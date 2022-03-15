@@ -293,8 +293,14 @@ class AliReducedVarManager : public TObject {
     kCentVZEROC,        // centrality from VZERO-C
     kCentZNA,           // centrality from ZNA
     kCentV0MNew,        // centrality from V0MNew
-    kCentV0MNewPlus1,      // centrality from V0MNewPlus1
-    kCentV0MNewMinus1,     // centrality from V0MNewMinus1
+    kCentV0MNewPlus10,      // centrality from V0MNewPlus10
+    kCentV0MNewMinus10,     // centrality from V0MNewMinus10
+    kCentV0MNewPlus05,      // centrality from V0MNewPlus05
+    kCentV0MNewMinus05,     // centrality from V0MNewMinus05
+    kCentV0MPlus10,      // centrality from V0MPlus10
+    kCentV0MMinus10,     // centrality from V0MMinus10
+    kCentV0MPlus05,      // centrality from V0MPlus05
+    kCentV0MMinus05,     // centrality from V0MMinus05
     kCentQuality,       // centrality quality   
     kNV0total,          // total number of V0s in the esd      
     kNV0selected,       // number of V0s selected              

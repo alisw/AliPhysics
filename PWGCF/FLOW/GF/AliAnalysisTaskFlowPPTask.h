@@ -157,7 +157,9 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile* fChc6_322322;  		//! <<6>> |#Delta#eta| > 1.0
 
 		//Addtional 6 particle correlation
+		TProfile* fChsc6222_Gap0;  		//! <<4>> |#Delta#eta| > 1.0
 		TProfile* fChsc6222_Gap10;  		//! <<4>> |#Delta#eta| > 1.0
+		TProfile* fChsc633_Gap0A;  		//! <<3>> |#Delta#eta| > 1.0
 		TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
 		TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
 		TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0

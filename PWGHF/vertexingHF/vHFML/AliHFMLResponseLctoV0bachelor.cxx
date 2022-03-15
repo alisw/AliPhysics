@@ -39,7 +39,8 @@ AliHFMLResponseLctoV0bachelor::AliHFMLResponseLctoV0bachelor() : AliHFMLResponse
 
 //--------------------------------------------------------------------------
 AliHFMLResponseLctoV0bachelor::AliHFMLResponseLctoV0bachelor(const Char_t *name, const Char_t *title,
-                                                             const std::string configfilepath) : AliHFMLResponse(name, title, configfilepath)
+                                                             const std::string configfilepath) : AliHFMLResponse(name, title, configfilepath),
+                                                                                                 fIsMixedEvent(false)
 {
   //
   // Standard constructor
@@ -55,7 +56,8 @@ AliHFMLResponseLctoV0bachelor::~AliHFMLResponseLctoV0bachelor()
 }
 
 //--------------------------------------------------------------------------
-AliHFMLResponseLctoV0bachelor::AliHFMLResponseLctoV0bachelor(const AliHFMLResponseLctoV0bachelor &source) : AliHFMLResponse(source)
+AliHFMLResponseLctoV0bachelor::AliHFMLResponseLctoV0bachelor(const AliHFMLResponseLctoV0bachelor &source) : AliHFMLResponse(source),
+                                                                                                            fIsMixedEvent(source.fIsMixedEvent)
 {
   //
   // Copy constructor
@@ -116,52 +118,54 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
   vpr.Boost(-vboost);
   fVars["cos_t_star"] = TMath::Cos(vpr.Angle(vlc.Vect()));
 
-  // Sign of d0 proton (different from regular d0)
-  // (from AliRDHFCutsLctoV0)
   AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
   fVars["pt_Pr"] = bachelor->Pt();
   AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
-  Double_t d0z0bach[2], covd0z0bach[3];
-  bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
-  Double_t tx[3];
-  bachelor->GetXYZ(tx);
-  tx[0] -= primvert->GetX();
-  tx[1] -= primvert->GetY();
-  tx[2] -= primvert->GetZ();
-  Double_t innerpro = tx[0]*cand->Px()+tx[1]*cand->Py();
-  Double_t signd0 = 1.;
-  if(innerpro<0.) signd0 = -1.;
-  fVars["signd0"] = signd0*TMath::Abs(d0z0bach[0]);
-  
+  if(!fIsMixedEvent){
+    // Sign of d0 proton (different from regular d0)
+    // (from AliRDHFCutsLctoV0)
+    Double_t d0z0bach[2], covd0z0bach[3];
+    bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
+    Double_t tx[3];
+    bachelor->GetXYZ(tx);
+    tx[0] -= primvert->GetX();
+    tx[1] -= primvert->GetY();
+    tx[2] -= primvert->GetZ();
+    Double_t innerpro = tx[0]*cand->Px()+tx[1]*cand->Py();
+    Double_t signd0 = 1.;
+    if(innerpro<0.) signd0 = -1.;
+    fVars["signd0"] = signd0*TMath::Abs(d0z0bach[0]);
+  }
   //Armenteros qT/|alpha|
   fVars["armenteros_K0s"] = v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0());
 
 
 
-
-  for(int iProng = 0; iProng < 3; iProng++){
-    AliAODTrack *dautrack;
-    if(iProng == 0) dautrack = dynamic_cast<AliAODTrack *>(cand->GetDaughter(iProng));
-    else            dautrack = dynamic_cast<AliAODTrack *>(v0part->GetDaughter(iProng-1));
-    
-    double nsigmaTPCpi = -999., nsigmaTPCK = -999., nsigmaTPCp = -999., nsigmaTOFpi = -999., nsigmaTOFK = -999., nsigmaTOFp = -999.;
-    pidHF->GetnSigmaTPC(dautrack, 2, nsigmaTPCpi);
-    pidHF->GetnSigmaTPC(dautrack, 3, nsigmaTPCK);
-    pidHF->GetnSigmaTPC(dautrack, 4, nsigmaTPCp);
-    pidHF->GetnSigmaTOF(dautrack, 2, nsigmaTOFpi);
-    pidHF->GetnSigmaTOF(dautrack, 3, nsigmaTOFK);
-    pidHF->GetnSigmaTOF(dautrack, 4, nsigmaTOFp);
-
-    fVars[Form("nsigTPC_Pi_%d", iProng)] = nsigmaTPCpi;
-    fVars[Form("nsigTPC_K_%d", iProng)]  = nsigmaTPCK;
-    fVars[Form("nsigTPC_Pr_%d", iProng)]  = nsigmaTPCp;
-    fVars[Form("nsigTOF_Pi_%d", iProng)] = nsigmaTOFpi;
-    fVars[Form("nsigTOF_K_%d", iProng)]  = nsigmaTOFK;
-    fVars[Form("nsigTOF_Pr_%d", iProng)]  = nsigmaTOFp;
-
-    fVars[Form("nsigComb_Pi_%d", iProng)] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCpi, nsigmaTOFpi);
-    fVars[Form("nsigComb_K_%d", iProng)]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCK, nsigmaTOFK);
-    fVars[Form("nsigComb_Pr_%d", iProng)]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCp, nsigmaTOFp);
+  if(!fIsMixedEvent){
+    for(int iProng = 0; iProng < 3; iProng++){
+      AliAODTrack *dautrack;
+      if(iProng == 0) dautrack = dynamic_cast<AliAODTrack *>(cand->GetDaughter(iProng));
+      else            dautrack = dynamic_cast<AliAODTrack *>(v0part->GetDaughter(iProng-1));
+      
+      double nsigmaTPCpi = -999., nsigmaTPCK = -999., nsigmaTPCp = -999., nsigmaTOFpi = -999., nsigmaTOFK = -999., nsigmaTOFp = -999.;
+      pidHF->GetnSigmaTPC(dautrack, 2, nsigmaTPCpi);
+      pidHF->GetnSigmaTPC(dautrack, 3, nsigmaTPCK);
+      pidHF->GetnSigmaTPC(dautrack, 4, nsigmaTPCp);
+      pidHF->GetnSigmaTOF(dautrack, 2, nsigmaTOFpi);
+      pidHF->GetnSigmaTOF(dautrack, 3, nsigmaTOFK);
+      pidHF->GetnSigmaTOF(dautrack, 4, nsigmaTOFp);
+      
+      fVars[Form("nsigTPC_Pi_%d", iProng)] = nsigmaTPCpi;
+      fVars[Form("nsigTPC_K_%d", iProng)]  = nsigmaTPCK;
+      fVars[Form("nsigTPC_Pr_%d", iProng)]  = nsigmaTPCp;
+      fVars[Form("nsigTOF_Pi_%d", iProng)] = nsigmaTOFpi;
+      fVars[Form("nsigTOF_K_%d", iProng)]  = nsigmaTOFK;
+      fVars[Form("nsigTOF_Pr_%d", iProng)]  = nsigmaTOFp;
+      
+      fVars[Form("nsigComb_Pi_%d", iProng)] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCpi, nsigmaTOFpi);
+      fVars[Form("nsigComb_K_%d", iProng)]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCK, nsigmaTOFK);
+      fVars[Form("nsigComb_Pr_%d", iProng)]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCp, nsigmaTOFp);
+    }
   }
     
 //  variables used by KFparticle
@@ -171,7 +175,7 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
   Double_t pos[3],cov[6];
    
   ///fpVtx  === primvert
-  primvert->GetXYZ(pos); 
+  primvert->GetXYZ(pos);
   primvert->GetCovarianceMatrix(cov);
   pVertex.SetXYZ((Float_t)pos[0],(Float_t)pos[1], (Float_t)pos[2]);
   Float_t covF[6];
@@ -227,31 +231,63 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
   
   fVars["chi2topo_Lc"] = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF();
   
-  // Bayesian PID probability for proton 
-  AliPIDCombined *PIDComb  = new AliPIDCombined();
-  PIDComb->SetDefaultTPCPriors();
-  PIDComb->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
-  Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
-  AliPIDResponse *pidresp = (AliPIDResponse*)pidHF->GetPidResponse();
-  UInt_t detUsed = PIDComb->ComputeProbabilities(bachelor, pidresp, probTPCTOF);
-  Double_t probProton = -1.;
-  if (detUsed == (UInt_t)PIDComb->GetDetectorMask()) { // TPC+TOF combined
-    probProton = probTPCTOF[AliPID::kProton];
-  }
-  else {   /// if TOF not available, try with TPC-only
+  if(!fIsMixedEvent){
+    // Bayesian PID probability for proton
+    AliPIDCombined *PIDComb  = new AliPIDCombined();
+    PIDComb->SetDefaultTPCPriors();
+    PIDComb->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+    Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
+    AliPIDResponse *pidresp = (AliPIDResponse*)pidHF->GetPidResponse();
+    UInt_t detUsed = PIDComb->ComputeProbabilities(bachelor, pidresp, probTPCTOF);
+    Double_t probProton = -1.;
+    if (detUsed == (UInt_t)PIDComb->GetDetectorMask()) { // TPC+TOF combined
+      probProton = probTPCTOF[AliPID::kProton];
+    }
+    else {   /// if TOF not available, try with TPC-only
       PIDComb->SetDetectorMask(AliPIDResponse::kDetTPC);
       detUsed= PIDComb->ComputeProbabilities(bachelor, pidresp, probTPCTOF);
       if (detUsed == (UInt_t)PIDComb->GetDetectorMask()) { //TPC-only worked. Else, probability returns as -1
-            probProton = probTPCTOF[AliPID::kProton];
+        probProton = probTPCTOF[AliPID::kProton];
       }
-  }    
-  fVars["CombinedPIDProb_Pr"] = probProton;
-
-  delete PIDComb;
-
-
-
-
+    }
+    fVars["CombinedPIDProb_Pr"] = probProton;
+    
+    delete PIDComb;
+  } else {
+    fIsMixedEvent = false;
+  }
 
 }
 
+//--------------------------------------------------------------------------
+void AliHFMLResponseLctoV0bachelor::SetMapOfProtonMixedEventVariables(float nsigmaTPCp, float nsigmaTOFp, float ncombp)
+{
+  //
+  // Keep the possibility to access proton PID variables in case of mixed event background
+  //
+
+  for(int iProng = 0; iProng < 3; iProng++){
+
+    fVars[Form("nsigTPC_Pi_%d", iProng)] = -999;
+    fVars[Form("nsigTPC_K_%d", iProng)] = -999;
+    fVars[Form("nsigTOF_Pi_%d", iProng)] = -999;
+    fVars[Form("nsigTOF_K_%d", iProng)] = -999;
+
+    fVars[Form("nsigComb_Pi_%d", iProng)] = -999;
+    fVars[Form("nsigComb_K_%d", iProng)] = -999;
+    
+    if(iProng == 0){
+      fVars[Form("nsigTPC_Pr_%d", iProng)] = nsigmaTPCp;
+      fVars[Form("nsigTOF_Pr_%d", iProng)] = nsigmaTOFp;
+      fVars[Form("nsigComb_Pr_%d", iProng)] = ncombp;
+    } else {
+      fVars[Form("nsigTPC_Pr_%d", iProng)] = -999;
+      fVars[Form("nsigTOF_Pr_%d", iProng)] = -999;
+      fVars[Form("nsigComb_Pr_%d", iProng)] = -999;
+    }
+  }
+  fVars["CombinedPIDProb_Pr"] = -999;
+  fVars["signd0"] = -9999;
+  
+  fIsMixedEvent = true;
+}

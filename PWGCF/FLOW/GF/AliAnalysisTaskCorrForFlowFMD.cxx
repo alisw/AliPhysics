@@ -697,7 +697,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigPhi = track->Phi();
       Double_t trigCharge = track->Charge();
       Double_t trigEff = 1.0;
-      if(fUseEfficiency) trigEff = GetEff(trigPt, spec, trigEta);
+      if(fUseEfficiency) {
+        trigEff = GetEff(trigPt, spec, trigEta);
+        if(trigEff < 0.001) continue;
+      }
       binscont[5] = trigPt;
       if(spec > 3) binscont[4] = track->M();
 
@@ -712,7 +715,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPhi = trackAss->Phi();
         Double_t assCharge = trackAss->Charge();
         Double_t assEff = 1.0;
-        if(fUseEfficiency) assEff = GetEff(assPt, 0, assEta);
+        if(fUseEfficiency) {
+          assEff = GetEff(assPt, 0, assEta);
+          if(assEff < 0.001) continue;
+        }
 
         if(!fIsMC && spec < 4 && trackAOD->GetID() == trackAODAss->GetID()) continue;
 
@@ -756,7 +762,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigEta = track->Eta();
       Double_t trigPhi = track->Phi();
       Double_t trigEff = 1.0;
-      if(fUseEfficiency) trigEff = GetEff(trigPt, spec, trigEta);
+      if(fUseEfficiency) {
+        trigEff = GetEff(trigPt, spec, trigEta);
+        if(trigEff < 0.001) continue;
+      }
       binscont[5] = trigPt;
       if(spec > 3) binscont[4] = track->M();
 
@@ -1324,14 +1333,16 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
   if(!mcEvent) return kFALSE;
 
-  if(fDoPID){
-    for(Int_t i(1); i < 4; i++){
-      fTracksTrig[i] = new TObjArray;
+  if(fIsTPCgen){
+    if(fDoPID){
+      for(Int_t i(1); i < 4; i++){
+        fTracksTrig[i] = new TObjArray;
+      }
     }
-  }
-  if(fDoV0){
-    for(Int_t i(4); i < 6; i++){
-      fTracksTrig[i] = new TObjArray;
+    if(fDoV0){
+      for(Int_t i(4); i < 6; i++){
+        fTracksTrig[i] = new TObjArray;
+      }
     }
   }
 
@@ -1367,6 +1378,11 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(binscont,0,1.);
           }
+          if(fDoV0 && partIdx > 3){
+            Double_t binscontV0[4] = {fPVz, fSampleIndex, part->Pt(), part->M()};
+            fhTrigTracks[partIdx]->Fill(binscontV0,0,1.);
+            fTracksTrig[partIdx]->Add(new AliPartSimpleForCorr(part->Eta(),part->Phi(),part->Pt(),part->M()));
+          }
         }
         if(partPt > fPtMinAss && partPt < fPtMaxAss) fTracksAss->Add((AliMCParticle*)part);
       } // end TPCTPC
@@ -1377,6 +1393,11 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
           if(fDoPID && partIdx > 0){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(binscont,0,1.);
+          }
+          if(fDoV0 && partIdx > 3){
+            Double_t binscontV0[4] = {fPVz, fSampleIndex, part->Pt(), part->M()};
+            fhTrigTracks[partIdx]->Fill(binscontV0,0,1.);
+            fTracksTrig[partIdx]->Add(new AliPartSimpleForCorr(part->Eta(),part->Phi(),part->Pt(),part->M()));
           }
         }
       }

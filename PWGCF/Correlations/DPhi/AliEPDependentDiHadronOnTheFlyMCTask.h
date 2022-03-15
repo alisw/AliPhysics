@@ -84,7 +84,7 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
   Int_t fNoSectorsV0; // The amount of sectors in phi that the simulated V0 detector has
   TString fCentralityEstimator; // The estimator used to determine the centrality. Choices: V0M, TRK, TKL, ZDC or FMD.
 
-  ClassDef(AliEPDependentDiHadronOnTheFlyMCTask, 2);
+  ClassDef(AliEPDependentDiHadronOnTheFlyMCTask, 3);
 };
 
 #endif

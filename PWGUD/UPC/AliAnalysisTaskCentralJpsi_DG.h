@@ -30,6 +30,7 @@ class AliAnalysisTaskCentralJpsi_DG : public AliAnalysisTaskSE
         virtual void    Terminate(Option_t* option); 
 
         void    SetIsMC(Bool_t MC){isMC = MC;}
+        void    SetIsNeutral(Bool_t neutral){isNeutral = neutral;}
         void    ReplayTriggersMC(AliVEvent *fEvent);
         void    RunMCGenLevel();  
         void    FillMCGenTree(TLorentzVector v);
@@ -42,6 +43,7 @@ class AliAnalysisTaskCentralJpsi_DG : public AliAnalysisTaskSE
         AliTimeRangeCut fTimeRangeCut;
         AliESDtrackCuts *fTrackCutsBit4;
         Bool_t          isMC;
+        Bool_t          isNeutral;
 
         AliVEvent   *fEvent;
         TList       *fOutputList;   //! output list
@@ -113,11 +115,12 @@ class AliAnalysisTaskCentralJpsi_DG : public AliAnalysisTaskSE
         Double_t fYGen;
         Double_t fMGen;
         Double_t fPhiGen;
+        Double_t fPtGen_Psi2s;
 
         AliAnalysisTaskCentralJpsi_DG(const AliAnalysisTaskCentralJpsi_DG&); // not implemented
         AliAnalysisTaskCentralJpsi_DG& operator=(const AliAnalysisTaskCentralJpsi_DG&); // not implemented
 
-        ClassDef(AliAnalysisTaskCentralJpsi_DG, 2);
+        ClassDef(AliAnalysisTaskCentralJpsi_DG, 3);
 };
 
 #endif

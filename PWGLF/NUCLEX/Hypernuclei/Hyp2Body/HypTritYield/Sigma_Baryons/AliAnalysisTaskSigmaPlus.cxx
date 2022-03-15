@@ -155,8 +155,8 @@ fveryverylowkstar(0.05),
 fMinPairPi0Mass(0.1),    
 fMaxPairPi0Mass(0.16),    
 fMaxPairSigmaPA(0.06),     
-fMinPairSigmaMass(1.16),   
-fMaxPairSigmaMass(1.22),   
+fMinPairSigmaMass(1.14),   
+fMaxPairSigmaMass(1.24),   
 fMinPairProtonDCAxy(0.005),
 fMaxPairkstar(0.5),
 
@@ -333,8 +333,8 @@ fveryverylowkstar(0.05),
 fMinPairPi0Mass(0.1),    
 fMaxPairPi0Mass(0.16),    
 fMaxPairSigmaPA(0.06),     
-fMinPairSigmaMass(1.16),   
-fMaxPairSigmaMass(1.22),   
+fMinPairSigmaMass(1.14),   
+fMaxPairSigmaMass(1.24),   
 fMinPairProtonDCAxy(0.005),
 fMaxPairkstar(0.5),
 
@@ -3201,7 +3201,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             AliAODTrack *pairprot;
             pairprot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(q));
             if(!pairprot) continue;
-            if(pairprot->Charge()!=prot->Charge()) continue;
+            //if(pairprot->Charge()!=prot->Charge()) continue;
 
             //If the Sigma made it here, check properties of all Protons in the Event and write them to a tree
 

@@ -171,6 +171,8 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   inline Double_t GetConvolutedGaussTransitionPar(Int_t index) const;
   
   Bool_t SetConvolutedGaussLambdaParameter(Double_t lambda);
+  
+  TF1* GetConvolutedGaussFunction() { return fConvolutedGausDeltaPrime; };
 
   Bool_t GetInputFromOtherTask() const { return fInputFromOtherTask; };
   void SetInputFromOtherTask(Bool_t flag) { fInputFromOtherTask = flag; };
@@ -428,7 +430,9 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   Double_t fAccuracyNonGaussianTail; // Accuracy of the non-gaussian tail (fraction of the maximum)
   const Double_t fkDeltaPrimeLowLimit; // Lower deltaPrime limit
   const Double_t fkDeltaPrimeUpLimit; // Upper deltaPrime limit
-  TF1* fConvolutedGausDeltaPrime; // Gaus convoluted with exponential tail to generate detector response (deltaPrime)
+  TF1* fConvolutedGausDeltaPrime; //! Gaus convoluted with exponential tail to generate detector response (deltaPrime)
+  
+  Double_t fConvolutedGaussLambda; // Lambda parameter for convoluted gaus function
   
   Int_t fTOFmode; // TOF mode used for TOF PID info (affects num sigma inclusion/exclusion)
   Double_t fConvolutedGaussTransitionPars[3]; // Parameter for transition from gaussian parameters to asymmetric shape
@@ -576,7 +580,7 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   TH3D* fh3DCA_XY_WeakDecays_Negative;
   TH3D* fh3DCA_XY_Material_Negative;  
   
-  ClassDef(AliAnalysisTaskMTFPID, 1);
+  ClassDef(AliAnalysisTaskMTFPID, 2);
 };
 
 

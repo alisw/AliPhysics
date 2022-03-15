@@ -66,9 +66,9 @@ private:
 
     TH1F *fHistNEvents;                              //!<! histo with number of events
     TH1F *fHistCentrality;                           //!<! histo with centrality
-    TH2F *fHistResolutionV0A;                        //!<! histo with detector resolution
-    TH2F *fHistResolutionV0C;                        //!<! histo with detector resolution
-    TH2F *fHistResolutionTPC;                        //!<! histo with detector resolution
+    TH3F *fHistResolution1;                          //!<! histo with detector resolution
+    TH3F *fHistResolution2;                          //!<! histo with detector resolution
+    TH3F *fHistResolution3;                          //!<! histo with detector resolution
     TH1F *fHistEventPlaneTPC[3];                     //!<! histos of TPC (Full, PosEta, NegEta) EP angle
     TH1F *fHistEventPlaneV0[3];                      //!<! histos of V0 (Full, V0A, V0C) EP angle
     TH2F *fHistqnVsCentrTPC[3];                      //!<! histos of q2TPC (Full, PosEta, NegEta) vs centrality (for spline calibration)
@@ -81,8 +81,8 @@ private:
     bool fEnableTPCPhiVsCentrDistr;                  /// flag to enable histos of phi vs. centr
     bool fEnableQvecTPCVsCentrDistr;                 /// flag to enable histos of TPC Q-vector vs. centr
 
-    AliJEQnVectorHandler* fJEQnVecHandler1;           /// Qn-vector handler
-    AliJEQnVectorHandler* fJEQnVecHandler2;           /// Qn-vector handler
+    AliJEQnVectorHandler* fJEQnVecHandler1;          /// Qn-vector handler
+    AliJEQnVectorHandler* fJEQnVecHandler2;          /// Qn-vector handler
     int fHarmonic;                                   /// Qn-vector harmonic
     int fCalibType;                                  /// type of calibrations used by handler
     int fNormMethod;                                 /// normalisation of Q vector
@@ -107,7 +107,7 @@ private:
     double fEPangleV0C;                              /// EP Angle with calibrations from V0A
     double fEPangleV0A;                              /// EP Angle with calibrations from V0C
 
-    ClassDef(AliAnalysisTaskJetQnVectors, 9);
+    ClassDef(AliAnalysisTaskJetQnVectors, 10);
 };
 
 #endif

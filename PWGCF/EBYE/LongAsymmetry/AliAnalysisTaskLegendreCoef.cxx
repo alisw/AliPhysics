@@ -21,6 +21,7 @@
 #include "AliEventCuts.h"
 #include "AliAODMCHeader.h"
 #include "TRandom2.h"
+#include <TTreeStream.h>
 
 ClassImp(AliAnalysisTaskLegendreCoef)
 
@@ -30,7 +31,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE()
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16),  fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEffTree(0), fTreeSRedirector(0x0),fTreeMCrec(0x0),fTreeMCgen(0x0),fEventCuts(0)
 {
 
 }
@@ -41,7 +42,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEffTree(0), fTreeSRedirector(0x0),fTreeMCrec(0x0),fTreeMCgen(0x0),fEventCuts(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -49,6 +50,8 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLegendreCoef::~AliAnalysisTaskLegendreCoef()
@@ -129,7 +132,17 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
     }
   }
 
+  // ************************************************************************
+  //   Trees for efficiency
+  // ************************************************************************
+  //
+  fTreeSRedirector = new TTreeSRedirector();
+  fTreeMCrec    = ((*fTreeSRedirector)<<"mcRec").GetTree();
+  fTreeMCgen     = ((*fTreeSRedirector)<<"mcGen").GetTree();
+
   PostData(1, fOutputList);
+  PostData(2, fTreeMCrec);
+  PostData(3, fTreeMCgen);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskLegendreCoef::BuildBackground()
@@ -157,19 +170,13 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   Float_t PVz = PrimaryVertex->GetZ();
   if(fabs(PVz)>fPVzMax) return;
   if(fabs(PVz)<fPVzMin) return;
-  if(fPVzSign==1){//take only positive pvz
-    if(PVz<0) return;
-  }
-  if(fPVzSign==-1){//take only negative pvz
-    if(PVz>0) return;
-  }
+  if(fPVzSign==1 && PVz<0) return;//take only positive pvz
+  if(fPVzSign==-1 && PVz>0) return;//take only negative pvz
 
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
   if(!MultSelection) return;
   
   Float_t Cent = MultSelection->GetMultiplicityPercentile("V0M"); //centrality
-  //mCentCL0 = MultSelection->GetMultiplicityPercentile("CL0");
-  //mCentCL1 = MultSelection->GetMultiplicityPercentile("CL1");
   if(Cent>70.0 || Cent<0.01) return;
   ((TH1D*) fOutputList->FindObject("NeventsCentHist"))->Fill(Cent);//Nevents vs centrality
 
@@ -194,18 +201,32 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
       AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
       if (!p1) continue;
       if(p1->Charge()==0)continue;//only get charged tracks
-      if(p1->Charge()!=-3 && p1->Charge()!=+3) continue;// x3 by convention
-      if(!p1->IsPrimary()) continue;
       if(!p1->IsPhysicalPrimary()) continue;
-      if(p1->Eta()> fEtaMax || p1->Eta()<fEtaMin ) continue;
-      if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
       if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
         //build background
-        ((TH2D*) fOutputList->FindObject("MCChargedBGHistOut"))->Fill(p1->Eta(), Cent);
-        if(p1->Charge() > 0) ((TH2D*) fOutputList->FindObject("MCPosBGHistOut"))->Fill(p1->Eta(), Cent);
-        if(p1->Charge() < 0) ((TH2D*) fOutputList->FindObject("MCNegBGHistOut"))->Fill(p1->Eta(), Cent);
-        ((TH3D*) fOutputList->FindObject("GenPhiEtaCentHist"))->Fill(p1->Phi(),p1->Eta(), Cent);
-        ((TH2D*) fOutputList->FindObject("GenPtCentHist"))->Fill(p1->Pt(), Cent);
+        // Fill MC closure tree
+        Float_t pTMCgen   = p1->Pt();
+        Float_t phiMCgen  = p1->Phi();
+        Float_t etaMCgen  = p1->Eta();
+        if(fTreeSRedirector && fEffTree){
+          //ttree for local test
+          (*fTreeSRedirector)<<"mcGen"<<
+          "pT="        << pTMCgen<<           // mc transverse momentum
+          "eta="       << etaMCgen <<          // mc eta
+          "phi="       << phiMCgen <<          // mc phi
+          "cent="      << Cent <<     // Centrality
+          "vZ="        << PVz <<  //PVz
+          "\n";
+        }
+        if(etaMCgen> fEtaMax || etaMCgen<fEtaMin ) continue;
+        if(pTMCgen < fPtmin|| pTMCgen > fPtmax) continue;
+        ((TH2D*) fOutputList->FindObject("MCChargedBGHistOut"))->Fill(etaMCgen, Cent);
+        if(p1->Charge() > 0) ((TH2D*) fOutputList->FindObject("MCPosBGHistOut"))->Fill(etaMCgen, Cent);
+        if(p1->Charge() < 0) ((TH2D*) fOutputList->FindObject("MCNegBGHistOut"))->Fill(etaMCgen, Cent);
+        ((TH3D*) fOutputList->FindObject("GenPhiEtaCentHist"))->Fill(phiMCgen,etaMCgen, Cent);
+        ((TH2D*) fOutputList->FindObject("GenPtCentHist"))->Fill(pTMCgen, Cent);
+
+
       }
     }
   }
@@ -214,34 +235,59 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
-    if(track->Charge()==0)continue;//only get charged tracks
-    if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
-    if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
-    if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
-    if(track->TestFilterBit(fBit)) {
-      if(!fIsMC){
-        //build background for raw data
-        //printf("filter bit is %i\n",fBit);
-        ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(track->Eta(), Cent);
-        if(track->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(track->Eta(), Cent);
-        if(track->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(track->Eta(), Cent);
-        ((TH3D*) fOutputList->FindObject("PhiEtaCentHist"))->Fill(track->Phi(),track->Eta(), Cent);
-        ((TH2D*) fOutputList->FindObject("PtCentHist"))->Fill(track->Pt(), Cent);
-      }else{
-        //build background for MC reconstructed
-        int label = TMath::Abs(track->GetLabel());
-        AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
-        if (!mcTrack) continue;
-        if(mcTrack->Charge()==0)continue;//only get charged tracks
-        if(!mcTrack->IsPrimary()) continue;
-        if(!mcTrack->IsPhysicalPrimary()) continue;   
-        if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
-          ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(mcTrack->Eta(), Cent);
-          if(mcTrack->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(mcTrack->Eta(), Cent);
-          if(mcTrack->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(mcTrack->Eta(), Cent);
-          ((TH3D*) fOutputList->FindObject("RecPhiEtaCentHist"))->Fill(mcTrack->Phi(),mcTrack->Eta(), Cent);
-          ((TH2D*) fOutputList->FindObject("RecPtCentHist"))->Fill(mcTrack->Pt(), Cent);
+    if(!fIsMC){
+      if(track->Charge()==0)continue;//only get charged tracks
+      if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
+      if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
+      if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
+      if(!track->TestFilterBit(fBit)) continue;
+      //build background for raw data
+      //printf("filter bit is %i\n",fBit);
+      ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(track->Eta(), Cent);
+      if(track->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(track->Eta(), Cent);
+      if(track->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(track->Eta(), Cent);
+      ((TH3D*) fOutputList->FindObject("PhiEtaCentHist"))->Fill(track->Phi(),track->Eta(), Cent);
+      ((TH2D*) fOutputList->FindObject("PtCentHist"))->Fill(track->Pt(), Cent);
+    }else{
+      //build background for MC reconstructed
+      int label = TMath::Abs(track->GetLabel());
+      AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
+      if (!mcTrack) continue;
+      if(mcTrack->Charge()==0)continue;//only get charged tracks
+      if(!mcTrack->IsPhysicalPrimary()) continue;  
+      if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
+        Float_t pTrec   = mcTrack->Pt();
+        Float_t phirec  = mcTrack->Phi();
+        Float_t etarec  = mcTrack->Eta();
+        Float_t ncl = track->GetTPCNcls();
+        Float_t crossedrows = track->GetTPCNCrossedRows();
+        Float_t chi2 = track->Chi2perNDF();
+        Int_t isfb = 0;
+        if(track->TestFilterBit(fBit)) isfb=1;
+        if(fTreeSRedirector && fEffTree){
+          //ttree for local test
+          (*fTreeSRedirector)<<"mcRec"<<
+          "pT="        << pTrec <<           // transverse momentum
+          "eta="       << etarec <<          // mc eta
+          "phi="       << phirec <<          // mc phi
+          "cent="      << Cent <<     // Centrality
+          "vZ="        << PVz <<  //PVz
+          "ncl="        << ncl << 
+          "crossedrows=" <<crossedrows<<
+          "chi2="       <<chi2<<
+          "fbit="       <<isfb<<
+          "\n";
         }
+        if(isfb==0) continue;//choose filterbit
+        if(mcTrack->Charge()==0)continue;//only get charged tracks
+        if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
+        if(pTrec < fPtmin|| pTrec > fPtmax) continue; //pt cut
+        if(ncl<fTPCNcls || crossedrows<fTPCNCrossedRows || chi2 > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
+        ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(etarec, Cent);
+        if(mcTrack->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(etarec, Cent);
+        if(mcTrack->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(etarec, Cent);
+        ((TH3D*) fOutputList->FindObject("RecPhiEtaCentHist"))->Fill(phirec, etarec, Cent);
+        ((TH2D*) fOutputList->FindObject("RecPtCentHist"))->Fill(pTrec, Cent);     
       }
     }
   }
@@ -272,19 +318,13 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   Float_t PVz = PrimaryVertex->GetZ();
   if(fabs(PVz)>fPVzMax) return;
   if(fabs(PVz)<fPVzMin) return;
-  if(fPVzSign==1){//take only positive pvz
-    if(PVz<0) return;
-  }
-  if(fPVzSign==-1){//take only negative pvz
-    if(PVz>0) return;
-  }
+  if(fPVzSign==1 && PVz<0) return;//take only positive pvz
+  if(fPVzSign==-1 && PVz>0) return;//take only negative pvz
   
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
   if(!MultSelection) return;
   
   Float_t Cent = MultSelection->GetMultiplicityPercentile("V0M"); //centrality
-  //mCentCL0 = MultSelection->GetMultiplicityPercentile("CL0");
-  //mCentCL1 = MultSelection->GetMultiplicityPercentile("CL1");
   if(Cent>70.0 || Cent<0.01) return;
   double centbins[9] = {0.01,5,10,20,30,40,50,60,70};
   TAxis *centaxis = new TAxis(8,centbins);
@@ -320,50 +360,54 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
       AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
       if (!p1) continue;
       if(p1->Charge()==0)continue;//only get charged tracks
-      if(p1->Charge()!=-3 && p1->Charge()!=+3) continue;// x3 by convention
-      if(!p1->IsPrimary()) continue;
       if(!p1->IsPhysicalPrimary()) continue;
-      if(p1->Eta() > fEtaMax || p1->Eta()<fEtaMin ) continue;
+      Float_t etaMCgen = p1->Eta();
+      if(etaMCgen > fEtaMax || etaMCgen<fEtaMin ) continue;
       if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
       if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
         // calculate signal    
-        MCchargedSignal->Fill(p1->Eta());
-        if(p1->Charge() > 0) MCposSignal->Fill(p1->Eta());
-        if(p1->Charge() < 0) MCnegSignal->Fill(p1->Eta());        
+        MCchargedSignal->Fill(etaMCgen);
+        if(p1->Charge() > 0) MCposSignal->Fill(etaMCgen);
+        if(p1->Charge() < 0) MCnegSignal->Fill(etaMCgen);        
       }
     }
-
+  }
 
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
-    if(track->Charge()==0)continue;//only get charged tracks
-    if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
-    if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
-    if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof   
-    if(track->TestFilterBit(fBit)) {
-      if(!fIsMC){
-        //build signal for raw data
-        chargedSignal->Fill(track->Eta());
-        if(track->Charge() > 0) posSignal->Fill(track->Eta());
-        if(track->Charge() < 0) negSignal->Fill(track->Eta());
-      }else{
-        //build signal for MC reconstructed
-        int label = TMath::Abs(track->GetLabel());
-        AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
-        if (!mcTrack) continue;
-        if(mcTrack->Charge()==0)continue;//only get charged tracks
-        if(!mcTrack->IsPrimary()) continue;
-        if(!mcTrack->IsPhysicalPrimary()) continue;    
-        if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
-          chargedSignal->Fill(mcTrack->Eta());
-          if(mcTrack->Charge() > 0) posSignal->Fill(mcTrack->Eta());
-          if(mcTrack->Charge() < 0) negSignal->Fill(mcTrack->Eta());
-        }
+    if(!fIsMC){
+    //build signal for raw data
+      if(track->Charge()==0)continue;//only get charged tracks
+      Float_t etaRaw = track->Eta();
+      if(etaRaw > fEtaMax || etaRaw < fEtaMin) continue;//eta cut
+      if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
+      if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof   
+      if(track->TestFilterBit(fBit)) {
+        chargedSignal->Fill(etaRaw);
+        if(track->Charge() > 0) posSignal->Fill(etaRaw);
+        if(track->Charge() < 0) negSignal->Fill(etaRaw);
+      }
+    }else{
+      //build signal for MC reconstructed
+      int label = TMath::Abs(track->GetLabel());
+      AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
+      if (!mcTrack) continue;
+      if(mcTrack->Charge()==0)continue;//only get charged tracks
+      if(!mcTrack->IsPhysicalPrimary()) continue;    
+      Float_t etaRec = mcTrack->Eta();
+      if(etaRec> fEtaMax || etaRec < fEtaMin) continue;//eta cut
+      if(mcTrack->Pt() < fPtmin|| mcTrack->Pt() > fPtmax) continue; //pt cut  
+      if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof       
+      if(!track->TestFilterBit(fBit)) continue;//only filterbit
+      if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
+        chargedSignal->Fill(etaRec);
+        if(mcTrack->Charge() > 0) posSignal->Fill(etaRec);
+        if(mcTrack->Charge() < 0) negSignal->Fill(etaRec);
       }
     }
   }
-  
+
   //calculate coefficients if histogram is full
   int ncentbin = centaxis->FindBin(Cent);
   int neventcent = fNeventCentHist->GetBinContent(ncentbin);
@@ -386,23 +430,23 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   }
 
 
-    //calculate coefficients if histogram is full
-    if(MCchargedSignal->Integral()>0) {
-      TH1D *MCchargedBG = fMCChargedBackgroundHist->ProjectionX("MCchargedbackground", ncentbin,ncentbin);
-      MCchargedBG->Scale(1.0/neventcent);
-      BuildCoefficients(MCchargedSignal, MCchargedBG, Cent, "MC");
-      if(MCposSignal->Integral()>0) {
-        TH1D *MCposBG = fMCPosBackgroundHist->ProjectionX("MCposbackground", ncentbin,ncentbin);
-        MCposBG->Scale(1.0/neventcent);
-        BuildCoefficients(MCposSignal, MCposBG, Cent, "posMC");   
-      }
-      if(MCnegSignal->Integral()>0) {
-        TH1D *MCnegBG = fMCNegBackgroundHist->ProjectionX("negbackground", ncentbin,ncentbin);
-        MCnegBG->Scale(1.0/neventcent);
-        BuildCoefficients(MCnegSignal, MCnegBG, Cent, "negMC");
-      }
+  //calculate coefficients if histogram is full
+  if(fIsMC && MCchargedSignal->Integral()>0) {
+    TH1D *MCchargedBG = fMCChargedBackgroundHist->ProjectionX("MCchargedbackground", ncentbin,ncentbin);
+    MCchargedBG->Scale(1.0/neventcent);
+    BuildCoefficients(MCchargedSignal, MCchargedBG, Cent, "MC");
+    if(MCposSignal->Integral()>0) {
+      TH1D *MCposBG = fMCPosBackgroundHist->ProjectionX("MCposbackground", ncentbin,ncentbin);
+      MCposBG->Scale(1.0/neventcent);
+      BuildCoefficients(MCposSignal, MCposBG, Cent, "posMC");   
+    }
+    if(MCnegSignal->Integral()>0) {
+      TH1D *MCnegBG = fMCNegBackgroundHist->ProjectionX("negbackground", ncentbin,ncentbin);
+      MCnegBG->Scale(1.0/neventcent);
+      BuildCoefficients(MCnegSignal, MCnegBG, Cent, "negMC");
     }
   }
+  
   delete (posSignal);
   delete (negSignal); 
   delete (chargedSignal);
@@ -418,8 +462,6 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
   int ntracks = signal->Integral();
   int n; 
   char histname[50];
-    printf("tracks is %i\n",ntracks);
-
   //normalizing signal hist 
   signal->Divide(background);
     // printf("signal normal is %f\n",signal->Integral());

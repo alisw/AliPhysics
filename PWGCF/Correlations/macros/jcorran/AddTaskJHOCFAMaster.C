@@ -25,29 +25,59 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     if (iOldConfig == iConfig) {break;}
 
     switch(iConfig) { // Hardcoded names to prevent typo in phi weights files.
-    case 0 :  // Default: global.
-      configNames.push_back("global");
+    case 0 :    // Default selection.     // V0M + |zVtx < 8| + (pileup > 15000)
+      configNames.push_back("default");   // + global tracks 96 + (NTPC < 70) + (chi2 in [0.1, 4]).
       break;
-    case 1 :  // Syst: hybrid.
+    case 1 :    // Syst: global changed to hybrid.
       configNames.push_back("hybrid");
       break;
-    case 2 :  // Syst: nqq. TBI
-      configNames.push_back("nqq");
-      break;
-    case 3 :  // Syst: pileup.
-      configNames.push_back("pileup");
-      break;
-    case 4 :  // Syst: SPD.
+    case 2 :    // Syst: V0M changed to SPD clusters.
       configNames.push_back("SPD");
       break;
-    case 5 :  // Syst: subA. TBI
-      configNames.push_back("subA");
+    case 3 :    // Syst: (pileup > 15000) changed to (no pileup cut).
+      configNames.push_back("noPileup");
       break;
-    case 6 :  // Syst: ztx < 10.
-      configNames.push_back("zvtx");
+    case 4 :    // Syst: (pileup > 15000) changed to (pileup > 10000).
+      configNames.push_back("pileup10");
       break;
-    case 7 :  // Syst: pqq. TBI.
+    case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 10|.
+      configNames.push_back("zvtx10");
+      break;
+    case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 9|.
+      configNames.push_back("zvtx9");
+      break;
+    case 7 :    // Syst: |zVtx < 8| changed to |zVtx < 7|.
+      configNames.push_back("zvtx7");
+      break;
+    case 8 :    // Syst: (NTPC > 70) changed to (NTPC > 80).
+      configNames.push_back("NTPC80");
+      break;
+    case 9 :    // Syst: (NTPC > 70) changed to (NTPC > 90).
+      configNames.push_back("NTPC90");
+      break;
+    case 10 :    // Syst: (NTPC > 70) changed to (NTPC > 100).
+      configNames.push_back("NTPC100");
+      break;
+    case 11 :    // Syst: (chi2 in [0.1, 4]) changed to (chi2 < 4).
+      configNames.push_back("chi2def");
+      break;
+    case 12 :    // Syst: (chi2 in [0.1, 4]) changed to (chi2 < 2.5).
+      configNames.push_back("chi2tight");
+      break;
+    case 13 :     // Syst: (DCAz < 2cm - default in global) changed to (DCAz < 1cm).
+      configNames.push_back("DCAz1");
+      break;
+    case 14 :     // Syst: (DCAz < 2cm - default in global) changed to (DCAz < 0.5cm).
+      configNames.push_back("DCAz05");
+      break;
+    case 15 :     // Syst: (all charges) changed to (negative charges only).
+      configNames.push_back("nqq");
+      break;
+    case 16 :     // Syst: (all charges) changed to (positive charges only).
       configNames.push_back("pqq");
+      break;
+    case 17 :     // Syst: subA. TBI
+      configNames.push_back("subA");
       break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
@@ -82,8 +112,13 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
         MAPdirname.Data(), sCorrection[period].Data(), Int_t(ptMin * 10), configNames[i].Data());
       break;
     case 2:   // 2; Fine binning, minPt = 0.2 for all.
-      MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_finerBins_pt02_s_%s.root",
-        MAPdirname.Data(), sCorrection[period].Data(), configNames[i].Data());
+      if (strcmp(configNames[i].Data(), "default") == 0) {
+        MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_finerBins_Default_s_%s.root",
+          MAPdirname.Data(), sCorrection[period].Data(), configNames[i].Data());
+      } else {
+        MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_finerBins_s_%s.root",
+          MAPdirname.Data(), sCorrection[period].Data(), configNames[i].Data());
+      }
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
@@ -95,7 +130,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
 
 // Set the general variables.
   int hybridCut = 768;      // Global hybrid tracks.
-  int globalCut = 96;       // Global tracks.
+  int globalCut = 96;       // Global tracks - default.
   UInt_t selEvt;            // Trigger.
   if (period == lhc15o) {   // Minimum bias.
     selEvt = AliVEvent::kINT7;
@@ -113,9 +148,10 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     fJCatalyst[i]->SetSaveAllQA(saveQA);
 
   // Set the correct flags to use.
-    if (strcmp(configNames[i].Data(), "pileup") != 0) {
+    if (strcmp(configNames[i].Data(), "noPileup") != 0) {   // Set flag only if we cut on pileup.
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
-      fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQApileup);
+      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQApileup);}
+      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQApileup);}
     }
     if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}
 
@@ -129,17 +165,47 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetCentDetName("V0M");
     }
 
-  // Set the filtering and kinematic cuts.
-    if (strcmp(configNames[i].Data(), "global") == 0) {
-      fJCatalyst[i]->SetTestFilterBit(globalCut);
-    } else {  // Default: Hybrid tracks.
-      fJCatalyst[i]->SetTestFilterBit(hybridCut);
-    }
-  
-    if (strcmp(configNames[i].Data(), "zvtx") == 0) {    
+    if (strcmp(configNames[i].Data(), "zvtx10") == 0) {    
       fJCatalyst[i]->SetZVertexCut(10.0);
+    } else if (strcmp(configNames[i].Data(), "zvtx9") == 0) {
+      fJCatalyst[i]->SetZVertexCut(9.0);
+    } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
+      fJCatalyst[i]->SetZVertexCut(7.0);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetZVertexCut(8.0);
+    }
+
+    /// Filtering, kinematic and detector cuts.
+    if (strcmp(configNames[i].Data(), "hybrid") == 0) {
+      fJCatalyst[i]->SetTestFilterBit(hybridCut);
+    } else {  // Default: global tracks.
+      fJCatalyst[i]->SetTestFilterBit(globalCut);
+    }
+
+    if (strcmp(configNames[i].Data(), "NTPC80") == 0) {    
+      fJCatalyst[i]->SetNumTPCClusters(80);
+    } else if (strcmp(configNames[i].Data(), "NTPC90") == 0) {
+      fJCatalyst[i]->SetNumTPCClusters(90);
+    } else if (strcmp(configNames[i].Data(), "NTPC100") == 0) {
+      fJCatalyst[i]->SetNumTPCClusters(100);
+    } else {  // Default value for JCorran analyses in Run 2.
+      fJCatalyst[i]->SetNumTPCClusters(70);
+    }
+
+    if (strcmp(configNames[i].Data(), "chi2def") == 0) {    
+      fJCatalyst[i]->SetChi2Cuts(0.0, 4.0);
+    } else if (strcmp(configNames[i].Data(), "chi2tight") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.0, 2.5);
+    } else {  // Default value for JCorran analyses in Run 2.
+      fJCatalyst[i]->SetChi2Cuts(0.1, 4.0);
+    }
+
+    if (strcmp(configNames[i].Data(), "DCAz1") == 0) {    
+      fJCatalyst[i]->SetDCAzCut(1.0);
+    } else if (strcmp(configNames[i].Data(), "DCAz05") == 0) {
+      fJCatalyst[i]->SetDCAzCut(0.5);
+    } else {  // Default value for JCorran analyses in Run 2.
+      fJCatalyst[i]->SetDCAzCut(2.0);
     }
 
     if (strcmp(configNames[i].Data(), "nqq") == 0) {

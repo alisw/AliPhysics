@@ -637,7 +637,7 @@ private:
   TH2F *       fhMCDeltaEtaCharged[fgkNmcTypes];         //!<! MC pure particles charged trigger primary pt vs delta eta (associated-trigger)
   TH2F *       fhMCDeltaPhiCharged[fgkNmcTypes];         //!<! MC pure particles charged trigger primary pt vs delta phi (associated-trigger)
   TH2F *       fhMCDeltaPhiDeltaEtaCharged[fgkNmcTypes]; //!<! MC pure particles charged associated primary pt vs delta phi (associated-trigger), in away side
-  TH2F *       fhMCDeltaPhiChargedPt[fgkNmcTypes];       //!<! MC pure particles charged delta phi vs delta eta (associated-trigger)
+  TH2F *       fhMCDeltaPhiChargedPt[fgkNmcTypes];       //!<! MC pure particles charged delta phi  (associated-trigger) vs associated pt, within delta phi window
   TH2F *       fhMCPtXECharged[fgkNmcTypes];             //!<! MC pure particles charged trigger primary pt vs xE
   TH2F *       fhMCPtXEUeCharged[fgkNmcTypes];           //!<! MC pure particles charged trigger primary pt vs xE (underlying event)
   TH2F *       fhMCPtXEUeLeftCharged[fgkNmcTypes];       //!<! MC pure particles charged trigger primary pt vs xE (underlying event,left cone)
@@ -653,7 +653,10 @@ private:
   TH2F *       fhMCPtHbpZTUeLeftCharged[fgkNmcTypes];    //!<! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event, left cone)
   TH2F *       fhMCPtTrigPout[fgkNmcTypes];              //!<! MC pure particles charged trigger primary pt vs pOut
   TH2F *       fhMCPtAssocDeltaPhi[fgkNmcTypes];         //!<! MC pure particles charged associated primary pt vs delta phi (associated-trigger)
-  
+
+  /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins and different MC particle origin
+  TH3F **      fhMCDeltaPhiDeltaEtaZTBin;                //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()*fgkNmcTypes]
+
   // Mixing
   TH1I *       fhNEventsTrigger;                         //!<! Number of analyzed triggered events.
   TH2F *       fhNtracksMB;                              //!<! Total number of tracks in MB events.
@@ -735,7 +738,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,41) ;
+  ClassDef(AliAnaParticleHadronCorrelation,42) ;
   /// \endcond
   
 } ;

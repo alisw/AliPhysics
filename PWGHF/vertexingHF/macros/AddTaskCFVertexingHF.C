@@ -945,11 +945,12 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	// ----- output data -----
 
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="",output4name="", output5name="";
+	TString output1name="", output2name="", output3name="",output4name="", output5name="", output6name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
 	output4name= "Cuts";
 	output5name= "coutProf";
+	output6name="QAHistos";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 		output1name="CFHFchist0";
@@ -988,6 +989,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 	// estimators list
 	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+	AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(output6name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
 
 	mgr->AddTask(task);
@@ -998,6 +1000,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
 	mgr->ConnectOutput(task,5,coutput5);
+	mgr->ConnectOutput(task,6,coutput6);
 
 	return task;
 

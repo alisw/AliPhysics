@@ -1270,7 +1270,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		fHistEta_track->Fill(track->Eta());            
 		fHistPhi_track->Fill(track->Phi());             
 		fTPCCrossedRow->Fill(track -> GetTPCCrossedRows());
-                fHistCheff1->Fill(correctednAcc,TrkP);
+                fHistCheff1->Fill(correctednAcc,TrkPt);
 
 
 		///////////////////////

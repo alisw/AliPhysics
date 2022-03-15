@@ -944,15 +944,18 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   UInt_t fSelectMask = inputHandler->IsEventSelected();
   Bool_t isTriggerSelected1 = kFALSE;
   Bool_t isTriggerSelected2 = kFALSE;
+  Bool_t isTriggerSelected3 = kFALSE;
 
   isTriggerSelected1 = fSelectMask& AliVEvent::kCentral;
   isTriggerSelected2 = fSelectMask& AliVEvent::kSemiCentral;
+  isTriggerSelected3 = fSelectMask& AliVEvent::kINT7;
 
 
-  if (isTriggerSelected1==1 && centrality>10.0)
+  if (isTriggerSelected1==1 && centrality>10.0 && isTriggerSelected3==0)
     return ;
-  if (isTriggerSelected2==1 && (centrality<30.0 || centrality>50.0 ))
+  if (isTriggerSelected2==1 && (centrality<30.0 || centrality>50.0 ) && isTriggerSelected3==0)
     return ;
+
 
 
   

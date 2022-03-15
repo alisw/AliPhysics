@@ -3,7 +3,7 @@
 // TODO: Set Trigger Mask to be set from the AddAnalysisTask argument list
 
 
-AliAnalysisTask_Phi_MC* AddAnalysisTask_Phi_MC( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, TString fName = "PhiCount_STD" )
+AliAnalysisTask_Phi_MC* AddAnalysisTask_Phi_MC( TString fName = "PhiCount_STD", Long_t kParticlePDG = 333 )
 {
     // Analysis Manager
     AliAnalysisManager         *fAliAnlManager      =   AliAnalysisManager::GetAnalysisManager();
@@ -19,6 +19,12 @@ AliAnalysisTask_Phi_MC* AddAnalysisTask_Phi_MC( Bool_t MCFlag, Bool_t PhiFlag, B
     if (!fAliAnlManager->GetInputEventHandler())    return 0x0;
     if (!fAliAnlTask)                               return 0x0;
 
+    //  Task settings
+    fAliAnlTask ->  SetParticlePDG          ( kParticlePDG );
+    fAliAnlTask ->  SetSPCompute            ( kFALSE );   // Not implemented
+    fAliAnlTask ->  SetSPWighted            ( kFALSE );   // Not implemented
+    fAliAnlTask ->  SetRTCompute            ( kFALSE );   // Not implemented
+    
     // Input
     fAliAnlManager->ConnectInput(fAliAnlTask,0,fAliAnlManager->GetCommonInputContainer());
     

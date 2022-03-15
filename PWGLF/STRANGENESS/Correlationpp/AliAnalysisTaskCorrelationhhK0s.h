@@ -187,12 +187,14 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F*                   fHistGeneratedV0PtOOBPileUp;      //!
   TH3F *                  fHistGeneratedTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedTriggerPtPhi; 	    //!
+  TH3F **                 fHistSelectedAllTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtPhi;     //!
   TH3F **                 fHistGeneratedV0PtTMaxPhi; 	    //!
   TH3F **                 fHistCPGeneratedV0PtTMaxPhi; 	    //!
   TH3F **                 fHistSelectedV0PtTMaxPhi; 	    //!
   TH3F *                  fHistGeneratedTriggerPtEta; 	    //!
   TH3F **                 fHistSelectedTriggerPtEta; 	    //!
+  TH3F **                 fHistSelectedAllTriggerPtEta; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtEta;     //!
   TH3F **                 fHistGeneratedV0PtTMaxEta; 	    //!
   TH3F **                 fHistCPGeneratedV0PtTMaxEta; 	    //!

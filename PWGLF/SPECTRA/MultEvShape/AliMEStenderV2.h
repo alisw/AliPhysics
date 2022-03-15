@@ -5,9 +5,9 @@
 //  Tender for Multiplicity and Event Shape group                         //
 //  Tender configuration                                                  //
 //  Authors:                                                              //
+//    Amelia Lindner <amelia.lindner@cern.ch>                             //
+//    Alex Bercuci (a.bercuci@gsi.de)                                     //
 //    Cristi Andrei <Cristian.Andrei@cern.ch>                             //
-//    Andrei Herghelegiu <aherghe@niham.nipne.ro>                         //
-//    Madalina Tarzila <mtarzila@niham.nipne.ro>                          //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -23,6 +23,8 @@ class TObjArray;
 class TClonesArray;
 class AliMESeventInfo;
 class AliAnalysisUtils;
+class TTree;
+
 #include "AliEventCuts.h"
 class AliMEStenderV2 : public AliAnalysisTaskSE
 {
@@ -73,6 +75,19 @@ public:
     ,kMCtrkInfo
     ,kNqa
   };
+  enum MEStenderV2Containers
+  {
+    kQA = 1,
+    kEventInfo = 1,
+    kTracks,
+    kTree,
+    kMCeventInfo,
+    kMCtracks,
+    kTreeMC,
+    kTreeGen,
+    kTreeMiss,
+    kNcontainers
+  };
   AliMEStenderV2();
   AliMEStenderV2(const char *name);
   virtual ~AliMEStenderV2();
@@ -107,13 +122,18 @@ private:
   AliPIDCombined     *fPIDcomb;      // working PID combined service
 
   TObjArray *fTracks;       //!
-  TClonesArray *fTracksIO;       //!
+  TClonesArray *fTracksIO;  //!
   AliMESeventInfo *fEvInfo; //!
   TObjArray *fMCtracks;  //!
   TClonesArray *fMCtracksIO; //!
   AliMESeventInfo *fMCevInfo;  //!
   TClonesArray *fMCGenTracksIO;   //!
   TClonesArray *fMCtracksMissIO; //!
+  TFile *fTreeFile; //!
+  TTree *fTree; //!
+  TTree *fTreeMC; //!
+  TTree *fTreeGen; //!
+  TTree *fTreeMiss; //!
 
   AliPPVsMultUtils *fUtils;
   AliEventCuts fEventCutsQA; //!

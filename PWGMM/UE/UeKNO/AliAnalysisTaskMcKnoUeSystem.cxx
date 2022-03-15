@@ -344,7 +344,7 @@ void AliAnalysisTaskMcKnoUeSystem::UserCreateOutputObjects()
 		fCuts1->SetCutGeoNcrNcl(fCutGeoNcrNclZone, fCutGeoNcrNclLength, 1.5, 0.85, 0.7); //3cm(default), 2cm, 4cm;   130(default), 120, 140
 	     
 		if (fIsRequirementSPD) {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);} //kTRUE---kAny(default)
-                else {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);} //kFALSE---kNone
+                //else {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);} //kFALSE---kNone
                 fCuts1->SetMaxChi2PerClusterITS(fCutMaxChi2PerClusterITS); //36(default), 25, 49
 		fCuts1->SetMaxChi2PerClusterTPC(fCutMaxChi2PerClusterTPC); //4(default), 3, 5
                 fCuts1->SetMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal); //36(default), 25, 49
@@ -372,8 +372,8 @@ void AliAnalysisTaskMcKnoUeSystem::UserCreateOutputObjects()
                 fCuts2->SetDCAToVertex2D(kTRUE);
                 fCuts2->SetAcceptKinkDaughters(kFALSE);
 		//2 additional cuts
-		fCuts2->SetRequireITSRefit(fIsTPCRefit); //kTRUE(defalut), kFALSE  
-		fCuts2->SetRequireTPCRefit(fIsITSRefit); //kTRUE(default), kFALSE   
+		fCuts2->SetRequireITSRefit(fIsITSRefit); //kTRUE(defalut), kFALSE  
+		fCuts2->SetRequireTPCRefit(fIsTPCRefit); //kTRUE(default), kFALSE   
 
 		fTrackFilter->AddCuts(fCuts2);
 	}

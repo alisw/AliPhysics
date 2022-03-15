@@ -546,11 +546,11 @@ void AliHFSystErr::Init(Int_t decay){
           if (fIsBDTAnalysis) {InitLctopK0S2017pp5TeVBDT();}
           else {InitLctopK0S2017pp5TeV();}
         }
-	else if (fRunNumber == 18 || fRunNumber == 2018){
-	  if (fIsBDTAnalysis) InitLctopK0S20161718pp13TeVBDT();
-    else if(fIsDataDrivenFDAnalysis) {InitNonPromptLctopK0s20161718pp13TeVML();}
-	  else AliFatal("Not yet implemented");
-	}
+        else if (fRunNumber == 18 || fRunNumber == 2018){
+          if (fIsBDTAnalysis) InitLctopK0S20161718pp13TeVBDT();
+          else if(fIsDataDrivenFDAnalysis) {InitNonPromptLctopK0s20161718pp13TeVML();}
+          else AliFatal("Not yet implemented");
+        }
         else InitLctopK0S2010pp();
       }
       else if (fCollisionType==1) {
@@ -3136,8 +3136,7 @@ void AliHFSystErr::InitNonPromptLctopK0s20161718pp13TeVML() {
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
   for(Int_t i=1;i<=2;i++) fMCPtShape->SetBinContent(i,1.00);
-  for(Int_t i=3;i<=4;i++) fMCPtShape->SetBinContent(i,0.03);
-  for(Int_t i=5;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=3;i<=12;i++) fMCPtShape->SetBinContent(i,0.05);
   for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,1.00);
 
   // FD
@@ -9021,19 +9020,42 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins_woVertexing() {
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.016);
 
   // Tracking efficiency (+++ From topological analysis +++)
+  ///fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  ///fTrackingEff->SetBinContent(1,0.045); // 0-1
+  ///for(Int_t i=2;i<=3;i++) fTrackingEff->SetBinContent(i,0.045); // 1-2
+  ///for(Int_t i=3;i<=5;i++) fTrackingEff->SetBinContent(i,0.055); // 2-3
+  ///for(Int_t i=5;i<=7;i++) fTrackingEff->SetBinContent(i,0.06); // 2-3
+  ///for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
+
+  // Tracking efficiency (+++ From topological analysis +++) plus in quadrature the systematic on material budget
+  // Systematic on material budget estimated as:
+  //  - propagation of ITS-TPC material budget uncertainty
+  //  - effect of TOF matching on the PID efficiency (2022 March 08: still missing! But expected negligible in 0-1 GeV/c)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  fTrackingEff->SetBinContent(1,0.045); // 0-1
-  for(Int_t i=2;i<=3;i++) fTrackingEff->SetBinContent(i,0.045); // 1-2
-  for(Int_t i=3;i<=5;i++) fTrackingEff->SetBinContent(i,0.055); // 2-3
-  for(Int_t i=5;i<=7;i++) fTrackingEff->SetBinContent(i,0.06); // 2-3
-  for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
+  fTrackingEff->SetBinContent(1,TMath::Sqrt( 0.045*0.045 + 0.02*0.02)); // 0-1
+  fTrackingEff->SetBinContent(2,TMath::Sqrt( 0.045*0.045 + 0.01*0.01)); // 1-2
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.055*0.055 + 0.01*0.01 )); // 2-3, 3-4
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.06*0.06 + 0.01*0.01 )); // 4-5, 5-6
+  for(Int_t i=7;i<=10;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.07*0.07 + 0.01*0.01 )); // up to 8-10
+  for(Int_t i=11;i<=24;i++) fTrackingEff->SetBinContent(i,0.07);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
-  fRawYield->SetBinContent(1,0.13);//0-1
-  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.09); // 1-2
-  for(Int_t i=3;i<=7;i++) fRawYield->SetBinContent(i,0.04); // from 2-3 to 6-7
-  for(Int_t i=8;i<=24;i++) fRawYield->SetBinContent(i,0.10); // from 7-8 to 12-24
+  ///fRawYield->SetBinContent(1,0.13);//0-1
+  ///for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.09); // 1-2
+  ///for(Int_t i=3;i<=7;i++) fRawYield->SetBinContent(i,0.04); // from 2-3 to 6-7
+  ///for(Int_t i=8;i<=24;i++) fRawYield->SetBinContent(i,0.10); // from 7-8 to 12-24
+  ///
+  /// Values obtained from the quadrature sum of
+  ///   - RMS of standard multitrial
+  ///   - shift of the mean between standard multitrial and multitrial with rot. background
+  fRawYield->SetBinContent(1,0.12); // 0-1
+  fRawYield->SetBinContent(2,0.06); // 1-2
+  fRawYield->SetBinContent(3,0.06); // 2-3
+  fRawYield->SetBinContent(4,0.03); // 3-4
+  fRawYield->SetBinContent(5,0.03); // 4-5
+  fRawYield->SetBinContent(6,0.03); // 5-6
+  for(Int_t i=7;i<=24;i++) fRawYield->SetBinContent(i,0.10);  // from 6-7 to 12-24
 
   // topological selection
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
@@ -9466,7 +9488,7 @@ void AliHFSystErr::InitLctopK0S2017pp5TeVBDT() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",nBins,limits);
-  for(Int_t i=1;i<=nBins;i++) fNorm->SetBinContent(i,0.037); // 3.7% error
+  for(Int_t i=1;i<=nBins;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0AND
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);

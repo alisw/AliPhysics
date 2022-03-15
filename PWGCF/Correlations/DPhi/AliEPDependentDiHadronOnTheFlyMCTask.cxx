@@ -54,9 +54,8 @@ fTrackEtaCut(1e9),
 fNoSectorsV0(8),
 fCentralityEstimator("V0M")
 {
-  // Default constructor
-  AliInfo("Constructing Event Plane based on fictional VZERO\n");
-  DefineOutput(1, TList::Class());
+  // Default constructor, used for ROOT I/O
+  // Don't allocate memory; don't use DefineOutput
 }
 
 

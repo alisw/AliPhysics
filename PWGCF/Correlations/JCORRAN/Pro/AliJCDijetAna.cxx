@@ -64,7 +64,8 @@ AliJCDijetAna::AliJCDijetAna() :
     area_def_bge(),
     selectorAllButTwo(),
     selectorEta(),
-    selectorBoth(),
+    selectorNoGhosts(),
+    selectorNoGhostsAllButTwo(),
     bge()
 #endif
 {
@@ -111,7 +112,8 @@ AliJCDijetAna::AliJCDijetAna(const AliJCDijetAna& obj) :
     area_def_bge(obj.area_def_bge),
     selectorAllButTwo(obj.selectorAllButTwo),
     selectorEta(obj.selectorEta),
-    selectorBoth(obj.selectorBoth),
+    selectorNoGhosts(obj.selectorNoGhosts),
+    selectorNoGhostsAllButTwo(obj.selectorNoGhostsAllButTwo),
     bge(obj.bge)
 #endif
 {
@@ -141,7 +143,8 @@ void AliJCDijetAna::SetSettings(int    lDebug,
                                 double lMinJetPt,
                                 double lDeltaPhiCut,
                                 double lmatchingR,
-                                double ltrackingIneff){
+                                double ltrackingIneff,
+                                double luseCrho){
     fDebug = lDebug;
     fParticleEtaCut = lParticleEtaCut;
     fParticlePtCut = lParticlePtCut;
@@ -152,6 +155,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     fSubleadingJetCut = lSubleadingJetCut;
     fDeltaPhiCut = lDeltaPhiCut;
     ftrackingIneff = ltrackingIneff;
+    bUseCrho = luseCrho;
 
     etaMaxCutForJet = lParticleEtaCut-lJetCone;
     etaMaxCutForKtJet = lParticleEtaCut-lktJetCone;
@@ -233,7 +237,8 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     // Selector selects first all jets inside rapidity acceptance and then all but two hardest jets.
     selectorAllButTwo  = fastjet::Selector(!fastjet::SelectorNHardest(2));
     selectorEta  = fastjet::SelectorAbsEtaMax(ghost_maxrap - fktJetCone);
-    selectorBoth  = selectorAllButTwo * selectorEta; // Here right selector is applied first, then the left one.
+    selectorNoGhosts  = !fastjet::SelectorIsPureGhost();
+    selectorNoGhostsAllButTwo  = selectorAllButTwo * selectorNoGhosts; // Here right selector is applied first, then the left one.
     bge = fastjet::JetMedianBackgroundEstimator(selectorEta, jet_def_bge, area_def_bge);
 
 
@@ -299,7 +304,7 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
     }
     fhistos->fh_randConeEtaPhi[lCBin]->Fill(randConeEta,randConePhi);
 
-    rawKtJets = fastjet::sorted_by_pt(cs_bge->inclusive_jets(0.0)); // APPLY Min pt cut for jet
+    rawKtJets = fastjet::sorted_by_pt(selectorEta(cs_bge->inclusive_jets(0.0))); // APPLY Min pt cut for jet
 
     fhistos->fh_events[lCBin]->Fill("particles",noTracks);
     for (utrack = 0; utrack < chparticles.size(); utrack++) {
@@ -328,10 +333,22 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
                 removed = true;
                 continue;
             }
-            rhoEstJets.push_back(rawKtJets.at(uktjet)); 
+            //If using C factor do not include ghost-only jets.
+            if(bUseCrho) {
+                if(!rawKtJets[uktjet].is_pure_ghost()) {
+                    rhoEstJets.push_back(rawKtJets.at(uktjet)); 
+                }
+            } else {
+                rhoEstJets.push_back(rawKtJets.at(uktjet)); 
+            }
         }
     } else {
-        rhoEstJets = selectorBoth(rawKtJets);
+        if(bUseCrho) {
+            //If using C factor do not include ghost-only jets.
+            rhoEstJets = selectorNoGhostsAllButTwo(rawKtJets);
+        } else {
+            rhoEstJets = selectorAllButTwo(rawKtJets);
+        }
     }
 
     if( rhoEstJets.size() < 1 ) {
@@ -343,6 +360,24 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
         bge.set_jets(rhoEstJets);
         rho  = bge.rho()<0   ? 0.0 : bge.rho();
         rhom = bge.rho_m()<0 ? 0.0 : bge.rho_m();
+        //This will turn on the "new CMS" method, where empty areas are taken
+        //into account specifically.
+        if(bUseCrho) {
+            double Covered=0.0;
+            double Total=0.0;
+            //For C factor, all kt jets are included.
+            for (uktjet = 0; uktjet < rawKtJets.size(); uktjet++) { // First jet is already skipped here.
+                if(rawKtJets[uktjet].is_pure_ghost()) {
+                    Total+=rawKtJets[uktjet].area();
+                } else {
+                    Total+=rawKtJets[uktjet].area();
+                    Covered+=rawKtJets[uktjet].area();
+                }
+            }
+            Covered/=Total;
+            rho=rho*Covered;
+            fhistos->fh_coveredRatio[lCBin]->Fill(Covered);
+        }
     }
 
 

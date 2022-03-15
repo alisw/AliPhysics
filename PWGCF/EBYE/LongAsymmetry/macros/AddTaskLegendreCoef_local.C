@@ -1,0 +1,66 @@
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+R__ADD_INCLUDE_PATH($PWD)
+#include "AliAnalysisTaskLegendreCoef_local.h"
+
+
+AliAnalysisTaskLegendreCoef_local* AddTaskLegendreCoef_local(const char *suffix = "")
+{
+    // get the manager via the static access member. since it's static, you don't need
+    // to create an instance of the class here to call the function
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr) {
+        return 0x0;
+    }
+    // get the input event handler, again via a static method. 
+    // this handler is part of the managing system and feeds events
+    // to your task
+    if (!mgr->GetInputEventHandler()) {
+        return 0x0;
+    }
+
+    TString name;
+    name.Form("LegCoef%s", suffix);
+    // by default, a file is open for writing. here, we get the filename
+    TString fileName = AliAnalysisManager::GetCommonFileName();
+    fileName += ":LongFluctuations";      // create a subfolder in the file
+    // now we create an instance of your task
+    AliAnalysisTaskLegendreCoef_local* task = new AliAnalysisTaskLegendreCoef_local(name.Data());
+    if(!task) return 0x0;
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->SetMCRead(kFALSE);
+    task->SetPileUpRead(kFALSE);
+    task->SetChi2DoF(4);
+    task->SetPtLimits(0.2, 2.0);
+    task->SetEtaMinLimit(-0.8);
+    task->SetEtaMaxLimit(0.8);
+    task->SetBuildBackground(kFALSE);
+    task->SetBuildLegendre(kFALSE);
+    printf("Container name is %s\n",name.Data());
+
+    // add your task to the manager
+    mgr->AddTask(task);
+    // your task needs input: here we connect the manager to your task
+    AliAnalysisDataContainer *cinput, *coutput1, *coutput2, *coutput3, *coutput4;
+    cinput  = mgr->GetCommonInputContainer();
+    mgr->ConnectInput(task, 0, cinput);
+    // same for the output
+    TString dirName = "";
+    TString fileDirStructure = AliAnalysisManager::GetCommonFileName();
+    TString listName = "";
+    listName = "LegCoef";
+    coutput1  = mgr->CreateContainer(listName, TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput2  = mgr->CreateContainer("mcRec",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput3  = mgr->CreateContainer("mcGen",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput4  = mgr->CreateContainer("Raw",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+
+    mgr->ConnectOutput(task,  1, coutput1);
+    mgr->ConnectOutput(task,  2, coutput2);
+    mgr->ConnectOutput(task,  3, coutput3);
+    mgr->ConnectOutput(task,  4, coutput4);
+
+    // mgr->ConnectOutput(task,1,mgr->CreateContainer(name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    // in the end, this macro returns a pointer to your task. this will be convenient later on
+    // when you will run your analysis in an analysis train on grid
+    return task;
+}

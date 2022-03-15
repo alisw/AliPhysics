@@ -131,7 +131,7 @@ private:
     Float_t  fCutMaxFractionSharedTPCClusters;                //0.4(default), 0.2, 1.0
     Float_t  fCutMinRatioCrossedRowsOverFindableClustersTPC;  //0.8(default), 0.7, 0.9
     Float_t  fCutGeoNcrNclZone, fCutGeoNcrNclLength;          //3cm(default), 2cm, 4cm;     130(default), 120, 140
-    Bool_t   fIsRequirementSPD;         //kTRUE--kAny(default), kFALSE--kNone
+    Bool_t   fIsRequirementSPD;         //kTRUE--kAny(default), kFALSE--don't use that cut
     Float_t  fCutMaxChi2PerClusterITS;  //36(default), 25, 49
     Float_t  fCutMaxChi2PerClusterTPC;  //4(default), 3, 5
     Float_t  fCutMaxChi2TPCConstrainedVsGlobal;  //36(default), 25, 49

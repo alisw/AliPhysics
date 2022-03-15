@@ -35,6 +35,7 @@
 #include "AliMEStenderV2.h"
 #include "AliMESeventInfo.h"
 #include "AliMEStrackInfo.h"
+#include "TTree.h"
 
 using namespace std;
 
@@ -117,7 +118,7 @@ Bool_t AliMEStenderV2::ConfigTask(AliMESconfigTender::EMESconfigEventCuts ec,
 
 //________________________________________________________________________
 AliMEStenderV2::AliMEStenderV2()
-    : AliAnalysisTaskSE(), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fTracksIO(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCtracksIO(NULL), fMCevInfo(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fUtils(NULL), fEventCutsQA(NULL)
+    : AliAnalysisTaskSE(), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fTracksIO(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCtracksIO(NULL), fMCevInfo(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTreeFile(NULL), fTree(NULL), fTreeMC(NULL), fTreeGen(NULL), fTreeMiss(NULL), fUtils(NULL), fEventCutsQA(NULL)
 {
   //
   // Constructor
@@ -126,14 +127,15 @@ AliMEStenderV2::AliMEStenderV2()
 
 //________________________________________________________________________
 AliMEStenderV2::AliMEStenderV2(const char *name)
-    : AliAnalysisTaskSE(name), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fTracksIO(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCtracksIO(NULL), fMCevInfo(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fUtils(NULL), fEventCutsQA(NULL)
+    : AliAnalysisTaskSE(name), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fTracksIO(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCtracksIO(NULL), fMCevInfo(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTreeFile(NULL), fTree(NULL), fTreeMC(NULL), fTreeGen(NULL), fTreeMiss(NULL), fUtils(NULL), fEventCutsQA(NULL)
 {
   //
   // Constructor
   //
-  DefineOutput(AliMESbaseTask::kQA, TList::Class());
-  DefineOutput(AliMESbaseTask::kEventInfo + 1, AliMESeventInfo::Class());
-  DefineOutput(AliMESbaseTask::kTracks + 1, TObjArray::Class());
+  DefineOutput(kQA, TList::Class());
+  DefineOutput(kEventInfo + 1, AliMESeventInfo::Class());
+  DefineOutput(kTracks + 1, TObjArray::Class());
+  DefineOutput(kTree + 1, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -143,8 +145,11 @@ void AliMEStenderV2::SetMCdata(Bool_t mc)
   SetBit(kMCdata, mc);
   if (mc)
   {
-    DefineOutput(AliMESbaseTask::kMCeventInfo + 1, AliMESeventInfo::Class());
-    DefineOutput(AliMESbaseTask::kMCtracks + 1, TObjArray::Class());
+    DefineOutput(kMCeventInfo + 1, AliMESeventInfo::Class());
+    DefineOutput(kMCtracks + 1, TObjArray::Class());
+    DefineOutput(kTreeMC + 1, TTree::Class());
+    DefineOutput(kTreeGen + 1, TTree::Class());
+    DefineOutput(kTreeMiss + 1, TTree::Class());
   }
 }
 
@@ -174,10 +179,12 @@ AliMEStenderV2::~AliMEStenderV2()
     delete fMCtracks;
   }
 
-  if (fUtils)
-    delete fUtils;
+  if(fTreeFile)
+    delete fTreeFile;
 
-  if (DebugLevel())
+  if (fUtils) delete fUtils;
+
+  if (DebugLevel()>1)
     AliMESbaseTask::CloseDebugStream();
 }
 
@@ -186,7 +193,7 @@ void AliMEStenderV2::UserCreateOutputObjects()
 {
   // Build user objects
   BuildQAHistos();
-  PostData(AliMESbaseTask::kQA, fHistosQA);
+  PostData(kQA, fHistosQA);
 
   // ------- track cuts
   fTrackFilter = new AliAnalysisFilter("trackFilter");
@@ -209,40 +216,17 @@ void AliMEStenderV2::UserCreateOutputObjects()
     break;
   }
 
-  // PID priors
-  //   fPIDcomb = new AliPIDCombined();
-  //   fPIDcomb->SetSelectedSpecies(AliPID::kSPECIES);
-  /*
-  switch(fConfig.fPIDpriors){
-	case AliMESconfigTender::kTPC:
-		// default aliroot priors
-		fPIDcomb->SetDefaultTPCPriors();
-		break;
-	case AliMESconfigTender::kIterative:
-	{  // data priors identified @ 15.04.2015 by Cristi for LHC10d
-		AliInfo("Loading iterative data priors ...");
-		fPIDcomb->SetPriorDistribution(AliPID::kMuon, fPriorsDist[0]);
-		fPIDcomb->SetPriorDistribution(AliPID::kElectron, fPriorsDist[0]);
-		fPIDcomb->SetPriorDistribution(AliPID::kPion, fPriorsDist[1]);
-		fPIDcomb->SetPriorDistribution(AliPID::kKaon, fPriorsDist[2]);
-		fPIDcomb->SetPriorDistribution(AliPID::kProton, fPriorsDist[3]);
-		AliInfo("Done loading iterative data priors.");
-		break;
-	}
-	case AliMESconfigTender::kNoPP:
-	{ // flat priors
-		fPIDcomb->SetEnablePriors(kFALSE);  // FLAT priors
-		break;
-	}
-	default:
-		AliDebug(2, "No PID priors selected");
-		break;
-  }
-*/
-
   fTracks = new TObjArray(200);
   fTracks->SetOwner(kTRUE);
   fEvInfo = new AliMESeventInfo;
+  fTracksIO = new TClonesArray("AliMEStrackInfo");
+  fTreeFile = new TFile("mestenderV2Tree.root", "RECREATE");
+  fTree = new TTree("fTree", "EventTree");
+  fTree->Branch("fEvInfoBranch", "AliMESeventInfo", &fEvInfo);
+  fTree->Branch("fTracksIOBranch", "TClonesArray", &fTracksIO);
+  PostData(kEventInfo + 1, fEvInfo);
+  PostData(kTracks + 1, fTracks);
+  PostData(kTree + 1, fTree);
 
   fUtils = new AliPPVsMultUtils();
 
@@ -251,6 +235,24 @@ void AliMEStenderV2::UserCreateOutputObjects()
   fMCtracks = new TObjArray(200);
   fMCtracks->SetOwner(kTRUE);
   fMCevInfo = new AliMESeventInfo;
+  fMCtracksIO = new TClonesArray("AliMEStrackInfo");
+  fMCGenTracksIO = new TClonesArray("AliMEStrackInfo");
+  fMCtracksMissIO = new TClonesArray("AliMEStrackInfo");
+  fTreeMC = new TTree("fTreeMC", "MCeventTree");
+  fTreeGen = new TTree("fTreeGen", "MCGenTree");
+  fTreeMiss = new TTree("fTreeMiss", "MCMissedTree");
+  fTreeMC->Branch("fMCevInfo", "AliMESeventInfo", &fMCevInfo);
+  fTreeMC->Branch("fMCtracksIOBranch", "TClonesArray", &fMCtracksIO);
+  fTreeGen->Branch("fMCevInfo", "AliMESeventInfo", &fMCevInfo);
+  fTreeGen->Branch("fMCGenTracksIO", "TClonesArray", &fMCGenTracksIO);
+  fTreeMiss->Branch("fMCevInfo", "AliMESeventInfo", &fMCevInfo);
+  fTreeMiss->Branch("fMCtracksMissIO", "TClonesArray", &fMCtracksMissIO);
+
+  PostData(kMCeventInfo + 1, fMCevInfo);
+  PostData(kMCtracks + 1, fMCtracks);
+  PostData(kTreeMC + 1, fTreeMC);
+  PostData(kTreeGen + 1, fTreeGen);
+  PostData(kTreeMiss + 1, fTreeMiss);
 }
 
 #include "AliGRPManager.h"
@@ -406,7 +408,6 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
 // 	  return;
   }
-
 // 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
 */
 
@@ -559,34 +560,36 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
   // fill debug
   if (!HasMCdata())
   {
-    if (DebugLevel() > 0)
-    {
-      if (!fTracksIO)
-        fTracksIO = new TClonesArray("AliMEStrackInfo");
+    // if (DebugLevel() > 0)
+    // {
+    //   if (!fTracksIO)
+    //     fTracksIO = new TClonesArray("AliMEStrackInfo");
       for (int i(0); i < fTracks->GetEntriesFast(); i++)
       {
         AliMEStrackInfo *t = (AliMEStrackInfo *)(*fTracks)[i];
         new ((*fTracksIO)[i]) AliMEStrackInfo(*t);
       }
+      fTree->Fill();
       // printf("tracksIn %d tracksOut %d\n", fTracks->GetEntries(), fTracksIO->GetEntries());
-      Int_t run = fESD->GetRunNumber();
-      (*AliMESbaseTask::DebugStream()) << "evInfo"
-                                       << "run=" << run
-                                       << "ev.=" << fEvInfo
-                                       << "trks.=" << fTracksIO
-                                       << "\n";
+    //   Int_t run = fESD->GetRunNumber();
+      //   (*AliMESbaseTask::DebugStream()) << "evInfo"
+      //                                    << "run=" << run
+      //                                    << "ev.=" << fEvInfo
+      //                                    << "trks.=" << fTracksIO
+      //                                    << "\n";
       fTracksIO->Delete();
-    }
+    // }
   }
 
   if (!fEventCutsQA.AcceptEvent(ev))
   {
-    PostData(AliMESbaseTask::kQA, fHistosQA);
+    PostData(kQA, fHistosQA);
     return;
   }
 
-  PostData(AliMESbaseTask::kEventInfo + 1, fEvInfo);
-  PostData(AliMESbaseTask::kTracks + 1, fTracks);
+  PostData(kEventInfo + 1, fEvInfo);
+  PostData(kTracks + 1, fTracks);
+  PostData(kTree + 1, fTree);
 
   //____ _________________________________
   if (!HasMCdata())
@@ -680,11 +683,11 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
     if (H)
       H->Fill(val);
   }
-  // printf("Found %d / %d ESD tracks MC tracks %d / %d\n",
+//   printf("Found %d / %d ESD tracks MC tracks %d / %d\n",
         //  fTracks->GetEntriesFast(), fESD->GetNumberOfTracks(), fMCtracks->GetEntriesFast(), fMC->GetNumberOfTracks());
 
-  Int_t nTracks = fTracks->GetEntriesFast(),
-        nTracksMC = fMCtracks->GetEntriesFast();
+//   Int_t nTracks = fTracks->GetEntriesFast(),
+  Int_t nTracksMC = fMCtracks->GetEntriesFast();
 
         // leading particle
       // printf("generated LP search\n");
@@ -735,14 +738,7 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
     }
   }
 
-  // fill debug
   AliMEStrackInfo *t(NULL), *tMC(NULL);
-  if (DebugLevel() > 0)
-  {
-    if (!fTracksIO)
-      fTracksIO = new TClonesArray("AliMEStrackInfo");
-    if (!fMCtracksIO)
-      fMCtracksIO = new TClonesArray("AliMEStrackInfo");
     for (int i(0), j(0); i < fTracks->GetEntriesFast(); i++)
     {
       if (!(t = (AliMEStrackInfo *)(*fTracks)[i]))
@@ -762,60 +758,40 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
       new ((*fMCtracksIO)[j]) AliMEStrackInfo(*tMC);
       j++;
     }
+    fTree->Fill();
+    fTreeMC->Fill();
     // cout << "Debug save " << fTracksIO->GetEntriesFast() << " MC " << fMCtracksIO->GetEntriesFast() << endl;
-
     // for (int i = 0; i < fTracksIO->GetEntries(); i++)
     // {
     //   std::cout << "REC: index" << i << "constructed at" << fTracksIO->ConstructedAt(i) << std::endl;
     //   // std::cout << "GEN: index" << i << "constructed at" << fMCtracksIO->ConstructedAt(i) << std::endl;
     // }
-
     // for (int i = 0; i < fMCtracksIO->GetEntries(); i++)
     // {
     //   std::cout << "GEN: index" << i << "constructed at" << fMCtracksIO->ConstructedAt(i) << std::endl;
     // }
-
-    (*AliMESbaseTask::DebugStream()) << "evInfo"
-                                     << "ev.=" << fEvInfo
-                                     << "MCev.=" << fMCevInfo
-                                     << "\n";
-    (*AliMESbaseTask::DebugStream()) << "trkInfo"
-                                     << "trks.=" << fTracksIO
-                                     << "MCtrks.=" << fMCtracksIO
-                                     << "\n";
     // printf("tracksIn %d tracksOut %d\n", fTracks->GetEntries(), fTracksIO->GetEntries());
     // printf("MCtracksIn %d MCtracksOut %d\n", fMCtracks->GetEntries(), fMCtracksIO->GetEntries());
 
-    if (!fMCGenTracksIO)
-      fMCGenTracksIO = new TClonesArray("AliMEStrackInfo");
     for (int i(0), j(0); i < fMCtracks->GetEntriesFast(); i++)
     {
       tMC = (AliMEStrackInfo *)(*fMCtracks)[i];
       //std::cout << i << " ESD label " << tMC->GetLabel() << " reco tracks " << fTracksIO->GetEntries()  << std::endl;
-
       if (!tMC) {
         AliError(Form("Missing MC trk at %d", i));
         continue;
       }
       new ((*fMCGenTracksIO)[j++]) AliMEStrackInfo(*tMC);
     }
-    (*AliMESbaseTask::DebugStream()) << "Gen"
-                                     << "MCGenEv.=" << fMCevInfo
-                                     << "MCGenTrks.=" << fMCGenTracksIO
-                                     << "\n";
+    fTreeGen->Fill();
     // printf("MCtracksGenIn %d MCtracksGenOut %d\n", fMCtracks->GetEntries(), fMCGenTracksIO->GetEntries());
 
-    if (!fMCtracksMissIO)
-      fMCtracksMissIO = new TClonesArray("AliMEStrackInfo");
     for (int i(0), j(0); i < fMCtracks->GetEntriesFast(); i++)
     {
-      tMC = (AliMEStrackInfo *)fMCtracks->At(i);   
+      tMC = (AliMEStrackInfo *)fMCtracks->At(i);
       if (tMC->GetLabel() < 0 ) new ((*fMCtracksMissIO)[j++]) AliMEStrackInfo(*tMC);
     }
-    (*AliMESbaseTask::DebugStream()) << "Missed"
-                                     << "MCMissEv.=" << fMCevInfo
-                                     << "MCMissTrks.=" << fMCtracksMissIO
-                                     << "\n";
+    fTreeMiss->Fill();
     // printf("MCtracks selected %d\n", fMCtracks->GetEntries());
     // printf("MCtracks matched %d\n", fMCtracksIO->GetEntries());
     // printf("MCtracks missed %d\n", fMCtracksMissIO->GetEntries());
@@ -825,20 +801,15 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
     fMCtracksIO->Delete();
     fMCGenTracksIO->Delete();
     fMCtracksMissIO->Delete();
-  }
 
-  // // fill debug
-  // if (DebugLevel() > 0)
-  // {
-  //   (*AliMESbaseTask::DebugStream()) << "evInfoMC"
-  //                                    << "ev.=" << fMCevInfo
-  //                                    << "\n";
-  // }
   AliDebug(2, Form("Tracks REC[%d] MC[%d]", fTracks->GetEntries(), fMCtracks ? fMCtracks->GetEntries() : 0));
 
-  PostData(AliMESbaseTask::kQA, fHistosQA);
-  PostData(AliMESbaseTask::kMCeventInfo + 1, fMCevInfo);
-  PostData(AliMESbaseTask::kMCtracks + 1, fMCtracks);
+  PostData(kQA, fHistosQA);
+  PostData(kMCeventInfo + 1, fMCevInfo);
+  PostData(kMCtracks + 1, fMCtracks);
+  PostData(kTreeMC + 1, fTreeMC);
+  PostData(kTreeGen + 1, fTreeGen);
+  PostData(kTreeMiss + 1, fTreeMiss);
 }
 
 //_____________________________________________________________________
@@ -1019,16 +990,6 @@ Bool_t AliMEStenderV2::BuildQAHistos()
   fHistosQA->ls();
   return kTRUE;
 }
-
-// //________________________________________________________________________
-// Int_t AliMEStenderV2::MakeMultiplicityESD(AliESDEvent* const esd, const char *opt)
-// {
-//   if(strcmp(opt, "Combined")==0) return fTrackCuts->GetReferenceMultiplicity(esd, AliESDtrackCuts::kTrackletsITSTPC,0.8);
-//   else if(strcmp(opt, "Global")==0) return fTrackCuts->CountAcceptedTracks(esd);
-//   else AliError(Form("Wrong option \"%s\"", opt));
-//
-//   return -1;
-// }
 
 //________________________________________________________________________
 Int_t AliMEStenderV2::MakeMultiplicityMC(AliMCEvent *const mc)

@@ -28,6 +28,7 @@ AliAnalysisTask_Phi_MC : public AliAnalysisTaskSE    {
     AliAnalysisTask_Phi_MC&    operator =                  ( const AliAnalysisTask_Phi_MC& );
     //
     //  --- Setters & Getters
+    void                        SetParticlePDG              ( Long_t    PDGn )              { kParticlePDG          = PDGn; };
     void                        SetSPCompute                ( Bool_t    SPFlag )            { kComputeSpherocity    = SPFlag; };
     void                        SetSPWighted                ( Bool_t    SPWeightFlag )      { kSpherocityPTWeight   = SPWeightFlag; };
     void                        SetRTCompute                ( Bool_t    RTFlag )            { kComputeRT            = RTFlag; };
@@ -46,6 +47,7 @@ AliAnalysisTask_Phi_MC : public AliAnalysisTaskSE    {
     bool                        uIsEventMultiplicityAvailable ( );
     //
     //  --- --- Variables
+    Long_t                      kParticlePDG;               //  PDG Code for target
     Bool_t                      kComputeSpherocity;         //  Spherocity Flag
     Bool_t                      kSpherocityPTWeight;        //  Spherocity PT Weighted Flag
     Bool_t                      kComputeRT;                 //  RT Flag
@@ -54,10 +56,17 @@ AliAnalysisTask_Phi_MC : public AliAnalysisTaskSE    {
     Bool_t                      fIs_Pb_Pb;                  //! Collision system flag for PbPb
     TString                     fRunName;                   //  MultiRun name
     TH1D*                       fQC_Event_Enum_FLL;         //! Event count utility histogram
+    TH1D*                       fQC_Event_Enum_E05;         //! Event Multiplicity utility histogram
     TH1D*                       fQC_Event_Enum_E08;         //! Event Multiplicity utility histogram
     TH1D*                       fQC_Event_Enum_E10;         //! Event Multiplicity utility histogram
     TH1D*                       fQC_Event_Enum_V0A;         //! Event Multiplicity utility histogram
     TH1D*                       fQC_Event_Enum_V0M;         //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0A_05;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0A_08;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0A_10;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0M_05;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0M_08;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0M_10;      //! Event Multiplicity utility histogram
     //
     //  --- EVENT --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     //
@@ -66,6 +75,7 @@ AliAnalysisTask_Phi_MC : public AliAnalysisTaskSE    {
     TClonesArray*               AODMCTrackArray;            //! MC Tracks Array
     AliPPVsMultUtils*           fMultSelection;             //! Multiplicity Utility
     Float_t                     fCurrent_SPH;               //! Event Spherocity
+    Float_t                     fCurrent_E05;               //! Event E08 Multiplicity
     Float_t                     fCurrent_E08;               //! Event E08 Multiplicity
     Float_t                     fCurrent_E10;               //! Event E10 Multiplicity
     Float_t                     fCurrent_V0A;               //! Event V0A Multiplicity
@@ -76,13 +86,13 @@ AliAnalysisTask_Phi_MC : public AliAnalysisTaskSE    {
     UChar_t                     fTrueEventMask;             //! True Event Mask
     //
     //  --- --- Output Tree Variables
-    TTree*                      tParticle_0333;             //! Output Tree for Signal
-    Int_t                       fTNParticle_0333;           //! Number of Phis produced found
-    Float_t                     fTPx          [2048];       //! Phi Px
-    Float_t                     fTPy          [2048];       //! Phi Py
-    Float_t                     fTPz          [2048];       //! Phi Pz
+    TTree*                      tParticle;                  //! Output Tree for Signal
+    Int_t                       fTNParticle;                //! Number of Phis produced found
+    Float_t                     fTPx          [2048];       //! Px
+    Float_t                     fTPy          [2048];       //! Py
+    Float_t                     fTPz          [2048];       //! Pz
     //
-    TList*                      lQCParticle_0333;           //! QC Histograms output list
+    TList*                      lQCParticle;                //! QC Histograms output list
     //
     TList*                      lAnalysisOutputList;        //! Analysis output list
     //

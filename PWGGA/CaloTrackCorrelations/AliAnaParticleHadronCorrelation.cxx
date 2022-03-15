@@ -184,6 +184,7 @@ fhMCPtZTUeLeftCharged(),
 fhMCPtHbpZTCharged(),           fhMCPtHbpZTUeCharged(),
 fhMCPtHbpZTUeLeftCharged(),
 fhMCPtTrigPout(),               fhMCPtAssocDeltaPhi(),
+fhMCDeltaPhiDeltaEtaZTBin(),
 // Mixing
 fhNEventsTrigger(0),            fhNtracksMB(0),                 fhNclustersMB(0),
 fhMixDeltaPhiCharged(0),        fhMixDeltaPhiDeltaEtaCharged(0),
@@ -336,17 +337,22 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
           fhDeltaPhiDecayCharged[ibit]->Fill(ptTrig, deltaPhi, GetEventWeight());
       }
     }
-    
+
     if ( IsDataMC() )
     {
       Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
-      fhDeltaPhiChargedMC[mcIndex]->Fill(ptTrig , deltaPhi, GetEventWeight());
-      
-      if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+      if ( mcIndex >= fMCGenTypeMin && mcIndex <= fMCGenTypeMax )
       {
-        // check index in GetMCTagIndexHistogram
-        if      ( mcIndex == 2 ) fhDeltaPhiChargedMC[8]->Fill(ptTrig, deltaPhi, GetEventWeight()); // pi0 decay
-        else if ( mcIndex == 4 ) fhDeltaPhiChargedMC[9]->Fill(ptTrig, deltaPhi, GetEventWeight()); // eta decay
+        fhDeltaPhiChargedMC[mcIndex]->Fill(ptTrig , deltaPhi, GetEventWeight());
+
+        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+        {
+          // check index in GetMCTagIndexHistogram
+          if      ( mcIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+            fhDeltaPhiChargedMC[8]->Fill(ptTrig, deltaPhi, GetEventWeight()); // pi0 decay
+          else if ( mcIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+            fhDeltaPhiChargedMC[9]->Fill(ptTrig, deltaPhi, GetEventWeight()); // eta decay
+        }
       }
     }
   } // if no fFillDeltaPhiDeltaEtaAssocPt
@@ -552,6 +558,8 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
   if ( mcdeltaPhi <= -TMath::PiOver2() ) mcdeltaPhi+=TMath::TwoPi();
   if ( mcdeltaPhi > 3*TMath::PiOver2() ) mcdeltaPhi-=TMath::TwoPi();
   
+  Float_t mcdeltaEta= mcTrigEta-mcAssocEta;
+
   if ( fMakeNearSideLeading)
   {
     if ( mcAssocPt > mcTrigPt && mcdeltaPhi < TMath::PiOver2() ) lead = kFALSE; // skip event
@@ -594,7 +602,38 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
     
     fhMCDeltaPhiDeltaEtaCharged[histoIndex]->Fill(mcdeltaPhi, mcTrigEta-mcAssocEta, GetEventWeight());
   }
-  
+
+  if ( fFillDeltaPhiDeltaEtaZT )
+  {
+    Int_t ztBin   = -1;
+    TArrayD ztBinsArray = GetHistogramRanges()->GetHistoRatioArr();
+
+    for(Int_t i = 0 ; i <  ztBinsArray.GetSize()-1 ; i++)
+    {
+      if ( mcTrigPt <= 0 ) continue;
+      if ( mcAssocPt/mcTrigPt > ztBinsArray[i] && mcAssocPt/mcTrigPt < ztBinsArray[i+1] ) ztBin= i;
+    }
+
+    //
+    // Assign to the histogram array a bin corresponding to a combination of pTa and vz bins
+    //
+    Int_t nz = 1;
+    Int_t vz = 0;
+
+    if ( fCorrelVzBin )
+    {
+      nz = GetNZvertBin();
+      vz = GetEventVzBin();
+    }
+
+    if ( fFillDeltaPhiDeltaEtaZT && ztBin > 0 )
+    {
+      Int_t binZT = (ztBin*nz + vz)*fgkNmcTypes + histoIndex;
+
+      fhMCDeltaPhiDeltaEtaZTBin[binZT]->Fill(mcTrigPt , mcdeltaPhi, mcdeltaEta, GetEventWeight());
+    }
+  }
+
   // Delta phi cut for correlation
   if ( (mcdeltaPhi > fDeltaPhiMinCut) && (mcdeltaPhi < fDeltaPhiMaxCut) )
   {
@@ -898,16 +937,20 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   if ( IsDataMC() )
   {
     Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
-    
-    if ( fFillXEHistograms )
-      fhXEChargedMC[mcIndex]->Fill(ptTrig, xE, GetEventWeight());
-    
-    if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost)
-        && fFillXEHistograms )
+    if ( mcIndex >= fMCGenTypeMin && mcIndex <= fMCGenTypeMax )
     {
-      // check index in GetMCTagIndexHistogram
-      if      ( mcIndex == 2 ) fhXEChargedMC[8]->Fill(ptTrig, xE, GetEventWeight()); // pi0 decay
-      else if ( mcIndex == 4 ) fhXEChargedMC[9]->Fill(ptTrig, xE, GetEventWeight()); // eta decay
+      if ( fFillXEHistograms )
+        fhXEChargedMC[mcIndex]->Fill(ptTrig, xE, GetEventWeight());
+
+      if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost)
+          && fFillXEHistograms )
+      {
+        // check index in GetMCTagIndexHistogram
+        if      ( mcIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+          fhXEChargedMC[8]->Fill(ptTrig, xE, GetEventWeight()); // pi0 decay
+        else if ( mcIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+          fhXEChargedMC[9]->Fill(ptTrig, xE, GetEventWeight()); // eta decay
+      }
     }
   }
   
@@ -1098,13 +1141,18 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
   if ( IsDataMC() && fFillXEHistograms )
   {
     Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
-    fhXEUeChargedRightMC[mcIndex]->Fill(ptTrig, uexE, GetEventWeight());
-    
-    if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+    if ( mcIndex >= fMCGenTypeMin && mcIndex <= fMCGenTypeMax )
     {
-      // check index in GetMCTagIndexHistogram
-      if      ( mcIndex == 2 ) fhXEUeChargedRightMC[8]->Fill(ptTrig, uexE, GetEventWeight()); // pi0 decay
-      else if ( mcIndex == 4 ) fhXEUeChargedRightMC[9]->Fill(ptTrig, uexE, GetEventWeight()); // eta decay
+      fhXEUeChargedRightMC[mcIndex]->Fill(ptTrig, uexE, GetEventWeight());
+
+      if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+      {
+        // check index in GetMCTagIndexHistogram
+        if      ( mcIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+          fhXEUeChargedRightMC[8]->Fill(ptTrig, uexE, GetEventWeight()); // pi0 decay
+        else if ( mcIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+          fhXEUeChargedRightMC[9]->Fill(ptTrig, uexE, GetEventWeight()); // eta decay
+      }
     }
   }
   
@@ -1237,13 +1285,18 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
     if ( IsDataMC() && fFillXEHistograms )
     {
       Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
-      fhXEUeChargedLeftMC[mcIndex]->Fill(ptTrig, uexE, GetEventWeight());
-      
-      if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+      if ( mcIndex >= fMCGenTypeMin && mcIndex <= fMCGenTypeMax )
       {
-        // check index in GetMCTagIndexHistogram
-        if      ( mcIndex == 2 ) fhXEUeChargedLeftMC[8]->Fill(ptTrig, uexE, GetEventWeight()); // pi0 decay
-        else if ( mcIndex == 4 ) fhXEUeChargedLeftMC[9]->Fill(ptTrig, uexE, GetEventWeight()); // eta decay
+        fhXEUeChargedLeftMC[mcIndex]->Fill(ptTrig, uexE, GetEventWeight());
+
+        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+        {
+          // check index in GetMCTagIndexHistogram
+          if      ( mcIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax)
+            fhXEUeChargedLeftMC[8]->Fill(ptTrig, uexE, GetEventWeight()); // pi0 decay
+          else if ( mcIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax)
+            fhXEUeChargedLeftMC[9]->Fill(ptTrig, uexE, GetEventWeight()); // eta decay
+        }
       }
     }
   }
@@ -1940,7 +1993,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
       if ( IsDataMC() )
       {
-        for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+        for(Int_t imc = fMCGenTypeMin; imc <= fMCGenTypeMax; imc++)
         {
           Int_t binmc = ibin+imc*fNBkgBin;
           fhPtLeadConeBinMC[binmc]  = new TH1F
@@ -1965,7 +2018,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   if ( IsDataMC() )
   {
-    for(Int_t i=0; i < fgkNmcTypes; i++)
+    for(Int_t i = fMCGenTypeMin; i <= fMCGenTypeMax; i++)
     {
       fhPtTriggerMC[i]  = new TH1F
       (Form("hPtTrigger_MC%s",nameMC[i].Data()),
@@ -2000,7 +2053,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
       if ( IsDataMC() )
       {
-        for(Int_t i=0; i < fgkNmcTypes; i++)
+        for(Int_t i = fMCGenTypeMin; i <= fMCGenTypeMax; i++)
         {
           fhPtDecayTriggerMC[ibit][i]  = new TH1F
           (Form("hPtDecayTrigger_bit%d_MC%s",fDecayBits[ibit], nameMC[i].Data()),
@@ -2306,7 +2359,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   if ( IsDataMC() )
   {
-    for(Int_t i=0; i < fgkNmcTypes; i++)
+    for(Int_t i = fMCGenTypeMin; i <= fMCGenTypeMax; i++)
     {
       if ( !fFillDeltaPhiDeltaEtaAssocPt && !fFillDeltaPhiDeltaEtaZT )
       {
@@ -3105,6 +3158,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   if ( fFillDeltaPhiDeltaEtaZT )
   {
     fhDeltaPhiDeltaEtaZTBin = new TH3F*[nZtArr*nz];
+    if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
+      fhMCDeltaPhiDeltaEtaZTBin = new TH3F*[nZtArr*nz*fgkNmcTypes];
 
     for(Int_t i = 0 ; i < nZtArr ; i++)
     {
@@ -3133,6 +3188,26 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         fhDeltaPhiDeltaEtaZTBin[bin]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
 
         outputContainer->Add(fhDeltaPhiDeltaEtaZTBin[bin]);
+
+        if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
+        {
+          for(Int_t imc = fMCGenTypeMin; imc <= fMCGenTypeMax; imc++)
+          {
+            Int_t binMC = bin*fgkNmcTypes+imc;
+            fhMCDeltaPhiDeltaEtaZTBin[binMC] = new TH3F
+            (Form("hMCDeltaPhiDeltaEtaChargedZTBin%1.2f_%1.2f%s_%s",
+                  ztBinsArray[i], ztBinsArray[i+1],sz.Data(),nameMC[imc].Data()),
+             Form("#Delta #eta vs #Delta #varphi vs #it{p}_{T trigger} for #it{z}_{T} bin [%1.2f,%1.2f]%s, MC %s",
+                  ztBinsArray[i], ztBinsArray[i+1],tz.Data(),nameMC[imc].Data()),
+               ptBinsArray.GetSize() - 1,     ptBinsArray.GetArray(),
+             dphiBinsArray.GetSize() - 1,   dphiBinsArray.GetArray(),
+             detaBinsArray.GetSize() - 1,   detaBinsArray.GetArray());
+            fhMCDeltaPhiDeltaEtaZTBin[binMC]->SetYTitle("#Delta #varphi (rad)");
+            fhMCDeltaPhiDeltaEtaZTBin[binMC]->SetZTitle("#Delta #eta");
+            fhMCDeltaPhiDeltaEtaZTBin[binMC]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+            outputContainer->Add(fhMCDeltaPhiDeltaEtaZTBin[binMC]);
+          }
+        } // MC
       }
     }
   }
@@ -3516,7 +3591,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   // If data is MC, fill more histograms, depending on origin
   if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
   {
-    for(Int_t i= fMCGenTypeMin; i <= fMCGenTypeMax; i++)
+    for(Int_t i = fMCGenTypeMin; i <= fMCGenTypeMax; i++)
     {
       fhMCPtTrigger[i]  = new TH1F 
       (Form("hMCPtTrigger_%s",nameMC[i].Data()),
@@ -4479,7 +4554,8 @@ void AliAnaParticleHadronCorrelation::InvMassHisto(AliCaloTrackParticleCorrelati
     
     // Mass of all pairs
     fhMassPtTrigger->Fill(ptTrig, mass, GetEventWeight());
-    if ( IsDataMC() ) fhMCMassPtTrigger[mcIndex]->Fill(ptTrig, mass, GetEventWeight());
+    if ( IsDataMC() && mcIndex >= fMCGenTypeMin && mcIndex <= fMCGenTypeMax )
+      fhMCMassPtTrigger[mcIndex]->Fill(ptTrig, mass, GetEventWeight());
   }
 }
 
@@ -4883,14 +4959,16 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     // T-Card checks
     if ( fFillPerTCardIndexHistograms ) fhPtTriggerPerTCardIndex->Fill(pt, fTCardIndex, GetEventWeight());
     
-    if ( IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes )
+    if ( IsDataMC() && mcIndex >= fMCGenTypeMin && mcIndex <= fMCGenTypeMax )
     {
       fhPtTriggerMC[mcIndex]->Fill(pt, GetEventWeight());
       if ( lostDecayPair )
       {
         // check index in GetMCTagIndexHistogram
-        if      ( mcIndex == 2 ) fhPtTriggerMC[8]->Fill(pt, GetEventWeight()); // pi0 decay
-        else if ( mcIndex == 4 ) fhPtTriggerMC[9]->Fill(pt, GetEventWeight()); // eta decay
+        if      ( mcIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+          fhPtTriggerMC[8]->Fill(pt, GetEventWeight()); // pi0 decay
+        else if ( mcIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+          fhPtTriggerMC[9]->Fill(pt, GetEventWeight()); // eta decay
       }
     }
     
@@ -5031,14 +5109,16 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
         {
           fhPtDecayTrigger[ibit]->Fill(pt, GetEventWeight());
           
-          if ( IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes )
+          if ( IsDataMC() && mcIndex >= fMCGenTypeMin && mcIndex <= fMCGenTypeMax )
           {
             fhPtDecayTriggerMC[ibit][mcIndex]->Fill(pt, GetEventWeight());
             if ( lostDecayPair )
             {
               // check index in GetMCTagIndexHistogram
-              if ( mcIndex == 2 )  fhPtDecayTriggerMC[ibit][8]->Fill(pt, GetEventWeight()); // pi0 decay
-              if ( mcIndex == 4 )  fhPtDecayTriggerMC[ibit][9]->Fill(pt, GetEventWeight()); // eta decay
+              if ( mcIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+                fhPtDecayTriggerMC[ibit][8]->Fill(pt, GetEventWeight()); // pi0 decay
+              if ( mcIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+                fhPtDecayTriggerMC[ibit][9]->Fill(pt, GetEventWeight()); // eta decay
             }
           }
         }// check bit
@@ -5617,7 +5697,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliCaloTrackPart
         {
           fhMixXECharged       ->Fill(ptTrig, xE, GetEventWeight());
           if ( fFillHBPHistograms  && xE > 0 )
-            fhMixHbpXECharged    ->Fill(ptTrig, TMath::Log(1./xE), GetEventWeight());
+            fhMixHbpXECharged    ->Fill(ptTrig, hbpXE, GetEventWeight());
         }
 
         if ( fFillZTHistograms )
