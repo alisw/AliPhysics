@@ -118,7 +118,7 @@ Bool_t AliMEStenderV2::ConfigTask(AliMESconfigTender::EMESconfigEventCuts ec,
 
 //________________________________________________________________________
 AliMEStenderV2::AliMEStenderV2()
-    : AliAnalysisTaskSE(), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fTracksIO(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCtracksIO(NULL), fMCevInfo(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTree(NULL), fTreeMC(NULL), fTreeGen(NULL), fTreeMiss(NULL), fUtils(NULL), fEventCutsQA(NULL)
+    : AliAnalysisTaskSE(), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fTracksIO(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCtracksIO(NULL), fMCevInfo(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTreeFile(NULL), fTree(NULL), fTreeMC(NULL), fTreeGen(NULL), fTreeMiss(NULL), fUtils(NULL), fEventCutsQA(NULL)
 {
   //
   // Constructor
@@ -127,7 +127,7 @@ AliMEStenderV2::AliMEStenderV2()
 
 //________________________________________________________________________
 AliMEStenderV2::AliMEStenderV2(const char *name)
-    : AliAnalysisTaskSE(name), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fTracksIO(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCtracksIO(NULL), fMCevInfo(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTree(NULL), fTreeMC(NULL), fTreeGen(NULL), fTreeMiss(NULL), fUtils(NULL), fEventCutsQA(NULL)
+    : AliAnalysisTaskSE(name), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fTracksIO(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCtracksIO(NULL), fMCevInfo(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTreeFile(NULL), fTree(NULL), fTreeMC(NULL), fTreeGen(NULL), fTreeMiss(NULL), fUtils(NULL), fEventCutsQA(NULL)
 {
   //
   // Constructor
@@ -218,6 +218,7 @@ void AliMEStenderV2::UserCreateOutputObjects()
   fTracks->SetOwner(kTRUE);
   fEvInfo = new AliMESeventInfo;
   fTracksIO = new TClonesArray("AliMEStrackInfo");
+  fTreeFile = new TFile("mestenderV2Tree.root", "RECREATE");
   fTree = new TTree("fTree", "EventTree");
   fTree->Branch("fEvInfoBranch", "AliMESeventInfo", &fEvInfo);
   fTree->Branch("fTracksIOBranch", "TClonesArray", &fTracksIO);

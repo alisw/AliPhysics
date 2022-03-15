@@ -129,6 +129,7 @@ private:
   AliMESeventInfo *fMCevInfo;  //!
   TClonesArray *fMCGenTracksIO;   //!
   TClonesArray *fMCtracksMissIO; //!
+  TFile *fTreeFile;
   TTree *fTree; //!
   TTree *fTreeMC; //!
   TTree *fTreeGen; //!
