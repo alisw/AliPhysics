@@ -36,6 +36,7 @@
 #include "AliMESeventInfo.h"
 #include "AliMEStrackInfo.h"
 #include "TTree.h"
+#include "TSystem.h"
 
 using namespace std;
 
@@ -220,13 +221,14 @@ void AliMEStenderV2::UserCreateOutputObjects()
   fTracks->SetOwner(kTRUE);
   fEvInfo = new AliMESeventInfo;
   fTracksIO = new TClonesArray("AliMEStrackInfo");
-  fTreeFile = new TFile("mestenderV2Tree.root", "RECREATE");
+  fTreeFile = new TFile("mestenderV2Tree.root", "CREATE");
   fTree = new TTree("fTree", "EventTree");
   fTree->Branch("fEvInfoBranch", "AliMESeventInfo", &fEvInfo);
   fTree->Branch("fTracksIOBranch", "TClonesArray", &fTracksIO);
   PostData(kEventInfo + 1, fEvInfo);
   PostData(kTracks + 1, fTracks);
   PostData(kTree + 1, fTree);
+  gSystem->Unlink("mestenderV2Tree.root");
 
   fUtils = new AliPPVsMultUtils();
 
@@ -247,6 +249,7 @@ void AliMEStenderV2::UserCreateOutputObjects()
   fTreeGen->Branch("fMCGenTracksIO", "TClonesArray", &fMCGenTracksIO);
   fTreeMiss->Branch("fMCevInfo", "AliMESeventInfo", &fMCevInfo);
   fTreeMiss->Branch("fMCtracksMissIO", "TClonesArray", &fMCtracksMissIO);
+
 
   PostData(kMCeventInfo + 1, fMCevInfo);
   PostData(kMCtracks + 1, fMCtracks);
@@ -1104,3 +1107,4 @@ Int_t AliMEStenderV2::MakeMultiplicityV0MMC(AliMCEvent *const mc)
 
   return charged;
 }
+
