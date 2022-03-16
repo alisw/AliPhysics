@@ -455,6 +455,7 @@ fOADB(nullptr)
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPhi[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPileupVxt[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackITSrefit[iq] = kFALSE ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackTPC[iq] = kFALSE ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackIsPileup[iq] = kFALSE ;
   
   DefineOutput(1, TList::Class()); // Event Counter Histo
@@ -771,6 +772,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
       fTreeEvent->Branch("fTrackPhi",fTrackPhi,"fTrackPhi[fNumberOfTracks]/F");
       fTreeEvent->Branch("fTrackPileupVxt",fTrackPileupVxt,"fTrackPileupVxt[fNumberOfTracks]/I");
       fTreeEvent->Branch("fTrackITSrefit",fTrackITSrefit,"fTrackITSrefit[fNumberOfTracks]/O");
+      fTreeEvent->Branch("fTrackTPC",fTrackTPC,"fTrackTPC[fNumberOfTracks]/O");
       fTreeEvent->Branch("fTrackIsPileup", fTrackIsPileup, "fTrackIsPileup[fNumberOfTracks]/O");
     }
     
@@ -1765,6 +1767,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
               fTrackEta[Ntracks] = trk->Eta(); 
               fTrackPhi[Ntracks] = trk->Phi(); 
               fTrackITSrefit[Ntracks] = (trk->GetStatus() & AliESDtrack::kITSrefit); //ITS refit flag
+              fTrackTPC[Ntracks] = ((trk->GetStatus() & AliESDtrack::kTPCout) && trk->GetID() > 0); //TPCout flag
               fTrackDCAz[Ntracks] = dzz[1]; //DCAz information
               
               //Find out if this track is pileup
