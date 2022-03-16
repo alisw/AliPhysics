@@ -1709,33 +1709,30 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   AliCaloPID* caloPID = ana->GetCaloPID();
   
   // pT track dependent cuts
-  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
-  
-  // Input / output delta AOD settings
-  //
-  ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaCaloTrackCorr.Data()));
-  //ana->SetAODObjArrayName(Form("%sHadronCorrIso%dTrigger_%s",particle.Data(),bIsolated,kAnaCaloTrackCorr.Data()));
-  //ana->SetAODNamepTInConeHisto(Form("IC%s_%s_R%1.1f_ThMin%1.1f"           ,particle.Data(),kAnaCaloTrackCorr.Data(),cone,pth));
+  if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
   // Set Histograms, bins and ranges and common settings
   //
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
 
-  if(particle=="Hadron"  || particle.Contains("CTS"))
+  if ( particle=="Hadron"  || particle.Contains("CTS") )
   {
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
-  if ( particle == "Random")
+  if ( particle == "Random" )
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, 100, 1) ;
   
-  // Set Histograms name tag
+  // Set Histograms and reference name tag
   //
-  //ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_TM%d_",particle.Data(),bIsolated,tm));
   TString histoStartName = Form("Ana%sHadronCorr_Iso%d_",particle.Data(),bIsolated);
+  TString outRefName     = Form("%sHadronCorrIso%dTrigger_%s",particle.Data(),bIsolated,kAnaCaloTrackCorr.Data());
   if ( particle == "Photon" )
+  {
     histoStartName+=Form("ShSh%1.2f-%1.2f_",shshMin,shshMax);
+    outRefName    +=Form("_ShSh%1.2f-%1.2f",shshMin,shshMax);
+  }
 
   if ( cenMax!=-1 && cenMin!=-1 )
   {
@@ -1743,9 +1740,15 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     ana->SelectCentrality(kTRUE,cenMin,cenMax);
     ana->SwitchOffFillHighMultiplicityHistograms();
     histoStartName+=Form("Cen%d_%d_",cenMin,cenMax);
+    outRefName    +=Form("_Cen%d_%d",cenMin,cenMax);
   }
 
   ana->AddToHistogramsName(histoStartName);
+
+  // Input / output delta AOD settings
+  //
+  ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaCaloTrackCorr.Data()));
+  ana->SetAODObjArrayName(outRefName); // only relevant if SwitchOnFillTriggerAODWithReferences()
 
   return ana;
 }
