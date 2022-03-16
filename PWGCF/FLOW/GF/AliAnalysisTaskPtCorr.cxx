@@ -81,6 +81,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fp6(0),
     fNchTrueVsRec(0),
     fV0MvsMult(0),
+    fPtDist(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
@@ -126,7 +127,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     wpN(0),
     fEventWeight(PtSpace::kWmaxperm),
     fV0MMulti(0),
-    fV0MvsMult(0),
     pfmpt(0),
     fck(0),
     fskew(0),
@@ -134,6 +134,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     fp5(0),
     fp6(0),
     fNchTrueVsRec(0),
+    fV0MvsMult(0),
+    fPtDist(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
@@ -225,7 +227,6 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     fp6 = new AliPtContainer("p6cont","p6cont",fNMultiBins,fMultiBins,6,fEtaGap>=0);
     fp6->SetEventWeight(fEventWeight);
     fCorrList->Add(fp6);
-    
     if(fNbootstrap) {
       pfmpt->InitializeSubsamples(fNbootstrap);
       fck->InitializeSubsamples(fNbootstrap);
@@ -241,6 +242,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     }
     fV0MvsMult = new TH2D("MultVsV0M","MultVsV0M",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
     fCorrList->Add(fV0MvsMult);
+    fPtDist = new TH2D("ptMoments","ptMoments",(fPtMax-fPtMin)/0.02,fPtMin,fPtMax,6,0,6);
+    fCorrList->Add(fPtDist);
     PostData(1,fCorrList);
     fQAList = new TList();
     fQAList->SetOwner(1);
@@ -425,6 +428,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
           if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,1,l_pt);
           FillWPCounter(wp,1,l_pt);
+          for(int i=0;i<6;++i) fPtDist->Fill(pow(l_pt,i+1),i);
       }    
     }
     else if(fIsMC)
@@ -448,6 +452,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
         if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
         if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,1,l_pt);
         FillWPCounter(wp,1,l_pt);
+        for(int i=0;i<6;++i) fPtDist->Fill(pow(l_pt,i+1),i);
       }
       nTracks = fUseRecNchForMC?nTracksRec:nTracksMC;
       if(fUseRecNchForMC) fNchTrueVsRec->Fill(nTracksMC,nTracksRec);
@@ -471,6 +476,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,wNUE,l_pt);
           if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,wNUE,l_pt);
           FillWPCounter(wp,wNUE,l_pt);
+          for(int i=0;i<6;++i) fPtDist->Fill(pow(l_pt,i+1),i+0.5);
       }
     }
     if(wp[1][0]==0) return;
@@ -490,7 +496,6 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
     fkur->FillRecursive(wp,l_mult,l_rnd);
     fp5->FillRecursive(wp,l_mult,l_rnd);
     fp6->FillRecursive(wp,l_mult,l_rnd);
-
     //Fill subevent profiles with appropriate wp arrays
     if(fEtaGap>=0) {
       fck->FillRecursive(wpP,l_mult,l_rnd,"subP"); fck->FillRecursive(wpN,l_mult,l_rnd,"subN");
