@@ -118,6 +118,7 @@ set(SRCS
   NetParticle/AliEbyEPhiDistNew.cxx
   TempFluctuations/AliAnalysisTempFluc.cxx
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
+  MultPt/AliAnalysisMultPt.cxx
   LongAsymmetry/AliAnalysisTaskLongFluctuations.cxx
   LongAsymmetry/AliAnalysisTaskLegendreCoef.cxx
   LongAsymmetry/AliAnalysisTaskLegendreCoef_local.cxx
