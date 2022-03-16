@@ -90,7 +90,7 @@ AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE() :
   IsQAZDC(false),
   IsQATPC(false),
   fPlanePtMin(0.2),
-  fPlanePtMax(2.0),
+  fPlanePtMax(5.0),
   fEtaGapPos( 0.1),
   fEtaGapNeg(-0.1),
   fFilterBit(1),
@@ -372,7 +372,7 @@ AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE(const char *name)
   IsQAZDC(false),
   IsQATPC(false),
   fPlanePtMin(0.2),
-  fPlanePtMax(2.0),
+  fPlanePtMax(5.0),
   fEtaGapPos( 0.1),
   fEtaGapNeg(-0.1),
   fFilterBit(1),
@@ -1843,8 +1843,8 @@ bool AliAnalysisTaskLambdaProtonCVE::LoopTracks()
 
 bool AliAnalysisTaskLambdaProtonCVE::GetTPCPlane()
 {
-  double psi2TPCPos = GetEventPlane(SumQ2xTPCNeg,SumQ2yTPCNeg,2);
-  double psi2TPCNeg = GetEventPlane(SumQ2xTPCPos,SumQ2yTPCPos,2);
+  double psi2TPCPos = GetEventPlane(SumQ2xTPCPos,SumQ2yTPCPos,2);
+  double psi2TPCNeg = GetEventPlane(SumQ2xTPCNeg,SumQ2yTPCNeg,2);
   if (TMath::IsNaN(psi2TPCPos) || TMath::IsNaN(psi2TPCNeg)) return false;
   fPsi2TPCPos = psi2TPCPos;
   fPsi2TPCNeg = psi2TPCNeg;
@@ -2029,8 +2029,8 @@ bool AliAnalysisTaskLambdaProtonCVE::PairLambda()
       fNegTPCQyTemp = fNegTPCQyTemp/fNegTPCMult;
     } else continue;
 
-    double fPsi2PosTPCNoAuto = GetEventPlane(fPosTPCQyTemp,fPosTPCQxTemp,2.);   //AutoCorrelation Removed Pos EP.
-    double fPsi2NegTPCNoAuto = GetEventPlane(fNegTPCQyTemp,fNegTPCQxTemp,2.);   //AutoCorrelation Removed Neg EP.
+    double fPsi2PosTPCNoAuto = GetEventPlane(fPosTPCQxTemp,fPosTPCQyTemp,2.);   //AutoCorrelation Removed Pos EP.
+    double fPsi2NegTPCNoAuto = GetEventPlane(fNegTPCQxTemp,fNegTPCQyTemp,2.);   //AutoCorrelation Removed Neg EP.
     if (TMath::IsNaN(fPsi2PosTPCNoAuto) || TMath::IsNaN(fPsi2NegTPCNoAuto)) continue;
 
     //Check the PID Flow
@@ -2418,7 +2418,6 @@ bool AliAnalysisTaskLambdaProtonCVE::RejectEvtMultComp() // 15o_pass1, old pile-
     fHist2DMultMultQA[1]->Fill(multGlobal,multTPCFE);
 
     //TODO
-    ///???
     TString fMultComp = "pileupByGlobalTPC1";
 
     if (fMultComp.EqualTo("pileupByEDSTPC128") ) { // Rihan
@@ -2657,8 +2656,10 @@ bool AliAnalysisTaskLambdaProtonCVE::AcceptAODTrack(AliAODTrack *track)
         dcaxy = sqrt(dcax*dcax + dcay*dcay);
         // dcaxy = dca[0];
       }
-      if (fabs(dcaxy)>fDcaCutxy) return false;
-      if (fabs(dcaz)>fDcaCutz) return false;
+      if (fFilterBit != 768){
+        if (fabs(dcaxy)>fDcaCutxy) return false;
+        if (fabs(dcaz)>fDcaCutz) return false;
+      }
       fHistDcaXY->Fill(dcaxy);
       fHistDcaZ->Fill(dcaz);
     }
