@@ -58,6 +58,7 @@ public:
   void SetMinTransverseDistancePrimSecVtx(double);
   void SetParticleType(short);
   void SetEta(double);
+  void SetRapidity(const float& lo, const float& hi);
   void SetPt(double,double);
   void SetEtaDaughters(float);
   void SetTPCnclsDaughters(int);
@@ -145,10 +146,11 @@ public:
   double fMinCosPointingAngle;    //correct
   short fParticleType;             ///< 0-lambda
   double fEta;
+  float  fRapidity[2]; 
   double fPtMin;
   double fPtMax;
   bool fOnFlyStatus;
-
+	
   float fMaxEtaDaughters;         ///< Eta of positive daughter
   int fTPCNclsDaughters;          ///< No. of cls of pos daughter
   int fNdofDaughters;             ///< No. of degrees of freedom of the pos. daughter track
@@ -231,5 +233,6 @@ inline TH1D* AliFemtoV0TrackCut::GetMinvPurityAidHistoV0() {return fMinvPurityAi
 inline bool AliFemtoV0TrackCut::GetBuildMisIDHistograms() {return fBuildMisIDHistograms;}
 inline void AliFemtoV0TrackCut::SetIgnoreOnFlyStatus(bool aIgnore) {fIgnoreOnFlyStatus = aIgnore;}
 inline void AliFemtoV0TrackCut::SetNanoAODAnalysis(bool aNanoAOD) {fNanoAODAnalysis = aNanoAOD;}
+inline void AliFemtoV0TrackCut::SetRapidity(const float& lo,const float& hi){fRapidity[0]=lo; fRapidity[1]=hi;}
 
 #endif
