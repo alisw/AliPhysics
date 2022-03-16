@@ -103,6 +103,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     AliPtContainer*         fp6;      //!
     TH2D*                   fNchTrueVsRec; //!
     TH2D*                   fV0MvsMult; //!
+    TH2D*                   fPtDist;  //!
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
     double                  fImpactParameter; 
