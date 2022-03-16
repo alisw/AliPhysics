@@ -104,7 +104,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2fv0a",
   "O2fv0c",
   "O2ft0",
-  "O2fdd",
+  "O2fdd_001",
   "O2v0_001",
   "O2cascade_001",
   "O2tof",
