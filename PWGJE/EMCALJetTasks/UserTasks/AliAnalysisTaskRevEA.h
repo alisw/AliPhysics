@@ -343,10 +343,16 @@ class AliAnalysisTaskRevEA : public AliAnalysisTaskEmcalJet {
 
    Float_t  fMaxFacPtHard;   // Cut on  pthat events. How many times can be jet pT larger than pthat //FK
 
+   TH3D* fhNjetReMx_V0MnormDetLev_15GeV;  //! FILIP response matrix for distribution counting jets pT gt 15 GeV jets in events  
+   TH2D* fhNjetNorm_V0MnormDetLev_15GeV;  //! FILIP normalization for ReMx for distribution counting jets pT gt 15 GeV jets in events  
+
+   TH3D* fhNjetReMx_V0MnormDetLev_20GeV;  //! FILIP response matrix for distribution counting jets pT gt 20 GeV jets in events  
+   TH2D* fhNjetNorm_V0MnormDetLev_20GeV;  //! FILIP normalization for ReMx for distribution counting jets pT gt 20 GeV jets in events 
+
    AliAnalysisTaskRevEA(const AliAnalysisTaskRevEA&);
    AliAnalysisTaskRevEA& operator=(const AliAnalysisTaskRevEA&);
 
-   ClassDef(AliAnalysisTaskRevEA, 1); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskRevEA, 2); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
