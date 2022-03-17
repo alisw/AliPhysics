@@ -111,9 +111,12 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
   private:
     
     AliAODEvent* fAOD; /// AOD event
-    TList* fCalibRefFile;
-    TList* fCalibV0Ref;
-    Bool_t fCalibQA;
+    TString fOADBFileName; /// OADB input file name
+    TFile*  fOADBFile;
+    TFile*  fCalibRefFile;
+    TList*  fCalibRefObjList;
+    TList*  fCalibV0Ref;
+    Bool_t  fCalibQA;
     
     AliJEQnVectorHandler* fQ2VecHandler;/// Qn-vector handler
     AliJEQnVectorHandler* fQ3VecHandler;/// Qn-vector handler
@@ -122,10 +125,10 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     int       fCalibType;   /// type of calibrations used by handler
     int       fNormMethod;  /// normalisation of Q vector
 
-    TString   fOADBFileName; /// OADB input file name
+    
     TString   fSplinesFileName; /// Sprine input file name
     TString   fCalibRefFileName;
-    
+
     void      LoadSpliForqnPerce();
 
     void       VzeroGainCalibQA();
@@ -142,6 +145,10 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     void       DoEventPlane();
     void       DoJetLoop();
     void       DoTrackLoop();
+
+    Bool_t     QnJEHandlarEPGet();
+    Bool_t     QnGainCalibration();
+    Bool_t     QnRecenteringCalibration();
 
     Double_t CalcEPReso(Int_t n, Double_t &psiA, Double_t &psiB, Double_t &psiC);
     
@@ -219,6 +226,16 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
 
     Double_t fV2ResoV0;
     Double_t fV3ResoV0;
+
+    TH2F *fHCorrV0ChWeghts;     //!
+    TH1D *fHCorrQ2xV0C; //!
+    TH1D *fHCorrQ2yV0C; //!
+    TH1D *fHCorrQ2xV0A; //!
+    TH1D *fHCorrQ2yV0A; //!
+    TH1D *fHCorrQ3xV0C; //!
+    TH1D *fHCorrQ3yV0C; //!
+    TH1D *fHCorrQ3xV0A; //!
+    TH1D *fHCorrQ3yV0A; //! 
 
 
     // TFile*  fOADBFile;

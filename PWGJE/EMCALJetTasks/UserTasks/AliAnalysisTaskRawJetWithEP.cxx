@@ -17,6 +17,7 @@
 #include <TChain.h>
 
 #include <TClonesArray.h>
+#include <TFile.h>
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -67,13 +68,26 @@ AliAnalysisTaskRawJetWithEP1::AliAnalysisTaskRawJetWithEP1() :
   fAOD(nullptr),
   fOutputList(nullptr),
   fEventCuts(),
+  fOADBFile(nullptr),
   fCalibRefFileName(""),
   fCalibRefFile(nullptr),
+  fCalibRefObjList(nullptr),
   fCalibV0Ref(nullptr),
   fQ2VecHandler(nullptr),
   fQ3VecHandler(nullptr),
   fV0Q2VectTask(0x0),
   fHistManager(),
+  fBefCalibQ2_Cent0(0x0),
+  fAftCalibQ2_Cent0(0x0),
+  fHCorrV0ChWeghts(NULL),
+  fHCorrQ2xV0C(NULL),
+  fHCorrQ2yV0C(NULL),
+  fHCorrQ2xV0A(NULL),
+  fHCorrQ2yV0A(NULL),
+  fHCorrQ3xV0C(NULL),
+  fHCorrQ3yV0C(NULL),
+  fHCorrQ3xV0A(NULL),
+  fHCorrQ3yV0A(NULL), 
   fFitModulationType(kNoFit), fFitModulation(0), hBkgTracks(0),
   fV2ResoV0(0.), fV3ResoV0(0.), CheckRunNum(0),
   fV0Q2Vector(0.), fV0Ep2Angle(0.)
@@ -118,13 +132,26 @@ AliAnalysisTaskRawJetWithEP1::AliAnalysisTaskRawJetWithEP1(const char *name):
   fAOD(nullptr),
   fOutputList(nullptr),
   fEventCuts(),
+  fOADBFile(nullptr),
   fCalibRefFileName(""),
   fCalibRefFile(nullptr),
+  fCalibRefObjList(nullptr),
   fCalibV0Ref(nullptr),
   fQ2VecHandler(nullptr),
   fQ3VecHandler(nullptr),
   fV0Q2VectTask(0x0),
   fHistManager(name),
+  fBefCalibQ2_Cent0(0x0),
+  fAftCalibQ2_Cent0(0x0),
+  fHCorrV0ChWeghts(NULL),
+  fHCorrQ2xV0C(NULL),
+  fHCorrQ2yV0C(NULL),
+  fHCorrQ2xV0A(NULL),
+  fHCorrQ2yV0A(NULL),
+  fHCorrQ3xV0C(NULL),
+  fHCorrQ3yV0C(NULL),
+  fHCorrQ3xV0A(NULL),
+  fHCorrQ3yV0A(NULL), 
   fFitModulationType(kNoFit),  fFitModulation(0), hBkgTracks(0),
   fV2ResoV0(0.), fV3ResoV0(0.), CheckRunNum(0),
   fV0Q2Vector(0.), fV0Ep2Angle(0.)
@@ -169,8 +196,11 @@ AliAnalysisTaskRawJetWithEP1::AliAnalysisTaskRawJetWithEP1(const char *name):
  */
 AliAnalysisTaskRawJetWithEP1::~AliAnalysisTaskRawJetWithEP1()
 {
-  if(fCalibRefFile) {delete fCalibRefFile; fCalibRefFile = 0x0;}
+  
+  if(fOADBFile) {fOADBFile->Close(); fOADBFile = 0x0;}
+  if(fCalibRefFile) {fCalibRefFile->Close(); fCalibRefFile = 0x0;}
   if(fCalibV0Ref)   {delete fCalibV0Ref;   fCalibV0Ref = 0x0;}
+  if(fCalibRefObjList) {delete fCalibRefObjList; fCalibRefObjList = 0x0;}
   if(fQ2VecHandler) {delete fQ2VecHandler; fQ2VecHandler = 0x0;}
   if(fQ3VecHandler) {delete fQ3VecHandler; fQ3VecHandler = 0x0;}
   if(fFitModulation) {delete fFitModulation; fFitModulation = 0x0;}
@@ -183,6 +213,7 @@ AliAnalysisTaskRawJetWithEP1::~AliAnalysisTaskRawJetWithEP1()
  */
 void AliAnalysisTaskRawJetWithEP1::UserCreateOutputObjects()
 {
+  
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
@@ -205,6 +236,42 @@ void AliAnalysisTaskRawJetWithEP1::UserCreateOutputObjects()
   }
   // == e == Add Objects into output file  #####################################
   
+
+  // == s == Calib root file include  ==============================--------===-
+  TString pathToFileCMVFNS = AliDataFile::GetFileName(fOADBFileName.Data());
+  TString pathToFileLocal;
+  std::cout << fOADBFileName << std::endl;
+  pathToFileLocal = fOADBFileName;
+  // Check access to CVMFS (will only be displayed locally)
+  if(fOADBFileName.BeginsWith("alien://") && !gGrid){
+    AliInfo("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  }
+  if(!pathToFileCMVFNS.IsNull()) fOADBFile = TFile::Open(pathToFileCMVFNS.Data());
+  if(pathToFileCMVFNS.IsNull())  fOADBFile = TFile::Open(pathToFileLocal.Data());
+  if(!fOADBFile) {
+    AliWarning("OADB V0-TPC calibration file cannot be opened\n");
+    return;
+  }
+
+  TString tempCalibFileName = AliDataFile::GetFileName(fCalibRefFileName.Data());
+  TString tempCalibLocalFileName;
+  std::cout << fCalibRefFileName << std::endl;
+  tempCalibLocalFileName = fCalibRefFileName;
+  // Check access to CVMFS (will only be displayed locally)
+  if(fCalibRefFileName.BeginsWith("alien://") && !gGrid){
+    AliInfo("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  }
+  if(!tempCalibFileName.IsNull()) fCalibRefFile = TFile::Open(tempCalibFileName.Data());
+  if(tempCalibFileName.IsNull())  fCalibRefFile = TFile::Open(tempCalibLocalFileName.Data());
+  if(!fCalibRefFile) {
+    AliWarning("V0-TPC Gain calibration file cannot be opened\n");
+    return;
+  }
+  // == e == Calib root file include  ==============================--------===-
+
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -221,6 +288,13 @@ void AliAnalysisTaskRawJetWithEP1::AllocateEventPlaneHistograms()
   fHistManager.CreateTH1(histName, histtitle, 100, 0, 100);
 
   // == s == gain calibration QA ============================================
+  histName  = TString::Format("%s/hV0CellChGains", groupName.Data());
+  histtitle = TString::Format("%s;cell ch number;CorrGain", histName.Data());
+  fHistManager.CreateTH1(histName, histtitle, 64, 0, 64);
+  histName  = TString::Format("%s/hV0CellChRatio", groupName.Data());
+  histtitle = TString::Format("%s;cell ch number;Ch ratio", histName.Data());
+  fHistManager.CreateTH1(histName, histtitle, 64, 0, 64);
+
   histName  = TString::Format("%s/hV0CellChVsMultBefEq", groupName.Data());
   histtitle = TString::Format("%s;cell ch number;multiplisity before equalization", histName.Data());
   fHistManager.CreateTH1(histName, histtitle, 64, 0, 64);
@@ -633,6 +707,8 @@ void AliAnalysisTaskRawJetWithEP1::ExecOnce()
   
   AliAnalysisTaskEmcalJet::ExecOnce();
   if(!GetJetContainer()) AliFatal(Form("%s: Couldn't find jet container. Aborting !", GetName()));
+
+
 }
 
 
@@ -657,12 +733,10 @@ Bool_t AliAnalysisTaskRawJetWithEP1::Run()
   std::cout << "fCentBin = " << fCentBin << ", fCent = " << fCent << "  CheKumaaaaa" << std::endl;
 
   DoEventPlane();
-
   SetModulationRhoFit();
-  std::cout << "Fomula = " << fFitModulation->GetExpFormula() << std::endl;
+  // std::cout << "Fomula = " << fFitModulation->GetExpFormula() << std::endl;
   // MeasureTpcEPQA();
   MeasureBkg();
-
   DoJetLoop();
   
   return kTRUE;
@@ -685,60 +759,12 @@ void AliAnalysisTaskRawJetWithEP1::DoEventPlane(){
     return;
   }
 
-  fCalibQA = kTRUE;
-  if(CheckRunNum == fQaEventNum) VzeroGainCalibQA();
+  QnGainCalibration();
+  QnRecenteringCalibration();
+
+  QnJEHandlarEPGet();
+  // if(CheckRunNum == fQaEventNum) VzeroGainCalibQA();
   
-  fQ2VecHandler = new AliJEQnVectorHandler(0,1,2,fOADBFileName);
-  fQ3VecHandler = new AliJEQnVectorHandler(0,1,3,fOADBFileName);
-  
-  fQ2VecHandler->ResetAODEvent();
-  fQ2VecHandler->SetAODEvent(fAOD);
-  fQ2VecHandler->ComputeCalibratedQnVectorTPC();
-  fQ2VecHandler->ComputeCalibratedQnVectorV0();
-
-  fQ3VecHandler->ResetAODEvent();
-  fQ3VecHandler->SetAODEvent(fAOD);
-  fQ3VecHandler->ComputeCalibratedQnVectorTPC();
-  fQ3VecHandler->ComputeCalibratedQnVectorV0();
-
-  //fill histos with EP angle
-  fQ2VecHandler->GetEventPlaneAngleTPC(psi2Tpc[0],psi2Tpc[2],psi2Tpc[1]);
-  fQ2VecHandler->GetEventPlaneAngleV0(psi2V0[0],psi2V0[2],psi2V0[1]);
-  std::cout << "(Psi2FullTPC,Psi2PosTPC,Psi2NegTPC) = ("\
-    << psi2Tpc[0] << "," << psi2Tpc[2] << "," << psi2Tpc[1] << ")" << std::endl;
-  std::cout << "(Psi2FullV0,Psi2V0A,Psi2V0C) = ("\
-    << psi2V0[0] << "," << psi2V0[2] << "," << psi2V0[1] << ")" << std::endl;
-
-	//fill histos for q2 spline calibration
-  fQ2VecHandler->GetQnVecTPC(q2VecTpcM, q2VecTpcP, q2VecTpcN);
-  fQ2VecHandler->GetQnVecV0(q2VecV0M, q2VecV0A, q2VecV0C);
-  fQ2VecHandler->GetqnTPC(q2Tpc[0],q2Tpc[2],q2Tpc[1]);
-  fQ2VecHandler->GetqnV0(q2V0[0],q2Tpc[2],q2Tpc[1]);
-  std::cout << "(q2FullTPC,q2PosTPC,q2NegTPC) = ("\
-    << q2Tpc[0] << "," << q2Tpc[2] << "," << q2Tpc[1] << ")" << std::endl;
-  std::cout << "(q2FullV0,q2V0A,q2V0C) = ("\
-    << q2V0[0] << "," << q2V0[2] << "," << q2V0[1] << ")" << std::endl;
-
-
-  //fill histos with EP angle
-  fQ3VecHandler->GetEventPlaneAngleTPC(psi3Tpc[0],psi3Tpc[2],psi3Tpc[1]);
-  fQ3VecHandler->GetEventPlaneAngleV0(psi3V0[0],psi3V0[2],psi3V0[1]);
-  std::cout << "(Psi3FullTPC,Psi3PosTPC,Psi3NegTPC) = ("\
-    << psi3Tpc[0] << "," << psi3Tpc[2] << "," << psi3Tpc[1] << ")" << std::endl;
-  std::cout << "(Psi3FullV0,Psi3V0A,Psi3V0C) = ("\
-    << psi3V0[0] << "," << psi3V0[2] << "," << psi3V0[1] << ")" << std::endl;
-
-	//fill histos for q3 spline calibration
-  fQ3VecHandler->GetQnVecTPC(q3VecTpcM, q3VecTpcP, q3VecTpcN);
-  fQ3VecHandler->GetQnVecV0(q3VecV0M, q3VecV0A, q3VecV0C);
-  fQ3VecHandler->GetqnTPC(q3Tpc[0],q3Tpc[2],q3Tpc[1]);
-  fQ3VecHandler->GetqnV0(q3V0[0],q3V0[2],q3V0[1]);
-  std::cout << "(q3FullTPC,q3PosTPC,q3NegTPC) = ("\
-    << q3Tpc[0] << "," << q3Tpc[2] << "," << q3Tpc[1] << ")" << std::endl;
-  std::cout << "(q3FullV0,q3V0A,q3V0C) = ("\
-    << q3V0[0] << "," << q3V0[2] << "," << q3V0[1] << ")" << std::endl;
-
-
   TString histName;
   TString groupName;
   groupName="EventPlane";
@@ -779,7 +805,7 @@ void AliAnalysisTaskRawJetWithEP1::SetModulationRhoFit()
   // set modulation fit
   TString histName;
 
-  delete fFitModulation;
+  if(fFitModulation) delete fFitModulation;
   fFitModulation = 0x0;
   const char * fitFunction = "[0]*([1]+[2]*([3]*TMath::Cos([2]*(x-[4]))+[7]*TMath::Cos([5]*(x-[6]))))";
   switch (fFitModulationType)  {
@@ -813,8 +839,10 @@ void AliAnalysisTaskRawJetWithEP1::SetModulationRhoFit()
       fFitModulation->SetParameter(7, 0.2);      // v3
     } break;
   }
+
   
-  delete hBkgTracks;
+
+  if(hBkgTracks) delete hBkgTracks;
   histName = "hBkgTracks";
   // hBkgTracks = new TH1F(histName, histName, 100, 0.0, TMath::TwoPi());
   hBkgTracks = new TH1F(histName, histName, 25, 0.0, TMath::TwoPi());
@@ -827,6 +855,7 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
   UInt_t sumAcceptedTracks = 0;
   AliParticleContainer* partCont = 0;
   TIter next(&fParticleCollArray);
+  TH1F *_tempkBkgTracks = new TH1F("_tempSwap", "_tempSwap", 30, 0., TMath::TwoPi());
   while ((partCont = static_cast<AliParticleContainer*>(next()))) {
     // groupname = partCont->GetName();
     for(auto part : partCont->accepted()) {
@@ -837,6 +866,7 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
         Float_t trackDeltaPhi = track->Phi() - psi2V0[0];
         if (trackDeltaPhi < 0.0) trackDeltaPhi += TMath::TwoPi();
         hBkgTracks->Fill(trackDeltaPhi);
+        _tempkBkgTracks->Fill(trackDeltaPhi);
       }
     }
   }
@@ -846,11 +876,14 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
   fFitModulation->SetParameter(0, fLocalRho->GetVal()); //Fix ChecKuma????
   fFitModulation->FixParameter(4, psi2V0[0]);
   fFitModulation->FixParameter(6, psi3V0[0]);
+  
+  hBkgTracks->Fit(fFitModulation, "N0Q"); //??????????????????????????????????????
+  
 
   if(1){ // ChecKuma fit parameters
     std::cout << "psi2V0 = " << psi2V0[0] << ", psi3V0 = " << psi3V0[0] << std::endl;
     
-    if(CheckRunNum == 21) hBkgTracks->SaveAs("checkOutput/checkhBkgTracks.root");
+    if(CheckRunNum == 24) hBkgTracks->SaveAs("checkOutput/checkhBkgTracks.root");
     std::cout << "  p0 = " << fFitModulation->GetParameter(0)\
               << ", p1 = " << fFitModulation->GetParameter(1)\
               << ", p2 = " << fFitModulation->GetParameter(2)\
@@ -862,9 +895,7 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
               << std::endl;
     
   }
-  
-  
-  // hBkgTracks->Fit(fFitModulation, "Q"); //??????????????????????????????????????
+
 
   // if(CheckRunNum == 5){
   if(0){
@@ -910,15 +941,17 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
   fV3ResoV0 = CalcEPReso(3, psi3V0[0], psi3Tpc[1], psi3Tpc[2]);
   std::cout << "v2Reso = " << fV2ResoV0 << ", v3Reso = " << fV3ResoV0 << std::endl;
 
+  
   Double_t v2ObjV0 = -999., v3ObjV0= -999.;
   v2ObjV0 = fFitModulation->GetParameter(3);
   v3ObjV0 = fFitModulation->GetParameter(7);
   
   std::cout << "v2obj = " << v2ObjV0 << ", v3Obj = " << v3ObjV0 << std::endl;
-  // fLocalRho->SetLocalRho(fFitModulation);
+  fLocalRho->SetLocalRho(fFitModulation);
+  
 
   // fLocalRho->SetVal(fRho->GetVal());
-  std::cout << "fRho = " << fRho->GetVal() << std::endl;
+  // std::cout << "fRho = " << fRho->GetVal() << std::endl;
 
   // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
   // three methods are available, all with their drawbacks. all are stored, one is selected to do the cut
@@ -1058,11 +1091,11 @@ void AliAnalysisTaskRawJetWithEP1::DoJetLoop()
     Double_t jetR = jetCont->GetJetRadius();
 
     Double_t rhoVal = 0;
-    // if (jetCont->GetRhoParameter()) { //kuma ??
-    //   rhoVal = jetCont->GetRhoVal();
-    //   histName = TString::Format("%s/hRhoVsCent", groupName.Data());
-    //   fHistManager.FillTH2(histName.Data(), fCent, rhoVal);
-    // }
+    if (jetCont->GetRhoParameter()) { //kuma ??
+      rhoVal = jetCont->GetRhoVal();
+      histName = TString::Format("%s/hRhoVsCent", groupName.Data());
+      fHistManager.FillTH2(histName.Data(), fCent, rhoVal);
+    }
 
     
     for(auto jet : jetCont->accepted()) {
@@ -1195,78 +1228,247 @@ void AliAnalysisTaskRawJetWithEP1::DoJetLoop()
   }
 }
 
+Bool_t  AliAnalysisTaskRawJetWithEP1::QnJEHandlarEPGet(){
+  fQ2VecHandler = new AliJEQnVectorHandler(0,1,2,fOADBFileName);
+  fQ3VecHandler = new AliJEQnVectorHandler(0,1,3,fOADBFileName);
+  
+  fQ2VecHandler->ResetAODEvent();
+  fQ2VecHandler->SetAODEvent(fAOD);
+  fQ2VecHandler->ComputeCalibratedQnVectorTPC();
+  fQ2VecHandler->ComputeCalibratedQnVectorV0();
 
-void AliAnalysisTaskRawJetWithEP1::VzeroGainCalibQA()
-{
-    AliAODVZERO* fAodV0 = dynamic_cast<AliAODVZERO*>(fAOD->GetVZEROData());
-    
-    TString pathToFileCMVFNS = AliDataFile::GetFileName(fOADBFileName.Data());
-    TString pathToFileLocal;
-    std::cout << fOADBFileName << std::endl;
-    pathToFileLocal = fOADBFileName;
-    // Check access to CVMFS (will only be displayed locally)
-    if(fOADBFileName.BeginsWith("alien://") && !gGrid){
-      AliInfo("Trying to connect to AliEn ...");
-      TGrid::Connect("alien://");
-    }
-    TFile*  fOADBFile = nullptr;
-    if(!pathToFileCMVFNS.IsNull()) fOADBFile = TFile::Open(pathToFileCMVFNS.Data());
-    if(pathToFileCMVFNS.IsNull())  fOADBFile = TFile::Open(pathToFileLocal.Data());
-    if(!fOADBFile) {
-      AliWarning("OADB V0-TPC calibration file cannot be opened\n");
-      return;
-    }
+  fQ3VecHandler->ResetAODEvent();
+  fQ3VecHandler->SetAODEvent(fAOD);
+  fQ3VecHandler->ComputeCalibratedQnVectorTPC();
+  fQ3VecHandler->ComputeCalibratedQnVectorV0();
 
-    TString histName;
-    TString groupName;
-    groupName="EventPlane";
-    
-    AliOADBContainer* cont = (AliOADBContainer*) fOADBFile->Get("hMultV0BefCorPfpx");
-    TH1D* fHistMultV0 = ((TH1D*) cont->GetObject(fRunNumber));
-    fHistMultV0->SaveAs("checkOutput/v0GainOADB.root");
-    for (int iCh = 0; iCh < 64; iCh++) {
-      
-      double phiCh = TMath::PiOver4()*(0.5 + iCh % 8);
-      double multV0 = fAodV0->GetMultiplicity(iCh);
-      double multCalibV0 = -10;
-      
-      histName = TString::Format("%s/hV0CellChVsMultBefEq", groupName.Data());
-      fHistManager.FillTH1(histName, iCh, multV0);
-      if (iCh < 32) { // V0C side
-        if (iCh < 8)
-          multCalibV0 = multV0/fHistMultV0->GetBinContent(iCh+1)\
-            *fHistMultV0->GetBinContent(1);
-        else if (iCh >= 8 && iCh < 16)
-          multCalibV0 = multV0/fHistMultV0->GetBinContent(iCh+1)\
-            *fHistMultV0->GetBinContent(9);
-        else if (iCh >= 16 && iCh < 24)
-          multCalibV0 = multV0/fHistMultV0->GetBinContent(iCh+1)\
-            *fHistMultV0->GetBinContent(17);
-        else if (iCh >= 24 && iCh < 32)
-          multCalibV0 = multV0/fHistMultV0->GetBinContent(iCh+1)\
-            *fHistMultV0->GetBinContent(25);
-      }else { // V0A side
-        if (iCh >= 32 && iCh < 40)
-          multCalibV0 = multV0/fHistMultV0->GetBinContent(iCh+1)\
-            *fHistMultV0->GetBinContent(33);
-        else if (iCh >= 40 && iCh < 48)
-            multCalibV0 = multV0/fHistMultV0->GetBinContent(iCh+1)\
-              *fHistMultV0->GetBinContent(41);
-        else if (iCh >= 48 && iCh < 56)
-            multCalibV0 = multV0/fHistMultV0->GetBinContent(iCh+1)\
-              *fHistMultV0->GetBinContent(49);
-        else if (iCh >= 56 && iCh < 64)
-            multCalibV0 = multV0/fHistMultV0->GetBinContent(iCh+1)\
-              *fHistMultV0->GetBinContent(57);
-            // std::cout << "multCalibV0:" << multCalibV0 << std::endl;
-      }
-      histName = TString::Format("%s/hV0CellChVsMultAftEq", groupName.Data());
-      fHistManager.FillTH1(histName, iCh, multCalibV0);
-      
-    }
+  //fill histos with EP angle
+  fQ2VecHandler->GetEventPlaneAngleTPC(psi2Tpc[0],psi2Tpc[2],psi2Tpc[1]);
+  fQ2VecHandler->GetEventPlaneAngleV0(psi2V0[0],psi2V0[2],psi2V0[1]);
+  std::cout << "(Psi2FullTPC,Psi2PosTPC,Psi2NegTPC) = ("\
+    << psi2Tpc[0] << "," << psi2Tpc[2] << "," << psi2Tpc[1] << ")" << std::endl;
+  std::cout << "(Psi2FullV0,Psi2V0A,Psi2V0C) = ("\
+    << psi2V0[0] << "," << psi2V0[2] << "," << psi2V0[1] << ")" << std::endl;
 
-    std::cout << "CHeeeeeeeeeeeeeeeeeeeeeeeeeeeecKuma: " << pathToFileCMVFNS << std::endl;
+	//fill histos for q2 spline calibration
+  fQ2VecHandler->GetQnVecTPC(q2VecTpcM, q2VecTpcP, q2VecTpcN);
+  fQ2VecHandler->GetQnVecV0(q2VecV0M, q2VecV0A, q2VecV0C);
+  fQ2VecHandler->GetqnTPC(q2Tpc[0],q2Tpc[2],q2Tpc[1]);
+  fQ2VecHandler->GetqnV0(q2V0[0],q2Tpc[2],q2Tpc[1]);
+  std::cout << "(q2FullTPC,q2PosTPC,q2NegTPC) = ("\
+    << q2Tpc[0] << "," << q2Tpc[2] << "," << q2Tpc[1] << ")" << std::endl;
+  std::cout << "(q2FullV0,q2V0A,q2V0C) = ("\
+    << q2V0[0] << "," << q2V0[2] << "," << q2V0[1] << ")" << std::endl;
+
+
+  //fill histos with EP angle
+  fQ3VecHandler->GetEventPlaneAngleTPC(psi3Tpc[0],psi3Tpc[2],psi3Tpc[1]);
+  fQ3VecHandler->GetEventPlaneAngleV0(psi3V0[0],psi3V0[2],psi3V0[1]);
+  std::cout << "(Psi3FullTPC,Psi3PosTPC,Psi3NegTPC) = ("\
+    << psi3Tpc[0] << "," << psi3Tpc[2] << "," << psi3Tpc[1] << ")" << std::endl;
+  std::cout << "(Psi3FullV0,Psi3V0A,Psi3V0C) = ("\
+    << psi3V0[0] << "," << psi3V0[2] << "," << psi3V0[1] << ")" << std::endl;
+
+	//fill histos for q3 spline calibration
+  fQ3VecHandler->GetQnVecTPC(q3VecTpcM, q3VecTpcP, q3VecTpcN);
+  fQ3VecHandler->GetQnVecV0(q3VecV0M, q3VecV0A, q3VecV0C);
+  fQ3VecHandler->GetqnTPC(q3Tpc[0],q3Tpc[2],q3Tpc[1]);
+  fQ3VecHandler->GetqnV0(q3V0[0],q3V0[2],q3V0[1]);
+  std::cout << "(q3FullTPC,q3PosTPC,q3NegTPC) = ("\
+    << q3Tpc[0] << "," << q3Tpc[2] << "," << q3Tpc[1] << ")" << std::endl;
+  std::cout << "(q3FullV0,q3V0A,q3V0C) = ("\
+    << q3V0[0] << "," << q3V0[2] << "," << q3V0[1] << ")" << std::endl;
 }
+
+Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
+  TString histName;
+  TString groupName;
+  groupName="EventPlane";
+  
+  fCalibQA = kTRUE;
+  if(fCalibRefFile){
+    TList *tempCalibRefObj = (TList *)fCalibRefFile->Get("fWgtsV0ZDC");
+    fCalibRefObjList = tempCalibRefObj;
+
+    //V0 Channel Gains:
+    fHCorrV0ChWeghts = (TH2F *)fCalibRefObjList->FindObject(Form("hWgtV0ChannelsvsVzRun%d",fRunNumber));
+    if(fHCorrV0ChWeghts){
+      printf("\n ===========> Info:: V0 Channel Weights Found for Run %d \n ",fRunNumber);
+    }
+  }
+  AliAODVZERO* fAodV0 = dynamic_cast<AliAODVZERO*>(fAOD->GetVZEROData());
+  
+  AliOADBContainer* cont = (AliOADBContainer*) fOADBFile->Get("hMultV0BefCorPfpx");
+  TH1D* fHistMultV0 = ((TH1D*) cont->GetObject(fRunNumber));
+
+  AliVEvent *fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+  const AliVVertex *pointVtx = fVevent->GetPrimaryVertex();
+  Double_t fVtxZ = -999;
+  fVtxZ  = pointVtx->GetZ();
+  
+  Int_t ibinV0 = 0;
+  Double_t fSumMV0A = 0;
+  Double_t fSumMV0C = 0;
+  Double_t fV0chGain = 0.;
+  Double_t fMultV0 = 0.;
+  for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
+    fMultV0 = fAodV0->GetMultiplicity(iV0);
+    
+    if(CheckRunNum == fQaEventNum){
+      histName = TString::Format("%s/hV0CellChVsMultBefEq", groupName.Data());
+      fHistManager.FillTH1(histName, iV0, fMultV0);
+    }
+
+    /// V0 Channel Gain Correction:
+    if(fHCorrV0ChWeghts){
+      ibinV0    = fHCorrV0ChWeghts->FindBin(fVtxZ,iV0);
+      fV0chGain = fHCorrV0ChWeghts->GetBinContent(ibinV0);
+    }
+    if(CheckRunNum == fQaEventNum){
+      histName  = TString::Format("%s/hV0CellChGains", groupName.Data());
+      fHistManager.FillTH1(histName, iV0, fV0chGain);
+      std::cout << "Bef fMultV0 = " << fMultV0 << std::endl;
+    }
+    
+    fMultV0 = fMultV0*fV0chGain;   //Corrected Multiplicity
+    // std::cout << "fV0chGain = " << fV0chGain << std::endl;
+
+    if(0){ //jet channel baias correction
+      Double_t tagV0Mult = 0.;
+      Double_t refV0Mult = 0.;
+      Double_t refGainRatio = 0.;
+      tagV0Mult = fHistMultV0->GetBinContent(iV0+1);
+      // if (iV0 < 8) refV0Mult = fAodV0->GetMultiplicity(1);
+      if (iV0 < 8) refV0Mult = fHistMultV0->GetBinContent(1);
+      else if (iV0 >= 8  && iV0 < 16) refV0Mult = fHistMultV0->GetBinContent(9);
+      else if (iV0 >= 16 && iV0 < 24) refV0Mult = fHistMultV0->GetBinContent(17);
+      else if (iV0 >= 24 && iV0 < 32) refV0Mult = fHistMultV0->GetBinContent(25);
+      else if (iV0 >= 32 && iV0 < 40) refV0Mult = fHistMultV0->GetBinContent(33);
+      else if (iV0 >= 40 && iV0 < 48) refV0Mult = fHistMultV0->GetBinContent(41);
+      else if (iV0 >= 48 && iV0 < 56) refV0Mult = fHistMultV0->GetBinContent(49);
+      else if (iV0 >= 56 && iV0 < 64) refV0Mult = fHistMultV0->GetBinContent(57);
+
+      refGainRatio = tagV0Mult/refV0Mult;
+      fMultV0 = fMultV0/refGainRatio;   //Corrected Multiplicity
+
+      if(CheckRunNum == fQaEventNum){
+        // histName  = TString::Format("%s/hV0CellChRatio", groupName.Data());
+        // fHistManager.FillTH1(histName, iV0, refGainRatio);
+        histName = TString::Format("%s/hV0CellChVsMultAftEq", groupName.Data());
+        fHistManager.FillTH1(histName, iV0, fMultV0);
+        std::cout << "Aft fMultV0 = " << fMultV0 << std::endl;
+        std::cout << "refMultV0 = " << refV0Mult << std::endl;
+        std::cout << "ratio = " << refGainRatio << std::endl;
+      }
+    }
+
+    Double_t fPhiV0  = TMath::PiOver4()*(0.5 + iV0 % 8);
+    
+    if(iV0 < 32){
+      q2VecV0C[0] += TMath::Cos(2*fPhiV0) * fMultV0;
+      q2VecV0C[1] += TMath::Sin(2*fPhiV0) * fMultV0;
+      q3VecV0C[0] += TMath::Cos(3*fPhiV0) * fMultV0;
+      q3VecV0C[1] += TMath::Sin(3*fPhiV0) * fMultV0;
+      fSumMV0C += fMultV0;
+    }
+    else if(iV0 >= 32){
+      q2VecV0A[0] += TMath::Cos(2*fPhiV0) * fMultV0;
+      q2VecV0A[1] += TMath::Sin(2*fPhiV0) * fMultV0;
+      q3VecV0A[0] += TMath::Cos(3*fPhiV0) * fMultV0;
+      q3VecV0A[1] += TMath::Sin(3*fPhiV0) * fMultV0;
+      fSumMV0A += fMultV0;
+    } 
+  }///V0 Channel loop
+
+  /// Now the q vectors:
+  if(fSumMV0A<=1e-4 || fSumMV0C<=1e-4){
+    q2VecV0C[0] = 0.;
+    q2VecV0C[1] = 0.;
+    q3VecV0C[0] = 0.;
+    q3VecV0C[1] = 0.;
+    q2VecV0A[0] = 0.;
+    q2VecV0A[1] = 0.;
+    q3VecV0A[0] = 0.;
+    q3VecV0A[1] = 0.;
+
+    return kFALSE;       
+  }
+  else{
+    q2VecV0C[0] = q2VecV0C[0]/fSumMV0C;
+    q2VecV0C[1] = q2VecV0C[1]/fSumMV0C;
+    q3VecV0C[0] = q3VecV0C[0]/fSumMV0C;
+    q3VecV0C[1] = q3VecV0C[1]/fSumMV0C;
+    q2VecV0A[0] = q2VecV0A[0]/fSumMV0A;
+    q2VecV0A[1] = q2VecV0A[1]/fSumMV0A;
+    q3VecV0A[0] = q3VecV0A[0]/fSumMV0A;
+    q3VecV0A[1] = q3VecV0A[1]/fSumMV0A;
+  
+    return kTRUE;  
+  }
+  
+
+}
+
+Bool_t  AliAnalysisTaskRawJetWithEP1::QnRecenteringCalibration(){
+  TList *tempCalibRefObj = (TList *)fCalibRefFile->Get("fWgtsV0ZDC");
+  fCalibRefObjList = tempCalibRefObj;
+
+  //Get V0A, V0C <Q> Vectors:
+  fHCorrQ2xV0C = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQNxvsCentV0CRun%d",fRunNumber));
+  fHCorrQ2yV0C = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQNyvsCentV0CRun%d",fRunNumber));    
+  fHCorrQ2xV0A = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQNxvsCentV0ARun%d",fRunNumber));
+  fHCorrQ2yV0A = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQNyvsCentV0ARun%d",fRunNumber));
+	
+  fHCorrQ3xV0C = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQ3xvsCentV0CRun%d",fRunNumber));
+  fHCorrQ3yV0C = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQ3yvsCentV0CRun%d",fRunNumber));    
+  fHCorrQ3xV0A = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQ3xvsCentV0ARun%d",fRunNumber));
+  fHCorrQ3yV0A = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQ3yvsCentV0ARun%d",fRunNumber));    
+  if(fHCorrQ2xV0C && fHCorrQ2yV0C && fHCorrQ2xV0A && fHCorrQ2yV0A){
+    printf(" ===========> Info:: V0A,V0C <Q> Found for Run %d \n ",fRunNumber);
+  }
+
+  Int_t icentbin = 0;
+  Double_t avgqx=0,avgqy=0; 
+  //cout<<" => Before qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<"\tqnxV0A "<<qnxV0A<<"\tqnyV0A "<<qnyV0A<<endl;
+  
+  if(fHCorrQ2xV0C && fHCorrQ2yV0C){
+    icentbin = fHCorrQ2xV0C->FindBin(fCent);
+    avgqx = fHCorrQ2xV0C->GetBinContent(icentbin);
+    avgqy = fHCorrQ2yV0C->GetBinContent(icentbin);
+    q2VecV0C[0] -= avgqx;
+    q2VecV0C[1] -= avgqy;	
+    //cout<<" V0C PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
+  }
+  if(fHCorrQ2xV0A && fHCorrQ2yV0A){
+    icentbin = fHCorrQ2xV0A->FindBin(fCent);
+    avgqx = fHCorrQ2xV0A->GetBinContent(icentbin);
+    avgqy = fHCorrQ2yV0A->GetBinContent(icentbin);
+    q2VecV0A[0] -= avgqx;
+    q2VecV0A[1] -= avgqy;
+    //cout<<" V0A PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
+  }
+  //cout<<" => After qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<" qnxV0A"<<qnxV0A<<"\tqnyV0A"<<qnyV0A<<endl;
+  if(fHCorrQ3xV0C && fHCorrQ3yV0C){
+    icentbin = fHCorrQ3xV0C->FindBin(fCent);
+    avgqx = fHCorrQ3xV0C->GetBinContent(icentbin);
+    avgqy = fHCorrQ3yV0C->GetBinContent(icentbin);
+    q3VecV0C[0] -= avgqx;
+    q3VecV0C[1] -= avgqy;      
+    //cout<<" V0C PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
+  }
+  if(fHCorrQ3xV0A && fHCorrQ3yV0A){
+    icentbin = fHCorrQ3xV0A->FindBin(fCent);
+    avgqx = fHCorrQ3xV0A->GetBinContent(icentbin);
+    avgqy = fHCorrQ3yV0A->GetBinContent(icentbin);
+    q3VecV0A[0] -= avgqx;
+    q3VecV0A[1] -= avgqy;           
+    //cout<<" V0A PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
+  }
+  //cout<<" => After qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<" qnxV0A "<<qnxV0A<<"\tqnyV0A "<<qnyV0A<<endl;
+  
+  return kTRUE;
+}
+
 
 /**
  * This function is called once at the end of the analysis.
@@ -1301,7 +1503,7 @@ AliAnalysisTaskRawJetWithEP1 * AliAnalysisTaskRawJetWithEP1::AddTaskRawJetWithEP
     ::Error("AddTaskRawJetWithEP1", "This task requires an input event handler");
     return 0;
   }
-
+  
   enum EDataType_t {kUnknown, kESD, kAOD};
   EDataType_t dataType = kAOD;
   
@@ -1321,22 +1523,7 @@ AliAnalysisTaskRawJetWithEP1 * AliAnalysisTaskRawJetWithEP1::AddTaskRawJetWithEP
   // rawJetTask->LoadSpliForqnPerce(qnSplineFileName); //new
   rawJetTask->SetVzRange(-10,10);
 
-  // == s == Calib root file include  ==============================--------===-
-  // TFile *calibfile = NULL;
-  
-  // TString tempCalibFileName = "";
-  // tempCalibFileName = fCalibRefFileName;
-  // if (tempCalibFileName.Length() != 0) {
-  //   if(tempCalibFileName.Contains("alien"))
-  //     TGrid::Connect("alien://");
-  //   calibfile = TFile::Open(tempCalibFileName);
-  // }
-  // if (calibfile != NULL && calibfile->IsOpen()) {
-  //   // AliInfo(TString::Format("\t Calibration file %s open", tempCalibFileName.Data()).Data());
-  //   // fAliQnCorrectionsManager->SetCalibrationHistogramsList(calibfile);
-  //   calibfile->Close();
-  // }
-  // == s == Calib root file include  ==============================--------===-
+
 
   if (trackName == "mcparticles") rawJetTask->AddMCParticleContainer(trackName);
   else if (trackName == "tracks") rawJetTask->AddTrackContainer(trackName);
@@ -1346,7 +1533,7 @@ AliAnalysisTaskRawJetWithEP1 * AliAnalysisTaskRawJetWithEP1::AddTaskRawJetWithEP
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
   mgr->AddTask(rawJetTask);
-
+  
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   TString contname(name);
