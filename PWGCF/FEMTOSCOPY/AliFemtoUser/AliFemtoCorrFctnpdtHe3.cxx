@@ -463,12 +463,12 @@ void AliFemtoCorrFctnpdtHe3::SetHighCFInit(bool aHighCF){
 	    for(int i=0;i<20;i++){
 		testxy[i] = 0.2*float(i+1);
 	    }
-	    float testz[101];
-	    for(int i=0;i<101;i++){
-		testz[i] = 0.01*float(i);
+	    float testz[401];
+	    for(int i=0;i<401;i++){
+		testz[i] = 0.005*float(i);
 	    }
-	    fNumHigh3F = new TH3F(TString::Format("fNumHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,100,testz);
-	    fDenHigh3F = new TH3F(TString::Format("fDenHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,100,testz);
+	    fNumHigh3F = new TH3F(TString::Format("fNumHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,400,testz);
+	    fDenHigh3F = new TH3F(TString::Format("fDenHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,400,testz);
 	    fNumHigh3F->Sumw2();
 	    fDenHigh3F->Sumw2();
     }
