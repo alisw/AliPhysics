@@ -339,7 +339,7 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
 
         }
 
-        if ( !PassedTrackQualityCuts (track)) continue;
+        if ( PassedTrackQualityCuts (track)) {
 
 
         //Variables
@@ -385,6 +385,9 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
 
 
         }
+        }
+
+        if (IsTritonCandidate(track)){
 
         pt = track -> Pt();
         p = track -> P();
@@ -431,7 +434,9 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
         nSigmaTOF_Trit = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
         nSigmaTRD_Trit = fPIDResponse -> NumberOfSigmasTRD(track,AliPID::kTriton);
 
-        if(IsTritonCandidate(track)) reducedTree_Triton -> Fill();
+        reducedTree_Triton -> Fill();
+    }
+
     }
 
 
