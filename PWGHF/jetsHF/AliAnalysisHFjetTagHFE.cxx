@@ -2114,14 +2114,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      //HFE from B
       if(TMath::Abs(pidM)==511 || TMath::Abs(pidM)==513 || TMath::Abs(pidM)==521 || TMath::Abs(pidM)==523 || TMath::Abs(pidM)==531)
         {
-						Double_t pTtrue_B = fMCparticle->Pt();
+						Double_t pTtrueEle_B = fMCparticle->Pt();
 						Double_t ptfrac = pt/pTmom; 
-						Double_t ptfrac_MC = pTtrue_B/pTmom; 
+						Double_t ptfrac_MC = pTtrueEle_B/pTmom; 
 						Double_t ptfracvals[5];
 						ptfracvals[0]=pTmom;
 						ptfracvals[1]=pt;
 						ptfracvals[2]=ptfrac;
-						ptfracvals[3]=pTtrue_B;
+						ptfracvals[3]=pTtrueEle_B;
 						ptfracvals[4]=ptfrac_MC;
 	          fHistPtfracB->Fill(ptfracvals);
 
@@ -2131,14 +2131,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     //HFE from D
       if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413 || TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423 || TMath::Abs(pidM)==431)
         {
-						Double_t pTtrue_D = fMCparticle->Pt();
+						Double_t pTtrueEle_D = fMCparticle->Pt();
 						Double_t ptfracD = pt/pTmom; 
-						Double_t ptfracD_MC = pTtrue_D/pTmom; 
+						Double_t ptfracD_MC = pTtrueEle_D/pTmom; 
 						Double_t ptfracDvals[5];
 						ptfracDvals[0]=pTmom;
 						ptfracDvals[1]=pt;
 						ptfracDvals[2]=ptfracD;
-						ptfracDvals[3]=pTtrue_D;
+						ptfracDvals[3]=pTtrueEle_D;
 						ptfracDvals[4]=ptfracD_MC;
 	          fHistPtfracD->Fill(ptfracDvals);
 
