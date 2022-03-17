@@ -564,8 +564,8 @@ private:
   struct {
     /// FDD (AD)
     Int_t fIndexBCs = 0u;                /// Index to BC table
-    int16_t fAmplitudeA[8] = {0u};   /// Multiplicity for each A-side channel
-    int16_t fAmplitudeC[8] = {0u};   /// Multiplicity for each C-side channel
+    int16_t fChargeA[8] = {0u};   /// Multiplicity for each A-side channel
+    int16_t fChargeC[8] = {0u};   /// Multiplicity for each C-side channel
     Float_t fTimeA = 0.f;             /// Average A-side time
     Float_t fTimeC = 0.f;             /// Average C-side time
     uint8_t fTriggerMask = 0;         /// Trigger info

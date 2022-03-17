@@ -988,8 +988,8 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFDD])
   {
     tFDD->Branch("fIndexBCs", &fdd.fIndexBCs, "fIndexBCs/I");
-    tFDD->Branch("fAmplitudeA", fdd.fAmplitudeA, "fAmplitudeA[8]/I");
-    tFDD->Branch("fAmplitudeC", fdd.fAmplitudeC, "fAmplitudeC[8]/I");
+    tFDD->Branch("fChargeA", fdd.fChargeA, "fChargeA[8]/I");
+    tFDD->Branch("fChargeC", fdd.fChargeC, "fChargeC[8]/I");
     tFDD->Branch("fTimeA", &fdd.fTimeA, "fTimeA/F");
     tFDD->Branch("fTimeC", &fdd.fTimeC, "fTimeC/F");
     tFDD->Branch("fTriggerMask", &fdd.fTriggerMask, "fTriggerMask/b");
@@ -2445,9 +2445,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (fESD) {
       AliESDAD *esdad = fESD->GetADData();
       for (Int_t ich = 0; ich < 8; ++ich)
-        fdd.fAmplitudeA[ich] = int16_t(esdad->GetMultiplicityADA(ich));
+        fdd.fChargeA[ich] = int16_t(esdad->GetMultiplicityADA(ich));
       for (Int_t ich = 0; ich < 8; ++ich)
-        fdd.fAmplitudeC[ich] = int16_t(esdad->GetMultiplicityADC(ich));
+        fdd.fChargeC[ich] = int16_t(esdad->GetMultiplicityADC(ich));
       fdd.fTimeA = AliMathBase::TruncateFloatFraction(esdad->GetADATime(), mADTime);
       fdd.fTimeC = AliMathBase::TruncateFloatFraction(esdad->GetADCTime(), mADTime);
       fdd.fTriggerMask = 0; // not filled for the moment
@@ -2455,9 +2455,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     else {
       AliAODAD *aodad = fAOD->GetADData();
       for (Int_t ich = 0; ich < 8; ++ich)
-        fdd.fAmplitudeA[ich] = int16_t(aodad->GetMultiplicityADA(ich));
+        fdd.fChargeA[ich] = int16_t(aodad->GetMultiplicityADA(ich));
       for (Int_t ich = 0; ich < 8; ++ich)
-        fdd.fAmplitudeC[ich] = int16_t(aodad->GetMultiplicityADC(ich));
+        fdd.fChargeC[ich] = int16_t(aodad->GetMultiplicityADC(ich));
       fdd.fTimeA = AliMathBase::TruncateFloatFraction(aodad->GetADATime(), mADTime);
       fdd.fTimeC = AliMathBase::TruncateFloatFraction(aodad->GetADCTime(), mADTime);
       fdd.fTriggerMask = 0; // not filled for the moment
