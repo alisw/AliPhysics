@@ -187,7 +187,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
     for (Int_t i(0); i < nMCTracks; i++) {
       AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
       if (!p1) continue;
-      if(abs(p1->Charge())<1) continue;
+      if(abs(p1->Charge())<=1) continue;
       if(!p1->IsPhysicalPrimary()) continue;
       if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
         //build background
@@ -210,7 +210,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
     if(!fIsMC){
-      if(track->Charge()<1)continue;//only get charged tracks
+      if(abs(track->Charge())<=1)continue;//only get charged tracks
       if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
       if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
       if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
@@ -227,7 +227,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
       int label = TMath::Abs(track->GetLabel());
       AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
       if (!mcTrack) continue;
-      if(mcTrack->Charge()<1)continue;//only get charged tracks
+      if(abs(mcTrack->Charge())<=1)continue;//only get charged tracks
       if(!mcTrack->IsPhysicalPrimary()) continue;  
       if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
         Float_t pTrec   = mcTrack->Pt();
@@ -239,7 +239,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         Int_t isfb = 0;
         if(track->TestFilterBit(fBit)) isfb=1;
         if(isfb==0) continue;//choose filterbit
-        if(mcTrack->Charge()<1)continue;//only get charged tracks
+        if(abs(mcTrack->Charge())<=1)continue;//only get charged tracks
         if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
         if(pTrec < fPtmin|| pTrec > fPtmax) continue; //pt cut
         if(ncl<fTPCNcls || crossedrows<fTPCNCrossedRows || chi2 > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
@@ -319,7 +319,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     for (Int_t i(0); i < nMCTracks; i++) {
       AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
       if (!p1) continue;
-      if(p1->Charge()<1)continue;//only get charged tracks
+      if(abs(p1->Charge())<=1)continue;//only get charged tracks
       if(!p1->IsPhysicalPrimary()) continue;
       Float_t etaMCgen = p1->Eta();
       if(etaMCgen > fEtaMax || etaMCgen<fEtaMin ) continue;
@@ -338,7 +338,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     if(!track) continue;
     if(!fIsMC){
     //build signal for raw data
-      if(track->Charge()<1)continue;//only get charged tracks
+      if(abs(track->Charge())<=1)continue;//only get charged tracks
       Float_t etaRaw = track->Eta();
       if(etaRaw > fEtaMax || etaRaw < fEtaMin) continue;//eta cut
       if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
@@ -353,7 +353,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
       int label = TMath::Abs(track->GetLabel());
       AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
       if (!mcTrack) continue;
-      if(mcTrack->Charge()<1)continue;//only get charged tracks
+      if(abs(mcTrack->Charge())<=1)continue;//only get charged tracks
       if(!mcTrack->IsPhysicalPrimary()) continue;    
       Float_t etaRec = mcTrack->Eta();
       if(etaRec> fEtaMax || etaRec < fEtaMin) continue;//eta cut
