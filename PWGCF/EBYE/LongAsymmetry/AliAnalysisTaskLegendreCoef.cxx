@@ -30,7 +30,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE()
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fIsRunFBOnly(0), fEventCuts(0)
 {
 
 }
@@ -41,7 +41,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fIsRunFBOnly(0), fEventCuts(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -213,7 +213,9 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
       if(abs(track->Charge())<=1)continue;//only get charged tracks
       if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
       if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
-      if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
+      if(!fIsRunFBOnly){
+        if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
+      }
       if(!track->TestFilterBit(fBit)) continue;
       //build background for raw data
       //printf("filter bit is %i\n",fBit);
@@ -242,7 +244,11 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         if(abs(mcTrack->Charge())<=1)continue;//only get charged tracks
         if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
         if(pTrec < fPtmin|| pTrec > fPtmax) continue; //pt cut
-        if(ncl<fTPCNcls || crossedrows<fTPCNCrossedRows || chi2 > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
+        if(!fIsRunFBOnly){  
+                  printf("inside tpc cuts!\n");
+       
+          if(ncl<fTPCNcls || crossedrows<fTPCNCrossedRows || chi2 > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
+        }
         ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(etarec, Cent);
         if(mcTrack->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(etarec, Cent);
         if(mcTrack->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(etarec, Cent);
@@ -342,7 +348,9 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
       Float_t etaRaw = track->Eta();
       if(etaRaw > fEtaMax || etaRaw < fEtaMin) continue;//eta cut
       if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
-      if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof   
+      if(!fIsRunFBOnly){
+        if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof   
+      }
       if(track->TestFilterBit(fBit)) {
         chargedSignal->Fill(etaRaw);
         if(track->Charge() > 0) posSignal->Fill(etaRaw);
@@ -357,8 +365,10 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
       if(!mcTrack->IsPhysicalPrimary()) continue;    
       Float_t etaRec = mcTrack->Eta();
       if(etaRec> fEtaMax || etaRec < fEtaMin) continue;//eta cut
-      if(mcTrack->Pt() < fPtmin|| mcTrack->Pt() > fPtmax) continue; //pt cut  
-      if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof       
+      if(mcTrack->Pt() < fPtmin|| mcTrack->Pt() > fPtmax) continue; //pt cut 
+      if(!fIsRunFBOnly){ 
+        if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof       
+      }
       if(!track->TestFilterBit(fBit)) continue;//only filterbit
       if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
         chargedSignal->Fill(etaRec);
