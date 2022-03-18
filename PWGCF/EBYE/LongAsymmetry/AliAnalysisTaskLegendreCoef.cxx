@@ -21,7 +21,6 @@
 #include "AliEventCuts.h"
 #include "AliAODMCHeader.h"
 #include "TRandom2.h"
-#include <TTreeStream.h>
 
 ClassImp(AliAnalysisTaskLegendreCoef)
 
@@ -31,7 +30,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE()
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEffTree(0), fTreeSRedirector(0x0),fTreeMCrec(0x0),fTreeMCgen(0x0),fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEventCuts(0)
 {
 
 }
@@ -42,7 +41,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEffTree(0), fTreeSRedirector(0x0),fTreeMCrec(0x0),fTreeMCgen(0x0),fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEventCuts(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -50,8 +49,6 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(1, TList::Class());
-  DefineOutput(2, TTree::Class());
-  DefineOutput(3, TTree::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLegendreCoef::~AliAnalysisTaskLegendreCoef()
@@ -132,17 +129,7 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
     }
   }
 
-  // ************************************************************************
-  //   Trees for efficiency
-  // ************************************************************************
-  //
-  fTreeSRedirector = new TTreeSRedirector();
-  fTreeMCrec    = ((*fTreeSRedirector)<<"mcRec").GetTree();
-  fTreeMCgen     = ((*fTreeSRedirector)<<"mcGen").GetTree();
-
   PostData(1, fOutputList);
-  PostData(2, fTreeMCrec);
-  PostData(3, fTreeMCgen);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskLegendreCoef::BuildBackground()
@@ -204,20 +191,9 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
       if(!p1->IsPhysicalPrimary()) continue;
       if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
         //build background
-        // Fill MC closure tree
         Float_t pTMCgen   = p1->Pt();
         Float_t phiMCgen  = p1->Phi();
         Float_t etaMCgen  = p1->Eta();
-        if(fTreeSRedirector && fEffTree){
-          //ttree for local test
-          (*fTreeSRedirector)<<"mcGen"<<
-          "pT="        << pTMCgen<<           // mc transverse momentum
-          "eta="       << etaMCgen <<          // mc eta
-          "phi="       << phiMCgen <<          // mc phi
-          "cent="      << Cent <<     // Centrality
-          "vZ="        << PVz <<  //PVz
-          "\n";
-        }
         if(etaMCgen> fEtaMax || etaMCgen<fEtaMin ) continue;
         if(pTMCgen < fPtmin|| pTMCgen > fPtmax) continue;
         ((TH2D*) fOutputList->FindObject("MCChargedBGHistOut"))->Fill(etaMCgen, Cent);
@@ -262,20 +238,6 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         Float_t chi2 = track->Chi2perNDF();
         Int_t isfb = 0;
         if(track->TestFilterBit(fBit)) isfb=1;
-        if(fTreeSRedirector && fEffTree){
-          //ttree for local test
-          (*fTreeSRedirector)<<"mcRec"<<
-          "pT="        << pTrec <<           // transverse momentum
-          "eta="       << etarec <<          // mc eta
-          "phi="       << phirec <<          // mc phi
-          "cent="      << Cent <<     // Centrality
-          "vZ="        << PVz <<  //PVz
-          "ncl="        << ncl << 
-          "crossedrows=" <<crossedrows<<
-          "chi2="       <<chi2<<
-          "fbit="       <<isfb<<
-          "\n";
-        }
         if(isfb==0) continue;//choose filterbit
         if(mcTrack->Charge()<1)continue;//only get charged tracks
         if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
