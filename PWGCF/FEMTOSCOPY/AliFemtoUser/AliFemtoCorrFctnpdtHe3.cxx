@@ -486,18 +486,18 @@ void AliFemtoCorrFctnpdtHe3::SetSideBandTF1Init(bool aSideBand){
 	    // f  = p4*pT + p5*pT^2 + p6*pT
 	    // 
 	    p2Up3Sigma	= new TF1(TString::Format("TF1_p2Up3Sigma_%s", fTitle.Data()),MassBandFunc,0,5,9);
-	    p2Up3Sigma->SetParameters(1,1,1,1,1,1,1,1);
+	    p2Up3Sigma->SetParameters(1,1,1,1, 1,1,1,1,1);
 
 	    p2Low3Sigma = new TF1(TString::Format("TF1_p2Low3Sigma_%s", fTitle.Data()),MassBandFunc,0,5,9);
-	    p2Low3Sigma->SetParameters(1,1,1,1,1,1,1,1);
+	    p2Low3Sigma->SetParameters(1,1,1,1, 1,1,1,1,1);
 	   
 
 	    SideBandUp = new TF1(TString::Format("TF1_SideBandUp_%s", fTitle.Data()),MassBandFunc,0,5,9);
-	    SideBandUp->SetParameters(0,0,0,6,1,1,1,1);
+	    SideBandUp->SetParameters(0,0,0,6, 1,1,1,1,1);
 	
 
 	    SideBandLow = new TF1(TString::Format("TF1_SideBandLow_%s", fTitle.Data()),MassBandFunc,0,5,9);
-	    SideBandLow->SetParameters(0,0,0,2,1,1,1,1);
+	    SideBandLow->SetParameters(0,0,0,2, 1,1,1,1,1);
 	    //SideBandLow->SetParNames(TString::Format("TF1_SideBandLow_para0_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para1_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para2_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para3_%s", fTitle.Data()));
     }
 
@@ -518,16 +518,16 @@ void AliFemtoCorrFctnpdtHe3::SetSideBandHistInit(bool aSideBand){
     }
 }
 void AliFemtoCorrFctnpdtHe3::SetTF1ParaUp3Sigma(float *para){
-    p2Up3Sigma->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7]);
+    p2Up3Sigma->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7],para[8]);
 }
 void AliFemtoCorrFctnpdtHe3::SetTF1ParaLow3Sigma(float *para){
-    p2Low3Sigma->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7]);
+    p2Low3Sigma->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7],para[8]);
 }
 void AliFemtoCorrFctnpdtHe3::SetTF1PareSideBandUp(float *para){
-    SideBandUp->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7]);
+    SideBandUp->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7],para[8]);
 }
 void AliFemtoCorrFctnpdtHe3::SetTF1PareSideBandLow(float *para){
-    SideBandLow->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7]);
+    SideBandLow->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7],para[8]);
 }
 void AliFemtoCorrFctnpdtHe3::FillSideBandNum(AliFemtoPair* aPair){
 
@@ -624,7 +624,7 @@ Double_t MassBandFunc(Double_t *x, Double_t *par){
     f = p4 * xx + p5 * TMath::Power(xx,2) + p6 * TMath::Power(xx,3);
 
     Double_t re = 0.;
-    re = mu + constIn11 + Beforef * f;
+    re = mu + abs(Beforef) * constIn11 + Beforef * f;
     return re;
 
 }
