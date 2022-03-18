@@ -199,6 +199,14 @@ private:
   TH3D *fHistMixed3d2pcXiBKMinus;
   TH3D *fHistMixed3d2pcXiBKPlus;
   
+  //double-differential analysis
+  Long_t fkDDRebin;
+  TH2D *fHistV0MvsSPD;
+  TH2D *fHistDDNch;
+  TH2D *fHistDDNMPI;
+  TH2D *fHistDDQ2;
+  TH2D *fHistDDYield[76];
+  
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
   
