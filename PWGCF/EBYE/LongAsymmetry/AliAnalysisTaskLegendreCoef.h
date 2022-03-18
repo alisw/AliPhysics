@@ -55,6 +55,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetPVzMaxLimit(Float_t pvzmax) {fPVzMax=pvzmax;}
     void            SetPVzSign(Int_t sign) {fPVzSign=sign;}//-1 then negative pvz, +1 then positive pvz, 0 then absolute value (to test effect from the TPC membrane)
     void            SetNEtaBins(Int_t Netabins) {fNetabins=Netabins;}//default 16
+    void            SetRunOnlyFB(Bool_t flag) {fIsRunFBOnly = flag;}//default 16
 
   private:
     Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
@@ -91,6 +92,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Float_t fPVzMin; //min PVz
     Int_t fPVzSign; //sign of PVz
     Int_t fNetabins; //number of bins in eta
+    Bool_t fIsRunFBOnly; //only filterbit cuts
 
     AliEventCuts fEventCuts;
 
