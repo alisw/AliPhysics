@@ -121,7 +121,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(bUseCalib),
-    fSkipCorr(bUseCalib),
+    fSkipCorr(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
