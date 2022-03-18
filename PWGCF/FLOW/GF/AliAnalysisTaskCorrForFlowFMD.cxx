@@ -43,6 +43,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(kFALSE),
+    fSkipCorr(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -120,6 +121,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(bUseCalib),
+    fSkipCorr(bUseCalib),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -265,7 +267,15 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     if (!fPoolMgr) { AliError("Event Pool manager not created!"); return; }
     fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
 
-    CreateTHnCorrelations();
+    if(!fSkipCorr) CreateTHnCorrelations();
+
+    for(Int_t i(0); i < 6; i++){
+      if(!fDoPID && i > 0 && i < 4) continue;
+      if(!fDoV0 && i > 3) continue;
+      fhPT[i] = new TH1D(Form("PT%s",pidName[i].Data()), "PT", 1000, 0, 10);
+      fhPT[i]->Sumw2();
+      fOutputListCharged->Add(fhPT[i]);
+    }
 
     if(fUseEfficiency) {
       fInputListEfficiency = (TList*) GetInputData(1);
@@ -337,7 +347,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     } // end MC
 
-    if(!fTracksAss->IsEmpty()){
+    if(!fTracksAss->IsEmpty() && !fSkipCorr){
       for(Int_t i(0); i < 6; i++){
         if(!fDoPID && i > 0 && i < 4) continue;
         if(!fDoV0 && i > 3) continue;
@@ -580,6 +590,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
   fhTrigTracks[4]->Fill(binscont,0,1.);
   fTracksTrig[4]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
+  fhPT[4]->Fill(v0->Pt());
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -632,6 +643,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
   fhTrigTracks[5]->Fill(binscont,0,1.);
   fTracksTrig[5]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
+  fhPT[5]->Fill(v0->Pt());
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -1215,6 +1227,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
             if(fAnalType == eTPCFMDC && trackEta < 0.0) continue;
           }
 
+          fhPT[0]->Fill(trackPt);
           fTracksTrig[0]->Add((AliAODTrack*)track);
           binscont[2] = trackPt;
           fhTrigTracks[0]->Fill(binscont,0,1.);
@@ -1224,6 +1237,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
             if(trackPid > 0 && trackPid < 4){
               fTracksTrig[trackPid]->Add((AliAODTrack*)track);
               fhTrigTracks[trackPid]->Fill(binscont,0,1.);
+              fhPT[trackPid]->Fill(trackPt);
             }
           }
         }
