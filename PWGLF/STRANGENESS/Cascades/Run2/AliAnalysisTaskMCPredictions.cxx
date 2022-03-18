@@ -281,7 +281,7 @@ fHistMixed3d2pcXiBBMinus(0),
 fHistMixed3d2pcXiBBPlus(0),
 fHistMixed3d2pcXiBKMinus(0),
 fHistMixed3d2pcXiBKPlus(0),
-fkDDRebin(1)
+fkDDRebin(lRebinFactor)
 {
   for(Int_t ii=0; ii<10; ii++){
     fEMBufferEtaD0[ii]=0;
