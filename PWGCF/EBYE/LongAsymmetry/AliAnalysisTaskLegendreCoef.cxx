@@ -244,9 +244,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         if(abs(mcTrack->Charge())<=1)continue;//only get charged tracks
         if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
         if(pTrec < fPtmin|| pTrec > fPtmax) continue; //pt cut
-        if(!fIsRunFBOnly){  
-                  printf("inside tpc cuts!\n");
-       
+        if(!fIsRunFBOnly){         
           if(ncl<fTPCNcls || crossedrows<fTPCNCrossedRows || chi2 > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
         }
         ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(etarec, Cent);
