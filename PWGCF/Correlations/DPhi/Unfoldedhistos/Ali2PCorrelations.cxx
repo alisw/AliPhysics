@@ -584,13 +584,15 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         fSum2PtPt_12           += 2*corr*ptpt;
         fhSum2PtPt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdpt            = (pt_1-avgpt_1)*(fPt_1[ix2]-fAvgPt_1[ix2]);
-        fSum2DptDptnw_12       += 2*dptdpt;
-        fSum2DptDpt_12         += 2*corr*dptdpt;
-        fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_d,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_c,corr*dptdpt);
+        float dptdptnw = (pt_1 - avgpt_1) * (fPt_1[ix2] - fAvgPt_1[ix2]);
+        float dptdpt = (corr_1 * pt_1 - avgpt_1)
+                       * (fCorrection_1[ix2] * fPt_1[ix2] - fAvgPt_1[ix2]);
+        fSum2DptDptnw_12 += 2 * dptdptnw;
+        fSum2DptDpt_12 += 2 * dptdpt;
+        fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_d, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_c, dptdpt);
         fhN2_12_vsPtPt[kOO]->Fill(pt_1,fPt_1[ix2],corr);
         fhN2_12_vsPtPt[kOO]->Fill(fPt_1[ix2],pt_1,corr);
       } //ix2
@@ -666,13 +668,15 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         fSum2PtPt_12           += 2*corr*ptpt;
         fhSum2PtPt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdpt            = (pt_1-avgpt_1)*(fPt_2[ix2]-fAvgPt_2[ix2]);
-        fSum2DptDptnw_12       += 2*dptdpt;
-        fSum2DptDpt_12         += 2*corr*dptdpt;
-        fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_d,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_c,corr*dptdpt);
+        float dptdptnw = (pt_1 - avgpt_1) * (fPt_2[ix2] - fAvgPt_2[ix2]);
+        float dptdpt = (corr_1 * pt_1 - avgpt_1)
+                       * (fCorrection_2[ix2] * fPt_2[ix2] - fAvgPt_2[ix2]);
+        fSum2DptDptnw_12 += 2 * dptdptnw;
+        fSum2DptDpt_12 += 2 * dptdpt;
+        fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_d, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_c, dptdpt);
         fhN2_12_vsPtPt[kTT]->Fill(pt_1,fPt_2[ix2],corr);
         fhN2_12_vsPtPt[kTT]->Fill(fPt_2[ix2],pt_1,corr);
       } //ix2
@@ -787,13 +791,15 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
         fSum2PtPt_12           += corr*ptpt;
         fhSum2PtPt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdpt            = (pt_1-avgpt_1)*(fPt_2[ix2]-fAvgPt_2[ix2]);
-        fSum2DptDptnw_12       += dptdpt;
-        fSum2DptDpt_12         += corr*dptdpt;
-        fhSum2DptDpt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kOT]->AddBinContent(globalbin_na_d,corr*dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kTO]->AddBinContent(globalbin_na_c,corr*dptdpt);
+        float dptdptnw = (pt_1 - avgpt_1) * (fPt_2[ix2] - fAvgPt_2[ix2]);
+        float dptdpt = (corr_1 * pt_1 - avgpt_1)
+                       * (fCorrection_2[ix2] * fPt_2[ix2] - fAvgPt_2[ix2]);
+        fSum2DptDptnw_12 += dptdptnw;
+        fSum2DptDpt_12 += dptdpt;
+        fhSum2DptDpt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kOT]->AddBinContent(globalbin_na_d, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kTO]->AddBinContent(globalbin_na_c, dptdpt);
         fhN2_12_vsPtPt[kOT]->Fill(pt_1,fPt_2[ix2],corr);
         fhN2_12_vsPtPt[kTO]->Fill(fPt_2[ix2],pt_1,corr);
       }
