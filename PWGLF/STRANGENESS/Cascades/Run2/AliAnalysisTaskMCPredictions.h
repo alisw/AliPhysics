@@ -206,6 +206,7 @@ private:
   TH2D *fHistDDNMPI;
   TH2D *fHistDDQ2;
   TH2D *fHistDDYield[76];
+  TH2D *fHistDDPt[76];
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
