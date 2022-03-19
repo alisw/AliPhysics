@@ -139,30 +139,30 @@ private:
   Float_t fMaxPtTrigger; //for xi trigger
   Float_t fMinEtaTrigger;
   Float_t fMaxEtaTrigger;
-  TH1D *fHistPtTriggerD0;
-  TH1D *fHistPtTriggerXiC;
-  TH1D *fHistPtTriggerXiB;
+  TH1D *fHistPtTriggerD0; //!
+  TH1D *fHistPtTriggerXiC; //!
+  TH1D *fHistPtTriggerXiB; //!
   
-  TH3D *fHist3d2pcD0Proton;
-  TH3D *fHist3d2pcD0AntiProton;
-  TH3D *fHist3d2pcD0D0;
-  TH3D *fHist3d2pcD0D0bar;
-  TH3D *fHist3d2pcD0KMinus;
-  TH3D *fHist3d2pcD0KPlus;
+  TH3D *fHist3d2pcD0Proton; //!
+  TH3D *fHist3d2pcD0AntiProton; //!
+  TH3D *fHist3d2pcD0D0; //!
+  TH3D *fHist3d2pcD0D0bar; //!
+  TH3D *fHist3d2pcD0KMinus; //!
+  TH3D *fHist3d2pcD0KPlus; //!
 
-  TH3D *fHist3d2pcXiCProton;
-  TH3D *fHist3d2pcXiCAntiProton;
-  TH3D *fHist3d2pcXiCD0;
-  TH3D *fHist3d2pcXiCD0bar;
-  TH3D *fHist3d2pcXiCKMinus;
-  TH3D *fHist3d2pcXiCKPlus;
+  TH3D *fHist3d2pcXiCProton; //!
+  TH3D *fHist3d2pcXiCAntiProton; //!
+  TH3D *fHist3d2pcXiCD0; //!
+  TH3D *fHist3d2pcXiCD0bar; //!
+  TH3D *fHist3d2pcXiCKMinus; //!
+  TH3D *fHist3d2pcXiCKPlus; //!
 
-  TH3D *fHist3d2pcXiBProton;
-  TH3D *fHist3d2pcXiBAntiProton;
-  TH3D *fHist3d2pcXiBBMinus;
-  TH3D *fHist3d2pcXiBBPlus;
-  TH3D *fHist3d2pcXiBKMinus;
-  TH3D *fHist3d2pcXiBKPlus;
+  TH3D *fHist3d2pcXiBProton; //!
+  TH3D *fHist3d2pcXiBAntiProton; //!
+  TH3D *fHist3d2pcXiBBMinus; //!
+  TH3D *fHist3d2pcXiBBPlus; //!
+  TH3D *fHist3d2pcXiBKMinus; //!
+  TH3D *fHist3d2pcXiBKPlus; //!
   
   //for event mixing
   Bool_t fEMBufferFullD0;
@@ -178,35 +178,37 @@ private:
   Double_t fEMBufferEtaXiB[10];
   Double_t fEMBufferPhiXiB[10];
   
-  TH3D *fHistMixed3d2pcD0Proton;
-  TH3D *fHistMixed3d2pcD0AntiProton;
-  TH3D *fHistMixed3d2pcD0D0;
-  TH3D *fHistMixed3d2pcD0D0bar;
-  TH3D *fHistMixed3d2pcD0KMinus;
-  TH3D *fHistMixed3d2pcD0KPlus;
+  TH3D *fHistMixed3d2pcD0Proton; //!
+  TH3D *fHistMixed3d2pcD0AntiProton; //!
+  TH3D *fHistMixed3d2pcD0D0; //!
+  TH3D *fHistMixed3d2pcD0D0bar; //!
+  TH3D *fHistMixed3d2pcD0KMinus; //!
+  TH3D *fHistMixed3d2pcD0KPlus; //!
   
-  TH3D *fHistMixed3d2pcXiCProton;
-  TH3D *fHistMixed3d2pcXiCAntiProton;
-  TH3D *fHistMixed3d2pcXiCD0;
-  TH3D *fHistMixed3d2pcXiCD0bar;
-  TH3D *fHistMixed3d2pcXiCKMinus;
-  TH3D *fHistMixed3d2pcXiCKPlus;
+  TH3D *fHistMixed3d2pcXiCProton; //!
+  TH3D *fHistMixed3d2pcXiCAntiProton; //!
+  TH3D *fHistMixed3d2pcXiCD0; //!
+  TH3D *fHistMixed3d2pcXiCD0bar; //!
+  TH3D *fHistMixed3d2pcXiCKMinus; //!
+  TH3D *fHistMixed3d2pcXiCKPlus; //!
 
-  TH3D *fHistMixed3d2pcXiBProton;
-  TH3D *fHistMixed3d2pcXiBAntiProton;
-  TH3D *fHistMixed3d2pcXiBBMinus;
-  TH3D *fHistMixed3d2pcXiBBPlus;
-  TH3D *fHistMixed3d2pcXiBKMinus;
-  TH3D *fHistMixed3d2pcXiBKPlus;
+  TH3D *fHistMixed3d2pcXiBProton; //!
+  TH3D *fHistMixed3d2pcXiBAntiProton; //!
+  TH3D *fHistMixed3d2pcXiBBMinus; //!
+  TH3D *fHistMixed3d2pcXiBBPlus; //!
+  TH3D *fHistMixed3d2pcXiBKMinus; //!
+  TH3D *fHistMixed3d2pcXiBKPlus; //!
   
   //double-differential analysis
   Long_t fkDDRebin;
-  TH2D *fHistV0MvsSPD;
-  TH2D *fHistDDNch;
-  TH2D *fHistDDNMPI;
-  TH2D *fHistDDQ2;
-  TH2D *fHistDDYield[76];
-  TH2D *fHistDDPt[76];
+  Long_t fkMaxMultDDV0M;
+  Long_t fkMaxMultDDSPD;
+  TH2D *fHistV0MvsSPD; //! DD studies
+  TH2D *fHistDDNch; //! DD studies
+  TH2D *fHistDDNMPI; //! DD studies
+  TH2D *fHistDDQ2; //! DD studies
+  TH2D *fHistDDYield[76]; //! DD studies
+  TH2D *fHistDDPt[76]; //! DD studies
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
