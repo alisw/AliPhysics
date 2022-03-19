@@ -198,6 +198,7 @@ fkDDRebin(1)
     fHistPtVsB[ih]       = 0x0;
     fHistPtVsNMPI[ih]   = 0x0;
     fHistDDYield[ih]   = 0x0;
+    fHistDDPt[ih]   = 0x0;
   }
 }
 
@@ -305,6 +306,7 @@ fkDDRebin(lRebinFactor)
     fHistPtVsB[ih]       = 0x0;
     fHistPtVsNMPI[ih]   = 0x0;
     fHistDDYield[ih]   = 0x0;
+    fHistDDPt[ih]   = 0x0;
   }
   DefineOutput(1, TList::Class()); // Event Counter Histo
 }
@@ -739,6 +741,14 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
       fListHist->Add(fHistDDYield[ih]);
     }
   }
+  for(Int_t ih=0; ih<76; ih++){
+    if(! fHistDDPt[ih] ) {
+      fHistDDPt[ih] = new TH2D(Form("fHistDDPt_%s",lPartNames[ih].Data()), "",
+                                  lNNchBinsV0M/fkDDRebin,lLowNchBoundV0M,lHighNchBoundV0M,
+                                  lNNchBinsV0M/fkDDRebin,lLowNchBoundV0M,lHighNchBoundV0M);
+      fListHist->Add(fHistDDPt[ih]);
+    }
+  }
   
   //List of Histograms: Normal
   PostData(1, fListHist);
@@ -1141,6 +1151,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
           if( fHistPtVsB[ih] ) fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
           if( fHistPtVsNMPI[ih] ) fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
           if( fHistDDYield[ih] ) fHistDDYield[ih]->Fill(lNchEtaWide,lNchVZEROA+lNchVZEROC);
+          if( fHistDDPt[ih] ) fHistDDYield[ih]->Fill(lNchEtaWide,lNchVZEROA+lNchVZEROC, lThisPt);
         }
         if( TMath::Abs(lThisRap) < 4.0 && fkWideRapiditySpeciesStudy ) {
           if( fHistPt[ih] ) fHistPt[ih]->Fill(lThisPt);
@@ -1150,6 +1161,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
           if( fHistPtVsB[ih] ) fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
           if( fHistPtVsNMPI[ih] ) fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
           if( fHistDDYield[ih] ) fHistDDYield[ih]->Fill(lNchEtaWide,lNchVZEROA+lNchVZEROC);
+          if( fHistDDPt[ih] ) fHistDDYield[ih]->Fill(lNchEtaWide,lNchVZEROA+lNchVZEROC, lThisPt);
         }
       }
     }
