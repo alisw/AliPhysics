@@ -978,7 +978,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 
     fHistQA[10]->Fill(3);
      
-    if(track->Y() < -0.6 || track->Y() > 0.6)
+    if(track->Y() < -0.5 || track->Y() > 0.5)
       continue; 
     fHistQA[10]->Fill(4);
 
