@@ -64,6 +64,7 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile*        fChsc4242_Gap6;                        //! SC(4,2) |#Delta#eta| > 0.2
 		TProfile*        fChsc4242_Gap8;                        //! SC(4,2) |#Delta#eta| > 0.2
 		TProfile*        fChsc4242_Gap10;                       //! SC(4,2) |#Delta#eta| > 0.2
+		TProfile*        fChsc4242_Gap12;                       //! SC(4,2) |#Delta#eta| > 0.2
 		TProfile*	 fChsc4242_3sub;			//! SC(4,2)_A 3subevent method
 		TProfile*	 fChsc4242_3subMMLRA;			//! SC(4,2)_A 3subevent method
 		TProfile*	 fChsc4242_3subMMLRB;			//! SC(4,2)_A 3subevent method
@@ -81,6 +82,7 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile*        fChsc3232_Gap6;                        //! SC(3,2) |#Delta#eta| > 0.2
 		TProfile*        fChsc3232_Gap8;                        //! SC(3,2) |#Delta#eta| > 0.2
 		TProfile*        fChsc3232_Gap10;                       //! SC(3,2) |#Delta#eta| > 0.2
+		TProfile*        fChsc3232_Gap12;                       //! SC(3,2) |#Delta#eta| > 0.2
 		TProfile*     	 fChsc3232_3sub;			//! SC(3,2)_A 3subevent method
 		TProfile*     	 fChsc3232_3subMMLRA;			//! SC(3,2)_A 3subevent method
 		TProfile*     	 fChsc3232_3subMMLRB;			//! SC(3,2)_A 3subevent method
@@ -119,15 +121,19 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile*        fChc422_Gap10B;    //!
 		TProfile*        fChc532_Gap10A;    //!
 		TProfile*        fChc532_Gap10B;    //!
-
+		TProfile*        fChc422_Gap12A;    //!
+		TProfile*        fChc422_Gap12B;    //!
+		TProfile*        fChc532_Gap12A;    //!
+		TProfile*        fChc532_Gap12B;    //!
 
 		TProfile*	 fChcn2[6]; 			//! <<2>> in unit bins of Ntrks
-		TProfile*    	 fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
+		TProfile*    fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
 		TProfile*	 fChcn2_Gap2[6];  		//! <<2>> |#Delta#eta| > 0.2
 		TProfile*	 fChcn2_Gap4[6];  		//! <<2>> |#Delta#eta| > 0.4
-		TProfile*        fChcn2_Gap6[6];                //! <<2>> |#Delta#eta| > 0.6
+		TProfile*    fChcn2_Gap6[6];        //! <<2>> |#Delta#eta| > 0.6
 		TProfile*	 fChcn2_Gap8[6];  		//! <<2>> |#Delta#eta| > 0.8
 		TProfile*	 fChcn2_Gap10[6];  		//! <<2>> |#Delta#eta| > 1.0
+		TProfile*	 fChcn2_Gap12[6];  		//! <<2>> |#Delta#eta| > 1.2
 		TProfile*	 fChcn2_Gap14[6];  	        //! <<2>> |#Delta#eta| > 1.4
 		TProfile*	 fChcn2_Gap16[6];  	        //! <<2>> |#Delta#eta| > 1.6
 		TProfile*	 fChcn2_Gap18[6];  	        //! <<2>> |#Delta#eta| > 1.8
@@ -145,6 +151,7 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile*        fChcn4_Gap6[6];                //! <<4>> |#Delta#eta| > 0.2
 		TProfile*        fChcn4_Gap8[6];                //! <<4>> |#Delta#eta| > 0.2
 		TProfile*        fChcn4_Gap10[6];               //! <<4>> |#Delta#eta| > 0.2
+		TProfile*        fChcn4_Gap12[6];               //! <<4>> |#Delta#eta| > 0.2
 		TProfile*        fChcn4_3subMMLR[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subLLMR[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subRRML[6];            //! <<4>> 3subevent method
@@ -393,8 +400,18 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int NtrksAfter = 0;                 //!
 		int NtrksAfterGap0M = 0;           //!
 		int NtrksAfterGap0P = 0;           //!
+		int NtrksAfterGap2M = 0;           //!
+		int NtrksAfterGap2P = 0;           //!
+		int NtrksAfterGap4M = 0;           //!
+		int NtrksAfterGap4P = 0;           //!
+		int NtrksAfterGap6M = 0;           //!
+		int NtrksAfterGap6P = 0;           //!
+		int NtrksAfterGap8M = 0;           //!
+		int NtrksAfterGap8P = 0;           //!
 		int NtrksAfterGap10M = 0;           //!
 		int NtrksAfterGap10P = 0;           //!
+		int NtrksAfterGap12M = 0;           //!
+		int NtrksAfterGap12P = 0;           //!
 		int NtrksAfterGap14M = 0;           //!
 		int NtrksAfterGap14P = 0;           //!
 		int NtrksAfter3subL = 0;            //!
