@@ -176,7 +176,11 @@ fHistMixed3d2pcXiBKMinus(0),
 fHistMixed3d2pcXiBKPlus(0),
 fkDDRebin(1),
 fkMaxMultDDV0M(fLargeMultRange),
-fkMaxMultDDSPD(fLargeMultRange)
+fkMaxMultDDSPD(fLargeMultRange),
+fHistV0MvsSPD(0x0),
+fHistDDNch(0x0),
+fHistDDNMPI(0x0),
+fHistDDQ2(0x0)
 {
   for(Int_t ii=0; ii<10; ii++){
     fEMBufferEtaD0[ii]=0;
@@ -286,7 +290,11 @@ fHistMixed3d2pcXiBKMinus(0),
 fHistMixed3d2pcXiBKPlus(0),
 fkDDRebin(lRebinFactor),
 fkMaxMultDDV0M(fLargeMultRange),
-fkMaxMultDDSPD(fLargeMultRange)
+fkMaxMultDDSPD(fLargeMultRange),
+fHistV0MvsSPD(0x0),
+fHistDDNch(0x0),
+fHistDDNMPI(0x0),
+fHistDDQ2(0x0)
 {
   for(Int_t ii=0; ii<10; ii++){
     fEMBufferEtaD0[ii]=0;
@@ -925,7 +933,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   if(fHistNchVsNMPI)    fHistNchVsNMPI      -> Fill ( fMC_NMPI, lNchEta5  );
   if(fHistV0MvsSPD)     fHistV0MvsSPD       -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC);
   if(fHistDDNch)        fHistDDNch          -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, lNchEta5);
-  if(fHistDDNMPI)       fHistDDNch          -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, fMC_NMPI);
+  if(fHistDDNMPI)       fHistDDNMPI         -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, fMC_NMPI);
   if(fHistDDQ2)         fHistDDQ2           -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, fMC_PtHard);
   
   //------------------------------------------------
