@@ -651,7 +651,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   fhTrigTracks[5]->Fill(binscont,0,1.);
   fTracksTrig[5]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
   fhPT[5]->Fill(v0->Pt());
-  fhPTvsMinv[5]->Fill(v0->Pt(),dMass);
+  fhPTvsMinv[1]->Fill(v0->Pt(),dMass);
   return kTRUE;
 }
 //_____________________________________________________________________________
