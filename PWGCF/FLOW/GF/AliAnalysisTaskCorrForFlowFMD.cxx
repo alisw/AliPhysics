@@ -280,7 +280,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
         fhPTvsMinv[i-4]->Sumw2();
         fOutputListCharged->Add(fhPTvsMinv[i-4]);
       }
-      if(!fSkipCorr) break;
+      if(fSkipCorr) break;
     }
 
     if(fUseEfficiency) {
@@ -596,8 +596,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
   fhTrigTracks[4]->Fill(binscont,0,1.);
   fTracksTrig[4]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
-  fhPT[4]->Fill(v0->Pt());
-  fhPTvsMinv[0]->Fill(v0->Pt(),dMass);
+  if(fSkipCorr){
+    fhPT[4]->Fill(v0->Pt());
+    fhPTvsMinv[0]->Fill(v0->Pt(),dMass);
+  }
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -650,8 +652,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
   fhTrigTracks[5]->Fill(binscont,0,1.);
   fTracksTrig[5]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
-  fhPT[5]->Fill(v0->Pt());
-  fhPTvsMinv[1]->Fill(v0->Pt(),dMass);
+  if(fSkipCorr){
+    fhPT[5]->Fill(v0->Pt());
+    fhPTvsMinv[1]->Fill(v0->Pt(),dMass);
+  }
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -1245,7 +1249,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
             if(trackPid > 0 && trackPid < 4){
               fTracksTrig[trackPid]->Add((AliAODTrack*)track);
               fhTrigTracks[trackPid]->Fill(binscont,0,1.);
-              fhPT[trackPid]->Fill(trackPt);
+              if(fSkipCorr) fhPT[trackPid]->Fill(trackPt);
             }
           }
         }
