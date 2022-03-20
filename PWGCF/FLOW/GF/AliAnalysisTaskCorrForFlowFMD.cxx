@@ -280,7 +280,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
         fhPTvsMinv[i-4]->Sumw2();
         fOutputListCharged->Add(fhPTvsMinv[i-4]);
       }
-      if(fSkipCorr) break;
+      if(!fSkipCorr) break;
     }
 
     if(fUseEfficiency) {
