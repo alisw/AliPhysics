@@ -6,13 +6,13 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEffDY *AddTaskEff(TString containerName="femtolist",int method=3, int filterbit=96)
+AliAnalysisTaskParticleEffDY *AddTaskEffDY(TString containerName="femtolist",int method=3, int filterbit=96)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskEff", "No analysis manager to connect to.");
+    Error("AddTaskEffDY", "No analysis manager to connect to.");
     return NULL;
   }
 
@@ -20,7 +20,7 @@ AliAnalysisTaskParticleEffDY *AddTaskEff(TString containerName="femtolist",int m
   //    manager. The availability of MC handler can also be checked here.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskEff", "This task requires an input event handler");
+    ::Error("AddTaskEffDY", "This task requires an input event handler");
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
