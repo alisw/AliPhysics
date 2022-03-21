@@ -33,15 +33,19 @@ CellEnergy:
     createHistos: true
     enableNewTempCalib: true
     enableShaperCorrection: true
+    enableAdditionalScale: true
+    additionalScaleValuesSM: [0.981, 0.970, 0.980]
 CellEnergy_0cells:
     enabled: true
     
 # Cell Time Calib
 CellTimeCalib:
+    enabled: true
     createHistos: true
-    doCalibrateLowGain: true 
+    doCalibrateLowGain: true
     doCalibTimeEdep: true
     doMergedBCs: true
+    doCalibMergedLG: false
 CellTimeCalib_0cells:
     enabled: true    
     
@@ -111,9 +115,10 @@ Clusterizer_V1ECell200:
             
 # Non-linearity
 ClusterNonLinearity:
+    enabled: true
     setForceClusterE: true
     createHistos: true
-    nonLinFunct: kTestBeamShaper  
+    nonLinFunct: kTestBeamShaperWoScale
 ClusterNonLinearity_V3ECell100:
     enabled: true
     clusterContainersNames:
