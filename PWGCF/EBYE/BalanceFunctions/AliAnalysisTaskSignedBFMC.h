@@ -53,8 +53,13 @@ class AliAnalysisTaskSignedBFMC : public AliAnalysisTaskSE {
   }
 
   void SetUseAdditionalVtxCuts() {
-  fUseAdditionalVtxCuts=kTRUE;}
+    fUseAdditionalVtxCuts=kTRUE;
+  }
 
+  void SetUseReactionPlane(Bool_t useRP=kFALSE) {
+    fUseReactionPlane = useRP;
+  }
+  
   //percentile
   void SetPercentileRange(Double_t min, Double_t max) { 
     fCentralityPercentileMin = min;
@@ -98,7 +103,7 @@ class AliAnalysisTaskSignedBFMC : public AliAnalysisTaskSE {
   TH2F *fHistMultiplicityvsPercentile;//multiplicity vs multiplicity percentile correlation
   TH2F *fHistEventPlane;//event plane angle
   TH2F *fHistEPResolution;//event plane Resolution
-  
+  TProfile *fProfEPResolution;//event plane Resolution
   TH1F *fHistNumberOfAcceptedParticles; //accepted particles,
   TH1F *fHistNumberOfAcceptedPositiveParticles; //acepted positive particles
   TH1F *fHistNumberOfAcceptedNegativeParticles; //acepted negative particles
@@ -167,7 +172,8 @@ class AliAnalysisTaskSignedBFMC : public AliAnalysisTaskSE {
   Bool_t fUseOfflineTrigger;//use offline trigger
   Double_t fVxMax, fVyMax, fVzMax;//vx vy vz max values
   Bool_t fUseAdditionalVtxCuts;// additional vertex cuts
-  Bool_t fCheckPileUp;//pile up checks
+  Bool_t fCheckPileUp; //pile up checks
+  Bool_t fUseReactionPlane; // whether use Reaction Plane instead of EP. 
   Double_t fCentralityPercentileMin, fCentralityPercentileMax;//centrality ranges
   Double_t fEventPlane; //event plane
   Int_t fnAODtrackCutBit;// AOD filter bit
