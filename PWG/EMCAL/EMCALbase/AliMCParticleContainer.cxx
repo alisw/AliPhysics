@@ -39,7 +39,9 @@ ClassImp(AliMCParticleContainer);
 
 AliMCParticleContainer::AliMCParticleContainer():
   AliParticleContainer(),
-  fMCFlag(AliAODMCParticle::kPhysicalPrim)
+  fMCFlag(AliAODMCParticle::kPhysicalPrim),
+  fMinPtCharged(0.),
+  fMinPtNeutral(0.)
 {
   fBaseClassName = "AliAODMCParticle";
   SetClassName("AliAODMCParticle");
@@ -47,7 +49,9 @@ AliMCParticleContainer::AliMCParticleContainer():
 
 AliMCParticleContainer::AliMCParticleContainer(const char *name):
   AliParticleContainer(name),
-  fMCFlag(AliAODMCParticle::kPhysicalPrim)
+  fMCFlag(AliAODMCParticle::kPhysicalPrim),
+  fMinPtCharged(0.),
+  fMinPtNeutral(0.)
 {
   fBaseClassName = "AliAODMCParticle";
   SetClassName("AliAODMCParticle");
@@ -160,6 +164,19 @@ Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, U
     rejectionReason |= kMCFlag;
     return kFALSE;
   }
+  
+  if(fMinPtCharged > 0.) {
+    if((vp->Charge() != 0) && (TMath::Abs(vp->Pt()) < fMinPtCharged)) {
+    rejectionReason |= kPtCut;
+    return kFALSE;
+    }
+  }
+  if(fMinPtNeutral > 0.) {
+    if((vp->Charge() == 0) && (TMath::Abs(vp->Pt()) < fMinPtNeutral)) {
+    rejectionReason |= kPtCut;
+    return kFALSE;      
+    }
+  }
 
   return ApplyParticleCuts(vp, rejectionReason);
 }
@@ -184,5 +201,11 @@ const char* AliMCParticleContainer::GetTitle() const
 {
   static TString trackString;
   trackString = TString::Format("%s_pT%04d", GetArrayName().Data(), static_cast<int>(GetMinPt()*1000.0));
+  if(fMinPtCharged > 0.) {
+    trackString += TString::Format("_pTCh%04d", static_cast<int>(fMinPtCharged*1000.0));
+  }
+  if(fMinPtNeutral > 0.) {
+    trackString += TString::Format("_pTNe%04d", static_cast<int>(fMinPtNeutral*1000.0));
+  }
   return trackString.Data();
 }
