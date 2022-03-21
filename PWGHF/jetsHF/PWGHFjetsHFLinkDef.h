@@ -28,6 +28,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetBtagSV+;
 #pragma link C++ class AliATDJetCorrDev+;
 #pragma link C++ class AliAnalysisTaskBJetTC+;
+#pragma link C++ class AliAnalysisTaskHFFindJets+;
 #endif
 
 #endif

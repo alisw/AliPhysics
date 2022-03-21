@@ -69,6 +69,7 @@ if(FASTJET_FOUND)
     AliAnalysisTaskEmcalJetBtagSV.cxx          
     AliAnalysisTaskBJetTC.cxx		
     AliATDJetCorrDev.cxx
+    AliAnalysisTaskHFFindJets.cxx
     )
 
 
