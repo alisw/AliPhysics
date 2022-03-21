@@ -642,6 +642,19 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
       fgIsMC = kTRUE;
       fgEnergy = kPbPb5TeV;
 
+      // LHC18x pp productions
+  } else if (szLHCPeriod.EqualTo("LHC18b") or szLHCPeriod.EqualTo("LHC18d")
+             or szLHCPeriod.EqualTo("LHC18e") or szLHCPeriod.EqualTo("LHC18f")
+             or szLHCPeriod.EqualTo("LHC18g") or szLHCPeriod.EqualTo("LHC18h")
+             or szLHCPeriod.EqualTo("LHC18i") or szLHCPeriod.EqualTo("LHC18k")
+             or szLHCPeriod.EqualTo("LHC18l") or szLHCPeriod.EqualTo("LHC18m")
+             or szLHCPeriod.EqualTo("LHC18n") or szLHCPeriod.EqualTo("LHC18o")
+             or szLHCPeriod.EqualTo("LHC18p")) {
+      fgDataPeriod = kLHC18bp;
+      fgAnchorPeriod = kLHC18bp;
+      fgIsMC = kFALSE;
+      fgEnergy = k13TeV;
+
       // LHC18x PbPb productions
   } else if (szLHCPeriod.Contains("LHC18q")) {
       fgDataPeriod = kLHC18q;

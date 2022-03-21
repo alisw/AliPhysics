@@ -59,6 +59,7 @@ AliAnaCaloTrackCorrBaseClass(),
 fFillAODWithReferences(0),      fCheckLeadingWithNeutralClusters(0),
 fMaxAssocPt(1000.),             fMinAssocPt(0.),
 fDeltaPhiMaxCut(0.),            fDeltaPhiMinCut(0.),
+fSelectCentrality(0),
 fSelectIsolated(0),             fMakeSeveralUE(0),
 fUeDeltaPhiMaxCut(0.),          fUeDeltaPhiMinCut(0.),
 fPi0AODBranchName(""),          fAODNamepTInConeHisto(""), fNeutralCorr(0),
@@ -202,7 +203,8 @@ fhPtLeadInConeBin(),            fhPtSumInConeBin(),
 fhPtLeadConeBinDecay(),         fhSumPtConeBinDecay(),
 fhPtLeadConeBinMC(),            fhSumPtConeBinMC(),
 fhTrackResolution(0),           fhTrackResolutionUE(0),
-fhPtTriggerPerSM(0),            fhPtTriggerPerTCardIndex(0)
+fhPtTriggerPerSM(0),            fhPtTriggerPerTCardIndex(0),
+fhCentrality(0)
 {
   InitParameters();
   
@@ -245,6 +247,8 @@ fhPtTriggerPerSM(0),            fhPtTriggerPerTCardIndex(0)
     fhDeltaPhiChargedPerTCardIndex       [itc] = 0 ;
     fhDeltaPhiChargedPtA3GeVPerTCardIndex[itc] = 0 ;
   }
+
+  fCenBin[0] = 0; fCenBin[1] = 100;
 }
 
 //_________________________________________________________________
@@ -322,7 +326,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
     }
     
     // Fill different multiplicity/centrality histogram
-    if ( IsHighMultiplicityAnalysisOn() && 
+    if ( IsHighMultiplicityAnalysisOn() && !fSelectCentrality &&
         cen >= 0 && cen < GetNCentrBin() )
     {
       fhDeltaPhiChargedMult[cen]->Fill(ptTrig, deltaPhi, GetEventWeight());
@@ -1089,7 +1093,8 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   }
   
   // Fill different multiplicity/centrality histogram
-  if ( IsHighMultiplicityAnalysisOn() && cen >= 0 && cen < GetNCentrBin() )
+  if ( IsHighMultiplicityAnalysisOn() && !fSelectCentrality &&
+      cen >= 0 && cen < GetNCentrBin() )
   {
     if ( fFillXEHistograms )
       fhXEMult[cen]->Fill(ptTrig, xE, GetEventWeight());
@@ -1236,7 +1241,8 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
   }
   
   // Fill different multiplicity/centrality histogram
-  if ( IsHighMultiplicityAnalysisOn() && cen >= 0 && cen < GetNCentrBin() )
+  if ( IsHighMultiplicityAnalysisOn() && !fSelectCentrality &&
+      cen >= 0 && cen < GetNCentrBin() )
   {
     if ( fFillXEHistograms )
       fhXEUeMult[cen]->Fill(ptTrig, uexE, GetEventWeight());
@@ -2102,12 +2108,12 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   fhEtaTrigger->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
   outputContainer->Add(fhEtaTrigger);
   
-  if ( IsHighMultiplicityAnalysisOn() )
+  if ( IsHighMultiplicityAnalysisOn() || fSelectCentrality )
   {
     fhPtTriggerCentrality   = new TH2F
     ("hPtTriggerCentrality",
      "Trigger particle #it{p}_{T} vs centrality",
-     nptbins,ptmin,ptmax,100,0.,100) ;
+     nptbins,ptmin,ptmax, fCenBin[1]-fCenBin[0],fCenBin[0],fCenBin[1]) ;
     fhPtTriggerCentrality->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhPtTriggerCentrality->SetYTitle("Centrality (%)");
     outputContainer->Add(fhPtTriggerCentrality) ;
@@ -2123,12 +2129,20 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhTriggerEventPlaneCentrality  = new TH2F
     ("hTriggerEventPlaneCentrality",
      "Trigger particle centrality vs event plane angle",
-     100,0.,100,100,0.,TMath::Pi()) ;
+     fCenBin[1]-fCenBin[0],fCenBin[0],fCenBin[1],100,0.,TMath::Pi()) ;
     fhTriggerEventPlaneCentrality->SetXTitle("Centrality (%)");
     fhTriggerEventPlaneCentrality->SetYTitle("EP angle (rad)");
     outputContainer->Add(fhTriggerEventPlaneCentrality) ;
   }
   
+  if ( fSelectCentrality )
+  {
+    fhCentrality   = new TH1F
+    ("hCentralityCorr","control centrality in correlation task",100,0,100) ;
+    fhCentrality->SetXTitle("Centrality (%)");
+    outputContainer->Add(fhCentrality) ;
+  }
+
   // Leading hadron in oposite side
   if ( fFillLeadHadOppositeHisto )
   {
@@ -2894,7 +2908,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     }
   } // pile-up
   
-  if ( IsHighMultiplicityAnalysisOn() )
+  if ( IsHighMultiplicityAnalysisOn() && !fSelectCentrality )
   {
     Int_t nMultiBins = GetNCentrBin();
     
@@ -4731,6 +4745,13 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   AliDebug(1,Form("n particle branch aod entries %d", naod));
   AliDebug(1,Form("In CTS aod entries %d",GetCTSTracks()->GetEntriesFast()));
   
+  Float_t cen = GetEventCentrality();
+  if ( fSelectCentrality )
+  {
+    if ( cen < fCenBin[0] || cen >= fCenBin[1] ) return;
+    fhCentrality->Fill(cen);
+  }
+
   //------------------------------------------------------
   // Find leading trigger if analysis request only leading,
   // if there is no leading trigger, then skip the event
@@ -4758,9 +4779,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   //------------------------------------------------------
   // Get event multiplicity and bins
   
-  Float_t cen         = GetEventCentrality();
   Float_t ep          = GetEventPlaneAngle();
-  if ( IsHighMultiplicityAnalysisOn() ) 
+  if ( IsHighMultiplicityAnalysisOn() || fSelectCentrality  )
     fhTriggerEventPlaneCentrality->Fill(cen, ep, GetEventWeight());
   
   Int_t   mixEventBin = GetEventMixBin();
@@ -5142,7 +5162,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if ( fCorrelVzBin )
       fhPtTriggerVzBin->Fill(pt, vzbin, GetEventWeight());
     
-    if ( IsHighMultiplicityAnalysisOn() )
+    if ( IsHighMultiplicityAnalysisOn() || fSelectCentrality )
     {
       fhPtTriggerCentrality->Fill(pt, cen, GetEventWeight());
       fhPtTriggerEventPlane->Fill(pt, ep , GetEventWeight());
@@ -5227,7 +5247,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliCaloTrackPartic
   
   // Track multiplicity or cent bin
   Int_t cenbin = 0;
-  if ( IsHighMultiplicityAnalysisOn() ) cenbin = GetEventCentralityBin();
+  if ( IsHighMultiplicityAnalysisOn() && !fSelectCentrality ) cenbin = GetEventCentralityBin();
   
   //
   // In case of pi0/eta trigger, we may want to check their decay correlation,

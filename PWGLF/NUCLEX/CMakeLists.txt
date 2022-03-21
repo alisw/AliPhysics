@@ -112,6 +112,7 @@ set(SRCS
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeHypertriton.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonESD_PbPb.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_XeXe.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx

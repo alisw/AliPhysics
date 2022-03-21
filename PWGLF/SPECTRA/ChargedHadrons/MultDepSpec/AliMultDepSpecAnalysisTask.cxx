@@ -467,11 +467,6 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
     AliError("fEvent not available\n");
     return false;
   }
-  if (fMinCent >= 0. && InitCentrality()) {
-    if (fCent < fMinCent || fCent > fMaxCent) {
-      return false;
-    }
-  }
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
   fEventPassesPhysSel = bool(handl->IsEventSelected());
@@ -1088,10 +1083,6 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   if (options.Contains("highPtMode::100")) {
     fHighPtMode = 3;
     SetPtRange(0.15, 100.0);
-  }
-
-  if (options.Contains("selectCentral")) {
-    SetCentRange(0., 10.);
   }
 
   DefineDefaultAxes(maxMultMeas, maxMultTrue);

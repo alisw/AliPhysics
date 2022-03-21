@@ -26,7 +26,15 @@ AliAnalysisTaskSignedBFMC *AddTaskSignedBFMC(TString name ="name",
   taskBF->SetMultiplicityEstimator(gMultiplicityEstimator);
   taskBF->SetVertexDiamond(vx, vy, vz);
   taskBF->SetAODtrackCutBit(gFilterBit);
-  taskBF->SetEventPlaneDetector(gEventPlaneDetector);
+  
+  if(gEventPlaneDetector=="RP"){
+    taskBF->SetUseReactionPlane(kTRUE);   // use Reaction plane from Model
+  }
+  else{
+    taskBF->SetEventPlaneDetector(gEventPlaneDetector);   // use MC tracks to get Event plane. 
+  }
+
+  
   if(kUseAdditionalVtxCuts) taskBF->SetUseAdditionalVtxCuts();
   if(kUseOfflineTrigger) taskBF->UseOfflineTrigger();
   if(kCheckPileUp) taskBF->CheckPileUp();

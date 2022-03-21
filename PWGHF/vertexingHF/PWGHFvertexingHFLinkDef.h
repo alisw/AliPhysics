@@ -64,6 +64,7 @@
 #pragma link C++ class AliAnalysisTaskSELc2pK0sfromAODtracks++;
 #pragma link C++ class AliAnalysisTaskSELc2eleLambdafromAODtracks+;
 #pragma link C++ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks+;
+#pragma link C++ class AliAnalysisTaskSEOmegacZero2XiPifromKFP+;
 #pragma link C++ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks++;
 #pragma link C++ class AliAnalysisTaskSEXicZero2XiPifromAODtracks++;
 #pragma link C++ class AliAnalysisTaskSEXic2eleXifromAODtracks+;

@@ -24,7 +24,7 @@ AliAnalysisTaskLambdaProtonCVE* AddTaskLambdaProtonCVE(
     bool           QAZDC=true,
     bool           QATPC=true,
     bool          doNUE=false,
-    bool           doNUA=true,
+    bool          doNUA=false,
     bool    checkPIDFlow=true,
     TString        uniqueID=""
     )

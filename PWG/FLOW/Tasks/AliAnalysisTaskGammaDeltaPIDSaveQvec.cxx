@@ -392,42 +392,6 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec(const
     }
   }
 
-  fZDCCAvgTow1EnergyFraction = NULL;
-  fZDCCAvgTow2EnergyFraction = NULL;
-  fZDCCAvgTow3EnergyFraction = NULL;
-  fZDCCAvgTow4EnergyFraction = NULL;
-  fZDCAAvgTow1EnergyFraction = NULL;
-  fZDCAAvgTow2EnergyFraction = NULL;
-  fZDCAAvgTow3EnergyFraction = NULL;
-  fZDCAAvgTow4EnergyFraction = NULL;
-  fZDCCCommonTowVsSumTow2D = NULL;
-  fZDCACommonTowVsSumTow2D = NULL;
-  fZDCCTotEnergyFraction = NULL;
-  fZDCATotEnergyFraction = NULL;
-  
-  fZDCCAvgTow1EnergyLRFraction = NULL;
-  fZDCCAvgTow2EnergyLRFraction = NULL;
-  fZDCCAvgTow3EnergyLRFraction = NULL;
-  fZDCCAvgTow4EnergyLRFraction = NULL;
-  fZDCAAvgTow1EnergyLRFraction = NULL;
-  fZDCAAvgTow2EnergyLRFraction = NULL;
-  fZDCAAvgTow3EnergyLRFraction = NULL;
-  fZDCAAvgTow4EnergyLRFraction = NULL;
-  fZDCCCommonTowVsSumTow2DLR = NULL;
-  fZDCACommonTowVsSumTow2DLR = NULL;
-  fZDCCTotEnergyFractionLR = NULL;
-  fZDCATotEnergyFractionLR = NULL;
-  
-  fZDCCTow0LRHRratio = NULL;
-  fZDCCTow1LRHRratio = NULL;
-  fZDCCTow2LRHRratio = NULL;
-  fZDCCTow3LRHRratio = NULL;
-  fZDCCTow4LRHRratio = NULL;
-  fZDCATow0LRHRratio = NULL;
-  fZDCATow1LRHRratio = NULL;
-  fZDCATow2LRHRratio = NULL;
-  fZDCATow3LRHRratio = NULL;
-  fZDCATow4LRHRratio = NULL;
   
   //Must be here:
   DefineInput(0,TChain::Class());
@@ -759,42 +723,6 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec():
     }
   }
   
-  fZDCCAvgTow1EnergyFraction = NULL;
-  fZDCCAvgTow2EnergyFraction = NULL;
-  fZDCCAvgTow3EnergyFraction = NULL;
-  fZDCCAvgTow4EnergyFraction = NULL;
-  fZDCAAvgTow1EnergyFraction = NULL;
-  fZDCAAvgTow2EnergyFraction = NULL;
-  fZDCAAvgTow3EnergyFraction = NULL;
-  fZDCAAvgTow4EnergyFraction = NULL;
-  fZDCCCommonTowVsSumTow2D = NULL;
-  fZDCACommonTowVsSumTow2D = NULL;
-  fZDCCTotEnergyFraction = NULL;
-  fZDCATotEnergyFraction = NULL;
-  
-  fZDCCAvgTow1EnergyLRFraction = NULL;
-  fZDCCAvgTow2EnergyLRFraction = NULL;
-  fZDCCAvgTow3EnergyLRFraction = NULL;
-  fZDCCAvgTow4EnergyLRFraction = NULL;
-  fZDCAAvgTow1EnergyLRFraction = NULL;
-  fZDCAAvgTow2EnergyLRFraction = NULL;
-  fZDCAAvgTow3EnergyLRFraction = NULL;
-  fZDCAAvgTow4EnergyLRFraction = NULL;
-  fZDCCCommonTowVsSumTow2DLR = NULL;
-  fZDCACommonTowVsSumTow2DLR = NULL;
-  fZDCCTotEnergyFractionLR = NULL;
-  fZDCATotEnergyFractionLR = NULL;
-  
-  fZDCCTow0LRHRratio = NULL;
-  fZDCCTow1LRHRratio = NULL;
-  fZDCCTow2LRHRratio = NULL;
-  fZDCCTow3LRHRratio = NULL;
-  fZDCCTow4LRHRratio = NULL;
-  fZDCATow0LRHRratio = NULL;
-  fZDCATow1LRHRratio = NULL;
-  fZDCATow2LRHRratio = NULL;
-  fZDCATow3LRHRratio = NULL;
-  fZDCATow4LRHRratio = NULL;
   //Not needed for Empty Constructor:
   //DefineInput(0,TChain::Class());
   //DefineOutput(1,TList::Class());
@@ -1270,8 +1198,6 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
   else if(aodZDC){
     const Double_t *fZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
     const Double_t *fZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
-    const Double_t *fZNATowerRawAODLR = aodZDC->GetZNATowerEnergyLR();
-    const Double_t *fZNCTowerRawAODLR = aodZDC->GetZNCTowerEnergyLR();
     
     //const Double_t *fZPATowerRawAOD = aodZDC->GetZPATowerEnergy();
     //const Double_t *fZPCTowerRawAOD = aodZDC->GetZPCTowerEnergy();  
@@ -1289,43 +1215,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	fpQvecEvent->setTowZNAraw3(fZNATowerRawAOD[3]);
 	fpQvecEvent->setTowZNAraw4(fZNATowerRawAOD[4]);
 	
-	fZDCCAvgTow1EnergyFraction->Fill(fZNCTowerRawAOD[1]/fZNCTowerRawAOD[0]);
-	fZDCCAvgTow2EnergyFraction->Fill(fZNCTowerRawAOD[2]/fZNCTowerRawAOD[0]);
-	fZDCCAvgTow3EnergyFraction->Fill(fZNCTowerRawAOD[3]/fZNCTowerRawAOD[0]);
-	fZDCCAvgTow4EnergyFraction->Fill(fZNCTowerRawAOD[4]/fZNCTowerRawAOD[0]);
-	fZDCAAvgTow1EnergyFraction->Fill(fZNATowerRawAOD[1]/fZNATowerRawAOD[0]);
-	fZDCAAvgTow2EnergyFraction->Fill(fZNATowerRawAOD[2]/fZNATowerRawAOD[0]);
-	fZDCAAvgTow3EnergyFraction->Fill(fZNATowerRawAOD[3]/fZNATowerRawAOD[0]);
-	fZDCAAvgTow4EnergyFraction->Fill(fZNATowerRawAOD[4]/fZNATowerRawAOD[0]);
-	fZDCCCommonTowVsSumTow2D->Fill(fZNCTowerRawAOD[0], fZNCTowerRawAOD[1]+fZNCTowerRawAOD[2]+fZNCTowerRawAOD[3]+fZNCTowerRawAOD[4]);
-	fZDCACommonTowVsSumTow2D->Fill(fZNATowerRawAOD[0], fZNATowerRawAOD[1]+fZNATowerRawAOD[2]+fZNATowerRawAOD[3]+fZNATowerRawAOD[4]);
-	fZDCCTotEnergyFraction->Fill((fZNCTowerRawAOD[1]+fZNCTowerRawAOD[2]+fZNCTowerRawAOD[3]+fZNCTowerRawAOD[4])/fZNCTowerRawAOD[0]);
-	fZDCATotEnergyFraction->Fill((fZNATowerRawAOD[1]+fZNATowerRawAOD[2]+fZNATowerRawAOD[3]+fZNATowerRawAOD[4])/fZNATowerRawAOD[0]);
-	
-	fZDCCAvgTow1EnergyLRFraction->Fill(fZNCTowerRawAODLR[1]/fZNCTowerRawAODLR[0]);
-	fZDCCAvgTow2EnergyLRFraction->Fill(fZNCTowerRawAODLR[2]/fZNCTowerRawAODLR[0]);
-	fZDCCAvgTow3EnergyLRFraction->Fill(fZNCTowerRawAODLR[3]/fZNCTowerRawAODLR[0]);
-	fZDCCAvgTow4EnergyLRFraction->Fill(fZNCTowerRawAODLR[4]/fZNCTowerRawAODLR[0]);
-	fZDCAAvgTow1EnergyLRFraction->Fill(fZNATowerRawAODLR[1]/fZNATowerRawAODLR[0]);
-	fZDCAAvgTow2EnergyLRFraction->Fill(fZNATowerRawAODLR[2]/fZNATowerRawAODLR[0]);
-	fZDCAAvgTow3EnergyLRFraction->Fill(fZNATowerRawAODLR[3]/fZNATowerRawAODLR[0]);
-	fZDCAAvgTow4EnergyLRFraction->Fill(fZNATowerRawAODLR[4]/fZNATowerRawAODLR[0]);
-	fZDCCCommonTowVsSumTow2DLR->Fill(fZNCTowerRawAODLR[0], fZNCTowerRawAODLR[1]+fZNCTowerRawAODLR[2]+fZNCTowerRawAODLR[3]+fZNCTowerRawAODLR[4]);
-	fZDCACommonTowVsSumTow2DLR->Fill(fZNATowerRawAODLR[0], fZNATowerRawAODLR[1]+fZNATowerRawAODLR[2]+fZNATowerRawAODLR[3]+fZNATowerRawAODLR[4]);
-	fZDCCTotEnergyFractionLR->Fill((fZNCTowerRawAODLR[1]+fZNCTowerRawAODLR[2]+fZNCTowerRawAODLR[3]+fZNCTowerRawAODLR[4])/fZNCTowerRawAODLR[0]);
-	fZDCATotEnergyFractionLR->Fill((fZNATowerRawAODLR[1]+fZNATowerRawAODLR[2]+fZNATowerRawAODLR[3]+fZNATowerRawAODLR[4])/fZNATowerRawAODLR[0]);
-	
-	fZDCCTow0LRHRratio->Fill(fZNCTowerRawAODLR[0]/fZNCTowerRawAOD[0]);
-	fZDCCTow1LRHRratio->Fill(fZNCTowerRawAODLR[1]/fZNCTowerRawAOD[1]);
-	fZDCCTow2LRHRratio->Fill(fZNCTowerRawAODLR[2]/fZNCTowerRawAOD[2]);
-	fZDCCTow3LRHRratio->Fill(fZNCTowerRawAODLR[3]/fZNCTowerRawAOD[3]);
-	fZDCCTow4LRHRratio->Fill(fZNCTowerRawAODLR[4]/fZNCTowerRawAOD[4]);
-	fZDCATow0LRHRratio->Fill(fZNATowerRawAODLR[0]/fZNATowerRawAOD[0]);
-	fZDCATow1LRHRratio->Fill(fZNATowerRawAODLR[1]/fZNATowerRawAOD[1]);
-	fZDCATow2LRHRratio->Fill(fZNATowerRawAODLR[2]/fZNATowerRawAOD[2]);
-	fZDCATow3LRHRratio->Fill(fZNATowerRawAODLR[3]/fZNATowerRawAOD[3]);
-	fZDCATow4LRHRratio->Fill(fZNATowerRawAODLR[4]/fZNATowerRawAOD[4]);
-  
+
   }
 
   // ================================================================================> Set event info 
@@ -2783,80 +2673,6 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::SetupAnalysisHistograms(){
     fTempList->Add(fCMEw4Proton[c]);
   }
   
-  fZDCCAvgTow1EnergyFraction = new TH1D("fZDCCAvgTow1EnergyFraction","fZDCCAvgTow1EnergyFraction",100,0,1);
-  fZDCCAvgTow2EnergyFraction = new TH1D("fZDCCAvgTow2EnergyFraction","fZDCCAvgTow2EnergyFraction",100,0,1);
-  fZDCCAvgTow3EnergyFraction = new TH1D("fZDCCAvgTow3EnergyFraction","fZDCCAvgTow3EnergyFraction",100,0,1);
-  fZDCCAvgTow4EnergyFraction = new TH1D("fZDCCAvgTow4EnergyFraction","fZDCCAvgTow4EnergyFraction",100,0,1);
-  fZDCAAvgTow1EnergyFraction = new TH1D("fZDCAAvgTow1EnergyFraction","fZDCAAvgTow1EnergyFraction",100,0,1);
-  fZDCAAvgTow2EnergyFraction = new TH1D("fZDCAAvgTow2EnergyFraction","fZDCAAvgTow2EnergyFraction",100,0,1);
-  fZDCAAvgTow3EnergyFraction = new TH1D("fZDCAAvgTow3EnergyFraction","fZDCAAvgTow3EnergyFraction",100,0,1);
-  fZDCAAvgTow4EnergyFraction = new TH1D("fZDCAAvgTow4EnergyFraction","fZDCAAvgTow4EnergyFraction",100,0,1);
-  fZDCCCommonTowVsSumTow2D = new TH2D("fZDCCCommonTowVsSumTow2D","fZDCCCommonTowVsSumTow2D",100,20000,150000,100,20000,150000);
-  fZDCACommonTowVsSumTow2D = new TH2D("fZDCACommonTowVsSumTow2D","fZDCACommonTowVsSumTow2D",100,20000,150000,100,20000,150000);
-  fZDCCTotEnergyFraction = new TH1D("fZDCCTotEnergyFraction","fZDCCTotEnergyFraction",100,0.5,1.2);
-  fZDCATotEnergyFraction = new TH1D("fZDCATotEnergyFraction","fZDCATotEnergyFraction",100,0,1.2);
-  
-  fZDCCAvgTow1EnergyLRFraction = new TH1D("fZDCCAvgTow1EnergyLRFraction","fZDCCAvgTow1EnergyLRFraction",100,0,1);
-  fZDCCAvgTow2EnergyLRFraction = new TH1D("fZDCCAvgTow2EnergyLRFraction","fZDCCAvgTow2EnergyLRFraction",100,0,1);
-  fZDCCAvgTow3EnergyLRFraction = new TH1D("fZDCCAvgTow3EnergyLRFraction","fZDCCAvgTow3EnergyLRFraction",100,0,1);
-  fZDCCAvgTow4EnergyLRFraction = new TH1D("fZDCCAvgTow4EnergyLRFraction","fZDCCAvgTow4EnergyLRFraction",100,0,1);
-  fZDCAAvgTow1EnergyLRFraction = new TH1D("fZDCAAvgTow1EnergyLRFraction","fZDCAAvgTow1EnergyLRFraction",100,0,1);
-  fZDCAAvgTow2EnergyLRFraction = new TH1D("fZDCAAvgTow2EnergyLRFraction","fZDCAAvgTow2EnergyLRFraction",100,0,1);
-  fZDCAAvgTow3EnergyLRFraction = new TH1D("fZDCAAvgTow3EnergyLRFraction","fZDCAAvgTow3EnergyLRFraction",100,0,1);
-  fZDCAAvgTow4EnergyLRFraction = new TH1D("fZDCAAvgTow4EnergyLRFraction","fZDCAAvgTow4EnergyLRFraction",100,0,1);
-  fZDCCCommonTowVsSumTow2DLR = new TH2D("fZDCCCommonTowVsSumTow2DLR","fZDCCCommonTowVsSumTow2DLR",100,2000,100000,100,2000,100000);
-  fZDCACommonTowVsSumTow2DLR = new TH2D("fZDCACommonTowVsSumTow2DLR","fZDCACommonTowVsSumTow2DLR",100,2000,100000,100,2000,100000);
-  fZDCCTotEnergyFractionLR = new TH1D("fZDCCTotEnergyFractionLR","fZDCCTotEnergyFractionLR",100,0.5,1.2);
-  fZDCATotEnergyFractionLR = new TH1D("fZDCATotEnergyFractionLR","fZDCATotEnergyFractionLR",100,0,1.2);
-  
-  fZDCCTow0LRHRratio = new TH1D("fZDCCTow0LRHRratio","fZDCCTow0LRHRratio",100,0,1);
-  fZDCCTow1LRHRratio = new TH1D("fZDCCTow1LRHRratio","fZDCCTow1LRHRratio",100,0,1);
-  fZDCCTow2LRHRratio = new TH1D("fZDCCTow2LRHRratio","fZDCCTow2LRHRratio",100,0,1);
-  fZDCCTow3LRHRratio = new TH1D("fZDCCTow3LRHRratio","fZDCCTow3LRHRratio",100,0,1);
-  fZDCCTow4LRHRratio = new TH1D("fZDCCTow4LRHRratio","fZDCCTow4LRHRratio",100,0,1);
-  fZDCATow0LRHRratio = new TH1D("fZDCATow0LRHRratio","fZDCATow0LRHRratio",100,0,1);
-  fZDCATow1LRHRratio = new TH1D("fZDCATow1LRHRratio","fZDCATow1LRHRratio",100,0,1);
-  fZDCATow2LRHRratio = new TH1D("fZDCATow2LRHRratio","fZDCATow2LRHRratio",100,0,1);
-  fZDCATow3LRHRratio = new TH1D("fZDCATow3LRHRratio","fZDCATow3LRHRratio",100,0,1);
-  fZDCATow4LRHRratio = new TH1D("fZDCATow4LRHRratio","fZDCATow4LRHRratio",100,0,1);
-  
-  
-  fListHist->Add(fZDCCAvgTow1EnergyFraction);
-  fListHist->Add(fZDCCAvgTow2EnergyFraction);
-  fListHist->Add(fZDCCAvgTow3EnergyFraction);
-  fListHist->Add(fZDCCAvgTow4EnergyFraction);
-  fListHist->Add(fZDCAAvgTow1EnergyFraction);
-  fListHist->Add(fZDCAAvgTow2EnergyFraction);
-  fListHist->Add(fZDCAAvgTow3EnergyFraction);
-  fListHist->Add(fZDCAAvgTow4EnergyFraction);
-  fListHist->Add(fZDCCCommonTowVsSumTow2D);
-  fListHist->Add(fZDCACommonTowVsSumTow2D);
-  fListHist->Add(fZDCCTotEnergyFraction);
-  fListHist->Add(fZDCATotEnergyFraction);
-
-  fListHist->Add(fZDCCAvgTow1EnergyLRFraction);
-  fListHist->Add(fZDCCAvgTow2EnergyLRFraction);
-  fListHist->Add(fZDCCAvgTow3EnergyLRFraction);
-  fListHist->Add(fZDCCAvgTow4EnergyLRFraction);
-  fListHist->Add(fZDCAAvgTow1EnergyLRFraction);
-  fListHist->Add(fZDCAAvgTow2EnergyLRFraction);
-  fListHist->Add(fZDCAAvgTow3EnergyLRFraction);
-  fListHist->Add(fZDCAAvgTow4EnergyLRFraction);
-  fListHist->Add(fZDCCCommonTowVsSumTow2DLR);
-  fListHist->Add(fZDCACommonTowVsSumTow2DLR);
-  fListHist->Add(fZDCCTotEnergyFractionLR);
-  fListHist->Add(fZDCATotEnergyFractionLR);
-
-  fListHist->Add(fZDCCTow0LRHRratio);
-  fListHist->Add(fZDCCTow1LRHRratio);
-  fListHist->Add(fZDCCTow2LRHRratio);
-  fListHist->Add(fZDCCTow3LRHRratio);
-  fListHist->Add(fZDCCTow4LRHRratio);
-  fListHist->Add(fZDCATow0LRHRratio);
-  fListHist->Add(fZDCATow1LRHRratio);
-  fListHist->Add(fZDCATow2LRHRratio);
-  fListHist->Add(fZDCATow3LRHRratio);
-  fListHist->Add(fZDCATow4LRHRratio);
 }
 
 

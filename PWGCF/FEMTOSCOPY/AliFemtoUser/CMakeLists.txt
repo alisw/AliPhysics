@@ -129,7 +129,7 @@ set(SRCS
   AliFemtoPairCutResonances.cxx
   AliFemtoCorrFctnMinvMonitor.cxx
   AliFemtoCorrFctnPairFractions.cxx
-  AliAnalysisTaskParticleEfficiency.cxx
+AliAnalysisTaskParticleEfficiency.cxx
   AliAnalysisTaskParticleFractions.cxx
   AliFemtoPairOriginMonitor.cxx
   AliFemtoPairCutAntiGammaAlpha.cxx
@@ -171,6 +171,7 @@ set(SRCS
   AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
   AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
   AliFemtoCorrFctnpdtHe3.cxx
+    AliAnalysisTaskParticleEffDY.cxx
   )
 
 
