@@ -203,6 +203,7 @@ private:
   Long_t fkDDRebin;
   Long_t fkMaxMultDDV0M;
   Long_t fkMaxMultDDSPD;
+  Long_t fkNSpeciesDD; 
   TH2D *fHistV0MvsSPD; //! DD studies
   TH2D *fHistDDNch; //! DD studies
   TH2D *fHistDDNMPI; //! DD studies
