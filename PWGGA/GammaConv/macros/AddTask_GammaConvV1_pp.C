@@ -993,6 +993,7 @@ void AddTask_GammaConvV1_pp(
 
   } else if (trainConfig == 421){
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // default
+    cuts.AddCutPCM("00015113", "0d200009f9730000dge0404000", "0152103500000000"); // default INEL>0
   } else if (trainConfig == 422){   // AM changed from 441 to 422  // updated 190923 with better 2D cuts
     cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
     cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
