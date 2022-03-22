@@ -14,20 +14,20 @@ using std::cout;
 using std::endl;
 
 AliAnalysisTaskLambdaProtonCVE* AddTaskLambdaProtonCVE(
-    int               debug=0, // debug level controls amount of output statements
-    TString     trigger="kMB",
-    TString   period="LHC10h",
-    int           filterBit=1, // AOD filter bit selection
-    bool       v0calibOn=true,
-    bool      zdccalibOn=true,
-    bool         QAVZERO=true,
-    bool           QAZDC=true,
-    bool           QATPC=true,
-    bool          doNUE=false,
-    bool          doNUA=false,
-    bool    checkPIDFlow=true,
-    TString        uniqueID=""
-    )
+  int               debug=0, // debug level controls amount of output statements
+  TString   trigger="kINT7",
+  TString   period="LHC18q",
+  int         filterBit=768, // AOD filter bit selection
+  bool       v0calibOn=true,
+  bool      zdccalibOn=true,
+  bool         QAVZERO=true,
+  bool           QAZDC=true,
+  bool           QATPC=true,
+  bool          doNUE=false,
+  bool           doNUA=true,
+  bool    checkPIDFlow=true,
+  TString        uniqueID=""
+  )
 {  
   // Creates a pid task and adds it to the analysis manager
   // Get the pointer to the existing analysis manager via the static
@@ -85,6 +85,10 @@ AliAnalysisTaskLambdaProtonCVE* AddTaskLambdaProtonCVE(
       fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/efficiencyBothpol.root","READ");
       fListNUE = dynamic_cast <TList*> (fNUEFile->Get("fMcEffiHij"));
     }
+    if (period.EqualTo("LHC18q")) {
+      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiencyBothpol18qnew.root","READ");
+      fListNUE = dynamic_cast <TList*> (fNUEFile->Get("fMcEffiHij"));
+    }
     if(fListNUE) {
       task->SetListForNUE(fListNUE);
       std::cout<<"================  NUE List Set ================="<<std::endl;
@@ -93,12 +97,16 @@ AliAnalysisTaskLambdaProtonCVE* AddTaskLambdaProtonCVE(
 
   if (doNUA) {
     if (period.EqualTo("LHC10h")) {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC10h/10hNUAFB1.root","READ");
-      fListNUA = dynamic_cast <TList*> (fNUAFile->Get("10hListNUAFB1"));
+      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC10h/10hNUAFB768.root","READ");
+      fListNUA = dynamic_cast <TList*> (fNUAFile->Get("10hListNUA"));
     }
     if (period.EqualTo("LHC15o")) {
       fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root","READ");
       fListNUA = dynamic_cast <TList*> (fNUAFile->Get("15oListNUA"));
+    }
+    if (period.EqualTo("LHC18q")) {
+      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root","READ");
+      fListNUA = dynamic_cast <TList*> (fNUAFile->Get("fNUA_ChPosChNeg"));
     }
     if(fListNUA) {
       task->SetListForNUA(fListNUA);
@@ -114,6 +122,10 @@ AliAnalysisTaskLambdaProtonCVE* AddTaskLambdaProtonCVE(
     if (period.EqualTo("LHC15o")) {
       fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile.root","READ");
       fVZEROCalibList = dynamic_cast <TList*> (fVZEROCalibFile->Get("VZEROCalibList"));
+    }
+    if (period.EqualTo("LHC18q")) {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibSpq2V0C18qP3.root","READ");
+      fVZEROCalibList = dynamic_cast <TList*> (fVZEROCalibFile->Get("fWgtsV0ZDC"));
     }
     if(fVZEROCalibList) {
       task->SetListForVZEROCalib(fVZEROCalibList);
@@ -144,9 +156,9 @@ AliAnalysisTaskLambdaProtonCVE* AddTaskLambdaProtonCVE(
     AliAnalysisDataContainer* cinput  = mgr->GetCommonInputContainer();
     TString outputFileName = mgr->GetCommonFileName();
     cout<<"outputfileName::::==========:::"<<outputFileName<<endl;
-    AliAnalysisDataContainer* coutput = mgr->CreateContainer("output", TList::Class(), 
+    AliAnalysisDataContainer* coutput = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), 
                                                              AliAnalysisManager::kOutputContainer,
-                                                             outputFileName.Data());
+                                                             Form("%s:%s", outputFileName.Data(), uniqueID.Data()));
     mgr->ConnectInput (task, 0, cinput);
     mgr->ConnectOutput(task, 1, coutput);
 
