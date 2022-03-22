@@ -22,12 +22,6 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/EVGEN
-                    ${AliRoot_SOURCE_DIR}/LHAPDF/base
-                    ${AliRoot_SOURCE_DIR}/PYTHIA6/AliPythia6
-                    ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
-                    ${AliRoot_SOURCE_DIR}/PYTHIA8/pythia8/include/Pythia8
-                    ${AliRoot_SOURCE_DIR}/PYTHIA8/pythia8/include
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
@@ -139,7 +133,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGLFresonances PWGHFvertexingHF EVGEN pythia8 AliPythia8)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGLFresonances PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies
