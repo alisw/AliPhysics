@@ -26,6 +26,7 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
     fIsMC(false),
     fIsMCtruth(false),
     fdoFDpairing(false),
+    fDOpd(false),
     fisIncludeSomeProtons(false),
     fisPions(false),
     fdoSideband(false),
@@ -73,13 +74,14 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
 }
 
 AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd(
-  const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing)
+  const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing, bool DOpd)
   : AliAnalysisTaskSE(name),
     fisLightWeight(false),
     fTrackBufferSize(2000),
     fIsMC(isMC),
     fIsMCtruth(isMCtruth),
     fdoFDpairing(doFDpairing),
+    fDOpd(DOpd),
     fisIncludeSomeProtons(isIncludeSomeProtons),
     fisPions(isPions),
     fdoSideband(false),
@@ -596,7 +598,8 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
 
         //FILL kaons and deuterons unless it is MCtruth:
         if(!fIsMCtruth){
-         if(IsKaon) FillKaon(fTrack);
+         if(IsKaon&&!fDOpd) FillKaon(fTrack);
+         if(IsProton&&fDOpd) FillKaon(fTrack);
          if(IsDeuteron) FillDeuteron(fTrack);
          if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.03) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
         }
