@@ -46,12 +46,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void SetEtaGap(double eta) { fEtaGap = eta; }
     void TurnOffPileup(bool off) { fPileupOff = off; }
     void SetPileupCut(double cut) { fPUcut = cut; }
-    void SetPtRange(double ptmin, double ptmax) { fPtMin = ptmin; fPtMax = ptmax; }
     void SetEventWeight(unsigned int weight) { fEventWeight = weight; }
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
     void SetUseRecNchForMc(bool userec) { fUseRecNchForMC = userec; }
     void SetUseNch(bool usench) { fUseNch = usench; }
     void SetEtaNch(double etanch) { fEtaNch = etanch; }
+    void SetNBootstrap(double nboot) { fNbootstrap = nboot; }
   protected:
     AliEventCuts            fEventCuts;
   private:
@@ -80,8 +80,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     double                  fEta;
     double                  fEtaNch;
     double                  fEtaGap;
-    double                  fPtMin;
-    double                  fPtMax;
     double                  fPUcut;
     TRandom*                fRndm;
     int                     fNbootstrap; 
@@ -116,9 +114,9 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool AcceptMCEvent(AliVEvent* inev);
     bool CheckTrigger(Double_t lCent);
     double getCentrality();
-    void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
+    void FillPtCorr(AliAODEvent* ev, const double &l_Cent, double *vtxXYZ);
     void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
-    int GetNTracks(AliVEvent* ev, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
+    int GetNTracks(AliAODEvent* ev, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
     double *GetBinsFromAxis(TAxis *inax);
     
   ClassDef(AliAnalysisTaskPtCorr,1);

@@ -234,6 +234,12 @@ void AliPtContainer::FillSkew(const vector<vector<double>> &inarr, const double 
     double lwpt = inarr[1][0];
     double lwskew = lwpt*lwpt*lwpt - 3*inarr[2][0]*inarr[1][0]+2*inarr[3][0];
     if(lwskew==0 || lwpt==0) return;
+    /* Full expression
+    <skew> =  <(w1p1)^3-3*w2p2*wp + 2*w3p3>
+    -3[pt]*   <(w1p1)^2*w1p0 - 2*w2p1*w1p1 + 2*w3p2 - w2p2*w1p0>
+    +3[pt]^2* <w1p1*(w1p0)^2 - 2*w2p1*w1p0 + 2*w3p1 - w1p1*w2p0>
+    -[pt]^3*  <(w1p0)^3-3*(w2p0)*(w1p0)+2*w3p0>   ----------> Cancelled by division of the weight
+    */
     ((AliProfileBS*)fTermList->At(0))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][1] - 3*inarr[2][2]*inarr[1][1]+2*inarr[3][3])/lwskew,(fEventWeight==PtSpace::kOne)?1.0:lwskew,rn);
     ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][0]-2*inarr[2][1]*inarr[1][1]+2*inarr[3][2]-inarr[2][2]*inarr[1][0])/lwskew,(fEventWeight==PtSpace::kOne)?1.0:lwskew,rn);
     ((AliProfileBS*)fTermList->At(2))->FillProfile(lMult,(inarr[1][1]*inarr[1][0]*inarr[1][0]-2*inarr[2][1]*inarr[1][0]+2*inarr[3][1]-inarr[1][1]*inarr[2][0])/lwskew,(fEventWeight==PtSpace::kOne)?1.0:lwskew,rn);
@@ -245,6 +251,13 @@ void AliPtContainer::FillKurtosis(const vector<vector<double>> &inarr, const dou
     double lwpt = inarr[1][0];
     double lwkur = lwpt*lwpt*lwpt*lwpt-6*inarr[2][0]*lwpt*lwpt+8*lwpt*inarr[3][0]+3*inarr[2][0]*inarr[2][0]-6*inarr[4][0];
     if(lwkur==0 || lwpt==0) return;
+    /* Full expression
+    <kurtosis> = <(w1p1)^4-4*w3p3*w1p1
+    -4
+    +
+    -
+    +[pt]^4*     <(w1p0)^4-
+    */
     ((AliProfileBS*)fTermList->At(0))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][1]*inarr[1][1]-6*inarr[2][2]*inarr[1][1]*inarr[1][1]
                                                     +3*inarr[2][2]*inarr[2][2]+8*inarr[1][1]*inarr[3][3]-6*inarr[4][4])/lwkur,(fEventWeight==PtSpace::kOne)?1.0:lwkur,rn);
     ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][1]*lwpt-3*inarr[2][2]*inarr[1][1]*lwpt
