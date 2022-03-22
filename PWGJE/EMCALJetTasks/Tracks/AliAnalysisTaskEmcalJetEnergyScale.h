@@ -182,6 +182,7 @@ public:
 
 protected:
   virtual void UserCreateOutputObjects();
+  virtual void UserRunBeforeEventSelection();
   virtual Bool_t Run(); 
   virtual Bool_t CheckMCOutliers();
   bool IsSelectEmcalTriggers(const TString &triggerstring) const;
