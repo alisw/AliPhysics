@@ -24,6 +24,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 
+
 ClassImp(AliAnalysisTaskTritonVsMultiplicity_XeXe)
 
 //_________________________________________________________________________________________________________________________________________________________________________________________________
@@ -34,6 +35,7 @@ fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
 fOutputList(NULL),
+reducedTree_Triton(NULL),
 //fQAList(NULL),
 fCentralityMin(0),
 fCentralityMax(0),
@@ -101,6 +103,7 @@ fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
 fOutputList(NULL),
+reducedTree_Triton(NULL),
 //fQAList(NULL),
 fCentralityMin(0),
 fCentralityMax(0),
@@ -182,12 +185,9 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserCreateOutputObjects()
 {
     fOutputList = new TList();
     fOutputList -> SetOwner();
-
     //fQAList = new TList();
     //fQAList -> SetOwner();
-
     //fAODeventCuts.AddQAplotsToList(fQAList);//Add event selection QA plots
-
 
     //Number of Events
     histoNumberOfEvents = new TH1F("histoNumberOfEvents","Events after selection steps",10,0,10);
@@ -332,110 +332,110 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
         if ( !track ) continue;
         if ( PassedTrackQualityCutsNoDCA (track)) {
 
-        if (IsCleanTritonCandidate(track))  {
-            if (track->Charge()>0) histoDCAxyTriton_vs_pt     -> Fill (track->Pt(),GetDCAxy(track));
-            if (track->Charge()<0) histoDCAxyAntiTriton_vs_pt -> Fill (track->Pt(),GetDCAxy(track));
-        }
+            if (IsCleanTritonCandidate(track))  {
+                if (track->Charge()>0) histoDCAxyTriton_vs_pt     -> Fill (track->Pt(),GetDCAxy(track));
+                if (track->Charge()<0) histoDCAxyAntiTriton_vs_pt -> Fill (track->Pt(),GetDCAxy(track));
+            }
 
         }
 
         if ( PassedTrackQualityCuts (track)) {
 
 
-        //Variables
-        Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kTriton);
-        Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kTriton);
+            //Variables
+            Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kTriton);
+            Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kTriton);
 
 
-        //TPC Signal vs. pT
+            //TPC Signal vs. pT
 
 
-      	if (track->Charge()>0) histoNsigmaTPCtriton_vs_p_notof	    -> Fill (track->P(),nsigmaTPC);
-        if (track->Charge()<0) histoNsigmaTPCantitriton_vs_p_notof -> Fill (track->P(),nsigmaTPC);
+            if (track->Charge()>0) histoNsigmaTPCtriton_vs_p_notof	    -> Fill (track->P(),nsigmaTPC);
+            if (track->Charge()<0) histoNsigmaTPCantitriton_vs_p_notof -> Fill (track->P(),nsigmaTPC);
 
 
-        if (PassedTOFSelection(track))  {
+            if (PassedTOFSelection(track))  {
 
-            if (track->Charge()>0) histoNsigmaTPCtriton_vs_pt     -> Fill (track->Pt(),nsigmaTPC);
-            if (track->Charge()<0) histoNsigmaTPCantitriton_vs_pt -> Fill (track->Pt(),nsigmaTPC);
-	        if (track->Charge()>0) histoNsigmaTPCtriton_vs_p      -> Fill (track->P(),nsigmaTPC);
-            if (track->Charge()<0) histoNsigmaTPCantitriton_vs_p  -> Fill (track->P(),nsigmaTPC);
+                if (track->Charge()>0) histoNsigmaTPCtriton_vs_pt     -> Fill (track->Pt(),nsigmaTPC);
+                if (track->Charge()<0) histoNsigmaTPCantitriton_vs_pt -> Fill (track->Pt(),nsigmaTPC);
+                if (track->Charge()>0) histoNsigmaTPCtriton_vs_p      -> Fill (track->P(),nsigmaTPC);
+                if (track->Charge()<0) histoNsigmaTPCantitriton_vs_p  -> Fill (track->P(),nsigmaTPC);
 
-            if (track->Charge()>0) histoNsigmaTPCtriton_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTPC(track));
-            if (track->Charge()<0) histoNsigmaTPCantitriton_vs_pt_centered -> Fill (track->Pt(),Centered_nsigmaTPC(track));
-
-
-        }
-
-        //TOF Signal vs. pT
-        if (PassedTPCSelection(track))  {
-
-            if (track->Charge()>0) histoNsigmaTOFtriton_vs_pt     -> Fill (track->Pt(),nsigmaTOF);
-            if (track->Charge()<0) histoNsigmaTOFantitriton_vs_pt -> Fill (track->Pt(),nsigmaTOF);
-            if (track->Charge()>0) histoNsigmaTOFtriton_vs_p      -> Fill (track->P(),nsigmaTOF);
-            if (track->Charge()<0) histoNsigmaTOFantitriton_vs_p  -> Fill (track->P(),nsigmaTOF);
+                if (track->Charge()>0) histoNsigmaTPCtriton_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTPC(track));
+                if (track->Charge()<0) histoNsigmaTPCantitriton_vs_pt_centered -> Fill (track->Pt(),Centered_nsigmaTPC(track));
 
 
-            if (track->Charge()>0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFtriton_vs_pt_trd     -> Fill (track->Pt(),nsigmaTOF);
-            if (track->Charge()<0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFantitriton_vs_pt_trd -> Fill (track->Pt(),nsigmaTOF);
+            }
 
-            if (track->Charge()>0) histoNsigmaTOFtriton_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTOF(track));
-            if (track->Charge()<0) histoNsigmaTOFantitriton_vs_pt_centered -> Fill (track->Pt(),Centered_nsigmaTOF(track));
+            //TOF Signal vs. pT
+            if (PassedTPCSelection(track))  {
+
+                if (track->Charge()>0) histoNsigmaTOFtriton_vs_pt     -> Fill (track->Pt(),nsigmaTOF);
+                if (track->Charge()<0) histoNsigmaTOFantitriton_vs_pt -> Fill (track->Pt(),nsigmaTOF);
+                if (track->Charge()>0) histoNsigmaTOFtriton_vs_p      -> Fill (track->P(),nsigmaTOF);
+                if (track->Charge()<0) histoNsigmaTOFantitriton_vs_p  -> Fill (track->P(),nsigmaTOF);
+
+
+                if (track->Charge()>0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFtriton_vs_pt_trd     -> Fill (track->Pt(),nsigmaTOF);
+                if (track->Charge()<0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFantitriton_vs_pt_trd -> Fill (track->Pt(),nsigmaTOF);
+
+                if (track->Charge()>0) histoNsigmaTOFtriton_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTOF(track));
+                if (track->Charge()<0) histoNsigmaTOFantitriton_vs_pt_centered -> Fill (track->Pt(),Centered_nsigmaTOF(track));
 
 
 
-        }
+            }
         }
 
         if (IsTritonCandidate(track)){
 
-        pt = track -> Pt();
-        p = track -> P();
+            pt = track -> Pt();
+            p = track -> P();
 
-        q  = (Int_t) track -> Charge();
-        eta = track -> Eta();
+            q  = (Int_t) track -> Charge();
+            eta = track -> Eta();
 
-        //Rapidity Calculation
-        Double_t m  = AliPID::ParticleMass(AliPID::kTriton);
-        Double_t px = track -> Px();
-        Double_t py = track -> Py();
-        Double_t pz = track -> Pz();
-        Double_t E = TMath::Sqrt(m*m + px*px + py*py + pz*pz);
-        TLorentzVector P (px,py,pz,E);
-        y = P.Rapidity();
+            //Rapidity Calculation
+            Double_t m  = AliPID::ParticleMass(AliPID::kTriton);
+            Double_t px = track -> Px();
+            Double_t py = track -> Py();
+            Double_t pz = track -> Pz();
+            Double_t E = TMath::Sqrt(m*m + px*px + py*py + pz*pz);
+            TLorentzVector P (px,py,pz,E);
+            y = P.Rapidity();
 
-        //DCA
-        dcaz  = GetDCAz  (track);
-        dcaxy = GetDCAxy (track);
+            //DCA
+            dcaz  = GetDCAz  (track);
+            dcaxy = GetDCAxy (track);
 
-        nTPC_Clusters = track->GetTPCNcls();
-        nTRD_Clusters = track->GetTRDncls();
-        nITS_Clusters = track->GetITSNcls();
+            nTPC_Clusters = track->GetTPCNcls();
+            nTRD_Clusters = track->GetTRDncls();
+            nITS_Clusters = track->GetITSNcls();
 
-        nTPC_FindableClusters = track->GetTPCNclsF();
-        nTPC_CrossedRows = track->GetTPCCrossedRows();
-        nTPC_Clusters_dEdx = track -> GetTPCsignalN();
+            nTPC_FindableClusters = track->GetTPCNclsF();
+            nTPC_CrossedRows = track->GetTPCCrossedRows();
+            nTPC_Clusters_dEdx = track -> GetTPCsignalN();
 
-        HasPointOnITSLayer0 = track->HasPointOnITSLayer(0);
-        HasPointOnITSLayer1 = track->HasPointOnITSLayer(1);
+            HasPointOnITSLayer0 = track->HasPointOnITSLayer(0);
+            HasPointOnITSLayer1 = track->HasPointOnITSLayer(1);
 
-        HasSharedPointOnITSLayer0 = track->HasSharedPointOnITSLayer(0);
-        HasSharedPointOnITSLayer1 = track->HasSharedPointOnITSLayer(1);
+            HasSharedPointOnITSLayer0 = track->HasSharedPointOnITSLayer(0);
+            HasSharedPointOnITSLayer1 = track->HasSharedPointOnITSLayer(1);
 
-        chi2_TPC = track -> GetTPCchi2();//    check -> seems to be 0
-        chi2_ITS = track -> GetITSchi2();//    check
+            chi2_TPC = track -> GetTPCchi2();//    check -> seems to be 0
+            chi2_ITS = track -> GetITSchi2();//    check
 
-        ITSsignal = track->GetITSsignal();
-        TPCsignal = track->GetTPCsignal();
-        TOFsignal = track->GetTOFsignal();
-        TRDsignal = track->GetTRDsignal();
+            ITSsignal = track->GetITSsignal();
+            TPCsignal = track->GetTPCsignal();
+            TOFsignal = track->GetTOFsignal();
+            TRDsignal = track->GetTRDsignal();
 
-        nSigmaTPC_Trit = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
-        nSigmaTOF_Trit = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
-        nSigmaTRD_Trit = fPIDResponse -> NumberOfSigmasTRD(track,AliPID::kTriton);
+            nSigmaTPC_Trit = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
+            nSigmaTOF_Trit = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
+            nSigmaTRD_Trit = fPIDResponse -> NumberOfSigmasTRD(track,AliPID::kTriton);
 
-        reducedTree_Triton -> Fill();
-    }
+            reducedTree_Triton -> Fill();
+        }
 
     }
 
@@ -482,6 +482,7 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::GetInputEvent ()  {
 
     if ( vertex->GetNContributors() < fNumberVertexContributorsMin ) return false;
     histoNumberOfEvents -> Fill(6.5);
+
     multPercentile_V0M  = multiplicitySelection->GetMultiplicityPercentile("V0M");
 
     return true;
@@ -642,7 +643,7 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::PassedTOFSelection (AliAODTrack
 Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::PassedTPCSelection (AliAODTrack *track)  {
 
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kTriton);
-    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax || (track->GetStatus()&AliAODTrack::kTOFout)!=0) return false;
+    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax) return false;
 
     //TPC-TOF Matching
 //   if ((track->GetStatus()&AliAODTrack::kTOFout)==0) hasTOFhit=0;//Track with no TOF hit

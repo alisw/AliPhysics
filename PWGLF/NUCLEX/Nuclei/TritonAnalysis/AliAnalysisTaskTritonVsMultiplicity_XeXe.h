@@ -1,4 +1,3 @@
-
 #ifndef AliAnalysisTaskTritonVsMultiplicity_XeXe_cxx
 #define AliAnalysisTaskTritonVsMultiplicity_XeXe_cxx
 
@@ -169,8 +168,6 @@ private:
 
     TH2F *histoNsigmaTPCtriton_vs_p_notof;//!
     TH2F *histoNsigmaTPCantitriton_vs_p_notof;//!
-
-
 
     //Reduced Trees
     TTree *reducedTree_Triton;//!
