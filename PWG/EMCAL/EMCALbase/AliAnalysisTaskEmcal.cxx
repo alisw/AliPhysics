@@ -711,6 +711,8 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     fHistEvents->Fill(fPtHardBinGlobal);
   }
 
+  UserRunBeforeEventSelection();
+
   if (IsEventSelected()) {
     if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
   }
