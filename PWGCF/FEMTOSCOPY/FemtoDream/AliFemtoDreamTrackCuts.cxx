@@ -654,6 +654,7 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
    float TOFp = fabs(Track->GetnSigmaTOF((int) (AliPID::kProton)));
    float COMBp = sqrt(TPCp*TPCp+TOFp*TOFp);
    float TOFd = fabs(Track->GetnSigmaTOF((int) (AliPID::kDeuteron)));
+   float TOFd_sign = Track->GetnSigmaTOF((int) (AliPID::kDeuteron));
    float COMBd = sqrt(TPCd*TPCd+TOFd*TOFd);
   
    if(fIsKaon){ //Kaon TOF selection
@@ -675,6 +676,10 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
     if( TOFk<5 ) passTOF = false;
     if( TOFp<5 ) passTOF = false;
     if( TPCpi_sign<3 ) passTOF = false; // use also TPCpi to exclude for TOF selection
+    // 22-March-2022 for p-d crosschecks:
+    if(p<1.4) passTOF = false;
+    if( TOFd_sign<-3 ) passTOF = true; 
+    if( TOFd_sign>5 ) passTOF = true; 
    }
   }//TOFyes
 
@@ -696,6 +701,9 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
   }else{ // Deuteron TPC selection
    if( TPCd<fcutTPCkd ) passTPC = true; // std fcutTPCkd = 3 
    if( TPCe_sign<3 ) passTPC = false; // exclude tpc e (effect only for p>~1.5GeV)
+   // 22-March-2022 for p-d crosschecks:
+   if(p>=1.4) passTPC = false;
+   if( TPCe<6 ) passTPC = false; 
   }
  }else{
   passTPC=false;

@@ -23,6 +23,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   // ProtonCut = 0 // protons
   // ProtonCut = 1 // pions
+  // ProtonCut = 2 // perform p-d analysis (substitute kaons in tree for protons)
 
   // DoFDpairing = 0 // no FD pairing
   // DoFDpairing = 1 // YES do FD pairing
@@ -39,6 +40,8 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   //add a boolean when running with pions since we don't need all of them:
   bool isPions = false;
   if(ProtonCut==1) isPions = true;
+  bool DOpd = false;
+  if(ProtonCut==2) DOpd = true;
 
 
   const char fullBlastQA = true; //moved from arguments
@@ -103,7 +106,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   TrackCutsDeuteron->SetCutCharge(1);
   TrackCutsDeuteron->SetFilterBit(128);
   if(DeuteronCut==0){ // cuts by Oton
-   TrackCutsDeuteron->SetPIDkd(false);
+   TrackCutsDeuteron->SetPIDkd(false,false,3,3);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
   }else if(DeuteronCut==2){ // Open cuts for syst by FemtoDream
@@ -132,7 +135,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   TrackCutsAntiDeuteron->SetCutCharge(-1);
   TrackCutsAntiDeuteron->SetFilterBit(128);
   if(DeuteronCut==0){ // cuts by Oton
-   TrackCutsAntiDeuteron->SetPIDkd(false);
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
   }else if(DeuteronCut==2){ // Open cuts for syst by FemtoDream
@@ -156,7 +159,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   //protons
   AliFemtoDreamTrackCuts *TrackCutsProton;
-  if(ProtonCut==0){ //use protons
+  if(ProtonCut==0||ProtonCut==2){ //use protons
    TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   }
   if(ProtonCut==1){ //use pions
@@ -178,7 +181,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   TrackCutsProton->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *TrackCutsAntiProton;
-  if(ProtonCut==0){ //use protons
+  if(ProtonCut==0||ProtonCut==2){ //use protons
    TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   }
   if(ProtonCut==1){ //use pions
@@ -204,7 +207,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   std::vector<int> PDGParticles;
   PDGParticles.push_back(321);//k
   PDGParticles.push_back(321);//k
-  if(ProtonCut==0){ //use protons
+  if(ProtonCut==0||ProtonCut==2){ //use protons
    PDGParticles.push_back(2212);
    PDGParticles.push_back(2212);
   }
@@ -377,7 +380,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   //Define here the analysis task
   AliAnalysisTaskOtonkd *task =
-   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, isIncludeSomeProtons, isPions, doFDpairing);
+   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, isIncludeSomeProtons, isPions, doFDpairing, DOpd);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
