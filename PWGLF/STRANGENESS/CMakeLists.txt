@@ -22,6 +22,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB

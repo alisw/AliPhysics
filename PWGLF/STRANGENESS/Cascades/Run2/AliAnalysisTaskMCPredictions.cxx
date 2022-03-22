@@ -88,6 +88,7 @@ class AliAODv0;
 #include "AliGenHepMCEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliVertexingHFUtils.h"
+//#include "AliPythia8.h"
 
 using std::cout;
 using std::endl;
@@ -177,6 +178,7 @@ fHistMixed3d2pcXiBKPlus(0),
 fkDDRebin(1),
 fkMaxMultDDV0M(fLargeMultRange),
 fkMaxMultDDSPD(fLargeMultRange),
+fkNSpeciesDD(16),
 fHistV0MvsSPD(0x0),
 fHistDDNch(0x0),
 fHistDDNMPI(0x0),
@@ -291,6 +293,7 @@ fHistMixed3d2pcXiBKPlus(0),
 fkDDRebin(lRebinFactor),
 fkMaxMultDDV0M(fLargeMultRange),
 fkMaxMultDDSPD(fLargeMultRange),
+fkNSpeciesDD(16),
 fHistV0MvsSPD(0x0),
 fHistDDNch(0x0),
 fHistDDNMPI(0x0),
@@ -753,7 +756,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   Double_t lLowNchBoundDDSPD  = -0.5;
   Double_t lHighNchBoundDDSPD = -0.5 + ((double)(fkMaxMultDDSPD));
   
-  for(Int_t ih=0; ih<76; ih++){
+  for(Int_t ih=0; ih<fkNSpeciesDD; ih++){
     if(! fHistDDYield[ih] ) {
       fHistDDYield[ih] = new TH2D(Form("fHistDDYield_%s",lPartNames[ih].Data()), "",
                                   lNNchBinsDDSPD,lLowNchBoundDDSPD,lHighNchBoundDDSPD,
@@ -761,7 +764,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
       fListHist->Add(fHistDDYield[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
+  for(Int_t ih=0; ih<fkNSpeciesDD; ih++){
     if(! fHistDDPt[ih] ) {
       fHistDDPt[ih] = new TH2D(Form("fHistDDPt_%s",lPartNames[ih].Data()), "",
                                lNNchBinsDDSPD,lLowNchBoundDDSPD,lHighNchBoundDDSPD,
@@ -867,13 +870,25 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   Int_t fMC_NColl = -1;
   Float_t fMC_b = -1;
   Int_t fMC_NMPI = -1;
-  Float_t fMC_PtHard = -1;
+  Float_t fMC_AvQ2 = -1;
   
   if (mcGenH->InheritsFrom(AliGenPythiaEventHeader::Class())){
     AliGenPythiaEventHeader *fMcPythiaHeader = dynamic_cast <AliGenPythiaEventHeader*> (mcGenH);
     if(fMcPythiaHeader){
       fMC_NMPI = fMcPythiaHeader->GetNMPI();
-      fMC_PtHard = fMcPythiaHeader->GetPtHard();
+      
+//      AliPythia8 *gAliPythiaObject = AliPythia8::Instance();
+//      if(gAliPythiaObject){
+//        Double_t lAverageQ2=0;
+//        for(Long_t iMPI=0; iMPI<gAliPythiaObject->Pythia8()->info.nMPI(); iMPI++){
+//          lAverageQ2 += gAliPythiaObject->Pythia8()->info.pTMPI(iMPI);
+//        }
+//        if( gAliPythiaObject->Pythia8()->info.nMPI() > 0 )
+//          lAverageQ2 /= gAliPythiaObject->Pythia8()->info.nMPI();
+//      }
+      
+      //alternative while AliPythia8 not viable
+      fMC_AvQ2 = fMcPythiaHeader->GetPtHard();
     }
   }
   
@@ -934,7 +949,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   if(fHistV0MvsSPD)     fHistV0MvsSPD       -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC);
   if(fHistDDNch)        fHistDDNch          -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, lNchEta5);
   if(fHistDDNMPI)       fHistDDNMPI         -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, fMC_NMPI);
-  if(fHistDDQ2)         fHistDDQ2           -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, fMC_PtHard);
+  if(fHistDDQ2)         fHistDDQ2           -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, fMC_AvQ2);
   
   //------------------------------------------------
   // Fill Spectra as Needed
