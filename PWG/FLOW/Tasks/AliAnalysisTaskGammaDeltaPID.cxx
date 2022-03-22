@@ -857,7 +857,6 @@ void AliAnalysisTaskGammaDeltaPID::UserCreateOutputObjects()
 void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
  
   //std::cout<<" Info:UserExec() called ..!!!\n";
-
   fAOD = dynamic_cast <AliAODEvent*> (InputEvent());
   fESD = dynamic_cast <AliESDEvent*> (InputEvent());
   if(!(fESD || fAOD)) {
@@ -1174,7 +1173,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   hV0CTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsiNV0C));
   hV0ATPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsiNV0A));
 
- 
   ///--------> Get ZDC Event Planes
   Double_t fQxZNCC=0, fQyZNCC=0, fQxZNCA=0, fQyZNCA=0; 
   Double_t fPsiZNCC = 0., fPsiZNCA = 0., fPsiZNCCA = 0; // fPsiZNCCA combine ZNCC and ZNCA
@@ -1188,6 +1186,9 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     const Double_t *fZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
     const Double_t *fZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
 	
+	if((fZNATowerRawAOD[0]<0) || (fZNATowerRawAOD[1]<0) || (fZNATowerRawAOD[2]<0) || (fZNATowerRawAOD[3]<0) || (fZNATowerRawAOD[4] < 0)) {bRecenterFailOrNot = kFALSE; return;}
+	if((fZNCTowerRawAOD[0]<0) || (fZNCTowerRawAOD[1]<0) || (fZNCTowerRawAOD[2]<0) || (fZNCTowerRawAOD[3]<0) || (fZNCTowerRawAOD[4] < 0)) {bRecenterFailOrNot = kFALSE; return;}
+	
 	Double_t towZNCraw1GainEq = 0, towZNCraw2GainEq = 0, towZNCraw3GainEq = 0, towZNCraw4GainEq = 0;
 	towZNCraw1GainEq = fZNCTowerRawAOD[1]*fHZDCCparameters->GetBinContent(1);
 	towZNCraw2GainEq = fZNCTowerRawAOD[2]*fHZDCCparameters->GetBinContent(2);
@@ -1200,7 +1201,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	towZNAraw3GainEq = fZNATowerRawAOD[3]*fHZDCAparameters->GetBinContent(3);
 	towZNAraw4GainEq = fZNATowerRawAOD[4]*fHZDCAparameters->GetBinContent(4);
 	
-	
 	const Double_t xZDCC[4] = {-1, 1, -1, 1}; // directional vector
     const Double_t yZDCC[4] = {-1, -1, 1, 1};
     const Double_t xZDCA[4] = {1, -1, 1, -1};
@@ -1212,12 +1212,12 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	
     Double_t EZNC = 0, wZNC = 0, denZNC = 0, numXZNC = 0, numYZNC = 0;
     Double_t EZNA = 0, wZNA = 0, denZNA = 0, numXZNA = 0, numYZNA = 0; 
-    
+
     for(Int_t i=0; i<4; i++){
 		// ZNC part
         // get energy
         EZNC = towZNC[i+1];
-
+        
         // build ZDCC centroid
         wZNC = TMath::Max(0., 4.0 + TMath::Log(towZNC[i+1]/fZNCTowerRawAOD[0]));
         numXZNC += xZDCC[i]*wZNC;
@@ -1227,7 +1227,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
         // ZNA part
         // get energy
         EZNA = towZNA[i+1];
-        
+
         // build ZDCA centroid
         wZNA = TMath::Max(0., 4.0 + TMath::Log(towZNA[i+1]/fZNATowerRawAOD[0]));
         numXZNA += xZDCA[i]*wZNA;
@@ -1236,7 +1236,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
         
 	}
 	
-  
 	bRecenterFailOrNot = kTRUE;
 	
 	if (denZNC==0) {bRecenterFailOrNot = kFALSE; return;}
@@ -1252,7 +1251,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	
 	Double_t ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(5)*centrality + fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9);
 	Double_t ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(10)*centrality + fHZDCAparameters->GetBinContent(11)*pVtxX + fHZDCAparameters->GetBinContent(12)*pVtxY + fHZDCAparameters->GetBinContent(13)*pVtxZ + fHZDCAparameters->GetBinContent(14);
-	
 	
 	fQxZNCC = ZDCCxPosFromLogWeight - ZDCCAvgxPosFromVtxFit;
 	fQyZNCC = ZDCCyPosFromLogWeight - ZDCCAvgyPosFromVtxFit;
@@ -1307,7 +1305,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	hZDCCAPsivsV0CAPsi2->Fill((fPsiNV0A+fPsiNV0C)/2, fPsiZNCCAProj);
 	hZDCCAPsivsV0CPsi2->Fill(fPsiNV0C, fPsiZNCCAProj);
 	hZDCCAPsivsV0APsi2->Fill(fPsiNV0A, fPsiZNCCAProj);
-
   }
   
   
@@ -1321,7 +1318,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     PostData(1,fListHist);
     return;     //Just fill QAs and get out..
   }
-
 
   Double_t fSelectedV0PsiN = 0;
   Double_t fSelectedV0Psi3 = 0;
@@ -1366,7 +1362,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     bUseV0EventPlane = kFALSE;
   }
   
-
 
 
 
@@ -1433,7 +1428,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   vector<Double_t> vecNUAWeightPID;  //Charge
   vector<Double_t> vecNUEWeightPID;  //Charge
   Bool_t isItPiontrk1 = kFALSE, isItKaontrk1 = kFALSE, isItProttrk1 = kFALSE;
-
 
   
   ///----------> Starting Analysis track Loop -----------
@@ -1808,7 +1802,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     }//-----> i-track => FB is validated.    
   }///-----> i-track loop Ends <--------
  
-
 
 
   
