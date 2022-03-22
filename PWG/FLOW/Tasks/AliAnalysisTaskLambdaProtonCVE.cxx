@@ -75,7 +75,6 @@ using std::endl;
 ClassImp(AliAnalysisTaskLambdaProtonCVE);
 
 //---------------------------------------------------
-//TODO
 AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE() :
   AliAnalysisTaskSE(),
   fDebug(0),
@@ -90,10 +89,10 @@ AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE() :
   IsQAZDC(false),
   IsQATPC(false),
   fPlanePtMin(0.2),
-  fPlanePtMax(5.0),
+  fPlanePtMax(2.0),
   fEtaGapPos( 0.1),
   fEtaGapNeg(-0.1),
-  fFilterBit(1),
+  fFilterBit(768),
   fNclsCut(70),
   fChi2Max(4.0),
   fChi2Min(0.1),
@@ -133,6 +132,7 @@ AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE() :
   fAOD(nullptr),         //! aod Event
   fPIDResponse(nullptr), //! PID Handler
   fUtils(nullptr),       //! Event Selection Options
+  runNumList(0),
   fRunNum(-999), // runnumber
   fOldRunNum(-999), // old runnumber
   fRunNumBin(-999), // runnumer bin, 10:139510..., 11:170387..., 15HIR:246994...
@@ -192,6 +192,7 @@ AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE() :
   contQyncm(nullptr),
   contQxnam(nullptr),
   contQynam(nullptr),
+  fHCorrectV0ChWeghts(nullptr),
   fListZDCCalib(nullptr),
   tree(nullptr),
   fProfileForZNCGE(nullptr),
@@ -372,10 +373,10 @@ AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE(const char *name)
   IsQAZDC(false),
   IsQATPC(false),
   fPlanePtMin(0.2),
-  fPlanePtMax(5.0),
+  fPlanePtMax(2.0),
   fEtaGapPos( 0.1),
   fEtaGapNeg(-0.1),
-  fFilterBit(1),
+  fFilterBit(768),
   fNclsCut(70),
   fChi2Max(4.0),
   fChi2Min(0.1),
@@ -415,6 +416,7 @@ AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE(const char *name)
   fAOD(nullptr),         //! aod Event
   fPIDResponse(nullptr), //! PID Handler
   fUtils(nullptr),       //! Event Selection Options
+  runNumList(0),
   fRunNum(-999), // runnumber
   fOldRunNum(-999), // old runnumber
   fRunNumBin(-999), // runnumer bin, 10:139510..., 11:170387..., 15HIR:246994...
@@ -474,6 +476,7 @@ AliAnalysisTaskLambdaProtonCVE::AliAnalysisTaskLambdaProtonCVE(const char *name)
   contQyncm(nullptr),
   contQxnam(nullptr),
   contQynam(nullptr),
+  fHCorrectV0ChWeghts(nullptr),
   fListZDCCalib(nullptr),
   tree(nullptr),
   fProfileForZNCGE(nullptr),
@@ -666,45 +669,63 @@ void AliAnalysisTaskLambdaProtonCVE::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList -> SetName(GetName());
   fOutputList -> SetOwner(kTRUE);
-
   ////////////////////////
   // Run Number Info
   ////////////////////////
-  if (fPeriod.EqualTo("LHC10h")) {
-    TString runNumList[90]={
-      "139510","139507","139505","139503","139465","139438","139437","139360","139329","139328","139314","139310",
-      "139309","139173","139107","139105","139038","139037","139036","139029","139028","138872","138871","138870",
-      "138837","138732","138730","138666","138662","138653","138652","138638","138624","138621","138583","138582",
-      "138579","138578","138534","138469","138442","138439","138438","138396","138364","138275","138225","138201",
-      "138197","138192","138190","137848","137844","137752","137751","137724","137722","137718","137704","137693",
-      "137692","137691","137686","137685","137639","137638","137608","137595","137549","137546","137544","137541",
-      "137539","137531","137530","137443","137441","137440","137439","137434","137432","137431","137430","137243",
-      "137236","137235","137232","137231","137162","137161"};
-    fHistRunNumBin = new TH1I("runNumBin","",100,0,100);
-    for (int i=0; i<90; ++i) {
-      fHistRunNumBin->GetXaxis()->SetBinLabel(i+1,runNumList[i].Data());
-    }
-    fOutputList->Add(fHistRunNumBin);
-  } else if (fPeriod.EqualTo("LHC15o")) {
-    TString runNumList[138]={
-     "246994","246991","246989","246984","246982","246948","246945","246928","246871","246870","246867","246865",
-     "246864","246859","246858","246851","246847","246846","246845","246844","246810","246809","246808","246807",
-     "246805","246804","246766","246765","246763","246760","246759","246758","246757","246751","246750","246434",
-     "246431","246424","246392","246391","246276","246275","246272","246271","246225","246222","246217","246185",
-     "246182","246181","246180","246178","246153","246152","246151","246148","246115","246113","246089","246087",
-     "246053","246052","246049","246048","246042","246037","246036","246012","246003","246001","245963","245954",
-     "245952","245949","245923","245833","245831","245829","245793","245785","245775","245766","245759","245752",
-     "245731","245729","245705","245702","245692","245683","245554","245545","245544","245543","245542","245540",
-     "245535","245507","245505","245504","245501","245497","245496","245454","245453","245450","245446","245441",
-     "245411","245410","245409","245407","245401","245397","245396","245353","245349","245347","245346","245345",
-     "245343","245259","245233","245232","245231","245152","245151","245146","245145","245068","245066","245064",
-     "244983","244982","244980","244975","244918","244917"};
-    fHistRunNumBin = new TH1I("runNumBin","",150,0,150);
-    for (int i=0; i<138; ++i) {
-      fHistRunNumBin->GetXaxis()->SetBinLabel(i+1,runNumList[i].Data());
-    }
-    fOutputList->Add(fHistRunNumBin);
-  }
+  TString runNumList10h[90] = {
+    "139510","139507","139505","139503","139465","139438","139437","139360","139329","139328","139314","139310",
+    "139309","139173","139107","139105","139038","139037","139036","139029","139028","138872","138871","138870",
+    "138837","138732","138730","138666","138662","138653","138652","138638","138624","138621","138583","138582",
+    "138579","138578","138534","138469","138442","138439","138438","138396","138364","138275","138225","138201",
+    "138197","138192","138190","137848","137844","137752","137751","137724","137722","137718","137704","137693",
+    "137692","137691","137686","137685","137639","137638","137608","137595","137549","137546","137544","137541",
+    "137539","137531","137530","137443","137441","137440","137439","137434","137432","137431","137430","137243",
+    "137236","137235","137232","137231","137162","137161"};
+  TString runNumList15o[138] = {
+    "246994","246991","246989","246984","246982","246948","246945","246928","246871","246870","246867","246865",
+    "246864","246859","246858","246851","246847","246846","246845","246844","246810","246809","246808","246807",
+    "246805","246804","246766","246765","246763","246760","246759","246758","246757","246751","246750","246434",
+    "246431","246424","246392","246391","246276","246275","246272","246271","246225","246222","246217","246185",
+    "246182","246181","246180","246178","246153","246152","246151","246148","246115","246113","246089","246087",
+    "246053","246052","246049","246048","246042","246037","246036","246012","246003","246001","245963","245954",
+    "245952","245949","245923","245833","245831","245829","245793","245785","245775","245766","245759","245752",
+    "245731","245729","245705","245702","245692","245683","245554","245545","245544","245543","245542","245540",
+    "245535","245507","245505","245504","245501","245497","245496","245454","245453","245450","245446","245441",
+    "245411","245410","245409","245407","245401","245397","245396","245353","245349","245347","245346","245345",
+    "245343","245259","245233","245232","245231","245152","245151","245146","245145","245068","245066","245064",
+    "244983","244982","244980","244975","244918","244917"};
+  TString runNumList18q[125] = {
+    "296623","296622","296621","296619","296618","296616","296615","296594","296553","296552","296551","296550",
+    "296548","296547","296516","296512","296511","296510","296509","296472","296433","296424","296423","296420",
+    "296419","296415","296414","296383","296381","296380","296379","296378","296377","296376","296375","296312",
+    "296309","296304","296303","296280","296279","296273","296270","296269","296247","296246","296244","296243",
+    "296242","296241","296240","296198","296197","296196","296195","296194","296192","296191","296143","296142",
+    "296135","296134","296133","296132","296123","296074","296066","296065","296063","296062","296060","296016",
+    "295942","295941","295937","295936","295913","295910","295909","295861","295860","295859","295856","295855",
+    "295854","295853","295831","295829","295826","295825","295822","295819","295818","295816","295791","295788",
+    "295786","295763","295762","295759","295758","295755","295754","295725","295723","295721","295719","295718",
+    "295717","295714","295712","295676","295675","295673","295668","295667","295666","295615","295612","295611",
+    "295610","295589","295588","295586","295585"};
+  TString runNumList18r[89] = {
+    "297595","297590","297588","297558","297544","297542","297541","297540","297537","297512","297483","297479",
+    "297452","297451","297450","297446","297442","297441","297415","297414","297413","297406","297405","297380",
+    "297379","297372","297367","297366","297363","297336","297335","297333","297332","297317","297311","297310",
+    "297278","297222","297221","297218","297196","297195","297193","297133","297132","297129","297128","297124",
+    "297123","297119","297118","297117","297085","297035","297031","296966","296941","296938","296935","296934",
+    "296932","296931","296930","296903","296900","296899","296894","296852","296851","296850","296848","296839",
+    "296838","296836","296835","296799","296794","296793","296790","296787","296786","296785","296784","296781",
+    "296752","296694","296693","296691","296690"};
+  runNumList = new std::map<int,int>;
+  if      (fPeriod.EqualTo("LHC10h")) for (int i = 0; i < 90; i++) runNumList->insert(std::pair<int,int>(runNumList10h[i].Atoi(),i));
+  else if (fPeriod.EqualTo("LHC15o")) for (int i = 0; i <138; i++) runNumList->insert(std::pair<int,int>(runNumList15o[i].Atoi(),i));
+  else if (fPeriod.EqualTo("LHC18q")) for (int i = 0; i <125; i++) runNumList->insert(std::pair<int,int>(runNumList18q[i].Atoi(),i));
+  else if (fPeriod.EqualTo("LHC18r")) for (int i = 0; i < 89; i++) runNumList->insert(std::pair<int,int>(runNumList18r[i].Atoi(),i));
+  else return;
+
+  fHistRunNumBin = new TH1I("runNumBin","",(int)runNumList->size(),0,(int)runNumList->size());
+  std::map<int,int>::iterator iter;
+  for (auto runNum : *runNumList) fHistRunNumBin->GetXaxis()->SetBinLabel(runNum.second, Form("%i",runNum.first));
+  fOutputList->Add(fHistRunNumBin);
 
   ////////////////////////
   // Pile up Function
@@ -755,10 +776,10 @@ void AliAnalysisTaskLambdaProtonCVE::UserCreateOutputObjects()
   // They do not need to be loaded run by run.
   if (IsDoNUE) {
     if (!fListNUE) {
-      AliError("NUE list not found");
+      std::cout<<("NUE list not found")<<std::endl;
       return;
     }
-    if (fPeriod.EqualTo("LHC15o")) {
+    if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
       hNUEweightPlus  = (TH1D*)fListNUE->FindObject("trkEfficiencyChrgPos");
       hNUEweightMinus = (TH1D*)fListNUE->FindObject("trkEfficiencyChrgNeg");
     }
@@ -768,12 +789,16 @@ void AliAnalysisTaskLambdaProtonCVE::UserCreateOutputObjects()
   ////////////////////////
   if (IsDoNUA) {
     if (!fListNUA) {
-      AliError("NUA list not found");
+      std::cout<<("NUA list not found")<<std::endl;
       return;
     }
     if (fPeriod.EqualTo("LHC10h")) {
       hNUAweightPlus  = (TH2D*)fListNUA->FindObject("hNUAweightPlus");
       hNUAweightMinus = (TH2D*)fListNUA->FindObject("hNUAweightMinus");
+    }
+    if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
+      hCorrectNUAPos = new TH3F();
+      hCorrectNUANeg = new TH3F();
     }
   }
   ////////////////////////
@@ -781,7 +806,7 @@ void AliAnalysisTaskLambdaProtonCVE::UserCreateOutputObjects()
   ////////////////////////
   if (IsVZEROCalibOn) {
     if (!fListVZEROCalib) {
-     AliError("VZERO calibration list not found");
+     std::cout<<("VZERO calibration list not found")<<std::endl;
      return;
     }
     if (fPeriod.EqualTo("LHC10h")) {
@@ -793,17 +818,27 @@ void AliAnalysisTaskLambdaProtonCVE::UserCreateOutputObjects()
       pV0XMeanRead[2] = (TProfile3D*)fListVZEROCalib->FindObject("pV0ACosMean");
       pV0YMeanRead[2] = (TProfile3D*)fListVZEROCalib->FindObject("pV0ASinMean");
     }
-    if (fPeriod.EqualTo("LHC15o")) {
-      //V0 Mult
+    if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
       // V0C Qx Mean
       // V0C Qy Mean
       // V0A Qx Mean
       // V0A Qy Mean
-      contMult = (AliOADBContainer*)fListVZEROCalib->FindObject("hMultV0BefCorPfpx");
       contQxncm = (AliOADBContainer*)fListVZEROCalib->FindObject(Form("fqxc%im",2));
       contQyncm = (AliOADBContainer*)fListVZEROCalib->FindObject(Form("fqyc%im",2));
       contQxnam = (AliOADBContainer*)fListVZEROCalib->FindObject(Form("fqxa%im",2));
       contQynam = (AliOADBContainer*)fListVZEROCalib->FindObject(Form("fqya%im",2));
+      for (int i = 0; i < 2; i++) {
+        hQx2mV0[i] = new TH1D();
+        hQy2mV0[i] = new TH1D();
+      }
+    }
+    //15 V0 Mult
+    if (fPeriod.EqualTo("LHC15o")) {
+      contMult = (AliOADBContainer*)fListVZEROCalib->FindObject("hMultV0BefCorPfpx");
+      hMultV0  = new TH1D();
+    }
+    if (fPeriod.EqualTo("LHC18q")) {
+      fHCorrectV0ChWeghts = new TH2F();
     }
   }
   ////////////////////////
@@ -811,7 +846,7 @@ void AliAnalysisTaskLambdaProtonCVE::UserCreateOutputObjects()
   ////////////////////////
   if (IsZDCCalibOn) {
     if (fPeriod.EqualTo("LHC10h") && !fListZDCCalib) {
-      AliError("ZDC calibration list not found");
+      std::cout<<("ZDC calibration list not found")<<std::endl;
       return;
     }
     tree = new TTree();
@@ -1285,7 +1320,7 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
     AliError(Form("%s: Could not get AliAnalysisUtils", GetName()));
   } else fEvtCount->Fill(24);
 
-  if (fPeriod.EqualTo("LHC15o")) {
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
     AliMultSelection* fMultSel = (AliMultSelection*)InputEvent()->FindListObject("MultSelection");
     if (!fMultSel) {
       AliError(Form("%s: Could not get AliMultSelection", GetName()));
@@ -1302,8 +1337,12 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
   //----------------------------
   UInt_t mask = handler->IsEventSelected();
   bool isTrigselected = false;
-  if (fTrigger.EqualTo("kINT7"))    isTrigselected = mask & AliVEvent::kINT7; //run 2
-  else if (fTrigger.EqualTo("kMB")) isTrigselected = mask & AliVEvent::kMB;   //10h
+  if (fTrigger.EqualTo("kMB"))
+  isTrigselected = mask & AliVEvent::kMB;
+  else if (fTrigger.EqualTo("kINT7"))
+  isTrigselected = mask & AliVEvent::kINT7;
+  else if (fTrigger.EqualTo("kINT7+kCentral+kSemiCentral"))
+  isTrigselected = mask & (AliVEvent::kINT7 + AliVEvent::kCentral + AliVEvent::kSemiCentral);
   if (isTrigselected == false) return;
   fEvtCount->Fill(3);
   if (fDebug) Printf("trigger done!");
@@ -1315,7 +1354,7 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
   if (fRunNum != fOldRunNum) {
      // Load the run dependent calibration hist
       if (!GetCalibHistForThisRun()) return;
-      fRunNumBin = GetRunNumBin(fRunNum);
+      fRunNumBin = runNumList->at(fRunNum);
       fOldRunNum = fRunNum;
       if (fRunNumBin < 0) return;
   }
@@ -1341,7 +1380,7 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
   // fEventCuts.SetCentralityEstimators("V0M","CL1");
   // if (!fEventCuts->AcceptEvent(fAOD) ) return;
   if (fPeriod.EqualTo("LHC10h")) if (fabs(dz)>0.5) return;
-  else if (fPeriod.EqualTo("LHC15o")) {
+  if (fPeriod.EqualTo("LHC15o")) {
       double covTrc[6],covSPD[6];
       fVtx->GetCovarianceMatrix(covTrc);
       fAOD->GetPrimaryVertexSPD()->GetCovarianceMatrix(covSPD);
@@ -1397,7 +1436,7 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
   // Pile up
   //----------------------------
   if (fPeriod.EqualTo("LHC10h")) if (!RemovalForRun1()) return;
-  if (fPeriod.EqualTo("LHC15o")) {
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
     // hMultCentQA[0]->Fill(fCent, fAOD->GetNumberOfTracks()); // raw Trk Multi Vs Cent(V0M)
     // if (PileUpMultiVertex(fAOD)) return;
     // if (!RejectEvtMultComp(fAOD)) return;
@@ -1405,7 +1444,6 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
     // if (!AODPileupCheck (fAOD)) return;
     if (!RejectEvtTFFit()) return; // 15o_pass2
   }
-  if (fPeriod.EqualTo("LHC18q")) if (!RejectEvtTFFit()) return;
   fHistCent[1]->Fill(fCent);
   fEvtCount->Fill(7);
   if (fDebug) Printf("pile-up done!");
@@ -1415,11 +1453,13 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
   //----------------------------
   if (!GetVZEROPlane()) return;
   fEvtCount->Fill(8);
+  if (fDebug) Printf("Get VZERO Plane done!");
   //----------------------------
   // ZDC Plane
   //----------------------------
   if (!GetZDCPlane()) return;
   fEvtCount->Fill(9);
+  if (fDebug) Printf("Get ZDC Plane done!");
   //----------------------------
   // Loop Tracks / Fill Vectors
   //----------------------------
@@ -1428,11 +1468,13 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
   fEvtCount->Fill(10);
   if (!LoopTracks()) return;
   fEvtCount->Fill(11);
+  if (fDebug) Printf("Loop Tracks done!");
   //----------------------------
   // TPC Plane
   //----------------------------
   if (!GetTPCPlane()) return;
   fEvtCount->Fill(12);
+  if (fDebug) Printf("Get TPC Plane done!");
   //----------------------------
   // Fill Resolution
   //----------------------------
@@ -1458,11 +1500,13 @@ void AliAnalysisTaskLambdaProtonCVE::UserExec(Option_t *)
   //----------------------------
   if (!LoopV0s()) return;
   fEvtCount->Fill(14);
+  if (fDebug) Printf("Get Lambda Vector done!");
   //----------------------------
   // Pair
   //----------------------------
   if (!PairLambda()) return;
   fEvtCount->Fill(15);
+  if (fDebug) Printf("Pair done!");
   //------------------
   // Post output data.
   //------------------
@@ -1493,10 +1537,9 @@ bool AliAnalysisTaskLambdaProtonCVE::GetVZEROPlane()
       V0YMean[i] = pV0YMeanRead[i]->GetBinContent(fRunNumBin+1, fCentBin+1, fVzBin+1);
     }
   }
-  if (fPeriod.EqualTo("LHC15o")) { // A.Dobrin's V0Calib; "calibV0HIR.root"
-    for (int iCh = 0; iCh < 64; ++iCh) multV0Ch[iCh] = hMultV0->GetBinContent(iCh+1);
-    // AliCentrality* centrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-    // Double_t centSPD = centrality->GetCentralityPercentile("CL1");
+  if (fPeriod.EqualTo("LHC15o"))  
+  for (int iCh = 0; iCh < 64; ++iCh) multV0Ch[iCh] = hMultV0->GetBinContent(iCh+1);
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q")) {
     AliMultSelection* fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
     double centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
     int iCentSPD = (int)centrCL1;
@@ -1512,44 +1555,56 @@ bool AliAnalysisTaskLambdaProtonCVE::GetVZEROPlane()
   //Loop Over VZERO Channels
   //Gain Equalization
   for (int iCh = 0; iCh < 64; ++iCh) {
-    if (TMath::IsNaN(multV0Ch[iCh]) || multV0Ch[iCh]<=0) continue;
     double phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
     double multCh = 0.;
     // double multCh = fAOD->GetVZEROEqMultiplicity(iCh);
     if (fPeriod.EqualTo("LHC10h")) multCh= fAOD->GetVZEROEqMultiplicity(iCh);
-    else if (fPeriod.EqualTo("LHC15o")) {
+    else if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
       AliAODVZERO* aodV0 = fAOD->GetVZEROData();
       multCh = aodV0->GetMultiplicity(iCh);
     }
     if (iCh<32) { // C
       double multChGEC = -1;
-      if      (iCh <  8)              multChGEC = multCh/multV0Ch[iCh] * multV0Ch[0];
-      else if (iCh >= 8  && iCh < 16) multChGEC = multCh/multV0Ch[iCh] * multV0Ch[8];
-      else if (iCh >= 16 && iCh < 24) multChGEC = multCh/multV0Ch[iCh] * multV0Ch[16];
-      else if (iCh >= 24 && iCh < 32) multChGEC = multCh/multV0Ch[iCh] * multV0Ch[24];
-      if (multChGEC<0 || TMath::IsNaN(multChGEC)) continue;
+      if (fPeriod.EqualTo("LHC10h") || fPeriod.EqualTo("LHC15o")) {
+        if      (iCh <  8)              multChGEC = multCh/multV0Ch[iCh] * multV0Ch[0];
+        else if (iCh >= 8  && iCh < 16) multChGEC = multCh/multV0Ch[iCh] * multV0Ch[8];
+        else if (iCh >= 16 && iCh < 24) multChGEC = multCh/multV0Ch[iCh] * multV0Ch[16];
+        else if (iCh >= 24 && iCh < 32) multChGEC = multCh/multV0Ch[iCh] * multV0Ch[24];
+      }
+      if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")){
+        int ibinV0 = fHCorrectV0ChWeghts->FindBin(fVertex[2],iCh);
+        double V0chGE = (double)fHCorrectV0ChWeghts->GetBinContent(ibinV0);
+        multChGEC = multCh*V0chGE;
+      }
+      if (multChGEC<0) continue;
       //for V0C GE
       qxGE[1] += multChGEC*TMath::Cos(2*phi);
       qyGE[1] += multChGEC*TMath::Sin(2*phi);
       multRingGE[1] += multChGEC;
     } else if (iCh>=32 && iCh<64) { // A
       double multChGEA = -1;
-      if      (iCh >= 32 && iCh < 40) multChGEA = multCh/multV0Ch[iCh] * multV0Ch[32];
-      else if (iCh >= 40 && iCh < 48) multChGEA = multCh/multV0Ch[iCh] * multV0Ch[40];
-      else if (iCh >= 48 && iCh < 56) multChGEA = multCh/multV0Ch[iCh] * multV0Ch[48];
-      else if (iCh >= 56 && iCh < 64) multChGEA = multCh/multV0Ch[iCh] * multV0Ch[56];
-      if (multChGEA<0 || TMath::IsNaN(multChGEA)) continue;
-      //for V0A GE
-      qxGE[2] += multChGEA*TMath::Cos(2*phi);
-      qyGE[2] += multChGEA*TMath::Sin(2*phi);
-      multRingGE[2] += multChGEA;
+      if (fPeriod.EqualTo("LHC10h") || fPeriod.EqualTo("LHC15o")) {
+        if      (iCh >= 32 && iCh < 40) multChGEA = multCh/multV0Ch[iCh] * multV0Ch[32];
+        else if (iCh >= 40 && iCh < 48) multChGEA = multCh/multV0Ch[iCh] * multV0Ch[40];
+        else if (iCh >= 48 && iCh < 56) multChGEA = multCh/multV0Ch[iCh] * multV0Ch[48];
+        else if (iCh >= 56 && iCh < 64) multChGEA = multCh/multV0Ch[iCh] * multV0Ch[56];
+      }
+      if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")){
+        int ibinV0 = fHCorrectV0ChWeghts->FindBin(fVertex[2],iCh);
+        double V0chGE = (double)fHCorrectV0ChWeghts->GetBinContent(ibinV0);
+        multChGEA = multCh*V0chGE;
+      }
+        if (multChGEA<0) continue;
+        //for V0A GE
+        qxGE[2] += multChGEA*TMath::Cos(2*phi);
+        qyGE[2] += multChGEA*TMath::Sin(2*phi);
+        multRingGE[2] += multChGEA;
     }
   }
   if (multRingGE[1] < 1.e-6 || multRingGE[2] < 1.e-6) return false;
+
+  //VZERO GE Plane
   for (int i = 1; i < 3; i++) {
-    //???
-    // qxGE[i] /= multRingGE[i];
-    // qyGE[i] /= multRingGE[i];
     psi2GE[i] = GetEventPlane(qxGE[i], qyGE[i], 2.);
     if (TMath::IsNaN(psi2GE[i])) return false;
   }
@@ -1570,7 +1625,7 @@ bool AliAnalysisTaskLambdaProtonCVE::GetVZEROPlane()
   // VZERO QA
   if (IsQAVZERO) {
     double centSPD  = -999.;
-    if (fPeriod.EqualTo("LHC15o")) {
+    if (fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC18q")||fPeriod.EqualTo("LHC18r")) {
       AliMultSelection* fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
       centSPD = fMultSelection->GetMultiplicityPercentile("CL1");
     }
@@ -1611,7 +1666,7 @@ bool AliAnalysisTaskLambdaProtonCVE::GetVZEROPlane()
 
 bool AliAnalysisTaskLambdaProtonCVE::GetZDCPlane()
 {
-  if(!fPeriod.EqualTo("LHC10h")) return true;
+  if(!fPeriod.EqualTo("LHC10h")) return true; //now we only have ZDC Calibration Files of LHC10h
   AliAODZDC* fZDC = fAOD -> GetZDCData();
   if (!fZDC) return false;
   const double x[4] = {-1.75, 1.75, -1.75, 1.75};
@@ -1798,7 +1853,7 @@ bool AliAnalysisTaskLambdaProtonCVE::LoopTracks()
       fHist2DEtaPhi[1]->Fill(eta,phi,wAcc);
     }
 
-    if (pt > fPlanePtMin && pt < fPlanePtMax) { //???
+    if (pt > fPlanePtMin && pt < fPlanePtMax) {
       ///TODO Use Pt as weight for Better resolution?
       if (eta >= fEtaGapPos) {
         SumQ2xTPCPos   += weight * TMath::Cos(2 * phi);
@@ -1817,8 +1872,6 @@ bool AliAnalysisTaskLambdaProtonCVE::LoopTracks()
       }
     }
 
-    //bool isItPiontrk = CheckPIDofParticle(track,1); // 1=pion
-    //bool isItKaontrk = CheckPIDofParticle(track,2); // 2=Kaon
     bool isItProttrk = CheckPIDofParticle(track,3); // 3=proton
 
     int code = 0;
@@ -2183,57 +2236,6 @@ bool AliAnalysisTaskLambdaProtonCVE::PairLambda()
 
 //---------------------------------------------------
 
-int AliAnalysisTaskLambdaProtonCVE::GetRunNumBin(int runNum)
-{
-  int runNBin=-1;
-  if (fPeriod.EqualTo("LHC10h")) {
-    int runNumList[90]={
-      139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310,
-      139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870,
-      138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582,
-      138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201,
-      138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693,
-      137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541,
-      137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137243,
-      137236, 137235, 137232, 137231, 137162, 137161};
-    for (int i = 0; i < 90; ++i) {
-      if (runNum==runNumList[i]) {runNBin=i; break;}
-      else continue;
-    }
-  } else if (fPeriod.EqualTo("LHC11h")) {
-    int runNumList[39]={
-      170387,170040,170268,170228,170207,169838,170159,170204,170311,170084,
-      169835,170088,170593,170203,170270,169846,170163,170388,170155,170083,
-      170572,169837,169855,170306,170269,170089,170309,170091,170081,170230,
-      170085,170315,170027,170193,170312,170313,170308,169858,169859};
-    for (int i = 0; i < 39; ++i) {
-      if (runNum==runNumList[i]) {runNBin=i; break;}
-      else continue;
-    }
-  } else if (fPeriod.EqualTo("LHC15o") ) {
-    int runNumList[138]={
-      246994, 246991, 246989, 246984, 246982, 246948, 246945, 246928, 246871, 246870, 246867, 246865,
-      246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807,
-      246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246434,
-      246431, 246424, 246392, 246391, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185,
-      246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087,
-      246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954,
-      245952, 245949, 245923, 245833, 245831, 245829, 245793, 245785, 245775, 245766, 245759, 245752,
-      245731, 245729, 245705, 245702, 245692, 245683, 245554, 245545, 245544, 245543, 245542, 245540,
-      245535, 245507, 245505, 245504, 245501, 245497, 245496, 245454, 245453, 245450, 245446, 245441,
-      245411, 245410, 245409, 245407, 245401, 245397, 245396, 245353, 245349, 245347, 245346, 245345,
-      245343, 245259, 245233, 245232, 245231, 245152, 245151, 245146, 245145, 245068, 245066, 245064,
-      244983, 244982, 244980, 244975, 244918, 244917};
-    for (int i = 0; i < 138; ++i) {
-      if (runNum==runNumList[i]) {runNBin=i; break;}
-      else continue;
-    }
-  }
-  return runNBin;
-}
-
-//---------------------------------------------------
-
 void AliAnalysisTaskLambdaProtonCVE::ResetVectors()
 {
   SumQ2xTPCPos   = 0.;
@@ -2341,9 +2343,6 @@ bool AliAnalysisTaskLambdaProtonCVE::GetCalibHistForThisRun()
         hQx2mV0[i] -> Reset();
         hQx2mV0[i] -> Reset();
       }
-
-
-
       hMultV0    = ((TH1D*) contMult ->GetObject(fRunNum));
       hQx2mV0[0] = ((TH1D*) contQxncm->GetObject(fRunNum));
       hQy2mV0[0] = ((TH1D*) contQyncm->GetObject(fRunNum));
@@ -2355,9 +2354,10 @@ bool AliAnalysisTaskLambdaProtonCVE::GetCalibHistForThisRun()
       if (!hQx2mV0[1]) return false;
       if (!hQy2mV0[1]) return false;
     }
-
     //15o NUA
     if (IsDoNUA) {
+      hCorrectNUAPos -> Reset();
+      hCorrectNUANeg -> Reset();
       hCorrectNUAPos = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent0_Run%d",fRunNum));
       hCorrectNUANeg = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent0_Run%d",fRunNum));
       if (!hCorrectNUAPos) return false;
@@ -2365,9 +2365,34 @@ bool AliAnalysisTaskLambdaProtonCVE::GetCalibHistForThisRun()
     }
   }
 
-  if (fPeriod.EqualTo("LHC18q")) {}
-  if (fPeriod.EqualTo("LHC18r")) {}
-
+  if (fPeriod.EqualTo("LHC18q")) {
+    if (IsVZEROCalibOn) {
+      for (int i = 0; i < 2; i++) {
+        hQx2mV0[i] -> Reset();
+        hQx2mV0[i] -> Reset();
+      }
+      hQx2mV0[0] = ((TH1D*) contQxncm->GetObject(fRunNum));
+      hQy2mV0[0] = ((TH1D*) contQyncm->GetObject(fRunNum));
+      hQx2mV0[1] = ((TH1D*) contQxnam->GetObject(fRunNum));
+      hQy2mV0[1] = ((TH1D*) contQynam->GetObject(fRunNum));
+      for (int i = 0; i < 2; i++) {
+        if (!hQx2mV0[i]) return false;
+        if (!hQy2mV0[i]) return false;
+      }
+      fHCorrectV0ChWeghts -> Reset();
+      fHCorrectV0ChWeghts = (TH2F *) fListVZEROCalib->FindObject(Form("hWgtV0ChannelsvsVzRun%d",fRunNum));
+      if (!fHCorrectV0ChWeghts) return false;
+    }
+    //18q NUA
+    if (IsDoNUA) {
+      hCorrectNUAPos -> Reset();
+      hCorrectNUANeg -> Reset();
+      hCorrectNUAPos = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d",0,fRunNum));
+      hCorrectNUANeg = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d",0,fRunNum));
+      if (!hCorrectNUAPos) return false;
+      if (!hCorrectNUANeg) return false;
+    }
+  }
   return true;
 }
 
@@ -2420,7 +2445,7 @@ bool AliAnalysisTaskLambdaProtonCVE::RejectEvtMultComp() // 15o_pass1, old pile-
     //TODO
     TString fMultComp = "pileupByGlobalTPC1";
 
-    if (fMultComp.EqualTo("pileupByEDSTPC128") ) { // Rihan
+    if (fMultComp.EqualTo("pileupByEDSTPC128")) { // Rihan
       if ((Double_t)(multEsd*(1/3.45) - 90.) < (Double_t)multTPC)
       {
         fHist2DMultMultQA[3]->Fill(multTPC,multEsd);
@@ -2429,7 +2454,7 @@ bool AliAnalysisTaskLambdaProtonCVE::RejectEvtMultComp() // 15o_pass1, old pile-
       else return false;
     }
 
-    if (fMultComp.EqualTo("pileupByGlobalTPC1") ) { // A.Dobrin
+    if (fMultComp.EqualTo("pileupByGlobalTPC1")){ // A.Dobrin
       if (multTPCFE-1.78*multGlobal<62.87 && multTPCFE-1.48*multGlobal>-36.73) {
         fHist2DMultMultQA[4]->Fill(multGlobal,multTPCFE);
         return true;
@@ -2487,6 +2512,10 @@ bool AliAnalysisTaskLambdaProtonCVE::RejectEvtTFFit()
   UShort_t multV0aOn = aodV0->GetTriggerChargeA();
   UShort_t multV0cOn = aodV0->GetTriggerChargeC();
   UShort_t multV0On = multV0aOn + multV0cOn;
+  
+  // //
+  // Int_t tpcClsTot = fAOD->GetNumberOfTPCClusters();
+  // Float_t nclsDif = Float_t(tpcClsTot) - (53182.6 + 113.326*multV0Tot - 0.000831275*multV0Tot*multV0Tot);
 
   // pile-up cuts
   if (centCL0 < fCenCutLowPU->Eval(centV0M)) return false;
@@ -2626,42 +2655,44 @@ bool AliAnalysisTaskLambdaProtonCVE::AcceptAODTrack(AliAODTrack *track)
     double chi2   = track->Chi2perNDF();
     int    charge = track->Charge();
 
-    if ( pt < fPtMin   ||  pt > fPtMax
-    ||  fabs(eta) > fEtaCut
-    ||  fabs(nhits) < fNclsCut
-    ||  chi2 < fChi2Min ||  chi2 > fChi2Max
-    ||  dedx < fDedxCut) return false;
+    if ( pt < fPtMin
+      || pt > fPtMax
+      || fabs(eta) > fEtaCut
+      || fabs(nhits) < fNclsCut
+      || chi2 < fChi2Min 
+      || chi2 > fChi2Max
+      || dedx < fDedxCut) 
+    return false;
 
-    if (fPeriod.EqualTo("LHC10h")) {
-      //------------------
-      // dca cut
-      //------------------
-      double mag = fAOD->GetMagneticField();
-      double dcaxy  = 999.;
-      double dcaz   = 999.;
-      double r[3];
-      double dca[2];
-      double cov[3];
-      double vx = fVertex[0];
-      double vy = fVertex[1];
-      double vz = fVertex[2];
-      bool proptodca = track->PropagateToDCA(fAOD->GetPrimaryVertex(), mag, 100., dca, cov);
-      if (track->GetXYZ(r)) {
-        dcaxy = r[0];
-        dcaz  = r[1];
-      } else {
-        double dcax = r[0] - vx;
-        double dcay = r[1] - vy;
-        dcaz  = r[2] - vz;
-        dcaxy = sqrt(dcax*dcax + dcay*dcay);
-        // dcaxy = dca[0];
-      }
-      if (fFilterBit != 768){
+    if (fFilterBit != 768){
+      if (fPeriod.EqualTo("LHC10h")) {
+        //------------------
+        // dca cut
+        //------------------
+        double mag = fAOD->GetMagneticField();
+        double dcaxy  = 999.;
+        double dcaz   = 999.;
+        double r[3];
+        double dca[2];
+        double cov[3];
+        double vx = fVertex[0];
+        double vy = fVertex[1];
+        double vz = fVertex[2];
+        bool proptodca = track->PropagateToDCA(fAOD->GetPrimaryVertex(), mag, 100., dca, cov);
+        if (track->GetXYZ(r)) {
+          dcaxy = r[0];
+          dcaz  = r[1];
+        } else {
+          double dcax = r[0] - vx;
+          double dcay = r[1] - vy;
+          dcaz  = r[2] - vz;
+          dcaxy = sqrt(dcax*dcax + dcay*dcay);
+        }
         if (fabs(dcaxy)>fDcaCutxy) return false;
         if (fabs(dcaz)>fDcaCutz) return false;
+        fHistDcaXY->Fill(dcaxy);
+        fHistDcaZ->Fill(dcaz);
       }
-      fHistDcaXY->Fill(dcaxy);
-      fHistDcaZ->Fill(dcaz);
     }
 
     fHistPt->Fill(pt);
@@ -2804,15 +2835,14 @@ double AliAnalysisTaskLambdaProtonCVE::GetNUACor(int charge, double phi, double 
       if (hNUAweightMinus->GetBinContent(phiBin, etaBin)>0) weightNUA = hNUAweightMinus->GetBinContent(phiBin, etaBin);
       return weightNUA;
     }
-  } else if (fPeriod.EqualTo("LHC15o")) { // Rihan and Protty 's NUA Results
+  }
+  if (fPeriod.EqualTo("LHC15o")|| fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) { // Rihan and Protty 's NUA Results
     if (charge>0) {
-      //hCorrectNUAPos = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent0_Run%d",fRunNum));
       if (!hCorrectNUAPos) return -1;
       int iBinNUA = hCorrectNUAPos->FindBin(vz,phi,eta);
       if (hCorrectNUAPos->GetBinContent(iBinNUA)>0) weightNUA = (double)hCorrectNUAPos->GetBinContent(iBinNUA);
       return  weightNUA;
     } else if (charge<0) {
-      //hCorrectNUANeg = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent0_Run%d",fRunNum));
       if (!hCorrectNUANeg) return -1;
       int iBinNUA = hCorrectNUANeg->FindBin(vz,phi,eta);
       if (hCorrectNUANeg->GetBinContent(iBinNUA)>0) weightNUA = (double)hCorrectNUANeg->GetBinContent(iBinNUA);

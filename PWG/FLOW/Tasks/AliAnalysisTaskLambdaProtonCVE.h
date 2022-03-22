@@ -26,8 +26,6 @@ public:
 
   AliAnalysisTaskLambdaProtonCVE();
   AliAnalysisTaskLambdaProtonCVE(const char *name);
-  AliAnalysisTaskLambdaProtonCVE(const char *name, TString PR, bool NUE, bool NUA, bool V0Calib);
-
   virtual ~AliAnalysisTaskLambdaProtonCVE();
 
   virtual void UserCreateOutputObjects();
@@ -115,8 +113,6 @@ private:
   ////////////////////////
   //Functional function
   ////////////////////////
-  // Event
-  int                 GetRunNumBin(int runNum);
   // Read in
   bool      GetCalibHistForThisRun();
   // Pile-up
@@ -226,6 +222,7 @@ private:
   ////////////////////////////////
   // Global Variables from data //
   ////////////////////////////////
+  std::map<int,int>*    runNumList;
   double                fVertex[3];
   int                      fRunNum; // runnumber
   int                   fOldRunNum;
@@ -318,6 +315,8 @@ private:
   AliOADBContainer*     contQynam;
   TH1D*                hQx2mV0[2];
   TH1D*                hQy2mV0[2];
+  //18q
+  TH2F*       fHCorrectV0ChWeghts;
   ////////////////////////
   // ZDC
   ////////////////////////
@@ -340,7 +339,7 @@ private:
   TProfile2D*      fProfile2DForSinC;
   TProfile2D*      fProfile2DForCosA;
   TProfile2D*      fProfile2DForSinA;
-  //15o //TODO
+  //15o 18q 18r //TODO
 
   ///////////////////The following files will be saved//////////////////////////////////
   ////////////
