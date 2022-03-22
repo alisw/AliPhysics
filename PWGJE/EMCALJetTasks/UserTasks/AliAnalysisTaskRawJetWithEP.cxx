@@ -18,6 +18,7 @@
 
 #include <TClonesArray.h>
 #include <TFile.h>
+#include <THashList.h>
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -240,7 +241,7 @@ void AliAnalysisTaskRawJetWithEP1::UserCreateOutputObjects()
   // == s == Calib root file include  ==============================--------===-
   TString pathToFileCMVFNS = AliDataFile::GetFileName(fOADBFileName.Data());
   TString pathToFileLocal;
-  std::cout << fOADBFileName << std::endl;
+  // std::cout << fOADBFileName << std::endl;
   pathToFileLocal = fOADBFileName;
   // Check access to CVMFS (will only be displayed locally)
   if(fOADBFileName.BeginsWith("alien://") && !gGrid){
@@ -256,7 +257,7 @@ void AliAnalysisTaskRawJetWithEP1::UserCreateOutputObjects()
 
   TString tempCalibFileName = AliDataFile::GetFileName(fCalibRefFileName.Data());
   TString tempCalibLocalFileName;
-  std::cout << fCalibRefFileName << std::endl;
+  // std::cout << fCalibRefFileName << std::endl;
   tempCalibLocalFileName = fCalibRefFileName;
   // Check access to CVMFS (will only be displayed locally)
   if(fCalibRefFileName.BeginsWith("alien://") && !gGrid){
@@ -382,53 +383,143 @@ void AliAnalysisTaskRawJetWithEP1::AllocateEventPlaneHistograms()
       histtitle = "Psi3 from TPC eta positive";
       //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
       fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+
+      // profiles for all correlator permutations which are necessary to calculate each second and third order event plane resolution
+      TProfile *tempHist;
+      THashList *parent;
+      histName = TString::Format("hProfV2Resolution_%d", cent);
+      histtitle = histName;
+      parent = static_cast<THashList *>(fHistManager.FindObject(groupName.Data()));
+      tempHist = new TProfile(histName, histtitle, 11, -0.5, 10.5);
+      tempHist->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{VZEROA} - #Psi_{VZEROC}))>");
+      tempHist->GetXaxis()->SetBinLabel(4, "<cos(2(#Psi_{VZEROC} - #Psi_{VZEROA}))>");
+      tempHist->GetXaxis()->SetBinLabel(5, "<cos(2(#Psi_{VZEROA} - #Psi_{TPC}))>");
+      tempHist->GetXaxis()->SetBinLabel(6, "<cos(2(#Psi_{TPC} - #Psi_{VZEROA}))>");
+      tempHist->GetXaxis()->SetBinLabel(7, "<cos(2(#Psi_{VZEROC} - #Psi_{TPC}))>");
+      tempHist->GetXaxis()->SetBinLabel(8, "<cos(2(#Psi_{TPC} - #Psi_{VZEROC}))>");
+      tempHist->GetXaxis()->SetBinLabel(9, "<cos(2(#Psi_{VZERO} - #Psi_{TPC_A}))>");
+      tempHist->GetXaxis()->SetBinLabel(10, "<cos(2(#Psi_{VZERO} - #Psi_{TPC_B}))>");
+      tempHist->GetXaxis()->SetBinLabel(11, "<cos(2(#Psi_{TPC_A} - #Psi_{TPC_B}))>");
+      parent->Add(tempHist);
+
+      histName = TString::Format("hProfV3Resolution_%d", cent);
+      histtitle = histName;
+      parent = static_cast<THashList *>(fHistManager.FindObject(groupName.Data()));
+      tempHist = new TProfile(histName, histtitle, 11, -0.5, 10.5);
+      tempHist->GetXaxis()->SetBinLabel(3, "<cos(3(#Psi_{VZEROA} - #Psi_{VZEROC}))>");
+      tempHist->GetXaxis()->SetBinLabel(4, "<cos(3(#Psi_{VZEROC} - #Psi_{VZEROA}))>");
+      tempHist->GetXaxis()->SetBinLabel(5, "<cos(3(#Psi_{VZEROA} - #Psi_{TPC}))>");
+      tempHist->GetXaxis()->SetBinLabel(6, "<cos(3(#Psi_{TPC} - #Psi_{VZEROA}))>");
+      tempHist->GetXaxis()->SetBinLabel(7, "<cos(3(#Psi_{VZEROC} - #Psi_{TPC}))>");
+      tempHist->GetXaxis()->SetBinLabel(8, "<cos(3(#Psi_{TPC} - #Psi_{VZEROC}))>");
+      tempHist->GetXaxis()->SetBinLabel(9, "<cos(3(#Psi_{VZERO} - #Psi_{TPC_A}))>");
+      tempHist->GetXaxis()->SetBinLabel(10, "<cos(3(#Psi_{VZERO} - #Psi_{TPC_B}))>");
+      tempHist->GetXaxis()->SetBinLabel(11, "<cos(3(#Psi_{TPC_A} - #Psi_{TPC_B}))>");
+      parent->Add(tempHist);
   }
 
-  // cdf and pdf of chisquare distribution
-  histName = TString::Format("%s/hPvalueCDF", groupName.Data());
+  // == s == cdf and pdf of chisquare distribution #############################
+  //  = v2 and v3 combind fit local rho =
+  histName = TString::Format("%s/hPvalueCDF_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; CDF #chi^{2}", histName.Data());
   fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
   
-  histName = TString::Format("%s/hPvalueCDFCent", groupName.Data());
+  histName = TString::Format("%s/hPvalueCDFCent_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; centrality; p-value", histName.Data());
   fHistManager.CreateTH2(histName, histtitle, 40, 0, 100, 40, 0, 1);
   
-  histName = TString::Format("%s/hChi2Cent", groupName.Data());
+  histName = TString::Format("%s/hChi2Cent_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; CDF #chi^{2}; #tilde{#chi^{2}}", histName.Data());
   fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 100, 0, 5);
 
-  histName = TString::Format("%s/hPChi2", groupName.Data());
+  histName = TString::Format("%s/hPChi2_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
   fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
 
-  histName = TString::Format("%s/hKolmogorovTest", groupName.Data());
-  histtitle = TString::Format("%s;CDF #chi^{2}", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
-
-  histName = TString::Format("%s/hKolmogorovTestCent", groupName.Data());
-  histtitle = TString::Format("%s; centrality; Kolmogorov p", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 45, 0, 1);
-
-  histName = TString::Format("%s/hPvalueCDFROOT", groupName.Data());
+  histName = TString::Format("%s/hPvalueCDFROOT_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
   fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
 
-  histName = TString::Format("%s/hPvalueCDFROOTCent", groupName.Data());
+  histName = TString::Format("%s/hPvalueCDFROOTCent_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; centrality; p-value ROOT", histName.Data());
   fHistManager.CreateTH2(histName, histtitle, 40, 0, 100, 45, 0, 1);
 
-  histName = TString::Format("%s/hChi2ROOTCent", groupName.Data());
+  histName = TString::Format("%s/hChi2ROOTCent_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
   fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 45, 0, 1);
 
-  histName = TString::Format("%s/hPChi2Root", groupName.Data());
+  histName = TString::Format("%s/hPChi2ROOT_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
   fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
 
-  histName = TString::Format("%s/hPKolmogorov", groupName.Data());
-  histtitle = TString::Format("%s; p-value; kolmogorov p", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 40, 0, 1, 40, 0, 1);
+  //  = v2  fit local rho =
+  histName = TString::Format("%s/hPvalueCDF_lRhoV2Fit", groupName.Data());
+  histtitle = TString::Format("%s; CDF #chi^{2}", histName.Data());
+  fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
   
+  histName = TString::Format("%s/hPvalueCDFCent_lRhoV2Fit", groupName.Data());
+  histtitle = TString::Format("%s; centrality; p-value", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 40, 0, 100, 40, 0, 1);
+  
+  histName = TString::Format("%s/hChi2Cent_lRhoV2Fit", groupName.Data());
+  histtitle = TString::Format("%s; CDF #chi^{2}; #tilde{#chi^{2}}", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 100, 0, 5);
+
+  histName = TString::Format("%s/hPChi2_lRhoV2Fit", groupName.Data());
+  histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+
+  histName = TString::Format("%s/hPvalueCDFROOT_lRhoV2Fit", groupName.Data());
+  histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
+  fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
+
+  histName = TString::Format("%s/hPvalueCDFROOTCent_lRhoV2Fit", groupName.Data());
+  histtitle = TString::Format("%s; centrality; p-value ROOT", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 40, 0, 100, 45, 0, 1);
+
+  histName = TString::Format("%s/hChi2ROOTCent_lRhoV2Fit", groupName.Data());
+  histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 45, 0, 1);
+
+  histName = TString::Format("%s/hPChi2ROOT_lRhoV2Fit", groupName.Data());
+  histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+
+    //  = fit global rho (rho0) =
+  histName = TString::Format("%s/hPvalueCDF_gRhoFit", groupName.Data());
+  histtitle = TString::Format("%s; CDF #chi^{2}", histName.Data());
+  fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
+  
+  histName = TString::Format("%s/hPvalueCDFCent_gRhoFit", groupName.Data());
+  histtitle = TString::Format("%s; centrality; p-value", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 40, 0, 100, 40, 0, 1);
+  
+  histName = TString::Format("%s/hChi2Cent_gRhoFit", groupName.Data());
+  histtitle = TString::Format("%s; CDF #chi^{2}; #tilde{#chi^{2}}", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 100, 0, 5);
+
+  histName = TString::Format("%s/hPChi2_gRhoFit", groupName.Data());
+  histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+
+  histName = TString::Format("%s/hPvalueCDFROOT_gRhoFit", groupName.Data());
+  histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
+  fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
+
+  histName = TString::Format("%s/hPvalueCDFROOTCent_gRhoFit", groupName.Data());
+  histtitle = TString::Format("%s; centrality; p-value ROOT", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 40, 0, 100, 45, 0, 1);
+
+  histName = TString::Format("%s/hChi2ROOTCent_gRhoFit", groupName.Data());
+  histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 45, 0, 1);
+
+  histName = TString::Format("%s/hPChi2ROOT_gRhoFit", groupName.Data());
+  histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
+  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+  // == e == cdf and pdf of chisquare distribution #############################
+
+
   
   histName = TString::Format("%s/hRhoVsMult", groupName.Data());
   histtitle = TString::Format("%s; multiplicity; #rho [GeV/c]", histName.Data());
@@ -721,7 +812,7 @@ void AliAnalysisTaskRawJetWithEP1::ExecOnce()
  */
 Bool_t AliAnalysisTaskRawJetWithEP1::Run()
 {
-  std::cout << "ChecKuma Run Number === " << CheckRunNum << "==================" << std::endl;
+  // std::cout << "ChecKuma Run Number === " << CheckRunNum << "==================" << std::endl;
   CheckRunNum++;
   if(!fEventCuts.AcceptEvent(InputEvent())) return kFALSE;
   
@@ -730,7 +821,7 @@ Bool_t AliAnalysisTaskRawJetWithEP1::Run()
   //   fRunOrder += 1;
   //   fRunNumList.push_back(fRunNumber);
   // }
-  std::cout << "fCentBin = " << fCentBin << ", fCent = " << fCent << "  CheKumaaaaa" << std::endl;
+  // std::cout << "fCentBin = " << fCentBin << ", fCent = " << fCent << "  CheKumaaaaa" << std::endl;
 
   DoEventPlane();
   SetModulationRhoFit();
@@ -758,12 +849,57 @@ void AliAnalysisTaskRawJetWithEP1::DoEventPlane(){
     AliWarning("AliAnalysisTaskJetQnVectors::Exec(): No AliInputEventHandler!");
     return;
   }
+  
+  //== s == qn Calibration  111111111111111111111111111111111111111111111111111
+  switch (fQnVCalibType) {
+    case kOrig : {
+      // std::cout << "bef calib (qx,qy) = " << q2VecV0M[0] << "," << q2VecV0M[1] << ")" << std::endl;
+      QnGainCalibration();
+      // std::cout << "gain calib (qx,qy) = " << q2VecV0M[0] << "," << q2VecV0M[1] << ")" << std::endl;
+      QnRecenteringCalibration();
 
-  QnGainCalibration();
-  QnRecenteringCalibration();
+      //== s == combin V0C and V0A  ################################################
+      Double_t q2ChiV0C = 0.;
+      Double_t q2ChiV0A = 0.;
+      Double_t q3ChiV0C = 0.;
+      Double_t q3ChiV0A = 0.;
+      if(fV0Combin){
+        Double_t psiReso = 0;
+        q2ChiV0A = CalculateEventPlaneChi(psiReso);
+        q2ChiV0C = CalculateEventPlaneChi(psiReso);
+        q3ChiV0A = CalculateEventPlaneChi(psiReso);
+        q3ChiV0C = CalculateEventPlaneChi(psiReso);
+      }else {
+        q2ChiV0A = 1.0;
+        q3ChiV0A = 1.0;
+      }
+      q2VecV0M[0] = q2ChiV0C*q2ChiV0C*q2VecV0C[0] + q2ChiV0A*q2ChiV0A*q2VecV0A[0];
+      q2VecV0M[1] = q2ChiV0C*q2ChiV0C*q2VecV0C[1] + q2ChiV0A*q2ChiV0A*q2VecV0A[1];
+      q3VecV0M[0] = q3ChiV0C*q2ChiV0C*q3VecV0C[0] + q3ChiV0A*q2ChiV0A*q3VecV0A[0];
+      q3VecV0M[1] = q3ChiV0C*q2ChiV0C*q3VecV0C[1] + q3ChiV0A*q2ChiV0A*q3VecV0A[1];
+      if(0){
+        std::cout << "recent calibA (qx,qy) = " \
+          << q2VecV0A[0] << "," << q2VecV0A[1] << ")" << std::endl;
+        std::cout << "recent calibM (qx,qy) = " \
+          << q2VecV0M[0] << "," << q2VecV0M[1] << ")" << std::endl;
+      }
+      //== s == combin V0C and V0A  ################################################
 
-  QnJEHandlarEPGet();
-  // if(CheckRunNum == fQaEventNum) VzeroGainCalibQA();
+      psi2V0[0] = CalcEPAngle(q2VecV0M[0], q2VecV0M[1]);
+      psi2V0[1] = CalcEPAngle(q2VecV0C[0], q2VecV0C[1]);
+      psi2V0[2] = CalcEPAngle(q2VecV0A[0], q2VecV0A[1]);
+
+      psi3V0[0] = CalcEPAngle(q3VecV0M[0], q3VecV0M[1]);
+      psi3V0[1] = CalcEPAngle(q3VecV0C[0], q3VecV0C[1]);
+      psi3V0[2] = CalcEPAngle(q3VecV0A[0], q3VecV0A[1]);
+    } break;
+    case kJeHand : {
+      QnJEHandlarEPGet(); 
+    } break;
+    default : break;
+  }
+  //== e == qn Calibration  111111111111111111111111111111111111111111111111111
+  
   
   TString histName;
   TString groupName;
@@ -797,6 +933,27 @@ void AliAnalysisTaskRawJetWithEP1::DoEventPlane(){
   histName = TString::Format("%s/hPsi2TPCP_%d", groupName.Data(), fCentBin);
   fHistManager.FillTH1(histName, psi3Tpc[1]);
   
+  histName = TString::Format("%s/hProfV2Resolution_%d", groupName.Data(), fCentBin);
+  fHistManager.FillProfile(histName, 2., TMath::Cos(2.*(psi2V0[2] - psi2V0[1])));
+  fHistManager.FillProfile(histName, 3., TMath::Cos(2.*(psi2V0[1] - psi2V0[2])));
+  fHistManager.FillProfile(histName, 4., TMath::Cos(2.*(psi2V0[2] - psi2Tpc[0])));
+  fHistManager.FillProfile(histName, 5., TMath::Cos(2.*(psi2Tpc[2] - psi2V0[2])));
+  fHistManager.FillProfile(histName, 6., TMath::Cos(2.*(psi2V0[1] - psi2Tpc[0])));
+  fHistManager.FillProfile(histName, 7., TMath::Cos(2.*(psi2Tpc[0] - psi2V0[1])));
+  fHistManager.FillProfile(histName, 8., TMath::Cos(2.*(psi2V0[0] - psi2Tpc[1])));
+  fHistManager.FillProfile(histName, 9., TMath::Cos(2.*(psi2V0[0] - psi2Tpc[2])));
+  fHistManager.FillProfile(histName, 10., TMath::Cos(2.*(psi2Tpc[1] - psi2Tpc[2])));
+    
+  histName = TString::Format("%s/hProfV3Resolution_%d", groupName.Data(), fCentBin);
+  fHistManager.FillProfile(histName, 2., TMath::Cos(3.*(psi2V0[2] - psi2V0[1])));
+  fHistManager.FillProfile(histName, 3., TMath::Cos(3.*(psi2V0[1] - psi2V0[2])));
+  fHistManager.FillProfile(histName, 4., TMath::Cos(3.*(psi2V0[2] - psi2Tpc[0])));
+  fHistManager.FillProfile(histName, 5., TMath::Cos(3.*(psi2Tpc[2] - psi2V0[2])));
+  fHistManager.FillProfile(histName, 6., TMath::Cos(3.*(psi2V0[1] - psi2Tpc[0])));
+  fHistManager.FillProfile(histName, 7., TMath::Cos(3.*(psi2Tpc[0] - psi2V0[1])));
+  fHistManager.FillProfile(histName, 8., TMath::Cos(3.*(psi2V0[0] - psi2Tpc[1])));
+  fHistManager.FillProfile(histName, 9., TMath::Cos(3.*(psi2V0[0] - psi2Tpc[2])));
+  fHistManager.FillProfile(histName, 10., TMath::Cos(3.*(psi2Tpc[1] - psi2Tpc[2])));
 }
 
 
@@ -807,36 +964,28 @@ void AliAnalysisTaskRawJetWithEP1::SetModulationRhoFit()
 
   if(fFitModulation) delete fFitModulation;
   fFitModulation = 0x0;
-  const char * fitFunction = "[0]*([1]+[2]*([3]*TMath::Cos([2]*(x-[4]))+[7]*TMath::Cos([5]*(x-[6]))))";
+  const char * fitFunction = "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))+[3]*TMath::Cos(3.*(x-[4]))))";
   switch (fFitModulationType)  {
     case kNoFit : { fFitModulation = new TF1("fix_kNoFit", "[0]", 0, TMath::TwoPi()); } break;
     case kV2 : {
       fitFunction = "[0]*([1]+[2]*[3]*TMath::Cos([2]*(x-[4])))";
       fFitModulation = new TF1("fit_kV2", fitFunction, 0, TMath::TwoPi());
-      fFitModulation->SetParameter(0, 0.);        // normalization
-      fFitModulation->SetParameter(3, 0.2);       // v2
-      fFitModulation->FixParameter(1, 1.);        // constant
-      fFitModulation->FixParameter(2, 2.);        // constant
+      fFitModulation->SetParameter(0, 0.);  // normalization
+      fFitModulation->SetParameter(1, 0.2); // v2
     } break;
     case kCombined: {
-      fitFunction = "[0]*([1]+[2]*([3]*TMath::Cos([2]*(x-[4]))+[7]*TMath::Cos([5]*(x-[6]))))";
+      fitFunction = "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))+[3]*TMath::Cos(3.*(x-[4]))))";
       fFitModulation = new TF1("fit_kCombined", fitFunction, 0, TMath::TwoPi());
       fFitModulation->SetParameter(0, 0.);       // normalization
-      fFitModulation->SetParameter(3, 0.2);      // v2
-      fFitModulation->FixParameter(1, 1.);       // constant
-      fFitModulation->FixParameter(2, 2.);       // constant
-      fFitModulation->FixParameter(5, 3.);       // constant
-      fFitModulation->SetParameter(7, 0.2);      // v3
+      fFitModulation->SetParameter(1, 0.2);      // v2
+      fFitModulation->SetParameter(3, 0.2);      // v3
     } break;
     default : { // for the combined fit, the 'direct fourier series' or the user supplied vn values we use v2 and v3
-      fitFunction = "[0]*([1]+[2]*([3]*TMath::Cos([2]*(x-[4]))+[7]*TMath::Cos([5]*(x-[6]))))";
+      fitFunction = "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))+[3]*TMath::Cos(3.*(x-[4]))))";
       fFitModulation = new TF1("fit_kCombined", fitFunction, 0, TMath::TwoPi());
       fFitModulation->SetParameter(0, 0.);       // normalization
-      fFitModulation->SetParameter(3, 0.2);      // v2
-      fFitModulation->FixParameter(1, 1.);       // constant
-      fFitModulation->FixParameter(2, 2.);       // constant
-      fFitModulation->FixParameter(5, 3.);       // constant
-      fFitModulation->SetParameter(7, 0.2);      // v3
+      fFitModulation->SetParameter(1, 0.2);      // v2
+      fFitModulation->SetParameter(3, 0.2);      // v3
     } break;
   }
 
@@ -855,7 +1004,6 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
   UInt_t sumAcceptedTracks = 0;
   AliParticleContainer* partCont = 0;
   TIter next(&fParticleCollArray);
-  TH1F *_tempkBkgTracks = new TH1F("_tempSwap", "_tempSwap", 30, 0., TMath::TwoPi());
   while ((partCont = static_cast<AliParticleContainer*>(next()))) {
     // groupname = partCont->GetName();
     for(auto part : partCont->accepted()) {
@@ -866,38 +1014,30 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
         Float_t trackDeltaPhi = track->Phi() - psi2V0[0];
         if (trackDeltaPhi < 0.0) trackDeltaPhi += TMath::TwoPi();
         hBkgTracks->Fill(trackDeltaPhi);
-        _tempkBkgTracks->Fill(trackDeltaPhi);
       }
     }
   }
   
   fLocalRho->SetVal(fRho->GetVal());
+  fFitModulation->SetParameter(0, fLocalRho->GetVal());
+  fFitModulation->FixParameter(2, psi2V0[0]);
+  fFitModulation->FixParameter(4, psi3V0[0]);
   
-  fFitModulation->SetParameter(0, fLocalRho->GetVal()); //Fix ChecKuma????
-  fFitModulation->FixParameter(4, psi2V0[0]);
-  fFitModulation->FixParameter(6, psi3V0[0]);
+  hBkgTracks->Fit(fFitModulation, "N0Q"); 
   
-  hBkgTracks->Fit(fFitModulation, "N0Q"); //??????????????????????????????????????
-  
-
-  if(1){ // ChecKuma fit parameters
+  if(0){ // ChecKuma fit parameters
     std::cout << "psi2V0 = " << psi2V0[0] << ", psi3V0 = " << psi3V0[0] << std::endl;
     
     if(CheckRunNum == 24) hBkgTracks->SaveAs("checkOutput/checkhBkgTracks.root");
-    std::cout << "  p0 = " << fFitModulation->GetParameter(0)\
-              << ", p1 = " << fFitModulation->GetParameter(1)\
-              << ", p2 = " << fFitModulation->GetParameter(2)\
-              << ", p3 = " << fFitModulation->GetParameter(3)\
-              << ", p4 = " << fFitModulation->GetParameter(4)\
-              << ", p5 = " << fFitModulation->GetParameter(5)\
-              << ", p6 = " << fFitModulation->GetParameter(6)\
-              << ", p7 = " << fFitModulation->GetParameter(7)\
+    std::cout << "  rho0 = " << fFitModulation->GetParameter(0)\
+              << ", v2 = " << fFitModulation->GetParameter(1)\
+              << ", psi2 = " << fFitModulation->GetParameter(2)\
+              << ", v3 = " << fFitModulation->GetParameter(3)\
+              << ", psi3 = " << fFitModulation->GetParameter(4)\
               << std::endl;
     
   }
-
-
-  // if(CheckRunNum == 5){
+  
   if(0){
     TCanvas *cBkgRhoFit = new TCanvas("cBkgRhoFit", "cBkgRhoFit", 2000, 1500);
     
@@ -905,25 +1045,21 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
     histName = hBkgTracks->GetName() + std::to_string(CheckRunNum);
     hBkgTracks_Event->SetName(histName);
     hBkgTracks_Event->Draw("E");
-    hBkgTracks->Fit(fFitModulation, "Q");
+    hBkgTracks->Fit(fFitModulation, "N0Q");
     fFitModulation->SetLineColor(632);
     fFitModulation->Draw("same");
 
-    TF1* rhoFitV2Com = new TF1("rhoFitV2Com", "[0]*([1]+[2]*([3]*TMath::Cos([2]*(x-[4]))))", 0.0, TMath::TwoPi());
+    TF1* rhoFitV2Com = new TF1("rhoFitV2Com", "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))))", 0.0, TMath::TwoPi());
     rhoFitV2Com->SetParameter(0, fFitModulation->GetParameter(0));
-    rhoFitV2Com->SetParameter(1, fFitModulation->GetParameter(1));
-    rhoFitV2Com->SetParameter(2, fFitModulation->GetParameter(2));
-    rhoFitV2Com->SetParameter(3, fFitModulation->GetParameter(3));
-    rhoFitV2Com->SetParameter(4, fFitModulation->GetParameter(4));
+    rhoFitV2Com->SetParameter(1, fFitModulation->GetParameter(1));//v2
+    rhoFitV2Com->SetParameter(2, fFitModulation->GetParameter(2));//psi2
     rhoFitV2Com->SetLineColor(808);
     rhoFitV2Com->Draw("same");
 
-    TF1* rhoFitV3Com = new TF1("rhoFitV3Com", "[0]*([1]+[2]*([5]*TMath::Cos([3]*(x-[4]))))", 0.0, TMath::TwoPi());
+    TF1* rhoFitV3Com = new TF1("rhoFitV3Com", "[0]*(1.+2.*([1]*TMath::Cos(3.*(x-[2]))))", 0.0, TMath::TwoPi());
     rhoFitV3Com->SetParameter(0, fFitModulation->GetParameter(0));
-    rhoFitV3Com->SetParameter(1, fFitModulation->GetParameter(1));
-    rhoFitV3Com->SetParameter(3, fFitModulation->GetParameter(5));
-    rhoFitV3Com->SetParameter(4, fFitModulation->GetParameter(6));
-    rhoFitV3Com->SetParameter(5, fFitModulation->GetParameter(7));
+    rhoFitV3Com->SetParameter(1, fFitModulation->GetParameter(1));//v3
+    rhoFitV3Com->SetParameter(2, fFitModulation->GetParameter(2));//psi3
     rhoFitV3Com->SetLineColor(824);
     rhoFitV3Com->Draw("same");
 
@@ -937,32 +1073,14 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
     !chcekDrawBkg++;
   }
   
-  fV2ResoV0 = CalcEPReso(2, psi2V0[0], psi2Tpc[1], psi2Tpc[2]);
-  fV3ResoV0 = CalcEPReso(3, psi3V0[0], psi3Tpc[1], psi3Tpc[2]);
-  std::cout << "v2Reso = " << fV2ResoV0 << ", v3Reso = " << fV3ResoV0 << std::endl;
+  // fV2ResoV0 = CalcEPReso(2, psi2V0[0], psi2Tpc[1], psi2Tpc[2]);
+  // fV3ResoV0 = CalcEPReso(3, psi3V0[0], psi3Tpc[1], psi3Tpc[2]);
+  // std::cout << "v2Reso = " << fV2ResoV0 << ", v3Reso = " << fV3ResoV0 << std::endl;
 
-  
-  Double_t v2ObjV0 = -999., v3ObjV0= -999.;
-  v2ObjV0 = fFitModulation->GetParameter(3);
-  v3ObjV0 = fFitModulation->GetParameter(7);
-  
-  std::cout << "v2obj = " << v2ObjV0 << ", v3Obj = " << v3ObjV0 << std::endl;
   fLocalRho->SetLocalRho(fFitModulation);
-  
-
   // fLocalRho->SetVal(fRho->GetVal());
-  // std::cout << "fRho = " << fRho->GetVal() << std::endl;
 
-  // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
-  // three methods are available, all with their drawbacks. all are stored, one is selected to do the cut
-  // Int_t numOfFreePara = 2; //v2, v3
-  // Int_t NDF(fFitModulation->GetXaxis()->GetNbins()-numOfFreePara);
-  // std::cout << "nbis: " << fFitModulation->GetXaxis()->GetNbins() << std::endl;
-  // if(NDF == 0 || (float)NDF <= 0.) return;
-  
-  // Double_t CDF(1.-ChiSquareCDF(NDF, ChiSquare(fFitModulation, fFitModulation)));
-  // Double_t CDFROOT(1.-ChiSquareCDF(NDF, fFitModulation->GetChisquare()));
-  
+  BkgFitEvaluation();
 }
 
 
@@ -991,7 +1109,6 @@ void AliAnalysisTaskRawJetWithEP1::MeasureTpcEPQA(){
   while ((partCont = static_cast<AliParticleContainer*>(next()))) {
     
     groupName = partCont->GetName();
-    std::cout << "partCont: " << partCont << std::endl; //checkuma
     // counting events
     histName = TString::Format("Hist nEvents");
     fHistManager.FillTH1(histName, 0.5);
@@ -1131,23 +1248,22 @@ void AliAnalysisTaskRawJetWithEP1::DoJetLoop()
       deltaPhiJetEP = jet->Phi() - psi2V0[0];
       if (jet->Phi() - psi2V0[0] < 0.0) deltaPhiJetEP += TMath::TwoPi();
 
-
-      // localRhoVal = fLocalRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
+      localRhoVal = fLocalRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
       
       // localRhoValScaled = localRhoVal * jetCont->GetRhoVal() / p0;
       jetPtCorr = jet->Pt() - jetCont->GetRhoVal() * jet->Area();
+      localRhoValScaled = fLocalRho->GetLocalVal(\
+        jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
       jetPtCorrLocal = jet->Pt() - localRhoValScaled * jet->Area();
-
-      /*
-      std::cout << "=s01= kumaaaaaaaaaakumaaaaaaaaaakumaaaaaaaaaakumaaaaaaaaaakumaaaaaaaaaa" << std::endl;
-      std::cout << "(jetPhi, corrPhi2V0, p0, p1, localRho, jetA, localRhoValScal, phiMinusPsi2, phiMinusPsi3) = (" \
-      << jet->Phi() << ", " << psi2V0[0] << ", " << p0 << ", " << p1 << ", "\
-      << localRhoVal << ", " << jet->Area() << ", " << localRhoValScaled << ", " \
-      << phiMinusPsi2 << ", " << phiMinusPsi3 \
-      << ")" << std::endl;
-      std::cout << "=e01= kumaaaaaaaaaakumaaaaaaaaaakumaaaaaaaaaakumaaaaaaaaaakumaaaaaaaaaa" << std::endl;
-      */
-
+      
+      if(0){
+        std::cout << "(jetPt, jetPhi, jetA, globalRho, localRho, localRhoValScal) = (" \
+          << jet->Pt() << ", " << jet->Phi() << ", " << jet->Area() << ", " \
+          << jetCont->GetRhoVal() * jet->Area() << ", " << localRhoValScaled * jet->Area() \
+          << ", " << localRhoValScaled 
+          << ")" << std::endl;
+      }
+      
       histName = TString::Format("%s/hJetRho_%d", groupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, jetCont->GetRhoVal());
       histName = TString::Format("%s/hJetRhoLocal_%d", groupName.Data(), fCentBin);
@@ -1194,33 +1310,6 @@ void AliAnalysisTaskRawJetWithEP1::DoJetLoop()
         fHistManager.FillTH1(histName, jetPtCorrLocal);
       }
       
-      /*
-      //V3 In-plane
-      histName = TString::Format("%s/hJetsYieldV3_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jet->Pt());
-      histName = TString::Format("%s/hCorrJetsYieldV3_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jetPtCorr);
-      histName = TString::Format("%s/hLocalCorrJetsYieldV3_%d", groupName.Data(), fCentBin);
-      if ((phiMinusPsi3 < TMath::Pi()/6) \
-      || (phiMinusPsi3 >= TMath::Pi()/2 && phiMinusPsi3 < 5*TMath::Pi()/6)\
-      || (phiMinusPsi3 >= 7*TMath::Pi()/6 && phiMinusPsi3 < 3*TMath::Pi()/2)\
-      || (phiMinusPsi3 >= 11*TMath::Pi()/6)) {
-        histName = TString::Format("%s/hJetsYieldInPlaneV3_%d", groupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jet->Pt());
-        histName = TString::Format("%s/hCorrJetsYieldInPlaneV3_%d", groupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jetPtCorr);
-        histName = TString::Format("%s/hLocalCorrJetsYieldInPlaneV3_%d", groupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jetPtCorrLocal);
-      }
-      else {
-        histName = TString::Format("%s/hJetsYieldOutPlaneV3_%d", groupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jet->Pt());
-        histName = TString::Format("%s/hCorrJetsYieldOutPlaneV3_%d", groupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jetPtCorr);
-        histName = TString::Format("%s/hLocalCorrJetsYieldOutPlaneV3_%d", groupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jetPtCorrLocal);
-      }
-      */
     }
 
     histName = TString::Format("%s/hNJets_%d", groupName.Data(), fCentBin);
@@ -1245,39 +1334,50 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnJEHandlarEPGet(){
   //fill histos with EP angle
   fQ2VecHandler->GetEventPlaneAngleTPC(psi2Tpc[0],psi2Tpc[2],psi2Tpc[1]);
   fQ2VecHandler->GetEventPlaneAngleV0(psi2V0[0],psi2V0[2],psi2V0[1]);
-  std::cout << "(Psi2FullTPC,Psi2PosTPC,Psi2NegTPC) = ("\
-    << psi2Tpc[0] << "," << psi2Tpc[2] << "," << psi2Tpc[1] << ")" << std::endl;
-  std::cout << "(Psi2FullV0,Psi2V0A,Psi2V0C) = ("\
-    << psi2V0[0] << "," << psi2V0[2] << "," << psi2V0[1] << ")" << std::endl;
+  if(0){
+    std::cout << "(Psi2FullTPC,Psi2PosTPC,Psi2NegTPC) = ("\
+      << psi2Tpc[0] << "," << psi2Tpc[2] << "," << psi2Tpc[1] << ")" << std::endl;
+    std::cout << "(Psi2FullV0,Psi2V0A,Psi2V0C) = ("\
+      << psi2V0[0] << "," << psi2V0[2] << "," << psi2V0[1] << ")" << std::endl;
+  }
+
 
 	//fill histos for q2 spline calibration
   fQ2VecHandler->GetQnVecTPC(q2VecTpcM, q2VecTpcP, q2VecTpcN);
   fQ2VecHandler->GetQnVecV0(q2VecV0M, q2VecV0A, q2VecV0C);
   fQ2VecHandler->GetqnTPC(q2Tpc[0],q2Tpc[2],q2Tpc[1]);
   fQ2VecHandler->GetqnV0(q2V0[0],q2Tpc[2],q2Tpc[1]);
-  std::cout << "(q2FullTPC,q2PosTPC,q2NegTPC) = ("\
-    << q2Tpc[0] << "," << q2Tpc[2] << "," << q2Tpc[1] << ")" << std::endl;
-  std::cout << "(q2FullV0,q2V0A,q2V0C) = ("\
-    << q2V0[0] << "," << q2V0[2] << "," << q2V0[1] << ")" << std::endl;
+  if(0){
+    std::cout << "(q2FullTPC,q2PosTPC,q2NegTPC) = ("\
+      << q2Tpc[0] << "," << q2Tpc[2] << "," << q2Tpc[1] << ")" << std::endl;
+    std::cout << "(q2FullV0,q2V0A,q2V0C) = ("\
+      << q2V0[0] << "," << q2V0[2] << "," << q2V0[1] << ")" << std::endl;    
+  }
+
 
 
   //fill histos with EP angle
   fQ3VecHandler->GetEventPlaneAngleTPC(psi3Tpc[0],psi3Tpc[2],psi3Tpc[1]);
   fQ3VecHandler->GetEventPlaneAngleV0(psi3V0[0],psi3V0[2],psi3V0[1]);
-  std::cout << "(Psi3FullTPC,Psi3PosTPC,Psi3NegTPC) = ("\
-    << psi3Tpc[0] << "," << psi3Tpc[2] << "," << psi3Tpc[1] << ")" << std::endl;
-  std::cout << "(Psi3FullV0,Psi3V0A,Psi3V0C) = ("\
-    << psi3V0[0] << "," << psi3V0[2] << "," << psi3V0[1] << ")" << std::endl;
+  if(0){
+    std::cout << "(Psi3FullTPC,Psi3PosTPC,Psi3NegTPC) = ("\
+      << psi3Tpc[0] << "," << psi3Tpc[2] << "," << psi3Tpc[1] << ")" << std::endl;
+    std::cout << "(Psi3FullV0,Psi3V0A,Psi3V0C) = ("\
+      << psi3V0[0] << "," << psi3V0[2] << "," << psi3V0[1] << ")" << std::endl;
+  }
 
 	//fill histos for q3 spline calibration
   fQ3VecHandler->GetQnVecTPC(q3VecTpcM, q3VecTpcP, q3VecTpcN);
   fQ3VecHandler->GetQnVecV0(q3VecV0M, q3VecV0A, q3VecV0C);
   fQ3VecHandler->GetqnTPC(q3Tpc[0],q3Tpc[2],q3Tpc[1]);
   fQ3VecHandler->GetqnV0(q3V0[0],q3V0[2],q3V0[1]);
-  std::cout << "(q3FullTPC,q3PosTPC,q3NegTPC) = ("\
-    << q3Tpc[0] << "," << q3Tpc[2] << "," << q3Tpc[1] << ")" << std::endl;
-  std::cout << "(q3FullV0,q3V0A,q3V0C) = ("\
-    << q3V0[0] << "," << q3V0[2] << "," << q3V0[1] << ")" << std::endl;
+  if(0){
+    std::cout << "(q3FullTPC,q3PosTPC,q3NegTPC) = ("\
+      << q3Tpc[0] << "," << q3Tpc[2] << "," << q3Tpc[1] << ")" << std::endl;
+    std::cout << "(q3FullV0,q3V0A,q3V0C) = ("\
+      << q3V0[0] << "," << q3V0[2] << "," << q3V0[1] << ")" << std::endl;
+  }
+
 }
 
 Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
@@ -1307,10 +1407,12 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
   fVtxZ  = pointVtx->GetZ();
   
   Int_t ibinV0 = 0;
-  Double_t fSumMV0A = 0;
-  Double_t fSumMV0C = 0;
+  Double_t fSumMV0A = 0.;
+  Double_t fSumMV0C = 0.;
+  Double_t fSumMV0M = 0.;
   Double_t fV0chGain = 0.;
   Double_t fMultV0 = 0.;
+  
   for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
     fMultV0 = fAodV0->GetMultiplicity(iV0);
     
@@ -1327,11 +1429,11 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
     if(CheckRunNum == fQaEventNum){
       histName  = TString::Format("%s/hV0CellChGains", groupName.Data());
       fHistManager.FillTH1(histName, iV0, fV0chGain);
-      std::cout << "Bef fMultV0 = " << fMultV0 << std::endl;
+      // std::cout << "Bef fMultV0 = " << fMultV0 << std::endl;
     }
     
     fMultV0 = fMultV0*fV0chGain;   //Corrected Multiplicity
-    // std::cout << "fV0chGain = " << fV0chGain << std::endl;
+    // std::cout << "(fV0chGain, fMultV0) = (" << fV0chGain << ","  << fMultV0 << ")" << std::endl;
 
     if(0){ //jet channel baias correction
       Double_t tagV0Mult = 0.;
@@ -1351,7 +1453,8 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
       refGainRatio = tagV0Mult/refV0Mult;
       fMultV0 = fMultV0/refGainRatio;   //Corrected Multiplicity
 
-      if(CheckRunNum == fQaEventNum){
+      // if(CheckRunNum == fQaEventNum){
+      if(0){
         // histName  = TString::Format("%s/hV0CellChRatio", groupName.Data());
         // fHistManager.FillTH1(histName, iV0, refGainRatio);
         histName = TString::Format("%s/hV0CellChVsMultAftEq", groupName.Data());
@@ -1364,6 +1467,12 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
 
     Double_t fPhiV0  = TMath::PiOver4()*(0.5 + iV0 % 8);
     
+    q2VecV0M[0] += TMath::Cos(2*fPhiV0) * fMultV0;
+    q2VecV0M[1] += TMath::Sin(2*fPhiV0) * fMultV0;
+    q3VecV0M[0] += TMath::Cos(3*fPhiV0) * fMultV0;
+    q3VecV0M[1] += TMath::Sin(3*fPhiV0) * fMultV0;
+    fSumMV0M += fMultV0;
+
     if(iV0 < 32){
       q2VecV0C[0] += TMath::Cos(2*fPhiV0) * fMultV0;
       q2VecV0C[1] += TMath::Sin(2*fPhiV0) * fMultV0;
@@ -1377,11 +1486,17 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
       q3VecV0A[0] += TMath::Cos(3*fPhiV0) * fMultV0;
       q3VecV0A[1] += TMath::Sin(3*fPhiV0) * fMultV0;
       fSumMV0A += fMultV0;
-    } 
-  }///V0 Channel loop
+    }
 
+    
+  }///V0 Channel loop
+  
   /// Now the q vectors:
   if(fSumMV0A<=1e-4 || fSumMV0C<=1e-4){
+    q2VecV0M[0] = 0.;
+    q2VecV0M[1] = 0.;
+    q3VecV0M[0] = 0.;
+    q3VecV0M[1] = 0.;
     q2VecV0C[0] = 0.;
     q2VecV0C[1] = 0.;
     q3VecV0C[0] = 0.;
@@ -1390,10 +1505,14 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
     q2VecV0A[1] = 0.;
     q3VecV0A[0] = 0.;
     q3VecV0A[1] = 0.;
-
+    
     return kFALSE;       
   }
   else{
+    q2VecV0M[0] = q2VecV0M[0]/fSumMV0M;
+    q2VecV0M[1] = q2VecV0M[1]/fSumMV0M;
+    q3VecV0M[0] = q3VecV0M[0]/fSumMV0M;
+    q3VecV0M[1] = q3VecV0M[1]/fSumMV0M;
     q2VecV0C[0] = q2VecV0C[0]/fSumMV0C;
     q2VecV0C[1] = q2VecV0C[1]/fSumMV0C;
     q3VecV0C[0] = q3VecV0C[0]/fSumMV0C;
@@ -1402,10 +1521,11 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
     q2VecV0A[1] = q2VecV0A[1]/fSumMV0A;
     q3VecV0A[0] = q3VecV0A[0]/fSumMV0A;
     q3VecV0A[1] = q3VecV0A[1]/fSumMV0A;
-  
+    
     return kTRUE;  
   }
-  
+
+
 
 }
 
@@ -1468,6 +1588,194 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnRecenteringCalibration(){
   
   return kTRUE;
 }
+
+//_____________________________________________________________________________
+TH1F* AliAnalysisTaskRawJetWithEP1::GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen)
+{
+    if(!fOutputList) {
+        printf(" > Please add fOutputList first < \n");
+        return 0x0;
+    }
+    TH1F* r(0x0);
+    (cen) ? r = new TH1F("R", "R", cen->GetSize()-1, cen->GetArray()) : r = new TH1F("R", "R", 10, 0, 10);
+    if(!cen) r->GetXaxis()->SetTitle("number of centrality bin");
+    r->GetYaxis()->SetTitle(Form("Resolution #Psi_{%i}", h));
+    for(Int_t i(0); i < 10; i++) {
+        TProfile* temp((TProfile*)fOutputList->FindObject(Form("fProfV%iResolution_%i", h, i)));
+        if(!temp) break;
+        Double_t a(temp->GetBinContent(3)); //cos(2[psi_V0A - psi_V0C])
+        Double_t b(temp->GetBinContent(5)); //cos(2[psi_TPC - psi_V0C])
+        Double_t c(temp->GetBinContent(7)); //cos(2[psi_TPC - psi_V0A])
+
+        Double_t d(temp->GetBinContent(9));  //cos(2[psi_V0M - psi_TPCnega])
+        Double_t e(temp->GetBinContent(10)); //cos(2[psi_V0M - psi_TPCposi])
+        Double_t f(temp->GetBinContent(11)); //cos(2[psi_TPCnega - psi_TPCposi])
+
+        Double_t _a(temp->GetBinError(3)), _b(temp->GetBinError(5)), _c(temp->GetBinError(7));
+        Double_t _d(temp->GetBinError(9)), _e(temp->GetBinError(10)), _f(temp->GetBinError(11));
+        Double_t error(0);
+        if(a <= 0 || b <= 0 || c <= 0 || d <= 0 || e <= 0 || f <= 0) continue;
+        switch (det) {
+            case kVZEROA : {
+                r->SetBinContent(1+i, TMath::Sqrt((a*b)/c));
+                if(i==0) r->SetNameTitle("VZEROA resolution", "VZEROA resolution");
+                error = TMath::Power((2.*a*TMath::Sqrt((a*b)/c))/3.,2.)*_a*_a+TMath::Power((2.*b*TMath::Sqrt((a*b)/c))/3.,2.)*_b*_b+TMath::Power(2.*c*TMath::Sqrt((a*b)/c),2.)*_c*_c;
+                if(error > 0.) error = TMath::Sqrt(error);
+                r->SetBinError(1+i, error);
+            } break;
+            case kVZEROC : {
+                r->SetBinContent(1+i, TMath::Sqrt((a*c)/b));
+                error = TMath::Power((2.*a*TMath::Sqrt((a*c)/b))/3.,2.)*_a*_a+TMath::Power((2.*b*TMath::Sqrt((a*c)/b)),2.)*_b*_b+TMath::Power(2.*c*TMath::Sqrt((a*c)/b)/3.,2.)*_c*_c;
+                if(error > 0.) error = TMath::Sqrt(error);
+                if(i==0) r->SetNameTitle("VZEROC resolution", "VZEROC resolution");
+                r->SetBinError(1+i, error);
+            } break;
+            case kTPC : {
+                r->SetBinContent(1+i, TMath::Sqrt((b*c)/a));
+                if(i==0) r->SetNameTitle("TPC resolution", "TPC resolution");
+                r->SetBinError(1+i, TMath::Sqrt(_a*_a+_b*_b+_c*_c));
+            } break;
+            case kVZEROComb : {
+                r->SetBinContent(1+i, TMath::Sqrt((d*e)/f));
+                if(i==0) r->SetNameTitle("VZEROComb resolution", "VZEROComb resolution");
+                r->SetBinError(1+i, TMath::Sqrt(_d*_d+_e*_e+_f*_f));
+            } break;
+            default : break;
+        }
+    }
+    return r;
+}
+
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskRawJetWithEP1::CalculateEventPlaneChi(Double_t res)
+{
+    // return chi for given resolution to combine event plane estimates from two subevents
+    // see Phys. Rev. C no. CS6346 (http://arxiv.org/abs/nucl-ex/9805001)
+    Double_t chi(2.), delta(1.), con((TMath::Sqrt(TMath::Pi()))/(2.*TMath::Sqrt(2)));
+    for (Int_t i(0); i < 15; i++) {
+        chi = ((con*chi*TMath::Exp(-chi*chi/4.)*(TMath::BesselI0(chi*chi/4.)+TMath::BesselI1(chi*chi/4.))) < res) ? chi + delta : chi - delta;
+        delta = delta / 2.;
+    }
+    return chi;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskRawJetWithEP1::BkgFitEvaluation()
+{
+  // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
+  // three methods are available, all with their drawbacks. 
+  // all are stored, one is selected to do the cut
+  Int_t numOfFreePara = 2; //v2, v3
+  Int_t NDF = 1;
+  NDF = (Int_t)fFitModulation->GetXaxis()->GetNbins() - numOfFreePara;
+  if(NDF == 0 || (float)NDF <= 0.) return;
+  
+  Double_t ChiSqr = 999.;
+  Double_t CDF = 1.;
+  Double_t CDFROOT = 1.;
+  ChiSqr = ChiSquare(*hBkgTracks, fFitModulation);
+  CDF = 1. - ChiSquareCDF(NDF, ChiSqr);
+  CDFROOT = 1.-ChiSquareCDF(NDF, fFitModulation->GetChisquare());
+  // std::cout << "CDF = " << ChiSquareCDF(NDF, ChiSqr) << std::endl;
+
+  TString histName;
+  TString groupName;
+  groupName="EventPlane";
+  
+  // == v2 and v3 combind fit ==
+  histName = TString::Format("%s/hPvalueCDF_lRhoCombinFit", groupName.Data());
+  fHistManager.FillTH1(histName, CDF);
+  histName = TString::Format("%s/hPvalueCDFCent_lRhoCombinFit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, CDF);
+  histName = TString::Format("%s/hChi2Cent_lRhoCombinFit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, ChiSqr/((float)NDF));
+  histName = TString::Format("%s/hPChi2_lRhoCombinFit", groupName.Data());
+  fHistManager.FillTH2(histName, CDF, ChiSqr/((float)NDF));
+
+  histName = TString::Format("%s/hPvalueCDFROOT_lRhoCombinFit", groupName.Data());
+  fHistManager.FillTH1(histName, CDFROOT);
+  histName = TString::Format("%s/hPvalueCDFROOTCent_lRhoCombinFit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, CDFROOT);
+  histName = TString::Format("%s/hChi2ROOTCent_lRhoCombinFit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, ChiSqr/((float)NDF));
+  histName = TString::Format("%s/hPChi2ROOT_lRhoCombinFit", groupName.Data());
+  fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
+
+  // std::cout <<"Comb Fit (ChiSqr, CDF) = ("<< ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl; 
+
+  // == v2 fit ==
+  TF1* tempV2Fit = new TF1("tempRhoFitV2", "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))))", \
+    0.0, TMath::TwoPi());
+  tempV2Fit->SetParameter(0, fRho->GetVal());
+  tempV2Fit->FixParameter(2, psi2V0[0]);
+  hBkgTracks->Fit(tempV2Fit, "N0Q");
+  numOfFreePara = 1; //v2
+  NDF = tempV2Fit->GetXaxis()->GetNbins() - numOfFreePara;
+  if(NDF == 0 || (float)NDF <= 0.) return;
+  ChiSqr = 999.;
+  ChiSqr = ChiSquare(*hBkgTracks, tempV2Fit);
+  CDF = 1. - ChiSquareCDF(NDF, ChiSqr);
+  CDFROOT = 1. - ChiSquareCDF(NDF, tempV2Fit->GetChisquare());
+
+  histName = TString::Format("%s/hPvalueCDF_lRhoV2Fit", groupName.Data());
+  fHistManager.FillTH1(histName, CDF);
+  histName = TString::Format("%s/hPvalueCDFCent_lRhoV2Fit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, CDF);
+  histName = TString::Format("%s/hChi2Cent_lRhoV2Fit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, ChiSqr/((float)NDF));
+  histName = TString::Format("%s/hPChi2_lRhoV2Fit", groupName.Data());
+  fHistManager.FillTH2(histName, CDF, ChiSqr/((float)NDF));
+
+  histName = TString::Format("%s/hPvalueCDFROOT_lRhoV2Fit", groupName.Data());
+  fHistManager.FillTH1(histName, CDFROOT);
+  histName = TString::Format("%s/hPvalueCDFROOTCent_lRhoV2Fit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, CDFROOT);
+  histName = TString::Format("%s/hChi2ROOTCent_lRhoV2Fit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, ChiSqr/((float)NDF));
+  histName = TString::Format("%s/hPChi2ROOT_lRhoV2Fit", groupName.Data());
+  fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
+  // std::cout << "v2Fit (ChiSqr, CDF) = ("<< ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl;
+
+  delete tempV2Fit;
+
+
+  // == global rho fit ==
+  TF1* tempGlobalFit = new TF1("tempGlobalRhoFit", "[0]", 0.0, TMath::TwoPi());
+  tempGlobalFit->FixParameter(0, fRho->GetVal());
+  tempGlobalFit->SetParameter(0, fRho->GetVal());
+  tempGlobalFit->FixParameter(2, psi2V0[0]);
+  hBkgTracks->Fit(tempGlobalFit, "N0Q");
+  numOfFreePara = 0; //v2
+  NDF = tempGlobalFit->GetXaxis()->GetNbins() - numOfFreePara;
+  if(NDF == 0 || (float)NDF <= 0.) return;
+  ChiSqr = 999.;
+  ChiSqr = ChiSquare(*hBkgTracks, tempGlobalFit);
+  CDF = 1. - ChiSquareCDF(NDF, ChiSqr);
+  CDFROOT = 1.-ChiSquareCDF(NDF, tempGlobalFit->GetChisquare());
+
+  histName = TString::Format("%s/hPvalueCDF_gRhoFit", groupName.Data());
+  fHistManager.FillTH1(histName, CDF);
+  histName = TString::Format("%s/hPvalueCDFCent_gRhoFit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, CDF);
+  histName = TString::Format("%s/hChi2Cent_gRhoFit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, ChiSqr/((float)NDF));
+  histName = TString::Format("%s/hPChi2_gRhoFit", groupName.Data());
+  fHistManager.FillTH2(histName, CDF, ChiSqr/((float)NDF));
+
+  histName = TString::Format("%s/hPvalueCDFROOT_gRhoFit", groupName.Data());
+  fHistManager.FillTH1(histName, CDFROOT);
+  histName = TString::Format("%s/hPvalueCDFROOTCent_gRhoFit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, CDFROOT);
+  histName = TString::Format("%s/hChi2ROOTCent_gRhoFit", groupName.Data());
+  fHistManager.FillTH2(histName, fCent, ChiSqr/((float)NDF));
+  histName = TString::Format("%s/hPChi2ROOT_gRhoFit", groupName.Data());
+  fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
+
+  // std::cout << "NoFit (ChiSqr, CDF) = (" << ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl;
+  delete tempGlobalFit;
+
+}
+
 
 
 /**

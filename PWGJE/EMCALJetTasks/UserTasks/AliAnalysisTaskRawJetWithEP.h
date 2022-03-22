@@ -77,7 +77,10 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
                               kIntegratedFlow, kQC2, kQC4 }; // fit type
     
     enum DetFlev{kFullTPC,kPosTPC,kNegTPC,kFullV0,kV0A,kV0C};
+    enum detectorType{ kTPC, kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used for event plane
+    enum qnVCalibType{kOrig, kJeHand};
 
+    
     AliAnalysisTaskJetQnVectors* fV0Q2VectTask; ///< Reader for the Qn vector
     Double_t  fV0Q2Vector; ///< Calibrated q2 value 
     Double_t  fV0Ep2Angle; ///< Calibrated event-plane angle 
@@ -95,6 +98,8 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     void SetModulationFitType(fitModulationType type) {fFitModulationType = type; }
 
     void SetEventQA(Int_t qaEventNum){fQaEventNum = qaEventNum;}
+    void SetV0Combine(Bool_t bV0Combin){fV0Combin = bV0Combin;}
+    void SetQnCalibType(qnVCalibType iQnVCalibType){fQnVCalibType = iQnVCalibType;}
     //== e == Setter Prepare  ################################################
 
   protected:
@@ -124,7 +129,7 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     TList     *fOutputList; //!<! output list for histograms
     int       fCalibType;   /// type of calibrations used by handler
     int       fNormMethod;  /// normalisation of Q vector
-
+    Bool_t    fV0Combin = kFALSE;
     
     TString   fSplinesFileName; /// Sprine input file name
     TString   fCalibRefFileName;
@@ -141,17 +146,24 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     
     void       SetModulationRhoFit();
     void       MeasureBkg();
+    void       BkgFitEvaluation();
     
     void       DoEventPlane();
     void       DoJetLoop();
     void       DoTrackLoop();
 
+    
+
     Bool_t     QnJEHandlarEPGet();
     Bool_t     QnGainCalibration();
     Bool_t     QnRecenteringCalibration();
 
+    Double_t CalcEPAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}
     Double_t CalcEPReso(Int_t n, Double_t &psiA, Double_t &psiB, Double_t &psiC);
-    
+
+    TH1F*   GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen);
+    Double_t CalculateEventPlaneChi(Double_t res);
+
     static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
       Double_t n(ndf/2.), denom(TMath::Power(2, n)*TMath::Gamma(n));
       if (denom!=0)  return ((1./denom)*TMath::Power(x, n-1)*TMath::Exp(-x/2.)); 
@@ -159,17 +171,19 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     }
 
     // note that the cdf of the chisquare distribution is the normalized lower incomplete gamma function
-    // static Double_t ChiSquareCDF(Int_t ndf, Double_t x) { return TMath::Gamma(ndf/2., x/2.); }
+    static Double_t ChiSquareCDF(Int_t ndf, Double_t x) { return TMath::Gamma(ndf/2., x/2.); }
 
-    // static Double_t ChiSquare(TH1& histo, TF1* func) {
-    //   // evaluate the chi2 using a poissonian error estimate on bins
-    //   Double_t chi2(0.);
-    //   for(Int_t i(0); i < histo.GetXaxis()->GetNbins(); i++) {
-    //       if(histo.GetBinContent(i+1) <= 0.) continue;
-    //       chi2 += TMath::Power((histo.GetBinContent(i+1)-func->Eval(histo.GetXaxis()->GetBinCenter(1+i))), 2)/histo.GetBinContent(i+1);
-    //   }
-    //   return chi2;
-    // }
+    static Double_t ChiSquare(TH1& histo, TF1* func) {
+      // evaluate the chi2 using a poissonian error estimate on bins
+      Double_t chi2(0.);
+      for(Int_t i(0); i < histo.GetXaxis()->GetNbins(); i++) {
+          if(histo.GetBinContent(i+1) <= 0.) continue;
+          chi2 += TMath::Power((histo.GetBinContent(i+1) \
+            - func->Eval(histo.GetXaxis()->GetBinCenter(1+i))), 2)\
+              /histo.GetBinContent(i+1);
+      }
+      return chi2;
+    }
 
     // static Double_t CalcEPChi(Double_t res)
     // {
@@ -185,6 +199,7 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     
     
 
+    qnVCalibType fQnVCalibType = kOrig;
 
     Int_t CheckRunNum = 0;
     Int_t fPreRunNum  = -1; /// run number of event previously analysed
