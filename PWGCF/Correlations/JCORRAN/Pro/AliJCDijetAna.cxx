@@ -131,6 +131,7 @@ AliJCDijetAna& AliJCDijetAna::operator=(const AliJCDijetAna& obj){
 void AliJCDijetAna::SetSettings(int    lDebug,
                                 double lParticleEtaCut,
                                 double lParticlePtCut,
+                                double lParticlePtCutMax,
                                 double lJetCone,
                                 double lktJetCone,
                                 int    lktScheme,
@@ -144,10 +145,12 @@ void AliJCDijetAna::SetSettings(int    lDebug,
                                 double lDeltaPhiCut,
                                 double lmatchingR,
                                 double ltrackingIneff,
-                                double luseCrho){
+                                double luseCrho,
+                                bool   lThisIsTrueMC){
     fDebug = lDebug;
     fParticleEtaCut = lParticleEtaCut;
     fParticlePtCut = lParticlePtCut;
+    fParticlePtCutMax = lParticlePtCutMax;
     fusePionMass = lusePionMass;
     fUseDeltaPhiBGSubtr = luseDeltaPhiBGSubtr;
     fConstituentCut = lConstituentCut;
@@ -156,6 +159,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     fDeltaPhiCut = lDeltaPhiCut;
     ftrackingIneff = ltrackingIneff;
     bUseCrho = luseCrho;
+    bThisIsTrueMC = lThisIsTrueMC;
 
     etaMaxCutForJet = lParticleEtaCut-lJetCone;
     etaMaxCutForKtJet = lParticleEtaCut-lktJetCone;
@@ -241,6 +245,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     selectorNoGhostsAllButTwo  = selectorAllButTwo * selectorNoGhosts; // Here right selector is applied first, then the left one.
     bge = fastjet::JetMedianBackgroundEstimator(selectorEta, jet_def_bge, area_def_bge);
 
+    areaCut=0.6*TMath::Pi()*0.4*0.4;
 
     return;
 }
@@ -270,7 +275,7 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
         AliJBaseTrack *trk = (AliJBaseTrack*)inList->At(utrack);
         pt = trk->Pt();
         eta = trk->Eta();
-        if (pt>fParticlePtCut && TMath::Abs(eta) < fParticleEtaCut){
+        if (pt>fParticlePtCut && pt<fParticlePtCutMax && TMath::Abs(eta) < fParticleEtaCut){
             if(ftrackingIneff>0.0 && randomGenerator->Uniform(0.0,1.0) < ftrackingIneff) continue;
             phi = trk->Phi() > TMath::Pi() ? trk->Phi()-2*TMath::Pi() : trk->Phi();
             if(DeltaR(randConeEta, eta, randConePhi, phi) < fJetCone) randConePt += pt;
@@ -291,7 +296,15 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
     cs.reset(new fastjet::ClusterSequenceArea(chparticles, jet_def, area_def));
     cs_bge.reset(new fastjet::ClusterSequenceArea(ktchparticles, jet_def_bge, area_def_bge));
 
-    rawJets   = fastjet::sorted_by_pt(cs->inclusive_jets(MinJetPt)); // APPLY Min pt cut for jet
+    tempJets   = fastjet::sorted_by_pt(cs->inclusive_jets(MinJetPt)); // APPLY Min pt cut for jet
+
+    if(bThisIsTrueMC) {
+        rawJets = tempJets;
+    } else {
+        for (utrack = 0; utrack < tempJets.size(); utrack++) {
+            if(tempJets.at(utrack).area()>areaCut) rawJets.push_back(tempJets.at(utrack));
+        }
+    }
 
     // For MC runs: If we find jets with over 4 times pt_hard bin, reject the event.
     if( fptHardBin!=0 && rawJets.size()>0 ) {
@@ -1032,6 +1045,7 @@ void AliJCDijetAna::ResetObjects() {
         bHasDeltaPhiDijet.at(i) = false;
     }
     rawJets.clear();
+    tempJets.clear();
     rawKtJets.clear();
     rhoEstJets.clear();
 
