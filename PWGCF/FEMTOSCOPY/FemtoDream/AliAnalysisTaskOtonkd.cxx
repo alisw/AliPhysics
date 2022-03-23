@@ -578,10 +578,10 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
            Protons.push_back(*fTrack);
            IsProton = kTRUE;
           }else{ //if isPions write only some of them
-           if(r3.Rndm()<.10){
+           //if(r3.Rndm()<.10){ // comment this ==> now use all pions
             Protons.push_back(*fTrack);
             IsProton = kTRUE;
-           }
+           //}
           }
         }
         if (fTrackCutsAntiProton->isSelected(fTrack)){
@@ -589,10 +589,10 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
            AntiProtons.push_back(*fTrack);
            IsProton = kTRUE;
           }else{ //if isPions write only some of them
-           if(r3.Rndm()<.10){
+           //if(r3.Rndm()<.10){ // comment this ==> now use all pions
             AntiProtons.push_back(*fTrack);
             IsProton = kTRUE;
-           }
+           //}
           }
         }
 
