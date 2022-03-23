@@ -166,15 +166,17 @@ Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, U
   }
   
   if(fMinPtCharged > 0.) {
+    AliDebugStream(1) << "Applying pt-cut on charged particles: " << fMinPtCharged << std::endl;
     if((vp->Charge() != 0) && (TMath::Abs(vp->Pt()) < fMinPtCharged)) {
-    rejectionReason |= kPtCut;
-    return kFALSE;
+      rejectionReason |= kPtCut;
+      return kFALSE;
     }
   }
   if(fMinPtNeutral > 0.) {
+    AliDebugStream(1) << "Applying pt-cut on neutral particles: " << fMinPtNeutral << std::endl;
     if((vp->Charge() == 0) && (TMath::Abs(vp->Pt()) < fMinPtNeutral)) {
-    rejectionReason |= kPtCut;
-    return kFALSE;      
+      rejectionReason |= kPtCut;
+      return kFALSE;      
     }
   }
 
