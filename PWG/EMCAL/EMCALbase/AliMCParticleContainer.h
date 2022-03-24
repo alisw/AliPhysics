@@ -236,6 +236,18 @@ class AliMCParticleContainer : public AliParticleContainer {
   void                        SetMinPtNeutral(Double_t minpt)                 { fMinPtNeutral = minpt; }
 
   /**
+   * @brief Set min. energy cut applied on charged particles
+   * @param minE Min. energy (in GeV)
+   */
+  void                        SetMinECharged(Double_t minE)                   { fMinECharged = minE; }
+
+  /**
+   * @brief Set min. energy cut applied on neutral particles
+   * @param minE Min. energy (in GeV)
+   */
+  void                        SetMinENeutral(Double_t minE)                   { fMinENeutral = minE; }
+
+  /**
    * @brief Require particle to be a physical primary particle
    * @param s If true only physical primary particles are selected 
    */
@@ -288,6 +300,8 @@ class AliMCParticleContainer : public AliParticleContainer {
   UInt_t                      fMCFlag;                        ///< select MC particles with flags
   Double_t                    fMinPtCharged;                  ///< min. charged particle pt
   Double_t                    fMinPtNeutral;                  ///< min. neutral particle pt
+  Double_t                    fMinECharged;                   ///< min. charged particle energy
+  Double_t                    fMinENeutral;                   ///< min. neutral particle energy
 
  private:
   AliMCParticleContainer(const AliMCParticleContainer& obj); // copy constructor
