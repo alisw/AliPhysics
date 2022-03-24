@@ -597,7 +597,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
         }
 
         //FILL kaons and deuterons unless it is MCtruth:
-        if(!fIsMCtruth){
+        if(!fIsMCtruth&&!fisPions){ //for pi-d analysis, do not use the tree
          if(IsKaon&&!fDOpd) FillKaon(fTrack);
          if(IsProton&&fDOpd) FillKaon(fTrack);
          if(IsDeuteron) FillDeuteron(fTrack);
@@ -761,7 +761,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
 
       //fill tree:
       //----------
-      if(fTnKaon>0&&fTnDeuteron>0) fTree->Fill(); // std kd 
+      if(fTnKaon>0&&fTnDeuteron>0&&!fisPions) fTree->Fill(); // std kd 
 
 
      bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)
