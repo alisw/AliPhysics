@@ -41,7 +41,9 @@ AliMCParticleContainer::AliMCParticleContainer():
   AliParticleContainer(),
   fMCFlag(AliAODMCParticle::kPhysicalPrim),
   fMinPtCharged(0.),
-  fMinPtNeutral(0.)
+  fMinPtNeutral(0.),
+  fMinECharged(0.),
+  fMinENeutral(0.)
 {
   fBaseClassName = "AliAODMCParticle";
   SetClassName("AliAODMCParticle");
@@ -51,7 +53,9 @@ AliMCParticleContainer::AliMCParticleContainer(const char *name):
   AliParticleContainer(name),
   fMCFlag(AliAODMCParticle::kPhysicalPrim),
   fMinPtCharged(0.),
-  fMinPtNeutral(0.)
+  fMinPtNeutral(0.),
+  fMinECharged(0.),
+  fMinENeutral(0.)
 {
   fBaseClassName = "AliAODMCParticle";
   SetClassName("AliAODMCParticle");
@@ -179,6 +183,20 @@ Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, U
       return kFALSE;      
     }
   }
+  if(fMinECharged > 0.) {
+    AliDebugStream(1) << "Applying E-cut on charged particles: " << fMinECharged << std::endl;
+    if((vp->Charge() != 0) && (vp->E() < fMinECharged)) {
+      rejectionReason |= kPtCut;
+      return kFALSE;
+    }
+  }
+  if(fMinENeutral > 0.) {
+    AliDebugStream(1) << "Applying E-cut on neutral particles: " << fMinENeutral << std::endl;
+    if((vp->Charge() == 0) && (vp->E() < fMinENeutral)) {
+      rejectionReason |= kPtCut;
+      return kFALSE;      
+    }
+  }
 
   return ApplyParticleCuts(vp, rejectionReason);
 }
@@ -208,6 +226,12 @@ const char* AliMCParticleContainer::GetTitle() const
   }
   if(fMinPtNeutral > 0.) {
     trackString += TString::Format("_pTNe%04d", static_cast<int>(fMinPtNeutral*1000.0));
+  }
+  if(fMinECharged > 0.) {
+    trackString += TString::Format("_ECh%04d", static_cast<int>(fMinECharged*1000.0));
+  }
+  if(fMinENeutral > 0.) {
+    trackString += TString::Format("_ENe%04d", static_cast<int>(fMinENeutral*1000.0));
   }
   return trackString.Data();
 }
