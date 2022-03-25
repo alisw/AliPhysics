@@ -678,8 +678,9 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
     if( TPCpi_sign<3 ) passTOF = false; // use also TPCpi to exclude for TOF selection
     // 22-March-2022 for p-d crosschecks:
     if(p<1.4) passTOF = false;
-    if( TOFd_sign<-3 ) passTOF = true; 
-    if( TOFd_sign>5 ) passTOF = true; 
+    if( TOFd_sign<-3 ) passTOF = false; 
+    if( TOFd_sign>5 ) passTOF = false; 
+    if( TPCpi_sign<6 ) passTOF = false; 
    }
   }//TOFyes
 
@@ -703,7 +704,8 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
    if( TPCe_sign<3 ) passTPC = false; // exclude tpc e (effect only for p>~1.5GeV)
    // 22-March-2022 for p-d crosschecks:
    if(p>=1.4) passTPC = false;
-   if( TPCe<6 ) passTPC = false; 
+   if( TPCe_sign<9 ) passTPC = false; // exclude tpc e (effect only for p>~1.5GeV)
+   if( TPCpi_sign<6 ) passTPC = false; // I think this is not necessary given the electron rejection
   }
  }else{
   passTPC=false;
