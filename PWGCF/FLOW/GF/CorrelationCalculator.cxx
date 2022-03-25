@@ -32,7 +32,7 @@ TComplex CorrelationCalculator::QGap12M(int n, int p)
 {
 
 	if(n>=0) return Qvector12M[n][p];
-	else return TComplex::Conjugate(Qvector10M[-n][p]);
+	else return TComplex::Conjugate(Qvector12M[-n][p]);
 
 }
 //____________________________________________________________________
@@ -40,7 +40,7 @@ TComplex CorrelationCalculator::QGap12P(int n, int p)
 {
 
 	if(n>=0) return Qvector12P[n][p];
-	else return TComplex::Conjugate(Qvector10P[-n][p]);
+	else return TComplex::Conjugate(Qvector12P[-n][p]);
 
 }
 //____________________________________________________________________

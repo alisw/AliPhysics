@@ -619,8 +619,13 @@ void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {
 	if (!fUseCorrectedNTracks) {
     	NtrksCounter = NTracksUncorrected;
   	} else {
-    	NtrksCounter = NTracksCorrected; 
+    	NtrksCounter = NTracksCorrected;
   	}
+	//printf("!!!!!!!!!!!!\n\n\n\n\n\n");
+	//std::cout<<"NTracksUncorrected="<<NTracksUncorrected<<std::endl;
+	//std::cout<<"NTracksCorrected="<<NTracksCorrected<<std::endl;
+	//std::cout<<"NtrksCounter="<<NtrksCounter<<std::endl;
+	//printf("!!!!!!!!!!!!\n\n\n\n\n\n");
 	hTracksCorrection2d->Fill(NTracksUncorrected, NTracksCorrected);
   	hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
 }

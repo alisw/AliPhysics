@@ -396,7 +396,9 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TH1F*				hChi2; 			//!
 
 		// Global variables
-		int NtrksCounter = 0;               //!
+		double NtrksCounter = 0;               //!
+		double NTracksCorrected = 0;			//!
+		double NTracksUncorrected = 0;			//!
 		int NtrksAfter = 0;                 //!
 		int NtrksAfterGap0M = 0;           //!
 		int NtrksAfterGap0P = 0;           //!
@@ -417,8 +419,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int NtrksAfter3subL = 0;            //!
 		int NtrksAfter3subM = 0;            //!
 		int NtrksAfter3subR = 0;            //!
-		int NTracksCorrected = 0;			//!
-		int NTracksUncorrected = 0;			//!
+		
         
 		PhysicsProfilePPTask multProfile;          //!
 		PhysicsProfilePPTask multProfile_bin[30];  //!
