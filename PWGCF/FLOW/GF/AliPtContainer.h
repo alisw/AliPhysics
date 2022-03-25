@@ -42,6 +42,7 @@ class AliPtContainer: public TNamed {
         void RebinMulti(Int_t nbins);
         void RebinMulti(Int_t nbins, Double_t *binedges);
         TH1* getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub = false);
+        TH1* getSubeventCorrelation(int ind, int m);
         Long64_t Merge(TCollection *collist);
     protected:
         TList* fTermList;
@@ -65,7 +66,6 @@ class AliPtContainer: public TNamed {
         TH1* RecalculateCkHists(vector<TH1*> inh);
         TH1* RecalculateSkewHists(vector<TH1*> inh);
         TH1* RecalculateKurtosisHists(vector<TH1*> inh);
-        TH1* getSubeventCorrelation(int ind, int m);
         void CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized); 
         void CalculateRecursive(bool normalized);
         int factorial(const int n) { return (n<2)?1:factorial(n - 1)*n; }
