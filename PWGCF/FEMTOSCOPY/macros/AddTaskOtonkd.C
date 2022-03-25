@@ -160,7 +160,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiDeuteron->SetDCAVtxZ(0.24);
   }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
-   TrackCutAntisDeuteron->SetPtRange(0.8,2.9);
+   TrackCutsAntiDeuteron->SetPtRange(0.8,2.9);
   }
 
   //protons
