@@ -211,7 +211,7 @@ public:
   
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information
-  void FillMCTruthInfo();                   // fill MC truth particles
+  void FillMCTruthInfo(Bool_t isAOD);                   // fill MC truth particles
   void FillV0PairInfo();                    // fill V0 reduced pair information
   AliReducedPairInfo* FillV0PairInfo(AliESDv0* v0, Int_t id, AliESDtrack* legPos, AliESDtrack* legNeg, AliKFVertex* vtxKF, Bool_t chargesAreCorrect);
   void FillV0PairInfoAOD();                    // fill V0 reduced pair information
@@ -221,9 +221,10 @@ public:
   void FillFMDInfo(Bool_t isAOD);
   Int_t GetSPDTrackletMultiplicity(AliVEvent* event, Float_t lowEta, Float_t highEta);
   
-  UInt_t MatchMCsignals(Int_t iparticle);     // check all MC signals for MC particle i and write decisions in a bit map
+  UInt_t MatchMCsignals(Int_t iparticle, Bool_t isAOD);     // check all MC signals for MC particle i and write decisions in a bit map
   Bool_t CheckMCtruthWriteFormat(UInt_t bitMap);   // make a decision on which format (base/full) to be used for the MC track
   Bool_t CheckParticleSource(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal);
+  Bool_t CheckParticleSourceAOD(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal);
   Bool_t CheckPDGcode(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal);
   
   void   FillStatisticsHistograms(Bool_t isSelected, UInt_t physSel, UChar_t trdTrigMap, UInt_t emcalTrigMap, Double_t xbin, Double_t* percentiles, Int_t nEstimators);
