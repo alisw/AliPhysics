@@ -32,12 +32,12 @@
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
 
-#include "AliAnalysisTaskParticleEffDY.h"
+#include "AliAnalysisTaskParticleEffDY04.h"
 
 
 
 
-ClassImp(AliAnalysisTaskParticleEffDY)
+ClassImp(AliAnalysisTaskParticleEffDY04)
 //ClassImp(AliAnalysisTaskParticleEff)
 
 double fV1[3];
@@ -46,22 +46,22 @@ double fV1[3];
 
 
 
-void AliAnalysisTaskParticleEffDY::SetFB(int fb)
+void AliAnalysisTaskParticleEffDY04::SetFB(int fb)
 {
   fFB = fb;
 }
 
-void AliAnalysisTaskParticleEffDY::SetPidMethod(PidMethod method)
+void AliAnalysisTaskParticleEffDY04::SetPidMethod(PidMethod method)
 {
   fPidMethod = method;
 }
 
-int AliAnalysisTaskParticleEffDY::GetPidMethod()
+int AliAnalysisTaskParticleEffDY04::GetPidMethod()
 {
   return (int)fPidMethod;
 }
 
-void AliAnalysisTaskParticleEffDY::SetPidMethod(int method)
+void AliAnalysisTaskParticleEffDY04::SetPidMethod(int method)
 {
   switch(method){
   case 0: fPidMethod=kNSigma;
@@ -84,7 +84,7 @@ void AliAnalysisTaskParticleEffDY::SetPidMethod(int method)
 
 
 
-AliAnalysisTaskParticleEffDY::AliAnalysisTaskParticleEffDY(TString name, int pidMethod, int filterbit) :
+AliAnalysisTaskParticleEffDY04::AliAnalysisTaskParticleEffDY04(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kNSigma),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
 {
@@ -135,7 +135,7 @@ AliAnalysisTaskParticleEffDY::AliAnalysisTaskParticleEffDY(TString name, int pid
 
 //_______________________________________________________
 
-AliAnalysisTaskParticleEffDY::~AliAnalysisTaskParticleEffDY()
+AliAnalysisTaskParticleEffDY04::~AliAnalysisTaskParticleEffDY04()
 {
   /* if(centrality) delete centrality;
 s128     if(fHistoList) delete fHistoList;
@@ -149,7 +149,7 @@ s128     if(fHistoList) delete fHistoList;
 
 //_______________________________________________________
 
-void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
+void AliAnalysisTaskParticleEffDY04::UserCreateOutputObjects()
 {
 
   /* create output */
@@ -783,7 +783,7 @@ bool IsElectron1(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsi
 
 //_______________________________________________________
 
-void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
+void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 {
 
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -1019,7 +1019,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 
     fHistQA[10]->Fill(3);
      
-    if(track->Y() < -0.5 || track->Y() > 0.5)
+    if(track->Y() < -0.4 || track->Y() > 0.4)
       continue; 
     fHistQA[10]->Fill(4);
 

@@ -172,6 +172,8 @@ AliAnalysisTaskParticleEfficiency.cxx
   AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
   AliFemtoCorrFctnpdtHe3.cxx
     AliAnalysisTaskParticleEffDY.cxx
+        AliAnalysisTaskParticleEffDY04.cxx
+            AliAnalysisTaskParticleEffDY06.cxx
   )
 
 
