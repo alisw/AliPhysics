@@ -1460,8 +1460,9 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     */
 	
     //KFParticle
-	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
+	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_ULS_KF);
+    
     fHist_InvMass_pt_ULS_KF_eg1 = new TH2F("fHist_InvMass_pt_ULS_KF_eg1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
     fOutputList->Add(fHist_InvMass_pt_ULS_KF_eg1);
     fHist_InvMass_pt_ULS_KF_eg2 = new TH2F("fHist_InvMass_pt_ULS_KF_eg2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
@@ -1469,7 +1470,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     
     
     
-	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,250,0,5);
+	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS_KF);
     
     //Correlation btween leg1 and leg2
@@ -1606,18 +1607,21 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fHist_InvMass_pt_LSboth = new TH2F("fHist_InvMass_pt_LSboth","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,125,0,5);
         fOutputList->Add(fHist_InvMass_pt_LSboth);
 
-        fHist_InvMass_pt_ULStpc_wMatching = new TH2F("fHist_InvMass_pt_ULStpc_wMatching","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,125,0,5);
-        fOutputList->Add(fHist_InvMass_pt_ULStpc_wMatching);
-    
-        fHist_InvMass_pt_LStpc_wMatching = new TH2F("fHist_InvMass_pt_LStpc_wMatching","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,125,0,5);
-        fOutputList->Add(fHist_InvMass_pt_LStpc_wMatching);
+        
     
     }//close flag fIs_sys
+    
+    
+    fHist_InvMass_pt_ULStpc_wMatching = new TH2F("fHist_InvMass_pt_ULStpc_wMatching","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,500,0,5);
+    fOutputList->Add(fHist_InvMass_pt_ULStpc_wMatching);
+    
+    fHist_InvMass_pt_LStpc_wMatching = new TH2F("fHist_InvMass_pt_LStpc_wMatching","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,500,0,5);
+    fOutputList->Add(fHist_InvMass_pt_LStpc_wMatching);
 	
-    fHist_InvMass_pt_ULStpc = new TH2F("fHist_InvMass_pt_ULStpc","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,125,0,5);
+    fHist_InvMass_pt_ULStpc = new TH2F("fHist_InvMass_pt_ULStpc","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,500,0,5);
     fOutputList->Add(fHist_InvMass_pt_ULStpc);
     
-    fHist_InvMass_pt_LStpc = new TH2F("fHist_InvMass_pt_LStpc","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,125,0,5);
+    fHist_InvMass_pt_LStpc = new TH2F("fHist_InvMass_pt_LStpc","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,500,0,5);
     fOutputList->Add(fHist_InvMass_pt_LStpc);
     
     
@@ -3813,10 +3817,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                         
 						
                         //tpc electrons but at least one leg with track-matching
-                        if(!fIs_sys){
+                        //if(!fIs_sys){
                             if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
                             if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
-                        }
+                       // }
                         
 						  if((fClus->E() / fP) >=fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax && (fClus->E()) >= fEnergyCut){
 							
@@ -4007,10 +4011,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                          // printf("The cuts are: %f , E/p < %f and E > %f\n",fEoverPCutMin, fEoverPCutMax, fEnergyCut);
                         
                         //tpc electrons but at least one leg with track-matching
-                        if(!fIs_sys){
+                        //if(!fIs_sys){
                             if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
                             if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
-                        }
+                        //}
                         
                         
 						
@@ -4215,10 +4219,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                        // printf("fClus2->E() =%f,   fP2= %f  \n",fClus2->E(), fP2);
                         
                         //tpc electrons but at least one leg with track-matching
-                        if(!fIs_sys){
+                      // if(!fIs_sys){
                             if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
                             if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
-                        }
+                        //}
 						
 						if(((fClus->E() / fP) >=fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax && (fClus->E()) >= fEnergyCut)||((fClus2->E()/fP2) >=fEoverPCutMin && (fClus2->E()/fP2) <=fEoverPCutMax && (fClus2->E()) >= fEnergyCut)){
 							

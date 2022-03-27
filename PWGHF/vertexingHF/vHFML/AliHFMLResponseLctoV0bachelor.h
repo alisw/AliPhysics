@@ -41,11 +41,15 @@ public:
   AliHFMLResponseLctoV0bachelor(const AliHFMLResponseLctoV0bachelor &source);
   AliHFMLResponseLctoV0bachelor& operator=(const AliHFMLResponseLctoV0bachelor& source);
   
+  void SetMapOfProtonMixedEventVariables(float nsigmaTPCp, float nsigmaTOFp, float ncombp);
+  
 protected:
   virtual void SetMapOfVariables(AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF, int /*masshypo*/);
 
+  Bool_t fIsMixedEvent;                                 /// variable to set the proton PID variables manually and disable the signed d0 variable in case of mixed event background
+
   /// \cond CLASSIMP
-  ClassDef(AliHFMLResponseLctoV0bachelor, 2); ///
+  ClassDef(AliHFMLResponseLctoV0bachelor, 3); ///
   /// \endcond
 };
 #endif

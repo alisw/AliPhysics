@@ -1,13 +1,13 @@
 #ifndef ALIANALYSISTRACKINGUNCERTAINTIESAOT_H
 #define ALIANALYSISTRACKINGUNCERTAINTIESAOT_H
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// Analysis task for the systematic study of the uncertainties related to   //
-// the tracking and ITS-TPC matching efficiency for different particle      //
-// species.                                                                 //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                     //
+// Analysis task for the systematic study of the uncertainties related to    //
+// the tracking and ITS-TPC matching efficiency for different particle        //
+// species.                                                                                                     //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class TList;
 class AliESDEvent;
@@ -30,7 +30,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
  public:
     
   enum {
-    kNumberOfAxes = 8
+    kNumberOfAxes = 12
   };
   enum ESpecies_t {
     kSpecElectron = BIT(0),
@@ -117,6 +117,12 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   // number of bins for histTpcItsMatch
   void SetnBinsDCAxy_histTpcItsMatch(Int_t n)  {fnBinsDCAxy_histTpcItsMatch = n;}
 
+  // switch on/off MC spectra weights
+  void SetUseMCWeights()  {fUseMCWeights = kTRUE;}
+
+  // adds to the ThnSparse 4 more axes of primary vertex resolution and position
+  void SetfAddPriVtxVars()  {fAddPriVtxVars = kTRUE;}
+
  private:
     
   void   BinLogAxis(const THnSparseF *h, Int_t axisNumber);
@@ -147,12 +153,20 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     
   TH1F *fHistNEvents;               //! histo with number of events
   TH1F *fHistCent;                  //! histo for the centrality 
+  TH1F *fHistVtxResT;               //! primary vertex resolution in bending plane
+  TH1F *fHistVtxResZ;               //! primary vertex resolution in z
+  TH1F *fHistVtxZpos;               //! primary vertex z position
+  TH1F *fHistVtxChi2;               //! primary vertex chi2/ndf
+  TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
+  TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
+  TH2F *fHistMCWeights;             //! histo of MC weights per particle type
   THnSparse *fHistMC;               //! sparse of the tracks on MC and ITS-TOC matching
   THnSparse *fHistMCTPConly;        //! sparse of the tracks on MC and only TPC request
   THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
-  TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
-  TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
 
+
+
+  
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
   Bool_t   fUsePtLogAxis;           //flag to use log scale on pt axis in match. eff. sparse
@@ -193,6 +207,10 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   // number of bins for histTpcItsMatch
   Int_t fnBinsDCAxy_histTpcItsMatch; ///
 
+  // switch on (if set) MC spectra weights
+  Bool_t       fUseMCWeights;     ///
+  Bool_t       fAddPriVtxVars;    ///
+  
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     

@@ -123,6 +123,7 @@ public:
   void SetCalculateSpherocityMC ( Bool_t lVar ) { fkDebugMCSpherocity = lVar; }
   void SetPreferSuperCalib( Bool_t lVar ) { fkPreferSuperCalib = lVar; }
   void SetPropDCA      ( Bool_t lVar ) { fkPropDCA     = lVar; } ;
+  void SetEtaCut(Float_t lVar) {fEtaCut  = lVar;};
   
   //override for getting estimator definitions from different OADB file
   //FIXME: should preferably be protected, extra functionality required
@@ -161,6 +162,9 @@ public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  
+  // Max number of tracks
+  static const Int_t kTrack = 90000;
   //---------------------------------------------------------------------------------------
   
 private:
@@ -182,7 +186,7 @@ private:
   Bool_t fkSkipMCHeaders; //if true, don't try to read headers
   Bool_t fkPreferSuperCalib; //if true, prefer supercalib if available
   Bool_t fkLightTree; //if true, disable typically unused branches of TTree for size
-  Bool_t fkPropDCA;     //if true, propagate tracks to DCA 
+  Bool_t fkPropDCA;     //if true, propagate tracks to DCA
   
   //Debug Options
   Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
@@ -310,10 +314,24 @@ private:
   AliMultVariable *fNTracksTPCout;             //!  no. tracks
   
   Int_t fNTracksITSrefit;
-  Int_t fNTracksDCAxyABS;
-  Int_t fNTracksDCAzABS;
-  Int_t fNTracksDCAxySQ;
-  Int_t fNTracksDCAzSQ;
+  Int_t fNTracksHasPointOnITSLayer;
+  Float_t fNTracksDCAxyABS;
+  Float_t fNTracksDCAzABS;
+  Float_t fNTracksDCAxySQ;
+  Float_t fNTracksDCAzSQ;
+  Float_t fNTracksMaxDCAz00;
+  Int_t BunchCrossingIDNotZero;
+  Int_t fNPileUpVertices;
+  Int_t fNumberOfTracks;
+  Float_t fTrackDCAz[kTrack];
+  Int_t fTrackBCID[kTrack];
+  Float_t fTrackEta[kTrack];
+  Float_t fTrackPhi[kTrack];
+  Int_t fTrackPileupVxt[kTrack];
+  Bool_t fTrackITSrefit[kTrack];
+  Bool_t fTrackIsPileup[kTrack];
+  Bool_t fTrackTPC[kTrack];
+  Float_t fEtaCut;
   
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
   AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
@@ -411,7 +429,7 @@ private:
   AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
   AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
   
-  ClassDef(AliMultSelectionTask, 14);
+  ClassDef(AliMultSelectionTask, 15);
   //3 - extra QA histograms
   //8 - fOADB ponter
   //13 - vertex Z

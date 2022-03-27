@@ -166,7 +166,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	if(flags & FLUC_PHI_CORRECTION)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_CORRECTION);
 	
-	gRandom->SetSeed();
+	gRandom->SetSeed(151222);
 
 	//fFFlucAna->SetQCEtaCut( fQC_eta_min, fQC_eta_max, 0.5 ); not used anymore, checked with JP
 
@@ -267,8 +267,9 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if(flags & FLUC_PHI_CORRECTION)
 			pPhiWeights = fJCorMapTask->GetCorrectionMap(phiMapIndex,fRunNum,fcBin);
 
-		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
+		//ReadAODTracks depends on the vertex info for phi and efficiency weight
 		ReadVertexInfo( currentEvent, fVertex); // read vertex info
+		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 		// Analysis Part
 		fFFlucAna->Init();
 		fFFlucAna->SetInputList( fInputList );
@@ -395,22 +396,22 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				continue;
 
 			// New: Get the values of the DCA according to the type of tracks.
-			Double_t DCAxy = 0.;	// DCA in the transverse plane.
+			/*Double_t DCAxy = 0.;	// DCA in the transverse plane.
 			Double_t DCAz = 0.;		// DCA along the beam axis.
 			if(fFilterBit == 128) {	// Constrained TPC-only tracks.
 				DCAxy = track->DCA();
 				DCAz = track->ZAtDCA();
-			}
-		  else {	// For the unconstrained tracks. TBC!
-		    AliAODVertex *primaryVertex = (AliAODVertex*)aod->GetPrimaryVertex();
-		    Double_t v[3];    // Coordinates of the PV
-		    Double_t pos[3];  // Coordinates of the track closest to PV
 
-		    primaryVertex->GetXYZ(v);
-		    track->GetXYZ(pos);
-		    DCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
-		    DCAz = pos[2] - v[2];
-		  }
+			}else {	// For the unconstrained tracks. TBC!
+				AliAODVertex *primaryVertex = (AliAODVertex*)aod->GetPrimaryVertex();
+				Double_t v[3];    // Coordinates of the PV
+				Double_t pos[3];  // Coordinates of the track closest to PV
+
+				primaryVertex->GetXYZ(v);
+				track->GetXYZ(pos);
+				DCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+				DCAz = pos[2] - v[2];
+			}
 
 		  // New: Apply the cuts on the DCA values of the track.
 			if(TMath::Abs(DCAxy) > fDCAxy_max) {continue;}
@@ -418,7 +419,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 
 			// New: Apply the cut on the chi2 per ndf for the TPC tracks.
 			Double_t chi2NDF = track->Chi2perNDF();	// TBC: is this 100% the right one?
-			if((chi2NDF < fChi2perNDF_min) || (chi2NDF > fChi2perNDF_max)) {continue;}
+			if((chi2NDF < fChi2perNDF_min) || (chi2NDF > fChi2perNDF_max)) {continue;}*/
 
 			if(track->TestFilterBit( fFilterBit )){ //
 				Double_t pt = track->Pt();
@@ -447,7 +448,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 				itrack->SetParticleType(kJHadron);
-				itrack->SetCharge(track->Charge() );
+				itrack->SetCharge(ch);
 				itrack->SetStatus(track->GetStatus() );
 				//
 				//double fCent = ReadCentrality(aod,fCentDetName);

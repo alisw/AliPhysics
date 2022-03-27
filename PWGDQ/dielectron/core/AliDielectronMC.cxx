@@ -939,6 +939,14 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
              TMath::Abs(particlePDG)==100443 // psi 2S
              ;
     break;
+  case 601:     // all dielectron from same mother (only heavier mesons that decay into pi0,eta) sources
+    result = /*TMath::Abs(particlePDG)==22  ||*/ // photon
+             TMath::Abs(particlePDG)==113 || // rho
+             TMath::Abs(particlePDG)==331 || // eta'
+             TMath::Abs(particlePDG)==223 || // omega
+             TMath::Abs(particlePDG)==333    // phi
+             ;
+    break;
   case 401:     // open charm mesons
     if(checkBothCharges)
       result = TMath::Abs(particlePDG)>=400 && TMath::Abs(particlePDG)<=439;

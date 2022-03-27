@@ -63,6 +63,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fRequireMatchedPartLevelJet(false),
   fMaxMatchedJetDistance(-1),
   fHistManager(),
+  fHistJetHTrackPtraw(nullptr),
   fHistJetHTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -99,6 +100,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fRequireMatchedPartLevelJet(false),
   fMaxMatchedJetDistance(-1),
   fHistManager(name),
+  fHistJetHTrackPtraw(nullptr),
   fHistJetHTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -191,6 +193,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::RetrieveAndSetTaskPropertiesFromYAMLC
   std::string tempStr = "";
   baseName = "efficiency";
   res = fYAMLConfig.GetProperty({baseName, "periodIdentifier"}, tempStr, false);
+  Printf("\n\n_____res = %d , tempStr = %s_____\n\n", res , tempStr.c_str() );
   if (res) {
     fEfficiencyPeriodIdentifier = AliAnalysisTaskEmcalJetHUtils::fgkEfficiencyPeriodIdentifier.at(tempStr);
   }
@@ -212,10 +215,12 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
   fYAMLConfig.Reinitialize();
 
   // Create histograms
-  fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
+  fHistJetHTrackPtraw = new TH1F("fHistJetHTrackPtraw", "P_{T} distribution", 1000, 0.0, 100.0);
+  fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution (events w/ jet > 15 GeV)", 1000, 0.0, 100.0);
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
+  fOutput->Add(fHistJetHTrackPtraw);
   fOutput->Add(fHistJetHTrackPt);
   fOutput->Add(fHistJetEtaPhi);
   fOutput->Add(fHistJetHEtaPhi);
@@ -431,7 +436,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   Double_t efficiency = -999;
   // For comparison to the current jet
   AliEmcalJet * leadingJet = jets->GetLeadingJet();
-  // For getting the proper properties of tracks
+  // For getting the proper properties of tracks (raw and w/ jets > 15 GeV)
   AliTLorentzVector track;
 
   // Determine the trigger for the current event
@@ -498,6 +503,15 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
       const double triggerInfo[] = {eventActivity, jetPt, epAngle};
       fhnTrigger->Fill(triggerInfo);
     }
+
+    //fill loop w/ raw particle pT BEFORE jet bias
+    auto tracksIterraw = tracks->accepted_momentum();
+    for ( auto trackIter = tracksIterraw.begin(); trackIter != tracksIterraw.end(); trackIter++ ){
+      // Get proper track properties
+      track.Clear();
+      track = trackIter->first;
+      fHistJetHTrackPtraw->Fill(track.Pt());
+    } //track loop
 
     // Cut on jet pt of 15 to reduce the size of the sparses
     if (jetPt > 15) {

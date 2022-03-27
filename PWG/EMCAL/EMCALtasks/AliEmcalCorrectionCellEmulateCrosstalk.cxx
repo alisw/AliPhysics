@@ -43,6 +43,7 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
     fTCardCorrInduceEnerProb   [i] = 0;
     fTCardCorrInduceEnerFracMax[i] = 100;
     fTCardCorrInduceEnerFracMin[i] =-100;
+    fTCardCorrInduceEnerFracMinCentralEta[i] =-100;
     
     for(Int_t j = 0; j < 4 ; j++)
     {
@@ -92,6 +93,7 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Initialize()
   };
   const std::map <std::string, Float_t *> properties1D = {
     {"inducedEnergyLossMinimumFraction", fTCardCorrInduceEnerFracMin},
+    {"inducedEnergyLossMinimumFractionCentralEta", fTCardCorrInduceEnerFracMinCentralEta},
     {"inducedEnergyLossMaximumFraction", fTCardCorrInduceEnerFracMax},
     {"inducedEnergyLossProbability", fTCardCorrInduceEnerProb}
   };
@@ -348,6 +350,28 @@ void AliEmcalCorrectionCellEmulateCrosstalk::CalculateInducedEnergyInTCardCell
   if ( frac < fTCardCorrInduceEnerFracMin[sm] ) frac = fTCardCorrInduceEnerFracMin[sm];
   if ( frac > fTCardCorrInduceEnerFracMax[sm] ) frac = fTCardCorrInduceEnerFracMax[sm];   
   
+  // If active, use different absolute minimum fraction for central eta, exclude DCal 2/3 SM
+  if ( fTCardCorrInduceEnerFracMinCentralEta[sm] > 0 && (sm < 12 || sm > 17) )
+  {
+    Int_t ietaMin = 32; Int_t ietaMax = 47;       // Odd  SM
+    if ( sm % 2 )  { ietaMin = 0; ietaMax = 15; } // Even SM
+
+    // First get the SM, col-row of this tower
+    Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+    fGeom->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+
+    if ( ieta >= ietaMin && ieta <= ietaMax )
+    {
+//      Float_t eta = -10000; Float_t phi = -100000;
+//      fGeom->EtaPhiFromIndex(absId, eta, phi);
+//      printf("Min induced energy fraction for central eta: sm %d, ieta %d, eta %f fracCen %f fracOut %f\n",
+//             sm,ieta,eta,fTCardCorrInduceEnerFracMinCentralEta[sm],fTCardCorrInduceEnerFracMin[sm]);
+
+      if ( frac < fTCardCorrInduceEnerFracMinCentralEta[sm] ) frac = fTCardCorrInduceEnerFracMinCentralEta[sm];
+    }
+  } // central eta
+
   AliDebug(1,Form("\t fraction %2.3f",frac));
   
   // Randomize the induced fraction, if requested
@@ -548,8 +572,9 @@ void AliEmcalCorrectionCellEmulateCrosstalk::PrintTCardParam()
 
   for(Int_t ism = 0; ism < fgkNsm; ism++)
   {
-    printf("\t sm %d, fraction %2.3f, E frac abs min %2.3e max %2.3e \n",
-        ism, fTCardCorrInduceEnerProb[ism],fTCardCorrInduceEnerFracMin[ism],fTCardCorrInduceEnerFracMax[ism]);
+    printf("\t sm %d, fraction %2.3f, E frac abs min %2.3e minCenEta  %2.3e max %2.3e \n",
+        ism, fTCardCorrInduceEnerProb[ism],fTCardCorrInduceEnerFracMin[ism],
+           fTCardCorrInduceEnerFracMinCentralEta[ism],fTCardCorrInduceEnerFracMax[ism]);
 
     for(Int_t icell = 0; icell < 4; icell++)
     {

@@ -77,8 +77,8 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         void SetWriteLcQATree(Bool_t a) {fWriteLcQATree = a;}
         Bool_t GetWriteLcQATree() const {return fWriteLcQATree;}
         void FillEventROOTObjects(AliAODEvent* aodEvent);
-        void FillTreeGenLc(AliAODMCParticle *mcpart, Int_t CheckOrigin, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent);
-        void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst, AliAODEvent *aodEvent);
+        void FillTreeGenLc(TClonesArray *mcArray, AliAODMCParticle *mcpart, Int_t CheckOrigin, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent);
+        void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst, AliAODEvent *aodEvent, AliAODVertex *ownPVtx);
         void SetWeightFunction(TF1* weight) {fWeight=weight;}
 
         void SetUseWeights(Bool_t opt) { fUseWeights = opt;}
@@ -116,6 +116,8 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
           if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
           fMultEstimatorAvg[2]=new TProfile(*hprof);
         }
+        void SetUseOnTheFlyV0(Bool_t opt) {fUseOnTheFlyV0 = opt;}
+        Bool_t GetUseOnTheFlyV0() {return fUseOnTheFlyV0;}
 
         TProfile* GetEstimatorHistogram(const AliVEvent* event);
 
@@ -171,11 +173,12 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
         Double_t                fRefMult;      ///reference multiplicity for ntrk correction
         Int_t                   fAnalysisType; ///< switch for analysis period (for multiplicity corrections)
+        Bool_t                  fUseOnTheFlyV0; ///< switch for use of on-the-fly V0s
 
         AliAnalysisTaskSELc2pKs0fromKFP(const AliAnalysisTaskSELc2pKs0fromKFP &source); // not implemented
         AliAnalysisTaskSELc2pKs0fromKFP& operator=(const AliAnalysisTaskSELc2pKs0fromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 8);
+        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 9);
 };
 
 #endif

@@ -174,7 +174,7 @@ void AliAnalysisTaskPIDV0base::UserCreateOutputObjects()
   // PID response object
   fPIDResponse = inputHandler->GetPIDResponse();
   if (!fPIDResponse)
-    AliError("PIDResponse object was not created");
+    AliError("PIDResponse object was not created, no response from input handler");
   
   // V0 Kine cuts 
   fV0KineCuts = new AliESDv0KineCuts;
@@ -555,16 +555,9 @@ Bool_t AliAnalysisTaskPIDV0base::TPCCutMIGeo(const AliVTrack* track, const AliVE
 
   if (!track || !evt)
     return kFALSE;
-  
-  const Short_t sign = track->Charge();
-  Double_t xyz[50];
-  Double_t pxpypz[50];
-  Double_t cv[100];
 
-  track->GetXYZ(xyz);
-  track->GetPxPyPz(pxpypz);
-
-  AliExternalTrackParam* par = new AliExternalTrackParam(xyz, pxpypz, cv, sign);
+  AliExternalTrackParam* par = new AliExternalTrackParam();
+  par->CopyFromVTrack(track);
   const AliESDtrack dummy;
 
   const Double_t magField = evt->GetMagneticField();

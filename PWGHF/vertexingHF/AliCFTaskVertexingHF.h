@@ -370,13 +370,21 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Float_t fCutOnMomConservation; /// cut on momentum conservation
   Double_t fMinLeadPtRT;   /// minimum pT cut for leading particle in RT calculation
   Double_t fAveMultInTransForRT; ///Average multiplicity in transverse region
+  TH1F* fPhiDistributionGlobal;
+  TH1F* fPhiDistributionComplementary;
+  TH1F* fPhiDistributionHybrid;
+  TH1F* fNchargedinTrans;
+  TH1F* fRTdistribution;
+  TList* fListQA;
+
+
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   Bool_t fRejectOOBPileUpEvents; /// flag to enable rejection of events with simulated pileup
   Bool_t fKeepOnlyOOBPileupEvents; /// flag to keep only events with simulated pileup
 
   /// \cond CLASSIMP
-  ClassDef(AliCFTaskVertexingHF,32); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,35); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 

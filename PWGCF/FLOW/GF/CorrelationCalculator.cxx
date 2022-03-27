@@ -1,3 +1,6 @@
+/*
+ * Maintainer: Mingrui Zhao
+ */
 #include "CorrelationCalculator.h"
 
 ClassImp(CorrelationCalculator);
@@ -23,6 +26,21 @@ TComplex CorrelationCalculator::QGap10P(int n, int p)
 
 	if(n>=0) return Qvector10P[n][p];
 	else return TComplex::Conjugate(Qvector10P[-n][p]);
+}
+//____________________________________________________________________
+TComplex CorrelationCalculator::QGap12M(int n, int p)
+{
+
+	if(n>=0) return Qvector12M[n][p];
+	else return TComplex::Conjugate(Qvector12M[-n][p]);
+
+}
+//____________________________________________________________________
+TComplex CorrelationCalculator::QGap12P(int n, int p)
+{
+
+	if(n>=0) return Qvector12P[n][p];
+	else return TComplex::Conjugate(Qvector12P[-n][p]);
 
 }
 //____________________________________________________________________
@@ -348,7 +366,15 @@ TComplex CorrelationCalculator::TwoGap10(int n1, int n2)
 	TComplex formula = QGap10M(n1,1)*QGap10P(n2,1);
 	return formula;
 
+}//____________________________________________________________________
+TComplex CorrelationCalculator::TwoGap12(int n1, int n2)
+{
+
+	TComplex formula = QGap12M(n1,1)*QGap12P(n2,1);
+	return formula;
+
 }
+
 //____________________________________________________________________
 TComplex CorrelationCalculator::TwoGap14(int n1, int n2)
 {
@@ -461,6 +487,13 @@ TComplex CorrelationCalculator::TwoGap10M(int n1, int n2)
 	TComplex formula = QGap10M(n1,1)*QGap10M(n2,1) - QGap10M(n1+n2,2);
 	return formula;
 
+}//____________________________________________________________________
+TComplex CorrelationCalculator::TwoGap12M(int n1, int n2)
+{
+
+	TComplex formula = QGap12M(n1,1)*QGap12M(n2,1) - QGap12M(n1+n2,2);
+	return formula;
+
 }
 //____________________________________________________________________
 TComplex CorrelationCalculator::TwoGap0P(int n1, int n2)
@@ -507,6 +540,14 @@ TComplex CorrelationCalculator::TwoGap10P(int n1, int n2)
 {
 
 	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1) - QGap10P(n1+n2,2);
+	return formula;
+
+}
+//____________________________________________________________________
+TComplex CorrelationCalculator::TwoGap12P(int n1, int n2)
+{
+
+	TComplex formula = QGap12P(n1,1)*QGap12P(n2,1) - QGap12P(n1+n2,2);
 	return formula;
 
 }
@@ -612,6 +653,22 @@ TComplex CorrelationCalculator::ThreeGap10B(int n1, int n2, int n3)
 {
 
 	TComplex formula = QGap10P(n1,1)*QGap10M(n2,1)*QGap10M(n3,1)-QGap10P(n1,1)*QGap10M(n2+n3,2);
+	return formula;
+
+}
+//____________________________________________________________________
+TComplex CorrelationCalculator::ThreeGap12A(int n1, int n2, int n3)
+{
+
+	TComplex formula = QGap12M(n1,1)*QGap12P(n2,1)*QGap12P(n3,1)-QGap12M(n1,1)*QGap12P(n2+n3,2);
+	return formula;
+
+}
+//____________________________________________________________________
+TComplex CorrelationCalculator::ThreeGap12B(int n1, int n2, int n3)
+{
+
+	TComplex formula = QGap12P(n1,1)*QGap12M(n2,1)*QGap12M(n3,1)-QGap12P(n1,1)*QGap12M(n2+n3,2);
 	return formula;
 
 }
@@ -727,6 +784,24 @@ TComplex CorrelationCalculator::ThreeGap10_subP(int n1, int n2, int n3)
 
 }
 //____________________________________________________________________
+TComplex CorrelationCalculator::ThreeGap12_subM(int n1, int n2, int n3)
+{
+
+	TComplex formula = QGap12M(n1,1)*QGap12M(n2,1)*QGap12M(n3,1)-QGap12M(n1+n2,2)*QGap12M(n3,1)-QGap12M(n2,1)*QGap12M(n1+n3,2)
+		- QGap12M(n1,1)*QGap12M(n2+n3,2)+2.*QGap12M(n1+n2+n3,3);
+	return formula;
+
+}
+//____________________________________________________________________
+TComplex CorrelationCalculator::ThreeGap12_subP(int n1, int n2, int n3)
+{
+
+	TComplex formula = QGap12P(n1,1)*QGap12P(n2,1)*QGap12P(n3,1)-QGap12P(n1+n2,2)*QGap12P(n3,1)-QGap12P(n2,1)*QGap12P(n1+n3,2)
+		- QGap12P(n1,1)*QGap12P(n2+n3,2)+2.*QGap12P(n1+n2+n3,3);
+	return formula;
+
+}
+//____________________________________________________________________
 TComplex CorrelationCalculator::Three_3Sub(int n1, int n2, int n3)
 {
 
@@ -821,6 +896,15 @@ TComplex CorrelationCalculator::FourGap10(int n1, int n2, int n3, int n4)
 
 	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1)*QGap10M(n3,1)*QGap10M(n4,1)-QGap10P(n1+n2,2)*QGap10M(n3,1)*QGap10M(n4,1)
 		-QGap10P(n1,1)*QGap10P(n2,1)*QGap10M(n3+n4,2)+QGap10P(n1+n2,2)*QGap10M(n3+n4,2);
+	return formula;
+
+}
+//____________________________________________________________________
+TComplex CorrelationCalculator::FourGap12(int n1, int n2, int n3, int n4)
+{
+
+	TComplex formula = QGap12P(n1,1)*QGap12P(n2,1)*QGap12M(n3,1)*QGap12M(n4,1)-QGap12P(n1+n2,2)*QGap12M(n3,1)*QGap12M(n4,1)
+		-QGap12P(n1,1)*QGap12P(n2,1)*QGap12M(n3+n4,2)+QGap12P(n1+n2,2)*QGap12M(n3+n4,2);
 	return formula;
 
 }
@@ -998,6 +1082,23 @@ TComplex CorrelationCalculator::FiveGap10B(int n1, int n2, int n3, int n4, int n
 	return formula;
 
 }
+//_____________________________________________________________________________
+TComplex CorrelationCalculator::FiveGap12A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
+{
+
+	TComplex formula = TwoGap12M(n1, n2) * ThreeGap12_subP(n3, n4, n5);
+	return formula;
+
+}
+
+//_____________________________________________________________________________
+TComplex CorrelationCalculator::FiveGap12B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
+{
+
+	TComplex formula = TwoGap12P(n1, n2) * ThreeGap12_subM(n3, n4, n5);
+	return formula;
+
+}
 //___________________________________________________________________
 TComplex CorrelationCalculator::Six(int n1, int n2, int n3, int n4, int n5, int n6)
 {
@@ -1153,6 +1254,14 @@ TComplex CorrelationCalculator::SixGap10(int n1, int n2, int n3, int n4, int n5,
 {
 
 	TComplex formula = ThreeGap10_subM(n1, n2, n3)*ThreeGap10_subP(n4, n5, n6);
+	return formula;
+
+}
+//_____________________________________________________________________________
+TComplex CorrelationCalculator::SixGap12(int n1, int n2, int n3, int n4, int n5, int n6)
+{
+
+	TComplex formula = ThreeGap12_subM(n1, n2, n3)*ThreeGap12_subP(n4, n5, n6);
 	return formula;
 
 }

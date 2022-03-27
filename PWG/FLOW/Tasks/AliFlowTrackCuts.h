@@ -20,6 +20,7 @@
 #include "AliMuonTrackCuts.h"  // XZhang 20120604
 #include "AliPID.h"
 #include "AliESDpid.h"
+#include "TF1.h"
 #include "TF2.h"
 
 
@@ -166,6 +167,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void SetForceTPCstandalone(Bool_t b) {fForceTPCstandalone=b;}
 
+  //efficiency parametrization
+  void SetEfficiencyParametrization(TF1 *gParametrisation) {this->fEfficiencyParametrization = gParametrisation; fCutEfficiencyParametrization = kTRUE;}
+  
   //Kinks
   void SetMinKinkAngle(Double_t a) {fMinKinkAngle=a;}
   void SetMinKinkRadius(Double_t r) {fMinKinkRadius=r;}
@@ -533,6 +537,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t  fMaxITSChi2;                // fMaxITSChi2
   Int_t         fRun;                   // run number
   
+  TF1 *fEfficiencyParametrization; //efficiency x acceptance vs pT
+  Bool_t fCutEfficiencyParametrization; //use the efficiency parametrization
+
   ClassDef(AliFlowTrackCuts,21)
 };
 

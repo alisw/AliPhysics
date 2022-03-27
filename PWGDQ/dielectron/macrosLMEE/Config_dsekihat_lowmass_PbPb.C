@@ -107,8 +107,22 @@ AliDielectron* Config_dsekihat_lowmass_PbPb(
 	//	die->GetEventFilter().AddCuts(pileupcuts);
 	//}
 
-  die->SetNoPairing(kFALSE);
-	if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase) ) die->SetNoPairing(kTRUE);
+    die->SetNoPairing(kFALSE);
+    if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase) ) die->SetNoPairing(kTRUE);
+
+
+    if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
+        printf("No event mixing handler for post PID calibration/noPID\n");
+    }
+    else{
+        printf("Add event mixing handler\n");
+        AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
+        mix->SetMixType(AliDielectronMixingHandler::kAll);
+        mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.");
+        mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,20,30,40,50,60,70,80,90,101");
+        mix->SetDepth(10);//dummy
+        if(!isMC) die->SetMixingHandler(mix);
+    }
 
 	if(isMC) SetupMCSignals(die);
 	InitHistograms(die,0,isMC);

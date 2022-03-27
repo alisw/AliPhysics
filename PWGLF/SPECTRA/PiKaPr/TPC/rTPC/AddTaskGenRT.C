@@ -1,55 +1,56 @@
 // 
-// AddTaskGenRT
+// // AddTaskGenRT
 // 
 AliAnalysisTask *AddTaskGenRT(TString suffixName =""){
+  
+  // Create the task, add it to manager and configure it
+  //===========================================================================
 
-	// Create the task, add it to manager and configure it
-	//===========================================================================
+  AliAnalysisTaskGenRT* taskSpectraLFMC = new  AliAnalysisTaskGenRT("AliAnalysisTaskPIDvsRT");
+  
+  taskSpectraLFMC->SetYRange(0.5);
+  taskSpectraLFMC->IsXiAllowed(kFALSE);
+  taskSpectraLFMC->SetMinPtLeading(5.0);
+  taskSpectraLFMC->SetMaxPtLeading(40.0);
+  
+  // Get the pointer to the existing analysis manager via the static access method
+  //===========================================================================
 
-	AliAnalysisTaskGenRT* taskUeSpherocityMM = new  AliAnalysisTaskGenRT("AliAnalysisTaskGenRT");
-	taskUeSpherocityMM -> SetGenerator("Pythia8");  
-	taskUeSpherocityMM -> SetYRange(0.5);
-	taskUeSpherocityMM -> SetMinPtLeading(5.0);
-	taskUeSpherocityMM -> SetMaxPtLeading(40.0);
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr){ Printf("AliAnalysisTaskGenRT: No analysis manager to connect to."); return NULL; }
 
-	// Get the pointer to the existing analysis manager via the static access method
-	//===========================================================================
+  // Check the analysis type using the event handlers connected to the analysis manager
+  //===========================================================================
 
-	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-	if(!mgr){ Printf("AliAnalysisTaskSimSpectraLF: No analysis manager to connect to."); return NULL; }
+  if(!mgr->GetMCtruthEventHandler()){ Printf("AliAnalysisTaskGenRT: This task requires an input MC event handler."); return NULL; }
 
-	// Check the analysis type using the event handlers connected to the analysis manager
-	//===========================================================================
+  // ADD the task
+  //===========================================================================
+  mgr -> AddTask(taskSpectraLFMC);  
 
-	if(!mgr->GetMCtruthEventHandler()){ Printf("AliAnalysisTaskSimSpectraLF: This task requires an input MC event handler."); return NULL; }
+  // Create containers for input/output
 
-	// ADD the task
-	//===========================================================================
-	mgr -> AddTask(taskUeSpherocityMM);  
+  TString finDirname	= "";
+  TString inname	= "cinput";
+  TString outBasic	= "cList";
 
-	// Create containers for input/output
+  finDirname	+= suffixName.Data();
+  inname	+= finDirname.Data();
+  outBasic	+= finDirname.Data();
 
-	TString finDirname	= "";
-	TString inname	= "cinput";
-	TString outBasic	= "cList";
+  
+  // Input and Output Slots
+  //===========================================================================
 
-	finDirname	+= suffixName.Data();
-	inname	+= finDirname.Data();
-	outBasic	+= finDirname.Data();
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  outputfile += ":PWGLF_SimSpectraLF";
+  
+  AliAnalysisDataContainer *coutSim = mgr->CreateContainer(outBasic,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
-
-	// Input and Output Slots
-	//===========================================================================
-
-	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	outputfile += ":PWGMM_SimSpherocityMM";
-
-	AliAnalysisDataContainer *coutSim = mgr->CreateContainer(outBasic,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-
-	mgr->ConnectInput (taskUeSpherocityMM, 0, mgr->GetCommonInputContainer());
-	mgr->ConnectOutput(taskUeSpherocityMM, 1, coutSim);
-
-	return taskUeSpherocityMM;
-
+  mgr->ConnectInput (taskSpectraLFMC, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(taskSpectraLFMC, 1, coutSim);
+  
+  return taskSpectraLFMC;
+  
 }
 

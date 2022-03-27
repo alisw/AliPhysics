@@ -61,4 +61,9 @@ const Int_t gk_half_range = 0; // seconds
 map<int, int> FillToI;
 map<int, int> IToFill;
 set<int> bcBlacklist[20]; //Each index corresponds to a Fill: increase maximum (20) if necessary
+
+//-------------------------------------------------------
+// File format of the plots being printed out: kimc, June 18, 2021
+
+const char* FFormat = "eps"; //png, eps, pdf, etc...
 #endif

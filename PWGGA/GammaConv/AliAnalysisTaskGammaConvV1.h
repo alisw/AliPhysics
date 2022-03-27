@@ -292,12 +292,18 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoJetArea;                                        // Histogram of Jet Area
     TH1F**                            fHistoNJets;                                          // Histogram of number of jets
     TH1F**                            fHistoEventwJets;                                     // Histogram of number of events with jets > 0
+    TH2F**                            fHistoConvGammaPtwithJet;                             // Histogram of Conversion photons in events with jets
+    TH2F**                            fHistoConvGammaPtwithoutJet;                          // Histogram of Conversion photons in events without jets
+    TH2F**                            fHistoConvGammaPtinJet;                               // Histogram of Conversion photons in jets
+    TH2F**                            fHistoConvGammaPtoutsideJet;                          // Histogram of Conversion photons in outside jets
+    TH1F**                            fHistoNEventsJetTriggers;                             // Histogram of Conversion photons in outside jets
     TH1F**                            fHistoJetPi0PtRatio;                                  // Histogram of PtPi0/PtJet
     TH1F**                            fHistoDoubleCounting;                                 // Histogram if NM candidates are defined within multiple jets
     TH2F**                            fHistoJetMotherInvMassPt;                             // Histogram of NM candidates with a jet in the event
     TH2F**                            fHistoPi0InJetMotherInvMassPt;                        // Histogram of NM candidates that are inside a jet
     TH2F**                            fHistoMotherBackJetInvMassPt;                         // Histogram of Backgrouns candidates that are involved with jets
     TH2F**                            fHistoRJetPi0Cand;                                    // Histogram of RJetPi0Cand vs Pt
+    TH2F**                            fHistoRJetPhotonCand;                                 // Histogram of RJetPhotonCand vs Pt
     TH2F**                            fHistoEtaPhiJetPi0Cand;                               // Histogram of delta eta and delta phi distr between jet and NM candidates
     TH2F**                            fHistoEtaPhiJetWithPi0Cand;                           // Histogram of delta eta and delta phi distr when pi0 is inside a jet
     TH2F**                            fHistoJetFragmFunc;                                   // Histogram to determine fragmentation function
@@ -416,7 +422,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 54);
+    ClassDef(AliAnalysisTaskGammaConvV1, 55);
 };
 
 #endif

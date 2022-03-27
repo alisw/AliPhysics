@@ -203,6 +203,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoWeightingInSwappBg(){return fDoWeightingInSwappBg;}
     Int_t    GammaSwappMethodBg(){return fGammaSwappMethodBg;}
     Int_t    GetNumberOfSwappsForBg(){return fNumberOfSwappsForBg;}
+    Int_t    GetDistanceToBorderForBg(){return fDistanceToBorderSwappBG;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
     Int_t    DoOutOfJet(){return fDoOutOfJet;}
@@ -232,6 +233,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
     Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
+
+    // Jet specific function
+    Bool_t  IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand);
+
   protected:
     TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
@@ -272,6 +277,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fPBremSmearing;                 ///
     Double_t    fPSigSmearing;                  ///
     Double_t    fPSigSmearingCte;               ///
+    Double_t    fPSigSmearingRatio;             ///
     Double_t    fDCAGammaGammaCut;              ///< cut value for the maximum distance between the two photons [cm]
     Double_t    fDCAZMesonPrimVtxCut;           ///< cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
     Double_t    fDCARMesonPrimVtxCut;           ///< cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
@@ -321,6 +327,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoWeightingInSwappBg;          ///< flag to use multiplicity weighting for cluster swapping for background estimation
     Int_t       fGammaSwappMethodBg;            ///< flag to switch between different methods for cluster swapping: 0= 90 degree; 1=random angle
     Int_t       fNumberOfSwappsForBg;           ///< flag to enable multiple rotations for 1 photon pair for cluster swapping Bg
+    Int_t       fDistanceToBorderSwappBG;       ///< flag to enable minimum distance of EMCal cluster to SuperModule border
     Bool_t      fEnableMinOpeningAngleCut;      ///< flag to enable min opening angle cut
     Bool_t      fEnableOneCellDistCut;          ///< flag to enable 1 cell dist cut
     Bool_t      fAllowCombOnlyInSameRecMethod;  ///< flag to disable inv mass pairing among different calo's
@@ -352,7 +359,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,49)
+    ClassDef(AliConversionMesonCuts,52)
     /// \endcond
 };
 

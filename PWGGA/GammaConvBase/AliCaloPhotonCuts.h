@@ -218,6 +218,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP13T17P1Pyt8LowB,
       kPP13T17P1JJ,
       kPP13T17P1JJTrigger,
+      kLHC21j8a,
       // pp 13 TeV 2018
       kPP13T18P1JJ,
       kPP13T18P1JJTrigger,
@@ -385,7 +386,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Int_t       FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Bool_t      CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
-    Bool_t      CheckDistanceToBadChannelSwapping(const Int_t CellID, Double_t phiCluster, AliVEvent* event);
+    Bool_t      CheckDistanceToBadChannelSwapping(const Int_t CellID, AliVEvent* event, const Int_t DistanceToBorder = 0);
     Int_t       ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliMCEvent* mcEvent, Bool_t isESD);
 
     std::vector<Int_t> GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster);
@@ -540,6 +541,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMaxDistTrackToClusterPhi;                // maximum distance between track and cluster in phi
     Bool_t    fUseDistTrackToCluster;                   // flag for switching on distance between track and cluster cut
     Int_t     fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
+    Bool_t    fUseOnlyMatchedClusters;                  // flag for switching on to use only the matched clusters (only for track matching studies)
     Bool_t    fTriggerMimicHelper_found;                //Flag if TriggerMimicHelper has been found in this instance
     TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
     TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
@@ -640,6 +642,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEnergyvsNCellsBeforeQA;       // Cluster Energy vs NCells before QA
     TH2F*     fHistClusterEnergyvsNCellsAfterQA;        // Cluster Energy vs NCells after QA
     TH2F*     fHistCellEnergyvsCellID;                  // Cell Energy vs CellID
+    TH1F*     fHistCellEnergyLG;                        // Cell Energy of low gain cells
+    TH1F*     fHistCellEnergyHG;                        // Cell Energy of high gain cells
     TH2F*     fHistCellTimevsCellID;                    // Cell Time vs CellID
     TH2F*     fHistClusterEM02BeforeQA;                 // 2-dim plot E vs. M02
     TH2F*     fHistClusterEM02AfterQA;                  // 2-dim plot E vs. M02
@@ -736,7 +740,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,123)
+    ClassDef(AliCaloPhotonCuts,126)
 };
 
 #endif

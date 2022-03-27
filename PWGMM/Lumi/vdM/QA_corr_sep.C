@@ -8,15 +8,15 @@
 
 void GetRate(Double_t *rate, const char *rate_name, const char *rate_type, Int_t scan, Int_t scan_type, Int_t bc)
 {
-	char *file_name = new char[kg_string_size];
-	if (scan_type == 1) sprintf(file_name,"../Fill-%d/%sRate_%s_x_Scan_%d.root",g_vdm_Fill,rate_type,rate_name,scan);
-	if (scan_type == 2) sprintf(file_name,"../Fill-%d/%sRate_%s_y_Scan_%d.root",g_vdm_Fill,rate_type,rate_name,scan);
-	TFile *rate_file = new TFile(file_name);
-	TTree *rate_tree = (TTree *) rate_file->Get("Rate");
-	rate_tree->ResetBranchAddresses();
-	rate_tree->SetBranchAddress("rate",rate);
-	rate_tree->GetEntry(bc);
-	delete [] file_name;
+  char *file_name = new char[kg_string_size];
+  if (scan_type == 1) sprintf(file_name,"../Fill-%d/%sRate_%s_x_Scan_%d.root",g_vdm_Fill,rate_type,rate_name,scan);
+  if (scan_type == 2) sprintf(file_name,"../Fill-%d/%sRate_%s_y_Scan_%d.root",g_vdm_Fill,rate_type,rate_name,scan);
+  TFile *rate_file = new TFile(file_name);
+  TTree *rate_tree = (TTree *) rate_file->Get("Rate");
+  rate_tree->ResetBranchAddresses();
+  rate_tree->SetBranchAddress("rate",rate);
+  rate_tree->GetEntry(bc);
+  delete [] file_name;
 }
 
 //-------------------------------------------------------
@@ -28,6 +28,7 @@ void GetRate(Double_t *rate, const char *rate_name, const char *rate_type, Int_t
 void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_type, Int_t bc)
 // scan_type: 1 => x-scan; 2 => y-scan
 {
+	Bool_t doOptical = kTRUE;
 	// initialize
 	Set_input_file_names(Fill);
 	Set_pointers_to_input_files_and_trees();
@@ -37,13 +38,15 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	Double_t *raw = new Double_t[n_sep];
 	Double_t *bkgd = new Double_t[n_sep];
 	Double_t *pu = new Double_t[n_sep];
-	Double_t *all = new Double_t[n_sep];      
+	Double_t *all = new Double_t[n_sep];
+	Double_t *optical = new Double_t[n_sep];        
 
 	// get the rates
 	GetRate(raw,rate_name,"Raw",scan,scan_type,bc);
 	GetRate(bkgd,rate_name,"BkgdCorr",scan,scan_type,bc);
 	GetRate(pu,rate_name,"PileupCorr",scan,scan_type,bc);
 	GetRate(all,rate_name,"IntensityCorrFBCT",scan,scan_type,bc);  
+	if (doOptical) GetRate(optical,rate_name,"OpticalIntensityCorrFBCT",scan,scan_type,bc);  
 
 	// get the separations
 	char *file_name = new char[kg_string_size];
@@ -62,11 +65,13 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	// make ratios
 	Double_t *raw_bkgd = new Double_t[n_sep];
 	Double_t *bkgd_pu = new Double_t[n_sep];
-	Double_t *pu_all = new Double_t[n_sep];  
+	Double_t *pu_all = new Double_t[n_sep];
+	Double_t *all_optical = new Double_t[n_sep];    
 	for(Int_t i=0;i<n_sep;i++) {
 		if (raw[i]>0 && bkgd[i]>0) raw_bkgd[i] = bkgd[i]/raw[i]; else raw_bkgd[i] = -1;
 		if (bkgd[i]>0 && pu[i]>0) bkgd_pu[i] = pu[i]/bkgd[i]; else bkgd_pu[i] = -1;
-		if (pu[i]>0 && all[i]>0) pu_all[i] = all[i]/pu[i]; else pu_all[i] = -1;    
+		if (pu[i]>0 && all[i]>0) pu_all[i] = all[i]/pu[i]; else pu_all[i] = -1;
+		if (doOptical && optical[i]>0 && all[i]>0) all_optical[i] = all[i]/optical[i]; else all_optical[i] = -1;    
 	}
 
 	// define the limits for the plot
@@ -86,9 +91,11 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 		if(raw_bkgd[i] > -1 && raw_bkgd[i] > ratio_max) ratio_max=raw_bkgd[i];
 		if(bkgd_pu[i] > -1 && bkgd_pu[i] > ratio_max) ratio_max=bkgd_pu[i];
 		if(pu_all[i] > -1 && pu_all[i] > ratio_max) ratio_max=pu_all[i];    
+		if(doOptical && all_optical[i] > -1 && all_optical[i] > ratio_max) ratio_max=all_optical[i];
 		if(raw_bkgd[i] > -1 && raw_bkgd[i] < ratio_min) ratio_min=raw_bkgd[i];
 		if(bkgd_pu[i] > -1 && bkgd_pu[i] < ratio_min) ratio_min=bkgd_pu[i];
-		if(pu_all[i] > -1 && pu_all[i] < ratio_min) ratio_min=pu_all[i];    
+		if(pu_all[i] > -1 && pu_all[i] < ratio_min) ratio_min=pu_all[i];
+		if(doOptical && all_optical[i] > -1 && all_optical[i] < ratio_min) ratio_min=all_optical[i];
 	}
 	ratio_max *= 1.5;
 	ratio_min *= 0.8; 
@@ -100,6 +107,11 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	gr_bkgd_pu->SetMarkerStyle(20);gr_bkgd_pu->SetMarkerColor(2);  
 	TGraph *gr_pu_all = new TGraph(n_sep,sep,pu_all);
 	gr_pu_all->SetMarkerStyle(20);gr_pu_all->SetMarkerColor(4);  
+	TGraph *gr_optical_all = NULL;
+	if (doOptical) {
+		gr_optical_all = new TGraph(n_sep,sep,all_optical);
+		gr_optical_all->SetMarkerStyle(20);gr_optical_all->SetMarkerColor(3);  
+	}
 
 	// plot graphs
 	gStyle->SetOptStat(0);
@@ -110,13 +122,13 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	gr_raw_bkgd->Draw("p,e1,same");
 	gr_bkgd_pu->Draw("p,e1,same");
 	gr_pu_all->Draw("p,e1,same");  
+	if (doOptical) gr_optical_all->Draw("p,e1,same");
 	TLegend *legend = new TLegend(0.3,0.7,0.7,0.9);
 	legend->AddEntry(gr_raw_bkgd,"Raw/Bkgd","p");
 	legend->AddEntry(gr_bkgd_pu,"Bkgd/Pileup","p");
 	legend->AddEntry(gr_pu_all,"Pileup/Intensity","p");  
+	if (doOptical) legend->AddEntry(gr_optical_all,"Intensity/Optical","p");  
 	legend->Draw();
-
-	corr_C->Print(Form("QAcorrSep_Fill%i_%s_scanT%i_scan%i_bc%i.png", Fill, rate_name, scan_type, scan, bc));
 
 	// clean up
 	delete [] raw;
@@ -125,5 +137,7 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	delete [] all;
 	delete [] raw_bkgd;
 	delete [] bkgd_pu;
-	delete [] pu_all;  
+	delete [] pu_all;
+	delete [] all_optical;    
+
 }

@@ -41,7 +41,8 @@ AliJSPCTask::AliJSPCTask() :
   bJSPCDoFisherYates(kFALSE),
   fJSPCFisherYatesCutOff(1.),
   fJSPCMinNumberPart(14),
-  bJSPCUseWeights(kFALSE),
+  bJSPCUseWeightsNUE(kTRUE),
+  bJSPCUseWeightsNUA(kFALSE),
   fJSPCNumber(0),  		//number of correlation first correlator
   fJSPCNumberSecond(0), 	//number of correlation second correlator
   fJSPCNumberThird(0),	//number of correlation second correlator
@@ -61,7 +62,9 @@ AliJSPCTask::AliJSPCTask() :
   bJSPCDoMixed(kFALSE),
   bJSPCDifferentCharge(kTRUE),
   bJSPCSetSameChargePositive(kTRUE),
-  fJSPCMixedHarmonic(0)
+  fJSPCMixedHarmonic(0), 
+  bJSPCComputeEtaGap(kFALSE),		// Do eta gap computation if kTRUE. Default kFALSE
+  fJSPCEtaGap(0.8)			// Value of eta gap
 {
 }
 
@@ -78,7 +81,8 @@ AliJSPCTask::AliJSPCTask(const char *name):
   bJSPCDoFisherYates(kFALSE),
   fJSPCFisherYatesCutOff(1.),
   fJSPCMinNumberPart(14),
-  bJSPCUseWeights(kFALSE),
+  bJSPCUseWeightsNUE(kTRUE),
+  bJSPCUseWeightsNUA(kFALSE),
   fJSPCNumber(0),  		//number of correlation first correlator
   fJSPCNumberSecond(0), 	//number of correlation second correlator
   fJSPCNumberThird(0),	//number of correlation second correlator
@@ -98,7 +102,9 @@ AliJSPCTask::AliJSPCTask(const char *name):
   bJSPCDoMixed(kFALSE),
   bJSPCDifferentCharge(kTRUE),
   bJSPCSetSameChargePositive(kTRUE),
-  fJSPCMixedHarmonic(0)
+  fJSPCMixedHarmonic(0),
+  bJSPCComputeEtaGap(kFALSE),		// Do eta gap computation if kTRUE. Default kFALSE
+  fJSPCEtaGap(0.8)			// Value of eta gap
 {
 	// Constructor
 	AliInfo("---- AliJSPCTask Constructor ----");
@@ -118,7 +124,7 @@ AliJSPCTask::AliJSPCTask(const AliJSPCTask& ap) :
   bJSPCDoFisherYates(ap.bJSPCDoFisherYates),
   fJSPCFisherYatesCutOff(ap.fJSPCFisherYatesCutOff),
   fJSPCMinNumberPart(ap.fJSPCMinNumberPart),
-  bJSPCUseWeights(ap.bJSPCUseWeights),
+  bJSPCUseWeightsNUE(ap.bJSPCUseWeightsNUE), bJSPCUseWeightsNUA(ap.bJSPCUseWeightsNUA),
   fJSPCNumber(ap.fJSPCNumber),     //number of correlation first correlator
   fJSPCNumberSecond(ap.fJSPCNumberSecond),   //number of correlation second correlator
   fJSPCNumberThird(ap.fJSPCNumberThird),  //number of correlation second correlator
@@ -138,7 +144,9 @@ AliJSPCTask::AliJSPCTask(const AliJSPCTask& ap) :
   bJSPCDoMixed(ap.bJSPCDoMixed),
   bJSPCDifferentCharge(ap.bJSPCDifferentCharge),
   bJSPCSetSameChargePositive(ap.bJSPCSetSameChargePositive),
-  fJSPCMixedHarmonic(ap.fJSPCMixedHarmonic)
+  fJSPCMixedHarmonic(ap.fJSPCMixedHarmonic),
+  bJSPCComputeEtaGap(ap.bJSPCComputeEtaGap),		// Do eta gap computation if kTRUE. Default kFALSE
+  fJSPCEtaGap(ap.fJSPCEtaGap)		// Value of eta gap
 { 
 
 	AliInfo("----DEBUG AliJSPCTask COPY ----");
@@ -182,7 +190,7 @@ void AliJSPCTask::UserCreateOutputObjects()
   fSPC->SetMinNuPar(fJSPCMinNumberPart);
   fSPC->SetFisherYates(bJSPCDoFisherYates, fJSPCFisherYatesCutOff); 
 
-  fSPC->SetUseWeights(bJSPCUseWeights);
+  fSPC->SetUseWeights(bJSPCUseWeightsNUE, bJSPCUseWeightsNUA);
 
   fSPC->SetCorrSet1(fJSPCNumber, fJSPCa1, fJSPCa2, fJSPCa3, fJSPCa4, fJSPCa5, fJSPCa6, fJSPCa7);
   fSPC->SetCorrSet2(fJSPCNumberSecond, fJSPCb1, fJSPCb2, fJSPCb3, fJSPCb4, fJSPCb5, fJSPCb6, fJSPCb7);
@@ -193,6 +201,7 @@ void AliJSPCTask::UserCreateOutputObjects()
   fSPC->SetCorrSet7(fJSPCNumberSeventh, fJSPCh1, fJSPCh2, fJSPCh3, fJSPCh4, fJSPCh5, fJSPCh6, fJSPCh7);
   fSPC->SetCorrSet8(fJSPCNumberEighth, fJSPCi1, fJSPCi2, fJSPCi3, fJSPCi4, fJSPCi5, fJSPCi6, fJSPCi7);
   fSPC->SetMixed(kFALSE,2., kFALSE, kTRUE);
+  fSPC->SetEtaGaps(bJSPCComputeEtaGap,fJSPCEtaGap);
 
 	fSPC->SetDebugLevel(fDebug);
 	OpenFile(1);

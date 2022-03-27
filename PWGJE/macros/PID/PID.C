@@ -19,13 +19,12 @@
 #include "TRandom3.h"
 #include "TROOT.h"
 
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS);
+#include "AliTPCPIDmathFit.h"
+#include "THnSparseDefinitions.h"
+
 #include <iostream>
 #include <iomanip>
-
-#include "AliPID.h"
-
-#include "THnSparseDefinitions.h"
-#include "histFitting/AliTPCPIDmathFit.h"
 
 enum processMode { kPMpT = 0, kPMz = 1, kPMxi = 2, kPMdistance = 3, kPMjT = 4, kPMnum };
 enum muonTreatment { kNoMuons = 0, kMuonFracEqualElFrac = 1, kMuonFracOverElFracTunedOnMCStandardTrackCuts = 2,
@@ -103,7 +102,7 @@ Double_t mostProbPIDthresholdZ_ka = -1.;
 Double_t mostProbPIDthresholdXi_pr = 999.;
 Double_t mostProbPIDthresholdXi_ka = 999.;
 
-// There is no clear separation in any bin of R or jT, disable special templates
+//TODO FULLJETS
 Double_t mostProbPIDthresholdR_pr = -1;
 Double_t mostProbPIDthresholdR_ka = -1;
 
@@ -1349,7 +1348,7 @@ TCanvas* drawFinalFractions(Int_t mode, Double_t pLow, Double_t pHigh, Bool_t el
     else if (mode == kPMxi)
       fElectronFraction->SetRange(0., lowFittingBoundElectronFraction);
     else
-      fElectronFraction->SetRange(0., 0.); // No special treatment of el for R and jT (seems to be the best option)
+      fElectronFraction->SetRange(0., 0.); //TODO FULLJETS
     
     if (electronFixingUsed)
       fElectronFraction->Draw("same");
@@ -3096,10 +3095,6 @@ void FitElContaminationForTOFpions(TAxis* pTaxis, TH2D* hGenDeltaUsed[][AliPID::
     if (errFlag != 0)
       std::cout << "errFlag " << errFlag << std::endl << std::endl;
   }
-  
-  // Clean up - need new mathFit instance for main fit
-  delete mathFit;
-  
   std::cout << std::endl << std::endl << "Done!" << std::endl << std::endl;
 }
 
@@ -3124,8 +3119,9 @@ Int_t PID(TString fileName, Double_t deta, Double_t pLow, Double_t pHigh, Bool_t
           Int_t binTypePt /*=kPtBinTypeJets*/,
           Double_t yieldThresholdForFitting /*= 0*/)
 {
-  // Do all the fitting
+  gInterpreter->LoadMacro("./AliTPCPIDmathFit.cxx+g");
   
+  // Do all the fitting
   PrintSettingsAxisRangeForMultiplicityAxisForMB();
   ResetGlobals();
   
@@ -5087,7 +5083,7 @@ Int_t PID(TString fileName, Double_t deta, Double_t pLow, Double_t pHigh, Bool_t
                                 0, 9.);
   }
   else {
-    // No special treatment of el for R and jT (seems to be the best option), i.e., set arbitrary high threshold which is never reached
+    //TODO FULLJETS What about R and jT? At the moment, set arbitrary high threshold which is never reached, i.e. disable electron stuff
     fElectronFraction = 0x0;
     electronFractionThresholdBinForFitting = 99999;
   }
@@ -5244,7 +5240,7 @@ Int_t PID(TString fileName, Double_t deta, Double_t pLow, Double_t pHigh, Bool_t
       const Int_t sliceStart = isXiMode ? hFractionPions->GetXaxis()->GetNbins() : 0;
       const Int_t sliceEnd   = isXiMode ? 0. : (isPtMode ? nPtBins : hFractionPions->GetXaxis()->GetNbins());
       
-      for (Int_t slice = sliceStart; isXiMode ? slice >= sliceEnd : slice < sliceEnd; isXiMode ? slice-- : slice++) { 
+      for (Int_t slice = sliceStart; isXiMode ? slice >= sliceEnd : slice < sliceEnd; isXiMode ? slice-- : slice++) {
         if (isPtMode && (slice < pSliceLow || slice > pSliceHigh))
           continue; 
         
@@ -6403,7 +6399,7 @@ Int_t PID(TString fileName, Double_t deta, Double_t pLow, Double_t pHigh, Bool_t
             if (processingMode == kPMxi)
               hFractionElectrons->Fit(fElectronFraction, "N", "", electronFractionThresholdForFitting, lowFittingBoundElectronFraction);
             else if (processingMode == kPMdistance || processingMode == kPMjT) {
-              // No special treatment of el for R and jT (seems to be the best option), i.e. do nothing here
+              //TODO FULLJETS at the moment, do noting
             }
             else
               hFractionElectrons->Fit(fElectronFraction, "N", "", lowFittingBoundElectronFraction, electronFractionThresholdForFitting);
@@ -9879,9 +9875,6 @@ Int_t PID(TString fileName, Double_t deta, Double_t pLow, Double_t pHigh, Bool_t
   
   delete fElectronFraction;
   fElectronFraction = 0x0;
-  
-  delete mathFit;
-  mathFit = 0x0;
   
   saveF->Close();
   

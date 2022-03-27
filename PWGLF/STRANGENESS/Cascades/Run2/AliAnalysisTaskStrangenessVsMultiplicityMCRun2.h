@@ -79,6 +79,9 @@ public:
   void SetAlwaysKeepTrue (Bool_t lAlwaysKeepTrue = kTRUE ) {
     fkAlwaysKeepTrue   = lAlwaysKeepTrue;
   }
+  void SetSaveEverything           (Bool_t lSaveEverything   = kTRUE ) {
+    fkSaveEverything = lSaveEverything; //danger ... use cautiously
+  }
   void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
     //Highly experimental, use with care!
     fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
@@ -342,6 +345,7 @@ private:
   Bool_t fkSaveV0Tree;              //if true, save TTree
   Bool_t fkDownScaleV0;
   Double_t fDownScaleFactorV0;
+  Bool_t fkSaveEverything;
   Bool_t fkPreselectDedx;
   Bool_t fkPreselectPID;
   Bool_t fkAlwaysKeepTrue;
@@ -550,6 +554,13 @@ private:
   Float_t fTreeVariablePosCreationX;
   Float_t fTreeVariablePosCreationY;
   Float_t fTreeVariablePosCreationZ;
+  
+  Float_t fTreeVariableNegPx; //!
+  Float_t fTreeVariableNegPy; //!
+  Float_t fTreeVariableNegPz; //!
+  Float_t fTreeVariablePosPx; //!
+  Float_t fTreeVariablePosPy; //!
+  Float_t fTreeVariablePosPz; //!
   
   Float_t fTreeVariableNegPxMC; //!
   Float_t fTreeVariableNegPyMC; //!

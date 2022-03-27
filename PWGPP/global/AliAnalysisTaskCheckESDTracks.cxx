@@ -182,6 +182,7 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fUsePhysSel(kTRUE),
   fUsePileupCut(kTRUE),
   fRejectGeneratedEventsWithPileup(kFALSE),
+  fRejectParticlesFromOutOfBunchPileup(kFALSE),
   fTriggerMask(AliVEvent::kAnyINT),
   fSelectOnCentrality(kFALSE),
   fMinCentrality(-1.),
@@ -1101,7 +1102,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(isBG) nBGtracks++;
       else nEmbeddedtracks++;
       AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(abstrlabel);
-      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(abstrlabel,mcEvent)) nOOBPileuptracks++;
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(abstrlabel,mcEvent)){
+	nOOBPileuptracks++;
+	if(fRejectParticlesFromOutOfBunchPileup) continue;
+      }
       TParticle* part = mcEvent->Particle(abstrlabel);
       if (part){
         ptgen=part->Pt();

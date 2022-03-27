@@ -26,6 +26,7 @@ enum MCGeneratorType {
     PP_PYTHIA_PERUGIA11,
     PP_PYTHIA_PERUGIA0,
     PP_PYTHIA_OLD,
+    PP_EPOS_LHC,
     PPB_EPOS,
     PBPB_HIJING,
 };

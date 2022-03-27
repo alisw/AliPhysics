@@ -4,13 +4,14 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <ANALYSIS/macros/train/AddMCHandler.C>
 #include <OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C>
 #include <OADB/macros/AddTaskPhysicsSelection.C>
+#include <PWGHF/vertexingHF/macros/AddTaskVertexingHFRun3Conversion.C>
 #include <ANALYSIS/macros/AddTaskPIDResponse.C>
 #include <RUN3/AddTaskAO2Dconverter.C>
 
 TChain* CreateChain(const char *xmlfile, const char *type="ESD");
 TChain *CreateLocalChain(const char *txtfile, const char *type, int nfiles);
 
-void convertAO2D(Bool_t mc = kFALSE)
+void convertAO2D(Bool_t mc = kFALSE, Bool_t hf = kFALSE)
 {
    const char *anatype = "ESD";
 
@@ -33,11 +34,19 @@ void convertAO2D(Bool_t mc = kFALSE)
    AddTaskPhysicsSelection();
    AddTaskPIDResponse();
 
+   if (hf) {
+      auto hfTask = AddTaskVertexingHFRun3Conversion("");
+      if (hfTask == nullptr)
+         return;
+   }
+
    AliAnalysisTaskAO2Dconverter* converter = AddTaskAO2Dconverter("");
    if (mc)
      converter->SetMCMode();
+   if (hf)
+      converter->SetStoreHF();
    //converter->SelectCollisionCandidates(AliVEvent::kAny);
-   
+
    if (!mgr->InitAnalysis()) return;
    //PH   mgr->SetBit(AliAnalysisManager::kTrueNotify);
    mgr->SetRunFromPath(244918);

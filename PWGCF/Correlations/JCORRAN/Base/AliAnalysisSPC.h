@@ -66,6 +66,8 @@ public:
 
   virtual void MainTask(Int_t MainTask_CentBin, Int_t MainTask_Mult, Double_t* MainTask_Angle_Array, Double_t* MainTask_Weight_Array);
   virtual void MixedParticle(Int_t MP_CentBin, Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B);
+ 
+  virtual void ComputeTPCWithEtaGaps(Int_t CentralityBin, Int_t numberOfParticles, Double_t* angles, Double_t* pWeights, Double_t* pseudorapidity);
 
   // 3.) Methods called in Terminate():
   // ...
@@ -82,7 +84,7 @@ public:
 
   void SetSaveAllQA(Bool_t SaveQA){this->bSaveAllQA=SaveQA;}
 
-  void SetUseWeights(Bool_t Weights){this->bUseWeights = Weights;}
+  void SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){this->bUseWeightsNUE = WeightsNUE; this->bUseWeightsNUA = WeightsNUA;}
 
   void SetFisherYates(Bool_t DoFY, Float_t CutOff)
   { this->bDoFisherYates=DoFY; this->fFisherYatesCutOff=CutOff; } 
@@ -123,6 +125,8 @@ public:
 
   void SetInitializeCentralityArray(); //Set Centrality array 
 
+  void SetEtaGaps(Bool_t ComputeEtaGap, Float_t EtaGap)
+  {this->bComputeEtaGap = ComputeEtaGap; this->fEtaGap = EtaGap; } 
 
 private:
   AliAnalysisSPC(const AliAnalysisSPC& aatmpf);
@@ -145,6 +149,7 @@ private:
   TH1F *fMultHistogram[16][2]; 		//! 0: Mult. After Track Selection 1: Mult. After Track Selection (second)
   TH1I *fChargeHistogram[16]; 	//! Charge After Track Selection 
   TH1F *fCentralityHistogram[16]; 	//! Centrality After Corresponding Cut
+  TProfile *fPhiWeightProfile[16];	//! Profile to check phi weights
 
   //2.) SelectionCuts
   Bool_t bSaveAllQA;			// if kTRUE: All Standard QA Histograms are saved (default kTRUE)
@@ -160,7 +165,8 @@ private:
   Float_t fFisherYatesCutOff;		//How much percentage of the orginal particles are kept, e.g. if 0.7 only 70% of the current particles are kept for analysis
 
   //Weights
-  Bool_t bUseWeights; 
+  Bool_t bUseWeightsNUE; 
+  Bool_t bUseWeightsNUA; 
 
   //3.) Variables for the correlation:
   Int_t fMaxCorrelator;          	// maximum of correlation   
@@ -189,6 +195,7 @@ private:
   // 4.) Final results:
    
   TProfile *fResults[16];         	//! final centrality result
+  TProfile *fResultsAlternativeError[16]; //! final centrality result
   TProfile *fCovResults[16];         	//! TProfile to store terms needed for Covariance 
   TProfile *fJoinedCovResults[16];      //! TProfile to store joined Covariance term calculated as one correlator <z> instead of product of two correlators <x*y> 
   TProfile *fMixedParticleHarmonics[16];//! Stores output for special mixed particle analysis
@@ -197,13 +204,18 @@ private:
 				 	//		    if kFALSE mixed particle analysis between same charge 
 				 	//		    (only positiv or only negativ particles)
 				 	// Default kTRUE
+  Bool_t bComputeEtaGap;		// Do eta gap computation if kTRUE. Default kFALSE
+  Float_t fEtaGap;			// Value of eta gap
+  TProfile *fProfileTPCEta[16];		//! Profile for 2-particle eta gap computation
+  
+
   Bool_t bSetSameChargePositive;   	// used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)
   Int_t fMixedHarmonic;			// Harmonic of special mixed particle analysis
   TH1F *fCounterHistogram;       	//! for some checks
   TProfile *fProfileTrackCuts;  	//! Profile to save the cut values for track selection
   TList *fFinalResultsList[16];      	//! List to hold all histograms with final results for a specific centrality bin. Up to 16 centraliy bins possible
 
-  ClassDef(AliAnalysisSPC,1); 
+  ClassDef(AliAnalysisSPC,5); 
 };
 
 //================================================================================================================

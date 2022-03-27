@@ -1895,26 +1895,31 @@ Bool_t Config_Lambdakx(
     
     // -- Create all needed outputs -----------------------------------------------------------------
     
-    Int_t i,k,xID,cut1,pairID,ipdg;
+    Int_t i,k,p,xID,cut1,pairID,ipdg;
     TString name,comp;
     Char_t charge2;
-    Double_t mass=1.8234;
+    Double_t mass;
+    Double_t massAll[5]={1.8234, 1.8700, 2.0650, 2.2550, 2.4550}; //masses for Xi(1820) and 4 Ps states
+    Int_t ipdgNum[5]={123314,9322132,9322312,9323212,9332212};  //pdgs for Xi(1820) and 4 Ps states
+    Int_t Ps = (TrackCutsLambda/100)%10; //TrackCutsLambda = 100 turns on strange pentaquark MC
     AliRsnMiniOutput* out;
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(i=0;i<2;i++) for(j=0;j<2;j++) for(k=0;k<9;k++){
+    for(i=0;i<2;i++) for(j=0;j<2;j++) for(k=0;k<9;k++) for(p=0;p<5;p++) {
         ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!i){
             name.Form("Lambdap");
             cut1=iCutLambda;
-            ipdg=123314;
+            ipdg=ipdgNum[p];
         }else{
             name.Form("Lambdaa");
             cut1=iCutAntiLambda;
-            ipdg=-123314;
+            ipdg=-ipdgNum[p];
         }
         
         if(!j){
@@ -1926,6 +1931,8 @@ Bool_t Config_Lambdakx(
         }
         
         if(!isMC && k>=3) continue;
+        if(isMC && Ps && k>=3){
+            name.Append(Form("_PsMass_%.3f", mass));}
         xID=imID;
         pairID=1;
         if(!k){
@@ -2281,27 +2288,35 @@ Bool_t Config_Lambdak0(
     
     // -- Create all needed outputs -----------------------------------------------------------------
     
-    Int_t i,xID,cut1,pairID,ipdg;
+    Int_t i,p,xID,cut1,pairID,ipdg;
     TString name,comp;
-    Double_t mass=1.8234;
+    Double_t mass;
+    Double_t massAll[5]={1.8234, 1.8700, 2.0650, 2.2550, 2.4550}; //masses for Xi(1820)0 and 4 Ps states
+    Int_t ipdgNum[5]={123324,9322131,9322311,9323211,9332211};  //pdgs for Xi(1820)0 and 4 Ps states
+    Int_t Ps = (TrackCutsLambda/100)%10; //100 turns on Ps MC
     AliRsnMiniOutput* out;
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(i=0;i<2;i++) for(j=0;j<9;j++){
+    for(i=0;i<2;i++) for(j=0;j<9;j++) for(p=0;p<5;p++){
+        ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!i){
             name.Form("LambdapK0");
             cut1=iCutLambda;
-            ipdg=123324;
+            ipdg=ipdgNum[p];
         }else{
             name.Form("LambdaaK0");
             cut1=iCutAntiLambda;
-            ipdg=-123324;
+            ipdg=-ipdgNum[p];
         }
         
         if(!isMC && j>=3) continue;
+        if(isMC && Ps && j>=3){
+            name.Append(Form("_PsMass_%.3f", mass));}
         xID=imID;
         pairID=1;
         if(!j){
@@ -3905,7 +3920,10 @@ Bool_t Config_Xik0(
         multbins[nmult]=15.; nmult++;
         for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
     }else{
-        multbins[nmult]=0.; nmult++;
+        multbins[nmult]=0.01; nmult++;
+        multbins[nmult]=0.02; nmult++;
+        multbins[nmult]=0.03; nmult++;
+        multbins[nmult]=0.04; nmult++;
         multbins[nmult]=0.05; nmult++;
         multbins[nmult]=0.06; nmult++;
         multbins[nmult]=0.07; nmult++;
@@ -3932,13 +3950,11 @@ Bool_t Config_Xik0(
         multbins[nmult]=0.28; nmult++;
         multbins[nmult]=0.29; nmult++;
         multbins[nmult]=0.3; nmult++;
-        multbins[nmult]=1.; nmult++;
     }
     
     // pT binning
     Double_t ptbins[200];
     int npt=0;
-    ptbins[npt]=0; npt++;
     ptbins[npt]=2; npt++;
     ptbins[npt]=2.2; npt++;
     ptbins[npt]=2.4; npt++;
@@ -3956,7 +3972,7 @@ Bool_t Config_Xik0(
     ptbins[npt]=5; npt++;
     ptbins[npt]=5.5; npt++;
     ptbins[npt]=6; npt++;
-    ptbins[npt]=8; npt++;
+    ptbins[npt]=7; npt++;
     ptbins[npt]=10; npt++;
     
     // -- Values ------------------------------------------------------------------------------------

@@ -1135,7 +1135,7 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
         IterativeParents(jet3, fMatchedJetSplittings, false);
         if (fStoreDetLevelJets) {
           fDetLevelJetSplittings.SetJetPt(jet2->Pt());
-          IterativeParents(jet2, fDetLevelJetSplittings, false);
+          IterativeParents(jet2, fDetLevelJetSplittings, false, true);
         }
       }
 
@@ -1153,10 +1153,12 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
  * @param[in] jet Jet to be declustered.
  * @param[in, out] jetSplittings Jet substructure output object which will be used to store the splittings.
  * @param[in] isData If True, treat the splitting as coming from data. This means that ghosts are utilized and track resolution may be considered.
+ * @param[in] isDetLevelInEmbedding If True, the input particles are from detector level in embedding (which means their masses should be assumed to be the pion mass)
  */
 void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
                               SubstructureTree::JetSubstructureSplittings & jetSplittings,
-                              bool isData)
+                              bool isData,
+                              bool isDetLevelInEmbedding)
 {
   AliDebugStream(1) << "Beginning iteration through the splittings.\n";
   std::vector<fastjet::PseudoJet> inputVectors;
@@ -1170,7 +1172,35 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
       continue;
     }
     // Set the PseudoJet and add it to the inputs.
-    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
+    // NOTE: The mass arguments here are a bit complicated.
+    //       The jet constituents store the AliVParticle rather than the AliTLorentzVector. In the
+    //       case of particles from reconstruction, those particles will use some sort of mass
+    //       hypothesis derived from PID information, which isn't what we want in that case (as in
+    //       the main jet finding, we usually want to use the charged pion mass hypothesis). However,
+    //       there are other cases such as MC truth (where we have the true mass) or constituent
+    //       subtraction (where the algorithm handles the mass and sets it to some particular value)
+    //       where we do want to take the mass from the AliVParticle. The cases are summarized below:
+    //
+    // pp:
+    //  - Use charged pion mass hypothesis. Called with isData == true, so uses pion mass
+    // pythia:
+    //  - Det level: Use charged pion mass hypothesis. Called with isData == true, so uses pion mass
+    //  - Part level: Use true mass in AliVParticle. Called with isData == false, so will use true mass
+    // PbPb:
+    //  - Using CS: Use the AliVParticle mass. Called with isData == true, but the sub type is CS, so
+    //              it will use the existing mass.
+    //  - Non CS: Use charged pion mass hypothesis. Called with isData == true and the sub type is not CS,
+    //            so uses pion mass.
+    // embedPythia
+    //  - Hybrid: Same cases as PbPb data.
+    //  - Det level: Use charged pion mass hypothesis. Called with isDetLevelInEmbedding == true, so uses pion mass
+    //  - Part level: Use true mass in AliVParticle. Called with isData == false, so will use true mass
+    double E = part->E();
+    if (isDetLevelInEmbedding || (isData && fJetShapeSub != kConstSub && fJetShapeSub != kEventSub)) {
+      //std::cout << "using charged pion mass hypothesis. " << std::boolalpha << "isData=" << isData << ", isDetLevelInEmbedding=" << isDetLevelInEmbedding << "\n";
+      E = std::sqrt(std::pow(part->P(), 2) + std::pow(0.139, 2));
+    }
+    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), E);
     // NOTE: This must be the constituent index to allow the subjets to properly determine which constituents are included
     //       in each subjet.
     pseudoTrack.set_user_index(constituentIndex);
@@ -1646,7 +1676,7 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
 {
   std::stringstream tempSS;
   tempSS << std::boolalpha;
-  tempSS << "Dynmical grooming analysis task:\n";
+  tempSS << "Dynamical grooming analysis task:\n";
   tempSS << "Jet properties:\n";
   tempSS << "\tShared momentum fraction: " << fMinFractionShared << "\n";
   tempSS << "\tJet shape type: " << GetKeyFromMapValue(fJetShapeType, fgkJetShapeTypeMap) << "\n";

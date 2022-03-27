@@ -13,7 +13,7 @@ AliGenerator* AddCustomMCGenPythia8( TString lTune          = "pp",
   gSystem->Load("liblhapdf");
   
   AliGenerator *genP  = NULL;
-  if( !lTune.Contains("pp") ){
+  if( lTune.Contains("pp") ){
     genP                = CreatePythia8GenCustom(lTune, e_cms);
   }else{
     genP                = CreatePythia8GenPbPb(lTune, e_cms);

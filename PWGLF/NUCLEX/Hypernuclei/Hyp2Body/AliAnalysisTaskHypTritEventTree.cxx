@@ -57,6 +57,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fTree(0),
   fTreeMCGen(0),
   fMCGenRecArray(),
+  fYear(0),
   fHistogramList(NULL),
   fMCGenRec(),
   fMomPos(),
@@ -73,7 +74,9 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fPeriod(0),
   fTriggerMask(0),
   fBetheSplines(kFALSE),
+  fUseExternalSplines(kFALSE),
   fBetheParamsHe(),
+  fRefitOnFlyV0(kFALSE),
   fBetheParamsT() {
 
   }
@@ -99,6 +102,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fTree(0),
   fTreeMCGen(0),
   fMCGenRecArray(),
+  fYear(0),
   fHistogramList(NULL),
   fMCGenRec(),
   fMomPos(),
@@ -115,7 +119,9 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fPeriod(00),
   fTriggerMask(),
   fBetheSplines(kFALSE),
+  fUseExternalSplines(kFALSE),
   fBetheParamsHe(),
+  fRefitOnFlyV0(kFALSE),
   fBetheParamsT()
   {
     DefineInput(0, TChain::Class());
@@ -258,7 +264,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     fMCGenRec[i] = -1;
   }
   fHistNumEvents->Fill(0);
-  Float_t centrality = -1;
+  Double_t centrality = -1;
   const AliESDVertex *vertex = fESDevent->GetPrimaryVertexTracks();
   fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD);
 
@@ -268,12 +274,25 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   }
 
   Int_t runNumber = fESDevent->GetRunNumber();
-  SetBetheBlochParams(runNumber);
+  
+  if (!fUseExternalSplines) SetBetheBlochParams(runNumber);
+
+	AliCDBManager *cdbMgr = AliCDBManager::Instance();
+	if (fMCtrue) {
+		cdbMgr->SetDefaultStorage("MC","Full");
+	}
+	else {
+		cdbMgr->SetDefaultStorage (Form("alien://Folder=/alice/data/%d/OCDB", fYear));
+	}
+	cdbMgr->SetRun(runNumber);
+	AliGeomManager::LoadGeometry();
+	
   TriggerSelection(mcEvent);
   SetMultiplicity();
   fHistNumEvents->Fill(1);
   fReducedEvent->fCentrality = centrality;
   fMagneticField  = fESDevent->GetMagneticField();
+  fReducedEvent->fMagField = fMagneticField;
   fPrimaryVertex.SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
   fReducedEvent->fVertexPosition = fPrimaryVertex;
   fReducedEvent->fRunNumber = runNumber;
@@ -285,10 +304,10 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 
   if(fUseAnalysisTrkSel){
     trackCutsV0.SetEtaRange(-0.9,0.9);
-    trackCutsV0.SetAcceptKinkDaughters(kFALSE);
-    trackCutsV0.SetRequireTPCRefit(kTRUE);
-    trackCutsV0.SetMaxChi2PerClusterTPC(6);
-    trackCutsV0.SetMinNClustersTPC(60);
+    trackCutsV0.SetAcceptKinkDaughters(kTRUE);
+    trackCutsV0.SetRequireTPCRefit(kFALSE);
+    trackCutsV0.SetMaxChi2PerClusterTPC(8);
+    trackCutsV0.SetMinNClustersTPC(40);
   } else {
       trackCutsV0.SetAcceptKinkDaughters(kFALSE);
       trackCutsV0.SetMinNClustersTPC(80);
@@ -323,6 +342,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     AliESDtrack* trackN = fESDevent->GetTrack(fV0->GetIndex(0));
     AliESDtrack* trackP = fESDevent->GetTrack(fV0->GetIndex(1));
     // Checks charge because of bug in V0 interface.
+    if (trackN->GetSign() ==  trackP->GetSign()) continue;
     if (trackN->GetSign() > 0 ) {
       trackN = fESDevent->GetTrack(fV0->GetIndex(1));
       trackP = fESDevent->GetTrack(fV0->GetIndex(0));
@@ -374,6 +394,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 //        tritonNegative = kTRUE;
 //      }
     }
+    
+       	       	
     if (helium3Positive && pionNegative) {
       SetMomentum( 2, v0ChargeCorrect);
       CalculateV0(*trackN, *trackP,  AliPID::kPion, AliPID::kHe3, mcEvent);
@@ -404,6 +426,42 @@ void AliAnalysisTaskHypTritEventTree::Terminate(const Option_t*) {
 /// \param charge charge of nuclei
 /// \param v0Charge corrects for mistake in AliESDv0. It is true when the charge was correctly set
 void AliAnalysisTaskHypTritEventTree::SetMomentum(Int_t charge, Bool_t v0ChargeCorrect) {
+		
+	if (fV0->GetOnFlyStatus() && fRefitOnFlyV0) {
+		AliESDVertex vtx = fV0->GetVertex();
+		Double_t mvec[3];
+		AliExternalTrackParam extParamsP(*(fV0->GetParamP()));
+		AliExternalTrackParam extParamsN(*(fV0->GetParamN()));
+		extParamsP.PropagateToDCA(&vtx, fESDevent->GetMagneticField(), 25);
+		extParamsN.PropagateToDCA(&vtx, fESDevent->GetMagneticField(), 25);
+		extParamsP.GetPxPyPz(mvec);
+		TVector3 momentumVectorP(mvec[0],mvec[1],mvec[2]); 	
+		extParamsN.GetPxPyPz(mvec);
+		TVector3 momentumVectorN(mvec[0],mvec[1],mvec[2]); 	
+
+		if (charge > 0) {
+		  if (v0ChargeCorrect) {
+			  fMomPos.SetVect(charge * momentumVectorP);
+			  fMomNeg.SetVect(momentumVectorN); 
+		  }
+		  else {
+		  	fMomPos.SetVect(charge * momentumVectorN);
+			  fMomNeg.SetVect(momentumVectorP); 
+		  }
+		}
+		else {
+		  if (v0ChargeCorrect) {
+			  fMomPos.SetVect(momentumVectorP);
+			  fMomNeg.SetVect(-charge * momentumVectorN);
+		  }
+		  else {
+			  fMomPos.SetVect(momentumVectorN);
+			  fMomNeg.SetVect(-charge * momentumVectorP);		  
+		  }
+		}
+		return;
+  }
+  
   TVector3 momentumVector(0,0,0);
   if (charge > 0) {
     fV0->GetPPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
@@ -443,8 +501,8 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
   Double_t v0P  = (fMomNeg + fMomPos).P();
   Double_t v0Y  = (fMomNeg + fMomPos).Rapidity();
   Int_t charge = -AliPID::ParticleCharge(typeNeg) + AliPID::ParticleCharge(typePos);
-  Float_t dcav0 = fV0->GetDcaV0Daughters();
-  Float_t cosineOfPointingAngle = fV0->GetV0CosineOfPointingAngle();
+  Double_t dcav0 = fV0->GetDcaV0Daughters();
+  Double_t cosineOfPointingAngle = fV0->GetV0CosineOfPointingAngle();
   TVector3 secondaryVertex(fV0->Xv(), fV0->Yv(), fV0->Zv());
   secondaryVertex = secondaryVertex - fPrimaryVertex;
   AliReducedHypTritV0* reducedV0 = dynamic_cast<AliReducedHypTritV0*>(fV0Array->ConstructedAt(fNV0Cand));
@@ -481,6 +539,9 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fDedxSigma = fPID->NumberOfSigmasTPC(&trackP, typePos);
     reducedHe->fDca = TMath::Abs(trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
     reducedPi->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
+    reducedHe->fDcaSigned = trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField);
+    reducedPi->fDcaSigned = trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField);
+    TRDtrack(const_cast<AliESDtrack*> (&trackN), reducedHe);
     reducedPi->fEta = trackP.Eta();
     reducedHe->fEta = trackN.Eta();
     reducedPi->fPhi = trackP.Phi();
@@ -491,12 +552,16 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fPtrack = trackP.GetInnerParam()->GetP();
     reducedHe->fTpcNClusters = trackN.GetTPCNcls();
     reducedPi->fTpcNClusters = trackP.GetTPCNcls();
-    reducedHe->fTpcChi2 = trackN.GetTPCchi2() / (Float_t) trackN.GetTPCclusters(0);
-    reducedPi->fTpcChi2 = trackP.GetTPCchi2() / (Float_t) trackP.GetTPCclusters(0);
+    reducedHe->fITSNClusters = trackN.GetITSNcls();
+    reducedPi->fITSNClusters = trackP.GetITSNcls();
+    reducedHe->fTpcChi2 = trackN.GetTPCchi2() / (Double_t) trackN.GetTPCclusters(0);
+    reducedPi->fTpcChi2 = trackP.GetTPCchi2() / (Double_t) trackP.GetTPCclusters(0);
     reducedHe->fKink = trackN.GetKinkIndex(0) > 0;
     reducedPi->fKink = trackP.GetKinkIndex(0) > 0;
     reducedHe->fTPCrefit = (trackN.GetStatus() & AliESDtrack::kTPCrefit) != 0;
     reducedPi->fTPCrefit = (trackP.GetStatus() & AliESDtrack::kTPCrefit) != 0;
+    reducedHe->fITSrefit = (trackN.GetStatus() & AliESDtrack::kITSrefit) != 0;
+    reducedPi->fITSrefit = (trackP.GetStatus() & AliESDtrack::kITSrefit) != 0;
   }
   if (charge > 0) {
     reducedHe->fP = fMomPos;
@@ -510,13 +575,12 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
       reducedHe->fDedxSigma = Bethe(trackP, AliPID::ParticleMass(typePos), 2, fBetheParamsHe);
       reducedHe->fDedxSigmaTriton = Bethe(trackP, AliPID::ParticleMass(AliPID::kTriton), 1, fBetheParamsT);
     }
-    reducedPi->fDedxSigma = fPID->NumberOfSigmasTPC(&trackP, typePos);
-    reducedHe->fDca = TMath::Abs(trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
-    reducedPi->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
-    reducedPi->fEta = trackP.Eta();
     reducedPi->fDedxSigma = fPID->NumberOfSigmasTPC(&trackN, typeNeg);
-    reducedHe->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
     reducedPi->fDca = TMath::Abs(trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
+    reducedHe->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
+    reducedPi->fDcaSigned = trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField);
+    reducedHe->fDcaSigned = trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField);
+    TRDtrack(const_cast<AliESDtrack*> (&trackP), reducedHe);
     reducedPi->fEta = trackN.Eta();
     reducedHe->fEta = trackP.Eta();
     reducedPi->fPhi = trackN.Phi();
@@ -527,33 +591,43 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fPtrack = trackN.GetInnerParam()->GetP();
     reducedHe->fTpcNClusters = trackP.GetTPCNcls();
     reducedPi->fTpcNClusters = trackN.GetTPCNcls();
-    reducedHe->fTpcChi2 = trackP.GetTPCchi2() / (Float_t) trackP.GetTPCclusters(0);
-    reducedPi->fTpcChi2 = trackN.GetTPCchi2() / (Float_t) trackN.GetTPCclusters(0);
+    reducedHe->fITSNClusters = trackP.GetITSNcls();
+    reducedPi->fITSNClusters = trackN.GetITSNcls();
+    reducedHe->fTpcChi2 = trackP.GetTPCchi2() / (Double_t) trackP.GetTPCclusters(0);
+    reducedPi->fTpcChi2 = trackN.GetTPCchi2() / (Double_t) trackN.GetTPCclusters(0);
     reducedHe->fKink = trackP.GetKinkIndex(0) > 0;
     reducedPi->fKink = trackN.GetKinkIndex(0) > 0;
     reducedHe->fTPCrefit = (trackP.GetStatus() & AliESDtrack::kTPCrefit) != 0;
     reducedPi->fTPCrefit = (trackN.GetStatus() & AliESDtrack::kTPCrefit) != 0;
+    reducedHe->fITSrefit = (trackP.GetStatus() & AliESDtrack::kITSrefit) != 0;
+    reducedPi->fITSrefit = (trackN.GetStatus() & AliESDtrack::kITSrefit) != 0;
   }
 
   if (fMCtrue && ((typePos == AliPID::kHe3 && typeNeg == AliPID::kPion) || (typePos == AliPID::kPion && typeNeg == AliPID::kHe3))) {
     Int_t labelP = TMath::Abs(trackP.GetLabel());
     Int_t labelN = TMath::Abs(trackN.GetLabel());
     if (!mcEvent->IsPhysicalPrimary(labelP) && !mcEvent->IsPhysicalPrimary(labelN) && !mcEvent->IsSecondaryFromMaterial(labelP) && !mcEvent->IsSecondaryFromMaterial(labelN)) {
-			AliMCParticle *daughterParticleP = (AliMCParticle*) mcEvent->GetTrack(labelP);
-			AliMCParticle *daughterParticleN = (AliMCParticle*) mcEvent->GetTrack(labelN);
-    	Int_t labelMotherP = TMath::Abs(daughterParticleP->GetMother());
-    	Int_t labelMotherN = TMath::Abs(daughterParticleN->GetMother());
-			AliMCParticle *particleMotherP = (AliMCParticle*) mcEvent->GetTrack(labelMotherP);
-			AliMCParticle *particleMotherN = (AliMCParticle*) mcEvent->GetTrack(labelMotherN);
+    
+  		AliMCParticle *daughterParticleP =  dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(labelP));
+			AliMCParticle *daughterParticleN = 	dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(labelN)); 
+			
+    	if ((daughterParticleP->PdgCode() == 211 && daughterParticleN->PdgCode() == -1000020030) || (daughterParticleP->PdgCode() == 1000020030 && daughterParticleN->PdgCode() == -211)) {
+    		
+    		Int_t labelMotherP = TMath::Abs(daughterParticleP->GetMother());
+    		Int_t labelMotherN = TMath::Abs(daughterParticleN->GetMother());
 
-    	if (((particleMotherN->PdgCode() == 1010010030 && particleMotherP->PdgCode() == 1010010030)   ||
-      (particleMotherN->PdgCode() == -1010010030 && particleMotherP->PdgCode() == -1010010030)) &&
-      (labelMotherN == labelMotherP)) {
-      	reducedV0->fMcTruth = 1;
-      	fMCGenRecArray->AddAtAndExpand(reducedV0, fMcGenRecCounter);
-      	fMCGenRec[fMcGenRecCounter] = labelMotherP;
-      	fMcGenRecCounter++;
-      	fHistMcRec->Fill(reducedV0->fDecayLength);
+				AliMCParticle *particleMotherP = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(labelMotherP));
+				AliMCParticle *particleMotherN = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(labelMotherN));
+
+  	  	if (((particleMotherN->PdgCode() == 1010010030 && particleMotherP->PdgCode() == 1010010030)   ||
+  	    (particleMotherN->PdgCode() == -1010010030 && particleMotherP->PdgCode() == -1010010030)) &&
+  	    (labelMotherN == labelMotherP)) {
+  	    	reducedV0->fMcTruth = 1;
+  	    	fMCGenRecArray->AddAtAndExpand(reducedV0, fMcGenRecCounter);
+  	    	fMCGenRec[fMcGenRecCounter] = labelMotherP;
+  	    	fMcGenRecCounter++;
+  	    	fHistMcRec->Fill(reducedV0->fDecayLength);
+  	  	}
     	}
     }
   }
@@ -646,7 +720,7 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 
 	} else {
 		// MC: simulate TRD trigger
-		Bool_t secHeHNU = kFALSE, secHeHQU = kFALSE;
+		Bool_t secHeHNU = kFALSE, secHeHQU = kFALSE, secHeHSE = kFALSE;
 
 		if (nTrdTracks > 0) {
 			for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
@@ -667,8 +741,8 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 				}
 				// simulate HQU
 				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
-					trdTrack->GetPID() >= 130 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
-					Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					trdTrack->GetPID() >= 135 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
+					Double_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
 					if (sag < 0.2 && sag > -0.2) {
 						fReducedEvent->fTrigHQU = 1;
 						fReducedEvent->fTrigger = 5;
@@ -677,9 +751,22 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 						}
 					}
 				}
+				// simulate HSE
+				if (TMath::Abs(trdTrack->GetPt()) >= 384 &&
+					trdTrack->GetPID() >= 120 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
+					Double_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						fReducedEvent->fTrigHSE = 1;
+						fReducedEvent->fTrigger = 7;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHSE = kTRUE;
+						}
+					}
+				}
 			}
-		if (secHeHNU) fReducedEvent->fTrigHNU = 2;
-		if (secHeHQU) fReducedEvent->fTrigHQU = 2;
+			if (secHeHNU) fReducedEvent->fTrigHNU = 2;
+			if (secHeHQU) fReducedEvent->fTrigHQU = 2;
+			if (secHeHSE) fReducedEvent->fTrigHSE = 2;
 		}
 	}
 	fHistTrigger->Fill(fReducedEvent->fTrigger);
@@ -701,13 +788,13 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
   return isTriggered;
 }
 //_____________________________________________________________________________
-Float_t AliAnalysisTaskHypTritEventTree::GetInvPtDevFromBC(Int_t b, Int_t c) {
+Double_t AliAnalysisTaskHypTritEventTree::GetInvPtDevFromBC(Int_t b, Int_t c) {
 	//returns d(1/Pt) in c/GeV
 	//in case of no gtu simulation -> return maximum 0.5
 	if(b==0 && c==0) return 0.5;
 	Int_t tmp = (((b & 0xfff) << 12) ^ 0x800000) - 0x800000;
 	tmp += (c & 0xfff);
-	Float_t invPtDev = tmp * 0.000001;
+	Double_t invPtDev = tmp * 0.000001;
 	return invPtDev;
 }
 //_____________________________________________________________________________
@@ -755,146 +842,180 @@ Double_t AliAnalysisTaskHypTritEventTree::GeoLength(const AliESDtrack& track) {
 //_____________________________________________________________________________
 void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
-  return;
-	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
-		if(!fMCtrue) { // Data
-			// LHC16 + LHC18
-			// Triton
-			fBetheParamsT[0] = 0.427978;
-			fBetheParamsT[1] = 105.46;
-			fBetheParamsT[2] =-7.08642e-07;
-			fBetheParamsT[3] = 2.23332;
-			fBetheParamsT[4] = 18.8231;
-			fBetheParamsT[5] = 0.06;
-			// He3
-			fBetheParamsHe[0] = 1.81085;
-			fBetheParamsHe[1] = 29.4656;
-			fBetheParamsHe[2] = 0.0458225;
-			fBetheParamsHe[3] = 2.08689;
-			fBetheParamsHe[4] = 2.28772;
-			fBetheParamsHe[5] = 0.06;
-		} else { // MC
-			if (runNumber >= 262424 || runNumber <= 256418 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-			if (runNumber >= 256941 && runNumber <= 258537 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-			if (runNumber >= 258962 && runNumber <= 259888 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-		}
+	if (runNumber >= 252235 && runNumber <= 265589) { // 2016 pp data
+		fYear = 2016;
+		// He3
+		fBetheParamsHe[0] = 1.81085;
+		fBetheParamsHe[1] = 29.4656;
+		fBetheParamsHe[2] = 0.0458225;
+		fBetheParamsHe[3] = 2.08689;
+		fBetheParamsHe[4] = 2.28772;
+		fBetheParamsHe[5] = 0.06;
+		// Triton
+		fBetheParamsT[0] = 0.427978;
+		fBetheParamsT[1] = 105.46;
+		fBetheParamsT[2] = -7.08642e-07;
+		fBetheParamsT[3] = 2.23332;
+		fBetheParamsT[4] = 18.8231;
+		fBetheParamsT[5] = 0.06;
 	}
-	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
-		if(!fMCtrue) {
-			//LHC17 Data
-			// He3
-			fBetheParamsHe[0] = 3.20025;
-			fBetheParamsHe[1] = 16.4971;
-			fBetheParamsHe[2] = -0.0116571;
-			fBetheParamsHe[3] = 2.3152;
-			fBetheParamsHe[4] = 3.11135;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 0.420434;
-			fBetheParamsT[1] = 106.102;
-			fBetheParamsT[2] = -3.15587e-07;
-			fBetheParamsT[3] = 2.32499;
-			fBetheParamsT[4] = 21.3439;
-			fBetheParamsT[5] = 0.06;
-		} else {
-			//LHC20l7b (-> LHC17)
-			// He3
-			fBetheParamsHe[0] = 3.14546;
-			fBetheParamsHe[1] = 16.2277;
-			fBetheParamsHe[2] = -0.000523081;
-			fBetheParamsHe[3] = 2.28248;
-			fBetheParamsHe[4] = 2.60465;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.88676;
-			fBetheParamsT[1] = 15.3823;
-			fBetheParamsT[2] = 0.580675;
-			fBetheParamsT[3] = 2.28551;
-			fBetheParamsT[4] = 2.47351;
-			fBetheParamsT[5] = 0.06;
-		}
+	if (runNumber > 265589 && runNumber <= 267166) { // 2016 p-Pb data
+		fYear = 2016;
+		// He3
+		fBetheParamsHe[0] = 0.715489;
+		fBetheParamsHe[1] = 59.5463;
+		fBetheParamsHe[2] = 4.44487e-12;
+		fBetheParamsHe[3] = 2.69874;
+		fBetheParamsHe[4] = 24.063;
+		fBetheParamsHe[5] = 0.04725;
+		// Triton
+		fBetheParamsT[0] = 0.223948;
+		fBetheParamsT[1] = 180.564;
+		fBetheParamsT[2] = -3.03884e-10;
+		fBetheParamsT[3] = 2.30095;
+		fBetheParamsT[4] = 34.2269;
+		fBetheParamsT[5] = 0.06517;	
+	} 	
+	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp data
+		fYear = 2017;
+		// He3
+		fBetheParamsHe[0] = 3.20025;
+		fBetheParamsHe[1] = 16.4971;
+		fBetheParamsHe[2] = -0.0116571;
+		fBetheParamsHe[3] = 2.3152;
+		fBetheParamsHe[4] = 3.11135;
+		fBetheParamsHe[5] = 0.06;
+		// Triton
+		fBetheParamsT[0] = 0.420434;
+		fBetheParamsT[1] = 106.102;
+		fBetheParamsT[2] = -3.15587e-07;
+		fBetheParamsT[3] = 2.32499;
+		fBetheParamsT[4] = 21.3439;
+		fBetheParamsT[5] = 0.06;
 	}
-	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
-		if(!fMCtrue) {
-			// LHC16 + LHC18
-			// He3
-			fBetheParamsT[0] = 0.427978;
-			fBetheParamsT[1] = 105.46;
-			fBetheParamsT[2] =-7.08642e-07;
-			fBetheParamsT[3] = 2.23332;
-			fBetheParamsT[4] = 18.8231;
-			fBetheParamsT[5] = 0.06;
-			// Triton
-			fBetheParamsHe[0] = 1.81085;
-			fBetheParamsHe[1] = 29.4656;
-			fBetheParamsHe[2] = 0.0458225;
-			fBetheParamsHe[3] = 2.08689;
-			fBetheParamsHe[4] = 2.28772;
-			fBetheParamsHe[5] = 0.06;
-		} else {
-			//LHC20l7a (-> LHC18)
-			// He3
-			fBetheParamsHe[0] = 3.07067;
-			fBetheParamsHe[1] = 15.8069;
-			fBetheParamsHe[2] = -0.0142383;
-			fBetheParamsHe[3] = 2.15513;
-			fBetheParamsHe[4] = 2.5192;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.95171;
-			fBetheParamsT[1] = 17.7223;
-			fBetheParamsT[2] = 37.7979;
-			fBetheParamsT[3] = 2.03313;
-			fBetheParamsT[4] = 0.730268;
-			fBetheParamsT[5] = 0.06;
-		}
+	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp data
+		fYear = 2018;
+		// He3
+		fBetheParamsHe[0] = 1.81085;
+		fBetheParamsHe[1] = 29.4656;
+		fBetheParamsHe[2] = 0.0458225;
+		fBetheParamsHe[3] = 2.08689;
+		fBetheParamsHe[4] = 2.28772;
+		fBetheParamsHe[5] = 0.06;
+		// Triton
+		fBetheParamsT[0] = 0.427978;
+		fBetheParamsT[1] = 105.46;
+		fBetheParamsT[2] = -7.08642e-07;
+		fBetheParamsT[3] = 2.23332;
+		fBetheParamsT[4] = 18.8231;
+		fBetheParamsT[5] = 0.06;
 	}
 }
+//_____________________________________________________________________________
+
+Double_t AliAnalysisTaskHypTritEventTree::TRDtrack(AliESDtrack* esdTrack, AliReducedHypTritTrack* reducedHe) {
+
+		reducedHe->fTRDvalid = 0;
+		reducedHe->fTRDtrigHNU = 0;
+		reducedHe->fTRDtrigHQU = 0;
+		reducedHe->fTRDPid = 0;
+		reducedHe->fTRDnTracklets = 0;
+		reducedHe->fTRDPt = 0;
+		reducedHe->fTRDLayerMask = 0;
+		reducedHe->fTRDSagitta = -1;
+		reducedHe->fTRDPID0 = 0;
+		reducedHe->fTRDStack = 0;
+		reducedHe->fTRDSector = 0;
+		reducedHe->fTRDPID1 = 0;
+		reducedHe->fTRDPID2 = 0;
+		reducedHe->fTRDPID3 = 0;
+		reducedHe->fTRDPID4 = 0;
+		reducedHe->fTRDPID5 = 0;
+	
+    if(!esdTrack) {
+        return 0;
+    }
+
+    if(fESDevent->GetNumberOfTrdTracks() == 0) {
+        return 0;
+    }
+    
+    AliESDTrdTrack* bestGtuTrack = 0x0;
+    AliTRDonlineTrackMatching *matching = new AliTRDonlineTrackMatching();
+    
+    Double_t esdPt = esdTrack->GetSignedPt();
+    Double_t mag = fESDevent->GetMagneticField();
+    Double_t currentMatch = 0;
+    Double_t bestMatch = 0;
+
+    for (Int_t i = 0; i < fESDevent->GetNumberOfTrdTracks(); i++) {
+
+        AliESDTrdTrack* gtuTrack= fESDevent->GetTrdTrack ( i );
+        Double_t gtuPt = gtuTrack->Pt();
+        if (mag > 0.) gtuPt = gtuPt * (-1.0);
+
+        Double_t ydist;
+        Double_t zdist;
+
+        if (matching->EstimateTrackDistance(esdTrack, gtuTrack, mag, &ydist, &zdist) == 0) {
+        	currentMatch = matching->RateTrackMatch(ydist, zdist, esdPt, gtuPt);
+				}
+				
+        if (currentMatch > bestMatch) {
+            bestMatch = currentMatch;
+            bestGtuTrack = gtuTrack;
+        }
+    }
+    
+    if (!bestGtuTrack) {
+    	return 0;
+    }
+    
+    reducedHe->fTRDvalid = 1;
+		reducedHe->fTRDPid = bestGtuTrack->GetPID();
+		reducedHe->fTRDnTracklets = bestGtuTrack->GetNTracklets();
+		reducedHe->fTRDPt = (TMath::Abs(bestGtuTrack->GetPt()));
+		reducedHe->fTRDLayerMask =  bestGtuTrack->GetLayerMask();
+		reducedHe->fTRDSagitta = GetInvPtDevFromBC(bestGtuTrack->GetB(), bestGtuTrack->GetC());	
+		reducedHe->fTRDStack = bestGtuTrack->GetStack();
+		reducedHe->fTRDSector = bestGtuTrack->GetSector();
+
+		AliESDTrdTracklet *trk = 0;
+		trk = bestGtuTrack->GetTracklet(0);
+		if (trk) reducedHe->fTRDPID0 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(1);
+		if (trk) reducedHe->fTRDPID1 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(2);
+		if (trk) reducedHe->fTRDPID2 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(3);
+		if (trk) reducedHe->fTRDPID3 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(4);
+		if (trk) reducedHe->fTRDPID4 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(5);
+		if (trk) reducedHe->fTRDPID5 = trk->GetTrackletWord();		
+
+			
+		if((bestGtuTrack->GetPID() >= 255 && bestGtuTrack->GetNTracklets() == 4) || 
+			(bestGtuTrack->GetPID() >= 235 && bestGtuTrack->GetNTracklets() > 4)) {
+						reducedHe->fTRDtrigHNU = 1;
+		}		
+
+			if (TMath::Abs(bestGtuTrack->GetPt()) >= 256 &&
+				bestGtuTrack->GetPID() >= 130 && bestGtuTrack->GetNTracklets() >= 5 && (bestGtuTrack->GetLayerMask() & 1) ){	
+				Double_t sag = GetInvPtDevFromBC(bestGtuTrack->GetB(), bestGtuTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+							reducedHe->fTRDtrigHQU = 1;
+				 	}
+			}	
+
+    return bestMatch;
+
+}
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+

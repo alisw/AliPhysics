@@ -42,6 +42,9 @@
 #include "AliJHistManager.h"
 #include "AliJRunTable.h"
 #include "AliJFFlucAnalysis.h" // TEMP for getting bins
+#include "TDirectoryFile.h"
+#include "TList.h"
+#include "TSystem.h"
 
 //#pragma GCC diagnostic warning "-Wall"
 //______________________________________________________________________________
@@ -78,6 +81,7 @@ AliJCatalystTask::AliJCatalystTask():
 	grEffCor(0),
 	fCentBinEff(0),
 	phiMapIndex(0),
+	bUseAlternativeWeights(kFALSE),
 // QA part.
 	fMainList(NULL),
 	bSaveAllQA(kFALSE),
@@ -88,9 +92,15 @@ AliJCatalystTask::AliJCatalystTask():
  	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
 	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
-	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2),	// TBC: Shall we keep 2010 default?
+	fUseITSMinClusters(false),
+	fITSMinClusters(2),
+	fUseTightCuts(false),
+	fAddESDpileupCuts(false),
+	fESDpileup_slope(3.38), fESDpileup_inter(15000),
+	fSaveESDpileupQA(false)
 {
-	//
+	InitializeArrays(); //
 }
 
 //______________________________________________________________________________
@@ -128,6 +138,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	grEffCor(0),
 	fCentBinEff(0),
 	phiMapIndex(0),
+	bUseAlternativeWeights(kFALSE),
 // QA part.
 	fMainList(NULL),
 	bSaveAllQA(kFALSE),
@@ -138,7 +149,13 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
  	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
 	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
-	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2),	// TBC: Shall we keep 2010 default?
+	fUseITSMinClusters(false),
+	fITSMinClusters(2),
+	fUseTightCuts(false),
+	fAddESDpileupCuts(false),
+	fESDpileup_slope(3.38), fESDpileup_inter(15000),
+	fSaveESDpileupQA(false)
 {
 // Main list to save the output of the QA.
   fMainList = new TList();
@@ -167,12 +184,19 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	grEffCor(ap.grEffCor),
 	fCentBinEff(ap.fCentBinEff),
 	phiMapIndex(ap.phiMapIndex),
+	bUseAlternativeWeights(ap.bUseAlternativeWeights),
 // QA part.
 	fMainList(ap.fMainList),
 	bSaveAllQA(ap.bSaveAllQA),
 	bSaveHMOhist(ap.bSaveHMOhist),
 	fCentralityBins(ap.fCentralityBins),
-	fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16)
+	fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16),
+	fChi2perNDF_min(ap.fChi2perNDF_min), fChi2perNDF_max(ap.fChi2perNDF_max),
+	fDCAxy_max(ap.fDCAxy_max), fDCAz_max(ap.fDCAz_max),
+	fUseITSMinClusters(ap.fUseITSMinClusters),fITSMinClusters(ap.fITSMinClusters),
+	fUseTightCuts(ap.fUseTightCuts), fAddESDpileupCuts(ap.fAddESDpileupCuts),
+	fESDpileup_slope(ap.fESDpileup_slope), fESDpileup_inter(ap.fESDpileup_inter),
+	fSaveESDpileupQA(ap.fSaveESDpileupQA)
 {
 	AliInfo("----DEBUG AliJCatalystTask COPY ----");
 }
@@ -319,6 +343,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		Int_t centBin = GetCentralityBin(fcent);
 		if (centBin == -1) {return;}
 
+		//ReadAODTracks depends on the vertex info for phi and efficiency weight
 		ReadVertexInfo(paodEvent, fvertex);	// Read vertex info before selection.
 		if (bSaveAllQA) {
 			fVertexXHistogram[centBin][0]->Fill(fvertex[0]);
@@ -349,7 +374,6 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		}
 
 		ReadAODTracks( paodEvent, fInputList, fcent ) ; // read tracklist
-		ReadVertexInfo( paodEvent, fvertex); // read vertex info
 	} // AOD
 	fZvert = fvertex[2];
 
@@ -458,22 +482,21 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 			if(track->GetTPCNcls() < fNumTPCClusters)
 				continue;
 
-			// New: Get the values of the DCA according to the type of tracks.
-			Double_t DCAxy = 0.;	// DCA in the transverse plane.
-			Double_t DCAz = 0.;		// DCA along the beam axis.
-			if(fFilterBit == 128) {	// Constrained TPC-only tracks.
-				DCAxy = track->DCA();
-				DCAz = track->ZAtDCA();
-			}
-		  else {	// For the unconstrained tracks. TBC!
-		    AliAODVertex *primaryVertex = (AliAODVertex*)aod->GetPrimaryVertex();
-		    Double_t v[3];    // Coordinates of the PV
-		    Double_t pos[3];  // Coordinates of the track closest to PV
+			if(fUseITSMinClusters && (track->GetITSNcls()<fITSMinClusters))
+				continue;
 
-		    primaryVertex->GetXYZ(v);
-		    track->GetXYZ(pos);
-		    DCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
-		    DCAz = pos[2] - v[2];
+			// New: Get the values of the DCA according to the type of tracks.
+			Float_t DCAxy = 0.;	// DCA in the transverse plane.
+			Float_t DCAz = 0.;		// DCA along the beam axis.	
+
+		  	track->GetImpactParameters(DCAxy,DCAz);
+
+		  // Newer: Set the tighter cuts for PbPb Run2: primary cuts along with hybrids.
+		  if (fUseTightCuts){
+		  	// Set the golden cut on chi2: < 36
+		  	if ((track->GetChi2TPCConstrainedVsGlobal()) > 36) {continue;}
+		  	// Redefine the max for DCAxy as a function of pT.
+		  	fDCAxy_max = 0.0105 + 0.0350/(TMath::Power(track->Pt(), 1.1));
 		  }
 
 		  // New: Apply the cuts on the DCA values of the track.
@@ -526,19 +549,32 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				
 				// Adding phi weight for a track
 				Double_t phi_module_corr = 1.0;
-				if(fJCorMapTask){
-					Double_t w;
-					if(pPhiWeights) {
-						Double_t phi = itrack->Phi();
-						Double_t eta = itrack->Eta();
-						w = pPhiWeights->GetBinContent(pPhiWeights->FindBin(phi,eta,fZvert));
+				if(bUseAlternativeWeights){
+				   Int_t RunBin = GetRunIndex10h((Int_t)aod->GetRunNumber());
+				   Int_t CentralityBin = GetCentralityBin(fcent);
+				   Int_t phiBin = fHistoPhiWeight[CentralityBin][RunBin]->FindBin(track->Phi());
+				   phi_module_corr = 1./((double)(fHistoPhiWeight[CentralityBin][RunBin])->GetBinContent(phiBin));
+				} else {
+					if(fJCorMapTask){
+						Double_t w;
+						if(pPhiWeights) {
+							Double_t phi = itrack->Phi();
+							Double_t eta = itrack->Eta();
+							w = pPhiWeights->GetBinContent(pPhiWeights->FindBin(phi,eta,fZvert));
+						}
+						else {
+							w = 1.0;
+						}
+						if(w > 1e-6) phi_module_corr = w;
 					}
-					else {
-						w = 1.0;
-					}
-					if(w > 1e-6) phi_module_corr = w;
 				}
 				itrack->SetWeight(phi_module_corr);
+
+				if (bSaveAllQA){
+					fProfileWeights[GetCentralityBin(fcent)]->Fill(itrack->Phi(), phi_module_corr);
+					fPhiHistogram[GetCentralityBin(fcent)][2]->Fill(track->Phi(), 1./phi_module_corr);
+					fPTHistogram[GetCentralityBin(fcent)][2]->Fill(itrack->Pt(), 1./effCorr);
+				}
 			}	// End: if(track->TestFilterBit( fFilterBit ))
 		}
 
@@ -639,6 +675,20 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 			FB32TOFTracks++;
 	}
 
+	// LOKI: Define the pileup cuts for EDStracks vs TPConlyTracks.
+	UInt_t M_ESD = 0;	// Multiplicity corresponding ESD tracks.
+	UInt_t M_TPC = 0;	// Multiplicity TPC only tracks
+	if (fAddESDpileupCuts) {
+		M_ESD = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+		for (int it = 0; it < nTracks; it++) {
+			AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+			if (!trackAOD) {continue;}
+			if (trackAOD->TestFilterBit(128)) {M_TPC++;}
+		}
+		// Fill some QA histogram?
+	}
+
+
 	if(flags & FLUC_CUT_OUTLIERS){
 		if(fperiod == AliJRunTable::kLHC15o || fperiod == AliJRunTable::kLHC18q || fperiod == AliJRunTable::kLHC18r){
 			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
@@ -664,6 +714,13 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 			if(tfb32tof < mu32tof-nsigma[0]*sigma32tof || tfb32tof > mu32tof+nsigma[1]*sigma32tof)
 				return kFALSE;
 
+			// if true, apply the pileup cut between ESD and TPConly tracks.
+			if (fAddESDpileupCuts) {
+				if (bSaveAllQA && fSaveESDpileupQA) {fESDpileupHistogram[thisCent][0]->Fill(M_TPC, M_ESD);}
+				if (!( (double)M_ESD < (fESDpileup_slope*(double)M_TPC + fESDpileup_inter) ))  {return kFALSE;}
+				if (bSaveAllQA && fSaveESDpileupQA) {fESDpileupHistogram[thisCent][1]->Fill(M_TPC, M_ESD);}
+			}
+
 		}
 		else if (fperiod == AliJRunTable::kLHC10h) {	// High multiplicity outlier cuts for LHC10h based on the SCklm analysis.
 			UInt_t MTPC = 0;
@@ -678,6 +735,12 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][0]->Fill(Mglobal, MTPC);}	// Fill the HMO histogram only if both bSave* are true.
 			if(!((double)MTPC > (-65.0 + 1.54*Mglobal) && (double)MTPC < (90.0 + 2.30*Mglobal))) {
 				return kFALSE;
+			}
+			if (fCentDetName == "V0M") {
+				float cent_V0M = ReadCentrality(event,"V0M");
+				if ((cent_V0M > 20.) && (cent_V0M < 30.) && (MTPC > 1500)) {return kFALSE;}
+				if ((cent_V0M > 30.) && (cent_V0M < 40.) && (MTPC > 1050)) {return kFALSE;}
+				if ((cent_V0M > 40.) && (cent_V0M < 50.) && (MTPC > 700)) {return kFALSE;}
 			}
 			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][1]->Fill(Mglobal, MTPC);}
 		}
@@ -872,6 +935,7 @@ void AliJCatalystTask::InitializeArrays() {
 		  fTPCClustersHistogram[icent][i] = NULL;
 		  fITSClustersHistogram[icent][i] = NULL;
 		  fChiSquareTPCHistogram[icent][i] = NULL;
+		  fChiSquareITSHistogram[icent][i] = NULL;		  
 		  fDCAzHistogram[icent][i] = NULL;
 		  fDCAxyHistogram[icent][i] = NULL;
 	    fChargeHistogram[icent][i] = NULL;
@@ -880,9 +944,14 @@ void AliJCatalystTask::InitializeArrays() {
 		  fEtaHistogram[icent][i] = NULL;
 		  fMultHistogram[icent][i] = NULL;
 		  fHMOsHistogram[icent][i] = NULL;
+		  fESDpileupHistogram[icent][i] = NULL;
 		}
+	    fPTHistogram[icent][2] = NULL;
+		  fPhiHistogram[icent][2] = NULL;
 
 		fCentralityHistogram[icent] = NULL;
+		fProfileWeights[icent] = NULL;
+		for(int iRun = 0; iRun < 90; iRun++) {fHistoPhiWeight[icent][iRun] = NULL;}
 	}
 }
 
@@ -913,17 +982,27 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fPTHistogram[icent][1]->GetXaxis()->SetTitle("P_t");
 	 fPTHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][1]);
+
+	 fPTHistogram[icent][2] = new TH1F("fPTHist_AfterTrackSelection_Weighted","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][2]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][2]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][2]);
 	 
 	 // b) Book histogram to hold phi spectra
-	 fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",2000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][0]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][0]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][0]);
 
-	 fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",2000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
+
+	 fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",2000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][2]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]);
 
 	 // c) Book histogram to hold eta distribution before track selection:
 	 fEtaHistogram[icent][0] = new TH1F("fEtaHist_BeforeTrackSelection","Eta Distribution",1000,-1.,1.); 
@@ -946,29 +1025,29 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][1]);
 
 	 // e) Book histogam for Vertex X 
-	 fVertexXHistogram[icent][0] = new TH1F("fVertexX_BeforeEventSelection","VertexXBefore",1000,-20.,20.); 
+	 fVertexXHistogram[icent][0] = new TH1F("fVertexX_BeforeEventSelection","VertexXBefore",2000,-10.,10.); 
 	 fVertexXHistogram[icent][0]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][0]);
 
-	 fVertexXHistogram[icent][1] = new TH1F("fVertexX_AfterEventSelection","VertexXAfter",1000,-20.,20.); 
+	 fVertexXHistogram[icent][1] = new TH1F("fVertexX_AfterEventSelection","VertexXAfter",2000,-10.,10.); 
 	 fVertexXHistogram[icent][1]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][1]);
 
 	 // f) Book histogam for Vertex Y 
-	 fVertexYHistogram[icent][0] = new TH1F("fVertexY_BeforeEventSelection","VertexYBefore",1000,-20.,20.); 
+	 fVertexYHistogram[icent][0] = new TH1F("fVertexY_BeforeEventSelection","VertexYBefore",2000,-10.,10.); 
 	 fVertexYHistogram[icent][0]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][0]);
 
-	 fVertexYHistogram[icent][1] = new TH1F("fVertexY_AfterEventSelection","VertexYAfter",1000,-20.,20.); 
+	 fVertexYHistogram[icent][1] = new TH1F("fVertexY_AfterEventSelection","VertexYAfter",2000,-10.,10.); 
 	 fVertexYHistogram[icent][1]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][1]);
 
 	 // g) Book histogam for Vertex Z 
-	 fVertexZHistogram[icent][0] = new TH1F("fVertexZ_BeforeEventSelection","VertexZBefore",1000,-20.,20.); 
+	 fVertexZHistogram[icent][0] = new TH1F("fVertexZ_BeforeEventSelection","VertexZBefore",4000,-20.,20.); 
 	 fVertexZHistogram[icent][0]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][0]);
 
-	 fVertexZHistogram[icent][1] = new TH1F("fVertexZ_AfterEventSelection","VertexZAfter",1000,-20.,20.); 
+	 fVertexZHistogram[icent][1] = new TH1F("fVertexZ_AfterEventSelection","VertexZAfter",4000,-20.,20.); 
 	 fVertexZHistogram[icent][1]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][1]);
 
@@ -986,12 +1065,18 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fITSClustersHistogram[icent][1] = new TH1F("fITSClusters_AfterCut","ITSClustersAfterCut",10,0.,10.); 
 	 fControlHistogramsList[icent]->Add(fITSClustersHistogram[icent][1]);
 
-	 // k) Book histogram for chi square TPC 
+	 // k) Book histogram for chi square TPC and ITS
 	 fChiSquareTPCHistogram[icent][0] = new TH1F("fChiSquareTPC_BeforeCut","ChiSquareTPCBeforeCut",1000,0.,20.); 
 	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][0]);
 
 	 fChiSquareTPCHistogram[icent][1] = new TH1F("fChiSquareTPC_AfterCut","ChiSquareTPCAfterCut",1000,0.,20.); 
 	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][1]);
+
+	 fChiSquareITSHistogram[icent][0] = new TH1F("fChiSquareITS_BeforeCut","ChiSquareITSBeforeCut",1000,0.,50.); 
+	 fControlHistogramsList[icent]->Add(fChiSquareITSHistogram[icent][0]);
+
+	 fChiSquareITSHistogram[icent][1] = new TH1F("fChiSquareITS_AfterCut","ChiSquareITSAfterCut",1000,0.,50.); 
+	 fControlHistogramsList[icent]->Add(fChiSquareITSHistogram[icent][1]);
 
 	  // l) Book histogram for DCAz
 	 fDCAzHistogram[icent][0] = new TH1F("fDCAz_BeforeCut","DCAzBeforeCut",1000,-10.,10.);  
@@ -1031,6 +1116,23 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fHMOsHistogram[icent][1]->GetYaxis()->SetTitle("M_{TPC}");
 	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
 
+	 // TProfile for the weights to apply.
+   fProfileWeights[icent] = new TProfile("fProfileWeights","Phi Weights",1000,-TMath::Pi(),TMath::Pi()); //centrality dependent output
+	 fProfileWeights[icent]->GetXaxis()->SetTitle("#varphi");
+	 fProfileWeights[icent]->GetYaxis()->SetTitle("weight");
+	 fControlHistogramsList[icent]->Add(fProfileWeights[icent]);
+
+	 // Save the TH2D for the ESD-TPC pileup cut in Run2.
+		fESDpileupHistogram[icent][0] = new TH2D("fESDpileupHistogram_Before","Correlations before ESD-TPC cut", 1200, 0., 6000., 7000, 0., 35000.);
+	 	fESDpileupHistogram[icent][0]->GetXaxis()->SetTitle("M_{TPC}");
+	 	fESDpileupHistogram[icent][0]->GetYaxis()->SetTitle("M_{ESD}");
+	 	if (fSaveESDpileupQA) {fControlHistogramsList[icent]->Add(fESDpileupHistogram[icent][0]);}
+
+	 	fESDpileupHistogram[icent][1] = new TH2D("fESDpileupHistogram_After","Correlations after ESD-TPC cuts", 1200, 0., 6000., 7000, 0., 35000.);
+	 	fESDpileupHistogram[icent][1]->GetXaxis()->SetTitle("M_{TPC}");
+	 	fESDpileupHistogram[icent][1]->GetYaxis()->SetTitle("M_{ESD}");
+	 	if (fSaveESDpileupQA) {fControlHistogramsList[icent]->Add(fESDpileupHistogram[icent][1]);}
+
   }//for(Int_t icent=0; icent<fCentralityBins; icent++)
 }
 
@@ -1043,19 +1145,7 @@ void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t which
 	Float_t ValueDCAxy = 999.;   // DCA in the xy-plane.
 	Float_t ValueDCAz = 999.;    // DCA along z.
 
-	if (fFilterBit == 128)  // These methods work only for constrained TPConly tracks.
-	{ //These two quantities are the DCA from global tracks but not what we will cut on.
-	  ValueDCAxy = thisTrack->DCA();
-	  ValueDCAz = thisTrack->ZAtDCA();
-	}
-	else  //For the unconstrained tracks.
-	{
-	  Double_t pos[3];  //Coordinates of the track closest to PV?
-
-	  thisTrack->GetXYZ(pos);
-	  ValueDCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
-	  ValueDCAz = pos[2] - v[2];
-	}
+	thisTrack->GetImpactParameters(ValueDCAxy,ValueDCAz);
 
 	fPTHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Pt());
 	fPhiHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Phi());
@@ -1063,6 +1153,7 @@ void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t which
   fTPCClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetTPCNcls());
   fITSClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSNcls());
   fChiSquareTPCHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Chi2perNDF());
+  fChiSquareITSHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSchi2()/(float)thisTrack->GetITSNcls());
   fDCAzHistogram[CentralityBin][whichHisto]->Fill(ValueDCAz);
   fDCAxyHistogram[CentralityBin][whichHisto]->Fill(ValueDCAxy);
   fChargeHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Charge());
@@ -1106,3 +1197,87 @@ void AliJCatalystTask::SetInitializeCentralityArray()
   }
 }
 
+//______________________________________________________________________________
+//______________________________________________________________________________
+//______________________________________________________________________________
+
+Int_t AliJCatalystTask::GetRunIndex10h(Int_t runNumber)
+{
+// Return for the given run the index in the run-by-run arrays.
+  TString sMethod = "Int_t AliJCatalystTask::GetRunIndex10h()";
+  Int_t cRun = -1; // Current index in the loop.
+
+  const int NumberRuns = 90;
+  Int_t listRuns[90] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
+
+// Find the position of the given run into the list of runs.
+  for (Int_t iRun = 0; iRun < NumberRuns; iRun++)
+  {
+    if (listRuns[iRun] == runNumber)
+    {
+      cRun = iRun;
+      break;
+    } // End: for (Int_t iRun = 0; iRun < fNumberRuns; iRun++).
+  } // End: iRun.
+
+ if(cRun == -1){Fatal(sMethod.Data(), "FATAL: Run Number not in List of Runs!");}  
+
+  return cRun;
+} // End: Int_t GetRunIndex(Int_t).
+
+//==========================================================================================================================================================================
+
+void AliJCatalystTask::SetInputAlternativeNUAWeights10h(bool UseAltWeight, TString fileWeight)
+{
+// Setter to open the external file with the particle weights and import them in the task....
+// a.)  Open the external file.                                                                  
+// b.)  Parse the runs.                                                                          
+// b.1) Open the TDirectoryFile for the current run.                                            
+// b.2) Open the list for the current centrality range.                                                                                         
+// c.)  Close the external file.                                                               
+
+  TString sMethod = "void AliJCatalystTask::SetInputAlternativeNUAWeights10h()"; 
+
+  bUseAlternativeWeights = UseAltWeight;
+
+  const int NumberRuns = 90;
+  Int_t listRuns[90] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
+
+  // a.) Open the external file.
+  TFile *weightsFile = TFile::Open(Form("%s", fileWeight.Data()), "READ");
+  if (!weightsFile) {Fatal(sMethod.Data(), "ERROR 404: File not found");}
+
+	for (Int_t iRun = 0; iRun < NumberRuns; iRun++)
+	{
+	  // b.1) Open the TDirectoryFile for the current run.
+	  Int_t runNumber = listRuns[iRun];
+
+	  TDirectoryFile *runTDF = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%d", runNumber)));
+	  if (!runTDF) {Fatal(sMethod.Data(), "ERROR: Directory not found");}
+
+	  for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins //GANESHA: Check about fCentralityBins. Hardcode???
+ 	  {
+	      //Check if value of this centrality bin is negativ -> if yes: break. We do not need anymore
+	      //The next edge is a breaking point -> this bin does not exist anymore
+	      if(fcentralityArray[icent+1] < 0) {break;}
+
+	      // b.2) Open the list for the current centrality range.
+	      TList *centralityList = dynamic_cast<TList*>(runTDF->Get(Form("Centrality-%.1f-%.1f", fcentralityArray[icent], fcentralityArray[icent+1])));
+	      if (!centralityList) {Fatal(sMethod.Data(), "ERROR: List not found");}
+
+	      fHistoPhiWeight[icent][iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("phi-weight"));
+	      if (!fHistoPhiWeight[icent][iRun]) {Fatal(sMethod.Data(), "ERROR: phi-weight histogram not found");}
+	      else {fHistoPhiWeight[icent][iRun]->SetDirectory(0);}  // Kill the default ownership
+
+	      delete centralityList;
+	   } // End: icent
+	   delete runTDF;
+ 	}//for irun
+
+  // c.) Close the external file.
+  weightsFile->Close();
+  delete weightsFile;
+
+} // void AliAnalysisTaskStudentsML::SetInputParticleWeights(TString fileWeight)
+
+//==========================================================================================================================================================================

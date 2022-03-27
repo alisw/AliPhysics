@@ -81,6 +81,7 @@ set(SRCS
   AliAnalysisTaskSEB0toDStarPi.cxx
   AliAnalysisTaskSEBPlustoD0Pi.cxx
   AliAnalysisTaskSEVertexingHF.cxx
+  AliAnalysisTaskSEVertexingHFRun3Conversion.cxx
   AliAnalysisTaskMEVertexingHF.cxx
   AliAnalysisTaskSESelectHF.cxx
   AliAnalysisTaskSECleanupVertexingHF.cxx
@@ -111,6 +112,7 @@ set(SRCS
   AliCFVertexingHFLctoV0bachelor.cxx
   AliCFTaskVertexingHF.cxx
   AliCFTaskVertexingHFCutVarFDSub.cxx
+  AliCFTaskVertexingHFEMCal.cxx
   AliCFTaskForDStarAnalysis.cxx
   AliAnalysisTaskSEDStarJets.cxx
   AliAnalysisTaskSEDStarSpectra.cxx
@@ -165,6 +167,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
   AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
+  AliAnalysisTaskSEOmegacZero2XiPifromKFP.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
   AliRDHFCutsCdeuterontodKpi.cxx
@@ -177,6 +180,9 @@ set(SRCS
   AliAnalysisTaskCheckAODdAODMatching.cxx
   AliAnalysisTaskSEXicPlusToXi2PifromKFP.cxx
   AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP.cxx
+  AliAnalysisTaskSESemileptonicOmegac0KFP.cxx
+  AliRDHFCutsOmegactoeleOmegafromKFP.cxx
+
 )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
@@ -234,6 +240,7 @@ install(FILES
             AddD2HTrain.C
 	    AddGoodRuns.C
             ConfigVertexingHF.C
+	    ConfigVertexingHF_pp_OfflineV0.C
             ConfigVertexingHF_pPbRHF.C
             ConfigVertexingHF_highmult.C
             ConfigVertexingHF_pp_LambdaC.C

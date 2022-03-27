@@ -36,6 +36,10 @@
 //           M. Vala (martin.vala@cern.ch)
 // modified: Kunal Garg (kgarg@cern.ch)
 //
+
+//modified: Prottay Das (prottay.das@cern.ch)
+//Modification (14/12/2021): Added armentous cut monitor for misidentification of lambda as K0s in Pb-Pb collisions
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
@@ -145,8 +149,9 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kV0Pt:        	        return "V0TransverseMomentum";
       case kV0NPt:        	        return "V0NegativeDaughterTransverseMomentum";
       case kV0PPt:        	        return "V0PositiveDaughterTransverseMomentum";
-      case kV0DCAXY:                return "V0TracksDCAXY";
-      case kV0Lifetime:             return "V0Lifetime";
+      case kV0DCAXY:                    return "V0TracksDCAXY";
+      case kV0Lifetime:                 return "V0Lifetime";
+      case kMinArm:                     return "ArmentousCut";
       case kDaughterDCA:  	        return "V0DaughterDCA";
       case kCosPointAng:  	        return "V0CosineOfPointingAngle";
       case kLambdaProtonPIDCut:         return "V0LambdaProtonNsigma";
@@ -737,6 +742,20 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        fComputedValue = TMath::Abs(lMass*lLength/lV0TotalMomentum);
        return kTRUE;
      }
+
+
+
+   case kMinArm:
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       fComputedValue = v0ESD->PtArmV0()/(TMath::Abs(v0ESD->AlphaV0()));
+       return kTRUE;
+     }
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+     
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
 

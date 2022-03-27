@@ -5,7 +5,7 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskSEXicPlusToXi2PifromKFP* AddTaskXicPlusToXi2PiFromKFParticle(TString finname="", Bool_t IsMC=kFALSE, TString cuttype="")
+AliAnalysisTaskSEXicPlusToXi2PifromKFP* AddTaskXicPlusToXi2PiFromKFParticle(TString finname="", Bool_t IsMC=kFALSE, TString cuttype="", Bool_t writeQATree = kTRUE)
 {
     Bool_t writeXicPlusRecTree = kTRUE;
     Bool_t writeXicPlusMCGenTree = kFALSE;
@@ -67,6 +67,7 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP* AddTaskXicPlusToXi2PiFromKFParticle(TStr
     task->SetDebugLevel(1);
     task->SetWriteXicPlusMCGenTree(writeXicPlusMCGenTree);
     task->SetWriteXicPlusTree(writeXicPlusRecTree);
+    task->SetWriteXicPlusQATree(writeQATree);
 
     // select type of event
 //    task->SelectCollisionCandidates(AliVEvent::kAnyINT); // kAnyINT = kMB | kINT7 | kINT5 | kINT8 | kSPI7
@@ -81,6 +82,7 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP* AddTaskXicPlusToXi2PiFromKFParticle(TStr
     mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_%s_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("tree_%s_MCGen_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("Hist_%s_%s", particle.Data(),cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("tree_%s_QA_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid

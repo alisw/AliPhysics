@@ -1,4 +1,4 @@
-AliAnalysisTaskLambdaNNRun2* AddMyTaskLNRun2(Bool_t isMC=kFALSE)
+AliAnalysisTaskLambdaNNRun2* AddMyTaskLNNRun2(Bool_t isMC=kFALSE)
 {
 	// get the manager via the static access member. since it's static, you don't need
 	// to create an instance of the class here to call the function

@@ -56,24 +56,24 @@ public:
   void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; }     //Only for MC, bypass event quality checks (e.g. for single pi0 MC)
   void SetRunNumber(int run){fRunNumber=run;fForseRun=kTRUE; }  //Use given run number, don't read from data
   void SetPi0WeightParameters(TArrayD * ar) ;             //Introduce weight for primary pi0
-  void SetDistanceToBad(Float_t cut=2.5){fMinBCDistance=cut;}     //Distance to bad module
+  void SetDistanceToBad(Double_t  cut=2.5){fMinBCDistance=cut;}     //Distance to bad module
   void SetCluCutType(cutType cut = kDefCut){fCutType = cut ; }      //To use default or lowE (Daiki's) cut
-  void SetTimeCut(Float_t cut=25.e-9){fTimeCut=cut;}              //Time selection, use only for data
+  void SetTimeCut(Double_t  cut=25.e-9){fTimeCut=cut;}              //Time selection, use only for data
   void SetCentralityEstimator(Int_t est=1){fCentEstimator=est;}   //Centrality estimator, pPb: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
   void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;  //for pp: 
   void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} //for pp: 
   void SetNonLinearity(Double_t a=1., Double_t b=0., Double_t c=1, Double_t d=0., Double_t e=1)
   { fNonlinA=a; fNonlinB=b; fNonlinC=c; fNonlinD=d; fNonlinE=e;}
-  void SetEminCut(Float_t emin=0.1){fEminCut=emin;}
+  void SetEminCut(Double_t  emin=0.1){fEminCut=emin;}
   void SetTimeEffCut(bool c){fDefTof=c;}
-  void SetUnsmear(Double_t a=1., Double_t b=0.){ fUnsmA=a; fUnsmB=b;}
+  void SetUnsmear(Double_t a=1., Double_t b=0.){ fUnsmA=a; fUnsmB=b; fDoUnsmear= true; }
   void SetTrackSelection(trackSelections s=kCENTwSSD){fTrackSelection=s;}
   void SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
-  void SetJetPthardRatio(Float_t ratio=2.5){fJetPtHardFactor=ratio;}
+  void SetJetPthardRatio(Double_t  ratio=2.5){fJetPtHardFactor=ratio;}
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
-  Int_t   GetFiducialArea(const Float_t * pos)const ;                           //what kind of fiducial area hit the photon
+  Int_t   GetFiducialArea(const Float_t  pos[3])const ;                           //what kind of fiducial area hit the photon
   Int_t   IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2,Int_t &iGrandPa) const; //Check MC genealogy; return PDG of parent
   Bool_t  IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   void    InPi0Band(Double_t m, Double_t pt, Double_t *nsimga)const; //Check if invariant mass is within pi0 peak
@@ -138,17 +138,18 @@ private:
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
   Bool_t fIsMCWithPileup; //Special MC production with pileup
   Bool_t fDefTof;         // default tof cut eff param or alternative to sys error estimate
+  Bool_t fDoUnsmear;      // do unsmearing
   Double_t fRP;           //! Reaction plane orientation
-  Float_t fJetPtHardFactor ; //Maximal Jetpt to pthard bins ratio
+  Double_t fJetPtHardFactor ; //Maximal Jetpt to pthard bins ratio
   
   //Fiducial area parameters
-  Float_t fZmax ;               //Rectangular
-  Float_t fZmin ;               //area
-  Float_t fPhimax ;             //covered by
-  Float_t fPhimin ;             //full calorimeter
-  Float_t fMinBCDistance;       //minimal distance to bad channel
-  Float_t fTimeCut ;            //Time cut
-  Float_t fEminCut ;            //Time cut
+  Double_t fZmax ;               //Rectangular
+  Double_t fZmin ;               //area
+  Double_t fPhimax ;             //covered by
+  Double_t fPhimin ;             //full calorimeter
+  Double_t fMinBCDistance;       //minimal distance to bad channel
+  Double_t fTimeCut ;            //Time cut
+  Double_t fEminCut ;            //Time cut
   Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights in MC
   Double_t fNonlinA;
   Double_t fNonlinB;
@@ -165,24 +166,24 @@ private:
   
   //
   TH2I * fPHOSBadMap[6] ;        //! 
-  TH2F * fhReMod[5];             //! Real per module
-  TH2F * fhMiMod[5];             //! Mixed per module
-  TH2F * fhRe[3][10][8];         //! Real: (Emin cut, Centrality, PID cut)
-  TH2F * fhMi[3][10][8];         //! Mixed: (Emin cut, Centrality, PID cut) 
-  TH2F * fhReSingle[3][10][8];   //!
-  TH2F * fhMiSingle[3][10][8];    //!
-  TH2F * fhReSingleIso[3][10][8]; //!
-  TH2F * fhMiSingleIso[3][10][8]; //!
-  TH1F * fhPiIsolation[20][10] ;  //!
-  TH2F * fhReTruePi0[3][10][8];   //! Real, true pi0: (Emin cut, Centrality, PID cut)
-  TH2F * fhReTrueEta[3][10][8];   //! Real, true eta: (Emin cut, Centrality, PID cut)
-  TH2F * fhReSingleTruePi0[3][8];
-  TH2F * fhReSingleTruePi0K0s[3][8];
-  TH2F * fhReSingleTruePi0Kpm[3][8];
-  TH2F * fhReSingleTruePi0Nbar[3][8];
-  TH2F * fhReSingleTruePi0K0sC[3][8];
-  TH2F * fhReSingleTruePi0KpmC[3][8];
-  TH2F * fhReSingleTruePi0NbarC[3][8];
+  TH2D * fhReMod[5];             //! Real per module
+  TH2D * fhMiMod[5];             //! Mixed per module
+  TH2D * fhRe[3][10][8];         //! Real: (Emin cut, Centrality, PID cut)
+  TH2D * fhMi[3][10][8];         //! Mixed: (Emin cut, Centrality, PID cut) 
+  TH2D * fhReSingle[3][10][8];   //!
+  TH2D * fhMiSingle[3][10][8];    //!
+  TH2D * fhReSingleIso[3][10][8]; //!
+  TH2D * fhMiSingleIso[3][10][8]; //!
+  TH1D * fhPiIsolation[20][10] ;  //!
+  TH2D * fhReTruePi0[3][10][8];   //! Real, true pi0: (Emin cut, Centrality, PID cut)
+  TH2D * fhReTrueEta[3][10][8];   //! Real, true eta: (Emin cut, Centrality, PID cut)
+  TH2D * fhReSingleTruePi0[3][8];
+  TH2D * fhReSingleTruePi0K0s[3][8];
+  TH2D * fhReSingleTruePi0Kpm[3][8];
+  TH2D * fhReSingleTruePi0Nbar[3][8];
+  TH2D * fhReSingleTruePi0K0sC[3][8];
+  TH2D * fhReSingleTruePi0KpmC[3][8];
+  TH2D * fhReSingleTruePi0NbarC[3][8];
 
   TH2F * fhQAAllEpartn ;    //!
   TH2F * fhQAAllzpartn ;    //!

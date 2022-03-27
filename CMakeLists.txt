@@ -97,6 +97,7 @@ endif()
 unset(isSystemDir)
 
 # Optional: Doxygen for reference doc generation
+set(DOXYGEN_EXECUTABLE "")
 find_package(Doxygen)
 if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
   message(STATUS "Doxygen ${DOXYGEN_VERSION} and Graphviz found: ${DOXYGEN_EXECUTABLE}, ${DOXYGEN_DOT_EXECUTABLE}")
@@ -137,6 +138,22 @@ else()
       if(NOT ROOT_HASALIEN)
           message(WARNING "ROOT has been built without AliEn support: some features might be unavailable!")
       endif(NOT ROOT_HASALIEN)
+
+      # find VMC standalone
+      # VMC standalone will fail if ROOT was found with VMC
+      find_package(VMC)
+      if(VMC_FOUND)
+        message(STATUS "Using standalone VMC")
+        # AliRoot's FindROOT module does not actually provide targets but only does link_libraries(ROOT_LIB_DIR).
+        # So AliRoot finds libs by name in that dir but not as a target.
+        # On the other hand VMCLibrary is linked against targets ROOT::Core etc which come in with a find_package(ROOT CONFIG).
+        # So Let's slightly modify the VMCLibrary target properties...
+        set(VMC_DEPS Core EG Geom Physics)
+        set_target_properties(VMCLibrary PROPERTIES INTERFACE_LINK_LIBRARIES "${VMC_DEPS}")
+        # Alias target before VMC was also found by name "VMC"
+        add_library(VMC ALIAS VMCLibrary)
+        include_directories(${VMC_INCLUDE_DIRS})
+      endif()
 
   else()
       message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
@@ -239,6 +256,9 @@ else()
   # KFParticke
   find_package(KFParticle)
 
+  # Boost
+  find_package(Boost)
+
   # General flags -> Should be moved into a configuration file
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
   # Avoid problems with -fPIE (set automatically by the previous line).
@@ -297,8 +317,8 @@ foreach(TEST_LIB ${ALILIBSTESTED})
   add_test(load_library_${TEST_LIB}
     env
     PATH=$ENV{PATH}
-    LD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:${ZEROMQ}/lib:${BOOST_ROOT}/lib:${TREELITE_ROOT}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:${ZEROMQ}/lib:${BOOST_ROOT}/lib:${TREELITE_ROOT}/lib:$ENV{DYLD_LIBRARY_PATH}
     ROOT_HIST=0
     root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
 endforeach()

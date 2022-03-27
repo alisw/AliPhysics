@@ -3297,8 +3297,8 @@ void AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
                                         Double_t ptMin, Double_t ptMax,
                                         Int_t filtbit1, Int_t filtbit2,
                                         Int_t minMult, Double_t phiStepSizeDeg,
-                                        Int_t nTrksToSkip, Int_t* idToSkip
-                                        ){
+                                        Int_t nTrksToSkip, Int_t* idToSkip, 
+                                        Bool_t unweight){
   /// compute spherocity
 
   Int_t nTracks=aod->GetNumberOfTracks();
@@ -3346,11 +3346,21 @@ void AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
     Double_t ny=TMath::Sin(phistep);
     Double_t numer=0.;
     for(Int_t j=0; j<nSelTracks; ++j){
-      Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
-      Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
+      Double_t pxA = 1.*TMath::Cos(phiArr[j]);  // x component of an unitary vector n for unweighted spherocity definition
+      Double_t pyA = 1.*TMath::Sin(phiArr[j]);  // y component of an unitary vector n for unweighted spherocity definition 
+        if(unweight == kFALSE){
+            pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
+            pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
+        }
       numer+=TMath::Abs(ny*pxA - nx*pyA);
     }
-    Double_t pFull=numer*numer/(sumpt*sumpt);
+    
+    Double_t pFull = 0.;    
+    if(unweight == kTRUE)
+      pFull=numer*numer/(nSelTracks*nSelTracks);  
+    else
+      pFull=numer*numer/(sumpt*sumpt);
+
     if(pFull<spherocity){
         spherocity=pFull; // minimization;
         phiRef=phistep;
@@ -3362,14 +3372,16 @@ void AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
 
   spherocity*=(TMath::Pi()*TMath::Pi()/4.);
   return;
-
 }
+
 //________________________________________________________________________
+
 void AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
                                                  Double_t &spherocity, Double_t &phiRef,
                                                  Double_t etaMin, Double_t etaMax,
                                                  Double_t ptMin, Double_t ptMax,
-                                                 Int_t minMult, Double_t phiStepSizeDeg){
+                                                 Int_t minMult, Double_t phiStepSizeDeg,
+                                                 Bool_t unweight){
 
   /// compute generated spherocity
 
@@ -3409,11 +3421,21 @@ void AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
     Double_t ny=TMath::Sin(phistep);
     Double_t numer=0.;
     for(Int_t j=0; j<nSelParticles; ++j){
-      Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
-      Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
+      Double_t pxA = 1.*TMath::Cos(phiArr[j]);  // x component of an unitary vector n for unweighted spherocity definition
+      Double_t pyA = 1.*TMath::Sin(phiArr[j]);  // y component of an unitary vector n for unweighted spherocity definition 
+        if(unweight == kFALSE){
+            pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
+            pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
+        }
       numer+=TMath::Abs(ny*pxA - nx*pyA);
     }
-    Double_t pFull=numer*numer/(sumpt*sumpt);
+    
+    Double_t pFull = 0.;    
+    if(unweight == kTRUE)
+      pFull=numer*numer/(nSelParticles*nSelParticles);  
+    else
+      pFull=numer*numer/(sumpt*sumpt);
+
     if(pFull<spherocity){
         spherocity=pFull; // minimization;
         phiRef=phistep;
@@ -3425,7 +3447,6 @@ void AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
 
   spherocity*=(TMath::Pi()*TMath::Pi()/4.);
   return;
-
 }
 
 //________________________________________________________________________

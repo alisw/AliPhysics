@@ -30,16 +30,18 @@ public:
   public:
     friend class AliMEStender;
     enum EMESconfigEventCuts{
-        kNoEC = 0           // no event cuts
-      ,kStandard           // vertex and trigger cuts
+      kNoEC = 0     // no event cuts
+			,k7TeV    // vertex and trigger cuts for 7TeV
+      ,k13TeV       // vertex and trigger cuts for 13TeV
     };
     enum EMESconfigTrackCuts{
-        kNoTC = 0                     // no track cuts
-      ,kStandardITSTPCTrackCuts2010  // 2010 standard cuts
+      kNoTC = 0                      // no track cuts
+			,kStandardITSTPCTrackCuts2010  // 2010 standard cuts
+      ,kStandardITSTPCTrackCuts2011  // 2011 standard cuts
     };
     enum EMESconfigPIDpriors{
-        kNoPP = 0                     // no priors
-      ,kTPC                          // TPC priors
+      kNoPP = 0                    // no priors
+      ,kTPC                        // TPC priors
       ,kIterative                  // iterative priors
     };
 

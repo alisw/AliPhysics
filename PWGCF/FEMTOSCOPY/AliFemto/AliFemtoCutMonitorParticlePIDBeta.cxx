@@ -24,7 +24,7 @@ AliFemtoCutMonitorParticlePIDBeta::AliFemtoCutMonitorParticlePIDBeta():
 }
 
 
-AliFemtoCutMonitorParticlePIDBeta::AliFemtoCutMonitorParticlePIDBeta(const char *aName, Int_t aTOFParticle, Double_t yTOFTimeMin, Double_t yTOFTimeMax):
+AliFemtoCutMonitorParticlePIDBeta::AliFemtoCutMonitorParticlePIDBeta(const char *aName, Int_t aTOFParticle, Double_t yTOFTimeMin, Double_t yTOFTimeMax, int MassBin, float LowMass, float UpMass):
   AliFemtoCutMonitorParticlePID(aName,aTOFParticle,yTOFTimeMin,yTOFTimeMax)
   , fBeta(nullptr)
   , fMass(nullptr)
@@ -32,7 +32,8 @@ AliFemtoCutMonitorParticlePIDBeta::AliFemtoCutMonitorParticlePIDBeta(const char 
 {
   // Normal constructor
     fBeta     = new TH2D(TString::Format("Beta%s", aName), "Beta vs. momentum", 100, 0.0, 10.0, 250, 0.0, 1.0);
-    fMass     = new TH2D(TString::Format("Mass%s", aName), "m2 vs. p", 100, 0.0, 5.0, 250, -1.0, 10.0);
+    //fMass     = new TH2D(TString::Format("Mass%s", aName), "m2 vs. p", 100, 0.0, 5.0, 250, -1.0, 10.0);
+    fMass = new TH2D(TString::Format("Mass%s", aName), "m2 vs. p", 100, 0.0, 5.0,MassBin,LowMass,UpMass);
     fDifference     = new TH1D(TString::Format("Difference%s", aName), "counts vs. mTOF2-mPDG2", 500, -5.0, 5.0);
 
 }
@@ -72,11 +73,14 @@ AliFemtoCutMonitorParticlePIDBeta& AliFemtoCutMonitorParticlePIDBeta::operator=(
 void AliFemtoCutMonitorParticlePIDBeta::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill in the monitor histograms with the values from the current track
-  float tMom = ( AliFemtoCutMonitorParticlePID::fIfUsePt) ? aTrack->Pt() : aTrack->P().Mag();
+  // dowang: Fill momentum should be different with tMom.
+  // if one chose pt to fill, can not use pt to calcluate Mass!
+  float tMom 	= aTrack->P().Mag();
+  float FillMom = ( AliFemtoCutMonitorParticlePID::fIfUsePt) ? aTrack->Pt() : aTrack->P().Mag();
   float c=1;
   AliFemtoCutMonitorParticlePID::Fill(aTrack);
   double beta =aTrack->VTOF();
-  fBeta->Fill(tMom, beta);
+  fBeta->Fill(FillMom, beta);
   double massTOF;//Mass square
   
   double massPDGPi=0.13957018;
@@ -84,10 +88,13 @@ void AliFemtoCutMonitorParticlePIDBeta::Fill(const AliFemtoTrack* aTrack)
   double massPDGP=0.938272013;
   double massPDGD=1.8756;
   
+  // dowang 2022.1.20
+  double massPDGT=2.8089;
+  double massPDGHe3=2.8084;
   if(beta!=0){
     massTOF= tMom*tMom/c/c*(1/(beta*beta)-1);
  
-    fMass->Fill(tMom,massTOF);
+    fMass->Fill(FillMom,massTOF);
     if(AliFemtoCutMonitorParticlePID::fTOFParticle==0)
       fDifference->Fill(massTOF-massPDGPi*massPDGPi);
     else if(AliFemtoCutMonitorParticlePID::fTOFParticle==1)
@@ -96,6 +103,10 @@ void AliFemtoCutMonitorParticlePIDBeta::Fill(const AliFemtoTrack* aTrack)
       fDifference->Fill(massTOF-massPDGP*massPDGP);
     else if(AliFemtoCutMonitorParticlePID::fTOFParticle==3)
       fDifference->Fill(massTOF-massPDGD*massPDGD);
+    else if(AliFemtoCutMonitorParticlePID::fTOFParticle==4)
+      fDifference->Fill(massTOF-massPDGD*massPDGT);
+    else if(AliFemtoCutMonitorParticlePID::fTOFParticle==5)
+      fDifference->Fill(massTOF-massPDGHe3*massPDGHe3/2./2.);
     
     
   }

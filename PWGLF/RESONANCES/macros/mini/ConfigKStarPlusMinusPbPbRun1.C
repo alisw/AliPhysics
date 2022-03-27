@@ -241,6 +241,8 @@ Bool_t ConfigKStarPlusMinusPbPbRun1
       out->SetCharge(0, charge1[i]);
       out->SetCharge(1, charge2[i]);
       out->SetMotherPDG(ipdg[i]);
+      
+      
       out->SetMotherMass(mass[i]);
      	
       // pair cuts

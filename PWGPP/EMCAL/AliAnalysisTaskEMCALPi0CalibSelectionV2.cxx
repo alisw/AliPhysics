@@ -10,6 +10,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <iostream>
+#include <fstream>
+
 
 // Root 
 #include <TRefArray.h>
@@ -64,7 +66,7 @@ fPeriodName(""),
 fCorrTaskSetting(""),
 fEMCALInitialized(kFALSE),
 fIsMC(0),                 fSaveHistos(kTRUE),       fSaveCells(kFALSE),     
-fSaveClusters(kFALSE),    fIsHeavyIon(kFALSE),
+fSaveClusters(kFALSE),    fSaveFullTree(kFALSE),    fIsHeavyIon(kFALSE),
 fNContributorsCutEnabled(kFALSE),
 fOADBFilePath(""),        
 fRecalPosition(kTRUE),
@@ -103,13 +105,14 @@ fCellTree(NULL),
 fVBuffer_NCells(0),         fBuffer_EventWeight(0),         fBuffer_ptHard(0),
 fBuffer_Event_VertexZ(0),   fBuffer_EventNPrimaryTracks(0),
 fBuffer_Event_V0Centrality(0),
-fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),             fVBuffer_Cell_t(0),
-fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0),
+fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),                      
+fVBuffer_Cell_t(0),         fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0),
 fBuffer_NClusters(0),
-fVBuffer_Cluster_E(0),      fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
-fVBuffer_Cluster_t(0),      fVBuffer_Cluster_M02(0),
-fVBuffer_TrueCluster_MCId(0), 
-fVBuffer_Cluster_X(0),      fVBuffer_Cluster_Y(0),      fVBuffer_Cluster_Z(0) 
+fVBuffer_Cluster_E(0),          fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
+fVBuffer_Cluster_LeadCellId(0), fVBuffer_Cluster_t(0),      fVBuffer_Cluster_M02(0),
+fVBuffer_TrueCluster_MCId(0),   fVBuffer_Cluster_NCells(0),
+fVFBuffer_Cluster_E(0),         fVFBuffer_Cluster_Eta(0),   fVFBuffer_Cluster_Phi(0),
+fVBuffer_Cluster_X(0),          fVBuffer_Cluster_Y(0),      fVBuffer_Cluster_Z(0)
 {
   
 
@@ -166,7 +169,7 @@ fPeriodName(""),
 fCorrTaskSetting(""),
 fEMCALInitialized(kFALSE),
 fIsMC(0),                 fSaveHistos(kTRUE),        fSaveCells(kFALSE),     
-fSaveClusters(kFALSE),    fIsHeavyIon(kFALSE),
+fSaveClusters(kFALSE),    fSaveFullTree(kFALSE),     fIsHeavyIon(kFALSE),
 fNContributorsCutEnabled(kFALSE),
 fOADBFilePath(""),        
 fRecalPosition(kTRUE),
@@ -206,13 +209,14 @@ fCellTree(NULL),
 fVBuffer_NCells(0),         fBuffer_EventWeight(0), fBuffer_ptHard(0),
 fBuffer_Event_VertexZ(0),   fBuffer_EventNPrimaryTracks(0),
 fBuffer_Event_V0Centrality(0),
-fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),         fVBuffer_Cell_t(0),
-fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0), 
+fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),                      
+fVBuffer_Cell_t(0),         fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0),
 fBuffer_NClusters(0),
-fVBuffer_Cluster_E(0),      fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
-fVBuffer_Cluster_t(0),      fVBuffer_Cluster_M02(0),
-fVBuffer_TrueCluster_MCId(0), 
-fVBuffer_Cluster_X(0),      fVBuffer_Cluster_Y(0),      fVBuffer_Cluster_Z(0)  
+fVBuffer_Cluster_E(0),          fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
+fVBuffer_Cluster_LeadCellId(0), fVBuffer_Cluster_t(0),      fVBuffer_Cluster_M02(0),
+fVBuffer_TrueCluster_MCId(0),   fVBuffer_Cluster_NCells(0),
+fVFBuffer_Cluster_E(0),         fVFBuffer_Cluster_Eta(0),   fVFBuffer_Cluster_Phi(0),
+fVBuffer_Cluster_X(0),          fVBuffer_Cluster_Y(0),      fVBuffer_Cluster_Z(0)
 {
   
   for(Int_t iCell=0; iCell < kMaxActiveCells_calib; iCell++){
@@ -582,7 +586,10 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserCreateOutputObjects() {
   if( fSaveCells ){
       fCellTree->Branch("NCells",                 &fVBuffer_NCells,             "NCells/I");
       fCellTree->Branch("Cell_ID",                "std::vector<UShort_t>",      &fVBuffer_Cell_ID);
-      fCellTree->Branch("Cell_E",                 "std::vector<UShort_t>",      &fVBuffer_Cell_E);
+      if( fSaveFullTree )
+        fCellTree->Branch("Cell_E",               "std::vector<Float_t>",       &fVBuffer_Cell_E);
+      else
+        fCellTree->Branch("Cell_E",               "std::vector<UShort_t>",      &fVBuffer_Cell_E);
       fCellTree->Branch("Cell_time",              "std::vector<Short_t>",       &fVBuffer_Cell_t);
       fCellTree->Branch("Cell_highGain",          "std::vector<Bool_t>",        &fVBuffer_Cell_gain);
 
@@ -594,14 +601,22 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserCreateOutputObjects() {
 
   if( fSaveClusters ){
     fCellTree->Branch("NClusters",            &fBuffer_NClusters,               "NClusters/s");
-    fCellTree->Branch("Cluster_E",            "std::vector<UShort_t>",          &fVBuffer_Cluster_E);
-    fCellTree->Branch("Cluster_Eta",          "std::vector<Short_t>",           &fVBuffer_Cluster_Eta);
-    fCellTree->Branch("Cluster_Phi",          "std::vector<UShort_t>",          &fVBuffer_Cluster_Phi);
+    fCellTree->Branch("Cluster_LeadCellId",   "std::vector<UShort_t>",             &fVBuffer_Cluster_LeadCellId);
+    fCellTree->Branch("Cluster_NCells",       "std::vector<Int_t>",             &fVBuffer_Cluster_NCells);
     fCellTree->Branch("Cluster_t",            "std::vector<Short_t>",           &fVBuffer_Cluster_t);
-    fCellTree->Branch("Cluster_M02",          "std::vector<Double_t>",          &fVBuffer_Cluster_M02);
-    fCellTree->Branch("Cluster_X",            "std::vector<Float_t>",           &fVBuffer_Cluster_X);
-    fCellTree->Branch("Cluster_Y",            "std::vector<Float_t>",           &fVBuffer_Cluster_Y);
-    fCellTree->Branch("Cluster_Z",            "std::vector<Float_t>",           &fVBuffer_Cluster_Z);
+    if( fSaveFullTree ){
+      fCellTree->Branch("Cluster_E_long",            "std::vector<Float_t>",          &fVFBuffer_Cluster_E);
+      fCellTree->Branch("Cluster_Eta_long",          "std::vector<Float_t>",          &fVFBuffer_Cluster_Eta);
+      fCellTree->Branch("Cluster_Phi_long",          "std::vector<Float_t>",          &fVFBuffer_Cluster_Phi);
+      fCellTree->Branch("Cluster_M02",          "std::vector<Double_t>",         &fVBuffer_Cluster_M02);
+      fCellTree->Branch("Cluster_X",            "std::vector<Float_t>",          &fVBuffer_Cluster_X);
+      fCellTree->Branch("Cluster_Y",            "std::vector<Float_t>",          &fVBuffer_Cluster_Y);
+      fCellTree->Branch("Cluster_Z",            "std::vector<Float_t>",          &fVBuffer_Cluster_Z);
+    } else {
+      fCellTree->Branch("Cluster_E",            "std::vector<UShort_t>",         &fVBuffer_Cluster_E);
+      fCellTree->Branch("Cluster_Eta",          "std::vector<Short_t>",          &fVBuffer_Cluster_Eta);
+      fCellTree->Branch("Cluster_Phi",          "std::vector<UShort_t>",         &fVBuffer_Cluster_Phi);
+    }
     
     if( fIsMC ){
       fCellTree->Branch("TrueCluster_MCId",    "std::vector<Short_t>",          &fVBuffer_TrueCluster_MCId);
@@ -816,9 +831,11 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessCells() {
     if(fEMCALCells->GetCellAmplitude(i) < fCellEmin ) continue;          // 50 MeV cut on cell energy
 
     fVBuffer_Cell_ID.push_back( static_cast<UShort_t>(i) );
-    fVBuffer_Cell_E.push_back( static_cast<UShort_t>(fEMCALCells->GetCellAmplitude(i)*1000) );
     fVBuffer_Cell_t.push_back( static_cast<Short_t>(fEMCALCells->GetCellTime(i)*1e9) );
     fVBuffer_Cell_gain.push_back( fEMCALCells->GetCellHighGain(i) );
+
+    fVBuffer_Cell_E.push_back( static_cast<UShort_t>(fEMCALCells->GetCellAmplitude(i)*1000) );
+
     nCellsAboveTh++;
 
     if( fIsMC ){
@@ -842,6 +859,8 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
     clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject("caloClusters"));
   } else {
     clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject( Form("%sClustersBranch", fCorrTaskSetting.Data() ) ));
+    if(!clusters)
+      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
   }
 
   nclus   = clusters->GetEntries();
@@ -862,14 +881,23 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
       if( phiCluster < 0 ) phiCluster  += 2*TMath::Pi();
 
 
-      fVBuffer_Cluster_E.push_back( static_cast<UShort_t>(clus->E()*1000) );
-      fVBuffer_Cluster_Eta.push_back( static_cast<Short_t>(etaCluster*1000) );
-      fVBuffer_Cluster_Phi.push_back( static_cast<UShort_t>(phiCluster*1000) );
+      fVBuffer_Cluster_LeadCellId.push_back( clus->GetCellAbsId(0) );
       fVBuffer_Cluster_t.push_back( static_cast<Short_t>(clus->GetTOF()*1.e9) );
-      fVBuffer_Cluster_M02.push_back( clus->GetM02() );
-      fVBuffer_Cluster_X.push_back( clusPos[0] );
-      fVBuffer_Cluster_Y.push_back( clusPos[1] );
-      fVBuffer_Cluster_Z.push_back( clusPos[2] );
+      fVBuffer_Cluster_NCells.push_back( clus->GetNCells() );
+
+      if( fSaveFullTree ){
+        fVFBuffer_Cluster_E.push_back( clus->E() );
+        fVFBuffer_Cluster_Eta.push_back( etaCluster );
+        fVFBuffer_Cluster_Phi.push_back(phiCluster );
+        fVBuffer_Cluster_M02.push_back( clus->GetM02() );
+        fVBuffer_Cluster_X.push_back( clusPos[0] );
+        fVBuffer_Cluster_Y.push_back( clusPos[1] );
+        fVBuffer_Cluster_Z.push_back( clusPos[2] );
+      } else {
+        fVBuffer_Cluster_E.push_back( static_cast<UShort_t>(clus->E()*1000) );
+        fVBuffer_Cluster_Eta.push_back( static_cast<Short_t>(etaCluster*1000) );
+        fVBuffer_Cluster_Phi.push_back( static_cast<UShort_t>(phiCluster*1000) );
+      }
       
       nClusAboveTh++;
 
@@ -929,29 +957,42 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
   }
 
   if(!fInputEvent) {
-    AliWarning("Input event not available!");
+    AliWarning("Input event not available! Returning....");
     return;
   }
 
   if( fNContributorsCutEnabled ){
     AliAODEvent* fAODevent = dynamic_cast<AliAODEvent*>(fInputEvent);
     if( fAODevent->GetPrimaryVertex() != NULL ){
-      if( fAODevent->GetPrimaryVertex()->GetNContributors() <= 0) return;
+      if( fAODevent->GetPrimaryVertex()->GetNContributors() <= 0) {
+        AliDebug(1,"No contributors to the vertex! Returning...");
+        return;
+      }
     }
   }
 
   if( !fEMCALInitialized ) {
     InitializeEMCAL();
     InitGeometryMatrices();
-    if( !fEMCALInitialized ) return;
+    if( !fEMCALInitialized ){
+      AliWarning("EMCAL not initialized! Returning...");
+      return;
+    }
   }
 
   // Event selection
   isEMC=kFALSE;
   isDMC=kFALSE;
 
-  if( !IsTriggerSelected() ) return;
-  if( !(isEMC) && !(isDMC) ) return;
+  if( !IsTriggerSelected() ){
+    AliDebug(1,"Trigger not selected! Returning...");
+    return;
+  }
+  
+  if( !(isEMC) && !(isDMC) ){
+    AliDebug(1,"Trigger not selected! Returning...");
+    return;
+  }
 
 
   // Centrality selection
@@ -963,7 +1004,10 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
       
       AliDebug(1,Form("Centrality %2.1f for class <%s>, event sel %d\n",cent,fCentralityClass.Data(),fCentWithEventSel));
       
-      if ( cent < fCentMin || cent >= fCentMax ) return;
+      if ( cent < fCentMin || cent >= fCentMax ) {
+        AliWarning("Outside given centrality, returnin....");
+        return;
+      }
       fhCentralitySelected->Fill(cent);
     }
   }
@@ -1001,8 +1045,8 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
     }
 
     fCellTree->Fill();
-    ResetBufferVectors();
     PostData(2,fCellTree);
+    ResetBufferVectors();
   }
 }
 
@@ -1081,7 +1125,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
           fOfflineTriggerMask = AliVEvent::kEMC7;
 
           TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
-          if( (firedTrigClass.Contains("CEMC7-B-") || firedTrigClass.Contains("CDMC7-B-")) && (!firedTrigClass.Contains("EG1") && !firedTrigClass.Contains("EG2") && !firedTrigClass.Contains("DG1") && !firedTrigClass.Contains("DG2")) ) {
+          if( (firedTrigClass.Contains("CEMC7-B-") || firedTrigClass.Contains("CDMC7-B-")) && (!firedTrigClass.Contains("EG1") && !firedTrigClass.Contains("EG2") && !firedTrigClass.Contains("DG1") && !firedTrigClass.Contains("DG2")  && !firedTrigClass.Contains("EJ1") && !firedTrigClass.Contains("EJ2") && !firedTrigClass.Contains("DJ1") && !firedTrigClass.Contains("DJ2") && !firedTrigClass.Contains("EGA") && !firedTrigClass.Contains("EJE") )) {
             if( firedTrigClass.Contains("CEMC7-B-") )
               isEMC = kTRUE;
             if( firedTrigClass.Contains("CDMC7-B-") )
@@ -1093,7 +1137,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
           if( !isSelected ) return kFALSE;
           
           TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
-          if( firedTrigClass.Contains("CEMC7EG2-B") || firedTrigClass.Contains("CDMC7DG2-B") ) {
+          if( firedTrigClass.Contains("CEMC7EG2-B") || firedTrigClass.Contains("CDMC7DG2-B") && (!firedTrigClass.Contains("EG1") && !firedTrigClass.Contains("DG1")  && !firedTrigClass.Contains("EJ1") && !firedTrigClass.Contains("EJ2") && !firedTrigClass.Contains("DJ1") && !firedTrigClass.Contains("DJ2") && !firedTrigClass.Contains("EGA") && !firedTrigClass.Contains("EJE") )) {
             if( firedTrigClass.Contains("EMC7") )
               isEMC = kTRUE;
             if( firedTrigClass.Contains("DMC7") )
@@ -1105,13 +1149,23 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
           if( !isSelected ) return kFALSE;
           
           TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
-          if( firedTrigClass.Contains("CEMC7EG1-B") || firedTrigClass.Contains("CDMC7DG1-B")) {
+          if( firedTrigClass.Contains("CEMC7EG1-B") || firedTrigClass.Contains("CDMC7DG1-B")&& (!firedTrigClass.Contains("EJ1") && !firedTrigClass.Contains("EJ2") && !firedTrigClass.Contains("DJ1") && !firedTrigClass.Contains("DJ2") && !firedTrigClass.Contains("EGA") && !firedTrigClass.Contains("EJE") )) {
             if( firedTrigClass.Contains("EMC7") )
               isEMC = kTRUE;
             if( firedTrigClass.Contains("DMC7") )
               isDMC = kTRUE;
           } else return kFALSE;
-        } else if( fTriggerName = "EMCAL" ){            // EMC7+EG1+EG2
+        } else if ( fTriggerName == "EGA" ) {
+          fOfflineTriggerMask = AliVEvent::kEMCEGA;
+          isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
+          if( !isSelected ) return kFALSE;
+          
+          TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
+          if( firedTrigClass.Contains("EGA") && (!firedTrigClass.Contains("EJ1") && !firedTrigClass.Contains("EJ2") && !firedTrigClass.Contains("DJ1") && !firedTrigClass.Contains("DJ2") && !firedTrigClass.Contains("EJE") )) {
+              isEMC = kTRUE;
+              isDMC = kFALSE;
+          } else return kFALSE;
+        }else if( fTriggerName = "EMCAL" ){            // EMC7+EG1+EG2
           fOfflineTriggerMask = AliVEvent::kEMC7 & AliVEvent::kEMCEGA;
           TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
 
@@ -1380,19 +1434,28 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ResetBufferVectors() {
   fVBuffer_Cluster_E.clear();
   fVBuffer_Cluster_Eta.clear();
   fVBuffer_Cluster_Phi.clear();
+  fVFBuffer_Cluster_E.clear();
+  fVFBuffer_Cluster_Eta.clear();
+  fVFBuffer_Cluster_Phi.clear();
   fVBuffer_Cluster_t.clear();
   fVBuffer_TrueCluster_MCId.clear();
 
   fVBuffer_Cluster_E.resize(0);
   fVBuffer_Cluster_Eta.resize(0);
   fVBuffer_Cluster_Phi.resize(0);
+  fVFBuffer_Cluster_E.resize(0);
+  fVFBuffer_Cluster_Eta.resize(0);
+  fVFBuffer_Cluster_Phi.resize(0);
   fVBuffer_Cluster_t.resize(0);
   fVBuffer_TrueCluster_MCId.resize(0);
+
+  fVBuffer_Cluster_LeadCellId.clear(); fVBuffer_Cluster_LeadCellId.resize(0);
 
   fVBuffer_Cluster_M02.clear(); fVBuffer_Cluster_M02.resize(0);
   fVBuffer_Cluster_X.clear();   fVBuffer_Cluster_X.resize(0);
   fVBuffer_Cluster_Y.clear();   fVBuffer_Cluster_Y.resize(0);
   fVBuffer_Cluster_Z.clear();   fVBuffer_Cluster_Z.resize(0);
+  fVBuffer_Cluster_NCells.clear(); fVBuffer_Cluster_NCells.resize(0);
 }
 
 ///

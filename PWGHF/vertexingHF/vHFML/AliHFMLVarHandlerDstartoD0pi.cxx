@@ -138,8 +138,12 @@ bool AliHFMLVarHandlerDstartoD0pi::SetVariables(AliAODRecoDecayHF* cand, float b
         bool setsingletrack = SetSingleTrackVars(prongtracks);  
         if(!setsingletrack) 
             return false;
-        for(unsigned int iProng = 0; iProng < fNProngs; iProng++)
-            fImpParProng[iProng] = cand->Getd0Prong(iProng);
+        for(unsigned int iProng = 0; iProng < fNProngs; iProng++){
+            if(iProng == 0)
+                fImpParProng[iProng] = cand->Getd0Prong(iProng);
+            else
+                fImpParProng[iProng] = dzero->Getd0Prong(iProng-1);
+        }
     }
 
     //pid variables

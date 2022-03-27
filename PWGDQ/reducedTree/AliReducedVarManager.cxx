@@ -77,6 +77,7 @@ const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandida
    1.86484, // D0
    1.86962, // D+-
    1.96850, // Ds
+   1.96850 // Ds
 };
 
 const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager::kNTrackingStatus] = {
@@ -435,14 +436,23 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kVtxZ]                      = baseEvent->Vertex(2);
   values[kNVtxContributors]= baseEvent->VertexNContributors(); 
   
-  values[kCentVZERO]         = baseEvent->CentralityVZERO();
-  values[kCentSPD]              = baseEvent->CentralitySPD();
-  values[kCentTPC]              = baseEvent->CentralityTPC();
-  values[kCentZDC]             = baseEvent->CentralityZEMvsZDC();
-  values[kCentVZEROA]      = baseEvent->CentralityVZEROA();
-  values[kCentVZEROC]      = baseEvent->CentralityVZEROC();
-  values[kCentZNA]             = baseEvent->CentralityZNA();
-  values[kCentQuality]        = baseEvent->CentralityQuality();
+  values[kCentVZERO]        = baseEvent->CentralityVZERO();
+  values[kCentSPD]          = baseEvent->CentralitySPD();
+  values[kCentTPC]          = baseEvent->CentralityTPC();
+  values[kCentZDC]          = baseEvent->CentralityZEMvsZDC();
+  values[kCentVZEROA]       = baseEvent->CentralityVZEROA();
+  values[kCentVZEROC]       = baseEvent->CentralityVZEROC();
+  values[kCentZNA]          = baseEvent->CentralityZNA();
+  values[kCentV0MNew]       = baseEvent->CentralityV0MNew();
+  values[kCentV0MNewPlus10]  = baseEvent->CentralityV0MNewPlus10();
+  values[kCentV0MNewMinus10] = baseEvent->CentralityV0MNewMinus10();
+  values[kCentV0MNewPlus05]  = baseEvent->CentralityV0MNewPlus05();
+  values[kCentV0MNewMinus05] = baseEvent->CentralityV0MNewMinus05();
+  values[kCentV0MPlus10]  = baseEvent->CentralityV0MPlus10();
+  values[kCentV0MMinus10] = baseEvent->CentralityV0MMinus10();
+  values[kCentV0MPlus05]  = baseEvent->CentralityV0MPlus05();
+  values[kCentV0MMinus05] = baseEvent->CentralityV0MMinus05();
+  values[kCentQuality]      = baseEvent->CentralityQuality();
   
   values[kNV0total]             = baseEvent->NV0CandidatesTotal();
   values[kNV0selected]       = baseEvent->NV0Candidates();
@@ -3097,6 +3107,15 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kCentVZEROA]                  = "VZERO-A centrality";              fgVariableUnits[kCentVZEROA]     = "%";
   fgVariableNames[kCentVZEROC]                  = "VZERO-C centrality";              fgVariableUnits[kCentVZEROC]     = "%";
   fgVariableNames[kCentZNA]                     = "ZNA centrality";                  fgVariableUnits[kCentZNA]        = "%";
+  fgVariableNames[kCentV0MNew]                  = "V0MNew centrality";               fgVariableUnits[kCentV0MNew]     = "%";
+  fgVariableNames[kCentV0MNewPlus05]            = "V0MNewPlus05 centrality";         fgVariableUnits[kCentV0MNewPlus05] = "%";
+  fgVariableNames[kCentV0MNewMinus05]           = "V0MNewMinus05 centrality";        fgVariableUnits[kCentV0MNewMinus05] = "%";
+  fgVariableNames[kCentV0MNewPlus10]            = "V0MNewPlus10 centrality";         fgVariableUnits[kCentV0MNewPlus10] = "%";
+  fgVariableNames[kCentV0MNewMinus10]           = "V0MNewMinus10 centrality";        fgVariableUnits[kCentV0MNewMinus10] = "%";
+  fgVariableNames[kCentV0MPlus05]               = "V0MPlus05 centrality";            fgVariableUnits[kCentV0MPlus05] = "%";
+  fgVariableNames[kCentV0MMinus05]              = "V0MMinus05 centrality";           fgVariableUnits[kCentV0MMinus05] = "%";
+  fgVariableNames[kCentV0MPlus10]               = "V0MPlus10 centrality";            fgVariableUnits[kCentV0MPlus10] = "%";
+  fgVariableNames[kCentV0MMinus10]              = "V0MMinus10 centrality";           fgVariableUnits[kCentV0MMinus10] = "%";
   fgVariableNames[kCentQuality]                 = "Centrality quality";              fgVariableUnits[kCentQuality]    = "";
   fgVariableNames[kNV0total]                    = "Total number of V0s";             fgVariableUnits[kNV0total]       = "";  
   fgVariableNames[kNV0selected]                 = "Number of selected V0s";          fgVariableUnits[kNV0selected]    = "";  

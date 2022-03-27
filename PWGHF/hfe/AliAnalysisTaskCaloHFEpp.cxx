@@ -91,12 +91,15 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	pTe("name"),
 	massMin(0),
 	Nref(0),
+	NrefV0(0),
 	Nch(0),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        estimatorV0Avg(0),
         NtrkWeightMC(0),
+        fmult_type(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -136,6 +139,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fHist_trackPt(0),
 	fHistMatchPt(0),
 	fHistSelectPt(0),
+        fHistCheff0(0),
+        fHistCheff1(0),
 	fHist_ClustE(0),
 	fHist_SelectClustE(0),
 	fHist_SelectClustE_time(0),
@@ -164,17 +169,21 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
 	fWh_phidiff(0),
+	fhad_phidiff(0),
         fIsoArray(0),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
+	fzvtx_Ntrkl_V0(0),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
 	fNtrkl_noCorr(0),
 	fzvtx_V0M(0),
+	fcent_V0M(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
+	fNchMC(0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	fDCAxy_Pt_LS(0),
@@ -275,12 +284,15 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	pTe("name"),
 	massMin(0),
 	Nref(0),
+	NrefV0(0),
 	Nch(0),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        estimatorV0Avg(0),
         NtrkWeightMC(0),
+        fmult_type(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -320,6 +332,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fHist_trackPt(0),
 	fHistMatchPt(0),
 	fHistSelectPt(0),
+        fHistCheff0(0),
+        fHistCheff1(0),
 	fHist_ClustE(0),
 	fHist_SelectClustE(0),
 	fHist_SelectClustE_time(0),
@@ -348,17 +362,21 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
 	fWh_phidiff(0),
+	fhad_phidiff(0),
         fIsoArray(0),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
+	fzvtx_Ntrkl_V0(0),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
 	fNtrkl_noCorr(0),
+	fzvtx_V0M(0),
+	fcent_V0M(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
-	fzvtx_V0M(0),
+	fNchMC(0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	fDCAxy_Pt_LS(0),
@@ -462,6 +480,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHist_trackPt = new TH1F("fHist_trackPt", "EMCAL cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
 	fHistMatchPt = new TH1F("fHistMatchPt", "EMCAL matched cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
 	fHistSelectPt = new TH1F("fHistSelectPt", "EMCAL Slected cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
+	fHistCheff0 = new TH2F("fHistCheff0", "track eff gene; pt(GeV/c); counts", 301,-0.5,300.5, 100, 0, 100);       // create your histogra
+	fHistCheff1 = new TH2F("fHistCheff1", "track eff reco; pt(GeV/c); counts", 301,-0.5,300.5, 100, 0, 100);       // create your histogra
 	fHist_ClustE = new TH1F("fHist_ClustE", "fHist_ClustE; EMCAL cluster energy distribution; counts", 1000, 0, 100);      
 	fHist_SelectClustE = new TH1F("fHist_SelectClustE", "fHistE; EMCAL cluster energy distribution before selection; counts", 1000, 0, 100);      
 	fHist_SelectClustE_time = new TH1F("fHist_SelectClustE_time", "fHistE; EMCAL cluster energy distribution before selection; counts", 1000, 0, 100);      
@@ -513,10 +533,11 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 
    
-        Int_t binsWh[4]=   { 50,  60,   80,  50}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xminWh[4]={ 20,   0, -2.0,   0};
-        Double_t xmaxWh[4]={ 70,  60,  6.0, 0.5};
-	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",4,binsWh, xminWh, xmaxWh);
+        Int_t binsWh[5]=   { 50,  60,   80,  50, 200}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xminWh[5]={ 20,   0, -2.0,   0,   0};
+        Double_t xmaxWh[5]={ 70,  60,  6.0, 0.5,   2};
+	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",5,binsWh, xminWh, xmaxWh);
+	fhad_phidiff = new THnSparseD("fhad_phidiff","pT vs. dphi differnce had",5,binsWh, xminWh, xmaxWh);
 	
         Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
         Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
@@ -529,14 +550,17 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
-	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
+	fzvtx_Ntrkl_V0 = new TH2F("fzvtx_Ntrkl_V0","N tracklet vs V0 after correction; SPD Tracklets; V0",1501,-0.5,1500.5,1501,-0.5,1500.5);
+	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.0,1501,-0.5,1500.5);
 	fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
-	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",301,-0.5,300.5);
-	fNtrkl_noCorr = new TH1F("fNtrkl_noCorr","N_{tracklet} w.o. correction; zvtx; counts",301,-0.5,300.5);
-	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
-	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
+	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",1501,-0.5,1500.5);
+	fNtrkl_noCorr = new TH1F("fNtrkl_noCorr","N_{tracklet} w.o. correction; zvtx; counts",1501,-0.5,1500.5);
+	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",1501,-0.5,1500.5,301,-0.5,300.5);
+	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",1501,-0.5,1500.5,301,-0.5,300.5);
+	fNchMC = new TH2F("fNchMC","evtcut; N charged",10,-0.5,9.5,1501,-0.5,1500.5);
 
         fzvtx_V0M = new TH2F("fzvtx_V0M","Zvertex vs V0M; zvtx; V0M",400,-20.,20.,1501,-0.5,1500.5);
+        fcent_V0M = new TH2F("fcent_V0M","cent vs V0M; zvtx; V0M",100,0.,100.,1501,-0.5,1500.5);
 
 	fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 	fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
@@ -664,6 +688,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHist_trackPt);          
 	fOutputList->Add(fHistMatchPt);          
 	fOutputList->Add(fHistSelectPt);          
+	fOutputList->Add(fHistCheff0);          
+	fOutputList->Add(fHistCheff1);          
 	fOutputList->Add(fHist_ClustE);          
 	fOutputList->Add(fHist_SelectClustE);          
 	fOutputList->Add(fHist_SelectClustE_time);          
@@ -692,15 +718,19 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fRiso_phidiff_35);
 	fOutputList->Add(fRiso_phidiff_LS_35);
 	fOutputList->Add(fWh_phidiff);
+	fOutputList->Add(fhad_phidiff);
 	fOutputList->Add(fzvtx_Ntrkl);
 	fOutputList->Add(fzvtx_Nch);
+	fOutputList->Add(fzvtx_Ntrkl_V0);
 	fOutputList->Add(fzvtx_Ntrkl_Corr);
 	fOutputList->Add(fzvtx_Corr);
 	fOutputList->Add(fNtrkl_Corr);
 	fOutputList->Add(fNtrkl_noCorr);
 	fOutputList->Add(fzvtx_V0M);
+	fOutputList->Add(fcent_V0M);
 	fOutputList->Add(fNchNtr);
 	fOutputList->Add(fNchNtr_Corr);
+	fOutputList->Add(fNchMC);
 	fOutputList->Add(fDCAxy_Pt_ele);
 	fOutputList->Add(fDCAxy_Pt_had);
 	fOutputList->Add(fDCAxy_Pt_LS);
@@ -888,6 +918,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	//Centarality
 	//////////////////////////////
 	Double_t centrality = -1;
+	Double_t centrality_mult = -1;
 	AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality();
 	//centrality = fCentrality->GetCentralityPercentile("V0M");
 	//cout << "Centrality == " << fCentrality->GetCentralityPercentile("V0M") << endl;
@@ -898,9 +929,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		centrality = fCentrality->GetCentralityPercentile("V0M");
 	}else{
 		//lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-		centrality = fMultSelection->GetMultiplicityPercentile("V0M"); 
+		centrality_mult = fMultSelection->GetMultiplicityPercentile("V0M"); 
 	}
 
+        //cout << "++++++++ centrality = " << centrality << endl;
 
 	//////////////////////////////
 	// Event selection
@@ -919,6 +951,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	Double_t NcontVSPD = pVtxSPD->GetNContributors();
 	Double_t cov[6]={0};
 	pVtxSPD->GetCovarianceMatrix(cov);
+
+        /*
 	// 1. remove pile up events
 	if(fVevent->IsPileupFromSPDInMultBins()) return;
 	fNevents->Fill(1); 
@@ -938,6 +972,44 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	if(TMath::Abs(Zvertex)>10.0)return;
 	fNevents->Fill(6); 
 	fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
+        */
+
+        // Get Nch 
+	if(fMCarray)CalNcharge(fMCheader,CutTrackEta[1]);
+        //fNchMC->Fill(0,Nch);
+        //cout << "N charge 0 = " << Nch << endl;
+
+	// 1. Z Vtx position cut 
+	if(TMath::Abs(Zvertex)>10.0)return;
+	fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
+	fNevents->Fill(1); 
+        fNchMC->Fill(1,Nch);
+	// 2. remove pile up events
+	if(fVevent->IsPileupFromSPDInMultBins()) return;
+	fNevents->Fill(2); 
+        fNchMC->Fill(2,Nch);
+	// 3. Global contributiors cut
+	if(NcontV<2)return;
+	fNevents->Fill(3); 
+        fNchMC->Fill(3,Nch);
+	// 4. SPD contributiors cut
+	if(NcontVSPD<1)return;
+	fNevents->Fill(4); 
+        fNchMC->Fill(4,Nch);
+	// 5. select events where SPD and primary vertex match//
+	if(TMath::Abs(ZvertexSPD - Zvertex) > 0.5) return;
+	fNevents->Fill(5); 
+        fNchMC->Fill(5,Nch);
+	// 6. SPD vertex resolution cut //
+	if (TMath::Sqrt(cov[5]) > 0.25) return;
+	fNevents->Fill(6); 
+        fNchMC->Fill(6,Nch);
+        
+	//////////////////////////////
+	// Get generated W
+	//////////////////////////////
+	//if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
 
 
 	//////////////////////////////
@@ -986,45 +1058,65 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
         Int_t V0Mult=V0AMult+V0CMult;
 
 	fzvtx_V0M->Fill(Zvertex,V0Mult);
+	fcent_V0M->Fill(centrality_mult,V0Mult);
 
 	//-----------Tracklet correction-------------------------
 
-        if(!estimatorAvg)
+        //cout << "check ; estimatorAvg = " << estimatorAvg << endl;
+
+        if(!estimatorAvg || !estimatorV0Avg)
           {
             cout << "No estimatorAvg and get one " << endl;
+            cout << "type =  " << fmult_type << endl;
             TFile* fEstimator = TFile::Open(festimatorFile.Data());
-            //fEstimator = TFile::Open(festimatorFile.Data());
-	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
-	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
+            cout << " fEstimator =  " <<  fEstimator << endl;
+	    if(!fMCarray)  // data
+               {
+                estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD,0);  // get SPD vs. Z
+	        estimatorV0Avg = GetEstimatorHistogram(fEstimator,fAOD,1); // get V0 vs.Z
+               }
+	    if(fMCarray)   // MC
+               {
+                estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD,0); 
+	        estimatorV0Avg = GetEstimatorHistogramMC(fEstimator,fAOD,1); 
+               }
  
 	    if(fMCarray && !NtrkWeightMC)
 	    {
-	       NtrkWeightMC = GetNtrkWeightMC(fEstimator);
+	       NtrkWeightMC = GetNtrkWeightMC(fEstimator, fmult_type);
 	    }
 
 	   }
 
+        //cout << "check ; estimatorAvg = " << estimatorAvg << endl;
+        //cout << "check ; estimatorV0Avg = " << estimatorV0Avg << endl;
+
 	Double_t correctednAcc   = nAcc;
+	Double_t correctedV0nAcc   = V0Mult;
+ 
 	Double_t fRefMult = Nref;
+	Double_t fRefMultV0 = NrefV0;
 	Double_t WeightNtrkl = -1.;
 	Double_t WeightZvtx = -1.;
 	//TProfile* estimatorAvg;
 	//if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
 	//if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
 
-
 	if(estimatorAvg){
-		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
-		//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
+		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));  // SPD correction
+	}
 
-	} 
+	if(estimatorV0Avg){
+		correctedV0nAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorV0Avg,V0Mult,Zvertex,fRefMultV0));  // V0 correction
+	}
+ 
+	fzvtx_Ntrkl_V0->Fill(correctednAcc,correctedV0nAcc);
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
         //fEstimator->Close();
 
-	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
-	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
-
+	//if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+	//if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
 
 	fNchNtr->Fill(correctednAcc,Nch);
 	if(fMCarray){
@@ -1035,15 +1127,22 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		fNtrkl_noCorr->Fill(correctednAcc);
 		fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
 		fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
+                fNchMC->Fill(7,Nch);
 	}
 
 
 	//////////////////////////////////
 	// Separate by multiplicity class
 	//////////////////////////////////
+
+        //if(fmult_type==1) correctednAcc = correctedV0nAcc; // for V0 mult dep study
+        if(fmult_type==1) correctednAcc = centrality_mult; // for V0 mult dep study
+
 	if(correctednAcc<CutMinNtr || correctednAcc > CutMaxNtr) return;
 	fNevents->Fill(7); 
 
+
+	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1],correctednAcc);
 
 	//////////////////////////////
 	// EMCal cluster loop
@@ -1062,10 +1161,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 
-                if(clust->GetIsExotic())continue;
+                //if(clust->GetIsExotic())continue;
 
 		if(clust && clust->IsEMCAL())
 		{
+
+                        if(clust->GetIsExotic())continue;
 
                         Float_t tof = clust->GetTOF()*1e+9; // ns
 
@@ -1169,6 +1270,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		fHistEta_track->Fill(track->Eta());            
 		fHistPhi_track->Fill(track->Phi());             
 		fTPCCrossedRow->Fill(track -> GetTPCCrossedRows());
+                fHistCheff1->Fill(correctednAcc,TrkPt);
 
 
 		///////////////////////
@@ -1292,10 +1394,13 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		if(fFlagEMCalCorrection) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 
-                if(clustMatch->GetIsExotic())continue;
+                //if(clustMatch->GetIsExotic())continue;
 
 		if(clustMatch && clustMatch->IsEMCAL())
 		{
+
+                        if(clustMatch->GetIsExotic())continue;
+
 			fHistMatchPt->Fill(TrkPt);
 
                         Float_t tof = clustMatch->GetTOF()*1e+9; // ns
@@ -1444,6 +1549,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                            fEop_iso->Fill(TrkPt,eop);
                           }
 
+                         // h-h correlation
+                         if(TrkPt>30.0 && fTPCnSigma<-3.0 && eop<0.7)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,0);
+
 			//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
 			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m20>CutM20[0] && m20<CutM20[1]){
 				fM02_2->Fill(TrkPt,m02);
@@ -1462,7 +1570,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
                                      //////////// ---- W-h correlation /////////////
 
-                                     if(NtrackCone<3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE);
+                                     if(NtrackCone<=3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
 
 				if(pid_eleP)
 				{
@@ -1743,14 +1851,14 @@ void AliAnalysisTaskCaloHFEpp::FindMother(AliAODMCParticle* part, int &label, in
   }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta)
+void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta, Int_t Nmult)
 {
  TList *lh=fMCheader->GetCocktailHeaders();
  NpureMC = 0;
  NpureMCproc = 0;
  NembMCpi0 = 0;
  NembMCeta = 0;
- Nch = 0;
+ //Nch = 0;
  TString MCgen;
  TString embpi0("pi");
  TString embeta("eta");
@@ -1762,7 +1870,8 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
          if(gh)
            {
-            MCgen =  gh->GetName();     
+            MCgen =  gh->GetName();  
+            //cout << "MCgen = " << MCgen << endl;    
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
            
             if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;
@@ -1792,18 +1901,21 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 
 
 	     //--------- Get N charged ----------------------
+             /*
 	     if(chargetrue!=0){
 		     if(TMath::Abs(pdgEta)<1.0){
 			     if(isPhysPrim){
 				     Nch++;
 			     }
 		     }
-	     }
-
+	      } 
+             */
 
 	     if(TMath::Abs(pdgEta)>CutEta)continue;
 
 	     fCheckEtaMC->Fill(pdgEta);
+
+             if(isPhysPrim && chargetrue!=0)fHistCheff0 -> Fill(Nmult,pTtrue);
 
 	     Int_t pdgMom = -99;
 	     Int_t pdgorg = -99;
@@ -1847,6 +1959,60 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 
  return;
 }
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::CalNcharge(AliAODMCHeader* fMCheader,Double_t CutEta)
+{
+ TList *lh=fMCheader->GetCocktailHeaders();
+ NpureMC = 0;
+ NpureMCproc = 0;
+ Nch = 0;
+ TString MCgen;
+
+ if(lh)
+    {     
+     for(int igene=0; igene<lh->GetEntries(); igene++)
+        {
+         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+         if(gh)
+           {
+            MCgen =  gh->GetName();     
+            if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
+            NpureMCproc += gh->NProduced();  // generate by PYTHIA or HIJING
+           }
+        }
+    }
+
+
+ //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+ for(int imc=0; imc<NpureMCproc; imc++)
+     {
+
+	     fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+             if(!fMCparticle)continue;
+	     Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
+	     Double_t pdgEta = fMCparticle->Eta(); 
+	     Double_t pTtrue = fMCparticle->Pt(); 
+	     Int_t chargetrue = fMCparticle->Charge();
+	     Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();
+
+
+	     //--------- Get N charged ----------------------
+	     if(chargetrue!=0){
+		     if(TMath::Abs(pdgEta)<1.0){
+			     if(isPhysPrim){
+				     Nch++;
+			     }
+		     }
+	     }
+
+        }
+
+ return;
+}
+
+
 
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Double_t CutEta)
@@ -1926,12 +2092,15 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 		
-                if(Assoclust->GetIsExotic())continue;
+                //if(Assoclust->GetIsExotic())continue;
 
                 ConeR = 0.;
 
 		if(Assoclust && Assoclust->IsEMCAL())
 		{
+
+                        if(Assoclust->GetIsExotic())continue;
+
 			Float_t Assoclpos[3] = {0.};
 			Assoclust->GetPosition(Assoclpos);
 
@@ -2052,8 +2221,11 @@ void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track
                if(EMCalIndex_TrCone<0)continue;
 	       AliVCluster *Assoclust_TrCone = 0x0;     
 	       Assoclust_TrCone = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex_TrCone)); 
-
-	       risoTrack += Assoclust_TrCone->E();
+ 
+               if(Assoclust_TrCone)
+                 {
+	          risoTrack += Assoclust_TrCone->E();
+                }
                //cout << "risoTrack = " << risoTrack << endl;
 
                NtrackCone++;
@@ -2068,7 +2240,7 @@ void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto)
+void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto, Int_t iWevt)
 {
 
 	//##################### Systematic Parameters ##################### //
@@ -2123,7 +2295,8 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
 		TrackPhi        = track->Phi();
 
-		if(ptWasso <1.0) continue;
+		//if(ptWasso <1.0) continue;
+		if(ptWasso <3.0) continue;
 
 		/////////////////////////
 		// track cut
@@ -2166,89 +2339,127 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 
                 //if(Riso<0.05)
                    {
-                    Double_t valwh[4];
-                    valwh[0] = TrackPt; valwh[1] = ptWasso; valwh[2] = Wphidiff; valwh[3] = Riso; 
-                    fWh_phidiff->Fill(valwh);
-                   }
+                    Double_t valwh[5];
+                    valwh[0] = TrackPt; valwh[1] = ptWasso; valwh[2] = Wphidiff; valwh[3] = Riso; valwh[4] = ptWasso/TrackPt;
+                    if(iWevt==1)
+                      {
+                       fWh_phidiff->Fill(valwh);
+                      }
+                    else
+                      {
+                       fhad_phidiff->Fill(valwh);
+                      }
+                     }
+                   //}
 
 	}
 
 }
 //____________________________________________________________________________
-TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, const AliAODEvent* fAOD)
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, const AliAODEvent* fAOD, Int_t mtype)
 {
-    
+
 	//TString estimaterFile = "alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root";  
 	//if(!gGrid){
 	//	TGrid::Connect("alien//");
 	//}   
 
-  Int_t runNo  = fAOD->GetRunNumber();
- 
-  //cout << "========== runNo ====" << runNo << endl;
+	Int_t runNo  = fAOD->GetRunNumber();
 
-  Char_t periodNames[100];
-  
-  if(fEMCEG1)
-    {
-	    if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklEG1_LHC16k"); 
-	    if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklEG1_LHC16l"); 
-	    if (runNo>=262418 && runNo<=264035) sprintf(periodNames, "SPDTrklEG1_LHC16o"); 
-	    if (runNo>=264076 && runNo<=264347) sprintf(periodNames, "SPDTrklEG1_LHC16p"); 
-	    if (runNo>=271868 && runNo<=273103) sprintf(periodNames, "SPDTrklEG1_LHC17h"); 
-	    if (runNo>=273591 && runNo<=274442) sprintf(periodNames, "SPDTrklEG1_LHC17i"); 
-	    if (runNo>=274593 && runNo<=274671) sprintf(periodNames, "SPDTrklEG1_LHC17j"); 
-	    if (runNo>=274690 && runNo<=276508) sprintf(periodNames, "SPDTrklEG1_LHC17k"); 
-	    if (runNo>=276551 && runNo<=278216) sprintf(periodNames, "SPDTrklEG1_LHC17l"); 
-	    if (runNo>=278914 && runNo<=280140) sprintf(periodNames, "SPDTrklEG1_LHC17m"); 
-	    if (runNo>=280282 && runNo<=281961) sprintf(periodNames, "SPDTrklEG1_LHC17o"); 
-	    if (runNo>=282528 && runNo<=282704) sprintf(periodNames, "SPDTrklEG1_LHC17r"); 
-	    if (runNo>=285008 && runNo<=285447) sprintf(periodNames, "SPDTrklEG1_LHC18b"); 
-	    if (runNo>=285978 && runNo<=286350) sprintf(periodNames, "SPDTrklEG1_LHC18d"); 
-	    if (runNo>=286380 && runNo<=286937) sprintf(periodNames, "SPDTrklEG1_LHC18e"); 
-	    if (runNo>=287000 && runNo<=287977) sprintf(periodNames, "SPDTrklEG1_LHC18f"); 
-	    if (runNo>=289240 && runNo<=289971) sprintf(periodNames, "SPDTrklEG1_LHC18l"); 
-	    if (runNo>=288619 && runNo<=288750) sprintf(periodNames, "SPDTrklEG1_LHC18g"); 
-	    if (runNo>=288861 && runNo<=288909) sprintf(periodNames, "SPDTrklEG1_LHC18i"); 
-	    if (runNo>=290222 && runNo<=292839) sprintf(periodNames, "SPDTrklEG1_LHC18m"); 
-	    if (runNo>=293357 && runNo<=293359) sprintf(periodNames, "SPDTrklEG1_LHC18n"); 
-	    if (runNo>=293368 && runNo<=293898) sprintf(periodNames, "SPDTrklEG1_LHC18o"); 
-	    if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklEG1_LHC18p"); 
-    }
-  else
-    {
-	    if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklMB_LHC16k");
-	    if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklMB_LHC16l");
-	    if (runNo>=262418 && runNo<=264035) sprintf(periodNames, "SPDTrklMB_LHC16o");
-	    if (runNo>=264076 && runNo<=264347) sprintf(periodNames, "SPDTrklMB_LHC16p");
-	    if (runNo>=271868 && runNo<=273103) sprintf(periodNames, "SPDTrklMB_LHC17h");
-	    if (runNo>=273591 && runNo<=274442) sprintf(periodNames, "SPDTrklMB_LHC17i");
-	    if (runNo>=274593 && runNo<=274671) sprintf(periodNames, "SPDTrklMB_LHC17j");
-	    if (runNo>=274690 && runNo<=276508) sprintf(periodNames, "SPDTrklMB_LHC17k");
-	    if (runNo>=276551 && runNo<=278216) sprintf(periodNames, "SPDTrklMB_LHC17l");
-	    if (runNo>=278914 && runNo<=280140) sprintf(periodNames, "SPDTrklMB_LHC17m");
-	    if (runNo>=280282 && runNo<=281961) sprintf(periodNames, "SPDTrklMB_LHC17o");
-	    if (runNo>=282528 && runNo<=282704) sprintf(periodNames, "SPDTrklMB_LHC17r");
-	    if (runNo>=285008 && runNo<=285447) sprintf(periodNames, "SPDTrklMB_LHC18b");
-	    if (runNo>=285978 && runNo<=286350) sprintf(periodNames, "SPDTrklMB_LHC18d");
-	    if (runNo>=286380 && runNo<=286937) sprintf(periodNames, "SPDTrklMB_LHC18e");
-	    if (runNo>=287000 && runNo<=287977) sprintf(periodNames, "SPDTrklMB_LHC18f");
-	    if (runNo>=289240 && runNo<=289971) sprintf(periodNames, "SPDTrklMB_LHC18l");
-	    if (runNo>=288619 && runNo<=288750) sprintf(periodNames, "SPDTrklMB_LHC18g"); 
-	    if (runNo>=288861 && runNo<=288909) sprintf(periodNames, "SPDTrklMB_LHC18i"); 
-	    if (runNo>=290222 && runNo<=292839) sprintf(periodNames, "SPDTrklMB_LHC18m"); 
-	    if (runNo>=293357 && runNo<=293359) sprintf(periodNames, "SPDTrklMB_LHC18n"); 
-	    if (runNo>=293368 && runNo<=293898) sprintf(periodNames, "SPDTrklMB_LHC18o"); 
-	    if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklMB_LHC18p"); 
-    }    
+	cout << "========== runNo ====" << runNo << endl;
+
+	Char_t periodNames[100];
+
+	if(mtype==0)
+	{
+		if(fEMCEG1 && Nref>15) // ref =  12 for MB
+		{
+			if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklEG1_LHC16k"); 
+			if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklEG1_LHC16l"); 
+			if (runNo>=262418 && runNo<=264035) sprintf(periodNames, "SPDTrklEG1_LHC16o"); 
+			if (runNo>=264076 && runNo<=264347) sprintf(periodNames, "SPDTrklEG1_LHC16p"); 
+			if (runNo>=271868 && runNo<=273103) sprintf(periodNames, "SPDTrklEG1_LHC17h"); 
+			if (runNo>=273591 && runNo<=274442) sprintf(periodNames, "SPDTrklEG1_LHC17i"); 
+			if (runNo>=274593 && runNo<=274671) sprintf(periodNames, "SPDTrklEG1_LHC17j"); 
+			if (runNo>=274690 && runNo<=276508) sprintf(periodNames, "SPDTrklEG1_LHC17k"); 
+			if (runNo>=276551 && runNo<=278216) sprintf(periodNames, "SPDTrklEG1_LHC17l"); 
+			if (runNo>=278914 && runNo<=280140) sprintf(periodNames, "SPDTrklEG1_LHC17m"); 
+			if (runNo>=280282 && runNo<=281961) sprintf(periodNames, "SPDTrklEG1_LHC17o"); 
+			if (runNo>=282528 && runNo<=282704) sprintf(periodNames, "SPDTrklEG1_LHC17r"); 
+			if (runNo>=285008 && runNo<=285447) sprintf(periodNames, "SPDTrklEG1_LHC18b"); 
+			if (runNo>=285978 && runNo<=286350) sprintf(periodNames, "SPDTrklEG1_LHC18d"); 
+			if (runNo>=286380 && runNo<=286937) sprintf(periodNames, "SPDTrklEG1_LHC18e"); 
+			if (runNo>=287000 && runNo<=287977) sprintf(periodNames, "SPDTrklEG1_LHC18f"); 
+			if (runNo>=289240 && runNo<=289971) sprintf(periodNames, "SPDTrklEG1_LHC18l"); 
+			if (runNo>=288619 && runNo<=288750) sprintf(periodNames, "SPDTrklEG1_LHC18g"); 
+			if (runNo>=288861 && runNo<=288909) sprintf(periodNames, "SPDTrklEG1_LHC18i"); 
+			if (runNo>=290222 && runNo<=292839) sprintf(periodNames, "SPDTrklEG1_LHC18m"); 
+			if (runNo>=293357 && runNo<=293359) sprintf(periodNames, "SPDTrklEG1_LHC18n"); 
+			if (runNo>=293368 && runNo<=293898) sprintf(periodNames, "SPDTrklEG1_LHC18o"); 
+			if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklEG1_LHC18p"); 
+		}
+		else
+		{
+			if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklMB_LHC16k");
+			if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklMB_LHC16l");
+			if (runNo>=262418 && runNo<=264035) sprintf(periodNames, "SPDTrklMB_LHC16o");
+			if (runNo>=264076 && runNo<=264347) sprintf(periodNames, "SPDTrklMB_LHC16p");
+			if (runNo>=271868 && runNo<=273103) sprintf(periodNames, "SPDTrklMB_LHC17h");
+			if (runNo>=273591 && runNo<=274442) sprintf(periodNames, "SPDTrklMB_LHC17i");
+			if (runNo>=274593 && runNo<=274671) sprintf(periodNames, "SPDTrklMB_LHC17j");
+			if (runNo>=274690 && runNo<=276508) sprintf(periodNames, "SPDTrklMB_LHC17k");
+			if (runNo>=276551 && runNo<=278216) sprintf(periodNames, "SPDTrklMB_LHC17l");
+			if (runNo>=278914 && runNo<=280140) sprintf(periodNames, "SPDTrklMB_LHC17m");
+			if (runNo>=280282 && runNo<=281961) sprintf(periodNames, "SPDTrklMB_LHC17o");
+			if (runNo>=282528 && runNo<=282704) sprintf(periodNames, "SPDTrklMB_LHC17r");
+			if (runNo>=285008 && runNo<=285447) sprintf(periodNames, "SPDTrklMB_LHC18b");
+			if (runNo>=285978 && runNo<=286350) sprintf(periodNames, "SPDTrklMB_LHC18d");
+			if (runNo>=286380 && runNo<=286937) sprintf(periodNames, "SPDTrklMB_LHC18e");
+			if (runNo>=287000 && runNo<=287977) sprintf(periodNames, "SPDTrklMB_LHC18f");
+			if (runNo>=289240 && runNo<=289971) sprintf(periodNames, "SPDTrklMB_LHC18l");
+			if (runNo>=288619 && runNo<=288750) sprintf(periodNames, "SPDTrklMB_LHC18g"); 
+			if (runNo>=288861 && runNo<=288909) sprintf(periodNames, "SPDTrklMB_LHC18i"); 
+			if (runNo>=290222 && runNo<=292839) sprintf(periodNames, "SPDTrklMB_LHC18m"); 
+			if (runNo>=293357 && runNo<=293359) sprintf(periodNames, "SPDTrklMB_LHC18n"); 
+			if (runNo>=293368 && runNo<=293898) sprintf(periodNames, "SPDTrklMB_LHC18o"); 
+			if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklMB_LHC18p"); 
+		}    
+	}  // SPD estimator
+	else
+	{
+		if(fEMCEG1)
+		{
+			if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "V0TrklEG1_LHC16");
+			if (runNo>=271868 && runNo<=282704) sprintf(periodNames, "V0TrklEG1_LHC17");
+			if (runNo>=285008 && runNo<=294925) sprintf(periodNames, "V0TrklEG1_LHC18");
+		}
+		else
+		{
+			if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "V0TrklMB_LHC16");
+			if (runNo>=271868 && runNo<=282704) sprintf(periodNames, "V0TrklMB_LHC17");
+			if (runNo>=285008 && runNo<=294925) sprintf(periodNames, "V0TrklMB_LHC18");
+
+		}
+
+	} // V0 estimator
+
+
 
   //TFile* fEstimator = TFile::Open("alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root");
   //cout << "runNo = " << runNo << " ; " << periodNames << " ; " << festimatorFile.Data() << endl;
+  cout << "<------------------ estimator name = "<< periodNames  << endl;
 
   //TFile* fEstimator = TFile::Open(festimatorFile.Data());
 
   if(!fEstimator){
 	AliFatal("File with estimator not found!");
+	}
+
+  cout << "========== runNo check ====" << runNo << endl;
+  if(runNo>=265309 &&  runNo<=267166){   // pPb 16qt
+	cout << "estimator not found in the run!" << endl;
+	cout << "set LHC16 one" << endl;
+	sprintf(periodNames, "SPDTrklMB_LHC16k");
 	}
 
   fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames));
@@ -2262,23 +2473,49 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, con
   return fMultEstimatorAvg;
 }
 //____________________________________________________________________________
-TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, const AliAODEvent* fAOD)
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, const AliAODEvent* fAOD, Int_t mtype)
 {
     
+  cout << "getting file for mtype ;" << mtype << endl; 
+
   Int_t runNo  = fAOD->GetRunNumber();
    
   Char_t periodNames[100];
+ 
+  if(mtype==0)
+  {
+	  if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "SPDTrklMC_LHC16");  //LHC16
+	  if (runNo>=270581 && runNo<=282704) sprintf(periodNames, "SPDTrklMC_LHC17"); //LHC17
+	  if (runNo>=285009 && runNo<=294925) sprintf(periodNames, "SPDTrklMC_LHC18"); //LHC18
+  } 
+  else
+  {
+	  if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "V0TrklMC_LHC16");  //LHC16
+	  if (runNo>=270581 && runNo<=282704) sprintf(periodNames, "V0TrklMC_LHC17"); //LHC17
+	  if (runNo>=285009 && runNo<=294925) sprintf(periodNames, "V0TrklMC_LHC18"); //LHC18
+  } 
 
-  if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "SPDTrklMC_LHC16");  //LHC16
-  if (runNo>=270581 && runNo<=282704) sprintf(periodNames, "SPDTrklMC_LHC17"); //LHC17
-  if (runNo>=285009 && runNo<=294925) sprintf(periodNames, "SPDTrklMC_LHC18"); //LHC18
-    
+
+
   //TFile* fEstimator = TFile::Open(festimatorFile.Data());
   //fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
     
   if(!fEstimator){
 	AliFatal("File with estimator not found!");
 	}
+
+  cout << "========== runNo check ====" << runNo << endl;
+  if(runNo>=265309 && runNo<=267166){   // pPb 16qt
+	cout << "estimator not found in the run!" << endl;
+	cout << "set LHC16 one" << endl;
+	sprintf(periodNames, "SPDTrklMC_LHC16");  //LHC16
+	}
+
+  cout << "<------------------ estimator name = "<< periodNames  << endl;
+
+  cout << "fEstimator = " << fEstimator << endl;
+
+  if(!fEstimator->Get(periodNames))cout << "no estimator !" << endl;
 
   fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames));
 
@@ -2290,14 +2527,22 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, c
   return fMultEstimatorAvg;
 }
 //____________________________________________________________________________
-TH1D* AliAnalysisTaskCaloHFEpp::GetNtrkWeightMC(TFile* fEstimator)
+TH1D* AliAnalysisTaskCaloHFEpp::GetNtrkWeightMC(TFile* fEstimator, Int_t mtype)
 {
     
   if(!fEstimator){
 	AliFatal("File with estimator not found!");
 	}
 
-  fweightNtrkl = (TProfile*)(fEstimator->Get("weightNtrkl"));
+  if(mtype==0) 
+    {
+     fweightNtrkl = (TProfile*)(fEstimator->Get("weightNtrkl"));
+    }
+   else
+    {
+     fweightNtrkl = (TProfile*)(fEstimator->Get("weightV0"));
+    }
+  
 
   if(!fMultEstimatorAvg){
 	AliFatal("fMultEstimatorAvg not found!");

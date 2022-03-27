@@ -96,6 +96,7 @@
 #pragma link C++ class AliFemtoPicoEventRP;
 #pragma link C++ class AliFemtoCorrFctnPairFractions;
 #pragma link C++ class AliAnalysisTaskParticleEfficiency+;
+#pragma link C++ class AliAnalysisTaskParticleEffDY+;
 #pragma link C++ class AliAnalysisTaskParticleFractions+;
 #pragma link C++ class AliFemtoPairOriginMonitor+;
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
@@ -198,3 +199,9 @@
 #pragma link C++ class AliFemtoCorrFctnPairsForCorrFit;
 #pragma link C++ class AliFemtoWRzTrackCut;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimpleWithCorrections;
+
+
+// p-d/t/He3 track cut
+#pragma link C++ class AliFemtoTrackCutPdtHe3;
+#pragma link C++ class AliFemtoCorrFctnpdtHe3;
+

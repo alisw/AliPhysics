@@ -148,6 +148,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ITS_nSigma_Muons",       "n#sigma_{#mu}^{ITS}",                                ""},
   {"ITS_nSigma_Kaons",       "n#sigma_{K}^{ITS}",                                  ""},
   {"ITS_nSigma_Protons",     "n#sigma_{p}^{ITS}",                                  ""},
+  {"ITS_nSigma_Deuterons",   "n#sigma_{d}^{ITS}",                                  ""},
 
   {"P_InnerParam",           "#it{p}_{inner wall}^{TPC}",                          "(GeV/#it{c})"},
   {"P_OuterParam",           "#it{p}_{outer wall}^{TPC}",                          "(GeV/#it{c})"},
@@ -165,6 +166,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPC_nSigma_Muons",       "n#sigma_{#mu}^{TPC}",                                ""},
   {"TPC_nSigma_Kaons",       "n#sigma_{K}^{TPC}",                                  ""},
   {"TPC_nSigma_Protons",     "n#sigma_{p}^{TPC}",                                  ""},
+  {"TPC_nSigma_Deuterons",   "n#sigma_{d}^{TPC}",                                  ""},
 
   {"TOF_nSigma_ElectronsRaw","n#sigma_{e}^{TOF} (raw)",                            ""},
   {"TOF_nSigma_Electrons",   "n#sigma_{e}^{TOF}",                                  ""},
@@ -172,6 +174,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TOF_nSigma_Muons",       "n#sigma_{#mu}^{TOF}",                                ""},
   {"TOF_nSigma_Kaons",       "n#sigma_{K}^{TOF}",                                  ""},
   {"TOF_nSigma_Protons",     "n#sigma_{p}^{TOF}",                                  ""},
+  {"TOF_nSigma_Deuterons",   "n#sigma_{d}^{TOF}",                                  ""},
 
   {"EMCAL_nSigma_Electrons", "n#sigma_{e}^{EMCAL}",                                ""},
   {"EMCAL_EoverP",           "E^{EMCAL}/^{}#it{p}",                                "(#it{c})"},
@@ -469,9 +472,15 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
    {"V0YaXcH2",               "Q_{y}^{V0A}#timesQ_{x}^{V0C}",                       ""},
    {"V0YaYcH2",               "Q_{y}^{V0A}#timesQ_{Y}^{V0C}",                       ""},
    {"V0XcYcH2",               "Q_{X}^{V0C}#timesQ_{Y}^{V0C}",                       ""},
-  // {"V0ATPCDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{TPC}))",                      ""},
-  // {"V0CTPCDiffH2",           "cos(2(#Psi^{V0C}-#Psi^{TPC}))",                      ""},
-  // {"V0AV0CDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{V0C}))",                      ""},
+   {"V0ATPCCosDiffH2",           "cos(2(#Psi_{2}^{V0A}-#Psi_{2}^{TPC}))",              ""},
+   {"V0CTPCCosDiffH2",           "cos(2(#Psi_{2}^{V0C}-#Psi_{2}^{TPC}))",              ""},
+   {"V0AV0CCosDiffH2",           "cos(2(#Psi_{2}^{V0A}-#Psi_{2}^{V0C}))",              ""},
+   {"V0ATPCSinDiffH2",           "sin(2(#Psi_{2}^{V0A}-#Psi_{2}^{TPC}))",              ""},
+   {"V0CTPCSinDiffH2",           "sin(2(#Psi_{2}^{V0C}-#Psi_{2}^{TPC}))",              ""},
+   {"V0AV0CSinDiffH2",           "sin(2(#Psi_{2}^{V0A}-#Psi_{2}^{V0C}))",              ""},
+   {"V0ATPCSPH2",           "Q_{2}^{V0A} #upoint Q_{2}^{TPC}",                        ""},
+   {"V0CTPCSPH2",           "Q_{2}^{V0C} #upoint Q_{2}^{TPC}",                        ""},
+   {"V0AV0CSPH2",           "Q_{2}^{V0A} #upoint Q_{2}^{V0C}",                        ""},
    {"TPCxH2",                 "Q_{x}^{TPC}",                                        ""},
    {"TPCyH2",                 "Q_{y}^{TPC}",                                        ""},
   // {"TPCmagH2",               "|#vec{Q}^{TPC}|",                                    ""},
@@ -504,6 +513,17 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   // {"ZDCACrpH1",              "#Psi^{ZDCA}"                                         ""},
   // {"kZDCrpResH1",            ""                                                    ""},
   // {"kv0ZDCrpRes",            ""                                                    ""},
+ 
+   {"SPV0AH2",                   "u_{ee} #upoint Q_{2}^{V0A}",                              ""},
+   {"SPV0CH2",                   "u_{ee} #upoint Q_{2}^{V0C}",                              ""},
+   {"SPTPCH2",                   "u_{ee} #upoint Q_{2}^{TPC}",                              ""},
+   {"DPhiV0AH2",                 "#Delta#varphi = #varphi_{ee} - #Psi_{2}^{V0A}",         ""},
+   {"DPhiV0CH2",                 "#Delta#varphi = #varphi_{ee} - #Psi_{2}^{V0C}",         ""},
+   {"DPhiTPCH2",                 "#Delta#varphi = #varphi_{ee} - #Psi_{2}^{TPC}",         ""},
+   {"Cos2DPhiV0AH2",             "cos(2 #times #Delta#varphi)",                           ""},
+   {"Cos2DPhiV0CH2",             "cos(2 #times #Delta#varphi)",                           ""},
+   {"Cos2DPhiTPCH2",             "cos(2 #times #Delta#varphi)",                           ""},
+ 
   // Beginning of Eventplane variables from Qn Framework
   // Eventplanes for 2nd harmonic from QnCorrections framework est. 2016
   {"QnTPCrpH2",                "#Psi^{TPC}",                                ""},

@@ -11,7 +11,11 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBlastQA = true,
-                                     bool isMC = false, bool isNano = true, bool plotAdditionalPlots=true, bool ClosePairRejectionForAll = "false", const char *cutVariation = "0") {
+                                     bool isMC = false, bool isNano = true,
+                                     bool plotAdditionalPlots=true,  
+                                     int mixingDepthFromTask = 20,
+                                     bool ClosePairRejectionForAll = "false", int mixinfChoice = 0,
+                                      const char *cutVariation = "0") {
 
 
 
@@ -124,7 +128,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(mixingDepthFromTask);
   config->SetUseEventMixing(true);
 
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
@@ -1270,7 +1274,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
   AliAnalysisDataContainer *coutputAntiv0CutsTrigger;
  
 
-  bool ClosePairRejectionForAll = false;
+ 
   bool turnoffClosePairRejectionCompletely = false;
   bool ClosePairRejectionPPPorPPL = true;
 
@@ -1313,6 +1317,10 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     taskNano->SetClosePairRejectionPPPorPPL(ClosePairRejectionPPPorPPL);
+
+
+    taskNano->SetMixingChoice(mixinfChoice);
+
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 
