@@ -25,6 +25,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TRandom.h>
+#include <TRandom3.h>
 #include <TParameter.h>
 
 #include "AliAnalysisTaskPhiCorrelations.h"
@@ -121,6 +122,8 @@ fHistos(0x0),
 fHistosMixed(0),
 fEfficiencyCorrectionTriggers(0),
 fEfficiencyCorrectionAssociated(0),
+fDeltaEtaAcceptance(0),
+fDeltaEtaAcceptanceRNG(0),
 fCentralityWeights(0),
 fCentralityMCGen_V0M(0),
 fCentralityMCGen_CL1(0),
@@ -225,6 +228,8 @@ AliAnalysisTaskPhiCorrelations::~AliAnalysisTaskPhiCorrelations()
 
   if (fListOfHistos  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
     delete fListOfHistos;
+  if (fDeltaEtaAcceptanceRNG)
+    delete fDeltaEtaAcceptanceRNG;
 }
 
 //____________________________________________________________________
@@ -390,6 +395,10 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   if (fEfficiencyCorrectionAssociated) {
     fHistos->SetEfficiencyCorrectionAssociated(fEfficiencyCorrectionAssociated);
     fHistosMixed->SetEfficiencyCorrectionAssociated((THnF*) fEfficiencyCorrectionAssociated->Clone());
+  }
+  if (fDeltaEtaAcceptance) {
+    fDeltaEtaAcceptanceRNG = new TRandom3(151221);
+    fHistos->SetDeltaEtaAcceptance(fDeltaEtaAcceptance,fDeltaEtaAcceptanceRNG);
   }
 
   // add histograms to list
