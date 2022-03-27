@@ -2677,9 +2677,15 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0_QA()
 //____________________________________________________________________________
 void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent,  Int_t decaytype)
 {
-    for (Int_t i=0; i<8; i++){
+    for (Int_t i=0; i<10; i++){
         fVar_MixedEvent[i]=-9999.;
     }
+    
+    //-------- ee pairs conversion type --------
+    Double_t mass, mass_ss;
+    Bool_t Convee_LS =  (PrefilterElectronLS(trackEleFromMixed, aodEvent, mass_ss));
+    Bool_t Convee_ULS = (PrefilterElectronULS(trackEleFromMixed, aodEvent, mass));
+    
     
     //------ Calculate EleOmegaOA ---------------
     Double_t pxe = trackEleFromMixed->Px();
@@ -2753,7 +2759,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     Float_t mass_Omegac0_PV, err_mass_Omegac0_PV;
     kfpOmegac0_PV.GetMass(mass_Omegac0_PV, err_mass_Omegac0_PV);
     fVar_MixedEvent[0] = mass_Omegac0_PV;
-    fVar_MixedEvent[1] = trackEleFromMixed  ->Pt();
+    fVar_MixedEvent[1] = trackEleFromMixed ->Pt();
     fVar_MixedEvent[2] = kfpOmegac0_PV.GetPt(); // EleOmega pT
     fVar_MixedEvent[3] = cosoa;
     fVar_MixedEvent[4] = decaytype;
@@ -2786,6 +2792,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     
     fVar_MixedEvent[6] = tlv_Orig.Pt();
     fVar_MixedEvent[7] = tlv_Orig.M();
+    fVar_MixedEvent[8] = (Int_t) Convee_ULS + 2 *  (Int_t)Convee_LS;
+    fVar_MixedEvent[9] = mass_Omega;
     
     if(fWriteMixedEventTree) fTree_MixedEvent -> Fill();
     
@@ -2798,7 +2806,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
    
     const char* nameoutput = GetOutputSlot(9)->GetContainer()->GetName();
     fTree_MixedEvent = new TTree(nameoutput, "mixed event variables tree");
-    Int_t nVar = 8;
+    Int_t nVar = 10;
     fVar_MixedEvent = new Float_t[nVar];
     TString *fVarNames_MixedEvent = new TString[nVar];
     
@@ -2810,6 +2818,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
     fVarNames_MixedEvent[5] = "MassOmega_casc";
     fVarNames_MixedEvent[6] = "EleOmgeapT_OldMethod";
     fVarNames_MixedEvent[7] = "EleOmegaMass_OldMethod";
+    fVarNames_MixedEvent[8] = "ConvType";
+    fVarNames_MixedEvent[9] = "MassOmega_KFP";
     
     for (Int_t ivar = 0; ivar<nVar; ivar++){
      

@@ -167,6 +167,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
   AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
+  AliAnalysisTaskSEOmegacZero2XiPifromKFP.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
   AliRDHFCutsCdeuterontodKpi.cxx
@@ -181,6 +182,7 @@ set(SRCS
   AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP.cxx
   AliAnalysisTaskSESemileptonicOmegac0KFP.cxx
   AliRDHFCutsOmegactoeleOmegafromKFP.cxx
+
 )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)

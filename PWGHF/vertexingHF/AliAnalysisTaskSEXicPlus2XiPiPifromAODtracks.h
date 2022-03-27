@@ -24,6 +24,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
 #include "AliPID.h"
+#include "AliRDHFCuts.h" //jcho
 #include "AliRDHFCutsXicPlustoXiPiPifromAODtracks.h"
 
 /// \class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks
@@ -46,7 +47,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   enum ECandStatus {kGenLimAcc,kGenAccMother,kGenAccMother08,kGenAcc,kGenAcc08,kReco,kReco08,kRecoCuts,kRecoCuts08,kRecoPID,kRecoPID08};
   
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
-  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE, Bool_t fillSparse=kFALSE);
+  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE, Bool_t fillSparse=kFALSE, Bool_t HMTrigOn=kFALSE);
   virtual ~AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
 
   /// Implementation of interface methods
@@ -81,6 +82,12 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   void SetITS3UpgradeAnalysis(Bool_t isITS3Upgrade) {fIsXicPlusUpgradeITS3=isITS3Upgrade;}
   void SetRejFactorBkgUpgrade(Double_t rejFactor){fRejFactorBkgUpgrade=rejFactor;}
   
+  // For HM analysis (Refer to Semileptonic Xic0)---------------------------- jcho
+  void UseTrig_kINT7(void) { fUsekINT7 = kTRUE; }	
+  void UseTrig_kHMV0(void) { fUsekHMV0 = kTRUE; }
+  void UseTrig_kHMSPD(void) { fUsekHMVSPD = kTRUE; }
+  
+
  private:
   
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks &source);
@@ -105,10 +112,15 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;             /// Histogram to check selected events
   TH1F *fHTrigger;            /// Histograms to check trigger
   TH1F *fHCentrality;         /// histogram to check centrality
+  TH1F *fHCentralSPD;		  ///jcho
+  TH1F *fHNSPDTracklets;	  ///jcho
+
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts;      /// Cuts - sent to output slot 2
+  AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts_HM;   //jcho
   Bool_t fIsEventSelected;           /// flag for event selected
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
   Bool_t fFillSparse;                 /// flag to decide whether fill the THnSparse
+  Bool_t fHMTrigOn;					  ///jcho, flag for HM Trig check
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 4
   Bool_t fReconstructPrimVert;            /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;            /// Is MB event
@@ -116,13 +128,16 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fIsCent;          /// is central trigger event
   Bool_t fIsINT7;          /// is int7 trigger event
   Bool_t fIsEMC7;          /// is emc7 trigger event
+
+  Bool_t fIsHMV0;		   /// jcho
+  Bool_t fIsHMSPD;		   /// jcho
+
   Float_t *fCandidateVariables;     //!<! variables to be written to the tree
   AliAODVertex *fVtx1;              /// primary vertex
   AliESDVertex *fV1;                /// primary vertex
   Double_t fBzkG;                   /// magnetic field value [kG]
   Float_t  fCentrality;             /// centrality
-  //Float_t  fTriggerCheck;           /// Trigger information
-  
+ 
   //--------------------- My histograms ------------------
   THnSparse*  fHistoXicMass;        //!<! xic mass spectra
   THnSparse*  fSparseXicMass;       //!<! xic sparse to study cut variation
@@ -175,7 +190,25 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;         //!<!Counter for normalization slot 4
   Bool_t fIsXicPlusUpgradeITS3;              ///flag to identify if the analysis is for the ITS3 upgrade
   Double_t fRejFactorBkgUpgrade;             // rejection factor for background reconstruction in upgrade studies
- 
+
+  //---for Multiplicity dependent analysis--------------------// jcho
+  AliNormalizationCounter *fCounter_MB_0to100  = nullptr;
+  AliNormalizationCounter *fCounter_MB_0p1to30 = nullptr;
+  AliNormalizationCounter *fCounter_MB_30to100 = nullptr;
+  AliNormalizationCounter *fCounter_HMV0_0to0p1 = nullptr;
+
+  Float_t fNewCentrality = 9999; 
+  Float_t fCentralSPD = 9999;
+  Float_t fNSPDTracklets = 9999;
+
+  TH1F* hCentrality; //Centrality
+
+  vector<UInt_t> fTargetTriggers; //jcho, Container for trigger bit
+  Bool_t fUsekINT7 = kFALSE;
+  Bool_t fUsekHMV0 = kFALSE;  
+  Bool_t fUsekHMVSPD = kFALSE; 
+  TH1F* fCentralityOfEvt; //jcho 
+
   /// \cond CLASSIMP    
   ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,11); /// class for Xic->Xipipi
   /// \endcond

@@ -3318,6 +3318,7 @@ void AddTask_GammaCalo_pp(
   // CONFIGS for sys pp 5 TeV MB with TM
   } else if (trainConfig == 2300) { // CALO variations
     cuts.AddCutCalo("00010113","411790109fe30220000","01631031000000d0"); // std
+    cuts.AddCutCalo("00015113","411790109fe30220000","01631031000000d0"); // std INEL>0
     cuts.AddCutCalo("00010113","411790109fe20220000","01631031000000d0"); // 0.6 GeV/c
     cuts.AddCutCalo("00010113","411790109fe40220000","01631031000000d0"); // 0.8 GeV/c
   } else if (trainConfig == 2301) {
@@ -3398,6 +3399,7 @@ void AddTask_GammaCalo_pp(
   // EMC7 configs LHC15n triggered
   } else if (trainConfig == 2320) { // CALO variations
     cuts.AddCutCalo("000aq113","4117901090e30220000","01631031000000d0"); // std
+    cuts.AddCutCalo("000as113","4117901090e30220000","01631031000000d0"); // std INEL>0
     cuts.AddCutCalo("000aq113","4117901090e20220000","01631031000000d0"); // 0.6 GeV/c
     cuts.AddCutCalo("000aq113","4117901090e40220000","01631031000000d0"); // 0.8 GeV/c
   } else if (trainConfig == 2321) {
@@ -3435,6 +3437,7 @@ void AddTask_GammaCalo_pp(
   // EG2 configs LHC17pq triggered
   } else if (trainConfig == 2330) { // CALO variations
     cuts.AddCutCalo("000am113","4117901090e30220000","01631031000000d0"); // std
+    cuts.AddCutCalo("000at113","4117901090e30220000","01631031000000d0"); // std INEL>0
     cuts.AddCutCalo("000am113","4117901090e20220000","01631031000000d0"); // 0.6 GeV/c
     cuts.AddCutCalo("000am113","4117901090e40220000","01631031000000d0"); // 0.8 GeV/c
   } else if (trainConfig == 2331) {

@@ -26,6 +26,7 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
     fIsMC(false),
     fIsMCtruth(false),
     fdoFDpairing(false),
+    fDOpd(false),
     fisIncludeSomeProtons(false),
     fisPions(false),
     fdoSideband(false),
@@ -73,13 +74,14 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
 }
 
 AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd(
-  const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing)
+  const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing, bool DOpd)
   : AliAnalysisTaskSE(name),
     fisLightWeight(false),
     fTrackBufferSize(2000),
     fIsMC(isMC),
     fIsMCtruth(isMCtruth),
     fdoFDpairing(doFDpairing),
+    fDOpd(DOpd),
     fisIncludeSomeProtons(isIncludeSomeProtons),
     fisPions(isPions),
     fdoSideband(false),
@@ -576,10 +578,10 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
            Protons.push_back(*fTrack);
            IsProton = kTRUE;
           }else{ //if isPions write only some of them
-           if(r3.Rndm()<.10){
+           //if(r3.Rndm()<.10){ // comment this ==> now use all pions
             Protons.push_back(*fTrack);
             IsProton = kTRUE;
-           }
+           //}
           }
         }
         if (fTrackCutsAntiProton->isSelected(fTrack)){
@@ -587,16 +589,17 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
            AntiProtons.push_back(*fTrack);
            IsProton = kTRUE;
           }else{ //if isPions write only some of them
-           if(r3.Rndm()<.10){
+           //if(r3.Rndm()<.10){ // comment this ==> now use all pions
             AntiProtons.push_back(*fTrack);
             IsProton = kTRUE;
-           }
+           //}
           }
         }
 
         //FILL kaons and deuterons unless it is MCtruth:
-        if(!fIsMCtruth){
-         if(IsKaon) FillKaon(fTrack);
+        if(!fIsMCtruth&&!fisPions){ //for pi-d analysis, do not use the tree
+         if(IsKaon&&!fDOpd) FillKaon(fTrack);
+         if(IsProton&&fDOpd) FillKaon(fTrack);
          if(IsDeuteron) FillDeuteron(fTrack);
          if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.03) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
         }
@@ -758,7 +761,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
 
       //fill tree:
       //----------
-      if(fTnKaon>0&&fTnDeuteron>0) fTree->Fill(); // std kd 
+      if(fTnKaon>0&&fTnDeuteron>0&&!fisPions) fTree->Fill(); // std kd 
 
 
      bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)

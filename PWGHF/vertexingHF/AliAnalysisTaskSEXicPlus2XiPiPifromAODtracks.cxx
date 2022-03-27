@@ -35,6 +35,8 @@
 //  (b) INFN, Trieste
 //
 //  Contatcs: wyosuke@cns.s.u-tokyo.ac.jp, gluparel@cern.ch
+//
+//  Multiplicity analyzer : JaeYoon Cho(Jcho, jaeyoon15@inha.edu)  
 //-------------------------------------------------------------------------
 
 #include <TSystem.h>
@@ -82,6 +84,10 @@
 #include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
 
+#include "AliMultSelection.h"
+#include "AliAODInputHandler.h"
+#include "AliPPVsMultUtils.h"
+
 using std::cout;
 using std::endl;
 
@@ -101,10 +107,14 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
+  fHCentralSPD(0), //jcho
+  fHNSPDTracklets(0), //jcho
   fAnalCuts(0),
+  fAnalCuts_HM(0), //jcho
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
   fFillSparse(kFALSE),
+  fHMTrigOn(kTRUE), //jcho
   fVariablesTree(0),
   fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
@@ -112,6 +122,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fIsCent(kFALSE),
   fIsINT7(kFALSE),
   fIsEMC7(kFALSE),
+  fIsHMV0(kFALSE), //jcho
+  fIsHMSPD(kFALSE), //jcho
   fCandidateVariables(),
   fVtx1(0),
   fV1(0),
@@ -164,7 +176,14 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fQAHistoSecondaryVertexXY(0),
   fCounter(0),
   fIsXicPlusUpgradeITS3(kFALSE),
-  fRejFactorBkgUpgrade(100.)
+  fRejFactorBkgUpgrade(100.),
+  fTargetTriggers(0), //jcho
+  fCounter_MB_0to100(0), // jcho
+  fCounter_MB_0p1to30(0), // jcho
+  fCounter_MB_30to100(0), // jcho
+  fCounter_HMV0_0to0p1(0), // jcho
+  hCentrality(0), //jcho
+  fCentralityOfEvt(0)  //jcho
 {
   //
   // Default Constructor. 
@@ -174,7 +193,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
 //___________________________________________________________________________
 AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name,
 											   AliRDHFCutsXicPlustoXiPiPifromAODtracks* analCuts, 
-											   Bool_t writeVariableTree, Bool_t fillSparse) :
+											   Bool_t writeVariableTree, Bool_t fillSparse, Bool_t HMTrigOn) :  
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fFillSignalOnly(kFALSE),
@@ -185,10 +204,14 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
+  fHCentralSPD(0), //jcho
+  fHNSPDTracklets(0), //jcho
   fAnalCuts(analCuts),
+  fAnalCuts_HM(0), //jcho
   fIsEventSelected(kFALSE),
   fWriteVariableTree(writeVariableTree),
   fFillSparse(fillSparse),
+  fHMTrigOn(HMTrigOn), //jcho
   fVariablesTree(0),
   fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
@@ -196,6 +219,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fIsCent(kFALSE),
   fIsINT7(kFALSE),
   fIsEMC7(kFALSE),
+  fIsHMV0(kFALSE), //jcho
+  fIsHMSPD(kFALSE),  //jcho
   fCandidateVariables(),
   fVtx1(0),
   fV1(0),
@@ -248,7 +273,14 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fQAHistoSecondaryVertexXY(0),
   fCounter(0),
   fIsXicPlusUpgradeITS3(kFALSE),
-  fRejFactorBkgUpgrade(100.)
+  fRejFactorBkgUpgrade(100.),
+  fTargetTriggers(0), //jcho
+  fCounter_MB_0to100(0), // jcho
+  fCounter_MB_0p1to30(0), // jcho
+  fCounter_MB_30to100(0), // jcho
+  fCounter_HMV0_0to0p1(0), // jcho
+  hCentrality(0),  //jcho
+  fCentralityOfEvt(0)  //jcho
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -263,6 +295,12 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
     DefineOutput(3,TList::Class());
   }
   DefineOutput(4,AliNormalizationCounter::Class());
+
+  DefineOutput(5,AliNormalizationCounter::Class()); fCounter_MB_0to100 = 0; //jcho
+  DefineOutput(6,AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0; //jcho
+  DefineOutput(7,AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0; //jcho
+  DefineOutput(8,AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0; //jcho
+
 }
 
 //___________________________________________________________________________
@@ -312,6 +350,14 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::~AliAnalysisTaskSEXicPlus2XiPiPifr
     delete fCounter;
     fCounter=0;
   }
+
+  delete fCentralityOfEvt; //jcho
+  delete fAnalCuts_HM; //jcho
+  delete fCounter_MB_0to100; //jcho
+  delete fCounter_MB_0p1to30; //jcho
+  delete fCounter_MB_30to100; //jcho
+  delete fCounter_HMV0_0to0p1; //jcho
+ 
 }
 
 //_________________________________________________
@@ -320,18 +366,17 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::Init() {
   // Initialization
   //
   //
-  
   //Copied from $ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C
-  
-  fIsEventSelected=kFALSE;
+  fIsEventSelected=kFALSE;	
     
   if (fDebug > 1) AliInfo("Init");
-  
+
   fListCuts = new TList();
   fListCuts->SetOwner();
   fListCuts->SetName("ListCuts");
   fListCuts->Add(new AliRDHFCutsXicPlustoXiPiPifromAODtracks(*fAnalCuts));
   PostData(2,fListCuts);
+
 
   return;
 }
@@ -342,7 +387,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   //
   // UserExec code
   //
-
   if (!fInputEvent) {
     AliError("NO EVENT FOUND!");
     return;
@@ -350,6 +394,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   
   fCEvents->Fill(1);
+
   //------------------------------------------------
   // First check if the event has proper vertex and B
   //------------------------------------------------
@@ -362,7 +407,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   fQAHistoAODPrimVertX->Fill(pos[0]);
   fQAHistoAODPrimVertY->Fill(pos[1]);
   fQAHistoAODPrimVertZ->Fill(pos[2]);
-  
   fV1 = new AliESDVertex(pos,cov,100.,100,fVtx1->GetName());
   
   fBzkG = (Double_t)aodEvent->GetMagneticField(); 
@@ -372,15 +416,20 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
     return;
   }
   fCEvents->Fill(2);
-
-  fCounter->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo);
   
+  fCounter->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo);
+
+   //---Load InputHandler for each event-----------// jcho
+   AliInputEventHandler* inputHandler = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  
+   AliMultSelection *MultSelection = 0x0; //jcho
+   MultSelection = (AliMultSelection*)aodEvent->FindListObject("MultSelection"); //jcho
+
   //------------------------------------------------
   // Event selection 
   //------------------------------------------------
   Bool_t fIsTriggerNotOK = fAnalCuts->IsEventRejectedDueToTrigger();
   if(!fIsTriggerNotOK) fCEvents->Fill(3);
-  
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent); 
   if(!fIsEventSelected) {
     //cout<<"Why: "<<fAnalCuts->GetWhyRejection()<<endl;
@@ -397,6 +446,10 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   fIsCent=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kCentral)==(AliVEvent::kCentral); 
   fIsINT7=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kINT7)==(AliVEvent::kINT7);  
   fIsEMC7=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kEMC7)==(AliVEvent::kEMC7);
+
+  fIsHMV0=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kHighMultV0)==(AliVEvent::kHighMultV0); //jcho
+  fIsHMSPD=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kHighMultSPD)==(AliVEvent::kHighMultSPD); //jcho
+
   //this trigger check is not used: commentig out for the moment everywhere in the task
   //  fTriggerCheck = fIsMB+2*fIsSemi+4*fIsCent+8*fIsINT7+16*fIsEMC7;
   if(fIsMB) fHTrigger->Fill(1);
@@ -409,10 +462,77 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   if(fIsMB&fIsSemi) fHTrigger->Fill(10);
   if(fIsMB&fIsCent) fHTrigger->Fill(11);
   if(fIsINT7&fIsEMC7) fHTrigger->Fill(12);
-  
+
+  if(fIsHMV0) fHTrigger->Fill(13); //jcho
+  if(fIsHMSPD) fHTrigger->Fill(14); //jcho
+
   AliCentrality *cent = aodEvent->GetCentrality();
-  fCentrality = cent->GetCentralityPercentile("V0M");
-  fHCentrality->Fill(fCentrality);
+  //fCentrality = cent->GetCentralityPercentile("V0M");
+  fCentrality = MultSelection->GetMultiplicityPercentile("V0M");	//jcho
+  fCentralSPD = MultSelection->GetMultiplicityPercentile("SPDTracklets"); //jcho
+  fNSPDTracklets = MultSelection->GetEstimator("SPDTracklets")->GetValue(); //jcho
+
+  fHCentrality->Fill(fCentrality);  //jcho
+  fHCentralSPD->Fill(fCentralSPD);  //jcho
+  fHNSPDTracklets->Fill(fNSPDTracklets);  //jcho
+
+   //---Retrieve centrality info-----------------------------// jcho, Refer to Semileptonic Xic0
+	fNewCentrality = -999;	//jcho
+    fCentralSPD = -999; //jcho
+	fNSPDTracklets = -999; //jcho
+
+	if (!MultSelection) //jcho
+	{
+		AliWarning("AliMultSelection object not found!");
+	}
+	else 
+	{
+		fCentralSPD    = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+		fNSPDTracklets = MultSelection->GetEstimator("SPDTracklets")->GetValue();
+		if ( fCentralSPD == 0. && fNSPDTracklets == 0. ) fCentralSPD = fNSPDTracklets = -999;
+	}    
+ 
+  //---AliRDHFCuts check---------------------------// jcho, Refer to Semileptonic Xic0
+  bool IsValid_MB   = fAnalCuts -> IsEventSelected(aodEvent);
+  bool IsValid_HMV0 = fAnalCuts_HM -> IsEventSelected(aodEvent);
+
+  //---Trigger Check------------------------------// jcho, Refer to Semileptonic Xic0
+
+	if (fTargetTriggers.size() == 0) AliFatal("WARNING: target trigger container is empty! Stop.");
+	Bool_t IsTrigFired      = false;
+	Bool_t IsTrigFired_MB   = false;
+	Bool_t IsTrigFired_HMV0 = false;
+	for (unsigned int a=0; a<fTargetTriggers.size(); a++)
+	{
+		if (inputHandler->IsEventSelected() & fTargetTriggers[a]) IsTrigFired = true;
+
+		//LHC16k and l are CD dedicated runs! CD-online-trigger is used
+		if (fOption.Contains("LHC16k") || fOption.Contains("LHC16l"))
+		{
+			TString firedTriggerClasses = aodEvent->GetFiredTriggerClasses();
+			if ( (fTargetTriggers[a] == AliVEvent::kINT7) &&
+			     (firedTriggerClasses.Contains("CINT7-B-NOPF-CENT")) ) IsTrigFired = true;
+		}
+	}
+
+	if (IsTrigFired == false) return; 
+	else
+	{
+		if (inputHandler->IsEventSelected() & AliVEvent::kINT7)
+		{
+			IsTrigFired_MB = true;
+			fCentralityOfEvt->Fill(0);
+			if (fCentrality >=  0.0 && fCentrality <= 100.0) fCentralityOfEvt->Fill(1);
+			if (fCentrality >=  0.1 && fCentrality <=  30.0) fCentralityOfEvt->Fill(2);
+			if (fCentrality >= 30.0 && fCentrality <= 100.0) fCentralityOfEvt->Fill(3);
+		}
+		if (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0) 
+		{
+			IsTrigFired_HMV0 = true;
+			fCentralityOfEvt->Fill(4);
+			if (fCentrality >= 0.0 && fCentrality <= 0.1) fCentralityOfEvt->Fill(5);
+		}
+	} // Trigger Check end
 
  //------------------------------------------------
   // MC analysis setting
@@ -428,7 +548,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
       return;
     }
     fCEvents->Fill(6); // in case of MC events
-    
     // load MC header
     mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if (!mcHeader) {
@@ -469,10 +588,11 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   }
   
   fCEvents->Fill(5); //counter of the events with selected cascades
-  
+
   //------------------------------------------------
   // Main analysis done in this function
   //------------------------------------------------
+
   MakeAnalysis(aodEvent, mcArray, mcHeader); 
   
   PostData(1,fOutput);
@@ -523,6 +643,52 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   //
 
   AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
+
+  //---Event cut -----------------------------------------// jcho
+  fAnalCuts_HM = new AliRDHFCutsXicPlustoXiPiPifromAODtracks();
+  fAnalCuts_HM->SetUsePhysicsSelection(kTRUE);
+  fAnalCuts_HM->SetTriggerClass("");
+  fAnalCuts_HM->SetTriggerMask(AliVEvent::kHighMultV0);
+  fAnalCuts_HM->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent);
+
+  //---Fill the container storing the trigger info. -----//jcho
+
+  cout << "------------ This is trigger info. ------------"  << endl;
+
+	if (fHMTrigOn==true) {
+		cout << "[Check Please!!] HM Trigger mode on!" << endl;
+	}
+	else {
+		cout << "[Check Please!!] HM Trigger mode off!" << endl;
+	}
+
+  fTargetTriggers.clear();
+  if (fUsekINT7)
+  { 
+		fTargetTriggers.push_back(AliVEvent::kINT7);
+        cout << Form("[CHECK PLEASE!!!] Adding trigger: kINT7 (BIT %i)", AliVEvent::kINT7) << endl;
+  }
+
+  if (fUsekHMV0)
+  {
+		fTargetTriggers.push_back(AliVEvent::kHighMultV0);
+        cout <<Form("[CHECK PLEASE!!!] Adding trigger: kHighMultV0 (BIT %i)", AliVEvent::kHighMultV0) <<endl;
+  }
+
+  if (fUsekHMVSPD)
+  {
+		fTargetTriggers.push_back(AliVEvent::kHighMultSPD);
+		cout <<Form("[CHECK PLEASE!!!] Adding trigger: kHighMultSPD (BIT %i)", AliVEvent::kHighMultSPD) <<endl;
+  }
+
+  if (fTargetTriggers.size() > 1)
+  {
+		cout <<" * Multiple triggers are being used: creating EventTree->fTrigBit\n" << endl;
+  }
+
+  cout << "-----------------------------------------------"  << endl;
+
+  //--------------------------------------------------------
   
   //------------------------------------------------
   // output object setting
@@ -532,7 +698,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   fOutput->SetName("chist0");
   DefineGeneralHistograms(); // define general histograms
   PostData(1,fOutput);
-  
 
   if (fWriteVariableTree) {
     DefineTreeVariables();
@@ -545,9 +710,27 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
     PostData(3,fOutputAll);
   }
 
-  fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(4)->GetContainer()->GetName()));
+  fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(4)->GetContainer()->GetName())); 
+  //fCounter = new AliNormalizationCounter("NormalizationCounter"); //jcho, Refer to Semileptonic Xic0
+  fCounter->SetStudyMultiplicity(kTRUE, 1.); 
   fCounter->Init();
   PostData(4,fCounter);
+  fCounter_MB_0to100   = new AliNormalizationCounter("MB_0to100");
+  fCounter_MB_0p1to30  = new AliNormalizationCounter("MB_0p1to30");
+  fCounter_MB_30to100  = new AliNormalizationCounter("MB_30to100");
+  fCounter_HMV0_0to0p1 = new AliNormalizationCounter("HMV0_0to0p1");
+  fCounter_MB_0to100  ->SetStudyMultiplicity(kTRUE, 1.);
+  fCounter_MB_0p1to30 ->SetStudyMultiplicity(kTRUE, 1.);
+  fCounter_MB_30to100 ->SetStudyMultiplicity(kTRUE, 1.);
+  fCounter_HMV0_0to0p1->SetStudyMultiplicity(kTRUE, 1.);
+  fCounter_MB_0to100  ->Init();
+  fCounter_MB_0p1to30 ->Init();
+  fCounter_MB_30to100 ->Init();	
+  fCounter_HMV0_0to0p1->Init();
+  PostData(5, fCounter_MB_0to100);
+  PostData(6, fCounter_MB_0p1to30);
+  PostData(7, fCounter_MB_30to100);
+  PostData(8, fCounter_HMV0_0to0p1);
   return;
 }
 
@@ -1061,6 +1244,10 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 
       fCandidateVariables[67] = nclsTPCPIDpi1;
       fCandidateVariables[68] = nclsTPCPIDpi2;
+
+      fCandidateVariables[68] = nclsTPCPIDpi2;
+
+	  fCandidateVariables[69] = fCentrality; 
       
     }//close if to check mc fill only signal
     fVariablesTree->Fill();
@@ -1123,7 +1310,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 69;
+  Int_t nVar = 70;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1209,6 +1396,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[67]="nClsTPCPIDpi1";
   fCandidateVariableNames[68]="nClsTPCPIDpi2";
   
+  fCandidateVariableNames[69]="CENTRALITY";
+
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
@@ -1267,7 +1456,12 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fHTrigger->GetXaxis()->SetBinLabel(12,"kMB&kCentral");
   fHTrigger->GetXaxis()->SetBinLabel(13,"kINT7&kEMC7");
 
+  fHTrigger->GetXaxis()->SetBinLabel(14,"fIsHMV0");	//jcho
+  fHTrigger->GetXaxis()->SetBinLabel(15,"fIsHMSPD");	//jcho
+
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
+  fHCentralSPD = new TH1F("fCentralSPD","CentralSPD",100,0.,100.); //jcho
+  fHNSPDTracklets = new TH1F("fNSPDTracklets","NSPDTracklets",100,0.,100.); //jcho
 
   Double_t binx[101];
   for(Int_t ib=0;ib<101;ib++){
@@ -1306,10 +1500,11 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fQAHistoSecondaryVertexZ = new TH1F("fQAHistoSecondaryVertexZ", "Z coord of secondary vertex", 1000, -20, 20);
   fQAHistoSecondaryVertexXY = new TH1F("fQAHistoSecondaryVertexXY", "XY coord of secondary vertex", 1000, -20, 20);
   
-				  
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
+  fOutput->Add(fHCentralSPD); //jcho
+  fOutput->Add(fHNSPDTracklets); //jcho
   fOutput->Add(fHistoXiMassvsPtRef1);
   fOutput->Add(fHistoXiMassvsPtRef2);
   fOutput->Add(fHistoXiMassvsPtRef3);
@@ -1337,6 +1532,16 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
     fOutput->Add(fHistoMCSpectrumAccXic);
   }
 
+  //---Multiplicity analysis histograms-----------------------// jcho
+  
+  fCentralityOfEvt = new TH1F("fCentralityOfEvt","",6,0,6); //jcho
+  fCentralityOfEvt->GetXaxis()->SetBinLabel(1,"MB");
+  fCentralityOfEvt->GetXaxis()->SetBinLabel(2,"[0,100]");
+  fCentralityOfEvt->GetXaxis()->SetBinLabel(3,"[0,30]");
+  fCentralityOfEvt->GetXaxis()->SetBinLabel(4,"[30,100]");
+  fCentralityOfEvt->GetXaxis()->SetBinLabel(5,"HMV0");
+  fCentralityOfEvt->GetXaxis()->SetBinLabel(6,"[0,0.1]");
+  fOutput->Add(fCentralityOfEvt);
     
   return;
 }
@@ -1408,6 +1613,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistonSigmaTOFpi);
   fHistoProbPion=new TH1F("fHistoProbPion","Bayse Prob",100,0.0,1.);
   fOutputAll->Add(fHistoProbPion);
+
   }
   return;
 }

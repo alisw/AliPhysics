@@ -80,11 +80,6 @@ void AliPtContainer::Initialize(int nbinsx, double* xbins)
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subN",m+1),this->GetTitle(),nbinsx,xbins));
         }
     }
-    fCorrList->Add(new AliProfileBS(Form("meanpt"),this->GetTitle(),nbinsx,xbins));
-    if(fSubevent) {
-        fSubList->Add(new AliProfileBS(Form("meanpt_subP"),this->GetTitle(),nbinsx,xbins));
-        fSubList->Add(new AliProfileBS(Form("meanpt_subN"),this->GetTitle(),nbinsx,xbins));
-    }
     printf("Container %s initialized with m = %i\n",this->GetName(),mpar);
 };
 void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh)
@@ -112,11 +107,6 @@ void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh)
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subP",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subN",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
         }
-    }
-    fCorrList->Add(new AliProfileBS(Form("meanpt"),this->GetTitle(),nbinsx,xlow,xhigh));
-    if(fSubevent) {
-        fSubList->Add(new AliProfileBS(Form("meanpt_subP"),this->GetTitle(),nbinsx,xlow,xhigh));
-        fSubList->Add(new AliProfileBS(Form("meanpt_subN"),this->GetTitle(),nbinsx,xlow,xhigh));
     }
     printf("Container %s initialized with m = %i\n",this->GetName(),mpar);
 };
@@ -162,9 +152,9 @@ void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr,const dou
 }
 void AliPtContainer::FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, const double &rn, TString sub)
 {
-    for(int m=0;m<=mpar;++m) if(sumw[m]==0) return; 
     for(int m=1;m<=mpar;++m)
     {
+        if(sumw[m]==0||(fEventWeight==PtSpace::kWmaxperm && sumw[GetWeightIndex(m)]==0)) return; 
         if(sub.IsNull())
             ((AliProfileBS*)fCorrList->At(m-1))->FillProfile(lMult,corr[m]/sumw[m],sumw[GetWeightIndex(m)],rn);
         if(sub.Contains("subP"))
@@ -172,12 +162,6 @@ void AliPtContainer::FillRecursiveProfiles(const vector<double> &corr, const vec
         if(sub.Contains("subN"))
             ((AliProfileBS*)fSubList->At(2*(m-1)+1))->FillProfile(lMult,corr[m]/sumw[m],sumw[GetWeightIndex(m)],rn);
     }
-    if(sub.IsNull())
-        ((AliProfileBS*)fCorrList->At(mpar))->FillProfile(lMult,corr[1]/sumw[1],sumw[1],rn);
-    if(sub.Contains("subP"))
-        ((AliProfileBS*)fSubList->At(2*mpar))->FillProfile(lMult,corr[1]/sumw[1],sumw[1],rn);
-    if(sub.Contains("subN"))
-        ((AliProfileBS*)fSubList->At(2*mpar+1))->FillProfile(lMult,corr[1]/sumw[1],sumw[1],rn);
     return;
 }
 double AliPtContainer::OrderedAddition(vector<double> vec, int size)
@@ -234,6 +218,12 @@ void AliPtContainer::FillSkew(const vector<vector<double>> &inarr, const double 
     double lwpt = inarr[1][0];
     double lwskew = lwpt*lwpt*lwpt - 3*inarr[2][0]*inarr[1][0]+2*inarr[3][0];
     if(lwskew==0 || lwpt==0) return;
+    /* Full expression
+    <skew> =  <(w1p1)^3-3*w2p2*wp + 2*w3p3>
+    -3[pt]*   <(w1p1)^2*w1p0 - 2*w2p1*w1p1 + 2*w3p2 - w2p2*w1p0>
+    +3[pt]^2* <w1p1*(w1p0)^2 - 2*w2p1*w1p0 + 2*w3p1 - w1p1*w2p0>
+    -[pt]^3*  <(w1p0)^3-3*(w2p0)*(w1p0)+2*w3p0>   ----------> Cancelled by division of the weight
+    */
     ((AliProfileBS*)fTermList->At(0))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][1] - 3*inarr[2][2]*inarr[1][1]+2*inarr[3][3])/lwskew,(fEventWeight==PtSpace::kOne)?1.0:lwskew,rn);
     ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][0]-2*inarr[2][1]*inarr[1][1]+2*inarr[3][2]-inarr[2][2]*inarr[1][0])/lwskew,(fEventWeight==PtSpace::kOne)?1.0:lwskew,rn);
     ((AliProfileBS*)fTermList->At(2))->FillProfile(lMult,(inarr[1][1]*inarr[1][0]*inarr[1][0]-2*inarr[2][1]*inarr[1][0]+2*inarr[3][1]-inarr[1][1]*inarr[2][0])/lwskew,(fEventWeight==PtSpace::kOne)?1.0:lwskew,rn);
@@ -245,6 +235,13 @@ void AliPtContainer::FillKurtosis(const vector<vector<double>> &inarr, const dou
     double lwpt = inarr[1][0];
     double lwkur = lwpt*lwpt*lwpt*lwpt-6*inarr[2][0]*lwpt*lwpt+8*lwpt*inarr[3][0]+3*inarr[2][0]*inarr[2][0]-6*inarr[4][0];
     if(lwkur==0 || lwpt==0) return;
+    /* Full expression
+    <kurtosis> = <(w1p1)^4-4*w3p3*w1p1
+    -4
+    +
+    -
+    +[pt]^4*     <(w1p0)^4-
+    */
     ((AliProfileBS*)fTermList->At(0))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][1]*inarr[1][1]-6*inarr[2][2]*inarr[1][1]*inarr[1][1]
                                                     +3*inarr[2][2]*inarr[2][2]+8*inarr[1][1]*inarr[3][3]-6*inarr[4][4])/lwkur,(fEventWeight==PtSpace::kOne)?1.0:lwkur,rn);
     ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][1]*lwpt-3*inarr[2][2]*inarr[1][1]*lwpt
@@ -449,8 +446,7 @@ void AliPtContainer::CalculateRecursive(bool normalized)
         fCumulantList = new TList();
         fCumulantList->SetOwner();
     }
-    for(int i=0;i<mpar;++i)
-        ((AliProfileBS*)fCorrList->At(i))->PresetWeights((AliProfileBS*)fCorrList->At(mpar));
+    ((AliProfileBS*)fCorrList->At(0))->PresetWeights((AliProfileBS*)fCorrList->At(mpar-1));
     for(int i=-1;i<((AliProfileBS*)fCorrList->At(0))->getNSubs();++i) {
         vector<TH1*> hTs;
         for(int j=0;j<mpar;++j) {
