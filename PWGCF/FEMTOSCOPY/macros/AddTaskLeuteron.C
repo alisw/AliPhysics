@@ -303,22 +303,6 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   LambdaCuts6->SetPDGCodev0(-LambdaPDG);	  // Antilambda
 
 
-  if(isLowPt){
-
-    // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(0.5,1.4);
-    TrackCuts4->SetPtRange(0.5,1.4);
-
-  }
- 
-  if(isHighPt){
-
-    // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(0.5,4.0);
-    TrackCuts4->SetPtRange(0.5,4.0);
-
-  }
-
 
   if(isSidebandSignal ==true || isUpperSideband == true || isLowerSideband == true){
 
@@ -660,6 +644,22 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   } // end of systematics if statement
 
+
+  if(isLowPt){
+
+    // Deuterons and Antideuterons
+    TrackCuts3->SetPtRange(0.5,1.4);
+    TrackCuts4->SetPtRange(0.5,1.4);
+
+  }
+ 
+  if(isHighPt){
+
+    // Deuterons and Antideuterons
+    TrackCuts3->SetPtRange(0.5,4.0);
+    TrackCuts4->SetPtRange(0.5,4.0);
+
+  }
  
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Antilambda (LambdaCuts6) set\n");
