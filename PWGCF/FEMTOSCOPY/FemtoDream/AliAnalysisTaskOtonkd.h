@@ -165,6 +165,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Int_t fTKaonNcl[30];
   Int_t fTKaonShared[30];
   Float_t fTKaonTPCchi2[30];
+  Bool_t fTKaonSPDtime[30];
   Bool_t fTKaonITStime[30];
   Bool_t fTKaonTOFtime[30];
   Bool_t fTKaonTPConly[30];
@@ -216,6 +217,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Int_t fTDeuteronNcl[10];
   Int_t fTDeuteronShared[10];
   Float_t fTDeuteronTPCchi2[10];
+  Bool_t fTDeuteronSPDtime[10];
   Bool_t fTDeuteronITStime[10];
   Bool_t fTDeuteronTOFtime[10];
   Bool_t fTDeuteronTPConly[10];

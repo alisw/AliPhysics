@@ -129,9 +129,11 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
    TrackCutsDeuteron->SetPIDkd(false,false,3,3);
    TrackCutsDeuteron->SetPtRange(0.8,2.9);
+  }else if(DeuteronCut==7){ // Deuterons by Oton with cut in min pt and checkpileupSPDTOF
+   TrackCutsDeuteron->SetPIDkd(false,false,3,3);
+   TrackCutsDeuteron->SetPtRange(0.8,2.9);
+   TrackCutsDeuteron->SetCheckPileUpSPDTOF(true);
   }
-
-
 
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, false, false);
@@ -161,6 +163,10 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
    TrackCutsAntiDeuteron->SetPtRange(0.8,2.9);
+  }else if(DeuteronCut==7){ // Deuterons by Oton with cut in min pt and checkpileupSPDTOF
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
+   TrackCutsAntiDeuteron->SetPtRange(0.8,2.9);
+   TrackCutsAntiDeuteron->SetCheckPileUpSPDTOF(true);
   }
 
   //protons
@@ -183,6 +189,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsProton->SetRejLowPtPionsTOF(false);
    TrackCutsProton->SetMinimalBooking(false);
    TrackCutsProton->SetPlotDCADist(true);
+   TrackCutsProton->SetCheckPileUpSPDTOF(true);
   }
   TrackCutsProton->SetCutCharge(1);
 
@@ -205,6 +212,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiProton->SetRejLowPtPionsTOF(false);
    TrackCutsAntiProton->SetMinimalBooking(false);
    TrackCutsAntiProton->SetPlotDCADist(true);
+   TrackCutsAntiProton->SetCheckPileUpSPDTOF(true);
   }
   TrackCutsAntiProton->SetCutCharge(-1);
 
@@ -284,12 +292,16 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   closeRejection[0] = true;  // k k
   closeRejection[2] = true;  // k p
   closeRejection[4] = true;  // k d
+  closeRejection[5] = true;  // k bard
   closeRejection[6] = true;  // bark bark
   closeRejection[8] = true;  // bark barp
+  closeRejection[9] = true;  // bark d
   closeRejection[10] = true;  // bark bard
   closeRejection[11] = true;  // pp
   closeRejection[13] = true;  // pd
+  closeRejection[14] = true;  // pbard
   closeRejection[15] = true;  // barp barp
+  closeRejection[16] = true;  // barp d
   closeRejection[17] = true;  // barp bard
   closeRejection[18] = true;  // dd
   closeRejection[20] = true;  // bard bar
