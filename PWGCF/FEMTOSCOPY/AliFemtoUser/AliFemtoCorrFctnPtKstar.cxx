@@ -41,7 +41,7 @@ AliFemtoCorrFctn(),
   fPairPtKstar2part = new TH2D(Form("PairPtvsKstar%s",title),"Pair Pt vs kstar ",100,0.0,0.5, 300, 0.0, 6.0);
   fPairPtKstarDen2part = new TH2D(Form("PairPtvsKstarDen%s",title),"Pair Pt vs kstar in mixed events ",100,0.0,0.5, 300, 0.0, 6.0);
 
-    fKstarBetaT = new TH2D(Form("KstarvsBetaT%s",title),"kstar vs BetaT ",100,0.0,0.5, 30, 0.0, 3.0);
+    fKstarBetaT = new TH2D(Form("KstarvsBetaT%s",title),"kstar vs BetaT ",100,0.0,0.5, 100, 0.0, 1.0);
 
   for(int i=1;i<=3;i++){
   fPtKstar_kT[i] = NULL;  
