@@ -97,6 +97,8 @@
 #pragma link C++ class AliFemtoCorrFctnPairFractions;
 #pragma link C++ class AliAnalysisTaskParticleEfficiency+;
 #pragma link C++ class AliAnalysisTaskParticleEffDY+;
+#pragma link C++ class AliAnalysisTaskParticleEffDY04+;
+#pragma link C++ class AliAnalysisTaskParticleEffDY06+;
 #pragma link C++ class AliAnalysisTaskParticleFractions+;
 #pragma link C++ class AliFemtoPairOriginMonitor+;
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;

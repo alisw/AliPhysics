@@ -6,13 +6,13 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEffDY *AddTaskEffDY(TString containerName="femtolist",int method=3, int filterbit=96)
+AliAnalysisTaskParticleEffDY04 *AddTaskEffDY04(TString containerName="femtolist",int method=3, int filterbit=96)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskEffDY", "No analysis manager to connect to.");
+    Error("AddTaskEffDY04", "No analysis manager to connect to.");
     return NULL;
   }
 
@@ -20,7 +20,7 @@ AliAnalysisTaskParticleEffDY *AddTaskEffDY(TString containerName="femtolist",int
   //    manager. The availability of MC handler can also be checked here.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskEffDY", "This task requires an input event handler");
+    ::Error("AddTaskEffDY04", "This task requires an input event handler");
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -41,10 +41,10 @@ AliAnalysisTaskParticleEffDY *AddTaskEffDY(TString containerName="femtolist",int
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskParticleEffDY *taskEff = new AliAnalysisTaskParticleEffDY("EffTask",method,filterbit);
-  taskEff->SetPidMethod(method);
-  taskEff->SetFB(filterbit);
-  mgr->AddTask(taskEff);
+  AliAnalysisTaskParticleEffDY04 *taskEff04 = new AliAnalysisTaskParticleEffDY04("EffTask04",method,filterbit);
+  taskEff04->SetPidMethod(method);
+  taskEff04->SetFB(filterbit);
+  mgr->AddTask(taskEff04);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
   // arguments of the AddTaskXXX() function.
@@ -59,8 +59,8 @@ AliAnalysisTaskParticleEffDY *AddTaskEffDY(TString containerName="femtolist",int
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
-   mgr->ConnectInput(taskEff, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(taskEff, 1, cout_femto);
+   mgr->ConnectInput(taskEff04, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput(taskEff04, 1, cout_femto);
 
    // std::ofstream ofile;
    // ofile.open("test.txt", std::ofstream::app);
@@ -68,5 +68,5 @@ AliAnalysisTaskParticleEffDY *AddTaskEffDY(TString containerName="femtolist",int
    // ofile.close();
    
    // Return task pointer at the end
-   return taskEff;
+   return taskEff04;
 }
