@@ -8,7 +8,7 @@
 #ifndef __AliMCSpectraWeights__
 #define __AliMCSpectraWeights__
 
-//#define __AliMCSpectraWeights_DebugPCC__
+#define __AliMCSpectraWeights_DebugPCC__
 //#define __AliMCSpectraWeights_DebugTiming__
 
 class TParticle;
@@ -156,23 +156,35 @@ class AliMCSpectraWeights : public TNamed {
 
     void Init(); /*!< Function to start initalizing after all setters are made. */
     float const
-    GetMCSpectraWeight(TParticle* mcGenParticle,
+    GetMCSpectraWeight(Int_t mcGenParticle,
                        AliMCEvent* mcEvent); /*!< old; should not be used */
+
+    float const
+    GetMCSpectraWeight(Int_t mcGenParticle,
+                       Int_t SysCase=0); /*!< way to go; SysCase = 0 --> nominal; -1 --> sys. moved down; +1 --> sys. moved up */
 
     float const
     GetMCSpectraWeight(TParticle* mcGenParticle,
                        Int_t SysCase=0); /*!< way to go; SysCase = 0 --> nominal; -1 --> sys. moved down; +1 --> sys. moved up */
 
     float const
-    GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
+    GetMCSpectraWeightNominal(Int_t mcGenParticle);/*!< main function to use. Will
                                                          deliver correct weights to
                                                          re-weight the abundances of
                                                          different particle species */
     float const
+    GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
+                                                    deliver correct weights to
+                                                    re-weight the abundances of
+                                                    different particle species */
+
+    float const
+    GetMCSpectraWeightSystematics(Int_t mcGenParticle, Int_t SysCase = 1);
+    float const
     GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int_t SysCase = 1);
 
-    int const IdentifySecondaryType(TParticle* part);
-    float const GetWeightForSecondaryParticle(TParticle* mcGenParticle, Int_t SysCase=0);
+    int const IdentifySecondaryType(Int_t partLabel);
+    float const GetWeightForSecondaryParticle(Int_t partLabel, Int_t SysCase=0);
 
     void FillMCSpectra(
         AliMCEvent* mcEvent); /*!< function to fill internal mc spectra for
