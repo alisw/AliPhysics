@@ -62,7 +62,6 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
   void SetIfXiAnalysis(Bool_t xi);
   void SetIfTrackPileUp(Bool_t ifTrackPlp);
   void SetV0PileUpRemoval(Bool_t v0PileUpRemoval);
-  void SetY(double minY,double maxY);
   void AnalyseCascades(int fcent, AliAODEvent* aodEvent, TClonesArray  *arrayMC);
 
  private:

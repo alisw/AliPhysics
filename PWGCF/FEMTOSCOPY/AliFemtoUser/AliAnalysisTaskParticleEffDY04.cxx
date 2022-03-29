@@ -40,7 +40,7 @@
 ClassImp(AliAnalysisTaskParticleEffDY04)
 //ClassImp(AliAnalysisTaskParticleEff)
 
-double fV1[3];
+double fV1_4[3];
 
 //_______________________________________________________
 
@@ -620,7 +620,7 @@ void AliAnalysisTaskParticleEffDY04::UserCreateOutputObjects()
 //_____________________________________________________________________
 
 
-bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigma_04(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -635,7 +635,7 @@ bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime
   return false;
 }
 
-bool IsPionNSigmaV0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool IsPionNSigmaV0_04(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
 
   if (TMath::Abs(nsigmaTPCPi) < 3.0) return true;
@@ -643,7 +643,7 @@ bool IsPionNSigmaV0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
   return false;
 }
 
-bool IsPionNSigmaV0TPC5(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool IsPionNSigmaV0TPC5_04(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
 
   if (TMath::Abs(nsigmaTPCPi) < 5.0) return true;
@@ -652,7 +652,7 @@ bool IsPionNSigmaV0TPC5(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 }
 
 
-bool IsProtonNSigmaV0TPC5(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool IsProtonNSigmaV0TPC5_04(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
 
   if (TMath::Abs(nsigmaTPCP) < 5.0) return true;
@@ -660,7 +660,7 @@ bool IsProtonNSigmaV0TPC5(float mom, float nsigmaTPCP, float nsigmaTOFP)
   return false;
 }
 
-bool IsPionNSigma3(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigma3_04(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -675,7 +675,7 @@ bool IsPionNSigma3(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtim
   return false;
 }
 
-bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigma_04(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
     if (mom > 0.5) {
       //rejection of unwanted contamination
@@ -694,7 +694,7 @@ bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
   return false;
 }
 
-bool IsKaonNSigma3(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigma3_04(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
   if (mom > 0.5) {
     //rejection of unwanted contamination
@@ -713,7 +713,7 @@ bool IsKaonNSigma3(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
   return false;
 }
 
-bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigma_04(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -735,7 +735,7 @@ bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime
   return false;
 }
 
-bool IsProtonNSigmaV0(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool IsProtonNSigmaV0_04(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
 
   if (mom < 0.8) {
@@ -751,7 +751,7 @@ bool IsProtonNSigmaV0(float mom, float nsigmaTPCP, float nsigmaTOFP)
   return false;
 }
 
-bool IsProtonNSigma3(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigma3_04(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
   if (mom > 0.5) {
    
@@ -773,7 +773,7 @@ bool IsProtonNSigma3(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtim
 }
 
 
-bool IsElectron1(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
+bool IsElectron04(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
   if(TMath::Abs(nsigmaTPCe)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
       return true;
@@ -888,7 +888,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 
   //"ESDs/pass2/AOD049/*AliAOD.root");
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
-  vertex->GetPosition(fV1);
+  vertex->GetPosition(fV1_4);
   if (!vertex || vertex->GetNContributors()<=0) return;
 
   fHistQA[9]->Fill(2);
@@ -929,7 +929,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
   //if (!vtxTtl.Contains("VertexerTracks")) return;
   Float_t zvtx = vertex->GetZ();
   if (TMath::Abs(zvtx) > 10) return;
-  fHistQA[0]->Fill(zvtx);
+  //fHistQA[0]->FIsKaonNSigmaill(zvtx);
   fHistQA[9]->Fill(4);
   if(fcent==0)fHistEvCuts[0]->Fill(4);
   else if(fcent==1)fHistEvCuts[1]->Fill(4);
@@ -1095,7 +1095,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     float nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectron1(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+    if(IsElectron04(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
       continue;
     fHistQA[10]->Fill(7);
     
@@ -1140,48 +1140,54 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
     fHistQAPIDFail[4][0][charge]->Fill(nSigmaTPCPi,nSigmaTOFPi);
 
 
-    bool isPionNsigma = 0;
-    bool isKaonNsigma = 0;
-    bool isProtonNsigma  = 0;
+    bool isPionNSigma = 0;
+    bool isKaonNSigma = 0;
+    bool isProtonNSigma  = 0;
 
+   if(fPidMethod==kNSigma){
     //******** With double counting *******************
-    // isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi));
-    // isKaonNsigma = (IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK));
-    // isProtonNsigma = (IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
+      isPionNSigma = (IsPionNSigma_04(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+      isKaonNSigma = (IsKaonNSigma_04(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+      isProtonNSigma = (IsProtonNSigma_04(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+    }
+    else if(fPidMethod==kNSigmaNoDoubleCounting){
+      //******** Without double counting *******************
+      double nSigmaPIDPi = 0, nSigmaPIDK = 0, nSigmaPIDP = 0;
 
-    //******** Without double counting *******************
-    // double nSigmaPIDPi = 0, nSigmaPIDK = 0, nSigmaPIDP = 0;
-    // if(track->Pt()<0.5){
-    //   nSigmaPIDPi = abs(nSigmaTPCPi);
-    //   nSigmaPIDK  = abs(nSigmaTPCK);
-    //   nSigmaPIDP  = abs(nSigmaTPCP);
-    // }
-    // else{
-    //   nSigmaPIDPi = TMath::Hypot(nSigmaTOFPi, nSigmaTPCPi);
-    //   nSigmaPIDK= TMath::Hypot(nSigmaTOFK, nSigmaTPCK);
-    //   nSigmaPIDP= TMath::Hypot(nSigmaTOFP, nSigmaTPCP);
-    // }
-    // if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
-    //   isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi));
-    // }
-    // else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
-    //   isKaonNsigma = (IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK));
-    // }
-    // else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
-    //   isProtonNsigma = (IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
-    // }
+      if(track->Pt()<0.5){
+	nSigmaPIDPi = abs(nSigmaTPCPi);
+	nSigmaPIDK  = abs(nSigmaTPCK);
+	nSigmaPIDP  = abs(nSigmaTPCP);
+      }
+      else{
+	nSigmaPIDPi = TMath::Hypot(nSigmaTPCPi,nSigmaTOFPi);
+	nSigmaPIDK= TMath::Hypot(nSigmaTPCK,nSigmaTOFK);
+	nSigmaPIDP= TMath::Hypot(nSigmaTPCP,nSigmaTOFP);
+      }
 
-    //******** Exclusive PID ********************
-    //isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi) && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
-    //isKaonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi)  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
-    //isProtonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi)  && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
-
-
-    isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-    isKaonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-    isProtonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-
-    if (isPionNsigma){
+      if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
+	isPionNSigma = (IsPionNSigma_04(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+      }
+      else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
+	isKaonNSigma = (IsKaonNSigma_04(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+      }
+      else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
+	isProtonNSigma = (IsProtonNSigma_04(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      }
+    }
+    else if(fPidMethod==kExclusivePID){
+      //******** Exclusive PID ********************
+      isPionNSigma = (IsPionNSigma_04(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma_04(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma_04(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNSigma = (!IsPionNSigma_04(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma_04(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma_04(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNSigma = (!IsPionNSigma_04(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma_04(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma_04(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+    }
+    else if(fPidMethod==kExclusivePIDDiffRejection){
+      //******** Exclusive PID, different rejection  ********************
+      isPionNSigma = (IsPionNSigma_04(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3_04(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3_04(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNSigma = (!IsPionNSigma3_04(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma_04(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3_04(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNSigma = (!IsPionNSigma3_04(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3_04(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma_04(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+    }
+    if (isPionNSigma){
       fHistQAPID[0][1][charge]->Fill(tPt,tdEdx);
       fHistQAPID[1][1][charge]->Fill(tPt,tTofSig-pidTime[2]);//pion
       fHistQAPID[2][1][charge]->Fill(tPt,nSigmaTOFPi);
@@ -1196,7 +1202,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	fHistQAPIDFail[3][1][charge]->Fill(tPt,nSigmaTPCPi);
 	fHistQAPIDFail[4][1][charge]->Fill(nSigmaTPCPi,nSigmaTOFPi);
       }
-    if (isKaonNsigma){
+    if (isKaonNSigma){
       fHistQAPID[0][2][charge]->Fill(tPt,tdEdx);
       fHistQAPID[1][2][charge]->Fill(tPt,tTofSig-pidTime[3]);//kaon
       fHistQAPID[2][2][charge]->Fill(tPt,nSigmaTOFK);
@@ -1211,7 +1217,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	fHistQAPIDFail[3][2][charge]->Fill(tPt,nSigmaTPCK);
 	fHistQAPIDFail[4][2][charge]->Fill(nSigmaTPCK,nSigmaTOFK);
       }
-    if (isProtonNsigma){
+    if (isProtonNSigma){
       fHistQAPID[0][3][charge]->Fill(tPt,tdEdx);
       fHistQAPID[1][3][charge]->Fill(tPt,tTofSig-pidTime[4]);//proton
       fHistQAPID[2][3][charge]->Fill(tPt,nSigmaTOFP);
@@ -1241,7 +1247,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
    //getting no. of tracks for each particle species after all the cuts:
 
     //********* PID - pions ********
-     if (isPionNsigma){
+     if (isPionNSigma){
 	if (track->Pt() > 0.2 || track->Pt() < 2.5)
        fReconstructedAfterCuts[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
        if (!MCtrk) continue;
@@ -1250,7 +1256,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
        //Fills for all identified pions found after cuts (reconstructed) - numerator for Efficiency
 
      //********* PID - kaons ********
-     if (isKaonNsigma){
+     if (isKaonNSigma){
      if (track->Pt() > 0.3 || track->Pt() < 2.5)
        fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
        if (!MCtrk) continue;
@@ -1259,7 +1265,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
        //Fills for all identified kaons found after cuts (reconstructed) - numerator for Efficiency
 
     //********* PID - protons ********
-     if (isProtonNsigma){
+     if (isProtonNSigma){
      if (track->Pt() > 0.5 || track->Pt() < 2.5)
        fReconstructedAfterCuts[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
        if (!MCtrk) continue;
@@ -1292,24 +1298,24 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
     int PDGcode = MCtrk->GetPdgCode();
 
    //And secondaries for different particle species:
-    if (!MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) { //secondaries in pions
+    if (!MCtrk->IsPhysicalPrimary() && (isPionNSigma && abs(PDGcode)==211)) { //secondaries in pions
       fReconstructedNotPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
     }
-    else if(MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) {
+    else if(MCtrk->IsPhysicalPrimary() && (isPionNSigma && abs(PDGcode)==211)) {
       fReconstructedPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
     }
 
-    if (!MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) { //secondaries in kaons
+    if (!MCtrk->IsPhysicalPrimary() && (isKaonNSigma && abs(PDGcode)==321)) { //secondaries in kaons
       fReconstructedNotPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
     }
-    else if(MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) {
+    else if(MCtrk->IsPhysicalPrimary() && (isKaonNSigma && abs(PDGcode)==321)) {
       fReconstructedPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
     }
 
-    if (!MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) { //secondaries in protons
+    if (!MCtrk->IsPhysicalPrimary() && (isProtonNSigma && abs(PDGcode)==2212)) { //secondaries in protons
       fReconstructedNotPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
     } 
-    else if(MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) {
+    else if(MCtrk->IsPhysicalPrimary() && (isProtonNSigma && abs(PDGcode)==2212)) {
       fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
     } 
 
@@ -1325,13 +1331,13 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
     //Misidentification fraction
     if(abs(PDGcode)==211)
       {
-	if(isPionNsigma)
+	if(isPionNSigma)
 	  fMisidentification[fcent][charge]-> Fill(1,0.5);
-	if(isKaonNsigma)
+	if(isKaonNSigma)
 	  fMisidentification[fcent][charge]-> Fill(1,1.5);
-	if(isProtonNsigma)
+	if(isProtonNSigma)
 	  fMisidentification[fcent][charge]-> Fill(1,2.5);
-	if(!isPionNsigma && !isKaonNsigma && !isProtonNsigma)
+	if(!isPionNSigma && !isKaonNSigma && !isProtonNSigma)
 	  if(status)
 	    fMisidentification[fcent][charge]-> Fill(1,3.5);
 
@@ -1339,13 +1345,13 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
       }
     else if(abs(PDGcode)==321)
       {
-	if(isPionNsigma)
+	if(isPionNSigma)
 	  fMisidentification[fcent][charge]-> Fill(2,0.5);
-	if(isKaonNsigma)
+	if(isKaonNSigma)
 	  fMisidentification[fcent][charge]-> Fill(2,1.5);
-	if(isProtonNsigma)
+	if(isProtonNSigma)
 	  fMisidentification[fcent][charge]-> Fill(2,2.5);
-	if(!isPionNsigma && !isKaonNsigma && !isProtonNsigma)
+	if(!isPionNSigma && !isKaonNSigma && !isProtonNSigma)
 	  if(status)
 	    fMisidentification[fcent][charge]-> Fill(2,3.5);
 
@@ -1353,15 +1359,15 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
       }
     else if(abs(PDGcode) == 2212)
       {
-	if(isPionNsigma)
+	if(isPionNSigma)
 	  fMisidentification[fcent][charge]-> Fill(3,0.5);
-	if(isKaonNsigma)
+	if(isKaonNSigma)
 	  fMisidentification[fcent][charge]-> Fill(3,1.5);
-	if(isProtonNsigma)
+	if(isProtonNSigma)
 	  {
 	  fMisidentification[fcent][charge]-> Fill(3,2.5);
 	  }
-	if(!isPionNsigma && !isKaonNsigma && !isProtonNsigma)
+	if(!isPionNSigma && !isKaonNSigma && !isProtonNSigma)
 	  if(status)
 	    fMisidentification[fcent][charge]-> Fill(3,3.5);
       }
@@ -1371,15 +1377,15 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
     //Contaminations: "how many pions are in the kaons sample"? etc.
     //Do not use for corrections: using those values will be dependant on i.e. Pi/K ratio in MC
     //Use misidentification fraction instead
-    if(isPionNsigma)
+    if(isPionNSigma)
       {
 	fContamination[PARTTYPES*fcent+1][charge]-> Fill(PDGcode,track->Pt()); // filling contamination histogram for pions
       }
-    if(isKaonNsigma)
+    if(isKaonNSigma)
       {
 	fContamination[PARTTYPES*fcent+2][charge]-> Fill(PDGcode,track->Pt()); // filling contamination histogram for kaons
       }
-    if(isProtonNsigma)
+    if(isProtonNSigma)
       {
 	fContamination[PARTTYPES*fcent+3][charge]-> Fill(PDGcode,track->Pt()); // filling contamination histogram for protons
       }
@@ -1411,8 +1417,8 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
       
-      if (aodv0->CosPointingAngle(fV1) < 0.99) continue;
-      //if (aodv0->CosPointingAngle(fV1) < 0.95) continue;
+      if (aodv0->CosPointingAngle(fV1_4) < 0.99) continue;
+      //if (aodv0->CosPointingAngle(fV1_4) < 0.95) continue;
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
       
@@ -1457,7 +1463,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
       //fCutsLambda->Fill(cutLam++);
       //fCutsAntiLambda->Fill(cutALam++);
       
-      if(aodv0->DecayLength(fV1) > 60) continue;
+      if(aodv0->DecayLength(fV1_4) > 60) continue;
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
  
@@ -1580,21 +1586,21 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 
 	}
 
-      bool isPionNsigmaPos = 0;
-      bool isProtonNsigmaPos  = 0;
-      bool isPionNsigmaNeg = 0;
-      bool isProtonNsigmaNeg  = 0;
+      bool IsPionNSigmaPos = 0;
+      bool IsProtonNSigmaPos  = 0;
+      bool IsPionNSigmaNeg = 0;
+      bool IsProtonNSigmaNeg  = 0;
 
-      isPionNsigmaPos = IsPionNSigmaV0TPC5(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
-      isProtonNsigmaPos = IsProtonNSigmaV0TPC5(trackpos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
-      isPionNsigmaNeg = IsPionNSigmaV0TPC5(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
-      isProtonNsigmaNeg = IsProtonNSigmaV0TPC5(trackneg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
+      IsPionNSigmaPos = IsPionNSigmaV0TPC5_04(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
+      IsProtonNSigmaPos = IsProtonNSigmaV0TPC5_04(trackpos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
+      IsPionNSigmaNeg = IsPionNSigmaV0TPC5_04(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
+      IsProtonNSigmaNeg = IsProtonNSigmaV0TPC5_04(trackneg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
 
       bool Lambda = false;
       bool AntiLambda = false;
 
       //antilambda
-      if(isProtonNsigmaNeg && isPionNsigmaPos)
+      if(IsProtonNSigmaNeg && IsPionNSigmaPos)
 	{
 	  fCutsAntiLambda->Fill(cutALam++);  
 	  if(trackpos->Pt() < 0.16 || trackpos->Pt() > 4.0) continue; //pions plus
@@ -1609,7 +1615,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	    fPtAntiLambda->Fill(aodv0->Pt());
 	    fYAntiLambda->Fill(TMath::Abs(aodv0->Y()));
 	    fHistQALambdas[1]->Fill(1,aodv0->Pt());
-	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt());
 	    fAllVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	  fAllVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
@@ -1618,7 +1624,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	}
 	  
       //lambda
-      if(isProtonNsigmaPos && isPionNsigmaNeg)
+      if(IsProtonNSigmaPos && IsPionNSigmaNeg)
 	{
 	  fCutsLambda->Fill(cutLam++);  
 	  if(trackpos->Pt() < 0.3 || trackpos->Pt() > 4.0) continue; //proton
@@ -1633,7 +1639,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	    fPtLambda->Fill(aodv0->Pt());
 	    fYLambda->Fill(TMath::Abs(aodv0->Y()));
 	    fHistQALambdas[0]->Fill(1,aodv0->Pt());
-	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt());
 	    fAllVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 
 	  }
@@ -1713,7 +1719,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	{
 	  fPrimVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt()); 
+	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt()); 
 	    fPrimVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1721,7 +1727,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	{
 	  fPrimVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt()); 
+	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt()); 
 	    fPrimVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1729,7 +1735,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	{
 	  fSecWeakVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt()); 
+	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt()); 
 	    fSecWeakVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1737,7 +1743,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	{
 	  fSecWeakVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt()); 
+	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt()); 
 	    fSecWeakVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt()); 
 	  }
 	}
@@ -1745,7 +1751,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	{
 	fSecMatVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt()); 
+	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt()); 
 	    fSecMatVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1753,7 +1759,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	{
 	fSecMatVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){ 
-	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt()); 
+	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt()); 
 	    fSecMatVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1763,7 +1769,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
 	  fFakeVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt()); 
+	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt()); 
 	    fFakeVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	
@@ -1773,7 +1779,7 @@ void AliAnalysisTaskParticleEffDY04::UserExec(Option_t *)
  
 	  fFakeVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt()); 
+	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1_4),aodv0->Pt()); 
 	    fFakeVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }	  
 	}
