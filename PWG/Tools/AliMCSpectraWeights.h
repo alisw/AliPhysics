@@ -8,7 +8,7 @@
 #ifndef __AliMCSpectraWeights__
 #define __AliMCSpectraWeights__
 
-#define __AliMCSpectraWeights_DebugPCC__
+//#define __AliMCSpectraWeights_DebugPCC__
 //#define __AliMCSpectraWeights_DebugTiming__
 
 class TParticle;
@@ -136,11 +136,11 @@ class AliMCSpectraWeights : public TNamed {
     bool CalcMCFractions();                                    //!
     bool CorrectFractionsforRest();                            //!
     bool CalculateSystematicUncertainties(); //!
-    
+
 
     int const CheckAndIdentifyParticle(TParticle* part);
     int const FindBinEntry(float pt, int const part);
-    
+
     // private = to be deleted
     AliMCSpectraWeights(const AliMCSpectraWeights&);//copy
     AliMCSpectraWeights& operator=(const AliMCSpectraWeights&);//copy assign
