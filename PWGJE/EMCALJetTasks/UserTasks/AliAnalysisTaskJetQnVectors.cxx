@@ -52,6 +52,9 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
+    fEPangleFullTPC(0),
+    fEPanglePosTPC(0),
+    fEPangleNegTPC(0),
     fEPangleV0M(0),
     fEPangleV0A(0),
     fEPangleV0C(0),
@@ -99,6 +102,9 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
+    fEPangleFullTPC(0),
+    fEPanglePosTPC(0),
+    fEPangleNegTPC(0),
     fEPangleV0M(0),
     fEPangleV0A(0),
     fEPangleV0C(0),
@@ -314,6 +320,11 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     double PsinFullV0 = -1., PsinV0A = -1., PsinV0C = -1.;
     fJEQnVecHandler->GetEventPlaneAngleTPC(PsinFullTPC,PsinPosTPC,PsinNegTPC);
     fJEQnVecHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C);
+
+    fEPangleFullTPC = PsinFullTPC;
+    fEPanglePosTPC = PsinPosTPC;
+    fEPangleNegTPC = PsinNegTPC;
+
     fEPangleV0M = PsinFullV0;
     fEPangleV0A = PsinV0A;
     fEPangleV0C = PsinV0C;
