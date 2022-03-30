@@ -252,6 +252,10 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc() :AliAnalysisT
   fTreeVariableTriggerIndex(0),
   fTreeVariablePDGCodeTrigger(0),
   fTreeVariablePDGCodeAssoc(0),
+  fTreeVariableLabelTrigger(0),
+  fTreeVariableLabelPos(0),
+  fTreeVariableLabelNeg(0),
+  fTreeVariableLabelBach(0),
   FifoShiftok(kFALSE)
 {
   // default constructor, don't allocate memory here!
@@ -465,6 +469,10 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc(const char* nam
   fTreeVariableTriggerIndex(0),
   fTreeVariablePDGCodeTrigger(0),
   fTreeVariablePDGCodeAssoc(0),
+  fTreeVariableLabelTrigger(0),
+  fTreeVariableLabelPos(0),
+  fTreeVariableLabelNeg(0),
+  fTreeVariableLabelBach(0),
   FifoShiftok(kFALSE)
 {
                       
@@ -860,6 +868,7 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fSignalTree->Branch("fTreeVariablePhiTrigger",         &fTreeVariablePhiTrigger, "fTreeVariablePhiTrigger/D");
   fSignalTree->Branch("fTreeVariableDCAz",               &fTreeVariableDCAz  , "fTreeVariableDCAz/D");
   fSignalTree->Branch("fTreeVariableDCAxy",              &fTreeVariableDCAxy  , "fTreeVariableDCAxy/D");
+  fSignalTree->Branch("fTreeVariableLabelTrigger",       &fTreeVariableLabelTrigger  , "fTreeVariableLabelTrigger/I");
   fSignalTree->Branch("fTreeVariableChargeAssoc",        &fTreeVariableChargeAssoc  , "fTreeVariableChargeAssoc/I");
   fSignalTree->Branch("fTreeVariableisPrimaryTrigger",   &fTreeVariableisPrimaryTrigger  , "fTreeVariableisPrimaryTrigger/I");
   fSignalTree->Branch("fTreeVariableisPrimaryV0",        &fTreeVariableisPrimaryV0  , "fTreeVariableisPrimaryV0/I");
@@ -887,6 +896,9 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fSignalTree->Branch("fTreeVariableTriggerIndex",            &fTreeVariableTriggerIndex  , "fTreeVariableTriggerIndex/I");
   fSignalTree->Branch("fTreeVariablePDGCodeTrigger",     &fTreeVariablePDGCodeTrigger  , "fTreeVariablePDGCodeTrigger/I");
   fSignalTree->Branch("fTreeVariablePDGCodeAssoc",       &fTreeVariablePDGCodeAssoc  , "fTreeVariablePDGCodeAssoc/I");
+  fSignalTree->Branch("fTreeVariableLabelPos",           &fTreeVariableLabelPos  , "fTreeVariableLabelPos/I");
+  fSignalTree->Branch("fTreeVariableLabelNeg",           &fTreeVariableLabelNeg  , "fTreeVariableLabelNeg/I");
+  fSignalTree->Branch("fTreeVariableLabelBach",          &fTreeVariableLabelBach  , "fTreeVariableLabelBach/I");
 
   const char* nameoutputBkgTree = GetOutputSlot(3)->GetContainer()->GetName();
   fBkgTree= new TTree(nameoutputBkgTree, "fBkgTree");
@@ -896,6 +908,7 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fBkgTree->Branch("fTreeVariablePhiTrigger",                 &fTreeVariablePhiTrigger, "fTreeVariablePhiTrigger/D");
   fBkgTree->Branch("fTreeVariableDCAz",                       &fTreeVariableDCAz  , "fTreeVariableDCAz/D");
   fBkgTree->Branch("fTreeVariableDCAxy",                      &fTreeVariableDCAxy  , "fTreeVariableDCAxy/D");
+  fBkgTree->Branch("fTreeVariableLabelTrigger",               &fTreeVariableLabelTrigger  , "fTreeVariableLabelTrigger/I");
   fBkgTree->Branch("fTreeVariableChargeAssoc",                &fTreeVariableChargeAssoc  , "fTreeVariableChargeAssoc/I");
   fBkgTree->Branch("fTreeVariableisPrimaryTrigger",           &fTreeVariableisPrimaryTrigger  , "fTreeVariableisPrimaryTrigger/I");  
   fBkgTree->Branch("fTreeVariableisPrimaryV0",                &fTreeVariableisPrimaryV0  , "fTreeVariableisPrimaryV0/I");  
@@ -923,6 +936,9 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fBkgTree->Branch("fTreeVariableTriggerIndex",            &fTreeVariableTriggerIndex  , "fTreeVariableTriggerIndex/I");
   fBkgTree->Branch("fTreeVariablePDGCodeTrigger",     &fTreeVariablePDGCodeTrigger  , "fTreeVariablePDGCodeTrigger/I");
   fBkgTree->Branch("fTreeVariablePDGCodeAssoc",       &fTreeVariablePDGCodeAssoc  , "fTreeVariablePDGCodeAssoc/I");
+  fBkgTree->Branch("fTreeVariableLabelPos",           &fTreeVariableLabelPos  , "fTreeVariableLabelPos/I");
+  fBkgTree->Branch("fTreeVariableLabelNeg",           &fTreeVariableLabelNeg  , "fTreeVariableLabelNeg/I");
+  fBkgTree->Branch("fTreeVariableLabelBach",          &fTreeVariableLabelBach  , "fTreeVariableLabelBach/I");
   
   fHistPt = new TH1F("fHistPt", "p_{T} distribution of selected charged tracks in events used for AC", 300, 0, 30); 
   fHistPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -2407,7 +2423,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	  fEvt->fReconstructedFirst[NumberFirstParticle-1].fZvertex      = lBestPrimaryVtxPos[2];
 	  fEvt->fReconstructedFirst[NumberFirstParticle-1].isP           = labelPrimOrSec;
 	  fEvt->fReconstructedFirst[NumberFirstParticle-1].fPDGcode      = TriggerPdgCode;
-	  //	fEvt->fReconstructedFirst[NumberFirstParticle-1].fLabel        = track->GetLabel();
+	  fEvt->fReconstructedFirst[NumberFirstParticle-1].fLabel        = track->GetLabel();
 	}
 	fHistPtvsMultBefAll->Fill(track->Pt(), lPercentiles);
       }
@@ -3441,6 +3457,9 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
       if((fReadMCTruth && isEfficiency) || (!fReadMCTruth)){
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].cLabelMotherBach       = lVariablePDGCode;
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].cisPrimCasc            = isPrimaryCasc;
+	fEvt->fReconstructedSecond[NumberSecondParticle-1].cLabelPos              = labelPos;
+        fEvt->fReconstructedSecond[NumberSecondParticle-1].cLabelNeg              = labelNeg;
+        fEvt->fReconstructedSecond[NumberSecondParticle-1].cLabelBach             = labelBach;
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].cInvMassLambda         = lInvMassLambdaAsCascDghter;
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].cInvMassXi             = lInvMassXi;
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].cInvMassOmega          = lInvMassOmega;
@@ -3816,6 +3835,7 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariableDCAz		      =	fEvt->fReconstructedFirst[i].fDCAz;             
 	  fTreeVariableDCAxy		      =	fEvt->fReconstructedFirst[i].fDCAxy;   
 	  fTreeVariablePDGCodeTrigger         = fEvt->fReconstructedFirst[i].fPDGcode ;
+	  fTreeVariableLabelTrigger           = fEvt->fReconstructedFirst[i].fLabel ;
 	  fTreeVariableisPrimaryTrigger       = fEvt->fReconstructedFirst[i].isP ;
 
 	  fTreeVariablePDGCodeAssoc           =    fEvt->fReconstructedSecond[j].cLabelMotherBach      ;
@@ -3835,6 +3855,10 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariableSkipAssoc	      =    fEvt->fReconstructedSecond[j].cAssocOrNot           ; 
 	  fTreeVariableIsCommonParton	      =    fEvt->fReconstructedSecond[j].cIsCommonParton       ; 
 	  fTreeVariablePdgCommonParton	      =    fEvt->fReconstructedSecond[j].cPdgCommonParton      ; 
+	  fTreeVariableLabelPos               =    fEvt->fReconstructedSecond[j].cLabelPos;
+	  fTreeVariableLabelNeg               =    fEvt->fReconstructedSecond[j].cLabelNeg;
+	  fTreeVariableLabelBach              =    fEvt->fReconstructedSecond[j].cLabelBach;
+
 
 	  fTreeVariableDeltaEta	      	      = deta;  
 	  fTreeVariableDeltaPhi		      = dphi;
@@ -3856,6 +3880,7 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariableDCAz		      =	fEvt->fReconstructedFirst[i].fDCAz;             
 	  fTreeVariableDCAxy		      =	fEvt->fReconstructedFirst[i].fDCAxy;   
 	  fTreeVariablePDGCodeTrigger         = fEvt->fReconstructedFirst[i].fPDGcode ;
+	  fTreeVariableLabelTrigger           = fEvt->fReconstructedFirst[i].fLabel ;
 	  fTreeVariableisPrimaryTrigger       = fEvt->fReconstructedFirst[i].isP ;
 
 	  fTreeVariablePDGCodeAssoc           =    (fEvt+eventNumber)->fReconstructedSecond[j].cLabelMotherBach      ;
@@ -3875,6 +3900,9 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariableSkipAssoc 	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cAssocOrNot           ; 
 	  fTreeVariableIsCommonParton	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cIsCommonParton       ; 
 	  fTreeVariablePdgCommonParton	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cPdgCommonParton      ; 
+	  fTreeVariableLabelPos               =    (fEvt+eventNumber)->fReconstructedSecond[j].cLabelPos;
+	  fTreeVariableLabelNeg               =    (fEvt+eventNumber)->fReconstructedSecond[j].cLabelNeg;
+	  fTreeVariableLabelBach              =    (fEvt+eventNumber)->fReconstructedSecond[j].cLabelBach;
 
 	  fTreeVariableDeltaEta	       	      =deta;  
 	  fTreeVariableDeltaPhi		      =dphi;
