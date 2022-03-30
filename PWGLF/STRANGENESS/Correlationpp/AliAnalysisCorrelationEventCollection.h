@@ -33,6 +33,7 @@ class AliReconstructedFirstC {
   Double_t fDCAxy;
   Double_t fDCAz;
   Int_t     fPDGcode;
+  Int_t     fLabel;
   Int_t     fMCmumIdx;
   Int_t     fMCmumPDG;
   Int_t     fMCgrandmumIdx;

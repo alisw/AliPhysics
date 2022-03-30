@@ -23,6 +23,7 @@ AliReconstructedFirstC::AliReconstructedFirstC() :
   fDCAxy(0),
   fDCAz(0),
   fPDGcode(0),
+  fLabel(0),
   fMCmumIdx(0),
   fMCmumPDG(0),
   fMCgrandmumIdx(0),
