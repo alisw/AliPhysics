@@ -145,16 +145,23 @@ private:
   TList                 *fHistogramList; 
   TH2F                  *fHistdEdx;            
   TH1F                  *fHistNumEvents;       
-  TH1F			*fHistTrigger;	
+  TH1F			        *fHistTrigger;
+  TH1F                  *fHistTrigger1;
+  TH1F                  *fHistTrigger2;
+  TH1F                  *fHistCentrality1;
+  TH1F                  *fHistCentrality2;
+  TH1F                  *fHistNtracks1;
+  TH1F                  *fHistNtracks2;
   Double_t              fBetheParamsHe[6];  
   Double_t              fBetheParamsT[6];
   Bool_t                fPIDCheckOnly;
   Int_t                 fMCtrue; 
-  UInt_t		fTriggerMask; 
+  UInt_t		        fTriggerMask; 
   Int_t                 kVariante; 
   Int_t                 kStandardReco;
   Int_t                 kKFReco;
   Int_t                 kSkip3LHAnalysis;
+  Int_t                 kSkip4LHAnalysis;
   Int_t                 kAOD, kESD;
   //-- Trigger --
   Int_t                 MB, HMV0, HMSPD, HNU, HQU, Central, SemiCentral;
@@ -164,16 +171,20 @@ private:
   AliESDtrack           *track3;
   AliESDtrack           *track4;
   //-- Full track arrays --
+  std::vector < int >   He4PosArray;
   std::vector < int >   He3PosArray;
   std::vector < int >   PPosArray;
   std::vector < int >   PiPosArray;
   std::vector < int >   PiPosSecArray;
+  std::vector < int >   He4NegArray;
   std::vector < int >   He3NegArray;
   std::vector < int >   PNegArray;
   std::vector < int >   PiNegArray;
   std::vector < int >   PiNegSecArray;
   //-- Array index counter --
+  Int_t                 He4PosCounter;
   Int_t                 He3PosCounter;
+  Int_t                 He4NegCounter;
   Int_t                 He3NegCounter;
   Int_t                 PPosCounter;
   Int_t                 PNegCounter;
@@ -228,6 +239,8 @@ private:
   Double_t              kMax4LLHMass;
   Double_t              kMin4LHeMass;
   Double_t              kMax4LHeMass;
+  Double_t              kMin4LHMass;
+  Double_t              kMax4LHMass;
   Double_t              kMin3LHMass;
   Double_t              kMax3LHMass;
   //-- MC --
@@ -277,7 +290,7 @@ private:
   //-- saved in Tree --
   Int_t                  fEventID;
   Int_t                  fParticleID;
-  Int_t		         fPeriod; 
+  Int_t		             fPeriod; 
   Int_t                  fMagneticField;
   Int_t                  fCentrality;
   Int_t                  frunnumber;
@@ -286,17 +299,24 @@ private:
   Int_t                  fPrimary4LHe;
   Int_t                  fDecayChannel;
   Int_t                  fRecoMethod;
+  Int_t                  fisWOTrackVertex;
+  TString                fTriggerString;
   Int_t                  fisOnlineV0_13;
   Int_t                  fisOnlineV0_14;
   Int_t                  fisOnlineV0_23;
   Int_t                  fisOnlineV0_24;
+  Double_t               fptDaughterUnProp, fpxDaughterUnProp, fpyDaughterUnProp, fpzDaughterUnProp;
+  Double_t               fptDaughter1UnProp, fpxDaughter1UnProp, fpyDaughter1UnProp, fpzDaughter1UnProp;
+  Double_t               fptDaughter2UnProp, fpxDaughter2UnProp, fpyDaughter2UnProp, fpzDaughter2UnProp;
+  Double_t               fptDaughter3UnProp, fpxDaughter3UnProp, fpyDaughter3UnProp, fpzDaughter3UnProp;
   Int_t                  fTrigMB, fTrigHMV0, fTrigHMSPD, fTrigHNU, fTrigHQU, fTrigkCentral, fTrigkSemiCentral;
   Int_t                  fPDGMother, fChargeMother;
-  Int_t                  fPrimVertNDF, fSecVertNDF, fTertVertNDF;
+  Int_t                  fPrimVertNDF, fSecVertNDF, fTertVertNDF;  
   Int_t                  fNclsDaughter, fNclsITSDaughter, fNclsDaughter1, fNclsITSDaughter1, fNclsDaughter2, fNclsITSDaughter2, fNclsDaughter3, fNclsITSDaughter3;
   Int_t                  fPropDCADaughter, fPropDCADaughter1, fPropDCADaughter2, fPropDCADaughter3, fPropDCADaughter4;
   Int_t                  fTPCRefitDaughter, fITSRefitDaughter, fTPCRefitDaughter1, fITSRefitDaughter1, fTPCRefitDaughter2, fITSRefitDaughter2, fTPCRefitDaughter3, fITSRefitDaughter3;
   Int_t                  fITSLayer1Daughter, fITSLayer2Daughter, fITSLayer3Daughter, fITSLayer4Daughter, fITSLayer5Daughter, fITSLayer6Daughter, fITSLayer1Daughter1, fITSLayer2Daughter1, fITSLayer3Daughter1, fITSLayer4Daughter1, fITSLayer5Daughter1, fITSLayer6Daughter1, fITSLayer1Daughter2, fITSLayer2Daughter2, fITSLayer3Daughter2, fITSLayer4Daughter2, fITSLayer5Daughter2, fITSLayer6Daughter2, fITSLayer1Daughter3, fITSLayer2Daughter3, fITSLayer3Daughter3, fITSLayer4Daughter3, fITSLayer5Daughter3, fITSLayer6Daughter3;
+  Int_t                  fTrackPIDDaughter, fTrackPIDDaughter1, fTrackPIDDaughter2, fTrackPIDDaughter3;
   Double_t               fEDaughter, fpDaughter, fptDaughter,  fpxDaughter,  fpyDaughter,  fpzDaughter, fyDaughter, fdEdxDaughter, fdEdxSigmaDaughter, fDcaDaughter, fDcaDaughtero, fDcazDaughter, fDcaSecDaughter,  fChi2Daughter,  fEtaDaughter, fPhiDaughter, fGeoLengthDaughter, fTOFSignalDaughter;
   Double_t               fEDaughter1, fpDaughter1, fptDaughter1, fpxDaughter1, fpyDaughter1, fpzDaughter1, fyDaughter1, fdEdxDaughter1, fdEdxSigmaDaughter1, fDcaDaughter1, fDcaDaughter1o, fDcaSecDaughter1, fDcazDaughter1, fChi2Daughter1, fEtaDaughter1, fPhiDaughter1, fGeoLengthDaughter1, fTOFSignalDaughter1;
   Double_t               fEDaughter2, fpDaughter2, fptDaughter2, fpxDaughter2, fpyDaughter2, fpzDaughter2, fyDaughter2, fdEdxDaughter2, fdEdxSigmaDaughter2, fDcaDaughter2, fDcaDaughter2o, fDcaSecDaughter2, fDcazDaughter2, fChi2Daughter2, fEtaDaughter2, fPhiDaughter2, fGeoLengthDaughter2, fTOFSignalDaughter2;
