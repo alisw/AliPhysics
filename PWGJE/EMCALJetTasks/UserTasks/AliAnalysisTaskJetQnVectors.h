@@ -51,6 +51,9 @@ public:
     double Getq2V0M()                                                                                    {return fq2V0M;}
     double Getq2V0A()                                                                                    {return fq2V0A;}
     double Getq2V0C()                                                                                    {return fq2V0C;}
+    double GetEPangleFullTPC()                                                                           {return fEPangleFullTPC;}
+    double GetEPanglePosTPC()                                                                            {return fEPanglePosTPC;}
+    double GetEPangleNegTPC()                                                                            {return fEPangleNegTPC;}
     double GetEPangleV0M()                                                                               {return fEPangleV0M;}
     double GetEPangleV0A()                                                                               {return fEPangleV0A;}
     double GetEPangleV0C()                                                                               {return fEPangleV0C;}
@@ -103,6 +106,9 @@ private:
     double fq2V0M;                                   /// q2 vector from the V0M   
     double fq2V0A;                                   /// q2 vector from the V0A    
     double fq2V0C;                                   /// q2 vector from the V0C     
+    double fEPangleFullTPC;                          /// EP Angle with calibrations from TPC Full
+    double fEPanglePosTPC;                           /// EP Angle with calibrations from TPC eta>0
+    double fEPangleNegTPC;                           /// EP Angle with calibrations from TPC eta<0
     double fEPangleV0M;                              /// EP Angle with calibrations from V0M
     double fEPangleV0C;                              /// EP Angle with calibrations from V0A
     double fEPangleV0A;                              /// EP Angle with calibrations from V0C
