@@ -215,7 +215,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     if(fUseGenPt) pt = lPart->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     CompWeight = flMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
-    Double_t secWeight = flMCSpectraWeights->GetWeightForSecondaryParticle(lPart->Particle());
+    Double_t secWeight = flMCSpectraWeights->GetWeightForSecondaryParticle(index);
     Int_t lBayesPIDIndex=0;
     Int_t lTruePIDIndex =0;
     Bool_t IndexMatch=kFALSE;
