@@ -12,9 +12,11 @@
 #include <THn.h>
 #include <THnSparse.h>
 #include <TProfile2D.h>
-
+// EP source 0
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
+// EP source 1
+#include "AliAnalysisTaskJetQnVectors.h"
 
 class TH1;
 class TH2;
@@ -24,6 +26,8 @@ class AliEvtPoolManager;
 class AliAODMCHeader;
 
 class AliQnCorrectionsManager;
+class AliAnalysisTaskJetQnVectors;
+
 
 using std::vector;
 
@@ -91,6 +95,8 @@ public:
   void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut        = input;}
   void                        SetApplyPatchCandCut(Bool_t input)                    { fApplyPatchCandCut = input;}
   void                        SetSidebandChoice(Int_t input)                        { fSidebandChoice    = input;}
+  void                        SetEventPlaneSource(Int_t input)                      { fEventPlaneSource  = input;}
+
 
   void                        SetMCEmbedReweightMode(Int_t input)                   { fMCEmbedReweightMode = input;}
   void                        SetUseMCReactionPlane(Int_t input)                    { fUseMCReactionPlane  = input;}
@@ -101,13 +107,17 @@ public:
   TF1*                        GetEffFunction(Int_t no,Int_t cent)                           ;
   //..Set which pools will be saved
   void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
-   private:
+private:
   AliEventCuts                fEventCuts;                   ///< event selection utility
   AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
   AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
-  AliQnCorrectionsManager*    fFlowQnVectorMgr;             ///< object for accessing QnVectorCorrections corrected event plane info
+  AliQnCorrectionsManager*    fFlowQnVectorMgr;             ///< object for accessing QnVectorCorrections corrected event plane info (source 0)
+  AliAnalysisTaskJetQnVectors* fQ2VectorReader;             ///< Reader for the Q2 vector (source 1)
+  AliAnalysisTaskJetQnVectors* fQ3VectorReader;             ///< Reader for the Q3 vector (source 1)
 
-   protected:
+
+
+protected:
 
   void                        InitArrays()                                                 ;
   //..overwritten EMCal base class functions
@@ -198,7 +208,7 @@ public:
   Double_t                    fArray_ZT_Bins[8];         ///< 8=kNoZtBins+1
   Double_t                    fArray_XI_Bins[9];         ///< 9=kNoXiBins+1
   Double_t                    fArray_HPT_Bins[9];        ///< 9=kNoHPtBins+1
-  Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
+  Double_t                    fArrayNVertBins[11];       ///< 11=kNvertBins+1
 
   static const Bool_t         bEnableTrackPtAxis = 1;    ///< Whether to swap the xi axis with a track pT axis. Currently must be set here
   static const Bool_t         bEnableEventHashMixing = 1;///< Whether to split events up into 2 classes (odd and even) for event mixing to avoid autocorrelation
@@ -240,6 +250,9 @@ public:
   UInt_t                      fVetoTrigger;              //!<! Trigger that is vetoed in Mixed Events to avoid bias.  Default is EMCAL Gamma Trigger
 
   Bool_t                      fApplyPatchCandCut;        ///< Add GA Trigger patch candidate status to Pi0Cand THnSparse
+
+  Int_t                       fEventPlaneSource;         ///< Where to get the event plane information. 0 is the QnVectorCorrections framework, 1 is the AliAnalysisTaskJetQnVectors
+                                                         // if 0 is given, but no QnVector corrections are available, default to V0M (sans calibration)
 
   //..Event Plane variables
   Double_t                    fQnCorrEventPlaneAngle;    //!<! Event plane angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
