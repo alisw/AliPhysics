@@ -190,7 +190,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   void                   GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR);
   Double_t               GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const;
   //for new EP angle calibration
-  AliAnalysisTaskJetQnVectors*   fqnVectorReader;  ///< Reader for the Qn vector
+  AliAnalysisTaskJetQnVectors*   fqnVectorReader;  //!<! Reader for the Qn vector
   // Test for biased jet
   Bool_t                 BiasedJet(AliEmcalJet * jet);
   // Corrections
