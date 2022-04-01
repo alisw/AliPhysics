@@ -145,7 +145,7 @@ private:
   TList                 *fHistogramList; 
   TH2F                  *fHistdEdx;            
   TH1F                  *fHistNumEvents;       
-  TH1F			        *fHistTrigger;
+  TH1F			*fHistTrigger;
   TH1F                  *fHistTrigger1;
   TH1F                  *fHistTrigger2;
   TH1F                  *fHistCentrality1;
@@ -300,7 +300,7 @@ private:
   Int_t                  fDecayChannel;
   Int_t                  fRecoMethod;
   Int_t                  fisWOTrackVertex;
-  TString                fTriggerString;
+  const Char_t*          fTriggerString;
   Int_t                  fisOnlineV0_13;
   Int_t                  fisOnlineV0_14;
   Int_t                  fisOnlineV0_23;
