@@ -1434,7 +1434,7 @@ void AliAnalysisTaskDoubleHypNucTree::UserExec(Option_t*) {
 
   // __ Number of acc events __ //
   if (fEventCuts.AcceptEvent(fevent)) feventclass = 1;
-  else feventclass = 0;
+  else return;
   // All accepted events
   if (feventclass)fHistNumEvents->Fill(1);
   //  accepted events depending on Track Vertex reco
