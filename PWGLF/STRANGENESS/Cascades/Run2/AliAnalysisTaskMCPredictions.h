@@ -75,7 +75,8 @@ public:
   void SetDoRapidityStudy ( Bool_t lOpt = kTRUE) { fkDoRapidityStudy = lOpt; }
   
   void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
-  void SetCheckOriginThirdArgument ( Bool_t lVal ) { fCheckOriginThirdArgument = lVal; } ; 
+  void SetCheckOriginThirdArgument ( Bool_t lVal ) { fCheckOriginThirdArgument = lVal; } ;
+  void SetNSpeciesDD ( Int_t lVal ) { fkNSpeciesDD = lVal; } ;
   
   //---------------------------------------------------------------------------------------
   
