@@ -1776,8 +1776,7 @@ void AliAnalysisTaskDoubleHypNucTree::FindTracks() {
       }
     }
   }
-  if (!He4PosCounter && !He4NegCounter) return;
-  if (!He3PosCounter && !He3NegCounter) return;
+  if (!He3PosCounter && !He3NegCounter && !He4PosCounter && !He4NegCounter) return;
   if (!PPosCounter && !PNegCounter)   return;
   if (!PiPosCounter && !PiNegCounter)  return;
   // _________________________________________________ // 
