@@ -51,20 +51,20 @@
 #include "AliRhoParameter.h"
 
 #include "AliAnalysisTaskFlowVectorCorrectionsPWGJE.h"
-#include "AliAnalysisTaskRawJetWithEP1.h"
+#include "AliAnalysisTaskRawJetWithEP.h"
 
 #include "AliDataFile.h"
 
-class AliAnalysisTaskRawJetWithEP1;
+class AliAnalysisTaskRawJetWithEP;
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskRawJetWithEP1);
+ClassImp(AliAnalysisTaskRawJetWithEP);
 /// \endcond
 
 /**
  * Default constructor. Needed by ROOT I/O
  */
-AliAnalysisTaskRawJetWithEP1::AliAnalysisTaskRawJetWithEP1() :
+AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
   AliAnalysisTaskEmcalJet(),
   fAOD(nullptr),
   fOutputList(nullptr),
@@ -128,7 +128,7 @@ AliAnalysisTaskRawJetWithEP1::AliAnalysisTaskRawJetWithEP1() :
  * Standard constructor. Should be used by the user.
  * @param[in] name Name of the task
  */
-AliAnalysisTaskRawJetWithEP1::AliAnalysisTaskRawJetWithEP1(const char *name):
+AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fAOD(nullptr),
   fOutputList(nullptr),
@@ -195,7 +195,7 @@ AliAnalysisTaskRawJetWithEP1::AliAnalysisTaskRawJetWithEP1(const char *name):
 /**
  * Destructor
  */
-AliAnalysisTaskRawJetWithEP1::~AliAnalysisTaskRawJetWithEP1()
+AliAnalysisTaskRawJetWithEP::~AliAnalysisTaskRawJetWithEP()
 {
   
   if(fOADBFile) {fOADBFile->Close(); fOADBFile = 0x0;}
@@ -212,7 +212,7 @@ AliAnalysisTaskRawJetWithEP1::~AliAnalysisTaskRawJetWithEP1()
  * Performing run-independent initialization.
  * Here the histograms should be instantiated.
  */
-void AliAnalysisTaskRawJetWithEP1::UserCreateOutputObjects()
+void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
 {
   
   fOutputList = new TList();
@@ -276,7 +276,7 @@ void AliAnalysisTaskRawJetWithEP1::UserCreateOutputObjects()
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
-void AliAnalysisTaskRawJetWithEP1::AllocateEventPlaneHistograms()
+void AliAnalysisTaskRawJetWithEP::AllocateEventPlaneHistograms()
 {
   TString histName;
   TString histtitle;
@@ -545,7 +545,7 @@ void AliAnalysisTaskRawJetWithEP1::AllocateEventPlaneHistograms()
  * at the vertex and at the EMCal surface, number of tracks) is allocated
  * per each particle container and per each centrality bin.
  */
-void AliAnalysisTaskRawJetWithEP1::AllocateTrackHistograms()
+void AliAnalysisTaskRawJetWithEP::AllocateTrackHistograms()
 {
   TString histName;
   TString histtitle;
@@ -602,7 +602,7 @@ void AliAnalysisTaskRawJetWithEP1::AllocateTrackHistograms()
  * A set of histograms (pT, eta, phi, area, number of jets, corrected pT) is allocated
  * per each jet container and per each centrality bin.
  */
-void AliAnalysisTaskRawJetWithEP1::AllocateJetHistograms()
+void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
 {
   TString histName;
   TString histtitle;
@@ -782,7 +782,7 @@ void AliAnalysisTaskRawJetWithEP1::AllocateJetHistograms()
  * This function is executed automatically for the first event.
  * Some extra initialization can be performed here.
  */
-void AliAnalysisTaskRawJetWithEP1::ExecOnce()
+void AliAnalysisTaskRawJetWithEP::ExecOnce()
 {
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   
@@ -810,7 +810,7 @@ void AliAnalysisTaskRawJetWithEP1::ExecOnce()
  * be executed for the current event
  * @return Always kTRUE
  */
-Bool_t AliAnalysisTaskRawJetWithEP1::Run()
+Bool_t AliAnalysisTaskRawJetWithEP::Run()
 {
   // std::cout << "ChecKuma Run Number === " << CheckRunNum << "==================" << std::endl;
   CheckRunNum++;
@@ -833,7 +833,7 @@ Bool_t AliAnalysisTaskRawJetWithEP1::Run()
   return kTRUE;
 }
 
-void AliAnalysisTaskRawJetWithEP1::DoEventPlane(){
+void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
 
   if (!fAOD && AODEvent() && IsStandardAOD()) {
       // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -957,7 +957,7 @@ void AliAnalysisTaskRawJetWithEP1::DoEventPlane(){
 }
 
 
-void AliAnalysisTaskRawJetWithEP1::SetModulationRhoFit() 
+void AliAnalysisTaskRawJetWithEP::SetModulationRhoFit() 
 {
   // set modulation fit
   TString histName;
@@ -998,7 +998,7 @@ void AliAnalysisTaskRawJetWithEP1::SetModulationRhoFit()
 }
 
 
-void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
+void AliAnalysisTaskRawJetWithEP::MeasureBkg(){
   TString histName;
   
   UInt_t sumAcceptedTracks = 0;
@@ -1084,7 +1084,7 @@ void AliAnalysisTaskRawJetWithEP1::MeasureBkg(){
 }
 
 
-Double_t AliAnalysisTaskRawJetWithEP1::CalcEPReso(Int_t n, \
+Double_t AliAnalysisTaskRawJetWithEP::CalcEPReso(Int_t n, \
   Double_t &psiA, Double_t &psiB, Double_t &psiC){
   
   Double_t vnReso = -999.;
@@ -1096,7 +1096,7 @@ Double_t AliAnalysisTaskRawJetWithEP1::CalcEPReso(Int_t n, \
 }
 
 
-void AliAnalysisTaskRawJetWithEP1::MeasureTpcEPQA(){
+void AliAnalysisTaskRawJetWithEP::MeasureTpcEPQA(){
   TString histName;
   TString groupName;
 
@@ -1156,7 +1156,7 @@ void AliAnalysisTaskRawJetWithEP1::MeasureTpcEPQA(){
 
 
 //________________________________________________________________________
-void AliAnalysisTaskRawJetWithEP1::LoadSpliForqnPerce()
+void AliAnalysisTaskRawJetWithEP::LoadSpliForqnPerce()
 {
     // load splines for qn percentiles
     std::cout << "splinesFilePath: " << fSplinesFileName << std::endl;
@@ -1193,7 +1193,7 @@ void AliAnalysisTaskRawJetWithEP1::LoadSpliForqnPerce()
  * This function performs a loop over the reconstructed jets
  * in the current event and fills the relevant histograms.
  */
-void AliAnalysisTaskRawJetWithEP1::DoJetLoop()
+void AliAnalysisTaskRawJetWithEP::DoJetLoop()
 {
   TString histName;
   TString groupName;
@@ -1317,7 +1317,7 @@ void AliAnalysisTaskRawJetWithEP1::DoJetLoop()
   }
 }
 
-Bool_t  AliAnalysisTaskRawJetWithEP1::QnJEHandlarEPGet(){
+Bool_t  AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet(){
   fQ2VecHandler = new AliJEQnVectorHandler(0,1,2,fOADBFileName);
   fQ3VecHandler = new AliJEQnVectorHandler(0,1,3,fOADBFileName);
   
@@ -1380,7 +1380,7 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnJEHandlarEPGet(){
 
 }
 
-Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
+Bool_t  AliAnalysisTaskRawJetWithEP::QnGainCalibration(){
   TString histName;
   TString groupName;
   groupName="EventPlane";
@@ -1529,7 +1529,7 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnGainCalibration(){
 
 }
 
-Bool_t  AliAnalysisTaskRawJetWithEP1::QnRecenteringCalibration(){
+Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
   TList *tempCalibRefObj = (TList *)fCalibRefFile->Get("fWgtsV0ZDC");
   fCalibRefObjList = tempCalibRefObj;
 
@@ -1590,7 +1590,7 @@ Bool_t  AliAnalysisTaskRawJetWithEP1::QnRecenteringCalibration(){
 }
 
 //_____________________________________________________________________________
-TH1F* AliAnalysisTaskRawJetWithEP1::GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen)
+TH1F* AliAnalysisTaskRawJetWithEP::GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen)
 {
     if(!fOutputList) {
         printf(" > Please add fOutputList first < \n");
@@ -1647,7 +1647,7 @@ TH1F* AliAnalysisTaskRawJetWithEP1::GetResoFromOutputFile(detectorType det, Int_
 }
 
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskRawJetWithEP1::CalculateEventPlaneChi(Double_t res)
+Double_t AliAnalysisTaskRawJetWithEP::CalculateEventPlaneChi(Double_t res)
 {
     // return chi for given resolution to combine event plane estimates from two subevents
     // see Phys. Rev. C no. CS6346 (http://arxiv.org/abs/nucl-ex/9805001)
@@ -1660,7 +1660,7 @@ Double_t AliAnalysisTaskRawJetWithEP1::CalculateEventPlaneChi(Double_t res)
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskRawJetWithEP1::BkgFitEvaluation()
+void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
 {
   // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
   // three methods are available, all with their drawbacks. 
@@ -1781,7 +1781,7 @@ void AliAnalysisTaskRawJetWithEP1::BkgFitEvaluation()
 /**
  * This function is called once at the end of the analysis.
  */
-void AliAnalysisTaskRawJetWithEP1::Terminate(Option_t *) 
+void AliAnalysisTaskRawJetWithEP::Terminate(Option_t *) 
 {
 }
 
@@ -1791,7 +1791,7 @@ void AliAnalysisTaskRawJetWithEP1::Terminate(Option_t *)
  * by an AddTask C macro. However, by compiling the code, it ensures that we do not
  * have to deal with difficulties caused by CINT.
  */
-AliAnalysisTaskRawJetWithEP1 * AliAnalysisTaskRawJetWithEP1::AddTaskRawJetWithEP1(
+AliAnalysisTaskRawJetWithEP * AliAnalysisTaskRawJetWithEP::AddTaskRawJetWithEP(
   const char *ntracks, const char *nclusters, const char* ncells, const char *suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -1799,7 +1799,7 @@ AliAnalysisTaskRawJetWithEP1 * AliAnalysisTaskRawJetWithEP1::AddTaskRawJetWithEP
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskRawJetWithEP1", "No analysis manager to connect to.");
+    ::Error("AddTaskRawJetWithEP", "No analysis manager to connect to.");
     return 0;
   }
 
@@ -1808,7 +1808,7 @@ AliAnalysisTaskRawJetWithEP1 * AliAnalysisTaskRawJetWithEP1::AddTaskRawJetWithEP
   AliVEventHandler* handler = mgr->GetInputEventHandler();
   if (!handler)
   {
-    ::Error("AddTaskRawJetWithEP1", "This task requires an input event handler");
+    ::Error("AddTaskRawJetWithEP", "This task requires an input event handler");
     return 0;
   }
   
@@ -1821,13 +1821,13 @@ AliAnalysisTaskRawJetWithEP1 * AliAnalysisTaskRawJetWithEP1::AddTaskRawJetWithEP
   TString trackName(ntracks);
   if (trackName == "usedefault") trackName = "tracks";
 
-  TString name("AliAnalysisTaskRawJetWithEP1");
+  TString name("AliAnalysisTaskRawJetWithEP");
   if (strcmp(suffix,"") != 0) {
     name += "_";
     name += suffix;
   }
 
-  AliAnalysisTaskRawJetWithEP1* rawJetTask = new AliAnalysisTaskRawJetWithEP1(name);
+  AliAnalysisTaskRawJetWithEP* rawJetTask = new AliAnalysisTaskRawJetWithEP(name);
   // rawJetTask->LoadSpliForqnPerce(qnSplineFileName); //new
   rawJetTask->SetVzRange(-10,10);
 

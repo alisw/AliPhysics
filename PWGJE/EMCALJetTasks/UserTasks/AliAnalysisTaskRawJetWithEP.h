@@ -1,6 +1,6 @@
 
-#ifndef AliAnalysisTaskRawJetWithEP1_H
-#define AliAnalysisTaskRawJetWithEP1_H
+#ifndef AliAnalysisTaskRawJetWithEP_H
+#define AliAnalysisTaskRawJetWithEP_H
 /**
  * \file AliAnalysisTaskEmcalJetSample.h
  * \brief Declaration of class AliAnalysisTaskEmcalJetSample
@@ -51,12 +51,12 @@ class AliLocalRhoParameter;
  * from AliAnalysisTaskEmcal and removing the functions DoJetLoop()
  * and AllocateJetHistograms().
  */
-class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
   public:
 
-    AliAnalysisTaskRawJetWithEP1();
-    AliAnalysisTaskRawJetWithEP1(const char *name);
-    virtual ~AliAnalysisTaskRawJetWithEP1();
+    AliAnalysisTaskRawJetWithEP();
+    AliAnalysisTaskRawJetWithEP(const char *name);
+    virtual ~AliAnalysisTaskRawJetWithEP();
 
     void UserCreateOutputObjects();
     void Terminate(Option_t *option);
@@ -66,7 +66,7 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     // void SetUseAODBCalibrations(TString oadbFileName){fOADBFileName = oadbFileName; fCalibType = AliJEQnVectorHandler::kQnCalib;}
     // void SetUseQnFrameworkCalibrations(){fCalibType = AliJEQnVectorHandler::kQnFrameworkCalib;}
 
-    static AliAnalysisTaskRawJetWithEP1* AddTaskRawJetWithEP1(
+    static AliAnalysisTaskRawJetWithEP* AddTaskRawJetWithEP(
         const char *ntracks            = "usedefault",
         const char *nclusters          = "usedefault",
         const char* ncells             = "usedefault",
@@ -261,12 +261,12 @@ class AliAnalysisTaskRawJetWithEP1 : public AliAnalysisTaskEmcalJet {
     TH1F*              hBkgTracks;         //-> modulation fit for rho
     
 
-    AliAnalysisTaskRawJetWithEP1(const AliAnalysisTaskRawJetWithEP1&)           ; // not implemented
-    AliAnalysisTaskRawJetWithEP1 &operator=(const AliAnalysisTaskRawJetWithEP1&); // not implemented
+    AliAnalysisTaskRawJetWithEP(const AliAnalysisTaskRawJetWithEP&)           ; // not implemented
+    AliAnalysisTaskRawJetWithEP &operator=(const AliAnalysisTaskRawJetWithEP&); // not implemented
 
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskRawJetWithEP1, 7);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 7);
     /// \endcond
   // ### private ###############################################################
 };

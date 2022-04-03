@@ -1,12 +1,12 @@
 
-AliAnalysisTaskRawJetWithEP1* AddTaskRawJetWithEP1(
+AliAnalysisTaskRawJetWithEP* AddTaskRawJetWithEP(
   const char *ntracks = "usedefault", 
   const char *nclusters = "usedefault",
   const char* ncells = "usedefault", 
   const char *suffix = ""
 )
 {
-  return AliAnalysisTaskRawJetWithEP1::AddTaskRawJetWithEP1(
+  return AliAnalysisTaskRawJetWithEP::AddTaskRawJetWithEP(
       ntracks, 
       nclusters,
       ncells, 
