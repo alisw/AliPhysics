@@ -472,7 +472,6 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     "PromptXib", "PromptXibbar",
     "PromptOmegab", "PromptOmegabbar",
     "PromptLambdab", "PromptLambdabbar"
-    
   };
   
   //Main Output: Histograms
