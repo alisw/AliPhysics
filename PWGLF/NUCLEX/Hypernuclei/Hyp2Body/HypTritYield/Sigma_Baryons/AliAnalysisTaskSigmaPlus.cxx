@@ -3873,7 +3873,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             fPairProtonStatus = pairprot->GetStatus();
 
             //Force TOF PID for Pair Proton if requested
-            if(fRequireProtonTOFforPairs&&TMath::Abs(fPairProtonNSigTOF)>fMaxNsigProtTOF) continue;
+            if(pairprot->P()>fMaxpOnlyTPCPID&&fRequireProtonTOFforPairs&&TMath::Abs(fPairProtonNSigTOF)>fMaxNsigProtTOF) continue;
 
             if(q!=k&&fSavePairs&&kstar<fMaxPairkstar) fSigmaPairTree->Fill();
             if(q!=k&&fFillredPairTreeSE&&kstar<fMaxPairkstar) fSigmaRedPairTreeSE->Fill();
@@ -3927,8 +3927,10 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
               fPairProtonID = mixprot->GetID();
               fPairProtonStatus = mixprot->GetStatus();
 
+              Double_t MixProtonMom = TMath::Sqrt(fPairProtonPx*fPairProtonPx+fPairProtonPy*fPairProtonPy+fPairProtonPz*fPairProtonPz);
+
               //Force TOF PID for Pair Proton if requested
-              if(fRequireProtonTOFforPairs&&TMath::Abs(fPairProtonNSigTOF)>fMaxNsigProtTOF) continue;
+              if(MixProtonMom>fMaxpOnlyTPCPID&&fRequireProtonTOFforPairs&&TMath::Abs(fPairProtonNSigTOF)>fMaxNsigProtTOF) continue;
 
               if(kstar<fMaxPairkstar) fSigmaRedPairTreeME->Fill();
 
