@@ -1776,8 +1776,7 @@ void AliAnalysisTaskDoubleHypNucTree::FindTracks() {
       }
     }
   }
-  if (!He4PosCounter && !He4NegCounter) return;
-  if (!He3PosCounter && !He3NegCounter) return;
+  if (!He3PosCounter && !He3NegCounter && !He4PosCounter && !He4NegCounter) return;
   if (!PPosCounter && !PNegCounter)   return;
   if (!PiPosCounter && !PiNegCounter)  return;
   // _________________________________________________ // 
@@ -1921,6 +1920,7 @@ void AliAnalysisTaskDoubleHypNucTree::CalcPosDaughterHypNuc() {
 	  // __ check daughter combinations __ //
 	  AliAnalysisTaskDoubleHypNucTree::KFReconstruction("3LH", 3, 1);//1 = 4LHe, 2 = 3LH, 3 = 3LH (tert check, 4LHe), 4 = 3LH (sec check), 5 = Lambda (tert check), 6 = Lambda (sec check), 7 = Lambda (4LHe), 8 = 4LH 2B
 	  hTreeKF->Fill();
+	  AliAnalysisTaskDoubleHypNucTree::ResetVals("");
 	  AliAnalysisTaskDoubleHypNucTree::KFReconstruction("3LH", 7, 1);//1 = 4LHe, 2 = 3LH, 3 = 3LH (tert check, 4LHe), 4 = 3LH (sec check), 5 = Lambda (tert check), 6 = Lambda (sec check), 7 = Lambda (4LHe), 8 = 4LH 2B
 	  hTreeKF->Fill();
 	  AliAnalysisTaskDoubleHypNucTree::ResetVals("");
@@ -1940,6 +1940,7 @@ void AliAnalysisTaskDoubleHypNucTree::CalcPosDaughterHypNuc() {
 	  // __ check daughter combinations __ //
 	  AliAnalysisTaskDoubleHypNucTree::StandardReconstruction("3LH", 3, 1);//1 = 4LHe, 2 = 3LH, 3 = 3LH (tert check, 4LHe), 4 = 3LH (sec check), 5 = Lambda (tert check), 6 = Lambda (sec check), 7 = Lambda (4LHe), 8 = 4LH 2B
 	  hTree->Fill();
+	  AliAnalysisTaskDoubleHypNucTree::ResetVals("");
 	  AliAnalysisTaskDoubleHypNucTree::StandardReconstruction("3LH", 7, 1);//1 = 4LHe, 2 = 3LH, 3 = 3LH (tert check, 4LHe), 4 = 3LH (sec check), 5 = Lambda (tert check), 6 = Lambda (sec check), 7 = Lambda (4LHe), 8 = 4LH 2B
 	  hTree->Fill();
 	  AliAnalysisTaskDoubleHypNucTree::ResetVals("");
