@@ -10,12 +10,16 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   AliAnalysisTaskSEpPbCorrelationsJetV2Kine *task = new AliAnalysisTaskSEpPbCorrelationsJetV2Kine("AliAnalysisTaskSEpPbCorrelationsJetV2Kine");
 
   Double_t trigPtLimits[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0};
+//  Double_t trigPtLimits[] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0};
   const Int_t nBinTrigPt = sizeof(trigPtLimits) / sizeof(Double_t) - 1;
   task->SetTrigPtBinning(nBinTrigPt, trigPtLimits);
 
   Double_t assocPtLimits[] = {0.5, 1., 1.5, 50.};
   const Int_t nBinAssocPt = sizeof(assocPtLimits) / sizeof(Double_t) - 1;
   task->SetAssocPtBinning(nBinAssocPt, assocPtLimits);
+
+  task->SetMuonDecay("B");
+  task->SetTPCEtaLimits(1.2); // Less than 2
 
   task->SetAnaMode(sMode);
   task->SetAssoCut(1.0);
