@@ -508,6 +508,11 @@ private:
   Bool_t fTreeVariableNegITSSharedClusters4;
   Bool_t fTreeVariableNegITSSharedClusters5;
   
+  Int_t fTreeVariablePosTPCNClusters;
+  Int_t fTreeVariableNegTPCNClusters;
+  Int_t fTreeVariablePosTPCNClustersShared;
+  Int_t fTreeVariableNegTPCNClustersShared;
+  
   Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
   Int_t fTreeVariableRunNumber; //store run number for random stuff
   
@@ -892,6 +897,13 @@ private:
   Bool_t fTreeCascVarBachITSSharedClusters3;
   Bool_t fTreeCascVarBachITSSharedClusters4;
   Bool_t fTreeCascVarBachITSSharedClusters5;
+  
+  Int_t fTreeCascVarPosTPCNClusters;
+  Int_t fTreeCascVarNegTPCNClusters;
+  Int_t fTreeCascVarBachTPCNClusters;
+  Int_t fTreeCascVarPosTPCNClustersShared;
+  Int_t fTreeCascVarNegTPCNClustersShared;
+  Int_t fTreeCascVarBachTPCNClustersShared;
   
   //Uncertainty information on mass (from KF) for testing purposes
   Float_t fTreeCascVarV0LambdaMassError;
