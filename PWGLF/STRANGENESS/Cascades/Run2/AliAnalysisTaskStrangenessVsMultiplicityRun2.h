@@ -99,6 +99,9 @@ public:
   void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
     fkExtraCleanup = lExtraCleanup;
   }
+  void SetExtraCleanupRapidity ( Bool_t lExtraCleanupRapidity = kTRUE) {
+    fkExtraCleanupRapidity = lExtraCleanupRapidity;
+  }
   void SetDoStrangenessTracking ( Bool_t lOpt = kTRUE) {
     fkDoStrangenessTracking = lOpt;
   }
@@ -237,7 +240,7 @@ public:
   //---------------------------------------------------------------------------------------
   void SetSaveSpecificCascadeConfig(TString lConfig){
     fkConfigToSave = lConfig;
-    fkSaveSpecificConfig = kTRUE; 
+    fkSaveSpecificConfig = kTRUE;
   }
   //---------------------------------------------------------------------------------------
   
@@ -284,7 +287,7 @@ private:
   Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
   Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
   Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
-  Bool_t fkDebugOOBPileupEventTree; 
+  Bool_t fkDebugOOBPileupEventTree;
   Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
   Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
   Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
@@ -299,8 +302,9 @@ private:
   Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
   Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
   Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+  Bool_t    fkExtraCleanupRapidity;    // if true, select candidates only within |y|<0.5 (logical OR in mass hypo)
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
-  AliAnalysisTaskWeakDecayVertexer *fWDV; //helper 
+  AliAnalysisTaskWeakDecayVertexer *fWDV; //helper
   
   AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
   
@@ -321,7 +325,7 @@ private:
   
   //if true, fill cascade TTree with a config with a given name
   Bool_t fkSaveSpecificConfig;
-  TString fkConfigToSave; 
+  TString fkConfigToSave;
   
   //===========================================================================================
   //   Variables for Event Tree
@@ -435,7 +439,7 @@ private:
   Float_t fTreeVariableNegTOFSignal; //!
   Float_t fTreeVariablePosTOFSignal; //!
   Int_t   fTreeVariableNegTOFBCid; //!
-  Int_t   fTreeVariablePosTOFBCid; //! 
+  Int_t   fTreeVariablePosTOFBCid; //!
   //Event info
   Float_t fTreeVariableAmplitudeV0A; //!
   Float_t fTreeVariableAmplitudeV0C; //!
@@ -696,7 +700,7 @@ private:
   TH1D *fHistEventCounterDifferential; //!
   TH1D *fHistCentrality; //!
   TH2D *fHistEventMatrix; //!
-  TH1D *fRecPointRadii; 
+  TH1D *fRecPointRadii;
   
   AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
   AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented

@@ -189,6 +189,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkExtraCleanupRapidity ( kFALSE ),
 fkDoStrangenessTracking (kFALSE),
 fkAddPVToRecPointFinder( kTRUE ),
 fkUseLayer1(kTRUE),
@@ -754,6 +755,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkExtraCleanupRapidity ( kFALSE ), 
 fkDoStrangenessTracking (kFALSE),
 fkAddPVToRecPointFinder( kTRUE),
 fkUseLayer1(kTRUE),
@@ -2758,6 +2760,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeVariableAlphaV0 = lAlphaV0;
     fTreeVariablePtArmV0 = lPtArmV0;
     
+    if( fkExtraCleanupRapidity ){
+      if( TMath::Abs(fTreeVariableRapK0Short)>0.5 && TMath::Abs(fTreeVariableRapLambda)>0.5) continue;
+    }
+    
     //Official means of acquiring N-sigmas
     fTreeVariableNSigmasPosProton = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton );
     fTreeVariableNSigmasPosPion   = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion );
@@ -4046,6 +4052,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     //lPhi      = xi->Phi()   *180.0/TMath::Pi();
     //lAlphaXi  = xi->AlphaXi();
     //lPtArmXi  = xi->PtArmXi();
+    
+    if( fkExtraCleanupRapidity ){
+      if( TMath::Abs(lRapXi)>0.5 && TMath::Abs(lRapOmega)>0.5) continue;
+    }
     
     //----------------------------------------
     // Calculate Cascade DCA to PV, please

@@ -135,6 +135,9 @@ public:
   void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
     fkExtraCleanup = lExtraCleanup;
   }
+  void SetExtraCleanupRapidity ( Bool_t lExtraCleanupRapidity = kTRUE) {
+    fkExtraCleanupRapidity = lExtraCleanupRapidity;
+  }
   void SetHypertritonMode ( Bool_t lOpt = kTRUE) {
     fkHypertritonMode = lOpt;
   }
@@ -389,6 +392,7 @@ private:
   Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
   Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
   Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+  Bool_t    fkExtraCleanupRapidity;    // if true, select candidates only within |y|<0.5 (logical OR in mass hypo)
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   Bool_t fkAddPVToRecPointFinder;
   Bool_t    fkUseLayer1; //if true, use layer 1
