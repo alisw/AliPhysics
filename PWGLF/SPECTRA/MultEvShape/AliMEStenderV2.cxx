@@ -37,13 +37,11 @@
 #include "AliMEStrackInfo.h"
 #include "TTree.h"
 
-#include <vector>
-
 using namespace std;
 
 ClassImp(AliMEStenderV2::AliMESconfigTender)
     ClassImp(AliMEStenderV2)
-
+ 
     //________________________________________________________________________
     AliMEStenderV2::AliMESconfigTender::AliMESconfigTender() : TObject(), fTrackCuts(0), fEventCuts(0), fPIDpriors(0)
 {
@@ -547,15 +545,7 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
   Int_t nTracks = fTracks->GetEntriesFast();
   Int_t run = fESD->GetRunNumber();
   Double_t dca[2] = {0.};
-  std::vector<double> fPt, fEta, fPhi, fCharge, fDeltaPhi, fDeltaEta, fDCAxy, fDCAz;
-  fPt.reserve(nTracks);
-  fEta.reserve(nTracks);
-  fPhi.reserve(nTracks);
-  fCharge.reserve(nTracks);
-  fDeltaPhi.reserve(nTracks);
-  fDeltaEta.reserve(nTracks);
-  fDCAxy.reserve(nTracks);
-  fDCAz.reserve(nTracks);
+  Double_t fPt[nTracks]{}, fEta[nTracks]{}, fPhi[nTracks]{}, fCharge[nTracks]{}, fDeltaPhi[nTracks]{}, fDeltaEta[nTracks]{}, fDCAxy[nTracks]{}, fDCAz[nTracks]{};
   for (int i(0); i < fTracks->GetEntriesFast(); i++)
   {
     AliMEStrackInfo *t = (AliMEStrackInfo *)(*fTracks)[i];
@@ -766,17 +756,7 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
   fPhiLP_MC = TMath::ATan2(pyLP_MC, pxLP_MC);
   fPhiLP_MC = (fPhiLP_MC > 0) ? fPhiLP_MC : (fPhiLP_MC + TMath::TwoPi());
   Int_t nTracks_MC = fMCtracks->GetEntriesFast();
-  std::vector<double> fPt_MC, fEta_MC, fPhi_MC, fCharge_MC, fDeltaPhi_MC, fDeltaEta_MC, fPrimary_MC, fSecondary_MC, fMaterial_MC;
-  fPt_MC.reserve(nTracks);
-  fEta_MC.reserve(nTracks);
-  fPhi_MC.reserve(nTracks);
-  fCharge_MC.reserve(nTracks);
-  fDeltaPhi_MC.reserve(nTracks);
-  fDeltaEta_MC.reserve(nTracks);
-  fPrimary_MC.reserve(nTracks);
-  fSecondary_MC.reserve(nTracks);
-  fMaterial_MC.reserve(nTracks);
-
+  Double_t fPt_MC[nTracks]{}, fEta_MC[nTracks]{}, fPhi_MC[nTracks]{}, fCharge_MC[nTracks]{}, fDeltaPhi_MC[nTracks]{}, fDeltaEta_MC[nTracks]{}, fPrimary_MC[nTracks]{}, fSecondary_MC[nTracks]{}, fMaterial_MC[nTracks]{};
   AliMEStrackInfo *t(NULL), *tMC(NULL);
   for (int i(0); i < fTracks->GetEntriesFast(); i++)
   {
@@ -859,17 +839,7 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
   // printf("tracksIn %d tracksOut %d\n", fTracks->GetEntries(), fTracksIO->GetEntries());
   // printf("MCtracksIn %d MCtracksOut %d\n", fMCtracks->GetEntries(), fMCtracksIO->GetEntries());
 
-  std::vector<double> fPt_Gen, fEta_Gen, fPhi_Gen, fCharge_Gen, fDeltaPhi_Gen, fDeltaEta_Gen, fPrimary_Gen, fSecondary_Gen, fMaterial_Gen;
-  fPt_Gen.reserve(nTracks_MC);
-  fEta_Gen.reserve(nTracks_MC);
-  fPhi_Gen.reserve(nTracks_MC);
-  fCharge_Gen.reserve(nTracks_MC);
-  fDeltaPhi_Gen.reserve(nTracks_MC);
-  fDeltaEta_Gen.reserve(nTracks_MC);
-  fPrimary_Gen.reserve(nTracks_MC);
-  fSecondary_Gen.reserve(nTracks_MC);
-  fMaterial_Gen.reserve(nTracks_MC);
-
+  Double_t fPt_Gen[nTracks_MC]{}, fEta_Gen[nTracks_MC]{}, fPhi_Gen[nTracks_MC]{}, fCharge_Gen[nTracks_MC]{}, fDeltaPhi_Gen[nTracks_MC]{}, fDeltaEta_Gen[nTracks_MC]{}, fPrimary_Gen[nTracks_MC]{}, fSecondary_Gen[nTracks_MC]{}, fMaterial_Gen[nTracks_MC]{};
   for (int i(0); i < fMCtracks->GetEntriesFast(); i++)
   {
     tMC = (AliMEStrackInfo *)(*fMCtracks)[i];
@@ -924,16 +894,7 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
   // printf("MCtracksGenIn %d MCtracksGenOut %d\n", fMCtracks->GetEntries(), fMCGenTracksIO->GetEntries());
 
   Int_t nTracks_Miss = nTracks_MC - nTracks;
-  std::vector<double> fPt_Miss, fEta_Miss, fPhi_Miss, fCharge_Miss, fDeltaPhi_Miss, fDeltaEta_Miss, fPrimary_Miss, fSecondary_Miss, fMaterial_Miss;
-  fPt_Miss.reserve(nTracks_Miss);
-  fEta_Miss.reserve(nTracks_Miss);
-  fPhi_Miss.reserve(nTracks_Miss);
-  fCharge_Miss.reserve(nTracks_Miss);
-  fDeltaPhi_Miss.reserve(nTracks_Miss);
-  fDeltaEta_Miss.reserve(nTracks_Miss);
-  fPrimary_Miss.reserve(nTracks_Miss);
-  fSecondary_Miss.reserve(nTracks_Miss);
-  fMaterial_Miss.reserve(nTracks_Miss);
+  Double_t fPt_Miss[nTracks_Miss]{}, fEta_Miss[nTracks_Miss]{}, fPhi_Miss[nTracks_Miss]{}, fCharge_Miss[nTracks_Miss]{}, fDeltaPhi_Miss[nTracks_Miss]{}, fDeltaEta_Miss[nTracks_Miss]{}, fPrimary_Miss[nTracks_Miss]{}, fSecondary_Miss[nTracks_Miss]{}, fMaterial_Miss[nTracks_Miss]{};
   for (int i(0); i < fMCtracks->GetEntriesFast(); i++)
   {
     tMC = (AliMEStrackInfo *)fMCtracks->At(i);
@@ -1321,9 +1282,10 @@ void AliMEStenderV2::FinishTaskOutput()
   // Called one at the end
   // locally on working node
   //
-  if (fTreeSRedirector)
+  if(fTreeSRedirector)
   {
     delete fTreeSRedirector;
     fTreeSRedirector = NULL;
   }
+
 }
