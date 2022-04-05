@@ -1280,7 +1280,7 @@ public:
   Bool_t           fHistoCentDependent;            ///< Fill centrality dependent of some histograms  
   Bool_t           fHistoPtDependent;              ///< Fill control histograms with Pt not E 
   
-  TH1I  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...  
+  TH1F  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
 
   // MC labels to accept
   Int_t            fNMCGenerToAccept;              ///<  Number of MC generators that should not be included in analysis

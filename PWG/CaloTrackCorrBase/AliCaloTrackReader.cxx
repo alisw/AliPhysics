@@ -1205,7 +1205,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndPromptPhotonPt(Int_t process, TString
 //___________________________________________________
 TList * AliCaloTrackReader::GetCreateControlHistograms()
 {  
-  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 22, 0, 22) ;
+  fhNEventsAfterCut = new TH1F("hNEventsAfterCut", "Number of analyzed events", 22, 0, 22) ;
   //fhNEventsAfterCut->SetXTitle("Selection");
   fhNEventsAfterCut->SetYTitle("# events");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(1 ,"1=Input");
