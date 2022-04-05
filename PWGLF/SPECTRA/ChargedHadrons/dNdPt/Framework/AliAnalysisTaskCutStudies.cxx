@@ -348,7 +348,7 @@ AliAnalysisTaskCutStudies* AliAnalysisTaskCutStudies::AddTaskCutStudies(const ch
 // temporary function that handles cut setting creation
 AliESDtrackCuts* AliAnalysisTaskCutStudies::GetCutSetting(const std::string& identifier)
 {
-  AliESDtrackCuts* trackCuts;
+  AliESDtrackCuts* trackCuts = nullptr;
 
   if(identifier == "chargedParticles")
   {

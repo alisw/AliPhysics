@@ -1,6 +1,6 @@
 
-// Task to estimate the number of gamma-hadron
-// statistic available in the Pb+Pb run.
+// Task to calculate gamma/pi0 - hadron correlations
+// in run 2 PbPb events
 //
 // Authors: E. Epple, M. Oliver, based on code by  B. Sahlmueller and C. Loizides
 
@@ -38,6 +38,8 @@
 #include "AliMCEvent.h"
 
 
+#include "AliAnalysisTaskJetQnVectors.h"
+
 using std::cout;
 using std::endl;
 
@@ -48,7 +50,7 @@ ClassImp(AliAnalysisTaskGammaHadron)
 //________________________________________________________________________
 AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   : AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
-  fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),
+  fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),
   fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
@@ -58,7 +60,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
   fPoolMgr(0x0),fMETrackDepth(0),fMETargetEvents(1),fMETargetFraction(0.1),fMEClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
-  fApplyPatchCandCut(0),
+  fApplyPatchCandCut(0),fEventPlaneSource(0),
   fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
   fParticleLevel(kFALSE),fIsMC(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
@@ -96,7 +98,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
 //________________________________________________________________________
 AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int_t InputSeMe,Bool_t InputMCorData)
   : AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
-  fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),
+  fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),
   fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
@@ -106,7 +108,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
   fPoolMgr(0x0),fMETrackDepth(0),fMETargetEvents(1),fMETargetFraction(0.1),fMEClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
-  fApplyPatchCandCut(0),
+  fApplyPatchCandCut(0),fEventPlaneSource(0),
   fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
   fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
@@ -620,12 +622,28 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   //   Set up event plane objects for QnVectorFramework
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   AliWarning("Attempting to load Flow QnVector Task\n");
-  AliAnalysisTaskFlowVectorCorrections * fFlowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
-  if (fFlowQnVectorTask != NULL) {
-    fFlowQnVectorMgr = fFlowQnVectorTask->GetAliQnCorrectionsManager();
-    AliInfo("Successfully loaded QnVector Corrections");
-  } else {
-    AliError("Flow Qn Vector correction object not found. Will use uncorrected event plane angle from VZEROM.");
+  AliAnalysisTaskFlowVectorCorrections * fFlowQnVectorTask = 0;
+
+  if (fEventPlaneSource == 0) {
+    fFlowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+    if (fFlowQnVectorTask != NULL) {
+      fFlowQnVectorMgr = fFlowQnVectorTask->GetAliQnCorrectionsManager();
+      AliInfo("Successfully loaded QnVector Corrections");
+    } else {
+      AliError("Flow Qn Vector correction object not found. Will use uncorrected event plane angle from VZEROM.");
+    }
+  }
+  else {
+    fQ2VectorReader = (AliAnalysisTaskJetQnVectors*) AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQ2Vectors");
+    if(!fQ2VectorReader) {
+      AliError("Error: Could not find AliAnalysisTaskJetQ2Vectors");
+      return;
+    }
+    fQ3VectorReader = (AliAnalysisTaskJetQnVectors*) AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQ3Vectors");
+    if(!fQ3VectorReader) {
+      AliError("Error: Could not find AliAnalysisTaskJetQ2Vectors");
+      return;
+    }
   }
 
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4479,26 +4497,46 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
     return;
   }
 
-  if (fFlowQnVectorMgr == 0) return;
 
   // Want to set fQnCorrEventPlaneAngle
 
   Int_t iHarmonic = 2;
 
-  const AliQnCorrectionsQnVector * fV0MQnVector;
-  const AliQnCorrectionsQnVector * fTPCAQnVector;
-  const AliQnCorrectionsQnVector * fTPCCQnVector;
+  const AliQnCorrectionsQnVector * fV0MQnVector = 0;
+  const AliQnCorrectionsQnVector * fTPCAQnVector = 0;
+  const AliQnCorrectionsQnVector * fTPCCQnVector = 0;
   Double_t fV0MQnEP = 0.0;
   Double_t fTPCAQnEP = 0.0;
   Double_t fTPCCQnEP = 0.0;
 
-  fV0MQnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZEROQoverM");
-  fTPCAQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCPosEtaQoverM");
-  fTPCCQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCNegEtaQoverM");
+  if (fEventPlaneSource == 0) {
+    if (fFlowQnVectorMgr == 0) return;
 
-  if (fV0MQnVector != NULL) fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic); else return;
-  if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return;
-  if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return;
+    fV0MQnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZEROQoverM");
+    fTPCAQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCPosEtaQoverM");
+    fTPCCQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCNegEtaQoverM");
+
+    if (fV0MQnVector != NULL) fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic); else return;
+    if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return;
+    if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return;
+  } else { // assume 1 for now, add switch if more options added
+    if (fQ2VectorReader == 0) {
+      AliError("Missing fQ2Vector");
+      return;
+    }
+    if (fQ3VectorReader == 0) {
+      AliError("Missing fQ3Vector");
+      return;
+    }
+    // Q2
+    fV0MQnEP = fQ2VectorReader->GetEPangleV0M();
+    // Might not be able to get the TPC vectors here, but can get the resolution from the Q2Vector class later
+    fTPCAQnEP = fQ2VectorReader->GetEPanglePosTPC();
+    fTPCCQnEP = fQ2VectorReader->GetEPangleNegTPC();
+
+  }
+
+
 
   // Second Order Event Plane
 
@@ -4520,9 +4558,20 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
 
   // Third Order Event Plane
   iHarmonic = 3;
-  fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic);
-  fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic);
-  fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic);
+
+
+
+  // FIXME check which source
+  if (fEventPlaneSource == 0) {
+    fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic);
+    fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic);
+    fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic);
+  } else { // assume 1 for now, add switch if more options added
+    fV0MQnEP = fQ3VectorReader->GetEPangleV0M();
+    fTPCAQnEP = fQ3VectorReader->GetEPanglePosTPC();
+    fTPCCQnEP = fQ3VectorReader->GetEPangleNegTPC();
+  }
+
 
   fEP3AngleV0M->Fill(fV0MQnEP);
   fEP3AngleTPCA->Fill(fTPCAQnEP);
@@ -4542,9 +4591,17 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
 
   // Fourth Order Event Plane
   iHarmonic = 4;
-  fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic);
-  fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic);
-  fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic);
+  if (fEventPlaneSource == 0) {
+    fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic);
+    fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic);
+    fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic);
+  } else {
+    // Don't have V0 EP4 from source 1. Could calculate it, but would likely be useless
+    fV0MQnEP = 0;
+    fTPCAQnEP = 0;
+    fTPCCQnEP = 0;
+  }
+
 
   fEP4AngleV0M->Fill(fV0MQnEP);
   fEP4AngleTPCA->Fill(fTPCAQnEP);

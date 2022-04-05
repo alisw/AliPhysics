@@ -273,6 +273,10 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   Int_t  fTreeVariableTriggerIndex;
   Int_t fTreeVariablePDGCodeTrigger;
   Int_t fTreeVariablePDGCodeAssoc;
+  Int_t fTreeVariableLabelTrigger;
+  Int_t fTreeVariableLabelPos;
+  Int_t fTreeVariableLabelNeg;
+  Int_t fTreeVariableLabelBach;
 
   bool FifoShiftok;	                        		      
 

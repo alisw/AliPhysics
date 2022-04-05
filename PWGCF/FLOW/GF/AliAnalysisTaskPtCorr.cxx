@@ -516,7 +516,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* ev, const double &l_cent, do
             vector<double> wNUE(7,1.0);
             for(int i=0;i<6;++i) {
               wNUE[i+1] = fPowerEfficiencies[iCent]->GetBinContent(fPowerEfficiencies[iCent]->GetXaxis()->FindBin(l_pt),fPowerEfficiencies[iCent]->GetYaxis()->FindBin(i+0.5)); 
-              if(wNUE[i]==0) continue; 
+              if(wNUE[i+1]==0) continue; 
               wNUE[i+1] = (fUseWeightsOne)?1.0:1.0/wNUE[i+1];
             }
             if(TMath::Abs(l_eta)>0.8) continue;

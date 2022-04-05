@@ -284,6 +284,9 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   Double_t fTreeVariableZvertex;
   Int_t    fTreeVariablePDGCodeTrigger;
   Int_t    fTreeVariablePDGCodeAssoc;
+  Int_t    fTreeVariableLabelTrigger;
+  Int_t    fTreeVariableLabelPos;
+  Int_t    fTreeVariableLabelNeg;
 
   bool FifoShiftok;	                        		      
 

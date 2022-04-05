@@ -740,9 +740,9 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   if (fMCEnableDDC && fMCSpectraWeights) {
     // memo: be sure never to call these functions with particles form pileup events
     if (fMCIsChargedPrimary) {
-      fMCParticleWeight = fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCDDCMode);
+      fMCParticleWeight = fMCSpectraWeights->GetMCSpectraWeight(particleID, fMCDDCMode);
     } else if (isChargedSecondaryFromWeakDecay) {
-      fMCParticleWeight = fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle(), fMCDDCMode);
+      fMCParticleWeight = fMCSpectraWeights->GetWeightForSecondaryParticle(particleID, fMCDDCMode);
     } // dont touch secondaries from material
     fNRepetitions = GetNRepetitons(fMCParticleWeight);
   }

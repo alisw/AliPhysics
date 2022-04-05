@@ -36,6 +36,8 @@
 #include "TH3F.h"
 #include "TMath.h"
 #include "TLorentzVector.h"
+#include "TFormula.h"
+#include "TRandom3.h"
 
 ClassImp(AliUEHistograms)
 
@@ -64,6 +66,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fControlConvResoncances(0),
   fEfficiencyCorrectionTriggers(0),
   fEfficiencyCorrectionAssociated(0),
+  fDeltaEtaAcceptance(0),
+  fDeltaEtaAcceptanceRNG(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fAssociatedSelectCharge(0),
@@ -245,6 +249,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fControlConvResoncances(0),
   fEfficiencyCorrectionTriggers(0),
   fEfficiencyCorrectionAssociated(0),
+  fDeltaEtaAcceptance(0),
+  fDeltaEtaAcceptanceRNG(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fAssociatedSelectCharge(0),
@@ -801,6 +807,14 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    continue;
 	  }
 
+	if (fDeltaEtaAcceptance)
+	{
+	  Float_t deta = triggerEta - eta[j];
+	  
+	  if (fDeltaEtaAcceptance->Eval(deta) < fDeltaEtaAcceptanceRNG->Uniform(0,1))
+	    continue;
+	}
+	
 	// conversions
 	if (twoTrackCuts && fCutConversionsV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
@@ -1220,7 +1234,7 @@ void AliUEHistograms::SetContaminationEnhancement(TH1F* hist)
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->SetContaminationEnhancement(hist);
-}  
+}
 
 //____________________________________________________________________
 void AliUEHistograms::SetCombineMinMax(Bool_t flag)
