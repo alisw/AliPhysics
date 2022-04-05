@@ -174,6 +174,7 @@ fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit       ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 fkExtraCleanupRapidity( kFALSE) ,
+fkSaveVertex ( kFALSE ),
 fkDoStrangenessTracking (kFALSE),
 fWDV (0x0),
 
@@ -300,6 +301,7 @@ fTreeVariablePrimVertexZ(0),
 
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
+fTreeVariableAliESDvertex(0x0),
 
 fTreeVariableMagneticField(0x0),
 fTreeVariableRunNumber(0),
@@ -501,6 +503,7 @@ fTreeCascVarPrimVertexZ(0),
 fTreeCascVarBachTrack(0x0),
 fTreeCascVarPosTrack(0x0),
 fTreeCascVarNegTrack(0x0),
+fTreeCascVarAliESDvertex(0x0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarRunNumber(0),
 
@@ -556,6 +559,7 @@ fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit       ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 fkExtraCleanupRapidity( kFALSE) ,
+fkSaveVertex ( kFALSE ),
 fkDoStrangenessTracking (kFALSE),
 fWDV (0x0),
 
@@ -684,6 +688,7 @@ fTreeVariablePrimVertexZ(0),
 
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
+fTreeVariableAliESDvertex(0x0), 
 
 fTreeVariableMagneticField(0x0),
 
@@ -885,6 +890,7 @@ fTreeCascVarPrimVertexZ(0),
 fTreeCascVarBachTrack(0x0),
 fTreeCascVarPosTrack(0x0),
 fTreeCascVarNegTrack(0x0),
+fTreeCascVarAliESDvertex(0x0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarRunNumber(0),
 //Histos
@@ -1157,6 +1163,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
       fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
     }
     //------------------------------------------------
+    if(fkSaveVertex){
+      fTreeV0->Branch("fTreeVariableAliESDvertex", &fTreeVariableAliESDvertex,16000,99);
+    }
   }
   
   //------------------------------------------------
@@ -1376,6 +1385,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarCowboyness",&fTreeCascVarCowboyness,"fTreeCascVarCowboyness/F");
     fTreeCascade->Branch("fTreeCascVarCascadeCowboyness",&fTreeCascVarCascadeCowboyness,"fTreeCascVarCascadeCowboyness/F");
     //------------------------------------------------
+    if(fkSaveVertex){
+      fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
+    }
   }
   //------------------------------------------------
   // Particle Identification Setup
@@ -1691,6 +1703,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
   const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
   const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
   const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
+  
+  AliESDVertex lPVobject(*lPrimaryBestESDVtx), *lPVpointer=&lPVobject;
+  fTreeVariableAliESDvertex = lPVpointer;
+  
+  AliESDVertex lPVobject2(*lPrimaryBestESDVtx), *lPVpointer2=&lPVobject2;
+  fTreeCascVarAliESDvertex = lPVpointer2;
   
   Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
   lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
