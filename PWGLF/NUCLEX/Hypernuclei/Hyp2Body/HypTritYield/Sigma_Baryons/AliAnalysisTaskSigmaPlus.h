@@ -28,6 +28,8 @@ class AliMCEvent;
 class AliMCEventHandler;
 class AliAODVZERO;
 
+class AliEventPoolManager;
+
 class AliPIDResponse;    //forward declaration of PID Response Object
 
 class KFParticleCD : public KFParticle 
