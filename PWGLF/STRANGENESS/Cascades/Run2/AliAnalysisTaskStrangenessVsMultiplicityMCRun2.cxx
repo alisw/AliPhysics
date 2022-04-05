@@ -325,6 +325,7 @@ fTreeVariablePrimVertexZ(0),
 
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
+fTreeVariableAliESDvertex(0x0),
 
 fTreeVariableMagneticField(0),
 
@@ -671,6 +672,7 @@ fTreeCascVarSwappedPID(0),
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
+fTreeCascVarAliESDvertex(0),
 fTreeCascVarCascadeTrack(0),
 fTreeCascVarCascadeTrackImproved(0),
 fTreeCascVarMagneticField(0),
@@ -891,6 +893,7 @@ fTreeVariablePrimVertexZ(0),
 
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
+fTreeVariableAliESDvertex(0x0),
 
 fTreeVariableMagneticField(0),
 
@@ -1241,6 +1244,7 @@ fTreeCascVarSwappedPID(0),
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
+fTreeCascVarAliESDvertex(0),
 fTreeCascVarCascadeTrack(0),
 fTreeCascVarCascadeTrackImproved(0),
 fTreeCascVarMagneticField(0),
@@ -1577,6 +1581,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
       fTreeV0->Branch("fTreeVariableIsPhysicalPrimaryPositiveGrandMother",&fTreeVariableIsPhysicalPrimaryPositiveGrandMother,"fTreeVariableIsPhysicalPrimaryPositiveGrandMother/O");
     }
     //------------------------------------------------
+    if(fkSaveVertex){
+      fTreeV0->Branch("fTreeVariableAliESDvertex", &fTreeVariableAliESDvertex,16000,99);
+    }
   }
   
   //------------------------------------------------
@@ -1890,6 +1897,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
       fTreeCascade->Branch("fTreeCascVarV0PosSibIsValid",&fTreeCascVarV0PosSibIsValid,"fTreeCascVarV0PosSibIsValid/I");
       fTreeCascade->Branch("fTreeCascVarPosV0Tagging",&fTreeCascVarPosV0Tagging,"fTreeCascVarPosV0Tagging/I");
     }
+    if(fkSaveVertex){
+      fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
+    }
     //------------------------------------------------
   }
   //------------------------------------------------
@@ -2175,6 +2185,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   
   Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
   lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
+  
+  AliESDVertex lPVobject(*lPrimaryBestESDVtx), *lPVpointer=&lPVobject;
+  fTreeVariableAliESDvertex = lPVpointer;
+  
+  AliESDVertex lPVobject2(*lPrimaryBestESDVtx), *lPVpointer2=&lPVobject2;
+  fTreeCascVarAliESDvertex = lPVpointer2;
   
   //sandbox this info, please
   fTreeVariablePrimVertexX = lBestPrimaryVtxPos[0];
