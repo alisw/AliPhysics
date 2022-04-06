@@ -267,6 +267,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fextendSparseForLb(kFALSE)
   ,fFillTuplePID_TOFreq(kFALSE)
   ,fTuplePID_TOFreq(0x0)
+  ,fUseBayesInFiltering(kFALSE)
 {
   /// Default constructor
 
@@ -451,6 +452,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fextendSparseForLb(kFALSE)
   ,fFillTuplePID_TOFreq(kFALSE)
   ,fTuplePID_TOFreq(0x0)
+  ,fUseBayesInFiltering(kFALSE)
 {
   /// Default constructor
   
@@ -3231,6 +3233,9 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
     }
   }
 
+  if(fUseBayesInFiltering){
+    UpdateTrackPIDwithBayesPID(track,iSelPion,iSelKaon,iSelProton);
+  }
   if(fRejEvWoutpKpi) {
     // update the number of recognised p, K, pi
     if(iSelProton>0)  fnProt++;
@@ -3240,6 +3245,34 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
 
 }
 
+//__________________________________________________________________
+void AliAnalysisTaskSEXicTopKpi::UpdateTrackPIDwithBayesPID(AliAODTrack *track,Int_t &iSelPion,Int_t &iSelKaon,Int_t &iSelProton){
+
+  AliAODPidHF *pidhf=fCutsXic->GetPidHF();
+    // controlla cosa sono gli ObjPIDHF delle singole traccie e il OnePad  in AliAODPIDHF
+  Double_t prob[AliPID::kSPECIES];
+
+  
+  if(track->P()<1.) pidhf->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+  pidhf->GetPidCombined()->ComputeProbabilities(track,pidhf->GetPidResponse(),prob);
+  if(track->P()<1.) {
+    pidhf->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+    
+    if(TMath::MaxElement(AliPID::kSPECIES,prob) == prob[AliPID::kPion]){
+      AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
+      if (status == AliPIDResponse::kDetPidOk) {
+	pidhf->GetPidCombined()->ComputeProbabilities(track,pidhf->GetPidResponse(),prob);
+      }
+    }
+  }
+  
+  if(iSelPion>0&&TMath::MaxElement(AliPID::kSPECIES,prob) != prob[AliPID::kPion])iSelPion=0;
+  if(iSelProton>0&&TMath::MaxElement(AliPID::kSPECIES,prob) != prob[AliPID::kProton])iSelProton=0;
+  if(iSelKaon>0&&TMath::MaxElement(AliPID::kSPECIES,prob) != prob[AliPID::kKaon])iSelKaon=0;
+    
+
+  return;    
+}
 
 //__________________________________________________________________
 void AliAnalysisTaskSEXicTopKpi::FillDist12and23(AliAODRecoDecayHF3Prong *pr,Double_t magfield){
