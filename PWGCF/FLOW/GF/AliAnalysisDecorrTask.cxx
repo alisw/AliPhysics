@@ -72,13 +72,13 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     hITSclsB{nullptr},
     hTPCclsB{nullptr},
     hTPCchi2B{nullptr},
-    hDCAxyB{nullptr},   
+    hDCAxyB{nullptr},
     hITSclsA{nullptr},
     hTPCclsA{nullptr},
     hTPCchi2A{nullptr},
-    hDCAxyA{nullptr}, 
-    hPtPhiEtaB{nullptr},  
-    hPtPhiEtaA{nullptr},  
+    hDCAxyA{nullptr},
+    hPtPhiEtaB{nullptr},
+    hPtPhiEtaA{nullptr},
     hNumTracksB{nullptr},
     hNumTracksA{nullptr},
     hNumHighPtTracksA{nullptr},
@@ -89,7 +89,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fIsMC(kFALSE),
     fMCEvent(nullptr),
     fEvent(nullptr),
-    fInitTask{kFALSE},  
+    fInitTask{kFALSE},
     fOnTheFly(kFALSE),
     fImpactParameterMC{0.0},
     fVecCorrTask{},
@@ -105,7 +105,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fEventRejectAddPileUp(kTRUE),
     fCentralPileupCut(500),
     fDefaultPileupCut(15000),
-    fCentEstimator("V0M"), 
+    fCentEstimator("V0M"),
     fFilterBit(96),
     fPtAxis(new TAxis()),
     fCentAxis(new TAxis()),
@@ -169,13 +169,13 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     hITSclsB{nullptr},
     hTPCclsB{nullptr},
     hTPCchi2B{nullptr},
-    hDCAxyB{nullptr},   
+    hDCAxyB{nullptr},
     hITSclsA{nullptr},
     hTPCclsA{nullptr},
     hTPCchi2A{nullptr},
-    hDCAxyA{nullptr}, 
+    hDCAxyA{nullptr},
     hPtPhiEtaB{nullptr},
-    hPtPhiEtaA{nullptr},  
+    hPtPhiEtaA{nullptr},
     hNumTracksB{nullptr},
     hNumTracksA{nullptr},
     hNumHighPtTracksA{nullptr},
@@ -186,8 +186,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     fIsMC(IsMC),
     fMCEvent(nullptr),
     fEvent(nullptr),
-    fInitTask{kFALSE}, 
-    fOnTheFly(kFALSE),  
+    fInitTask{kFALSE},
+    fOnTheFly(kFALSE),
     fImpactParameterMC{0.0},
     fVecCorrTask{},
 
@@ -202,7 +202,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     fEventRejectAddPileUp(kTRUE),
     fCentralPileupCut(500),
     fDefaultPileupCut(15000),
-    fCentEstimator("V0M"), 
+    fCentEstimator("V0M"),
     fFilterBit(96),
     fPtAxis(new TAxis()),
     fCentAxis(new TAxis()),
@@ -249,7 +249,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     bEqualPt(kFALSE)
 {
     DefineInput(0, TChain::Class());
-    DefineInput(1, TList::Class()); 
+    DefineInput(1, TList::Class());
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class());
     DefineOutput(3, TList::Class());
@@ -257,7 +257,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
 //_____________________________________________________________________________
 AliAnalysisDecorrTask::~AliAnalysisDecorrTask()
 {
-    
+
     if(fFlowList) delete fFlowList;
     //if(fFlowWeights) delete fFlowWeights;
     if(fQA) delete fQA;
@@ -278,7 +278,7 @@ Bool_t AliAnalysisDecorrTask::InitTask()
         return kFALSE;
     }
 
-    if (!fUseWeights3D) { 
+    if (!fUseWeights3D) {
         fWeightList = (TList*) GetInputData(1);
         if(!fWeightList) { AliFatal("\n\n\n\n\n\n\n\n\n Weight List not found! \n\n\n\n\n\n\n\n"); return kFALSE; }
     } else {
@@ -287,7 +287,7 @@ Bool_t AliAnalysisDecorrTask::InitTask()
     }
 
     AliInfo("Weight List loaded");
-    
+
     if(fIsMC) AliInfo("Running over MC data!");
     AliInfo("Creating output objects");
     return kTRUE;
@@ -352,6 +352,7 @@ Float_t AliAnalysisDecorrTask::GetNCharged()
 }
 
 void AliAnalysisDecorrTask::NotifyRun() {
+    if(fOnTheFly) return;
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
     fEventCuts.fESDvsTPConlyLinearCut[0] = 500.;
@@ -362,8 +363,8 @@ void AliAnalysisDecorrTask::CreateProfiles(AliDecorrFlowCorrTask* task, double* 
     bRef = task->fbDoRef;
     bDiff = task->fbDoDiff;
     bPtA = task->fbDoPtA;
-    bPtRef = task->fbDoPtRef; 
-    bPtB = task->fbDoPtB; 
+    bPtRef = task->fbDoPtRef;
+    bPtB = task->fbDoPtB;
     const char* CorrName = task->fsName.Data();
     const char* CorrLabel = task->fsLabel.Data();
     TH1* profile = nullptr;
@@ -384,8 +385,8 @@ void AliAnalysisDecorrTask::CreateProfiles(AliDecorrFlowCorrTask* task, double* 
         profile->Sumw2();
         lSampleList->Add(profile);
     }
-    if(bDiff) 
-    {      
+    if(bDiff)
+    {
         profDiff = new TProfile2D(Form("%s_diff",CorrName),Form("%s_diff",CorrLabel),NcentBin,lCentEdges,NPtBin,lPtEdges);
         if(!profDiff) { fInitTask = kFALSE; AliError("Differential profile not created"); task->PrintTask(); return; }
         profDiff->Sumw2();
@@ -396,7 +397,7 @@ void AliAnalysisDecorrTask::CreateProfiles(AliDecorrFlowCorrTask* task, double* 
         profPtA = new TProfile2D(Form("%s_PtA",CorrName),Form("%s_PtA",CorrLabel),NcentBin,lCentEdges,NPtBin,lPtEdges);
         if(!profPtA) { fInitTask = kFALSE; AliError("\n\n\nPtA profile not created\n\n\n"); task->PrintTask(); return; }
         profPtA->Sumw2();
-        lSampleList->Add(profPtA);      
+        lSampleList->Add(profPtA);
     }
     if(bPtRef)
     {
@@ -408,11 +409,11 @@ void AliAnalysisDecorrTask::CreateProfiles(AliDecorrFlowCorrTask* task, double* 
 
         profPtRef->Sumw2();
         profPtRefP->Sumw2();
-        lSampleList->Add(profPtRef); 
-        lSampleList->Add(profPtRefP); 
+        lSampleList->Add(profPtRef);
+        lSampleList->Add(profPtRefP);
     }
     if(bPtB)
-    { 
+    {
         profPtAPtB = new TProfile3D(Form("%s_PtAPtB",CorrName),Form("%s_PtAPtB",CorrLabel),NcentBin,lCentEdges, NPtBin,lPtEdges, NPtBin, lPtEdges);
         if(!profPtAPtB) { fInitTask = kFALSE; AliError("PtAPtB profile not created"); task->PrintTask(); return; }
 
@@ -437,9 +438,9 @@ void AliAnalysisDecorrTask::CreateProfiles(AliDecorrFlowCorrTask* task, double* 
             lSampleList->Add(profile);
         }
 
-        if(bDiff) 
+        if(bDiff)
         {
-            
+
             profDiff = new TProfile2D(Form("%s_diff_sample%d",CorrName,iSample),Form("%s_diff",CorrLabel),NcentBin,lCentEdges,NPtBin,lPtEdges);
             if(!profDiff) { fInitTask = kFALSE; AliError("Differential profile not created"); task->PrintTask(); return; }
 
@@ -455,7 +456,7 @@ void AliAnalysisDecorrTask::CreateProfiles(AliDecorrFlowCorrTask* task, double* 
 
             profPtA->Sumw2();
             lSampleList->Add(profPtA);
-            
+
         }
 
         if(bPtRef)
@@ -468,12 +469,12 @@ void AliAnalysisDecorrTask::CreateProfiles(AliDecorrFlowCorrTask* task, double* 
 
             profPtRef->Sumw2();
             profPtRefP->Sumw2();
-            lSampleList->Add(profPtRef); 
-            lSampleList->Add(profPtRefP); 
+            lSampleList->Add(profPtRef);
+            lSampleList->Add(profPtRefP);
         }
 
         if(bPtB)
-        { 
+        {
             profPtAPtB = new TProfile3D(Form("%s_PtAPtB_sample%d",CorrName,iSample),Form("%s_PtAPtB",CorrLabel),NcentBin,lCentEdges, NPtBin,lPtEdges, NPtBin, lPtEdges);
             if(!profPtAPtB) { fInitTask = kFALSE; AliError("PtAPtB profile not created"); task->PrintTask(); return; }
 
@@ -502,7 +503,7 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
     fInitTask = InitTask();
     if(!fInitTask) { return; }
-    
+
     int NV0M_default = 10;
     double lV0M_default[] = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
     NcentBin = (fCentAxis)?fCentAxis->GetNbins():NV0M_default;
@@ -534,10 +535,10 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
     {
         const char* weightName = Form("fh2Weights");
         const char* weightLabel = Form("2D weights; #varphi; #eta");
-        fh2Weights = new TH2D(weightName, weightLabel, fPhiBinNum, 0, TMath::TwoPi(), fEtaBinNum, -fAbsEtaMax, fAbsEtaMax);    
+        fh2Weights = new TH2D(weightName, weightLabel, fPhiBinNum, 0, TMath::TwoPi(), fEtaBinNum, -fAbsEtaMax, fAbsEtaMax);
         fh2Weights->Sumw2();
         fFlowList->Add(fh2Weights);
-    } 
+    }
 
     if(fFillAfterWeights)
     {
@@ -551,8 +552,8 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         AliDecorrFlowCorrTask* task = fVecCorrTask.at(iTask);
         if(!task) { fInitTask = kFALSE; AliError(Form("AliDecorrFlowCorrTask%d does not exist",iTask)); return; }
         CreateProfiles(task,centEdges,PtEdges);
-    } 
-    
+    }
+
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",NcentBin,centEdges);
     fQA->Add(fV0MMulti);
     fMulti = new TH1D("Multi","Multi",NV0M_default,lV0M_default);
@@ -578,17 +579,17 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(fhCentVsCharged);
         hITSclsB = new TH1I("ITS_clusters_on_trackB","ITS clusters on track",8,0,8);
         hITSclsA = (TH1I*)hITSclsB->Clone("ITS_clusters_on_trackA");
-        fQA->Add(hITSclsB); fQA->Add(hITSclsA);    
+        fQA->Add(hITSclsB); fQA->Add(hITSclsA);
         hTPCclsB = new TH1I("TPC_clusters_on_trackB","TPC clusters on track",159,1,160);
         hTPCclsA = (TH1I*)hTPCclsB->Clone("TPC_clusters_on_trackA");
-        fQA->Add(hTPCclsB); fQA->Add(hTPCclsA); 
+        fQA->Add(hTPCclsB); fQA->Add(hTPCclsA);
         hTPCchi2B = new TH1D("TPC_chi2_pr_clusterB","TPC #chi^{2}/clusters",100,0.0,5.0);
         hTPCchi2A = (TH1D*)hTPCchi2B->Clone("TPC_chi2_pr_clusterA");
-        fQA->Add(hTPCchi2B); fQA->Add(hTPCchi2A); 
+        fQA->Add(hTPCchi2B); fQA->Add(hTPCchi2A);
         hDCAxyB = new TH2D("DCAxyB","DCAxy before",50,0.2,5.0,200,-5.0, 5.0);
-        fQA->Add(hDCAxyB); 
+        fQA->Add(hDCAxyB);
         hDCAxyA = new TH2D("DCAxyA","DCAxy after",50,0.2,5.0,200,-5.0, 5.0);
-        fQA->Add(hDCAxyA); 
+        fQA->Add(hDCAxyA);
         hPtPhiEtaB = new TH3D("pt_phi_etaB","Pt, phi, eta distribution",50,0.2,20.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
         fQA->Add(hPtPhiEtaB);
         hPtPhiEtaA = new TH3D("pt_phi_etaA","Pt, phi, eta distribution",50,0.2,20.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
@@ -599,7 +600,7 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(hNumTracksA);
         hNumHighPtTracksA = new TH1D("hNumHighPtTracksA",Form("Number of track above %.1f GeV",fHighPtCut),50,0.0,50.0);
         fQA->Add(hNumHighPtTracksA);
-    }    
+    }
     if(fEventRejectAddPileUp)
     {
         fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
@@ -611,7 +612,7 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
         fQA->Add(fhQAEventsfMultTPCvsESD);
     }
-    
+
     AliInfo("Output objects created");
     PostData(1, fFlowList);
     //PostData(2, fFlowWeights);
@@ -626,40 +627,40 @@ Bool_t AliAnalysisDecorrTask::LoadWeights()
         if(!fUseWeights3D)
         {
             TList* listFlowWeights = nullptr;
-        
+
             listFlowWeights = (TList*) fWeightList->FindObject(Form("%d", fAOD->GetRunNumber()));
 
-            if(!listFlowWeights) 
+            if(!listFlowWeights)
             {
                 // run-specific weights not found for this run; loading run-averaged instead
                 AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
                 listFlowWeights = (TList*) fWeightList->FindObject("averaged");
                 if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fWeightList->ls(); return kFALSE; }
             }
-            
+
             fh2Weights = (TH2D*) listFlowWeights->FindObject("Refs");
-            return kTRUE;   
-        } 
+            return kTRUE;
+        }
         else
         {
             TList* listFlowWeights = nullptr;
-        
+
             listFlowWeights = (TList*) fWeightList->FindObject(Form("%d", fAOD->GetRunNumber()));
 
-            if(!listFlowWeights) 
+            if(!listFlowWeights)
             {
                 // run-specific weights not found for this run; loading run-averaged instead
                 AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
                 listFlowWeights = (TList*) fWeightList->FindObject("averaged");
                 if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fWeightList->ls(); return kFALSE; }
             }
-            
+
             fh3Weights = (TH3D*) listFlowWeights->FindObject("Refs");
-            return kTRUE;   
+            return kTRUE;
         }
-        
+
     }
-    else 
+    else
     {
         if(fCurrSystFlag == 0) fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i",fAOD->GetRunNumber()));
         else fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i_SystFlag%i",fAOD->GetRunNumber(),fCurrSystFlag));
@@ -684,7 +685,7 @@ void AliAnalysisDecorrTask::FillWeights()
     int NumTracksA = 0;
     int NumTracksHighPt = 0;
     for(int index(0); index < NParts; ++index)
-    {   
+    {
         Float_t dcaxy = 0.0;
         Float_t dcaz = 0.0;
         Float_t tpcchi2 = 0.0;
@@ -697,9 +698,9 @@ void AliAnalysisDecorrTask::FillWeights()
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
         if(!track) { continue; }
         bool pass = IsTrackSelected(track);
-        pt = track->Pt(); 
+        pt = track->Pt();
         phi = track->Phi();
-        eta = track->Eta(); 
+        eta = track->Eta();
 
         if(fFillQA)
         {
@@ -714,16 +715,16 @@ void AliAnalysisDecorrTask::FillWeights()
             hITSclsB->Fill(nitscls); if(pass) hITSclsA->Fill(nitscls);
             hPtPhiEtaB->Fill(pt,phi,eta); if(pass) hPtPhiEtaA->Fill(pt,phi,eta);
             if(pass) NumTracksB++;
-            if(fRedTracks && pass && index < fTrackprevent*NParts) 
-            { 
+            if(fRedTracks && pass && index < fTrackprevent*NParts)
+            {
                 NumTracksA++;
             }
-            if(fRequireHighPtTracks && pass) { 
-                if(pt >= fHighPtCut) ++NumTracksHighPt; 
+            if(fRequireHighPtTracks && pass) {
+                if(pt >= fHighPtCut) ++NumTracksHighPt;
                 if(NumTracksHighPt >= fNHighPtTracks) hNumHighPtTracksA->Fill(NumTracksHighPt);
             }
         }
-        
+
         if(fFillWeights && pass)
         {
             if(fUseWeights3D) { fh3Weights->Fill(phi,eta,Vz); }
@@ -744,15 +745,15 @@ void AliAnalysisDecorrTask::FillAfterWeights()
     for(Int_t i(0); i < NTracks; ++i)
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
-        if(!track || !IsTrackSelected(track)) { continue; } 
+        if(!track || !IsTrackSelected(track)) { continue; }
 
         double dPhi = track->Phi();
         double dEta = track->Eta();
         //double dPt = track->Pt();
 
-        //Calculating weights    
+        //Calculating weights
         double dWeight = GetWeights(dPhi, dEta, dVz);
-        if(dWeight <= 0.0) { dWeight = 1.0; }  
+        if(dWeight <= 0.0) { dWeight = 1.0; }
 
         fhAfterWeights->Fill(dPhi,dEta,dVz,dWeight);
     }
@@ -763,7 +764,7 @@ void AliAnalysisDecorrTask::FillAfterWeights()
 void AliAnalysisDecorrTask::UserExec(Option_t *)
 {
     if(!fInitTask) { AliFatal("Something went wrong! Task not initialized"); return; }
-    
+
     AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
     AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
     if(fIsMC) {
@@ -775,12 +776,14 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         fEvent = dynamic_cast<AliVEvent*>(MCEvent());
     }
     else
-    {   
+    {
         fEvent = dynamic_cast<AliVEvent*>(InputEvent());
         fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
         if(!fAOD) { return; }
     }
     if(!fEvent) { AliFatal("fEvent not found!"); return; }
+    if(fOnTheFly) if(!IsMCEventSelected()) return;
+
 
     //Get centrality of event
     Double_t lCent = 0.0;
@@ -789,7 +792,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     {
         Float_t SmallSyscentrality(0);
         AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-        if(multSelect) SmallSyscentrality = multSelect->GetMultiplicityPercentile(fCentEstimator);        
+        if(multSelect) SmallSyscentrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
         lCent = GetNCharged();
         if(lCent>0) {
             fhCentVsCharged->Fill(SmallSyscentrality,lCent);
@@ -806,17 +809,9 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         lCent = lMultSel->GetMultiplicityPercentile(fCentEstimator);
     }
     if(lCent < 0) return;
+    if(!fOnTheFly) if(!IsEventSelected(lCent)) return;
 
-    if(fOnTheFly)
-    {
-        if(!IsMCEventSelected()) { return; }
 
-    }
-    else
-    {
-        if(!IsEventSelected(lCent)) { return; }
-    }
-    
     if(!fOnTheFly && fFillQA) FillWeights();
 
     if(!fUseWeightsOne && !fOnTheFly)
@@ -835,7 +830,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     }
     //Subsampling - 10 subsamples
     fIndexSampling = GetSamplingIndex();
-    
+
     Int_t iNumTask = fVecCorrTask.size();
     for(Int_t iTask(0); iTask < iNumTask; ++iTask)
     {
@@ -845,10 +840,10 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         bRef = task->fbDoRef;
         bDiff = task->fbDoDiff;
         bPtA = task->fbDoPtA;
-        bPtRef = task->fbDoPtRef; 
-        bPtB = task->fbDoPtB; 
+        bPtRef = task->fbDoPtRef;
+        bPtB = task->fbDoPtB;
         if(bRef) { CalculateCorrelations(task, lCent, -1.0, -1.0, bRef, kFALSE, kFALSE, kFALSE, kFALSE); }
-        
+
         int iNumPtBins = fPtAxis->GetNbins();
 
         //Loop over Pt bins
@@ -860,7 +855,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                 double dPtLow = fPtAxis->GetBinLowEdge(iPtA);
                 double dPtHigh = fPtAxis->GetBinUpEdge(iPtA);
                 Int_t TrackCounter = 0;
-                TrackCounter = FillPOIvectors(task, dPtLow, dPtHigh);     
+                TrackCounter = FillPOIvectors(task, dPtLow, dPtHigh);
                 if(fRequireTwoPart)
                 {
                     if(TrackCounter > 1)
@@ -873,24 +868,24 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                 {
                     CalculateCorrelations(task, lCent, dPt, -1.0, kFALSE, bDiff, bPtA, bPtRef, kFALSE);
                 }
-                
-                                
+
+
                 if(bPtB && dPt < 5.0 && lCent < fCentMax)   //Save cpu by restricting double pt loops to central and semicentral centralities and low pt
                 {
                     // Too slow  -- reimplement maybe
                     for(int iPtB(1); iPtB < iNumPtBins+1; ++iPtB)
-                    { 
+                    {
                         if(iPtB == iPtA) bEqualPt = kTRUE; else bEqualPt = kFALSE;
                         double dPtB = fPtAxis->GetBinCenter(iPtB);
                         double dPtBLow = fPtAxis->GetBinLowEdge(iPtB);
                         double dPtBHigh = fPtAxis->GetBinUpEdge(iPtB);
                         FillPtBvectors(task, dPtBLow, dPtBHigh);     //Fill PtB POI vectors
-                        CalculateCorrelations(task, lCent, dPt, dPtB, kFALSE, kFALSE, kFALSE, kFALSE, bPtB); 
+                        CalculateCorrelations(task, lCent, dPt, dPtB, kFALSE, kFALSE, kFALSE, kFALSE, bPtB);
                     } //End PtB loop
-                } 
+                }
             } //End PtA loop
         }
-        
+
     } //End task loop
     fV0MMulti->Fill(lCent);
     fMulti->Fill(lCent);
@@ -907,7 +902,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
         Int_t corrOrder= task->fiNumHarm;
         const char* corrName = task->fsName.Data();
         bool bHasGap;
-        double dGap = task->fdGaps[0]; 
+        double dGap = task->fdGaps[0];
         if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
 
         TComplex cNum = TComplex(0.0,0.0,kFALSE);
@@ -943,7 +938,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                     cDnPtB = TwoDiff_PtA_PtB(0,0);
                     cNumPtB = TwoDiff_PtA_PtB(task->fiHarm[0],task->fiHarm[1]);
                 }
-                if(bRef) { 
+                if(bRef) {
                     cDn = Two(0,0);
                     cNum = Two(task->fiHarm[0],task->fiHarm[1]);
                 }
@@ -971,9 +966,9 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
         case 4 :
             if(!bHasGap){
                 if(bDiff)
-                {                  
+                {
                     cDnDiff = FourDiff(0,0,0,0);
-                    cNumDiff = FourDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);                       
+                    cNumDiff = FourDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
                 }
                 if(bPtA)
                 {
@@ -984,7 +979,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                 {
                     cDnPtRef = Four_2Diff_2Ref(0,0,0,0);
                     cNumPtRef = Four_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
-                } 
+                }
                 if(bPtB) {
                     cDnPtB = FourDiff_PtA_PtB(0,0,0,0);
                     cNumPtB = FourDiff_PtA_PtB(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]);
@@ -1018,14 +1013,14 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                     }
                 }
                 if(bPtRef) {
-                    if(task->fiHarm[1] > 0) 
+                    if(task->fiHarm[1] > 0)
                     {
                         cDnPtRef = FourGapM_2Diff_2Ref(0,0,0,0);
                         cNumPtRef = FourGapM_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);   //2-1 switched gives correct correlation
                         cDnPtRefP = FourGapP_2Diff_2Ref(0,0,0,0);
-                        cNumPtRefP = FourGapP_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);  
+                        cNumPtRefP = FourGapP_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
                     }
-                    else 
+                    else
                     {
                         cDnPtRef = FourGap_2Diff_2Ref_OS(0,0,0,0);
                         cNumPtRef = FourGap_2Diff_2Ref_OS(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]);
@@ -1056,13 +1051,13 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
             TProfile* prof = (TProfile*)lSampleList->FindObject(Form("%s",corrName));
             if(!prof) { AliError(Form("Profile %s not found",corrName)); return; }
             prof->Fill(centrality, dValue, dDn);
-            if(fSampling) 
+            if(fSampling)
             {
                 TProfile* prof_sample = (TProfile*)lSampleList->FindObject(Form("%s_sample%d",corrName,fIndexSampling));
                 if(!prof_sample) { AliError(Form("Profile %s_sample%d not found",corrName,fIndexSampling)); return; }
                 prof_sample->Fill(centrality, dValue, dDn);
             }
-            
+
         }
         if(bDiff)
         {
@@ -1149,9 +1144,9 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                 TProfile2D* profPtRefP_sample = (TProfile2D*)lSampleList->FindObject(Form("%s_PtRefP_sample%d",corrName,fIndexSampling));
                 if(!profPtRefP_sample) { AliError(Form("Profile %s_PtRefP_sample%d not found",corrName,fIndexSampling)); return; }
                 profPtRefP_sample->Fill(centrality, dPtA, dValuePtRefP, dDnPtRefP);
-            }   
+            }
         }
-        
+
         if(bPtB)
         {
             Double_t dDnPtB = cDnPtB.Re();
@@ -1166,14 +1161,14 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
             TProfile3D* profPtAPtB = (TProfile3D*)lSampleList->FindObject(Form("%s_PtAPtB",corrName));
             if(!profPtAPtB) { AliError(Form("Profile %s_PtAPtB not found",corrName)); }
             profPtAPtB->Fill(centrality,dPtA,dPtB, dValuePtB, dDnPtB);
-            
+
             if(fSampling)
             {
                 TProfile3D* profPtAPtB_sample = (TProfile3D*)lSampleList->FindObject(Form("%s_PtAPtB_sample%d",corrName,fIndexSampling));
                 if(!profPtAPtB_sample) { AliError(Form("Profile %s_PtAPtB_sample%d not found",corrName,fIndexSampling)); }
                 profPtAPtB_sample->Fill(centrality,dPtA,dPtB, dValuePtB, dDnPtB);
             }
-            
+
             Double_t dDnPtBP = cDnPtBP.Re();
             Double_t dNumPtBP = cNumPtBP.Re();
             Double_t dValuePtBP = 0.0;
@@ -1195,7 +1190,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
             }
             AliInfo("PtAPtB done");
         }
-        
+
     return;
 }
 
@@ -1206,41 +1201,41 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
     ResetFlowVector(Qvector10P);
     ResetFlowVector(Qvector10M);
 
-    bool bIsRP; 
+    bool bIsRP;
     bool bHasGap;
-    double dGap = task->fdGaps[0]; 
+    double dGap = task->fdGaps[0];
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
     double dVz = (fOnTheFly)?0.0:fAOD->GetPrimaryVertex()->GetZ();
-    
+
     if(fOnTheFly)
     {
         AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
         Int_t iNumTracks = ev->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return; }
-        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
+        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++)
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
 
             if(!track) { continue; }
-            
+
             //excluding non stable particles
             if(!(ev->IsPhysicalPrimary(iTrack))) continue;
             if(track->Charge() == 0) continue;
-            
+
             bIsRP = IsWithinRP(track);
             if (!bIsRP) { continue; }
 
             double dPhi = track->Phi();
             double dEta = track->Eta();
 
-            //Calculating weights    
+            //Calculating weights
             double dWeight = 1.0;
-            
+
             //Filling Q-vectors for RPs
             if(!bHasGap)
             {
-                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                 {
                     for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                     {
@@ -1283,7 +1278,7 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
         Int_t nPrim = tca->GetEntries();
         AliAODMCParticle* lpart;
         if(nPrim < 1 ) { return; }
-        for(Int_t iPart(0); iPart < nPrim; iPart++) 
+        for(Int_t iPart(0); iPart < nPrim; iPart++)
         {
             lpart = (AliAODMCParticle*)tca->At(iPart);
             if(!lpart->IsPhysicalPrimary()) continue;
@@ -1292,18 +1287,18 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             double dEta = lpart->Eta();
             double dPt = lpart->Pt();
             if (TMath::Abs(dEta) > 0.8) continue;
-            
+
             if (dPt < fRFPsPtMin || dPt > fRFPsPtMax) continue;
             if(fRedTracks && iPart > fTrackprevent*nPrim) continue;
             if(fAbsEtaMax > 0.0 && Abs(dEta) > fAbsEtaMax) continue;
             //Calculating weights
             double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
             if(dWeight <= 0.0) { dWeight = 1.0; }
-            
+
             //Filling Q-vectors for RPs
             if(!bHasGap)
             {
-                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                 {
                     for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                     {
@@ -1340,11 +1335,11 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             }  //end if eta gap
         }
     }
-    else 
+    else
     {
         int NTracks(fAOD->GetNumberOfTracks());
         if(NTracks < 1 ) { return; }
-        for(Int_t iTrack(0); iTrack < NTracks; iTrack++) 
+        for(Int_t iTrack(0); iTrack < NTracks; iTrack++)
         {
             AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
             if(!track || !IsTrackSelected(track)) { continue; }
@@ -1356,14 +1351,14 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             double dEta = track->Eta();
             //double dPt = track->Pt();
 
-            //Calculating weights    
+            //Calculating weights
             double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
             if(dWeight <= 0.0) { dWeight = 1.0; }
-            
+
             //Filling Q-vectors for RPs
             if(!bHasGap)
             {
-                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                 {
                     for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                     {
@@ -1400,7 +1395,7 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             }  //end if eta gap
         }  //end track loop
     }
-    
+
     return;
 }
 
@@ -1412,9 +1407,9 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
     ResetFlowVector(pvector10M);
     ResetFlowVector(pvector10P);
     ResetFlowVector(qvector);
- 
+
     bool bHasGap;
-    double dGap = task->fdGaps[0]; 
+    double dGap = task->fdGaps[0];
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
 
@@ -1425,7 +1420,7 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
         AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
         Int_t iNumTracks = ev->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return 0; }
-        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
+        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++)
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
             if(!track) { continue; }
@@ -1452,18 +1447,18 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
             double dWeight = 1.0;
 
             //POI with no eta gap
-            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <=
             {
                 TrackCounter++;
                 if(!bHasGap)
                 {
-                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                     {
                         for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                         {
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                            pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);           
+                            pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                             //Check if there is overlap of POI and RP
                             if(bIsWithinRP)
                             {
@@ -1482,7 +1477,7 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     }  //End for iHarm
                 }
@@ -1495,12 +1490,12 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     } //End for iHarm
                 }  // end if eta gap
             } //end if dPtLow < dPt < dPtHigh
-        } //end for track  
+        } //end for track
     }
     else if(fIsMC)
     {
@@ -1509,7 +1504,7 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
         AliAODMCParticle* lpart;
         if(nPrim < 1 ) { return 0; }
 
-        for(Int_t iPart(0); iPart < nPrim; iPart++) 
+        for(Int_t iPart(0); iPart < nPrim; iPart++)
         {
             lpart = (AliAODMCParticle*)tca->At(iPart);
             if(!lpart->IsPhysicalPrimary()) continue;
@@ -1517,17 +1512,17 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
             double dPt = lpart->Pt();
             double dPhi = lpart->Phi();
             double dEta = lpart->Eta();
-        
+
             if(fRedTracks && iPart > fTrackprevent*nPrim) continue;
             if(fAbsEtaMax > 0.0 && Abs(dEta) > fAbsEtaMax) continue;
 
             //Check for overlap with RPs
             bool bIsWithinRP = kFALSE;
             if (dPt > fRFPsPtMin || dPt < fRFPsPtMax) bIsWithinRP = kTRUE;
-            
+
 
             //Check that particle is in POI range
-            bool bIsWithinPOI = kFALSE; 
+            bool bIsWithinPOI = kFALSE;
             if(dPt > fPOIsPtmin || dPt < fPOIsPtmax) bIsWithinPOI = kTRUE;
 
             if(!bIsWithinPOI) { continue; }
@@ -1537,19 +1532,19 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
             if(dWeight <= 0.0) { dWeight = 1.0; }
 
             //POI with no eta gap
-            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <=
             {
                 TrackCounter++;
                 if(!bHasGap)
                 {
-                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                     {
                         for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                         {
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                             //Check if there is overlap of POI and RP
                             if(bIsWithinRP)
                             {
@@ -1568,7 +1563,7 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     }  //End for iHarm
                 }
@@ -1581,20 +1576,20 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     } //End for iHarm
                 }  // end if eta gap
             } //end if dPtLow < dPt < dPtHigh
         } //end for track
-        
+
     }
     else
     {
         int NTracks(fAOD->GetNumberOfTracks());
         if(NTracks < 1) { return 0; }
         for(int iTrack(0); iTrack < NTracks; ++iTrack)
-        {   
+        {
             AliAODTrack* POItrack = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
             if(!POItrack || !IsTrackSelected(POItrack)) { continue; }
             if(fRedTracks && iTrack > fTrackprevent*NTracks) { continue; }
@@ -1617,19 +1612,19 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
             if(dWeight <= 0.0) { dWeight = 1.0; }
 
             //POI with no eta gap
-            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <=
             {
                 TrackCounter++;
                 if(!bHasGap)
                 {
-                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                     {
                         for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                         {
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                             //Check if there is overlap of POI and RP
                             if(bIsWithinRP)
                             {
@@ -1648,7 +1643,7 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     }  //End for iHarm
                 }
@@ -1661,14 +1656,14 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     } //End for iHarm
                 }  // end if eta gap
             } //end if dPtLow < dPt < dPtHigh
         } //end for track
     }
-    
+
     return TrackCounter;
 }
 
@@ -1683,7 +1678,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
 
 
     bool bHasGap;
-    double dGap = task->fdGaps[0]; 
+    double dGap = task->fdGaps[0];
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
 
@@ -1693,7 +1688,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
         AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
         Int_t iNumTracks = ev->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return; }
-        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
+        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++)
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
             if(!track) { continue; }
@@ -1720,11 +1715,11 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
             double dWeight = 1.0;
 
             //POI with no eta gap
-            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <=
             {
                 if(!bHasGap)
                 {
-                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                     {
                         for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                         {
@@ -1750,7 +1745,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvectorPtB10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        
+
                         } //End for iPower
                     }  //End for iHarm
                 }
@@ -1763,7 +1758,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvectorPtB10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     } //End for iHarm
                 }  // end if eta gap
@@ -1776,7 +1771,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
         Int_t nPrim = tca->GetEntries();
         AliAODMCParticle* lpart;
         if(nPrim < 1 ) { return; }
-        for(Int_t iPart(0); iPart < nPrim; iPart++) 
+        for(Int_t iPart(0); iPart < nPrim; iPart++)
         {
             lpart = (AliAODMCParticle*)tca->At(iPart);
             if(!lpart->IsPhysicalPrimary()) continue;
@@ -1792,10 +1787,10 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
             //Check for overlap with RPs
             bool bIsWithinRP = kFALSE;
             if (dPt > fRFPsPtMin || dPt < fRFPsPtMax) bIsWithinRP = kTRUE;
-            
+
 
             //Check that particle is in POI range
-            bool bIsWithinPOI = kFALSE; 
+            bool bIsWithinPOI = kFALSE;
             if(dPt > fPOIsPtmin || dPt < fPOIsPtmax) bIsWithinPOI = kTRUE;
 
             if(!bIsWithinPOI) { continue; }
@@ -1805,11 +1800,11 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
             if(dWeight <= 0.0) { dWeight = 1.0; }
 
             //POI with no eta gap
-            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <=
             {
                 if(!bHasGap)
                 {
-                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                     {
                         for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                         {
@@ -1835,7 +1830,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvectorPtB10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        
+
                         } //End for iPower
                     }  //End for iHarm
                 }
@@ -1848,7 +1843,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvectorPtB10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     } //End for iHarm
                 }  // end if eta gap
@@ -1860,7 +1855,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
         int NTracks(fAOD->GetNumberOfTracks());
         if(NTracks < 1) { return; }
         for(int iTrack(0); iTrack < NTracks; ++iTrack)
-        {   
+        {
             AliAODTrack* POItrack = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
             if(!POItrack || !IsTrackSelected(POItrack)) { continue; }
             if(fRedTracks && iTrack > fTrackprevent*NTracks) { continue; }
@@ -1883,11 +1878,11 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
             if(dWeight <= 0.0) { dWeight = 1.0; }
 
             //POI with no eta gap
-            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <=
             {
                 if(!bHasGap)
                 {
-                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
                     {
                         for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                         {
@@ -1913,7 +1908,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvectorPtB10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                        
+
                         } //End for iPower
                     }  //End for iHarm
                 }
@@ -1926,15 +1921,15 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
                             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                             pvectorPtB10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                            
+
                         } //End for iPower
                     } //End for iHarm
                 }  // end if eta gap
             } //end if dPtLow < dPt < dPtHigh
         } //end for track
     }
-    
- 
+
+
 
     return;
 }
@@ -1981,11 +1976,11 @@ Double_t AliAnalysisDecorrTask::GetCentralityFromImpactParameter()
     Double_t cent[] = {2.5,7.5,15.,25.,35.,45.,55.,65.,75.,90.};
     for(Int_t i(0);i<10;i++)
     {
-        if(fImpactParameterMC <= b[i+1] && fImpactParameterMC > b[i]) 
+        if(fImpactParameterMC <= b[i+1] && fImpactParameterMC > b[i])
         {
             return cent[i];
         }
-        else 
+        else
         {
             continue;
         }
@@ -2001,12 +1996,12 @@ Bool_t AliAnalysisDecorrTask::IsMCEventSelected()
     AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
     if(!header) { AliFatal("MC event not generated!"); return kFALSE; }
 
-    const AliVVertex *vertex = ev->GetPrimaryVertex();
+    // const AliVVertex *vertex = ev->GetPrimaryVertex();
     if(!ev) { AliError("Vertex of MC not found!"); }
 
-    if(TMath::Abs(vertex->GetX()) > fPVtxCutX) return kFALSE;
-    if(TMath::Abs(vertex->GetY()) > fPVtxCutY) return kFALSE;
-    if(TMath::Abs(vertex->GetZ()) > fPVtxCutZ) return kFALSE;
+    // if(TMath::Abs(vertex->GetX()) > fPVtxCutX) return kFALSE;
+    // if(TMath::Abs(vertex->GetY()) > fPVtxCutY) return kFALSE;
+    // if(TMath::Abs(vertex->GetZ()) > fPVtxCutZ) return kFALSE;
 
     AliCollisionGeometry* headerH;
     AliGenHepMCEventHeader* headertmp;
@@ -2021,15 +2016,15 @@ Bool_t AliAnalysisDecorrTask::IsMCEventSelected()
             }
         }
     }
-    else 
+    else
     {
         headertmp = dynamic_cast<AliGenHepMCEventHeader*>(ev->GenEventHeader());
     }
     if(headertmp){
         fImpactParameterMC = headertmp->impact_parameter();
         if(!fImpactParameterMC) { AliFatal("Impact parameter not found"); return kFALSE; }
-    } 
-    else return kFALSE;  
+    }
+    else return kFALSE;
     return kTRUE;
 }
 //_____________________________________________________________________________
@@ -2041,8 +2036,8 @@ Bool_t AliAnalysisDecorrTask::IsEventSelected(Double_t lCent)
   if(!CheckTrigger(lCent)) return kFALSE;
   fhEventSel->Fill(2);
   if(lCent < 0) return kFALSE;
-  //if(fCentMin > 0 && lCent < fCentMin) return kFALSE; 
-  //if(fCentMax > 0 && lCent > fCentMax) return kFALSE; 
+  //if(fCentMin > 0 && lCent < fCentMin) return kFALSE;
+  //if(fCentMax > 0 && lCent > fCentMax) return kFALSE;
   /*
   if(!bIs2018Data)
   {
@@ -2081,13 +2076,13 @@ Bool_t AliAnalysisDecorrTask::IsEventSelected(Double_t lCent)
 
   return kTRUE;
 }
-Bool_t AliAnalysisDecorrTask::CheckTrigger(Double_t lCent) 
+Bool_t AliAnalysisDecorrTask::CheckTrigger(Double_t lCent)
 {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!(fTrigger&fSelMask)) { printf("Returning from the generic check\n"); return kFALSE; }; 
-  if(fSelMask&(fTrigger&(AliVEvent::kINT7+AliVEvent::kMB))) { printf("Passed by MB trigger!\n"); return kTRUE; }; 
-  if((fSelMask&fTrigger&AliVEvent::kCentral) && lCent>10) { printf("Returnning from kCent case\n");; return kFALSE; }; 
-  if((fSelMask&fTrigger&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) { printf("Returning from kSC case\n"); return kFALSE; }; 
+  if(!(fTrigger&fSelMask)) { printf("Returning from the generic check\n"); return kFALSE; };
+  if(fSelMask&(fTrigger&(AliVEvent::kINT7+AliVEvent::kMB))) { printf("Passed by MB trigger!\n"); return kTRUE; };
+  if((fSelMask&fTrigger&AliVEvent::kCentral) && lCent>10) { printf("Returnning from kCent case\n");; return kFALSE; };
+  if((fSelMask&fTrigger&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) { printf("Returning from kSC case\n"); return kFALSE; };
   return kTRUE;
 };
 //_____________________________________________________________________________
@@ -2194,7 +2189,7 @@ Bool_t AliAnalysisDecorrTask::IsEventRejectedAddPileUp(const int fPileupCut) con
   {
     multESDTPCdif = multESD - 3.38*multTPC128;
     if(multESDTPCdif > fPileupCut) { return kTRUE; }
-      
+
   }
 
   // QA Plots
@@ -2231,7 +2226,7 @@ double AliAnalysisDecorrTask::GetWeights(double dPhi, double dEta, double dVz)
         dWeight = fWeights->GetNUA(dPhi, dEta, dVz);
         return dWeight;
     }
-    
+
 }
 
 double *AliAnalysisDecorrTask::GetBinsFromAxis(TAxis *inax) {
@@ -2526,11 +2521,11 @@ TComplex AliAnalysisDecorrTask::TwoDiffGap10_PtA_PtB(int n1, int n2)
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::Three(int n1, int n2, int n3)
 {
-    
+
     TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)-Q(n1+n2,2)*Q(n3,1)-Q(n2,1)*Q(n1+n3,2)
     - Q(n1,1)*Q(n2+n3,2)+2.*Q(n1+n2+n3,3);
     return formula;
-    
+
 }
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::ThreeGapM(int n1, int n2, int n3)
@@ -2624,7 +2619,7 @@ TComplex AliAnalysisDecorrTask::FourGap_2Diff_2Ref_OS(int n1, int n2, int n3, in
     return formula;
 }
 //____________________________________________________________________
-TComplex AliAnalysisDecorrTask::FourDiff_PtA_PtA(int n1, int n2, int n3, int n4)  
+TComplex AliAnalysisDecorrTask::FourDiff_PtA_PtA(int n1, int n2, int n3, int n4)
 {
     TComplex formula = pPtA(n1,1)*pPtA(n2,1)*pPtA(n3,1)*pPtA(n4,1)-pPtA(n1+n2,2)*pPtA(n3,1)*pPtA(n4,1)-pPtA(n2,1)*pPtA(n1+n3,2)*pPtA(n4,1)
     - pPtA(n1,1)*pPtA(n2+n3,2)*pPtA(n4,1)+2.*pPtA(n1+n2+n3,3)*pPtA(n4,1)-pPtA(n2,1)*pPtA(n3,1)*pPtA(n1+n4,2)
@@ -2693,7 +2688,7 @@ TComplex AliAnalysisDecorrTask::FourDiffGap10M(int n1, int n2, int n3, int n4)
 //___________________________________________________________________
 TComplex AliAnalysisDecorrTask::Five(int n1, int n2, int n3, int n4, int n5)
 {
-    
+
     TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)
     - Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)
     + 2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5,1)
@@ -2721,7 +2716,7 @@ TComplex AliAnalysisDecorrTask::Five(int n1, int n2, int n3, int n4, int n5)
     - 2.*Q(n1+n2,2)*Q(n3+n4+n5,3)-6.*Q(n2,1)*Q(n1+n3+n4+n5,4)
     - 6.*Q(n1,1)*Q(n2+n3+n4+n5,4)+24.*Q(n1+n2+n3+n4+n5,5);
     return formula;
-    
+
 }
 //___________________________________________________________________
 TComplex AliAnalysisDecorrTask::Six(int n1, int n2, int n3, int n4, int n5, int n6)
@@ -2941,24 +2936,24 @@ TComplex AliAnalysisDecorrTask::SixDiff(int n1, int n2, int n3, int n4, int n5, 
 //_________________________________________________________________________________
 TComplex AliAnalysisDecorrTask::Seven(int n1, int n2, int n3, int n4, int n5, int n6, int n7)
 {
-    
+
     TComplex Correlation = {0, 0};
     int Narray[] = {n1, n2, n3, n4, n5, n6};
-    
+
     for(int k=7; k-->0; )
     {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-        
+
         int array[6] = {0,1,2,3,4,5};
         int iPerm = 0;
         //int argument = 0;
         int count = 0;
-        
+
         // k==6: there is just one combination, we can add it manually
         if(k==6){
             Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
             Six(n1, n2, n3, n4, n5, n6)*Q(n7, 7-k);
         }// k==6
-        
+
         else if(k==5){
             do{
                 iPerm += 1;
@@ -2971,7 +2966,7 @@ TComplex AliAnalysisDecorrTask::Seven(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+6));
         }// k==5
-        
+
         else if(k==4){
             do{
                 iPerm += 1;
@@ -2985,7 +2980,7 @@ TComplex AliAnalysisDecorrTask::Seven(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+6));
         }// k==4
-        
+
         else if(k==3){
             do{
                 iPerm += 1;
@@ -2998,7 +2993,7 @@ TComplex AliAnalysisDecorrTask::Seven(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+6));
         }// k==3
-        
+
         else if(k==2){
             do{
                 iPerm += 1;
@@ -3012,7 +3007,7 @@ TComplex AliAnalysisDecorrTask::Seven(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+6));
         }// k==2
-        
+
         else if(k == 1){
             Correlation = Correlation
             + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7, 7-k)
@@ -3022,42 +3017,42 @@ TComplex AliAnalysisDecorrTask::Seven(int n1, int n2, int n3, int n4, int n5, in
             + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n5, 1)*Q(n1+n2+n3+n4+n6+n7, 7-k)
             + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7, 7-k);
         }// k==1
-        
+
         else if(k == 0){
             Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1+n2+n3+n4+n5+n6+n7, 7-k);
         }// k==0
-        
+
         else{
             cout<<"invalid range of k"<<endl;
             return {0,0};
         }
-        
+
     }// loop over k
-    
+
     return Correlation;
-    
+
 }
 //_____________________________________________________________________________
 TComplex AliAnalysisDecorrTask::Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
 {
-    
+
     TComplex Correlation = {0, 0};
     int Narray[] = {n1, n2, n3, n4, n5, n6, n7};
-    
+
     for(int k=8; k-->0; )
     {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-        
+
         int array[7] = {0,1,2,3,4,5,6};
         int iPerm = 0;
         //int argument = 0;
         int count = 0;
-        
+
         // k==7: there is just one combination, we can add it manually
         if(k==7){
             Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
             Seven(n1, n2, n3, n4, n5, n6, n7)*Q(n8, 8-k);
         }// k==7
-        
+
         else if(k==6){
             do{
                 iPerm += 1;
@@ -3070,7 +3065,7 @@ TComplex AliAnalysisDecorrTask::Eight(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+7));
         }// k==6
-        
+
         else if(k==5){
             do{
                 iPerm += 1;
@@ -3084,7 +3079,7 @@ TComplex AliAnalysisDecorrTask::Eight(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+7));
         }// k==5
-        
+
         else if(k==4){
             do{
                 iPerm += 1;
@@ -3097,7 +3092,7 @@ TComplex AliAnalysisDecorrTask::Eight(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+7));
         }// k==4
-        
+
         else if(k==3){
             do{
                 iPerm += 1;
@@ -3110,7 +3105,7 @@ TComplex AliAnalysisDecorrTask::Eight(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+7));
         }// k==3
-        
+
         else if(k==2){
             do{
                 iPerm += 1;
@@ -3124,7 +3119,7 @@ TComplex AliAnalysisDecorrTask::Eight(int n1, int n2, int n3, int n4, int n5, in
                 }
             }while(std::next_permutation(array, array+7));
         }// k==2
-        
+
         else if(k == 1){
             Correlation = Correlation
             + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7+n8, 8-k)
@@ -3135,24 +3130,23 @@ TComplex AliAnalysisDecorrTask::Eight(int n1, int n2, int n3, int n4, int n5, in
             + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7+n8, 8-k)
             + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n7, 1)*Q(n1+n2+n3+n4+n5+n6+n8, 8-k);
         }// k==1
-        
+
         else if(k == 0){
             Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1+n2+n3+n4+n5+n6+n7+n8, 8-k);
         }// k==0
-        
+
         else{
             cout<<"invalid range of k"<<endl;
             return {0,0};
         }
-        
+
     }// loop over k
-    
+
     return Correlation;
-    
+
 }
 //_____________________________________________________________________________
 void AliAnalysisDecorrTask::Terminate(Option_t *)
 {
 
 }
-
