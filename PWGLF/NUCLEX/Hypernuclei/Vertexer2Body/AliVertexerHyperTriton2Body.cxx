@@ -446,8 +446,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
     {
         for (int index{0}; index < 2; ++index)
         {
-            AliPID::EParticleType pPart = index == 1 ? AliPID::kHe3 : AliPID::kPion;
-            AliPID::EParticleType nPart = index == 1 ? AliPID::kPion : AliPID::kHe3;
+            AliPID::EParticleType pPart = index == 1 ? fNucleus : AliPID::kPion;
+            AliPID::EParticleType nPart = index == 1 ? AliPID::kPion : fNucleus;
             for (auto &nidx : tracks[1][index]) /// We start with antihypertriton
             {
                 AliESDtrack *ntrk = event->GetTrack(nidx);
@@ -492,7 +492,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         for (int charge{0}; charge < 2; ++charge)
         {
             AliPID::EParticleType pPart = AliPID::kPion;
-            AliPID::EParticleType nPart = AliPID::kHe3;
+            AliPID::EParticleType nPart = fNucleus;
 
             for (auto &nidx : tracks[charge][0])
             {
@@ -563,8 +563,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices3Body(std::v
                         double params[5]{ptrk->GetY(), ptrk->GetZ(), -ptrk->GetSnp(), ptrk->GetTgl(), ptrk->GetSigned1Pt()};
                         ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(), params);
                     }
-                    AliPID::EParticleType pParticle = std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5 ? AliPID::kHe3 : AliPID::kPion;
-                    AliPID::EParticleType nParticle = std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5 ? AliPID::kHe3 : AliPID::kPion;
+                    AliPID::EParticleType pParticle = std::abs(fPID->NumberOfSigmasTPC(ptrk, fNucleus)) < 5 ? fNucleus : AliPID::kPion;
+                    AliPID::EParticleType nParticle = std::abs(fPID->NumberOfSigmasTPC(ntrk, fNucleus)) < 5 ? fNucleus : AliPID::kPion;
 
                     CreateV0(vtxT3D, nidx, ntrk, pidx, ptrk, pParticle, nParticle);
 
@@ -597,8 +597,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices3Body(std::v
                     auto ptrk = tracks[charge][1][pidx];
                     if (!ptrk)
                         continue;
-                    AliPID::EParticleType pParticle = std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5 ? AliPID::kHe3 : AliPID::kPion;
-                    AliPID::EParticleType nParticle = std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5 ? AliPID::kHe3 : AliPID::kPion;
+                    AliPID::EParticleType pParticle = std::abs(fPID->NumberOfSigmasTPC(ptrk, fNucleus)) < 5 ? fNucleus : AliPID::kPion;
+                    AliPID::EParticleType nParticle = std::abs(fPID->NumberOfSigmasTPC(ntrk, fNucleus)) < 5 ? fNucleus : AliPID::kPion;
 
                     CreateV0(vtxT3D, nidx, ntrk, pidx, ptrk, pParticle, nParticle);
                 }
@@ -1209,7 +1209,7 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
         }
         else
         {
-            if (std::abs(fPID->NumberOfSigmasTPC(esdTrack, AliPID::kHe3)) < 5 &&
+            if (std::abs(fPID->NumberOfSigmasTPC(esdTrack, fNucleus)) < 5 &&
                 fHe3Cuts->AcceptTrack(esdTrack))
                 tracks[index][0].push_back(i);
             else if (fPiCuts->AcceptTrack(esdTrack))
