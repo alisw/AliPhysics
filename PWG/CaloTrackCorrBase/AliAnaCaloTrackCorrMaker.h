@@ -215,7 +215,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH2F *   fhClusterTriggerBCExoticEventBC;          //!<! Correlate the found BC in the exotic trigger and the event BC.
   TH2F *   fhClusterTriggerBCExoticEventBCUnMatch;   //!<! Correlate the found BC in the exotic trigger and the event BC, when there was no match with the trigger BC.
   
-  TH1I *   fhRunNumberEmbeddedDiff;                  //!<! In case of embedding correlate signal and background runs, difference of run number
+  TH1F *   fhRunNumberEmbeddedDiff;                  //!<! In case of embedding correlate signal and background runs, difference of run number
   
   /// Assignment operator not implemented.
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; 

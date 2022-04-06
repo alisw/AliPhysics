@@ -370,8 +370,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
   // Centrality, Event plane bins
     
-  TH1I *   fhEventBin;                 //!<! Number of real  pairs in a particular bin (cen,vz,rp)
-  TH1I *   fhEventMixBin;              //!<! Number of mixed pairs in a particular bin (cen,vz,rp)
+  TH1F *   fhEventBin;                 //!<! Number of real  pairs in a particular bin (cen,vz,rp)
+  TH1F *   fhEventMixBin;              //!<! Number of mixed pairs in a particular bin (cen,vz,rp)
   TH1F *   fhCentrality;               //!<! Histogram with centrality bins with at least one pare
   TH1F *   fhCentralityNoPair;         //!<! Histogram with centrality bins with no pair
 

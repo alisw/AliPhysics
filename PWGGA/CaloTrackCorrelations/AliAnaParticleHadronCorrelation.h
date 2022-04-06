@@ -665,7 +665,7 @@ private:
   TH3F **      fhMCDeltaPhiDeltaEtaZTBin;                //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()*fgkNmcTypes]
 
   // Mixing
-  TH1I *       fhNEventsTrigger;                         //!<! Number of analyzed triggered events.
+  TH1F *       fhNEventsTrigger;                         //!<! Number of analyzed triggered events.
   TH2F *       fhNtracksMB;                              //!<! Total number of tracks in MB events.
   TH2F *       fhNclustersMB;                            //!<! Total number of clusters in MB events.
   TH2F *       fhMixDeltaPhiCharged;                     //!<! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT.
@@ -693,9 +693,9 @@ private:
   /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins.
   TH3F **      fhMixDeltaPhiDeltaEtaChargedZTBin;        //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()]
   
-  TH1I *       fhEventBin;                               //!<! Number of triggers in a particular event bin (cen,vz,rp).
-  TH1I *       fhEventMixBin;                            //!<! Number of triggers mixed in a particular bin (cen,vz,rp).
-  TH1I *       fhEventMBBin;                             //!<! Number of MB events in a particular bin (cen,vz,rp).
+  TH1F *       fhEventBin;                               //!<! Number of triggers in a particular event bin (cen,vz,rp).
+  TH1F *       fhEventMixBin;                            //!<! Number of triggers mixed in a particular bin (cen,vz,rp).
+  TH1F *       fhEventMBBin;                             //!<! Number of MB events in a particular bin (cen,vz,rp).
   
   // Check invariant mass
   TH2F *       fhMassPtTrigger;                          //!<! Invariant mass of the trigger.
