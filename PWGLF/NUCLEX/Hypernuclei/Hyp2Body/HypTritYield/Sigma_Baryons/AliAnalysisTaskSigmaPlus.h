@@ -476,7 +476,7 @@ class AliAODTrackreduced : public TObject
 
         //Setter
         void InitfromTrack(const AliAODTrack *aodTrack, const AliPIDResponse* pidresp = 0) { 
-            if(!aodTrack) {cout << "WARNING: Input source 'AOD Track' does not exit!\n"; return;}            
+            if(!aodTrack) {std::cout << "WARNING: Input source 'AOD Track' does not exit!\n"; return;}            
             aodTrack->GetXYZ(x);
             aodTrack->GetPxPyPz(p);
             aodTrack->GetCovarianceXYZPxPyPz(covMatrix);
@@ -486,7 +486,7 @@ class AliAODTrackreduced : public TObject
             id = aodTrack->GetID();
             status = aodTrack->GetStatus();
             tpcchi2 = aodTrack->GetTPCchi2();
-            if(!pidresp) {cout << "WARNING: Input source 'PID Response' does not exit!\n"; return;}            
+            if(!pidresp) {std::cout << "WARNING: Input source 'PID Response' does not exit!\n"; return;}            
             nsigmatpcproton = pidresp->NumberOfSigmasTPC(aodTrack,AliPID::kProton);
             nsigmatpcpion = pidresp->NumberOfSigmasTPC(aodTrack,AliPID::kPion);
             nsigmatpckaon = pidresp->NumberOfSigmasTPC(aodTrack,AliPID::kKaon);
