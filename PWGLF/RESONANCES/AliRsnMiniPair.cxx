@@ -649,3 +649,12 @@ Bool_t AliRsnMiniPair::ContainsIndex(Int_t index)
   return kFALSE;
   
 }
+
+Double_t AliRsnMiniPair::pTLstar(Bool_t mc) const
+{
+
+  	TDatabasePDG *db1   = TDatabasePDG::Instance();
+	TParticlePDG *part1 = db1->GetParticle(3124);
+	  Double_t mLstar      = part1->Mass();
+	  return sqrt(fSum[ID(mc)].Pt()*fSum[ID(mc)].Pt() + fSum[ID(mc)].M()*fSum[ID(mc)].M() - mLstar*mLstar);
+}
