@@ -3959,15 +3959,60 @@ void AddTask_GammaCalo_pp(
   //*************************************************************************************************
   // 13 TeV EMCal Sphericity differential cuts
   //*************************************************************************************************
+  } else if (trainConfig == 2475){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h0a10113","411790109fe30230000","0s631031000000d0"); // INT7, sphericity
+  } else if (trainConfig == 2476){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h0a8e113","411790109fe30230000","0s631031000000d0"); // EG2, sphericity
+  } else if (trainConfig == 2477){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h0a8d113","411790109fe30230000","0s631031000000d0"); // EG1, sphericity
+  } else if (trainConfig == 2478){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h0a78113","411790109fe30230000","0s631031000000d0"); // V0M HM, sphericity
+  } else if (trainConfig == 2479){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h0a77113","411790109fe30230000","0s631031000000d0"); // SPD HM, sphericity
+
+
   } else if (trainConfig == 2480){ //EMCal + DCal EG1 sphericity.
-    cuts.AddCutCalo("h0510113","411790109fe30230000","0s631031000000d0"); // INT7, NL21, sphericity
-    cuts.AddCutCalo("h5a10113","411790109fe30230000","0s631031000000d0"); // INT7, NL21, sphericity
+    cuts.AddCutCalo("h0510113","411790109fe30230000","0s631031000000d0"); // INT7, sphericity
+    cuts.AddCutCalo("h5a10113","411790109fe30230000","0s631031000000d0"); // INT7, sphericity
   } else if (trainConfig == 2481){ //EMCal + DCal EG1 sphericity.
-    cuts.AddCutCalo("h058e113","411790109fe30230000","0s631031000000d0"); // EG2, NL21, sphericity
-    cuts.AddCutCalo("h5a8e113","411790109fe30230000","0s631031000000d0"); // EG2, NL21, sphericity
+    cuts.AddCutCalo("h058e113","411790109fe30230000","0s631031000000d0"); // EG2, sphericity
+    cuts.AddCutCalo("h5a8e113","411790109fe30230000","0s631031000000d0"); // EG2, sphericity
   } else if (trainConfig == 2482){ //EMCal + DCal EG1 sphericity.
-    cuts.AddCutCalo("h058d113","411790109fe30230000","0s631031000000d0"); // EG1, NL21, sphericity
-    cuts.AddCutCalo("h5a8d113","411790109fe30230000","0s631031000000d0"); // EG1, NL21, sphericity
+    cuts.AddCutCalo("h058d113","411790109fe30230000","0s631031000000d0"); // EG1, sphericity
+    cuts.AddCutCalo("h5a8d113","411790109fe30230000","0s631031000000d0"); // EG1, sphericity
+  } else if (trainConfig == 2483){ //EMCal + DCal HM sphericity.
+    cuts.AddCutCalo("h0578113","411790109fe30230000","0s631031000000d0"); // High Mult V0M, sphericity
+    cuts.AddCutCalo("h5a78113","411790109fe30230000","0s631031000000d0"); // High Mult V0M, sphericity
+  } else if (trainConfig == 2484){ //EMCal + DCal HM sphericity.
+    cuts.AddCutCalo("h0577113","411790109fe30230000","0s631031000000d0"); // High Mult SPD, sphericity
+    cuts.AddCutCalo("h5a77113","411790109fe30230000","0s631031000000d0"); // High Mult SPD, sphericity
+
+  } else if (trainConfig == 2485){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h0310113","411790109fe30230000","0s631031000000d0"); // INT7, sphericity
+    cuts.AddCutCalo("h3510113","411790109fe30230000","0s631031000000d0"); // INT7, sphericity
+    cuts.AddCutCalo("h5710113","411790109fe30230000","0s631031000000d0"); // INT7, sphericity
+    cuts.AddCutCalo("h7a10113","411790109fe30230000","0s631031000000d0"); // INT7, sphericity
+  } else if (trainConfig == 2486){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h038e113","411790109fe30230000","0s631031000000d0"); // EG2, sphericity
+    cuts.AddCutCalo("h358e113","411790109fe30230000","0s631031000000d0"); // EG2, sphericity
+    cuts.AddCutCalo("h578e113","411790109fe30230000","0s631031000000d0"); // EG2, sphericity
+    cuts.AddCutCalo("h7a8e113","411790109fe30230000","0s631031000000d0"); // EG2, sphericity
+  } else if (trainConfig == 2487){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h038d113","411790109fe30230000","0s631031000000d0"); // EG1, sphericity
+    cuts.AddCutCalo("h358d113","411790109fe30230000","0s631031000000d0"); // EG1, sphericity
+    cuts.AddCutCalo("h578d113","411790109fe30230000","0s631031000000d0"); // EG1, sphericity
+    cuts.AddCutCalo("h7a8d113","411790109fe30230000","0s631031000000d0"); // EG1, sphericity
+  } else if (trainConfig == 2488){ //EMCal + DCal HM sphericity.
+    cuts.AddCutCalo("h0378113","411790109fe30230000","0s631031000000d0"); // High Mult V0M, sphericity
+    cuts.AddCutCalo("h3578113","411790109fe30230000","0s631031000000d0"); // High Mult V0M, sphericity
+    cuts.AddCutCalo("h5778113","411790109fe30230000","0s631031000000d0"); // High Mult V0M, sphericity
+    cuts.AddCutCalo("h7a78113","411790109fe30230000","0s631031000000d0"); // High Mult V0M, sphericity
+  } else if (trainConfig == 2489){ //EMCal + DCal HM sphericity.
+    cuts.AddCutCalo("h0377113","411790109fe30230000","0s631031000000d0"); // High Mult SPD, sphericity
+    cuts.AddCutCalo("h3577113","411790109fe30230000","0s631031000000d0"); // High Mult SPD, sphericity
+    cuts.AddCutCalo("h5777113","411790109fe30230000","0s631031000000d0"); // High Mult SPD, sphericity
+    cuts.AddCutCalo("h7a77113","411790109fe30230000","0s631031000000d0"); // High Mult SPD, sphericity
+
 
 
 
