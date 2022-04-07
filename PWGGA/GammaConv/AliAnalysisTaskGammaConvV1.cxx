@@ -278,6 +278,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoTrueJetFragmFuncZInvMass(NULL),
   fHistoMCPi0JetInAccPt(NULL),
   fHistoMCPi0inJetInAccPt(NULL),
+  fHistoMCPi0WOWeightinJetinAccPt(NULL),
   fHistoMCEtaJetInAccPt(NULL),
   fHistoMCEtainJetInAccPt(NULL),
   fHistoMCPi0JetEventGenerated(NULL),
@@ -589,6 +590,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoTrueJetFragmFuncZInvMass(NULL),
   fHistoMCPi0JetInAccPt(NULL),
   fHistoMCPi0inJetInAccPt(NULL),
+  fHistoMCPi0WOWeightinJetinAccPt(NULL),
   fHistoMCEtaJetInAccPt(NULL),
   fHistoMCEtainJetInAccPt(NULL),
   fHistoMCPi0JetEventGenerated(NULL),
@@ -1734,6 +1736,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoTrueJetFragmFuncZInvMass              = new TH2F*[fnCuts];
       fHistoMCPi0JetInAccPt                       = new TH1F*[fnCuts];
       fHistoMCPi0inJetInAccPt                     = new TH1F*[fnCuts];
+      fHistoMCPi0WOWeightinJetinAccPt             = new TH1F*[fnCuts];
       fHistoMCPi0JetEventGenerated                = new TH1F*[fnCuts];
       fHistoMCPi0inJetGenerated                   = new TH1F*[fnCuts];
       fHistoTrueSecondaryFromK0sJetInvMassPt      = new TH2F*[fnCuts];
@@ -2081,6 +2084,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0JetInAccPt[iCut]);
         fHistoMCPi0inJetInAccPt[iCut]      = new TH1F("MC_Pi0inJetInAcc_Pt", "MC_Pi0inJetInAcc_Pt", nBinsPt, arrPtBinning);
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0inJetInAccPt[iCut]);
+        fHistoMCPi0WOWeightinJetInAccPt[iCut]      = new TH1F("MC_Pi0WOWeightinJetInAcc_Pt", "MC_Pi0WOWeightinJetInAcc_Pt", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCPi0WOWeightinJetInAccPt[iCut]);
         fHistoMCPi0JetEventGenerated[iCut]    = new TH1F("MC_Pi0_JetEvent_Generated", "MC_Pi0_JetEvent_Generated", nBinsPt, arrPtBinning);
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0JetEventGenerated[iCut]);
         fHistoMCPi0inJetGenerated[iCut]    = new TH1F("MC_Pi0_inJet_Generated", "MC_Pi0_inJet_Generated", nBinsPt, arrPtBinning);
@@ -2752,7 +2757,7 @@ void AliAnalysisTaskGammaConvV1::ProcessJets()
         fHistoJetEta[fiCut]->Fill(fVectorJetEta.at(i));
         fHistoJetPhi[fiCut]->Fill(fVectorJetPhi.at(i));
         fHistoJetArea[fiCut]->Fill(fVectorJetArea.at(i));
-        if(!fDoJetQA) fHistoEventwJets[fiCut]->Fill(0);
+        if(!fDoJetQA || fIsMC == 0) fHistoEventwJets[fiCut]->Fill(0);
         if(fIsMC > 0 && fConvJetReader->GetNJets()>0 && fConvJetReader->GetTrueNJets()>0){
           Double_t min = 100;
           Int_t match = 0;
@@ -3543,7 +3548,10 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
                       RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
                       if(fConvJetReader->Get_Jet_Radius() > 0 ){
                         if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                          if(!fDoLightOutput) fHistoMCPi0inJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                          if(!fDoLightOutput){
+                            fHistoMCPi0inJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                            fHistoMCPi0WOWeightinJetinAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                          }  
                           else fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
                         }
                       }
@@ -3893,7 +3901,10 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
                       RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
                       if(fConvJetReader->Get_Jet_Radius() > 0 ){
                         if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                          if(!fDoLightOutput) fHistoMCPi0inJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                          if(!fDoLightOutput) {
+                            fHistoMCPi0inJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                            fHistoMCPi0WOWeightinJetinAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                          }
                           else fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
                         }
                       }
