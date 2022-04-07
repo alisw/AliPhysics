@@ -116,7 +116,7 @@ set(SRCS
   MultEvShape/AliMEStrackInfo.cxx
   MultEvShape/AliMESbaseTask.cxx
   MultEvShape/AliMEStender.cxx
-  MultEvShape/AliMEStenderV2.cxx
+  MultEvShape/AliMESpp13.cxx
   MultEvShape/AliMESpidTask.cxx
   MultEvShape/AliMESchgTask.cxx
   MultEvShape/AliMESppColTask.cxx
