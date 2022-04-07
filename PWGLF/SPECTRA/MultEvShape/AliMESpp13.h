@@ -1,5 +1,5 @@
-#ifndef ALIMESTENDERV2_H
-#define ALIMESTENDERV2_H
+#ifndef ALIMESPP13_H
+#define ALIMESPP13_H
 
 ////////////////////////////////////////////////////////////////////////////
 //  Tender for Multiplicity and Event Shape group                         //
@@ -29,13 +29,13 @@ class TTreeSRedirector;
 #include "AliEventCuts.h"
 #include "TTreeStream.h"
 
-class AliMEStenderV2 : public AliAnalysisTaskSE
+class AliMESpp13 : public AliAnalysisTaskSE
 {
 public:
   class AliMESconfigTender : public TObject
   {
   public:
-    friend class AliMEStenderV2;
+    friend class AliMESpp13;
     enum EMESconfigEventCuts
     {
       kNoEC = 0 // no event cuts
@@ -73,7 +73,7 @@ public:
   };
 
   //_______________________________________________________________________________________
-  enum AliMEStenderV2Steering
+  enum AliMESpp13Steering
   {
     kMCdata = BIT(18) // MC presence bit
     ,
@@ -81,7 +81,7 @@ public:
     ,
     kPostProcess = BIT(20) // run pos processing of QA histos
   };
-  enum EMEStenderV2QA
+  enum EMESpp13QA
   {
     kConfig = 0,
     kEfficiency,
@@ -91,19 +91,24 @@ public:
     kMCtrkInfo,
     kNqa
   };
-  enum MEStenderV2Containers
+  enum MESpp13Containers
   {
     kQA = 1,
     kEventInfo = 1,
     kTracks,
-    kTree,
+    kEventTree,
+    kTracksTree,
     kMCeventInfo,
     kMCtracks,
+    kMCeventTree,
+    kMCtracksTree,
+    kMCGenTracksTree,
+    kMCMissedTracksTree,
     kNcontainers
   };
-  AliMEStenderV2();
-  AliMEStenderV2(const char *name);
-  virtual ~AliMEStenderV2();
+  AliMESpp13();
+  AliMESpp13(const char *name);
+  virtual ~AliMESpp13();
 
   // static Int_t    MakeMultiplicityESD(AliESDEvent* const, const char *opt);
   static Int_t MakeMultiplicityMC(AliMCEvent *const);
@@ -127,8 +132,8 @@ protected:
   Bool_t BuildQAHistos();
 
 private:
-  AliMEStenderV2(const AliMEStenderV2 &);
-  AliMEStenderV2 &operator=(const AliMEStenderV2 &);
+  AliMESpp13(const AliMESpp13 &);
+  AliMESpp13 &operator=(const AliMESpp13 &);
 
   AliMESconfigTender fConfig; // currrent configuration of task
 
@@ -140,12 +145,17 @@ private:
   TObjArray *fMCtracks;               //!
   AliMESeventInfo *fMCevInfo;         //!
   TTreeSRedirector *fTreeSRedirector; //! temp tree to dump output
-  TTree *fTree;                       //!
+  TTree *fEventTree;                  //!
+  TTree *fTracksTree;                 //!
+  TTree *fMCeventTree;                //!
+  TTree *fMCtracksTree;               //!
+  TTree *fMCGenTracksTree;    //!
+  TTree *fMCMissedTracksTree; //!
 
   AliPPVsMultUtils *fUtils;
   AliEventCuts fEventCutsQA; //!
 
-  ClassDef(AliMEStenderV2, 5) // Tender task for the Multi Event Shape
+  ClassDef(AliMESpp13, 5) // Tender task for the Multi Event Shape
 };
 
 #endif
