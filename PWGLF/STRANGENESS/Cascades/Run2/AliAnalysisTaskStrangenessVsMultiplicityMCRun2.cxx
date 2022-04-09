@@ -757,7 +757,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
-fkExtraCleanupRapidity ( kFALSE ), 
+fkExtraCleanupRapidity ( kFALSE ),
 fkDoStrangenessTracking (kFALSE),
 fkAddPVToRecPointFinder( kTRUE),
 fkUseLayer1(kTRUE),
@@ -2123,7 +2123,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   // Called for each event
   AliESDEvent *lESDevent = 0x0;
   AliMCEvent  *lMCevent  = 0x0;
-  AliStack    *lMCstack  = 0x0;
   
   // Connect to the InputEvent
   // After these lines, we should have an ESD/AOD event + the number of V0s in it.
@@ -2139,17 +2138,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   //=================================================
   // Monte Carlo-related information
   lMCevent = MCEvent();
-  if (!lMCevent) {
-    Printf("ERROR: Could not retrieve MC event \n");
-    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
-    return;
-  }
-  lMCstack = lMCevent->Stack();
-  if (!lMCstack) {
-    Printf("ERROR: Could not retrieve MC stack \n");
-    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
-    return;
-  }
   //=================================================
   
   //Get VZERO Information for multiplicity later
@@ -2380,26 +2368,26 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   Int_t    lThisPDG  = 0;
   Double_t lThisRap  = 0;
   Double_t lThisPt   = 0;
-  for (Int_t ilab = 0;  ilab < (lMCstack->GetNtrack()); ilab++)
+  for (Int_t ilab = 0;  ilab < (lMCevent->GetNumberOfTracks()); ilab++)
   {   // This is the begining of the loop on tracks
     
-    TParticle* lPart = 0x0;
-    lPart = lMCstack->Particle( ilab );
+    AliMCParticle* lPart = 0x0;
+    lPart = (AliMCParticle*) lMCevent->Particle( ilab );
     if(!lPart) {
       Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
       continue;
     }
     
-    lThisPDG = lPart->GetPdgCode();
+    lThisPDG = lPart->PdgCode();
     
     //This if is necessary in some situations (rapidity calculation and PYTHIA junctions, etc)
     if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 || (TMath::Abs(lThisPDG) == 1010010030) )
     {
-      lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
+      lThisRap   = MyRapidity(lPart->E(),lPart->Pz());
       lThisPt    = lPart->Pt();
       
       //Use Physical Primaries only for filling These Histos
-      if ( lMCstack->IsPhysicalPrimary(ilab)!=kTRUE ) continue;
+      if ( lPart->IsPhysicalPrimary()!=kTRUE ) continue;
       
       if( lThisPDG ==   310 ) {
         fHistGeneratedPtVsYVsCentralityK0Short       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
@@ -2868,11 +2856,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeVariablePosLabel = lblPosV0Dghter;
     fTreeVariableNegLabel = lblNegV0Dghter;
     
-    TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
-    TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
+    AliMCParticle* mcPosV0Dghter = (AliMCParticle*)lMCevent->GetTrack( lblPosV0Dghter  );
+    AliMCParticle* mcNegV0Dghter = (AliMCParticle*)lMCevent->GetTrack( lblNegV0Dghter  );
     
-    Int_t lPIDPositive = mcPosV0Dghter -> GetPdgCode();
-    Int_t lPIDNegative = mcNegV0Dghter -> GetPdgCode();
+    Int_t lPIDPositive = mcPosV0Dghter -> PdgCode();
+    Int_t lPIDNegative = mcNegV0Dghter -> PdgCode();
     
     //fTreeVariablePosTransvMomentumMC = mcPosV0Dghter->Pt();
     //fTreeVariableNegTransvMomentumMC = mcNegV0Dghter->Pt();
@@ -2882,15 +2870,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     
     //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
     //Creation vertex of any one of the daughters!
-    fTreeVariableNegCreationX = mcNegV0Dghter->Vx();
-    fTreeVariableNegCreationY = mcNegV0Dghter->Vy();
-    fTreeVariableNegCreationZ = mcNegV0Dghter->Vz();
-    fTreeVariablePosCreationX = mcPosV0Dghter->Vx();
-    fTreeVariablePosCreationY = mcPosV0Dghter->Vy();
-    fTreeVariablePosCreationZ = mcPosV0Dghter->Vz();
+    fTreeVariableNegCreationX = mcNegV0Dghter->Xv();
+    fTreeVariableNegCreationY = mcNegV0Dghter->Yv();
+    fTreeVariableNegCreationZ = mcNegV0Dghter->Zv();
+    fTreeVariablePosCreationX = mcPosV0Dghter->Xv();
+    fTreeVariablePosCreationY = mcPosV0Dghter->Yv();
+    fTreeVariablePosCreationZ = mcPosV0Dghter->Zv();
     
-    Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
-    Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
+    Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetMother();
+    Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetMother();
     
     Double_t lMCTransvMomNeg = mcNegV0Dghter->Pt();
     Double_t lMCTransvMomPos = mcPosV0Dghter->Pt();
@@ -2904,39 +2892,40 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     
     // Extra: check decoupled parenthood info
     if ( lblMotherPosV0Dghter > -1 ){
-      TParticle *lPosMother = lMCstack->Particle( lblMotherPosV0Dghter );
-      if( lMCstack->IsPhysicalPrimary( lblMotherPosV0Dghter ) ) fTreeVariableIsPhysicalPrimaryPositiveMother = kTRUE;
-      fTreeVariablePIDPositiveMother = lPosMother->GetPdgCode();
+      AliMCParticle* lPosMother = (AliMCParticle*)lMCevent->GetTrack( lblMotherPosV0Dghter  );
+      if( lPosMother->IsPhysicalPrimary() ) fTreeVariableIsPhysicalPrimaryPositiveMother = kTRUE;
+      fTreeVariablePIDPositiveMother = lPosMother->PdgCode();
       fTreeVariablePosLabelMother = lblMotherPosV0Dghter;
       //Go further than that, please
-      Int_t lblGrandMother = lPosMother->GetFirstMother();
+      Int_t lblGrandMother = lPosMother->GetMother();
       if( lblGrandMother > -1 ){
-        TParticle *lPosGrandMother = lMCstack->Particle( lblGrandMother );
-        if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeVariableIsPhysicalPrimaryPositiveGrandMother = kTRUE;
-        fTreeVariablePIDPositiveGrandMother = lPosGrandMother->GetPdgCode();
+        AliMCParticle* lPosGrandMother = (AliMCParticle*)lMCevent->GetTrack( lblGrandMother  );
+        if( lPosGrandMother->IsPhysicalPrimary() ) fTreeVariableIsPhysicalPrimaryPositiveGrandMother = kTRUE;
+        fTreeVariablePIDPositiveGrandMother = lPosGrandMother->PdgCode();
         fTreeVariablePosLabelGrandMother = lblGrandMother;
       }
     }
     if ( lblMotherNegV0Dghter > -1 ){
-      TParticle *lNegMother = lMCstack->Particle( lblMotherNegV0Dghter );
-      if( lMCstack->IsPhysicalPrimary( lblMotherNegV0Dghter ) ) fTreeVariableIsPhysicalPrimaryNegativeMother = kTRUE;
-      fTreeVariablePIDNegativeMother = lNegMother->GetPdgCode();
-      fTreeVariableNegLabelMother = lblMotherNegV0Dghter;
+      AliMCParticle* lNegMother = (AliMCParticle*)lMCevent->GetTrack( lblMotherNegV0Dghter  );
+      if( lNegMother->IsPhysicalPrimary() ) fTreeVariableIsPhysicalPrimaryNegativeMother = kTRUE;
+      fTreeVariablePIDNegativeMother = lNegMother->PdgCode();
+      fTreeVariableNegLabelMother = lblMotherPosV0Dghter;
       //Go further than that, please
-      Int_t lblGrandMother = lNegMother->GetFirstMother();
+      Int_t lblGrandMother = lNegMother->GetMother();
       if( lblGrandMother > -1 ){
-        TParticle *lNegGrandMother = lMCstack->Particle( lblGrandMother );
-        if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeVariableIsPhysicalPrimaryNegativeGrandMother = kTRUE;
-        fTreeVariablePIDNegativeGrandMother = lNegGrandMother->GetPdgCode();
+        AliMCParticle* lNegGrandMother = (AliMCParticle*)lMCevent->GetTrack( lblGrandMother  );
+        if( lNegGrandMother->IsPhysicalPrimary() ) fTreeVariableIsPhysicalPrimaryNegativeGrandMother = kTRUE;
+        fTreeVariablePIDNegativeGrandMother = lNegGrandMother->PdgCode();
         fTreeVariableNegLabelGrandMother = lblGrandMother;
       }
     }
     
     if( lblMotherPosV0Dghter == lblMotherNegV0Dghter && lblMotherPosV0Dghter > -1 ) {
+      
       //either label is fine, they're equal at this stage
-      TParticle* pThisV0 = lMCstack->Particle( lblMotherPosV0Dghter );
+      AliMCParticle* pThisV0 = (AliMCParticle*)lMCevent->GetTrack( lblMotherPosV0Dghter  );
       //Set tree variables
-      fTreeVariablePID   = pThisV0->GetPdgCode(); //PDG Code
+      fTreeVariablePID   = pThisV0->PdgCode(); //PDG Code
       fTreeVariablePtMC  = pThisV0->Pt(); //Perfect Pt
       
       //Only Interested if it's a Lambda, AntiLambda or K0s
@@ -2948,22 +2937,22 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
       if( TMath::Abs(fTreeVariablePID) == 3122 || fTreeVariablePID==310 ) {
         fTreeVariableRapMC = pThisV0->Y(); //Perfect Y
       }
-      if( lMCstack->IsPhysicalPrimary       (lblMotherPosV0Dghter) ) fTreeVariablePrimaryStatus = 1; //Is Primary!
-      if( lMCstack->IsSecondaryFromWeakDecay(lblMotherPosV0Dghter) ) fTreeVariablePrimaryStatus = 2; //Weak Decay!
-      if( lMCstack->IsSecondaryFromMaterial (lblMotherPosV0Dghter) ) fTreeVariablePrimaryStatus = 3; //Material Int!
+      if( pThisV0->IsPhysicalPrimary       () ) fTreeVariablePrimaryStatus = 1; //Is Primary!
+      if( pThisV0->IsSecondaryFromWeakDecay() ) fTreeVariablePrimaryStatus = 2; //Weak Decay!
+      if( pThisV0->IsSecondaryFromMaterial () ) fTreeVariablePrimaryStatus = 3; //Material Int!
       
       //Now we try to acquire the V0 parent particle, if possible
-      Int_t lblThisV0Parent = pThisV0->GetFirstMother();
+      Int_t lblThisV0Parent = pThisV0->GetMother();
       if ( lblThisV0Parent > -1 ) { //if it has a parent, get it and store specs
-        TParticle* pThisV0Parent = lMCstack->Particle( lblThisV0Parent );
-        fTreeVariablePIDMother   = pThisV0Parent->GetPdgCode(); //V0 Mother PDG
+        AliMCParticle* pThisV0Parent = (AliMCParticle*)lMCevent->GetTrack( lblThisV0Parent  );
+        fTreeVariablePIDMother   = pThisV0Parent->PdgCode(); //V0 Mother PDG
         fTreeVariablePtMother    = pThisV0Parent->Pt();         //V0 Mother Pt
         //NOTE: Fill only for charged xi
         if ( TMath::Abs(fTreeVariablePIDMother)==3312) fTreeVariableRapMother   = pThisV0Parent->Y();         //V0 Mother Pt
         //Primary Status for the V0 Mother particle
-        if( lMCstack->IsPhysicalPrimary       (lblThisV0Parent) ) fTreeVariablePrimaryStatusMother = 1; //Is Primary!
-        if( lMCstack->IsSecondaryFromWeakDecay(lblThisV0Parent) ) fTreeVariablePrimaryStatusMother = 2; //Weak Decay!
-        if( lMCstack->IsSecondaryFromMaterial (lblThisV0Parent) ) fTreeVariablePrimaryStatusMother = 3; //Material Int!
+        if( pThisV0Parent->IsPhysicalPrimary       () ) fTreeVariablePrimaryStatusMother = 1; //Is Primary!
+        if( pThisV0Parent->IsSecondaryFromWeakDecay() ) fTreeVariablePrimaryStatusMother = 2; //Weak Decay!
+        if( pThisV0Parent->IsSecondaryFromMaterial () ) fTreeVariablePrimaryStatusMother = 3; //Material Int!
       }
     }
     
@@ -4262,9 +4251,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeCascVarNegLabel = nTrackXi->GetLabel();
     fTreeCascVarBachLabel = bachTrackXi->GetLabel();
     
-    TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
-    TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
-    TParticle* mcBach        = lMCstack->Particle( lblBach );
+    AliMCParticle* mcPosV0Dghter = (AliMCParticle*) lMCevent->GetTrack( lblPosV0Dghter );
+    AliMCParticle* mcNegV0Dghter = (AliMCParticle*) lMCevent->GetTrack( lblNegV0Dghter );
+    AliMCParticle* mcBach      = (AliMCParticle*) lMCevent->GetTrack( lblBach );
     
     //Get MC information
     fTreeCascVarNegPxMC = mcNegV0Dghter->Px();
@@ -4287,66 +4276,66 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeCascVarIsPhysicalPrimaryPositiveGrandMother = kFALSE;
     fTreeCascVarIsPhysicalPrimaryBachelorGrandMother = kFALSE;
     
-    if( lMCstack->IsPhysicalPrimary( lblNegV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryNegative = kTRUE;
-    if( lMCstack->IsPhysicalPrimary( lblPosV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryPositive = kTRUE;
-    if( lMCstack->IsPhysicalPrimary( lblBach        ) ) fTreeCascVarIsPhysicalPrimaryBachelor = kTRUE;
+    if( mcPosV0Dghter->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryNegative = kTRUE;
+    if( mcNegV0Dghter->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryPositive = kTRUE;
+    if( mcBach->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryBachelor = kTRUE;
     
     fTreeCascVarPosTransvMomentumMC = mcPosV0Dghter->Pt();
     fTreeCascVarNegTransvMomentumMC = mcNegV0Dghter->Pt();
     
-    fTreeCascVarPIDPositive = mcPosV0Dghter -> GetPdgCode();
-    fTreeCascVarPIDNegative = mcNegV0Dghter -> GetPdgCode();
-    fTreeCascVarPIDBachelor = mcBach->GetPdgCode();
+    fTreeCascVarPIDPositive = mcPosV0Dghter -> PdgCode();
+    fTreeCascVarPIDNegative = mcNegV0Dghter -> PdgCode();
+    fTreeCascVarPIDBachelor = mcBach->PdgCode();
     
     // - Step 4.2 : level of the Xi daughters
     
-    Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
-    Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
-    Int_t lblMotherBachelor    = mcBach->GetFirstMother();
+    Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetMother();
+    Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetMother();
+    Int_t lblMotherBachelor    = mcBach->GetMother();
     
     // Extra: check mother particle pdg code completely independently
     // Meant to provide extra info related to the bump
     if ( lblMotherPosV0Dghter > -1 ){
-      TParticle *lPosMother = lMCstack->Particle( lblMotherPosV0Dghter );
-      if( lMCstack->IsPhysicalPrimary( lblMotherPosV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryPositiveMother = kTRUE;
-      fTreeCascVarPIDPositiveMother = lPosMother->GetPdgCode();
+      AliMCParticle* lPosMother = (AliMCParticle*) lMCevent->GetTrack( lblMotherPosV0Dghter );
+      if( lPosMother->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryPositiveMother = kTRUE;
+      fTreeCascVarPIDPositiveMother = lPosMother->PdgCode();
       fTreeCascVarPosLabelMother = lblMotherPosV0Dghter;
       //Go further than that, please
-      Int_t lblGrandMother = lPosMother->GetFirstMother();
+      Int_t lblGrandMother = lPosMother->GetMother();
       if( lblGrandMother > -1 ){
-        TParticle *lPosGrandMother = lMCstack->Particle( lblGrandMother );
-        if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeCascVarIsPhysicalPrimaryPositiveGrandMother = kTRUE;
-        fTreeCascVarPIDPositiveGrandMother = lPosGrandMother->GetPdgCode();
+        AliMCParticle* lPosGrandMother = (AliMCParticle*) lMCevent->GetTrack( lblGrandMother );
+        if( lPosGrandMother->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryPositiveGrandMother = kTRUE;
+        fTreeCascVarPIDPositiveGrandMother = lPosGrandMother->PdgCode();
         fTreeCascVarPosLabelGrandMother = lblGrandMother;
       }
     }
     
     if ( lblMotherNegV0Dghter > -1 ){
-      TParticle *lNegMother = lMCstack->Particle( lblMotherNegV0Dghter );
-      if( lMCstack->IsPhysicalPrimary( lblMotherNegV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryNegativeMother = kTRUE;
-      fTreeCascVarPIDNegativeMother = lNegMother->GetPdgCode();
+      AliMCParticle* lNegMother = (AliMCParticle*) lMCevent->GetTrack( lblMotherNegV0Dghter );
+      if( lNegMother->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryNegativeMother = kTRUE;
+      fTreeCascVarPIDNegativeMother = lNegMother->PdgCode();
       fTreeCascVarNegLabelMother = lblMotherNegV0Dghter;
       //Go further than that, please
-      Int_t lblGrandMother = lNegMother->GetFirstMother();
+      Int_t lblGrandMother = lNegMother->GetMother();
       if( lblGrandMother > -1 ){
-        TParticle *lNegGrandMother = lMCstack->Particle( lblGrandMother );
-        if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeCascVarIsPhysicalPrimaryNegativeGrandMother = kTRUE;
-        fTreeCascVarPIDNegativeGrandMother = lNegGrandMother->GetPdgCode();
+        AliMCParticle* lNegGrandMother = (AliMCParticle*) lMCevent->GetTrack( lblGrandMother );
+        if( lNegGrandMother->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryNegativeGrandMother = kTRUE;
+        fTreeCascVarPIDNegativeGrandMother = lNegGrandMother->PdgCode();
         fTreeCascVarNegLabelGrandMother = lblGrandMother;
       }
     }
     
     if ( lblMotherBachelor > -1 ){
-      TParticle *lBachMother = lMCstack->Particle( lblMotherBachelor );
-      if( lMCstack->IsPhysicalPrimary( lblMotherBachelor ) ) fTreeCascVarIsPhysicalPrimaryBachelorMother = kTRUE;
-      fTreeCascVarPIDBachelorMother = lBachMother->GetPdgCode();
+      AliMCParticle* lBachMother = (AliMCParticle*) lMCevent->GetTrack( lblMotherBachelor );
+      if( lBachMother->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryBachelorMother = kTRUE;
+      fTreeCascVarPIDBachelorMother = lBachMother->PdgCode();
       fTreeCascVarBachLabelMother = lblMotherBachelor;
       //Go further than that, please
-      Int_t lblGrandMother = lBachMother->GetFirstMother();
+      Int_t lblGrandMother = lBachMother->GetMother();
       if( lblGrandMother > -1 ){
-        TParticle *lBachGrandMother = lMCstack->Particle( lblGrandMother );
-        if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeCascVarIsPhysicalPrimaryBachelorGrandMother = kTRUE;
-        fTreeCascVarPIDBachelorGrandMother = lBachGrandMother->GetPdgCode();
+        AliMCParticle* lBachGrandMother = (AliMCParticle*) lMCevent->GetTrack( lblGrandMother );
+        if( lBachGrandMother->IsPhysicalPrimary() ) fTreeCascVarIsPhysicalPrimaryBachelorGrandMother = kTRUE;
+        fTreeCascVarPIDBachelorGrandMother = lBachGrandMother->PdgCode();
         fTreeCascVarBachLabelGrandMother = lblGrandMother;
       }
     }
@@ -4357,53 +4346,51 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if(! (lblMotherNegV0Dghter < 0) ) {
           
           // mothers = Lambda candidate ... a priori
-          
-          TParticle* mcMotherPosV0Dghter = lMCstack->Particle( lblMotherPosV0Dghter );
-          TParticle* mcMotherNegV0Dghter = lMCstack->Particle( lblMotherNegV0Dghter );
+          AliMCParticle* mcMotherPosV0Dghter = (AliMCParticle*) lMCevent->GetTrack( lblMotherPosV0Dghter );
+          AliMCParticle* mcMotherNegV0Dghter = (AliMCParticle*) lMCevent->GetTrack( lblMotherNegV0Dghter );
           
           // - Step 4.3 : level of Xi candidate
           //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
           //Creation vertex of any one of the daughters!
-          fTreeCascVarV0DecayXMC = mcPosV0Dghter->Vx();
-          fTreeCascVarV0DecayYMC = mcPosV0Dghter->Vy();
-          fTreeCascVarV0DecayZMC = mcPosV0Dghter->Vz();
+          fTreeCascVarV0DecayXMC = mcPosV0Dghter->Xv();
+          fTreeCascVarV0DecayYMC = mcPosV0Dghter->Yv();
+          fTreeCascVarV0DecayZMC = mcPosV0Dghter->Zv();
           
-          Int_t lblGdMotherPosV0Dghter =   mcMotherPosV0Dghter->GetFirstMother() ;
-          Int_t lblGdMotherNegV0Dghter =   mcMotherNegV0Dghter->GetFirstMother() ;
+          Int_t lblGdMotherPosV0Dghter =   mcMotherPosV0Dghter->GetMother() ;
+          Int_t lblGdMotherNegV0Dghter =   mcMotherNegV0Dghter->GetMother() ;
           
           if(! (lblGdMotherPosV0Dghter != lblGdMotherNegV0Dghter) ) {
             if(! (lblGdMotherPosV0Dghter < 0) ) { // primary lambda ...
               if(! (lblGdMotherNegV0Dghter < 0) ) { // primary lambda ...
                 
                 // Gd mothers = Xi candidate ... a priori
+                AliMCParticle* mcGdMotherPosV0Dghter = (AliMCParticle*) lMCevent->GetTrack( lblGdMotherPosV0Dghter );
+                AliMCParticle* mcGdMotherNegV0Dghter = (AliMCParticle*) lMCevent->GetTrack( lblGdMotherNegV0Dghter );
                 
-                TParticle* mcGdMotherPosV0Dghter = lMCstack->Particle( lblGdMotherPosV0Dghter );
-                TParticle* mcGdMotherNegV0Dghter = lMCstack->Particle( lblGdMotherNegV0Dghter );
+                Int_t lblMotherBach = (Int_t) TMath::Abs( mcBach->GetMother()  );
                 
-                Int_t lblMotherBach = (Int_t) TMath::Abs( mcBach->GetFirstMother()  );
-                
-                //		if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
+                //    if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
                 if(!(lblMotherBach != lblGdMotherPosV0Dghter)) { //same mother for bach and V0 daughters
                   
-                  TParticle* mcMotherBach = lMCstack->Particle( lblMotherBach );
+                  AliMCParticle* mcMotherBach = (AliMCParticle*) lMCevent->GetTrack( lblMotherBach );
                   
-                  lPID_BachMother = mcMotherBach->GetPdgCode();
-                  lPID_NegMother = mcGdMotherPosV0Dghter->GetPdgCode();
-                  lPID_PosMother = mcGdMotherNegV0Dghter->GetPdgCode();
+                  lPID_BachMother = mcMotherBach->PdgCode();
+                  lPID_NegMother = mcGdMotherPosV0Dghter->PdgCode();
+                  lPID_PosMother = mcGdMotherNegV0Dghter->PdgCode();
                   
                   if(lPID_BachMother==lPID_NegMother && lPID_BachMother==lPID_PosMother) {
                     lPDGCodeCascade = lPID_BachMother;
                     lXiTransvMomMC = mcMotherBach->Pt();
                     //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
                     //Creation vertex of any one of the daughters!
-                    fTreeCascVarCascadeDecayXMC = mcBach->Vx();
-                    fTreeCascVarCascadeDecayYMC = mcBach->Vy();
-                    fTreeCascVarCascadeDecayZMC = mcBach->Vz();
-                    if( lMCstack->IsPhysicalPrimary       (lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 1; //Is Primary!
-                    if( lMCstack->IsSecondaryFromWeakDecay(lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 2; //Weak Decay!
-                    if( lMCstack->IsSecondaryFromMaterial (lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 3; //From Material!
-                    if ( (mcMotherBach->Energy() + mcMotherBach->Pz()) / (mcMotherBach->Energy() - mcMotherBach->Pz() +1.e-13) !=0 ) {
-                      lRapMC = 0.5*TMath::Log( (mcMotherBach->Energy() + mcMotherBach->Pz()) / (mcMotherBach->Energy() - mcMotherBach->Pz() +1.e-13) );
+                    fTreeCascVarCascadeDecayXMC = mcBach->Xv();
+                    fTreeCascVarCascadeDecayYMC = mcBach->Yv();
+                    fTreeCascVarCascadeDecayZMC = mcBach->Zv();
+                    if( mcMotherBach->IsPhysicalPrimary       () ) fTreeCascVarIsPhysicalPrimary = 1; //Is Primary!
+                    if( mcMotherBach->IsSecondaryFromWeakDecay() ) fTreeCascVarIsPhysicalPrimary = 2; //Weak Decay!
+                    if( mcMotherBach->IsSecondaryFromMaterial () ) fTreeCascVarIsPhysicalPrimary = 3; //From Material!
+                    if ( (mcMotherBach->E() + mcMotherBach->Pz()) / (mcMotherBach->E() - mcMotherBach->Pz() +1.e-13) !=0 ) {
+                      lRapMC = 0.5*TMath::Log( (mcMotherBach->E() + mcMotherBach->Pz()) / (mcMotherBach->E() - mcMotherBach->Pz() +1.e-13) );
                     }
                   }
                   
@@ -4417,515 +4404,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     
     fTreeCascVarV0BachSibIsValid = -1;
     fTreeCascVarV0NegSibIsValid = -1;
-    fTreeCascVarV0PosSibIsValid = -1;
-    
-    //------------------------------------------------
-    // Testing V0 association veto for mesons
-    //------------------------------------------------
-    //Variable definition
-    Int_t    lBachSibOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
-    Double_t lBachSibChi2V0 = 0;
-    Double_t lBachSibDcaV0Daughters = 0, lBachSibDcaV0ToPrimVertex = 0;
-    Double_t lBachSibDcaPosToPrimVertex = 0, lBachSibDcaNegToPrimVertex = 0;
-    Double_t lBachSibV0CosineOfPointingAngle = 0;
-    Double_t lBachSibV0Radius = 0, lBachSibPt = 0;
-    Double_t lBachSibRapK0Short = 0, lBachSibRapLambda = 0;
-    Double_t lBachSibInvMassK0s = 0, lBachSibInvMassLambda = 0, lBachSibInvMassAntiLambda = 0;
-    Double_t lBachSibAlphaV0 = 0, lBachSibPtArmV0 = 0;
-    
-    //Neg variables
-    Int_t    lNegSibOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
-    Double_t lNegSibChi2V0 = 0;
-    Double_t lNegSibDcaV0Daughters = 0, lNegSibDcaV0ToPrimVertex = 0;
-    Double_t lNegSibDcaPosToPrimVertex = 0, lNegSibDcaNegToPrimVertex = 0;
-    Double_t lNegSibV0CosineOfPointingAngle = 0;
-    Double_t lNegSibV0Radius = 0, lNegSibPt = 0;
-    Double_t lNegSibRapK0Short = 0, lNegSibRapLambda = 0;
-    Double_t lNegSibInvMassK0s = 0, lNegSibInvMassLambda = 0, lNegSibInvMassAntiLambda = 0;
-    Double_t lNegSibAlphaV0 = 0, lNegSibPtArmV0 = 0;
-    
-    //Pos variables
-    Int_t    lPosSibOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
-    Double_t lPosSibChi2V0 = 0;
-    Double_t lPosSibDcaV0Daughters = 0, lPosSibDcaV0ToPrimVertex = 0;
-    Double_t lPosSibDcaPosToPrimVertex = 0, lPosSibDcaNegToPrimVertex = 0;
-    Double_t lPosSibV0CosineOfPointingAngle = 0;
-    Double_t lPosSibV0Radius = 0, lPosSibPt = 0;
-    Double_t lPosSibRapK0Short = 0, lPosSibRapLambda = 0;
-    Double_t lPosSibInvMassK0s = 0, lPosSibInvMassLambda = 0, lPosSibInvMassAntiLambda = 0;
-    Double_t lPosSibAlphaV0 = 0, lPosSibPtArmV0 = 0;
+    fTreeCascVarV0PosSibIsValid = -1; 
     
     Double_t fMinV0Pt = 0;
-    
-    if( TMath::Abs(fTreeCascVarPIDBachelorMother) == 310 ){
-      Int_t lBachSibV0Status = 0;
-      fTreeCascVarV0BachSibIsValid = 0;
-      
-      //Need to loop on the V0's
-      for (Int_t lV0 = 0; lV0 < nv0s; lV0++){
-        AliESDv0 *BachSibv0 = ((AliESDEvent*)lESDevent)->GetV0(lV0);
-        if (!BachSibv0) continue;
-        
-        CheckChargeV0( BachSibv0 );
-        //Remove like-sign (will not affect offline V0 candidates!)
-        if( BachSibv0->GetParamN()->Charge() > 0 && BachSibv0->GetParamP()->Charge() > 0 ){
-          continue;
-        }
-        if( BachSibv0->GetParamN()->Charge() < 0 && BachSibv0->GetParamP()->Charge() < 0 ){
-          continue;
-        }
-        
-        UInt_t lBachSibKeyPos = (UInt_t)TMath::Abs(BachSibv0->GetPindex());
-        UInt_t lBachSibKeyNeg = (UInt_t)TMath::Abs(BachSibv0->GetNindex());
-        
-        
-        AliESDtrack *BachSibpTrack=((AliESDEvent*)lESDevent)->GetTrack(lBachSibKeyPos);
-        AliESDtrack *BachSibnTrack=((AliESDEvent*)lESDevent)->GetTrack(lBachSibKeyNeg);
-        if (!BachSibpTrack || !BachSibnTrack) {
-          Printf("ERROR: Could not retreive one of the daughter track");
-          continue;
-        }
-        Int_t lblBachSibV0P = (Int_t) TMath::Abs( BachSibpTrack->GetLabel() );
-        Int_t lblBachSibV0N = (Int_t) TMath::Abs( BachSibnTrack->GetLabel() );
-        //Testing if Bachelor belong to this V0
-        Int_t lblBachSib = -9999;
-        AliESDtrack *BachSibTrack = 0x0;
-        if( lblBach == lblBachSibV0P ){
-          lblBachSib = lblBachSibV0N;
-        }
-        if( lblBach == lblBachSibV0N ){
-          lblBachSib = lblBachSibV0P;
-        }
-        if( lblBachSib == -9999 ) continue; //Did not find Bachelor in V0
-        //BachSibTrack = ((AliESDEvent*)lESDevent)->GetTrack(lblBachSib);
-        //Now need to check if sibling comes from same mother as bachellr (K0s)
-        
-        TParticle* mcBachSib = lMCstack->Particle(lblBachSib);
-        
-        Int_t lblBachSibMother = mcBachSib->GetFirstMother();
-        if( lblBachSibMother != lblMotherBachelor ) continue;//Different mothers
-        //Start of track quality checks
-        //Now let's test track quality
-        const AliExternalTrackParam *BachSibinnernegv0=BachSibnTrack->GetInnerParam();
-        const AliExternalTrackParam *BachSibinnerposv0=BachSibpTrack->GetInnerParam();
-        Float_t lBachSibPosInnerP = -1;
-        Float_t lBachSibNegInnerP = -1;
-        if(BachSibinnerposv0)  { lBachSibPosInnerP  = BachSibinnerposv0 ->GetP(); }
-        if(BachSibinnernegv0)  { lBachSibNegInnerP  = BachSibinnernegv0 ->GetP(); }
-        
-        //Daughter Eta for Eta selection, afterwards
-        Float_t lBachSibV0NegEta = BachSibnTrack->Eta();
-        Float_t lBachSibV0PosEta = BachSibpTrack->Eta();
-        
-        //Let's not use this for now...
-        //if ( fkExtraCleanup ){
-        //    if( TMath::Abs( nTrack->Eta() )>0.8 || TMath::Abs( pTrack->Eta() )>0.8 ) continue;
-        //}
-        
-        
-        //________________________________________________________________________
-        // Track quality cuts
-        Float_t lBachSibPosTrackCrossedRows = BachSibpTrack->GetTPCClusterInfo(2,1);
-        Float_t lBachSibNegTrackCrossedRows = BachSibnTrack->GetTPCClusterInfo(2,1);
-        Int_t lSibV0LeastNbrCrossedRows = (Int_t) lBachSibPosTrackCrossedRows;
-        if( lBachSibNegTrackCrossedRows < lSibV0LeastNbrCrossedRows )
-          lSibV0LeastNbrCrossedRows = (Int_t) lBachSibNegTrackCrossedRows;
-        
-        // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-        if( !(BachSibpTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        if( !(BachSibnTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        
-        //Get status flags
-        ULong_t lSibV0PosTrackStatus = BachSibpTrack->GetStatus();
-        ULong_t lSibV0NegTrackStatus = BachSibnTrack->GetStatus();
-        
-        //Compute ratio Crossed Rows / Findable clusters
-        //Note: above test avoids division by zero!
-        Float_t lBachSibPosTrackCrossedRowsOverFindable = lBachSibPosTrackCrossedRows / ((double)(BachSibpTrack->GetTPCNclsF()));
-        Float_t lBachSibNegTrackCrossedRowsOverFindable = lBachSibNegTrackCrossedRows / ((double)(BachSibnTrack->GetTPCNclsF()));
-        
-        Float_t lSibV0LeastRatioCrossedRowsOverFindable = lBachSibPosTrackCrossedRowsOverFindable;
-        if( lBachSibNegTrackCrossedRowsOverFindable < lSibV0LeastRatioCrossedRowsOverFindable )
-          lSibV0LeastRatioCrossedRowsOverFindable = lBachSibNegTrackCrossedRowsOverFindable;
-        
-        //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-        if ( lSibV0LeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-        
-        
-        //Extra track quality: min track length
-        Float_t lBachSibSmallestTrackLength = 1000;
-        Float_t lBachSibPosTrackLength = -1;
-        Float_t lBachSibNegTrackLength = -1;
-        
-        if (BachSibpTrack->GetInnerParam()) lBachSibPosTrackLength = BachSibpTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        if (BachSibnTrack->GetInnerParam()) lBachSibNegTrackLength = BachSibnTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        
-        if ( lBachSibPosTrackLength  < lBachSibSmallestTrackLength ) lBachSibSmallestTrackLength = lBachSibPosTrackLength;
-        if ( lBachSibNegTrackLength  < lBachSibSmallestTrackLength ) lBachSibSmallestTrackLength = lBachSibNegTrackLength;
-        
-        //fTreeVariableMinTrackLength = lSmallestTrackLength;
-        
-        if ( ( ( ( BachSibpTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( BachSibnTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lBachSibSmallestTrackLength<80 ) continue;
-        
-        fTreeCascVarV0BachSibIsValid = 1;
-        //End track Quality Cuts
-        //Now would be a good time to get V0 informations
-        
-        Double_t tBachSibDecayVertexV0[3];
-        BachSibv0->GetXYZ(tBachSibDecayVertexV0[0],tBachSibDecayVertexV0[1],tBachSibDecayVertexV0[2]);
-        
-        lBachSibV0Radius = TMath::Sqrt(tBachSibDecayVertexV0[0]*tBachSibDecayVertexV0[0]+tBachSibDecayVertexV0[1]*tBachSibDecayVertexV0[1]);
-        
-        lBachSibDcaPosToPrimVertex = TMath::Abs(BachSibpTrack->GetD(lBestPrimaryVtxPos[0],
-                                                                    lBestPrimaryVtxPos[1],
-                                                                    lMagneticField) );
-        
-        lBachSibDcaNegToPrimVertex = TMath::Abs(BachSibnTrack->GetD(lBestPrimaryVtxPos[0],
-                                                                    lBestPrimaryVtxPos[1],
-                                                                    lMagneticField) );
-        
-        lBachSibOnFlyStatus = BachSibv0->GetOnFlyStatus();
-        lBachSibChi2V0 = BachSibv0->GetChi2V0();
-        lBachSibDcaV0Daughters = BachSibv0->GetDcaV0Daughters();
-        lBachSibDcaV0ToPrimVertex = BachSibv0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        lBachSibV0CosineOfPointingAngle = BachSibv0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        BachSibv0->ChangeMassHypothesis(310);
-        lBachSibInvMassK0s = BachSibv0->GetEffMass();
-        BachSibv0->ChangeMassHypothesis(3122);
-        lBachSibInvMassLambda = BachSibv0->GetEffMass();
-        BachSibv0->ChangeMassHypothesis(-3122);
-        lBachSibInvMassAntiLambda = BachSibv0->GetEffMass();
-        lBachSibAlphaV0 = BachSibv0->AlphaV0();
-        lBachSibPtArmV0 = BachSibv0->PtArmV0();
-        
-        fTreeCascVarBachSibPt                      = BachSibv0->Pt();
-        fTreeCascVarBachSibDcaV0ToPrimVertex       = lBachSibDcaV0ToPrimVertex;
-        fTreeCascVarBachSibDcaV0Daughters          = lBachSibDcaV0Daughters;
-        fTreeCascVarBachSibV0CosineOfPointingAngle = lBachSibV0CosineOfPointingAngle;
-        fTreeCascVarBachSibV0V0Radius              = lBachSibV0Radius;
-        fTreeCascVarBachSibV0DcaPosToPrimVertex    = lBachSibDcaPosToPrimVertex;
-        fTreeCascVarBachSibV0DcaNegToPrimVertex    = lBachSibDcaNegToPrimVertex;
-        fTreeCascVarBachSibV0InvMassK0s            = lBachSibInvMassK0s;
-        fTreeCascVarBachSibV0InvMassLambda         = lBachSibInvMassLambda;
-        fTreeCascVarBachSibV0InvMassAntiLambda     = lBachSibInvMassAntiLambda;
-        //^^^^^^^^^^^^^^^^^^^^^^
-      }
-    }
-    
-    if( TMath::Abs(fTreeCascVarPIDNegativeMother) == 310 ){
-      Int_t lNegSibV0Status = 0;
-      fTreeCascVarV0NegSibIsValid = 0;
-      
-      //Need to loop on the V0's
-      for (Int_t lV0 = 0; lV0 < nv0s; lV0++){
-        AliESDv0 *NegSibv0 = ((AliESDEvent*)lESDevent)->GetV0(lV0);
-        if (!NegSibv0) continue;
-        
-        CheckChargeV0( NegSibv0 );
-        //Remove like-sign (will not affect offline V0 candidates!)
-        if( NegSibv0->GetParamN()->Charge() > 0 && NegSibv0->GetParamP()->Charge() > 0 ){
-          continue;
-        }
-        if( NegSibv0->GetParamN()->Charge() < 0 && NegSibv0->GetParamP()->Charge() < 0 ){
-          continue;
-        }
-        
-        UInt_t lNegSibKeyPos = (UInt_t)TMath::Abs(NegSibv0->GetPindex());
-        UInt_t lNegSibKeyNeg = (UInt_t)TMath::Abs(NegSibv0->GetNindex());
-        
-        
-        AliESDtrack *NegSibpTrack=((AliESDEvent*)lESDevent)->GetTrack(lNegSibKeyPos);
-        AliESDtrack *NegSibnTrack=((AliESDEvent*)lESDevent)->GetTrack(lNegSibKeyNeg);
-        if (!NegSibpTrack || !NegSibnTrack) {
-          Printf("ERROR: Could not retreive one of the daughter track");
-          continue;
-        }
-        Int_t lblNegSibV0P = (Int_t) TMath::Abs( NegSibpTrack->GetLabel() );
-        Int_t lblNegSibV0N = (Int_t) TMath::Abs( NegSibnTrack->GetLabel() );
-        //Testing if Negative belong to this V0
-        Int_t lblNegSib = -9999;
-        AliESDtrack *NegSibTrack = 0x0;
-        if( lblNegV0Dghter == lblNegSibV0P ){
-          lblNegSib = lblNegSibV0N;
-        }
-        if( lblNegV0Dghter == lblNegSibV0N ){
-          lblNegSib = lblNegSibV0P;
-        }
-        if( lblNegSib == -9999 ) continue; //Did not find Negative in V0
-        //NegSibTrack = ((AliESDEvent*)lESDevent)->GetTrack(lblNegSib);
-        //Now need to check if sibling comes from same mother as bachellr (K0s)
-        
-        TParticle* mcNegSib = lMCstack->Particle(lblNegSib);
-        
-        Int_t lblNegSibMother = mcNegSib->GetFirstMother();
-        if( lblNegSibMother != lblMotherNegV0Dghter ) continue;//Different mothers
-        //Start of track quality checks
-        //Now let's test track quality
-        const AliExternalTrackParam *NegSibinnernegv0=NegSibnTrack->GetInnerParam();
-        const AliExternalTrackParam *NegSibinnerposv0=NegSibpTrack->GetInnerParam();
-        Float_t lNegSibPosInnerP = -1;
-        Float_t lNegSibNegInnerP = -1;
-        if(NegSibinnerposv0)  { lNegSibPosInnerP  = NegSibinnerposv0 ->GetP(); }
-        if(NegSibinnernegv0)  { lNegSibNegInnerP  = NegSibinnernegv0 ->GetP(); }
-        
-        //Daughter Eta for Eta selection, afterwards
-        Float_t lNegSibV0NegEta = NegSibnTrack->Eta();
-        Float_t lNegSibV0PosEta = NegSibpTrack->Eta();
-        
-        //Let's not use this for now...
-        //if ( fkExtraCleanup ){
-        //    if( TMath::Abs( nTrack->Eta() )>0.8 || TMath::Abs( pTrack->Eta() )>0.8 ) continue;
-        //}
-        
-        
-        //________________________________________________________________________
-        // Track quality cuts
-        Float_t lNegSibPosTrackCrossedRows = NegSibpTrack->GetTPCClusterInfo(2,1);
-        Float_t lNegSibNegTrackCrossedRows = NegSibnTrack->GetTPCClusterInfo(2,1);
-        Int_t lSibV0LeastNbrCrossedRows = (Int_t) lNegSibPosTrackCrossedRows;
-        if( lNegSibNegTrackCrossedRows < lSibV0LeastNbrCrossedRows )
-          lSibV0LeastNbrCrossedRows = (Int_t) lNegSibNegTrackCrossedRows;
-        
-        // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-        if( !(NegSibpTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        if( !(NegSibnTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        
-        //Get status flags
-        ULong_t lSibV0PosTrackStatus = NegSibpTrack->GetStatus();
-        ULong_t lSibV0NegTrackStatus = NegSibnTrack->GetStatus();
-        
-        //Compute ratio Crossed Rows / Findable clusters
-        //Note: above test avoids division by zero!
-        Float_t lNegSibPosTrackCrossedRowsOverFindable = lNegSibPosTrackCrossedRows / ((double)(NegSibpTrack->GetTPCNclsF()));
-        Float_t lNegSibNegTrackCrossedRowsOverFindable = lNegSibNegTrackCrossedRows / ((double)(NegSibnTrack->GetTPCNclsF()));
-        
-        Float_t lSibV0LeastRatioCrossedRowsOverFindable = lNegSibPosTrackCrossedRowsOverFindable;
-        if( lNegSibNegTrackCrossedRowsOverFindable < lSibV0LeastRatioCrossedRowsOverFindable )
-          lSibV0LeastRatioCrossedRowsOverFindable = lNegSibNegTrackCrossedRowsOverFindable;
-        
-        //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-        if ( lSibV0LeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-        
-        
-        //Extra track quality: min track length
-        Float_t lNegSibSmallestTrackLength = 1000;
-        Float_t lNegSibPosTrackLength = -1;
-        Float_t lNegSibNegTrackLength = -1;
-        
-        if (NegSibpTrack->GetInnerParam()) lNegSibPosTrackLength = NegSibpTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        if (NegSibnTrack->GetInnerParam()) lNegSibNegTrackLength = NegSibnTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        
-        if ( lNegSibPosTrackLength  < lNegSibSmallestTrackLength ) lNegSibSmallestTrackLength = lNegSibPosTrackLength;
-        if ( lNegSibNegTrackLength  < lNegSibSmallestTrackLength ) lNegSibSmallestTrackLength = lNegSibNegTrackLength;
-        
-        //fTreeVariableMinTrackLength = lSmallestTrackLength;
-        
-        if ( ( ( ( NegSibpTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( NegSibnTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lNegSibSmallestTrackLength<80 ) continue;
-        
-        fTreeCascVarV0NegSibIsValid = 1;
-        //End track Quality Cuts
-        //Now would be a good time to get V0 informations
-        
-        Double_t tNegSibDecayVertexV0[3];
-        NegSibv0->GetXYZ(tNegSibDecayVertexV0[0],tNegSibDecayVertexV0[1],tNegSibDecayVertexV0[2]);
-        
-        lNegSibV0Radius = TMath::Sqrt(tNegSibDecayVertexV0[0]*tNegSibDecayVertexV0[0]+tNegSibDecayVertexV0[1]*tNegSibDecayVertexV0[1]);
-        
-        lNegSibDcaPosToPrimVertex = TMath::Abs(NegSibpTrack->GetD(lBestPrimaryVtxPos[0],
-                                                                  lBestPrimaryVtxPos[1],
-                                                                  lMagneticField) );
-        
-        lNegSibDcaNegToPrimVertex = TMath::Abs(NegSibnTrack->GetD(lBestPrimaryVtxPos[0],
-                                                                  lBestPrimaryVtxPos[1],
-                                                                  lMagneticField) );
-        
-        lNegSibOnFlyStatus = NegSibv0->GetOnFlyStatus();
-        lNegSibChi2V0 = NegSibv0->GetChi2V0();
-        lNegSibDcaV0Daughters = NegSibv0->GetDcaV0Daughters();
-        lNegSibDcaV0ToPrimVertex = NegSibv0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        lNegSibV0CosineOfPointingAngle = NegSibv0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        NegSibv0->ChangeMassHypothesis(310);
-        lNegSibInvMassK0s = NegSibv0->GetEffMass();
-        NegSibv0->ChangeMassHypothesis(3122);
-        lNegSibInvMassLambda = NegSibv0->GetEffMass();
-        NegSibv0->ChangeMassHypothesis(-3122);
-        lNegSibInvMassAntiLambda = NegSibv0->GetEffMass();
-        lNegSibAlphaV0 = NegSibv0->AlphaV0();
-        lNegSibPtArmV0 = NegSibv0->PtArmV0();
-        
-        
-        fTreeCascVarNegSibPt                      = NegSibv0->Pt();
-        fTreeCascVarNegSibDcaV0ToPrimVertex       = lNegSibDcaV0ToPrimVertex;
-        fTreeCascVarNegSibDcaV0Daughters          = lNegSibDcaV0Daughters;
-        fTreeCascVarNegSibV0CosineOfPointingAngle = lNegSibV0CosineOfPointingAngle;
-        fTreeCascVarNegSibV0V0Radius              = lNegSibV0Radius;
-        fTreeCascVarNegSibV0DcaPosToPrimVertex    = lNegSibDcaPosToPrimVertex;
-        fTreeCascVarNegSibV0DcaNegToPrimVertex    = lNegSibDcaNegToPrimVertex;
-        fTreeCascVarNegSibV0InvMassK0s            = lNegSibInvMassK0s;
-        fTreeCascVarNegSibV0InvMassLambda         = lNegSibInvMassLambda;
-        fTreeCascVarNegSibV0InvMassAntiLambda     = lNegSibInvMassAntiLambda;
-        //^^^^^^^^^^^^^^^^^^^^^^
-      }
-    }
-    
-    if( TMath::Abs(fTreeCascVarPIDPositiveMother) == 310 ){
-      Int_t lPosSibV0Status = 0;
-      fTreeCascVarV0PosSibIsValid = 0;
-      
-      //Need to loop on the V0's
-      for (Int_t lV0 = 0; lV0 < nv0s; lV0++){
-        AliESDv0 *PosSibv0 = ((AliESDEvent*)lESDevent)->GetV0(lV0);
-        if (!PosSibv0) continue;
-        
-        CheckChargeV0( PosSibv0 );
-        //Remove like-sign (will not affect offline V0 candidates!)
-        if( PosSibv0->GetParamN()->Charge() > 0 && PosSibv0->GetParamP()->Charge() > 0 ){
-          continue;
-        }
-        if( PosSibv0->GetParamN()->Charge() < 0 && PosSibv0->GetParamP()->Charge() < 0 ){
-          continue;
-        }
-        
-        UInt_t lPosSibKeyPos = (UInt_t)TMath::Abs(PosSibv0->GetPindex());
-        UInt_t lPosSibKeyNeg = (UInt_t)TMath::Abs(PosSibv0->GetNindex());
-        
-        
-        AliESDtrack *PosSibpTrack=((AliESDEvent*)lESDevent)->GetTrack(lPosSibKeyPos);
-        AliESDtrack *PosSibnTrack=((AliESDEvent*)lESDevent)->GetTrack(lPosSibKeyNeg);
-        if (!PosSibpTrack || !PosSibnTrack) {
-          Printf("ERROR: Could not retreive one of the daughter track");
-          continue;
-        }
-        Int_t lblPosSibV0P = (Int_t) TMath::Abs( PosSibpTrack->GetLabel() );
-        Int_t lblPosSibV0N = (Int_t) TMath::Abs( PosSibnTrack->GetLabel() );
-        //Testing if Positive belong to this V0
-        Int_t lblPosSib = -9999;
-        AliESDtrack *PosSibTrack = 0x0;
-        if( lblPosV0Dghter == lblPosSibV0P ){
-          lblPosSib = lblPosSibV0N;
-        }
-        if( lblPosV0Dghter == lblPosSibV0N ){
-          lblPosSib = lblPosSibV0P;
-        }
-        if( lblPosSib == -9999 ) continue; //Did not find Positive in V0
-        //PosSibTrack = ((AliESDEvent*)lESDevent)->GetTrack(lblPosSib);
-        //Now need to check if sibling comes from same mother as bachellr (K0s)
-        
-        TParticle* mcPosSib = lMCstack->Particle(lblPosSib);
-        
-        Int_t lblPosSibMother = mcPosSib->GetFirstMother();
-        if( lblPosSibMother != lblMotherPosV0Dghter ) continue;//Different mothers
-        //Start of track quality checks
-        //Now let's test track quality
-        const AliExternalTrackParam *PosSibinnernegv0=PosSibnTrack->GetInnerParam();
-        const AliExternalTrackParam *PosSibinnerposv0=PosSibpTrack->GetInnerParam();
-        Float_t lPosSibPosInnerP = -1;
-        Float_t lPosSibNegInnerP = -1;
-        if(PosSibinnerposv0)  { lPosSibPosInnerP  = PosSibinnerposv0 ->GetP(); }
-        if(PosSibinnernegv0)  { lPosSibNegInnerP  = PosSibinnernegv0 ->GetP(); }
-        
-        //Daughter Eta for Eta selection, afterwards
-        Float_t lPosSibV0NegEta = PosSibnTrack->Eta();
-        Float_t lPosSibV0PosEta = PosSibpTrack->Eta();
-        
-        //Let's not use this for now...
-        //if ( fkExtraCleanup ){
-        //    if( TMath::Abs( nTrack->Eta() )>0.8 || TMath::Abs( pTrack->Eta() )>0.8 ) continue;
-        //}
-        
-        
-        //________________________________________________________________________
-        // Track quality cuts
-        Float_t lPosSibPosTrackCrossedRows = PosSibpTrack->GetTPCClusterInfo(2,1);
-        Float_t lPosSibNegTrackCrossedRows = PosSibnTrack->GetTPCClusterInfo(2,1);
-        Int_t lSibV0LeastNbrCrossedRows = (Int_t) lPosSibPosTrackCrossedRows;
-        if( lPosSibNegTrackCrossedRows < lSibV0LeastNbrCrossedRows )
-          lSibV0LeastNbrCrossedRows = (Int_t) lPosSibNegTrackCrossedRows;
-        
-        // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-        if( !(PosSibpTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        if( !(PosSibnTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        
-        //Get status flags
-        ULong_t lSibV0PosTrackStatus = PosSibpTrack->GetStatus();
-        ULong_t lSibV0NegTrackStatus = PosSibnTrack->GetStatus();
-        
-        //Compute ratio Crossed Rows / Findable clusters
-        //Note: above test avoids division by zero!
-        Float_t lPosSibPosTrackCrossedRowsOverFindable = lPosSibPosTrackCrossedRows / ((double)(PosSibpTrack->GetTPCNclsF()));
-        Float_t lPosSibNegTrackCrossedRowsOverFindable = lPosSibNegTrackCrossedRows / ((double)(PosSibnTrack->GetTPCNclsF()));
-        
-        Float_t lSibV0LeastRatioCrossedRowsOverFindable = lPosSibPosTrackCrossedRowsOverFindable;
-        if( lPosSibNegTrackCrossedRowsOverFindable < lSibV0LeastRatioCrossedRowsOverFindable )
-          lSibV0LeastRatioCrossedRowsOverFindable = lPosSibNegTrackCrossedRowsOverFindable;
-        
-        //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-        if ( lSibV0LeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-        
-        
-        //Extra track quality: min track length
-        Float_t lPosSibSmallestTrackLength = 1000;
-        Float_t lPosSibPosTrackLength = -1;
-        Float_t lPosSibNegTrackLength = -1;
-        
-        if (PosSibpTrack->GetInnerParam()) lPosSibPosTrackLength = PosSibpTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        if (PosSibnTrack->GetInnerParam()) lPosSibNegTrackLength = PosSibnTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        
-        if ( lPosSibPosTrackLength  < lPosSibSmallestTrackLength ) lPosSibSmallestTrackLength = lPosSibPosTrackLength;
-        if ( lPosSibNegTrackLength  < lPosSibSmallestTrackLength ) lPosSibSmallestTrackLength = lPosSibNegTrackLength;
-        
-        //fTreeVariableMinTrackLength = lSmallestTrackLength;
-        
-        if ( ( ( ( PosSibpTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( PosSibnTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lPosSibSmallestTrackLength<80 ) continue;
-        
-        fTreeCascVarV0PosSibIsValid = 1;
-        //End track Quality Cuts
-        //Now would be a good time to get V0 informations
-        
-        Double_t tPosSibDecayVertexV0[3];
-        PosSibv0->GetXYZ(tPosSibDecayVertexV0[0],tPosSibDecayVertexV0[1],tPosSibDecayVertexV0[2]);
-        
-        lPosSibV0Radius = TMath::Sqrt(tPosSibDecayVertexV0[0]*tPosSibDecayVertexV0[0]+tPosSibDecayVertexV0[1]*tPosSibDecayVertexV0[1]);
-        
-        lPosSibDcaPosToPrimVertex = TMath::Abs(PosSibpTrack->GetD(lBestPrimaryVtxPos[0],
-                                                                  lBestPrimaryVtxPos[1],
-                                                                  lMagneticField) );
-        
-        lPosSibDcaNegToPrimVertex = TMath::Abs(PosSibnTrack->GetD(lBestPrimaryVtxPos[0],
-                                                                  lBestPrimaryVtxPos[1],
-                                                                  lMagneticField) );
-        
-        lPosSibOnFlyStatus = PosSibv0->GetOnFlyStatus();
-        lPosSibChi2V0 = PosSibv0->GetChi2V0();
-        lPosSibDcaV0Daughters = PosSibv0->GetDcaV0Daughters();
-        lPosSibDcaV0ToPrimVertex = PosSibv0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        lPosSibV0CosineOfPointingAngle = PosSibv0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        PosSibv0->ChangeMassHypothesis(310);
-        lPosSibInvMassK0s = PosSibv0->GetEffMass();
-        PosSibv0->ChangeMassHypothesis(3122);
-        lPosSibInvMassLambda = PosSibv0->GetEffMass();
-        PosSibv0->ChangeMassHypothesis(-3122);
-        lPosSibInvMassAntiLambda = PosSibv0->GetEffMass();
-        lPosSibAlphaV0 = PosSibv0->AlphaV0();
-        lPosSibPtArmV0 = PosSibv0->PtArmV0();
-        
-        fTreeCascVarPosSibPt                      = PosSibv0->Pt();
-        fTreeCascVarPosSibDcaV0ToPrimVertex       = lPosSibDcaV0ToPrimVertex;
-        fTreeCascVarPosSibDcaV0Daughters          = lPosSibDcaV0Daughters;
-        fTreeCascVarPosSibV0CosineOfPointingAngle = lPosSibV0CosineOfPointingAngle;
-        fTreeCascVarPosSibV0V0Radius              = lPosSibV0Radius;
-        fTreeCascVarPosSibV0DcaPosToPrimVertex    = lPosSibDcaPosToPrimVertex;
-        fTreeCascVarPosSibV0DcaNegToPrimVertex    = lPosSibDcaNegToPrimVertex;
-        fTreeCascVarPosSibV0InvMassK0s            = lPosSibInvMassK0s;
-        fTreeCascVarPosSibV0InvMassLambda         = lPosSibInvMassLambda;
-        fTreeCascVarPosSibV0InvMassAntiLambda     = lPosSibInvMassAntiLambda;
-        //^^^^^^^^^^^^^^^^^^^^^^
-      }
-    }
     
     //----------------------------------------
     // Regular MC ASSOCIATION ENDS HERE
     //----------------------------------------
+    
     
     //----------------------------------------
     // Swapped MC ASSOCIATION STARTS HERE
@@ -4949,9 +4435,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
       lblBachSwapped        = lblPosV0Dghter;
     }
     
-    TParticle* mcPosV0DghterSwapped = lMCstack->Particle( lblPosV0DghterSwapped );
-    TParticle* mcNegV0DghterSwapped = lMCstack->Particle( lblNegV0DghterSwapped );
-    TParticle* mcBachSwapped        = lMCstack->Particle( lblBachSwapped );
+    AliMCParticle* mcPosV0DghterSwapped = (AliMCParticle*) lMCevent->GetTrack( lblPosV0DghterSwapped );
+    AliMCParticle* mcNegV0DghterSwapped = (AliMCParticle*) lMCevent->GetTrack( lblNegV0DghterSwapped );
+    AliMCParticle* mcBachSwapped = (AliMCParticle*) lMCevent->GetTrack( lblBachSwapped );
     
     //Needed, just for checks
     Int_t lPID_BachMotherSwapped = 0;
@@ -4961,8 +4447,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     
     // - Step 4.2 : level of the Xi daughters
     
-    Int_t lblMotherPosV0DghterSwapped = mcPosV0DghterSwapped->GetFirstMother() ;
-    Int_t lblMotherNegV0DghterSwapped = mcNegV0DghterSwapped->GetFirstMother();
+    Int_t lblMotherPosV0DghterSwapped = mcPosV0DghterSwapped->GetMother() ;
+    Int_t lblMotherNegV0DghterSwapped = mcNegV0DghterSwapped->GetMother();
     
     //Rather uncivilized: Open brackets for each 'continue'
     if(! (lblMotherPosV0DghterSwapped != lblMotherNegV0DghterSwapped) ) { // same mother
@@ -4970,34 +4456,32 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if(! (lblMotherNegV0DghterSwapped < 0) ) {
           
           // mothers = Lambda candidate ... a priori
-          
-          TParticle* mcMotherPosV0DghterSwapped = lMCstack->Particle( lblMotherPosV0DghterSwapped );
-          TParticle* mcMotherNegV0DghterSwapped = lMCstack->Particle( lblMotherNegV0DghterSwapped );
+          AliMCParticle* mcMotherPosV0DghterSwapped = (AliMCParticle*) lMCevent->GetTrack( lblMotherPosV0DghterSwapped );
+          AliMCParticle* mcMotherNegV0DghterSwapped = (AliMCParticle*) lMCevent->GetTrack( lblMotherNegV0DghterSwapped );
           
           // - Step 4.3 : level of Xi candidate
           
-          Int_t lblGdMotherPosV0DghterSwapped =   mcMotherPosV0DghterSwapped->GetFirstMother() ;
-          Int_t lblGdMotherNegV0DghterSwapped =   mcMotherNegV0DghterSwapped->GetFirstMother() ;
+          Int_t lblGdMotherPosV0DghterSwapped =   mcMotherPosV0DghterSwapped->GetMother() ;
+          Int_t lblGdMotherNegV0DghterSwapped =   mcMotherNegV0DghterSwapped->GetMother() ;
           
           if(! (lblGdMotherPosV0DghterSwapped != lblGdMotherNegV0DghterSwapped) ) {
             if(! (lblGdMotherPosV0DghterSwapped < 0) ) { // primary lambda ...
               if(! (lblGdMotherNegV0DghterSwapped < 0) ) { // primary lambda ...
                 
                 // Gd mothers = Xi candidate ... a priori
+                AliMCParticle* mcGdMotherPosV0DghterSwapped = (AliMCParticle*) lMCevent->GetTrack( lblGdMotherPosV0DghterSwapped );
+                AliMCParticle* mcGdMotherNegV0DghterSwapped = (AliMCParticle*) lMCevent->GetTrack( lblGdMotherNegV0DghterSwapped );
                 
-                TParticle* mcGdMotherPosV0DghterSwapped = lMCstack->Particle( lblGdMotherPosV0DghterSwapped );
-                TParticle* mcGdMotherNegV0DghterSwapped = lMCstack->Particle( lblGdMotherNegV0DghterSwapped );
+                Int_t lblMotherBachSwapped = (Int_t) TMath::Abs( mcBachSwapped->GetMother()  );
                 
-                Int_t lblMotherBachSwapped = (Int_t) TMath::Abs( mcBachSwapped->GetFirstMother()  );
-                
-                //		if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
+                //    if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
                 if(!(lblMotherBachSwapped != lblGdMotherPosV0DghterSwapped)) { //same mother for bach and V0 daughters
                   
-                  TParticle* mcMotherBachSwapped = lMCstack->Particle( lblMotherBachSwapped );
+                  AliMCParticle* mcMotherBachSwapped = (AliMCParticle*) lMCevent->GetTrack( lblMotherBachSwapped );
                   
-                  lPID_BachMotherSwapped = mcMotherBachSwapped->GetPdgCode();
-                  lPID_NegMotherSwapped = mcGdMotherPosV0DghterSwapped->GetPdgCode();
-                  lPID_PosMotherSwapped = mcGdMotherNegV0DghterSwapped->GetPdgCode();
+                  lPID_BachMotherSwapped = mcMotherBachSwapped->PdgCode();
+                  lPID_NegMotherSwapped = mcGdMotherPosV0DghterSwapped->PdgCode();
+                  lPID_PosMotherSwapped = mcGdMotherNegV0DghterSwapped->PdgCode();
                   
                   if(lPID_BachMotherSwapped==lPID_NegMotherSwapped && lPID_BachMotherSwapped==lPID_PosMotherSwapped) {
                     lPDGCodeCascadeSwapped = lPID_BachMotherSwapped;
