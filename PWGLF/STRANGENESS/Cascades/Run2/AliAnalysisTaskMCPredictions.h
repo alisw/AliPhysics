@@ -80,10 +80,11 @@ public:
   
   //configure intervals
   void ClearEtaIntervals() { fkNIntervals = 0; };
-  void AddEtaInterval( Float_t lMin, Float_t lMax ) {
+  void AddEtaInterval( Float_t lMin, Float_t lMax, Float_t lWeight = 1.0 ) {
     fkNIntervals++;
     fkIntervalMinEta[fkNIntervals] = lMin;
     fkIntervalMaxEta[fkNIntervals] = lMax;
+    fkIntervalWeight[fkNIntervals] = lWeight;
   } ;
   void PrintEtaIntervals(); 
   
@@ -111,6 +112,7 @@ private:
   Int_t fkNIntervals; //number of eta intervals in "SPD" estimator (def 1)
   Float_t fkIntervalMinEta[10];
   Float_t fkIntervalMaxEta[10];
+  Float_t fkIntervalWeight[10]; 
   
   Bool_t fkSelectINELgtZERO;
   Bool_t fkWideRapiditySpeciesStudy; //if true, |y|<4.0 instead of |y|<0.5 for PID

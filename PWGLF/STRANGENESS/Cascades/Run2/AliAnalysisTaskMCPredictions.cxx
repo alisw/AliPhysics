@@ -194,6 +194,7 @@ fHistDDQ2(0x0)
     fEMBufferPhiXiB[ii]=0;
     fkIntervalMinEta[ii] = 0;
     fkIntervalMaxEta[ii] = 0;
+    fkIntervalWeight[ii] = 1.0;
   }
   fkIntervalMinEta[0] = -1.4;
   fkIntervalMaxEta[0] = +1.4;
@@ -314,6 +315,7 @@ fHistDDQ2(0x0)
     fEMBufferPhiXiB[ii]=0;
     fkIntervalMinEta[ii] = 0;
     fkIntervalMaxEta[ii] = 0;
+    fkIntervalWeight[ii] = 1.0;
   }
   fkIntervalMinEta[0] = -1.4;
   fkIntervalMaxEta[0] = +1.4;
@@ -829,7 +831,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   Long_t lNchEta8   = 0;
   Long_t lNchEta8to15   = 0;
   Long_t lNchEta10  = 0;
-  Long_t lNchEtaWide  = 0;
+  Double_t lNchEtaWide  = 0;
   Long_t lNchVZEROA = 0;
   Long_t lNchVZEROC = 0;
   Bool_t lEvSel_INELgtZEROStackPrimaries=kFALSE;
@@ -859,14 +861,14 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     
     //Special treatment: multiple intervals 
     for(Int_t ii = 0; ii<fkNIntervals; ii++ )
-      if( fkIntervalMinEta[ii] < geta && geta < fkIntervalMaxEta[ii] ) lNchEtaWide++;
+      if( fkIntervalMinEta[ii] < geta && geta < fkIntervalMaxEta[ii] ) lNchEtaWide+=fkIntervalWeight[ii];
   }//End of loop on tracks
   //----- End Loop on Stack ------------------------------------------------------------
   
   //Reject non-INEL>0 if requested
   if( !lEvSel_INELgtZEROStackPrimaries && fkSelectINELgtZERO ) return;
   
-  if( lNchEtaWide < fkMinimumMultiplicity ) return;
+  if( lNchEtaWide < fkMinimumMultiplicity+1e-10 ) return;
   
   //------------------------------------------------
   // Acquire information on Npart, Ncoll, b
@@ -1952,5 +1954,5 @@ Double_t AliAnalysisTaskMCPredictions::ComputeDeltaPhi( Double_t phi1, Double_t 
 //______________________________________________________________________
 void AliAnalysisTaskMCPredictions::PrintEtaIntervals(){
   for(Int_t ii=0; ii<fkNIntervals; ii++)
-    cout<<"Interval #"<<ii<<"\tmin = "<<fkIntervalMinEta[ii]<<"\tmax = "<<fkIntervalMaxEta[ii]<<endl;
+    cout<<"Interval #"<<ii<<"\tmin = "<<fkIntervalMinEta[ii]<<"\tmax = "<<fkIntervalMaxEta[ii]<<"\tweight = "<<fkIntervalWeight[ii]<<endl;
 }
