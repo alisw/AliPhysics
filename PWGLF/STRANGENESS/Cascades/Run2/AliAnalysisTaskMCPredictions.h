@@ -66,7 +66,6 @@ public:
   void SetPtTrigger( Float_t l1, Float_t l2 ) { fMinPtTrigger = l1; fMaxPtTrigger = l2; }
   void SetEtaTrigger( Float_t lEta1, Float_t lEta2 ) { fMinEtaTrigger = lEta1; fMaxEtaTrigger = lEta2; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
-  void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
   void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
   
   void SetDoImpactParameterStudy ( Bool_t lOpt = kTRUE) { fkDoImpactParameterStudy = lOpt; }
@@ -76,7 +75,16 @@ public:
   
   void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
   void SetCheckOriginThirdArgument ( Bool_t lVal ) { fCheckOriginThirdArgument = lVal; } ;
+  void SetNSpecies ( Int_t lVal ) { fkNSpecies = lVal; } ;
   void SetNSpeciesDD ( Int_t lVal ) { fkNSpeciesDD = lVal; } ;
+  
+  //configure intervals
+  void ClearEtaIntervals() { fkNIntervals = 0; };
+  void AddEtaInterval( Float_t lMin, Float_t lMax ) {
+    fkNIntervals++;
+    fkIntervalMinEta[fkNIntervals] = lMin;
+    fkIntervalMaxEta[fkNIntervals] = lMax;
+  } ;
   
   //---------------------------------------------------------------------------------------
   
@@ -97,9 +105,13 @@ private:
   Int_t fkNBBins;
   Int_t fkNNpartBins;
   Int_t fkNEtaBins;
+  Int_t fkNSpecies;
+  
+  Int_t fkNIntervals; //number of eta intervals in "SPD" estimator (def 1)
+  Float_t fkIntervalMinEta[10];
+  Float_t fkIntervalMaxEta[10];
   
   Bool_t fkSelectINELgtZERO;
-  Bool_t fkALICE3SiliconMode; //if true, SPD multiplicity == full |eta|<4.0
   Bool_t fkWideRapiditySpeciesStudy; //if true, |y|<4.0 instead of |y|<0.5 for PID
   
   Bool_t fkDoImpactParameterStudy;
