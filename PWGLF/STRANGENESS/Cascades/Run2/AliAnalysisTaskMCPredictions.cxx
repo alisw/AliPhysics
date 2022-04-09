@@ -1948,3 +1948,9 @@ Double_t AliAnalysisTaskMCPredictions::ComputeDeltaPhi( Double_t phi1, Double_t 
   if( lReturnVal < -TMath::Pi()/2 ) lReturnVal += 2*TMath::Pi();
   return lReturnVal;
 }
+
+//______________________________________________________________________
+void AliAnalysisTaskMCPredictions::PrintEtaIntervals(){
+  for(Int_t ii=0; ii<fkNIntervals; ii++)
+    cout<<"Interval #"<<ii<<"\tmin = "<<fkIntervalMinEta[ii]<<"\tmax = "<<fkIntervalMaxEta[ii]<<endl;
+}

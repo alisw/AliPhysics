@@ -85,6 +85,7 @@ public:
     fkIntervalMinEta[fkNIntervals] = lMin;
     fkIntervalMaxEta[fkNIntervals] = lMax;
   } ;
+  void PrintEtaIntervals(); 
   
   //---------------------------------------------------------------------------------------
   
