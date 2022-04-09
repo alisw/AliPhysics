@@ -195,6 +195,7 @@ BunchCrossingIDNotZero(0),
 fNPileUpVertices(0),
 fNumberOfTracks(0),
 fEtaCut(0),
+fGenName("Hijing"),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
 fNTracksITSsa2010(0),
@@ -370,6 +371,7 @@ BunchCrossingIDNotZero(0),
 fNPileUpVertices(0),
 fNumberOfTracks(0),
 fEtaCut(0),
+fGenName("Hijing"),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
 fNTracksITSsa2010(0),
@@ -455,6 +457,7 @@ fOADB(nullptr)
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPhi[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPileupVxt[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackITSrefit[iq] = kFALSE ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackSPD[iq] = kFALSE ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackTPC[iq] = kFALSE ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackIsPileup[iq] = kFALSE ;
   
@@ -772,6 +775,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
       fTreeEvent->Branch("fTrackPhi",fTrackPhi,"fTrackPhi[fNumberOfTracks]/F");
       fTreeEvent->Branch("fTrackPileupVxt",fTrackPileupVxt,"fTrackPileupVxt[fNumberOfTracks]/I");
       fTreeEvent->Branch("fTrackITSrefit",fTrackITSrefit,"fTrackITSrefit[fNumberOfTracks]/O");
+      fTreeEvent->Branch("fTrackSPD",fTrackSPD,"fTrackSPD[fNumberOfTracks]/O");
       fTreeEvent->Branch("fTrackTPC",fTrackTPC,"fTrackTPC[fNumberOfTracks]/O");
       fTreeEvent->Branch("fTrackIsPileup", fTrackIsPileup, "fTrackIsPileup[fNumberOfTracks]/O");
     }
@@ -1271,7 +1275,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
         
         //Check pileup
-        fMC_IsPileup = fUtils->IsPileupInGeneratedEvent(mcEvent, "Hijing");
+        fMC_IsPileup = fUtils->IsPileupInGeneratedEvent(mcEvent, fGenName.Data());
         
         //DPMJet/HIJING info if available
         if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
@@ -1767,29 +1771,32 @@ void AliMultSelectionTask::UserExec(Option_t *)
               fTrackEta[Ntracks] = trk->Eta(); 
               fTrackPhi[Ntracks] = trk->Phi(); 
               fTrackITSrefit[Ntracks] = (trk->GetStatus() & AliESDtrack::kITSrefit); //ITS refit flag
+              fTrackSPD[Ntracks] = (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)); //Has Points on SPD flag
               fTrackTPC[Ntracks] = ((trk->GetStatus() & AliESDtrack::kTPCout) && trk->GetID() > 0); //TPCout flag
               fTrackDCAz[Ntracks] = dzz[1]; //DCAz information
               
               //Find out if this track is pileup
               if ( fkDebugIsMC ) {
+
                 AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
                 AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
                 AliStack*    stack=0;
                 AliMCEvent*  mcEvent=0;
-                
+
                 if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
                   //Step 1: access track label
-                  Int_t lblTrack = (Int_t) TMath::Abs(ctrack.GetLabel());
+                  Int_t lblTrack = (Int_t) TMath::Abs(trk->GetLabel());
                   //Step 2: check if track
-                  fTrackIsPileup[Ntracks] = fUtils->IsParticleFromOutOfBunchPileupCollision(lblTrack,mcEvent);
+                  fTrackIsPileup[Ntracks] = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(lblTrack,mcEvent);
                 }
+
               }
               // for events with pileup
               if (fMC_IsPileup && HasPUVertices){ 
                 
                 Bool_t IsNotFromCollision = kTRUE; // discriminate primary and secundary tracks
                 Int_t VxtCounter = 0; // Vertex number
-                Int_t Trackidx = (Int_t) TMath::Abs(ctrack.GetLabel() ); // event track index
+                Int_t Trackidx = (Int_t) TMath::Abs(trk->GetLabel()); // event track index
 
                 //loop over pileup vertices
                 for (Int_t ipl=0;ipl<lNumberOfPileUpVertices;ipl++) { 
@@ -1838,7 +1845,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 Bool_t IsNotFromCollision = kTRUE;
                 UShort_t *PrimaryIdx=primaryVertex->GetIndices();
                 Int_t nPrimary=primaryVertex->GetNIndices();
-                Int_t Trackidx = (Int_t) TMath::Abs(ctrack.GetLabel() );
+                Int_t Trackidx = (Int_t) TMath::Abs(trk->GetLabel());
 
                 //loop over primary vertex tracks
                 while (nPrimary--) { 
