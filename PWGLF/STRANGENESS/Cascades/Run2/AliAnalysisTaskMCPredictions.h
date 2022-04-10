@@ -76,6 +76,8 @@ public:
   void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
   void SetCheckOriginThirdArgument ( Bool_t lVal ) { fCheckOriginThirdArgument = lVal; } ;
   void SetNSpecies ( Int_t lVal ) { fkNSpecies = lVal; } ;
+  void SetSpeciesSwitch ( Int_t lIndex, Bool_t lVal ) { fkSpeciesSwitch[lIndex] = lVal; } ;
+  void SetSpeciesSwitch ( Bool_t *lVal ) { for (Int_t ii=0; ii<76; ii++) fkSpeciesSwitch[ii] = lVal[ii]; } ;
   void SetNSpeciesDD ( Int_t lVal ) { fkNSpeciesDD = lVal; } ;
   
   //configure intervals
@@ -108,6 +110,7 @@ private:
   Int_t fkNNpartBins;
   Int_t fkNEtaBins;
   Int_t fkNSpecies;
+  Bool_t fkSpeciesSwitch[76]; 
   
   Int_t fkNIntervals; //number of eta intervals in "SPD" estimator (def 1)
   Float_t fkIntervalMinEta[10];

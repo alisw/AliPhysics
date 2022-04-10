@@ -199,6 +199,7 @@ fHistDDQ2(0x0)
   fkIntervalMinEta[0] = -1.4;
   fkIntervalMaxEta[0] = +1.4;
   for(Int_t ih=0; ih<76; ih++){
+    fkSpeciesSwitch[ih] = kTRUE;
     fHistPt[ih]          = 0x0;
     fHistEta[ih]         = 0x0;
     fHistEtaTriggeredMeson[ih]= 0x0;
@@ -320,6 +321,7 @@ fHistDDQ2(0x0)
   fkIntervalMinEta[0] = -1.4;
   fkIntervalMaxEta[0] = +1.4;
   for(Int_t ih=0; ih<76; ih++){
+    fkSpeciesSwitch[ih] = kTRUE;
     fHistPt[ih]          = 0x0;
     fHistEta[ih]         = 0x0;
     fHistEtaTriggeredMeson[ih]= 0x0;
@@ -490,74 +492,74 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   
   //Event counter histogram: Multiplicity, Npart, b (if available)
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistPt[ih] ) {
+    if(! fHistPt[ih] && fkSpeciesSwitch[ih] ) {
       fHistPt[ih] = new TH1D(Form("fHistPt_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPt[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistEta[ih] ) {
+    if(! fHistEta[ih] && fkSpeciesSwitch[ih] ) {
       fHistEta[ih] = new TH1D(Form("fHistEta_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
       fListHist->Add(fHistEta[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistEtaTriggeredMeson[ih] ) {
+    if(! fHistEtaTriggeredMeson[ih] && fkSpeciesSwitch[ih] ) {
       fHistEtaTriggeredMeson[ih] = new TH2D(Form("fHistEtaTriggeredMeson_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta, 10,0,10);
       fListHist->Add(fHistEtaTriggeredMeson[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistEtaTriggeredCharm[ih] ) {
+    if(! fHistEtaTriggeredCharm[ih] && fkSpeciesSwitch[ih] ) {
       fHistEtaTriggeredCharm[ih] = new TH2D(Form("fHistEtaTriggeredCharm_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta, 10,0,10);
       fListHist->Add(fHistEtaTriggeredCharm[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistEtaTriggeredBeauty[ih] ) {
+    if(! fHistEtaTriggeredBeauty[ih] && fkSpeciesSwitch[ih] ) {
       fHistEtaTriggeredBeauty[ih] = new TH2D(Form("fHistEtaTriggeredBeauty_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta, 10,0,10);
       fListHist->Add(fHistEtaTriggeredBeauty[ih]);
     }
   }
   
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistPtVsV0MMult[ih] ) {
+    if(! fHistPtVsV0MMult[ih] && fkSpeciesSwitch[ih] ) {
       fHistPtVsV0MMult[ih] = new TH2D(Form("fHistPtVsV0MMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsV0MMult[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistPtVsSPDMult[ih] ) {
+    if(! fHistPtVsSPDMult[ih] && fkSpeciesSwitch[ih] ) {
       fHistPtVsSPDMult[ih] = new TH2D(Form("fHistPtVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsSPDMult[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistEtaVsSPDMult[ih] && fkDoRapidityStudy ) {
+    if(! fHistEtaVsSPDMult[ih] && fkDoRapidityStudy && fkSpeciesSwitch[ih] ) {
       fHistEtaVsSPDMult[ih] = new TH2D(Form("fHistEtaVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,1,-10,10);
       fListHist->Add(fHistEtaVsSPDMult[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistYVsSPDMult[ih] && fkDoRapidityStudy ) {
+    if(! fHistYVsSPDMult[ih] && fkDoRapidityStudy && fkSpeciesSwitch[ih] ) {
       fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,1,-10,10);
       fListHist->Add(fHistYVsSPDMult[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistPtVsNpart[ih] && fkDoNpartStudy ) {
+    if(! fHistPtVsNpart[ih] && fkDoNpartStudy && fkSpeciesSwitch[ih] ) {
       fHistPtVsNpart[ih] = new TH2D(Form("fHistPtVsNpart_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",fkNNpartBins,-0.5,fkNNpartBins-0.5,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsNpart[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistPtVsB[ih] && fkDoImpactParameterStudy ) {
+    if(! fHistPtVsB[ih] && fkDoImpactParameterStudy && fkSpeciesSwitch[ih] ) {
       fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",fkNBBins,0,20,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsB[ih]);
     }
   }
   for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(! fHistPtVsNMPI[ih] && fkDoNMPIStudy ) {
+    if(! fHistPtVsNMPI[ih] && fkDoNMPIStudy && fkSpeciesSwitch[ih] ) {
       fHistPtVsNMPI[ih] = new TH2D(Form("fHistPtVsNMPI_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",50,-0.5,49.5,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsNMPI[ih]);
     }
