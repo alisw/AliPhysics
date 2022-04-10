@@ -831,7 +831,11 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   Long_t lNchEta8   = 0;
   Long_t lNchEta8to15   = 0;
   Long_t lNchEta10  = 0;
+  
+  //this keeps multiplicity over a wide range
+  //(multiple intervals as configured by the fkInterval... vars) 
   Double_t lNchEtaWide  = 0;
+  
   Long_t lNchVZEROA = 0;
   Long_t lNchVZEROC = 0;
   Bool_t lEvSel_INELgtZEROStackPrimaries=kFALSE;
