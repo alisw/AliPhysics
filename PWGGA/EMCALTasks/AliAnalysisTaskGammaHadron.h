@@ -138,6 +138,7 @@ protected:
 
   //..Correlate and fill
   Bool_t                      FillHistograms()                                              ;
+  void                        FillClusterHistograms();
   void                        FillTrackHistograms(AliParticleContainer* tracks);
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
@@ -393,6 +394,8 @@ protected:
 
 
   TH2							*fEMCalMultvZvtx;            //!<! Histogram investigating z-vertex, EMCal Multiplicity for mixed cluster pairs
+
+  TH2             *fClusterSigmaLongVsE;       //!<! Histogram of lambda02 (sigma_long) vs cluster energy
 
 	// Monte Carlo Histograms
   TH2             *fHistClusMCDE;              //!<! Difference between detector Clus E and MC E (inclusive)
