@@ -142,7 +142,7 @@ public:
 
     // dowang femto
     void Set15oPass2EventReject(Int_t EventReject);
-    bool Reject15oPass2Event(AliAODEvent *fAOD);
+    bool Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLabel);
   //---
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
@@ -229,6 +229,12 @@ protected:
     TF1 *fSPDCutPU;
     TF1 *fV0CutPU;
     TF1 *fMultCutPU;
+
+   TF1 *fCenCutLowPU2018;
+    TF1 *fCenCutHighPU2018;
+    TF1 *fSPDCutPU2018;
+    TF1 *fV0CutPU2018;
+    TF1 *fMultCutPU2018;
 private:
 
   AliAODMCParticle *GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel);
