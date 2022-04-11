@@ -294,7 +294,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
                 		TFile *v0calib;
                 		if(!AllContainers->FindObject("v0calib")) {
 				AliAnalysisDataContainer *cin_v0calib = mgr->CreateContainer(Form("v0calib"), TList::Class(), AliAnalysisManager::kInputContainer);                			
-                			v0calib = TFile::Open("/Users/wuwenya/alice/LEGOTrainTest/refData/refLHC18/calibq2V0C18rP3.root");
+                			v0calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/calibq2V0C18rP3.root");
                 			TList* v0calib_list = NULL;
 				v0calib_list = dynamic_cast<TList*>(v0calib->FindObjectAny("18rlistspPerc"));
                 		    	cin_v0calib->SetData(v0calib_list); 
