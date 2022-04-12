@@ -52,6 +52,7 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
+    fq2TPC(0),
     fEPangleFullTPC(0),
     fEPanglePosTPC(0),
     fEPangleNegTPC(0),
@@ -102,6 +103,7 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
+    fq2TPC(0),
     fEPangleFullTPC(0),
     fEPanglePosTPC(0),
     fEPangleNegTPC(0),
@@ -344,6 +346,7 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     fq2V0M = qnFullV0;
     fq2V0A = qnV0A;
     fq2V0C = qnV0C;
+    fq2TPC = qnFullTPC;
 
 	fHistqnVsCentrTPC[0]->Fill(cent,qnFullTPC);
 	fHistqnVsCentrTPC[1]->Fill(cent,qnPosTPC);
