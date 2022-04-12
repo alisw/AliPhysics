@@ -181,7 +181,7 @@ class PhysicsProfile : public TObject {
 		TProfile*	 fChcn8_Gap0[6];  		//! <<8>> |#Delta#eta| > 0.0
 
 	private:
-		ClassDef(PhysicsProfile, 5);    //Analysis task
+		ClassDef(PhysicsProfile, 6);    //Analysis task
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
@@ -502,7 +502,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 15);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 16);    //Analysis task
 };
 
 #endif
