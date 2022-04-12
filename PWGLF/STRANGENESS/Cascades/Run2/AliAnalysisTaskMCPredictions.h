@@ -78,6 +78,7 @@ public:
   void SetNSpecies ( Int_t lVal ) { fkNSpecies = lVal; } ;
   void SetSpeciesSwitch ( Int_t lIndex, Bool_t lVal ) { fkSpeciesSwitch[lIndex] = lVal; } ;
   void SetSpeciesSwitch ( Bool_t *lVal ) { for (Int_t ii=0; ii<76; ii++) fkSpeciesSwitch[ii] = lVal[ii]; } ;
+  void SetStandardSpecies (); 
   void SetNSpeciesDD ( Int_t lVal ) { fkNSpeciesDD = lVal; } ;
   
   //configure intervals
