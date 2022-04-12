@@ -28,10 +28,7 @@
 
 class AliAnalysisTaskBaseWeights;
 
-namespace {
-using namespace Hist;
 using namespace std;
-} // namespace
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskBaseWeights)

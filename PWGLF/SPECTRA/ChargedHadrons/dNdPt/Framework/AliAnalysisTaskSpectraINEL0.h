@@ -39,13 +39,13 @@ class AliAnalysisTaskSpectraINEL0 : public AliAnalysisTaskMKBase
         static AliAnalysisTaskSpectraINEL0* AddTaskSpectraINEL0(const char* name = "TaskSpectra", const char* outfile = 0);
 
     protected:
-        Hist::Hist<THnF>           fHistEffCont{};         //-> efficiency/contamination histogram
-        Hist::Hist<THnF>           fHistTrack{};           //-> histogram of pt spectra vs. mult and cent
-        Hist::Hist<THnF>           fHistEvent{};           //-> histogram of event numbers etc.
-        Hist::Hist<THnF>           fHistTrackINEL0{};      //-> histogram for INEL0 study
-        Hist::Hist<THnF>           fHistVtxInfo{};      //-> vertex reconstruction efficiency histogram
-        Hist::Hist<TH2F>           fHistRelResoFromCov{};      //-> histogram for relative pt resolution (sigma(pt)/pt as function of pt)
-        Hist::Hist<TH2F>           fHistSigma1pt{};      //-> vertex reconstruction efficiency histogram (sigma(1/pt) as function of 1/pt)
+        Hist<THnF>           fHistEffCont{};         //-> efficiency/contamination histogram
+        Hist<THnF>           fHistTrack{};           //-> histogram of pt spectra vs. mult and cent
+        Hist<THnF>           fHistEvent{};           //-> histogram of event numbers etc.
+        Hist<THnF>           fHistTrackINEL0{};      //-> histogram for INEL0 study
+        Hist<THnF>           fHistVtxInfo{};      //-> vertex reconstruction efficiency histogram
+        Hist<TH2F>           fHistRelResoFromCov{};      //-> histogram for relative pt resolution (sigma(pt)/pt as function of pt)
+        Hist<TH2F>           fHistSigma1pt{};      //-> vertex reconstruction efficiency histogram (sigma(1/pt) as function of 1/pt)
 
     private:
         AliAnalysisTaskSpectraINEL0(const AliAnalysisTaskSpectraINEL0&); // not implemented

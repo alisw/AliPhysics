@@ -89,20 +89,20 @@ void AliAnalysisTaskSpectraINEL0::AddOutput()
         }
     }
 
-    Hist::Axis centAxis = {"cent", "centrality", centBins};
-    Hist::Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
-    Hist::Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
-    Hist::Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptbins};
-    Hist::Axis QAxis = {"Q", "Q", {-1.5,1.5}, 3};
-    Hist::Axis relResoAxis = {"rel. Reso", "#sigma(#it{p}_{T}) / #it{p}_{T}", {0.0,0.3}, 300};
-    Hist::Axis Sigma1ptAxis = {"Sigma1ptAxis", "#sigma(1/#it{p}_{T})", {0.0,0.3}, 300};
-    Hist::Axis inverseptAxis = {"1/pt", "1/#it{p}_{T} (GeV/c)", {0.005, 6.677}, 60};
-    //Hist::Axis MCpidAxis = {"MCpid", "MCpid", {-0.5, 9.5}, 10}; // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
-    Hist::Axis MCinfoAxis = {"MCinfo", "MCinfo", {-0.5,3.5}, 4}; // 0=prim, 1=decay 2=material, 3=genprim
-    //Hist::Axis MCQAxis = {"MCQ", "MCQ", {-1.5,1.5}, 3};
-    Hist::Axis MCptAxis = {"MCpt", "#it{p}_{T} (GeV/c)", ptbins};
-    Hist::Axis EvtSelectionAxis = {"EvtSele", "EvtSele", {-0.5,1.5}, 2}; // 0 == No Selection; 1 == with selection
-    Hist::Axis VtxInfoAxis = {"VtxInfo", "VtxInfo", {-0.5,1.5}, 2}; // 0 == with Vertex; 1== without Vertex
+    Axis centAxis = {"cent", "centrality", centBins};
+    Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
+    Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
+    Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptbins};
+    Axis QAxis = {"Q", "Q", {-1.5,1.5}, 3};
+    Axis relResoAxis = {"rel. Reso", "#sigma(#it{p}_{T}) / #it{p}_{T}", {0.0,0.3}, 300};
+    Axis Sigma1ptAxis = {"Sigma1ptAxis", "#sigma(1/#it{p}_{T})", {0.0,0.3}, 300};
+    Axis inverseptAxis = {"1/pt", "1/#it{p}_{T} (GeV/c)", {0.005, 6.677}, 60};
+    //Axis MCpidAxis = {"MCpid", "MCpid", {-0.5, 9.5}, 10}; // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
+    Axis MCinfoAxis = {"MCinfo", "MCinfo", {-0.5,3.5}, 4}; // 0=prim, 1=decay 2=material, 3=genprim
+    //Axis MCQAxis = {"MCQ", "MCQ", {-1.5,1.5}, 3};
+    Axis MCptAxis = {"MCpt", "#it{p}_{T} (GeV/c)", ptbins};
+    Axis EvtSelectionAxis = {"EvtSele", "EvtSele", {-0.5,1.5}, 2}; // 0 == No Selection; 1 == with selection
+    Axis VtxInfoAxis = {"VtxInfo", "VtxInfo", {-0.5,1.5}, 2}; // 0 == with Vertex; 1== without Vertex
 
 
     fHistEffCont.AddAxis(centAxis);
