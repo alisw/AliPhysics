@@ -224,6 +224,7 @@ fInvmassLSPt(0),
 fHFmomCorr(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
+fInclsElecPtClsE(0),
 fInclsElecPt(0),
 fHadPt_AftEID(0),
 fHadEovp_AftEID(0),
@@ -495,6 +496,7 @@ fInvmassLSPt(0),
 fHFmomCorr(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
+fInclsElecPtClsE(0),
 fInclsElecPt(0),
 fHadPt_AftEID(0),
 fHadEovp_AftEID(0),
@@ -879,6 +881,9 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     
     fEleCanITShit = new TH1F("fEleCanITShit","ITS hit map;ITS layer;counts",7,-0.5,6.5);
     fOutputList->Add(fEleCanITShit);
+    
+    fInclsElecPtClsE = new TH2F("fInclsElecPtClsE","Cls E vs pT of inclusive electrons;p_{T} (GeV/c);ClsE",500,0,50,500,0.0, 50.0);
+    fOutputList->Add(fInclsElecPtClsE);
     
     fInclsElecPt = new TH1F("fInclsElecPt","p_{T} distribution of inclusive electrons;p_{T} (GeV/c);counts",500,0,50);
     fOutputList->Add(fInclsElecPt);
@@ -1764,6 +1769,7 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             
             fInclsElecPt->Fill(TrkPt);
             fInclElecDCA->Fill(TrkPt,fTrkDCA);
+            fInclsElecPtClsE->Fill(TrkPt,clustMatchE);
             
             fNEle++;
             
