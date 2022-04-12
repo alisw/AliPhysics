@@ -165,7 +165,6 @@ set(SRCS
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
-  AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
   AliAnalysisTaskSEOmegacZero2XiPifromKFP.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
@@ -189,6 +188,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
   AliAnalysisTaskHFSimpleVertices.cxx
+  AliAnalysisTaskSEHFSystPID.cxx
   )
 endif()
 
