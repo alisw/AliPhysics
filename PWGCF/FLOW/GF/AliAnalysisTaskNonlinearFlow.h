@@ -174,6 +174,12 @@ class PhysicsProfile : public TObject {
 		TProfile*        fChcn4_3subLLMR[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subRRML[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subGap2[6];            //! <<4>> 3subevent method |#Delta#eta| > 0.2
+
+                TProfile*	 fChcn6[6];  			//! <<6>> in unit bins of Ntrks
+		TProfile*	 fChcn6_Gap0[6];  		//! <<6>> |#Delta#eta| > 0.0
+                TProfile*	 fChcn8[6];  			//! <<8>> in unit bins of Ntrks
+		TProfile*	 fChcn8_Gap0[6];  		//! <<8>> |#Delta#eta| > 0.0
+
 	private:
 		ClassDef(PhysicsProfile, 5);    //Analysis task
 };
@@ -457,6 +463,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		unsigned fgTwoParticleCorrelationHigher = 0; //!
 		unsigned fgThreeParticleCorrelation = 0;     //!
 		unsigned fgFourParticleCorrelation = 0;      //!
+		unsigned fgSixParticleCorrelation = 0;       //!
+		unsigned fgEightParticleCorrelation = 0;     //!
 
 		bool fuTwoParticleCorrelationStandard = 0;        //!
 		bool fuTwoParticleCorrelation0Gap = 0;            //!
@@ -478,6 +486,10 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		bool fuFourParticleCorrelationLargeGap = 0;       //!
 		bool fuFourParticleCorrelationThreeSub = 0;       //!
 		bool fuFourParticleCorrelationGapScan = 0;        //!
+		bool fuSixParticleCorrelationStandard = 0;        //!
+		bool fuSixParticleCorrelation0Gap = 0;            //!
+		bool fuEightParticleCorrelationStandard = 0;      //!
+		bool fuEightParticleCorrelation0Gap = 0;          //!
 
 		bool fuQStandard = 0; //!
 		bool fuQ0Gap     = 0; //!
