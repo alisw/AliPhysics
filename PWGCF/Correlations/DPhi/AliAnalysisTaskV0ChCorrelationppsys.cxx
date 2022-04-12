@@ -809,13 +809,13 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
     }
 
 
-   const Int_t nPtBinsV0Xi = 7;
-   const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25.0}; 
+   const Int_t nPtBinsV0Xi = 1;
+   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
       
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 8;
-   const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+   const Int_t nPtBins = 6;
+   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};// 
 
 
 
@@ -1159,13 +1159,13 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
     }
 
 
-   const Int_t nPtBinsV0Xi = 7;
-   const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25.0}; 
+   const Int_t nPtBinsV0Xi = 1;
+   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
       
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 8;
-   const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+   const Int_t nPtBins = 6;
+   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1385,13 +1385,14 @@ void AliAnalysisTaskV0ChCorrelationppsys::AddQAAnalysisLambda()
   
  
 
-   const Int_t nPtBinsV0Xi = 7;
-   const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25.0}; 
+   const Int_t nPtBinsV0Xi = 1;
+   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
       
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 8;
-   const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+   const Int_t nPtBins = 6;
+   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};// 
+
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1629,14 +1630,14 @@ void AliAnalysisTaskV0ChCorrelationppsys::AddQAAnalysisAntiLambda()
    
    
   
-
-   const Int_t nPtBinsV0Xi = 7;
-   const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25.0}; 
+   const Int_t nPtBinsV0Xi = 1;
+   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
       
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 8;
-   const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+   const Int_t nPtBins = 6;
+   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};// 
+
 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
