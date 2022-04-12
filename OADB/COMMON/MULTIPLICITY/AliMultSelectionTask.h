@@ -124,6 +124,7 @@ public:
   void SetPreferSuperCalib( Bool_t lVar ) { fkPreferSuperCalib = lVar; }
   void SetPropDCA      ( Bool_t lVar ) { fkPropDCA     = lVar; } ;
   void SetEtaCut(Float_t lVar) {fEtaCut  = lVar;};
+  void SetGenName(TString lVar) {fGenName  = lVar;};
   
   //override for getting estimator definitions from different OADB file
   //FIXME: should preferably be protected, extra functionality required
@@ -329,9 +330,11 @@ private:
   Float_t fTrackPhi[kTrack];
   Int_t fTrackPileupVxt[kTrack];
   Bool_t fTrackITSrefit[kTrack];
+  Bool_t fTrackSPD[kTrack];
   Bool_t fTrackIsPileup[kTrack];
   Bool_t fTrackTPC[kTrack];
-  Float_t fEtaCut;
+  Float_t fEtaCut; 
+  TString fGenName; // Generator name 
   
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
   AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
