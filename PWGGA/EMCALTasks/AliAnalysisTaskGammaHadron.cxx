@@ -83,7 +83,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fClusEnergy(0),fAccClusEtaPhi(0),fAccClusEtaPhiZvtx(0),bEnableClusPairRot(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),fHistEventHashVsMixingAngle(0),
   bEnablePosSwapHists(false),bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
   fEMCalMultvZvtx(0),
-  fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
+  fClusterSigmaLongVsE(0),fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
   fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
   fEffCorrectionCheck(0),
   fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0), fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
@@ -134,7 +134,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fClusEnergy(0),fAccClusEtaPhi(0),fAccClusEtaPhiZvtx(0),bEnableClusPairRot(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),fHistEventHashVsMixingAngle(0),
   bEnablePosSwapHists(false),bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
   fEMCalMultvZvtx(0),
-  fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
+  fClusterSigmaLongVsE(0),fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
   fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
   fEffCorrectionCheck(0),
   fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0), fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
@@ -682,6 +682,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  fClusterSigmaLongVsE = new TH2D("HistClusSigmaLongVsE","histClusSigmaLongVsE;#sigma_{long}^{2};E_{cluster} (GeV)",250,0.,2.5,250,0.,25.0);
+
 
   if (fIsMC) {
     // Cluster Matching
@@ -915,9 +917,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     minThnPi0[dimThnPi0] = 2;
     maxThnPi0[dimThnPi0] = 100;
 /*    nBinsThnPi0[dimThnPi0] = 5;
-    Double_t MinClusEnergyArray[5+1] = {0.3,0.5,1,1.5,2,100};
+    Double_t MinClusEnergyArray[5+1] = {0.5,1,1.5,2,2.5,100};
     binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
-    minThnPi0[dimThnPi0] = 0.3;
+    minThnPi0[dimThnPi0] = 0.5;
     maxThnPi0[dimThnPi0] = 100;*/
     dimThnPi0++;
 
@@ -1172,6 +1174,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 //			Double_t fBinsMixedClusZvtx[nBinsMixedClusZvtx+1] = {-10., -5.,-3.,-1.,1.,3.,5.,10.};
 //			Double_t fBinsEMCalMult[nBinsEMCalMult + 1] = {0.,50.,100.,150.,200.,250.,300,500,700,900,1200};
 //			fEMCalMultvZvtx = new TH2D("EMCalMultvZvtx","fEMCalMultvZvtx",nBinsMixedClusZvtx,fBinsMixedClusZvtx,nBinsEMCalMult,fBinsEMCalMult);
+
+
+      fOutput->Add(fClusterSigmaLongVsE);
 
 			if (fIsMC) {
 				// Cluster Matching
@@ -2288,6 +2293,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	{
 		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,1,fEventWeight);//correlate with same event
 		else               CorrelatePi0AndTrack(tracks,0,1,fEventWeight);    //correlate with same event
+    FillClusterHistograms();
     FillTrackHistograms(tracks);
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2332,6 +2338,28 @@ TObjArray* AliAnalysisTaskGammaHadron::CloneToCreateTObjArray(AliParticleContain
 
 	return tracksClone;
 }
+
+
+void AliAnalysisTaskGammaHadron::FillClusterHistograms() {
+	AliClusterContainer* clusters  = GetClusterContainer(0);
+	if (!clusters) return;
+	Int_t NoOfClustersInEvent =clusters->GetNClusters();
+	Int_t nAccClusters = 0;
+	AliVCluster *cluster = 0;
+
+  for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
+  {
+    cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
+    if(!cluster || !AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
+
+    double fClusE = cluster->GetUserDefEnergy(AliVCluster::kNonLinCorr); // using non-linearity-corrected energy
+    double fClusSigmaLong = cluster->GetM02();
+    fClusterSigmaLongVsE->Fill(fClusSigmaLong,fClusE);
+  }
+
+}
+
+
 void AliAnalysisTaskGammaHadron::FillTrackHistograms(AliParticleContainer* tracks) {
   double pi = TMath::Pi();
 
@@ -2612,6 +2640,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			if(!cluster || !AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
 
 			fClusEnergy->Fill(cluster->GetUserDefEnergy(fClusEnergyType),Weight);
+
 			Int_t iMCIndexClus1 = -1;
 			if (fIsMC && fPlotQA) {
 				iMCIndexClus1 = FindMCPartForClus(cluster);
