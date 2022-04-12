@@ -144,6 +144,10 @@ endif()
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND HDRS ChargedHadrons/MultDepSpec/AliAnalysisHelpersHist.h)
+endif()
+
 # Extra files to include in the PARfile
 set(PAR_EXTRAFILES_CXX
   PiKaPr/TestAOD/HistogramNamesBoth.cxx
@@ -216,10 +220,6 @@ install(TARGETS ${MODULE}
 
 install(FILES ${HDRS} DESTINATION include)
 install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
-
-if(${ROOT_VERSION} GREATER_EQUAL 6.0)
-  install(FILES ChargedHadrons/MultDepSpec/AliAnalysisHelpersHist.h DESTINATION include)
-endif()
 
 # install macros
 install(DIRECTORY ChargedHadrons/MultDepSpec/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/MultDepSpec)

@@ -21,10 +21,7 @@
 #include "AliMCSpectraWeights.h"
 #include <iostream>
 
-namespace {
-using namespace Hist;
 using namespace std;
-} // namespace
 
 //_____________________________________________________________________________
 

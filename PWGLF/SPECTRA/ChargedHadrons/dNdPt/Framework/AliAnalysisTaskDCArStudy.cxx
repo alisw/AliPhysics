@@ -21,10 +21,7 @@
 
 class AliAnalysisTaskDCArStudy;
 
-namespace {
-using namespace Hist;
 using namespace std;
-} // namespace
 
 ClassImp(AliAnalysisTaskDCArStudy)
 

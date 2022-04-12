@@ -89,7 +89,7 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultT
  */
 //**************************************************************************************************
 template <typename T>
-void AliMultDepSpecAnalysisTask::BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName, const std::vector<unsigned int>& dimensions)
+void AliMultDepSpecAnalysisTask::BookHistogram(Hist<T>& histContainer, const std::string& histName, const std::vector<unsigned int>& dimensions)
 {
   for (auto& dim : dimensions) {
     if (fAxes.find(dim) == fAxes.end()) {

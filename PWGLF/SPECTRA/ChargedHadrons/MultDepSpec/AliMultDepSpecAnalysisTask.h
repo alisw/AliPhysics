@@ -79,7 +79,7 @@ protected:
   void LoopTrue(bool count = false);
 
   template <typename T>
-  void BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName, const std::vector<unsigned int>& dimensions);
+  void BookHistogram(Hist<T>& histContainer, const std::string& histName, const std::vector<unsigned int>& dimensions);
 
   bool InitCentrality();
 
@@ -115,57 +115,57 @@ protected:
   double fMinPt{0.15};                                          ///< minimum pT cut
   double fMaxPt{10.0};                                          ///< maximum pT cut
 
-  std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
+  std::map<unsigned int, Axis> fAxes{}; ///< axis definitions used in the histograms
 
-  Hist::Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution (contains contamination from events not belonging to specified class or with true vertex position outside fiducial z range)
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance, particles from pileup events and tracks originating from background events as defined above)
+  Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution (contains contamination from events not belonging to specified class or with true vertex position outside fiducial z range)
+  Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance, particles from pileup events and tracks originating from background events as defined above)
 
   // MC-only histograms
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{};    //!<! tracks from measured primaries (no contamination from any of the sources mentioned above)
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};     //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background / pileup events)
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_meas_evtcont{}; //!<! tracks from events that are measured, but do not belong to the desired class of events or have true vertex position outside fiducial z range
+  Hist<TH2D> fHist_multPtSpec_trk_prim_meas{};    //!<! tracks from measured primaries (no contamination from any of the sources mentioned above)
+  Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};     //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background / pileup events)
+  Hist<TH2D> fHist_multPtSpec_trk_meas_evtcont{}; //!<! tracks from events that are measured, but do not belong to the desired class of events or have true vertex position outside fiducial z range
 
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};        //!<! measured primary charged particles as function of true properties (no contamination from background events)
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};         //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_evtloss{}; //!<! generated primary charged particles of events that did not pass the event selection as function of multiplicity and pt (subsample of the above)
-  Hist::Hist<TH1D> fHist_multDist_evt_gen{};            //!<! generated event distribution  (from events within specified class and with proper vertex position)
-  Hist::Hist<THnSparseF> fHist_multCorrel_evt{};        //!<! multilicity correlation of measured events (excluding background events)
-  Hist::Hist<THnSparseF> fHist_multCorrel_prim{};       //!<! multiplicity correlation of measured primary charged particles (excluding particles from background or pileup events, secondary particles and particles smeared in from outside acceptance)
-  Hist::Hist<TH2D> fHist_ptCorrel_prim{};               //!<! pT correlation of measured primary charged particles  (excluding particles from background or pileup events, secondary particles and particles smeared in from outside acceptance)
+  Hist<TH2D> fHist_multPtSpec_prim_meas{};        //!<! measured primary charged particles as function of true properties (no contamination from background events)
+  Hist<TH2D> fHist_multPtSpec_prim_gen{};         //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
+  Hist<TH2D> fHist_multPtSpec_prim_gen_evtloss{}; //!<! generated primary charged particles of events that did not pass the event selection as function of multiplicity and pt (subsample of the above)
+  Hist<TH1D> fHist_multDist_evt_gen{};            //!<! generated event distribution  (from events within specified class and with proper vertex position)
+  Hist<THnSparseF> fHist_multCorrel_evt{};        //!<! multilicity correlation of measured events (excluding background events)
+  Hist<THnSparseF> fHist_multCorrel_prim{};       //!<! multiplicity correlation of measured primary charged particles (excluding particles from background or pileup events, secondary particles and particles smeared in from outside acceptance)
+  Hist<TH2D> fHist_ptCorrel_prim{};               //!<! pT correlation of measured primary charged particles  (excluding particles from background or pileup events, secondary particles and particles smeared in from outside acceptance)
 
-  Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{};      //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [to disentangle trigger eff from reco eff ]
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_notrig{}; //!<! generated primary charged particles of events that did not fulfil physics selection and trigger condition as function of multiplicity and pt
+  Hist<TH1D> fHist_multDist_evt_gen_trig{};      //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [to disentangle trigger eff from reco eff ]
+  Hist<TH2D> fHist_multPtSpec_prim_gen_notrig{}; //!<! generated primary charged particles of events that did not fulfil physics selection and trigger condition as function of multiplicity and pt
 
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_inter{}; //!<! reference for interim step of unfolding
+  Hist<TH2D> fHist_multPtSpec_trk_inter{}; //!<! reference for interim step of unfolding
 
   // QA histograms
-  Hist::Log<TH1I> fHist_trainInfo{};         //!<! train metadata string as bin lable and number of compute jobs as bin content
-  Hist::Log<TH1I> fHist_runStatistics{};     //!<! number of measured events per run
-  Hist::Hist<TH1D> fHist_eventSelection{};   //!<! logging histogram to for event selection steps
-  Hist::Hist<TH1D> fHist_eventSelectionMC{}; //!<! logging histogram to for event selection steps in mc
+  Log<TH1I> fHist_trainInfo{};         //!<! train metadata string as bin lable and number of compute jobs as bin content
+  Log<TH1I> fHist_runStatistics{};     //!<! number of measured events per run
+  Hist<TH1D> fHist_eventSelection{};   //!<! logging histogram to for event selection steps
+  Hist<TH1D> fHist_eventSelectionMC{}; //!<! logging histogram to for event selection steps in mc
 
-  Hist::Hist<TH1D> fHist_zVtxGen{};  //!<! true z vertex position of all generated events (without z vertex position cut)
-  Hist::Hist<TH1D> fHist_zVtxMeas{}; //!<! measured z vertex position of all measured events (without z vertex position cut)
+  Hist<TH1D> fHist_zVtxGen{};  //!<! true z vertex position of all generated events (without z vertex position cut)
+  Hist<TH1D> fHist_zVtxMeas{}; //!<! measured z vertex position of all measured events (without z vertex position cut)
 
-  Hist::Hist<TH2D> fHist_deltaPt{}; //!<! relative track pt resolution (no contamination from particles smeared into acceptance or background events)
-  Hist::Hist<TH2D> fHist_sigmaPt{}; //!<! relatvie pT resolution from covariance matrix (from all tracks, including contamination defined above)
+  Hist<TH2D> fHist_deltaPt{}; //!<! relative track pt resolution (no contamination from particles smeared into acceptance or background events)
+  Hist<TH2D> fHist_sigmaPt{}; //!<! relatvie pT resolution from covariance matrix (from all tracks, including contamination defined above)
 
-  Hist::Hist<TH2D> fHist_dcaXY{}; //!<! dca in xy plane vs pt
-  Hist::Hist<TH1D> fHist_dcaZ{};  //!<! dca along the beam line
+  Hist<TH2D> fHist_dcaXY{}; //!<! dca in xy plane vs pt
+  Hist<TH1D> fHist_dcaZ{};  //!<! dca along the beam line
 
-  Hist::Hist<TH1D> fHist_signed1Pt{};                     //!<! signed 1/pt (1/(GeV/c))
-  Hist::Hist<TH1D> fHist_eta{};                           //!<! pseudorapidity distribution
-  Hist::Hist<TH1D> fHist_phi{};                           //!<! azimuthal angle phi
-  Hist::Hist<TH1D> fHist_itsNCls{};                       //!<! found clusters ITS
-  Hist::Hist<TH1D> fHist_itsHits{};                       //!<! hitmap ITS
-  Hist::Hist<TH1D> fHist_itsChi2NCl{};                    //!<! chi2 per cluster ITS
-  Hist::Hist<TH1D> fHist_tpcNClsFindable{};               //!<! findable clusters TPC
-  Hist::Hist<TH1D> fHist_tpcNClsFound{};                  //!<! found clusters TPC
-  Hist::Hist<TH1D> fHist_tpcCrossedRows{};                //!<! crossed rows in TPC
-  Hist::Hist<TH1D> fHist_tpcCrossedRowsOverFindableCls{}; //!<! rows / findable clusters TPC
-  Hist::Hist<TH1D> fHist_tpcChi2NCl{};                    //!<! chi2 per cluster TPC
-  Hist::Hist<TH1D> fHist_tpcGoldenChi2{};                 //!<! chi2 global vs tpc constrained track
-  Hist::Hist<TH1D> fHist_tpcGeomLength{};                 //!<! track length in active volume of the TPC
+  Hist<TH1D> fHist_signed1Pt{};                     //!<! signed 1/pt (1/(GeV/c))
+  Hist<TH1D> fHist_eta{};                           //!<! pseudorapidity distribution
+  Hist<TH1D> fHist_phi{};                           //!<! azimuthal angle phi
+  Hist<TH1D> fHist_itsNCls{};                       //!<! found clusters ITS
+  Hist<TH1D> fHist_itsHits{};                       //!<! hitmap ITS
+  Hist<TH1D> fHist_itsChi2NCl{};                    //!<! chi2 per cluster ITS
+  Hist<TH1D> fHist_tpcNClsFindable{};               //!<! findable clusters TPC
+  Hist<TH1D> fHist_tpcNClsFound{};                  //!<! found clusters TPC
+  Hist<TH1D> fHist_tpcCrossedRows{};                //!<! crossed rows in TPC
+  Hist<TH1D> fHist_tpcCrossedRowsOverFindableCls{}; //!<! rows / findable clusters TPC
+  Hist<TH1D> fHist_tpcChi2NCl{};                    //!<! chi2 per cluster TPC
+  Hist<TH1D> fHist_tpcGoldenChi2{};                 //!<! chi2 global vs tpc constrained track
+  Hist<TH1D> fHist_tpcGeomLength{};                 //!<! track length in active volume of the TPC
 
   AliMCSpectraWeights* fMCSpectraWeights{}; //!<! fMCSpectraWeights for data-driven corrections (particle composition and secondary scaling)
 
