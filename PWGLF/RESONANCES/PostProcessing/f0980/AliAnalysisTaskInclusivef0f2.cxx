@@ -172,6 +172,21 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  auto binTrig = AxisFix("Trig",2,-0.5,1.5);
  auto binParType = AxisFix("ParType",2,-0.5,1.5);
 
+
+ Double1D binPionMt = {
+        0.980193, 1.02508, 1.14925, 1.40028, 1.79186, 2.22728, 2.68529, 3.15607, 3.63466, 4.11835, 5.09517, 6.07954, 7.06829, 8.05982 };
+ Double1D binKaonMt = {
+        0.858517, 0.909423, 1.0474, 1.31797, 1.72831, 2.17648, 2.6433, 3.12042, 3.60376, 4.09109, 5.07317, 6.06111, 7.05245, 8.04593 };
+ Double1D binRhoMt = {
+        0.616015, 0.685182, 0.859927, 1.17451, 1.62157, 2.09272, 2.57478, 3.06259, 3.5538, 4.04716, 5.0378, 6.03154, 7.02705, 8.02368 };
+ Double1D binPhiMt = {
+        0, 0.178154, 0.549308, 0.970432, 1.48045, 1.98538, 2.48832, 2.99027, 3.49167, 3.99271, 4.99417, 5.99514, 6.99584, 7.99636 };
+
+ binMtPion = AxisVar("binMtPion",binPionMt);
+ binMtKaon = AxisVar("binMtPion",binKaonMt);
+ binMtRho = AxisVar("binMtPion",binRhoMt);
+ binMtPhi = AxisVar("binMtPion",binPhiMt);
+
  binEP = AxisFix("binEP",8,0,TMath::Pi());
 
  fHistos = new THistManager("Inclusivef0f2hists");
@@ -251,14 +266,15 @@ if( fOption.Contains("EPAna") ){
         {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossPionMt","SignalLossPionMt",4,
-        {binCentForMC,binPt,binSwitch,binCharge},"s");
+        {binCentForMC,binMtPion,binSwitch,binCharge},"s");
  CreateTHnSparse("SignalLoss0PionMt","SignalLoss0PionMt",4,
-        {binCentForMC,binPt,binSwitch,binCharge},"s");
+        {binCentForMC,binMtPion,binSwitch,binCharge},"s");
 
  CreateTHnSparse("SignalLossKaonMt","SignalLossKaonMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
+        {binCentForMC,binMtKaon,binSwitch},"s");
  CreateTHnSparse("SignalLoss0KaonMt","SignalLoss0KaonMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
+        {binCentForMC,binMtKaon,binSwitch},"s");
+
 
  CreateTHnSparse("SignalLossKaonpipiMt","SignalLossKaonpipiMt",3,
         {binCentForMC,binPt,binSwitch},"s");
@@ -266,10 +282,9 @@ if( fOption.Contains("EPAna") ){
         {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossPhiMt","SignalLossPhiMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
+        {binCentForMC,binMtPhi,binSwitch},"s");
  CreateTHnSparse("SignalLoss0PhiMt","SignalLoss0PhiMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
-
+        {binCentForMC,binMtPhi,binSwitch},"s");
 
 
  CreateTHnSparse("SignalLossRho","SignalLossRho",3,
@@ -283,10 +298,11 @@ if( fOption.Contains("EPAna") ){
         {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossRhoMt","SignalLossRhoMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
+        {binCentForMC,binMtRho,binSwitch},"s");
  CreateTHnSparse("SignalLoss0RhoMt","SignalLoss0RhoMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
-        
+        {binCentForMC,binMtRho,binSwitch},"s");
+
+ 
  CreateTHnSparse("SignalLossRhopipiMt","SignalLossRhopipiMt",3,
         {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0RhopipiMt","SignalLoss0RhopipiMt",3,
@@ -873,7 +889,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 				}
 			}
 		}
-/*
 		else if( pdgCode == 310 || pdgCode == 113 ){
                         if( fabs( trackMC->Y() ) > 0.5 ) continue;
                         if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
@@ -909,6 +924,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
                                         }
                                 }
                         }
+
                         if( trackMC->GetNDaughters() != 2 ) continue;
                         AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
                         AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
@@ -966,7 +982,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 				}
                         }
 		}
-*/
 	}
  }
 //************************************************

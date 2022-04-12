@@ -111,6 +111,12 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
 	TAxis				binCentForMC;
         TAxis                           binZ; //!
         TAxis                           binPt; //!
+
+        TAxis                           binMtPion; //!
+        TAxis                           binMtKaon; //!
+        TAxis                           binMtRho; //!
+        TAxis                           binMtPhi; //!
+
         TAxis                           binPtGen; //!
 	TAxis                           binType; //!
         TAxis                           binMass; //!
