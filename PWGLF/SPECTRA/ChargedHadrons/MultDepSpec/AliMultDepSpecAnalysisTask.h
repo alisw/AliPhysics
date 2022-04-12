@@ -210,7 +210,7 @@ protected:
   int fNRepetitions{1};         //!<! how often to repeat this particle to match data
 
   /// \cond CLASSIMP
-  ClassDef(AliMultDepSpecAnalysisTask, 1);
+  ClassDef(AliMultDepSpecAnalysisTask, 2);
   /// \endcond
 };
 
