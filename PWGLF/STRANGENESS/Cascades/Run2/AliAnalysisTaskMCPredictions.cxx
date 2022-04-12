@@ -1962,3 +1962,34 @@ void AliAnalysisTaskMCPredictions::PrintEtaIntervals(){
   for(Int_t ii=0; ii<fkNIntervals; ii++)
     cout<<"Interval #"<<ii<<"\tmin = "<<fkIntervalMinEta[ii]<<"\tmax = "<<fkIntervalMaxEta[ii]<<"\tweight = "<<fkIntervalWeight[ii]<<endl;
 }
+
+//______________________________________________________________________
+void AliAnalysisTaskMCPredictions::SetStandardSpecies(){
+  Bool_t lSaveThisSpecies[76] = {
+    kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE,
+    kFALSE, kFALSE, kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE,
+    kFALSE, kFALSE, kFALSE, kFALSE,
+    kFALSE, kFALSE, kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE
+  };
+  for(Int_t ii=0; ii<76; ii++){
+    fkSpeciesSwitch[ii] = lSaveThisSpecies[ii]; 
+  }
+}
