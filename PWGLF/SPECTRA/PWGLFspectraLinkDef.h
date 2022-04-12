@@ -18,8 +18,6 @@
 #if defined(__CLING__)
 #pragma link C++ struct Hist::Axis+;
 #pragma link C++ class AliMultDepSpecAnalysisTask+;
-#pragma link C++ class AliMultDepSpecAnalysisTaskOLD+;
-#pragma link C++ class AliMultDepSpecAnalysisTaskUE+;
 #pragma link C++ class AliAnalysisTaskDCArStudy+;
 #pragma link C++ class AliAnalysisTaskCutStudies+;
 #pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
