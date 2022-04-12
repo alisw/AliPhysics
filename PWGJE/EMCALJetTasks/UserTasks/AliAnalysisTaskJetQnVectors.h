@@ -51,6 +51,7 @@ public:
     double Getq2V0M()                                                                                    {return fq2V0M;}
     double Getq2V0A()                                                                                    {return fq2V0A;}
     double Getq2V0C()                                                                                    {return fq2V0C;}
+    double Getq2TPC()                                                                                    {return fq2TPC;}
     double GetEPangleFullTPC()                                                                           {return fEPangleFullTPC;}
     double GetEPanglePosTPC()                                                                            {return fEPanglePosTPC;}
     double GetEPangleNegTPC()                                                                            {return fEPangleNegTPC;}
@@ -106,6 +107,7 @@ private:
     double fq2V0M;                                   /// q2 vector from the V0M   
     double fq2V0A;                                   /// q2 vector from the V0A    
     double fq2V0C;                                   /// q2 vector from the V0C     
+    double fq2TPC;                                   /// q2 vector from the TPC
     double fEPangleFullTPC;                          /// EP Angle with calibrations from TPC Full
     double fEPanglePosTPC;                           /// EP Angle with calibrations from TPC eta>0
     double fEPangleNegTPC;                           /// EP Angle with calibrations from TPC eta<0
@@ -113,7 +115,7 @@ private:
     double fEPangleV0C;                              /// EP Angle with calibrations from V0A
     double fEPangleV0A;                              /// EP Angle with calibrations from V0C
 
-    ClassDef(AliAnalysisTaskJetQnVectors, 10);
+    ClassDef(AliAnalysisTaskJetQnVectors, 11);
 };
 
 #endif
