@@ -110,15 +110,15 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     buddyMaxPt = 4.05;
     aliPIDParticle = AliPID::kProton;
   } else if (pdgBuddy == 211){ // pion+
-    buddyPtlow = 0.1;
-    buddyPtup = 0.2;
+    buddyPtlow = 0.11;
+    buddyPtup = 0.17;
     buddyNsigmaLow = 2.7;
     buddyNsigmaUp = 3.3;
     buddyMaxPt = 4.0;
     aliPIDParticle = AliPID::kPion;
   } else if (pdgBuddy == 321){ // kaon+
-    buddyPtlow = 0.09;
-    buddyPtup = 0.19;
+    buddyPtlow = 0.1;
+    buddyPtup = 0.2;
     buddyNsigmaLow = 3;
     buddyNsigmaUp = 3;
     buddyMaxPt = 4.0;
