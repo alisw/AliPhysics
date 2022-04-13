@@ -111,6 +111,7 @@ fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC(
 fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE),
+fkStoreForwardMCInfo(kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
@@ -271,7 +272,8 @@ fHistQASelected_PtITSsaVsCL1(0),
 //Objects
 fOadbMultSelection(0),
 fInput(0),
-fOADB(nullptr)
+fOADB(nullptr),
+fNForwardMCParticles(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -286,7 +288,8 @@ fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
 fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
-fkSkipVertexZ(kFALSE), 
+fkSkipVertexZ(kFALSE),
+fkStoreForwardMCInfo(kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
@@ -447,8 +450,16 @@ fHistQASelected_PtITSsaVsCL1(0),
 //Objects
 fOadbMultSelection(0),
 fInput(0),
-fOADB(nullptr)
+fOADB(nullptr),
+fNForwardMCParticles(0)
 {
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardPx[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardPy[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardPz[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardE[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardM[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardPDG[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardIsPhysicalPrimary[iq] = kFALSE;
   
   for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackDCAz[iq] = 1e+6 ;
@@ -778,6 +789,17 @@ void AliMultSelectionTask::UserCreateOutputObjects()
       fTreeEvent->Branch("fTrackSPD",fTrackSPD,"fTrackSPD[fNumberOfTracks]/O");
       fTreeEvent->Branch("fTrackTPC",fTrackTPC,"fTrackTPC[fNumberOfTracks]/O");
       fTreeEvent->Branch("fTrackIsPileup", fTrackIsPileup, "fTrackIsPileup[fNumberOfTracks]/O");
+    }
+    
+    if(fkStoreForwardMCInfo){
+      fTreeEvent->Branch("fNForwardMCParticles", fNForwardMCParticles, "fNForwardMCParticles/I");
+      fTreeEvent->Branch("fForwardPx",fForwardPx,"fForwardPx[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardPy",fForwardPy,"fForwardPy[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardPz",fForwardPz,"fForwardPz[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardE",fForwardE,"fForwardE[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardM",fForwardM,"fForwardM[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardPDG",fForwardPDG,"fForwardPDG[fNForwardMCParticles]/I");
+      fTreeEvent->Branch("fForwardIsPhysicalPrimary",fForwardIsPhysicalPrimary,"fForwardIsPhysicalPrimary[fNForwardMCParticles]/O");
     }
     
     //Automatic Loop for linking directly to AliMultInput
@@ -1331,11 +1353,26 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if(!particleOne) continue;
         if(!particleOne->GetPDG()) continue;
         Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
-        if(TMath::Abs(lThisCharge)<0.001) continue;
-        if(! (stack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
-        
+
         Double_t gpt = particleOne -> Pt();
         Double_t geta = particleOne -> Eta();
+        
+        //ZDC tests: no charge requirement, no primary requirement
+        if( TMath::Abs(geta) > 7.5 && fkStoreForwardMCInfo ){
+          fForwardPx   [fNForwardMCParticles] = particleOne -> Px();
+          fForwardPy   [fNForwardMCParticles] = particleOne -> Py();
+          fForwardPz   [fNForwardMCParticles] = particleOne -> Pz();
+          fForwardE    [fNForwardMCParticles] = particleOne -> Energy();
+          fForwardM    [fNForwardMCParticles] = particleOne -> GetCalcMass();
+          fForwardPDG  [fNForwardMCParticles] = particleOne -> GetPdgCode();
+          fForwardIsPhysicalPrimary[fNForwardMCParticles] = stack->IsPhysicalPrimary(iCurrentLabelStack);
+          fNForwardMCParticles++;
+          if( fNForwardMCParticles > 1000 )
+            AliFatal("Maximum number of forward particles reaached! Sorry. Crashing now.");
+        }
+        
+        if(TMath::Abs(lThisCharge)<0.001) continue;
+        if(! (stack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
         
         if( 2.8 < geta && geta < 5.1 ) lCounter_NchV0A++;
         if(-3.7 < geta && geta <-1.7 ) lCounter_NchV0C++;

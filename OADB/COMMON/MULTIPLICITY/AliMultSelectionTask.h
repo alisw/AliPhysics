@@ -166,6 +166,7 @@ public:
   
   // Max number of tracks
   static const Int_t kTrack = 90000;
+  static const Int_t kFwdTracks = 1000;
   //---------------------------------------------------------------------------------------
   
 private:
@@ -202,6 +203,7 @@ private:
   Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
   
   Bool_t fkSkipVertexZ; //if true, skip vertex-Z selection for evselcode determination
+  Bool_t fkStoreForwardMCInfo; //if true, store MC info above |eta|>7.5 for posterior analysis
   
   //Downscale factor:
   //-> if smaller than unity, reduce change of accepting a given event for calib tree
@@ -428,6 +430,16 @@ private:
   // if valid, will bypass every other config option
   // set this with SetOADB( TString *file );
   AliOADBContainer *fOADB;
+  
+  //For MC checks of forward energy deposition in the ZDC
+  Int_t fNForwardMCParticles;
+  Float_t fForwardPx[kFwdTracks];
+  Float_t fForwardPy[kFwdTracks];
+  Float_t fForwardPz[kFwdTracks];
+  Float_t fForwardE[kFwdTracks];
+  Float_t fForwardM[kFwdTracks];
+  Int_t fForwardPDG[kFwdTracks];
+  Bool_t fForwardIsPhysicalPrimary[kFwdTracks];
   
   AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
   AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
