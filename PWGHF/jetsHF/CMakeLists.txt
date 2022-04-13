@@ -39,6 +39,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
 		    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
 		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+		    ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/O2vertexer/
                     )
 
 
@@ -68,7 +69,7 @@ if(FASTJET_FOUND)
     set(SRCS ${SRCS}
     AliAnalysisTaskEmcalJetBtagSV.cxx          
     AliAnalysisTaskBJetTC.cxx		
-    AliATDJetCorrDev.cxx
+    AliATDJetCorrDev.cxx 
     AliAnalysisTaskHFFindJets.cxx
     )
 
@@ -96,11 +97,22 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFvertexingHF)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFvertexingHF PWGJEEMCALJetTasks)
 
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    fastjettools
+    fastjet
+    )
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
