@@ -124,7 +124,6 @@
 #pragma link C++ class AliHFCutVarFDsubMinimiser+;
 #pragma link C++ class AliHFVnVsMassFitter+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVAApp+;
-#pragma link C++ class AliAnalysisTaskSEHFSystPID+;
 #pragma link C++ class AliAnalysisTaskSEDmesonPIDSysProp+;
 #pragma link C++ class IClassifierReader+;
 #pragma link C++ class AliAnalysisTaskSELbtoLcpi4+;
@@ -162,6 +161,7 @@
 /// ROOT6 tasks
 #ifdef __CLING__
 #pragma link C++ class AliAnalysisTaskHFSimpleVertices+;
+#pragma link C++ class AliAnalysisTaskSEHFSystPID+;
 #endif
 
 #endif
