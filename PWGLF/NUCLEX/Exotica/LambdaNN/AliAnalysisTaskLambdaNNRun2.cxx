@@ -270,7 +270,7 @@ void AliAnalysisTaskLambdaNNRun2::FillEvent(AnalysisV0::Type etype, AliAODTrack*
 	pion_v4.SetPxPyPzE(pion->Px(), pion->Py(), pion->Pz(), TMath::Sqrt(pion_mass * pion_mass + pion->P() * pion->P()));
 	LambdaNN_v4 = triton_v4 + pion_v4;
 
-	if (LambdaNN_v4.M() > 2.8 && LambdaNN_v4.M() < 4.2) {
+	if (LambdaNN_v4.M() > 2.8 && LambdaNN_v4.M() < 4.2 && triton->GetTPCNcls()>=90) {
 		fAnalysis_V0.mass = LambdaNN_v4.M();
 
 		fAnalysis_V0.topology = etype;
