@@ -125,6 +125,7 @@ public:
   void SetPropDCA      ( Bool_t lVar ) { fkPropDCA     = lVar; } ;
   void SetEtaCut(Float_t lVar) {fEtaCut  = lVar;};
   void SetGenName(TString lVar) {fGenName  = lVar;};
+  void SetStoreForwardMCInfo(Bool_t lVar) {fkStoreForwardMCInfo  = lVar;};
   
   //override for getting estimator definitions from different OADB file
   //FIXME: should preferably be protected, extra functionality required
