@@ -68,7 +68,7 @@ public:
   bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
 
 protected:
-  void DefineDefaultAxes(int maxMultMeas = 100, int maxMultTrue = 100);
+  void DefineDefaultAxes();
   void BookHistograms();
   void FillTrackQA(AliESDtrack* track);
 
@@ -114,6 +114,8 @@ protected:
   double fMaxEta{0.8};                                          ///< maximum eta cut
   double fMinPt{0.15};                                          ///< minimum pT cut
   double fMaxPt{10.0};                                          ///< maximum pT cut
+  int fMaxMultMeas{100};                                        ///< maximum measured multiplicity
+  int fMaxMultTrue{100};                                        ///< maximum true multiplicity
 
   std::map<unsigned int, Axis> fAxes{}; //!<! axis definitions used in the histograms
 
@@ -210,7 +212,7 @@ protected:
   int fNRepetitions{1};         //!<! how often to repeat this particle to match data
 
   /// \cond CLASSIMP
-  ClassDef(AliMultDepSpecAnalysisTask, 2);
+  ClassDef(AliMultDepSpecAnalysisTask, 1);
   /// \endcond
 };
 
