@@ -70,9 +70,15 @@ private:
 
     TH1F *fHistNEvents;                              //!<! histo with number of events
     TH1F *fHistCentrality;                           //!<! histo with centrality
-    TH3F *fHistResolution1;                          //!<! histo with detector resolution
-    TH3F *fHistResolution2;                          //!<! histo with detector resolution
-    TH3F *fHistResolution3;                          //!<! histo with detector resolution
+    TH3F *fHistResolution1M;                         //!<! histo with detector resolution
+    TH3F *fHistResolution2M;                         //!<! histo with detector resolution
+    TH3F *fHistResolution3M;                         //!<! histo with detector resolution
+    TH3F *fHistResolution1A;                         //!<! histo with detector resolution
+    TH3F *fHistResolution2A;                         //!<! histo with detector resolution
+    TH3F *fHistResolution3A;                         //!<! histo with detector resolution
+    TH3F *fHistResolution1C;                         //!<! histo with detector resolution
+    TH3F *fHistResolution2C;                         //!<! histo with detector resolution
+    TH3F *fHistResolution3C;                         //!<! histo with detector resolution
     TH1F *fHistEventPlaneTPC[3];                     //!<! histos of TPC (Full, PosEta, NegEta) EP angle
     TH1F *fHistEventPlaneV0[3];                      //!<! histos of V0 (Full, V0A, V0C) EP angle
     TH2F *fHistqnVsCentrTPC[3];                      //!<! histos of q2TPC (Full, PosEta, NegEta) vs centrality (for spline calibration)
@@ -115,7 +121,7 @@ private:
     double fEPangleV0C;                              /// EP Angle with calibrations from V0A
     double fEPangleV0A;                              /// EP Angle with calibrations from V0C
 
-    ClassDef(AliAnalysisTaskJetQnVectors, 11);
+    ClassDef(AliAnalysisTaskJetQnVectors, 12);
 };
 
 #endif
