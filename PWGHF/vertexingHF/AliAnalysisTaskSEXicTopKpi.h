@@ -380,6 +380,9 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   TH2F *fnSigmaPIDtpcProton; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcPion; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcKaon; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesProton; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesPion; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesKaon; //!<! histo for monitoring PID performance
   TH2F *fProtonID; //!<! histo for purity of PID
   TH2F *fKaonID; //!<! histo for purity of PID
   TH2F *fPionID; //!<! histo for purity of PID
@@ -574,7 +577,7 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   Bool_t fFillTuplePID_TOFreq;  // fill tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
   TNtuple* fTuplePID_TOFreq;  //! tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
   Bool_t fUseBayesInFiltering;// use bayesPID (max prob) in Filtering: note this does not match identically the usual Bayes selection
-  ClassDef(AliAnalysisTaskSEXicTopKpi,30); /// AliAnalysisTaskSE for Xic->pKpi  
+  ClassDef(AliAnalysisTaskSEXicTopKpi,31); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 
