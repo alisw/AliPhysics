@@ -74,7 +74,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     // here you ceate the histograms that you want to use 
     //
     // the histograms are in this case added to a tlist, this list is in the end saved
-    // to an output file
+    // to an output file.
     //
     fOutputList = new TList();          
     fOutputList->SetOwner(kTRUE);       
