@@ -63,6 +63,7 @@ public:
   void                        SetPoolTrackDepth(Int_t input)                        { fMETrackDepth    = input  ; }
   void                        SetPoolTargetEvents(Int_t input)                      { fMETargetEvents  = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
+  void                        SetEPCorrMode(Int_t input)                            { fEPCorrMode      = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetPi0MassSelection(Int_t input);
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input  ; }
@@ -112,6 +113,7 @@ private:
   AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
   AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
   AliQnCorrectionsManager*    fFlowQnVectorMgr;             ///< object for accessing QnVectorCorrections corrected event plane info (source 0)
+  AliAnalysisTaskJetQnVectors* fQ1VectorReader;             ///< Reader for the Q1 vector (source 1)
   AliAnalysisTaskJetQnVectors* fQ2VectorReader;             ///< Reader for the Q2 vector (source 1)
   AliAnalysisTaskJetQnVectors* fQ3VectorReader;             ///< Reader for the Q3 vector (source 1)
 
@@ -164,6 +166,7 @@ protected:
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
+  Double_t                    DeltaPhi(AliVParticle* TrackVec,Double_t phi_EVP) ;
 
   Double_t                    GetEventMixingAngle(Double_t fRawEventPlaneAngle);
 
@@ -179,6 +182,7 @@ protected:
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
+  Int_t                       fEPCorrMode;               ///< Correlate with EP{n=fEPCorrmode} instead of the trigger particle. 0 => use trigger particle (default)
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
   Bool_t                      fCorrectEff;               ///< Correct efficiency of associated tracks
   Bool_t                      fEventWeightChoice;        ///< 0 = no event reweighting, 1 = reweight by GA function
@@ -256,6 +260,7 @@ protected:
                                                          // if 0 is given, but no QnVector corrections are available, default to V0M (sans calibration)
 
   //..Event Plane variables
+  Double_t                    fQnCorrEventPlane1Angle;    //!<! Event plane(1st order) angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
   Double_t                    fQnCorrEventPlaneAngle;    //!<! Event plane angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
   Double_t                    fQnCorrEventPlane3Angle;    //!<! Event plane(3rd order) angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
   Double_t                    fQnCorrEventPlane4Angle;    //!<! Event plane angle (4th order) corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
@@ -280,6 +285,10 @@ protected:
   Double_t                    fscaleEta[4];             ///<
 
   // QnVector info and Event Plane Resolution Profiles
+  TH1F            *fEP1AngleV0M;              //!<! EP1 Angle from V0M
+  TH1F            *fEP1AngleTPCA;             //!<! EP1 Angle from TPC A (eta > 0)
+  TH1F            *fEP1AngleTPCC;             //!<! EP1 Angle from TPC C (eta < 0)
+
   TH1F            *fEPAngleV0M;              //!<! EP Angle from V0M
   TH1F            *fEPAngleTPCA;             //!<! EP Angle from TPC A (eta > 0)
   TH1F            *fEPAngleTPCC;             //!<! EP Angle from TPC C (eta < 0)
@@ -294,6 +303,12 @@ protected:
 
 
   static const int kNumEPROrders = 6;        ///<  How many orders of EPR to measure
+
+  // For 1st Order Event Plane
+  TProfile2D     **fEP1R_CosD1;               //!<! Cos(N[V0 - TPCA]). N is the index
+  TProfile2D     **fEP1R_CosD2;               //!<! Cos(N[V0 - TPCC])
+  TProfile2D     **fEP1R_CosD3;               //!<! Cos(N[TPCA - TPC])
+
   // For 2nd Order Event Plane
   TProfile2D     **fEPR_CosD1;               //!<! Cos(N[V0 - TPCA]). N is the index
   TProfile2D     **fEPR_CosD2;               //!<! Cos(N[V0 - TPCC])
@@ -321,22 +336,33 @@ protected:
   TH2             *fMAngle;                  //!<! Tyler's histogram
   TH2             *fPtAngle;                 //!<! Tyler's histogram
   TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+
+
+  // Event Plane information (reconstructed event plane, 1st order)
+  TH2             *fPtEP1AnglePionAcc;        //!<! Histogram of delta Psi_{EP,1} of accepted pi0 (vs pt)
+  TH3             *fPtEP1AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,1} of accepted pi0 (vs pt and cent)
+  TH2             *fPtEP1AngleMCPion;         //!<! Histogram of delta Psi_{EP,1} of MC truth pi0 (vs pt)
+  TH2             *fPtEP1AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,1} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+
   // Event Plane information (reconstructed event plane)
   TH2             *fPtEPAnglePionAcc;        //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt)
   TH3             *fPtEPAnglePionAccCent;    //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt and cent)
   TH2             *fPtEPAngleMCPion;         //!<! Histogram of delta Psi_{EP} of MC truth pi0 (vs pt)
   TH2             *fPtEPAngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+
   // Event Plane information (reconstructed event plane, 3rd order)
   TH2             *fPtEP3AnglePionAcc;        //!<! Histogram of delta Psi_{EP,3} of accepted pi0 (vs pt)
-  TH3             *fPtEP3AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,2} of accepted pi0 (vs pt and cent)
+  TH3             *fPtEP3AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,3} of accepted pi0 (vs pt and cent)
   TH2             *fPtEP3AngleMCPion;         //!<! Histogram of delta Psi_{EP,3} of MC truth pi0 (vs pt)
   TH2             *fPtEP3AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,3} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+
   // Event Plane information (reconstructed event plane, 4th order)
   TH2             *fPtEP4AnglePionAcc;        //!<! Histogram of delta Psi_{EP,4} of accepted pi0 (vs pt)
   TH3             *fPtEP4AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,4} of accepted pi0 (vs pt and cent)
   TH2             *fPtEP4AngleMCPion;         //!<! Histogram of delta Psi_{EP,4} of MC truth pi0 (vs pt)
   TH2             *fPtEP4AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,4} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
 
+  TH3             *fHistTrackPsiEP1PtCent;    //!<! Histogram of delta Psi_{EP,1} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEPPtCent;    //!<! Histogram of delta Psi_{EP} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEP3PtCent;    //!<! Histogram of delta Psi_{EP,3} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEP4PtCent;    //!<! Histogram of delta Psi_{EP,4} of accepted tracks (vs pt and centrality)
