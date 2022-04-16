@@ -44,7 +44,7 @@ public:
   Double_t     RangePhi(Double_t DPhi);
   Bool_t       DefineMixedEventPool(Int_t MC); // Definition of the Event pool parameters
   void FillCorrelationSE(Double_t MultipOrCent, TObjArray* selectedArray, Int_t d, Int_t MC, Double_t sfer);
-  void FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Zvtx, Double_t poolmax,Double_t poolmin, TObjArray*selectedArray, Int_t d, Int_t MC, Int_t param);
+  void FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Zvtx, Double_t poolmax,Double_t poolmin, TObjArray*selectedArray, Int_t d, Int_t MC);
 
   Bool_t         BuildQAHistos();
   virtual void   UserCreateOutputObjects();
@@ -59,12 +59,6 @@ protected:
   AliEventPoolManager      * fPoolMgr1;                  //  event pool manager for Event Mixing
   AliEventPoolManager      * fPoolMgr2;
   AliEventPoolManager      * fPoolMgr3;
-    AliEventPoolManager      * fPoolMgr4;                  //  event pool manager for Event Mixing
-  AliEventPoolManager      * fPoolMgr5;
-  AliEventPoolManager      * fPoolMgr6;
-    AliEventPoolManager      * fPoolMgr7;                  //  event pool manager for Event Mixing
-  AliEventPoolManager      * fPoolMgr8;
-  AliEventPoolManager      * fPoolMgr9;
   AliEventPoolManager      * fPoolMgrMC1;
   AliEventPoolManager      * fPoolMgrMC2;
   AliEventPoolManager      * fPoolMgrMC3;
