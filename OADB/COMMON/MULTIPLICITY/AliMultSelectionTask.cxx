@@ -1368,7 +1368,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
           fForwardIsPhysicalPrimary[fNForwardMCParticles] = lPart->IsPhysicalPrimary();
           fNForwardMCParticles++;
           if( fNForwardMCParticles > kFwdTracks )
-            AliFatal(Form("Event #%i: Maximum number of forward particles reaached! Sorry. Crashing now.", fHistEventCounter->GetEnties()));
+            AliFatal(Form("Event #%i: Maximum number of forward particles reaached! Sorry. Crashing now.", fHistEventCounter->GetEntries()));
         }
         
         if(TMath::Abs(lThisCharge)<0.001) continue;
