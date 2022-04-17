@@ -167,7 +167,7 @@ public:
   
   // Max number of tracks
   static const Int_t kTrack = 90000;
-  static const Int_t kFwdTracks = 1000;
+  static const Int_t kFwdTracks = 5000;
   //---------------------------------------------------------------------------------------
   
 private:
