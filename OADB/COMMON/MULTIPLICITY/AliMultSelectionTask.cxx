@@ -1346,6 +1346,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
       Long_t lCounter_NchEta10 = 0;
       Long_t lCounter_NchEta14 = 0;
       npartINELgtONE = 0.;
+      fNForwardMCParticles=0;
       //----- Loop on Stack ----------------------------------------------------------------
       for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCevent->GetNumberOfTracks()); iCurrentLabelStack++)
       {   // This is the begining of the loop on tracks
@@ -1366,8 +1367,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
           fForwardPDG  [fNForwardMCParticles] = lPart -> PdgCode();
           fForwardIsPhysicalPrimary[fNForwardMCParticles] = lPart->IsPhysicalPrimary();
           fNForwardMCParticles++;
-          if( fNForwardMCParticles > 1000 )
-            AliFatal("Maximum number of forward particles reaached! Sorry. Crashing now.");
+          if( fNForwardMCParticles > kFwdTracks )
+            AliFatal(Form("Event #%i: Maximum number of forward particles reaached! Sorry. Crashing now.", fHistEventCounter->GetEnties()));
         }
         
         if(TMath::Abs(lThisCharge)<0.001) continue;
