@@ -155,8 +155,8 @@ public:
   //Lightweight tree switch
   void SetLightTree ( Bool_t lVal ) { fkLightTree = lVal; }
   
-  static Double_t GetTransverseSpherocityMC( AliStack *lStack );
-  static Double_t GetTransverseSpherocityTracksMC( AliStack *lStack );
+  static Double_t GetTransverseSpherocityMC(AliMCEvent *lMCevent);
+  static Double_t GetTransverseSpherocityTracksMC(AliMCEvent *lMCevent);
   
   // Static method for AddTaskMultSelection
   static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
@@ -319,11 +319,11 @@ private:
   
   Int_t fNTracksITSrefit;
   Int_t fNTracksHasPointOnITSLayer;
+  Float_t fNTracksMaxDCAz00;
   Float_t fNTracksDCAxyABS;
   Float_t fNTracksDCAzABS;
   Float_t fNTracksDCAxySQ;
   Float_t fNTracksDCAzSQ;
-  Float_t fNTracksMaxDCAz00;
   Int_t BunchCrossingIDNotZero;
   Int_t fNPileUpVertices;
   Int_t fNumberOfTracks;

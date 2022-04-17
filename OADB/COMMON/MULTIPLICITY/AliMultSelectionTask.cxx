@@ -104,9 +104,9 @@ ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
-fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkPropDCA(kFALSE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
+fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
-fkDebug(kTRUE),
+fkPropDCA(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
 fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -282,9 +282,9 @@ fNForwardMCParticles(0)
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
-fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkPropDCA(kFALSE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
+fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
-fkDebug(kTRUE),
+fkPropDCA(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
 fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -805,7 +805,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //Automatic Loop for linking directly to AliMultInput
     for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
       if(lStoreIfLight[iVar] || !fkLightTree){
-        Printf(Form("Connecting variable number %i: %s",iVar,AliMultInput::VarName[iVar].Data()));
+        Printf(Form("Connecting variable number %li: %s",iVar,AliMultInput::VarName[iVar].Data()));
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])){
           Printf(Form("Problem finding variable: %s ! Please check!",AliMultInput::VarName[iVar].Data()));
           continue;
@@ -1285,19 +1285,19 @@ void AliMultSelectionTask::UserExec(Option_t *)
   if ( fkDebugIsMC ) {
     AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
     AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-    AliStack*    stack=0;
-    AliMCEvent*  mcEvent=0;
+    AliMCEvent*  lMCevent=0x0;
+    lMCevent = MCEvent();
     
-    if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+    if (eventHandler && lMCevent) {
       
       if(!fkSkipMCHeaders){
         //Npart and Ncoll information
         AliGenHijingEventHeader* hHijing=0;
         AliGenDPMjetEventHeader* dpmHeader=0;
-        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        AliGenEventHeader* mcGenH = lMCevent->GenEventHeader();
         
         //Check pileup
-        fMC_IsPileup = fUtils->IsPileupInGeneratedEvent(mcEvent, fGenName.Data());
+        fMC_IsPileup = fUtils->IsPileupInGeneratedEvent(lMCevent, fGenName.Data());
         
         //DPMJet/HIJING info if available
         if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
@@ -1347,32 +1347,31 @@ void AliMultSelectionTask::UserExec(Option_t *)
       Long_t lCounter_NchEta14 = 0;
       npartINELgtONE = 0.;
       //----- Loop on Stack ----------------------------------------------------------------
-      for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (stack->GetNtrack()); iCurrentLabelStack++)
+      for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCevent->GetNumberOfTracks()); iCurrentLabelStack++)
       {   // This is the begining of the loop on tracks
-        TParticle* particleOne = stack->Particle(iCurrentLabelStack);
-        if(!particleOne) continue;
-        if(!particleOne->GetPDG()) continue;
-        Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+        AliMCParticle* lPart = (AliMCParticle*) lMCevent->Particle( iCurrentLabelStack );
+        if(!lPart) continue;
+        Double_t lThisCharge = lPart->Charge();
 
-        Double_t gpt = particleOne -> Pt();
-        Double_t geta = particleOne -> Eta();
+        Double_t gpt = lPart -> Pt();
+        Double_t geta = lPart -> Eta();
         
         //ZDC tests: no charge requirement, no primary requirement
         if( TMath::Abs(geta) > 7.5 && fkStoreForwardMCInfo ){
-          fForwardPx   [fNForwardMCParticles] = particleOne -> Px();
-          fForwardPy   [fNForwardMCParticles] = particleOne -> Py();
-          fForwardPz   [fNForwardMCParticles] = particleOne -> Pz();
-          fForwardE    [fNForwardMCParticles] = particleOne -> Energy();
-          fForwardM    [fNForwardMCParticles] = particleOne -> GetCalcMass();
-          fForwardPDG  [fNForwardMCParticles] = particleOne -> GetPdgCode();
-          fForwardIsPhysicalPrimary[fNForwardMCParticles] = stack->IsPhysicalPrimary(iCurrentLabelStack);
+          fForwardPx   [fNForwardMCParticles] = lPart -> Px();
+          fForwardPy   [fNForwardMCParticles] = lPart -> Py();
+          fForwardPz   [fNForwardMCParticles] = lPart -> Pz();
+          fForwardE    [fNForwardMCParticles] = lPart -> E();
+          fForwardM    [fNForwardMCParticles] = lPart -> M();
+          fForwardPDG  [fNForwardMCParticles] = lPart -> PdgCode();
+          fForwardIsPhysicalPrimary[fNForwardMCParticles] = lPart->IsPhysicalPrimary();
           fNForwardMCParticles++;
           if( fNForwardMCParticles > 1000 )
             AliFatal("Maximum number of forward particles reaached! Sorry. Crashing now.");
         }
         
         if(TMath::Abs(lThisCharge)<0.001) continue;
-        if(! (stack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+        if(! (lPart->IsPhysicalPrimary()) ) continue;
         
         if( 2.8 < geta && geta < 5.1 ) lCounter_NchV0A++;
         if(-3.7 < geta && geta <-1.7 ) lCounter_NchV0C++;
@@ -1392,8 +1391,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
       fNPartINELgtONE->SetValue(npartINELgtONE);
       
       if ( fkDebugMCSpherocity ){
-        fMC_Spherocity->SetValue(GetTransverseSpherocityMC(stack));
-        fMC_SpherocityTracks->SetValue(GetTransverseSpherocityTracksMC(stack));
+        fMC_Spherocity->SetValue(GetTransverseSpherocityMC(lMCevent));
+        fMC_SpherocityTracks->SetValue(GetTransverseSpherocityTracksMC(lMCevent));
       }
     }
   }
@@ -1817,10 +1816,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
 
                 AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
                 AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-                AliStack*    stack=0;
                 AliMCEvent*  mcEvent=0;
 
-                if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+                if (eventHandler && (mcEvent=eventHandler->MCEvent()) ) {
                   //Step 1: access track label
                   Int_t lblTrack = (Int_t) TMath::Abs(trk->GetLabel());
                   //Step 2: check if track
@@ -3681,21 +3679,21 @@ void AliMultSelectionTask::SetOADB ( TString lOADBfilename ){
 }
 
 //____________________________________________________________________
-Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
+Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliMCEvent *lMCevent)
 {
   Int_t lMinMulti = 10;
   Int_t lNtracks = 0;
   Int_t fMinimizingIndex = 0;
   
   //Reject based on multiplicity
-  for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+  for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
     //get particle from stack
-    TParticle* particleOne = lStack->Particle(j);
+    AliMCParticle* particleOne = 0x0;
+    particleOne = (AliMCParticle*) lMCevent->Particle( j );
     if(!particleOne) continue;
-    if(!particleOne->GetPDG()) continue;
-    Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+    Double_t lThisCharge = particleOne->Charge();
     if(TMath::Abs(lThisCharge)<0.001) continue;
-    if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+    if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
@@ -3720,14 +3718,14 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
     Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
     
     Double_t num = 0;
-    for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+    for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
       //get particle from stack
-      TParticle* particleOne = lStack->Particle(j);
+      AliMCParticle* particleOne = 0x0;
+      particleOne = (AliMCParticle*) lMCevent->Particle( j );
       if(!particleOne) continue;
-      if(!particleOne->GetPDG()) continue;
-      Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+      Double_t lThisCharge = particleOne->Charge();
       if(TMath::Abs(lThisCharge)<0.001) continue;
-      if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+      if(! (particleOne->IsPhysicalPrimary()) ) continue;
       
       Double_t gpt = particleOne -> Pt();
       Double_t geta = particleOne -> Eta();
@@ -3750,21 +3748,21 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
   return RetTransverseSpherocity;
 };
 
-Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliStack *lStack)
+Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCevent)
 {
   Int_t lMinMulti = 10;
   Int_t lNtracks = 0;
   Int_t fMinimizingIndex = 0;
   
   //Reject based on multiplicity
-  for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+  for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
     //get particle from stack
-    TParticle* particleOne = lStack->Particle(j);
+    AliMCParticle* particleOne = 0x0;
+    particleOne = (AliMCParticle*) lMCevent->Particle( j );
     if(!particleOne) continue;
-    if(!particleOne->GetPDG()) continue;
-    Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+    Double_t lThisCharge = particleOne->Charge();
     if(TMath::Abs(lThisCharge)<0.001) continue;
-    if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+    if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
@@ -3782,14 +3780,14 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliStack *lStack)
   Double_t RetTransverseSpherocity = 1000;
   Double_t sumpt = 0;
   //const Double_t pt = 1;
-  for(Int_t i = 0; i < lStack->GetNtrack(); i++) {
+  for(Int_t i = 0; i < (lMCevent->GetNumberOfTracks()); i++) {
     //get particle from stack
-    TParticle* particleOne = lStack->Particle(i);
+    AliMCParticle* particleOne = 0x0;
+    particleOne = (AliMCParticle*) lMCevent->Particle( i );
     if(!particleOne) continue;
-    if(!particleOne->GetPDG()) continue;
-    Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+    Double_t lThisCharge = particleOne->Charge();
     if(TMath::Abs(lThisCharge)<0.001) continue;
-    if(! (lStack->IsPhysicalPrimary(i)) ) continue;
+    if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
@@ -3805,12 +3803,12 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliStack *lStack)
     Double_t ny =fPy / pt; // y component of a unitary vector n
     
     Double_t num = 0;
-    for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
-      TParticle* particleTwo = lStack->Particle(j);
+    for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
+      AliMCParticle* particleTwo = 0x0;
+      particleTwo = (AliMCParticle*) lMCevent->Particle( j );
       if(!particleTwo) continue;
-      if(!particleTwo->GetPDG()) continue;
-      if(TMath::Abs(particleTwo->GetPDG()->Charge()/3.)<0.001) continue;
-      if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+      if(TMath::Abs(particleTwo->Charge())<0.001) continue;
+      if(! (particleTwo->IsPhysicalPrimary()) ) continue;
       
       Double_t gpt2 = particleTwo -> Pt();
       Double_t geta2 = particleTwo -> Eta();
