@@ -144,6 +144,7 @@ bool AliMultDepSpecOnTheFlyAnalysisTask::InitEvent()
     AliError("fMCEvent not available\n");
     return false;
   }
+  fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
   LoopTrue(true); // set true multiplicity fTrueMult
   fMCIsGoodZPos = std::abs(fMCVtxZ) <= 10;
   fMCIsGoodEventClass = (fMultTrue > 0);
@@ -164,8 +165,13 @@ void AliMultDepSpecOnTheFlyAnalysisTask::LoopTrue(bool count)
   for (int particleID = 0; particleID < fMCEvent->GetNumberOfTracks(); ++particleID) {
     if (!InitParticle<AliMCParticle>(particleID)) continue;
     if (!fMCIsChargedPrimary) continue;
-    if (fMCAcceptEvent) {
-      fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
+    
+    if (count) {
+      ++fMultTrue;
+    } else {
+      if (fMCAcceptEvent) {
+        fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
+      }
     }
   }
 }
