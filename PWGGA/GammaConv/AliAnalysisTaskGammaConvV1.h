@@ -319,6 +319,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTrueJetFragmFuncZInvMass;                       // Histogram to determine true Inv Mass distribution with z
     TH1F**                            fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                            fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
+    TH1F**                            fHistoMCPi0WOWeightinJetInAccPt;                      // Histogram with pi0 without weights in a jet in acceptance, pT                            
     TH1F**                            fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
     TH1F**                            fHistoMCEtainJetInAccPt;                              // Histogram with weighted eta in a jet in acceptance, pT
     TH1F**                            fHistoMCPi0JetEventGenerated;                         // Histogram with mesons in a jet event generated, pT
