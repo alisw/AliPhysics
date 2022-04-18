@@ -2372,7 +2372,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   {   // This is the begining of the loop on tracks
     
     AliMCParticle* lPart = 0x0;
-    lPart = (AliMCParticle*) lMCevent->Particle( ilab );
+    lPart = (AliMCParticle*) lMCevent->GetTrack( ilab );
     if(!lPart) {
       Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
       continue;

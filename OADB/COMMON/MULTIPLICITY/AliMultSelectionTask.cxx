@@ -1350,7 +1350,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
       //----- Loop on Stack ----------------------------------------------------------------
       for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCevent->GetNumberOfTracks()); iCurrentLabelStack++)
       {   // This is the begining of the loop on tracks
-        AliMCParticle* lPart = (AliMCParticle*) lMCevent->Particle( iCurrentLabelStack );
+        AliMCParticle* lPart = (AliMCParticle*) lMCevent->GetTrack( iCurrentLabelStack );
         if(!lPart) continue;
         Short_t lCharge = -99;
         TParticlePDG* pdg = lPart->Particle()->GetPDG();
@@ -3726,7 +3726,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliMCEvent *lMCevent)
     for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
       //get particle from stack
       AliMCParticle* particleOne = 0x0;
-      particleOne = (AliMCParticle*) lMCevent->Particle( j );
+      particleOne = (AliMCParticle*) lMCevent->GetTrack( j );
       if(!particleOne) continue;
       Short_t lCharge = -99;
       TParticlePDG* pdg = particleOne->Particle()->GetPDG();
@@ -3765,7 +3765,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
   for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
     //get particle from stack
     AliMCParticle* particleOne = 0x0;
-    particleOne = (AliMCParticle*) lMCevent->Particle( j );
+    particleOne = (AliMCParticle*) lMCevent->GetTrack( j );
     if(!particleOne) continue;
     Short_t lCharge = -99;
     TParticlePDG* pdg = particleOne->Particle()->GetPDG();
@@ -3792,7 +3792,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
   for(Int_t i = 0; i < (lMCevent->GetNumberOfTracks()); i++) {
     //get particle from stack
     AliMCParticle* particleOne = 0x0;
-    particleOne = (AliMCParticle*) lMCevent->Particle( i );
+    particleOne = (AliMCParticle*) lMCevent->GetTrack( i );
     if(!particleOne) continue;
     Short_t lCharge = -99;
     TParticlePDG* pdg = particleOne->Particle()->GetPDG();
@@ -3816,7 +3816,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
     Double_t num = 0;
     for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
       AliMCParticle* particleTwo = 0x0;
-      particleTwo = (AliMCParticle*) lMCevent->Particle( j );
+      particleTwo = (AliMCParticle*) lMCevent->GetTrack( j );
       if(!particleTwo) continue;
       
       Short_t lCharge = -99;
