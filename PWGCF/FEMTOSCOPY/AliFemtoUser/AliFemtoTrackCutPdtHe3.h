@@ -46,7 +46,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	void SetfUsePtCut(int aUsePtCut);
 
 	void SetfOnlyTPCreject(int aOnlyTPCreject);
-	
+	void SetPionHe3Cut(int aPionHe3cut);	
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -66,7 +66,8 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	int fOtherNsigmacut;
 	// 2022.1.20
 	float fMinTPCFoundFraction;
-        
+	// 2022.4.18 for pi- + He3+ pair
+        int fPionHe3cut;        
         bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP);
         bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
         bool IsTritonNSigma(    float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
