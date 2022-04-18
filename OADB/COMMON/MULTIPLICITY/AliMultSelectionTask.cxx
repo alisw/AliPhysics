@@ -1352,7 +1352,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
       {   // This is the begining of the loop on tracks
         AliMCParticle* lPart = (AliMCParticle*) lMCevent->Particle( iCurrentLabelStack );
         if(!lPart) continue;
-        Double_t lThisCharge = lPart->Charge();
+        Short_t lCharge = -99;
+        TParticlePDG* pdg = lPart->Particle()->GetPDG();
+        if (pdg) lCharge = (Short_t (pdg->Charge()));
 
         Double_t gpt = lPart -> Pt();
         Double_t geta = lPart -> Eta();
@@ -1368,10 +1370,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
           fForwardIsPhysicalPrimary[fNForwardMCParticles] = lPart->IsPhysicalPrimary();
           fNForwardMCParticles++;
           if( fNForwardMCParticles > kFwdTracks )
-            AliFatal(Form("Event #%i: Maximum number of forward particles reaached! Sorry. Crashing now.", fHistEventCounter->GetEntries()));
+            AliFatal(Form("Event #%i: Maximum number of forward particles reached! Sorry. Crashing now.", fHistEventCounter->GetEntries()));
         }
         
-        if(TMath::Abs(lThisCharge)<0.001) continue;
+        if(TMath::Abs(lCharge)<0.001) continue;
         if(! (lPart->IsPhysicalPrimary()) ) continue;
         
         if( 2.8 < geta && geta < 5.1 ) lCounter_NchV0A++;
@@ -3692,8 +3694,10 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliMCEvent *lMCevent)
     AliMCParticle* particleOne = 0x0;
     particleOne = (AliMCParticle*) lMCevent->Particle( j );
     if(!particleOne) continue;
-    Double_t lThisCharge = particleOne->Charge();
-    if(TMath::Abs(lThisCharge)<0.001) continue;
+    Short_t lCharge = -99;
+    TParticlePDG* pdg = particleOne->Particle()->GetPDG();
+    if (pdg) lCharge = (Short_t (pdg->Charge()));
+    if(TMath::Abs(lCharge)<0.001) continue;
     if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
@@ -3724,8 +3728,10 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliMCEvent *lMCevent)
       AliMCParticle* particleOne = 0x0;
       particleOne = (AliMCParticle*) lMCevent->Particle( j );
       if(!particleOne) continue;
-      Double_t lThisCharge = particleOne->Charge();
-      if(TMath::Abs(lThisCharge)<0.001) continue;
+      Short_t lCharge = -99;
+      TParticlePDG* pdg = particleOne->Particle()->GetPDG();
+      if (pdg) lCharge = (Short_t (pdg->Charge()));
+      if(TMath::Abs(lCharge)<0.001) continue;
       if(! (particleOne->IsPhysicalPrimary()) ) continue;
       
       Double_t gpt = particleOne -> Pt();
@@ -3761,8 +3767,10 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
     AliMCParticle* particleOne = 0x0;
     particleOne = (AliMCParticle*) lMCevent->Particle( j );
     if(!particleOne) continue;
-    Double_t lThisCharge = particleOne->Charge();
-    if(TMath::Abs(lThisCharge)<0.001) continue;
+    Short_t lCharge = -99;
+    TParticlePDG* pdg = particleOne->Particle()->GetPDG();
+    if (pdg) lCharge = (Short_t (pdg->Charge()));
+    if(TMath::Abs(lCharge)<0.001) continue;
     if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
@@ -3786,8 +3794,10 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
     AliMCParticle* particleOne = 0x0;
     particleOne = (AliMCParticle*) lMCevent->Particle( i );
     if(!particleOne) continue;
-    Double_t lThisCharge = particleOne->Charge();
-    if(TMath::Abs(lThisCharge)<0.001) continue;
+    Short_t lCharge = -99;
+    TParticlePDG* pdg = particleOne->Particle()->GetPDG();
+    if (pdg) lCharge = (Short_t (pdg->Charge()));
+    if(TMath::Abs(lCharge)<0.001) continue;
     if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
@@ -3808,7 +3818,12 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
       AliMCParticle* particleTwo = 0x0;
       particleTwo = (AliMCParticle*) lMCevent->Particle( j );
       if(!particleTwo) continue;
-      if(TMath::Abs(particleTwo->Charge())<0.001) continue;
+      
+      Short_t lCharge = -99;
+      TParticlePDG* pdg = particleTwo->Particle()->GetPDG();
+      if (pdg) lCharge = (Short_t (pdg->Charge()));
+      
+      if(TMath::Abs(lCharge)<0.001) continue;
       if(! (particleTwo->IsPhysicalPrimary()) ) continue;
       
       Double_t gpt2 = particleTwo -> Pt();
