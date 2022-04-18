@@ -55,6 +55,170 @@ ClassImp(AliAnalysisTaskHFFindJets)
 //______________________________________________________________________________
 AliAnalysisTaskHFFindJets::AliAnalysisTaskHFFindJets():AliAnalysisTaskSE("HFFindJets"),
 	fOutput{nullptr},
+	fHistNEvents{nullptr},
+	fHistTrackStatus{nullptr},
+	fHistPtAllTracks{nullptr},
+	fHistPtSelTracks{nullptr},
+	fHistTglAllTracks{nullptr},
+	fHistTglSelTracks{nullptr},
+	fHistEtaAllTracks{nullptr},
+	fHistEtaSelTracks2prong{nullptr},
+	fHistEtaSelTracks3prong{nullptr},
+	fHistImpParAllTracks{nullptr},
+	fHistImpParSelTracks2prong{nullptr},
+	fHistImpParSelTracks3prong{nullptr},
+	fHistITSmapAllTracks{nullptr},
+	fHistITSmapSelTracks{nullptr},
+	fHistPrimVertX{nullptr},
+	fHistPrimVertY{nullptr},
+	fHistPrimVertZ{nullptr},
+	fHist2ProngVertX{nullptr},
+	fHist2ProngVertY{nullptr},
+	fHist2ProngVertZ{nullptr},
+	fHist3ProngVertX{nullptr},
+	fHist3ProngVertY{nullptr},
+	fHist3ProngVertZ{nullptr},
+	fHistDist12LcpKpi{nullptr},
+	fHistInvMassD0{nullptr},
+	fHistPtD0{nullptr},
+	fHistYPtD0{nullptr},
+	fHistPtD0Dau0{nullptr},
+	fHistPtD0Dau1{nullptr},
+	fHistImpParD0Dau0{nullptr},
+	fHistImpParD0Dau1{nullptr},
+	fHistd0Timesd0{nullptr},
+	fHistCosPointD0{nullptr},
+	fHistDecLenD0{nullptr},
+	fHistDecLenXYD0{nullptr},
+	fHistImpParErrD0Dau{nullptr},
+	fHistDecLenErrD0{nullptr},
+	fHistDecLenXYErrD0{nullptr},
+	fHistCovMatPrimVXX2Prong{nullptr},
+	fHistCovMatSecVXX2Prong{nullptr},
+	fHistD0SignalVertX{nullptr},
+	fHistD0SignalVertY{nullptr},
+	fHistD0SignalVertZ{nullptr},
+	fHistInvMassD0Signal{nullptr},
+	fHistInvMassD0Refl{nullptr},
+	fHistInvMassJpsi{nullptr},
+	fHistPtJpsi{nullptr},
+	fHistPtJpsiDau0{nullptr},
+	fHistPtJpsiDau1{nullptr},
+	fHistImpParJpsiDau0{nullptr},
+	fHistImpParJpsiDau1{nullptr},
+	fHistd0Timesd0Jpsi{nullptr},
+	fHistCosPointJpsi{nullptr},
+	fHistDecLenJpsi{nullptr},
+	fHistDecLenXYJpsi{nullptr},
+	fHistDecLenErrJpsi{nullptr},
+	fHistDecLenXYErrJpsi{nullptr},
+	fHistJpsiSignalVertX{nullptr},
+	fHistJpsiSignalVertY{nullptr},
+	fHistJpsiSignalVertZ{nullptr},
+	fHistInvMassJpsiSignal{nullptr},
+	fHistInvMassDplus{nullptr},
+	fHistInvMassDplusSignal{nullptr},
+	fHistPtDplus{nullptr},
+	fHistYPtDplus{nullptr},
+	fHistPtDplusDau0{nullptr},
+	fHistPtDplusDau1{nullptr},
+	fHistPtDplusDau2{nullptr},
+	fHistImpParDplusDau0{nullptr},
+	fHistImpParDplusDau1{nullptr},
+	fHistImpParDplusDau2{nullptr},
+	fHistDecLenDplus{nullptr},
+	fHistDecLenXYDplus{nullptr},
+	fHistNormDecLenXYDplus{nullptr},
+	fHistImpParErrDplusDau{nullptr},
+	fHistDecLenErrDplus{nullptr},
+	fHistDecLenXYErrDplus{nullptr},
+	fHistCosPointDplus{nullptr},
+	fHistCosPointXYDplus{nullptr},
+	fHistImpParXYDplus{nullptr},
+	fHistNormIPDplus{nullptr},
+	fHistoSumSqImpParDplusDau{nullptr},
+	fHistCovMatPrimVXX3Prong{nullptr},
+	fHistCovMatSecVXX3Prong{nullptr},
+	fHistInvMassDs{nullptr},
+	fHistInvMassDsSignal{nullptr},
+	fHistInvMassDsRefl{nullptr},
+	fHistPtDs{nullptr},
+	fHistYPtDs{nullptr},
+	fHistDecLenDs{nullptr},
+	fHistCosPointDs{nullptr},
+	fHistInvMassLc{nullptr},
+	fHistPtLc{nullptr},
+	fHistYPtLc{nullptr},
+	fHistPtLcDau0{nullptr},
+	fHistPtLcDau1{nullptr},
+	fHistPtLcDau2{nullptr},
+	fHistDecLenLc{nullptr},
+	fHistCosPointLc{nullptr},
+	fHistInvMassK0s{nullptr},
+	fHistInvMassLcK0sp{nullptr},
+	fHistPtLcK0sp{nullptr},
+	fHistCPUTimeTrackVsNTracks{nullptr},
+	fHistCPUTimeCandVsNTracks{nullptr},
+	fHistWallTimeTrackVsNTracks{nullptr},
+	fHistWallTimeCandVsNTracks{nullptr},
+	fReadMC(kFALSE),
+	fUsePhysSel(kTRUE),
+	fTriggerMask(AliVEvent::kAny),
+	fSelectOnCentrality(kFALSE),
+	fMinCentrality(-1.),
+	fMaxCentrality(110.),
+	fCentrEstimator("V0M"),
+	fCutOnSPDVsTrackVtx(kFALSE),
+	fMaxZVert(999.),
+	fDo3Prong(kFALSE),
+	fMaxDecVertRadius2(8),
+	fMassDzero(0.),
+	fMassJpsi(0.),
+	fMassDplus(0.),
+	fMassDs(0.),
+	fMassLambdaC(0.),
+	fMassK0s(0.),
+	fSecVertexerAlgo(0),
+	fVertexerTracks{nullptr},
+	//fO2Vertexer2Prong{},
+	//fO2Vertexer3Prong{},
+	fVertexerPropagateToPCA(true),
+	fVertexerMaxR(200.),
+	fVertexerMaxDZIni(4.),
+	fVertexerMinParamChange(1.e-3),
+	fVertexerMinRelChi2Change(0.9),
+	fVertexerUseAbsDCA(true),
+	fTrackCuts2pr{nullptr},
+	fTrackCuts3pr{nullptr},
+	fTrackCutsBach{nullptr},
+	fTrackCutsV0Dau{nullptr},
+	fMaxTracksToProcess(9999999),
+	fNPtBinsSingleTrack(6),
+	fNPtBinsDzero(25),
+	fPtWithoutVtxToll(0.1),
+	fMinPtDzero(0.),
+	fMaxPtDzero(9999.),
+	fMinPtDplus(0.),
+	fMaxPtDplus(9999.),
+	fMinPtJpsi(0.),
+	fMaxPtJpsi(9999.),
+	fCandidateCutLevel(1),
+	fSelectD0(1),
+	fSelectD0bar(1),
+	fMinPt3Prong(0.),
+	fMaxRapidityCand(-999.),
+	fNPtBinsDplus(12),
+	fNPtBinsJpsi(9),
+	fNPtBinsLc(10),
+	fSelectDplus(1),
+	fSelectJpsi(1),
+	fSelectLcpKpi(1),
+	fFindVertexForCascades(kFALSE),
+	fMinPtV0(0.),
+	fMinCosPointV0(0.),
+	fCutOnK0sMass(0.1),
+	fEnableCPUTimeCheck(kFALSE),
+	fCountTimeInMilliseconds(kFALSE),
 	hpt_nocuts{nullptr},
 	htgl_nocuts{nullptr},
 	hpt_cuts{nullptr},
@@ -94,8 +258,8 @@ AliAnalysisTaskHFFindJets::AliAnalysisTaskHFFindJets():AliAnalysisTaskSE("HFFind
 	hjetconstituents{nullptr},
 	hjetzg{nullptr},
 	hjetrg{nullptr},
-	hjetnsd{nullptr},
-	fReadMC(kFALSE)
+	hjetnsd{nullptr}
+
 {
   InitDefault();
 
@@ -109,6 +273,7 @@ AliAnalysisTaskHFFindJets::~AliAnalysisTaskHFFindJets() {
   
   if(fOutput && !fOutput->IsOwner()){
 	delete fOutput;
+	delete fHistNEvents;
 	delete hpt_nocuts;
 	delete htgl_nocuts;
 	delete hpt_cuts;
@@ -154,14 +319,14 @@ AliAnalysisTaskHFFindJets::~AliAnalysisTaskHFFindJets() {
 
 //_______________________________________________________________________________________
 void AliAnalysisTaskHFFindJets::InitDefault() {
-	kbitDplus = 0;
+	/*kbitDplus = 0;
 	kbitDs = 1;
 	kbitLc = 2;
    
 	fMassDzero = TDatabasePDG::Instance()->GetParticle(421)->Mass();
 	fMassDplus = TDatabasePDG::Instance()->GetParticle(411)->Mass();
 	fMassDs = TDatabasePDG::Instance()->GetParticle(431)->Mass();
-	fMassLambdaC = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+	fMassLambdaC = TDatabasePDG::Instance()->GetParticle(4122)->Mass();*/
 	
     //m     dca   cost* ptk  ptpi  d0k            d0pi         d0d0     cosp cosxy normdxy
 	Double_t defaultCuts[npTBins][nCutVars] = {{0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   // pt<0.5
@@ -189,97 +354,237 @@ void AliAnalysisTaskHFFindJets::InitDefault() {
                                      {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  // 24<pt<36 
                                      {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  // 36<pt<50 
                                      {0.400, 300. * 1E-4, 1.0, 0.6, 0.6, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.80, 0., 0.}}; // pt>50  ;
-	for(Int_t ib=0; ib<npTBins; ib++){
+   for(Int_t ib=0; ib<npTBins; ib++){
 		for(Int_t jc=0; jc<nCutVars; jc++){
 			fCuts[ib][jc]=defaultCuts[ib][jc];
 		}
-	}                                
+	}  
+	
+	
+	/// initialization with default values
+
+  fMassDzero = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  fMassJpsi = TDatabasePDG::Instance()->GetParticle(443)->Mass();
+  fMassDplus = TDatabasePDG::Instance()->GetParticle(411)->Mass();
+  fMassDs = TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  fMassLambdaC = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  fMassK0s = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+
+  fTrackCuts2pr = new AliESDtrackCuts("AliESDtrackCuts", "default");
+  fTrackCuts2pr->SetPtRange(0., 1.e10);
+  // fTrackCuts->SetEtaRange(-0.8, +0.8);
+  fTrackCuts2pr->SetMinNClustersTPC(50);
+  fTrackCuts2pr->SetRequireITSRefit(kTRUE);
+  fTrackCuts2pr->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                          AliESDtrackCuts::kAny);
+  // fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  // fTrackCuts->SetMaxDCAToVertexZ(3.2);
+  // fTrackCuts->SetMaxDCAToVertexXY(2.4);
+  // fTrackCuts->SetDCAToVertex2D(kTRUE);
+
+  // no possibility to apply pT-dependent DCA cut in AliESDtrackCuts --> done by hand
+  fTrackCuts2pr->SetMaxDCAToVertexXY(1000.);
+  fTrackCuts2pr->SetMinDCAToVertexXY(0.);
+
+  fTrackCuts3pr = new AliESDtrackCuts("AliESDtrackCuts", "default3p");
+  fTrackCuts3pr->SetPtRange(0., 1.e10);
+  // fTrackCuts->SetEtaRange(-0.8, +0.8);
+  fTrackCuts3pr->SetMinNClustersTPC(50);
+  fTrackCuts3pr->SetRequireITSRefit(kTRUE);
+  fTrackCuts3pr->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                          AliESDtrackCuts::kAny);
+
+  // no possibility to apply pT-dependent DCA cut in AliESDtrackCuts --> done by hand
+  fTrackCuts3pr->SetMaxDCAToVertexXY(1000.);
+  fTrackCuts3pr->SetMinDCAToVertexXY(0.);
+
+  fTrackCutsBach = new AliESDtrackCuts("AliESDtrackCuts", "defaultbach");
+  fTrackCutsBach->SetPtRange(0.3, 1.e10);
+  fTrackCutsBach->SetEtaRange(-0.8, +0.8);
+  fTrackCutsBach->SetMinDCAToVertexXYPtDep("0.*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+  fTrackCutsBach->SetMaxDCAToVertexXY(1.);
+  
+  fTrackCutsV0Dau = new AliESDtrackCuts("AliESDtrackCuts", "defaultV0dau");
+  fTrackCutsV0Dau->SetPtRange(0.05, 1.e10);
+  fTrackCutsV0Dau->SetEtaRange(-1.1, +1.1);
+  fTrackCutsV0Dau->SetMinNCrossedRowsTPC(50);
+  fTrackCutsV0Dau->SetRequireTPCRefit(kTRUE);
+  
+  fNPtBinsSingleTrack = 6;
+  Double_t defaultPtBinsSingleTrack[7] = {0., 0.5, 1., 1.5, 2., 3., 1000.};
+  for (Int_t ib = 0; ib < fNPtBinsSingleTrack + 1; ib++)
+      fPtBinLimsSingleTrack[ib] = defaultPtBinsSingleTrack[ib];
+
+  Double_t defaultSingleTrackCuts[6][kNCutVarsSingleTrack] =
+    {{0.0025, 1000.},  /* 0   < pt < 0.5    */
+     {0.0025, 1000.},  /* 0.5 < pt < 1      */
+     {0.0025, 1000.},  /* 1   < pt < 1.5    */
+     {0.0025, 1000.},  /* 1.5 < pt < 2      */
+     {0.0000, 1000.},  /* 2   < pt < 3      */
+     {0.0000, 1000.}}; /* 3   < pt < 1000   */
+
+  for (Int_t ib = 0; ib < fNPtBinsSingleTrack; ib++) {
+    for (Int_t jc = 0; jc < kNCutVarsSingleTrack; jc++) {
+      fSingleTrackCuts2Prong[ib][jc] = defaultSingleTrackCuts[ib][jc];
+      fSingleTrackCuts3Prong[ib][jc] = defaultSingleTrackCuts[ib][jc];
+    }
+  }
+
+  Double_t defaultPtBins2Prongs[3] = {0., 5., 1000.};
+  Double_t defaultPtBins3Prongs[3] = {0., 5., 1000.};
+  for (Int_t ib = 0; ib < 2 + 1; ib++) {
+    fPtBinLimsDzeroSkims[ib] = defaultPtBins2Prongs[ib];
+    fPtBinLimsJpsiSkims[ib] = defaultPtBins2Prongs[ib];
+    fPtBinLimsDplusSkims[ib] = defaultPtBins3Prongs[ib];
+    fPtBinLimsDsSkims[ib] = defaultPtBins3Prongs[ib];
+    fPtBinLimsLcSkims[ib] = defaultPtBins3Prongs[ib];
+    fPtBinLimsXicSkims[ib] = defaultPtBins3Prongs[ib];
+  }
+
+  Double_t defaultDzeroSkimCuts[2][kNCutVars2Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultJpsiSkimCuts[2][kNCutVars2Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultDplusSkimCuts[2][kNCutVars3Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultDsSkimCuts[2][kNCutVars3Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultLcSkimCuts[2][kNCutVars3Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultXicSkimCuts[2][kNCutVars3Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  for(Int_t ib=0; ib<fNPtBins; ib++){
+    for(Int_t jc=0; jc<kNCutVars2Prong; jc++){
+      fDzeroSkimCuts[ib][jc]=defaultDzeroSkimCuts[ib][jc];
+      fJpsiSkimCuts[ib][jc]=defaultJpsiSkimCuts[ib][jc];
+      fDplusSkimCuts[ib][jc]=defaultDplusSkimCuts[ib][jc];
+      fDsSkimCuts[ib][jc]=defaultDsSkimCuts[ib][jc];
+      fLcSkimCuts[ib][jc]=defaultLcSkimCuts[ib][jc];
+      fXicSkimCuts[ib][jc]=defaultXicSkimCuts[ib][jc];
+    }
+  }
+
+  fNPtBinsDzero=25;
+  Double_t defaultPtBins[26] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
+  for(Int_t ib=0; ib<fNPtBinsDzero+1; ib++) fPtBinLimsDzero[ib]=defaultPtBins[ib];
+
+  Double_t defaultD0Cuts[25][kNCutVarsDzero] =
+    {{0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   /* pt<0.5*/
+     {0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   /* 0.5<pt<1*/
+     {0.400, 300. * 1E-4, 0.8, 0.4, 0.4, 1000. * 1E-4, 1000. * 1E-4, -25000. * 1E-8, 0.80, 0., 0.},  /* 1<pt<1.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.4, 0.4, 1000. * 1E-4, 1000. * 1E-4, -25000. * 1E-8, 0.80, 0., 0.},  /* 1.5<pt<2 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -20000. * 1E-8, 0.90, 0., 0.},  /* 2<pt<2.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -20000. * 1E-8, 0.90, 0., 0.},  /* 2.5<pt<3 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -12000. * 1E-8, 0.85, 0., 0.},  /* 3<pt<3.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -12000. * 1E-8, 0.85, 0., 0.},  /* 3.5<pt<4 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 4<pt<4.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 4.5<pt<5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 5<pt<5.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 5.5<pt<6 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 6<pt<6.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 6.5<pt<7 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -7000. * 1E-8, 0.85, 0., 0.},   /* 7<pt<7.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -7000. * 1E-8, 0.85, 0., 0.},   /* 7.5<pt<8 */
+     {0.400, 300. * 1E-4, 0.9, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.85, 0., 0.},   /* 8<pt<9 */
+     {0.400, 300. * 1E-4, 0.9, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.85, 0., 0.},   /* 9<pt<10 */
+     {0.400, 300. * 1E-4, 0.9, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.85, 0., 0.},   /* 10<pt<12 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 10000. * 1E-8, 0.85, 0., 0.},   /* 12<pt<16 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 16<pt<20 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 20<pt<24 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 24<pt<36 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 36<pt<50 */
+     {0.400, 300. * 1E-4, 1.0, 0.6, 0.6, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.80, 0., 0.}}; /* pt>50 */
+  for(Int_t ib=0; ib<fNPtBinsDzero; ib++){
+   for(Int_t jc=0; jc<kNCutVarsDzero; jc++){
+     fDzeroCuts[ib][jc]=defaultD0Cuts[ib][jc];
+   }
+  }
+
+  fNPtBinsDplus = 12;
+  Double_t defaultPtBinsDplus[13] = {1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 16., 24., 36.};
+  for (Int_t ib = 0; ib < fNPtBinsDplus + 1; ib++)
+    fPtBinLimsDplus[ib] = defaultPtBinsDplus[ib];
+
+  Double_t defaultDplusCuts[12][kNCutVarsDplus] =
+    {{0.2, 0.3, 0.3, 0.07, 6., 0.96, 0.985, 2.5},  /* 1<pt<2   */
+     {0.2, 0.3, 0.3, 0.07, 5., 0.96, 0.985, 2.5},  /* 2<pt<3   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.980, 2.5},  /* 3<pt<4   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.000, 2.5},  /* 4<pt<5   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.000, 2.5},  /* 5<pt<6   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.000, 2.5},  /* 6<pt<7   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.000, 2.5},  /* 7<pt<8   */
+     {0.2, 0.3, 0.3, 0.12, 5., 0.96, 0.000, 2.5},  /* 8<pt<10  */
+     {0.2, 0.3, 0.3, 0.12, 5., 0.96, 0.000, 2.5},  /* 10<pt<12 */
+     {0.2, 0.3, 0.3, 0.12, 5., 0.96, 0.000, 2.5},  /* 12<pt<16 */
+     {0.2, 0.3, 0.3, 0.12, 5., 0.96, 0.000, 2.5},  /* 16<pt<24 */
+     {0.2, 0.3, 0.3, 0.20, 5., 0.94, 0.000, 2.5}}; /* 24<pt<36 */
+  for(Int_t ib=0; ib<fNPtBinsDplus; ib++){
+   for(Int_t jc=0; jc<kNCutVarsDplus; jc++){
+     fDplusCuts[ib][jc]=defaultDplusCuts[ib][jc];
+   }
+  }
+
+  fNPtBinsLc = 10;
+  Double_t defaultPtBinsLc[11] = {0., 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
+  for (Int_t ib = 0; ib < fNPtBinsLc + 1; ib++)
+    fPtBinLimsLc[ib] = defaultPtBinsLc[ib];
+
+  Double_t defaultLcCuts[10][kNCutVarsLc] =
+    {{0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* pt<1*/
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 1<pt<2*/
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 2<pt<3 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 3<pt<4 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 4<pt<5 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 5<pt<6 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 6<pt<8 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 8<pt<12 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 12<pt<24 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.}}; /* 24<pt<36 */
+  for (Int_t ib = 0; ib < fNPtBinsLc; ib++) {
+    for (Int_t jc = 0; jc < kNCutVarsLc; jc++) {
+      fLcCuts[ib][jc] = defaultLcCuts[ib][jc];
+    }
+  }
+
+  fNPtBinsJpsi = 9;
+  Double_t defaultPtBinsJpsi[10] = {0, 0.5, 1., 2., 3., 4., 5., 7., 10., 15.};
+  for (Int_t ib = 0; ib < fNPtBinsJpsi + 1; ib++)
+      fPtBinLimsJpsi[ib] = defaultPtBinsJpsi[ib];
+
+  Double_t defaultJpsiCuts[9][kNCutVarsJpsi] =
+    {{0.5, 0.2, 0.4, 1},  /* pt<0.5    */
+    {0.5, 0.2, 0.4,  1},  /* 0.5<pt<1   */
+    {0.5, 0.2, 0.4,  1},  /* 1<pt<2   */
+    {0.5, 0.2, 0.4,  1},  /* 2<pt<3   */
+    {0.5, 0.2, 0.4,  1},  /* 3<pt<4   */
+    {0.5, 0.2, 0.4,  1},  /* 4<pt<5   */
+    {0.5, 0.2, 0.4,  1},  /* 5<pt<7   */
+    {0.5, 0.2, 0.4,  1},  /* 7<pt<10  */
+    {0.5, 0.2, 0.4,  1}}; /* 10<pt<15 */
+
+  for (Int_t ib = 0; ib < fNPtBinsJpsi; ib++) {
+    for (Int_t jc = 0; jc < kNCutVarsJpsi; jc++) {
+      fJpsiCuts[ib][jc] = defaultJpsiCuts[ib][jc];
+    }
+  }                              
                                                         	
 }
 
 //_______________________________________________________________________________________
-char* AliAnalysisTaskHFFindJets::GetJsonString(const char* jsonFileName, const char* key) {
-	FILE* fj = fopen(jsonFileName, "r");
-	char line[500];
-	char* value = 0x0;
-	while (!feof(fj)) {
-		fgets(line, 500, fj);
-		if (strstr(line, key)) {
-			value = strtok(line, ":");
-			value = strtok(NULL, ":");
-			break;
-		}
-	}	
-	fclose(fj);
-	return value;
-}
-
-//_______________________________________________________________________________________
-int AliAnalysisTaskHFFindJets::GetJsonInteger(const char* jsonFileName, const char* key) {
-	FILE* fj = fopen(jsonFileName, "r");
-	char line[500];
-	int value = -999;
-	while (!feof(fj)) {
-		fgets(line, 500, fj);
-		if (strstr(line, key)) {
-			char* token = strtok(line, ":");
-			token = strtok(NULL, ":");
-			TString temp = token;
-			temp.ReplaceAll("\"", "");
-			temp.ReplaceAll(",", "");
-			value = temp.Atoi();
-			break;
-		}
-	}
-	fclose(fj);
-	return value;
-}
-
-//_______________________________________________________________________________________
-bool AliAnalysisTaskHFFindJets::GetJsonBool(const char* jsonFileName, const char* key) {
-	FILE* fj = fopen(jsonFileName, "r");
-	char line[500];
-	bool value = false;
-	while (!feof(fj)) {
-		fgets(line, 500, fj);
-		if (strstr(line, key)) {
-			char* token = strtok(line, ":");
-			token = strtok(NULL, ":");
-			TString temp = token;
-			temp.ReplaceAll("\"", "");
-			temp.ReplaceAll(",", "");
-			if (temp.Contains("true")) value = true;
-			break;
-		}
-	}
-	fclose(fj);
-	return value;
-}
-
-//_______________________________________________________________________________________
-float AliAnalysisTaskHFFindJets::GetJsonFloat(const char* jsonFileName, const char* key) {
-	FILE* fj = fopen(jsonFileName, "r");
-	char line[500];
-	float value = -999.;
-	while (!feof(fj)) {
-		fgets(line, 500, fj);
-		if (strstr(line, key)) {
-			char* token = strtok(line, ":");
-			token = strtok(NULL, ":");
-			TString temp = token;
-			temp.ReplaceAll("\"", "");
-			temp.ReplaceAll(",", "");
-			value = temp.Atof();
-			break;
-		}
-	}
-	fclose(fj);
-	return value;
-}
-
-//_______________________________________________________________________________________
 void AliAnalysisTaskHFFindJets::ReadJson() {
-	char* value = GetJsonString("dpl-config_std.json", "aod-file");
+	std::string value = GetJsonString("dpl-config_std.json", "aod-file");
 	printf("%s\n", value);
 	int i3p = GetJsonInteger("dpl-config_std.json", "do3prong");
 	printf("%d\n", i3p);
@@ -389,16 +694,6 @@ void AliAnalysisTaskHFFindJets::UserCreateOutputObjects() {
 	PostData(1,fOutput);
 }
 
-//_______________________________________________________________________________________
-Int_t AliAnalysisTaskHFFindJets::GetpTBin(Double_t candpT){
-	Double_t pTBins[npTBins + 1] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
-	for (Int_t i = 0; i < npTBins; i++) {
-		if (candpT >= pTBins[i] && candpT < pTBins[i + 1]) {
-			return i;
-		}
-	}
-	return -1;
-}
 
 //_______________________________________________________________________________________
 Bool_t AliAnalysisTaskHFFindJets::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float fBzkG) {
@@ -460,7 +755,7 @@ Int_t AliAnalysisTaskHFFindJets::TwoProngSelectionCuts(AliAODRecoDecayHF2Prong* 
 	bool isD0bar = true;
 	Double_t candpT = cand->Pt();
 	if (candpT < candpTMin || candpT >= candpTMax) return 0;
-	Int_t pTBin = GetpTBin(candpT);
+	Int_t pTBin = GetPtBin(candpT, fPtBinLimsDzeroSkims, kMaxNPtBins2ProngsSkims);
 	if (pTBin==-1) return 0;
 	if (cand->Prodd0d0() > fCuts[pTBin][7]) return 0;
 	if (cand->CosPointingAngle() < fCuts[pTBin][8]) return 0;
@@ -507,7 +802,7 @@ AliESDVertex* AliAnalysisTaskHFFindJets::ReconstructSecondaryVertex(AliVertexerT
 }
 
 //_______________________________________________________________________________________
-AliAODVertex* AliAnalysisTaskHFFindJets::ConvertToAODVertex(AliESDVertex* trkv) {
+/*AliAODVertex* AliAnalysisTaskHFFindJets::ConvertToAODVertex(AliESDVertex* trkv) {
 	Double_t pos_[3], cov_[6], chi2perNDF_;
 	trkv->GetXYZ(pos_);       // position
 	trkv->GetCovMatrix(cov_); // covariance matrix
@@ -516,6 +811,19 @@ AliAODVertex* AliAnalysisTaskHFFindJets::ConvertToAODVertex(AliESDVertex* trkv) 
 	//  printf(" pos_ %f %f %f \n", pos_[0], pos_[1], pos_[2]);
 	AliAODVertex* vertexAOD = new AliAODVertex(pos_, cov_, chi2perNDF_, 0x0, -1, AliAODVertex::kUndef, 2);
 	return vertexAOD;
+}*/
+
+//_______________________________________________________________________________________
+AliAODVertex* AliAnalysisTaskHFFindJets::ConvertToAODVertex(AliESDVertex* trkv)
+{
+  Double_t pos[3], cov[6], chi2perNDF;
+  trkv->GetXYZ(pos);       // position
+  trkv->GetCovMatrix(cov); // covariance matrix
+  chi2perNDF = trkv->GetChi2toNDF();
+  //  double dispersion = trkv->GetDispersion();
+  AliAODVertex* vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, trkv->GetNContributors());
+  vertexAOD->SetNContributors(trkv->GetNContributors());
+  return vertexAOD;
 }
 
 //_______________________________________________________________________________________
@@ -968,11 +1276,44 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd) {
 }
 
 //_______________________________________________________________________________________
+/*Int_t AliAnalysisTaskHFFindJets::GetpTBin(Double_t candpT){
+	Double_t pTBins[npTBins + 1] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
+	for (Int_t i = 0; i < npTBins; i++) {
+		if (candpT >= pTBins[i] && candpT < pTBins[i + 1]) {
+			return i;
+		}
+	}
+	return -1;
+}*/
+
+
+//______________________________________________________________________________
+Int_t AliAnalysisTaskHFFindJets::GetPtBin(Double_t ptCand, Double_t* ptBinLims, Double_t nPtBins)
+{
+  for (Int_t i = 0; i < nPtBins; i++) {
+    if (ptCand>=ptBinLims[i] && ptCand<ptBinLims[i+1]){
+      return i;
+    }
+  }
+  return -1;
+}
+
+//_______________________________________________________________________________________
 void AliAnalysisTaskHFFindJets::UserExec(Option_t *) {
+	
 	AliESDEvent *esd = (AliESDEvent*) (InputEvent()); //looping over events
 	if(!esd) {
 		printf("AliAnalysisTaskHFFindJets:::UserExec(): bad ESD\n");
 		return;
+	}
+	
+	Double_t centr=-1;
+	AliMultSelection* mulSel=0x0;
+	if(fSelectOnCentrality){
+		mulSel = (AliMultSelection*)esd->FindListObject("MultSelection");
+		if(mulSel){
+		centr=mulSel->GetMultiplicityPercentile(fCentrEstimator.Data());
+		}
 	}
   
 	if(fUsePhysSel){
@@ -986,6 +1327,233 @@ void AliAnalysisTaskHFFindJets::UserExec(Option_t *) {
   
 	PostData(1,fOutput);
 }
+
+//______________________________________________________________________________
+std::string AliAnalysisTaskHFFindJets::GetJsonString(const char* jsonFileName, const char* key){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  char* value=0x0;
+  while(!feof(fj)){
+    char* rc=fgets(line,500,fj);
+    if(rc && strstr(line,key)){
+      value=strtok(line, ":");
+      value=strtok(NULL, ":");
+      break;
+    }
+  }
+  fclose(fj);
+  TString sValue = value;
+  sValue.ReplaceAll("\"", "");
+  sValue.ReplaceAll("\n", "");
+  sValue.ReplaceAll("\t", "");
+  sValue.ReplaceAll(" ", "");
+  return std::string(sValue.Data());
+}
+//______________________________________________________________________________
+int AliAnalysisTaskHFFindJets::GetJsonBool(const char* jsonFileName, const char* key){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  int value=-1;
+  while(!feof(fj)){
+    char* rc=fgets(line,500,fj);
+    if(rc && strstr(line,key)){
+      char* token=strtok(line, ":");
+      token=strtok(NULL, ":");
+      TString temp=token;
+      temp.ReplaceAll("\"","");
+      temp.ReplaceAll(",","");
+      if(temp.Contains("true")) value=1;
+      if(temp.Contains("false")) value=0;
+      break;
+    }
+  }
+  fclose(fj);
+  return value;
+}
+
+//______________________________________________________________________________
+int AliAnalysisTaskHFFindJets::GetJsonInteger(const char* jsonFileName, const char* key){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  int value=-999;
+  while(!feof(fj)){
+    char* rc=fgets(line,500,fj);
+    if(rc && strstr(line,key)){
+      char* token=strtok(line, ":");
+      token=strtok(NULL, ":");
+      TString temp=token;
+      temp.ReplaceAll("\"","");
+      temp.ReplaceAll(",","");
+      value=temp.Atoi();
+      break;
+    }
+  }
+  fclose(fj);
+  return value;
+}
+//______________________________________________________________________________
+float AliAnalysisTaskHFFindJets::GetJsonFloat(const char* jsonFileName, const char* key){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  float value=-999.;
+  while(!feof(fj)){
+    char* rc=fgets(line,500,fj);
+    if(rc && strstr(line,key)){
+      char* token=strtok(line, ":");
+      token=strtok(NULL, ":");
+      TString temp=token;
+      temp.ReplaceAll("\"","");
+      temp.ReplaceAll(",","");
+      value=temp.Atof();
+      break;
+    }
+  }
+  fclose(fj);
+  return value;
+}
+
+//______________________________________________________________________________
+float* AliAnalysisTaskHFFindJets::GetJsonArray(const char* jsonFileName, const char* key, int &size){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  float* arrVals=0x0;
+  while(!feof(fj)){
+    fgets(line,500,fj);
+    if(strstr(line,key)){
+      TString full="";
+      while(!feof(fj)){
+        fgets(line,500,fj);
+        int len = strlen(line);
+        if(line[len-1]=='\n') line[len-1]=0;
+        full.Append(line);
+        if(strstr(line,"}")) break;
+      }
+      full.ReplaceAll("\"values\":","");
+      full.ReplaceAll(" ","");
+      full.ReplaceAll("},","");
+      full.ReplaceAll("}","");
+      TObjArray* arrStr=full.Tokenize(",");
+      size=arrStr->GetEntriesFast();
+      arrVals=new float[size];
+      for(int j=0; j<size; j++){
+        TObjString* sss=(TObjString*)arrStr->At(j);
+        TString strval=sss->GetString();
+        strval.ReplaceAll("[","");
+        strval.ReplaceAll("]","");
+        strval.ReplaceAll("\"","");
+        arrVals[j]=strval.Atof();
+      }
+      arrStr->Delete();
+      delete arrStr;
+    }
+  }
+  return arrVals;
+}
+
+//______________________________________________________________________________
+float** AliAnalysisTaskHFFindJets::GetJsonMatrix(const char* jsonFileName, const char* key, int &size1, int &size2){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  float** arrVals=0x0;
+  while(!feof(fj)){
+    fgets(line,500,fj);
+    if(strstr(line,key)){
+      TString full="";
+      while(!feof(fj)){
+        fgets(line,500,fj);
+        int len = strlen(line);
+        if(line[len-1]=='\n') line[len-1]=0;
+        full.Append(line);
+        if(strstr(line,"}")) break;
+      }
+      full.ReplaceAll("\"values\":","");
+      full.ReplaceAll(" ","");
+      full.ReplaceAll("},","");
+      full.ReplaceAll("}","");
+      TObjArray* rowArrStr=full.Tokenize("]");
+      size1=rowArrStr->GetEntriesFast();
+      arrVals=new float*[size1];
+      for(int j=0; j<size1; j++){
+        TObjString* rowStr=(TObjString*)rowArrStr->At(j);
+        TString rowStrVal=rowStr->GetString();
+        TObjArray* arrStr=rowStrVal.Tokenize(",");
+        size2=arrStr->GetEntriesFast();
+        arrVals[j]=new float[size2];
+        for(int k=0; k<size2; k++){
+          TObjString* sss=(TObjString*)arrStr->At(k);
+          TString strval=sss->GetString();
+          strval.ReplaceAll(",[","");
+          strval.ReplaceAll("[","");
+          strval.ReplaceAll("]","");
+          strval.ReplaceAll("\"","");
+          arrVals[j][k]=strval.Atof();
+        }
+      }
+    }
+  }
+  return arrVals;
+}
+
+//start
+Int_t AliAnalysisTaskHFFindJets::MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,
+                                                 Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const {return 0;}
+                                                
+Int_t AliAnalysisTaskHFFindJets::LcSelectionCuts(
+    AliAODRecoDecayHF3Prong *cand) {return 0;}
+    
+Int_t AliAnalysisTaskHFFindJets::JpsiSelectionCuts(AliAODRecoDecayHF2Prong* cand,AliESDtrack* trk_p,AliESDtrack* trk_n,AliESDVertex* primvtx,float bzkG)
+{return 0;}
+
+Int_t AliAnalysisTaskHFFindJets::DplusSelectionCuts(AliAODRecoDecayHF3Prong* cand, Double_t bzkG)
+{return 0;}
+
+Int_t AliAnalysisTaskHFFindJets::DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand)
+{return 0;}
+
+Int_t AliAnalysisTaskHFFindJets::LcSkimCuts(AliAODRecoDecayHF3Prong* cand)
+{return 0;}
+
+Int_t AliAnalysisTaskHFFindJets::DsSkimCuts(AliAODRecoDecayHF3Prong* cand)
+{return 0;}
+
+Int_t AliAnalysisTaskHFFindJets::DplusSkimCuts(AliAODRecoDecayHF3Prong* cand)
+{return 0;}
+
+Int_t AliAnalysisTaskHFFindJets::JpsiSkimCuts(AliAODRecoDecayHF2Prong* cand)
+{return 0;}
+
+Int_t AliAnalysisTaskHFFindJets::DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand)
+{return 0;}
+
+Bool_t AliAnalysisTaskHFFindJets::IsInFiducialAcceptance(Double_t pt, Double_t y) const
+{return 0;}
+
+AliAODRecoCascadeHF* AliAnalysisTaskHFFindJets::MakeCascade(TObjArray *twoTrackArray, AliAODVertex* secVert, Double_t bzkG){return 0;}
+
+
+Int_t AliAnalysisTaskHFFindJets::SelectInvMassAndPt2prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc2)
+{return 0;}
+
+Bool_t AliAnalysisTaskHFFindJets::SelectV0(AliESDv0 *v0, AliESDVertex* primvtx)
+{return 0;}
+
+//Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2]){}
+
+//Bool_t AliAnalysisTaskHFSimpleVertices::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG){}
+
+void AliAnalysisTaskHFFindJets::ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent){
+}
+
+Int_t AliAnalysisTaskHFFindJets::GetPtBinSingleTrack(Double_t ptTrack)
+{ return 0;}
+
+
+
+
+
+
+
+//end
 
 //_______________________________________________________________________________________
 void AliAnalysisTaskHFFindJets::Terminate(Option_t */*option*/) 
