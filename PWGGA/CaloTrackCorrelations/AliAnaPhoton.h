@@ -369,6 +369,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtPhotonNTracks    [10];                 //!<! Track multiplicity distribution per event vs track pT, different pT cuts
   TH2F * fhPtPhotonSumPtTracks[10];                 //!<! Track sum pT distribution per event vs track pT, different pT cuts  
 
+  TH3F * fhPtPhotonPerTriggerCen;                   //!<! Number of identified photon vs pT  vs trigger bit  vs centrality
+  TH2F * fhPtPhotonPerTrigger;                      //!<! Number of identified photon vs pT  vs trigger bit
+  TH3F * fhPtMCPhotonPromptPerTriggerCen;           //!<! Number of identified photon vs pT  vs trigger bit  vs centrality, origin MC prompt photon
+  TH2F * fhPtMCPhotonPromptPerTrigger;              //!<! Number of identified photon vs pT  vs trigger bit, origin MC prompt photon
+
   // Shower shape
   TH2F * fhDispE;                                   //!<! Cluster dispersion vs E
   TH2F * fhDispPt;                                  //!<! Cluster dispersion vs pT
@@ -841,7 +846,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,63) ;
+  ClassDef(AliAnaPhoton,64) ;
   /// \endcond
 
 } ;
