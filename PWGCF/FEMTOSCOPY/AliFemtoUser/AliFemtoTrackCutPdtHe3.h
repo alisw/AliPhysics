@@ -38,7 +38,8 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	void SetPionNsigma(float Nsigma);	// 2022.4.13
         void SetRejectionNsigma(float Nsigma);
 	void SetOtherNsigmacutLabel(int OtherNsigmaLabel);
-	void SetMinTPCFoundFraction(float MinTPCFoundFraction);
+	void SetMinTPCNCrossRows(int MinTPCNCrossRows);
+        void SetMinTPCFoundFraction(float MinTPCFoundFraction);
 	// set TOF Mass cut for side band
 	void SetUseTOFMassCut(int UseTOFMassCut);
         void SetTOFMassLimit(float LowMass,float UpMass);
@@ -65,6 +66,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	// 11.30
 	int fOtherNsigmacut;
 	// 2022.1.20
+	int fMinTPCNCrossRows;
 	float fMinTPCFoundFraction;
 	// 2022.4.18 for pi- + He3+ pair
         int fPionHe3cut;        
