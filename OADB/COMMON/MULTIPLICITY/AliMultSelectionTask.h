@@ -162,8 +162,6 @@ public:
   // Static method for AddTaskMultSelection
   static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
   
-  Short_t Charge(AliMCParticle *lParticle); 
-  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
