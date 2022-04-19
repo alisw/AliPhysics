@@ -96,7 +96,7 @@ class AliJEQnVectorHandler : public TObject
     void ComputeQvecQnFrameworkV0();
     void ComputeQvecTPC();
     void ComputeQvecV0();
-    double ComputeEventPlaneAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}  
+    double ComputeEventPlaneAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/fHarmonic;}
     
     short GetVertexZbin() const;
     short GetCentBin() const;

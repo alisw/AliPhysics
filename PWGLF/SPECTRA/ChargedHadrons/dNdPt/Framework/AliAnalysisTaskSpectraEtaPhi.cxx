@@ -18,12 +18,10 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TRandom3.h"
+#include "AliMCSpectraWeights.h"
 #include <iostream>
 
-namespace {
-using namespace Hist;
 using namespace std;
-} // namespace
 
 //_____________________________________________________________________________
 
@@ -230,14 +228,14 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrackMC(Int_t flag) {
     double fMCweightSysUp = 1.0;
     double fMCweightSysDown = 1.0;
     if(fMCSpectraWeights && 0==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for primary particles
-        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 0);
-        fMCweightSysUp = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
-        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), -1);
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+        fMCweightSysUp = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
     }
     if(fMCSpectraWeights && 1==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for secondaries from decay
-        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
-        fMCweightSysUp = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), 1);
-        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), -1);
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+        fMCweightSysUp = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
     }
 
     for (int i = 0; i < 23; ++i) {
@@ -282,14 +280,14 @@ void AliAnalysisTaskSpectraEtaPhi::AnaParticleMC(Int_t flag) {
     double fMCweightSysUp = 1.0;
     double fMCweightSysDown = 1.0;
     if(fMCSpectraWeights && 0==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for primary particles
-        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 0);
-        fMCweightSysUp = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
-        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), -1);
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+        fMCweightSysUp = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
     }
     if(fMCSpectraWeights && 1==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for secondaries from decay
-        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
-        fMCweightSysUp = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), 1);
-        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), -1);
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+        fMCweightSysUp = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
     }
 
     fHistEffContNCluster.FillWeight(fMCweight,fMultPercentileV0M, fMCPt, fTPCSignalN, -1., 3.);

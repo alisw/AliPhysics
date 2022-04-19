@@ -3985,7 +3985,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         GetReader()->SetListWithMixedEventsForCalo  (fListMixCaloEvents );
     }
     
-    fhEventBin = new TH1I
+    fhEventBin = new TH1F
     ("hEventBin",
      "Number of triggers per bin(cen,vz,rp)",
      GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
@@ -3993,7 +3993,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhEventBin->SetXTitle("event bin");
     outputContainer->Add(fhEventBin) ;
     
-    fhEventMixBin = new TH1I
+    fhEventMixBin = new TH1F
     ("hEventMixBin",
      "Number of triggers mixed per event bin(cen,vz,rp)",
      GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
@@ -4001,7 +4001,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhEventMixBin->SetXTitle("event bin");
     outputContainer->Add(fhEventMixBin) ;
     
-    fhEventMBBin = new TH1I
+    fhEventMBBin = new TH1F
     ("hEventMBBin",
      "Number of min bias events per bin(cen,vz,rp)",
      GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,

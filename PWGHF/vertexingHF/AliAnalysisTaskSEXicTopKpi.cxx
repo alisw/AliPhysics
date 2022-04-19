@@ -71,7 +71,6 @@
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoCascadeHF.h"
-
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliRDHFCutsXictopKpi.h"
 #include "AliAnalysisVertexingHF.h"
@@ -158,6 +157,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fnSigmaPIDtpcProton(0x0),
   fnSigmaPIDtpcPion(0x0),
   fnSigmaPIDtpcKaon(0x0),
+  fhPIDtpctofAfterBayesProton(0x0),
+  fhPIDtpctofAfterBayesPion(0x0),
+  fhPIDtpctofAfterBayesKaon(0x0),
   fProtonID(0x0),
   fKaonID(0x0),
   fPionID(0x0),
@@ -267,6 +269,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fextendSparseForLb(kFALSE)
   ,fFillTuplePID_TOFreq(kFALSE)
   ,fTuplePID_TOFreq(0x0)
+  ,fUseBayesInFiltering(kFALSE)
 {
   /// Default constructor
 
@@ -343,6 +346,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fnSigmaPIDtpcProton(0x0),
   fnSigmaPIDtpcPion(0x0),
   fnSigmaPIDtpcKaon(0x0),
+  fhPIDtpctofAfterBayesProton(0x0),
+  fhPIDtpctofAfterBayesPion(0x0),
+  fhPIDtpctofAfterBayesKaon(0x0),
   fProtonID(0x0),
   fKaonID(0x0),
   fPionID(0x0),
@@ -451,6 +457,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fextendSparseForLb(kFALSE)
   ,fFillTuplePID_TOFreq(kFALSE)
   ,fTuplePID_TOFreq(0x0)
+  ,fUseBayesInFiltering(kFALSE)
 {
   /// Default constructor
   
@@ -546,6 +553,9 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fnSigmaPIDtpcProton)delete fnSigmaPIDtpcProton;
   if(fnSigmaPIDtpcPion)delete fnSigmaPIDtpcPion;
   if(fnSigmaPIDtpcKaon)delete fnSigmaPIDtpcKaon;
+  if(fhPIDtpctofAfterBayesProton)delete fhPIDtpctofAfterBayesProton;
+  if(fhPIDtpctofAfterBayesPion) delete fhPIDtpctofAfterBayesPion;
+  if(fhPIDtpctofAfterBayesKaon) delete fhPIDtpctofAfterBayesKaon;
   if(fProtonID)delete fProtonID;
   if(fKaonID)delete fKaonID;
   if(fPionID)delete fPionID;
@@ -982,6 +992,10 @@ if(!fFillTree){
   fnSigmaPIDtpcPion=new TH2F("fnSigmaPIDtpcPion","fnSigmaPIDtpcPion",100,0,20,80,-10,10);
   fnSigmaPIDtpcKaon=new TH2F("fnSigmaPIDtpcKaon","fnSigmaPIDtpcKaon",100,0,20,80,-10,10);
 
+  fhPIDtpctofAfterBayesProton=new TH3F("fhPIDtpctofAfterBayesProton","fhPIDtpctofAfterBayesProton",50,0,10,50,-5,5,50,-5,5);
+  fhPIDtpctofAfterBayesKaon=new TH3F("fhPIDtpctofAfterBayesKaon","fhPIDtpctofAfterBayesKaon",50,0,10,50,-5,5,50,-5,5);
+  fhPIDtpctofAfterBayesPion=new TH3F("fhPIDtpctofAfterBayesPion","fhPIDtpctofAfterBayesPion",50,0,10,50,-5,5,50,-5,5);
+
   fProtonID=new TH2F("fProtonID","fProtonID",2,0,2,200,0,20);
   fProtonID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
   fProtonID->GetXaxis()->SetBinLabel(1,"MC particles");
@@ -1106,6 +1120,9 @@ if(!fFillTree){
   fOutput->Add(fnSigmaPIDtpcProton);
   fOutput->Add(fnSigmaPIDtpcPion);
   fOutput->Add(fnSigmaPIDtpcKaon);
+  fOutput->Add(fhPIDtpctofAfterBayesPion);
+  fOutput->Add(fhPIDtpctofAfterBayesKaon);
+  fOutput->Add(fhPIDtpctofAfterBayesProton);
   fOutput->Add(fProtonID);
   fOutput->Add(fKaonID);
   fOutput->Add(fPionID);
@@ -3166,28 +3183,28 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
   // TOF PID SELECTION
   AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
   
-  Double_t trpt=-1;
+  Double_t trpt=-1,nsigmaTPCpion=-30,nsigmaTPCproton=-30,nsigmaTPCkaon=-30,nsigmaTOFpion=-30,nsigmaTOFproton=-30,nsigmaTOFkaon=-30;
   if(fillHistos)trpt=track->Pt();
   
   if (status == AliPIDResponse::kDetPidOk){
     if(iSelProtonCuts>=0){
-      Double_t nsigma=fPidResponse->NumberOfSigmasTOF(track,(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
-      if(fillHistos)fnSigmaPIDtofProton->Fill(trpt,nsigma);
+      nsigmaTOFproton=fPidResponse->NumberOfSigmasTOF(track,(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
+      if(fillHistos)fnSigmaPIDtofProton->Fill(trpt,nsigmaTOFproton);
       //      Printf("nsigma Proton TOF: %f",nsigma);
-      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelProton++;
+      if(-fNSigmaPreFilterPID<=nsigmaTOFproton&&nsigmaTOFproton<=fNSigmaPreFilterPID)iSelProton++;
       else iSelProton--;
     }   
     if(iSelKaonCuts>=0){
-      Double_t nsigma=fPidResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
-      if(fillHistos)fnSigmaPIDtofKaon->Fill(trpt,nsigma);
-      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelKaon++;
+      nsigmaTOFkaon=fPidResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+      if(fillHistos)fnSigmaPIDtofKaon->Fill(trpt,nsigmaTOFkaon);
+      if(-fNSigmaPreFilterPID<=nsigmaTOFkaon&&nsigmaTOFkaon<=fNSigmaPreFilterPID)iSelKaon++;
       else iSelKaon--;
     }   
     if(iSelPionCuts>=0){
-      Double_t nsigma=fPidResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+      nsigmaTOFpion=fPidResponse->NumberOfSigmasTOF(track,AliPID::kPion);
       //	Printf("nsigma Pion TOF: %f",nsigma);
-      if(fillHistos)fnSigmaPIDtofPion->Fill(trpt,nsigma);
-      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelPion++;
+      if(fillHistos)fnSigmaPIDtofPion->Fill(trpt,nsigmaTOFpion);
+      if(-fNSigmaPreFilterPID<=nsigmaTOFpion&&nsigmaTOFpion<=fNSigmaPreFilterPID)iSelPion++;
       else iSelPion--;
     }
   }
@@ -3203,23 +3220,23 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
   status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTPC,track);
   if (status == AliPIDResponse::kDetPidOk){
     if(iSelProtonCuts>=0){
-      Double_t nsigma=fPidResponse->NumberOfSigmasTPC(track,(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
-      if(fillHistos)fnSigmaPIDtpcProton->Fill(trpt,nsigma);
+      nsigmaTPCproton=fPidResponse->NumberOfSigmasTPC(track,(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
+      if(fillHistos)fnSigmaPIDtpcProton->Fill(trpt,nsigmaTPCproton);
       //      Printf("nsigma Proton TPC: %f",nsigma);
-      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelProton++;
+      if(-fNSigmaPreFilterPID<=nsigmaTPCproton&&nsigmaTPCproton<=fNSigmaPreFilterPID)iSelProton++;
       else iSelProton--;
     }   
     if(iSelKaonCuts>=0){
-      Double_t nsigma=fPidResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
-      if(fillHistos)fnSigmaPIDtpcKaon->Fill(trpt,nsigma);
-      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelKaon++;
+      nsigmaTPCkaon=fPidResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+      if(fillHistos)fnSigmaPIDtpcKaon->Fill(trpt,nsigmaTPCkaon);
+      if(-fNSigmaPreFilterPID<=nsigmaTPCkaon&&nsigmaTPCkaon<=fNSigmaPreFilterPID)iSelKaon++;
 	else iSelKaon--;
     }   
     if(iSelPionCuts>=0){
-      Double_t nsigma=fPidResponse->NumberOfSigmasTPC(track,AliPID::kPion);
-      if(fillHistos)fnSigmaPIDtpcPion->Fill(trpt,nsigma);
+      nsigmaTPCpion=fPidResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+      if(fillHistos)fnSigmaPIDtpcPion->Fill(trpt,nsigmaTPCpion);
       //	Printf("nsigma Pion TPC: %f",nsigma);
-      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelPion++;
+      if(-fNSigmaPreFilterPID<=nsigmaTPCpion&&nsigmaTPCpion<=fNSigmaPreFilterPID)iSelPion++;
       else iSelPion--;
     }   
   }
@@ -3231,6 +3248,12 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
     }
   }
 
+  if(fUseBayesInFiltering){
+    UpdateTrackPIDwithBayesPID(track,iSelPion,iSelKaon,iSelProton);
+    if(iSelProton>0)fhPIDtpctofAfterBayesProton->Fill(trpt,nsigmaTPCproton,nsigmaTOFproton);
+    if(iSelPion>0)fhPIDtpctofAfterBayesPion->Fill(trpt,nsigmaTPCpion,nsigmaTOFpion);
+    if(iSelKaon>0)fhPIDtpctofAfterBayesKaon->Fill(trpt,nsigmaTPCkaon,nsigmaTOFkaon);
+  }
   if(fRejEvWoutpKpi) {
     // update the number of recognised p, K, pi
     if(iSelProton>0)  fnProt++;
@@ -3240,6 +3263,34 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
 
 }
 
+//__________________________________________________________________
+void AliAnalysisTaskSEXicTopKpi::UpdateTrackPIDwithBayesPID(AliAODTrack *track,Int_t &iSelPion,Int_t &iSelKaon,Int_t &iSelProton){
+
+  AliAODPidHF *pidhf=fCutsXic->GetPidHF();
+    // controlla cosa sono gli ObjPIDHF delle singole traccie e il OnePad  in AliAODPIDHF
+  Double_t prob[AliPID::kSPECIES];
+
+  
+  if(track->P()<1.) pidhf->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+  pidhf->GetPidCombined()->ComputeProbabilities(track,pidhf->GetPidResponse(),prob);
+  if(track->P()<1.) {
+    pidhf->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+    
+    if(TMath::MaxElement(AliPID::kSPECIES,prob) == prob[AliPID::kPion]){
+      AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
+      if (status == AliPIDResponse::kDetPidOk) {
+	pidhf->GetPidCombined()->ComputeProbabilities(track,pidhf->GetPidResponse(),prob);
+      }
+    }
+  }
+  
+  if(iSelPion>0&&TMath::MaxElement(AliPID::kSPECIES,prob) != prob[AliPID::kPion])iSelPion=0;
+  if(iSelProton>0&&TMath::MaxElement(AliPID::kSPECIES,prob) != prob[AliPID::kProton])iSelProton=0;
+  if(iSelKaon>0&&TMath::MaxElement(AliPID::kSPECIES,prob) != prob[AliPID::kKaon])iSelKaon=0;
+    
+
+  return;    
+}
 
 //__________________________________________________________________
 void AliAnalysisTaskSEXicTopKpi::FillDist12and23(AliAODRecoDecayHF3Prong *pr,Double_t magfield){

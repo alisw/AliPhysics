@@ -1445,14 +1445,15 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
     if (!multSelection)
       AliFatal("MultSelection not found in input event");
 
-    if (fUseUncheckedCentrality)
-      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, kFALSE);
-    else
-      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, kTRUE);
+    if (fCentralityMethod.EndsWith(".Value"))
+      centrality = multSelection->GetEstimator(fCentralityMethod(0, fCentralityMethod.Length()-6))->GetValue();
+    else {
+      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, !fUseUncheckedCentrality);
 
-    // error handling
-    if (centrality > 100)
-      centrality = -1;
+      // error handling
+      if (centrality > 100)
+        centrality = -1;
+    }
   }
   else {
     AliCentrality *centralityObj = 0;

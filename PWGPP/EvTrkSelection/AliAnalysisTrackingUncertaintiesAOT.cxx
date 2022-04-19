@@ -23,6 +23,11 @@
 //  - added vertex resolution in bending plane and z, vtx chi2 and          //
 //    to the thnsparse's Z position                                         //
 //                                                                          //
+//  This is my version 2.5 - RT                                             //
+//                                                                          //
+//                                                                          //
+// - fAddPriVtxVars now is the switch to choose if vtx quallity check axes  //
+//   are present or not                                                     //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -116,7 +121,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   ,fKeepOnlyPileUp(kFALSE)
   ,fnBinsDCAxy_histTpcItsMatch(30)
   ,fUseMCWeights(kFALSE) // if set to TRUE (just call the method) weights the MC with the data/MC ratio by Patrick Huhn
-  ,fAddPriVtxVars(kFALSE) // adds to the ThnSparse 4 more axes of primary vertex resolution and position
+  ,fAddPriVtxVars(kFALSE) // if set, add to the ThnSparse 4 more axes of primary vertex (resolution and position variables)
 {
 
   fAliEventCuts.SetManualMode();
@@ -177,7 +182,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   ,fKeepOnlyPileUp(kFALSE)
   ,fnBinsDCAxy_histTpcItsMatch(30)
   ,fUseMCWeights(kFALSE)
-  ,fAddPriVtxVars(kFALSE) // adds to the ThnSparse 4 more axes of primary vertex resolution and position
+  ,fAddPriVtxVars(kFALSE) // if set, add to the ThnSparse 4 more axes of primary vertex (resolution and position variables)
 {
   //
   // standard constructur
@@ -331,34 +336,67 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   Int_t nEtaBins = 2*fMaxEta/0.1;
   if(fMC) {
     if(fDCAz){
-      const Int_t nvars = 14;
-      Int_t nBins[nvars]   = {600,   64,   29, 29,  18,   nEtaBins,    3,  2,    5,      2, 80,    60,     30,   50 };
-      if(fmakefinerpTbin)   nBins[2]*=2;						                              
-      Double_t xmin[nvars] = {-3., -3.2,  0.5,  0.5, 0.  , -fMaxEta, -0.5, -2., -0.5, -0.5,  0.,    0.,     0., -12.};
-      Double_t xmax[nvars] = { 3.,  3.2, 15.0, 15,   6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5,  0.008, 0.012, 15.,  12.};
-      TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc",
-			      "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
-      fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
-      fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
-      for (Int_t j=0; j<nvars; j++) {
-        fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
-        fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      if(fAddPriVtxVars) {  // adds 4 axes for primary vtx variables
+	const Int_t nvars = 14;
+	Int_t nBins[nvars]   = {600,   64,   29, 29,  18,   nEtaBins,    3,  2,    5,      2, 80,    60,     30,   50 };
+	if(fmakefinerpTbin)   nBins[2]*=2;						                              
+	Double_t xmin[nvars] = {-3., -3.2,  0.5,  0.5, 0.  , -fMaxEta, -0.5, -2., -0.5, -0.5,  0.,    0.,     0., -12.};
+	Double_t xmax[nvars] = { 3.,  3.2, 15.0, 15,   6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5,  0.008, 0.012, 15.,  12.};
+	TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc",
+				"VresT", "VresZ", "Vchi2ndf", "VtxZ"};
+	fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
+	fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
+	for (Int_t j=0; j<nvars; j++) {
+	  fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	  fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	}
+      }
+      else {
+	const Int_t nvars = 10;
+	Int_t nBins[nvars]   = {600,   64,   29, 29,  18,   nEtaBins,    3,  2,    5,      2 };
+	if(fmakefinerpTbin)   nBins[2]*=2;						                              
+	Double_t xmin[nvars] = {-3., -3.2,  0.5,  0.5, 0.  , -fMaxEta, -0.5, -2., -0.5, -0.5 };
+	Double_t xmax[nvars] = { 3.,  3.2, 15.0, 15,   6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5 };
+	TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc"};
+	fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
+	fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
+	for (Int_t j=0; j<nvars; j++) {
+	  fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	  fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	}
       }
     }
     else{
-      const Int_t nvars = 12;
-      Int_t nBins[nvars]   = {600,   29,  18,   nEtaBins,    3,  2,    5,    2,   80,    60,     30,   50 };
-      if(fmakefinerpTbin)   nBins[1]*=2;					                            
-      Double_t xmin[nvars] = {-3.,   0.5,  0.,   -fMaxEta, -0.5, -2., -0.5, -0.5,  0.,    0.,     0., -12.};
-      Double_t xmax[nvars] = {3.,   15.0,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5,  0.008, 0.012, 15.,  12.};
-      TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc",
-			      "VresT", "VresZ", "Vchi2ndf","VtxZ"};
-      fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
-      fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
-      for (Int_t j=0; j<nvars; j++) {
-        fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
-        fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      if(fAddPriVtxVars) {  // adds 4 axes for primary vtx variables
+	const Int_t nvars = 12;
+	Int_t nBins[nvars]   = {600,   29,  18,   nEtaBins,    3,  2,    5,    2,   80,    60,     30,   50 };
+	if(fmakefinerpTbin)   nBins[1]*=2;					                            
+	Double_t xmin[nvars] = {-3.,   0.5,  0.,   -fMaxEta, -0.5, -2., -0.5, -0.5,  0.,    0.,     0., -12.};
+	Double_t xmax[nvars] = {3.,   15.0,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5,  0.008, 0.012, 15.,  12.};
+	TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc",
+				"VresT", "VresZ", "Vchi2ndf","VtxZ"};
+	fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
+	fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
+	for (Int_t j=0; j<nvars; j++) {
+	  fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	  fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	}
       }
+      else {
+	const Int_t nvars = 8;
+	Int_t nBins[nvars]   = {600,   29,  18,   nEtaBins,    3,  2,    5,    2 };
+	if(fmakefinerpTbin)   nBins[1]*=2;					                            
+	Double_t xmin[nvars] = {-3.,   0.5,  0.,   -fMaxEta, -0.5, -2., -0.5, -0.5 };
+	Double_t xmax[nvars] = {3.,   15.0,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5 };
+	TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc" };
+	fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
+	fHistMCTPConly  = new THnSparseF("fHistMCTPConly","fHistMCTPConly", nvars, nBins, xmin, xmax);
+	for (Int_t j=0; j<nvars; j++) {
+	  fHistMC->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	  fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+	}
+      }
+      
     }
     fListHist->Add(fHistMC);
     fListHist->Add(fHistMCTPConly);
@@ -376,40 +414,66 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   }
   else {
     if(fDCAz){
-      const Int_t nvars = 10;
-      Int_t nBins[nvars]   = {600,   64,    29,    18,  nEtaBins,    2,  80,    60,     30,   50 };
-      if(fmakefinerpTbin)   nBins[2]*=2;				                           
-      Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5,   0.,    0.,     0., -12.};
-      Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5,   0.008, 0.012, 15.,  12.};
-      TString axis[nvars]  = {"DCAxy", "DCAz", "track p_{T}", "phi", "eta", "TOFbc", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
-      fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
-      for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      if(fAddPriVtxVars) {  // adds 4 axes for primary vtx variables
+	const Int_t nvars = 10;
+	Int_t nBins[nvars]   = {600,   64,    29,    18,  nEtaBins,    2,  80,    60,     30,   50 };
+	if(fmakefinerpTbin)   nBins[2]*=2;				                           
+	Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5,   0.,    0.,     0., -12.};
+	Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5,   0.008, 0.012, 15.,  12.};
+	TString axis[nvars]  = {"DCAxy", "DCAz", "track p_{T}", "phi", "eta", "TOFbc", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
+	fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
+	for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
+      else{
+	const Int_t nvars = 10;
+	Int_t nBins[nvars]   = {600,   64,    29,    18,  nEtaBins,   2  };
+	if(fmakefinerpTbin)   nBins[2]*=2;				                           
+	Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5 };
+	Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5 };
+	TString axis[nvars]  = {"DCAxy", "DCAz", "track p_{T}", "phi", "eta", "TOFbc"};
+	fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
+	for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }      
     }
     else{
-      const Int_t nvars = 9;
-      Int_t nBins[nvars]   = {600,   29,    18,  nEtaBins,    2,   80,    60,     30,   50 };
-      if(fmakefinerpTbin)   nBins[1]*=2;			                             
-      Double_t xmin[nvars] = {-3.,   0.5,    0.,   -fMaxEta, -0.5,  0.,    0.,     0., -12.};
-      Double_t xmax[nvars] = {3.,    15.0,  6.28,   fMaxEta,  1.5,  0.008, 0.012, 15.,  12.};
-      TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","TOFbc", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
-      fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
-      for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      if(fAddPriVtxVars) {  // adds 4 axes for primary vtx variables
+	const Int_t nvars = 9;
+	Int_t nBins[nvars]   = {600,   29,    18,  nEtaBins,    2,   80,    60,     30,   50 };
+	if(fmakefinerpTbin)   nBins[1]*=2;			                             
+	Double_t xmin[nvars] = {-3.,   0.5,    0.,   -fMaxEta, -0.5,  0.,    0.,     0., -12.};
+	Double_t xmax[nvars] = {3.,    15.0,  6.28,   fMaxEta,  1.5,  0.008, 0.012, 15.,  12.};
+	TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","TOFbc", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
+	fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
+	for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
+      else{
+	const Int_t nvars = 5;
+	Int_t nBins[nvars]   = {600,   29,    18,  nEtaBins,    2 };
+	if(fmakefinerpTbin)   nBins[1]*=2;			                             
+	Double_t xmin[nvars] = {-3.,   0.5,    0.,   -fMaxEta, -0.5 };
+	Double_t xmax[nvars] = {3.,    15.0,  6.28,   fMaxEta,  1.5 };
+	TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","TOFbc" };
+	fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
+	for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
     }        
     fListHist->Add(fHistData);
   }
   
   //
-  // store the distribution of vtx axes added to the thnsparse
+  // store the distribution of vtx axes added to the thnsparse, if defined
   //
-  fHistVtxResT=new TH1F("fHistVtxResT", "fHistVtxResT", 80,   0.0, 0.008);
-  fHistVtxResZ=new TH1F("fHistVtxResZ", "fHistVtxResZ", 60,   0.0, 0.012);
-  fHistVtxChi2=new TH1F("fHistVtxChi2", "fHistVtxChi2", 30,   0.0, 15.00);
-  fHistVtxZpos=new TH1F("fHistVtxZpos", "fHistVtxZpos", 50, -12.0, 12.00);
-  //
-  fListHist->Add(fHistVtxResT);
-  fListHist->Add(fHistVtxResZ);
-  fListHist->Add(fHistVtxChi2);
-  fListHist->Add(fHistVtxZpos);
+  if(fAddPriVtxVars) { 
+    fHistVtxResT=new TH1F("fHistVtxResT", "fHistVtxResT", 80,   0.0, 0.008);
+    fHistVtxResZ=new TH1F("fHistVtxResZ", "fHistVtxResZ", 60,   0.0, 0.012);
+    fHistVtxChi2=new TH1F("fHistVtxChi2", "fHistVtxChi2", 30,   0.0, 15.00);
+    fHistVtxZpos=new TH1F("fHistVtxZpos", "fHistVtxZpos", 50, -12.0, 12.00);
+    //
+    fListHist->Add(fHistVtxResT);
+    fListHist->Add(fHistVtxResZ);
+    fListHist->Add(fHistVtxChi2);
+    fListHist->Add(fHistVtxZpos);
+  }
   //
   //
   TH1F * histTOFBC = new TH1F("histTOFBC", "TOF  BC!=0;pt (GeV/c)", 100, 0., 25.);
@@ -682,10 +746,13 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
   //
   //  vtx variables (which are per-event...) variables are filled here
   //
-  fHistVtxResT->Fill(VresT);
-  fHistVtxResZ->Fill(VresZ);
-  fHistVtxChi2->Fill(Vchi2ndf);
-  fHistVtxZpos->Fill(fVertex->GetZ());
+  if(fAddPriVtxVars) { 
+    fHistVtxResT->Fill(VresT);
+    fHistVtxResZ->Fill(VresZ);
+    fHistVtxChi2->Fill(Vchi2ndf);
+    fHistVtxZpos->Fill(fVertex->GetZ());
+  }
+
   
   //
   //  start loop on tracks
@@ -954,45 +1021,71 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
         for(int iSpec=0; iSpec<5; iSpec++) {
           if(fspecie&BIT(iSpec)) {
             if(IsConsistentWithPid(iSpec, track)) {
-	      Double_t pvMt1, pvMt2, pvMt3, pvMt4;
-	      if(fAddPriVtxVars) {pvMt1=VresT; pvMt2=VresZ; pvMt3=Vchi2ndf; pvMt4=fVertex->GetZ();}
-	      else {pvMt1=0; pvMt2=0; pvMt3=0; pvMt4=0;}
-              Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0],pvMt1, pvMt2, pvMt3,pvMt4};
-              if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
-              histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
-              if(fMC){
+	      Double_t pvMt1=0.0, pvMt2=0.0, pvMt3=0.0, pvMt4=0.0;
+	      if(fAddPriVtxVars) {
+		pvMt1=VresT; pvMt2=VresZ; pvMt3=Vchi2ndf; pvMt4=fVertex->GetZ();
+		Double_t vecHistTpcItsMatch[kNumberOfAxesWvtx] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0],pvMt1, pvMt2, pvMt3,pvMt4};
+		if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
+		histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
+	      }
+	      else {
+		Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0]};
+		if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
+		histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
+	      }
+	      if(fMC){
                 if(fDCAz)
-                {
+		  {
+		    Double_t pvv1=0.0, pvv2=0.0, pvv3=0.0, pvv4=0.0;
+		    if(fAddPriVtxVars) {
+		      pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();
+		      Double_t vec4Sparse[14] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
+		      fHistMCTPConly->Fill(vec4Sparse,weight);
+		    }
+		    else {
+		      Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d};
+		      fHistMCTPConly->Fill(vec4Sparse,weight);
+		    } 
+		  }
+                else {
 		  Double_t pvv1, pvv2, pvv3, pvv4;
-		  if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
-		  else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
-                  Double_t vec4Sparse[14] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
-                  fHistMCTPConly->Fill(vec4Sparse,weight);
-                }
-                else{
-		  Double_t pvv1, pvv2, pvv3, pvv4;
-		  if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
-		  else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
-                  Double_t vec4Sparse[12] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
-		  fHistMCTPConly->Fill(vec4Sparse,weight);
+		  if(fAddPriVtxVars) {
+		    pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();
+		    Double_t vec4Sparse[12] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
+		    fHistMCTPConly->Fill(vec4Sparse,weight);
+		  }
+		  else {
+		    Double_t vec4Sparse[8] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_d};
+		    fHistMCTPConly->Fill(vec4Sparse,weight);
+		  }
                 }
               }
-              else{
+              else {
                 if(fTPConlyFIT){
                   if(fDCAz)
 		    {
 		      Double_t pvv1, pvv2, pvv3, pvv4;
-		      if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
-		      else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
-		      Double_t vec4Sparse[10] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
-		      fHistData->Fill(vec4Sparse);
+		      if(fAddPriVtxVars) {
+			pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();
+			Double_t vec4Sparse[10] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
+			fHistData->Fill(vec4Sparse);
+		      }
+		      else {
+			Double_t vec4Sparse[6] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_d};
+			fHistData->Fill(vec4Sparse);
+		      }
 		    }
                   else {
 		    Double_t pvv1, pvv2, pvv3, pvv4;
-		    if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
-		    else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
-                    Double_t vec4Sparse[9] = {dca[0],pT,phi,eta,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
-                    fHistData->Fill(vec4Sparse);
+		    if(fAddPriVtxVars) {
+		      pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();
+		      Double_t vec4Sparse[9] = {dca[0],pT,phi,eta,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
+		      fHistData->Fill(vec4Sparse);
+		    }
+		    else {
+		      Double_t vec4Sparse[5] = {dca[0],pT,phi,eta,(Double_t)bcTOF_d};
+		      fHistData->Fill(vec4Sparse);
+		    }
                   }
                 }
               }
@@ -1021,44 +1114,69 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
         if(fspecie&BIT(iSpec)) {
           if(IsConsistentWithPid(iSpec, track)) {
 	    Double_t pvMt1, pvMt2, pvMt3, pvMt4;
-	    if(fAddPriVtxVars) {pvMt1=VresT; pvMt2=VresZ; pvMt3=Vchi2ndf; pvMt4=fVertex->GetZ();}
-	    else {pvMt1=0; pvMt2=0; pvMt3=0; pvMt4=0;}
-            Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0],pvMt1, pvMt2, pvMt3,pvMt4};
-            if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
-            histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
-            if(fMC){
+
+	    if(fAddPriVtxVars) {pvMt1=VresT; pvMt2=VresZ; pvMt3=Vchi2ndf; pvMt4=fVertex->GetZ();
+	      Double_t vecHistTpcItsMatch[kNumberOfAxesWvtx] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0],pvMt1, pvMt2, pvMt3,pvMt4};
+	      if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
+	      histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
+	    }
+              else {
+		Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0]};
+		if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
+		histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
+	      }
+	    if(fMC){
               if(fDCAz){
 		Double_t pvv1, pvv2, pvv3, pvv4;
-		if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
-		else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
-                Double_t vec4Sparse[14] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
-                fHistMC->Fill(vec4Sparse,weight);
-              }
+		if(fAddPriVtxVars) {
+		  pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();
+		  Double_t vec4Sparse[14] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
+		  fHistMC->Fill(vec4Sparse,weight);
+		}
+		else {
+		  Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
+		  fHistMC->Fill(vec4Sparse,weight);
+		}
+	      }
               else {
 		Double_t pvv1, pvv2, pvv3, pvv4;
-		if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
-		else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
-                Double_t vec4Sparse[12] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
-                fHistMC->Fill(vec4Sparse,weight);
-              }
+		if(fAddPriVtxVars) {
+		  pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();
+		  Double_t vec4Sparse[12] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
+		  fHistMC->Fill(vec4Sparse,weight);
+		}
+		else {
+		  Double_t vec4Sparse[8] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n};
+		  fHistMC->Fill(vec4Sparse,weight);
+		}
+	      }
             }
             else {
               if(!fTPConlyFIT){
                 if(fDCAz)
 		  {
 		    Double_t pvv1, pvv2, pvv3, pvv4;
-		    if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
-		    else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
-		    Double_t vec4Sparse[10] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
-		    fHistData->Fill(vec4Sparse);
+		    if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();
+		      Double_t vec4Sparse[10] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
+		      fHistData->Fill(vec4Sparse);
+		    }
+		    else {
+		      Double_t vec4Sparse[6] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_n};
+		      fHistData->Fill(vec4Sparse);
+		    }
 		  }
                 else {
 		  Double_t pvv1, pvv2, pvv3, pvv4;
-		  if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
-		  else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
-                  Double_t vec4Sparse[9] = {dca[0],pT,phi,eta,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
-                  fHistData->Fill(vec4Sparse);
-                }
+		  if(fAddPriVtxVars) {
+		    pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();
+		    Double_t vec4Sparse[9] = {dca[0],pT,phi,eta,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
+		    fHistData->Fill(vec4Sparse);
+		  }
+		  else {
+		    Double_t vec4Sparse[5] = {dca[0],pT,phi,eta,(Double_t)bcTOF_n};
+		    fHistData->Fill(vec4Sparse);
+		  }
+		}
               }
             }
             break;
@@ -1161,10 +1279,8 @@ void AliAnalysisTrackingUncertaintiesAOT::BinFinePt(const THnSparseF *h, Int_t a
 
   axis->Set(bins, newBins);
   delete [] newBins;
-
 }
-
-
+//
 //________________________________________________________________________
 Bool_t AliAnalysisTrackingUncertaintiesAOT::IsVertexAccepted(AliESDEvent * esd) {
   //
@@ -1195,8 +1311,7 @@ Bool_t AliAnalysisTrackingUncertaintiesAOT::IsVertexAccepted(AliESDEvent * esd) 
   if(TMath::Abs(vtx->GetZ())>10) vertexOkay=kFALSE;
   return vertexOkay;
 }
-
-
+//
 //________________________________________________________________________
 Bool_t AliAnalysisTrackingUncertaintiesAOT::IsConsistentWithPid(Int_t type, const AliESDtrack * const tr) {
   //
@@ -1208,11 +1323,10 @@ Bool_t AliAnalysisTrackingUncertaintiesAOT::IsConsistentWithPid(Int_t type, cons
   if (type == 2)     return IsKaon(tr);
   if (type == 3)   return IsProton(tr);
   if (type == 4)          return kTRUE;
-
+  
   return kFALSE;
-
 }
-
+//
 //________________________________________________________________________
 Bool_t AliAnalysisTrackingUncertaintiesAOT::IsElectron(const AliESDtrack * const tr, Bool_t useTPCTOF) const {
   //
@@ -1237,7 +1351,7 @@ Bool_t AliAnalysisTrackingUncertaintiesAOT::IsElectron(const AliESDtrack * const
     else return kTRUE;
   }
 }
-
+//
 //________________________________________________________________________
 Bool_t AliAnalysisTrackingUncertaintiesAOT::IsPion(const AliESDtrack * const tr,Bool_t useTPCTOF) const{
   //
@@ -1251,9 +1365,8 @@ Bool_t AliAnalysisTrackingUncertaintiesAOT::IsPion(const AliESDtrack * const tr,
     else return kTRUE;
   }
   return kFALSE;
-
 }
-
+//
 //________________________________________________________________________
 Bool_t AliAnalysisTrackingUncertaintiesAOT::IsKaon(const AliESDtrack * const tr,Bool_t useTPCTOF) const {
   //
@@ -1266,11 +1379,9 @@ Bool_t AliAnalysisTrackingUncertaintiesAOT::IsKaon(const AliESDtrack * const tr,
     if(TMath::Abs(nsigmaKaonTOF) > 3) return kFALSE;
     else return kTRUE;
   }
-
   return kFALSE;
-
 }
-
+//
 //________________________________________________________________________
 Bool_t AliAnalysisTrackingUncertaintiesAOT::IsProton(const AliESDtrack * const tr,Bool_t useTPCTOF) const{
   //
@@ -1283,12 +1394,9 @@ Bool_t AliAnalysisTrackingUncertaintiesAOT::IsProton(const AliESDtrack * const t
     if(TMath::Abs(nsigmaProtonTOF) > 3) return kFALSE;
     else return kTRUE;
   }
-
   return kFALSE;
-
 }
-
-
+//
 //________________________________________________________________________
 void AliAnalysisTrackingUncertaintiesAOT::InitializeTrackCutHistograms() {
   //
@@ -1296,22 +1404,44 @@ void AliAnalysisTrackingUncertaintiesAOT::InitializeTrackCutHistograms() {
   //
   //  match TPC->ITS
   //                                  0-is matched, 1-pt, 2-eta,   3-phi,   4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all) 6-bcTOF 7-DCAxy
+  //
+  THnSparseF * histTpcItsMatch=0x0; // just the pointer, define below
   Int_t nEtaBins = 2*fMaxEta/0.1;
-  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   29,  nEtaBins,                18,     6,    3,    2,  fnBinsDCAxy_histTpcItsMatch, 80,    60,     30,   50 };
-  Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.5, -fMaxEta,                  0,  -0.5, -1.5, -0.5, -3.                         ,  0.,    0.,     0., -12.};
-  Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5, 15.0,  fMaxEta,      2*TMath::Pi(),   5.5,  1.5,  1.5,  3.                         ,  0.008, 0.012, 15.,  12.};
-  //																       
-  TString axisNameTpcItsMatch[kNumberOfAxes]  = {"isMatched", "pT", "eta", "phi", "pid", "primSec", "bcTOF", "dcaxy", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
-  TString axisTitleTpcItsMatch[kNumberOfAxes] = {"isMatched", "pT", "eta", "phi", "pid", "primSec", "bcTOF", "dcaxy", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
-  //
-  THnSparseF * histTpcItsMatch = new THnSparseF("histTpcItsMatch","TPC -> ITS matching",kNumberOfAxes, binsTpcItsMatch, minTpcItsMatch, maxTpcItsMatch);
-  if(fUsePtLogAxis)BinLogAxis(histTpcItsMatch, 1);
-  if(fUseFinePtAxis)BinFinePt(histTpcItsMatch, 1);
-  fListHist->Add(histTpcItsMatch);
-  //
-  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
-    histTpcItsMatch->GetAxis(iaxis)->SetName(axisNameTpcItsMatch[iaxis]);
-    histTpcItsMatch->GetAxis(iaxis)->SetTitle(axisTitleTpcItsMatch[iaxis]);
+  if(fAddPriVtxVars) {
+    Int_t    binsTpcItsMatch[kNumberOfAxesWvtx] = {    2,   29,  nEtaBins,                18,     6,    3,    2,  fnBinsDCAxy_histTpcItsMatch, 80,    60,     30,   50 };
+    Double_t minTpcItsMatch[kNumberOfAxesWvtx]  = { -0.5,  0.5, -fMaxEta,                  0,  -0.5, -1.5, -0.5, -3.                         ,  0.,    0.,     0., -12.};
+    Double_t maxTpcItsMatch[kNumberOfAxesWvtx]  = {  1.5, 15.0,  fMaxEta,      2*TMath::Pi(),   5.5,  1.5,  1.5,  3.                         ,  0.008, 0.012, 15.,  12.};
+    //																       
+    TString axisNameTpcItsMatch[kNumberOfAxesWvtx]  = {"isMatched", "pT", "eta", "phi", "pid", "primSec", "bcTOF", "dcaxy", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
+    TString axisTitleTpcItsMatch[kNumberOfAxesWvtx] = {"isMatched", "pT", "eta", "phi", "pid", "primSec", "bcTOF", "dcaxy", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
+    //
+    histTpcItsMatch = new THnSparseF("histTpcItsMatch","TPC -> ITS matching",kNumberOfAxesWvtx, binsTpcItsMatch, minTpcItsMatch, maxTpcItsMatch);
+    if(fUsePtLogAxis)BinLogAxis(histTpcItsMatch, 1);
+    if(fUseFinePtAxis)BinFinePt(histTpcItsMatch, 1);
+    fListHist->Add(histTpcItsMatch);
+    //
+    for (Int_t iaxis=0; iaxis<kNumberOfAxesWvtx;iaxis++){
+      histTpcItsMatch->GetAxis(iaxis)->SetName(axisNameTpcItsMatch[iaxis]);
+      histTpcItsMatch->GetAxis(iaxis)->SetTitle(axisTitleTpcItsMatch[iaxis]);
+    }
   }
+  else  {
+    Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   29,  nEtaBins,                18,     6,    3,    2,  fnBinsDCAxy_histTpcItsMatch };
+    Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.5, -fMaxEta,                  0,  -0.5, -1.5, -0.5, -3.                          };
+    Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5, 15.0,  fMaxEta,      2*TMath::Pi(),   5.5,  1.5,  1.5,  3.                          };
+    //																       
+    TString axisNameTpcItsMatch[kNumberOfAxes]  = {"isMatched", "pT", "eta", "phi", "pid", "primSec", "bcTOF", "dcaxy" };
+    TString axisTitleTpcItsMatch[kNumberOfAxes] = {"isMatched", "pT", "eta", "phi", "pid", "primSec", "bcTOF", "dcaxy" };
+    //
+    histTpcItsMatch = new THnSparseF("histTpcItsMatch","TPC -> ITS matching",kNumberOfAxes, binsTpcItsMatch, minTpcItsMatch, maxTpcItsMatch);
+    if(fUsePtLogAxis)BinLogAxis(histTpcItsMatch, 1);
+    if(fUseFinePtAxis)BinFinePt(histTpcItsMatch, 1);
+    fListHist->Add(histTpcItsMatch);
+    //
+    for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
+      histTpcItsMatch->GetAxis(iaxis)->SetName(axisNameTpcItsMatch[iaxis]);
+      histTpcItsMatch->GetAxis(iaxis)->SetTitle(axisTitleTpcItsMatch[iaxis]);
+    }
+  }
+  return;
 }
-

@@ -1328,14 +1328,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   if ( DoOwnMix() )
   {
-    fhEventBin=new TH1I("hEventBin","Number of real pairs per bin(cen,vz,rp)",
+    fhEventBin=new TH1F("hEventBin","Number of real pairs per bin(cen,vz,rp)",
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
     fhEventBin->SetXTitle("bin");
     outputContainer->Add(fhEventBin) ;
     
     
-    fhEventMixBin=new TH1I("hEventMixBin","Number of mixed pairs per bin(cen,vz,rp)",
+    fhEventMixBin=new TH1F("hEventMixBin","Number of mixed pairs per bin(cen,vz,rp)",
                            GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
                            GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
     fhEventMixBin->SetXTitle("bin");

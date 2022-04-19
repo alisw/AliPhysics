@@ -437,7 +437,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_ClusterMatchTrackdPhi(0), 
   fBuffer_ClusterMatchTrackP(0), 
   fBuffer_ClusterMatchTrackPt(0), 
-  fBuffer_ClusterMatchTrackIsConv(0), 
+  fBuffer_ClusterMatchTrackIsConv(0),
+  fBuffer_ClusterDistanceToBadChannel(0), 
   fBuffer_TrueClusterE(0), 
   fBuffer_TrueClusterPx(0), 
   fBuffer_TrueClusterPy(0), 
@@ -883,6 +884,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_ClusterMatchTrackP(0), 
   fBuffer_ClusterMatchTrackPt(0), 
   fBuffer_ClusterMatchTrackIsConv(0), 
+  fBuffer_ClusterDistanceToBadChannel(0),
   fBuffer_TrueClusterE(0), 
   fBuffer_TrueClusterPx(0), 
   fBuffer_TrueClusterPy(0), 
@@ -2520,6 +2522,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("Cluster_MatchTrackP","std::vector<Float_t>",&fBuffer_ClusterMatchTrackP);
     fAnalysisTree->Branch("Cluster_MatchTrackPt","std::vector<Float_t>",&fBuffer_ClusterMatchTrackPt);
     fAnalysisTree->Branch("Cluster_MatchTrackIsConv","std::vector<Bool_t>",&fBuffer_ClusterMatchTrackIsConv);
+    fAnalysisTree->Branch("Cluster_DistanceToBadChannel","std::vector<Float_t>",&fBuffer_ClusterDistanceToBadChannel);
     if(fIsMC>0){
       fAnalysisTree->Branch("TrueCluster_E","std::vector<Float_t>",&fBuffer_TrueClusterE);
       fAnalysisTree->Branch("TrueCluster_Px","std::vector<Float_t>",&fBuffer_TrueClusterPx);
@@ -2810,6 +2813,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_ClusterMatchTrackP.clear(); 
   fBuffer_ClusterMatchTrackPt.clear(); 
   fBuffer_ClusterMatchTrackIsConv.clear(); 
+  fBuffer_ClusterDistanceToBadChannel.clear();
   fBuffer_TrueClusterE.clear(); 
   fBuffer_TrueClusterPx.clear(); 
   fBuffer_TrueClusterPy.clear(); 
@@ -5774,6 +5778,8 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   Double_t clusterIsoChargedLeft = isoCharged.backgroundLeft.at(2);
   Double_t clusterIsoChargedRight = isoCharged.backgroundRight.at(2);
 
+  Double_t distanceBC = clus->GetDistanceToBadChannel();
+
   //cout << "IsoCharged =" << isoCharged.isolationCone.at(0) << endl;
   
   Double_t trueClusterE = 0.;
@@ -5810,6 +5816,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   fBuffer_ClusterMatchTrackP.push_back(trackP); // if no match this is -1
   fBuffer_ClusterMatchTrackPt.push_back(trackPt); 
   fBuffer_ClusterMatchTrackIsConv.push_back(isConvMatch); 
+  fBuffer_ClusterDistanceToBadChannel.push_back(Float_t(distanceBC));
   
   
   if(fIsMC>0){

@@ -1002,7 +1002,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   if ( fReader->IsEmbeddedMCEventUsed() && !fReader->IsEmbeddedInputEventUsed() )
   {
-    fhRunNumberEmbeddedDiff = new TH1I
+    fhRunNumberEmbeddedDiff = new TH1F
     ("hRunNumberEmbeddedDiff",
      "Bkg Data - MC signal run number",
      2500,-2500,2500);

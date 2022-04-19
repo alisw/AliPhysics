@@ -110,15 +110,15 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     buddyMaxPt = 4.05;
     aliPIDParticle = AliPID::kProton;
   } else if (pdgBuddy == 211){ // pion+
-    buddyPtlow = 0.1;
-    buddyPtup = 0.2;
+    buddyPtlow = 0.11;
+    buddyPtup = 0.17;
     buddyNsigmaLow = 2.7;
     buddyNsigmaUp = 3.3;
     buddyMaxPt = 4.0;
     aliPIDParticle = AliPID::kPion;
   } else if (pdgBuddy == 321){ // kaon+
-    buddyPtlow = 0.09;
-    buddyPtup = 0.19;
+    buddyPtlow = 0.1;
+    buddyPtup = 0.2;
     buddyNsigmaLow = 3;
     buddyNsigmaUp = 3;
     buddyMaxPt = 4.0;
@@ -127,8 +127,10 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     kaonPIDLoose = { {"COMB", 4.3}, {"TPC", 3.3}, {"EXCLUSION", 2.7}, };
   } 
 
+if (!isMC) {
   TrackCuts->SetMinimalBooking(suffix != "0");
   AntiTrackCuts->SetMinimalBooking(suffix != "0");
+}
 
   if (suffix == "1") {
     TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
@@ -397,14 +399,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     closeRejection[4] = false;  // barp barp
   }
 
-if((suffix == "0" && fullBlastQA)){
   pairQA[0] = 11;   // light-light
   pairQA[4] = 11;   // antilight-antilight
   pairQA[2] = 13;   // light-charm
   pairQA[3] = 13;   // light-anticharm
   pairQA[5] = 13;   // antilight charm
   pairQA[6] = 13;   // antilight anticharm
-}
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
   if (trigger == "kHighMultV0") {
@@ -423,10 +423,6 @@ if((suffix == "0" && fullBlastQA)){
 
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
-
-  if (!isMCtruth){
-    config->SetPhiEtaBinnign(true);
-  }
 
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);

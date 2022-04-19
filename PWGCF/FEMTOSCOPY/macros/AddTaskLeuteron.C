@@ -151,7 +151,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(0.1);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts3->SetPID(AliPID::kDeuteron,1.4,3.0);
+  TrackCuts3->SetPID(AliPID::kDeuteron,999.0,3.0);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
@@ -186,7 +186,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetDCAVtxXY(0.1);
   TrackCuts4->SetCutSharedCls(true);
   TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts4->SetPID(AliPID::kDeuteron,1.4,3.0);
+  TrackCuts4->SetPID(AliPID::kDeuteron,999.0,3.0);
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
@@ -302,22 +302,6 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   LambdaCuts6->SetPDGCodeNegDaug(-ProtonPDG);	  // Antiproton
   LambdaCuts6->SetPDGCodev0(-LambdaPDG);	  // Antilambda
 
-
-  if(isLowPt){
-
-    // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(0.5,1.4);
-    TrackCuts4->SetPtRange(0.5,1.4);
-
-  }
- 
-  if(isHighPt){
-
-    // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(0.5,4.0);
-    TrackCuts4->SetPtRange(0.5,4.0);
-
-  }
 
 
   if(isSidebandSignal ==true || isUpperSideband == true || isLowerSideband == true){
@@ -660,6 +644,22 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   } // end of systematics if statement
 
+
+  if(isLowPt){
+
+    // Deuterons and Antideuterons
+    TrackCuts3->SetPtRange(0.5,1.4);
+    TrackCuts4->SetPtRange(0.5,1.4);
+
+  }
+ 
+  if(isHighPt){
+
+    // Deuterons and Antideuterons
+    TrackCuts3->SetPtRange(0.5,4.0);
+    TrackCuts4->SetPtRange(0.5,4.0);
+
+  }
  
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Antilambda (LambdaCuts6) set\n");

@@ -106,8 +106,9 @@ fRebinFactor(1),
 fkNBBins(1),
 fkNNpartBins(1),
 fkNEtaBins(1),
+fkNSpecies(76),
+fkNIntervals(1),
 fkSelectINELgtZERO(kTRUE),
-fkALICE3SiliconMode(kFALSE),
 fkWideRapiditySpeciesStudy(kFALSE),
 fkDoImpactParameterStudy(kFALSE),
 fkDoNpartStudy(kFALSE),
@@ -191,8 +192,14 @@ fHistDDQ2(0x0)
     fEMBufferPhiXiC[ii]=0;
     fEMBufferEtaXiB[ii]=0;
     fEMBufferPhiXiB[ii]=0;
+    fkIntervalMinEta[ii] = 0;
+    fkIntervalMaxEta[ii] = 0;
+    fkIntervalWeight[ii] = 1.0;
   }
+  fkIntervalMinEta[0] = -1.4;
+  fkIntervalMaxEta[0] = +1.4;
   for(Int_t ih=0; ih<76; ih++){
+    fkSpeciesSwitch[ih] = kTRUE;
     fHistPt[ih]          = 0x0;
     fHistEta[ih]         = 0x0;
     fHistEtaTriggeredMeson[ih]= 0x0;
@@ -221,8 +228,9 @@ fRebinFactor(lRebinFactor),
 fkNBBins(lNBBins),
 fkNNpartBins(lNNpartBins),
 fkNEtaBins(lNEtaBins),
+fkNSpecies(76),
+fkNIntervals(1),
 fkSelectINELgtZERO(kTRUE),
-fkALICE3SiliconMode(kFALSE),
 fkWideRapiditySpeciesStudy(kFALSE),
 fkDoImpactParameterStudy(kFALSE),
 fkDoNpartStudy(kFALSE),
@@ -306,8 +314,14 @@ fHistDDQ2(0x0)
     fEMBufferPhiXiC[ii]=0;
     fEMBufferEtaXiB[ii]=0;
     fEMBufferPhiXiB[ii]=0;
+    fkIntervalMinEta[ii] = 0;
+    fkIntervalMaxEta[ii] = 0;
+    fkIntervalWeight[ii] = 1.0;
   }
+  fkIntervalMinEta[0] = -1.4;
+  fkIntervalMaxEta[0] = +1.4;
   for(Int_t ih=0; ih<76; ih++){
+    fkSpeciesSwitch[ih] = kTRUE;
     fHistPt[ih]          = 0x0;
     fHistEta[ih]         = 0x0;
     fHistEtaTriggeredMeson[ih]= 0x0;
@@ -472,81 +486,80 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     "PromptXib", "PromptXibbar",
     "PromptOmegab", "PromptOmegabbar",
     "PromptLambdab", "PromptLambdabbar"
-    
   };
   
   //Main Output: Histograms
   
   //Event counter histogram: Multiplicity, Npart, b (if available)
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistPt[ih] ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistPt[ih] && fkSpeciesSwitch[ih] ) {
       fHistPt[ih] = new TH1D(Form("fHistPt_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPt[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistEta[ih] ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistEta[ih] && fkSpeciesSwitch[ih] ) {
       fHistEta[ih] = new TH1D(Form("fHistEta_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
       fListHist->Add(fHistEta[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistEtaTriggeredMeson[ih] ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistEtaTriggeredMeson[ih] && fkSpeciesSwitch[ih] ) {
       fHistEtaTriggeredMeson[ih] = new TH2D(Form("fHistEtaTriggeredMeson_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta, 10,0,10);
       fListHist->Add(fHistEtaTriggeredMeson[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistEtaTriggeredCharm[ih] ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistEtaTriggeredCharm[ih] && fkSpeciesSwitch[ih] ) {
       fHistEtaTriggeredCharm[ih] = new TH2D(Form("fHistEtaTriggeredCharm_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta, 10,0,10);
       fListHist->Add(fHistEtaTriggeredCharm[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistEtaTriggeredBeauty[ih] ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistEtaTriggeredBeauty[ih] && fkSpeciesSwitch[ih] ) {
       fHistEtaTriggeredBeauty[ih] = new TH2D(Form("fHistEtaTriggeredBeauty_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta, 10,0,10);
       fListHist->Add(fHistEtaTriggeredBeauty[ih]);
     }
   }
   
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistPtVsV0MMult[ih] ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistPtVsV0MMult[ih] && fkSpeciesSwitch[ih] ) {
       fHistPtVsV0MMult[ih] = new TH2D(Form("fHistPtVsV0MMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsV0MMult[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistPtVsSPDMult[ih] ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistPtVsSPDMult[ih] && fkSpeciesSwitch[ih] ) {
       fHistPtVsSPDMult[ih] = new TH2D(Form("fHistPtVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsSPDMult[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistEtaVsSPDMult[ih] && fkDoRapidityStudy ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistEtaVsSPDMult[ih] && fkDoRapidityStudy && fkSpeciesSwitch[ih] ) {
       fHistEtaVsSPDMult[ih] = new TH2D(Form("fHistEtaVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,1,-10,10);
       fListHist->Add(fHistEtaVsSPDMult[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistYVsSPDMult[ih] && fkDoRapidityStudy ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistYVsSPDMult[ih] && fkDoRapidityStudy && fkSpeciesSwitch[ih] ) {
       fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,1,-10,10);
       fListHist->Add(fHistYVsSPDMult[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistPtVsNpart[ih] && fkDoNpartStudy ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistPtVsNpart[ih] && fkDoNpartStudy && fkSpeciesSwitch[ih] ) {
       fHistPtVsNpart[ih] = new TH2D(Form("fHistPtVsNpart_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",fkNNpartBins,-0.5,fkNNpartBins-0.5,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsNpart[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistPtVsB[ih] && fkDoImpactParameterStudy ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistPtVsB[ih] && fkDoImpactParameterStudy && fkSpeciesSwitch[ih] ) {
       fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",fkNBBins,0,20,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsB[ih]);
     }
   }
-  for(Int_t ih=0; ih<76; ih++){
-    if(! fHistPtVsNMPI[ih] && fkDoNMPIStudy ) {
+  for(Int_t ih=0; ih<fkNSpecies; ih++){
+    if(! fHistPtVsNMPI[ih] && fkDoNMPIStudy && fkSpeciesSwitch[ih] ) {
       fHistPtVsNMPI[ih] = new TH2D(Form("fHistPtVsNMPI_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",50,-0.5,49.5,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsNMPI[ih]);
     }
@@ -820,13 +833,16 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   Long_t lNchEta8   = 0;
   Long_t lNchEta8to15   = 0;
   Long_t lNchEta10  = 0;
-  Long_t lNchEtaWide  = 0;
+  
+  //this keeps multiplicity over a wide range
+  //(multiple intervals as configured by the fkInterval... vars) 
+  Double_t lNchEtaWide  = 0;
+  
   Long_t lNchVZEROA = 0;
   Long_t lNchVZEROC = 0;
   Bool_t lEvSel_INELgtZEROStackPrimaries=kFALSE;
   
   Double_t lWideEta = 1.4;
-  if( fkALICE3SiliconMode ) lWideEta = 4.0; //ALICE 3 mode: |eta|<4 => "SPD"
   
   //----- Loop on Stack ----------------------------------------------------------------
   for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
@@ -845,17 +861,20 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
     if( (TMath::Abs(geta) > 0.8) && (TMath::Abs(geta) < 1.5) ) lNchEta8to15++;
     if( TMath::Abs(geta) < 1.0 ) lNchEta10++;
-    if( TMath::Abs(geta) < lWideEta ) lNchEtaWide++;
     if( TMath::Abs(geta) < 1.0 ) lEvSel_INELgtZEROStackPrimaries = kTRUE;
     if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
     if(-3.7 < geta && geta <-1.7 ) lNchVZEROC++;
+    
+    //Special treatment: multiple intervals 
+    for(Int_t ii = 0; ii<fkNIntervals; ii++ )
+      if( fkIntervalMinEta[ii] < geta && geta < fkIntervalMaxEta[ii] ) lNchEtaWide+=fkIntervalWeight[ii];
   }//End of loop on tracks
   //----- End Loop on Stack ------------------------------------------------------------
   
   //Reject non-INEL>0 if requested
   if( !lEvSel_INELgtZEROStackPrimaries && fkSelectINELgtZERO ) return;
   
-  if( lNchEtaWide < fkMinimumMultiplicity ) return;
+  if( lNchEtaWide < fkMinimumMultiplicity+1e-10 ) return;
   
   //------------------------------------------------
   // Acquire information on Npart, Ncoll, b
@@ -1936,4 +1955,41 @@ Double_t AliAnalysisTaskMCPredictions::ComputeDeltaPhi( Double_t phi1, Double_t 
   }
   if( lReturnVal < -TMath::Pi()/2 ) lReturnVal += 2*TMath::Pi();
   return lReturnVal;
+}
+
+//______________________________________________________________________
+void AliAnalysisTaskMCPredictions::PrintEtaIntervals(){
+  for(Int_t ii=0; ii<fkNIntervals; ii++)
+    cout<<"Interval #"<<ii<<"\tmin = "<<fkIntervalMinEta[ii]<<"\tmax = "<<fkIntervalMaxEta[ii]<<"\tweight = "<<fkIntervalWeight[ii]<<endl;
+}
+
+//______________________________________________________________________
+void AliAnalysisTaskMCPredictions::SetStandardSpecies(){
+  Bool_t lSaveThisSpecies[76] = {
+    kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE,
+    kFALSE, kFALSE, kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE,
+    kFALSE, kFALSE, kFALSE, kFALSE,
+    kFALSE, kFALSE, kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE,
+    kFALSE, kFALSE
+  };
+  for(Int_t ii=0; ii<76; ii++){
+    fkSpeciesSwitch[ii] = lSaveThisSpecies[ii]; 
+  }
 }

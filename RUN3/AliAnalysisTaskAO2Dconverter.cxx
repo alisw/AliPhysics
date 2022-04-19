@@ -104,7 +104,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2fv0a",
   "O2fv0c",
   "O2ft0",
-  "O2fdd",
+  "O2fdd_001",
   "O2v0_001",
   "O2cascade_001",
   "O2tof",
@@ -989,8 +989,8 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFDD])
   {
     tFDD->Branch("fIndexBCs", &fdd.fIndexBCs, "fIndexBCs/I");
-    tFDD->Branch("fAmplitudeA", fdd.fAmplitudeA, "fAmplitudeA[4]/F");
-    tFDD->Branch("fAmplitudeC", fdd.fAmplitudeC, "fAmplitudeC[4]/F");
+    tFDD->Branch("fChargeA", fdd.fChargeA, "fChargeA[8]/I");
+    tFDD->Branch("fChargeC", fdd.fChargeC, "fChargeC[8]/I");
     tFDD->Branch("fTimeA", &fdd.fTimeA, "fTimeA/F");
     tFDD->Branch("fTimeC", &fdd.fTimeC, "fTimeC/F");
     tFDD->Branch("fTriggerMask", &fdd.fTriggerMask, "fTriggerMask/b");
@@ -2445,20 +2445,20 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     fdd.fIndexBCs = fBCCount;
     if (fESD) {
       AliESDAD *esdad = fESD->GetADData();
-      for (Int_t ich = 0; ich < 4; ++ich)
-        fdd.fAmplitudeA[ich] = 0; // not filled for the moment
-      for (Int_t ich = 0; ich < 4; ++ich)
-        fdd.fAmplitudeC[ich] = 0; // not filled for the moment
+      for (Int_t ich = 0; ich < 8; ++ich)
+        fdd.fChargeA[ich] = int16_t(esdad->GetMultiplicityADA(ich));
+      for (Int_t ich = 0; ich < 8; ++ich)
+        fdd.fChargeC[ich] = int16_t(esdad->GetMultiplicityADC(ich));
       fdd.fTimeA = AliMathBase::TruncateFloatFraction(esdad->GetADATime(), mADTime);
       fdd.fTimeC = AliMathBase::TruncateFloatFraction(esdad->GetADCTime(), mADTime);
       fdd.fTriggerMask = 0; // not filled for the moment
     }
     else {
       AliAODAD *aodad = fAOD->GetADData();
-      for (Int_t ich = 0; ich < 4; ++ich)
-        fdd.fAmplitudeA[ich] = 0; // not filled for the moment
-      for (Int_t ich = 0; ich < 4; ++ich)
-        fdd.fAmplitudeC[ich] = 0; // not filled for the moment
+      for (Int_t ich = 0; ich < 8; ++ich)
+        fdd.fChargeA[ich] = int16_t(aodad->GetMultiplicityADA(ich));
+      for (Int_t ich = 0; ich < 8; ++ich)
+        fdd.fChargeC[ich] = int16_t(aodad->GetMultiplicityADC(ich));
       fdd.fTimeA = AliMathBase::TruncateFloatFraction(aodad->GetADATime(), mADTime);
       fdd.fTimeC = AliMathBase::TruncateFloatFraction(aodad->GetADCTime(), mADTime);
       fdd.fTriggerMask = 0; // not filled for the moment

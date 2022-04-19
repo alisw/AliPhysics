@@ -210,7 +210,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
     if(!fIsMC){
-      if(abs(track->Charge())<1)continue;//only get charged tracks
+      if(track->Charge()==0)continue;//only get charged tracks
       if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
       if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
       if(!fIsRunFBOnly){
@@ -342,7 +342,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     if(!track) continue;
     if(!fIsMC){
     //build signal for raw data
-      if(abs(track->Charge())<1)continue;//only get charged tracks
+      if(track->Charge()==0)continue;//only get charged tracks
       Float_t etaRaw = track->Eta();
       if(etaRaw > fEtaMax || etaRaw < fEtaMin) continue;//eta cut
       if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut

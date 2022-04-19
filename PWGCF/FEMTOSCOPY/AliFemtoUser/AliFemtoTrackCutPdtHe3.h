@@ -16,26 +16,30 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         AliFemtoTrackCutPdtHe3& operator =(const AliFemtoTrackCutPdtHe3 &aCut);
         virtual bool Pass(const AliFemtoTrack* aTrack);
         // label
-        void SetMostProbableDeuteron();
+	void SetMostProbableElectron();        
+	void SetMostProbableDeuteron();
         void SetMostProbableTriton();
         void SetMostProbableHe3();
-	
-	    // at mom, need TOF
-	    void SetProtonSwitchMom(float SwitchMom);
+	//void SetMostProbablePion();	
+	// at mom, need TOF
+	void SetProtonSwitchMom(float SwitchMom);
         void SetDeuteronSwitchMom(float SwitchMom);
         void SetTritonSwitchMom(float SwitchMom);
         void SetHe3SwitchMom(float SwitchMom);
-        void SetMostProbableElectron();
-        void SetdEdxcutLabel(int dEdxcutLabel);
+	void SetPionSwitchMom(float SwitchMom);		// 2022.4.13
+        
+        void SetdEdxcutLabel(int dEdxcutLabel);	
 
         // set Nsigma 
         void SetProtonNsigma(float Nsigma);
         void SetDeuteronNsigma(float Nsigma);
         void SetTritonNsigma(float Nsigma);
         void SetHe3Nsigma(float Nsigma);
+	void SetPionNsigma(float Nsigma);	// 2022.4.13
         void SetRejectionNsigma(float Nsigma);
 	void SetOtherNsigmacutLabel(int OtherNsigmaLabel);
-	void SetMinTPCFoundFraction(float MinTPCFoundFraction);
+	void SetMinTPCNCrossRows(int MinTPCNCrossRows);
+        void SetMinTPCFoundFraction(float MinTPCFoundFraction);
 	// set TOF Mass cut for side band
 	void SetUseTOFMassCut(int UseTOFMassCut);
         void SetTOFMassLimit(float LowMass,float UpMass);
@@ -43,13 +47,13 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	void SetfUsePtCut(int aUsePtCut);
 
 	void SetfOnlyTPCreject(int aOnlyTPCreject);
-	
+	void SetPionHe3Cut(int aPionHe3cut);	
     private:
         float fNsigmaP;
         float fNsigmaD;
         float fNsigmaT;
         float fNsigmaHe3;
-
+	float fNsigmaPi;
         float fNsigmaRejection;
         
         // 10.24
@@ -57,18 +61,21 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         float SwitchMom_d;
         float SwitchMom_t;
         float SwitchMom_He3;
-    
+    	float SwitchMom_Pi;
         int fdEdxcut;
 	// 11.30
 	int fOtherNsigmacut;
 	// 2022.1.20
+	int fMinTPCNCrossRows;
 	float fMinTPCFoundFraction;
-        
+	// 2022.4.18 for pi- + He3+ pair
+        int fPionHe3cut;        
         bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP);
         bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
         bool IsTritonNSigma(    float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
         bool IsHe3NSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3);
-        //\ for e+e femto
+	bool IsPionNSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCPi, float nsigmaTOFPi);	//2022.4.13        
+	//\ for e+e femto
         bool IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE);
         // dE/dx
         bool IsDeuteronTPCdEdx(float mom, float dEdx);
@@ -94,8 +101,10 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	bool RejectFakeD(const AliFemtoTrack* track, float mom);
 
 };
+
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableTriton() { fMostProbable = 14; }
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableHe3() { fMostProbable = 15; }
+//inline void AliFemtoTrackCutPdtHe3::SetMostProbablePion() { fMostProbable = 2; }
 
 #endif
