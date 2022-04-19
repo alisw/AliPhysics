@@ -175,6 +175,7 @@ void AliAnalysisTaskLambdaNNRun2::UserExec(Option_t *)
 		// AntiLambdaNN t- p+ ////////
 		if (isTriton[0] == kTRUE &&
 				track0->Charge() < 0 &&
+		                track0->GetTPCNcls()>=90 &&
 				isPion[1] == kTRUE &&
 				track1->Charge() > 0) {
 					if(!fMC)
@@ -190,6 +191,7 @@ void AliAnalysisTaskLambdaNNRun2::UserExec(Option_t *)
 		// AntiLambdaNN p+ t- ////////
 		if (isTriton[1] == kTRUE &&
 				track1->Charge() < 0 &&
+   		                track1->GetTPCNcls()>=90 &&
 				isPion[0] == kTRUE &&
 				track0->Charge() > 0) {
 				if(!fMC)
@@ -205,6 +207,7 @@ void AliAnalysisTaskLambdaNNRun2::UserExec(Option_t *)
 		// LambdaNN d+ p- ////////
 		if (isTriton[0] == kTRUE &&
 				track0->Charge() > 0 &&
+		                track0->GetTPCNcls()>=90 &&
 				isPion[1] == kTRUE &&
 				track1->Charge() < 0) {
 				if(!fMC)
@@ -220,6 +223,7 @@ void AliAnalysisTaskLambdaNNRun2::UserExec(Option_t *)
 		// LambdaNN p- d+ ////////
 		if (isTriton[1] == kTRUE &&
 				track1->Charge() > 0 &&
+		                track1->GetTPCNcls()>=90 &&
 				isPion[0] == kTRUE &&
 				track0->Charge() < 0) {
 				if(!fMC)
@@ -270,7 +274,7 @@ void AliAnalysisTaskLambdaNNRun2::FillEvent(AnalysisV0::Type etype, AliAODTrack*
 	pion_v4.SetPxPyPzE(pion->Px(), pion->Py(), pion->Pz(), TMath::Sqrt(pion_mass * pion_mass + pion->P() * pion->P()));
 	LambdaNN_v4 = triton_v4 + pion_v4;
 
-	if (LambdaNN_v4.M() > 2.8 && LambdaNN_v4.M() < 4.2 && triton->GetTPCNcls()>=90) {
+	if (LambdaNN_v4.M() > 2.8 && LambdaNN_v4.M() < 4.2) {
 		fAnalysis_V0.mass = LambdaNN_v4.M();
 
 		fAnalysis_V0.topology = etype;
