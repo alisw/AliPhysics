@@ -91,6 +91,8 @@ fhEtaPhiPhoton(0),
 fhEnergyEtaPhi(0),            fhEnergyColRow(0), 
 fhEnergyEtaPhiPID(0),         fhEnergyColRowPID(0),
 fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
+fhPtPhotonPerTriggerCen(0),   fhPtPhotonPerTrigger(0),
+fhPtMCPhotonPromptPerTriggerCen(0), fhPtMCPhotonPromptPerTrigger(0),
 
 // Shower shape histograms
 fhDispE(0),                   fhDispPt(0),                  
@@ -3424,6 +3426,33 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhTimePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhTimePt->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePt);
+
+    if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
+    {
+      Int_t ntrig = GetReader()->GetNumberOfTriggerMakerDecisions();
+      fhPtPhotonPerTrigger  = new TH2F
+      ("hPtPhotonPerTriggerDecision","#it{p}_{T} vs calo trigger from trigger maker",
+       nptbins,ptmin,ptmax,ntrig,0,ntrig);
+      fhPtPhotonPerTrigger->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+      for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+      {
+        fhPtPhotonPerTrigger->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+      }
+      outputContainer->Add(fhPtPhotonPerTrigger) ;
+
+      if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
+      {
+        fhPtMCPhotonPromptPerTrigger  = new TH2F
+        ("hPtMCPhotonPromptPerTriggerDecision","#it{p}_{T} vs calo trigger from trigger maker",
+         nptbins,ptmin,ptmax,ntrig,0,ntrig);
+        fhPtMCPhotonPromptPerTrigger->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+        for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+        {
+          fhPtMCPhotonPromptPerTrigger->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+        }
+        outputContainer->Add(fhPtMCPhotonPromptPerTrigger) ;
+      }
+    }
   }
   else
   {
@@ -3434,6 +3463,46 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhPtCentralityPhoton->SetXTitle("#it{p}_{T}(GeV/#it{c})");
     outputContainer->Add(fhPtCentralityPhoton) ;
     
+    if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
+    {
+      Int_t ntrig = GetReader()->GetNumberOfTriggerMakerDecisions();
+
+      TCustomBinning nTrigBinning;
+      nTrigBinning.SetMinimum(0);
+      nTrigBinning.AddStep(ntrig, 1);
+      TArrayD nTrigBinsArray;
+      nTrigBinning.CreateBinEdges(nTrigBinsArray);
+
+      fhPtPhotonPerTriggerCen  = new TH3F
+      ("hPtPhotonPerTriggerDecisionCen","centrality vs #it{p}_{T} vs calo trigger from trigger maker",
+       ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+       nTrigBinsArray.GetSize() - 1,  nTrigBinsArray.GetArray(),
+       cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
+      fhPtPhotonPerTriggerCen->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+      fhPtPhotonPerTriggerCen->SetZTitle("Centrality (%)");
+      for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+      {
+        fhPtPhotonPerTriggerCen->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+      }
+      outputContainer->Add(fhPtPhotonPerTriggerCen) ;
+
+      if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
+      {
+        fhPtMCPhotonPromptPerTriggerCen  = new TH3F
+        ("hPtMCPhotonPromptPerTriggerDecisionCen","#it{p}_{T} vs calo trigger from trigger maker",
+         ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+         nTrigBinsArray.GetSize() - 1,  nTrigBinsArray.GetArray(),
+         cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
+        fhPtMCPhotonPromptPerTriggerCen->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+        fhPtMCPhotonPromptPerTriggerCen->SetZTitle("Centrality (%)");
+        for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+        {
+          fhPtMCPhotonPromptPerTriggerCen->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+        }
+        outputContainer->Add(fhPtMCPhotonPromptPerTriggerCen) ;
+      }
+    }
+
     fhPtEventPlanePhoton  = new TH2F
     ("hPtEventPlanePhoton","centrality vs #it{p}_{T}",
      nptbins,ptmin,ptmax, 100,0,TMath::Pi());
@@ -8057,6 +8126,20 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       fhPtPhoton  ->Fill(ptcluster, GetEventWeight()*weightPt);
     } 
 
+    if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
+    {
+      for(Int_t itrig = 0; itrig < GetReader()->GetNumberOfTriggerMakerDecisions(); itrig++)
+      {
+        if( GetReader()->GetTriggerMakerDecision(itrig) )
+        {
+          if ( IsHighMultiplicityAnalysisOn() )
+            fhPtPhotonPerTriggerCen->Fill(ptcluster, itrig+0.5, cen, GetEventWeight()*weightPt) ;
+          else
+            fhPtPhotonPerTrigger   ->Fill(ptcluster, itrig+0.5,      GetEventWeight()*weightPt);
+        }
+      }
+    }
+
     // Fill event track multiplicity and sum pT histograms vs track pT
     // Calculated in the reader to be used everywhere, so not redone here.
     if ( fFillTrackMultHistograms )
@@ -8348,6 +8431,20 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 //        fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
 //        fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
+        if ( GetReader()->AreTriggerMakerDecisionHistoFill() && mcParticleTag == kmcPrompt )
+        {
+          for(Int_t itrig = 0; itrig < GetReader()->GetNumberOfTriggerMakerDecisions(); itrig++)
+          {
+            if( GetReader()->GetTriggerMakerDecision(itrig) )
+            {
+              if ( IsHighMultiplicityAnalysisOn() )
+                fhPtMCPhotonPromptPerTriggerCen->Fill(ptcluster, itrig+0.5, cen, GetEventWeight()*weightPt) ;
+              else
+                fhPtMCPhotonPromptPerTrigger   ->Fill(ptcluster, itrig+0.5,      GetEventWeight()*weightPt);
+            }
+          }
+        }
+
         if ( fFillPrimaryMCAcceptanceHisto && fhMCEta[mcParticleTag] )
         {
           fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
