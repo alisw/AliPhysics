@@ -71,7 +71,7 @@ public:
   float TPCsignal() const;
   short TPCsignalN() const;
   float TPCsignalS() const;
-
+  int   TPCNCrossedRows() const; 
   //new PID
   float NSigmaTPCPi() const;
   float NSigmaTPCK() const;
@@ -181,7 +181,7 @@ public:
   void SetTPCsignal(const float& s);
   void SetTPCsignalN(const short& s);
   void SetTPCsignalS(const float& x);
-
+  void SetTPCNCrossedRows(const int& x);
   //new PID
   void SetNSigmaTPCPi(const float& x);
   void SetNSigmaTPCK(const float& x);
@@ -361,7 +361,9 @@ public:
   float fTPCsignal;       ///< dEdx TPC value
   short fTPCsignalN;      ///< number of points used for dEdx
   float fTPCsignalS;      ///< RMS of dEdx measurement (not used in AOD files)
-
+  int fTPCNCrossedRows;  ///< n crossed rows	
+  
+  
   float fVTOF;            ///< v=length/TOF
   float fTOFsignal;            ///< TOF signal
   float fNSigmaTPCPi;     ///< nsigma TPC for pion
@@ -520,6 +522,7 @@ inline void AliFemtoTrack::SetTPCnclsF(const short& aTPCnclsF) { fTPCnclsF = aTP
 inline void AliFemtoTrack::SetTPCsignal(const float& aTPCsig) { fTPCsignal = aTPCsig; }
 inline void AliFemtoTrack::SetTPCsignalN(const short& aTPCsignalN) { fTPCsignalN = aTPCsignalN; }
 inline void AliFemtoTrack::SetTPCsignalS(const float& aTPCsignalS) { fTPCsignalS = aTPCsignalS; }
+inline void AliFemtoTrack::SetTPCNCrossedRows(const int& afTPCNCrossedRows)     {fTPCNCrossedRows = afTPCNCrossedRows;}
 inline void AliFemtoTrack::SetVTOF(const float& aVTOF) { fVTOF = aVTOF; }
 inline void AliFemtoTrack::SetTOFsignal(const float& aTOFsignal) { fTOFsignal = aTOFsignal; }
 inline void AliFemtoTrack::SetNSigmaTPCPi(const float& aNSigmaTPCPi) { fNSigmaTPCPi = aNSigmaTPCPi; }
@@ -575,6 +578,7 @@ inline short AliFemtoTrack::TPCnclsF() const { return fTPCnclsF; }
 inline float AliFemtoTrack::TPCsignal() const { return fTPCsignal; }
 inline short AliFemtoTrack::TPCsignalN() const { return fTPCsignalN; }
 inline float AliFemtoTrack::TPCsignalS() const { return fTPCsignalS; }
+inline int   AliFemtoTrack::TPCNCrossedRows() const {return fTPCNCrossedRows;}
 inline float AliFemtoTrack::VTOF() const { return fVTOF; }
 inline float AliFemtoTrack::TOFsignal() const { return fTOFsignal; }
 inline float AliFemtoTrack::NSigmaTPCPi() const { return fNSigmaTPCPi; }

@@ -1442,7 +1442,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tA
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
-
+  tFemtoTrack->SetTPCNCrossedRows(tAodTrack->GetTPCCrossedRows());
   float globalPositionsAtRadii[9][3];
   float bfield = 5 * fMagFieldSign;
 
