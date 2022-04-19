@@ -27,6 +27,7 @@
 #define AliMultSelectionTask_H
 
 #include <AliAnalysisTaskSE.h>
+#include "AliMCParticle.h"
 
 class TList;
 class TH1F;
