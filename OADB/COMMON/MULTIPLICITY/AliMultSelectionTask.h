@@ -127,6 +127,7 @@ public:
   void SetEtaCut(Float_t lVar) {fEtaCut  = lVar;};
   void SetGenName(TString lVar) {fGenName  = lVar;};
   void SetStoreForwardMCInfo(Bool_t lVar) {fkStoreForwardMCInfo  = lVar;};
+  void SetForwardMCMinEta(Double_t lVar) {fkForwardMCInfoMinEta  = lVar;};
   
   //override for getting estimator definitions from different OADB file
   //FIXME: should preferably be protected, extra functionality required
@@ -156,6 +157,9 @@ public:
   //Lightweight tree switch
   void SetLightTree ( Bool_t lVal ) { fkLightTree = lVal; }
   
+  //Verbosity switch
+  void SetVerbose ( Bool_t lVal = kTRUE ) { fkVerbose = lVal; }
+  
   static Double_t GetTransverseSpherocityMC(AliMCEvent *lMCevent);
   static Double_t GetTransverseSpherocityTracksMC(AliMCEvent *lMCevent);
   
@@ -180,6 +184,7 @@ private:
   TTree  *fTreeEvent;              //! Output Tree, Events
   
   //Objects Controlling Task Behaviour
+  Bool_t fkVerbose;     //if true, print out stuff for debugging
   Bool_t fkCalibration; //if true, save Calibration object
   Bool_t fkAddInfo;     //if true, save info
   Bool_t fkFilterMB;    //if true, save only kMB events
@@ -206,6 +211,7 @@ private:
   
   Bool_t fkSkipVertexZ; //if true, skip vertex-Z selection for evselcode determination
   Bool_t fkStoreForwardMCInfo; //if true, store MC info above |eta|>7.5 for posterior analysis
+  Double_t fkForwardMCInfoMinEta; //store min eta value for saving particles
   
   //Downscale factor:
   //-> if smaller than unity, reduce change of accepting a given event for calib tree
