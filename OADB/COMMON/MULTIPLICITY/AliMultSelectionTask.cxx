@@ -103,7 +103,7 @@ using std::endl;
 ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
-: AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
+: AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fkVerbose(kFALSE),
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
 fkPropDCA(kFALSE), fkDebug(kTRUE),
@@ -111,7 +111,7 @@ fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC(
 fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE),
-fkStoreForwardMCInfo(kFALSE),
+fkStoreForwardMCInfo(kFALSE), fkForwardMCInfoMinEta(7.0),
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
@@ -281,7 +281,7 @@ fNForwardMCParticles(0)
 }
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
-: AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
+: AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fkVerbose(kFALSE),
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
 fkPropDCA(kFALSE), fkDebug(kTRUE),
@@ -289,7 +289,7 @@ fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC 
 fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE),
-fkStoreForwardMCInfo(kFALSE),
+fkStoreForwardMCInfo(kFALSE), fkForwardMCInfoMinEta(7.0),
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
@@ -792,7 +792,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     }
     
     if(fkStoreForwardMCInfo){
-      fTreeEvent->Branch("fNForwardMCParticles", fNForwardMCParticles, "fNForwardMCParticles/I");
+      fTreeEvent->Branch("fNForwardMCParticles", &fNForwardMCParticles, "fNForwardMCParticles/I");
       fTreeEvent->Branch("fForwardPx",fForwardPx,"fForwardPx[fNForwardMCParticles]/F");
       fTreeEvent->Branch("fForwardPy",fForwardPy,"fForwardPy[fNForwardMCParticles]/F");
       fTreeEvent->Branch("fForwardPz",fForwardPz,"fForwardPz[fNForwardMCParticles]/F");
@@ -1180,7 +1180,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   // Main loop
   // Called for each event
   
-  Bool_t lVerbose = kFALSE ;
+//  Bool_t fkVerbose = kFALSE ;
   
   //Debugging / Memory usage tests
   //gObjectTable->Print();
@@ -1226,7 +1226,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   
   
   
-  if(lVerbose) Printf("Casting AliVEvent...");
+  if(fkVerbose) Printf("Casting AliVEvent...");
   
   lVevent = dynamic_cast<AliVEvent*>( InputEvent() );
   if (!lVevent) {
@@ -1237,7 +1237,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   fFiredTriggerClasses = lVevent->GetFiredTriggerClasses();
   
   if(!fkGeneratorOnly){
-    if(lVerbose) Printf("Casting AliVVZERO...");
+    if(fkVerbose) Printf("Casting AliVVZERO...");
     
     //Get VZERO Information for multiplicity later
     lVV0 = lVevent->GetVZEROData();
@@ -1245,7 +1245,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
       AliError("AliVVZERO not available");
       return;
     }
-    if(lVerbose) Printf("Casting AliVAD...");
+    if(fkVerbose) Printf("Casting AliVAD...");
     //Get AD Multiplicity Information
     lVAD = lVevent->GetADData();
     if(!lVAD) {
@@ -1281,6 +1281,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   fMC_NchEta10->SetValueInteger(0);
   fMC_b->SetValueInteger(0);
   fMC_Spherocity->SetValue(0);
+  fNForwardMCParticles=0;
   
   if ( fkDebugIsMC ) {
     AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
@@ -1346,21 +1347,19 @@ void AliMultSelectionTask::UserExec(Option_t *)
       Long_t lCounter_NchEta10 = 0;
       Long_t lCounter_NchEta14 = 0;
       npartINELgtONE = 0.;
-      fNForwardMCParticles=0;
+
       //----- Loop on Stack ----------------------------------------------------------------
       for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCevent->GetNumberOfTracks()); iCurrentLabelStack++)
       {   // This is the begining of the loop on tracks
         AliMCParticle* lPart = (AliMCParticle*) lMCevent->GetTrack( iCurrentLabelStack );
         if(!lPart) continue;
-        Short_t lCharge = -99;
-        TParticlePDG* pdg = lPart->Particle()->GetPDG();
-        if (pdg) lCharge = (Short_t (pdg->Charge()));
+        Double_t lCharge = lPart->Charge();
 
         Double_t gpt = lPart -> Pt();
         Double_t geta = lPart -> Eta();
         
         //ZDC tests: no charge requirement, no primary requirement
-        if( TMath::Abs(geta) > 7.5 && fkStoreForwardMCInfo ){
+        if( (TMath::Abs(geta) > fkForwardMCInfoMinEta) && (fkStoreForwardMCInfo==kTRUE) ){
           fForwardPx   [fNForwardMCParticles] = lPart -> Px();
           fForwardPy   [fNForwardMCParticles] = lPart -> Py();
           fForwardPz   [fNForwardMCParticles] = lPart -> Pz();
@@ -1370,7 +1369,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
           fForwardIsPhysicalPrimary[fNForwardMCParticles] = lPart->IsPhysicalPrimary();
           fNForwardMCParticles++;
           if( fNForwardMCParticles > kFwdTracks )
-            AliFatal(Form("Event #%i: Maximum number of forward particles reached! Sorry. Crashing now.", fHistEventCounter->GetEntries()));
+            AliFatal(Form("Event #%f: Maximum number of forward particles reached! Sorry. Crashing now.", fHistEventCounter->GetBinContent(1)));
         }
         
         if(TMath::Abs(lCharge)<0.001) continue;
@@ -1399,9 +1398,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
       }
     }
   }
+  if(fkVerbose) Printf(Form("Event #%i: %i particles at midrapidity, %i particles in V0M", (Int_t)fHistEventCounter->GetBinContent(1), fMC_NchEta05->GetValueInteger(), fMC_NchV0A->GetValueInteger()+fMC_NchV0A->GetValueInteger() ));
+  if(fkVerbose && fkStoreForwardMCInfo) Printf(Form("Will save forward particles, event #%i: %i particles", (Int_t)fHistEventCounter->GetBinContent(1), fNForwardMCParticles));
   //------------------------------------------------
   
-  if(lVerbose) Printf("Starting...");
+  if(fkVerbose) Printf("Starting...");
   
   if (!fkGeneratorOnly){
     //Basic properties
@@ -1425,7 +1426,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   // (static if possible)
   //------------------------------------------------
   if(!fkGeneratorOnly){
-    if(lVerbose) Printf("Doing Event Selections...");
+    if(fkVerbose) Printf("Doing Event Selections...");
     fEvSel_Triggered                 = IsSelectedTrigger                   (lVevent, fkTrigger);
     fEvSel_IsNotPileup               = IsNotPileupSPD                      (lVevent);
     fEvSel_IsNotPileupInMultBins     = IsNotPileupSPDInMultBins            (lVevent);
@@ -1462,7 +1463,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //===============================================
     // End Event Selection Variables Section
     //===============================================
-    if(lVerbose) Printf("Doing Multiplicity Calculations...");
+    if(fkVerbose) Printf("Doing Multiplicity Calculations...");
     //------------------------------------------------
     // Multiplicity Information from AD
     //------------------------------------------------
@@ -1602,7 +1603,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fAmplitude_V0AADC->SetValue(multV0AADC);
     fAmplitude_V0CADC->SetValue(multV0CADC);
     
-    if ( lVerbose ) {
+    if ( fkVerbose ) {
       Printf(" V0A Amplitude: %.5f", multV0A );
       Printf(" V0C Amplitude: %.5f", multV0C );
     }
@@ -1759,7 +1760,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNPileUpVertices=0;
     Bool_t HasPUVertices=kFALSE;
 
-    if(lVerbose) Printf("Doing ESD/AOD part...");
+    if(fkVerbose) Printf("Doing ESD/AOD part...");
     if (lVevent->InheritsFrom("AliESDEvent")) {
       AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
 
@@ -1913,6 +1914,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 Maxdcaz00 = TMath::Abs(dzz[1]);
               } 
               Ntracks++;
+              if(Ntracks>kTrack) AliFatal("Maximum tracks reached for test/debug! Aborting!");
             }
           }
         }
@@ -2076,7 +2078,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   //===============================================
   // End part which requires AOD/ESD separation
   //===============================================
-  if(lVerbose) Printf("Add info if asked...");
+  if(fkVerbose) Printf("Add info if asked...");
   if ( fkAddInfo ) { //Master switch for users
     //===============================================
     // Compute Percentiles
@@ -2087,24 +2089,22 @@ void AliMultSelectionTask::UserExec(Option_t *)
     }else{
       SetupRunFromOADB( lVevent );
     }
-    
-    
-    
+
     //===============================================
     // I/O: Create object for storing, add
     //===============================================
     
-    if(lVerbose) Printf( "--- Evaluate -1-");
+    if(fkVerbose) Printf( "--- Evaluate -1-");
     //Evaluate Estimators from Variables
     AliMultSelection*     lSelection = fOadbMultSelection->GetMultSelection();
     AliMultSelectionCuts* lMultCuts  = fOadbMultSelection->GetEventCuts();
-    if(lVerbose) Printf( "--- Evaluate -2-");
+    if(fkVerbose) Printf( "--- Evaluate -2-");
     lSelection -> Evaluate (fInput);
-    if(lVerbose) Printf( "--- INPUT --- ");
-    if(lVerbose) fInput -> Print("V") ;
-    if(lVerbose) Printf( "--- OUTPUT --- ");
-    if(lVerbose) lSelection -> PrintInfo();
-    if(lVerbose) Printf( "--- Evaluate -3-");
+    if(fkVerbose) Printf( "--- INPUT --- ");
+    if(fkVerbose) fInput -> Print("V") ;
+    if(fkVerbose) Printf( "--- OUTPUT --- ");
+    if(fkVerbose) lSelection -> PrintInfo();
+    if(fkVerbose) Printf( "--- Evaluate -3-");
     
     //Event Selection Code: No need to do this for all estimators ...
     lSelection->SetEvSelCode(0); //No Problem!
@@ -2286,6 +2286,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
       fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, fNTracksITSsa2010->GetValueInteger() );
       fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, fNTracksITSsa2010->GetValueInteger() );
     }
+    
     //=============================================================================
     
     //Add to AliVEvent
@@ -2333,20 +2334,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
       outS->Set(lSelection);
     }
   }
-  if(lVerbose) Printf( "--- INTERMEDIATE --- ");
-  if(lVerbose) fInput -> Print("V") ;
+  if(fkVerbose) Printf( "--- INTERMEDIATE --- ");
+  if(fkVerbose) fInput -> Print("V") ;
   //Event-level fill
   if ( fkCalibration ) {
     //Pre-filter on triggered (kMB) events for saving info
     if( !fkFilterMB || (fkFilterMB && fEvSel_Triggered) ) {
-      if(lVerbose) Printf( "--- FILLTREE --- ");
-      if(lVerbose) fInput -> Print("V") ;
+      if(fkVerbose) Printf( "--- FILLTREE --- ");
+      if(fkVerbose) fInput -> Print("V") ;
       
       //fill only if passing downscale test
       //Downscale logic:
       // (1) randomly generate number from 0-1
       // (2) check if smaller than fDownscaleFactor
       // (3) save only if smaller
+      if(fkVerbose && fkStoreForwardMCInfo) Printf(Form("Prior to saving, event #%i: %i particles", (Int_t)fHistEventCounter->GetBinContent(1), fNForwardMCParticles));
       if( fRand->Uniform() < fDownscaleFactor ) fTreeEvent->Fill() ;
     }
   }
@@ -3692,11 +3694,9 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliMCEvent *lMCevent)
   for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
     //get particle from stack
     AliMCParticle* particleOne = 0x0;
-    particleOne = (AliMCParticle*) lMCevent->Particle( j );
+    particleOne = (AliMCParticle*) lMCevent->GetTrack( j );
     if(!particleOne) continue;
-    Short_t lCharge = -99;
-    TParticlePDG* pdg = particleOne->Particle()->GetPDG();
-    if (pdg) lCharge = (Short_t (pdg->Charge()));
+    Double_t lCharge = particleOne->Charge();
     if(TMath::Abs(lCharge)<0.001) continue;
     if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
@@ -3728,9 +3728,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliMCEvent *lMCevent)
       AliMCParticle* particleOne = 0x0;
       particleOne = (AliMCParticle*) lMCevent->GetTrack( j );
       if(!particleOne) continue;
-      Short_t lCharge = -99;
-      TParticlePDG* pdg = particleOne->Particle()->GetPDG();
-      if (pdg) lCharge = (Short_t (pdg->Charge()));
+      Double_t lCharge = particleOne->Charge();
       if(TMath::Abs(lCharge)<0.001) continue;
       if(! (particleOne->IsPhysicalPrimary()) ) continue;
       
@@ -3767,9 +3765,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
     AliMCParticle* particleOne = 0x0;
     particleOne = (AliMCParticle*) lMCevent->GetTrack( j );
     if(!particleOne) continue;
-    Short_t lCharge = -99;
-    TParticlePDG* pdg = particleOne->Particle()->GetPDG();
-    if (pdg) lCharge = (Short_t (pdg->Charge()));
+    Double_t lCharge = particleOne->Charge();
     if(TMath::Abs(lCharge)<0.001) continue;
     if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
@@ -3794,9 +3790,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
     AliMCParticle* particleOne = 0x0;
     particleOne = (AliMCParticle*) lMCevent->GetTrack( i );
     if(!particleOne) continue;
-    Short_t lCharge = -99;
-    TParticlePDG* pdg = particleOne->Particle()->GetPDG();
-    if (pdg) lCharge = (Short_t (pdg->Charge()));
+    Double_t lCharge = particleOne->Charge();
     if(TMath::Abs(lCharge)<0.001) continue;
     if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
@@ -3819,9 +3813,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCev
       particleTwo = (AliMCParticle*) lMCevent->GetTrack( j );
       if(!particleTwo) continue;
       
-      Short_t lCharge = -99;
-      TParticlePDG* pdg = particleTwo->Particle()->GetPDG();
-      if (pdg) lCharge = (Short_t (pdg->Charge()));
+      Double_t lCharge = particleTwo->Charge();
       
       if(TMath::Abs(lCharge)<0.001) continue;
       if(! (particleTwo->IsPhysicalPrimary()) ) continue;
