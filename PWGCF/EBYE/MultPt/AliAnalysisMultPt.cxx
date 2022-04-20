@@ -87,14 +87,14 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
         
-    fHistMult = new TH1D("fHistMult", "Mult", 3000, 0, 3000);
+    fHistMult = new TH1D("fHistMult", "Mult", 4000, 0, 4000);
     fOutputList->Add(fHistMult);
     fHistMult->SetStats(0);
     fHistMult->SetTitle("Multiplicity");
     fHistMult->SetXTitle("Multiplicity");
     fHistMult->SetMarkerSize(1.2);
               
-    fHistMultPt = new TH2D("fHistMultPt", "MultpT", 3000, 0, 3000, 50, 0, 5);
+    fHistMultPt = new TH2D("fHistMultPt", "MultpT", 4000, 0, 4000, 50, 0, 5);
     fOutputList->Add(fHistMultPt);
     fHistMultPt->SetStats(0);
     fHistMultPt->SetTitle("pT vs Multiplicity");
@@ -103,7 +103,7 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
     fHistMultPt->SetLineColor(2);
     fHistMultPt->SetMarkerSize(1.2);
 
-    fHistMultPtMC = new TH2D("fHistMultPtMC", "MultPt-MC", 3000, 0, 3000, 50, 0, 5);
+    fHistMultPtMC = new TH2D("fHistMultPtMC", "MultPt-MC", 4000, 0, 4000, 50, 0, 5);
     fOutputList->Add(fHistMultPtMC);
     fHistMultPtMC->SetStats(0);
     fHistMultPtMC->SetTitle("pT vs Generated Multiplicity");
@@ -113,7 +113,7 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
     fHistMultPtMC->SetMarkerSize(1.2);
           
           
-    fHistMultRatio = new TH2D("fHistMultRatio", "Ratio",  3000, 0, 3000, 3000, 0, 3000);
+    fHistMultRatio = new TH2D("fHistMultRatio", "Ratio",  4000, 0, 4000, 4000, 0, 4000);
     fOutputList->Add(fHistMultRatio);
     fHistMultRatio->SetStats(0);
     fHistMultRatio->SetTitle("Generated Multiplicity vs Reconstructed");
@@ -175,8 +175,8 @@ void AliAnalysisMultPt::UserExec(Option_t *)
                  fHistMultPt->Fill(Mult, track->Pt());
              }
          }
+        
     }
-    
 /////////////////////////////////////////////////////////////////////////////////// Generated part:
     if(fIsMC){
         TClonesArray *stack = 0;
@@ -191,7 +191,6 @@ void AliAnalysisMultPt::UserExec(Option_t *)
         for ( Int_t i(0); i < nMCTracks; i++) {
             AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
             if (!p1) continue;
-            if(!p1->IsPrimary()) continue;
             if(!p1->IsPhysicalPrimary()) continue;
             Int_t charge = p1->Charge();
             if(TMath :: Abs(charge)>0) {
@@ -206,18 +205,18 @@ void AliAnalysisMultPt::UserExec(Option_t *)
         for ( Int_t i(0); i < nMCTracks; i++) {
             AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
             if (!p1) continue;
-            if(!p1->IsPrimary()) continue;
             if(!p1->IsPhysicalPrimary()) continue;
             Int_t charge = p1->Charge();
             if(TMath :: Abs(charge)>0) {
-                if(p1->Pt() < 0.2|| p1->Pt() > 5) continue;
-                if(fabs(p1->Eta()) > 0.8 ) continue;
+                if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
+                if(fabs(p1->Eta()) > fEta ) continue;
                 fHistMultPtMC->Fill(mNMC, p1->Pt());
             }
         }
         //Generated Mult vs Reconstructed Mult
         fHistMultRatio->Fill(Mult, mNMC);
     }
+    
     PostData(1, fOutputList);
 }
 
