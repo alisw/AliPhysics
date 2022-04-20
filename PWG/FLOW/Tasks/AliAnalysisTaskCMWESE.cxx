@@ -2134,7 +2134,7 @@ bool AliAnalysisTaskCMWESE::CalcQnVectorV0(AliAODEvent* fAOD, AliAODVertex* fVtx
     double multCh = 0.;
     // double multCh = fAOD->GetVZEROEqMultiplicity(iCh);
     if (fPeriod.EqualTo("LHC10h") || fPeriod.EqualTo("LHC11h")) multCh= fAOD->GetVZEROEqMultiplicity(iCh);
-    else if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18q")) {
+    else if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
       AliAODVZERO* aodV0 = fAOD->GetVZEROData();
       multCh = aodV0->GetMultiplicity(iCh);
     }
