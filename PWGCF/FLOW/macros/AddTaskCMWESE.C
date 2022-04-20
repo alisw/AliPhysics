@@ -162,7 +162,6 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 
 	if (period.EqualTo("LHC18q")) filenameNUA = "alien:///alice/cern.ch/user/m/mhaque/calib2021/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root";
 	if (period.EqualTo("LHC18r")) filenameNUA = "alien:///alice/cern.ch/user/m/mhaque/calib2021/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root";
-
 	if(task->GetNUAOn() ||doNUA) {
 		if (period.EqualTo("LHC10h") ) { // NUA for 10h is too large to read, we separate them into 3 TList*s.
 			TFile *inNUA;
