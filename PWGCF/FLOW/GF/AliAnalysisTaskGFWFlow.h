@@ -88,10 +88,12 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Bool_t fBypassCalculations; //Flag to bypass all the calculations, so only event selection is performed (for QA)
   TH1D *fMultiDist;
   Int_t fCollisionsSystem; //0 for pp, 1 for pPb, 2 for PbPb
+  Double_t fOverrideCentrality; //Relevant for when running on trains with fixed centrality classes.
   Bool_t LoadWeights(Int_t runno);
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndm, Bool_t DisableOverlap=kFALSE);
   AliMCEvent *FetchMCEvent(Double_t &impactParameter);
   Double_t GetCentFromIP(Double_t impactParameter) { return fCentMap->GetBinContent(fCentMap->FindBin(impactParameter)); };
+  void OverrideCentralityValue(Double_t newval=-1) { fOverrideCentrality = newval; };
  // TStopwatch mywatch;
  // TStopwatch mywatchFill;
  // TStopwatch mywatchStore;
