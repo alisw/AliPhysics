@@ -1165,7 +1165,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				for(UInt_t it=0;it<ntracks;it++){
 					track = (AliAODTrack*)fEvt->GetTrack(it);
 					if( !track ) continue;
-					if( pdgCode == 9010221 ) cout << track->GetLabel() << ", " << track->GetMother() << endl;
+//					if( pdgCode == 9010221 ) cout << track->GetLabel() << ", " << track->GetMother() << endl;
 					if( (int)track->GetLabel() == Label1 || (int)track->GetLabel() == Label2 ){
 						trackd1Recon = (AliAODTrack*)fEvt->GetTrack( it );
 						if( trackd1Recon ){
