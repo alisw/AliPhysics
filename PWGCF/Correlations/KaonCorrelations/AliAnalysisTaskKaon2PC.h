@@ -3,6 +3,9 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliPIDResponse.h"
+#include "AliAODv0.h"
+#include "AliAODVertex.h"
 
 class AliAODEvent;
 class TList;
