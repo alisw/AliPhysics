@@ -102,10 +102,10 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(tpcChi2PerCluster<=4.0) AddTr(klTPCchi2PC40);
       //Checking number of TPC clusters:
       UShort_t nTPCCls = fAODTrack->GetTPCNclsF();
-      if(nTPCCls>70) AddTr(klNTPCcls70);
-      if(nTPCCls>80) AddTr(klNTPCcls80);
-      if(nTPCCls>90) AddTr(klNTPCcls90);
-      if(nTPCCls>100) AddTr(klNTPCcls100);
+      if(nTPCCls>=70) AddTr(klNTPCcls70);
+      if(nTPCCls>=80) AddTr(klNTPCcls80);
+      if(nTPCCls>=90) AddTr(klNTPCcls90);
+      if(nTPCCls>=100) AddTr(klNTPCcls100);
       //Derived track cuts -- only for diff. modifications of filter bits, where OR is required
       if(TSB(klFB32)||TSB(klFB64)) AddTr(klFB96);
       if(TSB(klFB96)&&TSB(klSharedClusters)) AddTr(klFB96Tuned); //Tuned to overlap with 768 (modified)
