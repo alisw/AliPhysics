@@ -10,9 +10,14 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
    TString trigger = "kHM", //2
     bool fullBlastQA = true,//3
     bool UseSphericityCut = false,//4
-    bool UseFemtoPionCuts = false,//5
+    bool UseFemtoPionCuts = true,//5
     bool DoPairCleaning = false, //6
-    const char *cutVariation = "0") {
+    const char *cutVariation = "0", //7
+    bool DoOfficialFemto = false, //8
+    bool DoThreeDFemto = true, //9
+    bool RunPlotMult = true, //10
+    bool RunPlotPhiTheta = false,//11
+    bool DoClosePairRejection = true) {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -29,7 +34,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
 
   if (UseSphericityCut){
     float SpherDown = 0.7;
-    evtCuts->SetSphericityCuts(SpherDown, 1.0, 0.5); // THINK IF NEEDED FOR THREE BODY
+    evtCuts->SetSphericityCuts(SpherDown, 1.0, 0.5); 
   }
 
   AliFemtoDreamTrackCuts *TrackCutsPion = NULL;
@@ -211,8 +216,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
   config->SetExtendedQAPairs(pairQA);
-  config->SetDeltaEtaMax(0.017); // and here you set the actual values //GANESHA Can I change this to different values???
-  config->SetDeltaPhiMax(0.017); // and here you set the actual values //GANESHA Can I change this to different values???
+  config->SetDeltaEtaMax(0.017); // and here you set the actual values 
+  config->SetDeltaPhiMax(0.017); // and here you set the actual values 
   config->SetMixingDepth(10);
   config->SetmTBins(mTBins);
   config->SetDomTMultBinning(true);
@@ -236,6 +241,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
+
+
 
 
   AliAnalysisTaskNanoFemtoProtonPion *task =
@@ -274,6 +281,15 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   task->SetCollectionConfig(config);
   task->SetDoPairCleaning(DoPairCleaning);
 
+  //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
+  task->SetCombinationInput("00 11 02 13 03 12"); //p-p barp-barp p-pion barp-barpion p-barpion barp-pion
+  task->SetNameTagInput("Proton AntiProton Pion AntiPion");
+  task->SetDoOfficialFemto(DoOfficialFemto);
+  task->SetDoThreeDFemto(DoThreeDFemto);
+  task->SetRunPlotMult(RunPlotMult);
+  task->SetRunPlotPhiTheta(RunPlotPhiTheta); 
+  task->SetDoClosePairRejection(DoClosePairRejection);
+
   mgr->AddTask(task);
 
   TString addon = "";
@@ -284,38 +300,39 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     addon += "HM";
   }
 
+  suffix = ""; 
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  TString EvtCutsName = Form("%sEvtCuts%s", addon.Data(), suffix.Data());
+  TString EvtCutsName = Form("%s_EvtCuts_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
         EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), EvtCutsName.Data()));
   mgr->ConnectOutput(task, 1, coutputEvtCuts);
 
-  TString TrackCutsName = Form("%sTrackProton%s", addon.Data(), suffix.Data());
+  TString TrackCutsName = Form("%s_TrackProton_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputTrkCuts = mgr->CreateContainer(
         TrackCutsName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrackCutsName.Data()));
   mgr->ConnectOutput(task, 2, coutputTrkCuts);
 
-  TString AntiTrackCutsName = Form("%sAntiTrackProton%s", addon.Data(), suffix.Data());
+  TString AntiTrackCutsName = Form("%s_AntiTrackProton_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
         AntiTrackCutsName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
   mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
 
-  TString TrackCutsPionName = Form("%sTrackPion%s", addon.Data(), suffix.Data());
+  TString TrackCutsPionName = Form("%s_TrackPion_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputTrkCutsPion = mgr->CreateContainer(
         TrackCutsPionName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrackCutsPionName.Data()));
   mgr->ConnectOutput(task, 4, coutputTrkCutsPion);
 
-  TString AntiTrackCutsPionName = Form("%sAntiTrackPion%s", addon.Data(), suffix.Data());
+  TString AntiTrackCutsPionName = Form("%s_AntiTrackPion_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCutsPion = mgr->CreateContainer(
         AntiTrackCutsPionName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
@@ -323,14 +340,14 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   mgr->ConnectOutput(task, 5, coutputAntiTrkCutsPion);
 
   AliAnalysisDataContainer *coutputResults;
-  TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
+  TString ResultsName = Form("%s_Results_%s", addon.Data(), suffix.Data());
   coutputResults = mgr->CreateContainer(ResultsName.Data(),
                      TList::Class(), AliAnalysisManager::kOutputContainer,
                      Form("%s:%s", file.Data(), ResultsName.Data()));
   mgr->ConnectOutput(task, 6, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
-  TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
+  TString ResultsQAName = Form("%s_ResultsQA_%s", addon.Data(), suffix.Data());
   coutputResultsQA = mgr->CreateContainer(
                        //@suppress("Invalid arguments") it works ffs
                        ResultsQAName.Data(),
@@ -339,18 +356,25 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
                        Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 7, coutputResultsQA);
 
+  AliAnalysisDataContainer *coutputResultsThreeD;
+  TString ResultsThreeDName = Form("%s_ResultsThreeD_%s", addon.Data(), suffix.Data());
+  coutputResultsThreeD = mgr->CreateContainer(ResultsThreeDName.Data(),
+                     TList::Class(), AliAnalysisManager::kOutputContainer,
+                     Form("%s:%s", file.Data(), ResultsThreeDName.Data()));
+  mgr->ConnectOutput(task, 8, coutputResultsThreeD);
+
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
-    TString TrkCutsMCName = Form("%sProtonMC%s", addon.Data(), suffix.Data());
+    TString TrkCutsMCName = Form("%s_ProtonMC_%s", addon.Data(), suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(
                          TrkCutsMCName.Data(),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 8, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 9, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
-    TString AntiTrkCutsMCName = Form("%sAntiProtonMC%s", addon.Data(),
+    TString AntiTrkCutsMCName = Form("%s_AntiProtonMC_%s", addon.Data(),
                                      suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(
                              //@suppress("Invalid arguments") it works ffs
@@ -358,20 +382,20 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
                              TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 9, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 10, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
-    TString v0CutsMCName = Form("%sPionMC%s", addon.Data(), suffix.Data());
+    TString v0CutsMCName = Form("%s_PionMC_%s", addon.Data(), suffix.Data());
     coutputv0CutsMC = mgr->CreateContainer(
                         //@suppress("Invalid arguments") it works ffs
                         v0CutsMCName.Data(),
                         TList::Class(),
                         AliAnalysisManager::kOutputContainer,
                         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 10, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 11, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
-    TString Antiv0CutsMCName = Form("%sAntiPionMC%s", addon.Data(),
+    TString Antiv0CutsMCName = Form("%s_AntiPionMC_%s", addon.Data(),
                                     suffix.Data());
     coutputAntiv0CutsMC = mgr->CreateContainer(
                             //@suppress("Invalid arguments") it works ffs
@@ -379,7 +403,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
                             TList::Class(),
                             AliAnalysisManager::kOutputContainer,
                             Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 11, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 12, coutputAntiv0CutsMC);
   }
   return task;
 }
