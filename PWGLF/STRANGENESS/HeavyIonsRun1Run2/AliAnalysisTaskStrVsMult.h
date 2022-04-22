@@ -186,8 +186,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 13); 
-    //version 13: change ITSTOFtracks to int
+    ClassDef(AliAnalysisTaskStrVsMult, 14); 
+    //version 14: add variations based on V0Rad
 };
 
 #endif
