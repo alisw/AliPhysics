@@ -75,6 +75,7 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
     void SaveOnlyTrueCandidates(bool toggle = true) { fOnlyTrueCandidates = toggle; }
     void UseOnTheFly(bool toggle = true) { fUseOnTheFly = toggle; }
     void UseCustomPID(bool toggle = true) { fUseCustomPID = toggle; }
+    void UseV0Method(bool toggle = true) { fUseV0Method = toggle; }
     void SetMassRange(float min, float max) {
         fMassRange[0] = min;
         fMassRange[1] = max;
@@ -96,6 +97,7 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
     bool fOnlyTrueCandidates = true;  ///< Save only true Hyperhydrogens
     bool fUseOnTheFly = false;
     bool fUseCustomPID = false;  //!
+    bool fUseV0Method = true;    //!
 
     float fCustomBethe[5] = {1.28778e+00 / 50., 3.13539e+01, static_cast<float>(TMath::Exp(-3.16327e+01)), 1.87901e+00, 6.41583e+00};  /// default values are from AliAnalysisTaskAntiHe4.cxx
     float fCustomResolution = 0.05871;                                                                                                 /// default values are for LHC18qr
@@ -104,9 +106,10 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
     float Eta2y(float pt, float m, float eta) const;
 
     /// \cond CLASSDEF
-    ClassDef(AliAnalysisTaskAlphaPiAOD, 3);
+    ClassDef(AliAnalysisTaskAlphaPiAOD, 4);
     // 2: Use THistManager class, add QA histograms for TPC PID of alpha.
     // 3: Use default PID selection and add option for the customise.
+    // 4: Add track loop option
     /// \endcond
 };
 

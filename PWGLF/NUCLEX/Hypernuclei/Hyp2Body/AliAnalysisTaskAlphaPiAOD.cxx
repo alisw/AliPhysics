@@ -191,133 +191,316 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
 
     std::vector<int> checkedHyperLabel;
     fGenHyper.isReconstructed = true;
+    // V0 method
+    if(fUseV0Method) {
+        for (int iV0{0}; iV0 < ev->GetNumberOfV0s(); ++iV0) {
+            AliAODv0 *v0{ev->GetV0(iV0)};
+            if (!v0)
+                continue;
+            if (v0->GetOnFlyStatus() != fUseOnTheFly)
+                continue;
+            //get daughter tracks (positive, negative and bachelor)
+            AliAODTrack *pTrack = dynamic_cast<AliAODTrack *>(v0->GetDaughter(0));
+            AliAODTrack *nTrack = dynamic_cast<AliAODTrack *>(v0->GetDaughter(1));
+            if (!pTrack || !nTrack) {
+                AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
+                continue;
+            }
 
-    for (int iV0{0}; iV0 < ev->GetNumberOfV0s(); ++iV0) {
-        AliAODv0 *v0{ev->GetV0(iV0)};
-        if (!v0)
-            continue;
-        if (v0->GetOnFlyStatus() != fUseOnTheFly)
-            continue;
-        //get daughter tracks (positive, negative and bachelor)
-        AliAODTrack *pTrack = dynamic_cast<AliAODTrack *>(v0->GetDaughter(0));
-        AliAODTrack *nTrack = dynamic_cast<AliAODTrack *>(v0->GetDaughter(1));
-        if (!pTrack || !nTrack) {
-            AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
-            continue;
-        }
+            if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit) || !(nTrack->GetStatus() & AliVTrack::kTPCrefit) ||
+                pTrack->GetTPCsignalN() < 50 || nTrack->GetTPCsignalN() < 50 ||
+                std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8) {
+                continue;
+            }
 
-        if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit) || !(nTrack->GetStatus() & AliVTrack::kTPCrefit) ||
-            pTrack->GetTPCsignalN() < 50 || nTrack->GetTPCsignalN() < 50 ||
-            std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8) {
-            continue;
-        }
-
-        int hyperLabel{-1};
-        if (fMC) {
-            fGenHyper.pdg = 0;
-            auto posPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(pTrack->GetLabel()));
-            auto negPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(nTrack->GetLabel()));
-            if ((posPart->GetPdgCode() == AliPID::ParticleCode(AliPID::kAlpha) &&
-                 negPart->GetPdgCode() == -AliPID::ParticleCode(AliPID::kPion)) ||
-                (negPart->GetPdgCode() == -AliPID::ParticleCode(AliPID::kAlpha) &&
-                 posPart->GetPdgCode() == AliPID::ParticleCode(AliPID::kPion))) {
-                // Check hyper
-                int labMothPos = posPart->GetMother();
-                int labMothNeg = negPart->GetMother();
-                if (labMothNeg >= 0 && labMothNeg == labMothPos && !AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labMothNeg, header, MCTrackArray)) {
-                    auto hyper = (AliAODMCParticle *)fMCEvent->GetTrack(labMothNeg);
-                    if (hyper && std::abs(hyper->GetPdgCode()) == kHyperPdg) {
-                        hyperLabel = labMothNeg;
-                        fGenHyper.pdg = hyper->GetPdgCode();
-                        fGenHyper.ptMC = hyper->Pt();
-                        fGenHyper.etaMC = hyper->Eta();
-                        fGenHyper.yMC = hyper->Y();
-                        double ov[3], dv[3];
-                        hyper->XvYvZv(ov);
-                        posPart->XvYvZv(dv);
-                        fGenHyper.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * hyper->M() / hyper->P();
+            int hyperLabel{-1};
+            if (fMC) {
+                fGenHyper.pdg = 0;
+                auto posPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(pTrack->GetLabel()));
+                auto negPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(nTrack->GetLabel()));
+                if ((posPart->GetPdgCode() == AliPID::ParticleCode(AliPID::kAlpha) &&
+                    negPart->GetPdgCode() == -AliPID::ParticleCode(AliPID::kPion)) ||
+                    (negPart->GetPdgCode() == -AliPID::ParticleCode(AliPID::kAlpha) &&
+                    posPart->GetPdgCode() == AliPID::ParticleCode(AliPID::kPion))) {
+                    // Check hyper
+                    int labMothPos = posPart->GetMother();
+                    int labMothNeg = negPart->GetMother();
+                    if (labMothNeg >= 0 && labMothNeg == labMothPos && !AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labMothNeg, header, MCTrackArray)) {
+                        auto hyper = (AliAODMCParticle *)fMCEvent->GetTrack(labMothNeg);
+                        if (hyper && std::abs(hyper->GetPdgCode()) == kHyperPdg) {
+                            hyperLabel = labMothNeg;
+                            fGenHyper.pdg = hyper->GetPdgCode();
+                            fGenHyper.ptMC = hyper->Pt();
+                            fGenHyper.etaMC = hyper->Eta();
+                            fGenHyper.yMC = hyper->Y();
+                            double ov[3], dv[3];
+                            hyper->XvYvZv(ov);
+                            posPart->XvYvZv(dv);
+                            fGenHyper.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * hyper->M() / hyper->P();
+                        }
                     }
                 }
+
+                if (fOnlyTrueCandidates && hyperLabel < 0)
+                    continue;
             }
 
-            if (fOnlyTrueCandidates && hyperLabel < 0)
+            double pNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
+                        : fMC          ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
+                                        : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
+            double nNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
+                        : fMC          ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha)
+                                        : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
+            if (std::abs(pNsigma) > 5 && std::abs(nNsigma) > 5) {
                 continue;
-        }
-
-        double pNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
-                       : fMC          ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
-                                      : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
-        double nNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
-                       : fMC          ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha)
-                                      : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
-        if (std::abs(pNsigma) > 5 && std::abs(nNsigma) > 5) {
-            continue;
-        }
-        if (std::abs(pNsigma) < 5 && std::abs(nNsigma) < 5) {
-            continue;
-        }
-        fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
-        fHistos->FillTH2("QA/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
-
-        fRecHyper->Matter = std::abs(pNsigma) < 5;
-        auto alpha = fRecHyper->Matter ? pTrack : nTrack;
-        auto pion = fRecHyper->Matter ? nTrack : pTrack;
-
-        double sv[3]{v0->GetSecVtxX(), v0->GetSecVtxY(), v0->GetSecVtxZ()};
-        double deltaPos[3]{sv[0] - pv[0], sv[1] - pv[1], sv[2] - pv[2]};
-
-        LVector_t alphaVector, piVector, hyperVector;
-        double alphaP[3]{fRecHyper->Matter ? v0->MomPosX() : v0->MomNegX(), fRecHyper->Matter ? v0->MomPosY() : v0->MomNegY(), fRecHyper->Matter ? v0->MomPosZ() : v0->MomNegZ()};
-        double piP[3]{!fRecHyper->Matter ? v0->MomPosX() : v0->MomNegX(), !fRecHyper->Matter ? v0->MomPosY() : v0->MomNegY(), !fRecHyper->Matter ? v0->MomPosZ() : v0->MomNegZ()};
-
-        alphaVector.SetCoordinates(alphaP[0] * 2, alphaP[1] * 2, alphaP[2] * 2, AliPID::ParticleMass(AliPID::kAlpha));
-        piVector.SetCoordinates(piP[0], piP[1], piP[2], AliPID::ParticleMass(AliPID::kPion));
-        hyperVector = piVector + alphaVector;
-        if (hyperVector.mass() > fMassRange[1] || hyperVector.mass() < fMassRange[0]) {
-            continue;
-        }
-
-        double cpa = (deltaPos[0] * hyperVector.px() +
-                      deltaPos[1] * hyperVector.py() +
-                      deltaPos[2] * hyperVector.pz()) /
-                     std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
-
-        fRecHyper->pt = hyperVector.pt();
-        fRecHyper->m = hyperVector.mass();
-        fRecHyper->V0CosPA = cpa;
-        fRecHyper->Rapidity = Eta2y(fRecHyper->pt, kHyperMass, hyperVector.eta());
-
-        fRecHyper->V0radius = v0->RadiusSecVtx();
-        fRecHyper->Lrec = v0->DecayLengthV0(pv);
-        fRecHyper->ct = fRecHyper->Lrec * kHyperMass / hyperVector.P();
-
-        fRecHyper->alphaProngPvDCA = fRecHyper->Matter ? v0->DcaPosToPrimVertex() : v0->DcaNegToPrimVertex();
-        fRecHyper->PiProngPvDCA = fRecHyper->Matter ? v0->DcaNegToPrimVertex() : v0->DcaPosToPrimVertex();
-        float _dummy, xy;
-        alpha->GetImpactParameters(xy, _dummy);
-        fRecHyper->alphaProngPvDCAXY = xy;
-        pion->GetImpactParameters(xy, _dummy);
-        fRecHyper->PiProngPvDCAXY = xy;
-        fRecHyper->ProngsDCA = v0->DcaV0Daughters();
-        fRecHyper->TPCmomalpha = alpha->GetTPCmomentum();
-        fRecHyper->TPCsignalalpha = alpha->GetTPCsignal();
-        fRecHyper->NitsClustersalpha = alpha->GetITSNcls();
-        fRecHyper->TPCnSigmaPi = fPID->NumberOfSigmasTPC(pion, AliPID::kPion);
-        fRecHyper->TPCnSigmaalpha = fRecHyper->Matter ? pNsigma : nNsigma;
-        fRecHyper->NpidClustersPion = pion->GetTPCsignalN();
-        fRecHyper->NpidClustersalpha = alpha->GetTPCsignalN();
-
-        if (hyperLabel != -1) {
-            if (std::find(checkedHyperLabel.begin(), checkedHyperLabel.end(), hyperLabel) != checkedHyperLabel.end()) {
-                fGenHyper.isDuplicated = true;
-            } else {
-                fGenHyper.isDuplicated = false;
-                checkedHyperLabel.push_back(hyperLabel);
             }
-        }
-        fTree->Fill();
-    }
+            if (std::abs(pNsigma) < 5 && std::abs(nNsigma) < 5) {
+                continue;
+            }
+            fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
+            fHistos->FillTH2("QA/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
 
+            fRecHyper->Matter = std::abs(pNsigma) < 5;
+            auto alpha = fRecHyper->Matter ? pTrack : nTrack;
+            auto pion = fRecHyper->Matter ? nTrack : pTrack;
+
+            double sv[3]{v0->GetSecVtxX(), v0->GetSecVtxY(), v0->GetSecVtxZ()};
+            double deltaPos[3]{sv[0] - pv[0], sv[1] - pv[1], sv[2] - pv[2]};
+
+            LVector_t alphaVector, piVector, hyperVector;
+            double alphaP[3]{fRecHyper->Matter ? v0->MomPosX() : v0->MomNegX(), fRecHyper->Matter ? v0->MomPosY() : v0->MomNegY(), fRecHyper->Matter ? v0->MomPosZ() : v0->MomNegZ()};
+            double piP[3]{!fRecHyper->Matter ? v0->MomPosX() : v0->MomNegX(), !fRecHyper->Matter ? v0->MomPosY() : v0->MomNegY(), !fRecHyper->Matter ? v0->MomPosZ() : v0->MomNegZ()};
+
+            alphaVector.SetCoordinates(alphaP[0] * 2, alphaP[1] * 2, alphaP[2] * 2, AliPID::ParticleMass(AliPID::kAlpha));
+            piVector.SetCoordinates(piP[0], piP[1], piP[2], AliPID::ParticleMass(AliPID::kPion));
+            hyperVector = piVector + alphaVector;
+            if (hyperVector.mass() > fMassRange[1] || hyperVector.mass() < fMassRange[0]) {
+                continue;
+            }
+
+            double cpa = (deltaPos[0] * hyperVector.px() +
+                        deltaPos[1] * hyperVector.py() +
+                        deltaPos[2] * hyperVector.pz()) /
+                        std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
+
+            fRecHyper->pt = hyperVector.pt();
+            fRecHyper->m = hyperVector.mass();
+            fRecHyper->V0CosPA = cpa;
+            fRecHyper->Rapidity = Eta2y(fRecHyper->pt, kHyperMass, hyperVector.eta());
+
+            fRecHyper->V0radius = v0->RadiusSecVtx();
+            fRecHyper->Lrec = v0->DecayLengthV0(pv);
+            fRecHyper->ct = fRecHyper->Lrec * kHyperMass / hyperVector.P();
+
+            fRecHyper->alphaProngPvDCA = fRecHyper->Matter ? v0->DcaPosToPrimVertex() : v0->DcaNegToPrimVertex();
+            fRecHyper->PiProngPvDCA = fRecHyper->Matter ? v0->DcaNegToPrimVertex() : v0->DcaPosToPrimVertex();
+            float _dummy, xy;
+            alpha->GetImpactParameters(xy, _dummy);
+            fRecHyper->alphaProngPvDCAXY = xy;
+            pion->GetImpactParameters(xy, _dummy);
+            fRecHyper->PiProngPvDCAXY = xy;
+            fRecHyper->ProngsDCA = v0->DcaV0Daughters();
+            fRecHyper->TPCmomalpha = alpha->GetTPCmomentum();
+            fRecHyper->TPCsignalalpha = alpha->GetTPCsignal();
+            fRecHyper->NitsClustersalpha = alpha->GetITSNcls();
+            fRecHyper->TPCnSigmaPi = fPID->NumberOfSigmasTPC(pion, AliPID::kPion);
+            fRecHyper->TPCnSigmaalpha = fRecHyper->Matter ? pNsigma : nNsigma;
+            fRecHyper->NpidClustersPion = pion->GetTPCsignalN();
+            fRecHyper->NpidClustersalpha = alpha->GetTPCsignalN();
+
+            if (hyperLabel != -1) {
+                if (std::find(checkedHyperLabel.begin(), checkedHyperLabel.end(), hyperLabel) != checkedHyperLabel.end()) {
+                    fGenHyper.isDuplicated = true;
+                } else {
+                    fGenHyper.isDuplicated = false;
+                    checkedHyperLabel.push_back(hyperLabel);
+                }
+            }
+            fTree->Fill();
+        }
+    }
+    else {
+        // Trackloop method (for trial)
+        // iTrack loop -> alpha
+        for (int iTrack{0}; iTrack < ev->GetNumberOfTracks(); ++iTrack) {
+            AliAODTrack *alphaTrack = dynamic_cast<AliAODTrack *>(ev->GetTrack(iTrack));
+            if (alphaTrack) {
+                AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
+                continue;
+            }
+            if (!(alphaTrack->GetStatus() & AliVTrack::kTPCrefit) || alphaTrack->GetTPCsignalN() < 50 
+                || std::abs(alphaTrack->Eta()) > 0.8) {
+                continue;
+            }
+
+            double pNsigma{fPID->NumberOfSigmasTPC(alphaTrack, AliPID::kAlpha)};
+            if (std::abs(pNsigma) > 5 || std::abs(pNsigma) < 5) {
+                continue;
+            }
+            if(alphaTrack->GetSign() > 0)
+                fHistos->FillTH2("QA/hTPCPIDAlpha", alphaTrack->GetTPCmomentum(), alphaTrack->GetTPCsignal());
+            else
+                fHistos->FillTH2("QA/hTPCPIDAntiAlpha", alphaTrack->GetTPCmomentum(), alphaTrack->GetTPCsignal());
+
+            // jTrack loop - pion
+            for (int jTrack{0}; jTrack < ev->GetNumberOfTracks(); ++jTrack) {
+                AliAODTrack *pionTrack = dynamic_cast<AliAODTrack *>(ev->GetTrack(jTrack));
+                if (pionTrack) {
+                AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
+                    continue;
+                }
+                if (!(pionTrack->GetStatus() & AliVTrack::kTPCrefit) || pionTrack->GetTPCsignalN() < 50 
+                    || std::abs(pionTrack->Eta()) > 0.8) {
+                    continue;
+                }
+                double nNsigma{fPID->NumberOfSigmasTPC(pionTrack, AliPID::kPion)};
+                if (std::abs(nNsigma) > 5 && std::abs(nNsigma) < 5) {
+                    continue;
+                }
+
+                int hyperLabel{-1};
+                if (fMC) {
+                    fGenHyper.pdg = 0;
+                    auto posPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(alphaTrack->GetLabel()));
+                    auto negPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(pionTrack->GetLabel()));
+                    if ((posPart->GetPdgCode() == AliPID::ParticleCode(AliPID::kAlpha) &&
+                        negPart->GetPdgCode() == -AliPID::ParticleCode(AliPID::kPion)) ||
+                        (negPart->GetPdgCode() == -AliPID::ParticleCode(AliPID::kAlpha) &&
+                        posPart->GetPdgCode() == AliPID::ParticleCode(AliPID::kPion))) {
+                        // Check hyper
+                        int labMothPos = posPart->GetMother();
+                        int labMothNeg = negPart->GetMother();
+                        if (labMothNeg >= 0 && labMothNeg == labMothPos && !AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labMothNeg, header, MCTrackArray)) {
+                            auto hyper = (AliAODMCParticle *)fMCEvent->GetTrack(labMothNeg);
+                            if (hyper && std::abs(hyper->GetPdgCode()) == kHyperPdg) {
+                                hyperLabel = labMothNeg;
+                                fGenHyper.pdg = hyper->GetPdgCode();
+                                fGenHyper.ptMC = hyper->Pt();
+                                fGenHyper.etaMC = hyper->Eta();
+                                fGenHyper.yMC = hyper->Y();
+                                double ov[3], dv[3];
+                                hyper->XvYvZv(ov);
+                                posPart->XvYvZv(dv);
+                                fGenHyper.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * hyper->M() / hyper->P();
+                            }
+                        }
+                    }
+
+                    if (fOnlyTrueCandidates && hyperLabel < 0)
+                        continue;
+                }
+
+
+                fRecHyper->Matter = pTrack->GetSign() > 0;
+
+                // Vertexing
+                for (int i = 0; i < 21; i++)
+                    cv[i] = 0;
+                const AliESDVertex *vtxT3D = ((AliESDEvent *)ev)->GetPrimaryVertex();
+                AliExternalTrackParam pionTrk(*(AliESDtrack *)ev->GetTrack(jTrack));
+                AliExternalTrackParam alphaTrk(*(AliESDtrack *)ev->GetTrack(iTrack));
+                AliExternalTrackParam *pPionTrk = &pionTrk, *pAlphaTrk = &alphaTrk;
+                Double_t dztemp[2], covartemp[3], pos[3], cov[6];
+                pPionTrk->PropagateToDCA(vtxT3D, magField, 250, dztemp, covartemp);
+                pAlphaTrk->PropagateToDCA(vtxT3D, magField, 250, dztemp, covartemp);
+
+                AliESDVertex *vertexESD = 0;
+                AliAODVertex *vertexAOD = 0;
+
+                AliKFParticle::SetField(magField);
+                AliKFVertex vertexKF;
+
+                AliESDtrack *esdTrackPion = (AliESDtrack *)pPionTrk;
+                AliKFParticle daughterKFPion(*esdTrackPion, 211);
+                vertexKF.AddDaughter(daughterKFPion);
+
+                AliESDtrack *esdTrackAlpha = (AliESDtrack *)pAlphaTrk;
+                AliKFParticle daughterKFXi(*esdTrackAlpha, 211);
+                vertexKF.AddDaughter(daughterKFXi);
+
+                vertexESD = new AliESDVertex(vertexKF.Parameters(),
+                                            vertexKF.CovarianceMatrix(),
+                                            vertexKF.GetChi2(),
+                                            vertexKF.GetNContributors());
+
+                vertexESD->GetXYZ(pos);        // position
+                vertexESD->GetCovMatrix(cov);  //covariance matrix
+                chi2perNDF = vertexESD->GetChi2toNDF();
+                dispersion = vertexESD->GetDispersion();
+                delete vertexESD;
+                vertexESD = NULL;
+                vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, 2);  // Hyper Vertex
+
+                // Values
+                // Double_t deltaPos[3]{lPosRsnVtx[0] - fPosPV[0], lPosRsnVtx[1] - fPosPV[1], lPosRsnVtx[2] - fPosPV[2]};  // Distance from PV
+
+                
+                double sv[3];
+                vertexAOD->GetXYZ(sv);  // Secondary vertex
+                double deltaPos[3]{sv[0] - pv[0], sv[1] - pv[1], sv[2] - pv[2]};
+
+                LVector_t alphaVector, piVector, hyperVector;
+                double alphaP[3];
+                alphaTrack->GetPxPyPz(alphaP);
+                double piP[3];
+                pionTrack->GetPxPyPz(piP);
+
+                alphaVector.SetCoordinates(alphaP[0] * 2, alphaP[1] * 2, alphaP[2] * 2, AliPID::ParticleMass(AliPID::kAlpha));
+                piVector.SetCoordinates(piP[0], piP[1], piP[2], AliPID::ParticleMass(AliPID::kPion));
+                hyperVector = piVector + alphaVector;
+                if (hyperVector.mass() > fMassRange[1] || hyperVector.mass() < fMassRange[0]) {
+                    continue;
+                }
+
+                double cpa = (deltaPos[0] * hyperVector.px() +
+                            deltaPos[1] * hyperVector.py() +
+                            deltaPos[2] * hyperVector.pz()) /
+                            std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
+
+                fRecHyper->pt = hyperVector.pt();
+                fRecHyper->m = hyperVector.mass();
+                fRecHyper->V0CosPA = cpa;
+                fRecHyper->Rapidity = Eta2y(fRecHyper->pt, kHyperMass, hyperVector.eta());
+
+                fRecHyper->V0radius = TMath::Hypot(sv[0] - pv[0], sv[1] - pv[1]);
+                fRecHyper->Lrec = TMath::Sqrt(TMath::Power(sv[0] - pv[0],2) +
+                                TMath::Power(sv[1] - pv[1],2) +
+                                TMath::Power(sv[2] - pv[2],2 ));
+                fRecHyper->ct = fRecHyper->Lrec * kHyperMass / hyperVector.P();
+                Float_t b[2];     // Float due to the function input
+                Float_t bCov[3];  // Float due to the function input
+                alphaTrack->GetImpactParameters(b, bCov);
+                fRecHyper->alphaProngPvDCA = b[0];
+                pionTrack->GetImpactParameters(b, bCov);
+                fRecHyper->PiProngPvDCA = b[0];
+                float _dummy, xy;
+                alphaTrack->GetImpactParameters(xy, _dummy);
+                fRecHyper->alphaProngPvDCAXY = xy;
+                pionTrack->GetImpactParameters(xy, _dummy);
+                fRecHyper->PiProngPvDCAXY = xy;
+                Double_t xdummy, ydummy;
+                fRecHyper->ProngsDCA = pPionTrk->GetDCA(pAlphaTrk, magField, xdummy, ydummy);
+                fRecHyper->TPCmomalpha = alphaTrack->GetTPCmomentum();
+                fRecHyper->TPCsignalalpha = alphaTrack->GetTPCsignal();
+                fRecHyper->NitsClustersalpha = alphaTrack->GetITSNcls();
+                fRecHyper->TPCnSigmaPi = fPID->NumberOfSigmasTPC(pionTrack, AliPID::kPion);
+                fRecHyper->TPCnSigmaalpha = fPID->NumberOfSigmasTPC(alphaTrack, AliPID::kAlpha);
+                fRecHyper->NpidClustersPion = pionTrack->GetTPCsignalN();
+                fRecHyper->NpidClustersalpha = alphaTrack->GetTPCsignalN();
+
+                if (hyperLabel != -1) {
+                    if (std::find(checkedHyperLabel.begin(), checkedHyperLabel.end(), hyperLabel) != checkedHyperLabel.end()) {
+                        fGenHyper.isDuplicated = true;
+                    } else {
+                        fGenHyper.isDuplicated = false;
+                        checkedHyperLabel.push_back(hyperLabel);
+                    }
+                }
+                fTree->Fill();
+            }
+            
+        }
+    }
     if (fMC) {
         fGenHyper.isReconstructed = false;
         //loop on generated
