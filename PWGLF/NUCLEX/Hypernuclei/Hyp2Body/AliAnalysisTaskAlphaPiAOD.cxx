@@ -348,6 +348,8 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
 
             // jTrack loop - pion
             for (int jTrack{0}; jTrack < ev->GetNumberOfTracks(); ++jTrack) {
+                if (jTrack == iTrack)
+                    continue;
                 AliAODTrack *pionTrack = dynamic_cast<AliAODTrack *>(ev->GetTrack(jTrack));
                 if (pionTrack) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
