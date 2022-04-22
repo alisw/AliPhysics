@@ -61,8 +61,8 @@ fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
-fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //geometrical cut usage
@@ -163,8 +163,8 @@ fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
-fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 125., 0.5, 0.8, 70., 0.8, 1., 2.5, 5., 20., 30., 0.},
-fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 1., 2.5, 0.005, 1., 0.99, 0.1, 0.1, 0., 0.5, 0.8, 3., 3., 3., 85., 0.2, 0.2, 1.},
+fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 125., 0., 0.5, 0.8, 70., 0.8, 1., 2.5, 5., 20., 30., 0.},
+fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 1., 2.5, 0.005, 1., 0.99, 0.1, 0.1, 0., 0.5, 0.8, 3., 3., 3., 85., 0., 0.2, 0.2, 1.},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //geometrical cut usage
@@ -1187,6 +1187,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kFALSE, kV0_V0CosPA, 11, 0.95, 0.999);
   SetCutVariation(kFALSE, kV0_V0Rad, 11, 0.9, 1.3);
   SetCutVariation(kFALSE, kV0_MaxV0Rad, 5, 45., 125.);
+  SetCutVariation(kFALSE, kV0_V0RadBin, 10, 0., 9.);
   SetCutVariation(kFALSE, kV0_LeastCRaws, 11, 60, 80);
   SetCutVariation(kFALSE, kV0_LeastCRawsOvF, 11, 0.75, 0.90);
   SetCutVariation(kFALSE, kV0_TrackLengthCut, 4, 0, 3);
@@ -1212,6 +1213,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kTRUE, kCasc_PropLifetOm, 7, 2, 5);
   SetCutVariation(kTRUE, kCasc_V0Rad, 11, 1., 5.);
   SetCutVariation(kTRUE, kCasc_MaxV0Rad, 5, 45., 125.);
+  SetCutVariation(kTRUE, kCasc_V0RadBin, 10, 0., 9.);
   SetCutVariation(kTRUE, kCasc_DcaMesToPV, 11, 0.1, 0.3);
   SetCutVariation(kTRUE, kCasc_DcaBarToPV, 11, 0.1, 0.3);
   SetCutVariation(kTRUE, kCasc_BacBarCosPA, 10, 0.999, 0.99999);
@@ -1247,6 +1249,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     // check candidate's 2D decay distance from PV (if it is too small, then it's not a weak decay)
     if (fV0_V0Rad<cutval_V0[kV0_V0Rad]) return kFALSE;
     if (fV0_V0Rad>cutval_V0[kV0_MaxV0Rad]) return kFALSE;
+    if (cutval_V0[kV0_V0RadBin]>0.1 && TMath::Abs(cutval_V0[kV0_V0RadBin]+0.5*(varhighcut_V0[kV0_V0RadBin]-varlowcut_V0[kV0_V0RadBin])/(nvarcut_V0[kV0_V0RadBin]-1)-fV0_V0Rad)>0.5*(varhighcut_V0[kV0_V0RadBin]-varlowcut_V0[kV0_V0RadBin])/(nvarcut_V0[kV0_V0RadBin]-1)) return kFALSE;
     // check the cosine of the Pointing Angle (angle between candidate's momentum and vector connecting Primary and secondary vertices)
     if (fV0_V0CosPA<cutval_V0[kV0_V0CosPA]) return kFALSE;
     // check PID for all daughters (particle hypothesis' dependent)
@@ -1286,6 +1289,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     // check candidate V0 daughter's 2D decay distance from PV (if it is too small, then it's not a weak decay, if it's too large, then Lambda decays in the TPC)
     if(fCasc_V0Rad<cutval_Casc[kCasc_V0Rad]) return kFALSE;
     if(fCasc_V0Rad>cutval_Casc[kCasc_MaxV0Rad]) return kFALSE;
+    if (cutval_Casc[kCasc_V0RadBin]>0.1 && TMath::Abs(cutval_Casc[kCasc_V0RadBin]+0.5*(varhighcut_Casc[kCasc_V0RadBin]-varlowcut_Casc[kCasc_V0RadBin])/(nvarcut_Casc[kCasc_V0RadBin]-1)-fV0_V0Rad)>0.5*(varhighcut_Casc[kCasc_V0RadBin]-varlowcut_Casc[kCasc_V0RadBin])/(nvarcut_Casc[kCasc_V0RadBin]-1)) return kFALSE;
     // check the cosine of the Pointing Angle for both cascade and V0 (angle between candidate's momentum and vector connecting Primary and secondary vertices)
     if(fCasc_CascCosPA<cutval_Casc[kCasc_CascCosPA]) return kFALSE;
     if(fCasc_V0CosPA<cutval_Casc[kCasc_V0CosPA]) return kFALSE;
