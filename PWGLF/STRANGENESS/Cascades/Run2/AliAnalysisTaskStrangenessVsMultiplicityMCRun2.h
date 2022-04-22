@@ -48,6 +48,7 @@ class AliExternalTrackParam;
 //#include "AliESDtrackCuts.h"
 //#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliTrackReference.h"
 #include "AliAnalysisTaskWeakDecayVertexer.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityMCRun2 : public AliAnalysisTaskSE {
@@ -149,6 +150,9 @@ public:
   }
   void SetSandboxV0Prongs ( Bool_t lOpt = kTRUE) {
     fkSandboxV0Prongs = lOpt;
+  }
+  void SetSaveMCInfoAtTPC ( Bool_t lVal = kTRUE) {
+    fkSaveMCInfoTPC = lVal;
   }
   //---------------------------------------------------------------------------------------
   void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
@@ -397,6 +401,7 @@ private:
   Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
   Bool_t    fkExtraCleanupRapidity;    // if true, select candidates only within |y|<0.5 (logical OR in mass hypo)
   Bool_t    fkSaveVertex;              // if true, save ESD vertex
+  Bool_t	fkSaveMCInfoTPC;			// if true, save MC info at the entrance of the TPC
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   Bool_t fkAddPVToRecPointFinder;
   Bool_t    fkUseLayer1; //if true, use layer 1
@@ -601,6 +606,11 @@ private:
   Bool_t fTreeVariableIsPhysicalPrimaryPositiveMother;
   Bool_t fTreeVariableIsPhysicalPrimaryNegativeGrandMother;
   Bool_t fTreeVariableIsPhysicalPrimaryPositiveGrandMother;
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  
+  AliTrackReference* fTreeVariablePosTrackRef;
+  AliTrackReference* fTreeVariableNegTrackRef;
+  
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   
   //===========================================================================================
@@ -815,6 +825,10 @@ private:
   Int_t   fTreeCascVarNegV0Tagging;         //!
   Int_t   fTreeCascVarV0PosSibIsValid;         //!
   Int_t   fTreeCascVarPosV0Tagging;         //!
+  
+  AliTrackReference* fTreeCascVarBachTrackRef;
+  AliTrackReference* fTreeCascVarPosTrackRef;
+  AliTrackReference* fTreeCascVarNegTrackRef;
   
   //Bachelor Sibling Testing Variables
   Float_t fTreeCascVarBachSibPt; //!
