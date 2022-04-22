@@ -43,9 +43,11 @@ using std::string;
 
 // ALIROOT includes
 #include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
+#include "AliESDTrack.h"
 #include "AliAODcascade.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
@@ -391,16 +393,17 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 }
 
 
-                fRecHyper->Matter = pTrack->GetSign() > 0;
+                fRecHyper->Matter = alphaTrack->GetSign() > 0;
 
                 // Vertexing
+                Double_t cv[21], dztemp[2], covartemp[3], pos[3], cov[6], chi2perNDF, dispersion;
                 for (int i = 0; i < 21; i++)
                     cv[i] = 0;
-                const AliESDVertex *vtxT3D = ((AliESDEvent *)ev)->GetPrimaryVertex();
+                const AliESDVertex *vtxT3D = dynamic_cast<AliESDEvent *>(InputEvent())->GetPrimaryVertex();
                 AliExternalTrackParam pionTrk(*(AliESDtrack *)ev->GetTrack(jTrack));
                 AliExternalTrackParam alphaTrk(*(AliESDtrack *)ev->GetTrack(iTrack));
                 AliExternalTrackParam *pPionTrk = &pionTrk, *pAlphaTrk = &alphaTrk;
-                Double_t dztemp[2], covartemp[3], pos[3], cov[6], chi2perNDF, dispersion;
+
                 pPionTrk->PropagateToDCA(vtxT3D, magField, 250, dztemp, covartemp);
                 pAlphaTrk->PropagateToDCA(vtxT3D, magField, 250, dztemp, covartemp);
 
