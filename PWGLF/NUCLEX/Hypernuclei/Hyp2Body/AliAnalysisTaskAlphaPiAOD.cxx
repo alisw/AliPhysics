@@ -58,6 +58,8 @@ using std::string;
 #include "AliVTrack.h"
 #include "Math/Vector4D.h"
 #include "THistManager.h"
+#include "AliKFVertex.h"
+#include "AliKFParticle.h"
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskAlphaPiAOD);
