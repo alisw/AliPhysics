@@ -81,8 +81,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	DCAz(0),
 	NsigmaMin(0),
 	NsigmaMax(0),
-	M20Min(0), 
-	M20Max(0),
+	M02Min(0), 
+	M02Max(0),
 	EopMin(0),
 	EopMax(0),
 	MaxConeR(0),
@@ -274,8 +274,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	DCAz(0),
 	NsigmaMin(0),
 	NsigmaMax(0),
-	M20Min(0), 
-	M20Max(0),
+	M02Min(0), 
+	M02Max(0),
 	EopMin(0),
 	EopMax(0),
 	MaxConeR(0),
@@ -643,8 +643,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistoNCells = new TH2F("fHistoNCells", "No of EMCAL cells in a cluster; Cluster E; N^{EMC}_{cells}",500,0,50,30,0,30);
 	fInv_pT_LS = new TH2F("fInv_pT_LS", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
 	fInv_pT_ULS = new TH2F("fInv_pT_ULS", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
-	fInv_pT_LS_forW = new TH2F("fInv_pT_LS_forW", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
-	fInv_pT_ULS_forW = new TH2F("fInv_pT_ULS_forW", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
+	fInv_pT_LS_forW = new TH2F("fInv_pT_LS_forW", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1000,0,1.0);
+	fInv_pT_ULS_forW = new TH2F("fInv_pT_ULS_forW", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1000,0,1.0);
+	fInv_pT_LS_forZ = new TH2F("fInv_pT_LS_forZ", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1200,0,120.0);
+	fInv_pT_ULS_forZ = new TH2F("fInv_pT_ULS_forZ", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1200,0,120.0);
 	fHistMCorgPi0 = new TH2F("fHistMCorgPi0","MC org Pi0",2,-0.5,1.5,100,0,50);
 	fHistMCorgEta = new TH2F("fHistMCorgEta","MC org Eta",2,-0.5,1.5,100,0,50);
 	fTrigMulti = new TH2F("fTrigMulti","Multiplicity distribution for different triggers; Trigger type; multiplicity",11,-1,10,2000,0,2000);
@@ -710,6 +712,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fInv_pT_ULS);
 	fOutputList->Add(fInv_pT_LS_forW);
 	fOutputList->Add(fInv_pT_ULS_forW);
+	fOutputList->Add(fInv_pT_LS_forZ);
+	fOutputList->Add(fInv_pT_ULS_forZ);
 	fOutputList->Add(fHistPt_Inc);
 	fOutputList->Add(fHistPt_Iso);
 	fOutputList->Add(fHistPt_R_Iso);
@@ -796,7 +800,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	Double_t CutDCAz  = DCAz;
 	//---PID Cut
 	Double_t CutNsigma[2] = {NsigmaMin,NsigmaMax};
-	Double_t CutM20[2] = {M20Min,M20Max};
+	Double_t CutM02[2] = {M02Min,M02Max};
 	Double_t CutEop[2] = {EopMin,EopMax};
 	Double_t CutEopHad = -3.5;
 	Double_t CutptAsso = ptAssoMin;
@@ -1553,7 +1557,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                          if(TrkPt>30.0 && fTPCnSigma<-3.0 && eop<0.7)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,0);
 
 			//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
-			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m20>CutM20[0] && m20<CutM20[1]){
+			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m02>CutM02[0] && m02<CutM02[1]){
 				fM02_2->Fill(TrkPt,m02);
 				fM20_2->Fill(TrkPt,m20);
 
@@ -1564,8 +1568,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                                     {
                                      fHistPt_Iso->Fill(track->Pt());
                                      fEop_iso_eID->Fill(TrkPt,eop);
-
-
                                     }
 
                                      //////////// ---- W-h correlation /////////////
@@ -1594,10 +1596,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 
 
-			if(fTPCnSigma<3 && fTPCnSigma>-3 && m20>CutM20[0] && m20<CutM20[1]){
+			if(fTPCnSigma<3 && fTPCnSigma>-3 && m02>CutM02[0] && m02<CutM02[1]){
 				fEopPt_ele_loose -> Fill(TrkPt,eop);
 			}
-			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && m20>CutM20[0] && m20<CutM20[1]){ // TPC nsigma & shower shape cut
+			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && m02>CutM02[0] && m02<CutM02[1]){ // TPC nsigma & shower shape cut
 				fEopPt_ele_tight -> Fill(TrkPt,eop);
 				if(ilabelM<NpureMC){fEopPt_ele_tight_PYTHIA -> Fill(TrkPt,eop);}
 				if(pid_eleB || pid_eleD){fHist_eff_M20 -> Fill(TrkPt);}
@@ -1629,7 +1631,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 					if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
 				}
 			}
-			if(fTPCnSigma< CutEopHad && m20>CutM20[0] && m20<CutM20[1]){
+			if(fTPCnSigma< CutEopHad && m02>CutM02[0] && m02<CutM02[1]){
 				fEopPt_had -> Fill(TrkPt,eop);
 				fDCAxy_Pt_had->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 			}
@@ -1748,6 +1750,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 			if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
 			if(track->Pt()>1){
 				if(iIsocut)fInv_pT_LS_forW->Fill(TrkPt,mass);
+				if(iIsocut)fInv_pT_LS_forZ->Fill(TrkPt,mass);
 				fInv_pT_LS->Fill(TrkPt,mass);
 				if(mass<CutmassMin)fDCAxy_Pt_LS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
@@ -1756,6 +1759,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 			if(track->Pt()>1){
 				fInv_pT_ULS->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_ULS_forW->Fill(TrkPt,mass);
+				if(iIsocut)fInv_pT_ULS_forZ->Fill(TrkPt,mass);
 				if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
 		}
