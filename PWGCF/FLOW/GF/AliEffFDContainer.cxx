@@ -210,8 +210,8 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     lPart = (AliMCParticle*)flMCEvent->GetTrack(index);
     if(!lPart) continue;
     if(lPart->Charge()==0.) continue;
-    eta = lPart->Eta();
-    if(!CheckEta(eta)) continue;
+    // eta = lPart->Eta(); ///Eta check either on gen. or rec., not on both
+    // if(!CheckEta(eta)) continue; //Eta check either on gen. or rec., not on both
     if(fUseGenPt) pt = lPart->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     CompWeight = flMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());

@@ -21,6 +21,8 @@
 #include "AliESDEvent.h"
 #include "AliVMultiplicity.h"
 #include "AliGFWFilter.h"
+#include "TRegexp.h"
+#include "TFile.h"
 
 
 class TList;
@@ -64,8 +66,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
-  void LoadWeightAndMPT();
-  void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
   void FillWPCounter(Double_t[5], Double_t, Double_t);
   Bool_t LoadMyWeights(const Int_t &lRunNo = 0);
   Int_t GetBayesPIDIndex(AliVTrack*);
@@ -74,6 +74,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetV0MBins(Int_t nBins, Double_t *multibins);
+  void SetEtaEffBins(Int_t nBins, Double_t *etabins);
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; fEtaLow=-9999; };
   void SetEta(Double_t etaLow, Double_t etaHigh) { fEtaLow = etaLow; fEta = etaHigh; };
@@ -117,10 +118,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
   TAxis *fV0MMultiAxis;
+  TAxis *fEtaAxis; //Only relevant for efficiencies when running p-Pb
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
+  Double_t *fEtaBins; //!
+  Int_t fNEtaBins; //!
   Bool_t fUseNch;
   Bool_t fUseWeightsOne;
   Double_t fEta;

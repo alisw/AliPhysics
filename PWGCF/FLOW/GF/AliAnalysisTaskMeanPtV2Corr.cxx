@@ -64,10 +64,13 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fPtAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
+  fEtaAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fEtaBins(0),
+  fNEtaBins(0),
   fUseNch(kFALSE),
   fUseWeightsOne(kFALSE),
   fEta(0.8),
@@ -137,6 +140,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fPtAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
+  fEtaAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
@@ -198,7 +202,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
     DefineOutput(1,TList::Class());
   if(fStageSwitch==9) {
     if(!fIsMC) { //Efficiency and NUA only important for data
-      DefineInput(1,TList::Class()); //NUE weights; ultimately, should be combined with NUA, but don't want to rerun now
+      DefineInput(1,TFile::Class()); //NUE weights; ultimately, should be combined with NUA, but don't want to rerun now
       DefineInput(2,TList::Class()); //NUA weights from other analysis; quickfix
     };
     DefineOutput(1,TList::Class());
@@ -237,13 +241,22 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   if(!fPtAxis) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
   fPtBins = GetBinsFromAxis(fPtAxis);
   fNPtBins = fPtAxis->GetNbins();
+
+  const Int_t l_NEtaBinsDefault = 1;
+  Double_t l_EtaBinsDefault[l_NEtaBinsDefault+1] = {-0.8,0.8};
+  if(!fEtaAxis) SetEtaEffBins(l_NEtaBinsDefault,l_EtaBinsDefault);
+  fEtaBins = GetBinsFromAxis(fEtaAxis);
+  fNEtaBins = fEtaAxis->GetNbins();
+
   TString spNames[] = {"ch","pi","ka","pr"};
 
   if(fStageSwitch==9) {
     fRndm = new TRandom(0);
     fRequireReloadOnRunChange = kFALSE;
     if(!fIsMC) { //Efficiencies and NUA are only for the data
-      fEfficiencyList = (TList*)GetInputData(1);
+
+      //For now, ditching multiplicity eff. in favour of eta efficiency + new prescription
+      /*fEfficiencyList = (TList*)GetInputData(1);
       fEfficiencies = new TH1D*[l_NV0MBinsDefault];
       for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
         fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
@@ -253,7 +266,33 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
           printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
           fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
         };
-      }
+      }*/
+      TFile *effFile = (TFile*)GetInputData(1);
+      TList *effList = (TList*)effFile->Get("EfficiencyMB");
+      TList *fdList  = (TList*)effFile->Get("FeeddownMB");
+      if(!effList || !fdList) AliFatal("Efficiency or feeddown were not picked up");
+      TString tempName = effList->At(0)->GetName();
+      TRegexp r_period("LHC[0-9,a-z]+_");
+      TString period=tempName(r_period);
+      TString sysPF = GetSystPF(BitIndex(fEvNomFlag), BitIndex(fTrNomFlag));
+      // fEfficiencyList = new TList();
+      // fEfficiencyList->SetOwner(kTRUE);
+      fEfficiencies = new TH1D*[fNEtaBins];
+      for(Int_t i=0;i<fNEtaBins;i++) {
+        TString etaDig(Form("%2.1f%2.1f",TMath::Abs(fEtaBins[i]),TMath::Abs(fEtaBins[i+1])));
+        etaDig.ReplaceAll(".","");
+        TString l_name = period+"ch_Eta_"+etaDig+sysPF;
+        fEfficiencies[i] = (TH1D*)effList->FindObject(l_name.Data());
+        if(!fEfficiencies) printf(Form("Could not find efficiency %s!\n",l_name.Data()));
+        fEfficiencies[i] = (TH1D*)fEfficiencies[i]->Clone(Form("Efficiency_%s",etaDig.Data()));
+        fEfficiencies[i]->SetDirectory(0);
+        TH1D *hTemp = (TH1D*)fdList->FindObject(l_name.Data());
+        if(!hTemp) printf(Form("Feeddown %s not found!\n",l_name.Data()));
+        fEfficiencies[i]->Divide(hTemp);
+      };
+      //GetSystPF(BitIndex(fEvNomFlag), BitIndex(fTrNomFlag)).Data())
+
+      //NUAs:
       fWeightList = (TList*)GetInputData(2);
       fWeights = new AliGFWWeights*[1];
     };
@@ -368,8 +407,6 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   fBayesPID->SetDefaultTPCPriors();
   fBayesPID->SetSelectedSpecies(AliPID::kSPECIES);
   fBayesPID->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
-
-  // LoadWeightAndMPT();
 };
 void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   //On AODs with GFWFilter
@@ -486,6 +523,7 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliGFWFlags *lFlags, AliAODEvent *f
 
     //Event check performed already
     UInt_t gTrackFlags=0;
+    Int_t iEta;
     for(Int_t lTr=0;lTr<lFlags->GetNFiltered();lTr++) {
       gTrackFlags = lFlags->GetTrackFlag(lTr);
       if(!(gTrackFlags&fTrNomFlag)) continue; //Check if we want to accept the track
@@ -501,7 +539,9 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliGFWFlags *lFlags, AliAODEvent *f
       if(leta>fEtaV2Sep) lPosCount++;
       if(fEtaV2Sep>0 && TMath::Abs(leta)<fEtaV2Sep) lMidCount++;
       Double_t p1 = lTrack->Pt();
-      Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(p1));
+      iEta = fEtaAxis->FindBin(leta);
+      if(!iEta || iEta>fEtaAxis->GetNbins()) continue; //We are outside of eta efficiency range
+      Double_t weff = fEfficiencies[iEta-1]->GetBinContent(fEfficiencies[iEta-1]->FindBin(p1));
       if(weff==0) continue;
       Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
       weff = 1./weff;
@@ -638,21 +678,6 @@ void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
 
 
 };
-void AliAnalysisTaskMeanPtV2Corr::GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf) {
-  (*inWeights) = (AliGFWWeights*)fWeightList->FindObject(Form("weight_%s",pf.Data()));
-  if(!(*inWeights)) AliFatal(Form("Could not find weight %s in weight list\n", pf.Data()));
-  if(!(*inWeights)->CalculateIntegratedEff()) AliFatal("Could not calculate integrated efficiency!\n");
-  (*inWeights)->CreateNUA();
-};
-void AliAnalysisTaskMeanPtV2Corr::LoadWeightAndMPT() {//AliAODEvent *inEv) {
-  if(!fRequireReloadOnRunChange) return;
-  if(!fWeightList) AliFatal("Weight list not set!\n");
-
-  // Int_t l_RunNo = inEv->GetRunNumber();
-  TString spNames[] = {"ch","pi","ka","pr"};
-  fWeights = new AliGFWWeights*[4];
-  for(Int_t i=0;i<4;i++) GetSingleWeightFromList(&fWeights[i],spNames[i]);
-}
 Int_t AliAnalysisTaskMeanPtV2Corr::GetBayesPIDIndex(AliVTrack *l_track) {
   Double_t l_Probs[AliPID::kSPECIES];
   Double_t l_MaxProb[] = {0.95,0.85,0.85};
@@ -724,6 +749,10 @@ void AliAnalysisTaskMeanPtV2Corr::SetMultiBins(Int_t nMultiBins, Double_t *multi
 void AliAnalysisTaskMeanPtV2Corr::SetV0MBins(Int_t nMultiBins, Double_t *multibins) {
   if(fV0MMultiAxis) delete fV0MMultiAxis;
   fV0MMultiAxis = new TAxis(nMultiBins, multibins);
+}
+void AliAnalysisTaskMeanPtV2Corr::SetEtaEffBins(Int_t nEtaBins, Double_t *etabins) {
+  if(fEtaAxis) delete fEtaAxis;
+  fEtaAxis = new TAxis(nEtaBins, etabins);
 }
 void AliAnalysisTaskMeanPtV2Corr::SetV2dPtMultiBins(Int_t nMultiBins, Double_t *multibins) {
   if(fV2dPtMulti) delete fV2dPtMulti;
