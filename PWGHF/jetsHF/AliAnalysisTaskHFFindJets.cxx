@@ -180,8 +180,8 @@ AliAnalysisTaskHFFindJets::AliAnalysisTaskHFFindJets():AliAnalysisTaskSE("HFFind
 	fMassK0s(0.),
 	fSecVertexerAlgo(0),
 	fVertexerTracks{nullptr},
-	//fO2Vertexer2Prong{},
-	//fO2Vertexer3Prong{},
+	fO2Vertexer2Prong{},
+	fO2Vertexer3Prong{},
 	fVertexerPropagateToPCA(true),
 	fVertexerMaxR(200.),
 	fVertexerMaxDZIni(4.),
@@ -261,16 +261,30 @@ AliAnalysisTaskHFFindJets::AliAnalysisTaskHFFindJets():AliAnalysisTaskSE("HFFind
 	hjetnsd{nullptr}
 
 {
+  //
   InitDefault();
+
+  for(Int_t i=0; i<5; i++){
+    fHistPtGenPrompt[i]=0x0;
+    fHistPtGenFeeddw[i]=0x0;
+    fHistPtGenLimAccPrompt[i]=0x0;
+    fHistPtGenLimAccFeeddw[i]=0x0;
+    fHistPtRecoGenPtPrompt[i]=0x0;
+    fHistPtRecoGenPtFeeddw[i]=0x0;
+    fHistPtRecoPrompt[i]=0x0;
+    fHistPtRecoFeeddw[i]=0x0;
+  }
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
 
-//_______________________________________________________________________________________
-AliAnalysisTaskHFFindJets::~AliAnalysisTaskHFFindJets() {
+
+//___________________________________________________________________________
+AliAnalysisTaskHFFindJets::~AliAnalysisTaskHFFindJets(){
+  //
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
-  
+
   if(fOutput && !fOutput->IsOwner()){
 	delete fOutput;
 	delete fHistNEvents;
@@ -329,7 +343,7 @@ void AliAnalysisTaskHFFindJets::InitDefault() {
 	fMassLambdaC = TDatabasePDG::Instance()->GetParticle(4122)->Mass();*/
 	
     //m     dca   cost* ptk  ptpi  d0k            d0pi         d0d0     cosp cosxy normdxy
-	Double_t defaultCuts[npTBins][nCutVars] = {{0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   // pt<0.5
+	/*Double_t defaultCuts[npTBins][nCutVars] = {{0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   // pt<0.5
                                      {0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   // 0.5<pt<1
                                      {0.400, 300. * 1E-4, 0.8, 0.4, 0.4, 1000. * 1E-4, 1000. * 1E-4, -25000. * 1E-8, 0.80, 0., 0.},  // 1<pt<1.5 
                                      {0.400, 300. * 1E-4, 0.8, 0.4, 0.4, 1000. * 1E-4, 1000. * 1E-4, -25000. * 1E-8, 0.80, 0., 0.},  // 1.5<pt<2 
@@ -358,7 +372,7 @@ void AliAnalysisTaskHFFindJets::InitDefault() {
 		for(Int_t jc=0; jc<nCutVars; jc++){
 			fCuts[ib][jc]=defaultCuts[ib][jc];
 		}
-	}  
+	}  */
 	
 	
 	/// initialization with default values
@@ -694,47 +708,6 @@ void AliAnalysisTaskHFFindJets::UserCreateOutputObjects() {
 	PostData(1,fOutput);
 }
 
-
-//_______________________________________________________________________________________
-Bool_t AliAnalysisTaskHFFindJets::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float fBzkG) {
-  /// fast calculation (no covariance matrix treatment) of track momentum at secondary vertex
-  
-	Double_t alpha = tr->GetAlpha();
-	Double_t sn = TMath::Sin(alpha), cs = TMath::Cos(alpha);
-	Double_t x = tr->GetX(), y = tr->GetParameter()[0], snp = tr->GetParameter()[2];
-	Double_t xv = secVert->GetX() * cs + secVert->GetY() * sn;
-	Double_t yv = -secVert->GetX() * sn + secVert->GetY() * cs;
-	x -= xv;
-	y -= yv;
-	Double_t crv = tr->GetC(fBzkG);
-	if (TMath::Abs(fBzkG) < 0.000001) crv = 0.;
-	double csp = TMath::Sqrt((1. - snp) * (1. + snp));
-
-	Double_t tgfv = -(crv * x - snp) / (crv * y + csp);
-	cs = 1. / TMath::Sqrt(1 + tgfv * tgfv);
-	sn = cs < 1. ? tgfv * cs : 0.;
-
-	x = xv * cs + yv * sn;
-	Double_t alpNew = alpha + TMath::ASin(sn);
-	Double_t ca = TMath::Cos(alpNew - alpha), sa = TMath::Sin(alpNew - alpha);
-	Double_t p2 = tr->GetSnp();
-	Double_t xNew = tr->GetX() * ca + tr->GetY() * sa;
-	Double_t p2New = p2 * ca - TMath::Sqrt((1. - p2) * (1. + p2)) * sa;
-	momentum[0] = tr->GetSigned1Pt();
-	momentum[1] = p2New * (x - xNew) * tr->GetC(fBzkG);
-	momentum[2] = tr->GetTgl();
-	Bool_t retCode = tr->Local2GlobalMomentum(momentum, alpNew);
-	return retCode;
-}
-
-//_______________________________________________________________________________________
-Bool_t AliAnalysisTaskHFFindJets::SingleTrkCuts(AliESDtrack* trk, AliESDtrackCuts* esdTrackCuts, AliESDVertex* fV1, Double_t fBzkG) {
-	if (!trk->PropagateToDCA(fV1, fBzkG, kVeryBig))
-		return kFALSE;
-	trk->RelateToVertex(fV1, fBzkG, kVeryBig);
-	return esdTrackCuts->AcceptTrack(trk);
-}
-
 //_______________________________________________________________________________________
 Bool_t AliAnalysisTaskHFFindJets::SingleTrkCutsSimple(AliESDtrack* trk, Int_t minclutpc, int ptmintrack, double dcatoprimxymin, AliESDVertex* fV1, Double_t fBzkG) {
 	Int_t status = trk->GetStatus();
@@ -757,30 +730,30 @@ Int_t AliAnalysisTaskHFFindJets::TwoProngSelectionCuts(AliAODRecoDecayHF2Prong* 
 	if (candpT < candpTMin || candpT >= candpTMax) return 0;
 	Int_t pTBin = GetPtBin(candpT, fPtBinLimsDzeroSkims, kMaxNPtBins2ProngsSkims);
 	if (pTBin==-1) return 0;
-	if (cand->Prodd0d0() > fCuts[pTBin][7]) return 0;
-	if (cand->CosPointingAngle() < fCuts[pTBin][8]) return 0;
-	if (cand->CosPointingAngleXY() < fCuts[pTBin][9]) return 0;
-	if (cand->NormalizedDecayLengthXY() < fCuts[pTBin][10]) return 0;
+	if (cand->Prodd0d0() > fDzeroCuts[pTBin][7]) return 0;
+	if (cand->CosPointingAngle() < fDzeroCuts[pTBin][8]) return 0;
+	if (cand->CosPointingAngleXY() < fDzeroCuts[pTBin][9]) return 0;
+	if (cand->NormalizedDecayLengthXY() < fDzeroCuts[pTBin][10]) return 0;
 	Double_t decayLengthCut = TMath::Min((cand->P() * 0.0066) + 0.01, 0.06);
 	if (TMath::Abs(cand->Normalizedd0Prong(0)) < 0.5 || TMath::Abs(cand->Normalizedd0Prong(1)) < 0.5) return 0;
 	if (cand->DecayLength() * cand->DecayLength() < decayLengthCut * decayLengthCut) return 0;
 	// if (cand->NormalizedDecayLength() * cand->NormalizedDecayLength() < 1.0) return 0;
-	if (TMath::Abs(cand->InvMassD0()-fMassDzero) > fCuts[pTBin][0] ) isD0=false;
-	if (TMath::Abs(cand->InvMassD0bar()-fMassDzero) > fCuts[pTBin][0] ) isD0bar=false;
+	if (TMath::Abs(cand->InvMassD0()-fMassDzero) > fDzeroCuts[pTBin][0] ) isD0=false;
+	if (TMath::Abs(cand->InvMassD0bar()-fMassDzero) > fDzeroCuts[pTBin][0] ) isD0bar=false;
 	if (!isD0 && !isD0bar) return 0;
 
-	if (cand->Pt2Prong(0) < fCuts[pTBin][4]*fCuts[pTBin][4] || cand->Pt2Prong(1) < fCuts[pTBin][3]*fCuts[pTBin][3] ) isD0=false;
-	if (cand->Pt2Prong(0) < fCuts[pTBin][3]*fCuts[pTBin][3] || cand->Pt2Prong(1) < fCuts[pTBin][4]*fCuts[pTBin][4] ) isD0bar=false;
+	if (cand->Pt2Prong(0) < fDzeroCuts[pTBin][4]*fDzeroCuts[pTBin][4] || cand->Pt2Prong(1) < fDzeroCuts[pTBin][3]*fDzeroCuts[pTBin][3] ) isD0=false;
+	if (cand->Pt2Prong(0) < fDzeroCuts[pTBin][3]*fDzeroCuts[pTBin][3] || cand->Pt2Prong(1) < fDzeroCuts[pTBin][4]*fDzeroCuts[pTBin][4] ) isD0bar=false;
 	if (!isD0 && !isD0bar) return 0;
 
-	if (TMath::Abs(cand->Getd0Prong(0)) > fCuts[pTBin][6] || TMath::Abs(cand->Getd0Prong(1)) > fCuts[pTBin][5] ) isD0=false;
-	if (TMath::Abs(cand->Getd0Prong(0)) > fCuts[pTBin][5] || TMath::Abs(cand->Getd0Prong(1)) > fCuts[pTBin][6] ) isD0bar=false;
+	if (TMath::Abs(cand->Getd0Prong(0)) > fDzeroCuts[pTBin][6] || TMath::Abs(cand->Getd0Prong(1)) > fDzeroCuts[pTBin][5] ) isD0=false;
+	if (TMath::Abs(cand->Getd0Prong(0)) > fDzeroCuts[pTBin][5] || TMath::Abs(cand->Getd0Prong(1)) > fDzeroCuts[pTBin][6] ) isD0bar=false;
 	if (!isD0 && !isD0bar) return 0;
 
 	Double_t cosThetaStarD0,cosThetaStarD0bar;
 	cand->CosThetaStarD0(cosThetaStarD0,cosThetaStarD0bar);
-	if (TMath::Abs(cosThetaStarD0) > fCuts[pTBin][2] ) isD0=false;
-	if (TMath::Abs(cosThetaStarD0bar) > fCuts[pTBin][2] ) isD0bar=false;
+	if (TMath::Abs(cosThetaStarD0) > fDzeroCuts[pTBin][2] ) isD0=false;
+	if (TMath::Abs(cosThetaStarD0bar) > fDzeroCuts[pTBin][2] ) isD0bar=false;
 	if (!isD0 && !isD0bar) return 0;
 
 	Int_t returnValue=0;
@@ -790,7 +763,7 @@ Int_t AliAnalysisTaskHFFindJets::TwoProngSelectionCuts(AliAODRecoDecayHF2Prong* 
 }
 
 //_______________________________________________________________________________________
-AliESDVertex* AliAnalysisTaskHFFindJets::ReconstructSecondaryVertex(AliVertexerTracks* vt, TObjArray* trkArray, AliESDVertex* primvtx, double rmax) {
+/*AliESDVertex* AliAnalysisTaskHFFindJets::ReconstructSecondaryVertex(AliVertexerTracks* vt, TObjArray* trkArray, AliESDVertex* primvtx, double rmax) {
 	vt->SetVtxStart(primvtx);
 
 	AliESDVertex* trkv = (AliESDVertex*)vt->VertexForSelectedESDTracks(trkArray);
@@ -799,19 +772,85 @@ AliESDVertex* AliAnalysisTaskHFFindJets::ReconstructSecondaryVertex(AliVertexerT
 	Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
 	if(vertRadius2>rmax*rmax) return 0x0;
 	return trkv;
-}
+}*/
 
 //_______________________________________________________________________________________
-/*AliAODVertex* AliAnalysisTaskHFFindJets::ConvertToAODVertex(AliESDVertex* trkv) {
-	Double_t pos_[3], cov_[6], chi2perNDF_;
-	trkv->GetXYZ(pos_);       // position
-	trkv->GetCovMatrix(cov_); // covariance matrix
-	chi2perNDF_ = trkv->GetChi2toNDF();
-	double dispersion_ = trkv->GetDispersion();
-	//  printf(" pos_ %f %f %f \n", pos_[0], pos_[1], pos_[2]);
-	AliAODVertex* vertexAOD = new AliAODVertex(pos_, cov_, chi2perNDF_, 0x0, -1, AliAODVertex::kUndef, 2);
-	return vertexAOD;
-}*/
+AliESDVertex* AliAnalysisTaskHFFindJets::ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx)
+{
+
+  AliESDVertex* trkv =0x0;
+  // printf("------\n");
+  // for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+  //   AliExternalTrackParam *tp=(AliExternalTrackParam *)trkArray->At(jt);
+  //   printf("%f ",tp->Pt());
+  // }
+  // printf("\n");
+  if(fSecVertexerAlgo==0){
+    fVertexerTracks->SetVtxStart(primvtx);
+    trkv = (AliESDVertex*)fVertexerTracks->VertexForSelectedESDTracks(trkArray);
+    if (trkv->GetNContributors() != trkArray->GetEntriesFast()) return 0x0;
+  }else if(fSecVertexerAlgo==1){
+    o2::track::TrackParCov* o2Track[3] = {nullptr};
+    for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+      o2Track[jt] = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)trkArray->At(jt));
+    }
+    Int_t nVert=0;
+    Double_t vertCoord[3];
+    Double_t vertCov[6];
+    Double_t vertChi2=-999.;
+    if(trkArray->GetEntriesFast()==2){
+      nVert=fO2Vertexer2Prong.process(*o2Track[0], *o2Track[1]);
+      if(nVert){
+        fO2Vertexer2Prong.propagateTracksToVertex();
+        auto vertPos = fO2Vertexer2Prong.getPCACandidate();
+        auto vertCMat = fO2Vertexer2Prong.calcPCACovMatrix().Array();
+        for(Int_t ic=0; ic<3; ic++) vertCoord[ic]=vertPos[ic];
+        for(Int_t ic=0; ic<6; ic++) vertCov[ic]=vertCMat[ic];
+        vertChi2 = fO2Vertexer2Prong.getChi2AtPCACandidate();
+      }
+    }else if(trkArray->GetEntriesFast()==3){
+      nVert=fO2Vertexer3Prong.process(*o2Track[0], *o2Track[1], *o2Track[2]);
+      if(nVert){
+        fO2Vertexer3Prong.propagateTracksToVertex();
+        auto vertPos = fO2Vertexer3Prong.getPCACandidate();
+        auto vertCMat = fO2Vertexer3Prong.calcPCACovMatrix().Array();
+        for(Int_t ic=0; ic<3; ic++) vertCoord[ic]=vertPos[ic];
+        for(Int_t ic=0; ic<6; ic++) vertCov[ic]=vertCMat[ic];
+        vertChi2 = fO2Vertexer3Prong.getChi2AtPCACandidate();
+      }
+    }
+    if(nVert) trkv = new AliESDVertex(vertCoord,vertCov,vertChi2,trkArray->GetEntriesFast());
+    //   else printf("nVert = %d\n",nVert);
+  }else if(fSecVertexerAlgo==2){
+    KFParticle  dMesonVert;
+    double posmom[6],cov[21];
+    for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+      AliExternalTrackParam* trpar=(AliExternalTrackParam*)trkArray->At(jt);
+      trpar->GetXYZ(posmom);
+      trpar->GetPxPyPz(posmom+3);
+      trpar->GetCovarianceXYZPxPyPz(cov);
+      KFParticle trKFpar;
+      trKFpar.Create(posmom,cov,trpar->Charge(),0.13957); // mass of the pion for the time being
+      dMesonVert.AddDaughter(trKFpar);
+    }
+    Double_t vertChi2 = dMesonVert.GetChi2() / dMesonVert.GetNDF();
+    Double_t vertCoord[3]={dMesonVert.X(),dMesonVert.Y(),dMesonVert.Z()};
+    Double_t vertCov[6];
+    vertCov[0]=dMesonVert.GetCovariance(0,0);
+    vertCov[1]=dMesonVert.GetCovariance(0,1);
+    vertCov[2]=dMesonVert.GetCovariance(1,1);
+    vertCov[3]=dMesonVert.GetCovariance(0,2);
+    vertCov[4]=dMesonVert.GetCovariance(1,2);
+    vertCov[5]=dMesonVert.GetCovariance(2,2);
+    trkv = new AliESDVertex(vertCoord,vertCov,vertChi2,trkArray->GetEntriesFast());
+  }
+  if(!trkv) return 0x0;
+  Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
+  if(vertRadius2>fMaxDecVertRadius2) return 0x0;
+  //  trkv->Print("all");
+  //  printf("=============\n");
+  return trkv;
+}
 
 //_______________________________________________________________________________________
 AliAODVertex* AliAnalysisTaskHFFindJets::ConvertToAODVertex(AliESDVertex* trkv)
@@ -827,181 +866,415 @@ AliAODVertex* AliAnalysisTaskHFFindJets::ConvertToAODVertex(AliESDVertex* trkv)
 }
 
 //_______________________________________________________________________________________
-Int_t AliAnalysisTaskHFFindJets::SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3) {
-	Int_t retval = 0;
-	Double_t momentum[3];
-	Double_t px[3], py[3], pz[3];
-	for (Int_t iTrack = 0; iTrack < 3; iTrack++) {
-		AliESDtrack* track = (AliESDtrack*)trkArray->UncheckedAt(iTrack);
-		track->GetPxPyPz(momentum);
-		px[iTrack] = momentum[0];
-		py[iTrack] = momentum[1];
-		pz[iTrack] = momentum[2];
-	}
-	UInt_t pdg3[3];
-	Int_t nprongs = 3;
-	rd4massCalc3->SetPxPyPzProngs(nprongs, px, py, pz);
-	Double_t minv2, mrange;
-	Double_t lolim, hilim;
-	mrange = 0.1;
-	lolim = fMassDplus - mrange;
-	hilim = fMassDplus + mrange;
-	pdg3[0] = 211;
-	pdg3[1] = 321;
-	pdg3[2] = 211;
-	minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
-	if (minv2 > lolim * lolim && minv2 < hilim * hilim)
-		retval += (1 << kbitDplus);
-	lolim = fMassDs - mrange;
-	hilim = fMassDs + mrange;
-	for (Int_t ih = 0; ih < 2; ih++) {
-		Int_t k = ih * 2;
-		pdg3[k] = 321;
-		pdg3[1] = 321;
-		pdg3[2 - k] = 211;
-		minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
-		if (minv2 > lolim * lolim && minv2 < hilim * hilim && (retval & (1 << kbitDs)) == 0)
-			retval += (1 << kbitDs);
-	}
-	lolim = fMassLambdaC - mrange;
-	hilim = fMassLambdaC + mrange;
-	pdg3[0] = 2212;
-	pdg3[1] = 321;
-	pdg3[2] = 211;
-	minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
-	if (minv2 > lolim * lolim && minv2 < hilim * hilim && (retval & (1 << kbitLc)) == 0)
-		retval += (1 << kbitLc);
-	pdg3[0] = 211;
-	pdg3[1] = 321;
-	pdg3[2] = 2212;
-	minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
-	if (minv2 > lolim * lolim && minv2 < hilim * hilim && (retval & (1 << kbitLc)) == 0)
-		retval += (1 << kbitLc);
+Int_t AliAnalysisTaskHFFindJets::SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3)
+{
 
-	return retval;
+  Int_t retval = (1 << kbitDplus) + (1 << kbitDs) + (1 << kbitLc);
+  Double_t momentum[3];
+  Double_t px[3], py[3], pz[3];
+  for (Int_t iTrack = 0; iTrack < 3; iTrack++) {
+    AliESDtrack* track = (AliESDtrack*)trkArray->UncheckedAt(iTrack);
+    track->GetPxPyPz(momentum);
+    px[iTrack] = momentum[0];
+    py[iTrack] = momentum[1];
+    pz[iTrack] = momentum[2];
+  }
+  UInt_t pdg3[3];
+  Int_t nprongs = 3;
+  rd4massCalc3->SetPxPyPzProngs(nprongs, px, py, pz);
+  Double_t ptCand = rd4massCalc3->Pt() + fPtWithoutVtxToll;
+  Int_t iPtBinDplus = GetPtBin(ptCand, fPtBinLimsDplusSkims, kMaxNPtBins3ProngsSkims);
+  if(iPtBinDplus < 0) {
+    retval &= ~(1 << kbitDplus);
+  }
+  Int_t iPtBinDs = GetPtBin(ptCand, fPtBinLimsDsSkims, kMaxNPtBins3ProngsSkims);
+  if(iPtBinDs < 0) {
+    retval &= ~(1 << kbitDs);
+  }
+  Int_t iPtBinLc = GetPtBin(ptCand, fPtBinLimsLcSkims, kMaxNPtBins3ProngsSkims);
+  if(iPtBinLc < 0) {
+    retval &= ~(1 << kbitLc);
+  }
+  Double_t minv2;
+  Double_t lolim=fDplusSkimCuts[iPtBinDplus][0];
+  Double_t hilim=fDplusSkimCuts[iPtBinDplus][1];
+  pdg3[0] = 211;
+  pdg3[1] = 321;
+  pdg3[2] = 211;
+  minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
+  if ((retval & (1 << kbitDplus)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
+    retval &= ~(1 << kbitDplus);
+  lolim=fDsSkimCuts[iPtBinDs][0];
+  hilim=fDsSkimCuts[iPtBinDs][1];
+  Bool_t isSelDs[2] = {true, true}; 
+  for (Int_t ih = 0; ih < 2; ih++) {
+    Int_t k = ih * 2;
+    pdg3[k] = 321;
+    pdg3[1] = 321;
+    pdg3[2 - k] = 211;
+    minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
+    if ((retval & (1 << kbitDs)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
+      isSelDs[ih] = false;
+  }
+  if(!isSelDs[0] && !isSelDs[1])
+   retval &= ~(1 << kbitDs);
+  lolim=fLcSkimCuts[iPtBinLc][0];
+  hilim=fLcSkimCuts[iPtBinLc][1];
+  Bool_t isSelLc[2] = {true, true}; 
+  pdg3[0] = 2212;
+  pdg3[1] = 321;
+  pdg3[2] = 211;
+  minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
+  if ((retval & (1 << kbitLc)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
+    isSelLc[0] = false;
+  pdg3[0] = 211;
+  pdg3[1] = 321;
+  pdg3[2] = 2212;
+  minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
+  if ((retval & (1 << kbitLc)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
+    isSelLc[1] = false;
+  if(!isSelLc[0] && !isSelLc[1])
+   retval &= ~(1 << kbitLc);
+
+  return retval;
+}
+
+//______________________________________________________________________________
+AliAODRecoDecayHF2Prong* AliAnalysisTaskHFFindJets::Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG)
+{
+
+  AliESDtrack* track_0 = (AliESDtrack*)twoTrackArray->UncheckedAt(0);
+  AliESDtrack* track_1 = (AliESDtrack*)twoTrackArray->UncheckedAt(1);
+
+  Double_t px[2], py[2], pz[2], d0[2], d0err[2];
+  Double_t momentum[3];
+  GetTrackMomentumAtSecVert(track_0, secVert, momentum, bzkG);
+  px[0] = momentum[0];
+  py[0] = momentum[1];
+  pz[0] = momentum[2];
+  GetTrackMomentumAtSecVert(track_1, secVert, momentum, bzkG);
+  px[1] = momentum[0];
+  py[1] = momentum[1];
+  pz[1] = momentum[2];
+
+  Float_t d0z0f[2], covd0z0f[3];
+  track_0->GetImpactParameters(d0z0f, covd0z0f);
+  d0[0] = d0z0f[0];
+  d0err[0] = TMath::Sqrt(covd0z0f[0]);
+  track_1->GetImpactParameters(d0z0f, covd0z0f);
+  d0[1] = d0z0f[0];
+  d0err[1] = TMath::Sqrt(covd0z0f[0]);
+
+  Double_t xdummy, ydummy;
+  float dcap1n1 = track_0->GetDCA(track_1, bzkG, xdummy, ydummy);
+
+  AliAODRecoDecayHF2Prong* the2Prong = new AliAODRecoDecayHF2Prong(0x0, px, py, pz, d0, d0err, dcap1n1);
+  AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
+  the2Prong->SetOwnSecondaryVtx(ownsecv);
+  return the2Prong;
+}
+
+//______________________________________________________________________________
+AliAODRecoDecayHF3Prong* AliAnalysisTaskHFFindJets::Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG)
+{
+
+  AliESDtrack* track_0 = (AliESDtrack*)threeTrackArray->UncheckedAt(0);
+  AliESDtrack* track_1 = (AliESDtrack*)threeTrackArray->UncheckedAt(1);
+  AliESDtrack* track_2 = (AliESDtrack*)threeTrackArray->UncheckedAt(2);
+
+  Double_t px[3], py[3], pz[3], d0[3], d0err[3];
+  Double_t momentum[3];
+  GetTrackMomentumAtSecVert(track_0, secVert, momentum, bzkG);
+  px[0] = momentum[0];
+  py[0] = momentum[1];
+  pz[0] = momentum[2];
+  GetTrackMomentumAtSecVert(track_1, secVert, momentum, bzkG);
+  px[1] = momentum[0];
+  py[1] = momentum[1];
+  pz[1] = momentum[2];
+  GetTrackMomentumAtSecVert(track_2, secVert, momentum, bzkG);
+  px[2] = momentum[0];
+  py[2] = momentum[1];
+  pz[2] = momentum[2];
+  Float_t d0z0f[2], covd0z0f[3];
+  track_0->GetImpactParameters(d0z0f, covd0z0f);
+  d0[0] = d0z0f[0];
+  d0err[0] = TMath::Sqrt(covd0z0f[0]);
+  track_1->GetImpactParameters(d0z0f, covd0z0f);
+  d0[1] = d0z0f[0];
+  d0err[1] = TMath::Sqrt(covd0z0f[0]);
+  track_2->GetImpactParameters(d0z0f, covd0z0f);
+  d0[2] = d0z0f[0];
+  d0err[2] = TMath::Sqrt(covd0z0f[0]);
+
+  Double_t xdummy, ydummy;
+  float dcap1n1 = track_0->GetDCA(track_1, bzkG, xdummy, ydummy);
+  float dcap2n1 = track_2->GetDCA(track_1, bzkG, xdummy, ydummy);
+  float dcap1p2 = track_0->GetDCA(track_2, bzkG, xdummy, ydummy);
+  Double_t dca[3] = {dcap1n1, dcap2n1, dcap1p2};
+  Double_t dispersion = 0;
+  Double_t dist12 = 0.;
+  Double_t dist23 = 0.;
+  Short_t charge = (Short_t)(track_0->Charge() + track_1->Charge() + track_2->Charge());
+
+  // construct the candidate passing a NULL pointer for the secondary vertex to avoid creation of TRef
+  AliAODRecoDecayHF3Prong* the3Prong = new AliAODRecoDecayHF3Prong(0x0, px, py, pz, d0, d0err, dca, dispersion, dist12, dist23, charge);
+  // add a pointer to the secondary vertex via SetOwnSecondaryVtx (no TRef created)
+  AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
+  the3Prong->SetOwnSecondaryVtx(ownsecv);
+  return the3Prong;
 }
 
 //_______________________________________________________________________________________
-AliAODRecoDecayHF2Prong* AliAnalysisTaskHFFindJets::Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t fBzkG) {
-	AliESDtrack* track_0 = (AliESDtrack*)twoTrackArray->UncheckedAt(0);
-	AliESDtrack* track_1 = (AliESDtrack*)twoTrackArray->UncheckedAt(1);
+void AliAnalysisTaskHFFindJets::InitFromJson(TString filename){
+  /// read configuration from json file
+  if (filename != "" && gSystem->Exec(Form("ls %s > /dev/null", filename.Data())) == 0) {
+    printf("------Read configuration from JSON file------\n");
 
-	Double_t px[2], py[2], pz[2], d0[2], d0err[2];
-	Double_t momentum[3];
-	GetTrackMomentumAtSecVert(track_0, secVert, momentum, fBzkG);
-	px[0] = momentum[0];
-	py[0] = momentum[1];
-	pz[0] = momentum[2];
-	GetTrackMomentumAtSecVert(track_1, secVert, momentum, fBzkG);
-	px[1] = momentum[0];
-	py[1] = momentum[1];
-	pz[1] = momentum[2];
+    std::string triggerMaskFromJSON = GetJsonString(filename.Data(), "triggerClassName");
 
-	Float_t d0z0f[2], covd0z0f[3];
-	track_0->GetImpactParameters(d0z0f, covd0z0f);
-	d0[0] = d0z0f[0];
-	d0err[0] = TMath::Sqrt(covd0z0f[0]);
-	track_1->GetImpactParameters(d0z0f, covd0z0f);
-	d0[1] = d0z0f[0];
-	d0err[1] = TMath::Sqrt(covd0z0f[0]);
+    if (triggerMask.find(triggerMaskFromJSON) != triggerMask.end()) {
+      fUsePhysSel = kTRUE;
+      fTriggerMask = triggerMask[triggerMaskFromJSON];
+    }
 
-	Double_t xdummy, ydummy;
-	float dcap1n1 = track_0->GetDCA(track_1, fBzkG, xdummy, ydummy);
+    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "pTMinTrack2Prong");
+    printf("Min pt track (2 prong)= %f\n", ptmintrack2);
+    if(ptmintrack2>0) fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
+    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "pTMinTrack3Prong");
+    printf("Min pt track (3 prong)= %f\n", ptmintrack3);
+    if(ptmintrack3>0) fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
+    Int_t do3Prongs = GetJsonInteger(filename.Data(), "do3prong");
+    printf("do3prong     = %d\n", do3Prongs);
+    if(do3Prongs>0) fDo3Prong=kTRUE;
+    Int_t selectD0 = GetJsonInteger(filename.Data(), "d_selectionFlagD0");
+    printf("d_selectionFlagD0 = %d\n",selectD0);
+    if(selectD0>=0) fSelectD0=selectD0;
+    Int_t selectD0bar = GetJsonInteger(filename.Data(), "d_selectionFlagD0bar");
+    printf("d_selectionFlagD0bar = %d\n",selectD0bar);
+    if(selectD0>=0) fSelectD0bar=selectD0bar;
+    Int_t selectDplus = GetJsonInteger(filename.Data(), "d_selectionFlagDPlus");
+    printf("d_selectionFlagDplus = %d\n",selectDplus);
+    if(selectDplus>=0) fSelectDplus=selectDplus;
+    Int_t selectJpsi = GetJsonInteger(filename.Data(), "d_selectionFlagJpsi");
+    printf("d_selectionFlagJpsi = %d\n",selectJpsi);
+    if(selectJpsi>=0) fSelectJpsi=selectJpsi;
+    Int_t selectLcpKpi = GetJsonInteger(filename.Data(), "d_selectionFlagLc");
+    printf("d_selectionFlagLc = %d\n", selectLcpKpi);
+    if (selectLcpKpi >= 0) fSelectLcpKpi=selectLcpKpi;
+    Int_t minncluTPC = GetJsonInteger(filename.Data(), "tpcNClsFound");
+    if(minncluTPC>0) printf("minncluTPC   = %d\n", minncluTPC);
+    fTrackCuts2pr->SetMinNClustersTPC(minncluTPC);
+    fTrackCuts3pr->SetMinNClustersTPC(minncluTPC);
 
-	AliAODRecoDecayHF2Prong* the2Prong = new AliAODRecoDecayHF2Prong(0x0, px, py, pz, d0, d0err, dcap1n1);
-	AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
-	the2Prong->SetOwnSecondaryVtx(ownsecv);
-	return the2Prong;
-}
+    int nptbinlimsSingleTrack = 0;
+    float* ptbinsSingleTrack = GetJsonArray(filename.Data(),"pTBinsTrack",nptbinlimsSingleTrack);
+    int npt2Prong = 0, npt3Prong = 0, nc2Prong = 0, nc3Prong = 0;
+    float** cutsSingleTrack2Prong = GetJsonMatrix(filename.Data(),"cutsTrack2Prong",npt2Prong,nc2Prong);
+    float** cutsSingleTrack3Prong = GetJsonMatrix(filename.Data(),"cutsTrack3Prong",npt3Prong,nc3Prong);
+    if((nptbinlimsSingleTrack-1 != npt3Prong) || (nptbinlimsSingleTrack-1 != npt2Prong))
+      AliFatal("Number of pT bins in JSON for single track cuts of 2-prong and 3-prongs not consistent, please check it");
 
-//_______________________________________________________________________________________
-AliAODRecoDecayHF3Prong* AliAnalysisTaskHFFindJets::Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t fBzkG) {
-	AliESDtrack* track_0 = (AliESDtrack*)threeTrackArray->UncheckedAt(0);
-	AliESDtrack* track_1 = (AliESDtrack*)threeTrackArray->UncheckedAt(1);
-	AliESDtrack* track_2 = (AliESDtrack*)threeTrackArray->UncheckedAt(2);
+    for (Int_t ib = 0; ib < nptbinlimsSingleTrack; ib++) {
+      fPtBinLimsSingleTrack[ib] = ptbinsSingleTrack[ib];
+    }
+    for (Int_t ib = 0; ib < nptbinlimsSingleTrack-1; ib++) {
+      for (Int_t jc = 0; jc < nc2Prong; jc++) {
+        fSingleTrackCuts2Prong[ib][jc] = cutsSingleTrack2Prong[ib][jc];
+        AliWarning(Form("2prong %d, %d, %f", ib, jc, cutsSingleTrack2Prong[ib][jc]));
+      }
+      for (Int_t jc = 0; jc < nc3Prong; jc++) {
+        fSingleTrackCuts3Prong[ib][jc] = cutsSingleTrack3Prong[ib][jc];
+        AliWarning(Form("3prong %d %d, %d, %f", nc2Prong, ib, jc, cutsSingleTrack2Prong[ib][jc]));
+      }
+    }
+    Double_t etamax2 = GetJsonFloat(filename.Data(), "etaMax2Prong");
+    printf("Max eta  (2 prong) = %f\n", etamax2);
+    if(etamax2>0) fTrackCuts2pr->SetEtaRange(-etamax2, +etamax2);
+    Double_t etamax3 = GetJsonFloat(filename.Data(), "etaMax3Prong");
+    printf("Max eta  (3 prong) = %f\n", etamax3);
+    if(etamax3>0) fTrackCuts3pr->SetEtaRange(-etamax3, +etamax3);
 
-	Double_t px[3], py[3], pz[3], d0[3], d0err[3];
-	Double_t momentum[3];
-	GetTrackMomentumAtSecVert(track_0, secVert, momentum, fBzkG);
-	px[0] = momentum[0];
-	py[0] = momentum[1];
-	pz[0] = momentum[2];
-	GetTrackMomentumAtSecVert(track_1, secVert, momentum, fBzkG);
-	px[1] = momentum[0];
-	py[1] = momentum[1];
-	pz[1] = momentum[2];
-	GetTrackMomentumAtSecVert(track_2, secVert, momentum, fBzkG);
-	px[2] = momentum[0];
-	py[2] = momentum[1];
-	pz[2] = momentum[2];
-	Float_t d0z0f[2], covd0z0f[3];
-	track_0->GetImpactParameters(d0z0f, covd0z0f);
-	d0[0] = d0z0f[0];
-	d0err[0] = TMath::Sqrt(covd0z0f[0]);
-	track_1->GetImpactParameters(d0z0f, covd0z0f);
-	d0[1] = d0z0f[0];
-	d0err[1] = TMath::Sqrt(covd0z0f[0]);
-	track_2->GetImpactParameters(d0z0f, covd0z0f);
-	d0[2] = d0z0f[0];
-	d0err[2] = TMath::Sqrt(covd0z0f[0]);
+    // vertexer parameters
+    printf("--- DCAFitterN parameters ---\n");
+    Int_t b_propdca = GetJsonBool(filename.Data(),"propToDCA");
+    if(b_propdca==1){
+      fVertexerPropagateToPCA = true;
+      printf("propdca = %d\n",fVertexerPropagateToPCA);
+    }else if(b_propdca==0){
+      fVertexerPropagateToPCA = false;
+      printf("propdca = %d\n",fVertexerPropagateToPCA);
+    }
+    Double_t d_maxr = GetJsonFloat(filename.Data(), "maxRad");
+    if(d_maxr>0){
+      fMaxDecVertRadius2=d_maxr*d_maxr;
+      fVertexerMaxR=d_maxr;
+      printf("maxr = %f\n",fVertexerMaxR);
+    }
+    Double_t d_maxdzini = GetJsonFloat(filename.Data(), "maxDZIni");
+    if(d_maxdzini>0){
+      fVertexerMaxDZIni=d_maxdzini;
+      printf("maxdzini = %f\n",fVertexerMaxDZIni);
+    }
+    Double_t d_minparamchange = GetJsonFloat(filename.Data(), "minParamChange");
+    if(d_minparamchange>0){
+      fVertexerMinParamChange=d_minparamchange;
+      printf("minparamchange = %f\n",fVertexerMinParamChange);
+    }
+    Double_t d_minrelchi2change = GetJsonFloat(filename.Data(), "minRelChi2Change");
+    if(d_minrelchi2change){
+      fVertexerMinRelChi2Change=d_minrelchi2change;
+      printf("minrelchi2change = %f\n",fVertexerMinRelChi2Change);
+    }
+    printf("----------------\n");
+    Double_t ptMinCand = GetJsonFloat(filename.Data(), "d_pTCandMin");
+    printf("Min pt Dzero cand = %f\n", ptMinCand);
+    if(ptMinCand>=0.) fMinPtDzero=ptMinCand;
+    Double_t ptMaxCand = GetJsonFloat(filename.Data(), "d_pTCandMax");
+    printf("Max pt Dzero cand = %f\n", ptMaxCand);
+    if(ptMaxCand>=0. && ptMaxCand>=fMinPtDzero) fMaxPtDzero=ptMaxCand;
+    Double_t ptMinCand3 = GetJsonFloat(filename.Data(), "cut3ProngPtCandMin");
+    printf("Min pt 3-prong cand = %f\n", ptMinCand3);
+    if( ptMinCand3>=0.) fMinPt3Prong=ptMinCand3;
 
-	Double_t xdummy, ydummy;
-	float dcap1n1 = track_0->GetDCA(track_1, fBzkG, xdummy, ydummy);
-	float dcap2n1 = track_2->GetDCA(track_1, fBzkG, xdummy, ydummy);
-	float dcap1p2 = track_0->GetDCA(track_2, fBzkG, xdummy, ydummy);
-	Double_t dca[3] = {dcap1n1, dcap2n1, dcap1p2};
-	Double_t dispersion = 0;
-	Double_t dist12 = 0.;
-	Double_t dist23 = 0.;
-	Short_t charge = (Short_t)(track_0->Charge() + track_1->Charge() + track_2->Charge());
+    // Selections used in the skimming
+    printf("------- CANDIDATE SELECTIONS FOR SKIMMING -------\n");
 
-	// construct the candidate passing a NULL pointer for the secondary vertex to avoid creation of TRef
-	AliAODRecoDecayHF3Prong* the3Prong = new AliAODRecoDecayHF3Prong(0x0, px, py, pz, d0, d0err, dca, dispersion, dist12, dist23, charge);
-	// add a pointer to the secondary vertex via SetOwnSecondaryVtx (no TRef created)
-	// AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
-	// the3Prong->SetOwnSecondaryVtx(ownsecv);
-	return the3Prong;
-}
+    Double_t ptTol = GetJsonFloat(filename.Data(), "pTTolerance");
+    if(ptTol > 0)
+      fPtWithoutVtxToll = ptTol;
 
-//_______________________________________________________________________________________
-void AliAnalysisTaskHFFindJets::InitFromJson(TString esdFileName) {
-	// read configuration from json file
-	if (esdFileName != "" && gSystem->Exec(Form("ls %s > /dev/null", esdFileName.Data())) == 0) {
-		printf("------Read configuration from JSON file------\n");		
-	
-		selectD0 = GetJsonInteger(esdFileName.Data(), "d_selectionFlagD0");
-		selectD0bar = GetJsonInteger(esdFileName.Data(), "d_selectionFlagD0bar");
-		printf("D0 cuts: %d, D0bar cuts: %d\n", selectD0, selectD0bar);
-		ptmintrack = GetJsonFloat(esdFileName.Data(), "ptmintrack");
-		printf("Min pt track = %f\n", ptmintrack);
-		do3Prongs = GetJsonInteger(esdFileName.Data(), "do3prong");
-		printf("do3prong     = %d\n", do3Prongs);
-		minncluTPC = GetJsonInteger(esdFileName.Data(), "d_tpcnclsfound");
-		printf("minncluTPC   = %d\n", minncluTPC);
-		dcatoprimxymin = GetJsonFloat(esdFileName.Data(), "dcatoprimxymin");
-		printf("dcatoprimxymin   = %f\n", dcatoprimxymin);
-		printf("Read configuration from JSON file\n");
-		candpTMin = GetJsonFloat(esdFileName.Data(), "d_pTCandMin");
-		printf("Min pt 2prong cand = %f\n", candpTMin);
-		candpTMax = GetJsonInteger(esdFileName.Data(), "d_pTCandMax");
-		printf("Max pt 2prong cand = %f\n", candpTMax);
-		d_maxr = GetJsonFloat(esdFileName.Data(), ", d_maxr");
-		printf("Max DCA radius = %f\n", d_maxr);
-			
-		esdTrackCuts->SetPtRange(ptmintrack, 1.e10);
-		esdTrackCuts->SetEtaRange(-0.8, +0.8);
-		esdTrackCuts->SetMinNClustersTPC(minncluTPC);
-		esdTrackCuts->SetRequireITSRefit(kTRUE);
-		esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-											AliESDtrackCuts::kAny);
-		esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-		esdTrackCuts->SetMaxDCAToVertexZ(3.2);
-		esdTrackCuts->SetMaxDCAToVertexXY(2.4);
-		esdTrackCuts->SetDCAToVertex2D(kTRUE);
-				
-	}else{
-	AliError(Form("Json configuration file %s not found\n",esdFileName.Data()));
-	}	
+    int nptbinlimsDzeroSkims = 0, ncDzeroSkims = 0, nptDzeroSkims = 0;
+    float* ptbinlimsDzeroSkims = GetJsonArray(filename.Data(),"pTBinsD0ToPiK",nptbinlimsDzeroSkims);
+    float** cutsDzeroSkims = GetJsonMatrix(filename.Data(),"cutsD0ToPiK",nptDzeroSkims,ncDzeroSkims);
+    if(nptbinlimsDzeroSkims-1 != nptDzeroSkims)
+      AliFatal("Number of pT bins in JSON for Dzero at skims level not consistent, please check it");
+
+    int nptbinlimsJpsiSkims = 0, ncJpsiSkims = 0, nptJpsiSkims = 0;
+    float* ptbinlimsJpsiSkims = GetJsonArray(filename.Data(),"pTBinsJpsiToEE",nptbinlimsJpsiSkims);
+    float** cutsJpsiSkims = GetJsonMatrix(filename.Data(),"cutsJpsiToEE",nptJpsiSkims,ncJpsiSkims);
+    if(nptbinlimsJpsiSkims-1 != nptJpsiSkims)
+      AliFatal("Number of pT bins in JSON for J/psi at skims level not consistent, please check it");
+
+    int nptbinlimsDplusSkims = 0, ncDplusSkims = 0, nptDplusSkims = 0;
+    float* ptbinlimsDplusSkims = GetJsonArray(filename.Data(),"pTBinsDPlusToPiKPi",nptbinlimsDplusSkims);
+    float** cutsDplusSkims = GetJsonMatrix(filename.Data(),"cutsDPlusToPiKPi",nptDplusSkims,ncDplusSkims);
+    if(nptbinlimsDplusSkims-1 != nptDplusSkims)
+      AliFatal("Number of pT bins in JSON for Dplus at skims level not consistent, please check it");
+
+    int nptbinlimsDsSkims = 0, ncDsSkims = 0, nptDsSkims = 0;
+    float* ptbinlimsDsSkims = GetJsonArray(filename.Data(),"pTBinsDsToPiKK",nptbinlimsDsSkims);
+    float** cutsDsSkims = GetJsonMatrix(filename.Data(),"cutsDsToPiKK",nptDsSkims,ncDsSkims);
+    if(nptbinlimsDsSkims-1 != nptDsSkims)
+      AliFatal("Number of pT bins in JSON for Ds at skims level not consistent, please check it");
+
+    int nptbinlimsLcSkims = 0, ncLcSkims = 0, nptLcSkims = 0;
+    float* ptbinlimsLcSkims = GetJsonArray(filename.Data(),"pTBinsLcToPKPi",nptbinlimsLcSkims);
+    float** cutsLcSkims = GetJsonMatrix(filename.Data(),"cutsLcToPKPi",nptLcSkims,ncLcSkims);
+    if(nptbinlimsLcSkims-1 != nptLcSkims)
+      AliFatal("Number of pT bins in JSON for Lc at skims level not consistent, please check it");
+
+    int nptbinlimsXicSkims = 0, ncXicSkims = 0, nptXicSkims = 0;
+    float* ptbinlimsXicSkims = GetJsonArray(filename.Data(),"pTBinsXicToPKPi",nptbinlimsXicSkims);
+    float** cutsXicSkims = GetJsonMatrix(filename.Data(),"cutsXicToPKPi",nptXicSkims,ncXicSkims);
+    if(nptbinlimsXicSkims-1 != nptXicSkims)
+      AliFatal("Number of pT bins in JSON for Xic at skims level not consistent, please check it");
+
+    for (Int_t ib = 0; ib < nptbinlimsDzeroSkims; ib++) {
+      fPtBinLimsDzeroSkims[ib] = ptbinlimsDzeroSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptDzeroSkims; ib++) {
+      for (Int_t jc = 0; jc < ncDzeroSkims; jc++) {
+        fDzeroSkimCuts[ib][jc] = cutsDzeroSkims[ib][jc];
+      }
+      AliWarning(Form("Dzero cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; d0xd0  < %f\n", fPtBinLimsDzeroSkims[ib], fPtBinLimsDzeroSkims[ib+1], fDzeroSkimCuts[ib][0], fDzeroSkimCuts[ib][1], fDzeroSkimCuts[ib][2], fDzeroSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsJpsiSkims; ib++) {
+      fPtBinLimsJpsiSkims[ib] = ptbinlimsJpsiSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptJpsiSkims; ib++) {
+      for (Int_t jc = 0; jc < ncJpsiSkims; jc++) {
+        fJpsiSkimCuts[ib][jc] = cutsJpsiSkims[ib][jc];
+      }
+      AliWarning(Form("J/psi cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; d0xd0  < %f\n", fPtBinLimsJpsiSkims[ib], fPtBinLimsJpsiSkims[ib+1], fJpsiSkimCuts[ib][0], fJpsiSkimCuts[ib][1], fJpsiSkimCuts[ib][2], fJpsiSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsDplusSkims; ib++) {
+      fPtBinLimsDplusSkims[ib] = ptbinlimsDplusSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptDplusSkims; ib++) {
+      for (Int_t jc = 0; jc < ncDplusSkims; jc++) {
+        fDplusSkimCuts[ib][jc] = cutsDplusSkims[ib][jc];
+      }
+      AliWarning(Form("Dplus cuts: %f < pt < %f  ; %f < mass < %f  ;  cospoint > %f  ; declen > %f\n", fPtBinLimsDplusSkims[ib], fPtBinLimsDplusSkims[ib+1], fDplusSkimCuts[ib][0], fDplusSkimCuts[ib][1], fDplusSkimCuts[ib][2], fDplusSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsDsSkims; ib++) {
+      fPtBinLimsDsSkims[ib] = ptbinlimsDsSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptDsSkims; ib++) {
+      for (Int_t jc = 0; jc < ncDsSkims; jc++) {
+        fDsSkimCuts[ib][jc] = cutsDsSkims[ib][jc];
+      }
+      AliWarning(Form("Ds cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n", fPtBinLimsDsSkims[ib], fPtBinLimsDsSkims[ib+1], fDsSkimCuts[ib][0], fDsSkimCuts[ib][1], fDsSkimCuts[ib][2], fDsSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsLcSkims; ib++) {
+      fPtBinLimsLcSkims[ib] = ptbinlimsLcSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptLcSkims; ib++) {
+      for (Int_t jc = 0; jc < ncLcSkims; jc++) {
+        fLcSkimCuts[ib][jc] = cutsLcSkims[ib][jc];
+      }
+      AliWarning(Form("Lc cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n", fPtBinLimsLcSkims[ib], fPtBinLimsLcSkims[ib+1], fLcSkimCuts[ib][0], fLcSkimCuts[ib][1], fLcSkimCuts[ib][2], fLcSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsXicSkims; ib++) {
+      fPtBinLimsXicSkims[ib] = ptbinlimsXicSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptXicSkims; ib++) {
+      for (Int_t jc = 0; jc < ncXicSkims; jc++) {
+        fXicSkimCuts[ib][jc] = cutsXicSkims[ib][jc];
+      }
+      AliWarning(Form("Xic cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n", fPtBinLimsXicSkims[ib], fPtBinLimsXicSkims[ib+1], fXicSkimCuts[ib][0], fXicSkimCuts[ib][1], fXicSkimCuts[ib][2], fXicSkimCuts[ib][3]));
+    }
+
+    
+    Double_t cutcpaV0 = GetJsonFloat(filename.Data(), "cosPAV0");
+    if(cutcpaV0>0){
+      fMinCosPointV0=cutcpaV0;
+      printf("cosPAV0 cut = %f\n",fMinCosPointV0);
+    }
+
+    Double_t cutinvmV0 = GetJsonFloat(filename.Data(), "cutInvMassV0");
+    if(cutinvmV0>0){
+      fCutOnK0sMass=cutinvmV0;
+      printf("invmass V0 cut = %f\n",fCutOnK0sMass);
+    }
+    
+    
+    printf("---------------------------------------------\n");
+
+    printf("---- TEST READOUT OF ARRAYS ----\n");
+    int nptbinlims;
+    float* ptbins = GetJsonArray(filename.Data(),"pTBins",nptbinlims);
+    printf("%d ptbins. Limits: ",nptbinlims-1);
+    for(int j=0; j<nptbinlims; j++) printf("%.1f ",ptbins[j]);
+    printf("\n");
+    int npt,nc;
+    float** cuts = GetJsonMatrix(filename.Data(),"D0_to_pi_K_cuts",npt,nc);
+    printf("D0 2D cuts: %d pt bins, %d cut variables:\n",npt,nc);
+    for(int j=0; j<npt; j++){
+      for(int k=0; k<nc; k++){
+        printf("%.2f ",cuts[j][k]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+  }else{
+    AliError(Form("Json configuration file %s not found\n",filename.Data()));
+  }
 }
 
 //_______________________________________________________________________________________
@@ -1040,6 +1313,8 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd) {
 
 	TObjArray* twoTrackArray = new TObjArray(2);
 	TObjArray* threeTrackArray = new TObjArray(3);
+	TObjArray *twoTrackArrayCasc = new TObjArray(2);//
+	AliESDVertex* primVtxTrk = (AliESDVertex*)esd->GetPrimaryVertex();//
 
 	AliVertexerTracks* vt = new AliVertexerTracks(fBzkG);
 
@@ -1066,7 +1341,7 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd) {
 
 		twoTrackArray->AddAt(track_p0, 0);
 		twoTrackArray->AddAt(track_n0, 1);
-		AliESDVertex* trkv = ReconstructSecondaryVertex(vt, twoTrackArray, primvtx, d_maxr);
+		AliESDVertex* trkv = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
 		if (trkv == 0x0) {
 			twoTrackArray->Clear();
 			continue;
@@ -1211,7 +1486,8 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd) {
 					threeTrackArray->Clear();
 					continue;
 				}
-				AliESDVertex* trkv3 = ReconstructSecondaryVertex(vt, threeTrackArray, primvtx, d_maxr);
+				//AliESDVertex* trkv3 = ReconstructSecondaryVertex(vt, threeTrackArray, primvtx, d_maxr);
+				AliESDVertex* trkv3 = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
 				if (trkv3 == 0x0) {
 					threeTrackArray->Clear();
 					continue;
@@ -1247,7 +1523,7 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd) {
 					threeTrackArray->Clear();
 					continue;
 				}
-				AliESDVertex* trkv3 = ReconstructSecondaryVertex(vt, threeTrackArray, primvtx, d_maxr);
+				AliESDVertex* trkv3 = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
 				if (trkv3 == 0x0) {
 					threeTrackArray->Clear();
 					continue;
@@ -1539,7 +1815,38 @@ Bool_t AliAnalysisTaskHFFindJets::SelectV0(AliESDv0 *v0, AliESDVertex* primvtx)
 
 //Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2]){}
 
-//Bool_t AliAnalysisTaskHFSimpleVertices::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG){}
+Bool_t AliAnalysisTaskHFFindJets::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG)
+{
+  /// fast calculation (no covariance matrix treatment) of track momentum at secondary vertex
+
+  Double_t alpha = tr->GetAlpha();
+  Double_t sn = TMath::Sin(alpha), cs = TMath::Cos(alpha);
+  Double_t x = tr->GetX(), y = tr->GetParameter()[0], snp = tr->GetParameter()[2];
+  Double_t xv = secVert->GetX() * cs + secVert->GetY() * sn;
+  Double_t yv = -secVert->GetX() * sn + secVert->GetY() * cs;
+  x -= xv;
+  y -= yv;
+  Double_t crv = tr->GetC(bzkG);
+  if (TMath::Abs(bzkG) < 0.000001)
+    crv = 0.;
+  double csp = TMath::Sqrt((1. - snp) * (1. + snp));
+
+  Double_t tgfv = -(crv * x - snp) / (crv * y + csp);
+  cs = 1. / TMath::Sqrt(1 + tgfv * tgfv);
+  sn = cs < 1. ? tgfv * cs : 0.;
+
+  x = xv * cs + yv * sn;
+  Double_t alpNew = alpha + TMath::ASin(sn);
+  Double_t ca = TMath::Cos(alpNew - alpha), sa = TMath::Sin(alpNew - alpha);
+  Double_t p2 = tr->GetSnp();
+  Double_t xNew = tr->GetX() * ca + tr->GetY() * sa;
+  Double_t p2New = p2 * ca - TMath::Sqrt((1. - p2) * (1. + p2)) * sa;
+  momentum[0] = tr->GetSigned1Pt();
+  momentum[1] = p2New * (x - xNew) * tr->GetC(bzkG);
+  momentum[2] = tr->GetTgl();
+  Bool_t retCode = tr->Local2GlobalMomentum(momentum, alpNew);
+  return retCode;
+}
 
 void AliAnalysisTaskHFFindJets::ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent){
 }
@@ -1554,6 +1861,110 @@ Int_t AliAnalysisTaskHFFindJets::GetPtBinSingleTrack(Double_t ptTrack)
 
 
 //end
+
+//______________________________________________________________________________
+Int_t AliAnalysisTaskHFFindJets::SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2])
+{
+  Double_t covd0track[3];
+  if (!trk->PropagateToDCA(primVert, bzkG, kVeryBig, d0track, covd0track)) return kFALSE;
+  trk->RelateToVertex(primVert, bzkG, kVeryBig);
+  Int_t retCode=0;
+
+  // test first impact parameter
+  Int_t iPtTrack = GetPtBinSingleTrack(trk->Pt());
+  if(TMath::Abs(d0track[0]) >= fSingleTrackCuts2Prong[iPtTrack][0] && TMath::Abs(d0track[0]) <= fSingleTrackCuts2Prong[iPtTrack][1])
+    retCode+=1;
+  if(TMath::Abs(d0track[0]) >= fSingleTrackCuts3Prong[iPtTrack][0] && TMath::Abs(d0track[0]) <= fSingleTrackCuts3Prong[iPtTrack][1])
+    retCode+=2;
+
+  // test other cuts if impact-parameter tested
+  Int_t retCodeCurrent=retCode;
+  if((retCodeCurrent == 1 || retCodeCurrent == 3) && !fTrackCuts2pr->AcceptTrack(trk)) retCode-=1;
+  if(retCodeCurrent >= 2 && !fTrackCuts3pr->AcceptTrack(trk)) retCode-=2;
+
+  //test cuts for bachelor track
+  if(fTrackCutsBach->AcceptTrack(trk)) retCode+=4;
+  
+  return retCode;
+}
+
+//______________________________________________________________________________
+/*AliESDVertex* AliAnalysisTaskHFFindJets::ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx)
+{
+
+  AliESDVertex* trkv =0x0;
+  // printf("------\n");
+  // for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+  //   AliExternalTrackParam *tp=(AliExternalTrackParam *)trkArray->At(jt);
+  //   printf("%f ",tp->Pt());
+  // }
+  // printf("\n");
+  if(fSecVertexerAlgo==0){
+    fVertexerTracks->SetVtxStart(primvtx);
+    trkv = (AliESDVertex*)fVertexerTracks->VertexForSelectedESDTracks(trkArray);
+    if (trkv->GetNContributors() != trkArray->GetEntriesFast()) return 0x0;
+  }else if(fSecVertexerAlgo==1){
+    o2::track::TrackParCov* o2Track[3] = {nullptr};
+    for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+      o2Track[jt] = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)trkArray->At(jt));
+    }
+    Int_t nVert=0;
+    Double_t vertCoord[3];
+    Double_t vertCov[6];
+    Double_t vertChi2=-999.;
+    if(trkArray->GetEntriesFast()==2){
+      nVert=fO2Vertexer2Prong.process(*o2Track[0], *o2Track[1]);
+      if(nVert){
+        fO2Vertexer2Prong.propagateTracksToVertex();
+        auto vertPos = fO2Vertexer2Prong.getPCACandidate();
+        auto vertCMat = fO2Vertexer2Prong.calcPCACovMatrix().Array();
+        for(Int_t ic=0; ic<3; ic++) vertCoord[ic]=vertPos[ic];
+        for(Int_t ic=0; ic<6; ic++) vertCov[ic]=vertCMat[ic];
+        vertChi2 = fO2Vertexer2Prong.getChi2AtPCACandidate();
+      }
+    }else if(trkArray->GetEntriesFast()==3){
+      nVert=fO2Vertexer3Prong.process(*o2Track[0], *o2Track[1], *o2Track[2]);
+      if(nVert){
+        fO2Vertexer3Prong.propagateTracksToVertex();
+        auto vertPos = fO2Vertexer3Prong.getPCACandidate();
+        auto vertCMat = fO2Vertexer3Prong.calcPCACovMatrix().Array();
+        for(Int_t ic=0; ic<3; ic++) vertCoord[ic]=vertPos[ic];
+        for(Int_t ic=0; ic<6; ic++) vertCov[ic]=vertCMat[ic];
+        vertChi2 = fO2Vertexer3Prong.getChi2AtPCACandidate();
+      }
+    }
+    if(nVert) trkv = new AliESDVertex(vertCoord,vertCov,vertChi2,trkArray->GetEntriesFast());
+    //   else printf("nVert = %d\n",nVert);
+  }else if(fSecVertexerAlgo==2){
+    KFParticle  dMesonVert;
+    double posmom[6],cov[21];
+    for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+      AliExternalTrackParam* trpar=(AliExternalTrackParam*)trkArray->At(jt);
+      trpar->GetXYZ(posmom);
+      trpar->GetPxPyPz(posmom+3);
+      trpar->GetCovarianceXYZPxPyPz(cov);
+      KFParticle trKFpar;
+      trKFpar.Create(posmom,cov,trpar->Charge(),0.13957); // mass of the pion for the time being
+      dMesonVert.AddDaughter(trKFpar);
+    }
+    Double_t vertChi2 = dMesonVert.GetChi2() / dMesonVert.GetNDF();
+    Double_t vertCoord[3]={dMesonVert.X(),dMesonVert.Y(),dMesonVert.Z()};
+    Double_t vertCov[6];
+    vertCov[0]=dMesonVert.GetCovariance(0,0);
+    vertCov[1]=dMesonVert.GetCovariance(0,1);
+    vertCov[2]=dMesonVert.GetCovariance(1,1);
+    vertCov[3]=dMesonVert.GetCovariance(0,2);
+    vertCov[4]=dMesonVert.GetCovariance(1,2);
+    vertCov[5]=dMesonVert.GetCovariance(2,2);
+    trkv = new AliESDVertex(vertCoord,vertCov,vertChi2,trkArray->GetEntriesFast());
+  }
+  if(!trkv) return 0x0;
+  Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
+  if(vertRadius2>fMaxDecVertRadius2) return 0x0;
+  //  trkv->Print("all");
+  //  printf("=============\n");
+  return trkv;
+}*/
 
 //_______________________________________________________________________________________
 void AliAnalysisTaskHFFindJets::Terminate(Option_t */*option*/) 

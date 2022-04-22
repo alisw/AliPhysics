@@ -1,24 +1,6 @@
 #ifndef ALIANALYSISTASKHFFINDJETS_H
 #define ALIANALYSISTASKHFFINDJETS_H
 
-#include "AliAnalysisTaskSE.h"
-
-#include <TMath.h>
-#include <TDatabasePDG.h>
-#include <TFile.h>
-#include <TSystem.h>
-#include <TH1F.h>
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
-#include "AliAODVertex.h"
-#include "AliESDVertex.h"
-#include "AliESDEvent.h"
-#include "AliAODRecoDecayHF2Prong.h"
-#include "AliAODRecoDecayHF3Prong.h"
-#include "AliVertexerTracks.h"
-#include "AliFJWrapper.h"
-#include "FJ_includes.h"
-
 /* Copyright(c) 1998-2022, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -28,23 +10,40 @@
 //          
 //*************************************************************************
 
+#include "AliFJWrapper.h"
+
+#include <map>
+#include <string>
+#include "DCAFitterN.h"
+#include "AliVEvent.h"
+
+class TList;
+class AliESDEvent;
 
 class AliAnalysisTaskHFFindJets : public AliAnalysisTaskSE
 {
 
  public:
 	AliAnalysisTaskHFFindJets(); // class constructor
-	AliAnalysisTaskHFFindJets(const char *name); // class constructor
 	virtual ~AliAnalysisTaskHFFindJets(); // class destructor
-	
-	virtual void UserCreateOutputObjects(); // called once at beginning of runtime
-	virtual void UserExec(Option_t* option); // called for each event
-	virtual void Terminate(Option_t* option); // called at end of analysis
-	
+
+	virtual void   UserExec(Option_t *option); // called for each event
+	virtual void   UserCreateOutputObjects(); // called once at beginning of runtime
+	virtual void   Terminate(Option_t *option); // called at end of analysis
+	void InitFromJson(TString filename);
+	void SetUseCutOnSPDVsTrackVtx(Bool_t opt){fCutOnSPDVsTrackVtx=opt;}
+	void SetZVertexMaxRange(Double_t zmax){fMaxZVert=zmax;}
+	void SetUseVertexerTracks(){fSecVertexerAlgo=0;}
+	void SetUseO2Vertexer(){fSecVertexerAlgo=1;}
+	void SetUseKFParticleVertexer(){fSecVertexerAlgo=2;}
+	void SetFindVertexForCascades(Bool_t opt){fFindVertexForCascades=opt;}
 	void SetReadMC(Bool_t read){fReadMC=read;}
-	void InitFromJson(TString esdFile);
-	TTree* tree;
-	
+	void SetUseCandidateAnalysisCuts(){fCandidateCutLevel=2;}
+	void SetUseCandidateSkimCuts(){fCandidateCutLevel=1;}
+	void SetUseNoCandidateCuts(){fCandidateCutLevel=0;}
+	void SetUsePtDependentFiducialAcceptance(){fMaxRapidityCand=-999.;}
+	void SetMaxRapidityForFiducialAcceptance(Double_t ymax){fMaxRapidityCand=ymax;}
+	void EnableCPUTimeCheck(Bool_t enable=kTRUE, Bool_t milliseconds=kFALSE) {fEnableCPUTimeCheck=enable; fCountTimeInMilliseconds=milliseconds;}
 
  private:                                
     double ptmintrack = 0.;
@@ -58,11 +57,6 @@ class AliAnalysisTaskHFFindJets : public AliAnalysisTaskSE
 	Int_t selectD0, selectD0bar;
 	
 	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
-	
-	static const Int_t npTBins = 25;
-	static const Int_t nCutVars = 11;
-	
-	Double_t fCuts[npTBins][nCutVars];
                                                         
 	void ReadJson();
 	void MakeJetFinding(AliESDEvent *esd);
@@ -115,20 +109,8 @@ class AliAnalysisTaskHFFindJets : public AliAnalysisTaskSE
 	Int_t TwoProngSelectionCuts(AliAODRecoDecayHF2Prong* cand, Double_t candpTMin, Double_t candpTMax);
 
 //start
-	//Int_t GetpTBin(Double_t candpT);
-	Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float fBzkG);
-	Bool_t SingleTrkCuts(AliESDtrack* trk, AliESDtrackCuts* esdTrackCuts, AliESDVertex* fV1, Double_t fBzkG);
-	
-	AliESDVertex* ReconstructSecondaryVertex(AliVertexerTracks* vt, TObjArray* trkArray, AliESDVertex* primvtx, double rmax);
-	//AliAODVertex* ConvertToAODVertex(AliESDVertex* trkv);
-	Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
-	AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t fBzkG);
-	AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t fBzkG);
-	
-	
-//end	
-	//AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
-	//AliAnalysisTaskHFSimpleVertices& operator=(const AliAnalysisTaskHFSimpleVertices &source);
+	AliAnalysisTaskHFFindJets(const AliAnalysisTaskHFFindJets &source);
+	AliAnalysisTaskHFFindJets& operator=(const AliAnalysisTaskHFFindJets &source);
 
 	std::string GetJsonString(const char* jsonFileName, const char* key);
 	int GetJsonInteger(const char* jsonFileName, const char* key);
@@ -140,15 +122,15 @@ class AliAnalysisTaskHFFindJets : public AliAnalysisTaskSE
 	Int_t GetPtBin(Double_t ptCand, Double_t* ptBinLims, Double_t nPtBins);
 	Int_t GetPtBinSingleTrack(Double_t ptTrack);
 	void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent);
-	//Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
-	//Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2]);
+	Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
+	Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2]);
 	Bool_t SelectV0(AliESDv0 *v0, AliESDVertex* primvtx);
-	//AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
+	AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
 	AliAODVertex* ConvertToAODVertex(AliESDVertex* trkv);
 	Int_t SelectInvMassAndPt2prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc2);
-	//Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
-	//AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
-	//AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
+	Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
+	AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
+	AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
 	AliAODRecoCascadeHF* MakeCascade(TObjArray *twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
 	Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y) const;
 	Int_t DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand);
@@ -328,8 +310,8 @@ class AliAnalysisTaskHFFindJets : public AliAnalysisTaskSE
 
 	Int_t fSecVertexerAlgo;                  // Algorithm for secondary vertex
 	AliVertexerTracks* fVertexerTracks;             // Run-2 vertexer
-	//o2::vertexing::DCAFitter2 fO2Vertexer2Prong;    // o2 vertexer
-	//o2::vertexing::DCAFitter3 fO2Vertexer3Prong;    // o2 vertexer
+	o2::vertexing::DCAFitter2 fO2Vertexer2Prong;    // o2 vertexer
+	o2::vertexing::DCAFitter3 fO2Vertexer3Prong;    // o2 vertexer
 	Bool_t fVertexerPropagateToPCA;
 	Double_t fVertexerMaxR;
 	Double_t fVertexerMaxDZIni;
