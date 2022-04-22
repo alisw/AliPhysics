@@ -2291,25 +2291,6 @@ Int_t AliAnalysisTaskHFFindJets::MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, Al
 }
 
 //_______________________________________________________________________________________
-void AliAnalysisTaskHFFindJets::ReadJson() {
-	std::string value = GetJsonString("dpl-config_std.json", "aod-file");
-	printf("%s\n", value);
-	int i3p = GetJsonInteger("dpl-config_std.json", "do3prong");
-	printf("%d\n", i3p);
-	int tin = GetJsonInteger("dpl-config_std.json", "triggerindex");
-	printf("%d\n", tin);
-	float minpt = GetJsonFloat("dpl-config_std.json", "ptmintrack");
-	printf("%f\n", minpt);
-	float dcatoprimxymin = GetJsonFloat("dpl-config_std.json", "dcatoprimxymin");
-	printf("%f\n", dcatoprimxymin);
-	bool doit = GetJsonBool("dpl-config_std.json", "b_propdca");
-	printf("%d\n", doit);
-	float chi2 = GetJsonFloat("dpl-config_std.json", "d_minrelchi2change");
-	printf("%f\n", chi2);
-}
-
-
-//_______________________________________________________________________________________
 Bool_t AliAnalysisTaskHFFindJets::SingleTrkCutsSimple(AliESDtrack* trk, Int_t minclutpc, int ptmintrack, double dcatoprimxymin, AliESDVertex* fV1, Double_t fBzkG) {
 	Int_t status = trk->GetStatus();
 	bool sel_track = status & AliESDtrack::kITSrefit && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1));
@@ -2812,8 +2793,8 @@ void AliAnalysisTaskHFFindJets::Terminate(Option_t */*option*/)
 		printf("ERROR: fOutput not available\n");
 		return;
 	}
-	//fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-	//printf("AliAnalysisTaskHFSimpleVertices::Terminate --- Number of events: read = %.0f\n",fHistNEvents->GetBinContent(1));
+	fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
+	printf("AliAnalysisTaskHFFindJets::Terminate --- Number of events: read = %.0f\n",fHistNEvents->GetBinContent(1));
 	return;
 }
 

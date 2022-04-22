@@ -58,7 +58,6 @@ class AliAnalysisTaskHFFindJets : public AliAnalysisTaskSE
 	
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
                                                         
-  void ReadJson();
   void MakeJetFinding(AliESDEvent *esd);
 	
   TH1F* hpt_nocuts;
