@@ -1684,18 +1684,6 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    if(fRandom->Integer(100) < 5) fFillSigTT = kFALSE;
    //________________________________________________________________
    //DATA ANALYSIS PARTICLE LEVEL
-
-   InitEventProperties(); //FILIP
-   if(fMode == AliAnalysisTaskEA::kMC  || fMode == AliAnalysisTaskEA::kKine)  FindParticleLevelTT(); // Modified by KA
-   if(fMode == AliAnalysisTaskEA::kMC  || fMode == AliAnalysisTaskEA::kKine)  AnalyzeParticleLevel();
-   if(fMode == AliAnalysisTaskEA::kKine) return kTRUE;
-
-   //________________________________________________________________
-   //DATA ANALYSIS DETECTOR LEVEL
-
-   //Check Reconstructed event vertex and pileup
-   if(!IsEventInAcceptance(InputEvent())) return kFALSE; //post data is in UserExec
-
    fIsMinBiasTrig = kFALSE; //Minimum bias event flag
    if(PassedMinBiasTrigger()){
       fIsMinBiasTrig = kTRUE;
@@ -1727,7 +1715,19 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    fTrigflag[1] = fIsHighMultTrig;
    fTrigflag[2] = fIsEmcalTrig;
 
-   //_________________________________________________________________
+
+   InitEventProperties(); //FILIP
+   if(fMode == AliAnalysisTaskEA::kMC  || fMode == AliAnalysisTaskEA::kKine)  FindParticleLevelTT(); // Modified by KA
+   if(fMode == AliAnalysisTaskEA::kMC  || fMode == AliAnalysisTaskEA::kKine)  AnalyzeParticleLevel();
+   if(fMode == AliAnalysisTaskEA::kKine) return kTRUE;
+
+   //________________________________________________________________
+   //DATA ANALYSIS DETECTOR LEVEL
+
+   //Check Reconstructed event vertex and pileup
+   if(!IsEventInAcceptance(InputEvent())) return kFALSE; //post data is in UserExec
+
+    //_________________________________________________________________
 
    
    if(fMode == kEmbPy){                  EmbeddingFromTxtFile(); return kTRUE; }
