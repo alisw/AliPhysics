@@ -400,7 +400,7 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliExternalTrackParam pionTrk(*(AliESDtrack *)ev->GetTrack(jTrack));
                 AliExternalTrackParam alphaTrk(*(AliESDtrack *)ev->GetTrack(iTrack));
                 AliExternalTrackParam *pPionTrk = &pionTrk, *pAlphaTrk = &alphaTrk;
-                Double_t dztemp[2], covartemp[3], pos[3], cov[6];
+                Double_t dztemp[2], covartemp[3], pos[3], cov[6], chi2perNDF, dispersion;
                 pPionTrk->PropagateToDCA(vtxT3D, magField, 250, dztemp, covartemp);
                 pAlphaTrk->PropagateToDCA(vtxT3D, magField, 250, dztemp, covartemp);
 
@@ -430,10 +430,6 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 delete vertexESD;
                 vertexESD = NULL;
                 vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, 2);  // Hyper Vertex
-
-                // Values
-                // Double_t deltaPos[3]{lPosRsnVtx[0] - fPosPV[0], lPosRsnVtx[1] - fPosPV[1], lPosRsnVtx[2] - fPosPV[2]};  // Distance from PV
-
                 
                 double sv[3];
                 vertexAOD->GetXYZ(sv);  // Secondary vertex
@@ -452,14 +448,12 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                     continue;
                 }
 
-                double cpa = (deltaPos[0] * hyperVector.px() +
-                            deltaPos[1] * hyperVector.py() +
-                            deltaPos[2] * hyperVector.pz()) /
-                            std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
-
                 fRecHyper->pt = hyperVector.pt();
                 fRecHyper->m = hyperVector.mass();
-                fRecHyper->V0CosPA = cpa;
+                fRecHyper->V0CosPA = (deltaPos[0] * hyperVector.px() +
+                                      deltaPos[1] * hyperVector.py() +
+                                      deltaPos[2] * hyperVector.pz()) /
+                                      std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
                 fRecHyper->Rapidity = Eta2y(fRecHyper->pt, kHyperMass, hyperVector.eta());
 
                 fRecHyper->V0radius = TMath::Hypot(sv[0] - pv[0], sv[1] - pv[1]);
