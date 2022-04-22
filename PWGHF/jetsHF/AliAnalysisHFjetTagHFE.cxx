@@ -2058,13 +2058,16 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                // check isolation 
                if(pt>10.0)
                   { 
+                   Double_t IsoEnergyTrack = -999.9;
+                   Int_t NtrackCone = 0;
                    iso = IsolationCut(itrack, track, pt, emcphi, emceta, clustMatchE);
+		   if(iso<0.05)IsolationTrackBase(itrack, track, clustMatchE, IsoEnergyTrack, NtrackCone);
                    fHistEle_woISO->Fill(pt);
                    fHistEleiso->Fill(pt,iso);  // 
                    //if(iso<0.05)fHistEle_wISO->Fill(pt);
                    //if(iso<0.05 && pt>30.0 && pt<70.0)HaveW = kTRUE;
                   
-                    if(iso<0.05)
+                    if(iso<0.05 && NtrackCone<=3)
                        {
                         fHistEle_wISO->Fill(pt);
                         fHistEopIso->Fill(pt,eop);
@@ -3231,6 +3234,90 @@ Double_t AliAnalysisHFjetTagHFE::IsolationCut(Int_t itrack, AliVTrack *track, Do
 
         return riso;
 }
+
+
+//_____________________________________________________________________________
+void AliAnalysisHFjetTagHFE::IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone)
+{
+
+	//##################### Set cone radius  ##################### //
+	Double_t CutConeR = 0.3;
+	//################################################################# //
+
+	Int_t nWassotracks = -999;
+	//nWassotracks = fTracks_tender->GetEntries();
+	nWassotracks = ftrack->GetEntries();
+
+        Double_t risoTrack = 0.0; 
+
+	//////////////////////////////
+	// Track loop
+	//////////////////////////////
+	for (Int_t jtrack = 0; jtrack < nWassotracks; jtrack++) {
+		AliVParticle* VWassotrack = 0x0;
+		//VWassotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+		VWassotrack = dynamic_cast<AliVTrack*>(ftrack->At(jtrack)); //take tracks from Tender list
+
+		if (!VWassotrack) {
+			printf("ERROR: Could not receive track %d\n", jtrack);
+			continue;
+		}
+
+		AliVTrack   *Wassotrack  = dynamic_cast<AliVTrack*>(VWassotrack);
+		AliAODTrack *aWassotrack = dynamic_cast<AliAODTrack*>(VWassotrack);
+
+		if(!aWassotrack) continue;                            // if we failed, skip this 
+
+		//------reject same track
+		if(jtrack==itrack) continue;
+		if(aWassotrack->Px()==track->Px() && aWassotrack->Py()==track->Py() && aWassotrack->Pz()==track->Pz())continue;
+
+                //------ find tracks around candidate
+		Double_t ptWasso = -999., phiWasso = -999., etaWasso = -999.;
+		Double_t TrackPhi = -999., TrackEta = -999.;
+
+		ptWasso         = aWassotrack->Pt();
+		phiWasso        = aWassotrack->Phi();
+		etaWasso        = aWassotrack->Eta();
+		TrackPhi        = track->Phi();
+		TrackEta        = track->Eta();
+
+		if(ptWasso <0.15) continue;
+               
+		Double_t Wphidiff = phiWasso - TrackPhi; 
+		Wphidiff = TMath::ATan2(TMath::Sin(Wphidiff),TMath::Cos(Wphidiff)); 
+		if(Wphidiff < -TMath::Pi()/2) Wphidiff += 2*TMath::Pi();
+
+                Double_t Wetadiff = etaWasso - TrackEta;
+
+                Double_t ConeRtr = sqrt(pow(Wetadiff,2)+pow(Wphidiff,2));
+                //cout << "ConeRtr = " << ConeRtr << endl;
+
+               if(ConeRtr>CutConeR) continue;
+
+	       Int_t EMCalIndex_TrCone = aWassotrack->GetEMCALcluster();  // get index of EMCal cluster which matched to track
+               if(EMCalIndex_TrCone<0)continue;
+	       AliVCluster *Assoclust_TrCone = 0x0;     
+	       Assoclust_TrCone = dynamic_cast<AliVCluster*>(fCaloClusters->At(EMCalIndex_TrCone)); 
+ 
+               if(Assoclust_TrCone)
+                 {
+	          risoTrack += Assoclust_TrCone->E();
+                }
+               //cout << "risoTrack = " << risoTrack << endl;
+
+               NtrackCone++;
+
+	}  // end track loop
+
+        //cout << "<----- risoTrack = " << risoTrack << endl;
+        //cout << "<----- MatchclE = " << MatchclE << endl;
+        
+        IsoEnergyTrack = risoTrack/MatchclE;
+
+}
+
+
 
 Double_t AliAnalysisHFjetTagHFE::CalJetWidth(AliEmcalJet* jetC, TH2F *htmp0, TH2F *htmp1, TH2F *htmp2, TH2F *htmp3)
 {
