@@ -197,6 +197,7 @@ fkUseLayer2(kTRUE),
 fkDistanceLayer1(0.5),
 fkDistanceLayer2(0.5),
 fWDV (0x0),
+fkSaveMCInfoTPC(kFALSE),
 
 //---> Flags for hypertriton tests
 fkHypertritonMode ( kFALSE ),
@@ -367,6 +368,9 @@ fTreeVariableIsPhysicalPrimaryNegativeMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryPositiveMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryNegativeGrandMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryPositiveGrandMother(kFALSE),
+
+fTreeVariablePosTrackRef( new AliTrackReference() ),
+fTreeVariableNegTrackRef( new AliTrackReference() ),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -552,6 +556,10 @@ fTreeCascVarV0NegSibIsValid(0),
 fTreeCascVarNegV0Tagging(0),
 fTreeCascVarV0PosSibIsValid(0),
 fTreeCascVarPosV0Tagging(0),
+
+fTreeCascVarBachTrackRef( new AliTrackReference() ),
+fTreeCascVarPosTrackRef( new AliTrackReference() ),
+fTreeCascVarNegTrackRef( new AliTrackReference() ),
 
 fTreeCascVarBachSibPt(0),
 fTreeCascVarBachSibDcaV0ToPrimVertex(0),
@@ -765,6 +773,7 @@ fkUseLayer2(kTRUE),
 fkDistanceLayer1(0.5),
 fkDistanceLayer2(0.5),
 fWDV (0x0),
+fkSaveMCInfoTPC(kFALSE),
 
 //---> Flags for hypertriton tests
 fkHypertritonMode ( kFALSE ),
@@ -935,6 +944,9 @@ fTreeVariableIsPhysicalPrimaryNegativeMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryPositiveMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryNegativeGrandMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryPositiveGrandMother(kFALSE),
+
+fTreeVariablePosTrackRef( new AliTrackReference() ),
+fTreeVariableNegTrackRef( new AliTrackReference() ),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -1124,6 +1136,10 @@ fTreeCascVarV0NegSibIsValid(0),
 fTreeCascVarNegV0Tagging(0),
 fTreeCascVarV0PosSibIsValid(0),
 fTreeCascVarPosV0Tagging(0),
+
+fTreeCascVarBachTrackRef( new AliTrackReference() ),
+fTreeCascVarPosTrackRef( new AliTrackReference() ),
+fTreeCascVarNegTrackRef( new AliTrackReference() ),
 
 fTreeCascVarBachSibPt(0),
 fTreeCascVarBachSibDcaV0ToPrimVertex(0),
@@ -1584,6 +1600,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     if(fkSaveVertex){
       fTreeV0->Branch("fTreeVariableAliESDvertex", &fTreeVariableAliESDvertex,16000,99);
     }
+    if(fkSaveMCInfoTPC){
+		fTreeV0->Branch("fTreeVariableNegTrackRef", &fTreeVariableNegTrackRef, 16000, 99);
+		fTreeV0->Branch("fTreeVariablePosTrackRef", &fTreeVariablePosTrackRef, 16000, 99);
+	}
   }
   
   //------------------------------------------------
@@ -1900,6 +1920,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     if(fkSaveVertex){
       fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
     }
+    if(fkSaveMCInfoTPC){
+		fTreeCascade->Branch("fTreeCascVarNegTrackRef", &fTreeCascVarNegTrackRef, 16000, 99);
+		fTreeCascade->Branch("fTreeCascVarPosTrackRef", &fTreeCascVarPosTrackRef, 16000, 99);
+		fTreeCascade->Branch("fTreeCascVarBachTrackRef", &fTreeCascVarBachTrackRef, 16000, 99);
+	}
     //------------------------------------------------
   }
   //------------------------------------------------
@@ -2858,6 +2883,64 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     
     AliMCParticle* mcPosV0Dghter = (AliMCParticle*)lMCevent->GetTrack( lblPosV0Dghter  );
     AliMCParticle* mcNegV0Dghter = (AliMCParticle*)lMCevent->GetTrack( lblNegV0Dghter  );
+	
+	if(fkSaveMCInfoTPC)
+	{
+		// Reset the TrackReference 
+		fTreeVariablePosTrackRef->SetLength( 0 );
+		fTreeVariablePosTrackRef->SetTrack( 0 );
+		fTreeVariablePosTrackRef->SetTime( 0 );
+		fTreeVariablePosTrackRef->SetDetectorId( -999 );
+		fTreeVariablePosTrackRef->SetPosition( 0, 0, 0 );
+		fTreeVariablePosTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeVariablePosTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcPosV0Dghter->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcPosV0Dghter->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeVariablePosTrackRef->SetLength( trackRef->GetLength() );
+				fTreeVariablePosTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeVariablePosTrackRef->SetTime( trackRef->GetTime() );
+				fTreeVariablePosTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeVariablePosTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeVariablePosTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeVariablePosTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+		
+		// Reset the TrackReference 
+		fTreeVariableNegTrackRef->SetLength( 0 );
+		fTreeVariableNegTrackRef->SetTrack( 0 );
+		fTreeVariableNegTrackRef->SetTime( 0 );
+		fTreeVariableNegTrackRef->SetDetectorId( -999 );
+		fTreeVariableNegTrackRef->SetPosition( 0, 0, 0 );
+		fTreeVariableNegTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeVariableNegTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcNegV0Dghter->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcNegV0Dghter->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeVariableNegTrackRef->SetLength( trackRef->GetLength() );
+				fTreeVariableNegTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeVariableNegTrackRef->SetTime( trackRef->GetTime() );
+				fTreeVariableNegTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeVariableNegTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeVariableNegTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeVariableNegTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+	}
+	
     
     Int_t lPIDPositive = mcPosV0Dghter -> PdgCode();
     Int_t lPIDNegative = mcNegV0Dghter -> PdgCode();
@@ -4286,6 +4369,90 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeCascVarPIDPositive = mcPosV0Dghter -> PdgCode();
     fTreeCascVarPIDNegative = mcNegV0Dghter -> PdgCode();
     fTreeCascVarPIDBachelor = mcBach->PdgCode();
+	
+	if(fkSaveMCInfoTPC)
+	{
+		// Reset the TrackReference 
+		fTreeCascVarBachTrackRef->SetLength( 0 );
+		fTreeCascVarBachTrackRef->SetTrack( 0 );
+		fTreeCascVarBachTrackRef->SetTime( 0 );
+		fTreeCascVarBachTrackRef->SetDetectorId( -999 );
+		fTreeCascVarBachTrackRef->SetPosition( 0, 0, 0 );
+		fTreeCascVarBachTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeCascVarBachTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcBach->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcBach->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeCascVarBachTrackRef->SetLength( trackRef->GetLength() );
+				fTreeCascVarBachTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeCascVarBachTrackRef->SetTime( trackRef->GetTime() );
+				fTreeCascVarBachTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeCascVarBachTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeCascVarBachTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeCascVarBachTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+		
+		// Reset the TrackReference 
+		fTreeCascVarPosTrackRef->SetLength( 0 );
+		fTreeCascVarPosTrackRef->SetTrack( 0 );
+		fTreeCascVarPosTrackRef->SetTime( 0 );
+		fTreeCascVarPosTrackRef->SetDetectorId( -999 );
+		fTreeCascVarPosTrackRef->SetPosition( 0, 0, 0 );
+		fTreeCascVarPosTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeCascVarPosTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcPosV0Dghter->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcPosV0Dghter->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeCascVarPosTrackRef->SetLength( trackRef->GetLength() );
+				fTreeCascVarPosTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeCascVarPosTrackRef->SetTime( trackRef->GetTime() );
+				fTreeCascVarPosTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeCascVarPosTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeCascVarPosTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeCascVarPosTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+		
+		// Reset the TrackReference 
+		fTreeCascVarNegTrackRef->SetLength( 0 );
+		fTreeCascVarNegTrackRef->SetTrack( 0 );
+		fTreeCascVarNegTrackRef->SetTime( 0 );
+		fTreeCascVarNegTrackRef->SetDetectorId( -999 );
+		fTreeCascVarNegTrackRef->SetPosition( 0, 0, 0 );
+		fTreeCascVarNegTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeCascVarNegTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcNegV0Dghter->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcNegV0Dghter->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeCascVarNegTrackRef->SetLength( trackRef->GetLength() );
+				fTreeCascVarNegTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeCascVarNegTrackRef->SetTime( trackRef->GetTime() );
+				fTreeCascVarNegTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeCascVarNegTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeCascVarNegTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeCascVarNegTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+	}
     
     // - Step 4.2 : level of the Xi daughters
     
