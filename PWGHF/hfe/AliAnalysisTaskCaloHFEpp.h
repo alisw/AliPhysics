@@ -66,7 +66,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetTrackClust(Int_t TPC, Int_t ITS, Int_t Crossed) {NTPCClust = TPC, NITSClust = ITS, NCrossedRow = Crossed;};
 		void                    SetDCA(Double_t xy, Double_t z) {DCAxy = xy, DCAz = z;};
 		void                    SetNsigma(Double_t min, Double_t max) {NsigmaMin = min, NsigmaMax = max;};
-		void                    SetM20(Double_t min, Double_t max) {M20Min = min, M20Max = max;};
+		void                    SetM20(Double_t min, Double_t max) {M02Min = min, M02Max = max;};
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
@@ -104,7 +104,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t NTPCClust, NITSClust, NCrossedRow;
 		Double_t DCAxy, DCAz;
 		Double_t NsigmaMin, NsigmaMax;
-		Double_t M20Min, M20Max;
+		Double_t M02Min, M02Max;
 		Double_t EopMin, EopMax;
 		Double_t MaxConeR;
 		Double_t ptAssoMin;
@@ -185,6 +185,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_ULS;
 		TH2F*                   fInv_pT_LS_forW;
 		TH2F*                   fInv_pT_ULS_forW;
+		TH2F*                   fInv_pT_LS_forZ;
+		TH2F*                   fInv_pT_ULS_forZ;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
 		TH2F*                   fHistPt_R_Iso;
