@@ -58,7 +58,8 @@ fTimeCutMin(-10000),          fTimeCutMax(10000),
 fNCellsCut(0),                fExoCut(2.),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillSSPerSMHistograms(0),
-fFillSSEtaHistograms(0),      fFillSSEtaVzPosHistograms(0), fFillEMCALRegionSSHistograms(0),
+fFillSSEtaHistograms(0),      fFillSSEtaVzPosHistograms(0),
+fFillNLMEtaHistograms(0),     fFillEMCALRegionSSHistograms(0),
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
 fFillSSNLocMaxHisto(0),
 fFillTrackMultHistograms(0),  fFillCellsEnergyHisto(0),
@@ -191,6 +192,7 @@ fhPtPhotonCentralitySM(0),
 
 fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
 fhLam0Eta(),                          fhLam0EtaVzPos(),                 fhLam0EtaPerCen(0),
+fhNLMEta(),                           fhNLMEtaPerCen(0),
 //fhDistanceAddedPhotonAddedPrimarySignal  (0), fhDistanceHijingPhotonAddedPrimarySignal  (0),
 //fhDistanceAddedPhotonAddedSecondarySignal(0), fhDistanceHijingPhotonAddedSecondarySignal(0),
 //fhDistanceAddedPhotonHijingSecondary(0)
@@ -489,6 +491,7 @@ fhDistance2Hijing(0)
   for(Int_t isector = 0; isector < fgkNSectors; isector++)
   {
     fhLam0Eta   [isector] = 0;
+    fhNLMEta    [isector] = 0;
     fhLam0NxNEta[isector] = 0;
     fhLam0EtaVzPos   [isector] = 0;
     fhLam0NxNEtaVzPos[isector] = 0;
@@ -942,6 +945,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   Float_t ecluster   = fMomentum.E();
   Float_t etacluster = fMomentum.Eta();
   Float_t phicluster = GetPhi(fMomentum.Phi());
+  Int_t   icent      = GetEventCentralityBin();
+  Int_t   isector    = sm/2;
 
   Float_t eRecoRes   = -10000;
   if ( egen > 0.1 ) eRecoRes = (ecluster-egen) / egen;
@@ -1156,6 +1161,20 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
     }
   }
   
+  if ( fFillNLMEtaHistograms && fNLMCutMin >= 0  && fNLMCutMax <= 10 )
+  {
+    Int_t icent   = GetEventCentralityBin();
+
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhNLMEta[isector]->Fill(ptcluster, nMaxima, etacluster, GetEventWeight()*weightPt);
+    }
+    else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+    {
+      fhNLMEtaPerCen[isector*GetNCentrBin()+icent]->Fill(ptcluster, nMaxima, etacluster, GetEventWeight()*weightPt);
+    }
+  }
+
   if ( nMaxima < fNLMCutMin || nMaxima > fNLMCutMax ) return kFALSE ;
   AliDebug(2,Form("\t Cluster %d pass NLM %d of out of range",calo->GetID(), nMaxima));
   
@@ -1352,6 +1371,18 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
         fhClusterCutsECen[9]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
     }
   } // exoticity
+
+  if ( fFillNLMEtaHistograms && fNLMCutMin < 1  && fNLMCutMax > 10 )
+  {
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhNLMEta[isector]->Fill(ptcluster, nMaxima, etacluster, GetEventWeight()*weightPt);
+    }
+    else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+    {
+      fhNLMEtaPerCen[isector*GetNCentrBin()+icent]->Fill(ptcluster, nMaxima, etacluster, GetEventWeight()*weightPt);
+    }
+  }
 
   AliDebug(1,Form("Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
@@ -4243,6 +4274,50 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }
   }
   
+  if ( fFillNLMEtaHistograms && GetCalorimeter() == kEMCAL )
+  {
+    TString cuts = "All cluster cuts";
+    if ( fNLMCutMin >= 0  && fNLMCutMax <= 10 ) cuts = "Basic cuts, n cells";
+
+    if ( IsHighMultiplicityAnalysisOn() )
+      fhNLMEtaPerCen = new TH3F*[GetNCentrBin()*fgkNSectors] ;
+
+    for(Int_t isector = fFirstSector; isector <= fLastSector; isector++)
+    {
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhNLMEta[isector] = new TH3F
+        (Form("hNLMEta_Sector%d",isector),
+         Form("#it{p}_{T} vs #it{n}_{LM} vs #eta in sector %d, %s",isector,cuts.Data()),
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+         nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
+         etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray());
+        fhNLMEta[isector]->SetYTitle("#it{n}_{LM}");
+        fhNLMEta[isector]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhNLMEta[isector]->SetZTitle("#eta");
+        outputContainer->Add(fhNLMEta[isector]) ;
+      }
+      else
+      {
+        for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
+        {
+          Int_t index = isector*GetNCentrBin()+icent;
+          fhNLMEtaPerCen[index] = new TH3F
+          (Form("hNLMEta_Sector%d_Cen%d",isector,icent),
+           Form("#it{n}_{LM} vs #it{p}_{T} vs #eta, cen [%d,%d],sector %d, %s",
+                (Int_t) cenBinsArray.At(icent),(Int_t) cenBinsArray.At(icent+1),isector, cuts.Data()),
+           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray(),
+           etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+          fhNLMEtaPerCen[index]->SetZTitle("#eta");
+          fhNLMEtaPerCen[index]->SetYTitle("#it{n}_{LM}");
+          fhNLMEtaPerCen[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhNLMEtaPerCen[index]);
+        } // cen
+      } // high mult
+    } // sector
+  }
+
   // Shower shape
   if ( fFillSSHistograms )
   {
@@ -8478,9 +8553,9 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Number of cells in cluster is  > %d \n", fNCellsCut);
   if ( fExoCut < 1 ) printf("Exoticity cut  < %1.2f \n", fExoCut);
   printf("Number of local maxima in cluster is  %d < NLM < %d \n", fNLMCutMin,fNLMCutMax);
-  printf("Fill shower shape histograms %d, per SM %d, vs eta %d, per EMCal region %d, "
+  printf("Fill shower shape histograms %d, per SM %d, vs eta %d, per EMCal region %d, nLM vs Eta %d, "
          "only simple %d, per NLM %d, conversion separation %d\n",
-         fFillSSHistograms, fFillSSPerSMHistograms, fFillSSEtaHistograms, fFillEMCALRegionSSHistograms,
+         fFillSSHistograms, fFillSSPerSMHistograms, fFillSSEtaHistograms, fFillEMCALRegionSSHistograms, fFillNLMEtaHistograms,
          fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto, fSeparateConvertedDistributions);
   printf("Shower shape use NxN %d, col-row number %d, only neighbours %d, e cell > %2.2f, fill all histo %d\n",
          fUseNxNShowerShape, fNxNShowerShapeColRowDiffNumber,fNxNShowerShapeOnlyNeigbours,

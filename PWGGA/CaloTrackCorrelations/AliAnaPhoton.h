@@ -88,6 +88,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillShowerShapeEtaHistograms()     { fFillSSEtaHistograms   = kTRUE  ; }
   void         SwitchOffFillShowerShapeEtaHistograms()    { fFillSSEtaHistograms   = kFALSE ; }
 
+  void         SwitchOnFillNLMEtaHistograms()             { fFillNLMEtaHistograms   = kTRUE  ; }
+  void         SwitchOffFillNLMEtaHistograms()            { fFillNLMEtaHistograms   = kFALSE ; }
+
   void         SwitchOnFillShowerShapeEtaVzPosHistograms()  { fFillSSEtaVzPosHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeEtaVzPosHistograms() { fFillSSEtaVzPosHistograms = kFALSE ; }
 
@@ -263,8 +266,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillSSPerSMHistograms ;                 ///<  Fill shower shape histograms per SM
 
-  Bool_t   fFillSSEtaHistograms ;                   ///<  Fill shower shape vs eta histograms
+  Bool_t   fFillSSEtaHistograms ;                   ///<  Fill shower shape vs eta histograms per sector
   Bool_t   fFillSSEtaVzPosHistograms ;              ///<  Fill shower shape vs eta histograms for Vz>0
+  Bool_t   fFillNLMEtaHistograms ;                  ///<  Fill NLM vs eta histograms per sector
 
   Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     
@@ -776,8 +780,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   TH3F * fhLam0Eta[fgkNSectors];                    //!<! Cluster lambda0 vs  Pt vs eta
   TH3F * fhLam0EtaVzPos[fgkNSectors];               //!<! Cluster lambda0 vs  Pt vs eta
-  ///<  Cluster energy over restricted to NxN energy vs  pT vs eta, per centrality
+  ///<  Cluster   shower shape  vs  pT vs eta, per centrality
   TH3F **fhLam0EtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
+
+  TH3F * fhNLMEta[fgkNSectors];                    //!<! Cluster nLMv s  Pt vs eta
+  ///<  Cluster nLM  vs  pT vs eta, per centrality
+  TH3F **fhNLMEtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
 
   TH2F *  fhLocalRegionClusterEtaPhi[6]  ;                       //!<! Pseudorapidity vs Phi of clusters with cone R within the EMCal, for different cocktail merging cases 
   TH2F *  fhLocalRegionClusterEnergySum[6] ;                     //!<! Sum of energy near the cluster, R<0.2, vs cluster E, for different cocktail merging cases
@@ -846,7 +854,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,64) ;
+  ClassDef(AliAnaPhoton,65) ;
   /// \endcond
 
 } ;
