@@ -339,10 +339,10 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   snprintf(onePar,buffersize,"Select pairs with their angle: %d, edep %d, min angle %2.3f, max angle %2.3f, 1cell separation %d;",fUseAngleCut, fUseAngleEDepCut,fAngleCut,fAngleMaxCut,fUseOneCellSeparation) ;
   parList+=onePar ;
   snprintf(onePar,buffersize," Asymmetry cuts: n = %d, asymmetry < ",fNAsymCuts) ;
-  for(Int_t i = 0; i < fNAsymCuts; i++) snprintf(onePar,buffersize,"%s %2.2f;",onePar,fAsymCuts[i]);
+  for(Int_t i = 0; i < fNAsymCuts; i++) snprintf(onePar,buffersize,"%2.2f;",fAsymCuts[i]);
   parList+=onePar ;
   snprintf(onePar,buffersize," PID selection bits: n = %d, PID bit =",fNPIDBits) ;
-  for(Int_t i = 0; i < fNPIDBits; i++) snprintf(onePar,buffersize,"%s %d;",onePar,fPIDBits[i]);
+  for(Int_t i = 0; i < fNPIDBits; i++) snprintf(onePar,buffersize,"%d;",fPIDBits[i]);
   parList+=onePar ;
   snprintf(onePar,buffersize,"Cuts:") ;
   parList+=onePar ;
@@ -350,13 +350,13 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Calorimeter: %s;",GetCalorimeterString().Data()) ;
   parList+=onePar ;
-  if(fMultiCutAna || fMultiCutAnaAcc)
+  if ( fMultiCutAna || fMultiCutAnaAcc )
   {
     snprintf(onePar, buffersize," pT cuts: n = %d, pt > ",fNPtCuts) ;
-    for(Int_t i = 0; i < fNPtCuts; i++) snprintf(onePar,buffersize,"%s %2.2f;",onePar,fPtCuts[i]);
+    for(Int_t i = 0; i < fNPtCuts; i++) snprintf(onePar,buffersize,"%2.2f;",fPtCuts[i]);
     parList+=onePar ;
     snprintf(onePar,buffersize, " N cell in cluster cuts: n = %d, nCell > ",fNCellNCuts) ;
-    for(Int_t i = 0; i < fNCellNCuts; i++) snprintf(onePar,buffersize,"%s %d;",onePar,fCellNCuts[i]);
+    for(Int_t i = 0; i < fNCellNCuts; i++) snprintf(onePar,buffersize,"%d;",fCellNCuts[i]);
     parList+=onePar ;
   }
   
