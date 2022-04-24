@@ -184,7 +184,7 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fVerbose(kTRUE),
   fPerformSharedDaughterCut(kFALSE),
   fEnablePairMonitors(kFALSE),
-  freverseParticleVariables(kFALSE),
+  freverseParticleVariables(kFALSE)
 {
   // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
