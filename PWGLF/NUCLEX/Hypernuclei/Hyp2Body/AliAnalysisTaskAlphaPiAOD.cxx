@@ -338,7 +338,7 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
             }
 
             double pNsigma{fPID->NumberOfSigmasTPC(alphaTrack, AliPID::kAlpha)};
-            if (std::abs(pNsigma) > 5 || std::abs(pNsigma) < 5) {
+            if (std::abs(pNsigma) > 5 || std::abs(pNsigma) < -5) {
                 continue;
             }
             if(alphaTrack->GetSign() > 0)
@@ -360,7 +360,7 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                     continue;
                 }
                 double nNsigma{fPID->NumberOfSigmasTPC(pionTrack, AliPID::kPion)};
-                if (std::abs(nNsigma) > 5 && std::abs(nNsigma) < 5) {
+                if (std::abs(nNsigma) > 5 && std::abs(nNsigma) < -5) {
                     continue;
                 }
 
