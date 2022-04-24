@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEXICPLUS2XIPIPIFROMAODTRACKS_H
-#define ALIANALYSISTASKSEXICPLUS2XIPIPIFROMAODTRACKS_H
+#ifndef AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks_H
+#define AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks_H
 
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
@@ -120,8 +120,9 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fIsEventSelected;           /// flag for event selected
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
   Bool_t fFillSparse;                 /// flag to decide whether fill the THnSparse
-  Bool_t fHMTrigOn;					  ///jcho, flag for HM Trig check
+  Bool_t fHMTrigOn;					  /// jcho, flag for HM Trig check
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 4
+  TTree	   *fEventTree;				// jcho, Event variables tree
   Bool_t fReconstructPrimVert;            /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;            /// Is MB event
   Bool_t fIsSemi;          /// is semi-central trigger event
@@ -133,11 +134,13 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fIsHMSPD;		   /// jcho
 
   Float_t *fCandidateVariables;     //!<! variables to be written to the tree
+  Float_t *fEventTreeVariables;		//jcho, Event variables to be written to the (event variables) tree
   AliAODVertex *fVtx1;              /// primary vertex
   AliESDVertex *fV1;                /// primary vertex
   Double_t fBzkG;                   /// magnetic field value [kG]
   Float_t  fCentrality;             /// centrality
- 
+  Float_t fMultiplicity;			/// jcho, multiplicity 
+
   //--------------------- My histograms ------------------
   THnSparse*  fHistoXicMass;        //!<! xic mass spectra
   THnSparse*  fSparseXicMass;       //!<! xic sparse to study cut variation
@@ -204,6 +207,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F* hCentrality; //Centrality
 
   vector<UInt_t> fTargetTriggers; //jcho, Container for trigger bit
+  UInt_t fEventTreeVarTrig = 0; //jcho, To write the trigger info. into the event tree
   Bool_t fUsekINT7 = kFALSE;
   Bool_t fUsekHMV0 = kFALSE;  
   Bool_t fUsekHMVSPD = kFALSE; 
