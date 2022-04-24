@@ -1,0 +1,58 @@
+//used to instantiate an object of the task,define input and output and connect it to manager
+
+AliAnalysisTaskCorrelationhK0sXi_PureMCOnly* AddTaskCorrelationhK0sXi_PureMCOnly(Float_t minpt=3, Float_t maxpt=15, Bool_t ishhCorr=0,bool isLocal=kTRUE, Int_t EvtToMix=50, Float_t EtaTrigger=0.8, Float_t EtahAssoc=0.8,Float_t EtaV0Assoc=0.8, Int_t FilterBitValue=128, Int_t year=2010, TString AssocParticle="K0s", Bool_t isInclusiveAnalysis = 0, Bool_t isHM =0, Float_t PercentileMin =0, Float_t PercentileMax=0, TString suffix = ""){
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    return 0x0;
+  }
+
+  if (!mgr->GetInputEventHandler()) {
+    return 0x0;
+  }
+
+  TString fileName;  
+  if(isLocal) {
+    fileName = "AnalysisResultsLocal.root";
+  }
+  else {
+    fileName = AliAnalysisManager::GetCommonFileName();
+  }
+  fileName += ":MyTask";     
+  if (AssocParticle!="K0s") fileName += AssocParticle;
+  fileName += Form("_PtTrigMin%.1f", minpt);
+  fileName += Form("_PtTrigMax%.1f", maxpt);
+
+  TString combinedName=Form("hK0s_Task_%s", suffix.Data());
+  AliAnalysisTaskCorrelationhK0sXi_PureMCOnly* task = new AliAnalysisTaskCorrelationhK0sXi_PureMCOnly(combinedName);   
+  if(!task) return 0x0;
+  //task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  // add your task to the manager
+   task->SetMinPt(minpt); 
+   task->SetMaxPt(maxpt);
+   task->SetCorr(ishhCorr);
+   task->SetEvtToMix(EvtToMix);
+   task->SetEtaTrigger(EtaTrigger);
+   task->SetEtahAssoc(EtahAssoc);
+   task->SetEtaV0Assoc(EtaV0Assoc);
+   task->SetFilterBit(FilterBitValue);
+   task->SetYear(year);
+   task->SetInclusive(isInclusiveAnalysis);
+   task->SetHM(isHM);
+   task->SetMinimumMultPercentile(PercentileMin);
+   task->SetMaximumMultPercentile(PercentileMax);
+   task->SetAssocParticle(AssocParticle);
+
+  mgr->AddTask(task);
+
+  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+
+  mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_%s",combinedName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("MyOutputContainer1_%s",combinedName.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("MyOutputContainer2_%s",combinedName.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data())); 
+  mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("MyOutputContainer3_%s",combinedName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("MyOutputContainer4_%s",combinedName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("Risoluzione_%s",combinedName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  
+  return task;
+}
