@@ -1875,7 +1875,9 @@ void AliAnalysisTaskHFFindJets::UserExec(Option_t *)
   }
 
   PostData(1,fOutput);
+
 }
+
 
 //______________________________________________________________________________
 void AliAnalysisTaskHFFindJets::ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent){
@@ -2053,6 +2055,7 @@ void AliAnalysisTaskHFFindJets::ProcessTriplet(TObjArray* threeTrackArray, AliAO
   return;
 }
 
+
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskHFFindJets::GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG)
 {
@@ -2086,7 +2089,6 @@ Bool_t AliAnalysisTaskHFFindJets::GetTrackMomentumAtSecVert(AliESDtrack* tr, Ali
   Bool_t retCode = tr->Local2GlobalMomentum(momentum, alpNew);
   return retCode;
 }
-
 //______________________________________________________________________________
 Int_t AliAnalysisTaskHFFindJets::SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2])
 {
@@ -2230,7 +2232,6 @@ Bool_t AliAnalysisTaskHFFindJets::IsInFiducialAcceptance(Double_t pt, Double_t y
   }
   return kTRUE;
 }
-
 //______________________________________________________________________________
 Int_t AliAnalysisTaskHFFindJets::DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand)
 {
@@ -2403,6 +2404,7 @@ Int_t AliAnalysisTaskHFFindJets::LcSkimCuts(AliAODRecoDecayHF3Prong* cand)
   if(ispiKp) returnValue+=2;
   return returnValue;
 }
+
 //______________________________________________________________________________
 Int_t AliAnalysisTaskHFFindJets::GetPtBin(Double_t ptCand, Double_t* ptBinLims, Double_t nPtBins)
 {
@@ -2783,60 +2785,6 @@ Int_t AliAnalysisTaskHFFindJets::MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, Al
 }
 
 //_______________________________________________________________________________________
-Bool_t AliAnalysisTaskHFFindJets::SingleTrkCutsSimple(AliESDtrack* trk, Int_t minclutpc, int ptmintrack, double dcatoprimxymin, AliESDVertex* fV1, Double_t fBzkG) {
-	Int_t status = trk->GetStatus();
-	bool sel_track = status & AliESDtrack::kITSrefit && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1));
-	sel_track = sel_track && trk->GetNcls(1) >= minclutpc;
-	sel_track = sel_track && trk->Pt() > ptmintrack;
-	AliExternalTrackParam* track = (AliExternalTrackParam*)trk;
-	double b[2];
-	double bCov[3];
-	track->PropagateToDCA(fV1, fBzkG, 100., b, bCov);
-	sel_track = sel_track && abs(b[0]) > dcatoprimxymin;
-	return sel_track;
-}
-
-//_______________________________________________________________________________________
-Int_t AliAnalysisTaskHFFindJets::TwoProngSelectionCuts(AliAODRecoDecayHF2Prong* cand, Double_t candpTMin, Double_t candpTMax) {
-	bool isD0 = true;
-	bool isD0bar = true;
-	Double_t candpT = cand->Pt();
-	if (candpT < candpTMin || candpT >= candpTMax) return 0;
-	Int_t pTBin = GetPtBin(candpT, fPtBinLimsDzeroSkims, kMaxNPtBins2ProngsSkims);
-	if (pTBin==-1) return 0;
-	if (cand->Prodd0d0() > fDzeroCuts[pTBin][7]) return 0;
-	if (cand->CosPointingAngle() < fDzeroCuts[pTBin][8]) return 0;
-	if (cand->CosPointingAngleXY() < fDzeroCuts[pTBin][9]) return 0;
-	if (cand->NormalizedDecayLengthXY() < fDzeroCuts[pTBin][10]) return 0;
-	Double_t decayLengthCut = TMath::Min((cand->P() * 0.0066) + 0.01, 0.06);
-	if (TMath::Abs(cand->Normalizedd0Prong(0)) < 0.5 || TMath::Abs(cand->Normalizedd0Prong(1)) < 0.5) return 0;
-	if (cand->DecayLength() * cand->DecayLength() < decayLengthCut * decayLengthCut) return 0;
-	// if (cand->NormalizedDecayLength() * cand->NormalizedDecayLength() < 1.0) return 0;
-	if (TMath::Abs(cand->InvMassD0()-fMassDzero) > fDzeroCuts[pTBin][0] ) isD0=false;
-	if (TMath::Abs(cand->InvMassD0bar()-fMassDzero) > fDzeroCuts[pTBin][0] ) isD0bar=false;
-	if (!isD0 && !isD0bar) return 0;
-
-	if (cand->Pt2Prong(0) < fDzeroCuts[pTBin][4]*fDzeroCuts[pTBin][4] || cand->Pt2Prong(1) < fDzeroCuts[pTBin][3]*fDzeroCuts[pTBin][3] ) isD0=false;
-	if (cand->Pt2Prong(0) < fDzeroCuts[pTBin][3]*fDzeroCuts[pTBin][3] || cand->Pt2Prong(1) < fDzeroCuts[pTBin][4]*fDzeroCuts[pTBin][4] ) isD0bar=false;
-	if (!isD0 && !isD0bar) return 0;
-
-	if (TMath::Abs(cand->Getd0Prong(0)) > fDzeroCuts[pTBin][6] || TMath::Abs(cand->Getd0Prong(1)) > fDzeroCuts[pTBin][5] ) isD0=false;
-	if (TMath::Abs(cand->Getd0Prong(0)) > fDzeroCuts[pTBin][5] || TMath::Abs(cand->Getd0Prong(1)) > fDzeroCuts[pTBin][6] ) isD0bar=false;
-	if (!isD0 && !isD0bar) return 0;
-
-	Double_t cosThetaStarD0,cosThetaStarD0bar;
-	cand->CosThetaStarD0(cosThetaStarD0,cosThetaStarD0bar);
-	if (TMath::Abs(cosThetaStarD0) > fDzeroCuts[pTBin][2] ) isD0=false;
-	if (TMath::Abs(cosThetaStarD0bar) > fDzeroCuts[pTBin][2] ) isD0bar=false;
-	if (!isD0 && !isD0bar) return 0;
-
-	Int_t returnValue=0;
-	if(isD0) returnValue+=1;
-	if(isD0bar) returnValue+=2;
-	return returnValue;
-}
-
-//_______________________________________________________________________________________
 void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong) {
   AliFJWrapper *fFastJetWrapper;
   fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
@@ -3049,18 +2997,16 @@ float** AliAnalysisTaskHFFindJets::GetJsonMatrix(const char* jsonFileName, const
   return arrVals;
 }
 
-//_______________________________________________________________________________________
+//______________________________________________________________________________
 void AliAnalysisTaskHFFindJets::Terminate(Option_t */*option*/) 
 {
-	// Terminate analysis
-	fOutput = dynamic_cast<TList*> (GetOutputData(1));
-	if (!fOutput) {
-		printf("ERROR: fOutput not available\n");
-		return;
-	}
-	fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-	printf("AliAnalysisTaskHFFindJets::Terminate --- Number of events: read = %.0f\n",fHistNEvents->GetBinContent(1));
-	return;
+  // Terminate analysis
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
+  if (!fOutput) {
+    printf("ERROR: fOutput not available\n");
+    return;
+  }
+  fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
+  printf("AliAnalysisTaskHFFindJets::Terminate --- Number of events: read = %.0f\n",fHistNEvents->GetBinContent(1));
+  return;
 }
-
-

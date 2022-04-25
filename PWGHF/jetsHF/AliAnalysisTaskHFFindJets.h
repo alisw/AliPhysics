@@ -103,9 +103,6 @@ class AliAnalysisTaskHFFindJets : public AliAnalysisTaskSE
   TH1F* hjetzg;
   TH1F* hjetrg;
   TH1F* hjetnsd;
-	
-  Bool_t SingleTrkCutsSimple(AliESDtrack* trk, Int_t minclutpc, int ptmintrack, double dcatoprimxymin, AliESDVertex* fV1, Double_t fBzkG);
-  Int_t TwoProngSelectionCuts(AliAODRecoDecayHF2Prong* cand, Double_t candpTMin, Double_t candpTMax);
 
   AliAnalysisTaskHFFindJets(const AliAnalysisTaskHFFindJets &source);
   AliAnalysisTaskHFFindJets& operator=(const AliAnalysisTaskHFFindJets &source);
