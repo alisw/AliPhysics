@@ -2786,6 +2786,7 @@ Int_t AliAnalysisTaskHFFindJets::MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, Al
 
 //_______________________________________________________________________________________
 void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong) {
+  cout<< "Make Jet Finding" <<endl;
   AliFJWrapper *fFastJetWrapper;
   fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
   fFastJetWrapper->Clear();
@@ -2798,6 +2799,7 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks
 
   bool isHFJet=false;
   fFastJetWrapper->Clear();
+  cout<<"Total tracks" << totTracks <<endl;
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
     AliESDtrack* track = esd->GetTrack(iTrack);
     if (track->Pt() >= 0.15 && TMath::Abs(track->Eta()) < 0.9){ 
