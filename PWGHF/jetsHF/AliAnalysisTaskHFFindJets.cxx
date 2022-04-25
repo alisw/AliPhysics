@@ -1356,33 +1356,525 @@ void AliAnalysisTaskHFFindJets::UserCreateOutputObjects() {
 }
 
 //_______________________________________________________________________________________
-void AliAnalysisTaskHFFindJets::UserExec(Option_t *) {
-	
-	AliESDEvent *esd = (AliESDEvent*) (InputEvent()); //looping over events
-	if(!esd) {
-		printf("AliAnalysisTaskHFFindJets:::UserExec(): bad ESD\n");
-		return;
-	}
-	
-	Double_t centr=-1;
-	AliMultSelection* mulSel=0x0;
-	if(fSelectOnCentrality){
-		mulSel = (AliMultSelection*)esd->FindListObject("MultSelection");
-		if(mulSel){
-		centr=mulSel->GetMultiplicityPercentile(fCentrEstimator.Data());
+void AliAnalysisTaskHFFindJets::UserExec(Option_t *) 
+{
+  //
+  AliESDEvent *esd = (AliESDEvent*) (InputEvent()); //looping over events
+  if(!esd) {
+    printf("AliAnalysisTaskHFSimpleVertices::UserExec(): bad ESD\n");
+    return;
+  }
+
+  // AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  // AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+  // AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+
+  Double_t centr=-1;
+  AliMultSelection* mulSel=0x0;
+  if(fSelectOnCentrality){
+    mulSel = (AliMultSelection*)esd->FindListObject("MultSelection");
+    if(mulSel){
+      centr=mulSel->GetMultiplicityPercentile(fCentrEstimator.Data());
+    }
+  }
+
+  AliMCEvent* mcEvent = nullptr;
+  if(fReadMC){
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+    mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+    // check centrality and z vertex position, which should be selected before counting the generated signals
+    if(!fSelectOnCentrality || (mulSel && centr>=fMinCentrality && centr<=fMaxCentrality)){
+      const AliVVertex* mcVert=mcEvent->GetPrimaryVertex();
+      if(!mcVert){
+        Printf("ERROR: generated vertex not available");
+        return;
+      }
+      if(TMath::Abs(mcVert->GetZ()) < fMaxZVert){
+        Int_t nParticles=mcEvent->GetNumberOfTracks();
+        for (Int_t i=0;i<nParticles;i++){
+          AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(i);
+          TParticle* part = (TParticle*)mcEvent->Particle(i);
+          if(!part || !mcPart) continue;
+          Int_t absPdg=TMath::Abs(part->GetPdgCode());
+          //      Int_t pdg=part->GetPdgCode();
+          Int_t iPart=-1;
+          Int_t deca=0;
+          Bool_t isGoodDecay=kFALSE;
+          Int_t dummy[4];
+          if(absPdg==421){
+            iPart=0;
+            deca=AliVertexingHFUtils::CheckD0Decay(mcEvent,i,dummy);
+            if(deca==1) isGoodDecay=kTRUE;
+          }else if(absPdg==411){
+            iPart=1;
+            deca=AliVertexingHFUtils::CheckDplusDecay(mcEvent,i,dummy);
+            if(deca>0) isGoodDecay=kTRUE;
+          }else if(absPdg==431){
+            iPart=2;
+            deca=AliVertexingHFUtils::CheckDsDecay(mcEvent,i,dummy);
+            if(deca==1) isGoodDecay=kTRUE;
+          }else if(absPdg==4122){
+            iPart=3;
+            deca=AliVertexingHFUtils::CheckLcpKpiDecay(mcEvent,i,dummy);
+            if(deca>0){
+              iPart=3;
+              isGoodDecay=kTRUE;
+            }else{
+              deca=AliVertexingHFUtils::CheckLcV0bachelorDecay(mcEvent,i,dummy);
+              if(deca==1){
+                iPart=4;
+                isGoodDecay=kTRUE;
+              }
+            }
+          }
+          if(isGoodDecay){
+            Double_t ptgen=part->Pt();
+            Double_t ygen=part->Y();
+            Int_t isFromB=AliVertexingHFUtils::CheckOrigin(mcEvent,mcPart,kTRUE);
+            if(isFromB==4){
+              fHistPtGenPrompt[iPart]->Fill(ptgen);
+              if(TMath::Abs(ygen)<0.5) fHistPtGenLimAccPrompt[iPart]->Fill(ptgen);
+            }else if(isFromB==5){
+              fHistPtGenFeeddw[iPart]->Fill(ptgen);
+              if(TMath::Abs(ygen)<0.5) fHistPtGenLimAccFeeddw[iPart]->Fill(ptgen);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Int_t pdgD0dau[2]={321,211};
+  Int_t pdgJpsidau[2]={11,11};
+
+
+
+  fHistNEvents->Fill(0);
+  if(fUsePhysSel){
+    Bool_t isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+    if(!isPhysSel) return;
+  }
+  fHistNEvents->Fill(1);
+
+  if(fSelectOnCentrality){
+    if(centr<fMinCentrality || centr>fMaxCentrality) return;
+  }
+  fHistNEvents->Fill(2);
+  
+  AliESDVertex* primVtxTrk = (AliESDVertex*)esd->GetPrimaryVertex();
+  AliESDVertex* primVtxSPD = (AliESDVertex*)esd->GetPrimaryVertexSPD();
+  TString titTrc=primVtxTrk->GetTitle();
+  if(titTrc.IsNull())return;
+  if (primVtxTrk->IsFromVertexer3D() || primVtxTrk->IsFromVertexerZ()) return;
+  if (primVtxTrk->GetNContributors() < 2) return;
+  if (primVtxSPD->GetNContributors()<1) return;
+  fHistNEvents->Fill(3);
+
+  double covTrc[6],covSPD[6];
+  primVtxTrk->GetCovarianceMatrix(covTrc);
+  primVtxSPD->GetCovarianceMatrix(covSPD);
+  double dz = primVtxTrk->GetZ()-primVtxSPD->GetZ();
+  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+  double errTrc = TMath::Sqrt(covTrc[5]);
+  double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+  if (fCutOnSPDVsTrackVtx && (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20)) return; // bad vertexing
+  fHistNEvents->Fill(4);
+
+  Float_t zvert=primVtxTrk->GetZ();
+  if(TMath::Abs(zvert)>fMaxZVert) return;
+  fHistNEvents->Fill(5);
+
+  fHistPrimVertX->Fill(primVtxTrk->GetX());
+  fHistPrimVertY->Fill(primVtxTrk->GetY());
+  fHistPrimVertZ->Fill(primVtxTrk->GetZ());
+
+  AliAODVertex *vertexAODp = ConvertToAODVertex(primVtxTrk);
+  Double_t bzkG = (Double_t)esd->GetMagneticField();
+  Int_t totTracks = TMath::Min(fMaxTracksToProcess, esd->GetNumberOfTracks());
+  Double_t d0track[2],covd0track[3];
+
+
+  if(!fVertexerTracks){
+    fVertexerTracks = new AliVertexerTracks(bzkG);
+  }else{
+    Double_t oldField=fVertexerTracks->GetFieldkG();
+    if(oldField!=bzkG) fVertexerTracks->SetFieldkG(bzkG);
+  }
+  fO2Vertexer2Prong.setBz(bzkG);
+  fO2Vertexer2Prong.setPropagateToPCA(fVertexerPropagateToPCA);
+  fO2Vertexer2Prong.setMaxR(fVertexerMaxR);
+  fO2Vertexer2Prong.setMaxDZIni(fVertexerMaxDZIni);
+  fO2Vertexer2Prong.setMinParamChange(fVertexerMinParamChange);
+  fO2Vertexer2Prong.setMinRelChi2Change(fVertexerMinRelChi2Change);
+  fO2Vertexer2Prong.setUseAbsDCA(fVertexerUseAbsDCA);
+
+  fO2Vertexer3Prong.setBz(bzkG);
+  fO2Vertexer3Prong.setPropagateToPCA(fVertexerPropagateToPCA);
+  fO2Vertexer3Prong.setMaxR(fVertexerMaxR);
+  fO2Vertexer3Prong.setMaxDZIni(fVertexerMaxDZIni);
+  fO2Vertexer3Prong.setMinParamChange(fVertexerMinParamChange);
+  fO2Vertexer3Prong.setMinRelChi2Change(fVertexerMinRelChi2Change);
+  fO2Vertexer3Prong.setUseAbsDCA(fVertexerUseAbsDCA);
+
+
+  std::clock_t clockStartTrack;
+  std::chrono::time_point<std::chrono::high_resolution_clock> startTimeTrack;
+  if(fEnableCPUTimeCheck) {
+    clockStartTrack = std::clock();
+    startTimeTrack = std::chrono::high_resolution_clock::now();
+  }
+
+  // Apply single track cuts and flag them
+  int nTracksSel = 0;
+  UChar_t* status = new UChar_t[totTracks];
+  for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
+    status[iTrack] = 0;
+    AliESDtrack* track = esd->GetTrack(iTrack);
+    track->PropagateToDCA(primVtxTrk, bzkG, 100., d0track, covd0track);
+    fHistPtAllTracks->Fill(track->Pt());
+    fHistTglAllTracks->Fill(track->GetTgl());
+    fHistEtaAllTracks->Fill(track->Eta());
+    fHistImpParAllTracks->Fill(d0track[0]);
+    fHistITSmapAllTracks->Fill(track->GetITSClusterMap());
+    status[iTrack] = SingleTrkCuts(track,primVtxTrk,bzkG,d0track);
+    if(status[iTrack] > 0)
+      nTracksSel++;
+    if(status[iTrack] == 0) fHistTrackStatus->Fill(0);
+    if(status[iTrack] & 1) fHistTrackStatus->Fill(1);
+    if(status[iTrack] & 2) fHistTrackStatus->Fill(2);
+    if(status[iTrack] & 4) fHistTrackStatus->Fill(3);
+  }
+
+  std::clock_t clockStartCand;
+  std::chrono::time_point<std::chrono::high_resolution_clock> startTimeCand;
+  if(fEnableCPUTimeCheck) {
+    // count time elapsed for track selection
+    auto endTimeTrack = std::chrono::high_resolution_clock::now();
+    auto clockEndTrack = std::clock();
+    std::chrono::duration<double> wallTimeTrack = std::chrono::duration_cast<std::chrono::duration<double> >(endTimeTrack - startTimeTrack);
+    double multFact = 1.;
+    if(fCountTimeInMilliseconds)
+        multFact = 1000.;
+    fHistCPUTimeTrackVsNTracks->Fill(nTracksSel, double(clockEndTrack-clockStartTrack) / CLOCKS_PER_SEC * multFact);
+    fHistWallTimeTrackVsNTracks->Fill(nTracksSel, wallTimeTrack.count() * multFact);
+
+    // start time for candidate selection
+    clockStartCand = std::clock();
+    startTimeCand = std::chrono::high_resolution_clock::now();
+  }
+
+  Double_t d02[2]={0.,0.};
+  Double_t d03[3] = {0., 0., 0.};
+  AliAODRecoDecay* rd4massCalc2 = new AliAODRecoDecay(0x0, 2, 0, d02);
+  AliAODRecoDecay* rd4massCalc3 = new AliAODRecoDecay(0x0, 3, 1, d03);
+  TObjArray* twoTrackArray = new TObjArray(2);
+  TObjArray *twoTrackArrayCasc = new TObjArray(2);
+  TObjArray* threeTrackArray = new TObjArray(3);
+  Double_t mom0[3], mom1[3], mom2[3];
+  Int_t nv0 = esd->GetNumberOfV0s();
+  for (Int_t iPosTrack_0 = 0; iPosTrack_0 < totTracks; iPosTrack_0++) {
+    AliESDtrack* track_p0 = esd->GetTrack(iPosTrack_0);
+    track_p0->GetPxPyPz(mom0);
+    if (status[iPosTrack_0] == 0) continue;
+    track_p0->PropagateToDCA(primVtxTrk, bzkG, 100., d0track, covd0track);
+    fHistPtSelTracks->Fill(track_p0->Pt());
+    fHistTglSelTracks->Fill(track_p0->GetTgl());
+    if (status[iPosTrack_0] & 1){
+      fHistImpParSelTracks2prong->Fill(d0track[0]);
+      fHistEtaSelTracks2prong->Fill(track_p0->Eta());
+    }
+    if (status[iPosTrack_0] & 2){
+      fHistImpParSelTracks3prong->Fill(d0track[0]);
+      fHistEtaSelTracks3prong->Fill(track_p0->Eta());
+    }
+    fHistITSmapSelTracks->Fill(track_p0->GetITSClusterMap());
+    if (status[iPosTrack_0] & 4){ // good bachelor track
+      for(Int_t iv0=0; iv0<nv0; iv0++){
+        AliESDv0 *v0 = esd->GetV0(iv0);
+        if (!v0) continue;
+        Bool_t onFlyStatus=v0->GetOnFlyStatus();
+        if(onFlyStatus==kTRUE) continue;
+        if(v0->Pt()<fMinPtV0) continue;
+        UInt_t labPos = (UInt_t)TMath::Abs(v0->GetPindex());
+        UInt_t labNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+        AliESDtrack *posVV0track=esd->GetTrack(labPos);
+        AliESDtrack *negVV0track=esd->GetTrack(labNeg);
+        if( !posVV0track || !negVV0track ) continue;
+        // bachelor must not be a v0-track
+        if (posVV0track->GetID() == track_p0->GetID() ||
+            negVV0track->GetID() == track_p0->GetID()) continue;
+        // reject like-sign v0
+        if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
+        // avoid ghost TPC tracks
+        if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
+           !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        //  reject kinks (only necessary on AliESDtracks)
+        if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
+        // track cuts on V0 daughters
+        if(!fTrackCutsV0Dau->AcceptTrack(posVV0track) || !fTrackCutsV0Dau->AcceptTrack(negVV0track)) continue;
+        // selections on K0s
+        if(!SelectV0(v0,primVtxTrk)) continue;
+        Double_t xyz[3], pxpypz[3];
+        v0->XvYvZv(xyz);
+        v0->PxPyPz(pxpypz);
+        Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
+        AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
+        twoTrackArrayCasc->AddAt(track_p0,0);
+        twoTrackArrayCasc->AddAt(trackV0,1);
+        AliESDVertex* vertexCasc = 0x0;
+        if(fFindVertexForCascades){
+          vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
+        }else{
+          // assume Cascade decays at the primary vertex
+          Double_t pos[3],cov[6],chi2perNDF;
+          primVtxTrk->GetXYZ(pos);
+          primVtxTrk->GetCovMatrix(cov);
+          chi2perNDF = primVtxTrk->GetChi2toNDF();
+          vertexCasc = new AliESDVertex(pos,cov,chi2perNDF,2);
+        }
+        if (vertexCasc == 0x0) {
+          delete trackV0;
+          twoTrackArrayCasc->Clear();
+          continue;
+        }
+        AliAODVertex* vertexAOD = ConvertToAODVertex(vertexCasc);
+        AliAODRecoCascadeHF* theCascade=MakeCascade(twoTrackArrayCasc, vertexAOD, bzkG);
+        Double_t ptLcK0sp=theCascade->Pt();
+        Double_t invMassLcK0sp=theCascade->InvMassLctoK0sP();
+        fHistInvMassLcK0sp->Fill(invMassLcK0sp);
+        fHistPtLcK0sp->Fill(ptLcK0sp);
+        delete trackV0;
+        twoTrackArrayCasc->Clear();
+        delete theCascade;
+        delete vertexAOD;
+        delete vertexCasc;
+      }
+    }
+    if (track_p0->Charge() < 0) continue;
+    for (Int_t iNegTrack_0 = 0; iNegTrack_0 < totTracks; iNegTrack_0++) {
+      AliESDtrack* track_n0 = esd->GetTrack(iNegTrack_0);
+      track_n0->GetPxPyPz(mom1);
+      if (track_n0->Charge() > 0) continue;
+      if ((status[iPosTrack_0] & 1) == 0) continue;
+      if ((status[iNegTrack_0] & 1) == 0) continue;
+      twoTrackArray->AddAt(track_p0, 0);
+      twoTrackArray->AddAt(track_n0, 1);
+
+      AliESDVertex* trkv = ReconstructSecondaryVertex(twoTrackArray, primVtxTrk);
+      if (trkv == 0x0) {
+        twoTrackArray->Clear();
+        continue;
+      }
+
+      double deltax = trkv->GetX() - primVtxTrk->GetX();
+      double deltay = trkv->GetY() - primVtxTrk->GetY();
+      double deltaz = trkv->GetZ() - primVtxTrk->GetZ();
+      double decaylength = TMath::Sqrt(deltax * deltax + deltay * deltay + deltaz * deltaz);
+      double decaylengthxy = TMath::Sqrt(deltax * deltax + deltay * deltay);
+
+      if(SelectInvMassAndPt2prong(twoTrackArray,rd4massCalc2)>0){
+        AliAODVertex* vertexAOD = ConvertToAODVertex(trkv);
+        AliAODRecoDecayHF2Prong* the2Prong = Make2Prong(twoTrackArray, vertexAOD, bzkG);
+        the2Prong->SetOwnPrimaryVtx(vertexAODp);
+  Int_t dzeroSel = 3;Int_t jpsiSel = 3;
+        if(fCandidateCutLevel == 2){
+          if(fSelectD0 + fSelectD0bar > 0){
+            dzeroSel = DzeroSelectionCuts(the2Prong);
+          }
+          if(fSelectJpsi>0){
+            jpsiSel=JpsiSelectionCuts(the2Prong,track_p0,track_n0,primVtxTrk,bzkG);
+          }
+        }else if(fCandidateCutLevel == 1){
+          dzeroSel = DzeroSkimCuts(the2Prong);
+          jpsiSel=JpsiSkimCuts(the2Prong);
+        }else if(fCandidateCutLevel == 3){
+          if(fSelectJpsi>0){
+            jpsiSel=JpsiSkimCuts(the2Prong)+JpsiSelectionCuts(the2Prong,track_p0,track_n0,primVtxTrk,bzkG);
+          }
+        }
+
+        Double_t ptD = the2Prong->Pt();
+        Double_t rapid = the2Prong->Y(421);
+        if(dzeroSel>0 && IsInFiducialAcceptance(ptD,rapid)) {
+          Double_t m0 = the2Prong->InvMassD0();
+          Double_t m0b = the2Prong->InvMassD0bar();
+          Double_t ptDau0 = the2Prong->PtProng(0);
+          Double_t ptDau1 = the2Prong->PtProng(1);
+          Double_t ipDau0 = the2Prong->Getd0Prong(0);
+          Double_t ipDau1 = the2Prong->Getd0Prong(1);
+          Double_t d0xd0 = the2Prong->Prodd0d0();
+          if (fSelectD0 == 0 || dzeroSel == 1 || dzeroSel == 3) fHistInvMassD0->Fill(m0);
+          if (fSelectD0bar == 0 || dzeroSel == 2 || dzeroSel == 3) fHistInvMassD0->Fill(m0b);
+          fHistPtD0->Fill(ptD);
+          fHistYPtD0->Fill(ptD,rapid);
+          fHistPtD0Dau0->Fill(ptDau0);
+          fHistPtD0Dau1->Fill(ptDau1);
+          fHistImpParD0Dau0->Fill(ipDau0);
+          fHistImpParD0Dau1->Fill(ipDau1);
+          fHistd0Timesd0->Fill(d0xd0);
+          fHistCosPointD0->Fill(the2Prong->CosPointingAngle());
+          fHistDecLenD0->Fill(decaylength);
+          fHistDecLenXYD0->Fill(decaylengthxy);
+          fHistImpParErrD0Dau->Fill(the2Prong->Getd0errProng(0));
+          fHistImpParErrD0Dau->Fill(the2Prong->Getd0errProng(1));
+          fHistDecLenErrD0->Fill(the2Prong->DecayLengthError());
+          fHistDecLenXYErrD0->Fill(the2Prong->DecayLengthXYError());
+          Double_t covMatrix[6];
+          the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrix);
+          fHistCovMatPrimVXX2Prong->Fill(covMatrix[0]);
+          the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
+          fHistCovMatSecVXX2Prong->Fill(covMatrix[0]);
+          fHist2ProngVertX->Fill(trkv->GetX());
+          fHist2ProngVertY->Fill(trkv->GetY());
+          fHist2ProngVertZ->Fill(trkv->GetZ());
+          if(fReadMC && mcEvent){
+            Int_t labD=MatchToMC(the2Prong,421,mcEvent,2,twoTrackArray,pdgD0dau);
+            if(labD>=0){
+              fHistD0SignalVertX->Fill(trkv->GetX());
+              fHistD0SignalVertY->Fill(trkv->GetY());
+              fHistD0SignalVertZ->Fill(trkv->GetZ());
+              AliESDtrack* trDau0=(AliESDtrack*)twoTrackArray->UncheckedAt(0);
+              Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
+              AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
+              Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
+              if(pdgCode==211){
+                fHistInvMassD0Signal->Fill(m0);
+                fHistInvMassD0Refl->Fill(m0b);
+              }else if(pdgCode==321){
+                fHistInvMassD0Signal->Fill(m0b);
+                fHistInvMassD0Refl->Fill(m0);
+              }
+              AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
+              if(dmes){
+                Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
+                Double_t ptgen=dmes->Pt();
+                if(orig==4){
+                  fHistPtRecoPrompt[0]->Fill(ptD);
+                  fHistPtRecoGenPtPrompt[0]->Fill(ptgen);
+                }else if(orig==5){
+                  fHistPtRecoFeeddw[0]->Fill(ptD);
+                  fHistPtRecoGenPtFeeddw[0]->Fill(ptgen);
+                }
+              }
+            }
+          }
+        }
+        
+        if(doJetFinding){
+			MakeJetFinding(esd);
 		}
-	}
-  
-	if(fUsePhysSel){
-		Bool_t isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
-		if(!isPhysSel) return;
-	}
- 
-	if(doJetFinding){
-		MakeJetFinding(esd);
-	}
-  
-	PostData(1,fOutput);
+
+        if((fCandidateCutLevel>2 && jpsiSel>1)||(fCandidateCutLevel<= 2 && jpsiSel>0) ) {
+          Double_t m0 = the2Prong->InvMassJPSIee();
+          Double_t ptD = the2Prong->Pt();
+          Double_t ptDau0 = the2Prong->PtProng(0);
+          Double_t ptDau1 = the2Prong->PtProng(1);
+          Double_t ipDau0 = the2Prong->Getd0Prong(0);
+          Double_t ipDau1 = the2Prong->Getd0Prong(1);
+          Double_t d0xd0 = the2Prong->Prodd0d0();
+          //  Printf("jpsiSel xxx xxx d0xd0 xxx %f ipDau0 xxx  %f ipDau1 xxx  %f\n",d0xd0,ipDau0,ipDau1);
+          if (fSelectJpsi == 0 || jpsiSel == 1 ||jpsiSel == 2) fHistInvMassJpsi->Fill(m0);
+          fHistPtJpsi->Fill(ptD);
+          fHistPtJpsiDau0->Fill(ptDau0);
+          fHistPtJpsiDau1->Fill(ptDau1);
+          fHistImpParJpsiDau0->Fill(ipDau0);
+          fHistImpParJpsiDau1->Fill(ipDau1);
+          fHistd0Timesd0Jpsi->Fill(d0xd0);
+          fHistCosPointJpsi->Fill(the2Prong->CosPointingAngle());
+          fHistDecLenJpsi->Fill(decaylength);
+          fHistDecLenXYJpsi->Fill(decaylengthxy);
+          fHistDecLenErrJpsi->Fill(the2Prong->DecayLengthError());
+          fHistDecLenXYErrJpsi->Fill(the2Prong->DecayLengthXYError());
+          Double_t covMatrixj[6];
+          the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrixj);
+          fHistCovMatPrimVXX2Prong->Fill(covMatrixj[0]);
+          the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixj);
+          fHistCovMatSecVXX2Prong->Fill(covMatrixj[0]);
+          fHist2ProngVertX->Fill(trkv->GetX());
+          fHist2ProngVertY->Fill(trkv->GetY());
+          fHist2ProngVertZ->Fill(trkv->GetZ());
+          if(fReadMC && mcEvent){
+            Int_t labJ=MatchToMC(the2Prong,443,mcEvent,2,twoTrackArray,pdgJpsidau);
+            if(labJ>=0){
+              fHistJpsiSignalVertX->Fill(trkv->GetX());
+              fHistJpsiSignalVertY->Fill(trkv->GetY());
+              fHistJpsiSignalVertZ->Fill(trkv->GetZ());
+              AliESDtrack* trDau0=(AliESDtrack*)twoTrackArray->UncheckedAt(0);
+              Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
+              AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
+              Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
+              if(pdgCode==11){
+                fHistInvMassJpsiSignal->Fill(m0);
+              }
+            }
+          }
+        }
+        delete the2Prong;
+        delete vertexAOD;
+      }
+      delete trkv;
+      if (fDo3Prong) {
+        if((status[iPosTrack_0] & 2) == 0) continue;
+        if((status[iNegTrack_0] & 2) == 0) continue;
+        for (Int_t iPosTrack_1 = iPosTrack_0 + 1; iPosTrack_1 < totTracks; iPosTrack_1++) {
+          AliESDtrack* track_p1 = esd->GetTrack(iPosTrack_1);
+          if (!track_p1) continue;
+          if (track_p1->Charge() < 0) continue;
+          track_p1->GetPxPyPz(mom2);
+          if ((status[iPosTrack_1] & 2) == 0) continue;
+          // order tracks according to charge: +-+
+          threeTrackArray->AddAt(track_p0, 0);
+          threeTrackArray->AddAt(track_n0, 1);
+          threeTrackArray->AddAt(track_p1, 2);
+          ProcessTriplet(threeTrackArray, rd4massCalc3,primVtxTrk,vertexAODp,bzkG,decaylength,mcEvent);
+          threeTrackArray->Clear();
+        }
+        for (Int_t iNegTrack_1 = iNegTrack_0 + 1; iNegTrack_1 < totTracks; iNegTrack_1++) {
+          AliESDtrack* track_n1 = esd->GetTrack(iNegTrack_1);
+          if (!track_n1) continue;
+          if (track_n1->Charge() > 0) continue;
+          if ((status[iNegTrack_1] & 2) == 0) continue;
+          track_n1->GetPxPyPz(mom2);
+          // order tracks according to charge: -+-
+          threeTrackArray->AddAt(track_n0, 0);
+          threeTrackArray->AddAt(track_p0, 1);
+          threeTrackArray->AddAt(track_n1, 2);
+          ProcessTriplet(threeTrackArray, rd4massCalc3,primVtxTrk,vertexAODp,bzkG,decaylength,mcEvent);
+          threeTrackArray->Clear();
+        }
+      }
+      twoTrackArray->Clear();
+    }
+    //  delete vertexAODp;
+  }
+  delete[] status;
+  delete twoTrackArray;
+  delete twoTrackArrayCasc;
+  delete threeTrackArray;
+  delete rd4massCalc2;
+  delete rd4massCalc3;
+  delete vertexAODp;
+
+  if(fEnableCPUTimeCheck) {
+    auto endTimeCand = std::chrono::high_resolution_clock::now();
+    auto clockEndCand = std::clock();
+    std::chrono::duration<double> wallTimeCand = std::chrono::duration_cast<std::chrono::duration<double> >(endTimeCand - startTimeCand);
+    double multFact = 1.;
+    if(fCountTimeInMilliseconds)
+        multFact = 1000.;
+    fHistCPUTimeCandVsNTracks->Fill(nTracksSel, double(clockEndCand-clockStartCand) / CLOCKS_PER_SEC * multFact);
+    fHistWallTimeCandVsNTracks->Fill(nTracksSel, wallTimeCand.count() * multFact);
+  }
+
+  PostData(1,fOutput);
 }
 
 //______________________________________________________________________________
@@ -2346,276 +2838,49 @@ Int_t AliAnalysisTaskHFFindJets::TwoProngSelectionCuts(AliAODRecoDecayHF2Prong* 
 
 //_______________________________________________________________________________________
 void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd) {
-	Double_t d03[3] = {0., 0., 0.};
-	AliAODRecoDecay* rd4massCalc3 = new AliAODRecoDecay(0x0, 3, 1, d03);
-	Double_t covMatrix[6];
-  
-	TString trClass = esd->GetFiredTriggerClasses(); 
-	if (triggerstring != "" && !trClass.Contains(triggerstring)) return;
-	printf("      Fired Trigger Classes %s\n", trClass.Data());
+  AliFJWrapper *fFastJetWrapper;
+  fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
+  fFastJetWrapper->Clear();
+  fFastJetWrapper->SetR(0.4); 
+  fFastJetWrapper->SetAlgorithm(fastjet::JetAlgorithm::antikt_algorithm);
+  fFastJetWrapper->SetRecombScheme(fastjet::RecombinationScheme::E_scheme);
+  fFastJetWrapper->SetStrategy(fastjet::Strategy::Best);
+  fFastJetWrapper->SetGhostArea(0.005); 
+  fFastJetWrapper->SetAreaType(fastjet::AreaType::passive_area);
 
-	Int_t maxTracksToProcess = 9999999; /// temporary to limit the time duration of tests
-	Int_t totTracks = TMath::Min(maxTracksToProcess, esd->GetNumberOfTracks());
-	AliESDVertex* primvtx = (AliESDVertex*)esd->GetPrimaryVertex();
-	TString title = primvtx->GetTitle();
-	if (primvtx->IsFromVertexer3D() || primvtx->IsFromVertexerZ()) return;
-	if (primvtx->GetNContributors() < 2) return;
-	hvertexx->Fill(primvtx->GetX());
-	hvertexy->Fill(primvtx->GetY());
-	hvertexz->Fill(primvtx->GetZ());
-	AliAODVertex *vertexAODp = ConvertToAODVertex(primvtx);
-	if (triggerstring != "" && !trClass.Contains(triggerstring)) return;
-	Double_t fBzkG = (Double_t)esd->GetMagneticField();
+  bool isHFJet=false;
+  fFastJetWrapper->Clear();
+  for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
+    AliESDtrack* track = esd->GetTrack(iTrack);
+    if (track->Pt() >= 0.15 && TMath::Abs(track->Eta()) < 0.9){ 
+	  if (iTrack==iNegTrack_0 || iTrack==iPosTrack_0) continue;
+	  fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack+2);
+    }
+  }
+  fFastJetWrapper->AddInputVector(the2Prong->Px(), the2Prong->Py(), the2Prong->Pz(), the2Prong->ED0(),1);
 
-	// Apply single track cuts and flag them
-	UChar_t* status = new UChar_t[totTracks];
-	for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
-		status[iTrack] = 0;
-		AliESDtrack* track = esd->GetTrack(iTrack);
-		hpt_nocuts->Fill(track->Pt());
-		htgl_nocuts->Fill(track->GetTgl());
-		if (SingleTrkCutsSimple(track, minncluTPC, ptmintrack, dcatoprimxymin, primvtx, fBzkG))
-			status[iTrack] = 1; //FIXME
+  fFastJetWrapper->Run();
+  std::vector<fastjet::PseudoJet> jets = fFastJetWrapper->GetInclusiveJets();
+  for (Int_t ijet=0; ijet<jets.size(); ijet++) {
+	isHFJet=false;
+	fastjet::PseudoJet jet = jets[ijet];
+	if (jet.pt() < 0.15 || jet.perp() >= 1000.0 || TMath::Abs(jet.eta()) >= 0.5) continue;
+	std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));
+	for (Int_t iconstituent=0; iconstituent<constituents.size(); iconstituent++) {
+		if (constituents[iconstituent].user_index()==1) isHFJet=true;
+		break;
 	}
-
-	TObjArray* twoTrackArray = new TObjArray(2);
-	TObjArray* threeTrackArray = new TObjArray(3);
-	TObjArray *twoTrackArrayCasc = new TObjArray(2);//
-	AliESDVertex* primVtxTrk = (AliESDVertex*)esd->GetPrimaryVertex();//
-
-	AliVertexerTracks* vt = new AliVertexerTracks(fBzkG);
-
-	Double_t mom0[3], mom1[3], mom2[3];
-	for (Int_t iPosTrack_0 = 0; iPosTrack_0 < totTracks; iPosTrack_0++) {
-		AliESDtrack* track_p0 = esd->GetTrack(iPosTrack_0);
-		track_p0->GetPxPyPz(mom0);
-		if (status[iPosTrack_0] == 0) continue;
-		AliExternalTrackParam* trackext = (AliExternalTrackParam*)track_p0;
-		double b[2];
-		double bCov[3];
-		trackext->PropagateToDCA(primvtx, fBzkG, 100., b, bCov);
-		hpt_cuts->Fill(track_p0->Pt());
-		hdcatoprimxy_cuts->Fill(b[0]);
-		htgl_cuts->Fill(track_p0->GetTgl());
-		hitsmap->Fill(track_p0->GetITSClusterMap());
-		if (track_p0->Charge() < 0) continue;
-
-		for (Int_t iNegTrack_0 = 0; iNegTrack_0 < totTracks; iNegTrack_0++) {
-		AliESDtrack* track_n0 = esd->GetTrack(iNegTrack_0);
-		track_n0->GetPxPyPz(mom1);
-		if (track_n0->Charge() > 0) continue;
-		if (status[iNegTrack_0] == 0) continue;
-
-		twoTrackArray->AddAt(track_p0, 0);
-		twoTrackArray->AddAt(track_n0, 1);
-		AliESDVertex* trkv = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
-		if (trkv == 0x0) {
-			twoTrackArray->Clear();
-			continue;
-		}
-
-		hvx->Fill(trkv->GetX());
-		hvy->Fill(trkv->GetY());
-		hvz->Fill(trkv->GetZ());
-		double deltax = trkv->GetX() - primvtx->GetX();
-		double deltay = trkv->GetY() - primvtx->GetY();
-		double deltaz = trkv->GetZ() - primvtx->GetZ();
-		double decaylength = TMath::Sqrt(deltax * deltax + deltay * deltay + deltaz * deltaz);
-		double decaylengthxy = TMath::Sqrt(deltax * deltax + deltay * deltay);
-
-		AliAODVertex* vertexAOD = ConvertToAODVertex(trkv);
-		delete trkv;
-		AliAODRecoDecayHF2Prong* the2Prong = Make2Prong(twoTrackArray, vertexAOD, fBzkG);
-		the2Prong->SetOwnPrimaryVtx(vertexAODp);
-
-		Int_t twoProngSelection = 3;
-		if (selectD0 + selectD0bar > 0) twoProngSelection = TwoProngSelectionCuts(the2Prong, candpTMin, candpTMax);
-		Double_t m0 = the2Prong->InvMassD0();
-		Double_t m0b = the2Prong->InvMassD0bar();
-		if (twoProngSelection > 0) {
-		if (selectD0 == 0 || twoProngSelection == 1 || twoProngSelection == 3) hmass0->Fill(m0);
-        if (selectD0bar == 0 || twoProngSelection == 2 || twoProngSelection == 3) hmass0->Fill(m0b);
-        hdecayxyz->Fill(decaylength);
-        hdecayxy->Fill(decaylengthxy);
-        hptD0->Fill(the2Prong->Pt());
-        hptprong0->Fill(the2Prong->PtProng(0));
-        hptprong1->Fill(the2Prong->PtProng(1));
-        hd0->Fill(the2Prong->Getd0Prong(0));
-        hd0->Fill(the2Prong->Getd0Prong(1));
-        hd0d0->Fill(the2Prong->Prodd0d0());
-        hImpParErr->Fill(the2Prong->Getd0errProng(0));
-        hImpParErr->Fill(the2Prong->Getd0errProng(1));
-        hDecLenErr->Fill(the2Prong->DecayLengthError());
-        hDecLenXYErr->Fill(the2Prong->DecayLengthXYError());
-        the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrix);
-        hCovPVXX->Fill(covMatrix[0]);
-        the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
-        hCovSVXX->Fill(covMatrix[0]);
-		
-		AliFJWrapper *fFastJetWrapper;
-		fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
-		fFastJetWrapper->Clear();
-		fFastJetWrapper->SetR(0.4); 
-		fFastJetWrapper->SetAlgorithm(fastjet::JetAlgorithm::antikt_algorithm);
-		fFastJetWrapper->SetRecombScheme(fastjet::RecombinationScheme::E_scheme);
-		fFastJetWrapper->SetStrategy(fastjet::Strategy::Best);
-		fFastJetWrapper->SetGhostArea(0.005); 
-		fFastJetWrapper->SetAreaType(fastjet::AreaType::passive_area);
-
-		bool isHFJet=false;
-		fFastJetWrapper->Clear();
-		for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
-			AliESDtrack* track = esd->GetTrack(iTrack);
-			if (track->Pt() >= 0.15 && TMath::Abs(track->Eta()) < 0.9){ 
-				if (iTrack==iNegTrack_0 || iTrack==iPosTrack_0) continue;
-				fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack+2);
-			}
-		}
-		fFastJetWrapper->AddInputVector(the2Prong->Px(), the2Prong->Py(), the2Prong->Pz(), the2Prong->ED0(),1);
-
-		fFastJetWrapper->Run();
-		std::vector<fastjet::PseudoJet> jets = fFastJetWrapper->GetInclusiveJets();
-		for (Int_t ijet=0; ijet<jets.size(); ijet++) {
-			isHFJet=false;
-			fastjet::PseudoJet jet = jets[ijet];
-			if (jet.pt() < 0.15 || jet.perp() >= 1000.0 || TMath::Abs(jet.eta()) >= 0.5) continue;
-			std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));
-			for (Int_t iconstituent=0; iconstituent<constituents.size(); iconstituent++) {
-				if (constituents[iconstituent].user_index()==1) isHFJet=true;
-				break;
-			}
-			if(!isHFJet) continue;
-			hjetpt->Fill(jet.pt());
-			hjetE->Fill(jet.E());
-			hjetpx->Fill(jet.px());
-			hjetpy->Fill(jet.py());
-			hjetpz->Fill(jet.pz());
-			hjetphi->Fill(jet.phi());
-			hjetrap->Fill(jet.rap());
-			hjetconstituents->Fill(constituents.size());
-		
-			fastjet::JetDefinition subJetDef(fastjet::JetAlgorithm::cambridge_algorithm , 0.4*2.5,fastjet::RecombinationScheme::E_scheme, fastjet::Best);
-			try{
-				fastjet::ClusterSequence reclusterSeq(constituents, subJetDef);
-				std::vector<fastjet::PseudoJet> reclusteredJet =  reclusterSeq.inclusive_jets(0.0);
-				reclusteredJet = sorted_by_pt(reclusteredJet);
-         
-				fastjet::PseudoJet daughterSubJet = reclusteredJet[0];
-				fastjet::PseudoJet parentSubJet1; 
-				fastjet::PseudoJet parentSubJet2;
-
-				Float_t zg=-1.0,rg=-1.0;
-				Int_t nsd=0;
-				bool softDropped=false;
-				bool isHFSubJet=false;
-				std::vector<fastjet::PseudoJet> constituentsSubJet;
-				while(daughterSubJet.has_parents(parentSubJet1,parentSubJet2)){
-					isHFSubJet=false;
-					constituentsSubJet=parentSubJet1.constituents();
-					for (Int_t iconstituent=0; iconstituent<constituentsSubJet.size(); iconstituent++){
-						if (constituentsSubJet[iconstituent].user_index()==1) isHFSubJet=true;
-					}
-					if (!isHFSubJet) std::swap(parentSubJet1,parentSubJet2);
-					zg=parentSubJet2.perp()/(parentSubJet1.perp()+parentSubJet2.perp());
-					rg=parentSubJet1.delta_R(parentSubJet2);
-	
-					if (zg >= 0.1*TMath::Power(rg/0.4,0.0)){
-						if(!softDropped){
-							hjetzg->Fill(zg);
-							hjetrg->Fill(rg);
-							softDropped=true;
-						}
-						nsd++;
-					}
-					daughterSubJet=parentSubJet1;
-				}
-				hjetnsd->Fill(nsd);
-			}catch (fastjet::Error) {}
-		}
-		delete fFastJetWrapper;
-		}
-		delete the2Prong;
-		delete vertexAOD;
-   
-		if (do3Prongs) {
-			for (Int_t iPosTrack_1 = iPosTrack_0 + 1; iPosTrack_1 < totTracks; iPosTrack_1++) {
-				AliESDtrack* track_p1 = esd->GetTrack(iPosTrack_1);
-				if (!track_p1) continue;
-				if (track_p1->Charge() < 0) continue;
-				track_p1->GetPxPyPz(mom2);
-				if (status[iPosTrack_1] == 0) continue;
-				// order tracks according to charge: +-+
-				threeTrackArray->AddAt(track_p0, 0);
-				threeTrackArray->AddAt(track_n0, 1);
-				threeTrackArray->AddAt(track_p1, 2);
-				Int_t massSel = SelectInvMassAndPt3prong(threeTrackArray, rd4massCalc3);
-				if (massSel == 0) {
-					threeTrackArray->Clear();
-					continue;
-				}
-				//AliESDVertex* trkv3 = ReconstructSecondaryVertex(vt, threeTrackArray, primvtx, d_maxr);
-				AliESDVertex* trkv3 = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
-				if (trkv3 == 0x0) {
-					threeTrackArray->Clear();
-					continue;
-				}
-				AliAODVertex* vertexAOD3 = ConvertToAODVertex(trkv3);
-				AliAODRecoDecayHF3Prong* the3Prong = Make3Prong(threeTrackArray, vertexAOD3, fBzkG);
-				//  the3Prong->SetOwnPrimaryVtx(vertexAODp);
-				if (massSel & (1 << kbitDplus)) {
-					Double_t mp = the3Prong->InvMassDplus();
-					hmassP->Fill(mp);
-					hvx3->Fill(trkv3->GetX());
-					hvy3->Fill(trkv3->GetY());
-					hvz3->Fill(trkv3->GetZ());
-				}
-				delete trkv3;
-				delete the3Prong;
-				delete vertexAOD3;
-				threeTrackArray->Clear();
-			}
-			
-			for (Int_t iNegTrack_1 = iNegTrack_0 + 1; iNegTrack_1 < totTracks; iNegTrack_1++) {
-				AliESDtrack* track_n1 = esd->GetTrack(iNegTrack_1);
-				if (!track_n1) continue;
-				if (track_n1->Charge() > 0) continue;
-				track_n1->GetPxPyPz(mom2);
-				if (status[iNegTrack_1] == 0) continue;
-				// order tracks according to charge: -+-
-				threeTrackArray->AddAt(track_n0, 0);
-				threeTrackArray->AddAt(track_p0, 1);
-				threeTrackArray->AddAt(track_n1, 2);
-				Int_t massSel = SelectInvMassAndPt3prong(threeTrackArray, rd4massCalc3);
-				if (massSel == 0) {
-					threeTrackArray->Clear();
-					continue;
-				}
-				AliESDVertex* trkv3 = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
-				if (trkv3 == 0x0) {
-					threeTrackArray->Clear();
-					continue;
-				}
-				AliAODVertex* vertexAOD3 = ConvertToAODVertex(trkv3);
-				AliAODRecoDecayHF3Prong* the3Prong = Make3Prong(threeTrackArray, vertexAOD3, fBzkG);
-				//  the3Prong->SetOwnPrimaryVtx(vertexAODp);
-				if (massSel & (1 << kbitDplus)) {
-					Double_t mp = the3Prong->InvMassDplus();
-					hmassP->Fill(mp);
-				}
-				delete trkv3;
-				delete the3Prong;
-				delete vertexAOD3;
-				threeTrackArray->Clear();
-			}
-		}
-        twoTrackArray->Clear();
-		}
-	}
-    delete[] status;
-    delete vt;
-    delete twoTrackArray;
-    delete threeTrackArray;
-    delete rd4massCalc3; 
+	if(!isHFJet) continue;
+	hjetpt->Fill(jet.pt());
+	hjetE->Fill(jet.E());
+	hjetpx->Fill(jet.px());
+	hjetpy->Fill(jet.py());
+	hjetpz->Fill(jet.pz());
+	hjetphi->Fill(jet.phi());
+	hjetrap->Fill(jet.rap());
+	hjetconstituents->Fill(constituents.size());
+  }
+  delete fFastJetWrapper;
 }
 
 //______________________________________________________________________________
