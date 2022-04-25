@@ -1364,7 +1364,7 @@ void AliAnalysisTaskHFFindJets::UserExec(Option_t *)
     printf("AliAnalysisTaskHFSimpleVertices::UserExec(): bad ESD\n");
     return;
   }
-
+  cout << "Start of the event" <<endl;
   // AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   // AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   // AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
@@ -1531,7 +1531,7 @@ void AliAnalysisTaskHFFindJets::UserExec(Option_t *)
     clockStartTrack = std::clock();
     startTimeTrack = std::chrono::high_resolution_clock::now();
   }
-
+  cout << "Before tracks" <<endl;
   // Apply single track cuts and flag them
   int nTracksSel = 0;
   UChar_t* status = new UChar_t[totTracks];
@@ -1570,7 +1570,7 @@ void AliAnalysisTaskHFFindJets::UserExec(Option_t *)
     clockStartCand = std::clock();
     startTimeCand = std::chrono::high_resolution_clock::now();
   }
-
+  cout << "Before pos tracks" <<endl;
   Double_t d02[2]={0.,0.};
   Double_t d03[3] = {0., 0., 0.};
   AliAODRecoDecay* rd4massCalc2 = new AliAODRecoDecay(0x0, 2, 0, d02);
