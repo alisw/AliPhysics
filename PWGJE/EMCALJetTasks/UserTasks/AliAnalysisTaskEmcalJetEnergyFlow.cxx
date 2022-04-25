@@ -44,7 +44,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
           AliAnalysisTaskEmcalJet(),
-          fHistManager(),IsMCprod(kTRUE)// , fOutput{0}
+          fHistManager(),IsMCprod(kTRUE),R_jet_step(0.1)// , fOutput{0}
   {
   }
   /**
@@ -53,7 +53,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char* name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name),IsMCprod(kTRUE) // , fOutput{0}
+  fHistManager(name),IsMCprod(kTRUE),R_jet_step(0.1)// , fOutput{0}
   {
           SetMakeGeneralHistograms(1);
   }
