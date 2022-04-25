@@ -37,6 +37,7 @@
 //  Contatcs: wyosuke@cns.s.u-tokyo.ac.jp, gluparel@cern.ch
 //
 //  Multiplicity dependent analyzer : JaeYoon Cho(Jcho, jaeyoon15@inha.edu)  
+//  Last modification : 22/04/25 (YY/MM/DD)
 //-------------------------------------------------------------------------
 
 #include <TSystem.h>
@@ -114,7 +115,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
   fFillSparse(kFALSE),
-  fHMTrigOn(kTRUE), //jcho
+  fHMTrigOn(kFALSE), //jcho
   fVariablesTree(0),
   fEventTree(0),  //jcho
   fReconstructPrimVert(kFALSE),
@@ -131,7 +132,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fV1(0),
   fBzkG(0),
   fCentrality(0),
-  fMultiplicity(0), //jcho
+  //fMultiplicity(0), //jcho
   //fTriggerCheck(0),
   fHistoXicMass(0x0),
   fSparseXicMass(0x0),
@@ -231,7 +232,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fV1(0),
   fBzkG(0),
   fCentrality(0),
-  fMultiplicity(0), //jcho
+  //fMultiplicity(0), //jcho
   //fTriggerCheck(0),
   fHistoXicMass(0x0),
   fSparseXicMass(0x0),
@@ -307,7 +308,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   DefineOutput(7,AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0; //jcho
   DefineOutput(8,AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0; //jcho
 
-  DefineOutput(9, TTree::Class()); //jcho, Event variable tree
+  if (fHMTrigOn==true) DefineOutput(9, TTree::Class()); //jcho, Event variable tree
 
 }
 
@@ -554,16 +555,18 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
    fHNSPDTracklets->Fill(fNSPDTracklets);  //jcho
 
    // Fill the Event variables tree -------jcho, refer to Xi0 Semileptonic
-   for(int i=0; i<4; i++) fEventTreeVariables[i] = -999; //Initialize 
-   fEventTreeVariables[ 0] = fCentrality;      // CentralityV0M
-   fEventTreeVariables[ 1] = fCentralSPD;    // CentralitySPD 
-   fEventTreeVariables[ 2] = fNSPDTracklets;   // SPD tracklet
-   fEventTreeVariables[ 3] = -999;     // Runnumber 
-   fEventTreeVarTrig = 0;
-   if (!fUseMCInfo) fEventTreeVarTrig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+   if (fHMTrigOn==true)
+   {
+	   for(int i=0; i<4; i++) fEventTreeVariables[i] = -999; //Initialize 
+	   fEventTreeVariables[ 0] = fCentrality;      // CentralityV0M
+	   fEventTreeVariables[ 1] = fCentralSPD;    // CentralitySPD 
+	   fEventTreeVariables[ 2] = fNSPDTracklets;   // SPD tracklet
+	   fEventTreeVariables[ 3] = -999;     // Runnumber 
+	   fEventTreeVarTrig = 0;
+	   if (!fUseMCInfo) fEventTreeVarTrig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
-   fEventTree->Fill(); 
-
+	   fEventTree->Fill(); 
+   }
  //------------------------------------------------
   // MC analysis setting
   //------------------------------------------------
@@ -627,7 +630,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   MakeAnalysis(aodEvent, mcArray, mcHeader); 
   
   PostData(1,fOutput);
-  PostData(9, fEventTree);  //jcho
+  if (fHMTrigOn==true) PostData(9, fEventTree);  //jcho
   if(fWriteVariableTree){
     PostData(3,fVariablesTree);
   }else{
@@ -718,6 +721,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
 		cout <<" * Multiple triggers are being used: creating EventTree->fTrigBit\n" << endl;
   }
 
+
   cout << "-----------------------------------------------"  << endl;
 
   //--------------------------------------------------------
@@ -730,7 +734,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   fOutput->SetName("chist0");
   DefineGeneralHistograms(); // define general histograms
   PostData(1,fOutput);
-  PostData(9, fEventTree);	//jcho
+  if (fHMTrigOn==true) PostData(9, fEventTree);	//jcho
 
   if (fWriteVariableTree) {
     DefineTreeVariables();
@@ -1280,10 +1284,14 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 
       fCandidateVariables[68] = nclsTPCPIDpi2;
 
+	  if (fHMTrigOn==true)
+	  { //Fill the event info. for HM analysis 
 	  fCandidateVariables[69] = fCentrality;	//jcho
 	  fCandidateVariables[70] = fCentralSPD;	//jcho
       fCandidateVariables[71] = fNSPDTracklets;	//jcho
 	  fCandidateVariables[72] = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //jcho
+	  } //--Fill the event info.end
+
     }//close if to check mc fill only signal
     fVariablesTree->Fill();
   }//fWriteTree
@@ -1581,20 +1589,24 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fCentralityOfEvt->GetXaxis()->SetBinLabel(6,"[0,0.1]");
   fOutput->Add(fCentralityOfEvt);
 
+  if (fHMTrigOn==true)
+  {
   //---Define the Event tree variables ------------------// jcho, refer to Xi0 Semileptinic
-  fEventTree = new TTree("Event tree", "Event variable tree");
-  Int_t nEVar =4;
-  fEventTreeVariables = new Float_t [nEVar];
-  TString * fEventTreeVariablesName = new TString[nEVar];
-  fEventTreeVariablesName[ 0] = "CentralityV0M";
-  fEventTreeVariablesName[ 1] = "CentralSPD";
-  fEventTreeVariablesName[ 2] = "NSPDtracklet";
-  fEventTreeVariablesName[ 3] = "Runnumber";
-  for (Int_t iEvar=0; iEvar<nEVar; iEvar++) {
-	fEventTree->Branch(fEventTreeVariablesName[iEvar].Data(), &fEventTreeVariables[iEvar], Form("%s/F",fEventTreeVariablesName[iEvar].Data()));
-  } 
-  const Int_t Trigg = fTargetTriggers.size();
-  if (Trigg > 1) fEventTree->Branch("fTriggerBit", &fEventTreeVarTrig, "fTrigBit/i"); 
+	  fEventTree = new TTree("Event tree", "Event variable tree");
+	  Int_t nEVar =4;
+	  fEventTreeVariables = new Float_t [nEVar];
+	  TString * fEventTreeVariablesName = new TString[nEVar];
+	  fEventTreeVariablesName[ 0] = "CentralityV0M";
+	  fEventTreeVariablesName[ 1] = "CentralSPD";
+	  fEventTreeVariablesName[ 2] = "NSPDtracklet";
+	  fEventTreeVariablesName[ 3] = "Runnumber";
+	  for (Int_t iEvar=0; iEvar<nEVar; iEvar++) {
+		fEventTree->Branch(fEventTreeVariablesName[iEvar].Data(), &fEventTreeVariables[iEvar], Form("%s/F",fEventTreeVariablesName[iEvar].Data()));
+	  } 
+	  const Int_t Trigg = fTargetTriggers.size();
+	  if (Trigg > 1) fEventTree->Branch("fTriggerBit", &fEventTreeVarTrig, "fTrigBit/i"); 
+  } //--HM event tree end
+
   return;
 }
 

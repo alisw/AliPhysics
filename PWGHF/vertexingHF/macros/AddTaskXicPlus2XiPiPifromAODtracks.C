@@ -61,7 +61,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
   
   //mgr->AddTask(task);
   
-  task->UseTrig_kINT7();
+  task->UseTrig_kINT7();	//jcho
   if (HMTrigOn){
 	task->UseTrig_kHMV0();	//jcho, HM Trigger
 	task->UseTrig_kHMSPD();  //jcho, HM Trigger

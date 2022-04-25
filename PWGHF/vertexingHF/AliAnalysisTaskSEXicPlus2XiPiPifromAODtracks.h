@@ -139,7 +139,6 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliESDVertex *fV1;                /// primary vertex
   Double_t fBzkG;                   /// magnetic field value [kG]
   Float_t  fCentrality;             /// centrality
-  Float_t fMultiplicity;			/// jcho, multiplicity 
 
   //--------------------- My histograms ------------------
   THnSparse*  fHistoXicMass;        //!<! xic mass spectra
@@ -214,7 +213,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F* fCentralityOfEvt; //jcho 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,11); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,15); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif
