@@ -2801,6 +2801,7 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks
   fFastJetWrapper->Clear();
   cout<<"Total tracks" << totTracks <<endl;
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
+	cout<<"i tracks" << iTrack <<endl; 
     AliESDtrack* track = esd->GetTrack(iTrack);
     if (track->Pt() >= 0.15 && TMath::Abs(track->Eta()) < 0.9){ 
 	  if (iTrack==iNegTrack_0 || iTrack==iPosTrack_0) continue;
