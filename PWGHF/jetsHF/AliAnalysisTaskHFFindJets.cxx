@@ -1769,7 +1769,7 @@ void AliAnalysisTaskHFFindJets::UserExec(Option_t *)
         }
         
         if(doJetFinding){
-			MakeJetFinding(esd);
+			MakeJetFinding(esd, totTracks, iNegTrack_0, iPosTrack_0, the2Prong);
 		}
 
         if((fCandidateCutLevel>2 && jpsiSel>1)||(fCandidateCutLevel<= 2 && jpsiSel>0) ) {
@@ -2837,7 +2837,7 @@ Int_t AliAnalysisTaskHFFindJets::TwoProngSelectionCuts(AliAODRecoDecayHF2Prong* 
 }
 
 //_______________________________________________________________________________________
-void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd) {
+void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong) {
   AliFJWrapper *fFastJetWrapper;
   fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
   fFastJetWrapper->Clear();
