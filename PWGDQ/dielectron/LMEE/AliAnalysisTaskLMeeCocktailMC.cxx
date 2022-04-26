@@ -171,7 +171,8 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
-  fALTweightType(2)
+  fALTweightType(2),
+  fDoRapidityCut(kFALSE)
 {
 
 }
@@ -296,7 +297,8 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
-  fALTweightType(2)
+  fALTweightType(2),
+  fDoRapidityCut(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -771,8 +773,13 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
     if (!(fabs(particle->E()-particle->Pz())>0.)) continue;
 
     Double_t yPre = (particle->E()+particle->Pz())/(particle->E()-particle->Pz());
-    if (yPre == 0.) continue;
-
+    Double_t y = 0.5*TMath::Log(yPre);
+    if(fDoRapidityCut){//Apply rapidity cut on mother consistent with GammaConv group.
+      if (yPre <= 0.) continue;
+      if (y > 1.000)  continue;
+    }else{
+      if (yPre == 0.) continue;
+    }
     // We have an electron with a mother. Check that mother is primary and number of daughters
     if(abs(particle->PdgCode())==11 && hasMother==kTRUE){
      fdectyp = 0; // fdectyp: decay type (based on number of daughters).

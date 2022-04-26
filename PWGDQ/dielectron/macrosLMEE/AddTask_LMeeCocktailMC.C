@@ -1,4 +1,4 @@
-AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "", Int_t version = 0,Float_t NMee = 1200, Float_t MinMee = 0, Float_t MaxMee = 6,Float_t NPtee  = 400, Float_t MinPtee = 0, Float_t MaxPtee = 10, Float_t MinOpAng = 0.0) {
+AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "", Int_t version = 0,Float_t NMee = 1200, Float_t MinMee = 0, Float_t MaxMee = 6,Float_t NPtee  = 400, Float_t MinPtee = 0, Float_t MaxPtee = 10, Float_t MinOpAng = 0.0, Bool_t DoRapidityCut = kFALSE) {
 
   // ================= Load Librariers =================================
   gSystem->Load("libCore");
@@ -56,6 +56,9 @@ AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 20
 
   task->SetMinOpAng(MinOpAng);
 
+  //Rapidiy cut on mother particle
+  task->SetRapidityCut(DoRapidityCut);
+
   task->SetWriteTTree(WriteTTree);
   task->SetResolType(ResolType);
   task->SetResFileLocal(local);
@@ -69,7 +72,6 @@ AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 20
   Printf("Set eff file name to %s",effFileName.Data());
   task->SetEffFileName(effFileName);
 
-  
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(Form("LMeeCocktailMC_%1.2f_%d",MaxEta,version), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:LMeeCocktailMC",AliAnalysisManager::GetCommonFileName()));

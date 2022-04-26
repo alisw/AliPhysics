@@ -37,6 +37,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetResFileLocal(Bool_t localres) {fLocalRes = localres; }
     void SetEffFileName(TString name);
     void SetMinOpAng(Float_t MinOpAng = 0.050){fMinOpAng = MinOpAng;}
+    void SetRapidityCut(Bool_t DoRapidityCut) {fDoRapidityCut = DoRapidityCut; }
 
     TH1F *GetEffHisto() {return fhwEffpT;}
 
@@ -188,12 +189,13 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     Int_t              fcollisionSystem;
     Int_t                fResolType;
     Int_t               fALTweightType;
+    Bool_t               fDoRapidityCut;              //Check: Rapidity cut on mother particle
 
   private:
     AliAnalysisTaskLMeeCocktailMC(const AliAnalysisTaskLMeeCocktailMC&); // Prevent copy-construction
     AliAnalysisTaskLMeeCocktailMC &operator=(const AliAnalysisTaskLMeeCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskLMeeCocktailMC, 4);
+    ClassDef(AliAnalysisTaskLMeeCocktailMC, 5);
 };
 
 #endif
