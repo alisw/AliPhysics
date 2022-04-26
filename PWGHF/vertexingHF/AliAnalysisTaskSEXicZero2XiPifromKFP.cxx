@@ -411,6 +411,9 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fpVtx(0),
   fMCEvent(0),
   fBzkG(0),
+//  fCentrality(0),
+ 
+  Ntracklets(0),
 //  fRunNumber(0),
 //  fEvNumberCounter(0),
   fAodTrackInd(0),
@@ -1698,7 +1701,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   if(IsMB&&IsSemi) fHTrigger->Fill(10);
   if(IsMB&&IsCent) fHTrigger->Fill(11);
   if(IsINT7&&IsEMC7) fHTrigger->Fill(12);
-
   
   //  AliCentrality *cent = AODEvent->GetCentrality();
   //  Float_t Centrality = cent->GetCentralityPercentile("V0M");
@@ -1794,7 +1796,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   
   fPID = fInputHandler->GetPIDResponse();
 
-  //cout << fCentrality << "fCentrality"<< endl;
   //  MakeAnaXicZeroFromV0(AODEvent, mcArray, PV);
   MakeAnaXicZeroFromCasc(AODEvent, mcArray, PV);
 
@@ -3677,10 +3678,9 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
 {
      Double_t Centrality = -999.;
      AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
-     if(multSelection) Centrality = multSelection->GetMultiplicityPercentile("V0M");
-     //cout << Centrality << "Centrality"<< endl;
+     if(multSelection)Centrality = multSelection->GetMultiplicityPercentile("V0M");
 
-     int Ntracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
+     Int_t Ntracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
 
     // Main analysis called from "UserExec"
 
@@ -3885,7 +3885,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
         kfpXic0.GetMass(massXic0_Rec, err_massXic0);
         if ( err_massXic0<=0 ) continue;
 
-        //cout << Centrality << "Centrality"<< endl;
         if (fWriteXic0Tree) {
            Int_t lab_Xic0 = -9999;
            if (fIsMC) {
@@ -5384,7 +5383,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0, Double_t Centrality, Int_t Ntracklets)
+void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0 , Double_t Centrality ,Int_t Ntracklets)
 {
 
   for (Int_t i=0; i<50; i++) {
@@ -5613,10 +5612,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSo
 
   fVar_Xic0[44] = flagUSorLS; // flag of unlike sign or like sign pair
 
-  fVar_Xic0[48] = Centrality1;
-  //cout << Centrality1 << "Centrality1" << endl;
+  fVar_Xic0[48] = Centrality;
   fVar_Xic0[49] = Ntracklets; 
-  //cout << Ntracklets << "Ntracklets" << endl;
   fTree_Xic0->Fill();
 
 
