@@ -1698,7 +1698,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   if(IsMB&&IsSemi) fHTrigger->Fill(10);
   if(IsMB&&IsCent) fHTrigger->Fill(11);
   if(IsINT7&&IsEMC7) fHTrigger->Fill(12);
-  
+
+
   //  AliCentrality *cent = AODEvent->GetCentrality();
   //  Float_t Centrality = cent->GetCentralityPercentile("V0M");
   //  fHCentrality->Fill(Centrality);
