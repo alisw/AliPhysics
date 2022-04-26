@@ -1,4 +1,4 @@
-#ifndef AliAnalysisTaskSEXicZero2XiPifromKFP_H
+#ifndef ALIANALYSISTASKSEXICZERO2XIPIFROMKFP_H
 #define AliAnalysisTaskSEXicZero2XiPifromKFP_H
 
 /// \class AliAnalysisTaskSEXicZero2XiPifromKFP
