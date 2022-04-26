@@ -411,9 +411,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fpVtx(0),
   fMCEvent(0),
   fBzkG(0),
-//  fCentrality(0),
- 
-  Ntracklets(0),
 //  fRunNumber(0),
 //  fEvNumberCounter(0),
   fAodTrackInd(0),
@@ -1795,7 +1792,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
 //------------------------------------------------
   
   fPID = fInputHandler->GetPIDResponse();
-
   //  MakeAnaXicZeroFromV0(AODEvent, mcArray, PV);
   MakeAnaXicZeroFromCasc(AODEvent, mcArray, PV);
 
@@ -3672,15 +3668,16 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
   return;
 }
 
-
 //_____________________________________________________________________________
 void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV)
 {
-     Double_t Centrality = -999.;
-     AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
-     if(multSelection)Centrality = multSelection->GetMultiplicityPercentile("V0M");
 
-     Int_t Ntracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
+  // Main analysis called from "UserExec"
+    Double_t Centrality = -999.;
+    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
+    if(multSelection)Centrality = multSelection->GetMultiplicityPercentile("V0M");
+
+    Int_t Ntracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
 
     // Main analysis called from "UserExec"
 
@@ -4827,8 +4824,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[41] = "PA_Xic0ToPV"; // pointing angle of Xic0 (pointing back to PV)
   fVarNames[42] = "ldl_Xic0"; // l/dl of Xic0
   fVarNames[43] = "ct_Xic0"; // lifetime of Xic0
-  fVarNames[44] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair
-  
+  fVarNames[44] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair 
   }
 
   if (fIsAnaOmegac0) {
@@ -5377,7 +5373,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 //    fVar_Xic0[78] = lab_Xic0;
 //  }
 
-
+  
+  fTree_Xic0->Fill();
 
   return;
 }
