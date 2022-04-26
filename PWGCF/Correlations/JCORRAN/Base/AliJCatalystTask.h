@@ -29,6 +29,7 @@
 #include "AliJCorrectionMapTask.h"
 #include "TH1F.h"
 #include "TFile.h"
+#include "AliEventCuts.h"
 
 //==============================================================
 
@@ -154,6 +155,8 @@ public:
 	void SetTightCuts(bool usePrimary) {fUseTightCuts = usePrimary;}
 	void SetESDpileupCuts(bool ESDpileup, double slope, double intercept, bool saveQA) {fAddESDpileupCuts = ESDpileup;
 		fESDpileup_slope = slope; fESDpileup_inter = intercept; fSaveESDpileupQA = saveQA;}
+	void SetTPCpileupCuts(bool TPCpileup, bool saveQA) {fAddTPCpileupCuts = TPCpileup; fSaveTPCpileupQA = saveQA;}
+	void FillEventQA(AliAODEvent *event, int centBin, int stepBin);
 
 // Methods to use alternative correction weights.
 	Int_t GetRunIndex10h(Int_t runNumber);
@@ -198,6 +201,7 @@ private:
 	TAxis *fCentBinEff; // for different cent bin for MC eff
 	UInt_t phiMapIndex; //
 	Bool_t bUseAlternativeWeights; //
+	AliEventCuts *fAliEventCuts;	// Instance of AliEventCuts.
 
 // Data members for the QA of the catalyst.
 	TList *fMainList;		// Mother list containing all possible output of the catalyst task.
@@ -220,6 +224,8 @@ private:
 	double fESDpileup_slope;	// Slope of the cut M_ESD >= 15000 + 3.38*M_TPC
 	double fESDpileup_inter;	// Intercept of the cut.
 	bool fSaveESDpileupQA;	// if true: save the TH2D for the QA.
+	bool fAddTPCpileupCuts;	// if true: apply a cut on the correlations between ITS and TPC clusters.
+	bool fSaveTPCpileupQA;	// if true: save the TH2D for the QA.
 
   TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
   TH1F *fPTHistogram[16][3];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: After correction.
@@ -241,7 +247,8 @@ private:
   TH1F *fHistoPhiWeight[16][90];	// Histograms to save the NUA correction weights per centrality and runs.
   TProfile *fProfileWeights[16];	//! Profiles for the weights to apply per phi bins.
   TH2D *fESDpileupHistogram[16][2];		//! 0: Correlations between ESD and TPC tracks before, 1: after cut.
+  TH2I *fTPCpileupHistogram[16][2];		//! 0: Correlations between ITS and TPC clusters before, 1: after cut.
 
-  ClassDef(AliJCatalystTask, 7);
+  ClassDef(AliJCatalystTask, 8);
 };
 #endif // AliJCatalystTask_H

@@ -4,8 +4,22 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, int setNUAmap = 2, bool useTightCuts = kFALSE, bool ESDpileup = true, double slope = 3.38, double intercept = 15000, bool saveQApileup = false, bool getSC3h = kFALSE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
-{ 
+AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0,
+  double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6",
+  bool saveQA = kFALSE,
+  bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, int setNUAmap = 2,
+  bool ESDpileup = true, double intercept = 15000,
+  bool TPCpileup = false, bool saveQA_TPCpileup = false,
+  bool getSC3h = kFALSE, bool getEtaGap = kFALSE, float etaGap = 1.0,
+  int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+{
+// Least often changed data members.
+  bool removeBadArea = kFALSE;
+  int debug = 0;
+  bool useTightCuts = kFALSE;
+  double slope = 3.38; bool saveQA_ESDpileup = false;
+
+// Configuration of the analysis.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 // Prepare the configuration of the wagons.
@@ -150,8 +164,10 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   // Set the correct flags to use.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {   // Set flag only if we cut on pileup.
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
-      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQApileup);}
-      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQApileup);}
+      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);}
+      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
+
+      fJCatalyst[i]->SetTPCpileupCuts(TPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
     }
     if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}
 
