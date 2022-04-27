@@ -20,7 +20,6 @@
 #include <AliVParticle.h>
 #include <AliAODTrack.h>
 #include <AliAODMCParticle.h>
-#include <TH1D.h>
 #include <TH1I.h>
 #include <TH2I.h>
 #include <TH2D.h>
@@ -32,6 +31,7 @@
 #include <TSystem.h>
 #include <TF1.h>
 #include <TStopwatch.h>
+#include <TFormula.h>
 
 using std::cout;
 using std::endl;
@@ -49,8 +49,8 @@ const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in .cxx
-const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
-const Int_t gGenericCorrelations = 5; // correlations between various quantities (see .cxx for documentation)
+const Int_t gQAParticleCutCounter = 40; // see TString spcc[gQAParticleCutCounter] in .cxx . Used also for SequentialParticleCutCounter, via cloning
+const Int_t gGenericCorrelations = 7; // correlations between various quantities (see .cxx for documentation)
 const Int_t gMaxCorrelator = 12; // 
 const Int_t gMaxHarmonic = 6; // 
 const Int_t gMaxIndex = 300; // per order
@@ -134,6 +134,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SequentialEventCutCounter(AliVEvent *ave); // only for QA
   Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
   void ParticleCutCounter(AliVParticle *vParticle); // only for QA
+  void SequentialParticleCutCounter(AliVParticle *vParticle); // only for QA
   virtual Double_t Weight(const Double_t &value, const char *variable);
   virtual Double_t CentralityWeight(const Double_t &value);
   virtual void CalculateCorrelations();
@@ -400,7 +401,25 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fDCACuts[var][0] = min;
    this->fDCACuts[var][1] = max;
    this->fUseDCACuts[var] = kTRUE;
-  }
+  } 
+  void SetPtDependentDCAxyCut(const char* parameterization)
+  {
+   // Supported pre-defined formulas for DCAxy vs. pT dependence: "definition-2010", "definition-2011", "definition-2015"
+   // If none of them is used, then content of 'parameterization' is interpreted as user-defined formula for DCAxy vs. pT
+   // The chosen parameterization is stored in 5th bin of fControlParticleHistogramsPro, so it can be retrieved afterward from the output of analysis.
+   if(TString(parameterization).EqualTo("definition-2010")){this->fPtDependentDCAxyParameterization = "0.0182+0.0350/x^1.01";} 
+   else if(TString(parameterization).EqualTo("definition-2011")){this->fPtDependentDCAxyParameterization = "0.0105+0.0350/x^1.1";} 
+   else if(TString(parameterization).EqualTo("definition-2015")){this->fPtDependentDCAxyParameterization = "0.0105+0.0350/x^1.1";} 
+   // else if ... 
+   else // use user-supplied formula for parameterization. Use "x" to denote variable in the formula string, e.g. "1.44 + 2.*x"
+   {
+    this->fPtDependentDCAxyParameterization = parameterization;
+   } 
+    
+   // Only if this setter is called, for whichever parameterization, pT dependent DCAxy cut will be used:
+   this->fUsePtDependentDCAxyParameterization = kTRUE;
+
+  } // void SetPtDependentDCAxyCut(const char* parameterization)
 
   // Remaining particle distributions:
   void SetParticleBins(const char* type, const Double_t nbins, const Double_t min, const Double_t max)
@@ -437,6 +456,22 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fParticleCuts[var][0] = min;
    this->fParticleCuts[var][1] = max;
    this->fUseParticleCuts[var] = kTRUE;
+  }  
+  void SetUseParticleCuts(const char* type, const Bool_t b) // use this setter just to switch on/off sum cut, with was set either by default, or via SetParticleCuts(...)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("TPCNcls")){var = TPCNcls;} 
+   else if (TString(type).EqualTo("TPCnclsS")){var = TPCnclsS;}
+   else if (TString(type).EqualTo("TPCnclsFractionShared")){var = TPCnclsFractionShared;}
+   else if (TString(type).EqualTo("TPCNCrossedRows")){var = TPCNCrossedRows;}
+   else if (TString(type).EqualTo("TPCChi2perNDF")){var = TPCChi2perNDF;}
+   else if (TString(type).EqualTo("TPCFoundFraction")){var = TPCFoundFraction;}
+   else if (TString(type).EqualTo("Chi2TPCConstrainedVsGlobal")){var = Chi2TPCConstrainedVsGlobal;}
+   else if (TString(type).EqualTo("ITSNcls")){var = ITSNcls;}
+   else if (TString(type).EqualTo("ITSChi2perNDF")){var = ITSChi2perNDF;}
+   else if (TString(type).EqualTo("TPCNclsF")){var = TPCNclsF;}
+   else{exit(1);}
+   this->fUseParticleCuts[var] = b;
   }  
   void SetAtLeastOnePointInTheSPD(Bool_t alopits) {this->fAtLeastOnePointInTheSPD = alopits;};
   void SetIgnoreGlobalConstrained(Bool_t igc) {this->fIgnoreGlobalConstrained = igc;};
@@ -601,6 +636,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1I *fQAEventCutCounter; // counter for each event cut
   TH1I *fQASequentialEventCutCounter; // sequential counter for event cuts
   TH1I *fQAParticleCutCounter[2]; // counter for each particle cut. [0] = reco, [1] = sim
+  TH1I *fQASequentialParticleCutCounter[2]; // sequential counter for each particle cut. [0] = reco, [1] = sim
   TH1I *fQATrigger[2]; // counter for triggers [0] = before event cuts, [1] = after event cuts
 
   // 2) Control event histograms:  
@@ -668,6 +704,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fDCABins[2][3]; // [xy,z][nBins,min,max]
   Double_t fDCACuts[2][2]; // [xy,z][min,max]
   Bool_t fUseDCACuts[2];   // [xy,z] if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
+  Bool_t fUsePtDependentDCAxyParameterization; // use instead the pT dependent cut for DCAxy, see the setter SetPtDependentDCAxyCut(const char* parameterization)
+  TString fPtDependentDCAxyParameterization; // math. parameterization for DCAxy vs. pT, see the setter SetPtDependentDCAxyCut(const char* parameterization)
+  TFormula *fPtDependentDCAxyFormula; // the actual formula, used to evaluate for a given pT, the corresponding DCAxy, where the parameterization is given by fPtDependentDCAxyParameterization
   //    All remaining particle histograms: 
   TH1D *fParticleHist[2][2][gParticleHistograms]; //! distributions [before,after particle cuts][reco,sim][type - see enum]
   Double_t fParticleBins[gParticleHistograms][3]; // [nBins,min,max]
