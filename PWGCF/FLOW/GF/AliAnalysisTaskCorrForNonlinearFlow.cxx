@@ -68,6 +68,351 @@
 using std::cout;
 using std::endl;
 ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
+// ---------------------------------------------------------------------------------
+AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow():
+    AliAnalysisTaskSE(),
+    fEventCuts(),
+    fGFWSelection(NULL),
+    fGFWSelection15o(NULL),
+    fAOD(0),
+    fitssatrackcuts(0),
+    fEtaCut(0.8),
+    fVtxCut(10.0),
+    fVtxCutDefault(10.0),
+    fMinPt(0.2),
+    fMaxPt(3.0),
+    fSample(1),
+    fTrigger(0),
+    fAliTrigger(0),
+    fNUE(0),
+    fNUA(0),
+    fIsMC(0),
+    fNtrksName("Mult"),
+    //....
+    fPeriod("LHC15o"),
+    fCurrSystFlag(0),
+    fSpringMode(false),
+    fLowMultiplicityMode(false),
+    fAddTPCPileupCuts(false),
+    fESDvsTPConlyLinearCut(15000.),
+    fUseCorrectedNTracks(false),
+    fUseFlippedEta(false),
+    fUseNarrowBin(false),
+    fExtremeEfficiency(0),
+    fTPCchi2perCluster(4.0),
+    fUseAdditionalDCACut(false),
+    fUseDefaultWeight(false),
+    fEtaGap3Sub(0.4),
+
+    fListOfObjects(0),
+    fListOfProfile(0),
+
+    fMultTOFLowCut(0),
+    fMultTOFHighCut(0),
+    fMultCentLowCut(0),
+
+    fTrackEfficiency(0),
+    hTrackEfficiency(0),
+    hTrackEfficiencyRun(0),
+
+    fFlowRunByRunWeights(false),
+    fFlowPeriodWeights(false),
+    fFlowUse3Dweights(false),
+    fFlowWeightsList(nullptr),
+    fFlowPtWeightsList(nullptr),
+    fFlowFeeddownList(nullptr),
+    fFlowPtWeightsFile(nullptr),
+
+    fPhiWeight(0),
+    fPhiWeightFile(0),
+    fPhiWeightPlus(0),
+    fPhiWeightMinus(0),
+    fWeightsSystematics(0),
+    fPtWeightsSystematics(0),
+    hPhiWeight(0),
+    hPhiWeightRun(0),
+    hPhiWeight1D(0),
+
+    hEventCount(0),
+    hMult(0),
+    fVtxAfterCuts(0),
+    fCentralityDis(0),
+    fV0CentralityDis(0),
+    hMultV0vsNtrksAfterCuts(0),
+    hMultSPDvsNtrksAfterCuts(0),
+    hNtrksVSmultPercentile(0),
+    fCentralityV0MCL1(0),
+    fCentralityV0MCL0(0),
+    fCentralityCL0CL1(0),
+    fMultvsCentr(0),
+    fMult128vsCentr(0),
+    fMultTPCvsTOF(0),
+    fMultTPCvsESD(0),
+
+    hSPDClsVsTrk(0),
+    hV0C012vsTkl(0),
+    hV0C012vsV0C3(0),
+    hV0MOnVsOf(0),
+    hSPDOnVsOf(0),
+
+    fPhiDis1D(0),
+    fPhiDis(0),
+    fEtaDis(0),
+    fEtaBefore(0),
+    fPtDis(0),
+    fPtBefore(0),
+    hDCAxyBefore(0),
+    hDCAzBefore(0),
+    hITSclustersBefore(0),
+    hChi2Before(0),
+    hDCAxy(0),
+    hDCAz(0),
+    hITSclusters(0),
+    hChi2(0)
+{
+}
+//______________________________________________________________________________
+AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const char *name, int _fNUA, int _fNUE, TString _fPeriod):
+  AliAnalysisTaskSE(name),
+  fEventCuts(),
+  fGFWSelection(NULL),
+  fGFWSelection15o(NULL),
+  fAOD(0),
+  fitssatrackcuts(0),
+  fEtaCut(0.8),
+  fVtxCut(10.0),
+  fVtxCutDefault(10.0),
+  fMinPt(0.2),
+  fMaxPt(3.0),
+  fSample(1),
+  fTrigger(0),
+  fAliTrigger(0),
+  fNUE(_fNUE),
+  fNUA(_fNUA),
+  fIsMC(0),
+  fNtrksName("Mult"),
+  //....
+  fPeriod(_fPeriod),
+  fCurrSystFlag(0),
+  fSpringMode(false),
+  fLowMultiplicityMode(false),
+  fAddTPCPileupCuts(false),
+  fESDvsTPConlyLinearCut(15000.),
+  fUseCorrectedNTracks(false),
+  fUseFlippedEta(false),
+  fUseNarrowBin(false),
+  fExtremeEfficiency(0),
+  fTPCchi2perCluster(4.0),
+  fUseAdditionalDCACut(false),
+  fUseDefaultWeight(false),
+  fEtaGap3Sub(0.4),
+
+  fListOfObjects(0),
+  fListOfProfile(0),
+
+  fMultTOFLowCut(0),
+  fMultTOFHighCut(0),
+  fMultCentLowCut(0),
+
+  fTrackEfficiency(0),
+  hTrackEfficiency(0),
+  hTrackEfficiencyRun(0),
+
+  fFlowRunByRunWeights(false),
+  fFlowPeriodWeights(false),
+  fFlowUse3Dweights(false),
+  fFlowWeightsList(nullptr),
+  fFlowPtWeightsList(nullptr),
+  fFlowFeeddownList(nullptr),
+  fFlowPtWeightsFile(nullptr),
+
+  fPhiWeight(0),
+  fPhiWeightFile(0),
+  fPhiWeightPlus(0),
+  fPhiWeightMinus(0),
+  fWeightsSystematics(0),
+  fPtWeightsSystematics(0),
+  hPhiWeight(0),
+  hPhiWeightRun(0),
+  hPhiWeight1D(0),
+  hEventCount(0),
+  hMult(0),
+  fVtxAfterCuts(0),
+  fCentralityDis(0),
+  fV0CentralityDis(0),
+  hMultV0vsNtrksAfterCuts(0),
+  hMultSPDvsNtrksAfterCuts(0),
+  hNtrksVSmultPercentile(0),
+  fCentralityV0MCL1(0),
+  fCentralityV0MCL0(0),
+  fCentralityCL0CL1(0),
+  fMultvsCentr(0),
+  fMult128vsCentr(0),
+  fMultTPCvsTOF(0),
+  fMultTPCvsESD(0),
+
+  hSPDClsVsTrk(0),
+  hV0C012vsTkl(0),
+  hV0C012vsV0C3(0),
+  hV0MOnVsOf(0),
+  hSPDOnVsOf(0),
+
+  fPhiDis1D(0),
+  fPhiDis(0),
+  fEtaDis(0),
+  fEtaBefore(0),
+  fPtDis(0),
+  fPtBefore(0),
+  hDCAxyBefore(0),
+  hDCAzBefore(0),
+  hITSclustersBefore(0),
+  hChi2Before(0),
+  hDCAxy(0),
+  hDCAz(0),
+  hITSclusters(0),
+  hChi2(0)
+{
+
+  // Output slot #1 writes into a TList
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  int outputslot = 2;
+
+  int inputslot = 1;
+  if (fNUA) {
+    DefineInput(inputslot, TList::Class());
+    inputslot++;
+  }
+  if (fNUE) {
+    DefineInput(inputslot, TList::Class());
+    inputslot++;
+    if (fPeriod.EqualTo("LHC16qt")) {
+      DefineInput(inputslot, TList::Class());
+      inputslot++;
+    }
+    if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+        fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")
+		    ) {
+      DefineInput(inputslot, TList::Class());
+      inputslot++;
+    }
+  }
+}
+
+//______________________________________________________________________________
+AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const char *name):
+  AliAnalysisTaskSE(name),
+  fEventCuts(),
+  fGFWSelection(NULL),
+  fGFWSelection15o(NULL),
+  fAOD(0),
+  fitssatrackcuts(0),
+  fEtaCut(0.8),
+  fVtxCut(10.0),
+  fVtxCutDefault(10.0),
+  fMinPt(0.2),
+  fMaxPt(3.0),
+  fSample(1),
+  fTrigger(0),
+  fAliTrigger(0),
+  fNUE(0),
+  fNUA(0),
+  fNtrksName("Mult"),
+  //....
+  fPeriod("LHC15o"),
+  fCurrSystFlag(0),
+  fSpringMode(false),
+  fLowMultiplicityMode(false),
+  fAddTPCPileupCuts(false),
+  fESDvsTPConlyLinearCut(15000.),
+  fUseCorrectedNTracks(false),
+  fUseFlippedEta(false),
+  fUseNarrowBin(false),
+  fExtremeEfficiency(0),
+  fTPCchi2perCluster(4.0),
+  fUseAdditionalDCACut(false),
+  fUseDefaultWeight(false),
+  fEtaGap3Sub(0.4),
+
+  fListOfObjects(0),
+  fListOfProfile(0),
+
+  fMultTOFLowCut(0),
+  fMultTOFHighCut(0),
+  fMultCentLowCut(0),
+
+  fTrackEfficiency(0),
+  hTrackEfficiency(0),
+  hTrackEfficiencyRun(0),
+
+  fFlowRunByRunWeights(false),
+  fFlowPeriodWeights(false),
+  fFlowUse3Dweights(false),
+  fFlowWeightsList(nullptr),
+  fFlowPtWeightsList(nullptr),
+  fFlowFeeddownList(nullptr),
+  fFlowPtWeightsFile(nullptr),
+
+  fPhiWeight(0),
+  fPhiWeightFile(0),
+  fPhiWeightPlus(0),
+  fPhiWeightMinus(0),
+
+  fWeightsSystematics(0),
+  fPtWeightsSystematics(0),
+
+  hPhiWeight(0),
+  hPhiWeightRun(0),
+  hPhiWeight1D(0),
+
+  hEventCount(0),
+  hMult(0),
+  fVtxAfterCuts(0),
+  fCentralityDis(0),
+  fV0CentralityDis(0),
+  hMultV0vsNtrksAfterCuts(0),
+  hMultSPDvsNtrksAfterCuts(0),
+  hNtrksVSmultPercentile(0),
+  fCentralityV0MCL1(0),
+  fCentralityV0MCL0(0),
+  fCentralityCL0CL1(0),
+  fMultvsCentr(0),
+  fMult128vsCentr(0),
+  fMultTPCvsTOF(0),
+  fMultTPCvsESD(0),
+
+  hSPDClsVsTrk(0),
+  hV0C012vsTkl(0),
+  hV0C012vsV0C3(0),
+  hV0MOnVsOf(0),
+  hSPDOnVsOf(0),
+
+  fPhiDis1D(0),
+  fPhiDis(0),
+  fEtaDis(0),
+  fEtaBefore(0),
+  fPtDis(0),
+  fPtBefore(0),
+  hDCAxyBefore(0),
+  hDCAzBefore(0),
+  hITSclustersBefore(0),
+  hChi2Before(0),
+  hDCAxy(0),
+  hDCAz(0),
+  hITSclusters(0),
+  hChi2(0)
+{
+
+  // Output slot #1 writes into a TList
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  int outputslot = 2;
+
+  // int inputslot = 1;
+  DefineInput(1, TList::Class());
+  DefineInput(2, TList::Class());
+}
+
 
 // ---------------------------------------------------------------------------------
 AliAnalysisTaskCorrForNonlinearFlow::~AliAnalysisTaskCorrForNonlinearFlow() {
@@ -76,6 +421,7 @@ AliAnalysisTaskCorrForNonlinearFlow::~AliAnalysisTaskCorrForNonlinearFlow() {
 
 // ---------------------------------------------------------------------------------
 void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
+    cout << "UserCreateOutputObjects" << endl;
     // Create output objects
     fListOfObjects = new TList();
     fListOfObjects->SetOwner();
@@ -92,25 +438,53 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     fGFWSelection->PrintSetup();
     }
 
-    // mixing
-    fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins, fCentBins.data(), fNzVtxBins, fzVtxBins.data());
-    if (!fPoolMgr) {
-    	AliError("Event Pool manager not created!");
-	return;
-    }
-    fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
+  hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
+  fListOfObjects->Add(hEventCount);
+
+  // hMult = new TH1F("hMult", ";number of tracks; entries", nn, xbins);
+  // hMult->Sumw2();
+  // fListOfObjects->Add(hMult);
+
+  // fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (after cuts); Vtx z [cm]; Counts", 120, -30, 30);
+  // fVtxAfterCuts->Sumw2();
+  // fListOfObjects->Add(fVtxAfterCuts);
+
+  // fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 100, 0, 100);
+  // fListOfObjects->Add(fCentralityDis);
+
+
 
     Int_t nSteps = 1;
     Double_t binning_deta_tpctpc[33] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6};
     Double_t binning_dphi[73] = { -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0,       0.087266,  0.174533,  0.261799,  0.349066,  0.436332, 0.523599,  0.610865,  0.698132,  0.785398,  0.872665,  0.959931, 1.047198,  1.134464,  1.221730,  1.308997,  1.396263,  1.483530, 1.570796,  1.658063,  1.745329,  1.832596,  1.919862,  2.007129, 2.094395,  2.181662,  2.268928,  2.356194,  2.443461,  2.530727, 2.617994,  2.705260,  2.792527,  2.879793,  2.967060,  3.054326, 3.141593,  3.228859,  3.316126,  3.403392,  3.490659,  3.577925, 3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524, 4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123, 4.712389};
-    std::vector<Double_t>   fPtBinsTrigCharged;    // I don't want to set the things outside
-    std::vector<Double_t>   fPtBinsAss;            // I don't want to set the things outside
+    std::vector<Double_t>   fPtBinsTrigCharged = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0,10.0};    // I don't want to set the things outside
+    std::vector<Double_t>   fPtBinsAss = {0.2,0.5,1.0,3.0};            // I don't want to set the things outside
+    std::vector<Double_t>   fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100}; //
+    std::vector<Double_t>   fVtxBins = {0, 1};
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     const Int_t sizePtAss = fPtBinsAss.size() - 1;
     const Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; Subsample, don't use it so far
     const Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,sizePtTrig,sizePtAss};
 
 
+    // mixing
+    fPoolMaxNEvents = 100;
+    fPoolMinNTracks = 5;
+    fNCentBins = fCentBins.size() - 1;
+    fNzVtxBins = fzVtxBins.size() - 1;
+    fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins, fCentBins.data(), fNzVtxBins, fzVtxBins.data());
+
+    if (!fPoolMgr) {
+    	AliError("Event Pool manager not created!");
+	return;
+    }
+    fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
+
+    fListOfProfile = new TList();
+    fListOfProfile->SetOwner();
+
+
+    
     fhChargedSE = new AliTHn("fhChargedSE", "fhChargedSE", nSteps, 6, iBinningTPCTPC);
     fhChargedSE->SetBinLimits(0, binning_deta_tpctpc);
     fhChargedSE->SetBinLimits(1, binning_dphi);
@@ -124,7 +498,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     fhChargedSE->SetVarTitle(3, "sample");
     fhChargedSE->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
     fhChargedSE->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
-    fListOfObjects->Add(fhChargedSE);
+    fListOfProfile->Add(fhChargedSE);
     //
     fhChargedME = new AliTHn("fhChargedME", "fhChargedME", nSteps, sizeof(iBinningTPCTPC) / sizeof(Int_t), iBinningTPCTPC);
     fhChargedME->SetBinLimits(0, binning_deta_tpctpc);
@@ -139,7 +513,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     fhChargedME->SetVarTitle(3, "sample");
     fhChargedME->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
     fhChargedME->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
-    fListOfObjects->Add(fhChargedME);
+    fListOfProfile->Add(fhChargedME);
 }
 
 // ---------------------------------------------------------------------------------
@@ -183,10 +557,6 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
        PostData(1,fListOfObjects);
        int outputslot = 2;
        PostData(2, fListOfProfile);
-       for (int i = 0; i < 30; i++) {
-         outputslot++;
-         PostData(outputslot, fListOfProfiles[i]);
-       }
        return;
      }
   }
@@ -196,10 +566,6 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
     PostData(1,fListOfObjects);
     int outputslot = 2;
     PostData(2, fListOfProfile);
-    for (int i = 0; i < 30; i++) {
-      outputslot++;
-      PostData(outputslot, fListOfProfiles[i]);
-    }
     return;
   }
   hEventCount->Fill("after fEventCuts", 1.);
@@ -212,16 +578,13 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
   //..filling Vz distribution
   AliVVertex *vtx = fAOD->GetPrimaryVertex();
   float fVtxZ = vtx->GetZ();
+  fPVz = fVtxZ;
 
   if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
 	   if (!fGFWSelection15o->AcceptVertex(fAOD)) {
 	    PostData(1,fListOfObjects);
 	    int outputslot = 2;
 	    PostData(2, fListOfProfile);
-	    for (int i = 0; i < 30; i++) {
-	      outputslot++;
-	      PostData(outputslot, fListOfProfiles[i]);
-	    }
 	    return;
 	  }
   } else {
@@ -229,10 +592,6 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 	    PostData(1,fListOfObjects);
 	    int outputslot = 2;
 	    PostData(2, fListOfProfile);
-	    for (int i = 0; i < 30; i++) {
-	      outputslot++;
-	      PostData(outputslot, fListOfProfiles[i]);
-	    }
 	    return;
 	  }
   }
@@ -267,6 +626,12 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
   // Here we calcuate the multiplicity distribution
   NTracksCalculation(fInputEvent);
 
+  fbSign = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
+
+  AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+  if(!multSelection) { return; }
+  fCentrality = multSelection->GetMultiplicityPercentile("V0A"); 
+	
   Int_t nTracks = fInputEvent->GetNumberOfTracks();
   fTracksTrigCharged = new TObjArray;
   fTracksAss = new TObjArray;
@@ -279,6 +644,8 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
   double vtxp[3] = {vx, vy, vz};
   
 
+  int fNofTracksAss = 0;
+  int fNofTracksTrig = 0;
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     AliAODTrack* track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTrack));
 
@@ -291,12 +658,12 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
     if (pt > fPtMinAss && pt < fPtMaxAss) {
         // Mingrui Polarity ??
         fTracksAss->Add(track);
-        // fNofTracksAss++; // number of associate tracks in the event
+        fNofTracksAss++; // number of associate tracks in the event
     }
 
     if (pt > fPtMinTrig && pt < fPtMaxTrig) {
         fTracksTrigCharged->Add(track);
-        // fNofTracksTrig++; // number of trigger tracks in the event
+        fNofTracksTrig++; // number of trigger tracks in the event
         // fhTracksTrigPt->Fill(pt, fPVz);
     }
   }
@@ -313,6 +680,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
   delete fTracksAss;
 
   PostData(1, fListOfObjects);
+  PostData(2, fListOfProfile);
   return;
 }
 
@@ -322,6 +690,23 @@ void AliAnalysisTaskCorrForNonlinearFlow::Terminate(Option_t *)
     if (fPoolMgr) {
         delete fPoolMgr;
     }
+}
+
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskCorrForNonlinearFlow::RangePhi(Double_t DPhi) {
+  if (DPhi < -TMath::Pi() / 2)   DPhi += 2 * TMath::Pi();
+  if (DPhi > 3 * TMath::Pi() / 2) DPhi -= 2*TMath::Pi();
+  return DPhi;
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskCorrForNonlinearFlow::GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius){
+  // calculates delta phi *
+  Double_t dPhiStar = phi1 - phi2 - charge1 * fbSign * TMath::ASin(0.075 * radius / pt1) + charge2 * fbSign * TMath::ASin(0.075 * radius / pt2);
+
+  if (dPhiStar > TMath::Pi()) dPhiStar = 2.0*TMath::Pi() - dPhiStar;
+  if (dPhiStar < -TMath::Pi()) dPhiStar = -2.0*TMath::Pi() - dPhiStar;
+
+  return dPhiStar;
 }
 
 //________________________________________________________________________
@@ -361,8 +746,33 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
             //..check if the tracks are the same
             // Mingrui: I don't see Zuzana uses this
             // if (trackTrig == trackAss) continue;
-
             // Here these's a complicated way to check whether the pair pass or not
+	    binscont[0] = etaTrig - etaAss;
+	    binscont[1] = RangePhi(phiTrig - phiAss);
+	    binscont[4] = ptTrig;
+	    binscont[5] = ptAss;
+
+	    double fMergingCut = 0;
+
+	    // If etaTrig  - etaAss < 0; Cut from Zuzana
+	    if(TMath::Abs(binscont[0]) < fMergingCut){
+		    Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
+		    Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
+
+		    const Double_t kLimit = 3.0*fMergingCut;
+
+		    if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+			    Bool_t bIsBelow = kFALSE;
+			    for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+				    Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, rad);
+				    if(TMath::Abs(dPhiStar) < fMergingCut) {
+					    bIsBelow = kTRUE;
+					    break;
+				    }
+			    } // end loop radius
+			    if(bIsBelow) continue;
+		    }
+	    }
 
             fhChargedSE->Fill(binscont, 0, 1./(trigEff*assEff));
         }
@@ -407,13 +817,39 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
                     //
                     // if (trackTrig == trackAss) continue;
                     // Here these's a complicated way to check whether the pair pass or not
+		    binscont[0] = etaTrig - etaAss;
+		    binscont[1] = RangePhi(phiTrig - phiAss);
+		    binscont[4] = ptTrig;
+		    binscont[5] = ptAss;
+
+		    double fMergingCut = 0;
+
+		    // If etaTrig  - etaAss < 0; Cut from Zuzana
+		    if(TMath::Abs(binscont[0]) < fMergingCut){
+			    Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
+			    Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
+
+			    const Double_t kLimit = 3.0*fMergingCut;
+
+			    if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+				    Bool_t bIsBelow = kFALSE;
+				    for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+			                    Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, rad);
+					    if(TMath::Abs(dPhiStar) < fMergingCut) {
+						    bIsBelow = kTRUE;
+						    break;
+					    }
+				    } // end loop radius
+				    if(bIsBelow) continue;
+			    }
+		    }
 
                     fhChargedME->Fill(binscont, 0, 1./nMix);
                 }
             }
         }
     }
-    TObjArray* cloneArray = (TObjArray*)fTracksTrigCharged->Clone();
+    TObjArray* cloneArray = (TObjArray*)fTracksAss->Clone();
     cloneArray->SetOwner(kTRUE);
     pool->UpdatePool(cloneArray);
 
@@ -422,8 +858,8 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp) {
   // Pt cut
-  if(mtr->Pt() < fMinPt) return kFALSE;
-  if(mtr->Pt() > fMaxPt) return kFALSE;
+  // if(mtr->Pt() < fMinPt) return kFALSE;
+  // if(mtr->Pt() > fMaxPt) return kFALSE;
 
   // DCA cut
   if(ltrackXYZ && vtxp) {
@@ -444,6 +880,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Dou
 }
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
+  return true;
   // LHC15i, LHC15l, LHC16, LHC17, LHC18: means: pp sample
   if (fPeriod.EqualTo("LHC15i") ||
       fPeriod.EqualTo("LHC15l") ||
