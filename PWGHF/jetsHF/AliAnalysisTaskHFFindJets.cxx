@@ -2800,9 +2800,8 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks
   bool isHFJet=false;
   fFastJetWrapper->Clear();
   cout<<"Total tracks" << totTracks <<endl;
-  cout << "Pos" << iPosTrack_0 << "Neg" << iNegTrack_0 << endl;
+  cout << " Pos " << iPosTrack_0 << " Neg " << iNegTrack_0 << endl;
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
-	cout<<"i tracks" << iTrack <<endl; 
     AliESDtrack* track = esd->GetTrack(iTrack);
     if (track->Pt() >= 0.15 && TMath::Abs(track->Eta()) < 0.9){ 
 	  if (iTrack==iNegTrack_0 || iTrack==iPosTrack_0) continue;
@@ -2810,9 +2809,11 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks
     }
   }
   fFastJetWrapper->AddInputVector(the2Prong->Px(), the2Prong->Py(), the2Prong->Pz(), the2Prong->ED0(),1);
+  cout<<" 2Prong Py " << the2Prong->Py() << " 2Prong Px " <<  the2Prong->Px() << " 2Prong Pz " << the2Prong->Pz() <<" 2Prong ED0 " << the2Prong->ED0() <<endl; 
 
   fFastJetWrapper->Run();
   std::vector<fastjet::PseudoJet> jets = fFastJetWrapper->GetInclusiveJets();
+  cout << " jets size " << jets.size()<< endl;
   for (Int_t ijet=0; ijet<jets.size(); ijet++) {
 	isHFJet=false;
 	fastjet::PseudoJet jet = jets[ijet];
@@ -2823,6 +2824,7 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks
 		break;
 	}
 	if(!isHFJet) continue;
+	cout << " HF Found at " << ijet<<endl;
 	hjetpt->Fill(jet.pt());
 	hjetE->Fill(jet.E());
 	hjetpx->Fill(jet.px());
