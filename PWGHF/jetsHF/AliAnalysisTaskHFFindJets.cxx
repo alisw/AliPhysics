@@ -2815,6 +2815,7 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks
   std::vector<fastjet::PseudoJet> jets = fFastJetWrapper->GetInclusiveJets();
   cout << " jets size " << jets.size()<< endl;
   for (Int_t ijet=0; ijet<jets.size(); ijet++) {
+	cout << "hanyadik jetben vagyunk " << ijet <<endl;
 	isHFJet=false;
 	fastjet::PseudoJet jet = jets[ijet];
 	if (jet.pt() < 0.15 || jet.perp() >= 1000.0 || TMath::Abs(jet.eta()) >= 0.5) continue;
