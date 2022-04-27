@@ -2823,7 +2823,7 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks
 	for (Int_t iconstituent=0; iconstituent<constituents.size(); iconstituent++) {
 		cout << "constituents index"<< constituents[iconstituent].user_index()<<endl;
 		if (constituents[iconstituent].user_index()==1) isHFJet=true;
-		break;
+		//break;
 	}
 	if(!isHFJet) continue;
 	cout << " HF Found at " << ijet<<endl;
