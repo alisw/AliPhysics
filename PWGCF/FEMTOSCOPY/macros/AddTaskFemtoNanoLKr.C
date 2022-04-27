@@ -223,9 +223,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = true,		//2 MC
 	AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
 
-	config->SetPtQA(true);
-  config->SetMassQA(true); ///?
-	config->SetExtendedQAPairs(pairQA);
+	//config->SetPtQA(true);
+  //config->SetMassQA(true); ///?
+	//config->SetExtendedQAPairs(pairQA); (commented for systematics)
 	config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 	config->SetMultBinning(true);
 	config->SetZBins(ZVtxBins); ///only the ones with same z and multiplicity will be compared
