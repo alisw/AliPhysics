@@ -54,56 +54,87 @@ class AliInputEventHandler;
 #include <THnSparse.h>
 
 class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
-    public:
+	public:
 
-    enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
+		enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
 
-    AliAnalysisTaskCorrForNonlinearFlow();
-    AliAnalysisTaskCorrForNonlinearFlow(const char *name);
-    AliAnalysisTaskCorrForNonlinearFlow(const char *name, int NUA, int NUE, TString fPeriod);
+		AliAnalysisTaskCorrForNonlinearFlow();
+		AliAnalysisTaskCorrForNonlinearFlow(const char *name);
+		AliAnalysisTaskCorrForNonlinearFlow(const char *name, int NUA, int NUE, TString fPeriod);
 
-    virtual ~AliAnalysisTaskCorrForNonlinearFlow();
+		virtual ~AliAnalysisTaskCorrForNonlinearFlow();
 
-    virtual void  UserCreateOutputObjects();
-    virtual void UserExec(Option_t *option);
-    virtual void NotifyRun();
-    virtual void Terminate(Option_t *);
+		virtual void  UserCreateOutputObjects();
+		virtual void UserExec(Option_t *option);
+		virtual void NotifyRun();
+		virtual void Terminate(Option_t *);
 
-    virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
-    virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
-    virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
+		virtual void   SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
+		virtual void   SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
+		virtual void   SetVtxCutDefault(Double_t vtxCut){fVtxCutDefault = vtxCut;} // The vtxCut for NtrksCounter
+		virtual void   SetMinPt(Double_t minPt){fMinPt = minPt;}
+		virtual void   SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
+		virtual void   SetMinPtAss(Double_t minPt){fPtMinAss = minPt;}
+		virtual void   SetMaxPtAss(Double_t maxPt){fPtMaxAss = maxPt;}
+		virtual void   SetMinPtTrig(Double_t minPt){fPtMinTrig = minPt;}
+		virtual void   SetMaxPtTrig(Double_t maxPt){fPtMaxTrig = maxPt;}
+	
+		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
+		virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
+		virtual void   SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
+		virtual void   SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
+		virtual void   SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
+		virtual void   SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
+		virtual void   SetSpringMode(bool flag = true) { fSpringMode = flag; }
+		virtual void   SetLowMultiplicityMode(bool flag = true) {fLowMultiplicityMode = flag;}
+		virtual void   SetAdditionalTPCPileupCuts(bool flag = true) {fAddTPCPileupCuts = flag;}
+		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
+		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
+		virtual void   SetUseFlippedEta(bool flag = true) {fUseFlippedEta = flag;}
+		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
+		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
+		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
+		// virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
+		// virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
 
-    virtual void   SetPeriod(TString period){fPeriod = period;}
-    virtual void   SetSystFlag(int syst){fCurrSystFlag = syst;} 
-    virtual int    GetSystFlag(){return fCurrSystFlag;}
+		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
+		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
+		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
 
-    private:
-    AliAnalysisTaskCorrForNonlinearFlow(const AliAnalysisTaskCorrForNonlinearFlow&);
-    AliAnalysisTaskCorrForNonlinearFlow& operator=(const AliAnalysisTaskCorrForNonlinearFlow&);
+		virtual void   SetPeriod(TString period){fPeriod = period;}
+		virtual void   SetSystFlag(int syst){fCurrSystFlag = syst;} 
+		virtual int    GetSystFlag(){return fCurrSystFlag;}
 
-    virtual void NTracksCalculation(AliVEvent* aod);
-    virtual void FillCorrelations();
-    virtual void FillCorrelationsMixed();
-    Bool_t AcceptAOD(AliAODEvent *inEv);
-    Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
+		Double_t RangePhi(Double_t DPhi);
+		Double_t GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
 
-    double GetPtWeight(double pt, double eta, float vz, double runNumber);
+	private:
+		AliAnalysisTaskCorrForNonlinearFlow(const AliAnalysisTaskCorrForNonlinearFlow&);
+		AliAnalysisTaskCorrForNonlinearFlow& operator=(const AliAnalysisTaskCorrForNonlinearFlow&);
 
-    Bool_t                  LoadWeights();
-	Bool_t                  LoadWeightsKatarina();
-	Bool_t                  LoadPtWeights();
-	Bool_t                  LoadPtWeightsKatarina();
-	Bool_t                  LoadWeightsSystematics();
+		virtual void NTracksCalculation(AliVEvent* aod);
+		virtual void FillCorrelations();
+		virtual void FillCorrelationsMixed();
+		Bool_t AcceptAOD(AliAODEvent *inEv);
+		Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 
-	Double_t GetWeightKatarina(double phi, double eta, double vz);
-	Double_t GetPtWeightKatarina(double pt, double eta, double vz);
-	Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
-	Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
-	const char* ReturnPPperiod(const Int_t runNumber) const;
-	const char* ReturnPPperiodMC(const Int_t runNumber) const;
-	const char* GetSpeciesName(const PartSpecies species) const;
+		double GetPtWeight(double pt, double eta, float vz, double runNumber);
 
-AliEventCuts	fEventCuts;					// Event cuts
+		Bool_t                  LoadWeights();
+		Bool_t                  LoadWeightsKatarina();
+		Bool_t                  LoadPtWeights();
+		Bool_t                  LoadPtWeightsKatarina();
+		Bool_t                  LoadWeightsSystematics();
+
+		Double_t GetWeightKatarina(double phi, double eta, double vz);
+		Double_t GetPtWeightKatarina(double pt, double eta, double vz);
+		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
+		Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
+		const char* ReturnPPperiod(const Int_t runNumber) const;
+		const char* ReturnPPperiodMC(const Int_t runNumber) const;
+		const char* GetSpeciesName(const PartSpecies species) const;
+
+		AliEventCuts	fEventCuts;					// Event cuts
 		AliGFWCuts*     fGFWSelection;                                  //!
 		AliGFWNFCuts*   fGFWSelection15o;                               //!
 		AliAODEvent*    fAOD;                                           //! AOD object
@@ -132,10 +163,10 @@ AliEventCuts	fEventCuts;					// Event cuts
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
 		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region 
 		Bool_t                  fAddTPCPileupCuts;                      // Additional TPC pileup cuts
-                Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
+		Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
 		Bool_t                  fUseFlippedEta;                         // Flip the eta region to merge the pPb and Pbp sample;
-                Bool_t                  fUseNarrowBin;                          // Use Narrow bin
+		Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
 		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
@@ -146,9 +177,9 @@ AliEventCuts	fEventCuts;					// Event cuts
 		Int_t                   fMinEventsToMix;                        // Minimum numver of events to mix
 
 		Int_t                   fNzVtxBins;                             // number of PV z bins
-                Int_t                   fNCentBins;                             // number of centrality bins
-                std::vector<Double_t>   fzVtxBins;
-                std::vector<Double_t>   fCentBins;
+		Int_t                   fNCentBins;                             // number of centrality bins
+		std::vector<Double_t>   fzVtxBins;
+		std::vector<Double_t>   fCentBins;
 
 
 		// Output objects
@@ -234,24 +265,25 @@ AliEventCuts	fEventCuts;					// Event cuts
 		TH1F*				hDCAz; 			//!
 		TH1F*				hITSclusters; 		//!
 		TH1F*				hChi2; 			//!
- 
+
 		TObjArray*                   fTracksTrigCharged;     //! List of charged tracks
 		TObjArray*                   fTracksAss;             //! List of associate tracks
 		AliTHn*                      fhChargedSE;            //!
-                AliTHn*                      fhChargedME;            //!
+		AliTHn*                      fhChargedME;            //!
 		AliEventPoolManager*         fPoolMgr;               //!  event pool manager for Event Mixing
 
-        // Global variables
-	double NtrksCounter = 0;       //!
-	double NTracksCorrected = 0;   //!
-	double NTracksUncorrected = 0; //!
-	int NtrksAfter = 0;            //!
+		// Global variables
+		double NtrksCounter = 0;       //!
+		double NTracksCorrected = 0;   //!
+		double NTracksUncorrected = 0; //!
+		int NtrksAfter = 0;            //!
 
-        int lastRunNumber   = 0;       //!
-	double fPVz;                   //!
-	double fCentrality;                   //!
+		int lastRunNumber   = 0;       //!
+		double fPVz;                   //!
+		double fCentrality;            //!
+		Double_t fbSign;               //!
 
-        ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 1); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 1); // Analysis task
 };
 
 #endif
