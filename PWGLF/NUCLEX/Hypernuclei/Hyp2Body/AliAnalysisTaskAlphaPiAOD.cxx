@@ -114,8 +114,8 @@ void AliAnalysisTaskAlphaPiAOD::UserCreateOutputObjects() {
     fEventCut.AddQAplotsToList(fHistos->GetListOfHistograms());  // EventCuts QA Histograms
 
     // QA Histograms
-    fHistos->CreateTH2("QA/hTPCPIDAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c});n_{#sigma} #alpha", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH2("QA/hTPCPIDAntiAlpha", "TPC PID #bar{#alpha};#it{p}_{T} (GeV/#it{c});n_{#sigma} #bar{#alpha}", 200, 0, 20, 200, 0, 200);
+    fHistos->CreateTH2("QA/hTPCPIDAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c});TPC Signal #alpha", 400, -20, 20, 1000, 0, 1000);
+    fHistos->CreateTH2("QA/hTPCPIDAntiAlpha", "TPC PID #bar{#alpha};#it{p}_{T} (GeV/#it{c});TPC Signal #bar{#alpha}", 400, -20, 20, 1000, 0, 1000);
 
     // MC QA Histograms
     // if (fMC) {
@@ -261,8 +261,8 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
             if (std::abs(pNsigma) < 5 && std::abs(nNsigma) < 5) {
                 continue;
             }
-            fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
-            fHistos->FillTH2("QA/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
+            fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum()/pTrack->Charge(), pTrack->GetTPCsignal());
+            fHistos->FillTH2("QA/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum()/nTrack->Charge(), nTrack->GetTPCsignal());
 
             fRecHyper->Matter = std::abs(pNsigma) < 5;
             auto alpha = fRecHyper->Matter ? pTrack : nTrack;
@@ -342,9 +342,9 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 continue;
             }
             if(alphaTrack->GetSign() > 0)
-                fHistos->FillTH2("QA/hTPCPIDAlpha", alphaTrack->GetTPCmomentum(), alphaTrack->GetTPCsignal());
+                fHistos->FillTH2("QA/hTPCPIDAlpha", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
             else
-                fHistos->FillTH2("QA/hTPCPIDAntiAlpha", alphaTrack->GetTPCmomentum(), alphaTrack->GetTPCsignal());
+                fHistos->FillTH2("QA/hTPCPIDAntiAlpha", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
 
             // jTrack loop - pion
             for (int jTrack{0}; jTrack < ev->GetNumberOfTracks(); ++jTrack) {
