@@ -2822,8 +2822,11 @@ void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks
 	std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));
 	for (Int_t iconstituent=0; iconstituent<constituents.size(); iconstituent++) {
 		cout << "constituents index"<< constituents[iconstituent].user_index()<<endl;
-		if (constituents[iconstituent].user_index()==1) isHFJet=true;
-		//break;
+		if (constituents[iconstituent].user_index()==1) {
+			isHFJet=true; 
+			cout << " HF index " << constituents[iconstituent].user_index() <<endl;
+			break;
+			}
 	}
 	if(!isHFJet) continue;
 	cout << " HF Found at " << ijet<<endl;
