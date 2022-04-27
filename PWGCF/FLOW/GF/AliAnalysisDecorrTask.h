@@ -66,6 +66,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetRequireTwoPart(Bool_t req) { fRequireTwoPart = req; }
         void                    OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
         void                    OverrideCentrality(double val) { fOverrideCentrality = val; }
+        void                    DebugTrain(bool dbg) { fDebugTrain = dbg; }
         struct StoreRef
         {
             double val;
@@ -242,6 +243,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         AliVEvent*              fEvent;                     //!
         Bool_t                  fInitTask;                  //Initialization
         Bool_t                  fOnTheFly;                  
+        Bool_t                  fDebugTrain;
         Double_t                fImpactParameterMC;
         std::vector<AliDecorrFlowCorrTask*>    fVecCorrTask;   //
         TString                 fCorrName;                     //

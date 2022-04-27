@@ -88,6 +88,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fEvent(nullptr),
     fInitTask{kFALSE},  
     fOnTheFly(kFALSE),
+    fDebugTrain(kFALSE),
     fImpactParameterMC{-1.0},
     fVecCorrTask{},
     fCorrName{""},
@@ -181,7 +182,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, bool IsMC, bool i
     fMCEvent(nullptr),
     fEvent(nullptr),
     fInitTask{kFALSE}, 
-    fOnTheFly(isOnTheFly),  
+    fOnTheFly(isOnTheFly),
+    fDebugTrain(kFALSE),
     fImpactParameterMC{-1.0},
     fVecCorrTask{},
     fCorrName{""},
@@ -583,14 +585,14 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         fMCEvent = inputHandler->MCEvent();
         if (!fMCEvent) return;
     }
-    else if(fOnTheFly) fEvent = getMCEvent();  
+    else if(fOnTheFly) { fMCEvent = getMCEvent(); if(fDebugTrain&&fMCEvent) printf("MC event fetched\n"); }
     else
     {   
         fEvent = dynamic_cast<AliVEvent*>(InputEvent());
         fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
         if(!fAOD) { return; }
+        if(!fEvent) { AliFatal("fEvent not found!"); return; }
     }
-    if(!fEvent) { AliFatal("fEvent not found!"); return; }
     double lCent = (fOverrideCentrality>0)?fOverrideCentrality:getCentrality();
     if(lCent<0) return;
     if(!fOnTheFly)
@@ -662,11 +664,24 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
         bool bHasGap = (dGap > -1.0)?kTRUE:kFALSE;
         TComplex c[2] = {TComplex(0.0,0.0,kFALSE),TComplex(0.0,0.0,kFALSE)};
 
-        if(bRef) { CalculateGFW(c,task,0,bHasGap); FillProfiles(c,lCent,""); }
-        if(bDiff) { CalculateGFW(c,task,1,bHasGap); FillProfiles(c,lCent,lpta,"_diff"); }
-        if(bPtA) { CalculateGFW(c,task,2,bHasGap); FillProfiles(c,lCent,lpta,"_PtA"); }
+        if(bRef) { 
+            if(fDebugTrain) printf("Calculating reference obs\n"); 
+            CalculateGFW(c,task,0,bHasGap); 
+            FillProfiles(c,lCent,""); 
+        }
+        if(bDiff) { 
+            if(fDebugTrain) printf("Calculating differential obs\n"); 
+            CalculateGFW(c,task,1,bHasGap); 
+            FillProfiles(c,lCent,lpta,"_diff"); 
+        }
+        if(bPtA) { 
+            if(fDebugTrain) printf("Calculating pta obs\n"); 
+            CalculateGFW(c,task,2,bHasGap); 
+            FillProfiles(c,lCent,lpta,"_PtA"); 
+        }
         if(bPtRef)
         {
+            if(fDebugTrain) printf("Calculating ptref obs\n");
             CalculateGFW(c,task,3,bHasGap);
             FillProfiles(c,lCent,lpta,"_PtRef");
             if(fCorrOrder==4 && task->fiHarm[1] > 0)
@@ -677,6 +692,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
         }        
         if(bPtB)
         {
+            if(fDebugTrain) printf("Calculating ptb obs\n");
             CalculateGFW(c,task,4,bHasGap);
             FillProfiles(c,lCent,lpta,lptb,"_PtAPtB");
             if(fCorrOrder==4 && task->fiHarm[1] > 0)
@@ -786,6 +802,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, TSt
         if(!prof_sample) { AliError(Form("Profile %s%s_sample%d not found",fCorrName.Data(),suffix.Data(),fIndexSampling)); return; }
         prof_sample->Fill(lCent,val,d[0]);
     }
+    if(fDebugTrain && fill) printf("Filled reference profiles\n");
 }
 void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, const double &lpta, TString suffix)
 {
@@ -814,6 +831,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, con
         if(!prof_sample) { AliError(Form("Profile %s%s_sample%d not found",fCorrName.Data(),suffix.Data(),fIndexSampling)); return; }
         prof_sample->Fill(lCent,lpta,val,d[0]);
     }
+    if(fDebugTrain && fill) printf("Filled pta profiles\n");
 }
 void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, const double &lpta, const double lptb, TString suffix)
 {
@@ -841,6 +859,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, con
         if(!prof_sample) { AliError(Form("Profile %s%s_sample%d not found",fCorrName.Data(),suffix.Data(),fIndexSampling)); return; }
         prof_sample->Fill(lCent,lpta,lptb,val,d[0]);
     }
+    if(fDebugTrain && fill) printf("Filled ptb profiles\n");
 }
 void AliAnalysisDecorrTask::InitTypes(const AliDecorrFlowCorrTask* const task)
 {
@@ -866,17 +885,16 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
     
     if(fOnTheFly)
     {
-        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
-        Int_t iNumTracks = ev->GetNumberOfPrimaries();
+        Int_t iNumTracks = fMCEvent->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return; }
         for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
         {
-            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
 
             if(!track) { continue; }
             
             //excluding non stable particles
-            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(!(fMCEvent->IsPhysicalPrimary(iTrack))) continue;
             if(track->Charge() == 0) continue;
             
             bIsRP = IsWithinRP(track);
@@ -1071,16 +1089,15 @@ int AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const tas
     Int_t TrackCounter = 0;
     if(fOnTheFly)
     {
-        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
-        Int_t iNumTracks = ev->GetNumberOfPrimaries();
+        Int_t iNumTracks = fMCEvent->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return 0; }
         for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
         {
-            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
 
             //excluding non stable particles
-            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(!(fMCEvent->IsPhysicalPrimary(iTrack))) continue;
             if(track->Charge() == 0) continue;
 
             double dPt = track->Pt();
@@ -1337,16 +1354,15 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
     double dVz = (fOnTheFly)?0.0:fAOD->GetPrimaryVertex()->GetZ();
     if(fOnTheFly)
     {
-        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
-        Int_t iNumTracks = ev->GetNumberOfPrimaries();
+        Int_t iNumTracks = fMCEvent->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return; }
         for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
         {
-            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
 
             //excluding non stable particles
-            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(!(fMCEvent->IsPhysicalPrimary(iTrack))) continue;
             if(track->Charge() == 0) continue;
 
             double dPt = track->Pt();
