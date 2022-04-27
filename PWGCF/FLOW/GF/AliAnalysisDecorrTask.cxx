@@ -891,12 +891,7 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
 
-            if(!track) { continue; }
-            
-            //excluding non stable particles
-            if(!(fMCEvent->IsPhysicalPrimary(iTrack))) continue;
-            if(track->Charge() == 0) continue;
-            
+            if(!track) { continue; }    
             bIsRP = IsWithinRP(track);
             if (!bIsRP) { continue; }
 
@@ -1095,10 +1090,6 @@ int AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const tas
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
-
-            //excluding non stable particles
-            if(!(fMCEvent->IsPhysicalPrimary(iTrack))) continue;
-            if(track->Charge() == 0) continue;
 
             double dPt = track->Pt();
             double dPhi = track->Phi();
@@ -1360,10 +1351,6 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
-
-            //excluding non stable particles
-            if(!(fMCEvent->IsPhysicalPrimary(iTrack))) continue;
-            if(track->Charge() == 0) continue;
 
             double dPt = track->Pt();
             double dPhi = track->Phi();
