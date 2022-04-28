@@ -257,7 +257,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 			}
 			// Pb-Pb Dataset
 			else if(fPeriod.EqualTo("LHC15o")){
-				inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"): TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
+				inNUE =TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
 			}
 			// p-p Dataset
 			else{
