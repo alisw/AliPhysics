@@ -184,6 +184,24 @@ set(SRCS
 
 )
 
+if(FASTJET_FOUND)
+    set(SRCS ${SRCS}
+    AliAnalysisTaskEmcalJetBtagSV.cxx          
+    AliAnalysisTaskBJetTC.cxx		
+    AliATDJetCorrDev.cxx 
+    AliAnalysisTaskHFFindJets.cxx
+    )
+
+
+    include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
+                        ${AliPhysics_SOURCE_DIR}/JETAN/JETAN
+                       )
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+
+endif(FASTJET_FOUND)
+
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
@@ -197,10 +215,16 @@ endif()
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS} IClassifierReader.h)
 
+if(FASTJET_FOUND)
+  list(APPEND HDRS ../../PWGJE/EMCALJetTasks/FJ_includes.h)
+endif(FASTJET_FOUND)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+
+set(ALIROOT_DEPENDENCIES PWGJEEMCALJetTasks)
 
 # Add a shared library
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
@@ -212,6 +236,17 @@ if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
     set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
 endif(KFParticle_FOUND)
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    fastjettools
+    fastjet
+    )
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
