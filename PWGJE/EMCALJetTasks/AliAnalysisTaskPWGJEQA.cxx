@@ -76,6 +76,7 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fDoEventQA(kTRUE),
   fGeneratorLevelName(),
   fDetectorLevelName(),
+  fMCGeneratorIndex(-1),
   fRejectOutlierEvents(kFALSE),
   fIsPtHard(kFALSE),
   fGeneratorLevel(0),
@@ -123,6 +124,7 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fDoEventQA(kTRUE),
   fGeneratorLevelName(),
   fDetectorLevelName(),
+  fMCGeneratorIndex(-1),
   fRejectOutlierEvents(kFALSE),
   fIsPtHard(kFALSE),
   fGeneratorLevel(0),
@@ -1001,7 +1003,7 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
       if (fGeneratorLevel && label > 0) {
         AliAODMCParticle *part =  fGeneratorLevel->GetAcceptMCParticleWithLabel(label);
         if (part) {
-          if (part->GetGeneratorIndex() == 0) {
+          if (fMCGeneratorIndex == -1 || fMCGeneratorIndex == part->GetGeneratorIndex()) {
             Int_t pdg = TMath::Abs(part->PdgCode());
             // select charged pions, protons, kaons, electrons, muons
             if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) {
@@ -1021,13 +1023,13 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
     for (auto partIterator : fGeneratorLevel->accepted_momentum() ) {
       part = partIterator.second;
       
-      Byte_t findable = 0;
-      
-      Int_t pdg = TMath::Abs(part->PdgCode());
-      // select charged pions, protons, kaons, electrons, muons
-      if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) findable = 1;
-      
-      FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), findable);
+      if (fMCGeneratorIndex == -1 || fMCGeneratorIndex == part->GetGeneratorIndex()) {
+        Byte_t findable = 0;
+        Int_t pdg = TMath::Abs(part->PdgCode());
+        // select charged pions, protons, kaons, electrons, muons
+        if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) findable = 1;
+        FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), findable);
+      }
     }
   }
 }
