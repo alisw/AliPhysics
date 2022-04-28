@@ -184,11 +184,16 @@ set(SRCS
 
 )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	set(SRCS
+	  ${SRCS}
+  AliAnalysisTaskHFSimpleVertices.cxx
+  )
+endif()
+
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}         
-    AliAnalysisTaskBJetTC.cxx		
-    AliATDJetCorrDev.cxx 
-    AliAnalysisTaskHFFindJets.cxx
+    AliAnalysisTaskHFSimpleVertices.cxx
     )
 
 
@@ -201,6 +206,7 @@ if(FASTJET_FOUND)
 
 endif(FASTJET_FOUND)
 
+<<<<<<< HEAD
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
@@ -209,6 +215,8 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
   )
 endif()
 
+=======
+>>>>>>> Adding HFJetFinding Task to SimpleVerices
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
