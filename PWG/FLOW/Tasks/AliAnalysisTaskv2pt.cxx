@@ -137,6 +137,7 @@ AliAnalysisTaskv2pt::AliAnalysisTaskv2pt(const char *name): AliAnalysisTaskSE(na
   fHistTPCVsESDTrkBefore(NULL),
   fHistTPCVsESDTrkAfter(NULL),
   fHistv2cumCentChrgAll(NULL),
+  fHistv2cumCentChrgAllNeg(NULL),
   fHistPileUpCount(NULL),  
 
   fHCorrectNUAposChrg(NULL),  
@@ -246,6 +247,7 @@ AliAnalysisTaskv2pt::AliAnalysisTaskv2pt():
   fHistTPCVsESDTrkBefore(NULL),
   fHistTPCVsESDTrkAfter(NULL),
   fHistv2cumCentChrgAll(NULL),
+  fHistv2cumCentChrgAllNeg(NULL),
   fHistPileUpCount(NULL),  
 
   fHCorrectNUAposChrg(NULL),  
@@ -496,6 +498,12 @@ void AliAnalysisTaskv2pt::UserCreateOutputObjects()
   fHistv2cumCentChrgAll = new TProfile(name,title,18,0,90,"");
   fHistv2cumCentChrgAll ->Sumw2();
   fListHist->Add(fHistv2cumCentChrgAll);
+
+  sprintf(name,"fHistv2cumCentChrgAllQcumNegCent%d",0);
+  sprintf(title,"Cent %2.0f-%2.0f; p_{T}; v_{2}",centRange[0],centRange[1]);
+  fHistv2cumCentChrgAllNeg = new TProfile(name,title,18,0,90,"");
+  fHistv2cumCentChrgAllNeg ->Sumw2();
+  fListHist->Add(fHistv2cumCentChrgAllNeg);
   
 
 
@@ -758,7 +766,9 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 	  
   ////User's variable:
   Double_t fSumTPCQn2xNeg=0, fSumTPCQn2yNeg=0, fSumTPCQn2xPos=0, fSumTPCQn2yPos=0;
+  Double_t fSumTPCQn2xNegChNeg=0, fSumTPCQn2yNegChNeg=0, fSumTPCQn2xPosChNeg=0, fSumTPCQn2yPosChNeg=0;
   Double_t fSumWgtEtaNeg=0, fSumWgtEtaPos=0;
+  Double_t fSumWgtEtaNegChNeg=0, fSumWgtEtaPosChNeg=0;
   Double_t fNumOfPos = 0;
   Double_t fNumOfNeg = 0;
   Double_t ptWgtMC = 1.0, WgtNUA = 1.0;
@@ -796,8 +806,6 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
       //Apply track cuts here:
-      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
-
       if((trkPt <= 10.0) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
 	//---------->  Here I do All my track level analysis:
@@ -861,14 +869,11 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 	}
 
 	
-	//if(iTrack%10==0){
-	//std::cout<<" pT = "<<trkPt<<"\t MCWgt = "<<ptWgtMC<<"\t Eta = "<<trkEta<<"\t NUAwgt = "<<WgtNUA<<"\t TotalWgt = "<<trkWgt<<endl;
-	//}
-       
+	
 	
 	if (trkPt<fMaxevpt)
 	  {
-
+	    if(trkChrg > 0){	  
 	    if(trkEta < fEtaGapNeg){
 	  fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
 	  fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
@@ -879,7 +884,22 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 	  fSumTPCQn2yPos += trkWgt*TMath::Sin(gPsiN*trkPhi);
 	  fSumWgtEtaPos  += trkWgt;
 	}
-	    
+	    }
+	    else
+	      {
+	    if(trkEta < fEtaGapNeg){
+	  fSumTPCQn2xNegChNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNegChNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNegChNeg  += trkWgt;
+	}
+	    else if(trkEta > fEtaGapPos){
+	  fSumTPCQn2xPosChNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yPosChNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaPosChNeg  += trkWgt;
+	}
+	      }
+
+
 	  }
 	
 
@@ -996,9 +1016,7 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
       //Apply track cuts here:
       if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
-	//dcaXY  = track->DCA();
-	//dcaZ   = track->ZAtDCA();
-        
+	
 	//---------->  Here I do All my track level analysis:
 
 	
@@ -1018,10 +1036,10 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 	  nSigRMSTPCTOFpion = TMath::Sqrt(nSigTPCpion*nSigTPCpion + nSigTOFpion*nSigTOFpion);
 
 
-	  if(trkPt<=0.6 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
+	  if(trkPt<=0.5 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
 	    isItPion = kTRUE;
 	  }
-	  else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigRMSTPCTOFpion)<=fNSigmaTOFCut){
+	  else if(trkPt>0.5 && trkPt<=10.0 && TMath::Abs(nSigRMSTPCTOFpion)<=fNSigmaTOFCut){
 	    isItPion = kTRUE;
 	  }
 	}
@@ -1168,8 +1186,8 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 	/// infinity Weight protection:
 	if(WgtNUA>1e3)     WgtNUA = 1.0;
 	if(WgtNUAPion>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAKaon>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAProt>1e3) WgtNUAPion = 1.0;
+	if(WgtNUAKaon>1e3) WgtNUAKaon = 1.0;
+	if(WgtNUAProt>1e3) WgtNUAProt = 1.0;
 
 	
 	
@@ -1352,12 +1370,21 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 
 
   Double_t c2WeightChrg     = fSumWgtEtaPos*fSumWgtEtaNeg;
+  Double_t c2WeightChrgNeg     = fSumWgtEtaPosChNeg*fSumWgtEtaNegChNeg;
   if (c2WeightChrg!=0)
     {
   Double_t c2cumulantChrg   = (fSumTPCQn2xPos*fSumTPCQn2xNeg + fSumTPCQn2yPos*fSumTPCQn2yNeg)/c2WeightChrg;
   fHistv2cumAchChrgAll[iCent]->Fill(1, c2cumulantChrg, c2WeightChrg);   /// for denominator
   fHistv2cumCentChrgAll->Fill(centrality, c2cumulantChrg, c2WeightChrg);   /// for denominator
     }
+
+  if (c2WeightChrgNeg!=0)
+    {
+  Double_t c2cumulantChrgNeg   = (fSumTPCQn2xPosChNeg*fSumTPCQn2xNegChNeg + fSumTPCQn2yPosChNeg*fSumTPCQn2yNegChNeg)/c2WeightChrgNeg;
+  fHistv2cumCentChrgAllNeg->Fill(centrality, c2cumulantChrgNeg, c2WeightChrgNeg);   /// for denominator
+    }
+
+
 
   if (fSumWgtEtaNeg!=0)
     {

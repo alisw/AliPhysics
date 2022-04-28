@@ -12,17 +12,22 @@
 #include <TRandom.h>
 #include "TClonesArray.h"
 #include "AliRsnListOutput.h"
+#include "TDatabasePDG.h"
+#include "TParticlePDG.h"
 
 class AliRsnListOutput;
 class AliRsnMiniParticle;
 class AliRsnMiniEvent;
+class AliRsnDaughter;
+
 
 class AliRsnMiniPair : public TObject {
 public:
 
- AliRsnMiniPair() : fIndex1(-1), fIndex2(-1), fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE), fPassesOOBPileupCut(kFALSE) {for (Int_t i = 0; i<3; i++) fPmother[i] = 0.0;}
+  AliRsnMiniPair() : fIndex1(-1), fIndex2(-1), fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE), fPassesOOBPileupCut(kFALSE), K0sIM(0) {for (Int_t i = 0; i<3; i++) fPmother[i] = 0.0;}
   
    Int_t          &Mother()    {return fMother;}
+   Double_t       &K0IM()      {return K0sIM;} //added by prottay
    Long_t         &MotherPDG() {return fMotherPDG;}
    Bool_t         &IsFromB()      {return fIsFromB;}
    Bool_t         &IsQuarkFound() {return fIsQuarkFound;}
@@ -59,6 +64,7 @@ public:
    Double_t        CosThetaStarAbs(Bool_t mc);
    Double_t        CosThetaHe(Bool_t mc);
    Double_t        CosThetaHeAbs(Bool_t mc);
+   Double_t        CosThetaCsAbs(Bool_t mc);
    Double_t        PhiHePbPb5(Bool_t mc);
    Double_t        PhiHePP5(Bool_t mc);
    Double_t        CosThetaJackson(Bool_t mc);
@@ -66,6 +72,7 @@ public:
    Double_t        CosThetaToEventPlane(AliRsnMiniEvent *event, Bool_t mc);
    Double_t        PhiV(Bool_t mc); 
    Double_t        DaughterPt(Int_t daughterId, Bool_t mc);
+   Double_t        DaughterIM(); 
    Double_t        DaughterDCA(Int_t daughterId); 
    Double_t        DCAProduct();                                                   
    void            DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpypz); 
@@ -74,6 +81,8 @@ public:
    Double_t        PairYRes()               const;
    Double_t        PairAsymmetry(Bool_t mc); 
    Bool_t          ContainsIndex(Int_t index);
+  Double_t        pTLstar(Bool_t mc)     const;
+
 
  private:
    
@@ -95,7 +104,8 @@ public:
    Float_t        fPmother[3];// MC momentum of the pair corresponding mother
    Bool_t         fContainsV0Daughter; // Flag if one of particle is part of V0's daughter
    Bool_t         fPassesOOBPileupCut; // At least one daughter passes the out-of-bunch pileup cut
-   
+   Double_t       K0sIM;      // K0s IM (by prottay)
+  
    ClassDef(AliRsnMiniPair, 7)
      };
 

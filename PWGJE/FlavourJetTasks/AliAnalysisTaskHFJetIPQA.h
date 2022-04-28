@@ -94,7 +94,9 @@ public:
         bAnalysisCut_MinNewVertexContrib=29,
         bAnalysisCut_SDz=30,
         bAnalysisCut_SDbeta=31,
-        bAnalysisCut_MaxIPLNJP=32
+        bAnalysisCut_MaxIPLNJP=32,
+        bAnalysisCut_NCrossedRowsOverFClusters=33,
+        bAnalysisCut_NCrossedRows=34
     };
 
     enum V0Cuts{
@@ -643,7 +645,7 @@ private:
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[33]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fAnalysisCuts[35]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
     Double_t fV0Cuts[26];
 
     AliPIDCombined *fCombined ;//!
@@ -712,7 +714,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 84)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 85)
 };
 
 #endif

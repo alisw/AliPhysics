@@ -82,6 +82,10 @@ public:
     kRun2BCInfo,
     kOrigin,
     kHMPID,
+    kHF2Prong,
+    kHF3Prong,
+    kHFCascade,
+    kHFDStar,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -125,7 +129,9 @@ public:
     // NOTE Highest 4 bits reservd for PID hypothesis
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum MCParticleFlags : uint8_t {
-    ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
+    ProducedInTransport = 0x1, // Bit 0: 0 = from generator; 1 = from transport
+    FromBackgroundEvent = 0x2, // Particle from background event (may have been used several times)
+    PhysicalPrimary = 0x4      // Particle is a physical primary according to ALICE definition
   };
   //Aliases for multiplicity selection criteria
   enum EventSelectionCut {
@@ -160,6 +166,7 @@ public:
 
   void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
   void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
+  void SetStoreHF() { fStoreHF = kTRUE; }
   void SetCentralityMethod(const char *method) { fCentralityMethod = method; } // Settter for centrality method
   void SetSkipPileup(Bool_t flag) { fSkipPileup = flag; }
   void SetSkipTPCPileup(Bool_t flag) { fSkipTPCPileup = flag; }
@@ -389,14 +396,13 @@ private:
 
     Int_t   fIndexMcCollisions = -1;    /// The index of the MC collision vertex
 
-    // MC information (modified version of TParticle
+    // MC information (modified version of TParticle)
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
     uint8_t fFlags    = 0;     /// See enum MCParticleFlags
-    Int_t fIndexMcParticles_Mother0    = 0; /// Indices of the mother particles
-    Int_t fIndexMcParticles_Mother1    = 0;
-    Int_t fIndexMcParticles_Daughter0  = 0; /// Indices of the daughter particles
-    Int_t fIndexMcParticles_Daughter1  = 0;
+    Int_t fIndexArray_Mothers_size     = 0;   /// Length of fIndexArray_Mothers
+    Int_t fIndexArray_Mothers[1]       = {0}; /// VLA of mothers (always length 1 for Run 2)
+    Int_t fIndexSlice_Daughters[2]     = {0}; /// Slice of daughter particles
     Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
     Float_t fPx = -999.f; /// x component of momentum
@@ -520,24 +526,36 @@ private:
 
   struct {
     /// V0A  (32 cells in Run2, 48 cells in Run3)
-    Int_t fIndexBCs = 0u;                /// Index to BC table
-    Float_t fAmplitude[48] = {0.f};   /// Multiplicity for each channel
+    Int_t fIndexBCs = 0u;             /// Index to BC table
+    Int_t fChannel_size = 0;          /// Size of fChannel and fAmplitude
+    uint8_t fChannel[48] = {0};       /// Channel indices of filled amplitudes
+    Int_t fAmplitude_size = 0;        /// Size of fChannel and fAmplitude
+    Float_t fAmplitude[48] = {0.f};   /// Multiplicity for each filled channel listed in fChannel
     Float_t fTime = 0.f;              /// Average A-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
   } fv0a;                             //! structure to keep V0A information
 
   struct {
     /// V0C  (32 cells in Run2)
-    Int_t fIndexBCs = 0u;                /// Index to BC table
+    Int_t fIndexBCs = 0u;             /// Index to BC table
+    Int_t fChannel_size = 0;          /// Size of fChannel and fAmplitude
+    uint8_t fChannel[32] = {0};       /// Channel indices of filled amplitudes
+    Int_t fAmplitude_size = 0;        /// Size of fChannel and fAmplitude
     Float_t fAmplitude[32] = {0.f};   /// Multiplicity for each channel
     Float_t fTime = 0.f;              /// Average C-side time
   } fv0c;                             //! structure to keep V0C information
 
   struct {
     /// FT0 (12+12 channels in Run2, 96+112 channels in Run3)
-    Int_t fIndexBCs = 0u;                /// Index to BC table
-    Float_t fAmplitudeA[96] = {0.f};  /// Multiplicity for each A-side channel
-    Float_t fAmplitudeC[112] = {0.f}; /// Multiplicity for each C-side channel
+    Int_t fIndexBCs = 0u;             /// Index to BC table
+    Int_t fChannelA_size = 0;         /// Size of fChannelA and fAmplitudeA
+    uint8_t fChannelA[96] = {0};      /// Channel indices of filled amplitudes on the A-side
+    Int_t fAmplitudeA_size = 0;       /// Size of fChannelA and fAmplitudeA
+    Float_t fAmplitudeA[96] = {0.f};  /// Multiplicity for A-side channels listed in fChannelA
+    Int_t fChannelC_size = 0;         /// Size of fChannelC and fAmplitudeC
+    uint8_t fChannelC[112] = {0};     /// Channel indices of filled amplitudes on the C-side
+    Int_t fAmplitudeC_size = 0;       /// Size of fChannelC and fAmplitudeC
+    Float_t fAmplitudeC[112] = {0.f}; /// Multiplicity for C-side channels listed in fChannelC
     Float_t fTimeA = 0.f;             /// Average A-side time
     Float_t fTimeC = 0.f;             /// Average C-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
@@ -546,8 +564,8 @@ private:
   struct {
     /// FDD (AD)
     Int_t fIndexBCs = 0u;                /// Index to BC table
-    Float_t fAmplitudeA[4] = {0.f};   /// Multiplicity for each A-side channel
-    Float_t fAmplitudeC[4] = {0.f};   /// Multiplicity for each C-side channel
+    int16_t fChargeA[8] = {0u};   /// Multiplicity for each A-side channel
+    int16_t fChargeC[8] = {0u};   /// Multiplicity for each C-side channel
     Float_t fTimeA = 0.f;             /// Average A-side time
     Float_t fTimeC = 0.f;             /// Average C-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
@@ -555,26 +573,55 @@ private:
 
   struct {
     /// V0s (Ks, Lambda)
-
+    Int_t fIndexCollisions = -1; /// The index of the collision vertex in the TF, to which the track is attached
     Int_t fIndexTracksPos = -1; // Positive track ID
     Int_t fIndexTracksNeg = -1; // Negative track ID
   } v0s;               //! structure to keep v0sinformation
 
   struct {
     /// Cascades
-
+    Int_t fIndexCollisions = -1; /// The index of the collision vertex in the TF, to which the track is attached
     Int_t fIndexV0s = -1; // V0 ID
     Int_t fIndexTracks = -1; // Bachelor track ID
   } cascs;             //! structure to keep cascades information
+
+  struct {
+    // HF 2 Prong
+    Int_t fIndexTracks_0 = -1; /// Track index
+    Int_t fIndexTracks_1 = -1; /// Track index
+    uint8_t fHFflag = 0;       /// Selection flag
+  } hf2Prong;                  //! structure for HF 2 prongs
+
+  struct {
+    // HF 3 Prong
+    Int_t fIndexTracks_0 = -1; /// Track index
+    Int_t fIndexTracks_1 = -1; /// Track index
+    Int_t fIndexTracks_2 = -1; /// Track index
+    uint8_t fHFflag = 0;       /// Selection flag
+  } hf3Prong;                  //! structure for HF 3 prongs
+
+  struct {
+    // HF Lc->V0+bach / cascades
+    Int_t fIndexV0s = -1;      /// V0 index
+    Int_t fIndexTracks_0 = -1; /// Bachelor track index
+  } hfCascades;                //! structure for HF Lc->V0+bach / cascades
+
+  struct {
+    // D* -> D0pi candidates
+    Int_t fIndexHf2Prongs = -1; /// D0 index
+    Int_t fIndexTracks_0 = -1;  /// Track index of soft pion
+  } hfDStar;
 
   /// Offsets to convert the IDs within one collision to global IDs
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track  (used in the clusters)
   Int_t fOffsetTrack = 0;   ///! Offset of track (used in V0s)
   Int_t fOffsetV0 = 0;      ///! Offset of V0s (used in cascades)
   Int_t fOffsetLabel = 0;     ///! Offset of MC paritcles (used in cascades)
+  Int_t fOffsetHF2Prong = 0;      ///! Offset of V0s (used in cascades)
 
   /// Truncation
   Bool_t fTruncate = kFALSE;
+  Bool_t fStoreHF = kFALSE; // produce HF trees
   /// Compression algotythm and level, see TFile.cxx and RZip.cxx
   UInt_t fCompress = 101; /// This is the default level in Root (zip level 1)
   Bool_t fSkipPileup = kFALSE;       /// Skip pileup events
@@ -601,7 +648,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 23);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 28);
 };
 
 #endif

@@ -79,22 +79,57 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
     void                    SetWriteOmegac0MCGenTree(Bool_t a) {fWriteOmegac0MCGenTree = a;}
     Bool_t                  GetWriteOmegac0MCGenTree() const {return fWriteOmegac0MCGenTree;}
     
+    void                    SetWriteElectronTree(Bool_t a ) {fWriteElectronTree = a;}
+    Bool_t                  GetWriteElectronTree() const {return fWriteElectronTree;}
+    
     void                    FillTreeGenOmegac0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLOverP);
     
     void                    FillEventROOTObjects();
 
-    void                    FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype);
+    void                    FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpOmegaMinus_woLMassConst,KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype);
+    
+    void                    FillTreeElectron(AliAODTrack* trk, AliAODEvent *aodEvent, TClonesArray * mcArray);
+    
+     // ----------- mixing
+    void                    SetEventMixingWithPools(Bool_t domixing){fDoEventMixing= domixing;}
+    Bool_t                  GetEventMixingWithPools() const { return fDoEventMixing;}
+    void                    SetNumberOfEventsForMixing(Int_t events){fNumberOfEventsForMixing=events;}
+    
+    void                    SetPoolZVertBinLimits(Int_t NzVertPoolsLimSize, const Double_t *zVertPoolLims){
+                            fNzVertPoolsLimSize = NzVertPoolsLimSize;
+                            for (int ix =0; ix< fNzVertPoolsLimSize+1; ix++ ) {fzVertPoolLims[ix] = zVertPoolLims[ix]; }
+                            }
+    void                    SetMultiplicityBinLimits(Int_t NMultPoolsLimSize, const Double_t *MultPoolLims){
+                            fNMultPoolsLimSize = NMultPoolsLimSize;
+                            for (int ix =0; ix < fNMultPoolsLimSize+1; ix++ ) { fMultPoolLims[ix] = MultPoolLims[ix]; }
+                            }
+    void                    DoEventMixingWithPools(Int_t index,AliAODEvent *aodEvent, Bool_t *seleCascFlags, KFParticle PV,  TClonesArray *mcArray);
+    void                    ResetPool(Int_t poolIndex);
+    Int_t                   GetPoolIndex(Double_t zvert, Double_t mult);
+    
+    void                    FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV , TClonesArray *mcArray, AliAODEvent *aodEvent,  Int_t decaytype);
+    
+    void                    SetWriteMixedEventTree(Bool_t a){fWriteMixedEventTree =a;}
+    Bool_t                  GetWriteMixedEventTree() const {return fWriteMixedEventTree;  }
+    
+    void                    SetWriteTrackRotation(Bool_t a){fWriteTrackRotation =a;}
+    Bool_t                  GetwriteTrackRotation() const {return fWriteTrackRotation; }
     
     
     //--- private
     
 private:
+    AliAnalysisTaskSESemileptonicOmegac0KFP(const AliAnalysisTaskSESemileptonicOmegac0KFP &source);
+    AliAnalysisTaskSESemileptonicOmegac0KFP& operator=(const AliAnalysisTaskSESemileptonicOmegac0KFP& source);
+    
     void                     DefineEvent();
     void                     DefineTreeRecoOmegac0();
     void                     DefineTreeRecoOmegac0_QA();
     void                     DefineTreeMCGenOmegac0();
     void                     DefineAnaHist();
-  
+    void                     DefineTreeElectron();
+    void                     DefineTreeMixedEvent();
+    
     AliPIDResponse*          fPID; ///<
     AliRDHFCutsOmegactoeleOmegafromKFP*   fAnalCuts; /// !<! Cuts
     AliAODVertex*           fpVtx;                //!<! primary vertex
@@ -110,24 +145,53 @@ private:
     Float_t*                fVar_Omegac0_QA;         //!<! QA check for the candidate variables
     TTree*                  fTree_Omegac0MCGen;        //!<! tree of the candidate variables after the track selection on output slot
     Float_t*                fVar_Omegac0MCGen;         //!<! variables of Omegac0 to be written to the tree
-   
+    TTree*                  fTree_Electron;           //!<! tree of event
+    Float_t*                fVar_Electron;             //!<! tree of the electron candidate variables
+    
     AliNormalizationCounter* fCounter; //!<! Counter for normalization
     Bool_t                  fUseMCInfo; ///< Flag of MC analysis
     Bool_t                  fWriteOmegac0Tree;   ///< flag to decide whether to write Omegac0 tree
     Bool_t                  fWriteOmegac0QATree; ///< flag to decide whether to write Omegac0QA tree
     Bool_t                  fWriteOmegac0MCGenTree;  ///<flag to decide whether to write the MC candidate variables on a tree variables
+    Bool_t                  fWriteElectronTree;   ///< flag to decide whether to write Electron tree
+    
     
     TH1F*                   fHistEvents;          //!<! Histogram of selected events
     TH1F*                   fHTrigger;            //!<! Histogram of trigger
     TH2F*                   fHistoElectronTPCPID;     //!<! TPC electron PID
     TH2F*                   fHistoElectronTOFPID;     //!<! TOF electron PID
-       
+    TH2F*                   fHistoOmegaMassvspTKFP;  //!<!  Histogram of OmegaMass vs pT from KFP
+    
     THnSparse*              fHistoElectronTPCPIDSelTOF;     //!<! TPC electron PID
     THnSparse*              fHistoMassConversions;          //!<! electron-pairs mass conversion
     THnSparse*              fHistoElectronTPCTOFSelPID;     //!<! TPC, TOF electron PID
     
+    // ----------- mixing
+    Double_t                fVtxZ; /// zVertex
+    Bool_t                  fDoEventMixing; ///< flag for event mixing
+    Int_t                   fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
+  
+    Int_t                   fNzVertPoolsLimSize;       /// number of pools in z vertex for event mixing +1
+    Double_t                fzVertPoolLims[100];        //[fNzVertPoolsLimSize] limits of the pools in zVertex
+    Int_t                   fNMultPoolsLimSize;        /// number of pools in multiplicity for event mixing +1
+    Double_t                fMultPoolLims[100];         //[fNMultPoolsLimSize] limits of the pools in multiplicity
+    
+    Int_t                   fNOfPools; /// number of pools
+    TTree**                 fEventBuffer;   //!<! structure for event mixing
+    TObjString*             fEventInfo; ///unique event id for mixed event check
+    TObjArray*              fElectronTracks; /// array of electron-compatible tracks
+  
+    ULong64_t               fEventID;  /// eventID to store
+    Double_t                fMultiplicityEM;        /// multiplicity for ev mix pools
+    TH2F*                   fHistEventTrackletZvME;          //!<! hist. of evnt Tracklet vs. Zv for Mixed Event (ME)
+    Bool_t                  fWriteMixedEventTree;  ///< flag to decide whether to write MixedEvent tree
+    TTree*                  fTree_MixedEvent;           //!<! tree of mixed event
+    Float_t*                fVar_MixedEvent;              //!<! variables of mixed event to be written to the tree
+    Bool_t                  fWriteTrackRotation;  ///< flag to switch track rotation
+    
+    
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,1);   // class for Omegac0 -> e+Omega KFP
+    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,4);   // class for Omegac0 -> e+Omega KFP
     /// \endcond
 };
 

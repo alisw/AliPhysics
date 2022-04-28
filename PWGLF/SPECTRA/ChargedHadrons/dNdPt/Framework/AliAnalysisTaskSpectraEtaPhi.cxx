@@ -18,12 +18,10 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TRandom3.h"
+#include "AliMCSpectraWeights.h"
 #include <iostream>
 
-namespace {
-using namespace Hist;
 using namespace std;
-} // namespace
 
 //_____________________________________________________________________________
 
@@ -90,6 +88,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     Axis chargeQAxis = {"MCQ", "Q", {-1.5, 1.5}, 3};
     Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
     Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
+    Axis WeightSysAxis = {"WeightSys", "WeightSys", {-1.5, 1.5}, 3};
 
     double requiredMemory = 0.;
     // MC
@@ -100,7 +99,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     fHistEffContNCluster.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistEffContNCluster.GenerateHist("fHistEffContNCluster"));
     requiredMemory += fHistEffContNCluster.GetSize();
-
+    
     fHistEffContZ.AddAxis(centAxis);
     fHistEffContZ.AddAxis(ptAxis);
     fHistEffContZ.AddAxis(zInnerAxis);
@@ -110,12 +109,13 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     fOutputList->Add(fHistEffContZ.GenerateHist("fHistEffContZ"));
     requiredMemory += fHistEffContZ.GetSize();
 
-    fHistEffContEta.AddAxis(centAxis);
+    fHistEffContEta.AddAxis(multAxis);
     fHistEffContEta.AddAxis(ptAxis);
     fHistEffContEta.AddAxis(etaAxis);
     fHistEffContEta.AddAxis(cutAxis);
     fHistEffContEta.AddAxis(mcInfoAxis);
     fHistEffContEta.AddAxis(chargeQAxis);
+    fHistEffContEta.AddAxis(WeightSysAxis);
     fOutputList->Add(fHistEffContEta.GenerateHist("fHistEffContEta"));
     requiredMemory += fHistEffContEta.GetSize();
 
@@ -186,6 +186,15 @@ void AliAnalysisTaskSpectraEtaPhi::AnaEvent() {
     fHistEvent.Fill(fMultPercentileV0M, fNTracksAcc, fZv);
 }
 
+void AliAnalysisTaskSpectraEtaPhi::AnaEventMC() {
+
+    AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
+    fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
+
+    LoopOverAllParticles();
+    LoopOverAllTracks();
+}
+
 //_____________________________________________________________________________
 
 void AliAnalysisTaskSpectraEtaPhi::AnaTrack(Int_t flag) {
@@ -215,15 +224,33 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrackMC(Int_t flag) {
         return;
     }
 
+    double fMCweight = 1.0;
+    double fMCweightSysUp = 1.0;
+    double fMCweightSysDown = 1.0;
+    if(fMCSpectraWeights && 0==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for primary particles
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+        fMCweightSysUp = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
+    }
+    if(fMCSpectraWeights && 1==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for secondaries from decay
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+        fMCweightSysUp = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
+    }
+
     for (int i = 0; i < 23; ++i) {
         if (fAcceptTrack[i]) {
-            fHistEffContNCluster.Fill(fMultPercentileV0M, fPt, fTPCSignalN, i,
+            fHistEffContNCluster.FillWeight(fMCweight,fMultPercentileV0M, fPt, fTPCSignalN, i,
                                       fMCProdcutionType);
-            fHistEffContZ.Fill(fMultPercentileV0M, fPt, fZInner, i,
+            fHistEffContZ.FillWeight(fMCweight,fMultPercentileV0M, fPt, fZInner, i,
                                fMCProdcutionType, fEta);
-            fHistEffContEta.Fill(fMultPercentileV0M, fPt, fEta, i,
-                                 fMCProdcutionType, fChargeSign);
-            fHistEffContPhi.Fill(fMultPercentileV0M, fPt, fPhi, i,
+            fHistEffContEta.FillWeight(fMCweight,fMultPercentileV0M, fPt, fEta, i,
+                                       fMCProdcutionType, fChargeSign, 0);
+            fHistEffContEta.FillWeight(fMCweightSysUp,fMultPercentileV0M, fPt, fEta, i,
+                                       fMCProdcutionType, fChargeSign, 1);
+            fHistEffContEta.FillWeight(fMCweightSysDown,fMultPercentileV0M, fPt, fEta, i,
+                                       fMCProdcutionType, fChargeSign, -1);
+            fHistEffContPhi.FillWeight(fMCweight,fMultPercentileV0M, fPt, fPhi, i,
                                  fMCProdcutionType);
         }
     }
@@ -249,10 +276,26 @@ void AliAnalysisTaskSpectraEtaPhi::AnaParticleMC(Int_t flag) {
         Log("GenPrim.Q>1.PDG.", fMCPDGCode);
     }
 
-    fHistEffContNCluster.Fill(fMultPercentileV0M, fMCPt, fTPCSignalN, -1., 3.);
-    fHistEffContZ.Fill(fMultPercentileV0M, fMCPt, fZInner, -1., 3., fMCEta);
-    fHistEffContEta.Fill(fMultPercentileV0M, fMCPt, fMCEta, -1., 3., fChargeSign);
-    fHistEffContPhi.Fill(fMultPercentileV0M, fMCPt, fMCPhi, -1., 3.);
+    double fMCweight = 1.0;
+    double fMCweightSysUp = 1.0;
+    double fMCweightSysDown = 1.0;
+    if(fMCSpectraWeights && 0==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for primary particles
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+        fMCweightSysUp = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
+    }
+    if(fMCSpectraWeights && 1==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for secondaries from decay
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+        fMCweightSysUp = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
+    }
+
+    fHistEffContNCluster.FillWeight(fMCweight,fMultPercentileV0M, fMCPt, fTPCSignalN, -1., 3.);
+    fHistEffContZ.FillWeight(fMCweight,fMultPercentileV0M, fMCPt, fZInner, -1., 3., fMCEta);
+    fHistEffContEta.FillWeight(fMCweight,fMultPercentileV0M, fMCPt, fMCEta, -1., 3., fChargeSign, 0);
+    fHistEffContEta.FillWeight(fMCweightSysUp,fMultPercentileV0M, fMCPt, fMCEta, -1., 3., fChargeSign, 1);
+    fHistEffContEta.FillWeight(fMCweightSysDown,fMultPercentileV0M, fMCPt, fMCEta, -1., 3., fChargeSign, -1);
+    fHistEffContPhi.FillWeight(fMCweight,fMultPercentileV0M, fMCPt, fMCPhi, -1., 3.);
 }
 
 //_____________________________________________________________________________

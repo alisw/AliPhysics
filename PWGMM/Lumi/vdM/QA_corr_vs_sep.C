@@ -43,7 +43,8 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	GetRate(raw,rate_name,"Raw",scan,scan_type,bc);
 	GetRate(bkgd,rate_name,"BkgdCorr",scan,scan_type,bc);
 	GetRate(pu,rate_name,"PileupCorr",scan,scan_type,bc);
-	GetRate(all,rate_name,"IntensityCorrFBCT",scan,scan_type,bc);  
+	GetRate(all,rate_name, Form("IntensityCorr%s", scan==0?"FBCT":"BPTX"), scan,scan_type,bc); //kimc
+	//GetRate(all,rate_name,"IntensityCorrFBCT",scan,scan_type,bc);  
 
 	// get the separations
 	char *file_name = new char[kg_string_size];
@@ -99,8 +100,9 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	TGraph *gr_bkgd_pu = new TGraph(n_sep,sep,bkgd_pu);
 	gr_bkgd_pu->SetMarkerStyle(24);gr_bkgd_pu->SetMarkerColor(2);  
 	TGraph *gr_pu_all = new TGraph(n_sep,sep,pu_all);
-	gr_pu_all->SetMarkerStyle(24);gr_pu_all->SetMarkerColor(4);  
+	gr_pu_all->SetMarkerStyle(24);gr_pu_all->SetMarkerColor(4);
 
+	/*
 	// plot graphs
 	gStyle->SetOptStat(0);
 	gStyle->SetOptTitle(0);
@@ -115,8 +117,53 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	legend->AddEntry(gr_bkgd_pu,"Bkgd/Pileup","p");
 	legend->AddEntry(gr_pu_all,"Pileup/Intensity","p");  
 	legend->Draw();
+	corr_C->Print(Form("c2b_QAcorrSep_Fill%i_%s_scanT%i_scan%i_bc%i.%s",
+				Fill, rate_name, scan_type, scan, bc, FFormat));
+				*/
 
-	corr_C->Print(Form("c2b_QAcorrSep_Fill%i_%s_scanT%i_scan%i_bc%i.png", Fill, rate_name, scan_type, scan, bc));
+    // Plot for public note, June 25
+    gStyle->SetOptStat(0);
+    TCanvas* c1 = new TCanvas("c1_corr", "", 800, 900); c1->cd();
+    TH1F* H1 = new TH1F("H1frame", ";Separation [mm];Ratio", (sep_max - sep_min)*2, sep_min, sep_max);
+	/*
+	H1->SetTitle(Form("Fill %i, %s, scan %i, bunch pair index %i",
+				Fill, !strcmp(rate_name, "TVX")?"T0":"V0", scan_type, bc));
+				*/
+    H1->GetXaxis()->SetRangeUser(-0.65, 0.65);
+	if (Fill==4937) H1->GetYaxis()->SetRangeUser(0.7, 1.25);
+	if (Fill==6012) H1->GetYaxis()->SetRangeUser(0.7, 1.30);
+	if (Fill==6864) H1->GetYaxis()->SetRangeUser(0.7, 1.35);
+    H1->DrawCopy();
+
+    gr_raw_bkgd->SetMarkerSize(1.6);
+    gr_raw_bkgd->SetMarkerStyle(28);
+    gr_raw_bkgd->SetMarkerColor(1);
+    gr_raw_bkgd->Draw("p,e1,same");
+    gr_bkgd_pu->SetMarkerSize(1.6);
+    gr_bkgd_pu->SetMarkerStyle(25);
+    gr_bkgd_pu->SetMarkerColor(2);
+    gr_bkgd_pu->Draw("p,e1,same");
+    gr_pu_all->SetMarkerSize(1.6);
+    gr_pu_all->SetMarkerStyle(24);
+    gr_pu_all->SetMarkerColor(4);
+    gr_pu_all->Draw("p,e1,same");
+
+    TLegend *L1 = new TLegend(0.165, 0.75, 0.40, 0.85);
+    L1->SetMargin(0);
+    L1->SetBorderSize(0);
+    L1->AddEntry((TObject*)0, "ALICE", "");
+    L1->AddEntry((TObject*)0, "pp #sqrt{s} = 13 TeV", "");
+    L1->Draw();
+
+	TLegend* L2 = new TLegend(0.35, 0.2, 0.65, 0.4);
+    L2->SetMargin(0.3);
+    L2->SetBorderSize(0);
+	L2->AddEntry(gr_raw_bkgd, "R_{BB} / R_{Raw}", "p");
+	L2->AddEntry(gr_bkgd_pu, "R_{PU} / R_{BB}", "p");
+	L2->AddEntry(gr_pu_all, "R_{DC} / R_{PU}", "p");
+	L2->Draw();
+
+	c1->Print(Form("Fill%i_Ratio_%s_%i.eps", Fill, !strcmp(rate_name, "TVX")?"T0":"V0", scan_type));
 
 	// clean up
 	delete [] raw;

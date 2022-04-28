@@ -21,10 +21,7 @@
 
 class AliAnalysisTaskDCArStudy;
 
-namespace {
-using namespace Hist;
 using namespace std;
-} // namespace
 
 ClassImp(AliAnalysisTaskDCArStudy)
 
@@ -64,11 +61,15 @@ AliAnalysisTaskDCArStudy::~AliAnalysisTaskDCArStudy()
 void AliAnalysisTaskDCArStudy::AddOutput()
 {
     //dcar:pt:mult:mcinfo
-    auto const DCAbins = 500;
+    auto const DCAbins = 250;
     auto const DCAbinWidth = 2./DCAbins;
     std::vector<double> centBins = {0.,  10., 20., 30., 40.,
         50., 60., 70., 80., 90.};
-    std::vector<double> ptBins = {0.0, 0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,10,13,20, 30, 50, 80, 100, 200};
+//    std::vector<double> ptBins = {0.0, 0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,10,13,20, 30, 50, 80, 100, 200};
+
+    std::vector<double> ptBins = {0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0};
+
+//    std::vector<double> ptBins = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,  0.8,  0.9,  1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0, 50.0, 200.0 };
     std::vector<double> multBins;
     {
         // variable mult binning total 0-6000
@@ -104,8 +105,9 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     Axis mcInfoAxis{"mcInfo", "mcInfo", {-0.5, 3.5}, 4};
     // 0=none, 1=weighted 2=weightedRandom, 3=weightSys,
     // 4=weightSysRandom
-//    Axis mcWeightAxis{"weight", "weight", {-0.5, 4.5}, 5};
-
+    //    Axis mcWeightAxis{"weight", "weight", {-0.5, 4.5}, 5};
+    Axis weightValues{"weight", "weight", {0.,5.}, 50};
+    Axis secLambdaKaon{"SecDecayType", "SecDecayType", {-1.5, 4.5}, 6};//0=lambda, 1=kaon, 2=pion, 3=other
 
     // ------
     // hists
@@ -115,7 +117,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fHistDCA.AddAxis(DCAaxis);
     fHistDCA.AddAxis(ptAxis);
     fHistDCA.AddAxis(multAxisNch);
-    fHistDCA.AddAxis(centAxis);
+//    fHistDCA.AddAxis(centAxis);
     fHistDCA.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistDCA.GenerateHist("fHistDCA"));
     requiredMemory += fHistDCA.GetSize();
@@ -123,10 +125,36 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fHistDCAPCC.AddAxis(DCAaxis);
     fHistDCAPCC.AddAxis(ptAxis);
     fHistDCAPCC.AddAxis(multAxisNch);
-    fHistDCAPCC.AddAxis(centAxis);
+//    fHistDCAPCC.AddAxis(centAxis);
     fHistDCAPCC.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistDCAPCC.GenerateHist("fHistDCAPCC"));
     requiredMemory += fHistDCAPCC.GetSize();
+
+    fHistDCAPCCSysUp.AddAxis(DCAaxis);
+    fHistDCAPCCSysUp.AddAxis(ptAxis);
+    fHistDCAPCCSysUp.AddAxis(multAxisNch);
+//    fHistDCAPCCSysUp.AddAxis(centAxis);
+    fHistDCAPCCSysUp.AddAxis(mcInfoAxis);
+    fOutputList->Add(fHistDCAPCCSysUp.GenerateHist("fHistDCAPCCSysUp"));
+    requiredMemory += fHistDCAPCCSysUp.GetSize();
+
+    fHistDCAPCCSysDown.AddAxis(DCAaxis);
+    fHistDCAPCCSysDown.AddAxis(ptAxis);
+    fHistDCAPCCSysDown.AddAxis(multAxisNch);
+//    fHistDCAPCCSysDown.AddAxis(centAxis);
+    fHistDCAPCCSysDown.AddAxis(mcInfoAxis);
+    fOutputList->Add(fHistDCAPCCSysDown.GenerateHist("fHistDCAPCCSysDown"));
+    requiredMemory += fHistDCAPCCSysDown.GetSize();
+
+    fHistSecWeights.AddAxis(ptAxis);
+    fHistSecWeights.AddAxis(weightValues);
+    fHistSecWeights.AddAxis(secLambdaKaon);
+    fOutputList->Add(fHistSecWeights.GenerateHist("fHistSecWeights"));
+    requiredMemory += fHistSecWeights.GetSize();
+
+    fEventHist.AddAxis(multAxisNch);
+    fOutputList->Add(fEventHist.GenerateHist("fEventHist"));
+    requiredMemory += fEventHist.GetSize();
 
     AliError(Form("Estimated memory usage of histograms: %.0f Bytes (%f MiB)",
                   requiredMemory, requiredMemory / 1048576));
@@ -143,9 +171,10 @@ Bool_t AliAnalysisTaskDCArStudy::IsEventSelected()
 //_____________________________________________________________________________
 
 
-void AliAnalysisTaskDCArStudy::AnaEvent()
+void AliAnalysisTaskDCArStudy::AnaEventDATA()
 {
     LoopOverAllTracks();
+    fEventHist.Fill(fNTracksAcc);
 }
 
 void AliAnalysisTaskDCArStudy::AnaEventMC() {
@@ -155,20 +184,34 @@ void AliAnalysisTaskDCArStudy::AnaEventMC() {
     
 //    LoopOverAllParticles();
     LoopOverAllTracks();
+    fEventHist.Fill(fNTracksAcc);
 }
 
 //_____________________________________________________________________________
 
 void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
 {
-    if (fAcceptTrack[0]) {
+    if (fAcceptTrack[0] && !fMCPileUpTrack) {
         double fMCweight = 1.0;
-        if(fMCSpectraWeights && 0==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for primary particles
-            fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 0);
+        double fMCweightSysUp = 1.0;
+        double fMCweightSysDown = 1.0;
+        if(fMCSpectraWeights && 0==fMCPrimSec && !fMCPileUpTrack){ // only for primary particles
+            fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+            fMCweightSysUp = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+            fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
         }
+        if(fMCSpectraWeights && 1==fMCPrimSec && !fMCPileUpTrack){ // only for secondaries from decay
+            fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+            fMCweightSysUp = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+            fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
 
-        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
-        fHistDCAPCC.FillWeight(fMCweight, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
+            fHistSecWeights.Fill(fPt, fMCweight, fMCSpectraWeights->IdentifySecondaryType(fMCLabel));
+
+        }
+        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMCPrimSec);
+        fHistDCAPCC.FillWeight(fMCweight, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
+        fHistDCAPCCSysUp.FillWeight(fMCweightSysUp, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
+        fHistDCAPCCSysDown.FillWeight(fMCweightSysDown, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
     }
 }
 
@@ -177,8 +220,8 @@ void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
 void AliAnalysisTaskDCArStudy::AnaTrackDATA(Int_t flag)
 {
     if (fAcceptTrack[0]) {
-        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, -1);
-        fHistDCAPCC.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, -1);
+        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, -1);
+        fHistDCAPCC.Fill(fDCAr, fPt, fNTracksAcc, -1);
     }
 }
 

@@ -38,6 +38,10 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
    AliAnalysisTaskSVtaskMCFilter(const Char_t* name);
    virtual ~AliAnalysisTaskSVtaskMCFilter();
 
+   static AliAnalysisTaskSVtaskMCFilter*  AddTaskSVtaskMCFilter(const char* trkcontname   = "tracks", 
+		                                                const char* outtrk = "mytracks", 
+								Bool_t fFilterTracks = kTRUE);
+
    void     UserCreateOutputObjects();
    Bool_t   Run();
    
@@ -64,7 +68,7 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
     AliAnalysisTaskSVtaskMCFilter(const AliAnalysisTaskSVtaskMCFilter &source);
     AliAnalysisTaskSVtaskMCFilter& operator=(const AliAnalysisTaskSVtaskMCFilter& source);
     
-    ClassDef(AliAnalysisTaskSVtaskMCFilter, 2); 
+    ClassDef(AliAnalysisTaskSVtaskMCFilter, 3); 
 };
 
 #endif

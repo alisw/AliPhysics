@@ -1,27 +1,20 @@
 #ifndef AliAnalysisTaskDeuteronCoalescence_cxx
 #define AliAnalysisTaskDeuteronCoalescence_cxx
 
-#include "AliMCEventHandler.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliMultSelection.h"
-#include "AliAnalysisUtils.h"
 #include "AliAnalysisTask.h"
 #include "TLorentzVector.h"
 #include "AliMCParticle.h"
-#include "AliEventCuts.h"
-#include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliMCEvent.h"
-#include "TVector2.h"
 #include "TVector3.h"
-#include "AliStack.h"
 #include "TList.h"
-#include "TTree.h"
 #include "TH1D.h"
 #include "TH1F.h"
 #include "TH2D.h"
 #include "TF1.h"
 
-//___________________________________________________________________________________________________________________________________________________
+//____________________________________________________________________________________________________________________________________
 class AliAnalysisTaskDeuteronCoalescence : public AliAnalysisTaskSE {
         
 public:
@@ -64,20 +57,16 @@ public:
     Bool_t    DoCoalescence                (Double_t deltaX, Double_t deltaP, Double_t sigma_p, const char *func);
     TLorentzVector LorentzTransform        (TLorentzVector R, TVector3 beta_vect);
 
-    AliEventCuts  fESDeventCuts;//
-
 private:
-    AliESDEvent       *fESDevent;//!
-    AliMCEvent        *fMCEvent;//!
-    AliStack          *fMCstack;//!
-    AliMCEventHandler *fMCEventHandler;//!
-    TList             *fOutputList;//!
-    TList             *fQAList;//!
+    AliAODEvent *fAODevent;//!
+    AliMCEvent  *fMCEvent;//!
+    TList       *fOutputList;//!
+    TList       *fQAList;//!
     
     //Average Multiplicity
     Double_t fAverage_Nch_Transv;//
     
-    //Re-shaping Protons
+    //Re-shaping Protons 
     TH1D *hProtonWeights;//
     TF1  *fProtonWeights;//
     TH1D *hWeightToward;//
@@ -133,10 +122,6 @@ private:
     TH1D *hDeuteronsINELgtZERO_wignerArg[50];//!
     TH1D *hDeuterons_Toward_wignerArg[50];//!
     TH1D *hDeuterons_Transv_wignerArg[50];//!
-
-    
-    //QA Histograms & Debug
-    TH1D *hRparticles;//!
     
     //Rapidity Distributions
     TH1D *hRapidityProtons;//!
@@ -169,6 +154,6 @@ private:
     ClassDef(AliAnalysisTaskDeuteronCoalescence, 1);
     
 };
-//___________________________________________________________________________________________________________________________________________________
+//____________________________________________________________________________________________________________________________________
 
 #endif

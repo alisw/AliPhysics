@@ -29,6 +29,12 @@ auther : JunLee Kim
 #include "AliVEventHandler.h"
 #include "AliEventCuts.h"
 
+#include "AliQnCorrectionsCutsSet.h"
+#include "AliQnCorrectionsManager.h"
+#include "AliQnCorrectionsHistos.h"
+#include "AliQnCorrectionsQnVector.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliEventplane.h"
 
 using namespace std;
 
@@ -132,11 +138,15 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
 
  Double1D varcentbinHeavy = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,5,10,15,20,30,40,50,60,70,80,100};
+ Double1D Cntbins_HI = {0, 10, 30, 50, 90};
  binCent = AxisVar("Cent",varcentbinHeavy);
+ if( fOption.Contains("PbPb") ){
+	binCent = AxisVar("Cent",Cntbins_HI);
+ }
 
  Double1D verzbin = {-15,-10,-7,7,10,15};
  binZ = AxisVar("Z",verzbin);
- 
+
  Double1D verptbin = {0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 13.0};
  binPt = AxisVar("Pt",verptbin);
  binPtGen = AxisFix("Pt",200,0.0,20.0);
@@ -144,8 +154,11 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  binType = AxisStr("Type",{"PN","PP","NN"});
 
  binMass = AxisFix("Mass",1000,0,5);
- if( fOption.Contains("Fine") ) binMass = AxisFix("Mass",100000,0,5);
 
+ if( fOption.Contains("Fine") ) binMass = AxisFix("Mass",100000,0,5);
+ if( fOption.Contains("PbPb") ){
+	binMass = AxisFix("Mass",300,0.5,2);
+ }
  binCharge = AxisFix("Charge",3,-1.5,1.5);
 
  binTrackCutBit = AxisFix("TrackCut",7,0.5,7.5);
@@ -165,6 +178,23 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  auto binV0Amp = AxisFix("binV0Amp",3000,0,3e3);
  auto binTrig = AxisFix("Trig",2,-0.5,1.5);
  auto binParType = AxisFix("ParType",2,-0.5,1.5);
+
+
+ Double1D binPionMt = {
+        0.980193, 1.02508, 1.14925, 1.40028, 1.79186, 2.22728, 2.68529, 3.15607, 3.63466, 4.11835, 5.09517, 6.07954, 7.06829, 8.05982 };
+ Double1D binKaonMt = {
+        0.858517, 0.909423, 1.0474, 1.31797, 1.72831, 2.17648, 2.6433, 3.12042, 3.60376, 4.09109, 5.07317, 6.06111, 7.05245, 8.04593 };
+ Double1D binRhoMt = {
+        0.616015, 0.685182, 0.859927, 1.17451, 1.62157, 2.09272, 2.57478, 3.06259, 3.5538, 4.04716, 5.0378, 6.03154, 7.02705, 8.02368 };
+ Double1D binPhiMt = {
+        0, 0.178154, 0.549308, 0.970432, 1.48045, 1.98538, 2.48832, 2.99027, 3.49167, 3.99271, 4.99417, 5.99514, 6.99584, 7.99636 };
+
+ binMtPion = AxisVar("binMtPion",binPionMt);
+ binMtKaon = AxisVar("binMtPion",binKaonMt);
+ binMtRho = AxisVar("binMtPion",binRhoMt);
+ binMtPhi = AxisVar("binMtPion",binPhiMt);
+
+ binEP = AxisFix("binEP",8,0,TMath::Pi());
 
  fHistos = new THistManager("Inclusivef0f2hists");
 
@@ -188,6 +218,10 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  binCentForMC = AxisFix("CentMC",100,0,100);
 //*****************************
 
+ if( fOption.Contains("EPAna") ){
+        fHistos->CreateTH1("hEP","",200,-4,4,"s");
+ }
+
 //Distributions for correction in the event selection ****************
 
  if( fOption.Contains("MC") ){
@@ -202,6 +236,11 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
         {binZ,binCentForMC,binPtGen,binMass},"s");
  CreateTHnSparse("hF2GenParticle","hF2GenParticle",4,
         {binZ,binCentForMC,binPtGen,binMass},"s");
+
+if( fOption.Contains("EPAna") ){
+        CreateTHnSparse("hF0GenParticleAddEP","hF0GenParticleAddEP",5,
+                {binZ,binCentForMC,binPtGen,binMass,binEP},"s");
+ }
 
  CreateTHnSparse("VtxSelection","VtxSelection",2,
 	{binCentForMC,binSwitch},"s");
@@ -234,14 +273,15 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
         {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossPionMt","SignalLossPionMt",4,
-        {binCentForMC,binPt,binSwitch,binCharge},"s");
+        {binCentForMC,binMtPion,binSwitch,binCharge},"s");
  CreateTHnSparse("SignalLoss0PionMt","SignalLoss0PionMt",4,
-        {binCentForMC,binPt,binSwitch,binCharge},"s");
+        {binCentForMC,binMtPion,binSwitch,binCharge},"s");
 
  CreateTHnSparse("SignalLossKaonMt","SignalLossKaonMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
+        {binCentForMC,binMtKaon,binSwitch},"s");
  CreateTHnSparse("SignalLoss0KaonMt","SignalLoss0KaonMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
+        {binCentForMC,binMtKaon,binSwitch},"s");
+
 
  CreateTHnSparse("SignalLossKaonpipiMt","SignalLossKaonpipiMt",3,
         {binCentForMC,binPt,binSwitch},"s");
@@ -249,10 +289,9 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
         {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossPhiMt","SignalLossPhiMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
+        {binCentForMC,binMtPhi,binSwitch},"s");
  CreateTHnSparse("SignalLoss0PhiMt","SignalLoss0PhiMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
-
+        {binCentForMC,binMtPhi,binSwitch},"s");
 
 
  CreateTHnSparse("SignalLossRho","SignalLossRho",3,
@@ -266,10 +305,11 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
         {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossRhoMt","SignalLossRhoMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
+        {binCentForMC,binMtRho,binSwitch},"s");
  CreateTHnSparse("SignalLoss0RhoMt","SignalLoss0RhoMt",3,
-        {binCentForMC,binPt,binSwitch},"s");
-        
+        {binCentForMC,binMtRho,binSwitch},"s");
+
+ 
  CreateTHnSparse("SignalLossRhopipiMt","SignalLossRhopipiMt",3,
         {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0RhopipiMt","SignalLoss0RhopipiMt",3,
@@ -318,6 +358,15 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
         {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hF2TrueParticleADDPIDTUNE","hF2TrueParticleADDPIDTUNE",5,
         {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
+
+ if( fOption.Contains("EPAna") ){
+        CreateTHnSparse("hF0TrueParticleAddEP","hF0TrueParticleAddEP",6,
+                {binZ,binCentForMC,binPtGen,binMass,binTrackCutBit,binEP},"s");
+        CreateTHnSparse("hF0TrueParticleADDPIDAddEP","hF0TrueParticleADDPIDAddEP",6,
+                {binZ,binCentForMC,binPtGen,binMass,binTrackCutBit,binEP},"s");
+        CreateTHnSparse("hF0TrueParticleADDPIDTUNEAddEP","hF0TrueParticleADDPIDTUNEAddEP",6,
+                {binZ,binCentForMC,binPtGen,binMass,binTrackCutBit,binEP},"s");
+ }
  }
 //************************************
 
@@ -361,6 +410,10 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 	{binType,binZ,binCent,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hInvMassUnpair","InvMassUnpair",5,
         {binType,binZ,binCent,binPt,binMass},"s");
+ if( fOption.Contains("EPAna") ){
+        CreateTHnSparse("hInvMassEP","hInvMassEP",7,
+        {binType,binZ,binCent,binPt,binMass,binTrackCutBit,binEP},"s");
+ }
 
 
  CreateTHnSparse("KSTARRecParticle","KSTARRecParticle",5,
@@ -472,6 +525,16 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  fMultiplicity = fEvt -> GetMultiplicity();
 
 
+ AliEventplane* evtPlane = event->GetEventplane();
+ Double_t qx = 0; Double_t qy = 0;
+ if( fOption.Contains("EPAna") ){
+        if (evtPlane) {
+                fEP_v0 = evtPlane->CalculateVZEROEventPlane(event, 10, 2, qx, qy);
+                fHistos -> FillTH1("hEP",fEP_v0,1);
+        }
+ }
+
+
 // const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC(); //for ESD
  const AliVVertex* trackVtx = fEvt->GetPrimaryVertex();
  const AliVVertex* spdVtx = fEvt->GetPrimaryVertexSPD();
@@ -518,6 +581,14 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
                                 if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->PdgCode() ) != 211 ) continue;
 				FillTHnSparse("hF0GenParticle",
 					{genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass()},1.0 );
+
+				if( fOption.Contains("EPAna") ){
+                                        Double_t rap_Phi_gen = atan( ( trackd1->Py()+trackd2->Py() )/( trackd1->Px()+trackd2->Px() ) ) - fEP_v0;
+                                        TVector2::Phi_0_2pi( rap_Phi_gen );
+                                        if( rap_Phi_gen > TMath::Pi() ) rap_Phi_gen -= TMath::Pi();
+                                        FillTHnSparse("hF0GenParticleAddEP",
+                                                {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),rap_Phi_gen},1.0 );
+                                }
 
 				FillTHnSparse("hF0GenParticleFromPion",
 					{genzvtx,fCent,
@@ -825,7 +896,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 				}
 			}
 		}
-/*
 		else if( pdgCode == 310 || pdgCode == 113 ){
                         if( fabs( trackMC->Y() ) > 0.5 ) continue;
                         if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
@@ -861,6 +931,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
                                         }
                                 }
                         }
+
                         if( trackMC->GetNDaughters() != 2 ) continue;
                         AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
                         AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
@@ -918,7 +989,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 				}
                         }
 		}
-*/
 	}
  }
 //************************************************
@@ -928,7 +998,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 }
 
 
-bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig, double TOFsig, double TPCalonesig, double TOFMismatchRatio=0.01){
+bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig, double TOFsig, double TPCalonesig, double TOFMismatchRatio){
 
  const UInt_t ntracks = fEvt ->GetNumberOfTracks();
  goodtrackindices.clear();
@@ -1065,16 +1135,26 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                 if( trackd1->Pt() < fptcut ) continue;
                                 if( fabs( trackd1->Eta() ) > fetacut ) continue;
 
-                                if( pdgCode == 113 )
+				Double_t rap_Phi_gen = atan( ( trackd1->Py()+trackd2->Py() )/( trackd1->Px()+trackd2->Px() ) ) - fEP_v0;
+
+                                if( pdgCode == 113 ){
                                 FillTHnSparse("hRhoTrueParticle",
                                         {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
-                                else if( pdgCode == 9010221 )
+				}
+                                else if( pdgCode == 9010221 ){
                                 FillTHnSparse("hF0TrueParticle",
                                         {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
-                                else if( pdgCode == 225 )
+					if( fOption.Contains("EPAna") ){
+                                                TVector2::Phi_0_2pi( rap_Phi_gen );
+                                                if( rap_Phi_gen > TMath::Pi() ) rap_Phi_gen -= TMath::Pi();
+                                                FillTHnSparse("hF0TrueParticleAddEP",
+                                                        {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),rap_Phi_gen},1.0 );
+                                        }
+				}
+                                else if( pdgCode == 225 ){
                                 FillTHnSparse("hF2TrueParticle",
                                         {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
-
+				}
 
 				trkl1 = trackd1->GetLabel();
 				trkl2 = trackd2->GetLabel();
@@ -1092,7 +1172,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				for(UInt_t it=0;it<ntracks;it++){
 					track = (AliAODTrack*)fEvt->GetTrack(it);
 					if( !track ) continue;
-					if( pdgCode == 9010221 ) cout << track->GetLabel() << ", " << track->GetMother() << endl;
+//					if( pdgCode == 9010221 ) cout << track->GetLabel() << ", " << track->GetMother() << endl;
 					if( (int)track->GetLabel() == Label1 || (int)track->GetLabel() == Label2 ){
 						trackd1Recon = (AliAODTrack*)fEvt->GetTrack( it );
 						if( trackd1Recon ){
@@ -1180,6 +1260,12 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                 	else if( pdgCode == 9010221 ){
                                 		FillTHnSparse("hF0TrueParticleADDPID",
                                 		        {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
+                                                if( fOption.Contains("EPAna") ){
+                                                        TVector2::Phi_0_2pi( rap_Phi_gen );
+                                                        if( rap_Phi_gen > TMath::Pi() ) rap_Phi_gen -= TMath::Pi();
+                                                        FillTHnSparse("hF0TrueParticleADDPIDAddEP",
+                                                                {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),rap_Phi_gen},1.0 );
+                                                }
 					}
                                 	else if( pdgCode == 225 ){
                                 		FillTHnSparse("hF2TrueParticleADDPID",
@@ -1210,16 +1296,25 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                 }
 
                                 if( PIDcut1 && PIDcut2 ){
-                                        if( pdgCode == 113 )
+                                        if( pdgCode == 113 ){
                                         FillTHnSparse("hRhoTrueParticleADDPIDTUNE",
                                                 {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
-                                        else if( pdgCode == 9010221 )
+					}
+                                        else if( pdgCode == 9010221 ){
                                         FillTHnSparse("hF0TrueParticleADDPIDTUNE",
                                                 {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
-                                        else if( pdgCode == 225 )
+						if( fOption.Contains("EPAna") ){
+                                                        TVector2::Phi_0_2pi( rap_Phi_gen );
+                                                        if( rap_Phi_gen > TMath::Pi() ) rap_Phi_gen -= TMath::Pi();
+                                                        FillTHnSparse("hF0TrueParticleADDPIDTUNEAddEP",
+                                                                {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),rap_Phi_gen},1.0 );
+                                                }
+					}
+                                        else if( pdgCode == 225 ){
                                         FillTHnSparse("hF2TrueParticleADDPIDTUNE",
                                                 {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
-                                }
+                                	}
+				}
 			}
 /*
 			else if( pdgCode == 223 ){
@@ -1407,6 +1502,9 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
  double PiPipT;
  double Rap_pair;
 
+ double Phi_pair;
+ double rap_Phi;
+
  TLorentzVector temp1,temp2;
  TLorentzVector vecsum;
 
@@ -1419,6 +1517,8 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 
 		e1 = sqrt( pow(track1->P(),2)+pow(AliPID::ParticleMass(AliPID::kPion),2) );
 		e2 = sqrt( pow(track2->P(),2)+pow(AliPID::ParticleMass(AliPID::kPion),2) );
+
+		Phi_pair = atan( (track1->Py()+track2->Py())/(track1->Px()+track2->Px()) );
 
 		if( e1+e2-track1->Pz()-track2->Pz() > 0 )
 		Rap_pair = 0.5*TMath::Log( (e1+e2+track1->Pz()+track2->Pz())/(e1+e2-track1->Pz()-track2->Pz()) );
@@ -1572,14 +1672,38 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 		if( track1->Charge()*track2->Charge() == -1 ){
 			FillTHnSparse("hInvMass",{1,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
+                        if( fOption.Contains("EPAna") ){
+                                rap_Phi = Phi_pair - fEP_v0;
+                                TVector2::Phi_0_2pi( rap_Phi );
+                                if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
+
+                                FillTHnSparse("hInvMassEP",{1,fZ,fCent,
+                                PiPipT, PiPiMass,(double)(trkbin+1),rap_Phi},1.0 );
+                        }
 		}
 		else if( track1->Charge() + track2->Charge() == 2 ){
 			FillTHnSparse("hInvMass",{2,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
+                        if( fOption.Contains("EPAna") ){
+                                rap_Phi = Phi_pair - fEP_v0;
+                                TVector2::Phi_0_2pi( rap_Phi );
+                                if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
+
+                                FillTHnSparse("hInvMassEP",{2,fZ,fCent,
+                                PiPipT, PiPiMass,(double)(trkbin+1),rap_Phi},1.0 );
+                        }
 		}
 		else if( track1->Charge() + track2->Charge() == -2 ){
 			FillTHnSparse("hInvMass",{3,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
+                        if( fOption.Contains("EPAna") ){
+                                rap_Phi = Phi_pair - fEP_v0;
+                                TVector2::Phi_0_2pi( rap_Phi );
+                                if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
+
+                                FillTHnSparse("hInvMassEP",{3,fZ,fCent,
+                                PiPipT, PiPiMass,(double)(trkbin+1),rap_Phi},1.0 );
+                        }
 		}
 	}
  }

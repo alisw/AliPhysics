@@ -275,7 +275,7 @@ void AliGFWWeights::ReadAndMerge(TString filelinks, TString listName, Bool_t add
 };
 void AliGFWWeights::AddArray(TObjArray *targ, TObjArray *sour) {
   if(!sour) {
-    printf("Source array does not exist!\n");
+    // printf("Source array does not exist!\n");
     return;
   };
   for(Int_t i=0;i<sour->GetEntries();i++) {

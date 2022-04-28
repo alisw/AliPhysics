@@ -1,3 +1,6 @@
+#ifndef ALIPIECEWISEPOLY_H
+#define ALIPIECEWISEPOLY_H
+
 class TF1;
 
 class AliPieceWisePoly {
@@ -17,6 +20,9 @@ public:
   static void ReadFSParameters(TString parameterFile, TF1** effFunctions);
   
 private:
+  AliPieceWisePoly(const AliPieceWisePoly&)           ;  //Not implemented
+  AliPieceWisePoly &operator=(const AliPieceWisePoly&);  //Not implemented
+  
   Int_t doSmoothing;
   Int_t nParts;
   Double_t* cuts;
@@ -25,4 +31,5 @@ private:
   TF1* piecewisepolynom;
 };
 
+#endif
 

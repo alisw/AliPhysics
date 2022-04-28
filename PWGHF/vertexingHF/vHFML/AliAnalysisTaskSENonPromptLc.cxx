@@ -94,7 +94,7 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
     fOutput->SetOwner();
     fOutput->SetName("OutputHistos");
 
-    fHistNEvents = new TH1F("hNEvents", "number of events ", 16, -0.5, 15.5);
+    fHistNEvents = new TH1F("hNEvents", "number of events ", 17, -0.5, 16.5);
     fHistNEvents->GetXaxis()->SetBinLabel(1, "nEventsRead");
     fHistNEvents->GetXaxis()->SetBinLabel(2, "nEvents Matched dAOD");
     fHistNEvents->GetXaxis()->SetBinLabel(3, "nEvents Mismatched dAOD");
@@ -111,6 +111,7 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
     fHistNEvents->GetXaxis()->SetBinLabel(14, "no. of Lc after selection cuts");
     fHistNEvents->GetXaxis()->SetBinLabel(15, "no. of not on-the-fly rec Lc");
     fHistNEvents->GetXaxis()->SetBinLabel(16, "no. of Lc rejected by preselect");
+    fHistNEvents->GetXaxis()->SetBinLabel(17, "no. of Lc rejected because of on-the-fly V0");
     fHistNEvents->GetXaxis()->SetNdivisions(1, false);
     fHistNEvents->SetMinimum(0);
     fOutput->Add(fHistNEvents);
@@ -533,6 +534,12 @@ int AliAnalysisTaskSENonPromptLc::IsCandidateSelected(AliAODRecoDecayHF *&lc, Al
         if (!isSelBit || !vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(lc), false))
         {
             fHistNEvents->Fill(14);
+            return 0;
+        }
+
+        AliAODv0 *v0part = dynamic_cast<AliAODv0*>(dynamic_cast<AliAODRecoCascadeHF *>(lc)->Getv0());
+        if (v0part->GetOnFlyStatus()) {
+            fHistNEvents->Fill(16);
             return 0;
         }
     }

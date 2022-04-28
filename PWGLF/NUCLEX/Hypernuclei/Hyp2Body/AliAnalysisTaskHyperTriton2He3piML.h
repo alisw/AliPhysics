@@ -231,7 +231,7 @@ private:
   float fCustomResolution;
 
   /// Control histograms to monitor the filtering
-  TH2D *fHistCentTrigger;          //! 
+  TH2D *fHistCentTrigger;          //!
   TH2D *fHistNsigmaHe3;          //! # sigma TPC proton for the positive prong
   TH2D *fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D *fHistInvMass;            //! # Invariant mass histogram
@@ -286,7 +286,7 @@ private:
   // Event Plane vs Centrality
   TH2D *EPVzAvsCentrality  ;        //!
   TH2D *EPVzCvsCentrality  ;        //!
-  
+
   // For SP resolution
   TH2D *hQVzAQVzCvsCentrality;      //!
   TH2D *hQVzAQTPCvsCentrality;      //!
@@ -305,7 +305,7 @@ private:
   TH2D *hCos2DeltaVzCVzAvsCentrality; //!
 
   AliESDtrackCuts* fESDtrackCutsEP; //!
-    
+
 
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML &); // not implemented

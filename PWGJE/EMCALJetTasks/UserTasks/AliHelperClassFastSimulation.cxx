@@ -14,7 +14,7 @@
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 
-#include "AliAnalysisTaskPID.h"
+#include "AliAnalysisTaskMTFPID.h"
 #include "AliHelperClassFastSimulation.h"
 
 ClassImp(AliHelperClassFastSimulation)
@@ -71,7 +71,7 @@ void AliHelperClassFastSimulation::AddParticle(AliAODMCParticle* part) {
 }
 
 void AliHelperClassFastSimulation::AddInputVector(Double_t pT, Double_t phi, Double_t eta, Double_t mass, Int_t index, Double_t charge, Int_t pdgCode) {
-	Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(pdgCode);
+	Int_t mcID = AliAnalysisTaskMTFPID::PDGtoMCID(pdgCode);
 	
 	if (mcID == AliPID::kMuon || mcID >= AliPID::kSPECIES)
 		return;
@@ -118,8 +118,6 @@ void AliHelperClassFastSimulation::Run() {
 //       jet->SetJetAcceptanceType(FindJetAcceptanceType(jet->Eta(), jet->Phi_0_2pi(), fRadius)); 
 		
 		std::vector<fastjet::PseudoJet> constituents(fWrapper->GetJetConstituents(j));
-		
-		Double_t jetPt = jet->Pt();
 		
 		TObjArray* partArray = new TObjArray();
 		Int_t nOfParticles = 0;
@@ -179,7 +177,7 @@ UInt_t AliHelperClassFastSimulation::GetNJets() {
 		return 0;
 }
 
-UInt_t AliHelperClassFastSimulation::GetNParticlesOfJet(Int_t jetNumber) {
+UInt_t AliHelperClassFastSimulation::GetNParticlesOfJet(UInt_t jetNumber) {
 	if (fParticlesArray && jetNumber <= GetNJets() - 1)
 		return ((TObjArray*)fParticlesArray->At(jetNumber))->GetEntriesFast();
 	else 

@@ -88,6 +88,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillShowerShapeEtaHistograms()     { fFillSSEtaHistograms   = kTRUE  ; }
   void         SwitchOffFillShowerShapeEtaHistograms()    { fFillSSEtaHistograms   = kFALSE ; }
 
+  void         SwitchOnFillNLMEtaHistograms()             { fFillNLMEtaHistograms   = kTRUE  ; }
+  void         SwitchOffFillNLMEtaHistograms()            { fFillNLMEtaHistograms   = kFALSE ; }
+
+  void         SwitchOnFillShowerShapeEtaVzPosHistograms()  { fFillSSEtaVzPosHistograms = kTRUE  ; }
+  void         SwitchOffFillShowerShapeEtaVzPosHistograms() { fFillSSEtaVzPosHistograms = kFALSE ; }
+
   void         SwitchOnFillEMCALRegionSSHistograms()      { fFillEMCALRegionSSHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionSSHistograms()     { fFillEMCALRegionSSHistograms = kFALSE ; }  
 
@@ -189,6 +195,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnAcceptanceHistoPerPrimaryMC()  { fFillPrimaryMCAcceptanceHisto = kTRUE  ; }
   void         SwitchOffAcceptanceHistoPerPrimaryMC() { fFillPrimaryMCAcceptanceHisto = kFALSE ; }
   
+  void         SwitchOnFillPromptPhotonGenRecoEtaPhi() { fFillPromptPhotonGenRecoEtaPhi = kTRUE  ; }
+  void         SwitchOffFillPromptPhotonGenRecoEtaPhi(){ fFillPromptPhotonGenRecoEtaPhi = kFALSE ; }
+
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > fgkNmcTypes    ) fNOriginHistograms  = fgkNmcTypes     ; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
@@ -257,7 +266,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillSSPerSMHistograms ;                 ///<  Fill shower shape histograms per SM
 
-  Bool_t   fFillSSEtaHistograms ;                   ///<  Fill shower shape vs eta histograms
+  Bool_t   fFillSSEtaHistograms ;                   ///<  Fill shower shape vs eta histograms per sector
+  Bool_t   fFillSSEtaVzPosHistograms ;              ///<  Fill shower shape vs eta histograms for Vz>0
+  Bool_t   fFillNLMEtaHistograms ;                  ///<  Fill NLM vs eta histograms per sector
 
   Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     
@@ -280,6 +291,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNxNShowerShapeColRowDiffNumber;         ///< Number of columns and rows from leading cell in shower shape calculation
   Bool_t   fNxNShowerShapeOnlyNeigbours;            ///< Make sure when adding the NxN cells, that all cells are contiguous to max energy cell
   Float_t  fNxNShowerShapeMinEnCell;                ///< Minimum energy of cells in NxN cluster shower shape
+
+  Bool_t   fFillPromptPhotonGenRecoEtaPhi;          ///< Activate dedicated histograms for generated prompt photon eta-phi angles associated to cluster
 
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
@@ -308,7 +321,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNSectors = 10;     
 
   /// Total number basic cluster cuts
-  static const Int_t fgkNClusterCuts = 12 ;
+  static const Int_t fgkNClusterCuts = 13 ;
   TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
   TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
   TH2F * fhClusterCutsECen [fgkNClusterCuts];       //!<! control histogram on the different photon selection cuts, E vs centrality
@@ -359,6 +372,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F * fhPtPhotonNTracks    [10];                 //!<! Track multiplicity distribution per event vs track pT, different pT cuts
   TH2F * fhPtPhotonSumPtTracks[10];                 //!<! Track sum pT distribution per event vs track pT, different pT cuts  
+
+  TH3F * fhPtPhotonPerTriggerCen;                   //!<! Number of identified photon vs pT  vs trigger bit  vs centrality
+  TH2F * fhPtPhotonPerTrigger;                      //!<! Number of identified photon vs pT  vs trigger bit
+  TH3F * fhPtMCPhotonPromptPerTriggerCen;           //!<! Number of identified photon vs pT  vs trigger bit  vs centrality, origin MC prompt photon
+  TH2F * fhPtMCPhotonPromptPerTrigger;              //!<! Number of identified photon vs pT  vs trigger bit, origin MC prompt photon
 
   // Shower shape
   TH2F * fhDispE;                                   //!<! Cluster dispersion vs E
@@ -495,6 +513,18 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCPhi[fgkNmcTypes];                      //!<! Phi of identified photon coming from MC particle
   TH2F * fhMCEta[fgkNmcTypes];                      //!<! eta of identified photon coming from MC particle
 
+  TH2F* fhMCPromptPhotonDeltaPhiRecGen;             //!<! MC-Reco phi distribution coming from prompt photon, not converted
+  TH2F* fhMCPromptPhotonDeltaEtaRecGen;             //!<! MC-Reco eta distribution coming from prompt photon not converted
+  TH3F* fhMCPromptPhotonEtaPhiGenAssociatedReco;    //!<! Rec Pt vs MC gen eta vs phi distribution coming from prompt photon not converted
+  TH1F* fhMCPromptPhotonAssociatedPtGen;            //!<! Generated pT of prompt Photon associated to reco cluster not converted
+  TH1F* fhMCPromptPhotonAssociatedPtGenInFidCut;    //!<! Generated pT of prompt Photon within fiducial cuts associated to reco cluster not converted
+
+  TH2F* fhMCPromptPhotonDeltaPhiRecGenConv;             //!<! MC-Reco phi distribution coming from prompt photon,  converted
+  TH2F* fhMCPromptPhotonDeltaEtaRecGenConv;             //!<! MC-Reco eta distribution coming from prompt photon converted
+  TH3F* fhMCPromptPhotonEtaPhiGenConvAssociatedReco;    //!<! Rec Pt vs MC gen eta vs phi distribution coming from prompt photon converted
+  TH1F* fhMCPromptPhotonAssociatedPtGenConv;            //!<! Generated pT of prompt Photon associated to reco cluster converted
+  TH1F* fhMCPromptPhotonAssociatedPtGenConvInFidCut;    //!<! Generated pT of prompt Photon within fiducial cuts associated to reco cluster converted
+
 //  TH1F * fhEPrimMC  [fgkNmcPrimTypes];              //!<! Number of generated photon vs energy
 //  TH1F * fhPtPrimMC [fgkNmcPrimTypes];              //!<! Number of generated photon vs pT
   TH2F * fhPhiPrimMC[fgkNmcPrimTypes];              //!<! Phi of generted photon
@@ -507,6 +537,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPrimMCAcc[fgkNmcPrimTypes];           //!<! Phi of generted photon, in calorimeter acceptance
   TH2F * fhYPrimMCAcc  [fgkNmcPrimTypes];           //!<! Rapidity of generated photon, in calorimeter acceptance
   
+//  TH2F * fhPhiPrimMCPartonicPhoton;                 //!<! Phi of generted partonic photon, in calorimeter acceptance
+//  TH2F * fhEtaPrimMCPartonicPhoton;                 //!<! Phi of generted partonic photon, in calorimeter acceptance
+//  TH2F * fhYPrimMCPartonicPhoton  ;                 //!<! Rapidity of generated partonic photon, in calorimeter acceptance
+
   // Shower Shape MC
     
   TH2F * fhMCELambda0   [fgkNssTypes] ;             //!<! E vs Lambda0     from MC particle
@@ -552,6 +586,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhLam0NxNPerSM   [20] ;                         //!<! Cluster lambda0 vs  Pt, in different SM
 
   TH3F * fhLam0NxNEta[fgkNSectors];                      //!<! Cluster lambda0 vs  Pt vs eta
+  TH3F * fhLam0NxNEtaVzPos[fgkNSectors];                 //!<! Cluster lambda0 vs  Pt vs eta
   ///<  Cluster energy over restricted to NxN energy vs  pT vs eta, per centrality
   TH3F **fhLam0NxNEtaPerCen;                             //![GetNCentrBin()*fgkNSectors]
 
@@ -744,8 +779,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 //TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
 
   TH3F * fhLam0Eta[fgkNSectors];                    //!<! Cluster lambda0 vs  Pt vs eta
-  ///<  Cluster energy over restricted to NxN energy vs  pT vs eta, per centrality
+  TH3F * fhLam0EtaVzPos[fgkNSectors];               //!<! Cluster lambda0 vs  Pt vs eta
+  ///<  Cluster   shower shape  vs  pT vs eta, per centrality
   TH3F **fhLam0EtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
+
+  TH3F * fhNLMEta[fgkNSectors];                    //!<! Cluster nLMv s  Pt vs eta
+  ///<  Cluster nLM  vs  pT vs eta, per centrality
+  TH3F **fhNLMEtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
 
   TH2F *  fhLocalRegionClusterEtaPhi[6]  ;                       //!<! Pseudorapidity vs Phi of clusters with cone R within the EMCal, for different cocktail merging cases 
   TH2F *  fhLocalRegionClusterEnergySum[6] ;                     //!<! Sum of energy near the cluster, R<0.2, vs cluster E, for different cocktail merging cases
@@ -814,7 +854,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,60) ;
+  ClassDef(AliAnaPhoton,65) ;
   /// \endcond
 
 } ;

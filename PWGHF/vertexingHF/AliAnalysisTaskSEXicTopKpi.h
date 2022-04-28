@@ -73,7 +73,8 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   AliESDtrack* SelectTrack(AliAODTrack *aodtr, Int_t &isSelProton,Int_t &isSelKaon, Int_t &isSelPion,Int_t &isSelSoftPion,AliESDtrackCuts *cutsProton, AliESDtrackCuts *cutsKaon, AliESDtrackCuts *cutsPion,AliESDtrackCuts *cutsSoftPion);
 
   void IsSelectedPID(AliAODTrack *track,Int_t &iSelPion,Int_t &iSelKaon,Int_t &iSelProton,const Int_t iSelPionCuts=1,const Int_t iSelKaonCuts=1,const Int_t iSelProtonCuts=1,Bool_t fillHistos=kFALSE);
-
+  void UpdateTrackPIDwithBayesPID(AliAODTrack *track,Int_t &iSelPion,Int_t &iSelKaon,Int_t &iSelProton);
+ 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetAnalysisType(Int_t antype){fAnalysisType=antype;};
   void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;} 
@@ -94,6 +95,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetFillTree(Int_t filltree){fFillTree=filltree;}
   void FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer,Int_t flagMC,AliAODEvent *aod,AliAODMCParticle* p,TClonesArray* array_MC, AliAODMCHeader *mcHeader);
   void SetMaxChi2Cut(Double_t maxchi2){fMaxVtxChi2Cut=maxchi2;}
+  void SetUseBayesPIDinFiltering(Bool_t useBayesFilt){fUseBayesInFiltering=useBayesFilt;}
   Double_t GetMaxChi2Cut(){return fMaxVtxChi2Cut;}
   Double_t CosThetaStar(Double_t mumVector[3],Double_t daughtVector[3],Double_t massMum,Double_t massDaught);
   void PrintCandidateVariables(AliAODRecoDecayHF3Prong *d,AliAODEvent *aod);  
@@ -108,6 +110,23 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
      fminpT_treeFill = min;
      fmaxpT_treeFill = max;
    }
+  void SetFastLoopParamsSingleTrack(Double_t ptLoop1,Double_t ptLoop2,Double_t ptLoop3,Double_t minptTracksFastLoop,Double_t maxDCATracksFastLoop,Double_t DCApar1,Double_t DCApar2,Double_t DCApar3,Double_t DCApar4,Double_t maxFastDZ12,Double_t maxFastDZ13,Double_t maxFastDZ23){
+    fptLoop1=ptLoop1;
+  fptLoop2=ptLoop2;
+  fptLoop3=ptLoop3;
+  fminptTracksFastLoop=minptTracksFastLoop;
+  fmaxDCATracksFastLoop=maxDCATracksFastLoop;
+  fFastLoopDCApar1=DCApar1;
+  fFastLoopDCApar2=DCApar2;
+  fFastLoopDCApar3=DCApar3;
+  fFastLoopDCApar4=DCApar4;
+  fMaxFastDZ12=maxFastDZ12;
+  fMaxFastDZ13=maxFastDZ13;
+  fMaxFastDZ23=maxFastDZ23;
+  }
+
+
+  
   // require the calculation of dist12 and dist23
   void SetCalculate_dist12_dist23(Bool_t flag){ fCompute_dist12_dist23 = flag; }
   Short_t SetMapCutsResponse(Int_t massHypo_filtering, Int_t response_onlyCuts, Int_t response_onlyPID);
@@ -131,6 +150,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     }
   }
 
+  void SetUseOnlySignalInLoop(Bool_t useOnlySignal=kTRUE){
+    fLoopOverSignalOnly=useOnlySignal;
+  }
   // integer to keep only SigmaC candidate with 0 or ++ charge
   void SetAbsValueScCharge(Int_t value){
     fAbsValueScCharge = value;
@@ -149,7 +171,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetNSoftPionRotations(Int_t nrot){nrot < 0 ? Printf("Cannot set negative number of rotations, setting 0"), fNRotations=0 : fNRotations=nrot;}
   void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
   void SetPDGcodeForFiducialYreco(Int_t pdgcode){fPdgFiducialYreco=pdgcode;}
-
+  
   // set mass range for ttree filling
   void SetMassRangeTTreeFill( Double_t min, Double_t max )  {flowMass_treeFill=min;  fhighMass_tree_Fill=max;}
 
@@ -172,6 +194,54 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // reject events without a recognised p, K, pi
   void SetRejEvWoutpKpi(){fRejEvWoutpKpi=kTRUE;}
 
+  void SetRandomRejFactorDebug(Double_t value){fRejFactorFastAnalysis=value;}
+  // apply different pt cuts on candidate daughters
+  void SetMinPtSingleDaughter(Double_t minPtProton, Double_t minPtKaon, Double_t minPtPion){
+    fUseMinPtSingleDaughter = kTRUE;
+    fMinPtProton = minPtProton;
+    fMinPtKaon = minPtKaon;
+    fMinPtPion = minPtPion;
+  }
+  void SwitchToFastLoops(){fFastLoopPbPb=kTRUE;}
+  void SwitchOnFastSelections(Bool_t fastsel=kTRUE){fFastLoopPbPbFastSelections=fastsel;}
+  void ExtendSparseVariables(Bool_t extendSparse=kTRUE){fextendSparseForLb=extendSparse;}
+  // avoid SigmaC analysis
+  void SetDisableSigmaCLoop(){fDisableSigmaCLoop=kTRUE;}
+  void SetFillNtupleFastVar(Bool_t fillNt=kTRUE){fFillFastVarForDebug=fillNt;}
+  void SetMinFastLxyCuts(Double_t minLxyFast,Double_t minLxyFast12,Double_t minLxyFast13,Double_t minLxyFast23){
+    if(minLxyFast12>0.)fMinFastLxy12Sq=minLxyFast12*minLxyFast12;
+    else fMinFastLxy12Sq=-1;
+    if(fMinFastLxy13Sq>0.)fMinFastLxy13Sq=minLxyFast13*minLxyFast13;
+    else fMinFastLxy13Sq=-1;
+    if(fMinFastLxy23Sq>0.)fMinFastLxy23Sq=minLxyFast23*minLxyFast23;
+    else fMinFastLxy23Sq=-1;
+    if(fMinFastLxySq>0.) fMinFastLxySq=minLxyFast*minLxyFast;
+    else fMinFastLxySq=-1;
+  }
+  
+  void SetMaxDistVtxFast(Double_t maxDist12_13,Double_t maxDist12_23){
+    fMaxFastDist12_13Sq=maxDist12_13*maxDist12_13;
+    fMaxFastDist12_23Sq=maxDist12_23*maxDist12_23;
+  }
+  void SetMinFastPtCand(Double_t minpt){fMinFastPtCand=minpt;}
+  void SetMinCosPointAngleXYFast(Double_t cosPxyFast){
+    if(cosPxyFast<0)fMinFastCosPointXYSq=-1;
+    else fMinFastCosPointXYSq=cosPxyFast*cosPxyFast;
+  }
+  void SetMinCosPointAngle3DFast(Double_t cosPxyFast){
+    if(cosPxyFast<0)fMinFastCosPoint3DSq=-1;
+    else fMinFastCosPoint3DSq=cosPxyFast*cosPxyFast;
+  }
+void EnableSparseReflections(){fFillSparseReflections=kTRUE;} 
+ 
+// build background of Lc candidates with rotated pion
+void SetBuildRotBkgLc(){fLcRotationBkg=kTRUE;};
+void BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidate, Double_t* pointFillSparse, Int_t massHypo);
+
+// fill tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
+void SetFillTuplePID_TOFreq(Bool_t flag=kTRUE){fFillTuplePID_TOFreq=flag;}
+void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
+  
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -229,7 +299,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   AliAODMCParticle* MatchRecoCandtoMC(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
   AliAODMCParticle* MatchRecoCandtoMCAcc(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
   void LoopOverGenParticles();
-  void LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod);  
+  void LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod);
+  Int_t DefinePbPbfilteringLoop(const AliAODTrack *track,Bool_t isPreselSoftPionOnly);
+  void PrepareArrayFastLoops();
+  void InitStandardValuesForFastLoops();
   AliAnalysisVertexingHF *fvHF;   //!<! temporary object for filling reco cands
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts 
   //AliRDHFCutsLctopKpi *fCutsLc;  // Lc Cuts
@@ -273,6 +346,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
+  THnSparseF* fhSparseAnalysisReflections;//! sparse for analysis - reflections
   THnSparseF* fhSparseAnalysisSigma;//! sparse for analysis of SigmaC (with deltaM)
   THnSparseF* fhSparsePartReco;//! sparse for single track efficiency (reco spectra)
   THnSparseF* fhSparsePartGen;//! sparse for single track efficiency (gen spectra)
@@ -306,6 +380,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH2F *fnSigmaPIDtpcProton; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcPion; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcKaon; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesProton; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesPion; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesKaon; //!<! histo for monitoring PID performance
   TH2F *fProtonID; //!<! histo for purity of PID
   TH2F *fKaonID; //!<! histo for purity of PID
   TH2F *fPionID; //!<! histo for purity of PID
@@ -445,8 +522,62 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // bool to avoid processing events without recognised p, K, pi
   Bool_t fRejEvWoutpKpi; //
 
+  // pT selections on daughters and candidate
+  Bool_t fUseMinPtSingleDaughter; // separated pt cut for daughters (NB: in cut object pt>300 MeV/c)
+  Double_t fMinPtProton;  // minimum pt for selected candidate protons
+  Double_t fMinPtKaon;    // minimum pt for selected candidate kaons
+  Double_t fMinPtPion;    // minimum pt for selected candidate pions
+  TH1D* fHistoPtSelProton; //!<!
+  TH1D* fHistoPtSelKaon; //!<!
+  TH1D* fHistoPtSelPion; //!<!
+
+  // avoid SigmaC analysis
+  Bool_t fDisableSigmaCLoop; //
+  TH2F *fHistoPtd0plane;//!<!
+  TH2F *fHistoPtd0planeAfterFastLoopSel;//!<!
+  Bool_t fFastLoopPbPb;// option for fast loops in Pb-Pb
+  Bool_t fFastLoopPbPbFastSelections;// option for fast selections before computing vertex, can be used also for pp though not needed
+  TArrayI *ftrackArraySelFast;  //!<! array of selected tracks for internal use
+  TArrayI *ftrackArraySelLoop1;  //!<! array of selected tracks for internal use
+  TArrayI *ftrackArraySelLoop2;  //!<! array of selected tracks for internal use
+  TArrayI *ftrackArraySelLoop3;  //!<! array of selected tracks for internal use
+  Int_t floop1;  //!<! internal number of selected tracks for loop1
+  Int_t floop2;  //!<! internal number of selected tracks for loop2
+  Int_t floop3;  //!<! internal number of selected tracks for loop3
+  TNtuple *ftnFastVariables; //!  ntuple with fast variable and correlation with full calculation
+  Bool_t fFillFastVarForDebug; // flag to fill ntuple with fast variables
+  Double_t fMinFastLxy12Sq; // variable used in fast selection
+  Double_t fMinFastLxy13Sq; // variable used in fast selection
+  Double_t fMinFastLxy23Sq; // variable used in fast selection
+  Double_t fMinFastLxySq; // variable used in fast selection
+  Double_t fMaxFastDist12_13Sq; // variable used in fast selection
+  Double_t fMaxFastDist12_23Sq; // variable used in fast selection
+  Double_t fMinFastPtCand; // variable used in fast selection
+  Double_t fMinFastCosPointXYSq; // variable used in fast selection
+  TH2D *fHistFastInvMass;//!<! fast inv mass plot
+  Double_t fRejFactorFastAnalysis; // random rejection factor for debugging, makes sense if between 0 (reject all, also if <0) and 1 (keep all, also if>1)
+  Bool_t fFillSparseReflections; 
+  Bool_t  fLoopOverSignalOnly; // flag to select only tracks from signals (Lc,Xic,Sc,c-deut) for the loops (to be used in MC only!)
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,21); /// AliAnalysisTaskSE for Xic->pKpi
+  Double_t fptLoop1;// internal parameter for fast loops
+  Double_t fptLoop2;// internal parameter for fast loops
+  Double_t fptLoop3;// internal parameter for fast loops
+  Double_t fminptTracksFastLoop; // internal parameter for fast loops
+  Double_t fmaxDCATracksFastLoop; // internal parameter for fast loops
+  Double_t fFastLoopDCApar1; // internal parameter for fast loops
+  Double_t fFastLoopDCApar2;// internal parameter for fast loops
+  Double_t fFastLoopDCApar3;// internal parameter for fast loops
+  Double_t fFastLoopDCApar4;// internal parameter for fast loops
+  Double_t fMaxFastDZ12;// internal parameter for fast loops
+  Double_t fMaxFastDZ13;// internal parameter for fast loops
+  Double_t fMaxFastDZ23;// internal parameter for fast loops
+  Double_t fMinFastCosPoint3DSq;// internal parameter for fast loops
+  Bool_t fLcRotationBkg;  // build background of Lc candidates with rotated pion
+  Bool_t fextendSparseForLb; // change range of some variables in default sparse
+  Bool_t fFillTuplePID_TOFreq;  // fill tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
+  TNtuple* fTuplePID_TOFreq;  //! tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
+  Bool_t fUseBayesInFiltering;// use bayesPID (max prob) in Filtering: note this does not match identically the usual Bayes selection
+  ClassDef(AliAnalysisTaskSEXicTopKpi,31); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 

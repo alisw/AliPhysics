@@ -136,10 +136,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fGeneratorHashs(),
   fGeneratorMCSignalHashs(),
   fGeneratorULSSignalHashs(),
-  fCheckGenID(kFALSE),
-  fGeneratorIndex(),
-  fGeneratorMCSignalIndex(),
-  fGeneratorULSSignalIndex(),
+  fRejectParticleFromOOB(false),
   fPIDResponse(0x0),
   fEvent(0x0),
   fMC(0x0),
@@ -293,10 +290,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fGeneratorHashs(),
   fGeneratorMCSignalHashs(),
   fGeneratorULSSignalHashs(),
-  fCheckGenID(kFALSE),
-  fGeneratorIndex(),
-  fGeneratorMCSignalIndex(),
-  fGeneratorULSSignalIndex(),
+  fRejectParticleFromOOB(false),
   fPIDResponse(0x0),
   fEvent(0x0),
   fMC(0x0),
@@ -1051,13 +1045,8 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // ##########################################################
     // check if correct generator used
-    bool generatorForMCSignal  = CheckGenerator(iPart, fGeneratorMCSignalHashs);
-    bool generatorForULSSignal = CheckGenerator(iPart, fGeneratorULSSignalHashs);
-
-    if(fCheckGenID){
-      generatorForMCSignal  = CheckGeneratorIndex(iPart, fGeneratorMCSignalIndex);
-      generatorForULSSignal = CheckGeneratorIndex(iPart, fGeneratorULSSignalIndex);
-    }
+    bool generatorForMCSignal  = CheckGenerator(iPart, fGeneratorMCSignalHashs, kTRUE);
+    bool generatorForULSSignal = CheckGenerator(iPart, fGeneratorULSSignalHashs, kTRUE);
 
     if (!generatorForMCSignal && !generatorForULSSignal) continue;
     // if (!CheckGenerator(iPart, fGeneratorHashs)) continue;
@@ -1145,13 +1134,8 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // ##########################################################
     // check if correct generator used
-    bool generatorForMCSignal  = CheckGenerator(label, fGeneratorMCSignalHashs);
-    bool generatorForULSSignal = CheckGenerator(label, fGeneratorULSSignalHashs);
-
-    if(fCheckGenID){
-      generatorForMCSignal  = CheckGeneratorIndex(label, fGeneratorMCSignalIndex);
-      generatorForULSSignal = CheckGeneratorIndex(label, fGeneratorULSSignalIndex);
-    }
+    bool generatorForMCSignal  = CheckGenerator(label, fGeneratorMCSignalHashs, kFALSE);
+    bool generatorForULSSignal = CheckGenerator(label, fGeneratorULSSignalHashs, kFALSE);
 
     // std::cout << "generatorForMCSignal = " << generatorForMCSignal << std::endl;
     // std::cout << "generatorForULSSignal = " << generatorForULSSignal << std::endl;
@@ -2066,25 +2050,27 @@ Double_t AliAnalysisTaskElectronEfficiencyV2::GetSmearing(TObjArray *arr, Double
   return smearing;
 }
 
-bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vector<unsigned int> vecHashes){
-  if (vecHashes.size() == 0) return true;
+bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vector<unsigned int> vecHashes, Bool_t isGen){
+  if(fRejectParticleFromOOB){
+    if(isAOD){//for AOD
+      AliAODMCHeader* mcHeader = (AliAODMCHeader*)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      if (!mcHeader) {
+          AliError("Could not find MC headr in AOD");
+          return false;
+      }
+      TClonesArray* mcArray = dynamic_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!mcArray) {
+          AliError("Could not find MC array in AOD");
+          return false;
+      }
+      if(isGen && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
+    }
+    else{//for ESD
+        if(isGen && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
+    }
+  }
 
-  if(isAOD){//for AOD
-    AliAODMCHeader* mcHeader = (AliAODMCHeader*)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if (!mcHeader) {
-      AliError("Could not find MC headr in AOD");
-      return false;
-    }
-    TClonesArray* mcArray = dynamic_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!mcArray) {
-      AliError("Could not find MC array in AOD");
-      return false;
-    }
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
-  }
-  else{//for ESD
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
-  }
+  if (vecHashes.size() == 0) return true;
 
   TString genname="";
   Bool_t hasGenerator = fMC->GetCocktailGenerator(TMath::Abs(trackID), genname);
@@ -2104,41 +2090,8 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vecto
     }//end of vecHashes loop
     return false;
   }
+
   return false; // should not happen
-}
-
-bool AliAnalysisTaskElectronEfficiencyV2::CheckGeneratorIndex(int trackID, std::vector<unsigned int> vecGenIDs){
-  if (vecGenIDs.size() == 0) return true;
-
-  if(isAOD){//for AOD
-    AliAODMCHeader* mcHeader = (AliAODMCHeader*)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if (!mcHeader) {
-      AliError("Could not find MC headr in AOD");
-      return false;
-    }
-    TClonesArray* mcArray = dynamic_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!mcArray) {
-      AliError("Could not find MC array in AOD");
-      return false;
-    }
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
-  }
-  else{//for ESD
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
-  }
-
-  AliMCParticle* p = (AliMCParticle*)fMC->GetTrack(TMath::Abs(trackID));
-  Int_t genID = p->GetGeneratorIndex();
-
-  //TString genname="";
-  //Bool_t hasGenerator = fMC->GetCocktailGenerator(TMath::Abs(trackID), genname);
-  //AliInfo(Form("genID = %d , generator name = %s",genID,genname.Data()));
-
-  for (unsigned int i = 0; i < vecGenIDs.size(); ++i){
-    //std::cout << genID << " " << vecGenIDs[i] << std::endl;
-    if (genID == vecGenIDs[i]) return true;
-  }//end of vecHashes loop
-  return false;
 }
 
 double AliAnalysisTaskElectronEfficiencyV2::GetWeight(Particle part1, Particle part2, double motherpt){

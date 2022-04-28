@@ -1,7 +1,7 @@
 AliAnalysisVertexingHF* ConfigVertexingHF() {
 
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
-  vHF = new AliAnalysisVertexingHF();
+  AliAnalysisVertexingHF* vHF = new AliAnalysisVertexingHF();
   //Set Reduce Size dAOD
   vHF->SetMakeReducedRHF(kTRUE);
 
@@ -57,40 +57,40 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetTrackFilter(trkFilter);
 
   //   displaced tracks for 20% most central events 2 prongs
-  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
-  esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(50);
-  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  AliESDtrackCuts *esdTrackCuts1 = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCuts1->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts1->SetMinNClustersTPC(50);
+  esdTrackCuts1->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  esdTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
   // |d0|>25 micron for pt<2GeV, no cut above 2
-  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0025*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
-  esdTrackCuts->SetMaxDCAToVertexXY(1.);  
-  esdTrackCuts->SetMaxDCAToVertexZ(1.);
-  esdTrackCuts->SetPtRange(0.5,1.e10);
-  esdTrackCuts->SetEtaRange(-0.8,+0.8);
-  AliAnalysisFilter *trkFilter = new AliAnalysisFilter("trackFilter");
-  trkFilter->AddCuts(esdTrackCuts);
-  vHF->SetTrackFilter2prongPbCentral(20.,trkFilter); // for centrality 0-20%
+  esdTrackCuts1->SetMinDCAToVertexXYPtDep("0.0025*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+  esdTrackCuts1->SetMaxDCAToVertexXY(1.);
+  esdTrackCuts1->SetMaxDCAToVertexZ(1.);
+  esdTrackCuts1->SetPtRange(0.5,1.e10);
+  esdTrackCuts1->SetEtaRange(-0.8,+0.8);
+  AliAnalysisFilter *trkFilter1 = new AliAnalysisFilter("trackFilter");
+  trkFilter1->AddCuts(esdTrackCuts1);
+  vHF->SetTrackFilter2prongPbCentral(20.,trkFilter1); // for centrality 0-20%
 
   //     displaced tracks for 20% most central events 3 prongs
-  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
-  esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(50);
-  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  AliESDtrackCuts *esdTrackCuts2 = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCuts2->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts2->SetMinNClustersTPC(50);
+  esdTrackCuts2->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  esdTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
   // |d0|>60 micron for pt<2GeV, no cut above 2
-  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0060*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
-  esdTrackCuts->SetMaxDCAToVertexXY(1.);  
-  esdTrackCuts->SetMaxDCAToVertexZ(1.);
-  esdTrackCuts->SetPtRange(0.6,1.e10);
-  esdTrackCuts->SetEtaRange(-0.8,+0.8);
-  AliAnalysisFilter *trkFilter = new AliAnalysisFilter("trackFilter");
-  trkFilter->AddCuts(esdTrackCuts);
-  vHF->SetTrackFilter3prongPbCentral(20.,trkFilter); // for centrality 0-20%
+  esdTrackCuts2->SetMinDCAToVertexXYPtDep("0.0060*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+  esdTrackCuts2->SetMaxDCAToVertexXY(1.);
+  esdTrackCuts2->SetMaxDCAToVertexZ(1.);
+  esdTrackCuts2->SetPtRange(0.6,1.e10);
+  esdTrackCuts2->SetEtaRange(-0.8,+0.8);
+  AliAnalysisFilter *trkFilter2 = new AliAnalysisFilter("trackFilter");
+  trkFilter2->AddCuts(esdTrackCuts2);
+  vHF->SetTrackFilter3prongPbCentral(20.,trkFilter2); // for centrality 0-20%
 
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");

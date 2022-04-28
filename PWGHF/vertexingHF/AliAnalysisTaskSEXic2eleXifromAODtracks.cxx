@@ -1939,7 +1939,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 						fHistoEleXiMassvsElePtMCS->Fill(cont2);
 						if(trk->Charge()>0) fHistoEleXiMassvsElePtMCS1->Fill(cont2);
 						else fHistoEleXiMassvsElePtMCS2->Fill(cont2);
-						if(cont[0]<fAnalCuts->GetEleXiMassMax()){
+						if( cont[0]>fAnalCuts->GetEleXiMassMin() &&  cont[0]<fAnalCuts->GetEleXiMassMax()){
 							fHistoEleXiPtvsRapidityMCS->Fill(exobj->Pt(),exobj_rap);
 							fHistoElePtMCS->Fill(mcele->Pt(),fCentrality);
 							fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
@@ -3009,7 +3009,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
     Int_t nextRes( nextResVec[fPoolIndex] );
     m_ReservoirE[fPoolIndex][nextRes].push_back(new TLorentzVector(trk->Px(),trk->Py(),trk->Pz(),trk->Charge()));
     m_ReservoirVarsE[fPoolIndex][nextRes].push_back(varvec);
-	}
+	
+    } 
 
 	if(!fWriteEachVariableTree) return;
 

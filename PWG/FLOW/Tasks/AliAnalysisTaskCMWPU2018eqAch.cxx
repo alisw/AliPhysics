@@ -462,6 +462,51 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   
 
 
+  //15op2 pospol                                                                                                                             
+  // Acharge Binning with Equal Event per bin:                                                                                               
+  //Cent 0-5                                                                                                                                 
+  Double_t fAchBinCent000[11] = {-0.09, -0.018, -0.01, -0.004, 0, 0.004, 0.008, 0.012, 0.018, 0.024, 1};
+  //Cent 5-10                                                                                                                                
+  Double_t fAchBinCent111[11] = {-0.1, -0.02, -0.012, -0.006, -0.002, 0.004, 0.008, 0.012, 0.018, 0.026, 1};
+  //Cent 10-20                                                                                                                               
+  Double_t fAchBinCent222[11] = {-0.146, -0.024, -0.014, -0.008, -0.002, 0.004, 0.008, 0.014, 0.02, 0.03, 1};
+  //Cent 20-30                                                                                                                               
+  Double_t fAchBinCent333[11] = {-0.144, -0.03, -0.018, -0.01, -0.004,  0.004, 0.01, 0.016, 0.024, 0.036, 1};
+  //Cent 30-40                                                                                                                               
+  Double_t fAchBinCent444[11] = {-0.186, -0.038, -0.024, -0.014, -0.006, 0.002, 0.012, 0.02, 0.03, 0.044, 1};
+  //Cent 40-50                                                                                                                               
+  Double_t fAchBinCent555[11] = {-0.23, -0.052, -0.032, -0.018, -0.008, 0.004, 0.014, 0.024, 0.038, 0.058, 1};
+  //Cent 50-60                                                                                                                               
+  Double_t fAchBinCent666[11] = {-0.332, -0.07, -0.044, -0.026, -0.012, 0.002, 0.018, 0.032, 0.05, 0.076, 1};
+  //Cent 60-80                                                                                                                               
+  Double_t fAchBinCent777[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
+  //Cent 80-90                                                                                                                               
+  Double_t fAchBinCent888[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
+
+
+  //15op2 negpol                                                                                                                             
+  // Acharge Binning with Equal Event per bin:                                                                                               
+  //Cent 0-5                                                                                                                                 
+  Double_t fAchBinCent0000[11] = {-0.148, -0.022, -0.014, -0.01, -0.006, -0.002, 0.002, 0.008, 0.012, 0.02, 1};
+  //Cent 5-10                                                                                                                                
+  Double_t fAchBinCent1111[11] = {-0.132, -0.024, -0.016, -0.01, -0.006, 0, 0.004, 0.008, 0.014, 0.022, 1};
+  //Cent 10-20                                                                                                                               
+  Double_t fAchBinCent2222[11] = {-0.166, -0.028, -0.018, -0.012, -0.006, 0, 0.004, 0.01, 0.016, 0.026, 1};
+  //Cent 20-30                                                                                                                               
+  Double_t fAchBinCent3333[11] = {-0.182, -0.034, -0.022, -0.014, -0.008, 0, 0.006, 0.012, 0.022, 0.032, 1};
+  //Cent 30-40                                                                                                                               
+  Double_t fAchBinCent4444[11] = {-0.216, -0.042, -0.028, -0.018, -0.008, 0, 0.008, 0.016, 0.026, 0.042, 1};
+  //Cent 40-50                                                                                                                              
+  Double_t fAchBinCent5555[11] = {-0.246, -0.054, -0.036, -0.022, -0.012, -0.002, 0.01, 0.022, 0.034, 0.054, 1};
+  //Cent 50-60                                                                                                                               
+  Double_t fAchBinCent6666[11] = {-0.372, -0.074, -0.048, -0.03, -0.014, 0.002, 0.014, 0.03, 0.048, 0.072, 1};
+  //Cent 60-80                                                                                                                               
+  Double_t fAchBinCent7777[11] = {-0.996, -0.132, -0.084, -0.052, -0.024, 0.002, 0.024, 0.05, 0.082, 0.13, 1};
+  //Cent 80-90                                                                                                                               
+  Double_t fAchBinCent8888[11] = {-0.996, -0.132, -0.084, -0.052, -0.024, 0.002, 0.024, 0.05, 0.082, 0.13, 1};
+
+
+
 
   Double_t fAchBinSelect[11] = {0.0};
  
@@ -510,17 +555,46 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 	  if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88[k]; } }
 	  
 	}   
+
+      else if (bdataset==2)
+	{
+          if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent000[k]; } }
+          if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent111[k]; } }
+          if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent222[k]; } }
+          if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent333[k]; } }
+          if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent444[k]; } }
+          if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent555[k]; } }
+          if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent666[k]; } }
+          if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent777[k]; } }
+          if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent888[k]; } }
+
+        }
+
+      else if (bdataset==3)
+	{
+          if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0000[k]; } }
+          if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1111[k]; } }
+          if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2222[k]; } }
+          if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent3333[k]; } }
+          if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent4444[k]; } }
+          if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent5555[k]; } }
+          if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6666[k]; } }
+          if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7777[k]; } }
+          if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8888[k]; } }
+
+        }
+
       
 
       ////Charge:
       sprintf(name,"fHistv2AchChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchChrgPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPos[i][j]);
       sprintf(name,"fHistv2AchChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNeg[i][j]);
 
@@ -528,12 +602,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
       sprintf(name,"fHistv2AchChrgPosChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgPosChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPosChrgNeg[i][j]);
       sprintf(name,"fHistv2AchChrgNegChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgNegChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNegChrgPos[i][j]);
 
@@ -543,12 +617,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Pion:
       sprintf(name,"fHistv2AchPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchPionPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPos[i][j]);
       sprintf(name,"fHistv2AchPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchPionNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNeg[i][j]);
 
@@ -556,12 +630,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       
       sprintf(name,"fHistv2AchPionPosPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchPionPosPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPosPionNeg[i][j]);
       sprintf(name,"fHistv2AchPionNegPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchPionNegPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNegPionPos[i][j]);  
       
@@ -569,24 +643,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Kaon:
       sprintf(name,"fHistv2AchKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchKaonPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPos[i][j]);
       sprintf(name,"fHistv2AchKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNeg[i][j]);
 
 
       sprintf(name,"fHistv2AchKaonPosKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPosKaonNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchKaonPosKaonNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchKaonPosKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPosKaonNeg[i][j]);
       sprintf(name,"fHistv2AchKaonNegKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNegKaonPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchKaonNegKaonPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchKaonNegKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNegKaonPos[i][j]);      
             
@@ -594,24 +668,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Proton:
       sprintf(name,"fHistv2AchProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchProtPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPos[i][j]);
       sprintf(name,"fHistv2AchProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchProtNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNeg[i][j]);
 
 
       sprintf(name,"fHistv2AchProtPosProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPosProtNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchProtPosProtNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchProtPosProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPosProtNeg[i][j]);
       sprintf(name,"fHistv2AchProtNegProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNegProtPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchProtNegProtPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchProtNegProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNegProtPos[i][j]);    
     }
@@ -661,12 +735,37 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
     if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88[k]; } }
     }
     
+    else if (bdataset==2)
+      {
+	if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent000[k]; } }
+	if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent111[k]; } }
+	if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent222[k]; } }
+	if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent333[k]; } }
+	if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent444[k]; } }
+	if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent555[k]; } }
+	if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent666[k]; } }
+	if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent777[k]; } }
+	if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent888[k]; } }
+      }
+
+    else if (bdataset==3)
+      {
+	if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0000[k]; } }
+	if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1111[k]; } }
+	if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2222[k]; } }
+	if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent3333[k]; } }
+	if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent4444[k]; } }
+	if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent5555[k]; } }
+	if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6666[k]; } }
+	if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7777[k]; } }
+	if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8888[k]; } }
+      }
 
 
     ////Charge:
     sprintf(name,"fHistv2cumAchChrgAllQcumCent%d",i);
     sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[i],centRange[i+1]);
-    fHistv2cumAchChrgAll[i] = new TProfile(name,title,9,fAchBinSelect,"");
+    fHistv2cumAchChrgAll[i] = new TProfile(name,title,10,fAchBinSelect,"");
     fHistv2cumAchChrgAll[i]->Sumw2();
     fListHist->Add(fHistv2cumAchChrgAll[i]);    
 
@@ -840,6 +939,23 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   fCentDistBeforCut->Fill(centrality);
   
 
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
+  UInt_t fSelectMask = inputHandler->IsEventSelected();
+  Bool_t isTriggerSelected1 = kFALSE;
+  Bool_t isTriggerSelected2 = kFALSE;
+  Bool_t isTriggerSelected3 = kFALSE;
+
+  isTriggerSelected1 = fSelectMask& AliVEvent::kCentral;
+  isTriggerSelected2 = fSelectMask& AliVEvent::kSemiCentral;
+  isTriggerSelected3 = fSelectMask& AliVEvent::kINT7;
+
+
+  if (isTriggerSelected1==1 && centrality>10.0 && isTriggerSelected3==0)
+    return ;
+  if (isTriggerSelected2==1 && (centrality<30.0 || centrality>50.0 ) && isTriggerSelected3==0)
+    return ;
+
 
 
   
@@ -990,7 +1106,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
     AliAODTrack* AODtrack = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
     if(!AODtrack) continue;
     
-    if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks. 
+    if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks.
+    //if(AODtrack->TestFilterBit(768)) {  //// Only use FB tracks. hard coded 
 
       trkPt    = AODtrack->Pt();
       trkPhi   = AODtrack->Phi();
@@ -1008,7 +1125,9 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       
 
 
-      if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+
+      //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
 
 
 	  
@@ -1069,7 +1188,11 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	  fNumOfNeg += 1;
 	}
 	
-       
+
+
+	//used this section in 2nd for loop as in this loop for Ach calculation all variables are hardcoded
+	/*
+	
 	if(trkPt < 2.0)  ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
 	  {
 	  
@@ -1130,6 +1253,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 	  }
 
+	*/
+
 	
 	
 	//<---------- User track analysis Done---------------
@@ -1150,7 +1275,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   stepCount++;
 
 
-  if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
+  //if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
   
   fHistEventCount->Fill(stepCount); //9
   stepCount++;
@@ -1248,7 +1373,9 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
       
       //Apply track cuts here:
-      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+
+	if((trkPt <= 3.0) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
 
 
@@ -1430,8 +1557,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	/// infinity Weight protection:
 	if(WgtNUA>1e3)     WgtNUA = 1.0;
 	if(WgtNUAPion>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAKaon>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAProt>1e3) WgtNUAPion = 1.0;
+	if(WgtNUAKaon>1e3) WgtNUAKaon = 1.0;
+	if(WgtNUAProt>1e3) WgtNUAProt = 1.0;
 
 	
 	
@@ -1442,11 +1569,81 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
-    
+	//event plane calculation from 1st for loop
+
+		if(trkPt < 2.0)  ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
+	  {
+	  
+
+
+	if(trkEta < fEtaGapNeg){
+	  fSumTPCQn2xNegWhole += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNegWhole += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNegWhole  += trkWgt;
+	}
+	else if(trkEta > fEtaGapPos){
+	  fSumTPCQn2xPosWhole += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yPosWhole += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaPosWhole  += trkWgt;
+	}
+
+
+
+
+  if(trkEta < fEtaGapNeg){
+	  if (trkChrg>0) //added by me for trivial term correction
+	  {
+	  fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNeg  += trkWgt;
+	  }
+	  
+	  //added by me for trivial term correction
+	else if (trkChrg<0)
+	  {
+	  fSumTPCQn2xNegChNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNegChNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNegChNeg  += trkWgt;
+	  }
+	  ///////////////////////////////
+	
+	}
+	else if(trkEta > fEtaGapPos){
+	  
+	  if (trkChrg>0)  //added by me for trivial term correction
+	    {
+	  fSumTPCQn2xPos += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yPos += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaPos  += trkWgt;
+	    }
+	  
+	   //added by me for trivial term correction
+	  else if (trkChrg<0) 
+	    {
+	      fSumTPCQn2xPosChNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	      fSumTPCQn2yPosChNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	      fSumWgtEtaPosChNeg  += trkWgt;
+	    }
+	  ////////////////////////////////////////
+	  
+	}
+
+
+	  }
+
+
+
+
+		if (trkPt <= fMaxPtCut)
+
+		  {
+		  
 	uqRe = TMath::Cos(gPsiN*trkPhi);
 	uqIm = TMath::Sin(gPsiN*trkPhi);
 
 
+
+	
 
 
 	
@@ -1595,13 +1792,15 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	
        
        
-
-      }//with all trackCuts applied      
+		  }
+	}//with all trackCuts applied      
     }//-------> if FB is validated
     
   }///------> 2nd Track loop Ends here.<--------
  
 
+  if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
+  
   /// For cumulant method:
 
 

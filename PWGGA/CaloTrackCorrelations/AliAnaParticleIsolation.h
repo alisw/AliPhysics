@@ -197,6 +197,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetM02CutForSignal    (Float_t min, Float_t max ) { fM02Narrow[0] = min ; fM02Narrow[1] = max; }
   void         SetM02CutForBackground(Float_t min, Float_t max ) { fM02Wide  [0] = min ; fM02Wide  [1] = max; }
 
+  Bool_t       IsFiducialCutGenLevelOn()       const { return fCheckFidCutGenLevel           ; }
+  void         SwitchOnFiducialCutGenLevel()         { fCheckFidCutGenLevel = kTRUE ;
+                            if ( !fFidCutGenLevel )  fFidCutGenLevel   = new AliFiducialCut(); }
+  void           SwitchOffFiducialCutGenLevel()      { fCheckFidCutGenLevel = kFALSE         ; }
+  AliFiducialCut  * GetFiducialCutGenLevel()         { if ( !fFidCutGenLevel ) fFidCutGenLevel  = new AliFiducialCut() ;
+                                                      return  fFidCutGenLevel                ; }
+  void         SetFiducialCutGenLevel(AliFiducialCut * fc) { delete fFidCutGenLevel;
+                                                         fFidCutGenLevel  = fc               ; }
+
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
                      kmcPrimPrompt = 4, kmcPrimFrag     = 5, kmcPrimISR       = 6,
@@ -319,6 +328,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t         fIsExoticTrigger;                    //!<! Trigger cluster considered as exotic
   Float_t        fClusterExoticity;                   //!<! Temporary container or currently analyzed cluster exoticity
 
+  Bool_t         fCheckFidCutGenLevel ;               ///< Do analysis for generated particles in defined region.
+  AliFiducialCut * fFidCutGenLevel;                   ///< Acceptance cuts at generator level, detector dependent.
+
   // Histograms  
   
   TH1F *   fhPt[2][2] ;                                //!<! Number of non/isolated narrow/wide particles vs pT.
@@ -328,6 +340,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhPtEtaPhi[2][2] ;                          //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles.
   TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
+  TH2F *   fhPtPerTrigger   [2][2] ;                   //!<! Number of non/isolated narrow/wide particles vs pT vs calo trigger from maker.
+  TH3F *   fhPtPerTriggerCen[2][2] ;                   //!<! Number of non/isolated narrow/wide particles vs pT vs centrality vs calo trigger from maker.
+  TH2F *   fhPtMCPhotonPromptPerTrigger   [2][2] ;     //!<! Number of non/isolated narrow/wide particles vs pT vs calo trigger from maker, prompt photon origin.
+  TH3F *   fhPtMCPhotonPromptPerTriggerCen[2][2] ;     //!<! Number of non/isolated narrow/wide particles vs pT  vs centrality vs calo trigger from maker., prompt photon origin
+
   TH1F *   fhPtDecay       [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Number of (non) isolated Pi0 decay particles (invariant mass tag).
   TH2F *   fhEtaPhiDecay   [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! eta vs phi of (not) isolated leading Pi0 decay particles.
   TH2F *   fhPtLambda0Decay[2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously).
@@ -717,7 +734,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,52) ;
+  ClassDef(AliAnaParticleIsolation,54) ;
   /// \endcond
 
 } ;

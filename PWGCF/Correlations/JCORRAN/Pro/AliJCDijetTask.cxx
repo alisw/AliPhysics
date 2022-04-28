@@ -93,7 +93,7 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fUtils(nullptr)
 {
     // Constructor
-    AliInfo("---- AliJCDijetTask Constructor ----");
+    AliInfo(Form("---- AliJCDijetTask Constructor: %s ----",name));
     DefineOutput (1, TDirectory::Class());
 }
 
@@ -163,7 +163,7 @@ AliJCDijetTask::~AliJCDijetTask()
 void AliJCDijetTask::UserCreateOutputObjects()
 {  
     //=== create the jcorran outputs objects
-    if(fDebug > 1) printf("AliJCDijetTask::UserCreateOutPutData() \n");
+    if(fDebug > 1) printf("AliJCDijetTask::UserCreateOutPutObjects() \n");
     //=== Get AnalysisManager
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
@@ -177,6 +177,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
     fhistos = new AliJCDijetHistos();
     fhistos->SetName("jcdijet");
     fhistos->SetCentralityBinsHistos(fcentralityBins);
+    fhistos->SetDijetMBinsHistos(fsDijetMBins);
     fhistos->CreateEventTrackHistos();
     fhistos->fHMG->Print();
     fana = new AliJCDijetAna();
@@ -185,6 +186,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
         fhistosDetMC = new AliJCDijetHistos();
         fhistosDetMC->SetName("jcdijetDetMC");
         fhistosDetMC->SetCentralityBinsHistos(fcentralityBins);
+        fhistosDetMC->SetDijetMBinsHistos(fsDijetMBins);
         fhistosDetMC->CreateEventTrackHistos();
         fhistosDetMC->fHMG->Print();
         fanaMC = new AliJCDijetAna();
@@ -238,6 +240,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Centrality bins:            ";
     for(unsigned i=0; i< fcentralityBins.size(); i++) cout << fcentralityBins.at(i) << " ";
     cout << endl;
+    cout << "Dijet M bins:               " << fsDijetMBins.Data() << endl;
     cout << "Jet cone size:              " << fjetCone << endl;
     cout << "kt-jet cone size:           " << fktJetCone << endl;
     cout << "Using kt-jet scheme:        " << sktScheme.Data() << endl;
@@ -245,7 +248,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Using pion mass:            " << fusePionMass << endl;
     cout << "Using DeltaPhi in BG subtr: " << fuseDeltaPhiBGSubtr << endl;
     cout << "Particle eta cut:           " << fparticleEtaCut << endl;
-    cout << "Particle pt cut:            " << fparticlePtCut << endl;
+    cout << "Particle pt min cut:        " << fparticlePtCut << endl;
+    cout << "Particle pt max cut:        " << 100.0 << endl;
     cout << "Dijet leading jet cut:      " << fleadingJetCut << endl;
     cout << "Dijet subleading jet cut:   " << fsubleadingJetCut << endl;
     cout << "Jet min pt cut:             " << fMinJetPt << endl;
@@ -253,6 +257,10 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Dijet DeltaPhi cut:         pi/" << fdeltaPhiCut << endl;
     cout << "Matching R for MC:          " << fmatchingR << endl;
     cout << "Tracking ineff for DetMC:   " << ftrackingIneff << endl;
+    cout << "Unfolding with true MC set: " << iUnfJetClassTrue << endl;
+    cout << "Unfolding with det  MC set: " << iUnfJetClassDet << endl;
+    cout << "Use C-rho estimation:       " << bUseCrho << endl;
+    cout << "Event selection flag:       " << flags << endl;
     cout << endl;
 
     if(fusePionMass && (fktScheme!=0 || fantiktScheme!=0)) {
@@ -261,9 +269,11 @@ void AliJCDijetTask::UserCreateOutputObjects()
     }
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
+    //Note: for true MC we do not want to cut particles kinematically.
     fana->SetSettings(fDebug,
                       fparticleEtaCut,
-                      fparticlePtCut,
+                      fIsMC?0.0:fparticlePtCut,
+                      fIsMC?DBL_MAX:100.0,
                       fjetCone,
                       fktJetCone,
                       fktScheme,
@@ -276,12 +286,15 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fMinJetPt,
                       fdeltaPhiCut,
                       fmatchingR,
-                      0.0); //Tracking ineff only for det level.
+                      0.0, //Tracking ineff only for det level.
+                      bUseCrho,
+                      fIsMC); //Is this true mc
 
     if(fIsMC) {
         fanaMC->SetSettings(fDebug,
                             fparticleEtaCut,
                             fparticlePtCut,
+                            100.0,
                             fjetCone,
                             fktJetCone,
                             fktScheme,
@@ -294,7 +307,9 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fMinJetPt,
                             fdeltaPhiCut,
                             fmatchingR,
-                            ftrackingIneff);
+                            ftrackingIneff,
+                            bUseCrho,
+                            false); //Is this true mc
     }
 
     // Save information about the settings used.
@@ -329,8 +344,15 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         fhistosDetMC->fh_eventSel->Fill("events wo/ cuts",1.0);
         if(fJCatalystDetMCTask->GetJCatalystEntry() != fEntry) return;
         fhistosDetMC->fh_eventSel->Fill("catalyst entry ok",1.0);
-        if( !fJCatalystDetMCTask->GetIsGoodEvent() ) return;
-        fhistosDetMC->fh_eventSel->Fill("catalyst ok",1.0);
+        if(flags & DIJET_CATALYST) {
+            if( !fJCatalystDetMCTask->GetIsGoodEvent() ) return;
+            fhistosDetMC->fh_eventSel->Fill("catalyst ok",1.0);
+        }
+
+        if(flags & DIJET_ALIEVENTCUT) {
+            if( !fEventCuts.AcceptEvent(InputEvent()) ) return;
+            fhistosDetMC->fh_eventSel->Fill("alieventcut ok",1.0);
+        }
 
         if(flags & DIJET_VERTEX13PA) {
             if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
@@ -384,8 +406,15 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     }
 
     fhistos->fh_eventSel->Fill("catalyst entry ok",1.0);
-    if( !fJCatalystTask->GetIsGoodEvent() ) return;
-    fhistos->fh_eventSel->Fill("catalyst ok",1.0);
+    if(flags & DIJET_CATALYST) {
+        if( !fJCatalystTask->GetIsGoodEvent() ) return;
+        fhistos->fh_eventSel->Fill("catalyst ok",1.0);
+    }
+
+    if(flags & DIJET_ALIEVENTCUT) {
+        if( !fEventCuts.AcceptEvent(InputEvent()) ) return;
+        fhistos->fh_eventSel->Fill("alieventcut ok",1.0);
+    }
 
     if(flags & DIJET_VERTEX13PA) {
         if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
@@ -418,6 +447,14 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     if(fIsMC) {
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iAcc,AliJCDijetAna::iAcc);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtr,AliJCDijetAna::iBGSubtr);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrCutsRaw,AliJCDijetAna::iBGSubtrCutsRaw);
+        //we can run custom configuration with an argument
+        if( !((iUnfJetClassTrue==AliJCDijetAna::iAcc            && iUnfJetClassDet==AliJCDijetAna::iAcc)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtr        && iUnfJetClassDet==AliJCDijetAna::iBGSubtr)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrCutsRaw && iUnfJetClassDet==AliJCDijetAna::iBGSubtrCutsRaw))) {
+            fana->CalculateResponse(fanaMC,fhistosDetMC,iUnfJetClassTrue,iUnfJetClassDet);
+        }
 #endif
     }
 

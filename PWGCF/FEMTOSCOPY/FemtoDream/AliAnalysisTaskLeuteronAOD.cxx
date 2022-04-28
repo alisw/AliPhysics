@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskLeuteronAOD.h"
 #include "AliAODTrack.h"
+#include "AliMultSelection.h"
 
 ClassImp(AliAnalysisTaskLeuteronAOD)
 
@@ -18,7 +19,8 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fisSidebandSignal(false),
   fisUpperSideband(false),
   fisLowerSideband(false),
-  fTrackBufferSize(2000),
+  fisPbPb(false),
+  fTrackBufferSize(50000),
   fEventList(nullptr),
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
@@ -32,6 +34,7 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fResultsList(nullptr),
   fResultsQAList(nullptr),
   fSimpleEventCounter(nullptr),
+  fEventCentrality(nullptr),
   fEvent(nullptr),
   fTrack(nullptr),
   fFemtov0(nullptr),
@@ -54,14 +57,15 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
 
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool doEventQAPlots,bool doResultsQAPlots):AliAnalysisTaskSE(name),
+AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool isPbPb,bool doEventQAPlots,bool doResultsQAPlots):AliAnalysisTaskSE(name),
   fIsMC(isMC),
   fIsHighMultV0(isHighMultV0),
   fBruteForceDebugging(BruteForceDebugging),
   fisSidebandSignal(isSidebandSignal),
   fisUpperSideband(isUpperSideband),
   fisLowerSideband(isLowerSideband),
-  fTrackBufferSize(2000),
+  fisPbPb(isPbPb),
+  fTrackBufferSize(50000),
   fEventList(nullptr),
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
@@ -75,6 +79,7 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool is
   fResultsList(nullptr),
   fResultsQAList(nullptr),
   fSimpleEventCounter(nullptr),
+  fEventCentrality(nullptr),
   fEvent(nullptr),
   fTrack(nullptr),
   fFemtov0(nullptr),
@@ -112,6 +117,8 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool is
   }
 
 }
+
+
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
 AliAnalysisTaskLeuteronAOD::~AliAnalysisTaskLeuteronAOD(){	// destructor -> check if the object exists, if so delete it 
@@ -360,7 +367,12 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
   fSimpleEventCounter = new TH1F("fSimpleEventCounter","Number of events",1,0.0,1.0);
   fSimpleEventCounter->GetYaxis()->SetTitle("number of events");
 
+  fEventCentrality = new TH1F("fEventCentrality","Centrality",100,0.0,100.0);
+  fEventCentrality->GetXaxis()->SetTitle("centrality (%)");
+  fEventCentrality->GetYaxis()->SetTitle("counts");
+
   fEventList->Add(fSimpleEventCounter);
+  fEventList->Add(fEventCentrality);
   fResultsList = fPartColl->GetHistList();
   fResultsQAList->Add(fPartColl->GetQAList());
   fEventList->Add(fEvent->GetEvtCutList());
@@ -405,6 +417,22 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  }
 	  StoreGlobalTrackReference(track);
 	}
+
+    double centrality_min = 30.0;
+    double centrality_max = 50.0;
+    double centrality = -999.0;
+
+    AliMultSelection *MultSelection = (AliMultSelection*) Event->FindListObject("MultSelection");
+    centrality = MultSelection->GetMultiplicityPercentile("V0M");
+
+    if(fisPbPb){
+
+      if((centrality < centrality_min) || (centrality > centrality_max)) return;
+
+    }
+
+    // Fill centrality histo
+    fEventCentrality->Fill(centrality);
 
     // fill the simple event counter
     fSimpleEventCounter->Fill(0.5);

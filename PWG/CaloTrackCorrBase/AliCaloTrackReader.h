@@ -447,8 +447,17 @@ public:
   void             SwitchOffBadTriggerEventsFromTriggerMakerRemoval()      { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kFALSE ; }
   void             SwitchOnBadTriggerEventsFromTriggerMakerRemoval()       { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kTRUE  ; }
   
-  void             SetEMCalTriggerMakerDecisionContainerName(TString name) { fEMCalTriggerMakerDecissionContainerName = name ; }
-  TString          GetEMCalTriggerMakerDecisionContainerName()       const { return fEMCalTriggerMakerDecissionContainerName ; }
+  Bool_t           AreTriggerMakerDecisionHistoFill()   const { return fFillTriggerMakerDecisionHisto  ; }
+  void             SwitchOnTriggerMakerDecisionHistoFill ()   { fFillTriggerMakerDecisionHisto = kTRUE ; }
+  void             SwitchOffTriggerMakerDecisionHistoFill()   { fFillTriggerMakerDecisionHisto = kFALSE; }
+  TString          GetTriggerMakerDecisionName(Int_t i) const { if (i < fNTrigMakerDecision && i >= 0 ) return fTrigMakerLabels[i]  ;
+                                                                 else                                     return ""; }
+  Int_t            GetNumberOfTriggerMakerDecisions()   const { return fNTrigMakerDecision; }
+  Bool_t           GetTriggerMakerDecision(Int_t i)     const { if (i < fNTrigMakerDecision && i >= 0 ) return fTriggerMakerDecisionBoolArr[i];
+                                                         else                                             return kFALSE; }
+
+  void             SetEMCalTriggerMakerDecisionContainerName(TString name) { fEMCalTriggerMakerDecisionContainerName = name ; }
+  TString          GetEMCalTriggerMakerDecisionContainerName()       const { return fEMCalTriggerMakerDecisionContainerName ; }
    
   Bool_t           AreBadTriggerEventsRemoved()      const { return fRemoveBadTriggerEvents     ; }
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
@@ -470,7 +479,8 @@ public:
   Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
   Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
   Bool_t           IsEventSemiCentral()              const { return fEventTrigSemiCentral    ; }
-	
+  Bool_t           IsEventMinimumBiasAll()           const { return ( IsEventMinimumBias() || IsEventCentral() || IsEventSemiCentral() ) ; }
+
   Bool_t           IsEventEMCALL0()                  const { return fEventTrigEMCALL0        ; }
   Bool_t           IsEventEMCALL1Gamma1()            const { return fEventTrigEMCALL1Gamma1  ; }
   Bool_t           IsEventEMCALL1Gamma2()            const { return fEventTrigEMCALL1Gamma2  ; }
@@ -489,6 +499,9 @@ public:
   Bool_t           IsEventDCALL1Jet()                const { return (fEventTrigDCALL1Jet1   || fEventTrigDCALL1Jet2  ) ; }
   Bool_t           IsEventDCALL1()                   const { return (IsEventDCALL1Gamma()   || IsEventDCALL1Jet()    ) ; }
   
+  Bool_t           IsEventEMDCALAll()            const     { return ( IsEventDCALL1() || IsEventEMCALL1() ||
+                                                                      IsEventDCALL0() || IsEventEMCALL0()     ) ; }
+
   Bool_t           IsEventMinimumBiasCaloOnly()      const { return fEventTrigMinBiasCaloOnly        ; }
   Bool_t           IsEventEMCALL0CaloOnly()          const { return fEventTrigEMCALL0CaloOnly        ; }
   Bool_t           IsEventEMCALL1Gamma1CaloOnly()    const { return fEventTrigEMCALL1Gamma1CaloOnly  ; }
@@ -1144,8 +1157,13 @@ public:
   // Triggered event selection
   
   Bool_t           fRemoveBadTriggerEventsFromEMCalTriggerMaker;  ///<  Remove triggered events because recalculated trigger was bad
-  TString          fEMCalTriggerMakerDecissionContainerName;      ///<  Name of container with trigger decission
+  TString          fEMCalTriggerMakerDecisionContainerName;      ///<  Name of container with trigger decission
   
+  Bool_t           fFillTriggerMakerDecisionHisto;               ///< Fill histograms with trigger maker decisission
+  Int_t            fNTrigMakerDecision;                          ///< Number of trigger maker checks
+  TString          fTrigMakerLabels[10];                          ///< Trigger decission names
+  Bool_t           fTriggerMakerDecisionBoolArr[10];             ///< Trigger decission bits per trigger
+
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -1276,7 +1294,13 @@ public:
   Bool_t           fHistoCentDependent;            ///< Fill centrality dependent of some histograms  
   Bool_t           fHistoPtDependent;              ///< Fill control histograms with Pt not E 
   
-  TH1I  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...  
+  TH1F  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
+  TH1F  *          fhNEventsPerTrigger;            //!<! Each bin represents number of event from a trigger, correlation of trigger coincidences
+  TH1F  *          fhNEventsPerTriggerMakerSelected;//!<! Each bin represents number of event selected by trigger maker, correlation of trigger coincidences
+
+  TH2F  *          fhNEventsAfterCutCen;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
+  TH2F  *          fhNEventsPerTriggerCen;            //!<! Each bin represents number of event from a trigger, correlation of trigger coincidences
+  TH2F  *          fhNEventsPerTriggerMakerSelectedCen;//!<! Each bin represents number of event selected by trigger maker, correlation of trigger coincidences
 
   // MC labels to accept
   Int_t            fNMCGenerToAccept;              ///<  Number of MC generators that should not be included in analysis
@@ -1301,7 +1325,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,97) ;
+  ClassDef(AliCaloTrackReader,98) ;
   /// \endcond
 
 } ;

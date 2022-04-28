@@ -22,12 +22,14 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/correlationHF)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML
   )
 if(KFParticle_FOUND)
   get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
@@ -75,7 +77,9 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
     set(SRCS ${SRCS}
 	AliAnalysisTaskDHFeCorr.cxx
-	)						
+        AliHFMLResponseLambdactopKpi.cxx
+        AliAnalysisTaskSELambdacCorrelations.cxx
+	)
 endif(ROOT_VERSION_MAJOR EQUAL 6)
 
 # Headers from sources
@@ -96,6 +100,10 @@ if(KFParticle_FOUND)
   get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
   set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
 endif(KFParticle_FOUND)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHFML)
+endif(ROOT_VERSION_MAJOR EQUAL 6)
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

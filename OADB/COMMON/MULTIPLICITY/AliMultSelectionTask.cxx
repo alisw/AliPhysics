@@ -103,14 +103,15 @@ using std::endl;
 ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
-: AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
-fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkPropDCA(kFALSE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
+: AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fkVerbose(kFALSE),
+fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
-fkDebug(kTRUE),
+fkPropDCA(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
 fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE),
+fkStoreForwardMCInfo(kFALSE), fkForwardMCInfoMinEta(7.0),
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
@@ -185,13 +186,17 @@ fZpcFired(0),
 fNTracks(0),
 fNTracksTPCout(0),
 fNTracksITSrefit(0),
-fNTracksMaxDCAz(0),
-fNTracksMaxDCAz01(0),
+fNTracksHasPointOnITSLayer(0),
 fNTracksMaxDCAz00(0),
 fNTracksDCAxyABS(0),
 fNTracksDCAzABS(0),
 fNTracksDCAxySQ(0),
 fNTracksDCAzSQ(0),
+BunchCrossingIDNotZero(0),
+fNPileUpVertices(0),
+fNumberOfTracks(0),
+fEtaCut(0),
+fGenName("Hijing"),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
 fNTracksITSsa2010(0),
@@ -267,7 +272,8 @@ fHistQASelected_PtITSsaVsCL1(0),
 //Objects
 fOadbMultSelection(0),
 fInput(0),
-fOADB(nullptr)
+fOADB(nullptr),
+fNForwardMCParticles(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -275,14 +281,15 @@ fOADB(nullptr)
 }
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
-: AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
-fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkPropDCA(kFALSE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
+: AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fkVerbose(kFALSE),
+fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
-fkDebug(kTRUE),
+fkPropDCA(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
 fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
-fkSkipVertexZ(kFALSE), 
+fkSkipVertexZ(kFALSE),
+fkStoreForwardMCInfo(kFALSE), fkForwardMCInfoMinEta(7.0),
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
@@ -357,13 +364,17 @@ fZpcFired(0),
 fNTracks(0),
 fNTracksTPCout(0),
 fNTracksITSrefit(0),
-fNTracksMaxDCAz(0),
-fNTracksMaxDCAz01(0),
+fNTracksHasPointOnITSLayer(0),
 fNTracksMaxDCAz00(0),
 fNTracksDCAxyABS(0),
 fNTracksDCAzABS(0),
 fNTracksDCAxySQ(0),
 fNTracksDCAzSQ(0),
+BunchCrossingIDNotZero(0),
+fNPileUpVertices(0),
+fNumberOfTracks(0),
+fEtaCut(0),
+fGenName("Hijing"),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
 fNTracksITSsa2010(0),
@@ -439,10 +450,27 @@ fHistQASelected_PtITSsaVsCL1(0),
 //Objects
 fOadbMultSelection(0),
 fInput(0),
-fOADB(nullptr)
+fOADB(nullptr),
+fNForwardMCParticles(0)
 {
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardPx[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardPy[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardPz[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardE[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardM[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardPDG[iq] = 0;
+  for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardIsPhysicalPrimary[iq] = kFALSE;
   
   for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackDCAz[iq] = 1e+6 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackBCID[iq] = 1e+6 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackEta[iq] = 1e+6 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPhi[iq] = 1e+6 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPileupVxt[iq] = 1e+6 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackITSrefit[iq] = kFALSE ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackSPD[iq] = kFALSE ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackTPC[iq] = kFALSE ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackIsPileup[iq] = kFALSE ;
   
   DefineOutput(1, TList::Class()); // Event Counter Histo
   if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
@@ -741,20 +769,43 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fTreeEvent->Branch("fMC_IsPileup", &fMC_IsPileup, "fMC_IsPileup/O");
     
     if(!fkLightTree){
-      fTreeEvent->Branch("fNTracksMaxDCAz", &fNTracksMaxDCAz, "fNTracksMaxDCAz/F");
-      fTreeEvent->Branch("fNTracksMaxDCAz01", &fNTracksMaxDCAz01, "fNTracksMaxDCAz01/F");
       fTreeEvent->Branch("fNTracksMaxDCAz00", &fNTracksMaxDCAz00, "fNTracksMaxDCAz00/F");
       fTreeEvent->Branch("fNTracksDCAxyABS", &fNTracksDCAxyABS, "fNTracksDCAxyABS/F");
       fTreeEvent->Branch("fNTracksDCAzABS", &fNTracksDCAzABS, "fNTracksDCAzABS/F");
       fTreeEvent->Branch("fNTracksDCAxySQ", &fNTracksDCAxySQ, "fNTracksDCAxySQ/F");
       fTreeEvent->Branch("fNTracksDCAzSQ", &fNTracksDCAzSQ, "fNTracksDCAzSQ/F");
       fTreeEvent->Branch("fNTracksITSrefit", &fNTracksITSrefit, "fNTracksITSrefit/I");
+      fTreeEvent->Branch("fNTracksHasPointOnITSLayer", &fNTracksHasPointOnITSLayer, "fNTracksHasPointOnITSLayer/I");
+      fTreeEvent->Branch("BunchCrossingIDNotZero", &BunchCrossingIDNotZero, "BunchCrossingIDNotZero/I");
+      fTreeEvent->Branch("fNPileUpVertices", &fNPileUpVertices, "fNPileUpVertices/I");
+      
+      fTreeEvent->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
+      fTreeEvent->Branch("fTrackDCAz",fTrackDCAz,"fTrackDCAz[fNumberOfTracks]/F");
+      fTreeEvent->Branch("fTrackBCID",fTrackBCID,"fTrackBCID[fNumberOfTracks]/I");
+      fTreeEvent->Branch("fTrackEta",fTrackEta,"fTrackEta[fNumberOfTracks]/F");
+      fTreeEvent->Branch("fTrackPhi",fTrackPhi,"fTrackPhi[fNumberOfTracks]/F");
+      fTreeEvent->Branch("fTrackPileupVxt",fTrackPileupVxt,"fTrackPileupVxt[fNumberOfTracks]/I");
+      fTreeEvent->Branch("fTrackITSrefit",fTrackITSrefit,"fTrackITSrefit[fNumberOfTracks]/O");
+      fTreeEvent->Branch("fTrackSPD",fTrackSPD,"fTrackSPD[fNumberOfTracks]/O");
+      fTreeEvent->Branch("fTrackTPC",fTrackTPC,"fTrackTPC[fNumberOfTracks]/O");
+      fTreeEvent->Branch("fTrackIsPileup", fTrackIsPileup, "fTrackIsPileup[fNumberOfTracks]/O");
+    }
+    
+    if(fkStoreForwardMCInfo){
+      fTreeEvent->Branch("fNForwardMCParticles", &fNForwardMCParticles, "fNForwardMCParticles/I");
+      fTreeEvent->Branch("fForwardPx",fForwardPx,"fForwardPx[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardPy",fForwardPy,"fForwardPy[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardPz",fForwardPz,"fForwardPz[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardE",fForwardE,"fForwardE[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardM",fForwardM,"fForwardM[fNForwardMCParticles]/F");
+      fTreeEvent->Branch("fForwardPDG",fForwardPDG,"fForwardPDG[fNForwardMCParticles]/I");
+      fTreeEvent->Branch("fForwardIsPhysicalPrimary",fForwardIsPhysicalPrimary,"fForwardIsPhysicalPrimary[fNForwardMCParticles]/O");
     }
     
     //Automatic Loop for linking directly to AliMultInput
     for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
       if(lStoreIfLight[iVar] || !fkLightTree){
-        Printf(Form("Connecting variable number %i: %s",iVar,AliMultInput::VarName[iVar].Data()));
+        Printf(Form("Connecting variable number %li: %s",iVar,AliMultInput::VarName[iVar].Data()));
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])){
           Printf(Form("Problem finding variable: %s ! Please check!",AliMultInput::VarName[iVar].Data()));
           continue;
@@ -1129,7 +1180,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   // Main loop
   // Called for each event
   
-  Bool_t lVerbose = kFALSE ;
+//  Bool_t fkVerbose = kFALSE ;
   
   //Debugging / Memory usage tests
   //gObjectTable->Print();
@@ -1175,7 +1226,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   
   
   
-  if(lVerbose) Printf("Casting AliVEvent...");
+  if(fkVerbose) Printf("Casting AliVEvent...");
   
   lVevent = dynamic_cast<AliVEvent*>( InputEvent() );
   if (!lVevent) {
@@ -1186,7 +1237,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   fFiredTriggerClasses = lVevent->GetFiredTriggerClasses();
   
   if(!fkGeneratorOnly){
-    if(lVerbose) Printf("Casting AliVVZERO...");
+    if(fkVerbose) Printf("Casting AliVVZERO...");
     
     //Get VZERO Information for multiplicity later
     lVV0 = lVevent->GetVZEROData();
@@ -1194,7 +1245,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
       AliError("AliVVZERO not available");
       return;
     }
-    if(lVerbose) Printf("Casting AliVAD...");
+    if(fkVerbose) Printf("Casting AliVAD...");
     //Get AD Multiplicity Information
     lVAD = lVevent->GetADData();
     if(!lVAD) {
@@ -1230,23 +1281,24 @@ void AliMultSelectionTask::UserExec(Option_t *)
   fMC_NchEta10->SetValueInteger(0);
   fMC_b->SetValueInteger(0);
   fMC_Spherocity->SetValue(0);
+  fNForwardMCParticles=0;
   
   if ( fkDebugIsMC ) {
     AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
     AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-    AliStack*    stack=0;
-    AliMCEvent*  mcEvent=0;
+    AliMCEvent*  lMCevent=0x0;
+    lMCevent = MCEvent();
     
-    if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+    if (eventHandler && lMCevent) {
       
       if(!fkSkipMCHeaders){
         //Npart and Ncoll information
         AliGenHijingEventHeader* hHijing=0;
         AliGenDPMjetEventHeader* dpmHeader=0;
-        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        AliGenEventHeader* mcGenH = lMCevent->GenEventHeader();
         
         //Check pileup
-        fMC_IsPileup = fUtils->IsPileupInGeneratedEvent(mcEvent, "Hijing");
+        fMC_IsPileup = fUtils->IsPileupInGeneratedEvent(lMCevent, fGenName.Data());
         
         //DPMJet/HIJING info if available
         if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
@@ -1295,18 +1347,33 @@ void AliMultSelectionTask::UserExec(Option_t *)
       Long_t lCounter_NchEta10 = 0;
       Long_t lCounter_NchEta14 = 0;
       npartINELgtONE = 0.;
+
       //----- Loop on Stack ----------------------------------------------------------------
-      for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (stack->GetNtrack()); iCurrentLabelStack++)
+      for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCevent->GetNumberOfTracks()); iCurrentLabelStack++)
       {   // This is the begining of the loop on tracks
-        TParticle* particleOne = stack->Particle(iCurrentLabelStack);
-        if(!particleOne) continue;
-        if(!particleOne->GetPDG()) continue;
-        Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
-        if(TMath::Abs(lThisCharge)<0.001) continue;
-        if(! (stack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+        AliMCParticle* lPart = (AliMCParticle*) lMCevent->GetTrack( iCurrentLabelStack );
+        if(!lPart) continue;
+        Double_t lCharge = lPart->Charge();
+
+        Double_t gpt = lPart -> Pt();
+        Double_t geta = lPart -> Eta();
         
-        Double_t gpt = particleOne -> Pt();
-        Double_t geta = particleOne -> Eta();
+        //ZDC tests: no charge requirement, no primary requirement
+        if( (TMath::Abs(geta) > fkForwardMCInfoMinEta) && (fkStoreForwardMCInfo==kTRUE) ){
+          fForwardPx   [fNForwardMCParticles] = lPart -> Px();
+          fForwardPy   [fNForwardMCParticles] = lPart -> Py();
+          fForwardPz   [fNForwardMCParticles] = lPart -> Pz();
+          fForwardE    [fNForwardMCParticles] = lPart -> E();
+          fForwardM    [fNForwardMCParticles] = lPart -> M();
+          fForwardPDG  [fNForwardMCParticles] = lPart -> PdgCode();
+          fForwardIsPhysicalPrimary[fNForwardMCParticles] = lPart->IsPhysicalPrimary();
+          fNForwardMCParticles++;
+          if( fNForwardMCParticles > kFwdTracks )
+            AliFatal(Form("Event #%f: Maximum number of forward particles reached! Sorry. Crashing now.", fHistEventCounter->GetBinContent(1)));
+        }
+        
+        if(TMath::Abs(lCharge)<0.001) continue;
+        if(! (lPart->IsPhysicalPrimary()) ) continue;
         
         if( 2.8 < geta && geta < 5.1 ) lCounter_NchV0A++;
         if(-3.7 < geta && geta <-1.7 ) lCounter_NchV0C++;
@@ -1326,14 +1393,16 @@ void AliMultSelectionTask::UserExec(Option_t *)
       fNPartINELgtONE->SetValue(npartINELgtONE);
       
       if ( fkDebugMCSpherocity ){
-        fMC_Spherocity->SetValue(GetTransverseSpherocityMC(stack));
-        fMC_SpherocityTracks->SetValue(GetTransverseSpherocityTracksMC(stack));
+        fMC_Spherocity->SetValue(GetTransverseSpherocityMC(lMCevent));
+        fMC_SpherocityTracks->SetValue(GetTransverseSpherocityTracksMC(lMCevent));
       }
     }
   }
+  if(fkVerbose) Printf(Form("Event #%i: %i particles at midrapidity, %i particles in V0M", (Int_t)fHistEventCounter->GetBinContent(1), fMC_NchEta05->GetValueInteger(), fMC_NchV0A->GetValueInteger()+fMC_NchV0A->GetValueInteger() ));
+  if(fkVerbose && fkStoreForwardMCInfo) Printf(Form("Will save forward particles, event #%i: %i particles", (Int_t)fHistEventCounter->GetBinContent(1), fNForwardMCParticles));
   //------------------------------------------------
   
-  if(lVerbose) Printf("Starting...");
+  if(fkVerbose) Printf("Starting...");
   
   if (!fkGeneratorOnly){
     //Basic properties
@@ -1357,7 +1426,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   // (static if possible)
   //------------------------------------------------
   if(!fkGeneratorOnly){
-    if(lVerbose) Printf("Doing Event Selections...");
+    if(fkVerbose) Printf("Doing Event Selections...");
     fEvSel_Triggered                 = IsSelectedTrigger                   (lVevent, fkTrigger);
     fEvSel_IsNotPileup               = IsNotPileupSPD                      (lVevent);
     fEvSel_IsNotPileupInMultBins     = IsNotPileupSPDInMultBins            (lVevent);
@@ -1394,7 +1463,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //===============================================
     // End Event Selection Variables Section
     //===============================================
-    if(lVerbose) Printf("Doing Multiplicity Calculations...");
+    if(fkVerbose) Printf("Doing Multiplicity Calculations...");
     //------------------------------------------------
     // Multiplicity Information from AD
     //------------------------------------------------
@@ -1534,7 +1603,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fAmplitude_V0AADC->SetValue(multV0AADC);
     fAmplitude_V0CADC->SetValue(multV0CADC);
     
-    if ( lVerbose ) {
+    if ( fkVerbose ) {
       Printf(" V0A Amplitude: %.5f", multV0A );
       Printf(" V0C Amplitude: %.5f", multV0C );
     }
@@ -1613,83 +1682,32 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracksGlobal2015Trigger   -> SetValueInteger( 0 );
     fNTracksITSsa2010           -> SetValueInteger( 0 );
     
-    // Set DCA variables to default
-    Float_t dcaxyABS = 0;
-    Float_t dcazABS = 0;
-    Float_t dcaxySQ = 0;
-    Float_t dcazSQ = 0;
-    Float_t Maxdcaz = 0;
-    Float_t Maxdcaz01 = 0;
-    Float_t Maxdcaz00 = 0;
-
-    Float_t averageDCAxyABS = 0;
-    Float_t averageDCAzABS = 0;
-    Float_t averageDCAxySQ = 0;
-    Float_t averageDCAzSQ = 0;
-
-    fNTracksDCAxyABS=0;
-    fNTracksDCAzABS=0;
-    fNTracksDCAxySQ=0;
-    fNTracksDCAzSQ=0;
-    fNTracksMaxDCAz=0;
-    fNTracksMaxDCAz01=0;
-    fNTracksMaxDCAz00=0;
-
+    // Set ITS variables to default
     Int_t ITSrefitTracks = 0;
     fNTracksITSrefit=0;
     
-    // Getting Primary Vertex
-    const AliVVertex *primaryVertex = lVevent -> GetPrimaryVertex();
-
-    // Getting Magnetic Field
-    double_t bf = lVevent->GetMagneticField();
+    Int_t HasPointOnITSLayerTracks = 0;
+    fNTracksHasPointOnITSLayer=0;
     
+    // Set TOF variable to default
+    Int_t BCID = 0;
+    BunchCrossingIDNotZero=0;
+
     //Count tracks with various selections
     Float_t ntrackINELgtONE=0.;
     for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
       AliVTrack *track = lVevent -> GetVTrack( itrack );
       if ( !track ) continue;
       
-      if (fkPropDCA){
-        AliExternalTrackParam ctrack;
-        ctrack.CopyFromVTrack(track);
-        
-        double_t dzz[2];
-        double_t covd0[3];
-        
-        // Propagating to DCA:
-        ctrack.PropagateToDCA(primaryVertex,bf,1000.,dzz, covd0);
-        
-        // Sum of xy and z components of DCA:
-        dcaxyABS = dcaxyABS + TMath::Abs(dzz[0]);
-        dcazABS = dcazABS + TMath::Abs(dzz[1]);
-        
-        dcaxySQ = dcaxySQ + dzz[0]*dzz[0];
-        dcazSQ = dcazSQ + dzz[1]*dzz[1];
-
-	//without DCAxy Cut:
-	if (TMath::Abs(dzz[1])>Maxdcaz){
-		Maxdcaz = TMath::Abs(dzz[1]);		
-	}
-
-	//with DCAxy Cut:
-	if (TMath::Abs(dzz[0])<0.1){ // "loose" DCAxy cut
-		if (TMath::Abs(dzz[1])>Maxdcaz01){
-			Maxdcaz01 = TMath::Abs(dzz[1]);		
-		}	
-	}
-
-	if (TMath::Abs(dzz[0])<(0.0182 + 0.0350/(track->Pt()))){ //"strict" DCAxy Cut 
-		if (TMath::Abs(dzz[1])>Maxdcaz00){
-			Maxdcaz00 = TMath::Abs(dzz[1]);		
-		}	
-	}
-	
-      }
+      // Get BunchCrossingID counts
+      if(!((track->GetTOFBunchCrossing())==0)) BCID++;
       
       // Get ITSrefit counts
       if(!((track->GetStatus() & AliVTrack::kITSrefit)==0)) ITSrefitTracks++;
-            
+      
+      // Count tracks with SPD points
+      if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) HasPointOnITSLayerTracks++;
+      
       //Only ITSsa tracks
       if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
         fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
@@ -1711,42 +1729,196 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
     }
     
-    if (lVevent->GetNumberOfTracks()>0){
-      averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
-      averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
-      averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
-      averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
-     }
-    else {
-      averageDCAxyABS = dcaxyABS/(-1);
-      averageDCAzABS = dcazABS/(-1);
-      averageDCAxySQ = dcaxySQ/(-1);
-      averageDCAzSQ = dcazSQ/(-1);
-     }
-
-    fNTracksMaxDCAz=Maxdcaz;
-    fNTracksMaxDCAz01=Maxdcaz01;
-    fNTracksMaxDCAz00=Maxdcaz00;
-    fNTracksDCAxyABS=averageDCAxyABS;
-    fNTracksDCAzABS=averageDCAzABS;
-    fNTracksDCAxySQ=averageDCAxySQ;
-    fNTracksDCAzSQ=averageDCAzSQ;
-    fNTracksITSrefit=ITSrefitTracks;
+    // Set DCA variables to default
+    Float_t dcaxyABS = 0;
+    Float_t dcazABS = 0;
+    Float_t dcaxySQ = 0;
+    Float_t dcazSQ = 0;
+    Float_t Maxdcaz00 = 0;
     
+    Float_t averageDCAxyABS = 0;
+    Float_t averageDCAzABS = 0;
+    Float_t averageDCAxySQ = 0;
+    Float_t averageDCAzSQ = 0;
+    
+    fNTracksDCAxyABS=0;
+    fNTracksDCAzABS=0;
+    fNTracksDCAxySQ=0;
+    fNTracksDCAzSQ=0;
+    fNTracksMaxDCAz00=0;
+
+    // Set TPC variables to default
     Long_t lNTPCout = 0;
     fNTracksTPCout->SetValueInteger(lNTPCout);
     
-    if(lVerbose) Printf("Doing ESD/AOD part...");
+    // Set N. of tracks counter to default
+    Int_t Ntracks = 0;
+
+    // Set N. of pileup vertices to default
+
+    Int_t lNumberOfPileUpVertices = 0;
+    fNPileUpVertices=0;
+    Bool_t HasPUVertices=kFALSE;
+
+    if(fkVerbose) Printf("Doing ESD/AOD part...");
     if (lVevent->InheritsFrom("AliESDEvent")) {
       AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
+
+      // Getting Primary Vertex
+      const AliESDVertex *primaryVertex = esdevent -> GetPrimaryVertex();
+
+      // Getting Magnetic Field
+      double_t bf = esdevent->GetMagneticField();
+
+      // Getting number of pileup vertices
+      if (fMC_IsPileup){ 
+
+        TClonesArray *lPileupVerticesTracks = esdevent->GetPileupVerticesTracks(); 
+        lNumberOfPileUpVertices = lPileupVerticesTracks->GetSize(); // number of pileup vertices
+        fNPileUpVertices = lNumberOfPileUpVertices;
+
+        if (lNumberOfPileUpVertices!=0){ 
+          HasPUVertices = kTRUE;
+        }
+      }
+      else {
+        fNPileUpVertices = 0;
+      }
       
-      //Get TPCout counts
+      // loop over tracks
       const Long_t nTracks = esdevent->GetNumberOfTracks();
       for (int it = 0; it < nTracks; it++) {
         AliESDtrack* trk = (AliESDtrack*)esdevent->GetTrack(it);
         if (!trk) continue;
-        if ((trk->GetStatus() & AliESDtrack::kTPCout) &&
-            trk->GetID() > 0) lNTPCout++;
+        if ((trk->GetStatus() & AliESDtrack::kTPCout) && trk->GetID() > 0) lNTPCout++; //Get TPCout counts
+
+        if (fkPropDCA){
+
+          if (TMath::Abs(trk->Eta())<fEtaCut){ // Eta cut
+
+            AliExternalTrackParam ctrack;
+            ctrack.CopyFromVTrack(trk);
+            
+            double_t dzz[2];
+            double_t covd0[3];
+            
+            // Propagating to DCA:
+            ctrack.PropagateToDCA(primaryVertex,bf,1000.,dzz, covd0);
+
+            if (TMath::Abs(dzz[0])<(0.0182 + 0.0350/(trk->Pt()))){ //"strict" DCAxy Cut
+
+              fTrackBCID[Ntracks] = trk->GetTOFBunchCrossing();
+              fTrackEta[Ntracks] = trk->Eta(); 
+              fTrackPhi[Ntracks] = trk->Phi(); 
+              fTrackITSrefit[Ntracks] = (trk->GetStatus() & AliESDtrack::kITSrefit); //ITS refit flag
+              fTrackSPD[Ntracks] = (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)); //Has Points on SPD flag
+              fTrackTPC[Ntracks] = ((trk->GetStatus() & AliESDtrack::kTPCout) && trk->GetID() > 0); //TPCout flag
+              fTrackDCAz[Ntracks] = dzz[1]; //DCAz information
+              
+              //Find out if this track is pileup
+              if ( fkDebugIsMC ) {
+
+                AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+                AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+                AliMCEvent*  mcEvent=0;
+
+                if (eventHandler && (mcEvent=eventHandler->MCEvent()) ) {
+                  //Step 1: access track label
+                  Int_t lblTrack = (Int_t) TMath::Abs(trk->GetLabel());
+                  //Step 2: check if track
+                  fTrackIsPileup[Ntracks] = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(lblTrack,mcEvent);
+                }
+
+              }
+              // for events with pileup
+              if (fMC_IsPileup && HasPUVertices){ 
+                
+                Bool_t IsNotFromCollision = kTRUE; // discriminate primary and secundary tracks
+                Int_t VxtCounter = 0; // Vertex number
+                Int_t Trackidx = (Int_t) TMath::Abs(trk->GetLabel()); // event track index
+
+                //loop over pileup vertices
+                for (Int_t ipl=0;ipl<lNumberOfPileUpVertices;ipl++) { 
+                  VxtCounter = VxtCounter + 1; 
+
+                  // Getting pileup vertex
+                  const AliESDVertex *vtPlp = esdevent->GetPileupVertexTracks(ipl);
+
+                  UShort_t *PUIdx=vtPlp->GetIndices();
+                  Int_t n=vtPlp->GetNIndices(); // number of pileup tracks
+
+                  //loop over pileup vertex tracks
+                  while (n--) { 
+                    Int_t PUidx=Int_t(PUIdx[n]); // Pileup track index
+
+                    // Check if track 
+                    if (Trackidx==PUidx){
+                      fTrackPileupVxt[Ntracks] = VxtCounter; 
+                      IsNotFromCollision = kFALSE;
+                    }
+                  }
+                }
+                
+                // check if track belongs to primary vertex:
+                UShort_t *PrimaryIdx=primaryVertex->GetIndices();
+                Int_t nPrimary=primaryVertex->GetNIndices();
+
+                //loop over primary vertex tracks
+                while (nPrimary--) { 
+                  Int_t Primaryidx=Int_t(PrimaryIdx[nPrimary]); // Primary track index
+
+                  // Check if track 
+                  if (Trackidx==Primaryidx){
+                    fTrackPileupVxt[Ntracks] = 0; // track from primary vertex
+                    IsNotFromCollision = kFALSE;
+                  }
+                }
+
+                // If track is not from primary or pileup collision
+                if (IsNotFromCollision){
+                  fTrackPileupVxt[Ntracks] = -10; // track from secondary vertex
+                }
+              }
+              // for events without pileup
+              else {
+                Bool_t IsNotFromCollision = kTRUE;
+                UShort_t *PrimaryIdx=primaryVertex->GetIndices();
+                Int_t nPrimary=primaryVertex->GetNIndices();
+                Int_t Trackidx = (Int_t) TMath::Abs(trk->GetLabel());
+
+                //loop over primary vertex tracks
+                while (nPrimary--) { 
+                  Int_t Primaryidx=Int_t(PrimaryIdx[nPrimary]);
+                  
+                  // Check if track 
+                  if (Trackidx==Primaryidx){
+                    fTrackPileupVxt[Ntracks] = 0; // track from primary vertex
+                    IsNotFromCollision = kFALSE;
+                  }
+                }
+                // If track is not from primary collision
+                if (IsNotFromCollision){
+                  fTrackPileupVxt[Ntracks] = -10; // track from secondary vertex
+                }
+              }
+              
+              // Sum of xy and z components of DCA:
+              dcaxyABS = dcaxyABS + TMath::Abs(dzz[0]);
+              dcazABS = dcazABS + TMath::Abs(dzz[1]);
+              
+              dcaxySQ = dcaxySQ + dzz[0]*dzz[0];
+              dcazSQ = dcazSQ + dzz[1]*dzz[1];
+                  
+              // Max DCAz information:
+              if (TMath::Abs(dzz[1])>Maxdcaz00){
+                Maxdcaz00 = TMath::Abs(dzz[1]);
+              } 
+              Ntracks++;
+              if(Ntracks>kTrack) AliFatal("Maximum tracks reached for test/debug! Aborting!");
+            }
+          }
+        }
+
       }
       
       //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
@@ -1824,10 +1996,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
         AliAODTrack *aodt=(AliAODTrack*)aodevent->GetTrack(itrack);
         if ( !aodt )  { continue; }
         if( (aodt->TestFilterBit(BIT(5)) || aodt->TestFilterBit(BIT(6))) && aodt->Pt()>0.4 && TMath::Abs(aodt->Eta())<0.8 ) ntrackINELgtONE+=1.;
-        if ((aodt->GetStatus() & AliESDtrack::kTPCout) &&
-            aodt->GetID() > 0) lNTPCout++;
+        if ((aodt->GetStatus() & AliESDtrack::kTPCout) && aodt->GetID() > 0) lNTPCout++;
       }
-      
       //FIXME: get ZDC information in AOD in a fully consistent way
       AliAODZDC *lAODZDC = aodevent->GetZDCData();
       
@@ -1849,9 +2019,32 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
         fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
       }
-    }
+    } 
     
     fNTracksTPCout ->SetValueInteger(lNTPCout);
+
+    if (Ntracks>0){
+      averageDCAxyABS = dcaxyABS/Ntracks;
+      averageDCAzABS = dcazABS/Ntracks;
+      averageDCAxySQ = dcaxySQ/Ntracks;
+      averageDCAzSQ = dcazSQ/Ntracks;
+    }
+    else {
+      averageDCAxyABS = dcaxyABS/(-1);
+      averageDCAzABS = dcazABS/(-1);
+      averageDCAxySQ = dcaxySQ/(-1);
+      averageDCAzSQ = dcazSQ/(-1);
+    }
+    
+    fNTracksMaxDCAz00=Maxdcaz00;
+    fNTracksDCAxyABS=averageDCAxyABS;
+    fNTracksDCAzABS=averageDCAzABS;
+    fNTracksDCAxySQ=averageDCAxySQ;
+    fNTracksDCAzSQ=averageDCAzSQ;
+    fNTracksITSrefit=ITSrefitTracks;
+    fNTracksHasPointOnITSLayer=HasPointOnITSLayerTracks;
+    BunchCrossingIDNotZero=BCID;
+    fNumberOfTracks = Ntracks;
     
     fNTracksINELgtONE->SetValue(ntrackINELgtONE);
     if(fkDebugIsMC && fkDebugAdditional2DHisto) ((TH2D*)(fListHist->FindObject("hist_NpartVsNtracks"))) -> Fill(npartINELgtONE,ntrackINELgtONE);
@@ -1885,7 +2078,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
   //===============================================
   // End part which requires AOD/ESD separation
   //===============================================
-  if(lVerbose) Printf("Add info if asked...");
+  if(fkVerbose) Printf("Add info if asked...");
   if ( fkAddInfo ) { //Master switch for users
     //===============================================
     // Compute Percentiles
@@ -1896,24 +2089,22 @@ void AliMultSelectionTask::UserExec(Option_t *)
     }else{
       SetupRunFromOADB( lVevent );
     }
-    
-    
-    
+
     //===============================================
     // I/O: Create object for storing, add
     //===============================================
     
-    if(lVerbose) Printf( "--- Evaluate -1-");
+    if(fkVerbose) Printf( "--- Evaluate -1-");
     //Evaluate Estimators from Variables
     AliMultSelection*     lSelection = fOadbMultSelection->GetMultSelection();
     AliMultSelectionCuts* lMultCuts  = fOadbMultSelection->GetEventCuts();
-    if(lVerbose) Printf( "--- Evaluate -2-");
+    if(fkVerbose) Printf( "--- Evaluate -2-");
     lSelection -> Evaluate (fInput);
-    if(lVerbose) Printf( "--- INPUT --- ");
-    if(lVerbose) fInput -> Print("V") ;
-    if(lVerbose) Printf( "--- OUTPUT --- ");
-    if(lVerbose) lSelection -> PrintInfo();
-    if(lVerbose) Printf( "--- Evaluate -3-");
+    if(fkVerbose) Printf( "--- INPUT --- ");
+    if(fkVerbose) fInput -> Print("V") ;
+    if(fkVerbose) Printf( "--- OUTPUT --- ");
+    if(fkVerbose) lSelection -> PrintInfo();
+    if(fkVerbose) Printf( "--- Evaluate -3-");
     
     //Event Selection Code: No need to do this for all estimators ...
     lSelection->SetEvSelCode(0); //No Problem!
@@ -1982,6 +2173,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if( iEst < fNDebug ) {
           fQuantiles[iEst] = lThisQuantile; //Debug, please
         }
+        if(lThisQuantile<1e-6) lThisQuantile = 99.5; //protection for zdc firing
         lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
       }
     }
@@ -2094,6 +2286,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
       fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, fNTracksITSsa2010->GetValueInteger() );
       fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, fNTracksITSsa2010->GetValueInteger() );
     }
+    
     //=============================================================================
     
     //Add to AliVEvent
@@ -2141,20 +2334,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
       outS->Set(lSelection);
     }
   }
-  if(lVerbose) Printf( "--- INTERMEDIATE --- ");
-  if(lVerbose) fInput -> Print("V") ;
+  if(fkVerbose) Printf( "--- INTERMEDIATE --- ");
+  if(fkVerbose) fInput -> Print("V") ;
   //Event-level fill
   if ( fkCalibration ) {
     //Pre-filter on triggered (kMB) events for saving info
     if( !fkFilterMB || (fkFilterMB && fEvSel_Triggered) ) {
-      if(lVerbose) Printf( "--- FILLTREE --- ");
-      if(lVerbose) fInput -> Print("V") ;
+      if(fkVerbose) Printf( "--- FILLTREE --- ");
+      if(fkVerbose) fInput -> Print("V") ;
       
       //fill only if passing downscale test
       //Downscale logic:
       // (1) randomly generate number from 0-1
       // (2) check if smaller than fDownscaleFactor
       // (3) save only if smaller
+      if(fkVerbose && fkStoreForwardMCInfo) Printf(Form("Prior to saving, event #%i: %i particles", (Int_t)fHistEventCounter->GetBinContent(1), fNForwardMCParticles));
       if( fRand->Uniform() < fDownscaleFactor ) fTreeEvent->Fill() ;
     }
   }
@@ -3490,21 +3684,21 @@ void AliMultSelectionTask::SetOADB ( TString lOADBfilename ){
 }
 
 //____________________________________________________________________
-Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
+Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliMCEvent *lMCevent)
 {
   Int_t lMinMulti = 10;
   Int_t lNtracks = 0;
   Int_t fMinimizingIndex = 0;
   
   //Reject based on multiplicity
-  for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+  for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
     //get particle from stack
-    TParticle* particleOne = lStack->Particle(j);
+    AliMCParticle* particleOne = 0x0;
+    particleOne = (AliMCParticle*) lMCevent->GetTrack( j );
     if(!particleOne) continue;
-    if(!particleOne->GetPDG()) continue;
-    Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
-    if(TMath::Abs(lThisCharge)<0.001) continue;
-    if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+    Double_t lCharge = particleOne->Charge();
+    if(TMath::Abs(lCharge)<0.001) continue;
+    if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
@@ -3529,14 +3723,14 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
     Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
     
     Double_t num = 0;
-    for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+    for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
       //get particle from stack
-      TParticle* particleOne = lStack->Particle(j);
+      AliMCParticle* particleOne = 0x0;
+      particleOne = (AliMCParticle*) lMCevent->GetTrack( j );
       if(!particleOne) continue;
-      if(!particleOne->GetPDG()) continue;
-      Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
-      if(TMath::Abs(lThisCharge)<0.001) continue;
-      if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+      Double_t lCharge = particleOne->Charge();
+      if(TMath::Abs(lCharge)<0.001) continue;
+      if(! (particleOne->IsPhysicalPrimary()) ) continue;
       
       Double_t gpt = particleOne -> Pt();
       Double_t geta = particleOne -> Eta();
@@ -3559,21 +3753,21 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
   return RetTransverseSpherocity;
 };
 
-Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliStack *lStack)
+Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliMCEvent *lMCevent)
 {
   Int_t lMinMulti = 10;
   Int_t lNtracks = 0;
   Int_t fMinimizingIndex = 0;
   
   //Reject based on multiplicity
-  for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+  for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
     //get particle from stack
-    TParticle* particleOne = lStack->Particle(j);
+    AliMCParticle* particleOne = 0x0;
+    particleOne = (AliMCParticle*) lMCevent->GetTrack( j );
     if(!particleOne) continue;
-    if(!particleOne->GetPDG()) continue;
-    Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
-    if(TMath::Abs(lThisCharge)<0.001) continue;
-    if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+    Double_t lCharge = particleOne->Charge();
+    if(TMath::Abs(lCharge)<0.001) continue;
+    if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
@@ -3591,14 +3785,14 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliStack *lStack)
   Double_t RetTransverseSpherocity = 1000;
   Double_t sumpt = 0;
   //const Double_t pt = 1;
-  for(Int_t i = 0; i < lStack->GetNtrack(); i++) {
+  for(Int_t i = 0; i < (lMCevent->GetNumberOfTracks()); i++) {
     //get particle from stack
-    TParticle* particleOne = lStack->Particle(i);
+    AliMCParticle* particleOne = 0x0;
+    particleOne = (AliMCParticle*) lMCevent->GetTrack( i );
     if(!particleOne) continue;
-    if(!particleOne->GetPDG()) continue;
-    Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
-    if(TMath::Abs(lThisCharge)<0.001) continue;
-    if(! (lStack->IsPhysicalPrimary(i)) ) continue;
+    Double_t lCharge = particleOne->Charge();
+    if(TMath::Abs(lCharge)<0.001) continue;
+    if(! (particleOne->IsPhysicalPrimary()) ) continue;
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
@@ -3614,12 +3808,15 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliStack *lStack)
     Double_t ny =fPy / pt; // y component of a unitary vector n
     
     Double_t num = 0;
-    for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
-      TParticle* particleTwo = lStack->Particle(j);
+    for(Int_t j = 0; j < (lMCevent->GetNumberOfTracks()); j++) {
+      AliMCParticle* particleTwo = 0x0;
+      particleTwo = (AliMCParticle*) lMCevent->GetTrack( j );
       if(!particleTwo) continue;
-      if(!particleTwo->GetPDG()) continue;
-      if(TMath::Abs(particleTwo->GetPDG()->Charge()/3.)<0.001) continue;
-      if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+      
+      Double_t lCharge = particleTwo->Charge();
+      
+      if(TMath::Abs(lCharge)<0.001) continue;
+      if(! (particleTwo->IsPhysicalPrimary()) ) continue;
       
       Double_t gpt2 = particleTwo -> Pt();
       Double_t geta2 = particleTwo -> Eta();

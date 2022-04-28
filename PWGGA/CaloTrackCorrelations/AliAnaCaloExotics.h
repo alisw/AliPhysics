@@ -601,7 +601,7 @@ public:
   TH1F *   fhEventCutVertexY[4];                              //!<! vertex y  for event selection criteria
   TH1F *   fhEventCutVertexZ[4];                              //!<! vertex z  for event selection criteria
 
-  TH1I *   fhEventCutBunchCrossing[4];                        //!<! Bunch crossing of events for different event selection criteria
+  TH1F *   fhEventCutBunchCrossing[4];                        //!<! Bunch crossing of events for different event selection criteria
 
   
   /// Copy constructor not implemented.

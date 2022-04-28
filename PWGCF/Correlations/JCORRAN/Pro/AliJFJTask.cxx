@@ -223,6 +223,7 @@ void AliJFJTask::UserCreateOutputObjects()
     fana->SetSettings(fDebug,
                       fparticleEtaCut,
                       fparticlePtCut,
+                      100.0,
                       fjetCone,
                       fktJetCone,
                       fktScheme,
@@ -235,7 +236,9 @@ void AliJFJTask::UserCreateOutputObjects()
                       fMinJetPt,
                       fdeltaPhiCut,
                       fmatchingR,
-                      0.0); //Tracking ineff only for det level.
+                      0.0, //Tracking ineff only for det level.
+                      false,  //Todo: implement the C*rho method flag for this code as well.
+                      false); //Is this true mc
 #endif
     // Load Custom Configuration and parameters
     // override values with parameters

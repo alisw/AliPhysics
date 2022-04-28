@@ -1,4 +1,4 @@
-#include "THnSparseDefinitions.h"
+#include "./PID.C"
 
 void runPID(TString fileName, Double_t deta, Double_t pLow, Double_t pHigh, Bool_t isMCdataSet, Int_t fitMethod,
             Int_t muonFractionHandlingParameter,
@@ -13,9 +13,6 @@ void runPID(TString fileName, Double_t deta, Double_t pLow, Double_t pHigh, Bool
             TString filePathNameFileWithInititalFractions,
             Int_t binTypePt = kPtBinTypeJets)
 {
-  // Load class for fit
-  gROOT->LoadMacro("histFitting/AliTPCPIDmathFit.cxx+g");
-  gROOT->LoadMacro("PID.C+");
   PID(fileName, deta, pLow, pHigh, isMCdataSet, fitMethod, muonFractionHandlingParameter, useIdentifiedGeneratedSpectra,
       plotIdentifiedSpectra, mode, chargeMode, lowerCentrality, upperCentrality, lowerJetPt, upperJetPt, rebin, rebinDeltaPrime,
       listName, useLogLikelihood, useWeightsForLogLikelihood, regularisation, regularisationFactor, applyTOFpatching,

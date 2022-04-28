@@ -24,6 +24,7 @@
 #include <TAxis.h>
 #include <TSpline.h>
 #include <TGrid.h>
+#include <TRandom3.h>
 
 #include <AliLog.h>
 #include "AliAnalysisManager.h"
@@ -47,6 +48,7 @@
 #include "AliDataFile.h"
 
 #include "AliAODPidHF.h"
+#include "AliHFMLResponseD0toKpi.h"
 #include "AliHFMLResponseDstoKKpi.h"
 #include "AliHFMLResponseDplustoKpipi.h"
 #include "AliHFMLResponseLctoV0bachelor.h"
@@ -94,11 +96,9 @@ AliAnalysisTaskSE(),
     fEnableDownsamplqn(false),
     fFracToKeepDownSamplqn(1.1),
     fApplyML(false),
+    fMultiClass(false),
     fConfigPath(""),
-    fMLResponse(nullptr),
-    fNMLBins(300),
-    fMLOutputMin(0.85),
-    fMLOutputMax(1.)
+    fMLResponse(nullptr)
 {
     // Default constructor
     for(int iHisto=0; iHisto<3; iHisto++) {
@@ -148,13 +148,12 @@ AliAnalysisTaskSECharmHadronvn::AliAnalysisTaskSECharmHadronvn(const char *name,
     fRemoveDauFromqn(0),
     fRemoveSoftPion(false),
     fEnableDownsamplqn(false),
+    fEnableResampleCan(false),
     fFracToKeepDownSamplqn(1.1),
     fApplyML(false),
+    fMultiClass(false),
     fConfigPath(""),
-    fMLResponse(nullptr),
-    fNMLBins(300),
-    fMLOutputMin(0.85),
-    fMLOutputMax(1.)
+    fMLResponse(nullptr)
 {
     // standard constructor
     for(int iHisto=0; iHisto<3; iHisto++) {
@@ -467,6 +466,10 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     double Ntrkmin       = 0.;
     double Ntrkmax       = 5000.;
 
+    int nRandomBins      = 100;
+    double Randmin       = 0.;
+    double Randmax       = 1.;
+  
     TString massaxisname = "";
     if(fDecChannel==0)      massaxisname = "#it{M}(K#pi#pi) (GeV/#it{c}^{2})";
     else if(fDecChannel==1) massaxisname = "#it{M}(K#pi) (GeV/#it{c}^{2})";
@@ -474,14 +477,19 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     else if(fDecChannel==3) massaxisname = "#it{M}(KK#pi) (GeV/#it{c}^{2})";
     else if(fDecChannel==4) massaxisname = "#it{M}(pK^{0}_{S}) (GeV/#it{c}^{2})";
 
-    int naxes=kVarForSparse;
-    if(!fApplyML)
-        naxes--;
+    int naxes = kVarForSparse;
 
-    int nbins[kVarForSparse]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins, fNMLBins};
-    double xmin[kVarForSparse]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin, fMLOutputMin};
-    double xmax[kVarForSparse]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax, fMLOutputMax};
-    TString axTit[kVarForSparse] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill, "ML response"};
+    if(!fApplyML)
+        naxes = naxes-3;
+    if(fApplyML && !fMultiClass)
+        naxes = naxes-2;
+    if(!fEnableResampleCan)
+        naxes = naxes-1;
+
+    int nbins[kVarForSparse]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins, nRandomBins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    double xmin[kVarForSparse]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin, Randmin, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    double xmax[kVarForSparse]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax, Randmax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    TString axTit[kVarForSparse] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill, "Random number", "ML response 0", "ML response 1", "ML response 2"};
 
     fHistMassPtPhiqnCentr = new THnSparseF("fHistMassPtPhiqnCentr",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
 
@@ -500,9 +508,10 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
                 }
             break;
             case kD0toKpi:
-                {
-                    AliFatal("ML application for D0 meson not yet implemented! Exit");
-                }
+              {
+                fMLResponse = new AliHFMLResponseD0toKpi("D0toKpiMLResponse", "D0toKpiMLResponse", fConfigPath.Data());
+                fMLResponse->MLResponseInit();
+              }
             break;
             case kDstartoKpipi:
                 {
@@ -750,7 +759,8 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     int nCand = arrayProng->GetEntriesFast();
     bool alreadyLooped = false;
     vector<int> isSelByPrevLoop;
-    vector<double> MLPred[2];
+    std::vector<std::vector<double> > fMLScores = {};
+    std::vector<std::vector<double> > fMLScoresSecond = {};
     vector<AliAODTrack*> trackstoremove;
 
     if(fFlowMethod==kEvShapeEP || fFlowMethod==kEvShapeSP || fFlowMethod==kEvShapeEPVsMass) {
@@ -781,11 +791,11 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
                         else
                             dD0 = (dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong();
                     }
-                    double modelPred[2] = {-1., -1.};
-                    int isSel = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0,  modelPred);
+                    std::vector<double> scores{}, scoresSecond{};
+                    int isSel = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0, scores, scoresSecond);
                     isSelByPrevLoop.push_back(isSel);
-                    MLPred[0].push_back(modelPred[0]);
-                    MLPred[1].push_back(modelPred[1]);
+                    fMLScores.push_back(scores);
+                    fMLScoresSecond.push_back(scoresSecond);
                     if(!isSel) continue;
 
                     GetDaughterTracksToRemove(d,nDau,trackstoremove);
@@ -895,14 +905,14 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         }
 
         int isSelected = 0;
-        double modelPred[2] = {-1., -1.};
+        std::vector<double> scores{}, scoresSecond{};
         if(alreadyLooped) {//check already here to avoid application of cuts twice
             isSelected = isSelByPrevLoop[iCand];
-            modelPred[0] = MLPred[0][iCand];
-            modelPred[1] = MLPred[1][iCand];
+            scores = fMLScores[iCand];
+            scoresSecond = fMLScoresSecond[iCand];
         }
         else {
-            isSelected = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0,  modelPred);
+            isSelected = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0, scores, scoresSecond);
         }
         if(!isSelected) continue;
 
@@ -972,50 +982,22 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         else {
             candpercqn = mainpercqn;
         }
-
-        switch(fDecChannel) {
-            case kDplustoKpipi:
-            {
-                double sparsearray[10] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
-                fHistMassPtPhiqnCentr->Fill(sparsearray);
-                break;
-            }
-            case kD0toKpi:
-            {
-                if(isSelected==1 || isSelected==3) {
-                    double sparsearray[10] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
-                    fHistMassPtPhiqnCentr->Fill(sparsearray);
-                }
-                if(isSelected==2 || isSelected==3) {
-                    double sparsearray[10] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[1]};
-                    fHistMassPtPhiqnCentr->Fill(sparsearray);
-                }
-                break;
-            }
-            case kDstartoKpipi:
-            {
-                double sparsearray[10] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
-                fHistMassPtPhiqnCentr->Fill(sparsearray);
-                break;
-            }
-            case kDstoKKpi:
-            {
-                if(isSelected&4) {
-                    double sparsearray[10] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
-                    fHistMassPtPhiqnCentr->Fill(sparsearray);
-                }
-                if(isSelected&8) {
-                    double sparsearray[10] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[1]};
-                    fHistMassPtPhiqnCentr->Fill(sparsearray);
-                }
-                break;
-            }
-            case kLctopK0S:
-            {
-               double sparsearray[10] = {invMass[0], ptD, vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
-               fHistMassPtPhiqnCentr->Fill(sparsearray);
-               break;
-            }
+      
+        double canRandom = gRandom->Uniform(0., 1);
+        std::vector<double> var4nSparse{};
+        if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kLctopK0S || fDecChannel == kDstartoKpipi || (fDecChannel == kDstoKKpi && (isSelected & 4)))
+        {
+            var4nSparse = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn, canRandom};
+            var4nSparse.insert(var4nSparse.end(), scores.begin(), scores.end());
+            fHistMassPtPhiqnCentr->Fill(var4nSparse.data());
+            continue;
+        }
+        if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
+        {
+            var4nSparse = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn, canRandom};
+            var4nSparse.insert(var4nSparse.end(), scoresSecond.begin(), scoresSecond.end());
+            fHistMassPtPhiqnCentr->Fill(var4nSparse.data());
+            continue;
         }
     }
 
@@ -1023,8 +1005,8 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
 
     trackstoremove.clear();
     isSelByPrevLoop.clear();
-    MLPred[0].clear();
-    MLPred[1].clear();
+    fMLScores.clear();
+    fMLScoresSecond.clear();
 
     delete vHF;
     vHF = nullptr;
@@ -1342,7 +1324,7 @@ void AliAnalysisTaskSECharmHadronvn::GetDaughterTracksToRemove(AliAODRecoDecayHF
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, double modelPred[2]) {
+int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, std::vector<double> &modelPred, std::vector<double> &modelPredSecond) {
 
     if(!d || !vHF || (fDecChannel==kDstartoKpipi && !dD0) ) return false;
  
@@ -1409,57 +1391,35 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
 
     int isSelected = fRDCuts->IsSelected(d,AliRDHFCuts::kAll,fAOD);
 
-    //ML application
+    // ML application
+    int isMLsel = 0;
+    modelPred = {};
+    modelPredSecond = {};
     if(fApplyML) {
-        AliAODPidHF* pidHF = fRDCuts->GetPidHF();
-        bool isMLsel = true;
-
-        switch(fDecChannel) {
-            case kDplustoKpipi:
-            {
-                isMLsel = fMLResponse->IsSelected(modelPred[0], d, fAOD->GetMagneticField(), pidHF);
-                if(!isMLsel)
-                    isSelected = 0;
-                break;
-            }
-            case kD0toKpi:
-            {
-                AliWarning("ML application for D0 meson not yet implemented! Exit");
-                break;
-            }
-            case kDstartoKpipi:
-            {
-                AliWarning("ML application for Dstar meson not yet implemented! Exit");
-                break;
-            }
-            case kDstoKKpi:
-            {
-                if(isSelected&4) {
-                    isMLsel = fMLResponse->IsSelected(modelPred[0], d, fAOD->GetMagneticField(), pidHF, 0);
-                    if(!isMLsel)
-                        isSelected &= ~4; //switch off bit ok KKpi hypo
-                }
-                if(isSelected&8) {
-                    isMLsel = fMLResponse->IsSelected(modelPred[1], d, fAOD->GetMagneticField(), pidHF, 1);
-                    if(!isMLsel)
-                        isSelected &= ~8; //switch off bit ok piKK hypo
-                }
-                break;
-            }
-           case kLctopK0S:
-           {
-               isMLsel = fMLResponse->IsSelected(modelPred[0],d,fAOD->GetMagneticField(),pidHF);
-               if(!isMLsel)
-                    isSelected = 0;
-               break;
-           }
-        }
+    AliAODPidHF *pidHF = fRDCuts->GetPidHF();
+    if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kLctopK0S || fDecChannel == kDstartoKpipi || (fDecChannel == kDstoKKpi && (isSelected & 4)))
+    {
+        if(fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 0))
+            isMLsel += (fDecChannel != kDstoKKpi) ? 1 : 4;
     }
+    if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
+    {
+        if(fMLResponse->IsSelectedMultiClass(modelPredSecond, d, fAOD->GetMagneticField(), pidHF, 1))
+            isMLsel += (fDecChannel != kDstoKKpi) ? 2 : 8;
+    }
+    }
+    if(modelPred.size() > modelPredSecond.size())
+        for(int iScore=0; iScore<modelPred.size(); iScore++)
+            modelPredSecond.push_back(-9999.);
+    else if(modelPred.size() < modelPredSecond.size())
+        for(int iScore=0; iScore<modelPredSecond.size(); iScore++)
+            modelPred.push_back(-9999.);
 
-    if(!isSelected) return 0;
+    isSelected = isMLsel;
+    
     if(fDecChannel==kDstoKKpi)
         if(!(isSelected&4) && !(isSelected&8)) return 0;
-
+    
     return isSelected;
 }
 

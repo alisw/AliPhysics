@@ -38,6 +38,7 @@
 #pragma link C++ class  AliEmcalCorrectionComponent+;
 #pragma link C++ class  AliEmcalCorrectionCellBadChannel+;
 #pragma link C++ class  AliEmcalCorrectionCellEnergy+;
+#pragma link C++ class  AliEmcalCorrectionCellEnergyCompression+;
 #pragma link C++ class  AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction+;
 #pragma link C++ class  AliEmcalCorrectionCellSingleChannelCalibration+;
 #pragma link C++ class  AliEmcalCorrectionCellTimeCalib+;
@@ -48,6 +49,7 @@
 #pragma link C++ class  AliEmcalCorrectionClusterNonLinearity+;
 #pragma link C++ class  AliEmcalCorrectionClusterNonLinearityMCAfterburner+;
 #pragma link C++ class  AliEmcalCorrectionClusterLowEnergyEfficiency+;
+#pragma link C++ class  AliEmcalCorrectionClusterPositionCorrection+;
 #pragma link C++ class  AliEmcalCorrectionClusterExotics+;
 #pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;

@@ -16,10 +16,8 @@
 
 // Classes that should only be included in ROOT6 build
 #if defined(__CLING__)
-#pragma link C++ struct Hist::Axis+;
 #pragma link C++ class AliMultDepSpecAnalysisTask+;
-#pragma link C++ class AliMultDepSpecAnalysisTaskOLD+;
-#pragma link C++ class AliMultDepSpecAnalysisTaskUE+;
+#pragma link C++ class AliMultDepSpecOnTheFlyAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskDCArStudy+;
 #pragma link C++ class AliAnalysisTaskCutStudies+;
 #pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
@@ -114,6 +112,8 @@
 #pragma link C++ class AliMESbaseTask+;
 #pragma link C++ class AliMEStender+;
 #pragma link C++ class AliMEStender::AliMESconfigTender+;
+#pragma link C++ class AliMESpp13+;
+#pragma link C++ class AliMESpp13::AliMESconfigTender+;
 #pragma link C++ class AliMESpidTask+;
 #pragma link C++ class AliMESchgTask+;
 #pragma link C++ class AliMESppColTask+;

@@ -72,6 +72,7 @@ set(SRCS
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
+  AliEmcalCorrectionCellEnergyCompression.cxx
   AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction.cxx
   AliEmcalCorrectionCellSingleChannelCalibration.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
@@ -82,6 +83,7 @@ set(SRCS
   AliEmcalCorrectionClusterNonLinearity.cxx
   AliEmcalCorrectionClusterNonLinearityMCAfterburner.cxx
   AliEmcalCorrectionClusterLowEnergyEfficiency.cxx
+  AliEmcalCorrectionClusterPositionCorrection.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx

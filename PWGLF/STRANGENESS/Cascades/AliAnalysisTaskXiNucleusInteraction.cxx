@@ -129,18 +129,27 @@ void AliAnalysisTaskXiNucleusInteraction::UserCreateOutputObjects()  {
         fOutputList -> Add(hMassXi_vs_P[i]);
         fOutputList -> Add(hMassAntiXi_vs_P[i]);
         
-        //Pointing Angle Xi
+        //Pointing Angle
         hXiPointingAngle_vs_P[i]     = new TH2F (Form("hXiPointingAngle_vs_P[%d]",i),"",100,0,10,200,0,20);
         hAntiXiPointingAngle_vs_P[i] = new TH2F (Form("hAntiXiPointingAngle_vs_P[%d]",i),"",100,0,10,200,0,20);
         hXiPointingAngle_vs_P[i]     -> Sumw2();
         hAntiXiPointingAngle_vs_P[i] -> Sumw2();
         fOutputList -> Add(hXiPointingAngle_vs_P[i]);
         fOutputList -> Add(hAntiXiPointingAngle_vs_P[i]);
+        
+        //Scattering Angle
+        hXiScatteringAngle_vs_P[i]     = new TH2F (Form("hXiScatteringAngle_vs_P[%d]",i),"",100,0,10,400,0,40);
+        hAntiXiScatteringAngle_vs_P[i] = new TH2F (Form("hAntiXiScatteringAngle_vs_P[%d]",i),"",100,0,10,400,0,40);
+        hXiScatteringAngle_vs_P[i]     -> Sumw2();
+        hAntiXiScatteringAngle_vs_P[i] -> Sumw2();
+        fOutputList -> Add(hXiScatteringAngle_vs_P[i]);
+        fOutputList -> Add(hAntiXiScatteringAngle_vs_P[i]);
     }
     
     //Track Cuts Objects
     fESDtrackCuts = new AliESDtrackCuts ("fESDtrackCuts");
     SetTrackSelectionCriteria ();
+        
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
@@ -169,6 +178,11 @@ void AliAnalysisTaskXiNucleusInteraction::UserExec(Option_t *)  {
     Double_t vx = primaryVertex->GetX();
     Double_t vy = primaryVertex->GetY();
     Double_t vz = primaryVertex->GetZ();
+    TVector3 prim_vertex (vx,vy,vz);
+    
+    //Global Variables
+    const Double_t mass_hyperon = 1.32171;
+    const Double_t mass_silicon = 26.1614775455;
     
     //Flags
     Bool_t containsRecXi_R0(kFALSE);
@@ -209,49 +223,116 @@ void AliAnalysisTaskXiNucleusInteraction::UserExec(Option_t *)  {
         //Cascade Cuts
         if (!PassedCascadeSelectionCuts(cascade)) continue;
         
-        //Cascade Radius
-        Double_t xCasc(0),yCasc(0),zCasc(0);
-        cascade->GetXYZcascade (xCasc,yCasc,zCasc);
-        Double_t rC = TMath::Sqrt(xCasc*xCasc + yCasc*yCasc);
-        
-        //Trigger Requirement: TOF Hits (reduce pile-up)
+        //Trigger Requirement: TOF Hits (to reduce pile-up)
         Bool_t hasTOFhit_pos = (positive_track->GetStatus() & AliVTrack::kTOFout) && (positive_track->GetStatus() & AliVTrack::kTIME);
         Bool_t hasTOFhit_neg = (negative_track->GetStatus() & AliVTrack::kTOFout) && (negative_track->GetStatus() & AliVTrack::kTIME);
         Bool_t hasTOFhit_bac = (bachelor_track->GetStatus() & AliVTrack::kTOFout) && (bachelor_track->GetStatus() & AliVTrack::kTIME);
         if ((!hasTOFhit_pos) && (!hasTOFhit_neg) && (!hasTOFhit_bac)) continue;
-        
-        //Candidate Selection
+               
+        //(Anti)Xi Candidate Selection
         Bool_t isXi(kFALSE),isAntiXi(kFALSE);
-        Double_t m_xi(0),m_antixi(0),p_xi(0),p_antixi(0);
-        if (IsXiCandidate(cascade,positive_track,negative_track,bachelor_track,m_xi,p_xi))             isXi     = kTRUE;
-        if (IsAntiXiCandidate(cascade,positive_track,negative_track,bachelor_track,m_antixi,p_antixi)) isAntiXi = kTRUE;
+        Double_t m_xi(0),m_antixi(0);
+        TVector3 momentum_xi(0,0,0);
+        TVector3 momentum_antixi(0,0,0);
+        if (IsXiCandidate(cascade,positive_track,negative_track,bachelor_track,m_xi,momentum_xi))             isXi     = kTRUE;
+        if (IsAntiXiCandidate(cascade,positive_track,negative_track,bachelor_track,m_antixi,momentum_antixi)) isAntiXi = kTRUE;
         if ((!isXi)&&(!isAntiXi)) continue;
         
+        //Cascade Radius
+        Double_t xCasc(0),yCasc(0),zCasc(0);
+        cascade->GetXYZcascade (xCasc,yCasc,zCasc);
+        Double_t rC = TMath::Sqrt(xCasc*xCasc + yCasc*yCasc);
+        TVector3 sec_vertex (xCasc,yCasc,zCasc);
+        
         //Pointing Angle
-        Double_t cos_theta = cascade->GetCascadeCosineOfPointingAngle(vx,vy,vz);
-        Double_t angle_rad = TMath::ACos(cos_theta);
-        Double_t angle = (180.0/TMath::Pi())*angle_rad;
+        Double_t cos_theta   = cascade->GetCascadeCosineOfPointingAngle(vx,vy,vz);
+        Double_t angle_point = (180.0/TMath::Pi())*TMath::ACos(cos_theta);
+                
+        //Hyperon Momentum
+        TVector3 momentum_hyperon(0,0,0);
+        if (isXi)     momentum_hyperon = momentum_xi;
+        if (isAntiXi) momentum_hyperon = momentum_antixi;
+
+        //Beta
+        TVector3 beta(0,0,0);
+        Double_t E_hyperon = TMath::Sqrt(mass_hyperon*mass_hyperon + momentum_hyperon.Mag2());
+        beta.SetX(momentum_hyperon.X()/(E_hyperon+mass_silicon));
+        beta.SetY(momentum_hyperon.Y()/(E_hyperon+mass_silicon));
+        beta.SetZ(momentum_hyperon.Z()/(E_hyperon+mass_silicon));
+
+        //Unit Vector connecting Primary-Secondary Vertex
+        TVector3 r(0,0,0);
+        TVector3 decay_length = sec_vertex-prim_vertex;
+        Double_t r_mag = decay_length.Mag();
+        r.SetX(decay_length.X()/r_mag);
+        r.SetY(decay_length.Y()/r_mag);
+        r.SetZ(decay_length.Z()/r_mag);
+
+        //Initial 4-Momentum
+        TLorentzVector P_init(0,0,0,0);
+        P_init.SetPx(momentum_hyperon.Mag()*r.X());
+        P_init.SetPy(momentum_hyperon.Mag()*r.Y());
+        P_init.SetPz(momentum_hyperon.Mag()*r.Z());
+        P_init.SetE (E_hyperon);
+        TLorentzVector P_init_star = Boost(P_init,beta);
+        
+        //Final 4-Momentum
+        TLorentzVector P_fin(0,0,0,0);
+        P_fin.SetPx(momentum_hyperon.X());
+        P_fin.SetPy(momentum_hyperon.Y());
+        P_fin.SetPz(momentum_hyperon.Z());
+        P_fin.SetE (E_hyperon);
+        TLorentzVector P_final_star = Boost(P_fin,beta);
+
+        //Scattering Angle (in the center-of-mass frame)
+        Double_t angle_scatt = (180.0/TMath::Pi())*P_final_star.Angle(P_init_star.Vect());
+        
+        //Momenta
+        Double_t p_xi     = momentum_xi.Mag();
+        Double_t p_antixi = momentum_antixi.Mag();
 
         //Xi Selection
         if (isXi)  {
-            if (rC> 2.24) {containsRecXi_R0 = kTRUE; hMassXi_vs_P[0] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[0] -> Fill (p_xi,angle);}
-            if (rC> 3.01) {containsRecXi_R1 = kTRUE; hMassXi_vs_P[1] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[1] -> Fill (p_xi,angle);}
-            if (rC> 3.78) {containsRecXi_R2 = kTRUE; hMassXi_vs_P[2] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[2] -> Fill (p_xi,angle);}
-            if (rC>19.44) {containsRecXi_R3 = kTRUE; hMassXi_vs_P[3] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[3] -> Fill (p_xi,angle);}
-            if (rC>24.39) {containsRecXi_R4 = kTRUE; hMassXi_vs_P[4] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[4] -> Fill (p_xi,angle);}
-            if (rC>34.23) {containsRecXi_R5 = kTRUE; hMassXi_vs_P[5] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[5] -> Fill (p_xi,angle);}
-            if (rC>39.18) {containsRecXi_R6 = kTRUE; hMassXi_vs_P[6] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[6] -> Fill (p_xi,angle);}
+            if (rC> 2.24) {containsRecXi_R0 = kTRUE; hMassXi_vs_P[0] -> Fill (p_xi,m_xi);}
+            if (rC> 3.01) {containsRecXi_R1 = kTRUE; hMassXi_vs_P[1] -> Fill (p_xi,m_xi);}
+            if (rC> 3.78) {containsRecXi_R2 = kTRUE; hMassXi_vs_P[2] -> Fill (p_xi,m_xi);}
+            if (rC>19.44) {containsRecXi_R3 = kTRUE; hMassXi_vs_P[3] -> Fill (p_xi,m_xi);}
+            if (rC>24.39) {containsRecXi_R4 = kTRUE; hMassXi_vs_P[4] -> Fill (p_xi,m_xi);}
+            if (rC>34.23) {containsRecXi_R5 = kTRUE; hMassXi_vs_P[5] -> Fill (p_xi,m_xi);}
+            if (rC>39.18) {containsRecXi_R6 = kTRUE; hMassXi_vs_P[6] -> Fill (p_xi,m_xi);}
         }
-        
+               
+        //Pointing & Scattering Angles Xi
+        if (isXi && m_xi>1.320 && m_xi<1.327)  {
+            if (rC> 2.24) {hXiPointingAngle_vs_P[0] -> Fill (p_xi,angle_point);hXiScatteringAngle_vs_P[0] -> Fill(p_xi,angle_scatt);}
+            if (rC> 3.01) {hXiPointingAngle_vs_P[1] -> Fill (p_xi,angle_point);hXiScatteringAngle_vs_P[1] -> Fill(p_xi,angle_scatt);}
+            if (rC> 3.78) {hXiPointingAngle_vs_P[2] -> Fill (p_xi,angle_point);hXiScatteringAngle_vs_P[2] -> Fill(p_xi,angle_scatt);}
+            if (rC>19.44) {hXiPointingAngle_vs_P[3] -> Fill (p_xi,angle_point);hXiScatteringAngle_vs_P[3] -> Fill(p_xi,angle_scatt);}
+            if (rC>24.39) {hXiPointingAngle_vs_P[4] -> Fill (p_xi,angle_point);hXiScatteringAngle_vs_P[4] -> Fill(p_xi,angle_scatt);}
+            if (rC>34.23) {hXiPointingAngle_vs_P[5] -> Fill (p_xi,angle_point);hXiScatteringAngle_vs_P[5] -> Fill(p_xi,angle_scatt);}
+            if (rC>39.18) {hXiPointingAngle_vs_P[6] -> Fill (p_xi,angle_point);hXiScatteringAngle_vs_P[6] -> Fill(p_xi,angle_scatt);}
+        }
+               
         //AntiXi Selection
         if (isAntiXi)  {
-            if (rC> 2.24) {containsRecAntiXi_R0=kTRUE;hMassAntiXi_vs_P[0]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[0]->Fill(p_antixi,angle);}
-            if (rC> 3.01) {containsRecAntiXi_R1=kTRUE;hMassAntiXi_vs_P[1]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[1]->Fill(p_antixi,angle);}
-            if (rC> 3.78) {containsRecAntiXi_R2=kTRUE;hMassAntiXi_vs_P[2]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[2]->Fill(p_antixi,angle);}
-            if (rC>19.44) {containsRecAntiXi_R3=kTRUE;hMassAntiXi_vs_P[3]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[3]->Fill(p_antixi,angle);}
-            if (rC>24.39) {containsRecAntiXi_R4=kTRUE;hMassAntiXi_vs_P[4]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[4]->Fill(p_antixi,angle);}
-            if (rC>34.23) {containsRecAntiXi_R5=kTRUE;hMassAntiXi_vs_P[5]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[5]->Fill(p_antixi,angle);}
-            if (rC>39.18) {containsRecAntiXi_R6=kTRUE;hMassAntiXi_vs_P[6]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[6]->Fill(p_antixi,angle);}
+            if (rC> 2.24) {containsRecAntiXi_R0=kTRUE;hMassAntiXi_vs_P[0]->Fill(p_antixi,m_antixi);}
+            if (rC> 3.01) {containsRecAntiXi_R1=kTRUE;hMassAntiXi_vs_P[1]->Fill(p_antixi,m_antixi);}
+            if (rC> 3.78) {containsRecAntiXi_R2=kTRUE;hMassAntiXi_vs_P[2]->Fill(p_antixi,m_antixi);}
+            if (rC>19.44) {containsRecAntiXi_R3=kTRUE;hMassAntiXi_vs_P[3]->Fill(p_antixi,m_antixi);}
+            if (rC>24.39) {containsRecAntiXi_R4=kTRUE;hMassAntiXi_vs_P[4]->Fill(p_antixi,m_antixi);}
+            if (rC>34.23) {containsRecAntiXi_R5=kTRUE;hMassAntiXi_vs_P[5]->Fill(p_antixi,m_antixi);}
+            if (rC>39.18) {containsRecAntiXi_R6=kTRUE;hMassAntiXi_vs_P[6]->Fill(p_antixi,m_antixi);}
+        }
+               
+        //Pointing Angle AntiXi
+        if (isAntiXi && m_antixi>1.320 && m_antixi<1.327)  {
+            if (rC> 2.24) {hAntiXiPointingAngle_vs_P[0] -> Fill (p_antixi,angle_point);hAntiXiScatteringAngle_vs_P[0] -> Fill(p_antixi,angle_scatt);}
+            if (rC> 3.01) {hAntiXiPointingAngle_vs_P[1] -> Fill (p_antixi,angle_point);hAntiXiScatteringAngle_vs_P[1] -> Fill(p_antixi,angle_scatt);}
+            if (rC> 3.78) {hAntiXiPointingAngle_vs_P[2] -> Fill (p_antixi,angle_point);hAntiXiScatteringAngle_vs_P[2] -> Fill(p_antixi,angle_scatt);}
+            if (rC>19.44) {hAntiXiPointingAngle_vs_P[3] -> Fill (p_antixi,angle_point);hAntiXiScatteringAngle_vs_P[3] -> Fill(p_antixi,angle_scatt);}
+            if (rC>24.39) {hAntiXiPointingAngle_vs_P[4] -> Fill (p_antixi,angle_point);hAntiXiScatteringAngle_vs_P[4] -> Fill(p_antixi,angle_scatt);}
+            if (rC>34.23) {hAntiXiPointingAngle_vs_P[5] -> Fill (p_antixi,angle_point);hAntiXiScatteringAngle_vs_P[5] -> Fill(p_antixi,angle_scatt);}
+            if (rC>39.18) {hAntiXiPointingAngle_vs_P[6] -> Fill (p_antixi,angle_point);hAntiXiScatteringAngle_vs_P[6] -> Fill(p_antixi,angle_scatt);}
         }
     }
     
@@ -382,7 +463,7 @@ Bool_t AliAnalysisTaskXiNucleusInteraction::PassedCascadeSelectionCuts (AliESDca
     Double_t vz = primaryVertex->GetZ();
     
     //Topological Selections
-    if (cascade->GetV0CosineOfPointingAngle(vx,vy,vz)<0.97)      return passedCascadeSelection;
+    if (cascade->GetV0CosineOfPointingAngle(vx,vy,vz)<0.97) return passedCascadeSelection;
     if (cascade->GetDcaV0Daughters()>1.6) return passedCascadeSelection;
     if (cascade->GetDcaXiDaughters()>1.6) return passedCascadeSelection;
     
@@ -402,7 +483,7 @@ Bool_t AliAnalysisTaskXiNucleusInteraction::PassedCascadeSelectionCuts (AliESDca
     return passedCascadeSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskXiNucleusInteraction::IsXiCandidate (AliESDcascade *casc, AliESDtrack *pos, AliESDtrack *neg, AliESDtrack *bac, Double_t &m, Double_t &p)  {
+Bool_t AliAnalysisTaskXiNucleusInteraction::IsXiCandidate (AliESDcascade *casc, AliESDtrack *pos, AliESDtrack *neg, AliESDtrack *bac, Double_t &m, TVector3 &momentum)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -434,14 +515,13 @@ Bool_t AliAnalysisTaskXiNucleusInteraction::IsXiCandidate (AliESDcascade *casc, 
     if (mass>1.35) return kFALSE;
     
     //Assignments
-    m  = mass;
-    TVector3 momentum = Ptot.Vect();
-    p = momentum.Mag();
+    m = mass;
+    momentum = Ptot.Vect();
 
     return kTRUE;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskXiNucleusInteraction::IsAntiXiCandidate (AliESDcascade *casc, AliESDtrack *pos, AliESDtrack *neg, AliESDtrack *bac, Double_t &m, Double_t &p)  {
+Bool_t AliAnalysisTaskXiNucleusInteraction::IsAntiXiCandidate (AliESDcascade *casc, AliESDtrack *pos, AliESDtrack *neg, AliESDtrack *bac, Double_t &m, TVector3 &momentum)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -473,9 +553,8 @@ Bool_t AliAnalysisTaskXiNucleusInteraction::IsAntiXiCandidate (AliESDcascade *ca
     if (mass>1.35) return kFALSE;
 
     //Assignments
-    m  = mass;
-    TVector3 momentum = Ptot.Vect();
-    p = momentum.Mag();
+    m = mass;
+    momentum = Ptot.Vect();
 
     return kTRUE;
 }
@@ -492,6 +571,39 @@ Bool_t AliAnalysisTaskXiNucleusInteraction::PassedPIDSelection (AliESDtrack *tra
 
     passedPIDSelection = kTRUE;
     return passedPIDSelection;
+}
+//____________________________________________________________________________________________________________________________________________________
+TLorentzVector AliAnalysisTaskXiNucleusInteraction::Boost (TLorentzVector R, TVector3 beta_vect)  {
+    
+    //Inizialization
+    TLorentzVector R_prime (0,0,0,0);
+    
+    //Beta Components
+    Double_t Bx = beta_vect.X();
+    Double_t By = beta_vect.Y();
+    Double_t Bz = beta_vect.Z();
+    
+    //Beta & Gamma
+    Double_t beta  = TMath::Sqrt(Bx*Bx + By*By + Bz*Bz);
+    if (beta>=1.0) { return R_prime; }
+    Double_t gamma = 1.0/TMath::Sqrt(1.0-(beta*beta));
+    
+    //Coordinates in the Lab System
+    Double_t t = R.T();
+    Double_t x = R.X();
+    Double_t y = R.Y();
+    Double_t z = R.Z();
+    
+    //Coordinates in the Center-of-mass System
+    Double_t t_prime =  gamma*t - gamma*Bx*x - gamma*By*y - gamma*Bz*z;
+    Double_t x_prime = -gamma*Bx*t + (1.0+(gamma-1.0)*Bx*Bx/(beta*beta))*x + (gamma-1.0)*(Bx*By/(beta*beta))*y + (gamma-1.0)*(Bx*Bz/(beta*beta))*z;
+    Double_t y_prime = -gamma*By*t + (gamma-1.0)*(Bx*By/(beta*beta))*x + (1.0+(gamma-1.0)*By*By/(beta*beta))*y + (gamma-1.0)*(By*Bz/(beta*beta))*z;
+    Double_t z_prime = -gamma*Bz*t + (gamma-1.0)*(Bx*Bz/(beta*beta))*x + (gamma-1.0)*(By*Bz/(beta*beta))*y + (1.0+(gamma-1.0)*Bz*Bz/(beta*beta))*z;
+
+    //Set Coordinates
+    R_prime.SetXYZT(x_prime,y_prime,z_prime,t_prime);
+    
+    return R_prime;
 }
 //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskXiNucleusInteraction::Terminate(Option_t *)  {

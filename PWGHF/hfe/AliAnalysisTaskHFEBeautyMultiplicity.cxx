@@ -199,6 +199,10 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fNsigma_Electron(0),
     fNsigma_Hadron(0),
 
+    fHistPt_BeforePID(0),
+    fdEdx_BeforePID(0),
+    fTPCnsig_BeforePID(0),
+
     //---- MC data ----//
     fMCcheckMother(0),
     fMCarray(0),
@@ -250,6 +254,18 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fDCAxy_MC_Lc(0),	    // DCA from Lambda
     fDCAxy_MC_Lc_weight(0), // DCA from Lambda with weight
 
+    fDCA_B_total(0),
+    fDCA_B_total_weight(0),
+    fDCA_D_total(0),
+    fDCA_Dpm_total(0),
+    fDCA_Dpm_total_weight(0),
+    fDCA_D0_total(0),
+    fDCA_D0_total_weight(0),
+    fDCA_Ds_total(0),
+    fDCA_Ds_total_weight(0),
+    fDCA_Lc_total(0),
+    fDCA_Lc_total_weight(0),
+
     fDCAxy_MC_ele(0),       // DCA True electron
     fDCAxy_MC_Phot(0),      // DCA True photonic electron
 
@@ -268,6 +284,10 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_B_TrkCut11(0),
     fHistPt_B_TrkCut12(0),
 
+    fHistPt_Tracking_B(0),
+    fHistPt_Tracking_B_2(0),
+    fHistPt_EMCmatch_B(0),
+
     fHistPt_D_TrkCut(0),
     fHistPt_D_TrkCut0(0),
     fHistPt_D_TrkCut1(0),
@@ -282,6 +302,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_D_TrkCut10(0),
     fHistPt_D_TrkCut11(0),
     fHistPt_D_TrkCut12(0),
+
+    fHistPt_Tracking_D(0),
+    fHistPt_Tracking_D_2(0),
+    fHistPt_EMCmatch_D(0),
+
+    fHistEta_forTrackingEff(0),
 
     fNtrkletNch(0),
     fweightNtrkl(0),
@@ -463,6 +489,11 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fNsigma_Electron(0),
     fNsigma_Hadron(0),
 
+    fHistPt_BeforePID(0),
+    fdEdx_BeforePID(0),
+    fTPCnsig_BeforePID(0),
+    
+
 
     //---- MC data ----//
     fMCcheckMother(0),
@@ -515,6 +546,18 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fDCAxy_MC_Lc(0),	    // DCA from Lambda
     fDCAxy_MC_Lc_weight(0), // DCA from Lambda with weight
 
+    fDCA_B_total(0),
+    fDCA_B_total_weight(0),
+    fDCA_D_total(0),
+    fDCA_Dpm_total(0),
+    fDCA_Dpm_total_weight(0),
+    fDCA_D0_total(0),
+    fDCA_D0_total_weight(0),
+    fDCA_Ds_total(0),
+    fDCA_Ds_total_weight(0),
+    fDCA_Lc_total(0),
+    fDCA_Lc_total_weight(0),
+
     fDCAxy_MC_ele(0),	    // DCA True electron
     fDCAxy_MC_Phot(0),      // DCA True photonic electron
 
@@ -533,6 +576,10 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_B_TrkCut11(0),
     fHistPt_B_TrkCut12(0),
 
+    fHistPt_Tracking_B(0),
+    fHistPt_Tracking_B_2(0),
+    fHistPt_EMCmatch_B(0),
+
     fHistPt_D_TrkCut(0),
     fHistPt_D_TrkCut0(0),
     fHistPt_D_TrkCut1(0),
@@ -547,6 +594,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_D_TrkCut10(0),
     fHistPt_D_TrkCut11(0),
     fHistPt_D_TrkCut12(0),
+
+    fHistPt_Tracking_D(0),
+    fHistPt_Tracking_D_2(0),
+    fHistPt_EMCmatch_D(0),
+
+    fHistEta_forTrackingEff(0),
 
     fNtrkletNch(0),
     fweightNtrkl(0),
@@ -652,7 +705,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNevents->GetXaxis()->SetBinLabel(2,"pile-up cut");
     fNevents->GetXaxis()->SetBinLabel(3,"Global track cont cut");
     fNevents->GetXaxis()->SetBinLabel(4,"SPD track cont cut");
-    fNevents->GetXaxis()->SetBinLabel(5,"SPD&Global mutch");
+    fNevents->GetXaxis()->SetBinLabel(5,"SPD&Global match");
     fNevents->GetXaxis()->SetBinLabel(6,"SPD resolusion cut");
     fNevents->GetXaxis()->SetBinLabel(7,"|Zvertex| < 10cm");
     fNevents->GetXaxis()->SetBinLabel(8,"tracklet class");
@@ -754,7 +807,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fEMCTrkPhi);
 
   //TPC CrossedRows
-    fTPCCrossedRow = new TH1F("fTPCCrossedRow","No of TPC CrossedRow; N^{ITS}_{CrossedRow}; counts",200,0.,200.); 
+    fTPCCrossedRow = new TH1F("fTPCCrossedRow","No of TPC CrossedRow; N^{TPC}_{CrossedRow}; counts",200,0.,200.); 
     fOutputList->Add(fTPCCrossedRow);
 
   //Phi vs. Eta
@@ -762,7 +815,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fPhiEta);
 
   //dE/dx distribution (electron)
-    fdEdx = new TH2F("fdEdx","All track dE/dx distribution;p (GeV/c);dE/dx",300,0,15,1600,0,160);
+    fdEdx = new TH2F("fdEdx","All track dE/dx distribution;p (GeV/c);dE/dx",600,0,30,2000,0,200);
     fOutputList->Add(fdEdx);
 
   //TPC Nsigma distribution (electron)
@@ -826,7 +879,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fTrkPhi_2);
 
   //dE/dx (after track cut)
-    fdEdx_2 = new TH2F("fdEdx_2","dE/dx distribution (after track cut);p (GeV/c);dE/dx",300,0,15,1600,0,160);
+    fdEdx_2 = new TH2F("fdEdx_2","dE/dx distribution (after track cut);p (GeV/c);dE/dx",600,0,30,2000,0,200);
     fOutputList->Add(fdEdx_2);
 
   //TPC Nsigma distribution (after track cut)
@@ -846,19 +899,19 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fTPCCrossedRow_2);
     
   //M02
-    fM02_1 = new TH2F("fM02_1","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse : M02 [cm]",400,0,20,800,0,4);
+    fM02_1 = new TH2F("fM02_1","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse : M02 [cm]",600,0,30,800,0,4);
     fOutputList -> Add(fM02_1);
 
   //M20
-    fM20_1 = new TH2F("fM20_1","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse : M20 [cm]",400,0,20,800,0,4);
+    fM20_1 = new TH2F("fM20_1","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse : M20 [cm]",600,0,30,800,0,4);
     fOutputList -> Add(fM20_1);
     
   //M02 (after PID)
-    fM02_2 = new TH2F("fM02_2","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse (after PID) : M02 [cm]",400,0,20,800,0,4);
+    fM02_2 = new TH2F("fM02_2","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse (after PID) : M02 [cm]",600,0,30,800,0,4);
     fOutputList -> Add(fM02_2);
 
   //M20 (after PID)
-    fM20_2 = new TH2F("fM20_2","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse (after PID) : M20 [cm]",400,0,20,800,0,4);
+    fM20_2 = new TH2F("fM20_2","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse (after PID) : M20 [cm]",600,0,30,800,0,4);
     fOutputList -> Add(fM20_2);
 
   //Track Eta vs. Phi (after Track cut)
@@ -1003,7 +1056,17 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNsigma_Hadron = new TH2F("fNsigma_Hadron","fNsigma_Hadron;p_{T} [GeV/c];n^{TPC}_{#sigma}",600,0,30,200,-10,10);
     fOutputList->Add(fNsigma_Hadron);
 
+  //Track Pt (Before PID cut)
+    fHistPt_BeforePID = new TH1F("fHistPt_BeforePID","fHistPt_BeforePID;p_{T} [GeV/c];",600,0,30);
+    fOutputList->Add(fHistPt_BeforePID);
 
+  //dE/dx (before PID)
+    fdEdx_BeforePID = new TH2F("fdEdx_BeforePID","dE/dx distribution (before PID);P (GeV/c);dE/dx",600,0,30,2000,0,200);
+    fOutputList->Add(fdEdx_BeforePID);
+
+  //TPC nsigma (before PID)
+    fTPCnsig_BeforePID = new TH2F("fTPCnsig_BeforePID","TPC Nsigma (before PID);P (GeV/c);n^{TPC}_{#sigma_{electron}}",600,0,30,200,-10,10);
+    fOutputList->Add(fTPCnsig_BeforePID);
 
     
 //************************************ MC data ************************************//
@@ -1014,7 +1077,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNoB->GetXaxis()->SetBinLabel(1,"B->e");
     fNoB->GetXaxis()->SetBinLabel(2,"correct");
     fNoB->GetXaxis()->SetBinLabel(3,"phi cut (EMCal)");
-    fNoB->GetXaxis()->SetBinLabel(4,"Track mutch");
+    fNoB->GetXaxis()->SetBinLabel(4,"Track match");
     fNoB->GetXaxis()->SetBinLabel(5,"AOD standard");
     fNoB->GetXaxis()->SetBinLabel(6,"TPC & ITS refit");
     fNoB->GetXaxis()->SetBinLabel(7,"TPC CrossedRow");
@@ -1036,7 +1099,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNoD->GetXaxis()->SetBinLabel(1,"D->e & B->D->e");
     fNoD->GetXaxis()->SetBinLabel(2,"correct");
     fNoD->GetXaxis()->SetBinLabel(3,"phi cut (EMCal)");
-    fNoD->GetXaxis()->SetBinLabel(4,"Track mutch");
+    fNoD->GetXaxis()->SetBinLabel(4,"Track match");
     fNoD->GetXaxis()->SetBinLabel(5,"AOD standard");
     fNoD->GetXaxis()->SetBinLabel(6,"TPC & ITS refit");
     fNoD->GetXaxis()->SetBinLabel(7,"TPC CrossedRow");
@@ -1211,6 +1274,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistPt_B_TrkCut10 = new TH1F("fHistPt_B_TrkCut10","B (TPC Nsigma cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut10);
     fHistPt_B_TrkCut11 = new TH1F("fHistPt_B_TrkCut11","B (shower shape cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut11);
     fHistPt_B_TrkCut12 = new TH1F("fHistPt_B_TrkCut12","B (E/p cut);p_{T} [GeV/c];",1200,0,60);			fOutputList->Add(fHistPt_B_TrkCut12);
+
+    fHistPt_Tracking_B = new TH1F("fHistPt_Tracking_B","fHistPt_Tracking_B;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_Tracking_B);
+    fHistPt_Tracking_B_2 = new TH1F("fHistPt_Tracking_B_2","fHistPt_Tracking_B 2;p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_Tracking_B_2);
+    fHistPt_EMCmatch_B = new TH1F("fHistPt_EMCmatch_B","fHistPt_EMCmatch_B;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_EMCmatch_B);
+
     
   //D Hist
     fHistPt_D_TrkCut   = new TH1F("fHistPt_D_TrkCut",  "D (phi cut, EMCal);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut);
@@ -1227,6 +1295,14 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistPt_D_TrkCut10 = new TH1F("fHistPt_D_TrkCut10","D (TPC Nsigma cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut10);
     fHistPt_D_TrkCut11 = new TH1F("fHistPt_D_TrkCut11","D (shower shape cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut11);
     fHistPt_D_TrkCut12 = new TH1F("fHistPt_D_TrkCut12","D (E/p cut);p_{T} [GeV/c];",1200,0,60);			fOutputList->Add(fHistPt_D_TrkCut12);
+
+    fHistPt_Tracking_D = new TH1F("fHistPt_Tracking_D","fHistPt_Tracking_D;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_Tracking_D);
+    fHistPt_Tracking_D_2 = new TH1F("fHistPt_Tracking_D_2","fHistPt_Tracking_D 2;p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_Tracking_D_2);
+    fHistPt_EMCmatch_D = new TH1F("fHistPt_EMCmatch_D","fHistPt_EMCmatch_D;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_EMCmatch_D);
+
+
+    fHistEta_forTrackingEff = new TH1F("fHistEta_fortrackingEff","Eta for tracking efficiency;#Eta;counts",400,-2.0,2.0);
+    fOutputList->Add(fHistEta_forTrackingEff);
 
 
   //Tracklet vs. N charged
@@ -1300,6 +1376,58 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 
 
 
+  //------------------//
+  //     total DCA    //
+  //------------------//
+  //DCA from B
+    fDCA_B_total = new TH2F("fDCA_B_total","Total DCA (MC : B-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_B_total);
+  
+  //DCA from B with weight
+    fDCA_B_total_weight = new TH2F("fDCA_B_total_weight","Total DCA (MC : B-meson with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_B_total_weight->Sumw2();
+    fOutputList->Add(fDCA_B_total_weight);
+  
+  //DCA from D
+    fDCA_D_total = new TH2F("fDCA_D_total","Total DCA (MC : D-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_D_total);
+
+  //DCA from Dpm
+    fDCA_Dpm_total = new TH2F("fDCA_Dpm_total","Total DCA (MC : Dpm);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_Dpm_total);
+
+  //DCA from Dpm with weight
+    fDCA_Dpm_total_weight = new TH2F("fDCA_Dpm_total_weight","Total DCA (MC : Dpm with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_Dpm_total_weight->Sumw2();
+    fOutputList->Add(fDCA_Dpm_total_weight);
+
+  //DCA from D0
+    fDCA_D0_total = new TH2F("fDCA_D0_total","Total DCA (MC : D0);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_D0_total);
+
+  //DCA from Dpm with weight
+    fDCA_D0_total_weight = new TH2F("fDCA_D0_total_weight","Total DCA (MC : D0 with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_D0_total_weight->Sumw2();
+    fOutputList->Add(fDCA_D0_total_weight);
+
+  //DCA from Ds
+    fDCA_Ds_total = new TH2F("fDCA_Ds_total","Total DCA (MC : Ds);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_Ds_total);
+
+  //DCA from Ds with weight
+    fDCA_Ds_total_weight = new TH2F("fDCA_Ds_total_weight","Total DCA (MC : Ds with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_Ds_total_weight->Sumw2();
+    fOutputList->Add(fDCA_Ds_total_weight);
+
+  //DCA from Lc
+    fDCA_Lc_total = new TH2F("fDCA_Lc_total","Total DCA (MC : #Lambda_{c});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_Lc_total);
+
+  //DCA from Lc with weight
+    fDCA_Lc_total_weight = new TH2F("fDCA_Lc_total_weight","Total DCA (MC : #Lambda_{c} with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_Lc_total_weight->Sumw2();
+    fOutputList->Add(fDCA_Lc_total_weight);
+
 
 
 
@@ -1312,13 +1440,13 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 	  
 	//Pi0
 	  pTWeight_Pi0 = new TF1("pTWeight_Pi0", "([0]*exp((-x/[1]) - (x*x/[2])) + x/[3])^[4]");
-	  //pTWeight_Pi0->SetParameters(9.64967e-02,1.38490e+06,6.58746e+01,4.98144e+00,-4.51193e+00);
-	  pTWeight_Pi0->SetParameters(7.27836e-02,1.96082e+06,3.89361e+01,5.35823e+00,-4.07299e+00);
+	  pTWeight_Pi0->SetParameters(9.64967e-02,1.38490e+06,6.58746e+01,4.98144e+00,-4.51193e+00);
+	  //pTWeight_Pi0->SetParameters(7.27836e-02,1.96082e+06,3.89361e+01,5.35823e+00,-4.07299e+00);
 
 	//Eta
 	  pTWeight_Eta = new TF1("pTWeight_Eta", "([0]*exp((-x/[1]) - (x*x/[2])) + x/[3])^[4]");
-	  //pTWeight_Eta->SetParameters(2.96266e-01,8.86671e+05,8.01783e+01,4.82405e+00,-5.81330e+00);
-	  pTWeight_Eta->SetParameters(2.24285e-01,1.00307e+02,4.85372e+01,4.60808e+00,-4.80392e+00);
+	  pTWeight_Eta->SetParameters(2.96266e-01,8.86671e+05,8.01783e+01,4.82405e+00,-5.81330e+00);
+	  //pTWeight_Eta->SetParameters(2.24285e-01,1.00307e+02,4.85372e+01,4.60808e+00,-4.80392e+00);
 	  
 	  
 
@@ -1626,7 +1754,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 
 
-     
+
 //*********************//
 //        track        //
 //*********************//
@@ -1775,8 +1903,84 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         if(TrkPt>2.0)fTPCnsigEta0 -> Fill(TrkEta,TPCnSigma);    //track pT > 2 GeV/c
         if(TrkPt>3.0)fTPCnsigEta1 -> Fill(TrkEta,TPCnSigma);    //track pT > 3 GeV/c
         if(TrkPt>5.0)fTPCnsigEta2 -> Fill(TrkEta,TPCnSigma);    //track pT > 5 GeV/c
+ 
+
+	
+      //---- for tracking efficiency ----
+	if((pid_eleB) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_Tracking_B->Fill(TrkPt);
+	if((pid_eleD) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_Tracking_D->Fill(TrkPt);
+
+	if( TMath::Abs(TrkEta)<CutTrackEta[1] ){
+		fHistEta_forTrackingEff->Fill(TrkEta);
+
+            	if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA))
+		{
+			if(pid_eleB) fHistPt_Tracking_B_2->Fill(TrkPt);	
+			if(pid_eleD) fHistPt_Tracking_D_2->Fill(TrkPt);	
+		}
+	}
+      //---------------------------------
+	
         
-        
+
+            
+//---- for DCA Template (no EMCAL) ----
+    Bool_t fFlagTrkSelect_forDCA = kFALSE;
+    Double_t dca[2], CovaMatrix[3];
+    	track->PropagateToDCA(pVtx, fVevent->GetMagneticField(),20., dca, CovaMatrix);
+
+    SelectTrack_DCA(i, track, TPCCrossedRows, ITSchi2, TPCchi2NDF, dca[0], dca[1], TrkEta, fFlagTrkSelect_forDCA);
+
+    if(fFlagTrkSelect_forDCA)
+    {
+        if(pid_ele == 1.0)
+        {
+            if(pid_eleB)
+            {
+              fDCA_B_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+              fDCA_B_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_B->Eval(pTMom));
+            }
+
+            if(pid_eleD)
+            {
+              fDCA_D_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+
+              if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413)  // Dpm
+              {
+                fDCA_Dpm_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+                fDCA_Dpm_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+              }
+
+              if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423)  // D0
+              {
+                fDCA_D0_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+                fDCA_D0_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+              }
+
+              if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433)  // Ds
+              {
+                fDCA_Ds_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+                fDCA_Ds_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+              }
+
+              if(TMath::Abs(pidM)==4122)  //Lc
+						  {
+							  fDCA_Lc_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+
+                if(pTMom < 10.0){
+                      fDCA_Lc_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_Lc->Eval(pTMom));
+                }else{
+                      fDCA_Lc_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_Lc->Eval(10));
+                }
+		    		  }
+
+            }
+
+        }
+
+    }
+
+  
         
         
     //************************//
@@ -1877,6 +2081,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
             fEMCTrkMatch_EtaPhi_AfterCut -> Fill(fEtaDiff,fPhiDiff);
 
+	
+      //---- for matching efficiency ----
+	if((pid_eleB) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_EMCmatch_B->Fill(TrkPt);
+	if((pid_eleD) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_EMCmatch_D->Fill(TrkPt);
+      //---------------------------------
 
 
 
@@ -1935,7 +2144,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         //    Electron Identification    //
         //*******************************//
 
-	//cout << CutTrackEta[0] << " , " << CutTrackEta[1] << endl;
 
             //---- 10.Eta cut ----
             if(TrkEta > CutTrackEta[1] || TrkEta < CutTrackEta[0]) continue;
@@ -1948,7 +2156,12 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
             
             Bool_t fFlagNonHFE = kFALSE;    // photonic electron identification
-            
+
+
+
+	    fHistPt_BeforePID->Fill(TrkPt);
+            fdEdx_BeforePID -> Fill(TrkP,dEdx);
+            fTPCnsig_BeforePID -> Fill(TrkP,TPCnSigma);
 
             //========== Electron E/p ==========//
             //if((TPCnSigma >= CutTPCNsigma[0] && TPCnSigma <= CutTPCNsigma[1]) && (m20 >= CutM20[0] && m20 <= CutM20[1]))  // TPC nsigma & shower shape cut
@@ -2145,6 +2358,29 @@ void AliAnalysisTaskHFEBeautyMultiplicity::GetTrkClsEtaPhiDiff(AliVTrack *t, Ali
 	phidiff = TVector2::Phi_mpi_pi(vphi-cphi);
 
 }
+
+void AliAnalysisTaskHFEBeautyMultiplicity::SelectTrack_DCA(Int_t itrack, AliAODTrack *track, Double_t TPC_CrossedRows, Double_t ITS_chi2, Double_t TPC_chi2NDF, Double_t dca_xy, Double_t dca_z, Double_t track_Eta, Bool_t &fFlagTrkSelect_forDCA)
+{
+  Bool_t flagTrkSelect_forDCA = kFALSE;
+
+  if(
+    ( track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA) ) && // AOD standard
+    ( (track->GetStatus()&AliESDtrack::kITSrefit) && (track->GetStatus()&AliESDtrack::kTPCrefit) ) && // TPC& ITS refit
+    ( TPC_CrossedRows >= NCrossedRow ) && // TPC Crossed Rows
+    ( track->GetITSNcls() >= NITSClust ) && // ITS cluster
+    ( track->GetTPCsignalN() >= TPCdEdx ) && // dEdx
+    ( track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1) ) && // SPD hit
+    ( (ITS_chi2 < 25) && (TPC_chi2NDF < 4) ) && // chi2
+    ( (TMath::Abs(dca_xy) <= DCAxy) && (TMath::Abs(dca_z) <= DCAz) ) && // DCA
+    ( TMath::Abs(track_Eta) <= TrackEtaMax ) // Eta
+
+   ) flagTrkSelect_forDCA = kTRUE;
+
+
+  fFlagTrkSelect_forDCA = flagTrkSelect_forDCA;
+
+}
+
 
 //_________________________________________________________________________________________________
 void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)

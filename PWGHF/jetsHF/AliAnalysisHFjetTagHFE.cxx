@@ -115,6 +115,14 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistTPCnSigma_ele(0),
   fHistTPCnSigma_had(0),
   fHistTPCnSigma_eMC(0),
+	fHistdEdx(0),
+	fHistTPCnSigma_p(0),
+	fHistTPCnSigma_pele(0),
+	fHistTPCnSigma_phad(0),
+	fM20(0),
+	fM20_ele(0),
+	fM20_had(0),
+	fM20_2(0),
   fHistEopNsig(0),
   fHistEop(0),
   fHistEopHFE(0),
@@ -221,7 +229,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
   fHistBGrandHFEev(0),
-	fHistNtrBGfrac(0),
+  fHistNtrBGfrac(0),
   fHistUE_org(0),
   fHistUE_true(0),
   fHistUE_reco(0),
@@ -279,6 +287,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistphoPi0MC(0),//pho from pi0 without emb
   fHistphoEtaMC(0),//pho from eta without emb
   fNtrklRhoarea(0),
+  fHistPtfracB(0),
+  fHistPtfracD(0),
   fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
   fDelta_pT(0),	
   //======parameter============
@@ -358,6 +368,14 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistTPCnSigma_ele(0),
 	fHistTPCnSigma_had(0),
 	fHistTPCnSigma_eMC(0),
+	fHistdEdx(0),
+	fHistTPCnSigma_p(0),
+	fHistTPCnSigma_pele(0),
+	fHistTPCnSigma_phad(0),
+	fM20(0),
+	fM20_ele(0),
+	fM20_had(0),
+	fM20_2(0),
 	fHistEopNsig(0),
 	fHistEop(0),
 	fHistEopHFE(0),
@@ -522,8 +540,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistphoPi0MC(0),//photonic e from pi0 without emb
 	fHistphoEtaMC(0),//photonic e from eta without emb
 	fNtrklRhoarea(0),
-        fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
-        fDelta_pT(0),	
+	fHistPtfracB(0),
+	fHistPtfracD(0),
+	fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
+	fDelta_pT(0),	
 
 //======parameter============
         fNref(0),
@@ -681,19 +701,43 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistCent = new TH1F("fHistCent","centrality distribution",100,0,100);
   fOutput->Add(fHistCent);
 
-  fHistTPCnSigma = new TH2F("fHistTPCnSigma","TPC nSigma;p_{T}(GeV/c);n#sigms",100,0.,20.,250,-5.,5.);
+  fHistTPCnSigma = new TH2F("fHistTPCnSigma","TPC nSigma;p_{T}(GeV/c);n#sigma",100,0.,20.,200,-10.,10.);
   fOutput->Add(fHistTPCnSigma);
 
-  fHistTPCnSigma_ele = new TH2F("fHistTPCnSigma_ele","TPC nSigma electron;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fHistTPCnSigma_ele = new TH2F("fHistTPCnSigma_ele","TPC nSigma electron;p_{T}(GeV/c);n#sigma",20,0.,20.,200,-10.,10.);
   fOutput->Add(fHistTPCnSigma_ele);
 
-  fHistTPCnSigma_had = new TH2F("fHistTPCnSigma_had","TPC nSigma hadron;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fHistTPCnSigma_had = new TH2F("fHistTPCnSigma_had","TPC nSigma hadron;p_{T}(GeV/c);n#sigma",20,0.,20.,200,-10.,10.);
   fOutput->Add(fHistTPCnSigma_had);
 
-  fHistTPCnSigma_eMC = new TH2F("fHistTPCnSigma_eMC","TPC nSigma electron in MC;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fHistTPCnSigma_eMC = new TH2F("fHistTPCnSigma_eMC","TPC nSigma electron in MC;p_{T}(GeV/c);n#sigma",20,0.,20.,200,-10.,10.);
   fOutput->Add(fHistTPCnSigma_eMC);
 
-  fHistEopNsig = new TH2F("fHistEopNsig","E/p vs. Nsig;Nsig;E/p",200,-5,5,200,0.,4.);
+  fHistdEdx = new TH2F("fHistdEdx","All Track dEdx;p (GeV/c);dEdx",500,0,50,500,0,160);
+	fOutput->Add(fHistdEdx);
+
+  fHistTPCnSigma_p = new TH2F("fHistTPCnSigma_p","TPC nSigma;p (GeV/c);n#sigma",1000,0.,50.,200,-10.,10.);
+  fOutput->Add(fHistTPCnSigma_p);
+
+  fHistTPCnSigma_pele = new TH2F("fHistTPCnSigma_pele","TPC nSigma;p (GeV/c);n#sigma",1000,0.,50.,200,-10.,10.);
+  fOutput->Add(fHistTPCnSigma_pele);
+
+  fHistTPCnSigma_phad = new TH2F("fHistTPCnSigma_phad","TPC nSigma;p (GeV/c);n#sigma",1000,0.,50.,200,-10.,10.);
+  fOutput->Add(fHistTPCnSigma_phad);
+
+	 fM20 = new TH2F ("fM20","M20 vs pt distribution; pt(GeV/c); M20",500,0,50,400,0,2);
+   fOutput->Add(fM20);
+
+	 fM20_ele = new TH2F ("fM20_ele","M20 distribution ele; pt(GeV/c); M20",500,0,50,400,0,2);
+   fOutput->Add(fM20_ele);
+
+	 fM20_had = new TH2F ("fM20_had","M20 distribution had; pt(GeV/c); M20",500,0,50,400,0,2);
+	 fOutput->Add(fM20_had);
+
+	 fM20_2 = new TH2F ("fM20_2","M20 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M20",500,0,50,400,0,2);
+	 fOutput->Add(fM20_2);
+
+  fHistEopNsig = new TH2F("fHistEopNsig","E/p vs. Nsig;Nsig;E/p",200,-10,10,200,0.,4.);
   fOutput->Add(fHistEopNsig);
 
   //fHistEop = new TH2F("fHistEop","E/p;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
@@ -1169,8 +1213,20 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fNtrklEopHad->Sumw2();
   fOutput->Add(fNtrklEopHad);
 
-	fNtrklRhoarea = new TH2D("fNtrklRhoarea", "Ntrackelet vs Rho_area; N^{corr}_{trkl};#it{p}_{T}",301,-0.5,300.5,600,-100,500);
-	fOutput->Add(fNtrklRhoarea);
+  fNtrklRhoarea = new TH2D("fNtrklRhoarea", "Ntrackelet vs Rho_area; N^{corr}_{trkl};#it{p}_{T}",301,-0.5,300.5,600,-100,500);
+  fOutput->Add(fNtrklRhoarea);
+
+  //pT fraction of HFE from B
+  Int_t nBinfrac[5] = {100,60,200,60,200};
+  Double_t minfrac[5]={0.0,0.0,0.0,0.0,0.0};
+  Double_t maxfrac[5]={50.0,30.0,2,30.0,2};
+  fHistPtfracB = new THnSparseD("fHistPtfracB","pT distribution;p_{T}^{B};p_{T}^{HFE};p_{T} fraction;p_{T,true}^{HFE};p_{T} fraction MC",5, nBinfrac, minfrac,maxfrac);
+  fOutput->Add(fHistPtfracB);
+	
+  fHistPtfracD = new THnSparseD("fHistPtfracD","pT distribution;p_{T}^{D};p_{T}^{HFE};p_{T} fraction;p_{T,true}^{HFE};p_{T} fraction MC",5, nBinfrac, minfrac,maxfrac);
+  fOutput->Add(fHistPtfracD);
+
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
   // pi0 & eta weight
@@ -1826,6 +1882,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
         // get track information
         Double_t pt = track->Pt(); 
+        Double_t trackp = track->P(); 
         Double_t px = track->Px(); 
         Double_t py = track->Py(); 
         Double_t pz = track->Pz(); 
@@ -1885,6 +1942,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
         //if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  //++++++++
         fHistTPCnSigma->Fill(pt,fTPCnSigma);
+				fHistTPCnSigma_p->Fill(trackp,fTPCnSigma);
+				fHistdEdx->Fill(trackp,dEdx);
 
                epTarray[0] = pt;
                epTarray[1] = pz;
@@ -1932,6 +1991,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             Double_t clustMatchE = clustMatch->E();
             Double_t m20 =clustMatch->GetM20();
             if(iSSlong)m20 =clustMatch->GetM02();
+
+						fM20->Fill(trackp,m20);
          
             //if(m20<0.01 || m20>0.35)continue;  // shower shape cut (not need for MB since vAN20180710)
             if(m20<fmimM20 || m20>fmaxM20)continue;  // shower shape cut (not need for MB since vAN20180710)
@@ -1958,8 +2019,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             // check nSigma Data and MC
             //if(eop>0.85 && eop<1.3 && m20>0.01 && m20<0.35)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
             //if(eop>0.2  && eop<0.7 && m20>0.01 && m20<0.35)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
-            if(eop>0.9  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
+            if(eop>0.8  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
+            if(eop>0.8  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_pele->Fill(trackp,fTPCnSigma);
+            if(eop>0.8  && eop<1.3 && fTPCnSigma>-1 && fTPCnSigma<3)fM20_2->Fill(trackp,m20);
             if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
+            if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_phad->Fill(trackp,fTPCnSigma);
+            if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_phad->Fill(trackp,fTPCnSigma);
             if(abs(MCpdg)==11)fHistTPCnSigma_eMC->Fill(pt,fTPCnSigma);
  
             //if(fTPCnSigma<-2.5 && eop>fmimEop && eop<1.3)GetFakeHadronJet(pt,epTarray,rho);
@@ -1993,13 +2058,16 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                // check isolation 
                if(pt>10.0)
                   { 
+                   Double_t IsoEnergyTrack = -999.9;
+                   Int_t NtrackCone = 0;
                    iso = IsolationCut(itrack, track, pt, emcphi, emceta, clustMatchE);
+		   if(iso<0.05)IsolationTrackBase(itrack, track, clustMatchE, IsoEnergyTrack, NtrackCone);
                    fHistEle_woISO->Fill(pt);
                    fHistEleiso->Fill(pt,iso);  // 
                    //if(iso<0.05)fHistEle_wISO->Fill(pt);
                    //if(iso<0.05 && pt>30.0 && pt<70.0)HaveW = kTRUE;
                   
-                    if(iso<0.05)
+                    if(iso<0.05 && NtrackCone<=3)
                        {
                         fHistEle_wISO->Fill(pt);
                         fHistEopIso->Fill(pt,eop);
@@ -2045,7 +2113,43 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
        {
         fHistHfEleMCreco->Fill(pt);  // 
         fHistHfEleMCiso->Fill(pt,iso);  // 
-       }
+
+     //HFE from B
+      if(TMath::Abs(pidM)==511 || TMath::Abs(pidM)==513 || TMath::Abs(pidM)==521 || TMath::Abs(pidM)==523 || TMath::Abs(pidM)==531)
+        {
+						Double_t pTtrueEle_B = fMCparticle->Pt();
+						Double_t ptfrac = pt/pTmom; 
+						Double_t ptfrac_MC = pTtrueEle_B/pTmom; 
+						Double_t ptfracvals[5];
+						ptfracvals[0]=pTmom;
+						ptfracvals[1]=pt;
+						ptfracvals[2]=ptfrac;
+						ptfracvals[3]=pTtrueEle_B;
+						ptfracvals[4]=ptfrac_MC;
+	          fHistPtfracB->Fill(ptfracvals);
+
+				}
+	    
+	    
+    //HFE from D
+      if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413 || TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423 || TMath::Abs(pidM)==431)
+        {
+						Double_t pTtrueEle_D = fMCparticle->Pt();
+						Double_t ptfracD = pt/pTmom; 
+						Double_t ptfracD_MC = pTtrueEle_D/pTmom; 
+						Double_t ptfracDvals[5];
+						ptfracDvals[0]=pTmom;
+						ptfracDvals[1]=pt;
+						ptfracDvals[2]=ptfracD;
+						ptfracDvals[3]=pTtrueEle_D;
+						ptfracDvals[4]=ptfracD_MC;
+	          fHistPtfracD->Fill(ptfracDvals);
+
+				}
+
+
+
+			 }
 
     if(iMCPHO)
       {
@@ -2280,6 +2384,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                               fHistJetEtaCorr2->Fill(HFjetRap2);   
 
                       } // end of HF selections
+		       
 
 		    if(fFlagULS)fHistULSjet->Fill(pt,corrPt);
 
@@ -2336,7 +2441,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        HFjetCorrUE->Fill(HFjetVals4); 
  
                        double HFjetVals5[7]; // sub UE in reco jet
-                       double bgfrac = fDelta_pT->GetRandom();
+                       //double bgfrac = fDelta_pT->GetRandom();
+                       double bgfrac = 0.0;
+                       if(fDelta_pT)bgfrac = fDelta_pT->GetRandom();
                        if(bgfrac>=0 && bgfrac<1.0)bgfrac=0.0;
                        double corrPt_UE_fbg = pTeJet - pTeJet_UE - bgfrac;
                        HFjetVals4[0]=track->Pt(); HFjetVals4[1]=0.0; HFjetVals4[2] = corrPt_UE_fbg; HFjetVals4[3] = pTeJet; HFjetVals4[4] = pTeJetTrue; HFjetVals4[5] = 0.0; HFjetVals4[6] = 0.0;
@@ -3127,6 +3234,90 @@ Double_t AliAnalysisHFjetTagHFE::IsolationCut(Int_t itrack, AliVTrack *track, Do
 
         return riso;
 }
+
+
+//_____________________________________________________________________________
+void AliAnalysisHFjetTagHFE::IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone)
+{
+
+	//##################### Set cone radius  ##################### //
+	Double_t CutConeR = 0.3;
+	//################################################################# //
+
+	Int_t nWassotracks = -999;
+	//nWassotracks = fTracks_tender->GetEntries();
+	nWassotracks = ftrack->GetEntries();
+
+        Double_t risoTrack = 0.0; 
+
+	//////////////////////////////
+	// Track loop
+	//////////////////////////////
+	for (Int_t jtrack = 0; jtrack < nWassotracks; jtrack++) {
+		AliVParticle* VWassotrack = 0x0;
+		//VWassotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+		VWassotrack = dynamic_cast<AliVTrack*>(ftrack->At(jtrack)); //take tracks from Tender list
+
+		if (!VWassotrack) {
+			printf("ERROR: Could not receive track %d\n", jtrack);
+			continue;
+		}
+
+		AliVTrack   *Wassotrack  = dynamic_cast<AliVTrack*>(VWassotrack);
+		AliAODTrack *aWassotrack = dynamic_cast<AliAODTrack*>(VWassotrack);
+
+		if(!aWassotrack) continue;                            // if we failed, skip this 
+
+		//------reject same track
+		if(jtrack==itrack) continue;
+		if(aWassotrack->Px()==track->Px() && aWassotrack->Py()==track->Py() && aWassotrack->Pz()==track->Pz())continue;
+
+                //------ find tracks around candidate
+		Double_t ptWasso = -999., phiWasso = -999., etaWasso = -999.;
+		Double_t TrackPhi = -999., TrackEta = -999.;
+
+		ptWasso         = aWassotrack->Pt();
+		phiWasso        = aWassotrack->Phi();
+		etaWasso        = aWassotrack->Eta();
+		TrackPhi        = track->Phi();
+		TrackEta        = track->Eta();
+
+		if(ptWasso <0.15) continue;
+               
+		Double_t Wphidiff = phiWasso - TrackPhi; 
+		Wphidiff = TMath::ATan2(TMath::Sin(Wphidiff),TMath::Cos(Wphidiff)); 
+		if(Wphidiff < -TMath::Pi()/2) Wphidiff += 2*TMath::Pi();
+
+                Double_t Wetadiff = etaWasso - TrackEta;
+
+                Double_t ConeRtr = sqrt(pow(Wetadiff,2)+pow(Wphidiff,2));
+                //cout << "ConeRtr = " << ConeRtr << endl;
+
+               if(ConeRtr>CutConeR) continue;
+
+	       Int_t EMCalIndex_TrCone = aWassotrack->GetEMCALcluster();  // get index of EMCal cluster which matched to track
+               if(EMCalIndex_TrCone<0)continue;
+	       AliVCluster *Assoclust_TrCone = 0x0;     
+	       Assoclust_TrCone = dynamic_cast<AliVCluster*>(fCaloClusters->At(EMCalIndex_TrCone)); 
+ 
+               if(Assoclust_TrCone)
+                 {
+	          risoTrack += Assoclust_TrCone->E();
+                }
+               //cout << "risoTrack = " << risoTrack << endl;
+
+               NtrackCone++;
+
+	}  // end track loop
+
+        //cout << "<----- risoTrack = " << risoTrack << endl;
+        //cout << "<----- MatchclE = " << MatchclE << endl;
+        
+        IsoEnergyTrack = risoTrack/MatchclE;
+
+}
+
+
 
 Double_t AliAnalysisHFjetTagHFE::CalJetWidth(AliEmcalJet* jetC, TH2F *htmp0, TH2F *htmp1, TH2F *htmp2, TH2F *htmp3)
 {

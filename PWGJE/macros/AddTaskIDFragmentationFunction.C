@@ -113,7 +113,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
   const char* trackType = "AODMC2b",
   Float_t radius = -0.4,
   Int_t PtTrackMin = 150.0,
-  Int_t eventClass=0,
+  Int_t eventClass=-1,
   Int_t FFMaxTrackPt = -1,
   Int_t FFMinNTracks = 0,
   UInt_t filterMaskTracks = 0,
@@ -268,6 +268,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    if (debug>=0) 
 		 task->SetDebugLevel(debug);
 
+   task->SetUseNewCentralityEstimation(kTRUE);
    task->SetEventSelectionMask(kPhysSel);
    task->SetEventClass(eventClass);
 	 
@@ -456,7 +457,10 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
                      strDir);   
    
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-   //mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());// Comment to run locally
+  if (mgr->GetCommonOutputContainer()) {
+    //Not present for local runs
+    mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer());
+  }
    mgr->ConnectOutput (task, 1, coutput_FragFunc);   
    
    postConfig(task, namesOfInclusivePIDtasks, namesOfJetPIDtasks, namesOfJetUEPIDtasks, namesOfJetUEMethods);

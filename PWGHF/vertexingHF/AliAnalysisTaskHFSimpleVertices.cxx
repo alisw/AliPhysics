@@ -57,6 +57,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   AliAnalysisTaskSE("HFSimpleVertices"),
   fOutput{nullptr},
   fHistNEvents{nullptr},
+  fHistTrackStatus{nullptr},
   fHistPtAllTracks{nullptr},
   fHistPtSelTracks{nullptr},
   fHistTglAllTracks{nullptr},
@@ -154,6 +155,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
   fHistCosPointLc{nullptr},
+  fHistInvMassK0s{nullptr},
   fHistInvMassLcK0sp{nullptr},
   fHistPtLcK0sp{nullptr},
   fHistCPUTimeTrackVsNTracks{nullptr},
@@ -212,6 +214,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fSelectDplus(1),
   fSelectJpsi(1),
   fSelectLcpKpi(1),
+  fFindVertexForCascades(kFALSE),
   fMinPtV0(0.),
   fMinCosPointV0(0.),
   fCutOnK0sMass(0.1),
@@ -244,6 +247,7 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
 
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistTrackStatus;
     delete fHistPtAllTracks;
     delete fHistPtSelTracks;
     delete fHistTglAllTracks;
@@ -341,6 +345,7 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistPtLcDau2;
     delete fHistDecLenLc;
     delete fHistCosPointLc;
+    delete fHistInvMassK0s;
     delete fHistInvMassLcK0sp;
     delete fHistPtLcK0sp;
     for(Int_t i=0; i<5; i++){
@@ -859,7 +864,13 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
   fOutput->Add(fHistNEvents);
 
-
+  fHistTrackStatus = new TH1F("hTrackStatus","",4,-0.5,3.5);
+  fHistTrackStatus->GetXaxis()->SetBinLabel(1,"Rejected");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(2,"2-prong");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(3,"3-prong");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(4,"bachelor");
+  fOutput->Add(fHistTrackStatus);
+  
   // single track histos
   fHistPtAllTracks = new TH1F("hPtAllTracks", " All tracks ; p_{T} (GeV/c)", 100, 0, 10.);
   fHistPtSelTracks = new TH1F("hPtSelTracks", " Selected tracks ; p_{T} (GeV/c)", 100, 0, 10.);
@@ -1099,8 +1110,10 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistDecLenLc);
   fOutput->Add(fHistCosPointLc);
 
+  fHistInvMassK0s = new TH1F("hInvMassK0s", " ; M_{#pi#pi} (GeV/c^{2})", 200, 0.4, 0.6);
   fHistInvMassLcK0sp = new TH1F("hInvMassLcK0sp", " ; M_{pK^{0}_{s}} (GeV/c^{2})", 500, 1.6, 3.1);
   fHistPtLcK0sp = new TH1F("hPtLcK0sp", " ; #Lambda_{c} p_{T} (GeV/c)", 100, 0, 10.);
+  fOutput->Add(fHistInvMassK0s);
   fOutput->Add(fHistInvMassLcK0sp);
   fOutput->Add(fHistPtLcK0sp);
 
@@ -1370,6 +1383,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     status[iTrack] = SingleTrkCuts(track,primVtxTrk,bzkG,d0track);
     if(status[iTrack] > 0)
       nTracksSel++;
+    if(status[iTrack] == 0) fHistTrackStatus->Fill(0);
+    if(status[iTrack] & 1) fHistTrackStatus->Fill(1);
+    if(status[iTrack] & 2) fHistTrackStatus->Fill(2);
+    if(status[iTrack] & 4) fHistTrackStatus->Fill(3);
   }
 
   std::clock_t clockStartCand;
@@ -1448,7 +1465,17 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
         AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
         twoTrackArrayCasc->AddAt(track_p0,0);
         twoTrackArrayCasc->AddAt(trackV0,1);
-        AliESDVertex* vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
+        AliESDVertex* vertexCasc = 0x0;
+        if(fFindVertexForCascades){
+          vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
+        }else{
+          // assume Cascade decays at the primary vertex
+          Double_t pos[3],cov[6],chi2perNDF;
+          primVtxTrk->GetXYZ(pos);
+          primVtxTrk->GetCovMatrix(cov);
+          chi2perNDF = primVtxTrk->GetChi2toNDF();
+          vertexCasc = new AliESDVertex(pos,cov,chi2perNDF,2);
+        }
         if (vertexCasc == 0x0) {
           delete trackV0;
           twoTrackArrayCasc->Clear();
@@ -1927,6 +1954,7 @@ Bool_t AliAnalysisTaskHFSimpleVertices::SelectV0(AliESDv0 *v0, AliESDVertex* pri
   if(cpa<fMinCosPointV0) return kFALSE;
   Double_t invMassK0s = v0->GetEffMass(2,2);
   if(TMath::Abs(invMassK0s-fMassK0s)>fCutOnK0sMass) return kFALSE;
+  fHistInvMassK0s->Fill(invMassK0s);
   return kTRUE;
 }
 //______________________________________________________________________________

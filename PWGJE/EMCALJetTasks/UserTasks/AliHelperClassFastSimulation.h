@@ -31,9 +31,12 @@ public:
 	AliFJWrapper* 				GetStandardJetWrapper();
 	
 	UInt_t 								GetNJets();
-	UInt_t                GetNParticlesOfJet(Int_t jetNumber);
+	UInt_t                GetNParticlesOfJet(UInt_t jetNumber);
 	
 private:
+  AliHelperClassFastSimulation(const AliHelperClassFastSimulation&)           ;  //Not implemented
+  AliHelperClassFastSimulation &operator=(const AliHelperClassFastSimulation&);  //Not implemented
+  
 	Double_t 							fFastSimEffFactor;
 	Double_t 							fFastSimResFactor;
 	Double_t 							fFastSimRes;

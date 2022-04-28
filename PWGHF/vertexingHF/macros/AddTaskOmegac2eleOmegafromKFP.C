@@ -8,13 +8,15 @@
 #include "TFile.h"
 #endif
 
-AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString finname="", Bool_t theMCon=kFALSE, Bool_t writeQATree=kFALSE, TString cuttype="")
+AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString finname="", Bool_t theMCon=kFALSE, Bool_t writeQATree=kFALSE, Bool_t writeElectronTree = kFALSE, Bool_t domixing = kFALSE,  Bool_t writeTrackRotation = kFALSE, TString cuttype="")
 
 {
-
+    
     Bool_t writeOmegac0RecTree = kTRUE;
     Bool_t writeOmegac0MCGenTree = kFALSE;
     if(theMCon) writeOmegac0MCGenTree = kTRUE;
+    Bool_t writeMixedEventTree = kFALSE;
+    if(domixing) writeMixedEventTree=kTRUE;
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -58,6 +60,26 @@ AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString f
    task->SetWriteOmegac0MCGenTree(writeOmegac0MCGenTree);
    task->SetWriteOmegac0Tree(writeOmegac0RecTree);
    task->SetWriteOmegac0QATree(writeQATree);
+   task->SetWriteElectronTree(writeElectronTree);
+   task->SetEventMixingWithPools(domixing);
+   task->SetWriteMixedEventTree(writeMixedEventTree);
+   task->SetWriteTrackRotation(writeTrackRotation);
+   
+   
+ //-------------- bins for mult. and Vz
+   // PVz binning for pools pp
+ //  Double_t zVertbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12 };
+   Double_t zVertbinlimits[] = {-10 ,-7.5, -5, -2.5, 0, 2.5, 5, 7.5, 10};
+   Int_t  NzVertbin = sizeof(zVertbinlimits)/sizeof(Double_t) - 1;
+   task -> SetPoolZVertBinLimits(NzVertbin, zVertbinlimits);
+    
+   // Mult binning for pools pp
+  // Double_t Multbinlimits[] = {0, 100};
+   Double_t Multbinlimits[] = {0, 5, 10, 15, 20, 25, 30, 40, 100000};
+   Int_t NMultbin = sizeof(Multbinlimits)/sizeof(Double_t) - 1;
+   task -> SetMultiplicityBinLimits(NMultbin, Multbinlimits);
+   task -> SetNumberOfEventsForMixing(20);
+    
    mgr->AddTask(task);
     
 
@@ -74,6 +96,9 @@ AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString f
    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("tree_Omegac0_%s",cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("tree_Omegac0_MCGen_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("tree_Omegac0_QA_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
+   mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("tree_Electron_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
+   mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("tree_MixedEvent_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
+    
 
  // in the end, this macro returns a pointer to your task. this will be convenient later on
  // when you will run your analysis in an analysis train on grid

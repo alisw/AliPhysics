@@ -71,6 +71,7 @@
 #include "AliESDUtils.h"
 #include "AliMultSelection.h"
 #include "AliAnalysisUtils.h"
+#include "AliNeutralTrackParam.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -116,11 +117,13 @@ fWriteVariableTreeDs(0),
 fWriteVariableTreeLc2V0bachelor(0),
 fVariablesTreeDs(0x0),
 fVariablesTreeLc2V0bachelor(0x0),
+fVariablesTreeLc2V0bachelorMixEv(0x0),
 fGenTreeDs(0x0),
 fGenTreeLc2V0bachelor(0x0),
 fTreeEvChar(0x0),
 fTreeHandlerDs(0x0),
 fTreeHandlerLc2V0bachelor(0x0),
+fTreeHandlerLc2V0bachelorMixEv(0x0),
 fTreeHandlerGenDs(0x0),
 fTreeHandlerGenLc2V0bachelor(0x0),
 fPIDresp(0x0),
@@ -201,7 +204,17 @@ fMaxPtCandDownsampling(999.),
 fConfigPath(""),
 fMLResponse(0x0),
 fReducePbPbBranches(false),
-fSaveSTDSelection(false)
+fSaveSTDSelection(false),
+fSaveMixedEventBkg(false),
+fNumberOfEventsForMixing(10),
+fNzVtxBins(0),
+fNCentBins(0),
+fNOfPools(1),
+fPoolIndex(-9999),
+fNextResVec(),
+fReservoirsReady(),
+fReservoirP(),
+fMLResponseMixEv(0x0)
 {
 
   if (fListCuts) {
@@ -212,6 +225,7 @@ fSaveSTDSelection(false)
 
     if(fWriteVariableTreeDs) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDstoKKpi->Clone();
     else if(fWriteVariableTreeLc2V0bachelor) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsLc2V0bachelor->Clone();
+    else if(fSaveMixedEventBkg) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsLc2V0bachelor->Clone();
     else {
       if(fFiltCutsDstoKKpi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDstoKKpi->Clone();
       else if(fFiltCutsLc2V0bachelor) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsLc2V0bachelor->Clone();
@@ -238,6 +252,8 @@ fSaveSTDSelection(false)
   DefineOutput(8,TTree::Class());
   // Output slot #9 stores the tree of the gen Lc2V0bachelor variables
   DefineOutput(9,TTree::Class());
+  // Output slot #10 stores the tree of the Lc2V0bachelor candidate variables after track selection from Mixed Events
+  DefineOutput(10,TTree::Class());
 
 }
 
@@ -256,12 +272,14 @@ AliAnalysisTaskSEHFTreeCreatorApply::~AliAnalysisTaskSEHFTreeCreatorApply()
   delete fCounter;
   delete fTreeHandlerDs;
   delete fTreeHandlerLc2V0bachelor;
+  delete fTreeHandlerLc2V0bachelorMixEv;
 
   delete fTreeHandlerGenDs;
   delete fTreeHandlerGenLc2V0bachelor;
   delete fTreeEvChar;
   
   delete fMLResponse;
+  delete fMLResponseMixEv;
 }
 
 //________________________________________________________________________
@@ -346,16 +364,41 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserCreateOutputObjects()
   fCounter->Init();
   fListCounter->Add(fCounter);
   
+  //Pools for event mixing
+  if(fSaveMixedEventBkg){
+    fNzVtxBins = 10;
+    for(Int_t i=0;i<11;i++){
+      fZvtxBins[i] = -10.+2.*(Double_t)i;
+    }
+
+    fNCentBins = 10;
+    for(Int_t i=0;i<11;i++){
+      fCentBins[i] = 0.+10.*(Double_t)i;
+    }
+
+    fNOfPools=fNCentBins*fNzVtxBins;
+    fReservoirP.resize(fNOfPools,std::vector<std::vector<TVector *>  > (fNumberOfEventsForMixing));
+    fNextResVec.resize(fNOfPools,0);
+    fReservoirsReady.resize(fNOfPools,kFALSE);
+
+    for(Int_t s=0; s<fNOfPools; s++) {
+      for(Int_t k=0;k<fNumberOfEventsForMixing;k++){
+        fReservoirP[s][k].clear();
+      }
+    }
+  }
+  
   //count number of enabled trees
   Int_t nEnabledTrees = 1; // event tree always enabled
   if(fWriteVariableTreeDs) nEnabledTrees++;
   if(fWriteVariableTreeLc2V0bachelor) nEnabledTrees++;
+  if(fSaveMixedEventBkg) nEnabledTrees++;
   if(fReadMC && fFillMCGenTrees) {
     nEnabledTrees = (nEnabledTrees-1)*2+1;
   }
   
   //
-  // Output slot 4-9 : trees of the candidate and event-characterization variables
+  // Output slot 4-10 : trees of the candidate and event-characterization variables
   //
   OpenFile(5);
   fTreeEvChar = new TTree("tree_event_char","tree_event_char");
@@ -464,6 +507,26 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserCreateOutputObjects()
       fTreeEvChar->AddFriend(fGenTreeLc2V0bachelor);
     }
   }
+  
+  if(fSaveMixedEventBkg){
+    if(fConfigPath != ""){
+      fMLResponseMixEv = new AliHFMLResponseLctoV0bachelor("LctoV0bachelorMLResponseMixEv", "LctoV0bachelorMLResponseMixEv", fConfigPath.Data());
+      fMLResponseMixEv->MLResponseInit();
+    }
+    
+    OpenFile(10);
+    TString nameoutputMixEv = "tree_MixEv_Lc2V0bachelor";
+    fTreeHandlerLc2V0bachelorMixEv = new AliHFTreeHandlerApplyLc2V0bachelor(AliHFTreeHandlerApplyLc2V0bachelor::kNoPID);
+    fTreeHandlerLc2V0bachelorMixEv->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
+    fTreeHandlerLc2V0bachelorMixEv->SetFillOnlySignal(kFALSE);
+    if(fEnableNsigmaTPCDataCorr) fTreeHandlerLc2V0bachelorMixEv->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
+    fTreeHandlerLc2V0bachelorMixEv->SetCalcSecoVtx(fLc2V0bachelorCalcSecoVtx);
+    fTreeHandlerLc2V0bachelorMixEv->SetReducePbPbBranches(fReducePbPbBranches);
+    fTreeHandlerLc2V0bachelorMixEv->SetIsMixedEvent(true);
+    fVariablesTreeLc2V0bachelorMixEv = (TTree*)fTreeHandlerLc2V0bachelorMixEv->BuildTree(nameoutputMixEv,nameoutputMixEv);
+    fVariablesTreeLc2V0bachelorMixEv->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+    fTreeEvChar->AddFriend(fVariablesTreeLc2V0bachelorMixEv);
+  }
 
   //Set seed of gRandom
   if(fEnableEventDownsampling) gRandom->SetSeed(fSeedEventDownsampling);
@@ -481,6 +544,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserCreateOutputObjects()
     PostData(8,fVariablesTreeLc2V0bachelor);
     if(fFillMCGenTrees && fReadMC) PostData(9,fGenTreeLc2V0bachelor);
   }
+  if(fSaveMixedEventBkg) PostData(10,fVariablesTreeLc2V0bachelorMixEv);
 
   return;
 }
@@ -590,7 +654,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
 
   if(fWriteVariableTreeDs)
     isSameEvSelDs=!((fFiltCutsDstoKKpi->IsEventSelected(aod) && !fCutsDstoKKpi->IsEventSelected(aod))||(!fFiltCutsDstoKKpi->IsEventSelected(aod) && fCutsDstoKKpi->IsEventSelected(aod)));
-  if(fWriteVariableTreeLc2V0bachelor)
+  if(fWriteVariableTreeLc2V0bachelor || fSaveMixedEventBkg)
     isSameEvSelLc2V0bachelor=!((fFiltCutsLc2V0bachelor->IsEventSelected(aod) && !fCutsLc2V0bachelor->IsEventSelected(aod))||(!fFiltCutsLc2V0bachelor->IsEventSelected(aod) && fCutsLc2V0bachelor->IsEventSelected(aod)));
   
   Bool_t isSameEvSel = isSameEvSelDs && isSameEvSelLc2V0bachelor;
@@ -599,7 +663,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
     return;
   }
   
-  if((fWriteVariableTreeDs && fWriteVariableTreeLc2V0bachelor && (fFiltCutsDstoKKpi->IsEventSelected(aod)!=fFiltCutsLc2V0bachelor->IsEventSelected(aod)))){
+  if((fWriteVariableTreeDs && (fWriteVariableTreeLc2V0bachelor || fSaveMixedEventBkg) && (fFiltCutsDstoKKpi->IsEventSelected(aod)!=fFiltCutsLc2V0bachelor->IsEventSelected(aod)))){
     Printf("AliAnalysisTaskSEHFTreeCreatorApply::UserExec: differences in the event selection cuts different meson");
     return;
   }
@@ -777,6 +841,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
   
   if(fWriteVariableTreeDs) Process3Prong(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeLc2V0bachelor) ProcessCasc(arrayCasc,aod,mcArray,aod->GetMagneticField(),mcHeader);
+  if(fSaveMixedEventBkg) DoEventMixingLc2V0bachelor(aod);
   
   // Post the data
   PostData(1,fNentries);
@@ -791,7 +856,8 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
     PostData(8,fVariablesTreeLc2V0bachelor);
     if(fFillMCGenTrees && fReadMC) PostData(9,fGenTreeLc2V0bachelor);
   }
-  
+  if(fSaveMixedEventBkg) PostData(10,fVariablesTreeLc2V0bachelorMixEv);
+
   return;
 }
 //________________________________________________________________________
@@ -1329,6 +1395,350 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessMCGen(TClonesArray *arrayMC, Al
     }
   }
 }
+//_________________________________________________________________
+void AliAnalysisTaskSEHFTreeCreatorApply::DoEventMixingLc2V0bachelor(AliAODEvent *aodEvent){
+  //
+  // Prepares the mixed event background
+  //
+  AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+  Double_t bfield = aodEvent->GetMagneticField();
+
+  Double_t vtxz = vtx1->GetZ();
+  Double_t centrality = fFiltCutsLc2V0bachelor->GetCentrality(aodEvent);
+  fPoolIndex = GetPoolIndex(vtxz,centrality);
+  if(fPoolIndex<0) return;
+
+  Int_t nextRes( fNextResVec[fPoolIndex] );
+  while(!fReservoirP[fPoolIndex][nextRes].empty()){
+    delete fReservoirP[fPoolIndex][nextRes].back();
+    fReservoirP[fPoolIndex][nextRes].pop_back();
+  }
+  
+  //Fill proton in the pool
+  Int_t nTracks = aodEvent->GetNumberOfTracks();
+  Int_t itrpas = 0;
+  for (Int_t itrk = 0; itrk<nTracks; itrk++) {
+    AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
+    if(!trk) continue;
+    if(!fFiltCutsLc2V0bachelor->ApplySingleProtonCuts(trk,aodEvent)) continue;
+    itrpas++;
+
+    Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
+    trk->PxPyPz(pxpypz);
+    trk->GetXYZ(xyz);
+    trk->GetCovarianceXYZPxPyPz(cv);
+    sign=trk->Charge();
+    Double_t d0z0bach[2],covd0z0bach[3];
+    trk->PropagateToDCA(vtx1,bfield,kVeryBig,d0z0bach,covd0z0bach);
+
+    TVector *varvec = new TVector(45);
+    (*varvec)[0] = trk->GetID();
+    (*varvec)[1] = trk->GetLabel();
+    for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+2] = pxpypz[ic];
+    (*varvec)[5] = 1;
+    for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+6] = xyz[ic];
+    (*varvec)[9] = 1;
+    for(Int_t ic=0;ic<21;ic++) (*varvec)[ic+10] = cv[ic];
+    (*varvec)[31] = sign;
+    (*varvec)[32] = (Int_t)trk->GetITSClusterMap(); //convert to UChar_t (maybe doesn't matter)
+    (*varvec)[33] = vtx1->GetX(); //only used to subtract from xyz, use vertex from other event
+    (*varvec)[34] = vtx1->GetY(); //only used to subtract from xyz, use vertex from other event
+    (*varvec)[35] = vtx1->GetZ(); //only used to subtract from xyz, use vertex from other event
+    (*varvec)[35] = trk->GetUsedForVtxFit();
+    (*varvec)[36] = trk->GetUsedForPrimVtxFit();
+    (*varvec)[37] = -1;
+    (*varvec)[38] = trk->GetFilterMap();
+    (*varvec)[39] = trk->Chi2perNDF();
+    (*varvec)[40] = d0z0bach[0];
+    (*varvec)[41] = TMath::Sqrt(covd0z0bach[0]);
+    
+    AliAODPidHF *Pid_HF = fFiltCutsLc2V0bachelor->GetPidHF();
+    double nsigmaTPCp = -999., nsigmaTOFp = -999.;
+    Pid_HF->GetnSigmaTPC(trk, 4, nsigmaTPCp);
+    Pid_HF->GetnSigmaTOF(trk, 4, nsigmaTOFp);
+    (*varvec)[42] = nsigmaTPCp;
+    (*varvec)[43] = nsigmaTOFp;
+    (*varvec)[44] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCp, nsigmaTOFp);
+    fReservoirP[fPoolIndex][nextRes].push_back(varvec);
+  }
+  
+  // Do the event mixing for fPoolIndex
+  Int_t KiddiePool = fReservoirP[fPoolIndex].size();
+  if( !fReservoirsReady[fPoolIndex] )  KiddiePool = nextRes;
+
+  if( KiddiePool>0 )
+  {
+    for(Int_t j=0;j<KiddiePool;j++){
+      if( j!=nextRes )
+      {
+        ProcessCascMixEv(fReservoirP[fPoolIndex][j], aodEvent, bfield);
+      }
+    }
+  }
+
+  // Rolling buffer
+  nextRes++;
+  if( nextRes>=fNumberOfEventsForMixing ){
+    nextRes = 0;
+    fReservoirsReady[fPoolIndex] = kTRUE;
+  }
+  fNextResVec[fPoolIndex] = nextRes;
+}
+//________________________________________________________________________
+void AliAnalysisTaskSEHFTreeCreatorApply::ProcessCascMixEv(std::vector<TVector * > mixTypeP, AliAODEvent *aod, Float_t bfield){
+  //
+  // Builds mixed event cascade candidate and fills the TTree
+  //
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  
+  Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  Double_t mPrPDG  = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  Double_t mK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  Int_t nPr = mixTypeP.size();
+  Int_t nV0s = aod->GetNumberOfV0s();
+  if(nPr == 0 || nV0s == 0) return;
+  
+  Int_t iv0pas = 0;
+  for(Int_t iv0=0;iv0<nV0s;iv0++){
+    AliAODv0 *v0 = aod->GetV0(iv0);
+    if(!v0) continue;
+    
+    //V0 selections:
+    if(!fFiltCutsLc2V0bachelor->ApplySingleK0Cuts(v0,aod)) continue;
+    AliESDtrackCuts* fV0daughtersCuts = (AliESDtrackCuts*)fFiltCutsLc2V0bachelor->GetTrackCutsV0daughters();
+    Double_t pos[3]; vtx1->GetXYZ(pos);
+    Double_t cov[6]; vtx1->GetCovarianceMatrix(cov);
+    const AliESDVertex vESD(pos,cov,100.,100);
+    AliAODTrack *v0positiveTrack = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
+    if (!v0positiveTrack) continue;
+    AliAODTrack *v0negativeTrack = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
+    if (!v0negativeTrack) continue;
+    if (!fFiltCutsLc2V0bachelor->IsDaughterSelected(v0positiveTrack,&vESD,fV0daughtersCuts,aod)) continue;
+    if (!fFiltCutsLc2V0bachelor->IsDaughterSelected(v0negativeTrack,&vESD,fV0daughtersCuts,aod)) continue;
+    
+    iv0pas++;
+
+    AliNeutralTrackParam *trackV0=NULL;
+    const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+    if(trackVV0)  trackV0 = new AliNeutralTrackParam(trackVV0);
+    Double_t d0z0v0[2],covd0z0v0[2];
+    trackV0->PropagateToDCA(vtx1,bfield,kVeryBig,d0z0v0,covd0z0v0);
+
+    for(Int_t ip=0;ip<nPr;ip++){
+      TVector *pvars = mixTypeP[ip];
+      if(!pvars) continue;
+
+      //pvars: for AliAODTrack
+      Int_t id = (Int_t)((*pvars)[0]);
+      Int_t label = (Int_t)((*pvars)[1]);
+      Double_t pxpypz[3];
+      for(Int_t ic=0;ic<3;ic++) pxpypz[ic] = (*pvars)[ic+2];
+      Bool_t cartesian = (Bool_t)(*pvars)[5];
+      Double_t xyz[3];
+      for(Int_t ic=0;ic<3;ic++) xyz[ic] = (*pvars)[ic+6];
+      Bool_t isDCA = (Int_t)((*pvars)[9]);
+      Double_t cv[21];
+      for(Int_t ic=0;ic<21;ic++) cv[ic] = (*pvars)[ic+10];
+      Int_t sign = (Int_t)((*pvars)[31]);
+      UChar_t ITSclsmap = (UChar_t)((*pvars)[32]);
+      Double_t vtxold[3];
+      for(Int_t ic=0;ic<3;ic++) vtxold[ic] = (*pvars)[ic+33];
+      Bool_t usedForVtxFit = (*pvars)[35];
+      Bool_t usedForPrimVtxFit = (*pvars)[36];
+      AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*pvars)[37]);
+      UInt_t selectInfo = (UInt_t)((*pvars)[38]);
+      Float_t chi2perNDF = (*pvars)[39];
+      Double_t d0z0bach = (*pvars)[40];
+      Double_t covd0z0bach = (*pvars)[41];
+      Double_t nsigmaTPCp = (*pvars)[42];
+      Double_t nsigmaTOFp = (*pvars)[43];
+      Double_t ncombsigmap = (*pvars)[44];
+      //Move to new vertex
+      Double_t vtxnew[3];
+      vtx1->GetXYZ(vtxnew);
+      for(Int_t ic=0;ic<3;ic++) xyz[ic] = xyz[ic] + vtxnew[ic] - vtxold[ic];
+
+      //Calculate Lc inv mass
+      Double_t Ep = TMath::Sqrt(pow(pxpypz[0],2)+pow(pxpypz[1],2)+pow(pxpypz[2],2)+pow(mPrPDG,2));
+      Double_t Ev0 = TMath::Sqrt(pow(v0->Px(),2)+pow(v0->Py(),2)+pow(v0->Pz(),2)+pow(mK0SPDG,2));
+      Double_t Etot = Ep+Ev0;
+      Double_t pxtot = pxpypz[0]+v0->Px();
+      Double_t pytot = pxpypz[1]+v0->Py();
+      Double_t pztot = pxpypz[2]+v0->Pz();
+      Double_t tmass = sqrt(pow(Etot,2)-pow(pxtot,2)-pow(pytot,2)-pow(pztot,2));
+      //Hardcoded cut to only store wide invariant mass window around Lc
+      if(TMath::Abs(tmass-mLcPDG)>0.20) continue;
+
+      AliAODTrack *trkp = new AliAODTrack(id, label, pxpypz, cartesian, xyz, isDCA, cv, sign, ITSclsmap, vtx1, usedForVtxFit, usedForPrimVtxFit, ttype, selectInfo,  chi2perNDF);
+
+      Double_t d0[2],d0err[2];
+      d0[0]= d0z0bach;
+      d0err[0] = covd0z0bach; //sqrt already taken above
+      d0[1]= d0z0v0[0];
+      d0err[1] = TMath::Sqrt(covd0z0v0[0]);
+
+      Double_t px[2],py[2],pz[2];
+      px[0] = trkp->Px(); py[0] = trkp->Py(); pz[0] = trkp->Pz();
+      px[1] = v0->Px(); py[1] = v0->Py(); pz[1] = v0->Pz();
+      
+      //
+      // FindVertexForCascades (and fLc2V0bachelorCalcSecoVtx) is assumed to be FALSE in the filtering
+      // Use Primary vertex as secondary Vtx and dca is 0
+      //
+      Double_t pos[3],cov[6],chi2perNDF2;
+      vtx1->GetXYZ(pos);
+      vtx1->GetCovarianceMatrix(cov);
+      chi2perNDF2 = vtx1->GetChi2perNDF();
+      AliAODVertex *secVert = new AliAODVertex(pos,cov,chi2perNDF2,0x0,-1,AliAODVertex::kUndef,2);
+      Double_t dca = 0.;
+      
+      AliAODRecoCascadeHF *theCascade = new AliAODRecoCascadeHF(secVert,sign,px,py,pz,d0,d0err,dca);
+      if(!theCascade){
+        delete trkp;
+        delete secVert;
+        delete theCascade;
+        continue;
+      }
+      theCascade->SetOwnPrimaryVtx(vtx1);
+      UShort_t id2[2]={(UShort_t)trkp->GetID(), (UShort_t)trackV0->GetID()};
+      theCascade->SetProngIDs(2,id2);
+      theCascade->SetCharge(trkp->Charge());
+      theCascade->GetSecondaryVtx()->AddDaughter(trkp);
+      theCascade->GetSecondaryVtx()->AddDaughter(v0);
+      
+      /*---------------------------------------------*/
+      //Here we start the ProcessCasc part
+      Bool_t isOnFlyV0 = v0->GetOnFlyStatus();
+      if(fV0typeForLc2V0bachelor==1 && isOnFlyV0 == kTRUE){
+        delete trkp;
+        delete secVert;
+        delete theCascade;
+        continue;
+      }
+      if(fV0typeForLc2V0bachelor==2 && isOnFlyV0 == kFALSE){
+        delete trkp;
+        delete secVert;
+        delete theCascade;
+        continue;
+      }
+
+      if(fEnableCandDownsampling){
+        Double_t ptCand = theCascade->Pt();
+        Double_t pseudoRand = ptCand * 1000. - (long)(ptCand * 1000);
+        if (pseudoRand > fFracToKeepCandDownsampling && ptCand < fMaxPtCandDownsampling){
+          delete trkp;
+          delete secVert;
+          delete theCascade;
+          continue;
+        }
+      }
+      
+      //PID info is not copied (and already selected on before), so turn it for this topological selection
+      Bool_t usepidtemp = fFiltCutsLc2V0bachelor->GetIsUsePID();
+      fFiltCutsLc2V0bachelor->SetUsePID(kFALSE);
+      Int_t isSelectedFilt = fFiltCutsLc2V0bachelor->IsSelected(theCascade,AliRDHFCuts::kCandidate,aod); //selected
+      fFiltCutsLc2V0bachelor->SetUsePID(usepidtemp);
+      if(isSelectedFilt > 0){
+        
+        Double_t modelPred = -1.;
+        AliAODPidHF *Pid_HF = fFiltCutsLc2V0bachelor->GetPidHF();
+        Bool_t isSelectedMLFilt = kTRUE;
+        if(fMLResponseMixEv){
+          fMLResponseMixEv->SetMapOfProtonMixedEventVariables(nsigmaTPCp, nsigmaTOFp, ncombsigmap);
+          isSelectedMLFilt = fMLResponseMixEv->IsSelected(modelPred, theCascade, aod->GetMagneticField(), Pid_HF, 0);
+        }
+        
+        Int_t isSelectedCutAn = kFALSE;
+        if(fSaveSTDSelection) isSelectedCutAn = fCutsLc2V0bachelor->IsSelected(theCascade,AliRDHFCuts::kAll,aod);
+        
+        if(isSelectedMLFilt || (fSaveSTDSelection && isSelectedCutAn > 0)){
+          //test analysis cuts
+          Bool_t isSelAnCutstopK0s = kFALSE;
+          Bool_t isSelAnCutstoLpi = kFALSE;
+          Bool_t isSelAnPidCutstopK0s = kFALSE;
+          Bool_t isSelAnPidCutstoLpi = kFALSE;
+          Bool_t isSelAnTopolCutstopK0s = kFALSE;
+          Bool_t isSelAnTopolCutstoLpi = kFALSE;
+          Int_t isSelectedAnalysis = fCutsLc2V0bachelor->IsSelected(theCascade,AliRDHFCuts::kAll,aod);
+          Int_t isSelectedPidAnalysis = fCutsLc2V0bachelor->IsSelectedPID(theCascade);
+          Bool_t isUsePidAn = fCutsLc2V0bachelor->GetIsUsePID();
+          if(isUsePidAn) fCutsLc2V0bachelor->SetUsePID(kFALSE);
+          Int_t isSelectedTopoAnalysis = fCutsLc2V0bachelor->IsSelected(theCascade,AliRDHFCuts::kAll,aod);
+          
+          //Standard selection Lc->pK0s, but keep also Lc->Lpi (different bit)
+          if( (isSelectedAnalysis&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr))                                                                                                       isSelAnCutstopK0s = kTRUE;
+          if( ((isSelectedAnalysis&(AliRDHFCutsLctoV0::kLcToLpi)) == (AliRDHFCutsLctoV0::kLcToLpi)) || ((isSelectedAnalysis&(AliRDHFCutsLctoV0::kLcToLBarpi)) == (AliRDHFCutsLctoV0::kLcToLBarpi)) )         isSelAnCutstoLpi = kTRUE;
+          if( (isSelectedPidAnalysis&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr))                                                                                                    isSelAnPidCutstopK0s = kTRUE;
+          if( ((isSelectedPidAnalysis&(AliRDHFCutsLctoV0::kLcToLpi)) == (AliRDHFCutsLctoV0::kLcToLpi)) || ((isSelectedPidAnalysis&(AliRDHFCutsLctoV0::kLcToLBarpi)) == (AliRDHFCutsLctoV0::kLcToLBarpi)))    isSelAnPidCutstoLpi = kTRUE;
+          if( (isSelectedTopoAnalysis&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr))                                                                                                   isSelAnTopolCutstopK0s = kTRUE;
+          if( ((isSelectedTopoAnalysis&(AliRDHFCutsLctoV0::kLcToLpi)) == (AliRDHFCutsLctoV0::kLcToLpi)) || ((isSelectedTopoAnalysis&(AliRDHFCutsLctoV0::kLcToLBarpi)) == (AliRDHFCutsLctoV0::kLcToLBarpi)) ) isSelAnTopolCutstoLpi = kTRUE;
+          
+          fCutsLc2V0bachelor->SetUsePID(isUsePidAn);
+          Bool_t isSelTracksAnCuts=kFALSE;
+          Int_t isSelectedTrackAnalysis = fCutsLc2V0bachelor->IsSelected(theCascade,AliRDHFCuts::kTracks,aod);
+          if(isSelectedTrackAnalysis > 0) isSelTracksAnCuts=kTRUE;
+          
+          Bool_t unsetvtx=kFALSE;
+          if(!theCascade->GetOwnPrimaryVtx()){
+            theCascade->SetOwnPrimaryVtx(vtx1);
+            unsetvtx=kTRUE;
+            // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+            // Pay attention if you use continue inside this loop!!!
+          }
+          Bool_t recVtx=kFALSE;
+          AliAODVertex *origownvtx=0x0;
+          if(fFiltCutsLc2V0bachelor->GetIsPrimaryWithoutDaughters()){
+            if(theCascade->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*theCascade->GetOwnPrimaryVtx());
+            if(fFiltCutsLc2V0bachelor->RecalcOwnPrimaryVtx(theCascade,aod))recVtx=kTRUE;
+            else fFiltCutsLc2V0bachelor->CleanOwnPrimaryVtx(theCascade,aod,origownvtx);
+          }
+          
+          Int_t masshypo = 0;
+          fTreeHandlerLc2V0bachelorMixEv->SetIsSelectedStd(isSelAnCutstopK0s,isSelAnTopolCutstopK0s,isSelAnPidCutstopK0s,isSelTracksAnCuts);
+          fTreeHandlerLc2V0bachelorMixEv->SetIsLctoLpi(isSelAnCutstoLpi, isSelAnTopolCutstoLpi, isSelAnPidCutstoLpi);
+          fTreeHandlerLc2V0bachelorMixEv->SetProtonPIDvariables(nsigmaTPCp, nsigmaTOFp, ncombsigmap);
+          fTreeHandlerLc2V0bachelorMixEv->SetVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong,-99,modelPred,theCascade,bfield,masshypo,fPIDresp,Pid_HF);
+          fTreeHandlerLc2V0bachelorMixEv->FillTree();
+          if(recVtx)fFiltCutsLc2V0bachelor->CleanOwnPrimaryVtx(theCascade,aod,origownvtx);
+          if(unsetvtx) theCascade->UnsetOwnPrimaryVtx();
+        }//end is selected filt
+      } //end ML selection
+      /*---------------------------------------------*/
+      
+      delete trkp;
+      delete secVert;
+      delete theCascade;
+    }
+    delete trackV0;
+  }
+
+  return;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskSEHFTreeCreatorApply::GetPoolIndex(Double_t zvert, Double_t cent){
+  //
+  // check in which of the pools the current event falls
+  //
+  Int_t theBinZ=-9999;
+  for(Int_t iz=0;iz<fNzVtxBins;iz++){
+    if(zvert>=fZvtxBins[iz] && zvert<fZvtxBins[iz+1]) {
+      theBinZ = iz;
+      break;
+    }
+  }
+  if(theBinZ<0) return -1;
+
+  Int_t theBinM=-9999;
+  for(Int_t ic=0;ic<fNCentBins;ic++){
+    if(cent>=fCentBins[ic] && cent<fCentBins[ic+1]){
+      theBinM = ic;
+      break;
+    }
+  }
+  if(theBinM<0) return -2;
+
+  return fNCentBins*theBinZ+theBinM;
+}
 //________________________________________________________________________
 std::string AliAnalysisTaskSEHFTreeCreatorApply::GetPeriod(const AliVEvent* event){
 
@@ -1507,7 +1917,6 @@ AliAODVertex* AliAnalysisTaskSEHFTreeCreatorApply::ReconstructDisplVertex(const 
   
   return vertexAOD;
 }
-
 //________________________________________________________________
 unsigned int AliAnalysisTaskSEHFTreeCreatorApply::GetEvID() {
   TString currentfilename = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();

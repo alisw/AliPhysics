@@ -92,7 +92,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Int_t GetCaloPhotonMotherMCLabel(Int_t i){return fCaloPhotonMotherMCLabels[i];}
     Int_t GetNNeutralPionMCLabels(){return fNNeutralPionLabels;}
     Int_t GetNeutralPionMCLabel(Int_t i){return fNeutralPionLabels[i];}
-    Float_t GetNeutralPionEnergyFraction(Int_t i){return fNeutralPionEnergyFraction[i];}
+    Float_t GetNeutralPionEnergyFraction(Int_t i){if(i >= 0)return fNeutralPionEnergyFraction[i]; else return 0;}
     Float_t GetLeadingNeutralPionIndex(){return fLeadingNeutralPionIndex;}
     Int_t GetLeadingNeutralPionDaughterIndex(){return fLeadingNeutralPionDaughterIndex;}
 

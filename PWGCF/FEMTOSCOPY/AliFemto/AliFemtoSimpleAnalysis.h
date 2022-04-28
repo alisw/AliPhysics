@@ -142,6 +142,8 @@ public:
 
   /// Calls Finish method on all correlation functions
   virtual void Finish();
+  
+  void SetReverseParticleVariables(bool value);
 
 protected:
 
@@ -177,6 +179,8 @@ protected:
   Bool_t fVerbose;
   Bool_t fPerformSharedDaughterCut;
   Bool_t fEnablePairMonitors;
+  
+  Bool_t freverseParticleVariables;                  ////set true if you want reverse z,y,z. This additional variable is just for some trains. After that it will be deleted. By default is false so, nothing change in other analyis, Wioleta Rzęsa wrzesa@cern.ch
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -305,4 +309,9 @@ inline void AliFemtoSimpleAnalysis::SetEnablePairMonitors(Bool_t aEnable)
   fEnablePairMonitors = aEnable;
 }
 
+inline void AliFemtoSimpleAnalysis::SetReverseParticleVariables(Bool_t value)
+{
+  freverseParticleVariables=value;
+}
 #endif
+

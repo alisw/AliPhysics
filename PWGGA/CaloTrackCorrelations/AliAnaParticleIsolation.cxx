@@ -82,6 +82,7 @@ fMomDaugh1(),                     fMomDaugh2(),
 fTrackVector(),                   fProdVertex(),
 fCluster(0),                      fClustersArr(0),                          fCaloCells(0),                
 fIsExoticTrigger(0),              fClusterExoticity(1),
+fCheckFidCutGenLevel (0),         fFidCutGenLevel(0x0),
 // Histograms
 
 fhPtInConeExoTrigger(0),          fhPtClusterInConeExoTrigger(0),           fhPtTrackInConeExoTrigger(0),
@@ -265,6 +266,10 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
       fhPtCentrality[i][ishsh] = 0 ;                 
       fhPtEventPlane[i][ishsh] = 0 ;      
       fhPtNLocMax   [i][ishsh] = 0 ;
+      fhPtPerTrigger   [i][ishsh] = 0 ;
+      fhPtPerTriggerCen[i][ishsh] = 0 ;
+      fhPtMCPhotonPromptPerTrigger   [i][ishsh] = 0 ;
+      fhPtMCPhotonPromptPerTriggerCen[i][ishsh] = 0 ;
     }
     
     fhPtExoTrigger[i] = 0 ;
@@ -1135,7 +1140,81 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   for(Int_t iso = 0; iso < 2; iso++)
   {
     for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
-    {      
+    {
+      if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
+      {
+        Int_t ntrig = GetReader()->GetNumberOfTriggerMakerDecisions();
+
+        if ( !IsHighMultiplicityAnalysisOn() )
+        {
+          fhPtPerTrigger[iso][ishsh] = new TH2F
+          (Form("hPt%s%sPerTriggerDecision",isoName[iso].Data(),m02Name[ishsh].Data()),
+           Form("#it{p}_{T} vs calo trigger from trigger maker %s%s, %s",
+                isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+           nptbins,ptmin,ptmax,ntrig,0,ntrig);
+          fhPtPerTrigger[iso][ishsh]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+          for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+          {
+            fhPtPerTrigger[iso][ishsh]->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+          }
+          outputContainer->Add(fhPtPerTrigger[iso][ishsh]) ;
+
+          if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
+          {
+            fhPtMCPhotonPromptPerTrigger[iso][ishsh]   = new TH2F
+            (Form("hPt%s%sMCPhotonPromptPerTriggerDecision",isoName[iso].Data(),m02Name[ishsh].Data()),
+             Form("calo trigger from trigger maker %s%s, %s",
+                  isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+             nptbins,ptmin,ptmax,ntrig,0,ntrig);
+            fhPtMCPhotonPromptPerTrigger[iso][ishsh]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+            for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+            {
+              fhPtMCPhotonPromptPerTrigger[iso][ishsh]->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+            }
+            outputContainer->Add(fhPtMCPhotonPromptPerTrigger[iso][ishsh] ) ;
+          }
+        }
+        else
+        {
+          TCustomBinning nTrigBinning;
+          nTrigBinning.SetMinimum(0);
+          nTrigBinning.AddStep(ntrig, 1);
+          TArrayD nTrigBinsArray;
+          nTrigBinning.CreateBinEdges(nTrigBinsArray);
+
+          fhPtPerTriggerCen[iso][ishsh] = new TH3F
+          (Form("hPt%s%sPerTriggerDecisionCen",isoName[iso].Data(),m02Name[ishsh].Data()),
+           Form("#it{p}_{T} vs calo trigger from trigger maker %s%s, %s",
+                isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+           ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+           nTrigBinsArray.GetSize() - 1,  nTrigBinsArray.GetArray(),
+           cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
+          fhPtPerTriggerCen[iso][ishsh]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+          for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+          {
+            fhPtPerTriggerCen[iso][ishsh]->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+          }
+          outputContainer->Add(fhPtPerTriggerCen[iso][ishsh]) ;
+
+          if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
+          {
+            fhPtMCPhotonPromptPerTriggerCen[iso][ishsh]   = new TH3F
+            (Form("hPt%s%sMCPhotonPromptPerTriggerDecisionCen",isoName[iso].Data(),m02Name[ishsh].Data()),
+             Form("calo trigger from trigger maker %s%s, %s",
+                  isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+             ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+             nTrigBinsArray.GetSize() - 1,  nTrigBinsArray.GetArray(),
+             cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
+            fhPtMCPhotonPromptPerTriggerCen[iso][ishsh]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+            for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+            {
+              fhPtMCPhotonPromptPerTriggerCen[iso][ishsh]->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+            }
+            outputContainer->Add(fhPtMCPhotonPromptPerTriggerCen[iso][ishsh] ) ;
+          }
+        }
+      } // trigger maker
+
       if ( fFillOnlyTH3Histo ) continue;
       
       fhPt[iso][ishsh]  = new TH1F
@@ -5115,10 +5194,36 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhPtExoTrigger[isolated]->Fill(pt, GetEventWeight()*weightTrig);        
     }
     
+    //---------------------------------------------------------------
     // Fill depending shower shape narrow or wide or iso or not iso
     // On non photon analysis, iso or non iso filled
-    //
-    if ( !inM02Windows || fFillOnlyTH3Histo ) continue; // it is on the wide or narrow window if those are selected, see above
+    //---------------------------------------------------------------
+
+    if ( !inM02Windows ) continue; // it is on the wide or narrow window if those are selected, see above
+
+    if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
+    {
+      for(Int_t itrig = 0; itrig < GetReader()->GetNumberOfTriggerMakerDecisions(); itrig++)
+      {
+        if( GetReader()->GetTriggerMakerDecision(itrig) )
+        {
+          if ( IsHighMultiplicityAnalysisOn() )
+            fhPtPerTriggerCen[isolated][narrow]->Fill(pt, itrig+0.5, GetEventCentrality(), GetEventWeight()*weightTrig) ;
+          else
+            fhPtPerTrigger   [isolated][narrow]->Fill(pt, itrig+0.5, GetEventWeight()*weightTrig);
+
+          if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() && GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) )
+          {
+            if ( IsHighMultiplicityAnalysisOn() )
+              fhPtMCPhotonPromptPerTriggerCen[isolated][narrow]->Fill(pt, itrig+0.5, GetEventCentrality(), GetEventWeight()*weightTrig) ;
+            else
+              fhPtMCPhotonPromptPerTrigger   [isolated][narrow]->Fill(pt, itrig+0.5, GetEventWeight()*weightTrig);
+          }
+        }
+      }
+    }
+
+    if ( fFillOnlyTH3Histo ) continue;
     
     fhPt[isolated][narrow]->Fill(pt    , GetEventWeight()*weightTrig);
     
@@ -5291,8 +5396,14 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if ( !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
-    
+    if ( !fCheckFidCutGenLevel ) // Use same as reconstruction level
+    {
+      if ( !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
+    }
+    else // use a bit larger acceptance than reco level
+    {
+      if ( !fFidCutGenLevel->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
+    }
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
     tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
