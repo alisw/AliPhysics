@@ -220,35 +220,6 @@ AliAnalysisTaskHFFindJets::AliAnalysisTaskHFFindJets() :
   fCutOnK0sMass(0.1),
   fEnableCPUTimeCheck(kFALSE),
   fCountTimeInMilliseconds(kFALSE),
-  hpt_nocuts{nullptr},
-  htgl_nocuts{nullptr},
-  hpt_cuts{nullptr},
-  hdcatoprimxy_cuts{nullptr},
-  htgl_cuts{nullptr},
-  hvx{nullptr},
-  hvy{nullptr},
-  hvz{nullptr},
-  hvx3{nullptr},
-  hvy3{nullptr},
-  hvz3{nullptr},
-  hitsmap{nullptr},
-  hvertexx{nullptr},
-  hvertexy{nullptr},
-  hvertexz{nullptr},
-  hdecayxyz{nullptr},
-  hdecayxy{nullptr},
-  hmass0{nullptr},
-  hmassP{nullptr},
-  hptD0{nullptr},
-  hptprong0{nullptr},
-  hptprong1{nullptr},
-  hd0{nullptr},
-  hd0d0{nullptr},
-  hImpParErr{nullptr},
-  hDecLenErr{nullptr},
-  hDecLenXYErr{nullptr},
-  hCovPVXX{nullptr},
-  hCovSVXX{nullptr},
   hjetpt{nullptr},
   hjetE{nullptr},
   hjetpx{nullptr},
@@ -402,35 +373,6 @@ AliAnalysisTaskHFFindJets::~AliAnalysisTaskHFFindJets(){
     if(fHistCPUTimeCandVsNTracks) delete fHistCPUTimeCandVsNTracks;
     if(fHistWallTimeTrackVsNTracks) delete fHistWallTimeTrackVsNTracks;
     if(fHistWallTimeCandVsNTracks) delete fHistWallTimeCandVsNTracks;
-    delete hpt_nocuts;
-    delete htgl_nocuts;
-    delete hpt_cuts;
-    delete hdcatoprimxy_cuts;
-    delete htgl_cuts;
-    delete hvx;
-    delete hvy;
-    delete hvz;
-    delete hvx3;
-    delete hvy3;
-    delete hvz3;
-    delete hitsmap;
-    delete hvertexx;
-    delete hvertexy;
-    delete hvertexz;
-    delete hdecayxyz;
-    delete hdecayxy;
-    delete hmass0;
-    delete hmassP;
-    delete hptD0;
-    delete hptprong0;
-    delete hptprong1;
-    delete hd0;
-    delete hd0d0;
-    delete hImpParErr;
-    delete hDecLenErr;
-    delete hDecLenXYErr;
-    delete hCovPVXX;
-    delete hCovSVXX;
     delete hjetpt;
     delete hjetE;
     delete hjetpx;
@@ -1266,67 +1208,6 @@ void AliAnalysisTaskHFFindJets::UserCreateOutputObjects() {
     fOutput->Add(fHistWallTimeCandVsNTracks);
     fOutput->Add(fHistWallTimeTrackVsNTracks);
   }
-
-  hpt_nocuts = new TH1F("hpt_nocuts", " ; pt tracks (#GeV) ; Entries", 100, 0, 10.);
-  fOutput->Add(hpt_nocuts);
-  htgl_nocuts = new TH1F("htgl_nocuts", "tgl tracks (#GeV)", 100, -5., 5.);
-  fOutput->Add(htgl_nocuts);
-  hpt_cuts = new TH1F("hpt_cuts", " ; pt tracks (#GeV) ; Entries", 100, 0, 10.);
-  fOutput->Add(hpt_cuts);
-  hdcatoprimxy_cuts = new TH1F("hdcatoprimxy_cuts", "dca xy to prim. vtx (cm)", 100, -1.0, 1.0);
-  fOutput->Add(hdcatoprimxy_cuts);
-  htgl_cuts = new TH1F("htgl_cuts", "tgl tracks (#GeV)", 100, -5., 5.);
-  fOutput->Add(htgl_cuts);
-  hvx = new TH1F("hvx", " Secondary vertex ; X vertex (cm) ; Entries", 1000, -2.0, 2.0);
-  fOutput->Add(hvx);
-  hvy = new TH1F("hvy", " Secondary vertex ; Y vertex (cm) ; Entries", 1000, -2.0, 2.0);
-  fOutput->Add(hvy);
-  hvz = new TH1F("hvz", " Secondary vertex ; Z vertex (cm) ; Entries", 1000, -20.0, 20.0);
-  fOutput->Add(hvz);
-  hvx3 = new TH1F("hvx3", " Secondary vertex 3prong ; X vertex (cm) ; Entries", 1000, -2.0, 2.0);
-  fOutput->Add(hvx3);
-  hvy3 = new TH1F("hvy3", " Secondary vertex 3prong ; Y vertex (cm) ; Entries", 1000, -2.0, 2.0);
-  fOutput->Add(hvy3);
-  hvz3 = new TH1F("hvz3", " Secondary vertex 3prong ; Z vertex (cm) ; Entries", 1000, -20.0, 20.0);
-  fOutput->Add(hvz3);
-  hitsmap = new TH1F("hitsmap", "hitsmap_cuts", 64, -0.5, 63.5);
-  fOutput->Add(hitsmap);
-
-  hvertexx = new TH1F("hvertexx", " Primary vertex ; X vertex (cm) ; Entries", 100, -0.5, 0.5);
-  fOutput->Add(hvertexx);
-  hvertexy = new TH1F("hvertexy", " Primary vertex ; Y vertex (cm) ; Entries", 100, -0.5, 0.5);
-  fOutput->Add(hvertexy);
-  hvertexz = new TH1F("hvertexz", " Primary vertex ; Z vertex (cm) ; Entries", 100, -20.0, 20.0);
-  fOutput->Add(hvertexz);
-
-  hdecayxyz = new TH1F("hdecayxyz", "hdecayxyz", 200, 0., 2.0);
-  fOutput->Add(hdecayxyz);
-  hdecayxy = new TH1F("hdecayxy", "hdecayxy", 200, 0., 2.0);
-  fOutput->Add(hdecayxy);
-  hmass0 = new TH1F("hmass0", "; Inv Mass (GeV/c^{2})", 500, 0, 5.0);
-  fOutput->Add(hmass0);
-  hmassP = new TH1F("hmassP", "; Inv Mass (GeV/c^{2})", 500, 1.6, 2.1);
-  fOutput->Add(hmassP);
-  hptD0 = new TH1F("hptD0", " ; pt D0 (#GeV) ; Entries", 100, 0, 10.);
-  fOutput->Add(hptD0);
-  hptprong0 = new TH1F("hptprong0", " ; pt prong0 (#GeV) ; Entries", 100, 0, 10.);
-  fOutput->Add(hptprong0);
-  hptprong1 = new TH1F("hptprong1", " ; pt prong1 (#GeV) ; Entries", 100, 0, 10.);
-  fOutput->Add(hptprong1);
-  hd0 = new TH1F("hd0", "dca xy to prim. vertex (cm)", 100, -1.0, 1.0);
-  fOutput->Add(hd0);
-  hd0d0 = new TH1F("hd0d0", "product of dca xy to prim. vertex (cm^{2})", 500, -1.0, 1.0);
-  fOutput->Add(hd0d0);
-  hImpParErr = new TH1F("hImpParErr", "impact parameter error", 100, -1.0, 1.0);
-  fOutput->Add(hImpParErr);
-  hDecLenErr = new TH1F("hDecLenErr", "decay length error", 100, 0., 1.0);
-  fOutput->Add(hDecLenErr);
-  hDecLenXYErr = new TH1F("hDecLenXYErr", "decay length XY error", 100, 0., 1.0);
-  fOutput->Add(hDecLenXYErr);
-  hCovPVXX = new TH1F("hCovPVXX", "XX element of PV cov. matrix", 100, 0., 1.0e-4);
-  fOutput->Add(hCovPVXX);
-  hCovSVXX = new TH1F("hCovSVXX", "XX element of SV cov. matrix", 100, 0., 0.2);
-  fOutput->Add(hCovSVXX);
 
   hjetpt = new TH1F("hjetpt", " ; pt jet (#GeV) ; Entries", 100, 0., 100.);
   fOutput->Add(hjetpt);

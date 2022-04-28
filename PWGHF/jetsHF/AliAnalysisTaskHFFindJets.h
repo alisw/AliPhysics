@@ -59,38 +59,6 @@ class AliAnalysisTaskHFFindJets : public AliAnalysisTaskSE
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
                                                         
   void MakeJetFinding(AliESDEvent *esd, Int_t totTracks, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong);
-	
-  TH1F* hpt_nocuts;
-  TH1F* htgl_nocuts;
-  TH1F* hpt_cuts;
-  TH1F* hdcatoprimxy_cuts;
-  TH1F* htgl_cuts;
-  TH1F* hvx;
-  TH1F* hvy;
-  TH1F* hvz;
-  TH1F* hvx3;
-  TH1F* hvy3;
-  TH1F* hvz3;
-  TH1F* hitsmap;
-
-  TH1F* hvertexx;
-  TH1F* hvertexy;
-  TH1F* hvertexz;
-
-  TH1F* hdecayxyz;
-  TH1F* hdecayxy;
-  TH1F* hmass0;
-  TH1F* hmassP;
-  TH1F* hptD0;
-  TH1F* hptprong0;
-  TH1F* hptprong1;
-  TH1F* hd0;
-  TH1F* hd0d0;
-  TH1F* hImpParErr;
-  TH1F* hDecLenErr;
-  TH1F* hDecLenXYErr;
-  TH1F* hCovPVXX;
-  TH1F* hCovSVXX;
 
   TH1F* hjetpt;
   TH1F* hjetE; // returns the energy component
