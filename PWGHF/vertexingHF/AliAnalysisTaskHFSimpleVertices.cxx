@@ -2666,7 +2666,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdga
 }
 
 //_______________________________________________________________________________________
-void AliAnalysisTaskHFFindJets::MakeJetFinding(AliESDEvent *esd, Int_t totTracks, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong) {
+void AliAnalysisTaskHFSimpleVertices::MakeJetFinding(AliESDEvent *esd, Int_t totTracks, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong) {
   cout<< "Make Jet Finding" <<endl;
   AliFJWrapper *fFastJetWrapper;
   fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
