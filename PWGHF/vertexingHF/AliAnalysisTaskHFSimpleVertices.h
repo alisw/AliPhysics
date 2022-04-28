@@ -46,7 +46,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void EnableCPUTimeCheck(Bool_t enable=kTRUE, Bool_t milliseconds=kFALSE) {fEnableCPUTimeCheck=enable; fCountTimeInMilliseconds=milliseconds;}
 
  private:
-
+  bool doJetFinding = true;
+	
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
   AliAnalysisTaskHFSimpleVertices& operator=(const AliAnalysisTaskHFSimpleVertices &source);
 
