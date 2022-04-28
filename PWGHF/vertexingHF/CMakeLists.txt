@@ -33,7 +33,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
-                    ${AliPhysics_SOURCE_DIR}/PWGJE
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/O2vertexer/
@@ -186,8 +185,7 @@ set(SRCS
 )
 
 if(FASTJET_FOUND)
-    set(SRCS ${SRCS}
-    AliAnalysisTaskEmcalJetBtagSV.cxx          
+    set(SRCS ${SRCS}         
     AliAnalysisTaskBJetTC.cxx		
     AliATDJetCorrDev.cxx 
     AliAnalysisTaskHFFindJets.cxx
