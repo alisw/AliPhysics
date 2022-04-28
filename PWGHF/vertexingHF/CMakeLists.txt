@@ -34,6 +34,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/O2vertexer/
