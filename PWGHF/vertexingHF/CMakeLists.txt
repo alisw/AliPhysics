@@ -231,14 +231,15 @@ endif(FASTJET_FOUND)
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
-set(ALIROOT_DEPENDENCIES PWGJEEMCALJetTasks)
+set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFvertexingHF PWGJEEMCALJetTasks)
 
 # Add a shared library
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW PWGTools PWGLFnuclex)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW PWGTools PWGLFnuclex)
 if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
     set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
@@ -260,7 +261,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
 # Linking the library
-target_link_libraries(${MODULE} ${LIBDEPS} ${FASTJET_LIBS})
+target_link_libraries(${MODULE} ${LIBDEPS} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${FASTJET_LIBS})
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
