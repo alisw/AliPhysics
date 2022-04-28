@@ -10,7 +10,7 @@
 //          
 //*************************************************************************
 
-#include "AliFJWrapper.h"
+//#include "AliFJWrapper.h"
 
 #include <map>
 #include <string>
