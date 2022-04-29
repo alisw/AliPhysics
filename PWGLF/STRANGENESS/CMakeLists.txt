@@ -26,7 +26,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
@@ -40,6 +39,15 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${TREELITE_ROOT}/include
                     ${TREELITE_ROOT}/runtime/native/include
   )
+
+if(ROOT_VERSION_MAJOR EQUAL 6)
+# Additional includes for ROOT 6 only dependencies - alphabetical order except ROOT
+  include_directories(${AliPhysics_SOURCE_DIR}/ML
+                    ${TREELITE_ROOT}/include
+                    ${TREELITE_ROOT}/runtime/native/include
+                    ${YAML_CPP_SOURCE_DIR}/include
+    )
+endif()
 
 # Sources - alphabetical order
 set(SRCS
