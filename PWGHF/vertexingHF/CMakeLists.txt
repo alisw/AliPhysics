@@ -223,7 +223,7 @@ endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-set(HDRS ${HDRS} IClassifierReader.h ./../PWGHF/jetsHF/AliHFJetsUtils.h)
+set(HDRS ${HDRS} IClassifierReader.h ../../PWGHF/jetsHF/AliHFJetsUtils.h)
 
 if(FASTJET_FOUND)
   list(APPEND HDRS ../../PWGJE/EMCALJetTasks/FJ_includes.h)
