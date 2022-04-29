@@ -219,18 +219,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMinCosPointV0(0.),
   fCutOnK0sMass(0.1),
   fEnableCPUTimeCheck(kFALSE),
-  fCountTimeInMilliseconds(kFALSE),
-  hjetpt{nullptr},
-  hjetE{nullptr},
-  hjetpx{nullptr},
-  hjetpy{nullptr},
-  hjetpz{nullptr}, 
-  hjetphi{nullptr},
-  hjetrap{nullptr},
-  hjetconstituents{nullptr},
-  hjetzg{nullptr},
-  hjetrg{nullptr},
-  hjetnsd{nullptr}
+  fCountTimeInMilliseconds(kFALSE)
 {
   //
   InitDefault();
@@ -373,17 +362,6 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     if(fHistCPUTimeCandVsNTracks) delete fHistCPUTimeCandVsNTracks;
     if(fHistWallTimeTrackVsNTracks) delete fHistWallTimeTrackVsNTracks;
     if(fHistWallTimeCandVsNTracks) delete fHistWallTimeCandVsNTracks;
-    delete hjetpt;
-    delete hjetE;
-    delete hjetpx;
-    delete hjetpy;
-    delete hjetpz; 
-    delete hjetphi;
-    delete hjetrap;
-    delete hjetconstituents;
-    delete hjetzg;
-    delete hjetrg;
-    delete hjetnsd;
   }
   delete fOutput;
   delete fTrackCuts2pr;
@@ -1209,29 +1187,6 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
     fOutput->Add(fHistWallTimeTrackVsNTracks);
   }
 
-  hjetpt = new TH1F("hjetpt", " ; pt jet (#GeV) ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetpt);
-  hjetE = new TH1F("hjetE", " ; jet E ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetE);
-  hjetpx = new TH1F("hjetpx", " ; px jet (#GeV) ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetpx);
-  hjetpy = new TH1F("hjetpy", " ; py jet (#GeV) ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetpy);
-  hjetpz = new TH1F("hjetpz", " ; pz jet (#GeV) ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetpz);
-  hjetphi = new TH1F("hjetphi", " ; jet phi ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetphi);
-  hjetrap = new TH1F("hjetrap", " ; jet rapidity ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetrap);
-  hjetconstituents = new TH1F("hjetconstituents", " ; jet constituents ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetconstituents);
-  hjetzg = new TH1F("hjetzg", " ; jet zg ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetzg);
-  hjetrg = new TH1F("hjetrrg", " ; jet rg ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetrg);
-  hjetnsd = new TH1F("hjetnsd", " ; jet nsd ; Entries", 100, 0., 100.);
-  fOutput->Add(hjetnsd);
-
   PostData(1,fOutput);
 
 }
@@ -1648,10 +1603,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
             }
           }
         }
-        
-        if(doJetFinding){
-			MakeJetFinding(esd, totTracks, iNegTrack_0, iPosTrack_0, the2Prong);
-		}
 
         if((fCandidateCutLevel>2 && jpsiSel>1)||(fCandidateCutLevel<= 2 && jpsiSel>0) ) {
           Double_t m0 = the2Prong->InvMassJPSIee();
@@ -2663,64 +2614,6 @@ Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdga
     return -1;
 
   return labMother;
-}
-
-//_______________________________________________________________________________________
-void AliAnalysisTaskHFSimpleVertices::MakeJetFinding(AliESDEvent *esd, Int_t totTracks, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong) {
-  cout<< "Make Jet Finding" <<endl;
-  AliFJWrapper *fFastJetWrapper;
-  fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
-  fFastJetWrapper->Clear();
-  fFastJetWrapper->SetR(0.4); 
-  fFastJetWrapper->SetAlgorithm(fastjet::JetAlgorithm::antikt_algorithm);
-  fFastJetWrapper->SetRecombScheme(fastjet::RecombinationScheme::E_scheme);
-  fFastJetWrapper->SetStrategy(fastjet::Strategy::Best);
-  fFastJetWrapper->SetGhostArea(0.005); 
-  fFastJetWrapper->SetAreaType(fastjet::AreaType::passive_area);
-
-  bool isHFJet=false;
-  fFastJetWrapper->Clear();
-  cout<<"Total tracks" << totTracks <<endl;
-  cout << " Pos " << iPosTrack_0 << " Neg " << iNegTrack_0 << endl;
-  for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
-    AliESDtrack* track = esd->GetTrack(iTrack);
-    if (track->Pt() >= 0.15 && TMath::Abs(track->Eta()) < 0.9){ 
-	  if (iTrack==iNegTrack_0 || iTrack==iPosTrack_0) continue;
-	  fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack+2);
-    }
-  }
-  fFastJetWrapper->AddInputVector(the2Prong->Px(), the2Prong->Py(), the2Prong->Pz(), the2Prong->ED0(),1);
-  cout<<" 2Prong Py " << the2Prong->Py() << " 2Prong Px " <<  the2Prong->Px() << " 2Prong Pz " << the2Prong->Pz() <<" 2Prong ED0 " << the2Prong->ED0() <<endl; 
-
-  fFastJetWrapper->Run();
-  std::vector<fastjet::PseudoJet> jets = fFastJetWrapper->GetInclusiveJets();
-  cout << " jets size " << jets.size()<< endl;
-  for (Int_t ijet=0; ijet<jets.size(); ijet++) {
-	cout << "hanyadik jetben vagyunk " << ijet <<endl;
-	isHFJet=false;
-	fastjet::PseudoJet jet = jets[ijet];
-	if (jet.pt() < 0.15 || jet.perp() >= 1000.0 || TMath::Abs(jet.eta()) >= 0.5) continue;
-	std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));
-	for (Int_t iconstituent=0; iconstituent<constituents.size(); iconstituent++) {
-		cout << "constituents index"<< constituents[iconstituent].user_index()<<endl;
-		if (constituents[iconstituent].user_index()==1) {
-			isHFJet=true; 
-			cout << " HF index " << constituents[iconstituent].user_index() <<endl;
-			break;
-			}
-	}
-	if(!isHFJet) continue;
-	cout << " HF Found at " << ijet<<endl;
-	hjetpt->Fill(jet.pt());
-	hjetE->Fill(jet.E());
-	hjetpx->Fill(jet.px());
-	hjetpy->Fill(jet.py());
-	hjetpz->Fill(jet.pz());
-	hjetphi->Fill(jet.phi());
-	hjetrap->Fill(jet.rap());
-	hjetconstituents->Fill(constituents.size());
-  }
-  delete fFastJetWrapper;
 }
 
 //______________________________________________________________________________

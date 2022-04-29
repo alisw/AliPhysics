@@ -10,8 +10,6 @@
 //          
 //*************************************************************************
 
-#include "AliFJWrapper.h"
-
 #include <map>
 #include <string>
 #include "DCAFitterN.h"
@@ -46,17 +44,6 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void EnableCPUTimeCheck(Bool_t enable=kTRUE, Bool_t milliseconds=kFALSE) {fEnableCPUTimeCheck=enable; fCountTimeInMilliseconds=milliseconds;}
 
  private:
-  double ptmintrack = 0.;
-  int do3Prongs = 0;
-  bool doJetFinding = true;
-  TString triggerstring = ""; 
-    
-  int minncluTPC;
-  float dcatoprimxymin;
-  Double_t candpTMin,candpTMax, d_maxr;
-  Int_t selectD0, selectD0bar;
-	
-  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
 
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
   AliAnalysisTaskHFSimpleVertices& operator=(const AliAnalysisTaskHFSimpleVertices &source);
@@ -92,8 +79,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t JpsiSelectionCuts(AliAODRecoDecayHF2Prong* cand,AliESDtrack* trk_p,AliESDtrack* trk_n,AliESDVertex* primvtx,float bzkG);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong *cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const;
-  void MakeJetFinding(AliESDEvent *esd, Int_t totTracks, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong);
-
+  
   enum ESelBits2prong {kbitDzero = 0,kbitDzerobar,kbitJpsi};
   enum ESelBits3prong {kbitDplus = 0,kbitDs,kbitLc};
   enum {kMaxNPtBinsDzero = 100, kNCutVarsDzero=11};
@@ -233,18 +219,6 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
   TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
   
-  TH1F* hjetpt;
-  TH1F* hjetE; // returns the energy component
-  TH1F* hjetpx; // returns the x momentum component
-  TH1F* hjetpy; // returns the y momentum component
-  TH1F* hjetpz; // returns the z momentum component
-  TH1F* hjetphi; // returns the azimuthal angle in range 0 . . . 2π
-  TH1F* hjetrap; // returns the rapidity
-  TH1F* hjetconstituents;
-  TH1F* hjetzg;
-  TH1F* hjetrg;
-  TH1F* hjetnsd;
-
   TH2F* fHistCPUTimeTrackVsNTracks;  //!<! histo with CPU time for track selection vs number of selected tracks for candidates
   TH2F* fHistCPUTimeCandVsNTracks;   //!<! histo with CPU time for candidate selection vs number of selected tracks for candidates
   TH2F* fHistWallTimeTrackVsNTracks; //!<! histo with wall time for track selection vs number of selected tracks for candidates
