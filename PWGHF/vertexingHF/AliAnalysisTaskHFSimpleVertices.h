@@ -46,8 +46,18 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void EnableCPUTimeCheck(Bool_t enable=kTRUE, Bool_t milliseconds=kFALSE) {fEnableCPUTimeCheck=enable; fCountTimeInMilliseconds=milliseconds;}
 
  private:
+  double ptmintrack = 0.;
+  int do3Prongs = 0;
   bool doJetFinding = true;
+  TString triggerstring = ""; 
+    
+  int minncluTPC;
+  float dcatoprimxymin;
+  Double_t candpTMin,candpTMax, d_maxr;
+  Int_t selectD0, selectD0bar;
 	
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
+
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
   AliAnalysisTaskHFSimpleVertices& operator=(const AliAnalysisTaskHFSimpleVertices &source);
 
@@ -222,7 +232,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPtRecoGenPtFeeddw[5];  //!<! histos for efficiency (from B)
   TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
   TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
-
+  
   TH1F* hjetpt;
   TH1F* hjetE; // returns the energy component
   TH1F* hjetpx; // returns the x momentum component
@@ -234,7 +244,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* hjetzg;
   TH1F* hjetrg;
   TH1F* hjetnsd;
-  
+
   TH2F* fHistCPUTimeTrackVsNTracks;  //!<! histo with CPU time for track selection vs number of selected tracks for candidates
   TH2F* fHistCPUTimeCandVsNTracks;   //!<! histo with CPU time for candidate selection vs number of selected tracks for candidates
   TH2F* fHistWallTimeTrackVsNTracks; //!<! histo with wall time for track selection vs number of selected tracks for candidates

@@ -33,11 +33,22 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
-                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
-                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/O2vertexer/
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS		
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice	
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
+                    ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
+		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+		    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
 )
 if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
@@ -189,12 +200,12 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
-  AliAnalysisTaskHFSimpleVertices.cxx
+  AliAnalysisTaskSEHFSystPID.cxx
   )
 endif()
 
 if(FASTJET_FOUND)
-    set(SRCS ${SRCS}         
+    set(SRCS ${SRCS}
     AliAnalysisTaskHFSimpleVertices.cxx
     )
 
@@ -208,17 +219,6 @@ if(FASTJET_FOUND)
 
 endif(FASTJET_FOUND)
 
-<<<<<<< HEAD
-if(ROOT_VERSION_MAJOR EQUAL 6)
-	set(SRCS
-	  ${SRCS}
-  AliAnalysisTaskHFSimpleVertices.cxx
-  AliAnalysisTaskSEHFSystPID.cxx
-  )
-endif()
-
-=======
->>>>>>> Adding HFJetFinding Task to SimpleVerices
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

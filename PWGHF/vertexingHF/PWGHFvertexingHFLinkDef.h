@@ -160,9 +160,9 @@
 #pragma link C++ class AliRDHFCutsOmegactoeleOmegafromKFP+;
 /// ROOT6 tasks
 #ifdef __CLING__
-#pragma link C++ class AliAnalysisTaskHFSimpleVertices+;
 #pragma link C++ class AliAnalysisTaskSEHFSystPID+;
 #endif
+
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliAnalysisTaskHFSimpleVertices+;
 #endif
