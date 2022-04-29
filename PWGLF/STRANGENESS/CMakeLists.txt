@@ -37,6 +37,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
+                    ${TREELITE_ROOT}/include
+                    ${TREELITE_ROOT}/runtime/native/include
   )
 
 # Sources - alphabetical order
