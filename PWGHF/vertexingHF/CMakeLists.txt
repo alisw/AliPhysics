@@ -243,17 +243,6 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW PWGTools PWGLFnuclex)
-if(FASTJET_FOUND)
-  set(LIBDEPS
-    ${LIBDEPS}
-    fastjetcontribfragile
-    fastjetplugins
-    siscone_spherical
-    siscone
-    fastjettools
-    fastjet
-    )
-endif(FASTJET_FOUND)
 if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
     set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
