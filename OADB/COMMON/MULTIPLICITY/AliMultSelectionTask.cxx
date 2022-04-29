@@ -138,6 +138,7 @@ fAmplitude_OnlineV0A(0),
 fAmplitude_OnlineV0C(0),
 fAmplitude_V0AADC(0),
 fAmplitude_V0CADC(0),
+fFlatenicity_V0(0),
 fnSPDClusters(0),
 fnSPDClusters0(0),
 fnSPDClusters1(0),
@@ -316,6 +317,7 @@ fAmplitude_OnlineV0A(0),
 fAmplitude_OnlineV0C(0),
 fAmplitude_V0AADC   (0),
 fAmplitude_V0CADC   (0),
+fFlatenicity_V0(0),
 fnSPDClusters(0),
 fnSPDClusters0(0),
 fnSPDClusters1(0),
@@ -568,6 +570,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
   fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
   fAmplitude_V0AADC        = new AliMultVariable("fAmplitude_V0AADC");
   fAmplitude_V0CADC        = new AliMultVariable("fAmplitude_V0CADC");
+  fFlatenicity_V0         = new AliMultVariable("fFlatenicity_V0");
   //SPD Related
   fnSPDClusters         = new AliMultVariable("fnSPDClusters");
   fnSPDClusters->SetIsInteger( kTRUE );
@@ -670,6 +673,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
   fInput->AddVariable( fAmplitude_OnlineV0C );
   fInput->AddVariable( fAmplitude_V0AADC );
   fInput->AddVariable( fAmplitude_V0CADC );
+  fInput->AddVariable( fFlatenicity_V0 );
   fInput->AddVariable( fnSPDClusters );
   fInput->AddVariable( fnSPDClusters0 );
   fInput->AddVariable( fnSPDClusters1 );
@@ -725,7 +729,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     kTRUE, kFALSE, kFALSE, kFALSE, kFALSE,
     kFALSE, kFALSE, kFALSE, kFALSE,
     kTRUE, kTRUE,
-    kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
@@ -1561,7 +1565,70 @@ void AliMultSelectionTask::UserExec(Option_t *)
       Double_t mult = lVV0->GetMultiplicity(iCh);
       multV0A4 += mult;
     }
-    
+
+    //Flatenicity calculation
+    const Int_t nRings   = 4;
+    const Int_t nSectors = 8;
+    Double_t minEtaV0C[nRings] = { -3.7,-3.2,-2.7,-2.2 };
+    Double_t maxEtaV0C[nRings] = { -3.2,-2.7,-2.2,-1.7 };
+    Double_t maxEtaV0A[nRings] = { 5.1,  4.5, 3.9, 3.4 };
+    Double_t minEtaV0A[nRings] = { 4.5,  3.9, 3.4, 2.8 };
+    //Grid
+    const Int_t nCells = nRings*2*nSectors;
+    Double_t RhoLattice[nCells];
+    for (Int_t iCh = 0; iCh < nCells; iCh++) {
+	    RhoLattice[iCh] = 0.0;
+    }
+    Int_t nringA = 0;
+    Int_t nringC = 0;
+    for(Int_t iCh = 0; iCh < nCells; iCh++) {
+	    Double_t detaV0 = -1;
+	    Double_t mult = lVV0->GetMultiplicity(iCh);
+	    if(iCh < 32){//V0C
+		    if(iCh < 8){
+			    nringC=0;
+		    }else if(iCh >= 8 && iCh < 16){
+			    nringC=1;
+		    }else if(iCh >= 16 && iCh < 24){
+			    nringC=2;
+		    }else{
+			    nringC=3;
+		    }
+		    detaV0 = maxEtaV0C[nringC]-minEtaV0C[nringC];
+	    }else{// V0A
+		    if(iCh < 40){
+			    nringA=0;
+		    }else if(iCh >= 40 && iCh < 48){
+			    nringA=1;
+		    }else if(iCh >= 48 && iCh < 56){
+			    nringA=2;
+		    }else{
+			    nringA=3;
+		    }
+		    detaV0 = maxEtaV0A[nringA]-minEtaV0A[nringA];
+	    }
+	    RhoLattice[iCh] = mult/detaV0;// needed to consider the different eta coverage
+    }
+    Double_t mRho = 0;
+    Double_t flatenicity = -1;
+    for (Int_t iCh = 0; iCh < nCells; iCh++) {
+	    mRho += RhoLattice[iCh];
+    }
+    // average activity per cell
+    mRho /= (1.0 * nCells);
+    // get sigma
+    Double_t sRho_tmp = 0;
+    for (Int_t iCh = 0; iCh < nCells; iCh++) {
+	    sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
+    }
+    sRho_tmp /= (1.0 * nCells);
+    Double_t sRho = TMath::Sqrt(sRho_tmp);
+    if(mRho>0){
+	    flatenicity = sRho / mRho;
+    }
+    fFlatenicity_V0->SetValue(0);   
+    fFlatenicity_V0->SetValue(flatenicity);
+ 
     //Non-Equalized Signal: copy of multV0ACorr and multV0CCorr from AliCentralitySelectionTask
     //Getters for uncorrected multiplicity
     multV0A=lVV0->GetMTotV0A();
