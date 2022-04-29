@@ -896,7 +896,6 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserCreateOutputObjects()
   fHistTriggervsMultMC->GetXaxis()->SetTitle("Centrality");
 
   fHistGeneratedV0PtOOBPileUp= new TH2F("fHistGeneratedV0PtOOBPileUp", "p_{T} distribution of generated trigger particles from pileup (charged, primary)", 600, 0, 30, NumBinsMult, 0, UpperLimitMult );
-
   fHistGeneratedV0Pt= new TH2F("fHistGeneratedV0Pt", "p_{T} distribution of generated trigger particles from pileup (charged, primary)", 600, 0, 30, NumBinsMult, 0, UpperLimitMult );
 
   fHistGeneratedTriggerPtPhi=new TH3F("fHistGeneratedTriggerPtPhi", "p_{T} and #phi distribution of generated trigger particles (charged, primary)", 600, 0, 30, 400,0, 2*TMath::Pi(),  NumBinsMult, 0, UpperLimitMult );
@@ -921,7 +920,6 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserCreateOutputObjects()
     fHistGeneratedV0PtTMaxEta[j]->GetYaxis()->SetTitle("#eta");
   }
   
-
   fHistGeneratedV0PtPtTMax=new TH3F*[2];
   for(Int_t j=0; j<2; j++){
     fHistGeneratedV0PtPtTMax[j]=new TH3F(Form("fHistGeneratedV0PtPtTMax_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of generated V0 particles (K0s, primary, events w T>0)", 300, 0, 30, 120, -30, 30,  NumBinsMult, 0, UpperLimitMult );
@@ -1028,12 +1026,10 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserCreateOutputObjects()
   fOutputList2->Add(fHistGeneratedV0PtOOBPileUp);
  
   for(Int_t j=0; j < 1; j++){
-    /*
     fOutputList2->Add(fHistGeneratedV0PtTMaxPhi[j]); 
     fOutputList2->Add(fHistGeneratedV0PtTMaxEta[j]); 
     fOutputList2->Add(fHistGeneratedV0PtPtTMax[j]); 
     fOutputList2->Add(fHistGeneratedV0PtEta[j]);
-    */
   }
 
   PostData(1, fOutputList);  
@@ -1064,6 +1060,11 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
 
   //PVz
   fMCEvent= MCEvent();
+  if (!fMCEvent) {
+    Printf("ERROR: Could not retrieve MC event \n");
+    return;
+  }
+
   TArrayF mcPrimaryVtx;
   AliGenEventHeader* mcHeader=fMCEvent->GenEventHeader();
   if(!mcHeader){
@@ -1072,6 +1073,7 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
   }
   mcHeader->PrimaryVertex(mcPrimaryVtx);
   lBestPrimaryVtxPos[2]= mcPrimaryVtx.At(2);
+
   if (TMath::Abs(lBestPrimaryVtxPos[2]) > 10.){
     PostData(1, fOutputList);
     PostData(2, fSignalTree );
@@ -1096,9 +1098,10 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
     PostData(6, fOutputList4);
     return;
   }
+
   fHistEventMult->Fill(3);   
 
-  cout << fMCEvent->GetNumberOfTracks() << endl;
+  //  cout << fMCEvent->GetNumberOfTracks() << endl;
 
   // Multiplicity Information Acquistion    
   Long_t lNchEta5   = 0;
@@ -1117,7 +1120,6 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
       TParticle* particleOne = static_cast<TParticle*>(fMCEvent->Particle(iCurrentLabelStack));
       //      cout << "Loop on tparticles: " << iCurrentLabelStack << endl;
       if(!particleOne) continue;
-      cout << "There's a particle! " << endl;
       if(!particleOne->GetPDG()) continue;
       Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
       if(TMath::Abs(lThisCharge)<0.001) continue;
