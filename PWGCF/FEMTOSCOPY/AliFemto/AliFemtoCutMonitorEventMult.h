@@ -44,6 +44,7 @@ public:
 
   void SetReadMC(Bool_t mc);
   void AdditionalMultHistsOn(Bool_t addhists);
+  void SetfaddRunNumberQA(int addRunNumberQA);
   void Write();
 
   virtual TList *GetOutputList();
@@ -69,7 +70,9 @@ private:
   TH2D *fEst3Norm;    ///< ITS Pure vs Normalized
 
   TH1D *fPsiVZERO;    ///< psi from vzero
-
+  
+  int faddRunNumberQA;	///< dowang: if ture, add run number QA
+  TH1D *fRunNumberQA;	///< dowang: how many event in each run number!
 };
 
 #endif

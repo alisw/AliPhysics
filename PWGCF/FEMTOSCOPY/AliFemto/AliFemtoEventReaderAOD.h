@@ -74,7 +74,7 @@ public:
   bool GetReadCascade() const {
     return fReadCascade;
   }
-
+  void SetPreCentralityCut(double min, double max); // only set pre centrality cut
   void SetCentralityPreSelection(double min, double max);
   std::pair<double, double> GetCentralityPreSelection() const {
     return std::make_pair(fCentRange[0], fCentRange[1]);
