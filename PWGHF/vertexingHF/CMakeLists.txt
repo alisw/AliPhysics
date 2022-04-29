@@ -225,6 +225,10 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS} IClassifierReader.h)
 list(APPEND HDRS ../../PWGHF/jetsHF/AliHFJetsUtils.h)
 
+if(FASTJET_FOUND)
+  list(APPEND HDRS ../../PWGJE/EMCALJetTasks/FJ_includes.h)
+endif(FASTJET_FOUND)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
