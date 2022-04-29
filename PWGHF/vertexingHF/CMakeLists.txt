@@ -49,6 +49,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
 		    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
 		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF
 )
 if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
