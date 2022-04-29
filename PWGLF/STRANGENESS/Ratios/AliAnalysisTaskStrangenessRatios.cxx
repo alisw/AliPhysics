@@ -125,7 +125,6 @@ void AliAnalysisTaskStrangenessRatios::UserCreateOutputObjects()
     for (int iB=0; iB<fNctBinsBDT; ++iB)
     {
       fBDT.push_back(new AliExternalBDT());
-      std::cout << "model_path = " << fBDTPath.data()<<iB*fDeltaCtBinsBDT<<"_"<<(iB+1)*fDeltaCtBinsBDT<<".model" << std::endl;
       if (!fBDT[iB]->LoadXGBoostModel(Form("%s%.0f_%.0f.model",fBDTPath.data(),iB*fDeltaCtBinsBDT,(iB+1)*fDeltaCtBinsBDT)))
       {
         fBDT[iB] = nullptr;
