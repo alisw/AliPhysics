@@ -279,7 +279,7 @@ private:
   Bool_t fFilesOpen; 	 /// check to ensure improver files from CVMFS are accessed only once
   Double_t fRescaledd0rphi; /// scaling factor that can be used for fast checks also for systematic uncertainties
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITSCVMFS,14);
+  ClassDef(AliAnalysisTaskSEImproveITSCVMFS,15);
   /// \endcond
 };
 
