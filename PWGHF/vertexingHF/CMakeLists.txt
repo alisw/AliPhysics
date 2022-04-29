@@ -234,6 +234,9 @@ endif(FASTJET_FOUND)
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
+set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFvertexingHF PWGJEEMCALJetTasks)
+
 # Add a shared library
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
