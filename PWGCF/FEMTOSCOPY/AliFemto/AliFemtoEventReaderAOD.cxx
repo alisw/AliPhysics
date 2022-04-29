@@ -461,13 +461,11 @@ AliFemtoEvent *AliFemtoEventReaderAOD::ReturnHbtEvent()
 
 AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 {
-
   // A function that reads in the AOD event
   // and transfers the neccessary information into
   // the internal AliFemtoEvent
 
   AliFemtoEvent *tEvent = new AliFemtoEvent();
-
   // setting global event characteristics
   tEvent->SetRunNumber(fEvent->GetRunNumber());
   tEvent->SetMagneticField(fEvent->GetMagneticField() * kilogauss); //to check if here is ok
@@ -529,6 +527,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         if(!Reject15oPass2Event(fEvent,fEventReject)){
             return nullptr;
         }
+	if(fCentRange[1]!=1000){
+	AliMultSelection* fMultSel  = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+	float centV0M               = fMultSel->GetMultiplicityPercentile("V0M");
+		if ((centV0M * 10 < fCentRange[0]) || (centV0M * 10 > fCentRange[1])) {
+      			delete tEvent;
+      			return nullptr;
+    		}
+	}		
     }
   //**************************************
 
@@ -603,7 +609,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return nullptr;
     }
   }
-
+  
   const Float_t percent = cent->GetCentralityPercentile("V0M");
 
   // Flatten centrality distribution
@@ -2450,7 +2456,11 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
   /******************************************/
   //////////////////////////////////////
 }
+void AliFemtoEventReaderAOD::SetPreCentralityCut(double min, double max){
+  fCentRange[0] = min;
+  fCentRange[1] = max;
 
+}
 void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 {
   fCentRange[0] = min;
