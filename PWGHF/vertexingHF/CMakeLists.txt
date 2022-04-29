@@ -187,10 +187,24 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
-  AliAnalysisTaskHFSimpleVertices.cxx
   AliAnalysisTaskSEHFSystPID.cxx
   )
 endif()
+
+if(FASTJET_FOUND)
+    set(SRCS ${SRCS}
+    AliAnalysisTaskHFSimpleVertices.cxx
+    )
+
+
+    include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
+                        ${AliPhysics_SOURCE_DIR}/JETAN/JETAN
+                       )
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+
+endif(FASTJET_FOUND)
 
 
 # Headers from sources

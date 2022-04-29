@@ -158,13 +158,12 @@
 #pragma link C++ class AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP+;
 #pragma link C++ class AliAnalysisTaskSESemileptonicOmegac0KFP+;
 #pragma link C++ class AliRDHFCutsOmegactoeleOmegafromKFP+;
-
-#ifdef HAVE_FASTJET
-#pragma link C++ class AliAnalysisTaskHFSimpleVertices+;
-#endif
 /// ROOT6 tasks
 #ifdef __CLING__
+#ifdef HAVE_FASTJET
 #pragma link C++ class AliAnalysisTaskSEHFSystPID+;
+#pragma link C++ class AliAnalysisTaskHFSimpleVertices+;
+#endif
 #endif
 
 #endif
