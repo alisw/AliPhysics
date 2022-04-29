@@ -58,13 +58,13 @@ class AliJCDijetAna : public TObject
                          double lDeltaPhiCut,
                          double lmatchingR,
                          double ltrackingIneff,
-                         double luseCrho,
+                         bool   luseCrho,
                          bool   lThisIsTrueMC);
 
-        int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
+        int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
         void SetPtHardBin(double flptHardBin) {fptHardBin = flptHardBin; }
-        void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin);
+        void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
         void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos);
         void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet);
         void ResetObjects();

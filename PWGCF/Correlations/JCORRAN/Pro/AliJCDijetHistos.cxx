@@ -38,6 +38,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_centrality(),
     fh_zvtx(),
     fh_nch(),
+    fh_hisWeight(),
     fh_pt(),
     fh_ptPosEta(),
     fh_ptNegEta(),
@@ -135,6 +136,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_centrality(obj.fh_centrality),
     fh_zvtx(obj.fh_zvtx),
     fh_nch(obj.fh_nch),
+    fh_hisWeight(obj.fh_hisWeight),
     fh_pt(obj.fh_pt),
     fh_ptPosEta(obj.fh_ptPosEta),
     fh_ptNegEta(obj.fh_ptNegEta),
@@ -303,6 +305,11 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_nch
         << TH1D("h_nch", "h_nch", 101, -0.5, 100.5 )
+        << fHistCentBin
+        << "END" ;
+
+    fh_hisWeight
+        << TH1D("h_hisWeight", "h_hisWeight", 500, 0, 5000)
         << fHistCentBin
         << "END" ;
 

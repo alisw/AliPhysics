@@ -399,9 +399,9 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         //cout << "Next det level calculations:" << endl;
-        fDetMCFlag = fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
+        fDetMCFlag = fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC, 1.0);
         if(fDetMCFlag != 0) return;
-        fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
+        fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC, 1.0);
 #endif
     }
 
@@ -439,8 +439,8 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
     //cout << "Next true level calculations:" << endl;
-    fana->CalculateJets(fInputList, fhistos, fCBin);
-    fana->FillJetsDijets(fhistos, fCBin);
+    fana->CalculateJets(fInputList, fhistos, fCBin, 1.0);
+    fana->FillJetsDijets(fhistos, fCBin, 1.0);
 #endif
 
     // Here response matrix calculation.

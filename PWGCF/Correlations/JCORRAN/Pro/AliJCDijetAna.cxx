@@ -145,7 +145,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
                                 double lDeltaPhiCut,
                                 double lmatchingR,
                                 double ltrackingIneff,
-                                double luseCrho,
+                                bool   luseCrho,
                                 bool   lThisIsTrueMC){
     fDebug = lDebug;
     fParticleEtaCut = lParticleEtaCut;
@@ -251,7 +251,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
 }
 
 //______________________________________________________________________________
-int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin){
+int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin, double hisWeight){
 
     ResetObjects();
 
@@ -315,6 +315,7 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
             return -1;
         }
     }
+    fhistos->fh_hisWeight[lCBin]->Fill(hisWeight);
     fhistos->fh_randConeEtaPhi[lCBin]->Fill(randConeEta,randConePhi);
 
     rawKtJets = fastjet::sorted_by_pt(selectorEta(cs_bge->inclusive_jets(0.0))); // APPLY Min pt cut for jet
@@ -328,9 +329,9 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
         fhistos->fh_eta[lCBin]->Fill(eta);
         fhistos->fh_phi[lCBin]->Fill(phi-TMath::Pi());
         fhistos->fh_etaPhi[lCBin]->Fill(eta,phi-TMath::Pi());
-        fhistos->fh_pt[lCBin]->Fill(pt);
-        if(eta>0.0) fhistos->fh_ptPosEta[lCBin]->Fill(pt);
-        else        fhistos->fh_ptNegEta[lCBin]->Fill(pt);
+        fhistos->fh_pt[lCBin]->Fill(pt,hisWeight);
+        if(eta>0.0) fhistos->fh_ptPosEta[lCBin]->Fill(pt,hisWeight);
+        else        fhistos->fh_ptNegEta[lCBin]->Fill(pt,hisWeight);
     }
     fhistos->fh_nch[lCBin]->Fill(chparticles.size());
     if(chparticles.size()==0) return 0; // We are not intereted in empty events.
@@ -421,7 +422,7 @@ void AliJCDijetAna::SetJets(vector<fastjet::PseudoJet> jetsOutside) {
 // Note: Jets in rawJets are assumed to be sorted by pt, as is done
 //       in the previous functions.
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
+void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin, double hisWeight) {
     int iAccJetCounter = 0;
     bool bHasHighPtJet = false;
 
@@ -442,8 +443,8 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
             fhistos->fh_jetEta[lCBin][iAcc]->Fill(eta);  
             fhistos->fh_jetPhi[lCBin][iAcc]->Fill(phi - TMath::Pi()); //Pseudojet.phi range 0-2pi
             fhistos->fh_jetEtaPhi[lCBin][iAcc]->Fill(eta,phi - TMath::Pi());
-            fhistos->fh_jetPt[lCBin][iAcc]->Fill(pt);
-            fhistos->fh_jetPt_ALICE[lCBin][iAcc]->Fill(pt);
+            fhistos->fh_jetPt[lCBin][iAcc]->Fill(pt,hisWeight);
+            fhistos->fh_jetPt_ALICE[lCBin][iAcc]->Fill(pt,hisWeight);
             if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iAcc]->Fill(area);
             if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iAcc]->Fill(area*rho);
 
@@ -463,8 +464,8 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 fhistos->fh_jetEta[lCBin][iConstCut]->Fill(eta);
                 fhistos->fh_jetPhi[lCBin][iConstCut]->Fill(phi - TMath::Pi());
                 fhistos->fh_jetEtaPhi[lCBin][iConstCut]->Fill(eta,phi - TMath::Pi());
-                fhistos->fh_jetPt[lCBin][iConstCut]->Fill(pt);
-                fhistos->fh_jetPt_ALICE[lCBin][iConstCut]->Fill(pt);
+                fhistos->fh_jetPt[lCBin][iConstCut]->Fill(pt,hisWeight);
+                fhistos->fh_jetPt_ALICE[lCBin][iConstCut]->Fill(pt,hisWeight);
                 if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iConstCut]->Fill(area);
                 if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iConstCut]->Fill(area*rho);
 
@@ -489,9 +490,9 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                     fhistos->fh_jetEta[lCBin][iBGSubtr]->Fill(eta);
                     fhistos->fh_jetPhi[lCBin][iBGSubtr]->Fill(phi - TMath::Pi());
                     fhistos->fh_jetEtaPhi[lCBin][iBGSubtr]->Fill(eta,phi - TMath::Pi());
-                    fhistos->fh_jetPt[lCBin][iBGSubtr]->Fill(pt2);
-                    fhistos->fh_jetPt_ALICE[lCBin][iBGSubtr]->Fill(pt2);
-                    fhistos->fh_jetPtTransBGSub[lCBin][iBGSubtr]->Fill(pt - rho*area);
+                    fhistos->fh_jetPt[lCBin][iBGSubtr]->Fill(pt2,hisWeight);
+                    fhistos->fh_jetPt_ALICE[lCBin][iBGSubtr]->Fill(pt2,hisWeight);
+                    fhistos->fh_jetPtTransBGSub[lCBin][iBGSubtr]->Fill(pt - rho*area,hisWeight);
                     if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iBGSubtr]->Fill(area); // Assuming bg subtracted jet has the same area.
                     if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iBGSubtr]->Fill(area*rho);
 
@@ -503,9 +504,9 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                         fhistos->fh_jetEta[lCBin][iBGSubtrConstCut]->Fill(eta);
                         fhistos->fh_jetPhi[lCBin][iBGSubtrConstCut]->Fill(phi - TMath::Pi());
                         fhistos->fh_jetEtaPhi[lCBin][iBGSubtrConstCut]->Fill(eta,phi - TMath::Pi());
-                        fhistos->fh_jetPt[lCBin][iBGSubtrConstCut]->Fill(pt2);
-                        fhistos->fh_jetPt_ALICE[lCBin][iBGSubtrConstCut]->Fill(pt2);
-                        fhistos->fh_jetPtTransBGSub[lCBin][iBGSubtrConstCut]->Fill(pt - rho*area);
+                        fhistos->fh_jetPt[lCBin][iBGSubtrConstCut]->Fill(pt2,hisWeight);
+                        fhistos->fh_jetPt_ALICE[lCBin][iBGSubtrConstCut]->Fill(pt2,hisWeight);
+                        fhistos->fh_jetPtTransBGSub[lCBin][iBGSubtrConstCut]->Fill(pt - rho*area,hisWeight);
                         if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iBGSubtrConstCut]->Fill(area);
                         if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iBGSubtrConstCut]->Fill(area*rho);
 
@@ -540,8 +541,8 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
             fhistos->fh_jetEta[lCBin][iktJets]->Fill(eta);  
             fhistos->fh_jetPhi[lCBin][iktJets]->Fill(phi - TMath::Pi()); //Pseudojet.phi range 0-2pi
             fhistos->fh_jetEtaPhi[lCBin][iktJets]->Fill(eta,phi - TMath::Pi());
-            fhistos->fh_jetPt[lCBin][iktJets]->Fill(pt);
-            fhistos->fh_jetPt_ALICE[lCBin][iktJets]->Fill(pt);
+            fhistos->fh_jetPt[lCBin][iktJets]->Fill(pt,hisWeight);
+            fhistos->fh_jetPt_ALICE[lCBin][iktJets]->Fill(pt,hisWeight);
             if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iktJets]->Fill(area);
             if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iktJets]->Fill(area*rho);
         }
@@ -653,20 +654,20 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 fhistos->fh_events[lCBin]->Fill(Form("%s acc. dijets",sDijetTypes[udijet].Data()),1.0);
                 bHasDijet.at(udijet) = true;
                 dijet = dijets.at(udijet).at(0).at(0) + dijets.at(udijet).at(0).at(1);
-                fhistos->fh_jetPtLeadSublead_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(0).at(0).pt());
-                fhistos->fh_jetPtLeadSublead_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(0).at(1).pt());
+                fhistos->fh_jetPtLeadSublead_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(0).at(0).pt(),hisWeight);
+                fhistos->fh_jetPtLeadSublead_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(0).at(1).pt(),hisWeight);
                 mjj = dijet.m();
                 ptpair = dijet.pt();
                 iDijetBin = fhistos->GetDijetMClass(mjj);
-                fhistos->fh_jetPtLeadSubleadMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(0).pt());
-                fhistos->fh_jetPtLeadSubleadMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(1).pt());
-                fhistos->fh_dijetInvM[lCBin][udijet]->Fill(mjj);
-                fhistos->fh_dijetInvMLin[lCBin][udijet]->Fill(mjj);
-                fhistos->fh_dijetInvMTrunc[lCBin][udijet]->Fill(mjj);
-                fhistos->fh_dijetInvMTrunc2[lCBin][udijet]->Fill(mjj);
-                fhistos->fh_dijetPtPair[lCBin][udijet]->Fill(ptpair);
+                fhistos->fh_jetPtLeadSubleadMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(0).pt(),hisWeight);
+                fhistos->fh_jetPtLeadSubleadMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(1).pt(),hisWeight);
+                fhistos->fh_dijetInvM[lCBin][udijet]->Fill(mjj,hisWeight);
+                fhistos->fh_dijetInvMLin[lCBin][udijet]->Fill(mjj,hisWeight);
+                fhistos->fh_dijetInvMTrunc[lCBin][udijet]->Fill(mjj,hisWeight);
+                fhistos->fh_dijetInvMTrunc2[lCBin][udijet]->Fill(mjj,hisWeight);
+                fhistos->fh_dijetPtPair[lCBin][udijet]->Fill(ptpair,hisWeight);
                 dPhi = GetDeltaPhi(dijets.at(udijet).at(0).at(0), dijets.at(udijet).at(0).at(1));
-                fhistos->fh_dijetDeltaPhi[lCBin][udijet]->Fill(dPhi);
+                fhistos->fh_dijetDeltaPhi[lCBin][udijet]->Fill(dPhi,hisWeight);
             }
 
             // Analysis for dijet with deltaPhi cut.
@@ -683,20 +684,20 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                     fhistos->fh_events[lCBin]->Fill(Form("%s deltaphi cut dijets",sDijetTypes[udijet].Data()),1.0);
                     bHasDeltaPhiDijet.at(udijet) = true;
                     dijet = dijets.at(udijet).at(1).at(0) + dijets.at(udijet).at(1).at(1);
-                    fhistos->fh_jetPtLeadSubleadDeltaPhi_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(1).at(0).pt());
-                    fhistos->fh_jetPtLeadSubleadDeltaPhi_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(1).at(1).pt());
+                    fhistos->fh_jetPtLeadSubleadDeltaPhi_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(1).at(0).pt(),hisWeight);
+                    fhistos->fh_jetPtLeadSubleadDeltaPhi_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(1).at(1).pt(),hisWeight);
                     mjj = dijet.m();
                     ptpair = dijet.pt();
                     iDijetBin = fhistos->GetDijetMClass(mjj);
-                    fhistos->fh_jetPtLeadSubleadDeltaPhiMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(0).pt());
-                    fhistos->fh_jetPtLeadSubleadDeltaPhiMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(1).pt());
-                    fhistos->fh_dijetInvMDeltaPhiCut[lCBin][udijet]->Fill(mjj);
-                    fhistos->fh_dijetInvMDeltaPhiCutLin[lCBin][udijet]->Fill(mjj);
-                    fhistos->fh_dijetInvMDeltaPhiCutTrunc[lCBin][udijet]->Fill(mjj);
-                    fhistos->fh_dijetInvMDeltaPhiCutTrunc2[lCBin][udijet]->Fill(mjj);
-                    fhistos->fh_dijetPtPairDeltaPhiCut[lCBin][udijet]->Fill(ptpair);
+                    fhistos->fh_jetPtLeadSubleadDeltaPhiMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(0).pt(),hisWeight);
+                    fhistos->fh_jetPtLeadSubleadDeltaPhiMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(1).pt(),hisWeight);
+                    fhistos->fh_dijetInvMDeltaPhiCut[lCBin][udijet]->Fill(mjj,hisWeight);
+                    fhistos->fh_dijetInvMDeltaPhiCutLin[lCBin][udijet]->Fill(mjj,hisWeight);
+                    fhistos->fh_dijetInvMDeltaPhiCutTrunc[lCBin][udijet]->Fill(mjj,hisWeight);
+                    fhistos->fh_dijetInvMDeltaPhiCutTrunc2[lCBin][udijet]->Fill(mjj,hisWeight);
+                    fhistos->fh_dijetPtPairDeltaPhiCut[lCBin][udijet]->Fill(ptpair,hisWeight);
                     dPhi = GetDeltaPhi(dijets.at(udijet).at(1).at(0), dijets.at(udijet).at(1).at(1));
-                    fhistos->fh_dijetDeltaPhiWithCut[lCBin][udijet]->Fill(dPhi);
+                    fhistos->fh_dijetDeltaPhiWithCut[lCBin][udijet]->Fill(dPhi,hisWeight);
                 }
             }
         }
