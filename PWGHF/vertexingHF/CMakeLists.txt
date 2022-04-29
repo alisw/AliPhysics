@@ -36,20 +36,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/O2vertexer/
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS		
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice	
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
-                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
-                    ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
-                    ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
-		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
-		    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
-		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
-		    ${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF
 )
 if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
@@ -201,60 +187,38 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
+  AliAnalysisTaskHFSimpleVertices.cxx
   AliAnalysisTaskSEHFSystPID.cxx
   )
 endif()
 
-if(FASTJET_FOUND)
-    set(SRCS ${SRCS}
-    AliAnalysisTaskHFSimpleVertices.cxx
-    )
-
-
-    include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
-                        ${AliPhysics_SOURCE_DIR}/JETAN/JETAN
-                       )
-    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
-    link_directories(${FASTJET_LIBS_DIR})
-    add_definitions(${FASTJET_DEFINITIONS})
-
-endif(FASTJET_FOUND)
-
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-set(APPEND HDRS ${HDRS} IClassifierReader.h ../../PWGHF/jetsHF/AliHFJetsUtils.h)
-
-if(FASTJET_FOUND)
-  list(APPEND HDRS ../../PWGJE/EMCALJetTasks/FJ_includes.h)
-endif(FASTJET_FOUND)
+set(HDRS ${HDRS} IClassifierReader.h)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
-
-set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFvertexingHF PWGJEEMCALJetTasks)
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW PWGTools PWGLFnuclex)
+set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW PWGTools PWGLFnuclex)
 if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
     set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
 endif(KFParticle_FOUND)
-
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
 # Linking the library
-target_link_libraries(${MODULE} ${LIBDEPS} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${FASTJET_LIBS})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
