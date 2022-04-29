@@ -32,6 +32,12 @@ class AliPHOSGeometry;
  * Set the names of the tracks/clusters/cells in the AddTask, as well as "mcparticles" if MC production
  * (or "" if not). Set also flags for whether to perform track/calo/jet/event QA.
  *
+ * For MC productions with multiple MC generators (e.g. HIJING + embedded Pythia) the THnSparses for MC
+ * particles and MC tracks matched to MC particles can be limited to a single generator with the
+ * fMCGeneratorIndex option. It is up to the user to determine which index corresponds to the desired
+ * MC generator. With the default value of -1, all MC particles will be used.
+ * 
+ *
  * For Pt-hard productions, you should further call the function SetIsPtHard(kTRUE), and you can
  * reject outliers with SetRejectOutlierEvents(kTRUE).
  *
@@ -86,6 +92,7 @@ public:
   void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
   void                        SetGeneratorLevelName(const char* name)              { fGeneratorLevelName = name       ; }
   void                        SetDetectorLevelName(const char* name)               { fDetectorLevelName  = name       ; }
+  void                        SetMCGeneratorIndex(Int_t input)                     { fMCGeneratorIndex   = input      ; }
   
   void                        SetDoTrackQA(Bool_t b) { fDoTrackQA = b; }
   void                        SetDoCaloQA(Bool_t b)  { fDoCaloQA  = b; }
@@ -142,6 +149,7 @@ protected:
   Bool_t                      fDoEventQA;                ///< Set whether to enable event QA
   TString                     fGeneratorLevelName;       ///< generator level container name
   TString                     fDetectorLevelName;        ///< detector level container name
+  Int_t                       fMCGeneratorIndex;         ///< Optional choice of which MC generator (by index) from which to restrict MC particles
   Bool_t                      fRejectOutlierEvents;      ///< flag to reject pythia pt-hard jet outlier events
   Bool_t                      fIsPtHard;                 ///< flag to enable pt-hard histos and make available outlier cut
   
@@ -171,7 +179,7 @@ private:
   AliAnalysisTaskPWGJEQA &operator=(const AliAnalysisTaskPWGJEQA&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPWGJEQA, 5);
+  ClassDef(AliAnalysisTaskPWGJEQA, 6);
   /// \endcond
 };
 #endif
