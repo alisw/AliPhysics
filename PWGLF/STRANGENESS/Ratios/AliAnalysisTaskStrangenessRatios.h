@@ -7,6 +7,7 @@
 #include <Rtypes.h>
 #include <TString.h>
 #include "AliEventCuts.h"
+#include "AliExternalBDT.h"
 
 class AliPIDResponse;
 class TH2F;
@@ -86,6 +87,17 @@ struct MiniCascadeMC : public MiniCascade {
   unsigned char flag;
 };
 
+struct MiniLambdaBDTOut {
+  Double32_t pt;
+  Double32_t ct;
+  Double32_t mass;
+  Double32_t bdtOutputPrompt;
+  Double32_t bdtOutputNonPrompt;
+  Double32_t bdtOutputBackground;
+  bool matter;
+  bool pileUpCheck;
+};
+
 class AliAnalysisTaskStrangenessRatios : public AliAnalysisTaskSE {
 public:
   enum StatusFlag {
@@ -106,6 +118,8 @@ public:
   AliEventCuts  fEventCut; ///<
 
   void SetFillLambdas(bool toogle = true) { fFillLambdas = toogle; }
+  void SetFillCascades(bool toogle = true) { fFillCascades = toogle; }
+  void SetFillLambdasBDTOut(bool toogle = true) { fFillLambdasBDTOut = toogle; }
   void SetLambdaDownscaling(float scale = true) { fLambdaDownscaling = scale; }
 
   //Setters for topological cuts
@@ -132,6 +146,15 @@ public:
   void SetTPCRowsCut(float cut = 80.) {fCutTPCrows=cut;}
   void SetTPCRowOvFCut(float cut = 0.8) {fCutRowsOvF=cut;}
   void UseOnTheFly(bool toggle = true) { fUseOnTheFly = toggle; }
+  void SetMinCentrality(int minCentrality = 0) { fMinCentrality = minCentrality; }
+  void SetMaxCentrality(int maxCentrality = 90) { fMaxCentrality = maxCentrality; }
+  void SetRadiusPreselection(double cut = 3.) { fRadiusPreselection = cut; }
+  void SetTpcClV0PiPreselection(int cut = 70) { fTpcClV0PiPreselection = cut; }
+  void SetTpcClV0PrPreselection(int cut = 70) { fTpcClV0PrPreselection = cut; }
+
+  void SetBDTPath(const char *path = "") { fBDTPath = path; }
+  void SetNctBinsBDT(int nBins = 8) { fNctBinsBDT = nBins; }
+  void SetDeltaCtBinsBDT(double deltaCtBinsBDT = 5) { fDeltaCtBinsBDT = deltaCtBinsBDT; }
 
 private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
@@ -142,15 +165,20 @@ private:
   TList*          fList = nullptr;             //!<! List of the output histograms
   TTree*          fTree = nullptr;             //!<! Tree for Xis and Omegas
   TTree*          fTreeLambda = nullptr;       //!<! Tree for Lambdas
+  TTree*          fTreeLambdaBDTOut = nullptr; //!<! Tree for Lambdas
 
   MiniCascade* fRecCascade = nullptr;          //!<! Transient fRecCascade
   MiniCascadeMC fGenCascade;
   MiniLambda* fRecLambda = nullptr;          //!<! Transient fRecLambda
   MiniLambdaMC fGenLambda;
+  MiniLambdaBDTOut *fRecLambdaBDTOut = nullptr;//!<! Transient fRecLambda with BDT output
   AliPIDResponse* fPID = nullptr;              //!<! ALICE PID framework
+  std::vector<AliExternalBDT*> fBDT;
   bool fMC;
   bool fOnlyTrueCandidates = false;  ///< Save only true Xi and Omegas in MC
   bool fFillLambdas = false;
+  bool fFillLambdasBDTOut = false;
+  bool fFillCascades = false;
   bool fOnlyTrueLambdas = true;      ///< Save only true Lambdas in MC
   float fLambdaDownscaling = 1.;
 
@@ -179,6 +207,11 @@ private:
   double fCascLeastCRawsOvF;
   double fLambdaLeastCRaws;
   double fLambdaLeastCRawsOvF;
+  double fMinCentrality = 0;
+  double fMaxCentrality = 90;
+  double fRadiusPreselection = 3;
+  int fTpcClV0PiPreselection = 70;
+  int fTpcClV0PrPreselection = 70;
 
   float fCosPALambda = 0.97;
   float fCutDCALambdaPrToPV = 0.08;
@@ -186,9 +219,14 @@ private:
   float fCutLambdaMass[2] = {1.09f, 1.15f};
   bool fUseOnTheFly = false;
 
+  int fNctBinsBDT = 8;
+  double fDeltaCtBinsBDT = 5.;
+  std::string fBDTPath = "";
+
   bool IsTopolSelected(bool isXi = true);
   bool IsTopolSelectedLambda();
   float Eta2y(float pt, float m, float eta) const;
+  int WhichBDT(double ct);
 
 
   /// \cond CLASSDEF
