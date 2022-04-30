@@ -196,6 +196,7 @@ BunchCrossingIDNotZero(0),
 fNPileUpVertices(0),
 fNumberOfTracks(0),
 fEtaCut(0.8),
+fNClustersCut(-1),
 fGenName("Hijing"),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
@@ -374,6 +375,7 @@ BunchCrossingIDNotZero(0),
 fNPileUpVertices(0),
 fNumberOfTracks(0),
 fEtaCut(0.8),
+fNClustersCut(-1),
 fGenName("Hijing"),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
@@ -1796,7 +1798,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
 
         if (fkPropDCA){
 
-          if (TMath::Abs(trk->Eta())<fEtaCut){ // Eta cut
+          if (TMath::Abs(trk->Eta())<fEtaCut && trk->GetTPCNcls() > fNClustersCut ){ // Eta, Nclusters cuts
 
             AliExternalTrackParam ctrack;
             ctrack.CopyFromVTrack(trk);
