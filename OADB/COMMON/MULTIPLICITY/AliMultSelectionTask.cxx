@@ -195,7 +195,7 @@ fNTracksDCAzSQ(0),
 BunchCrossingIDNotZero(0),
 fNPileUpVertices(0),
 fNumberOfTracks(0),
-fEtaCut(0),
+fEtaCut(0.8),
 fGenName("Hijing"),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
@@ -373,7 +373,7 @@ fNTracksDCAzSQ(0),
 BunchCrossingIDNotZero(0),
 fNPileUpVertices(0),
 fNumberOfTracks(0),
-fEtaCut(0),
+fEtaCut(0.8),
 fGenName("Hijing"),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
@@ -466,6 +466,7 @@ fNForwardMCParticles(0)
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackBCID[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackEta[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPhi[iq] = 1e+6 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPt[iq] = -1 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackPileupVxt[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackITSrefit[iq] = kFALSE ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackSPD[iq] = kFALSE ;
@@ -784,6 +785,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
       fTreeEvent->Branch("fTrackBCID",fTrackBCID,"fTrackBCID[fNumberOfTracks]/I");
       fTreeEvent->Branch("fTrackEta",fTrackEta,"fTrackEta[fNumberOfTracks]/F");
       fTreeEvent->Branch("fTrackPhi",fTrackPhi,"fTrackPhi[fNumberOfTracks]/F");
+      fTreeEvent->Branch("fTrackPt",fTrackPt,"fTrackPt[fNumberOfTracks]/F");
       fTreeEvent->Branch("fTrackPileupVxt",fTrackPileupVxt,"fTrackPileupVxt[fNumberOfTracks]/I");
       fTreeEvent->Branch("fTrackITSrefit",fTrackITSrefit,"fTrackITSrefit[fNumberOfTracks]/O");
       fTreeEvent->Branch("fTrackSPD",fTrackSPD,"fTrackSPD[fNumberOfTracks]/O");
@@ -1809,7 +1811,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
 
               fTrackBCID[Ntracks] = trk->GetTOFBunchCrossing();
               fTrackEta[Ntracks] = trk->Eta(); 
-              fTrackPhi[Ntracks] = trk->Phi(); 
+              fTrackPhi[Ntracks] = trk->Phi();
+              fTrackPt[Ntracks] = trk->Pt();
               fTrackITSrefit[Ntracks] = (trk->GetStatus() & AliESDtrack::kITSrefit); //ITS refit flag
               fTrackSPD[Ntracks] = (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)); //Has Points on SPD flag
               fTrackTPC[Ntracks] = ((trk->GetStatus() & AliESDtrack::kTPCout) && trk->GetID() > 0); //TPCout flag
