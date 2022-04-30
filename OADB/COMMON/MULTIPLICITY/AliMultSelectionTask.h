@@ -125,6 +125,7 @@ public:
   void SetPreferSuperCalib( Bool_t lVar ) { fkPreferSuperCalib = lVar; }
   void SetPropDCA      ( Bool_t lVar ) { fkPropDCA     = lVar; } ;
   void SetEtaCut(Float_t lVar) {fEtaCut  = lVar;};
+  void SetNclustersCut(Float_t lVar) {fNClustersCut  = lVar;};
   void SetGenName(TString lVar) {fGenName  = lVar;};
   void SetStoreForwardMCInfo(Bool_t lVar) {fkStoreForwardMCInfo  = lVar;};
   void SetForwardMCMinEta(Double_t lVar) {fkForwardMCInfoMinEta  = lVar;};
@@ -345,7 +346,8 @@ private:
   Bool_t fTrackSPD[kTrack];
   Bool_t fTrackIsPileup[kTrack];
   Bool_t fTrackTPC[kTrack];
-  Float_t fEtaCut; 
+  Float_t fEtaCut;
+  Float_t fNClustersCut;
   TString fGenName; // Generator name 
   
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
