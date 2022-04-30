@@ -114,6 +114,8 @@ void AliAnalysisTaskAlphaPiAOD::UserCreateOutputObjects() {
     fEventCut.AddQAplotsToList(fHistos->GetListOfHistograms());  // EventCuts QA Histograms
 
     // QA Histograms
+    fHistos->CreateTH2("QA/hTPCPIDAllTracksP", "TPC PID all tracks;#it{p}_{T} (GeV/#it{c});TPC Signal", 400, -20, 20, 1000, 0, 1000);
+    fHistos->CreateTH2("QA/hTPCPIDAllTracksN", "TPC PID all tracks;#it{p}_{T} (GeV/#it{c});TPC Signal", 400, -20, 20, 1000, 0, 1000);
     fHistos->CreateTH2("QA/hTPCPIDAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c});TPC Signal #alpha", 400, -20, 20, 1000, 0, 1000);
     fHistos->CreateTH2("QA/hTPCPIDAntiAlpha", "TPC PID #bar{#alpha};#it{p}_{T} (GeV/#it{c});TPC Signal #bar{#alpha}", 400, -20, 20, 1000, 0, 1000);
 
@@ -255,6 +257,8 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
             double nNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
                         : fMC          ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha)
                                         : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
+            fHistos->FillTH2("QA/hTPCPIDAllTracksP", pTrack->GetTPCmomentum()/pTrack->Charge(), pTrack->GetTPCsignal());
+            fHistos->FillTH2("QA/hTPCPIDAllTracksN", nTrack->GetTPCmomentum()/nTrack->Charge(), nTrack->GetTPCsignal());
             if (std::abs(pNsigma) > 5 && std::abs(nNsigma) > 5) {
                 continue;
             }
@@ -336,7 +340,10 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 || std::abs(alphaTrack->Eta()) > 0.8) {
                 continue;
             }
-
+            if(alphaTrack->GetSign() > 0)
+                fHistos->FillTH2("QA/hTPCPIDAllTracksP", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
+            else
+                fHistos->FillTH2("QA/hTPCPIDAllTracksN", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
             double pNsigma{fPID->NumberOfSigmasTPC(alphaTrack, AliPID::kAlpha)};
             if (std::abs(pNsigma) > 5) {
                 continue;
