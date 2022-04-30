@@ -212,12 +212,12 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                 continue;
             }
-
-            if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit) || !(nTrack->GetStatus() & AliVTrack::kTPCrefit) ||
-                pTrack->GetTPCsignalN() < 50 || nTrack->GetTPCsignalN() < 50 ||
-                std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8) {
+            if (!((AliAODTrack *)pTrack)->TestFilterBit(fFilterBit))
                 continue;
-            }
+            if (!((AliAODTrack *)nTrack)->TestFilterBit(fFilterBit))
+                continue;
+            if (std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8)
+                continue;
 
             int hyperLabel{-1};
             if (fMC) {
@@ -336,10 +336,11 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                 continue;
             }
-            if (!(alphaTrack->GetStatus() & AliVTrack::kTPCrefit) || alphaTrack->GetTPCsignalN() < 50 
-                || std::abs(alphaTrack->Eta()) > 0.8) {
+            if (!((AliAODTrack *)alphaTrack)->TestFilterBit(fFilterBit))
                 continue;
-            }
+            if (std::abs(alphaTrack->Eta()) > 0.8)
+                continue;
+
             if(alphaTrack->GetSign() > 0)
                 fHistos->FillTH2("QA/hTPCPIDAllTracksP", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
             else
@@ -362,10 +363,11 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                     continue;
                 }
-                if (!(pionTrack->GetStatus() & AliVTrack::kTPCrefit) || pionTrack->GetTPCsignalN() < 50 
-                    || std::abs(pionTrack->Eta()) > 0.8) {
+                if (!((AliAODTrack *)pionTrack)->TestFilterBit(fFilterBit))
+                    continue;   
+                if (std::abs(pionTrack->Eta()) > 0.8)
                     continue;
-                }
+
                 double nNsigma{fPID->NumberOfSigmasTPC(pionTrack, AliPID::kPion)};
                 if (std::abs(nNsigma) > 5) {
                     continue;

@@ -80,6 +80,7 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
         fMassRange[0] = min;
         fMassRange[1] = max;
     }
+    void SetFilterbitTrackCut(Double_t lParameter) { fFilterBit = lParameter; }
 
    private:
     AliAnalysisTaskAlphaPiAOD(const AliAnalysisTaskAlphaPiAOD &source);
@@ -102,6 +103,7 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
     float fCustomBethe[5] = {1.28778e+00 / 50., 3.13539e+01, static_cast<float>(TMath::Exp(-3.16327e+01)), 1.87901e+00, 6.41583e+00};  /// default values are from AliAnalysisTaskAntiHe4.cxx
     float fCustomResolution = 0.05871;                                                                                                 /// default values are for LHC18qr
     double fMassRange[2] = {3.7, 4.1};
+    UInt_t fFilterBit = 32;
 
     float Eta2y(float pt, float m, float eta) const;
 
