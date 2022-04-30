@@ -339,6 +339,7 @@ private:
   Int_t fTrackBCID[kTrack];
   Float_t fTrackEta[kTrack];
   Float_t fTrackPhi[kTrack];
+  Float_t fTrackPt[kTrack];
   Int_t fTrackPileupVxt[kTrack];
   Bool_t fTrackITSrefit[kTrack];
   Bool_t fTrackSPD[kTrack];
