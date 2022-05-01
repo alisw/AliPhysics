@@ -238,11 +238,11 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${F
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFvertexingHF PWGJEEMCALJetTasks)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFjetsHF PWGJEEMCALJetTasks)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW PWGTools PWGLFnuclex)
+set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW PWGTools PWGLFnuclex)
 if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
     set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
