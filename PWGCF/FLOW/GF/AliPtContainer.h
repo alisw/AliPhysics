@@ -69,7 +69,6 @@ class AliPtContainer: public TNamed {
         void CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized); 
         void CalculateRecursive(bool normalized);
         int factorial(const int n) { return (n<2)?1:factorial(n - 1)*n; }
-        int GetWeightIndex(int m);
 
       private:
         static double           fFactorial[9];
