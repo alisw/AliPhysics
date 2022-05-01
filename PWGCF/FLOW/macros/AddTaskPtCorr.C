@@ -7,7 +7,7 @@ Bool_t ConnectToGrid() {
   if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
   return kTRUE;
 }
-AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiencyPath, TString subfix1, TString subfix2 = "")
+AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, int pseudoeff, TString efficiencyPath, TString subfix1, TString subfix2 = "")
 {
   TString l_ContName(subfix1);
   if(!l_ContName.IsNull()) l_ContName.Prepend("_");
@@ -16,7 +16,7 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiency
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
   TString fileName = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisTaskPtCorr* task = new AliAnalysisTaskPtCorr(name.Data(), IsMC, l_ContName);
+  AliAnalysisTaskPtCorr* task = new AliAnalysisTaskPtCorr(name.Data(), IsMC, isOnTheFly, pseudoeff, l_ContName);
   if(!task)
     return 0x0;
   mgr->AddTask(task); // add your task to the manager
@@ -26,7 +26,7 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiency
   printf("Getting input...\n");
   TObjArray *AllContainers = mgr->GetContainers();
   Bool_t gridConnected=kFALSE;
-  if(!IsMC) {
+  if(!(IsMC && !(pseudoeff>0)) && !isOnTheFly) {
     if(!AllContainers->FindObject("Efficiency")) {
       if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
       if(efficiencyPath.Contains("alien:")) if(!ConnectToGrid()) return 0;//{ TGrid::Connect("alien:"); gridConnected = kTRUE; };
