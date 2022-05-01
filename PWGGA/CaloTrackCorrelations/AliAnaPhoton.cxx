@@ -138,6 +138,10 @@ fhMCPrimParticleCen(0),       fhMCPrimParticleAccCen(0),
 fhMCParticleVsErecEgenDiffOverEgenCen(0), fhMCParticleVsErecEgenCen(0),
 fhMCParticleErecEgenDiffOverEgenNLMCen(0), fhMCParticleErecEgenNLMCen(0),
 fhMCParticleM02NLMCen(0),
+fhMCPromptPhotonPtRecPtGenEta(0), fhMCDecayPhotonPtRecPtGenEta(0),
+fhMCPromptPhotonEnRecEnGenEta(0), fhMCDecayPhotonEnRecEnGenEta(0),
+fhMCPromptPhotonPtResolEta(0)   , fhMCDecayPhotonPtResolEta(0),
+fhMCPromptPhotonEnResolEta(0)   , fhMCDecayPhotonEnResolEta(0),
 fhMCPromptPhotonDeltaPhiRecGen(0), fhMCPromptPhotonDeltaEtaRecGen(0),
 fhMCPromptPhotonEtaPhiGenAssociatedReco(0),
 fhMCPromptPhotonAssociatedPtGen(0),fhMCPromptPhotonAssociatedPtGenInFidCut(0),
@@ -191,7 +195,8 @@ fhPtClusterSM(0),                     fhPtPhotonSM(0),
 fhPtPhotonCentralitySM(0),
 
 fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
-fhLam0Eta(),                          fhLam0EtaVzPos(),                 fhLam0EtaPerCen(0),
+fhLam0Eta(),                          fhLam0EtaEn(),
+fhLam0EtaVzPos(),                     fhLam0EtaPerCen(0),
 fhNLMEta(),                           fhNLMEtaPerCen(0),
 //fhDistanceAddedPhotonAddedPrimarySignal  (0), fhDistanceHijingPhotonAddedPrimarySignal  (0),
 //fhDistanceAddedPhotonAddedSecondarySignal(0), fhDistanceHijingPhotonAddedSecondarySignal(0),
@@ -491,6 +496,7 @@ fhDistance2Hijing(0)
   for(Int_t isector = 0; isector < fgkNSectors; isector++)
   {
     fhLam0Eta   [isector] = 0;
+    fhLam0EtaEn [isector] = 0;
     fhNLMEta    [isector] = 0;
     fhLam0NxNEta[isector] = 0;
     fhLam0EtaVzPos   [isector] = 0;
@@ -1991,6 +1997,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     if ( fFillSSEtaHistograms  && cluster->IsEMCAL() )
     {
       fhLam0Eta[isector]->Fill(pt, lambda0, eta, GetEventWeight()*weightPt);
+      fhLam0EtaEn[isector]->Fill(energy, lambda0, eta, GetEventWeight()*weightPt);
       Double_t v[3] = {0,0,0}; //vertex ;
       GetReader()->GetVertex(v);
       if ( fFillSSEtaVzPosHistograms  && cluster->IsEMCAL() && v[2] > 0 )
@@ -3879,6 +3886,89 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       }
     }
 
+    fhMCPromptPhotonPtRecPtGenEta  = new TH3F
+    ("hMCPromptPhoton_PtRecPtGenEta","Prompt photon",
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+    fhMCPromptPhotonPtRecPtGenEta->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+    fhMCPromptPhotonPtRecPtGenEta->SetYTitle("#it{p}_{T, gen} (GeV/#it{c})");
+    fhMCPromptPhotonPtRecPtGenEta->SetZTitle("#eta");
+    outputContainer->Add(fhMCPromptPhotonPtRecPtGenEta);
+    
+    fhMCDecayPhotonPtRecPtGenEta  = new TH3F
+    ("hMCDecayPhoton_PtRecPtGenEta","Decay photon",
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+    fhMCDecayPhotonPtRecPtGenEta->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+    fhMCDecayPhotonPtRecPtGenEta->SetYTitle("#it{p}_{T, gen} (GeV/#it{c})");
+    fhMCDecayPhotonPtRecPtGenEta->SetZTitle("#eta");
+    outputContainer->Add(fhMCDecayPhotonPtRecPtGenEta);
+    
+    fhMCPromptPhotonEnRecEnGenEta  = new TH3F
+    ("hMCPromptPhoton_EnRecEnGenEta","Prompt photon",
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+    fhMCPromptPhotonEnRecEnGenEta->SetXTitle("#it{E}_{rec} (GeV)");
+    fhMCPromptPhotonEnRecEnGenEta->SetYTitle("#it{E}_{gen} (GeV)");
+    fhMCPromptPhotonEnRecEnGenEta->SetZTitle("#eta");
+    outputContainer->Add(fhMCPromptPhotonEnRecEnGenEta);
+    
+    fhMCDecayPhotonEnRecEnGenEta  = new TH3F
+    ("hMCDecayPhoton_EnRecEnGenEta","Decay photon",
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+    fhMCDecayPhotonEnRecEnGenEta->SetXTitle("#it{E}_{rec} (GeV)");
+    fhMCDecayPhotonEnRecEnGenEta->SetYTitle("#it{E}_{gen} (GeV)");
+    fhMCDecayPhotonEnRecEnGenEta->SetZTitle("#eta");
+    outputContainer->Add(fhMCDecayPhotonEnRecEnGenEta);
+    
+    
+    
+    
+    fhMCPromptPhotonPtResolEta  = new TH3F
+    ("hMCPromptPhoton_PtResolEta","Prompt photon",
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+     diffBinsArray.GetSize() - 1, diffBinsArray.GetArray(),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+    fhMCPromptPhotonPtResolEta->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+    fhMCPromptPhotonPtResolEta->SetYTitle("(#it{E}_{rec}-#it{E}_{gen}) / #it{E}_{gen}");
+    fhMCPromptPhotonPtResolEta->SetZTitle("#eta");
+    outputContainer->Add(fhMCPromptPhotonPtResolEta);
+    
+    fhMCDecayPhotonPtResolEta  = new TH3F
+    ("hMCDecayPhoton_PtResolEta","Decay photon",
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+     diffBinsArray.GetSize() - 1, diffBinsArray.GetArray(),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+    fhMCDecayPhotonPtResolEta->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+    fhMCDecayPhotonPtResolEta->SetYTitle("(#it{E}_{rec}-#it{E}_{gen}) / #it{E}_{gen}");
+    fhMCDecayPhotonPtResolEta->SetZTitle("#eta");
+    outputContainer->Add(fhMCDecayPhotonPtResolEta);
+    
+    fhMCPromptPhotonEnResolEta  = new TH3F
+    ("hMCPromptPhoton_EnResolEta","Prompt photon",
+      ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+     diffBinsArray.GetSize() - 1, diffBinsArray.GetArray(),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+    fhMCPromptPhotonEnResolEta->SetXTitle("#it{E}_{rec} (GeV)");
+    fhMCPromptPhotonEnResolEta->SetYTitle("(#it{E}_{rec}-#it{E}_{gen}) / #it{E}_{gen}");
+    fhMCPromptPhotonEnResolEta->SetZTitle("#eta");
+    outputContainer->Add(fhMCPromptPhotonEnResolEta);
+    
+    fhMCDecayPhotonEnResolEta  = new TH3F
+    ("hMCDecayPhoton_EnResolEta","Decay photon",
+     ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+     diffBinsArray.GetSize() - 1, diffBinsArray.GetArray(),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray());
+    fhMCDecayPhotonEnResolEta->SetXTitle("#it{E}_{rec} (GeV)");
+    fhMCDecayPhotonEnResolEta->SetYTitle("(#it{E}_{rec}-#it{E}_{gen}) / #it{E}_{gen}");
+    fhMCDecayPhotonEnResolEta->SetZTitle("#eta");
+    outputContainer->Add(fhMCDecayPhotonEnResolEta);
+    
     if ( !IsHighMultiplicityAnalysisOn() )
     {
       if ( fFillPromptPhotonGenRecoEtaPhi )
@@ -4395,6 +4485,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLam0Eta[isector]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhLam0Eta[isector]->SetZTitle("#eta");
           outputContainer->Add(fhLam0Eta[isector]) ;
+          
+          fhLam0EtaEn[isector] = new TH3F
+          (Form("hLam0EtaEn_Sector%d",isector),
+           Form("#it{E} vs #sigma^{2}_{long} vs #eta in sector %d",isector),
+            ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,   ssBinsArray.GetArray(),
+           etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray());
+          fhLam0EtaEn[isector]->SetYTitle("#sigma^{2}_{long}");
+          fhLam0EtaEn[isector]->SetXTitle("#it{E} (GeV)");
+          fhLam0EtaEn[isector]->SetZTitle("#eta");
+          outputContainer->Add(fhLam0EtaEn[isector]) ;
         }
 
         if ( fFillSSEtaVzPosHistograms )
@@ -7641,8 +7742,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Float_t egen      =  0;
     Float_t ptgen     =  0;
     Bool_t  bConverted=  kFALSE;
-    Float_t eRecoRes  = -10000;
-    Bool_t conversion = kFALSE; 
+    Float_t  eRecoRes = -10000;
+    Float_t ptRecoRes = -10000;
+    Bool_t conversion = kFALSE;
     Int_t   index     = 0;
     Float_t weightPt  = 1 ; 
     
@@ -7775,6 +7877,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       }
       
       if ( egen > 0.1 ) eRecoRes = (ener-egen) / egen;
+      if (ptgen > 0.1 ) ptRecoRes = (fMomentum.Pt()-ptgen) / ptgen;
       // Check if several particles contributed to cluster and discard overlapped mesons
       // Compare the primary depositing more energy with the rest,
       // if no photon/electron as comon ancestor (conversions), count as other particle
@@ -7990,6 +8093,23 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     if ( IsDataMC() )
     {
+      if ( mcbin < 3 )
+      {
+        fhMCPromptPhotonPtRecPtGenEta->Fill(fMomentum.Pt(), ptgen, eta, GetEventWeight()*weightPt);
+        fhMCPromptPhotonEnRecEnGenEta->Fill(fMomentum.E() ,  egen, eta, GetEventWeight()*weightPt);
+        
+        fhMCPromptPhotonPtResolEta->Fill(fMomentum.Pt(), ptRecoRes, eta, GetEventWeight()*weightPt);
+        fhMCPromptPhotonEnResolEta->Fill(fMomentum.E() ,  eRecoRes, eta, GetEventWeight()*weightPt);
+      }
+      if ( mcbin > 3 && mcbin < 6)
+      {
+        fhMCDecayPhotonPtRecPtGenEta ->Fill(fMomentum.Pt(), ptgen, eta, GetEventWeight()*weightPt);
+        fhMCDecayPhotonEnRecEnGenEta ->Fill(fMomentum.E() ,  egen, eta, GetEventWeight()*weightPt);
+        
+        fhMCDecayPhotonPtResolEta->Fill(fMomentum.Pt(), ptRecoRes, eta, GetEventWeight()*weightPt);
+        fhMCDecayPhotonEnResolEta->Fill(fMomentum.E() ,  eRecoRes, eta, GetEventWeight()*weightPt);
+      }
+      
       // Fill final selected photon histograms in MC
       if ( !IsHighMultiplicityAnalysisOn() )
       {
