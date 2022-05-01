@@ -992,8 +992,6 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
 
   //-------------------------------------------------------------------------------------
   // Reject event if large clusters with large energy
-  // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
-  // If clusterzer NxN or V2 it does not help
   //-------------------------------------------------------------------------------------
   
   //Int_t run = fInputEvent->GetRunNumber();

@@ -657,7 +657,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   {
     ana->SetNCellCut(2);// At least 3 cells, check if already set at reader level
     ana->SetMinEnergy(0.3);
-    ana->SetMaxEnergy(200);
+    ana->SetMaxEnergy(1000);
     ana->SetMinDistanceToBadChannel(2, 4, 5); // could have been already applied at reader level
     if ( kAnaCutsString.Contains("DistToBadOff") )
       ana->SetMinDistanceToBadChannel(0, 4, 6);
@@ -668,7 +668,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   {//EMCAL
     ana->SetNCellCut(1);// At least 2 cells, check if already set at reader level
     ana->SetMinEnergy(0.7); 
-    ana->SetMaxEnergy(300);
+    ana->SetMaxEnergy(1000);
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
                                  // restrict to less than 100 ns when time calibration is on
     ana->SetMinDistanceToBadChannel(2, 4, 6); // could have been already applied at reader level
