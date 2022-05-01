@@ -247,6 +247,17 @@ if(KFParticle_FOUND)
     get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
     set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
 endif(KFParticle_FOUND)
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    fastjettools
+    fastjet
+    )
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
