@@ -34,11 +34,13 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *) {};
   virtual void InitializeArrays();
-  void FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config); 
+  void FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config); 
+  void FillPairDistributionSEAncestors(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, TH1F **histAncestor, TH2F **hist2dAncestor, TH2F **SameEventPhiTheta_OneDimensionalAncestor, int CombinationNumber, AliFemtoDreamCollConfig Config);
   void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config);
 
   bool DeltaEtaDeltaPhi(int species1, int species2, AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2, int part1PDGcode,int part2PDGcode, unsigned int PairDaughterIdentifier, TH2F* beforeHist,TH2F* afterHist, AliFemtoDreamCollConfig Config, double RelativeMomentum);
   void SetMixedEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *PartContainer);
+  bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2); //Stolen from AliFemtoDreamHigherPairMath
 
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) {fEventCuts = evtCuts;};
   void SetTrackCutsPion(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPion = trkCuts;};
@@ -55,6 +57,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   void SetRunPlotMult(bool RunPlotMult){fRunPlotMult = RunPlotMult;};
   void SetRunPlotPhiTheta(bool RunPlotPhiTheta){fRunPlotPhiTheta = RunPlotPhiTheta;};
   void SetDoClosePairRejection(bool DoClosePairRejection){fDoClosePairRejection = DoClosePairRejection;};
+  void SetDoAncestors(bool DoAncestors){fDoAncestors = DoAncestors;};
 
   private:
   AliAnalysisTaskNanoFemtoProtonPion(const AliAnalysisTaskNanoFemtoProtonPion &task);
@@ -76,8 +79,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   bool fRunPlotMult; //
   bool fRunPlotPhiTheta; // 
   bool fDoClosePairRejection; //
-
-  //GANESHA add needed histograms!! 
+  bool fDoAncestors; //
 
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
@@ -111,6 +113,9 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   TH1F **fSameEvent_OneDimensional;
   TH2F **fSameEventMult_OneDimensional;
   TH2F **fSameEventPhiTheta_OneDimensional;
+  TH1F **fSameEvent_OneDimensional_Ancestors;
+  TH2F **fSameEventMult_OneDimensional_Ancestors;
+  TH2F **fSameEventPhiTheta_OneDimensional_Ancestors;
 
   TList *fMixedEvent_List_OneDimensional;
   TList *fMixedEventDeltaEtaDeltaPhi_List_OneDimensional;
@@ -118,6 +123,6 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   TH2F **fMixedEventMult_OneDimensional;
   TH2F **fMixedEventTripletPhiTheta_OneDimensional;
 
-  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 2) //GANESHA 1->2
+  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 3) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFEMTOPROTONPION_H_ */

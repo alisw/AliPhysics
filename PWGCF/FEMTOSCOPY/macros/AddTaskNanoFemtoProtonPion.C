@@ -17,7 +17,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     bool DoThreeDFemto = true, //9
     bool RunPlotMult = true, //10
     bool RunPlotPhiTheta = false,//11
-    bool DoClosePairRejection = true) {
+    bool DoClosePairRejection = true,
+    bool DoAncestors = false) {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -226,6 +227,10 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
 
   if (isMC) {
     config->SetMomentumResolution(true);
+    if(DoAncestors){
+      config->SetAncestors(true);
+      config->GetDoAncestorsPlots();
+    }
   }
   if (fullBlastQA) {
    // config->SetkTBinning(true);
@@ -289,6 +294,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   task->SetRunPlotMult(RunPlotMult);
   task->SetRunPlotPhiTheta(RunPlotPhiTheta); 
   task->SetDoClosePairRejection(DoClosePairRejection);
+  task->SetDoAncestors(DoAncestors);
 
   mgr->AddTask(task);
 
