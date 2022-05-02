@@ -27,6 +27,7 @@
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 
 using namespace std;
 using namespace TMath;
@@ -67,28 +68,26 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fPileupOff(false),
     fUseNch(false),
     fUsePowerEff(false),
+    fPseudoEff(0),
     mpar(6),
     wp(0),
     wpP(0),
     wpN(0),
     fEventWeight(PtSpace::kWperms),
     fV0MMulti(0),
-    fck(0),
-    fskew(0),
-    fkur(0),
-    fp5(0),
-    fp6(0),
+    fpt(0),
     fNchTrueVsRec(0),
     fV0MvsMult(0),
     fPtMoms(0),
     fPtDist(0),
     fPtDCA(0),
+    fPtVsNTrk(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
 {};
 //_____________________________________________________________________________
-AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TString ContSubfix) : AliAnalysisTaskSE(name),
+AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool isOnTheFly, int pseudoeff, TString ContSubfix) : AliAnalysisTaskSE(name),
     fEventCuts(),
     fCentEst(0),
     fRunNo(0),
@@ -122,29 +121,27 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     fPileupOff(false),
     fUseNch(false),
     fUsePowerEff(false),
+    fPseudoEff(pseudoeff),
     mpar(6),
     wp(0),
     wpP(0),
     wpN(0),
     fEventWeight(PtSpace::kWperms),
     fV0MMulti(0),
-    fck(0),
-    fskew(0),
-    fkur(0),
-    fp5(0),
-    fp6(0),
+    fpt(0),
     fNchTrueVsRec(0),
     fV0MvsMult(0),
     fPtMoms(0),
     fPtDist(0),
     fPtDCA(0),
+    fPtVsNTrk(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
-    fOnTheFly(false),
+    fOnTheFly(isOnTheFly),
     fImpactParameter(0)
 { 
     SetContSubfix(ContSubfix);
     fCentEst = new TString("V0M");
-    if(!fIsMC)
+    if(!(fIsMC && !(fPseudoEff>0)) && !fOnTheFly)
     {
         DefineInput(1, TList::Class());
     }
@@ -163,6 +160,7 @@ AliAnalysisTaskPtCorr::~AliAnalysisTaskPtCorr()
     if(fCorrList) delete fCorrList;
 };
 void AliAnalysisTaskPtCorr::NotifyRun() {
+    if(fOnTheFly) return;
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
     if(!fPileupOff) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
 
@@ -179,7 +177,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     else if(fGFWSelection->GetSystFlagIndex() == 21) SetCentralityEstimator("CL1");
     OpenFile(1);
     const int temp_NV0MBinsDefault = 10;
-    double temp_V0MBinsDefault[12] = {0,5,10,20,30,40,50,60,70,80,90,101}; //Last bin to include V0M beyond anchor point
+    double temp_V0MBinsDefault[11] = {0,5,10,20,30,40,50,60,70,80,90}; //Last bin to include V0M beyond anchor point
     if(!fV0MAxis) SetV0MBins(temp_NV0MBinsDefault,temp_V0MBinsDefault);
     double *l_V0MBinsDefault=GetBinsFromAxis(fV0MAxis);
     int l_NV0MBinsDefault=fV0MAxis->GetNbins();
@@ -197,7 +195,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     fNPtBins = fPtAxis->GetNbins();
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
     fRndm = new TRandom(0);
-    if(!fIsMC)
+    if(!(fIsMC && !(fPseudoEff>0)) && !fOnTheFly)
     { 
         fEfficiencyList = (TList*)GetInputData(1);
         fEfficiencies = new TH1D*[l_NV0MBinsDefault];
@@ -226,27 +224,10 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     };
     
     fCorrList = new TList(); fCorrList->SetOwner(1);
-    fck = new AliPtContainer("ckcont","ckcont",fNMultiBins,fMultiBins,2,fEtaGap>=0);
-    fck->SetEventWeight(fEventWeight);
-    fCorrList->Add(fck);
-    fskew = new AliPtContainer("skewcont","skewcont",fNMultiBins,fMultiBins,3,fEtaGap>=0);
-    fskew->SetEventWeight(fEventWeight);
-    fCorrList->Add(fskew);
-    fkur = new AliPtContainer("kurcont","kurcont",fNMultiBins,fMultiBins,4,fEtaGap>=0);
-    fkur->SetEventWeight(fEventWeight);
-    fCorrList->Add(fkur);
-    fp5 = new AliPtContainer("p5cont","p5cont",fNMultiBins,fMultiBins,5,fEtaGap>=0);
-    fp5->SetEventWeight(fEventWeight);
-    fCorrList->Add(fp5);
-    fp6 = new AliPtContainer("p6cont","p6cont",fNMultiBins,fMultiBins,6,fEtaGap>=0);
-    fp6->SetEventWeight(fEventWeight);
-    fCorrList->Add(fp6);
+    fpt = new AliPtContainer("ptcont","ptcont",fNMultiBins,fMultiBins,mpar,fEtaGap>=0);
+    fCorrList->Add(fpt);
     if(fNbootstrap) {
-      fck->InitializeSubsamples(fNbootstrap);
-      fskew->InitializeSubsamples(fNbootstrap);
-      fkur->InitializeSubsamples(fNbootstrap);
-      fp5->InitializeSubsamples(fNbootstrap);
-      fp6->InitializeSubsamples(fNbootstrap);
+      fpt->InitializeSubsamples(fNbootstrap);
     }
     fCorrList->Add(fV0MMulti);
     if(fIsMC) {
@@ -259,7 +240,9 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     fQAList = new TList();
     fQAList->SetOwner(1);
     fEventCuts.AddQAplotsToList(fQAList,kTRUE);
-    fPtMoms = new TH2D("ptMoments","ptMoments",fNPtBins,fPtBins,6,0,6);
+    double powers[7] = {0,1,2,3,4,5,6};
+    int Npows = 6;
+    fPtMoms = new TH3D("ptMoments","ptMoments",fNPtBins,fPtBins,Npows,powers,temp_NV0MBinsDefault,l_V0MBinsDefault);
     fQAList->Add(fPtMoms);
     fPtDist = new TH2D("ptDist","ptDist;p_t;centrality",fNPtBins,fPtBins,temp_NV0MBinsDefault,l_V0MBinsDefault);
     fQAList->Add(fPtDist);
@@ -267,6 +250,11 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     int NbinsDCA = 60;
     fPtDCA = new TH3D("ptDCA","ptDCA;pt;dcaxy;dcaz",fNPtBins,fPtBins,NbinsDCA,binsDCA,NbinsDCA,binsDCA);
     fQAList->Add(fPtDCA);
+    Int_t NNtrkBins=100;
+    Double_t *binsNtrk = new Double_t[NNtrkBins+1];
+    for(Int_t i=0;i<=NNtrkBins; i++) binsNtrk[i] = 30*i+0.5;
+    fPtVsNTrk = new TH2D("NtracksPt",";NtracksPt;N_{trk};p_{T} (GeV/#it{c})",NNtrkBins,binsNtrk,fNPtBins,fPtBins);
+    fQAList->Add(fPtVsNTrk);
     PostData(2,fQAList);
     fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
     fGFWnTrackSelection = new AliGFWCuts();
@@ -276,36 +264,27 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
 }
 void AliAnalysisTaskPtCorr::UserExec(Option_t *)
 {
-    AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD) return;
+    AliAODEvent *fAOD;
+    AliVEvent* fEvent;
     if(fIsMC) {
         fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
         if (!fMCEvent) return;
     }
-    /*
-    AliVEvent* fEvent;
-    if(fOnTheFly)
+    if(fOnTheFly) fMCEvent = getMCEvent();
+    else 
     {
-      fEvent = dynamic_cast<AliVEvent*>(MCEvent());
+      fEvent = dynamic_cast<AliVEvent*>(InputEvent());
+      fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+      if(!fAOD) { return; }
       if(!fEvent) { printf("Event not found!\n"); return; }
-      if(!AcceptMCEvent(fEvent)) return;
     }
-    */
-    //double l_cent = getCentrality();
-    AliMultSelection *l_MultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    if(!l_MultSel) { printf("MultSelection not found\n"); return; }
-    double l_cent = l_MultSel->GetMultiplicityPercentile(fCentEst->Data());
+    double l_cent = getCentrality();
     if(l_cent<0) return;
-    //if(!fOnTheFly && !CheckTrigger(l_cent)) return;
-    if(!CheckTrigger(l_cent)) return;
+    if(!fOnTheFly && !CheckTrigger(l_cent)) return;
     double vtxXYZ[] = {0.,0.,0.};
-    //if(!fOnTheFly && !AcceptAODEvent(fAOD, vtxXYZ)) return;
-    if(!AcceptAODEvent(fAOD, vtxXYZ)) return;
-    //double vtxZ = (fOnTheFly)?fEvent->GetPrimaryVertex()->GetZ():fAOD->GetPrimaryVertex()->GetZ();
-    //if(!fOnTheFly && !fGFWSelection->AcceptVertex(fAOD)) return;
-    if(!fGFWSelection->AcceptVertex(fAOD)) return;
-    //(fOnTheFly)?FillPtCorr(fEvent,vtxZ,l_cent,vtxXYZ):FillPtCorr(fAOD,vtxZ,l_cent,vtxXYZ);
-    FillPtCorr(fAOD,l_cent,vtxXYZ);
+    if(!fOnTheFly && !AcceptAODEvent(fAOD, vtxXYZ)) return;
+    if(!fOnTheFly && !fGFWSelection->AcceptVertex(fAOD)) return;
+    (fOnTheFly)?FillPtCorr(fMCEvent,l_cent,vtxXYZ):FillPtCorr(fAOD,l_cent,vtxXYZ);
 }
 bool AliAnalysisTaskPtCorr::CheckTrigger(Double_t lCent) {
   unsigned int fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -337,17 +316,11 @@ void AliAnalysisTaskPtCorr::Terminate(Option_t *)
 {
 
 }
-bool AliAnalysisTaskPtCorr::AcceptMCEvent(AliVEvent* inev)
-{
-  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(inev);
-  if(!ev) { AliFatal("MC event not found!\n"); return kFALSE; }
-
+AliMCEvent *AliAnalysisTaskPtCorr::getMCEvent() {
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
+  if(!ev) { AliFatal("MC event not found!"); return 0; }
   AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
-  if(!header) { AliFatal("MC event not generated!\n"); return kFALSE; }
-  const AliVVertex *vertex = ev->GetPrimaryVertex();
-  if(!ev) { AliError("Vertex of MC not found!\n"); }
-  if(TMath::Abs(vertex->GetZ()) > 10) return kFALSE;
-
+  if(!header) { AliFatal("MC event not generated!"); return 0; }
   AliCollisionGeometry* headerH;
   TString genName;
   TList *ltgen = (TList*)ev->GetCocktailList();
@@ -360,13 +333,11 @@ bool AliAnalysisTaskPtCorr::AcceptMCEvent(AliVEvent* inev)
       }
     }
   }
-  else
-    headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
+  else headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
   if(headerH){
       fImpactParameter = headerH->ImpactParameter();
   }
-
-  return kTRUE;
+  return ev;
 }
 bool AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *tr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp)
 {
@@ -393,7 +364,7 @@ bool AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *mtr, double *ltrackXYZ, 
   if(fGFWnTrackSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
   return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,kFALSE); 
 };
-bool AliAnalysisTaskPtCorr::AcceptAODEvent(AliAODEvent *ev, Double_t *inVtxXYZ)
+bool AliAnalysisTaskPtCorr::AcceptAODEvent(AliVEvent *ev, Double_t *inVtxXYZ)
 {
     const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(ev->GetPrimaryVertex());
     if(!vtx || vtx->GetNContributors() < 1)
@@ -434,7 +405,7 @@ void AliAnalysisTaskPtCorr::FillWPCounter(vector<vector<double>> &inarr, vector<
   }
   return;
 }
-void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* ev, const double &l_cent, double *vtxXYZ)
+void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &l_cent, double *vtxXYZ)
 {          
     wp.resize(10,vector<double>(10));
     wpP.resize(10,vector<double>(10));
@@ -449,16 +420,12 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* ev, const double &l_cent, do
     int nTracks=0;
     if(fOnTheFly)
     {
-      AliMCEvent* mcev = dynamic_cast<AliMCEvent*>(ev);
-      int NTracks = mcev->GetNumberOfPrimaries();
+      int NTracks = fMCEvent->GetNumberOfPrimaries();
       if(NTracks < 1) { return; }
       for(Int_t iTrack(0); iTrack < NTracks; iTrack++) 
       {
-          AliMCParticle* track = dynamic_cast<AliMCParticle*>(mcev->GetTrack(iTrack));
+          AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
           if(!track) { continue; }
-
-          if(!(mcev->IsPhysicalPrimary(iTrack))) continue;
-          if(track->Charge() == 0) continue;
           double l_eta = track->Eta();          
           if (TMath::Abs(l_eta) > fEta) continue;
           double l_pt = track->Pt();
@@ -466,7 +433,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* ev, const double &l_cent, do
           if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
           if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,1,l_pt);
           FillWPCounter(wp,1,l_pt);
-          for(int i=0;i<6;++i) fPtMoms->Fill(pow(l_pt,i+1),i);
+          for(int i=0;i<6;++i) fPtMoms->Fill(pow(l_pt,i+1),i+0.5,l_cent);
           fPtDist->Fill(l_pt,l_cent);
           fPtDCA->Fill(l_pt,TMath::Sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),trackXYZ[2]);
       }    
@@ -480,6 +447,8 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* ev, const double &l_cent, do
       Int_t nPrim = tca->GetEntries();
       if(nPrim<1) return;
       AliAODMCParticle *part;
+      double rnd_eff = 0.0;
+      vector<int> NtracksPt(fNPtBins);
       for(Int_t ipart = 0; ipart < nPrim; ipart++) {
         part = (AliAODMCParticle*)tca->At(ipart);
         if (!part->IsPhysicalPrimary()) continue;
@@ -488,16 +457,24 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* ev, const double &l_cent, do
         if (TMath::Abs(l_eta) > fEta) continue;
         double l_pt = part->Pt();
         if (l_pt<ptMin || l_pt>ptMax) continue;
-        if(TMath::Abs(l_eta)<fEtaNch) nTracksMC++; 
+        double wNUE = 1.0;
+        if(fPseudoEff>0) {
+          wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
+          if(wNUE==0.0) continue;
+          if(fPseudoEff==1) { rnd_eff = fRndm->Rndm(); if(rnd_eff > wNUE) continue; }
+          if(fPseudoEff==2) wNUE = fRndm->Gaus(wNUE,0.05); 
+        }
+        if(TMath::Abs(l_eta)<fEtaNch) { nTracksMC++; NtracksPt[fPtDist->GetXaxis()->FindBin(l_pt)-1]++; }
         if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
         if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,1,l_pt);
-        FillWPCounter(wp,1,l_pt);
-        for(int i=0;i<6;++i) fPtMoms->Fill(pow(l_pt,i+1),i);
+        FillWPCounter(wp,wNUE,l_pt);
+        for(int i=0;i<6;++i) fPtMoms->Fill(pow(l_pt,i+1),i+0.5,l_cent);
         fPtDist->Fill(l_pt,l_cent);
         fPtDCA->Fill(l_pt,TMath::Sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),trackXYZ[2]);
       }
       nTracks = fUseRecNchForMC?nTracksRec:nTracksMC;
       if(fUseRecNchForMC) fNchTrueVsRec->Fill(nTracksMC,nTracksRec);
+      for(int i(0);i<fNPtBins;++i) fPtVsNTrk->Fill(NtracksPt[i],fPtBins[i]+0.001); 
     }
     else
     {
@@ -534,7 +511,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* ev, const double &l_cent, do
             if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,wNUE,l_pt);
             FillWPCounter(wp,wNUE,l_pt);
           }
-          for(int i=0;i<6;++i) fPtMoms->Fill(pow(l_pt,i+1),i+0.5);
+          for(int i=0;i<6;++i) fPtMoms->Fill(pow(l_pt,i+1),i+0.5,l_cent);
           fPtDist->Fill(l_pt,l_cent);
           fPtDCA->Fill(l_pt,TMath::Sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),trackXYZ[2]);
       }
@@ -544,32 +521,20 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* ev, const double &l_cent, do
     fV0MvsMult->Fill(l_cent,nTracks);
     double l_mult = fUseNch?(1.0*nTracks):l_cent;
     double l_rnd = fRndm->Rndm();
-    double wpt = wp[1][0];
     //Fill recursive pt-correlations
-    fck->FillRecursive(wp,l_mult,l_rnd);
-    fskew->FillRecursive(wp,l_mult,l_rnd);
-    fkur->FillRecursive(wp,l_mult,l_rnd);
-    fp5->FillRecursive(wp,l_mult,l_rnd);
-    fp6->FillRecursive(wp,l_mult,l_rnd);
-
+    fpt->FillRecursive(wp,l_mult,l_rnd);
     //Test with explicit ck calculation
-    fck->FillObs(wp,l_mult,l_rnd);
-    fskew->FillObs(wp,l_mult,l_rnd);
-    fkur->FillObs(wp,l_mult,l_rnd);
+    fpt->FillObs(wp,l_mult,l_rnd);
     //Fill subevent profiles with appropriate wp arrays
     if(fEtaGap>=0) {
-      fck->FillRecursive(wpP,l_mult,l_rnd,"subP"); fck->FillRecursive(wpN,l_mult,l_rnd,"subN");
-      fskew->FillRecursive(wpP,l_mult,l_rnd,"subP"); fskew->FillRecursive(wpN,l_mult,l_rnd,"subN");
-      fkur->FillRecursive(wpP,l_mult,l_rnd,"subP"); fkur->FillRecursive(wpN,l_mult,l_rnd,"subN");
-      fp5->FillRecursive(wpP,l_mult,l_rnd,"subP"); fp5->FillRecursive(wpN,l_mult,l_rnd,"subN");
-      fp6->FillRecursive(wpP,l_mult,l_rnd,"subP"); fp6->FillRecursive(wpN,l_mult,l_rnd,"subN");
+      fpt->FillRecursive(wpP,l_mult,l_rnd,"subP"); fpt->FillRecursive(wpN,l_mult,l_rnd,"subN");
     }
     wp.clear();
     wpP.clear();
     wpN.clear();
     PostData(1,fCorrList);
 }
-int AliAnalysisTaskPtCorr::GetNTracks(AliAODEvent* ev, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp) 
+int AliAnalysisTaskPtCorr::GetNTracks(AliVEvent* ev, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp) 
 {
   Double_t ltrackXYZ[3];
   AliAODTrack *lTrack;

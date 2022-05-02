@@ -154,13 +154,13 @@ void AliPtContainer::FillRecursiveProfiles(const vector<double> &corr, const vec
 {
     for(int m=1;m<=mpar;++m)
     {
-        if(sumw[m]==0||(fEventWeight==PtSpace::kWmaxperm && sumw[GetWeightIndex(m)]==0)) return; 
+        if(sumw[m]==0) continue; 
         if(sub.IsNull())
-            ((AliProfileBS*)fCorrList->At(m-1))->FillProfile(lMult,corr[m]/sumw[m],sumw[GetWeightIndex(m)],rn);
+            ((AliProfileBS*)fCorrList->At(m-1))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:sumw[m],rn);
         if(sub.Contains("subP"))
-            ((AliProfileBS*)fSubList->At(2*(m-1)))->FillProfile(lMult,corr[m]/sumw[m],sumw[GetWeightIndex(m)],rn);
+            ((AliProfileBS*)fSubList->At(2*(m-1)))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:sumw[m],rn);
         if(sub.Contains("subN"))
-            ((AliProfileBS*)fSubList->At(2*(m-1)+1))->FillProfile(lMult,corr[m]/sumw[m],sumw[GetWeightIndex(m)],rn);
+            ((AliProfileBS*)fSubList->At(2*(m-1)+1))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:sumw[m],rn);
     }
     return;
 }
@@ -512,14 +512,6 @@ TH1* AliPtContainer::getPowerHist(TH1* inh, double p)
 
     }   
     return reth;
-}
-int AliPtContainer::GetWeightIndex(int m)
-{
-    if(fEventWeight==kOne) return 0;
-    if(fEventWeight==kWpt) return 1;
-    if(fEventWeight==kWperms) return m;
-    if(fEventWeight==kWmaxperm) return mpar;
-    return m;
 }
 Long64_t AliPtContainer::Merge(TCollection *collist) {
   Long64_t nmerged=0;

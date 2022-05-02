@@ -1143,8 +1143,8 @@ void AliAnalysisTaskLMeeCocktailMC::SetEffFileName(TString name)
   // Get Efficiency
   if(fFileNameEff.Contains("alien")){
     // file is copied from alien path to local directory
-    //gSystem->Exec(Form("alien_cp %s .", fFileNameEff.Data()));
-    TFile::Cp(fFileNameEff, TString::Format("file:%s", gSystem->BaseName(fFileNameEff)));
+    gSystem->Exec(Form("alien_cp %s file:./", fFileNameEff.Data()));
+    //TFile::Cp(fFileNameEff, TString::Format("file:%s", gSystem->BaseName(fFileNameEff)));//this works only rootfile
 
     // obtain ROOT file name only and local directory
     TObjArray* Strings = fFileNameEff.Tokenize("/");
@@ -1179,8 +1179,8 @@ void AliAnalysisTaskLMeeCocktailMC::SetResFileName(TString name)
   if(fResolType == 2) {
     if(fResolDataSetName.Contains("alien")){
       // file is copied from alien path to local directory
-      //gSystem->Exec(Form("alien_cp %s .", fResolDataSetName.Data()));
-      TFile::Cp(fResolDataSetName, TString::Format("file:%s", gSystem->BaseName(fResolDataSetName)));
+      gSystem->Exec(Form("alien_cp %s file:./", fResolDataSetName.Data()));
+      //TFile::Cp(fResolDataSetName, TString::Format("file:%s", gSystem->BaseName(fResolDataSetName)));//this works only rootfile
 
       // obtain ROOT file name only and local directory
       TObjArray* Strings = fResolDataSetName.Tokenize("/");

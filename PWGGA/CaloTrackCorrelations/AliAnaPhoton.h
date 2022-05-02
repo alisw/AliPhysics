@@ -503,6 +503,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F **fhMCParticleM02NLMCen;                     //![GetNCentrBin()*fgkNssTypes]
   TH3F * fhMCParticleM02NLM   [fgkNssTypes];        //!<! MC cluster from different origins  shower shape long axis  vs n local max, after all cuts.
 
+  TH3F * fhMCPromptPhotonPtRecPtGenEta;             //!<! Correlation prompt photon reconstructed and generated pT and eta
+  TH3F * fhMCDecayPhotonPtRecPtGenEta;              //!<! Correlation decay photon reconstructed and generated pT and eta
+  TH3F * fhMCPromptPhotonEnRecEnGenEta;             //!<! Correlation prompt photon reconstructed and generated energy and eta
+  TH3F * fhMCDecayPhotonEnRecEnGenEta;              //!<! Correlation decay photon reconstructed and generated energy and eta
+
+  TH3F * fhMCPromptPhotonPtResolEta;                //!<! Correlation prompt photon pT resol vs  eta
+  TH3F * fhMCDecayPhotonPtResolEta;                 //!<! Correlation decay photon pT resol vs  eta
+  TH3F * fhMCPromptPhotonEnResolEta;                //!<! Correlation prompt photon energy resol vs eta
+  TH3F * fhMCDecayPhotonEnResolEta;                 //!<! Correlation decay photon energy resol vs eta
+  
 //  TH2F * fhMCDeltaE [fgkNmcTypes];                  //!<! MC-Reco E distribution coming from MC particle
 //  TH2F * fhMCDeltaPt[fgkNmcTypes];                  //!<! MC-Reco pT distribution coming from MC particle
 //  TH2F * fhMC2E     [fgkNmcTypes];                  //!<! E distribution, Reco vs MC coming from MC particle
@@ -779,6 +789,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 //TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
 
   TH3F * fhLam0Eta[fgkNSectors];                    //!<! Cluster lambda0 vs  Pt vs eta
+  TH3F * fhLam0EtaEn[fgkNSectors];                  //!<! Cluster lambda0 vs Energy vs eta
   TH3F * fhLam0EtaVzPos[fgkNSectors];               //!<! Cluster lambda0 vs  Pt vs eta
   ///<  Cluster   shower shape  vs  pT vs eta, per centrality
   TH3F **fhLam0EtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
