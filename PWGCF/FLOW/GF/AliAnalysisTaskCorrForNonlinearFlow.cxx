@@ -482,8 +482,6 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 
     fListOfProfile = new TList();
     fListOfProfile->SetOwner();
-
-
     
     fhChargedSE = new AliTHn("fhChargedSE", "fhChargedSE", nSteps, 6, iBinningTPCTPC);
     fhChargedSE->SetBinLimits(0, binning_deta_tpctpc);
@@ -514,6 +512,9 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     fhChargedME->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
     fhChargedME->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
     fListOfProfile->Add(fhChargedME);
+
+  PostData(1, fListOfObjects);
+  PostData(2, fListOfProfile);
 }
 
 // ---------------------------------------------------------------------------------
