@@ -10,11 +10,195 @@
 
 #ifdef __CLING__
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
-#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
-#endif
 Bool_t SetCustomQualityCut(AliRsnCutTrackQuality* trkQualityCut,
                            Int_t customQualityCutsID = 0,
                            Int_t customFilterBit = 0);
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#endif
+
+void AddMonitorOutput_K0sPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lpt=0)
+{
+  // Pt
+  AliRsnValueDaughter *axisK0sPt = new AliRsnValueDaughter("k0s_transversemomentum", AliRsnValueDaughter::kV0Pt);
+  axisK0sPt->SetBins(0.,15.,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorTrMom = new AliRsnListOutput("K0s_TransverseMomentum", AliRsnListOutput::kHistoDefault);
+  outMonitorTrMom->AddValue(axisK0sPt);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorTrMom);
+  if (lpt) lpt->AddOutput(outMonitorTrMom);
+}
+
+void AddMonitorOutput_K0sNegDaughPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lnpt=0)
+{
+
+  // Pt
+  AliRsnValueDaughter *axisK0sNegDaughPt = new AliRsnValueDaughter("k0s_negdaugh_transversemomentum", AliRsnValueDaughter::kV0NPt);
+  axisK0sNegDaughPt->SetBins(0.,15.,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorK0sNegDaughTrMom = new AliRsnListOutput("K0s_NegDaugh_TransverseMomentum", AliRsnListOutput::kHistoDefault);
+  outMonitorK0sNegDaughTrMom->AddValue(axisK0sNegDaughPt);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorK0sNegDaughTrMom);
+  if (lnpt) lnpt->AddOutput(outMonitorK0sNegDaughTrMom);
+
+}
+
+void AddMonitorOutput_K0sPosDaughPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lppt=0)
+{
+
+  // Mass
+  AliRsnValueDaughter *axisK0sPosDaughPt = new AliRsnValueDaughter("k0s_posdaugh_transversemomentum", AliRsnValueDaughter::kV0PPt);
+  axisK0sPosDaughPt->SetBins(0.,15.,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorK0sPosDaughTrMom = new AliRsnListOutput("K0s_PosDaugh_TransverseMomentum", AliRsnListOutput::kHistoDefault);
+  outMonitorK0sPosDaughTrMom->AddValue(axisK0sPosDaughPt);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorK0sPosDaughTrMom);
+  if (lppt) lppt->AddOutput(outMonitorK0sPosDaughTrMom);
+
+}
+
+void AddMonitorOutput_K0sMass(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
+{
+
+  // Mass
+  AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("k0s_mass", AliRsnValueDaughter::kV0Mass);
+  axisMass->SetBins(0.4,0.6,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorM = new AliRsnListOutput("K0s_Mass", AliRsnListOutput::kHistoDefault);
+  outMonitorM->AddValue(axisMass);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorM);
+  if (lm) lm->AddOutput(outMonitorM);
+
+}
+
+void AddMonitorOutput_K0sRadius(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldca=0)
+{
+  // K0s Radius
+  AliRsnValueDaughter *axisK0sRadius = new AliRsnValueDaughter("k0s_radius", AliRsnValueDaughter::kV0Radius);
+  axisK0sRadius->SetBins(0.0,200,0.2);
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorK0sRadius = new AliRsnListOutput("K0s_Radius", AliRsnListOutput::kHistoDefault);
+  outMonitorK0sRadius->AddValue(axisK0sRadius);
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorK0sRadius);
+  if (ldca) ldca->AddOutput(outMonitorK0sRadius);
+}
+
+void AddMonitorOutput_K0sDaughterDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldaugdca=0)
+{
+
+  // K0s Daughter DCA
+  AliRsnValueDaughter *axisK0sDDCA = new AliRsnValueDaughter("k0s_daughterDCA", AliRsnValueDaughter::kDaughterDCA);
+  axisK0sDDCA->SetBins(0.0,2,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorK0sDDCA = new AliRsnListOutput("K0s_DaughterDCA", AliRsnListOutput::kHistoDefault);
+  outMonitorK0sDDCA->AddValue(axisK0sDDCA);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorK0sDDCA);
+  if (ldaugdca) ldaugdca->AddOutput(outMonitorK0sDDCA);
+
+}
+
+void AddMonitorOutput_K0sCosPointAngle(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lcpa=0)
+{
+
+  // K0s Cosine of the Pointing Angle
+  AliRsnValueDaughter *axisK0sCPA = new AliRsnValueDaughter("k0s_cospointang", AliRsnValueDaughter::kCosPointAng);
+  axisK0sCPA->SetBins(0.97,1.,0.0001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorK0sCPA = new AliRsnListOutput("K0s_CosineOfPointingAngle", AliRsnListOutput::kHistoDefault);
+  outMonitorK0sCPA->AddValue(axisK0sCPA);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorK0sCPA);
+  if (lcpa) lcpa->AddOutput(outMonitorK0sCPA);
+
+}
+
+void AddMonitorOutput_K0sPionPID(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lpiPID=0)
+{
+
+
+  AliRsnValueDaughter *axisK0sPionPID = new AliRsnValueDaughter("k0s_pionPID", AliRsnValueDaughter::kLambdaPionPIDCut);
+  axisK0sPionPID->SetBins(0.0,5,0.01);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorK0sPionPID = new AliRsnListOutput("K0s_PionPID", AliRsnListOutput::kHistoDefault);
+  outMonitorK0sPionPID->AddValue(axisK0sPionPID);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorK0sPionPID);
+  if (lpiPID) lpiPID->AddOutput(outMonitorK0sPionPID);
+
+}
+
+
+// Lifetime of V0 particle.
+
+void AddMonitorOutput_K0sfpLife(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *llifetime=0)
+{
+  AliRsnValueDaughter *k0slifetime = new AliRsnValueDaughter("lifetime", AliRsnValueDaughter::kV0Lifetime);
+  k0slifetime->SetBins(0.0,200,0.1);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitork0sLifetime = new AliRsnListOutput("k0s", AliRsnListOutput::kHistoDefault);
+  outMonitork0sLifetime->AddValue(k0slifetime);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitork0sLifetime);
+  if (llifetime) llifetime->AddOutput(outMonitork0sLifetime);
+
+}
+
+void AddMonitorOutput_K0sMass_Pt(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *lMass=0, AliRsnLoopDaughter *lPt=0)
+{
+  AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("K0s_Mass", AliRsnValueDaughter::kV0Mass);
+  axisMass->SetBins(0.4,0.6,0.001);
+
+  AliRsnValueDaughter *axisK0sPt = new AliRsnValueDaughter("K0s_Pt", AliRsnValueDaughter::kV0Pt);
+  axisK0sPt->SetBins(0.,30.,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorTrMom = new AliRsnListOutput("K0s_Mass_Pt", AliRsnListOutput::kHistoDefault);
+  outMonitorTrMom->AddValue(axisK0sPt);
+  outMonitorTrMom->AddValue(axisMass);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorTrMom);
+  // if (lPt) lpt->AddOutput(outMonitorTrMom);//=======>>ORIGINAL
+  if (lPt) lPt->AddOutput(outMonitorTrMom);
+  //if (mon) mon->Add(outMonitorM);
+  //if (lMass) lm->AddOutput(outMonitorM);
+}
+
+void AddMonitorOutput_MinDCAToVertexXYPtDep(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *trackDCAXY=0)
+{
+
+  // DCAXY of Tracks
+  AliRsnValueDaughter *axisDCATracks = new AliRsnValueDaughter("dcaXY_tracks", AliRsnValueDaughter::kV0DCAXY);
+  axisDCATracks->SetBins(0.0,2,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorDCATracks = new AliRsnListOutput("DCAXY_Tracks", AliRsnListOutput::kHistoDefault);
+  outMonitorDCATracks->AddValue(axisDCATracks);
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorDCATracks);
+  if (trackDCAXY) trackDCAXY->AddOutput(outMonitorDCATracks);
+}
 
 Bool_t ConfigKStarPlusMinuspPbRun2_AOD
 (
@@ -51,7 +235,7 @@ Bool_t ConfigKStarPlusMinuspPbRun2_AOD
  Float_t		 v0rapidity,
  Int_t                   Sys
  )
-//kTPCpidphipp2015
+
 {
   if (isMC)
     Bool_t isData=kFALSE;
@@ -141,7 +325,7 @@ Bool_t ConfigKStarPlusMinuspPbRun2_AOD
         else if(Sys==21){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster+0.1);}
 
     }
-    //
+   
     AliRsnCutSet *cutSetK0s = new AliRsnCutSet("setK0s", AliRsnTarget::kDaughter);
     cutSetK0s->AddCut(cutK0s);
     cutSetK0s->SetCutScheme(cutK0s->GetName());
@@ -156,10 +340,6 @@ Bool_t ConfigKStarPlusMinuspPbRun2_AOD
         AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
         AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
     }
-
-    //
-    // -- Values ------------------------------------------------------------------------------------
-    //
 
     /// -- Values ------------------------------------------------------------------------------------
     /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
@@ -265,397 +445,9 @@ Bool_t ConfigKStarPlusMinuspPbRun2_AOD
     return kTRUE;
 }
 
-void AddMonitorOutput_PionPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ppt=0)
-{
-
-    // PionPt
-    AliRsnValueDaughter *axisPionPt = new AliRsnValueDaughter("pion_pt", AliRsnValueDaughter::kPt);
-    axisPionPt->SetBins(0.,10.0,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorPionPt = new AliRsnListOutput("Pion_Pt", AliRsnListOutput::kHistoDefault);
-    outMonitorPionPt->AddValue(axisPionPt);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorPionPt);
-    if (ppt) ppt->AddOutput(outMonitorPionPt);
-
-}
-
-void AddMonitorOutput_PionEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *peta=0)
-{
-
-    // PionDCA
-    AliRsnValueDaughter *axisPionEta = new AliRsnValueDaughter("pion_eta", AliRsnValueDaughter::kEta);
-    axisPionEta->SetBins(-2.,2.,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorPionEta = new AliRsnListOutput("Pion_Eta", AliRsnListOutput::kHistoDefault);
-    outMonitorPionEta->AddValue(axisPionEta);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorPionEta);
-    if (peta) peta->AddOutput(outMonitorPionEta);
-
-}
-
-void AddMonitorOutput_PionDCAxy(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *pdcaxy=0)
-{
-
-    // PionDCA
-    AliRsnValueDaughter *axisPionDCAxy = new AliRsnValueDaughter("pion_dcaxy", AliRsnValueDaughter::kDCAXY);
-    axisPionDCAxy->SetBins(-0.5,0.5,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorPionDCAxy = new AliRsnListOutput("Pion_DCAxy", AliRsnListOutput::kHistoDefault);
-    outMonitorPionDCAxy->AddValue(axisPionDCAxy);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorPionDCAxy);
-    if (pdcaxy) pdcaxy->AddOutput(outMonitorPionDCAxy);
-
-}
-
-void AddMonitorOutput_PionDCAz(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *pdcaz=0)
-{
-
-    // PionDCA
-    AliRsnValueDaughter *axisPionDCAz = new AliRsnValueDaughter("pion_dcaz", AliRsnValueDaughter::kDCAZ);
-    axisPionDCAz->SetBins(-2.5,2.5,0.005);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorPionDCAz = new AliRsnListOutput("Pion_DCAz", AliRsnListOutput::kHistoDefault);
-    outMonitorPionDCAz->AddValue(axisPionDCAz);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorPionDCAz);
-    if (pdcaz) pdcaz->AddOutput(outMonitorPionDCAz);
-
-}
-
-void AddMonitorOutput_PionPIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *piPID=0)
-{
-
-    // Pion PID Cut
-    AliRsnValueDaughter *axisPionPIDCut = new AliRsnValueDaughter("pionPID", AliRsnValueDaughter::kTPCnsigmaPi);
-    axisPionPIDCut->SetBins(0.0,5,0.01);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorPionPIDCut = new AliRsnListOutput("Pion_PID_Cut", AliRsnListOutput::kHistoDefault);
-    outMonitorPionPIDCut->AddValue(axisPionPIDCut);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorPionPIDCut);
-    if (piPID) piPID->AddOutput(outMonitorPionPIDCut);
-
-}
-
-void AddMonitorOutput_PionNTPC(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *piNTPC=0)
-{
-
-    // Pion PID Cut
-    AliRsnValueDaughter *axisPionNTPC = new AliRsnValueDaughter("pionNTPC", AliRsnValueDaughter::kNTPCclusters);
-    axisPionNTPC->SetBins(0.0,200,1);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorPionNTPC = new AliRsnListOutput("Pion_NTPC", AliRsnListOutput::kHistoDefault);
-    outMonitorPionNTPC->AddValue(axisPionNTPC);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorPionNTPC);
-    if (piNTPC) pNTPC->AddOutput(outMonitorPionNTPC);
-
-}
-
-void AddMonitorOutput_PionTPCchi2(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *piTPCchi2=0)
-{
-
-    // Pion PID Cut
-    AliRsnValueDaughter *axisPionTPCchi2 = new AliRsnValueDaughter("pionTPCchi2", AliRsnValueDaughter::kTPCchi2);
-    axisPionTPCchi2->SetBins(0.0,6,.1);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorPionTPCchi2 = new AliRsnListOutput("Pion_TPCchi2", AliRsnListOutput::kHistoDefault);
-    outMonitorPionTPCchi2->AddValue(axisPionTPCchi2);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorPionTPCchi2);
-    if (piTPCchi2) pTPCchi2->AddOutput(outMonitorPionTPCchi2);
-
-}
-
-
-void AddMonitorOutput_K0sP(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lp=0)
-{
-
-
-    AliRsnValueDaughter *axisK0sP = new AliRsnValueDaughter("k0s_momentum", AliRsnValueDaughter::kP);
-    axisK0sP->SetBins(0.,15.,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorMom = new AliRsnListOutput("K0s_Momentum", AliRsnListOutput::kHistoDefault);
-    outMonitorMom->AddValue(axisK0sP);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorMom);
-    if (lp) lp->AddOutput(outMonitorMom);
-
-}
-
-void AddMonitorOutput_K0sPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lpt=0)
-{
-
-    // Pt
-    AliRsnValueDaughter *axisK0sPt = new AliRsnValueDaughter("k0s_transversemomentum", AliRsnValueDaughter::kV0Pt);
-    axisK0sPt->SetBins(0.,15.,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorTrMom = new AliRsnListOutput("K0s_TransverseMomentum", AliRsnListOutput::kHistoDefault);
-    outMonitorTrMom->AddValue(axisK0sPt);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorTrMom);
-    if (lpt) lpt->AddOutput(outMonitorTrMom);
-
-}
-
-void AddMonitorOutput_K0sNegDaughPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lnpt=0)
-{
-
-    // Pt
-    AliRsnValueDaughter *axisK0sNegDaughPt = new AliRsnValueDaughter("k0s_negdaugh_transversemomentum", AliRsnValueDaughter::kV0NPt);
-    axisK0sNegDaughPt->SetBins(0.,15.,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorK0sNegDaughTrMom = new AliRsnListOutput("K0s_NegDaugh_TransverseMomentum", AliRsnListOutput::kHistoDefault);
-    outMonitorK0sNegDaughTrMom->AddValue(axisK0sNegDaughPt);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorK0sNegDaughTrMom);
-    if (lnpt) lnpt->AddOutput(outMonitorK0sNegDaughTrMom);
-
-}
-
-void AddMonitorOutput_K0sPosDaughPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lppt=0)
-{
-
-    // Mass
-    AliRsnValueDaughter *axisK0sPosDaughPt = new AliRsnValueDaughter("k0s_posdaugh_transversemomentum", AliRsnValueDaughter::kV0PPt);
-    axisK0sPosDaughPt->SetBins(0.,15.,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorK0sPosDaughTrMom = new AliRsnListOutput("K0s_PosDaugh_TransverseMomentum", AliRsnListOutput::kHistoDefault);
-    outMonitorK0sPosDaughTrMom->AddValue(axisK0sPosDaughPt);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorK0sPosDaughTrMom);
-    if (lppt) lppt->AddOutput(outMonitorK0sPosDaughTrMom);
-
-}
-
-
-void AddMonitorOutput_K0sMass(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
-{
-
-    // Mass
-    AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("k0s_mass", AliRsnValueDaughter::kV0Mass);
-    axisMass->SetBins(0.4,0.6,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorM = new AliRsnListOutput("K0s_Mass", AliRsnListOutput::kHistoDefault);
-    outMonitorM->AddValue(axisMass);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorM);
-    if (lm) lm->AddOutput(outMonitorM);
-
-}
-
-void AddMonitorOutput_K0sRadius(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldca=0)
-{
-    // K0s Radius
-    AliRsnValueDaughter *axisK0sRadius = new AliRsnValueDaughter("k0s_radius", AliRsnValueDaughter::kV0Radius);
-    axisK0sRadius->SetBins(0.0,200,0.2);
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorK0sRadius = new AliRsnListOutput("K0s_Radius", AliRsnListOutput::kHistoDefault);
-    outMonitorK0sRadius->AddValue(axisK0sRadius);
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorK0sRadius);
-    if (ldca) ldca->AddOutput(outMonitorK0sRadius);
-}
-
-void AddMonitorOutput_K0sDaughterDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldaugdca=0)
-{
-
-    // K0s Daughter DCA
-    AliRsnValueDaughter *axisK0sDDCA = new AliRsnValueDaughter("k0s_daughterDCA", AliRsnValueDaughter::kDaughterDCA);
-    axisK0sDDCA->SetBins(0.0,2,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorK0sDDCA = new AliRsnListOutput("K0s_DaughterDCA", AliRsnListOutput::kHistoDefault);
-    outMonitorK0sDDCA->AddValue(axisK0sDDCA);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorK0sDDCA);
-    if (ldaugdca) ldaugdca->AddOutput(outMonitorK0sDDCA);
-
-}
-
-void AddMonitorOutput_K0sCosPointAngle(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lcpa=0)
-{
-
-    // K0s Cosine of the Pointing Angle
-    AliRsnValueDaughter *axisK0sCPA = new AliRsnValueDaughter("k0s_cospointang", AliRsnValueDaughter::kCosPointAng);
-    axisK0sCPA->SetBins(0.97,1.,0.0001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorK0sCPA = new AliRsnListOutput("K0s_CosineOfPointingAngle", AliRsnListOutput::kHistoDefault);
-    outMonitorK0sCPA->AddValue(axisK0sCPA);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorK0sCPA);
-    if (lcpa) lcpa->AddOutput(outMonitorK0sCPA);
-
-}
-
-
-void AddMonitorOutput_K0sPionPID(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lpiPID=0)
-{
-
-
-    AliRsnValueDaughter *axisK0sPionPID = new AliRsnValueDaughter("k0s_pionPID", AliRsnValueDaughter::kLambdaPionPIDCut);
-    axisK0sPionPID->SetBins(0.0,5,0.01);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorK0sPionPID = new AliRsnListOutput("K0s_PionPID", AliRsnListOutput::kHistoDefault);
-    outMonitorK0sPionPID->AddValue(axisK0sPionPID);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorK0sPionPID);
-    if (lpiPID) lpiPID->AddOutput(outMonitorK0sPionPID);
-
-}
-
-void AddMonitorOutput_K0sAntiPionPID(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lapiPID=0)
-{
-
-
-    AliRsnValueDaughter *axisK0sAntiPionPID = new AliRsnValueDaughter("k0s_antipionPID", AliRsnValueDaughter::kAntiLambdaAntiPionPIDCut);
-    axisK0sAntiPionPID->SetBins(0.0,5,0.01);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorK0sAntiPionPID = new AliRsnListOutput("K0s_AntiPionPID", AliRsnListOutput::kHistoDefault);
-    outMonitorK0sAntiPionPID->AddValue(axisK0sAntiPionPID);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorK0sAntiPionPID);
-    if (lapiPID) lpiPID->AddOutput(outMonitorK0sAntiPionPID);
-
-}
-
-
-void AddMonitorOutput_MinDCAToVertexXYPtDep(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *trackDCAXY=0)
-{
-
-    // DCAXY of Tracks
-    AliRsnValueDaughter *axisDCATracks = new AliRsnValueDaughter("dcaXY_tracks", AliRsnValueDaughter::kV0DCAXY);
-    axisDCATracks->SetBins(0.0,2,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorDCATracks = new AliRsnListOutput("DCAXY_Tracks", AliRsnListOutput::kHistoDefault);
-    outMonitorDCATracks->AddValue(axisDCATracks);
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorDCATracks);
-    if (trackDCAXY) trackDCAXY->AddOutput(outMonitorDCATracks);
-
-
-}
-
-//  DCA V0 Secondary Tracks to Primary Vertex
-void AddMonitorOutput_MinDCAToVertexXY(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *trackDCAXY=0)
-{
-
-    // DCAXY of Tracks
-    AliRsnValueDaughter *axisDCATracks = new AliRsnValueDaughter("dcaXY_tracks", AliRsnValueDaughter::kV0DCAXY);
-    axisDCATracks->SetBins(0.0,2,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorDCATracks = new AliRsnListOutput("DCAXY_Tracks", AliRsnListOutput::kHistoDefault);
-    outMonitorDCATracks->AddValue(axisDCATracks);
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorDCATracks);
-    if (trackDCAXY) trackDCAXY->AddOutput(outMonitorDCATracks);
-
-
-}
-
-// Lifetime of V0 particle.
-
-void AddMonitorOutput_K0sfpLife(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *llifetime=0)
-{
-    AliRsnValueDaughter *k0slifetime = new AliRsnValueDaughter("lifetime", AliRsnValueDaughter::kV0Lifetime);
-    k0slifetime->SetBins(0.0,200,0.1);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitork0sLifetime = new AliRsnListOutput("k0s", AliRsnListOutput::kHistoDefault);
-    outMonitork0sLifetime->AddValue(k0slifetime);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitork0sLifetime);
-    if (llifetime) llifetime->AddOutput(outMonitork0sLifetime);
-
-}
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void AddMonitorOutput_K0sMass_Pt(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *lMass=0, AliRsnLoopDaughter *lPt=0)
-{
-    AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("K0s_Mass", AliRsnValueDaughter::kV0Mass);
-    axisMass->SetBins(0.4,0.6,0.001);
-
-    AliRsnValueDaughter *axisK0sPt = new AliRsnValueDaughter("K0s_Pt", AliRsnValueDaughter::kV0Pt);
-    axisK0sPt->SetBins(0.,30.,0.001);
-
-    // output: 2D histogram
-    AliRsnListOutput *outMonitorTrMom = new AliRsnListOutput("K0s_Mass_Pt", AliRsnListOutput::kHistoDefault);
-    outMonitorTrMom->AddValue(axisK0sPt);
-    outMonitorTrMom->AddValue(axisMass);
-
-    // add outputs to loop
-    if (mon) mon->Add(outMonitorTrMom);
-    if (lPt) lpt->AddOutput(outMonitorTrMom);
-    //if (mon) mon->Add(outMonitorM);
-    //if (lMass) lm->AddOutput(outMonitorM);
-
-}
-
-
 Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0)
 {
-    //Sets configuration for track quality object different from std quality cuts.
-    //Returns kTRUE if track quality cut object is successfully defined,
-    //returns kFALSE if an invalid set of cuts (customQualityCutsID) is chosen or if the
-    //object to be configured does not exist.
-
-    if ((!trkQualityCut)){
+  if ((!trkQualityCut)){
         Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
         return kFALSE;
     }
@@ -783,22 +575,177 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     trkQualityCut->Print();
     return kTRUE;
 }
+void AddMonitorOutput_PionPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ppt=0)
+{
+
+  // PionPt
+  AliRsnValueDaughter *axisPionPt = new AliRsnValueDaughter("pion_pt", AliRsnValueDaughter::kPt);
+  axisPionPt->SetBins(0.,10.0,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorPionPt = new AliRsnListOutput("Pion_Pt", AliRsnListOutput::kHistoDefault);
+  outMonitorPionPt->AddValue(axisPionPt);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorPionPt);
+  if (ppt) ppt->AddOutput(outMonitorPionPt);
+
+}
+
+void AddMonitorOutput_PionEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *peta=0)
+{
+ 
+  // PionDCA
+  AliRsnValueDaughter *axisPionEta = new AliRsnValueDaughter("pion_eta", AliRsnValueDaughter::kEta);
+  axisPionEta->SetBins(-2.,2.,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorPionEta = new AliRsnListOutput("Pion_Eta", AliRsnListOutput::kHistoDefault);
+  outMonitorPionEta->AddValue(axisPionEta);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorPionEta);
+  if (peta) peta->AddOutput(outMonitorPionEta);
+
+}
+
+void AddMonitorOutput_PionDCAxy(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *pdcaxy=0)
+{
+
+  // PionDCA
+  AliRsnValueDaughter *axisPionDCAxy = new AliRsnValueDaughter("pion_dcaxy", AliRsnValueDaughter::kDCAXY);
+  axisPionDCAxy->SetBins(-0.5,0.5,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorPionDCAxy = new AliRsnListOutput("Pion_DCAxy", AliRsnListOutput::kHistoDefault);
+  outMonitorPionDCAxy->AddValue(axisPionDCAxy);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorPionDCAxy);
+  if (pdcaxy) pdcaxy->AddOutput(outMonitorPionDCAxy);
+
+}
+
+void AddMonitorOutput_PionDCAz(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *pdcaz=0)
+{
+
+  // PionDCA
+  AliRsnValueDaughter *axisPionDCAz = new AliRsnValueDaughter("pion_dcaz", AliRsnValueDaughter::kDCAZ);
+  axisPionDCAz->SetBins(-2.5,2.5,0.005);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorPionDCAz = new AliRsnListOutput("Pion_DCAz", AliRsnListOutput::kHistoDefault);
+  outMonitorPionDCAz->AddValue(axisPionDCAz);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorPionDCAz);
+  if (pdcaz) pdcaz->AddOutput(outMonitorPionDCAz);
+
+}
+
+void AddMonitorOutput_PionPIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *piPID=0)
+{
+
+  // Pion PID Cut
+  AliRsnValueDaughter *axisPionPIDCut = new AliRsnValueDaughter("pionPID", AliRsnValueDaughter::kTPCnsigmaPi);
+  axisPionPIDCut->SetBins(0.0,5,0.01);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorPionPIDCut = new AliRsnListOutput("Pion_PID_Cut", AliRsnListOutput::kHistoDefault);
+  outMonitorPionPIDCut->AddValue(axisPionPIDCut);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorPionPIDCut);
+  if (piPID) piPID->AddOutput(outMonitorPionPIDCut);
+
+}
+
+void AddMonitorOutput_PionNTPC(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *piNTPC=0)
+{
+
+  // Pion PID Cut
+  AliRsnValueDaughter *axisPionNTPC = new AliRsnValueDaughter("pionNTPC", AliRsnValueDaughter::kNTPCclusters);
+  axisPionNTPC->SetBins(0.0,200,1);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorPionNTPC = new AliRsnListOutput("Pion_NTPC", AliRsnListOutput::kHistoDefault);
+  outMonitorPionNTPC->AddValue(axisPionNTPC);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorPionNTPC);
+  // if (piNTPC) pNTPC->AddOutput(outMonitorPionNTPC);//===>>ORIGINAL
+  if (piNTPC) piNTPC->AddOutput(outMonitorPionNTPC);
+
+}
+
+void AddMonitorOutput_PionTPCchi2(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *piTPCchi2=0)
+{
+
+  // Pion PID Cut
+  AliRsnValueDaughter *axisPionTPCchi2 = new AliRsnValueDaughter("pionTPCchi2", AliRsnValueDaughter::kTPCchi2);
+  axisPionTPCchi2->SetBins(0.0,6,.1);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorPionTPCchi2 = new AliRsnListOutput("Pion_TPCchi2", AliRsnListOutput::kHistoDefault);
+  outMonitorPionTPCchi2->AddValue(axisPionTPCchi2);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorPionTPCchi2);
+  // if (piTPCchi2) pTPCchi2->AddOutput(outMonitorPionTPCchi2);//===>>ORIGINAL
+  if (piTPCchi2) piTPCchi2->AddOutput(outMonitorPionTPCchi2);
+}
 
 
+void AddMonitorOutput_K0sP(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lp=0)
+{
 
 
+  AliRsnValueDaughter *axisK0sP = new AliRsnValueDaughter("k0s_momentum", AliRsnValueDaughter::kP);
+  axisK0sP->SetBins(0.,15.,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorMom = new AliRsnListOutput("K0s_Momentum", AliRsnListOutput::kHistoDefault);
+  outMonitorMom->AddValue(axisK0sP);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorMom);
+  if (lp) lp->AddOutput(outMonitorMom);
+
+}
+
+void AddMonitorOutput_K0sAntiPionPID(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lapiPID=0)
+{
 
 
+  AliRsnValueDaughter *axisK0sAntiPionPID = new AliRsnValueDaughter("k0s_antipionPID", AliRsnValueDaughter::kAntiLambdaAntiPionPIDCut);
+  axisK0sAntiPionPID->SetBins(0.0,5,0.01);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorK0sAntiPionPID = new AliRsnListOutput("K0s_AntiPionPID", AliRsnListOutput::kHistoDefault);
+  outMonitorK0sAntiPionPID->AddValue(axisK0sAntiPionPID);
+
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorK0sAntiPionPID);
+  //if (lapiPID) lpiPID->AddOutput(outMonitorK0sAntiPionPID);//=====>>>ORIGINAL
+  if (lapiPID) lapiPID->AddOutput(outMonitorK0sAntiPionPID);
+
+}
+
+//  DCA V0 Secondary Tracks to Primary Vertex
+void AddMonitorOutput_MinDCAToVertexXY(TObjArray *mon=0, TString opt="", AliRsnLoopDaughter *trackDCAXY=0)
+{
+
+  // DCAXY of Tracks
+  AliRsnValueDaughter *axisDCATracks = new AliRsnValueDaughter("dcaXY_tracks", AliRsnValueDaughter::kV0DCAXY);
+  axisDCATracks->SetBins(0.0,2,0.001);
+
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorDCATracks = new AliRsnListOutput("DCAXY_Tracks", AliRsnListOutput::kHistoDefault);
+  outMonitorDCATracks->AddValue(axisDCATracks);
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorDCATracks);
+  if (trackDCAXY) trackDCAXY->AddOutput(outMonitorDCATracks);
 
 
-
-
-
-
-
-
-
-
-
-
+}
 
