@@ -81,6 +81,8 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
         fMassRange[1] = max;
     }
     void SetFilterbitTrackCut(Double_t lParameter) { fFilterBit = lParameter; }
+    void SetNucleusPID(AliPID::EParticleType pdg) { fNucleusPID = pdg; }
+    void SetPIDrange(float min, float max) { fPIDrange[0] = min; fPIDrange[1] = max; }
 
    private:
     AliAnalysisTaskAlphaPiAOD(const AliAnalysisTaskAlphaPiAOD &source);
@@ -104,6 +106,8 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
     float fCustomResolution = 0.05871;                                                                                                 /// default values are for LHC18qr
     double fMassRange[2] = {3.7, 4.1};
     UInt_t fFilterBit = 16; // Bit(4) 16: Loose StandardITSTPC2011 cut.
+    AliPID::EParticleType fNucleusPID = AliPID::kAlpha;
+    float fPIDrange[2] = {-5.f, 5.f};
 
     float Eta2y(float pt, float m, float eta) const;
 
