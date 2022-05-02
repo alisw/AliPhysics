@@ -1024,17 +1024,17 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    fControlHistogramsList[icent]->Add(fPTHistogram[icent][2]);
    
    // b) Book histogram to hold phi spectra
-   fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",2000,0.,TMath::TwoPi()); 
+   fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
    fPhiHistogram[icent][0]->GetXaxis()->SetTitle("Phi");
    fPhiHistogram[icent][0]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPhiHistogram[icent][0]);
 
-   fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",2000,0.,TMath::TwoPi()); 
+   fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
    fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
    fPhiHistogram[icent][1]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
 
-   fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",2000,0.,TMath::TwoPi()); 
+   fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",1000,0.,TMath::TwoPi()); 
    fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
    fPhiHistogram[icent][2]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]);
