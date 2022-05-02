@@ -8,6 +8,7 @@
 #include <AliAnalysisDataContainer.h>
 #include <AliMESbaseTask.h>
 #include <AliMEStender.h>
+#include <AliMESeventInfo.h>
 #endif
 
 AliMEStender *AddMEStender(Bool_t mc, Int_t configuration = 0)
