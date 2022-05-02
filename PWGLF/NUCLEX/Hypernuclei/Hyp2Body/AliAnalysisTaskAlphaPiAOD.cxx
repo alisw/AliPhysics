@@ -114,6 +114,8 @@ void AliAnalysisTaskAlphaPiAOD::UserCreateOutputObjects() {
     fEventCut.AddQAplotsToList(fHistos->GetListOfHistograms());  // EventCuts QA Histograms
 
     // QA Histograms
+    fHistos->CreateTH2("QA/hTPCPIDAllTracksP", "TPC PID all tracks;#it{p}_{T} (GeV/#it{c});TPC Signal", 400, -20, 20, 1000, 0, 1000);
+    fHistos->CreateTH2("QA/hTPCPIDAllTracksN", "TPC PID all tracks;#it{p}_{T} (GeV/#it{c});TPC Signal", 400, -20, 20, 1000, 0, 1000);
     fHistos->CreateTH2("QA/hTPCPIDAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c});TPC Signal #alpha", 400, -20, 20, 1000, 0, 1000);
     fHistos->CreateTH2("QA/hTPCPIDAntiAlpha", "TPC PID #bar{#alpha};#it{p}_{T} (GeV/#it{c});TPC Signal #bar{#alpha}", 400, -20, 20, 1000, 0, 1000);
 
@@ -210,12 +212,12 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                 continue;
             }
-
-            if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit) || !(nTrack->GetStatus() & AliVTrack::kTPCrefit) ||
-                pTrack->GetTPCsignalN() < 50 || nTrack->GetTPCsignalN() < 50 ||
-                std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8) {
+            if (!((AliAODTrack *)pTrack)->TestFilterBit(fFilterBit))
                 continue;
-            }
+            if (!((AliAODTrack *)nTrack)->TestFilterBit(fFilterBit))
+                continue;
+            if (std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8)
+                continue;
 
             int hyperLabel{-1};
             if (fMC) {
@@ -255,6 +257,8 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
             double nNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
                         : fMC          ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha)
                                         : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
+            fHistos->FillTH2("QA/hTPCPIDAllTracksP", pTrack->GetTPCmomentum()/pTrack->Charge(), pTrack->GetTPCsignal());
+            fHistos->FillTH2("QA/hTPCPIDAllTracksN", nTrack->GetTPCmomentum()/nTrack->Charge(), nTrack->GetTPCsignal());
             if (std::abs(pNsigma) > 5 && std::abs(nNsigma) > 5) {
                 continue;
             }
@@ -332,11 +336,15 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                 continue;
             }
-            if (!(alphaTrack->GetStatus() & AliVTrack::kTPCrefit) || alphaTrack->GetTPCsignalN() < 50 
-                || std::abs(alphaTrack->Eta()) > 0.8) {
+            if (!((AliAODTrack *)alphaTrack)->TestFilterBit(fFilterBit))
                 continue;
-            }
+            if (std::abs(alphaTrack->Eta()) > 0.8)
+                continue;
 
+            if(alphaTrack->GetSign() > 0)
+                fHistos->FillTH2("QA/hTPCPIDAllTracksP", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
+            else
+                fHistos->FillTH2("QA/hTPCPIDAllTracksN", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
             double pNsigma{fPID->NumberOfSigmasTPC(alphaTrack, AliPID::kAlpha)};
             if (std::abs(pNsigma) > 5) {
                 continue;
@@ -355,10 +363,11 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                     continue;
                 }
-                if (!(pionTrack->GetStatus() & AliVTrack::kTPCrefit) || pionTrack->GetTPCsignalN() < 50 
-                    || std::abs(pionTrack->Eta()) > 0.8) {
+                if (!((AliAODTrack *)pionTrack)->TestFilterBit(fFilterBit))
+                    continue;   
+                if (std::abs(pionTrack->Eta()) > 0.8)
                     continue;
-                }
+
                 double nNsigma{fPID->NumberOfSigmasTPC(pionTrack, AliPID::kPion)};
                 if (std::abs(nNsigma) > 5) {
                     continue;
