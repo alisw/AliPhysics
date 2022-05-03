@@ -79,12 +79,19 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
 #include "AliGenEventHeader.h"
+#include "AliAnalysisFilter.h"
 
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   AliAnalysisTaskSE(),
   fCFManager(0x0),
   fHistEventsProcessed(0x0),
+  fNChargedInTrans(0x0),
+  fPTDistributionInTransverse(0x0),
+  fGlobalRT(0x0),
+  fStepRecoPIDRT(0x0),
+  fHistPtLead(0x0),
+  fOutputRT(0x0),
   fCorrelation(0x0),
   fListProfiles(0),
   fCountMC(0),
@@ -144,26 +151,30 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fCutOnMomConservation(0.00001),
   fMinLeadPtRT(6.0),
   fAveMultInTransForRT(4.965),
+  fTrackFilterGlobal(0),
+  fTrackFilterComplementary(0),
+  fUseHybridTracks(kTRUE),
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
-  fKeepOnlyOOBPileupEvents(kFALSE),
-  fPhiDistributionGlobal(0),
-  fPhiDistributionComplementary(0),
-  fPhiDistributionHybrid(0),
-  fNchargedinTrans(0),
-  fRTdistribution(0),
-  fListQA(0)
-{
-  //
-  //Default ctor
-  //
-  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
-}
+  fKeepOnlyOOBPileupEvents(kFALSE)
+  {
+    //
+    //Default ctor
+    //
+    for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
+
+  for(Int_t i = 0; i < 18; i++) fTrackFilter[i] = 0;}
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func) :
   AliAnalysisTaskSE(name),
   fCFManager(0x0),
   fHistEventsProcessed(0x0),
+  fNChargedInTrans(0x0),
+  fPTDistributionInTransverse(0x0),
+  fGlobalRT(0x0),
+  fStepRecoPIDRT(0x0),
+  fHistPtLead(0x0),
+  fOutputRT(0x0),
   fCorrelation(0x0),
   fListProfiles(0),
   fCountMC(0),
@@ -223,15 +234,12 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fCutOnMomConservation(0.00001),
   fMinLeadPtRT(6.0),
   fAveMultInTransForRT(4.965),
+  fTrackFilterGlobal(0),
+  fTrackFilterComplementary(0),
+  fUseHybridTracks(kTRUE),
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
-  fKeepOnlyOOBPileupEvents(kFALSE),
-  fPhiDistributionGlobal(0),
-  fPhiDistributionComplementary(0),
-  fPhiDistributionHybrid(0),
-  fNchargedinTrans(0),
-  fRTdistribution(0),
-  fListQA(0)
+  fKeepOnlyOOBPileupEvents(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -245,9 +253,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(3,THnSparseD::Class());
   DefineOutput(4,AliRDHFCuts::Class());
   for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
+  for (Int_t i = 0; i < 18; i++) {fTrackFilter[i] = 0;}
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
   DefineOutput(6,TList::Class());
-
   fCuts->PrintAll();
 }
 
@@ -276,6 +284,12 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   AliAnalysisTaskSE(c),
   fCFManager(c.fCFManager),
   fHistEventsProcessed(c.fHistEventsProcessed),
+  fNChargedInTrans(c.fNChargedInTrans),
+  fPTDistributionInTransverse(c.fPTDistributionInTransverse),
+  fGlobalRT(c.fGlobalRT),
+  fStepRecoPIDRT(c.fStepRecoPIDRT),
+  fHistPtLead(c.fHistPtLead),
+  fOutputRT(c.fOutputRT),
   fCorrelation(c.fCorrelation),
   fListProfiles(c.fListProfiles),
   fCountMC(c.fCountMC),
@@ -337,13 +351,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fAveMultInTransForRT(c.fAveMultInTransForRT),
   fAODProtection(c.fAODProtection),
   fRejectOOBPileUpEvents(c.fRejectOOBPileUpEvents),
-  fKeepOnlyOOBPileupEvents(c.fKeepOnlyOOBPileupEvents),
-  fPhiDistributionGlobal(c.fPhiDistributionGlobal),
-  fPhiDistributionComplementary(c.fPhiDistributionComplementary),
-  fPhiDistributionHybrid(c.fPhiDistributionHybrid),
-  fNchargedinTrans(c.fNchargedinTrans),
-  fRTdistribution(c.fRTdistribution),
-  fListQA(c.fListQA)
+  fKeepOnlyOOBPileupEvents(c.fKeepOnlyOOBPileupEvents)
 {
   //
   // Copy Constructor
@@ -361,7 +369,6 @@ AliCFTaskVertexingHF::~AliCFTaskVertexingHF()
   if (fHistEventsProcessed) delete fHistEventsProcessed ;
   if (fCorrelation)         delete fCorrelation ;
   if (fListProfiles)        delete fListProfiles;
-  if (fListQA)              delete fListQA;
   if (fCuts)                delete fCuts;
   if (fFuncWeight)          delete fFuncWeight;
   if (fHistoPtWeight)       delete fHistoPtWeight;
@@ -584,23 +591,6 @@ void AliCFTaskVertexingHF::Init()
 
   PostData(5,fListProfiles);
 
-  fListQA = new TList();
-  fPhiDistributionGlobal = new TH1F("fPhiDistributionGlobal","Phi distribution of selected global tracks", 320, 0., 6.4);
-  fPhiDistributionComplementary = new TH1F("fPhiDistributionComplementary","Phi distribution of selected complementary tracks", 320, 0., 6.4);
-  fPhiDistributionHybrid = new TH1F("fPhiDistributionHybrid","Phi distribution of selected hybrid tracks", 320, 0., 6.4);
-  fNchargedinTrans = new TH1F("fNchargedinTrans","Charged Tracks in Transvers region;N_{ch};Entries",200,0,200);
-  fRTdistribution = new TH1F("fRTdistribution","RT for all events;R_{T};Entries",100,0,10);
-
-  fListQA->Add(fPhiDistributionGlobal);
-  fListQA->Add(fPhiDistributionComplementary);
-  fListQA->Add(fPhiDistributionHybrid);
-  fListQA->Add(fNchargedinTrans);
-  fListQA->Add(fRTdistribution);
-
-  PostData(6,fListQA);
-
-
-
   return;
 }
 
@@ -614,6 +604,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;
+    // TList for output
+  if (fConfiguration==kRT) PostData(6,fOutputRT) ;
 
   AliDebug(3,Form("*** Processing event %d\n", fEvents));
 
@@ -980,8 +972,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
      //do RT determination if RT analysis
     cfVtxHF->SetAveMultiInTrans(fAveMultInTransForRT);
      rtval = CalculateRTValue(aodEvent,mcHeader,cfVtxHF);
+     if (rtval<0.) {
+       delete cfVtxHF;
+       return;
+     }
      cfVtxHF->SetRTValue(rtval);
-     fRTdistribution->Fill(rtval);
+     fGlobalRT->Fill(rtval);
   }
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
@@ -1370,6 +1366,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
                 }
                 fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight*weigPID);
                 icountRecoPID++;
+		if(fConfiguration==kRT) fStepRecoPIDRT->Fill(rtval);
                 AliDebug(3,"Reco PID cuts passed and container filled \n");
                 if(!fAcceptanceUnf){
                   Double_t fill[4]; //fill response matrix
@@ -1785,10 +1782,31 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(8,"AOD/dAOD #events ok");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(9,"Candidates from OOB pile-up");
 
-  PostData(1,fHistEventsProcessed) ;
+    // TList for output
+  if (fConfiguration==kRT) {
+    fOutputRT = new TList();
+    fOutputRT->SetOwner();
+    fOutputRT->SetName("OutputHistos");
+
+    fNChargedInTrans = new TH1F("fNChargedInTrans","Charged Tracks in Transvers region;N_{ch};Entries",200,0,200);
+    fPTDistributionInTransverse = new TH1F("fPTDistributionInTransverse","pT distribution of all charged particles in Transverse region",250,0,50);
+    fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
+    fStepRecoPIDRT = new TH1F("fStepRecoPIDRT","RT for events with selected D;R_{T};Entries",100,0,10);
+    fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
+
+    fOutputRT->Add(fNChargedInTrans);
+    fOutputRT->Add(fPTDistributionInTransverse);
+    fOutputRT->Add(fGlobalRT);
+    fOutputRT->Add(fStepRecoPIDRT);
+    fOutputRT->Add(fHistPtLead);
+  }
+
+  PostData(1,fHistEventsProcessed);
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;
 
+    // TList for output
+  if (fConfiguration==kRT) PostData(6,fOutputRT);
 }
 
 
@@ -2842,111 +2860,113 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
    Double_t trackRTval = -1;
    if (esdEvent->GetHeader()) eventId = GetEventIdAsLong(esdEvent->GetHeader());
 
+   ///settings for track filter used in RT determination
+  AliESDtrackCuts* esdTrackCutsRun2[18] = {0};
+  AliESDtrackCuts* esdTrackCutsGlobal[18] = {0};
+  AliESDtrackCuts* esdTrackCutsComplementary[18] = {0};
 
+   if (!fUseHybridTracks){
+     for ( int iTc = 0 ; iTc < 18 ; iTc++ )
+       {
+ 	// standar parameters ------------------- //
+ 	double maxdcaz = 2.;
+ 	double minratiocrossrowstpcover = 0.8;
+ 	double maxfraclusterstpcshared = 0.4;
+ 	double maxchi2perclustertpc = 4.0;
+ 	double maxchi2perclusterits = 36.;
+ 	double geowidth = 3.;
+ 	double geolenght = 130.;
+ 	double maxchi2tpcglobal = 36.;
+ 	// ------------------------------------- //
 
+ 	// variations of the track cuts -------- //
+ 	if ( iTc == 1) maxdcaz = 1.0;
+ 	if ( iTc == 2) maxdcaz = 5.0;
+ 	if ( iTc == 5) minratiocrossrowstpcover = 0.7;
+ 	if ( iTc == 6) minratiocrossrowstpcover = 0.9;
+ 	if ( iTc == 7) maxfraclusterstpcshared = 0.2;
+ 	if ( iTc == 8) maxfraclusterstpcshared = 1.0;
+ 	if ( iTc == 9) maxchi2perclustertpc = 3.0;
+ 	if ( iTc == 10) maxchi2perclustertpc = 5.0;
+ 	if ( iTc == 11) maxchi2perclusterits = 25.0;
+ 	if ( iTc == 12) maxchi2perclusterits = 49.0;
+ 	if ( iTc == 14) geowidth = 2.0;
+ 	if ( iTc == 15) geowidth = 4.0;
+ 	if ( iTc == 16) geolenght = 120.0;
+ 	if ( iTc == 17) geolenght = 140.0;
+ 	// variations of the track cuts -------- //
+ 	fTrackFilter[iTc] = new AliAnalysisFilter(Form("fTrackFilter%d",iTc));
+ 	esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
 
+ 	// TPC
+ 	esdTrackCutsRun2[iTc]->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
+ 	esdTrackCutsRun2[iTc]->SetRequireTPCRefit(kTRUE);
+ 	esdTrackCutsRun2[iTc]->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover);
+ 	esdTrackCutsRun2[iTc]->SetMaxChi2PerClusterTPC(maxchi2perclustertpc);
+ 	esdTrackCutsRun2[iTc]->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared);
+ 	//esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal); TODO VZ: check this cut
+ 	// ITS
+ 	esdTrackCutsRun2[iTc]->SetRequireITSRefit(kTRUE);
+ 	if ( iTc != 13 )
+ 	  esdTrackCutsRun2[iTc]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
 
+ 	esdTrackCutsRun2[iTc]->SetMaxChi2PerClusterITS(maxchi2perclusterits);
 
+ 	// primary selection
+ 	esdTrackCutsRun2[iTc]->SetDCAToVertex2D(kFALSE);
+ 	esdTrackCutsRun2[iTc]->SetRequireSigmaToVertex(kFALSE);
+ 	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexZ(maxdcaz);
+ 	esdTrackCutsRun2[iTc]->SetAcceptKinkDaughters(kFALSE);
 
-   AliESDtrackCuts* esdTrackCutsGlobal[18] = {0};
-   AliESDtrackCuts* esdTrackCutsComplementary[18] = {0};
+ 	if ( iTc == 3 )
+ 	  // esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("4*(0.0026+0.0050/pt^1.01)");
+ 	  esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("6.5*(0.0026+0.0050/pt^1.01)");
+ 	else if ( iTc == 4 )
+ 	  // esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("10*(0.0026+0.0050/pt^1.01)");
+ 	  esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("7.5*(0.0026+0.0050/pt^1.01)");
+ 	else
+ 	  esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // (7*(------))
 
-   AliAnalysisFilter* trackFilterGlobal = new AliAnalysisFilter("trackFilterGlobal");
-   AliAnalysisFilter* trackFilterComplementary = new AliAnalysisFilter("trackFilterComplementary");
+ 	fTrackFilter[iTc]->AddCuts(esdTrackCutsRun2[iTc]);
+       }
+   } else {//end if on usage of hybrid tracks
+ 	fTrackFilterGlobal = new AliAnalysisFilter("fTrackFilterGlobal0");
+ 	esdTrackCutsGlobal[0] = new AliESDtrackCuts("esdTrackCutsRunGlobal0"); //use other slots for systematic if needed;
 
-//   fTrackFilterGlobal = new AliAnalysisFilter("fTrackFilterGlobal0");
-	esdTrackCutsGlobal[0] = new AliESDtrackCuts("esdTrackCutsRunGlobal0"); //use other slots for systematic if needed;
+ 	esdTrackCutsGlobal[0]->SetMinNCrossedRowsTPC(70);
+ 	esdTrackCutsGlobal[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+ 	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterTPC(4);
+ 	esdTrackCutsGlobal[0]->SetAcceptKinkDaughters(kFALSE);
+ 	esdTrackCutsGlobal[0]->SetRequireTPCRefit(kTRUE);
+ 	esdTrackCutsGlobal[0]->SetRequireITSRefit(kTRUE);
+ 	esdTrackCutsGlobal[0]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+ 	esdTrackCutsGlobal[0]->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+ 	esdTrackCutsGlobal[0]->SetMaxDCAToVertexZ(2);
+ 	esdTrackCutsGlobal[0]->SetDCAToVertex2D(kFALSE);
+ 	esdTrackCutsGlobal[0]->SetRequireSigmaToVertex(kFALSE);
+ 	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterITS(36);
+ 	esdTrackCutsGlobal[0]->SetEtaRange(-0.8,0.8);
+ 	fTrackFilterGlobal->AddCuts(esdTrackCutsGlobal[0]);
 
-	esdTrackCutsGlobal[0]->SetMinNCrossedRowsTPC(70);
-	esdTrackCutsGlobal[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterTPC(4);
-	esdTrackCutsGlobal[0]->SetAcceptKinkDaughters(kFALSE);
-	esdTrackCutsGlobal[0]->SetRequireTPCRefit(kTRUE);
-	esdTrackCutsGlobal[0]->SetRequireITSRefit(kTRUE);
-	esdTrackCutsGlobal[0]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-	esdTrackCutsGlobal[0]->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-	esdTrackCutsGlobal[0]->SetMaxDCAToVertexZ(2);
-	esdTrackCutsGlobal[0]->SetDCAToVertex2D(kFALSE);
-	esdTrackCutsGlobal[0]->SetRequireSigmaToVertex(kFALSE);
-	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterITS(36);
-	esdTrackCutsGlobal[0]->SetEtaRange(-0.8,0.8);
-	//fTrackFilterGlobal->AddCuts(esdTrackCutsGlobal[0]);
-  trackFilterGlobal->AddCuts(esdTrackCutsGlobal[0]);
+ 	fTrackFilterComplementary = new AliAnalysisFilter("fTrackFilterComplementary0");
+ 	esdTrackCutsComplementary[0] = new AliESDtrackCuts("esdTrackCutsRunComplementary0"); //use other slots for systematic if needed;
 
-	//fTrackFilterComplementary = new AliAnalysisFilter("fTrackFilterComplementary0");
-	esdTrackCutsComplementary[0] = new AliESDtrackCuts("esdTrackCutsRunComplementary0"); //use other slots for systematic if needed;
+ 	esdTrackCutsComplementary[0]->SetMinNCrossedRowsTPC(70);
+ 	esdTrackCutsComplementary[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+ 	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterTPC(4);
+ 	esdTrackCutsComplementary[0]->SetAcceptKinkDaughters(kFALSE);
+ 	esdTrackCutsComplementary[0]->SetRequireTPCRefit(kTRUE);
+ 	esdTrackCutsComplementary[0]->SetRequireITSRefit(kFALSE);
+ 	esdTrackCutsComplementary[0]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+ 	esdTrackCutsComplementary[0]->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+ 	esdTrackCutsComplementary[0]->SetMaxDCAToVertexZ(2);
+ 	esdTrackCutsComplementary[0]->SetDCAToVertex2D(kFALSE);
+ 	esdTrackCutsComplementary[0]->SetRequireSigmaToVertex(kFALSE);
+ 	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterITS(36);
+ 	esdTrackCutsComplementary[0]->SetEtaRange(-0.8,0.8);
+ 	fTrackFilterComplementary->AddCuts(esdTrackCutsComplementary[0]);
+   }
 
-	esdTrackCutsComplementary[0]->SetMinNCrossedRowsTPC(70);
-	esdTrackCutsComplementary[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterTPC(4);
-	esdTrackCutsComplementary[0]->SetAcceptKinkDaughters(kFALSE);
-	esdTrackCutsComplementary[0]->SetRequireTPCRefit(kTRUE);
-	esdTrackCutsComplementary[0]->SetRequireITSRefit(kTRUE);
-	esdTrackCutsComplementary[0]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
-	esdTrackCutsComplementary[0]->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-	esdTrackCutsComplementary[0]->SetMaxDCAToVertexZ(2);
-	esdTrackCutsComplementary[0]->SetDCAToVertex2D(kFALSE);
-	esdTrackCutsComplementary[0]->SetRequireSigmaToVertex(kFALSE);
-	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterITS(36);
-	esdTrackCutsComplementary[0]->SetEtaRange(-0.8,0.8);
-	//fTrackFilterComplementary->AddCuts(esdTrackCutsComplementary[0]);
-  trackFilterComplementary->AddCuts(esdTrackCutsComplementary[0]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   /*
-   // standard parameters ------------------- //
-       double maxdcaz = 2.;
-       double minratiocrossrowstpcover = 0.8;
-       double maxfraclusterstpcshared = 0.4;
-       double maxchi2perclustertpc = 4.0;
-       double maxchi2perclusterits = 36.;
-       double geowidth = 3.;
-       double geolenght = 130.;
-       double maxchi2tpcglobal = 36.;
-       // ------------------------------------- //
-
-       AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-       AliESDtrackCuts* esdTrackCutsRun2 = new AliESDtrackCuts("esdTrackCutsRun2");
-       // TPC
-       esdTrackCutsRun2->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
-       esdTrackCutsRun2->SetRequireTPCRefit(kTRUE);
-       esdTrackCutsRun2->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover);
-       esdTrackCutsRun2->SetMaxChi2PerClusterTPC(maxchi2perclustertpc);
-       esdTrackCutsRun2->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared);
-       //esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal); TODO VZ: check this cut
-       // ITS
-       esdTrackCutsRun2->SetRequireITSRefit(kTRUE);
-       esdTrackCutsRun2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-
-       esdTrackCutsRun2->SetMaxChi2PerClusterITS(maxchi2perclusterits);
-   // primary selection
-       esdTrackCutsRun2->SetDCAToVertex2D(kFALSE);
-       esdTrackCutsRun2->SetRequireSigmaToVertex(kFALSE);
-       esdTrackCutsRun2->SetMaxDCAToVertexZ(maxdcaz);
-       esdTrackCutsRun2->SetAcceptKinkDaughters(kFALSE);
-       esdTrackCutsRun2->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-
-      //AliESDtrackCuts* esdCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-      trackFilter->AddCuts(esdTrackCutsRun2);
-*/
 
    const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
    TObjArray *fCTSTracks = new TObjArray();
@@ -2965,29 +2985,16 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
       for ( Int_t i = 0; i < 1; i++)
       {
          UInt_t selectDebug = 0;
-         /*if (trackFilter)
+         if (!fUseHybridTracks && fTrackFilter[i])
          {
-            selectDebug = trackFilter->IsSelected(part);
+            selectDebug = fTrackFilter[i]->IsSelected(part);
             if (!selectDebug)
             {
                continue;
             }
-            /// fill tracks array
-            fCTSTracks->Add(part);
             if (!part) continue;
-         }*/
-         if (trackFilterGlobal && trackFilterComplementary ){
-      	   //printf(">>>>>>> I am using the hybrid track selections.. \n");
-      	   if(trackFilterGlobal->IsSelected(part)) {
-      	     fCTSTracks->Add(part);
-             fPhiDistributionGlobal->Fill(part->Phi());
-             fPhiDistributionHybrid->Fill(part->Phi());
-      	   }else if(trackFilterComplementary->IsSelected(part)) {
-      	     fCTSTracks->Add(part);
-             fPhiDistributionComplementary->Fill(part->Phi());
-             fPhiDistributionHybrid->Fill(part->Phi());
-	          } else {continue;}
-	         }
+         } else if (fUseHybridTracks && fTrackFilterGlobal && fTrackFilterComplementary ){
+	   	 }
       }
    }
 
@@ -3011,7 +3018,8 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
          listMin = (TList*)regionsMinMaxReco->At(1);
 
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
-         fNchargedinTrans->Fill(listMax->GetEntries() + listMin->GetEntries());
+	 fNChargedInTrans->Fill(listMax->GetEntries() + listMin->GetEntries());
+         fHistPtLead->Fill(LeadingPt);
       }
 
    }
@@ -3019,7 +3027,6 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
   if (regionSortedParticlesReco) delete regionSortedParticlesReco;
   if (regionsMinMaxReco) delete regionsMinMaxReco;
   if (LeadingTrackReco) delete LeadingTrackReco;
-  //if(trackFilter) delete trackFilter;
   return trackRTval;
 }
 
@@ -3146,6 +3153,11 @@ TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObj
       if(region == -1) transverse2->Add(part);
       if(region == 2) toward->Add(part);
       if(region == -2) away->Add(part);
+
+      if(region == 1 || region == -1) fPTDistributionInTransverse->Fill(part->Pt());
+
+
+
    }//end loop on tracks
 
    return regionParticles;
