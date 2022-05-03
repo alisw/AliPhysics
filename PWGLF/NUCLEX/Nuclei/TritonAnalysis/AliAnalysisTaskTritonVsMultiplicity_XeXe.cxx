@@ -91,6 +91,7 @@ ITSsignal(0),
 TPCsignal(0),
 TOFsignal(0),
 TRDsignal(0),
+nSigmaITS_Trit(0),
 nSigmaTPC_Trit(0),
 nSigmaTOF_Trit(0),
 nSigmaTRD_Trit(0)
@@ -159,6 +160,7 @@ ITSsignal(0),
 TPCsignal(0),
 TOFsignal(0),
 TRDsignal(0),
+nSigmaITS_Trit(0),
 nSigmaTPC_Trit(0),
 nSigmaTOF_Trit(0),
 nSigmaTRD_Trit(0)
@@ -300,6 +302,7 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserCreateOutputObjects()
     reducedTree_Triton -> Branch("TPCsignal",&TPCsignal,"TPCsignal/D");
     reducedTree_Triton -> Branch("TOFsignal",&TOFsignal,"TOFsignal/D");
     reducedTree_Triton -> Branch("TRDsignal",&TRDsignal,"TRDsignal/D");
+    reducedTree_Triton -> Branch("nSigmaITS_Trit",&nSigmaITS_Trit,"nSigmaITS_Trit/D");
     reducedTree_Triton -> Branch("nSigmaTPC_Trit",&nSigmaTPC_Trit,"nSigmaTPC_Trit/D");
     reducedTree_Triton -> Branch("nSigmaTOF_Trit",&nSigmaTOF_Trit,"nSigmaTOF_Trit/D");
     reducedTree_Triton -> Branch("nSigmaTRD_Trit",&nSigmaTRD_Trit,"nSigmaTRD_Trit/D");
@@ -386,7 +389,6 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
 
             }
         }
-
         if (IsTritonCandidate(track)){
 
             pt = track -> Pt();
@@ -429,7 +431,7 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
             TPCsignal = track->GetTPCsignal();
             TOFsignal = track->GetTOFsignal();
             TRDsignal = track->GetTRDsignal();
-
+            nSigmaITS_Trit = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kTriton);
             nSigmaTPC_Trit = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
             nSigmaTOF_Trit = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
             nSigmaTRD_Trit = fPIDResponse -> NumberOfSigmasTRD(track,AliPID::kTriton);
