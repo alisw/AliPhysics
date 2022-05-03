@@ -173,7 +173,7 @@ private:
   MiniLambdaMC fGenLambda;
   MiniLambdaBDTOut *fRecLambdaBDTOut = nullptr;//!<! Transient fRecLambda with BDT output
   AliPIDResponse* fPID = nullptr;              //!<! ALICE PID framework
-  std::vector<AliExternalBDT*> fBDT;
+  std::vector<AliExternalBDT*> fBDT;           //!<! BDTs
   bool fMC;
   bool fOnlyTrueCandidates = false;  ///< Save only true Xi and Omegas in MC
   bool fFillLambdas = false;

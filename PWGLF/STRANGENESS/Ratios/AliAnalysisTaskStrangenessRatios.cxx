@@ -446,9 +446,12 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         {
           if (fRecLambda->radius < fRadiusPreselection || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
           int model_index = WhichBDT(fRecLambda->ct);
-          if (!fBDT[model_index] || model_index > (fNctBinsBDT-1))
+          if (model_index > (fNctBinsBDT-1)) {
+            continue;
+          }
+          if (!fBDT[model_index])
           {
-            AliWarning("ERROR: BDT not loaded, skip prediction ...\n");
+            AliError("ERROR: BDT not loaded, skip prediction ...\n");
             continue;
           }
           double features[]={fRecLambda->cosPA, fRecLambda->dcaV0tracks, fRecLambda->dcaPiPV, fRecLambda->dcaPrPV, fRecLambda->dcaV0PV, fRecLambda->tpcNsigmaPr, fRecLambda->radius};
@@ -461,7 +464,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fRecLambdaBDTOut->mass = fRecLambda->mass;
           fRecLambdaBDTOut->ct = fRecLambda->ct;
           fRecLambdaBDTOut->pt = fRecLambda->pt;
-          fRecLambdaBDTOut->pileUpCheck = true;
+          fRecLambdaBDTOut->pileUpCheck = fRecLambda->hasTOFhit || fRecLambda->hasITSrefit;
           fTreeLambdaBDTOut->Fill();
         }
       }
@@ -591,7 +594,6 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       }
     }
   }
-
   PostAllData();
 }
 

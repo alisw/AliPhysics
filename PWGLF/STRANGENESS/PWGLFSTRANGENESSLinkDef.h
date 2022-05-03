@@ -99,6 +99,7 @@
 #pragma link C++ class MiniCascadeMC+;
 #pragma link C++ class MiniLambda+;
 #pragma link C++ class MiniLambdaMC+;
+#pragma link C++ class MiniLambdaBDTOut+;
 #pragma link C++ class V0filler+;
 #pragma link C++ class Cascfiller+;
 //#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
