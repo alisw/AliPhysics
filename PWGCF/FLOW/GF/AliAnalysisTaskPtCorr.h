@@ -53,7 +53,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void SetEtaNch(double etanch) { fEtaNch = etanch; }
     void SetNBootstrap(double nboot) { fNbootstrap = nboot; }
     void SetUsePowerEff(double useeff) { fUsePowerEff = useeff; }
-    void SetPseudoEff(int pseudoeff) { fPseudoEff = pseudoeff; }
+    void SetPseudoEffPars(bool useeff, double consteff = 0.8, double sigmaeff = 0.05) { fUseEff = useeff; fConstEff = consteff; fSigmaEff = sigmaeff; }
   protected:
     AliEventCuts            fEventCuts;
   private:
@@ -93,17 +93,14 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool                    fUsePowerEff;
     int                     mpar;
     int                     fPseudoEff;
+    bool                    fUseEff;
+    double                  fConstEff;
+    double                  fSigmaEff;
     vector<vector<double>>  wp;
     vector<vector<double>>  wpP;
     vector<vector<double>>  wpN;
     unsigned int            fEventWeight;
     TH1D*                   fV0MMulti;    //!
-    TProfile*               pfmpt;      //!
-    AliPtContainer*         fck;      //!
-    AliPtContainer*         fskew;      //!
-    AliPtContainer*         fkur;      //!
-    AliPtContainer*         fp5;      //!
-    AliPtContainer*         fp6;      //!
     AliPtContainer*         fpt;      //!
     TH2D*                   fNchTrueVsRec; //!
     TH2D*                   fV0MvsMult; //!
@@ -115,7 +112,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool                    fOnTheFly;
     double                  fImpactParameter; 
     map<double,double>      centralitymap;
-    
 
     bool AcceptAODTrack(AliAODTrack *tr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp);
     bool AcceptAODTrack(AliAODTrack *mtr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp, int &nTot);
