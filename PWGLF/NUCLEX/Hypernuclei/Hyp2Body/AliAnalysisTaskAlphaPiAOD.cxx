@@ -251,18 +251,18 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                     continue;
             }
 
-            double pNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
-                        : fMC          ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
-                                        : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
-            double nNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
-                        : fMC          ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha)
-                                        : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
+            double pNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
+                           : fMC          ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
+                                          : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
+            double nNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
+                           : fMC          ? fPID->NumberOfSigmasTPC(nTrack, fNucleusPID)
+                                          : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
             fHistos->FillTH2("QA/hTPCPIDAllTracksP", pTrack->GetTPCmomentum()/pTrack->Charge(), pTrack->GetTPCsignal());
             fHistos->FillTH2("QA/hTPCPIDAllTracksN", nTrack->GetTPCmomentum()/nTrack->Charge(), nTrack->GetTPCsignal());
-            if (std::abs(pNsigma) > 5 && std::abs(nNsigma) > 5) {
+            if ((pNsigma < fPIDrange[0] || pNsigma > fPIDrange[1]) && (nNsigma < fPIDrange[0] || nNsigma > fPIDrange[1])) {
                 continue;
             }
-            if (std::abs(pNsigma) < 5 && std::abs(nNsigma) < 5) {
+            if (pNsigma > fPIDrange[0] && pNsigma < fPIDrange[1] && nNsigma > fPIDrange[0] && nNsigma < fPIDrange[1]) {
                 continue;
             }
             fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum()/pTrack->Charge(), pTrack->GetTPCsignal());
@@ -345,8 +345,8 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 fHistos->FillTH2("QA/hTPCPIDAllTracksP", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
             else
                 fHistos->FillTH2("QA/hTPCPIDAllTracksN", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
-            double pNsigma{fPID->NumberOfSigmasTPC(alphaTrack, AliPID::kAlpha)};
-            if (std::abs(pNsigma) > 5) {
+            double pNsigma{fPID->NumberOfSigmasTPC(alphaTrack, fNucleusPID)};
+            if (pNsigma < fPIDrange[0] || pNsigma > fPIDrange[1]) {
                 continue;
             }
             if(alphaTrack->GetSign() > 0)
@@ -364,7 +364,7 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                     continue;
                 }
                 if (!((AliAODTrack *)pionTrack)->TestFilterBit(fFilterBit))
-                    continue;   
+                    continue;
                 if (std::abs(pionTrack->Eta()) > 0.8)
                     continue;
 
@@ -446,7 +446,7 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 delete vertexESD;
                 vertexESD = NULL;
                 vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, 2);  // Hyper Vertex
-                
+
                 double sv[3];
                 vertexAOD->GetXYZ(sv);  // Secondary vertex
                 double deltaPos[3]{sv[0] - pv[0], sv[1] - pv[1], sv[2] - pv[2]};
@@ -508,7 +508,6 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 }
                 fTree->Fill();
             }
-            
         }
     }
     if (fMC) {
