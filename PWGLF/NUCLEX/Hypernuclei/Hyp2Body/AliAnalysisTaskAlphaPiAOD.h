@@ -8,7 +8,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-#include "AliPid.h"
+#include "AliPID.h"
 
 class THistManager;
 class AliPIDResponse;
