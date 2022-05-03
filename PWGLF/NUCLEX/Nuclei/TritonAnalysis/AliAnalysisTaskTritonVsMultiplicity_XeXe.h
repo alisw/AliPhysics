@@ -197,6 +197,7 @@ private:
     Double_t TPCsignal;
     Double_t TOFsignal;
     Double_t TRDsignal;
+    Double_t nSigmaITS_Trit;//
     Double_t nSigmaTPC_Trit;//
     Double_t nSigmaTOF_Trit;//
     Double_t nSigmaTRD_Trit;//
