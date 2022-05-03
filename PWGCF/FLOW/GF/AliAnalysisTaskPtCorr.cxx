@@ -69,6 +69,9 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fUseNch(false),
     fUsePowerEff(false),
     fPseudoEff(0),
+    fUseEff(0),
+    fConstEff(0.8),
+    fSigmaEff(0.05),
     mpar(6),
     wp(0),
     wpP(0),
@@ -122,6 +125,9 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool i
     fUseNch(false),
     fUsePowerEff(false),
     fPseudoEff(pseudoeff),
+    fUseEff(0),
+    fConstEff(0.8),
+    fSigmaEff(0.05),
     mpar(6),
     wp(0),
     wpP(0),
@@ -459,10 +465,21 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &l_cent, doub
         if (l_pt<ptMin || l_pt>ptMax) continue;
         double wNUE = 1.0;
         if(fPseudoEff>0) {
-          wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
-          if(wNUE==0.0) continue;
-          if(fPseudoEff==1) { rnd_eff = fRndm->Rndm(); if(rnd_eff > wNUE) continue; }
-          if(fPseudoEff==2) wNUE = fRndm->Gaus(wNUE,0.05); 
+          if(fUseEff){
+            wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
+            if(wNUE==0.0) continue;
+          }
+          else wNUE = fConstEff;
+          if(fPseudoEff==1) {
+            rnd_eff = fRndm->Rndm(); 
+            if(rnd_eff > wNUE) continue;
+          }
+          if(fPseudoEff==2) { 
+            wNUE = fRndm->Gaus(wNUE,fSigmaEff); 
+            rnd_eff = fRndm->Rndm(); 
+            if(rnd_eff > wNUE) continue;
+          }
+          wNUE = 1./wNUE;
         }
         if(TMath::Abs(l_eta)<fEtaNch) { nTracksMC++; NtracksPt[fPtDist->GetXaxis()->FindBin(l_pt)-1]++; }
         if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
@@ -523,8 +540,9 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &l_cent, doub
     double l_rnd = fRndm->Rndm();
     //Fill recursive pt-correlations
     fpt->FillRecursive(wp,l_mult,l_rnd);
-    //Test with explicit ck calculation
-    fpt->FillObs(wp,l_mult,l_rnd);
+    //Test with explicit ck and Skew calculation
+    fpt->FillCk(wp,l_mult,l_rnd);
+    fpt->FillSkew(wp,l_mult,l_rnd);
     //Fill subevent profiles with appropriate wp arrays
     if(fEtaGap>=0) {
       fpt->FillRecursive(wpP,l_mult,l_rnd,"subP"); fpt->FillRecursive(wpN,l_mult,l_rnd,"subN");
@@ -561,7 +579,6 @@ void AliAnalysisTaskPtCorr::SetPtBins(int nPtBins, double *PtBins) {
 void AliAnalysisTaskPtCorr::SetMultiplicityBins(int nMultiBins, double *multibins) {
   if(fMultiAxis) delete fMultiAxis;
   fMultiAxis = new TAxis(nMultiBins, multibins);
-  printf("Multi axis set\n");
 }
 void AliAnalysisTaskPtCorr::SetV0MBins(int nMultiBins, double *multibins) {
   if(fV0MAxis) delete fV0MAxis;

@@ -7,15 +7,18 @@ Bool_t ConnectToGrid() {
   if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
   return kTRUE;
 }
-AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, int pseudoeff, TString efficiencyPath, TString subfix1, TString subfix2 = "")
+AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, int pseudoeff, TString efficiencyPath, TString subfix1)
 {
-  TString l_ContName(subfix1);
-  if(!l_ContName.IsNull()) l_ContName.Prepend("_");
-  if(!subfix2.IsNull()) l_ContName+="_"+subfix2;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
   TString fileName = AliAnalysisManager::GetCommonFileName();
+  TString l_ContName(subfix1);
+  printf("----Initialising task %s ----\n",l_ContName.Data());
+  printf("IsMC: %i\n",IsMC);
+  printf("IsOnTheFly: %i\n",isOnTheFly);
+  printf("Pseudo efficiency: %i\n",pseudoeff);
+  if(!l_ContName.IsNull()) l_ContName.Prepend("_");
   AliAnalysisTaskPtCorr* task = new AliAnalysisTaskPtCorr(name.Data(), IsMC, isOnTheFly, pseudoeff, l_ContName);
   if(!task)
     return 0x0;
@@ -23,11 +26,11 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, i
   AliAnalysisDataContainer* cInput0 = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task,0,cInput0);
   //Full analysis
-  printf("Getting input...\n");
   TObjArray *AllContainers = mgr->GetContainers();
   Bool_t gridConnected=kFALSE;
   if(!(IsMC && !(pseudoeff>0)) && !isOnTheFly) {
     if(!AllContainers->FindObject("Efficiency")) {
+      printf("Getting input...\n");
       if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
       if(efficiencyPath.Contains("alien:")) if(!ConnectToGrid()) return 0;//{ TGrid::Connect("alien:"); gridConnected = kTRUE; };
       TFile *tfEff = TFile::Open(efficiencyPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MergedWeights.root"
@@ -38,13 +41,11 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, i
       AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
       cEff->SetData(fList);
       mgr->ConnectInput(task,1,cEff);
-    } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
-    printf("Efficiencies connected!\n");      
+      printf("Inputs connected!\n");    
+    } else { mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency")); printf("Inputs already connected\n"); }
   };
-  printf("Inputs connected!\n");
   AliAnalysisDataContainer *cPtcorr = mgr->CreateContainer(Form("Correlations%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   AliAnalysisDataContainer *cQA = mgr->CreateContainer(Form("QA%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
-  printf("Output containers created!\n");
   mgr->ConnectOutput(task,1,cPtcorr);
   mgr->ConnectOutput(task,2,cQA);
   return task;
