@@ -44,7 +44,6 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fCentMax(10),
   fJetRadius(0),
   JetChargeK(0.5),
-  MotherFraction(0.8),
 
 
   fTreeJets(0)
@@ -63,7 +62,6 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fCentMax(10),
   fJetRadius(0),
   JetChargeK(0.5),
-  MotherFraction(0.8),
 
 
 
@@ -111,6 +109,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fTreeJets->Branch("ParticleJetCharge",&ParticleJetCharge,"ParticleJetCharge/F");
   fTreeJets->Branch("LeadingTrackPt",&LeadingTrackPt,"LeadingTrackPt/F");
   fTreeJets->Branch("PdgCode",&PdgCode,"pdgcode/I");
+  fTreeJets->Branch("ProgenetorFraction",&ProgenetorFraction,"ProgenetorFraction/F");
 
 
 
@@ -145,16 +144,18 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
   }
 
   // Reset the Tree Parameters
-  Pt = 0;
-  Phi = 0;
-  Eta = 0;
-  JetCharge = 0;
-  ParticlePt  = 0;
-  ParticlePhi = 0;
-  ParticleEta = 0;
-  ParticleJetCharge = 0;
-  LeadingTrackPt = 0;
+  Pt = -999;
+  Phi = -999;
+  Eta = -999;
+  JetCharge = -999;
+  ParticlePt  = -999;
+  ParticlePhi = -999;
+  ParticleEta = -999;
+  ParticleJetCharge = -999;
+  LeadingTrackPt = -999;
   PdgCode = 0;
+  ProgenetorFraction = -1;
+
 
   // Initialise jet pointer
   //cout << "Running Fill Histograms" << endl;
@@ -172,10 +173,10 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
   Float_t JetPt_ForThreshold=0;
 
   if(JetCont) {
-    // Technical detail; fix possibly corrupted jet container ID
-    // Jet is acceptable?
-    for (auto Jet1 : JetCont->accepted())
-    {
+
+    for (auto Jet1 : JetCont->accepted()) {
+      // ...
+    
       if(!Jet1)
       {
 
@@ -258,6 +259,8 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         Float_t jetCharge = 0;
         Float_t jetChargeParticle = 0;
 
+        Int_t fParticleUniqueID[100] = {};
+        Int_t fCurrentParticleUniqueID = 0;
 
 
         //Finding Pdg Code using TRUTH Jet.
@@ -310,78 +313,112 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
               MotherParticle = (AliMCParticle*) MCParticleContainer->GetParticle(MotherParticle->GetMother());
             }
             // Insure this isnt a beam proton
-            if(MotherParticle->E() < 3400)
+            if(MotherParticle->PdgCode() != 2212)
             {
+            
+            fCurrentParticleUniqueID = MotherParticle->GetLabel();
             fCurrentPdg = MotherParticle->PdgCode();
-            fPdgCodes[nMothers] = fCurrentPdg;
+            fPdgCodes[nMothers] = fCurrentPdg;            
+            fParticleUniqueID[nMothers] = fCurrentParticleUniqueID;
+
+            //cout << fPdgCodes[nMothers] << endl;
             nMothers++;
+
             }
           }
 
+          /*
+          //Output for checking the list of raw pdgCodes
+          cout << "Pdg Codes: [" ;
+          for(int i = 0; i < nMothers; i++)
+          {
+            cout << fPdgCodes[i] << "," ;
+          }
+          cout << "] " << endl;
 
+          //Outputs for checking Raw ParticleUniqueIDs
+          cout << "Particle Label: [" ;
+          for(int i = 0; i < nMothers; i++)
+          {
+            cout << fParticleUniqueID[i] << "," ;
+          }
+          cout << "] " << endl;
+          */
 
-            Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
-            Float_t UniquePdgFrequency[20] = {};
-            Int_t nUniques = 0;
+          Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
+          Float_t UniquePdgFrequency[20] = {};
+          Int_t nUniques = 0;
 
-            //Loop of PDG code found
-            for(int i = 0; i < nMothers; i++)
+          //Loop of PDG code found
+          for(int i = 0; i < nMothers; i++)
+          {
+            
+            // Consider one pdgCode at the time.
+            fCurrentPdg = fPdgCodes[i];
+            // Loop over unique arry to be filled
+            
+            for(int j = 0; j < nMothers; j++)
             {
-              // consider one pdgCode at the time.
-              fCurrentPdg = fPdgCodes[i];
-              // Loop over unique arry to be filled
-              for(int j = 0; j < nMothers; j++)
+
+              // If it hasnt matched and the current unique value is empty list the new value and increment frequncy by 1 and then break
+              if(UniquePdgCodes[j] != fCurrentPdg && UniquePdgCodes[j] == 0)
               {
-                // If it hasnt matched and the current unique value is empty list the new value and increment frequncy by 1 and then break
-                if(UniquePdgCodes[j] != fCurrentPdg && UniquePdgCodes[j] == 0)
-                {
-                  UniquePdgCodes[j] = fCurrentPdg;
-                  UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
-                  nUniques ++;
-                  break;
-                }
-                //Check if the PDG is already lsited if it matched increase the frequency counter by 1
-                else if(UniquePdgCodes[j] == fCurrentPdg)
-                {
-                  UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
-                  break;
-                }
-
-                // Otherwise the PDG hasnt matched and the value isnt zero check the next value
-
+                UniquePdgCodes[j] = fCurrentPdg;
+                UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
+                nUniques ++;
+                break;
               }
-            }
 
-            // Setting Final Pdg Code
-            // normalising frequency array
-
-            for(unsigned int i = 0; i < nUniques; i++)
-            {
-              UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
-            }
-
-            //Find the index of the max
-            int IndexOfMaximum = -1;
-
-            // assigens index of maximum if the over limit factation of mother particles agree
-            for(unsigned int i = 0; i < nUniques; i++)
-            {
-              if(UniquePdgFrequency[i] > MotherFraction)
+              //Check if the PDG is already lsited if it matched increase the frequency counter by 1
+              else if(UniquePdgCodes[j] == fCurrentPdg)
               {
-                IndexOfMaximum = i;
+                UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
+                break;
               }
+              // Otherwise the PDG hasnt matched and the value isnt zero check the next value
+
             }
+          }
 
-            // Set final PDG Code to be used
-            fCurrentPdg = fPdgCodes[IndexOfMaximum];
+          // Setting Final Pdg Code
+          // normalising frequency array
 
-            if(IndexOfMaximum < 0)
+          for(unsigned int i = 0; i < nUniques; i++)
+          {
+            UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
+          }
+
+          /*
+          //Output Frequency of Uniques
+          cout << "Frequency of Uniques: [" ;
+          for(int i = 0; i < nUniques; i++)
+          {
+            cout << UniquePdgFrequency[i] << "," ;
+          }
+          cout << "] " << endl;
+          */
+
+          
+         // Loop to store largest number And corresponding pdg code
+          Float_t CurrentFraction;
+
+          int IndexOfMaximum = -1;
+          CurrentFraction = UniquePdgFrequency[0];
+          for(unsigned int i = 0;i < nUniques; ++i) 
+          {
+            if(UniquePdgFrequency[i] >= CurrentFraction)
             {
-              fCurrentPdg = 0;
+              IndexOfMaximum = i;
+              CurrentFraction = UniquePdgFrequency[i];
             }
+          }
 
-
+          ProgenetorFraction = CurrentFraction;
+          fCurrentPdg = fPdgCodes[IndexOfMaximum];
+          
           // Now Caluclate the jet Charge
+
+
 
           // Loop over the consituents
           for (UInt_t iJetConst = 0; iJetConst < nJetConstituents; iJetConst++ )
@@ -399,22 +436,27 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
 
 
-        // Normalise the Non Flavoured Jet CHarge
-        jetCharge/=pow(Jet1->Pt(),0.5);
+          // Normalise the Non Flavoured Jet CHarge
+          jetCharge/=pow(Jet1->Pt(),0.5);
 
-        // Normalise Particle level jet charge
-        jetChargeParticle/=pow(TruthJet->Pt(),0.5);
-
-
-        //Put The Jet Charge in the right place
-        JetCharge = jetCharge;
-        ParticleJetCharge = jetChargeParticle;
-
-        PdgCode = fCurrentPdg;
+          // Normalise Particle level jet charge
+          jetChargeParticle/=pow(TruthJet->Pt(),0.5);
 
 
+          //Put The Jet Charge in the right place
+          JetCharge = jetCharge;
+          ParticleJetCharge = jetChargeParticle;
 
-        fTreeJets->Fill();
+          PdgCode = fCurrentPdg;
+
+
+
+          //cout << "Final PDG CODE: " << fCurrentPdg << endl;
+          //cout << "Progenetor Fraction: " << ProgenetorFraction << endl;
+
+
+
+          fTreeJets->Fill();
 
 
 
