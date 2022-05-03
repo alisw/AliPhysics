@@ -1,6 +1,6 @@
 //=============================================================================
 //
-// *** AliAnalysisTaskParticleEff.C ***
+// *** AliAnalysisTaskParticleEffWRZ.C ***
 //
 // This macro initialize an AnalysisTask for Particle Efficiency
 //

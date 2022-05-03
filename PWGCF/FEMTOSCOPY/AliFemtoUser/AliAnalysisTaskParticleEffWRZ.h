@@ -13,8 +13,8 @@
 class AliAnalysisUtils;
 
 class AliAnalysisTaskParticleEffWRZ :public AliAnalysisTaskSE{
- public:
- AliAnalysisTaskParticleEffWRZ() : AliAnalysisTaskSE(),centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
+  public:
+  AliAnalysisTaskParticleEffWRZ() : AliAnalysisTaskSE(),centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
     {
 
       for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
@@ -42,7 +42,7 @@ class AliAnalysisTaskParticleEffWRZ :public AliAnalysisTaskSE{
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
   
- private:
+  private:
   AliAnalysisTaskParticleEffWRZ(const AliAnalysisTaskParticleEffWRZ &); // copy constructor
   AliAnalysisTaskParticleEffWRZ &operator=(const AliAnalysisTaskParticleEffWRZ &); // operator=
   AliCentrality *centrality;

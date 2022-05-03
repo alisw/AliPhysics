@@ -167,8 +167,8 @@ set(SRCS
   AliFemtoCutMonitorV0CosPointingAngle.cxx
   AliFemtoCutMonitorPairMomRes.cxx
   AliFemtoCorrFctnPairsForCorrFit.cxx
-  AliFemtoWRzTrackCut.cxx
   AliAnalysisTaskParticleEffWRZ.cxx
+  AliFemtoWRzTrackCut.cxx
   AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
   AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
   AliFemtoCorrFctnpdtHe3.cxx
