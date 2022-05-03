@@ -420,7 +420,7 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
 
   fGTI = new AliAODTrack*[fTrackBufferSize];
 
-  fPairCleaner = new AliFemtoDreamPairCleaner(10,2,false);
+  fPairCleaner = new AliFemtoDreamPairCleaner(12,2,false);
     // AliFemtoDreamPairCleaner(1,2,3)
     // 1. argument (integer) number of track-decay-combinations to be cleaned (proton-lambda, antiproton-antilambda, deuteron-lambda and antideuteron-antilambda)
     // 2. argument (integer) number of decay-decay-combinations to be cleaned (lambda-lambda and antilambda-antilambda)
@@ -758,18 +758,20 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&Decays,0);			    // clean deuteron-lambda
 	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiDecays,1);		    // clean antideuteron-antilambda
 
-	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&ProtonParticles,2);	    // clean deuteron-proton
-	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiprotonParticles,3);    // clean antideuteron-antiproton
+	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&AntiDecays,2);		    // clean deuteron-antilambda
+	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&Decays,3);		    // clean antideuteron-lambda
+
+	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&Decays,4);			    // clean proton-lambda
+	fPairCleaner->CleanTrackAndDecay(&AntiprotonParticles,&AntiDecays,5);		    // clean antiproton-antilambda
+
+	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&AntiDecays,6);		    // clean proton-antilambda
+	fPairCleaner->CleanTrackAndDecay(&AntiprotonParticles,&Decays,7);		    // clean antiproton-lambda
+
+	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&ProtonParticles,8);	    // clean deuteron-proton
+	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiprotonParticles,9);    // clean antideuteron-antiproton
       
-	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&DeuteronParticles,4);	    // clean deuteron-deuteron
-	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntideuteronParticles,5);  // clean antideuteron-antideuteron
-
-	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&ProtonParticles,6);		    // clean proton-proton
-	fPairCleaner->CleanTrackAndDecay(&AntiprotonParticles,&AntiprotonParticles,7);	    // clean antiproton-antiproton
- 
-	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&Decays,8);			    // clean proton-lambda
-	fPairCleaner->CleanTrackAndDecay(&AntiprotonParticles,&AntiDecays,9);		    // clean antiproton-antilambda
-
+	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&AntideuteronParticles,10);	    // clean deuteron-antideuteron
+	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&AntiprotonParticles,11);	    // clean proton-antiproton
 
 	fPairCleaner->CleanDecay(&Decays,0);						    // clean lambda-lambda
 	fPairCleaner->CleanDecay(&AntiDecays,1);					    // clean antilambda-antilambda
