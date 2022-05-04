@@ -44,7 +44,17 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fCentMax(10),
   fJetRadius(0),
   JetChargeK(0.5),
-
+  Pt(-999),
+  Phi(-999),
+  Eta(-999),
+  JetCharge(-999),
+  ParticlePt(-999),
+  ParticlePhi(-999),
+  ParticleEta(-999),
+  ParticleJetCharge(-999),
+  LeadingTrackPt(-999),
+  PdgCode(0),
+  ProgenetorFraction(-1),
 
   fTreeJets(0)
 {
@@ -62,7 +72,17 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fCentMax(10),
   fJetRadius(0),
   JetChargeK(0.5),
-
+  Pt(-999),
+  Phi(-999),
+  Eta(-999),
+  JetCharge(-999),
+  ParticlePt(-999),
+  ParticlePhi(-999),
+  ParticleEta(-999),
+  ParticleJetCharge(-999),
+  LeadingTrackPt(-999),
+  PdgCode(0),
+  ProgenetorFraction(-1),
 
 
 
@@ -155,6 +175,16 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
   LeadingTrackPt = -999;
   PdgCode = 0;
   ProgenetorFraction = -1;
+
+  // Initialise Jet shapes
+  Int_t fPdgCodes[100] = {};
+  Int_t fCurrentPdg = 0;
+  Int_t nMothers = 0;
+  Float_t jetCharge = 0;
+  Float_t jetChargeParticle = 0;
+
+  Int_t fParticleUniqueID[100] = {};
+  Int_t fCurrentParticleUniqueID = 0;
 
 
   // Initialise jet pointer
@@ -251,16 +281,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         }
 
 
-      	// Add other branches below this line ...
-        // Initialise Jet shapes
-        Int_t fPdgCodes[100] = {};
-        Int_t fCurrentPdg = 0;
-        Int_t nMothers = 0;
-        Float_t jetCharge = 0;
-        Float_t jetChargeParticle = 0;
-
-        Int_t fParticleUniqueID[100] = {};
-        Int_t fCurrentParticleUniqueID = 0;
+      
 
 
         //Finding Pdg Code using TRUTH Jet.
@@ -327,24 +348,6 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
             }
           }
 
-          /*
-          //Output for checking the list of raw pdgCodes
-          cout << "Pdg Codes: [" ;
-          for(int i = 0; i < nMothers; i++)
-          {
-            cout << fPdgCodes[i] << "," ;
-          }
-          cout << "] " << endl;
-
-          //Outputs for checking Raw ParticleUniqueIDs
-          cout << "Particle Label: [" ;
-          for(int i = 0; i < nMothers; i++)
-          {
-            cout << fParticleUniqueID[i] << "," ;
-          }
-          cout << "] " << endl;
-          */
-
           Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
           Float_t UniquePdgFrequency[20] = {};
           Int_t nUniques = 0;
@@ -387,16 +390,6 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           {
             UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
           }
-
-          /*
-          //Output Frequency of Uniques
-          cout << "Frequency of Uniques: [" ;
-          for(int i = 0; i < nUniques; i++)
-          {
-            cout << UniquePdgFrequency[i] << "," ;
-          }
-          cout << "] " << endl;
-          */
 
           
          // Loop to store largest number And corresponding pdg code
@@ -450,9 +443,38 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           PdgCode = fCurrentPdg;
 
 
+          //Outputs for Checking
+          if(fCurrentPdg > 30000)
+          {
+          cout << "Final PDG CODE: " << fCurrentPdg << endl;
+          cout << "Progenetor Fraction: " << ProgenetorFraction << endl;
 
-          //cout << "Final PDG CODE: " << fCurrentPdg << endl;
-          //cout << "Progenetor Fraction: " << ProgenetorFraction << endl;
+          //Output Frequency of Uniques
+          cout << "Frequency of Uniques: [" ;
+          for(int i = 0; i < nUniques; i++)
+          {
+            cout << UniquePdgFrequency[i] << "," ;
+          }
+          cout << "] " << endl;
+                   
+          //Output for checking the list of raw pdgCodes
+          cout << "Pdg Codes: [" ;
+          for(int i = 0; i < nMothers; i++)
+          {
+            cout << fPdgCodes[i] << "," ;
+          }
+          cout << "] " << endl;
+
+          //Outputs for checking Raw ParticleUniqueIDs
+          cout << "Particle Label: [" ;
+          for(int i = 0; i < nMothers; i++)
+          {
+            cout << fParticleUniqueID[i] << "," ;
+          }
+          cout << "] " << endl;
+          
+          }
+          
 
 
 
