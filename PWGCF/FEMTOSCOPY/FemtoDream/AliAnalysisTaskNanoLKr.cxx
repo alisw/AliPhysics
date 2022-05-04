@@ -221,26 +221,22 @@ void AliAnalysisTaskNanoLKr::UserCreateOutputObjects() {
   fLambdaList = fLambda->GetQAHists();
   fAntiLambdaList = fAntiLambda->GetQAHists();
 
-  fResultsQA = new TList();
-  fResultsQA->SetOwner();
-  fResultsQA->SetName("ResultsQA");
-  if (fConfig->GetUseEventMixing()) {
+  if (fPartColl && fPartColl->GetHistList()) {
     fResults = fPartColl->GetHistList();
-    if (!fConfig->GetMinimalBookingME()) {
-      fResultsQA->Add(fPartColl->GetQAList());
-      fResultsQA->Add(fPairCleaner->GetHistList());
-    }
+  }
+  
+  if (!fConfig->GetMinimalBookingME() && fPartColl && fPartColl->GetQAList()) {
+    fResultsQA = fPartColl->GetQAList();
   } else {
-    fResults = new TList();
-    fResults->SetOwner();
-    fResults->SetName("Results");
+    fResultsQA = new TList();
+    fResultsQA->SetName("ResultsQA");
+    fResultsQA->SetOwner(true);
   }
 
-
-    if (!fConfig->GetMinimalBookingSample()) {
-      ///fResultsSampleQA->Add(fSample->GetQAList());
-      fResultsQA->Add(fPairCleaner->GetHistList());
-    }
+  if (!fConfig->GetMinimalBookingME() && fPairCleaner
+      && fPairCleaner->GetHistList()) {
+    fQA->Add(fPairCleaner->GetHistList());
+  }
 
   PostData(1, fQA);  ///Postdata: to fill outputs already defined
   PostData(2, fEvtList);
