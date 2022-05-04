@@ -13,11 +13,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     bool UseFemtoPionCuts = true,//5
     bool DoPairCleaning = false, //6
     const char *cutVariation = "0", //7
-    bool DoOfficialFemto = false, //8
-    bool DoThreeDFemto = true, //9
-    bool RunPlotMult = true, //10
-    bool RunPlotPhiTheta = false,//11
-    bool DoClosePairRejection = true,
     bool DoAncestors = false) {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -30,6 +25,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     return nullptr;
   }
 
+  //Event cuts ------------------------------------------------------------------------
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
@@ -38,6 +34,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     evtCuts->SetSphericityCuts(SpherDown, 1.0, 0.5); 
   }
 
+
+  //Track cuts ------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsPion = NULL;
   AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
@@ -114,6 +112,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   TrackCutsAntiProton->SetFilterBit(128);
   TrackCutsAntiProton->SetCutCharge(-1);
 
+
+  //Set-up output ------------------------------------------------------------------------
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212); 
   PDGParticles.push_back(2212); 
@@ -122,9 +122,14 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
-  mTBins.push_back(1.14); 
-  mTBins.push_back(1.26); 
-  mTBins.push_back(999.); 
+  mTBins.push_back(0.53); 
+  mTBins.push_back(0.7); 
+  mTBins.push_back(0.8); 
+  mTBins.push_back(1.0); 
+  mTBins.push_back(1.2); 
+  mTBins.push_back(1.5); 
+  mTBins.push_back(2.0); 
+  mTBins.push_back(4.0); 
   std::vector<int> pairQA;
   //pairs: 
   // pp             0
@@ -152,9 +157,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
 
   closeRejection[0] = true;  // pp
   closeRejection[2] = true;  // ppi+
-  closeRejection[3] = true;  // ppi-
+  closeRejection[3] = false;  // ppi-
   closeRejection[4] = true;  // barp barp
-  closeRejection[5] = true;  // barp pi+
+  closeRejection[5] = false;  // barp pi+
   closeRejection[6] = true;  // barp pi-
   closeRejection[7] = true;  // pi+pi+
   closeRejection[9] = true;  // pi-pi-
@@ -204,8 +209,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   MultBins.push_back(72);
   MultBins.push_back(76);
   MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
 
- 
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
   config->SetZBins(ZVtxBins);
@@ -218,7 +227,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   config->SetClosePairRejection(closeRejection);
   config->SetExtendedQAPairs(pairQA);
   config->SetDeltaEtaMax(0.017); // and here you set the actual values 
-  config->SetDeltaPhiMax(0.017); // and here you set the actual values 
+  config->SetDeltaPhiMax(0.04); // and here you set the actual values 
   config->SetMixingDepth(10);
   config->SetmTBins(mTBins);
   config->SetDomTMultBinning(true);
@@ -235,6 +244,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   if (fullBlastQA) {
    // config->SetkTBinning(true);
     config->SetPtQA(true);
+    config->SetdPhidEtaPlots(true);
   }
 
   if (!fullBlastQA) {
@@ -246,8 +256,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
-
-
 
 
   AliAnalysisTaskNanoFemtoProtonPion *task =
@@ -285,23 +293,25 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   task->SetTrackCutsAntiProton(TrackCutsAntiProton);
   task->SetCollectionConfig(config);
   task->SetDoPairCleaning(DoPairCleaning);
+  task->SetDoOfficialFemto(true); 
 
+  //Set-up for own looping & calculus -> needed for 3D studies
   //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
   task->SetCombinationInput("00 11 02 13 03 12"); //p-p barp-barp p-pion barp-barpion p-barpion barp-pion
   task->SetNameTagInput("Proton AntiProton Pion AntiPion");
-  task->SetDoOfficialFemto(DoOfficialFemto);
-  task->SetDoThreeDFemto(DoThreeDFemto);
-  task->SetRunPlotMult(RunPlotMult);
-  task->SetRunPlotPhiTheta(RunPlotPhiTheta); 
-  task->SetDoClosePairRejection(DoClosePairRejection);
-  task->SetDoAncestors(DoAncestors);
+  task->SetDoOwnFemto(false); //Do own looping and calculus 
+  task->SetDoThreeDFemto(false);
+  task->SetRunPlotMult(false);
+  task->SetRunPlotPhiTheta(false); 
+  task->SetDoClosePairRejection(false);
+  task->SetDoAncestors(false); //Does not affect official femto part
 
   mgr->AddTask(task);
 
   TString addon = "";
 
   if (trigger == "kINT7") {
-    addon += "MB";
+    addon += "kINT7";
   } else if (trigger == "kHM") {
     addon += "HM";
   }
