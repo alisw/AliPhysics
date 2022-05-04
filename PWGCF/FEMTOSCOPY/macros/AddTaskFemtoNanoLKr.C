@@ -223,9 +223,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = true,		//2 MC
 	AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
 
-	//config->SetPtQA(true);
-  //config->SetMassQA(true); ///?
-	//config->SetExtendedQAPairs(pairQA); (commented for systematics)
+	config->SetExtendedQAPairs(pairQA); //(commented for systematics)
 	config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 	config->SetMultBinning(true);
 	config->SetZBins(ZVtxBins); ///only the ones with same z and multiplicity will be compared
@@ -236,16 +234,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = true,		//2 MC
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetUseEventMixing(true);
-	//config->SetMixingDepth(30); ///how many events i want to mix. 10 is usually okay
-  config->SetMixingDepth(100); ///how many events I want to mix. 10 is usually okay
+	config->SetMixingDepth(30); ///how many events i want to mix. 10 is usually okay
+  config->SetMinimalBookingME(suffix != "0");
 
-
-  if (suffix == "0") {
-  config->SetkTBinning(true);
-  config->SetMultBinning(true);
-  config->SetmTBinning(true);
-  }
-
+  // if (suffix == "0") {
+  //   config->SetPtQA(true);
+  //   config->SetMassQA(true);
+  //   config->SetkTBinning(true);
+  //   config->SetMultBinning(true);
+  //   config->SetmTBinning(true);
+  // }
 
   if (isMC) {
 		///create a histogram, which says how e.g. k true (montecarlo s), vs the one we reconstruct
