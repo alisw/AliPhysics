@@ -12120,6 +12120,7 @@ void AliHFSystErr::InitLctopK0S20161718pp13TeVBDT() {
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff", "fTrackingEff", 24, 0., 24.); //Preliminary (usual track syst from inclusive Lc analysis + 2% soft-pion)
   for (Int_t i = 1; i <= 24; i++) fTrackingEff->SetBinContent(i, 0.0);  // default value is set to zero
+  fTrackingEff->SetBinContent(1, 0.05); //(0,1) GeV/c
   fTrackingEff->SetBinContent(2, 0.05); //(1,2) GeV/c
   fTrackingEff->SetBinContent(3, 0.06); //(2,3) GeV/c
   fTrackingEff->SetBinContent(4, 0.06); //(3,4) GeV/c
@@ -12134,6 +12135,7 @@ void AliHFSystErr::InitLctopK0S20161718pp13TeVBDT() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
   for (Int_t i = 1; i <= 24; i++) fRawYield->SetBinContent(i, 0.0);  // default value is set to zero
+  fRawYield->SetBinContent(1, 0.11);
   fRawYield->SetBinContent(2, 0.08);
   fRawYield->SetBinContent(3, 0.08);
   fRawYield->SetBinContent(4, 0.08);
@@ -12148,6 +12150,7 @@ void AliHFSystErr::InitLctopK0S20161718pp13TeVBDT() {
   // Cut variation
   fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
+  fCutsEff->SetBinContent(1, 0.05);
   fCutsEff->SetBinContent(2, 0.05);
   fCutsEff->SetBinContent(3, 0.05);
   fCutsEff->SetBinContent(4, 0.05);
@@ -12162,6 +12165,7 @@ void AliHFSystErr::InitLctopK0S20161718pp13TeVBDT() {
   // PID efficiency
   fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fPIDEff->SetBinContent(i, 0.0); // default value is set to zero
+  fPIDEff->SetBinContent(1, 0.01);
   fPIDEff->SetBinContent(2, 0.01);
   fPIDEff->SetBinContent(3, 0.01);
   fPIDEff->SetBinContent(4, 0.01);
@@ -12176,6 +12180,7 @@ void AliHFSystErr::InitLctopK0S20161718pp13TeVBDT() {
   // MC Pt-shape (PYTHIA Monash, Mode2)
   fMCPtShape = new TH1F("fMCPtShape", "fMCPtShape", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fMCPtShape->SetBinContent(i, 0.0); // default value is set to zero
+  fMCPtShape->SetBinContent(1, 0.00);
   fMCPtShape->SetBinContent(2, 0.01);
   fMCPtShape->SetBinContent(3, 0.01);
   fMCPtShape->SetBinContent(4, 0.01);
