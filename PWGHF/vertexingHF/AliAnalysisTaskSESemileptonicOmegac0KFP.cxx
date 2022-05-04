@@ -1633,50 +1633,56 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(AliAODEve
         delete fReservoirE[fPoolIndex][nextRes].back();
         fReservoirE[fPoolIndex][nextRes].pop_back();
         }
-    
+
     for(Int_t itrk =0; itrk<nTracks; itrk++){
         if(!seleTrkFlags[itrk]) continue;
         AliAODTrack *trk = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrk));
         if(!trk) continue;
         
-        //--- Fill Electron in the pool
-        Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
-        trk->PxPyPz(pxpypz);
-        trk->GetXYZ(xyz);
-        trk->GetCovarianceXYZPxPyPz(cv);
-        sign=trk->Charge();
-        Double_t d0z0bach[2],covd0z0bach[3];
-        trk->PropagateToDCA(fpVtx,bfield,kVeryBig,d0z0bach,covd0z0bach);
+        Double_t mass =9999.;
+        Bool_t Convee_ULS = (PrefilterElectronULS(trk, aodEvent, mass));
+        
+        if(!Convee_ULS){
+            
+            //--- Fill Electron in the pool
+            Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
+            trk->PxPyPz(pxpypz);
+            trk->GetXYZ(xyz);
+            trk->GetCovarianceXYZPxPyPz(cv);
+            sign=trk->Charge();
+            Double_t d0z0bach[2],covd0z0bach[3];
+            trk->PropagateToDCA(fpVtx,bfield,kVeryBig,d0z0bach,covd0z0bach);
 
-        TVector *varvec = new TVector(45);
-        (*varvec)[0] = trk->GetID();
-        (*varvec)[1] = trk->GetLabel();
-        for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+2] = pxpypz[ic];
-        (*varvec)[5] = 1;
-        for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+6] = xyz[ic];
-        (*varvec)[9] = 1;
-        for(Int_t ic=0;ic<21;ic++) (*varvec)[ic+10] = cv[ic];
-        (*varvec)[31] = sign;
-        (*varvec)[32] = (Int_t)trk->GetITSClusterMap(); //convert to UChar_t (maybe doesn't matter)
-        (*varvec)[33] = fpVtx->GetX(); //only used to subtract from xyz, use vertex from other event
-        (*varvec)[34] = fpVtx->GetY(); //only used to subtract from xyz, use vertex from other event
-        (*varvec)[35] = fpVtx->GetZ(); //only used to subtract from xyz, use vertex from other event
-        (*varvec)[35] = trk->GetUsedForVtxFit();
-        (*varvec)[36] = trk->GetUsedForPrimVtxFit();
-        (*varvec)[37] = -1;
-        (*varvec)[38] = trk->GetFilterMap();
-        (*varvec)[39] = trk->Chi2perNDF();
-        (*varvec)[40] = d0z0bach[0];
-        (*varvec)[41] = TMath::Sqrt(covd0z0bach[0]);
+            TVector *varvec = new TVector(45);
+            (*varvec)[0] = trk->GetID();
+            (*varvec)[1] = trk->GetLabel();
+            for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+2] = pxpypz[ic];
+            (*varvec)[5] = 1;
+            for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+6] = xyz[ic];
+            (*varvec)[9] = 1;
+            for(Int_t ic=0;ic<21;ic++) (*varvec)[ic+10] = cv[ic];
+            (*varvec)[31] = sign;
+            (*varvec)[32] = (Int_t)trk->GetITSClusterMap(); //convert to UChar_t (maybe doesn't matter)
+            (*varvec)[33] = fpVtx->GetX(); //only used to subtract from xyz, use vertex from other event
+            (*varvec)[34] = fpVtx->GetY(); //only used to subtract from xyz, use vertex from other event
+            (*varvec)[35] = fpVtx->GetZ(); //only used to subtract from xyz, use vertex from other event
+            (*varvec)[35] = trk->GetUsedForVtxFit();
+            (*varvec)[36] = trk->GetUsedForPrimVtxFit();
+            (*varvec)[37] = -1;
+            (*varvec)[38] = trk->GetFilterMap();
+            (*varvec)[39] = trk->Chi2perNDF();
+            (*varvec)[40] = d0z0bach[0];
+            (*varvec)[41] = TMath::Sqrt(covd0z0bach[0]);
         
-        double nsigmaTPCE = -999., nsigmaTOFE = -999.;
-        nsigmaTPCE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron); // TPC
-        nsigmaTOFE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron); // TOF
-        (*varvec)[42] = nsigmaTPCE;
-        (*varvec)[43] = nsigmaTOFE;
-        (*varvec)[44] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCE, nsigmaTOFE);
+            double nsigmaTPCE = -999., nsigmaTOFE = -999.;
+            nsigmaTPCE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron); // TPC
+            nsigmaTOFE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron); // TOF
+            (*varvec)[42] = nsigmaTPCE;
+            (*varvec)[43] = nsigmaTOFE;
+            (*varvec)[44] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCE, nsigmaTOFE);
         
-        fReservoirE[fPoolIndex][nextRes].push_back(varvec);
+            fReservoirE[fPoolIndex][nextRes].push_back(varvec);
+        }
     } //itrk
     
     Int_t KiddiePool = fReservoirE[fPoolIndex].size();
