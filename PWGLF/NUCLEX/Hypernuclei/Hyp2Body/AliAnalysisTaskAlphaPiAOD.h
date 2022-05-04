@@ -25,15 +25,16 @@ struct StructHyper {
     Double32_t V0radius;
     Double32_t Lrec;
     Double32_t fZ;
-    Double32_t TPCnSigmaPi;        //[-5,5,8]
-    Double32_t TPCnSigmaalpha;     //[-5,5,8]
-    Double32_t TPCmomalpha;        //[0.0,10.22,8]
-    Double32_t TPCsignalalpha;     //[0.,2046.,12]
-    Double32_t alphaProngPvDCAXY;  //[0.0,5.10,10]
-    Double32_t PiProngPvDCAXY;     //[0.0,20.46,12]
-    Double32_t alphaProngPvDCA;    //[0.0,10.22,10]
-    Double32_t PiProngPvDCA;       //[0.0,40.94,12]
-    Double32_t ProngsDCA;          //[0.0,2.54,8]
+    Double32_t TPCnSigmaPi;
+    Double32_t TPCnSigmaalpha;
+    Double32_t TOFnSigmaalpha;
+    Double32_t TPCmomalpha;
+    Double32_t TPCsignalalpha;
+    Double32_t alphaProngPvDCAXY;
+    Double32_t PiProngPvDCAXY;
+    Double32_t alphaProngPvDCA;
+    Double32_t PiProngPvDCA;
+    Double32_t ProngsDCA; 
     unsigned char NpidClustersPion;
     unsigned char NpidClustersalpha;
     unsigned char NitsClustersalpha;
@@ -113,12 +114,13 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
     float Eta2y(float pt, float m, float eta) const;
 
     /// \cond CLASSDEF
-    ClassDef(AliAnalysisTaskAlphaPiAOD, 6);
+    ClassDef(AliAnalysisTaskAlphaPiAOD, 7);
     // 2: Use THistManager class, add QA histograms for TPC PID of alpha.
     // 3: Use default PID selection and add option for the customise.
     // 4: Add track loop option
     // 5: Add track cut with filterbit
     // 6: Add additional functionality for broad PID cut.
+    // 7: Add TOF PID
     /// \endcond
 };
 
