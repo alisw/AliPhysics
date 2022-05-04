@@ -36,11 +36,15 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   virtual void InitializeArrays();
   void FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config); 
   void FillPairDistributionSEAncestors(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, TH1F **histAncestor, TH2F **hist2dAncestor, TH2F **SameEventPhiTheta_OneDimensionalAncestor, int CombinationNumber, AliFemtoDreamCollConfig Config);
-  void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config);
+  void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **EventPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config);
 
   bool DeltaEtaDeltaPhi(int species1, int species2, AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2, int part1PDGcode,int part2PDGcode, unsigned int PairDaughterIdentifier, TH2F* beforeHist,TH2F* afterHist, AliFemtoDreamCollConfig Config, double RelativeMomentum);
   void SetMixedEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *PartContainer);
   bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2); //Stolen from AliFemtoDreamHigherPairMath
+
+  double GetQOutLCMS(const TLorentzVector Particle1, const TLorentzVector Particle2);
+  double GetQSideLCMS(const TLorentzVector Particle1, const TLorentzVector Particle2);
+  double GetQLongLCMS(const TLorentzVector Particle1, const TLorentzVector Particle2);
 
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) {fEventCuts = evtCuts;};
   void SetTrackCutsPion(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPion = trkCuts;};
@@ -53,6 +57,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   void SetCombinationInput(string CombinationInput){fCombinationInput = CombinationInput;};
   void SetNameTagInput(string NameTagInput){fNameTagInput = NameTagInput;};
   void SetDoOfficialFemto(bool DoOfficialFemto){fDoOfficialFemto = DoOfficialFemto;};
+  void SetDoOwnFemto(bool DoOwnFemto){fDoOwnFemto = DoOwnFemto;};
   void SetDoThreeDFemto(bool DoThreeDFemto){fDoThreeDFemto = DoThreeDFemto;};
   void SetRunPlotMult(bool RunPlotMult){fRunPlotMult = RunPlotMult;};
   void SetRunPlotPhiTheta(bool RunPlotPhiTheta){fRunPlotPhiTheta = RunPlotPhiTheta;};
@@ -75,7 +80,8 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   string fNameTagInput; //
 
   bool fDoOfficialFemto; // 
-  bool fDoThreeDFemto; //  
+  bool fDoOwnFemto; // Do own looping and calculations
+  bool fDoThreeDFemto; //  Three dimensional femtoscopy in own looping
   bool fRunPlotMult; //
   bool fRunPlotPhiTheta; // 
   bool fDoClosePairRejection; //
@@ -109,20 +115,27 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   std::vector<std::vector<std::vector<AliFemtoDreamPartContainer>>> fPartContainer;
 
   TList *fSameEvent_List_OneDimensional; 
-  TList *fSameEventDeltaEtaDeltaPhi_List_OneDimensional;
   TH1F **fSameEvent_OneDimensional;
   TH2F **fSameEventMult_OneDimensional;
-  TH2F **fSameEventPhiTheta_OneDimensional;
   TH1F **fSameEvent_OneDimensional_Ancestors;
   TH2F **fSameEventMult_OneDimensional_Ancestors;
-  TH2F **fSameEventPhiTheta_OneDimensional_Ancestors;
 
   TList *fMixedEvent_List_OneDimensional;
-  TList *fMixedEventDeltaEtaDeltaPhi_List_OneDimensional;
   TH1F **fMixedEvent_OneDimensional;
   TH2F **fMixedEventMult_OneDimensional;
-  TH2F **fMixedEventTripletPhiTheta_OneDimensional;
 
-  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 3) 
+  TList *fSameEvent_List_ThreeDimensional;
+  TH2F **fSameEvent_ThreeDimensional;
+  TList *fMixedEvent_List_ThreeDimensional;
+  TH2F **fMixedEvent_ThreeDimensional;
+
+  TList *fSameEventDeltaEtaDeltaPhi_List;
+  TH2F **fSameEventPhiTheta;
+  TH2F **fSameEventPhiTheta_Ancestors;
+
+  TList *fMixedEventDeltaEtaDeltaPhi_List;
+  TH2F **fMixedEventPhiTheta;
+
+  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 4) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFEMTOPROTONPION_H_ */
