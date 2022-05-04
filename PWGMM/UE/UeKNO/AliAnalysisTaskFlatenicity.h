@@ -72,6 +72,8 @@ private:
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
+  TProfile *hActivityV0DataSect;
+  TProfile *hActivityV0McSect;
   TH1D *hCounter;
 
   AliAnalysisTaskFlatenicity(
