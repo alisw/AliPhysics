@@ -1,7 +1,6 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-//            AddTaskFlatenicity Macro to run on grids               //
-//                                                               //
+//            AddTaskFlatenicity macro                           //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;

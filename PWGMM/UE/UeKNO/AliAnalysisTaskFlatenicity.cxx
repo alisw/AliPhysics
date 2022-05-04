@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  *                                                                        *
  * Author: Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
- * Anatask to compute flatenicity: arXiv: arXiv:2204.13733                *
+ * Anatask to compute flatenicity (arXiv:2204.13733)                      *
  **************************************************************************/
 
 class TTree;
@@ -97,7 +97,8 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatenicity(0), hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0),
-      hFlatVsPtMC(0), hCounter(0) {}
+      hFlatVsPtMC(0), hActivityV0DataSect(0), hActivityV0McSect(0),
+      hCounter(0) {}
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
     : AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
@@ -106,7 +107,7 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatenicity(0), hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0),
-      hFlatVsPtMC(0), hCounter(0)
+      hFlatVsPtMC(0), hActivityV0DataSect(0), hActivityV0McSect(0), hCounter(0)
 
 {
 
@@ -194,6 +195,17 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
         new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})",
                  1000, -0.1, 9.9, nPtbins, Ptbins);
     fOutputList->Add(hFlatVsPtMC);
+  }
+
+  hActivityV0DataSect =
+      new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT",
+                   64, -0.5, 63.5);
+  fOutputList->Add(hActivityV0DataSect);
+  if (fUseMC) {
+    hActivityV0McSect =
+        new TProfile("hActivityV0McSect", "true; V0 sector; #LTmultiplicity#GT",
+                     64, -0.5, 63.5);
+    fOutputList->Add(hActivityV0McSect);
   }
 
   hCounter = new TH1D("hCounter", "counter", 10, -0.5, 9.5);
@@ -442,6 +454,10 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
     RhoLattice[iCh] =
         mult / detaV0; // needed to consider the different eta coverage
   }
+  // Filling histos with mult info
+  for (Int_t iCh = 0; iCh < nCells; iCh++) {
+    hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]);
+  }
   Double_t mRho = 0;
   Double_t flatenicity = -1;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
@@ -521,6 +537,8 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
     for (int i_phi = 0; i_phi < nSectors; ++i_phi) {
       Double_t deltaEta = TMath::Abs(maxEta[i_eta] - minEta[i_eta]);
       RhoLattice[i_segment] /= deltaEta;
+      // Filling histos with mult info
+      hActivityV0McSect->Fill(i_segment, RhoLattice[i_segment]);
       i_segment++;
     }
   }
