@@ -106,6 +106,7 @@ set(SRCS
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCascDATA.cxx
+  Correlationpp/AliAnalysisTaskCorrelationhK0sXi_PureMCOnly.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_PileUpStudies.cxx
