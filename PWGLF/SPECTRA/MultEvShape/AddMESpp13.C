@@ -1,4 +1,3 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TTree.h>
 #include <TError.h>
 #include <AliLog.h>
@@ -7,7 +6,6 @@
 #include <AliMESbaseTask.h>
 #include <AliMESpp13.h>
 #include <AliMESeventInfo.h>
-#endif
 
 AliMESpp13 *AddMESpp13(Bool_t mc, Int_t configuration = 1)
 {
