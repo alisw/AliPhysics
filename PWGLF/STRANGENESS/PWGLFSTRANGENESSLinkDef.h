@@ -60,6 +60,7 @@
 #pragma link C++ class AliAnalysisTaskStrEffStudy+;
 #pragma link C++ class AliAnalysisTaskMCPredictions+;
 #pragma link C++ class AliAnalysisTaskMCPredictionsEE+;
+#pragma link C++ class AliAnalysisTaskMCPredictionsStrgVsMultVsZDC+;
 #pragma link C++ class AliAnalysisCorrelationEventCollection+;
 #pragma link C++ class AliReconstructedFirstC+;
 #pragma link C++ class AliReconstructedSecondC+;
