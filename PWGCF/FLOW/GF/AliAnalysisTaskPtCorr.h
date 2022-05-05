@@ -53,6 +53,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void SetEtaNch(double etanch) { fEtaNch = etanch; }
     void SetNBootstrap(double nboot) { fNbootstrap = nboot; }
     void SetUsePowerEff(double useeff) { fUsePowerEff = useeff; }
+    void OverridePseudoEff(int pseudoeff) { printf("Pseudo eff overridden from %i to %i\n",fPseudoEff,pseudoeff); fPseudoEff = pseudoeff; }
     void SetPseudoEffPars(bool useeff, double consteff = 0.8, double sigmaeff = 0.05) { fUseEff = useeff; fConstEff = consteff; fSigmaEff = sigmaeff; }
   protected:
     AliEventCuts            fEventCuts;
