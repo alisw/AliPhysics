@@ -25,7 +25,7 @@ class TFile;
 class AliAnalysisTaskUpcRhoJpsi : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskUpcRhoJpsi();
-  AliAnalysisTaskUpcRhoJpsi(const char *name);
+  AliAnalysisTaskUpcRhoJpsi(const char *name, Bool_t);
   virtual ~AliAnalysisTaskUpcRhoJpsi();
 
   virtual void Init();

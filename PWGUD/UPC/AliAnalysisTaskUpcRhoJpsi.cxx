@@ -12,7 +12,7 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
-
+//AliAnalysisTaskUpcRhoJpsi
 // c++ headers
 #include <iostream>
 #include <string.h>
@@ -97,7 +97,7 @@ AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi()
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi(const char *name) 
+AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi(const char *name, Bool_t isMC) 
   : AliAnalysisTaskSE(name),fType(0),fTracking(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fTOFmask(0),fIsPhysicsSelected(kFALSE),
