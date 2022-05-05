@@ -457,6 +457,9 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           double features[]={fRecLambda->cosPA, fRecLambda->dcaV0tracks, fRecLambda->dcaPiPV, fRecLambda->dcaPrPV, fRecLambda->dcaV0PV, fRecLambda->tpcNsigmaPr, fRecLambda->radius};
           std::vector<double> bdt_out;
           fBDT[model_index]->Predict(features,7,bdt_out,false);
+          if (bdt_out[0] > fBdtOutputBackgroundCut) {
+            continue;
+          }
           fRecLambdaBDTOut->bdtOutputBackground = bdt_out[0];
           fRecLambdaBDTOut->bdtOutputNonPrompt = bdt_out[1];
           fRecLambdaBDTOut->bdtOutputPrompt = bdt_out[2];

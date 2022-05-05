@@ -151,6 +151,7 @@ public:
   void SetRadiusPreselection(double cut = 3.) { fRadiusPreselection = cut; }
   void SetTpcClV0PiPreselection(int cut = 70) { fTpcClV0PiPreselection = cut; }
   void SetTpcClV0PrPreselection(int cut = 70) { fTpcClV0PrPreselection = cut; }
+  void SetBdtOutputBackgroundCut(double cut = 0.15) { fBdtOutputBackgroundCut = cut; }
 
   void SetBDTPath(const char *path = "") { fBDTPath = path; }
   void SetNctBinsBDT(int nBins = 8) { fNctBinsBDT = nBins; }
@@ -212,6 +213,7 @@ private:
   double fRadiusPreselection = 3;
   int fTpcClV0PiPreselection = 70;
   int fTpcClV0PrPreselection = 70;
+  double fBdtOutputBackgroundCut = 0.15;
 
   float fCosPALambda = 0.97;
   float fCutDCALambdaPrToPV = 0.08;
