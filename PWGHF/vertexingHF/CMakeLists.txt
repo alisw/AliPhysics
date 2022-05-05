@@ -222,8 +222,8 @@ endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-set(HDRS ${HDRS} IClassifierReader.h)
 list(APPEND HDRS ../../PWGHF/jetsHF/AliHFJetsUtils.h)
+set(HDRS ${HDRS} IClassifierReader.h)
 
 if(FASTJET_FOUND)
   list(APPEND HDRS ../../PWGJE/EMCALJetTasks/FJ_includes.h)
@@ -234,11 +234,11 @@ endif(FASTJET_FOUND)
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
-# Add a shared library
-add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
-
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFjetsHF PWGJEEMCALJetTasks)
+
+# Add a shared library
+add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
