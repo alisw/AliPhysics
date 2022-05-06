@@ -36,16 +36,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
                     ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/O2vertexer/	
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS		
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice	
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
-                    ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
-                    ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
 )
 if(KFParticle_FOUND)
@@ -214,17 +206,13 @@ if(FASTJET_FOUND)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
-
+    list(APPEND HDRS FJ_includes.h)
 endif(FASTJET_FOUND)
 
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS} IClassifierReader.h)
-
-if(FASTJET_FOUND)
-  list(APPEND HDRS FJ_includes.h)
-endif(FASTJET_FOUND)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
