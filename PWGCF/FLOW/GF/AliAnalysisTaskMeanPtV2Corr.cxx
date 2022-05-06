@@ -202,7 +202,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
     DefineOutput(1,TList::Class());
   if(fStageSwitch==9) {
     if(!fIsMC) { //Efficiency and NUA only important for data
-      DefineInput(1,TFile::Class()); //NUE weights; ultimately, should be combined with NUA, but don't want to rerun now
+      DefineInput(1,TList::Class()); //NUE weights; ultimately, should be combined with NUA, but don't want to rerun now
       DefineInput(2,TList::Class()); //NUA weights from other analysis; quickfix
     };
     DefineOutput(1,TList::Class());
@@ -267,9 +267,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
           fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
         };
       }*/
-      TFile *effFile = (TFile*)GetInputData(1);
-      TList *effList = (TList*)effFile->Get("EfficiencyMB");
-      TList *fdList  = (TList*)effFile->Get("FeeddownMB");
+      TList *effFile = (TList*)GetInputData(1);
+      TList *effList = (TList*)effFile->FindObject("EfficiencyMB");
+      TList *fdList  = (TList*)effFile->FindObject("FeeddownMB");
       if(!effList || !fdList) AliFatal("Efficiency or feeddown were not picked up");
       TString tempName = effList->At(0)->GetName();
       TRegexp r_period("LHC[0-9,a-z]+_");
