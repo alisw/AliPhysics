@@ -40,8 +40,13 @@ public:
   void SetPtMin(Double_t val) {
     fPtMin = val;
   } // Set pT cut for associated particles
-  void SetUseMC(Bool_t mc = kFALSE) { fUseMC = mc; } // use to analyse MC data
-  void SetMCclosureTest(Bool_t mcc = kFALSE) { fIsMCclosure = mcc; }
+  void SetUseMC(Bool_t flat_flag = kFALSE) {
+    fUseMC = flat_flag;
+  } // use to analyse MC data
+  void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
+  void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
+    fRemoveTrivialScaling = flat_flag;
+  }
   bool HasRecVertex();
 
 protected:
@@ -51,7 +56,9 @@ private:
   AliStack *fMCStack; //! MC stack
   AliMCEvent *fMC;    //! MC Event
   Bool_t fUseMC;      // analyze MC events
+  Int_t fV0Mindex;
   Bool_t fIsMCclosure;
+  Bool_t fRemoveTrivialScaling;
   Int_t fnGen;
   AliPIDResponse *fPIDResponse;
   AliAnalysisFilter *fTrackFilter;
@@ -60,8 +67,8 @@ private:
   Double_t fPtMin;
   Double_t ftrackmult08;
   Double_t fv0mpercentile;
-  Double_t fFlat;
-  Double_t fFlatMC;
+  Float_t fFlat;
+  Float_t fFlatMC;
   AliMultSelection *fMultSelection;
   TH1D *hPtPrimIn;
   TH1D *hPtPrimOut;
@@ -74,7 +81,10 @@ private:
   TH2D *hFlatVsPtMC;
   TProfile *hActivityV0DataSect;
   TProfile *hActivityV0McSect;
+  TH2D *hFlatVsNchMC;
+  TH2D *hFlatVsV0M;
   TH1D *hCounter;
+  TH2D *hFlatVsPtV0M[9];
 
   AliAnalysisTaskFlatenicity(
       const AliAnalysisTaskFlatenicity &); // not implemented

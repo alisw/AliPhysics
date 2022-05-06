@@ -6,7 +6,8 @@
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskFlatenicity *
-AddTaskFlatenicity(const Char_t *taskname = "Flat", Bool_t useMC = kTRUE,
+AddTaskFlatenicity(const Char_t *taskname = "Flat",
+                   Bool_t woTrivialscaling = kFALSE, Bool_t useMC = kTRUE,
                    Bool_t performMCclosuretest = kFALSE, Double_t minpT = 0.5)
 
 {
@@ -30,15 +31,22 @@ AddTaskFlatenicity(const Char_t *taskname = "Flat", Bool_t useMC = kTRUE,
     return 0x0;
   taskFlat->SetUseMC(useMC);
   taskFlat->SetMCclosureTest(performMCclosuretest);
-  // add your task to the manager
   taskFlat->SetPtMin(minpT);
+  taskFlat->SetRemoveTrivialScaling(woTrivialscaling);
   mgr->AddTask(taskFlat);
+
+  const Char_t *complement;
+  if (woTrivialscaling) {
+    complement = "wotrivialscal";
+  } else {
+    complement = "wtrivialscal";
+  }
 
   mgr->ConnectInput(taskFlat, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(
       taskFlat, 1,
       mgr->CreateContainer(
-          Form("cList%s", taskname), TList::Class(),
+          Form("cList%s_%s", taskname, complement), TList::Class(),
           AliAnalysisManager::kOutputContainer,
           Form("%s:%s", AliAnalysisManager::GetCommonFileName(), taskname)));
 
