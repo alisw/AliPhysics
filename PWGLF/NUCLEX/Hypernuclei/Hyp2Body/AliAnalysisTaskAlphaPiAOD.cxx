@@ -118,6 +118,8 @@ void AliAnalysisTaskAlphaPiAOD::UserCreateOutputObjects() {
     fHistos->CreateTH2("QA/hTPCPIDAllTracksN", "TPC PID all tracks;#it{p}_{T} (GeV/#it{c});TPC Signal", 400, -20, 20, 1000, 0, 1000);
     fHistos->CreateTH2("QA/hTPCPIDAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c});TPC Signal #alpha", 400, -20, 20, 1000, 0, 1000);
     fHistos->CreateTH2("QA/hTPCPIDAntiAlpha", "TPC PID #bar{#alpha};#it{p}_{T} (GeV/#it{c});TPC Signal #bar{#alpha}", 400, -20, 20, 1000, 0, 1000);
+    fHistos->CreateTH2("QA/hTPCPIDnSigmaAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c}); n_{#sigma} #alpha", 400, -20, 20, 100, -5, 5);
+    fHistos->CreateTH2("QA/hTPCPIDnSigmaAntiAlpha", "TPC PID #bar{#alpha};#it{p}_{T} (GeV/#it{c}); n_{#sigma} #bar{#alpha}", 400, -20, 20, 100, -5, 5);
 
     // MC QA Histograms
     // if (fMC) {
@@ -262,11 +264,13 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
             if ((pNsigma < fPIDrange[0] || pNsigma > fPIDrange[1]) && (nNsigma < fPIDrange[0] || nNsigma > fPIDrange[1])) {
                 continue;
             }
-            if (pNsigma > fPIDrange[0] && pNsigma < fPIDrange[1] && nNsigma > fPIDrange[0] && nNsigma < fPIDrange[1]) {
-                continue;
-            }
+            // if (pNsigma > fPIDrange[0] && pNsigma < fPIDrange[1] && nNsigma > fPIDrange[0] && nNsigma < fPIDrange[1]) {
+            //    continue;
+            // }
             fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum()/pTrack->Charge(), pTrack->GetTPCsignal());
+            fHistos->FillTH2("QA/hTPCPIDnSigmaAlpha", pTrack->GetTPCmomentum()/pTrack->Charge(), pNsigma);
             fHistos->FillTH2("QA/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum()/nTrack->Charge(), nTrack->GetTPCsignal());
+            fHistos->FillTH2("QA/hTPCPIDnSigmaAntiAlpha", nTrack->GetTPCmomentum()/nTrack->Charge(), nNsigma);
 
             fRecHyper->Matter = std::abs(pNsigma) < 5;
             auto alpha = fRecHyper->Matter ? pTrack : nTrack;
@@ -335,7 +339,7 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
         // iTrack loop -> alpha
         for (int iTrack{0}; iTrack < ev->GetNumberOfTracks(); ++iTrack) {
             AliAODTrack *alphaTrack = dynamic_cast<AliAODTrack *>(ev->GetTrack(iTrack));
-            if (alphaTrack) {
+            if (!alphaTrack) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                 continue;
             }
@@ -352,17 +356,21 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
             if (pNsigma < fPIDrange[0] || pNsigma > fPIDrange[1]) {
                 continue;
             }
-            if(alphaTrack->GetSign() > 0)
+            if(alphaTrack->GetSign() > 0) {
                 fHistos->FillTH2("QA/hTPCPIDAlpha", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
-            else
+                fHistos->FillTH2("QA/hTPCPIDnSigmaAlpha", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), pNsigma);
+            }
+            else {
                 fHistos->FillTH2("QA/hTPCPIDAntiAlpha", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), alphaTrack->GetTPCsignal());
+                fHistos->FillTH2("QA/hTPCPIDnSigmaAntiAlpha", alphaTrack->GetTPCmomentum()/alphaTrack->Charge(), pNsigma);
+            }
 
             // jTrack loop - pion
             for (int jTrack{0}; jTrack < ev->GetNumberOfTracks(); ++jTrack) {
                 if (jTrack == iTrack)
                     continue;
                 AliAODTrack *pionTrack = dynamic_cast<AliAODTrack *>(ev->GetTrack(jTrack));
-                if (pionTrack) {
+                if (!pionTrack) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                     continue;
                 }
