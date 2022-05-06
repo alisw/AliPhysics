@@ -85,6 +85,9 @@ Double_t Ptbins[nPtbins + 1] = {
     0.0, 0.1, 0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45, 0.5,  0.6, 0.7, 0.8,
     0.9, 1.0, 1.25, 1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5,  5.0, 6.0, 7.0,
     8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 30.0, 40.0, 50.0};
+const Int_t nCent = 9;
+Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
+                                 30.0, 40.0, 50.0, 70.0, 100.0};
 
 using namespace std; // std namespace: so you can do things like 'cout' etc
 
@@ -92,24 +95,34 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
 
     AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity()
     : AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fIsMCclosure(kFALSE), fnGen(-1), fPIDResponse(0x0),
+      fUseMC(kFALSE), fV0Mindex(-1), fIsMCclosure(kFALSE),
+      fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
       fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
       ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatenicity(0), hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0),
       hFlatVsPtMC(0), hActivityV0DataSect(0), hActivityV0McSect(0),
-      hCounter(0) {}
+      hFlatVsNchMC(0), hFlatVsV0M(0), hCounter(0) {
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hFlatVsPtV0M[i_c] = 0;
+  }
+}
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
     : AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fIsMCclosure(kFALSE), fnGen(-1), fPIDResponse(0x0),
+      fUseMC(kFALSE), fV0Mindex(-1), fIsMCclosure(kFALSE),
+      fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
       fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
       ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatenicity(0), hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0),
-      hFlatVsPtMC(0), hActivityV0DataSect(0), hActivityV0McSect(0), hCounter(0)
+      hFlatVsPtMC(0), hActivityV0DataSect(0), hActivityV0McSect(0),
+      hFlatVsNchMC(0), hFlatVsV0M(0), hCounter(0)
 
 {
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hFlatVsPtV0M[i_c] = 0;
+  }
 
   DefineInput(0, TChain::Class()); // define the input of the analysis: in this
                                    // case you take a 'chain' of events
@@ -166,6 +179,15 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                1000, -0.1, 9.9, nPtbins, Ptbins);
   fOutputList->Add(hFlatVsPt);
 
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hFlatVsPtV0M[i_c] = new TH2D(
+        Form("hFlatVsPtV0M_c%d", i_c),
+        Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",
+             centClass[i_c], centClass[i_c + 1]),
+        1000, -0.1, 9.9, nPtbins, Ptbins);
+    fOutputList->Add(hFlatVsPtV0M[i_c]);
+  }
+
   if (fUseMC) {
     hPtPrimIn =
         new TH1D("hPtPrimIn", "Prim In; #it{p}_{T} (GeV/#it{c}; counts)",
@@ -195,6 +217,10 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
         new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})",
                  1000, -0.1, 9.9, nPtbins, Ptbins);
     fOutputList->Add(hFlatVsPtMC);
+
+    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", 1000, -0.1,
+                            9.9, 100, -0.5, 99.5);
+    fOutputList->Add(hFlatVsNchMC);
   }
 
   hActivityV0DataSect =
@@ -207,6 +233,9 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                      64, -0.5, 63.5);
     fOutputList->Add(hActivityV0McSect);
   }
+
+  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClass, 1000, -0.1, 9.9);
+  fOutputList->Add(hFlatVsV0M);
 
   hCounter = new TH1D("hCounter", "counter", 10, -0.5, 9.5);
   fOutputList->Add(hCounter);
@@ -291,6 +320,15 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
   hCounter->Fill(1);
 
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    if (fv0mpercentile >= centClass[i_c] &&
+        fv0mpercentile < centClass[i_c + 1]) {
+      fV0Mindex = i_c;
+    } else {
+      continue;
+    }
+  }
+
   fFlat = GetFlatenicity();
   fFlatMC = -1;
   if (fUseMC) {
@@ -303,7 +341,10 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   }
   if (fFlat > 0) {
     hFlatenicity->Fill(fFlat);
-    MakeDataanalysis();
+    if (fV0Mindex) {
+      hFlatVsV0M->Fill(fv0mpercentile, fFlat);
+      MakeDataanalysis();
+    }
   }
 
   if (fIsMCclosure) {
@@ -346,6 +387,7 @@ void AliAnalysisTaskFlatenicity::MakeDataanalysis() {
     if (esdtrack->Pt() < fPtMin)
       continue;
     hFlatVsPt->Fill(fFlat, esdtrack->Pt());
+    hFlatVsPtV0M[fV0Mindex]->Fill(fFlat, esdtrack->Pt());
   }
 }
 
@@ -412,13 +454,13 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
   // Flatenicity calculation
   const Int_t nRings = 4;
   const Int_t nSectors = 8;
-  Double_t minEtaV0C[nRings] = {-3.7, -3.2, -2.7, -2.2};
-  Double_t maxEtaV0C[nRings] = {-3.2, -2.7, -2.2, -1.7};
-  Double_t maxEtaV0A[nRings] = {5.1, 4.5, 3.9, 3.4};
-  Double_t minEtaV0A[nRings] = {4.5, 3.9, 3.4, 2.8};
+  Float_t minEtaV0C[nRings] = {-3.7, -3.2, -2.7, -2.2};
+  Float_t maxEtaV0C[nRings] = {-3.2, -2.7, -2.2, -1.7};
+  Float_t maxEtaV0A[nRings] = {5.1, 4.5, 3.9, 3.4};
+  Float_t minEtaV0A[nRings] = {4.5, 3.9, 3.4, 2.8};
   // Grid
   const Int_t nCells = nRings * 2 * nSectors;
-  Double_t RhoLattice[nCells];
+  Float_t RhoLattice[nCells];
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     RhoLattice[iCh] = 0.0;
   }
@@ -426,8 +468,8 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
   Int_t nringA = 0;
   Int_t nringC = 0;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
-    Double_t detaV0 = -1;
-    Double_t mult = lVV0->GetMultiplicity(iCh);
+    Float_t detaV0 = -1;
+    Float_t mult = lVV0->GetMultiplicity(iCh);
     if (iCh < 32) { // V0C
       if (iCh < 8) {
         nringC = 0;
@@ -458,8 +500,8 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]);
   }
-  Double_t mRho = 0;
-  Double_t flatenicity = -1;
+  Float_t mRho = 0;
+  Float_t flatenicity = -1;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     mRho += RhoLattice[iCh];
   }
@@ -471,9 +513,15 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
     sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
   }
   sRho_tmp /= (1.0 * nCells);
-  Double_t sRho = TMath::Sqrt(sRho_tmp);
+  Float_t sRho = TMath::Sqrt(sRho_tmp);
   if (mRho > 0) {
-    flatenicity = sRho / mRho;
+    if (fRemoveTrivialScaling) {
+      flatenicity = TMath::Sqrt(mRho) * sRho / mRho;
+    } else {
+      flatenicity = sRho / mRho;
+    }
+  } else {
+    flatenicity = -1;
   }
   return flatenicity;
 }
@@ -482,12 +530,12 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
 
   // Flatenicity calculation
   const Int_t nRings = 8;
-  Double_t maxEta[nRings] = {-3.2, -2.7, -2.2, -1.7, 5.1, 4.5, 3.9, 3.4};
-  Double_t minEta[nRings] = {-3.7, -3.2, -2.7, -2.2, 4.5, 3.9, 3.4, 2.8};
+  Float_t maxEta[nRings] = {-3.2, -2.7, -2.2, -1.7, 5.1, 4.5, 3.9, 3.4};
+  Float_t minEta[nRings] = {-3.7, -3.2, -2.7, -2.2, 4.5, 3.9, 3.4, 2.8};
 
   const Int_t nSectors = 8;
-  double PhiBins[nSectors + 1];
-  double deltaPhi = (2.0 * TMath::Pi()) / (1.0 * nSectors);
+  Float_t PhiBins[nSectors + 1];
+  Float_t deltaPhi = (2.0 * TMath::Pi()) / (1.0 * nSectors);
   for (int i_phi = 0; i_phi < nSectors + 1; ++i_phi) {
     PhiBins[i_phi] = 0;
     if (i_phi < nSectors) {
@@ -499,11 +547,12 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
 
   // Grid
   const Int_t nCells = nRings * nSectors;
-  Double_t RhoLattice[nCells];
+  Float_t RhoLattice[nCells];
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     RhoLattice[iCh] = 0.0;
   }
 
+  Int_t nMult = 0;
   for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
 
     AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
@@ -525,6 +574,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
 
         if (eta >= minEta[i_eta] && eta < maxEta[i_eta] &&
             phi >= PhiBins[i_phi] && phi < PhiBins[i_phi + 1]) {
+          nMult++;
           RhoLattice[i_segment] += 1.0;
         }
         i_segment++;
@@ -535,7 +585,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
   Int_t i_segment = 0;
   for (int i_eta = 0; i_eta < nRings; ++i_eta) {
     for (int i_phi = 0; i_phi < nSectors; ++i_phi) {
-      Double_t deltaEta = TMath::Abs(maxEta[i_eta] - minEta[i_eta]);
+      Float_t deltaEta = TMath::Abs(maxEta[i_eta] - minEta[i_eta]);
       RhoLattice[i_segment] /= deltaEta;
       // Filling histos with mult info
       hActivityV0McSect->Fill(i_segment, RhoLattice[i_segment]);
@@ -543,23 +593,30 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
     }
   }
 
-  Double_t mRho = 0;
-  Double_t flatenicity = -1;
+  Float_t mRho = 0;
+  Float_t flatenicity = -1;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     mRho += RhoLattice[iCh];
   }
   // average activity per cell
   mRho /= (1.0 * nCells);
   // get sigma
-  Double_t sRho_tmp = 0;
+  Float_t sRho_tmp = 0;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
   }
   sRho_tmp /= (1.0 * nCells);
-  Double_t sRho = TMath::Sqrt(sRho_tmp);
+  Float_t sRho = TMath::Sqrt(sRho_tmp);
   if (mRho > 0) {
-    flatenicity = sRho / mRho;
+    if (fRemoveTrivialScaling) {
+      flatenicity = TMath::Sqrt(mRho) * sRho / mRho;
+    } else {
+      flatenicity = sRho / mRho;
+    }
+  } else {
+    sRho = -1;
   }
+  hFlatVsNchMC->Fill(flatenicity, nMult);
   return flatenicity;
 }
 
