@@ -140,6 +140,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillOnlyPtHisto()                  { fFillOnlyPtHisto = kTRUE  ; }
   void         SwitchOffFillOnlyPtHisto()                 { fFillOnlyPtHisto = kFALSE ; }
    
+  void         SwitchOnFillMCResoltionHisto()             { fFillMCResolution = kTRUE  ; }
+  void         SwitchOffFillMCResolutionHisto()           { fFillMCResolution = kFALSE ; }
+
   void         SwitchOnUse5x5ShowerShape()                { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 2 ; }
   void         SwitchOnUse7x7ShowerShape()                { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 3 ; }
   void         SwitchOnUseNxNShowerShape(Int_t n=2)       { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = n ; }
@@ -284,6 +287,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillControlClusterContentHisto;         ///< Fill cluster ncell, nlm, long axis shower shape plots before and after some cluster selection cuts
   
+  Bool_t   fFillMCResolution;                       ///< Fill generated/reconstructed pt or E plots vs pseudorapidity
+
   Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
   
   Bool_t   fUseNxNShowerShape;                      ///< Calculate shower shape restricting to NxN and fill histograms
@@ -375,6 +380,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   TH3F * fhPtPhotonPerTriggerCen;                   //!<! Number of identified photon vs pT  vs trigger bit  vs centrality
   TH2F * fhPtPhotonPerTrigger;                      //!<! Number of identified photon vs pT  vs trigger bit
+  TH3F * fhPtPhotonPerTriggerSM;                    //!<! Number of identified photon vs pT  vs trigger bit vs SM number
   TH3F * fhPtMCPhotonPromptPerTriggerCen;           //!<! Number of identified photon vs pT  vs trigger bit  vs centrality, origin MC prompt photon
   TH2F * fhPtMCPhotonPromptPerTrigger;              //!<! Number of identified photon vs pT  vs trigger bit, origin MC prompt photon
 
@@ -789,7 +795,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 //TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
 
   TH3F * fhLam0Eta[fgkNSectors];                    //!<! Cluster lambda0 vs  Pt vs eta
-  TH3F * fhLam0EtaEn[fgkNSectors];                  //!<! Cluster lambda0 vs Energy vs eta
+//TH3F * fhLam0EtaEn[fgkNSectors];                  //!<! Cluster lambda0 vs Energy vs eta
   TH3F * fhLam0EtaVzPos[fgkNSectors];               //!<! Cluster lambda0 vs  Pt vs eta
   ///<  Cluster   shower shape  vs  pT vs eta, per centrality
   TH3F **fhLam0EtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
