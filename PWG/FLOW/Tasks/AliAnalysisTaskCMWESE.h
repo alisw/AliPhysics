@@ -42,6 +42,9 @@ public:
   TString GetTrigger(){return fTrigger;}
   void SetTrigger(TString x){fTrigger = x;}
 
+  TString GetCentEst(){return fCentEst;}
+  void SetCentEst(TString x){fCentEst = x;}
+
   int    GetFilterBit(){return fFltbit;}
   void SetFilterBit(int x){fFltbit = x;}
 
@@ -147,6 +150,7 @@ private:
     int                     fDebug; // debug level controls amount of output statements
     double              fHarmonic; // value of harmonic
     TString             fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
+    TString             fCentEst;
     int                     fFltbit; // AOD filter bit selection
     int                     fNclsCut; // ncls cut for all tracks 
     float                  fChi2Hg; // upper limmit for chi2
