@@ -1280,6 +1280,7 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
     for ( Int_t i = 0; i< fMCEvent->GetNumberOfTracks(); i++ )    {
       TParticle* trParticle = static_cast<TParticle*>( fMCEvent->Particle(i) );
       if (!trParticle) continue;       
+      if(!trParticle->GetPDG()) continue;
       fHistTrack->Fill(1);
       if((trParticle->GetPDG()->Charge())==0)continue;
       fHistTrack->Fill(2);
@@ -1401,6 +1402,7 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
       Bool_t skipV0_MC=kFALSE;
       TParticle* particleV0 = static_cast<TParticle*>( fMCEvent->Particle(i) );
       if (!particleV0) continue;
+      if(!particleV0->GetPDG()) continue;
       if(TMath::Abs(particleV0->GetPdgCode())!=PDGCodeAssoc[ParticleType]) continue;
       //selection on eta K0s applied online to reduce tree size
       if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
