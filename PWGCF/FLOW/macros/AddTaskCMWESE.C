@@ -208,7 +208,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 			TFile *inNUA;
 			inNUA = TFile::Open(filenameNUA);
 			if (!inNUA) return task;
-			AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
+			AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);				
 			TList* wNUA_list = NULL;
 			wNUA_list = dynamic_cast<TList*>(inNUA->FindObjectAny("fNUA_ChPosChNeg"));
 		            cin_NUA->SetData(wNUA_list); 
