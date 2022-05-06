@@ -430,7 +430,6 @@ AliFemtoEvent *AliFemtoEventReaderAOD::ReturnHbtEvent()
 {
   /// Reads in the next event from the chain and converts it to an AliFemtoEvent
   AliFemtoEvent *hbtEvent = nullptr;
-
   // We have hit the end of our range -> open the next file
   if (fCurEvent == fNumberofEvent) {
     // We haven't loaded anything yet - open
@@ -537,7 +536,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 	}		
     }
   //**************************************
-
+  
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
@@ -569,17 +568,17 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     delete fAnaUtils;
   }
-
+  
   // Primary Vertex position
   const auto *aodvertex = (fUseAliEventCuts)
                         ? static_cast<const AliAODVertex *>(fEventCuts->GetPrimaryVertex())
                         : static_cast<const AliAODVertex *>(fEvent->GetPrimaryVertex());
-
+  
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
     delete tEvent;  // Bad vertex, skip event.
     return nullptr;
   }
-
+  
   aodvertex->GetPosition(fV1);
   AliFmThreeVectorF vertex(fV1[0], fV1[1], fV1[2]);
   tEvent->SetPrimVertPos(vertex);
@@ -839,7 +838,6 @@ if(fjets>0){
         norm_mult = lrint(multV0);
       }
     }
-
 
  
     tEvent->SetNormalizedMult(norm_mult);
@@ -2913,7 +2911,6 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
   // 0.0 refenrence 08 pileup
   if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
   if (fAOD->IsIncompleteDAQ()) return false;
-
   // 1.0 trigger
   // has been done in AliAnalysisTaskFemto.cxx
 
@@ -2948,6 +2945,7 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
   // 4.1 CL0 pile-up
   float centCL0 = fMultSel->GetMultiplicityPercentile("CL0");
   if (centCL0 < fCenCutLowPU->Eval(centV0M)) return false;
+  
   // 4.2 ITS pile-up
   Int_t nITSClsLy0          = fAOD->GetNumberOfITSClusters(0);
   Int_t nITSClsLy1          = fAOD->GetNumberOfITSClusters(1);
@@ -2966,7 +2964,7 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
   UShort_t multV0On     = multV0aOn + multV0cOn;
 
   if (multV0On < fV0CutPU->Eval(multV0Tot)) return false;
-  
+
   // 4.4 Mult(FB32) Vs Cent(V0M)
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   Int_t multTrk = 0;

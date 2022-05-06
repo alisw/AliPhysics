@@ -818,7 +818,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
           fManager->ProcessEvent();
         }
 
-        else if (auto *faodkine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
+        else if (auto *faodkine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) { 
           // Process the event
           faodkine->SetAODSource(fAOD);
           fManager->ProcessEvent();
