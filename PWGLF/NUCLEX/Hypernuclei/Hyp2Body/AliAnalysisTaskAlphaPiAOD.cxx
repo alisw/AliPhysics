@@ -24,6 +24,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliAnalysisTaskAlphaPiAOD.h"
+#include "AliAnalysisTaskNucleiYield.h"
 
 #include <algorithm>
 #include <cmath>
@@ -275,8 +276,9 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
             fRecHyper->Matter = std::abs(pNsigma) < 5;
             auto alpha = fRecHyper->Matter ? pTrack : nTrack;
             auto pion = fRecHyper->Matter ? nTrack : pTrack;
-
-            double nsigmaTOFkAlpha = fPID->NumberOfSigmasTOF(alpha, AliPID::kAlpha);
+            const float beta = AliAnalysisTaskNucleiYield::HasTOF(alpha,fPID);
+            const int hasTOF = beta > 1.e-24 ? 1 : 0;
+            double nsigmaTOFkAlpha = (hasTOF) ? fPID->NumberOfSigmasTOF(alpha, AliPID::kAlpha) : -999;
 
             double sv[3]{v0->GetSecVtxX(), v0->GetSecVtxY(), v0->GetSecVtxZ()};
             double deltaPos[3]{sv[0] - pv[0], sv[1] - pv[1], sv[2] - pv[2]};
@@ -474,7 +476,9 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 if (hyperVector.mass() > fMassRange[1] || hyperVector.mass() < fMassRange[0]) {
                     continue;
                 }
-                double nsigmaTOFkAlpha = fPID->NumberOfSigmasTOF(alphaTrack, AliPID::kAlpha);
+                const float beta = AliAnalysisTaskNucleiYield::HasTOF(alphaTrack,fPID);
+                const int hasTOF = beta > 1.e-24 ? 1 : 0;
+                double nsigmaTOFkAlpha = (hasTOF) ? fPID->NumberOfSigmasTOF(alphaTrack, AliPID::kAlpha) : -999;
 
                 fRecHyper->pt = hyperVector.pt();
                 fRecHyper->m = hyperVector.mass();
