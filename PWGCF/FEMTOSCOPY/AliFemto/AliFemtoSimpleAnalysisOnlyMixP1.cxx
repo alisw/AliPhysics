@@ -187,7 +187,7 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
     EventBegin(hbtEvent);
     bool tmpPassEvent = fEventCut->Pass(hbtEvent);
     if (!tmpPassEvent) {
-        fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
+        //fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
         EventEnd(hbtEvent);  // cleanup for EbyE
         return;
     }
