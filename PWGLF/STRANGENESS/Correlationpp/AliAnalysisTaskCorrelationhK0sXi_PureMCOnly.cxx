@@ -1280,7 +1280,7 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
     for ( Int_t i = 0; i< fMCEvent->GetNumberOfTracks(); i++ )    {
       TParticle* trParticle = static_cast<TParticle*>( fMCEvent->Particle(i) );
       if (!trParticle) continue;       
-      if(!particleOne->GetPDG()) continue;
+      if(!trParticle->GetPDG()) continue;
       fHistTrack->Fill(1);
       if((trParticle->GetPDG()->Charge())==0)continue;
       fHistTrack->Fill(2);
