@@ -217,9 +217,9 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                 continue;
             }
-            if (!((AliAODTrack *)pTrack)->TestFilterBit(fFilterBit))
+            if (!pTrack->TestFilterBit(fFilterBit))
                 continue;
-            if (!((AliAODTrack *)nTrack)->TestFilterBit(fFilterBit))
+            if (!nTrack->TestFilterBit(fFilterBit))
                 continue;
             if (std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8)
                 continue;
@@ -256,12 +256,12 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                     continue;
             }
 
-            double pNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
-                           : fMC          ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
-                                          : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
-            double nNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
-                           : fMC          ? fPID->NumberOfSigmasTPC(nTrack, fNucleusPID)
-                                          : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
+            double pNsigma{fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)};
+            double nNsigma{fPID->NumberOfSigmasTPC(nTrack, fNucleusPID)};
+            if (fUseCustomPID) {
+                pNsigma = customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
+                nNsigma = customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
+            }
             fHistos->FillTH2("QA/hTPCPIDAllTracksP", pTrack->GetTPCmomentum()/pTrack->Charge(), pTrack->GetTPCsignal());
             fHistos->FillTH2("QA/hTPCPIDAllTracksN", nTrack->GetTPCmomentum()/nTrack->Charge(), nTrack->GetTPCsignal());
             if ((pNsigma < fPIDrange[0] || pNsigma > fPIDrange[1]) && (nNsigma < fPIDrange[0] || nNsigma > fPIDrange[1])) {
