@@ -59,8 +59,10 @@ using std::string;
 #include "AliVTrack.h"
 #include "Math/Vector4D.h"
 #include "THistManager.h"
-#include "AliKFVertex.h"
-#include "AliKFParticle.h"
+#include "AliESDv0.h"
+#include "AliAODv0.h" 
+#include "AliESDtrack.h"
+#include "AliExternalTrackParam.h"
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskAlphaPiAOD);
@@ -215,9 +217,9 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the lambdas ...\n");
                 continue;
             }
-            if (!((AliAODTrack *)pTrack)->TestFilterBit(fFilterBit))
+            if (!pTrack->TestFilterBit(fFilterBit))
                 continue;
-            if (!((AliAODTrack *)nTrack)->TestFilterBit(fFilterBit))
+            if (!nTrack->TestFilterBit(fFilterBit))
                 continue;
             if (std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8)
                 continue;
@@ -254,12 +256,12 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                     continue;
             }
 
-            double pNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
-                           : fMC          ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
-                                          : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
-            double nNsigma{!fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)
-                           : fMC          ? fPID->NumberOfSigmasTPC(nTrack, fNucleusPID)
-                                          : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
+            double pNsigma{fPID->NumberOfSigmasTPC(pTrack, fNucleusPID)};
+            double nNsigma{fPID->NumberOfSigmasTPC(nTrack, fNucleusPID)};
+            if (fUseCustomPID) {
+                pNsigma = customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
+                nNsigma = customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
+            }
             fHistos->FillTH2("QA/hTPCPIDAllTracksP", pTrack->GetTPCmomentum()/pTrack->Charge(), pTrack->GetTPCsignal());
             fHistos->FillTH2("QA/hTPCPIDAllTracksN", nTrack->GetTPCmomentum()/nTrack->Charge(), nTrack->GetTPCsignal());
             if ((pNsigma < fPIDrange[0] || pNsigma > fPIDrange[1]) && (nNsigma < fPIDrange[0] || nNsigma > fPIDrange[1])) {
@@ -339,6 +341,8 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
     else {
         // Trackloop method (for trial)
         // iTrack loop -> alpha
+        AliESDtrack  *pionESDTrack = 0x0;
+        AliESDtrack  *alphaESDTrack = 0x0;
         for (int iTrack{0}; iTrack < ev->GetNumberOfTracks(); ++iTrack) {
             AliAODTrack *alphaTrack = dynamic_cast<AliAODTrack *>(ev->GetTrack(iTrack));
             if (!alphaTrack) {
@@ -422,48 +426,53 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 fRecHyper->Matter = alphaTrack->GetSign() > 0;
 
                 // Vertexing
+                AliVTrack* aAlphaTrack = (AliVTrack*) ev->GetTrack(iTrack);
+                AliVTrack* aPionTrack = (AliVTrack*) ev->GetTrack(jTrack);
+                alphaESDTrack = new AliESDtrack(aAlphaTrack);
+                pionESDTrack = new AliESDtrack(aPionTrack);
                 Double_t cv[21], dztemp[2], covartemp[3], pos[3], cov[6], chi2perNDF, dispersion;
                 for (int i = 0; i < 21; i++)
                     cv[i] = 0;
-                const AliESDVertex *vtxT3D = dynamic_cast<AliESDEvent *>(InputEvent())->GetPrimaryVertex();
-                AliExternalTrackParam pionTrk(*(AliESDtrack *)ev->GetTrack(jTrack));
-                AliExternalTrackParam alphaTrk(*(AliESDtrack *)ev->GetTrack(iTrack));
-                AliExternalTrackParam *pPionTrk = &pionTrk, *pAlphaTrk = &alphaTrk;
+                AliExternalTrackParam pionTrk(*pionESDTrack);
+                AliExternalTrackParam alphaTrk(*alphaESDTrack);
+                
+                Double_t xn, xp;
+                Double_t dca=0.;
+                
+                dca= pionESDTrack->GetDCA(alphaESDTrack,magField,xn,xp); //!dca (Neg to Pos)
+                
+                //CORRECTION from AliV0Vertex
+                
+                Bool_t corrected=kFALSE;
+                if ((pionTrk.GetX() > 3.) && (xn < 3.)) {
+                    //correct for the beam pipe material
+                    corrected=kTRUE;
+                }
+                if ((alphaTrk.GetX() > 3.) && (xp < 3.)) {
+                    //correct for the beam pipe material
+                    corrected=kTRUE;
+                }
+                if (corrected) {
+                    dca=pionTrk.GetDCA(&alphaTrk,magField,xn,xp);
+                }
+                
+                pionTrk.PropagateTo(xn,magField); 
+	            alphaTrk.PropagateTo(xp,magField);
 
-                pPionTrk->PropagateToDCA(vtxT3D, magField, 250, dztemp, covartemp);
-                pAlphaTrk->PropagateToDCA(vtxT3D, magField, 250, dztemp, covartemp);
+                // pionTrk.PropagateToDCA(ev->GetPrimaryVertex(), magField, 250, dztemp, covartemp);
+                // alphaTrk.PropagateToDCA(ev->GetPrimaryVertex(), magField, 250, dztemp, covartemp);
 
-                AliESDVertex *vertexESD = 0;
-                AliAODVertex *vertexAOD = 0;
-
-                AliKFParticle::SetField(magField);
-                AliKFVertex vertexKF;
-
-                AliESDtrack *esdTrackPion = (AliESDtrack *)pPionTrk;
-                AliKFParticle daughterKFPion(*esdTrackPion, 211);
-                vertexKF.AddDaughter(daughterKFPion);
-
-                AliESDtrack *esdTrackAlpha = (AliESDtrack *)pAlphaTrk;
-                AliKFParticle daughterKFXi(*esdTrackAlpha, 211);
-                vertexKF.AddDaughter(daughterKFXi);
-
-                vertexESD = new AliESDVertex(vertexKF.Parameters(),
-                                            vertexKF.CovarianceMatrix(),
-                                            vertexKF.GetChi2(),
-                                            vertexKF.GetNContributors());
-
-                vertexESD->GetXYZ(pos);        // position
-                vertexESD->GetCovMatrix(cov);  //covariance matrix
-                chi2perNDF = vertexESD->GetChi2toNDF();
-                dispersion = vertexESD->GetDispersion();
-                delete vertexESD;
-                vertexESD = NULL;
-                vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, 2);  // Hyper Vertex
-
+                AliESDv0 vertex(pionTrk,jTrack,alphaTrk,iTrack);
+                Float_t CosPointingAngle=vertex.GetV0CosineOfPointingAngle(pv[0],pv[1],pv[2]); //PointingAngle
+                
+                vertex.SetDcaV0Daughters(dca);
+                vertex.SetV0CosineOfPointingAngle(CosPointingAngle);
+                
                 double sv[3];
-                vertexAOD->GetXYZ(sv);  // Secondary vertex
-                double deltaPos[3]{sv[0] - pv[0], sv[1] - pv[1], sv[2] - pv[2]};
-
+                sv[0]=vertex.Xv();
+                sv[1]=vertex.Yv(); 
+                sv[2]=vertex.Zv(); 
+                
                 LVector_t alphaVector, piVector, hyperVector;
                 double alphaP[3];
                 alphaTrack->GetPxPyPz(alphaP);
@@ -482,10 +491,7 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
 
                 fRecHyper->pt = hyperVector.pt();
                 fRecHyper->m = hyperVector.mass();
-                fRecHyper->V0CosPA = (deltaPos[0] * hyperVector.px() +
-                                      deltaPos[1] * hyperVector.py() +
-                                      deltaPos[2] * hyperVector.pz()) /
-                                      std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
+                fRecHyper->V0CosPA = CosPointingAngle;
                 fRecHyper->Rapidity = Eta2y(fRecHyper->pt, kHyperMass, hyperVector.eta());
 
                 fRecHyper->V0radius = TMath::Hypot(sv[0] - pv[0], sv[1] - pv[1]);
@@ -496,16 +502,12 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 Float_t b[2];     // Float due to the function input
                 Float_t bCov[3];  // Float due to the function input
                 alphaTrack->GetImpactParameters(b, bCov);
-                fRecHyper->alphaProngPvDCA = b[0];
+                fRecHyper->alphaProngPvDCAXY = b[0];
+                fRecHyper->alphaProngPvDCA = b[1];
                 pionTrack->GetImpactParameters(b, bCov);
-                fRecHyper->PiProngPvDCA = b[0];
-                float _dummy, xy;
-                alphaTrack->GetImpactParameters(xy, _dummy);
-                fRecHyper->alphaProngPvDCAXY = xy;
-                pionTrack->GetImpactParameters(xy, _dummy);
-                fRecHyper->PiProngPvDCAXY = xy;
-                Double_t xdummy, ydummy;
-                fRecHyper->ProngsDCA = pPionTrk->GetDCA(pAlphaTrk, magField, xdummy, ydummy);
+                fRecHyper->PiProngPvDCAXY = b[0];
+                fRecHyper->PiProngPvDCA = b[1];
+                fRecHyper->ProngsDCA = dca;
                 fRecHyper->TPCmomalpha = alphaTrack->GetTPCmomentum();
                 fRecHyper->TPCsignalalpha = alphaTrack->GetTPCsignal();
                 fRecHyper->TOFnSigmaalpha = nsigmaTOFkAlpha;
