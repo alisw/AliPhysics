@@ -444,8 +444,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
 
           //Outputs for Checking
-          if(fCurrentPdg > 30000)
-          {
+          /*
           cout << "Final PDG CODE: " << fCurrentPdg << endl;
           cout << "Progenetor Fraction: " << ProgenetorFraction << endl;
 
@@ -473,7 +472,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           }
           cout << "] " << endl;
           
-          }
+          */
           
 
 
