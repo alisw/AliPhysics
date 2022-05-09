@@ -46,7 +46,7 @@ double fV1[3];
 
 //_______________________________________________________
 
-AliAnalysisTaskParticlePurityEfficiency_pik::AliAnalysisTaskParticlePurityEfficiency_pik(const Char_t *partName, double Vz, double eta, double pTmin, double pTmax, double tdcaxy, double tdcaz, int  ncls) :
+AliAnalysisTaskParticlePurityEfficiency_pik::AliAnalysisTaskParticlePurityEfficiency_pik(const Char_t *partName) :
   AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
 {
 
@@ -612,7 +612,7 @@ if(!MultSelection) {
   //TString vtxTtl = vertex->GetTitle();
   //if (!vtxTtl.Contains("VertexerTracks")) return;
   Float_t zvtx = vertex->GetZ();
-  if (TMath::Abs(zvtx) > Vz) return;
+  if (TMath::Abs(zvtx) > 7.0) return;
   fHistQA[0]->Fill(zvtx);
   fHistQA[9]->Fill(4);
   if(fcent == 0) fHistEvCuts[0]->Fill(4);
@@ -734,17 +734,17 @@ if(!MultSelection) {
 
     fHistQA[10]->Fill(3);
      
-    if(track->Eta() < -eta || track->Eta() > eta)
+    if(track->Eta() < -0.8 || track->Eta() > 0.8)
       continue; 
     fHistQA[10]->Fill(4);
 
-    if (track->Pt() < pTmin || track->Pt() > pTmax)
+    if (track->Pt() < 0.1 || track->Pt() > 2.0)
       continue;
     fHistQA[10]->Fill(5);
 
     //single track cuts
     // if(track->Chi2perNDF() > 4.0) continue;
-    if(track->GetTPCNcls() < ncls) continue;
+    if(track->GetTPCNcls() < 70) continue;
 
     //DCA
     
@@ -789,9 +789,9 @@ if(!MultSelection) {
       DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
 
 
-      if (TMath::Abs(DCAXY) > tdcaxy)
+      if (TMath::Abs(DCAXY) > 0.3)
       continue;
-      if (TMath::Abs(DCAZ) > tdcaz)
+      if (TMath::Abs(DCAZ) > 0.3)
       continue;
       
       //if(TMath::Abs(DCAXY) > 0.0182 + 0.035*TMath::Power(track->Pt(), -1.01)) continue; //XY, Pt dep
@@ -1211,10 +1211,10 @@ if(!MultSelection) {
     //*** PID - check if pion ***
     //if(PDGcode!=211) continue; //(PDGcode==11 || PDGcode==321 || PDGcode==2212 || PDGcode==13)
 
-      if(MCtrk->Eta() < -eta || MCtrk->Eta() > eta){
+      if(MCtrk->Eta() < -0.8 || MCtrk->Eta() > 0.8){
 	continue; }
 	
-      if (MCtrk->Pt() < pTmin || MCtrk->Pt() > pTmax){
+      if (MCtrk->Pt() < 0.1 || MCtrk->Pt() > 2.0){
 	continue;}
 
 
