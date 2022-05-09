@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticlePurityEfficiency_pik *AddTaskEfficiency_pik(TString containerName="femtolist", double Vz=7.0, double eta=0.8, double pTmin=0.1, double pTmax=2.5, double tdcaxy=0.3, double tdcaz=0.3, int  ncls=70)
+AliAnalysisTaskParticlePurityEfficiency_pik *AddTaskEfficiency_pik(TString containerName="femtolist")
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -41,7 +41,7 @@ AliAnalysisTaskParticlePurityEfficiency_pik *AddTaskEfficiency_pik(TString conta
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskParticlePurityEfficiency_pik *taskEfficiency = new AliAnalysisTaskParticlePurityEfficiency_pik("EfficiencyTask", Vz, eta, pTmin, pTmax, tdcaxy, tdcaz, ncls);
+  AliAnalysisTaskParticlePurityEfficiency_pik *taskEfficiency = new AliAnalysisTaskParticlePurityEfficiency_pik("EfficiencyTask");
   mgr->AddTask(taskEfficiency);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
