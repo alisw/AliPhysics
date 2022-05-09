@@ -82,8 +82,16 @@ nTPC_CrossedRows(0),
 nTPC_Clusters_dEdx(0),
 HasPointOnITSLayer0(0),
 HasPointOnITSLayer1(0),
+HasPointOnITSLayer2(0),
+HasPointOnITSLayer3(0),
+HasPointOnITSLayer4(0),
+HasPointOnITSLayer5(0),
 HasSharedPointOnITSLayer0(0),
 HasSharedPointOnITSLayer1(0),
+HasSharedPointOnITSLayer2(0),
+HasSharedPointOnITSLayer3(0),
+HasSharedPointOnITSLayer4(0),
+HasSharedPointOnITSLayer5(0),
 chi2_TPC(0),
 chi2_NDF(0),
 chi2_ITS(0),
@@ -151,8 +159,16 @@ nTPC_CrossedRows(0),
 nTPC_Clusters_dEdx(0),
 HasPointOnITSLayer0(0),
 HasPointOnITSLayer1(0),
+HasPointOnITSLayer2(0),
+HasPointOnITSLayer3(0),
+HasPointOnITSLayer4(0),
+HasPointOnITSLayer5(0),
 HasSharedPointOnITSLayer0(0),
 HasSharedPointOnITSLayer1(0),
+HasSharedPointOnITSLayer2(0),
+HasSharedPointOnITSLayer3(0),
+HasSharedPointOnITSLayer4(0),
+HasSharedPointOnITSLayer5(0),
 chi2_TPC(0),
 chi2_NDF(0),
 chi2_ITS(0),
@@ -294,8 +310,16 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserCreateOutputObjects()
     reducedTree_Triton -> Branch("nTPC_Clusters_dEdx",&nTPC_Clusters_dEdx,"nTPC_Clusters_dEdx/I");
     reducedTree_Triton -> Branch("HasPointOnITSLayer0",&HasPointOnITSLayer0,"HasPointOnITSLayer0/O");
     reducedTree_Triton -> Branch("HasPointOnITSLayer1",&HasPointOnITSLayer1,"HasPointOnITSLayer1/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer2",&HasPointOnITSLayer2,"HasPointOnITSLayer2/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer3",&HasPointOnITSLayer3,"HasPointOnITSLayer3/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer4",&HasPointOnITSLayer4,"HasPointOnITSLayer4/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer5",&HasPointOnITSLayer5,"HasPointOnITSLayer5/O");
     reducedTree_Triton -> Branch("HasSharedPointOnITSLayer0",&HasSharedPointOnITSLayer0,"HasSharedPointOnITSLayer0/O");
     reducedTree_Triton -> Branch("HasSharedPointOnITSLayer1",&HasSharedPointOnITSLayer1,"HasSharedPointOnITSLayer1/O");
+    reducedTree_Triton -> Branch("HasSharedPointOnITSLayer2",&HasSharedPointOnITSLayer2,"HasSharedPointOnITSLayer2/O");
+    reducedTree_Triton -> Branch("HasSharedPointOnITSLayer3",&HasSharedPointOnITSLayer3,"HasSharedPointOnITSLayer3/O");
+    reducedTree_Triton -> Branch("HasSharedPointOnITSLayer4",&HasSharedPointOnITSLayer4,"HasSharedPointOnITSLayer4/O");
+    reducedTree_Triton -> Branch("HasSharedPointOnITSLayer5",&HasSharedPointOnITSLayer5,"HasSharedPointOnITSLayer5/O");
     reducedTree_Triton -> Branch("chi2_TPC",&chi2_TPC,"chi2_TPC/D");
     reducedTree_Triton -> Branch("chi2_ITS",&chi2_ITS,"chi2_ITS/D");
     reducedTree_Triton -> Branch("ITSsignal",&ITSsignal,"ITSsignal/D");
@@ -418,11 +442,18 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
             nTPC_CrossedRows = track->GetTPCCrossedRows();
             nTPC_Clusters_dEdx = track -> GetTPCsignalN();
 
-            HasPointOnITSLayer0 = track->HasPointOnITSLayer(0);
-            HasPointOnITSLayer1 = track->HasPointOnITSLayer(1);
-
+            HasPointOnITSLayer0       = track->HasPointOnITSLayer(0);
+            HasPointOnITSLayer1       = track->HasPointOnITSLayer(1);
+            HasPointOnITSLayer2       = track->HasPointOnITSLayer(2);
+            HasPointOnITSLayer3       = track->HasPointOnITSLayer(3);
+            HasPointOnITSLayer4       = track->HasPointOnITSLayer(4);
+            HasPointOnITSLayer5       = track->HasPointOnITSLayer(5);
             HasSharedPointOnITSLayer0 = track->HasSharedPointOnITSLayer(0);
             HasSharedPointOnITSLayer1 = track->HasSharedPointOnITSLayer(1);
+            HasSharedPointOnITSLayer2 = track->HasSharedPointOnITSLayer(2);
+            HasSharedPointOnITSLayer3 = track->HasSharedPointOnITSLayer(3);
+            HasSharedPointOnITSLayer4 = track->HasSharedPointOnITSLayer(4);
+            HasSharedPointOnITSLayer5 = track->HasSharedPointOnITSLayer(5);
 
             chi2_TPC = track -> GetTPCchi2();//    check -> seems to be 0
             chi2_ITS = track -> GetITSchi2();//    check
@@ -589,11 +620,11 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::IsTritonCandidate (AliAODTrack 
 
   Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
   if (track->Pt() < 1.5) {
-    if ( TMath::Abs(nsigmaTPC) > 6. ) return false;
+    if ( TMath::Abs(nsigmaTPC) > 7. ) return false;
   } else {
     Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
     if ( TMath::Abs(nsigmaTOF) > 7. ) return false;
-    if ( TMath::Abs(nsigmaTPC) > 6. ) return false;
+    if ( TMath::Abs(nsigmaTPC) > 7. ) return false;
   }
 
   return true;
