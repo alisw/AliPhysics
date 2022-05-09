@@ -97,6 +97,7 @@ public:
   void                        SetApplyPatchCandCut(Bool_t input)                    { fApplyPatchCandCut = input;}
   void                        SetSidebandChoice(Int_t input)                        { fSidebandChoice    = input;}
   void                        SetEventPlaneSource(Int_t input)                      { fEventPlaneSource  = input;}
+  void                        SetEventPlaneChoice(Int_t input)                      { fEventPlaneChoice  = input;}
 
 
   void                        SetMCEmbedReweightMode(Int_t input)                   { fMCEmbedReweightMode = input;}
@@ -174,9 +175,10 @@ protected:
   void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
   AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
 
+  // Control variables
   Int_t                       fGammaOrPi0;               ///< This tells me whether the correlation and the filling of histograms is done for gamma or pi0 or pi0 SB
   Int_t                       fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
-	Bool_t                      fSaveTriggerPool;          ///< Whether to save an event pool of accepted triggers
+  Bool_t                      fSaveTriggerPool;          ///< Whether to save an event pool of accepted triggers
   Float_t                     fDownScaleMT;              ///< Downscale factor to restrict Mixed Trigger statistics/runtime. 1.0 -> no downscale. 0.5 -> cut stats in half.
   Int_t                       fSidebandChoice;           ///< This determines which sideband option is used
   Bool_t                      fDebug;			        ///< Can be set for debugging
@@ -258,6 +260,7 @@ protected:
 
   Int_t                       fEventPlaneSource;         ///< Where to get the event plane information. 0 is the QnVectorCorrections framework, 1 is the AliAnalysisTaskJetQnVectors
                                                          // if 0 is given, but no QnVector corrections are available, default to V0M (sans calibration)
+  Int_t                       fEventPlaneChoice;         ///< 0 for V0M, 1 for V0A, 2 for V0C
 
   //..Event Plane variables
   Double_t                    fQnCorrEventPlane1Angle;    //!<! Event plane(1st order) angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
@@ -286,18 +289,30 @@ protected:
 
   // QnVector info and Event Plane Resolution Profiles
   TH1F            *fEP1AngleV0M;              //!<! EP1 Angle from V0M
+  TH1F            *fEP1AngleV0A;              //!<! EP1 Angle from V0A
+  TH1F            *fEP1AngleV0C;              //!<! EP1 Angle from V0C
+  TH1F            *fEP1AngleTPC;              //!<! EP1 Angle from TPC all
   TH1F            *fEP1AngleTPCA;             //!<! EP1 Angle from TPC A (eta > 0)
   TH1F            *fEP1AngleTPCC;             //!<! EP1 Angle from TPC C (eta < 0)
 
   TH1F            *fEPAngleV0M;              //!<! EP Angle from V0M
+  TH1F            *fEPAngleV0A;              //!<! EP Angle from V0A
+  TH1F            *fEPAngleV0C;              //!<! EP Angle from V0C
+  TH1F            *fEPAngleTPC;              //!<! EP Angle from TPC all
   TH1F            *fEPAngleTPCA;             //!<! EP Angle from TPC A (eta > 0)
   TH1F            *fEPAngleTPCC;             //!<! EP Angle from TPC C (eta < 0)
 
   TH1F            *fEP3AngleV0M;              //!<! EP3 Angle from V0M
+  TH1F            *fEP3AngleV0A;              //!<! EP3 Angle from V0A
+  TH1F            *fEP3AngleV0C;              //!<! EP3 Angle from V0C
+  TH1F            *fEP3AngleTPC;              //!<! EP3 Angle from TPC all
   TH1F            *fEP3AngleTPCA;             //!<! EP3 Angle from TPC A (eta > 0)
   TH1F            *fEP3AngleTPCC;             //!<! EP3 Angle from TPC C (eta < 0)
 
   TH1F            *fEP4AngleV0M;              //!<! EP4 Angle from V0M
+  TH1F            *fEP4AngleV0A;              //!<! EP4 Angle from V0A
+  TH1F            *fEP4AngleV0C;              //!<! EP4 Angle from V0C
+  TH1F            *fEP4AngleTPC;              //!<! EP4 Angle from TPC all
   TH1F            *fEP4AngleTPCA;             //!<! EP4 Angle from TPC A (eta > 0)
   TH1F            *fEP4AngleTPCC;             //!<! EP4 Angle from TPC C (eta < 0)
 
