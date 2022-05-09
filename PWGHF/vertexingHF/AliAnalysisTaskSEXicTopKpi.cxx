@@ -270,6 +270,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fFillTuplePID_TOFreq(kFALSE)
   ,fTuplePID_TOFreq(0x0)
   ,fUseBayesInFiltering(kFALSE)
+  ,fLcInvMassBins(125)
 {
   /// Default constructor
 
@@ -458,6 +459,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fFillTuplePID_TOFreq(kFALSE)
   ,fTuplePID_TOFreq(0x0)
   ,fUseBayesInFiltering(kFALSE)
+  ,fLcInvMassBins(125)
 {
   /// Default constructor
   
@@ -886,7 +888,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   //if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;seleFlag;LcMass;CosThetaStarSoftPion",9,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   // adding PID cases study and axis for decay channel (MC)
-  Int_t nbinsSparse[9]={24,125,10,16,20,10,23,11,6};
+  Int_t nbinsSparse[9]={24,fLcInvMassBins,10,16,20,10,23,11,6};
   Double_t lowEdges[9]={0,2.15,0.,0,0.8,0,-0.5,-0.5,-1.5};
   Double_t upEdges[9]={24,2.65,0.0500,8,1.,5,22.5,10.5,4.5};
   if(fextendSparseForLb){

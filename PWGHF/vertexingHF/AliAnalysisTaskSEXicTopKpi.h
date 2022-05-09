@@ -172,6 +172,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
   void SetPDGcodeForFiducialYreco(Int_t pdgcode){fPdgFiducialYreco=pdgcode;}
   
+  // set binning of Lc mass distribution
+  void SetLcInvMassBins(Int_t bins) {fLcInvMassBins=bins;}
+
   // set mass range for ttree filling
   void SetMassRangeTTreeFill( Double_t min, Double_t max )  {flowMass_treeFill=min;  fhighMass_tree_Fill=max;}
 
@@ -470,6 +473,9 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   Double_t fMaxAngleForRot;//
   Int_t   fPdgFiducialYreco;// pdg code of particle that will be used to compute fiducial acceptance at reco level
 
+  // binning of Lc mass distribution
+  Int_t fLcInvMassBins; 
+
   // mass ranges to store candidates in the TTree
   Double_t flowMass_treeFill;
   Double_t fhighMass_tree_Fill;
@@ -577,7 +583,7 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   Bool_t fFillTuplePID_TOFreq;  // fill tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
   TNtuple* fTuplePID_TOFreq;  //! tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
   Bool_t fUseBayesInFiltering;// use bayesPID (max prob) in Filtering: note this does not match identically the usual Bayes selection
-  ClassDef(AliAnalysisTaskSEXicTopKpi,31); /// AliAnalysisTaskSE for Xic->pKpi  
+  ClassDef(AliAnalysisTaskSEXicTopKpi,32); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 
