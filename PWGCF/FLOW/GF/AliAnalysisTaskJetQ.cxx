@@ -13,7 +13,11 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  fPtAxis(0),
  fNormCounter(0),
  fCorrPlot(0),
- fMixCorrPlot(0)
+ fMixCorrPlot(0),
+ fPtAssocMin(2.),
+ fPtAssocMax(2.5),
+ fPtTriggMin(6.),
+ fPtTriggMax(8.)
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
@@ -29,7 +33,11 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
  fPtAxis(0),
  fNormCounter(0),
  fCorrPlot(0),
- fMixCorrPlot(0)
+ fMixCorrPlot(0),
+ fPtAssocMin(2.),
+ fPtAssocMax(2.5),
+ fPtTriggMin(6.),
+ fPtTriggMax(8.)
 {
     DefineOutput(1, TList::Class());
 }
@@ -52,9 +60,11 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
       SetVtxZBins(1,vzs);
     };
     if(fPtBins.size()<2) {
-      Double_t ptbs[] = {0.5,2};
+      Double_t ptbs[] = {2.,2.5};
       SetPtBins(1,ptbs);
     };
+    fPtAssocMin = fPtAxis->GetBinLowEdge(1);
+    fPtAssocMax = fPtAxis->GetBinUpEdge(fPtAxis->GetNbins());
     fPtDif = fPtBins.size()>2; //if only one pT bin, then assoc is not pt-dif. and use TH2 instead of TH3
     if(!fEvMixPars[0]) SetEventMixingCapacity(30,5000,10,10);
     //Setting up the pool manager
@@ -78,8 +88,10 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
       fMixCorrPlot    = new TH3D("fMixCorr","fMixCorr; #Delta#phi (rad); #Delta#eta; #it{p}_{T, assoc} (GeV/#it{c})",100,-C_PI_HALF,C_PI_TH,200, -1.6, 1.6, fPtBins.size()-1, 0, 10);
       fMixCorrPlot->GetZaxis()->Set(fPtBins.size()-1,fPtBins.data());
     } else {
-      fCorrPlot       = new TH2D("fCorr","fCorr; #Delta#phi (rad); #Delta#eta",100,-C_PI_HALF,C_PI_TH,200, -1.6, 1.6);
-      fMixCorrPlot    = new TH2D("fMixCorr","fMixCorr; #Delta#phi (rad); #Delta#eta",100,-C_PI_HALF,C_PI_TH,200, -1.6, 1.6);
+      fCorrPlot       = new TH3D("fCorr","fCorr; #Delta#phi (rad); #Delta#eta; z_{vtx}",100,-C_PI_HALF,C_PI_TH,200, -1.6, 1.6,fVzBins.size()-1,-10,10);
+      fMixCorrPlot    = new TH3D("fMixCorr","fMixCorr; #Delta#phi (rad); #Delta#eta; z_{vtx}",100,-C_PI_HALF,C_PI_TH,200, -1.6, 1.6,fVzBins.size()-1,-10,10);
+      fCorrPlot->GetZaxis()->Set(fVzBins.size()-1,fVzBins.data());
+      fMixCorrPlot->GetZaxis()->Set(fVzBins.size()-1,fVzBins.data());
     }
     fOutList->Add(vtzBefore);
     fOutList->Add(vtzAfter);
@@ -107,19 +119,20 @@ void AliAnalysisTaskJetQ::UserExec(Option_t *)
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
   // Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   ((TH1D*)fOutList->At(1))->Fill(vz);
-  Int_t ind = FindGivenPt(6.,8.);
+  Int_t ind = FindGivenPt(fPtTriggMin,fPtTriggMax);
   if(ind<0) return;
-  fNormCounter->Fill(l_Cent,0); //Number of triggers
-  Int_t nPairs = FillCorrelations(ind,0.5,2);
-  // printf("Number of pairs in event is %i\n",nPairs);
   Int_t i_Cent = fCentAxis->FindBin(l_Cent);
   Int_t i_vz   = fVzAxis->FindBin(vz);
   if(!i_Cent || i_Cent>fCentAxis->GetNbins()) return; //out of centrality/vz range
   if(!i_vz || i_vz>fVzAxis->GetNbins()) return; //out of centrality/vz range
+
+
+  fNormCounter->Fill(l_Cent,0); //Number of triggers
+  Int_t nPairs = FillCorrelations(ind,fPtAssocMin,fPtTriggMax,vz);
   AliEventPool *pool = fPoolMgr->GetEventPool(i_Cent-1, i_vz-1);
   if(!pool) { printf("Could not find the event pool!\n"); return; };
   // printf("Current numbe of events in pool: %i\n",pool->GetCurrentNEvents());
-  if(pool->IsReady()) { Int_t nMixPairs = FillMixedEvent(ind, pool);  };
+  if(pool->IsReady()) { Int_t nMixPairs = FillMixedEvent(ind, pool, vz);  };
   pool->UpdatePool((TObjArray*)fPoolTrackArray->Clone());
   fPoolTrackArray->Clear();
   PostData(1, fOutList);
@@ -168,7 +181,7 @@ Int_t AliAnalysisTaskJetQ::FindGivenPt(const Double_t &ptMin, const Double_t &pt
   };
   return ind;
 }
-Int_t AliAnalysisTaskJetQ::FillCorrelations(Int_t &triggerIndex, const Double_t &ptAsMin, const Double_t &ptAsMax) {
+Int_t AliAnalysisTaskJetQ::FillCorrelations(Int_t &triggerIndex, const Double_t &ptAsMin, const Double_t &ptAsMax, Double_t &vzValue) {
   Int_t nPairs=0;
   AliAODTrack *lTrack;
   AliAODTrack *lTriggerTrack = (AliAODTrack*)fAOD->GetTrack(triggerIndex);
@@ -184,14 +197,14 @@ Int_t AliAnalysisTaskJetQ::FillCorrelations(Int_t &triggerIndex, const Double_t 
     Double_t d_Phi = l_TrPhi-lTrack->Phi();
     fixPhi(d_Phi);
     // printf("Attempting to fill a track with %f %f %f (%s)\n",d_Phi,d_Eta,lPt,fPtDif);
-    if(!fPtDif) fill2DHist(fCorrPlot,d_Phi,d_Eta);
+    if(!fPtDif) fill3DHist(fCorrPlot,d_Phi,d_Eta,vzValue);
     else       fill3DHist(fCorrPlot,d_Phi,d_Eta,lPt);
     nPairs++;
     fPoolTrackArray->Add(new AliBasicParticle(lTrack->Eta(),lTrack->Phi(),lPt, lTrack->Charge()));
   };
   return nPairs;
 };
-Int_t AliAnalysisTaskJetQ::FillMixedEvent(Int_t &triggerIndex, AliEventPool *l_pool) {
+Int_t AliAnalysisTaskJetQ::FillMixedEvent(Int_t &triggerIndex, AliEventPool *l_pool, Double_t &vzValue) {
   Int_t nPairs=0;
   AliAODTrack *lTrack;
   AliAODTrack *lTriggerTrack = (AliAODTrack*)fAOD->GetTrack(triggerIndex);
@@ -208,7 +221,7 @@ Int_t AliAnalysisTaskJetQ::FillMixedEvent(Int_t &triggerIndex, AliEventPool *l_p
       l_AsEta = l_TrEta - rTr->Eta();
       l_AsPhi = l_TrPhi - rTr->Phi();
       fixPhi(l_AsPhi);
-      if(!fPtDif) fill2DHist(fMixCorrPlot,l_AsPhi,l_AsEta);
+      if(!fPtDif) fill3DHist(fMixCorrPlot,l_AsPhi,l_AsEta,vzValue);
       else { l_AsPt=rTr->Pt(); fill3DHist(fMixCorrPlot,l_AsPhi,l_AsEta,l_AsPt); };
       nPairs++;
     };
