@@ -525,18 +525,18 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
         alphaTrk.PropagateTo(xp, magField);
 
         AliESDv0 vertex(pionTrk, jTrack, alphaTrk, iTrack);
-        Float_t CosPointingAngle = std::abs(vertex.GetV0CosineOfPointingAngle(
-            pv[0], pv[1], pv[2])); // PointingAngle
+        // Float_t CosPointingAngle = std::abs(vertex.GetV0CosineOfPointingAngle(
+        //     pv[0], pv[1], pv[2])); // PointingAngle, disable to use better way
 
         vertex.SetDcaV0Daughters(dca);
-        vertex.SetV0CosineOfPointingAngle(CosPointingAngle);
+        // vertex.SetV0CosineOfPointingAngle(CosPointingAngle); // will be updated below
 
         double sv[3];
         sv[0] = vertex.Xv();
         sv[1] = vertex.Yv();
         sv[2] = vertex.Zv();
 
-        // Done
+        // Reconstruction
         LVector_t alphaVector, piVector, hyperVector;
         double alphaP[3];
         alphaTrack->GetPxPyPz(alphaP);
@@ -552,12 +552,21 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
             hyperVector.mass() < fMassRange[0]) {
           continue;
         }
+        double deltaPos[3]{sv[0] - pv[0], sv[1] - pv[1], sv[2] - pv[2]};
+        double CosPointingAngle =
+            (deltaPos[0] * hyperVector.px() + deltaPos[1] * hyperVector.py() +
+             deltaPos[2] * hyperVector.pz()) /
+            std::sqrt(hyperVector.P2() *
+                      (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
+
+        vertex.SetV0CosineOfPointingAngle(CosPointingAngle);
+
+        // Done
         const float beta = AliAnalysisTaskNucleiYield::HasTOF(alphaTrack, fPID);
         const int hasTOF = beta > 1.e-24 ? 1 : 0;
         double nsigmaTOFkAlpha =
             (hasTOF) ? fPID->NumberOfSigmasTOF(alphaTrack, AliPID::kAlpha)
                      : -999;
-
         fRecHyper->pt = hyperVector.pt();
         fRecHyper->m = hyperVector.mass();
         fRecHyper->V0CosPA = CosPointingAngle;
