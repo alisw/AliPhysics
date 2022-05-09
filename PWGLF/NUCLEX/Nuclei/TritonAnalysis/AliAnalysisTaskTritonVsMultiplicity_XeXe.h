@@ -188,8 +188,16 @@ private:
     Int_t nTPC_Clusters_dEdx;//
     bool HasPointOnITSLayer0;//
     bool HasPointOnITSLayer1;//
+    bool HasPointOnITSLayer2;//
+    bool HasPointOnITSLayer3;//
+    bool HasPointOnITSLayer4;//
+    bool HasPointOnITSLayer5;//
     bool HasSharedPointOnITSLayer0;//
     bool HasSharedPointOnITSLayer1;//
+    bool HasSharedPointOnITSLayer2;//
+    bool HasSharedPointOnITSLayer3;//
+    bool HasSharedPointOnITSLayer4;//
+    bool HasSharedPointOnITSLayer5;//
     Double_t chi2_TPC;//check
     Double_t chi2_NDF;//check
     Double_t chi2_ITS;//check
