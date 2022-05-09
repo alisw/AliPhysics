@@ -283,7 +283,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
         etaDig.ReplaceAll(".","");
         TString l_name = period+"ch_Eta_"+etaDig+sysPF;
         fEfficiencies[i] = (TH1D*)effList->FindObject(l_name.Data());
-        if(!fEfficiencies) printf(Form("Could not find efficiency %s!\n",l_name.Data()));
+        if(!fEfficiencies[i]) printf(Form("Could not find efficiency %s!\n",l_name.Data()));
         fEfficiencies[i] = (TH1D*)fEfficiencies[i]->Clone(Form("Efficiency_%s",etaDig.Data()));
         fEfficiencies[i]->SetDirectory(0);
         TH1D *hTemp = (TH1D*)fdList->FindObject(l_name.Data());
