@@ -50,7 +50,7 @@ class AliAnalysisTaskParticlePurityEfficiency_pik :public AliAnalysisTaskSE{
       }
       }*/
 
-  AliAnalysisTaskParticlePurityEfficiency_pik(const Char_t *partName, double Vz=7.0, double eta=0.8, double pTmin=0.1, double pTmax=2.5, double tdcaxy=0.3, double tdcaz=0.3, int  ncls=70); // default constructor
+  AliAnalysisTaskParticlePurityEfficiency_pik(const Char_t *partName); // default constructor
   virtual ~AliAnalysisTaskParticlePurityEfficiency_pik(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
