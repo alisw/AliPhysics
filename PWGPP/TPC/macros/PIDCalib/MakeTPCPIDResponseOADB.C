@@ -288,6 +288,12 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
 
 
   // ---| pass2 |---------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18XX_pp.pass2/TPCPIDResponseOADB_2022_02_13_18ghi_pass2_It6.root", 288388, 288920, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18XX_pp.pass2/TPCPIDResponseOADB_2022_02_13_18jk_pass2_It5.root",  288921, 289236, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18XX_pp.pass2/TPCPIDResponseOADB_2022_02_13_18l_pass2_It5.root",   289237, 290110, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18XX_pp.pass2/TPCPIDResponseOADB_2022_02_13_18m_pass2_It5.root",   290111, 293253, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18XX_pp.pass2/TPCPIDResponseOADB_2022_02_13_18nop_pass2_It5.root", 293254, 295242, "2");
+
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18q.pass3/TPCPIDResponseOADB_2020_08_13_18q_pass3_It3_withDeuteron.root", 295243, 296630, "3", "",
       "", "", "", AliTPCPIDResponse::kNTPCTrackBeforeClean                             ); // 18q
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18r.pass3/TPCPIDResponseOADB_2020_07_22_18r_pass3_It8_withDeuteron.root", 296631, 999999, "3", "",
