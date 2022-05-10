@@ -88,7 +88,6 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fEvent(nullptr),
     fInitTask{kFALSE},  
     fOnTheFly(kFALSE),
-    fDebugTrain(kFALSE),
     fImpactParameterMC{-1.0},
     fVecCorrTask{},
     fCorrName{""},
@@ -183,7 +182,6 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, bool IsMC, bool i
     fEvent(nullptr),
     fInitTask{kFALSE}, 
     fOnTheFly(isOnTheFly),
-    fDebugTrain(kFALSE),
     fImpactParameterMC{-1.0},
     fVecCorrTask{},
     fCorrName{""},
@@ -585,7 +583,8 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         fMCEvent = inputHandler->MCEvent();
         if (!fMCEvent) return;
     }
-    else if(fOnTheFly) { fMCEvent = getMCEvent(); if(fDebugTrain&&fMCEvent) printf("MC event fetched\n"); }
+
+    if(fOnTheFly) { fMCEvent = getMCEvent(); }
     else
     {   
         fEvent = dynamic_cast<AliVEvent*>(InputEvent());
@@ -665,23 +664,19 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
         TComplex c[2] = {TComplex(0.0,0.0,kFALSE),TComplex(0.0,0.0,kFALSE)};
 
         if(bRef) { 
-            if(fDebugTrain) printf("Calculating reference obs\n"); 
             CalculateGFW(c,task,0,bHasGap); 
             FillProfiles(c,lCent,""); 
         }
         if(bDiff) { 
-            if(fDebugTrain) printf("Calculating differential obs\n"); 
             CalculateGFW(c,task,1,bHasGap); 
             FillProfiles(c,lCent,lpta,"_diff"); 
         }
         if(bPtA) { 
-            if(fDebugTrain) printf("Calculating pta obs\n"); 
             CalculateGFW(c,task,2,bHasGap); 
             FillProfiles(c,lCent,lpta,"_PtA"); 
         }
         if(bPtRef)
         {
-            if(fDebugTrain) printf("Calculating ptref obs\n");
             CalculateGFW(c,task,3,bHasGap);
             FillProfiles(c,lCent,lpta,"_PtRef");
             if(fCorrOrder==4 && task->fiHarm[1] > 0)
@@ -692,7 +687,6 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
         }        
         if(bPtB)
         {
-            if(fDebugTrain) printf("Calculating ptb obs\n");
             CalculateGFW(c,task,4,bHasGap);
             FillProfiles(c,lCent,lpta,lptb,"_PtAPtB");
             if(fCorrOrder==4 && task->fiHarm[1] > 0)
@@ -706,8 +700,6 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
 }
 void AliAnalysisDecorrTask::CalculateGFW(TComplex c[2], const AliDecorrFlowCorrTask* const task, int type, bool gap, bool switchreg)
 { 
-    c[0] = TComplex(0.0,0.0,kFALSE);
-    c[1] = TComplex(0.0,0.0,kFALSE);
     if(gap)
     {
         switch(type)
@@ -733,11 +725,14 @@ void AliAnalysisDecorrTask::CalculateGFW(TComplex c[2], const AliDecorrFlowCorrT
                             c[1] = FourGapP_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]); }
                         else {
                             c[0] = FourGapM_2Diff_2Ref(0,0,0,0);
-                            c[1] = FourGapM_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]); } }
+                            c[1] = FourGapM_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]); } 
+                    }
                     else {
                         c[0] = FourGap_2Diff_2Ref_OS(0,0,0,0);
-                        c[1] = FourGap_2Diff_2Ref_OS(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]); }
+                        c[1] = FourGap_2Diff_2Ref_OS(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]); 
+                    }
                 }
+                break;
             case 4 :
                 if(fCorrOrder==2) { c[0] = TwoDiffGap10_PtA_PtB(0,0); c[1] = TwoDiffGap10_PtA_PtB(task->fiHarm[0],task->fiHarm[1]); }
                 else { 
@@ -802,7 +797,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, TSt
         if(!prof_sample) { AliError(Form("Profile %s%s_sample%d not found",fCorrName.Data(),suffix.Data(),fIndexSampling)); return; }
         prof_sample->Fill(lCent,val,d[0]);
     }
-    if(fDebugTrain && fill) printf("Filled reference profiles\n");
+    return;
 }
 void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, const double &lpta, TString suffix)
 {
@@ -814,8 +809,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, con
     d[1] = c[1].Re();
     val = 0.0;
     bool fill = kFALSE;
-
-    if(d[0] > 0.0) {fill = kTRUE; val = d[1]/d[0]; }
+    if(d[0] > 0.0) {fill = kTRUE; val = d[1]/d[0]; } 
     if(fill && TMath::Abs(val) > 1.0) { fill = kFALSE; }
     if(!fill) { return; }
     TProfile2D* prof = (TProfile2D*)lSampleList->FindObject(Form("%s%s",fCorrName.Data(),suffix.Data()));
@@ -831,7 +825,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, con
         if(!prof_sample) { AliError(Form("Profile %s%s_sample%d not found",fCorrName.Data(),suffix.Data(),fIndexSampling)); return; }
         prof_sample->Fill(lCent,lpta,val,d[0]);
     }
-    if(fDebugTrain && fill) printf("Filled pta profiles\n");
+    return;
 }
 void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, const double &lpta, const double lptb, TString suffix)
 {
@@ -859,7 +853,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, con
         if(!prof_sample) { AliError(Form("Profile %s%s_sample%d not found",fCorrName.Data(),suffix.Data(),fIndexSampling)); return; }
         prof_sample->Fill(lCent,lpta,lptb,val,d[0]);
     }
-    if(fDebugTrain && fill) printf("Filled ptb profiles\n");
+    return;
 }
 void AliAnalysisDecorrTask::InitTypes(const AliDecorrFlowCorrTask* const task)
 {
