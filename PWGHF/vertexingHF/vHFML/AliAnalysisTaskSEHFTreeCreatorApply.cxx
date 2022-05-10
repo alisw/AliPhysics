@@ -1431,7 +1431,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::DoEventMixingLc2V0bachelor(AliAODEvent
     Double_t d0z0bach[2],covd0z0bach[3];
     trk->PropagateToDCA(vtx1,bfield,kVeryBig,d0z0bach,covd0z0bach);
 
-    TVector *varvec = new TVector(45);
+    TVector *varvec = new TVector(46);
     (*varvec)[0] = trk->GetID();
     (*varvec)[1] = trk->GetLabel();
     for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+2] = pxpypz[ic];
@@ -1444,21 +1444,21 @@ void AliAnalysisTaskSEHFTreeCreatorApply::DoEventMixingLc2V0bachelor(AliAODEvent
     (*varvec)[33] = vtx1->GetX(); //only used to subtract from xyz, use vertex from other event
     (*varvec)[34] = vtx1->GetY(); //only used to subtract from xyz, use vertex from other event
     (*varvec)[35] = vtx1->GetZ(); //only used to subtract from xyz, use vertex from other event
-    (*varvec)[35] = trk->GetUsedForVtxFit();
-    (*varvec)[36] = trk->GetUsedForPrimVtxFit();
-    (*varvec)[37] = -1;
-    (*varvec)[38] = trk->GetFilterMap();
-    (*varvec)[39] = trk->Chi2perNDF();
-    (*varvec)[40] = d0z0bach[0];
-    (*varvec)[41] = TMath::Sqrt(covd0z0bach[0]);
+    (*varvec)[36] = trk->GetUsedForVtxFit();
+    (*varvec)[37] = trk->GetUsedForPrimVtxFit();
+    (*varvec)[38] = -1;
+    (*varvec)[39] = trk->GetFilterMap();
+    (*varvec)[40] = trk->Chi2perNDF();
+    (*varvec)[41] = d0z0bach[0];
+    (*varvec)[42] = TMath::Sqrt(covd0z0bach[0]);
     
     AliAODPidHF *Pid_HF = fFiltCutsLc2V0bachelor->GetPidHF();
     double nsigmaTPCp = -999., nsigmaTOFp = -999.;
     Pid_HF->GetnSigmaTPC(trk, 4, nsigmaTPCp);
     Pid_HF->GetnSigmaTOF(trk, 4, nsigmaTOFp);
-    (*varvec)[42] = nsigmaTPCp;
-    (*varvec)[43] = nsigmaTOFp;
-    (*varvec)[44] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCp, nsigmaTOFp);
+    (*varvec)[43] = nsigmaTPCp;
+    (*varvec)[44] = nsigmaTOFp;
+    (*varvec)[45] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCp, nsigmaTOFp);
     fReservoirP[fPoolIndex][nextRes].push_back(varvec);
   }
   
@@ -1543,16 +1543,16 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessCascMixEv(std::vector<TVector *
       UChar_t ITSclsmap = (UChar_t)((*pvars)[32]);
       Double_t vtxold[3];
       for(Int_t ic=0;ic<3;ic++) vtxold[ic] = (*pvars)[ic+33];
-      Bool_t usedForVtxFit = (*pvars)[35];
-      Bool_t usedForPrimVtxFit = (*pvars)[36];
-      AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*pvars)[37]);
-      UInt_t selectInfo = (UInt_t)((*pvars)[38]);
-      Float_t chi2perNDF = (*pvars)[39];
-      Double_t d0z0bach = (*pvars)[40];
-      Double_t covd0z0bach = (*pvars)[41];
-      Double_t nsigmaTPCp = (*pvars)[42];
-      Double_t nsigmaTOFp = (*pvars)[43];
-      Double_t ncombsigmap = (*pvars)[44];
+      Bool_t usedForVtxFit = (*pvars)[36];
+      Bool_t usedForPrimVtxFit = (*pvars)[37];
+      AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*pvars)[38]);
+      UInt_t selectInfo = (UInt_t)((*pvars)[39]);
+      Float_t chi2perNDF = (*pvars)[40];
+      Double_t d0z0bach = (*pvars)[41];
+      Double_t covd0z0bach = (*pvars)[42];
+      Double_t nsigmaTPCp = (*pvars)[43];
+      Double_t nsigmaTOFp = (*pvars)[44];
+      Double_t ncombsigmap = (*pvars)[45];
       //Move to new vertex
       Double_t vtxnew[3];
       vtx1->GetXYZ(vtxnew);
