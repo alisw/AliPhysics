@@ -37,7 +37,7 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
         void       GetLeadingObjectFromArray(const std::vector<Float_t> &pt, const std::vector<Float_t> &phi, Int_t multPart, Bool_t isMC);
-        void       GetDetectorResponse(const std::vector<Float_t> &phiGen, Int_t multGen, const std::vector<Float_t> &phiRec, Int_t multRec);
+        void       GetDetectorResponse(const std::vector<Float_t> &phiGen, Int_t multGen, const std::vector<Float_t> &phiRec, Int_t multRec, const std::vector<Int_t> &idGen, const std::vector<Int_t> &idRec);
         void       GetBinByBinCorrections(Int_t multGen, Int_t multRec, const std::vector<Float_t> &ptGen, const std::vector<Float_t> &ptRec, const std::vector<Int_t> &idGen, const std::vector<Int_t> &idRec, const std::vector<Int_t> &isprimRec);
         void       GetMultiplicityDistributionsTrue(const std::vector<Float_t> &phiGen, const std::vector<Float_t> &ptGen, Int_t multGen );
 
