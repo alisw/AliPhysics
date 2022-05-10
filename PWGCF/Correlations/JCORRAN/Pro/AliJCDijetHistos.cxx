@@ -403,32 +403,32 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << "END" ;
 
     fh_jetPt_ALICE
-        << TH1D("h_jetPt_ALICE","h_jetPt_ALICE", 300, 10, 310 )
+        << TH1D("h_jetPt_ALICE","h_jetPt_ALICE", 310, 0, 310 )
         << fHistCentBin << fJetBin
         << "END" ;
 
     fh_jetPtLeadSublead_ALICE
-        << TH1D("h_jetPtLeadSublead_ALICE","h_jetPtLeadSublead_ALICE", 300, 10, 310 )
+        << TH1D("h_jetPtLeadSublead_ALICE","h_jetPtLeadSublead_ALICE", 310, 0, 310 )
         << fHistCentBin << fJetBin
         << "END" ;
 
     fh_jetPtLeadSubleadDeltaPhi_ALICE
-        << TH1D("h_jetPtLeadSubleadDeltaPhi_ALICE","h_jetPtLeadSubleadDeltaPhi_ALICE", 300, 10, 310 )
+        << TH1D("h_jetPtLeadSubleadDeltaPhi_ALICE","h_jetPtLeadSubleadDeltaPhi_ALICE", 310, 0, 310 )
         << fHistCentBin << fJetBin
         << "END" ;
 
     fh_jetPtLeadSubleadMBin_ALICE
-        << TH1D("h_jetPtLeadSubleadMBin_ALICE","h_jetPtLeadSubleadMBin_ALICE", 300, 10, 310 )
+        << TH1D("h_jetPtLeadSubleadMBin_ALICE","h_jetPtLeadSubleadMBin_ALICE", 310, 0, 310 )
         << fHistCentBin << fJetBin << fMBin
         << "END" ;
 
     fh_jetPtLeadSubleadDeltaPhiMBin_ALICE
-        << TH1D("h_jetPtLeadSubleadDeltaPhiMBin_ALICE","h_jetPtLeadSubleadDeltaPhiMBin_ALICE", 300, 10, 310 )
+        << TH1D("h_jetPtLeadSubleadDeltaPhiMBin_ALICE","h_jetPtLeadSubleadDeltaPhiMBin_ALICE", 310, 0, 310 )
         << fHistCentBin << fJetBin << fMBin
         << "END" ;
 
     fh_jetPtTransBGSub
-        << TH1D("h_jetPtTransBGSub","h_jetPtTransBGSub", 300, 10, 310 )
+        << TH1D("h_jetPtTransBGSub","h_jetPtTransBGSub", 310, 0, 310 )
         << fHistCentBin << fJetBin
         << "END" ;
 
@@ -585,7 +585,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << fJetBin << fJetBin << "END" ;
 
     fh_jetResponse_ALICE
-        << TH2D("h_jetResponse_ALICE", "h_jetResponse_ALICE", 300, 10, 310, 300, 10, 310 )
+        << TH2D("h_jetResponse_ALICE", "h_jetResponse_ALICE", 310, 0, 310, 310, 0, 310 )
         << fJetBin << fJetBin << "END" ;
 
     fh_deltaPtResponse
@@ -593,7 +593,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << fJetBin << "END" ;
 
     fh_deltaPtResponse_ALICE
-        << TH2D("h_deltaPtResponse_ALICE", "h_deltaPtResponse_ALICE", 300, 10, 310, 300, 10, 310 )
+        << TH2D("h_deltaPtResponse_ALICE", "h_deltaPtResponse_ALICE", 310, 0, 310, 310, 0, 310 )
         << fJetBin << "END" ;
 
     fh_deltaPtResponseEvery
@@ -601,7 +601,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << "END" ;
 
     fh_deltaPtResponseEvery_ALICE
-        << TH2D("h_deltaPtResponseEvery_ALICE", "h_deltaPtResponseEvery_ALICE", 300, 10, 310, 300, 10, 310 )
+        << TH2D("h_deltaPtResponseEvery_ALICE", "h_deltaPtResponseEvery_ALICE", 310, 0, 310, 310, 0, 310 )
         << "END" ;
 
     fh_dijetResponse
