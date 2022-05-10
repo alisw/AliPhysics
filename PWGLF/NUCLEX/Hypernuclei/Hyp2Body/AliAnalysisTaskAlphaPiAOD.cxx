@@ -74,6 +74,7 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 double Sq(double x) { return x * x; }
 
 constexpr int kHyperPdg{1010010040};
+constexpr double kAlphaMass{AliPID::ParticleMass(AliPID::kAlpha)};
 constexpr double kHyperMass{3.931}; /// from AliPDG.cxx
 
 } // namespace
@@ -713,9 +714,15 @@ void AliAnalysisTaskAlphaPiAOD::SetCustomBetheBloch(float res,
 }
 
 double AliAnalysisTaskAlphaPiAOD::customNsigma(double mom, double sig) {
-  const float bg = mom / AliPID::ParticleMass(AliPID::kAlpha);
+  // const float bg = mom / AliPID::ParticleMass(AliPID::kAlpha);
+  // const float *p = fCustomBethe;
+  // const float expS =
+  //     AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
+  // return (sig - expS) / (fCustomResolution * expS);
+  const int chargeAlpha = 2;
   const float *p = fCustomBethe;
-  const float expS =
-      AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
-  return (sig - expS) / (fCustomResolution * expS);
+  Double_t expected = chargeAlpha * chargeAlpha * AliExternalTrackParam::BetheBlochAleph(chargeAlpha * mom / AliPID::ParticleMass(AliPID::kAlpha), p[0], p[1], p[2], p[3], p[4]);
+  Double_t sigma = expected * fCustomResolution;
+  if (TMath::IsNaN(expected)) return -999;
+  return (track.GetTPCsignal() - expected) / sigma;
 }
