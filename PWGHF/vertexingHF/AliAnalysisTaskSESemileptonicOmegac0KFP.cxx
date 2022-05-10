@@ -1653,33 +1653,33 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(AliAODEve
             Double_t d0z0bach[2],covd0z0bach[3];
             trk->PropagateToDCA(fpVtx,bfield,kVeryBig,d0z0bach,covd0z0bach);
 
-            TVector *varvec = new TVector(45);
+            TVector *varvec = new TVector(46);
             (*varvec)[0] = trk->GetID();
             (*varvec)[1] = trk->GetLabel();
             for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+2] = pxpypz[ic];
             (*varvec)[5] = 1;
             for(Int_t ic=0;ic<3;ic++) (*varvec)[ic+6] = xyz[ic];
-            (*varvec)[9] = 1;
+            (*varvec)[9] = trk->GetXYZ(xyz); //isdca (should be false to not get -999's)
             for(Int_t ic=0;ic<21;ic++) (*varvec)[ic+10] = cv[ic];
             (*varvec)[31] = sign;
             (*varvec)[32] = (Int_t)trk->GetITSClusterMap(); //convert to UChar_t (maybe doesn't matter)
             (*varvec)[33] = fpVtx->GetX(); //only used to subtract from xyz, use vertex from other event
             (*varvec)[34] = fpVtx->GetY(); //only used to subtract from xyz, use vertex from other event
             (*varvec)[35] = fpVtx->GetZ(); //only used to subtract from xyz, use vertex from other event
-            (*varvec)[35] = trk->GetUsedForVtxFit();
-            (*varvec)[36] = trk->GetUsedForPrimVtxFit();
-            (*varvec)[37] = -1;
-            (*varvec)[38] = trk->GetFilterMap();
-            (*varvec)[39] = trk->Chi2perNDF();
-            (*varvec)[40] = d0z0bach[0];
-            (*varvec)[41] = TMath::Sqrt(covd0z0bach[0]);
+            (*varvec)[36] = trk->GetUsedForVtxFit();
+            (*varvec)[37] = trk->GetUsedForPrimVtxFit();
+            (*varvec)[38] = -1;
+            (*varvec)[39] = trk->GetFilterMap();
+            (*varvec)[40] = trk->Chi2perNDF();
+            (*varvec)[41] = d0z0bach[0];
+            (*varvec)[42] = TMath::Sqrt(covd0z0bach[0]);
         
             double nsigmaTPCE = -999., nsigmaTOFE = -999.;
             nsigmaTPCE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron); // TPC
             nsigmaTOFE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron); // TOF
-            (*varvec)[42] = nsigmaTPCE;
-            (*varvec)[43] = nsigmaTOFE;
-            (*varvec)[44] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCE, nsigmaTOFE);
+            (*varvec)[43] = nsigmaTPCE;
+            (*varvec)[44] = nsigmaTOFE;
+            (*varvec)[45] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCE, nsigmaTOFE);
         
             fReservoirE[fPoolIndex][nextRes].push_back(varvec);
         }
@@ -1914,17 +1914,17 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                 UChar_t ITSclsmap = (UChar_t)((*evars)[32]);
                 Double_t vtxold[3];
                 for(Int_t ic=0;ic<3;ic++) vtxold[ic] = (*evars)[ic+33];
-                Bool_t usedForVtxFit = (*evars)[35];
-                Bool_t usedForPrimVtxFit = (*evars)[36];
+                Bool_t usedForVtxFit = (*evars)[36];
+                Bool_t usedForPrimVtxFit = (*evars)[37];
                   
-                AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*evars)[37]);
-                UInt_t selectInfo = (UInt_t)((*evars)[38]);
-                Float_t chi2perNDF = (*evars)[39];
-                Double_t d0z0bach = (*evars)[40];
-                Double_t covd0z0bach = (*evars)[41];
-                Double_t nsigmaTPCE = (*evars)[42];
-                Double_t nsigmaTOFE = (*evars)[43];
-                Double_t ncombsigmaE = (*evars)[44];
+                AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*evars)[38]);
+                UInt_t selectInfo = (UInt_t)((*evars)[39]);
+                Float_t chi2perNDF = (*evars)[40];
+                Double_t d0z0bach = (*evars)[41];
+                Double_t covd0z0bach = (*evars)[42];
+                Double_t nsigmaTPCE = (*evars)[43];
+                Double_t nsigmaTOFE = (*evars)[44];
+                Double_t ncombsigmaE = (*evars)[45];
                 
                 //Move to new vertex
                 Double_t vtxnew[3];
@@ -2122,17 +2122,17 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                 UChar_t ITSclsmap = (UChar_t)((*evars)[32]);
                 Double_t vtxold[3];
                 for(Int_t ic=0;ic<3;ic++) vtxold[ic] = (*evars)[ic+33];
-                Bool_t usedForVtxFit = (*evars)[35];
-                Bool_t usedForPrimVtxFit = (*evars)[36];
+                Bool_t usedForVtxFit = (*evars)[36];
+                Bool_t usedForPrimVtxFit = (*evars)[37];
                   
-                AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*evars)[37]);
-                UInt_t selectInfo = (UInt_t)((*evars)[38]);
-                Float_t chi2perNDF = (*evars)[39];
-                Double_t d0z0bach = (*evars)[40];
-                Double_t covd0z0bach = (*evars)[41];
-                Double_t nsigmaTPCE = (*evars)[42];
-                Double_t nsigmaTOFE = (*evars)[43];
-                Double_t ncombsigmaE = (*evars)[44];
+                AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*evars)[38]);
+                UInt_t selectInfo = (UInt_t)((*evars)[39]);
+                Float_t chi2perNDF = (*evars)[40];
+                Double_t d0z0bach = (*evars)[41];
+                Double_t covd0z0bach = (*evars)[42];
+                Double_t nsigmaTPCE = (*evars)[43];
+                Double_t nsigmaTOFE = (*evars)[44];
+                Double_t ncombsigmaE = (*evars)[45];
                 
                 //Move to new vertex
                 Double_t vtxnew[3];
