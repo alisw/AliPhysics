@@ -724,5 +724,5 @@ double AliAnalysisTaskAlphaPiAOD::customNsigma(double mom, double sig) {
   Double_t expected = chargeAlpha * chargeAlpha * AliExternalTrackParam::BetheBlochAleph(chargeAlpha * mom / AliPID::ParticleMass(AliPID::kAlpha), p[0], p[1], p[2], p[3], p[4]);
   Double_t sigma = expected * fCustomResolution;
   if (TMath::IsNaN(expected)) return -999;
-  return (track.GetTPCsignal() - expected) / sigma;
+  return (sig - expected) / sigma;
 }
