@@ -181,6 +181,8 @@ AliMESpp13::~AliMESpp13()
 
   if (fUtils)
     delete fUtils;
+
+   AliMESpp13::DeleteStreamer();
 }
 
 //________________________________________________________________________
@@ -1338,7 +1340,7 @@ Double_t AliMESpp13::ComputeDeltaPhi(Double_t phi, Double_t phi_LP)
   }
 }
 //_____________________________________________________________________________
-void AliMESpp13::FinishTaskOutput()
+void AliMESpp13::DeleteStreamer()
 {
   //
   // Called one at the end
@@ -1346,6 +1348,7 @@ void AliMESpp13::FinishTaskOutput()
   //
   if (fTreeSRedirector)
   {
+    printf("Deleting fTreeSRedirector\n");
     delete fTreeSRedirector;
     fTreeSRedirector = NULL;
   }
