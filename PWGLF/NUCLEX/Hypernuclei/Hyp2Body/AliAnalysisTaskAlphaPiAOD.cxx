@@ -74,7 +74,6 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 double Sq(double x) { return x * x; }
 
 constexpr int kHyperPdg{1010010040};
-constexpr double kAlphaMass{AliPID::ParticleMass(AliPID::kAlpha)};
 constexpr double kHyperMass{3.931}; /// from AliPDG.cxx
 
 } // namespace
