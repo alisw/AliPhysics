@@ -181,11 +181,21 @@ AliMESpp13::~AliMESpp13()
 
   if (fUtils)
     delete fUtils;
+
+  if (fTreeSRedirector){
+    delete fTreeSRedirector;
+    fTreeSRedirector = NULL;
+  }
 }
 
 //________________________________________________________________________
 void AliMESpp13::UserCreateOutputObjects()
 {
+
+  OpenFile(1);
+  TDirectory *savedir = gDirectory;
+  fTreeSRedirector = new TTreeSRedirector();
+  savedir->cd();
 
   // Build user objects
   BuildQAHistos();
@@ -212,9 +222,7 @@ void AliMESpp13::UserCreateOutputObjects()
     break;
   }
 
-  OpenFile(1);
 
-  fTreeSRedirector = new TTreeSRedirector();
   fEventTree = ((*fTreeSRedirector) << "ev").GetTree();
   fTracksTree = ((*fTreeSRedirector) << "trk").GetTree();
 
@@ -1015,6 +1023,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // PostData(kMCtracksTree + 1, fMCtracksTree);
   // PostData(kMCGenTracksTree + 1, fMCGenTracksTree);
   // PostData(kMCMissedTracksTree + 1, fMCMissedTracksTree);
+
+  fTreeSRedirector->Close();
 }
 //_____________________________________________________________________
 void AliMESpp13::SetPriors()
@@ -1335,18 +1345,5 @@ Double_t AliMESpp13::ComputeDeltaPhi(Double_t phi, Double_t phi_LP)
   {
     // printf("returning 2.5\n");
     return 3.5;
-  }
-}
-//_____________________________________________________________________________
-void AliMESpp13::FinishTaskOutput()
-{
-  //
-  // Called one at the end
-  // locally on working node
-  //
-  if (fTreeSRedirector)
-  {
-    delete fTreeSRedirector;
-    fTreeSRedirector = NULL;
   }
 }

@@ -126,7 +126,6 @@ public:
   virtual Bool_t PostProcess();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *opt);
-  virtual void FinishTaskOutput();
 
 protected:
   Bool_t BuildQAHistos();
