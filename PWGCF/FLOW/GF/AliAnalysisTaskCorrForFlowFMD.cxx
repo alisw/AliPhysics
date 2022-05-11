@@ -317,6 +317,17 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     fTracksAss = new TObjArray;
     fTracksTrig[0] = new TObjArray;
 
+    if(fDoPID){
+      for(Int_t i(1); i < 4; i++){
+        fTracksTrig[i] = new TObjArray;
+      }
+    }
+    if(fDoV0){
+      for(Int_t i(4); i < 6; i++){
+        fTracksTrig[i] = new TObjArray;
+      }
+    }
+
     if(fUseEfficiency && fColSystem == sPP && (fRunNumber != fAOD->GetRunNumber()) && !AreEfficienciesLoaded()) { return; }
 
     // FMD - V0 correlation event cut
@@ -329,7 +340,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
-    if(fAnalType != eFMDAFMDC && !fIsTPCgen) {
+    if(fUseNch || fAnalType != eFMDAFMDC || !fIsTPCgen) {
       if(!PrepareTPCTracks()){
         for(Int_t i(0); i < 6; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
@@ -1213,12 +1224,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fAOD) return kFALSE;
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
-  if(fDoPID){
-    for(Int_t i(1); i < 4; i++){
-      fTracksTrig[i] = new TObjArray;
-    }
-  }
-
   fNofTracks = 0;
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
 
@@ -1230,6 +1235,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); // only if associated from TPC
         fNofTracks++;
+        if(fAnalType == eFMDAFMDC) continue;
       }
       if(fAnalType != eFMDAFMDC){
         Double_t trackEta = track->Eta();
@@ -1255,17 +1261,14 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
         }
       } // POI from TPC
   } // tracks loop end
-  fhEventMultiplicity->Fill(fNofTracks);
 
   if(fUseNch){
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
+    fhEventMultiplicity->Fill(fNofTracks);
   }
 
   if(fDoV0){
-    for(Int_t i(4); i < 6; i++){
-      fTracksTrig[i] = new TObjArray;
-    }
     PrepareV0();
   }
 
@@ -1358,19 +1361,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
   if(!mcEvent) return kFALSE;
-
-  if(fIsTPCgen){
-    if(fDoPID){
-      for(Int_t i(1); i < 4; i++){
-        fTracksTrig[i] = new TObjArray;
-      }
-    }
-    if(fDoV0){
-      for(Int_t i(4); i < 6; i++){
-        fTracksTrig[i] = new TObjArray;
-      }
-    }
-  }
 
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
   Double_t binscontFMD[2] = {fPVz, fSampleIndex};
