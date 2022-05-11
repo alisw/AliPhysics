@@ -160,19 +160,12 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 	binMass = AxisFix("Mass",300,0.5,2);
  }
  binCharge = AxisFix("Charge",3,-1.5,1.5);
-
  binTrackCutBit = AxisFix("TrackCut",7,0.5,7.5);
-
  binPID = AxisFix("PIDBit",4,0.5,4.5);
-
  binExKaonNum = AxisFix("KNum",5,0.5,5.5);
-
  binTrackPt = AxisFix("TrackPt",200,0,10);
-
  binSigma = AxisFix("Sigma",100,-10,10);
-
  binSwitch = AxisFix("Switch",2,-0.5,1.5);
-
  binEta = AxisFix("eta",32,-0.8,0.8);
 
  auto binV0Amp = AxisFix("binV0Amp",3000,0,3e3);
@@ -406,16 +399,18 @@ if( fOption.Contains("EPAna") ){
 //Fill Tracks*********************************
  CreateTHnSparse("hInvMass","InvMass",6,
 	{binType,binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+/*
  CreateTHnSparse("hInvMassMixing","InvMassMixing",6,
 	{binType,binZ,binCent,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hInvMassUnpair","InvMassUnpair",5,
         {binType,binZ,binCent,binPt,binMass},"s");
+*/
  if( fOption.Contains("EPAna") ){
         CreateTHnSparse("hInvMassEP","hInvMassEP",7,
         {binType,binZ,binCent,binPt,binMass,binTrackCutBit,binEP},"s");
  }
 
-
+ if( fOption.Contains("MC") ){
  CreateTHnSparse("KSTARRecParticle","KSTARRecParticle",5,
 	{binType,binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("OmegaRecParticle","OmegaRecParticle",5,
@@ -428,6 +423,7 @@ if( fOption.Contains("EPAna") ){
         {binType,binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("ExKaonRecParticle","ExKaonRecParticle",6,
 	{binType,binZ,binCent,binPt,binMass,binExKaonNum},"s");
+ }
 //**********************************************
 
 //QA plots**************************************
@@ -1740,7 +1736,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 	
 			PiPipT = sqrt( pow( track1->Px()+track2->Px(),2 ) +
 	                               pow( track1->Py()+track2->Py(),2 ) );
-
+/*
 	                if( track1->Charge()*track2->Charge() == -1 ){
 	                        FillTHnSparse("hInvMassMixing",{1,fZ,fCent,
 	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0);
@@ -1753,6 +1749,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 	                        FillTHnSparse("hInvMassMixing",{3,fZ,fCent,
 	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0);
 	                }
+*/
 	        }
 	}
  }
