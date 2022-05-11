@@ -276,7 +276,6 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
   // Output slot #1 writes into a TList
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  int outputslot = 2;
 
   int inputslot = 1;
   if (fNUA) {
@@ -460,7 +459,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     std::vector<Double_t>   fPtBinsTrigCharged = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0,10.0};    // I don't want to set the things outside
     std::vector<Double_t>   fPtBinsAss = {0.2,0.5,1.0,3.0};            // I don't want to set the things outside
     std::vector<Double_t>   fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100}; //
-    std::vector<Double_t>   fVtxBins = {0, 1};
+    std::vector<Double_t>   fzVtxBins = {-10.0, 0, 10.0};
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     const Int_t sizePtAss = fPtBinsAss.size() - 1;
     const Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; Subsample, don't use it so far
@@ -468,10 +467,10 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 
 
     // mixing
-    fPoolMaxNEvents = 100;
-    fPoolMinNTracks = 5;
-    fNCentBins = fCentBins.size() - 1;
-    fNzVtxBins = fzVtxBins.size() - 1;
+    fPoolMaxNEvents = 2000;
+    fPoolMinNTracks = 50000;
+    int fNCentBins = fCentBins.size() - 1;
+    int fNzVtxBins = fzVtxBins.size() - 1;
     fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins, fCentBins.data(), fNzVtxBins, fzVtxBins.data());
 
     if (!fPoolMgr) {
@@ -551,21 +550,9 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
     return;
   }
 
-  if (fLowMultiplicityMode) {
-     // Number of AOD tracks before track cuts
-     const int nAODTracks = fAOD->GetNumberOfTracks();
-     if (nAODTracks > 200) {
-       PostData(1,fListOfObjects);
-       int outputslot = 2;
-       PostData(2, fListOfProfile);
-       return;
-     }
-  }
-
   // Check if it passed the standard AOD selection
   if (!AcceptAOD(fAOD) ) {
     PostData(1,fListOfObjects);
-    int outputslot = 2;
     PostData(2, fListOfProfile);
     return;
   }
@@ -584,14 +571,12 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
   if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
 	   if (!fGFWSelection15o->AcceptVertex(fAOD)) {
 	    PostData(1,fListOfObjects);
-	    int outputslot = 2;
 	    PostData(2, fListOfProfile);
 	    return;
 	  }
   } else {
 	  if (!fGFWSelection->AcceptVertex(fAOD)) {
 	    PostData(1,fListOfObjects);
-	    int outputslot = 2;
 	    PostData(2, fListOfProfile);
 	    return;
 	  }
@@ -631,7 +616,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 
   AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
   if(!multSelection) { return; }
-  fCentrality = multSelection->GetMultiplicityPercentile("V0A"); 
+  fCentrality = multSelection->GetMultiplicityPercentile("V0M"); 
 	
   Int_t nTracks = fInputEvent->GetNumberOfTracks();
   fTracksTrigCharged = new TObjArray;
@@ -669,7 +654,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
     }
   }
 
-  if (!fTracksTrigCharged) {
+  if (fTracksTrigCharged) {
       FillCorrelations();
       FillCorrelationsMixed();
   }
@@ -792,6 +777,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 
     AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, fPVz);
     if (!pool) {
+        return;
     }
 
     if (pool->IsReady()) {
@@ -881,7 +867,6 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Dou
 }
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
-  return true;
   // LHC15i, LHC15l, LHC16, LHC17, LHC18: means: pp sample
   if (fPeriod.EqualTo("LHC15i") ||
       fPeriod.EqualTo("LHC15l") ||
