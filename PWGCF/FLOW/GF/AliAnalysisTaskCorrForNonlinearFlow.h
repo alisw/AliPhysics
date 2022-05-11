@@ -176,12 +176,6 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t                   fPoolMinNTracks;                        // Minimum number of tracks to mix
 		Int_t                   fMinEventsToMix;                        // Minimum numver of events to mix
 
-		Int_t                   fNzVtxBins;                             // number of PV z bins
-		Int_t                   fNCentBins;                             // number of centrality bins
-		std::vector<Double_t>   fzVtxBins;
-		std::vector<Double_t>   fCentBins;
-
-
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
 		TList*			fListOfProfile;			//! Output list of objects
