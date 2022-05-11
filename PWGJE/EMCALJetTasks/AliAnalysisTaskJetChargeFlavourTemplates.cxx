@@ -329,23 +329,41 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           {
             AliMCParticle* TruthParticle = (AliMCParticle*) TruthJet->Track(iTruthConst);
             AliMCParticle *MotherParticle = (AliMCParticle*)  MCParticleContainer->GetParticle(TruthParticle->GetMother());
+            AliMCParticle *OneSetBackParticle = (AliMCParticle*)  MCParticleContainer->GetParticle(TruthParticle->GetMother());
+            
+            //cout << "Start: " << endl;
             while(MotherParticle->GetMother() > 0)
             {
               MotherParticle = (AliMCParticle*) MCParticleContainer->GetParticle(MotherParticle->GetMother());
+
+              //cout << "MotherParticle PDG: " << MotherParticle->PdgCode() << endl;
+              //cout << "MotherParticle Label: " << MotherParticle->Label() << endl;
+              
+              if(MotherParticle->PdgCode() == 2212)
+              {
+                //cout << "Proton Label: " <<MotherParticle->Label() << endl;
+                //cout << "One Down Label: " << OneSetBackParticle->Label() << endl;
+                MotherParticle  = OneSetBackParticle;
+                break;
+              }
+              else
+              {
+              OneSetBackParticle = MotherParticle;           
+              }
+              
             }
+
+            //cout << "End;" << endl << endl;
+
             // Insure this isnt a beam proton
-            if(MotherParticle->PdgCode() != 2212)
-            {
             
             fCurrentParticleUniqueID = MotherParticle->GetLabel();
             fCurrentPdg = MotherParticle->PdgCode();
             fPdgCodes[nMothers] = fCurrentPdg;            
             fParticleUniqueID[nMothers] = fCurrentParticleUniqueID;
-
             //cout << fPdgCodes[nMothers] << endl;
             nMothers++;
-
-            }
+          
           }
 
           Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
