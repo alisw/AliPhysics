@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEffWRZ *AddTaskEfficiency(TString containerName="femtolist")
+AliAnalysisTaskParticleEffWRZ *AddTaskEfficiencyWRZ(TString containerName="femtolist")
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
