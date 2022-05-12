@@ -37,7 +37,6 @@
 //  Contatcs: wyosuke@cns.s.u-tokyo.ac.jp, gluparel@cern.ch
 //
 //  Multiplicity dependent analyzer : JaeYoon Cho(Jcho, jaeyoon15@inha.edu)  
-//  Last modification : 22/04/25 (YY/MM/DD)
 //-------------------------------------------------------------------------
 
 #include <TSystem.h>
@@ -303,10 +302,10 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   }
   DefineOutput(4,AliNormalizationCounter::Class());
 
-  DefineOutput(5,AliNormalizationCounter::Class()); fCounter_MB_0to100 = 0; //jcho
-  DefineOutput(6,AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0; //jcho
-  DefineOutput(7,AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0; //jcho
-  DefineOutput(8,AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0; //jcho
+  DefineOutput(5,AliNormalizationCounter::Class()); fCounter_MB_0to100 = 0; //jcho, MB[0,100]
+  DefineOutput(6,AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0; //jcho, MB[0.1,30] 
+  DefineOutput(7,AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0; //jcho, MB[30,100]
+  DefineOutput(8,AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0; //jcho, HM[0,0.1] 
 
   if (fHMTrigOn==true) DefineOutput(9, TTree::Class()); //jcho, Event variable tree
 
@@ -493,7 +492,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   fCentralSPD = MultSelection->GetMultiplicityPercentile("SPDTracklets"); //jcho
   fNSPDTracklets = MultSelection->GetEstimator("SPDTracklets")->GetValue(); //jcho
 
-   //---Retrieve centrality info-----------------------------// jcho, Refer to Semileptonic Xic0
+/*   //---Retrieve centrality info-----------------------------// jcho, Refer to Semileptonic Xic0
     fCentralSPD = -999; //jcho
 	fNSPDTracklets = -999; //jcho
 
@@ -507,7 +506,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 		fNSPDTracklets = MultSelection->GetEstimator("SPDTracklets")->GetValue();
 		if ( fCentralSPD == 0. && fNSPDTracklets == 0. ) fCentralSPD = fNSPDTracklets = -999;
 	}    
-
+*/
   //---AliRDHFCuts check---------------------------// jcho, Refer to Semileptonic Xic0
   bool IsValid_MB   = fAnalCuts -> IsEventSelected(aodEvent);
   bool IsValid_HMV0 = fAnalCuts_HM -> IsEventSelected(aodEvent);
@@ -557,16 +556,50 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
    // Fill the Event variables tree -------jcho, refer to Xi0 Semileptonic
    if (fHMTrigOn==true)
    {
+	   //Filling the event tree
 	   for(int i=0; i<4; i++) fEventTreeVariables[i] = -999; //Initialize 
 	   fEventTreeVariables[ 0] = fCentrality;      // CentralityV0M
 	   fEventTreeVariables[ 1] = fCentralSPD;    // CentralitySPD 
 	   fEventTreeVariables[ 2] = fNSPDTracklets;   // SPD tracklet
 	   fEventTreeVariables[ 3] = -999;     // Runnumber 
+	   // Flag for trigger 
+	   if(fIsMB) fEventTreeVariables[ 4] = 1;
+	   if(fIsSemi) fEventTreeVariables[ 4] = 2;
+	   if(fIsCent) fEventTreeVariables[ 4] = 3;
+	   if(fIsINT7) fEventTreeVariables[ 4] = 4;
+	   if(fIsHMV0) fEventTreeVariables[ 4] = 13;
+	   if(fIsHMSPD) fEventTreeVariables[ 4] = 14;
+
 	   fEventTreeVarTrig = 0;
 	   if (!fUseMCInfo) fEventTreeVarTrig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-
+	   
 	   fEventTree->Fill(); 
-   }
+
+	   //Counter for MB[0.1,30],[30,100],[0,100] and HM[0,0.1],[0,100]  -- NOTE: HM[0,100] is not implemented yet!
+	   if (IsTrigFired_MB)
+	   {
+			if (fCentrality >=  0.0 && fCentrality <= 100.0)
+			{
+				fCounter_MB_0to100->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo);
+			}
+			if (fCentrality >=  0.1 && fCentrality <=  30.0)
+			{
+				fCounter_MB_0p1to30->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo);
+			}
+			if (fCentrality >= 30.0 && fCentrality <= 100.0)
+			{
+				fCounter_MB_30to100->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo);
+			}
+	   } //IsTrigFired_MB
+	   if (IsTrigFired_HMV0)
+	   {
+			if (fCentrality >= 0.0 && fCentrality <= 0.1)
+			{
+				fCounter_HMV0_0to0p1->StoreEvent(aodEvent, fAnalCuts_HM, fUseMCInfo);
+			}
+	   } //IsTrigFired_HMV0
+	} //fHMTrigOn 
+
  //------------------------------------------------
   // MC analysis setting
   //------------------------------------------------
@@ -718,9 +751,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
 
   if (fTargetTriggers.size() > 1)
   {
-		cout <<" * Multiple triggers are being used: creating EventTree->fTrigBit\n" << endl;
+		cout <<" * Multiple triggers are being used " << endl;
   }
-
 
   cout << "-----------------------------------------------"  << endl;
 
@@ -1290,6 +1322,13 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	  fCandidateVariables[70] = fCentralSPD;	//jcho
       fCandidateVariables[71] = fNSPDTracklets;	//jcho
 	  fCandidateVariables[72] = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //jcho
+	  // Flag for trigger 
+	  if(fIsMB) fCandidateVariables[73] = 1;	// MB
+	  if(fIsSemi) fCandidateVariables[73] = 2;	// Semi
+	  if(fIsCent) fCandidateVariables[73] = 3;	// Cent
+	  if(fIsINT7) fCandidateVariables[73] = 4;	// INT7
+	  if(fIsHMV0) fCandidateVariables[73] = 13;	// HMV0
+	  if(fIsHMSPD) fCandidateVariables[73] = 14; // HMSPD
 	  } //--Fill the event info.end
 
     }//close if to check mc fill only signal
@@ -1353,7 +1392,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 73;
+  Int_t nVar = 74;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1443,6 +1482,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[70]="CentralitySPD";	//jcho
   fCandidateVariableNames[71]="SPDtracklet";	//jcho
   fCandidateVariableNames[72]="Trigbit";		//jcho
+  fCandidateVariableNames[73]="TrigFlags";		//jcho	
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
@@ -1592,19 +1632,21 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   if (fHMTrigOn==true)
   {
   //---Define the Event tree variables ------------------// jcho, refer to Xi0 Semileptinic
-	  fEventTree = new TTree("Event tree", "Event variable tree");
-	  Int_t nEVar =4;
+	  fEventTree = new TTree("EventTree", "Event variable tree");
+	  Int_t nEVar =5;
 	  fEventTreeVariables = new Float_t [nEVar];
 	  TString * fEventTreeVariablesName = new TString[nEVar];
 	  fEventTreeVariablesName[ 0] = "CentralityV0M";
 	  fEventTreeVariablesName[ 1] = "CentralSPD";
 	  fEventTreeVariablesName[ 2] = "NSPDtracklet";
 	  fEventTreeVariablesName[ 3] = "Runnumber";
+	  fEventTreeVariablesName[ 4] = "TriggerFlag";
 	  for (Int_t iEvar=0; iEvar<nEVar; iEvar++) {
 		fEventTree->Branch(fEventTreeVariablesName[iEvar].Data(), &fEventTreeVariables[iEvar], Form("%s/F",fEventTreeVariablesName[iEvar].Data()));
 	  } 
 	  const Int_t Trigg = fTargetTriggers.size();
-	  if (Trigg > 1) fEventTree->Branch("fTriggerBit", &fEventTreeVarTrig, "fTrigBit/i"); 
+	  //if (Trigg > 1) 
+	  fEventTree->Branch("fTriggerBit", &fEventTreeVarTrig, "fTrigBit/i"); 
   } //--HM event tree end
 
   return;
