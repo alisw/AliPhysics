@@ -7,11 +7,11 @@
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-//#define MONTECARLO
+#define MONTECARLO
 //#define ACTIVATE_SYSTEMATICS
 
 AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
-		                         bool isMC=false,
+		                         bool isMC=true,
 					 const char *cutVariation = "0",
            bool hasFemtoTrackCleaning=false, bool hasFemtoPairCleaning=false,
            TString taskName="default") {
