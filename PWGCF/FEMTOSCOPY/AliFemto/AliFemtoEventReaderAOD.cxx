@@ -893,8 +893,8 @@ if(fjets>0){
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy.get());
 	// dowang for Pb-Pb 15 pass2 filter bit7 MC
-	if(fFilterBit == (1 << 7)){
-		if(fPbPb15Pass2MC){
+	if(fPbPb15Pass2MC){
+		if(fFilterBit == (1 << 7)){
 			CopyPIDtoFemtoTrack(aodtrack,trackCopy.get());		
 		}
 	}
