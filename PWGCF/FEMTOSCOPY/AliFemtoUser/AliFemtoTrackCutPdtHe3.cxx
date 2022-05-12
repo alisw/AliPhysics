@@ -672,10 +672,10 @@ bool AliFemtoTrackCutPdtHe3::RejectFakeP(const AliFemtoTrack* track, float mom){
 	            return rejected;	
 	}
     	else {
-		p_NsigmaCombine = track->NSigmaTPCP();
-		k_NsigmaCombine = track->NSigmaTPCK();
-		e_NsigmaCombine = track->NSigmaTPCE();
-		pi_NsigmaCombine = track->NSigmaTPCPi();
+		p_NsigmaCombine = abs(track->NSigmaTPCP());
+		k_NsigmaCombine = abs(track->NSigmaTPCK());
+		e_NsigmaCombine = abs(track->NSigmaTPCE());
+		pi_NsigmaCombine = abs(track->NSigmaTPCPi());
 	        if ( 	(k_NsigmaCombine < p_NsigmaCombine) || 
 			(e_NsigmaCombine < p_NsigmaCombine) || 
 			(pi_NsigmaCombine < p_NsigmaCombine) )
@@ -692,7 +692,7 @@ bool AliFemtoTrackCutPdtHe3::RejectFakeD(const AliFemtoTrack* track, float mom){
 	float k_NsigmaCombine = 0.;
 	float e_NsigmaCombine = 0.;
 	float pi_NsigmaCombine = 0.;
-	if (mom > SwitchMom_p) {
+	if (mom > SwitchMom_d) {
 		d_NsigmaCombine = TMath::Hypot(track->NSigmaTPCD(), track->NSigmaTOFD());
 		p_NsigmaCombine = TMath::Hypot(track->NSigmaTPCP(), track->NSigmaTOFP());
 		k_NsigmaCombine = TMath::Hypot(track->NSigmaTPCK(), track->NSigmaTOFK());
@@ -705,11 +705,11 @@ bool AliFemtoTrackCutPdtHe3::RejectFakeD(const AliFemtoTrack* track, float mom){
 	            return rejected;	
 	}
     	else {
-		d_NsigmaCombine = track->NSigmaTPCD();      	
-		p_NsigmaCombine = track->NSigmaTPCP();
-		k_NsigmaCombine = track->NSigmaTPCK();
-		e_NsigmaCombine = track->NSigmaTPCE();
-		pi_NsigmaCombine = track->NSigmaTPCPi();
+		d_NsigmaCombine = abs(track->NSigmaTPCD());      	
+		p_NsigmaCombine = abs(track->NSigmaTPCP());
+		k_NsigmaCombine = abs(track->NSigmaTPCK());
+		e_NsigmaCombine = abs(track->NSigmaTPCE());
+		pi_NsigmaCombine = abs(track->NSigmaTPCPi());
 	        if ( 	(k_NsigmaCombine 	< d_NsigmaCombine) || 
 			(e_NsigmaCombine 	< d_NsigmaCombine) || 
 			(pi_NsigmaCombine 	< d_NsigmaCombine) ||
