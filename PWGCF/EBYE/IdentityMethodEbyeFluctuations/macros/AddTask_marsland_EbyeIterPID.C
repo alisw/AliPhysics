@@ -50,7 +50,9 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TStrin
   TString configBasePath;
   if (getFromAlien)
   {
-    gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/%s .",configFileName.Data()));
+    // gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/%s .",configFileName.Data()));
+    // TString configFileName = "Config_marsland_EbyeIterPID.C";
+    gSystem->Exec(Form("alien_cp /alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/%s file:%s",configFileName.Data(),configFileName.Data()));
     configBasePath=Form("%s/",gSystem->pwd());
   } else {
     std::cout << " Info::marsland: Settings for local testing " << std::endl;
