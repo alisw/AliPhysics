@@ -230,7 +230,7 @@ void AliAnalysisTaskParticlePurityEfficiency_pik::UserCreateOutputObjects()
     for(Int_t chg=0;chg<1;chg++){
       hname  = "hMisidentificationM"; hname+=i; 
       htitle = "Misidentification Fraction M"; htitle+=i; 
-      fMisidentification[i][0] = new TH3F(hname.Data(),htitle.Data(), 3, 0.5, 3.5, 4 , 0, 4, 100,0.19,4.0);
+      fMisidentification[i][0] = new TH3F(hname.Data(),htitle.Data(), 3, 0.5, 3.5, 4 , 0, 4, 200,0.1,2.5);
       fMisidentification[i][0]->GetXaxis()->SetBinLabel(1,"Pions, MC");
       fMisidentification[i][0]->GetXaxis()->SetBinLabel(2,"Kaons, MC");
       fMisidentification[i][0]->GetXaxis()->SetBinLabel(3,"Protons, MC");
@@ -241,7 +241,7 @@ void AliAnalysisTaskParticlePurityEfficiency_pik::UserCreateOutputObjects()
       fHistoList->Add(fMisidentification[i][0]);
 
     htitle+="Minus"; hname+="Minus";
-      fMisidentification[i][1] = new TH3F(hname.Data(),htitle.Data(), 3, 0.5, 3.5, 4 , 0, 4, 100,0.19,4.0);
+      fMisidentification[i][1] = new TH3F(hname.Data(),htitle.Data(), 3, 0.5, 3.5, 4 , 0, 4, 200,0.1,2.5);
       fMisidentification[i][1]->GetXaxis()->SetBinLabel(1,"Pions, MC");
       fMisidentification[i][1]->GetXaxis()->SetBinLabel(2,"Kaons, MC");
       fMisidentification[i][1]->GetXaxis()->SetBinLabel(3,"Protons, MC");
@@ -261,7 +261,7 @@ void AliAnalysisTaskParticlePurityEfficiency_pik::UserCreateOutputObjects()
   fHistQA[3] = new TH1F("dcaHistDcaXY1D", "DCA XY", 210, -2.1, 2.1);
   fHistQA[4] = new TH1F("dcaHistDcaZ1D", "DCA Z", 210, -2.1, 2.1);
   fHistQA[5] = new TH1F("fHistChi2Tpc", "Chi2 TPC", 100, 0., 8.);
-  fHistQA[6] = new TH1F("fHistpT", "pT distribution",100,0.19,0.4);
+  fHistQA[6] = new TH1F("fHistpT", "pT distribution",200,0.1,2.5);
   fHistQA[7] = new TH1F("fHistPhi", "Phi distribution" , 100, -TMath::Pi(), TMath::Pi());
   fHistQA[8] = new TH1F("fHistEta", "Eta distribution" , 100, -2, 2);
  
@@ -738,7 +738,7 @@ if(!MultSelection) {
       continue; 
     fHistQA[10]->Fill(4);
 
-    if (track->Pt() < 0.1 || track->Pt() > 2.0)
+    if (track->Pt() < 0.1 || track->Pt() > 2.5)
       continue;
     fHistQA[10]->Fill(5);
 
@@ -1214,7 +1214,7 @@ if(!MultSelection) {
       if(MCtrk->Eta() < -0.8 || MCtrk->Eta() > 0.8){
 	continue; }
 	
-      if (MCtrk->Pt() < 0.1 || MCtrk->Pt() > 2.0){
+      if (MCtrk->Pt() < 0.1 || MCtrk->Pt() > 2.5){
 	continue;}
 
 
