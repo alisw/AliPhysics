@@ -333,13 +333,13 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   fFlatMC = -1;
   if (fUseMC) {
     fFlatMC = GetFlatenicityMC();
-    if (fFlatMC > 0) {
+    if (fFlatMC >= 0) {
       hFlatenicityMC->Fill(fFlatMC);
       hFlatResponse->Fill(fFlatMC, fFlat);
       MakeMCanalysis();
     }
   }
-  if (fFlat > 0) {
+  if (fFlat >= 0) {
     hFlatenicity->Fill(fFlat);
     if (fV0Mindex >= 0) {
       hFlatVsV0M->Fill(fv0mpercentile, fFlat);
