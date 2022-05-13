@@ -95,10 +95,10 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMo
   , fTPCvsTOFNSigma(new TH2D(*aCut.fTPCvsTOFNSigma))
   , fParticleOrigin(new TH1D(*aCut.fParticleOrigin))
   , fParticleId(new TH1D(*aCut.fParticleId))
-  , fTPCdEdx_pT(new TH1D(*aCut.fTPCdEdx_pT))
-  , fTOFTime_pT(new TH1D(*aCut.fTOFTime_pT))
-  , fTOFNSigma_pT(new TH1D(*aCut.fTOFNSigma_pT))
-  , fTPCNSigma_pT(new TH1D(*aCut.fTPCNSigma_pT))
+  , fTPCdEdx_pT(new TH2D(*aCut.fTPCdEdx_pT))
+  , fTOFTime_pT(new TH2D(*aCut.fTOFTime_pT))
+  , fTOFNSigma_pT(new TH2D(*aCut.fTOFNSigma_pT))
+  , fTPCNSigma_pT(new TH2D(*aCut.fTPCNSigma_pT))
 
 {
   // copy constructor
