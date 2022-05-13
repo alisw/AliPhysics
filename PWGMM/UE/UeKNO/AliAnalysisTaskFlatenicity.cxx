@@ -171,12 +171,12 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
       new TList(); // this is a list which will contain all of your histograms
   fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
 
-  hFlatenicity = new TH1D("hFlatenicity", "counter", 1000, -0.1, 9.9);
+  hFlatenicity = new TH1D("hFlatenicity", "counter", 2000, -0.1, 9.9);
   fOutputList->Add(hFlatenicity);
 
   hFlatVsPt =
       new TH2D("hFlatVsPt", "Measured; Flatenicity; #it{p}_{T} (GeV/#it{c})",
-               1000, -0.1, 9.9, nPtbins, Ptbins);
+               2000, -0.1, 9.9, nPtbins, Ptbins);
   fOutputList->Add(hFlatVsPt);
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -184,7 +184,7 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
         Form("hFlatVsPtV0M_c%d", i_c),
         Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",
              centClass[i_c], centClass[i_c + 1]),
-        1000, -0.1, 9.9, nPtbins, Ptbins);
+        2000, -0.1, 9.9, nPtbins, Ptbins);
     fOutputList->Add(hFlatVsPtV0M[i_c]);
   }
 
@@ -208,17 +208,17 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                       nPtbins, Ptbins);
     fOutputList->Add(hPtOut);
 
-    hFlatenicityMC = new TH1D("hFlatenicityMC", "counter", 1000, -0.1, 9.9);
+    hFlatenicityMC = new TH1D("hFlatenicityMC", "counter", 2000, -0.1, 9.9);
     fOutputList->Add(hFlatenicityMC);
     hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat",
-                             1000, -0.1, 9.9, 1000, -0.1, 9.9);
+                             2000, -0.1, 9.9, 2000, -0.1, 9.9);
     fOutputList->Add(hFlatResponse);
     hFlatVsPtMC =
         new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})",
-                 1000, -0.1, 9.9, nPtbins, Ptbins);
+                 2000, -0.1, 9.9, nPtbins, Ptbins);
     fOutputList->Add(hFlatVsPtMC);
 
-    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", 1000, -0.1,
+    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", 2000, -0.1,
                             9.9, 100, -0.5, 99.5);
     fOutputList->Add(hFlatVsNchMC);
   }
@@ -234,7 +234,7 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     fOutputList->Add(hActivityV0McSect);
   }
 
-  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClass, 1000, -0.1, 9.9);
+  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClass, 2000, -0.1, 9.9);
   fOutputList->Add(hFlatVsV0M);
 
   hCounter = new TH1D("hCounter", "counter", 10, -0.5, 9.5);
@@ -339,9 +339,9 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       MakeMCanalysis();
     }
   }
-  if (fFlat >=0.0) {
+  if (fFlat > 0) {
     hFlatenicity->Fill(fFlat);
-    if (fV0Mindex>=0) {
+    if (fV0Mindex >= 0) {
       hFlatVsV0M->Fill(fv0mpercentile, fFlat);
       MakeDataanalysis();
     }
@@ -505,6 +505,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     mRho += RhoLattice[iCh];
   }
+  Float_t multiplicityV0M = mRho;
   // average activity per cell
   mRho /= (1.0 * nCells);
   // get sigma
@@ -512,11 +513,11 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
   }
-  sRho_tmp /= (1.0 * nCells);
+  sRho_tmp /= (1.0 * nCells * nCells);
   Float_t sRho = TMath::Sqrt(sRho_tmp);
   if (mRho > 0) {
     if (fRemoveTrivialScaling) {
-      flatenicity = TMath::Sqrt(mRho) * sRho / mRho;
+      flatenicity = TMath::Sqrt(multiplicityV0M) * sRho / mRho;
     } else {
       flatenicity = sRho / mRho;
     }
@@ -605,11 +606,11 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
   }
-  sRho_tmp /= (1.0 * nCells);
+  sRho_tmp /= (1.0 * nCells * nCells);
   Float_t sRho = TMath::Sqrt(sRho_tmp);
   if (mRho > 0) {
     if (fRemoveTrivialScaling) {
-      flatenicity = TMath::Sqrt(mRho) * sRho / mRho;
+      flatenicity = TMath::Sqrt(1.0 * nMult) * sRho / mRho;
     } else {
       flatenicity = sRho / mRho;
     }
