@@ -1639,6 +1639,8 @@ void AliAnalysisTaskUpcRhoJpsi::RunESDhist()
 		vPIDE[iTrack]=fPIDTPCElectron;		
 		vPIDP[iTrack]=fPIDTOFProton;		
 	}
+		vNum = nGoodTracks;
+		fTrkTree->Fill();	
 	if((nLepton == 2) && (nPion == 2)){
 		fHistNeventsPsi2s->Fill(7);
 		if(qLepton[0]*qLepton[1] > 0) fHistNeventsPsi2s->Fill(8);
