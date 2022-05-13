@@ -112,6 +112,7 @@ set(SRCS
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_PileUpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_SelectionStudies.cxx
+  HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_RStudies.cxx
   Cascades/Run2/AliEventContainer.cxx
   Cascades/Run2/AliCascadeContainer.cxx
   Cascades/Run2/AliV0Container.cxx

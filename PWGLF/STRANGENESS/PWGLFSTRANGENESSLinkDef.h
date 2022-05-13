@@ -74,6 +74,7 @@
 #pragma link C++ class AliAnalysisTaskStrVsMult_BumpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_PileUpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_SelectionStudies+;
+#pragma link C++ class AliAnalysisTaskStrVsMult_RStudies+;
 #pragma link C++ class AliEventContainer+;
 #pragma link C++ class AliCascadeContainer+;
 #pragma link C++ class AliV0Container+;
