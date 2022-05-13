@@ -500,6 +500,8 @@ void AliAnalysisTaskUpcRhoJpsi::UserCreateOutputObjects()
   fTrkTree ->Branch("vPIDE", &vPIDE[0], "vPIDE[4]/F");
   fTrkTree ->Branch("vPIDP", &vPIDP[0], "vPIDP[4]/F");
   fListHist->Add(fTrkTree);
+  fListHist->Add(fPsi2sTree);
+  fListHist->Add(fJPsiTree);
   
   
   fListSystematics = new TList();
@@ -517,8 +519,8 @@ void AliAnalysisTaskUpcRhoJpsi::UserCreateOutputObjects()
   hBCmod4 = hBCmod4_2D->ProjectionY();
   fSPDfile->Close();
   
-  PostData(1, fJPsiTree);
-  PostData(2, fPsi2sTree);
+//  PostData(1, fJPsiTree);
+//  PostData(2, fPsi2sTree);
   PostData(3, fListTrig);
   PostData(4, fListHist);
 
@@ -575,7 +577,7 @@ void AliAnalysisTaskUpcRhoJpsi::UserExec(Option_t *)
   //cout<<"#################### Next event ##################"<<endl;
 
   if( fType == 0 ){
-    	//RunESDtrig(); 
+    	RunESDtrig(); 
   	if(fRunHist) RunESDhist();
 	if(fRunTree) RunESDtree();
 	}
@@ -1398,6 +1400,17 @@ void AliAnalysisTaskUpcRhoJpsi::RunESDtrig()
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
+  if(fRunNum>=295881){
+    if(trigger.Contains("CCUP30-B-SPD2-CENTNOTRD")) fHistCcup30TriggersPerRun->Fill(fRunNum); //CCUP30 triggers
+    if(trigger.Contains("CCUP31-B-SPD2-CENTNOTRD")) fHistCcup31TriggersPerRun->Fill(fRunNum); //CCUP31 triggers
+    if(fRunNum>=296594 && trigger.Contains("CCUP29-U-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+    if(fRunNum<296594  && trigger.Contains("CCUP29-B-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+	}
+  else{ 
+	if(trigger.Contains("CCUP29-B-NOPF-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+	if(trigger.Contains("CCUP30-B-NOPF-CENTNOTRD")) fHistCcup30TriggersPerRun->Fill(fRunNum); //CCUP30 triggers
+	if(trigger.Contains("CCUP31-B-NOPF-CENTNOTRD")) fHistCcup31TriggersPerRun->Fill(fRunNum); //CCUP31 triggers
+	}
   
   if(esd->GetHeader()->IsTriggerInputFired("1ZED")) fHistZedTriggersPerRun->Fill(fRunNum); //1ZED trigger inputs
   
