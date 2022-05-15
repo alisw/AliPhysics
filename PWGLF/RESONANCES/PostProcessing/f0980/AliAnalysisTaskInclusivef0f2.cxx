@@ -157,7 +157,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  if( fOption.Contains("Fine") ) binMass = AxisFix("Mass",100000,0,5);
  if( fOption.Contains("PbPb") ){
-	binMass = AxisFix("Mass",300,0.5,2);
+	binMass = AxisFix("Mass",150,0.5,2);
  }
  binCharge = AxisFix("Charge",3,-1.5,1.5);
  binTrackCutBit = AxisFix("TrackCut",7,0.5,7.5);
@@ -230,7 +230,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  CreateTHnSparse("hF2GenParticle","hF2GenParticle",4,
         {binZ,binCentForMC,binPtGen,binMass},"s");
 
-if( fOption.Contains("EPAna") ){
+ if( fOption.Contains("EPAna") ){
         CreateTHnSparse("hF0GenParticleAddEP","hF0GenParticleAddEP",5,
                 {binZ,binCentForMC,binPtGen,binMass,binEP},"s");
  }
@@ -373,6 +373,7 @@ if( fOption.Contains("EPAna") ){
  fHistos->CreateTH2("PID_TPC_NSIG_MC_TUNE","",200,0,10,100,-10,10,"s");
  fHistos->CreateTH2("PID_TOF_NSIG_MC_TUNE","",200,0,10,100,-10,10,"s");
 
+ if( fOption.Contains("MC") ){
  CreateTHnSparse("hKSTrueParticleADDPID","hKSTrueParticleADDPID",4,
         {binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("hOmgTrueParticleADDPID","hOmgTrueParticleADDPID",4,
@@ -382,6 +383,7 @@ if( fOption.Contains("EPAna") ){
         {binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("hOmgTrueParticleADDPIDTUNE","hOmgTrueParticleADDPIDTUNE",4,
         {binZ,binCent,binPt,binMass},"s");
+ }
 //***************************************
 
 
@@ -427,8 +429,10 @@ if( fOption.Contains("EPAna") ){
 //**********************************************
 
 //QA plots**************************************
+ if( fOption.Contains("AddSP") ){
  CreateTHnSparse("hSinglePion","hSinglePion",4,
 	{binCent,binTrackPt,binCharge,binEta},"s");
+ }
 //**********************************************
 
 // fEMpool.resize(binCent.GetNbins(),
