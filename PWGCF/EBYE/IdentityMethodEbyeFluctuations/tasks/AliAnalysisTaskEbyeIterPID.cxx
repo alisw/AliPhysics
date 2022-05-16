@@ -1619,7 +1619,7 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
   if (fDEdxCheck)                          { FillTPCdEdxCheck(); return;}
   if (fRunFastSimulation && fFillDnchDeta) { FillDnchDeta(); return;}
   if (fRunFastHighMomentCal)               { FastGenHigherMoments(); return;}
-  if (fRunFastSimulation)                  { FastGen(); return;}
+  if (fRunFastSimulation)                  { FastGen_NetParticles(); return;}
   //
   // Real Data Analysis
   //
@@ -3000,6 +3000,175 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
 
 }
 //________________________________________________________________________
+void AliAnalysisTaskEbyeIterPID::FastGen_NetParticles()
+{
+  //
+  // Fill dEdx information for the TPC and also the clean kaon and protons
+  //
+  // Assign subsample index
+  Int_t sampleNo = 0;
+  Int_t nSubSample = 20;
+  sampleNo = Int_t(fEventGID)%nSubSample;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FastGen_NetParticles ===== " << std::endl;
+  //
+  // ======================================================================
+  // --------------   MC information with ideal PID   ---------------------
+  // ======================================================================
+  //
+  const Int_t nParticles = 3;
+  const Int_t nMoments   = 14;
+  TVectorF genPos(nParticles);
+  TVectorF genNeg(nParticles);
+  TVectorF fMomNetPiGen(nMoments);
+  TVectorF fMomNetKaGen(nMoments);
+  TVectorF fMomNetPrGen(nMoments);
+  //
+  // Acceptance scan
+  for (Int_t ieta=0; ieta<fNEtaWinBinsMC; ieta++){
+    for (Int_t imom=0; imom<fNMomBinsMC; imom++){
+      //
+      // Initialize counters
+      Int_t nTracksgen=0;
+      for(Int_t i=0;i<nParticles; i++){ genPos[i]=0.; genNeg[i]=0.; }
+      for(Int_t i=0;i<nMoments; i++)  { fMomNetPiGen[i]=0.; fMomNetKaGen[i]=0.; fMomNetPrGen[i]=0.; }
+      //
+      // ----------------------------   MC generated pure MC particles  --------------------------
+      AliMCParticle *trackMCgen;
+      for (Int_t iTrack = 0; iTrack < fMCEvent->GetNumberOfTracks(); iTrack++)
+      {
+        //
+        // initialize the dummy particle id
+        fElMCgen =-100.; fPiMCgen =-100.; fKaMCgen =-100.; fPrMCgen =-100.;
+        trackMCgen = (AliMCParticle *)fMCEvent->GetTrack(iTrack);
+        if (!trackMCgen) continue;
+        // 
+        // Accepty only primary particles
+        if (!fMCStack->IsPhysicalPrimary(iTrack)) continue;
+        //
+        // select particle of interest
+        Int_t sign = trackMCgen->Charge();
+        Int_t pdg  = trackMCgen->Particle()->GetPdgCode();
+        Int_t absPDG = TMath::Abs(pdg);
+        Int_t iPart = -10;
+        if (absPDG == kPDGpi) {iPart = 0; fPiMCgen = iPart;} // select pi+
+        if (absPDG == kPDGka) {iPart = 1; fKaMCgen = iPart;} // select ka+
+        if (absPDG == kPDGpr) {iPart = 2; fPrMCgen = iPart;} // select pr+
+        if (iPart == -10) continue; // perfect PID cut
+        //
+        // Acceptance selection
+        Double_t ptotMCgen = 0.;
+        if(fUsePtCut==0) ptotMCgen = trackMCgen->P();
+        if(fUsePtCut==1) ptotMCgen = trackMCgen->P();
+        if(fUsePtCut==2) ptotMCgen = trackMCgen->Pt();
+        Double_t etaMCgen = trackMCgen->Eta();
+        Bool_t etaAcc  = (etaMCgen  >= fetaDownArr[ieta] && etaMCgen  <= fetaUpArr[ieta]);
+        Bool_t momAcc  = (ptotMCgen >= fpDownArr[imom]   && ptotMCgen <= fpUpArr[imom]);
+        Bool_t etaAccMaxWindow = (etaMCgen>=fEtaDown  && etaMCgen<=fEtaUp);
+        Bool_t momAccMaxWindow = (ptotMCgen>=fMomDown && ptotMCgen<=fMomUp);
+        Bool_t centAcc = (fCentrality>0);
+        //
+        // fill the moments
+        if (etaAcc && momAcc && centAcc){
+          nTracksgen++;
+          if ( fPiMCgen>-1 && pdg<0) genNeg[kPi]++;
+          if ( fKaMCgen>-1 && pdg<0) genNeg[kKa]++;
+          if ( fPrMCgen>-1 && pdg<0) genNeg[kPr]++;
+          // 
+          if ( fPiMCgen>-1 && pdg>0) genPos[kPi]++;
+          if ( fKaMCgen>-1 && pdg>0) genPos[kKa]++;
+          if ( fPrMCgen>-1 && pdg>0) genPos[kPr]++;
+        }
+
+      } // ======= end of track loop for generated particles =======
+      //
+      // -----------------------------------------------------------------------------------------
+      // --------------------   Calculation of moments on the event level  -----------------------
+      // -----------------------------------------------------------------------------------------
+      //
+      // Net Pions
+      fMomNetPiGen[kA]    = genPos[kPi];
+      fMomNetPiGen[kB]    = genNeg[kPi];
+      fMomNetPiGen[kAA]   = genPos[kPi]*genPos[kPi];
+      fMomNetPiGen[kBB]   = genNeg[kPi]*genNeg[kPi];
+      fMomNetPiGen[kAB]   = genPos[kPi]*genNeg[kPi];
+      fMomNetPiGen[kAAA]  = genPos[kPi]*genPos[kPi]*genPos[kPi];
+      fMomNetPiGen[kBBB]  = genNeg[kPi]*genNeg[kPi]*genNeg[kPi];
+      fMomNetPiGen[kAAB]  = genPos[kPi]*genPos[kPi]*genNeg[kPi];
+      fMomNetPiGen[kBBA]  = genNeg[kPi]*genNeg[kPi]*genPos[kPi];
+      fMomNetPiGen[kABBB] = genPos[kPi]*genNeg[kPi]*genNeg[kPi]*genNeg[kPi];
+      fMomNetPiGen[kAABB] = genPos[kPi]*genPos[kPi]*genNeg[kPi]*genNeg[kPi];
+      fMomNetPiGen[kAAAB] = genPos[kPi]*genPos[kPi]*genPos[kPi]*genNeg[kPi];
+      fMomNetPiGen[kAAAA] = genPos[kPi]*genPos[kPi]*genPos[kPi]*genPos[kPi];
+      fMomNetPiGen[kBBBB] = genNeg[kPi]*genNeg[kPi]*genNeg[kPi]*genNeg[kPi];
+      //
+      // Net Kaons
+      fMomNetKaGen[kA]    = genPos[kKa];
+      fMomNetKaGen[kB]    = genNeg[kKa];
+      fMomNetKaGen[kAA]   = genPos[kKa]*genPos[kKa];
+      fMomNetKaGen[kBB]   = genNeg[kKa]*genNeg[kKa];
+      fMomNetKaGen[kAB]   = genPos[kKa]*genNeg[kKa];
+      fMomNetKaGen[kAAA]  = genPos[kKa]*genPos[kKa]*genPos[kKa];
+      fMomNetKaGen[kBBB]  = genNeg[kKa]*genNeg[kKa]*genNeg[kKa];
+      fMomNetKaGen[kAAB]  = genPos[kKa]*genPos[kKa]*genNeg[kKa];
+      fMomNetKaGen[kBBA]  = genNeg[kKa]*genNeg[kKa]*genPos[kKa];
+      fMomNetKaGen[kABBB] = genPos[kKa]*genNeg[kKa]*genNeg[kKa]*genNeg[kKa];
+      fMomNetKaGen[kAABB] = genPos[kKa]*genPos[kKa]*genNeg[kKa]*genNeg[kKa];
+      fMomNetKaGen[kAAAB] = genPos[kKa]*genPos[kKa]*genPos[kKa]*genNeg[kKa];
+      fMomNetKaGen[kAAAA] = genPos[kKa]*genPos[kKa]*genPos[kKa]*genPos[kKa];
+      fMomNetKaGen[kBBBB] = genNeg[kKa]*genNeg[kKa]*genNeg[kKa]*genNeg[kKa];
+      //
+      // Net Protons
+      fMomNetPrGen[kA]    = genPos[kPr];
+      fMomNetPrGen[kB]    = genNeg[kPr];
+      fMomNetPrGen[kAA]   = genPos[kPr]*genPos[kPr];
+      fMomNetPrGen[kBB]   = genNeg[kPr]*genNeg[kPr];
+      fMomNetPrGen[kAB]   = genPos[kPr]*genNeg[kPr];
+      fMomNetPrGen[kAAA]  = genPos[kPr]*genPos[kPr]*genPos[kPr];
+      fMomNetPrGen[kBBB]  = genNeg[kPr]*genNeg[kPr]*genNeg[kPr];
+      fMomNetPrGen[kAAB]  = genPos[kPr]*genPos[kPr]*genNeg[kPr];
+      fMomNetPrGen[kBBA]  = genNeg[kPr]*genNeg[kPr]*genPos[kPr];
+      fMomNetPrGen[kABBB] = genPos[kPr]*genNeg[kPr]*genNeg[kPr]*genNeg[kPr];
+      fMomNetPrGen[kAABB] = genPos[kPr]*genPos[kPr]*genNeg[kPr]*genNeg[kPr];
+      fMomNetPrGen[kAAAB] = genPos[kPr]*genPos[kPr]*genPos[kPr]*genNeg[kPr];
+      fMomNetPrGen[kAAAA] = genPos[kPr]*genPos[kPr]*genPos[kPr]*genPos[kPr];
+      fMomNetPrGen[kBBBB] = genNeg[kPr]*genNeg[kPr]*genNeg[kPr]*genNeg[kPr];
+      //
+      // fill tree which contains moments
+      if(!fTreeSRedirector) return;
+      if (nTracksgen>0){
+        (*fTreeSRedirector)<<"mcGen"<<
+        "ngenacc="      << nTracksgen <<
+        "isample="      << sampleNo <<                 // sample id for subsample method
+        "cent="         << fCentrality <<              // centrality from V0
+        "centimp="      << fCentImpBin <<              // centraltiy from impact parameter
+        "impPar="       << fMCImpactParameter <<       // impact parameter taken from MC event header
+        //
+        "nhard="        << fNHardScatters <<           // Number of hard scatterings
+        "nproj="        << fNProjectileParticipants << // Number of projectiles participants
+        "ntarget="      << fNTargetParticipants <<     // Number of target participants
+        "nn="           << fNNColl <<                  // Number of N-N collisions
+        "nnw="          << fNNwColl <<                 // Number of N-Nwounded collisions
+        "nwn="          << fNwNColl <<                 // Number of Nwounded-N collisons
+        "nwnw="         << fNwNwColl <<                // Number of Nwounded-Nwounded collisions
+        //
+        "pDown="        << fpDownArr[imom] <<          // lower edge of momentum bin
+        "pUp="          << fpUpArr[imom] <<            // upper edge of momentum bin
+        "etaDown="      << fetaDownArr[ieta] <<        // lower edge of eta bin
+        "etaUp="        << fetaUpArr[ieta] <<          // upper edge of eta bin
+        //
+        "netPiMomGen.="   << &fMomNetPiGen <<         // momnets up to 3rd order for (net)pions on generated level with resonances
+        "netKaMomGen.="   << &fMomNetKaGen <<         // momnets up to 3rd order for (net)kaons on generated level with resonances
+        "netPrMomGen.="   << &fMomNetPrGen <<         // momnets up to 3rd order for (net)protons on generated level with resonances
+        "\n";
+      }
+
+
+    } // ======= end of momentum loop =======
+  } // ======= end of eta loop =======
+
+
+}
+//________________________________________________________________________
 void AliAnalysisTaskEbyeIterPID::FillTreeMC()
 {
 
@@ -3303,7 +3472,7 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
           Double_t etaMCgen = (fRapidityType==0) ? trackMCgen->Eta() :  trackMCgen->Y();
           Bool_t etaAcc  = (etaMCgen>=fetaDownArr[ieta] && etaMCgen<=fetaUpArr[ieta]);
           Bool_t momAcc  = (ptotMCgen>=fpDownArr[imom]  && ptotMCgen<fpUpArr[imom]);
-          Bool_t centAcc = ( fCentrality>0 );
+          Bool_t centAcc = (fCentrality>0);
           //
           if (iorig==0 && fPrMCgen>0 && fetaUpArr[ieta]>11.7 && fpUpArr[imom]>100.)
           {
