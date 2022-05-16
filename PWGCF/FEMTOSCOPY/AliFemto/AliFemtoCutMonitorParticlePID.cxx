@@ -76,10 +76,10 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   fParticleOrigin = new TH1D(TString::Format("POrigin%s", aName), "Mothers PDG Codes", 6000, 0.0, 6000.0);
   fParticleId     = new TH1D(TString::Format("PId%s", aName), "Particle PDG Codes", 6000, 0.0, 6000.0);
 
-  fTPCdEdx_pT        = new TH2D("TPCdEdx_pT", "TPC dEdx vs. pT", 100, 0.0, 5.0, 250, 0.0, 500.0);
-  fTOFTime_pT        = new TH2D("TOFTime_pT", "TOF Time vs. pT", 100, 0.0, 5.0, 400, -4000.0, 4000.0);//to be consistent with dE/dx
-  fTOFNSigma_pT      = new TH2D("TOFNSigma_pT","TOF NSigma vs. pT", 100, 0.0, 5.0, 100, -5.0, 5.0);
-  fTPCNSigma_pT      = new TH2D("TPCNSigma_pT","TPC NSigma vs. pT", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fTPCdEdx_pT        = new TH2D(TString::Format("TPCdEdx_pT%s", aName), "TPC dEdx vs. pT", 100, 0.0, 5.0, 250, 0.0, 500.0);
+  fTOFTime_pT        = new TH2D(TString::Format("TOFTime_pT%s", aName), "TOF Time vs. pT", 100, 0.0, 5.0, 400, -4000.0, 4000.0);//to be consistent with dE/dx
+  fTOFNSigma_pT      = new TH2D(TString::Format("TOFNSigma_pT%s", aName),"TOF NSigma vs. pT", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fTPCNSigma_pT      = new TH2D(TString::Format("TPCNSigma_pT%s", aName),"TPC NSigma vs. pT", 100, 0.0, 5.0, 100, -5.0, 5.0);
 
 }
 
@@ -236,15 +236,15 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
     if (fTOFParticle == 6) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCE(), aTrack->NSigmaTOFE() ) );
     if (fTOFParticle == 6) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCE(), aTrack->NSigmaTOFE());
 
-    if (fTOFParticle == 0) fTOFNSigma->Fill(tMom_pT, aTrack->NSigmaTOFPi());
-    if (fTOFParticle == 1) fTOFNSigma->Fill(tMom_pT, aTrack->NSigmaTOFK());
-    if (fTOFParticle == 2) fTOFNSigma->Fill(tMom_pT, aTrack->NSigmaTOFP());
-    if (fTOFParticle == 3) fTOFNSigma->Fill(tMom_pT, aTrack->NSigmaTOFD());
+    if (fTOFParticle == 0) fTOFNSigma_pT->Fill(tMom_pT, aTrack->NSigmaTOFPi());
+    if (fTOFParticle == 1) fTOFNSigma_pT->Fill(tMom_pT, aTrack->NSigmaTOFK());
+    if (fTOFParticle == 2) fTOFNSigma_pT->Fill(tMom_pT, aTrack->NSigmaTOFP());
+    if (fTOFParticle == 3) fTOFNSigma_pT->Fill(tMom_pT, aTrack->NSigmaTOFD());
 
-    if (fTOFParticle == 0) fTPCNSigma->Fill(tMom_pT, aTrack->NSigmaTPCPi());
-    if (fTOFParticle == 1) fTPCNSigma->Fill(tMom_pT, aTrack->NSigmaTPCK());
-    if (fTOFParticle == 2) fTPCNSigma->Fill(tMom_pT, aTrack->NSigmaTPCP());
-    if (fTOFParticle == 3) fTPCNSigma->Fill(tMom_pT, aTrack->NSigmaTPCD());
+    if (fTOFParticle == 0) fTPCNSigma_pT->Fill(tMom_pT, aTrack->NSigmaTPCPi());
+    if (fTOFParticle == 1) fTPCNSigma_pT->Fill(tMom_pT, aTrack->NSigmaTPCK());
+    if (fTOFParticle == 2) fTPCNSigma_pT->Fill(tMom_pT, aTrack->NSigmaTPCP());
+    if (fTOFParticle == 3) fTPCNSigma_pT->Fill(tMom_pT, aTrack->NSigmaTPCD());
 
 }
 
