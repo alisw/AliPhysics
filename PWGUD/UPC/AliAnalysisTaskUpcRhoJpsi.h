@@ -92,6 +92,8 @@ class AliAnalysisTaskUpcRhoJpsi : public AliAnalysisTaskSE {
   Float_t fKfVtxPos[3];
   Int_t fSpdVtxContrib;
   Float_t fSpdVtxPos[3];
+  Float_t vPt[4],vEta[4],vPhi[4],vPIDPi[4],vPIDMu[4],vPIDE[4],vPIDP[4];
+  Int_t vNum, vC[4];
   
   Bool_t fIsVtxContributor[4];
   
@@ -124,6 +126,7 @@ class AliAnalysisTaskUpcRhoJpsi : public AliAnalysisTaskSE {
   
   //EVE tree
   TTree *fEveTree;
+  TTree *fTrkTree;
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fPIDsigma;
   Int_t fChannel;
   
@@ -176,7 +179,7 @@ class AliAnalysisTaskUpcRhoJpsi : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcRhoJpsi(const AliAnalysisTaskUpcRhoJpsi&); //not implemented
   AliAnalysisTaskUpcRhoJpsi& operator =(const AliAnalysisTaskUpcRhoJpsi&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcRhoJpsi, 1); 
+  ClassDef(AliAnalysisTaskUpcRhoJpsi, 2); 
 };
 
 #endif

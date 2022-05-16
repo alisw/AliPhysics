@@ -64,7 +64,6 @@ using std::cout;
 using std::endl;
 
 //trees for UPC analysis,
-// michal.broz@cern.ch
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi() 
@@ -76,7 +75,7 @@ AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi()
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),fIR1Map(0),fIR2Map(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
-    fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
+    fEveTree(0),fTrkTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),
@@ -87,6 +86,7 @@ AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi()
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),
     fSPDfile(0),hBCmod4(0),hSPDeff(0)
+    //vPt(0),vEta(0),vPhi(0),vPIDPi(0),vPIDMu(0),vPIDE(0),vPIDP(0),vNum(0),vC(0)
 
 {
 
@@ -106,7 +106,7 @@ AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi(const char *name, Bool_t is
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),fIR1Map(0),fIR2Map(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
-    fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
+    fEveTree(0),fTrkTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),
@@ -117,6 +117,7 @@ AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi(const char *name, Bool_t is
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),
     fSPDfile(0),hBCmod4(0),hSPDeff(0)
+    //vPt(0),vEta(0),vPhi(0),vPIDPi(0),vPIDMu(0),vPIDE(0),vPIDP(0),vNum(0),vC(0)
 
 {
 
@@ -155,6 +156,15 @@ void AliAnalysisTaskUpcRhoJpsi::Init()
 	fPIDTOFProton[i] = -666;
 	
 	fIsVtxContributor[i] = kFALSE;
+  	vPt[i] = -666;
+	vEta[i] = - 666;
+	vPhi[i] = - 666;
+	vPIDPi[i] = - 666;
+	vPIDMu[i] = - 666;
+	vPIDE[i] = - 666;
+	vPIDP[i] = - 666;
+	vC[i] = -666; 
+
 	
 	fZNATDCm[i] = -666;
         fZNCTDCm[i] = -666;
@@ -169,7 +179,7 @@ void AliAnalysisTaskUpcRhoJpsi::Init()
 	fKfVtxPos[i] = -666;
 	fSpdVtxPos[i] = -666;
 	}
-
+	vNum = -1;
 }//Init
 
 //_____________________________________________________________________________
@@ -466,7 +476,6 @@ void AliAnalysisTaskUpcRhoJpsi::UserCreateOutputObjects()
   fHistPsi2sMassCoherent = new TH1D("fHistPsi2sMassAllCoherent","Invariant mass of coherent #psi(2s) candidates",50,2.5,5.5);
   fHistPsi2sMassCoherent->GetXaxis()->SetTitle("Invariant mass(l^{+}l^{-}#pi^{+}#pi^{-}) (GeV/c)");
   fListHist->Add(fHistPsi2sMassCoherent);
-  
   fEveTree = new TTree("fEveTree", "fEveTree");
   fEveTree ->Branch("fPt", &fPt, "fPt/F");
   fEveTree ->Branch("fY", &fY, "fY/F");
@@ -480,6 +489,19 @@ void AliAnalysisTaskUpcRhoJpsi::UserCreateOutputObjects()
   fEveTree ->Branch("fDataFilnam", &fDataFilnam);
   fEveTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L"); 
   fListHist->Add(fEveTree);
+  fTrkTree = new TTree("fTrkTree", "fTrkTree");
+  fTrkTree ->Branch("vNum", &vNum, "vNum/I");
+  fTrkTree ->Branch("vPt", &vPt[0], "vPt[4]/F");
+  fTrkTree ->Branch("vEta", &vEta[0], "vEta[4]/F");
+  fTrkTree ->Branch("vPhi", &vPhi[0], "vPhi[4]/F");
+  fTrkTree ->Branch("vC", &vC[0], "vC[4]/I");
+  fTrkTree ->Branch("vPIDPi", &vPIDPi[0], "vPIDPi[4]/F");
+  fTrkTree ->Branch("vPIDMu", &vPIDMu[0], "vPIDMu[4]/F");
+  fTrkTree ->Branch("vPIDE", &vPIDE[0], "vPIDE[4]/F");
+  fTrkTree ->Branch("vPIDP", &vPIDP[0], "vPIDP[4]/F");
+  fListHist->Add(fTrkTree);
+  fListHist->Add(fPsi2sTree);
+  fListHist->Add(fJPsiTree);
   
   
   fListSystematics = new TList();
@@ -497,8 +519,8 @@ void AliAnalysisTaskUpcRhoJpsi::UserCreateOutputObjects()
   hBCmod4 = hBCmod4_2D->ProjectionY();
   fSPDfile->Close();
   
-  PostData(1, fJPsiTree);
-  PostData(2, fPsi2sTree);
+//  PostData(1, fJPsiTree);
+//  PostData(2, fPsi2sTree);
   PostData(3, fListTrig);
   PostData(4, fListHist);
 
@@ -555,7 +577,7 @@ void AliAnalysisTaskUpcRhoJpsi::UserExec(Option_t *)
   //cout<<"#################### Next event ##################"<<endl;
 
   if( fType == 0 ){
-    	//RunESDtrig(); 
+    	RunESDtrig(); 
   	if(fRunHist) RunESDhist();
 	if(fRunTree) RunESDtree();
 	}
@@ -1378,6 +1400,17 @@ void AliAnalysisTaskUpcRhoJpsi::RunESDtrig()
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
+  if(fRunNum>=295881){
+    if(trigger.Contains("CCUP30-B-SPD2-CENTNOTRD")) fHistCcup30TriggersPerRun->Fill(fRunNum); //CCUP30 triggers
+    if(trigger.Contains("CCUP31-B-SPD2-CENTNOTRD")) fHistCcup31TriggersPerRun->Fill(fRunNum); //CCUP31 triggers
+    if(fRunNum>=296594 && trigger.Contains("CCUP29-U-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+    if(fRunNum<296594  && trigger.Contains("CCUP29-B-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+	}
+  else{ 
+	if(trigger.Contains("CCUP29-B-NOPF-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+	if(trigger.Contains("CCUP30-B-NOPF-CENTNOTRD")) fHistCcup30TriggersPerRun->Fill(fRunNum); //CCUP30 triggers
+	if(trigger.Contains("CCUP31-B-NOPF-CENTNOTRD")) fHistCcup31TriggersPerRun->Fill(fRunNum); //CCUP31 triggers
+	}
   
   if(esd->GetHeader()->IsTriggerInputFired("1ZED")) fHistZedTriggersPerRun->Fill(fRunNum); //1ZED trigger inputs
   
@@ -1509,6 +1542,7 @@ void AliAnalysisTaskUpcRhoJpsi::RunESDhist()
 				   
       		Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
     		Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+      		Float_t fPIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
 		Float_t fPIDTOFProton = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
 		
 		vElectron[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
@@ -1522,8 +1556,19 @@ void AliAnalysisTaskUpcRhoJpsi::RunESDhist()
 		nSigmaProton[iTrack] = fPIDTOFProton;
 		
 		qLepton[iTrack] = trk->Charge();
-				
-  		}		
+		vC[iTrack]=trk->Charge();		
+		vPt[iTrack]=trk->Pt();		
+		vEta[iTrack]=trk->Eta();		
+		vPhi[iTrack]=trk->Phi();
+		vPIDPi[iTrack]=fPIDTPCPion;		
+		vPIDMu[iTrack]=fPIDTPCMuon;		
+		vPIDE[iTrack]=fPIDTPCElectron;		
+		vPIDP[iTrack]=fPIDTOFProton;		
+  		}
+		vC[2]=0;		
+		vC[3]=0;	
+		vNum = nGoodTracks;
+		fTrkTree->Fill();	
   	  if(qLepton[0]*qLepton[1] > 0) fHistNeventsJPsi->Fill(6);
 	  if(qLepton[0]*qLepton[1] < 0){
 		fHistNeventsJPsi->Fill(7);
@@ -1573,11 +1618,13 @@ void AliAnalysisTaskUpcRhoJpsi::RunESDhist()
   	  fHistNeventsPsi2s->Fill(6);
   	  for(Int_t iTrack=0; iTrack<4; iTrack++){
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[iTrack]);
+			Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+    			Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+      			Float_t fPIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+			Float_t fPIDTOFProton = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
 
 		if(trk->Pt() > MeanPt){
       			qLepton[nLepton] = trk->Charge();
-			Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
-    			Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 
 			nSigmaMuon[nLepton] = fPIDTPCMuon;
     			nSigmaElectron[nLepton] = fPIDTPCElectron;
@@ -1596,7 +1643,17 @@ void AliAnalysisTaskUpcRhoJpsi::RunESDhist()
 			vPion[nPion].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
 			nPion++;
 			}
+		vC[iTrack]=trk->Charge();		
+		vPt[iTrack]=trk->Pt();		
+		vEta[iTrack]=trk->Eta();		
+		vPhi[iTrack]=trk->Phi();
+		vPIDPi[iTrack]=fPIDTPCPion;		
+		vPIDMu[iTrack]=fPIDTPCMuon;		
+		vPIDE[iTrack]=fPIDTPCElectron;		
+		vPIDP[iTrack]=fPIDTOFProton;		
 	}
+		vNum = nGoodTracks;
+		fTrkTree->Fill();	
 	if((nLepton == 2) && (nPion == 2)){
 		fHistNeventsPsi2s->Fill(7);
 		if(qLepton[0]*qLepton[1] > 0) fHistNeventsPsi2s->Fill(8);
