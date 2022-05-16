@@ -674,7 +674,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 void AliAnalysisTaskCorrForNonlinearFlow::Terminate(Option_t *)
 {
     if (fPoolMgr) {
-        delete fPoolMgr;
+        // delete fPoolMgr;
     }
 }
 
