@@ -724,12 +724,10 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
   hNhits[0] = new TH1D("hNhitsBeforeCut", "", 200, 0., 200.);
   hNhits[1] = new TH1D("hNhitsAfterCut",  "", 200, 0., 200.);
   hPDedx = new TH2D("hPDedx", "", 400, -10., 10., 400, 0, 1000);
-  if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
-    hDcaXy[0] = new TH1D("hDcaXyBeforeCut", "", 100, 0., 10.);
-    hDcaXy[1] = new TH1D("hDcaXyAfterCut",  "", 100, 0., 10.);
-    hDcaZ[0] = new TH1D("hDcaZBeforeCut", "", 100, 0., 10.);
-    hDcaZ[1] = new TH1D("hDcaZAfterCut",  "", 100, 0., 10.);
-  }
+  hDcaXy[0] = new TH1D("hDcaXyBeforeCut", "", 100, 0., 10.);
+  hDcaXy[1] = new TH1D("hDcaXyAfterCut",  "", 100, 0., 10.);
+  hDcaZ[0] = new TH1D("hDcaZBeforeCut", "", 100, 0., 10.);
+  hDcaZ[1] = new TH1D("hDcaZAfterCut",  "", 100, 0., 10.);
 
   if (fTPCEstOn){
     fOutputList->Add(hPt);
@@ -742,12 +740,10 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
     fOutputList->Add(hNhits[0]);
     fOutputList->Add(hNhits[1]);
     fOutputList->Add(hPDedx);
-    if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
-      fOutputList->Add(hDcaXy[0]);
-      fOutputList->Add(hDcaXy[1]);
-      fOutputList->Add(hDcaZ[0]);
-      fOutputList->Add(hDcaZ[1]);
-    }
+    fOutputList->Add(hDcaXy[0]);
+    fOutputList->Add(hDcaXy[1]);
+    fOutputList->Add(hDcaZ[0]);
+    fOutputList->Add(hDcaZ[1]);
   }
 
   // V0 Calib
@@ -2145,7 +2141,7 @@ bool AliAnalysisTaskEPCalib::AcceptAODTrack(AliAODEvent* fAOD, AliAODTrack *trac
     hEta[1]->Fill(eta);
     hNhits[1]->Fill(nhits);
     hPDedx->Fill(track->P()*charge, dedx);
-    if ((fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18q")) && fDcaCutz==2.0){
+    if ((fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) && fDcaCutz==2.0){
       fDcaCutxy = 7*(0.0026 + 0.005/pow(pt, 1.01));
       //------------------
       // dca cut
