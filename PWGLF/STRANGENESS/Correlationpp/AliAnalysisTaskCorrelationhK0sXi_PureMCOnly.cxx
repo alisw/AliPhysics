@@ -416,7 +416,7 @@ AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::~AliAnalysisTaskCorrelationhK0sXi_P
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserCreateOutputObjects()
 {
-  Int_t NumBinsMult=300;
+  Int_t NumBinsMult=60;
   if (fisHM) NumBinsMult=100;
   Float_t UpperLimitMult =300;
   if (fisHM) UpperLimitMult =0.1;
