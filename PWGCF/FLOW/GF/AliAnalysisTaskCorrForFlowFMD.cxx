@@ -960,7 +960,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
 
-            fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff)));
+            fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff));
           }
         }
       }
