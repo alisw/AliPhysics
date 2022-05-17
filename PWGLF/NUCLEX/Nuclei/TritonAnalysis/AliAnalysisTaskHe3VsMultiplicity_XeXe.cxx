@@ -66,9 +66,13 @@ fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
 fpar1_sigma_TOF(0),
 multPercentile_V0M(-1),
+multPercentile_V0A(0),
 IsPrimaryCandidate(0),
 pt(0),
 p(0),
+px(0),
+py(0),
+pz(0),
 eta(0),
 y(0),
 q(0),
@@ -137,10 +141,14 @@ fpar0_mean_TOF(0),
 fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
 fpar1_sigma_TOF(0),
+multPercentile_V0A(0),
 multPercentile_V0M(-1),
 IsPrimaryCandidate(0),
 pt(0),
 p(0),
+px(0),
+py(0),
+pz(0),
 eta(0),
 y(0),
 q(0),
@@ -280,9 +288,13 @@ void AliAnalysisTaskHe3VsMultiplicity_XeXe::UserCreateOutputObjects()
     //Reduced Tree (He3)
     reducedTree_He3 = new TTree("reducedTree_He3","reducedTree_He3");
     reducedTree_He3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
+    reducedTree_He3 -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
     reducedTree_He3 -> Branch("IsPrimaryCandidate",&IsPrimaryCandidate,"IsPrimaryCandidate/O");
     reducedTree_He3 -> Branch("pt",&pt,"pt/D");
     reducedTree_He3 -> Branch("p",&p,"p/D");
+    reducedTree_He3 -> Branch("px",&px,"px/D");
+    reducedTree_He3 -> Branch("py",&py,"py/D");
+    reducedTree_He3 -> Branch("pz",&pz,"pz/D");
     reducedTree_He3 -> Branch("eta",&eta,"eta/D");
     reducedTree_He3 -> Branch("y",&y,"y/D");
     reducedTree_He3 -> Branch("q",&q,"q/I");
@@ -395,21 +407,25 @@ void AliAnalysisTaskHe3VsMultiplicity_XeXe::UserExec(Option_t *)
         }
         if (IsHe3Candidate(track)){
 
-            pt                          = track -> Pt();
-            p                           = track -> P();
+            pt = track -> Pt();
+            p  = track -> P();
+            px = track -> Px();
+            py = track -> Py();
+            pz = track -> Pz();
 
-            q                           = (Int_t) track -> Charge();
-            eta                         = track -> Eta();
+
+            q  = (Int_t) track -> Charge();
+            eta = track -> Eta();
 
             //Rapidity Calculation
             Double_t m  = AliPID::ParticleMass(AliPID::kHe3);
-            Double_t px = track -> Px();
-            Double_t py = track -> Py();
-            Double_t pz = track -> Pz();
-            Double_t E = TMath::Sqrt(m*m + px*px + py*py + pz*pz);
-            TLorentzVector P (px,py,pz,E);
+            Double_t fpx = track -> Px();
+            Double_t fpy = track -> Py();
+            Double_t fpz = track -> Pz();
+            Double_t E = TMath::Sqrt(m*m + fpx*fpx + fpy*fpy + fpz*fpz);
+            TLorentzVector P (fpx,fpy,fpz,E);
+            y = P.Rapidity();
 
-            y                           = P.Rapidity();
 
             IsPrimaryCandidate          = track->IsPrimaryCandidate();
             //DCA
@@ -478,6 +494,7 @@ Bool_t AliAnalysisTaskHe3VsMultiplicity_XeXe::GetInputEvent ()  {
     histoNumberOfEvents -> Fill(2.5);
     Double_t centrality = multiplicitySelection->GetMultiplicityPercentile(fCentralityEstimator);
 
+    multPercentile_V0A  = multiplicitySelection->GetMultiplicityPercentile("V0A");
 
     //Selection of Centrality Range
     if (centrality<fCentralityMin || centrality>=fCentralityMax ) return false;
@@ -559,11 +576,11 @@ Bool_t AliAnalysisTaskHe3VsMultiplicity_XeXe::PassedTrackQualityCutsNoDCA (AliAO
 
     //Rapidity Calculation
     Double_t m  = AliPID::ParticleMass(AliPID::kHe3);
-    Double_t px = track -> Px();
-    Double_t py = track -> Py();
-    Double_t pz = track -> Pz();
-    Double_t E = TMath::Sqrt(m*m + px*px + py*py + pz*pz);
-    TLorentzVector P (px,py,pz,E);
+    Double_t fpx = track -> Px();
+    Double_t fpy = track -> Py();
+    Double_t fpz = track -> Pz();
+    Double_t E = TMath::Sqrt(m*m + fpx*fpx + fpy*fpy + fpz*fpz);
+    TLorentzVector P (fpx,fpy,fpz,E);
     Double_t y = P.Rapidity();
 
 

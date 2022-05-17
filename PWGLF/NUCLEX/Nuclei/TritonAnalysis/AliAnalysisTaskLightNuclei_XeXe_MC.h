@@ -1,7 +1,10 @@
-#ifndef AliAnalysisTaskHe3VsMultiplicity_XeXe_cxx
-#define AliAnalysisTaskHe3VsMultiplicity_XeXe_cxx
-
-
+#ifndef   AliAnalysisTaskLightNuclei_XeXe_MC_cxx
+#define   AliAnalysisTaskLightNuclei_XeXe_MC_cxx
+#include "AliMCEventHandler.h"
+#include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
+#include "TClonesArray.h"
+#include "AliMCEvent.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliMultSelection.h"
 #include "AliAnalysisUtils.h"
@@ -19,15 +22,40 @@
 #include "TH1F.h"
 #include "TH2F.h"
 
-class AliAnalysisTaskHe3VsMultiplicity_XeXe : public AliAnalysisTaskSE {
+
+class AliAnalysisTaskLightNuclei_XeXe_MC : public AliAnalysisTaskSE {
 
 public:
-    AliAnalysisTaskHe3VsMultiplicity_XeXe();
-    AliAnalysisTaskHe3VsMultiplicity_XeXe(const char *name);
-    virtual ~AliAnalysisTaskHe3VsMultiplicity_XeXe();
+    AliAnalysisTaskLightNuclei_XeXe_MC();
+    AliAnalysisTaskLightNuclei_XeXe_MC(const char *name);
+    virtual ~AliAnalysisTaskLightNuclei_XeXe_MC();
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec (Option_t *option);
+
+    Bool_t      GetInputEvent ();
+    Bool_t      PassedMinimalTrackQualityCuts 		(AliAODTrack *track);
+    Bool_t      PassedCandidateSelectionHe3    		(AliAODTrack *track);
+    Bool_t      PassedCandidateSelectionTriton 		(AliAODTrack *track);
+    Bool_t      PassedCandidateSelectionHelium3	    (AliAODTrack *track);
+    Double_t    GetDCAxy                      		(AliAODTrack *track);
+    Double_t    GetDCAz              		        (AliAODTrack *track);
+
+    Bool_t      PassedTrackQualityCutsNoDCA         (AliAODTrack *track);
+    Bool_t      PassedTrackQualityCuts              (AliAODTrack *track);
+    Bool_t      IsHe3Candidate                      (AliAODTrack *track);
+    Bool_t      IsCleanHe3Candidate                 (AliAODTrack *track);
+    Double_t    Centered_nsigmaTPC                  (AliAODTrack *track);
+    Double_t    Centered_nsigmaTOF                  (AliAODTrack *track);
+    Bool_t      PassedTOFSelection                  (AliAODTrack *track);
+    Bool_t      PassedTPCSelection                  (AliAODTrack *track);
+
+
+
+
+
+    virtual void   Terminate(Option_t *);
+
 
     void SetCentralityRange (Double_t CentralityMin, Double_t CentralityMax)  {
 
@@ -83,27 +111,20 @@ public:
     }
 
 
-
-    Bool_t      GetInputEvent ();
-    Bool_t      PassedTrackQualityCutsNoDCA (AliAODTrack *track);
-    Bool_t      PassedTrackQualityCuts      (AliAODTrack *track);
-    Bool_t      IsHe3Candidate              (AliAODTrack *track);
-    Bool_t      IsCleanHe3Candidate         (AliAODTrack *track);
-    Double_t    Centered_nsigmaTPC          (AliAODTrack *track);
-    Double_t    Centered_nsigmaTOF          (AliAODTrack *track);
-    Bool_t      PassedTOFSelection          (AliAODTrack *track);
-    Bool_t      PassedTPCSelection          (AliAODTrack *track);
-    Double_t    GetDCAxy                    (AliAODTrack *track);
-    Double_t    GetDCAz                     (AliAODTrack *track);
-
-    virtual void   Terminate(Option_t *);
-
 private:
-    AliAODEvent      *fAODevent;//!
-    AliPIDResponse   *fPIDResponse;//!
-    AliEventCuts      fAODeventCuts;//
-    AliAnalysisUtils *fUtils;//!
-    TList            *fOutputList;//!
+    AliAODEvent       *fAODevent;//!
+    AliMCEvent        *fMCevent;//!
+    AliPIDResponse    *fPIDResponse;//!
+    AliEventCuts       fAODeventCuts;//
+    AliAnalysisUtils  *fUtils;//!
+    TList             *fOutputList;//!
+    TList             *fQAList;//!
+    AliAODMCHeader    *fAODMCHeader;//!
+    TClonesArray      *fAODArrayMCParticles;//!
+    AliMCEventHandler *fMCEventHandler;//!
+    TTree             *reducedTree_gen;//!
+    TTree             *reducedTree_rec;//!
+
 
     Double_t    fCentralityMin;//
     Double_t    fCentralityMax;//
@@ -111,7 +132,6 @@ private:
     Double_t    fVertexZmax;//
     Int_t       fNumberVertexContributorsMin;//
     const char *fCentralityEstimator;//
-
     Double_t    fPtMin;//
     Double_t    fPtMax;//
     Double_t    fEtaMax;//
@@ -128,8 +148,6 @@ private:
     Double_t    fnSigmaTOFmax;//
     Double_t    fnSigmaTPCmax;//
     Int_t       fTRDntracklets;//
-
-
     Double_t    fpar0_mean_TPC;//
     Double_t    fpar1_mean_TPC;//
     Double_t    fpar0_sigma_TPC;//
@@ -138,81 +156,83 @@ private:
     Double_t    fpar0_sigma_TOF;//
     Double_t    fpar1_sigma_TOF;//
 
-    //Histograms
+    //Histograms for He3
     TH1F        *histoNumberOfEvents;//!
-
     TH2F        *histoNsigmaTPCHe3_vs_pt;//!
     TH2F        *histoNsigmaTOFHe3_vs_pt;//!
-
     TH2F        *histoNsigmaTPCantiHe3_vs_pt;//!
     TH2F        *histoNsigmaTOFantiHe3_vs_pt;//!
-
     TH2F        *histoNsigmaTPCHe3_vs_pt_centered;//!
     TH2F        *histoNsigmaTPCantiHe3_vs_pt_centered;//!
-
     TH2F        *histoNsigmaTOFHe3_vs_pt_centered;//!
     TH2F        *histoNsigmaTOFantiHe3_vs_pt_centered;//!
-
     TH2F        *histoDCAxyHe3_vs_pt;//!
     TH2F        *histoDCAxyAntiHe3_vs_pt;//!
-
     TH2F        *histoNsigmaTOFHe3_vs_pt_trd;//!
     TH2F        *histoNsigmaTOFantiHe3_vs_pt_trd;//!
-
     TH2F        *histoNsigmaTPCHe3_vs_p;//!
     TH2F        *histoNsigmaTPCantiHe3_vs_p;//!
-
     TH2F        *histoNsigmaTOFHe3_vs_p;//!
     TH2F        *histoNsigmaTOFantiHe3_vs_p;//!
-
     TH2F        *histoNsigmaTPCHe3_vs_p_notof;//!
     TH2F        *histoNsigmaTPCantiHe3_vs_p_notof;//!
 
-    //Reduced Trees
-    TTree *reducedTree_He3;//!
 
-    Double_t    multPercentile_V0M;//
-    Double_t    multPercentile_V0A;//
-    Double_t    IsPrimaryCandidate;//
-    Double_t    pt;//
-    Double_t    p;//
-    Double_t    px;//
-    Double_t    py;//
-    Double_t    pz;//
-    Double_t    eta;//
-    Double_t    y;//
-    Int_t       q;//
-    Double_t    dcaxy;//
-    Double_t    dcaz;//
-    Int_t       nTPC_Clusters;//
-    Int_t       nITS_Clusters;//
-    Int_t       nTPC_FindableClusters;//
-    Int_t       nTPC_CrossedRows;//
-    Int_t       nTPC_Clusters_dEdx;//
-    bool        HasPointOnITSLayer0;//
-    bool        HasPointOnITSLayer1;//
-    bool        HasPointOnITSLayer2;//
-    bool        HasPointOnITSLayer3;//
-    bool        HasPointOnITSLayer4;//
-    bool        HasPointOnITSLayer5;//
-    bool        HasSharedPointOnITSLayer0;//
-    bool        HasSharedPointOnITSLayer1;//
-    Double_t    chi2_TPC;//check
-    Double_t    chi2_NDF;//check
-    Double_t    chi2_ITS;//check
-    Double_t    ITSsignal;//
-    Double_t    TPCsignal;//
-    Double_t    TOFsignal;//
-    Double_t    trackLength;//
-    Double_t    TPCmomentum;//
-    Double_t    nSigmaITS;//
-    Double_t    nSigmaTPC;//
-    Double_t    nSigmaTOF;//
+    // Tree variables
+    Float_t centrality;//
+    Float_t multPercentile_V0M;//
+    Int_t   particleType;
+    Float_t xVertex;//
+    Float_t yVertex;//
+    Float_t zVertex;//
+    Int_t   ID_event;//
+    Int_t   Helium3Sec;//
+    Int_t   TritonSec;//
+    Int_t   lp;//
+    Float_t px;//
+    Float_t py;//
+    Float_t pz;//
+    Float_t pt;//
+    Float_t pt_particle;//
+    Float_t pz_particle;//
+    Float_t deltapt;//
+    Float_t deltapz;//
+    Int_t   charge;//
+    Double_t dcaxy;//
+    Double_t dcaz;//
+    Int_t   trackType;//
+    Int_t   nTPC_Clusters;//
+    Int_t   nITS_Clusters;//
+    Int_t   nTPC_Clusters_dEdx;//
+    Int_t   nTPC_FindableClusters;//
+    Int_t   nTPC_CrossedRows;//
+    Int_t   HasPointOnITSLayer0;//
+    Int_t   HasPointOnITSLayer1;//
+    Int_t   HasPointOnITSLayer2;//
+    Int_t   HasPointOnITSLayer3;//
+    Int_t   HasPointOnITSLayer4;//
+    Int_t   HasPointOnITSLayer5;//
+    Float_t chi2_NDF;//
+    Float_t chi2_ITS;//
+    Float_t nSigmaITS_He3;
+    Float_t nSigmaTPC_He3;//
+    Float_t nSigmaTOF_He3;//
+    Float_t nSigmaITS_Triton;//
+    Float_t nSigmaTPC_Triton;//
+    Float_t nSigmaTOF_Triton;//
+    Int_t   PrimaryParticle;//
+    Int_t   SecondaryMaterial;//
+    Int_t   SecondaryDecay;//
+    Int_t   PrimaryTrack;//
+    Double_t TPC_signal;//
+    Double_t ITS_signal;//
+    Int_t   TRDntracklets;//
+    Int_t   hasTOFhit;//
 
 
-    AliAnalysisTaskHe3VsMultiplicity_XeXe(const AliAnalysisTaskHe3VsMultiplicity_XeXe&);
-    AliAnalysisTaskHe3VsMultiplicity_XeXe& operator=(const AliAnalysisTaskHe3VsMultiplicity_XeXe&);
-    ClassDef(AliAnalysisTaskHe3VsMultiplicity_XeXe, 1);
 
+    AliAnalysisTaskLightNuclei_XeXe_MC(const AliAnalysisTaskLightNuclei_XeXe_MC&);
+    AliAnalysisTaskLightNuclei_XeXe_MC& operator=(const AliAnalysisTaskLightNuclei_XeXe_MC&);
+    ClassDef(AliAnalysisTaskLightNuclei_XeXe_MC, 1);
 };
 #endif
