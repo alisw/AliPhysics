@@ -70,6 +70,7 @@
 #pragma link C++ class AliAnalysisTaskTritonESD_PbPb+;
 #pragma link C++ class AliAnalysisTaskTritonVsMultiplicity_XeXe+;
 #pragma link C++ class AliAnalysisTaskHe3VsMultiplicity_XeXe+;
+#pragma link C++ class AliAnalysisTaskLightNuclei_XeXe_MC+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertriton+;
