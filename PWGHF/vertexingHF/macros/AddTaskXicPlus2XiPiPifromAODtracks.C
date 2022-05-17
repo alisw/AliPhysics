@@ -104,6 +104,9 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
   AliAnalysisDataContainer *coutputXic9 = mgr->CreateContainer(Form("XicPlusEventvariables%s",outputFileName.Data()),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());	//jcho, Event variables tree
   mgr->ConnectOutput(task,9,coutputXic9);
 
+  AliAnalysisDataContainer *coutputXic10 = mgr->CreateContainer(Form("HMV0_0to100%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(task,10,coutputXic10);
+
   return task;
 
 }

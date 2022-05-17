@@ -198,7 +198,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter_MB_0p1to30 = nullptr;
   AliNormalizationCounter *fCounter_MB_30to100 = nullptr;
   AliNormalizationCounter *fCounter_HMV0_0to0p1 = nullptr;
-
+  AliNormalizationCounter *fCounter_HMV0_0to100 = nullptr;
   Float_t fNewCentrality = 9999; 
   Float_t fCentralSPD = 9999;
   Float_t fNSPDTracklets = 9999;
