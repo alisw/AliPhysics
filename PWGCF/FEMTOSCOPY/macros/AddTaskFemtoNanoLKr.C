@@ -55,7 +55,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     // by default in AliFemtoDreamv0Cuts, the parameter SetCutInvMass is 0.004. It should stay as it is, but we want to
     // do an analysis with all the mass spectrum, so just for this analysis, we ll change this parameter. Afterwards we
     // will put again as it is
-    v0Cuts->SetCutInvMass(3);
+    // v0Cuts->SetCutInvMass(3);
     v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
     v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
     v0Cuts->SetPDGCodePosDaug(2212);  // Proton
@@ -68,7 +68,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     PosAntiv0Daug->SetCutCharge(1);
     AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
     NegAntiv0Daug->SetCutCharge(-1);
-    Antiv0Cuts->SetCutInvMass(3);
+    // Antiv0Cuts->SetCutInvMass(3);
     Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
     Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
     Antiv0Cuts->SetPDGCodePosDaug(211);   // Pion
@@ -247,8 +247,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     /// Setting all cuts for systematics
 
     // Variation cuts
-    const float KaonPtlow = 0.09;
-    const float KaonPtup = 0.19;
+    const float KaonPtlow = 0.1;
+    const float KaonPtup = 0.2;
     const float KaonEtaLow = 0.75;
     const float KaonEtaUp = 0.85;
     const float KaonNClsLow = 70;
