@@ -2423,7 +2423,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SplitEnergy(absCellIdList[0], absCellIdList[1],
                                                                      clus, fInputEvent, fIsMC, clusSub1, clusSub2);
     }
-    if(fDoJetAnalysis){
+
+    if(fDoJetAnalysis && fIsMC > 0){
       // Cluster is in Jet but not in true Jet
       if(passedJetCriterium && !passedTrueJetCriterium){
         if(!fDoLightOutput) fHistoClusMergedPtvsM02FakeJet[fiCut]->Fill( PhotonCandidate->Pt(),
