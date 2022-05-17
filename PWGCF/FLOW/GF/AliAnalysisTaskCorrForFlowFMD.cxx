@@ -877,6 +877,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigCharge = track->Charge();
         binscont[5] = trigPt;
         if(spec > 3) binscont[4] = track->M();
+        Double_t trigEff = 1.0;
+        if(fUseEfficiency) {
+          trigEff = GetEff(trigPt, spec, trigEta);
+          if(trigEff < 0.001) continue;
+        }
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -888,6 +893,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assEta = trackAss->Eta();
             Double_t assPhi = trackAss->Phi();
             Double_t assCharge = trackAss->Charge();
+            Double_t assEff = 1.0;
+            if(fUseEfficiency) {
+              assEff = GetEff(assPt, 0, assEta);
+              if(assEff < 0.001) continue;
+            }
 
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
@@ -911,7 +921,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
               }
             }
 
-            fhME[spec]->Fill(binscont,0,1./(Double_t)nMix);
+            fhME[spec]->Fill(binscont,0,1./((Double_t)nMix*(trigEff*assEff)));
           }
         }
       }
@@ -931,6 +941,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigPhi = track->Phi();
         binscont[5] = trigPt;
         if(spec > 3) binscont[4] = track->M();
+        Double_t trigEff = 1.0;
+        if(fUseEfficiency) {
+          trigEff = GetEff(trigPt, spec, trigEta);
+          if(trigEff < 0.001) continue;
+        }
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -945,7 +960,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
 
-            fhME[spec]->Fill(binscont,0,assMult/(Double_t)nMix);
+            fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff));
           }
         }
       }
