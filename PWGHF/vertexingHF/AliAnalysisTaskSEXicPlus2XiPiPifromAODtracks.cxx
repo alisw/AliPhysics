@@ -184,6 +184,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fCounter_MB_0to100(0), // jcho
   fCounter_MB_0p1to30(0), // jcho
   fCounter_MB_30to100(0), // jcho
+  fCounter_HMV0_0to100(0),	//jcho
   fCounter_HMV0_0to0p1(0), // jcho
   hCentrality(0), //jcho
   fCentralityOfEvt(0)  //jcho
@@ -284,6 +285,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fCounter_MB_0to100(0), // jcho
   fCounter_MB_0p1to30(0), // jcho
   fCounter_MB_30to100(0), // jcho
+  fCounter_HMV0_0to100(0),	//jcho
   fCounter_HMV0_0to0p1(0), // jcho
   hCentrality(0),  //jcho
   fCentralityOfEvt(0)  //jcho
@@ -306,6 +308,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   DefineOutput(6,AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0; //jcho, MB[0.1,30] 
   DefineOutput(7,AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0; //jcho, MB[30,100]
   DefineOutput(8,AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0; //jcho, HM[0,0.1] 
+  DefineOutput(10,AliNormalizationCounter::Class()); fCounter_HMV0_0to100 = 0;	//jcho, HM[0,100]
 
   if (fHMTrigOn==true) DefineOutput(9, TTree::Class()); //jcho, Event variable tree
 
@@ -376,6 +379,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::~AliAnalysisTaskSEXicPlus2XiPiPifr
   delete fCounter_MB_0to100; //jcho
   delete fCounter_MB_0p1to30; //jcho
   delete fCounter_MB_30to100; //jcho
+  delete fCounter_HMV0_0to100;	//jcho
   delete fCounter_HMV0_0to0p1; //jcho
  
 }
@@ -451,11 +455,12 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   Bool_t fIsTriggerNotOK = fAnalCuts->IsEventRejectedDueToTrigger();
   if(!fIsTriggerNotOK) fCEvents->Fill(3);
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent); 
-  if(!fIsEventSelected) {
+
+/*  if(!fIsEventSelected) {
     //cout<<"Why: "<<fAnalCuts->GetWhyRejection()<<endl;
     delete fV1;
     return;
-  }
+  } */ // jcho, Comment out this part to take the HM triggered events into account
   
   //cout<<fabs(aodEvent->GetPrimaryVertex()->GetZ()-aodEvent->GetPrimaryVertexSPD()->GetZ())<<endl;
   
@@ -593,6 +598,10 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 	   } //IsTrigFired_MB
 	   if (IsTrigFired_HMV0)
 	   {
+			if (fCentrality >= 0.0 && fCentrality <= 100.0)
+			{
+				fCounter_HMV0_0to100->StoreEvent(aodEvent, fAnalCuts_HM, fUseMCInfo);
+			}
 			if (fCentrality >= 0.0 && fCentrality <= 0.1)
 			{
 				fCounter_HMV0_0to0p1->StoreEvent(aodEvent, fAnalCuts_HM, fUseMCInfo);
@@ -787,19 +796,26 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   fCounter_MB_0to100   = new AliNormalizationCounter("MB_0to100");
   fCounter_MB_0p1to30  = new AliNormalizationCounter("MB_0p1to30");
   fCounter_MB_30to100  = new AliNormalizationCounter("MB_30to100");
+  fCounter_HMV0_0to100 = new AliNormalizationCounter("HMV0_0to100");
   fCounter_HMV0_0to0p1 = new AliNormalizationCounter("HMV0_0to0p1");
+
   fCounter_MB_0to100  ->SetStudyMultiplicity(kTRUE, 1.);
   fCounter_MB_0p1to30 ->SetStudyMultiplicity(kTRUE, 1.);
   fCounter_MB_30to100 ->SetStudyMultiplicity(kTRUE, 1.);
+  fCounter_HMV0_0to100 ->SetStudyMultiplicity(kTRUE, 1.);
   fCounter_HMV0_0to0p1->SetStudyMultiplicity(kTRUE, 1.);
+
   fCounter_MB_0to100  ->Init();
   fCounter_MB_0p1to30 ->Init();
-  fCounter_MB_30to100 ->Init();	
+  fCounter_MB_30to100 ->Init();
+  fCounter_HMV0_0to100 ->Init();	
   fCounter_HMV0_0to0p1->Init();
+
   PostData(5, fCounter_MB_0to100);
   PostData(6, fCounter_MB_0p1to30);
   PostData(7, fCounter_MB_30to100);
   PostData(8, fCounter_HMV0_0to0p1);
+  PostData(10, fCounter_HMV0_0to100);
   return;
 }
 
