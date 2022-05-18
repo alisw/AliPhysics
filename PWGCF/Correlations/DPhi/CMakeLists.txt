@@ -85,6 +85,7 @@ set(SRCS
     AliAnalysisTaskV0ChCorrelationpp.cxx
     AliAnalysisTaskV0ChCorrelationppsys.cxx
     AliAnalysisTaskV0ChCorrelationsys.cxx
+    AliAnalysisTaskCorrelGen.cxx
     AliAnalysisTaskLambdaK0s.cxx
     AliPhiCorrelationsQATask.cxx
     AliAnalysisTaskDiJetCorrelationsAllb2b.cxx

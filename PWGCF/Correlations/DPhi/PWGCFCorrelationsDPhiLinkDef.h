@@ -50,6 +50,8 @@
 #pragma link C++ class AliV0hParticles+;
 #pragma link C++ class AliAnalysisTaskV0ChCorrelationsys+;
 #pragma link C++ class AliV0XiParticles+;
+#pragma link C++ class AliAnalysisTaskCorrelGen+;
+#pragma link C++ class AliV0ChParticleGen+;
 #pragma link C++ class AliAnalysisTaskLambdaK0s+;
 #pragma link C++ class AliV0XiParticleall+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
