@@ -24,8 +24,6 @@
 
 #include <AliMultiplicity.h>
 #include <AliCentrality.h>
-#include <AliPID.h>
-#include <AliPIDResponse.h>
 #include <AliAnalysisUtils.h>
 #include <AliPPVsMultUtils.h>
 #include <AliPhysicsSelectionTask.h>
@@ -39,86 +37,10 @@
 
 using namespace std;
 
-ClassImp(AliMESpp13::AliMESconfigTender)
-    ClassImp(AliMESpp13)
-
+ClassImp(AliMESpp13)
     //________________________________________________________________________
-    AliMESpp13::AliMESconfigTender::AliMESconfigTender() : TObject(), fTrackCuts(0), fEventCuts(0), fPIDpriors(0)
-{
-}
-
-//________________________________________________________________________
-void AliMESpp13::AliMESconfigTender::Print(Option_t *) const
-{
-  // Dump config info to stdout
-  printf("MES TENDER CONFIGURATION\n   Event cuts : ");
-  switch (fEventCuts)
-  {
-  case kNoEC:
-    printf("No\n");
-    break;
-  case k7TeV:
-    printf("Trigger[MB, HM], Vertex[Yes]\n");
-    break;
-  case k13TeV:
-    printf("13TeV: Trigger[MB, HM], Vertex[Yes]\n");
-    break;
-  default:
-    printf("Not defined [%d]\n", fEventCuts);
-    break;
-  }
-  printf("   Track cuts : ");
-  switch (fTrackCuts)
-  {
-  case kNoTC:
-    printf("No\n");
-    break;
-  case kStandardITSTPCTrackCuts2010:
-    printf("StandardITSTPCTrackCuts2010\n");
-    break;
-  case kStandardITSTPCTrackCuts2011:
-    printf("StandardITSTPCTrackCuts2011\n");
-    break;
-  default:
-    printf("Not defined [%d]\n", fTrackCuts);
-    break;
-  }
-  printf("   PID priors : ");
-  switch (fPIDpriors)
-  {
-  case kNoPP:
-    printf("Flat Priors\n");
-    break;
-  case kTPC:
-    printf("DefaultTPCPriors\n");
-    break;
-  case kIterative:
-    printf("LHC10d Iterative Priors\n");
-    break;
-  default:
-    printf("Not defined [%d]\n", fPIDpriors);
-    break;
-  }
-
-  printf("\n");
-}
-
-//________________________________________________________________________
-Bool_t AliMESpp13::ConfigTask(AliMESconfigTender::EMESconfigEventCuts ec,
-                              AliMESconfigTender::EMESconfigTrackCuts tc,
-                              AliMESconfigTender::EMESconfigPIDpriors pp)
-{
-  // configure tender for current run
-  fConfig.fEventCuts = ec;
-  fConfig.fTrackCuts = tc;
-  fConfig.fPIDpriors = pp;
-  fConfig.Print();
-  return kTRUE;
-}
-
-//________________________________________________________________________
-AliMESpp13::AliMESpp13()
-    : AliAnalysisTaskSE(), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fEventTree(NULL), fTracksTree(NULL), fMCeventTree(NULL), fMCtracksTree(NULL), fMCGenTracksTree(NULL), fMCMissedTracksTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
+    AliMESpp13::AliMESpp13()
+    : AliAnalysisTaskSE(), fTrackFilter(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fEventTree(NULL), fTracksTree(NULL), fMCeventTree(NULL), fMCtracksTree(NULL), fMCGenTracksTree(NULL), fMCMissedTracksTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
 {
   //
   // Constructor
@@ -127,7 +49,7 @@ AliMESpp13::AliMESpp13()
 
 //________________________________________________________________________
 AliMESpp13::AliMESpp13(const char *name)
-    : AliAnalysisTaskSE(name), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fEventTree(NULL), fTracksTree(NULL), fMCeventTree(NULL), fMCtracksTree(NULL), fMCGenTracksTree(NULL), fMCMissedTracksTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
+    : AliAnalysisTaskSE(name), fTrackFilter(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fEventTree(NULL), fTracksTree(NULL), fMCeventTree(NULL), fMCtracksTree(NULL), fMCGenTracksTree(NULL), fMCMissedTracksTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
 { //
   // Constructor
   //
@@ -161,8 +83,6 @@ AliMESpp13::~AliMESpp13()
   //
   if (fTrackFilter)
     delete fTrackFilter;
-  if (fPIDcomb)
-    delete fPIDcomb;
 
   if (fEvInfo)
     delete fEvInfo;
@@ -178,14 +98,8 @@ AliMESpp13::~AliMESpp13()
     fMCtracks->Delete();
     delete fMCtracks;
   }
-
   if (fUtils)
     delete fUtils;
-
-  if (fTreeSRedirector){
-    delete fTreeSRedirector;
-    fTreeSRedirector = NULL;
-  }
 }
 
 //________________________________________________________________________
@@ -204,24 +118,9 @@ void AliMESpp13::UserCreateOutputObjects()
   // ------- track cuts
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *lTrackCuts(NULL);
-  switch (fConfig.fTrackCuts)
-  {
-  case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
-    lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
-    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, 0);
-    fTrackFilter->AddCuts(lTrackCuts);
-    break;
-  case AliMESconfigTender::kStandardITSTPCTrackCuts2011:
-    lTrackCuts = new AliESDtrackCuts("std11TC", "Standard 2011");
-    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0); // kTRUE for primaries
-    fTrackFilter->AddCuts(lTrackCuts);
-    break;
-  case AliMESconfigTender::kNoTC:
-  default:
-    AliDebug(2, "No track cuts selected");
-    break;
-  }
-
+  lTrackCuts = new AliESDtrackCuts("std11TC", "Standard 2011");
+  lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0); // kTRUE for primaries
+  fTrackFilter->AddCuts(lTrackCuts);
 
   fEventTree = ((*fTreeSRedirector) << "ev").GetTree();
   fTracksTree = ((*fTreeSRedirector) << "trk").GetTree();
@@ -274,13 +173,11 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     return;
   }
 
-  //   AliMESeventInfo *fEvInfo   = dynamic_cast<AliMESeventInfo*>(GetOutputData(AliMESbaseTask::kEventInfo+1));
   if (!fEvInfo)
   {
     AliError("REC event info missing. Processing skipped");
     return;
   }
-  //   TObjArray *fTracks   = dynamic_cast<TObjArray*>(GetOutputData(AliMESbaseTask::kTracks+1));
   if (!fTracks)
   {
     AliError("REC track array missing. Processing skipped");
@@ -297,9 +194,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
 
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
-  AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
-  if (!pidResponse)
-    AliFatal("This Task needs the PID response attached to the inputHandler");
 
   // init magnetic field
   if (!TGeoGlobalMagField::Instance()->GetField() && !TGeoGlobalMagField::Instance()->IsLocked())
@@ -314,71 +208,29 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   Bool_t incompleteDAQ = kFALSE; // if true should be rejected
   AliAnalysisUtils SPDclustersTrackletsPileup;
 
-  switch (fConfig.fEventCuts)
+  incompleteDAQ = fESD->IsIncompleteDAQ();
+
+  ((TH1 *)fHistosQA->At(kEfficiency))->Fill(0); // all events
+  if (AliPPVsMultUtils::IsMinimumBias(fESD))
   {
-  case AliMESconfigTender::k7TeV:
-
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(0); // all events
-    if (AliPPVsMultUtils::IsMinimumBias(fESD))
-    {
-      ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // events after Physics Selection (for MB normalisation to INEL)
-    }
-    if ((!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kMB)) && (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kHighMult)))
-    {
-      return;
-    }
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // analyzed events
-    break;
-
-  case AliMESconfigTender::k13TeV:
-
-    incompleteDAQ = fESD->IsIncompleteDAQ();
-
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(0); // all events
-    if (AliPPVsMultUtils::IsMinimumBias(fESD))
-    {
-      ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // events after Physics Selection (for MB normalisation to INEL)
-    }
-
-    if (!(inputHandler->IsEventSelected()) ||
-        incompleteDAQ ||
-        SPDclustersTrackletsPileup.IsSPDClusterVsTrackletBG(fESD))
-    {
-      return;
-    }
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // analyzed events
-    break;
-  default:
-    AliDebug(2, "No event cuts selected");
+    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // events after Physics Selection (for MB normalisation to INEL)
   }
+
+  if (!(inputHandler->IsEventSelected()) ||
+      incompleteDAQ ||
+      SPDclustersTrackletsPileup.IsSPDClusterVsTrackletBG(fESD))
+  {
+    return;
+  }
+  ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // analyzed events
 
   // TRIGGER SELECTION
   // MB & HM triggers
   Bool_t triggerMB = 0;
-  Bool_t triggerHM = 0;
-  switch (fConfig.fEventCuts)
-  {
-  case AliMESconfigTender::k7TeV:
-    triggerMB = (inputHandler->IsEventSelected() & AliVEvent::kMB),
-    triggerHM = (inputHandler->IsEventSelected() & AliVEvent::kHighMult);
-    break;
-  case AliMESconfigTender::k13TeV:
-    triggerMB = (inputHandler->IsEventSelected() & AliVEvent::kINT7),   // default - for MB
-        triggerHM = (inputHandler->IsEventSelected() & AliVEvent::kMB); // for crosschecks
-    break;
-  default:
-    AliDebug(2, "No trigger selected");
-  }
-
-  if (!triggerHM && !triggerMB)
-  {
-    AliDebug(2, "Miss trigger");
-    //     ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);
-  }
+  triggerMB = (inputHandler->IsEventSelected() & AliVEvent::kINT7); // default - for MB
+  // AliVEvent::kMB for crosschecks
   if (triggerMB)
     fEvInfo->SetTriggerMB();
-  if (triggerHM)
-    fEvInfo->SetTriggerHM();
 
   // vertex selection
   const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
@@ -395,22 +247,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     else
     {
       AliDebug(2, "Miss vertex");
-      //       ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-      //       return;
     }
   }
-  /*
-  if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
-    ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
-  }
-  if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
-    ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
-  }
-// 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
-*/
-
   fEvInfo->SetVertexZ(vertex->GetZ());
 
   // pile-up selection
@@ -420,23 +258,16 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // multiplicity
   AliESDtrackCuts *tc(NULL);
   AliMultSelection *MultSelection = (AliMultSelection *)fESD->FindListObject("MultSelection");
-  if ((tc = dynamic_cast<AliESDtrackCuts *>(fTrackFilter->GetCuts()->At(0) /*FindObject("std10TC")*/)))
+  if ((tc = dynamic_cast<AliESDtrackCuts *>(fTrackFilter->GetCuts()->At(0))))
   {
-    // MakeMultiplicityESD(fESD, "Combined")
     fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
     if (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1) >= 1)
     {
       fEvInfo->SetMultiplicity(AliMESeventInfo::kSPDtrk, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8));
     }
-    // fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD));
-    // MakeMultiplicityESD(fESD, "Global")
     fEvInfo->SetMultiplicity(AliMESeventInfo::kGlob08, tc->CountAcceptedTracks(fESD));
-    // V0M
-    // fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M, fUtils->GetMultiplicityPercentile(ev, "V0M"));
     fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M, MultSelection->GetMultiplicityPercentile("V0M"));
-    // fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M_MC, MultSelection->GetMultiplicityPercentile("V0M"));
-    // Combined multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
-    fEvInfo->SetMultiplicity(AliMESeventInfo::kComb0408, (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8) - tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.4)));
+    fEvInfo->SetMultiplicity(AliMESeventInfo::kComb0408, (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8) - tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.4))); // Combined multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
   }
   else
   {
@@ -444,79 +275,20 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     fTrackFilter->GetCuts()->ls();
   }
 
-  Double_t val[7] = {0.};
+  Double_t val[5] = {0.};
   THnSparse *H(NULL);
   H = (THnSparse *)fHistosQA->At(kTrkInfo);
   AliMEStrackInfo *tmes(NULL);
-
-  // Int_t counter = 0;
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++)
-  {
-
+  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack *track = fESD->GetTrack(iTracks);
     if (!track)
     {
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
-    // printf("label[%d] ITS[%d] TPC[%d] TRD[%d]\n", track->GetLabel(),
-    //  track->GetITSLabel(), track->GetTPCLabel(), track->GetTRDLabel());
-
-    if (!(fTrackFilter->IsSelected(track)))
-    {
-      // printf("ESD track reject %d\n", iTracks);
-      // track->Print("");
+    if (!(fTrackFilter->IsSelected(track)) && !DebugLevel())
       continue;
-    }
-    tmes = new AliMEStrackInfo(track, pidResponse, fPIDcomb);
-
-    // TOF matching (old version - Alex)
-    // 	if(pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) tmes->SetTOFmisProb(fPIDcomb->GetTOFmismatchProb());
-    // 	printf("mismatch prob from AliMESpp13 = %g\n", fPIDcomb->GetTOFmismatchProb());
-
-    // TOF matching (Cristi)
-    Int_t fTOFout;
-    if ((!(track->GetStatus() & AliESDtrack::kTOFout)) == 0)
-    {
-      fTOFout = 1;
-    }
-    else
-    {
-      fTOFout = 0;
-    }
-    Int_t ftime;
-    if ((!(track->GetStatus() & AliESDtrack::kTIME)) == 0)
-    {
-      ftime = 1;
-    }
-    else
-    {
-      ftime = 0;
-    }
-    Double_t flength;
-    flength = track->GetIntegratedLength();
-    Double_t ftimetof;
-    ftimetof = track->GetTOFsignal();
-    Double_t inttime[5];
-    track->GetIntegratedTimes(inttime); // Returns the array with integrated times for each particle hypothesis
-    Double_t fexptimepi;
-    Double_t fexptimeka;
-    Double_t fexptimepr;
-    fexptimepi = inttime[2];
-    fexptimeka = inttime[3];
-    fexptimepr = inttime[4];
-
-    // Barbara
-    if ((fTOFout == 1) && (ftime == 1) && (flength > 350) && (ftimetof > 10000) && (fexptimepi > 10000) && (fexptimeka > 10000) && (fexptimepr > 10000) && (ftimetof < 80000))
-    {
-      tmes->SetTOFmisProb(1);
-    }
-    else
-    {
-      tmes->SetTOFmisProb(0);
-    }
-
-    // counter ++;
+    tmes = new AliMEStrackInfo(track);
 
     // fill tracks QA
     val[0] = tmes->Pt();
@@ -524,25 +296,11 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     val[2] = tmes->Phi();
     val[3] = tmes->Rv();
     val[4] = tmes->Zv();
-    const AliMEStrackInfo::AliMESpid *pid = tmes->GetPID();
-    if (pid)
-    {
-      val[5] = pid->GetRaw(AliMEStrackInfo::kTPC);
-      val[6] = pid->GetRaw(AliMEStrackInfo::kTOF);
-    }
     if (H)
       H->Fill(val);
     fTracks->Add(tmes);
-
     // printf("tender: counter = %i eta = %f \t pT = %g\n", counter, val[1], val[0]);
   }
-
-  // printf("tender: combined08 = %g \t old combined08 = %i \t global08 = %g\n", fEvInfo->GetMultiplicity(AliMESeventInfo::kComb), (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8)), fEvInfo->GetMultiplicity(AliMESeventInfo::kGlob08));
-  // printf("fTracks = %i\n\n", fTracks->GetEntries());
-  // printf("event index = %i\n", fESD->GetEventNumberInFile());
-
-  // leading particle
-  // printf("\n\nNew event!\n");
 
   // printf("LP search\n");
   fEvInfo->FindLeadingParticle(fTracks);
@@ -632,19 +390,17 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
 
   PostData(kEventInfo + 1, fEvInfo);
   PostData(kTracks + 1, fTracks);
-  // PostData(kEventTree + 1, fEventTree);
-  // PostData(kTracksTree + 1, fTracksTree);
+  PostData(kEventTree + 1, fEventTree);
+  PostData(kTracksTree + 1, fTracksTree);
 
   //____ _________________________________
   if (!HasMCdata())
     return;
-  //   AliMESeventInfo *fMCevInfo   = dynamic_cast<AliMESeventInfo*>(GetOutputData(AliMESbaseTask::kMCeventInfo+1));
   if (!fMCevInfo)
   {
     AliError("MC event info missing. MC processing skipped");
     return;
   }
-  //   TObjArray *fMCtracks         = dynamic_cast<TObjArray*>(GetOutputData(AliMESbaseTask::kMCtracks+1));
   if (!fMCtracks)
   {
     AliError("MC track array missing. MC processing skipped");
@@ -668,20 +424,16 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   }
 
   // multiplicity
-  // multiplicity for eta (-0.8, 0.8)
-  fMCevInfo->SetMultiplicity(AliMESeventInfo::kGlob08, MakeMultiplicityMC(fMC));
-  // multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
-  fMCevInfo->SetMultiplicity(AliMESeventInfo::kComb0408, MakeMultiplicity0408MC(fMC));
-  // multiplicity for eta (-3.7,-1.7) & (2.8, 5.1)  -> V0M
-  fMCevInfo->SetMultiplicity(AliMESeventInfo::kV0M, MakeMultiplicityV0MMC(fMC));
+  fMCevInfo->SetMultiplicity(AliMESeventInfo::kGlob08, MakeMultiplicityMC(fMC)); // multiplicity for eta (-0.8, 0.8)
+  fMCevInfo->SetMultiplicity(AliMESeventInfo::kComb0408, MakeMultiplicity0408MC(fMC)); // multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
+  fMCevInfo->SetMultiplicity(AliMESeventInfo::kV0M, MakeMultiplicityV0MMC(fMC)); // multiplicity for eta (-3.7,-1.7) & (2.8, 5.1)  -> V0M
 
-  memset(val, 0, 7 * sizeof(Double_t));
+  memset(val, 0, 5 * sizeof(Double_t));
   H = (THnSparse *)fHistosQA->At(kMCtrkInfo);
   AliMCParticle *particle(NULL);
   AliMEStrackInfo *tmesRec(NULL);
   for (Int_t ipart = 0; ipart < fMC->GetNumberOfTracks(); ipart++)
   {
-
     if (!(particle = dynamic_cast<AliMCParticle *>(fMC->GetTrack(ipart))))
     {
       AliWarning("MC particle pointer is null !!!");
@@ -699,11 +451,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       continue;
     }
     tmes = new AliMEStrackInfo(particle, fMCStack);
-    // if (!(fTrackFilter->IsSelected(tmes)))
-    // {
-    //   printf("MC track reject %d\n", ipart);
-    //   continue;
-    // }
     fMCtracks->AddLast(tmes);
     // printf("accept[%d] -> %d\n", ipart, tmes->GetLabel());
 
@@ -713,18 +460,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     val[2] = tmes->Phi();
     val[3] = tmes->Rv();
     val[4] = tmes->Zv();
-    const AliMEStrackInfo::AliMESpid *pid = tmes->GetPID();
-    if (pid)
-    {
-      const Double_t *prob = pid->GetProb(AliMEStrackInfo::kITS);
-      for (Int_t is(0); is < AliPID::kSPECIES; is++)
-        if (prob[is] > 0.)
-        {
-          val[5] = is;
-          break;
-        }
-    }
-    val[6] = 0.;
     if (H)
       H->Fill(val);
   }
@@ -1019,75 +754,11 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   PostData(kQA, fHistosQA);
   PostData(kMCeventInfo + 1, fMCevInfo);
   PostData(kMCtracks + 1, fMCtracks);
-  // PostData(kMCeventTree + 1, fMCeventTree);
-  // PostData(kMCtracksTree + 1, fMCtracksTree);
-  // PostData(kMCGenTracksTree + 1, fMCGenTracksTree);
-  // PostData(kMCMissedTracksTree + 1, fMCMissedTracksTree);
-
-  fTreeSRedirector->Close();
+  PostData(kMCeventTree + 1, fMCeventTree);
+  PostData(kMCtracksTree + 1, fMCtracksTree);
+  PostData(kMCGenTracksTree + 1, fMCGenTracksTree);
+  PostData(kMCMissedTracksTree + 1, fMCMissedTracksTree);
 }
-//_____________________________________________________________________
-void AliMESpp13::SetPriors()
-{
-
-  fPIDcomb = new AliPIDCombined();
-  fPIDcomb->SetSelectedSpecies(AliPID::kSPECIES);
-
-  switch (fConfig.fPIDpriors)
-  {
-  case AliMESconfigTender::kTPC:
-    // default aliroot priors
-    AliInfo("Setting default priors ...");
-    fPIDcomb->SetDefaultTPCPriors();
-    AliInfo("Done setting default priors.");
-    break;
-  case AliMESconfigTender::kIterative:
-  { // data priors identified @ 15.04.2015 by Cristi for LHC10d
-    AliInfo("Getting iterative data priors from file...");
-    TDirectory *cwd(gDirectory);
-    TFile *lPriors = TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
-    if (lPriors->IsZombie())
-    {
-      AliError("Could not open the priors file");
-      return;
-    }
-    const Char_t *pname[] = {"e", "e", "pi", "K", "p"};
-    AliInfo("Setting iterative data priors ...");
-    for (Int_t i = 0; i < 5; i++)
-    {
-      fPIDcomb->SetPriorDistribution(AliPID::EParticleType(i), (TH1F *)lPriors->Get(Form("priors_%s_final", pname[i])));
-      fPIDcomb->GetPriorDistribution(AliPID::EParticleType(i))->SetDirectory(cwd);
-    }
-    lPriors->Close();
-    delete lPriors;
-    for (Int_t i = 0; i < 5; i++)
-    {
-      TH1 *h(fPIDcomb->GetPriorDistribution(AliPID::EParticleType(i)));
-      printf("%s -> %s\n", h->GetName(), h->GetDirectory()->GetName());
-    }
-    fPIDcomb->SetEnablePriors(kTRUE);
-    AliInfo("Done setting iterative data priors.");
-    break;
-  }
-  case AliMESconfigTender::kNoPP:
-  { // flat priors
-    AliInfo("Setting flat priors ...");
-    fPIDcomb->SetEnablePriors(kFALSE); // FLAT priors
-    AliInfo("Done setting flat priors.");
-    break;
-  }
-  default:
-    AliWarning("No PID priors selected");
-    break;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliMESpp13::PostProcess()
-{
-  return kTRUE;
-}
-
 //________________________________________________________
 Bool_t AliMESpp13::BuildQAHistos()
 {
@@ -1099,7 +770,7 @@ Bool_t AliMESpp13::BuildQAHistos()
 
   if (fHistosQA)
   { // QA histos already created. Check consistency
-    if (fHistosQA->GetEntries() == (HasMCdata() ? kNqa : kMCevInfo) && dynamic_cast<AliMESpp13::AliMESconfigTender *>(fHistosQA->At(kConfig)))
+    if (fHistosQA->GetEntries() == (HasMCdata() ? kNqa : kMCevInfo))
     {
       AliInfo("QA histos already created");
       return kTRUE;
@@ -1115,7 +786,6 @@ Bool_t AliMESpp13::BuildQAHistos()
   // build QA histos
   fHistosQA = new TList();
   fHistosQA->SetOwner(kTRUE);
-  fHistosQA->AddAt(&fConfig, kConfig);
 
   fEventCutsQA.AddQAplotsToList(fHistosQA, kTRUE);
 
@@ -1151,11 +821,11 @@ Bool_t AliMESpp13::BuildQAHistos()
 
   if (!(H = (THnSparseI *)gROOT->FindObject("TrackInfo")))
   {
-    const Int_t ndim(7);
-    const Char_t *cldTitle[ndim] = {"p_{t}", "eta", "phi", "DCA_{r}", "DCA_{z}", "dEdx", "p_Beta"};
-    const Int_t cldNbins[ndim] = {100, 20, 20, 61, 41, 100, 100};
-    const Double_t cldMin[ndim] = {0., -1.0, 0., -3., -2.0, 0., 0.},
-                   cldMax[ndim] = {10., 1., (2 * TMath::Pi()), 3., 2., 200., 1.1};
+    const Int_t ndim(5);
+    const Char_t *cldTitle[ndim] = {"p_{t}", "eta", "phi", "DCA_{r}", "DCA_{z}"};
+    const Int_t cldNbins[ndim] = {100, 20, 20, 61, 41};
+    const Double_t cldMin[ndim] = {0., -1.0, 0., -3., -2.0},
+                   cldMax[ndim] = {10., 1., (2 * TMath::Pi()), 3., 2.};
     st = "Track Info;";
     for (Int_t idim(0); idim < ndim; idim++)
     {
@@ -1345,5 +1015,18 @@ Double_t AliMESpp13::ComputeDeltaPhi(Double_t phi, Double_t phi_LP)
   {
     // printf("returning 2.5\n");
     return 3.5;
+  }
+}
+//_____________________________________________________________________________
+void AliMESpp13::FinishTaskOutput()
+{
+  //
+  // Called one at the end
+  // locally on working node
+  //
+  if (fTreeSRedirector)
+  {
+    delete fTreeSRedirector;
+    fTreeSRedirector = NULL;
   }
 }
