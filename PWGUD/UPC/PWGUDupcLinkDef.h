@@ -44,4 +44,5 @@
 #pragma link C++ class AliAnalysisTaskCentralJpsi_DG+;
 #pragma link C++ class AliAnalysisTaskUpcPhi0+;
 #pragma link C++ class AliAnalysisTaskUpc2Pi2E+;
+#pragma link C++ class AliAnalysisTaskUpcRhoJpsi;
 #endif
