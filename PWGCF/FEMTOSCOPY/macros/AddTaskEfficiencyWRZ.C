@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEffWRZ *AddTaskEfficiency(TString containerName="femtolist")
+AliAnalysisTaskParticleEffWRZ *AddTaskEfficiencyWRZ(TString containerName="femtolist", double minCent=0.0, double maxCent=100.0)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -42,8 +42,8 @@ AliAnalysisTaskParticleEffWRZ *AddTaskEfficiency(TString containerName="femtolis
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskParticleEffWRZ *taskEfficiency = new AliAnalysisTaskParticleEffWRZ("EfficiencyTask");
-
-
+  taskEfficiency->setMinMult(minCent);
+  taskEfficiency->setMaxMult(maxCent);
   mgr->AddTask(taskEfficiency);
 
   // D. Configure the analysis task. Extra parameters can be used via optional

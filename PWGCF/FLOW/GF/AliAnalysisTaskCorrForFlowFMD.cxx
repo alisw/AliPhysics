@@ -317,6 +317,17 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     fTracksAss = new TObjArray;
     fTracksTrig[0] = new TObjArray;
 
+    if(fDoPID){
+      for(Int_t i(1); i < 4; i++){
+        fTracksTrig[i] = new TObjArray;
+      }
+    }
+    if(fDoV0){
+      for(Int_t i(4); i < 6; i++){
+        fTracksTrig[i] = new TObjArray;
+      }
+    }
+
     if(fUseEfficiency && fColSystem == sPP && (fRunNumber != fAOD->GetRunNumber()) && !AreEfficienciesLoaded()) { return; }
 
     // FMD - V0 correlation event cut
@@ -329,7 +340,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
-    if(fAnalType != eFMDAFMDC && !fIsTPCgen) {
+    if(fUseNch || fAnalType != eFMDAFMDC || !fIsTPCgen) {
       if(!PrepareTPCTracks()){
         for(Int_t i(0); i < 6; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
@@ -866,6 +877,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigCharge = track->Charge();
         binscont[5] = trigPt;
         if(spec > 3) binscont[4] = track->M();
+        Double_t trigEff = 1.0;
+        if(fUseEfficiency) {
+          trigEff = GetEff(trigPt, spec, trigEta);
+          if(trigEff < 0.001) continue;
+        }
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -877,6 +893,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assEta = trackAss->Eta();
             Double_t assPhi = trackAss->Phi();
             Double_t assCharge = trackAss->Charge();
+            Double_t assEff = 1.0;
+            if(fUseEfficiency) {
+              assEff = GetEff(assPt, 0, assEta);
+              if(assEff < 0.001) continue;
+            }
 
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
@@ -900,7 +921,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
               }
             }
 
-            fhME[spec]->Fill(binscont,0,1./(Double_t)nMix);
+            fhME[spec]->Fill(binscont,0,1./((Double_t)nMix*(trigEff*assEff)));
           }
         }
       }
@@ -920,6 +941,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigPhi = track->Phi();
         binscont[5] = trigPt;
         if(spec > 3) binscont[4] = track->M();
+        Double_t trigEff = 1.0;
+        if(fUseEfficiency) {
+          trigEff = GetEff(trigPt, spec, trigEta);
+          if(trigEff < 0.001) continue;
+        }
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -934,7 +960,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
 
-            fhME[spec]->Fill(binscont,0,assMult/(Double_t)nMix);
+            fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff));
           }
         }
       }
@@ -1213,12 +1239,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fAOD) return kFALSE;
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
-  if(fDoPID){
-    for(Int_t i(1); i < 4; i++){
-      fTracksTrig[i] = new TObjArray;
-    }
-  }
-
   fNofTracks = 0;
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
 
@@ -1230,6 +1250,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); // only if associated from TPC
         fNofTracks++;
+        if(fAnalType == eFMDAFMDC) continue;
       }
       if(fAnalType != eFMDAFMDC){
         Double_t trackEta = track->Eta();
@@ -1255,17 +1276,14 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
         }
       } // POI from TPC
   } // tracks loop end
-  fhEventMultiplicity->Fill(fNofTracks);
 
   if(fUseNch){
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
+    fhEventMultiplicity->Fill(fNofTracks);
   }
 
   if(fDoV0){
-    for(Int_t i(4); i < 6; i++){
-      fTracksTrig[i] = new TObjArray;
-    }
     PrepareV0();
   }
 
@@ -1358,19 +1376,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
   if(!mcEvent) return kFALSE;
-
-  if(fIsTPCgen){
-    if(fDoPID){
-      for(Int_t i(1); i < 4; i++){
-        fTracksTrig[i] = new TObjArray;
-      }
-    }
-    if(fDoV0){
-      for(Int_t i(4); i < 6; i++){
-        fTracksTrig[i] = new TObjArray;
-      }
-    }
-  }
 
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
   Double_t binscontFMD[2] = {fPVz, fSampleIndex};

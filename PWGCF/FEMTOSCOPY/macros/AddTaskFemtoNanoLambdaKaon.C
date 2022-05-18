@@ -42,16 +42,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     evtCuts->SetSphericityCuts(0.7, 1);
   }
 
-  //Lambda Cuts
+  // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
-  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false); //PileUpRej, false
+  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false); // PileUpRej, false
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
-  v0Cuts->SetPDGCodePosDaug(2212); //Proton
-  v0Cuts->SetPDGCodeNegDaug(211);  //Pion
-  v0Cuts->SetPDGCodev0(3122);      //Lambda
+  v0Cuts->SetPDGCodePosDaug(2212); // Proton
+  v0Cuts->SetPDGCodeNegDaug(211);  // Pion
+  v0Cuts->SetPDGCodev0(3122);      // Lambda
 
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
@@ -61,10 +61,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
-  Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
-  Antiv0Cuts->SetPDGCodeNegDaug(2212); //Proton
-  Antiv0Cuts->SetPDGCodev0(-3122);     //Lambda
-
+  Antiv0Cuts->SetPDGCodePosDaug(211);  // Pion
+  Antiv0Cuts->SetPDGCodeNegDaug(2212); // Proton
+  Antiv0Cuts->SetPDGCodev0(-3122);     // Lambda
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts =
       AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
@@ -76,7 +75,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   }
   else if (WhichKaonCut == 1)
   {
-    TrackPosKaonCuts->SetPIDkd(true, true); //Ramona
+    TrackPosKaonCuts->SetPIDkd(true, true); // Ramona
   }
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts =
@@ -89,13 +88,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   }
   else if (WhichKaonCut == 1)
   {
-    TrackNegKaonCuts->SetPIDkd(true, true); //Ramona
-  }
-
-  if (suffix != "0" && suffix != "999")
-  {
-    TrackPosKaonCuts->SetMinimalBooking(true);
-    TrackNegKaonCuts->SetMinimalBooking(true);
+    TrackNegKaonCuts->SetPIDkd(true, true); // Ramona
   }
 
   if (suffix != "0")
@@ -117,7 +110,6 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   PDGParticles.push_back(321);  // 1 Kaon Minus
   PDGParticles.push_back(3122); // 2 Lambda
   PDGParticles.push_back(3122); // 3 antiLambda
-
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -170,17 +162,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   // pair QA extended
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  //pairs:
-  //K+K+               0
-  //K+K-               1
-  //K+ La              2
-  //K+ bar La          3
-  //K-K-               4
-  //K- La              5
-  //K- bar La          6
-  //La La              7
-  //La La bar          8
-  //La bar La bar      9
+  // pairs:
+  // K+K+               0
+  // K+K-               1
+  // K+ La              2
+  // K+ bar La          3
+  // K-K-               4
+  // K- La              5
+  // K- bar La          6
+  // La La              7
+  // La La bar          8
+  // La bar La bar      9
 
   const int npairs = 10;
   for (int i = 0; i < npairs; i++)
@@ -216,15 +208,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     pairQA[9] = 22;
   }
 
-  AliFemtoDreamCollConfig *config =
-      new AliFemtoDreamCollConfig("Femto", "Femto");
-  config->SetPtQA(true);
-  config->SetMassQA(true);
-  config->SetExtendedQAPairs(pairQA);
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
+
+  config->SetPDGCodes(PDGParticles);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
+  config->SetClosePairRejection(closeRejection);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
+  config->SetExtendedQAPairs(pairQA);
   config->SetMultBinning(true);
-  config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
@@ -234,9 +227,15 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
 
   if (suffix == "0")
   {
+    config->SetPtQA(true);
+    config->SetMassQA(true);
     config->SetkTBinning(true);
     config->SetMultBinning(true);
     config->SetmTBinning(true);
+  }
+  if (suffix != 0)
+  {
+    config->SetMinimalBookingME(true);
   }
 
   if (isMC)
@@ -249,15 +248,29 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   }
 
   // Variation cuts
-  const float KaonPtlow = 0.075;
-  const float KaonPtup = 0.225;
+  const float KaonPtlow = 0.09;
+  const float KaonPtup = 0.19;
   const float KaonEtaLow = 0.75;
   const float KaonEtaUp = 0.85;
-  const float KaonNsigmaLow = 4.25;
-  const float KaonNsigmaUp = 5.75;
   const float KaonNClsLow = 70;
   const float KaonNClsUp = 90;
   const float KaonPtMax = 999;
+
+  AliPID::EParticleType aliPIDParticle;
+  aliPIDParticle = AliPID::kKaon;
+  std::map<std::string, float> kaonPIDTight;
+  std::map<std::string, float> kaonPIDLoose;
+
+  kaonPIDTight = {
+      {"COMB", 3.7},
+      {"TPC", 2.7},
+      {"EXCLUSION", 3.3},
+  }; // for SetPIDkd() when using oton's K selection
+  kaonPIDLoose = {
+      {"COMB", 4.3},
+      {"TPC", 3.3},
+      {"EXCLUSION", 2.7},
+  };
 
   /// Systematic variations (taken from pφ and ΛΚ)
   if (suffix != "0")
@@ -326,8 +339,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -342,8 +355,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     }
     else if (suffix == "6")
     {
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -366,8 +379,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -440,8 +453,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -464,8 +477,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
@@ -482,8 +495,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -504,8 +517,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
       TrackNegKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -525,8 +538,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -550,8 +563,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
       TrackNegKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
@@ -577,8 +590,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -599,8 +612,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -617,8 +630,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     }
     else if (suffix == "19")
     {
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
@@ -658,8 +671,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
@@ -698,8 +711,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
 
       Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
@@ -719,8 +732,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -738,7 +751,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
       NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
 
-      //XI
+      // XI
     }
     else if (suffix == "25")
     {
@@ -766,8 +779,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetPtRange(KaonPtup, KaonPtMax);
       TrackNegKaonCuts->SetPtRange(KaonPtup, KaonPtMax);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       Posv0Daug->SetEtaRange(-0.77, 0.77);
       Negv0Daug->SetEtaRange(-0.77, 0.77);
@@ -779,8 +792,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -817,8 +830,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
 
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
@@ -859,8 +872,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
       TrackNegKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
@@ -882,8 +895,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -940,8 +953,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
       TrackNegKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
@@ -991,8 +1004,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -1034,8 +1047,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
       TrackNegKaonCuts->SetPtRange(KaonPtlow, KaonPtMax);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
 
       TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
       TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
@@ -1082,8 +1095,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -1101,8 +1114,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetPtRange(KaonPtup, KaonPtMax);
       TrackNegKaonCuts->SetPtRange(KaonPtup, KaonPtMax);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDTight["EXCLUSION"]);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
@@ -1128,8 +1141,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDLoose["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       Posv0Daug->SetEtaRange(-0.83, 0.83);
       Negv0Daug->SetEtaRange(-0.83, 0.83);
@@ -1141,8 +1154,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
       TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
       TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
 
-      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
+      TrackPosKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
+      TrackNegKaonCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDLoose["EXCLUSION"]);
 
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);

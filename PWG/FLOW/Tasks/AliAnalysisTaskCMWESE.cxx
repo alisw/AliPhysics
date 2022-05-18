@@ -915,16 +915,14 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   fOutputList->Add(hNhits[1]);
   hPDedx = new TH2D("hPDedx", "", 400, -10., 10., 400, 0, 1000);
   fOutputList->Add(hPDedx);
-  if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
-    hDcaXy[0] = new TH1D("hDcaXyBeforeCut", "", 100, 0., 10.);
-    hDcaXy[1] = new TH1D("hDcaXyAfterCut",  "", 100, 0., 10.);
-    fOutputList->Add(hDcaXy[0]);
-    fOutputList->Add(hDcaXy[1]);
-    hDcaZ[0] = new TH1D("hDcaZBeforeCut", "", 100, 0., 10.);
-    hDcaZ[1] = new TH1D("hDcaZAfterCut",  "", 100, 0., 10.);
-    fOutputList->Add(hDcaZ[0]);
-    fOutputList->Add(hDcaZ[1]);
-  }
+  hDcaXy[0] = new TH1D("hDcaXyBeforeCut", "", 100, 0., 10.);
+  hDcaXy[1] = new TH1D("hDcaXyAfterCut",  "", 100, 0., 10.);
+  fOutputList->Add(hDcaXy[0]);
+  fOutputList->Add(hDcaXy[1]);
+  hDcaZ[0] = new TH1D("hDcaZBeforeCut", "", 100, 0., 10.);
+  hDcaZ[1] = new TH1D("hDcaZAfterCut",  "", 100, 0., 10.);
+  fOutputList->Add(hDcaZ[0]);
+  fOutputList->Add(hDcaZ[1]);
 
   if (fQAV0){
     hQnCentRecenter[0] = new TH2D("hqnV0MRecenter","",100, 0, 100, 570, 0, 12); 
@@ -1981,7 +1979,7 @@ bool AliAnalysisTaskCMWESE::AcceptAODTrack(AliAODEvent* fAOD, AliAODTrack *track
     hEta[1]->Fill(eta);
     hNhits[1]->Fill(nhits);
     hPDedx->Fill(track->P()*charge, dedx);
-    if ((fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18q")) && fDcaCutz==2.0){
+    if ((fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) && fDcaCutz==2.0){
       fDcaCutxy = 7*(0.0026 + 0.005/pow(pt, 1.01));
       //------------------
       // dca cut

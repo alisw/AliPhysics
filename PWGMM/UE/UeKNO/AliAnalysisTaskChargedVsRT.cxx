@@ -873,7 +873,6 @@ void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiG
     for (Int_t i = 0; i < multGen; ++i) {
 
         if(i==fGenLeadIn)continue;
-        //if (idGen[i]==0) continue;
         Double_t DPhi = DeltaPhi(phiGen[i], fGenLeadPhi);
 
         // definition of the topological regions
@@ -884,7 +883,7 @@ void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiG
             hPhiGen[1]->Fill(DPhi);
         }
         else{// transverse side
-            if (idGen[i]!=0){
+            if(idGen[i]>0 && idGen[i]<=8){
                 multTSgen++;
             }
             hPhiGen[2]->Fill(DPhi);
@@ -896,7 +895,6 @@ void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiG
     for(Int_t i=0; i < multRec; ++i) {  // loop over all these tracks
         
         if(i==fRecLeadIn)continue;
-        //if (idRec[i]==0) continue;
         Double_t DPhi = DeltaPhi(phiRec[i], fRecLeadPhi);
 
         // definition of the topological regions
@@ -907,7 +905,7 @@ void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiG
             hPhiRec[1]->Fill(DPhi);
         }
         else{// transverse side
-            if (idRec[i]!=0){
+            if(idRec[i]>0 && idRec[i]<=8){
                 multTSrec++;
             }
             hPhiRec[2]->Fill(DPhi);

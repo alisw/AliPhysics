@@ -1,7 +1,7 @@
-//#include "AliAnalysisTaskMyTask.h"
-
 AliAnalysisMultPt* AddMultPt(TString name = "name")
 {
+  // get the manager via the static access member. since it's static, you don't need
+  // to create an instance of the class here to call the function
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
         return 0x0;
@@ -20,11 +20,14 @@ AliAnalysisMultPt* AddMultPt(TString name = "name")
   // now we create an instance of your task
   AliAnalysisMultPt* task = new AliAnalysisMultPt(name.Data());
   if(!task) return 0x0;
-  task->SelectCollisionCandidates(AliVEvent::kAnyINT); //to check which triggers are selected
-  //task->SetMCRead(kTRUE);
+  task->SelectCollisionCandidates(AliVEvent::kINT7); //to check which triggers are selected
   task->SetMCRead(kFALSE);
+  task->SetPileUpRead(kFALSE);
+  task->SetChi2DoF(4);
   task->SetPtLimits(0.2, 5.0);
-  task->SetEtaLimit(0.8);
+  task->SetEtaMinLimit(-0.8);
+  task->SetEtaMaxLimit(0.8);
+  
   printf("Container name is %s\n",name.Data());
     
   // add your task to the manager
