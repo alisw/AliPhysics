@@ -85,7 +85,7 @@ AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi()
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),
-    fSPDfile(0),hBCmod4(0),hSPDeff(0)
+    fSPDfile(0),hBCmod4(0),hSPDeff(0), vNum(0)
     //vPt(0),vEta(0),vPhi(0),vPIDPi(0),vPIDMu(0),vPIDE(0),vPIDP(0),vNum(0),vC(0)
 
 {
@@ -116,7 +116,7 @@ AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi(const char *name, Bool_t is
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),
-    fSPDfile(0),hBCmod4(0),hSPDeff(0)
+    fSPDfile(0),hBCmod4(0),hSPDeff(0), vNum(0)
     //vPt(0),vEta(0),vPhi(0),vPIDPi(0),vPIDMu(0),vPIDE(0),vPIDP(0),vNum(0),vC(0)
 
 {
@@ -179,7 +179,7 @@ void AliAnalysisTaskUpcRhoJpsi::Init()
 	fKfVtxPos[i] = -666;
 	fSpdVtxPos[i] = -666;
 	}
-	vNum = -1;
+//	vNum = -1;
 }//Init
 
 //_____________________________________________________________________________
