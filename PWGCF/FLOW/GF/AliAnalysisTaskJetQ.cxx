@@ -128,7 +128,7 @@ void AliAnalysisTaskJetQ::UserExec(Option_t *)
 
 
   fNormCounter->Fill(l_Cent,0); //Number of triggers
-  Int_t nPairs = FillCorrelations(ind,fPtAssocMin,fPtTriggMax,vz);
+  Int_t nPairs = FillCorrelations(ind,fPtAssocMin,fPtAssocMax,vz);
   AliEventPool *pool = fPoolMgr->GetEventPool(i_Cent-1, i_vz-1);
   if(!pool) { printf("Could not find the event pool!\n"); return; };
   // printf("Current numbe of events in pool: %i\n",pool->GetCurrentNEvents());
