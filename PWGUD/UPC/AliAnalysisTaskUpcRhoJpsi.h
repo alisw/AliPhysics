@@ -2,7 +2,6 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-//AliAnalysisTaskUpcPsi2s
 #ifndef ALIANALYSISTASKUPCRHOJPSI_H
 #define ALIANALYSISTASKUPCRHOJPSI_H
 
@@ -25,7 +24,7 @@ class TFile;
 class AliAnalysisTaskUpcRhoJpsi : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskUpcRhoJpsi();
-  AliAnalysisTaskUpcRhoJpsi(const char *name, Bool_t);
+  AliAnalysisTaskUpcRhoJpsi(const char *name);
   virtual ~AliAnalysisTaskUpcRhoJpsi();
 
   virtual void Init();
@@ -93,7 +92,7 @@ class AliAnalysisTaskUpcRhoJpsi : public AliAnalysisTaskSE {
   Int_t fSpdVtxContrib;
   Float_t fSpdVtxPos[3];
   Float_t vPt[4],vEta[4],vPhi[4],vPIDPi[4],vPIDMu[4],vPIDE[4],vPIDP[4];
-  Int_t vNum, vC[4];
+  Int_t vC[4];
   
   Bool_t fIsVtxContributor[4];
   
@@ -175,11 +174,12 @@ class AliAnalysisTaskUpcRhoJpsi : public AliAnalysisTaskSE {
   TFile *fSPDfile;
   TH1D *hBCmod4;
   TH2D *hSPDeff;
-  
+  Int_t vNum;
+ 
   AliAnalysisTaskUpcRhoJpsi(const AliAnalysisTaskUpcRhoJpsi&); //not implemented
   AliAnalysisTaskUpcRhoJpsi& operator =(const AliAnalysisTaskUpcRhoJpsi&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcRhoJpsi, 2); 
+  ClassDef(AliAnalysisTaskUpcRhoJpsi, 3); 
 };
 
 #endif

@@ -55,7 +55,7 @@
 #include "AliAODMCHeader.h"
 #include "AliDataFile.h"
 
-// my headers
+// my headers MC
 #include "AliAnalysisTaskUpcRhoJpsi.h"
 
 ClassImp(AliAnalysisTaskUpcRhoJpsi);
@@ -97,7 +97,7 @@ AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi()
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi(const char *name, Bool_t isMC) 
+AliAnalysisTaskUpcRhoJpsi::AliAnalysisTaskUpcRhoJpsi(const char *name) 
   : AliAnalysisTaskSE(name),fType(0),fTracking(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fTOFmask(0),fIsPhysicsSelected(kFALSE),
@@ -185,7 +185,7 @@ void AliAnalysisTaskUpcRhoJpsi::Init()
 //_____________________________________________________________________________
 AliAnalysisTaskUpcRhoJpsi::~AliAnalysisTaskUpcRhoJpsi() 
 {
-  // Destructor
+// Destructor
   if(fJPsiTree){
      delete fJPsiTree;
      fJPsiTree = 0x0;
@@ -500,8 +500,8 @@ void AliAnalysisTaskUpcRhoJpsi::UserCreateOutputObjects()
   fTrkTree ->Branch("vPIDE", &vPIDE[0], "vPIDE[4]/F");
   fTrkTree ->Branch("vPIDP", &vPIDP[0], "vPIDP[4]/F");
   fListHist->Add(fTrkTree);
-  fListHist->Add(fPsi2sTree);
-  fListHist->Add(fJPsiTree);
+//  fListHist->Add(fPsi2sTree);
+//  fListHist->Add(fJPsiTree);
   
   
   fListSystematics = new TList();
@@ -519,8 +519,8 @@ void AliAnalysisTaskUpcRhoJpsi::UserCreateOutputObjects()
   hBCmod4 = hBCmod4_2D->ProjectionY();
   fSPDfile->Close();
   
-//  PostData(1, fJPsiTree);
-//  PostData(2, fPsi2sTree);
+  PostData(1, fJPsiTree);
+  PostData(2, fPsi2sTree);
   PostData(3, fListTrig);
   PostData(4, fListHist);
 
