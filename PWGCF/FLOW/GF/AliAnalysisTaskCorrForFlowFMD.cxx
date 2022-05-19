@@ -80,6 +80,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fPIDbayesProton(0.85),
     fV0ratioClusters(0.8),
     fV0dcaToPV(0.06),
+    fV0dcaNegLambdaToPV(0.25),
     fV0dcaDaugters(1.),
     fV0radiusMin(0.5),
     fV0radiusMax(200.),
@@ -87,6 +88,11 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fCutCPALambda(0.995),
     fCutTauK0s(0.),
     fCutTauLambda(0.),
+    fSigmaTPC(3.),
+    fnTPCcrossedRows(70),
+    fTrackLength(90),
+    fMassRejWindowK0(0.005),
+    fMassRejWindowLambda(0.01),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
     fPoolMaxNEvents(2000),
@@ -158,6 +164,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fPIDbayesProton(0.85),
     fV0ratioClusters(0.8),
     fV0dcaToPV(0.06),
+    fV0dcaNegLambdaToPV(0.25),
     fV0dcaDaugters(1.),
     fV0radiusMin(0.5),
     fV0radiusMax(200.),
@@ -165,6 +172,11 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fCutCPALambda(0.995),
     fCutTauK0s(0.),
     fCutTauLambda(0.),
+    fSigmaTPC(3.),
+    fnTPCcrossedRows(70),
+    fTrackLength(90),
+    fMassRejWindowK0(0.005),
+    fMassRejWindowLambda(0.01),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
     fPoolMaxNEvents(2000),
@@ -544,15 +556,25 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
 
   // track quality
   if(daughterPos->GetTPCNcls() < fTPCclMin || daughterNeg->GetTPCNcls() < fTPCclMin) { return kFALSE; }
-  if(daughterPos->GetTPCNCrossedRows() < 70 || daughterNeg->GetTPCNCrossedRows() < 70) { return kFALSE; }
-  if(daughterPos->GetTPCNclsF() < 1 || daughterNeg->GetTPCNclsF() < 1) { return kFALSE; }
+  if(daughterPos->GetTPCNCrossedRows() < fnTPCcrossedRows || daughterNeg->GetTPCNCrossedRows() < fnTPCcrossedRows) { return kFALSE; }
 
-  Double_t dRatioCrossFindPos = (Double_t) daughterPos->GetTPCNCrossedRows() / (Double_t) daughterPos->GetTPCNclsF();
-  Double_t dRatioCrossFindNeg = (Double_t) daughterNeg->GetTPCNCrossedRows() / (Double_t) daughterNeg->GetTPCNclsF();
-  if( dRatioCrossFindPos < fV0ratioClusters || dRatioCrossFindNeg < fV0ratioClusters) { return kFALSE; }
+  if(fColSystem==sPP||fColSystem==sPPb){
+    if(daughterPos->GetTPCNclsF() < 1 || daughterNeg->GetTPCNclsF() < 1) { return kFALSE; }
+
+    Double_t dRatioCrossFindPos = (Double_t) daughterPos->GetTPCNCrossedRows() / (Double_t) daughterPos->GetTPCNclsF();
+    Double_t dRatioCrossFindNeg = (Double_t) daughterNeg->GetTPCNCrossedRows() / (Double_t) daughterNeg->GetTPCNclsF();
+    if( dRatioCrossFindPos < fV0ratioClusters || dRatioCrossFindNeg < fV0ratioClusters) { return kFALSE; }
+  }else{
+    if(daughterPos->GetIntegratedLength()<fTrackLength || daughterNeg->GetIntegratedLength()<fTrackLength ) { return kFALSE; }
+    Double_t dRatioCrossLengthPos = (Double_t) daughterPos->GetTPCNCrossedRows() / daughterPos->GetIntegratedLength();
+    Double_t dRatioCrossLengthNeg = (Double_t) daughterNeg->GetTPCNCrossedRows() / daughterNeg->GetIntegratedLength();
+    if( dRatioCrossLengthPos < fV0ratioLength || dRatioCrossLengthNeg < fV0ratioLength) { return kFALSE; }
+  }
 
   //DCA
-  if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaToPV ) { return kFALSE; }
+  if(fColSystem == sPP || fColSystem == sPPb){
+    if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaToPV ) { return kFALSE; }
+  }
   if( TMath::Abs(v0->DcaV0Daughters()) > fV0dcaDaugters ) { return kFALSE; }
 
   //radius
@@ -569,15 +591,21 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
   if(dMass < 0.44 || dMass > 0.56) { return kFALSE; }
   fhV0Counter[0]->Fill("Mass OK",1);
 
+  //DCA for PbPb
+  if(fColSystem == sPbPb){
+    if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaToPV ) { return kFALSE; }
+  }
   // cosine of pointing angle (CPA)
   Double_t dCPA = v0->CosPointingAngle(fAOD->GetPrimaryVertex());
   if(dCPA < fCutCPAK0s) { return kFALSE; }
   fhV0Counter[0]->Fill("CPA OK",1);
 
   // Armenteros-Podolanski plot
-  Double_t dPtArm = v0->PtArmV0();
-  Double_t dAlpha = v0->AlphaV0();
-  if(dPtArm < (0.2 * TMath::Abs(dAlpha))) { return kFALSE; }
+  if(fColSystem==sPbPb){
+    Double_t dPtArm = v0->PtArmV0();
+    Double_t dAlpha = v0->AlphaV0();
+    if(dPtArm < (0.2 * TMath::Abs(dAlpha))) { return kFALSE; }
+  }
   fhV0Counter[0]->Fill("AP OK",1);
 
   if(fCutTauK0s > 0.0 && ProperLifetime(v0, 0.497614) > fCutTauK0s) { return kFALSE; }
@@ -594,14 +622,16 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
   fhV0Counter[0]->Fill("TPC sig OK",1);
   Float_t nSigmaPiPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterPos, AliPID::kPion));
   Float_t nSigmaPiNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterNeg, AliPID::kPion));
-  if(nSigmaPiPos > 3.0 || nSigmaPiNeg > 3.0) { return kFALSE; }
+  if(nSigmaPiPos > fSigmaTPC || nSigmaPiNeg > fSigmaTPC) { return kFALSE; }
   fhV0Counter[0]->Fill("3Sigma OK",1);
 
   // cross mass rejection
-  Double_t dMassLambda = v0->MassLambda();
-  Double_t dMassALambda = v0->MassAntiLambda();
-  if(TMath::Abs(dMassLambda - 1.11568) < 0.005) { return kFALSE; }
-  if(TMath::Abs(dMassALambda - 1.11568) < 0.005) { return kFALSE; }
+  if(fColSystem==sPP||fColSystem==sPPb){
+    Double_t dMassLambda = v0->MassLambda();
+    Double_t dMassALambda = v0->MassAntiLambda();
+    if(TMath::Abs(dMassLambda - 1.11568) < fMassRejWindowK0) { return kFALSE; }
+    if(TMath::Abs(dMassALambda - 1.11568) < fMassRejWindowK0) { return kFALSE; }
+  }
   fhV0Counter[0]->Fill("Mass crosscheck OK",1);
 
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
@@ -627,6 +657,15 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   if(!isL && !isAL)  { return kFALSE; }
   fhV0Counter[1]->Fill("Mass OK",1);
 
+  if(fColSystem == sPbPb){
+    if(isL){
+      if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaNegLambdaToPV ) { return kFALSE; }
+    }
+    if(isAL){
+      if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaNegLambdaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaToPV ) { return kFALSE; }
+    }
+  }
+
   // cosine of pointing angle (CPA)
   Double_t dCPA = v0->CosPointingAngle(fAOD->GetPrimaryVertex());
   if(dCPA < fCutCPALambda) { return kFALSE; }
@@ -647,12 +686,14 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   Float_t nSigmaPiNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterNeg, AliPID::kPion));
   Float_t nSigmaPPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterPos, AliPID::kProton));
   Float_t nSigmaPNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterNeg, AliPID::kProton));
-  if(isL && (nSigmaPPos > 3.0 || nSigmaPiNeg > 3.0) ) { return kFALSE; }
-  if(isAL && (nSigmaPiPos > 3.0 || nSigmaPNeg > 3.0) ) { return kFALSE; }
+  if(isL && (nSigmaPPos > fSigmaTPC || nSigmaPiNeg > fSigmaTPC) ) { return kFALSE; }
+  if(isAL && (nSigmaPiPos > fSigmaTPC || nSigmaPNeg > fSigmaTPC) ) { return kFALSE; }
   fhV0Counter[1]->Fill("3Sigma OK",1);
 
-  Double_t dMassK0s = v0->MassK0Short();
-  if(TMath::Abs(dMassK0s - 0.497614) < 0.01) { return kFALSE; }
+  if(fColSystem==sPP||fColSystem==sPPb){
+    Double_t dMassK0s = v0->MassK0Short();
+    if(TMath::Abs(dMassK0s - 0.497614) < fMassRejWindowLambda) { return kFALSE; }
+  }
   fhV0Counter[1]->Fill("Mass crosscheck OK",1);
 
   Double_t dMass = 0.0;
