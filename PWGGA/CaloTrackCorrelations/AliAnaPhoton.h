@@ -381,6 +381,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhPtPhotonPerTriggerCen;                   //!<! Number of identified photon vs pT  vs trigger bit  vs centrality
   TH2F * fhPtPhotonPerTrigger;                      //!<! Number of identified photon vs pT  vs trigger bit
   TH3F * fhPtPhotonPerTriggerSM;                    //!<! Number of identified photon vs pT  vs trigger bit vs SM number
+  TH3F * fhPtPhotonEtaSectorTriggerG1;              //!<! Number of identified photon vs pT  vs eta vs Sector number for EDG1 trigger from maker
+  TH3F * fhPtPhotonEtaSectorTriggerG2;              //!<! Number of identified photon vs pT  vs eta vs Sector number for EDG2 trigger from maker
+  TH3F * fhPtPhotonEtaSectorTriggerL0;              //!<! Number of identified photon vs pT   vs eta vs Sector number for EDL0 trigger from maker
   TH3F * fhPtMCPhotonPromptPerTriggerCen;           //!<! Number of identified photon vs pT  vs trigger bit  vs centrality, origin MC prompt photon
   TH2F * fhPtMCPhotonPromptPerTrigger;              //!<! Number of identified photon vs pT  vs trigger bit, origin MC prompt photon
 
@@ -871,7 +874,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,65) ;
+  ClassDef(AliAnaPhoton,66) ;
   /// \endcond
 
 } ;
