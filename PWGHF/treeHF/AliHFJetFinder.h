@@ -61,6 +61,7 @@ class AliHFJetFinder : public TObject
   std::vector<AliHFJet> GetJets(TClonesArray *array);
   std::vector<AliHFJet> GetMCJets(TClonesArray *array);
   void FindJets(TClonesArray *array, AliAODRecoDecayHF *cand=nullptr, Double_t invmass=0);
+  void FindMCdaughters(TClonesArray *array, AliAODMCParticle *mcpart, std::vector<Int_t>& daughter_vec);
   void FindMCJets(TClonesArray *array, AliAODMCParticle *mcpart=nullptr);
   #if !defined(__CINT__) && !defined(__MAKECINT__)
   void SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF *cand=nullptr);
