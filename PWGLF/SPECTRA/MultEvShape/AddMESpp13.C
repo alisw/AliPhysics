@@ -1,4 +1,4 @@
-#ifdef __CLING__
+#if defined(__CLING__) || defined(__ACLIC__)
 #include <TTree.h>
 #include <TError.h>
 #include <AliLog.h>
@@ -9,32 +9,14 @@
 #include <AliMESeventInfo.h>
 #endif
 
-AliMESpp13 *AddMESpp13(Bool_t mc, Int_t configuration = 1)
+AliMESpp13 *AddMESpp13(Bool_t mc)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   AliMESpp13 *task = new AliMESpp13((char *)"MESpp13");
   mgr->AddTask(task);
-
   // task set-up
   task->SetMCdata(mc);
-  switch (configuration)
-  {
-  case 0:
-    task->ConfigTask(AliMESpp13::AliMESconfigTender::k7TeV,                        // event cuts
-                     AliMESpp13::AliMESconfigTender::kStandardITSTPCTrackCuts2010, // track cuts
-                     AliMESpp13::AliMESconfigTender::kIterative);                  // PID priors
-    break;
-  case 1:
-    task->ConfigTask(AliMESpp13::AliMESconfigTender::k13TeV,                       // event cuts
-                     AliMESpp13::AliMESconfigTender::kStandardITSTPCTrackCuts2011, // track cuts
-                     AliMESpp13::AliMESconfigTender::kNoPP);                       // PID priors
-    break;
-  default:
-    printf("Configuration not defined\n");
-    break;
-  }
-  task->SetPriors(); // always call this after ConfigTask !!
 
   // connect input
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

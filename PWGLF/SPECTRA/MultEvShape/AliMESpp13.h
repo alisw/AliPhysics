@@ -32,46 +32,6 @@ class TTreeSRedirector;
 class AliMESpp13 : public AliAnalysisTaskSE
 {
 public:
-  class AliMESconfigTender : public TObject
-  {
-  public:
-    friend class AliMESpp13;
-    enum EMESconfigEventCuts
-    {
-      kNoEC = 0 // no event cuts
-      ,
-      k7TeV // vertex and trigger cuts for 7TeV
-      ,
-      k13TeV // vertex and trigger cuts for 13TeV
-    };
-    enum EMESconfigTrackCuts
-    {
-      kNoTC = 0 // no track cuts
-      ,
-      kStandardITSTPCTrackCuts2010 // 2010 standard cuts
-      ,
-      kStandardITSTPCTrackCuts2011 // 2011 standard cuts
-    };
-    enum EMESconfigPIDpriors
-    {
-      kNoPP = 0 // no priors
-      ,
-      kTPC // TPC priors
-      ,
-      kIterative // iterative priors
-    };
-
-    AliMESconfigTender();
-    void Print(Option_t *o = "") const; // *MENU*
-
-  protected:
-    UChar_t fTrackCuts; // track cuts selector
-    UChar_t fEventCuts; // event cuts selector
-    UChar_t fPIDpriors; // PID prior selector
-
-    ClassDef(AliMESconfigTender, 1)
-  };
-
   //_______________________________________________________________________________________
   enum AliMESpp13Steering
   {
@@ -116,14 +76,9 @@ public:
   static Int_t MakeMultiplicityV0MMC(AliMCEvent *const);
   static Double_t ComputeDeltaPhi(Double_t, Double_t);
 
-  virtual Bool_t ConfigTask(AliMESconfigTender::EMESconfigEventCuts ec,
-                            AliMESconfigTender::EMESconfigTrackCuts tc,
-                            AliMESconfigTender::EMESconfigPIDpriors pp);
   Bool_t HasMCdata() const { return TestBit(kMCdata); };
   virtual void SetMCdata(Bool_t mc = kTRUE);
-  virtual void SetPriors();
-
-  virtual Bool_t PostProcess();
+  virtual void FinishTaskOutput();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *opt);
 
@@ -134,11 +89,7 @@ private:
   AliMESpp13(const AliMESpp13 &);
   AliMESpp13 &operator=(const AliMESpp13 &);
 
-  AliMESconfigTender fConfig; // currrent configuration of task
-
   AliAnalysisFilter *fTrackFilter; // working track filter
-  AliPIDCombined *fPIDcomb;        // working PID combined service
-
   TObjArray *fTracks;                 //!
   AliMESeventInfo *fEvInfo;           //!
   TObjArray *fMCtracks;               //!
@@ -148,13 +99,12 @@ private:
   TTree *fTracksTree;                 //!
   TTree *fMCeventTree;                //!
   TTree *fMCtracksTree;               //!
-  TTree *fMCGenTracksTree;    //!
-  TTree *fMCMissedTracksTree; //!
-
+  TTree *fMCGenTracksTree;            //!
+  TTree *fMCMissedTracksTree;         //!
   AliPPVsMultUtils *fUtils;
   AliEventCuts fEventCutsQA; //!
 
-  ClassDef(AliMESpp13, 5) // Tender task for the Multi Event Shape
+  ClassDef(AliMESpp13, 3) // MESpp task
 };
 
 #endif
