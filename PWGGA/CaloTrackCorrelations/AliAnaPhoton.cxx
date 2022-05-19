@@ -94,6 +94,7 @@ fhEnergyEtaPhi(0),            fhEnergyColRow(0),
 fhEnergyEtaPhiPID(0),         fhEnergyColRowPID(0),
 fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 fhPtPhotonPerTriggerCen(0),   fhPtPhotonPerTrigger(0),      fhPtPhotonPerTriggerSM(0),
+fhPtPhotonEtaSectorTriggerG1(0),     fhPtPhotonEtaSectorTriggerG2(0),     fhPtPhotonEtaSectorTriggerL0(0),
 fhPtMCPhotonPromptPerTriggerCen(0), fhPtMCPhotonPromptPerTrigger(0),
 
 // Shower shape histograms
@@ -3207,6 +3208,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   TArrayD mcprimBinsArray;
   mcprimBinning.CreateBinEdges(mcprimBinsArray);
  
+//  TCustomBinning smBinning;
+//  smBinning.SetMinimum(fFirstModule-0.5);
+//  smBinning.AddStep(fLastModule+0.5, 1);
+//
+//  TArrayD smBinsArray;
+//  smBinning.CreateBinEdges(smBinsArray);
+
+  TCustomBinning secBinning;
+  secBinning.SetMinimum(fFirstModule/2-0.5);
+  secBinning.AddStep(fLastModule/2+0.5, 1);
+
+  TArrayD secBinsArray;
+  secBinning.CreateBinEdges(secBinsArray);
+
   //
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies (remove or move to TH3)
   
@@ -3479,16 +3494,49 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       }
       outputContainer->Add(fhPtPhotonPerTrigger) ;
 
-      fhPtPhotonPerTriggerSM  = new TH3F
-      ("hPtPhotonPerTriggerDecisionSM","#it{p}_{T} vs calo trigger from trigger maker vs SM",
-       nptbins,ptmin,ptmax,ntrig,0,ntrig,fTotalUsedSM,fFirstModule-0.5,fLastModule+0.5);
-      fhPtPhotonPerTriggerSM->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-      fhPtPhotonPerTriggerSM->SetZTitle("Supermodule number");
-      for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+      if(fFillSSPerSMHistograms)
       {
-        fhPtPhotonPerTriggerSM->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+        fhPtPhotonPerTriggerSM  = new TH3F
+        ("hPtPhotonPerTriggerDecisionSM","#it{p}_{T} vs calo trigger from trigger maker vs SM",
+         nptbins,ptmin,ptmax,ntrig,0,ntrig,fTotalUsedSM,fFirstModule-0.5,fLastModule+0.5);
+        fhPtPhotonPerTriggerSM->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+        fhPtPhotonPerTriggerSM->SetZTitle("Supermodule number");
+        for(Int_t itrig = 1; itrig <= ntrig; itrig++)
+        {
+          fhPtPhotonPerTriggerSM->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
+        }
+        outputContainer->Add(fhPtPhotonPerTriggerSM) ;
+
+        fhPtPhotonEtaSectorTriggerG1  = new TH3F
+        ("hPtPhotonEtaSectorTriggerG1","#it{p}_{T} vs #eta from trigger G1 vs SM",
+          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+         secBinsArray.GetSize() - 1,  secBinsArray.GetArray(),
+         etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray());
+        fhPtPhotonEtaSectorTriggerG1->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+        fhPtPhotonEtaSectorTriggerG1->SetYTitle("Sector number");
+        fhPtPhotonEtaSectorTriggerG1->SetZTitle("#eta");
+        outputContainer->Add(fhPtPhotonEtaSectorTriggerG1) ;
+
+        fhPtPhotonEtaSectorTriggerG2  = new TH3F
+        ("hPtPhotonEtaSectorTriggerG2","#it{p}_{T} vs #eta from trigger G1 vs SM",
+          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+         secBinsArray.GetSize() - 1,  secBinsArray.GetArray(),
+         etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray());
+        fhPtPhotonEtaSectorTriggerG2->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+        fhPtPhotonEtaSectorTriggerG2->SetYTitle("Sector number");
+        fhPtPhotonEtaSectorTriggerG2->SetZTitle("#eta");
+        outputContainer->Add(fhPtPhotonEtaSectorTriggerG2) ;
+
+        fhPtPhotonEtaSectorTriggerL0  = new TH3F
+        ("hPtPhotonEtaSectorTriggerL0","#it{p}_{T} vs #eta from trigger G1 vs SM",
+          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+         secBinsArray.GetSize() - 1,  secBinsArray.GetArray(),
+         etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray());
+        fhPtPhotonEtaSectorTriggerL0->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+        fhPtPhotonEtaSectorTriggerL0->SetYTitle("Sector number");
+        fhPtPhotonEtaSectorTriggerL0->SetZTitle("#eta");
+        outputContainer->Add(fhPtPhotonEtaSectorTriggerL0) ;
       }
-      outputContainer->Add(fhPtPhotonPerTriggerSM) ;
 
       if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
       {
@@ -8348,7 +8396,24 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           else
           {
             fhPtPhotonPerTrigger   ->Fill(ptcluster, itrig+0.5,       GetEventWeight()*weightPt);
-            fhPtPhotonPerTriggerSM ->Fill(ptcluster, itrig+0.5,  sm,  GetEventWeight()*weightPt);
+            if ( fFillSSPerSMHistograms )
+            {
+              fhPtPhotonPerTriggerSM ->Fill(ptcluster, itrig+0.5,  sm,  GetEventWeight()*weightPt);
+              if ( itrig == 3 ) fhPtPhotonEtaSectorTriggerG1 ->Fill(ptcluster,  sm/2, etacluster,  GetEventWeight()*weightPt); // EGA
+
+              if ( sm < 12 ) // EMCal
+              {
+                if ( itrig == 6 ) fhPtPhotonEtaSectorTriggerG1 ->Fill(ptcluster,  sm/2, etacluster,  GetEventWeight()*weightPt); // EG1
+                if ( itrig == 8 ) fhPtPhotonEtaSectorTriggerG2 ->Fill(ptcluster,  sm/2, etacluster,  GetEventWeight()*weightPt); // EG2
+                if ( itrig == 1 ) fhPtPhotonEtaSectorTriggerL0 ->Fill(ptcluster,  sm/2, etacluster,  GetEventWeight()*weightPt); // EL0
+              }
+              else // DCal
+              {
+                if ( itrig == 7 ) fhPtPhotonEtaSectorTriggerG1 ->Fill(ptcluster,  sm/2, etacluster,  GetEventWeight()*weightPt); // DG1
+                if ( itrig == 9 ) fhPtPhotonEtaSectorTriggerG2 ->Fill(ptcluster,  sm/2, etacluster,  GetEventWeight()*weightPt); // DG2
+                if ( itrig == 2 ) fhPtPhotonEtaSectorTriggerL0 ->Fill(ptcluster,  sm/2, etacluster,  GetEventWeight()*weightPt); // DL0
+              }
+            }
           }
         }
       }
