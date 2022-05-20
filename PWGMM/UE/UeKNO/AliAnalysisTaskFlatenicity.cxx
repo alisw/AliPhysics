@@ -95,14 +95,15 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
 
     AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity()
     : AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fV0Mindex(-1), fIsMCclosure(kFALSE),
+      fUseMC(kFALSE), fV0Mindex(-1), fDetFlat("V0"), fIsMCclosure(kFALSE),
       fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
       fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
       ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
-      hFlatenicity(0), hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0),
-      hFlatVsPtMC(0), hActivityV0DataSect(0), hActivityV0McSect(0),
-      hFlatVsNchMC(0), hFlatVsV0M(0), hCounter(0) {
+      hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
+      hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
+      hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
+      hFlatVsV0M(0), hCounter(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
@@ -110,14 +111,15 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
     : AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fV0Mindex(-1), fIsMCclosure(kFALSE),
+      fUseMC(kFALSE), fV0Mindex(-1), fDetFlat("V0"), fIsMCclosure(kFALSE),
       fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
       fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
       ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
-      hFlatenicity(0), hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0),
-      hFlatVsPtMC(0), hActivityV0DataSect(0), hActivityV0McSect(0),
-      hFlatVsNchMC(0), hFlatVsV0M(0), hCounter(0)
+      hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
+      hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
+      hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
+      hFlatVsV0M(0), hCounter(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -165,18 +167,36 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
   fTrackFilter->AddCuts(fCuts);
 
   // create output objects
+  float min_flat = -0.01;
+  float max_flat = 1.01;
+  int nbins_flat = 204;
+  if (fRemoveTrivialScaling) {
+    min_flat = -0.1;
+    max_flat = 9.9;
+    nbins_flat = 2000;
+  }
 
   OpenFile(1);
   fOutputList =
       new TList(); // this is a list which will contain all of your histograms
   fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
 
-  hFlatenicity = new TH1D("hFlatenicity", "counter", 2000, -0.1, 9.9);
+  hFlatV0vsFlatTPC =
+      new TH2D("hFlatV0vsFlatTPC", "counter", nbins_flat, min_flat, max_flat,
+               nbins_flat, min_flat, max_flat);
+  fOutputList->Add(hFlatV0vsFlatTPC);
+
+  hFlatenicityBefore =
+      new TH1D("hFlatenicityBefore", "counter", nbins_flat, min_flat, max_flat);
+  fOutputList->Add(hFlatenicityBefore);
+
+  hFlatenicity =
+      new TH1D("hFlatenicity", "counter", nbins_flat, min_flat, max_flat);
   fOutputList->Add(hFlatenicity);
 
   hFlatVsPt =
       new TH2D("hFlatVsPt", "Measured; Flatenicity; #it{p}_{T} (GeV/#it{c})",
-               2000, -0.1, 9.9, nPtbins, Ptbins);
+               nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
   fOutputList->Add(hFlatVsPt);
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -184,7 +204,7 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
         Form("hFlatVsPtV0M_c%d", i_c),
         Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",
              centClass[i_c], centClass[i_c + 1]),
-        2000, -0.1, 9.9, nPtbins, Ptbins);
+        nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
     fOutputList->Add(hFlatVsPtV0M[i_c]);
   }
 
@@ -208,18 +228,20 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                       nPtbins, Ptbins);
     fOutputList->Add(hPtOut);
 
-    hFlatenicityMC = new TH1D("hFlatenicityMC", "counter", 2000, -0.1, 9.9);
+    hFlatenicityMC =
+        new TH1D("hFlatenicityMC", "counter", nbins_flat, min_flat, max_flat);
     fOutputList->Add(hFlatenicityMC);
-    hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat",
-                             2000, -0.1, 9.9, 2000, -0.1, 9.9);
+    hFlatResponse =
+        new TH2D("hFlatResponse", "; true flat; measured flat", nbins_flat,
+                 min_flat, max_flat, nbins_flat, min_flat, max_flat);
     fOutputList->Add(hFlatResponse);
     hFlatVsPtMC =
         new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})",
-                 2000, -0.1, 9.9, nPtbins, Ptbins);
+                 nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
     fOutputList->Add(hFlatVsPtMC);
 
-    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", 2000, -0.1,
-                            9.9, 100, -0.5, 99.5);
+    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", nbins_flat,
+                            min_flat, max_flat, 100, -0.5, 99.5);
     fOutputList->Add(hFlatVsNchMC);
   }
 
@@ -234,7 +256,8 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     fOutputList->Add(hActivityV0McSect);
   }
 
-  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClass, 2000, -0.1, 9.9);
+  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClass, nbins_flat,
+                        min_flat, max_flat);
   fOutputList->Add(hFlatVsV0M);
 
   hCounter = new TH1D("hCounter", "counter", 10, -0.5, 9.5);
@@ -331,8 +354,15 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
 
   Double_t flatenicity_v0 = GetFlatenicityV0();
   Double_t flatenicity_tpc = GetFlatenicityTPC();
+  fFlat = flatenicity_v0; // default V0
+  if (fDetFlat == "VO_TPC") {
+    fFlat = (flatenicity_v0 + flatenicity_tpc) / 2.0;
+  }
+  if (fDetFlat == "TPC") {
+    fFlat = flatenicity_tpc;
+  }
 
-  fFlat = (flatenicity_v0 + flatenicity_tpc) / 2.0;
+  hFlatV0vsFlatTPC->Fill(flatenicity_tpc, flatenicity_v0);
   fFlatMC = -1;
   if (fUseMC) {
     fFlatMC = GetFlatenicityMC();
@@ -343,7 +373,11 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     }
   }
   if (fFlat >= 0) {
-    hFlatenicity->Fill(fFlat);
+
+    hFlatenicityBefore->Fill(fFlat);
+    if (flatenicity_v0 < 0.9 && flatenicity_tpc < 0.9) {
+      hFlatenicity->Fill(fFlat);
+    }
     if (fV0Mindex >= 0) {
       hFlatVsV0M->Fill(fv0mpercentile, fFlat);
       MakeDataanalysis();
@@ -452,7 +486,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityTPC() {
   for (int iCh = 0; iCh < nCells2; iCh++) {
     RhoLattice2[iCh] = 0.0;
   }
-
+  int mult_glob = 0;
   Int_t nTracks = fESD->GetNumberOfTracks();
   for (Int_t iT = 0; iT < nTracks; ++iT) {
 
@@ -476,6 +510,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityTPC() {
             phi_a >= minPhi2[is] * 2.0 * M_PI / (1.0 * nSectors2) &&
             phi_a < maxPhi2[is] * 2.0 * M_PI / (1.0 * nSectors2)) {
           RhoLattice2[i_ch]++;
+          mult_glob++;
         }
         i_ch++;
       }
@@ -497,7 +532,11 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityTPC() {
   double sRho_glob = TMath::Sqrt(sRho_glob_tmp);
   float flatenicity_glob = 9999;
   if (mRho_glob > 0) {
-    flatenicity_glob = sRho_glob / mRho_glob;
+    if (fRemoveTrivialScaling) {
+      flatenicity_glob = TMath::Sqrt(mult_glob) * sRho_glob / mRho_glob;
+    } else {
+      flatenicity_glob = sRho_glob / mRho_glob;
+    }
   }
 
   return flatenicity_glob;
