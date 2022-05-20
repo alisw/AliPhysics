@@ -188,7 +188,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   }
 
   if(fMakeClusterHistos1D){
-    fHistos->CreateTH1("hClusterEnergy1D", "Cluster Energy Spectrum", 200., 0., 200.);
+    fHistos->CreateTH1("hClusterEnergy1D", "Cluster Energy Spectrum", 800., 0., 200.);
   }
 
   // A bit of QA stuff
@@ -570,7 +570,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureMCMinBias(MCProductionType_
 
 void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc) {
   auto detjets = GetDetJetContainer();
-  
+
   detjets->SetJetPtCut(minJetPt);
   if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
     detjets->SetMaxTrackPt(maxTrackPt);
