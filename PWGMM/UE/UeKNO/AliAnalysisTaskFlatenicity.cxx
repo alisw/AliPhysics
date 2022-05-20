@@ -329,7 +329,10 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     }
   }
 
-  fFlat = GetFlatenicity();
+  Double_t flatenicity_v0 = GetFlatenicityV0();
+  Double_t flatenicity_tpc = GetFlatenicityTPC();
+
+  fFlat = (flatenicity_v0 + flatenicity_tpc) / 2.0;
   fFlatMC = -1;
   if (fUseMC) {
     fFlatMC = GetFlatenicityMC();
@@ -436,7 +439,72 @@ void AliAnalysisTaskFlatenicity::MakeMCanalysis() {
 }
 
 //______________________________________________________________________________
-Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
+Double_t AliAnalysisTaskFlatenicity::GetFlatenicityTPC() {
+
+  const int nRings2 = 4;
+  const int nSectors2 = 8;
+  const int nCells2 = nRings2 * nSectors2;
+  float maxEta2[nRings2] = {-0.4, 0.0, +0.4, +0.8};
+  float minEta2[nRings2] = {-0.8, -0.4, +0.0, +0.4};
+  float maxPhi2[nSectors2] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+  float minPhi2[nSectors2] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+  float RhoLattice2[nCells2];
+  for (int iCh = 0; iCh < nCells2; iCh++) {
+    RhoLattice2[iCh] = 0.0;
+  }
+
+  Int_t nTracks = fESD->GetNumberOfTracks();
+  for (Int_t iT = 0; iT < nTracks; ++iT) {
+
+    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(
+        fESD->GetTrack(iT)); // get a track (type AliesdTrack)
+    if (!esdtrack)
+      continue;
+    if (!fTrackFilter->IsSelected(esdtrack))
+      continue;
+    float eta_a = esdtrack->Eta();
+    float phi_a = esdtrack->Phi();
+
+    if (TMath::Abs(eta_a) > fEtaCut)
+      continue;
+    if (esdtrack->Pt() < fPtMin)
+      continue;
+    int i_ch = 0;
+    for (int ir = 0; ir < nRings2; ir++) {
+      for (int is = 0; is < nSectors2; is++) {
+        if (eta_a >= minEta2[ir] && eta_a < maxEta2[ir] &&
+            phi_a >= minPhi2[is] * 2.0 * M_PI / (1.0 * nSectors2) &&
+            phi_a < maxPhi2[is] * 2.0 * M_PI / (1.0 * nSectors2)) {
+          RhoLattice2[i_ch]++;
+        }
+        i_ch++;
+      }
+    }
+  }
+
+  double mRho_glob = 0;
+  for (int iCell = 0; iCell < nCells2; ++iCell) {
+    mRho_glob += 1.0 * RhoLattice2[iCell];
+  }
+  // average activity per cell
+  mRho_glob /= (1.0 * nCells2);
+  // get sigma
+  double sRho_glob_tmp = 0;
+  for (int iCell = 0; iCell < nCells2; ++iCell) {
+    sRho_glob_tmp += TMath::Power(1.0 * RhoLattice2[iCell] - mRho_glob, 2);
+  }
+  sRho_glob_tmp /= (1.0 * nCells2 * nCells2);
+  double sRho_glob = TMath::Sqrt(sRho_glob_tmp);
+  float flatenicity_glob = 9999;
+  if (mRho_glob > 0) {
+    flatenicity_glob = sRho_glob / mRho_glob;
+  }
+
+  return flatenicity_glob;
+}
+
+//______________________________________________________________________________
+Double_t AliAnalysisTaskFlatenicity::GetFlatenicityV0() {
 
   AliVVZERO *lVV0 = 0x0;
   AliVEvent *lVevent = 0x0;
@@ -449,7 +517,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
   lVV0 = lVevent->GetVZEROData();
   if (!lVV0) {
     AliError("AliVVZERO not available");
-    return -1;
+    return 9999;
   }
   // Flatenicity calculation
   const Int_t nRings = 4;
@@ -522,7 +590,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicity() {
       flatenicity = sRho / mRho;
     }
   } else {
-    flatenicity = -1;
+    flatenicity = 9999;
   }
   return flatenicity;
 }
@@ -615,7 +683,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
       flatenicity = sRho / mRho;
     }
   } else {
-    sRho = -1;
+    sRho = 9999;
   }
   hFlatVsNchMC->Fill(flatenicity, nMult);
   return flatenicity;
