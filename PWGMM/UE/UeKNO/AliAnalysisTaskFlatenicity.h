@@ -32,7 +32,8 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-  Double_t GetFlatenicity();
+  Double_t GetFlatenicityV0();
+  Double_t GetFlatenicityTPC();
   Double_t GetFlatenicityMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
