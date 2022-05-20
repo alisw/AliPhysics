@@ -8,7 +8,10 @@ AliAnalysisMeanPtdata * AddTaskMptFluct
  double dcaZMax                 =  3.2,///tulika 3.2,
  double dcaXYMax                =  2.4,///tulika 2.4,
  double chi2perTPC              = 36,
- double chi2perITS              = 36)
+ double chi2perITS              = 36,
+ double VzMin                 =  -10.0,
+ double VzMax                 =  10.0)//vz<10 Tulika
+
  {
    double dcaZMin                = -dcaZMax;
    double dcaXYMin               = -dcaXYMax;
@@ -89,6 +92,8 @@ AliAnalysisMeanPtdata * AddTaskMptFluct
      task->SetDcaXYMax(            dcaXYMax        );
      task->SetChi2PerTPCCluster(          chi2perTPC      ); 
      task->SetChi2PerITSCluster(          chi2perITS      ); 
+     task->SetVzMin(             VzMin        );
+     task->SetVzMax(             VzMax        );
 
 
      //     TString outputfile = AliAnalysisManager::GetCommonFileName();
