@@ -45,6 +45,13 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
     virtual     void    SetChi2PerTPCCluster(double v)           { _chi2perTPC          = v; 
 }
     virtual     void    SetChi2PerITSCluster(double v)           { _chi2perITS          = v; }
+
+    virtual     void    SetVzMin(double v)            { _vZMin           = v; }
+    virtual     void    SetVzMax(double v)            { _vZMax           = v; }
+
+
+
+
     AliEventCuts* GetAliEventCuts() const { return fAliEventCuts;}
     //    AliEventCuts fEventCuts;
     Int_t eventcount;
@@ -84,6 +91,8 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
     TH1D        *fMultPairsA;
     TH1D        *fMultTripletsA;
     TH1D        *fMultQuadsA;
+    TH1D        *fTpcNCrossedRows;
+
 
     TProfile        *fMeanQ;
     TProfile        *fTwopart;
@@ -185,6 +194,8 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
     double   _dcaXYMax;
     double   _chi2perTPC;
     double   _chi2perITS;
+    double _vZMin;
+    double _vZMax;
     ClassDef(AliAnalysisMeanPtdata, 1); // example of analysis
 };
 
