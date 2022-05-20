@@ -44,6 +44,7 @@ public:
   void SetUseMC(Bool_t flat_flag = kFALSE) {
     fUseMC = flat_flag;
   } // use to analyse MC data
+  void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
   void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
   void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
     fRemoveTrivialScaling = flat_flag;
@@ -58,6 +59,7 @@ private:
   AliMCEvent *fMC;    //! MC Event
   Bool_t fUseMC;      // analyze MC events
   Int_t fV0Mindex;
+  TString fDetFlat;
   Bool_t fIsMCclosure;
   Bool_t fRemoveTrivialScaling;
   Int_t fnGen;
@@ -75,6 +77,8 @@ private:
   TH1D *hPtPrimOut;
   TH1D *hPtSecOut;
   TH1D *hPtOut;
+  TH2D *hFlatV0vsFlatTPC;
+  TH1D *hFlatenicityBefore;
   TH1D *hFlatenicity;
   TH1D *hFlatenicityMC;
   TH2D *hFlatResponse;

@@ -6,11 +6,12 @@
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskFlatenicity *
-AddTaskFlatenicity(const Char_t *taskname = "Flat",
+AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
                    Bool_t woTrivialscaling = kFALSE, Bool_t useMC = kTRUE,
                    Bool_t performMCclosuretest = kFALSE, Double_t minpT = 0.5)
 
 {
+  // detForFlat: "V0", "TPC", "V0_TPC"
   // get the manager via the static access member. since it's static, you don't
   // need an instance of the class to call the function
 
@@ -30,24 +31,37 @@ AddTaskFlatenicity(const Char_t *taskname = "Flat",
   if (!taskFlat)
     return 0x0;
   taskFlat->SetUseMC(useMC);
+  taskFlat->SetDetectorForFlatenicity(detForFlat);
   taskFlat->SetMCclosureTest(performMCclosuretest);
   taskFlat->SetPtMin(minpT);
   taskFlat->SetRemoveTrivialScaling(woTrivialscaling);
   mgr->AddTask(taskFlat);
 
-  const Char_t *complement;
+  const char *complement;
   if (woTrivialscaling) {
     complement = "wotrivialscal";
   } else {
     complement = "wtrivialscal";
   }
+  const char *complement2;
+  if (detForFlat == "V0") {
+    complement2 = "V0";
+  }
+  if (detForFlat == "TPC") {
+    complement2 = "TPC";
+  }
+  if (detForFlat == "V0_TPC") {
+    complement2 = "V0_TPC";
+  }
+
+  // complement += detForFlat;
 
   mgr->ConnectInput(taskFlat, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(
       taskFlat, 1,
       mgr->CreateContainer(
-          Form("cList%s_%s", taskname, complement), TList::Class(),
-          AliAnalysisManager::kOutputContainer,
+          Form("cList%s_%s_%s", taskname, complement, complement2),
+          TList::Class(), AliAnalysisManager::kOutputContainer,
           Form("%s:%s", AliAnalysisManager::GetCommonFileName(), taskname)));
 
   return taskFlat;
