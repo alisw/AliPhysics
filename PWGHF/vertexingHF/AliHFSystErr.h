@@ -56,6 +56,11 @@ class AliHFSystErr : public TNamed
   void  ResetTrackEfficErr(Double_t pt, Double_t val){
     fTrackingEff->SetBinContent(fTrackingEff->FindBin(pt),val);
   }
+  void  ResetDataDrivenFDErr(Double_t pt, Double_t val){
+    if (fDataDrivenFD) {
+      fDataDrivenFD->SetBinContent(fDataDrivenFD->FindBin(pt),val);
+    }
+  }
   /// Setting  the run number
   ///  set the two last numbers of the year (is 10 for 2010)
   void SetRunNumber(Int_t number) {
