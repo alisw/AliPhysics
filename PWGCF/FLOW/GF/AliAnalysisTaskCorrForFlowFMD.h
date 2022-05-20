@@ -79,10 +79,11 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 
         //track selection V0s
         void                    SetTPCclV0Ratio(Double_t cut) { fV0ratioClusters = cut; }
-        void                    SetV0dcaToPVcut(Double_t cut) { fV0dcaToPV = cut; }
-        void                    SetV0dcaNegLambdaToPVcut(Double_t cut) { fV0dcaNegLambdaToPV = cut; }
-        void                    SetV0dcaDaugters(Double_t cut) { fV0dcaDaugters = cut; }
-        void                    SetV0radius(Double_t min, Double_t max) { fV0radiusMin = min; fV0radiusMax = max; }
+        void                    SetV0dcaK0ToPVcut(Double_t cut) { fV0dcaK0ToPV = cut; }
+        void                    SetV0dcaLambdaToPVcut(Double_t pos, Double_t neg) { fV0dcaPosLambdaToPV = pos; fV0dcaNegLambdaToPV = neg; }
+        void                    SetV0dcaDaugters(Double_t cutK0, Double_t cutLam) { fV0dcaDaugtersK0 = cutK0; fV0dcaDaugtersLambda = cutLam; }
+        void                    SetK0radius(Double_t min, Double_t max) { fK0radiusMin = min; fK0radiusMax = max; }
+        void                    SetLambdaradius(Double_t min, Double_t max) { fLambdaradiusMin = min; fLambdaradiusMax = max; }
         void                    SetV0sCPAs(Double_t k0s, Double_t lambda) { fCutCPAK0s = k0s; fCutCPALambda = lambda; }
         void                    SetV0sTaus(Double_t k0s, Double_t lambda) { fCutTauK0s = k0s; fCutTauLambda = lambda; }
         void                    SetNSigmaTPC(Double_t cut) { fSigmaTPC = cut; }
@@ -216,11 +217,15 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fPIDbayesKaon; // [0.85]
         Double_t                fPIDbayesProton; // [0.85]
         Double_t                fV0ratioClusters; // [0.8]
-        Double_t                fV0dcaToPV; // [0.06]
+        Double_t                fV0dcaK0ToPV; // [0.06]
         Double_t                fV0dcaNegLambdaToPV; // [0.25]
-        Double_t                fV0dcaDaugters; // [1.]
-        Double_t                fV0radiusMin; // [0.5]
-        Double_t                fV0radiusMax; // [200.]
+        Double_t                fV0dcaPosLambdaToPV; // [0.1]
+        Double_t                fV0dcaDaugtersK0; // [1.]
+        Double_t                fV0dcaDaugtersLambda; // [1.]
+        Double_t                fK0radiusMin; // [0.5]
+        Double_t                fK0radiusMax; // [200.]
+        Double_t                fLambdaradiusMin; // [0.5]
+        Double_t                fLambdaradiusMax; // [200.]
         Double_t                fCutCPAK0s; // [0.97]
         Double_t                fCutCPALambda; // [0.995]
         Double_t                fCutTauK0s; // [0.]
@@ -245,7 +250,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 11);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 12);
 };
 
 #endif
