@@ -927,16 +927,16 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Min Cluster Energy";
-    nBinsThnPi0[dimThnPi0] = 3;
+    /*nBinsThnPi0[dimThnPi0] = 3;
     Double_t MinClusEnergyArray[3+1] = {2,2.5,3,100};
     binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
     minThnPi0[dimThnPi0] = 2;
-    maxThnPi0[dimThnPi0] = 100;
-/*    nBinsThnPi0[dimThnPi0] = 5;
+    maxThnPi0[dimThnPi0] = 100;*/
+    nBinsThnPi0[dimThnPi0] = 5;
     Double_t MinClusEnergyArray[5+1] = {0.5,1,1.5,2,2.5,100};
     binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
     minThnPi0[dimThnPi0] = 0.5;
-    maxThnPi0[dimThnPi0] = 100;*/
+    maxThnPi0[dimThnPi0] = 100;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Asymmetry";
