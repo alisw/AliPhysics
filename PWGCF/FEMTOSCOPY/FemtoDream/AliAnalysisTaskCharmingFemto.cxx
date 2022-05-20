@@ -427,18 +427,18 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
 
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      if (fUseMCTruthReco && mcpdg == fTrackCutsPartProton->GetPDGCode() && mcPart && SelectBuddyOrigin(mcPart)){
+      if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
         protons.push_back(*fProtonTrack);
       }
-      else if (!fIsMCtruth) {
+      else if (!fIsMCtruth && !fUseMCTruthReco) {
         protons.push_back(*fProtonTrack);
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      if(fUseMCTruthReco && mcpdg == fTrackCutsPartAntiProton->GetPDGCode() && mcPart && SelectBuddyOrigin(mcPart)) {
+      if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
         antiprotons.push_back(*fProtonTrack);
       }
-      else if (!fIsMCtruth) {
+      else if (!fIsMCtruth && !fUseMCTruthReco) {
         antiprotons.push_back(*fProtonTrack);
       }      
     }
