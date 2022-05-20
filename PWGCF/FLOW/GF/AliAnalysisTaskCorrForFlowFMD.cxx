@@ -79,11 +79,14 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fPIDbayesKaon(0.85),
     fPIDbayesProton(0.85),
     fV0ratioClusters(0.8),
-    fV0dcaToPV(0.06),
+    fV0dcaK0ToPV(0.06),
     fV0dcaNegLambdaToPV(0.25),
-    fV0dcaDaugters(1.),
-    fV0radiusMin(0.5),
-    fV0radiusMax(200.),
+    fV0dcaDaugtersK0(1.),
+    fV0dcaDaugtersLambda(1.),
+    fK0radiusMin(0.5),
+    fK0radiusMax(200.),
+    fLambdaradiusMin(0.5),
+    fLambdaradiusMax(200.),
     fCutCPAK0s(0.97),
     fCutCPALambda(0.995),
     fCutTauK0s(0.),
@@ -163,11 +166,14 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fPIDbayesKaon(0.85),
     fPIDbayesProton(0.85),
     fV0ratioClusters(0.8),
-    fV0dcaToPV(0.06),
+    fV0dcaK0ToPV(0.06),
     fV0dcaNegLambdaToPV(0.25),
-    fV0dcaDaugters(1.),
-    fV0radiusMin(0.5),
-    fV0radiusMax(200.),
+    fV0dcaDaugtersK0(1.),
+    fV0dcaDaugtersLambda(1.),
+    fK0radiusMin(0.5),
+    fK0radiusMax(200.),
+    fLambdaradiusMin(0.5),
+    fLambdaradiusMax(200.),
     fCutCPAK0s(0.97),
     fCutCPALambda(0.995),
     fCutTauK0s(0.),
@@ -571,16 +577,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
     if( dRatioCrossLengthPos < fV0ratioLength || dRatioCrossLengthNeg < fV0ratioLength) { return kFALSE; }
   }
 
-  //DCA
-  if(fColSystem == sPP || fColSystem == sPPb){
-    if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaToPV ) { return kFALSE; }
-  }
-  if( TMath::Abs(v0->DcaV0Daughters()) > fV0dcaDaugters ) { return kFALSE; }
-
-  //radius
-  Double_t dDecayRadius = v0->RadiusV0();
-  if( dDecayRadius < fV0radiusMin || dDecayRadius > fV0radiusMax ) { return kFALSE; }
-
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -591,10 +587,14 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
   if(dMass < 0.44 || dMass > 0.56) { return kFALSE; }
   fhV0Counter[0]->Fill("Mass OK",1);
 
-  //DCA for PbPb
-  if(fColSystem == sPbPb){
-    if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaToPV ) { return kFALSE; }
-  }
+  //DCA
+  if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaK0ToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaK0ToPV ) { return kFALSE; }
+
+  if( TMath::Abs(v0->DcaV0Daughters()) > fV0dcaDaugtersK0 ) { return kFALSE; }
+  //radius
+  Double_t dDecayRadius = v0->RadiusV0();
+  if( dDecayRadius < fK0radiusMin || dDecayRadius > fK0radiusMax ) { return kFALSE; }
+
   // cosine of pointing angle (CPA)
   Double_t dCPA = v0->CosPointingAngle(fAOD->GetPrimaryVertex());
   if(dCPA < fCutCPAK0s) { return kFALSE; }
@@ -657,14 +657,17 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   if(!isL && !isAL)  { return kFALSE; }
   fhV0Counter[1]->Fill("Mass OK",1);
 
-  if(fColSystem == sPbPb){
-    if(isL){
-      if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaNegLambdaToPV ) { return kFALSE; }
-    }
-    if(isAL){
-      if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaNegLambdaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaToPV ) { return kFALSE; }
-    }
+  //DCA
+  if(isL){
+    if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaPosLambdaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaNegLambdaToPV ) { return kFALSE; }
   }
+  if(isAL){
+    if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaNegLambdaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaPosLambdaToPV ) { return kFALSE; }
+  }
+  if( TMath::Abs(v0->DcaV0Daughters()) > fV0dcaDaugtersLambda ) { return kFALSE; }
+  //radius
+  Double_t dDecayRadius = v0->RadiusV0();
+  if( dDecayRadius < fLambdaradiusMin || dDecayRadius > fLambdaradiusMax ) { return kFALSE; }
 
   // cosine of pointing angle (CPA)
   Double_t dCPA = v0->CosPointingAngle(fAOD->GetPrimaryVertex());
