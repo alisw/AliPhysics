@@ -87,6 +87,8 @@ AliAnalysisMeanPtdata::AliAnalysisMeanPtdata() // All data members should be ini
  _dcaXYMax             (  2.4),
  _chi2perTPC             (36),
  _chi2perITS             (36),
+  _vZMin(0),
+  _vZMax(10),
   _fhV0MvsTracksTPCout_before(0),
   _fhV0MvsTracksTPCout_after(0),
  _fV0MmultVsSpdTracklet_before(0),
@@ -167,6 +169,7 @@ AliAnalysisMeanPtdata::AliAnalysisMeanPtdata() // All data members should be ini
   ftrack(0),
   fHdcaz(0),
   fHdcaxy(0),
+  fTpcNCrossedRows(0),
   fcentnpart2d_1(0)
 
   //  fEventCuts(0) 
@@ -201,6 +204,8 @@ _profV0MvsTPCout(0),
  _dcaXYMax             (  2.4),
  _chi2perTPC             (36),
  _chi2perITS             (36),
+ _vZMin(0),
+ _vZMax(10),
  _fhV0MvsTracksTPCout_before(0),
  _fhV0MvsTracksTPCout_after(0),
  _fV0MmultVsSpdTracklet_before(0),
@@ -284,6 +289,7 @@ fHistPt(0),
   ftrack(0),
   fHdcaz(0),
   fHdcaxy(0),
+  fTpcNCrossedRows(0),
   fcentnpart2d_1(0)
 
   //  fEventCuts(0)
@@ -512,6 +518,7 @@ fAliEventCuts->AddQAplotsToList(fOutput);
    fHdcaxy = new TH1F("fHdcaxy","fHdcaxy",1000,-3,3);
 
    fHdcaz = new TH1F("fHdcaz","fHdcaz",1000,-3,3);
+   fTpcNCrossedRows = new TH1D("fTpcNCrossedRows","fTpcNCrossedRows",200,0,200);
 
 
 
@@ -616,6 +623,7 @@ fAliEventCuts->AddQAplotsToList(fOutput);
    //   fOutput->Add(fCorrDet_afterCut);
    fOutput->Add(fHdcaxy);
    fOutput->Add(fHdcaz);
+   fOutput->Add(fTpcNCrossedRows);
 
   PostData(1, fOutput); 
 }
@@ -713,10 +721,19 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
    fVtxZDiff2->Fill(vtxZdiff2);
    fVtxZDiff3->Fill(vtxZdiff3);
 
-    if (TMath::Abs(zv) > 10.0)
+   /*    if (TMath::Abs(zv) > 10.0)
       {
 	return;
-      }
+	}*/
+
+   cout<<" vz b4  "<<zv<<endl;
+
+   if (!(TMath::Abs(zv) < _vZMax))
+     {return;}
+
+   cout<<" vz after  "<<zv<<endl;
+
+
    fEvents->Fill(4);  //primery vertex -10 to 10                              
    fVtxZCut->Fill(vtxZ); // VtxZ after cut on vtxZ
 
@@ -959,7 +976,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
 
        Float_t fMultGlobal  = 0;  // global track multiplicity
        Float_t trkDCAz=0.0,trkDCAxy=0.0,dcaxys=0.0,trkDCAxyA=0.0, trkDCAzA=0.0;
-
+       Float_t nCrossedRowsTPC = -1;
 
 
  for (Int_t iTracks = 0; iTracks <totTrack; iTracks++) {
@@ -1015,6 +1032,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
 
      dcaxys=7*(0.0026+(0.005/(TMath::Power(Pt,1.01))));
 
+     //     cout<<"B4 DCA Z    "<< trkDCAzA<<"DCA XY  " <<trkDCAxyA<<endl;
 
      if (TMath::Abs(trkDCAzA)<_dcaZMax && TMath::Abs(trkDCAxyA)<_dcaXYMax)
        {
@@ -1023,10 +1041,11 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
        }
 	 //	 fHdcaz->Fill(trkDCAzA);
 	 //	 fHdcaxy->Fill(trkDCAxyA);
-
-
-
-
+     cout<<endl;
+     //     cout<<"After DCA Z    "<< trkDCAzA<<" After XY  " <<trkDCAxyA<<endl;
+     nCrossedRowsTPC = track->GetTPCCrossedRows();
+     //     cout<<"nCrossedRowsTPC  "<<nCrossedRowsTPC<<endl;
+     fTpcNCrossedRows->Fill(nCrossedRowsTPC);
 
    //   cout<<" dcaxy BEFORE  "<<TMath::Abs(track->DCA())<<"  dcaz BEFORE "<< TMath::Abs(track->ZAtDCA())<<endl;  
    //if(!(TMath::Abs(track->DCA())<_dcaXYMax))continue;
