@@ -400,7 +400,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
 //Fill Tracks*********************************
 
- if( fOption.Contains("Sys") ){
+ if( fOption.Contains("Sys") && !fOption.Contains("Sep") ){
  CreateTHnSparse("hInvMass","InvMass",6,
 	{binType,binZ,binCent,binPt,binMass,binTrackCutBit},"s");
 /*
@@ -763,6 +763,34 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 100)) this -> FillTracks();
 			} else{ if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks(); }
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+	}
+	else if( IsEventSelectedPbPb && fOption.Contains("2018") ){
+		if( fOption.Contains("SepSysZ") ){
+			if( fabs(fZ) < 7 ){
+				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks();
+				FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+			}
+		}
+		else if( fOption.Contains("SepSysTrk") ){
+			if(this -> GoodTracksSelection(0x60, 5, 3, 2,0.01)) this -> FillTracks();
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+		else if( fOption.Contains("SepSysPID_var1") ){
+			if(this -> GoodTracksSelection(0x20, 5, 3.5, 2,0.01)) this -> FillTracks();
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+		else if( fOption.Contains("SepSysPID_var2") ){
+			if(this -> GoodTracksSelection(0x20, 5, 3, 2.5,0.01)) this -> FillTracks();
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+		else if( fOption.Contains("SepSysPID_var3") ){
+			if(this -> GoodTracksSelection(0x20, 5, 2.5, 2,0.01)) this -> FillTracks();
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+		else if( fOption.Contains("SepSysPID_var4") ){
+			if(this -> GoodTracksSelection(0x20, 5, 3, 1.5,0.01)) this -> FillTracks();
 			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
 		}
 	}
@@ -1681,7 +1709,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 */
 
 		if( track1->Charge()*track2->Charge() == -1 ){
-			if( fOption.Contains("Sys") ){
+			if( fOption.Contains("Sys") && !fOption.Contains("Sep") ){
 			FillTHnSparse("hInvMass",{1,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
@@ -1707,7 +1735,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 			}
 		}
 		else if( track1->Charge() + track2->Charge() == 2 ){
-			if( fOption.Contains("Sys") ){
+			if( fOption.Contains("Sys") && !fOption.Contains("Sep") ){
 			FillTHnSparse("hInvMass",{2,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
@@ -1733,7 +1761,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 			}
 		}
 		else if( track1->Charge() + track2->Charge() == -2 ){
-			if( fOption.Contains("Sys") ){
+			if( fOption.Contains("Sys") && !fOption.Contains("Sep") ){
 			FillTHnSparse("hInvMass",{3,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
