@@ -470,7 +470,7 @@ fAliEventCuts->AddQAplotsToList(fOutput);
 
    ftrack= new TH1D("ftrack","Multiplicity histogram",1000,0.0,5000.0);
   
- const Int_t ndims = 3; //number of dimensions 
+   // const Int_t ndims = 3; //number of dimensions 
      
  /*   TString sparseTitle_beforeCut[ndims] = {"TPCout_beforeCut",
 					   "V0Mult_beforeCut",
@@ -652,7 +652,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
 {
 
 
-  cout<< "I am here 1 "<<endl;
+  //  cout<< "I am here 1 "<<endl;
    fEvents->Fill(0);  //before all cuts
    
    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -660,7 +660,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
      printf("ERROR: fAOD not available\n");
      return;
   }
-    cout<< "I am here 2 "<<endl;
+   //    cout<< "I am here 2 "<<endl;
      fEvents->Fill(1);  //after AOD and before pile up cuts
 
       AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
@@ -670,7 +670,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
 
    if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)) return;    
    
-   cout<< "I am here 3"<<endl;    
+   //   cout<< "I am here 3"<<endl;    
 
    fEvents->Fill(2);  //after pile up cuts
 
@@ -726,12 +726,12 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
 	return;
 	}*/
 
-   cout<<" vz b4  "<<zv<<endl;
+   //   cout<<" vz b4  "<<zv<<endl;
 
    if (!(TMath::Abs(zv) < _vZMax))
      {return;}
 
-   cout<<" vz after  "<<zv<<endl;
+   //   cout<<" vz after  "<<zv<<endl;
 
 
    fEvents->Fill(4);  //primery vertex -10 to 10                              
@@ -800,7 +800,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
     AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
 
     if(!MultSelection) {
-      cout << "AliMultSelection object not found!" << endl;
+      //      cout << "AliMultSelection object not found!" << endl;
       return;
 
     }
@@ -849,7 +849,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
     //    cout<<"########fcentrality#######   before "<<fcentrality<<"  "<<fITSlayer1<<"  "<<fITSlayer2<<"   "<<fTPCCluster<<endl;
     fHistCentralityMultSelection->Fill(fcentrality);
 
-    cout<< "I am here 5"<<endl;    
+    //    cout<< "I am here 5"<<endl;    
 
 
     /*        AliVEvent *ev = InputEvent();
@@ -860,7 +860,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
  
        fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);  */
      fEvents->Fill(8);  //after pile up cuts
-    cout<< "I am here 6"<<endl;    
+     //    cout<< "I am here 6"<<endl;    
 
     //    h2d_tpc_ITSl1_after->Fill(fITSlayer1,fTPCCluster);
     //    h2d_tpc_ITSl2_after->Fill(fITSlayer2,fTPCCluster);
@@ -869,10 +869,10 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
     //     fAliEventCuts->fUseITSTPCCluCorrelationCut = true;
      fEvents->Fill(9);  //after pile up cuts
 
-    cout<<"########fcentrality#######   after  "<<fcentrality<<"  "<<fITSlayer1<<"  "<<fITSlayer2<<"   "<<fTPCCluster<<endl;
+     //    cout<<"########fcentrality#######   after  "<<fcentrality<<"  "<<fITSlayer1<<"  "<<fITSlayer2<<"   "<<fTPCCluster<<endl;
     Int_t totTrack=0;
     totTrack=fAOD->GetNumberOfTracks();
-    cout<<"I m here"<<totTrack<<endl;
+    //    cout<<"I m here"<<totTrack<<endl;
   
     Int_t nParts = 0 ;
     Double_t Q1=0.0, Q2 = 0.0, Q3 = 0.0, Q4=0.0;
@@ -1041,7 +1041,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
        }
 	 //	 fHdcaz->Fill(trkDCAzA);
 	 //	 fHdcaxy->Fill(trkDCAxyA);
-     cout<<endl;
+     //     cout<<endl;
      //     cout<<"After DCA Z    "<< trkDCAzA<<" After XY  " <<trkDCAxyA<<endl;
      nCrossedRowsTPC = track->GetTPCCrossedRows();
      //     cout<<"nCrossedRowsTPC  "<<nCrossedRowsTPC<<endl;
@@ -1077,7 +1077,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
   
  }
  
- cout<<"before cut fNoOfTPCoutTracks XXXXXX  "<<fNoOfTPCoutTracks<<" nParts XXXXXX "<<nParts<<endl;
+ // cout<<"before cut fNoOfTPCoutTracks XXXXXX  "<<fNoOfTPCoutTracks<<" nParts XXXXXX "<<nParts<<endl;
 
  /*if(fcentrality > 0.0 && fcentrality < 2.5 && nParts>2000)
 
