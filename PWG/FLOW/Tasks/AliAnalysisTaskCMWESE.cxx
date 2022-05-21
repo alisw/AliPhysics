@@ -1014,13 +1014,13 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   }
 
   // pt,eta Vs. Ach
-  pbufferPt_thisEvt               = new TProfile("pbufferPt_thisEvt", "", 10, 0, 10);
-  pbufferEta_thisEvt             = new TProfile("pbufferEta_thisEvt", "", 10, 0, 10);
+  pbufferPt_thisEvt               = new TProfile("pbufferPt_thisEvt", "", 10, 0, 10, "s");
+  pbufferEta_thisEvt             = new TProfile("pbufferEta_thisEvt", "", 10, 0, 10, "s");
   for (int i = 0; i < NCENTBINS; ++i) {
-    pPosPtAch[i]       = new TProfile(Form("pPosPtAch_cent%i", i), "", 31, -1, 1);
-    pNegPtAch[i]      = new TProfile(Form("pNegPtAch_cent%i", i), "", 31, -1, 1);    
-    pPosEtaAch[i]     = new TProfile(Form("pPosEtaAch_cent%i", i), "", 31, -1, 1);
-    pNegEtaAch[i]     = new TProfile(Form("pNegEtaAch_cent%i", i), "", 31, -1, 1);  
+    pPosPtAch[i]       = new TProfile(Form("pPosPtAch_cent%i", i), "", 31, -1, 1, "s");
+    pNegPtAch[i]      = new TProfile(Form("pNegPtAch_cent%i", i), "", 31, -1, 1, "s");    
+    pPosEtaAch[i]     = new TProfile(Form("pPosEtaAch_cent%i", i), "", 31, -1, 1, "s");
+    pNegEtaAch[i]     = new TProfile(Form("pNegEtaAch_cent%i", i), "", 31, -1, 1, "s");  
   }
   for (int i = fCbinLo; i < fCbinHg; ++i) {
     fOutputList->Add(pPosPtAch[i]);
