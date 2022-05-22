@@ -37,7 +37,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 				} else printf("AddTask: Could not find pool manager\n");
 				fPoolFile->Close();
 			} else {
-				AliError("Could not open mixed event pool file");
+				printf("AddTask: Could not find event pool file\n");
 			}
 		}
 
