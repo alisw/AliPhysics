@@ -21,6 +21,7 @@
 #include "AliAODMCParticle.h"
 #include "AliEventCuts.h"
 #include "AliAODMCHeader.h"
+#include "TCanvas.h"
 
 
 using namespace std;            // std namespace: so you can do things like 'cout'
@@ -67,49 +68,45 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
       fOutputList = new TList();
       fOutputList->SetOwner(kTRUE);
     }
+//______________________________________ Raw Data:
 
-    //______________________________________ Raw Data:
-    
     MultHist = new TH1D("MultHist", "Mult", 4000, 0, 4000);
     fOutputList->Add(MultHist);
     MultHist->SetTitle("Multiplicity Distribution - Data");
     MultHist->SetXTitle("N_{ch}");
     MultHist->SetYTitle("Number of Events");
     MultHist->SetMarkerSize(1.2);
-              
+          
     MultPtHist = new TH2D("MultPtHist", "MultpT", 4000, 0, 4000, 50, 0, 5);
     fOutputList->Add(MultPtHist);
     MultPtHist->SetTitle("pT vs Multiplicity - Data");
     MultPtHist->SetXTitle("N_{ch}");
     MultPtHist->SetYTitle("pT");
     MultPtHist->SetMarkerSize(1.2);
-    if(fIsMC) {
-        //______________________________________ Reconstructed:
-        MultPtHistRec = new TH2D("MultPtHistRec", "MultPt-Rec", 4000, 0, 4000, 50, 0, 5);
-        fOutputList->Add(MultPtHistRec);
-        MultPtHistRec->SetTitle("pT vs Reconstructed Multiplicity");
-        MultPtHistRec->SetXTitle("Reconstructed N_{ch}");
-        MultPtHistRec->SetYTitle("pT");
-        MultPtHistRec->SetMarkerSize(1.2);
-        //______________________________________ Generated:
-        MultPtHistGen = new TH2D("MultPtHistGen", "MultPt-Gen", 4000, 0, 4000, 50, 0, 5);
-        fOutputList->Add(MultPtHistGen);
-        MultPtHistGen->SetTitle("pT vs Generated Multiplicity");
-        MultPtHistGen->SetXTitle("Generated N_{ch}");
-        MultPtHistGen->SetYTitle("pT");
-        MultPtHistGen->SetMarkerSize(1.2);
-        //______________________________________ Ratio of Gen mult over Rec mult:
-        MultHistRatio = new TH2D("MultHistRatio", "Ratio",  4000, 0, 4000, 4000, 0, 4000);
-        fOutputList->Add(MultHistRatio);
-        MultHistRatio->SetTitle("Generated Multiplicity vs Reconstructed");
-        MultHistRatio->SetXTitle("Reconstructed N_{ch}");
-        MultHistRatio->SetYTitle("Generated N_{ch}");
-        MultHistRatio->SetMarkerSize(1.2);
-    }
-
+    //______________________________________ Reconstructed:
+    MultPtHistRec = new TH2D("MultPtHistRec", "MultPt-Rec", 4000, 0, 4000, 50, 0, 5);
+    fOutputList->Add(MultPtHistRec);
+    MultPtHistRec->SetTitle("pT vs Reconstructed Multiplicity");
+    MultPtHistRec->SetXTitle("Reconstructed N_{ch}");
+    MultPtHistRec->SetYTitle("pT");
+    MultPtHistRec->SetMarkerSize(1.2);
+    //______________________________________ Generated:
+    MultPtHistGen = new TH2D("MultPtHistGen", "MultPt-Gen", 4000, 0, 4000, 50, 0, 5);
+    fOutputList->Add(MultPtHistGen);
+    MultPtHistGen->SetTitle("pT vs Generated Multiplicity");
+    MultPtHistGen->SetXTitle("Generated N_{ch}");
+    MultPtHistGen->SetYTitle("pT");
+    MultPtHistGen->SetMarkerSize(1.2);
+    //______________________________________ Ratio of Gen mult over Rec mult:
+    MultHistRatio = new TH2D("MultHistRatio", "Ratio",  4000, 0, 4000, 4000, 0, 4000);
+    fOutputList->Add(MultHistRatio);
+    MultHistRatio->SetTitle("Generated Multiplicity vs Reconstructed");
+    MultHistRatio->SetXTitle("Reconstructed N_{ch}");
+    MultHistRatio->SetYTitle("Generated N_{ch}");
+    MultHistRatio->SetMarkerSize(1.2);
     // add the list to our output file
     PostData(1, fOutputList);
-    //PostData(1, mixer);
+
     }
 
 //___________________________________________________________________________________
@@ -165,6 +162,7 @@ void AliAnalysisMultPt::UserExec(Option_t *)
             if(!fIsRunFBOnly){
                 if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof
             }
+            
             if(track->Charge()==0) continue;//only get charged tracks
             if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
             if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
@@ -174,12 +172,16 @@ void AliAnalysisMultPt::UserExec(Option_t *)
         
         //Number of events vs multiplicity
         MultHist->Fill(Mult);
-
+        
         for( Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
             // get a track (type AliAODTrack) from the event:
             AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
             // if we failed, skip this track:
             if(!track) continue;
+            if(!fIsRunFBOnly){
+                if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof
+            }
+            
             if(track->Charge()==0) continue;//only get charged tracks
             if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
             if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
@@ -209,9 +211,6 @@ void AliAnalysisMultPt::UserExec(Option_t *)
             Float_t crossedrows = track->GetTPCNCrossedRows();
             Float_t chi2 = track->Chi2perNDF();
             Float_t ncl = track->GetTPCNcls();
-            Int_t isfb = 0;
-            if(track->TestFilterBit(fBit)) isfb=1;
-            if(isfb==0) continue; //choose filterbit
             if(ncl<fTPCNcls || crossedrows<fTPCNCrossedRows || chi2 > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof
             if(abs(chargeMCRec)<=1) continue;
             if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
@@ -234,9 +233,6 @@ void AliAnalysisMultPt::UserExec(Option_t *)
             Float_t crossedrows = track->GetTPCNCrossedRows();
             Float_t chi2 = track->Chi2perNDF();
             Float_t ncl = track->GetTPCNcls();
-            Int_t isfb = 0;
-            if(track->TestFilterBit(fBit)) isfb=1;
-            if(isfb==0) continue;//choose filterbit
             if(ncl<fTPCNcls || crossedrows<fTPCNCrossedRows || chi2 > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof
             if(abs(chargeMCRec)<=1) continue;
             if(etarec > fEtaMax || etarec < fEtaMin) continue; //eta cut
@@ -278,8 +274,6 @@ void AliAnalysisMultPt::UserExec(Option_t *)
         //Generated Mult vs Reconstructed Mult
         MultHistRatio->Fill(MultRec, MultGen);
     }
-    
-    PostData(1, fOutputList);
 }
 
 //________________________________________________________________________
