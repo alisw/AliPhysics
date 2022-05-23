@@ -40,6 +40,7 @@ struct MiniLambdaMC : public MiniLambda {
   float etaMC;
   float ctMC;
   float yMC;
+  float ptMotherMC;
   int pdg;
   bool isPrimary;
   bool isReconstructed;
@@ -102,8 +103,10 @@ class AliAnalysisTaskStrangenessRatios : public AliAnalysisTaskSE {
 public:
   enum StatusFlag {
     kPrimary = BIT(0),
-    kSecondaryFromWD = BIT(1),
-    kSecondaryFromMaterial = BIT(2)
+    kSecondaryFromWDXi = BIT(1),
+    kSecondaryFromWDOmega = BIT(2),
+    kSecondaryFromWD = BIT(3),
+    kSecondaryFromMaterial = BIT(4)
   };
 
   AliAnalysisTaskStrangenessRatios(bool isMC = false, TString taskname = "StrangenessRatios");
