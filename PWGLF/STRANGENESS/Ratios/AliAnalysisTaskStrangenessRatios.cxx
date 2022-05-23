@@ -398,7 +398,23 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           if (lambda->IsPrimary())
             fGenLambda.flag |= kPrimary;
           else
-            fGenLambda.flag |= lambda->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
+          {
+            if (lambda->IsSecondaryFromWeakDecay())
+            {
+              int mothLambda = lambda->GetMother();
+              auto mother = (AliAODMCParticle *)fMCEvent->GetTrack(mothLambda);
+              switch (std::abs(mother->GetPdgCode())){
+                case kXiPdg:
+                  fGenLambda.flag |= kSecondaryFromWDXi;
+                case kOmegaPdg:
+                  fGenLambda.flag |= kSecondaryFromWDOmega;
+                default:
+                  fGenLambda.flag |= kSecondaryFromWD;
+              }
+              fGenLambda.ptMotherMC = mother->Pt();
+            }
+            else fGenLambda.flag |= kSecondaryFromMaterial;
+          }
         }
         if (fOnlyTrueLambdas && fGenLambda.pdg == 0)
           continue;
@@ -590,7 +606,23 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         if (track->IsPrimary())
           fGenLambda.flag |= kPrimary;
         else
-          fGenLambda.flag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
+        {
+          if (track->IsSecondaryFromWeakDecay())
+          {
+            int mothLambda = track->GetMother();
+            auto mother = (AliAODMCParticle *)fMCEvent->GetTrack(mothLambda);
+            switch (std::abs(mother->GetPdgCode())){
+              case kXiPdg:
+                fGenLambda.flag |= kSecondaryFromWDXi;
+              case kOmegaPdg:
+                fGenLambda.flag |= kSecondaryFromWDOmega;
+              default:
+                fGenLambda.flag |= kSecondaryFromWD;
+            }
+            fGenLambda.ptMotherMC = mother->Pt();
+          }
+          else fGenLambda.flag |= kSecondaryFromMaterial;
+        }
 
         fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * track->M() / track->P();
         fTreeLambda->Fill();
