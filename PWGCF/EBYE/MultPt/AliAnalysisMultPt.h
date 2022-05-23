@@ -48,6 +48,10 @@ class AliAnalysisMultPt : public AliAnalysisTaskSE
         TH2D                    *MultPtHistRec;    //! pT-Mult MC histogram
         TH2D                    *MultPtHistGen;    //! pT-Mult MC histogram
         TH2D                    *MultHistRatio;    //! Ratio of Gen mult vs rec mult histogram
+        TH1D                    *fptRatio;         //!pt ratio
+    
+    
+    
     
         Bool_t          fIsMC;                     //! MC flag
         Double_t        fPtmin;                    //! min PT
