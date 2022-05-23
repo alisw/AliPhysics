@@ -187,7 +187,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  binMtRho = AxisVar("binMtPion",binRhoMt);
  binMtPhi = AxisVar("binMtPion",binPhiMt);
 
- binEP = AxisFix("binEP",8,0,TMath::Pi());
+ binEP = AxisFix("binEP",10,0,TMath::Pi());
 
  fHistos = new THistManager("Inclusivef0f2hists");
 
@@ -524,6 +524,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( fOption.Contains("UseZNA") ){ fCent = sel->GetMultiplicityPercentile("ZNA"); } 
  
  fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) );
+ if( fOption.Contains("PbPb") && fOption.Contains("MBOnly") ) fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7) );
  if( fOption.Contains("PbPb") && (
 	( fCent > 10  && fCent < 30 ) || ( fCent > 50 ) ) ){
 	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7) );
