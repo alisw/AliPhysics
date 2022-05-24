@@ -476,7 +476,7 @@ fAliEventCuts->AddQAplotsToList(fOutput);
 
    ftrack= new TH1D("ftrack","Multiplicity histogram",1000,0.0,5000.0);
   
- const Int_t ndims = 3; //number of dimensions 
+   // const Int_t ndims = 3; //number of dimensions 
      
  /*   TString sparseTitle_beforeCut[ndims] = {"TPCout_beforeCut",
 					   "V0Mult_beforeCut",
@@ -809,7 +809,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
     AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
 
     if(!MultSelection) {
-            cout << "AliMultSelection object not found!" << endl;
+      //            cout << "AliMultSelection object not found!" << endl;
       return;
 
     }
@@ -869,7 +869,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
  
        fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);  */
      fEvents->Fill(8);  //after pile up cuts
-       cout<< "I am here 6"<<endl;    
+     //       cout<< "I am here 6"<<endl;    
 
     //    h2d_tpc_ITSl1_after->Fill(fITSlayer1,fTPCCluster);
     //    h2d_tpc_ITSl2_after->Fill(fITSlayer2,fTPCCluster);
@@ -878,10 +878,10 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
     //     fAliEventCuts->fUseITSTPCCluCorrelationCut = true;
      fEvents->Fill(9);  //after pile up cuts
 
-         cout<<"########fcentrality#######   after  "<<fcentrality<<"  "<<fITSlayer1<<"  "<<fITSlayer2<<"   "<<fTPCCluster<<endl;
+     //         cout<<"########fcentrality#######   after  "<<fcentrality<<"  "<<fITSlayer1<<"  "<<fITSlayer2<<"   "<<fTPCCluster<<endl;
     Int_t totTrack=0;
     totTrack=fAOD->GetNumberOfTracks();
-    cout<<"I m here"<<totTrack<<endl;
+    //    cout<<"I m here"<<totTrack<<endl;
   
     Int_t nParts = 0 ;
     Double_t Q1=0.0, Q2 = 0.0, Q3 = 0.0, Q4=0.0;
@@ -1100,7 +1100,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
   
  }
  
- cout<<"before cut fNoOfTPCoutTracks XXXXXX  "<<fNoOfTPCoutTracks<<" nParts XXXXXX "<<nParts<<endl;
+ // cout<<"before cut fNoOfTPCoutTracks XXXXXX  "<<fNoOfTPCoutTracks<<" nParts XXXXXX "<<nParts<<endl;
 
  /*if(fcentrality > 0.0 && fcentrality < 2.5 && nParts>2000)
 
@@ -1282,8 +1282,7 @@ Bool_t AliAnalysisMeanPtdata::StoreEventMultiplicities(AliVEvent *ev)
 
       //      cout << "_max_eta_1: "<<_max_eta_1<<"\t" << "_nClusterMin: "<<_nClusterMin<<endl;
       //      if (/*(TMath::Abs(aodt->Eta()) < 0.8) &&*/ (aodt->GetTPCNcls() >= _nClusterMin)/* && (aodt->Pt() >= 0.15) && (aodt->Pt() < 2.)*/)
-	
-      if(AcceptTrack(aodt))
+	      if(AcceptTrack(aodt))
 	{
     	  /*  if ((aodt->GetStatus() & AliVTrack::kTPCout) && aodt->GetID() > 0 )  */ fNoOfTPCoutTracks++;
 	}
