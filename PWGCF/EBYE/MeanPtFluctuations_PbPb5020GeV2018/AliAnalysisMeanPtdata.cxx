@@ -87,6 +87,8 @@ AliAnalysisMeanPtdata::AliAnalysisMeanPtdata() // All data members should be ini
  _dcaXYMax             (  2.4),
  _chi2perTPC             (36),
  _chi2perITS             (36),
+ _nTPCCrossRows (120),
+  _pileUpEvent(0),
   _vZMin(0),
   _vZMax(10),
   _fhV0MvsTracksTPCout_before(0),
@@ -170,6 +172,7 @@ AliAnalysisMeanPtdata::AliAnalysisMeanPtdata() // All data members should be ini
   fHdcaz(0),
   fHdcaxy(0),
   fTpcNCrossedRows(0),
+  fTpcNCluster(0),
   fcentnpart2d_1(0)
 
   //  fEventCuts(0) 
@@ -204,6 +207,8 @@ _profV0MvsTPCout(0),
  _dcaXYMax             (  2.4),
  _chi2perTPC             (36),
  _chi2perITS             (36),
+ _nTPCCrossRows (120),
+  _pileUpEvent(0),
  _vZMin(0),
  _vZMax(10),
  _fhV0MvsTracksTPCout_before(0),
@@ -290,6 +295,7 @@ fHistPt(0),
   fHdcaz(0),
   fHdcaxy(0),
   fTpcNCrossedRows(0),
+  fTpcNCluster(0),
   fcentnpart2d_1(0)
 
   //  fEventCuts(0)
@@ -470,7 +476,7 @@ fAliEventCuts->AddQAplotsToList(fOutput);
 
    ftrack= new TH1D("ftrack","Multiplicity histogram",1000,0.0,5000.0);
   
-   // const Int_t ndims = 3; //number of dimensions 
+ const Int_t ndims = 3; //number of dimensions 
      
  /*   TString sparseTitle_beforeCut[ndims] = {"TPCout_beforeCut",
 					   "V0Mult_beforeCut",
@@ -518,7 +524,9 @@ fAliEventCuts->AddQAplotsToList(fOutput);
    fHdcaxy = new TH1F("fHdcaxy","fHdcaxy",1000,-3,3);
 
    fHdcaz = new TH1F("fHdcaz","fHdcaz",1000,-3,3);
+
    fTpcNCrossedRows = new TH1D("fTpcNCrossedRows","fTpcNCrossedRows",200,0,200);
+   fTpcNCluster = new TH1D("fTpcNCluster","fTpcNCluster",200,0,200);
 
 
 
@@ -624,6 +632,7 @@ fAliEventCuts->AddQAplotsToList(fOutput);
    fOutput->Add(fHdcaxy);
    fOutput->Add(fHdcaz);
    fOutput->Add(fTpcNCrossedRows);
+   fOutput->Add(fTpcNCluster);
 
   PostData(1, fOutput); 
 }
@@ -800,7 +809,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
     AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
 
     if(!MultSelection) {
-      //      cout << "AliMultSelection object not found!" << endl;
+            cout << "AliMultSelection object not found!" << endl;
       return;
 
     }
@@ -860,7 +869,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
  
        fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);  */
      fEvents->Fill(8);  //after pile up cuts
-     //    cout<< "I am here 6"<<endl;    
+       cout<< "I am here 6"<<endl;    
 
     //    h2d_tpc_ITSl1_after->Fill(fITSlayer1,fTPCCluster);
     //    h2d_tpc_ITSl2_after->Fill(fITSlayer2,fTPCCluster);
@@ -869,10 +878,10 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
     //     fAliEventCuts->fUseITSTPCCluCorrelationCut = true;
      fEvents->Fill(9);  //after pile up cuts
 
-     //    cout<<"########fcentrality#######   after  "<<fcentrality<<"  "<<fITSlayer1<<"  "<<fITSlayer2<<"   "<<fTPCCluster<<endl;
+         cout<<"########fcentrality#######   after  "<<fcentrality<<"  "<<fITSlayer1<<"  "<<fITSlayer2<<"   "<<fTPCCluster<<endl;
     Int_t totTrack=0;
     totTrack=fAOD->GetNumberOfTracks();
-    //    cout<<"I m here"<<totTrack<<endl;
+    cout<<"I m here"<<totTrack<<endl;
   
     Int_t nParts = 0 ;
     Double_t Q1=0.0, Q2 = 0.0, Q3 = 0.0, Q4=0.0;
@@ -910,10 +919,14 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
 
     if( fAOD )
       {
-	if (!fAliEventCuts->AcceptEvent(fAOD))//fAliEventCuts
-	  {PostData(1,fOutput);
-	    return;}
-
+	if(_pileUpEvent) // 0=goes out, 1=goes in-pile up cut applied
+	  {
+	    if (!fAliEventCuts->AcceptEvent(fAOD))//fAliEventCuts //pile up cut applied
+	      {PostData(1,fOutput);
+		return;}
+	    fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+	    fAliEventCuts->fUseITSTPCCluCorrelationCut = true;
+	  }
 	    StoreEventMultiplicities( fAOD );
 
 	    spdTracklet = MultSelection->GetMultiplicityPercentile("SPDTracklets");
@@ -968,19 +981,17 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
        if(!fAliEventCuts->AcceptEvent(ev))
 	 {PostData(1,fOutput);
 	 return;}*/
-       fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
-       fAliEventCuts->fUseITSTPCCluCorrelationCut = true;
-
-
 
 
        Float_t fMultGlobal  = 0;  // global track multiplicity
        Float_t trkDCAz=0.0,trkDCAxy=0.0,dcaxys=0.0,trkDCAxyA=0.0, trkDCAzA=0.0;
        Float_t nCrossedRowsTPC = -1;
+       Float_t nTPCNcls = -1;
 
 
  for (Int_t iTracks = 0; iTracks <totTrack; iTracks++) {
  
+
    AliAODTrack* track =(AliAODTrack*)fAOD->GetTrack(iTracks);
   
    if (!track) {
@@ -1033,19 +1044,31 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
      dcaxys=7*(0.0026+(0.005/(TMath::Power(Pt,1.01))));
 
      //     cout<<"B4 DCA Z    "<< trkDCAzA<<"DCA XY  " <<trkDCAxyA<<endl;
+   //   if(!(track->GetTPCchi2perCluster()<_chi2perTPC))continue;
 
-     if (TMath::Abs(trkDCAzA)<_dcaZMax && TMath::Abs(trkDCAxyA)<_dcaXYMax)
-       {
-	 fHdcaz->Fill(trkDCAzA);
-	 fHdcaxy->Fill(trkDCAxyA);
-       }
-	 //	 fHdcaz->Fill(trkDCAzA);
-	 //	 fHdcaxy->Fill(trkDCAxyA);
-     //     cout<<endl;
-     //     cout<<"After DCA Z    "<< trkDCAzA<<" After XY  " <<trkDCAxyA<<endl;
+   //  cout<<"Before Dca z  "<<TMath::Abs(trkDCAzA)<<" Dca z max  "<<_dcaZMax<<" dca xy "<<TMath::Abs(trkDCAxyA)<<" dca xy max  "<<_dcaXYMax<<" Tpc crossrows "<<nCrossedRowsTPC<<" Tpc crossrows max  "<<_nTPCCrossRows<<endl;
+   
+
+     if (!(TMath::Abs(trkDCAzA)<_dcaZMax && TMath::Abs(trkDCAxyA)<_dcaXYMax))continue; 
      nCrossedRowsTPC = track->GetTPCCrossedRows();
-     //     cout<<"nCrossedRowsTPC  "<<nCrossedRowsTPC<<endl;
+     nTPCNcls=track->GetTPCNcls();
+
+       if(!(nCrossedRowsTPC < _nTPCCrossRows))continue;
+       if(!(nTPCNcls < _nClusterMin))continue;
+
+     
+
+     //cout<<"After Dca z  "<<TMath::Abs(trkDCAzA)<<" Dca z max  "<<_dcaZMax<<" dca xy "<<TMath::Abs(trkDCAxyA)<<" dca xy max  "<<_dcaXYMax<<" Tpc crossrows "<<nCrossedRowsTPC<<" Tpc crossrows max  "<<_nTPCCrossRows<<endl;
+
+     fHdcaz->Fill(trkDCAzA);
+     fHdcaxy->Fill(trkDCAxyA);
      fTpcNCrossedRows->Fill(nCrossedRowsTPC);
+     fTpcNCluster->Fill(nTPCNcls);
+
+     //     cout<<"After DCA Z    "<< trkDCAzA<<" After XY  " <<trkDCAxyA<<endl;
+     
+     //     cout<<"nCrossedRowsTPC  "<<nCrossedRowsTPC<<endl;
+
 
    //   cout<<" dcaxy BEFORE  "<<TMath::Abs(track->DCA())<<"  dcaz BEFORE "<< TMath::Abs(track->ZAtDCA())<<endl;  
    //if(!(TMath::Abs(track->DCA())<_dcaXYMax))continue;
@@ -1077,7 +1100,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
   
  }
  
- // cout<<"before cut fNoOfTPCoutTracks XXXXXX  "<<fNoOfTPCoutTracks<<" nParts XXXXXX "<<nParts<<endl;
+ cout<<"before cut fNoOfTPCoutTracks XXXXXX  "<<fNoOfTPCoutTracks<<" nParts XXXXXX "<<nParts<<endl;
 
  /*if(fcentrality > 0.0 && fcentrality < 2.5 && nParts>2000)
 
