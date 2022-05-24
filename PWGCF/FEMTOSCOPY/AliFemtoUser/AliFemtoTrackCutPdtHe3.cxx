@@ -160,7 +160,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	}
     }
 
-
     // ITS cluster requirenments
     for (Int_t i = 0; i < 3; i++) {
         if (!CheckITSClusterRequirement(fCutClusterRequirementITS[i], track->HasPointOnITSLayer(i * 2), track->HasPointOnITSLayer(i*2+1))) {
@@ -295,7 +294,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
         fNTracksFailed++;
         return false;
     }
-
     //****N Sigma Method -- electron rejection****
     if (fElectronRejection)
         if (!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP()))
@@ -371,7 +369,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
             
         }
         
-        //cout<<"AliFemtoTrackCutPdtHe3 "<<track->ImpactD()<<" "<<track->ImpactZ()<<endl;
         fNTracksPassed++ ;
         return true;
     
