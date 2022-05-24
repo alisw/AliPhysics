@@ -406,10 +406,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
               switch (std::abs(mother->GetPdgCode())){
                 case kXiPdg:
                   fGenLambda.flag |= kSecondaryFromWDXi;
+                break;
                 case kOmegaPdg:
                   fGenLambda.flag |= kSecondaryFromWDOmega;
+                break;
                 default:
                   fGenLambda.flag |= kSecondaryFromWD;
+                break;
               }
               fGenLambda.ptMotherMC = mother->Pt();
             }
@@ -614,10 +617,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
             switch (std::abs(mother->GetPdgCode())){
               case kXiPdg:
                 fGenLambda.flag |= kSecondaryFromWDXi;
+              break;
               case kOmegaPdg:
                 fGenLambda.flag |= kSecondaryFromWDOmega;
+              break;
               default:
                 fGenLambda.flag |= kSecondaryFromWD;
+              break;
             }
             fGenLambda.ptMotherMC = mother->Pt();
           }
