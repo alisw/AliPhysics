@@ -31,7 +31,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   TString configBasePath= "/data4/jung/localLegotrainNewEfficiency/";
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/j/jjung/%s .",configFile.Data())))
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/j/jjung/%s file:./",configFile.Data())))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
@@ -75,7 +75,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
  
   task->SetTriggerMask(triggerNames); 
   task->SetEventFilter(SetupEventCuts(wagonnr)); //returns eventCuts from Config.
-  task->SetCentrality(centMin, centMax);
+  if(wagonnr!=0) task->SetCentrality(centMin, centMax);
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
@@ -156,9 +156,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   // #########################################################
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
-  task->SetCentralityFile(centralityFilename);
-  task->SetCentralityFile(centralityFilename,centralityFilenameFromAlien);
-
+  if(wagonnr!=0){
+    task->SetCentralityFile(centralityFilename);
+    task->SetCentralityFile(centralityFilename,centralityFilenameFromAlien);
+  }
   // #########################################################
   // #########################################################
   // Set MCSignal and Cutsetting to fill the support histograms
@@ -198,7 +199,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   if(calibFileName != "") rootfile = TFile::Open(calibFileName.c_str(),"READ");
   if(calibFileNameFromAlien != "" && !rootfile && getFromAlien){
     std::cout << "Location in AliEN: " << calibFileNameFromAlien << std::endl;
-    gSystem->Exec(Form("alien_cp alien://%s .", calibFileNameFromAlien.c_str()));
+    gSystem->Exec(Form("alien_cp alien://%s file:./", calibFileNameFromAlien.c_str()));
     std::cout << "Copy resolution from Alien" << std::endl;
     rootfile = TFile::Open(calibFileName.c_str(), "READ");
 
