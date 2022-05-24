@@ -96,8 +96,8 @@ AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::AliAnalysisTaskCorrelationhK0sXi_Pu
   fHistPtMaxvsMult(0), 
   fHistPtMaxvsMultBefAll(0), 
   fHistZvertex(0),  
-  fHistMultMidvsForwardRap(0),
-  fHistMultMidvsForwardRapvsPt(0),
+  fHistMultForwardvsMidRap(0),
+  fHistMultForwardvsMidRapvsPt(0),
   fHistFractionSharedTPCClusters(0),
   fHistNumberChargedAllEvents(0),
   fHistNumberChargedNoTrigger(0),
@@ -247,8 +247,8 @@ AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::AliAnalysisTaskCorrelationhK0sXi_Pu
   fHistPtMaxvsMult(0), 
   fHistPtMaxvsMultBefAll(0), 
   fHistZvertex(0),  
-  fHistMultMidvsForwardRap(0),
-  fHistMultMidvsForwardRapvsPt(0),
+  fHistMultForwardvsMidRap(0),
+  fHistMultForwardvsMidRapvsPt(0),
   fHistFractionSharedTPCClusters(0),
   fHistNumberChargedAllEvents(0),
   fHistNumberChargedNoTrigger(0),
@@ -552,14 +552,14 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserCreateOutputObjects()
 
   fHistZvertex= new TH1F("fHistZvertex", "Z vertex distribution of selected events used for AC", 40,-20,20);
 
-  fHistMultMidvsForwardRap = new TH2F("fHistMultMidvsForwardRap", "dN/deta at midrapidity vs charged particles in V0 acceptance in events with a trigger particle", NumBinsMult,0,UpperLimitMult,300, 0, 300);
-  fHistMultMidvsForwardRap->GetXaxis()->SetTitle("N charged particles in V0 acceptance");
-  fHistMultMidvsForwardRap->GetYaxis()->SetTitle("N charged particles at midrapidity (|#eta|<0.5)");
+  fHistMultForwardvsMidRap = new TH2F("fHistMultForwardvsMidRap", "Charged particles in V0 acceptance vs dN/deta at midrapidity in events with a trigger particle", NumBinsMult,0,UpperLimitMult,300, 0, 300);
+  fHistMultForwardvsMidRap->GetXaxis()->SetTitle("N charged particles at midrapidity (|#eta|<0.5)");
+  fHistMultForwardvsMidRap->GetYaxis()->SetTitle("N charged particles in V0 acceptance");
 
-  fHistMultMidvsForwardRapvsPt = new TH3F("fHistMultMidvsForwardRapvsPt", "dN/deta at midrapidity vs charged particles in V0 acceptance in events with a trigger particle", NumBinsMult,0,UpperLimitMult,300, 0, 300, 300, 0, 30);
-  fHistMultMidvsForwardRapvsPt->GetXaxis()->SetTitle("N charged particles in V0 acceptance");
-  fHistMultMidvsForwardRapvsPt->GetYaxis()->SetTitle("N charged particles at midrapidity (|#eta|<0.5)");
-  fHistMultMidvsForwardRapvsPt->GetZaxis()->SetTitle("p_{T} trigger particle");
+  fHistMultForwardvsMidRapvsPt = new TH3F("fHistMultForwardvsMidRapvsPt", "Charged particles in V0 acceptance vs dN/deta at midrapidity in events with a trigger particle", NumBinsMult,0,UpperLimitMult,300, 0, 300, 300, 0, 30);
+  fHistMultForwardvsMidRapvsPt->GetXaxis()->SetTitle("N charged particles at midrapidity (|#eta|<0.5)");
+  fHistMultForwardvsMidRapvsPt->GetYaxis()->SetTitle("N charged particles in V0 acceptance");
+  fHistMultForwardvsMidRapvsPt->GetZaxis()->SetTitle("p_{T} trigger particle");
 
   fHistFractionSharedTPCClusters = new TH1F ("fHistFractionSharedTPCClusters", "fHistFractionSharedTPCClusters",100, 0,1);
 
@@ -825,8 +825,8 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserCreateOutputObjects()
   
   //istogrammi riempiti ad ogni evento selezionato (ossia utilizzato per AC) con una entry
   fOutputList->Add(fHistZvertex);
-  fOutputList->Add(fHistMultMidvsForwardRap);
-  fOutputList->Add(fHistMultMidvsForwardRapvsPt);
+  fOutputList->Add(fHistMultForwardvsMidRap);
+  fOutputList->Add(fHistMultForwardvsMidRapvsPt);
   fOutputList->Add(fHistNumberChargedAllEvents);
   fOutputList->Add(fHistNumberChargedTrigger);
   fOutputList->Add(fHistNumberChargedNoTrigger);
@@ -949,8 +949,6 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
 
   fHistEventMult->Fill(3);   
 
-  //  cout << fMCEvent->GetNumberOfTracks() << endl;
-
   // Multiplicity Information Acquistion    
   Float_t lNchEta5   = 0;
   Float_t lNchEta8   = 0;
@@ -969,13 +967,9 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
       //      TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack); //stack
       TParticle* particleOne = static_cast<TParticle*>(fMCEvent->Particle(iCurrentLabelStack));
       if(!particleOne) continue;
-      //      cout << "I found the particle " << endl;
       if(!particleOne->GetPDG()) continue;
-      //      cout << "I found the particle with the PDG" << endl;
       Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
-      //      cout <<"charge: " << lThisCharge << " eta " << particleOne -> Eta() << endl;
       if(TMath::Abs(lThisCharge)<0.001) continue;
-      //      if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue; //stack
       if(! (fMCEvent->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
 
       //Double_t gpt = particleOne -> Pt();
@@ -1201,8 +1195,8 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
     return;
   }
 
-  fHistMultMidvsForwardRap->Fill(lNchEta5, lPercentiles);
-  fHistMultMidvsForwardRapvsPt->Fill(lNchEta5, lPercentiles, ptTriggerMassimoMC);
+  fHistMultForwardvsMidRap->Fill(lNchEta5, lPercentiles);
+  fHistMultForwardvsMidRapvsPt->Fill(lNchEta5, lPercentiles, ptTriggerMassimoMC);
   fHist_multiplicity_EvwTrigger->Fill(lPercentiles);
   fHistTrack->AddBinContent(8, NumberFirstParticleMC);
   fHistTriggerCompositionMCTruth->Fill(TriggerPdgCode,1,ptTriggerMassimoMC);
@@ -1236,7 +1230,6 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
   if(fV0=="K0s") ParticleType =0;
   if(fV0=="Lambda") ParticleType=1;
   if(fV0=="Xi") ParticleType=2;
-  
   
   //  cout << " beginning loop for associated particles (MCtruth) " << endl;
   //begin MC truth loop for K0s particles as associated 

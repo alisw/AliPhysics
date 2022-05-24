@@ -90,8 +90,8 @@ class AliAnalysisTaskCorrelationhK0sXi_PureMCOnly : public AliAnalysisTaskSE
   TH2F*                   fHistPtMaxvsMult;                 //! 
   TH2F*                   fHistPtMaxvsMultBefAll;           //! 
   TH1F*                   fHistZvertex;                     //!
-  TH2F*                   fHistMultMidvsForwardRap;         //!
-  TH3F*                   fHistMultMidvsForwardRapvsPt;     //!
+  TH2F*                   fHistMultForwardvsMidRap;         //!
+  TH3F*                   fHistMultForwardvsMidRapvsPt;     //!
   TH1F*                   fHistFractionSharedTPCClusters;   //!
   TH3F*                   fHistNumberChargedAllEvents;      //!
   TH3F*                   fHistNumberChargedNoTrigger;      //!
