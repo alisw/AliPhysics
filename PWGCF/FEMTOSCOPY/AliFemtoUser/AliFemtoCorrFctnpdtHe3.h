@@ -66,6 +66,7 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetfUsePt(int aUsePt);
 	void SetfUseDPhiDEtaQA(int aUseDPhiDEtaQA);
 	void SetDPhiDEtaQAInit(bool aDPhiDEtaQA);
+        float ReAvgDphi(AliFemtoPair* aPair);
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -123,17 +124,11 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	int fUsePt;
 	int fUseDPhiDEtaQA;
 	
-	TH3F *fNumHigh3FDPhiDEtaQA;
-	TH3F *fDumHigh3FDPhiDEtaQA;
-	TH3F *fNumHigh3FDPhiDEtaQAvsKStar;
-	TH3F *fDumHigh3FDPhiDEtaQAvsKStar;
+	TH2F *fNumDPhiDEtaQA;
+	TH2F *fDumDPhiDEtaQA;
+	TH2F *fNumDPhiDEtaAvgQA;
+	TH2F *fDumDPhiDEtaAvgQA;
 		
-	TH2F *fDPhiDEtaQA_A1SideBandNum;
-	TH2F *fDPhiDEtaQA_A1SideBandDum;
-	TH2F *fDPhiDEtaQA_S1SideBandNum;
-	TH2F *fDPhiDEtaQA_S1SideBandDum;
-	TH2F *fDPhiDEtaQA_A2SideBandNum;
-	TH2F *fDPhiDEtaQA_A2SideBandDum;
 	
 	
 	
