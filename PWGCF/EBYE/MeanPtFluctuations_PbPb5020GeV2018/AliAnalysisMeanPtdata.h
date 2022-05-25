@@ -1,6 +1,5 @@
 
 //Done
-
 #ifndef ALIANALYSISMEANPTDATA_H
 #define ALIANALYSISMEANPTDATA_H
 
@@ -49,6 +48,8 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
 
     virtual     void    SetVzMin(double v)            { _vZMin           = v; }
     virtual     void    SetVzMax(double v)            { _vZMax           = v; }
+    virtual     void    SetNTPCCrossRows(double v)            { _nTPCCrossRows           = v; }
+    virtual     void    SetPileUpEvent(double v)            { _pileUpEvent           = v; }
 
 
 
@@ -93,6 +94,7 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
     TH1D        *fMultTripletsA;
     TH1D        *fMultQuadsA;
     TH1D        *fTpcNCrossedRows;
+    TH1D        *fTpcNCluster;
 
 
     TProfile        *fMeanQ;
@@ -189,6 +191,8 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
     Int_t fNoOfTPCoutTracks;    
     int      _nClusterMin;
     int      _singlesOnly;
+    int      _nTPCCrossRows;
+    int      _pileUpEvent;
     double   _dcaZMin;
     double   _dcaZMax;
     double   _dcaXYMin;
@@ -197,6 +201,8 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
     double   _chi2perITS;
     double _vZMin;
     double _vZMax;
+
+
     ClassDef(AliAnalysisMeanPtdata, 1); // example of analysis
 };
 
