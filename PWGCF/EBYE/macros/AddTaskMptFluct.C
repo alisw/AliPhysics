@@ -1,4 +1,11 @@
 
+/**************************************************************************
+ Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *Macro designed for AliAnalysisMeanPtdata class 
+  Author: (Tulika Tripathy, Sadhana Dash),   IIT Bombay                                                                      *                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ **************************************************************************/
+
 AliAnalysisMeanPtdata * AddTaskMptFluct
 (const char * outfilename="meaanpTfluck",const char * listname="PbPb5TeV",
  /*achar *inputPileupCutFileName   = (char*)"alien:///alice/cern.ch/user/t/tutripat/tulika_profile_final.root",*/

@@ -1,17 +1,9 @@
 
 /**************************************************************************
- 1;95;0c* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
+ Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *Class designed for Mean pt fluctuation Analysis in 5 TeV.
+  Author: (Tulika Tripathy, Sadhana Dash),   IIT Bombay                                                                      *                                    *
  * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- 1;95;0c* documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 
