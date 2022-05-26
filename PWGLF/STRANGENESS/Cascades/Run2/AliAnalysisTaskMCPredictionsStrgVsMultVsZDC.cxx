@@ -111,18 +111,18 @@ fHistNMPI(0),
 fHistQ2(0),
 fHistb(0),
 fHistLeadingE(0),
-fHistEffEnergy(0)
+fHistEffEnergy(0),
+f2DHistINELgt0SPDV0M(0),
+f2DHistLeadingESPDV0M(0),
+f2DHistEffEnergySPDV0M(0),
+f2DHistNchSPDV0M(0),
+f2DHistNMPISPDV0M(0),
+f2DHistQ2SPDV0M(0),
+f2DHistbSPDV0M(0)
 {
   for(Int_t ih=0; ih<21; ih++){
     fHistPt[ih] = 0x0;
     f2DHistPartSPDV0M[ih] = 0x0;
-    f2DHistINELgt0SPDV0M[ih] = 0x0;
-    f2DHistLeadingESPDV0M[ih] = 0x0;
-    f2DHistEffEnergySPDV0M[ih] = 0x0;
-    f2DHistNchSPDV0M[ih] = 0x0;
-    f2DHistNMPISPDV0M[ih] = 0x0;
-    f2DHistQ2SPDV0M[ih] = 0x0;
-    f2DHistbSPDV0M[ih] = 0x0;
     f2DHistAvPtSPDV0M[ih] = 0x0;
   }
 }
@@ -147,19 +147,18 @@ fHistNMPI(0),
 fHistQ2(0),
 fHistb(0),
 fHistLeadingE(0),
-fHistEffEnergy(0)
+fHistEffEnergy(0),
+f2DHistINELgt0SPDV0M(0),
+f2DHistLeadingESPDV0M(0),
+f2DHistEffEnergySPDV0M(0),
+f2DHistNchSPDV0M(0),
+f2DHistNMPISPDV0M(0),
+f2DHistQ2SPDV0M(0),
+f2DHistbSPDV0M(0)
 {
   for(Int_t ih=0; ih<21; ih++){
     fHistPt[ih] = 0x0;
     f2DHistPartSPDV0M[ih] = 0x0;
-    f2DHistINELgt0SPDV0M[ih] = 0x0;
-    f2DHistLeadingESPDV0M[ih] = 0x0;
-    f2DHistEffEnergySPDV0M[ih] = 0x0;
-    f2DHistNchSPDV0M[ih] = 0x0;
-    f2DHistNchSPDV0M[ih] = 0x0;
-    f2DHistNMPISPDV0M[ih] = 0x0;
-    f2DHistQ2SPDV0M[ih] = 0x0;
-    f2DHistbSPDV0M[ih] = 0x0;
     f2DHistAvPtSPDV0M[ih] = 0x0;
   }
   //
@@ -285,6 +284,55 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
   }
 
   //-----------------------------------------------------------------------------
+  if(!f2DHistINELgt0SPDV0M) {
+    f2DHistINELgt0SPDV0M = new TH2D( "f2DHistINELgt0SPDV0M", "INEL>0 events;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistINELgt0SPDV0M);
+  }
+  
+
+  //-----------------------------------------------------------------------------
+  if(!f2DHistLeadingESPDV0M) {
+    f2DHistLeadingESPDV0M = new TH2D( "f2DHistLeadingESPDV0M", "Leading energy (GeV);SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistLeadingESPDV0M);
+  }
+  
+
+  //-----------------------------------------------------------------------------
+  if(!f2DHistEffEnergySPDV0M) {
+    f2DHistEffEnergySPDV0M = new TH2D( "f2DHistEffEnergySPDV0M", "Effective energy (GeV);SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistEffEnergySPDV0M);
+  }
+  
+
+  //-----------------------------------------------------------------------------
+  if(!f2DHistNchSPDV0M) {
+    f2DHistNchSPDV0M = new TH2D( "f2DHistNchSPDV0M", "Nch (|#eta|<0.5);SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistNchSPDV0M);
+  }
+  
+
+  //-----------------------------------------------------------------------------
+  if(!f2DHistNMPISPDV0M && fkDoPythia) {
+    f2DHistNMPISPDV0M = new TH2D( "f2DHistNMPISPDV0M", "NMPI;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistNMPISPDV0M);
+  }
+  
+
+  //-----------------------------------------------------------------------------
+  if(!f2DHistQ2SPDV0M && fkDoPythia) {
+    f2DHistQ2SPDV0M = new TH2D( "f2DHistQ2SPDV0M", "Q2;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistQ2SPDV0M);
+  }
+  
+
+  //-----------------------------------------------------------------------------
+  if(!f2DHistbSPDV0M && fkDoEPOS) {
+    f2DHistbSPDV0M = new TH2D( "f2DHistbSPDV0M", "b;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistbSPDV0M);
+  }
+  
+
+  //-----------------------------------------------------------------------------
   for(Int_t ih=0; ih<fkNSpecies; ih++){
     if(!fHistPt[ih]) {
       fHistPt[ih] = new TH1D(Form("fHistPt_%s",lPartNames[ih].Data()), Form("Generated %s;p_{T} (GeV/c)",lPartNames[ih].Data()), 250, 0, 25.);
@@ -297,62 +345,6 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
     if(!f2DHistPartSPDV0M[ih]) {
       f2DHistPartSPDV0M[ih] = new TH2D(Form("f2DHistPartSPDV0M_%s",lPartNames[ih].Data()), Form("Generated %s;SPD Clusters; V0M multiplicity",lPartNames[ih].Data()), 800, 0, 800., 500, 0, 500.);
       fListHist->Add(f2DHistPartSPDV0M[ih]);
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-  for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(!f2DHistINELgt0SPDV0M[ih]) {
-      f2DHistINELgt0SPDV0M[ih] = new TH2D(Form("f2DHistINELgt0SPDV0M_%s",lPartNames[ih].Data()), "INEL>0 events;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
-      fListHist->Add(f2DHistINELgt0SPDV0M[ih]);
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-  for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(!f2DHistLeadingESPDV0M[ih]) {
-      f2DHistLeadingESPDV0M[ih] = new TH2D(Form("f2DHistLeadingESPDV0M_%s",lPartNames[ih].Data()), "Leading energy (GeV);SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
-      fListHist->Add(f2DHistLeadingESPDV0M[ih]);
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-  for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(!f2DHistEffEnergySPDV0M[ih]) {
-      f2DHistEffEnergySPDV0M[ih] = new TH2D(Form("f2DHistEffEnergySPDV0M_%s",lPartNames[ih].Data()), "Effective energy (GeV);SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
-      fListHist->Add(f2DHistEffEnergySPDV0M[ih]);
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-  for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(!f2DHistNchSPDV0M[ih]) {
-      f2DHistNchSPDV0M[ih] = new TH2D(Form("f2DHistNchSPDV0M_%s",lPartNames[ih].Data()), "Nch (|#eta|<0.5);SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
-      fListHist->Add(f2DHistNchSPDV0M[ih]);
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-  for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(!f2DHistNMPISPDV0M[ih] && fkDoPythia) {
-      f2DHistNMPISPDV0M[ih] = new TH2D(Form("f2DHistNMPISPDV0M_%s",lPartNames[ih].Data()), "NMPI;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
-      fListHist->Add(f2DHistNMPISPDV0M[ih]);
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-  for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(!f2DHistQ2SPDV0M[ih] && fkDoPythia) {
-      f2DHistQ2SPDV0M[ih] = new TH2D(Form("f2DHistQ2SPDV0M_%s",lPartNames[ih].Data()), "Q2;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
-      fListHist->Add(f2DHistQ2SPDV0M[ih]);
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-  for(Int_t ih=0; ih<fkNSpecies; ih++){
-    if(!f2DHistbSPDV0M[ih] && fkDoEPOS) {
-      f2DHistbSPDV0M[ih] = new TH2D(Form("f2DHistbSPDV0M_%s",lPartNames[ih].Data()), "b;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
-      fListHist->Add(f2DHistbSPDV0M[ih]);
     }
   }
 
@@ -600,6 +592,7 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
     
           //Fill histos
           if(fHistPt[ih]) fHistPt[ih] -> Fill( pt );
+          if(f2DHistAvPtSPDV0M[ih]) f2DHistAvPtSPDV0M[ih] -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, pt );
           
           //Counter for specific parricles in this event
           lPartCounter[ih]++;
@@ -608,16 +601,16 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
     }  
   } //end loop on tracks 
 
+  if(f2DHistINELgt0SPDV0M)   f2DHistINELgt0SPDV0M   -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC );    
+  if(f2DHistLeadingESPDV0M)  f2DHistLeadingESPDV0M  -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fLeadingE );    
+  if(f2DHistEffEnergySPDV0M) f2DHistEffEnergySPDV0M -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fEffEnergy );    
+  if(f2DHistNchSPDV0M)       f2DHistNchSPDV0M       -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, lNchEta05 );    
+  if(f2DHistNMPISPDV0M)      f2DHistNMPISPDV0M      -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_NMPI );   
+  if(f2DHistQ2SPDV0M)        f2DHistQ2SPDV0M        -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_Q2 );
+  if(f2DHistbSPDV0M)         f2DHistbSPDV0M         -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_b );
+    
   for(Int_t ih=0; ih<21; ih++){ //loop over pdg codes
-    if(f2DHistPartSPDV0M[ih])      f2DHistPartSPDV0M[ih]      -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, lPartCounter[ih]);    
-    if(f2DHistINELgt0SPDV0M[ih])   f2DHistINELgt0SPDV0M[ih]   -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC );    
-    if(f2DHistLeadingESPDV0M[ih])  f2DHistLeadingESPDV0M[ih]  -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fLeadingE );    
-    if(f2DHistEffEnergySPDV0M[ih]) f2DHistEffEnergySPDV0M[ih] -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fEffEnergy );    
-    if(f2DHistNchSPDV0M[ih])       f2DHistNchSPDV0M[ih]       -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, lNchEta05 );    
-    if(f2DHistNMPISPDV0M[ih])      f2DHistNMPISPDV0M[ih]      -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_NMPI );   
-    if(f2DHistQ2SPDV0M[ih])        f2DHistQ2SPDV0M[ih]        -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_Q2 );
-    if(f2DHistbSPDV0M[ih])         f2DHistbSPDV0M[ih]         -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_b );
-    if(f2DHistAvPtSPDV0M[ih])      f2DHistAvPtSPDV0M[ih]      -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fHistPt[ih]->GetMean() );
+    if(f2DHistPartSPDV0M[ih])   f2DHistPartSPDV0M[ih]  -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, lPartCounter[ih]);    
   }
 
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
