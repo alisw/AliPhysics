@@ -1,9 +1,5 @@
 #include "AliAnalysisTaskMSDibaryons.h"
 
-///////////////////////////////////////////////////////
-// This is the first test
-///////////////////////////////////////////////////////
-
 // std
 #include <iostream>
 #include <stdio.h>
@@ -341,34 +337,27 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
 
   //========== baryon-baryon FG ==========
   //LamndaLambda
-  TH1F *hInvMassLambdaLambda                    =new TH1F("hInvMassLambdaLambda","",1000,0,10);
-  TH2F *hInvMassLambdaLambda_onlyprompt         =new TH2F("hInvMassLambdaLambda_onlyprompt","",1000,0,10,1000,2,3);
-  TH2F *hInvMassLambdaLambda_deltaphi           =new TH2F("hInvMassLambdaLambda_deltaphi","",180,0,180,10000,0,10);
+  TH2F *hInvMassLambdaLambda_onlyprompt =new TH2F("hInvMassLambdaLambda_onlyprompt","",1000,0,10,1000,2,3);
+  TH2F *hInvMassLambdaLambda            =new TH2F("hInvMassLambdaLambda","",1000,0,10,10000,2,3);
   //ProtonXi
-  TH1F *hInvMassProtonXi                        =new TH1F("hInvMassProtonXi","",1000,0,10);
-  TH2F *hInvMassProtonXi_deltaphi               =new TH2F("hInvMassProtonXi_deltaphi","",180,0,180,10000,0,10);
+  TH2F *hInvMassProtonXi                =new TH2F("hInvMassProtonXi","",1000,0,10,10000,2,3);
   //LambdaXi
-  TH1F *hInvMassLambdaXi                        =new TH1F("hInvMassLambdaXi","",1000,0,10);
-  TH2F *hInvMassLambdaXi_deltaphi               =new TH2F("hInvMassLambdaXi_deltaphi","",180,0,180,10000,0,10);
+  TH2F *hInvMassLambdaXi                =new TH2F("hInvMassLambdaXi","",1000,0,10,10000,2,3);
   //ProtonOmega
-  TH1F *hInvMassProtonOmega                     =new TH1F("hInvMassProtonOmega","",1000,0,10);
-  TH2F *hInvMassProtonOmega_deltaphi            =new TH2F("hInvMassProtonOmega_deltaphi","",180,0,180,10000,0,10);
+  TH2F *hInvMassProtonOmega             =new TH2F("hInvMassProtonOmega","",1000,0,10,10000,2,3);
 
   //LambdaLambda
-  fOutputList->Add(hInvMassLambdaLambda);
   fOutputList->Add(hInvMassLambdaLambda_onlyprompt);
-  fOutputList->Add(hInvMassLambdaLambda_deltaphi);
+  fOutputList->Add(hInvMassLambdaLambda);
   //ProtonXi
   fOutputList->Add(hInvMassProtonXi);
-  fOutputList->Add(hInvMassProtonXi_deltaphi);
   //LambdaXi
   fOutputList->Add(hInvMassLambdaXi);
-  fOutputList->Add(hInvMassLambdaXi_deltaphi);
   //ProtonOmega
   fOutputList->Add(hInvMassProtonOmega);
-  fOutputList->Add(hInvMassProtonOmega_deltaphi);
 
   //========== baryon-baryon BG ==========
+  /*
   TH2F *hInvMassLambdaLambda_combinatorial      =new TH2F("hInvMassLambdaLambda_combinatorial","",1000,0,10,1000,2,3);
 
   //LambdaLambda
@@ -398,7 +387,7 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   //ProtonOmega
   fOutputList->Add(hInvMassProtonOmega_evtpool);
   fOutputList->Add(hInvMassProtonOmega_evtpool_deltaphi);
-
+  */
   //===============
 
   TH1F *fPt_allLambda                =new TH1F("fPt_allLambda","",1000,0,10);
@@ -1148,8 +1137,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 
 	//cout<<"---------- FG pxi-"<<j<<" ----------"<<endl;
 	//cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_protonxi"))->Fill(multiplicity); 
 
 	isprotonxi=true; 
@@ -1202,9 +1190,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	if(bachid == ntrackid) continue;
 	if(ptrackid == ntrackid) continue;
 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_deltaphi"))->Fill(deltaphi,invMass); 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_protonxi"))->Fill(multiplicity); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi"))->Fill(pt,invMass); 
 
 	isantiprotonxi=true; 
 
@@ -1258,8 +1244,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
         if(negID1==negID2) continue;    
 	
 	// all lambda + all lambda
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_lambdalambda"))->Fill(multiplicity); 
 
 	// cout<<"nLam = "<<nLamn<<endl;
@@ -1316,8 +1301,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
         if(negID1==negID2) continue;    
 	
 	// all lambda + all lambda
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_lambdalambda"))->Fill(multiplicity); 
 
 	isantilambdaantilambda=true; 
@@ -1383,8 +1367,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	if(ptrackid == bachid) continue;
 	if(ntrackid == bachid) continue;
 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_lambdaxi"))->Fill(multiplicity); 
 	islambdaxi=true; 
 
@@ -1440,8 +1423,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	if(ptrackid == bachid) continue;
 	if(ntrackid == bachid) continue;
 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_lambdaxi"))->Fill(multiplicity); 
 
 	isantilambdaxi=true; 
@@ -1500,8 +1482,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 
 	//cout<<"---------- FG pxi-"<<j<<" ----------"<<endl;
 	//cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega"))->Fill(pt,invMass); 
 
 	isprotonomega=true; 
 
@@ -1553,8 +1534,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	if(bachid == ntrackid) continue;
 	if(ptrackid == ntrackid) continue;
 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega"))->Fill(pt,invMass); 
 
 	isantiprotonomega=true; 
 
@@ -1563,6 +1543,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   }
 
   //========== Event mixing
+  /*
   dynamic_cast<TH2F*>(fOutputList->FindObject("fmultiplicity"))->Fill(multiplicity,vecTarget[2]);
  
   Double_t z_min = -10; 
@@ -2369,7 +2350,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
     tracksCloneprb->SetOwner();
     antippool->UpdatePool(tracksCloneprb);
   }
-
+  */
 
   // Post output data
   PostData(1,fOutputList);
