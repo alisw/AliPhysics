@@ -95,6 +95,8 @@ Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
                                  30.0, 40.0, 50.0, 70.0, 100.0};
 const Int_t nDet = 4;
 const Char_t *DetName[nDet] = {"ADC", "V0C", "V0A", "ADA"};
+const Int_t nComb = 3;
+const Char_t *CombName[nComb] = {"V0C_V0A", "ADC_ADA", "V0C_V0A_ADC_ADA"};
 
 using namespace std; // std namespace: so you can do things like 'cout' etc
 
@@ -102,9 +104,9 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
 
     AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity()
     : AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fV0Mindex(-1), fmultV0A(-1), fmultV0C(-1), fmultADA(-1),
-      fmultADC(-1), fmultV0Amc(-1), fmultV0Cmc(-1), fmultADAmc(-1),
-      fmultADCmc(-1), fDetFlat("V0"), fIsMCclosure(kFALSE),
+      fUseMC(kFALSE), fV0Mindex(-1), fmultTPC(-1), fmultV0A(-1), fmultV0C(-1),
+      fmultADA(-1), fmultADC(-1), fmultTPCmc(-1), fmultV0Amc(-1),
+      fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1), fDetFlat("V0"),
       fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
       fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
       ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
@@ -119,16 +121,22 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = 0;
   }
+  for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+    hCombinedMult[i_c] = 0;
+  }
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMultmc[i_d] = 0;
+  }
+  for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+    hCombinedMultmc[i_c] = 0;
   }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
     : AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fV0Mindex(-1), fmultV0A(-1), fmultV0C(-1), fmultADA(-1),
-      fmultADC(-1), fmultV0Amc(-1), fmultV0Cmc(-1), fmultADAmc(-1),
-      fmultADCmc(-1), fDetFlat("V0"), fIsMCclosure(kFALSE),
+      fUseMC(kFALSE), fV0Mindex(-1), fmultTPC(-1), fmultV0A(-1), fmultV0C(-1),
+      fmultADA(-1), fmultADC(-1), fmultTPCmc(-1), fmultV0Amc(-1),
+      fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1), fDetFlat("V0"),
       fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
       fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
       ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
@@ -145,8 +153,14 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = 0;
   }
+  for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+    hCombinedMult[i_c] = 0;
+  }
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMultmc[i_d] = 0;
+  }
+  for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+    hCombinedMultmc[i_c] = 0;
   }
 
   DefineInput(0, TChain::Class()); // define the input of the analysis: in this
@@ -232,9 +246,14 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
   }
 
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
-    hComponentsMult[i_d] =
-        new TH1D(Form("hAmpl_%s", DetName[i_d]), "", 5000, -0.5, 10000.0);
+    hComponentsMult[i_d] = new TH2D(Form("hAmpl_%s", DetName[i_d]), "", 5000,
+                                    -0.5, 10000.0, 200, -0.5, 199.5);
     fOutputList->Add(hComponentsMult[i_d]);
+  }
+  for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+    hCombinedMult[i_c] = new TH2D(Form("hCombined_%s", CombName[i_c]), "", 5000,
+                                  -0.5, 10000.0, 200, -0.5, 199.5);
+    fOutputList->Add(hCombinedMult[i_c]);
   }
 
   if (fUseMC) {
@@ -285,9 +304,15 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     fOutputList->Add(hFlatVsNchMC);
 
     for (Int_t i_d = 0; i_d < nDet; ++i_d) {
-      hComponentsMultmc[i_d] =
-          new TH1D(Form("hTrueMult_%s", DetName[i_d]), "", 600, -0.5, 599.0);
+      hComponentsMultmc[i_d] = new TH2D(Form("hTrueMult_%s", DetName[i_d]), "",
+                                        600, -0.5, 599.0, 200, -0.5, 199.5);
       fOutputList->Add(hComponentsMultmc[i_d]);
+    }
+    for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+      hCombinedMultmc[i_c] =
+          new TH2D(Form("hTrueCombined_%s", CombName[i_c]), "", 5000, -0.5,
+                   10000.0, 200, -0.5, 199.5);
+      fOutputList->Add(hCombinedMultmc[i_c]);
     }
   }
 
@@ -404,16 +429,37 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   if (fUseMC) {
     if (isGoodVtxPosMC) {
       ExtractMultiplicitiesMC();
-      hComponentsMultmc[2]->Fill(fmultV0Amc);
-      hComponentsMultmc[1]->Fill(fmultV0Cmc);
-      hComponentsMultmc[3]->Fill(fmultADAmc);
-      hComponentsMultmc[0]->Fill(fmultADCmc);
+      float activityMC[4] = {0, 0, 0, 0};
+      activityMC[0] = fmultADCmc;
+      activityMC[1] = fmultV0Cmc;
+      activityMC[2] = fmultV0Amc;
+      activityMC[3] = fmultADAmc;
+      for (int i_a = 0; i_a < 4; ++i_a) {
+        hComponentsMultmc[i_a]->Fill(activityMC[i_a], fmultTPCmc);
+      }
+      float com1mc = fmultV0Amc + fmultV0Cmc;
+      float com2mc = fmultADAmc + fmultADCmc;
+      float com3mc = com1mc + com2mc;
+      hCombinedMultmc[0]->Fill(com1mc, fmultTPCmc);
+      hCombinedMultmc[1]->Fill(com2mc, fmultTPCmc);
+      hCombinedMultmc[2]->Fill(com3mc, fmultTPCmc);
     }
   }
-  hComponentsMult[2]->Fill(fmultV0A);
-  hComponentsMult[1]->Fill(fmultV0C);
-  hComponentsMult[3]->Fill(fmultADA);
-  hComponentsMult[0]->Fill(fmultADC);
+  float weigths[4] = {1.0, 1.0, 1.0, 1.0};
+  float activity[4] = {0, 0, 0, 0};
+  activity[0] = fmultADC;
+  activity[1] = fmultV0C;
+  activity[2] = fmultV0A;
+  activity[3] = fmultADA;
+  for (int i_a = 0; i_a < 4; ++i_a) {
+    hComponentsMult[i_a]->Fill(activity[i_a], fmultTPC);
+  }
+  float com1 = weigths[1] * activity[1] + activity[2] * weigths[2];
+  float com2 = weigths[0] * activity[0] + activity[3] * weigths[3];
+  float com3 = com1 + com2;
+  hCombinedMult[0]->Fill(com1, fmultTPC);
+  hCombinedMult[1]->Fill(com2, fmultTPC);
+  hCombinedMult[2]->Fill(com3, fmultTPC);
 
   fFlat = flatenicity_v0; // default V0
   if (fDetFlat == "VO_TPC") {
@@ -588,6 +634,23 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityTPC() {
 //______________________________________________________________________________
 void AliAnalysisTaskFlatenicity::ExtractMultiplicities() {
 
+  fmultTPC = 0;
+  Int_t nTracks = fESD->GetNumberOfTracks();
+  for (Int_t iT = 0; iT < nTracks; ++iT) {
+
+    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(
+        fESD->GetTrack(iT)); // get a track (type AliesdTrack)
+    if (!esdtrack)
+      continue;
+    if (!fTrackFilter->IsSelected(esdtrack))
+      continue;
+    if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
+      continue;
+    if (esdtrack->Pt() < fPtMin)
+      continue;
+    fmultTPC++;
+  }
+
   AliVVZERO *lVV0 = 0x0;
   AliVEvent *lVevent = 0x0;
   lVevent = dynamic_cast<AliVEvent *>(InputEvent());
@@ -601,11 +664,11 @@ void AliAnalysisTaskFlatenicity::ExtractMultiplicities() {
     AliError("AliVVZERO not available");
     return;
   }
-  // Grid
-  const Int_t nCells = 64;
+
+  const Int_t nChannels = 64;
   fmultV0C = 0;
   fmultV0A = 0;
-  for (Int_t iCh = 0; iCh < nCells; iCh++) {
+  for (Int_t iCh = 0; iCh < nChannels; iCh++) {
     Float_t mult = lVV0->GetMultiplicity(iCh);
     if (iCh < 32) { // V0C
       fmultV0C += mult;
@@ -733,6 +796,7 @@ void AliAnalysisTaskFlatenicity::ExtractMultiplicitiesMC() {
   fmultV0Cmc = 0;
   fmultADAmc = 0;
   fmultADCmc = 0;
+  fmultTPCmc = 0;
 
   for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
 
@@ -759,6 +823,9 @@ void AliAnalysisTaskFlatenicity::ExtractMultiplicitiesMC() {
     }
     if (eta_a >= -7.0 && eta_a < -4.9) { // adc
       fmultADCmc++;
+    }
+    if (TMath::Abs(eta_a) < 0.8) { // adc
+      fmultTPCmc++;
     }
   }
 }
