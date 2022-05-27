@@ -5374,19 +5374,19 @@ AliAODVertex* AliAnalysisTaskSEXicTopKpi::RemoveDaughtersFromPrimaryVtxCascHF(In
   return vtxAODNew;
 }
 //-----------------------------------------------------------------------------------
-void AliAODRecoDecayHF::RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent* aod) {
-  //
-  // now recalculate the daughters impact parameters
-  //
-  Double_t dz[2],covdz[3];
-  for(Int_t i=0; i<GetNDaughters(); i++) {
-    AliAODTrack *t = (AliAODTrack*)GetDaughter(i);
-    AliExternalTrackParam etp; etp.CopyFromVTrack(t);
-    if(etp.PropagateToDCA(vtxAODNew,aod->GetMagneticField(),3.,dz,covdz)) {
-      fd0[i]    = dz[0];
-      fd0err[i] = TMath::Sqrt(covdz[0]);
-    }
-  }
-
-  return;
-}
+// void AliAODRecoDecayHF::RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent* aod) {
+//  //
+//  // now recalculate the daughters impact parameters
+//  //
+//  Double_t dz[2],covdz[3];
+//  for(Int_t i=0; i<GetNDaughters(); i++) {
+//    AliAODTrack *t = (AliAODTrack*)GetDaughter(i);
+//    AliExternalTrackParam etp; etp.CopyFromVTrack(t);
+//    if(etp.PropagateToDCA(vtxAODNew,aod->GetMagneticField(),3.,dz,covdz)) {
+//      fd0[i]    = dz[0];
+//      fd0err[i] = TMath::Sqrt(covdz[0]);
+//    }
+//  }
+//
+//  return;
+//}
