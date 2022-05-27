@@ -8,7 +8,7 @@ class AliAnalysisDataContainer;
 AliAnalysisTaskFlatenicity *
 AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
                    Bool_t woTrivialscaling = kFALSE, Bool_t useMC = kTRUE,
-                   Bool_t performMCclosuretest = kFALSE, Double_t minpT = 0.5)
+                   Double_t minpT = 0.15)
 
 {
   // detForFlat: "V0", "TPC", "V0_TPC"
@@ -32,7 +32,6 @@ AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
     return 0x0;
   taskFlat->SetUseMC(useMC);
   taskFlat->SetDetectorForFlatenicity(detForFlat);
-  taskFlat->SetMCclosureTest(performMCclosuretest);
   taskFlat->SetPtMin(minpT);
   taskFlat->SetRemoveTrivialScaling(woTrivialscaling);
   mgr->AddTask(taskFlat);
