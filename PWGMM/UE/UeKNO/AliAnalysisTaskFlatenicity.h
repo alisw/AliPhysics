@@ -107,6 +107,7 @@ private:
   TH2D *hCombinedMult[3];
   TH2D *hComponentsMultmc[4];
   TH2D *hCombinedMultmc[3];
+  TH2D *hRmCombinedMult[3];
   AliAnalysisTaskFlatenicity(
       const AliAnalysisTaskFlatenicity &); // not implemented
   AliAnalysisTaskFlatenicity &

@@ -130,6 +130,9 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
   for (Int_t i_c = 0; i_c < nComb; ++i_c) {
     hCombinedMultmc[i_c] = 0;
   }
+  for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+    hRmCombinedMult[i_c] = 0;
+  }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
@@ -162,7 +165,9 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
   for (Int_t i_c = 0; i_c < nComb; ++i_c) {
     hCombinedMultmc[i_c] = 0;
   }
-
+  for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+    hRmCombinedMult[i_c] = 0;
+  }
   DefineInput(0, TChain::Class()); // define the input of the analysis: in this
                                    // case you take a 'chain' of events
   DefineOutput(1, TList::Class()); // define the ouptut of the analysis: in this
@@ -309,10 +314,16 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
       fOutputList->Add(hComponentsMultmc[i_d]);
     }
     for (Int_t i_c = 0; i_c < nComb; ++i_c) {
-      hCombinedMultmc[i_c] =
-          new TH2D(Form("hTrueCombined_%s", CombName[i_c]), "", 500, -0.5,
-                   499.5, 200, -0.5, 199.5);
+      hCombinedMultmc[i_c] = new TH2D(Form("hTrueCombined_%s", CombName[i_c]),
+                                      "", 500, -0.5, 499.5, 200, -0.5, 199.5);
       fOutputList->Add(hCombinedMultmc[i_c]);
+    }
+    for (Int_t i_c = 0; i_c < nComb; ++i_c) {
+      hRmCombinedMult[i_c] =
+          new TH2D(Form("hRmCombined_%s", CombName[i_c]),
+                   "; measured combined mult.; true combined mult.", 500, -0.5,
+                   499.5, 500, -0.5, 499.5);
+      fOutputList->Add(hRmCombinedMult[i_c]);
     }
   }
 
@@ -426,6 +437,9 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   Double_t flatenicity_v0 = GetFlatenicityV0();
   Double_t flatenicity_tpc = GetFlatenicityTPC();
   ExtractMultiplicities();
+  float com1mc = 0;
+  float com2mc = 0;
+  float com3mc = 0;
   if (fUseMC) {
     if (isGoodVtxPosMC) {
       ExtractMultiplicitiesMC();
@@ -437,9 +451,9 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       for (int i_a = 0; i_a < 4; ++i_a) {
         hComponentsMultmc[i_a]->Fill(activityMC[i_a], fmultTPCmc);
       }
-      float com1mc = fmultV0Amc + fmultV0Cmc;
-      float com2mc = fmultADAmc + fmultADCmc;
-      float com3mc = com1mc + com2mc;
+      com1mc = fmultV0Amc + fmultV0Cmc;
+      com2mc = fmultADAmc + fmultADCmc;
+      com3mc = com1mc + com2mc;
       hCombinedMultmc[0]->Fill(com1mc, fmultTPCmc);
       hCombinedMultmc[1]->Fill(com2mc, fmultTPCmc);
       hCombinedMultmc[2]->Fill(com3mc, fmultTPCmc);
@@ -473,13 +487,20 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   hCombinedMult[0]->Fill(com1, fmultTPC);
   hCombinedMult[1]->Fill(com2, fmultTPC);
   hCombinedMult[2]->Fill(com3, fmultTPC);
-
+  if (fUseMC) {
+    hRmCombinedMult[0]->Fill(com1, com1mc);
+    hRmCombinedMult[1]->Fill(com2, com2mc);
+    hRmCombinedMult[2]->Fill(com3, com3mc);
+  }
   fFlat = flatenicity_v0; // default V0
   if (fDetFlat == "VO_TPC") {
     fFlat = (flatenicity_v0 + flatenicity_tpc) / 2.0;
   }
   if (fDetFlat == "TPC") {
     fFlat = flatenicity_tpc;
+  }
+  if (fDetFlat == "V0") {
+    fFlat = flatenicity_v0;
   }
 
   hFlatV0vsFlatTPC->Fill(flatenicity_tpc, flatenicity_v0);
