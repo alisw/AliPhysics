@@ -247,12 +247,12 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
 
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = new TH2D(Form("hAmpl_%s", DetName[i_d]), "", 5000,
-                                    -0.5, 10000.0, 200, -0.5, 199.5);
+                                    -0.5, 20000.0, 200, -0.5, 199.5);
     fOutputList->Add(hComponentsMult[i_d]);
   }
   for (Int_t i_c = 0; i_c < nComb; ++i_c) {
-    hCombinedMult[i_c] = new TH2D(Form("hCombined_%s", CombName[i_c]), "", 5000,
-                                  -0.5, 10000.0, 200, -0.5, 199.5);
+    hCombinedMult[i_c] = new TH2D(Form("hCombined_%s", CombName[i_c]), "", 500,
+                                  -0.5, 499.5, 200, -0.5, 199.5);
     fOutputList->Add(hCombinedMult[i_c]);
   }
 
@@ -310,8 +310,8 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     }
     for (Int_t i_c = 0; i_c < nComb; ++i_c) {
       hCombinedMultmc[i_c] =
-          new TH2D(Form("hTrueCombined_%s", CombName[i_c]), "", 5000, -0.5,
-                   10000.0, 200, -0.5, 199.5);
+          new TH2D(Form("hTrueCombined_%s", CombName[i_c]), "", 500, -0.5,
+                   499.5, 200, -0.5, 199.5);
       fOutputList->Add(hCombinedMultmc[i_c]);
     }
   }
@@ -445,7 +445,20 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       hCombinedMultmc[2]->Fill(com3mc, fmultTPCmc);
     }
   }
+  // these values were obtained from LHC16l pass 2 (and MC)
+  float avData[4] = {1819.91, 55.6384, 27.6564, 449.373};
+  float avExpect[4] = {9.18629, 15.1672, 11.934, 7.47469};
+  if (fUseMC) {
+    avData[0] = 1380.66;
+    avData[1] = 60.009;
+    avData[2] = 35.1942;
+    avData[3] = 202.348;
+  }
   float weigths[4] = {1.0, 1.0, 1.0, 1.0};
+  for (int i_a = 0; i_a < 4; ++i_a) {
+    weigths[i_a] = avExpect[i_a] / avData[i_a];
+  }
+
   float activity[4] = {0, 0, 0, 0};
   activity[0] = fmultADC;
   activity[1] = fmultV0C;
