@@ -25,6 +25,7 @@
 #ifndef AliAnalysisTaskMCPredictions_H
 #define AliAnalysisTaskMCPredictions_H
 
+class TTree;
 class TList;
 class TH1F;
 class TH2F;
@@ -62,6 +63,7 @@ public:
   
   Double_t ComputeDeltaPhi( Double_t phi1, Double_t phi2) const;
   
+  void SetSaveTree( Bool_t lOpt = kTRUE ) { fkSaveTree = lOpt; }
   void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
   void SetPtTrigger( Float_t l1, Float_t l2 ) { fMinPtTrigger = l1; fMaxPtTrigger = l2; }
   void SetEtaTrigger( Float_t lEta1, Float_t lEta2 ) { fMinEtaTrigger = lEta1; fMaxEtaTrigger = lEta2; }
@@ -98,6 +100,15 @@ private:
   // your data member object is created on the worker nodes and streaming is not needed.
   // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
   TList  *fListHist;  //! List of Cascade histograms
+  TTree *fTree; //! output tree (PoIs)
+  Bool_t fkSaveTree;
+  
+  //Variables for fTree
+  Int_t fPID;
+  Float_t fPt;
+  Int_t fPIDMother[10];
+  Int_t fNParents;
+  Int_t fV0MMultiplicity;
   
   //Histograms (Desired objects in this cross-checking task)
   TH1D *fHistEventCounter; //! histogram for event counting
