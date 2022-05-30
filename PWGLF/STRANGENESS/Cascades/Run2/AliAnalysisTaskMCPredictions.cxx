@@ -97,7 +97,12 @@ ClassImp(AliAnalysisTaskMCPredictions)
 
 AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions()
 : AliAnalysisTaskSE(),
-fListHist(0),
+fListHist(0), fTree(0), fkSaveTree(kFALSE),
+//Variables for fTree
+fPID(0),
+fPt(0),
+fNParents(0),
+fV0MMultiplicity(0),
 fHistEventCounter(0),
 fHistChargedEta(0),
 fSmallMultRange(1000),
@@ -185,6 +190,7 @@ fHistDDNch(0x0),
 fHistDDNMPI(0x0),
 fHistDDQ2(0x0)
 {
+  for(Int_t ii=0; ii<10; ii++) fPIDMother[ii]=-1;
   for(Int_t ii=0; ii<10; ii++){
     fEMBufferEtaD0[ii]=0;
     fEMBufferPhiD0[ii]=0;
@@ -219,7 +225,11 @@ fHistDDQ2(0x0)
 
 AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning, Int_t lNLargeBinning, Int_t lRebinFactor, Int_t lNBBins, Int_t lNNpartBins, Int_t lNEtaBins)
 : AliAnalysisTaskSE(name),
-fListHist(0),
+fListHist(0), fTree(0), fkSaveTree(kFALSE),
+fPID(0),
+fPt(0),
+fNParents(0),
+fV0MMultiplicity(0),
 fHistEventCounter(0),
 fHistChargedEta(0),
 fSmallMultRange(lNSmallBinning),
@@ -307,6 +317,7 @@ fHistDDNch(0x0),
 fHistDDNMPI(0x0),
 fHistDDQ2(0x0)
 {
+  for(Int_t ii=0; ii<10; ii++) fPIDMother[ii]=-1;
   for(Int_t ii=0; ii<10; ii++){
     fEMBufferEtaD0[ii]=0;
     fEMBufferPhiD0[ii]=0;
@@ -338,6 +349,7 @@ fHistDDQ2(0x0)
     fHistDDPt[ih]   = 0x0;
   }
   DefineOutput(1, TList::Class()); // Event Counter Histo
+  DefineOutput(2, TTree::Class()); // Event Counter Histo
 }
 
 
@@ -786,8 +798,18 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
   }
   
+  if(!fTree){
+    fTree = new TTree("fTree","particles of interest");
+    fTree->Branch("fPt", &fPt, "fPt/F");
+    fTree->Branch("fPID", &fPID, "fPID/I");
+    fTree->Branch("fNParents", &fNParents, "fNParents/I");
+    fTree->Branch("fPIDMother", &fPIDMother, "fPIDMother[fNParents]/I");
+    fTree->Branch("fV0MMultiplicity", &fV0MMultiplicity, "fV0MMultiplicity/I");
+  }
+  
   //List of Histograms: Normal
   PostData(1, fListHist);
+  PostData(2, fTree);
   
 }// end UserCreateOutputObjects
 
@@ -969,6 +991,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   if(fHistDDNch)        fHistDDNch          -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, lNchEta5);
   if(fHistDDNMPI)       fHistDDNMPI         -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, fMC_NMPI);
   if(fHistDDQ2)         fHistDDQ2           -> Fill ( lNchEtaWide, lNchVZEROA+lNchVZEROC, fMC_AvQ2);
+  
+  //Save V0M multiplicity, please
+  fV0MMultiplicity = lNchVZEROA+lNchVZEROC;
   
   //------------------------------------------------
   // Fill Spectra as Needed
@@ -1217,6 +1242,25 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
           if( fHistDDYield[ih] ) fHistDDYield[ih]->Fill(lNchEtaWide,lNchVZEROA+lNchVZEROC);
           if( fHistDDPt[ih] ) fHistDDPt[ih]->Fill(lNchEtaWide,lNchVZEROA+lNchVZEROC, lThisPt);
         }
+      }
+    }
+    
+    if(fkSaveTree){
+      //Store D0, D+, D- separately, please; PDG = 421, -421, 411, -411
+      fNParents = 0;
+      for(Int_t ii=0; ii<10; ii++) fPIDMother[ii]=-1;
+      if(TMath::Abs(lThisRap)<0.5 && (TMath::Abs(lThisPDG)==421 || TMath::Abs(lThisPDG)==411) ){
+        fPt = lThisPt;
+        fPID = lThisPDG;
+        Int_t lblMother = lMCPart->GetMother();
+        while(lblMother>=0){
+          AliMCParticle* lParentParticle = (AliMCParticle*)lMCevent->GetTrack( lblMother );
+          if(!lParentParticle) break;
+          fPIDMother[fNParents] = lParentParticle->PdgCode();
+          fNParents++;
+          lblMother = lParentParticle->GetMother();
+        }
+        fTree->Fill();
       }
     }
   }//End of loop on tracks
@@ -1840,6 +1884,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   
   // Post output data.
   PostData(1, fListHist);
+  PostData(2, fTree);
 }
 
 //________________________________________________________________________
