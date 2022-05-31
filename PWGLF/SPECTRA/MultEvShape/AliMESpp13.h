@@ -70,12 +70,6 @@ public:
   AliMESpp13(const char *name);
   virtual ~AliMESpp13();
 
-  // static Int_t    MakeMultiplicityESD(AliESDEvent* const, const char *opt);
-  static Int_t MakeMultiplicityMC(AliMCEvent *const);
-  static Int_t MakeMultiplicity0408MC(AliMCEvent *const);
-  static Int_t MakeMultiplicityV0MMC(AliMCEvent *const);
-  static Double_t ComputeDeltaPhi(Double_t, Double_t);
-
   Bool_t HasMCdata() const { return TestBit(kMCdata); };
   virtual void SetMCdata(Bool_t mc = kTRUE);
   virtual void FinishTaskOutput();
