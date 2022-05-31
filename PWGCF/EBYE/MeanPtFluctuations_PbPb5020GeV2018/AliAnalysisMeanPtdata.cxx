@@ -1045,8 +1045,8 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
      nCrossedRowsTPC = track->GetTPCCrossedRows();
      nTPCNcls=track->GetTPCNcls();
 
-       if(!(nCrossedRowsTPC < _nTPCCrossRows))continue;
-       if(!(nTPCNcls < _nClusterMin))continue;
+       if(nCrossedRowsTPC < _nTPCCrossRows)continue;
+       if(nTPCNcls < _nClusterMin)continue;
 
      
 
