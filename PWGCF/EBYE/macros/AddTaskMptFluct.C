@@ -12,8 +12,8 @@ AliAnalysisMeanPtdata * AddTaskMptFluct
  // int    usePileupCut_PbPb5TeV    =  1 ,  // 0: no                   1: yes  
  int    singlesOnly             =  1,
  int    nContributor             =  1,
- int    nClusterMin             =  160,
- int    nTPCCrossRows             =  160,
+ int    nClusterMin             =  70,
+ int    nTPCCrossRows             = 70,
  double dcaZMax                 =  1.0,///tulika 3.2,
  double dcaXYMax                =  1.0,///tulika 2.4,
  double chi2perTPC              = 36,
