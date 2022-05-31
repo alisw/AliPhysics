@@ -975,6 +975,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   //------------------------------------------------
   
   //Basics: All Processed
+  if( !fHistEventCounter ) {
+    Printf("ERROR: Could not retrieve fHistEventCounter! This will crash!\n");
+  }
   fHistEventCounter->Fill(0.5);
   
   if(fHistV0MMult)      fHistV0MMult        -> Fill ( lNchVZEROA+lNchVZEROC );
