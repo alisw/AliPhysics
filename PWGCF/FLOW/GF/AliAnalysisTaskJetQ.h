@@ -44,8 +44,8 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         Bool_t CheckTrigger(Double_t);
         Bool_t AcceptAOD(AliAODEvent*, Double_t lvtxXYZ[3]);
         Int_t FindGivenPt(const Double_t &ptMin, const Double_t &ptMax);
-        Int_t FillCorrelations(Int_t &triggerIndex, const Double_t &ptAsMin, const Double_t &ptAsMax, Double_t &vzValue);
-        Int_t FillMixedEvent(Int_t &triggerIndex, AliEventPool *inpool, Double_t &vzValue);
+        Int_t FillCorrelations(Int_t &triggerIndex, Int_t &centVal, Double_t &vzValue);
+        Int_t FillMixedEvent(Int_t &triggerIndex, AliEventPool *inpool, Int_t &centVal, Double_t &vzValue);
         void fill2DHist(TH1 *&inh, Double_t &xval, Double_t &yval) { ((TH2*)inh)->Fill(xval,yval); };
         void fill3DHist(TH1 *&inh, Double_t &xval, Double_t &yval, Double_t &zval) { ((TH3*)inh)->Fill(xval,yval,zval); };
 
@@ -61,8 +61,8 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         TAxis *fVzAxis;
         TAxis *fPtAxis;
         TH2D *fNormCounter; //!
-        TH1 *fCorrPlot; //!
-        TH1 *fMixCorrPlot; //!
+        TH1 ***fCorrPlot; //!
+        TH1 ***fMixCorrPlot; //!
         vector<Double_t> fCentBins;
         vector<Double_t> fVzBins;
         vector<Double_t> fPtBins;
