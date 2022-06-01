@@ -104,7 +104,6 @@ AliAnalysisTaskHe3piKF::~AliAnalysisTaskHe3piKF()
 ///
 void AliAnalysisTaskHe3piKF::UserCreateOutputObjects()
 {
-
   fList = new TList();
   fList->SetOwner(kTRUE);
   fEventCut.AddQAplotsToList(fList);
@@ -186,7 +185,6 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
   fGenHyper.isReconstructed = true;
 
   std::vector<HelperParticle> helpers[2][2];
-
   for (int iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
   {
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
@@ -215,7 +213,7 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
 
     for (int iT{0}; iT < 2; ++iT)
     {
-      nSigmasTPC[iT] = fPID->NumberOfSigmasTPC(track, kAliPID[iT]);
+      nSigmasTPC[iT] = (fMC || iT == kPion) ? fPID->NumberOfSigmasTPC(track, kAliPID[iT]) : customNsigma(track->GetTPCmomentum(), track->GetTPCsignal()); // use custom nSigma for He3 from data
       if (std::abs(nSigmasTPC[iT]) < 5 && dcaNorm > fMinTrackDCA[iT] && track->Pt() < fTrackPtRange[iT][1] &&
           track->Pt() > fTrackPtRange[iT][0] && track->GetTPCsignalN() >= 50 && std::abs(track->Eta()) < 0.8 && (track->GetStatus() & AliVTrack::kTPCrefit))
         candidate[iT] = true;
@@ -233,14 +231,16 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
           double posmom[6], cov[21];
           track->GetXYZ(posmom);
           track->GetPxPyPz(posmom + 3);
-          if (kAliPID[iT] == AliPID::kHe3)
+          int charge = track->Charge();
+          if (iT == kHe3)
           {
             posmom[3] *= 2;
             posmom[4] *= 2;
             posmom[5] *= 2;
+            charge *= 2;
           }
           track->GetCovarianceXYZPxPyPz(cov);
-          helper.particle.Create(posmom, cov, track->Charge(), kMasses[iT]);
+          helper.particle.Create(posmom, cov, charge, kMasses[iT]);
           helper.particle.Chi2() = track->GetTPCchi2();
           helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           helper.track = track;
@@ -257,16 +257,17 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
   kfPVertex.SetNDF(fEventCut.GetPrimaryVertex()->GetNDF());
   kfPVertex.SetNContributors(fEventCut.GetPrimaryVertex()->GetNContributors());
   KFParticle prodVertex{kfPVertex};
-
   for (int idx{0}; idx < 2; ++idx)
   {
-    for (const auto &he3 : helpers[1][1 - idx])
+
+    for (const auto &he3 : helpers[kHe3][1 - idx])
     {
+
       KFParticle oneCandidate;
-      oneCandidate.Q() = he3.particle.GetQ();
+      // oneCandidate.Q() = he3.particle.GetQ();
       oneCandidate.AddDaughter(he3.particle);
 
-      for (const auto &pi : helpers[0][idx])
+      for (const auto &pi : helpers[kPion][idx])
       {
         int hyperLabel{-1};
         if (fMC)
@@ -274,12 +275,14 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
           fGenHyper.pdg = 0;
           auto he3Part = fMCEvent->GetTrack(std::abs(he3.track->GetLabel()));
           auto piPart = fMCEvent->GetTrack(std::abs(pi.track->GetLabel()));
+
           if ((abs(he3Part->PdgCode()) == AliPID::ParticleCode(AliPID::kHe3) &&
                abs(piPart->PdgCode()) == AliPID::ParticleCode(AliPID::kPion)))
           {
             // Check hyper
             int labMothHe3 = he3Part->GetMother();
             int labMothPi = piPart->GetMother();
+
             if (labMothPi >= 0 && labMothPi == labMothHe3)
             {
               auto hyper = fMCEvent->GetTrack(labMothPi);
@@ -294,17 +297,28 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
                 hyper->XvYvZv(ov);
                 he3Part->XvYvZv(dv);
                 fGenHyper.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * hyper->M() / hyper->P();
+                // std::cout << "-------------------------" << std::endl;
+                // std::cout << "Gen, Prim VTx x: " << ov[0] << ", y: " << ov[1] << ", z: " << ov[2] << std::endl;
+                // std::cout << "Gen, Decay VTx x: " << dv[0] << ", y: " << dv[1] << ", z: " << dv[2] << std::endl;
               }
             }
           }
-
           if (fOnlyTrueCandidates && hyperLabel < 0)
             continue;
         }
-
         KFParticle kfHyperTriton{oneCandidate};
         kfHyperTriton.AddDaughter(pi.particle);
-        double mass = kfHyperTriton.GetMass();
+        double recoMass = kfHyperTriton.GetMass();
+        if (recoMass > fMassRange[1] || recoMass < fMassRange[0])
+          continue;
+
+        ROOT::Math::XYZVectorF decayVtx;
+        double deltaPos[3]{kfHyperTriton.X() - prodVertex.X(), kfHyperTriton.Y() - prodVertex.Y(), kfHyperTriton.Z() - prodVertex.Z()};
+        decayVtx.SetCoordinates(kfHyperTriton.X() - prodVertex.X(), kfHyperTriton.Y() - prodVertex.Y(), kfHyperTriton.Z() - prodVertex.Z());
+
+        // std::cout << "Rec, Prim VTx x: " << prodVertex.X() << ", y: " << prodVertex.Y() << ", z: " << prodVertex.Z() << std::endl;
+        // std::cout << "Rec, Dec VTx x: " << kfHyperTriton.X() << ", y: " << kfHyperTriton.Y() << ", z: " << kfHyperTriton.Z() << std::endl;
+        // std::cout << "Charge: " << kfHyperTriton.GetQ();
 
         kfHyperTriton.SetProductionVertex(prodVertex);
         fRecHyper->fChi2 = kfHyperTriton.GetChi2() / kfHyperTriton.GetNDF();
@@ -314,33 +328,28 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
         fRecHyper->Matter = idx == 0 ? true : false;
         auto &he3track = he3.track;
         auto &pitrack = pi.track;
-
-        double deltaPos[3]{kfHyperTriton.X() - prodVertex.X(), kfHyperTriton.Y() - prodVertex.Y(), kfHyperTriton.Z() - prodVertex.Z()};
-
         LVector_t hyperVector;
         hyperVector.SetCoordinates(kfHyperTriton.Px(), kfHyperTriton.Py(), kfHyperTriton.Pz(), kfHyperTriton.GetMass());
-        ROOT::Math::XYZVectorF decayVtx;
-        decayVtx.SetCoordinates(kfHyperTriton.X() - prodVertex.X(), kfHyperTriton.Y() - prodVertex.Y(), kfHyperTriton.Z() - prodVertex.Z());
 
-        if (hyperVector.mass() > fMassRange[1] || hyperVector.mass() < fMassRange[0])
-        {
-          continue;
-        }
-
+        double prongsDCA = he3.particle.GetDistanceFromParticle(pi.particle);
         double cpa = (deltaPos[0] * hyperVector.px() +
                       deltaPos[1] * hyperVector.py() +
                       deltaPos[2] * hyperVector.pz()) /
                      std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
 
+        fRecHyper->Lrec = sqrt(decayVtx.Mag2());
+        fRecHyper->ct = fRecHyper->Lrec* kHyperMass / hyperVector.P();
+        if (hyperVector.pt() < fCandidatePtRange[0] || hyperVector.pt() > fCandidatePtRange[1] || fRecHyper->ct < fCandidateCtRange[0] || fRecHyper->ct > fCandidateCtRange[1])
+          continue;
+
+        if (cpa < fMinCosPA || prongsDCA > fMaxProngDCA)
+          continue;
+
         fRecHyper->pt = hyperVector.pt();
-        fRecHyper->m = hyperVector.mass();
+        fRecHyper->m = recoMass;
         fRecHyper->V0CosPA = cpa;
         fRecHyper->Rapidity = Eta2y(fRecHyper->pt, kHyperMass, hyperVector.eta());
-
         fRecHyper->V0radius = decayVtx.Rho();
-        fRecHyper->Lrec = sqrt(decayVtx.Mag2());
-        fRecHyper->ct = fRecHyper->Lrec * kHyperMass / hyperVector.P();
-
         float z, xy;
         he3track->GetImpactParameters(xy, z);
         fRecHyper->He3ProngPvDCAXY = xy;
@@ -373,55 +382,54 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
         fTree->Fill();
       }
     }
-
-    if (fMC)
+  }
+  if (fMC)
+  {
+    fGenHyper.isReconstructed = false;
+    // loop on generated
+    for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
     {
-      fGenHyper.isReconstructed = false;
-      // loop on generated
-      for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
+      auto track = (AliVParticle *)fMCEvent->GetTrack(iT);
+      int pdg = std::abs(track->PdgCode());
+      if (pdg != kHyperPdg)
       {
-        auto track = (AliVParticle *)fMCEvent->GetTrack(iT);
-        int pdg = std::abs(track->PdgCode());
-        if (pdg != kHyperPdg)
-        {
-          continue;
-        }
-        if (std::find(checkedHyperLabel.begin(), checkedHyperLabel.end(), iT) != checkedHyperLabel.end())
-        {
-          continue;
-        }
-
-        // if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
-        // {
-        //   continue;
-        // }
-
-        fGenHyper.ptMC = track->Pt();
-        fGenHyper.etaMC = track->Eta();
-        fGenHyper.yMC = track->Y();
-        fGenHyper.pdg = track->PdgCode();
-        double ov[3], dv[3];
-        track->XvYvZv(ov);
-        bool otherDecayChannel{true};
-        for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++)
-        {
-          auto daugh = (AliVParticle *)fMCEvent->GetTrack(iD);
-          if (!daugh)
-          {
-            continue;
-          }
-          if (std::abs(daugh->PdgCode()) == AliPID::ParticleCode(AliPID::kHe3))
-          {
-            otherDecayChannel = false;
-            daugh->XvYvZv(dv);
-            break;
-          }
-        }
-        if (otherDecayChannel)
-          continue;
-        fGenHyper.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * track->M() / track->P();
-        fTree->Fill();
+        continue;
       }
+      if (std::find(checkedHyperLabel.begin(), checkedHyperLabel.end(), iT) != checkedHyperLabel.end())
+      {
+        continue;
+      }
+
+      // if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
+      // {
+      //   continue;
+      // }
+
+      fGenHyper.ptMC = track->Pt();
+      fGenHyper.etaMC = track->Eta();
+      fGenHyper.yMC = track->Y();
+      fGenHyper.pdg = track->PdgCode();
+      double ov[3], dv[3];
+      track->XvYvZv(ov);
+      bool otherDecayChannel{true};
+      for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++)
+      {
+        auto daugh = (AliVParticle *)fMCEvent->GetTrack(iD);
+        if (!daugh)
+        {
+          continue;
+        }
+        if (std::abs(daugh->PdgCode()) == AliPID::ParticleCode(AliPID::kHe3))
+        {
+          otherDecayChannel = false;
+          daugh->XvYvZv(dv);
+          break;
+        }
+      }
+      if (otherDecayChannel)
+        continue;
+      fGenHyper.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * track->M() / track->P();
+      fTree->Fill();
     }
   }
 
@@ -452,21 +460,14 @@ AliAnalysisTaskHe3piKF *AliAnalysisTaskHe3piKF::AddTask(bool isMC, TString tskna
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
       Form("%s_summary", tskname.Data()), TList::Class(),
       AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
-
-  AliAnalysisDataContainer *coutput2 =
-      mgr->CreateContainer(Form("%s_treeCascades", tskname.Data()), TTree::Class(),
-                           AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%s_tree", tskname.Data()), TTree::Class(),
+                                                            AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   coutput2->SetSpecialOutput();
-
-  AliAnalysisDataContainer *coutput3 =
-      mgr->CreateContainer(Form("%s_treeLambda", tskname.Data()), TTree::Class(),
-                           AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
-  coutput3->SetSpecialOutput();
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
-  mgr->ConnectOutput(task, 3, coutput3);
+
   return task;
 }
 
