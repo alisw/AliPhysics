@@ -54,6 +54,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void ProcessConversionCandidates();
+    void InitJets();  // Initialize Jet vectors etc. to be available in ProcessMCParticles. ProcessJets has to be called later after full event selection
     void ProcessJets();
     void CalculatePi0Candidates();
 
@@ -521,6 +522,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     vector<Double_t>      fTrueVectorJetEta;                                    // Vector of True JetEta
     vector<Double_t>      fTrueVectorJetPhi;                                    // Vector of True JetPhi
 
+    std::map<Int_t, Int_t> MapRecJetsTrueJets;                                  // Map containing the reconstructed jet index in vector and mapping it to true Jet index
+
     // tree for identified particle properties
     TTree**               tTrueInvMassROpenABPtFlag;                            //! array of trees with
     Float_t               fInvMass;                                             //! InvMass,
@@ -613,7 +616,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 89);
+    ClassDef(AliAnalysisTaskGammaCalo, 90);
 };
 
 #endif
