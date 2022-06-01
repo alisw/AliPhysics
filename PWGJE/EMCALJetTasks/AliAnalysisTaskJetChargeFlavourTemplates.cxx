@@ -22,8 +22,6 @@
 #include "AliMCEvent.h"
 #include "AliEmcalJet.h"
 
-#include "AliHFJetsTaggingVertex.h"
-
 //My Header
 #include "AliAnalysisTaskJetChargeFlavourTemplates.h"
 
@@ -211,7 +209,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
   AliJetContainer *JetGen= GetJetContainer(1); //Jet Container for event
 
 
-  AliMCParticleContainer *MCParticleContainer = (AliMCParticleContainer*) JetGen->GetParticleContainer();
+  AliMCParticleContainer* MCParticleContainer = (AliMCParticleContainer*) JetGen->GetParticleContainer();
 
   TClonesArray*  MCParticleCloneContainer = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("mcparticles"));
 
