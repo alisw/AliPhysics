@@ -24,7 +24,7 @@ struct MiniHyperKF
   Double32_t V0radius;
   Double32_t Lrec;
   Double32_t fZ;
-  Double32_t fChi2;           //[0.0,10.22,10]
+  Double32_t fChi2;           //[0.0,20.46,12]
   Double32_t TPCnSigmaPi;     //[-5,5,8]
   Double32_t TPCnSigmaHe3;    //[-5,5,8]
   Double32_t TPCmomHe3;       //[0.0,10.22,8]
@@ -56,6 +56,7 @@ struct MiniHyperMCKF : public MiniHyperKF
 class AliAnalysisTaskHe3piKF : public AliAnalysisTaskSE
 {
 public:
+  enum kProng { kHe3 = 0, kPion = 1};
   enum kReducedTrigger
   {
     kINT7 = BIT(0),
@@ -88,7 +89,10 @@ public:
   float fMinTrackDCA[3] = {0., 0., 0.};
   float fCandidateCtRange[2] = {0.f, 35.f};
   float fCandidatePtRange[2] = {1.f, 9.f};
-  float fTrackPtRange[2][2] = {{0.f, 10.f}, {0.f, 2.f}};
+  float fTrackPtRange[2][2] = {{1.f, 10.f}, {0.f, 2.f}};
+  float fMaxProngDCA = 2;
+  float fMinCosPA = 0.9;
+
 
 private:
   AliAnalysisTaskHe3piKF(const AliAnalysisTaskHe3piKF &source);
