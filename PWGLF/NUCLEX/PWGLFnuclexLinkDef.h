@@ -143,6 +143,9 @@
 #pragma link C++ class AliAnalysisTaskAlphaPiAOD+;
 #pragma link C++ class StructHyper+;
 #pragma link C++ class StructHyperMC+;
+#pragma link C++ class AliAnalysisTaskAlphaPiAODtrk+;
+#pragma link C++ class StructHypertrk+;
+#pragma link C++ class StructHypertrkMC+;
 #pragma link C++ class MiniHyper+;
 #pragma link C++ class MiniHyperMC+;
 #pragma link C++ class MiniHyperKF+;

@@ -140,6 +140,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
       Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piAOD.cxx
       Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piKF.cxx
       Hypernuclei/Hyp2Body/AliAnalysisTaskAlphaPiAOD.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskAlphaPiAODtrk.cxx
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
       Hypernuclei/Hyp3Body/Hypertriton3structures.cxx
