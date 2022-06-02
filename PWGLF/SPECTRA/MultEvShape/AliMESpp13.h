@@ -2,12 +2,11 @@
 #define ALIMESPP13_H
 
 ////////////////////////////////////////////////////////////////////////////
-//  Tender for Multiplicity and Event Shape group                         //
-//  Tender configuration                                                  //
+//  Task for multiplicity and event shape studies in pp @ 13 TeV          //
+//                                                                        //
 //  Authors:                                                              //
 //    Amelia Lindner <amelia.lindner@cern.ch>                             //
 //    Alex Bercuci (a.bercuci@gsi.de)                                     //
-//    Cristi Andrei <Cristian.Andrei@cern.ch>                             //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -54,14 +53,8 @@ public:
   enum MESpp13Containers
   {
     kQA = 1,
-    kEventInfo = 1,
-    kTracks,
-    kEventTree,
+    kEventTree = 1,
     kTracksTree,
-    kMCeventInfo,
-    kMCtracks,
-    kMCeventTree,
-    kMCtracksTree,
     kMCGenTracksTree,
     kMCMissedTracksTree,
     kNcontainers
@@ -83,18 +76,21 @@ private:
   AliMESpp13(const AliMESpp13 &);
   AliMESpp13 &operator=(const AliMESpp13 &);
 
-  AliAnalysisFilter *fTrackFilter; // working track filter
+  AliAnalysisFilter *fTrackFilter;    // working track filter
   TObjArray *fTracks;                 //!
   AliMESeventInfo *fEvInfo;           //!
   TObjArray *fMCtracks;               //!
   AliMESeventInfo *fMCevInfo;         //!
   TTreeSRedirector *fTreeSRedirector; //! temp tree to dump output
+  TClonesArray *fTracksIO;            //!
+  TClonesArray *fMCtracksIO;          //!
+  TClonesArray *fMCGenTracksIO;       //!
+  TClonesArray *fMCtracksMissIO;      //!
   TTree *fEventTree;                  //!
   TTree *fTracksTree;                 //!
-  TTree *fMCeventTree;                //!
-  TTree *fMCtracksTree;               //!
   TTree *fMCGenTracksTree;            //!
   TTree *fMCMissedTracksTree;         //!
+
   AliPPVsMultUtils *fUtils;
   AliEventCuts fEventCutsQA; //!
 
