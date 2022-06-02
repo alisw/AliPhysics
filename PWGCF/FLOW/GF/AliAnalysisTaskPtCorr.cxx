@@ -81,7 +81,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fNchTrueVsRec(0),
     fV0MvsMult(0),
     fPtMoms(0),
-    fPtDist(0),
+    fPtDistB(0),
+    fPtDistA(0),
     fPtDCA(0),
     fPtVsNTrk(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
@@ -137,7 +138,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool i
     fNchTrueVsRec(0),
     fV0MvsMult(0),
     fPtMoms(0),
-    fPtDist(0),
+    fPtDistB(0),
+    fPtDistA(0),
     fPtDCA(0),
     fPtVsNTrk(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
@@ -257,8 +259,10 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     int Npows = 6;
     fPtMoms = new TH3D("ptMoments","ptMoments",fNPtBins,fPtBins,Npows,powers,temp_NV0MBinsDefault,l_V0MBinsDefault);
     fQAList->Add(fPtMoms);
-    fPtDist = new TH2D("ptDist","ptDist;p_t;centrality",fNPtBins,fPtBins,temp_NV0MBinsDefault,l_V0MBinsDefault);
-    fQAList->Add(fPtDist);
+    fPtDistB = new TH1D("ptDistB","ptDistB;p_t;centrality",fNPtBins,fPtBins);
+    fQAList->Add(fPtDistB);
+    fPtDistA = new TH2D("ptDistA","ptDistA;p_t;centrality",fNPtBins,fPtBins);
+    fQAList->Add(fPtDistA);
     double binsDCA[61] = {-3.00, -2.90, -2.80, -2.70, -2.60, -2.50, -2.40, -2.30, -2.20, -2.10, -2.00, -1.90, -1.80, -1.70, -1.60, -1.50, -1.40, -1.30, -1.20, -1.10, -1.00, -0.90, -0.80, -0.70, -0.60, -0.50, -0.40, -0.30, -0.20, -0.10, 0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.10, 2.20, 2.30, 2.40, 2.50, 2.60, 2.70, 2.80, 2.90, 3.00};
     int NbinsDCA = 60;
     fPtDCA = new TH3D("ptDCA","ptDCA;pt;dcaxy;dcaz",fNPtBins,fPtBins,NbinsDCA,binsDCA,NbinsDCA,binsDCA);
@@ -490,6 +494,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* fAOD, const double &l_cent, 
         double l_eta = part->Eta();
         if (TMath::Abs(l_eta) > fEta) continue;
         double l_pt = part->Pt();
+        fPtDistB->Fill(l_pt);
         if (l_pt<ptMin || l_pt>ptMax) continue;
         double wNUE = 1.0;
         if(eff_flags&(flags::consteff|flags::gausseff)) {
@@ -509,12 +514,12 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* fAOD, const double &l_cent, 
           }
           wNUE = 1./wNUE;
         }
-        if(TMath::Abs(l_eta)<fEtaNch) { nTracksMC++; NtracksPt[fPtDist->GetXaxis()->FindBin(l_pt)-1]++; }
+        if(TMath::Abs(l_eta)<fEtaNch) { nTracksMC++; NtracksPt[fPtDistA->GetXaxis()->FindBin(l_pt)-1]++; }
         if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
         if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,1,l_pt);
         FillWPCounter(wp,wNUE,l_pt);
         for(int i=0;i<6;++i) fPtMoms->Fill(pow(l_pt,i+1),i+0.5,l_cent);
-        fPtDist->Fill(l_pt,l_cent);
+        fPtDistA->Fill(l_pt);
         fPtDCA->Fill(l_pt,TMath::Sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),trackXYZ[2]);
       }
       nTracks = fUseRecNchForMC?nTracksRec:nTracksMC;
@@ -534,12 +539,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* fAOD, const double &l_cent, 
           double trackXYZ[] = {0.,0.,0.};
           if(!AcceptAODTrack(track,trackXYZ,ptMin,ptMax,vtxXYZ)) continue;
           double l_pt = track->Pt();
-          double wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
-          if(wNUE==0.0) continue;
-          wNUE = 1.0/wNUE;
-          FillWPCounter(wp,wNUE,l_pt);
-          fPtDist->Fill(wNUE*l_pt,l_cent);
-          
+          fPtDistB->Fill(l_pt);
           if(eff_flags & flags::powereff)
           {
             vector<double> wNUE(7,1.0);
@@ -567,7 +567,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* fAOD, const double &l_cent, 
             if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,wNUE,l_pt);
             if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,wNUE,l_pt);
             FillWPCounter(wp,wNUE,l_pt);
-            fPtDist->Fill(wNUE*l_pt,l_cent);
+            fPtDistA->Fill(l_pt,l_cent);
           }
           
           for(int i=0;i<6;++i) fPtMoms->Fill(pow(l_pt,i+1),i+0.5,l_cent);

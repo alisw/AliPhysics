@@ -23,8 +23,8 @@ class AliVEvent;
 
 using namespace std;
 
-namespace flags {
-    enum flags : unsigned int {
+namespace PtCorrFlags {
+    enum flags : int {
       noeff = 1,
       consteff = 2,
       gausseff = 4,
@@ -116,7 +116,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     TH2D*                   fNchTrueVsRec; //!
     TH2D*                   fV0MvsMult; //!
     TH3D*                   fPtMoms;  //!
-    TH2D*                   fPtDist;  //!
+    TH1D*                   fPtDistB;  //!
+    TH1D*                   fPtDistA;  //!
     TH3D*                   fPtDCA; //!
     TH2D*                   fPtVsNTrk; //!
     unsigned int            fTriggerType;
