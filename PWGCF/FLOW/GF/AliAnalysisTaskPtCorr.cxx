@@ -150,7 +150,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool i
     SetContSubfix(ContSubfix);
     fCentEst = new TString("V0M");
     SetEffFlags(fl_eff);
-    if(!(fIsMC&&!((eff_flags&flags::realeffin)==flags::realeffin)) &&!fOnTheFly)
+    if(!(fIsMC&&!((eff_flags&PtCorrFlags::realeffin)==PtCorrFlags::realeffin)) &&!fOnTheFly)
     {
         DefineInput(1, TList::Class());
     }
@@ -205,13 +205,13 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     fNPtBins = fPtAxis->GetNbins();
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
     fRndm = new TRandom(0);
-    if(!(fIsMC&&!((eff_flags&flags::realeffin)==flags::realeffin)) &&!fOnTheFly)
+    if(!(fIsMC&&!((eff_flags&PtCorrFlags::realeffin)==PtCorrFlags::realeffin)) &&!fOnTheFly)
     { 
         fEfficiencyList = (TList*)GetInputData(1);
         fEfficiencies = new TH1D*[l_NV0MBinsDefault];
         fPowerEfficiencies = new TH2D*[l_NV0MBinsDefault];
         for(int i=0;i<l_NV0MBinsDefault;i++) {
-          if(eff_flags&flags::powereff)
+          if(eff_flags&PtCorrFlags::powereff)
           {
             fPowerEfficiencies[i] = (TH2D*)fEfficiencyList->FindObject(Form("Eff_Cent%i%s",i,fGFWSelection->GetSystPF()));
             if(!fPowerEfficiencies[i])
@@ -497,17 +497,17 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* fAOD, const double &l_cent, 
         fPtDistB->Fill(l_pt);
         if (l_pt<ptMin || l_pt>ptMax) continue;
         double wNUE = 1.0;
-        if(eff_flags&(flags::consteff|flags::gausseff)) {
-          if(eff_flags&flags::realeffin){
+        if(eff_flags&(PtCorrFlags::consteff|PtCorrFlags::gausseff)) {
+          if(eff_flags&PtCorrFlags::realeffin){
             wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
             if(wNUE==0.0) continue;
           }
           else wNUE = fConstEff;
-          if(eff_flags&flags::consteff) {
+          if(eff_flags&PtCorrFlags::consteff) {
             rnd_eff = fRndm->Rndm(); 
             if(rnd_eff > wNUE) continue;
           }
-          if(eff_flags&flags::gausseff) { 
+          if(eff_flags&PtCorrFlags::gausseff) { 
             wNUE = fRndm->Gaus(wNUE,fSigmaEff); 
             rnd_eff = fRndm->Rndm(); 
             if(rnd_eff > wNUE) continue;
@@ -540,13 +540,13 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* fAOD, const double &l_cent, 
           if(!AcceptAODTrack(track,trackXYZ,ptMin,ptMax,vtxXYZ)) continue;
           double l_pt = track->Pt();
           fPtDistB->Fill(l_pt);
-          if(eff_flags & flags::powereff)
+          if(eff_flags & PtCorrFlags::powereff)
           {
             vector<double> wNUE(7,1.0);
             for(int i=0;i<6;++i) {
               wNUE[i+1] = fPowerEfficiencies[iCent]->GetBinContent(fPowerEfficiencies[iCent]->GetXaxis()->FindBin(l_pt),fPowerEfficiencies[iCent]->GetYaxis()->FindBin(i+0.5)); 
               if(wNUE[i+1]==0) continue; 
-              wNUE[i+1] = (eff_flags&flags::noeff)?1.0:1.0/wNUE[i+1];
+              wNUE[i+1] = (eff_flags&PtCorrFlags::noeff)?1.0:1.0/wNUE[i+1];
             }
             if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,wNUE,l_pt);
             if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,wNUE,l_pt);
@@ -556,12 +556,12 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* fAOD, const double &l_cent, 
           {
             double wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
             if(wNUE==0.0) continue;
-            if(eff_flags&flags::flateff) {
+            if(eff_flags&PtCorrFlags::flateff) {
               wNUE = fEfficiencies[iCent]->GetMinimum(0.00001)/wNUE;
               rnd_eff = fRndm->Rndm(); 
               if(rnd_eff > wNUE) continue;
             }
-            if(eff_flags&flags::noeff) wNUE = 1.0;
+            if(eff_flags&PtCorrFlags::noeff) wNUE = 1.0;
             wNUE = 1.0/wNUE;
             
             if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,wNUE,l_pt);
