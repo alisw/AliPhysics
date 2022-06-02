@@ -1,7 +1,7 @@
-/// \class AliAnalysisTaskAlphaPiAOD
+/// \class AliAnalysisTaskAlphaPiAODtrk
 
-#ifndef __AliAnalysisTaskAlphaPiAOD__
-#define __AliAnalysisTaskAlphaPiAOD__
+#ifndef __AliAnalysisTaskAlphaPiAODtrk__
+#define __AliAnalysisTaskAlphaPiAODtrk__
 
 #include <Rtypes.h>
 #include <TString.h>
@@ -16,7 +16,7 @@ class TH2F;
 class TList;
 class TTree;
 
-struct StructHyper {
+struct StructHypertrk {
   Double32_t pt;
   Double32_t Rapidity;
   Double32_t m;
@@ -43,7 +43,7 @@ struct StructHyper {
   bool Matter;
 };
 
-struct StructHyperMC : public StructHyper {
+struct StructHypertrkMC : public StructHypertrk {
   float ptMC;
   float etaMC;
   float ctMC;
@@ -53,7 +53,7 @@ struct StructHyperMC : public StructHyper {
   bool isDuplicated = false;
 };
 
-class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
+class AliAnalysisTaskAlphaPiAODtrk : public AliAnalysisTaskSE {
 public:
   enum kReducedTrigger {
     kINT7 = BIT(0),
@@ -62,10 +62,10 @@ public:
     kPositiveB = BIT(3),
     kHighMultV0 = BIT(4)
   };
-  AliAnalysisTaskAlphaPiAOD(bool isMC = false, TString taskname = "HyperAOD");
-  static AliAnalysisTaskAlphaPiAOD *AddTask(bool isMC, TString tskname,
+  AliAnalysisTaskAlphaPiAODtrk(bool isMC = false, TString taskname = "HyperAOD");
+  static AliAnalysisTaskAlphaPiAODtrk *AddTask(bool isMC, TString tskname,
                                             TString suffix);
-  virtual ~AliAnalysisTaskAlphaPiAOD();
+  virtual ~AliAnalysisTaskAlphaPiAODtrk();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -92,15 +92,15 @@ public:
   }
 
 private:
-  AliAnalysisTaskAlphaPiAOD(const AliAnalysisTaskAlphaPiAOD &source);
-  AliAnalysisTaskAlphaPiAOD &operator=(const AliAnalysisTaskAlphaPiAOD &source);
+  AliAnalysisTaskAlphaPiAODtrk(const AliAnalysisTaskAlphaPiAODtrk &source);
+  AliAnalysisTaskAlphaPiAODtrk &operator=(const AliAnalysisTaskAlphaPiAODtrk &source);
 
   void PostAllData();
 
   TTree *fTree = nullptr; //!<! Tree for Hyper
 
-  StructHyper *fRecHyper = nullptr; //!<! Transient fRecHyper
-  StructHyperMC fGenHyper;
+  StructHypertrk *fRecHyper = nullptr; //!<! Transient fRecHyper
+  StructHypertrkMC fGenHyper;
   AliPIDResponse *fPID = nullptr; //!<! ALICE PID framework
   bool fMC;
   THistManager *fHistos;           //!
@@ -120,7 +120,7 @@ private:
   float Eta2y(float pt, float m, float eta) const;
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskAlphaPiAOD, 8);
+  ClassDef(AliAnalysisTaskAlphaPiAODtrk, 8);
   // 2: Use THistManager class, add QA histograms for TPC PID of alpha.
   // 3: Use default PID selection and add option for the customise.
   // 4: Add track loop option
@@ -131,4 +131,4 @@ private:
   /// \endcond
 };
 
-#endif /* defined(__AliAnalysisTaskAlphaPiAOD__) */
+#endif /* defined(__AliAnalysisTaskAlphaPiAODtrk__) */
