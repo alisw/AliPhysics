@@ -1,11 +1,9 @@
-#include "AliAnalysisTaskMSDibaryons.h"
-
 // std
 #include <iostream>
 #include <stdio.h>
 
 // ROOT includes
-#include <TList.h>
+#include <THashList.h>
 #include <TChain.h>
 #include <TMath.h>
 #include <TH1.h>
@@ -29,11 +27,20 @@
 #include <AliPIDResponse.h>
 #include <AliAODv0.h>
 #include <AliAODcascade.h>
-#include <AliEventPoolManager.h>
 #include <AliAODTracklets.h>
+#include <AliEventPoolManager.h>
 //#include <AliCentrality>
 
-class AliAnalysisTaskMSDibaryons;
+//20220524 Flow study
+#include <AliMultSelection.h>
+#include <AliEventplane.h>
+#include <AliQnCorrectionsManager.h>
+#include <AliAnalysisTaskFlowVectorCorrections.h>
+#include <AliQnCorrectionsQnVector.h>
+
+#include "AliAnalysisTaskMSDibaryons.h"
+
+//class AliAnalysisTaskMSDibaryons;
 
 using namespace std;
 
@@ -42,14 +49,18 @@ ClassImp(AliAnalysisTaskMSDibaryons)
 //_____________________________________________________________________________
 AliAnalysisTaskMSDibaryons::AliAnalysisTaskMSDibaryons() : 
 AliAnalysisTaskSE(),
+  fEvent(0x0),
+  fESD(0x0),
   fAOD(0),
   fHeader(0),
-  fUtils(0),
   fPIDResponse(0),
   ftrigBit(0),
-  nevt(0),
-  lambdacounter(0),
-//
+  fFlowQnVectorMgr(0x0),
+  fEstimator("V0M"),
+  fMultSelection(0x0),
+  fCentralityMain(0.),
+  fCentralityMin(0.),
+  fCentralityMax(0.),
   fPoolManagerlambda(0),
   fPoolManagerantilambda(0),
   fPoolManagerxi(0),
@@ -72,14 +83,18 @@ AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskMSDibaryons::AliAnalysisTaskMSDibaryons(const char *name) : 
   AliAnalysisTaskSE(name),
+  fEvent(0x0),
+  fESD(0x0),
   fAOD(0),
   fHeader(0),
-  fUtils(0),
   fPIDResponse(0),
   ftrigBit(0),
-  nevt(0),
-  lambdacounter(0),
-  //
+  fFlowQnVectorMgr(0x0),
+  fEstimator("V0M"),
+  fMultSelection(0x0),
+  fCentralityMain(0.),
+  fCentralityMin(0.),
+  fCentralityMax(0.),
   fPoolManagerlambda(0),
   fPoolManagerantilambda(0),
   fPoolManagerxi(0),
@@ -98,29 +113,9 @@ AliAnalysisTaskMSDibaryons::AliAnalysisTaskMSDibaryons(const char *name) :
 {
   // Constructor
   DefineInput(0,TChain::Class());
-  DefineOutput(1,TList::Class());
+  DefineOutput(1,THashList::Class());
 
-  nevt=0;
-  lambdacounter=0;
 
-  for(Int_t i=0; i<5; i++){
-    for(Int_t j=0; j<10; j++){
-      eventdepth[i][j] =0;
-      eventdepth2[i][j]=0;
-      for(Int_t k=0; k<5; k++){
-	mnLambda[i][j][k]=0;
-	for(Int_t l=0; l<10; l++){
-
-	  mEnergy[i][j][k][l]=0;
-	  mPx[i][j][k][l]=0;
-	  mPy[i][j][k][l]=0;
-	  mPz[i][j][k][l]=0;	  
-	}
-      }
-    }
-  }
-  
-  
 }
 
 //________________________________________________________________________
@@ -137,11 +132,11 @@ AliAnalysisTaskMSDibaryons::~AliAnalysisTaskMSDibaryons()
 void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
 {
 
-  //==========define AliEventPoolMgr
+  //==========define AliEventPoolMgr                                                                                                                                
   Int_t MaxNEvents = 5;
   Int_t MaxNLambda = 10;
-  //Int_t nMultiBins = 12;
-  //Double_t multBins[]={0,10,20,30,40,50,60,70,80,90,100,110,120};
+  //Int_t nMultiBins = 12;                                                                                                                                          
+  //Double_t multBins[]={0,10,20,30,40,50,60,70,80,90,100,110,120};                                                                                                 
   Int_t nMultiBins = 17;
   Double_t multBins[]={1,4,8,12,16,20,24,28,32,36,40,50,60,70,80,90,100,200};
   Int_t nZvtxBins = 4;
@@ -164,33 +159,31 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   fPoolManageromegap     =new AliEventPoolManager(MaxNEvents,MaxNLambda,nMultiBins,(Double_t*)multBins,nZvtxBins,(Double_t *)vertexBins);
   fPoolManagerp          =new AliEventPoolManager(MaxNEvents,MaxNLambda,nMultiBins,(Double_t*)multBins,nZvtxBins,(Double_t *)vertexBins);
   fPoolManagerantip      =new AliEventPoolManager(MaxNEvents,MaxNLambda,nMultiBins,(Double_t*)multBins,nZvtxBins,(Double_t *)vertexBins);
-  //==========
+  //========== 
 
-  fOutputList=new TList();
+  fOutputList=new THashList();
   fOutputList->SetOwner(kTRUE);
 
   //========== Event cut ==========
-  TH1F *fEvtCounter                  =new TH1F("fEvtCounter","",1,0,1);
-  TH1F *fEvtPassCut                  =new TH1F("fEvtPassCut","",1,0,1);
-  TH1F *fEvtVtxX                     =new TH1F("fEvtVtxX","",400,-20.,20.);
-  TH1F *fEvtVtxY                     =new TH1F("fEvtVtxY","",400,-20.,20.);
-  TH1F *fEvtVtxZ                     =new TH1F("fEvtVtxZ","",400,-20.,20.);
-  TH1F *fEvtVtxTrk                   =new TH1F("fEvtVtxTrk","",1000,0.,1000.);
-  TH1F *fSPDVtxZ                     =new TH1F("fSPDVtxZ","",400,-20.,20.);
-  TH1F *fSPDVtxTrk                   =new TH1F("fSPDVtxTrk","",1000,0.,1000.);
-  TH2F *fSPDVtxCor                   =new TH2F("fSPDVtxCor","",400,-20.,20.,400,-20.,20.);
-  TH1F *fSPDVtxDisp                  =new TH1F("fSPDVtxDisp","",300,0.,1.5);
+  fOutputList->Add(new TH1F("fEvtCounter","",1,0,1));
+  fOutputList->Add(new TH1F("fEvtPassCut","",1,0,1));
+  fOutputList->Add(new TH1F("fEvtVtxX","",400,-20.,20.));
+  fOutputList->Add(new TH1F("fEvtVtxY","",400,-20.,20.));
+  fOutputList->Add(new TH1F("fEvtVtxZ","",400,-20.,20.));
+  fOutputList->Add(new TH1F("fEvtVtxTrk","",1000,0.,1000.));
+  fOutputList->Add(new TH1F("fSPDVtxZ","",400,-20.,20.));
+  fOutputList->Add(new TH1F("fSPDVtxTrk","",1000,0.,1000.));
+  fOutputList->Add(new TH2F("fSPDVtxCor","",400,-20.,20.,400,-20.,20.));
+  fOutputList->Add(new TH1F("fSPDVtxDisp","",300,0.,1.5));
 
-  fOutputList->Add(fEvtCounter);
-  fOutputList->Add(fEvtPassCut);
-  fOutputList->Add(fEvtVtxX);
-  fOutputList->Add(fEvtVtxY);
-  fOutputList->Add(fEvtVtxZ);
-  fOutputList->Add(fEvtVtxTrk);
-  fOutputList->Add(fSPDVtxZ);
-  fOutputList->Add(fSPDVtxTrk);
-  fOutputList->Add(fSPDVtxCor);
-  fOutputList->Add(fSPDVtxDisp);
+  fOutputList->Add(new TH1F("hCentralityV0M","centrality V0M",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityCL0","centrality CL0",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityCL1","centrality CL1",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityZNA","centrality ZNA",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityZNC","centrality ZNC",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityV0A","centrality V0A",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityV0C","centrality V0C",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityMain","centrality Main",101,0,101));
 
   //========== multiplicity ==========
   TH2F *fmultiplicity                      =new TH2F("fmultiplicity","",2000,0,200,40,-20,20);
@@ -198,216 +191,109 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   TH1F *fmultiplicity_protonxi             =new TH1F("fmultiplicity_protonxi","",2000,0,200);
   TH1F *fmultiplicity_lambdaxi             =new TH1F("fmultiplicity_lambdaxi","",2000,0,200);
 
-  fOutputList->Add(fmultiplicity);
-  fOutputList->Add(fmultiplicity_lambdalambda);
-  fOutputList->Add(fmultiplicity_protonxi);            
-  fOutputList->Add(fmultiplicity_lambdaxi);            
+  fOutputList->Add(new TH2F("fmultiplicity","",2000,0,200,40,-20,20));
+  fOutputList->Add(new TH1F("fmultiplicity_lambdalambda","",2000,0,200));
+  fOutputList->Add(new TH1F("fmultiplicity_protonxi","",2000,0,200));            
+  fOutputList->Add(new TH1F("fmultiplicity_lambdaxi","",2000,0,200));            
 
   //========== Proton ==========
-  TH1F *fTrkEta                      =new TH1F("fTrkEta","",100,-2,2);
-  TH1F *fTrkPt                       =new TH1F("fTrkPt","",1000,0,5);
-  TH1F *fTrkTPCclus                  =new TH1F("fTrkTPCclus","",1000,0,200);
-  TH1F *fTrkTPCcrsR                  =new TH1F("fTrkTPCcrsR","",1000,0,200);
-  TH1F *fTrkTPCclusF                 =new TH1F("fTrkTPCclusF","",1000,0,200);
-  TH1F *fTrkDCAxy                    =new TH1F("fTrkDCAxy","",100,-3,3);
-  TH1F *fTrkDCAz                     =new TH1F("fTrkDCAz","",100,-3,3);
-  TH2F *fPvsTPCsignal                =new TH2F("fPvsTPCsignal","",2000,0,10,20000,0,1000);
-  TH2F *fPvsTOFsignal                =new TH2F("fPvsTOFsignal","",500,0,5,200,0,2);
-  TH1F *fPt_proton                   =new TH1F("fPt_proton","",1000,0,10); 
-  TH2F *PID_cut                      =new TH2F("PID_cut","",2000,0,10,20000,-1000,1000);
-
-  fOutputList->Add(fTrkEta);
-  fOutputList->Add(fTrkPt);
-  fOutputList->Add(fTrkTPCclus);
-  fOutputList->Add(fTrkTPCcrsR);
-  fOutputList->Add(fTrkTPCclusF);
-  fOutputList->Add(fTrkDCAxy);
-  fOutputList->Add(fTrkDCAz);
-  fOutputList->Add(fPvsTPCsignal);
-  fOutputList->Add(fPvsTOFsignal);
-  fOutputList->Add(fPt_proton);
-  fOutputList->Add(PID_cut);
+  fOutputList->Add(new TH1F("fTrkEta","",100,-2,2));
+  fOutputList->Add(new TH1F("fTrkPt","",1000,0,5));
+  fOutputList->Add(new TH1F("fTrkTPCclus","",1000,0,200));
+  fOutputList->Add(new TH1F("fTrkTPCcrsR","",1000,0,200));
+  fOutputList->Add(new TH1F("fTrkTPCclusF","",1000,0,200));
+  fOutputList->Add(new TH1F("fTrkDCAxy","",100,-3,3));
+  fOutputList->Add(new TH1F("fTrkDCAz","",100,-3,3));
+  fOutputList->Add(new TH2F("fPvsTPCsignal","",2000,0,10,20000,0,1000));
+  fOutputList->Add(new TH2F("fPvsTOFsignal","",500,0,5,200,0,2));
+  fOutputList->Add(new TH1F("fPt_proton","",1000,0,10));
+  fOutputList->Add(new TH2F("PID_cut","",2000,0,10,20000,-1000,1000));
 
   //========== Lambda ===========
   //daughter track select contents
-  TH1F *fEta                         =new TH1F("fEta","",100,-2,2);
-  TH1F *fTPC                         =new TH1F("fTPC","",200,0,200);
-  TH1F *fDCA                         =new TH1F("fDCA","",100,0,1);
-  TH1F *fPIDproton                   =new TH1F("fPIDproton","",60,0,6);
-  TH1F *fPIDpion                     =new TH1F("fPIDpion","",60,0,6);
+  fOutputList->Add(new TH1F("fEta","",100,-2,2));
+  fOutputList->Add(new TH1F("fTPC","",200,0,200));
+  fOutputList->Add(new TH1F("fDCA","",100,0,1));
+  fOutputList->Add(new TH1F("fPIDproton","",60,0,6));
+  fOutputList->Add(new TH1F("fPIDpion","",60,0,6));  
   //lambda select contents
-  TH1F *fV0pt                        =new TH1F("fV0pt","",1000,0,10);
-  TH1F *fV0vtxx                      =new TH1F("fV0vtxx","",500,0,500);
-  TH1F *fV0vtxy                      =new TH1F("fV0vtxy","",500,0,500);
-  TH1F *fV0vtxz                      =new TH1F("fV0vtxz","",500,0,500);
-  TH1F *fTransRadius                 =new TH1F("fTransRadius","",30000,0,300);
-  TH1F *fDCAdaugTov0Vtx              =new TH1F("fDCAdaugTov0Vtx","",1000,0,10);
-  TH1F *fCPA                         =new TH1F("fCPA","",200,-1,1);
-  TH1F *hInvMassK0s                  =new TH1F("hInvMassK0s","",10000,0,10);
-  //v0 selection
-  TH1F *hInvMassLambda               =new TH1F("hInvMassLambda","",10000,0,10); 
-  TH2F *fPtv0_lambda                 =new TH2F("fPtv0_lambda","",1000,0,10,10000,0,10);
-
-  //daughter track select contents
-  fOutputList->Add(fEta);
-  fOutputList->Add(fTPC);
-  fOutputList->Add(fDCA);
-  fOutputList->Add(fPIDproton);
-  fOutputList->Add(fPIDpion);  
-  //lambda select contents
-  fOutputList->Add(fV0pt);  
-  fOutputList->Add(fV0vtxx);
-  fOutputList->Add(fV0vtxy);
-  fOutputList->Add(fV0vtxz);
-  fOutputList->Add(fTransRadius);
-  fOutputList->Add(fDCAdaugTov0Vtx);
-  fOutputList->Add(fCPA);
-  fOutputList->Add(hInvMassK0s);
+  fOutputList->Add(new TH1F("fV0pt","",1000,0,10));  
+  fOutputList->Add(new TH1F("fV0vtxx","",500,0,500));
+  fOutputList->Add(new TH1F("fV0vtxy","",500,0,500));
+  fOutputList->Add(new TH1F("fV0vtxz","",500,0,500));
+  fOutputList->Add(new TH1F("fTransRadius","",30000,0,300));
+  fOutputList->Add(new TH1F("fDCAdaugTov0Vtx","",1000,0,10));
+  fOutputList->Add(new TH1F("fCPA","",200,-1,1));
+  fOutputList->Add(new TH1F("hInvMassK0s","",10000,0,10));
   //v0 selection                                                                                    
-  fOutputList->Add(fPtv0_lambda);
-  fOutputList->Add(hInvMassLambda);
+  fOutputList->Add(new TH1F("hInvMassLambda","",10000,0,10));
+  fOutputList->Add(new TH2F("fPtv0_lambda","",1000,0,10,10000,0,10));
 
   //=========== Xi ==========
   //cascade daughter select contents
-  TH1F *fcascdauEta                  =new TH1F("fcascdauEta","",100,-2,2);
-  TH1F *fcascdauEtab                 =new TH1F("fcascdauEtab","",100,-2,2);  
-  TH1F *fcascdauTPC                  =new TH1F("fcascdauTPC","",200,0,200);  
-  TH1F *fcascdauTPCb                 =new TH1F("fcascdauTPCb","",200,0,200);  
-  TH1F *fcascdauPt                   =new TH1F("fcascdauPt","",1000,0,10);   
-  TH1F *fcascdauPtb                  =new TH1F("fcascdauPtb","",1000,0,10);   
-  TH1F *fcascdaudca                  =new TH1F("fcascdaudca","",100,0,1);   
-  TH1F *fcascdaudcab                 =new TH1F("fcascdaudcab","",100,0,1);   
-  TH1F *fcascdauPIDproton            =new TH1F("fcascdauPIDproton","",60,0,6);
-  TH1F *fcascdauPIDpion              =new TH1F("fcascdauPIDpion","",60,0,6);
-  TH1F *fcascbachPIDpion             =new TH1F("fcascbachPIDpion","",60,0,6);
+  fOutputList->Add(new TH1F("fcascdauEta","",100,-2,2));
+  fOutputList->Add(new TH1F("fcascdauEtab","",100,-2,2));
+  fOutputList->Add(new TH1F("fcascdauTPC","",200,0,200));
+  fOutputList->Add(new TH1F("fcascdauTPCb","",200,0,200));
+  fOutputList->Add(new TH1F("fcascdauPt","",1000,0,10));
+  fOutputList->Add(new TH1F("fcascdauPtb","",1000,0,10));
+  fOutputList->Add(new TH1F("fcascdaudca","",100,0,1)); 
+  fOutputList->Add(new TH1F("fcascdaudcab","",100,0,1));
+  fOutputList->Add(new TH1F("fcascdauPIDproton","",60,0,6));
+  fOutputList->Add(new TH1F("fcascdauPIDpion","",60,0,6));
+  fOutputList->Add(new TH1F("fcascbachPIDpion","",60,0,6));
   //cascade V0 select contents
-  TH1F *fcascV0Transradius           =new TH1F("fcascV0Transradius","",30000,0,300);
-  TH1F *fcascV0daugdca               =new TH1F("fcascV0daugdca","",1000,0,10);
-  TH1F *fcascV0dca                   =new TH1F("fcascV0dca","",1000,0,10);
-  TH1F *fcascV0cpa                   =new TH1F("fcascV0cpa","",200,-1,1);
-  TH1F *hInvMassXidecayLambda        =new TH1F("hInvMassXidecayLambda","",10000,0,10);
+  fOutputList->Add(new TH1F("fcascV0Transradius","",30000,0,300));
+  fOutputList->Add(new TH1F("fcascV0daugdca","",1000,0,10));    
+  fOutputList->Add(new TH1F("fcascV0dca","",1000,0,10));        
+  fOutputList->Add(new TH1F("fcascV0cpa","",200,-1,1));        
+  fOutputList->Add(new TH1F("hInvMassXidecayLambda","",10000,0,10));
   //Xi select contents
-  TH1F *XiTranverseradius            =new TH1F("XiTranverseradius","",30000,0,300);
-  TH1F *dcaXiDaughters               =new TH1F("dcaXiDaughters","",1000,0,10);
-  TH1F *XiCPA                        =new TH1F("XiCPA","",200,-1,1);
-  //TH1F *hInvMassOmega                =new TH1F("hInvMassOmega","",10000,0,10);
-  //invariant mass xi                                                                           
-  TH1F *hInvMassXi                   =new TH1F("hInvMassXi","",10000,0,10); //xiのmassが0.001GeV/c オーダーで決定されてるから10000 bin
-  TH2F *fPtcascade_xi                =new TH2F("fPtcascade_xi","",1000,0,10,10000,0,10);
-  TH1F *fPtv0casc                    =new TH1F("fPtv0casc","",1000,0,10);
-  TH1F *fPtBachelor                  =new TH1F("fPtBachelor","",1000,0,10);
-  TH1F *fPhiXidecayLambda            =new TH1F("fPhiXidecayLambda","",1000,0,10);
-
-  //cascade daughter select contents
-  fOutputList->Add(fcascdauEta);
-  fOutputList->Add(fcascdauEtab);
-  fOutputList->Add(fcascdauTPC);
-  fOutputList->Add(fcascdauTPCb);
-  fOutputList->Add(fcascdauPt);
-  fOutputList->Add(fcascdauPtb); 
-  fOutputList->Add(fcascdaudca);
-  fOutputList->Add(fcascdaudcab);
-  fOutputList->Add(fcascdauPIDproton);
-  fOutputList->Add(fcascdauPIDpion);
-  fOutputList->Add(fcascbachPIDpion);
-  //cascade V0 select contents
-  fOutputList->Add(fcascV0Transradius);
-  fOutputList->Add(fcascV0daugdca);    
-  fOutputList->Add(fcascV0dca);        
-  fOutputList->Add(fcascV0cpa);        
-  fOutputList->Add(hInvMassXidecayLambda);
-  //Xi select contents
-  fOutputList->Add(XiTranverseradius); 
-  fOutputList->Add(dcaXiDaughters);    
-  fOutputList->Add(XiCPA);      
-  //fOutputList->Add(hInvMassOmega);       
+  fOutputList->Add(new TH1F("XiTranverseradius","",30000,0,300)); 
+  fOutputList->Add(new TH1F("dcaXiDaughters","",1000,0,10));    
+  fOutputList->Add(new TH1F("XiCPA","",200,-1,1));      
+  //fOutputList->Add(new TH1F("hInvMassOmega","",10000,0,10));       
   //invariant mass xi          
-  fOutputList->Add(hInvMassXi);
-  fOutputList->Add(fPtcascade_xi);
-  fOutputList->Add(fPtv0casc);
-  fOutputList->Add(fPtBachelor);
-  fOutputList->Add(fPhiXidecayLambda);
+  fOutputList->Add(new TH1F("hInvMassXi","",10000,0,10));
+  fOutputList->Add(new TH2F("fPtcascade_xi","",1000,0,10,10000,0,10));
+  fOutputList->Add(new TH1F("fPtv0casc","",1000,0,10));
+  fOutputList->Add(new TH1F("fPtBachelor","",1000,0,10));
+  fOutputList->Add(new TH1F("fPhiXidecayLambda","",1000,0,10));
 
   //========== Omega ==========
-  TH1F *hInvMassOmega               =new TH1F("hInvMassOmega","",10000,0,10); 
-  TH2F *fPtcascade_omega            =new TH2F("fPtcascade_omega","",1000,0,10,10000,0,10);
-
-  fOutputList->Add(hInvMassOmega);
-  fOutputList->Add(fPtcascade_omega);
+  fOutputList->Add(new TH1F("hInvMassOmega","",10000,0,10));
+  fOutputList->Add(new TH2F("fPtcascade_omega","",1000,0,10,10000,0,10));
 
   //========== baryon-baryon FG ==========
-  //LamndaLambda
-  TH1F *hInvMassLambdaLambda                    =new TH1F("hInvMassLambdaLambda","",1000,0,10);
-  TH2F *hInvMassLambdaLambda_onlyprompt         =new TH2F("hInvMassLambdaLambda_onlyprompt","",1000,0,10,1000,2,3);
-  TH2F *hInvMassLambdaLambda_deltaphi           =new TH2F("hInvMassLambdaLambda_deltaphi","",180,0,180,10000,0,10);
-  //ProtonXi
-  TH1F *hInvMassProtonXi                        =new TH1F("hInvMassProtonXi","",1000,0,10);
-  TH2F *hInvMassProtonXi_deltaphi               =new TH2F("hInvMassProtonXi_deltaphi","",180,0,180,10000,0,10);
-  //LambdaXi
-  TH1F *hInvMassLambdaXi                        =new TH1F("hInvMassLambdaXi","",1000,0,10);
-  TH2F *hInvMassLambdaXi_deltaphi               =new TH2F("hInvMassLambdaXi_deltaphi","",180,0,180,10000,0,10);
-  //ProtonOmega
-  TH1F *hInvMassProtonOmega                     =new TH1F("hInvMassProtonOmega","",1000,0,10);
-  TH2F *hInvMassProtonOmega_deltaphi            =new TH2F("hInvMassProtonOmega_deltaphi","",180,0,180,10000,0,10);
-
   //LambdaLambda
-  fOutputList->Add(hInvMassLambdaLambda);
-  fOutputList->Add(hInvMassLambdaLambda_onlyprompt);
-  fOutputList->Add(hInvMassLambdaLambda_deltaphi);
+  fOutputList->Add(new TH2F("hInvMassLambdaLambda_onlyprompt","",1000,0,10,1000,2,3));
+  fOutputList->Add(new TH2F("hInvMassLambdaLambda","",1000,0,10,10000,2,3));
   //ProtonXi
-  fOutputList->Add(hInvMassProtonXi);
-  fOutputList->Add(hInvMassProtonXi_deltaphi);
+  fOutputList->Add(new TH2F("hInvMassProtonXi","",1000,0,10,10000,2,3));
   //LambdaXi
-  fOutputList->Add(hInvMassLambdaXi);
-  fOutputList->Add(hInvMassLambdaXi_deltaphi);
+  fOutputList->Add(new TH2F("hInvMassLambdaXi","",1000,0,10,10000,2,3));
   //ProtonOmega
-  fOutputList->Add(hInvMassProtonOmega);
-  fOutputList->Add(hInvMassProtonOmega_deltaphi);
+  fOutputList->Add(new TH2F("hInvMassProtonOmega","",1000,0,10,10000,2,3));
 
   //========== baryon-baryon BG ==========
-  TH2F *hInvMassLambdaLambda_combinatorial      =new TH2F("hInvMassLambdaLambda_combinatorial","",1000,0,10,1000,2,3);
-
-  //LambdaLambda
-  TH1F *hInvMassLambdaLambda_evtpool            =new TH1F("hInvMassLambdaLambda_evtpool","",1000,0,10);
-  TH2F *hInvMassLambdaLambda_evtpool_deltaphi   =new TH2F("hInvMassLambdaLambda_evtpool_deltaphi","",180,0,180,10000,0,10);
-  //ProtonXi
-  TH1F *hInvMassProtonXi_evtpool                =new TH1F("hInvMassProtonXi_evtpool","",1000,0,10);
-  TH2F *hInvMassProtonXi_evtpool_deltaphi       =new TH2F("hInvMassProtonXi_evtpool_deltaphi","",180,0,180,10000,0,10);
-  //LambdaXi
-  TH1F *hInvMassLambdaXi_evtpool                =new TH1F("hInvMassLambdaXi_evtpool","",1000,0,10);
-  TH2F *hInvMassLambdaXi_evtpool_deltaphi       =new TH2F("hInvMassLambdaXi_evtpool_deltaphi","",180,0,180,10000,0,10);
-  //ProtonOmega
-  TH1F *hInvMassProtonOmega_evtpool             =new TH1F("hInvMassProtonOmega_evtpool","",1000,0,10);
-  TH2F *hInvMassProtonOmega_evtpool_deltaphi    =new TH2F("hInvMassProtonOmega_evtpool_deltaphi","",180,0,180,10000,0,10);
-
-  fOutputList->Add(hInvMassLambdaLambda_combinatorial);
-
-  //LambdaLambda
-  fOutputList->Add(hInvMassLambdaLambda_evtpool);
-  fOutputList->Add(hInvMassLambdaLambda_evtpool_deltaphi);
-  //ProtonXi
-  fOutputList->Add(hInvMassProtonXi_evtpool);
-  fOutputList->Add(hInvMassProtonXi_evtpool_deltaphi);
-  //LambdaXi
-  fOutputList->Add(hInvMassLambdaXi_evtpool);
-  fOutputList->Add(hInvMassLambdaXi_evtpool_deltaphi);
-  //ProtonOmega
-  fOutputList->Add(hInvMassProtonOmega_evtpool);
-  fOutputList->Add(hInvMassProtonOmega_evtpool_deltaphi);
-
+  //LambdaLambda                                                                                                                                                    
+  fOutputList->Add(new TH1F("hInvMassLambdaLambda_evtpool","",1000,0,10));                                                                                                                   
+  fOutputList->Add(new TH2F("hInvMassLambdaLambda_evtpool_deltaphi","",180,0,180,10000,0,10));
+  //ProtonXi                                                                                                                                                        
+  fOutputList->Add(new TH1F("hInvMassProtonXi_evtpool","",1000,0,10));      
+  fOutputList->Add(new TH2F("hInvMassProtonXi_evtpool_deltaphi","",180,0,180,10000,0,10));
+  //LambdaXi                                                                                                                                                        
+  fOutputList->Add(new TH1F("hInvMassLambdaXi_evtpool","",1000,0,10));      
+  fOutputList->Add(new TH2F("hInvMassLambdaXi_evtpool_deltaphi","",180,0,180,10000,0,10));
+  //ProtonOmega                                                                                                                                                     
+  fOutputList->Add(new TH1F("hInvMassProtonOmega_evtpool","",1000,0,10));      
+  fOutputList->Add(new TH2F("hInvMassProtonOmega_evtpool_deltaphi","",180,0,180,10000,0,10));                                                                                                                                                         
   //===============
-
-  TH1F *fPt_allLambda                =new TH1F("fPt_allLambda","",1000,0,10);
-  TH1F *fPt_xidecaylambda            =new TH1F("fPt_xidecaylambda","",1000,0,10);
-  TH1F *fPt_allAntiLambda            =new TH1F("fPt_allAntiLambda","",1000,0,10);
-  TH1F *fPt_xidecayAntiLambda        =new TH1F("fPt_xidecayAntiLambda","",1000,0,10);
-  TH2F *fKaon_pt_eta                 =new TH2F("fKaon_pt_eta","",1000,0,10,200,-1,1);
-
-  fOutputList->Add(fPt_allLambda);
-  fOutputList->Add(fPt_xidecaylambda);
-  fOutputList->Add(fPt_allAntiLambda);
-  fOutputList->Add(fPt_xidecayAntiLambda);
-  fOutputList->Add(fKaon_pt_eta);
+  fOutputList->Add(new TH1F("fPt_allLambda","",1000,0,10));
+  fOutputList->Add(new TH1F("fPt_xidecaylambda","",1000,0,10));
+  fOutputList->Add(new TH1F("fPt_allAntiLambda","",1000,0,10));
+  fOutputList->Add(new TH1F("fPt_xidecayAntiLambda","",1000,0,10));
+  fOutputList->Add(new TH2F("fKaon_pt_eta","",1000,0,10,200,-1,1));
 
   //===============
 
@@ -422,17 +308,20 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   //cout<<"++++++++++++++++++++"<<endl;
 
   // Event loop
-  //if(nevt!=0) return;
   
   // Input event
-  AliAnalysisManager   *man         =AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler=(AliInputEventHandler*)(man->GetInputEventHandler());
-  
-  if(!inputHandler){
-    printf("ERROR: AliInputEventHandler not available\n");
-    return;
+  //AliAnalysisManager   *man         =AliAnalysisManager::GetAnalysisManager();
+  //AliInputEventHandler *inputHandler=(AliInputEventHandler*)(man->GetInputEventHandler());
+ 
+
+  fEvent = dynamic_cast<AliVEvent*>(InputEvent());
+  if(!fEvent){
+  	AliError("event is not available.");
+  	return;
   }
-  fAOD=dynamic_cast<AliAODEvent*>(InputEvent());
+  fESD = dynamic_cast<AliESDEvent*>(fEvent);
+  fAOD = dynamic_cast<AliAODEvent*>(fEvent);
+ 
   if(!fAOD){
     printf("ERROR: fAOD not available\n");
     return;
@@ -442,34 +331,61 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
     printf("ERROR: fHeader not available\n");
     return;
   }
-  fUtils=new AliAnalysisUtils();
-  if(!fUtils){
-    printf("ERROR: fUtils not available\n");
-    return;
-  }
-  if(inputHandler){
-    fPIDResponse=inputHandler->GetPIDResponse();
+  if(fInputHandler){
+    fPIDResponse=fInputHandler->GetPIDResponse();
     if(!fPIDResponse){
       printf("ERROR: fPIDResponse not available\n");
       return;
     }
   }
   
-  //=============== Event selection
-  Bool_t isEvtMB=((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & ftrigBit);
-  if(!isEvtMB) return;
+  ////=============== Event selection
+  //Bool_t isEvtMB=((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & ftrigBit);
+  //if(!isEvtMB) return;
+
   dynamic_cast<TH1F*>(fOutputList->FindObject("fEvtCounter"))->Fill(0.5);
   // Event pile-up
-  Bool_t isPileupEvt=kFALSE;
-  isPileupEvt=(fAOD->IsPileupFromSPD() || fUtils->IsSPDClusterVsTrackletBG(fAOD));
+  Bool_t isPileupEvt = fAOD->IsPileupFromSPD();
   Bool_t isGoodEvt=EventSelection(fAOD);
   if(!isGoodEvt || isPileupEvt){ PostData(1,fOutputList); return; }
   dynamic_cast<TH1F*>(fOutputList->FindObject("fEvtPassCut"))->Fill(0.5);
-  
-  //if(nevt%1000==0) cout<<nevt<<"-th event"<<endl;
-  //cout<<"==================== "<<nevt<<"th ===================="<<endl;
-  nevt++; 
-  
+ 
+  Float_t centralityV0M = -1.;
+  Float_t centralityCL0 = -1.;
+  Float_t centralityCL1 = -1.;
+  Float_t centralityV0A = -1.;
+  Float_t centralityV0C = -1.;
+  Float_t centralityZNA = -1.;
+  Float_t centralityZNC = -1.;
+  Float_t centralityMain = -1.;
+
+  //Get Centrality
+  fMultSelection = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+  if(!fMultSelection){
+	  //If you get this warning (and fCentralityV0M 300) please check that the AliMultSelectionTask actually ran (before your task)
+	  AliWarning("AliMultSelection object not found!");
+	  return;
+  }
+  else{
+	  centralityV0M  = fMultSelection->GetMultiplicityPercentile("V0M");
+	  centralityCL0  = fMultSelection->GetMultiplicityPercentile("CL0");
+	  centralityCL1  = fMultSelection->GetMultiplicityPercentile("CL1");
+	  centralityV0A  = fMultSelection->GetMultiplicityPercentile("V0A");
+	  centralityV0C  = fMultSelection->GetMultiplicityPercentile("V0C");
+	  centralityZNA  = fMultSelection->GetMultiplicityPercentile("ZNA");
+	  centralityZNC  = fMultSelection->GetMultiplicityPercentile("ZNC");
+	  centralityMain = fMultSelection->GetMultiplicityPercentile(fEstimator);
+  }
+
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityV0M")) ->Fill(centralityV0M);
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityV0A")) ->Fill(centralityV0A);
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityV0C")) ->Fill(centralityV0C);
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityZNA")) ->Fill(centralityZNA);
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityZNC")) ->Fill(centralityZNC);
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityCL0")) ->Fill(centralityCL0);
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityCL1")) ->Fill(centralityCL1);
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityMain"))->Fill(centralityMain);
+ 
   //============= variable definition
   Int_t    nTracks   =fAOD->GetNumberOfTracks();
   Int_t    nV0s      =fAOD->GetNumberOfV0s();
@@ -495,12 +411,23 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
     multiplicity++;    
   }
 
-  //PDG mass                                                                                                                                                            
+  //PDG mass                                                                                                        
   const Double_t massProton = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
   const Double_t massLambda = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   const Double_t massXi     = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
   const Double_t massOmega  = TDatabasePDG::Instance()->GetParticle(3334)->Mass();
 
+  //============== 20220524 Flow study
+  /*
+  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> 
+    (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+  if (flowQnVectorTask != NULL) {
+    fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+  }
+  else {
+    AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
+  }
+  */
   //============== cascade loop
   TObjArray* fCascadeArraym=new TObjArray();
   TObjArray* fCascadeArrayp=new TObjArray();
@@ -842,7 +769,6 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
       // lamntrack[5][nLamn]=v0->GetNegID();
 
       nLamn++;
-      lambdacounter++;
 
       fV0Arrayn->Add(v0);
     }
@@ -1144,8 +1070,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 
 	//cout<<"---------- FG pxi-"<<j<<" ----------"<<endl;
 	//cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_protonxi"))->Fill(multiplicity); 
 
 	isprotonxi=true; 
@@ -1198,9 +1123,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	if(bachid == ntrackid) continue;
 	if(ptrackid == ntrackid) continue;
 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_deltaphi"))->Fill(deltaphi,invMass); 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_protonxi"))->Fill(multiplicity); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi"))->Fill(pt,invMass); 
 
 	isantiprotonxi=true; 
 
@@ -1254,8 +1177,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
         if(negID1==negID2) continue;    
 	
 	// all lambda + all lambda
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_lambdalambda"))->Fill(multiplicity); 
 
 	// cout<<"nLam = "<<nLamn<<endl;
@@ -1312,8 +1234,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
         if(negID1==negID2) continue;    
 	
 	// all lambda + all lambda
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_lambdalambda"))->Fill(multiplicity); 
 
 	isantilambdaantilambda=true; 
@@ -1379,8 +1300,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	if(ptrackid == bachid) continue;
 	if(ntrackid == bachid) continue;
 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_lambdaxi"))->Fill(multiplicity); 
 	islambdaxi=true; 
 
@@ -1436,8 +1356,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	if(ptrackid == bachid) continue;
 	if(ntrackid == bachid) continue;
 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi"))->Fill(pt,invMass); 
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fmultiplicity_lambdaxi"))->Fill(multiplicity); 
 
 	isantilambdaxi=true; 
@@ -1496,8 +1415,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 
 	//cout<<"---------- FG pxi-"<<j<<" ----------"<<endl;
 	//cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega"))->Fill(pt,invMass); 
 
 	isprotonomega=true; 
 
@@ -1549,8 +1467,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	if(bachid == ntrackid) continue;
 	if(ptrackid == ntrackid) continue;
 
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_deltaphi"))->Fill(deltaphi,invMass); 
+	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega"))->Fill(pt,invMass); 
 
 	isantiprotonomega=true; 
 
@@ -1558,826 +1475,208 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
     }
   }
 
-  //========== Event mixing
-  dynamic_cast<TH2F*>(fOutputList->FindObject("fmultiplicity"))->Fill(multiplicity,vecTarget[2]);
- 
-  Double_t z_min = -10; 
-  Double_t z_max = 10; 
-  Double_t m_min[2] = {0,40};
-  Double_t m_max[2] = {40,200};
-  Double_t z_divide = 4;
-  Double_t m_divide[2] = {10,16};
-  Double_t z_width = ((z_max)-(z_min))/(z_divide); 
-  Double_t m_width[2] = {4,10};
-  
-  Int_t iz    = (vecTarget[2]-(z_min))/z_width;
-  Int_t im    = (multiplicity<40)?(multiplicity-m_min[0])/m_width[0]:(multiplicity-m_min[1])/m_width[1]+11;
-  
-  if(0 < nLamn){
-    for(Int_t i=0; i < nLamn; i++){ 
-      
-      for(Int_t j=0; j < eventdepth2[iz][im]; j++){
-	for(Int_t k=0; k < mnLambda[iz][im][j]; k++){
-	  
-	  Double_t energysum=0.,l1px=0.,l1py=0.,l1pz=0.,l2px=0.,l2py=0.,l2pz=0.,pt=0.,invMass=0.;
-	  
-	  energysum = lamntrack[0][i]+mEnergy[iz][im][j][k];
-	  l1px      = lamntrack[1][i];
-	  l1py      = lamntrack[2][i];
-	  l1pz      = lamntrack[3][i];
-	  l2px      = mPx[iz][im][j][k];
-	  l2py      = mPy[iz][im][j][k];
-	  l2pz      = mPz[iz][im][j][k];
-	  
-	  pt        =sqrt(pow(l1px+l2px,2)+pow(l1py+l2py,2));
-	  invMass   =InvariantMass(l1px,l1py,l1pz,l2px,l2py,l2pz,energysum);       
-	  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_combinatorial"))->Fill(pt,invMass); 
-	  
-	}
-      }
-    }
-    
-    mnLambda[iz][im][eventdepth[iz][im]] = nLamn;
-        
-    for(Int_t i=0; i < nLamn; i++){
-      
-      mEnergy[iz][im][eventdepth[iz][im]][i] = lamntrack[0][i];
-      mPx[iz][im][eventdepth[iz][im]][i] = lamntrack[1][i];
-      mPy[iz][im][eventdepth[iz][im]][i] = lamntrack[2][i];
-      mPz[iz][im][eventdepth[iz][im]][i] = lamntrack[3][i];
-      
-    }
-    
-    if(eventdepth[iz][im] < 5){
-      eventdepth[iz][im]++;
-    }
-    if(eventdepth[iz][im] == 5){       
-      eventdepth[iz][im] = 0;
-    }    
-    if(eventdepth2[iz][im] < 5){
-      eventdepth2[iz][im]++;
-    }    
-    if((eventdepth2[iz][im] == 5) || (eventdepth2[iz][im] > 5)){
-      eventdepth2[iz][im] = 5;
-    }
-  }
-  
-
-  //========== eventmixing with AliEventpool
-  AliEventPool *lambdapool =fPoolManagerlambda->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!lambdapool) return; 
-  AliEventPool *antilambdapool =fPoolManagerantilambda->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!antilambdapool) return; 
-
-  AliEventPool *xipool =fPoolManagerxi->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!xipool) return; 
-  AliEventPool *xippool =fPoolManagerxip->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!xippool) return; 
-  AliEventPool *protonpool =fPoolManagerproton->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!protonpool) return; 
-  AliEventPool *antiprotonpool =fPoolManagerantiproton->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!antiprotonpool) return; 
-
-  AliEventPool *lampool =fPoolManagerlam->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!lampool) return; 
-  AliEventPool *antilampool =fPoolManagerantilam->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!antilampool) return; 
-  AliEventPool *xpool =fPoolManagerx->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!xpool) return; 
-  AliEventPool *xppool =fPoolManagerxp->GetEventPool(multiplicity,vecTarget[2],0.);
+  //========== eventmixing with AliEventpool                                                                                                                        
+  AliEventPool *lambdapool =fPoolManagerlambda->GetEventPool(multiplicity,vecTarget[2],0.);                                                                         
+  if(!lambdapool) return;                                                                                                                                           
+  AliEventPool *antilambdapool =fPoolManagerantilambda->GetEventPool(multiplicity,vecTarget[2],0.);                                                                 
+  if(!antilambdapool) return;                                                                                                                                       
+                                                                                                                                                                    
+  AliEventPool *xipool =fPoolManagerxi->GetEventPool(multiplicity,vecTarget[2],0.);                                                                                 
+  if(!xipool) return;                                                                                                                                               
+  AliEventPool *xippool =fPoolManagerxip->GetEventPool(multiplicity,vecTarget[2],0.);                                                                               
+  if(!xippool) return;                                                                                                                                              
+  AliEventPool *protonpool =fPoolManagerproton->GetEventPool(multiplicity,vecTarget[2],0.);                                                                         
+  if(!protonpool) return;                                                                                                                                           
+  AliEventPool *antiprotonpool =fPoolManagerantiproton->GetEventPool(multiplicity,vecTarget[2],0.);                                                                 
+  if(!antiprotonpool) return;                                                                                                                                       
+                                                                                                                                                                    
+  AliEventPool *lampool =fPoolManagerlam->GetEventPool(multiplicity,vecTarget[2],0.);                                                                               
+  if(!lampool) return;                                                                                                                                              
+  AliEventPool *antilampool =fPoolManagerantilam->GetEventPool(multiplicity,vecTarget[2],0.);                                                                       
+  if(!antilampool) return;                                                                                                                                          
+  AliEventPool *xpool =fPoolManagerx->GetEventPool(multiplicity,vecTarget[2],0.);                                                                                   
+  if(!xpool) return;                                                                                                                                                
+  AliEventPool *xppool =fPoolManagerxp->GetEventPool(multiplicity,vecTarget[2],0.);                                                                                 
   if(!xppool) return; 
 
-  AliEventPool *omegapool =fPoolManageromega->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!omegapool) return; 
-  AliEventPool *omegappool =fPoolManageromegap->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!omegappool) return; 
-  AliEventPool *ppool =fPoolManagerp->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!ppool) return; 
-  AliEventPool *antippool =fPoolManagerantip->GetEventPool(multiplicity,vecTarget[2],0.);
-  if(!antippool) return; 
+  AliEventPool *omegapool =fPoolManageromega->GetEventPool(multiplicity,vecTarget[2],0.);                                                                           
+  if(!omegapool) return;                                                                                                                                            
+  AliEventPool *omegappool =fPoolManageromegap->GetEventPool(multiplicity,vecTarget[2],0.);                                                                         
+  if(!omegappool) return;                                                                                                                                           
+  AliEventPool *ppool =fPoolManagerp->GetEventPool(multiplicity,vecTarget[2],0.);                                                                                   
+  if(!ppool) return;                                                                                                                                                
+  AliEventPool *antippool =fPoolManagerantip->GetEventPool(multiplicity,vecTarget[2],0.);                                                                           
+  if(!antippool) return;
 
-  // lambda + lambda
-  if(islambdalambda){
-    for(Int_t iv0=0; iv0 < fV0Arrayn->GetEntriesFast(); iv0++){
-      TObject *objV0=fV0Arrayn->At(iv0);    
-      if(!objV0) continue;
-      AliAODv0 *lambda1=dynamic_cast<AliAODv0*>(objV0); 
-      l1px     =lambda1->MomV0X();
-      l1py     =lambda1->MomV0Y();
-      l1pz     =lambda1->MomV0Z();
-      phi1     =atan2(l1py,l1px)*radian_to_degree;
-      energy1  =sqrt(pow(1.115,2)+pow(l1px,2)+pow(l1py,2)+pow(l1pz,2));  
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < lambdapool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolv0=(TObjArray*)lambdapool->GetEvent(imevt);
-	for(Int_t imv0=0; imv0<poolv0->GetEntriesFast(); imv0++){
-	  TObject *objpV0=poolv0->At(imv0);
-	  if(!objpV0) continue;
-	  AliAODv0 *lambda2=dynamic_cast<AliAODv0*>(objpV0);
-	  l2px     =lambda2->MomV0X();
-	  l2py     =lambda2->MomV0Y();
-	  l2pz     =lambda2->MomV0Z();
-	  phi2     =atan2(l2py,l2px)*radian_to_degree;
-	  energy2  =sqrt(pow(1.115,2)+pow(l2px,2)+pow(l2py,2)+pow(l2pz,2));
-	  energysum=energy1+energy2;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	if(deltaphi > 180){
-	  deltaphi = 360-deltaphi;
-	}
-	pt        =sqrt(pow(l1px+l2px,2)+pow(l1py+l2py,2));
-	invMass   =InvariantMass(l1px,l1py,l1pz,l2px,l2py,l2pz,energysum);
-	relmom    =sqrt(pow((l1px-l2px),2)+pow((l1py-l2py),2)+pow((l1pz-l2pz),2))/2;
-	
-	// cout<<"========== BG lambdalambda =========="<<endl;
-	// cout<<"(l1px,l1py,l1pz,l2px,l2py,l2pz) = "<<"("<<l1px<<","<<l1py<<","<<l1pz<<","<<l2px<<","<<l2py<<","<<l2pz<<")"<<endl;
-
-	dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool"))->Fill(pt); 
-	dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	
-	}
-      }   
-    }  
+  // lambda + lambda                                                                                                                                                
+  if(islambdalambda){                                                                                                                                               
+    for(Int_t iv0=0; iv0 < fV0Arrayn->GetEntriesFast(); iv0++){                                                                                                     
+      TObject *objV0=fV0Arrayn->At(iv0);                                                                                                                            
+      if(!objV0) continue;                                                                                                                                          
+      AliAODv0 *lambda1=dynamic_cast<AliAODv0*>(objV0);                                                                                                             
+      l1px     =lambda1->MomV0X();                                                                                                                                  
+      l1py     =lambda1->MomV0Y();                                                                                                                                  
+      l1pz     =lambda1->MomV0Z();                                                                                                                                  
+      phi1     =atan2(l1py,l1px)*radian_to_degree;                                                                                                                  
+      energy1  =sqrt(pow(1.115,2)+pow(l1px,2)+pow(l1py,2)+pow(l1pz,2));                                                                                             
+                                                                                                                                                                    
+      //mixed event loop starts                                                                                                                                     
+      for(Int_t imevt=0; imevt < lambdapool->GetCurrentNEvents(); imevt++){                                                                                         
+        TObjArray *poolv0=(TObjArray*)lambdapool->GetEvent(imevt);                                                                                                  
+        for(Int_t imv0=0; imv0<poolv0->GetEntriesFast(); imv0++){                                                                                                   
+          TObject *objpV0=poolv0->At(imv0);                                                                                                                         
+          if(!objpV0) continue;                                                                                                                                     
+          AliAODv0 *lambda2=dynamic_cast<AliAODv0*>(objpV0);                                                                                                        
+	  l2px     =lambda2->MomV0X();                                                                                                                              
+          l2py     =lambda2->MomV0Y();                                                                                                                              
+          l2pz     =lambda2->MomV0Z();                                                                                                                              
+          phi2     =atan2(l2py,l2px)*radian_to_degree;                                                                                                              
+          energy2  =sqrt(pow(1.115,2)+pow(l2px,2)+pow(l2py,2)+pow(l2pz,2));                                                                                         
+          energysum=energy1+energy2;                                                                                                                                
+                                                                                                                                                                    
+          deltaphi  =fabs(phi1-phi2);                                                                                                                               
+	  if(deltaphi > 180){                                                                                                                                         
+	    deltaphi = 360-deltaphi;                                                                                                                                  
+	  }                                                                                                                                                           
+	  pt        =sqrt(pow(l1px+l2px,2)+pow(l1py+l2py,2));                                                                                                         
+	  invMass   =InvariantMass(l1px,l1py,l1pz,l2px,l2py,l2pz,energysum);                                                                                          
+	  relmom    =sqrt(pow((l1px-l2px),2)+pow((l1py-l2py),2)+pow((l1pz-l2pz),2))/2;
+	  // cout<<"========== BG lambdalambda =========="<<endl;                                                                                                     
+	  // cout<<"(l1px,l1py,l1pz,l2px,l2py,l2pz) = "<<"("<<l1px<<","<<l1py<<","<<l1pz<<","<<l2px<<","<<l2py<<","<<l2pz<<")"<<endl;                                 
+                                                                                                                                                                    
+	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool"))->Fill(pt);                                                                     
+	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                              
+                                                                                                                                                                    
+        }                                                                                                                                                           
+      }                                                                                                                                                             
+    }                                                                                                                                                               
+  }
+  // antilambda + antilambda                                                                                                                                      
+  if(isantilambdaantilambda){                                                                                                                                       
+    for(Int_t iv0=0; iv0 < fV0Arrayb->GetEntriesFast(); iv0++){                                                                                                     
+      TObject *objV0=fV0Arrayb->At(iv0);                                                                                                                            
+      if(!objV0) continue;                                                                                                                                          
+      AliAODv0 *lambda1=dynamic_cast<AliAODv0*>(objV0);                                                                                                             
+      l1px     =lambda1->MomV0X();                                                                                                                                  
+      l1py     =lambda1->MomV0Y();                                                                                                                                  
+      l1pz     =lambda1->MomV0Z();                                                                                                                                  
+      phi1     =atan2(l1py,l1px)*radian_to_degree;                                                                                                                  
+      energy1  =sqrt(pow(1.115,2)+pow(l1px,2)+pow(l1py,2)+pow(l1pz,2));
+      //mixed event loop starts                                                                                                                                     
+      for(Int_t imevt=0; imevt < antilambdapool->GetCurrentNEvents(); imevt++){                                                                                     
+        TObjArray *poolv0=(TObjArray*)antilambdapool->GetEvent(imevt);                                                                                              
+        for(Int_t imv0=0; imv0<poolv0->GetEntriesFast(); imv0++){                                                                                                   
+          TObject *objpV0=poolv0->At(imv0);                                                                                                                         
+          if(!objpV0) continue;                                                                                                                                     
+          AliAODv0 *lambda2=dynamic_cast<AliAODv0*>(objpV0);                                                                                                        
+          l2px     =lambda2->MomV0X();                                                                                                                              
+          l2py     =lambda2->MomV0Y();                                                                                                                              
+          l2pz     =lambda2->MomV0Z();                                                                                                                              
+          phi2     =atan2(l2py,l2px)*radian_to_degree;                                                                                                              
+          energy2  =sqrt(pow(1.115,2)+pow(l2px,2)+pow(l2py,2)+pow(l2pz,2));                                                                                         
+          energysum=energy1+energy2;                                                                                                                                
+                                                                                                                                                                    
+          deltaphi  =fabs(phi1-phi2);                                                                                                                               
+          if(deltaphi > 180){                                                                                                                                       
+            deltaphi = 360-deltaphi;                                                                                                                                
+          }                                                                                                                                                         
+          pt        =sqrt(pow(l1px+l2px,2)+pow(l1py+l2py,2));                                                                                                       
+          invMass   =InvariantMass(l1px,l1py,l1pz,l2px,l2py,l2pz,energysum);                                                                                        
+          relmom    =sqrt(pow((l1px-l2px),2)+pow((l1py-l2py),2)+pow((l1pz-l2pz),2))/2;                                                                              
+                                                                                                                                                                    
+          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool"))->Fill(pt);                                                                   
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                            
+                                                                                                                                                                    
+        }                                                                                                                                                           
+      }                                                                                                                                                             
+    }                                                                                                                                                               
   }
 
-  // antilambda + antilambda
-  if(isantilambdaantilambda){
-    for(Int_t iv0=0; iv0 < fV0Arrayb->GetEntriesFast(); iv0++){
-      TObject *objV0=fV0Arrayb->At(iv0);    
-      if(!objV0) continue;
-      AliAODv0 *lambda1=dynamic_cast<AliAODv0*>(objV0); 
-      l1px     =lambda1->MomV0X();
-      l1py     =lambda1->MomV0Y();
-      l1pz     =lambda1->MomV0Z();
-      phi1     =atan2(l1py,l1px)*radian_to_degree;
-      energy1  =sqrt(pow(1.115,2)+pow(l1px,2)+pow(l1py,2)+pow(l1pz,2));  
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < antilambdapool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolv0=(TObjArray*)antilambdapool->GetEvent(imevt);
-	for(Int_t imv0=0; imv0<poolv0->GetEntriesFast(); imv0++){
-	  TObject *objpV0=poolv0->At(imv0);
-	  if(!objpV0) continue;
-	  AliAODv0 *lambda2=dynamic_cast<AliAODv0*>(objpV0);
-	  l2px     =lambda2->MomV0X();
-	  l2py     =lambda2->MomV0Y();
-	  l2pz     =lambda2->MomV0Z();
-	  phi2     =atan2(l2py,l2px)*radian_to_degree;
-	  energy2  =sqrt(pow(1.115,2)+pow(l2px,2)+pow(l2py,2)+pow(l2pz,2));
-	  energysum=energy1+energy2;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt(pow(l1px+l2px,2)+pow(l1py+l2py,2));
-	  invMass   =InvariantMass(l1px,l1py,l1pz,l2px,l2py,l2pz,energysum);
-	  relmom    =sqrt(pow((l1px-l2px),2)+pow((l1py-l2py),2)+pow((l1pz-l2pz),2))/2;	
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool"))->Fill(pt); 
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }   
-    }   
+  //lambda                                                                                                                                                          
+  if(islambdalambda){                                                                                                                                               
+    TObjArray* tracksClonelambda=(TObjArray*)fV0Arrayn->Clone();                                                                                                    
+    tracksClonelambda->SetOwner();                                                                                                                                  
+    lambdapool->UpdatePool(tracksClonelambda);                                                                                                                      
+  }                                                                                                                                                                 
+  //lambda bar                                                                                                                                                      
+  if(isantilambdaantilambda){                                                                                                                                       
+    TObjArray* tracksClonelambdab=(TObjArray*)fV0Arrayb->Clone();                                                                                                   
+    tracksClonelambdab->SetOwner();                                                                                                                                 
+    antilambdapool->UpdatePool(tracksClonelambdab);                                                                                                                 
   }
-
-  // p + xi-
-  // proton
-  if(isprotonxi){
-    //cout<<"MIX : (im,iz,nevts,mult,zvtx)= ("<<im<<","<<iz<<","<<xipool->GetCurrentNEvents()<<","<<multiplicity<<","<<vecTarget[2]<<")"<<endl;
-    for(Int_t itrk=0; itrk < fProtonArray->GetEntriesFast(); itrk++){
-      TObject *objTrack=fProtonArray->At(itrk);    
-      if(!objTrack) continue;
-      AliAODTrack *proton=dynamic_cast<AliAODTrack*>(objTrack);    
-      prpx        =proton->Px();
-      prpy        =proton->Py();
-      prpz        =proton->Pz();
-      phi1        =atan2(prpy,prpx)*radian_to_degree;
-      energypr    =sqrt(pow(0.938,2)+pow(prpx,2)+pow(prpy,2)+pow(prpz,2));
-
-      // cout<<"---------- BG pxi proton1 ----------"<<endl;
-      // cout<<"(prpx,prpy,prpz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<")"<<endl;
-
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < xipool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolcascade=(TObjArray*)xipool->GetEvent(imevt);
-	for(Int_t imcascade=0; imcascade < poolcascade->GetEntriesFast(); imcascade++){
-	  TObject *objCascade=poolcascade->At(imcascade);
-	  if(!objCascade) continue;
-	  AliAODcascade *xi=dynamic_cast<AliAODcascade*>(objCascade); 
-	  xipx        =xi->MomXiX();
-	  xipy        =xi->MomXiY();
-	  xipz        =xi->MomXiZ();
-	  phi2        =atan2(xipy,xipx)*radian_to_degree;
-	  energyxi    =sqrt(pow(1.322,2)+pow(xipx,2)+pow(xipy,2)+pow(xipz,2));	
-
-	  // cout<<"---------- BG pxi xi1 ----------"<<endl;
-	  // cout<<"(xipx,xipy,xipz) = "<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt((prpx+xipx)*(prpx+xipx)+(prpy+xipy)*(prpy+xipy));
-	  energysum = energypr+energyxi;
-	  invMass   =InvariantMass(xipx,xipy,xipz,prpx,prpy,prpz,energysum);
-	  relmom    =sqrt(pow((xipx-prpx),2)+pow((xipy-prpy),2)+pow((xipz-prpz),2))/2;
-
-	  //if(imevt==0) cout<<"========== eventmixing pxi (xi loop) =========="<<endl;
-	  //cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt); 
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }    
-    } 
-  
-    // Xi
-    for(Int_t icascade=0; icascade < fCascadeArraym->GetEntriesFast(); icascade++){      
-      TObject *objCascade=fCascadeArraym->At(icascade);    
-      if(!objCascade) continue;
-      AliAODcascade *xi=dynamic_cast<AliAODcascade*>(objCascade); 
-      xipx        =xi->MomXiX();
-      xipy        =xi->MomXiY();
-      xipz        =xi->MomXiZ();
-      phi2        =atan2(xipy,xipx)*radian_to_degree;
-      energyxi    =sqrt(pow(1.322,2)+pow(xipx,2)+pow(xipy,2)+pow(xipz,2));
-      
-      // cout<<"---------- BG pxi xi2 ----------"<<endl;
-      // cout<<"(xipx,xipy,xipz) = "<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < protonpool->GetCurrentNEvents(); imevt++){
-	TObjArray *pooltrk=(TObjArray*)protonpool->GetEvent(imevt);      
-	for(Int_t imtrk=0; imtrk < pooltrk->GetEntriesFast(); imtrk++){
-	  TObject *objProton=pooltrk->At(imtrk);
-	  if(!objProton) continue;
-	  AliAODTrack *proton=dynamic_cast<AliAODTrack*>(objProton); 	
-	  prpx        =proton->Px();
-	  prpy        =proton->Py();
-	  prpz        =proton->Pz();
-	  phi1        =atan2(prpy,prpx)*radian_to_degree;
-	  energypr    =sqrt(pow(0.938,2)+pow(prpx,2)+pow(prpy,2)+pow(prpz,2));
-	  energysum   =energyxi+energypr;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt((prpx+xipx)*(prpx+xipx)+(prpy+xipy)*(prpy+xipy));
-	  invMass   =InvariantMass(xipx,xipy,xipz,prpx,prpy,prpz,energysum);
-	  relmom    =sqrt(pow((xipx-prpx),2)+pow((xipy-prpy),2)+pow((xipz-prpz),2))/2;
-
-	  // cout<<"---------- BG pxi proton2 ----------"<<endl;
-	  // cout<<"(prpx,prpy,prpz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<")"<<endl;
-
-	  //if(imevt==0) cout<<"========== eventmixing pxi (proton loop) =========="<<endl;
-	  //cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt);
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }   
-    }          
+  //pXi-                                                                                                                                                            
+  if(isprotonxi){                                                                                                                                                   
+    //xi                                                                                                                                                            
+    TObjArray* tracksClonexim=(TObjArray*)fCascadeArraym->Clone();                                                                                                  
+    tracksClonexim->SetOwner();                                                                                                                                     
+    xipool->UpdatePool(tracksClonexim);                                                                                                                             
+    //proton                                                                                                                                                        
+    TObjArray* tracksClonep=(TObjArray*)fProtonArray->Clone();                                                                                                      
+    tracksClonep->SetOwner();                                                                                                                                       
+    protonpool->UpdatePool(tracksClonep);                                                                                                                           
+    //cout<<"POOL: (im,iz,mult,zvtx,nevts)= ("<<im<<","<<iz<<","<<xipool->GetCurrentNEvents()<<","<<multiplicity<<","<<vecTarget[2]<<")"<<endl;                     
+  }                                                                                                                                                                 
+                                                                                                                                                                    
+  //pbarXi+                                                                                                                                                         
+  if(isantiprotonxi){                                                                                                                                               
+    //xip                                                                                                                                                           
+    TObjArray* tracksClonexip=(TObjArray*)fCascadeArrayp->Clone();                                                                                                  
+    tracksClonexip->SetOwner();                                                                                                                                     
+    xippool->UpdatePool(tracksClonexip);                                                                                                                            
+    //proton bar                                                                                                                                                    
+    TObjArray* tracksClonepb=(TObjArray*)fProtonArrayb->Clone();                                                                                                    
+    tracksClonepb->SetOwner();                                                                                                                                      
+    antiprotonpool->UpdatePool(tracksClonepb);                                                                                                                      
   }
-
-  // pbar + xi+
-  // protonbar
-  if(isantiprotonxi){
-    for(Int_t itrk=0; itrk < fProtonArrayb->GetEntriesFast(); itrk++){
-      TObject *objTrack=fProtonArrayb->At(itrk);    
-      if(!objTrack) continue;
-      AliAODTrack *proton=dynamic_cast<AliAODTrack*>(objTrack);    
-      prpx        =proton->Px();
-      prpy        =proton->Py();
-      prpz        =proton->Pz();
-      phi1        =atan2(prpy,prpx)*radian_to_degree;
-      energypr    =sqrt(pow(0.938,2)+pow(prpx,2)+pow(prpy,2)+pow(prpz,2));
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < xippool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolcascade=(TObjArray*)xippool->GetEvent(imevt);
-	for(Int_t imcascade=0; imcascade < poolcascade->GetEntriesFast(); imcascade++){
-	  TObject *objCascade=poolcascade->At(imcascade);
-	  if(!objCascade) continue;
-	  AliAODcascade *xi=dynamic_cast<AliAODcascade*>(objCascade); 
-	  xipx        =xi->MomXiX();
-	  xipy        =xi->MomXiY();
-	  xipz        =xi->MomXiZ();
-	  phi2        =atan2(xipy,xipx)*radian_to_degree;
-	  energyxi    =sqrt(pow(1.322,2)+pow(xipx,2)+pow(xipy,2)+pow(xipz,2));	
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt((prpx+xipx)*(prpx+xipx)+(prpy+xipy)*(prpy+xipy));
-	  energysum = energypr+energyxi;
-	  invMass   =InvariantMass(xipx,xipy,xipz,prpx,prpy,prpz,energysum);
-	  relmom    =sqrt(pow((xipx-prpx),2)+pow((xipy-prpy),2)+pow((xipz-prpz),2))/2;
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt);  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }    
-    } 
-    // Xi+
-    for(Int_t icascade=0; icascade < fCascadeArrayp->GetEntriesFast(); icascade++){
-      TObject *objCascade=fCascadeArrayp->At(icascade);    
-      if(!objCascade) continue;
-      AliAODcascade *xi=dynamic_cast<AliAODcascade*>(objCascade); 
-      xipx        =xi->MomXiX();
-      xipy        =xi->MomXiY();
-      xipz        =xi->MomXiZ();
-      phi2        =atan2(xipy,xipx)*radian_to_degree;
-      energyxi    =sqrt(pow(1.322,2)+pow(xipx,2)+pow(xipy,2)+pow(xipz,2));
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < antiprotonpool->GetCurrentNEvents(); imevt++){
-	TObjArray *pooltrk=(TObjArray*)antiprotonpool->GetEvent(imevt);      
-	for(Int_t imtrk=0; imtrk < pooltrk->GetEntriesFast(); imtrk++){
-	  TObject *objProton=pooltrk->At(imtrk);
-	  if(!objProton) continue;
-	  AliAODTrack *proton=dynamic_cast<AliAODTrack*>(objProton); 	
-	  prpx        =proton->Px();
-	  prpy        =proton->Py();
-	  prpz        =proton->Pz();
-	  phi1        =atan2(prpy,prpx)*radian_to_degree;
-	  energypr    =sqrt(pow(0.938,2)+pow(prpx,2)+pow(prpy,2)+pow(prpz,2));	
-	  energysum   =energyxi+energypr;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt((prpx+xipx)*(prpx+xipx)+(prpy+xipy)*(prpy+xipy));
-	  invMass   =InvariantMass(xipx,xipy,xipz,prpx,prpy,prpz,energysum);
-	  relmom    =sqrt(pow((xipx-prpx),2)+pow((xipy-prpy),2)+pow((xipz-prpz),2))/2;
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt);  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass); 	
-	  
-	}
-      }   
-    }    
+  //lambdaXi                                                                                                                                                        
+  if(islambdaxi){                                                                                                                                                   
+    //lambda                                                                                                                                                        
+    TObjArray* tracksClonelam=(TObjArray*)fV0Arrayn->Clone();                                                                                                       
+    tracksClonelam->SetOwner();                                                                                                                                     
+    lampool->UpdatePool(tracksClonelam);                                                                                                                            
+    //Xi-                                                                                                                                                           
+    TObjArray* tracksClonex=(TObjArray*)fCascadeArraym->Clone();                                                                                                    
+    tracksClonex->SetOwner();                                                                                                                                       
+    xpool->UpdatePool(tracksClonex);                                                                                                                                
+  }                                                                                                                                                                 
+  //lambdabarXip                                                                                                                                                    
+  if(isantilambdaxi){                                                                                                                                               
+    //lambdabar                                                                                                                                                     
+    TObjArray* tracksClonelamb=(TObjArray*)fV0Arrayb->Clone();                                                                                                      
+    tracksClonelamb->SetOwner();                                                                                                                                    
+    antilampool->UpdatePool(tracksClonelamb);                                                                                                                       
+    TObjArray* tracksClonexp=(TObjArray*)fCascadeArrayp->Clone();                                                                                                   
+    tracksClonexp->SetOwner();                                                                                                                                      
+    xppool->UpdatePool(tracksClonexp);                                                                                                                              
   }
-
-  // lambda + Xi-
-  // lambda
-  if(islambdaxi){
-    for(Int_t iv0=0; iv0 < fV0Arrayn->GetEntriesFast(); iv0++){
-      TObject *objV0=fV0Arrayn->At(iv0);    
-      if(!objV0) continue;
-      AliAODv0 *lambda=dynamic_cast<AliAODv0*>(objV0); 
-      lampx       =lambda->MomV0X();
-      lampy       =lambda->MomV0Y();
-      lampz       =lambda->MomV0Z();
-      phi1        =atan2(lampy,lampx)*radian_to_degree;
-      energylam   =sqrt(pow(1.115,2)+pow(lampx,2)+pow(lampy,2)+pow(lampz,2));  
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < xpool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolcascade=(TObjArray*)xpool->GetEvent(imevt);
-	for(Int_t imcascade=0; imcascade < poolcascade->GetEntriesFast(); imcascade++){
-	  TObject *objCascade=poolcascade->At(imcascade);
-	  if(!objCascade) continue;
-	  AliAODcascade *xi=dynamic_cast<AliAODcascade*>(objCascade); 
-	  xipx        =xi->MomXiX();
-	  xipy        =xi->MomXiY();
-	  xipz        =xi->MomXiZ();
-	  phi2        =atan2(xipy,xipx)*radian_to_degree;
-	  energyxi    =sqrt(pow(1.322,2)+pow(xipx,2)+pow(xipy,2)+pow(xipz,2));	
-	  energysum   =energyxi+energylam;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt          =sqrt(pow((lampx+xipx),2)+pow((lampy+xipy),2));
-	  invMass     =InvariantMass(xipx,xipy,xipz,lampx,lampy,lampz,energysum);	
-	  relmom    =sqrt(pow((xipx-lampx),2)+pow((xipy-lampy),2)+pow((xipz-lampz),2))/2;
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt);  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }    
-    } 
-    // Xi-
-    for(Int_t icascade=0; icascade < fCascadeArraym->GetEntriesFast(); icascade++){
-      TObject *objCascade=fCascadeArraym->At(icascade);    
-      if(!objCascade) continue;
-      AliAODcascade *xi=dynamic_cast<AliAODcascade*>(objCascade); 
-      xipx        =xi->MomXiX();
-      xipy        =xi->MomXiY();
-      xipz        =xi->MomXiZ();
-      phi2        =atan2(xipy,xipx)*radian_to_degree;
-      energyxi    =sqrt(pow(1.322,2)+pow(xipx,2)+pow(xipy,2)+pow(xipz,2));
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < lampool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolv0=(TObjArray*)lampool->GetEvent(imevt);
-	for(Int_t imv0=0; imv0<poolv0->GetEntriesFast(); imv0++){
-	  TObject *objpV0=poolv0->At(imv0);
-	  if(!objpV0) continue;
-	  AliAODv0 *lambda=dynamic_cast<AliAODv0*>(objpV0);
-	  lampx       =lambda->MomV0X();
-	  lampy       =lambda->MomV0Y();
-	  lampz       =lambda->MomV0Z();
-	  phi1        =atan2(lampy,lampx)*radian_to_degree;
-	  energylam   =sqrt(pow(1.115,2)+pow(lampx,2)+pow(lampy,2)+pow(lampz,2));  
-	  energysum   =energyxi+energylam;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt          =sqrt(pow((lampx+xipx),2)+pow((lampy+xipy),2));
-	  invMass     =InvariantMass(xipx,xipy,xipz,lampx,lampy,lampz,energysum);	
-	  relmom    =sqrt(pow((xipx-lampx),2)+pow((xipy-lampy),2)+pow((xipz-lampz),2))/2;
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt);  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }   
-    }    
-  }
-
-  // antilambda + Xi+
-  // antilambda
-  if(isantilambdaxi){
-    for(Int_t iv0=0; iv0 < fV0Arrayb->GetEntriesFast(); iv0++){
-      TObject *objV0=fV0Arrayb->At(iv0);    
-      if(!objV0) continue;
-      AliAODv0 *lambda=dynamic_cast<AliAODv0*>(objV0); 
-      lampx       =lambda->MomV0X();
-      lampy       =lambda->MomV0Y();
-      lampz       =lambda->MomV0Z();
-      phi1        =atan2(lampy,lampx)*radian_to_degree;
-      energylam   =sqrt(pow(1.115,2)+pow(lampx,2)+pow(lampy,2)+pow(lampz,2));  
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < xppool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolcascade=(TObjArray*)xppool->GetEvent(imevt);
-	for(Int_t imcascade=0; imcascade < poolcascade->GetEntriesFast(); imcascade++){
-	  TObject *objCascade=poolcascade->At(imcascade);
-	  if(!objCascade) continue;
-	  AliAODcascade *xi=dynamic_cast<AliAODcascade*>(objCascade); 
-	  xipx        =xi->MomXiX();
-	  xipy        =xi->MomXiY();
-	  xipz        =xi->MomXiZ();
-	  phi2        =atan2(xipy,xipx)*radian_to_degree;
-	  energyxi    =sqrt(pow(1.322,2)+pow(xipx,2)+pow(xipy,2)+pow(xipz,2));	
-	  energysum   =energyxi+energylam;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt          =sqrt(pow((lampx+xipx),2)+pow((lampy+xipy),2));
-	  invMass     =InvariantMass(xipx,xipy,xipz,lampx,lampy,lampz,energysum);	
-	  relmom    =sqrt(pow((xipx-lampx),2)+pow((xipy-lampy),2)+pow((xipz-lampz),2))/2;
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt);  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }    
-    } 
-    // Xi+
-    for(Int_t icascade=0; icascade < fCascadeArrayp->GetEntriesFast(); icascade++){
-      TObject *objCascade=fCascadeArrayp->At(icascade);    
-      if(!objCascade) continue;
-      AliAODcascade *xi=dynamic_cast<AliAODcascade*>(objCascade); 
-      xipx        =xi->MomXiX();
-      xipy        =xi->MomXiY();
-      xipz        =xi->MomXiZ();
-      phi2        =atan2(xipy,xipx)*radian_to_degree;
-      energyxi    =sqrt(pow(1.322,2)+pow(xipx,2)+pow(xipy,2)+pow(xipz,2));
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < antilampool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolv0=(TObjArray*)antilampool->GetEvent(imevt);
-	for(Int_t imv0=0; imv0<poolv0->GetEntriesFast(); imv0++){
-	  TObject *objpV0=poolv0->At(imv0);
-	  if(!objpV0) continue;
-	  AliAODv0 *lambda=dynamic_cast<AliAODv0*>(objpV0);
-	  lampx       =lambda->MomV0X();
-	  lampy       =lambda->MomV0Y();
-	  lampz       =lambda->MomV0Z();
-	  phi1        =atan2(lampy,lampx)*radian_to_degree;
-	  energylam   =sqrt(pow(1.115,2)+pow(lampx,2)+pow(lampy,2)+pow(lampz,2));  	
-	  energysum   =energyxi+energylam;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt          =sqrt(pow((lampx+xipx),2)+pow((lampy+xipy),2));
-	  invMass     =InvariantMass(xipx,xipy,xipz,lampx,lampy,lampz,energysum);	
-	  relmom    =sqrt(pow((xipx-lampx),2)+pow((xipy-lampy),2)+pow((xipz-lampz),2))/2;
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt);  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }   
-    }
-  }    
-
-  // p + omega-
-  // proton
-  if(isprotonomega){
-    //cout<<"MIX : (im,iz,nevts,mult,zvtx)= ("<<im<<","<<iz<<","<<xipool->GetCurrentNEvents()<<","<<multiplicity<<","<<vecTarget[2]<<")"<<endl;
-    for(Int_t itrk=0; itrk < fProtonArray->GetEntriesFast(); itrk++){
-      TObject *objTrack=fProtonArray->At(itrk);    
-      if(!objTrack) continue;
-      AliAODTrack *proton=dynamic_cast<AliAODTrack*>(objTrack);    
-      prpx        =proton->Px();
-      prpy        =proton->Py();
-      prpz        =proton->Pz();
-      phi1        =atan2(prpy,prpx)*radian_to_degree;
-      energypr    =sqrt(pow(0.938,2)+pow(prpx,2)+pow(prpy,2)+pow(prpz,2));
-
-      // cout<<"---------- BG pxi proton1 ----------"<<endl;
-      // cout<<"(prpx,prpy,prpz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<")"<<endl;
-
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < omegapool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolcascade=(TObjArray*)omegapool->GetEvent(imevt);
-	for(Int_t imcascade=0; imcascade < poolcascade->GetEntriesFast(); imcascade++){
-	  TObject *objCascade=poolcascade->At(imcascade);
-	  if(!objCascade) continue;
-	  AliAODcascade *omega=dynamic_cast<AliAODcascade*>(objCascade); 
-	  omegapx        =omega->MomXiX();
-	  omegapy        =omega->MomXiY();
-	  omegapz        =omega->MomXiZ();
-	  phi2           =atan2(omegapy,omegapx)*radian_to_degree;
-	  energyomega    =sqrt(pow(1.672,2)+pow(omegapx,2)+pow(omegapy,2)+pow(omegapz,2));	
-
-	  // cout<<"---------- BG pxi xi1 ----------"<<endl;
-	  // cout<<"(xipx,xipy,xipz) = "<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt((prpx+omegapx)*(prpx+omegapx)+(prpy+omegapy)*(prpy+omegapy));
-	  energysum = energypr+energyomega;
-	  invMass   =InvariantMass(omegapx,omegapy,omegapz,prpx,prpy,prpz,energysum);
-	  relmom    =sqrt(pow((omegapx-prpx),2)+pow((omegapy-prpy),2)+pow((omegapz-prpz),2))/2;
-
-	  //if(imevt==0) cout<<"========== eventmixing pxi (xi loop) =========="<<endl;
-	  //cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt); 
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }    
-    } 
-  
-    // Omega
-    for(Int_t icascade=0; icascade < fCascadeArrayOmegam->GetEntriesFast(); icascade++){      
-      TObject *objCascade=fCascadeArrayOmegam->At(icascade);    
-      if(!objCascade) continue;
-      AliAODcascade *omega=dynamic_cast<AliAODcascade*>(objCascade); 
-      omegapx        =omega->MomXiX();
-      omegapy        =omega->MomXiY();
-      omegapz        =omega->MomXiZ();
-      phi2           =atan2(omegapy,omegapx)*radian_to_degree;
-      energyomega    =sqrt(pow(1.672,2)+pow(omegapx,2)+pow(omegapy,2)+pow(omegapz,2));
-      
-      // cout<<"---------- BG pxi xi2 ----------"<<endl;
-      // cout<<"(xipx,xipy,xipz) = "<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < ppool->GetCurrentNEvents(); imevt++){
-	TObjArray *pooltrk=(TObjArray*)ppool->GetEvent(imevt);      
-	for(Int_t imtrk=0; imtrk < pooltrk->GetEntriesFast(); imtrk++){
-	  TObject *objProton=pooltrk->At(imtrk);
-	  if(!objProton) continue;
-	  AliAODTrack *proton=dynamic_cast<AliAODTrack*>(objProton); 	
-	  prpx        =proton->Px();
-	  prpy        =proton->Py();
-	  prpz        =proton->Pz();
-	  phi1        =atan2(prpy,prpx)*radian_to_degree;
-	  energypr    =sqrt(pow(0.938,2)+pow(prpx,2)+pow(prpy,2)+pow(prpz,2));
-	  energysum   =energyomega+energypr;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt((prpx+omegapx)*(prpx+omegapx)+(prpy+omegapy)*(prpy+omegapy));
-	  invMass   =InvariantMass(omegapx,omegapy,omegapz,prpx,prpy,prpz,energysum);
-	  relmom    =sqrt(pow((omegapx-prpx),2)+pow((omegapy-prpy),2)+pow((omegapz-prpz),2))/2;
-
-	  // cout<<"---------- BG pxi proton2 ----------"<<endl;
-	  // cout<<"(prpx,prpy,prpz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<")"<<endl;
-
-	  //if(imevt==0) cout<<"========== eventmixing pxi (proton loop) =========="<<endl;
-	  //cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt);
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }   
-    }          
-  }
-
-  // pbar + xi+
-  // protonbar
-  if(isantiprotonomega){
-    for(Int_t itrk=0; itrk < fProtonArrayb->GetEntriesFast(); itrk++){
-      TObject *objTrack=fProtonArrayb->At(itrk);    
-      if(!objTrack) continue;
-      AliAODTrack *proton=dynamic_cast<AliAODTrack*>(objTrack);    
-      prpx        =proton->Px();
-      prpy        =proton->Py();
-      prpz        =proton->Pz();
-      phi1        =atan2(prpy,prpx)*radian_to_degree;
-      energypr    =sqrt(pow(0.938,2)+pow(prpx,2)+pow(prpy,2)+pow(prpz,2));
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < omegappool->GetCurrentNEvents(); imevt++){
-	TObjArray *poolcascade=(TObjArray*)omegappool->GetEvent(imevt);
-	for(Int_t imcascade=0; imcascade < poolcascade->GetEntriesFast(); imcascade++){
-	  TObject *objCascade=poolcascade->At(imcascade);
-	  if(!objCascade) continue;
-	  AliAODcascade *omega=dynamic_cast<AliAODcascade*>(objCascade); 
-	  omegapx        =omega->MomXiX();
-	  omegapy        =omega->MomXiY();
-	  omegapz        =omega->MomXiZ();
-	  phi2           =atan2(omegapy,omegapx)*radian_to_degree;
-	  energyomega    =sqrt(pow(1.672,2)+pow(omegapx,2)+pow(omegapy,2)+pow(omegapz,2));	
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt((prpx+omegapx)*(prpx+omegapx)+(prpy+omegapy)*(prpy+omegapy));
-	  energysum = energypr+energyomega;
-	  invMass   =InvariantMass(omegapx,omegapy,omegapz,prpx,prpy,prpz,energysum);
-	  relmom    =sqrt(pow((omegapx-prpx),2)+pow((omegapy-prpy),2)+pow((omegapz-prpz),2))/2;
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt);  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass); 
-	  
-	}
-      }    
-    } 
-    // Omega+
-    for(Int_t icascade=0; icascade < fCascadeArrayOmegap->GetEntriesFast(); icascade++){
-      TObject *objCascade=fCascadeArrayOmegap->At(icascade);    
-      if(!objCascade) continue;
-      AliAODcascade *omega=dynamic_cast<AliAODcascade*>(objCascade); 
-      omegapx        =omega->MomXiX();
-      omegapy        =omega->MomXiY();
-      omegapz        =omega->MomXiZ();
-      phi2           =atan2(omegapy,omegapx)*radian_to_degree;
-      energyomega    =sqrt(pow(1.672,2)+pow(omegapx,2)+pow(omegapy,2)+pow(omegapz,2));
-      
-      //mixed event loop starts
-      for(Int_t imevt=0; imevt < antippool->GetCurrentNEvents(); imevt++){
-	TObjArray *pooltrk=(TObjArray*)antippool->GetEvent(imevt);      
-	for(Int_t imtrk=0; imtrk < pooltrk->GetEntriesFast(); imtrk++){
-	  TObject *objProton=pooltrk->At(imtrk);
-	  if(!objProton) continue;
-	  AliAODTrack *proton=dynamic_cast<AliAODTrack*>(objProton); 	
-	  prpx        =proton->Px();
-	  prpy        =proton->Py();
-	  prpz        =proton->Pz();
-	  phi1        =atan2(prpy,prpx)*radian_to_degree;
-	  energypr    =sqrt(pow(0.938,2)+pow(prpx,2)+pow(prpy,2)+pow(prpz,2));	
-	  energysum   =energyomega+energypr;
-	  
-	  deltaphi  =fabs(phi1-phi2);
-	  if(deltaphi > 180){
-	    deltaphi = 360-deltaphi;
-	  }
-	  pt        =sqrt((prpx+omegapx)*(prpx+omegapx)+(prpy+omegapy)*(prpy+omegapy));
-	  invMass   =InvariantMass(omegapx,omegapy,omegapz,prpx,prpy,prpz,energysum);
-	  relmom    =sqrt(pow((omegapx-prpx),2)+pow((omegapy-prpy),2)+pow((omegapz-prpz),2))/2;
-	  
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt);  
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass); 	
-	  
-	}
-      }   
-    }    
-  }
-
-  //lambda
-  if(islambdalambda){
-    //if(nLamn > 1){
-    // cout<<"eventpoolの作業"<<endl;
-    TObjArray* tracksClonelambda=(TObjArray*)fV0Arrayn->Clone();
-    tracksClonelambda->SetOwner();
-    lambdapool->UpdatePool(tracksClonelambda);
-  }
-  //lambda bar
-  if(isantilambdaantilambda){
-    //if(nLamb > 1){
-    TObjArray* tracksClonelambdab=(TObjArray*)fV0Arrayb->Clone();
-    tracksClonelambdab->SetOwner();
-    antilambdapool->UpdatePool(tracksClonelambdab);    
-  }
-
-  //pXi-
-  if(isprotonxi){
-    //if((np > 0) && (nXim > 0)){
-    //xi
-    TObjArray* tracksClonexim=(TObjArray*)fCascadeArraym->Clone();
-    tracksClonexim->SetOwner();
-    xipool->UpdatePool(tracksClonexim);
-    //proton
-    TObjArray* tracksClonep=(TObjArray*)fProtonArray->Clone();
-    tracksClonep->SetOwner();
-    protonpool->UpdatePool(tracksClonep);
-    //cout<<"POOL: (im,iz,mult,zvtx,nevts)= ("<<im<<","<<iz<<","<<xipool->GetCurrentNEvents()<<","<<multiplicity<<","<<vecTarget[2]<<")"<<endl;
-  }
-    
-  //pbarXi+
-  if(isantiprotonxi){
-    //if((npb > 0) && (nXip > 0)){
-    //xip
-    TObjArray* tracksClonexip=(TObjArray*)fCascadeArrayp->Clone();
-    tracksClonexip->SetOwner();
-    xippool->UpdatePool(tracksClonexip);
-    //proton bar
-    TObjArray* tracksClonepb=(TObjArray*)fProtonArrayb->Clone();
-    tracksClonepb->SetOwner();
-    antiprotonpool->UpdatePool(tracksClonepb);
-  }
-
-  //lambdaXi
-  if(islambdaxi){
-    //if((nLamn > 0) && (nXim > 0)){
-    //lambda
-    TObjArray* tracksClonelam=(TObjArray*)fV0Arrayn->Clone();
-    tracksClonelam->SetOwner();
-    lampool->UpdatePool(tracksClonelam);
-    //Xi-
-    TObjArray* tracksClonex=(TObjArray*)fCascadeArraym->Clone();
-    tracksClonex->SetOwner();
-    xpool->UpdatePool(tracksClonex);
-  }
-  //lambdabarXip
-  if(isantilambdaxi){
-    //if((nLamb > 0) && (nXip > 0)){
-    //lambdabar
-    TObjArray* tracksClonelamb=(TObjArray*)fV0Arrayb->Clone();
-    tracksClonelamb->SetOwner();
-    antilampool->UpdatePool(tracksClonelamb);    
-    TObjArray* tracksClonexp=(TObjArray*)fCascadeArrayp->Clone();
-    tracksClonexp->SetOwner();
-    xppool->UpdatePool(tracksClonexp); 
-  }
-
-  //pOmega-
-  if(isprotonomega){
-    //if((np > 0) && (nXim > 0)){
-    //xi
-    TObjArray* tracksCloneomegam=(TObjArray*)fCascadeArrayOmegam->Clone();
-    tracksCloneomegam->SetOwner();
-    omegapool->UpdatePool(tracksCloneomegam);
-    //proton
-    TObjArray* tracksClonepr=(TObjArray*)fProtonArray->Clone();
-    tracksClonepr->SetOwner();
-    ppool->UpdatePool(tracksClonepr);
-    //cout<<"POOL: (im,iz,mult,zvtx,nevts)= ("<<im<<","<<iz<<","<<xipool->GetCurrentNEvents()<<","<<multiplicity<<","<<vecTarget[2]<<")"<<endl;
-  }
-    
-  //pbarOmega+
-  if(isantiprotonomega){
-    //if((npb > 0) && (nXip > 0)){
-    //xip
-    TObjArray* tracksCloneomegap=(TObjArray*)fCascadeArrayOmegap->Clone();
-    tracksCloneomegap->SetOwner();
-    omegappool->UpdatePool(tracksCloneomegap);
-    //proton bar
-    TObjArray* tracksCloneprb=(TObjArray*)fProtonArrayb->Clone();
-    tracksCloneprb->SetOwner();
-    antippool->UpdatePool(tracksCloneprb);
+  //pOmega-                                                                                                                                                         
+  if(isprotonomega){                                                                                                                                                
+    //xi                                                                                                                                                            
+    TObjArray* tracksCloneomegam=(TObjArray*)fCascadeArrayOmegam->Clone();                                                                                          
+    tracksCloneomegam->SetOwner();                                                                                                                                  
+    omegapool->UpdatePool(tracksCloneomegam);                                                                                                                       
+    //proton                                                                                                                                                        
+    TObjArray* tracksClonepr=(TObjArray*)fProtonArray->Clone();                                                                                                     
+    tracksClonepr->SetOwner();                                                                                                                                      
+    ppool->UpdatePool(tracksClonepr);                                                                                                                               
+    //cout<<"POOL: (im,iz,mult,zvtx,nevts)= ("<<im<<","<<iz<<","<<xipool->GetCurrentNEvents()<<","<<multiplicity<<","<<vecTarget[2]<<")"<<endl;                     
+  } 
+  //pbarOmega+                                                                                                                                                      
+  if(isantiprotonomega){                                                                                                                                            
+    //xip                                                                                                                                                           
+    TObjArray* tracksCloneomegap=(TObjArray*)fCascadeArrayOmegap->Clone();                                                                                          
+    tracksCloneomegap->SetOwner();                                                                                                                                  
+    omegappool->UpdatePool(tracksCloneomegap);                                                                                                                      
+    //proton bar                                                                                                                                                    
+    TObjArray* tracksCloneprb=(TObjArray*)fProtonArrayb->Clone();                                                                                                   
+    tracksCloneprb->SetOwner();                                                                                                                                     
+    antippool->UpdatePool(tracksCloneprb);                                                                                                                          
   }
 
 
   // Post output data
   PostData(1,fOutputList);
-
-  /*
-    cout<<"+++++++++++++++++++++"<<endl;
-    cout<<"++ Analysis Finish ++"<<endl;
-    cout<<"++     bye bye..   ++"<<endl;
-    cout<<"event number = "<<nevt<<endl;
-    cout<<"+++++++++++++++++++++"<<endl; 
-  */
-  
+ 
 }
 
 
@@ -2414,7 +1713,8 @@ Bool_t AliAnalysisTaskMSDibaryons::EventSelection(AliAODEvent* data)
   dynamic_cast<TH1F*>(fOutputList->FindObject("fSPDVtxDisp"))->Fill(vdisp);
 
   Bool_t zvtx_cut=kFALSE;
-  zvtx_cut=(fabs(zvtx)<10. && ncont>1 && ncontSPD>0 && vdisp<0.5);
+  //zvtx_cut=(fabs(zvtx)<10. && ncont>0 && ncontSPD>0 && vdisp<0.5);
+  zvtx_cut=(abs(zvtx) < 10. && ncont > 0);
   return zvtx_cut;
 }
 //________________________________________________________________________
