@@ -1,4 +1,4 @@
-//  Macro designed for use with the AliAnalysisTaskR2P2multClass task.
+//  Macro designed for use with the AliAnalysisTaskR2P2multClassGen task.
 //  Author: (Baidyanath Sahoo, Basanta Kumar Nandi), IIT Bombay & Claude Pruneau, Wayne State University
 //
 //   PbPb               10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 
-AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
+AliAnalysisTaskR2P2multClassGen * AddTaskR2P2multClassGen
 (
  TString AnalysisDataType       = "MCAOD", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString prefixName             = "truth_",
@@ -556,7 +556,7 @@ AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
   int iTask = 0; // task counter
   AliAnalysisDataContainer *taskInputContainer;
   AliAnalysisDataContainer *taskOutputContainer;
-  AliAnalysisTaskR2P2multClass* task;
+  AliAnalysisTaskR2P2multClassGen* task;
     
   for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
     {
@@ -672,7 +672,7 @@ AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
 
 
       
-      task = new  AliAnalysisTaskR2P2multClass(taskName);
+      task = new  AliAnalysisTaskR2P2multClassGen(taskName);
       //configure my task
       task->SetDebugLevel(          debugLevel      );
       task->SetSameFilter(          sameFilter      );
