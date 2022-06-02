@@ -12,13 +12,13 @@
 #include "AliProfileBS.h"
 #include "AliCkContainer.h"
 #include "TRandom.h"
-#include "AliMCSpectraWeights.h"
 #include "AliAODTracklets.h"
 #include "AliAODVZERO.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliVMultiplicity.h"
+#include "AliPtContainer.h"
 
 
 class TList;
@@ -43,7 +43,6 @@ class AliGFWCuts;
 class AliGFWFlowContainer;
 class AliPIDResponse;
 class AliPIDCombined;
-class AliEffFDContainer;
 
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
@@ -60,7 +59,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetEventCutFlag(Int_t newval) { fEventCutFlag = newval; };
   void FillWeights(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void FillWeightsMC(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  //void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
@@ -68,6 +67,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void LoadWeightAndMPT();
   void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
   void FillWPCounter(Double_t[5], Double_t, Double_t);
+  void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
   Bool_t LoadMyWeights(const Int_t &lRunNo = 0);
   Int_t GetBayesPIDIndex(AliVTrack*);
   Int_t GetPIDIndex(const Int_t &pdgcode);
@@ -131,6 +131,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fQAList; //
+  TH1D* fEventCount; //!
   TH1D *fMultiDist;
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
@@ -139,6 +140,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TProfile *fNchInBins;
   TList *fptVarList;
   AliCkContainer *fCkCont;
+  AliPtContainer  *fPtCont;
   TList *fCovList;
   TList *fV2dPtList;
   AliProfileBS **fCovariance; //!
@@ -170,6 +172,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
+  int EventNo;
+  vector<vector<double>>  wpPt;
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
@@ -183,7 +187,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;
-  AliEffFDContainer *fEfFd;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskDeform,1);
 };
