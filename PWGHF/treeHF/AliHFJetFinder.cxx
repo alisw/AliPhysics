@@ -321,7 +321,7 @@ void AliHFJetFinder::FindJets(TClonesArray *array, AliAODRecoDecayHF *cand, Doub
 }
 
 // Find all measurable decay products in generator level
-void AliHFJetFinder::FindMCdaughters(TClonesArray *array, AliAODMCParticle *mcpart, std::vector<Int_t>& daughter_vec){
+void AliHFJetFinder::FindMCDaughters(TClonesArray *array, AliAODMCParticle *mcpart, std::vector<Int_t>& daughter_vec){
   AliAODMCParticle *daughter;
   for (Int_t i = 0; i < mcpart->GetNDaughters(); i++) {
     Int_t daughterLabel = mcpart->GetDaughterLabel(i);
@@ -331,7 +331,7 @@ void AliHFJetFinder::FindMCdaughters(TClonesArray *array, AliAODMCParticle *mcpa
     if(daughter->IsPhysicalPrimary()){
       daughter_vec.push_back(daughter->GetLabel());
     }else{
-      FindMCdaughters(array, daughter, daughter_vec);
+      FindMCDaughters(array, daughter, daughter_vec);
     }
   }
 }
@@ -348,7 +348,7 @@ void AliHFJetFinder::FindMCJets(TClonesArray *array, AliAODMCParticle *mcpart) {
   if (mcpart){
   
     daughter_vec.clear();
-    FindMCdaughters(array, mcpart,daughter_vec);
+    FindMCDaughters(array, mcpart,daughter_vec);
 
     fFastJetWrapper->AddInputVector(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(),0);
     charge.first=0;
