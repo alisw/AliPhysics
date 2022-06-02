@@ -55,7 +55,6 @@ AliAnalysisTaskSE(),
   fHeader(0),
   fPIDResponse(0),
   ftrigBit(0),
-  fFlowQnVectorMgr(0x0),
   fEstimator("V0M"),
   fMultSelection(0x0),
   fCentralityMain(0.),
@@ -75,6 +74,8 @@ AliAnalysisTaskSE(),
   fPoolManageromegap(0),
   fPoolManagerp(0),
   fPoolManagerantip(0),
+  fIsFlowTask(kTRUE),
+  fFlowQnVectorMgr(0x0),
   fOutputList(0)
 {
  
@@ -89,7 +90,6 @@ AliAnalysisTaskMSDibaryons::AliAnalysisTaskMSDibaryons(const char *name) :
   fHeader(0),
   fPIDResponse(0),
   ftrigBit(0),
-  fFlowQnVectorMgr(0x0),
   fEstimator("V0M"),
   fMultSelection(0x0),
   fCentralityMain(0.),
@@ -109,6 +109,8 @@ AliAnalysisTaskMSDibaryons::AliAnalysisTaskMSDibaryons(const char *name) :
   fPoolManageromegap(0),
   fPoolManagerp(0),
   fPoolManagerantip(0),
+  fIsFlowTask(kTRUE),
+  fFlowQnVectorMgr(0x0),
   fOutputList(0)
 {
   // Constructor
@@ -296,6 +298,17 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   fOutputList->Add(new TH2F("fKaon_pt_eta","",1000,0,10,200,-1,1));
 
   //===============
+  //============== 20220524 Flow study
+  if(fIsFlowTask){
+	  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+	  if(flowQnVectorTask != NULL){
+		  fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+	  }
+	  else {
+		  AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
+	  }
+  }
+
 
   PostData(1,fOutputList);
 }
@@ -312,7 +325,6 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   // Input event
   //AliAnalysisManager   *man         =AliAnalysisManager::GetAnalysisManager();
   //AliInputEventHandler *inputHandler=(AliInputEventHandler*)(man->GetInputEventHandler());
- 
 
   fEvent = dynamic_cast<AliVEvent*>(InputEvent());
   if(!fEvent){
@@ -343,11 +355,15 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   //Bool_t isEvtMB=((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & ftrigBit);
   //if(!isEvtMB) return;
 
+  printf("before Event selection\n");
   dynamic_cast<TH1F*>(fOutputList->FindObject("fEvtCounter"))->Fill(0.5);
   // Event pile-up
   Bool_t isPileupEvt = fAOD->IsPileupFromSPD();
   Bool_t isGoodEvt=EventSelection(fAOD);
-  if(!isGoodEvt || isPileupEvt){ PostData(1,fOutputList); return; }
+  if(!isGoodEvt || isPileupEvt){
+	  PostData(1,fOutputList);
+	  return; 
+  }
   dynamic_cast<TH1F*>(fOutputList->FindObject("fEvtPassCut"))->Fill(0.5);
  
   Float_t centralityV0M = -1.;
@@ -385,6 +401,12 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityCL0")) ->Fill(centralityCL0);
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityCL1")) ->Fill(centralityCL1);
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityMain"))->Fill(centralityMain);
+
+	printf("before Qn\n");
+
+  Bool_t isok = ExtractQnVector();
+  printf("isok = %d\n",isok);
+
  
   //============= variable definition
   Int_t    nTracks   =fAOD->GetNumberOfTracks();
@@ -417,17 +439,6 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   const Double_t massXi     = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
   const Double_t massOmega  = TDatabasePDG::Instance()->GetParticle(3334)->Mass();
 
-  //============== 20220524 Flow study
-  /*
-  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> 
-    (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
-  if (flowQnVectorTask != NULL) {
-    fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-  }
-  else {
-    AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
-  }
-  */
   //============== cascade loop
   TObjArray* fCascadeArraym=new TObjArray();
   TObjArray* fCascadeArrayp=new TObjArray();
@@ -1929,5 +1940,178 @@ Double_t AliAnalysisTaskMSDibaryons::InvariantMass(Double_t px1,Double_t py1,Dou
   invMass   =sqrt((energysum*energysum)-psum2);
 
   return invMass;
+
+}
+
+Bool_t AliAnalysisTaskMSDibaryons::ExtractQnVector()
+{
+  Int_t fHarmonics =2;
+  Int_t fQnDetectorMain =0;
+
+  //TString fTPCEPName[0] = "TPC";
+  //TString fTPCEPName[1] = "TPCNegEta";
+  //TString fTPCEPName[2] = "TPCPosEta";
+  TString fTPCEPName[3] = {"TPC","TPCNegEta","TPCPosEta"};
+
+  //fV0EPName[0] = "VZERO";
+  //fV0EPName[1] = "VZEROA";
+  //fV0EPName[2] = "VZEROC";
+
+  TString fV0EPName[3] = {"VZERO","VZEROA","VZEROC"};
+  TString fQNormalization = "QoverM";
+
+  if(fHarmonics < 0){
+    AliError(Form("Qn Flow vector correction flag is ON, but fHarmonics is not set. (it is %d now).",fHarmonics));
+    return kFALSE;
+  }
+
+  TList* qnlist = fFlowQnVectorMgr->GetQnVectorList();
+
+  const AliQnCorrectionsQnVector *QnVectorTPCDet[3];
+  Double_t TPCEP[3] = {};
+  for(Int_t i=0;i<3;i++){
+    QnVectorTPCDet[i] = GetQnVectorFromList(qnlist,Form("%s%s",fTPCEPName[i].Data(),fQNormalization.Data()),"latest","plain");
+    if(!QnVectorTPCDet[i]){
+      AliInfo("Event is rejected because event plane is not found or bad event plane quality in TPC.");
+      Printf("Event is rejected because event plane is not found or bad event plane quality in TPC.");
+      return kFALSE;//Qn vector correction does not exist or bad quality.
+    }
+    TPCEP[i] = QnVectorTPCDet[i]->EventPlane(fHarmonics);
+    if(TPCEP[i] < 0) TPCEP[i] += 2./(Double_t) fHarmonics * TMath::Pi();
+    AliInfo(Form("harmonics %d | TPC sub detector name %s%s : event plane = %f (rad).",fHarmonics,fTPCEPName[i].Data(),fQNormalization.Data(),TPCEP[i]));
+  }
+
+  const AliQnCorrectionsQnVector *QnVectorV0Det[3];
+  Double_t V0EP[3]  = {};
+  for(Int_t i=0;i<3;i++){
+    QnVectorV0Det[i]  = GetQnVectorFromList(qnlist,Form("%s%s",fV0EPName[i].Data(),fQNormalization.Data()),"latest","raw");
+    if(!QnVectorV0Det[i]){
+      AliInfo("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
+      Printf("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
+      return kFALSE;//Qn vector correction does not exist or bad quality.
+    }
+    V0EP[i] = QnVectorV0Det[i]->EventPlane(fHarmonics);
+    if(V0EP[i] < 0)  V0EP[i]  += 2./(Double_t) fHarmonics * TMath::Pi();
+    AliInfo(Form("harmonics %d | V0  sub detector name %s%s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data(),fQNormalization.Data(),V0EP[i]));
+    //Printf("harmonics %d | V0  sub detector name %s%s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data(),fQNormalization.Data(),V0EP[i]);
+  }
+
+  //0 < event plane < 2*pi/fHarmonics.
+  Double_t EP2 = -999; 
+  Double_t EP3 = -999; 
+
+  Double_t Q1[2] = {};//for Main
+  Double_t Q2[2] = {};//for Sub1
+  Double_t Q3[2] = {};//for Sub2
+
+  Float_t fEventPlane = 999;
+
+  if(fQnDetectorMain == AliAnalysisTaskMSDibaryons::kFullTPC){
+    Q1[0] = QnVectorTPCDet[0]->Qx(fHarmonics);//FullTPC
+    Q1[1] = QnVectorTPCDet[0]->Qy(fHarmonics);//FullTPC
+    Q2[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q2[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q3[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q3[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    fEventPlane = TPCEP[0];
+    EP2 = V0EP[1];
+    EP3 = V0EP[2];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskMSDibaryons::kTPCNegEta){
+    Q1[0] = QnVectorTPCDet[1]->Qx(fHarmonics);//TPCNegEta
+    Q1[1] = QnVectorTPCDet[1]->Qy(fHarmonics);//TPCNegEta
+    Q2[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q2[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q3[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q3[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    fEventPlane = TPCEP[2];
+    EP2 = V0EP[1];
+    EP3 = V0EP[2];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskMSDibaryons::kTPCPosEta){
+    Q1[0] = QnVectorTPCDet[2]->Qx(fHarmonics);//TPCPosEta
+    Q1[1] = QnVectorTPCDet[2]->Qy(fHarmonics);//TPCPosEta
+    Q2[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q2[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q3[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q3[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    fEventPlane = TPCEP[1];
+    EP2 = V0EP[1];
+    EP3 = V0EP[2];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskMSDibaryons::kFullV0){
+    Q1[0] = QnVectorV0Det[0]->Qx(fHarmonics);//FullV0
+    Q1[1] = QnVectorV0Det[0]->Qy(fHarmonics);//FullV0
+    Q2[0] = QnVectorTPCDet[1]->Qx(fHarmonics);//TPCNegEta
+    Q2[1] = QnVectorTPCDet[1]->Qy(fHarmonics);//TPCNegEta
+    Q3[0] = QnVectorTPCDet[2]->Qx(fHarmonics);//TPCPosEta
+    Q3[1] = QnVectorTPCDet[2]->Qy(fHarmonics);//TPCPosEta
+    fEventPlane = V0EP[0];
+    EP2 = TPCEP[1];
+    EP3 = TPCEP[2];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskMSDibaryons::kV0A){
+    Q1[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q1[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q2[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q2[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    Q3[0] = QnVectorTPCDet[0]->Qx(fHarmonics);//full acceptance of TPC
+    Q3[1] = QnVectorTPCDet[0]->Qy(fHarmonics);//full acceptance of TPC
+    fEventPlane = V0EP[1];
+    EP2 = V0EP[2];
+    EP3 = TPCEP[0];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskMSDibaryons::kV0C){
+    Q1[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q1[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    Q2[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q2[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q3[0] = QnVectorTPCDet[0]->Qx(fHarmonics);//full acceptance of TPC
+    Q3[1] = QnVectorTPCDet[0]->Qy(fHarmonics);//full acceptance of TPC
+    fEventPlane = V0EP[2];
+    EP2 = V0EP[1];
+    EP3 = TPCEP[0];
+  }
+
+  //fQVector1.Set(Q1[0],Q1[1]);
+  TVector2 fQVector1(Q1[0],Q1[1]);
+  TVector2 QVector2(Q2[0],Q2[1]);
+  TVector2 QVector3(Q3[0],Q3[1]);
+  Double_t sp12 = fQVector1 *  QVector2;//scalar product between Q1 vector and Q2 vector
+  Double_t sp23 =  QVector2 *  QVector3;//scalar product between Q2 vector and Q3 vector
+  Double_t sp31 =  QVector3 * fQVector1;//scalar product between Q3 vector and Q1 vector
+
+  AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , Q3x = %e , Q3y = %e ,  SP12 = %e ,  SP23 = %e ,  SP31 = %e",Q1[0],Q1[1],Q2[0],Q2[1],Q3[0],Q3[1],sp12,sp23,sp31));
+  Printf("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , Q3x = %e , Q3y = %e ,  SP12 = %e ,  SP23 = %e ,  SP31 = %e",Q1[0],Q1[1],Q2[0],Q2[1],Q3[0],Q3[1],sp12,sp23,sp31);
+  
+//  const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
+//  fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
+//  if(fEPBin < 0)  fEPBin =  0;//protection to avoid fEPBin = -1.
+//  if(fEPBin > 11) fEPBin = 11;//protection to avoid fEPBin = 12.
+
+  return kTRUE;
+}
+const AliQnCorrectionsQnVector *AliAnalysisTaskMSDibaryons::GetQnVectorFromList(const TList *list, const char* subdetector, const char *expcorr, const char *altcorr)
+{
+  AliQnCorrectionsQnVector *theQnVector = NULL;
+
+  TList *pQvecList = dynamic_cast<TList*> (list->FindObject(subdetector));
+  if(pQvecList != NULL){//sub detector is found
+    if(TString(expcorr).EqualTo("latest")) theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+    else                                   theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expcorr);
+    //theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expcorr);
+
+    if(theQnVector == NULL || !(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)){ //the Qn vector for the expected correction is not found
+      AliInfo(Form("expected correction (%s) is not found. use %s as an alternative step in %s.",expcorr,altcorr,subdetector));
+      if(TString(altcorr).EqualTo("latest")) theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+      else                                   theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altcorr);
+        //theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altcorr);
+    }
+
+    //check the Qn vector quality
+    if(!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)) theQnVector = NULL; //bad quality, discarded
+
+  }
+  return theQnVector;
 
 }
