@@ -40,6 +40,8 @@
 
 using namespace std;
 
+Int_t noEvents(0);
+
 ClassImp(AliMESpp13)
     //________________________________________________________________________
     AliMESpp13::AliMESpp13()
@@ -244,6 +246,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   if (fESD->IsPileupFromSPDInMultBins())
     fEvInfo->SetPileUp();
 
+  noEvents++;
+
   // multiplicity
   AliESDtrackCuts *tc(NULL);
   AliMultSelection *MultSelection = (AliMultSelection *)fESD->FindListObject("MultSelection");
@@ -385,6 +389,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   if (!HasMCdata())
   {
     (*fTreeSRedirector) << "ev"
+                        << "noEvents=" << noEvents
                         << "run=" << run
                         << "MultComb08=" << fMultComb08
                         << "MultSPDtrk08=" << fMultSPDtrk08
@@ -639,6 +644,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   if (!fTreeSRedirector)
     return;
   (*fTreeSRedirector) << "ev"
+                      << "noEvents=" << noEvents
                       << "run=" << run
                       << "MultComb08=" << fMultComb08
                       << "MultSPDtrk08=" << fMultSPDtrk08
