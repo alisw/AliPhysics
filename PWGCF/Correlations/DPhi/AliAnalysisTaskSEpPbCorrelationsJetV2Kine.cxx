@@ -69,6 +69,9 @@ fHistFMDAFMDC_Mixed(0),
 fHistFMDTrig(0),
 fEtaTPClimits(0),
 fMuonDecay("D"),
+fEst("V0A"),
+fCorr_Beam(kFALSE),
+fPbp(kFALSE),
 fT(1.)
 {
 //
@@ -117,6 +120,9 @@ fHistFMDAFMDC_Mixed(0),
 fHistFMDTrig(0),
 fEtaTPClimits(0),
 fMuonDecay("D"),
+fEst("V0A"),
+fCorr_Beam(kFALSE),
+fPbp(kFALSE),
 fT(1.)
 {
 //
@@ -163,6 +169,9 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserCreateOutputObjects()
   fListOutput->Add(new TH2D("hMu",  "", 200, 0., 50., 150, -4., -2.5));
   fListOutput->Add(new TH2D("hMu_All",  "", 200, 0., 50., 1000, -10., 10));
   fListOutput->Add(new TH1D("hChargeV0A",  "", 1001, -0.5, 1000.5));
+  fListOutput->Add(new TH1D("hChargeV0A_tmp",  "", 1001, -0.5, 1000.5));
+  fListOutput->Add(new TH1D("hChargeV0C",  "", 1001, -0.5, 1000.5));
+  fListOutput->Add(new TH1D("hChargeV0M",  "", 1501, -0.5, 1500.5));
   fListOutput->Add(new TH1D("hChargeMid",  "", 1001, -0.5, 1000.5));
   fListOutput->Add(new TH1D("hCentrality",  "", 120, -10., 110.));
   fListOutput->Add(new TH2D("hCentrality_MidCharged",  "", 120, -10., 110., 1000, 0., 1000.));
@@ -530,11 +539,13 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
   fVtxZ = spdVtx->GetZ();
   Int_t nMCAllTracks = ev->GetNumberOfTracks();
 
-
 //============================================================================= Random number
   //if(rand()%4 == 1) return;    
 //============================================================================  For Multiplicity
   Int_t nV0A = 0;
+  Int_t nV0C = 0;
+  Int_t nV0M = 0;
+  Int_t nV0A_tmp = 0;
   Int_t nCharged_mid = 0;
   for (auto i=0; i<ev->GetNumberOfTracks(); ++i)
   {
@@ -548,34 +559,66 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
 
    Bool_t TrIsPrim=mcTrack->IsPhysicalPrimary();
    Bool_t TrCharge=mcTrack->Charge()!=0;
-   //if(pdgabs == 13) cout << "Is Muon" << endl;
-   //if(pdgabs == 421) cout << "Is D" << endl;
 
    if (!TrCharge)        continue;
    if (!TrIsPrim)           continue;
    if (mcTrack->Pt() < 0.001 || mcTrack->Pt() > 50.) continue;
-   if (pdgabs!=211 && pdgabs!=321 && pdgabs!=2212) continue; //only charged pi+K+p
+   //if (pdgabs!=211 && pdgabs!=321 && pdgabs!=2212) continue; //only charged pi+K+p
    if (pdgabs==9902210) return; //no diffractive protons
 
-   const auto dEtapp(mcTrack->Eta());
+   const auto dEtapp(ConvertCMS(mcTrack->Eta(),fPbp));
 
-   if(dEtapp>2.8 && dEtapp<5.1)
+   /*
+   if(dEtapp>1.7 && dEtapp<3.7)
+   {
+    ++nV0C;
+   }
+
+   if(dEtapp>-5.1 && dEtapp<-2.8)
    {
     ++nV0A;
    }
+   */
+  
+   if(dEtapp > 2.8  && dEtapp < 5.1)
+   {
+    ++nV0A;
+   }
+
+   if(dEtapp > -3.7 && dEtapp < -1.7)
+   {
+    ++nV0C;
+   }
+
+   if(dEtapp > -5.1 && dEtapp < -2.8)
+   {
+    ++nV0A_tmp;
+   }
+
    if(dEtapp>-0.5 && dEtapp<0.5)
    {
     ++nCharged_mid;
    } 
   }
 
+  if(nV0A <1 || nV0C<1) return;
+
+  nV0M = nV0A + nV0C;
   (static_cast<TH1D*>(fListOutput->FindObject("hChargeV0A")))->Fill(nV0A);
+  (static_cast<TH1D*>(fListOutput->FindObject("hChargeV0A_tmp")))->Fill(nV0A_tmp);
+  (static_cast<TH1D*>(fListOutput->FindObject("hChargeV0C")))->Fill(nV0C);
+  (static_cast<TH1D*>(fListOutput->FindObject("hChargeV0M")))->Fill(nV0M);
   (static_cast<TH1D*>(fListOutput->FindObject("hChargeMid")))->Fill(nCharged_mid);
 
 //Centrality Selection
  TH1D *h_Charge = dynamic_cast<TH1D*>(GetInputData(1));
- Double_t dMul_All = h_Charge->Integral(1,-1);
- fCentrality = h_Charge->Integral(h_Charge->FindBin(nV0A),-1) / dMul_All * 100;
+ Double_t dMul_All = h_Charge->Integral(2,-1);
+
+ if(fEst == "V0A") fCentrality = h_Charge->Integral(h_Charge->FindBin(nV0A),-1) / dMul_All * 100;
+ if(fEst == "V0M") fCentrality = h_Charge->Integral(h_Charge->FindBin(nV0M),-1) / dMul_All * 100;
+ if(fEst == "V0C") fCentrality = h_Charge->Integral(h_Charge->FindBin(nV0C),-1) / dMul_All * 100;
+ if(fEst == "V0A_tmp") fCentrality = h_Charge->Integral(h_Charge->FindBin(nV0A_tmp),-1) / dMul_All * 100;
+
  (static_cast<TH1D*>(fListOutput->FindObject("hCentrality")))->Fill(fCentrality);
  (static_cast<TH1D*>(fListOutput->FindObject("hEvent")))->Fill(0.5);
  (static_cast<TH2D*>(fListOutput->FindObject("hCentrality_MidCharged")))->Fill(fCentrality,nCharged_mid);
@@ -599,7 +642,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
   //if (pdgabs!=211 && pdgabs!=321 && pdgabs!=2212) continue; //only charged pi+K+p
   if (pdgabs==9902210) return; //no diffractive protons 
 
-  const auto dEtapp(mcTrack->Eta());
+  const auto dEtapp(ConvertCMS(mcTrack->Eta(),fPbp));
+  //const auto dEtapp(mcTrack->Eta());
   const auto dEtappt(mcTrack->Pt());
  
   (static_cast<TH2D*>(fListOutput->FindObject("hPt_Cen")))->Fill(dEtappt,fCentrality);
@@ -624,6 +668,9 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
 
  TObjArray *selectedTracksFMDA = new TObjArray;
  selectedTracksFMDA->SetOwner(kTRUE);
+
+ TObjArray *selectedTracksFMDA_tmp = new TObjArray;
+ selectedTracksFMDA_tmp->SetOwner(kTRUE);
 
  TObjArray *selectedTracksFMDC = new TObjArray;
  selectedTracksFMDC->SetOwner(kTRUE);
@@ -651,24 +698,10 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
   TrIsPrim=mcTrack->IsPhysicalPrimary();
   TrCharge=mcTrack->Charge()!=0;
 
-  mcTrackEta = mcTrack->Eta();
+  mcTrackEta = ConvertCMS(mcTrack->Eta(),fPbp);
   mcTrackPt  = mcTrack->Pt();
   mcTrackPhi = mcTrack->Phi(); 
 
-/*
-  if(TMath::Abs(mcTrack->PdgCode()) == 13) 
-  {
-   //cout << "Inc muon" << endl; 
-   Int_t imother = mcTrack->GetMother();
-   cout << imother << endl;
-   while ( imother >= 0 ) {
-    const AliVParticle* part = ev->GetTrack(imother);
-    Int_t absPdg = TMath::Abs(part->PdgCode());
-    //cout << "mother pdg: " << absPdg << endl;
-    imother = part->GetMother();
-   }
-  }
-*/
   if(fMode != "SPDSPD" && fMode != "MuonSPD")
   {
    if(!TrIsPrim)        continue;
@@ -683,8 +716,15 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
     (static_cast<TH2D*>(fListOutput->FindObject("hEta_Phi")))->Fill(mcTrackEta,mcTrackPhi);
    }
 
-
-   if(mcTrackEta>1.7 && mcTrackEta<4.9)
+   if((mcTrackEta>1.7 && mcTrackEta<4.9) && !fCorr_Beam)
+   {
+    if(mcTrackPt>fPtMax) continue;
+    if(mcTrackPt<fPtMin) continue;
+    selectedTracksFMDA->Add(new AliAssociatedTrackYSLEGOMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
+    (static_cast<TH2D*>(fListOutput->FindObject("hEta_Phi")))->Fill(mcTrackEta,mcTrackPhi);
+   }
+   
+   if((mcTrackEta>-4.9 && mcTrackEta<-1.7) && fCorr_Beam)
    {
     if(mcTrackPt>fPtMax) continue;
     if(mcTrackPt<fPtMin) continue;
@@ -692,7 +732,15 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
     (static_cast<TH2D*>(fListOutput->FindObject("hEta_Phi")))->Fill(mcTrackEta,mcTrackPhi);
    }
 
-   if(mcTrackEta>-3.4 && mcTrackEta<-1.7)
+   if(mcTrackEta>-3.4 && mcTrackEta<-1.7 && !fCorr_Beam)
+   {
+    if(mcTrackPt>fPtMax) continue;
+    if(mcTrackPt<fPtMin) continue;
+    selectedTracksFMDC->Add(new AliAssociatedTrackYSLEGOMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
+    (static_cast<TH1D*>(fListOutput->FindObject("hEta_Phi")))->Fill(mcTrackEta,mcTrackPhi);
+   }
+
+   if(mcTrackEta>1.7 && mcTrackEta<3.4 && fCorr_Beam)
    {
     if(mcTrackPt>fPtMax) continue;
     if(mcTrackPt<fPtMin) continue;
@@ -702,6 +750,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
   }
   else
   {
+
    if(mcTrackEta>-1.0 && mcTrackEta<1.0)
    {
     if(mcTrackPt>fPtMax) continue;
@@ -718,13 +767,24 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
     if(mcTrackPt>fPtMax) continue;
     if(mcTrackPt<fPtMin) continue;
 
-   //if(TMath::Abs(mcTrack->PdgCode()) == 13)
     if(fMuonDecay == "B" && (TMath::Abs(mcTrack->PdgCode()) == 511 || TMath::Abs(mcTrack->PdgCode()) == 521 || TMath::Abs(mcTrack->PdgCode()) == 531))
     {
      selectedTracksHFMuons->Add(new AliAssociatedTrackYSLEGOMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
      (static_cast<TH2D*>(fListOutput->FindObject("hEta_Phi_Muon_SPD")))->Fill(mcTrackEta,mcTrackPhi);
     }
-    if(fMuonDecay == "D" && (TMath::Abs(mcTrack->PdgCode()) == 411 || TMath::Abs(mcTrack->PdgCode()) == 421 || TMath::Abs(mcTrack->PdgCode()) == 431))
+    if(fMuonDecay == "D" && (TMath::Abs(mcTrack->PdgCode()) == 421))
+    {
+     selectedTracksHFMuons->Add(new AliAssociatedTrackYSLEGOMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
+     (static_cast<TH2D*>(fListOutput->FindObject("hEta_Phi_Muon_SPD")))->Fill(mcTrackEta,mcTrackPhi);
+    }
+    
+    if(fMuonDecay == "K" && (TMath::Abs(mcTrack->PdgCode()) == 321))
+    {
+     selectedTracksHFMuons->Add(new AliAssociatedTrackYSLEGOMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
+     (static_cast<TH2D*>(fListOutput->FindObject("hEta_Phi_Muon_SPD")))->Fill(mcTrackEta,mcTrackPhi);
+    }
+
+    if(fMuonDecay == "Pi" && (TMath::Abs(mcTrack->PdgCode()) == 211))
     {
      selectedTracksHFMuons->Add(new AliAssociatedTrackYSLEGOMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
      (static_cast<TH2D*>(fListOutput->FindObject("hEta_Phi_Muon_SPD")))->Fill(mcTrackEta,mcTrackPhi);
@@ -1135,6 +1195,14 @@ Double_t AliAnalysisTaskSEpPbCorrelationsJetV2Kine::RangePhi(Double_t DPhi) {
   if (DPhi > 3 * TMath::Pi() / 2) DPhi -= 2*TMath::Pi();
   return DPhi;
 }
+
+Double_t AliAnalysisTaskSEpPbCorrelationsJetV2Kine::ConvertCMS(Double_t eta_CMS, Bool_t isPbp){ 
+ Double_t eta_Lab;
+ if(!isPbp) eta_Lab = -1 * (eta_CMS + 0.465); // important, the CMS is converted into Lab frame!
+ else eta_Lab = -1 * (eta_CMS - 0.465); 
+ return eta_Lab;
+}
+
 
 void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::Terminate(Option_t *) {
 
