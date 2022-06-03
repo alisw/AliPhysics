@@ -114,6 +114,7 @@ set(SRCS
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonESD_PbPb.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_XeXe.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskHe3VsMultiplicity_XeXe.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskDeuteronVsMultiplicity_XeXe.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskLightNuclei_XeXe_MC.cxx  
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
