@@ -92,7 +92,7 @@ public:
   float fTrackPtRange[2][2] = {{1.f, 10.f}, {0.f, 2.f}};
   float fMaxProngDCA = 2;
   float fMinCosPA = 0.9;
-
+  float fMaxKFchi2 = 40000.;
 
 private:
   AliAnalysisTaskHe3piKF(const AliAnalysisTaskHe3piKF &source);
@@ -113,7 +113,6 @@ private:
   float fCustomBethe[5] = {-166.11733, -0.11020473, 0.10851357, 2.7018593, -0.087597824}; /// default values are for LHC18qr
   float fCustomResolution = 0.05871;                                                      /// default values are for LHC18qr
   double fMassRange[2] = {2.9, 3.1};
-  float fMaxKFchi2 = 40000.;
 
   float Eta2y(float pt, float m, float eta) const;
 
