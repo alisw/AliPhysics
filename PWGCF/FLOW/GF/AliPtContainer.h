@@ -35,6 +35,7 @@ class AliPtContainer: public TNamed {
         void FillSkew(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
         void FillKurtosis(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
         void FillRecursive(const vector<vector<double>> &inarr,const double &lMult, const double &rn, TString sub = "");
+        vector<double> getEventCorrelation(const vector<vector<double>> &inarr, int mOrder);
         TList* GetCkList() { return fCkTermList; }
         TList* GetSkewList() { return fSkewTermList; }
         TList* GetKurtosisList() { return fKurtosisTermList; }
