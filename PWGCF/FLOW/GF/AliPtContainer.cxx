@@ -160,6 +160,31 @@ void AliPtContainer::InitializeSubsamples(const int &nsub) {
     }
     return;
 };
+vector<double> AliPtContainer::getEventCorrelation(const vector<vector<double>> &inarr, int mOrder) {
+  vector<double> corr(mpar+1,0.0); corr[0] = 1.0;
+  vector<double> sumw(mpar+1,0.0); sumw[0] = 1.0;
+  double sumNum = 0;
+  double sumDenum = 0;
+  vector<double> valNum;
+  vector<double> valDenum;
+  for(int m(1); m<=mpar; ++m)
+  {
+    for(int k(1);k<=m;++k)
+    {
+      valNum.push_back(fSign[k-1]*corr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][k]);
+      valDenum.push_back(fSign[k-1]*sumw[m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][0]);
+    }
+    sumNum = OrderedAddition(valNum, m);
+    sumDenum = OrderedAddition(valDenum, m);
+    valNum.clear();
+    valDenum.clear();
+  
+    corr[m] = sumNum;
+    sumw[m] = sumDenum;
+  }
+  vector<double> outvec = {corr[mOrder],sumw[mOrder]};
+  return outvec;
+}
 void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr,const double &lMult, const double &rn, TString sub) {
   vector<double> corr(mpar+1,0.0); corr[0] = 1.0;
   vector<double> sumw(mpar+1,0.0); sumw[0] = 1.0;
