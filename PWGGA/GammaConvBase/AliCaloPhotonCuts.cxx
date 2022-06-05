@@ -8781,7 +8781,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
           // fine tuning for pp 13 TeV lowB
           if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
-            energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            // energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            energy /= FunctionNL_kSDM(energy, 0.979428, -3.20181, -0.360978); // settings only to be used with dedicated lowB cell scale factors, (EXPERIMENTAL!)
             energy /= 1.0025;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
               energy /= 0.99;
