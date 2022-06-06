@@ -52,7 +52,7 @@ set(SRCS
   UeKNO/AliAnalysisTaskFlatenicity.cxx
   UeMpi/AliAnalysisTaskMpiUE.cxx
   Flatenicity/AliAnalysisTaskSpectraFlatenicity.cxx
-  Flatenicity/PiKp/AliAnalysisTaskFlatenicityPiKp.cxx
+  FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx
   )
 
 # Headers from sources
@@ -123,4 +123,4 @@ install(DIRECTORY UeSpectraRT DESTINATION  PWGMM/UE)
 install(DIRECTORY UeDphi DESTINATION  PWGMM/UE)
 install(DIRECTORY macros DESTINATION  PWGMM/UE)
 install(DIRECTORY Flatenicity DESTINATION  PWGMM/UE)
-install(DIRECTORY Flatenicity/PiKp DESTINATION  PWGMM/UE/Flatenicity)
+install(DIRECTORY FlatenicityPiKp DESTINATION  PWGMM/UE)

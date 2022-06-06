@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* Add a description of your MPI analysis */
 
-#ifndef AliAnalysisTaskFlatenicity_H
-#define AliAnalysisTaskFlatenicity_H
+#ifndef AliAnalysisTaskFlatenicityPiKp_H
+#define AliAnalysisTaskFlatenicityPiKp_H
 
 class AliESDtrackCuts;
 class AliESDEvent;
