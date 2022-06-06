@@ -65,6 +65,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     bool IsInPHOSAcceptance(AliVParticle* part) const;
     bool IsInEMCalAcceptance(AliVParticle* part) const;
     bool IsInV0Acceptance(AliVParticle* part) const;
+    bool IsSecondary(AliVParticle* motherParticle) const;
 
     // additional functions
     void SetLogBinningXTH1(TH1* histoRebin);

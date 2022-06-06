@@ -718,12 +718,35 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         if (motherParticle->PdgCode() == kPdgEta)
           fHistPtYPi0FromEta->Fill(particle->Pt(), particle->Y());
       }
+      // fill primary pi0s in eta > 0.8
+      if(fDoMultStudies){
+        if(std::abs(particle->Y()) <= 0.8){
+          if(!IsSecondary(motherParticle)){
+            fHistPtV0MultPi0GG->Fill(particle->Pt(), fNTracksInV0Acc);
+          }
+        }
+      }
       break;
     case kPdgEta:
       fHistPtYEta->Fill(particle->Pt(), particle->Y());
+      // fill primary etas in eta > 0.8
+      if(fDoMultStudies){
+        if(std::abs(particle->Y()) <= 0.8){
+          if(!IsSecondary(motherParticle)){
+            fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
+          }
+        }
+      }
       break;
     case kPdgEtaPrime:
       fHistPtYEtaPrime->Fill(particle->Pt(), particle->Y());
+      if(fDoMultStudies){
+        if(std::abs(particle->Y()) <= 0.8){
+          if(!IsSecondary(motherParticle)){
+            fHistPtV0MultEtaPrimeGG->Fill(particle->Pt(), fNTracksInV0Acc);
+          }
+        }
+      }
       break;
     case kPdgOmega:
       fHistPtYOmega->Fill(particle->Pt(), particle->Y());
@@ -867,8 +890,6 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           if (!TESTBIT(acceptanceGamma[1], kPHOSAcceptance)) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
           fHistPtAlphaPi0GGPCMPHOAcc->Fill(particle->Pt(), alpha);
         }
-        // mult studies
-        if(fDoMultStudies) fHistPtV0MultPi0GG->Fill(particle->Pt(), fNTracksInV0Acc);
       }
       if (particle->PdgCode()==kPdgEta){
         fHistPtYEtaGG->Fill(particle->Pt(), particle->Y());
@@ -898,8 +919,6 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           if (TESTBIT(!acceptanceGamma[1],kPHOSAcceptance)) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
           fHistPtAlphaEtaGGPCMPHOAcc->Fill(particle->Pt(), alpha);
         }
-        // mult studies
-        if(fDoMultStudies) fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
       }
       if (particle->PdgCode()==kPdgEtaPrime){
         fHistPtYEtaPrimeGG->Fill(particle->Pt(), particle->Y());
@@ -929,8 +948,6 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           if (TESTBIT(!acceptanceGamma[1],kPHOSAcceptance)) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
           fHistPtAlphaEtaPrimeGGPCMPHOAcc->Fill(particle->Pt(), alpha);
         }
-        // mult studies
-        if(fDoMultStudies) fHistPtV0MultEtaPrimeGG->Fill(particle->Pt(), fNTracksInV0Acc);
       }
     }
 
@@ -1078,6 +1095,23 @@ bool AliAnalysisTaskGammaPureMC::IsInV0Acceptance(AliVParticle* part) const {
   const Double_t kBoundaryEtaMaxV0C = -1.7;
   if (part->Eta() < kBoundaryEtaMaxV0A && part->Eta() > kBoundaryEtaMinV0A) return true;
   if (part->Eta() < kBoundaryEtaMaxV0C && part->Eta() > kBoundaryEtaMinV0C) return true;
+  return false;
+}
+
+//________________________________________________________________________
+bool AliAnalysisTaskGammaPureMC::IsSecondary(AliVParticle* motherParticle) const {
+  if (TMath::Abs(motherParticle->PdgCode()) == kPdgK0Short ||
+      TMath::Abs(motherParticle->PdgCode()) == kPdgK0Long  ||
+      TMath::Abs(motherParticle->PdgCode()) == kPdgKPlus  ||
+      TMath::Abs(motherParticle->PdgCode()) == kPdgLambda ||
+      TMath::Abs(motherParticle->PdgCode()) == kPdgSigma0 ||
+      TMath::Abs(motherParticle->PdgCode()) == kPdgSigmaPlus ||
+      TMath::Abs(motherParticle->PdgCode()) == kPdgSigmaMinus ||
+      TMath::Abs(motherParticle->PdgCode()) == kPdgXi0 ||
+      TMath::Abs(motherParticle->PdgCode()) == kPdgXiMinus
+  ){
+    return true;
+  }
   return false;
 }
 
