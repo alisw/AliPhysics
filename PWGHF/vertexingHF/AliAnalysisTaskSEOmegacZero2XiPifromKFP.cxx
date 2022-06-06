@@ -68,7 +68,10 @@ AliAnalysisTaskSEOmegacZero2XiPifromKFP::AliAnalysisTaskSEOmegacZero2XiPifromKFP
   fTree_Omegac0(0),
   fVar_Omegac0(0),
   fCounter(0),
-  fHistEvents(0)
+  fHistEvents(0),
+  fHistMult(0),
+  fHistCheckKF(0),
+  fEvCount(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -86,7 +89,10 @@ AliAnalysisTaskSEOmegacZero2XiPifromKFP::AliAnalysisTaskSEOmegacZero2XiPifromKFP
   fTree_Omegac0(0),
   fVar_Omegac0(0),
   fCounter(0),
-  fHistEvents(0)
+  fHistEvents(0),
+  fHistMult(0),
+  fHistCheckKF(0),
+  fEvCount(0)
 {
     // constructor
   DefineInput(0, TChain::Class());  // define the input of the analysis: in this case we take a 'chain' of events
@@ -170,11 +176,14 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserCreateOutputObjects()
     // the histograms are in this case added to a tlist, this list is in the end saved
     // to an output file
     //
+
+  fEvCount=0;
+
   fOutputList = new TList();          // this is a list which will contain all of your histograms, at the end of the analysis, the contents of this list are written to the output file
   fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
 
   //histogram for general checks on number of events
-  fHistEvents = new TH1F("fHistEvents", "fHistEvents", 9, 0.5, 9.5);
+  fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0.5, 11.5);
   fHistEvents->GetXaxis()->SetBinLabel(1,"Analyzed events"); //all the events
   fHistEvents->GetXaxis()->SetBinLabel(2,"AliAODVertex exists"); //events with magnetic field B and primary vertex PV
   fHistEvents->GetXaxis()->SetBinLabel(3,"TriggerOK"); //events with B, PV, trigger selected, physicsselection, PV reconstructed, |z|<10
@@ -184,9 +193,26 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserCreateOutputObjects()
   fHistEvents->GetXaxis()->SetBinLabel(7,"TriggerMB"); //events with B, PV, trigger MB, PhysicsSelection
   fHistEvents->GetXaxis()->SetBinLabel(8,"TriggerkINT7zCut"); //events with B, PV, trigger kINT7, physicsselection, |z|<10
   fHistEvents->GetXaxis()->SetBinLabel(9,"TriggerkINT7"); //events with B, PV, trigger kINT7, physicsselection
+  fHistEvents->GetXaxis()->SetBinLabel(10,"kINT7&B"); //events with B, trigger kINT7, (for rejection factor studies)
+  fHistEvents->GetXaxis()->SetBinLabel(11,"OnlykINT7"); //events with trigger kINT7, (for rejection factor studies)
 
 
   fOutputList->Add(fHistEvents); // don't forget to add it to the list! the list will be written to file
+
+  //histogram multiplicity distribution
+  fHistMult = new TH1F("fHistMult", "fHistMult", 2500, 0., 5000);
+  fHistMult->GetXaxis()->SetTitle("N_{tracks}");
+
+  fOutputList->Add(fHistMult);
+
+  //histogram check on KF failure (E<p_z)
+  fHistCheckKF = new TH1F("fHistCheckKF", "fHistCheckKF", 4, 0.5, 4.5);
+  fHistCheckKF->GetXaxis()->SetBinLabel(1,"KFOkayBeforeMC"); //KF does not fail before setting mass constraint
+  fHistCheckKF->GetXaxis()->SetBinLabel(2,"KFFailsBeforeMC"); //KF fails before setting mass constraint
+  fHistCheckKF->GetXaxis()->SetBinLabel(3,"KFOkayAfterMC"); //KF does not fail after setting mass constraint
+  fHistCheckKF->GetXaxis()->SetBinLabel(4,"KFFailsAfterMC"); //KF fails after setting mass constraint
+
+  fOutputList->Add(fHistCheckKF);
 
   //counter for Normalization
   TString normName="NormalizationCounter";
@@ -221,6 +247,8 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserExec(Option_t *)
   }
   AliAODEvent* AODEvent = dynamic_cast<AliAODEvent*>(fInputEvent);    // get an event (called AODEvent) from the input file (there's another event format (ESD) which works in a similar way, but is more cpu/memory unfriendly -> for now, we'll stick with aod)
 
+  fHistMult->Fill(AODEvent->GetNumberOfTracks());
+
   fHistEvents->Fill(1);
 
   //----------------------------------------------------------------------------
@@ -229,12 +257,21 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserExec(Option_t *)
   if(!fAnaCuts) return;
 
   //----------------------------------------------------------------------------
-  // First check if the event has magnetic field and proper vertex - selecting events with B e PV
+  // First check if the event has magnetic field and proper vertex - selecting events with B e PV (and check on kINT7 trigger for rejection factor studies)
   //----------------------------------------------------------------------------
+  Bool_t IsINT7RejFac = (  ( (AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kINT7 )==(AliVEvent::kINT7);
+
+  if(IsINT7RejFac){
+    fHistEvents->Fill(11);
+  }
 
   fBzkG = (Double_t)AODEvent->GetMagneticField();
   if (TMath::Abs(fBzkG)<0.001) return;
   KFParticle::SetField(fBzkG);
+
+  if(IsINT7RejFac){
+    fHistEvents->Fill(10);
+  }
 
   fpVtx = (AliAODVertex*)AODEvent->GetPrimaryVertex();
   if (!fpVtx) return;
@@ -313,6 +350,11 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserExec(Option_t *)
 
   MakeAnaOmegacZero(AODEvent, PV);
 
+  fEvCount=fEvCount+1;
+
+  if(fEvCount==100){
+    fEvCount=0;
+  }
 
   // stream the results the analysis of this event to the output manager which will take care of writing it to a file
   PostData(2, fCounter);
@@ -425,7 +467,12 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       kfpLambda.GetMass(massLambda_Rec, err_massLambda);
 
       //checks
-      if ( TMath::Abs(kfpLambda.GetE())<=TMath::Abs(kfpLambda.GetPz()) ) continue;
+      if ( TMath::Abs(kfpLambda.GetE())<=TMath::Abs(kfpLambda.GetPz()) ){
+        fHistCheckKF->Fill(2);
+        continue;
+      }
+      fHistCheckKF->Fill(1);
+
       if ( (kfpLambda.GetNDF()<=0 || kfpLambda.GetChi2()<=0) ) continue;
       if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda) ) continue;
       if ( err_massLambda<=0 ) continue;
@@ -451,7 +498,13 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       kfpLambda_m.SetNonlinearMassConstraint(massLambda);
 
       //checks
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda_m.GetE()) <= TMath::Abs(kfpLambda_m.GetPz()) ) continue;
+      if ( TMath::Abs(kfpLambda_m.GetE()) <= TMath::Abs(kfpLambda_m.GetPz()) ){
+        fHistCheckKF->Fill(4);
+        continue;
+      }
+      fHistCheckKF->Fill(3);
+
+      if(!AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m)) continue;
 
 //^^^^^^^^^^^^^^^^^^^  PI- <-- CASCADE-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       //construct il pion (pi<-xi) KFP
@@ -466,7 +519,11 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       kfpXiMinus.Construct(vXiDs, NDaughters);
 
       // checks on cascade
-      if ( TMath::Abs(kfpXiMinus.GetE())<=TMath::Abs(kfpXiMinus.GetPz()) ) continue;
+      if ( TMath::Abs(kfpXiMinus.GetE())<=TMath::Abs(kfpXiMinus.GetPz()) ){
+        fHistCheckKF->Fill(2);
+        continue;
+      }
+      fHistCheckKF->Fill(1):
 
       // err_mass_cascade > 0
       Float_t massXiMinus_Rec, err_massXiMinus;
@@ -490,7 +547,13 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
 
       //checks
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus_m.GetE()) <= TMath::Abs(kfpXiMinus_m.GetPz()) ) continue;
+      if ( TMath::Abs(kfpXiMinus_m.GetE()) <= TMath::Abs(kfpXiMinus_m.GetPz()) ){
+        fHistCheckKF->Fill(4);
+        continue;
+      }
+      fHistCheckKF->Fill(3);
+
+      if(!AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m)) continue;
 
 
 //=============== loop on pi+<-Omegac0 ==================================
@@ -517,7 +580,11 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
         if ( kfpOmegac0.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
 
         //check
-        if ( TMath::Abs(kfpOmegac0.GetE())<=TMath::Abs(kfpOmegac0.GetPz()) ) continue;
+        if ( TMath::Abs(kfpOmegac0.GetE())<=TMath::Abs(kfpOmegac0.GetPz()) ){
+          fHistCheckKF->Fill(2);
+          continue;
+        }
+        fHistCheckKF->Fill(1);
 
         //check covariance matrix
         if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegac0) ) continue;
@@ -602,7 +669,11 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       kfpAntiLambda.GetMass(massAntiLambda_Rec, err_massAntiLambda);
 
       // check
-      if ( TMath::Abs(kfpAntiLambda.GetE())<=TMath::Abs(kfpAntiLambda.GetPz()) ) continue;
+      if ( TMath::Abs(kfpAntiLambda.GetE())<=TMath::Abs(kfpAntiLambda.GetPz()) ){
+        fHistCheckKF->Fill(2);
+        continue;
+      }
+      fHistCheckKF->Fill(1);
 
       // chi2>0 && NDF>0 for selecting Anti-Lambda
       if ( kfpAntiLambda.GetNDF()<=0 || kfpAntiLambda.GetChi2()<=0 ) continue;
@@ -635,7 +706,13 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       KFParticle kfpAntiLambda_m = kfpAntiLambda;
       kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda_m.GetE()) <= TMath::Abs(kfpAntiLambda_m.GetPz()) ) continue;
+      if (TMath::Abs(kfpAntiLambda_m.GetE()) <= TMath::Abs(kfpAntiLambda_m.GetPz()) ){
+        fHistCheckKF->Fill(4);
+        continue;
+      }
+      fHistCheckKF->Fill(3);
+
+      if(!AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m)) continue;
 
 //^^^^^^^^^^^^^^^^^^^^^^^ PI+ <-- CASCADE+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       KFParticle kfpPionFromXi;
@@ -647,7 +724,11 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       kfpXiPlus.Construct(vXiDs, NDaughters);
 
       // check
-      if ( TMath::Abs(kfpXiPlus.GetE())<=TMath::Abs(kfpXiPlus.GetPz()) ) continue;
+      if ( TMath::Abs(kfpXiPlus.GetE())<=TMath::Abs(kfpXiPlus.GetPz()) ){
+        fHistCheckKF->Fill(2);
+        continue;
+      }
+      fHistCheckKF->Fill(1);
 
       // err_massXi > 0
       Float_t massXiPlus_Rec, err_massXiPlus;
@@ -669,7 +750,13 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       KFParticle kfpXiPlus_m = kfpXiPlus;
       kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus_m.GetE()) <= TMath::Abs(kfpXiPlus_m.GetPz()) ) continue;
+      if ( TMath::Abs(kfpXiPlus_m.GetE()) <= TMath::Abs(kfpXiPlus_m.GetPz()) ){
+        fHistCheckKF->Fill(4);
+        continue;
+      }
+      fHistCheckKF->Fill(3);
+
+      if( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) ) continue;
 
 
       //=============== loop on pi-<-AntiOmegac0 ==================================
@@ -695,7 +782,11 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
         if ( kfpAntiOmegac0.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
 
         // check rapidity of Anti-Omegac0
-        if ( TMath::Abs(kfpAntiOmegac0.GetE())<=TMath::Abs(kfpAntiOmegac0.GetPz()) ) continue;
+        if ( TMath::Abs(kfpAntiOmegac0.GetE())<=TMath::Abs(kfpAntiOmegac0.GetPz()) ){
+          fHistCheckKF->Fill(2);
+          continue;
+        }
+        fHistCheckKF->Fill(1);
 
         // check covariance matrix (quality check, checks whether the uncertainties contained in the covariance matrix are reasonable)
         if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiOmegac0) ) continue;
@@ -782,7 +873,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::DefineTreeOmegac0()
 
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 44;
+  Int_t nVar = 45;
   fVar_Omegac0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -830,6 +921,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::DefineTreeOmegac0()
   fVarNames[41] = "chi2mass_Lam"; // chi2 Lambda after using SetNonlinearMassConstraint (before fitting in PV/mother decay point)
   fVarNames[42] = "chi2mass_Xi"; // chi2 Xi after using SetNonlinearMassConstraint (before fitting in PV/mother decay point)
   fVarNames[43] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair (0=likesign, 1=unlikesign) , to study the combinatorial bck (likesign)
+  fVarNames[44] = "EventCounter"; //int that counts the number of event
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Omegac0->Branch(fVarNames[ivar].Data(), &fVar_Omegac0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -844,7 +936,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::FillTreeOmegac0(Int_t flagUSorLS, 
 
 //fill Omegac0 TTree
 
-  for (Int_t i=0; i<44; i++) {
+  for (Int_t i=0; i<45; i++) {
     fVar_Omegac0[i] = -9999.;
   }
 
@@ -1043,6 +1135,9 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::FillTreeOmegac0(Int_t flagUSorLS, 
 
   //flag like/unlike sign
   fVar_Omegac0[43]=flagUSorLS;
+
+  //flag like/unlike sign
+  fVar_Omegac0[44]=fEvCount;
 
   //fill tree
   fTree_Omegac0->Fill();
