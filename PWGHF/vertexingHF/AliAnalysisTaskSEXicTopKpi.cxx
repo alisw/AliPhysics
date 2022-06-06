@@ -5131,8 +5131,8 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
   
   AliExternalTrackParam *trackHF = new AliExternalTrackParam();
   trackHF->CopyFromVTrack(io3Prong);
-  Int_t flagPart=0;// both ele and pion hypo ok
   for(Int_t iextratr=0;iextratr<fnSel;iextratr++){
+    Int_t flagPart=0;// both ele and pion hypo ok
     Int_t itrackFourth=ftrackArraySelFast->At(iextratr);
     
     if(itrackFourth==itrack1 || itrackFourth==itrack2 || itrackFourth==itrack3)continue;
