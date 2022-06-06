@@ -168,6 +168,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fProtonID(0x0),
   fKaonID(0x0),
   fPionID(0x0),
+  fElectronID(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
   fVertexerTracksPrimaryVtx(0x0),
@@ -369,6 +370,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fProtonID(0x0),
   fKaonID(0x0),
   fPionID(0x0),
+  fElectronID(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
   fVertexerTracksPrimaryVtx(0x0),
@@ -589,6 +591,7 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fProtonID)delete fProtonID;
   if(fKaonID)delete fKaonID;
   if(fPionID)delete fPionID;
+  if(fElectronID)delete fElectronID;
   if(fTreeVar)delete fTreeVar;
   if(fhsparseMC_ScPeak)delete fhsparseMC_ScPeak;
   if(fHistoPtd0plane)delete fHistoPtd0plane;
@@ -1056,6 +1059,10 @@ if(!fFillTree){
   fPionID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
   fPionID->GetXaxis()->SetBinLabel(1,"MC particles");
   fPionID->GetXaxis()->SetBinLabel(2,"ID'd particles");
+ fElectronID=new TH2F("fElectronID","fElectronID",2,0,2,200,0,20);
+  fElectronID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fElectronID->GetXaxis()->SetBinLabel(1,"MC particles");
+  fElectronID->GetXaxis()->SetBinLabel(2,"ID'd particles");
 
 /*
   //  pt vs. pointing angle, lxy, nlxy, ptP,ptK,ptPi,vtxchi2,sigmaVtx,sumd02,dca1,dca2,dca3,nd01,nd02,nd03,Lc d0
@@ -1177,6 +1184,7 @@ if(!fFillTree){
   fOutput->Add(fProtonID);
   fOutput->Add(fKaonID);
   fOutput->Add(fPionID);
+  fOutput->Add(fElectronID);
   if(fStudyScPeakMC)  fOutput->Add(fhsparseMC_ScPeak);
   fOutput->Add(fPtSoftPionCand);
   fOutput->Add(fPtSoftPionCand_insideScLoop);
@@ -3943,7 +3951,7 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     ftrackArraySel->AddAt(itrack,fnSel);
       
     // PID SELECTION
-    IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelElectron,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,kTRUE);
+    IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelElectron,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,iSelElectronCuts,kTRUE);
     //    if(itrack%50==0)Printf("Track %d, pt: %f",itrack,track->Pt());
 
     /// further cut on minimum track pt (useful if tighter than that in the cut object)
@@ -4010,6 +4018,10 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
       if(iSelProton>0) {
         fProtonID->Fill(1.5, mcpart->Pt());
         if(fIsCdeuteronAnalysis?pdg==1000010020:pdg==2212) fProtonID->Fill(0.5, mcpart->Pt());
+      }
+      if(iSelElectron>0) {
+        fElectronID->Fill(1.5, mcpart->Pt());
+        if(pdg==11)  fElectronID->Fill(0.5, mcpart->Pt());
       }
     }
     
@@ -4619,8 +4631,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	 }	 
 	 delete trackESD;
 	 
-	 Int_t iSelProton=0,iSelKaon=0,iSelPion=0;//,iSelSoftPion=0;
-	 IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,kFALSE);
+	 Int_t iSelProton=0,iSelKaon=0,iSelPion=0,iSelElectron=0;//,iSelSoftPion=0;
+	 IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelElectronCuts,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,iSelElectronCuts,kFALSE);
 	 iSelDebugPion[itr]=iSelPion;
 	 iSelDebugProton[itr]=iSelProton;
 	 iSelDebugKaon[itr]=iSelKaon;
@@ -5119,8 +5131,8 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
   
   AliExternalTrackParam *trackHF = new AliExternalTrackParam();
   trackHF->CopyFromVTrack(io3Prong);
-  Int_t flagPart=0;// both ele and pion hypo ok
   for(Int_t iextratr=0;iextratr<fnSel;iextratr++){
+    Int_t flagPart=0;// both ele and pion hypo ok
     Int_t itrackFourth=ftrackArraySelFast->At(iextratr);
     
     if(itrackFourth==itrack1 || itrackFourth==itrack2 || itrackFourth==itrack3)continue;
