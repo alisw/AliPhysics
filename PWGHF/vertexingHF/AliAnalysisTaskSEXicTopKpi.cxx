@@ -970,12 +970,12 @@ if(!fFillTree){
      if(fFillSparseReflections)  fhSparseAnalysisReflections=new THnSparseF("fhSparseAnalysisReflections","fhSparseAnalysisReflections;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
 
 
-     Int_t nbinsSparse[11]={24,500,10,16,20,10,40,3,3,1,3};
-     Double_t lowEdges[11]={0,2.2,0.,0,0.8,0,-0.000625,0.5,0.5,0.5,-1.5};
-     Double_t upEdges[11]={24,5.,0.0500,8,1.,5,0.,3.5,3.5,1.5,1.5};
+     Int_t nbinsSparse4prong[11]={24,500,10,16,20,10,40,15,3,1,3};
+     Double_t lowEdges4prong[11]={0,2.2,0.,0,0.8,0,-0.000625,0.5,0.5,0.5,-1.5};
+     Double_t upEdges4prong[11]={24,5.8,0.0500,8,1.,5,0.,15.5,3.5,1.5,1.5};
 
      
-     fhSparseAnalysis4Prong=new THnSparseF("fhSparseAnalysis4Prong","fhSparseAnalysis4Prong;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;d0d0;PIDtrack4;LcMassHypo;chargePairProduct;infoMC",11,nbinsSparse,lowEdges,upEdges);
+     fhSparseAnalysis4Prong=new THnSparseF("fhSparseAnalysis4Prong","fhSparseAnalysis4Prong;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;d0d0;PIDtrack4;LcMassHypo;chargePairProduct;infoMC",11,nbinsSparse4prong,lowEdges4prong,upEdges4prong);
 
  }
   
@@ -5139,6 +5139,8 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
     if(ftrackSelStatusElectron->At(itrackFourth)>0)flagPart++;
     else if(fOnlyEleFourthLoop)continue;
     if(ftrackSelStatusPion->At(itrackFourth)>0)flagPart+=2;
+    if(ftrackSelStatusKaon->At(itrackFourth)>0)flagPart+=4;
+    if(ftrackSelStatusProton->At(itrackFourth)>0)flagPart+=8;
     if(flagPart==0)continue;//
 	
 
