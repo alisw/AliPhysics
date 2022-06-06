@@ -51,6 +51,7 @@ set(SRCS
   UeKNO/AliAnalysisTaskGenUeNchTS.cxx
   UeKNO/AliAnalysisTaskFlatenicity.cxx
   UeMpi/AliAnalysisTaskMpiUE.cxx
+  FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx
   )
 
 # Headers from sources
