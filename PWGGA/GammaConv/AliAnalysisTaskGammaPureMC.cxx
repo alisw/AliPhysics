@@ -132,9 +132,15 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtAlphaPi0FromKGGEMCPCMAcc(nullptr),
   fHistPtAlphaPi0FromKGGEMCAccSamePi0(nullptr),
   fHistPtAlphaPi0FromKGGEMCAccDiffPi0(nullptr),
+  fHistV0Mult(nullptr),
+  fHistPtV0MultPi0GG(nullptr),
+  fHistPtV0MultEtaGG(nullptr),
+  fHistPtV0MultEtaPrimeGG(nullptr),
   fIsK0(1),
   fIsMC(1),
-  fMaxpT(100)
+  fMaxpT(100),
+  fDoMultStudies(0),
+  fNTracksInV0Acc(0)
 {
 
 }
@@ -220,9 +226,15 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtAlphaPi0FromKGGEMCPCMAcc(nullptr),
   fHistPtAlphaPi0FromKGGEMCAccSamePi0(nullptr),
   fHistPtAlphaPi0FromKGGEMCAccDiffPi0(nullptr),
+  fHistV0Mult(nullptr),
+  fHistPtV0MultPi0GG(nullptr),
+  fHistPtV0MultEtaGG(nullptr),
+  fHistPtV0MultEtaPrimeGG(nullptr),
   fIsK0(1),
   fIsMC(1),
-  fMaxpT(100)
+  fMaxpT(100),
+  fDoMultStudies(0),
+  fNTracksInV0Acc(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -541,6 +553,23 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAccDiffPi0);
   }
 
+  if(fDoMultStudies){
+    fHistV0Mult = new TH1D("V0Multiplicity", "V0Multiplicity", 1000, -0.5, 1000 - 0.5);
+    fHistV0Mult->Sumw2();
+    fOutputContainer->Add(fHistV0Mult);
+
+    fHistPtV0MultPi0GG      = new TH2F("Pt_V0Mult_Pi0FromGG","Pt_V0Mult_Pi0FromGG", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultPi0GG->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultPi0GG);
+
+    fHistPtV0MultEtaGG      = new TH2F("Pt_V0Mult_EtaFromGG","Pt_V0Mult_EtaFromGG", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultEtaGG->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultEtaGG);
+
+    fHistPtV0MultEtaPrimeGG      = new TH2F("Pt_V0Mult_EtaPrimeFromGG","Pt_V0Mult_EtaPrimeFromGG", fMaxpT*10, 0., fMaxpT/2, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultEtaPrimeGG->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultEtaPrimeGG);
+  }
 
 
   PostData(1, fOutputContainer);
@@ -611,12 +640,36 @@ void AliAnalysisTaskGammaPureMC::UserExec(Option_t *)
   if (xSection) fHistXSection->Fill(xSection);
   if (ptHard) fHistPtHard->Fill(ptHard);
 
+  if(fDoMultStudies)
+  {
+    ProcessMultiplicity();
+  }
+
   ProcessMCParticles();
 
 
   PostData(1, fOutputContainer);
 }
 
+void AliAnalysisTaskGammaPureMC::ProcessMultiplicity()
+{
+  // set number of tracks in V0 acceptance to 0
+  fNTracksInV0Acc = 0;
+  // Loop over all primary MC particle
+  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
+    AliVParticle* particle     = nullptr;
+    particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
+    if (!particle) continue;
+
+    // selected charged primary particles
+    if(particle->Charge() != 0 && particle->IsPhysicalPrimary()){
+      if(IsInV0Acceptance(particle)){
+        fNTracksInV0Acc++;
+      }
+    }
+  }
+  fHistV0Mult->Fill(fNTracksInV0Acc);
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
@@ -814,6 +867,8 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           if (!TESTBIT(acceptanceGamma[1], kPHOSAcceptance)) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
           fHistPtAlphaPi0GGPCMPHOAcc->Fill(particle->Pt(), alpha);
         }
+        // mult studies
+        if(fDoMultStudies) fHistPtV0MultPi0GG->Fill(particle->Pt(), fNTracksInV0Acc);
       }
       if (particle->PdgCode()==kPdgEta){
         fHistPtYEtaGG->Fill(particle->Pt(), particle->Y());
@@ -843,6 +898,8 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           if (TESTBIT(!acceptanceGamma[1],kPHOSAcceptance)) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
           fHistPtAlphaEtaGGPCMPHOAcc->Fill(particle->Pt(), alpha);
         }
+        // mult studies
+        if(fDoMultStudies) fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
       }
       if (particle->PdgCode()==kPdgEtaPrime){
         fHistPtYEtaPrimeGG->Fill(particle->Pt(), particle->Y());
@@ -872,6 +929,8 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           if (TESTBIT(!acceptanceGamma[1],kPHOSAcceptance)) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
           fHistPtAlphaEtaPrimeGGPCMPHOAcc->Fill(particle->Pt(), alpha);
         }
+        // mult studies
+        if(fDoMultStudies) fHistPtV0MultEtaPrimeGG->Fill(particle->Pt(), fNTracksInV0Acc);
       }
     }
 
@@ -1009,6 +1068,17 @@ bool AliAnalysisTaskGammaPureMC::IsInEMCalAcceptance(AliVParticle* part) const {
   if (part->Eta() > kBoundaryEtaMax || part->Eta() < kBoundaryEtaMin) return false;
   if (part->Phi() > kBoundaryPhiMax || part->Phi() < kBoundaryPhiMin) return false;
   return true;
+}
+
+//________________________________________________________________________
+bool AliAnalysisTaskGammaPureMC::IsInV0Acceptance(AliVParticle* part) const {
+  const Double_t kBoundaryEtaMinV0A = 2.8;
+  const Double_t kBoundaryEtaMaxV0A = 5.1;
+  const Double_t kBoundaryEtaMinV0C = -3.7;
+  const Double_t kBoundaryEtaMaxV0C = -1.7;
+  if (part->Eta() < kBoundaryEtaMaxV0A && part->Eta() > kBoundaryEtaMinV0A) return true;
+  if (part->Eta() < kBoundaryEtaMaxV0C && part->Eta() > kBoundaryEtaMinV0C) return true;
+  return false;
 }
 
 //________________________________________________________________________
