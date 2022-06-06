@@ -15,7 +15,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   // KaonCut = 0 // Oton Std
   // KaonCut = 1 // Ramona
-  // KaonCut = 0 // Oton open
+  // KaonCut = 2 // Oton open
 
   // DeuteronCut = 0 // Oton 
   // DeuteronCut = 1 // FD Std

@@ -1381,6 +1381,8 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     TH1F* fHistCentralityINT7LF        = new TH1F("fHistCentralityINT7LF", "Centrality Percentile - INT7 Low Field;Centrality [%];Counts/(0.01 %)", 10000, 0, 100);
     TH1F* fHistEventCounter            = new TH1F("fHistEventCounter", "Event Counter", 2, 0.5, 2.5);
     TH1D* fHistEventCounterdouble      = new TH1D("fHistEventCounterdouble", "Event Counter", 2, 0.5, 2.5);
+    TH1F* fHistEventCounterHM          = new TH1F("fHistEventCounterHM", "Event Counter - High-Mult. V0+SPD", 2, 0.5, 2.5);
+    TH1D* fHistEventCounterdoubleHM    = new TH1D("fHistEventCounterdoubleHM", "Event Counter - High-Mult. V0+SPD", 2, 0.5, 2.5);
     TH1F* fHistEventCounterHMV0        = new TH1F("fHistEventCounterHMV0", "Event Counter - HMV0", 2, 0.5, 2.5);
     TH1D* fHistEventCounterdoubleHMV0  = new TH1D("fHistEventCounterdoubleHMV0", "Event Counter - HMV0", 2, 0.5, 2.5);
     TH1F* fHistEventCounterHMSPD       = new TH1F("fHistEventCounterHMSPD", "Event Counter - HMSPD", 2, 0.5, 2.5);
@@ -1423,6 +1425,22 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     TH1F* fHistSigmaCounter            = new TH1F("fHistSigmaCounter", "#Sigma Counter", 6, 0.5, 6.5);
                                        
     //MC Information              
+    TH2F* fHistMCPrimSigmaPtvsRap      = new TH2F("fHistMCPrimSigmaPtvsRap","Transverse momentum of primary MC #Sigma^{+} vs. y;#it{p}_{T} [GeV/#it{c}];y",1200,0,12,3000,-1.5,1.5);
+    TH2F* fHistMCPrimAntiSigmaPtvsRap  = new TH2F("fHistMCPrimAntiSigmaPtvsRap","Transverse momentum of primary MC #bar#Sigma^{-} vs. y;#it{p}_{T} [GeV/#it{c}];y",1200,0,12,3000,-1.5,1.5);
+    TH1F* fHistMCPrimSigmaPtRap05      = new TH1F("fHistMCPrimSigmaPtRap05","Transverse momentum of primary MC #Sigma^{+}, |y|<0.5;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimAntiSigmaPtRap05  = new TH1F("fHistMCPrimAntiSigmaPtRap05","Transverse momentum of primary MC #bar#Sigma^{-}, |y|<0.5;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimSigmaPtRap08      = new TH1F("fHistMCPrimSigmaPtRap08","Transverse momentum of primary MC #Sigma^{+}, |y|<0.8;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimAntiSigmaPtRap08  = new TH1F("fHistMCPrimAntiSigmaPtRap08","Transverse momentum of primary MC #bar#Sigma^{-}, |y|<0.8;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimSigmaPtRap10      = new TH1F("fHistMCPrimSigmaPtRap10","Transverse momentum of primary MC #Sigma^{+}, |y|<1;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimAntiSigmaPtRap10  = new TH1F("fHistMCPrimAntiSigmaPtRap10","Transverse momentum of primary MC #bar#Sigma^{-}, |y|<1;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH2F* fHistMCSigmaPtvsRap          = new TH2F("fHistMCSigmaPtvsRap","Transverse momentum of MC #Sigma^{+} vs. y;#it{p}_{T} [GeV/#it{c}];y",1200,0,12,3000,-1.5,1.5);
+    TH2F* fHistMCAntiSigmaPtvsRap      = new TH2F("fHistMCAntiSigmaPtvsRap","Transverse momentum of MC #bar#Sigma^{-} vs. y;#it{p}_{T} [GeV/#it{c}];y",1200,0,12,3000,-1.5,1.5);
+    TH1F* fHistMCSigmaPtRap05          = new TH1F("fHistMCSigmaPtRap05","Transverse momentum of MC #Sigma^{+}, |y|<0.5;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCAntiSigmaPtRap05      = new TH1F("fHistMCAntiSigmaPtRap05","Transverse momentum of MC #bar#Sigma^{-}, |y|<0.5;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCSigmaPtRap08          = new TH1F("fHistMCSigmaPtRap08","Transverse momentum of MC #Sigma^{+}, |y|<0.8;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCAntiSigmaPtRap08      = new TH1F("fHistMCAntiSigmaPtRap08","Transverse momentum of MC #bar#Sigma^{-}, |y|<0.8;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCSigmaPtRap10          = new TH1F("fHistMCSigmaPtRap10","Transverse momentum of MC #Sigma^{+}, |y|<1;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCAntiSigmaPtRap10      = new TH1F("fHistMCAntiSigmaPtRap10","Transverse momentum of MC #bar#Sigma^{-}, |y|<1;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
     TH1F* fHistMCSigmaPt               = new TH1F("fHistMCSigmaPt","Transverse momentum of MC #Sigma^{+};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
     TH1F* fHistMCAntiSigmaPt           = new TH1F("fHistMCAntiSigmaPt","Transverse momentum of MC #bar#Sigma^{-};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
     TH1F* fHistMCPrimSigmaPt           = new TH1F("fHistMCPrimSigmaPt","Transverse momentum of primary MC #Sigma^{+};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
@@ -1785,12 +1803,16 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     
     fHistEventCounter->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdouble->GetXaxis()->SetBinLabel(1,"Events");
+    fHistEventCounterHM->GetXaxis()->SetBinLabel(1,"Events");
+    fHistEventCounterdoubleHM->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterHMV0->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdoubleHMV0->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterHMSPD->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdoubleHMSPD->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterINT7->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdoubleINT7->GetXaxis()->SetBinLabel(1,"Events");
+    fHistEventCounterINT7LF->GetXaxis()->SetBinLabel(1,"Events");
+    fHistEventCounterdoubleINT7LF->GetXaxis()->SetBinLabel(1,"Events");
 
     fHistV0Statistics->GetXaxis()->SetBinLabel(1, "On-the-fly V0s");
     fHistV0Statistics->GetXaxis()->SetBinLabel(2, "Offline V0s");
@@ -1992,6 +2014,8 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 
     fOutputList->Add(fHistEventCounter);
     fOutputList->Add(fHistEventCounterdouble);
+    fOutputList->Add(fHistEventCounterHM);
+    fOutputList->Add(fHistEventCounterdoubleHM);
     fOutputList->Add(fHistEventCounterHMV0);
     fOutputList->Add(fHistEventCounterdoubleHMV0);
     fOutputList->Add(fHistEventCounterHMSPD);
@@ -2033,7 +2057,23 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fOutputList->Add(fHistGammaPairStatsOneadd);
     fOutputList->Add(fHistGammaPairStatsOnlyadd);
     fOutputList->Add(fHistSigmaCounter);
-    //MC Kinematics              
+    //MC Kinematics
+    fOutputList->Add(fHistMCPrimSigmaPtvsRap);
+    fOutputList->Add(fHistMCPrimAntiSigmaPtvsRap);
+    fOutputList->Add(fHistMCPrimSigmaPtRap05);
+    fOutputList->Add(fHistMCPrimAntiSigmaPtRap05);
+    fOutputList->Add(fHistMCPrimSigmaPtRap08);
+    fOutputList->Add(fHistMCPrimAntiSigmaPtRap08);
+    fOutputList->Add(fHistMCPrimSigmaPtRap10);
+    fOutputList->Add(fHistMCPrimAntiSigmaPtRap10);
+    fOutputList->Add(fHistMCSigmaPtvsRap);
+    fOutputList->Add(fHistMCAntiSigmaPtvsRap);
+    fOutputList->Add(fHistMCSigmaPtRap05);
+    fOutputList->Add(fHistMCAntiSigmaPtRap05);
+    fOutputList->Add(fHistMCSigmaPtRap08);
+    fOutputList->Add(fHistMCAntiSigmaPtRap08);
+    fOutputList->Add(fHistMCSigmaPtRap10);
+    fOutputList->Add(fHistMCAntiSigmaPtRap10);                  
     fOutputList->Add(fHistMCSigmaPt);
     fOutputList->Add(fHistMCAntiSigmaPt);
     fOutputList->Add(fHistMCPrimSigmaPt);
@@ -2346,6 +2386,12 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   else EventCounterdoub->Fill(1);
 
   //Check if Event has corresponding Trigger: Get Trigger Mask and AND it with requested trigger
+  if((EventTriggers&65536)||(EventTriggers&8)){
+    FillHistogram("fHistEventCounterHM",1); //Event Counter 
+    TH1D* EventCounterdoubHM = dynamic_cast<TH1D*>(fOutputList->FindObject("fHistEventCounterdoubleHM"));
+    if(!EventCounterdoubHM){AliWarning("Error: Histogram 'fHistEventCounterdoubleHM' does not exist in TList 'fOutputList'!");} 
+    else EventCounterdoubHM->Fill(1);
+  }
   if(EventTriggers&65536){
     FillHistogram("fHistEventCounterHMV0",1); //Event Counter 
     TH1D* EventCounterdoubHMV0 = dynamic_cast<TH1D*>(fOutputList->FindObject("fHistEventCounterdoubleHMV0"));
@@ -2381,6 +2427,12 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   if(!EventCounterdoub){AliWarning("Error: Histogram 'fHistEventCounterdouble' does not exist in TList 'fOutputList'!");} 
   else EventCounterdoub->Fill(2);
 
+  if((EventTriggers&65536)||(EventTriggers&8)){
+    FillHistogram("fHistEventCounterHM",2); //Event Counter 
+    TH1D* EventCounterdoubHM = dynamic_cast<TH1D*>(fOutputList->FindObject("fHistEventCounterdoubleHM"));
+    if(!EventCounterdoubHM){AliWarning("Error: Histogram 'fHistEventCounterdoubleHM' does not exist in TList 'fOutputList'!");} 
+    else EventCounterdoubHM->Fill(2);
+  }
   if(EventTriggers&65536){
     FillHistogram("fHistEventCounterHMV0",2); //Event Counter 
     TH1D* EventCounterdoubHMV0 = dynamic_cast<TH1D*>(fOutputList->FindObject("fHistEventCounterdoubleHMV0"));
@@ -2805,6 +2857,35 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
     }
 
     Int_t MCPartPDGCode = mcPart->PdgCode(); 
+    Double_t Rapidity = mcPart->Y();
+
+    if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){
+        if(MCPartPDGCode == 3222){
+            FillHistogram("fHistMCPrimSigmaPtvsRap",mcPart->Pt(),Rapidity);
+            if(TMath::Abs(Rapidity)<0.5) FillHistogram("fHistMCPrimSigmaPtRap05",mcPart->Pt());
+            if(TMath::Abs(Rapidity)<0.8) FillHistogram("fHistMCPrimSigmaPtRap08",mcPart->Pt());
+            if(TMath::Abs(Rapidity)<1) FillHistogram("fHistMCPrimSigmaPtRap10",mcPart->Pt());
+        }
+        if(MCPartPDGCode == -3222){
+            FillHistogram("fHistMCPrimAntiSigmaPtvsRap",mcPart->Pt(),Rapidity);
+            if(TMath::Abs(Rapidity)<0.5) FillHistogram("fHistMCPrimAntiSigmaPtRap05",mcPart->Pt());
+            if(TMath::Abs(Rapidity)<0.8) FillHistogram("fHistMCPrimAntiSigmaPtRap08",mcPart->Pt());
+            if(TMath::Abs(Rapidity)<1) FillHistogram("fHistMCPrimAntiSigmaPtRap10",mcPart->Pt());
+        }
+    }
+
+    if(MCPartPDGCode == 3222){
+        FillHistogram("fHistMCSigmaPtvsRap",mcPart->Pt(),Rapidity);
+        if(TMath::Abs(Rapidity)<0.5) FillHistogram("fHistMCSigmaPtRap05",mcPart->Pt());
+        if(TMath::Abs(Rapidity)<0.8) FillHistogram("fHistMCSigmaPtRap08",mcPart->Pt());
+        if(TMath::Abs(Rapidity)<1) FillHistogram("fHistMCSigmaPtRap10",mcPart->Pt());
+    }
+    if(MCPartPDGCode == -3222){
+        FillHistogram("fHistMCAntiSigmaPtvsRap",mcPart->Pt(),Rapidity);
+        if(TMath::Abs(Rapidity)<0.5) FillHistogram("fHistMCAntiSigmaPtRap05",mcPart->Pt());
+        if(TMath::Abs(Rapidity)<0.8) FillHistogram("fHistMCAntiSigmaPtRap08",mcPart->Pt());
+        if(TMath::Abs(Rapidity)<1) FillHistogram("fHistMCAntiSigmaPtRap10",mcPart->Pt());
+    }
 
     if(MCPartPDGCode == 3222) FillHistogram("fHistMCSigmaPtvsEta",mcPart->Pt(),TMath::Abs(mcPart->Eta())); 
     if(MCPartPDGCode == -3222) FillHistogram("fHistMCAntiSigmaPtvsEta",mcPart->Pt(),TMath::Abs(mcPart->Eta()));

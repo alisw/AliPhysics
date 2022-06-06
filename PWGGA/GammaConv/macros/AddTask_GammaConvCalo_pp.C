@@ -2806,6 +2806,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0r63103100000010"); // INT7, old FT
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3n220000","0r63103100000010"); // INT7, old FT
 
+    // low B with dedicated cell scale
+  } else if (trainConfig == 2197){ // low Bfield
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799409fe32220000","0r63103100000010"); // INT7, dedicated lowB cell scale FT
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799409fe30220000","0r63103100000010"); // INT7, dedicated lowB cell scale FT
 
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics

@@ -685,7 +685,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
         GetLeadingObjectFromArray(ptMc,phiMc,fnGen, kTRUE);
         // Filling histos for observables at generator level
         if( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax )
-            GetMultiplicityDistributionsTrue(phiMc,ptMc,fnGen);
+            GetMultiplicityDistributionsTrue(phiMc,ptMc,fnGen,idMc);
 
 
     }
@@ -749,7 +749,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
             if(isGoodVtxPosMC){
                 // KNO scaling
                 if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){
-                    GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy,idMc,idHy);
+                    GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy,idMc);
                     GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
                 }
             }
@@ -768,7 +768,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
                 // KNO scaling
                 if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
                 {
-                    GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy,idMc,idHy);
+                    GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy,idMc);
                     GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
                     GetMultiplicityDistributions(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,isprimHyWoDCA, fnRecHyWoDCA);
                 }
@@ -866,7 +866,7 @@ void AliAnalysisTaskChargedVsRT::GetBinByBinCorrections( Int_t multGen, Int_t mu
     }
 }
 
-void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiGen, Int_t multGen, const vector<Float_t> &phiRec, Int_t multRec, const vector<Int_t> &idRec, const vector<Int_t> &idGen) {
+void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiGen, Int_t multGen, const vector<Float_t> &phiRec, Int_t multRec, const vector<Int_t> &idGen) {
 
     Int_t multTSgen=0;
     Int_t multTSrec=0;
@@ -905,9 +905,7 @@ void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiG
             hPhiRec[1]->Fill(DPhi);
         }
         else{// transverse side
-            if(idRec[i]>0 && idRec[i]<=8){
-                multTSrec++;
-            }
+            multTSrec++;
             hPhiRec[2]->Fill(DPhi);
         }
 
@@ -975,7 +973,7 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsData(const vector<F
 
 }
 //_____________________________________________________________
-void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsTrue(const vector<Float_t> &phiGen, const vector<Float_t> &ptGen, Int_t multGen){
+void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsTrue(const vector<Float_t> &phiGen, const vector<Float_t> &ptGen, Int_t multGen, const vector<Int_t> &idGen){
 
 
     Int_t multTSgen=0;
@@ -994,7 +992,9 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsTrue(const vector<F
             continue;
         }
         else{// transverse side
-            multTSgen++;
+            if(idGen[i]>0 && idGen[i]<=8){
+                multTSgen++;
+            }
         }
 
     }

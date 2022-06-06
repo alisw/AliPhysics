@@ -226,10 +226,7 @@ Bool_t AliTPCPIDBase::PhiPrimeCut(Double_t trackPt, Double_t trackPhi, Short_t t
   
   Double_t phiPrime = GetPhiPrime(trackPhi, magField, trackCharge);
   
-  if (phiPrime < fPhiCutHigh->Eval(trackPt) && phiPrime > fPhiCutLow->Eval(trackPt))
-    return kFALSE; // reject track
-    
-    return kTRUE;
+  return !(phiPrime < fPhiCutHigh->Eval(trackPt) && phiPrime > fPhiCutLow->Eval(trackPt));
 }
 
 

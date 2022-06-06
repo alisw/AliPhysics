@@ -31,7 +31,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
 
   if (UseSphericityCut){
     float SpherDown = 0.7;
-    evtCuts->SetSphericityCuts(SpherDown, 1.0, 0.5); 
+    evtCuts->SetSphericityCuts(SpherDown, 1.0); 
   }
 
 

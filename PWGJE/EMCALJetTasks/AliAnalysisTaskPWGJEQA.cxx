@@ -48,6 +48,7 @@
 #include "AliAODMCHeader.h"
 #include "AliPHOSGeometry.h"
 #include "AliOADBContainer.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliAnalysisTaskPWGJEQA.h"
 
@@ -78,6 +79,7 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fDetectorLevelName(),
   fMCGeneratorIndex(-1),
   fRejectOutlierEvents(kFALSE),
+  fRejectMCPileup(kFALSE),
   fIsPtHard(kFALSE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
@@ -126,6 +128,7 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fDetectorLevelName(),
   fMCGeneratorIndex(-1),
   fRejectOutlierEvents(kFALSE),
+  fRejectMCPileup(kFALSE),
   fIsPtHard(kFALSE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
@@ -1003,6 +1006,10 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
       if (fGeneratorLevel && label > 0) {
         AliAODMCParticle *part =  fGeneratorLevel->GetAcceptMCParticleWithLabel(label);
         if (part) {
+          bool particleIsPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(label,MCEvent());
+          if (particleIsPileup && fRejectMCPileup) {
+            continue;
+          }
           if (fMCGeneratorIndex == -1 || fMCGeneratorIndex == part->GetGeneratorIndex()) {
             Int_t pdg = TMath::Abs(part->PdgCode());
             // select charged pions, protons, kaons, electrons, muons
@@ -1022,7 +1029,12 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
     AliAODMCParticle* part;
     for (auto partIterator : fGeneratorLevel->accepted_momentum() ) {
       part = partIterator.second;
-      
+
+      int iMCPartLabel = TMath::Abs(part->GetLabel());
+      bool particleIsPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMCPartLabel,MCEvent());
+      if (particleIsPileup && fRejectMCPileup) {
+        continue;
+      }
       if (fMCGeneratorIndex == -1 || fMCGeneratorIndex == part->GetGeneratorIndex()) {
         Byte_t findable = 0;
         Int_t pdg = TMath::Abs(part->PdgCode());

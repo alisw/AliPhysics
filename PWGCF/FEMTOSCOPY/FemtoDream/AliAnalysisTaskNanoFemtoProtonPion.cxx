@@ -260,13 +260,13 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
   for(int i=0; i<10; i++)
   {
      if(fCombinations[i][0]<0)
-	break;
+     break;
      CounterPassedCombinations++; 
   }
 
   const int PassedCombinations = CounterPassedCombinations;
   if(PassedCombinations>10)
-	AliFatal("More than 10 combinations passed");
+  AliFatal("More than 10 combinations passed");
 
    if(fDoOwnFemto)
    {
@@ -288,13 +288,13 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
     if(!fDoThreeDFemto){
        for (int i = 0; i < PassedCombinations; i++) {
           std::string title = "SameEvent_OneDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-	  fSameEvent_OneDimensional[i] =  new TH1F(title.data(),title.data(), 3000, 0, 3);
-	  fSameEvent_List_OneDimensional->Add(fSameEvent_OneDimensional[i]);
+          fSameEvent_OneDimensional[i] =  new TH1F(title.data(),title.data(), 3000, 0, 3);
+          fSameEvent_List_OneDimensional->Add(fSameEvent_OneDimensional[i]);
        }
 
        for (int i = 0; i < PassedCombinations; ++i) {
           std::string title = "SameEventMult_OneDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-	  fSameEventMult_OneDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
+          fSameEventMult_OneDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
           if(fRunPlotMult){fSameEvent_List_OneDimensional->Add(fSameEventMult_OneDimensional[i]);}
        }
     }//if(!fDoThreeDFemto)
@@ -309,17 +309,17 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
        for (int i = 0; i < PassedCombinations; i++) {
           std::string title_common = "SameEvent_OneDimensional_Common_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
           std::string title_noncommon = "SameEvent_OneDimensional_NonCommon_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-	  fSameEvent_OneDimensional_Ancestors[i] =  new TH1F(title_common.data(),title_common.data(), 3000, 0, 5);
-	  fSameEvent_OneDimensional_Ancestors[10+i] =  new TH1F(title_noncommon.data(),title_noncommon.data(), 3000, 0, 5);
-	  fSameEvent_List_OneDimensional->Add(fSameEvent_OneDimensional_Ancestors[i]);
-	  fSameEvent_List_OneDimensional->Add(fSameEvent_OneDimensional_Ancestors[10+i]);
+          fSameEvent_OneDimensional_Ancestors[i] =  new TH1F(title_common.data(),title_common.data(), 3000, 0, 5);
+          fSameEvent_OneDimensional_Ancestors[10+i] =  new TH1F(title_noncommon.data(),title_noncommon.data(), 3000, 0, 5);
+          fSameEvent_List_OneDimensional->Add(fSameEvent_OneDimensional_Ancestors[i]);
+          fSameEvent_List_OneDimensional->Add(fSameEvent_OneDimensional_Ancestors[10+i]);
        }
    
        for (int i = 0; i < PassedCombinations; ++i) {
           std::string title_common = "SameEventMult_OneDimensional_Common_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
           std::string title_noncommon = "SameEventMult_OneDimensional_NonCommon_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-	  fSameEventMult_OneDimensional_Ancestors[i] =  new TH2F(title_common.data(),title_common.data(), 3000, 0, 3,26,1,27);
-	  fSameEventMult_OneDimensional_Ancestors[10+i] =  new TH2F(title_noncommon.data(),title_noncommon.data(), 3000, 0, 3,26,1,27);
+          fSameEventMult_OneDimensional_Ancestors[i] =  new TH2F(title_common.data(),title_common.data(), 3000, 0, 3,26,1,27);
+          fSameEventMult_OneDimensional_Ancestors[10+i] =  new TH2F(title_noncommon.data(),title_noncommon.data(), 3000, 0, 3,26,1,27);
           if(fRunPlotMult){
             fSameEvent_List_OneDimensional->Add(fSameEventMult_OneDimensional_Ancestors[i]);
             fSameEvent_List_OneDimensional->Add(fSameEventMult_OneDimensional_Ancestors[10+i]);
@@ -327,21 +327,21 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
        }
  
        for (int i = 0; i < PassedCombinations; ++i) {
-    	  std::string titlebefore_common = "SameEventDeltaEtaDeltaPhi_OneDimensional_Common_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-    	  std::string titleafter_common = "SameEventDeltaEtaDeltaPhi_OneDimensional_Common_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-    	  std::string titlebefore_noncommon = "SameEventDeltaEtaDeltaPhi_OneDimensional_NonCommon_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-    	  std::string titleafter_noncommon = "SameEventDeltaEtaDeltaPhi_OneDimensional_NonCommon_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-    	  
-          fSameEventPhiTheta_Ancestors[i] = new TH2F(titlebefore_common.data(),titlebefore_common.data(), 500, -0.15,0.15,500,-0.15,0.15);
-          fSameEventPhiTheta_Ancestors[10+i] = new TH2F(titleafter_common.data(),titleafter_common.data(), 500, -0.15,0.15,500,-0.15,0.15);
-          fSameEventPhiTheta_Ancestors[20+i] = new TH2F(titlebefore_noncommon.data(),titlebefore_noncommon.data(), 500, -0.15,0.15,500,-0.15,0.15);
-          fSameEventPhiTheta_Ancestors[30+i] = new TH2F(titleafter_noncommon.data(),titleafter_noncommon.data(), 500, -0.15,0.15,500,-0.15,0.15);
-	  if(fRunPlotPhiTheta){
-	   fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta_Ancestors[i]);
-	   fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta_Ancestors[10+i]);
-	   fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta_Ancestors[20+i]);
-	   fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta_Ancestors[30+i]);
-	  }
+        std::string titlebefore_common = "SameEventDeltaEtaDeltaPhi_OneDimensional_Common_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+        std::string titleafter_common = "SameEventDeltaEtaDeltaPhi_OneDimensional_Common_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+        std::string titlebefore_noncommon = "SameEventDeltaEtaDeltaPhi_OneDimensional_NonCommon_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+        std::string titleafter_noncommon = "SameEventDeltaEtaDeltaPhi_OneDimensional_NonCommon_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+        
+        fSameEventPhiTheta_Ancestors[i] = new TH2F(titlebefore_common.data(),titlebefore_common.data(), 500, -0.15,0.15,500,-0.15,0.15);
+        fSameEventPhiTheta_Ancestors[10+i] = new TH2F(titleafter_common.data(),titleafter_common.data(), 500, -0.15,0.15,500,-0.15,0.15);
+        fSameEventPhiTheta_Ancestors[20+i] = new TH2F(titlebefore_noncommon.data(),titlebefore_noncommon.data(), 500, -0.15,0.15,500,-0.15,0.15);
+        fSameEventPhiTheta_Ancestors[30+i] = new TH2F(titleafter_noncommon.data(),titleafter_noncommon.data(), 500, -0.15,0.15,500,-0.15,0.15);
+        if(fRunPlotPhiTheta){
+           fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta_Ancestors[i]);
+           fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta_Ancestors[10+i]);
+           fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta_Ancestors[20+i]);
+           fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta_Ancestors[30+i]);
+         }
        }
        
     }//if(fDoAncestors)
@@ -354,9 +354,9 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
     fSameEvent_ThreeDimensional = new TH2F*[30]; //0-9: out, 10-19: side, 20-29: long
     if(fDoThreeDFemto){
        for (int i = 0; i < PassedCombinations; ++i) {
-	  std::string title = "SameEvent_ThreeDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-	  fSameEvent_ThreeDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
-          fSameEvent_List_ThreeDimensional->Add(fSameEvent_ThreeDimensional[i]);
+         std::string title = "SameEvent_ThreeDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+         fSameEvent_ThreeDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
+         fSameEvent_List_ThreeDimensional->Add(fSameEvent_ThreeDimensional[i]);
        }
     }//if(fDoThreeDFemto)
 
@@ -367,14 +367,14 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
   
     fSameEventPhiTheta = new TH2F*[20]; 
     for (int i = 0; i < PassedCombinations; ++i) {
-    	std::string titlebefore = "SameEventDeltaEtaDeltaPhi_OneDimensional_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-    	std::string titleafter = "SameEventDeltaEtaDeltaPhi_OneDimensional_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-        fSameEventPhiTheta[i] = new TH2F(titlebefore.data(),titlebefore.data(), 500, -0.15,0.15,500,-0.15,0.15);
-        fSameEventPhiTheta[10+i] = new TH2F(titleafter.data(),titleafter.data(), 500, -0.15,0.15,500,-0.15,0.15);
-	if(fRunPlotPhiTheta){
-	  fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[i]);
-	  fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[10+i]);
-	}
+      std::string titlebefore = "SameEventDeltaEtaDeltaPhi_OneDimensional_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+      std::string titleafter = "SameEventDeltaEtaDeltaPhi_OneDimensional_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+      fSameEventPhiTheta[i] = new TH2F(titlebefore.data(),titlebefore.data(), 500, -0.15,0.15,500,-0.15,0.15);
+      fSameEventPhiTheta[10+i] = new TH2F(titleafter.data(),titleafter.data(), 500, -0.15,0.15,500,-0.15,0.15);
+      if(fRunPlotPhiTheta){
+        fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[i]);
+        fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[10+i]);
+      }
     }
 
     //-------------------------------------------------------------------
@@ -387,17 +387,17 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
     fMixedEventMult_OneDimensional = new TH2F*[10];
 
     if(!fDoThreeDFemto){
-       for (int i = 0; i < PassedCombinations; i++) {
-	  std::string title = "MixedEvent_OneDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-	  fMixedEvent_OneDimensional[i] =  new TH1F(title.data(),title.data(), 3000, 0, 3);
-	  fMixedEvent_List_OneDimensional->Add(fMixedEvent_OneDimensional[i]);
-       }
+      for (int i = 0; i < PassedCombinations; i++) {
+        std::string title = "MixedEvent_OneDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+        fMixedEvent_OneDimensional[i] =  new TH1F(title.data(),title.data(), 3000, 0, 3);
+        fMixedEvent_List_OneDimensional->Add(fMixedEvent_OneDimensional[i]);
+      }
 
-       for (int i = 0; i < PassedCombinations; ++i) {
-	  std::string title = "MixedEventMult_OneDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-	  fMixedEventMult_OneDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
-          if(fRunPlotMult){fMixedEvent_List_OneDimensional->Add(fMixedEventMult_OneDimensional[i]);}
-       }
+      for (int i = 0; i < PassedCombinations; ++i) {
+        std::string title = "MixedEventMult_OneDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+        fMixedEventMult_OneDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
+        if(fRunPlotMult){fMixedEvent_List_OneDimensional->Add(fMixedEventMult_OneDimensional[i]);}
+      }
     }//if(!fDoThreeDFemto)
 
     //3D Mixed Event ~~~~~~~~~~~~~~~~~~~
@@ -407,11 +407,11 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
 
     fMixedEvent_ThreeDimensional = new TH2F*[30]; //0-9: out, 10-19: side, 20-29: long
     if(fDoThreeDFemto){
-       for (int i = 0; i < PassedCombinations; ++i) {
-	  std::string title = "MixedEvent_ThreeDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-	  fMixedEvent_ThreeDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
-          fMixedEvent_List_ThreeDimensional->Add(fMixedEvent_ThreeDimensional[i]);
-       }
+      for (int i = 0; i < PassedCombinations; ++i) {
+        std::string title = "MixedEvent_ThreeDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+        fMixedEvent_ThreeDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
+        fMixedEvent_List_ThreeDimensional->Add(fMixedEvent_ThreeDimensional[i]);
+      }
     }//if(fDoThreeDFemto)
 
     //Close Pair Rejecton Plots Mixed Event ~~~~~~~~~~~~~~~~~~~
@@ -421,14 +421,14 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
 
     fMixedEventPhiTheta = new TH2F*[20]; 
     for (int i = 0; i < PassedCombinations; ++i) {
-    	std::string titlebefore = "MixedEventDeltaEtaDeltaPhi_OneDimensional_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-    	std::string titleafter = "MixedEventDeltaEtaDeltaPhi_OneDimensional_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-        fMixedEventPhiTheta[i] = new TH2F(titlebefore.data(),titlebefore.data(), 500, -0.15,0.15,500,-0.15,0.15);
-        fMixedEventPhiTheta[10+i] = new TH2F(titleafter.data(),titleafter.data(), 500, -0.15,0.15,500,-0.15,0.15);
-	if(fRunPlotPhiTheta){
-	  fMixedEventDeltaEtaDeltaPhi_List->Add(fMixedEventPhiTheta[i]);
-	  fMixedEventDeltaEtaDeltaPhi_List->Add(fMixedEventPhiTheta[10+i]);
-        }
+      std::string titlebefore = "MixedEventDeltaEtaDeltaPhi_OneDimensional_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+      std::string titleafter = "MixedEventDeltaEtaDeltaPhi_OneDimensional_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+      fMixedEventPhiTheta[i] = new TH2F(titlebefore.data(),titlebefore.data(), 500, -0.15,0.15,500,-0.15,0.15);
+      fMixedEventPhiTheta[10+i] = new TH2F(titleafter.data(),titleafter.data(), 500, -0.15,0.15,500,-0.15,0.15);
+      if(fRunPlotPhiTheta){
+        fMixedEventDeltaEtaDeltaPhi_List->Add(fMixedEventPhiTheta[i]);
+        fMixedEventDeltaEtaDeltaPhi_List->Add(fMixedEventPhiTheta[10+i]);
+      }
     }
 
     //-------------------------------------------------------------------
@@ -503,7 +503,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
   } 
 
   fEvent->SetEvent(Event);
-  if (fEventCuts->isSelected(fEvent)) {
+  if (!fEventCuts->isSelected(fEvent)) {
        return;
   }
 
@@ -586,13 +586,13 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
   if(fDoOfficialFemto){ fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); }
 
   //Three Dimensional Two-Body Calculations
- if(fDoOwnFemto)
+  if(fDoOwnFemto)
   {
     int CounterPassedCombinations = 0; 
     for(int i=0; i<10; i++)
     {
       if(fCombinations[i][0]<0)
-	 break;
+      break;
       CounterPassedCombinations++; 
     }
     const int PassedCombinations = CounterPassedCombinations;
@@ -608,10 +608,10 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
 
     for (int i = 0; i < PassedCombinations; i++) {
         if(!fDoAncestors){
-    	   FillPairDistributionSE(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,i,*fConfig);
-    	} else {
-    	   FillPairDistributionSEAncestors(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,fSameEvent_OneDimensional_Ancestors,fSameEventMult_OneDimensional_Ancestors,fSameEventPhiTheta_Ancestors,i,*fConfig);
-    	}
+         FillPairDistributionSE(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,i,*fConfig);
+      } else {
+         FillPairDistributionSEAncestors(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,fSameEvent_OneDimensional_Ancestors,fSameEventMult_OneDimensional_Ancestors,fSameEventPhiTheta_Ancestors,i,*fConfig);
+      }
     }
 
     // Mixed event distribution -----------------------------------------
@@ -620,12 +620,12 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
       auto itMult = itZVtx->begin() + bins[1];
 
       for (int i = 0; i < PassedCombinations; i++) {
-    	 FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
+       FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
 
-	 if(fCombinations[i][0] != fCombinations[i][1]) //if the two particles are not the same species, we can mix a second time
-	 {
-	     FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][1],fCombinations[i][0],PDGCodes,bins[1],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
-	 }	 
+   if(fCombinations[i][0] != fCombinations[i][1]) //if the two particles are not the same species, we can mix a second time
+   {
+       FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][1],fCombinations[i][0],PDGCodes,bins[1],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
+   }   
       } //for (int i = 0; i < PassedCombinations; i++)
 
      SetMixedEvent(ParticleVector, &(*itMult));
@@ -740,10 +740,10 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std:
         float RelativeMomentum = AliFemtoDreamHigherPairMath::RelativePairMomentum(Particle1_LV, Particle2_LV);
 
         bool PassedClosePairRejection = true;
-	if(fDoClosePairRejection)
-	{
-	  PassedClosePairRejection =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensional[CombinationNumber],SameEventPhiTheta_OneDimensional[10+CombinationNumber],Config,RelativeMomentum); 
-	}
+  if(fDoClosePairRejection)
+  {
+    PassedClosePairRejection =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensional[CombinationNumber],SameEventPhiTheta_OneDimensional[10+CombinationNumber],Config,RelativeMomentum); 
+  }
         if(!PassedClosePairRejection) {continue;}
 
         hist->Fill(RelativeMomentum);
@@ -799,29 +799,29 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::ve
         bool PassedClosePairRejection = true; //Close pair rejection for any MC type particle
         bool PassedClosePairRejection_Ancestor = true; //Close pair rejection for any common or non common ancestor MC particles
         
-	if(fDoClosePairRejection)
-	{
-	  PassedClosePairRejection =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensional[CombinationNumber],SameEventPhiTheta_OneDimensional[10+CombinationNumber],Config,RelativeMomentum); 
-	  
-	  if(HasCommonAncestor){
-	    PassedClosePairRejection_Ancestor =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensionalAncestor[CombinationNumber],SameEventPhiTheta_OneDimensionalAncestor[10+CombinationNumber],Config,RelativeMomentum);
-	  } else {
-	    PassedClosePairRejection_Ancestor =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensionalAncestor[20+CombinationNumber],SameEventPhiTheta_OneDimensionalAncestor[30+CombinationNumber],Config,RelativeMomentum);
-	  }
-	}
-	
+  if(fDoClosePairRejection)
+  {
+    PassedClosePairRejection =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensional[CombinationNumber],SameEventPhiTheta_OneDimensional[10+CombinationNumber],Config,RelativeMomentum); 
+    
+    if(HasCommonAncestor){
+      PassedClosePairRejection_Ancestor =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensionalAncestor[CombinationNumber],SameEventPhiTheta_OneDimensionalAncestor[10+CombinationNumber],Config,RelativeMomentum);
+    } else {
+      PassedClosePairRejection_Ancestor =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensionalAncestor[20+CombinationNumber],SameEventPhiTheta_OneDimensionalAncestor[30+CombinationNumber],Config,RelativeMomentum);
+    }
+  }
+  
         if(PassedClosePairRejection){
           hist->Fill(RelativeMomentum); 
           hist2d->Fill(RelativeMomentum,mult+1); 
         }
         if(PassedClosePairRejection_Ancestor){
           if(HasCommonAncestor){
-	    histAncestor[CombinationNumber]->Fill(RelativeMomentum); 
+      histAncestor[CombinationNumber]->Fill(RelativeMomentum); 
             hist2dAncestor[CombinationNumber]->Fill(RelativeMomentum,mult+1); 
-	  } else {
-	    histAncestor[10+CombinationNumber]->Fill(RelativeMomentum); 
+    } else {
+      histAncestor[10+CombinationNumber]->Fill(RelativeMomentum); 
             hist2dAncestor[10+CombinationNumber]->Fill(RelativeMomentum,mult+1); 
-	  }
+    }
         }
         
     }
@@ -870,10 +870,10 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionME(std::vector<std:
         float RelativeMomentum = AliFemtoDreamHigherPairMath::RelativePairMomentum(part1_LorVec, part2_LorVec);
 
         bool PassedClosePairRejection = true;
-	if(fDoClosePairRejection)
-	{
-	  PassedClosePairRejection =  DeltaEtaDeltaPhi(speciesSE, speciesME, *iPart1,*iPart2, *itPDGParSE, *itPDGParME, PairDaughterIdentifier, EventPhiThetaArray[CombinationNumber],EventPhiThetaArray[10+CombinationNumber],Config, RelativeMomentum); 
-	}
+  if(fDoClosePairRejection)
+  {
+    PassedClosePairRejection =  DeltaEtaDeltaPhi(speciesSE, speciesME, *iPart1,*iPart2, *itPDGParSE, *itPDGParME, PairDaughterIdentifier, EventPhiThetaArray[CombinationNumber],EventPhiThetaArray[10+CombinationNumber],Config, RelativeMomentum); 
+  }
         if(!PassedClosePairRejection) {continue;}
    
         hist->Fill(RelativeMomentum);
@@ -1082,23 +1082,23 @@ void AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays()
 
   do {
     if(Counter>9){
-	AliFatal("Max. 10 entries of combinations allowed"); 
-	break; 
+  AliFatal("Max. 10 entries of combinations allowed"); 
+  break; 
     }
 
     std::string subs;
     issCombination >> subs;
 
     if(subs.size() == 0)
-	continue;
+  continue;
 
     int FirstEntry = ((int)subs[0]) - ((int)'0');
     int SecondEntry = ((int)subs[1]) - ((int)'0');
 
     if(FirstEntry < 0 || SecondEntry < 0) 
-	AliFatal("No number below 0 allowed in passed combinations");
+  AliFatal("No number below 0 allowed in passed combinations");
     if(FirstEntry > 3 || SecondEntry > 3) 
-	AliFatal("No number above 3 allowed in passed combinations");
+  AliFatal("No number above 3 allowed in passed combinations");
 
     fCombinations[Counter][0] = FirstEntry; 
     fCombinations[Counter][1] = SecondEntry;   
@@ -1111,13 +1111,13 @@ void AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays()
 
   while (issNameTag) {
     if(Counter>3)
-	break;
+  break;
 
     std::string subs;
     issNameTag >> subs;
 
     if(subs.size() == 0)
-    	continue; 
+      continue; 
 
     fNameTags[Counter] = subs;
     Counter++; 

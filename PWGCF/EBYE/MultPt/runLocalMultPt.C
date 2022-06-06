@@ -1,46 +1,47 @@
-#include "AliAnalysisMultPt.h"
-void runLocal()
+AliAnalysisMultPt* AddMultPt(const char *suffix = "")
 {
-    // set if you want to run the analysis locally (kTRUE), or on grid (kFALSE)
-    //Bool_t local = kTRUE;
-     //if you run on grid, specify test mode (kTRUE) or full grid model (kFALSE)
-    //Bool_t gridTest = kTRUE;
-    
-    
-    // header location
-    gInterpreter->ProcessLine(".include $ROOTSYS/include");
-    gInterpreter->ProcessLine(".include $ALICE_ROOT/include");
+  // get the manager via the static access member. since it's static, you don't need
+  // to create an instance of the class here to call the function
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+        return 0x0;
+    }
+    // get the input event handler, again via a static method.
+    // this handler is part of the managing system and feeds events
+    // to your task
+    if (!mgr->GetInputEventHandler()) {
+        return 0x0;
+    }
 
-    // create the analysis manager
-    AliAnalysisManager *mgr = new AliAnalysisManager("AnalysisMultPt");
-    AliAODInputHandler *aodH = new AliAODInputHandler();
-    mgr->SetInputEventHandler(aodH);
+  // resolve the name of the output file
 
-    // compile the class (locally) with debug symbols
-    gInterpreter->LoadMacro("AliAnalysisMultPt.cxx++g");
+  TString name;
+  name.Form("MulttpT%s", suffix);
+    // by default, a file is open for writing. here, we get the filename
+  TString fileName = AliAnalysisManager::GetCommonFileName();
+  fileName += ":MultPtt";      // create a subfolder in the file
 
+  // now we create an instance of your task
+  AliAnalysisMultPt* task = new AliAnalysisMultPt(name.Data());
+  if(!task) return 0x0;
+  task->SelectCollisionCandidates(AliVEvent::kINT7); //to check which triggers are selected
+  task->SetMCRead(kTRUE);
+  task->SetPileUpRead(kFALSE);
+  task->SetChi2DoF(4);
+  task->SetPtLimits(0.2, 5.0);
+  task->SetEtaMinLimit(-0.8);
+  task->SetEtaMaxLimit(0.8);
   
-    // load the addtask macro and create the task
-    AliAnalysisMultPt *task = reinterpret_cast<AliAnalysisMultPt*>(gInterpreter->ExecuteMacro("macros/AddMultPt.C"));
+  printf("Container name is %s\n",name.Data());
+    
+  // add your task to the manager
+  mgr->AddTask(task);
 
-    if(!task) return 0x0;
-    // Add task
-    if(!mgr->InitAnalysis()) return;
-    //mgr->AddTask(task);
-    mgr->SetDebugLevel(2);
-    mgr->PrintStatus();
-    mgr->SetUseProgressBar(1, 25);
-    
-    // if you want to run locally, we need to define some input
-    TChain* chain = new TChain("aodTree");
-    //chain->Add("/Users/neginav/AliAODPbMC.root");
-    //chain->Add("/Users/neginav/AliAODMC.root");
-    chain->Add("/Users/neginav/AliAOD.root");
-    //chain->Add("/Users/neginav/AliAOD0001.root");
-    //chain->Add("/Users/neginav/AliAOD0003.root");
-    //chain->Add("/Users/neginav/AliAOD0004.root");
-    
-    // start the analysis locally, reading the events from the tchain
-    mgr->StartAnalysis("local", chain); 
-    //chain->Draw("aodTree");
+  // connect the manager to your task
+  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+  // same for the output
+  mgr->ConnectOutput(task,1,mgr->CreateContainer(name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+
+  // important: return a pointer to your task
+  return task;
 }

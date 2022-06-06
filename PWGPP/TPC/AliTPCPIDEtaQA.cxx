@@ -53,17 +53,7 @@ AliTPCPIDEtaQA::AliTPCPIDEtaQA()
 {
   // default Constructor
 
-  // Question: Is this the right place to initialize these functions?
-  // Will it work on proof? i.e. will they be streamed to the workers?
-  // Also one should add getters and setters
-  //TODO fPhiCutLow  = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
-  //TODO fPhiCutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
-  
-  //TODO NEW fPhiCutLow  = new TF1("StandardPhiCutLow",  "0.072/x+pi/18.0-0.035", 0, 50);
-  //TODO NEW fPhiCutHigh = new TF1("StandardPhiCutHigh", "0.07/x/x+0.1/x+pi/18.0+0.035", 0, 50);
-  
-  fPhiCutSecondBranchLow  = new TF1("StandardPhiCutSecondBranchLow",  "NewStandardPhiCutLow - 2.*pi/18.", 0, 50);
-  fPhiCutSecondBranchHigh = new TF1("StandardPhiCutSecondBranchHigh", "0.07/x+pi/18.0+0.125 - 2.*pi/18.", 0, 50);
+  SetUpPhiCutFunctions();
 }
 
 //________________________________________________________________________
@@ -81,17 +71,7 @@ AliTPCPIDEtaQA::AliTPCPIDEtaQA(const char *name)
 {
   // Constructor
   
-  // Question: Is this the right place to initialize these functions?
-  // Will it work on proof? i.e. will they be streamed to the workers?
-  // Also one should add getters and setters
-  //TODO fPhiCutLow  = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
-  //TODO fPhiCutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
-  
-  //TODO NEW fPhiCutLow  = new TF1("StandardPhiCutLow",  "0.072/x+pi/18.0-0.035", 0, 50);
-  //TODO NEW fPhiCutHigh = new TF1("StandardPhiCutHigh", "0.07/x/x+0.1/x+pi/18.0+0.035", 0, 50);
-  
-  fPhiCutSecondBranchLow  = new TF1("StandardPhiCutSecondBranchLow",  "StandardPhiCutLow - 2.*pi/18.", 0, 50);
-  fPhiCutSecondBranchHigh = new TF1("StandardPhiCutSecondBranchHigh", "0.07/x+pi/18.0+0.125 - 2.*pi/18.", 0, 50);
+  SetUpPhiCutFunctions();
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -647,3 +627,23 @@ void AliTPCPIDEtaQA::SetUpHist(THnSparse* hist, Double_t* binsPt) const
      
   //hist->Sumw2();
 }
+
+void AliTPCPIDEtaQA::SetUpPhiCutFunctions()
+{
+    //This functions are not used anywhere at the moment
+    
+    // Question: Is this the right place to initialize these functions?
+    // Will it work on proof? i.e. will they be streamed to the workers?
+    // Also one should add getters and setters
+    //TODO fPhiCutLow  = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
+    //TODO fPhiCutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
+
+    //TODO NEW fPhiCutLow  = new TF1("StandardPhiCutLow",  "0.072/x+pi/18.0-0.035", 0, 50);
+    //TODO NEW fPhiCutHigh = new TF1("StandardPhiCutHigh", "0.07/x/x+0.1/x+pi/18.0+0.035", 0, 50);
+
+    // TODO fPhiCutSecondBranchLow has incorrect formula, but is not needed anyway at the moment
+//     fPhiCutSecondBranchLow  = new TF1("StandardPhiCutSecondBranchLow",  "StandardPhiCutLow - 2.*pi/18.", 0, 50);
+//     fPhiCutSecondBranchHigh = new TF1("StandardPhiCutSecondBranchHigh", "0.07/x+pi/18.0+0.125 - 2.*pi/18.", 0, 50);
+}
+
+

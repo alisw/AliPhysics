@@ -20,7 +20,7 @@ struct MiniLambda {
   Double32_t mass;
   Double32_t ct;
   Double32_t radius;      //[0,101.6,8]
-  Double32_t dcaV0PV;     //[0,10.16,8]
+  Double32_t dcaV0PV;     //[0,10.16,16]
   Double32_t dcaPiPV;     //[0,20.32,8]
   Double32_t dcaPrPV;     //[0,20.32,8]
   Double32_t dcaV0tracks; //[0,2.54,8]
@@ -40,6 +40,7 @@ struct MiniLambdaMC : public MiniLambda {
   float etaMC;
   float ctMC;
   float yMC;
+  float ptMotherMC;
   int pdg;
   bool isPrimary;
   bool isReconstructed;
@@ -102,8 +103,10 @@ class AliAnalysisTaskStrangenessRatios : public AliAnalysisTaskSE {
 public:
   enum StatusFlag {
     kPrimary = BIT(0),
-    kSecondaryFromWD = BIT(1),
-    kSecondaryFromMaterial = BIT(2)
+    kSecondaryFromWDXi = BIT(1),
+    kSecondaryFromWDOmega = BIT(2),
+    kSecondaryFromWD = BIT(3),
+    kSecondaryFromMaterial = BIT(4)
   };
 
   AliAnalysisTaskStrangenessRatios(bool isMC = false, TString taskname = "StrangenessRatios");

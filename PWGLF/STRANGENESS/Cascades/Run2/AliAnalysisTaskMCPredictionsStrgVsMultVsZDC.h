@@ -78,15 +78,15 @@ private:
   TH1D *fHistb; //! 
   TH1D *fHistLeadingE; //!
   TH1D *fHistEffEnergy; //! 
+  TH2D *f2DHistINELgt0SPDV0M; //!
+  TH2D *f2DHistLeadingESPDV0M; //!
+  TH2D *f2DHistEffEnergySPDV0M; //!
+  TH2D *f2DHistNchSPDV0M; //!
+  TH2D *f2DHistNMPISPDV0M; //!
+  TH2D *f2DHistQ2SPDV0M; //!
+  TH2D *f2DHistbSPDV0M; //!
   TH1D *fHistPt[21]; //! 
   TH2D *f2DHistPartSPDV0M[21]; //!
-  TH2D *f2DHistINELgt0SPDV0M[21]; //!
-  TH2D *f2DHistLeadingESPDV0M[21]; //!
-  TH2D *f2DHistEffEnergySPDV0M[21]; //!
-  TH2D *f2DHistNchSPDV0M[21]; //!
-  TH2D *f2DHistNMPISPDV0M[21]; //!
-  TH2D *f2DHistQ2SPDV0M[21]; //!
-  TH2D *f2DHistbSPDV0M[21]; //!
   TH2D *f2DHistAvPtSPDV0M[21]; //!
   
   //Bool

@@ -722,7 +722,8 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
   if(btrack->Charge() > 0) isparticle = kFALSE;
     
  
-   // ====== follwing cuts will be replaced by KFP_Cuts
+   // ====== following cuts will be replaced by KFP_Cuts
+   /*
   Double_t massLambda = casc->MassLambda();
   Double_t massAntiLambda = casc->MassAntiLambda();
   if(TMath::Abs(massLambda-mLPDG)>fProdMassTolLambda && TMath::Abs(massAntiLambda-mLPDG)>fProdMassTolLambda) 
@@ -776,7 +777,7 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
   Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
   if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
   if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
-
+    */
     
   if(fUseCascadePID)
   {
