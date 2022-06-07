@@ -152,6 +152,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetDCAmesonDaughterPV(Double_t dca) { fDCAmesonDaughterPV = dca; }
         Int_t                   GetOriginalPartonPDG(const AliMCParticle* mcTrack);
         void                    SetOnTheFlyMCTrain(Bool_t tr) { fonTheFlyMC = tr; }
+        void                    SetFlowEffPtBins(Bool_t cut) { fFlowEffPtBins = cut; }
         AliEventCuts *           fAliEventCuts; //!
     
     private:
@@ -322,11 +323,13 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                fDCAmesonDaughterPV; // DCA of cascade meson daughter track to PV cut 
         TH1D *                  fHistV0AmplitudeVsPVposition; //!
         Bool_t                  fonTheFlyMC; // on the fly MC train usage
+        Bool_t                  fFlowEffPtBins; //Different pt bins setting for efficiency calculation
+        Double_t                fPercentile;// th V0M multiplicity percentile 
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 39);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 40);
 };
 
 class AliV0ChParticle : public AliVParticle
