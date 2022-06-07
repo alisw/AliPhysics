@@ -53,6 +53,8 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
+  Double_t Rapidity(Double_t E, Double_t Pz) const;
+
   Bool_t IsEPOSLHC() const;
 
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
@@ -88,6 +90,14 @@ private:
   TH1D *fHistPt[21]; //! 
   TH2D *f2DHistPartSPDV0M[21]; //!
   TH2D *f2DHistAvPtSPDV0M[21]; //!
+  TH2D *f2dHistZDCVsLE; //!
+  TH2D *f2dHistZDCVsEE; //!
+  TH2D *f2dHistZDCVsLEA; //!
+  TH2D *f2dHistZDCVsLEC; //!
+  TH2D *f2dHistZPVsLP; //!
+  TH2D *f2dHistZNVsLN; //!
+  TH2D *f2dHistSPDClRecoVsTrue; //!
+  TH2D *f2dHistV0MRecoVsTrue; //!
   
   //Bool
   Bool_t fkSelectINELgtZERO;  
@@ -97,6 +107,14 @@ private:
   //Variables
   Float_t fCenterOfMassEnergy; 
   Int_t fkNSpecies; //! 
+
+  //Reco variables 
+  Float_t fCentrality_V0M; //!
+  Float_t fCentrality_SPDClusters; //!
+  Float_t fZNApp; //!
+  Float_t fZNCpp; //!
+  Float_t fZPApp; //!
+  Float_t fZPCpp; //!
   
   AliAnalysisTaskMCPredictionsStrgVsMultVsZDC(const AliAnalysisTaskMCPredictionsStrgVsMultVsZDC&);            // not implemented
   AliAnalysisTaskMCPredictionsStrgVsMultVsZDC& operator=(const AliAnalysisTaskMCPredictionsStrgVsMultVsZDC&); // not implemented
