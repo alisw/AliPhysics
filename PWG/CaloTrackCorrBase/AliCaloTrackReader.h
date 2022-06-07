@@ -269,7 +269,10 @@ public:
   virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE          ; 
                                                              fFiducialCut = new AliFiducialCut() ; }
   virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE         ; }
-    
+
+  virtual void     SwitchOnMaskRun2HardcodedEMCalRegions() { fMaskRun2HardcodedEMCalRegions = kTRUE ; }
+  virtual void     SwitchOffMaskRun2HardcodedEMCalRegions(){ fMaskRun2HardcodedEMCalRegions = kFALSE; }
+
   // Cluster/track/cells switchs
   
   Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS               ; }
@@ -962,6 +965,7 @@ public:
   Int_t            fDebug;                         ///<  Debugging level.
   AliFiducialCut * fFiducialCut;                   ///<  Acceptance cuts.
   Bool_t           fCheckFidCut ;                  ///<  Do analysis for clusters in defined region.         
+  Bool_t           fMaskRun2HardcodedEMCalRegions; ///< Activate Hardcoded Run2 mask
 
   Bool_t           fComparePtHardAndJetPt;         ///<  In MonteCarlo, jet events, reject fake events with wrong jet energy.
   Float_t          fPtHardAndJetPtFactor;          ///<  Factor between ptHard and jet pT to reject/accept event.
@@ -1325,7 +1329,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,98) ;
+  ClassDef(AliCaloTrackReader,99) ;
   /// \endcond
 
 } ;

@@ -63,7 +63,7 @@ ClassImp(AliCaloTrackReader) ;
 AliCaloTrackReader::AliCaloTrackReader() :
 TObject(),                   fEventNumber(-1), //fCurrentFileName(""),
 fDataType(0),                fDebug(0),
-fFiducialCut(0x0),           fCheckFidCut(kFALSE),
+fFiducialCut(0x0),           fCheckFidCut(kFALSE), fMaskRun2HardcodedEMCalRegions(0),
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
 fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fComparePtHardAndPromptPhotonPt(0),fPtHardAndPromptPhotonPtFactor(0),
@@ -993,9 +993,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   //-------------------------------------------------------------------------------------
   // Reject event if large clusters with large energy
   //-------------------------------------------------------------------------------------
-  
-  //Int_t run = fInputEvent->GetRunNumber();
-  
+
   if ( fRemoveLEDEvents )
   {
     Bool_t reject = RejectLEDEvents();
@@ -1411,14 +1409,14 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     fOutputContainer->Add(fhEMCALClusterDisToBadE);
     
     fhEMCALClusterEtaPhi  = new TH2F 
-    ("hEMCALReaderEtaPhi","#eta vs #varphi",80,-2, 2,100, 0,10);
+    ("hEMCALReaderEtaPhi","#eta vs #varphi",70,-1, 1,220, 0,TMath::TwoPi());
     // Very open limits to check problems
     fhEMCALClusterEtaPhi->SetXTitle("#eta");
     fhEMCALClusterEtaPhi->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhi);    
     
     fhEMCALClusterEtaPhiFidCut  = new TH2F 
-    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",80,-2, 2,100, 0,10);
+    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",70,-1, 1,220,0,TMath::TwoPi());
     fhEMCALClusterEtaPhiFidCut->SetXTitle("#eta");
     fhEMCALClusterEtaPhiFidCut->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhiFidCut);
@@ -1688,7 +1686,7 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   parList+=onePar ;
   snprintf(onePar,buffersize,"EMC time cut single window (%2.2f,%2.2f); ",fEMCALTimeCutMin,fEMCALTimeCutMax) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Check: calo fid cut %d; ",fCheckFidCut) ;
+  snprintf(onePar,buffersize,"Check: calo fid cut %d, activate Run 2 EMCal mask %d; ",fCheckFidCut,fMaskRun2HardcodedEMCalRegions) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Track: status %d, SPD hit %d; ITS cluster >= %d; ITS chi2 > %2.1f; TPC cluster >= %d; TPC chi2 > %2.1f ",
            (Int_t) fTrackStatus,  fSelectSPDHitTracks,
@@ -3299,7 +3297,10 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   energyOrMom = clus->E();
   if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
   
-  fhEMCALClusterEtaPhi->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+  Float_t etaCls = fMomentum.Eta();
+  Float_t phiCls = GetPhi(fMomentum.Phi());
+
+  fhEMCALClusterEtaPhi->Fill(etaCls,phiCls);
   
   // Check effect linearity correction, energy smearing
   if ( fScaleEPerSM ||  fCorrectELinearity )
@@ -3337,8 +3338,8 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   Bool_t bDCAL  = kFALSE;
   if ( fCheckFidCut )
   {
-    if ( fFillEMCAL && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL) ) bEMCAL = kTRUE ;
-    if ( fFillDCAL  && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kDCAL ) ) bDCAL  = kTRUE ;
+    if ( fFillEMCAL && fFiducialCut->IsInFiducialCut(etaCls, phiCls, kEMCAL) ) bEMCAL = kTRUE ;
+    if ( fFillDCAL  && fFiducialCut->IsInFiducialCut(etaCls, phiCls, kDCAL ) ) bDCAL  = kTRUE ;
   }
   else
   {
@@ -3351,7 +3352,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   if ( GetCaloUtils()->GetNMaskCellColumns() )
   {
     AliDebug(2,Form("Masked collumn: cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
-                    fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+                    fMomentum.E(),fMomentum.Pt(),RadToDeg(phiCls),etaCls));
     
     if ( GetCaloUtils()->MaskFrameCluster(iSupMod, ietaMax) )
     {
@@ -3360,6 +3361,85 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     }
   }
   
+  if ( fMaskRun2HardcodedEMCalRegions )
+  {
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    // Mostly misbehaving trigger regions
+    // LHC15   pp: n 244340-244628; PbPb: o 244824-246994,
+    // LHC16   pp: i 255515-255650; j 256146-256420; k 256504-258574; l 258883-260187; o 262395-264035; p 264076-264347
+    // LHC16  pPb: q 265015-265525; r 265589-266318; s 266405-267131; t 267161-267166
+    // LHC17   pp: h 271839-273103; i 274442-274442; j 274591-274671; k 274690-276508; l 276551-278729; m 278818-280140; o 280282-281961; r 282504-282704
+    // LHC17   Xe: n 280234-280235; pp 5 TeV: p 282008-282343 ; q 282365-282441
+    // LHC18   pp: d 285978-286350; e 286380-286958; f 286982-287977; g 288619-288750; h 288804-288806; ij 288861-288943; k 289165-289201; l 289240-289971
+    //             m 290167-292839; n 293357-293362; o 293368-293898; p 294009-295232;
+    // LHC18 PbPb: q 295274-296623 ; r 296690-297624
+    Bool_t b15 = 0;
+    Bool_t b16 = 0;
+    Bool_t b17 = 0;
+    Bool_t b18 = 0;
+    if      ( runNumber >=  244340 &&  runNumber <= 246994 ) b15 = 1;
+    else if ( runNumber >=  255515 &&  runNumber <= 267166 ) b16 = 1;
+    else if ( runNumber >=  271839 &&  runNumber <= 282704 ) b17 = 1;
+    else if ( runNumber >=  285978 &&  runNumber <= 297624 ) b18 = 1;
+    else AliFatal("Not Run 2 Physics run, stop!");
+
+    if ( b15 )
+    {
+      // Skip DCal 1/3 SM (not calibrated in 18)
+      if ( iSupMod > 17 ) return;
+    }
+    else if ( b16 )
+    {
+      // Skip DCal 1/3 SM
+      if ( iSupMod > 17 ) return;
+      // Remove DCal for pp periods
+      if ( iSupMod > 11 && runNumber < 265015 ) return;
+
+      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
+      if ( iSupMod == 1 && etaCls <-0.55                  && phiCls > 1.396 && phiCls < 1.513 ) return;
+      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod == 7 && etaCls >-0.28 && etaCls <-0.22 && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod ==10 && etaCls > 0.05 && etaCls < 0.10 ) return;
+      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
+      if ( iSupMod ==11 && etaCls >-0.05 && etaCls < 0.00 ) return;
+      if ( iSupMod ==13 && etaCls >-0.45 && etaCls <-0.30 && phiCls > 4.654 ) return;
+    }
+    else if ( b17 )
+    {
+      if ( iSupMod == 15 || iSupMod == 17 ) return;
+
+      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
+      if ( iSupMod == 2 && etaCls > 0.44                  && runNumber <  258883 ) return; // LHC17hilk
+      if ( iSupMod == 4 && etaCls > 0.22 && etaCls < 0.44 && runNumber >= 258883 ) return; // from LHC17l
+      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod ==10 && etaCls > 0.05 && etaCls < 0.10 ) return;
+      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
+      if ( iSupMod ==18 && etaCls > 0.00 && etaCls < 0.05 ) return;
+      if ( iSupMod ==18 && etaCls > 0.45 && etaCls < 0.55 ) return;
+      if ( iSupMod ==19 && etaCls >-0.05 && etaCls < 0.00 ) return;
+    }
+    else if ( b18 )
+    {
+      if ( iSupMod == 15 || iSupMod == 17 ) return;
+
+      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
+      if ( iSupMod == 1 && etaCls >-0.20 && etaCls <-0.15 && phiCls > 1.513 && phiCls < 1.629 ) return;
+      if ( iSupMod == 4 && etaCls > 0.22 && etaCls < 0.44 ) return; // from LHC17l
+      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod ==10 && etaCls > 0.00 && etaCls < 0.10 ) return;
+      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
+      if ( iSupMod ==10 && etaCls > 0.30 && etaCls < 0.35 ) return;
+      if ( iSupMod ==11 && etaCls >-0.10 && etaCls <-0.05 ) return;
+      if ( iSupMod ==12 && etaCls > 0.35 && etaCls < 0.45 && phiCls > 4.537 && phiCls < 4.654 ) return;
+      if ( iSupMod ==18 && etaCls > 0.00 && etaCls < 0.05 ) return;
+      if ( iSupMod ==18 && etaCls > 0.45 && etaCls < 0.55 ) return;
+      if ( iSupMod ==19 && etaCls >-0.05 && etaCls < 0.00 ) return;
+    }
+  }
+
   // Check effect of energy and fiducial cuts  
   if ( bEMCAL || bDCAL ) 
   {
@@ -3372,7 +3452,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
       else                        fhEMCALClusterCutsECenSignal[4]->Fill(energyOrMom,cen);
     }
     
-    fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+    fhEMCALClusterEtaPhiFidCut->Fill(etaCls,phiCls);
   }
   else 
   {
@@ -3460,7 +3540,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     if ( fUseEMCALTimeCut ) 
     {
       AliDebug(2,Form("Out of time window E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, time %e",
-                      fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(),tof));
+                      fMomentum.E(),fMomentum.Pt(),RadToDeg(phiCls),etaCls,tof));
       
       return ;
     }
@@ -3547,7 +3627,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   
   //if((fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10)
   AliDebug(2,Form("Selected clusters (EMCAL%d, DCAL%d), E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
-                  bEMCAL,bDCAL,fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+                  bEMCAL,bDCAL,fMomentum.E(),fMomentum.Pt(),RadToDeg(phiCls),etaCls));
 
   
   if      ( bEMCAL ) fEMCALClusters->Add(clus);
