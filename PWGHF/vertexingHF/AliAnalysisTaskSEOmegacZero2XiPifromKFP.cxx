@@ -523,7 +523,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
         fHistCheckKF->Fill(2);
         continue;
       }
-      fHistCheckKF->Fill(1):
+      fHistCheckKF->Fill(1);
 
       // err_mass_cascade > 0
       Float_t massXiMinus_Rec, err_massXiMinus;
@@ -750,7 +750,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
       KFParticle kfpXiPlus_m = kfpXiPlus;
       kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
 
-      if ( TMath::Abs(kfpXiPlus_m.GetE()) <= TMath::Abs(kfpXiPlus_m.GetPz()) ){
+     if ( TMath::Abs(kfpXiPlus_m.GetE()) <= TMath::Abs(kfpXiPlus_m.GetPz()) ){
         fHistCheckKF->Fill(4);
         continue;
       }
