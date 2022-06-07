@@ -118,7 +118,15 @@ f2DHistEffEnergySPDV0M(0),
 f2DHistNchSPDV0M(0),
 f2DHistNMPISPDV0M(0),
 f2DHistQ2SPDV0M(0),
-f2DHistbSPDV0M(0)
+f2DHistbSPDV0M(0),
+f2dHistZDCVsLE(0),
+f2dHistZDCVsEE(0),
+f2dHistZDCVsLEA(0),
+f2dHistZDCVsLEC(0),
+f2dHistZPVsLP(0),
+f2dHistZNVsLN(0),
+f2dHistSPDClRecoVsTrue(0),
+f2dHistV0MRecoVsTrue(0)
 {
   for(Int_t ih=0; ih<21; ih++){
     fHistPt[ih] = 0x0;
@@ -154,7 +162,15 @@ f2DHistEffEnergySPDV0M(0),
 f2DHistNchSPDV0M(0),
 f2DHistNMPISPDV0M(0),
 f2DHistQ2SPDV0M(0),
-f2DHistbSPDV0M(0)
+f2DHistbSPDV0M(0),
+f2dHistZDCVsLE(0),
+f2dHistZDCVsEE(0),
+f2dHistZDCVsLEA(0),
+f2dHistZDCVsLEC(0),
+f2dHistZPVsLP(0),
+f2dHistZNVsLN(0),
+f2dHistSPDClRecoVsTrue(0),
+f2dHistV0MRecoVsTrue(0)
 {
   for(Int_t ih=0; ih<21; ih++){
     fHistPt[ih] = 0x0;
@@ -356,6 +372,54 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
     }
   }
 
+  //-----------------------------------------------------------------------------
+  if(!f2dHistZDCVsLE) {
+    f2dHistZDCVsLE = new TH2D("f2dHistZDCVsLE", ";ZDC Energy Sum (a.u.);Leading energy (GeV);",400,0.,4000.,1300, 0., fCenterOfMassEnergy);
+    fListHist->Add(f2dHistZDCVsLE);
+  }
+
+  //-----------------------------------------------------------------------------
+  if(!f2dHistZDCVsEE) {
+    f2dHistZDCVsEE = new TH2D("f2dHistZDCVsEE", ";ZDC Energy Sum (a.u.); Effective energy (GeV);",400,0.,4000.,1300, 0., fCenterOfMassEnergy);
+    fListHist->Add(f2dHistZDCVsEE);
+  }
+
+  //-----------------------------------------------------------------------------
+  if(!f2dHistZDCVsLEA) {
+    f2dHistZDCVsLEA = new TH2D("f2dHistZDCVsLEA", ";ZDC-A Energy Sum (a.u.);Leading energy A-side (GeV);",400,0.,4000.,1300, 0., fCenterOfMassEnergy);
+    fListHist->Add(f2dHistZDCVsLEA);
+  }
+
+  //-----------------------------------------------------------------------------
+  if(!f2dHistZDCVsLEC) {
+    f2dHistZDCVsLEC = new TH2D("f2dHistZDCVsLEC", ";ZDC-C Energy Sum (a.u.);Leading energy C-side (GeV);",400,0.,4000.,1300, 0., fCenterOfMassEnergy);
+    fListHist->Add(f2dHistZDCVsLEC);
+  }
+
+  //-----------------------------------------------------------------------------
+  if(!f2dHistZPVsLP) {
+    f2dHistZPVsLP = new TH2D("f2dHistZPVsLP", ";ZP Energy Sum (a.u.);Leading proton energy (GeV);",400,0.,4000.,1300, 0., fCenterOfMassEnergy);
+    fListHist->Add(f2dHistZPVsLP);
+  }
+
+  //-----------------------------------------------------------------------------
+  if(!f2dHistZNVsLN) {
+    f2dHistZNVsLN = new TH2D("f2dHistZNVsLN", ";ZN Energy Sum (a.u.);Leading neutron C-side (GeV);",400,0.,4000.,1300, 0., fCenterOfMassEnergy);
+    fListHist->Add(f2dHistZNVsLN);
+  }
+
+  //-----------------------------------------------------------------------------
+  if(!f2dHistSPDClRecoVsTrue) {
+    f2dHistSPDClRecoVsTrue = new TH2D("f2dHistSPDClRecoVsTrue", "; SPDClusters centrality (%); SPD Clusters", 100,0.,100., 800, 0, 800.);
+    fListHist->Add(f2dHistSPDClRecoVsTrue);
+  }
+
+  //-----------------------------------------------------------------------------
+  if(!f2dHistV0MRecoVsTrue) {
+    f2dHistV0MRecoVsTrue = new TH2D("f2dHistV0MRecoVsTrue", ";V0M centrality (%); V0M Multiplicity",100,0.,100., 500, 0, 500.);
+    fListHist->Add(f2dHistV0MRecoVsTrue);
+  }
+
   //List of Histograms: Normal
   PostData(1, fListHist);
   
@@ -384,7 +448,7 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
   }
   //
   AliGenEventHeader* mcGenH = lMCevent->GenEventHeader();
-  
+
   //Events Processed
   fHistEventCounter->Fill(0.5);
 
@@ -400,6 +464,10 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
 
   //Eff energy
   Float_t fLeadingE = 0.;
+  Float_t fLeadingE_Aside = 0.;
+  Float_t fLeadingE_Cside = 0.;
+  Float_t fLeadingP = 0.;
+  Float_t fLeadingN = 0.;
   Float_t fEffEnergy = fCenterOfMassEnergy;
 
   //Utility
@@ -497,6 +565,15 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
       ) {
         fEffEnergy -= particleOne -> Energy();
         fLeadingE += particleOne -> Energy();
+
+        if( (charge>0 && TMath::Abs(geta)>7. && TMath::Abs(geta)<8.7) ) fLeadingP += particleOne -> Energy();
+        if (charge==0 && TMath::Abs(geta)>8.8) fLeadingN += particleOne -> Energy();
+
+        if((charge>0 && geta>7. && geta<8.7) || (charge==0 && geta>8.8)) {
+          fLeadingE_Aside += particleOne -> Energy();
+        } else if((charge>0 && geta>-8.7 && geta<-7) || (charge==0 && geta<-8.8)) {
+          fLeadingE_Cside += particleOne -> Energy();
+        }
       } 
     
     if(TMath::Abs(partcharge)<0.001) continue; //now only charged primaries
@@ -582,9 +659,9 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
     Float_t energy  = part -> Energy();
     Float_t eta     = part -> Eta();
     Int_t pdg       = (Int_t) part -> GetPdgCode();
-    Float_t y       = TMath::Log( TMath::Sqrt( ( energy + pz*c )/( energy - pz*c ) ) );
+    Float_t y       = Rapidity(energy, pz);
         
-    if(TMath::Abs(eta)<0.5){   
+    if(TMath::Abs(y)<0.5){   
       for(Int_t ih=0; ih<21; ih++){ //loop over pdg codes
         if( pdg == lPDGCodes[ih] ) {
           //
@@ -613,6 +690,58 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
     if(f2DHistPartSPDV0M[ih])   f2DHistPartSPDV0M[ih]  -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, lPartCounter[ih]);    
   }
 
+
+  //Reco information
+
+  AliAODEvent *lAODevent = 0x0;
+  lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
+  
+  if (!lAODevent) {
+      AliWarning("ERROR: lAODevent not available from InputEvent() trying with AODEvent()");        
+      //  assume that the AOD is in the general output...
+      lAODevent  = AODEvent();
+      if(!lAODevent){
+          AliWarning("ERROR: lAODevent not available from AODEvent() Aborting event!");
+          return;
+      }
+  }
+
+  Float_t lV0MPercentile = 300;
+  Float_t lSPDClusterspercentile = 300;
+
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection*) lAODevent -> FindListObject("MultSelection");
+  if( !MultSelection) {
+        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+        AliWarning("AliMultSelection object not found!");
+        return;
+    } else {
+        lV0MPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+        lSPDClusterspercentile = MultSelection->GetMultiplicityPercentile("SPDClusters");
+  }
+    
+  fCentrality_V0M = lV0MPercentile;
+  fCentrality_SPDClusters = lSPDClusterspercentile; 
+    
+  // ZDC info ==========================================================
+  const Double_t *aZDCN1 = lAODevent->GetZDCData()->GetZNCTowerEnergy();
+  fZNCpp = aZDCN1[0];
+  const Double_t *aZDCN2 = lAODevent->GetZDCData()->GetZNATowerEnergy();
+  fZNApp = aZDCN2[0];
+  const Double_t *aZDCP1 = lAODevent->GetZDCData()->GetZPCTowerEnergy();
+  fZPCpp = aZDCP1[0];  
+  const Double_t *aZDCP2 = lAODevent->GetZDCData()->GetZPATowerEnergy();
+  fZPApp = aZDCP2[0];  
+
+  if(f2dHistZDCVsLE)    f2dHistZDCVsLE         -> Fill ( fZNCpp+fZNApp+fZPCpp+fZPApp , fLeadingE );
+  if(f2dHistZDCVsEE)    f2dHistZDCVsEE         -> Fill ( fZNCpp+fZNApp+fZPCpp+fZPApp , fEffEnergy );
+  if(f2dHistZDCVsLEA)   f2dHistZDCVsLEA        -> Fill ( fZNApp+fZPApp , fLeadingE_Aside );
+  if(f2dHistZDCVsLEC)   f2dHistZDCVsLEC        -> Fill ( fZNCpp+fZPCpp , fLeadingE_Cside );
+  if(f2dHistZPVsLP)     f2dHistZPVsLP          -> Fill ( fZPCpp+fZPApp , fLeadingP );
+  if(f2dHistZNVsLN)     f2dHistZNVsLN          -> Fill ( fZNCpp+fZNApp , fLeadingN );
+  if(f2dHistSPDClRecoVsTrue)    f2dHistSPDClRecoVsTrue    -> Fill ( fCentrality_SPDClusters , lSPDClusters );
+  if(f2dHistV0MRecoVsTrue)      f2dHistV0MRecoVsTrue      -> Fill ( fCentrality_V0M , lNchVZEROA+lNchVZEROC );
+  
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   // Post output data.
   PostData(1, fListHist);
@@ -659,4 +788,15 @@ Bool_t AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::IsEPOSLHC() const {
     }
   }
   return lReturnValue;
+}
+
+//______________________________________________________________________
+Double_t AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::Rapidity(Double_t E, Double_t Pz) const
+{
+  // Local calculation for rapidity
+  Double_t ReturnValue = -100;
+  if( (E - Pz + 1.e-13) != 0 && (E + Pz) != 0 ) {
+    ReturnValue =  0.5*TMath::Log((E + Pz)/( E - Pz + 1.e-13));
+  }
+  return ReturnValue;
 }
