@@ -1,4 +1,4 @@
-AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA", TString sNameList = "0_10", TString sEst = "V0M")
+AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA", TString sNameList = "0_10", TString sEst = "V0A")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -10,7 +10,8 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   AliAnalysisTaskSEpPbCorrelationsJetV2Kine *task = new AliAnalysisTaskSEpPbCorrelationsJetV2Kine("AliAnalysisTaskSEpPbCorrelationsJetV2Kine");
 
   Double_t trigPtLimits[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0};
-  //Double_t trigPtLimits[] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 14.0}; // For muon-tracklet
+  //Double_t trigPtLimits[] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0};
+  //Double_t trigPtLimits[] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 14.0};
   const Int_t nBinTrigPt = sizeof(trigPtLimits) / sizeof(Double_t) - 1;
   task->SetTrigPtBinning(nBinTrigPt, trigPtLimits);
 
@@ -18,7 +19,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   const Int_t nBinAssocPt = sizeof(assocPtLimits) / sizeof(Double_t) - 1;
   task->SetAssocPtBinning(nBinAssocPt, assocPtLimits);
 
-  task->SetMuonDecay("Pi");
+  task->SetMuonDecay("B");
   task->SetTPCEtaLimits(1.5); // Less than 2
 
   task->SetAnaMode(sMode);
@@ -30,10 +31,10 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   task->SetCen1(0);
   task->SetCen2(10);
 
-  task->SetIsPbp(kFALSE);
+  task->SetIsPbp(kTRUE);
   task->SetEst(sEst);
 
-  task->SetCorrBeam(kFALSE);
+  task->SetCorrBeam(kTRUE);
 
   // Input File
   TGrid::Connect("alien://");
@@ -42,7 +43,8 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   //TFile *file = TFile::Open("./Centrality_502_Muonv2/Centrality.root"); // Old AMPT
   //TFile *file = TFile::Open("./Centrality/Centrality.root");  // w/o Hadronic scattering
   //TFile *file = TFile::Open("./Centrality_HS/Centrality.root"); // w/ Hardronic scattering
-  //TFile *file = TFile::Open("./Centrality_816_MuonV2/Centrality.root"); // 8.16 TeV w/ Hardronic scattering
+ // TFile *file = TFile::Open("./Centrality_816_MuonV2/Centrality.root"); // 8.16 TeV w/ Hardronic scattering
+  //TFile *file = TFile::Open("./Centrality_816_MuonV2_Pbp/Centrality.root"); // 8.16 TeV w/ Hardronic scattering
   TH1D *h_Charge  = (TH1D*)file->Get(Form("hCharge%s",sEst.Data())); h_Charge->SetName(Form("hCharge%s_%s_%s",sEst.Data(), sMode.Data(),sNameList.Data())); h_Charge->SetDirectory(0);
   file->Close();
 
