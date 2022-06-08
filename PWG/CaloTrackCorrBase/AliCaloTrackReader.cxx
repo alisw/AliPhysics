@@ -3381,7 +3381,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     else if ( runNumber >=  255515 &&  runNumber <= 267166 ) b16 = 1;
     else if ( runNumber >=  271839 &&  runNumber <= 282704 ) b17 = 1;
     else if ( runNumber >=  285978 &&  runNumber <= 297624 ) b18 = 1;
-    else AliFatal("Not Run 2 Physics run, stop!");
+    else AliWarning(Form("Not Run 2 run number %d in expected range, do not apply hard mask",runNumber));
 
     if ( b15 )
     {
