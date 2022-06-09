@@ -86,7 +86,9 @@ public:
   virtual void    SetDataType(Int_t data )                 { fDataType = data              ; }
 
   virtual Int_t   GetEventNumber()                   const { return fEventNumber           ; }
-	
+  virtual Int_t   GetRunNumber()                     const { return fRunNumber             ; }
+  virtual Int_t   GetYear()                          const { return fYear                  ; }
+
   virtual TObjString *  GetListOfParameters() ;
   
   TString         GetTaskName()                      const { return fTaskName              ; }
@@ -960,7 +962,9 @@ public:
   
  protected:
   
-  Int_t	           fEventNumber;                   ///<  Event number.
+  Int_t            fEventNumber;                   ///<  Event number.
+  Int_t            fRunNumber;                     ///<  Run number.
+  Int_t            fYear;                          ///<  Year of run, for runs within range
   Int_t            fDataType ;                     ///<  Select MC: Kinematics, Data: ESD/AOD, MCData: Both.
   Int_t            fDebug;                         ///<  Debugging level.
   AliFiducialCut * fFiducialCut;                   ///<  Acceptance cuts.
@@ -1329,7 +1333,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,99) ;
+  ClassDef(AliCaloTrackReader,100) ;
   /// \endcond
 
 } ;
