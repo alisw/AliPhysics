@@ -705,6 +705,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     Int_t binsTrig[5]={fNumberOfPtBinsAssoc,9,6,fNumberOfEtaBins,fNumberPhiBins};
     Double_t mintrig[5]={fPtAsocMin,-10,0,-0.8,0};
     Double_t maxtrig[5]={fPtAssocMax,10,6,0.8,2*kPi};
+    if(fFlowEffPtBins){
+        binsTrig[4]=11;
+        mintrig[4]=0;
+        maxtrig[4]=100;
+    }
     fHistGenV0 = new THnSparseF("fHistGenV0","fHistGenV0",5,binsTrig,mintrig,maxtrig);
     fOutputList->Add(fHistGenV0);
     fHistGenV0->Sumw2();
@@ -728,6 +733,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     Int_t binsTrigRec[6]={fNumberOfPtBinsAssoc,9,6,fNumberOfEtaBins,902,fNumberPhiBins};
     Double_t mintrigRec[6]={fPtAsocMin,-10,0,-0.8,0.44,0};
     Double_t maxtrigRec[6]={fPtAssocMax,10,6,0.8,1.355,2*kPi};
+    if(fFlowEffPtBins){
+        binsTrigRec[5]=11;
+        mintrigRec[5]=0;
+        maxtrigRec[5]=100;
+    }
     fHistRecV0 = new THnSparseF("fHistRecV0","fHistRecV0",6,binsTrigRec,mintrigRec,maxtrigRec);
     fOutputList->Add(fHistRecV0);
     fHistRecV0->Sumw2();
@@ -1617,7 +1627,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 }
             }
         }
-        if(fV0hCorr||fhV0Corr){
+        if(fV0hCorr||fhV0Corr||fEfficiency){
 	    for (Int_t i=0; i<nV0; i++){
         
             if(fAOD) {
