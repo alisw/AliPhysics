@@ -140,7 +140,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fIsMC(1),
   fMaxpT(100),
   fDoMultStudies(0),
-  fNTracksInV0Acc(0)
+  fNTracksInV0Acc(0),
+  fIsEvtINELgtZERO(0)
 {
 
 }
@@ -234,7 +235,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fIsMC(1),
   fMaxpT(100),
   fDoMultStudies(0),
-  fNTracksInV0Acc(0)
+  fNTracksInV0Acc(0),
+  fIsEvtINELgtZERO(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -655,20 +657,35 @@ void AliAnalysisTaskGammaPureMC::ProcessMultiplicity()
 {
   // set number of tracks in V0 acceptance to 0
   fNTracksInV0Acc = 0;
+  // set INEL>0 to false
+  fIsEvtINELgtZERO = false;
+
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
     AliVParticle* particle     = nullptr;
     particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
     if (!particle) continue;
 
-    // selected charged primary particles
-    if(particle->Charge() != 0 && particle->IsPhysicalPrimary()){
+    // selected charged primary particles in V0 acceptance
+    if(particle->IsPhysicalPrimary() && particle->Charge() != 0){
       if(IsInV0Acceptance(particle)){
         fNTracksInV0Acc++;
       }
+      // check if event is INEL>0
+      if(!fIsEvtINELgtZERO){
+        if(std::abs(particle->Eta()) < 1){
+          fIsEvtINELgtZERO = true;
+        }
+      }
     }
   }
-  fHistV0Mult->Fill(fNTracksInV0Acc);
+  if(fDoMultStudies == 2){
+    if(fIsEvtINELgtZERO == true){
+      fHistV0Mult->Fill(fNTracksInV0Acc);
+    }
+  } else {
+    fHistV0Mult->Fill(fNTracksInV0Acc);
+  }
 }
 
 //________________________________________________________________________
@@ -722,7 +739,13 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
           if(!IsSecondary(motherParticle)){
-            fHistPtV0MultPi0GG->Fill(particle->Pt(), fNTracksInV0Acc);
+            if(fDoMultStudies == 2){ // select only INEL>0 events for multiplicity
+              if(fIsEvtINELgtZERO == true){
+                fHistPtV0MultPi0GG->Fill(particle->Pt(), fNTracksInV0Acc);
+              }
+            } else {
+              fHistPtV0MultPi0GG->Fill(particle->Pt(), fNTracksInV0Acc);
+            }
           }
         }
       }
@@ -733,7 +756,13 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
           if(!IsSecondary(motherParticle)){
-            fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
+            if(fDoMultStudies == 2){ // select only INEL>0 events for multiplicity
+              if(fIsEvtINELgtZERO == true){
+                fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
+              }
+            } else {
+              fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
+            }
           }
         }
       }
@@ -743,7 +772,13 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
           if(!IsSecondary(motherParticle)){
-            fHistPtV0MultEtaPrimeGG->Fill(particle->Pt(), fNTracksInV0Acc);
+            if(fDoMultStudies == 2){ // select only INEL>0 events for multiplicity
+              if(fIsEvtINELgtZERO == true){
+                fHistPtV0MultEtaPrimeGG->Fill(particle->Pt(), fNTracksInV0Acc);
+              }
+            } else {
+              fHistPtV0MultEtaPrimeGG->Fill(particle->Pt(), fNTracksInV0Acc);
+            }
           }
         }
       }
