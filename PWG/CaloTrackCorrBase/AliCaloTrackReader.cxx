@@ -62,6 +62,7 @@ ClassImp(AliCaloTrackReader) ;
 //________________________________________
 AliCaloTrackReader::AliCaloTrackReader() :
 TObject(),                   fEventNumber(-1), //fCurrentFileName(""),
+fRunNumber(-1),              fYear(-1),
 fDataType(0),                fDebug(0),
 fFiducialCut(0x0),           fCheckFidCut(kFALSE), fMaskRun2HardcodedEMCalRegions(0),
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
@@ -759,7 +760,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       {
         Int_t centMin = 0; // LHC11h
         Int_t centMax = 50;
-        if ( fInputEvent->GetRunNumber() > 295274 ) 
+        if ( fRunNumber > 295274 )
         {
           centMin = 30; // LHC18qr
         }
@@ -798,7 +799,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if  ( fEventTrigEMCALL1Gamma2 || fEventTrigEMCALL1Gamma2CaloOnly || 
             fEventTrigDCALL1Gamma2  || fEventTrigDCALL1Gamma2CaloOnly    )
       {
-        if ( centrality < 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G2"))
+        if ( centrality < 50 && fRunNumber > 295274 && fFiredTriggerClassName.Contains("G2"))
         {
           //printf("%s\n",GetFiredTriggerClasses().Data());
           AliDebug(1,Form("Skip L1-G2 event with centrality %2.1f",centrality));
@@ -809,7 +810,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if ( (fEventTrigEMCALL1Gamma1 || fEventTrigEMCALL1Gamma1CaloOnly || 
             fEventTrigDCALL1Gamma1  || fEventTrigDCALL1Gamma1CaloOnly)   )
       {
-        if ( centrality > 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G1") )
+        if ( centrality > 50 && fRunNumber > 295274 && fFiredTriggerClassName.Contains("G1") )
         {
           //printf("%s\n",GetFiredTriggerClasses().Data());
           AliDebug(1,Form("Skip L1-G1 event with centrality %2.1f",centrality));
@@ -2239,6 +2240,37 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     return kFALSE;
   }
 
+  // Check if run number changes
+  if ( fRunNumber != fInputEvent->GetRunNumber() )
+  {
+    AliInfo(Form("Change run from %d to %d", fRunNumber, fInputEvent->GetRunNumber()));
+
+    fRunNumber = fInputEvent->GetRunNumber();
+
+    // Assign year, only for Run 2.
+    //
+    // LHC15   pp: n 244340-244628; PbPb: o 244824-246994,
+    // LHC16   pp: i 255515-255650; j 256146-256420; k 256504-258574; l 258883-260187; o 262395-264035; p 264076-264347
+    // LHC16  pPb: q 265015-265525; r 265589-266318; s 266405-267131; t 267161-267166
+    // LHC17   pp: h 271839-273103; i 274442-274442; j 274591-274671; k 274690-276508; l 276551-278729; m 278818-280140; o 280282-281961; r 282504-282704
+    // LHC17   Xe: n 280234-280235; pp 5 TeV: p 282008-282343 ; q 282365-282441
+    // LHC18   pp: d 285978-286350; e 286380-286958; f 286982-287977; g 288619-288750; h 288804-288806; ij 288861-288943; k 289165-289201; l 289240-289971
+    //             m 290167-292839; n 293357-293362; o 293368-293898; p 294009-295232;
+    // LHC18 PbPb: q 295274-296623 ; r 296690-297624
+
+    // Adding this run to a period. It will unlikely change during the analsis
+    // but do it once per change of run.
+    if      ( fRunNumber >=  220139 &&  fRunNumber <= 246994 ) fYear = 15;
+    else if ( fRunNumber >=  249954 &&  fRunNumber <= 267166 ) fYear = 16;
+    else if ( fRunNumber >=  270531 &&  fRunNumber <= 282704 ) fYear = 17;
+    else if ( fRunNumber >=  284706 &&  fRunNumber <= 297624 ) fYear = 18;
+    else
+    {
+      fYear = -1;
+      AliWarning(Form("Run number %d out of expected ranges, year not set", fRunNumber));
+    }
+  }
+
   if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(0.5);
   else                        fhNEventsAfterCutCen->Fill(0.5,cen);
   
@@ -3361,39 +3393,22 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     }
   }
   
+  // Apply hard mask for  Run 2
   if ( fMaskRun2HardcodedEMCalRegions )
   {
-    Int_t runNumber = fInputEvent->GetRunNumber();
-    // Mostly misbehaving trigger regions
-    // LHC15   pp: n 244340-244628; PbPb: o 244824-246994,
-    // LHC16   pp: i 255515-255650; j 256146-256420; k 256504-258574; l 258883-260187; o 262395-264035; p 264076-264347
-    // LHC16  pPb: q 265015-265525; r 265589-266318; s 266405-267131; t 267161-267166
-    // LHC17   pp: h 271839-273103; i 274442-274442; j 274591-274671; k 274690-276508; l 276551-278729; m 278818-280140; o 280282-281961; r 282504-282704
-    // LHC17   Xe: n 280234-280235; pp 5 TeV: p 282008-282343 ; q 282365-282441
-    // LHC18   pp: d 285978-286350; e 286380-286958; f 286982-287977; g 288619-288750; h 288804-288806; ij 288861-288943; k 289165-289201; l 289240-289971
-    //             m 290167-292839; n 293357-293362; o 293368-293898; p 294009-295232;
-    // LHC18 PbPb: q 295274-296623 ; r 296690-297624
-    Bool_t b15 = 0;
-    Bool_t b16 = 0;
-    Bool_t b17 = 0;
-    Bool_t b18 = 0;
-    if      ( runNumber >=  244340 &&  runNumber <= 246994 ) b15 = 1;
-    else if ( runNumber >=  255515 &&  runNumber <= 267166 ) b16 = 1;
-    else if ( runNumber >=  271839 &&  runNumber <= 282704 ) b17 = 1;
-    else if ( runNumber >=  285978 &&  runNumber <= 297624 ) b18 = 1;
-    else AliWarning(Form("Not Run 2 run number %d in expected range, do not apply hard mask",runNumber));
-
-    if ( b15 )
+    //Int_t runNumber = fInputEvent->GetRunNumber();
+    // fYear set at start of FillInputEvent()
+    if ( fYear == 15 )
     {
       // Skip DCal 1/3 SM (not calibrated in 18)
       if ( iSupMod > 17 ) return;
     }
-    else if ( b16 )
+    else if ( fYear == 16 )
     {
       // Skip DCal 1/3 SM
       if ( iSupMod > 17 ) return;
       // Remove DCal for pp periods
-      if ( iSupMod > 11 && runNumber < 265015 ) return;
+      if ( iSupMod > 11 && fRunNumber < 265015 ) return;
 
       if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
       if ( iSupMod == 1 && etaCls <-0.55                  && phiCls > 1.396 && phiCls < 1.513 ) return;
@@ -3405,13 +3420,13 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
       if ( iSupMod ==11 && etaCls >-0.05 && etaCls < 0.00 ) return;
       if ( iSupMod ==13 && etaCls >-0.45 && etaCls <-0.30 && phiCls > 4.654 ) return;
     }
-    else if ( b17 )
+    else if ( fYear == 17 )
     {
       if ( iSupMod == 15 || iSupMod == 17 ) return;
 
       if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
-      if ( iSupMod == 2 && etaCls > 0.44                  && runNumber <  258883 ) return; // LHC17hilk
-      if ( iSupMod == 4 && etaCls > 0.22 && etaCls < 0.44 && runNumber >= 258883 ) return; // from LHC17l
+      if ( iSupMod == 2 && etaCls > 0.44                  && fRunNumber <  258883 ) return; // LHC17hilk
+      if ( iSupMod == 4 && etaCls > 0.22 && etaCls < 0.44 && fRunNumber >= 258883 ) return; // from LHC17l
       if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
       if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
       if ( iSupMod ==10 && etaCls > 0.05 && etaCls < 0.10 ) return;
@@ -3420,7 +3435,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
       if ( iSupMod ==18 && etaCls > 0.45 && etaCls < 0.55 ) return;
       if ( iSupMod ==19 && etaCls >-0.05 && etaCls < 0.00 ) return;
     }
-    else if ( b18 )
+    else if ( fYear == 18 )
     {
       if ( iSupMod == 15 || iSupMod == 17 ) return;
 
@@ -4524,16 +4539,16 @@ void AliCaloTrackReader::SetEMCALTriggerThresholds()
   if( IsEventEMCALL0() && fTriggerL0EventThreshold < 0)
   { 
     // Revise for periods > LHC11d 
-    Int_t runNumber = fInputEvent->GetRunNumber();
-    if     (runNumber < 146861) fTriggerL0EventThreshold = 3. ;  // LHC11a
-    else if(runNumber < 154000) fTriggerL0EventThreshold = 4. ;  // LHC11b,c
-    else if(runNumber < 165000) fTriggerL0EventThreshold = 5.5;  // LHC11c,d,e
-    else if(runNumber < 194000) fTriggerL0EventThreshold = 2  ;  // LHC12
-    else if(runNumber < 197400) fTriggerL0EventThreshold = 3  ;  // LHC13def 
-    else if(runNumber < 197400) fTriggerL0EventThreshold = 2  ;  // LHC13g 
-    else if(runNumber < 244300) fTriggerL0EventThreshold = 5  ;  // LHC15 in, phys 1, 5 in phys2 
-    else if(runNumber < 266400) fTriggerL0EventThreshold = 2.5;  // LHC16ir 
-    else                        fTriggerL0EventThreshold = 3.5;  // LHC16s 
+    //Int_t runNumber = fInputEvent->GetRunNumber();
+    if     (fRunNumber < 146861) fTriggerL0EventThreshold = 3. ;  // LHC11a
+    else if(fRunNumber < 154000) fTriggerL0EventThreshold = 4. ;  // LHC11b,c
+    else if(fRunNumber < 165000) fTriggerL0EventThreshold = 5.5;  // LHC11c,d,e
+    else if(fRunNumber < 194000) fTriggerL0EventThreshold = 2  ;  // LHC12
+    else if(fRunNumber < 197400) fTriggerL0EventThreshold = 3  ;  // LHC13def
+    else if(fRunNumber < 197400) fTriggerL0EventThreshold = 2  ;  // LHC13g
+    else if(fRunNumber < 244300) fTriggerL0EventThreshold = 5  ;  // LHC15 in, phys 1, 5 in phys2
+    else if(fRunNumber < 266400) fTriggerL0EventThreshold = 2.5;  // LHC16ir
+    else                         fTriggerL0EventThreshold = 3.5;  // LHC16s
   }  
 }
 
@@ -5129,9 +5144,9 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
         if ( GetFiredTriggerClasses().Contains("DJ2") ) fEventTrigDCALL1Jet2CaloOnly = kTRUE;
       }
       
-      Int_t runNumber = fInputEvent->GetRunNumber();
+      //Int_t runNumber = fInputEvent->GetRunNumber();
       
-      if ( runNumber >= 295584 )
+      if ( fRunNumber >= 295584 )
       {
         if ( GetFiredTriggerClasses().Contains("CDMC7PER") )
         {
