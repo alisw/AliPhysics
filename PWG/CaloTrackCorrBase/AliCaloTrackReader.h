@@ -766,6 +766,13 @@ public:
   virtual Double_t       GetEventPlaneAngle()        const ;          
   virtual void           SetEventPlaneMethod(TString m)    { fEventPlaneMethod = m               ; }
   virtual TString        GetEventPlaneMethod()       const { return fEventPlaneMethod            ; }
+  
+  virtual void     SetEventPlaneBin(Double_t min, Double_t max) //Set the centrality bin to select the event. If used, then need to get percentile
+                                                           { fEventPlaneBin[0]=min; fEventPlaneBin[1]=max; }
+                                                           
+  virtual Float_t  GetEventPlaneBin(Int_t i)         const { if(i < 0 || i > 1) return 0 ; 
+                                                             else return fEventPlaneBin[i]              ; }
+  
 
   //--------------------
   // Mixing
@@ -1232,7 +1239,8 @@ public:
   Int_t            fCentralityOpt;                 ///<  Option for the returned value of the centrality, possible options 5, 10, 100.
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
   TString          fEventPlaneMethod;              ///<  Name of event plane method, by default "Q".
-
+  Double_t         fEventPlaneBin[2];              ///<  Minimum and maximum value of the event plane angle for the analysis.
+  
   // Event spherocity
   Float_t          fSpherocity ;                   ///<  Event spherocity, it uses fSpherocityMinPt, to be accesses by the analysis tasks
   Float_t          fSpherocityPtCut[4] ;           ///<  Event spherocity, it uses fSpherocityMinPtCuts[4], to be accesses by the analysis tasks if fStudySpherocityMinPt = 1

@@ -1250,12 +1250,12 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
 
   TString evtCutLabels[] = {"Input","Event Type","Mixing Event","Trigger string","Trigger Bit","L1 no L2","Good EMC Trigger",
     "!Fast Cluster","!LED","Time stamp","Primary vertex","Null 3 vertex","Z vertex window","Pile-up",
-    "V0AND","Centrality","GenHeader","PtHard-Jet","PtHard-Gam","N Track>0","TOF BC","AliEventCuts"};
+    "V0AND","Centrality","EventPlane","GenHeader","PtHard-Jet","PtHard-Gam","N Track>0","TOF BC","AliEventCuts"};
   if ( !fHistoCentDependent )
   {
-    fhNEventsAfterCut = new TH1F("hNEventsAfterCut", "Number of analyzed events", 22, 0, 22) ;
+    fhNEventsAfterCut = new TH1F("hNEventsAfterCut", "Number of analyzed events", 23, 0, 23) ;
     fhNEventsAfterCut->SetYTitle("# events");
-    for(Int_t icut = 1; icut <= 22; icut++ )
+    for(Int_t icut = 1; icut <= 23; icut++ )
       fhNEventsAfterCut->GetXaxis()->SetBinLabel(icut ,Form("%d=%s",icut,evtCutLabels[icut-1].Data()));
     fOutputContainer->Add(fhNEventsAfterCut);
 
@@ -1286,10 +1286,10 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   }
   else
   {
-    fhNEventsAfterCutCen = new TH2F("hNEventsAfterCutCen", "Number of analyzed events", 22, 0, 22, 50, 0, 100) ;
+    fhNEventsAfterCutCen = new TH2F("hNEventsAfterCutCen", "Number of analyzed events", 23, 0, 23, 50, 0, 100) ;
     fhNEventsAfterCutCen->SetZTitle("# events");
     fhNEventsAfterCutCen->SetYTitle("Centrality (%)");
-    for(Int_t icut = 1; icut <= 22; icut++ )
+    for(Int_t icut = 1; icut <= 23; icut++ )
       fhNEventsAfterCutCen->GetXaxis()->SetBinLabel(icut ,Form("%d=%s",icut,evtCutLabels[icut-1].Data()));
     fOutputContainer->Add(fhNEventsAfterCutCen);
 
@@ -1999,6 +1999,7 @@ void AliCaloTrackReader::InitParameters()
   fCentralityClass  = "V0M";
   fCentralityOpt    = 100;
   fCentralityBin[0] = fCentralityBin[1]=-1;
+  fEventPlaneBin[0] = fEventPlaneBin[1]=-1;
   
   fEventPlaneMethod = "V0";
   
@@ -2424,6 +2425,25 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   }
 
   //----------------------------------------------------------------
+  //Check if there is an event plane angle value, PbPb analysis,
+  // and if an event plane angle bin selection is requested
+  //----------------------------------------------------------------
+  
+  Float_t ep =  GetEventPlaneAngle();
+  if ( fEventPlaneBin[0] >= 0 && fEventPlaneBin[1] >= 0 )
+  {
+    AliDebug(1,Form("Angle %f in [%f,%f]?", ep, fEventPlaneBin[0], fEventPlaneBin[1]));
+
+    if ( ep >= fEventPlaneBin[0] || ep <  fEventPlaneBin[1]   )  return kFALSE; //reject events out of bin.
+    
+    AliDebug(1,"Pass event plane angle rejection");
+    
+    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(16.5);
+    else                        fhNEventsAfterCutCen->Fill(16.5,cen);
+  }
+
+
+  //----------------------------------------------------------------
   // MC events selections
   //----------------------------------------------------------------
   if ( GetMC() )
@@ -2456,8 +2476,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       
       AliDebug(1,"Pass Event header selection");
       
-      if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(16.5);
-      else                        fhNEventsAfterCutCen->Fill(16.5,cen);
+      if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(17.5);
+      else                        fhNEventsAfterCutCen->Fill(17.5,cen);
     }
     
     // Pythia header
@@ -2495,8 +2515,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
         
         AliDebug(1,"Pass Pt Hard - Jet rejection");
         
-        if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(17.5);
-        else                        fhNEventsAfterCutCen->Fill(17.5,cen);
+        if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(18.5);
+        else                        fhNEventsAfterCutCen->Fill(18.5,cen);
       }
       
       if ( fComparePtHardAndClusterPt )
@@ -2507,8 +2527,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
         
         if ( !fComparePtHardAndPromptPhotonPt ) // avoid double counting in next filling
         {
-          if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(18.5);
-          else                        fhNEventsAfterCutCen->Fill(18.5,cen);
+          if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(19.5);
+          else                        fhNEventsAfterCutCen->Fill(19.5,cen);
         }
       }
 
@@ -2518,8 +2538,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
 
         AliDebug(1,"Pass Pt Hard - Prompt photon rejection");
 
-        if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(18.5);
-        else                        fhNEventsAfterCutCen->Fill(18.5,cen);
+        if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(19.5);
+        else                        fhNEventsAfterCutCen->Fill(19.5,cen);
       }
 
     } // pythia header
@@ -2558,8 +2578,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass rejection of null track events");
 
-    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(19.5);
-    else                        fhNEventsAfterCutCen->Fill(19.5,cen);
+    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(20.5);
+    else                        fhNEventsAfterCutCen->Fill(20.5,cen);
   }
   
   if ( fDoVertexBCEventSelection )
@@ -2569,8 +2589,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass rejection of events with vertex at BC!=0");
     
-    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(20.5);
-    else                        fhNEventsAfterCutCen->Fill(20.5,cen);
+    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(21.5);
+    else                        fhNEventsAfterCutCen->Fill(21.5,cen);
   }
   
   //-----------------------------------
@@ -2584,8 +2604,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass AliEventCuts!");
     
-    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(21.5);
-    else                        fhNEventsAfterCutCen->Fill(21.5,cen);
+    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(22.5);
+    else                        fhNEventsAfterCutCen->Fill(22.5,cen);
   }
   
   if ( fCalculateSpherocity && fFillCTS )
