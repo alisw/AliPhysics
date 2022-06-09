@@ -2400,9 +2400,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   Float_t ep =  GetEventPlaneAngle();
   if ( fEventPlaneBin[0] >= 0 && fEventPlaneBin[1] >= 0 )
   {
-    AliDebug(1,Form("Angle %f in [%f,%f]?", ep, fEventPlaneBin[0], fEventPlaneBin[0]));
+    AliDebug(1,Form("Angle %f in [%f,%f]?", ep, fEventPlaneBin[0], fEventPlaneBin[1]));
 
-    if ( ep >= fEventPlaneBin[0] || ep <  fEventPlaneBin[0]   )  return kFALSE; //reject events out of bin.
+    if ( ep >= fEventPlaneBin[0] || ep <  fEventPlaneBin[1]   )  return kFALSE; //reject events out of bin.
     
     AliDebug(1,"Pass event plane angle rejection");
     
