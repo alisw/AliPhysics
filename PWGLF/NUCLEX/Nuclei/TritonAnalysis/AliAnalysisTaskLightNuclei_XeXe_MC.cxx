@@ -82,9 +82,9 @@ fpar0_mean_TOF(0),
 fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
 fpar1_sigma_TOF(0),
-multPercentile_V0M(-1),
+multPercentile_V0M(0),
 particleType(0),
-centrality(-1),
+centrality(0),
 xVertex(0),
 yVertex(0),
 zVertex(0),
@@ -176,9 +176,9 @@ fpar0_mean_TOF(0),
 fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
 fpar1_sigma_TOF(0),
-multPercentile_V0M(-1),
+multPercentile_V0M(0),
 particleType(0),
-centrality(-1),
+centrality(0),
 xVertex(0),
 yVertex(0),
 zVertex(0),
@@ -322,7 +322,7 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserCreateOutputObjects(){
     reducedTree_gen_He3 = new TTree("reducedTree_gen_He3","reducedTree_gen_He3");
     reducedTree_gen_He3 -> Branch("particleType",&particleType,"particleType/I");
     reducedTree_gen_He3 -> Branch("centrality",&centrality,"centrality/F");
-    reducedTree_gen_He3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
+    reducedTree_gen_He3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
     reducedTree_gen_He3 -> Branch("xVertex",&xVertex,"xVertex/F");
     reducedTree_gen_He3 -> Branch("yVertex",&yVertex,"yVertex/F");
     reducedTree_gen_He3 -> Branch("zVertex",&zVertex,"zVertex/F");
@@ -336,7 +336,7 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserCreateOutputObjects(){
     reducedTree_gen_H3 = new TTree("reducedTree_gen_H3","reducedTree_gen_H3");
     reducedTree_gen_H3 -> Branch("particleType",&particleType,"particleType/I");
     reducedTree_gen_H3 -> Branch("centrality",&centrality,"centrality/F");
-    reducedTree_gen_H3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
+    reducedTree_gen_H3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
     reducedTree_gen_H3 -> Branch("xVertex",&xVertex,"xVertex/F");
     reducedTree_gen_H3 -> Branch("yVertex",&yVertex,"yVertex/F");
     reducedTree_gen_H3 -> Branch("zVertex",&zVertex,"zVertex/F");
@@ -351,6 +351,7 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserCreateOutputObjects(){
     reducedTree_rec_He3 = new TTree("reducedTree_rec_He3","reducedTree_rec_He3");
     reducedTree_rec_He3 -> Branch("trackType",&trackType,"trackType/I");
     reducedTree_rec_He3 -> Branch("centrality",&centrality,"centrality/F");
+    reducedTree_rec_He3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
     reducedTree_rec_He3 -> Branch("xVertex",&xVertex,"xVertex/F");
     reducedTree_rec_He3 -> Branch("yVertex",&yVertex,"yVertex/F");
     reducedTree_rec_He3 -> Branch("zVertex",&zVertex,"zVertex/F");
@@ -397,6 +398,7 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserCreateOutputObjects(){
     reducedTree_rec_H3 = new TTree("reducedTree_rec_H3","reducedTree_rec_H3");
     reducedTree_rec_H3 -> Branch("trackType",&trackType,"trackType/I");
     reducedTree_rec_H3 -> Branch("centrality",&centrality,"centrality/F");
+    reducedTree_rec_H3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
     reducedTree_rec_H3 -> Branch("xVertex",&xVertex,"xVertex/F");
     reducedTree_rec_H3 -> Branch("yVertex",&yVertex,"yVertex/F");
     reducedTree_rec_H3 -> Branch("zVertex",&zVertex,"zVertex/F");
@@ -662,63 +664,44 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t      AliAnalysisTaskLightNuclei_XeXe_MC::GetInputEvent ()  {
 
-
     //Get Input Event
     fAODevent = dynamic_cast <AliAODEvent*>(InputEvent());
     if (!fAODevent) return false;
-    histoNumberOfEvents -> Fill(0.5);
+    histoNumberOfEvents->Fill(0.5);
 
     //Get MC Event
     fMCEvent = MCEvent();
     if (!fMCEvent) return false;
     histoNumberOfEvents->Fill(1.0);
 
-    //Standard Event Cuts
+    //Event Cut
     if (!fAODeventCuts.AcceptEvent(fAODevent)) {
-        //PostData(2, fQAList);
+        PostData(2, fQAList);
         return false;
     }
-    histoNumberOfEvents -> Fill(1.5);
+    histoNumberOfEvents->Fill(1.5);
 
-    //Centrality
-    AliMultSelection *multiplicitySelection = (AliMultSelection*) fAODevent->FindListObject("MultSelection");
-    if( !multiplicitySelection) return false;
-    histoNumberOfEvents -> Fill(2.5);
-    Double_t centr = multiplicitySelection->GetMultiplicityPercentile(fCentralityEstimator);
-
-    //Selection of Centrality Range
-    if (centr<fCentralityMin || centr>=fCentralityMax ) return false;
-    histoNumberOfEvents -> Fill(3.5);
-
-    //Primary Vertex
+    //Vertex
     AliAODVertex *vertex = (AliAODVertex*) fAODevent->GetPrimaryVertex();
     if ( !vertex ) return false;
-    histoNumberOfEvents -> Fill(4.5);
+
+    //Multiplicity
+    AliMultSelection *multiplicitySelection = (AliMultSelection*) fAODevent->FindListObject("MultSelection");
+    if ( !multiplicitySelection) return false;
+    histoNumberOfEvents->Fill(2.5);
 
     xVertex = vertex->GetX();
     yVertex = vertex->GetY();
     zVertex = vertex->GetZ();
 
-    //Primary Vertex Selection
-    if ( zVertex < fVertexZmin ) return false;
-    if ( zVertex > fVertexZmax ) return false;
-    histoNumberOfEvents -> Fill(5.5);
-
-    if ( vertex->GetNContributors() < fNumberVertexContributorsMin ) return false;
-    histoNumberOfEvents -> Fill(6.5);
-
-
-    multPercentile_V0M  = multiplicitySelection->GetMultiplicityPercentile("V0M");
-    centrality          = multiplicitySelection->GetMultiplicityPercentile("V0A");
+    centrality           = multiplicitySelection->GetMultiplicityPercentile("V0A");
+    multPercentile_V0M   = multiplicitySelection->GetMultiplicityPercentile("V0M");
 
     //identification
     fAODArrayMCParticles = dynamic_cast<TClonesArray *>(fAODevent->FindListObject(AliAODMCParticle::StdBranchName()));
     if(!fAODArrayMCParticles) return false;
-    histoNumberOfEvents -> Fill(7.5);
-
 
     return true;
-
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t      AliAnalysisTaskLightNuclei_XeXe_MC::PassedMinimalTrackQualityCuts (AliAODTrack *track)  {
