@@ -392,6 +392,47 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec(const
     }
   }
 
+  for(Int_t c=0;c<2;c++) {
+	fCMEQ2Re4[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2[c] = NULL; // w^3*sin(2phi)
+    fCMEw0[c] = NULL;    // w^0
+    fCMEw1[c] = NULL;    // w^1
+    fCMEw2[c] = NULL;    // w^2
+    fCMEw3[c] = NULL;    // w^3
+    fCMEw4[c] = NULL;    // w^4
+  
+	fCMEQ2Re4Pion[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Pion[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Pion[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Pion[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Pion[c] = NULL;    // w^0
+    fCMEw1Pion[c] = NULL;    // w^1
+    fCMEw2Pion[c] = NULL;    // w^2
+    fCMEw3Pion[c] = NULL;    // w^3
+    fCMEw4Pion[c] = NULL;    // w^4
+    
+    fCMEQ2Re4Kaon[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Kaon[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Kaon[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Kaon[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Kaon[c] = NULL;    // w^0
+    fCMEw1Kaon[c] = NULL;    // w^1
+    fCMEw2Kaon[c] = NULL;    // w^2
+    fCMEw3Kaon[c] = NULL;    // w^3
+    fCMEw4Kaon[c] = NULL;    // w^4
+    
+    fCMEQ2Re4Proton[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Proton[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Proton[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Proton[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Proton[c] = NULL;    // w^0
+    fCMEw1Proton[c] = NULL;    // w^1
+    fCMEw2Proton[c] = NULL;    // w^2
+    fCMEw3Proton[c] = NULL;    // w^3
+    fCMEw4Proton[c] = NULL;    // w^4
+  }
   
   //Must be here:
   DefineInput(0,TChain::Class());
@@ -721,6 +762,48 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec():
       fCMEQImProtonBothCharge[c][h] = NULL;
       fCMEMultProtonBothCharge[c][h] = NULL;
     }
+  }
+  
+  for(Int_t c=0;c<2;c++) {
+	fCMEQ2Re4[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2[c] = NULL; // w^3*sin(2phi)
+    fCMEw0[c] = NULL;    // w^0
+    fCMEw1[c] = NULL;    // w^1
+    fCMEw2[c] = NULL;    // w^2
+    fCMEw3[c] = NULL;    // w^3
+    fCMEw4[c] = NULL;    // w^4
+  
+	fCMEQ2Re4Pion[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Pion[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Pion[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Pion[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Pion[c] = NULL;    // w^0
+    fCMEw1Pion[c] = NULL;    // w^1
+    fCMEw2Pion[c] = NULL;    // w^2
+    fCMEw3Pion[c] = NULL;    // w^3
+    fCMEw4Pion[c] = NULL;    // w^4
+    
+    fCMEQ2Re4Kaon[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Kaon[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Kaon[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Kaon[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Kaon[c] = NULL;    // w^0
+    fCMEw1Kaon[c] = NULL;    // w^1
+    fCMEw2Kaon[c] = NULL;    // w^2
+    fCMEw3Kaon[c] = NULL;    // w^3
+    fCMEw4Kaon[c] = NULL;    // w^4
+    
+    fCMEQ2Re4Proton[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Proton[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Proton[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Proton[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Proton[c] = NULL;    // w^0
+    fCMEw1Proton[c] = NULL;    // w^1
+    fCMEw2Proton[c] = NULL;    // w^2
+    fCMEw3Proton[c] = NULL;    // w^3
+    fCMEw4Proton[c] = NULL;    // w^4
   }
   
   //Not needed for Empty Constructor:
