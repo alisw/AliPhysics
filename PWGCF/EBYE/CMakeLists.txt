@@ -132,6 +132,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx
   HMPTF/AliAnalysisTaskMeanptFluctuationPP.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityMC.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity2.cxx
   )
 
 # Headers from sources
