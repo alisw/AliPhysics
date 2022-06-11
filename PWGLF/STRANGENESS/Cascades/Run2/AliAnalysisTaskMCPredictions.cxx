@@ -500,12 +500,11 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   if(!fTree){
     fTree = new TTree("fTree","particles of interest");
     fTree->Branch("fPt", &fPt, "fPt/F");
+    fTree->Branch("fNParents", &fNParents, "fNParents/I");
     fTree->Branch("fStatus", &fStatus, "fStatus/I");
     fTree->Branch("fStatusMother", &fStatusMother, "fStatusMother[fNParents]/I");
     fTree->Branch("fPID", &fPID, "fPID/I");
     fTree->Branch("fPIDMother", &fPIDMother, "fPIDMother[fNParents]/I");
-    fTree->Branch("fNParents", &fNParents, "fNParents/I");
-    
     fTree->Branch("fV0MMultiplicity", &fV0MMultiplicity, "fV0MMultiplicity/I");
   }
   
