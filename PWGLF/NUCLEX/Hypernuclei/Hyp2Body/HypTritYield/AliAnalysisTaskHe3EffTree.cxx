@@ -250,6 +250,22 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 
 	fOutputList->Add(fHistEvents);          
 	fOutputList->Add(fHistdEdx);
+	
+		fHistEventsTRD[0] = new TH2D("fHistEventsTRD_bfec", "fHistEventsTRDbeforeEventCuts", 9, 0, 9,10000,0,100);     
+	fHistEventsTRD[1] = new TH2D("fHistEventsTRD_afec", "fHistEventsTRDafterEventCuts", 9, 0, 9,10000,0,100);  
+	for (int i = 0; i < 2; i++) {   
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(1,"Events");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(2,"MB");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(3,"HNUsimMB");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(4,"HQUsimMB");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(5,"TRD");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(6,"HNU");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(7,"HNUsimTRD");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(8,"HQU");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(9,"HQUsimTRD");
+	  fOutputList->Add(fHistEventsTRD[i]);
+	}  
+	
 	fEventCuts.AddQAplotsToList(fOutputList);
 
 	fTree = new TTree("treeHe","fTree");
@@ -353,7 +369,7 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 
 	fESDevent = dynamic_cast<AliESDEvent*>(InputEvent()); 
 	fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD);
-  if(!fEventCuts.AcceptEvent(fESDevent)) return;
+
 
   Int_t runNumber = fESDevent->GetRunNumber();
   if (!fUseExternalSplines) SetBetheBlochParams(runNumber);
@@ -376,6 +392,19 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 	trackCutsV0.SetMaxChi2PerClusterTPC(8);
 	trackCutsV0.SetMinNClustersTPC(40);
 
+	AliMultSelection *MultSelection = (AliMultSelection*) fESDevent->FindListObject("MultSelection");
+	if (MultSelection) {
+		tMultV0M = MultSelection->GetMultiplicityPercentile("V0M");
+		tMultOfV0M = MultSelection->GetMultiplicityPercentile("OnlineV0M");
+		tMultSPDTracklet = MultSelection->GetMultiplicityPercentile("SPDClusters");
+		tMultSPDCluster = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+		tMultRef05 = MultSelection->GetMultiplicityPercentile("RefMult05");
+		tMultRef08 = MultSelection->GetMultiplicityPercentile("RefMult08");
+	}
+	
+	TRDnEvents();
+	
+	if(!fEventCuts.AcceptEvent(fESDevent)) return;
 	//******************************
 	//*   get trigger information  *
 	//******************************
@@ -447,15 +476,7 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 	tSPDFiredChips0 = multSPD->GetNumberOfFiredChips(0);
 	tSPDFiredChips1 = multSPD->GetNumberOfFiredChips(1);
 
-	AliMultSelection *MultSelection = (AliMultSelection*) fESDevent->FindListObject("MultSelection");
-	if (MultSelection) {
-		tMultV0M = MultSelection->GetMultiplicityPercentile("V0M");
-		tMultOfV0M = MultSelection->GetMultiplicityPercentile("OnlineV0M");
-		tMultSPDTracklet = MultSelection->GetMultiplicityPercentile("SPDClusters");
-		tMultSPDCluster = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-		tMultRef05 = MultSelection->GetMultiplicityPercentile("RefMult05");
-		tMultRef08 = MultSelection->GetMultiplicityPercentile("RefMult08");
-	}
+
 	
 	tMagField = fESDevent->GetMagneticField();
 
@@ -578,6 +599,85 @@ Double_t AliAnalysisTaskHe3EffTree::GetInvPtDevFromBC(Int_t b, Int_t c) {
 	tmp += (c & 0xfff);
 	Double_t invPtDev = tmp * 0.000001;
 	return invPtDev;
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskHe3EffTree::TRDnEvents() {
+	//*   get trigger information  *
+	Bool_t MB = kFALSE;		// minimum bias
+	Int_t HNU = 0;			// TRD nuclei
+	Int_t HQU = 0;			// TRD quarkonia
+  Int_t HJT = 0;
+  
+  Bool_t TRD = kFALSE;		// minimum bias
+	Int_t HNUTRD = 0;			// TRD nuclei
+	Int_t HQUTRD = 0;			// TRD quarkonia
+  Int_t HJTTRD = 0;
+ 	Int_t HNUsimTRD = 0;			// TRD nuclei
+	Int_t HQUsimTRD = 0;			// TRD quarkonia
+  Int_t HJTsimTRD = 0; 
+  
+	if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) MB = kTRUE;
+	if (fInputHandler->IsEventSelected() & AliVEvent::kTRD) TRD = kTRUE;
+	
+	if (TRD) {
+		TString classes = fESDevent->GetFiredTriggerClasses();   
+		if (classes.Contains("HNU")) HNUTRD = 1;
+		if (classes.Contains("HQU")) HQUTRD = 1; 
+		if (classes.Contains("HJT")) HJTTRD = 1; 
+	} 
+	
+	  Int_t nTrdTracks = fESDevent->GetNumberOfTrdTracks();
+		// MC: simulate TRD trigger
+
+		
+		Int_t nTracks[90] = { 0 }; // stack-wise counted number of tracks above pt threshold
+
+    
+		if (nTrdTracks > 0) {
+			for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
+				AliESDTrdTrack* trdTrack = fESDevent->GetTrdTrack(iTrack);
+				if (!trdTrack) continue;
+	
+				// simulate HNU
+				if((trdTrack->GetPID() >= 255 && trdTrack->GetNTracklets() == 4) || 
+					(trdTrack->GetPID() >= 235 && trdTrack->GetNTracklets() > 4)) {	
+					if (MB) HNU = 1;
+					if (TRD) HNUsimTRD = 1;
+				}
+				// simulate HQU
+				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
+					trdTrack->GetPID() >= 130 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){	
+					Double_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						if (MB) HQU = 1;
+						if (TRD) HQUsimTRD = 1;
+					}
+				}
+      }
+		}
+  
+	// fill histogram
+	//fHistEventsTRD[0]->Fill(0,tMultV0M);
+	if (MB) fHistEventsTRD[0]->Fill(1,tMultV0M);
+	if (HNU) fHistEventsTRD[0]->Fill(2,tMultV0M);
+	if (HQU) fHistEventsTRD[0]->Fill(3,tMultV0M);
+	if (TRD) fHistEventsTRD[0]->Fill(4,tMultV0M);
+	if (HNUTRD) fHistEventsTRD[0]->Fill(5,tMultV0M);
+	if (HQUTRD) fHistEventsTRD[0]->Fill(7,tMultV0M);
+	if (HNUsimTRD) fHistEventsTRD[0]->Fill(6,tMultV0M);
+	if (HQUsimTRD) fHistEventsTRD[0]->Fill(8,tMultV0M);
+	
+	if (fEventCuts.AcceptEvent(fESDevent)) {
+		  //fHistEventsTRD[1]->Fill(0,tMultV0M);
+	  if (MB) fHistEventsTRD[1]->Fill(1,tMultV0M);
+	  if (HNU) fHistEventsTRD[1]->Fill(2,tMultV0M);
+	  if (HQU) fHistEventsTRD[1]->Fill(3,tMultV0M);
+	  if (TRD) fHistEventsTRD[1]->Fill(4,tMultV0M);
+	  if (HNUTRD) fHistEventsTRD[1]->Fill(5,tMultV0M);
+	  if (HQUTRD) fHistEventsTRD[1]->Fill(7,tMultV0M);
+	  if (HNUsimTRD) fHistEventsTRD[1]->Fill(6,tMultV0M);
+	  if (HQUsimTRD) fHistEventsTRD[1]->Fill(8,tMultV0M);
+	}
 }
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskHe3EffTree::Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params){
