@@ -724,6 +724,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fInv_pT_ULS_forW);
 	fOutputList->Add(fInv_pT_LS_forZ);
 	fOutputList->Add(fInv_pT_ULS_forZ);
+	fOutputList->Add(fInv_pT_ULS_forZ_MC);
 	fOutputList->Add(fHistPt_Inc);
 	fOutputList->Add(fHistPt_Iso);
 	fOutputList->Add(fHistPt_R_Iso);
@@ -784,6 +785,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistWeOrg); 
 	fOutputList->Add(fHistWeOrgPos); 
 	fOutputList->Add(fHistWeOrgNeg); 
+	fOutputList->Add(fHistZeOrg); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
