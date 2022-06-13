@@ -179,6 +179,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserCreateOutputObjects()
   fListOutput->Add(new TH2D("hCentrality_MidCharged",  "", 120, -10., 110., 1000, 0., 1000.));
   
   fListOutput->Add(new TH2D("hEta_Phi",  "", 80, -5.5, 5.5, 72, 0 ,2.*TMath::Pi()));
+  fListOutput->Add(new TH1D("hEta_CMS",  "", 200, -10, 10.));
+  fListOutput->Add(new TH1D("hEta_Lab",  "", 200, -10, 10));
   fListOutput->Add(new TH2D("hEta_Phi_Muon_SPD",  "", 80, -5.5, 5.5, 72, 0 ,2.*TMath::Pi()));
 
   fListOutput->Add(new TH2D("hPt_Cen","", 40, 0., 20., 120, -10., 110.));
@@ -580,7 +582,10 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
    //if (pdgabs!=211 && pdgabs!=321 && pdgabs!=2212) continue; //only charged pi+K+p
    if (pdgabs==9902210) return; //no diffractive protons
 
-   const auto dEtapp(ConvertCMS(mcTrack->Eta(),fPbp));
+   (static_cast<TH1D*>(fListOutput->FindObject("hEta_CMS")))->Fill(mcTrack->Eta());
+   const auto dEtapp(GetLabEta(mcTrack,fPbp));
+   (static_cast<TH1D*>(fListOutput->FindObject("hEta_Lab")))->Fill(dEtapp);
+   
 
    /*
    if(dEtapp>1.7 && dEtapp<3.7)
@@ -665,8 +670,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
   //if (pdgabs!=211 && pdgabs!=321 && pdgabs!=2212) continue; //only charged pi+K+p
   if (pdgabs==9902210) return; //no diffractive protons 
 
-  const auto dEtapp(ConvertCMS(mcTrack->Eta(),fPbp));
   //const auto dEtapp(mcTrack->Eta());
+  const auto dEtapp(GetLabEta(mcTrack,fPbp));
   const auto dEtappt(mcTrack->Pt());
  
   (static_cast<TH2D*>(fListOutput->FindObject("hPt_Cen")))->Fill(dEtappt,fCentrality);
@@ -721,7 +726,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
   TrIsPrim=mcTrack->IsPhysicalPrimary();
   TrCharge=mcTrack->Charge()!=0;
 
-  mcTrackEta = ConvertCMS(mcTrack->Eta(),fPbp);
+  mcTrackEta = GetLabEta(mcTrack,fPbp);
   mcTrackPt  = mcTrack->Pt();
   mcTrackPhi = mcTrack->Phi(); 
 
@@ -1253,6 +1258,16 @@ Double_t AliAnalysisTaskSEpPbCorrelationsJetV2Kine::ConvertCMS(Double_t eta_CMS,
  if(!isPbp) eta_Lab = -1 * (eta_CMS + 0.465); // important, the CMS is converted into Lab frame!
  else eta_Lab = -1 * (eta_CMS - 0.465); 
  return eta_Lab;
+}
+
+Double_t AliAnalysisTaskSEpPbCorrelationsJetV2Kine::GetLabEta(AliMCParticle *MCtrack, Bool_t isPbp){
+ TLorentzVector v1;
+ v1.SetPtEtaPhiE(MCtrack->Pt(),MCtrack->Eta(),MCtrack->Phi(),MCtrack->E());
+ Double_t beta;
+ if(!isPbp) beta = TMath::TanH(0.465);
+ else beta = TMath::TanH(-0.465);
+ v1.Boost(0,0,beta);
+ return -1.*v1.Eta();
 }
 
 

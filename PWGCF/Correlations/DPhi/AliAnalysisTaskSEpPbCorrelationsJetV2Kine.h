@@ -45,6 +45,7 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
 
  Double_t RangePhi(Double_t DPhi);
  Double_t ConvertCMS(Double_t eta, Bool_t IsPbp);
+ Double_t GetLabEta(AliMCParticle *MCtrack, Bool_t isPbp);
 
  private:
  Double_t fCen1;
