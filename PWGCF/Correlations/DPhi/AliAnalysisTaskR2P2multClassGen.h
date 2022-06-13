@@ -52,16 +52,8 @@ public:
   Bool_t Is2015PileUpEvent();
   Bool_t StoreEventMultiplicities(AliVEvent *event);
   Double_t CalculateSharedFraction(const TBits *triggerClusterMap,const TBits *assocClusterMap,const TBits *triggerShareMap,const TBits *assocShareMap);
-
-  Bool_t ResonanceV0Cut(const Int_t pdgMother,
-			  const Double_t px1, const Double_t py1,
-			  const Double_t pz1, const Double_t px2,
-			  const Double_t py2, const Double_t pz2);
-  Bool_t photonConvCut(const Double_t px1, const Double_t py1,
-		       const Double_t pz1, const Double_t px2,
-		       const Double_t py2, const Double_t pz2);
-
- private:
+    
+private:
     Double_t fnsigmas[4][2]; //nsigma values
     Bool_t fHasTOFPID;
     Double_t fNSigmaPID; // number of sigma for PID cut
@@ -71,7 +63,7 @@ public:
     Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
     Double_t fSharedfraction_Pair_cut;
-    
+
     AliAnalysisUtils *fUtils; //!
     AliPPVsMultUtils *fPPVsMultUtils; //!
     AliEventCuts *   fEventCut;  //!
@@ -128,6 +120,8 @@ public:
       
     virtual     void    SetDebugLevel( int v )              { _debugLevel   = v; }
     virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
+    virtual     void    SetPileUpEventPP13(int v)               { _pileUpEventPP13  = v; }
+    virtual     void    SetPileUpTrackPP13(int v)               { _pileUpTrackPP13  = v; }
     virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
     virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
     virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
@@ -136,8 +130,7 @@ public:
     virtual     void    SetIfContaminationWeakInMC( bool v )    { NoContaminationWeak   = v; }
     virtual     void    SetIfContaminationWeakMaterialInMC( bool v )    { NoContaminationWeakMaterial   = v; }
     virtual     void    SetIfMisIDWeakMaterialInMCClosure( bool v )     { Closure_NoMisIDWeakMaterial   = v; }
-    virtual     void    SetUsePtEff(int v)                { _usePtEff   = v; }
-    virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
+    virtual     void    SetUsePtEff(Int_t v)                { _usePtEff   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
     virtual     void    SetEventPlane(bool v)               { _useEventPlane  = v; }
     virtual     void    SetEPmin( double v)                 { EP_min          = v; }
@@ -158,12 +151,10 @@ public:
         _centralityMin = centralityMin;
         _centralityMax = centralityMax;
     }
-
-
+    
     virtual     void    SetRequestedCharge_1(int v)     { _requestedCharge_1 = v; }
     virtual     void    SetRequestedCharge_2(int v)     { _requestedCharge_2 = v; }
     virtual     void    SetPtMin1( double v)            { _min_pt_1          = v; }
-
     virtual     void    SetPtMax1( double v)            { _max_pt_1          = v; }
     virtual     void    SetPtBinWidth1( double v)       { _width_pt_1        = v; }
     virtual     void    SetNPhiBins1( int v)            { _nBins_phi_1       = v; }
@@ -186,12 +177,8 @@ public:
     virtual     void    SetDedxMax(double v)            { _dedxMax           = v; }
     virtual     void    SetNClusterMin(int v)           { _nClusterMin       = v; }
     virtual     void    SetTrackFilterBit(int v)        { _trackFilterBit    = v; }
-
     virtual     void    SetPtEff_1(TH1F * v)           { _hPtEff_1          = v; }
     virtual     void    SetPtEff_2(TH1F * v)           { _hPtEff_2          = v; }
-    
-    virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
-    virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
 
     AliHelperPID                   * GetHelperPID()          { return fHelperPID; }
     void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid;  }
@@ -200,7 +187,7 @@ public:
 
     void SetAnalysisType( const char * analysisType ) { fAnalysisType = analysisType; }
     void SetSystemType( const char * systemType )     { fSystemType = systemType; }
-    void SetResonancesCut( Bool_t NoResonances )      {  fExcludeResonancesInMC = NoResonances; }
+    void SetResonancesCut( Bool_t NoResonances )      { fExcludeResonancesInMC = NoResonances; }
     void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
 
     void SetNSigmaCut( double nsigma )             { fNSigmaPID = nsigma; }
@@ -218,15 +205,15 @@ protected:
     AliAODEvent*             fAODEvent;             //! AOD Event
     AliESDEvent*             fESDEvent;             //! ESD Event
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
-
-    AliPIDResponse*          fPIDResponse; 
+    
+    AliPIDResponse*          fPIDResponse; //!
     AliHelperPID* fHelperPID;       // points to class for PID
     
     // Histogram settings
     //TList*              _inputHistoList;
-    TList*              _outputHistoList;   
+    TList*              _outputHistoList;   //!
     //int _outputSlot;
-    TClonesArray*                   fMCArray=nullptr; //!
+    
     
     double   _twoPi;
     long     _eventCount;
@@ -234,6 +221,8 @@ protected:
     //configuration variables and filters
     int      _debugLevel;
     int      _singlesOnly;
+    int      _pileUpEventPP13;
+    int      _pileUpTrackPP13;
     bool      PIDparticle;
     bool      use_pT_cut;
     bool      useAliHelperPID;
@@ -242,8 +231,7 @@ protected:
     bool      NoContaminationWeak;
     bool      NoContaminationWeakMaterial;
     bool      Closure_NoMisIDWeakMaterial;
-    int      _usePtEff;
-    int      _useWeights;
+    Int_t      _usePtEff;
     int      _useRapidity;
     bool     _useEventPlane;
     double   EP_min;
@@ -281,22 +269,9 @@ protected:
 
     TFormula *f2015V0MtoTrkTPCout;
     TFormula *f2015V0MtoTrkTPCout_Upper;
-    TFormula *fV0MtoTrkTPCout_lower_pp13TeV;
-    TFormula *fV0MtoTrkTPCout_upper_pp13TeV;
     Int_t fV0Multiplicity;
-    Int_t fV0AMultiplicity;
-    Int_t fV0CMultiplicity;
     Int_t fV0Multiplicity_Victor;
     Int_t fNoOfTPCoutTracks;
-    
-    //----------------------------------------------------------------
-    Double_t  fMultV0A;                                  //  mult. V0A
-    Double_t  fMultV0C;                                  //  mult. V0C
-    Double_t  fMultV0M;                                  //  mult. V0A+V0C
-
-    //-------------------------------------------------------------
-
-
     
     int _tpcnclus;
     double _chi2ndf;
@@ -305,9 +280,6 @@ protected:
     
     double _field;
     int    _nTracks;
-    int    _nTracksTruth;
-    Int_t nTracksMC;
-    int _nTpcCls;
     double _mult0;
     double _mult1;
     double _mult2;
@@ -335,8 +307,8 @@ protected:
     //float*  _eta_1;             //!
     float  *_correction_1;           //!
     float  *_dedx_1;           //!
-    AliAODTrack ** _TrackArray;  //!  
-
+    AliAODTrack ** _TrackArray;  //!
+    
     //particle 2
     int    *_id_2;              //!
     int    *_charge_2;            //!
@@ -353,11 +325,8 @@ protected:
     float  *_correction_2;           //!
     float  *_dedx_2;           //!
     
-    float * _correctionPtEff_1;           //!
-    float * _correctionPtEff_2;           //!
-
-    float * _correctionWeight_1;           //!
-    float * _correctionWeight_2;           //!
+    Float_t * _correctionPtEff_1;           //!
+    Float_t * _correctionPtEff_2;           //!
     
     //histograming
     int _nBins_M0;       double _min_M0;       double _max_M0;       double _width_M0;
@@ -371,7 +340,7 @@ protected:
     int _nBins_M8;       double _min_M8;       double _max_M8;       double _width_M8;
     
     int _nBins_vertexZ;  double _min_vertexZ;  double _max_vertexZ;  double _width_vertexZ;
-
+    
     int _nBins_pt_1;     double _min_pt_1;     double _max_pt_1;     double _width_pt_1;
     int _nBins_phi_1;    double _min_phi_1;    double _max_phi_1;    double _width_phi_1;
     int _nBins_eta_1;    double _min_eta_1;    double _max_eta_1;    double _width_eta_1;
@@ -406,41 +375,26 @@ protected:
     double __s2NPtNw_12;
     double __s2PtNNw_12;
     
-
     double * __n1_1_vsPt;   //!
-    double * __n1Nw_1_vsPt;   //!
     double * __n1_1_vsPt_pdg;   //!
     double * __n1_1_vsPt_pdg_Weak;   //!
     double * __n1_1_vsPt_pdg_Weak_Material;   //!
     double * __n1_1_vsPt_Weak;   //!
     double * __n1_1_vsPt_Material;   //!
     double * __n1_1_vsEtaPhi;     //!
-    double * __n1Nw_1_vsEtaPhi;     //!
     double * __s1pt_1_vsEtaPhi;    //!
-    float  * __n1_1_vsZEtaPhiPt;    //!
-    float  * __wt_1_vsEtaPhi;    //! 
-    double * __n1_1_vsEta;   //!
-    double * __n1Nw_1_vsEta;   //!
-    double * __n1_1_vsPhi;   //!
-    double * __n1Nw_1_vsPhi;   //!
-
+ 
+    
     double * __n1_2_vsPt;   //!
-    double * __n1Nw_2_vsPt;   //!
     double * __n1_2_vsPt_pdg;   //!
     double * __n1_2_vsPt_pdg_Weak;   //!
     double * __n1_2_vsPt_pdg_Weak_Material;   //!
     double * __n1_2_vsPt_Weak;   //!
     double * __n1_2_vsPt_Material;   //!
     double * __n1_2_vsEtaPhi;     //!
-    double * __n1Nw_2_vsEtaPhi;     //!
     double * __s1pt_2_vsEtaPhi;    //!
-    float  * __n1_2_vsZEtaPhiPt;    //!
-    float  * __wt_2_vsEtaPhi;    //! 
-    double * __n1_2_vsEta;   //!
-    double * __n1Nw_2_vsEta;   //!
-    double * __n1_2_vsPhi;   //!
-    double * __n1Nw_2_vsPhi;   //!
 
+    
     //double * __n2_12_vsPtPt;
     //double * __n2_12_vsEtaPhi;
     //double * __s2ptpt_12_vsEtaPhi;
@@ -449,33 +403,16 @@ protected:
     
     double * __n2_12_vsPtPt;   //!
     float  * __n2_12_vsEtaPhi;   //!
-    float  * __n2Nw_12_vsEtaPhi;   //!
     float  * __s2ptpt_12_vsEtaPhi;   //!
     float  * __s2PtN_12_vsEtaPhi;   //!
     float  * __s2NPt_12_vsEtaPhi;   //!
     
     TH1F * _hPtEff_1;
     TH1F * _hPtEff_2;
-
-    TH3F * _weight_1;
-    TH3F * _weight_2;
-    //    TProfile * _hProfPileupCut;
-    TH1D * _eventDetails;    
-    TH1D * _trackDetails;   	
+    TH1D * _eventAccounting;
     TH1D * _m0;
     TH1D * _m1;
     TH1D * _m2;
-    TH1D * _m2DiffMultBeforeCut;
-    TH1D * _m2DiffMult;
-    TH1D * _m2RatioMult;
-    TH1D * _m2Ratio2Mult;
-    TH2F *multDiffVsTruth;
-    TH2F *multDiffNegVsTruth;
-    TH2F *multRecoVsTruth;
-
-    TH2F *multDiff2VsTruth;
-    TH2F *multDiff2NegVsTruth;
-    TH2F *multReco2VsTruth;
     TH1D * _m3;
     TH1D * _m4;
     TH1D * _m5;
@@ -483,25 +420,9 @@ protected:
     TH1D * _m7;
     TH1D * _m8;
     TH1D * _vertexZ;
-    TH1D * _vertexZHisto_before;
-    TH1D * _vertexZHisto;
-    TH1D** fV0M;//!array of histograms for V0M flatness check
-
-	
     
-    /*TH1F * _Ncluster1;
-    TH1F *_Ncluster1_NoMisID; 
-    TH1F *_Ncluster1_NoMisID_NoWeakDecayed; 
-    TH1F *_Ncluster1_NoMisID_NoWeakDecayed_NoMaterial;
-
-    
-    TH1D *h1_chiSqNDF_beforeCut;
-    TH1D *h1_chiSqNDF;
-    TH1D *h1_chiSqNDF_NoMisID; 
-    TH1D *h1_chiSqNDF_NoMisID_NoWeakDecayed; 
-    TH1D *h1_chiSqNDF_NoMisID_NoWeakDecayed_NoMaterial;
-    */
-
+    TH1F * _Ncluster1;
+    TH1F * _Ncluster2;
 
     TH1F * _t0_1d;
     TH1F * _trackLength;
@@ -527,26 +448,10 @@ protected:
     
     TH1F * _phidis_POI_AliHelperPID;
     TH1F * _phidis_before_any_cuts;
+    
+    TH1F * _dcaz;
+    TH1F * _dcaxy;
 
-    TH1F * _ptMcTruth_all;
-    TH1F * _ptMcTruth_phyPrimary;
-    TH1F * _ptMcTruth_phyPrimary_noSecFromWeakDecay;
-    TH1F * _ptMcTruth_phyPrimary_noSecFromWeakDecay_noSecFromMaterial;
-    TH1F * _ptMcTruth_phyPrimary_noSecFromWeakDecay_noSecFromMaterial_noResonance;
-  /*  TH1F * _dcazPos;
-    TH1F * _dcazImpact;
-    TH1F *_dcazImpact_NoMisID; 
-    TH1F *_dcazImpact_NoMisID_NoWeakDecayed;   
-    TH1F *_dcazImpact_NoMisID_NoWeakDecayed_NoMaterial; 
-    
-    TH1F * _dcaxyPos;
-    TH1F * _dcaxyImpact;
-    TH1F * _dcaxyPtDept;
-    TH1F *_dcaxyImpact_NoMisID;  
-    TH1F *_dcaxyImpact_NoMisID_NoWeakDecayed; 
-    TH1F *_dcaxyImpact_NoMisID_NoWeakDecayed_NoMaterial;
-*/
-    
     TH2F *  _dedx_p;
     TH2F *  _dedx_p_POI_AliHelperPID;
     TH2F *  _dedx_p_AliHelperPID_no_Undefined;
@@ -574,72 +479,19 @@ protected:
     TH2F *  _msquare_p;
     TH2F *  _msquare_p_POI_AliHelperPID;
     TH2F *  _msquare_p_AliHelperPID_no_Undefined;
-    TH2F *  _fhV0MvsTracksTPCout_before;
     TH2F *  _fhV0MvsTracksTPCout_after;
-    TProfile *  _profV0MvsTPCout;
-    TH2F *  _fV0MmultVsSpdTracklet_before;
-    TH2F *  _fV0MmultVsSpdTracklet_after;
-
-  
-   TH1F *  _fhMultV0M;
-   TH1F *  _fhMultV0A;
-   TH1F *  _fhMultV0C;
-
-   
-   //-------------------------------------------------------------------------
+    
     // PARTICLE 1 (satisfies filter 1)
     // Primary filled quantities
-
     TH1F      *  _n1_1_vsPt;
-    TH1F      *  _n1Nw_1_vsPt;
     TH1F      *  _n1_1_vsPt_pdg;
     TH1F      *  _n1_1_vsPt_pdg_Weak;
     TH1F      *  _n1_1_vsPt_pdg_Weak_Material;
-
-    TH1F      *  _n1_1_vsDCAzPos;
-    TH1F      *  _n1_1_vsDCAzImpact_beforeCut;
-    TH1F      *  _n1_1_vsDCAzImpact;
-    TH1F      *  _n1_1_vsDCAzImpact_pdg;
-    TH1F      *  _n1_1_vsDCAzImpact_pdg_Weak;
-    TH1F      *  _n1_1_vsDCAzImpact_pdg_Weak_Material;
-
-    TH1F      *  _n1_1_vsDCAxyPos;
-    TH1F      *  _n1_1_vsDCAxyPtDept;
-    TH1F      *  _n1_1_vsDCAxyImpact_beforeCut;
-    TH1F      *  _n1_1_vsDCAxyImpact;
-    TH1F      *  _n1_1_vsDCAxyImpact_pdg;
-    TH1F      *  _n1_1_vsDCAxyImpact_pdg_Weak;
-    TH1F      *  _n1_1_vsDCAxyImpact_pdg_Weak_Material;
-
-    //   TH1F      *  _n1_1_vsNcluster2;
-    TH1F * _Ncluster2;
-    TH1F * _trackId; 
-    TH1F * _trackIdTPCout;
-    
-    TH1F      *  _n1_1_vsNcluster1_beforeCut;
-    TH1F      *  _n1_1_vsNcluster1;
-    TH1F      *  _n1_1_vsNcluster1_pdg;
-    TH1F      *  _n1_1_vsNcluster1_pdg_Weak;
-    TH1F      *  _n1_1_vsNcluster1_pdg_Weak_Material;
-
-    TH1F      *  _n1_1_vsChiSqPerNDF_beforeCut;
-    TH1F      *  _n1_1_vsChiSqPerNDF;
-    TH1F      *  _n1_1_vsChiSqPerNDF_pdg;
-    TH1F      *  _n1_1_vsChiSqPerNDF_pdg_Weak;
-    TH1F      *  _n1_1_vsChiSqPerNDF_pdg_Weak_Material;
-
     TH1F      *  _n1_1_vsPt_Weak;
     TH1F      *  _n1_1_vsPt_Material;
-    TH1F      *  _n1_1_vsEta;
-    TH1F      *  _n1Nw_1_vsEta;
-    TH1F      *  _n1_1_vsPhi;
-    TH1F      *  _n1Nw_1_vsPhi;
-    //    TH1F      * h1f_wt1_vsEtaPhi;
     TH2F      *  _n1_1_vsEtaVsPhi;
-    TH2F      *  _n1Nw_1_vsEtaVsPhi;
     TH2F      *  _s1pt_1_vsEtaVsPhi;
-    TH3F      *  _n1_1_vsZVsEtaVsPhiVsPt;
-    TH1F      *  _wt_1_vsEtaVsPhi;
+
     TProfile *  _n1_1_vsM;  // w/ weight
     TProfile *  _s1pt_1_vsM;
     TProfile *  _n1Nw_1_vsM; // w/o weight
@@ -651,52 +503,14 @@ protected:
     // PARTICLE 2 (satisfies filter 2)
     // Primary filled quantities
     TH1F      *  _n1_2_vsPt;
-    TH1F      *  _n1Nw_2_vsPt;
     TH1F      *  _n1_2_vsPt_pdg;
     TH1F      *  _n1_2_vsPt_pdg_Weak;
     TH1F      *  _n1_2_vsPt_pdg_Weak_Material;
-
-    TH1F      *  _n1_2_vsDCAzPos;
-    TH1F      *  _n1_2_vsDCAzImpact_beforeCut;
-    TH1F      *  _n1_2_vsDCAzImpact;
-    TH1F      *  _n1_2_vsDCAzImpact_pdg;
-    TH1F      *  _n1_2_vsDCAzImpact_pdg_Weak;
-    TH1F      *  _n1_2_vsDCAzImpact_pdg_Weak_Material;
-
-    TH1F      *  _n1_2_vsDCAxyPos;
-    TH1F      *  _n1_2_vsDCAxyPtDept;
-    TH1F      *  _n1_2_vsDCAxyImpact_beforeCut;
-    TH1F      *  _n1_2_vsDCAxyImpact;
-    TH1F      *  _n1_2_vsDCAxyImpact_pdg;
-    TH1F      *  _n1_2_vsDCAxyImpact_pdg_Weak;
-    TH1F      *  _n1_2_vsDCAxyImpact_pdg_Weak_Material;
-
-    //   TH1F      *  _n1_2_vsNcluster2;
-
-    TH1F      *  _n1_2_vsNcluster1_beforeCut;
-    TH1F      *  _n1_2_vsNcluster1;
-    TH1F      *  _n1_2_vsNcluster1_pdg;
-    TH1F      *  _n1_2_vsNcluster1_pdg_Weak;
-    TH1F      *  _n1_2_vsNcluster1_pdg_Weak_Material;
-
-    TH1F      *  _n1_2_vsChiSqPerNDF_beforeCut;
-    TH1F      *  _n1_2_vsChiSqPerNDF;
-    TH1F      *  _n1_2_vsChiSqPerNDF_pdg;
-    TH1F      *  _n1_2_vsChiSqPerNDF_pdg_Weak;
-    TH1F      *  _n1_2_vsChiSqPerNDF_pdg_Weak_Material;
-
     TH1F      *  _n1_2_vsPt_Weak;
     TH1F      *  _n1_2_vsPt_Material;
-    TH1F      *  _n1_2_vsEta;
-    TH1F      *  _n1Nw_2_vsEta;
-    TH1F      *  _n1_2_vsPhi;
-    TH1F      *  _n1Nw_2_vsPhi;
-    //    TH1F      * h1f_wt2_vsEtaPhi;
     TH2F      *  _n1_2_vsEtaVsPhi;
-    TH2F      *  _n1Nw_2_vsEtaVsPhi;
     TH2F      *  _s1pt_2_vsEtaVsPhi;
-    TH3F      *  _n1_2_vsZVsEtaVsPhiVsPt;
-    TH1F      *  _wt_2_vsEtaVsPhi;
+
     TProfile *  _n1_2_vsM;
     TProfile *  _s1pt_2_vsM;
     TProfile *  _n1Nw_2_vsM; // w/o weight
@@ -706,9 +520,7 @@ protected:
     TH2F      *  _betaVsP_2;
     
     // Pairs 1 & 2
-    //    TH1F      * h1f_wt12_vsEtaPhi;
     TH1F      * _n2_12_vsEtaPhi;
-    TH1F      * _n2Nw_12_vsEtaPhi;
     TH2F      * _n2_12_vsPtVsPt;
     TH1F      * _s2PtPt_12_vsEtaPhi;
     TH1F      * _s2PtN_12_vsEtaPhi;
@@ -723,25 +535,14 @@ protected:
     TProfile * _s2PtNNw_12_vsM;
     TProfile * _s2NPtNw_12_vsM;
     
-    TH1F * _invMassRho0Before   ; 
-    TH1F * _invMassK0sBefore    ; 
-    TH1F * _invMassLambdaBefore ;  
-    TH1F * _invMassRho0After    ;
-    TH1F * _invMassK0sAfter     ;  
-    TH1F * _invMassLambdaAfter  ;     
     TH1F     * _invMassKaon;
     TH1F     * _invMassKaonSq;
-    TH1F     * _invMassElec_beforeCut;
     TH1F     * _invMassElec;
     TH1F     * _ClusterSharedFraction_beforeCut;
     TH1F     * _ClusterSharedFraction_afterCut;
     TH1F     * _ClusterSharedFraction_3by3Bins_beforeCut;
     TH1F     * _ClusterSharedFraction_3by3Bins_afterCut;
-
-    ///thnsparse added by baidya on 25jul19 for correlation of detectors                             
-    //    THnSparseD *fCorrDet_beforeCut;//
-    // THnSparseD *fCorrDet_afterCut;   // 
-
+    
     TString n1Name;
     TString n1NwName;
     TString n2Name;
@@ -833,7 +634,6 @@ protected:
     
     TString _title_etaPhi_12;
     
-    TString _title_wt;
     TString _title_AvgN2_12;
     TString _title_AvgSumPtPt_12;
     TString _title_AvgSumPtN_12;
@@ -855,4 +655,3 @@ protected:
 
 
 #endif
-

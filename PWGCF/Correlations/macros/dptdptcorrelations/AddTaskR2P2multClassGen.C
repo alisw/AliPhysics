@@ -1,4 +1,4 @@
-//  Macro designed for use with the AliAnalysisTaskR2P2multClass task.
+//  Macro designed for use with the AliAnalysisTaskR2P2multClassGen task.
 //  Author: (Baidyanath Sahoo, Basanta Kumar Nandi), IIT Bombay & Claude Pruneau, Wayne State University
 //
 //   PbPb               10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
@@ -19,16 +19,16 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 
-AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
+AliAnalysisTaskR2P2multClassGen * AddTaskR2P2multClassGen
 (
  TString AnalysisDataType       = "MCAOD", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- TString prefixName             = "truth_",
+ TString prefixName             = "genNoEffPM_",
   //************ for Stage2_Step1 starts ************************
  
  int    singlesOnly             =  0,   // 0: full correlations    1: singles only
  
  int    usePtEff                =  0,   // 0: no                   1: yes  
- TString inputPtEffFileName       = "alien:///alice/cern.ch/user/d/dbauri/efficiencyInv_Default.root",
+ TString inputPtEffFileName       = "alien:///alice/cern.ch/user/s/sbaidyan/efficiency_newCode_6feb22.root", 
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
  const char* taskname           = "ChPM",// ChPM, ChPP, ChMM
  //************ for Stage2_Step1 ends ************************
@@ -54,9 +54,9 @@ AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
  bool   PureNoWeakinMC          = 1,   // 0: No MisID but Secondaries from weak decays in MCAODreco;       1: No MisID and No Secondaries from weak decays in MCAODreco
  bool   PureNoWeakMaterialinMC  = 1,   // 0: No MisID and No Secondaries from weak decays but Secondaries from material in MCAODreco;       1: No MisID and No Secondaries from weak decays and material in MCAODreco
  bool   NoMisIDWeakMaterialInClosure = 1,   // 0: allow MisID and No Secondaries from weak decays and material in MC Closure test       1: No MisID and Secondaries from weak decays and material in MC Closure test
- double SharedFractionPairCut   = 0.005 // check track splitting
- //int    pileUpEventPP13             =  1,   // 0: with Event Pileup    1: without Event Pileup
- //int    pileUpTrackPP13             =  1   // 0: with track Pileup    1: without track Pileup
+ double SharedFractionPairCut   = 0.005, // check track splitting
+ int    pileUpEventPP13             =  1,   // 0: with Event Pileup    1: without Event Pileup
+ int    pileUpTrackPP13             =  1   // 0: with track Pileup    1: without track Pileup
  )
 
 {
@@ -506,7 +506,7 @@ AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
       minCentrality[8] = 90.;     maxCentrality[8]  = 95.;
       minCentrality[9] = 95.;     maxCentrality[9]  = 100.;
     }
-   else if ( CentralityGroup == 47 )
+  else if ( CentralityGroup == 47 )
     {
       nCentrality = 4;
 
@@ -515,7 +515,6 @@ AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
       minCentrality[2] = 30.;     maxCentrality[2]  = 60.;
       minCentrality[3] = 60.;     maxCentrality[3]  = 100.;
     }
-
   else    return 0;
   
   double dedxMin                =  0.0;
@@ -556,7 +555,7 @@ AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
   int iTask = 0; // task counter
   AliAnalysisDataContainer *taskInputContainer;
   AliAnalysisDataContainer *taskOutputContainer;
-  AliAnalysisTaskR2P2multClass* task;
+  AliAnalysisTaskR2P2multClassGen* task;
     
   for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
     {
@@ -620,11 +619,10 @@ AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
 		      cout << "\n\n\n\n ====================================================" << endl;
 		      return 0;
 		    }
-		 TString nameHistoBasePtEff = "hEff_";
+		  TString nameHistoBasePtEff = "hEff_";
 		  TString nameHistoPtEff;
 		  nameHistoBasePtEff += partName;
-		  //nameHistoBasePtEff += eventName;
-		  nameHistoBasePtEff += "_0Vo100";
+		  nameHistoBasePtEff += eventName;
 		  cout <<"\n\n\n nameHistoBasePtEff: "<<nameHistoBasePtEff<<endl;
 		  if (requestedCharge1 == 1)
 		    {
@@ -672,13 +670,13 @@ AliAnalysisTaskR2P2multClass * AddTaskR2P2multClassGen
 
 
       
-      task = new  AliAnalysisTaskR2P2multClass(taskName);
+      task = new  AliAnalysisTaskR2P2multClassGen(taskName);
       //configure my task
       task->SetDebugLevel(          debugLevel      );
       task->SetSameFilter(          sameFilter      );
       task->SetSinglesOnly(         singlesOnly     );
-      //task->SetPileUpEventPP13(     pileUpEventPP13 );
-      //task->SetPileUpTrackPP13(     pileUpTrackPP13 );
+      task->SetPileUpEventPP13(     pileUpEventPP13 );
+      task->SetPileUpTrackPP13(     pileUpTrackPP13 );
       task->SetPIDparticle(         pidparticle     );
       task->SetUse_pT_cut(          Use_PT_Cut      );
       task->SetIfContaminationInMC(   PurePIDinMC   );
