@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEXICTOPKPI_H
-#define ALIANALYSISTASKSEXICTOPKPI_H
+#ifndef ALIANALYSISTASKSEXICTOPKPIAR_H
+#define ALIANALYSISTASKSEXICTOPKPIAR_H
 
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -7,7 +7,7 @@
 /* $Id$ */ 
 
 ///*************************************************************************
-/// \class Class AliAnalysisTaskSEXicTopKpi
+/// \class Class AliAnalysisTaskSEXicTopKpiAR
 /// \brief AliAnalysisTaskSE for Xic->pKpi candidates invariant mass histogram
 /// and comparison to MC truth (kinematics stored in the AOD) and cut variables
 /// distributions
@@ -44,14 +44,14 @@ class AliAODVertex;
 class AliAODRecoDecayHF3Prong;
 class AliAnalysisVertexingHF;
 
-class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
+class AliAnalysisTaskSEXicTopKpiAR : public AliAnalysisTaskSE
 {
  public:
   enum ECandStatus {kGenLimAcc=1,kGenAccMother,kGenAcc,kReco=6,kRecoCuts,kRecoPID,kRecoLc=13,kRecoLcCuts,kRecoLcPID};
 
-  AliAnalysisTaskSEXicTopKpi();
-  AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFCutsD0toKpi* cuts);
-  virtual ~AliAnalysisTaskSEXicTopKpi();
+  AliAnalysisTaskSEXicTopKpiAR();
+  AliAnalysisTaskSEXicTopKpiAR(const char *name,AliRDHFCutsD0toKpi* cuts);
+  virtual ~AliAnalysisTaskSEXicTopKpiAR();
 
 
   /// Implementation of interface methods
@@ -66,7 +66,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 /*   void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader); */
 
 /*   void NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC); */
-/*   void SetArray(Int_t type=AliAnalysisTaskSEXicTopKpi::kD0){fArray=type;} */
+/*   void SetArray(Int_t type=AliAnalysisTaskSEXicTopKpiAR::kD0){fArray=type;} */
 /*   enum{kD0,kLS}; */
   
   
@@ -283,8 +283,8 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
 
  private:
 
-  AliAnalysisTaskSEXicTopKpi(const AliAnalysisTaskSEXicTopKpi &source);
-  AliAnalysisTaskSEXicTopKpi& operator=(const AliAnalysisTaskSEXicTopKpi& source); 
+  AliAnalysisTaskSEXicTopKpiAR(const AliAnalysisTaskSEXicTopKpiAR &source);
+  AliAnalysisTaskSEXicTopKpiAR& operator=(const AliAnalysisTaskSEXicTopKpiAR& source); 
 /*   void	   DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal); */
 
 /*   void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts, TList *listout); */
@@ -603,7 +603,7 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   TNtuple* fTuplePID_TOFreq;  //! tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
   Bool_t fUseBayesInFiltering;// use bayesPID (max prob) in Filtering: note this does not match identically the usual Bayes selection
   Bool_t fOnlyEleFourthLoop;// flag for limiting to electron candidate 4th-particle loop
-  ClassDef(AliAnalysisTaskSEXicTopKpi,33); /// AliAnalysisTaskSE for Xic->pKpi  
+  ClassDef(AliAnalysisTaskSEXicTopKpiAR,33); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 
