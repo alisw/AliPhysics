@@ -94,7 +94,8 @@ set(SRCS
   AliAnalysisTaskCMWPU2018dca.cxx
   AliAnalysisTaskCMWPU2018eqAchdca.cxx
   AliAnalysisTaskCMWPU2018eqAchmerge.cxx
-  AliAnalysisTaskCMWPU2018eqAchCL.cxx	
+  AliAnalysisTaskCMWPU2018eqAchCL.cxx
+  AliAnalysisTaskCMWPU2018eqAchCLdca.cxx	
   AliAnalysisTaskCMWPU2018eqAchmergedca.cxx	
   AliAnalysisTaskCVEUNIpt.cxx
   AliAnalysisTaskCMWPUeqAch.cxx
