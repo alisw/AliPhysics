@@ -41,6 +41,9 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fHistResolution_epV0AV0C_qV0C(nullptr),
     fHistResolution_epV0CTPC_qV0C(nullptr),
     fHistResolution_epV0ATPC_qV0C(nullptr),
+    fHistResolution_epTPCpTPCn_qV0M(nullptr),
+    fHistResolution_epV0MTPCp_qV0M(nullptr),
+    fHistResolution_epV0MTPCn_qV0M(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
     fJEQnVecHandler1(nullptr),
@@ -98,6 +101,9 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fHistResolution_epV0AV0C_qV0C(nullptr),
     fHistResolution_epV0CTPC_qV0C(nullptr),
     fHistResolution_epV0ATPC_qV0C(nullptr),
+    fHistResolution_epTPCpTPCn_qV0M(nullptr),
+    fHistResolution_epV0MTPCp_qV0M(nullptr),
+    fHistResolution_epV0MTPCn_qV0M(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
     fJEQnVecHandler1(nullptr),
@@ -165,6 +171,10 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
                         delete fHistResolution_epV0AV0C_qV0C;
                         delete fHistResolution_epV0CTPC_qV0C;
                         delete fHistResolution_epV0ATPC_qV0C;
+                        delete fHistResolution_epTPCpTPCn_qV0M;
+                        delete fHistResolution_epV0MTPCp_qV0M;
+                        delete fHistResolution_epV0MTPCn_qV0M;
+
 			for(int iDet=0; iDet<3; iDet++) {
 				delete fHistEventPlaneTPC[iDet];
                                 delete fHistEventPlaneV0[iDet];
@@ -217,6 +227,12 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
     fOutputList->Add(fHistResolution_epV0CTPC_qV0M);
     fHistResolution_epV0ATPC_qV0M = new TH3F("fHistResolution_epV0ATPC_qV0M", "fHistResolution_epV0ATPC_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
     fOutputList->Add(fHistResolution_epV0ATPC_qV0M);
+    fHistResolution_epTPCpTPCn_qV0M = new TH3F("fHistResolution_epTPCpTPCn_qV0M", "fHistResolution_epTPCpTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epTPCpTPCn_qV0M);
+    fHistResolution_epV0MTPCp_qV0M = new TH3F("fHistResolution_epV0MTPCp_qV0M", "fHistResolution_epV0MTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0MTPCp_qV0M);
+    fHistResolution_epV0MTPCn_qV0M = new TH3F("fHistResolution_epV0MTPCn_qV0M", "fHistResolution_epV0MTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0MTPCn_qV0M);
 
     //V0A Resolution Hists
     fHistResolution_epV0AV0C_qV0A = new TH3F("fHistResolution_epV0AV0C_qV0A", "fHistResolution_epV0AV0C_qV0A", 200,-1.,1., 200,0.,20., 100,0.,100.);
@@ -394,10 +410,16 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     double resolution1 = cos(2*(PsinV0C-PsinV0A));
     double resolution2 = cos(2*(PsinV0C-PsinFullTPC));
     double resolution3 = cos(2*(PsinV0A-PsinFullTPC));
+    double resolution4 = cos(2*(PsinPosTPC-PsinNegTPC));
+    double resolution5 = cos(2*(PsinFullV0-PsinPosTPC));
+    double resolution6 = cos(2*(PsinFullV0-PsinNegTPC));
 
     fHistResolution_epV0AV0C_qV0M->Fill(resolution1, qnFullV0, cent);  //used to calculate reaction plane resolution
     fHistResolution_epV0CTPC_qV0M->Fill(resolution2, qnFullV0, cent);  //2nd argument gives detector being used for q2 calculation
     fHistResolution_epV0ATPC_qV0M->Fill(resolution3, qnFullV0, cent);
+    fHistResolution_epTPCpTPCn_qV0M->Fill(resolution4, qnFullV0, cent);
+    fHistResolution_epV0MTPCp_qV0M->Fill(resolution5, qnFullV0, cent);
+    fHistResolution_epV0MTPCn_qV0M->Fill(resolution6, qnFullV0, cent);
 
     fHistResolution_epV0AV0C_qV0A->Fill(resolution1, qnV0A, cent); 
     fHistResolution_epV0CTPC_qV0A->Fill(resolution2, qnV0A, cent); 
