@@ -97,6 +97,7 @@ fhPtPhotonPerTriggerCen(0),   fhPtPhotonPerTrigger(0),      fhPtPhotonPerTrigger
 fhPtPhotonEtaSectorTriggerG1(0),    fhPtPhotonEtaSectorTriggerG2(0),     fhPtPhotonEtaSectorTriggerL0(0),
 fhPtMCPhotonPromptPerTriggerCen(0), fhPtMCPhotonPromptPerTrigger(0),
 fhEnPhotonColRowTriggerG1(0), fhEnPhotonColRowTriggerG2(0), fhEnPhotonColRowTriggerL0(0),
+fhEnClusterColRowTriggerG1(0),fhEnClusterColRowTriggerG2(0),fhEnClusterColRowTriggerL0(0),
 
 // Shower shape histograms
 fhDispE(0),                   fhDispPt(0),                  
@@ -3728,9 +3729,42 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
     if ( fFillEBinAcceptanceHisto )
     {
+      fhEnClusterColRowTriggerG1 = new TH3F
+      ("hEnClusterColRowTriggerG1",
+       "cluster max E cell column vs row vs energy, G1 from trigger decision",
+       ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
+       fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
+       fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
+      fhEnClusterColRowTriggerG1->SetZTitle("row");
+      fhEnClusterColRowTriggerG1->SetYTitle("column");
+      fhEnClusterColRowTriggerG1->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhEnClusterColRowTriggerG1) ;
+
+      fhEnClusterColRowTriggerG2 = new TH3F
+      ("hEnClusterColRowTriggerG2",
+       "cluster max E cell column vs row vs energy, G2 from trigger decision",
+       ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
+       fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
+       fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
+      fhEnClusterColRowTriggerG2->SetZTitle("row");
+      fhEnClusterColRowTriggerG2->SetYTitle("column");
+      fhEnClusterColRowTriggerG2->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhEnClusterColRowTriggerG2) ;
+
+      fhEnClusterColRowTriggerL0 = new TH3F
+      ("hEnClusterColRowTriggerL0",
+       "cluster max E cell column vs row vs energy, L0 from trigger decision",
+       ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
+       fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
+       fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
+      fhEnClusterColRowTriggerL0->SetZTitle("row");
+      fhEnClusterColRowTriggerL0->SetYTitle("column");
+      fhEnClusterColRowTriggerL0->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhEnClusterColRowTriggerL0) ;
+
       fhEnPhotonColRowTriggerG1 = new TH3F
       ("hEnPhotonColRowTriggerG1",
-       "cluster max E cell column vs row vs energy, G1 from trigger decision",
+       "selected cluster max E cell column vs row vs energy, G1 from trigger decision",
        ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
        fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
        fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
@@ -3741,7 +3775,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
       fhEnPhotonColRowTriggerG2 = new TH3F
       ("hEnPhotonColRowTriggerG2",
-       "cluster max E cell column vs row vs energy, G2 from trigger decision",
+       "selected cluster max E cell column vs row vs energy, G2 from trigger decision",
        ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
        fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
        fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
@@ -3752,7 +3786,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
       fhEnPhotonColRowTriggerL0 = new TH3F
       ("hEnPhotonColRowTriggerL0",
-       "cluster max E cell column vs row vs energy, L0 from trigger decision",
+       "selected cluster max E cell column vs row vs energy, L0 from trigger decision",
        ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
        fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
        fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
@@ -8021,13 +8055,14 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Float_t eta = fMomentum.Eta();
     Float_t phi = GetPhi(fMomentum.Phi());
     
-    Int_t icolAbs = -1, irowAbs = -1;
     Float_t maxCellFraction = 0;
     Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
     if ( absIdMax < 0 ) AliFatal("Wrong absID");
 
-    Int_t icol = -1, irow = -1, iRCU = -1; 
-    GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
+    Int_t icolAbs = -1, irowAbs = -1;
+    Int_t icol    = -1, irow    = -1, iRCU = -1;
+    Int_t nSM = GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
+
     if ( fFillControlClusterContentHisto )
     {
       if ( fFillEBinAcceptanceHisto )
@@ -8035,6 +8070,30 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         fhEnergyEtaPhi->Fill(en,eta,phi,GetEventWeight()*weightPt) ;
         
         fhEnergyColRow->Fill(en,icolAbs,irowAbs,GetEventWeight()*weightPt) ;
+
+        if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
+        {
+          for(Int_t itrig = 0; itrig < GetReader()->GetNumberOfTriggerMakerDecisions(); itrig++)
+          {
+            if ( GetReader()->GetTriggerMakerDecision(itrig) )
+            {
+              if ( itrig == 3 ) fhEnClusterColRowTriggerG1 ->Fill(en, icolAbs, irowAbs,  GetEventWeight()*weightPt); // EGA
+
+              if ( nSM < 12 ) // EMCal
+              {
+                if ( itrig == 6 ) fhEnClusterColRowTriggerG1 ->Fill(en, icolAbs, irowAbs,  GetEventWeight()*weightPt); // EG1
+                if ( itrig == 8 ) fhEnClusterColRowTriggerG2 ->Fill(en, icolAbs, irowAbs,  GetEventWeight()*weightPt); // EG2
+                if ( itrig == 1 ) fhEnClusterColRowTriggerL0 ->Fill(en, icolAbs, irowAbs,  GetEventWeight()*weightPt); // EL0
+              }
+              else // DCal
+              {
+                if ( itrig == 7 ) fhEnClusterColRowTriggerG1 ->Fill(en, icolAbs, irowAbs,  GetEventWeight()*weightPt); // DG1
+                if ( itrig == 9 ) fhEnClusterColRowTriggerG2 ->Fill(en, icolAbs, irowAbs,  GetEventWeight()*weightPt); // DG2
+                if ( itrig == 2 ) fhEnClusterColRowTriggerL0 ->Fill(en, icolAbs, irowAbs,  GetEventWeight()*weightPt); // DL0
+              }
+            }
+          }
+        }
       }
       else if ( en > 0.7 ) 
         fhEtaPhi->Fill(eta, phi, GetEventWeight()*weightPt);
@@ -8044,7 +8103,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Cluster selection
     //-----------------------------
     Int_t  nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
-    Int_t  nSM     = GetModuleNumber(calo);    
+//  Int_t  nSM     = GetModuleNumber(calo);
     Bool_t bRes = kFALSE, bEoP = kFALSE;
     Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent(),bEoP,bRes);
 
