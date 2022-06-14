@@ -53,6 +53,7 @@ public:
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
   void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
   void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
+  void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALTriggerReducedPayload = reduced; }
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
@@ -634,6 +635,7 @@ private:
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
   Double_t fEMCALAmplitudeThreshold = 0.1; ///< EMCAL amplitude threshold (for compression - default: 100 MeV := cluster cell threshold)
   Double_t fFractionL1MonitorEventsEMCAL = 0.001; ///< Fraction of monitoring events (full payload) for EMCAL L1 trigger
+  Bool_t fEMCALReducedTriggerPayload = kFALSE; ///< Use reduced trigger payload for EMCAL L1 trigger
   Bool_t fUsePHOSBadMap = kTRUE ; ///< read and apply PHOS trigger bad map
 
   /// Byte counter
