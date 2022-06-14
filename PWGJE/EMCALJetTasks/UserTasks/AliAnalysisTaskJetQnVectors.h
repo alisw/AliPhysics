@@ -73,6 +73,9 @@ private:
     TH3F *fHistResolution_epV0AV0C_qV0M;             //!<! histo with detector resolution
     TH3F *fHistResolution_epV0CTPC_qV0M;             //!<! histo with detector resolution
     TH3F *fHistResolution_epV0ATPC_qV0M;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epTPCpTPCn_qV0M;           //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0MTPCp_qV0M;            //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0MTPCn_qV0M;            //!<! histo with detector resolution
     TH3F *fHistResolution_epV0AV0C_qV0A;             //!<! histo with detector resolution
     TH3F *fHistResolution_epV0CTPC_qV0A;             //!<! histo with detector resolution
     TH3F *fHistResolution_epV0ATPC_qV0A;             //!<! histo with detector resolution
