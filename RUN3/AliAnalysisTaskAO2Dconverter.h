@@ -53,7 +53,7 @@ public:
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
   void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
   void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
-  void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALTriggerReducedPayload = reduced; }
+  void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALReducedTriggerPayload = reduced; }
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
