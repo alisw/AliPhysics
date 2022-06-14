@@ -2068,7 +2068,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       geo = AliEMCALGeometry::GetInstanceFromRunNumber(fVEvent->GetRunNumber()); // Needed for EMCAL trigger mapping
     }
     AliVCaloTrigger *calotriggers = fVEvent->GetCaloTrigger("EMCAL");
-    Bool_t fullPayload = gRandom->Uniform() < fFractionL1MonitorEventsEMCAL;
+    Bool_t fullPayload = fEMCALReducedTriggerPayload ? gRandom->Uniform() < fFractionL1MonitorEventsEMCAL : true;
     calotrigger.fIndexBCs = fBCCount;
     calotrigger.fFastOrAbsID = 10001;
     calotrigger.fLnAmplitude = fullPayload ? 1 : 0;
