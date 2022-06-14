@@ -131,7 +131,9 @@
 #pragma link C++ class AliEventTree+;
 #pragma link C++ class AliAnalysisTaskEventExtractor+;
 #pragma link C++ class AliEmcalTRDTrackingTask+;
+#pragma link C++ class AliAnalysisTaskEPCalibForJet+;
 #pragma link C++ class AliAnalysisTaskRawJetWithEP+;
+#pragma link C++ class AliAnalysisTaskEmbeddingJetWithEP+;
 
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;
