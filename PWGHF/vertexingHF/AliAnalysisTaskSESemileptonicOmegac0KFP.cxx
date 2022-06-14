@@ -1963,7 +1963,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                         
                         if(fWriteMixedEventTree){
                             if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype);
+                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
                             }
                         } //fWriteMixedEventTree
                         kfpOmegac0.Clear();
@@ -1990,7 +1990,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                         
                         if(fWriteMixedEventTree){
                             if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype);
+                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
                             }
                         }//MixedTree
                         kfpOmegac0.Clear();
@@ -2168,7 +2168,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                         
                         if(fWriteMixedEventTree){
                             if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype);
+                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
                             }
                         }//MixedTree
                         kfpAntiOmegac0.Clear();
@@ -2197,7 +2197,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                         
                         if(fWriteMixedEventTree){
                             if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype);
+                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
                             }
                         }//MixedTree
                         kfpAntiOmegac0.Clear();
@@ -2379,7 +2379,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeElectron(AliAODTrack *tr
 void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpOmegaMinus_woLMassConst, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
-    for (Int_t i=0; i< 43 ; i++){
+    for (Int_t i=0; i< 45 ; i++){
         fVar_Omegac0[i] = -9999.;
     }
     
@@ -2625,6 +2625,9 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     fVar_Omegac0[41] = tlv_Orig.Pt();
     fVar_Omegac0[42] = tlv_Orig.M();
     
+    fVar_Omegac0[43] = nSigmaTPC_KaonFromOmega;
+    fVar_Omegac0[44] = nSigmaTOF_KaonFromOmega;
+    
     if (fWriteOmegac0Tree)
     fTree_Omegac0 -> Fill();
     
@@ -2784,7 +2787,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     
     const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
     fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-    Int_t nVar = 43;
+    Int_t nVar = 45;
     fVar_Omegac0 = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -2803,7 +2806,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[12] = "PA_LamToOmega"; // pointing angle of Lmabda (pointing back to Omega) (with Lambda mass const.)
     fVarNames[13] = "PA_OmegaToPV"; // pointing angle of Omega (pointing back to PV) (with Omega mass const.)
     fVarNames[14] = "Mass_Lam"; // mass of Lambda (without Lambda mass const.)
-    fVarNames[15] = "Mass_Omega"; // mass of Omega (without Omega mass const., with Lamda mass const.)
+    fVarNames[15] = "MassOmega_KFP"; // mass of Omega (without Omega mass const., with Lamda mass const.)
     fVarNames[16] = "Pt_EleFromOmegac0"; // pt of electron from Omegac0
     fVarNames[17] = "Pt_EleOmega_KF"; // pt of EleOmega_pairs (with Omega mass const. and with PV const.)
     fVarNames[18] = "Rap_EleOmega_KF"; // rapidity of EleOmega_pairs  (with Omega mass const. and with PV const.)
@@ -2820,7 +2823,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[29] = "Source_Omegac0"; // flag for Omegac0 MC (“4”:prompt, "5": feed-down, “<0”: background)
     fVarNames[30] = "Omegac0_Pt_MC"; // Omegac0 pt distribution in MC
     fVarNames[31] = "Mass_Xi"; // mass of Xi, (with Lambda mass const.) - - to reject
-    fVarNames[32] = "EleOmegaOA";  // Calcualtion from AOD
+    fVarNames[32] = "CosOA";  // Calcualtion from AOD
     fVarNames[33] = "ConvType"; // ee pairs - - prefilter method
     fVarNames[34] = "DecayType";  // flags for WS and RS of EleOmega_pairs
     fVarNames[35] = "Omega_MassConst"; // Omega with Omega mass const
@@ -2832,6 +2835,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[40] = "Rotation_EleOmegaMass";
     fVarNames[41] = "EleOmegapT_OldMethod";
     fVarNames[42] = "EleOmegaMass_OldMethod";
+    fVarNames[43] = "nSigmaTPC_KaonFromOmega";
+    fVarNames[44] = "nSigmaTOF_KaonFromOmega";
     
     for (Int_t ivar = 0; ivar<nVar ; ivar++){
      
@@ -2898,9 +2903,9 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0_QA()
                 
 } //DefineTreeRecoOmegac0_QA
 //____________________________________________________________________________
-void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, AliAODEvent *aodEvent,  Int_t decaytype)
+void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, AliAODEvent *aodEvent,  Int_t decaytype, Double_t nsigmaTPCE, Double_t nsigmaTOFE, Double_t ncombsigmaE )
 {
-    for (Int_t i=0; i<10; i++){
+    for (Int_t i=0; i<38; i++){
         fVar_MixedEvent[i]=-9999.;
     }
     
@@ -2926,8 +2931,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     
     Double_t cosoa = (pxe*pxOmega+pye*pyOmega+pze*pzOmega)/mome/momOmega;
     
-    Float_t nSigmaTOF_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackEleFromMixed, AliPID::kElectron);
-    Float_t nSigmaTPC_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackEleFromMixed, AliPID::kElectron);
+ //   Float_t nSigmaTOF_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackEleFromMixed, AliPID::kElectron);
+ //   Float_t nSigmaTPC_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackEleFromMixed, AliPID::kElectron);
     Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
     Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
     Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
@@ -3016,7 +3021,65 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     fVar_MixedEvent[6] = tlv_Orig.Pt();
     fVar_MixedEvent[7] = tlv_Orig.M();
     fVar_MixedEvent[8] = (Int_t) Convee_ULS + 2 *  (Int_t)Convee_LS;
-    fVar_MixedEvent[9] = mass_Omega;
+    fVar_MixedEvent[9] = mass_Omega; // Omega from KFP
+    
+    //--- add new branches for ML
+//    fVar_MixedEvent[10] = nSigmaTOF_EleFromME;
+//    fVar_MixedEvent[11] = nSigmaTPC_EleFromME;
+//    fVar_MixedEvent[12] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_EleFromME,nSigmaTOF_EleFromME);
+    
+    fVar_MixedEvent[10] = nsigmaTOFE;
+    fVar_MixedEvent[11] = nsigmaTPCE;
+    fVar_MixedEvent[12] = ncombsigmaE;
+    
+    fVar_MixedEvent[13] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_KaonFromOmega,nSigmaTOF_KaonFromOmega);
+    fVar_MixedEvent[14] = nSigmaTPC_PiFromLam;
+    fVar_MixedEvent[15] = nSigmaTPC_PrFromLam;
+    fVar_MixedEvent[16] = casc -> DcaXiDaughters();
+    fVar_MixedEvent[17] = kfpLambda.GetChi2()/kfpLambda.GetNDF(); // chi2geo_Lam
+    fVar_MixedEvent[18] =  l_Lambda/dl_Lambda;
+    fVar_MixedEvent[19] = kfpOmegaMinus.GetChi2()/kfpOmegaMinus.GetNDF();
+    fVar_MixedEvent[20] = l_Omega/dl_Omega;
+    fVar_MixedEvent[21] = kfpOmegaMinus_PV.GetChi2()/kfpOmegaMinus_PV.GetNDF();
+    
+    Float_t DecayLxy_Lam, err_DecayLxy_Lam;
+    kfpLambda_Omega.GetDecayLengthXY(DecayLxy_Lam, err_DecayLxy_Lam);
+    fVar_MixedEvent[22] = DecayLxy_Lam;
+    
+    Float_t DecayLxy_Omega, err_DecayLxy_Omega;
+    kfpOmegaMinus_PV.GetDecayLengthXY(DecayLxy_Omega, err_DecayLxy_Omega);
+    fVar_MixedEvent[23] = DecayLxy_Omega;
+    
+    Double_t cosPA_v0toOmega = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLambda_m, kfpOmegaMinus);
+    Double_t cosPA_OmegaToPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpOmegaMinus_m, PV);
+    fVar_MixedEvent[24] = TMath::ACos(cosPA_v0toOmega); // PA_LamToOmega
+    fVar_MixedEvent[25] = TMath::ACos(cosPA_OmegaToPV); // PA_OmegaToPV
+    
+    Float_t mass_Lam, err_mass_Lam;
+    kfpLambda.GetMass(mass_Lam, err_mass_Lam);
+    fVar_MixedEvent[26] = mass_Lam;
+    fVar_MixedEvent[27] = kfpLambda_Omega.GetChi2()/kfpLambda_Omega.GetNDF();
+    fVar_MixedEvent[28] = kfpOmegac0.GetChi2()/kfpOmegac0.GetNDF();
+    fVar_MixedEvent[29] = casc->DcaV0Daughters(); // DCA_LamDau
+    fVar_MixedEvent[30] = kfpKaon.GetDistanceFromParticle(kfpLambda_m); // DCA_OmegaDau_KF
+    fVar_MixedEvent[31] = kfpBE.GetDistanceFromParticle(kfpOmegaMinus_m); // DCA_Omegac0Dau_KF
+    fVar_MixedEvent[32] = kfpOmegaMinus_m.GetDistanceFromVertexXY(PV); // DCA of Omega in x-y plan to PV
+    
+    KFParticle kfpPion_Rej;
+    kfpPion_Rej = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackKaonFromOmega, -211);
+    KFParticle kfpCasc_Rej;
+    const KFParticle *vCasc_Rej_Ds[2] = {&kfpPion_Rej, &kfpLambda_m};
+    kfpCasc_Rej.Construct(vCasc_Rej_Ds, 2);
+    Float_t massCasc_Rej, err_massCasc_Rej;
+    kfpCasc_Rej.GetMass(massCasc_Rej, err_massCasc_Rej); // massCasc_Rej
+    fVar_MixedEvent[33] = massCasc_Rej;
+    
+    KFParticle kfpBE_PV = kfpBE;
+    kfpBE_PV.SetProductionVertex(PV);
+    fVar_MixedEvent[34] = kfpBE_PV.GetChi2()/kfpBE_PV.GetNDF();  //chi2_prim of Electron to PV
+    fVar_MixedEvent[35] = kfpBE.GetDistanceFromVertexXY(PV); // DCA of electron in x-y to PV
+    fVar_MixedEvent[36] = nSigmaTPC_KaonFromOmega;
+    fVar_MixedEvent[37] = nSigmaTOF_KaonFromOmega;
     
     if(fWriteMixedEventTree) fTree_MixedEvent -> Fill();
     
@@ -3029,7 +3092,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
    
     const char* nameoutput = GetOutputSlot(9)->GetContainer()->GetName();
     fTree_MixedEvent = new TTree(nameoutput, "mixed event variables tree");
-    Int_t nVar = 10;
+    Int_t nVar = 38;
     fVar_MixedEvent = new Float_t[nVar];
     TString *fVarNames_MixedEvent = new TString[nVar];
     
@@ -3038,12 +3101,40 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
     fVarNames_MixedEvent[2] = "EleOmega_pT";
     fVarNames_MixedEvent[3] = "CosOA";
     fVarNames_MixedEvent[4] = "DecayType";
-    fVarNames_MixedEvent[5] = "MassOmega_casc";
-    fVarNames_MixedEvent[6] = "EleOmgeapT_OldMethod";
+    fVarNames_MixedEvent[5] = "Mass_Omega_casc";
+    fVarNames_MixedEvent[6] = "EleOmegapT_OldMethod";
     fVarNames_MixedEvent[7] = "EleOmegaMass_OldMethod";
     fVarNames_MixedEvent[8] = "ConvType";
     fVarNames_MixedEvent[9] = "MassOmega_KFP";
-    
+    fVarNames_MixedEvent[10] = "nSigmaTOF_Ele";
+    fVarNames_MixedEvent[11] = "nSigmaTPC_Ele";
+    fVarNames_MixedEvent[12] = "nSigmaCombined_Ele";
+    fVarNames_MixedEvent[13] = "nSigmaCombined_Kaon";
+    fVarNames_MixedEvent[14] = "nSigmaTPC_PiFromLam";
+    fVarNames_MixedEvent[15] = "nSigmaTPC_PrFromLam";
+    fVarNames_MixedEvent[16] = "DCA_OmegaDau";
+    fVarNames_MixedEvent[17] = "chi2geo_Lam";
+    fVarNames_MixedEvent[18] = "ldl_Lam";
+    fVarNames_MixedEvent[19] = "chi2geo_Omega";
+    fVarNames_MixedEvent[20] = "ldl_Omega";
+    fVarNames_MixedEvent[21] = "chi2topo_OmegaToPV";
+    fVarNames_MixedEvent[22] = "DecayLxy_Lambda";
+    fVarNames_MixedEvent[23] = "DecayLxy_Omega";
+    fVarNames_MixedEvent[24] = "PA_LamToOmega";
+    fVarNames_MixedEvent[25] = "PA_OmegaToPV";
+    fVarNames_MixedEvent[26] = "Mass_Lam";
+    fVarNames_MixedEvent[27] = "Chi2topo_LamToOmega";
+    fVarNames_MixedEvent[28] = "Chi2geo_Omegac0";
+    fVarNames_MixedEvent[29] = "DCA_LamDau";
+    fVarNames_MixedEvent[30] = "DCA_OmegaDau_KF";
+    fVarNames_MixedEvent[31] = "DCA_Omegac0Dau_KF";
+    fVarNames_MixedEvent[32] = "DCAxy_OmegaToPV_KF";
+    fVarNames_MixedEvent[33] = "Mass_Xi";
+    fVarNames_MixedEvent[34] = "Chi2prim_EleFromOmegac0";
+    fVarNames_MixedEvent[35] = "DCAxy_EleFromOmegac0_KF";
+    fVarNames_MixedEvent[36] = "nSigmaTPC_KaonFromOmega";
+    fVarNames_MixedEvent[37] = "nSigmaTOF_KaonFromOmega";
+
     for (Int_t ivar = 0; ivar<nVar; ivar++){
      
         fTree_MixedEvent->Branch(fVarNames_MixedEvent[ivar].Data(), &fVar_MixedEvent[ivar], Form("%s/F", fVarNames_MixedEvent[ivar].Data()));

@@ -111,6 +111,7 @@ set(SRCS
   AliFemtoCorrFctnQLCMS.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
   AliFemtoCorrFctnPtKstar.cxx
+  AliFemtoCorrFctnPtKstarBeta.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoBPLCMS3DCorrFctnEMCIC.cxx
   AliFemtoPairCutAntiGamma.cxx

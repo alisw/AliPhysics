@@ -186,7 +186,7 @@ protected:
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Int_t                       fEPCorrMode;               ///< Correlate with EP{n=fEPCorrmode} instead of the trigger particle. 0 => use trigger particle (default)
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
-  Bool_t                      fCorrectEff;               ///< Correct efficiency of associated tracks
+  Int_t                       fCorrectEff;               ///< Correct efficiency of associated tracks. 0 = no correction, 1 = 15oP1 Correction, 2 = 18qrP1 Correction
   Bool_t                      fEventWeightChoice;        ///< 0 = no event reweighting, 1 = reweight by GA function
 
   static const Int_t kNMainCentBins = 4;                 ///< Centrality bins that the analysis is done in (and mass windows are defined in)
@@ -196,6 +196,34 @@ protected:
   TF1 						 *funcpT_high[4];
   TF1 						 *funcpEta_left[4];
   TF1 						 *funcpEta_right[4];
+
+  // Parameters for new parameterizations from Charles for LHC18qr Pass1 (very close to Pass3)
+  // LHC18qr efficiency parameters
+  // pt parameters
+  static const double LHC18qrParam_0_10_pt[11];                    //!<! 0-10% pt parameters
+  static const double LHC18qrParam_10_30_pt[11];                   //!<! 10-30% pt parameters
+  static const double LHC18qrParam_30_50_pt[11];                   //!<! 30-50% pt parameters
+  static const double LHC18qrParam_50_90_pt[11];                   //!<! 50-90% pt parameters
+  // Eta parameters
+  static const double LHC18qrParam_0_10_eta[11];                   //!<! 0-10% eta parameters
+  static const double LHC18qrParam_10_30_eta[11];                  //!<! 10-30% eta parameters
+  static const double LHC18qrParam_30_50_eta[11];                  //!<! 30-50% eta parameters
+  static const double LHC18qrParam_50_90_eta[11];                  //!<! 50-90% eta parameters
+  // Helper functions for determining the LHC15o tracking efficiency
+  static double LHC18qrPtEfficiency(const double trackPt, const double params[11]);
+
+  static double LHC18qrLowPtEfficiencyImpl(const double trackPt, const double params[11], const int index); // pT < 2.7
+  static double LHC18qrMidPtEfficiencyImpl(const double trackPt, const double params[11], const int index); // 2.7 < pT < 10
+  static double LHC18qrHighPtEfficiencyImpl(const double params[11], const int index); // pT > 10
+
+  static double LHC18qrEtaEfficiency(const double trackEta, const double params[11]);
+
+  static double LHC18qrEtaEfficiencyNeg(const double trackEta, const double params[11], const int index); // eta < -0.1
+  static double LHC18qrEtaEfficiencyMid(const double trackEta, const double params[11], const int index); // -0.1  < eta < 0.12
+  static double LHC18qrEtaEfficiencyPos(const double trackEta, const double params[11], const int index); // eta > 0.12
+
+
+
 
   //..Constants
   Double_t                    fRtoD;                     ///< conversion of rad to degree
@@ -315,6 +343,17 @@ protected:
   TH1F            *fEP4AngleTPC;              //!<! EP4 Angle from TPC all
   TH1F            *fEP4AngleTPCA;             //!<! EP4 Angle from TPC A (eta > 0)
   TH1F            *fEP4AngleTPCC;             //!<! EP4 Angle from TPC C (eta < 0)
+
+
+  TH2F            *fQ2V0MScaleVsAngle;        //!<! Scale of Q2Vector from V0M vs its angle
+  TH2F            *fQ2V0AScaleVsAngle;        //!<! Scale of Q2Vector from V0A vs its angle
+  TH2F            *fQ2V0CScaleVsAngle;        //!<! Scale of Q2Vector from V0C vs its angle
+  TH2F            *fQ2TPCScaleVsAngle;        //!<! Scale of Q2Vector from TPC vs its angle
+
+  TH2F            *fQ3V0MScaleVsAngle;        //!<! Scale of Q3Vector from V0M vs its angle
+  TH2F            *fQ3V0AScaleVsAngle;        //!<! Scale of Q3Vector from V0A vs its angle
+  TH2F            *fQ3V0CScaleVsAngle;        //!<! Scale of Q3Vector from V0C vs its angle
+  TH2F            *fQ3TPCScaleVsAngle;        //!<! Scale of Q3Vector from TPC vs its angle
 
 
   static const int kNumEPROrders = 6;        ///<  How many orders of EPR to measure
@@ -478,6 +517,6 @@ protected:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 13) // Class to analyse gamma hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 14) // Class to analyze gamma- and pi0- hadron correlations
 };
 #endif

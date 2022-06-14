@@ -48,8 +48,8 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster"
   case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 10|.
     configName = "zvtx10";
     break;
-  case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 9|.
-    configName = "zvtx9";
+  case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 6|.
+    configName = "zvtx6";
     break;
   case 7 :    // Syst: |zVtx < 8| changed to |zVtx < 7|.
     configName = "zvtx7";
@@ -145,7 +145,12 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster"
     if (cutConfig == 0) {
       MAPfileNames = Form("%sPhiWeights_LHC%s_fullPUcuts_Default_s_%s.root",
         MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
-    } else {
+    }
+    else if ((strcmp(configName.Data(), "zvtx6") == 0) || (strcmp(configName.Data(), "zvtx7") == 0)) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx10.root",
+          MAPdirName.Data(), sCorrection[period].Data());
+    }
+    else {
       MAPfileNames = Form("%sPhiWeights_LHC%s_fullPUcuts_s_%s.root",
         MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
     }
@@ -208,8 +213,8 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster"
 
     if (strcmp(configName.Data(), "zvtx10") == 0) {    
       fJCatalyst[i]->SetZVertexCut(10.0);
-    } else if (strcmp(configName.Data(), "zvtx9") == 0) {
-      fJCatalyst[i]->SetZVertexCut(9.0);
+    } else if (strcmp(configName.Data(), "zvtx6") == 0) {
+      fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configName.Data(), "zvtx7") == 0) {
       fJCatalyst[i]->SetZVertexCut(7.0);
     } else {  // Default value for JCorran analyses in Run 2.

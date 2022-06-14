@@ -398,7 +398,26 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           if (lambda->IsPrimary())
             fGenLambda.flag |= kPrimary;
           else
-            fGenLambda.flag |= lambda->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
+          {
+            if (lambda->IsSecondaryFromWeakDecay())
+            {
+              int mothLambda = lambda->GetMother();
+              auto mother = (AliAODMCParticle *)fMCEvent->GetTrack(mothLambda);
+              switch (std::abs(mother->GetPdgCode())){
+                case kXiPdg:
+                  fGenLambda.flag |= kSecondaryFromWDXi;
+                break;
+                case kOmegaPdg:
+                  fGenLambda.flag |= kSecondaryFromWDOmega;
+                break;
+                default:
+                  fGenLambda.flag |= kSecondaryFromWD;
+                break;
+              }
+              fGenLambda.ptMotherMC = mother->Pt();
+            }
+            else fGenLambda.flag |= kSecondaryFromMaterial;
+          }
         }
         if (fOnlyTrueLambdas && fGenLambda.pdg == 0)
           continue;
@@ -444,7 +463,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fTreeLambda->Fill();
         if (fFillLambdasBDTOut)
         {
-          if (fRecLambda->radius < fRadiusPreselection || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
+          if (fRecLambda->radius < fRadiusPreselection || fRecLambda->radius > fRadiusOverflowCut || fRecLambda->dcaPiPV > fDCAV0piToPVOverflowCut || fRecLambda->dcaPrPV > fDCAV0prToPVOverflowCut || fRecLambda->dcaV0PV > fDCAV0toPVOverflowCut || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
           int model_index = WhichBDT(fRecLambda->ct);
           if (model_index > (fNctBinsBDT-1)) {
             continue;
@@ -590,7 +609,26 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         if (track->IsPrimary())
           fGenLambda.flag |= kPrimary;
         else
-          fGenLambda.flag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
+        {
+          if (track->IsSecondaryFromWeakDecay())
+          {
+            int mothLambda = track->GetMother();
+            auto mother = (AliAODMCParticle *)fMCEvent->GetTrack(mothLambda);
+            switch (std::abs(mother->GetPdgCode())){
+              case kXiPdg:
+                fGenLambda.flag |= kSecondaryFromWDXi;
+              break;
+              case kOmegaPdg:
+                fGenLambda.flag |= kSecondaryFromWDOmega;
+              break;
+              default:
+                fGenLambda.flag |= kSecondaryFromWD;
+              break;
+            }
+            fGenLambda.ptMotherMC = mother->Pt();
+          }
+          else fGenLambda.flag |= kSecondaryFromMaterial;
+        }
 
         fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * track->M() / track->P();
         fTreeLambda->Fill();

@@ -52,7 +52,8 @@ set(SRCS
   UeKNO/AliAnalysisTaskFlatenicity.cxx
   UeMpi/AliAnalysisTaskMpiUE.cxx
   Flatenicity/AliAnalysisTaskSpectraFlatenicity.cxx
- )
+  FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx
+  )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -122,3 +123,4 @@ install(DIRECTORY UeSpectraRT DESTINATION  PWGMM/UE)
 install(DIRECTORY UeDphi DESTINATION  PWGMM/UE)
 install(DIRECTORY macros DESTINATION  PWGMM/UE)
 install(DIRECTORY Flatenicity DESTINATION  PWGMM/UE)
+install(DIRECTORY FlatenicityPiKp DESTINATION  PWGMM/UE)

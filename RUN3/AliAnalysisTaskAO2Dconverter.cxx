@@ -32,6 +32,8 @@
 #include <TSystem.h>
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -39,6 +41,8 @@
 #include "AliESDVertex.h"
 #include "AliAODVertex.h"
 #include "AliCentrality.h"
+#include "AliDAQ.h"
+#include "AliGRPObject.h"
 #include "AliVMultiplicity.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerDataGrid.h"
@@ -219,6 +223,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)),
     fEventCuts{},
     fTriggerAnalysis(),
+    fGRP(nullptr),
     collision(),
     eventextra(),
     bc(),
@@ -258,8 +263,8 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
   }
 } // AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
 
-  
-  
+
+
 AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
 {
   fOutputList->Delete();
@@ -278,23 +283,31 @@ void AliAnalysisTaskAO2Dconverter::NotifyRun(){
   //read PHOS trigger bad map
   if (fUsePHOSBadMap){
     AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
-    phosBadmapContainer.InitFromFile(Form("%s/PHOS/PHOSTrigBadMaps.root", AliAnalysisManager::GetOADBPath()),              
+    phosBadmapContainer.InitFromFile(Form("%s/PHOS/PHOSTrigBadMaps.root", AliAnalysisManager::GetOADBPath()),
                                       "phosTriggerBadMap");
     TObjArray *maps = (TObjArray*)phosBadmapContainer.GetObject(fCurrentRunNumber,"phosTriggerBadMap");
     if(!maps){
-      AliFatal(Form("Can not read PHOS Trigger Bad map for run %d. \n",fCurrentRunNumber)) ;    
+      AliFatal(Form("Can not read PHOS Trigger Bad map for run %d. \n",fCurrentRunNumber)) ;
     }
     else{
       for(Int_t mod=0; mod<5;mod++){
-        if(fPHOSBadMap[mod]) 
+        if(fPHOSBadMap[mod])
           delete fPHOSBadMap[mod] ;
-        TH2I * h = (TH2I*)maps->At(mod) ;      
+        TH2I * h = (TH2I*)maps->At(mod) ;
         if(h)
           fPHOSBadMap[mod]=new TH2I(*h) ;
       }
     }
   }
-    
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  if(cdb->IsDefaultStorageSet() && cdb->GetRun() > 0) {
+    // CDB manage initialized
+    // Get GRP
+    AliCDBEntry *en = cdb->Get("GRP/GRP/Data");
+    if(en) {
+      fGRP = static_cast<AliGRPObject *>(en->GetObject());
+    }
+  }
 }
 
 
@@ -452,7 +465,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   // This call is necessary to initialize event cuts according to the current run number
   bool alieventcut = fEventCuts.AcceptEvent(fVEvent);
-  
+
   // In case of ESD we skip events like in the AOD filtering, for AOD this is not needed
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
   bool skip_event = false;
@@ -886,8 +899,8 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->Branch("fIndexMFTTracks", &fwdtracks.fIndexMFTTracks, "fIndexMFTTracks/I");
     tFwdTrack->Branch("fIndexFwdTracks_MatchMCHTrack", &fwdtracks.fIndexFwdTracks_MatchMCHTrack, "fIndexFwdTracks_MatchMCHTrack/I");
     tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s");
-    tFwdTrack->Branch("fMIDBitMap", &fwdtracks.fMIDBitMap, "fMIDBitMap/s"); 
-    tFwdTrack->Branch("fMIDBoards", &fwdtracks.fMIDBoards, "fMIDBoards/i"); 
+    tFwdTrack->Branch("fMIDBitMap", &fwdtracks.fMIDBitMap, "fMIDBitMap/s");
+    tFwdTrack->Branch("fMIDBoards", &fwdtracks.fMIDBoards, "fMIDBoards/i");
     tFwdTrack->SetBasketSize("*", fBasketSizeEvents);
   }
 
@@ -913,7 +926,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->SetBasketSize("*", fBasketSizeEvents);
   }
 
-  
+
   // Associuate branches for ZDC
   TTree *tZdc = CreateTree(kZdc);
   if (fTreeStatus[kZdc])
@@ -1172,7 +1185,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   // In case of AOD the access is via TClonesArray containing AliAODMCParticles, and AliAODMCHeader
   TClonesArray *MCArray = nullptr;
   AliAODMCHeader *MCHeader = nullptr;
-  
+
   if (fTaskMode == kMC)
   {
     if (fESD) {
@@ -1187,8 +1200,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       PIDResponse->SetCurrentMCEvent(MCEvt); //Set The PID response on the current MC event
     }
     else if (fAOD) {
-      MCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName())); 
-      MCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName())); 
+      MCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+      MCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
     }
   }
 
@@ -1309,43 +1322,43 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     AliMultSelection *multSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
     if (!multSelection)
       AliFatal("MultSelection not found in input event");
-  
+
     if( multSelection->GetThisEventINELgtZERO() )
       SETBIT (run2bcinfo.fEventCuts, kINELgtZERO);
-  
+
     if( multSelection->GetThisEventIsNotPileupInMultBins() )
       SETBIT (run2bcinfo.fEventCuts, kPileupInMultBins);
-  
+
     if( multSelection->GetThisEventHasNoInconsistentVertices() )
       SETBIT (run2bcinfo.fEventCuts, kConsistencySPDandTrackVertices);
-  
+
     if( multSelection->GetThisEventPassesTrackletVsCluster() )
       SETBIT (run2bcinfo.fEventCuts, kTrackletsVsClusters);
-  
+
     if( fESD->GetPrimaryVertex()->GetNContributors()>0 )
       SETBIT (run2bcinfo.fEventCuts, kNonZeroNContribs);
-  
+
     if( multSelection->GetThisEventIsNotIncompleteDAQ() )
       SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
-  
+
     if (fEventCuts.PassedCut(AliEventCuts::kPileUp))
       SETBIT(run2bcinfo.fEventCuts, kPileUpMV);
 
     if (fEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
       SETBIT(run2bcinfo.fEventCuts, kTPCPileUp);
-  
+
     if (fEventCuts.PassedCut(AliEventCuts::kTimeRangeCut))
       SETBIT(run2bcinfo.fEventCuts, kTimeRangeCut);
-  
+
     if (fEventCuts.PassedCut(AliEventCuts::kEMCALEDCut))
       SETBIT(run2bcinfo.fEventCuts, kEMCALEDCut);
 
     if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
       SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
-  
+
     if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
       SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
-  
+
     if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
       SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
 
@@ -1354,7 +1367,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
     if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
       SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
-  
+
     if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
       SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
 
@@ -1571,11 +1584,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
       if (aodmcpt && aodmcpt->IsPhysicalPrimary()) // AOD
         mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
-      
+
       mcparticle.fIndexArray_Mothers_size = 1;
       mcparticle.fIndexArray_Mothers[0] = particle ? particle->GetMother(0) : aodmcpt->GetMother();
       if (mcparticle.fIndexArray_Mothers[0] > -1)
         mcparticle.fIndexArray_Mothers[0] = kineIndex[mcparticle.fIndexArray_Mothers[0]] > -1 ? kineIndex[mcparticle.fIndexArray_Mothers[0]] + fOffsetLabel : -1;
+      if (mcparticle.fIndexArray_Mothers[0] == -1)
+        mcparticle.fIndexArray_Mothers_size = 0;
 
       mcparticle.fIndexSlice_Daughters[0] = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
       if (mcparticle.fIndexSlice_Daughters[0] > -1)
@@ -1689,7 +1704,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       }
       else {
 	// FIXME: In case of AOD we suppose the cut has been applied
-	  tracks.fFlags |= TrackFlagsRun2Enum::GoldenChi2;	
+	  tracks.fFlags |= TrackFlagsRun2Enum::GoldenChi2;
       }
 
       // Uppermost 4 bits contain PID hypothesis used during tracking
@@ -2018,95 +2033,129 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   } // end loop on calo cells
   eventextra.fNentries[kCalo] = ncalocells_filled;
 
-  
-  // Trigger data for EMCAL:
-  // - For full payload (monitoring) events store all non-0 L1 ADCs
-  // - For regular events store non-0 L1 ADCs of the 3 leading Gamma patches
-  AliEMCALGeometry *geo = AliEMCALGeometry::GetInstanceFromRunNumber(fVEvent->GetRunNumber()); // Needed for EMCAL trigger mapping
-  AliVCaloTrigger *calotriggers = fVEvent->GetCaloTrigger("EMCAL");
-  Bool_t fullPayload = gRandom->Uniform() < fFractionL1MonitorEventsEMCAL;
-  calotrigger.fIndexBCs = fBCCount;
-  calotrigger.fFastOrAbsID = 10001;
-  calotrigger.fLnAmplitude = fullPayload ? 1 : 0;
-  calotrigger.fTriggerBits = 0;
-  calotrigger.fCaloType = 1;
-  FillTree(kCaloTrigger);
-  // Median for EMCAL
-  calotrigger.fFastOrAbsID = 10002;
-  calotrigger.fLnAmplitude = calotriggers->GetMedian(0);
-  FillTree(kCaloTrigger);
-  // Median for DCAL
-  calotrigger.fFastOrAbsID = 10003;
-  calotrigger.fLnAmplitude = calotriggers->GetMedian(1);
-  FillTree(kCaloTrigger);
-
-  calotriggers->Reset();
-  Int_t ncalotriggers_filled = 3; // total number of EMCAL triggers filled per event, offset 3 for the global event properties for EMCAL
-  int col, row, fastorID, l1timesums;
-  if(fullPayload) {
-    // Full payload - store all ADCs
-    while (calotriggers->Next())
-    {
-      calotriggers->GetPosition(col, row);
-      calotriggers->GetL1TimeSum(l1timesums);
-      if(l1timesums <=0) 
-        continue;
-      geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
-      calotrigger.fFastOrAbsID = fastorID;
-      calotrigger.fLnAmplitude = l1timesums;
-      FillTree(kCaloTrigger);
-      if (fTreeStatus[kCaloTrigger])
-        ncalotriggers_filled++;
+  bool fillEMCtriggers = true;
+  bool fillEMCheaderMedian = true;
+  Int_t ncalotriggers_filled = 0;
+  TString triggerclasses = fInputEvent->GetFiredTriggerClasses();
+  if(!(triggerclasses.Contains("CENT") || triggerclasses.Contains("ALL") || triggerclasses.Contains("-FAST-") || triggerclasses.Contains("CALO"))) {
+    // Don't write EMCAL trigger table for clusters where EMCAL was neither trigger nor readout detector
+    fillEMCtriggers = false;
+  }
+  if(fGRP) {
+    // In case global run parameters are available write EMCAL trigger 
+    // entries only in case EMCAL was a readout nor a trigger detector
+    // in order to reduce the data volume used for header words
+    TString detectorstring = AliDAQ::ListOfTriggeredDetectors(fGRP->GetDetectorMask());
+    if(!detectorstring.Contains("EMCAL")) {
+      fillEMCtriggers = false;
+    } else {
+      // Don't fill median header words for small system (STU not in median mode)
+      TString beamtype = fGRP->GetBeamType();
+      if((beamtype == "p-p" || beamtype == "p-A" || beamtype == "A-p")) { 
+        fillEMCheaderMedian = false;
+      }
     }
-  } else {
-    TClonesArray *emcalpatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-    if(emcalpatches) {
-      AliEMCALTriggerDataGrid<int> l1adcs;
-      l1adcs.Allocate(48, 104);
-      // Pre-sort the ADCs in the data grid in order to find the ADCs belonging to the 3 leading patches later
+  }
+  if(fillEMCtriggers) {
+    // Trigger data for EMCAL:
+    // - For full payload (monitoring) events store all non-0 L1 ADCs
+    // - For regular events store non-0 L1 ADCs of the 3 leading Gamma patches
+    auto geo = AliEMCALGeometry::GetInstance();
+    if(!geo) {
+      // singleton not yet initialized - initialize it for the first time
+      // based on the current run number expecting data from different years
+      // will not be mixed in the same job
+      geo = AliEMCALGeometry::GetInstanceFromRunNumber(fVEvent->GetRunNumber()); // Needed for EMCAL trigger mapping
+    }
+    AliVCaloTrigger *calotriggers = fVEvent->GetCaloTrigger("EMCAL");
+    Bool_t fullPayload = gRandom->Uniform() < fFractionL1MonitorEventsEMCAL;
+    calotrigger.fIndexBCs = fBCCount;
+    calotrigger.fFastOrAbsID = 10001;
+    calotrigger.fLnAmplitude = fullPayload ? 1 : 0;
+    calotrigger.fTriggerBits = 0;
+    calotrigger.fCaloType = 1;
+    FillTree(kCaloTrigger);
+    int nheader = 1;
+    if(fillEMCheaderMedian) {
+      // Median for EMCAL
+      calotrigger.fFastOrAbsID = 10002;
+      calotrigger.fLnAmplitude = calotriggers->GetMedian(0);
+      FillTree(kCaloTrigger);
+      // Median for DCAL
+      calotrigger.fFastOrAbsID = 10003;
+      calotrigger.fLnAmplitude = calotriggers->GetMedian(1);
+      FillTree(kCaloTrigger);
+      nheader += 2;
+    }
+
+    calotriggers->Reset();
+    ncalotriggers_filled = nheader; // total number of EMCAL triggers filled per event, offset 1 or 3 for the global event properties for EMCAL
+    int col, row, fastorID, l1timesums;
+    if(fullPayload) {
+      // Full payload - store all ADCs
       while (calotriggers->Next())
       {
         calotriggers->GetPosition(col, row);
         calotriggers->GetL1TimeSum(l1timesums);
         if(l1timesums <=0) 
           continue;
-        l1adcs(col, row) = l1timesums;
+        geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
+        calotrigger.fFastOrAbsID = fastorID;
+        calotrigger.fLnAmplitude = l1timesums;
+        FillTree(kCaloTrigger);
+        if (fTreeStatus[kCaloTrigger])
+          ncalotriggers_filled++;
       }
-      std::vector<AliEMCALTriggerPatchInfo *> allpatches;
-      for(int ipatch = 0; ipatch < emcalpatches->GetEntries(); ipatch++) {
-        AliEMCALTriggerPatchInfo *nextpatch = static_cast<AliEMCALTriggerPatchInfo *>(emcalpatches->At(ipatch));
-        if(nextpatch->IsGammaLowRecalc()) allpatches.emplace_back(nextpatch);
-      }
-      // sort patches in descending order according to the patch ADC
-      std::sort(allpatches.begin(), allpatches.end(), [](const AliEMCALTriggerPatchInfo *lhs, const AliEMCALTriggerPatchInfo *rhs) { return lhs->GetADCAmp() > rhs->GetADCAmp(); } );
-      std::vector<int> fastOrIDsInTree;  // in order to avoid double counting
-      int npatches = 0;
-      for(auto patch : allpatches) {
-        for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++) {
-          for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++) {
-            int adc = l1adcs(icol, irow);
-            if(adc > 0) {
-              geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastorID);
-              if(std::find(fastOrIDsInTree.begin(), fastOrIDsInTree.end(), fastorID) == fastOrIDsInTree.end()) {
-                // FastOr not present in other (selected) trigger patch - add to tree
-                calotrigger.fFastOrAbsID = fastorID;
-                calotrigger.fLnAmplitude = adc;
-                FillTree(kCaloTrigger);
-                if (fTreeStatus[kCaloTrigger])
-                  ncalotriggers_filled++;
-                fastOrIDsInTree.emplace_back(fastorID);
+    } else {
+      TClonesArray *emcalpatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
+      if(emcalpatches) {
+        AliEMCALTriggerDataGrid<int> l1adcs;
+        l1adcs.Allocate(48, 104);
+        // Pre-sort the ADCs in the data grid in order to find the ADCs belonging to the 3 leading patches later
+        while (calotriggers->Next())
+        {
+          calotriggers->GetPosition(col, row);
+          calotriggers->GetL1TimeSum(l1timesums);
+          if(l1timesums <=0) 
+            continue;
+          l1adcs(col, row) = l1timesums;
+        }
+        std::vector<AliEMCALTriggerPatchInfo *> allpatches;
+        for(int ipatch = 0; ipatch < emcalpatches->GetEntries(); ipatch++) {
+          AliEMCALTriggerPatchInfo *nextpatch = static_cast<AliEMCALTriggerPatchInfo *>(emcalpatches->At(ipatch));
+          if(nextpatch->IsGammaLowRecalc()) allpatches.emplace_back(nextpatch);
+        }
+        // sort patches in descending order according to the patch ADC
+        std::sort(allpatches.begin(), allpatches.end(), [](const AliEMCALTriggerPatchInfo *lhs, const AliEMCALTriggerPatchInfo *rhs) { return lhs->GetADCAmp() > rhs->GetADCAmp(); } );
+        std::vector<int> fastOrIDsInTree;  // in order to avoid double counting
+        int npatches = 0;
+        for(auto patch : allpatches) {
+          for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++) {
+            for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++) {
+              int adc = l1adcs(icol, irow);
+              if(adc > 0) {
+                geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastorID);
+                if(std::find(fastOrIDsInTree.begin(), fastOrIDsInTree.end(), fastorID) == fastOrIDsInTree.end()) {
+                  // FastOr not present in other (selected) trigger patch - add to tree
+                  calotrigger.fFastOrAbsID = fastorID;
+                  calotrigger.fLnAmplitude = adc;
+                  FillTree(kCaloTrigger);
+                  if (fTreeStatus[kCaloTrigger])
+                    ncalotriggers_filled++;
+                  fastOrIDsInTree.emplace_back(fastorID);
+                }
               }
             }
           }
+          npatches++;
+          if(npatches == 3) {
+            // select at maximum the 3 leading trigger patches
+            break;
+          }
         }
-        npatches++;
-        if(npatches == 3) {
-          // select at maximum the 3 leading trigger patches
-          break;
-        }
+      } else {
+        AliErrorStream() << "Needs EMCAL patches (from EMCAL trigger maker) for the selection of the FastORs belonging to the 3 leading gamma patches" << std::endl;
       }
-    } else {
-      AliErrorStream() << "Needs EMCAL patches (from EMCAL trigger maker) for the selection of the FastORs belonging to the 3 leading gamma patches" << std::endl;
     }
   }
   eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled;
@@ -2117,11 +2166,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   AliVCaloTrigger *phostriggers = fVEvent->GetCaloTrigger("PHOS");
   phostriggers->Reset();
   calotrigger.fIndexBCs = fBCCount;
-  int relid[3]; 
+  int relid[3];
   Float_t amplitude;
   while (phostriggers->Next())
   {
-    //Write trigger digits to same stream as readout cells  
+    //Write trigger digits to same stream as readout cells
     calo.fIndexBCs = fBCCount;
     int triggerbits;
     phostriggers->GetTriggerBits(triggerbits);
@@ -2129,30 +2178,30 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     phostriggers->GetPosition(mod, absId);
     //here absId is normal Run2 readout absId
     //Remove noisy triggers
-    Int_t phosmodulenumber = TMath:: Ceil(float(absId)/3584) ; 
+    Int_t phosmodulenumber = TMath:: Ceil(float(absId)/3584) ;
     if (fUsePHOSBadMap)
-    {    
-      int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
+    {
+      int id = absId - ( phosmodulenumber - 1 ) * 3584 ;
       int ix = (Int_t)TMath::Ceil( float(id) / 64 )  ;
-      int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
+      int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ;
       if(fPHOSBadMap[phosmodulenumber] != nullptr && fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
         continue ;
       }
     }
     //transform to Run3 truID
     absId--;
-    relid[0] = 4 - absId / 3584  ;  //Aliroot<->O2 module numbering 
-    absId = absId % 3584  ;  //module 
+    relid[0] = 4 - absId / 3584  ;  //Aliroot<->O2 module numbering
+    absId = absId % 3584  ;  //module
     relid[1] = absId / 64  ; //x
     relid[2] = absId % 64  ; //z
-     
+
     relid[0] = relid[0]*4 -2 + relid[1]/16 ;
     relid[1] = (relid[1]%16)/2 ;
     relid[2] /=2 ;
-    
+
     Int_t truId= relid[0] * 224 + // the offset of PHOS modules
                  relid[1] +       // the offset along phi
-                 relid[2] * 8;    // the offset along z    
+                 relid[2] * 8;    // the offset along z
     // filter null entries: they usually have negative entries and no trigger bits
     // in case of trigger bits the energy can be 0 or negative but the trigger position is marked
     // store trigger
@@ -2173,11 +2222,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (fTreeStatus[kCaloTrigger])
       ncalotriggers_filled++;
   }
-  eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled; 
+  eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled;
 
 
 
-  
+
   AliVCaloCells * phoscells = fVEvent->GetPHOSCells();
   Int_t nphoscells_filled = 0;
   Int_t nPHCells = phoscells->GetNumberOfCells();
@@ -2190,14 +2239,14 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
     calo.fIndexBCs = fBCCount;
     phoscells->GetCell(icp, cellNumber, amplitude, time, mclabel, efrac);
-    //Run2: absId=1..4*56*64 ; Run3: absId = 32*56...4*56*64, module numbering is opposite 
-    int mod = cellNumber/3584; 
+    //Run2: absId=1..4*56*64 ; Run3: absId = 32*56...4*56*64, module numbering is opposite
+    int mod = cellNumber/3584;
     calo.fCellNumber = (4-mod)*3584 + cellNumber%3584 ;
     //Run3: uncalibrated amplitude in ADC counts
-    // here we assume fixed calibration 
+    // here we assume fixed calibration
     calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
     calo.fTime = AliMathBase::TruncateFloatFraction(time, 0x1FFF);  //13 bit
-    calo.fCellType = phoscells->GetHighGain(icp) ? 0. : 1.; 
+    calo.fCellType = phoscells->GetHighGain(icp) ? 0. : 1.;
     calo.fCaloType = phoscells->GetType();
 
     FillTree(kCalo);
@@ -2212,7 +2261,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         mccalolabel.fMcMask = 0;
         if ( klabel < 0)
           mccalolabel.fMcMask |= (0x1 << 15);
-        
+
         FillTree(kMcCaloLabel);
       }
     }
@@ -2249,7 +2298,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       nmu_filled++;
     } // End loop on muon tracks
   }
-  else {    
+  else {
     for (Int_t imu = 0; imu < nmu; ++imu) {
       //PH It seems the MUON information in the "standard" AOD is not really useful.
       AliAODTrack *mutrk = dynamic_cast<AliAODTrack*>(muonTracks.At(imu));
@@ -2260,17 +2309,17 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       fwdtracks.fIndexCollisions = fCollisionCount;
 
       // No MUON clusters for the AOD track
-      
+
       FillTree(kFwdTrack);
       FillTree(kFwdTrackCov);
       if (fTreeStatus[kFwdTrack])
       nmu_filled++;
      } // End loop on muon AOD tracks
   }
-  
+
   eventextra.fNentries[kFwdTrack] = nmu_filled;
   eventextra.fNentries[kFwdTrackCov] = nmu_filled;
-  
+
   //---------------------------------------------------------------------------
   // ZDC
   AliESDZDC *esdzdc = fESD ? fESD->GetESDZDC() : nullptr;
@@ -2432,9 +2481,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     ft0.fTriggerMask = 0; // Not available in AOD
   }
   // will be removed with O2 improvement (one size field used for two VLAs)
-  ft0.fAmplitudeA_size = ft0.fChannelA_size; 
+  ft0.fAmplitudeA_size = ft0.fChannelA_size;
   ft0.fAmplitudeC_size = ft0.fChannelC_size;
-  
+
   FillTree(kFT0);
   if (fTreeStatus[kFT0])
     eventextra.fNentries[kFT0] = 1;
@@ -2499,7 +2548,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         v0s.fIndexTracksPos = TMath::Abs(pidx) + fOffsetTrack; // Positive track ID
         v0s.fIndexTracksNeg = TMath::Abs(nidx) + fOffsetTrack; // Negative track ID
       }
-      
+
       v0Lookup[iv0] = nv0_filled; // stored
       FillTree(kV0s);
       if (fTreeStatus[kV0s])
@@ -2517,7 +2566,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       ULong64_t *packedPosNeg = new ULong64_t[nv0];
       ULong64_t *sortedPosNeg = new ULong64_t[nv0];
       Int_t *sortIdx = new Int_t[nv0];
-      
+
       //Fill cascades in order
       Int_t ncas = fVEvent->GetNumberOfCascades();
       Int_t ncastosort = 0;
@@ -2583,7 +2632,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 	  }
 	}
       } // End loop on cascades
-      
+
       //Sort cascades
       TMath::Sort(ncastosort, packedV0indices, sortV0Idx, kFALSE);
       //Fill cascades only after V0 sorting
@@ -2599,7 +2648,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       delete[] packedPosNeg;
       delete[] sortedPosNeg;
       delete[] sortIdx;
-      
+
       delete[] packedV0indices;
       delete[] packedbachelorindices;
       delete[] sortV0Idx;
@@ -2857,7 +2906,7 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   convertedTrack.fMIDBitMap = midbitmap;
   UInt_t midboard = static_cast<UInt_t>(AliESDMuonTrack::GetCrossedBoard(midpattern));
   convertedTrack.fMIDBoards = (midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard;
-  
+
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;
@@ -2908,15 +2957,15 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   }
   else
   {
-     jacobian(2, 1) = 0; 
-     jacobian(2, 3) = 0; 
+     jacobian(2, 1) = 0;
+     jacobian(2, 3) = 0;
 
-     jacobian(3, 1) = 0; 
-     jacobian(3, 3) = 0; 
+     jacobian(3, 1) = 0;
+     jacobian(3, 3) = 0;
 
-     jacobian(4, 1) = 0; 
-     jacobian(4, 3) = 0; 
-     jacobian(4, 4) = 0; 
+     jacobian(4, 1) = 0;
+     jacobian(4, 3) = 0;
+     jacobian(4, 4) = 0;
   }
 
   // jacobian*covariances*jacobian^T
@@ -2931,52 +2980,52 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
 
   if(fwdtracks.fSigmaX != 0 && fwdtracks.fSigmaY != 0)
       convertedTrack.fRhoXY = (Char_t)(128. * convertedCovariances(0,1) / fwdtracks.fSigmaX / fwdtracks.fSigmaY);
-  else 
+  else
      convertedTrack.fRhoXY = 0;
- 
-  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaX != 0) 
+
+  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaX != 0)
      convertedTrack.fRhoPhiX = (Char_t)(128. * convertedCovariances(0,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaX);
-  else 
+  else
      convertedTrack.fRhoPhiX = 0;
 
-  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaY != 0) 
+  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaY != 0)
      convertedTrack.fRhoPhiY = (Char_t)(128. * convertedCovariances(1,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaY);
-  else 
+  else
      convertedTrack.fRhoPhiY = 0;
 
-  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaX != 0) 
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaX != 0)
      convertedTrack.fRhoTglX = (Char_t)(128. * convertedCovariances(3,0) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaX);
-  else 
+  else
      convertedTrack.fRhoTglX = 0;
 
-  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaY != 0) 
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaY != 0)
      convertedTrack.fRhoTglY = (Char_t)(128. * convertedCovariances(3,1) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaY);
-  else 
+  else
      convertedTrack.fRhoTglY = 0;
 
-  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaPhi != 0) 
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaPhi != 0)
      convertedTrack.fRhoTglPhi = (Char_t)(128. * convertedCovariances(3,2) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaPhi);
-  else 
+  else
      convertedTrack.fRhoTglPhi = 0;
 
-  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaX != 0) 
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaX != 0)
      convertedTrack.fRho1PtX = (Char_t)(128. * convertedCovariances(4,0) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaX);
   else
      convertedTrack.fRho1PtX = 0;
 
-  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaY != 0) 
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaY != 0)
      convertedTrack.fRho1PtY = (Char_t)(128. * convertedCovariances(4,1) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaY);
-  else 
+  else
      convertedTrack.fRho1PtY = 0;
 
-  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaPhi != 0) 
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaPhi != 0)
      convertedTrack.fRho1PtPhi = (Char_t)(128. * convertedCovariances(4,2) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaPhi);
-  else 
+  else
      convertedTrack.fRho1PtPhi = 0;
 
-  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaTgl != 0) 
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaTgl != 0)
     convertedTrack.fRho1PtTgl = (Char_t)(128. * convertedCovariances(4,3) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaTgl);
-  else 
+  else
     convertedTrack.fRho1PtTgl = 0;
 
   return convertedTrack;
@@ -3000,9 +3049,9 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   alpha4 = MUONTrack.OneOverPt();
 
   x2 = TMath::ATan2(-alpha3, -alpha1);
-  if (alpha3 != 0 || alpha1 != 0) 
+  if (alpha3 != 0 || alpha1 != 0)
     x3 = -1. / TMath::Sqrt(alpha3 * alpha3 + alpha1 * alpha1);
-  else 
+  else
     x3 = 0;
   x4 = alpha4 * -x3 * TMath::Sqrt(1 + alpha3 * alpha3);
 
@@ -3080,15 +3129,15 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   }
   else
   {
-     jacobian(2, 1) = 0; 
-     jacobian(2, 3) = 0; 
+     jacobian(2, 1) = 0;
+     jacobian(2, 3) = 0;
 
-     jacobian(3, 1) = 0; 
-     jacobian(3, 3) = 0; 
+     jacobian(3, 1) = 0;
+     jacobian(3, 3) = 0;
 
-     jacobian(4, 1) = 0; 
-     jacobian(4, 3) = 0; 
-     jacobian(4, 4) = 0; 
+     jacobian(4, 1) = 0;
+     jacobian(4, 3) = 0;
+     jacobian(4, 4) = 0;
   }
 
   // jacobian*covariances*jacobian^T
@@ -3103,52 +3152,52 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
 
   if(fwdtracks.fSigmaX != 0 && fwdtracks.fSigmaY != 0)
       convertedTrack.fRhoXY = (Char_t)(128. * convertedCovariances(0,1) / fwdtracks.fSigmaX / fwdtracks.fSigmaY);
-  else 
+  else
      convertedTrack.fRhoXY = 0;
- 
-  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaX != 0) 
+
+  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaX != 0)
      convertedTrack.fRhoPhiX = (Char_t)(128. * convertedCovariances(0,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaX);
-  else 
+  else
      convertedTrack.fRhoPhiX = 0;
 
-  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaY != 0) 
+  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaY != 0)
      convertedTrack.fRhoPhiY = (Char_t)(128. * convertedCovariances(1,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaY);
-  else 
+  else
      convertedTrack.fRhoPhiY = 0;
 
-  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaX != 0) 
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaX != 0)
      convertedTrack.fRhoTglX = (Char_t)(128. * convertedCovariances(3,0) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaX);
-  else 
+  else
      convertedTrack.fRhoTglX = 0;
 
-  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaY != 0) 
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaY != 0)
      convertedTrack.fRhoTglY = (Char_t)(128. * convertedCovariances(3,1) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaY);
-  else 
+  else
      convertedTrack.fRhoTglY = 0;
 
-  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaPhi != 0) 
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaPhi != 0)
      convertedTrack.fRhoTglPhi = (Char_t)(128. * convertedCovariances(3,2) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaPhi);
-  else 
+  else
      convertedTrack.fRhoTglPhi = 0;
 
-  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaX != 0) 
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaX != 0)
      convertedTrack.fRho1PtX = (Char_t)(128. * convertedCovariances(4,0) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaX);
   else
      convertedTrack.fRho1PtX = 0;
 
-  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaY != 0) 
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaY != 0)
      convertedTrack.fRho1PtY = (Char_t)(128. * convertedCovariances(4,1) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaY);
-  else 
+  else
      convertedTrack.fRho1PtY = 0;
 
-  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaPhi != 0) 
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaPhi != 0)
      convertedTrack.fRho1PtPhi = (Char_t)(128. * convertedCovariances(4,2) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaPhi);
-  else 
+  else
      convertedTrack.fRho1PtPhi = 0;
 
-  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaTgl != 0) 
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaTgl != 0)
     convertedTrack.fRho1PtTgl = (Char_t)(128. * convertedCovariances(4,3) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaTgl);
-  else 
+  else
     convertedTrack.fRho1PtTgl = 0;
 
   return convertedTrack;

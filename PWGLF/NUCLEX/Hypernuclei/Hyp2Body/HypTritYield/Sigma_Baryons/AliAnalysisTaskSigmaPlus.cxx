@@ -1381,6 +1381,8 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     TH1F* fHistCentralityINT7LF        = new TH1F("fHistCentralityINT7LF", "Centrality Percentile - INT7 Low Field;Centrality [%];Counts/(0.01 %)", 10000, 0, 100);
     TH1F* fHistEventCounter            = new TH1F("fHistEventCounter", "Event Counter", 2, 0.5, 2.5);
     TH1D* fHistEventCounterdouble      = new TH1D("fHistEventCounterdouble", "Event Counter", 2, 0.5, 2.5);
+    TH1F* fHistEventCounterHM          = new TH1F("fHistEventCounterHM", "Event Counter - High-Mult. V0+SPD", 2, 0.5, 2.5);
+    TH1D* fHistEventCounterdoubleHM    = new TH1D("fHistEventCounterdoubleHM", "Event Counter - High-Mult. V0+SPD", 2, 0.5, 2.5);
     TH1F* fHistEventCounterHMV0        = new TH1F("fHistEventCounterHMV0", "Event Counter - HMV0", 2, 0.5, 2.5);
     TH1D* fHistEventCounterdoubleHMV0  = new TH1D("fHistEventCounterdoubleHMV0", "Event Counter - HMV0", 2, 0.5, 2.5);
     TH1F* fHistEventCounterHMSPD       = new TH1F("fHistEventCounterHMSPD", "Event Counter - HMSPD", 2, 0.5, 2.5);
@@ -1801,12 +1803,16 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     
     fHistEventCounter->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdouble->GetXaxis()->SetBinLabel(1,"Events");
+    fHistEventCounterHM->GetXaxis()->SetBinLabel(1,"Events");
+    fHistEventCounterdoubleHM->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterHMV0->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdoubleHMV0->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterHMSPD->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdoubleHMSPD->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterINT7->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdoubleINT7->GetXaxis()->SetBinLabel(1,"Events");
+    fHistEventCounterINT7LF->GetXaxis()->SetBinLabel(1,"Events");
+    fHistEventCounterdoubleINT7LF->GetXaxis()->SetBinLabel(1,"Events");
 
     fHistV0Statistics->GetXaxis()->SetBinLabel(1, "On-the-fly V0s");
     fHistV0Statistics->GetXaxis()->SetBinLabel(2, "Offline V0s");
@@ -2008,6 +2014,8 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 
     fOutputList->Add(fHistEventCounter);
     fOutputList->Add(fHistEventCounterdouble);
+    fOutputList->Add(fHistEventCounterHM);
+    fOutputList->Add(fHistEventCounterdoubleHM);
     fOutputList->Add(fHistEventCounterHMV0);
     fOutputList->Add(fHistEventCounterdoubleHMV0);
     fOutputList->Add(fHistEventCounterHMSPD);
@@ -2378,6 +2386,12 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   else EventCounterdoub->Fill(1);
 
   //Check if Event has corresponding Trigger: Get Trigger Mask and AND it with requested trigger
+  if((EventTriggers&65536)||(EventTriggers&8)){
+    FillHistogram("fHistEventCounterHM",1); //Event Counter 
+    TH1D* EventCounterdoubHM = dynamic_cast<TH1D*>(fOutputList->FindObject("fHistEventCounterdoubleHM"));
+    if(!EventCounterdoubHM){AliWarning("Error: Histogram 'fHistEventCounterdoubleHM' does not exist in TList 'fOutputList'!");} 
+    else EventCounterdoubHM->Fill(1);
+  }
   if(EventTriggers&65536){
     FillHistogram("fHistEventCounterHMV0",1); //Event Counter 
     TH1D* EventCounterdoubHMV0 = dynamic_cast<TH1D*>(fOutputList->FindObject("fHistEventCounterdoubleHMV0"));
@@ -2413,6 +2427,12 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   if(!EventCounterdoub){AliWarning("Error: Histogram 'fHistEventCounterdouble' does not exist in TList 'fOutputList'!");} 
   else EventCounterdoub->Fill(2);
 
+  if((EventTriggers&65536)||(EventTriggers&8)){
+    FillHistogram("fHistEventCounterHM",2); //Event Counter 
+    TH1D* EventCounterdoubHM = dynamic_cast<TH1D*>(fOutputList->FindObject("fHistEventCounterdoubleHM"));
+    if(!EventCounterdoubHM){AliWarning("Error: Histogram 'fHistEventCounterdoubleHM' does not exist in TList 'fOutputList'!");} 
+    else EventCounterdoubHM->Fill(2);
+  }
   if(EventTriggers&65536){
     FillHistogram("fHistEventCounterHMV0",2); //Event Counter 
     TH1D* EventCounterdoubHMV0 = dynamic_cast<TH1D*>(fOutputList->FindObject("fHistEventCounterdoubleHMV0"));

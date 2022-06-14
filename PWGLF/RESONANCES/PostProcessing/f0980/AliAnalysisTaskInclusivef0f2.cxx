@@ -1715,7 +1715,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{1,fZ,fCent,
@@ -1726,7 +1726,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
                                 PiPipT, PiPiMass},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{1,fZ,fCent,
@@ -1741,7 +1741,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{2,fZ,fCent,
@@ -1752,7 +1752,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
                                 PiPipT, PiPiMass},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{2,fZ,fCent,
@@ -1767,7 +1767,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{3,fZ,fCent,
@@ -1778,7 +1778,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
                                 PiPipT, PiPiMass},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{3,fZ,fCent,

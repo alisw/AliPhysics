@@ -80,7 +80,6 @@ public:
   }
   void UseOnTheFly(bool toggle = true) { fUseOnTheFly = toggle; }
   void UseCustomPID(bool toggle = true) { fUseCustomPID = toggle; }
-  void UseV0Method(bool toggle = true) { fUseV0Method = toggle; }
   void SetMassRange(float min, float max) {
     fMassRange[0] = min;
     fMassRange[1] = max;
@@ -108,7 +107,6 @@ private:
   bool fOnlyTrueCandidates = true; ///< Save only true Hyperhydrogens
   bool fUseOnTheFly = false;
   bool fUseCustomPID = false; //!
-  bool fUseV0Method = true;   //!
 
   float fCustomBethe[5] = {
       1.70184, 28.4426, 3.21871e-12, 2.06952,

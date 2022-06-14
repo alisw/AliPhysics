@@ -37,8 +37,7 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  // AddTask
-  static AliAnalysisTaskCorrelGen *AddTaskCorrelGen(TString suffix = "");
+  
 
   void Correlation(TObjArray *triggers, TObjArray *associated, Bool_t hh, Bool_t V0h, Float_t perc, Bool_t hV0);
   void CorrelationMixing(TObjArray *triggers, TObjArray *bgTracks, Float_t perc);
