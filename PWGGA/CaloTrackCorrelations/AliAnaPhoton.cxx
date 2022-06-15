@@ -8496,7 +8496,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 
           if ( fFillSSPerSMHistograms ) // Per SM or sector
           {
-            printf("\t \t Per SM histograms\n");
             fhPtPhotonPerTriggerSM ->Fill(ptcluster, itrig+0.5, sm, GetEventWeight()*weightPt);
 
             // Per sector
