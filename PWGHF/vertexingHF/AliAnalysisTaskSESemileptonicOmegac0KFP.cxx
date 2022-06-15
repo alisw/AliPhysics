@@ -706,8 +706,12 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: SelectTrack(const AliVEvent *eve
         Double_t nSigmaCombined_Ele = -9999.;
         
         if(fAnalCuts->GetIsUsePID()){
-            nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodtpid,AliPID::kElectron);
-            nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodtpid,AliPID::kElectron);
+           // nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodtpid,AliPID::kElectron);
+           // nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodtpid,AliPID::kElectron);
+            
+            AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+            Pid_HF -> GetnSigmaTOF(aodtpid, 0, nsigma_tofele);
+            Pid_HF -> GetnSigmaTPC(aodtpid, 0, nsigma_tpcele);
         }
         if(fAnalCuts->SingleTrkCutsNoPID(aodt,aodtpid,fpVtx)){
             fHistoElectronTPCPID->Fill(aodt->Pt(),nsigma_tpcele);
@@ -907,8 +911,14 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
         AliAODTrack *trk = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrk));
         if(!trk) continue;
         
-        Float_t nSigmaTOF_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk, AliPID::kElectron);
-        Float_t nSigmaTPC_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk, AliPID::kElectron);
+      //  Float_t nSigmaTOF_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk, AliPID::kElectron);
+       // Float_t nSigmaTPC_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk, AliPID::kElectron);
+        
+        Double_t nSigmaTOF_Ele = -999., nSigmaTPC_Ele = -999.;
+        AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+        Pid_HF -> GetnSigmaTOF(trk, 0, nSigmaTOF_Ele);
+        Pid_HF -> GetnSigmaTPC(trk, 0, nSigmaTPC_Ele);
+        
         nSigmaCombined_Ele = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_Ele, nSigmaTOF_Ele);
         
         Double_t mass =9999.; Double_t mass_ss = 9999.;
@@ -1674,9 +1684,14 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(AliAODEve
             (*varvec)[41] = d0z0bach[0];
             (*varvec)[42] = TMath::Sqrt(covd0z0bach[0]);
         
-            double nsigmaTPCE = -999., nsigmaTOFE = -999.;
-            nsigmaTPCE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron); // TPC
-            nsigmaTOFE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron); // TOF
+            Double_t nsigmaTPCE = -999., nsigmaTOFE = -999.;
+           // nsigmaTPCE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron); // TPC
+           // nsigmaTOFE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron); // TOF
+            
+            AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+            Pid_HF -> GetnSigmaTOF(trk, 0, nsigmaTOFE);
+            Pid_HF -> GetnSigmaTPC(trk, 0, nsigmaTPCE);
+            
             (*varvec)[43] = nsigmaTPCE;
             (*varvec)[44] = nsigmaTOFE;
             (*varvec)[45] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCE, nsigmaTOFE);
@@ -2409,12 +2424,26 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     Double_t cosoa = (pxe*pxOmega+pye*pyOmega+pze*pzOmega)/mome/momOmega; // CosOpeningAngle
 
     
-    Float_t nSigmaTOF_EleFromOmegac0 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackElectronFromOmegac0, AliPID::kElectron);
-    Float_t nSigmaTPC_EleFromOmegac0 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackElectronFromOmegac0, AliPID::kElectron);
-    Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
-    Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-    Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
-    Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
+ //   Float_t nSigmaTOF_EleFromOmegac0 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackElectronFromOmegac0, AliPID::kElectron);
+ //  Float_t nSigmaTPC_EleFromOmegac0 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackElectronFromOmegac0, AliPID::kElectron);
+ //   Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
+ //   Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
+ //   Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
+ //   Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
+    
+    //--- using new funtions to get nSigmaTOF and nSigmaTPC
+    
+    Double_t nSigmaTOF_EleFromOmegac0 = -999., nSigmaTPC_EleFromOmegac0 = -999., nSigmaTPC_PiFromLam = -999., nSigmaTPC_PrFromLam = -999., nSigmaTPC_KaonFromOmega = -999., nSigmaTOF_KaonFromOmega = -999.;
+    
+    AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+    Pid_HF -> GetnSigmaTOF(trackElectronFromOmegac0, 0, nSigmaTOF_EleFromOmegac0);
+    Pid_HF -> GetnSigmaTPC(trackElectronFromOmegac0, 0, nSigmaTPC_EleFromOmegac0);
+
+    Pid_HF -> GetnSigmaTPC(trkPion, 2, nSigmaTPC_PiFromLam);
+    Pid_HF -> GetnSigmaTPC(trkProton, 4, nSigmaTPC_PrFromLam);
+    
+    Pid_HF -> GetnSigmaTPC(trackKaonFromOmega, 3, nSigmaTPC_KaonFromOmega);
+    Pid_HF -> GetnSigmaTOF(trackKaonFromOmega, 3, nSigmaTOF_KaonFromOmega);
     
     if ( fabs(nSigmaTPC_PiFromLam)>=4. || fabs(nSigmaTPC_PrFromLam)>=4. || fabs(nSigmaTPC_KaonFromOmega)>=4. ) return;
 
@@ -2933,11 +2962,22 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     
  //   Float_t nSigmaTOF_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackEleFromMixed, AliPID::kElectron);
  //   Float_t nSigmaTPC_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackEleFromMixed, AliPID::kElectron);
-    Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
-    Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-    Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
-    Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
-
+  //  Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
+  //  Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
+  //  Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
+  //  Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
+    
+    
+    //--- using new funtions to get nSigmaTOF and nSigmaTPC
+    
+    Double_t  nSigmaTPC_PiFromLam = -999., nSigmaTPC_PrFromLam = -999., nSigmaTPC_KaonFromOmega = -999., nSigmaTOF_KaonFromOmega = -999.;
+    
+    AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+    Pid_HF -> GetnSigmaTPC(trkPion, 2, nSigmaTPC_PiFromLam);
+    Pid_HF -> GetnSigmaTPC(trkProton, 4, nSigmaTPC_PrFromLam);
+    Pid_HF -> GetnSigmaTPC(trackKaonFromOmega, 3, nSigmaTPC_KaonFromOmega);
+    Pid_HF -> GetnSigmaTOF(trackKaonFromOmega, 3, nSigmaTOF_KaonFromOmega);
+    
     if ( fabs(nSigmaTPC_PiFromLam)>=4. || fabs(nSigmaTPC_PrFromLam)>=4. || fabs(nSigmaTPC_KaonFromOmega)>=4. ) return;
     
     KFParticle kfpOmegac0_PV = kfpOmegac0;
