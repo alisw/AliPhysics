@@ -142,7 +142,11 @@ fJetR(0.4),
 fJetAcut(0.),
 fRho(0.),
 fRhoMC(0.),
-fMaxFacPtHard(0)
+fMaxFacPtHard(0),
+fhNjetReMx_V0MnormDetLev_15GeV(0),
+fhNjetNorm_V0MnormDetLev_15GeV(0),
+fhNjetReMx_V0MnormDetLev_20GeV(0),
+fhNjetNorm_V0MnormDetLev_20GeV(0)
 {
    //default constructor
    //1D respnse matrix from recoil jets  //FF
@@ -343,7 +347,11 @@ fJetR(0.4),
 fJetAcut(0.),
 fRho(0.),
 fRhoMC(0.),
-fMaxFacPtHard(0)
+fMaxFacPtHard(0),
+fhNjetReMx_V0MnormDetLev_15GeV(0),
+fhNjetNorm_V0MnormDetLev_15GeV(0),
+fhNjetReMx_V0MnormDetLev_20GeV(0),
+fhNjetNorm_V0MnormDetLev_20GeV(0)
 {
    //Constructor
 
@@ -1540,6 +1548,13 @@ void AliAnalysisTaskRevEA::FillResponseMatrix(){
       //Important: TT labels must be the same!!!
       Int_t Label_Det_TT, Label_Part_TT; // Modified by KA
 
+      //count number of jets with pT larger than 15 GeV and 20 GeV in particle and detector level events
+      Double_t nJetsPt15_PartLevel = 1e-5; 
+      Double_t nJetsPt15_DetLevel  = 1e-5; 
+      Double_t nJetsPt20_PartLevel = 1e-5; 
+      Double_t nJetsPt20_DetLevel  = 1e-5; 
+
+
       for(Int_t iTT = 0; iTT < fnHadronTTBins; iTT++){
          if(fFillSigTT  && iTT == 0) continue;  //fk
          if(!fFillSigTT && iTT > 0)  continue;  //fk
@@ -1567,6 +1582,13 @@ void AliAnalysisTaskRevEA::FillResponseMatrix(){
             for(auto jetIterator : fJetContainerPartLevel->accepted_momentum()){
                jetPartMC = jetIterator.second;  // Get the pointer to jet object
                if(!jetPartMC) continue;
+               
+                if(fFillSigTT){ //just for TT{20,30}
+                   if(TMath::Abs(TVector2::Phi_mpi_pi(jetPartMC->Phi() - fTTH_PartLevel[iTT][idx_PartLevel].Phi()) > TMath::Pi()/2)){
+                      if(jetPartMC->Pt() > 15.0)  nJetsPt15_PartLevel++;
+                      if(jetPartMC->Pt() > 20.0)  nJetsPt20_PartLevel++;
+                   }
+                }
 
                if(TMath::Abs(TVector2::Phi_mpi_pi(jetPartMC->Phi() - fTTH_PartLevel[iTT][idx_PartLevel].Phi())) > fPhiCut){  // KA
                   jetPtCorrPart = jetPartMC->Pt() - fRhoMC*jetPartMC->Area();
@@ -1586,12 +1608,29 @@ void AliAnalysisTaskRevEA::FillResponseMatrix(){
                jetPtCorrPart =  jetPartMC->Pt() - jetPartMC->Area()*fRhoMC;
                jetPtCorrDet  =  jetDetMC->Pt()  - jetDetMC->Area()*fRho;
 
+               if(fFillSigTT){ //just for TT{20,30}
+                  if(TMath::Abs(TVector2::Phi_mpi_pi(jetDetMC->Phi()-fTTH[iTT][idx].Phi())) > TMath::Pi()/2){ //select recoil hemisphere and count jets
+                     if(jetDetMC->Pt() > 15.0)  nJetsPt15_DetLevel++;
+                     if(jetDetMC->Pt() > 20.0)  nJetsPt20_DetLevel++;
+                  }
+               }
+
                if(TMath::Abs(TVector2::Phi_mpi_pi(jetDetMC->Phi()-fTTH[iTT][idx].Phi())) > fPhiCut && TMath::Abs(TVector2::Phi_mpi_pi(jetPartMC->Phi()-fTTH_PartLevel[iTT][idx_PartLevel].Phi())) > fPhiCut){   // KA: look for events when both matched jets are in the recoil
                   fhRecoilJetPtPartLevelVsJetPtDetLevel_CorrespTT[iTT]->Fill(jetPtCorrDet, jetPtCorrPart); // Modified by KA
                   fhRecoilJetPtZeroPartLevelVsJetPtDetLevel_CorrespTT[iTT]->Fill(jetPtCorrDet, jetPartMC->Pt()); // Modified by KA
                   fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_CorrespTT[iTT]->Fill(jetDetMC->Pt(), jetPartMC->Pt()); // Modified by KA
                }
             }
+
+            //Fill Njet response matrices
+            if(fFillSigTT){ //just for TT{20,30}
+               fhNjetReMx_V0MnormDetLev_15GeV->Fill(nJetsPt15_DetLevel, nJetsPt15_PartLevel, fMultV0Mnorm);
+               fhNjetNorm_V0MnormDetLev_15GeV->Fill(nJetsPt15_PartLevel, fMultV0Mnorm);
+
+               fhNjetReMx_V0MnormDetLev_20GeV->Fill(nJetsPt20_DetLevel, nJetsPt20_PartLevel, fMultV0Mnorm);
+               fhNjetNorm_V0MnormDetLev_20GeV->Fill(nJetsPt20_PartLevel, fMultV0Mnorm);
+            }
+
          }
       }
    }
@@ -2461,7 +2500,27 @@ void AliAnalysisTaskRevEA::UserCreateOutputObjects(){
       }
    }
 
+   if(fMode == AliAnalysisTaskRevEA::kMC){ 
+      Double_t NjetBins [] = {0,1,2,3,4,20};
+      Int_t nNjetBins = sizeof(NjetBins)/sizeof(Double_t) - 1;
+      Double_t NV0MnormBins [] = {0,4,5,9,20};
+      Int_t nNV0MnormBins = sizeof(NV0MnormBins)/sizeof(Double_t) - 1;
 
+      fhNjetReMx_V0MnormDetLev_15GeV = new TH3D("fhNjetReMx_V0MnormDetLev_15GeV","fhNjetReMx_V0MnormDetLev_15GeV",
+        nNjetBins,NjetBins,nNjetBins,NjetBins,nNV0MnormBins,NV0MnormBins);
+
+      fOutput->Add((TH3D*) fhNjetReMx_V0MnormDetLev_15GeV);
+
+      fhNjetNorm_V0MnormDetLev_15GeV = new TH2D("fhNjetNorm_V0MnormDetLev_15GeV","fhNjetNorm_V0MnormDetLev_15GeV", nNjetBins,NjetBins,nNV0MnormBins,NV0MnormBins);
+      fOutput->Add((TH2D*) fhNjetNorm_V0MnormDetLev_15GeV);
+
+      fhNjetReMx_V0MnormDetLev_20GeV = new TH3D("fhNjetReMx_V0MnormDetLev_20GeV","fhNjetReMx_V0MnormDetLev_20GeV",
+        nNjetBins,NjetBins,nNjetBins,NjetBins,nNV0MnormBins,NV0MnormBins);
+      fOutput->Add((TH3D*) fhNjetReMx_V0MnormDetLev_20GeV);
+
+      fhNjetNorm_V0MnormDetLev_20GeV = new TH2D("fhNjetNorm_V0MnormDetLev_20GeV","fhNjetNorm_V0MnormDetLev_20GeV", nNjetBins,NjetBins,nNV0MnormBins,NV0MnormBins);
+      fOutput->Add((TH2D*) fhNjetNorm_V0MnormDetLev_20GeV);
+   }
 
    // =========== Switch on Sumw2 for all histos ===========
    for(Int_t i=0; i<fOutput->GetEntries(); i++){

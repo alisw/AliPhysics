@@ -6,16 +6,18 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0,
-  std::string configArray = "0 1 2 4 5 8 11 13", bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000, bool saveQApileup = false)
+AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0,
+  double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 2 4 5 8 11 13",
+  bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000,
+  bool TPCpileup = false, bool saveQA_TPCpileup = false)
 {
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
   // Less essential global variables.
   bool removeBadArea = kFALSE;
   int debug = 0;
   bool useTightCuts = kFALSE;
-  double slope = 3.38;
+  double slope = 3.38; bool saveQA_ESDpileup = false;
+  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   // Prepare the configuration of the wagons.
   enum { lhc15o = 0, lhc18q = 1, lhc18r = 2 };
@@ -149,8 +151,10 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     /// Event selection: pileup cuts and Zvtx.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {   // Set flag only if we cut on pileup.
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
-      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQApileup);}
-      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQApileup);}
+      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);}
+      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
+
+      fJCatalyst[i]->SetTPCpileupCuts(TPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
     }
     if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}    
 

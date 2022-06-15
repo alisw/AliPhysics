@@ -28,10 +28,7 @@
 
 class AliAnalysisTaskBaseWeights;
 
-namespace {
-using namespace Hist;
 using namespace std;
-} // namespace
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskBaseWeights)
@@ -346,16 +343,16 @@ void AliAnalysisTaskBaseWeights::AnaTrackMC(Int_t flag) {
 
     // get the scaling factor
     if(fMCSpectraWeights && 0==fMCPrimSec && fMCParticle->Particle()){ // only for primary particles
-        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 0);
-        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
-        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), -1);
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
         fMCweightRandom = GetRandomRoundDouble(fMCweight);
         fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
     }
     if(fMCSpectraWeights && 1==fMCPrimSec && fMCParticle->Particle()){ // only for secondaries from decay
-        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
-        fMCweightSys = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), 1);
-        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), -1);
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+        fMCweightSys = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
         fMCweightRandom = GetRandomRoundDouble(fMCweight);
         fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
     }
@@ -426,16 +423,16 @@ void AliAnalysisTaskBaseWeights::AnaParticleMC(Int_t flag) {
 
     // get the scaling factor
     if(fMCSpectraWeights && 0==fMCPrimSec && fMCParticle->Particle()){ // only for primary particles
-        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 0);
-        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
-        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), -1);
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
         fMCweightRandom = GetRandomRoundDouble(fMCweight);
         fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
     }
     if(fMCSpectraWeights && 1==fMCPrimSec && fMCParticle->Particle()){ // only for secondaries from decay
-        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
-        fMCweightSys = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), 1);
-        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), -1);
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+        fMCweightSys = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
         fMCweightRandom = GetRandomRoundDouble(fMCweight);
         fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
     }
@@ -481,7 +478,7 @@ Double_t AliAnalysisTaskBaseWeights::MCScalingFactor() {
 
     // in case mcspectraweights are there we use them for primary particles
     if (fMCSpectraWeights && fMCisPrim) {
-        return fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(),
+        return fMCSpectraWeights->GetMCSpectraWeight(fMCLabel,
                                                      fMC);
     }
     if (!fMCisPrim) {

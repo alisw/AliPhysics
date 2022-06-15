@@ -189,6 +189,7 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
+
 }
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):

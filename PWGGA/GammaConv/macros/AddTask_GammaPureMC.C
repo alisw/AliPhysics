@@ -1,4 +1,4 @@
-void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 ) {
+void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStudies = 0) {
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -20,6 +20,7 @@ void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 ) {
   // if no k0 desired, set to isK0
   task->SetIsK0(isK0);
   task->SetMaxPt(maxpT);
+  task->SetDoMultStudies(doMultStudies);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

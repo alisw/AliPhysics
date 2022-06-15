@@ -15,7 +15,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
                                      bool isMC = false, bool isNano = true, bool triggerOn = false, int MixingDepth = 30,
                                      float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
                                      const char *cutVariation = "0", bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = "false",
-                                     const char *triggerVariation = "0", bool RunPlotPt = true, bool RunPlotQ3Vsq = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1, bool DoTwoPrimary = false, bool StandardMixing = false) {
+                                     const char *triggerVariation = "0", bool RunPlotPt = true, bool RunPlotQ3Vsq = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1, bool DoTwoPrimary = false, bool StandardMixing = false, bool DoKinematicPlots = false) {
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -356,7 +356,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     taskNano->SetDeltaEtaMaxPPrim(DeltaEtaMaxpKplus);
     taskNano->SetDeltaPhiMaxPAPrim(0.);
     taskNano->SetDeltaEtaMaxPAPrim(0.);
-    taskNano->SetDoKinematicsPlots(true);
+    taskNano->SetDoKinematicsPlots(DoKinematicPlots);
+    taskNano->SetRunPlotInvMass(DoKinematicPlots);
     if (isMC) taskNano->SetPlotsMC(true);
 
     mgr->AddTask(taskNano);

@@ -39,7 +39,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            CalNcharge(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera, Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
-		virtual void            FindWdecay(AliAODMCParticle* part, int &label, int &pid);
+		virtual void            FindWZdecay(AliAODMCParticle* part, int &label, int &pid);
 		virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
 
 		Bool_t                  GetEMCalTriggerEG1() { return fEMCEG1; };
@@ -66,7 +66,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetTrackClust(Int_t TPC, Int_t ITS, Int_t Crossed) {NTPCClust = TPC, NITSClust = ITS, NCrossedRow = Crossed;};
 		void                    SetDCA(Double_t xy, Double_t z) {DCAxy = xy, DCAz = z;};
 		void                    SetNsigma(Double_t min, Double_t max) {NsigmaMin = min, NsigmaMax = max;};
-		void                    SetM20(Double_t min, Double_t max) {M20Min = min, M20Max = max;};
+		void                    SetM20(Double_t min, Double_t max) {M02Min = min, M02Max = max;};
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
@@ -104,7 +104,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t NTPCClust, NITSClust, NCrossedRow;
 		Double_t DCAxy, DCAz;
 		Double_t NsigmaMin, NsigmaMax;
-		Double_t M20Min, M20Max;
+		Double_t M02Min, M02Max;
 		Double_t EopMin, EopMax;
 		Double_t MaxConeR;
 		Double_t ptAssoMin;
@@ -185,6 +185,9 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_ULS;
 		TH2F*                   fInv_pT_LS_forW;
 		TH2F*                   fInv_pT_ULS_forW;
+		TH2F*                   fInv_pT_LS_forZ;
+		TH2F*                   fInv_pT_ULS_forZ;
+		TH2F*                   fInv_pT_ULS_forZ_MC;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
 		TH2F*                   fHistPt_R_Iso;
@@ -272,6 +275,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistWeOrg;
 		TH1F*                   fHistWeOrgPos;
 		TH1F*                   fHistWeOrgNeg;
+		TH2F*                   fHistZeOrg;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented

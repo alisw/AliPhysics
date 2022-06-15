@@ -13,8 +13,6 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
       double              Harmonic=2,
       TString             trigger="kINT7",
       float                  chi2lo=0.1,
-      float                  dcacutz=3.2, // dcaz cut for all tracks
-      float                  dcacutxy=2.4, // dcaxy cut for all tracks
       float                  ptmin=0.2, // minimum pt for Q-vector components
       float                  ptmax=2.0, // maximum pt for Q-vector components
       int                     cbinlo=0, // lower centrality bin for histogram array
@@ -54,8 +52,6 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	task-> SetHarmonic(Harmonic);
 	task->SetTrigger(trigger);
   	task->SetChi2Low(chi2lo);
-	task->SetDCAcutZ(dcacutz);
-	task->SetDCAcutXY(dcacutxy);
 	task->SetPtMin(ptmin);
 	task->SetPtMax(ptmax);
 	task->SetCentBinLow(cbinlo);
@@ -107,10 +103,27 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 			TFile *inNUE;
 			if(!AllContainers->FindObject("NUE")) {
 				inNUE = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/efficiencyBothpol.root");
-				// Ref NUE data from alien:///alice/cern.ch/user/p/prottay/nuarootfiles_p5_one_two_two_FB768_15op2_withpileup/efficiencyBothpol.root
 				AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
 				TList* wNUE_list = NULL;
 				wNUE_list = dynamic_cast<TList*>(inNUE->Get("fMcEffiHij"));
+				if (!wNUE_list) printf("Read TList wrong!\n");
+            		    	cin_NUE->SetData(wNUE_list); 			
+				mgr->ConnectInput(task,inSlotCounter,cin_NUE);
+				inSlotCounter++;				
+			}
+			else {
+				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE"));
+				inSlotCounter++;
+				printf("NUE already loaded\n");
+			}
+		} 
+		else if (period.EqualTo("LHC18q") || period.EqualTo("LHC18r")) {
+			TFile *inNUE;
+			if(!AllContainers->FindObject("NUE")) {
+				inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/efficiencyBothpol18qnew.root");
+				AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
+				TList* wNUE_list = NULL;
+				wNUE_list = dynamic_cast<TList*>(inNUE->FindObjectAny("fMcEffiHij"));
 				if (!wNUE_list) printf("Read TList wrong!\n");
             		    	cin_NUE->SetData(wNUE_list); 			
 				mgr->ConnectInput(task,inSlotCounter,cin_NUE);
@@ -146,42 +159,100 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	if (uniqueID.EqualTo("15o_NUA_fromEmil")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_wSyst.root";
 	if (uniqueID.EqualTo("15o_ChiHg2")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_ChiHg2.root";
 
+	if (period.EqualTo("LHC18q")) filenameNUA = "alien:///alice/cern.ch/user/m/mhaque/calib2021/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root";
+	if (uniqueID.EqualTo("18q_ChiHg2")     && period.EqualTo("LHC18q")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2.root";
+	if (uniqueID.EqualTo("18q_ChiHg2d5") && period.EqualTo("LHC18q")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2d5.root";
+	if (uniqueID.EqualTo("18q_Nhits60")     && period.EqualTo("LHC18q")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits60.root";
+	if (uniqueID.EqualTo("18q_Nhits80")     && period.EqualTo("LHC18q")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits80.root";
+	if (uniqueID.EqualTo("18q_Dcaz2")       && period.EqualTo("LHC18q")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Dcaz2.root";
+	if (uniqueID.EqualTo("18q_Dcaz2d5")   && period.EqualTo("LHC18q")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Dcaz2d5.root";
+
+	if (period.EqualTo("LHC18r")) filenameNUA = "alien:///alice/cern.ch/user/m/mhaque/calib2021/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root";
+	if (uniqueID.EqualTo("18r_ChiHg2")     && period.EqualTo("LHC18r")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2.root";
+	if (uniqueID.EqualTo("18r_ChiHg2d5") && period.EqualTo("LHC18r")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2d5.root";
+	if (uniqueID.EqualTo("18r_Nhits60")     && period.EqualTo("LHC18r")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits60.root";
+	if (uniqueID.EqualTo("18r_Nhits80")     && period.EqualTo("LHC18r")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits80.root";
+	if (uniqueID.EqualTo("18r_Dcaz2")       && period.EqualTo("LHC18r")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Dcaz2.root";
+	if (uniqueID.EqualTo("18r_Dcaz2d5")   && period.EqualTo("LHC18r")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Dcaz2d5.root";
+
 	if(task->GetNUAOn() ||doNUA) {
 		if (period.EqualTo("LHC10h") ) { // NUA for 10h is too large to read, we separate them into 3 TList*s.
 			TFile *inNUA;
-			if(!AllContainers->FindObject("NUA")) {
-				inNUA = TFile::Open(filenameNUA);
-				if (!inNUA) return task;
-				AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
-	                		TList* wNUA_list = NULL;
-				wNUA_list = dynamic_cast<TList*>(inNUA->Get("10hListNUA"));
-		                	cin_NUA->SetData(wNUA_list); 
-				mgr->ConnectInput(task,inSlotCounter,cin_NUA);
-				inSlotCounter++;
-				
-			} else {
-				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA"));
-				inSlotCounter++;
-				printf("NUA already loaded\n");
-			}
+			inNUA = TFile::Open(filenameNUA);
+			if (!inNUA) return task;
+			AliAnalysisDataContainer *cin_NUA;
+			if (period.EqualTo("LHC10h")) cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_ChiHg3") && period.EqualTo("LHC10h"))  cin_NUA = mgr->CreateContainer(Form("NUA_ChiHg3"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_Nhits60") && period.EqualTo("LHC10h"))  cin_NUA = mgr->CreateContainer(Form("NUA_Nhits60"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_Nhits80") && period.EqualTo("LHC10h"))  cin_NUA = mgr->CreateContainer(Form("NUA_Nhits80"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_FB768")   && period.EqualTo("LHC10h"))  cin_NUA = mgr->CreateContainer(Form("NUA_FB768"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_FB272")   && period.EqualTo("LHC10h"))  cin_NUA = mgr->CreateContainer(Form("NUA_FB272"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_FB768_ChiHg2")   && period.EqualTo("LHC10h")) cin_NUA = mgr->CreateContainer(Form("NUA_FB768_ChiHg2"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_FB768_ChiHg3")   && period.EqualTo("LHC10h")) cin_NUA = mgr->CreateContainer(Form("NUA_FB768_ChiHg3"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_FB768_Nhits80")   && period.EqualTo("LHC10h")) cin_NUA = mgr->CreateContainer(Form("NUA_FB768_Nhits80"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("10h_FB768_Nhits60")   && period.EqualTo("LHC10h")) cin_NUA = mgr->CreateContainer(Form("NUA_FB768_Nhits60"), TList::Class(), AliAnalysisManager::kInputContainer);
 
+	                	TList* wNUA_list = NULL;
+			wNUA_list = dynamic_cast<TList*>(inNUA->Get("10hListNUA"));
+		            cin_NUA->SetData(wNUA_list); 
+			mgr->ConnectInput(task,inSlotCounter,cin_NUA);
+			inSlotCounter++;
 		} 
-
 		else if (period.EqualTo("LHC15o")) {
 			TFile *inNUA;
-			if(!AllContainers->FindObject("NUA")) {
-				inNUA = TFile::Open(filenameNUA);
-				if (!inNUA) return task;
-				AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
+			inNUA = TFile::Open(filenameNUA);
+			if (!inNUA) return task;
+			AliAnalysisDataContainer *cin_NUA;
+			if (period.EqualTo("LHC15o")) cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("15o_ChiHg3")  && period.EqualTo("LHC15o")) cin_NUA = mgr->CreateContainer(Form("NUA_ChiHg3"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("15o_Nhits60")  && period.EqualTo("LHC15o")) cin_NUA = mgr->CreateContainer(Form("NUA_Nhits60"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("15o_Nhits80")  && period.EqualTo("LHC15o")) cin_NUA = mgr->CreateContainer(Form("NUA_Nhits80"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("15o_FB96")      && period.EqualTo("LHC15o")) cin_NUA = mgr->CreateContainer(Form("NUA_FB96"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("15o_NUA_fromEmil")  && period.EqualTo("LHC15o")) cin_NUA = mgr->CreateContainer(Form("NUA_FromEmil"), TList::Class(), AliAnalysisManager::kInputContainer);
+			if (uniqueID.EqualTo("15o_ChiHg2")  && period.EqualTo("LHC15o")) cin_NUA = mgr->CreateContainer(Form("NUA_ChiHg2"), TList::Class(), AliAnalysisManager::kInputContainer);
+
+			TList* wNUA_list = NULL;
+			wNUA_list = dynamic_cast<TList*>(inNUA->Get("15oListNUA"));
+		            cin_NUA->SetData(wNUA_list); 
+			mgr->ConnectInput(task,inSlotCounter,cin_NUA);
+			inSlotCounter++;			
+		}
+		else if (period.EqualTo("LHC18q") || period.EqualTo("LHC18r")) {
+			TFile *inNUA;
+			inNUA = TFile::Open(filenameNUA);
+			if (!inNUA) return task;
+			if (!AllContainers->FindObject("NUA")
+				|| uniqueID.EqualTo("18q_ChiHg2") || uniqueID.EqualTo("18q_ChiHg2d5") || uniqueID.EqualTo("18q_Nhits60") || uniqueID.EqualTo("18q_Nhits80") || uniqueID.EqualTo("18q_Dcaz2") || uniqueID.EqualTo("18q_Dcaz2d5") 
+				|| uniqueID.EqualTo("18r_ChiHg2") || uniqueID.EqualTo("18r_ChiHg2d5") || uniqueID.EqualTo("18r_Nhits60") || uniqueID.EqualTo("18r_Nhits80") || uniqueID.EqualTo("18r_Dcaz2") || uniqueID.EqualTo("18r_Dcaz2d5") 	
+				// The ID of track-wise syst is unique!!			
+			){
+				AliAnalysisDataContainer *cin_NUA;
+				if (period.EqualTo("LHC18q") && !AllContainers->FindObject("NUA") )  cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
+				if (uniqueID.EqualTo("18q_ChiHg2")     && period.EqualTo("LHC18q")) cin_NUA = mgr->CreateContainer(Form("NUA_ChiHg2"), TList::Class(), AliAnalysisManager::kInputContainer);
+				if (uniqueID.EqualTo("18q_ChiHg2d5") && period.EqualTo("LHC18q")) cin_NUA = mgr->CreateContainer(Form("NUA_ChiHg2d5"), TList::Class(), AliAnalysisManager::kInputContainer);
+				if (uniqueID.EqualTo("18q_Nhits60")     && period.EqualTo("LHC18q")) cin_NUA = mgr->CreateContainer(Form("NUA_Nhits60"), TList::Class(), AliAnalysisManager::kInputContainer);
+				if (uniqueID.EqualTo("18q_Nhits80")     && period.EqualTo("LHC18q")) cin_NUA = mgr->CreateContainer(Form("NUA_Nhits80"), TList::Class(), AliAnalysisManager::kInputContainer);
+				if (uniqueID.EqualTo("18q_Dcaz2")       && period.EqualTo("LHC18q")) cin_NUA = mgr->CreateContainer(Form("NUA_Dcaz2"), TList::Class(), AliAnalysisManager::kInputContainer);
+				if (uniqueID.EqualTo("18q_Dcaz2d5")   && period.EqualTo("LHC18q")) cin_NUA = mgr->CreateContainer(Form("NUA_Dcaz2d5"), TList::Class(), AliAnalysisManager::kInputContainer);
+				
+				if (period.EqualTo("LHC18r") && !AllContainers->FindObject("NUA") ) cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
+				if (uniqueID.EqualTo("18r_ChiHg2")     && period.EqualTo("LHC18r")) cin_NUA = mgr->CreateContainer(Form("NUA_ChiHg2"), TList::Class(), AliAnalysisManager::kInputContainer); 
+				if (uniqueID.EqualTo("18r_ChiHg2d5") && period.EqualTo("LHC18r")) cin_NUA = mgr->CreateContainer(Form("NUA_ChiHg2d5"), TList::Class(), AliAnalysisManager::kInputContainer); 
+				if (uniqueID.EqualTo("18r_Nhits60")     && period.EqualTo("LHC18r")) cin_NUA = mgr->CreateContainer(Form("NUA_Nhits60"), TList::Class(), AliAnalysisManager::kInputContainer); 
+				if (uniqueID.EqualTo("18r_Nhits80")     && period.EqualTo("LHC18r")) cin_NUA = mgr->CreateContainer(Form("NUA_Nhits80"), TList::Class(), AliAnalysisManager::kInputContainer); 
+				if (uniqueID.EqualTo("18r_Dcaz2")       && period.EqualTo("LHC18r")) cin_NUA = mgr->CreateContainer(Form("NUA_Dcaz2"), TList::Class(), AliAnalysisManager::kInputContainer); 
+				if (uniqueID.EqualTo("18r_Dcaz2d5")   && period.EqualTo("LHC18r")) cin_NUA = mgr->CreateContainer(Form("NUA_Dcaz2d5"), TList::Class(), AliAnalysisManager::kInputContainer); 
+
 				TList* wNUA_list = NULL;
-				wNUA_list = dynamic_cast<TList*>(inNUA->Get("15oListNUA"));
-		                	cin_NUA->SetData(wNUA_list); 
+				wNUA_list = dynamic_cast<TList*>(inNUA->FindObjectAny("fNUA_ChPosChNeg"));
+		            	cin_NUA->SetData(wNUA_list); 
 				mgr->ConnectInput(task,inSlotCounter,cin_NUA);
-				inSlotCounter++;			
-			} else {
+				inSlotCounter++;
+			}
+			else {
 				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA"));
 				inSlotCounter++;
-				printf("NUA already loaded\n");
+				printf("NUA(except for Trk-wise Syst) already loaded\n");
 			}
 		}
 
@@ -241,6 +312,38 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 				printf("wCent already loaded\n");
 			}
 			
+		}
+		else if (period.EqualTo("LHC18q")){
+                		TFile *v0calib;
+                		if(!AllContainers->FindObject("v0calib")) {
+				AliAnalysisDataContainer *cin_v0calib = mgr->CreateContainer(Form("v0calib"), TList::Class(), AliAnalysisManager::kInputContainer);                			
+                			v0calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/calibq2V0C18qP3.root");
+                			TList* v0calib_list = NULL;
+				v0calib_list = dynamic_cast<TList*>(v0calib->FindObjectAny("18qlistspPerc"));
+                		    	cin_v0calib->SetData(v0calib_list); 
+                		    	mgr->ConnectInput(task,inSlotCounter,cin_v0calib);
+                		    	inSlotCounter++;                		 
+                		}else {
+				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("v0calib"));
+				inSlotCounter++;
+				printf("v0calib already loaded\n");
+			}
+		}
+		else if (period.EqualTo("LHC18r")){
+                		TFile *v0calib;
+                		if(!AllContainers->FindObject("v0calib")) {
+				AliAnalysisDataContainer *cin_v0calib = mgr->CreateContainer(Form("v0calib"), TList::Class(), AliAnalysisManager::kInputContainer);                			
+                			v0calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/calibq2V0C18rP3.root");
+                			TList* v0calib_list = NULL;
+				v0calib_list = dynamic_cast<TList*>(v0calib->FindObjectAny("18rlistspPerc"));
+                		    	cin_v0calib->SetData(v0calib_list); 
+                		    	mgr->ConnectInput(task,inSlotCounter,cin_v0calib);
+                		    	inSlotCounter++;                		 
+                		}else {
+				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("v0calib"));
+				inSlotCounter++;
+				printf("v0calib already loaded\n");
+			}
 		}
 	}
 	

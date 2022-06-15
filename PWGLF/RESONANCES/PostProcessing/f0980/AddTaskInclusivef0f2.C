@@ -21,7 +21,7 @@ AliAnalysisTaskInclusivef0f2* AddTaskInclusivef0f2(
 
 	mgr->ConnectInput(taskInclusivef0f2, 0, cinput);
 //	mgr->ConnectOutput(taskInclusivef0f2, 1, coutputInclusivef0f2);
-	mgr->ConnectOutput(taskInclusivef0f2,1,mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));
+	mgr->ConnectOutput(taskInclusivef0f2,1,mgr->CreateContainer(Form("output_%s",option), TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));
 
 	return taskInclusivef0f2;
 }

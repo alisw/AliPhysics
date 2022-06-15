@@ -34,12 +34,12 @@ class AliAnalysisTaskDCArStudy : public AliAnalysisTaskMKBase
         static AliAnalysisTaskDCArStudy* AddTaskDCArStudy(const char* name = "TaskDCArStudy", const char* outfile = 0);
 
     protected:
-        Hist::Hist<THnF>        fHistDCA; //!<! hist for DCA distros
-        Hist::Hist<THnF>        fHistDCAPCC; //!<! hist for DCA distros with PCC scaling
-        Hist::Hist<THnF>        fHistDCAPCCSysUp; //!<! hist for DCA distros with PCC scaling                                    //!
-        Hist::Hist<THnF>        fHistDCAPCCSysDown; //!<! hist for DCA distros with PCC scaling                                    //!
-        Hist::Hist<THnF>        fHistSecWeights;//!
-        Hist::Hist<THnF>        fEventHist;//!
+        Hist<THnF>        fHistDCA; //!<! hist for DCA distros
+        Hist<THnF>        fHistDCAPCC; //!<! hist for DCA distros with PCC scaling
+        Hist<THnF>        fHistDCAPCCSysUp; //!<! hist for DCA distros with PCC scaling                                    //!
+        Hist<THnF>        fHistDCAPCCSysDown; //!<! hist for DCA distros with PCC scaling                                    //!
+        Hist<THnF>        fHistSecWeights;//!
+        Hist<THnF>        fEventHist;//!
         AliMCSpectraWeights*    fMCSpectraWeights; //!<! object to determine efficiency scaling
         
     private:

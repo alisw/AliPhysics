@@ -86,6 +86,8 @@
 #pragma link C++ class AliAnalysisTaskLegendreCoef_local+;
 #pragma link C++ class AliAnalysisTaskEtaDist+;
 
+#pragma link C++ class AliAnalysisMultPt+;
+
 
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
 #pragma link C++ class AliLightV0+;
@@ -119,6 +121,8 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity+;
 #pragma link C++ class AliAnalysisTaskMeanptFluctuationPP+;
+#pragma link C++ class AliAnalysisMeanPtdata+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityMC+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity2+;
 
 #endif

@@ -743,7 +743,7 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fCheckRealCaloAcc    = kFALSE ;
   fRecalculateCaloPID  = kFALSE ;
   fMinPt               = 0.2  ; //Min pt in particle analysis
-  fMaxPt               = 300. ; //Max pt in particle analysis
+  fMaxPt               = 1000. ; //Max pt in particle analysis
   fNZvertBin           = 1;
   fNrpBin              = 1;
   

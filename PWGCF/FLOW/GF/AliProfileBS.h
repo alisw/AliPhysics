@@ -29,6 +29,8 @@ public:
   void RebinMulti(Int_t nbins, Double_t *binedges);
   TH1 *getHist(Int_t ind=-1);
   TProfile *getProfile(Int_t ind=-1);
+  TProfile *getSummedProfiles();
+  void OverrideMainWithSub();
   Int_t getNSubs() { return fListOfEntries->GetEntries(); };
   void PresetWeights(AliProfileBS *targetBS) { fPresetWeights = targetBS; };
   void ResetBin(Int_t nbin) { ResetBin((TProfile*)this,nbin); for(Int_t i=0;i<fListOfEntries->GetEntries(); i++) ResetBin((TProfile*)fListOfEntries->At(i),nbin); };

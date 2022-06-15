@@ -68,6 +68,17 @@ fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
+fCutMinCascRadius(1.),
+fCutMinV0Radius(3.),
+fCutMaxV0Radius(85.),
+fCutCosPA(0.995),
+fCutDcaBachToPV(0.1), 
+fCutDcaV0ToPV(0.1),
+fCutDcaV0DaughToPV(0.2),
+fDcaV0Daught(0.1),
+fDcaCascDaught(0.1),
+fCutInvMassLam(0.005),
+fCutNSigmaPID(4.),
 fCentMin(0.),
 fCentMax(100.),
 fCentEstimator(kCentOff),
@@ -189,6 +200,17 @@ fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
+fCutMinCascRadius(1.),
+fCutMinV0Radius(3.),
+fCutMaxV0Radius(85.),
+fCutCosPA(0.995),
+fCutDcaBachToPV(0.1), 
+fCutDcaV0ToPV(0.1),
+fCutDcaV0DaughToPV(0.2),
+fDcaV0Daught(0.1),
+fDcaCascDaught(0.1),
+fCutInvMassLam(0.005),
+fCutNSigmaPID(4.),
 fCentMin(0.),
 fCentMax(100.),
 fCentEstimator(kCentOff),
@@ -418,7 +440,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   if(fSystem == 1)
     fPIDtree->Branch("OOBpileupbits",&fOOBPileupMap,"OOBpileupbits/b");
 
-  fPIDtree->Branch("tag",&fTag,"tag/s");
+  fPIDtree->Branch("tag",&fTag,"tag/i");
   if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/I");
 
   if(fUseAliEventCuts) { //add QA plots if event cuts used
@@ -564,8 +586,10 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   vector<short> idProtonFromL;
   vector<short> idElectronFromGamma;
   vector<short> idKaonFromKinks;
+  vector<short> idKaonFromOmega;
   GetTaggedV0s(idPionFromK0s, idPionFromL, idProtonFromL, idElectronFromGamma);
   GetTaggedKaonsFromKinks(idKaonFromKinks);
+  GetTaggedCascades(idKaonFromOmega);
 
   vector<short>::iterator it;
 
@@ -745,6 +769,14 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     if(it!=idKaonFromKinks.end()) {
       filltree = true;
       fTag |= kIsKaonFromKinks;
+    }
+    else
+      fTag &= ~kIsKaonFromKinks;
+
+    it = find(idKaonFromOmega.begin(),idKaonFromOmega.end(),trackid);
+    if(it!=idKaonFromOmega.end()) {
+      filltree = true;
+      fTag |= kIsKaonFromOmega;
     }
     else
       fTag &= ~kIsKaonFromKinks;
@@ -1008,6 +1040,28 @@ void AliAnalysisTaskSEHFSystPID::GetTaggedV0s(vector<short> &idPionFromK0s, vect
     }
   }
 }
+
+void AliAnalysisTaskSEHFSystPID::GetTaggedCascades(vector<short> &idKaonFromOmega) {
+  // tag tracks from Cascade decays
+  const int nCasc = fAOD->GetNumberOfCascades();
+  AliAODcascade *casc=nullptr;
+
+  for (int iCasc = 0; iCasc < nCasc; iCasc++){
+    casc = (AliAODcascade*)fAOD->GetCascade(iCasc);
+    if(!casc) continue;
+
+    AliAODTrack* pTrack=dynamic_cast<AliAODTrack*>(casc->GetDaughter(0));
+    AliAODTrack* nTrack=dynamic_cast<AliAODTrack*>(casc->GetDaughter(1));
+    AliAODTrack* bTrack=dynamic_cast<AliAODTrack*>(casc->GetDecayVertexXi()->GetDaughter(0));
+    if(!fESDtrackCuts->IsSelected(pTrack) || !fESDtrackCuts->IsSelected(nTrack) || !fESDtrackCuts->IsSelected(bTrack)) continue;
+
+    if(IsSelectedOmega(casc)){
+      idKaonFromOmega.push_back(bTrack->GetID());
+    }
+   
+  }
+}
+
 
 //________________________________________________________________________
 int AliAnalysisTaskSEHFSystPID::GetPDGcodeFromMC(AliAODTrack* track, TClonesArray* arrayMC)
@@ -1328,4 +1382,83 @@ void AliAnalysisTaskSEHFSystPID::TagOOBPileUpEvent() {
     fOOBPileupMap |= kTightITSTPC;
   else
     fOOBPileupMap &= ~kTightITSTPC;
+}
+
+ //________________________________________________________________
+bool AliAnalysisTaskSEHFSystPID::IsSelectedOmega(AliAODcascade *const casc)
+{
+  if (!casc) return false;
+
+  double vtxCasc[3];
+
+  vtxCasc[0] = casc->DecayVertexXiX();
+  vtxCasc[1] = casc->DecayVertexXiY();
+  vtxCasc[2] = casc->DecayVertexXiZ();
+
+  float cascRad = TMath::Sqrt(vtxCasc[0] * vtxCasc[0] + vtxCasc[1] * vtxCasc[1]);
+  if (cascRad < fCutMinCascRadius) return false;
+
+  float cascV0Rad = casc->RadiusSecVtx();
+  if (cascV0Rad < fCutMinV0Radius) return false;
+  if (cascV0Rad > fCutMaxV0Radius) return false;
+
+  double PV[3];
+  const AliAODVertex *vertex = fAOD->GetPrimaryVertex();
+  if(!vertex) return false;
+  vertex->GetXYZ(PV);
+
+  double cascCosPA = casc->CosPointingAngleXi((const double&) PV[0], (const double&) PV[1], (const double&) PV[2]);
+  if (cascCosPA < fCutCosPA) return false;
+
+  double v0CosPA = casc->CosPointingAngle(PV); 
+  if (v0CosPA < fCutCosPA) return false;
+
+  AliAODTrack* pTrack=dynamic_cast<AliAODTrack*>(casc->GetDaughter(0));
+  AliAODTrack* nTrack=dynamic_cast<AliAODTrack*>(casc->GetDaughter(1));
+
+  float cascDcaBachToPV = casc->DcaBachToPrimVertex();
+  if (cascDcaBachToPV < fCutDcaBachToPV) return false;
+
+  float cascDcaV0ToPV = casc->DcaV0ToPrimVertex();
+  if (cascDcaV0ToPV < fCutDcaV0ToPV) return false;
+
+  float cascDcaPosToPV = casc->DcaPosToPrimVertex();
+  float cascDcaNegToPV = casc->DcaNegToPrimVertex();
+
+  if (cascDcaPosToPV < fCutDcaV0DaughToPV) return false;
+  if (cascDcaNegToPV < fCutDcaV0DaughToPV) return false;
+ 
+  
+  float cascDcaV0Daught = casc->DcaV0Daughters();
+  if(cascDcaV0Daught > fDcaV0Daught) return false;
+
+  float cascDcaCascDaught = casc->DcaXiDaughters();
+  if(cascDcaCascDaught > fDcaCascDaught) return false;
+
+  float cascInvMassLam;
+  if(casc->ChargeXi() < 0){
+    cascInvMassLam = casc->MassLambda();
+  } else {
+    cascInvMassLam = casc->MassAntiLambda();
+  }
+  if(TMath::Abs(cascInvMassLam - kLambdaMass) > fCutInvMassLam) return false;
+
+  float cascNSigPosProton = fPIDresp->NumberOfSigmasTPC(pTrack, AliPID::kProton);
+  float cascNSigPosPion = fPIDresp->NumberOfSigmasTPC(pTrack, AliPID::kPion);
+  float cascNSigNegProton = fPIDresp->NumberOfSigmasTPC(nTrack, AliPID::kProton);
+  float cascNSigNegPion = fPIDresp->NumberOfSigmasTPC(nTrack, AliPID::kPion);
+
+  if(casc->ChargeXi() < 0){
+   if (TMath::Abs(cascNSigNegPion) > fCutNSigmaPID || 
+       TMath::Abs(cascNSigPosProton) > fCutNSigmaPID){
+         return false;
+       }
+  } else {
+    if(TMath::Abs(cascNSigPosPion) > fCutNSigmaPID ||
+       TMath::Abs(cascNSigNegProton) > fCutNSigmaPID){
+         return false;
+       }
+    }
+
+  return true;
 }

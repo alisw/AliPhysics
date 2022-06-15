@@ -22,22 +22,39 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   AliFemtoDreamTrackCuts *TrackCutsDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, false, false);
   TrackCutsDeuteronDCA->SetCutCharge(1);
-   TrackCutsDeuteronDCA->SetPtRange(0.5, 1.4);
+  TrackCutsDeuteronDCA->SetRejLowPtPionsTOF(true);
+  TrackCutsDeuteronDCA->SetPtRange(0.5, 1.4);
 
-  AliFemtoDreamTrackCuts *TrackCutsDeuteronMass =  AliFemtoDreamTrackCuts::PrimDeuteronCuts(
-        isMC, true, false, false);
+  AliFemtoDreamTrackCuts *TrackCutsDeuteronMass = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+      isMC, true, false, false);
   TrackCutsDeuteronMass->SetCutCharge(1);
   TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.0);
 
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
-        isMC, true, false, false);
+      isMC, true, false, false);
   TrackCutsAntiDeuteronDCA->SetCutCharge(-1);
+  TrackCutsAntiDeuteronDCA->SetRejLowPtPionsTOF(true);
   TrackCutsAntiDeuteronDCA->SetPtRange(0.5, 1.4);
+
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronMass =  AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, false, false);
   TrackCutsAntiDeuteronMass->SetCutCharge(-1);
   TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.0);
-
+  //Oton's selections for deuterons
+  if (!SystematicLowpT) {
+    if (suffix == "1") {
+      TrackCutsDeuteronDCA->SetPtRange(0.8, 2.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 2.4);
+      TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
+      TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+    }
+    if (suffix == "2") {
+      TrackCutsDeuteronDCA->SetPtRange(0.8, 1.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 1.4);
+      TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
+      TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+    }
+  }
   AliFemtoDreamTrackCuts *TrackCutsProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
   TrackCutsProtonDCA->SetCutCharge(1);

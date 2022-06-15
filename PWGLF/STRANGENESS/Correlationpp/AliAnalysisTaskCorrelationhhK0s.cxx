@@ -261,6 +261,9 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s() :AliAnalysisT
   fTreeVariableZvertex(0),
   fTreeVariablePDGCodeTrigger(0),
   fTreeVariablePDGCodeAssoc(0),
+  fTreeVariableLabelTrigger(0),
+  fTreeVariableLabelPos(0),
+  fTreeVariableLabelNeg(0),
   FifoShiftok(kFALSE)
 {
   // default constructor, don't allocate memory here!
@@ -479,6 +482,9 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s(const char* nam
   fTreeVariableZvertex(0),
   fTreeVariablePDGCodeTrigger(0),
   fTreeVariablePDGCodeAssoc(0),
+  fTreeVariableLabelTrigger(0),
+  fTreeVariableLabelPos(0),
+  fTreeVariableLabelNeg(0),
   FifoShiftok(kFALSE)
 {
                       
@@ -658,11 +664,11 @@ void AliAnalysisTaskCorrelationhhK0s::ProcessMCParticles(Bool_t Generated, AliAO
 	}
 
 	fHistGeneratedV0Pt->Fill(particle->Pt(), lPercentiles );
-	
+
 	if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, header, AODMCTrackArraybis)) {
 	  fHistGeneratedV0PtOOBPileUp->Fill(particle->Pt(), lPercentiles );
 	}
-	
+
 	Float_t EtaAssoc = fEtaV0Assoc;
 	if (ishhCorr) EtaAssoc = fEtahAssoc;
 	if(TMath::Abs(particle->Eta())<EtaAssoc){
@@ -806,6 +812,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fSignalTree->Branch("fTreeVariablePhiTrigger",         &fTreeVariablePhiTrigger, "fTreeVariablePhiTrigger/D");
   fSignalTree->Branch("fTreeVariableDCAz",               &fTreeVariableDCAz  , "fTreeVariableDCAz/D");
   fSignalTree->Branch("fTreeVariableDCAxy",              &fTreeVariableDCAxy  , "fTreeVariableDCAxy/D");
+  fSignalTree->Branch("fTreeVariableLabelTrigger",       &fTreeVariableLabelTrigger  , "fTreeVariableLabelTrigger/I");
   fSignalTree->Branch("fTreeVariableChargeAssoc",        &fTreeVariableChargeAssoc  , "fTreeVariableChargeAssoc/I");
   fSignalTree->Branch("fTreeVariableSkipAssoc",          &fTreeVariableSkipAssoc  , "fTreeVariableSkipAssoc/O");
   //  fSignalTree->Branch("fTreeVariableEtaDaughterPos",          &fTreeVariableEtaDaughterPos  , "fTreeVariableEtaDaughterPos/D");
@@ -837,6 +844,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fSignalTree->Branch("fTreeVariableZvertex",            &fTreeVariableZvertex  , "fTreeVariableZvertex/D");
   fSignalTree->Branch("fTreeVariablePDGCodeTrigger",     &fTreeVariablePDGCodeTrigger  , "fTreeVariablePDGCodeTrigger/I");
   fSignalTree->Branch("fTreeVariablePDGCodeAssoc",       &fTreeVariablePDGCodeAssoc  , "fTreeVariablePDGCodeAssoc/I");
+  fSignalTree->Branch("fTreeVariableLabelPos",           &fTreeVariableLabelPos  , "fTreeVariableLabelPos/I");
+  fSignalTree->Branch("fTreeVariableLabelNeg",           &fTreeVariableLabelNeg  , "fTreeVariableLabelNeg/I");
 
   const char* nameoutputBkgTree = GetOutputSlot(3)->GetContainer()->GetName();
   fBkgTree= new TTree(nameoutputBkgTree,"fBkgTree");
@@ -847,6 +856,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fBkgTree->Branch("fTreeVariableDCAz",               &fTreeVariableDCAz  , "fTreeVariableDCAz/D");
   fBkgTree->Branch("fTreeVariableDCAxy",              &fTreeVariableDCAxy  , "fTreeVariableDCAxy/D");
   fBkgTree->Branch("fTreeVariableChargeAssoc",        &fTreeVariableChargeAssoc  , "fTreeVariableChargeAssoc/I");
+  fBkgTree->Branch("fTreeVariableLabelTrigger",       &fTreeVariableLabelTrigger  , "fTreeVariableLabelTrigger/I");
   fBkgTree->Branch("fTreeVariableSkipAssoc",          &fTreeVariableSkipAssoc  , "fTreeVariableSkipAssoc/O");
   fBkgTree->Branch("fTreeVariableIsCommonParton",     &fTreeVariableIsCommonParton, "fTreeVariableIsCommonParton/O");
   fBkgTree->Branch("fTreeVariablePdgCommonParton",    &fTreeVariablePdgCommonParton, "fTreeVariablePdgCommonParton/I");
@@ -875,6 +885,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fBkgTree->Branch("fTreeVariableZvertex",            &fTreeVariableZvertex  , "fTreeVariableZvertex/D");
   fBkgTree->Branch("fTreeVariablePDGCodeTrigger",     &fTreeVariablePDGCodeTrigger  , "fTreeVariablePDGCodeTrigger/I");
   fBkgTree->Branch("fTreeVariablePDGCodeAssoc",       &fTreeVariablePDGCodeAssoc  , "fTreeVariablePDGCodeAssoc/I");
+  fBkgTree->Branch("fTreeVariableLabelPos",           &fTreeVariableLabelPos  , "fTreeVariableLabelPos/I");
+  fBkgTree->Branch("fTreeVariableLabelNeg",           &fTreeVariableLabelNeg  , "fTreeVariableLabelNeg/I");
  
   fHistPt = new TH1F("fHistPt", "p_{T} distribution of selected charged tracks in events used for AC", 300, 0, 30); 
   fHistPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -1758,6 +1770,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     PostData(6, fOutputList4);     
     return;
   }        
+    
   fHistEventMult->Fill(24);
   
   // fEventCuts.SetManualMode(true);
@@ -1778,7 +1791,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     PostData(6, fOutputList4);     
     return;
   }
-
   fHistEventMult->Fill(1);
   
   Int_t iTracks(fAOD->GetNumberOfTracks());         
@@ -1803,7 +1815,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     return;
   }
   fHistEventMult->Fill(2);
-
 
   AliVVertex *vertexmain =0x0;
   vertexmain = (AliVVertex*) lPrimaryBestAODVtx;
@@ -2034,45 +2045,46 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 
 
   //*****************create a global track to get the correct DCA*******************************
-  for (Int_t igt = 0; igt < fTrackBufferSize; igt++) farrGT[igt] = -1;
- 
-  if (fFilterBitValue==128 || fFilterBitValue==512){
-    // Read and store global tracks to retrieve PID information for TPC only tracks
-    for (Int_t igt = 0; igt < iTracks; igt++) {
-      globaltrack = (AliAODTrack*) fAOD->GetTrack(igt);
+  if (!(fReadMCTruth && !isEfficiency && !isHybridMCTruth)){
+    for (Int_t igt = 0; igt < fTrackBufferSize; igt++) farrGT[igt] = -1;
+    if (fFilterBitValue==128 || fFilterBitValue==512){
+      // Read and store global tracks to retrieve PID information for TPC only tracks
+      for (Int_t igt = 0; igt < iTracks; igt++) {
+	globaltrack = (AliAODTrack*) fAOD->GetTrack(igt);
 
-      if (!globaltrack) continue; 
-      if (globaltrack->GetID()<0 ) continue;
-      if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) continue; // there are such tracks with no TPC clusters
+	if (!globaltrack) continue; 
+	if (globaltrack->GetID()<0 ) continue;
+	if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) continue; // there are such tracks with no TPC clusters
 
-      // Check id is not too big for buffer
-      if (globaltrack->GetID()>=fTrackBufferSize) {
-	printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n",globaltrack->GetID(),fTrackBufferSize);
-	fHistTrackBufferOverflow->Fill(1);
-	continue;
+	// Check id is not too big for buffer
+	if (globaltrack->GetID()>=fTrackBufferSize) {
+	  printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n",globaltrack->GetID(),fTrackBufferSize);
+	  fHistTrackBufferOverflow->Fill(1);
+	  continue;
+	}
+
+	//    if ( !(globaltrack->GetFilterMap()) ) { 
+	//        cout<<" No filter map for this global track!!  "<<globaltrack->GetFilterMap()<<endl;
+	//        continue;
+	//    }
+
+	if ( globaltrack->GetTPCNcls()<=0   ) { // such tracks do not have the TPC refit either, filter map is 2 --> ITS constrained
+	  //      cout<<" No TPC cl for this global track!!  "<<igt<<endl;
+	  //      if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) cout<<" ... and also no tpc refit  "<<globaltrack->GetFilterMap()<<endl;
+	  continue;
+	}
+	//cout<<" The array will contain "<<igt<<" , it contains "<<farrGT[globaltrack->GetID()]<<endl; 
+
+	// Warn if we overwrite a track
+	if (farrGT[globaltrack->GetID()]>=0) { // Two tracks same id  --> checked that it never happens
+	  //      cout<<" Array already filled "<<farrGT[globaltrack->GetID()]<<endl;
+	} else { 
+	  farrGT[globaltrack->GetID()] = igt;           // solution adopted in the femto framework
+	  //    cout<<" Set array, now it contains  "<<farrGT[globaltrack->GetID()]<<endl;
+	}
       }
-
-      //    if ( !(globaltrack->GetFilterMap()) ) { 
-      //        cout<<" No filter map for this global track!!  "<<globaltrack->GetFilterMap()<<endl;
-      //        continue;
-      //    }
-
-      if ( globaltrack->GetTPCNcls()<=0   ) { // such tracks do not have the TPC refit either, filter map is 2 --> ITS constrained
-	//      cout<<" No TPC cl for this global track!!  "<<igt<<endl;
-	//      if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) cout<<" ... and also no tpc refit  "<<globaltrack->GetFilterMap()<<endl;
-	continue;
-      }
-      //cout<<" The array will contain "<<igt<<" , it contains "<<farrGT[globaltrack->GetID()]<<endl; 
-
-      // Warn if we overwrite a track
-      if (farrGT[globaltrack->GetID()]>=0) { // Two tracks same id  --> checked that it never happens
-	//      cout<<" Array already filled "<<farrGT[globaltrack->GetID()]<<endl;
-      } else { 
-	farrGT[globaltrack->GetID()] = igt;           // solution adopted in the femto framework
-	//    cout<<" Set array, now it contains  "<<farrGT[globaltrack->GetID()]<<endl;
-      }
-    }
-  } //end if on filterbit value
+    } //end if on filterbit value
+  }
   globaltrack = 0x0; 
 
   //***********************************************************************************
@@ -2323,6 +2335,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 
 	NumberFirstParticleAllPt++; 
 
+	//	cout << "label " << track->GetLabel() << " ID " << track->GetID() << endl;
 	if(track->Pt()< ptTriggerMinimoDati) ptTriggerMinimoDati=track->Pt(); 
 	if(track->Pt()> ptTriggerMassimoDati){
 	  ptTriggerMassimoDati =track->Pt(); 
@@ -2358,6 +2371,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	  fEvt->fReconstructedFirst[NumberFirstParticle-1].fZvertex      = lBestPrimaryVtxPos[2];
 	  fEvt->fReconstructedFirst[NumberFirstParticle-1].isP           = labelPrimOrSec;
 	  fEvt->fReconstructedFirst[NumberFirstParticle-1].fPDGcode      = TriggerPdgCode;
+	  fEvt->fReconstructedFirst[NumberFirstParticle-1].fLabel        = track->GetLabel();
 	}
 	fHistPtvsMultBefAll->Fill(track->Pt(), lPercentiles);
       }
@@ -2461,7 +2475,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fMultiplicity = lPercentiles;
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fZvertex      = lBestPrimaryVtxPos[2];
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].isP           = 1;
-	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fPDGcode     = trParticle->GetPdgCode();
+	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fPDGcode      = trParticle->GetPdgCode();
 
       }
       //      cout << "I found " << 	NumberFirstParticleMC << " trigger particles (pT > 3 GeV/c, not only the highest pt one)" << endl;
@@ -2909,8 +2923,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
       for(Int_t i(0); i < V0Tracks; i++) {       
 	isaK0s=0; //it will be put to 1 for true K0s in MC
 	rapidityV0=0;
-	EV0[2]={0};
-	kctau[2]={0};
 	goodPiPlus=kFALSE;
 	goodPiMinus=kFALSE;
 
@@ -2957,17 +2969,17 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	    }
 	    particlePos = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(labelPos)));
 	    particleNeg = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(labelNeg)));
-	    if(labelPos>=0)	PdgPos = particlePos->GetPdgCode();
-	    if(labelNeg>=0)	PdgNeg = particleNeg->GetPdgCode();
- 
+	    
+	    PdgPos = particlePos->GetPdgCode();
+	    PdgNeg = particleNeg->GetPdgCode();
+
 	    labelMotherPos=particlePos->GetMother();
 	    labelMotherNeg=particleNeg->GetMother();
 	    MotherPos = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelMotherPos));
 	    MotherNeg = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelMotherNeg));
 	
-	    if (labelMotherPos>=0) PdgMotherPos = MotherPos->GetPdgCode();
-	    if (labelMotherNeg>=0)	PdgMotherNeg = MotherNeg->GetPdgCode();
-	
+	    PdgMotherPos = MotherPos->GetPdgCode();
+	    PdgMotherNeg = MotherNeg->GetPdgCode();
 
 	    //Common Parton -> ****************************
 	    VParticleV0[0]=MotherPos; 
@@ -3350,6 +3362,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	if(fReadMCTruth){
 	  if (fMCEvent){
 	    V0PDGCode=0;
+	    if(PdgMotherPos == PdgMotherNeg)  V0PDGCode=PdgMotherPos;
 	    if(PdgPos==211 && PdgNeg==-211 && PdgMotherPos == 310 &&  PdgMotherNeg == 310 && labelMotherPos==labelMotherNeg){
 	      V0PDGCode=PdgMotherPos;
 	      if(MotherPos->IsPhysicalPrimary()){
@@ -3441,8 +3454,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	  fEvt->fReconstructedSecond[NumberSecondParticle-1].sIsCommonParton        = IsCommonParton;
 	  fEvt->fReconstructedSecond[NumberSecondParticle-1].sPdgCommonParton       = PdgCodeCommon;
 
-
-      
 	  fHistPtV0->Fill(v0->Pt());
 	}
       } //end loop for K0s particles as associated
@@ -3842,7 +3853,8 @@ void AliAnalysisTaskCorrelationhhK0s::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariablePhiTrigger	      =	fEvt->fReconstructedFirst[i].fPhi;             
 	  fTreeVariableDCAz		      =	fEvt->fReconstructedFirst[i].fDCAz;             
 	  fTreeVariableDCAxy		      =	fEvt->fReconstructedFirst[i].fDCAxy;   
-	  fTreeVariablePDGCodeTrigger         = fEvt->fReconstructedFirst[i].fPDGcode ;
+	  fTreeVariablePDGCodeTrigger         = fEvt->fReconstructedFirst[i].fPDGcode;
+	  fTreeVariableLabelTrigger           = fEvt->fReconstructedFirst[i].fLabel ;
 	  fTreeVariableChargeAssoc            = fEvt->fReconstructedSecond[j].sCharge;		       
 	  fTreeVariableAssocDCAz	      =	fEvt->fReconstructedSecond[j].sDCAz;             
 	  fTreeVariableAssocDCAxy	      =	fEvt->fReconstructedSecond[j].sDCAxy;              
@@ -3866,11 +3878,13 @@ void AliAnalysisTaskCorrelationhhK0s::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariableMultiplicity	      = lPercentiles;
 	  fTreeVariableZvertex                = lBestPrimaryVtxPos;
 	  fTreeVariablePDGCodeAssoc           = fEvt->fReconstructedSecond[j].sPDGcode;
-	  fTreeVariableisPrimaryTrigger       =  fEvt->fReconstructedFirst[i].isP ;
-	  fTreeVariableisPrimaryV0            =  fEvt->fReconstructedSecond[j].isP ;
-	  fTreeVariableSkipAssoc              =  fEvt->fReconstructedSecond[j].sAssocOrNot ;
-	  fTreeVariableIsCommonParton         =  fEvt->fReconstructedSecond[j].sIsCommonParton       ;
-          fTreeVariablePdgCommonParton        =  fEvt->fReconstructedSecond[j].sPdgCommonParton      ;
+	  fTreeVariableisPrimaryTrigger       = fEvt->fReconstructedFirst[i].isP;
+	  fTreeVariableisPrimaryV0            = fEvt->fReconstructedSecond[j].isP;
+	  fTreeVariableSkipAssoc              = fEvt->fReconstructedSecond[j].sAssocOrNot;
+	  fTreeVariableIsCommonParton         = fEvt->fReconstructedSecond[j].sIsCommonParton;
+          fTreeVariablePdgCommonParton        = fEvt->fReconstructedSecond[j].sPdgCommonParton;
+	  fTreeVariableLabelPos               = fEvt->fReconstructedSecond[j].sLabelPos;
+          fTreeVariableLabelNeg               = fEvt->fReconstructedSecond[j].sLabelNeg;
 	  //	  fTreeVariableEtaDaughterPos         =  fEvt->fReconstructedSecond[j].sEtaPos ;
 	  //	  fTreeVariableEtaDaughterNeg         =  fEvt->fReconstructedSecond[j].sEtaNeg ;
 
@@ -3886,6 +3900,7 @@ void AliAnalysisTaskCorrelationhhK0s::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariableDCAz		      =	fEvt->fReconstructedFirst[i].fDCAz;             
 	  fTreeVariableDCAxy		      =	fEvt->fReconstructedFirst[i].fDCAxy;   
 	  fTreeVariablePDGCodeTrigger         = fEvt->fReconstructedFirst[i].fPDGcode ;
+	  fTreeVariableLabelTrigger           = fEvt->fReconstructedFirst[i].fLabel ;
 	  fTreeVariableisPrimaryTrigger       = fEvt->fReconstructedFirst[i].isP;
 
 	  fTreeVariableChargeAssoc            = (fEvt+eventNumber)->fReconstructedSecond[j].sCharge;		       
@@ -3906,12 +3921,14 @@ void AliAnalysisTaskCorrelationhhK0s::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariablePtArmenteros           = (fEvt+eventNumber)->fReconstructedSecond[j].sPtArmV0;     
 	  fTreeVariableAlpha	              = (fEvt+eventNumber)->fReconstructedSecond[j].sAlphaV0;  
 	  fTreeVariablePDGCodeAssoc           = (fEvt+eventNumber)->fReconstructedSecond[j].sPDGcode;
-	  fTreeVariableisPrimaryV0            =  (fEvt+eventNumber)->fReconstructedSecond[j].isP;
-	  fTreeVariableSkipAssoc              =  (fEvt+eventNumber)->fReconstructedSecond[j].sAssocOrNot ;
+	  fTreeVariableisPrimaryV0            = (fEvt+eventNumber)->fReconstructedSecond[j].isP;
+	  fTreeVariableSkipAssoc              = (fEvt+eventNumber)->fReconstructedSecond[j].sAssocOrNot ;
 	  //	  fTreeVariableEtaDaughterPos         =  (fEvt+eventNumber)->fReconstructedSecond[j].sEtaPos ;
 	  //	  fTreeVariableEtaDaughterNeg         =  (fEvt+eventNumber)->fReconstructedSecond[j].sEtaNeg ;
-	  fTreeVariableIsCommonParton         =    (fEvt+eventNumber)->fReconstructedSecond[j].sIsCommonParton       ;
-          fTreeVariablePdgCommonParton        =    (fEvt+eventNumber)->fReconstructedSecond[j].sPdgCommonParton      ;
+	  fTreeVariableIsCommonParton         = (fEvt+eventNumber)->fReconstructedSecond[j].sIsCommonParton;
+          fTreeVariablePdgCommonParton        = (fEvt+eventNumber)->fReconstructedSecond[j].sPdgCommonParton;
+	  fTreeVariableLabelPos               = (fEvt+eventNumber)->fReconstructedSecond[j].sLabelPos;
+          fTreeVariableLabelNeg               = (fEvt+eventNumber)->fReconstructedSecond[j].sLabelNeg;
 
 	  fTreeVariableDeltaEta	       	      =deta;  
 	  fTreeVariableDeltaPhi		      =dphi;

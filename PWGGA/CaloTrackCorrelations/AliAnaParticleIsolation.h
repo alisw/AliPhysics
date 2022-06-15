@@ -340,6 +340,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhPtEtaPhi[2][2] ;                          //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles.
   TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
+  TH2F *   fhPtPerTrigger   [2][2] ;                   //!<! Number of non/isolated narrow/wide particles vs pT vs calo trigger from maker.
+  TH3F *   fhPtPerTriggerCen[2][2] ;                   //!<! Number of non/isolated narrow/wide particles vs pT vs centrality vs calo trigger from maker.
+  TH2F *   fhPtMCPhotonPromptPerTrigger   [2][2] ;     //!<! Number of non/isolated narrow/wide particles vs pT vs calo trigger from maker, prompt photon origin.
+  TH3F *   fhPtMCPhotonPromptPerTriggerCen[2][2] ;     //!<! Number of non/isolated narrow/wide particles vs pT  vs centrality vs calo trigger from maker., prompt photon origin
+
   TH1F *   fhPtDecay       [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Number of (non) isolated Pi0 decay particles (invariant mass tag).
   TH2F *   fhEtaPhiDecay   [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! eta vs phi of (not) isolated leading Pi0 decay particles.
   TH2F *   fhPtLambda0Decay[2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously).
@@ -729,7 +734,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,53) ;
+  ClassDef(AliAnaParticleIsolation,54) ;
   /// \endcond
 
 } ;

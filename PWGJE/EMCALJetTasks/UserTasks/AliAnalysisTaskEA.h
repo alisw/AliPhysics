@@ -335,8 +335,9 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    // TH2D* fhTTH_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive hadron TT versus V0M    centrality
    TH2D* fhTTH_V0Mnorm1[kTG][fkTTbins];                   //! counter of semi-inclusive hadron TT versus V0M/mean
 
-   TH2D* fhTTH_V0Mnorm1_PartLevel[fkTTbins];           //! counter of semi-inclusive hadron TT   V0M/mean particle level with V0 coincidence
-   TH2D* fhTTH_V0Mnorm_AllMB_PartLevel[fkTTbins];      //! counter of semi-inclusive hadron TT   V0M/mean particle level without V0 coincidence //FF
+   TH2D* fhTTH_V0Mnorm1_PartLevel[fkTTbins];           //! counter of semi-inclusive hadron TT   V0M/mean particle level with V0 coincidence with PartLevel V0Mnorm
+   TH2D* fhTTH_V0Mnorm_AllMB_PartLevel[fkTTbins];      //! counter of semi-inclusive hadron TT   V0M/mean particle level without V0 coincidence with PartLevel V0Mnorm
+   TH2D* fhTTH_V0MnormDetLev_AllMB_PartLevel[fkTTbins];      //! FILIP counter of semi-inclusive hadron TT   V0M/mean particle level without V0 coincidence with DetLevel V0Mnorm
    TH2D* fhTT_Corresp[fkTTbins];                       //! counter of "corresponding TT" // KA
 
    // TH3D* fhTTH_3D_V0Mnorm1[kTG][fkTTbins];           //! counter of semi-inclusive hadron l TT in MB versus V0M/mean
@@ -355,13 +356,15 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    // TH2D* fhRecoilJetPtTTH_CentV0M[kTG][fkTTbins];          //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M centrality
    TH2D* fhRecoilJetPtTTH_V0Mnorm1[kTG][fkTTbins];           //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
    TH2D* fhRecoilJetPtTTH_V0Mnorm1_PartLevel[fkTTbins];      //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
-   TH2D* fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean. Jet pT is NOT CORRECTED on RhokT (added by KA)
+   TH2D* fhRecoilJetPtZero_TTH_V0MnormDet_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean. Jet pT is NOT CORRECTED on RhokT, V0Mnorm det level 
    TH2D* fhRecoilJetPtTTH_V0Mnorm_AllMB_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean without V0 coincidence //FF
+   TH2D* fhRecoilJetPtTTH_V0MnormDetLev_AllMB_PartLevel[fkTTbins]; //! FILIP pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean without V0 coincidence,  DetLevel V0Mnorm 
 
    TH3D* fhRecoilJetPhiTTH_V0Mnorm1[kTG][fkTTbins];                   //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)
    TH3D* fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[fkTTbins];              //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level
    TH3D* fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean , recoil jet pT,  delta phi). Jet pT is NOT CORRECTED on RhokT (added by KA)
    TH3D* fhRecoilJetPhiTTH_V0Mnorm_AllMB_PartLevel[fkTTbins];         //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level //FF
+   TH3D* fhRecoilJetPhiTTH_V0MnormDetLev_AllMB_PartLevel[fkTTbins];   //! FILIP recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level, DetLevel V0Mnorm 
 
    // THnSparse *fhRecoilJetTTH_V0Mnorm1[kTG][fkTTbins];      //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
    // THnSparse *fhRecoilJetTTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
@@ -472,22 +475,23 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    // TH2D* fhJetPtAsymmetryCB[kTG][fkTTbins];              //! JetpT asymmetry in central barrel  TT direction / recoil region
    // TH2D* fhTrackPtAsymmetryCB[kTG][fkTTbins];            //! JetpT asymmetry in central barrel  TT direction / recoil region
-   THnSparse* fhNumberOfHighPtJetsCB[kTG][fkTTbins];     //! number of jets with pT larger than X in central barrel
+   //THnSparse* fhNumberOfHighPtJetsCB[kTG][fkTTbins];     //! number of jets with pT larger than X in central barrel
    THnSparse* fhNumberOfHighPtJetsRecoil[kTG][fkTTbins]; //! number of jets with pT larger than X in recoil region of physical TT
-   THnSparse* fhNumberOfHighPtJetsRecoilRandomTT[kTG];   //! number of jets with pT larger than X in recoil region of random TT
+//   THnSparse* fhNumberOfHighPtJetsRecoilRandomTT[kTG];   //! number of jets with pT larger than X in recoil region of random TT
 
    TH1D* fhJetPtEvtByEvent;                              //! event by event pt spectrum of jets
    TH1D* fhRecoilJetPtEvtByEvent[fkTTbins];              //! event by event pt spectrum of jets with physical TT
-   TH1D* fhRecoilJetPtEvtByEventRandomTT;                //! event by event pt spectrum of jets with radom TT
+//   TH1D* fhRecoilJetPtEvtByEventRandomTT;                //! event by event pt spectrum of jets with radom TT
 
    // TH2D* fhJetPtAsymmetryCBPartLevel[fkTTbins];              //! JetpT asymmetry in central barrel  TT direction / recoil region
    // TH2D* fhTrackPtAsymmetryCBPartLevel[fkTTbins];            //! JetpT asymmetry in central barrel  TT direction / recoil region
-   THnSparse* fhNumberOfHighPtJetsCBPartLevel[fkTTbins];     //! number of jets with pT larger than X in central barrel
-   THnSparse* fhNumberOfHighPtJetsRecoilPartLevel[fkTTbins]; //! number of jets with pT larger than X in recoil region of physical TT
-   THnSparse* fhNumberOfHighPtJetsRecoilRandomTTPartLevel;   //! number of jets with pT larger than X in recoil region of random TT
+   //THnSparse* fhNumberOfHighPtJetsCBPartLevel[fkTTbins];     //! number of jets with pT larger than X in central barrel
+   THnSparse* fhNumberOfHighPtJetsRecoilPartLevel[fkTTbins]; //! number of jets with pT larger than X in recoil region of physical TT         V0Mnorm part level
+   THnSparse* fhNumberOfHighPtJetsRecoilPartLevelV0MnormDetLev[fkTTbins]; //! FILIP number of jets with pT larger than X in recoil region of physical TT  V0Mnorm detector level
+//   THnSparse* fhNumberOfHighPtJetsRecoilRandomTTPartLevel;   //! number of jets with pT larger than X in recoil region of random TT  V0Mnorm part
    TH1D* fhJetPtEvtByEventPartLevel;                         //! event by event pt spectrum of jets
    TH1D* fhRecoilJetPtEvtByEventPartLevel[fkTTbins];         //! event by event pt spectrum of jets with physical TT
-   TH1D* fhRecoilJetPtEvtByEventRandomTTPartLevel;           //! event by event pt spectrum of jets with radom TT
+//   TH1D* fhRecoilJetPtEvtByEventRandomTTPartLevel;           //! event by event pt spectrum of jets with radom TT
 
    //EMBEDDING
    TH2D* fhTrackEtaInclEMB;                              //!  Eta dist inclusive embedded tracks vs pT
@@ -584,10 +588,16 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    Float_t  fMaxFacPtHard;   // Cut on  pthat events. How many times can be jet pT larger than pthat //FK
 
+   TH3D* fhNjetReMx_V0MnormDetLev_15GeV;  //! FILIP response matrix for distribution counting jets pT gt 15 GeV jets in events  
+   TH2D* fhNjetNorm_V0MnormDetLev_15GeV;  //! FILIP normalization for ReMx for distribution counting jets pT gt 15 GeV jets in events  
+
+   TH3D* fhNjetReMx_V0MnormDetLev_20GeV;  //! FILIP response matrix for distribution counting jets pT gt 20 GeV jets in events  
+   TH2D* fhNjetNorm_V0MnormDetLev_20GeV;  //! FILIP normalization for ReMx for distribution counting jets pT gt 20 GeV jets in events  
+
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 37); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 38); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

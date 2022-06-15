@@ -210,12 +210,12 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     lPart = (AliMCParticle*)flMCEvent->GetTrack(index);
     if(!lPart) continue;
     if(lPart->Charge()==0.) continue;
-    eta = lPart->Eta();
-    if(!CheckEta(eta)) continue;
+    // eta = lPart->Eta(); ///Eta check either on gen. or rec., not on both
+    // if(!CheckEta(eta)) continue; //Eta check either on gen. or rec., not on both
     if(fUseGenPt) pt = lPart->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     CompWeight = flMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
-    Double_t secWeight = flMCSpectraWeights->GetWeightForSecondaryParticle(lPart->Particle());
+    Double_t secWeight = flMCSpectraWeights->GetWeightForSecondaryParticle(index);
     Int_t lBayesPIDIndex=0;
     Int_t lTruePIDIndex =0;
     Bool_t IndexMatch=kFALSE;
@@ -757,4 +757,40 @@ TH1 *AliEffFDContainer::getPureFeeddown(Int_t iSpecie) {
   hPrim->Divide(hAll);
   delete hAll;
   return hPrim;
+}
+TH2 *AliEffFDContainer::getFDvsPhi(Int_t iSpecie, Bool_t RatioToIntegrated, Int_t cBin1, Int_t cBin2) {
+  TH3D *hPrim = (TH3D*)fetchObj("PrimVsPhi",iSpecie);
+  if(cBin1<1) cBin1=1;
+  if(cBin2<cBin1 || cBin2<1 || cBin2>hPrim->GetNbinsY()) cBin2=hPrim->GetNbinsY();
+  TString hName("FDvsPhi");
+  if(cBin1==1 && cBin2==hPrim->GetNbinsY()) hName.Append("_MB");
+  else hName.Append(Form("_CentBin_%i_%i",cBin1,cBin2));
+  TH3D *hAll = (TH3D*)fetchObj("AllVsPhi",iSpecie);
+  hPrim->GetYaxis()->SetRange(cBin1,cBin2);
+  hAll ->GetYaxis()->SetRange(cBin1,cBin2);
+  TH2D *h2Prim = (TH2D*)hPrim->Project3D("zx");
+  TH2D *h2All  = (TH2D*)hAll ->Project3D("zx");
+  h2Prim->SetDirectory(0);
+  h2Prim->SetName(makeName(hName,iSpecie).Data());
+  // h2Prim->Divide(h2Prim,h2All,1,1,"B"); //if we want binomial error propagation
+  h2Prim->Divide(h2All);
+  delete h2All;
+  if(RatioToIntegrated) { //Normalize by central value, if required
+    TH1D *h1Prim = (TH1D*)hPrim->Project3D("x");
+    TH1D *h1All  = (TH1D*)hAll ->Project3D("x");
+    h1Prim->Divide(h1All);
+    delete h1All;
+    for(Int_t ix=1;ix<=h1Prim->GetNbinsX();ix++) {
+      Double_t intVal = h1Prim->GetBinContent(ix);
+      if(!intVal) continue;
+      for(Int_t iy=1;iy<=h2Prim->GetNbinsY();iy++) {
+        h2Prim->SetBinContent(ix,iy,h2Prim->GetBinContent(ix,iy)/intVal);
+        h2Prim->SetBinError(ix,iy,h2Prim->GetBinError(ix,iy)/intVal);
+      };
+    };
+    delete h1Prim;
+  }
+  hPrim->GetYaxis()->SetRange(1,hPrim->GetNbinsY());
+  hAll->GetYaxis()->SetRange(1,hAll->GetNbinsY());
+  return h2Prim;
 }

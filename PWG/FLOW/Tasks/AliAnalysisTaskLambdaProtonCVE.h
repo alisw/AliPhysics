@@ -26,8 +26,6 @@ public:
 
   AliAnalysisTaskLambdaProtonCVE();
   AliAnalysisTaskLambdaProtonCVE(const char *name);
-  AliAnalysisTaskLambdaProtonCVE(const char *name, TString PR, bool NUE, bool NUA, bool V0Calib);
-
   virtual ~AliAnalysisTaskLambdaProtonCVE();
 
   virtual void UserCreateOutputObjects();
@@ -56,16 +54,17 @@ public:
   void SetPlaneEtaGapPos(float etaGapPos)  {this->fEtaGapPos  =  etaGapPos;}
   void SetPlaneEtaGapNeg(float etaGapNeg)  {this->fEtaGapNeg  =  etaGapNeg;}
   //Track
-  void SetFilterBit(int filterBit)         {this->fFilterBit = filterBit;}
-  void SetNclsCut(int nclsCut)             {this->fNclsCut   =   nclsCut;}
-  void SetChi2Max(float chi2Max)           {this->fChi2Max   =   chi2Max;}
-  void SetChi2Min(float chi2Min)           {this->fChi2Min   =   chi2Min;}
-  void SetDCAcutZ(float dcaCutz)           {this->fDcaCutz   =   dcaCutz;}
-  void SetDCAcutXY(float dcaCutxy)         {this->fDcaCutxy  =  dcaCutxy;}
-  void SetPtMin(float ptMin)               {this->fPtMin     =     ptMin;}
-  void SetPtMax(float ptMax)               {this->fPtMax     =     ptMax;}
-  void SetNUEOn(bool doNUE)                {this->IsDoNUE    =     doNUE;}
-  void SetNUAOn(bool doNUA)                {this->IsDoNUA    =     doNUA;}
+  void SetFilterBit(int filterBit)         {this->fFilterBit   =   filterBit;}
+  void SetNclsCut(int nclsCut)             {this->fNclsCut     =     nclsCut;}
+  void SetChi2Max(float chi2Max)           {this->fChi2Max     =     chi2Max;}
+  void SetChi2Min(float chi2Min)           {this->fChi2Min     =     chi2Min;}
+  void SetDCAcutZ(float dcaCutz)           {this->fDcaCutz     =     dcaCutz;}
+  void SetDCAcutXY(float dcaCutxy)         {this->fDcaCutxy    =    dcaCutxy;}
+  void SetPtMin(float ptMin)               {this->fPtMin       =       ptMin;}
+  void SetPtMax(float ptMax)               {this->fPtMax       =       ptMax;}
+  void SetNUEOn(bool doNUE)                {this->IsDoNUE      =       doNUE;}
+  void SetNUAOn(bool doNUA)                {this->IsDoNUA      =       doNUA;}
+  void SetProtonPtMax(double protonPtMax)  {this->fProtonPtMax = protonPtMax;}
   //PID
   void SetNSigmaTPCCut(double nSigmaTPC) {this->fNSigmaTPCCut = nSigmaTPC;}
   void SetNSigmaTOFCut(double nSigmaTOF) {this->fNSigmaTOFCut = nSigmaTOF;}
@@ -106,6 +105,7 @@ private:
   ////////////////////////
   bool    GetVZEROPlane();
   bool      GetZDCPlane();
+  bool GetZDCPlaneLsFit();
   bool       LoopTracks();
   bool      GetTPCPlane();
   bool          LoopV0s();
@@ -115,10 +115,8 @@ private:
   ////////////////////////
   //Functional function
   ////////////////////////
-  // Event     
-  int                 GetRunNumBin(int runNum);    
   // Read in
-  bool      GetCalibHistForThisRun();
+  bool      LoadCalibHistForThisRun();
   // Pile-up
   bool           RejectEvtMultComp();
   bool              RejectEvtTFFit();
@@ -135,7 +133,7 @@ private:
   // V0
   bool                    IsGoodV0(AliAODv0 *aodV0);
   bool         IsGoodDaughterTrack(const AliAODTrack *track);
-  int                GetLambdaCode(const AliAODTrack *pTrack, const AliAODTrack *ntrack); 
+  int                GetLambdaCode(const AliAODTrack *pTrack, const AliAODTrack *ntrack);
   // Plane
   double             GetEventPlane(double qx, double qy, double harmonic);
 
@@ -150,7 +148,7 @@ private:
   //Event
   double                    fVzCut; // vz cut
   float               fCentDiffCut; // centrality restriction for V0M and TRK
-  
+
   //Calib
   bool              IsVZEROCalibOn; // switch for VZERO qn calib
   bool                IsZDCCalibOn;
@@ -167,7 +165,7 @@ private:
 
   //Track
   int                   fFilterBit; // AOD filter bit selection
-  int                     fNclsCut; // ncls cut for all tracks 
+  int                     fNclsCut; // ncls cut for all tracks
   float                   fChi2Max; // upper limmit for chi2
   float                   fChi2Min; // lower limmit for chi2
   float                   fDcaCutz; // dcaz cut for all tracks
@@ -176,6 +174,7 @@ private:
   float                     fPtMax; // maximum pt for track
   bool                     IsDoNUE; // switch for NUE
   bool                     IsDoNUA; // switch for NUA
+  double              fProtonPtMax; // Max pt for proton
   //PID
   float             fNSigmaTPCCut;
   float             fNSigmaTOFCut;
@@ -226,13 +225,14 @@ private:
   ////////////////////////////////
   // Global Variables from data //
   ////////////////////////////////
+  std::map<int,int>*    runNumList;
   double                fVertex[3];
   int                      fRunNum; // runnumber
   int                   fOldRunNum;
   int                   fRunNumBin; // runnumer bin; 10:139510...; 11:170387...; 15HIR:246994...
   int                       fVzBin; // vertex z bin
   int                     fCentBin; // centrality bin: 0-10
-  double                     fCent; // value of centrality 
+  double                     fCent; // value of centrality
 
   double                  fPsi1ZNC;
   double                  fPsi1ZNA;
@@ -284,33 +284,33 @@ private:
   TF1*                    fCenCutLowPU;
   TF1*                   fCenCutHighPU;
   TF1*                      fMultCutPU;
-  //////////////////////// 
+  ////////////////////////
   // NUE
   ////////////////////////
   //10h/15o
   TList*                      fListNUE; // read list for NUE
   TH1D*                 hNUEweightPlus;
   TH1D*                hNUEweightMinus;
-  //////////////////////// 
+  ////////////////////////
   // NUA
   ////////////////////////
   TList*          fListNUA; // read lists for NUA
   //10h
   TH2D*     hNUAweightPlus;
   TH2D*    hNUAweightMinus;
-  //15o    
+  //15o
   TH3F*    hCorrectNUAPos; // Protty
   TH3F*    hCorrectNUANeg; // Protty
-  //////////////////////// 
+  ////////////////////////
   // VZERO
   ////////////////////////
   TList*         fListVZEROCalib; // read list for V0 Calib
-  //10h    
+  //10h
   TH2D*              hMultV0Read;
-  TProfile3D*    pV0XMeanRead[3]; 
+  TProfile3D*    pV0XMeanRead[3];
   TProfile3D*    pV0YMeanRead[3];
   //15o
-  TH1D*                   hMultV0; //Dobrin  
+  TH1D*                   hMultV0; //Dobrin
   AliOADBContainer*      contMult;
   AliOADBContainer*     contQxncm;
   AliOADBContainer*     contQyncm;
@@ -318,11 +318,13 @@ private:
   AliOADBContainer*     contQynam;
   TH1D*                hQx2mV0[2];
   TH1D*                hQy2mV0[2];
-  //////////////////////// 
+  //18q
+  TH2F*       fHCorrectV0ChWeghts;
+  ////////////////////////
   // ZDC
   ////////////////////////
   TList*               fListZDCCalib;
-  // 10h     
+  // 10h
   TTree*                        tree;
   float                 vtxQuant1[3];
   float                 vtxQuant2[3];
@@ -341,15 +343,18 @@ private:
   TProfile2D*      fProfile2DForCosA;
   TProfile2D*      fProfile2DForSinA;
   //15o //TODO
+  //18q 18r
+  TH1D*             fHZDCCparameters;
+  TH1D*             fHZDCAparameters;
 
   ///////////////////The following files will be saved//////////////////////////////////
   ////////////
   //QA Plots//
   ////////////
   // Event-wise QA
-  TList*             fOutputList;          
-  TH1D*                fEvtCount;   
-  TH1I*           fHistRunNumBin;  
+  TList*             fOutputList;
+  TH1D*                fEvtCount;
+  TH1I*           fHistRunNumBin;
   TH1D*             fHistCent[2];
   TH1D*               fHistVz[2];
   TH2D*         fHist2DCentQA[8];
@@ -364,7 +369,7 @@ private:
   TH1D*           fHistDcaZ;
   TH1D*         fHistPhi[2];
   TH2D*    fHist2DEtaPhi[2];
-  // Psi QA 
+  // Psi QA
   //V0C [0]GE [1]RC
   TProfile*          fProfileV0CQxCent[2];
   TProfile*          fProfileV0CQyCent[2];
@@ -378,7 +383,7 @@ private:
   TProfile*           fProfileV0AQyVtx[2];
   TH2D*        fHist2DCalibPsi2V0ACent[2];
   //ZNC [0]Raw [1]GE
-  TProfile* fProfileZNCTowerMeanEnegry[2]; 
+  TProfile* fProfileZNCTowerMeanEnegry[2];
   // [0]GE [1]RC
   TProfile*          fProfileZNCQxCent[2];
   TProfile*          fProfileZNCQyCent[2];
@@ -402,7 +407,7 @@ private:
   TH1D*        fHistV0DecayLength; // Raw V0s' DecayLength
   ///Lambda QA
   //[0]:Before the Mass Cut [1]:After the Mass Cut
-  TH1D*                        fHistLambdaPt[2]; // 
+  TH1D*                        fHistLambdaPt[2]; //
   TH1D*                       fHistLambdaEta[2]; //
   TH1D*                       fHistLambdaPhi[2]; //
   TH1D*           fHistLambdaDcaToPrimVertex[2]; //
@@ -415,18 +420,18 @@ private:
   TH1D*       fHistAntiLambdaDcaToPrimVertex[2]; //
   TH1D*                   fHistAntiLambdaCPA[2]; //
   TH1D*           fHistAntiLambdaDecayLength[2]; //
-  TH1D*                  fHistAntiLambdaMass[2]; //  
+  TH1D*                  fHistAntiLambdaMass[2]; //
   TProfile*           fProfileLambdaMassVsPt[2]; //
   TProfile*       fProfileAntiLambdaMassVsPt[2]; //
-  //Flow 
+  //Flow
   //[0]TPC [1]V0C [2]V0A [3]ZNC [4]ZNA
   TProfile2D*          fProfile2DRawFlowCentPthPos[5];
-  TProfile2D*          fProfile2DRawFlowCentPthNeg[5];  
+  TProfile2D*          fProfile2DRawFlowCentPthNeg[5];
   TProfile2D*        fProfile2DRawFlowCentPtProton[5];
   TProfile2D*    fProfile2DRawFlowCentPtAntiProton[5];
   TProfile2D*        fProfile2DRawFlowCentPtLambda[5];
   TProfile2D*    fProfile2DRawFlowCentPtAntiLambda[5];
-    
+
   /////////////
   // Results //
   /////////////
@@ -465,7 +470,7 @@ private:
   TProfile*          fProfileGammaTPC_AntiLambda_hNeg; //
   TProfile*        fProfileGammaTPC_AntiLambda_Proton; //
   TProfile*    fProfileGammaTPC_AntiLambda_AntiProton; //
-   
+
   TProfile*              fProfileGammaV0C_Lambda_hPos; //
   TProfile*              fProfileGammaV0C_Lambda_hNeg; //
   TProfile*            fProfileGammaV0C_Lambda_Proton; //
@@ -474,7 +479,7 @@ private:
   TProfile*          fProfileGammaV0C_AntiLambda_hNeg; //
   TProfile*        fProfileGammaV0C_AntiLambda_Proton; //
   TProfile*    fProfileGammaV0C_AntiLambda_AntiProton; //
-            
+
   TProfile*              fProfileGammaV0A_Lambda_hPos; //
   TProfile*              fProfileGammaV0A_Lambda_hNeg; //
   TProfile*            fProfileGammaV0A_Lambda_Proton; //
@@ -492,7 +497,7 @@ private:
   TProfile*          fProfileGammaZNC_AntiLambda_hNeg; //
   TProfile*        fProfileGammaZNC_AntiLambda_Proton; //
   TProfile*    fProfileGammaZNC_AntiLambda_AntiProton; //
-            
+
   TProfile*              fProfileGammaZNA_Lambda_hPos; //
   TProfile*              fProfileGammaZNA_Lambda_hNeg; //
   TProfile*            fProfileGammaZNA_Lambda_Proton; //
@@ -509,4 +514,3 @@ private:
 };
 
 #endif
- 

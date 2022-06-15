@@ -58,6 +58,9 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   AliAnalysisTaskEmcalJet(),
   fHistos(nullptr),
   fAngularityHandler(nullptr),
+  fNameTracks(),
+  fNameClusters(),
+  fNameMCParticles(),
   fNameDetectorJets(),
   fNameParticleJets(),
   fTriggerSelectionString(),
@@ -77,6 +80,9 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
   fAngularityHandler(nullptr),
+  fNameTracks(),
+  fNameClusters(),
+  fNameMCParticles(),
   fNameDetectorJets(),
   fNameParticleJets(),
   fTriggerSelectionString(),
@@ -154,7 +160,9 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH1("hJetSpectrumPartAllClosure", "Part level jet pt spectrum for closure test", kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH1("hJetSpectrumPartAllNoClosure", "Part level jet pt spectrum (no-closure sample)", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hJetSpectrumPartAllNoEvSel", "Part level jet pt spectrum (no det-level event selection)", kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hPurityDet", "Det. level purity", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hEtaPhiPartAllNoEvSel", "#eta-#phi distibution of pure part. level jets (no event selection)", 100, -1., 1., 100, 0, TMath::TwoPi());
   fHistos->CreateTH2("hPurityDetClosure", "Det. level purity for closure test", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
   fHistos->CreateTH2("hPurityDetNoClosure", "Det. level purity (no-closure sample)", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
   fHistos->CreateTH2("hJetfindingEfficiencyCore", "Part. level efficiency", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
@@ -311,6 +319,19 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   return true;
 }
 
+void AliAnalysisTaskEmcalJetEnergyScale::UserRunBeforeEventSelection(){
+  auto partjets = GetPartLevelJetContainer();
+   // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets
+  for(auto partjet : partjets->accepted()){
+    Double_t partjetpt = partjet->Pt();
+    if (fDoBkgSub && partjets->GetRhoParameter()){
+      partjetpt = partjetpt - partjets->GetRhoVal() * partjet->Area();
+    }
+    fHistos->FillTH1("hJetSpectrumPartAllNoEvSel", partjetpt);
+    fHistos->FillTH1("hEtaPhiPartAllNoEvSel", partjet->Eta(), TVector2::Phi_0_2pi(partjet->Phi()));
+  }
+}
+
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   AliDebugStream(2) << "Next event" << std::endl;
   if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
@@ -348,6 +369,8 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
 
   auto detjets = GetDetLevelJetContainer(),
        partjets = GetPartLevelJetContainer();
+  AliDebugStream(4) << "Detjets has array name : " << detjets->GetArrayName() << std::endl;
+  AliDebugStream(4) << "Partjets has array name : " << partjets->GetArrayName() << std::endl;
   if(!detjets || !partjets) {
     AliErrorStream() << "At least one jet container missing, exiting ..." << std::endl;
     return false;
@@ -818,16 +841,25 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   if(partcontname == "usedefault") partcontname = "mcparticles";
   auto partcont = energyscaletask->AddMCParticleContainer(partcontname.Data());
   partcont->SetMinPt(0.);
+  const std::string kNameMCParticles = "MCParticles";
+  partcont->SetName(kNameMCParticles.data());
+  energyscaletask->SetNameMCParticles(kNameMCParticles.data());
 
   AliClusterContainer *clusters(nullptr);
   if(addClusterContainer) {
+    const std::string kNameClusterContainer = "EMCALClusters";
     clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
+    clusters->SetName(kNameClusterContainer.data());
+    energyscaletask->SetNameClusters(kNameClusterContainer.data());
   }
   AliTrackContainer *tracks(nullptr);
   if(addTrackContainer) {
+    const std::string kNameTrackContainer = "Tracks";
     tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    tracks->SetName(kNameTrackContainer.data());
+    energyscaletask->SetNameTracks(kNameTrackContainer.data());
   }
 
   const std::string kNameJetsPart = "particleLevelJets",
@@ -901,16 +933,25 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   if(partcontname == "usedefault") partcontname = "mcparticles";
   auto partcont = energyscaletask->AddMCParticleContainer(partcontname.Data());
   partcont->SetMinPt(0.);
+  const std::string kNameMCParticles = "MCParticles";
+  partcont->SetName(kNameMCParticles.data());
+  energyscaletask->SetNameMCParticles(kNameMCParticles.data());
 
   AliClusterContainer *clusters(nullptr);
   if(addClusterContainer) {
+    const std::string kNameClusterContainer = "EMCALClusters";
     clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
+    clusters->SetName(kNameClusterContainer.data());
+    energyscaletask->SetNameClusters(kNameClusterContainer.data());
   }
   AliTrackContainer *tracks(nullptr);
   if(addTrackContainer) {
+    const std::string kNameTrackContainer = "Tracks";
     tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    tracks->SetName(kNameTrackContainer.data());
+    energyscaletask->SetNameTracks(kNameTrackContainer.data());
   }
 
   const std::string kNameJetsPart = "particleLevelJets",

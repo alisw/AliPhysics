@@ -25,6 +25,8 @@ class CorrelationCalculator : public TObject
     TComplex Qvector8P[20][20];
     TComplex Qvector10M[20][20];
     TComplex Qvector10P[20][20];
+    TComplex Qvector12M[20][20];
+    TComplex Qvector12P[20][20];
     TComplex Qvector14M[20][20];
     TComplex Qvector14P[20][20];
     TComplex Qvector16M[20][20];
@@ -55,6 +57,7 @@ class CorrelationCalculator : public TObject
     TComplex TwoGap6(int n1, int n2);
     TComplex TwoGap8(int n1, int n2);
     TComplex TwoGap10(int n1, int n2);
+    TComplex TwoGap12(int n1, int n2);
     TComplex TwoGap14(int n1, int n2);
     TComplex TwoGap16(int n1, int n2);
     TComplex TwoGap18(int n1, int n2);
@@ -69,12 +72,14 @@ class CorrelationCalculator : public TObject
     TComplex TwoGap6M(int n1, int n2);
     TComplex TwoGap8M(int n1, int n2);
     TComplex TwoGap10M(int n1, int n2);
+    TComplex TwoGap12M(int n1, int n2);
     TComplex TwoGap0P(int n1, int n2);
     TComplex TwoGap2P(int n1, int n2);
     TComplex TwoGap4P(int n1, int n2);
     TComplex TwoGap6P(int n1, int n2);
     TComplex TwoGap8P(int n1, int n2);
     TComplex TwoGap10P(int n1, int n2);
+    TComplex TwoGap12P(int n1, int n2);
 
     TComplex Three(int n1, int n2, int n3);
     TComplex ThreeGap0A(int n1, int n2, int n3);
@@ -89,6 +94,8 @@ class CorrelationCalculator : public TObject
     TComplex ThreeGap8B(int n1, int n2, int n3);
     TComplex ThreeGap10A(int n1, int n2, int n3);
     TComplex ThreeGap10B(int n1, int n2, int n3);
+    TComplex ThreeGap12A(int n1, int n2, int n3);
+    TComplex ThreeGap12B(int n1, int n2, int n3);
     TComplex Three_3Sub(int n1, int n2, int n3);
 
     TComplex ThreeGap0_subM(int n1, int n2, int n3);
@@ -103,6 +110,8 @@ class CorrelationCalculator : public TObject
     TComplex ThreeGap8_subP(int n1, int n2, int n3);
     TComplex ThreeGap10_subM(int n1, int n2, int n3);
     TComplex ThreeGap10_subP(int n1, int n2, int n3);
+    TComplex ThreeGap12_subM(int n1, int n2, int n3);
+    TComplex ThreeGap12_subP(int n1, int n2, int n3);
     TComplex Four(int n1, int n2, int n3, int n4);
     TComplex FourGap0M(int n1, int n2, int n3, int n4);
     TComplex FourGap0P(int n1, int n2, int n3, int n4);
@@ -112,6 +121,7 @@ class CorrelationCalculator : public TObject
     TComplex FourGap6(int n1, int n2, int n3, int n4);
     TComplex FourGap8(int n1, int n2, int n3, int n4);
     TComplex FourGap10(int n1, int n2, int n3, int n4);
+    TComplex FourGap12(int n1, int n2, int n3, int n4);
     TComplex Four_3SubMMLR(int n1, int n2, int n3, int n4);
     TComplex Four_3SubLLMR(int n1, int n2, int n3, int n4);
     TComplex Four_3SubRRML(int n1, int n2, int n3, int n4);
@@ -130,6 +140,8 @@ class CorrelationCalculator : public TObject
     TComplex FiveGap8B(int n1, int n2, int n3, int n4, int n5);
     TComplex FiveGap10A(int n1, int n2, int n3, int n4, int n5);
     TComplex FiveGap10B(int n1, int n2, int n3, int n4, int n5);
+    TComplex FiveGap12A(int n1, int n2, int n3, int n4, int n5);
+    TComplex FiveGap12B(int n1, int n2, int n3, int n4, int n5);
     TComplex Six(int n1, int n2, int n3, int n4, int n5, int n6);
     TComplex SixGap0(int n1, int n2, int n3, int n4, int n5, int n6);
     TComplex SixGap2(int n1, int n2, int n3, int n4, int n5, int n6);
@@ -137,6 +149,7 @@ class CorrelationCalculator : public TObject
     TComplex SixGap6(int n1, int n2, int n3, int n4, int n5, int n6);
     TComplex SixGap8(int n1, int n2, int n3, int n4, int n5, int n6);
     TComplex SixGap10(int n1, int n2, int n3, int n4, int n5, int n6);
+    TComplex SixGap12(int n1, int n2, int n3, int n4, int n5, int n6);
     TComplex Seven(int n1, int n2, int n3, int n4, int n5, int n6, int n7);
     TComplex Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
     TComplex EightGap0(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
@@ -154,6 +167,8 @@ class CorrelationCalculator : public TObject
     TComplex QGap8P(int n, int p);
     TComplex QGap10M(int n, int p);
     TComplex QGap10P(int n, int p);
+    TComplex QGap12M(int n, int p);
+    TComplex QGap12P(int n, int p);
     TComplex QGap14M(int n, int p);
     TComplex QGap14P(int n, int p);
     TComplex QGap16M(int n, int p);
@@ -174,8 +189,6 @@ class CorrelationCalculator : public TObject
     TComplex pGap0P(int n, int p);
     TComplex pGap4M(int n, int p);
     TComplex pGap4P(int n, int p);
-    TComplex pGap6M(int n, int p);
-    TComplex pGap6P(int n, int p);
     TComplex pGap8M(int n, int p);
     TComplex pGap8P(int n, int p);
 

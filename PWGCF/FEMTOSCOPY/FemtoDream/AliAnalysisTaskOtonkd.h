@@ -23,7 +23,7 @@
 class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskOtonkd();
-  AliAnalysisTaskOtonkd(const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing);
+  AliAnalysisTaskOtonkd(const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing, bool DOpd);
   virtual ~AliAnalysisTaskOtonkd();
   Float_t GetMass2sq(AliFemtoDreamTrack *track)const;
   float MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const;
@@ -73,6 +73,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   bool fIsMC;                               //
   bool fIsMCtruth;                               //
   bool fdoFDpairing;                               //
+  bool fDOpd;                               //
   bool fisIncludeSomeProtons;                               //
   bool fisPions;                               //
   bool fdoSideband;                         //
@@ -164,6 +165,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Int_t fTKaonNcl[30];
   Int_t fTKaonShared[30];
   Float_t fTKaonTPCchi2[30];
+  Bool_t fTKaonSPDtime[30];
   Bool_t fTKaonITStime[30];
   Bool_t fTKaonTOFtime[30];
   Bool_t fTKaonTPConly[30];
@@ -215,6 +217,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Int_t fTDeuteronNcl[10];
   Int_t fTDeuteronShared[10];
   Float_t fTDeuteronTPCchi2[10];
+  Bool_t fTDeuteronSPDtime[10];
   Bool_t fTDeuteronITStime[10];
   Bool_t fTDeuteronTOFtime[10];
   Bool_t fTDeuteronTPConly[10];

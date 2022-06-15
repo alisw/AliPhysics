@@ -97,7 +97,7 @@ const int nBinsDCAxy = 121;
 double binsDCAxy3[nBinsDCAxy+1] = {-3.025,-2.975,-2.925,-2.875,-2.825,-2.775,-2.725,-2.675,-2.625,-2.575,-2.525,-2.475,-2.425,-2.375,-2.325,-2.275,-2.225, -2.175,-2.125,-2.075,-2.025,-1.975,-1.925,-1.875,-1.825,-1.775,-1.725,-1.675,-1.625,-1.575,-1.525,-1.475,-1.425,-1.375,-1.325,-1.275,-1.225,-1.175,-1.125,-1.075,-1.025,-0.975,-0.925,-0.875,-0.825,-0.775,-0.725,-0.675,-0.625,-0.575,-0.525,-0.475,-0.425,-0.375,-0.325,-0.275,-0.225,-0.175,-0.125,-0.075,-0.025,0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475,0.525,0.575,0.625,0.675,0.725,0.775,0.825,0.875,0.925,0.975,1.025,1.075,1.125,1.175,1.225,1.275,1.325,1.375,1.425,1.475,1.525,1.575,1.625,1.675,1.725,1.775,1.825,1.875,1.925,1.975,2.025,2.075,2.125,2.175,2.225,2.275,2.325,2.375,2.425,2.475,2.525,2.575,2.625,2.675,2.725,2.775,2.825,2.875,2.925,2.975,3.025};
 
 
-const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
+const Double_t pi = 3.141592653589793238;
 
 using namespace std;            // std namespace: so you can do things like 'cout' etc
 
@@ -685,7 +685,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
         GetLeadingObjectFromArray(ptMc,phiMc,fnGen, kTRUE);
         // Filling histos for observables at generator level
         if( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax )
-            GetMultiplicityDistributionsTrue(phiMc,ptMc,fnGen);
+            GetMultiplicityDistributionsTrue(phiMc,ptMc,fnGen,idMc);
 
 
     }
@@ -749,7 +749,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
             if(isGoodVtxPosMC){
                 // KNO scaling
                 if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){
-                    GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy);
+                    GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy,idMc);
                     GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
                 }
             }
@@ -768,7 +768,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
                 // KNO scaling
                 if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
                 {
-                    GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy);
+                    GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy,idMc);
                     GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
                     GetMultiplicityDistributions(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,isprimHyWoDCA, fnRecHyWoDCA);
                 }
@@ -866,7 +866,7 @@ void AliAnalysisTaskChargedVsRT::GetBinByBinCorrections( Int_t multGen, Int_t mu
     }
 }
 
-void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiGen, Int_t multGen, const vector<Float_t> &phiRec, Int_t multRec) {
+void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiGen, Int_t multGen, const vector<Float_t> &phiRec, Int_t multRec, const vector<Int_t> &idGen) {
 
     Int_t multTSgen=0;
     Int_t multTSrec=0;
@@ -883,7 +883,9 @@ void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiG
             hPhiGen[1]->Fill(DPhi);
         }
         else{// transverse side
-            multTSgen++;
+            if(idGen[i]>0 && idGen[i]<=8){
+                multTSgen++;
+            }
             hPhiGen[2]->Fill(DPhi);
         }
     }
@@ -891,7 +893,7 @@ void AliAnalysisTaskChargedVsRT::GetDetectorResponse(const vector<Float_t> &phiG
     hNchTSGen->Fill(multTSgen);
 
     for(Int_t i=0; i < multRec; ++i) {  // loop over all these tracks
-
+        
         if(i==fRecLeadIn)continue;
         Double_t DPhi = DeltaPhi(phiRec[i], fRecLeadPhi);
 
@@ -971,7 +973,7 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsData(const vector<F
 
 }
 //_____________________________________________________________
-void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsTrue(const vector<Float_t> &phiGen, const vector<Float_t> &ptGen, Int_t multGen){
+void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsTrue(const vector<Float_t> &phiGen, const vector<Float_t> &ptGen, Int_t multGen, const vector<Int_t> &idGen){
 
 
     Int_t multTSgen=0;
@@ -990,7 +992,9 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsTrue(const vector<F
             continue;
         }
         else{// transverse side
-            multTSgen++;
+            if(idGen[i]>0 && idGen[i]<=8){
+                multTSgen++;
+            }
         }
 
     }
@@ -1198,7 +1202,6 @@ Int_t AliAnalysisTaskChargedVsRT::FillArrayMC( vector<Float_t> &ptArray, vector<
         phiArray.push_back(particle->Phi());
         idArray.push_back(idPart);
         nNchGen++;
-
     }
     return nNchGen;
 

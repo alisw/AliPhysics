@@ -26,6 +26,7 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
     fIsMC(false),
     fIsMCtruth(false),
     fdoFDpairing(false),
+    fDOpd(false),
     fisIncludeSomeProtons(false),
     fisPions(false),
     fdoSideband(false),
@@ -73,13 +74,14 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
 }
 
 AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd(
-  const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing)
+  const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing, bool DOpd)
   : AliAnalysisTaskSE(name),
     fisLightWeight(false),
     fTrackBufferSize(2000),
     fIsMC(isMC),
     fIsMCtruth(isMCtruth),
     fdoFDpairing(doFDpairing),
+    fDOpd(DOpd),
     fisIncludeSomeProtons(isIncludeSomeProtons),
     fisPions(isPions),
     fdoSideband(false),
@@ -313,6 +315,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   if(!fIsMCtruth)fTree->Branch("KaonDCA",&fTKaonDCA,"fTKaonDCA[fTnKaon]/F");
   if(!fIsMCtruth)fTree->Branch("KaonDCAz",&fTKaonDCAz,"fTKaonDCAz[fTnKaon]/F");
   fTree->Branch("KaonID",&fTKaonID,"fTKaonID[fTnKaon]/I"); //used also in MCtruth
+  if(!fIsMCtruth)fTree->Branch("KaonSPDtime",&fTKaonSPDtime,"fTKaonSPDtime[fTnKaon]/O");
   if(!fIsMCtruth)fTree->Branch("KaonITStime",&fTKaonITStime,"fTKaonITStime[fTnKaon]/O");
   if(!fIsMCtruth)fTree->Branch("KaonTOFtime",&fTKaonTOFtime,"fTKaonTOFtime[fTnKaon]/O");
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
@@ -351,6 +354,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   if(!fIsMCtruth)fTree->Branch("DeuteronDCAz",&fTDeuteronDCAz,"fTDeuteronDCAz[fTnDeuteron]/F");
   fTree->Branch("DeuteronID",&fTDeuteronID,"fTDeuteronID[fTnDeuteron]/I");
 //  fTree->Branch("DeuteronTOFbeta",&fTDeuteronTOFbeta,"fTDeuteronTOFbeta[fTnDeuteron]/F");
+  if(!fIsMCtruth)fTree->Branch("DeuteronSPDtime",&fTDeuteronSPDtime,"fTDeuteronSPDtime[fTnDeuteron]/O");
   if(!fIsMCtruth)fTree->Branch("DeuteronITStime",&fTDeuteronITStime,"fTDeuteronITStime[fTnDeuteron]/O");
   if(!fIsMCtruth)fTree->Branch("DeuteronTOFtime",&fTDeuteronTOFtime,"fTDeuteronTOFtime[fTnDeuteron]/O");
   if(fIsMC||fIsMCtruth)fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/I");
@@ -410,6 +414,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTKaonDCA[ii]=-100000.;
    fTKaonDCAz[ii]=-100000.;
    fTKaonNcl[ii]=-100000;
+   fTKaonSPDtime[ii]=kFALSE;
    fTKaonITStime[ii]=kFALSE;
    fTKaonTOFtime[ii]=kFALSE;
    fTKaonIs[ii]=kFALSE;
@@ -448,6 +453,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTDeuteronDCA[ii]=-100000.;
    fTDeuteronDCAz[ii]=-100000.;
    fTDeuteronNcl[ii]=-100000;
+   fTDeuteronSPDtime[ii]=kFALSE;
    fTDeuteronITStime[ii]=kFALSE;
    fTDeuteronTOFtime[ii]=kFALSE;
    fTDeuteronPhi[ii]=-100000.;
@@ -576,10 +582,10 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
            Protons.push_back(*fTrack);
            IsProton = kTRUE;
           }else{ //if isPions write only some of them
-           if(r3.Rndm()<.10){
+           //if(r3.Rndm()<.10){ // comment this ==> now use all pions
             Protons.push_back(*fTrack);
             IsProton = kTRUE;
-           }
+           //}
           }
         }
         if (fTrackCutsAntiProton->isSelected(fTrack)){
@@ -587,16 +593,17 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
            AntiProtons.push_back(*fTrack);
            IsProton = kTRUE;
           }else{ //if isPions write only some of them
-           if(r3.Rndm()<.10){
+           //if(r3.Rndm()<.10){ // comment this ==> now use all pions
             AntiProtons.push_back(*fTrack);
             IsProton = kTRUE;
-           }
+           //}
           }
         }
 
         //FILL kaons and deuterons unless it is MCtruth:
-        if(!fIsMCtruth){
-         if(IsKaon) FillKaon(fTrack);
+        if(!fIsMCtruth&&!fisPions){ //for pi-d analysis, do not use the tree
+         if(IsKaon&&!fDOpd) FillKaon(fTrack);
+         if(IsProton&&fDOpd) FillKaon(fTrack);
          if(IsDeuteron) FillDeuteron(fTrack);
          if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.03) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
         }
@@ -758,7 +765,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
 
       //fill tree:
       //----------
-      if(fTnKaon>0&&fTnDeuteron>0) fTree->Fill(); // std kd 
+      if(fTnKaon>0&&fTnDeuteron>0&&!fisPions) fTree->Fill(); // std kd 
 
 
      bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)
@@ -904,6 +911,7 @@ Bool_t AliAnalysisTaskOtonkd::FillKaon(AliFemtoDreamTrack *TheTrack) {
  fTKaonITSsigma_d[fTnKaon] = (TheTrack->GetnSigmaITS((int) (AliPID::kDeuteron)));
  fTKaonTPCsigma_d[fTnKaon] = (TheTrack->GetnSigmaTPC((int) (AliPID::kDeuteron)));
  fTKaonTOFsigma_d[fTnKaon] = (TheTrack->GetnSigmaTOF((int) (AliPID::kDeuteron)));
+ fTKaonSPDtime[fTnKaon] = TheTrack->GetHasSPDHit();
  fTKaonITStime[fTnKaon] = TheTrack->GetHasITSHit();
  fTKaonTOFtime[fTnKaon] = TheTrack->GetTOFTimingReuqirement();
   fTKaonFilterBit[fTnKaon] = TheTrack->GetFilterMap();
@@ -971,6 +979,7 @@ Bool_t AliAnalysisTaskOtonkd::FillDeuteron(AliFemtoDreamTrack *TheTrack, int IsB
  fTDeuteronITSsigma_d[fTnDeuteron] = (TheTrack->GetnSigmaITS((int) (AliPID::kDeuteron)));
  fTDeuteronTPCsigma_d[fTnDeuteron] = (TheTrack->GetnSigmaTPC((int) (AliPID::kDeuteron)));
  fTDeuteronTOFsigma_d[fTnDeuteron] = (TheTrack->GetnSigmaTOF((int) (AliPID::kDeuteron)));
+ fTDeuteronSPDtime[fTnDeuteron] = TheTrack->GetHasSPDHit();
  fTDeuteronITStime[fTnDeuteron] = TheTrack->GetHasITSHit();
  fTDeuteronTOFtime[fTnDeuteron] = TheTrack->GetTOFTimingReuqirement();
  fTDeuteronPDG[fTnDeuteron] = TheTrack->GetMCPDGCode();

@@ -274,6 +274,12 @@ void AliMESpidTask::UserExec(Option_t *opt)
   Double_t pT_LP_ESD = -9999.;
   Double_t pT_LP_MC = -9999.;
 
+	enum axis_hAllESD {l_comb08, l_V0M, l_directivity, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_delta_phi, l_delta_y, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
+	
+	enum axis_hResponse {l_comb08_resp, l_directivity_resp, l_pT_resp, l_charge_resp, l_pidTOF_resp, l_rapidity_resp, l_delta_phi_resp, l_delta_y_resp, l_MC_comb08_resp, l_MC_directivity_resp, l_MC_pT_resp, l_MCprimary_resp, l_MCPID_resp, l_MC_delta_phi_resp, l_MC_delta_y_resp};
+	
+	enum axis_hFakes {l_comb08_fake, l_directivity_fake, l_pT_fake, l_charge_fake, l_pidTPC_fake, l_pidTOF_fake, l_rapidity_fake, l_TOFmatching_fake, l_delta_phi_fake, l_delta_y_fake};
+
   // printf("\n\n\nNew event\n");
   // printf("\nESD loop:\n");
   // ESD track loop
@@ -306,11 +312,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
   THnSparseD *hResponse = (THnSparseD*)fHistosQA->At(slot_Response);
   // THnSparseD *hFakes = (THnSparseD*)fHistosQA->At(slot_Fakes);
 
-	enum axis_hAllESD {l_comb08, l_V0M, l_directivity, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_delta_phi, l_delta_y, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
-
-  enum axis_hResponse {l_comb08_resp, l_directivity_resp, l_pT_resp, l_charge_resp, l_pidTOF_resp, l_rapidity_resp, l_delta_phi_resp, l_delta_y_resp, l_MC_comb08_resp, l_MC_directivity_resp, l_MC_pT_resp, l_MCprimary_resp, l_MCPID_resp, l_MC_delta_phi_resp};
-
-  enum axis_hFakes {l_comb08_fake, l_directivity_fake, l_pT_fake, l_charge_fake, l_pidTPC_fake, l_pidTOF_fake, l_rapidity_fake, l_TOFmatching_fake, l_delta_phi_fake, l_delta_y_fake};
 
 	// ---------------------------
 	// get ESD multiplicity
@@ -407,9 +408,15 @@ void AliMESpidTask::UserExec(Option_t *opt)
   vec_hResponse[l_delta_phi_resp] = vec_hAllESD[l_delta_phi];
   // ---------------------------
   // compute delta y
-  vec_hAllESD[l_delta_y] = y_LP_ESD - vec_hAllESD[l_rapidity];
-  vec_hResponse[l_delta_y_resp] = vec_hAllESD[l_delta_y];
-
+	if(it == 0){
+		vec_hAllESD[l_delta_y] = -9999;
+		vec_hResponse[l_delta_y_resp] = -9999;
+	}
+	else{
+	  vec_hAllESD[l_delta_y] = y_LP_ESD - vec_hAllESD[l_rapidity];
+	  vec_hResponse[l_delta_y_resp] = vec_hAllESD[l_delta_y];
+	}
+	
   // fill the deltaPhi sparse
   THnSparseD *hDeltaPhi = (THnSparseD*)fHistosQA->At(slot_DeltaPhi);
   // vec_hDeltaPhi[0] = t->Pt();
@@ -462,6 +469,12 @@ void AliMESpidTask::UserExec(Option_t *opt)
 					MC_identity = i;
 				}
 			}
+
+			// delta_y MC
+			// y_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Y();
+			y_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Eta();
+			pT_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Pt();
+
 			// 		AliInfo(Form("MC PID = %g", vec_hAllESD[4]));
 			vec_hPIDQA[7] = vec_hAllESD[l_MCPID];
       vec_hResponse[l_MCPID_resp] = vec_hAllESD[l_MCPID];
@@ -471,6 +484,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
       vec_hResponse[l_MCprimary_resp] = vec_hAllESD[l_MCprimary];
       vec_hResponse[l_MC_delta_phi_resp] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);
+			// compute delta y
+			if(it == 0){
+				vec_hResponse[l_MC_delta_y_resp] = -9999;
+			}
+			else{
+			  vec_hResponse[l_MC_delta_y_resp] = y_LP_MC - tMC->Eta();
+			}
 
       vec_hDeltaPhi[5] = tMC->Pt();
 		}
@@ -483,10 +503,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		// else vec_hAllESD[l_yMCPID] = -9999;
 		// if(TMath::Abs(vec_hAllESD[l_yMCPID]) > 1.0) continue;
 
-    // delta_y MC
-		// y_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Y();
-    y_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Eta();
-    pT_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Pt();
     if(tMC){
 			// vec_hDeltaPhi[6] = y_LP_MC - tMC->Y();
       vec_hDeltaPhi[6] = y_LP_MC - tMC->Eta();
@@ -707,8 +723,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
       // ---------------------------
       // compute the delta y
-      vec_hGen[l_MC_delta_y] = y_LP_MC - vec_hGen[l_MC_rapidity];
-
+			if(it == 0){
+				vec_hGen[l_MC_delta_y] = -9999;
+			}
+			else{
+	      vec_hGen[l_MC_delta_y] = y_LP_MC - vec_hGen[l_MC_rapidity];
+			}
+			
   		// ---------------------------
   		// get the ESD multiplicity
   		// 		vec_hGen[5] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);
@@ -742,8 +763,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
         vec_hMiss[l_rapidity_miss] = vec_hGen[l_MC_rapidity];
         // vec_hMiss[l_delta_phi_miss] = ComputeDeltaPhi(tMC->Phi(), phi_LP);  // NOTE: compute dP vs REC LP!
         vec_hMiss[l_delta_phi_miss] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);
-        vec_hMiss[l_delta_y_miss] = y_LP_MC - vec_hGen[l_MC_rapidity];
-
+				if(it == 0){
+					vec_hGen[l_MC_delta_y] = -9999;
+				}
+				else{
+	        vec_hMiss[l_delta_y_miss] = y_LP_MC - vec_hGen[l_MC_rapidity];
+				}
+				
         hMiss->Fill(vec_hMiss);
 
         // printf("Filled hMiss\n\n");
@@ -796,15 +822,15 @@ Bool_t AliMESpidTask::BuildQAHistos()
   fHistosQA->AddAt(hMultEst, slot_MultEst);
 
   // test response
-  const Int_t ndimResponse(14);
-  const Int_t cldNbinsResponse[ndimResponse]   = {7, 5, 87, 2, 5, 20, 4, 20, 7, 5, 87, 2, 5, 4};
+  const Int_t ndimResponse(15);
+  const Int_t cldNbinsResponse[ndimResponse]   = {7, 5, 87, 2, 5, 20, 4, 20, 7, 5, 87, 2, 5, 4, 20};
   // const Int_t cldNbinsResponse[ndimResponse]   = {7, 5, 87, 2, 5, 20, 80, 20, 7, 5, 87, 2, 5};
   // const Int_t cldNbinsResponse[ndimResponse]   = {20, 10, 42, 2, 5, 20, 80, 20, 20, 10, 42, 2, 5};
-  const Double_t cldMinResponse[ndimResponse]  = {0., 0., 0., -2., -0.5, -1., 0., -2., 0., 0., 0., -0.5, -0.5, 0.},
-  cldMaxResponse[ndimResponse]  = {100., 1., 20., 2., 4.5, 1., 4., 2., 100., 1., 20., 1.5, 4.5, 4.};
+  const Double_t cldMinResponse[ndimResponse]  = {0., 0., 0., -2., -0.5, -1., 0., -2., 0., 0., 0., -0.5, -0.5, 0., -2.},
+  cldMaxResponse[ndimResponse]  = {100., 1., 20., 2., 4.5, 1., 4., 2., 100., 1., 20., 1.5, 4.5, 4., 2.};
   // const Double_t cldMinResponse[ndimResponse]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2., 0., 0., 0., -0.5, -0.5},
   // cldMaxResponse[ndimResponse]  = {100., 1., 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 100., 1., 20., 1.5, 4.5};
-  THnSparseD *hResponse = new THnSparseD("Response","Response;combined08;directivity;p_{T};charge;PID_TPCTOF;y;delta_phi;delta_y;generated 0.8;generated directivity;generated p_{T};generated_primary;generated_PID;generated_delta_phi;", ndimResponse, cldNbinsResponse, cldMinResponse, cldMaxResponse);
+  THnSparseD *hResponse = new THnSparseD("Response","Response;combined08;directivity;p_{T};charge;PID_TPCTOF;y;delta_phi;delta_y;generated 0.8;generated directivity;generated p_{T};generated_primary;generated_PID;generated_delta_phi;generated_delta_y", ndimResponse, cldNbinsResponse, cldMinResponse, cldMaxResponse);
   // hResponse->GetAxis(0)->Set(7, binLimits_mult);
   // hResponse->GetAxis(2)->Set(42, binLimits_reduced);
   // hResponse->GetAxis(2)->Set(87, binLimits);

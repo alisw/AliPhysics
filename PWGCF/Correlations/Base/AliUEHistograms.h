@@ -21,6 +21,8 @@ class TObjArray;
 class TH1F;
 class TH2F;
 class TH3F;
+class TFormula;
+class TRandom3;
 
 class AliUEHistograms : public TNamed
 {
@@ -85,6 +87,7 @@ class AliUEHistograms : public TNamed
   void SetCombineMinMax(Bool_t flag);
   void SetTrackEtaCut(Float_t value);
   void SetWeightPerEvent(Bool_t flag);
+  void SetDeltaEtaAcceptance(TFormula* deltaEtaAcceptance, TRandom3* deltaEtaAcceptanceRNG) { fDeltaEtaAcceptance = deltaEtaAcceptance; fDeltaEtaAcceptanceRNG = deltaEtaAcceptanceRNG; }
   void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
   void SetSelectTriggerCharge(Int_t selectCharge) { fTriggerSelectCharge = selectCharge; }
   void SetSelectAssociatedCharge(Int_t selectCharge) { fAssociatedSelectCharge = selectCharge; }
@@ -154,7 +157,9 @@ protected:
   
   THnF* fEfficiencyCorrectionTriggers;   // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency
   THnF* fEfficiencyCorrectionAssociated;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency
-  
+  TFormula* fDeltaEtaAcceptance; //if non-0, randomly reject particle pairs according to this distribution as a function of delta-eta
+  TRandom3* fDeltaEtaAcceptanceRNG; //! RNG for the delta-eta rejection
+
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   Int_t fTriggerSelectCharge;    // select charge of trigger particle
   Int_t fAssociatedSelectCharge; // select charge of associated particle
@@ -182,7 +187,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 33)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 34)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

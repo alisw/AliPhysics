@@ -20,6 +20,7 @@
 class AliVEvent;
 class AliESDEvent;
 class AliAODEvent;
+class AliGRPObject;
 class TFile;
 class TDirectory;
 class TParticle;
@@ -52,6 +53,7 @@ public:
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
   void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
   void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
+  void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALReducedTriggerPayload = reduced; }
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
@@ -178,6 +180,7 @@ private:
   Bool_t fUseEventCuts = kFALSE;         //! Use or not event cuts
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliTriggerAnalysis fTriggerAnalysis; //! Trigger analysis object for event selection
+  AliGRPObject *fGRP;           //! Global run parameters
   AliVEvent *fVEvent = nullptr; //! input ESD or AOD event
   AliESDEvent *fESD  = nullptr; //! input ESD event
   AliAODEvent *fAOD  = nullptr; //! input AOD event
@@ -258,7 +261,7 @@ private:
     UShort_t fSPDFiredFastOrL1 = 0u;   /// number of fired FO chips in SPD L1 (online)
     UShort_t fV0TriggerChargeA = 0u;   /// V0A trigger charge
     UShort_t fV0TriggerChargeC = 0u;   /// V0C trigger charge
-  } run2bcinfo; //! structure to keep run 2 only related info 
+  } run2bcinfo; //! structure to keep run 2 only related info
 
   struct {
     ULong64_t fDataframeID = 0; /// ID of this data frame (important for merging DFs)
@@ -401,7 +404,7 @@ private:
     Int_t fStatusCode = -99999; /// generation status code
     uint8_t fFlags    = 0;     /// See enum MCParticleFlags
     Int_t fIndexArray_Mothers_size     = 0;   /// Length of fIndexArray_Mothers
-    Int_t fIndexArray_Mothers[1]       = {0}; /// VLA of mothers (always length 1 for Run 2)
+    Int_t fIndexArray_Mothers[1]       = {0}; /// VLA of mothers (length 1 or 0 for Run 2)
     Int_t fIndexSlice_Daughters[2]     = {0}; /// Slice of daughter particles
     Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
@@ -480,7 +483,7 @@ private:
     // i-th chamber can be tested with: fMIDBitMap & (1<<i)
     UShort_t fMIDBitMap = 0u;
     UInt_t fMIDBoards = 0;
-    
+
 
     // "Covariance matrix"
     // The diagonal elements represent the errors = Sqrt(C[i,i])
@@ -564,8 +567,8 @@ private:
   struct {
     /// FDD (AD)
     Int_t fIndexBCs = 0u;                /// Index to BC table
-    Float_t fAmplitudeA[4] = {0.f};   /// Multiplicity for each A-side channel
-    Float_t fAmplitudeC[4] = {0.f};   /// Multiplicity for each C-side channel
+    int16_t fChargeA[8] = {0u};   /// Multiplicity for each A-side channel
+    int16_t fChargeC[8] = {0u};   /// Multiplicity for each C-side channel
     Float_t fTimeA = 0.f;             /// Average A-side time
     Float_t fTimeC = 0.f;             /// Average C-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
@@ -632,8 +635,9 @@ private:
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
   Double_t fEMCALAmplitudeThreshold = 0.1; ///< EMCAL amplitude threshold (for compression - default: 100 MeV := cluster cell threshold)
   Double_t fFractionL1MonitorEventsEMCAL = 0.001; ///< Fraction of monitoring events (full payload) for EMCAL L1 trigger
+  Bool_t fEMCALReducedTriggerPayload = kFALSE; ///< Use reduced trigger payload for EMCAL L1 trigger
   Bool_t fUsePHOSBadMap = kTRUE ; ///< read and apply PHOS trigger bad map
-  
+
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
   ULong_t fMaxBytes = 100000000; ///| Approximative size limit on the total TF output trees

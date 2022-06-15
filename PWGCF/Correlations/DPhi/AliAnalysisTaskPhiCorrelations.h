@@ -46,6 +46,7 @@ class AliESDEvent;
 class AliHelperPID;
 class AliAnalysisUtils;
 class TFormula;
+class TRandom3;
 class TMap;
 class AliGenEventHeader;
 class AliVEvent;
@@ -114,6 +115,7 @@ public:
   // track cuts
   void SetTrackletDphiCut(Double_t val) { fTrackletDphiCut = val; }
 
+  void SetDeltaEtaAcceptance(TFormula* deltaEtaAcceptance) { fDeltaEtaAcceptance = deltaEtaAcceptance; }
   void SetEventSelectionBit(UInt_t val) { fSelectBit = val;  }
   void SetUseChargeHadrons(Bool_t val) { fUseChargeHadrons = val; }
   void SetSelectParticleSpecies(Int_t trigger, Int_t associated) { fParticleSpeciesTrigger = trigger; fParticleSpeciesAssociated = associated; }
@@ -239,6 +241,8 @@ private:
 
   THnF* fEfficiencyCorrectionTriggers;   // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
   THnF* fEfficiencyCorrectionAssociated; // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+  TFormula*           fDeltaEtaAcceptance; //if non-0, randomly reject particle pairs according to this distribution as a function of delta-eta
+  TRandom3*           fDeltaEtaAcceptanceRNG; //! RNG for the delta-eta rejection
   TH1* fCentralityWeights;               // for centrality flattening
   TH1* fCentralityMCGen_V0M;             // for centrality from generated MCGen_V0M
   TH1* fCentralityMCGen_CL1;             // for centrality from generated MCGen_CL1
@@ -343,7 +347,7 @@ private:
   Bool_t fUsePtBinnedEventPool;                   // uses event pool in pt bins
   Bool_t fCheckEventNumberInMixedEvent;           // check event number before correlation in mixed event
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 64); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 65); // Analysis task for delta phi correlations
 };
 
 #endif

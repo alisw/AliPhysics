@@ -1233,6 +1233,18 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @return True if event is selected, false otherwise
    */
   virtual Bool_t              Run()                             { return kTRUE                 ; }
+
+  /**
+   * @brief Run function before event selection 
+   * 
+   * User can implement code i.e. for filling histograms before event selection.
+   * Usually the function is used to fill particle level histograms without bias
+   * from the detector level event selection which is applied before the Run function.
+   * 
+   * No selections are applied in the function, therefore no return type is expected.
+   * Selections must be done in the run function.
+   */
+  virtual void                UserRunBeforeEventSelection()     { }
     
   // Static utilities
   /**

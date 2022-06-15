@@ -27,6 +27,7 @@
 #define AliMultSelectionTask_H
 
 #include <AliAnalysisTaskSE.h>
+#include "AliMCParticle.h"
 
 class TList;
 class TH1F;
@@ -123,6 +124,11 @@ public:
   void SetCalculateSpherocityMC ( Bool_t lVar ) { fkDebugMCSpherocity = lVar; }
   void SetPreferSuperCalib( Bool_t lVar ) { fkPreferSuperCalib = lVar; }
   void SetPropDCA      ( Bool_t lVar ) { fkPropDCA     = lVar; } ;
+  void SetEtaCut(Float_t lVar) {fEtaCut  = lVar;};
+  void SetNclustersCut(Float_t lVar) {fNClustersCut  = lVar;};
+  void SetGenName(TString lVar) {fGenName  = lVar;};
+  void SetStoreForwardMCInfo(Bool_t lVar) {fkStoreForwardMCInfo  = lVar;};
+  void SetForwardMCMinEta(Double_t lVar) {fkForwardMCInfoMinEta  = lVar;};
   
   //override for getting estimator definitions from different OADB file
   //FIXME: should preferably be protected, extra functionality required
@@ -152,8 +158,11 @@ public:
   //Lightweight tree switch
   void SetLightTree ( Bool_t lVal ) { fkLightTree = lVal; }
   
-  static Double_t GetTransverseSpherocityMC( AliStack *lStack );
-  static Double_t GetTransverseSpherocityTracksMC( AliStack *lStack );
+  //Verbosity switch
+  void SetVerbose ( Bool_t lVal = kTRUE ) { fkVerbose = lVal; }
+  
+  static Double_t GetTransverseSpherocityMC(AliMCEvent *lMCevent);
+  static Double_t GetTransverseSpherocityTracksMC(AliMCEvent *lMCevent);
   
   // Static method for AddTaskMultSelection
   static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
@@ -163,7 +172,8 @@ public:
   virtual void   Terminate(Option_t *);
   
   // Max number of tracks
-  static const Int_t kTrack = 90000;
+  static const Int_t kTrack = 40000;
+  static const Int_t kFwdTracks = 5000;
   //---------------------------------------------------------------------------------------
   
 private:
@@ -175,6 +185,7 @@ private:
   TTree  *fTreeEvent;              //! Output Tree, Events
   
   //Objects Controlling Task Behaviour
+  Bool_t fkVerbose;     //if true, print out stuff for debugging
   Bool_t fkCalibration; //if true, save Calibration object
   Bool_t fkAddInfo;     //if true, save info
   Bool_t fkFilterMB;    //if true, save only kMB events
@@ -200,6 +211,8 @@ private:
   Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
   
   Bool_t fkSkipVertexZ; //if true, skip vertex-Z selection for evselcode determination
+  Bool_t fkStoreForwardMCInfo; //if true, store MC info above |eta|>7.5 for posterior analysis
+  Double_t fkForwardMCInfoMinEta; //store min eta value for saving particles
   
   //Downscale factor:
   //-> if smaller than unity, reduce change of accepting a given event for calib tree
@@ -244,7 +257,8 @@ private:
   AliMultVariable *fAmplitude_OnlineV0C;
   AliMultVariable *fAmplitude_V0AADC;
   AliMultVariable *fAmplitude_V0CADC;
-  
+  AliMultVariable *fFlatenicity_V0; 
+ 
   //Integer Variables
   AliMultVariable *fnSPDClusters;
   AliMultVariable *fnSPDClusters0;
@@ -314,15 +328,34 @@ private:
   
   Int_t fNTracksITSrefit;
   Int_t fNTracksHasPointOnITSLayer;
+  Float_t fNTracksMaxDCAz00;
   Float_t fNTracksDCAxyABS;
   Float_t fNTracksDCAzABS;
   Float_t fNTracksDCAxySQ;
   Float_t fNTracksDCAzSQ;
-  Float_t fNTracksMaxDCAz00;
   Int_t BunchCrossingIDNotZero;
+  Int_t fNPileUpVertices;
   Int_t fNumberOfTracks;
   Float_t fTrackDCAz[kTrack];
+  Float_t fTrackDCAxy[kTrack];
+  Int_t fTrackBCID[kTrack];
+  Float_t fTrackEta[kTrack];
+  Float_t fTrackPhi[kTrack];
+  Float_t fTrackPt[kTrack];
+  Int_t fTrackPileupVxt[kTrack];
+  Bool_t fTrackITSrefit[kTrack];
+  Bool_t fTrackSPD0[kTrack];
+  Bool_t fTrackSPD1[kTrack];
+  Bool_t fTrackSDD0[kTrack];
+  Bool_t fTrackSDD1[kTrack];
+  Bool_t fTrackSSD0[kTrack];
+  Bool_t fTrackSSD1[kTrack];
   Bool_t fTrackIsPileup[kTrack];
+  Bool_t fTrackTPC[kTrack];
+  Bool_t fTrackIsPrimary[kTrack];
+  Float_t fEtaCut;
+  Float_t fNClustersCut;
+  TString fGenName; // Generator name 
   
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
   AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
@@ -416,6 +449,16 @@ private:
   // if valid, will bypass every other config option
   // set this with SetOADB( TString *file );
   AliOADBContainer *fOADB;
+  
+  //For MC checks of forward energy deposition in the ZDC
+  Int_t fNForwardMCParticles;
+  Float_t fForwardPx[kFwdTracks];
+  Float_t fForwardPy[kFwdTracks];
+  Float_t fForwardPz[kFwdTracks];
+  Float_t fForwardE[kFwdTracks];
+  Float_t fForwardM[kFwdTracks];
+  Int_t fForwardPDG[kFwdTracks];
+  Bool_t fForwardIsPhysicalPrimary[kFwdTracks];
   
   AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
   AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented

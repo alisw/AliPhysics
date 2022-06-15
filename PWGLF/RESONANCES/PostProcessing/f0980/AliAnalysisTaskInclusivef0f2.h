@@ -14,7 +14,8 @@
 #include "AliPID.h"
 #include "AliStack.h"
 #include "AliEventCuts.h"
-
+#include "AliAnalysisUtils.h"
+#include "AliQnCorrectionsFillEventTask.h"
 
 class AliMultSelection;
 class AliVMultiplicity;
@@ -110,9 +111,16 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
 	TAxis				binCentForMC;
         TAxis                           binZ; //!
         TAxis                           binPt; //!
+
+        TAxis                           binMtPion; //!
+        TAxis                           binMtKaon; //!
+        TAxis                           binMtRho; //!
+        TAxis                           binMtPhi; //!
+
         TAxis                           binPtGen; //!
 	TAxis                           binType; //!
         TAxis                           binMass; //!
+	TAxis				binEP; //!
 	TAxis				binPtTrack;
 	TAxis				binPhiTrack;
 	TAxis				binEtaTrack;
@@ -133,10 +141,8 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
         Int_t                           zbin = -1 ;
 	Int_t				trkbin = -1;
 	Int_t				pidbin = -1;
+	Double_t			fEP_v0 = -999.;
 
-	std::vector<Double_t>		EffpT;
-	Int_t fEff_npT_step = 140;
-	Double_t fEff_pT_max = 14.0;
 
         ClassDef(AliAnalysisTaskInclusivef0f2, 1);
 };

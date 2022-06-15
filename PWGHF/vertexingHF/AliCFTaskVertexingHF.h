@@ -32,6 +32,7 @@
 #include "AliCFVertexingHF.h"
 #include <TH1F.h>
 #include <TProfile.h>
+#include "AliAnalysisFilter.h"
 
 class TH1I;
 class TFile ;
@@ -236,6 +237,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL7overLHC10f7aLc();
   void SetPtWeightsFromFONLL8overLHC15l2a2();
   void SetPtWeightsFromFONLL13overLHC17c3a12();
+  void SetPtWeightsFromFONLL13overLHC20f4abc();
 
   void SetPtWeightsFDFromFONLL5anddataoverLHC19c3a();
   void SetPtWeightsFDFromFONLL5anddataoverLHC19c3b();
@@ -308,6 +310,12 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager
   TH1I *fHistEventsProcessed;   //!<! simple histo for monitoring the number of events processed
+  TH1F* fNChargedInTrans;       /// Number of charged tracks in the transverse region
+  TH1F* fPTDistributionInTransverse; ///Pt ditribution of charged tracks in transverse region
+  TH1F* fGlobalRT;              /// Global RT distribution
+  TH1F* fStepRecoPIDRT;              ///RT ditribution for events with a D meson at the kRecoPID step
+  TH1F* fHistPtLead;            ///Pt distribution of leading track
+  TList *fOutputRT; //Additional output to check RT
   THnSparse* fCorrelation;      ///  response matrix for unfolding
   TList  *fListProfiles; //list of profile histos for z-vtx correction
   Int_t fCountMC;               ///  MC particle found
@@ -370,13 +378,10 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Float_t fCutOnMomConservation; /// cut on momentum conservation
   Double_t fMinLeadPtRT;   /// minimum pT cut for leading particle in RT calculation
   Double_t fAveMultInTransForRT; ///Average multiplicity in transverse region
-  TH1F* fPhiDistributionGlobal;
-  TH1F* fPhiDistributionComplementary;
-  TH1F* fPhiDistributionHybrid;
-  TH1F* fNchargedinTrans;
-  TH1F* fRTdistribution;
-  TList* fListQA;
-
+  AliAnalysisFilter* fTrackFilter[18]; //! track filter
+  AliAnalysisFilter* fTrackFilterGlobal; //! filter to select global tracks
+  AliAnalysisFilter* fTrackFilterComplementary; //! filter to select complementary tracks
+  Bool_t fUseHybridTracks; /// flag to chose the tracks to use for RT calculation
 
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
@@ -384,7 +389,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t fKeepOnlyOOBPileupEvents; /// flag to keep only events with simulated pileup
 
   /// \cond CLASSIMP
-  ClassDef(AliCFTaskVertexingHF,35); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,34); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 

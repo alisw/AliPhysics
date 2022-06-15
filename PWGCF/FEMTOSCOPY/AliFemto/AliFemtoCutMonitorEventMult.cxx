@@ -25,7 +25,9 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
   fEst1Norm(NULL),
   fEst2Norm(NULL),
   fEst3Norm(NULL),
-  fPsiVZERO(NULL)
+  fPsiVZERO(NULL),
+  faddRunNumberQA(0),
+  fRunNumberQA(NULL)
 {
   // Default constructor
   fEvMult = new TH1D("EvMult", "Event Multiplicity", 5001, -0.5, 5000.5);
@@ -52,7 +54,9 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName, int 
   fEst1Norm(NULL),
   fEst2Norm(NULL),
   fEst3Norm(NULL),
-  fPsiVZERO(NULL)
+  fPsiVZERO(NULL),
+  faddRunNumberQA(0),
+  fRunNumberQA(NULL)
 {
   TString name(aName);
 
@@ -125,6 +129,9 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName, int 
   fPsiVZERO = new TH1D("PsiEPVZERO" + name,
                        "event plane angle from vzero",
                        157, -1.575, 1.565);
+  
+  fRunNumberQA = new TH1D("RunNumberQA_" + name, "", 54000,244000-0.5,298000-0.5);
+  
 }
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonitorEventMult &aCut):
@@ -144,7 +151,10 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
   fEst1Norm(NULL),
   fEst2Norm(NULL),
   fEst3Norm(NULL),
-  fPsiVZERO(NULL)
+  fPsiVZERO(NULL),
+  faddRunNumberQA(aCut.faddRunNumberQA),
+  fRunNumberQA(NULL)
+
 {
   // copy constructor
   fEvMult = new TH1D(*aCut.fEvMult);
@@ -169,6 +179,9 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
   }
 
   fPsiVZERO = new TH1D(*aCut.fPsiVZERO);
+  if(faddRunNumberQA){ 
+	fRunNumberQA = new TH1D(*aCut.fRunNumberQA);
+  }
 }
 
 AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
@@ -196,6 +209,10 @@ AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
   }
 
   delete fPsiVZERO;
+  if(faddRunNumberQA){ 
+      delete fRunNumberQA;
+  }
+
 }
 
 AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFemtoCutMonitorEventMult& aCut)
@@ -251,6 +268,11 @@ AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFem
     fEst3Norm = new TH2D(*aCut.fEst3Norm);
   }
 
+  if(faddRunNumberQA){ 
+        if(fRunNumberQA) delete fRunNumberQA;
+	fRunNumberQA = new TH1D(*aCut.fRunNumberQA);
+  }
+
   return *this;
 }
 
@@ -289,7 +311,10 @@ void AliFemtoCutMonitorEventMult::Fill(const AliFemtoEvent* aEvent)
   //     fEst2Norm->Fill(aEvent->MultiplicityEstimateTracklets(),aEvent->UncorrectedNumberOfPrimaries());
   //     fEst3Norm->Fill(aEvent->MultiplicityEstimateITSPure(),aEvent->UncorrectedNumberOfPrimaries());
   //   }
-
+  //
+  if(faddRunNumberQA){
+	fRunNumberQA->Fill((int)aEvent->RunNumber());
+  }  
 }
 
 void AliFemtoCutMonitorEventMult::Write()
@@ -316,7 +341,9 @@ void AliFemtoCutMonitorEventMult::Write()
   //     fEst2Norm->Write();
   //     fEst3Norm->Write();
   //   }
-
+  if(faddRunNumberQA){ 
+	fRunNumberQA->Write();
+  } 
 }
 
 TList *AliFemtoCutMonitorEventMult::GetOutputList()
@@ -340,6 +367,9 @@ TList *AliFemtoCutMonitorEventMult::GetOutputList()
   //     tOutputList->Add(fEst2Norm);
   //     tOutputList->Add(fEst3Norm);
   //   }
+  if(faddRunNumberQA){ 
+	tOutputList->Add(fRunNumberQA);
+  } 
   return tOutputList;
 }
 
@@ -352,3 +382,11 @@ void AliFemtoCutMonitorEventMult::AdditionalMultHistsOn(Bool_t addhists)
 {
   faddhists = addhists;
 }
+void AliFemtoCutMonitorEventMult::SetfaddRunNumberQA(int addRunNumberQA)
+{
+  faddRunNumberQA = addRunNumberQA;
+	
+}
+
+
+

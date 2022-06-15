@@ -27,7 +27,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 			printf("AddTask: Adding mixed event pool\n");
 			// For Mixed Trigger Mode, copy alien file
 			printf("Copying file from alien:/%s/%s\n",poolFilePath,poolFileName);
-			gSystem->Exec(Form("alien_cp alien:/%s/%s .",poolFilePath,poolFileName));
+			gSystem->Exec(Form("alien_cp alien:/%s/%s file:.",poolFilePath,poolFileName));
 			TFile * fPoolFile = TFile::Open(poolFileName);
 			if (fPoolFile) {
 				AliEventPoolManager * fPool = 0x0; 
@@ -36,9 +36,10 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 					task->SetExternalEventPoolManager(fPool);
 				} else printf("AddTask: Could not find pool manager\n");
 				fPoolFile->Close();
+			} else {
+				printf("AddTask: Could not find event pool file\n");
 			}
 		}
 
 		return task;
-//	  return AliAnalysisTaskGammaHadron::AddTaskGammaHadron(InputGammaOrPi0,InputSeMe,InputMCorData,
 }

@@ -814,9 +814,10 @@ void AliCSEventCuts::SetActualSystemType() {
   case kLHC15n:
   case kLHC16k:
   case kLHC16l:
-    system = kpp;
-    AliInfo("SYSTEM: p-p");
-    break;
+  case kLHC18bp:
+      system = kpp;
+      AliInfo("SYSTEM: p-p");
+      break;
   case kLHC13bc:
   case kLHC13de:
     system = kpPb;
@@ -1025,6 +1026,7 @@ Bool_t AliCSEventCuts::UseNewMultiplicityFramework() const{
   case kLHC15oLIR:
   case kLHC15oHIR:
   case kLHC17n:
+  case kLHC18bp:
   case kLHC18q:
   case kLHC18r:
     AliInfo("Using NEW mulitplicity framework");
@@ -2225,12 +2227,18 @@ void AliCSEventCuts::SetActualFilterTracksCuts() {
     system = "Xe-Xe";
     period = "2017n";
     break;
+  case kLHC18bp:
+      baseSystem = k2011based;
+      basename = "2011";
+      system = "p-p";
+      period = "2018bp";
+      break;
   case kLHC18q:
-    baseSystem = k2011based;
-    basename = "2011";
-    system = "Pb-Pb";
-    period = "2018q";
-    break;
+      baseSystem = k2011based;
+      basename = "2011";
+      system = "Pb-Pb";
+      period = "2018q";
+      break;
   case kLHC18r:
     baseSystem = k2011based;
     basename = "2011";

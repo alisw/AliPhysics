@@ -61,6 +61,12 @@ AliAnalysisTask_Phi_MC : public AliAnalysisTaskSE    {
     TH1D*                       fQC_Event_Enum_E10;         //! Event Multiplicity utility histogram
     TH1D*                       fQC_Event_Enum_V0A;         //! Event Multiplicity utility histogram
     TH1D*                       fQC_Event_Enum_V0M;         //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0A_05;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0A_08;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0A_10;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0M_05;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0M_08;      //! Event Multiplicity utility histogram
+    TH2D*                       fQC_Event_Enum_V0M_10;      //! Event Multiplicity utility histogram
     //
     //  --- EVENT --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     //

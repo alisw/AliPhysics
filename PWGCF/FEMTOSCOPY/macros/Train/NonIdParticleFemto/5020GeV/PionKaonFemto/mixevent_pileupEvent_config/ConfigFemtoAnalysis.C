@@ -289,7 +289,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  }
 
 	  //Set particle 1:
-	  dtc1etaphitpc[aniter]->SetPt(0.19,1.5);
+	  dtc1etaphitpc[aniter]->SetPt(pTmin, pTmax);
 	  dtc1etaphitpc[aniter]->SetEta(-eta,eta);
 	  dtc1etaphitpc[aniter]->SetMass(PionMass);	  
 	  dtc1etaphitpc[aniter]->SetMostProbablePion();	 

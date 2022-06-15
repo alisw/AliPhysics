@@ -5,6 +5,7 @@
 
 #include "AliAnalysisTaskEmcalJetHCorrelations.h"
 
+
 #include <bitset>
 
 #include <TH1F.h>
@@ -53,6 +54,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
   fRandom(0),
+  fqnVectorReader(0),
   fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kDisableEff),
   fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
@@ -65,6 +67,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fHistManager(),
   fHistJetHTrackPtraw(nullptr),
   fHistJetHTrackPt(nullptr),
+  fHistEPAngle(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
   fhnMixedEvents(nullptr),
@@ -90,6 +93,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
   fRandom(0),
+  fqnVectorReader(0),
   fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kDisableEff),
   fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
@@ -102,6 +106,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fHistManager(name),
   fHistJetHTrackPtraw(nullptr),
   fHistJetHTrackPt(nullptr),
+  fHistEPAngle(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
   fhnMixedEvents(nullptr),
@@ -217,11 +222,13 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
   // Create histograms
   fHistJetHTrackPtraw = new TH1F("fHistJetHTrackPtraw", "P_{T} distribution", 1000, 0.0, 100.0);
   fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution (events w/ jet > 15 GeV)", 1000, 0.0, 100.0);
+  fHistEPAngle = new TH1F("fHistEPAngle", "#Psi_{2} distribution for 2018 calib",100,-TMath::Pi(),3.*TMath::Pi());
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
   fOutput->Add(fHistJetHTrackPtraw);
   fOutput->Add(fHistJetHTrackPt);
+  fOutput->Add(fHistEPAngle);
   fOutput->Add(fHistJetEtaPhi);
   fOutput->Add(fHistJetHEtaPhi);
 
@@ -430,6 +437,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   Double_t deltaEta = 0;
   Double_t deltaR = 0;
   Double_t epAngle = 0;
+  // Event plane angle from V0C
+  Double_t EP_angle_from_calib = 0;
   // Event activity (centrality or multipilicity)
   Double_t eventActivity = 0;
   // Efficiency correction
@@ -441,6 +450,12 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
   // Determine the trigger for the current event
   UInt_t eventTrigger = RetrieveTriggerMask();
+
+  //new way of getting qnvectors 
+  fqnVectorReader=(AliAnalysisTaskJetQnVectors*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQnVectors");
+  if(!fqnVectorReader){printf("Error: No AliAnalysisTaskJetQnVectors");return 0;} // GetQnVectorReader
+  EP_angle_from_calib = fqnVectorReader->GetEPangleV0C();
+  fHistEPAngle->Fill(EP_angle_from_calib);
 
   AliDebugStream(5) << "Beginning main processing. Number of jets: " << jets->GetNJets() << ", accepted jets: " << jets->GetNAcceptedJets() << "\n";
 
@@ -492,7 +507,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     leadJet = kFALSE;
     if (jet == leadingJet) leadJet = kTRUE;
     biasedJet = BiasedJet(jet);
-    epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
+    
+
+    //new way of getting qnvectors  
+    epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);     
 
     // Fill jet properties
     fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
@@ -633,7 +651,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           leadJet = kFALSE;
           if (jet == leadingJet) { leadJet = kTRUE; }
           biasedJet = BiasedJet(jet);
-          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
+
+        
+          //new way of getting qnvectors 
+          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
 
           // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
           if (jetPt < 15 || biasedJet == kFALSE) continue;

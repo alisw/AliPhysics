@@ -48,6 +48,7 @@ class AliExternalTrackParam;
 //#include "AliESDtrackCuts.h"
 //#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliTrackReference.h"
 #include "AliAnalysisTaskWeakDecayVertexer.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityMCRun2 : public AliAnalysisTaskSE {
@@ -135,6 +136,12 @@ public:
   void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
     fkExtraCleanup = lExtraCleanup;
   }
+  void SetExtraCleanupRapidity ( Bool_t lExtraCleanupRapidity = kTRUE) {
+    fkExtraCleanupRapidity = lExtraCleanupRapidity;
+  }
+  void SetSaveVertex ( Bool_t lVal = kTRUE) {
+    fkSaveVertex = lVal;
+  }
   void SetHypertritonMode ( Bool_t lOpt = kTRUE) {
     fkHypertritonMode = lOpt;
   }
@@ -143,6 +150,9 @@ public:
   }
   void SetSandboxV0Prongs ( Bool_t lOpt = kTRUE) {
     fkSandboxV0Prongs = lOpt;
+  }
+  void SetSaveMCInfoAtTPC ( Bool_t lVal = kTRUE) {
+    fkSaveMCInfoTPC = lVal;
   }
   //---------------------------------------------------------------------------------------
   void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
@@ -389,6 +399,9 @@ private:
   Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
   Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
   Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+  Bool_t    fkExtraCleanupRapidity;    // if true, select candidates only within |y|<0.5 (logical OR in mass hypo)
+  Bool_t    fkSaveVertex;              // if true, save ESD vertex
+  Bool_t	fkSaveMCInfoTPC;			// if true, save MC info at the entrance of the TPC
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   Bool_t fkAddPVToRecPointFinder;
   Bool_t    fkUseLayer1; //if true, use layer 1
@@ -508,6 +521,11 @@ private:
   Bool_t fTreeVariableNegITSSharedClusters4;
   Bool_t fTreeVariableNegITSSharedClusters5;
   
+  Int_t fTreeVariablePosTPCNClusters;
+  Int_t fTreeVariableNegTPCNClusters;
+  Int_t fTreeVariablePosTPCNClustersShared;
+  Int_t fTreeVariableNegTPCNClustersShared;
+  
   Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
   Int_t fTreeVariableRunNumber; //store run number for random stuff
   
@@ -545,6 +563,7 @@ private:
   
   AliExternalTrackParam *fTreeVariablePosTrack;
   AliExternalTrackParam *fTreeVariableNegTrack;
+  AliESDVertex *fTreeVariableAliESDvertex;
   
   Float_t fTreeVariableMagneticField;
   
@@ -587,6 +606,11 @@ private:
   Bool_t fTreeVariableIsPhysicalPrimaryPositiveMother;
   Bool_t fTreeVariableIsPhysicalPrimaryNegativeGrandMother;
   Bool_t fTreeVariableIsPhysicalPrimaryPositiveGrandMother;
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  
+  AliTrackReference* fTreeVariablePosTrackRef;
+  AliTrackReference* fTreeVariableNegTrackRef;
+  
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   
   //===========================================================================================
@@ -802,6 +826,10 @@ private:
   Int_t   fTreeCascVarV0PosSibIsValid;         //!
   Int_t   fTreeCascVarPosV0Tagging;         //!
   
+  AliTrackReference* fTreeCascVarBachTrackRef;
+  AliTrackReference* fTreeCascVarPosTrackRef;
+  AliTrackReference* fTreeCascVarNegTrackRef;
+  
   //Bachelor Sibling Testing Variables
   Float_t fTreeCascVarBachSibPt; //!
   Float_t fTreeCascVarBachSibDcaV0ToPrimVertex; //!
@@ -893,6 +921,13 @@ private:
   Bool_t fTreeCascVarBachITSSharedClusters4;
   Bool_t fTreeCascVarBachITSSharedClusters5;
   
+  Int_t fTreeCascVarPosTPCNClusters;
+  Int_t fTreeCascVarNegTPCNClusters;
+  Int_t fTreeCascVarBachTPCNClusters;
+  Int_t fTreeCascVarPosTPCNClustersShared;
+  Int_t fTreeCascVarNegTPCNClustersShared;
+  Int_t fTreeCascVarBachTPCNClustersShared;
+  
   //Uncertainty information on mass (from KF) for testing purposes
   Float_t fTreeCascVarV0LambdaMassError;
   Float_t fTreeCascVarV0AntiLambdaMassError;
@@ -921,6 +956,8 @@ private:
   AliExternalTrackParam *fTreeCascVarBachTrack;
   AliExternalTrackParam *fTreeCascVarPosTrack;
   AliExternalTrackParam *fTreeCascVarNegTrack;
+  AliESDVertex *fTreeCascVarAliESDvertex;//!
+  
   AliExternalTrackParam *fTreeCascVarCascadeTrack;
   AliExternalTrackParam *fTreeCascVarCascadeTrackImproved;
   
