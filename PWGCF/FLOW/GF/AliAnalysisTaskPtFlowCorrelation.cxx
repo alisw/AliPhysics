@@ -123,11 +123,9 @@ void AliAnalysisTaskPtFlowCorrelation::UserCreateOutputObjects()
     PostData(1, fOutputList);         
 
 
-
-
-
         
-    inputFile = new TFile("Stat-Pass2-2015o.root", "READ");  
+    inputFile = TFile::Open("alien:///alice/cern.ch/user/f/frjensen/Stat-Pass2-2015o.root", "READ");  
+
     TDirectoryFile* statDirectory = (TDirectoryFile*)inputFile->Get("GetPassStatistic");
     if( statDirectory == nullptr ) printf("Could not load directory \n");
 
@@ -313,7 +311,5 @@ Double_t AliAnalysisTaskPtFlowCorrelation::GetPhiWeight(Double_t phi)
     Int_t binx = inputAxisPhi->FindBin(phi);
     Double_t w = N_max/inputHistPhi->GetBinContent(binx);
     
-    // printf("Phi weights: %f \n", w);
-
     return w;
 }
