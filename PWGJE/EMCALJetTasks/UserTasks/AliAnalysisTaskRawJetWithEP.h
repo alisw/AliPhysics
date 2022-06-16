@@ -67,8 +67,6 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
 
     // AliJEQnVectorHandler* GetQnVectorHandler() const {return fQ2VecHandler;}
     TList* GetSplineForqnPercentileList(int det=kFullTPC) const;
-    // void SetUseAODBCalibrations(TString oadbFileName){fOADBFileName = oadbFileName; fCalibType = AliJEQnVectorHandler::kQnCalib;}
-    // void SetUseQnFrameworkCalibrations(){fCalibType = AliJEQnVectorHandler::kQnFrameworkCalib;}
 
     static AliAnalysisTaskRawJetWithEP* AddTaskRawJetWithEP(
         const char *ntracks            = "usedefault",
@@ -77,41 +75,41 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
         const char *suffix             = "");
 
     enum runModeType{
-      kLocal,           ///< run location (local)
-      kGrid             ///< run location (grid)
+      kLocal,
+      kGrid
     };
 
     enum fitModulationType  { 
-      kNoFit,           ///< background fit type plane
-      kV2,              ///< background fit type v2
-      kV3,              ///< background fit type v3
-      kCombined,        ///< background fit type v2 and v3
-      kFourierSeries,   ///< background fit type FourierSeries
-      kIntegratedFlow,  ///< background fit type integrated flow
-      kQC2,             ///< background fit type qumrant2
-      kQC4              ///< background fit type qumrant4
+      kNoFit,
+      kV2,
+      kV3,
+      kCombined,
+      kFourierSeries,
+      kIntegratedFlow,
+      kQC2,
+      kQC4
     };
     
     enum DetFlev{
-      kFullTPC,         ///< use all TPC Qn Vector
-      kPosTPC,          ///< use positive eta TPC Qn Vector
-      kNegTPC,          ///< use negative eta TPC Qn Vector
-      kFullV0,          ///< use A and C V0 Qn Vector
-      kV0A,             ///< use C V0 Qn Vector
-      kV0C              ///< use A V0 Qn Vector
+      kFullTPC,
+      kPosTPC,
+      kNegTPC,
+      kFullV0,
+      kV0A,
+      kV0C
     };
 
     enum detectorType{
-      kTPC,             ///< use all TPC for Event Plane
-      kVZEROA,          ///< use V0 A for Event Plane
-      kVZEROC,          ///< use V0 C for Event Plane
-      kVZEROComb,       ///< use V0 C and A for Event Plane
-      kFixedEP          ///< use Event Plane
+      kTPC,
+      kVZEROA,
+      kVZEROC,
+      kVZEROComb,
+      kFixedEP
     };  // detector that was used for event plane
     
     enum qnVCalibType{
-      kOrig,            ///< Own Qn Vector Calibration
-      kJeHand           ///< Jet Handlar Qn Vector Calibration
+      kOrig,
+      kJeHand
     };
 
     
@@ -325,7 +323,7 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
 
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskRawJetWithEP, 43);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 21);
     /// \endcond
   // ### private ###############################################################
 };
