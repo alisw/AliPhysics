@@ -164,7 +164,7 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(int isMCint = 0,
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4,1.4);//1.4 sigmas as well!
   }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
    TrackCutsAntiDeuteron->SetFilterBit(128);
-   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3.5,3.5);
    TrackCutsAntiDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiDeuteron->SetNClsTPC(70);
    TrackCutsAntiDeuteron->SetDCAVtxZ(0.24);
