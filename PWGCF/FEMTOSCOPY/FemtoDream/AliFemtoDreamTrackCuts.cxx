@@ -670,17 +670,15 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
     }
    }else{ //Deuteron TOF selection
     if( TOFd<10 ) passTOF = true; //start as true and then exclude
+    if(p<1.4) passTOF = false;
     if( TPCd>fcutTPCkd ) passTOF = false; 
+    if( TOFd_sign<-3 ) passTOF = false; 
+    if( TOFd_sign>5 ) passTOF = false; 
     if( TOFe<5 ) passTOF = false;
     if( TOFpi<5 ) passTOF = false;
     if( TOFk<5 ) passTOF = false;
     if( TOFp<5 ) passTOF = false;
     if( TPCpi_sign<3 ) passTOF = false; // use also TPCpi to exclude for TOF selection
-    // 22-March-2022 for p-d crosschecks:
-    if(p<1.4) passTOF = false;
-    if( TOFd_sign<-3 ) passTOF = false; 
-    if( TOFd_sign>5 ) passTOF = false; 
-    if( TPCpi_sign<6 ) passTOF = false; 
    }
   }//TOFyes
 
@@ -691,21 +689,18 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
     float maxTPCp = 0.85;
     if(p>.3 && p<maxTPCp && TPCe<3 ) passTPC=false; // exclude TPC electrons
     if(p>.5 && TPCpi<3 ) passTPC=false; // exclude TPC pions
-    if(TPCk>3) passTPC=false; // own TPC sigma kaon selection
+    if(TPCk>fcutTPCkd) passTPC=false; // own TPC sigma kaon selection
     if(p>maxTPCp) passTPC = false; // momentum limit for TPC selection
     // at the end leave the exclusion band:  => this can go after preliminaries!
-    if(p>.5&&p<.65) passTPC = false; //      => this can go after preliminaries!
+    if(p>.5&&p<.65) passTPC = false;//at the end use exclusion band. This can go after prelims!
 
    }else{ // Ramona Kaon TPC selection
     if(p>0.15&&p<0.3&&TPCk<3) passTPC=true;
    }
   }else{ // Deuteron TPC selection
    if( TPCd<fcutTPCkd ) passTPC = true; // std fcutTPCkd = 3 
-   if( TPCe_sign<3 ) passTPC = false; // exclude tpc e (effect only for p>~1.5GeV)
-   // 22-March-2022 for p-d crosschecks:
    if(p>=1.4) passTPC = false;
-   if( TPCe_sign<9 ) passTPC = false; // exclude tpc e (effect only for p>~1.5GeV)
-   if( TPCpi_sign<6 ) passTPC = false; // I think this is not necessary given the electron rejection
+   if( TPCe_sign<3 ) passTPC = false; // exclude tpc e (effect only for p>~1.5GeV)
   }
  }else{
   passTPC=false;
@@ -1235,7 +1230,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   trackCuts->SetPID(AliPID::kDeuteron, 1.4);
   trackCuts->SetCutITSPID(1.4, -2., 1e30); 
-  trackCuts->SetRejLowPtPionsTOF(true);
+  trackCuts->SetRejLowPtPionsTOF(false);
   trackCuts->SetCutSmallestSig(true);
   return trackCuts;
 }
