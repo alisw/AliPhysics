@@ -44,6 +44,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(kFALSE),
     fSkipCorr(kFALSE),
+    fIsAntiparticleCheck(kFALSE),
+    fDoAntiparticleOnly(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -131,6 +133,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(bUseCalib),
     fSkipCorr(kFALSE),
+    fIsAntiparticleCheck(kFALSE),
+    fDoAntiparticleOnly(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -240,6 +244,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     for(Int_t i(0); i < 6; i++){
       if(!fDoPID && i > 0 && i < 4) continue;
       if(!fDoV0 && i > 3) continue;
+      if(fIsAntiparticleCheck && (i != 3 || i != 5)) continue;
       if(fAnalType == eFMDAFMDC) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 2, binsFMD);
       else if(i < 4) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 3, binsPID);
       else if(i > 3) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 4, binsV0);
@@ -386,6 +391,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       for(Int_t i(0); i < 6; i++){
         if(!fDoPID && i > 0 && i < 4) continue;
         if(!fDoV0 && i > 3) continue;
+        if(fIsAntiparticleCheck && (i != 3 || i != 5)) continue;
 
         FillCorrelations(i);
         FillCorrelationsMixed(i);
@@ -582,6 +588,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
 {
+  if(fIsAntiparticleCheck) return kFALSE;
+
   fhV0Counter[0]->Fill("Input",1);
   Double_t dMass = v0->MassK0Short();
   if(dMass < 0.44 || dMass > 0.56) { return kFALSE; }
@@ -656,6 +664,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   if( dMassALambda > 1.08 && dMassALambda < 1.15) { isAL = kTRUE; }
   if(!isL && !isAL)  { return kFALSE; }
   fhV0Counter[1]->Fill("Mass OK",1);
+
+  if(fDoAntiparticleOnly && isL) return kFALSE;
 
   //DCA
   if(isL){
@@ -1190,6 +1200,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     for(Int_t i(0); i < 6; i++){
       if(!fDoPID && i > 0 && i < 4) continue;
       if(!fDoV0 && i > 3) continue;
+      if(fIsAntiparticleCheck && (i != 3 || i != 5)) continue;
 
       if(fAnalType == eTPCFMDA){
         fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_tpcfmd, iTrackBin_tpcfmdA);
@@ -1233,6 +1244,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     for(Int_t i(0); i < 6; i++){
       if(!fDoPID && i > 0 && i < 4) continue;
       if(!fDoV0 && i > 3) continue;
+      if(fIsAntiparticleCheck && (i != 3 || i != 5)) continue;
 
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
       fhSE[i]->SetBinLimits(0, binning_deta_tpctpc);
@@ -1250,6 +1262,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     if(fAnalType == eFMDAFMDC && i > 0) break;
     if(!fDoPID && i > 0 && i < 4) continue;
     if(!fDoV0 && i > 3) continue;
+    if(fIsAntiparticleCheck && (i != 3 || i != 5)) continue;
 
     fhSE[i]->SetBinLimits(2, -10,10);
     fhSE[i]->SetBinLimits(3, 0,10);
@@ -1308,14 +1321,18 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
             if(fAnalType == eTPCFMDC && trackEta < 0.0) continue;
           }
 
-          fhPT[0]->Fill(trackPt);
-          fTracksTrig[0]->Add((AliAODTrack*)track);
           binscont[2] = trackPt;
-          fhTrigTracks[0]->Fill(binscont,0,1.);
+          if(!fIsAntiparticleCheck){
+            fhPT[0]->Fill(trackPt);
+            fTracksTrig[0]->Add((AliAODTrack*)track);
+            fhTrigTracks[0]->Fill(binscont,0,1.);
+          }
 
           if(fDoPID){
             Int_t trackPid = IdentifyTrack(track);
             if(trackPid > 0 && trackPid < 4){
+              if(fIsAntiparticleCheck && trackPid != 3) continue;
+              if(fDoAntiparticleOnly && track->Charge() > 0.) continue;
               fTracksTrig[trackPid]->Add((AliAODTrack*)track);
               fhTrigTracks[trackPid]->Fill(binscont,0,1.);
               if(fSkipCorr) fhPT[trackPid]->Fill(trackPt);
@@ -1520,6 +1537,8 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fIsHMpp: (Bool_t) %s\n", fIsHMpp ? "kTRUE" : "kFALSE");
   printf("\t fUseEfficiency: (Bool_t) %s\n",  fUseEfficiency ? "kTRUE" : "kFALSE");
   printf("\t fUseOppositeSidesOnly: (Bool_t) %s\n", fUseOppositeSidesOnly ? "kTRUE" : "kFALSE");
+  printf("\t fIsAntiparticleCheck: (Bool_t) %s\n", fIsAntiparticleCheck ? "kTRUE" : "kFALSE");
+  printf("\t fDoAntiparticleOnly: (Bool_t) %s\n", fDoAntiparticleOnly ? "kTRUE" : "kFALSE");
   printf("\t fNOfSamples: (Int_t) %d\n", (Int_t) fNOfSamples);
   printf(" **************************** \n");
   printf("\t fSystematicsFlag: (TString) %s\n", fSystematicsFlag.Data());

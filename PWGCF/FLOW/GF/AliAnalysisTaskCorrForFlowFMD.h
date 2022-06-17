@@ -61,6 +61,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
+        void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -181,6 +182,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
         Bool_t                  fUseCentralityCalibration; // [kFALSE]
         Bool_t                  fSkipCorr; // [kFALSE]
+        Bool_t                  fIsAntiparticleCheck; // [kFALSE]
+        Bool_t                  fDoAntiparticleOnly; // [kFALSE] == particle only
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
@@ -250,7 +253,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 12);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 13);
 };
 
 #endif
