@@ -1055,24 +1055,28 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 Bool_t AliAnalysisTaskCorrForFlowFMD::AreEfficienciesLoaded()
 {
   if(!fInputListEfficiency) {AliError("Efficiency input list not loaded"); return kFALSE; }
-  TString part[4] = {"ch", "pi", "ka", "pr"};
+  TString part[6] = {"ch", "pi", "ka", "pr", "K0s", "Lambda"};
   if(fColSystem == sPPb){
     TString etaReg[8] = {"0020", "0200", "0204", "0402", "0406", "0604", "0608", "0806"};
-    for(Int_t p(0); p < 4; p++){
+    for(Int_t p(0); p < 6; p++){
       for(Int_t eta(0); eta < 8; eta++){
+        if(fDoV0 && p < 4) continue;
+        if(fDoPID && !fDoV0 && p > 3) continue;
         fhEfficiencyEta[p][eta] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC17f2b_%s_Eta_%s_%s_wFD",part[p].Data(), etaReg[eta].Data(),fSystematicsFlag.Data()));
         if(!fhEfficiencyEta[p][eta]) {AliError(Form("Efficiency (%s, eta region %s, flag %s) not loaded",part[p].Data(),etaReg[eta].Data(),fSystematicsFlag.Data())); return kFALSE; }
       }
-      if(!fDoPID) break;
+      if(!fDoPID && !fDoV0) break;
     }
     fhEventCounter->Fill("Efficiencies loaded",1);
     return kTRUE;
   }
   else if(fColSystem == sPP){
-    for(Int_t p(0); p < 4; p++){
+    for(Int_t p(0); p < 6; p++){
+      if(fDoV0 && p < 4) continue;
+      if(fDoPID && !fDoV0 && p > 3) continue;
       fhEfficiency[p] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC%s_%s_%s_wFD",ReturnPPperiod(fAOD->GetRunNumber()).Data(),part[p].Data(),fSystematicsFlag.Data()));
       if(!fhEfficiency[p]) {AliError(Form("Efficiency (run %d, part %s, flag %s) not loaded",fAOD->GetRunNumber(),part[p].Data(),fSystematicsFlag.Data())); return kFALSE; }
-      if(!fDoPID) break;
+      if(!fDoPID && !fDoV0) break;
     }
     fhEventCounter->Fill("Efficiencies loaded",1);
     return kTRUE;
@@ -1130,7 +1134,7 @@ TString AliAnalysisTaskCorrForFlowFMD::ReturnPPperiod(const Int_t runNumber) con
 Double_t AliAnalysisTaskCorrForFlowFMD::GetEff(const Double_t dPt, const Int_t spec, const Double_t dEta)
 {
   if(!fUseEfficiency) return 1.0;
-  if(spec < 0 || spec > 3) { AliError("Efficiency loading -- species out of range! ");}
+  if(fDoV0 && spec == eCharged) return 1.0;
   if(fColSystem == sPPb){
     Int_t region = GetEtaRegion(dEta);
     if(region < 0) { AliWarning("Invalid region, returning efficiency 1.0."); return 1.0; }

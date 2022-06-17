@@ -157,8 +157,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         AliTHn*                 fhTrigTracks[6]; //!
         AliTHn*                 fhSE[6]; //!
         AliTHn*                 fhME[6]; //!
-        TH2D*                   fhEfficiency[4]; //! not eta dependent
-        TH2D*                   fhEfficiencyEta[4][8]; //! eta dependent (8 sectors)
+        TH2D*                   fhEfficiency[6]; //! not eta dependent
+        TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
         TH1D*                   fhV0Counter[2]; //!
         TH1D*                   fhCentCalib; //!
