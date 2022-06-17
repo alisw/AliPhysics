@@ -342,6 +342,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     fEta = t->Eta();
     fPhi = t->Phi();
     fPt = t->Pt();
+    // cout << "pT_Rec" << fPt << endl;
     if (i == 0)
     {
       fPtLP = fPt;
@@ -567,21 +568,21 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     new ((*fMCtracksIO)[j]) AliMEStrackInfo(*tMC);
     j++;
   }
-  // cout << "!!!!!! fTracksIO entries  = " << fTracksIO->GetEntries() << endl;
-  // cout << "!!!!!! fMCtracksIO entries  = " << fMCtracksIO->GetEntries() << endl;
+  cout << "!!!!!! fTracksIO entries  = " << fTracksIO->GetEntries() << endl;
+  cout << "!!!!!! fMCtracksIO entries  = " << fMCtracksIO->GetEntries() << endl;
 
   Double_t fPt_MC(0.), fEta_MC(0.), fPhi_MC(0.), fCharge_MC(0.), fPhiLP_MC(0.), fPtLP_MC(0.), fEtaLP_MC(0.), fDeltaPhi_MC(0.), fDeltaEta_MC(0.), fPrimary_MC(0.), fSecondary_MC(0.), fMaterial_MC(0.);
   Double_t pxLP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kTRUE);
   Double_t pyLP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kFALSE);
   fPhiLP_MC = TMath::ATan2(pyLP_MC, pxLP_MC);
   fPhiLP_MC = (fPhiLP_MC > 0) ? fPhiLP_MC : (fPhiLP_MC + TMath::TwoPi());
-  sort.QSortTracks(*fMCtracksIO, 0, nTracks);
   for (int i(0); i < nTracks; i++)
   {
     AliMEStrackInfo *tMC = (AliMEStrackInfo *)(*fMCtracksIO)[i];
     if (TMath::Abs(tMC->Eta()) > 0.8 && tMC->Pt() < 0.15)
       continue;
     fPt_MC = tMC->Pt();
+    // cout << "pT_Gen matched" << fPt_MC << endl;
     fCharge_MC = tMC->Charge();
     fEta_MC = tMC->Eta();
     fPhi_MC = tMC->Phi();
