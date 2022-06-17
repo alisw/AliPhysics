@@ -55,8 +55,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 10|.
       configNames.push_back("zvtx10");
       break;
-    case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 9|.
-      configNames.push_back("zvtx9");
+    case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 6|.
+      configNames.push_back("zvtx6");
       break;
     case 7 :    // Syst: |zVtx < 8| changed to |zVtx < 7|.
       configNames.push_back("zvtx7");
@@ -160,8 +160,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
 
     if (strcmp(configNames[i].Data(), "zvtx10") == 0) {    
       fJCatalyst[i]->SetZVertexCut(10.0);
-    } else if (strcmp(configNames[i].Data(), "zvtx9") == 0) {
-      fJCatalyst[i]->SetZVertexCut(9.0);
+    } else if (strcmp(configNames[i].Data(), "zvtx6") == 0) {
+      fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
       fJCatalyst[i]->SetZVertexCut(7.0);
     } else {  // Default value for JCorran analyses in Run 2.
