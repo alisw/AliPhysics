@@ -367,7 +367,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
-    if(fUseNch || fAnalType != eFMDAFMDC || !fIsTPCgen) {
+    if(!fIsTPCgen) ) {
       if(!PrepareTPCTracks()){
         for(Int_t i(0); i < 6; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
