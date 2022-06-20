@@ -51,7 +51,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fIsMC(kFALSE),
   fBypassTriggerAndEvetCuts(kFALSE),
   fMCEvent(0),
-  fUseRecoNchForMC(kTRUE),
+  fUseRecoNchForMC(kFALSE),
+  fUseMCNchForReco(kFALSE),
   fRndm(0),
   fNBootstrapProfiles(10),
   fPtAxis(0),
@@ -61,6 +62,9 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fNPtBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fV0MCentMin(0),
+  fV0MCentMax(90),
+  fUseNchInV0M(kFALSE),
   fUseNch(kFALSE),
   fUseWeightsOne(kFALSE),
   fEta(0.4),
@@ -112,6 +116,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fConsistencyFlag(3),
   fRequireReloadOnRunChange(kFALSE),
   EventNo(0),
+  fEventWeight(PtSpace::kOne),
   wpPt(0)
 {
 };
@@ -126,7 +131,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fIsMC(IsMC),
   fBypassTriggerAndEvetCuts(kFALSE),
   fMCEvent(0),
-  fUseRecoNchForMC(kTRUE),
+  fUseRecoNchForMC(kFALSE),
+  fUseMCNchForReco(kFALSE),
   fNBootstrapProfiles(10),
   fRndm(0),
   fPtAxis(0),
@@ -136,6 +142,9 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fNPtBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fV0MCentMin(0),
+  fV0MCentMax(90),
+  fUseNchInV0M(kFALSE),
   fUseNch(kFALSE),
   fUseWeightsOne(kFALSE),
   fEta(0.4),
@@ -187,6 +196,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fConsistencyFlag(3),
   fRequireReloadOnRunChange(kFALSE),
   EventNo(0),
+  fEventWeight(PtSpace::kOne),
   wpPt(0)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
@@ -281,8 +291,9 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       fptVarList->Add(fCkCont);
       if(fNBootstrapProfiles) fCkCont->InitializeSubsamples(fNBootstrapProfiles);
     }
-    fPtCont = new AliPtContainer("ptcont","ptcont",fNMultiBins,fMultiBins,4,false);
+    fPtCont = new AliPtContainer("ptcont","ptcont",fNMultiBins,fMultiBins,8,false);
     fptVarList->Add(fPtCont);
+    fPtCont->SetEventWeight(fEventWeight);
     fPtCont->InitializeSubsamples(fNBootstrapProfiles);
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
@@ -449,13 +460,14 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
   */
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
-  if(fIsMC) {
+  if(fIsMC || fUseMCNchForReco) {
     fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
     if (!fMCEvent) return;
   }
   fEventCount->Fill("Input",1);
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
+  if(fUseNchInV0M && (l_Cent>fV0MCentMax||l_Cent<fV0MCentMin)) return; 
   fEventCount->Fill("Centrality",1);
   if(!fBypassTriggerAndEvetCuts)
     if(!CheckTrigger(l_Cent)) return;
@@ -647,6 +659,23 @@ Int_t AliAnalysisTaskDeform::GetNtotTracks(AliAODEvent* lAOD, const Double_t &pt
   };
   return nTotNoTracks;
 }
+Int_t AliAnalysisTaskDeform::GetNtotMCTracks(const Double_t &ptmin, const Double_t &ptmax) {
+  AliAODMCParticle *lPart;
+  TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
+  Int_t nTotNoTracks=0;
+  for(Int_t ipart = 0; ipart < tca->GetEntries(); ipart++) {
+    lPart = (AliAODMCParticle*)tca->At(ipart);
+    if(!lPart) continue;
+    if (!lPart->IsPhysicalPrimary()) continue;
+    if (lPart->Charge()==0.) continue;
+    Double_t leta = lPart->Eta();
+    if (TMath::Abs(leta) > 0.8) continue;
+    Double_t pt = lPart->Pt();
+    if (pt<ptmin || pt>ptmax) continue;
+    if(TMath::Abs(leta)<fEtaNch) nTotNoTracks++; 
+  };
+  return nTotNoTracks;
+}
 void AliAnalysisTaskDeform::FillWPCounter(Double_t inArr[5], Double_t w, Double_t p) {
   inArr[0] += w;       // = w1p0
   inArr[1] += w*p;     // = w1p1
@@ -694,7 +723,7 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
       Double_t leta = lPart->Eta();
       if (TMath::Abs(leta) > 0.8) continue;
       Double_t pt = lPart->Pt();
-      if (pt<0.2 || pt>3.) continue;
+      if (pt<ptMin || pt>ptMax) continue;
       if(leta<-fEtaV2Sep) lNegCount++;
       if(leta>fEtaV2Sep) lPosCount++;
       if(TMath::Abs(leta)<fEtaNch) nTotNoTracksMC++; //Nch calculated in EtaNch region
@@ -708,9 +737,10 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     if(fUseRecoNchForMC) fNchTrueVsReco->Fill(nTotNoTracksMC,nTotNoTracksReco);
   } else {
+    Int_t nTotNoTracksMC=0;
     if(!LoadMyWeights(fAOD->GetRunNumber())) return; //Only load wieghts for data
     Bool_t usingPseudoEff = (fPseudoEfficiency<1);
-    nTotNoTracks=GetNtotTracks(fAOD,ptMin,ptMax,vtxp);
+    if(fUseMCNchForReco) nTotNoTracksMC = GetNtotMCTracks(ptMin,ptMax);
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       if(usingPseudoEff) if(fRndm->Uniform()>fPseudoEfficiency) continue;
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
@@ -720,6 +750,7 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
       //Counting FB128 for QA:
       if(lTrack->TestFilterBit(128)) nTotTracksFB128++;
       if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
+      nTotNoTracks++;
       if(leta<-fEtaV2Sep) lNegCount++;
       if(leta>fEtaV2Sep) lPosCount++;
       if(fEtaV2Sep>0 && TMath::Abs(leta)<fEtaV2Sep) lMidCount++;
@@ -734,6 +765,7 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
       }  //Actually, no need for if() statememnt now since GFW knows about eta's, so I can fill it all the time
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mas 2)
     };
+    if(fUseMCNchForReco) nTotNoTracks = nTotNoTracksMC;
   };
   if(wp[0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   fEventCount->Fill("Tracks",1);
@@ -755,6 +787,8 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
   Double_t l_Random = fRndm->Rndm();
   fCkCont->FillObs(wp,l_Multi,l_Random);
   fPtCont->FillRecursive(wpPt,l_Multi,l_Random);
+  fPtCont->FillCk(wpPt,l_Multi,l_Random);
+  fPtCont->FillSkew(wpPt,l_Multi,l_Random);
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   PostData(1,fptVarList);
