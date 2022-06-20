@@ -98,6 +98,8 @@ double binsDCAxy3[nBinsDCAxy+1] = {-3.025,-2.975,-2.925,-2.875,-2.825,-2.775,-2.
 
 
 const Double_t pi = 3.141592653589793238;
+//Bin Nch
+const Double_t minbinNch = -0.5;
 
 using namespace std;            // std namespace: so you can do things like 'cout' etc
 
@@ -138,6 +140,8 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
     fPtMin(0.5),
     fLeadPtCutMin(5.0),
     fLeadPtCutMax(40.0),
+    fNchNbin(200),
+    fNchBinMax(199.5),
     fGenLeadPhi(0),
     fGenLeadPt(0),
     fGenLeadIn(0),
@@ -243,6 +247,8 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
     fPtMin(0.5),
     fLeadPtCutMin(5.0),
     fLeadPtCutMax(40.0),
+    fNchNbin(200),
+    fNchBinMax(199.5),
     fGenLeadPhi(0),
     fGenLeadPt(0),
     fGenLeadIn(0),
@@ -454,22 +460,22 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     if(fUseMC)
     {
 
-        hNchTSGen = new TH1D("hNchTSGen","",200,-0.5,199.5);
+        hNchTSGen = new TH1D("hNchTSGen","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchTSGen);
 
-        hNchTSGenTest = new TH1D("hNchTSGenTest","",200,-0.5,199.5);
+        hNchTSGenTest = new TH1D("hNchTSGenTest","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchTSGenTest);
 
-        hNchTSRecTest = new TH1D("hNchTSRecTest","",200,-0.5,199.5);
+        hNchTSRecTest = new TH1D("hNchTSRecTest","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchTSRecTest);
 
-        hNchGen = new TH1D("hNchGen","",200,-0.5,199.5);
+        hNchGen = new TH1D("hNchGen","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchGen);
 
-        hNchGenTest = new TH1D("hNchGenTest","",200,-0.5,199.5);
+        hNchGenTest = new TH1D("hNchGenTest","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchGenTest);
 
-        hNchRecTest = new TH1D("hNchRecTest","",200,-0.5,199.5);
+        hNchRecTest = new TH1D("hNchRecTest","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchRecTest);
 
         for(Int_t i=0;i<3;++i){
@@ -477,7 +483,7 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
             fOutputList->Add(hPhiGen[i]);
         }
 
-        hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",200,-0.5,199.5,200,-0.5,199.5);
+        hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",fNchNbin,minbinNch,fNchBinMax,fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchResponse);
 
         hPtInPrim = new TH1D("hPtInPrim","pT prim true; pT; Nch",ptNbins,ptbins1_3);
@@ -551,10 +557,10 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
         for(Int_t i=0;i<3;++i){
 
-            hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
             fOutputList->Add(hPtVsUEGenTest[i]);
 
-            hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
             fOutputList->Add(hPtVsNchGenTest[i]);
 
         }
@@ -574,10 +580,10 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
     }
 
-    hNchTSRec = new TH1D("hNchTSRec","",200,-0.5,199.5);
+    hNchTSRec = new TH1D("hNchTSRec","",fNchNbin,minbinNch,fNchBinMax);
     fOutputList->Add(hNchTSRec);
 
-    hNchRec = new TH1D("hNchRec","",200,-0.5,199.5);
+    hNchRec = new TH1D("hNchRec","",fNchNbin,minbinNch,fNchBinMax);
     fOutputList->Add(hNchTSRec);
     hPhiTotal = new TH1F("hPhiSum","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
     fOutputList->Add(hPhiTotal);
@@ -596,27 +602,27 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
     for(Int_t i=0;i<3;++i){
 
-        hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+        hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
         fOutputList->Add(hPtVsUERecTest[i]);
 
-        hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+        hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
         fOutputList->Add(hPtVsNchRecTest[i]);
 
     }
 
     if(!fUseMC){
-        hNchTSData = new TH1D("hNchTSData","",200,-0.5,199.5);
+        hNchTSData = new TH1D("hNchTSData","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchTSData);
 
-        hNchData = new TH1D("hNchData","",200,-0.5,199.5);
+        hNchData = new TH1D("hNchData","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchData);
 
         for(Int_t i=0;i<3;++i){
 
-            hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_3[i]),"data pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
             fOutputList->Add(hPtVsUEData[i]);
 
-            hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_3[i]),"data pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
             fOutputList->Add(hPtVsNchData[i]);
 
         }

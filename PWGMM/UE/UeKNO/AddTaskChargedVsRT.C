@@ -13,6 +13,8 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
                                    Double_t minpT=0.5,
                                    Double_t PtLmin = 1.0,
                                    Double_t PtLmax = 15.0,
+                                   Int_t NchNbins = 200,
+                                   Double_t maxbinNch = 199.5,
                                    Bool_t TPCclustersVar1 = kFALSE,
                                    Bool_t TPCclustersVar2 = kFALSE,
                                    Bool_t NcrVar1 = kFALSE,
@@ -53,19 +55,26 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     taskKno->SetIsHybridAnalysis(IsHyAna);
     taskKno->SetLeadingPtMin(PtLmin);
     taskKno->SetLeadingPtMax(PtLmax);
+    taskKno->SetNchNbin(NchNbins);
+    taskKno->SetNchBinMax(maxbinNch);
     // Systematic -------------------------------
+    //taskKno->SetTPCclustersVar1(TPCclustersVar1);
+    //taskKno->SetTPCclustersVar2(TPCclustersVar2);
     taskKno->SetNcrVar1(NcrVar1);
     taskKno->SetNcrVar2(NcrVar2);
     taskKno->SetChisqTPCVar1(ChisqTPCVar1);
     taskKno->SetChisqTPCVar2(ChisqTPCVar2);
     taskKno->SetChisqITSVar1(ChisqITSVar1);
     taskKno->SetChisqITSVar2(ChisqITSVar2);
+    //taskKno->SetChisqITSmTPCVar1(ChisqITSmTPCVar1);
+    //taskKno->SetChisqITSmTPCVar2(ChisqITSmTPCVar2);
     taskKno->SetDcazVar1(DcazVar1);
     taskKno->SetDcazVar2(DcazVar2);
     taskKno->SetGeoTPCVar1(GeoTPCVar1);
     taskKno->SetGeoTPCVar2(GeoTPCVar2);
     taskKno->SetGeoTPCVar3(GeoTPCVar3);
     taskKno->SetGeoTPCVar4(GeoTPCVar4);
+    //taskKno->SetSPDreqVar1(SPDreqVar1);
     // Systematic -------------------------------
     mgr->AddTask(taskKno);
 
