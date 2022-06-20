@@ -4632,7 +4632,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	 delete trackESD;
 	 
 	 Int_t iSelProton=0,iSelKaon=0,iSelPion=0,iSelElectron=0;//,iSelSoftPion=0;
-	 IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelElectronCuts,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,iSelElectronCuts,kFALSE);
+	 IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelElectron,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,iSelElectronCuts,kFALSE);
 	 iSelDebugPion[itr]=iSelPion;
 	 iSelDebugProton[itr]=iSelProton;
 	 iSelDebugKaon[itr]=iSelKaon;
