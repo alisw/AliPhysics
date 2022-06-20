@@ -1600,6 +1600,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         mcparticle.fIndexSlice_Daughters[1] = kineIndex[mcparticle.fIndexSlice_Daughters[1]] > -1 ? kineIndex[mcparticle.fIndexSlice_Daughters[1]] + fOffsetLabel : -1;
       if (mcparticle.fIndexSlice_Daughters[0] > -1 && mcparticle.fIndexSlice_Daughters[1] == -1)
         mcparticle.fIndexSlice_Daughters[1] = mcparticle.fIndexSlice_Daughters[0];
+      if (mcparticle.fIndexSlice_Daughters[1] > -1 && mcparticle.fIndexSlice_Daughters[0] == -1)
+        mcparticle.fIndexSlice_Daughters[0] = mcparticle.fIndexSlice_Daughters[1];
       mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle ? particle->GetWeight() : 1., mMcParticleW);
 
       mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle ? particle->Px() : aodmcpt->Px(), mMcParticleMom);
