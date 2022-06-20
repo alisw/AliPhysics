@@ -47,6 +47,9 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         void       SetPtMin(Double_t val)              {fPtMin = val;}   // Set pT cut for associated particles
         void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
         void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
+        void       SetNchNbin(Int_t NchNbins)    {fNchNbin = NchNbins;}   // use different bining
+        void       SetNchBinMax(Double_t maxbinNch)    {fNchBinMax = maxbinNch;}   // use different bin max
+    
         void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
         void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
         void       SetIsHybridAnalysis(Bool_t isHy = kFALSE)    {fIsHybAna = isHy;}
@@ -119,6 +122,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         Double_t fPtMin;
         Double_t fLeadPtCutMin;
         Double_t fLeadPtCutMax;
+        Int_t fNchNbin;
+        Double_t fNchBinMax;
         Double_t fGenLeadPhi;
         Double_t fGenLeadPt;
         Int_t    fGenLeadIn;
