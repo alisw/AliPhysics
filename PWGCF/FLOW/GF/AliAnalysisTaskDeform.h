@@ -75,6 +75,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetV0MBins(Int_t nBins, Double_t *multibins);
+  void SetNchV0M(Double_t centMin, Double_t centMax) { fV0MCentMin = centMin; fV0MCentMax = centMax; fUseNchInV0M = true; };
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; fEtaLow=-9999; };
   void SetEta(Double_t etaLow, Double_t etaHigh) { fEtaLow = etaLow; fEta = etaHigh; };
@@ -89,15 +90,17 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); };
   void OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
   Int_t GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
-  void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
+  Int_t GetNtotMCTracks(const Double_t &ptmin, const Double_t &ptmax);
+  void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; if(fUseRecoNchForMC) fUseMCNchForReco = false; };
+  void SetUseMCNchForReco(Bool_t newval) { fUseMCNchForReco = newval; if(fUseMCNchForReco) fUseRecoNchForMC = false; };
   void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
   void SetWeightSubfix(TString newval) { fWeightSubfix=newval; }; //base (runno) + subfix (systflag), delimited by ;. First argument always base, unless is blank. In that case, w{RunNo} is used for base.
   void SetPseudoEfficiency(Double_t newval) {fPseudoEfficiency = newval; };
   void SetNchCorrelationCut(Double_t l_slope=1, Double_t l_offset=0, Bool_t l_enable=kTRUE) { fCorrPar[0] = l_slope; fCorrPar[1] = l_offset; fUseCorrCuts = l_enable; };
   Bool_t CheckNchCorrelation(const Int_t &lNchGen, const Int_t &lNchRec) { return (fCorrPar[0]*lNchGen + fCorrPar[1] < lNchRec); };
   void SetBypassTriggerAndEventCuts(Bool_t newval) { fBypassTriggerAndEvetCuts = newval; };
-  void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000);
-}
+  void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000); }
+  void SetEventWeight(unsigned int weight) { fEventWeight = weight; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -113,15 +116,19 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fBypassTriggerAndEvetCuts;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
+  Bool_t fUseMCNchForReco; //Flag to use Nch from generated, when running MC closure
   TRandom *fRndm; //For random number generation
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   TAxis *fPtAxis;
-  TAxis *fMultiAxis;
-  TAxis *fV0MMultiAxis;
+  TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
+  TAxis *fV0MMultiAxis;   //Defaults V0M bins
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
+  Double_t fV0MCentMin;  //Max cent for Nch bins
+  Double_t fV0MCentMax;  //Min cent for Nch bins
+  Bool_t fUseNchInV0M;
   Bool_t fUseNch;
   Bool_t fUseWeightsOne;
   Double_t fEta;
@@ -173,6 +180,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
   int EventNo;
+  unsigned int fEventWeight; 
   vector<vector<double>>  wpPt;
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
