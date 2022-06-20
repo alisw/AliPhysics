@@ -367,7 +367,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
-    if(!fIsTPCgen) ) {
+    if(!fIsTPCgen || fUseNch) ) {
       if(!PrepareTPCTracks()){
         for(Int_t i(0); i < 6; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
@@ -1321,9 +1321,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       Double_t trackPt = track->Pt();
       if(trackPt > 10.) iNofHighPtParticles++;
       if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
-        if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); // only if associated from TPC
         fNofTracks++;
-        if(fAnalType == eFMDAFMDC) continue;
+        if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
+        if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); // only if associated from TPC
       }
       if(fAnalType != eFMDAFMDC){
         Double_t trackEta = track->Eta();
