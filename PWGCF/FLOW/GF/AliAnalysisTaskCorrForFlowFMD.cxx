@@ -557,7 +557,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
   AliAODTrack* daughterNeg = (AliAODTrack*) v0->GetDaughter(1);
   if(!daughterPos || !daughterNeg) { return kFALSE; }
 
-  if(v0->)
   if(fAbsEtaMax > 0.0 && ((TMath::Abs(daughterPos->Eta()) > fAbsEtaMax) || (TMath::Abs(daughterNeg->Eta()) > fAbsEtaMax)) ) { return kFALSE; }
 
   if(v0->Charge() != 0) { return kFALSE; }
