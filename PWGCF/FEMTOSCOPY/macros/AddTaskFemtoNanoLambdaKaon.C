@@ -14,6 +14,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
                                               int filterBit = 128,
                                               int WhichKaonCut = 0,
                                               const char *sTcut = "0",
+                                              bool DoAncestors = false,
                                               const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
@@ -190,9 +191,6 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     pairQA[3] = 12;
     pairQA[5] = 12;
     pairQA[6] = 12;
-    pairQA[7] = 22;
-    pairQA[8] = 22;
-    pairQA[9] = 22;
   }
   else
   {
@@ -206,6 +204,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     pairQA[7] = 22;
     pairQA[8] = 22;
     pairQA[9] = 22;
+    closeRejection[0] = true;
+    closeRejection[1] = true;
+    closeRejection[4] = true;
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
@@ -245,6 +246,13 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   else
   {
     std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+  }
+
+  // Common/Non Common Ancestors
+  if (isMC && DoAncestors)
+  {
+    config->SetAncestors(true);
+    config->GetDoAncestorsPlots();
   }
 
   // Variation cuts

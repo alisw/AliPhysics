@@ -129,7 +129,10 @@ AliAnalysisTaskNanoLambdaKaon::AliAnalysisTaskNanoLambdaKaon(
     fQA = new TList();
     fQA->SetOwner();
     fQA->SetName("QA");
-    fQA->Add(fEvent->GetEvtCutList());
+    if (!fConfig->GetMinimalBookingME() && fEvent && fEvent->GetEvtCutList())
+    {
+      fQA->Add(fEvent->GetEvtCutList());
+    }
 
     if (!fEventCuts->GetMinimalBooking())
     {
@@ -183,6 +186,7 @@ AliAnalysisTaskNanoLambdaKaon::AliAnalysisTaskNanoLambdaKaon(
     fResultsQA = new TList();
     fResultsQA->SetOwner();
     fResultsQA->SetName("ResultsQA");
+
     if (fConfig->GetUseEventMixing())
     {
       fResults = fPartColl->GetHistList();
