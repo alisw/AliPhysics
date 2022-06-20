@@ -37,6 +37,7 @@
 #include "AliEventPoolManager.h"
 #include "AliMCEvent.h"
 
+#include "AliEmcalTriggerDecisionContainer.h"
 
 #include "AliAnalysisTaskJetQnVectors.h"
 
@@ -53,8 +54,9 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ1VectorReader(0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
-  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
-  fRtoD(0),fSubDetector(0),
+  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
+  fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
+  fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
@@ -106,8 +108,9 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ1VectorReader(0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
-  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
-  fRtoD(0),fSubDetector(0),
+  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
+  fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
+  fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
@@ -2315,6 +2318,8 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 			if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
 			return kFALSE;
 		}
+
+
      /* // For some wired reason gives an error in alibild when doing pull request
         // need to check that later again because it's an exact copy from "AliAnalysisTaskEmcal"
 		std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
@@ -2370,6 +2375,31 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 			return kFALSE;
 		}*/
 	}
+
+  // EMCal Trigger rejection (for use with EMCalTriggerMakerNew
+  // Check if EMCal Trigger requirement is set
+  if (fAcceptEMCalTriggers.size() > 0) {
+    auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
+    //auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(input->FindListObject("EmcalTriggerDecision"))
+    if (trgsel == 0) {
+      cout << "AliAnalysisGammaHadron:: Could not find EMCal Trigger Decision container named: " << fNameEMCalTriggerDecisionContainer << endl;
+      return kFALSE;
+    }
+
+    bool fRejectForLackOfEMCalTrigger = true;
+
+    for (TString fEMCalTriggerString : fAcceptEMCalTriggers) {
+      if(trgsel->IsEventSelected(fEMCalTriggerString.Data())) {
+        fRejectForLackOfEMCalTrigger = false;
+        break;
+      }
+    }
+
+    if (fRejectForLackOfEMCalTrigger) {
+      return kFALSE;
+    }
+  }
+
 
 	if (fTriggerTypeSel != kND)
 	{
