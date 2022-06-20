@@ -62,6 +62,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
         void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
+        void                    SetRejectHighPtEvents(Bool_t flag = kTRUE, Int_t cut) { fRejectHighPtEvents = flag; fNofMinHighPtTracksForRejection = cut; }
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -183,11 +184,13 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fUseCentralityCalibration; // [kFALSE]
         Bool_t                  fSkipCorr; // [kFALSE]
         Bool_t                  fIsAntiparticleCheck; // [kFALSE]
-        Bool_t                  fDoAntiparticleOnly; // [kFALSE] == particle only
+        Bool_t                  fDoAntiparticleOnly; // [kFALSE] == positive particles only and lambdas
+        Bool_t                  fRejectHighPtEvents; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
         Int_t                   fNofTracks;
+        Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
         Int_t                   fNbinsMinv; // [60]
