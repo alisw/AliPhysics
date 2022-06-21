@@ -462,6 +462,12 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Double_t amp = cells->GetAmplitude(iCell),
              celltime = cells->GetTime(iCell);
     if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
+
+    if ( cellId < 0 ) {
+      AliErrorStream() << "Skip: iCell = "<< iCell << "Cell Id = " << cellId <<", E = "<< amp <<", time = "<<celltime<<std::endl;
+      continue;
+    }
+
     amp *= fScaleMult;
     if(amp < fMinCellAmplitude) continue;
     if(fScaleShift) amp += fScaleShift;
