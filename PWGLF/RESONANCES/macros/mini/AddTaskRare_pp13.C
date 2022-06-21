@@ -3898,6 +3898,10 @@ Bool_t Config_Xik0(
     AliRsnCutSet* cutsPairMix=new AliRsnCutSet("pairCutsMix", AliRsnTarget::kMother);
     cutsPairMix->AddCut(cutY);
     
+    AliRsnCutSet* cutsPairSameGen=new AliRsnCutSet("pairCutsSameGen",AliRsnTarget::kMother);
+    cutsPairSameGen->AddCut(cutY);
+    cutsPairSameGen->AddCut(cutV0);
+    
     if(CheckOOBP){
         cutsPairSame->AddCut(cutOOBP);
         cutsPairSame->SetCutScheme(TString::Format("%s&(!%s)&%s",cutY->GetName(),cutV0->GetName(),cutOOBP->GetName()).Data());
@@ -3907,6 +3911,7 @@ Bool_t Config_Xik0(
         cutsPairSame->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
         cutsPairMix->SetCutScheme(cutY->GetName());
     }
+    cutsPairSameGen->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
     
     // multiplicity binning
     Double_t multbins[200];
@@ -4036,6 +4041,7 @@ Bool_t Config_Xik0(
         }else if(j==3){
             name.Append("_gen");
             comp.Form("MOTHER");
+            pairID=2;
         }else if(j==4){
             name.Append("_rec");
             comp.Form("TRUE");
@@ -4050,12 +4056,14 @@ Bool_t Config_Xik0(
         }else if(j==7){
             name.Append("rapidity_gen");
             comp.Form("MOTHER");
+            pairID=2;
         }else if(j==8){
             name.Append("rapidity_rec");
             comp.Form("TRUE");
         }else if(j==9){
             name.Append("_genPS");
             comp.Form("MOTHER_IN_ACC");
+            pairID=2;
         }else if(j==10){
             name.Append("_recPS");
             comp.Form("TRUE");
@@ -4071,7 +4079,8 @@ Bool_t Config_Xik0(
         out->SetCharge(1,'0');
         
         if(!pairID) out->SetPairCuts(cutsPairSame);
-        else out->SetPairCuts(cutsPairMix);
+        else if(pairID==1) out->SetPairCuts(cutsPairMix);
+        else out->SetPairCuts(cutsPairSameGen);
         out->SetMotherPDG(ipdg);
         out->SetMotherMass(mass);
         
