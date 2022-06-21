@@ -163,6 +163,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   // pair QA extended
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
+  std::vector<float> mTBins = {0.9, 1.15, 1.4, 4.5, 999.};
+
   // pairs:
   // K+K+               0
   // K+K-               1
@@ -185,7 +187,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     pairQA.push_back(0);
   }
 
-  if (suffix != "0")
+  if (suffix != "0" )
   {
     pairQA[2] = 12;
     pairQA[3] = 12;
@@ -232,6 +234,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     config->SetMassQA(true);
     config->SetkTBinning(true);
     config->SetMultBinning(true);
+    config->SetmTBins(mTBins);
+    config->SetDomTMultBinning(true);
     config->SetmTBinning(true);
   }
   if (suffix != 0)
