@@ -61,6 +61,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
+        void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
+        void                    SetRejectHighPtEvents(Bool_t flag = kTRUE, Int_t cut = 4) { fRejectHighPtEvents = flag; fNofMinHighPtTracksForRejection = cut; }
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -157,8 +159,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         AliTHn*                 fhTrigTracks[6]; //!
         AliTHn*                 fhSE[6]; //!
         AliTHn*                 fhME[6]; //!
-        TH2D*                   fhEfficiency[4]; //! not eta dependent
-        TH2D*                   fhEfficiencyEta[4][8]; //! eta dependent (8 sectors)
+        TH2D*                   fhEfficiency[6]; //! not eta dependent
+        TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
         TH1D*                   fhV0Counter[2]; //!
         TH1D*                   fhCentCalib; //!
@@ -181,10 +183,14 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
         Bool_t                  fUseCentralityCalibration; // [kFALSE]
         Bool_t                  fSkipCorr; // [kFALSE]
+        Bool_t                  fIsAntiparticleCheck; // [kFALSE]
+        Bool_t                  fDoAntiparticleOnly; // [kFALSE] == positive particles only and lambdas
+        Bool_t                  fRejectHighPtEvents; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
         Int_t                   fNofTracks;
+        Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
         Int_t                   fNbinsMinv; // [60]
@@ -250,7 +256,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 12);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 13);
 };
 
 #endif
