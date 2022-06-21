@@ -555,7 +555,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     // std::cout << "trk id " << i << " MC label " << t->GetLabel() << std::endl;
     if (t->GetLabel() >= nTracks_MC)
     {
-      AliError(Form("MC label %d request outside range %d", t->GetLabel(), nTracks_MC));
+      AliWarning(Form("MC label %d request outside range %d", t->GetLabel(), nTracks_MC));
       continue;
     }
     if (!(tMC = (AliMEStrackInfo *)fMCtracks->At(t->GetLabel())))
