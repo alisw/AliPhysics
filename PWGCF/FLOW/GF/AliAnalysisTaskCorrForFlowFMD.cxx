@@ -1,4 +1,4 @@
-AliAnalysisTaskNch/**************************************************************************
+/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -323,7 +323,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       if(!fhCentCalib) { AliError("Centrality calibration histogram not loaded!"); return; }
     }
 
-    AliAnalysisTaskNchta(1, fOutputListCharged);
+    PostData(1, fOutputListCharged);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
@@ -362,19 +362,19 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       if(!PrepareFMDTracks()){
         delete fTracksAss;
         delete fTracksTrig[0];
-        AliAnalysisTaskNchta(1, fOutputListCharged);
+        PostData(1, fOutputListCharged);
         return;
       }
     }
 
-    if(!fIsTPCgen || fUseNch) {
+    if(!fIsTPCgen || fUseNch) ) {
       if(!PrepareTPCTracks()){
         for(Int_t i(0); i < 6; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
           if(!fDoV0 && i > 3) continue;
           if(fTracksTrig[i]) delete fTracksTrig[i];
         }
-        AliAnalysisTaskNchta(1, fOutputListCharged);
+        PostData(1, fOutputListCharged);
         return;
       }
     }
