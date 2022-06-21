@@ -1237,8 +1237,8 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
   fCent  = centV0M; // default
 
   // Trigger check 
-  if (mask&AliVEvent::kCentral && fCent>10.0) return;
-  if (mask&AliVEvent::kSemiCentral && (fCent < 30.0 || fCent>50.0) ) return;
+  // if (mask&AliVEvent::kCentral && fCent>10.0) return;
+  // if (mask&AliVEvent::kSemiCentral && (fCent < 30.0 || fCent>50.0) ) return;
 
   if (fCentEst.EqualTo("V0M")) fCent  = centV0M;
   else if (fCentEst.EqualTo("SPD0")) fCent  = centSPD0;
