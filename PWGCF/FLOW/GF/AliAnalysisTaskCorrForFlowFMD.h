@@ -62,7 +62,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
         void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
-        void                    SetRejectHighPtEvents(Bool_t flag = kTRUE, Int_t cut) { fRejectHighPtEvents = flag; fNofMinHighPtTracksForRejection = cut; }
+        void                    SetRejectHighPtEvents(Bool_t flag = kTRUE, Int_t cut = 4) { fRejectHighPtEvents = flag; fNofMinHighPtTracksForRejection = cut; }
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
