@@ -184,6 +184,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fNtrkl_noCorr(0),
 	fzvtx_V0M(0),
 	fcent_V0M(0),
+	fcent_nAcc(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
 	fNchMC(0),
@@ -381,6 +382,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fNtrkl_noCorr(0),
 	fzvtx_V0M(0),
 	fcent_V0M(0),
+	fcent_nAcc(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
 	fNchMC(0),
@@ -569,6 +571,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 
         fzvtx_V0M = new TH2F("fzvtx_V0M","Zvertex vs V0M; zvtx; V0M",400,-20.,20.,1501,-0.5,1500.5);
         fcent_V0M = new TH2F("fcent_V0M","cent vs V0M; zvtx; V0M",100,0.,100.,1501,-0.5,1500.5);
+        fcent_nAcc = new TH2F("fcent_nAcc","cent vs nTrk; zvtx; V0M",100,0.,100.,201,-0.5,200.5);
 
 	fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 	fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
@@ -1066,6 +1069,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	}
 	fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
+        if(fmult_type==1)
+          {
+           if(nAcc<1)return;
+          }
+
         //------------ V0 mult ----------------------
 
         AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
@@ -1075,6 +1083,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 	fzvtx_V0M->Fill(Zvertex,V0Mult);
 	fcent_V0M->Fill(centrality_mult,V0Mult);
+	fcent_nAcc->Fill(centrality_mult,nAcc);
 
 	//-----------Tracklet correction-------------------------
 

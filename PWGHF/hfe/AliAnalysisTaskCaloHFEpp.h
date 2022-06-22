@@ -208,6 +208,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fNtrkl_noCorr;
 		TH2F*                   fzvtx_V0M;
 		TH2F*                   fcent_V0M;
+		TH2F*                   fcent_nAcc;
 		TH2F*                   fNchNtr;
 		TH2F*                   fNchNtr_Corr;
 		TH2F*                   fNchMC;
