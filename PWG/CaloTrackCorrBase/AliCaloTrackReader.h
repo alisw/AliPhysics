@@ -86,7 +86,9 @@ public:
   virtual void    SetDataType(Int_t data )                 { fDataType = data              ; }
 
   virtual Int_t   GetEventNumber()                   const { return fEventNumber           ; }
-	
+  virtual Int_t   GetRunNumber()                     const { return fRunNumber             ; }
+  virtual Int_t   GetYear()                          const { return fYear                  ; }
+
   virtual TObjString *  GetListOfParameters() ;
   
   TString         GetTaskName()                      const { return fTaskName              ; }
@@ -269,7 +271,10 @@ public:
   virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE          ; 
                                                              fFiducialCut = new AliFiducialCut() ; }
   virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE         ; }
-    
+
+  virtual void     SwitchOnMaskRun2HardcodedEMCalRegions() { fMaskRun2HardcodedEMCalRegions = kTRUE ; }
+  virtual void     SwitchOffMaskRun2HardcodedEMCalRegions(){ fMaskRun2HardcodedEMCalRegions = kFALSE; }
+
   // Cluster/track/cells switchs
   
   Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS               ; }
@@ -761,6 +766,13 @@ public:
   virtual Double_t       GetEventPlaneAngle()        const ;          
   virtual void           SetEventPlaneMethod(TString m)    { fEventPlaneMethod = m               ; }
   virtual TString        GetEventPlaneMethod()       const { return fEventPlaneMethod            ; }
+  
+  virtual void     SetEventPlaneBin(Double_t min, Double_t max) //Set the centrality bin to select the event. If used, then need to get percentile
+                                                           { fEventPlaneBin[0]=min; fEventPlaneBin[1]=max; }
+                                                           
+  virtual Float_t  GetEventPlaneBin(Int_t i)         const { if(i < 0 || i > 1) return 0 ; 
+                                                             else return fEventPlaneBin[i]              ; }
+  
 
   //--------------------
   // Mixing
@@ -957,11 +969,14 @@ public:
   
  protected:
   
-  Int_t	           fEventNumber;                   ///<  Event number.
+  Int_t            fEventNumber;                   ///<  Event number.
+  Int_t            fRunNumber;                     ///<  Run number.
+  Int_t            fYear;                          ///<  Year of run, for runs within range
   Int_t            fDataType ;                     ///<  Select MC: Kinematics, Data: ESD/AOD, MCData: Both.
   Int_t            fDebug;                         ///<  Debugging level.
   AliFiducialCut * fFiducialCut;                   ///<  Acceptance cuts.
   Bool_t           fCheckFidCut ;                  ///<  Do analysis for clusters in defined region.         
+  Bool_t           fMaskRun2HardcodedEMCalRegions; ///< Activate Hardcoded Run2 mask
 
   Bool_t           fComparePtHardAndJetPt;         ///<  In MonteCarlo, jet events, reject fake events with wrong jet energy.
   Float_t          fPtHardAndJetPtFactor;          ///<  Factor between ptHard and jet pT to reject/accept event.
@@ -1224,7 +1239,8 @@ public:
   Int_t            fCentralityOpt;                 ///<  Option for the returned value of the centrality, possible options 5, 10, 100.
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
   TString          fEventPlaneMethod;              ///<  Name of event plane method, by default "Q".
-
+  Double_t         fEventPlaneBin[2];              ///<  Minimum and maximum value of the event plane angle for the analysis.
+  
   // Event spherocity
   Float_t          fSpherocity ;                   ///<  Event spherocity, it uses fSpherocityMinPt, to be accesses by the analysis tasks
   Float_t          fSpherocityPtCut[4] ;           ///<  Event spherocity, it uses fSpherocityMinPtCuts[4], to be accesses by the analysis tasks if fStudySpherocityMinPt = 1
@@ -1325,7 +1341,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,98) ;
+  ClassDef(AliCaloTrackReader,100) ;
   /// \endcond
 
 } ;

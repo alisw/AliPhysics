@@ -7,6 +7,7 @@
 
 class AliESDtrackCuts;
 class AliESDEvent;
+class AliESDAD;
 class TList;
 class TH1D;
 class TH2D;
@@ -35,6 +36,8 @@ public:
   Double_t GetFlatenicityV0();
   Double_t GetFlatenicityTPC();
   Double_t GetFlatenicityMC();
+  void ExtractMultiplicities();
+  void ExtractMultiplicitiesMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
 
@@ -45,7 +48,6 @@ public:
     fUseMC = flat_flag;
   } // use to analyse MC data
   void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
-  void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
   void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
     fRemoveTrivialScaling = flat_flag;
   }
@@ -59,8 +61,17 @@ private:
   AliMCEvent *fMC;    //! MC Event
   Bool_t fUseMC;      // analyze MC events
   Int_t fV0Mindex;
+  Float_t fmultTPC;
+  Float_t fmultV0A;
+  Float_t fmultV0C;
+  Float_t fmultADA;
+  Float_t fmultADC;
+  Float_t fmultTPCmc;
+  Float_t fmultV0Amc;
+  Float_t fmultV0Cmc;
+  Float_t fmultADAmc;
+  Float_t fmultADCmc;
   TString fDetFlat;
-  Bool_t fIsMCclosure;
   Bool_t fRemoveTrivialScaling;
   Int_t fnGen;
   AliPIDResponse *fPIDResponse;
@@ -88,9 +99,15 @@ private:
   TProfile *hActivityV0McSect;
   TH2D *hFlatVsNchMC;
   TH2D *hFlatVsV0M;
+  TH1D *hEtamc;
+  TH1D *hEtamcAlice;
   TH1D *hCounter;
   TH2D *hFlatVsPtV0M[9];
-
+  TH2D *hComponentsMult[4];
+  TH2D *hCombinedMult[3];
+  TH2D *hComponentsMultmc[4];
+  TH2D *hCombinedMultmc[3];
+  TH2D *hRmCombinedMult[3];
   AliAnalysisTaskFlatenicity(
       const AliAnalysisTaskFlatenicity &); // not implemented
   AliAnalysisTaskFlatenicity &

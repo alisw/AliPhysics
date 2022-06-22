@@ -1049,8 +1049,8 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   //cout<<"Before rec: q2xn "<<fQ2xNeg<<"\t q2yn "<<fQ2yNeg<<"\t q2xp "<<fQ2xPos<<"\t q2yp "<<fQ2yPos<<endl;
 
   // *** Rihan: Temporarily Turned off. Uncomment after end of Test.!
-  //ApplyTPCqVectRecenter(centrV0M, 2, fQ2xNeg, fQ2yNeg, fQ2xPos, fQ2yPos);
-  //ApplyTPCqVectRecenter(centrV0M, 3, fQ3xNeg, fQ3yNeg, fQ3xPos, fQ3yPos);  
+  ApplyTPCqVectRecenter(centrV0M, 2, fQ2xNeg, fQ2yNeg, fQ2xPos, fQ2yPos);
+  ApplyTPCqVectRecenter(centrV0M, 3, fQ3xNeg, fQ3yNeg, fQ3xPos, fQ3yPos);  
 
   //cout<<"After  rec: q2xn "<<fQ2xNeg<<"\t q2yn "<<fQ2yNeg<<"\t q2xp "<<fQ2xPos<<"\t q2yp "<<fQ2yPos<<endl;
   //cout<<"------- Bug Testing Mode... we exit here....... "<<endl; return;
@@ -3673,15 +3673,15 @@ Bool_t AliAnalysisTaskGammaDeltaPID::GetTPCQvectAndRemovePileUp2018(AliAODEvent 
 
   
   AliAODVZERO* aodV0 = faod->GetVZEROData();
-  Float_t  multV0a   = aodV0->GetMTotV0A();
-  Float_t  multV0c   = aodV0->GetMTotV0C();
+  Float_t  multV0a   = aodV0->GetMTotV0A(); // return total multiplicity in V0A 0-31
+  Float_t  multV0c   = aodV0->GetMTotV0C(); // return total multiplicity in V0C 32-63
   Float_t  multV0Tot = multV0a + multV0c;
-  UShort_t multV0aOn = aodV0->GetTriggerChargeA();
-  UShort_t multV0cOn = aodV0->GetTriggerChargeC();
+  UShort_t multV0aOn = aodV0->GetTriggerChargeA(); // Sum of the trigger (clock=10) charge on A side.
+  UShort_t multV0cOn = aodV0->GetTriggerChargeC(); // Sum of the trigger (clock=10) charge on C side.
   UShort_t multV0On  = multV0aOn + multV0cOn;
 
   Int_t tpcClsTot = faod->GetNumberOfTPCClusters();
-  Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
+  Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot); // not needed?
 
   if (centrCL0 < fCenCutLowPU->Eval(centrV0M)) {
     BisPileup=kTRUE;
@@ -3707,7 +3707,7 @@ Bool_t AliAnalysisTaskGammaDeltaPID::GetTPCQvectAndRemovePileUp2018(AliAODEvent 
   //if (nclsDif > 200000)//can be increased to 200000
   // BisPileup=kTRUE;
 
-  Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
+  Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks(); // should we have a pileup cut on multESD and multTPC
 
   fHistCentCL0VsV0MBefore->Fill(centrV0M,centrCL0);
   fHistTPCVsESDTrkBefore->Fill(multTrk,multEsd);  

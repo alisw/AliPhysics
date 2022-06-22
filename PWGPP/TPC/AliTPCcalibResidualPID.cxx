@@ -3241,16 +3241,28 @@ TObjArray * AliTPCcalibResidualPID::GetResponseFunctions(TF1* parametrisation, T
       // In case of data there are sometimes problems to fit the shape with one function (could describe the overall deviation,
       // but will not cover all the details).
       // Nevertheless, this shape (including most of the "details") can be fitted with the following approach with two functions
-      TF1 * funcCorrKaon1 = new TF1("funcCorrKaon1", fitFuncString.Data(),
-                                    TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981); 
-      graphKaonTPC->Fit(funcCorrKaon1, "QREX0M", "same", TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.0);
+      //Simple functions
+//          Double_t minValue = TMath::Max(graphKaonTPC->GetX()[0], 0.25);
+//          Double_t maxValue = 1.0; //1.981
+//         funcCorrKaon = new TF1("funcCorrKaon", fitFuncString2.Data(), 0.22,  1.981);
+//         funcCorrKaon = new TF1("funcCorrKaon", "[0] + [1] / x + [2] / (x**2) + [3] / (x**3) + [4] / (x**4) + [5] / (x**5) + [6] * x + [7] / (x**6)", 0.22,  1.981);
+//          funcCorrKaon = new TF1("funcCorrKaon", fitFuncString.Data(), minValue,  maxValue);
+         
+//          graphKaonTPC->Fit(funcCorrKaon, "QREX0M", "same", minValue, maxValue);
+      
+        // Complex fit, using two functions
+        TF1 * funcCorrKaon1 = new TF1("funcCorrKaon1", fitFuncString.Data(),
+                                        TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.0); 
+        graphKaonTPC->Fit(funcCorrKaon1, "QREX0M", "same", TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.0);
+        
+        TString funcCorrKaonString = TString(TString::Format("(%f + %f / x + %f / (x**2) + %f / (x**3) + %f / (x**4) + %f / (x**5) + %f * x)", funcCorrKaon1->GetParameter(0), funcCorrKaon1->GetParameter(1), funcCorrKaon1->GetParameter(2), funcCorrKaon1->GetParameter(3), funcCorrKaon1->GetParameter(4), funcCorrKaon1->GetParameter(5), funcCorrKaon1->GetParameter(6)));
 
-      TF1 * funcCorrKaon2 = new TF1("funcCorrKaon2", fitFuncString2.Data(), TMath::Max(graphKaonTPC->GetX()[0], 0.25),  1.981);
-      graphKaonTPC->Fit(funcCorrKaon2, "QREX0M", "same", (isMC ? 1.981 : 1.0), 1.981);
+        TF1 * funcCorrKaon2 = new TF1("funcCorrKaon2", fitFuncString2.Data(), 1.0,  1.981);
+        graphKaonTPC->Fit(funcCorrKaon2, "QREX0M", "same", 1.0, 1.981);
 
-      funcCorrKaon = new TF1("funcCorrKaon",
-                             "funcCorrKaon1 * 0.5*(1.+TMath::Erf((1 - x) / 0.1)) + ([0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x+[6]*x*x*x*x*x*x) * 0.5*(1.+TMath::Erf((x - 1) / 0.1))",
-                             TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981);
+        funcCorrKaon = new TF1("funcCorrKaon",
+                                (funcCorrKaonString + TString(" * 0.5*(1.+TMath::Erf((1 - x) / 0.1)) + ([0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6) * 0.5*(1.+TMath::Erf((x - 1) / 0.1))")).Data(),
+                                TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981);
 
       for (Int_t i = funcCorrKaon1->GetNpar(), j = 0; i < funcCorrKaon1->GetNpar() + funcCorrKaon2->GetNpar(); i++, j++) {
         funcCorrKaon->SetParameter(j, funcCorrKaon2->GetParameter(j));

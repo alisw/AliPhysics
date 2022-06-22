@@ -97,8 +97,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
 
     if (suffix != "0") {
         evtCuts->SetMinimalBooking(true);
-        TrackPosKaonCuts->SetMinimalBooking(true);
-        TrackNegKaonCuts->SetMinimalBooking(true);
+        TrackPosKaonCuts->SetMinimalBooking(false);
+        TrackNegKaonCuts->SetMinimalBooking(false);
         v0Cuts->SetMinimalBooking(true);
         Antiv0Cuts->SetMinimalBooking(true);
     }

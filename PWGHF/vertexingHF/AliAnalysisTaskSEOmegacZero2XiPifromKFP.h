@@ -64,11 +64,14 @@ class AliAnalysisTaskSEOmegacZero2XiPifromKFP : public AliAnalysisTaskSE
         Float_t*                 fVar_Omegac0;        // variables of Omegac0 to be written to the tree
         AliNormalizationCounter* fCounter;            // Counter for normalization
         TH1F*                    fHistEvents;         // Histogram of selected events (added to output list)
+        TH1F*                    fHistMult;           // Histogram of event multiplicity distribution (added to output list)
+        TH1F*                    fHistCheckKF;        // Histogram to check when the KF fails (E<p_z)
+        Int_t                    fEvCount;            // event counter
 
         AliAnalysisTaskSEOmegacZero2XiPifromKFP(const AliAnalysisTaskSEOmegacZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEOmegacZero2XiPifromKFP& operator=(const AliAnalysisTaskSEOmegacZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEOmegacZero2XiPifromKFP, 1);
+        ClassDef(AliAnalysisTaskSEOmegacZero2XiPifromKFP, 2);
 };
 
 #endif

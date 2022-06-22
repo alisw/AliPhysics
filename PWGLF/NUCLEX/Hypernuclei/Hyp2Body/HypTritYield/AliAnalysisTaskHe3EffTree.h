@@ -29,6 +29,7 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
     AliEventCuts     fEventCuts;            //< event cuts as advised by PDG (AliEventCuts)
     TList*           fOutputList;           //! output list
     TH1F*            fHistEvents;           //! number of events and trigger info
+    TH2D*            fHistEventsTRD[2];     //! histograms for TRD trigger
     TH2F*            fHistdEdx;             //! TPC dEdx histogram
     Double_t         fBetheParamsHe[6];     //< Bethe Aleph He3 Parameter + TPC sigma
     Double_t         fBetheParamsT[6];  
@@ -123,11 +124,11 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
     Double_t         GetTOFSignalHe3(AliESDtrack& trackHe, Double_t tP);
     void             SetBetheBlochParams(Int_t runNumber);
     Double_t         TRDtrack(AliESDtrack* esdTrack);
-    
+    void             TRDnEvents();
     AliAnalysisTaskHe3EffTree(const AliAnalysisTaskHe3EffTree&); // not implemented
     AliAnalysisTaskHe3EffTree& operator=(const AliAnalysisTaskHe3EffTree&); // not implemented
 
-    ClassDef(AliAnalysisTaskHe3EffTree, 4);
+    ClassDef(AliAnalysisTaskHe3EffTree, 5);
 };
 
 #endif

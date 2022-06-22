@@ -406,10 +406,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
               switch (std::abs(mother->GetPdgCode())){
                 case kXiPdg:
                   fGenLambda.flag |= kSecondaryFromWDXi;
+                break;
                 case kOmegaPdg:
                   fGenLambda.flag |= kSecondaryFromWDOmega;
+                break;
                 default:
                   fGenLambda.flag |= kSecondaryFromWD;
+                break;
               }
               fGenLambda.ptMotherMC = mother->Pt();
             }
@@ -460,7 +463,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fTreeLambda->Fill();
         if (fFillLambdasBDTOut)
         {
-          if (fRecLambda->radius < fRadiusPreselection || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
+          if (fRecLambda->radius < fRadiusPreselection || fRecLambda->radius > fRadiusOverflowCut || fRecLambda->dcaPiPV > fDCAV0piToPVOverflowCut || fRecLambda->dcaPrPV > fDCAV0prToPVOverflowCut || fRecLambda->dcaV0PV > fDCAV0toPVOverflowCut || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
           int model_index = WhichBDT(fRecLambda->ct);
           if (model_index > (fNctBinsBDT-1)) {
             continue;
@@ -614,10 +617,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
             switch (std::abs(mother->GetPdgCode())){
               case kXiPdg:
                 fGenLambda.flag |= kSecondaryFromWDXi;
+              break;
               case kOmegaPdg:
                 fGenLambda.flag |= kSecondaryFromWDOmega;
+              break;
               default:
                 fGenLambda.flag |= kSecondaryFromWD;
+              break;
             }
             fGenLambda.ptMotherMC = mother->Pt();
           }

@@ -1,4 +1,4 @@
-AliAnalysisMultPt* AddMultPt(TString name = "name")
+AliAnalysisMultPt* AddMultPt(const char *suffix = "")
 {
   // get the manager via the static access member. since it's static, you don't need
   // to create an instance of the class here to call the function
@@ -14,6 +14,10 @@ AliAnalysisMultPt* AddMultPt(TString name = "name")
     }
 
   // resolve the name of the output file
+
+  TString name;
+  name.Form("MulttpT%s", suffix);
+    // by default, a file is open for writing. here, we get the filename
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName += ":MultPtt";      // create a subfolder in the file
 
@@ -21,7 +25,7 @@ AliAnalysisMultPt* AddMultPt(TString name = "name")
   AliAnalysisMultPt* task = new AliAnalysisMultPt(name.Data());
   if(!task) return 0x0;
   task->SelectCollisionCandidates(AliVEvent::kINT7); //to check which triggers are selected
-  task->SetMCRead(kFALSE);
+  task->SetMCRead(kTRUE);
   task->SetPileUpRead(kFALSE);
   task->SetChi2DoF(4);
   task->SetPtLimits(0.2, 5.0);
@@ -36,7 +40,7 @@ AliAnalysisMultPt* AddMultPt(TString name = "name")
   // connect the manager to your task
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   // same for the output
-  mgr->ConnectOutput(task,1,mgr->CreateContainer("MultPtcontainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,1,mgr->CreateContainer(name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
   // important: return a pointer to your task
   return task;

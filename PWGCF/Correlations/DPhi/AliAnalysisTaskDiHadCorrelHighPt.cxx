@@ -18,7 +18,7 @@
  * and calculates correlations with charged unidentified particles in phi and eta.
  * The charged unidentified particles are also taken as trigger particles to have a check.
  * The task works with AOD or ESD (with or without MC info) events only and contains also mixing for acceptance corrections.
- * Last update edited by Lucia Anna Husova, March 2021
+ * Last update edited by Lucia Anna Husova, June 2022
  */
 
 #include <TChain.h>
@@ -215,7 +215,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fDCAbaryonDaughterPV(0.03),
     fDCAmesonDaughterPV(0.04),
     fHistV0AmplitudeVsPVposition(0),
-    fonTheFlyMC(kFALSE)
+    fonTheFlyMC(kFALSE),
+    fFlowEffPtBins(kFALSE),
+    fPercentile(302)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -378,7 +380,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fDCAbaryonDaughterPV(0.03),
     fDCAmesonDaughterPV(0.04),
     fHistV0AmplitudeVsPVposition(0),
-    fonTheFlyMC(kFALSE)
+    fonTheFlyMC(kFALSE),
+    fFlowEffPtBins(kFALSE),
+    fPercentile(302)
 {
     // constructor
 
@@ -701,6 +705,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     Int_t binsTrig[5]={fNumberOfPtBinsAssoc,9,6,fNumberOfEtaBins,fNumberPhiBins};
     Double_t mintrig[5]={fPtAsocMin,-10,0,-0.8,0};
     Double_t maxtrig[5]={fPtAssocMax,10,6,0.8,2*kPi};
+    if(fFlowEffPtBins){
+        binsTrig[4]=11;
+        mintrig[4]=0;
+        maxtrig[4]=100;
+    }
     fHistGenV0 = new THnSparseF("fHistGenV0","fHistGenV0",5,binsTrig,mintrig,maxtrig);
     fOutputList->Add(fHistGenV0);
     fHistGenV0->Sumw2();
@@ -710,9 +719,25 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistGenV0->GetAxis(3)->SetTitle("#eta");
     fHistGenV0->GetAxis(4)->SetTitle("#varphi");
     fHistGenV0->GetAxis(1)->Set(NofZVrtxBins,ZBins);
+
+    Double_t binsPt[62]={0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,
+                                             1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,
+                                             4.5,5,5.5,6,6.5,7,8,9,10,11,12,13,14,15,16,18,20,22,24,26,30,34,40,50};
+    Double_t multBins[12]={0,5,10,20,30,40,50,60,70,80,90,100};
+    if(fFlowEffPtBins){
+        fHistGenV0->GetAxis(0)->Set(fNumberOfPtBinsAssoc,binsPt);
+        fHistGenV0->GetAxis(4)->SetTitle("V0M");
+        fHistGenV0->GetAxis(4)->Set(11,multBins);
+    }
+
     Int_t binsTrigRec[6]={fNumberOfPtBinsAssoc,9,6,fNumberOfEtaBins,902,fNumberPhiBins};
     Double_t mintrigRec[6]={fPtAsocMin,-10,0,-0.8,0.44,0};
     Double_t maxtrigRec[6]={fPtAssocMax,10,6,0.8,1.355,2*kPi};
+    if(fFlowEffPtBins){
+        binsTrigRec[5]=11;
+        mintrigRec[5]=0;
+        maxtrigRec[5]=100;
+    }
     fHistRecV0 = new THnSparseF("fHistRecV0","fHistRecV0",6,binsTrigRec,mintrigRec,maxtrigRec);
     fOutputList->Add(fHistRecV0);
     fHistRecV0->Sumw2();
@@ -724,6 +749,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistRecV0->GetAxis(5)->SetTitle("#varphi");
     fHistRecV0->GetAxis(4)->Set(902,binsMass);
     fHistRecV0->GetAxis(1)->Set(NofZVrtxBins,ZBins);
+
+    if(fFlowEffPtBins){
+        fHistRecV0->GetAxis(0)->Set(fNumberOfPtBinsAssoc,binsPt);
+        fHistRecV0->GetAxis(5)->SetTitle("V0M");
+        fHistRecV0->GetAxis(5)->Set(11,multBins);
+    }
 
 	fHistNumberOfTriggers = new THnSparseF("fHistNumberOfTriggers","fHistNumberOfTriggers",5,bins2d,mis2d, maxs2d);
     fHistNumberOfTriggers->GetAxis(0)->SetTitle("p_{T}");
@@ -956,8 +987,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     // have access to the current event. 
     // once you return from the UserExec function, the manager will retrieve the next event from the chain#
 
-    Double_t lPercentile = 302;
-
     Int_t iTracks = 0;
     Int_t nV0 =0;
     Int_t nCascades =0;
@@ -1066,17 +1095,17 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         if( !MultSelection) {
             AliWarning("AliMultSelection object not found!");
         }else{
-            if(fMultEstimator=="V0M") lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-            else if(fMultEstimator=="V0A") lPercentile = MultSelection->GetMultiplicityPercentile("V0A");
-            else if(fMultEstimator=="SPDTracklets") lPercentile = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-            else if(fMultEstimator=="RefMult05") lPercentile = MultSelection->GetMultiplicityPercentile("RefMult05");
-            else if(fMultEstimator=="RefMult08") lPercentile = MultSelection->GetMultiplicityPercentile("RefMult08");
+            if(fMultEstimator=="V0M") fPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+            else if(fMultEstimator=="V0A") fPercentile = MultSelection->GetMultiplicityPercentile("V0A");
+            else if(fMultEstimator=="SPDTracklets") fPercentile = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+            else if(fMultEstimator=="RefMult05") fPercentile = MultSelection->GetMultiplicityPercentile("RefMult05");
+            else if(fMultEstimator=="RefMult08") fPercentile = MultSelection->GetMultiplicityPercentile("RefMult08");
         }
-        if ((lPercentile<fPercentileMin)||(lPercentile>fPercetileMax)) return;
+        if ((fPercentile<fPercentileMin)||(fPercentile>fPercetileMax)) return;
     
-        fHistMultVZEROTracklets->Fill(VZEROmultiplicity,nTracklets,lPercentile);
-        fHistMultipPercentile->Fill(lPercentile);
-        fHistVZeroPercentileTPCMult -> Fill(lPercentile,tpcMult);
+        fHistMultVZEROTracklets->Fill(VZEROmultiplicity,nTracklets,fPercentile);
+        fHistMultipPercentile->Fill(fPercentile);
+        fHistVZeroPercentileTPCMult -> Fill(fPercentile,tpcMult);
     }
 
 	//=========== MC loop ===============================
@@ -1149,7 +1178,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(fMixingGen){
                     genTrackMix = SetAliAODTrack(mcTrack->Theta(),mcTrack->Phi(),mcTrack->Pt(),mcTrack->Charge());
                     fmcGenTracksMixing->Add(genTrackMix);
-                    lPercentile = 19;
+                    fPercentile = 19;
                 }
 
                 pdg_parton = GetOriginalPartonPDG(mcTrack);
@@ -1238,6 +1267,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),fPV[2],0.5,mcTrack->Eta(),mcTrack->Phi()};
+                        if(fFlowEffPtBins)v0effic[4]=fPercentile;
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1245,6 +1275,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),6,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),fPV[2],1.5,mcTrack->Eta(),mcTrack->Phi()};
+                        if(fFlowEffPtBins)v0effic[4]=fPercentile;
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1252,6 +1283,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),7,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),fPV[2],2.5,mcTrack->Eta(),mcTrack->Phi()};
+                        if(fFlowEffPtBins)v0effic[4]=fPercentile;
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1595,7 +1627,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 }
             }
         }
-        if(fV0hCorr||fhV0Corr){
+        if(fV0hCorr||fhV0Corr||fEfficiency){
 	    for (Int_t i=0; i<nV0; i++){
         
             if(fAOD) {
@@ -2076,42 +2108,42 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         
          if(fAnalysisMC&&fCorrelations){
             //V0-h MC rec
-            if(fV0hCorr) Corelations(fselectedMCV0Triggersrec,fselectedMCassoc,kFALSE,kTRUE,lPercentile,kFALSE);
+            if(fV0hCorr) Corelations(fselectedMCV0Triggersrec,fselectedMCassoc,kFALSE,kTRUE,fPercentile,kFALSE);
 
             //h-h MC rec
-            if(fhhCorr) Corelations(fselectedMCtrig,fselectedMCassoc,kTRUE,kFALSE,lPercentile,kFALSE);
+            if(fhhCorr) Corelations(fselectedMCtrig,fselectedMCassoc,kTRUE,kFALSE,fPercentile,kFALSE);
              
              //MC rec h-V0
-            if(fhV0Corr) Corelations(fselectedMCtrig,fselectedMCV0assoc,kFALSE,kTRUE,lPercentile,kTRUE);
+            if(fhV0Corr) Corelations(fselectedMCtrig,fselectedMCV0assoc,kFALSE,kTRUE,fPercentile,kTRUE);
         
             if(fAnalyseFeedDown) {
-                CorrelationsXi(fselectedV0Triggers,fselectedMCassoc,lPercentile,kTRUE);
-                CorrelationsXi(fselectedMCtrig,fselectedV0Assoc,lPercentile,kFALSE);
+                CorrelationsXi(fselectedV0Triggers,fselectedMCassoc,fPercentile,kTRUE);
+                CorrelationsXi(fselectedMCtrig,fselectedV0Assoc,fPercentile,kFALSE);
             }
         } else if(fCorrelations){
             //Data V0-h
-            if(fV0hCorr) Corelations(fselectedV0Triggers,fselectedAssociatedTracks,kFALSE,kTRUE,lPercentile,kFALSE);
+            if(fV0hCorr) Corelations(fselectedV0Triggers,fselectedAssociatedTracks,kFALSE,kTRUE,fPercentile,kFALSE);
 
     	    //Data h-h
-            if(fhhCorr) Corelations(fselectedTriggerTracks,fselectedAssociatedTracks,kTRUE,kFALSE,lPercentile,kFALSE);
+            if(fhhCorr) Corelations(fselectedTriggerTracks,fselectedAssociatedTracks,kTRUE,kFALSE,fPercentile,kFALSE);
             
             //Data h-V0
-            if(fhV0Corr) Corelations(fselectedTriggerTracks,fselectedV0Assoc,kFALSE,kTRUE,lPercentile,kTRUE);
+            if(fhV0Corr) Corelations(fselectedTriggerTracks,fselectedV0Assoc,kFALSE,kTRUE,fPercentile,kTRUE);
         
             if(fAnalyseFeedDown) {
-                CorrelationsXi(fselectedV0Triggers,fselectedAssociatedTracks,lPercentile,kTRUE);
-                CorrelationsXi(fselectedTriggerTracks,fselectedV0Assoc,lPercentile,kFALSE);
+                CorrelationsXi(fselectedV0Triggers,fselectedAssociatedTracks,fPercentile,kTRUE);
+                CorrelationsXi(fselectedTriggerTracks,fselectedV0Assoc,fPercentile,kFALSE);
             }
         }
     }    
 
  	// Mixing ==============================================
 
-    fHistMultVtxz->Fill(lPercentile,fPV[2]);
+    fHistMultVtxz->Fill(fPercentile,fPV[2]);
     if(fMixing){
-        fPool = fPoolMgr->GetEventPool(lPercentile, fPV[2]);
+        fPool = fPoolMgr->GetEventPool(fPercentile, fPV[2]);
         if (!fPool) {
-            AliWarning(Form("No pool found for centrality = %f, zVtx = %f", lPercentile, fPV[2]));
+            AliWarning(Form("No pool found for centrality = %f, zVtx = %f", fPercentile, fPV[2]));
             return;
         }
         Int_t nMix = fPool->GetCurrentNEvents();
@@ -2121,20 +2153,20 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             {// loop through mixing events
                 TObjArray* bgTracks = fPool->GetEvent(jMix);
                 if(fAnalysisMC) {
-                    if(fV0hCorr) CorelationsMixing(fselectedMCV0Triggersrec,bgTracks,lPercentile);
-                    if(fhhCorr) CorelationsMixing(fselectedMCtrig,bgTracks,lPercentile);
-                    if(fhV0Corr) CorelationsMixinghV0(bgTracks,fselectedMCV0assoc,lPercentile);
+                    if(fV0hCorr) CorelationsMixing(fselectedMCV0Triggersrec,bgTracks,fPercentile);
+                    if(fhhCorr) CorelationsMixing(fselectedMCtrig,bgTracks,fPercentile);
+                    if(fhV0Corr) CorelationsMixinghV0(bgTracks,fselectedMCV0assoc,fPercentile);
                     if(fAnalyseFeedDown){
-                        CorrelationsXi(fselectedV0Triggers,bgTracks,lPercentile,kTRUE);
-                        CorrelationsXi(bgTracks,fselectedV0Assoc,lPercentile,kFALSE);
+                        CorrelationsXi(fselectedV0Triggers,bgTracks,fPercentile,kTRUE);
+                        CorrelationsXi(bgTracks,fselectedV0Assoc,fPercentile,kFALSE);
                     }
                 }else{
-                    if(fV0hCorr) CorelationsMixing(fselectedV0Triggers,bgTracks,lPercentile);
-                    if(fhhCorr) CorelationsMixing(fselectedTriggerTracks,bgTracks,lPercentile);
-                    if(fhV0Corr) CorelationsMixinghV0(bgTracks,fselectedV0Assoc,lPercentile);
+                    if(fV0hCorr) CorelationsMixing(fselectedV0Triggers,bgTracks,fPercentile);
+                    if(fhhCorr) CorelationsMixing(fselectedTriggerTracks,bgTracks,fPercentile);
+                    if(fhV0Corr) CorelationsMixinghV0(bgTracks,fselectedV0Assoc,fPercentile);
                     if(fAnalyseFeedDown){
-                        CorrelationsXi(fselectedV0Triggers,bgTracks,lPercentile,kTRUE);
-                        CorrelationsXi(bgTracks,fselectedV0Assoc,lPercentile,kFALSE);
+                        CorrelationsXi(fselectedV0Triggers,bgTracks,fPercentile,kTRUE);
+                        CorrelationsXi(bgTracks,fselectedV0Assoc,fPercentile,kFALSE);
                     }
                 }
              }
@@ -2145,9 +2177,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     }
 
     if(fAnalysisMC&&fMixingGen){
-        fPoolMCGen = fPoolMgr->GetEventPool(lPercentile, fPV[2]);
+        fPoolMCGen = fPoolMgr->GetEventPool(fPercentile, fPV[2]);
         if (!fPoolMCGen) {
-            AliWarning(Form("No pool MC Gen found for centrality = %f, zVtx = %f", lPercentile, fPV[2]));
+            AliWarning(Form("No pool MC Gen found for centrality = %f, zVtx = %f", fPercentile, fPV[2]));
             return;
         }
         Int_t nMixGen = fPoolMCGen->GetCurrentNEvents();
@@ -3126,6 +3158,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::FillMC(const AliVParticle *V0,Int_t pdgV0
     
         if(fEfficiency){
             Double_t v0effic[6]={V0mcPt,fPV[2],triggerType-0.5,V0mcEta,mass,mcPosMother->Phi()};
+            if(fFlowEffPtBins)v0effic[5]=fPercentile;
             fHistRecV0->Fill(v0effic);
         }
 
