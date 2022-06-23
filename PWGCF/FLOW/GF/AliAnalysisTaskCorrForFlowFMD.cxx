@@ -462,8 +462,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
       if(part->Charge()==0)        continue;
       if(mceta>2.8 && mceta<5.1) ntrackv0aprimary++;
     }
-    Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(ntrackv0aprimary);
-    lCentrality=fhcorr[0]->GetBinContent(nbinmult);
+    Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(ntrackv0aprimary);
+    fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
   }
   else{
     AliAODVZERO* fvzero = fAOD->GetVZEROData();
@@ -1566,7 +1566,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
   return kTRUE;
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskCorrForFlowFMD::TransverseBoost(const AliMCParticle*track){
+Double_t AliAnalysisTaskCorrForFlowFMD::TransverseBoost(const AliMCParticle *track){
   Float_t boost=0.465;
   Float_t beta=TMath::TanH(boost);
   Float_t gamma=1./TMath::Sqrt((1.-TMath::Power(beta,2)));
