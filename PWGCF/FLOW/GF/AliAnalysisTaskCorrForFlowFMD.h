@@ -108,7 +108,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
         void                    SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
         void                    SetFMDacceptanceCuts(Double_t cutAlower, Double_t cutAupper, Double_t cutClower, Double_t cutCupper) { fFMDAacceptanceCutLower = cutAlower; fFMDAacceptanceCutUpper = cutAupper; fFMDCacceptanceCutLower = cutClower; fFMDCacceptanceCutUpper = cutCupper; }
-
+        void                    SetBoostAMPT(Bool_t flag = kTRUE){ fBoostAMPT = flag; }
 
     private:
 
@@ -140,7 +140,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                GetEff(const Double_t dPt, const Int_t spec = 0, const Double_t dEta = 0.0);
         Int_t                   GetEtaRegion(const Double_t dEta);
         TString                 ReturnPPperiod(const Int_t runNumber) const;
-
+        Double_t                TransverseBoost(const AliMCParticle *track);
 
         AliAnalysisTaskCorrForFlowFMD(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
         AliAnalysisTaskCorrForFlowFMD& operator=(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
@@ -186,6 +186,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fIsAntiparticleCheck; // [kFALSE]
         Bool_t                  fDoAntiparticleOnly; // [kFALSE] == positive particles only and lambdas
         Bool_t                  fRejectHighPtEvents; // [kFALSE]
+        Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
@@ -194,6 +195,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Int_t                   fNchMin;
         Int_t                   fNchMax;
         Int_t                   fNbinsMinv; // [60]
+        Int_t                   fnTPCcrossedRows; // [70]
         Double_t                fNOfSamples; //[1]
         Double_t                fSampleIndex; //[0]
         Double_t                fPtMinTrig;
@@ -237,7 +239,6 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fCutTauK0s; // [0.]
         Double_t                fCutTauLambda; // [0.]
         Double_t                fSigmaTPC; // [3.0]
-        Int_t                   fnTPCcrossedRows; // [70]
         Double_t                fTrackLength; // [90]
         Double_t                fV0ratioLength; // [0.8]
         Double_t                fMassRejWindowK0; // [0.005]
@@ -256,7 +257,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 13);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 14);
 };
 
 #endif
