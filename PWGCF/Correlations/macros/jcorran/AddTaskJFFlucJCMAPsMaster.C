@@ -91,6 +91,9 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     case 17 :     // Syst: subA. TBI
       configNames.push_back("subA");
       break;
+    case 18 :     // Syst: (chi2 in [0.1, 4]) changed to (chi2 in [0.1, 2.5]).
+      configNames.push_back("chi2tight01");
+      break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -189,6 +192,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetChi2Cuts(0.0, 4.0);
     } else if (strcmp(configNames[i].Data(), "chi2tight") == 0) {
       fJCatalyst[i]->SetChi2Cuts(0.0, 2.5);
+    } else if (strcmp(configNames[i].Data(), "chi2tight01") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 2.5);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetChi2Cuts(0.1, 4.0);
     }
