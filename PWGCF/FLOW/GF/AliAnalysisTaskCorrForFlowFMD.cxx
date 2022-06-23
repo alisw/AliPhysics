@@ -47,6 +47,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fIsAntiparticleCheck(kFALSE),
     fDoAntiparticleOnly(kFALSE),
     fRejectHighPtEvents(kFALSE),
+    fBoostAMPT(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -55,6 +56,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fNchMin(0),
     fNchMax(100000),
     fNbinsMinv(60),
+    fnTPCcrossedRows(70),
     fNOfSamples(1.0),
     fSampleIndex(0.0),
     fPtMinTrig(0.5),
@@ -96,7 +98,6 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fSigmaTPC(3.),
-    fnTPCcrossedRows(70),
     fTrackLength(90),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
@@ -138,6 +139,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fIsAntiparticleCheck(kFALSE),
     fDoAntiparticleOnly(kFALSE),
     fRejectHighPtEvents(kFALSE),
+    fBoostAMPT(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -146,6 +148,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fNchMin(0),
     fNchMax(100000),
     fNbinsMinv(60),
+    fnTPCcrossedRows(70),
     fNOfSamples(1.0),
     fSampleIndex(0.0),
     fPtMinTrig(0.5),
@@ -187,7 +190,6 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fSigmaTPC(3.),
-    fnTPCcrossedRows(70),
     fTrackLength(90),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
@@ -441,10 +443,24 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
     Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
     if(dPercentile > 100 || dPercentile < 0) { return kFALSE; }
     fhEventCounter->Fill("PercOK",1);
-
-    if(fCentMax > 0.0 && (dPercentile < fCentMin || dPercentile > fCentMax)) { return kFALSE; }
-    fhEventCounter->Fill("CentOK",1);
     fCentrality = (Double_t) dPercentile;
+  }
+  else if(fIsMC){
+    AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+    if(!mcEvent) return kFALSE;
+    Int_t ntrackv0aprimary=0;
+
+    for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
+      AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
+      if(!part->IsPhysicalPrimary()) continue;
+      Double_t mceta = part->Eta();
+      if(fBoostAMPT) mceta = TransverseBoost(part);
+
+      if(part->Charge()==0)        continue;
+      if(mceta>2.8 && mceta<5.1) ntrackv0aprimary++;
+    }
+    Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(ntrackv0aprimary);
+    fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
   }
   else{
     AliAODVZERO* fvzero = fAOD->GetVZEROData();
@@ -459,9 +475,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
 
     Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(sum);
     fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
-    if(fCentrality < fCentMin || fCentrality > fCentMax) { return kFALSE; }
-    fhEventCounter->Fill("CentOK",1);
   }
+  if(fCentrality < fCentMin || fCentrality > fCentMax) { return kFALSE; }
+  fhEventCounter->Fill("CentOK",1);
 
   fPVz = fAOD->GetPrimaryVertex()->GetZ();
   if(TMath::Abs(fPVz) >= fPVzCut) { return kFALSE; }
@@ -1468,7 +1484,13 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
     Double_t partEta = part->Eta();
     Double_t partPt = part->Pt();
     Double_t partPhi = part->Phi();
+    Double_t partRapidity = part->Y();
     binscont[2] = partPt;
+
+    if(fBoostAMPT) {
+      partEta=TransverseBoost(part);
+      partRapidity=partRapidity-0.465;
+    }
 
     // TPC region
     if(TMath::Abs(partEta) < 0.8){
@@ -1491,7 +1513,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(binscont,0,1.);
           }
-          if(fDoV0 && partIdx > 3){
+          if(fDoV0 && partIdx > 3 && TMath::Abs(partRapidity)<0.5){
             Double_t binscontV0[4] = {fPVz, fSampleIndex, part->Pt(), part->M()};
             fhTrigTracks[partIdx]->Fill(binscontV0,0,1.);
             fTracksTrig[partIdx]->Add(new AliPartSimpleForCorr(part->Eta(),part->Phi(),part->Pt(),part->M()));
@@ -1507,7 +1529,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(binscont,0,1.);
           }
-          if(fDoV0 && partIdx > 3){
+          if(fDoV0 && partIdx > 3 && TMath::Abs(partRapidity)<0.5){
             Double_t binscontV0[4] = {fPVz, fSampleIndex, part->Pt(), part->M()};
             fhTrigTracks[partIdx]->Fill(binscontV0,0,1.);
             fTracksTrig[partIdx]->Add(new AliPartSimpleForCorr(part->Eta(),part->Phi(),part->Pt(),part->M()));
@@ -1539,6 +1561,31 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
 
   return kTRUE;
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskCorrForFlowFMD::TransverseBoost(const AliMCParticle *track){
+  Float_t boost=0.465;
+  Float_t beta=TMath::TanH(boost);
+  Float_t gamma=1./TMath::Sqrt((1.-TMath::Power(beta,2)));
+
+  Float_t energy=track->E();
+  Float_t mass=track->M();
+  Float_t px=track->Px();
+  Float_t py=track->Py();
+  Float_t pz=track->Pz();
+  Float_t mT=TMath::Sqrt(TMath::Power(energy,2)-TMath::Power(pz,2));
+  Float_t eta=track->Eta();
+  Float_t rap=track->Y();
+
+  Float_t energy_boosted=gamma*energy-gamma*beta*pz;
+  Float_t pz_boosted=-gamma*beta*energy+gamma*pz;
+  Float_t mT_boosted=TMath::Sqrt(TMath::Power(energy_boosted,2)-TMath::Power(pz_boosted,2));
+  Float_t rap_boosted=rap-boost;
+  Float_t numerator=TMath::Sqrt(TMath::Power(mT_boosted,2)*TMath::Power(TMath::CosH(rap_boosted),2)-TMath::Power(mass,2))+mT_boosted*TMath::SinH(rap_boosted);
+  Float_t denumerator=TMath::Sqrt(TMath::Power(mT_boosted,2)*TMath::Power(TMath::CosH(rap_boosted),2)-TMath::Power(mass,2))-mT_boosted*TMath::SinH(rap_boosted);
+  Double_t eta_boosted = 0.5*TMath::Log(numerator/denumerator);
+
+  return eta_boosted;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
