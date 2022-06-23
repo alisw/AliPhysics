@@ -28,8 +28,9 @@ ClassImp(AliAnalysisTaskNFMs)
 AliAnalysisTaskNFMs::AliAnalysisTaskNFMs() 
   : AliAnalysisTaskSE(),  
   fAOD(0),
-  filterBit(768),
   fOutHList(0),
+  fQAList(0),
+  fEventCuts(0),
   fNtupleListBin1(0),
   fNtupleListBin2(0),
   fNtupleListBin3(0),
@@ -37,8 +38,6 @@ AliAnalysisTaskNFMs::AliAnalysisTaskNFMs()
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
-  minCent(0.0),
-  maxCent(5.0),
   minEta(-0.8),
   maxEta(0.8),
   fHistQAEta(0), 
@@ -47,15 +46,17 @@ AliAnalysisTaskNFMs::AliAnalysisTaskNFMs()
   fHistQAVy(0),
   fHistQAVz(0), 
   fEventCounter(0),
-  fHistQACent(0)
+  fHistQACent(0),
+  NoOfBins(0)
 {
 
 }
 AliAnalysisTaskNFMs::AliAnalysisTaskNFMs(const char *name)
   : AliAnalysisTaskSE(name),
   fAOD(0),
-  filterBit(768),
   fOutHList(0),
+  fQAList(0),
+  fEventCuts(0),
   fNtupleListBin1(0),
   fNtupleListBin2(0),
   fNtupleListBin3(0),
@@ -63,8 +64,6 @@ AliAnalysisTaskNFMs::AliAnalysisTaskNFMs(const char *name)
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
-  minCent(0.0),
-  maxCent(5.0),
   minEta(-0.8),
   maxEta(0.8),
   fHistQAEta(0), 
@@ -73,7 +72,8 @@ AliAnalysisTaskNFMs::AliAnalysisTaskNFMs(const char *name)
   fHistQAVy(0),
   fHistQAVz(0), 
   fEventCounter(0),
-  fHistQACent(0)
+  fHistQACent(0),
+  NoOfBins(0)
 {
   // Constructor
   Info("AliAnalysisTaskNFMs","Specific Constructor");
@@ -101,6 +101,7 @@ AliAnalysisTaskNFMs::AliAnalysisTaskNFMs(const char *name)
   DefineOutput(3, TList::Class());
   DefineOutput(4, TList::Class());
   DefineOutput(5, TList::Class());
+  DefineOutput(6, TList::Class());
 
 }
 
@@ -126,12 +127,23 @@ void AliAnalysisTaskNFMs::UserCreateOutputObjects()
   fNtupleListBin2->SetOwner(kTRUE);
   fNtupleListBin3->SetOwner(kTRUE);
   fNtupleListBin4->SetOwner(kTRUE);
+    
+  fQAList = new TList();
+  fQAList->SetOwner(kTRUE);
+  fEventCuts.AddQAplotsToList(fQAList,kTRUE);
+  PostData(6,fQAList);
 
   //Value of M init.:
   Int_t Mbins[M];
-  for(Int_t ind = 0; ind < M; ind++)
+  
+  if(!(fIsMmaxET))
   {
-    Mbins[ind] = 2 * (ind +2);
+    for(Int_t ind = 0; ind < M; ind++) Mbins[ind] = 3 * (ind +2);
+  }
+  
+  if(fIsMmaxET)
+  {
+    for(Int_t ind = 0; ind < M; ind++) Mbins[ind] = 2 * (ind +2);
   }
 
   //Eventcounter hist defined
@@ -141,11 +153,11 @@ void AliAnalysisTaskNFMs::UserCreateOutputObjects()
   fEventCounter->GetXaxis()->SetBinLabel(3,"Events without proper vertex");
   fEventCounter->GetXaxis()->SetBinLabel(4,"Events with a proper vertex");
   fEventCounter->GetXaxis()->SetBinLabel(5,"Events with 0-5% Centrality");
-  fEventCounter->GetXaxis()->SetBinLabel(7,"Events Analyzed");
+  fEventCounter->GetXaxis()->SetBinLabel(6,"Events Analyzed");
   fOutHList->Add(fEventCounter); 
 
   //Hists defined 
-  fHistQACent = new TH1F("fHistQACent","Centrality Distribution", 10, minCent, maxCent);
+  fHistQACent = new TH1F("fHistQACent","Centrality Distribution", 10, minCent-2, maxCent+2);
   fOutHList->Add(fHistQACent);
   fHistQAEta = new TH1F("fHistQAEta", "#eta distribution", 1000, minEta, maxEta);
   fHistQAPhi = new TH1F("fHistQAPhi", "#phi distribution", 1000, 0.0, 6.5);
@@ -213,16 +225,25 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
     AliWarning("ERROR: AliAODEvent not available \n");
     return;
   }
-
+  // fEventCuts.SetupLHC15o();
+  if(fIsPileUpCuts) {fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);}
+  
+  Bool_t dummy = fEventCuts.AcceptEvent(fAOD); //for QA
+  if(!dummy)return ;
+  
   UInt_t fSelectMask= fInputHandler->IsEventSelected();
-  Bool_t isINT7selected = fSelectMask& AliVEvent::kMB; 
-  if(!isINT7selected)return ;
+  /* Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7; if(!(isINT7selected)) return; */
+  if(fisINT7) {Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7; if(!(isINT7selected)) return;}
+  if(fiskMB) {Bool_t iskMBselected = fSelectMask& AliVEvent::kMB; if(!(iskMBselected))return ;}
 
   fEventCounter->Fill(2);
 
   AliAODVertex *vertex = fAOD->GetPrimaryVertex();
   if (vertex->GetNContributors() < 1)
+  {   
     fEventCounter->Fill(3);
+    return;
+  }
   Float_t lvx = (Float_t) vertex->GetX();
   Float_t lvy = (Float_t) vertex->GetY();
   Float_t lvz = (Float_t) vertex->GetZ();
@@ -233,25 +254,37 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
     {
       if(fabs(lvz) < fVzMax) 
       {
-        fEventCounter->Fill(4);
         fHistQAVx->Fill(lvx);
         fHistQAVy->Fill(lvy);
         fHistQAVz->Fill(lvz);
       }
     }
   }
-  
-   //Centrality slecetion for LHC10
-   AliCentrality* centrality = fAOD->GetCentrality();
-   if (!centrality) {
-     cout << "AliCentrality object not found!" << endl;
-     return;
-    }
-   double fCentrality = centrality->GetCentralityPercentile("V0M");
-   if(fCentrality < minCent || fCentrality >= maxCent) return;
-   fEventCounter->Fill(5); 
-   fHistQACent->Fill(fCentrality);
-  // counter++;
+  else return;
+  fEventCounter->Fill(4);
+
+  if(fRun1data)
+  {
+    //Centrality slecetion for 2.76 TeV
+    AliCentrality* centrality = fAOD->GetCentrality();
+    Double_t fCentrality = centrality->GetCentralityPercentile("V0M");
+    if(fCentrality < minCent || fCentrality >= maxCent) return;
+    fHistQACent->Fill(fCentrality);
+  }
+  else
+  {
+    //Centrality slecetion for 5.02TeV
+    AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+    if(!MultSelection) return;
+    double lMultiPercentile = -1;
+    lMultiPercentile = MultSelection->GetMultiplicityPercentile("V0M"); 
+    if(lMultiPercentile < minCent || lMultiPercentile >= maxCent) return;
+    fHistQACent->Fill(lMultiPercentile);
+  }
+
+  fEventCounter->Fill(5); 
+
+  //counter++;
 
   //Reset Histos:
   for(Int_t i = 0; i < M; i++)
@@ -261,11 +294,10 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
     if(fHEtaPhiBin3[i]) fHEtaPhiBin3[i]->Reset();
     if(fHEtaPhiBin4[i]) fHEtaPhiBin4[i]->Reset();
   }
-  fEventCounter->Fill(7);
+  fEventCounter->Fill(6);
 
   Int_t counterEtacutBin1 = 0, counterEtacutBin2 = 0, counterEtacutBin3 = 0, counterEtacutBin4 = 0;
   Int_t nTracks(fAOD->GetNumberOfTracks());
-  Float_t PtCut[5] = {0.4, 0.6, 1.0, 2.0, 5.0};
   Int_t status_write = 0;
 
   //Track Loop:
@@ -274,6 +306,9 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
       AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
       if(!(track->TestFilterBit(filterBit)))
         continue;
+
+      if(fClflag){if(!(track->GetTPCCrossedRows() < fNcls)) continue;}
+      if(fCrflag){if(!(track->GetTPCNcls() < fNcrows)) continue;}
 
       Float_t Pt  = track->Pt();         
       Float_t Eta = track->Eta();
@@ -284,7 +319,7 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
       fHistQAEta->Fill(Eta);
       fHistQAPhi->Fill(Phi);
 
-      if(( Pt >= PtCut[0] && Pt <= PtCut[2]))
+      if(( Pt >= ptbin[0] && Pt <= ptbin[1]))
       {
         counterEtacutBin1++;
         fHistPtBin[0]->Fill(Pt);  
@@ -292,7 +327,7 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
         fPhiBin[0]->Fill(Phi);    
         for(Int_t k =0; k < M; k++) fHEtaPhiBin1[k]->Fill(Eta,Phi);   
       } 
-      if(( Pt >= PtCut[0] && Pt <= PtCut[3]))
+      if(( Pt >= ptbin[2] && Pt <= ptbin[3]))
       {
         counterEtacutBin2++;
         fHistPtBin[1]->Fill(Pt);  
@@ -300,7 +335,7 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
         fPhiBin[1]->Fill(Phi);    
         for(Int_t k =0; k < M; k++) fHEtaPhiBin2[k]->Fill(Eta,Phi);   
       }                          
-      if(( Pt >= PtCut[0] && Pt <= PtCut[4]))
+      if(( Pt >= ptbin[4] && Pt <= ptbin[5]))
       {
         counterEtacutBin3++;
         fHistPtBin[2]->Fill(Pt);  
@@ -308,7 +343,7 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
         fPhiBin[2]->Fill(Phi);    
         for(Int_t k =0; k < M; k++) fHEtaPhiBin3[k]->Fill(Eta,Phi);           
       } 
-      if(( Pt >= PtCut[1] && Pt <= PtCut[4]))
+      if(( Pt >= ptbin[6] && Pt <= ptbin[7]))
       {
         counterEtacutBin4++;
         fHistPtBin[3]->Fill(Pt);  
@@ -332,7 +367,8 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
         fEventCounter->Fill(7); status_write++; 
       }
 
-      Double_t NoOfBins = 2 * (binset+2);              
+      if(fIsMmaxET)  NoOfBins = 2 * (binset+2);              
+      if(!(fIsMmaxET)) NoOfBins = 3 * (binset+2);              
       Double_t MSquare = TMath::Power(NoOfBins,D);    
       Double_t SumOfbincontent = 0;                   
       Double_t FqEvent[Q];
@@ -392,9 +428,9 @@ void AliAnalysisTaskNFMs::UserExec(Option_t *)
         }
       }
 
-      Double_t Av_bincontent   = SumOfbincontent / MSquare; 
+      Double_t Av_bincontent = SumOfbincontent / MSquare; 
       for(Int_t q = 0; q < Q; q++) {  
-        if(sumoff[q] > 0.0) FqEvent[q]     =  sumoff[q] / (MSquare);               
+        if(sumoff[q] > 0.0) FqEvent[q] = sumoff[q] / (MSquare);               
       }
 
       Float_t Fq2e = FqEvent[0];
