@@ -443,9 +443,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
     Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
     if(dPercentile > 100 || dPercentile < 0) { return kFALSE; }
     fhEventCounter->Fill("PercOK",1);
-
-    if(fCentMax > 0.0 && (dPercentile < fCentMin || dPercentile > fCentMax)) { return kFALSE; }
-    fhEventCounter->Fill("CentOK",1);
     fCentrality = (Double_t) dPercentile;
   }
   else if(fIsMC){
@@ -478,9 +475,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
 
     Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(sum);
     fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
-    if(fCentrality < fCentMin || fCentrality > fCentMax) { return kFALSE; }
-    fhEventCounter->Fill("CentOK",1);
   }
+  if(fCentrality < fCentMin || fCentrality > fCentMax) { return kFALSE; }
+  fhEventCounter->Fill("CentOK",1);
 
   fPVz = fAOD->GetPrimaryVertex()->GetZ();
   if(TMath::Abs(fPVz) >= fPVzCut) { return kFALSE; }
