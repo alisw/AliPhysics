@@ -71,7 +71,7 @@ class AliAnalysisTaskSEOmegacZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEOmegacZero2XiPifromKFP(const AliAnalysisTaskSEOmegacZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEOmegacZero2XiPifromKFP& operator=(const AliAnalysisTaskSEOmegacZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEOmegacZero2XiPifromKFP, 2);
+        ClassDef(AliAnalysisTaskSEOmegacZero2XiPifromKFP, 3);
 };
 
 #endif
