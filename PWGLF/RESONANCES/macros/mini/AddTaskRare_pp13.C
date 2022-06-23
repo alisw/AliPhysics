@@ -1755,12 +1755,13 @@ Bool_t Config_Lambdakx(
     
     // selections for V0 daughters
     
-    Int_t V0Cuts=TrackCutsLambda%1000;
+    Int_t V0Cuts=TrackCutsLambda%100;
     Int_t checkAC=TrackCutsLambda/1000;
     
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+    if(V0Cuts==1)   v0d_dcaxy;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -1783,8 +1784,11 @@ Bool_t Config_Lambdakx(
     Bool_t  lambdaSwitch=kFALSE;
     Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
     
-    if(V0Cuts==1) lambdaDCA=1.e10;
-    else if(V0Cuts==2) lambdaDaughDCA=0.5;
+    if(V0Cuts==2) lambdaDCA=1.e10;
+    else if(V0Cuts==3) lambdaDaughDCA=0.5;
+    else if(V0Cuts==4) lambdaDCA=0.2;
+    else if(V0Cuts==5) lambdaDaughDCA=0.3;
+    else if(V0Cuts==6) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     
@@ -2106,6 +2110,7 @@ Bool_t Config_Lambdak0(
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+    if(K0sCuts==1)  v0d_dcaxy=.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -2129,7 +2134,10 @@ Bool_t Config_Lambdak0(
     Bool_t  k0sSwitch=kFALSE;
     Float_t k0sCosPoinAn=0.97;
     
-    if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if(K0sCuts==2) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if(K0sCuts==3) k0sDCA=0.15;
+    if(K0sCuts==4) k0sDaughDCA=0.3;
+    if(K0sCuts==5) k0sCosPoinAn=0.995;
     
     AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
     cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
@@ -2172,6 +2180,12 @@ Bool_t Config_Lambdak0(
     Bool_t  lambdaSwitch=kFALSE;
     Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
     
+    if(LambdaCuts==1) lambdaDCA=1.e10;
+    else if(LambdaCuts==2) lambdaDaughDCA=0.5;
+    else if(LambdaCuts==3) lambdaDCA=0.2;
+    else if(LambdaCuts==4) lambdaDaughDCA=0.3;
+    else if(LambdaCuts==5) lambdaCosPoinAn=0.995;
+ 
     // selections for the proton and pion daugthers of Lambda
     
     AliRsnCutV0* cutLambda=new AliRsnCutV0("cutLambda",kLambda0,AliPID::kProton,AliPID::kPion);
