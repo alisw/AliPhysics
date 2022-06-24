@@ -746,6 +746,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fNtrkl_noCorr);
 	fOutputList->Add(fzvtx_V0M);
 	fOutputList->Add(fcent_V0M);
+	fOutputList->Add(fcent_nAcc);
 	fOutputList->Add(fNchNtr);
 	fOutputList->Add(fNchNtr_Corr);
 	fOutputList->Add(fNchMC);
@@ -1069,6 +1070,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	}
 	fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
+	fcent_nAcc->Fill(centrality_mult,nAcc);
+
         if(fmult_type==1)
           {
            if(nAcc<1)return;
@@ -1083,7 +1086,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 	fzvtx_V0M->Fill(Zvertex,V0Mult);
 	fcent_V0M->Fill(centrality_mult,V0Mult);
-	fcent_nAcc->Fill(centrality_mult,nAcc);
 
 	//-----------Tracklet correction-------------------------
 
