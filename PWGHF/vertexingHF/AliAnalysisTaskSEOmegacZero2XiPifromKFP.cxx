@@ -434,7 +434,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeAnaOmegacZero(AliAODEvent *AOD
    //Nota: V0 sreconstructed on the fly (see function AliCascadeVertexer::V0sTracks2CascadeVertices)
 
     // cascade cut
-    if ( !fAnaCuts->SingleCascCuts(casc, kTRUE) ) continue; //cuts implemented in the corresponding class, kTRUE --> the particle is an Omegac0 (see AliRDHFCutsKFP.cxx)
+    if ( !fAnaCuts->SingleCascCuts(casc, kFALSE) ) continue; //cuts implemented in the corresponding class, kFALSE --> (see AliRDHFCutsKFP.cxx - the only thing the boolean affects is the particle species assigned to the charged cascade's daughter, if the boolean is false it is assumed to be a pion, if it's true a kaon)
 
     AliAODTrack *ptrack = (AliAODTrack*) (casc->GetDaughter(0)); //ptrack stands for positive track, i.e. track of the daughter with positive charge (see how the trak bends in the magnetic field) - first daughter of lambda<-cascade
     AliAODTrack *ntrack = (AliAODTrack*) (casc->GetDaughter(1)); //ntrack stands for negative track, i.e. track of the daughter with negative charge (see how the trak bends in the magnetic field) - second daughter of lambda<-cascade
