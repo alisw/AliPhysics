@@ -2417,6 +2417,13 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
     }
   }
 
+  // Load QnVector, skip event in case of qvector=0
+  bool fQVectorSuccess = LoadQnCorrectedEventPlane();
+
+  if (!fQVectorSuccess) {
+    return kFALSE;
+  }
+
     /*
 	//.. Maybe these two as well .. .. ..
 	if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin)  {
@@ -2504,7 +2511,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
   fHistEventHash->Fill((float) iEventHash);
 
   // Getting corrected event plane, saving information
-  LoadQnCorrectedEventPlane();
+  //LoadQnCorrectedEventPlane(); // now done in is event selected
   if (fIsMC && fMCHeader) {
     fMCReactionPlaneAngle = fMCHeader->GetReactionPlaneAngle();
     fMCReactionPlane->Fill(fMCReactionPlaneAngle);
@@ -4910,7 +4917,7 @@ Int_t AliAnalysisTaskGammaHadron::CalculateEventHash() {
   }
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
+bool AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   //..This function is called at the beginning of FillHistograms
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane()"<<endl;
 
@@ -4920,7 +4927,7 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
 
   if (fIsMC && fUseMCReactionPlane && fMCHeader) {
     fQnCorrEventPlaneAngle = fMCHeader->GetReactionPlaneAngle();
-    return;
+    return kTRUE;
   }
 
 
@@ -4948,23 +4955,23 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   Double_t fQnScaleTPC = 0.0;
 
   if (fEventPlaneSource == 0) {
-    if (fFlowQnVectorMgr == 0) return;
+    if (fFlowQnVectorMgr == 0) return kFALSE;
 
     fV0MQnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZEROQoverM");
     fTPCAQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCPosEtaQoverM");
     fTPCCQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCNegEtaQoverM");
 
-    if (fV0MQnVector != NULL) fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic); else return;
-    if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return;
-    if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return;
+    if (fV0MQnVector != NULL) fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic); else return kFALSE;
+    if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return kFALSE;
+    if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return kFALSE;
   } else { // assume 1 for now, add switch if more options added
     if (fQ2VectorReader == 0) {
       AliError("Missing fQ2Vector");
-      return;
+      return kFALSE;
     }
     if (fQ3VectorReader == 0) {
       AliError("Missing fQ3Vector");
-      return;
+      return kFALSE;
     }
     // Q2
     fV0MQnEP = fQ2VectorReader->GetEPangleV0M();
@@ -4991,6 +4998,14 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
     fQ2V0AScaleVsAngle->Fill(fV0AQnEP,fQnScaleV0A);
     fQ2V0CScaleVsAngle->Fill(fV0CQnEP,fQnScaleV0C);
     fQ2TPCScaleVsAngle->Fill(fTPCQnEP,fQnScaleTPC);
+
+
+    if (fQnScaleV0M == 0) {
+      // removing rare events where Q2 = 0
+      AliError("Found Q2 = 0.");
+      return kFALSE;
+    }
+
 
   }
 
@@ -5205,6 +5220,7 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
     fEP4R_CosD3[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi3));
   }
 
+  return kTRUE;
 }
 
 /**

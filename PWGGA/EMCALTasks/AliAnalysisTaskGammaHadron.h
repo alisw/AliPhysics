@@ -138,7 +138,7 @@ protected:
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
   //..Function for event plane purposes
-  void                        LoadQnCorrectedEventPlane();
+  bool                        LoadQnCorrectedEventPlane(); // returns true if succesful
 
 
   //..Correlate and fill
