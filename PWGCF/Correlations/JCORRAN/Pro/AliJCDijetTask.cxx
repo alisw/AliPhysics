@@ -248,7 +248,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Using pion mass:            " << fusePionMass << endl;
     cout << "Using DeltaPhi in BG subtr: " << fuseDeltaPhiBGSubtr << endl;
     cout << "Particle eta cut:           " << fparticleEtaCut << endl;
-    cout << "Particle pt cut:            " << fparticlePtCut << endl;
+    cout << "Particle pt min cut:        " << fparticlePtCut << endl;
+    cout << "Particle pt max cut:        " << 100.0 << endl;
     cout << "Dijet leading jet cut:      " << fleadingJetCut << endl;
     cout << "Dijet subleading jet cut:   " << fsubleadingJetCut << endl;
     cout << "Jet min pt cut:             " << fMinJetPt << endl;
@@ -268,9 +269,11 @@ void AliJCDijetTask::UserCreateOutputObjects()
     }
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
+    //Note: for true MC we do not want to cut particles kinematically.
     fana->SetSettings(fDebug,
                       fparticleEtaCut,
-                      fparticlePtCut,
+                      fIsMC?0.0:fparticlePtCut,
+                      fIsMC?DBL_MAX:100.0,
                       fjetCone,
                       fktJetCone,
                       fktScheme,
@@ -284,12 +287,14 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fdeltaPhiCut,
                       fmatchingR,
                       0.0, //Tracking ineff only for det level.
-                      bUseCrho);
+                      bUseCrho,
+                      fIsMC); //Is this true mc
 
     if(fIsMC) {
         fanaMC->SetSettings(fDebug,
                             fparticleEtaCut,
                             fparticlePtCut,
+                            100.0,
                             fjetCone,
                             fktJetCone,
                             fktScheme,
@@ -303,7 +308,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fdeltaPhiCut,
                             fmatchingR,
                             ftrackingIneff,
-                            bUseCrho);
+                            bUseCrho,
+                            false); //Is this true mc
     }
 
     // Save information about the settings used.
@@ -393,9 +399,9 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         //cout << "Next det level calculations:" << endl;
-        fDetMCFlag = fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
+        fDetMCFlag = fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC, 1.0);
         if(fDetMCFlag != 0) return;
-        fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
+        fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC, 1.0);
 #endif
     }
 
@@ -433,8 +439,8 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
     //cout << "Next true level calculations:" << endl;
-    fana->CalculateJets(fInputList, fhistos, fCBin);
-    fana->FillJetsDijets(fhistos, fCBin);
+    fana->CalculateJets(fInputList, fhistos, fCBin, 1.0);
+    fana->FillJetsDijets(fhistos, fCBin, 1.0);
 #endif
 
     // Here response matrix calculation.

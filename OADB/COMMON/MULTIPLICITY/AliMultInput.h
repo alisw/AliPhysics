@@ -53,6 +53,7 @@ public:
     kAmplitude_OnlineV0C,
     kAmplitude_V0AADC,
     kAmplitude_V0CADC,
+    kFlatenicity_V0,
     kMultiplicity_ADA,
     kMultiplicity_ADC,
     knSPDClusters,

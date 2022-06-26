@@ -15,10 +15,12 @@
 #include <TH2.h>
 #include <TList.h>
 #include <TString.h>
+#include <TDatabasePDG.h>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODv0KineCuts.h"
 #include "AliAODTrack.h"
+#include "AliAODcascade.h"
 #include "AliAODEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
@@ -45,6 +47,7 @@ public:
     kIsHe3FromTPCTOF      = BIT(10),
     kPositiveTrack        = BIT(14),
     kNegativeTrack        = BIT(15),
+    kIsKaonFromOmega      = BIT(16)
   };
 
   enum trackinfo {
@@ -101,6 +104,18 @@ public:
   void SetUseTimeRangeCutForPbPb2018(bool opt)                                {fUseTimeRangeCutForPbPb2018=opt;}
   void SetConversionFactordEdx(float factor)                                  {fConversionFactordEdx=factor;}
 
+  void SetCutMinCascRadius(float cut)                                         {fCutMinCascRadius = cut;}
+  void SetCutMinV0Radius(float cut)                                           {fCutMinV0Radius = cut;}
+  void SetCutMaxV0Radius(float cut)                                           {fCutMaxV0Radius = cut;}
+  void SetCutCosPA(double cut)                                                {fCutCosPA = cut;}
+  void SetCutDcaBachToPV(float cut)                                           {fCutDcaBachToPV = cut;}
+  void SetCutDcaV0ToPV(float cut)                                             {fCutDcaV0ToPV = cut;}
+  void SetCutDcaV0DaughToPV(float cut)                                        {fCutDcaV0DaughToPV = cut;}
+  void SetDcaV0Daught(float cut)                                              {fDcaV0Daught = cut;}
+  void SetDcaCascDaught(float cut)                                            {fDcaCascDaught = cut;}
+  void SetCutInvMassLam(float cut)                                            {fCutInvMassLam = cut;}
+  void SetCutNSigmaPID(float cut)                                             {fCutNSigmaPID = cut;}
+
   void EnableSelectionWithAliEventCuts(bool useAliEventCuts=true, int optOOBpileup=0, int optOOBpileupITSTPC=1, bool keepOnlyPileUpEvents=false) {
     fUseAliEventCuts=useAliEventCuts;
     fApplyPbPbOutOfBunchPileupCuts=optOOBpileup;
@@ -126,6 +141,7 @@ private:
   bool IsVertexAccepted();
   bool IsCentralitySelected();
   void GetTaggedV0s(vector<short> &idPionFromK0s, vector<short> &idPionFromL, vector<short> &idProtonFromL, vector<short> &idElectronFromGamma);
+  void GetTaggedCascades(vector<short> &idKaonFomrCascade);
   int GetPDGcodeFromMC(AliAODTrack* track, TClonesArray* arrayMC);
   AliAODTrack* IsKinkDaughter(AliAODTrack* track);
   void GetTaggedKaonsFromKinks(vector<short> &idKaonFromKinks);
@@ -139,6 +155,7 @@ private:
   bool IsSelectedByGeometricalCut(AliAODTrack* track);
   bool FillNsigma(int iDet, AliAODTrack* track);
   void TagOOBPileUpEvent();
+  bool IsSelectedOmega(AliAODcascade *const casc);
 
   enum {kPion, kKaon, kProton, kElectron, kDeuteron, kTriton, kHe3};
   enum {kITS, kTPC, kTOF, kHMPID};
@@ -146,6 +163,7 @@ private:
   const float kCSPEED = 2.99792457999999984e-02; // cm / ps
   static const int kNMaxDet = 4;
   static const int kNMaxHypo = 7;
+  const float kLambdaMass = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
   TList *fOutputList;                                                                //!<! output list for histograms
 
@@ -185,7 +203,7 @@ private:
   short fEta;                                                                        /// pseudorapidity of the track
   unsigned short fPhi;                                                               /// azimuthal angle of the track
   int fPDGcode;                                                                      /// PDG code in case of MC to fill the tree
-  unsigned short fTag;                                                               /// bit map for tag (see enum above)
+  unsigned int fTag;                                                                 /// bit map for tag (see enum above)
   float fNsigmaMaxForKaonTag;                                                        /// max nSigma value to tag kaons
   float fNsigmaMaxForNucleiTag;                                                      /// max nSigma value to tag nuclei
   float fQtMinKinks;                                                                 /// min qt for kinks
@@ -196,6 +214,18 @@ private:
   float fCutGeoNcrNclGeom1Pt;                                                        /// 3rd parameter geometrical cut
   float fCutGeoNcrNclFractionNcr;                                                    /// 4th parameter geometrical cut
   float fCutGeoNcrNclFractionNcl;                                                    /// 5th parameter geometrical cut
+  
+  float fCutMinCascRadius;                                                           /// min radius of the cascade
+  float fCutMinV0Radius;                                                             /// min radius of the V0
+  float fCutMaxV0Radius;                                                             /// max radius of the V0
+  double fCutCosPA;                                                                  /// cosinus of the pointing angle
+  float fCutDcaBachToPV;                                                             /// DCA between bachelor and PV
+  float fCutDcaV0ToPV;                                                               /// DCA between V0 and PV
+  float fCutDcaV0DaughToPV;                                                          /// DCA between V0 daughter and PV
+  float fDcaV0Daught;                                                                /// DCA between the V0 daughters
+  float fDcaCascDaught;                                                              /// DCA between the cascade daughters
+  float fCutInvMassLam;                                                              /// Width of the lambda
+  float fCutNSigmaPID;                                                               /// N of sigmas for PID
 
   float fCentMin;                                                                    /// min centrality
   float fCentMax;                                                                    /// max centrality
@@ -244,7 +274,7 @@ private:
   bool fUseTimeRangeCutForPbPb2018;                                                  /// flag to enable time-range cut in PbPb 2018
   AliTimeRangeCut fTimeRangeCut;                                                     /// object to manage time range cut
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 17);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 18);
 };
 
 #endif

@@ -63,6 +63,8 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() :
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE), 
   fDropMass0Jets(false),
+  fMinPtTracksSD(0.),
+  fMinEClustersSD(0.),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -82,6 +84,8 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGV
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
   fDropMass0Jets(false),
+  fMinPtTracksSD(0.),
+  fMinEClustersSD(0.),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -227,8 +231,8 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     }
     try {
       FillJetQA(*jet, energydef);
-      auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, energydef, fVertex, fDropMass0Jets);
-      auto splittings = IterativeDecluster(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, energydef, fVertex, fDropMass0Jets);
+      auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, energydef, fVertex, fDropMass0Jets, fMinPtTracksSD, fMinEClustersSD);
+      auto splittings = IterativeDecluster(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, energydef, fVertex, fDropMass0Jets, fMinPtTracksSD, fMinEClustersSD);
       bool untagged = sdparams.fZg < fZcut;
       AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << sdparams.fZg << std::endl;
       Double_t pointZg[3] = {sdparams.fZg, jet->Pt(), -1},

@@ -134,6 +134,7 @@ void AliAnalysisTaskUpcRho0::Init()
 		TrackP_T[i] = -666;
 		TrackEta_T[i] = -666;
 		TrackPhi_T[i] = -666;
+		TrackQ_T[i] = 0;
 	}
 	for (Int_t i=0;i<3;i++){
 		Vertex_T[i] = -666;
@@ -182,6 +183,7 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree->Branch("TrackPx_T",&TrackPx_T,"TrackPx_T[2]/F");
 	fRhoTree->Branch("TrackPy_T",&TrackPy_T,"TrackPy_T[2]/F");
 	fRhoTree->Branch("TrackPz_T",&TrackPz_T,"TrackPz_T[2]/F");
+	fRhoTree->Branch("TrackQ_T",&TrackQ_T,"TrackQ_T[2]/S");
 	fRhoTree->Branch("VtxX_T",&Vertex_T[0],"VtxX_T/F");
 	fRhoTree->Branch("VtxY_T",&Vertex_T[1],"VtxY_T/F");
 	fRhoTree->Branch("VtxZ_T",&Vertex_T[2],"VtxZ_T/F");
@@ -537,6 +539,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		TrackPx_T[i] = trk->Px();
 		TrackPy_T[i] = trk->Py();
 		TrackPz_T[i] = trk->Pz();
+		TrackQ_T[i] = trk->Charge();
 
 		fTrackChi2->Fill((Float_t)trk->GetTPCchi2()/trk->GetTPCNcls());
 

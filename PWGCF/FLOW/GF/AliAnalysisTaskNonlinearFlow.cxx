@@ -550,7 +550,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   // Calculate the used observables:
   // unsigned fgFlowHarmonics;        //! calculate v2, v3, v4, v5
   // unsigned fgFlowHarmonicsHigher;  //! calculate v6, v7, v8 ..
-  // unsigned fgFlowHarmonicsMult;    //! calculate v2{4} // yet v2{6}, v2{8}
+  // unsigned fgFlowHarmonicsMult;    //! calculate v2{4}  v2{6}, v2{8}
   // unsigned fgNonlinearFlow;        //! calculate v_4,22, v_5,32
   // unsigned fgSymmetricCumulants;   //! calculate SC(3,2), SC(4,2)
   //
@@ -559,6 +559,8 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fgTwoParticleCorrelationHigher = fgFlowHarmonicsHigher;
   fgThreeParticleCorrelation     = fgNonlinearFlow;
   fgFourParticleCorrelation      = fgNonlinearFlow | fgSymmetricCumulants | fgFlowHarmonicsMult;
+  fgSixParticleCorrelation       = fgFlowHarmonicsMult;
+  fgEightParticleCorrelation     = fgFlowHarmonicsMult;
 
   fuTwoParticleCorrelationStandard = fgTwoParticleCorrelation & knStandard;
   fuTwoParticleCorrelation0Gap     = fgTwoParticleCorrelation & kn0Gap;
@@ -583,6 +585,12 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fuFourParticleCorrelationLargeGap = fgFourParticleCorrelation & knLargeGap;
   fuFourParticleCorrelationThreeSub = fgFourParticleCorrelation & knThreeSub;
   fuFourParticleCorrelationGapScan  = fgFourParticleCorrelation & knGapScan;
+
+  fuSixParticleCorrelationStandard  = fgSixParticleCorrelation & knStandard;
+  fuSixParticleCorrelation0Gap      = fgSixParticleCorrelation & kn0Gap;
+
+  fuEightParticleCorrelationStandard = fgEightParticleCorrelation & knStandard;
+  fuEightParticleCorrelation0Gap     = fgEightParticleCorrelation & kn0Gap;
 
   if (fuTwoParticleCorrelationGapScan) {
     fuTwoParticleCorrelationStandard = true;
@@ -2295,6 +2303,31 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
       listOfProfile->Add(multProfile.fChcn4_3subGap2[h]);
     }
 
+
+    if (fuSixParticleCorrelationStandard && h == 0) {
+      multProfile.fChcn6[h] = new TProfile(Form("fChc%d{6}%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn6[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn6[h]);
+    }
+
+    if (fuSixParticleCorrelation0Gap && h == 0) {
+      multProfile.fChcn6_Gap0[h] = new TProfile(Form("fChc%d{6}_Gap0%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn6_Gap0[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn6_Gap0[h]);
+    }
+
+    if (fuEightParticleCorrelationStandard && h == 0) {
+      multProfile.fChcn8[h] = new TProfile(Form("fChc%d{8}%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn8[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn8[h]);
+    }
+
+    if (fuEightParticleCorrelation0Gap && h == 0) {
+      multProfile.fChcn8_Gap0[h] = new TProfile(Form("fChc%d{8}_Gap0%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn8_Gap0[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn8_Gap0[h]);
+    }
+
   } // harmonics
 
   if (fuThreeParticleCorrelationStandard) {
@@ -3334,6 +3367,52 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
     }
   }
 
+  //..calculate 6-particle correlations and 8-particle corrleations
+  //................................
+
+
+  double Dn6, Dn6Gap0;
+  double Dn8, Dn8Gap0;
+  Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
+  Dn6Gap0 = correlator.SixGap0(0, 0, 0, 0, 0, 0).Re();
+  Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
+  Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
+
+  if (fuSixParticleCorrelationStandard) {
+    if(NtrksAfter > 5 && Dn6 != 0)
+    {
+
+      TComplex v26 = correlator.Six(2, 2, 2, -2, -2, -2);
+      double v26Re = v26.Re()/Dn6;
+      profile.fChcn6[0]->Fill(Ntrks, v26Re, Dn6);
+    }
+  }
+  if (fuSixParticleCorrelation0Gap) {
+    if (NtrksAfterGap0M > 2 && NtrksAfterGap0P > 2 && Dn4Gap0 !=0)
+    {
+        TComplex v26Gap0 = correlator.SixGap0(2, 2, 2, -2, -2, -2);
+        double v26Gap0Re = v26Gap0.Re()/Dn6Gap0;
+        profile.fChcn6_Gap0[0]->Fill(Ntrks, v26Gap0Re, Dn6Gap0);
+    }
+  }
+  if (fuEightParticleCorrelationStandard) {
+    if(NtrksAfter > 7 && Dn8 != 0)
+    {
+
+      TComplex v28 = correlator.Eight(2, 2, 2, 2, -2, -2, -2, -2);
+      double v28Re = v28.Re()/Dn8;
+      profile.fChcn8[0]->Fill(Ntrks, v28Re, Dn8);
+    }
+  }
+  if (fuEightParticleCorrelation0Gap) {
+    if (NtrksAfterGap0M > 3 && NtrksAfterGap0P > 3 && Dn8Gap0 !=0)
+    {
+        TComplex v28Gap0 = correlator.EightGap0(2, 2, 2, 2, -2, -2, -2, -2);
+        double v28Gap0Re = v28Gap0.Re()/Dn8Gap0;
+        profile.fChcn8_Gap0[0]->Fill(Ntrks, v28Gap0Re, Dn8Gap0);
+    }
+  }
+
 }
 
 const char* AliAnalysisTaskNonlinearFlow::ReturnPPperiodMC(const Int_t runNumber) const
@@ -3567,7 +3646,13 @@ PhysicsProfile::PhysicsProfile() :
   memset(fChcn4_3subLLMR, 0, sizeof(fChcn4_3subLLMR));
   memset(fChcn4_3subRRML, 0, sizeof(fChcn4_3subRRML));
   memset(fChcn4_3subGap2, 0, sizeof(fChcn4_3subGap2));
+
+  memset(fChcn6, 0, sizeof(fChcn6));
+  memset(fChcn6_Gap0, 0, sizeof(fChcn6_Gap0));
+  memset(fChcn8, 0, sizeof(fChcn8));
+  memset(fChcn8_Gap0, 0, sizeof(fChcn8_Gap0));
 }
+
 PhysicsProfile::PhysicsProfile(const PhysicsProfile& profile) :
   fChsc4242(nullptr),
   fChsc4242_Gap0(nullptr),
@@ -3667,4 +3752,9 @@ PhysicsProfile::PhysicsProfile(const PhysicsProfile& profile) :
   memset(fChcn4_3subLLMR, 0, sizeof(fChcn4_3subLLMR));
   memset(fChcn4_3subRRML, 0, sizeof(fChcn4_3subRRML));
   memset(fChcn4_3subGap2, 0, sizeof(fChcn4_3subGap2));
+
+  memset(fChcn6, 0, sizeof(fChcn6));
+  memset(fChcn6_Gap0, 0, sizeof(fChcn6_Gap0));
+  memset(fChcn8, 0, sizeof(fChcn8));
+  memset(fChcn8_Gap0, 0, sizeof(fChcn8_Gap0));
 }

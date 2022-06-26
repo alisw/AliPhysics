@@ -38,6 +38,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 		const char *ntracks		= "usedefault",
 		const char *nclusters		= "usedefault",
 		const char *ncells		= "usedefault",
+		Double_t Rstep_EF               = 0.1,              
 		Bool_t SetMCprod                 = kTRUE,
                 const char *suffix              = "" );
 	
@@ -64,6 +65,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoClusterLoop()                         ; ///<May remove later	
 	void                    DoCellLoop()                            ; ///<May remove later
 
+	Double_t                R_jet_step				;///<Radial step for the dpt calculation
         Bool_t                  IsMCprod                                ;///<Flag for MC productions
 	THistManager            fHistManager                            ;///<Hist manager
 //	TList*			fOutput					;///!<! Output list
@@ -72,7 +74,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
   	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,13);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,14);
 	/// \endcond
 };
 #endif

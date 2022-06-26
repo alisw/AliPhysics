@@ -1,13 +1,17 @@
 #ifndef ALIANALYSISTRACKINGUNCERTAINTIESAOT_H
 #define ALIANALYSISTRACKINGUNCERTAINTIESAOT_H
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                                                     //
-// Analysis task for the systematic study of the uncertainties related to    //
-// the tracking and ITS-TPC matching efficiency for different particle        //
-// species.                                                                                                     //
-//                                                                                                                   //
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                 //
+// Analysis task for the systematic study of the uncertainties related to                          //
+// the tracking and ITS-TPC matching efficiency for different particle  species.                   //
+//                                                                                                 //
+//                                                                                                 //
+//  This is my version 2.5 - RT                                                                    //
+//                                                                                                 //
+// - fAddPriVtxVars now is the switch to choose if vtx quallity check axes are present or not      //
+//                                                                                                 //
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class TList;
 class AliESDEvent;
@@ -26,12 +30,14 @@ class AliESDpid;
 #include <Rtypes.h>
 
 class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
-    
+  //
+  //
  public:
-    
   enum {
-    kNumberOfAxes = 12
+    kNumberOfAxes = 8,
+    kNumberOfAxesWvtx = 12
   };
+    
   enum ESpecies_t {
     kSpecElectron = BIT(0),
     kSpecPion     = BIT(1),
@@ -120,7 +126,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   // switch on/off MC spectra weights
   void SetUseMCWeights()  {fUseMCWeights = kTRUE;}
 
-  // adds to the ThnSparse 4 more axes of primary vertex resolution and position
+  // choose to add to the ThnSparse 4 more axes of primary vertex resolution and position variables
   void SetfAddPriVtxVars()  {fAddPriVtxVars = kTRUE;}
 
  private:
@@ -218,4 +224,3 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
 };
 
 #endif
-

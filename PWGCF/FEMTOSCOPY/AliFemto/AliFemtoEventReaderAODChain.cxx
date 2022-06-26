@@ -80,7 +80,7 @@ AliFemtoEvent* AliFemtoEventReaderAODChain::ReturnHbtEvent()
   if (!fEvent) {
     return nullptr;
   }
-
+  
   AliFemtoEvent *hbtEvent = 0;
 
   // Get the PWG2 specific information if it exists

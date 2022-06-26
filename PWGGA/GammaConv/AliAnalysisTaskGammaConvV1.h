@@ -52,6 +52,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void ProcessPhotonBDT();
     void ProcessClusters();
     void ProcessJets();
+    void InitJets();
     void ProcessPhotonsHighPtHadronAnalysis();
     void CalculatePi0Candidates();
     void CalculateBackground();
@@ -319,6 +320,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTrueJetFragmFuncZInvMass;                       // Histogram to determine true Inv Mass distribution with z
     TH1F**                            fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                            fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
+    TH1F**                            fHistoMCPi0WOWeightinJetInAccPt;                      // Histogram with pi0 without weights in a jet in acceptance, pT
     TH1F**                            fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
     TH1F**                            fHistoMCEtainJetInAccPt;                              // Histogram with weighted eta in a jet in acceptance, pT
     TH1F**                            fHistoMCPi0JetEventGenerated;                         // Histogram with mesons in a jet event generated, pT
@@ -353,6 +355,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     vector<Double_t>                  fTrueVectorJetPz;                                     // Vector of True JetPz
     vector<Double_t>                  fTrueVectorJetEta;                                    // Vector of True JetEta
     vector<Double_t>                  fTrueVectorJetPhi;                                    // Vector of True JetPhi
+
+    std::map<Int_t, Int_t> MapRecJetsTrueJets;                                  //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
 
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1F**                            fHistoNV0Tracks;                            //!
@@ -422,7 +426,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 55);
+    ClassDef(AliAnalysisTaskGammaConvV1, 56);
 };
 
 #endif

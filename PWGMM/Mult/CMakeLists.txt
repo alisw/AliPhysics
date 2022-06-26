@@ -30,6 +30,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisPseudoRapidityDensity.cxx
+  AliPMDpPbAnalysisTaskData.cxx
+  AliPMDpPbAnalysisTaskSim.cxx
 )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

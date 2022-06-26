@@ -12,6 +12,8 @@
 #include <TRandom.h>
 #include "TClonesArray.h"
 #include "AliRsnListOutput.h"
+#include "TDatabasePDG.h"
+#include "TParticlePDG.h"
 
 class AliRsnListOutput;
 class AliRsnMiniParticle;
@@ -79,6 +81,7 @@ public:
    Double_t        PairYRes()               const;
    Double_t        PairAsymmetry(Bool_t mc); 
    Bool_t          ContainsIndex(Int_t index);
+  Double_t        pTLstar(Bool_t mc)     const;
 
 
  private:

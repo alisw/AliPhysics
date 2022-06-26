@@ -2092,6 +2092,23 @@ void AliAnalysisTaskEmcalEmbeddingHelper::Print(Option_t* opt) const
 *    to get the Pt-Hard bin in jet-jet MC  productions  
 */
  TString AliAnalysisTaskEmcalEmbeddingHelper::GetExternalFilePath() const 
-{ 
+{
+  // Sanity checks and protection in case there was a problem accessing the external file
+  //
+  if ( !fChain ) {
+    AliError("No file chain found!");
+    return "";
+  }
+
+  if ( !fChain->GetTree() )  {
+    AliError("No file tree found!");
+    return "";
+  }
+
+  if ( !fChain->GetTree()->GetCurrentFile() ) {
+    AliError("No file found!");
+    return "";
+  }
+
   return fChain->GetTree()->GetCurrentFile()->GetName(); 
 }

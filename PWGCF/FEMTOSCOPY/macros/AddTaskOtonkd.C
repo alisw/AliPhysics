@@ -15,7 +15,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   // KaonCut = 0 // Oton Std
   // KaonCut = 1 // Ramona
-  // KaonCut = 0 // Oton open
+  // KaonCut = 2 // Oton open
 
   // DeuteronCut = 0 // Oton 
   // DeuteronCut = 1 // FD Std
@@ -23,6 +23,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   // ProtonCut = 0 // protons
   // ProtonCut = 1 // pions
+  // ProtonCut = 2 // perform p-d analysis (substitute kaons in tree for protons)
 
   // DoFDpairing = 0 // no FD pairing
   // DoFDpairing = 1 // YES do FD pairing
@@ -39,6 +40,8 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   //add a boolean when running with pions since we don't need all of them:
   bool isPions = false;
   if(ProtonCut==1) isPions = true;
+  bool DOpd = false;
+  if(ProtonCut==2) DOpd = true;
 
 
   const char fullBlastQA = true; //moved from arguments
@@ -77,6 +80,9 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsKaon->SetEtaRange(-0.84, 0.84);
    TrackCutsKaon->SetNClsTPC(70);
    TrackCutsKaon->SetDCAVtxZ(0.24);
+  }else if(KaonCut==7){ // Kaons by Oton with checkpileupSPDTOF
+   TrackCutsKaon->SetPIDkd();
+   TrackCutsKaon->SetCheckPileUpSPDTOF(true);
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(
@@ -95,6 +101,9 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiKaon->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiKaon->SetNClsTPC(70);
    TrackCutsAntiKaon->SetDCAVtxZ(0.24);
+  }else if(KaonCut==7){ // Kaons by Oton with checkpileupSPDTOF
+   TrackCutsAntiKaon->SetPIDkd();
+   TrackCutsAntiKaon->SetCheckPileUpSPDTOF(true);
   }
 
   //deuterons
@@ -103,7 +112,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   TrackCutsDeuteron->SetCutCharge(1);
   TrackCutsDeuteron->SetFilterBit(128);
   if(DeuteronCut==0){ // cuts by Oton
-   TrackCutsDeuteron->SetPIDkd(false);
+   TrackCutsDeuteron->SetPIDkd(false,false,3,3);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
   }else if(DeuteronCut==2){ // Open cuts for syst by FemtoDream
@@ -119,20 +128,24 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
    TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 1.4);//1.4 sigmas as well!
   }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
-   TrackCutsDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsDeuteron->SetPIDkd(false,false,3.5,3.5);
    TrackCutsDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsDeuteron->SetNClsTPC(70);
    TrackCutsDeuteron->SetDCAVtxZ(0.24);
+  }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
+   TrackCutsDeuteron->SetPIDkd(false,false,3,3);
+   TrackCutsDeuteron->SetPtRange(0.8,2.9);
+  }else if(DeuteronCut==7){ // Deuterons by Oton with checkpileupSPDTOF
+   TrackCutsDeuteron->SetPIDkd(false,false,3,3);
+   TrackCutsDeuteron->SetCheckPileUpSPDTOF(true);
   }
-
-
 
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, false, false);
   TrackCutsAntiDeuteron->SetCutCharge(-1);
   TrackCutsAntiDeuteron->SetFilterBit(128);
   if(DeuteronCut==0){ // cuts by Oton
-   TrackCutsAntiDeuteron->SetPIDkd(false);
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
   }else if(DeuteronCut==2){ // Open cuts for syst by FemtoDream
@@ -148,15 +161,21 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4,1.4);//1.4 sigmas as well!
   }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
-   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3.5,3.5);
    TrackCutsAntiDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiDeuteron->SetNClsTPC(70);
    TrackCutsAntiDeuteron->SetDCAVtxZ(0.24);
+  }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
+   TrackCutsAntiDeuteron->SetPtRange(0.8,2.9);
+  }else if(DeuteronCut==7){ // Deuterons by Oton with checkpileupSPDTOF
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
+   TrackCutsAntiDeuteron->SetCheckPileUpSPDTOF(true);
   }
 
   //protons
   AliFemtoDreamTrackCuts *TrackCutsProton;
-  if(ProtonCut==0){ //use protons
+  if(ProtonCut==0||ProtonCut==2){ //use protons
    TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   }
   if(ProtonCut==1){ //use pions
@@ -174,11 +193,12 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsProton->SetRejLowPtPionsTOF(false);
    TrackCutsProton->SetMinimalBooking(false);
    TrackCutsProton->SetPlotDCADist(true);
+   TrackCutsProton->SetCheckPileUpSPDTOF(true);
   }
   TrackCutsProton->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *TrackCutsAntiProton;
-  if(ProtonCut==0){ //use protons
+  if(ProtonCut==0||ProtonCut==2){ //use protons
    TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   }
   if(ProtonCut==1){ //use pions
@@ -196,6 +216,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiProton->SetRejLowPtPionsTOF(false);
    TrackCutsAntiProton->SetMinimalBooking(false);
    TrackCutsAntiProton->SetPlotDCADist(true);
+   TrackCutsAntiProton->SetCheckPileUpSPDTOF(true);
   }
   TrackCutsAntiProton->SetCutCharge(-1);
 
@@ -204,7 +225,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   std::vector<int> PDGParticles;
   PDGParticles.push_back(321);//k
   PDGParticles.push_back(321);//k
-  if(ProtonCut==0){ //use protons
+  if(ProtonCut==0||ProtonCut==2){ //use protons
    PDGParticles.push_back(2212);
    PDGParticles.push_back(2212);
   }
@@ -275,12 +296,16 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   closeRejection[0] = true;  // k k
   closeRejection[2] = true;  // k p
   closeRejection[4] = true;  // k d
+  closeRejection[5] = true;  // k bard
   closeRejection[6] = true;  // bark bark
   closeRejection[8] = true;  // bark barp
+  closeRejection[9] = true;  // bark d
   closeRejection[10] = true;  // bark bard
   closeRejection[11] = true;  // pp
   closeRejection[13] = true;  // pd
+  closeRejection[14] = true;  // pbard
   closeRejection[15] = true;  // barp barp
+  closeRejection[16] = true;  // barp d
   closeRejection[17] = true;  // barp bard
   closeRejection[18] = true;  // dd
   closeRejection[20] = true;  // bard bar
@@ -377,7 +402,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   //Define here the analysis task
   AliAnalysisTaskOtonkd *task =
-   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, isIncludeSomeProtons, isPions, doFDpairing);
+   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, isIncludeSomeProtons, isPions, doFDpairing, DOpd);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);

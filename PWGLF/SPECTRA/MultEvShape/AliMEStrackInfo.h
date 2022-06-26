@@ -82,6 +82,7 @@ public:
   AliMEStrackInfo();
   AliMEStrackInfo(const AliMEStrackInfo &t);
   AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCombined *pidComb);
+  AliMEStrackInfo(AliESDtrack *t);
   AliMEStrackInfo(AliMCParticle *t, AliStack *mcStack);
   ~AliMEStrackInfo();
 

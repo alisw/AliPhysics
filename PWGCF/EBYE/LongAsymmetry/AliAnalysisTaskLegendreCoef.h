@@ -17,7 +17,6 @@ class TTree;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-#include <TTreeStream.h>
 #define PI 3.1415927
 
 class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
@@ -56,7 +55,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetPVzMaxLimit(Float_t pvzmax) {fPVzMax=pvzmax;}
     void            SetPVzSign(Int_t sign) {fPVzSign=sign;}//-1 then negative pvz, +1 then positive pvz, 0 then absolute value (to test effect from the TPC membrane)
     void            SetNEtaBins(Int_t Netabins) {fNetabins=Netabins;}//default 16
-    void            SetEfficiencyTree(Bool_t flag) {fEffTree = flag;}//enable efficiency tree when building background
+    void            SetRunOnlyFB(Bool_t flag) {fIsRunFBOnly = flag;}//default 16
 
   private:
     Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
@@ -93,10 +92,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Float_t fPVzMin; //min PVz
     Int_t fPVzSign; //sign of PVz
     Int_t fNetabins; //number of bins in eta
-    Bool_t fEffTree; //enable eff tree in output
-    TTreeSRedirector *fTreeSRedirector;        //! temp tree to dump output
-    TTree            *fTreeMCrec;              // tree for reconstructed 
-    TTree            *fTreeMCgen;              // tree for generatec
+    Bool_t fIsRunFBOnly; //only filterbit cuts
 
     AliEventCuts fEventCuts;
 

@@ -37,9 +37,9 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
         void       GetLeadingObjectFromArray(const std::vector<Float_t> &pt, const std::vector<Float_t> &phi, Int_t multPart, Bool_t isMC);
-        void       GetDetectorResponse(const std::vector<Float_t> &phiGen, Int_t multGen, const std::vector<Float_t> &phiRec, Int_t multRec);
+        void       GetDetectorResponse(const std::vector<Float_t> &phiGen, Int_t multGen, const std::vector<Float_t> &phiRec, Int_t multRec, const std::vector<Int_t> &idGen);
         void       GetBinByBinCorrections(Int_t multGen, Int_t multRec, const std::vector<Float_t> &ptGen, const std::vector<Float_t> &ptRec, const std::vector<Int_t> &idGen, const std::vector<Int_t> &idRec, const std::vector<Int_t> &isprimRec);
-        void       GetMultiplicityDistributionsTrue(const std::vector<Float_t> &phiGen, const std::vector<Float_t> &ptGen, Int_t multGen );
+        void       GetMultiplicityDistributionsTrue(const std::vector<Float_t> &phiGen, const std::vector<Float_t> &ptGen, Int_t multGen, const std::vector<Int_t> &idGen );
 
         void       GetMultiplicityDistributions(const std::vector<Float_t> &phiRec, const std::vector<Float_t> &ptRec, Int_t multRec, const std::vector<Float_t> &ptRecwodca, const            std::vector<Float_t> &dcaxyRecwodca, const std::vector<Int_t> &isprimwodca, Int_t multRecwodca );
 
@@ -47,6 +47,9 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         void       SetPtMin(Double_t val)              {fPtMin = val;}   // Set pT cut for associated particles
         void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
         void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
+        void       SetNchNbin(Int_t NchNbins)    {fNchNbin = NchNbins;}   // use different bining
+        void       SetNchBinMax(Double_t maxbinNch)    {fNchBinMax = maxbinNch;}   // use different bin max
+    
         void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
         void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
         void       SetIsHybridAnalysis(Bool_t isHy = kFALSE)    {fIsHybAna = isHy;}
@@ -119,6 +122,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         Double_t fPtMin;
         Double_t fLeadPtCutMin;
         Double_t fLeadPtCutMax;
+        Int_t fNchNbin;
+        Double_t fNchBinMax;
         Double_t fGenLeadPhi;
         Double_t fGenLeadPt;
         Int_t    fGenLeadIn;

@@ -50,6 +50,7 @@ AliAnalysisTaskSignedBFMC::AliAnalysisTaskSignedBFMC(const char *name)
   fHistMultiplicityvsPercentile(0),
   fHistEventPlane(0),
   fHistEPResolution(0),
+  fProfEPResolution(0),
   fHistNumberOfAcceptedParticles(0),
   fHistNumberOfAcceptedPositiveParticles(0),
   fHistNumberOfAcceptedNegativeParticles(0),
@@ -83,6 +84,7 @@ AliAnalysisTaskSignedBFMC::AliAnalysisTaskSignedBFMC(const char *name)
   fVxMax(3.), fVyMax(3.), fVzMax(10.),
   fUseAdditionalVtxCuts(kFALSE),
   fCheckPileUp(kFALSE),
+  fUseReactionPlane(kFALSE),
   fCentralityPercentileMin(0.), fCentralityPercentileMax(100.),
   fEventPlane(0),
   fnAODtrackCutBit(768),
@@ -144,7 +146,7 @@ void AliAnalysisTaskSignedBFMC::UserCreateOutputObjects() {
   fListQA->Add(fHistMultiplicityPercentile);
 
   fHistMultiplicity = new TH1F("fHistMultiplicity","Multiplicity distribution; Multiplicity;Entries",100002,-1.,20000.);
-  fListQA->Add(fHistMultiplicity);
+  fListQA->Add(fHistMultiplicity);  
 
   fHistMultiplicityvsPercentile = new TH2F("fHistMultiplicityvsPercentile","Multiplicity vs percentile; Multiplicity;Event class (%)",100002,-1.,20000.,103,-1.5,100.5);
   fListQA->Add(fHistMultiplicityvsPercentile);
@@ -152,9 +154,12 @@ void AliAnalysisTaskSignedBFMC::UserCreateOutputObjects() {
   //Event plane
   fHistEventPlane = new TH2F("fHistEventPlane",";#Psi_{2} [deg.];Centrality percentile;Counts",100,0,TMath::Pi(),220,-5,105);
   fListQA->Add(fHistEventPlane);
-  fHistEPResolution = new TH2F("fHistEPResolution",";Resolution;Centrality percentile;Counts",100,0,TMath::Pi(),220,-5,105);
-  fListQA->Add(fHistEPResolution); 
+  fHistEPResolution = new TH2F("fHistEPResolution",";Resolution;Centrality percentile;Counts",100,0,1.0,220,-5,105);
+  fListQA->Add(fHistEPResolution);
+  fProfEPResolution = new TProfile("fProfEPResolution"," Resolution vs Centrality",10,0,100); 
+  fListQA->Add(fProfEPResolution);
 
+  
   fHistNumberOfAcceptedParticles = new TH1F("fHistNumberOfAcceptedParticles",";N_{acc.};Entries",10000,0,10000);
   fListQA->Add(fHistNumberOfAcceptedParticles);
   fHistNumberOfAcceptedPositiveParticles = new TH1F("fHistNumberOfAcceptedPositiveParticles",";N_{acc.}^{+};Entries",10000,0,10000);
@@ -175,7 +180,7 @@ void AliAnalysisTaskSignedBFMC::UserCreateOutputObjects() {
   }
   else {
     //AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
-    Printf("Flow Qn vector corrections framework needed but it is not present. No Qn Vector!!!");
+    //Printf("Flow Qn vector corrections framework needed but it is not present. No Qn Vector!!!");
   }
   //============================================//
   
@@ -297,7 +302,7 @@ void AliAnalysisTaskSignedBFMC::UserExec(Option_t *) {
   //fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
 
   if(lMultiplicityVar < 0) { 
-    Printf("Debug: Could not get Centrality from Impact parameter! Exit \n");    
+    //Printf("Debug: Could not get Centrality from Impact parameter! Exit \n");    
     return;
   }
   if(gReactionPlane<-9){  /// should -pi to pi but if it is -10 then we did not get it right! 
@@ -713,11 +718,16 @@ void AliAnalysisTaskSignedBFMC::ProcessEvent(AliMCEvent *mcEvent,
       if(gEPneg<0) gEPneg += TMath::Pi();
     }
 
+    if(fUseReactionPlane){
+      gEPpos = 0.;
+      gEPneg = 0.;      
+    }
 
     gReactionPlane = gEPpos; /// using +ve Eta EP for the calculation.
 
     fHistEventPlane->Fill(gReactionPlane,gCentrality);
     fHistEPResolution->Fill(TMath::Cos(2*(gEPpos - gEPneg)),gCentrality);
+    fProfEPResolution->Fill(gCentrality,TMath::Cos(2*(gEPpos - gEPneg)));
 
     
     for (Int_t iTracks = 0; iTracks < nMCParticles; iTracks++) {

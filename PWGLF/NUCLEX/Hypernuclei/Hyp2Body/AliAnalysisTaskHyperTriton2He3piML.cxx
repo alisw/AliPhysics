@@ -318,6 +318,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
 
   fFatParticle = fLambda ? AliPID::kProton : fNucleus;
   fHyperPDG = fLambda ? 3122 : (fNucleus == AliPID::kHe3 ? 1010010030 : 1010010040);
+  fV0Vertexer.fNucleus = fNucleus;
 } // end UserCreateOutputObjects
 
 void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
@@ -327,7 +328,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   if (fSaveFileNames)
     fCurrentEventNumber = esdEvent->GetHeader()->GetEventNumberInFile();
-  
+
   if (!vEvent)
   {
     ::Fatal("AliAnalysisTaskHyperTriton2He3piML::UserExec",
@@ -335,7 +336,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     return;
   }
 
-  
+
   AliMCEvent *mcEvent = MCEvent();
   if (!mcEvent && fMC)
   {
@@ -343,7 +344,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     return;
   }
 
-  
+
   if (!fEventCuts.AcceptEvent(vEvent))
   {
     PostData(1, fListHist);
@@ -351,7 +352,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     return;
   }
 
-  
+
   if (fSaveFileNames)
   {
     if (fCurrentFileName.String() != CurrentFileName())
@@ -359,7 +360,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       fCurrentFileName = CurrentFileName();
     }
   }
-  
+
   double primaryVertex[3];
   fRCollision.fCent = fEventCuts.GetCentrality(fCentralityEstimator);
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
@@ -385,7 +386,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     tgr |= kHighMultV0;
   int magField = vEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
-  
+
   fPIDResponse = fInputHandler->GetPIDResponse();
   fRCollision.fTrigger = tgr + magField;
 
@@ -622,7 +623,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   std::vector<AliESDv0> V0Vector;
   if (!fUseOnTheFly && !fUseNanoAODs)
-  { 
+  {
     if(!fLambda)
       esdEvent->ResetV0s();
     if (!fEnableEventMixing)
@@ -638,7 +639,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   }
 
   int nV0s = (fUseOnTheFly || fUseNanoAODs) ? esdEvent->GetNumberOfV0s() : V0Vector.size();
-  
+
   for (int iV0 = 0; iV0 < nV0s; iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
     // V0s)
@@ -698,7 +699,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       Bool_t isFilled = FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
       if (!isFilled)
         continue;
-      
+
       double x{v0->AliAODv0::DecayVertexV0X()}, y{v0->AliAODv0::DecayVertexV0Y()}, z{v0->AliAODv0::DecayVertexV0Z()};
       v0part.fDecayX = x - fRCollision.fX;
       v0part.fDecayY = y - fRCollision.fY;

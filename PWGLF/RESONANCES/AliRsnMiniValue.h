@@ -63,6 +63,7 @@ public:
       kPairYRes,        // pair rapidity resolution
       kPhiV,   // PhiV calculation
       kAsym,   // pair asymmetry
+      kpTLstar, //ptL1520
       kTypes          // -- general limit ----------------------------------------------------------
    };
 

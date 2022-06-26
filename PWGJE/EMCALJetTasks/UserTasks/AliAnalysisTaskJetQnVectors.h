@@ -51,6 +51,10 @@ public:
     double Getq2V0M()                                                                                    {return fq2V0M;}
     double Getq2V0A()                                                                                    {return fq2V0A;}
     double Getq2V0C()                                                                                    {return fq2V0C;}
+    double Getq2TPC()                                                                                    {return fq2TPC;}
+    double GetEPangleFullTPC()                                                                           {return fEPangleFullTPC;}
+    double GetEPanglePosTPC()                                                                            {return fEPanglePosTPC;}
+    double GetEPangleNegTPC()                                                                            {return fEPangleNegTPC;}
     double GetEPangleV0M()                                                                               {return fEPangleV0M;}
     double GetEPangleV0A()                                                                               {return fEPangleV0A;}
     double GetEPangleV0C()                                                                               {return fEPangleV0C;}
@@ -66,9 +70,18 @@ private:
 
     TH1F *fHistNEvents;                              //!<! histo with number of events
     TH1F *fHistCentrality;                           //!<! histo with centrality
-    TH3F *fHistResolution1;                          //!<! histo with detector resolution
-    TH3F *fHistResolution2;                          //!<! histo with detector resolution
-    TH3F *fHistResolution3;                          //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0AV0C_qV0M;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0CTPC_qV0M;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0ATPC_qV0M;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epTPCpTPCn_qV0M;           //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0MTPCp_qV0M;            //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0MTPCn_qV0M;            //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0AV0C_qV0A;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0CTPC_qV0A;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0ATPC_qV0A;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0AV0C_qV0C;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0CTPC_qV0C;             //!<! histo with detector resolution
+    TH3F *fHistResolution_epV0ATPC_qV0C;             //!<! histo with detector resolution
     TH1F *fHistEventPlaneTPC[3];                     //!<! histos of TPC (Full, PosEta, NegEta) EP angle
     TH1F *fHistEventPlaneV0[3];                      //!<! histos of V0 (Full, V0A, V0C) EP angle
     TH2F *fHistqnVsCentrTPC[3];                      //!<! histos of q2TPC (Full, PosEta, NegEta) vs centrality (for spline calibration)
@@ -103,11 +116,15 @@ private:
     double fq2V0M;                                   /// q2 vector from the V0M   
     double fq2V0A;                                   /// q2 vector from the V0A    
     double fq2V0C;                                   /// q2 vector from the V0C     
+    double fq2TPC;                                   /// q2 vector from the TPC
+    double fEPangleFullTPC;                          /// EP Angle with calibrations from TPC Full
+    double fEPanglePosTPC;                           /// EP Angle with calibrations from TPC eta>0
+    double fEPangleNegTPC;                           /// EP Angle with calibrations from TPC eta<0
     double fEPangleV0M;                              /// EP Angle with calibrations from V0M
     double fEPangleV0C;                              /// EP Angle with calibrations from V0A
     double fEPangleV0A;                              /// EP Angle with calibrations from V0C
 
-    ClassDef(AliAnalysisTaskJetQnVectors, 10);
+    ClassDef(AliAnalysisTaskJetQnVectors, 12);
 };
 
 #endif

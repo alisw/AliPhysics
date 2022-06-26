@@ -1114,14 +1114,14 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
       AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
       if (fInputHandler==NULL) return kFALSE;
 
-      if( fInputHandler->GetEventSelection() ) {
-        if( fTriggerName == "INT7" ){
+      if( fInputHandler->GetEventSelection() &&  fTriggerName.CompareTo("CALO_ONLY") != 0) {
+        if( fTriggerName.CompareTo("INT7")==0 ){
           fOfflineTriggerMask = AliVEvent::kINT7;
           isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
           if( !isSelected ) return kFALSE;
           isEMC = kTRUE; 
           isDMC = kTRUE;
-        } else if ( fTriggerName == "EMC7" ) {
+        } else if ( fTriggerName.CompareTo("EMC7") == 0 ) {
           fOfflineTriggerMask = AliVEvent::kEMC7;
 
           TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
@@ -1131,7 +1131,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
             if( firedTrigClass.Contains("CDMC7-B-") )
               isDMC = kTRUE;
           } else return kFALSE;
-        } else if ( fTriggerName == "EG2" ) {
+        } else if ( fTriggerName.CompareTo("EG2") == 0 ) {
           fOfflineTriggerMask = AliVEvent::kEMCEGA;
           isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
           if( !isSelected ) return kFALSE;
@@ -1143,7 +1143,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
             if( firedTrigClass.Contains("DMC7") )
               isDMC = kTRUE;
           } else return kFALSE;
-        } else if ( fTriggerName == "EG1" ) {
+        } else if ( fTriggerName.CompareTo("EG1") == 0) {
           fOfflineTriggerMask = AliVEvent::kEMCEGA;
           isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
           if( !isSelected ) return kFALSE;
@@ -1155,7 +1155,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
             if( firedTrigClass.Contains("DMC7") )
               isDMC = kTRUE;
           } else return kFALSE;
-        } else if ( fTriggerName == "EGA" ) {
+        } else if ( fTriggerName.CompareTo("EGA") == 0 ) {
           fOfflineTriggerMask = AliVEvent::kEMCEGA;
           isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
           if( !isSelected ) return kFALSE;
@@ -1165,7 +1165,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
               isEMC = kTRUE;
               isDMC = kFALSE;
           } else return kFALSE;
-        }else if( fTriggerName = "EMCAL" ){            // EMC7+EG1+EG2
+        }else if( fTriggerName.CompareTo("EMCAL") == 0 ){            // EMC7+EG1+EG2
           fOfflineTriggerMask = AliVEvent::kEMC7 & AliVEvent::kEMCEGA;
           TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
 
@@ -1177,8 +1177,18 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
           } else return kFALSE;
         }
         return kTRUE;
-      } 
-
+      } else if( fTriggerName.CompareTo("CALO_ONLY") == 0 ) {
+        TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
+        // std::cout << fInputEvent->GetFiredTriggerClasses().Data() << std::endl;
+        if( firedTrigClass.Contains("CEMC7-B-NOPF-EMCAL") || firedTrigClass.Contains("CDMC7-B-NOPF-EMCAL") ) {
+          if( firedTrigClass.Contains("EMC7") )
+            isEMC = kTRUE;
+          if( firedTrigClass.Contains("DMC7") )
+            isDMC = kTRUE;
+        } else return kFALSE;
+        // std::cout << "found it" << std::endl;
+        return kTRUE;
+      }
   } else if (fIsMC){
     AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
       if (fInputHandler==NULL) return kFALSE;

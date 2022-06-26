@@ -93,6 +93,7 @@ Long64_t AliProfileBS::Merge(TCollection *collist) {
   AliProfileBS *l_PBS = 0;
   TIter all_PBS(collist);
   while ((l_PBS = ((AliProfileBS*) all_PBS()))) {
+    (TProfile*)this->Add((TProfile*)l_PBS);
     TList *tarL = l_PBS->fListOfEntries;
     if(!tarL) continue;
     if(!fListOfEntries) {
@@ -154,4 +155,17 @@ void AliProfileBS::MergeBS(AliProfileBS *target) {
     for(Int_t i=0; i<fListOfEntries->GetEntries(); i++) ((TProfile*)fListOfEntries->At(i))->Reset();
   }
   for(Int_t i=0; i<fListOfEntries->GetEntries(); i++) ((TProfile*)fListOfEntries->At(i))->Add((TProfile*)tarL->At(i));
+}
+TProfile *AliProfileBS::getSummedProfiles() {
+  if(!fListOfEntries || !fListOfEntries->GetEntries()) {printf("No subprofiles initialized for the AliProfileBS.\n"); return 0; };
+  TProfile *retpf = (TProfile*)fListOfEntries->At(0)->Clone("SummedProfile");
+  for(Int_t i=1;i<fListOfEntries->GetEntries();i++) retpf->Add((TProfile*)fListOfEntries->At(i));
+  return retpf;
+}
+void AliProfileBS::OverrideMainWithSub() {
+  TProfile *sum = getSummedProfiles();
+  if(!sum) return;
+  ((TProfile*)this)->Reset();
+  ((TProfile*)this)->Add(sum);
+  delete sum;
 }

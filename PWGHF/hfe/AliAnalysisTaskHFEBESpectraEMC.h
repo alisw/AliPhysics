@@ -295,6 +295,7 @@ private:
     TH2F        *fEMCTrkMatch_Phi;//!
     TH2F        *fEMCTrkMatch_Eta;//!
     
+    TH2F                *fInclsElecPtClsE;//!
     TH1F                *fInclsElecPt;//!
     TH1F                *fHadPt_AftEID;//!
     TH2F                *fHadEovp_AftEID;//!

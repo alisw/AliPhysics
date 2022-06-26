@@ -158,6 +158,34 @@ AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCom
 }
 
 //______________________________________________________________
+AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t)
+  : AliVParticle()
+  ,fTrackId(TMath::Abs(t->GetLabel()))
+  ,fOrigin(0)
+  ,fFilterId(0)
+  ,fDetStat(0)
+  ,fPt(t->GetSignedPt())
+//   ,fPt(t->Charge()*t->Pt())
+  ,fP(t->P())
+  ,fPz(t->Pz())
+  ,fEta(t->Eta())
+  ,fPhi(t->Phi())
+  ,fY(0.)
+  ,fdEdx(t->GetTPCsignal())
+  ,fBeta(-1.)
+  ,fFilterParam(NULL)
+{
+  // fill Position
+  t->GetXYZ(fPosition);
+  SetOrigin(kPrimary);
+
+  // set DCAxy and DCAz
+//   Float_t dca[2];  // 0 = xy; 1 = z
+  Float_t bCov[3];
+  t->GetImpactParameters(fDCA, bCov);
+}
+
+//______________________________________________________________
 AliMEStrackInfo::AliMEStrackInfo(AliMCParticle *t, AliStack *mc)
   : AliVParticle()
   // ,fTrackId(-1)

@@ -1195,10 +1195,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
        if(fDCalDG1 && !fEMCEG1){ if(!firedTrigger.Contains(TriggerDG1))return;}
        
   
-     Bool_t   fIs_TPC_calibration=kFALSE;
-     
-     if(fEMCEG1 && fDCalDG1) fIs_TPC_calibration=kTRUE;
-    
+       
 	//cout<<" ftrigger "<<ftrigger<<" fEMCEG1 "<<fEMCEG1<<"   fDCalDG1 "<<fDCalDG1<<"   fEMCEG2 "<<fEMCEG2<<"     fDCalDG2 "<<fDCalDG2<<endl;
 	//getchar();   
 	
@@ -1396,6 +1393,9 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
   if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
 
   Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;
+
+
+    
   for ( Int_t index = 0; index < Nclust ; index++ ) 
   {
 				AliAODCaloCluster * clu =0x0;
@@ -1461,6 +1461,15 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
   
   Int_t runNumber = fAOD->GetRunNumber();
 	Int_t num=0;
+	Bool_t kHFEReco=kFALSE;
+
+	 Bool_t   fIs_TPC_calibration=kFALSE;
+     
+        //if(fEMCEG1 && fDCalDG1) fIs_TPC_calibration=kTRUE;
+    	
+
+
+
 	for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) 
 	{
 			AliAODTrack* track = 0x0;
@@ -1480,25 +1489,34 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 			pt = track->Pt();
 			p = track->P();  
 			eta=track->Eta();
-			
+			if(!fIsMC){	
+				if( pt > 11 ) fIs_TPC_calibration=kTRUE;
+         		}
 			
 																		//reconstructed level & have proper TPC PID response(?)
-     		if(fIsMC && track->GetLabel()>=0)
+		kHFEReco=kFALSE;
+     		
+		if(fIsMC && TMath::Abs(track->GetLabel())>0)
+		//if(fIsMC &&(track->GetLabel())>=0)
      		{		
 					//cout<<" track->GetLabel() = "<<track->GetLabel()<<endl;
 					//getchar();
-					fMCparticle=(AliAODMCParticle*)fMCArray->At(track->GetLabel());
-					pdg = fMCparticle->GetPdgCode();
-					if(TMath::Abs(pdg) == 11)
-					{													
-     				Int_t IsElecHf=GetHFE(fMCparticle,fMCArray);
+
+				fMCparticle=(AliAODMCParticle*)fMCArray->At(TMath::Abs(track->GetLabel()));
+				//fMCparticle=(AliAODMCParticle*)fMCArray->At( (track->GetLabel()));
+				
+				pdg = fMCparticle->GetPdgCode();
+				if(TMath::Abs(pdg) == 11)
+				{													
+     				        Int_t IsElecHf=GetHFE(fMCparticle,fMCArray);
 					if((IsElecHf==kBeauty) || (IsElecHf==kCharm))
 					{
+						kHFEReco=kTRUE;
 						fPtHFEMC_trackcutreco->Fill(pt);
 						fPtHFEMC_trackcutreco_SPD->Fill(pt,SPDntr);
 					}	
-					}	
-			} 	
+				}	
+		} 	
 			
 			feta->Fill(eta);
 			dEdx_TPC = track->GetTPCsignal();
@@ -1510,8 +1528,9 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 	
 			fTPCnSigma_old = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 			
+
 			if(fIs_TPC_calibration) fTPCnSigma = GetTPCCalibration(fAOD->GetRunNumber(), fTPCnSigma_old);
-         if(!fIs_TPC_calibration) fTPCnSigma = fTPCnSigma_old;
+        		if(!fIs_TPC_calibration) fTPCnSigma = fTPCnSigma_old;
 		
 		  
 			fdEdxVsP_TPC->Fill(p,dEdx_TPC);
@@ -1577,7 +1596,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 		  /////////////////////////////////////////////
 		  
 		  	
-			if(fIsMC && track->GetLabel()>=0)
+/*			if(fIsMC && track->GetLabel()>=0)
      		{			
 					pdg = fMCparticle->GetPdgCode();
 					if(TMath::Abs(pdg) == 11)
@@ -1591,6 +1610,11 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 					}	
 					}
 			} 
+*/
+		if(fIsMC && kHFEReco){
+			fPtHFEMC_trackmatchreco->Fill(pt);
+			fPtHFEMC_trackmatchreco_SPD->Fill(pt,SPDntr);
+		}		
 	
 		  fEMCTrkPt->Fill(pt);
 		  fEMCTrketa->Fill(eta);
@@ -1631,7 +1655,8 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 			Bool_t fElectTrack = kFALSE;
 			
 			 if(Eoptrk < fCutEopEMin || Eoptrk > fCutEopEMax) continue;			
-			if(fIsMC && track->GetLabel()>=0)
+
+/*			if(fIsMC && track->GetLabel()>=0)
      		{			
 					pdg = fMCparticle->GetPdgCode();
 					if(TMath::Abs(pdg) == 11)
@@ -1646,14 +1671,18 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 					}	
 					}	
 			}
-
+*/
+			if(fIsMC && kHFEReco){
+				fPtHFEMC_TPCEMCreco->Fill(pt);
+				fPtHFEMC_TPCEMCreco_SPD->Fill(pt,SPDntr);
+			}
 
 
 			Double_t nsigma_ele=-999;
   			nsigma_ele = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
   			if(nsigma_ele < fTPCnsigmin || nsigma_ele > fTPCnsigmax) continue;
  
- 			if(fIsMC && track->GetLabel()>=0)
+/* 			if(fIsMC && track->GetLabel()>=0)
      		{			
 					pdg = fMCparticle->GetPdgCode();
 					if(TMath::Abs(pdg) == 11)
@@ -1669,10 +1698,13 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 					}	
 			} 
 			
-	  
+*/	  
   
 		  
-		  
+		  	if(fIsMC && kHFEReco){
+				fPtHFEMC_TPCreco->Fill(pt);
+				fPtHFEMC_TPCreco_SPD->Fill(pt,SPDntr);
+			}
 		 
 
 		 //if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max) return kFALSE;
@@ -1682,7 +1714,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 		  if(pt>=20){if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max3) continue;}
 		  
 		  
-		  if(fIsMC && track->GetLabel()>=0)
+/*		  if(fIsMC && track->GetLabel()>=0)
      		{			
 					pdg = fMCparticle->GetPdgCode();
 					if(TMath::Abs(pdg) == 11)
@@ -1697,6 +1729,12 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
 					}	
 					}	
 			}  
+*/
+
+			if(fIsMC && kHFEReco){
+				fPtHFEMC_SScutreco->Fill(pt);
+				fPtHFEMC_SScutreco_SPD->Fill(pt,SPDntr);
+			}
       	
 				//fElectTrack = PassEIDCuts(track, clustMatch);     	
       	//if(!fElectTrack) continue;
@@ -1761,10 +1799,13 @@ void AliAnalysisTaskHFEmultTPCEMCAL_1::UserExec(Option_t *)
   	
   				
   	//--------------------MC---------------------------------------
-  				if(fIsMC && track->GetLabel()>=0)
-   			{
+  				//if(fIsMC && track->GetLabel()>=0)
+				if(fIsMC && TMath::Abs(track->GetLabel())>0)
+   				{
    				
-   				fMCparticle=(AliAODMCParticle*)fMCArray->At(track->GetLabel());
+   				      //fMCparticle=(AliAODMCParticle*)fMCArray->At(track->GetLabel());
+					fMCparticle=(AliAODMCParticle*)fMCArray->At(TMath::Abs(track->GetLabel()));
+					
 					pdg = fMCparticle->GetPdgCode();
 					Float_t ptMC= fMCparticle->Pt();
 					

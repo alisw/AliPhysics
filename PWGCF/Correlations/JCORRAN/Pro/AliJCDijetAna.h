@@ -44,6 +44,7 @@ class AliJCDijetAna : public TObject
         void SetSettings(int    lDebug,
                          double lParticleEtaCut,
                          double lParticlePtCut,
+                         double lParticlePtCutMax,
                          double lJetCone,
                          double lktJetCone,
                          int    lktScheme,
@@ -57,12 +58,13 @@ class AliJCDijetAna : public TObject
                          double lDeltaPhiCut,
                          double lmatchingR,
                          double ltrackingIneff,
-                         double luseCrho);
+                         bool   luseCrho,
+                         bool   lThisIsTrueMC);
 
-        int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
+        int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
         void SetPtHardBin(double flptHardBin) {fptHardBin = flptHardBin; }
-        void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin);
+        void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
         void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos);
         void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet);
         void ResetObjects();
@@ -79,6 +81,7 @@ class AliJCDijetAna : public TObject
         int fDebug;
         double fParticleEtaCut;
         double fParticlePtCut;
+        double fParticlePtCutMax;
         bool fusePionMass;
         bool fUseDeltaPhiBGSubtr;
         double fConstituentCut;
@@ -95,6 +98,7 @@ class AliJCDijetAna : public TObject
         double ftrackingIneff;
         bool bEvtHasAreaInfo;
         bool bUseCrho;
+        bool bThisIsTrueMC;
 
         double phi, eta, pt, pt2, rho, rhom, area, mjj, ptpair, dPhi, deltaRMin, deltaR;
         bool leadingTrackOverThreshold;
@@ -112,6 +116,7 @@ class AliJCDijetAna : public TObject
         double randConeEta;
         double randConePt;
         double fDeltaM;
+        double areaCut;
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<fastjet::PseudoJet> chparticles;
@@ -120,6 +125,7 @@ class AliJCDijetAna : public TObject
         vector<vector<fastjet::PseudoJet>> jets;
         // These 'raw' lists contain all jets by fastjet:
         vector<fastjet::PseudoJet> rawJets;
+        vector<fastjet::PseudoJet> tempJets;
         vector<fastjet::PseudoJet> rawKtJets;
         vector<fastjet::PseudoJet> rhoEstJets;
         vector<vector<vector<fastjet::PseudoJet>>> dijets;
