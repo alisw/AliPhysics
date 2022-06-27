@@ -653,10 +653,18 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
   } else {
     clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject( Form("%sClustersBranch", fCorrTaskSetting.Data() ) ));
   }
+
+  if ( !clusters ) return;
   
   for(Int_t iClu=0; iClu<clusters->GetEntries(); iClu++) {
     
-    AliVCluster *c1 = (AliVCluster *) clusters->At(iClu);
+    // AliVCluster *c1 = (AliVCluster *) clusters->At(iClu);
+    AliVCluster *c1   = NULL;
+    if( fInputEvent->IsA()==AliESDEvent::Class() ){
+      c1 = new AliESDCaloCluster( *(AliESDCaloCluster*) clusters->At(iClu) );
+    } else if (fInputEvent->IsA()==AliAODEvent::Class() ){
+      c1 = new AliAODCaloCluster( *(AliAODCaloCluster*) clusters->At(iClu) );
+    }
     
     if (!AcceptCluster(c1)) continue;
     
@@ -682,7 +690,14 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
     
     // Combine cluster with other clusters and get the invariant mass
     for (Int_t jClu=iClu+1; jClu < clusters->GetEntries(); jClu++) {
-      AliAODCaloCluster *c2 = (AliAODCaloCluster *) clusters->At(jClu);
+      
+      // AliAODCaloCluster *c2 = (AliAODCaloCluster *) clusters->At(jClu);
+      AliVCluster *c2   = NULL;
+      if( fInputEvent->IsA()==AliESDEvent::Class() ){
+        c2 = new AliESDCaloCluster( *(AliESDCaloCluster*) clusters->At(jClu) );
+      } else if (fInputEvent->IsA()==AliAODEvent::Class() ){
+        c2 = new AliAODCaloCluster( *(AliAODCaloCluster*) clusters->At(jClu) );
+      }
     
       if (!AcceptCluster(c2)) continue;
       
@@ -853,23 +868,60 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
   Int_t nclus   = 0;
   UShort_t nClusAboveTh = 0;
 
-  TClonesArray* clusters;
+  TClonesArray* clusters  = NULL;
 
   if( !fCorrTaskSetting.CompareTo("") ){
     clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject("caloClusters"));
   } else {
     clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject( Form("%sClustersBranch", fCorrTaskSetting.Data() ) ));
     if(!clusters)
-      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
+      // AliFatal(Form("%sClustersBranch was not found! Check the correction framework settings!",fCorrTaskSetting.Data()));
+      return;
   }
-
   nclus   = clusters->GetEntries();
   if(nclus == 0) return;   
-  
+
   for(Long_t i=0; i<nclus; i++){
     if(fInputEvent->IsA()==AliAODEvent::Class()){
       AliVCluster* clus = NULL;
       clus  = dynamic_cast<AliAODCaloCluster*>(clusters->At(i));
+      if( !clus ) continue;
+      if( clus->IsPHOS()) continue;
+      Float_t     clusPos[3];
+      clus->GetPosition(clusPos);
+      TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+      Float_t     etaCluster            = (Float_t) (clusterVector.Eta());
+      Float_t     phiCluster            = (Float_t) (clusterVector.Phi());
+      if( phiCluster < 0 ) phiCluster  += 2*TMath::Pi();
+
+
+      fVBuffer_Cluster_LeadCellId.push_back( clus->GetCellAbsId(0) );
+      fVBuffer_Cluster_t.push_back( static_cast<Short_t>(clus->GetTOF()*1.e9) );
+      fVBuffer_Cluster_NCells.push_back( clus->GetNCells() );
+
+      if( fSaveFullTree ){
+        fVFBuffer_Cluster_E.push_back( clus->E() );
+        fVFBuffer_Cluster_Eta.push_back( etaCluster );
+        fVFBuffer_Cluster_Phi.push_back(phiCluster );
+        fVBuffer_Cluster_M02.push_back( clus->GetM02() );
+        fVBuffer_Cluster_X.push_back( clusPos[0] );
+        fVBuffer_Cluster_Y.push_back( clusPos[1] );
+        fVBuffer_Cluster_Z.push_back( clusPos[2] );
+      } else {
+        fVBuffer_Cluster_E.push_back( static_cast<UShort_t>(clus->E()*1000) );
+        fVBuffer_Cluster_Eta.push_back( static_cast<Short_t>(etaCluster*1000) );
+        fVBuffer_Cluster_Phi.push_back( static_cast<UShort_t>(phiCluster*1000) );
+      }
+
+      nClusAboveTh++;
+
+      if ( fIsMC ){
+        fVBuffer_TrueCluster_MCId.push_back( static_cast<Short_t>(clus->GetLabel()) );
+      }
+
+    } else  if(fInputEvent->IsA()==AliESDEvent::Class()){
+      AliVCluster* clus = NULL;
+      clus  = dynamic_cast<AliESDCaloCluster*>(clusters->At(i));
       if( !clus ) continue;
       if( clus->IsPHOS()) continue;
 
@@ -904,10 +956,6 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
       if ( fIsMC ){
         fVBuffer_TrueCluster_MCId.push_back( static_cast<Short_t>(clus->GetLabel()) );
       }
-
-    } else {
-      std::cout << "Cluster tree for ESD not implemented" << std::endl;
-      return;
     }
   }
 
@@ -949,9 +997,18 @@ UShort_t AliAnalysisTaskEMCALPi0CalibSelectionV2::GetPrimaryTracks(){
 /// * finally, fill the histograms per channel after recalibration.
 //__________________________________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
-
   // Get the input event
-  fInputEvent = InputEvent();
+  fInputEvent   = InputEvent();
+
+  AliESDEvent*  esdev   = 0;
+  AliAODEvent*  aodev   = 0;
+
+  if( InputEvent()->IsA() == AliESDEvent::Class() ){
+    esdev   = dynamic_cast<AliESDEvent*>(fInputEvent);
+  } else if ( InputEvent()->IsA() == AliAODEvent::Class() ){
+    aodev   = dynamic_cast<AliAODEvent*>(fInputEvent);
+  }
+
   if( fIsMC>0 ){
     fMCEvent = MCEvent();
   }
@@ -961,10 +1018,9 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
     return;
   }
 
-  if( fNContributorsCutEnabled ){
-    AliAODEvent* fAODevent = dynamic_cast<AliAODEvent*>(fInputEvent);
-    if( fAODevent->GetPrimaryVertex() != NULL ){
-      if( fAODevent->GetPrimaryVertex()->GetNContributors() <= 0) {
+  if( fNContributorsCutEnabled ){             
+    if( aodev->GetPrimaryVertex() != NULL ){
+      if( aodev->GetPrimaryVertex()->GetNContributors() <= 0) {
         AliDebug(1,"No contributors to the vertex! Returning...");
         return;
       }
@@ -1011,12 +1067,14 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
       fhCentralitySelected->Fill(cent);
     }
   }
+
   
   AliDebug(1,Form("<<< %s: Event %d >>>",fInputEvent->GetName(), (Int_t)Entry()));
   
   // Get the primary vertex
   fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex) ;
   AliDebug(1,Form("Vertex: (%.3f,%.3f,%.3f)",fVertex[0],fVertex[1],fVertex[2]));
+
 
   if(fSaveCells || fSaveClusters ){
     fBuffer_Event_VertexZ = fInputEvent->GetPrimaryVertex()->GetZ() * 100;
@@ -1027,11 +1085,12 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
 
   //Get the list of clusters and cells
   fEMCALCells       = fInputEvent->GetEMCALCells();
+  if( fEMCALCells == 0 ) return;
 
   if( fSaveHistos ) FillHistograms();  
-  PostData(1,fOutputContainer);  
+  PostData(1,fOutputContainer); 
 
-  if( fSaveCells )   ProcessCells();
+  if( fSaveCells ) ProcessCells();
   if( fSaveClusters ) ProcessClusters();
 
   if( fSaveCells || fSaveClusters) {
@@ -1043,9 +1102,9 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
       fBuffer_EventWeight = fWeightJetJetMC;
       fBuffer_ptHard      = pthard;
     }
-
     fCellTree->Fill();
     PostData(2,fCellTree);
+
     ResetBufferVectors();
   }
 }
