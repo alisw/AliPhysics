@@ -247,7 +247,7 @@ void        AliAnalysisTaskDeuteron_XeXe_MC::UserCreateOutputObjects(){
 
 
     //Number of Events
-    histoNumberOfEvents                     = new TH1F("histoNumberOfEvents","Events after selection steps",10,0,10);
+    histoNumberOfEvents                     = new TH1F("histoNumberOfEvents","Events after selection steps",20,0,10);
     fQAList                                 -> Add (histoNumberOfEvents);
     fAODeventCuts.AddQAplotsToList(fQAList);                //Add event selection QA plots
     //Signal Extraction
@@ -290,24 +290,24 @@ void        AliAnalysisTaskDeuteron_XeXe_MC::UserCreateOutputObjects(){
     histoDCAxyd_vs_pt                     -> Sumw2();
     histoDCAxyAntid_vs_pt                 -> Sumw2();
 
-    fQAList                                 -> Add(histoNsigmaTPCd_vs_pt);
-    fQAList                                 -> Add(histoNsigmaTOFd_vs_pt);
-    fQAList                                 -> Add(histoNsigmaTPCantid_vs_pt);
-    fQAList                                 -> Add(histoNsigmaTOFantid_vs_pt);
-    fQAList                                 -> Add(histoNsigmaTPCd_vs_pt_centered);
-    fQAList                                 -> Add(histoNsigmaTPCantid_vs_pt_centered);
-    fQAList                                 -> Add(histoNsigmaTOFd_vs_pt_centered);
-    fQAList                                 -> Add(histoNsigmaTOFantid_vs_pt_centered);
-    fQAList                                 -> Add(histoNsigmaTOFd_vs_pt_trd);
-    fQAList                                 -> Add(histoNsigmaTOFantid_vs_pt_trd);
-    fQAList                                 -> Add(histoNsigmaTPCd_vs_p);
-    fQAList                                 -> Add(histoNsigmaTPCantid_vs_p);
-    fQAList                                 -> Add(histoNsigmaTOFd_vs_p);
-    fQAList                                 -> Add(histoNsigmaTOFantid_vs_p);
-    fQAList                                 -> Add(histoNsigmaTPCd_vs_p_notof);
-    fQAList                                 -> Add(histoNsigmaTPCantid_vs_p_notof);
-    fQAList                                 -> Add (histoDCAxyd_vs_pt);
-    fQAList                                 -> Add (histoDCAxyAntid_vs_pt);
+    fQAList                               -> Add(histoNsigmaTPCd_vs_pt);
+    fQAList                               -> Add(histoNsigmaTOFd_vs_pt);
+    fQAList                               -> Add(histoNsigmaTPCantid_vs_pt);
+    fQAList                               -> Add(histoNsigmaTOFantid_vs_pt);
+    fQAList                               -> Add(histoNsigmaTPCd_vs_pt_centered);
+    fQAList                               -> Add(histoNsigmaTPCantid_vs_pt_centered);
+    fQAList                               -> Add(histoNsigmaTOFd_vs_pt_centered);
+    fQAList                               -> Add(histoNsigmaTOFantid_vs_pt_centered);
+    fQAList                               -> Add(histoNsigmaTOFd_vs_pt_trd);
+    fQAList                               -> Add(histoNsigmaTOFantid_vs_pt_trd);
+    fQAList                               -> Add(histoNsigmaTPCd_vs_p);
+    fQAList                               -> Add(histoNsigmaTPCantid_vs_p);
+    fQAList                               -> Add(histoNsigmaTOFd_vs_p);
+    fQAList                               -> Add(histoNsigmaTOFantid_vs_p);
+    fQAList                               -> Add(histoNsigmaTPCd_vs_p_notof);
+    fQAList                               -> Add(histoNsigmaTPCantid_vs_p_notof);
+    fQAList                               -> Add (histoDCAxyd_vs_pt);
+    fQAList                               -> Add (histoDCAxyAntid_vs_pt);
 
 
     //Reduced Tree Generated particles
@@ -373,8 +373,8 @@ void        AliAnalysisTaskDeuteron_XeXe_MC::UserCreateOutputObjects(){
     reducedTree_rec_d -> Branch("hasTOFhit",&hasTOFhit,"hasTOFhit/I");
 
 
-	fOutputList     -> Add(reducedTree_gen_d);
-	fOutputList     -> Add(reducedTree_rec_d);
+	fOutputList       -> Add(reducedTree_gen_d);
+	fOutputList       -> Add(reducedTree_rec_d);
 
 
     PostData(1, fOutputList);
@@ -396,7 +396,7 @@ void        AliAnalysisTaskDeuteron_XeXe_MC::UserExec(Option_t *){
 
 	Int_t ID_Event=0;
 
-        //Loop over Generated Particles
+    //Loop over Generated Particles
     for ( Int_t i=0; i<fAODArrayMCParticles->GetEntriesFast(); i++ ) {
 
         //MC Particle
@@ -404,7 +404,9 @@ void        AliAnalysisTaskDeuteron_XeXe_MC::UserExec(Option_t *){
         if ( !particle) continue;
         if ( TMath::Abs(particle->GetPdgCode()) != 1000010020 ) continue;
 
-        if (TMath::Abs(particle->GetPdgCode()) == 1000010020) particleType = 1; // 1 for d (check)
+        if (TMath::Abs(particle->GetPdgCode()) == 1000010020) particleType = 1; // 1 for d
+        if (TMath::Abs(particle->GetPdgCode()) ==-1000010020) particleType =-1; // -1 for anti-d (check)
+
 
         px = particle  -> Px();
         py = particle  -> Py();
@@ -442,13 +444,13 @@ void        AliAnalysisTaskDeuteron_XeXe_MC::UserExec(Option_t *){
 
 
         // Filling histograms for d
-        if (PassedTrackQualityCuts (track) && track->PdgCode() == 1000010020) {
+        if (PassedTrackQualityCuts(track)) {
             //Variables
             Double_t nsigma_TPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kDeuteron);
             Double_t nsigma_TOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kDeuteron);
 
             //TPC Signal vs. pT
-            if (track->Charge()>0) histoNsigmaTPCd_vs_p_notof	            -> Fill (track->P(),nsigma_TPC);
+            if (track->Charge()>0) histoNsigmaTPCd_vs_p_notof	           -> Fill (track->P(),nsigma_TPC);
             if (track->Charge()<0) histoNsigmaTPCantid_vs_p_notof         -> Fill (track->P(),nsigma_TPC);
 
             if (PassedTOFSelection(track))  {
@@ -496,7 +498,7 @@ void        AliAnalysisTaskDeuteron_XeXe_MC::UserExec(Option_t *){
         //
         //===================================================================================================//
 
-        trackType = (TMath::Abs(particle->GetPdgCode()) == 1000010020)? 1: 0;   // 1 for d, 2 for Triton (check)
+        trackType = (particle->GetPdgCode() == 1000010020)? 1: (particle->GetPdgCode() ==-1000010020)? -1: 0;   // 1 for d, 2 for Triton (check)
 
         if (!IsdCandidate(track))    continue;
 
@@ -537,11 +539,11 @@ void        AliAnalysisTaskDeuteron_XeXe_MC::UserExec(Option_t *){
         chi2_ITS            = track -> GetITSchi2();
 
         //PID
-        if (particle->PdgCode() == 1000010020 ){
-            nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kDeuteron);
-            nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kDeuteron);
-            nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kDeuteron);
-        }
+
+        nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kDeuteron);
+        nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kDeuteron);
+        nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kDeuteron);
+
 
 
         //TPC-TOF Matching
@@ -707,14 +709,15 @@ Double_t    AliAnalysisTaskDeuteron_XeXe_MC::GetDCAz (AliAODTrack *track)  {
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t      AliAnalysisTaskDeuteron_XeXe_MC::IsdCandidate (AliAODTrack *track)  {
 
-    Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kDeuteron);
+    Double_t lnsigmaTPC = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kDeuteron);
+    Double_t lnsigmaTOF = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kDeuteron);
+
     if (track->Pt() < 1.5) {
-        if ( TMath::Abs(nsigmaTPC) > 6. ) return false;
+        if ( TMath::Abs(lnsigmaTPC) > 6. ) return false;
     }
     else {
-        Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kDeuteron);
-        if ( TMath::Abs(nsigmaTOF) > 10. ) return false;
-        if ( TMath::Abs(nsigmaTPC) > 6. ) return false;
+        if ( TMath::Abs(lnsigmaTOF) > 10.) return false;
+        if ( TMath::Abs(lnsigmaTPC) > 6. ) return false;
     }
 
   return true;
@@ -756,8 +759,8 @@ Double_t    AliAnalysisTaskDeuteron_XeXe_MC::Centered_nsigmaTOF (AliAODTrack *tr
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t      AliAnalysisTaskDeuteron_XeXe_MC::PassedTOFSelection (AliAODTrack *track)  {
 
-    Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kDeuteron);
-    if (TMath::Abs(nsigmaTOF) > fnSigmaTOFmax) return false;
+    Double_t lnsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kDeuteron);
+    if (TMath::Abs(lnsigmaTOF) > fnSigmaTOFmax) return false;
 
     return true;
 }
