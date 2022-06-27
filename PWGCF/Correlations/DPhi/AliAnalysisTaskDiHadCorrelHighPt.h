@@ -29,18 +29,18 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
-        
+
         Bool_t                  IsMyGoodPrimaryTrack(const AliAODTrack* aodtrack);
         Bool_t                  IsMyGoodPrimaryTrackESD(const AliESDtrack* esdtrack);
-        Bool_t                  IsMyGoodV0AngleLambda(const AliAODv0 *t, AliAODVertex *pv); 
+        Bool_t                  IsMyGoodV0AngleLambda(const AliAODv0 *t, AliAODVertex *pv);
         Bool_t                  IsMyGoodV0AngleLambdaESD(const AliESDv0 *t);
-        Bool_t                  IsMyGoodV0AngleK0(const AliAODv0 *t, AliAODVertex *pv); 
+        Bool_t                  IsMyGoodV0AngleK0(const AliAODv0 *t, AliAODVertex *pv);
         Bool_t                  IsMyGoodV0AngleK0ESD(const AliESDv0 *t);
-        Bool_t                  IsMyGoodV0RapidityK0(const AliAODv0 *t); 
+        Bool_t                  IsMyGoodV0RapidityK0(const AliAODv0 *t);
         Bool_t                  IsMyGoodV0RapidityK0ESD(const AliESDv0 *t);
-        Bool_t                  IsMyGoodV0RapidityLambda(const AliAODv0 *t); 
-        Bool_t                  IsMyGoodV0RapidityLambdaESD(const AliESDv0 *t); 
-        Bool_t                  IsMyGoodLifeTimeK0(const AliAODv0 *V0); 
+        Bool_t                  IsMyGoodV0RapidityLambda(const AliAODv0 *t);
+        Bool_t                  IsMyGoodV0RapidityLambdaESD(const AliESDv0 *t);
+        Bool_t                  IsMyGoodLifeTimeK0(const AliAODv0 *V0);
         Bool_t                  IsMyGoodLifeTimeLambda(const AliAODv0 *V0);
         Bool_t                  IsMyGoodLifeTimeESD(const AliESDv0 *V0, Double_t masshypotesis);
         Bool_t                  IsMyGoodLifeTimeAntiLambda(const AliAODv0 *V0);
@@ -63,7 +63,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    TopologCuts(Double_t pttrig,Double_t mass,Double_t dcaNeg, Double_t dcaPos,Double_t dcaDau, Double_t V0rad, Double_t cosPA,Double_t lifetime,Double_t massSell,Double_t triggType, Double_t status);
         void                    FillMC(const AliVParticle *V0,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2,Int_t triggerType, Double_t mass, Double_t posTrackProp[6],Double_t negTrackProp[6]);
         void                    CorelationsMixinghV0(TObjArray *bgTracks, TObjArray *assocArray, Float_t perc);
-    
+
         void                    SetCosPAK0(Float_t cosPAK0) { fCosPointAngleK0 = cosPAK0; }
         void                    SetCosPALam(Float_t cosPALam) { fCosPointAngleLam = cosPALam; }
         void                    SetDCAV0Daughters(Float_t dca) { fDCAV0Daughters = dca; }
@@ -102,7 +102,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetNumberOfDeltaPhiBins(Int_t bins) { fNumberOfDeltaPhiBins = bins; }
         void                    SetNumberOfDeltaEtaBins(Int_t bins) { fNumberOfDeltaEtaBins = bins; }
         void                    SetNumberOfEtaBins(Int_t bins) { fNumberOfEtaBins = bins; }
-        void                    SetMixing(Bool_t mix) { fMixing = mix; } 
+        void                    SetMixing(Bool_t mix) { fMixing = mix; }
         void                    SetMixingGen (Bool_t mix) { fMixingGen = mix; }
         void                    SetNumberOfVzBins(Int_t nbins) { fNumOfVzBins = nbins; }
         AliAODTrack *           SetAliAODTrack(Double_t theta,Double_t phi, Double_t pt , Short_t charge);
@@ -153,15 +153,16 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t                   GetOriginalPartonPDG(const AliMCParticle* mcTrack);
         void                    SetOnTheFlyMCTrain(Bool_t tr) { fonTheFlyMC = tr; }
         void                    SetFlowEffPtBins(Bool_t cut) { fFlowEffPtBins = cut; }
+        void                    SetTPCrowsRindableRatio(Double_t ratio) { fTPCrowsRindableRatio = ratio; }
         AliEventCuts *           fAliEventCuts; //!
-    
+
     private:
         AliAODEvent*            fAOD;           		//! input event
         AliESDEvent*            fESD;                   //! input event
-        AliMCEvent*             fmcEvent;               //! input MC event 
+        AliMCEvent*             fmcEvent;               //! input MC event
         AliPIDResponse*         fPIDResponse;           //!
         TList*                  fOutputList;    		//! output list
-        TH3F*					fHistLambdaMassPtCut;	//! 
+        TH3F*					fHistLambdaMassPtCut;	//!
         TH3F*					fHistK0MassPtCut;		//!
         TH3F*                   fHistAntiLambdaMassPtCut; //!
         THnSparse*              fHistKorelacie;             //!
@@ -197,20 +198,20 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                        fRejectEventPileUp; // enable to use Pile-up cuts
         Bool_t                        fRejectTrackPileUp; // enable to use Bunch-Of Pile-up cuts for tracks
 
-        THnSparse*              fHistKorelacieMCrec; //!  
+        THnSparse*              fHistKorelacieMCrec; //!
         THnSparse*              fHistNumberOfTriggersGen;  //!
         THnSparse*              fHistNumberOfTriggersRec;  //!
-    
+
         THnSparse*              fHistRecV0; //!
         THnSparse*              fHistGenV0; //!
-    
+
         TH3D*                   fHistRCPtTrigg;            //!
         TH1D*                   fHistSelection;            //!
         TH1F*                   fHistMultipPercentile;     //!
         THnSparse*              fHistTopolCut;             //!
         THnSparse*              fHistTopolCutMC;           //!
         THnSparse*              fHistPurityCheck;          //!
-    
+
         Float_t                 fCosPointAngleK0; //
         Float_t                 fCosPointAngleLam; //
         Float_t                 fDCAV0Daughters; //
@@ -238,7 +239,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t                   fFilterBit; // enable to vary filter bit for systematic studies
         Bool_t                  fRemoveLamhFromCascade; // enable to remove hh corelations, which are from the same V0
         Bool_t                  fRemoveHadrFromV0; // enable to remove Lamh corelations, which are from the same cascade
-        Bool_t                  fAacceptLambdasFromCasscade; // accept Lambdas from cascades to efficiency calculation 
+        Bool_t                  fAacceptLambdasFromCasscade; // accept Lambdas from cascades to efficiency calculation
         Bool_t                  fPurePrimHadrons; // anable to accept only pure primary hadrons for MC closure test
         Bool_t                  fPureV0; // anable to accept only pure good ID V0 for MC closure test
         Bool_t                  fAnalysisAOD;// anable to change between ESDs and AODs
@@ -250,9 +251,9 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fMixingGen; //
         Int_t                   fNumOfVzBins; // number of PV bins for mixing
         Int_t                   fPrimaryVertexCut; // PV position acceptance
-        
 
-        TH1D *                  fHistGenMultiplicity; //! 
+
+        TH1D *                  fHistGenMultiplicity; //!
         TH2D *                  fHistTPCTracksVsClusters; //!
         TH2D *                  fHistVZeroPercentileTPCMult;//!
 
@@ -260,20 +261,20 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fTestPions; // for testing MC trains
 
         TH2D *                  fHistPosNegTracks; //!
-        THnSparse *             fHistLambdaFeedDown; //! 
+        THnSparse *             fHistLambdaFeedDown; //!
         Bool_t                  fAnalyseFeedDown;
         Double_t                fPtAssocMax; // maximal pt of associated Particle
         Double_t                fPtTrigMax; // maximal pt of trigger Particle
         TH3F *                  fHistXiMinusMassPtCut; //!
         TH3F *                  fHistXiPlusMassPtCut; //!
         TH2D *                  fHistCasMC; //!
-        
+
         Double_t                fMagneticField;
         Double_t                fPV[3];
 
         Float_t                 fMaxDCAToVertexZ; // DCA selection criterium for primary tracks in Z direction
         Float_t                 fMaxDCAToVertexXY; // DCA selection criterium for primary tracks in XY plane
-        Float_t                 fMinNCrossedRowsTPCprimtracks; // TPC quality selection criterium for primary tracks 
+        Float_t                 fMinNCrossedRowsTPCprimtracks; // TPC quality selection criterium for primary tracks
 
         TObjArray *             fmcTracksSel;  //!  generated associated particles
         TObjArray *             fmcGenTracksMixing; //! generated associated particles for Mixing
@@ -300,36 +301,37 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fUseEff;
         Bool_t                  fMixCorrect; // enable efficiency correction for mixing
         Bool_t                  fminBias;// enable minimum bias trigger , deffault
-        Bool_t                  fhighMult;// enable V0 high multiplicity trigger 
+        Bool_t                  fhighMult;// enable V0 high multiplicity trigger
         Bool_t                  fhighMultSPD;// enable SPD high multiplicity trigger
-        TH3D *                  fHistMultVZEROTracklets; //!    
+        TH3D *                  fHistMultVZEROTracklets; //!
         Double_t                fPercentileMin; // minimum muliplicity percentile to be analysed
         Double_t                fPercetileMax; // maximum muliplicity percentile to be analysed
         Bool_t                  fEventCutsQAPlots; // enable to save event QA plots
         Bool_t                  fpp; // flag pp / PbPb
         Int_t                   fNMultiplicityBins; // number of multiplicity bins
-        Double_t                fCascadePA; //casscade cos(PA) cut 
+        Double_t                fCascadePA; //casscade cos(PA) cut
         Double_t                fCascadeTransverseDecayRadius; // cascade transverse radius cut
         Double_t                fDaughterV0DecayRadius; // cascade daughter V0 transverse decay radius cut
         Double_t                fDaughterV0cosPA; // cascade daughter V0 cos(PA) cut
         Double_t                fDCADaughterV0PV; // cascade DCA daughter V0 to PV cut
         Double_t                fDCADaughterV0tracks; // cascade DCA of daughter V0 tracks cut
-        Double_t                fDCACascadeDaughters; // DCA of Cascade Daughters cut 
+        Double_t                fDCACascadeDaughters; // DCA of Cascade Daughters cut
         Double_t                fDaugterV0InvariantMassRange; // cascade daugter V0 invariant mass range cut
         Double_t                fCascadeProperLifetime; // cascade proper lifetime cut
         Double_t                fNSigmasTPCCascadedaughterTracks; // N Sigmas TPC of Cascade daughter Tracks cut
         Double_t                fDCAbachelorPV; // DCA of cacscade bachelor track to PV cut
-        Double_t                fDCAbaryonDaughterPV; // DCA of cascade baryon daughter track to PV cut 
-        Double_t                fDCAmesonDaughterPV; // DCA of cascade meson daughter track to PV cut 
+        Double_t                fDCAbaryonDaughterPV; // DCA of cascade baryon daughter track to PV cut
+        Double_t                fDCAmesonDaughterPV; // DCA of cascade meson daughter track to PV cut
         TH1D *                  fHistV0AmplitudeVsPVposition; //!
         Bool_t                  fonTheFlyMC; // on the fly MC train usage
         Bool_t                  fFlowEffPtBins; //Different pt bins setting for efficiency calculation
-        Double_t                fPercentile;// th V0M multiplicity percentile 
+        Double_t                fPercentile;// th V0M multiplicity percentile
+        Double_t                fTPCrowsRindableRatio; // ratio of crossed rows in TPC and Finadable clusters
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 40);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 41);
 };
 
 class AliV0ChParticle : public AliVParticle
@@ -377,7 +379,7 @@ class AliV0ChParticle : public AliVParticle
 
     }
      virtual ~AliV0ChParticle() {}
-  
+
       // kinematics
       virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
       virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
@@ -385,29 +387,29 @@ class AliV0ChParticle : public AliVParticle
       virtual Double_t Pt() const { return fpT; }
       virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
       virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-  
+
       virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
       virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
       virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
       virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-  
+
       virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
       virtual Double_t Phi()        const { return fPhi; }
       virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
-  
-  
+
+
       virtual Double_t E()          const { return fEnergie; }
       virtual Double_t M()          const { return fMass; }
-  
+
       virtual Double_t Eta()        const { return fEta; }
       virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
-  
+
       virtual Short_t Charge()      const { return fCharge; }
       virtual Int_t   GetLabel()    const { return fLabel; }
       // PID
       virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
       virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
-  
+
       virtual Short_t WhichCandidate()      const { return fCandidate; }
     Int_t   GetIDCh()             const { return fIDh; }
     Int_t   GetIDPos()            const { return fIDpos; }
@@ -422,7 +424,7 @@ class AliV0ChParticle : public AliVParticle
     Double_t GetEta1()            const { return fEta1; }
     Double_t GetEta2()            const { return fEta2; }
     Int_t GetOrigalPartonType()   const { return fOriginalParton; }
-  
+
       private:
       Double_t fEta;      // eta
       Double_t fPhi;      // phi
@@ -437,16 +439,16 @@ class AliV0ChParticle : public AliVParticle
       Short_t fCharge; // charge of the track
       Double_t fPz; //pZ
       Double_t fEnergie; //E
-      Double_t fPhi1; // phi of first daughter 
-      Double_t fPt1; //pt of first daughter 
-      Double_t fEta1; // eta of first daughter  
-      Double_t fChar1; // charge of first daughter 
-      Double_t fPhi2; // phi of second daughter 
-      Double_t fPt2; //pt of second daughter 
-      Double_t fEta2; // eta of second daughter 
-      Double_t fChar2; // charge of second daughter 
+      Double_t fPhi1; // phi of first daughter
+      Double_t fPt1; //pt of first daughter
+      Double_t fEta1; // eta of first daughter
+      Double_t fChar1; // charge of first daughter
+      Double_t fPhi2; // phi of second daughter
+      Double_t fPt2; //pt of second daughter
+      Double_t fEta2; // eta of second daughter
+      Double_t fChar2; // charge of second daughter
       Int_t fOriginalParton; //0- quark; 1-gluon, for MC truth information
-   
+
       ClassDef( AliV0ChParticle, 8) // class required for correlatios calculation and event mixing
  };
 
