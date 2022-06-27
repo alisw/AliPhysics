@@ -187,7 +187,6 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_ULS_forW;
 		TH2F*                   fInv_pT_LS_forZ;
 		TH2F*                   fInv_pT_ULS_forZ;
-		TH2F*                   fInv_pT_ULS_forZ_MC;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
 		TH2F*                   fHistPt_R_Iso;
@@ -277,6 +276,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistWeOrgPos;
 		TH1F*                   fHistWeOrgNeg;
 		TH2F*                   fHistZeOrg;
+		TH1F*                   fHistZeRec;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
