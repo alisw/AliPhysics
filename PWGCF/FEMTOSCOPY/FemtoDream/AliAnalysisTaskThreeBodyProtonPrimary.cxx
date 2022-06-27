@@ -625,8 +625,6 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 
     if(fDoOnlyThreeBody){
       for (int i = 0; i < 10; ++i) {
-        fSameEventTripletMultArray[i] = new TH2F(histTitlesSameMult[i],histTitlesSameMult[i], 8000, 0, 8,26,1,27);
-          if(fRunPlotMult){fSameEventMult->Add(fSameEventTripletMultArray[i]);}
         fSameEventTripletMultArray12[i] = new TH2F(histTitlesSameMult12[i],histTitlesSameMult12[i], 8000, 0, 8,26,1,27);
           if(fRunPlotMult){fSameEventMult->Add(fSameEventTripletMultArray12[i]);}
         fSameEventTripletMultArray23[i] = new TH2F(histTitlesSameMult23[i],histTitlesSameMult23[i], 8000, 0, 8,26,1,27);
