@@ -163,7 +163,6 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fInv_pT_ULS_forW(0),
 	fInv_pT_LS_forZ(0),
 	fInv_pT_ULS_forZ(0),
-	fInv_pT_ULS_forZ_MC(0),
 	fHistPt_Inc(0),
 	fHistPt_Iso(0),
 	fHistPt_R_Iso(0),
@@ -251,6 +250,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
         fHistZeOrg(0),
+        fHistZeRec(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
 
@@ -361,7 +361,6 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fInv_pT_ULS_forW(0),
 	fInv_pT_LS_forZ(0),
 	fInv_pT_ULS_forZ(0),
-	fInv_pT_ULS_forZ_MC(0),
 	fHistPt_Inc(0),
 	fHistPt_Iso(0),
 	fHistPt_R_Iso(0),
@@ -449,6 +448,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
         fHistZeOrg(0),
+        fHistZeRec(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
 {
@@ -595,6 +595,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistWeOrgPos        = new TH1F("fHistWeOrgPos","particle level W->e plus",90,10,100);
 	fHistWeOrgNeg        = new TH1F("fHistWeOrgNeg","particle level W->e minus",90,10,100);
 	fHistZeOrg        = new TH2F("fHistZeOrg","particle level W->e",90,10,100,90,10,100);
+	fHistZeRec        = new TH1F("fHistZeRec","particle level W->e",90,10,100);
 
 
 
@@ -657,9 +658,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fInv_pT_ULS = new TH2F("fInv_pT_ULS", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
 	fInv_pT_LS_forW = new TH2F("fInv_pT_LS_forW", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1000,0,1.0);
 	fInv_pT_ULS_forW = new TH2F("fInv_pT_ULS_forW", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1000,0,1.0);
-	fInv_pT_LS_forZ = new TH2F("fInv_pT_LS_forZ", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1200,0,120.0);
-	fInv_pT_ULS_forZ = new TH2F("fInv_pT_ULS_forZ", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1200,0,120.0);
-	fInv_pT_ULS_forZ_MC = new TH2F("fInv_pT_ULS_forZ_MC", "Invariant mass vs p_{T} distribution(ULS) in MC; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1200,0,120.0);
+	fInv_pT_LS_forZ = new TH2F("fInv_pT_LS_forZ", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
+	fInv_pT_ULS_forZ = new TH2F("fInv_pT_ULS_forZ", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fHistMCorgPi0 = new TH2F("fHistMCorgPi0","MC org Pi0",2,-0.5,1.5,100,0,50);
 	fHistMCorgEta = new TH2F("fHistMCorgEta","MC org Eta",2,-0.5,1.5,100,0,50);
 	fTrigMulti = new TH2F("fTrigMulti","Multiplicity distribution for different triggers; Trigger type; multiplicity",11,-1,10,2000,0,2000);
@@ -727,7 +727,6 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fInv_pT_ULS_forW);
 	fOutputList->Add(fInv_pT_LS_forZ);
 	fOutputList->Add(fInv_pT_ULS_forZ);
-	fOutputList->Add(fInv_pT_ULS_forZ_MC);
 	fOutputList->Add(fHistPt_Inc);
 	fOutputList->Add(fHistPt_Iso);
 	fOutputList->Add(fHistPt_R_Iso);
@@ -790,6 +789,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistWeOrgPos); 
 	fOutputList->Add(fHistWeOrgNeg); 
 	fOutputList->Add(fHistZeOrg); 
+	fOutputList->Add(fHistZeRec); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -953,6 +953,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	}
 
         //cout << "++++++++ centrality = " << centrality << endl;
+        //cout << "++++++++ centrality_mult = " << centrality_mult << endl;
 
 	//////////////////////////////
 	// Event selection
@@ -1334,7 +1335,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	                   FindWZdecay(fMCTrackpart,ilabelM,pdgorg);
                        
                            //cout << "pidM = "<< pidM << endl; 
-                           if(TMath::Abs(pdgorg)==24)cout << "W->e reco status = "<< fMCTrackpart->GetStatus() << endl; 
+                           //if(TMath::Abs(pdgorg)==24)cout << "W->e reco status = "<< fMCTrackpart->GetStatus() << endl; 
+                           //if(TMath::Abs(pdgorg)==23)cout << "Z->e reco status = "<< fMCTrackpart->GetStatus() << endl; 
                           }
 
 			pid_eleB = IsBdecay(pidM);
@@ -1517,7 +1519,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                         Int_t NtrackCone = 0;
 
                         Bool_t icaliso = kTRUE;
-                        if(fMCarray && TMath::Abs(pdgorg)!=24 && pdgstatus!=1)icaliso = kFALSE;
+                        if(fMCarray && (TMath::Abs(pdgorg)!=24 || TMath::Abs(pdgorg)!=23) && pdgstatus!=1)icaliso = kFALSE;
                         //cout << "icaliso = " << icaliso << endl;
 
 			//if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
@@ -1549,6 +1551,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             fIsoArray->Fill(isoarray);
                             if(IsoEnergy<0.05)fDCAxy_Pt_We->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                             if(IsoEnergy < 0.05 && NtrackCone <3)iIsocut=kTRUE;
+                            if(iIsocut && TMath::Abs(pdgorg)==23)fHistZeRec->Fill(TrkPt);
                            }
 
                         if(TrkPt>10.0 && ((pid_eleD) || (pid_eleB)))
@@ -1783,7 +1786,6 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 				fInv_pT_ULS->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_ULS_forW->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_ULS_forZ->Fill(TrkPt,mass);
-				if(iIsocut && iMC==23)fInv_pT_ULS_forZ_MC->Fill(TrkPt,mass);
 				if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
 		}
