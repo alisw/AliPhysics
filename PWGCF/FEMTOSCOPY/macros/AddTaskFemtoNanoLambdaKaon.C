@@ -211,16 +211,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     closeRejection[4] = true;
   }
 
-  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
 
   config->SetPDGCodes(PDGParticles);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
+  config->SetMultBinning(true);
   config->SetClosePairRejection(closeRejection);
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMultBinning(true);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
@@ -238,7 +238,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     config->SetDomTMultBinning(true);
     config->SetmTBinning(true);
   }
-  if (suffix != 0)
+  
+  if (suffix != "0")
   {
     config->SetMinimalBookingME(true);
   }
@@ -246,17 +247,14 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   if (isMC)
   {
     config->SetMomentumResolution(true);
+    if (DoAncestors) {
+      config->SetAncestors(true);
+      config->GetDoAncestorsPlots();
+    }
   }
   else
   {
     std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
-  }
-
-  // Common/Non Common Ancestors
-  if (isMC && DoAncestors)
-  {
-    config->SetAncestors(true);
-    config->GetDoAncestorsPlots();
   }
 
   // Variation cuts
@@ -1196,6 +1194,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   AliAnalysisTaskNanoLambdaKaon *task =
       new AliAnalysisTaskNanoLambdaKaon(
           "AliAnalysisTaskNanoLambdaKaon", isMC);
+
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
