@@ -161,8 +161,7 @@ public:
   void SetBdtOutputBackgroundCut(double cut = 0.15) { fBdtOutputBackgroundCut = cut; }
 
   void SetBDTPath(const char *path = "") { fBDTPath = path; }
-  void SetNctBinsBDT(int nBins = 8) { fNctBinsBDT = nBins; }
-  void SetDeltaCtBinsBDT(double deltaCtBinsBDT = 5) { fDeltaCtBinsBDT = deltaCtBinsBDT; }
+  void SetCtBinsBDT(int nBins, double *ctBins) { fCtBinsBDT.Set(nBins+1,ctBins); }
 
 private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
@@ -217,6 +216,7 @@ private:
   double fLambdaLeastCRawsOvF;
   double fMinCentrality = 0;
   double fMaxCentrality = 90;
+  double fCtPreselection = 1.;
   double fRadiusPreselection = 3;
   double fRadiusOverflowCut = 100;
   int fTpcClV0PiPreselection = 70;
@@ -232,8 +232,7 @@ private:
   float fCutLambdaMass[2] = {1.09f, 1.15f};
   bool fUseOnTheFly = false;
 
-  int fNctBinsBDT = 8;
-  double fDeltaCtBinsBDT = 5.;
+  TArrayD fCtBinsBDT;
   std::string fBDTPath = "";
 
   bool IsTopolSelected(bool isXi = true);
