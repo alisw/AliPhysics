@@ -2150,14 +2150,14 @@ void AliAnalysisTaskDoubleHypNucTree::InitArrays() {
 
   const Int_t nTracksEvent = fAODevent->GetNumberOfTracks();
   // __ Track Array for identified particles __ //
-  He4PosCounter = 0;
-  He4NegCounter = 0;
-  He3PosCounter = 0;
-  He3NegCounter = 0;
-  PPosCounter = 0;
-  PNegCounter = 0;
-  PiPosCounter = 0;
-  PiNegCounter = 0;
+  He4PosCounter   = 0;
+  He4NegCounter   = 0;
+  He3PosCounter   = 0;
+  He3NegCounter   = 0;
+  PPosCounter     = 0;
+  PNegCounter     = 0;
+  PiPosCounter    = 0;
+  PiNegCounter    = 0;
   PiPosSecCounter = 0;
   PiNegSecCounter = 0;
 
@@ -2173,19 +2173,19 @@ void AliAnalysisTaskDoubleHypNucTree::InitArrays() {
   PiNegSecArray.clear();
 
   // __ cuts __ //
-  kDCATracksCut     = 3.;
+  kDCATracksCut     = 2.;
   kTrackPtUncertCut = 1.0;
   kPointingAngleCut = 0.9;
-  kPIDSelecCut = 4.0;
-  int nsigma   = 5;
-  kMin4LLHMass = 4.04;//4.106 - nsigma * 0.004;
-  kMax4LLHMass = 4.20;//4.106 + nsigma * 0.004;
-  kMin4LHeMass = 3.86;//3.924 - nsigma * 0.003;
-  kMax4LHeMass = 4.02;//3.924 + nsigma * 0.003;
-  kMin4LHMass  = 3.86;//3.925 - nsigma * 0.003;
-  kMax4LHMass  = 4.02;//3.925 + nsigma * 0.003;
-  kMin3LHMass  = 2.93;//2.991 - nsigma * 0.002;
-  kMax3LHMass  = 3.05;//2.991 + nsigma * 0.002; 
+  kPIDSelecCut      = 4.0;
+  int nsigma        = 5;
+  kMin4LLHMass      = 4.04;//4.106 - nsigma * 0.004;
+  kMax4LLHMass      = 4.18;//4.106 + nsigma * 0.004;
+  kMin4LHeMass      = 3.86;//3.924 - nsigma * 0.003;
+  kMax4LHeMass      = 4.00;//3.924 + nsigma * 0.003;
+  kMin4LHMass       = 3.86;//3.925 - nsigma * 0.003;
+  kMax4LHMass       = 4.00;//3.925 + nsigma * 0.003;
+  kMin3LHMass       = 2.92;//2.991 - nsigma * 0.002;
+  kMax3LHMass       = 3.06;//2.991 + nsigma * 0.002; 
 }
 // _________________________________________________ //
 Int_t AliAnalysisTaskDoubleHypNucTree::CustomTrackCut(const AliAODTrack& track, Int_t particle) {//1 = 3He, 2 = p, 3 = pi
@@ -2209,13 +2209,13 @@ Int_t AliAnalysisTaskDoubleHypNucTree::CustomTrackCut(const AliAODTrack& track, 
   // __ require TPC refit __ //
   if (!(track.GetStatus() & AliAODTrack::kTPCrefit))                       rval = 0;
   // __ pion momentum __ //
-  if (particle == 3 && part.Pt() > 3.)                                     rval = 0;
+  if (particle == 3 && part.Pt() > 2.)                                     rval = 0;
   // __ proton momentum __ //
   //if (particle == 2 && part.Pt() > 5.)                                     rval = 0;
   // __ he momentum __ //
   //if (particle == 1 && (part.Pt() > 7. || part.Pt() < 0.8))                rval = 0;
   // __ ncls TPC pion __ //
-  if (particle == 3 && track.GetTPCNcls() < 40)                            rval = 0;
+  if (particle == 3 && track.GetTPCNcls() < 50)                            rval = 0;
   // __ ncls TPC proton __ //
   if (particle == 2 && track.GetTPCNcls() < 50)                            rval = 0;
   // __ ncls TPC He3 __ //
