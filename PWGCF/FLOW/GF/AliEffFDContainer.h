@@ -107,7 +107,7 @@ class AliEffFDContainer: public TNamed {
     //Pointers to histograms -- so that we don't need to look them up in the list all the time:
     TH2D ***fEff; //! Stored by TList
     TH3D ***fDCA;//! Stored by TList
-    TH2D ***fWithinDCA;//! Stored by TList
+    TH3D ***fWithinDCA;//! Stored by TList
     TH2D ***fPurity;//! Stored by TList
     TH3D ***fFDvsPhi;//! Stored by TList
     TNamed *fIdentifier; //
@@ -125,6 +125,6 @@ class AliEffFDContainer: public TNamed {
     Double_t fPtMax;
     Double_t fEta;
     Double_t fEtaLow;
-    ClassDef(AliEffFDContainer,5);
+    ClassDef(AliEffFDContainer,6);
 };
 #endif
