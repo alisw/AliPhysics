@@ -49,8 +49,8 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  IsMyGoodDaughterTrackESD(const AliESDtrack *t)  ;
         Bool_t                  IsMyGoodV0(const AliAODv0 *v0,const AliAODTrack* myTrackPos, const AliAODTrack* myTrackNeg, Int_t oSta);
         Bool_t                  IsMyGoodV0ESD(const AliESDv0 *v0,const AliESDtrack* myTrackPos, const AliESDtrack* myTrackNeg, Int_t oSta);
-        Bool_t                  IsMyGoodV0Topology(const AliAODv0 *v0);
-        Bool_t                  IsMyGoodV0TopologyESD(const AliESDv0 *v0, const AliESDtrack* myTrackPos, const AliESDtrack* myTrackNeg);
+        Bool_t                  IsMyGoodV0Topology(const AliAODv0 *v0, Bool_t K0s, Bool_t Lambda);
+        Bool_t                  IsMyGoodV0TopologyESD(const AliESDv0 *v0, const AliESDtrack* myTrackPos, const AliESDtrack* myTrackNeg, Bool_t K0s, Bool_t Lambda);
 
         Int_t                   GetOStatus() { return fOStatus; }
         void                    SetOStatus(Int_t stat) {  fOStatus=stat; }
@@ -66,9 +66,9 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 
         void                    SetCosPAK0(Float_t cosPAK0) { fCosPointAngleK0 = cosPAK0; }
         void                    SetCosPALam(Float_t cosPALam) { fCosPointAngleLam = cosPALam; }
-        void                    SetDCAV0Daughters(Float_t dca) { fDCAV0Daughters = dca; }
-        void                    SetDCAposDaughter(Float_t dcapos) { fDCAposDaughter = dcapos; }
-        void                    SetDCAnegDaughter(Float_t dcaneg) { fDCAnegDaughter = dcaneg; }
+        void                    SetDCAV0Daughters(Float_t dcaK0, Float_t dcaLam) { fDCAV0DaughtersK0 = dcaK0; fDCAV0DaughtersLambda = dcaLam; }
+        void                    SetDCADaughterK0(Float_t dcapos) { fDCADaughterK0 = dcapos; }
+        void                    SetDCADaughterLambda(Float_t dca_pos, Float_t dca_neg) { fDCAposDaughterLamda = dca_pos; fDCAnegDaughterLamda = dca_neg; }
         void                    SetNTPCcrossedRows(Int_t Ncr) { fnumOfTPCcrossedRows = Ncr; }
         void                    SetEffAnalysis(Bool_t eff) { fEfficiency = eff; }
         void                    SetPurityCheckAnalysis(Bool_t pur) { fPurityCheck = pur; }
@@ -76,7 +76,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetMixedEvents(Int_t nmix) { fMixedEvents = nmix; }
         void                    SetNofPtBinsTrigger(Int_t nbins) { fNumberOfPtBinsTrigger = nbins; }
         void                    SetNofPtBinsAssoc(Int_t nbins) { fNumberOfPtBinsAssoc = nbins; }
-        void                    SetV0RadiusCut(Double_t rad) { fV0Radius = rad; }
+        void                    SetV0RadiusCut(Double_t cutK0, Double_t cutLam) { fK0sRadius = cutK0; fLambdaRadius = cutLam; }
         void                    SetSigmaCut(Double_t sigma) { fSigmaCut = sigma; }
         void                    SetEtaCut(Double_t eta) { fEtaCut = eta; }
         void                    SetRapidityCut(Double_t rap) { fRapidityCut = rap; }
@@ -154,6 +154,8 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetOnTheFlyMCTrain(Bool_t tr) { fonTheFlyMC = tr; }
         void                    SetFlowEffPtBins(Bool_t cut) { fFlowEffPtBins = cut; }
         void                    SetTPCrowsRindableRatio(Double_t ratio) { fTPCrowsRindableRatio = ratio; }
+        void                    SetMinimalTrackLenght(Int_t cut) { fTrackLength = cut; }
+        void                    SetCollisionSystem(TString system) { fSystem = system; }
         AliEventCuts *           fAliEventCuts; //!
 
     private:
@@ -187,7 +189,8 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                      fPtAsocMin; //
         Bool_t                        fCutsCrosscheck; //
         Int_t                         fMixedEvents; // number of minimum mixed events
-        Double_t                      fV0Radius; // V0 radius
+        Double_t                      fK0sRadius; // K0 radius
+        Double_t                      fLambdaRadius; // Lambda radius
         Double_t                      fSigmaCut; // TPC PID
         Double_t                      fEtaCut; // pseudorapidity cut for primary hadrons
         Double_t                      fRapidityCut; // rapidity cut for V0
@@ -214,9 +217,11 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 
         Float_t                 fCosPointAngleK0; //
         Float_t                 fCosPointAngleLam; //
-        Float_t                 fDCAV0Daughters; //
-        Float_t                 fDCAposDaughter; //
-        Float_t                 fDCAnegDaughter; //
+        Float_t                 fDCAV0DaughtersK0; //
+        Float_t                 fDCAV0DaughtersLambda; //
+        Float_t                 fDCADaughterK0; //
+        Float_t                 fDCAposDaughterLamda; //
+        Float_t                 fDCAnegDaughterLamda; //
         Int_t                   fnumOfTPCcrossedRows; //
         Bool_t                  fEfficiency; //
         Bool_t                  fPurityCheck;//
@@ -327,11 +332,13 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fFlowEffPtBins; //Different pt bins setting for efficiency calculation
         Double_t                fPercentile;// th V0M multiplicity percentile
         Double_t                fTPCrowsRindableRatio; // ratio of crossed rows in TPC and Finadable clusters
+        Int_t                   fTrackLength;//V0 daughter track lenght
+        TString                 fSystem; //
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 41);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 42);
 };
 
 class AliV0ChParticle : public AliVParticle

@@ -91,7 +91,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fPtAsocMin(1),
     fCutsCrosscheck(kFALSE),
     fMixedEvents(10),
-    fV0Radius(0.5),
+    fK0sRadius(0.5),
+    fLambdaRadius(0.5),
     fSigmaCut(3.),
     fEtaCut(0.8),
     fRapidityCut(0.5),
@@ -114,9 +115,11 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistPurityCheck(0),
     fCosPointAngleK0(0.97),
     fCosPointAngleLam(0.995),
-    fDCAV0Daughters(1),
-    fDCAposDaughter(0.06),
-    fDCAnegDaughter(0.06),
+    fDCAV0DaughtersK0(1),
+    fDCAV0DaughtersLambda(1),
+    fDCADaughterK0(0.06),
+    fDCAposDaughterLamda(0.06),
+    fDCAnegDaughterLamda(0.06),
     fnumOfTPCcrossedRows(70),
     fEfficiency(kTRUE),
     fPurityCheck(kTRUE),
@@ -218,7 +221,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fonTheFlyMC(kFALSE),
     fFlowEffPtBins(kFALSE),
     fPercentile(302),
-    fTPCrowsRindableRatio(0.8)
+    fTPCrowsRindableRatio(0.8),
+    fSystem("pp")
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -257,7 +261,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fPtAsocMin(1),
     fCutsCrosscheck(kFALSE),
     fMixedEvents(10),
-    fV0Radius(0.5),
+    fK0sRadius(0.5),
+    fLambdaRadius(0.5),
     fSigmaCut(3.),
     fEtaCut(0.8),
     fRapidityCut(0.5),
@@ -280,9 +285,11 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fHistPurityCheck(0),
     fCosPointAngleK0(0.97),
     fCosPointAngleLam(0.995),
-    fDCAV0Daughters(1),
-    fDCAposDaughter(0.06),
-    fDCAnegDaughter(0.06),
+    fDCAV0DaughtersK0(1),
+    fDCAV0DaughtersLambda(1),
+    fDCADaughterK0(0.06),
+    fDCAposDaughterLamda(0.06),
+    fDCAnegDaughterLamda(0.06),
     fnumOfTPCcrossedRows(70),
     fEfficiency(kTRUE),
     fPurityCheck(kTRUE),
@@ -384,7 +391,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fonTheFlyMC(kFALSE),
     fFlowEffPtBins(kFALSE),
     fPercentile(302),
-    fTPCrowsRindableRatio(0.8)
+    fTPCrowsRindableRatio(0.8),
+    fSystem("pp")
 {
     // constructor
 
@@ -1960,10 +1968,15 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             if (Lambda&&cutLambdaPid) fHistLambdaMassPtCut->Fill(massLambda,v0pt,3.5);
             if (Antilambda&&cutAntiLambdaPid) fHistAntiLambdaMassPtCut->Fill(massAntilambda,v0pt,3.5);
 
-            if(fAOD)
-                if(!IsMyGoodV0Topology(V0AOD)) continue; //topoligical cuts
-            if(fESD)
-                if(!IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD)) continue;
+            if(fAOD){
+                if(k0&&!IsMyGoodV0Topology(V0AOD,kTRUE,kFALSE)) continue; //topoligical cuts
+                if(Lambda&&!IsMyGoodV0Topology(V0AOD,kFALSE,kTRUE)) continue; //topoligical cut
+                if(Antilambda&&!IsMyGoodV0Topology(V0AOD,kFALSE,kFALSE)) continue; //topoligical cut
+            }if(fESD){
+                if(k0&&!IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kTRUE,kFALSE)) continue;
+                if(Lambda&&!IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kFALSE,kTRUE)) continue;
+                if(Antilambda&&!IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kFALSE,kFALSE)) continue;
+            }
 
 
             if (k0&&cutK0Pid) fHistK0MassPtCut->Fill(massK0,v0pt,4.5);
@@ -2389,8 +2402,15 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodDaughterTrack(const AliAODTrack
 	Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);
 	if (nCrossedRowsTPC < fnumOfTPCcrossedRows) return kFALSE;
 	Int_t findable=t->GetTPCNclsF();
-	if (findable <= 0) return kFALSE;
-	if (nCrossedRowsTPC/findable < fTPCrowsRindableRatio) return kFALSE;
+
+  if(fSystem=="PbPb"){
+    if(t->GetIntegratedLength()<fTrackLength) { return kFALSE; }
+    if (nCrossedRowsTPC/t->GetIntegratedLength() < fTPCrowsRindableRatio) return kFALSE;
+  }else{
+    if (findable <= 0) return kFALSE;
+    if (nCrossedRowsTPC/findable < fTPCrowsRindableRatio) return kFALSE;
+  }
+
 
     if (TMath::Abs(t->Eta())>=fEtaCut) return kFALSE;
 
@@ -2470,36 +2490,79 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0ESD(const AliESDv0 *v0,const 
     return kTRUE;
 }
 //______________________________________________________________________
-Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0Topology(const AliAODv0 *v0){
+Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0Topology(const AliAODv0 *v0, Bool_t K0s, Bool_t Lambda){
     if (!v0) {
         AliError(Form("ERROR: Could not retrieve aodV0"));
         return kFALSE;
     }
-	//DCA Negative Track to PV
-	if(v0->DcaNegToPrimVertex()<=fDCAposDaughter) return kFALSE;
-	//DCA Positive Track to PV
-	if(v0->DcaPosToPrimVertex()<=fDCAnegDaughter) return kFALSE;
-	//DCA V0 daughters
-	if(v0->DcaV0Daughters()>=fDCAV0Daughters) return kFALSE;
+    if(K0s){
+    	//DCA Negative Track to PV
+    	if(v0->DcaNegToPrimVertex()<=fDCADaughterK0) return kFALSE;
+    	//DCA Positive Track to PV
+    	if(v0->DcaPosToPrimVertex()<=fDCADaughterK0) return kFALSE;
+      //DCA V0 daughters
+    	if(v0->DcaV0Daughters()>=fDCAV0DaughtersK0) return kFALSE;
+      if(fSystem=="PbPb"){
+        Double_t dPtArm = v0->PtArmV0();
+        Double_t dAlpha = v0->AlphaV0();
+        if(dPtArm < (0.2 * TMath::Abs(dAlpha))) { return kFALSE; }
+      }
+    }else{
+      if(Lambda){
+        //DCA Negative Track to PV
+      	if(v0->DcaNegToPrimVertex()<=fDCAnegDaughterLamda) return kFALSE;
+      	//DCA Positive Track to PV
+      	if(v0->DcaPosToPrimVertex()<=fDCAposDaughterLamda) return kFALSE;
+      }else{
+        //DCA Negative Track to PV
+      	if(v0->DcaNegToPrimVertex()<=fDCAposDaughterLamda) return kFALSE;
+      	//DCA Positive Track to PV
+      	if(v0->DcaPosToPrimVertex()<=fDCAnegDaughterLamda) return kFALSE;
+      }
+      //DCA V0 daughters
+    	if(v0->DcaV0Daughters()>=fDCAV0DaughtersLambda) return kFALSE;
+    }
+
 	//V0 2D Decay Radius
-	if(v0->RadiusV0()<=fV0Radius) return kFALSE;
+	if(K0s && v0->RadiusV0()<=fK0sRadius) return kFALSE;
+  if(!K0s && v0->RadiusV0()<=fLambdaRadius) return kFALSE;
 
 	return kTRUE;
 }
 //______________________________________________________________________
-Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0TopologyESD(const AliESDv0 *v0, const AliESDtrack* myTrackPos, const AliESDtrack* myTrackNeg){
+Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0TopologyESD(const AliESDv0 *v0, const AliESDtrack* myTrackPos, const AliESDtrack* myTrackNeg, Bool_t K0s, Bool_t Lambda){
     if (!v0) {
         AliError(Form("ERROR: Could not retrieve esdV0"));
         return kFALSE;
     }
     //DCA Positive Track to PV
     Double_t lDcaPosToPrimVertex = TMath::Abs(myTrackPos->GetD(fPV[0], fPV[1],fMagneticField) );
-    if(lDcaPosToPrimVertex<=fDCAposDaughter) return kFALSE;
     //DCA Negative Track to PV
     Double_t lDcaNegToPrimVertex = TMath::Abs(myTrackNeg->GetD(fPV[0], fPV[1],fMagneticField) );
-    if(lDcaNegToPrimVertex<=fDCAnegDaughter) return kFALSE;
-    //DCA V0 daughters
-    if(v0->GetDcaV0Daughters()>=fDCAV0Daughters) return kFALSE;
+
+    if(K0s){
+    	//DCA Negative Track to PV
+    	if(lDcaPosToPrimVertex<=fDCADaughterK0) return kFALSE;
+    	//DCA Positive Track to PV
+    	if(lDcaNegToPrimVertex<=fDCADaughterK0) return kFALSE;
+      //DCA V0 daughters
+      if(v0->GetDcaV0Daughters()>=fDCAV0DaughtersK0) return kFALSE;
+    }else{
+      if(Lambda){
+        //DCA Negative Track to PV
+      	if(lDcaNegToPrimVertex<=fDCAnegDaughterLamda) return kFALSE;
+      	//DCA Positive Track to PV
+      	if(lDcaPosToPrimVertex<=fDCAposDaughterLamda) return kFALSE;
+      }else{
+        //DCA Negative Track to PV
+      	if(lDcaNegToPrimVertex<=fDCAposDaughterLamda) return kFALSE;
+      	//DCA Positive Track to PV
+      	if(lDcaPosToPrimVertex<=fDCAnegDaughterLamda) return kFALSE;
+      }
+      //DCA V0 daughters
+      if(v0->GetDcaV0Daughters()>=fDCAV0DaughtersLambda) return kFALSE;
+    }
+
 
     //V0 2D Decay Radius
 
@@ -2507,7 +2570,8 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0TopologyESD(const AliESDv0 *v
     v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
     Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
 
-    if(lV0Radius<=fV0Radius) return kFALSE;
+    if(K0s && lV0Radius<=fK0sRadius) return kFALSE;
+    if(!K0s && lV0Radius<=fK0sRadius) return kFALSE;
 
     return kTRUE;
 }
