@@ -465,7 +465,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         {
           if (fRecLambda->ct < fCtPreselection || fRecLambda->radius < fRadiusPreselection || fRecLambda->radius > fRadiusOverflowCut || fRecLambda->dcaPiPV > fDCAV0piToPVOverflowCut || fRecLambda->dcaPrPV > fDCAV0prToPVOverflowCut || fRecLambda->dcaV0PV > fDCAV0toPVOverflowCut || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
           int model_index = WhichBDT(fRecLambda->ct);
-          if (model_index > (fCtBinsBDT.GetSize()-1)) {
+          if (model_index > (fCtBinsBDT.GetSize()-2)) {
             continue;
           }
           if (!fBDT[model_index])
