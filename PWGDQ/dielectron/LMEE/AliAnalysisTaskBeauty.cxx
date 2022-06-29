@@ -61,6 +61,7 @@ fPtCutHigh(1e6),
 fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
+fMinOpAng(-1.),
 fScaleByRAA(kFALSE),
 fHistoRAA(0x0),
 fTF1RAA(0x0),
@@ -190,6 +191,7 @@ fPtCutHigh(1e6),
 fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
+fMinOpAng(-1.),
 fScaleByRAA(kFALSE),
 fHistoRAA(0x0),
 fTF1RAA(0x0),
@@ -330,6 +332,7 @@ void AliAnalysisTaskBeauty::UserCreateOutputObjects()
   printf("  low-pt cut:         %f\n", fPtCutLow);
   printf("  high-eta cut:         %f\n", fEtamax);
   printf("  low-eta cut:         %f\n", fEtamin);
+  printf("  Opening angle cut:   %f\n", fMinOpAng);
   printf("  use R_AA scaling:    %s\n", fScaleByRAA?"YES":"NO");
   if(fHistoRAA && fScaleByRAA) printf("  Use histo for HFE RAA\n");
   if(fTF1RAA && fScaleByRAA) printf("  User TF1 for HFE RAA\n");
@@ -1316,12 +1319,14 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta_pt->Sumw2();
   hMeePtee_ULS_eta08_pt400->Sumw2();
   hMeePtee_LS_eta08_pt400->Sumw2();
-  hMeePtee_ULS_eta08_pt200_opAngleCut->Sumw2();
-  hMeePtee_LS_eta08_pt200_opAngleCut->Sumw2();
-  hMeePtee_ULS_eta08_pt300_opAngleCut->Sumw2();
-  hMeePtee_LS_eta08_pt300_opAngleCut->Sumw2();
-  hMeePtee_ULS_eta08_pt400_opAngleCut->Sumw2();
-  hMeePtee_LS_eta08_pt400_opAngleCut->Sumw2();
+  if(fMinOpAng > -1.) {
+    hMeePtee_ULS_eta08_pt200_opAngleCut->Sumw2();
+    hMeePtee_LS_eta08_pt200_opAngleCut->Sumw2();
+    hMeePtee_ULS_eta08_pt300_opAngleCut->Sumw2();
+    hMeePtee_LS_eta08_pt300_opAngleCut->Sumw2();
+    hMeePtee_ULS_eta08_pt400_opAngleCut->Sumw2();
+    hMeePtee_LS_eta08_pt400_opAngleCut->Sumw2();
+  }
   hMee_ULS_simulated_be->Sumw2();
   hMee_LS_simulated_be->Sumw2();
   hMee_ULS_eta05_be->Sumw2();
