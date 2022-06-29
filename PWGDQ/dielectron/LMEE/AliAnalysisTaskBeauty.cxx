@@ -1319,14 +1319,12 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta_pt->Sumw2();
   hMeePtee_ULS_eta08_pt400->Sumw2();
   hMeePtee_LS_eta08_pt400->Sumw2();
-  if(fMinOpAng > -1.) {
-    hMeePtee_ULS_eta08_pt200_opAngleCut->Sumw2();
-    hMeePtee_LS_eta08_pt200_opAngleCut->Sumw2();
-    hMeePtee_ULS_eta08_pt300_opAngleCut->Sumw2();
-    hMeePtee_LS_eta08_pt300_opAngleCut->Sumw2();
-    hMeePtee_ULS_eta08_pt400_opAngleCut->Sumw2();
-    hMeePtee_LS_eta08_pt400_opAngleCut->Sumw2();
-  }
+  hMeePtee_ULS_eta08_pt200_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt200_opAngleCut->Sumw2();
+  hMeePtee_ULS_eta08_pt300_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt300_opAngleCut->Sumw2();
+  hMeePtee_ULS_eta08_pt400_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt400_opAngleCut->Sumw2();
   hMee_ULS_simulated_be->Sumw2();
   hMee_LS_simulated_be->Sumw2();
   hMee_ULS_eta05_be->Sumw2();
@@ -1430,12 +1428,14 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   fOutputList->Add(hMeePtee_LS_eta_pt);
   fOutputList->Add(hMeePtee_ULS_eta08_pt400);
   fOutputList->Add(hMeePtee_LS_eta08_pt400);
-  fOutputList->Add(hMeePtee_ULS_eta08_pt200_opAngleCut);
-  fOutputList->Add(hMeePtee_LS_eta08_pt200_opAngleCut);
-  fOutputList->Add(hMeePtee_ULS_eta08_pt300_opAngleCut);
-  fOutputList->Add(hMeePtee_LS_eta08_pt300_opAngleCut);
-  fOutputList->Add(hMeePtee_ULS_eta08_pt400_opAngleCut);
-  fOutputList->Add(hMeePtee_LS_eta08_pt400_opAngleCut);
+  if(fMinOpAng > -1.) {
+    fOutputList->Add(hMeePtee_ULS_eta08_pt200_opAngleCut);
+    fOutputList->Add(hMeePtee_LS_eta08_pt200_opAngleCut);
+    fOutputList->Add(hMeePtee_ULS_eta08_pt300_opAngleCut);
+    fOutputList->Add(hMeePtee_LS_eta08_pt300_opAngleCut);
+    fOutputList->Add(hMeePtee_ULS_eta08_pt400_opAngleCut);
+    fOutputList->Add(hMeePtee_LS_eta08_pt400_opAngleCut);
+  }
   fOutputList->Add(hMee_ULS_simulated_be);
   fOutputList->Add(hMee_LS_simulated_be);
   fOutputList->Add(hMee_ULS_eta05_be);
