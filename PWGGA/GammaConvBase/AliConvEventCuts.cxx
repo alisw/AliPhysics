@@ -1226,6 +1226,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d, with overlapping Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 6){
       printf("\t %d - %d, with overlapping Track mult in MC as data \n", fCentralityMin*5, fCentralityMax*5);
+    } else if ( fModCentralityClass == 10){
+      printf("\t %d - %d, cluster multiplicity with EMCal clusters \n", fCentralityMin, fCentralityMax);
     }
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kMB, kCentral, kSemiCentral will be analysed \n");
@@ -1464,6 +1466,11 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fDetectorCentrality=3;
     fModCentralityClass=20;
     break;
+  case 31: // v: pp -> Multiplicity EMCal clusters in single cluster bins (if one selects 36, all events with 3 to 6 clusters are selected)
+    fIsHeavyIon=0;
+    fDetectorCentrality=4;
+    fModCentralityClass=10;
+    break;
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
     return kFALSE;
@@ -1475,7 +1482,7 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
 Bool_t AliConvEventCuts::SetCentralityMin(Int_t minCentrality)
 {
   // Set Cut
-  if(minCentrality<0||minCentrality>20){
+  if(minCentrality<0||minCentrality>50){
     AliError(Form("minCentrality not defined %d",minCentrality));
     return kFALSE;
   }
@@ -1488,7 +1495,7 @@ Bool_t AliConvEventCuts::SetCentralityMin(Int_t minCentrality)
 Bool_t AliConvEventCuts::SetCentralityMax(Int_t maxCentrality)
 {
   // Set Cut
-  if(maxCentrality<0||maxCentrality>20){
+  if(maxCentrality<0||maxCentrality>50){
     AliError(Form("maxCentrality not defined %d",maxCentrality));
     return kFALSE;
   }
@@ -3012,6 +3019,42 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
 }
 
 //-------------------------------------------------------------
+Int_t AliConvEventCuts::GetEMCalClusterMultiplicity(AliVEvent* event)
+{
+  Int_t nclus                       = 0;
+  TClonesArray * arrClustersProcess = NULL;
+  if(!fCorrTaskSetting.CompareTo("")){
+    nclus = event->GetNumberOfCaloClusters();
+  } else {
+    arrClustersProcess = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(!arrClustersProcess)
+      AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    nclus = arrClustersProcess->GetEntries();
+  }
+  Int_t nClusCalo = 0;
+  for(int i = 0; i < nclus; ++i){
+    AliVCluster* clus = NULL;
+    if(event->IsA()==AliESDEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+      else
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(i));
+    } else if(event->IsA()==AliAODEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+      else
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(i));
+    }
+    if(!clus) continue;
+
+    if (clus->IsEMCAL()){
+      nClusCalo++;
+    }
+  }
+  return nClusCalo;
+};
+
+//-------------------------------------------------------------
 Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 {   // Get Event Centrality
 
@@ -3064,6 +3107,10 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
           return fESDCentrality->GetCentralityPercentile("ZNA");
       }
     }
+    // Estimation using EMCal clusters
+    if(fDetectorCentrality==4){
+      return GetEMCalClusterMultiplicity(event);
+    }
   }
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
@@ -3097,6 +3144,10 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
     }
     }else{
       if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    }
+    // Estimation using EMCal clusters
+    if(fDetectorCentrality==4){
+      return GetEMCalClusterMultiplicity(event);
     }
   }
   return -1;
@@ -3155,6 +3206,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   }
   else if (fModCentralityClass == 21){  // pp 13 TeV 0.01% mult classes
     centralityC= Int_t(centrality*100);
+    if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
+      return kTRUE;
+    } else return kFALSE;
+  }
+  else if (fModCentralityClass == 10){  // EMCal nCluster multiplicity classes
+    centralityC= Int_t(centrality);
     if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
       return kTRUE;
     } else return kFALSE;
