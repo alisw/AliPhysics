@@ -316,7 +316,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       fInputListEfficiency = (TList*) GetInputData(1);
       if(fAbsEtaMax > 0.8) AliWarning("Efficiency loading -- eta can be out of range!");
       if(fSystematicsFlag.IsNull()) fSystematicsFlag = "Ev0_Tr0";
-      if(fColSystem == sPPb && !AreEfficienciesLoaded()) { AliError("Efficiencies not loaded!"); return; }
+      if(fColSystem == sPPb && fAnalType != eFMDAFMDC && !AreEfficienciesLoaded()) { AliError("Efficiencies not loaded!"); return; }
     }
 
     if(fUseCentralityCalibration){
@@ -324,6 +324,8 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       else fhCentCalib = (TH1D*) GetInputData(1);
       if(!fhCentCalib) { AliError("Centrality calibration histogram not loaded!"); return; }
     }
+
+    if(fAnalType == eFMDAFMDC && fUseEfficiency){ AliWarning("Efficeincies inserted when running FMDA-FMDC. Turning off the flag."); fUseEfficiency = kFALSE; }
 
     PostData(1, fOutputListCharged);
 }
