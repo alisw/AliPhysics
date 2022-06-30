@@ -1519,8 +1519,15 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                         Int_t NtrackCone = 0;
 
                         Bool_t icaliso = kTRUE;
-                        if(fMCarray && (TMath::Abs(pdgorg)!=24 || TMath::Abs(pdgorg)!=23) && pdgstatus!=1)icaliso = kFALSE;
-                        //cout << "icaliso = " << icaliso << endl;
+                        //if(fMCarray && (TMath::Abs(pdgorg)!=24 || TMath::Abs(pdgorg)!=23) && pdgstatus!=1)icaliso = kFALSE;
+                        if(fMCarray)
+                           {
+                            icaliso = kFALSE;
+                            if(TMath::Abs(pdg)==11 && TMath::Abs(pdgorg)==23 && pdgstatus==1)icaliso = kTRUE;
+                            if(TMath::Abs(pdg)==11 && TMath::Abs(pdgorg)==24 && pdgstatus==1)icaliso = kTRUE;
+                           }
+
+                        //cout << "icaliso = " << icaliso << " ; pdgorg  = " << pdgorg << endl;
 
 			//if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
 			if(icaliso && TrkPt>10.0)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy, NcontCone);
@@ -1534,6 +1541,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                         //if(TrkPt>10.0 && TMath::Abs(pdgorg)==24)
                         if(TrkPt>10.0 && icaliso)
                            {
+                            //cout << "pdgorg = " << pdgorg << endl;
                             Double_t isoarray[11];
                             isoarray[0] = TrkPt;
                             isoarray[1] = fTPCnSigma;
@@ -1551,7 +1559,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             fIsoArray->Fill(isoarray);
                             if(IsoEnergy<0.05)fDCAxy_Pt_We->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                             if(IsoEnergy < 0.05 && NtrackCone <3)iIsocut=kTRUE;
-                            if(iIsocut && TMath::Abs(pdgorg)==23)fHistZeRec->Fill(TrkPt);
+                            //if(iIsocut && TMath::Abs(pdgorg)==23)fHistZeRec->Fill(TrkPt);
                            }
 
                         if(TrkPt>10.0 && ((pid_eleD) || (pid_eleB)))
@@ -1588,6 +1596,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				fM20_2->Fill(TrkPt,m20);
 
 				///////-----Identify Non-HFE////////////////////////////
+                                if(iIsocut && TMath::Abs(pdgorg)==23)fHistZeRec->Fill(TrkPt);
 				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt,DCA[0],Bsign,iIsocut);
 				//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD);
 				if(fFlagIsolation)
