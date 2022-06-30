@@ -258,6 +258,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe32220000","32c51050a","0103603o00000000","0453503000000000"); // dEdx +-4 sigma
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe32220000","32c51080a","0103603o00000000","0453503000000000"); // dEdx -2+3 sigma
 
+    //***********EMCal Trigger****************
+  }else if (trainConfig == 1018){ // EMC MinBias reference for run1 triggered
+    cuts.AddCutHeavyMesonCalo("80010113","111110105f030230000","32c51070a","0103603o00000000","0453503000000000"); // Min Bias run1 reference
+  }else if (trainConfig == 1019){ // EMC run1 EG1 trigger
+    cuts.AddCutHeavyMesonCalo("80083113","111110105f030230000","32c51070a","0103603o00000000","0453503000000000"); // 0-100% without NL just EMC, EG1
+  }else if (trainConfig == 1020){ // EMC run1 EG2 trigger
+    cuts.AddCutHeavyMesonCalo("80085113","111110105f030230000","32c51070a","0103603o00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
+
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  INT7 run1
     cuts.AddCutHeavyMesonCalo("80010113","244440004a013200000","32c51070a","0103603q00000000","0453503000000000");  // 0-100% without NL
@@ -272,6 +280,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
     cuts.AddCutHeavyMesonCalo("80062113","244445104a013200000","32c51070a","0103603q00000000","0453503000000000");  // 0-100% PCM NL
   } else if (trainConfig == 1506) {  // PHOS  INT7 run2
     cuts.AddCutHeavyMesonCalo("80010113","24466410ha012200000","32c51070a","0103603q00000000","0453503000000000");  // 0-100% PCM NL
+
+  } else if (trainConfig == 1507) {  // PHOS  INT7 run2
+    cuts.AddCutHeavyMesonCalo("80010113","24466190sa01cc00000","32c51070a","0103603q00000000","0453503000000000");  // 0-100% NL19
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
