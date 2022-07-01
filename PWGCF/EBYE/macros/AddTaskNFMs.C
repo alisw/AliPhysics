@@ -20,7 +20,7 @@ AliAnalysisTaskNFMs* AddTaskNFMs(TString name, UInt_t fbit, int mincnt, int maxc
   // now we create an instance for task
   AliAnalysisTaskNFMs *task = new AliAnalysisTaskNFMs(name.Data());
   if(!task) return 0x0;
-  task->SetFilterBit(UInt_t fbit);
+  task->SetFilterBit(fbit);
   task->SetCentLim(mincnt, maxcnt);                     //min and max cent value
   task->SetpTbins(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]);  //pt bin vals in order
   task->SetMmax(fmmax);                                   //kTRUE for m upto 82
