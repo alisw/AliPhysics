@@ -1,4 +1,4 @@
-AliAnalysisTaskNFMs* AddTaskNFMs(TString name, UInt_t fbit, int mincnt, int maxcnt, float pt[8], bool fmmax, bool fpileup, bool fncl, bool fncr, float vncl, float vncr, bool run1)
+AliAnalysisTaskNFMs* AddTaskNFMs(TString name, UInt_t fbit, int mincnt, int maxcnt, float pt0, float pt1, float pt2, float pt3, float pt4, float pt5, float pt6, float pt7, bool fmmax, bool fpileup, bool fncl, bool fncr, float vncl, float vncr, bool run1)
 {
   // get the manager via the static access member. since it's static, you don't need
   // an instance of the class to call the function
@@ -22,7 +22,7 @@ AliAnalysisTaskNFMs* AddTaskNFMs(TString name, UInt_t fbit, int mincnt, int maxc
   if(!task) return 0x0;
   task->SetFilterBit(fbit);
   task->SetCentLim(mincnt, maxcnt);                     //min and max cent value
-  task->SetpTbins(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]);  //pt bin vals in order
+  task->SetpTbins(pt0, pt1, pt2, pt3, pt4, pt5, pt6, pt7);  //pt bin vals in order
   task->SetMmax(fmmax);                                   //kTRUE for m upto 82
   task->SetPileUpRead(fpileup);                           //pileup flag
   task->SetSysflag(fncl, fncr, vncl, vncr);               //ncluster, ncrossdrows flag, val
