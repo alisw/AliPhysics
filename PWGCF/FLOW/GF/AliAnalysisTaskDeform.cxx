@@ -434,30 +434,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
 };
 void AliAnalysisTaskDeform::UserExec(Option_t*) {
   EventNo++;
-  /*
-  if(fStageSwitch == 7) { //Efficiencies on ESDs
-    AliESDEvent *fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-    if(!fESD) return;
-    //Checking multiplicity & trigger
-    AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    if(!lMultSel) AliFatal("Mult selection not found!\n");
-    Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
-    if(!fBypassTriggerAndEvetCuts)
-      if(!CheckTrigger(l_Cent)) return;
-    if(fEventCutFlag) if(!AcceptCustomEvent(fESD)) return;
-    Bool_t dummy = fEventCuts.AcceptEvent(fESD); //for QA
-    if(!fEventCutFlag && !dummy) return;
-    if(!fGFWSelection->AcceptVertex(fESD)) return;
-    if(fIsMC) {
-      fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
-      if (!fMCEvent) return;
-    }
-    Double_t vtxXYZ[] = {0,0,0};
-    Double_t vzt=0;
-    ProduceEfficiencies(fESD,vzt,l_Cent,vtxXYZ); //Disabling vz vertex
-    return;
-  };
-  */
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
   if(fIsMC || fUseMCNchForReco) {
@@ -789,6 +765,7 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
   fPtCont->FillRecursive(wpPt,l_Multi,l_Random);
   fPtCont->FillCk(wpPt,l_Multi,l_Random);
   fPtCont->FillSkew(wpPt,l_Multi,l_Random);
+  fPtCont->FillKurtosis(wpPt,l_Multi,l_Random);
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   PostData(1,fptVarList);
@@ -800,8 +777,8 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
   Double_t mptev = wp[1]/wp[0];
   FillCovariance(fCovariance[0],corrconfigs.at(0),l_Multi,mptev,wp[0],l_Random);
   FillCovariance(fCovariance[1],corrconfigs.at(0),l_Multi,1,wp[0],l_Random);
-  FillCovariance(fCovariance[2],corrconfigs.at(1),l_Multi,mptev,wp[0],l_Random);
-  FillCovariance(fCovariance[3],corrconfigs.at(1),l_Multi,1,wp[0],l_Random);
+  FillCovariance(fCovariance[2],corrconfigs.at(4),l_Multi,mptev,wp[0],l_Random);
+  FillCovariance(fCovariance[3],corrconfigs.at(4),l_Multi,1,wp[0],l_Random);
   FillCovariance(fCovariance[4],corrconfigs.at(15),l_Multi,mptev,wp[0],l_Random);
   FillCovariance(fCovariance[5],corrconfigs.at(15),l_Multi,1,wp[0],l_Random);
   FillCovariance(fCovariance[8],corrconfigs.at(1),l_Multi,mptev,wp[0],l_Random);

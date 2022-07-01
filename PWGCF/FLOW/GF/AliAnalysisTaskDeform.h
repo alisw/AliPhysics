@@ -126,8 +126,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
-  Double_t fV0MCentMin;  //Max cent for Nch bins
-  Double_t fV0MCentMax;  //Min cent for Nch bins
+  Double_t fV0MCentMin;
+  Double_t fV0MCentMax;
   Bool_t fUseNchInV0M;
   Bool_t fUseNch;
   Bool_t fUseWeightsOne;
