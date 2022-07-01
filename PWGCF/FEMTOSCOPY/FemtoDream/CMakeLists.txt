@@ -117,6 +117,8 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;
   AliAnalysisTaskNanoBenchmark.cxx
   AliAnalysisTaskNanoFemtoProtonPion.cxx
+  CustomQueue.h
+  AliAnalysisTaskPionDeuteronMC.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)

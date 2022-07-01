@@ -82,6 +82,9 @@
 #pragma link C++ class AliSigma0AODPhotonMotherCuts+;
 #pragma link C++ class AliSigma0PhotonCuts+;
 
+#pragma link C++ class CustomQueue+;
+#pragma link C++ class AliAnalysisTaskPionDeuteronMC+;
+
 #endif
 
 #ifdef __CLING__
