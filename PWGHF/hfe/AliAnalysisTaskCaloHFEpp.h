@@ -275,6 +275,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistWeOrg;
 		TH1F*                   fHistWeOrgPos;
 		TH1F*                   fHistWeOrgNeg;
+		TH1F*                   fHistZ_Org;
 		TH2F*                   fHistZeOrg;
 		TH1F*                   fHistZeRec;
 

@@ -249,6 +249,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
+        fHistZ_Org(0),
         fHistZeOrg(0),
         fHistZeRec(0),
         fMultEstimatorAvg(0),
@@ -447,6 +448,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
+        fHistZ_Org(0),
         fHistZeOrg(0),
         fHistZeRec(0),
         fMultEstimatorAvg(0),
@@ -594,8 +596,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistWeOrg        = new TH1F("fHistWeOrg","particle level W->e",90,10,100);
 	fHistWeOrgPos        = new TH1F("fHistWeOrgPos","particle level W->e plus",90,10,100);
 	fHistWeOrgNeg        = new TH1F("fHistWeOrgNeg","particle level W->e minus",90,10,100);
-	fHistZeOrg        = new TH2F("fHistZeOrg","particle level W->e",90,10,100,90,10,100);
-	fHistZeRec        = new TH1F("fHistZeRec","particle level W->e",90,10,100);
+	fHistZ_Org        = new TH1F("fHistZ_Org","particle level Z",90,10,100);
+	fHistZeOrg        = new TH2F("fHistZeOrg","particle level Z->e",90,10,100,90,10,100);
+	fHistZeRec        = new TH1F("fHistZeRec","particle level Z->e",90,10,100);
 
 
 
@@ -788,6 +791,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistWeOrg); 
 	fOutputList->Add(fHistWeOrgPos); 
 	fOutputList->Add(fHistWeOrgNeg); 
+	fOutputList->Add(fHistZ_Org); 
 	fOutputList->Add(fHistZeOrg); 
 	fOutputList->Add(fHistZeRec); 
 
@@ -2082,8 +2086,41 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Doubl
 	 Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
 	 Int_t pdgStatus = fMCparticle->GetStatus();
 
+         // ----- Z info
+         if(pdgGen==23)
+           {
+            Int_t Ndecay =  fMCparticle->GetNDaughters();
+            Int_t c0 = fMCparticle->GetDaughterFirst();
+            Int_t c1 = fMCparticle->GetDaughterLast();
+          
+            if(Ndecay==3)
+              {
+	       AliAODMCParticle* fMCparticle_Ze0 = (AliAODMCParticle*) fMCarray->At(c0);
+	       AliAODMCParticle* fMCparticle_Ze1 = (AliAODMCParticle*) fMCarray->At(c0+1);
+	       AliAODMCParticle* fMCparticle_Ze2 = (AliAODMCParticle*) fMCarray->At(c0+2);
+ 
+               //cout << "c0 = " << c0 << " ; c1 = " << c1 << endl;
+
+               //cout << "Z -> ee" << endl;
+               //cout << fMCparticle_Ze0->GetPdgCode() << " ; " << fMCparticle_Ze1->GetPdgCode() << " ; " << fMCparticle_Ze2->GetPdgCode()  << endl;
+
+               Double_t eta_Ze0 = fMCparticle_Ze0->Eta(); 
+               Double_t eta_Ze1 = fMCparticle_Ze1->Eta(); 
+               Double_t pT_Ze0 = fMCparticle_Ze0->Pt(); 
+               Double_t pT_Ze1 = fMCparticle_Ze1->Pt(); 
+
+               if((TMath::Abs(eta_Ze0)<0.6 || TMath::Abs(eta_Ze1)<0.6) && (pT_Ze0>30.0 || pT_Ze1>30.0))
+                 { 
+                  //cout << eta_Ze0 << " ; " << eta_Ze1 << endl;
+	          fHistZ_Org->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+                 }
+
+             }
+           }
+
 	 if(TMath::Abs(fMCparticle->Eta())>CutEta)continue; 
 
+         // ---- W->e , Z->e info.
          if(TMath::Abs(pdgGen)==11)
             {
 
