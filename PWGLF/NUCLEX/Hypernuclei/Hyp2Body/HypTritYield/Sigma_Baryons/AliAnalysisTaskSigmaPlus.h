@@ -213,7 +213,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fCleanAutoCorr = kTRUE;
         Double_t              fMinPi0Mass = 0.06;                   // 0.1
         Double_t              fMaxPi0Mass = 0.19;                   // 0.16
-        Double_t              fMaxSigmaPA = 0.1;                    // 0.04
+        Double_t              fMaxSigmaPA = 0.06;                   // 0.04
         Double_t              fMaxSigmaMass = 1.4;    
         Double_t              fMinProtonDCAxy = 0.005;              // 0.01
         Double_t              fMinProtonDCAz = -1; //Dummy Value
