@@ -750,12 +750,28 @@ TH1 *AliEffFDContainer::get1DRatio(TString numID, TString denID, Int_t iSpecie, 
   delete h1Den;
   return h1Num;
 };
-TH1 *AliEffFDContainer::getPureFeeddown(Int_t iSpecie) {
-  TH2 *l_h2 = (TH2*)fetchObj("WithinDCA_withChi2",iSpecie);
-  if(!l_h2) {printf("Could not find %s in %s!\n",makeName("WithinDCA_withChi2",iSpecie).Data(), this->GetName()); return 0; };
-  TH1 *hPrim = (TH1*)l_h2->ProjectionX(makeName("PrimOverAll",iSpecie),1,1);
+TH1 *AliEffFDContainer::getPureFeeddown(Int_t iSpecie, Int_t centBin1, Int_t centBin2) {
+  TObject *obj = fetchObj("WithinDCA_withChi2",iSpecie);
+  //Older versions have TH2 instead of TH3 (that is, no centrality. Don't want to break it.)
+  TH2 *l_h2 = dynamic_cast<TH2*>(obj);
+  if(!l_h2) {
+    TH3 *l_h3 = dynamic_cast<TH3*>(obj);
+    if(!l_h3) {
+      printf("Could not find %s in %s!\n",makeName("WithinDCA_withChi2",iSpecie).Data(), this->GetName());
+      return 0;
+    };
+    if(centBin1<1) centBin1 = 1;
+    if(centBin2>l_h3->GetNbinsZ() || centBin2<1) centBin2 = l_h3->GetNbinsZ();
+    l_h3->GetZaxis()->SetRange(centBin1,centBin2);
+    l_h2 = (TH2*)l_h3->Project3D("yx");
+    l_h3->GetZaxis()->SetRange(1,l_h3->GetNbinsZ());
+  };
+  return getPureFeeddown(iSpecie,l_h2);
+}
+TH1 *AliEffFDContainer::getPureFeeddown(Int_t iSpecie, TH2 *inh) {
+  TH1 *hPrim = (TH1*)inh->ProjectionX(makeName("PrimOverAll",iSpecie),1,1);
   hPrim->SetDirectory(0);
-  TH1 *hAll  = (TH1*)l_h2->ProjectionX("All",1,l_h2->GetNbinsX());
+  TH1 *hAll  = (TH1*)inh->ProjectionX("All",1,inh->GetNbinsX());
   hPrim->Divide(hAll);
   delete hAll;
   return hPrim;
