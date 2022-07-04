@@ -96,7 +96,7 @@ ClassImp(AliAnalysisTaskMCPredictionsStrgVsMultVsZDC)
 
 AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::AliAnalysisTaskMCPredictionsStrgVsMultVsZDC()
 : AliAnalysisTaskSE(),
-fkNSpecies(21),
+fkNSpecies(22),
 fkSelectINELgtZERO(kTRUE),
 fListHist(0),
 fHistEventCounter(0),
@@ -128,7 +128,7 @@ f2dHistZNVsLN(0),
 f2dHistSPDClRecoVsTrue(0),
 f2dHistV0MRecoVsTrue(0)
 {
-  for(Int_t ih=0; ih<21; ih++){
+  for(Int_t ih=0; ih<22; ih++){
     fHistPt[ih] = 0x0;
     f2DHistPartSPDV0M[ih] = 0x0;
     f2DHistAvPtSPDV0M[ih] = 0x0;
@@ -138,7 +138,7 @@ f2dHistV0MRecoVsTrue(0)
 AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::AliAnalysisTaskMCPredictionsStrgVsMultVsZDC(const char *name, Float_t lCenterOfMassEnergy, Bool_t kDoPythia, Bool_t kDoEPOS)
 : AliAnalysisTaskSE(name),
 fCenterOfMassEnergy(lCenterOfMassEnergy),
-fkNSpecies(21),
+fkNSpecies(22),
 fkSelectINELgtZERO(kTRUE),
 fkDoPythia(kDoPythia),
 fkDoEPOS(kDoEPOS),
@@ -172,7 +172,7 @@ f2dHistZNVsLN(0),
 f2dHistSPDClRecoVsTrue(0),
 f2dHistV0MRecoVsTrue(0)
 {
-  for(Int_t ih=0; ih<21; ih++){
+  for(Int_t ih=0; ih<22; ih++){
     fHistPt[ih] = 0x0;
     f2DHistPartSPDV0M[ih] = 0x0;
     f2DHistAvPtSPDV0M[ih] = 0x0;
@@ -204,7 +204,7 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
 
-  TString lPartNames[21] = {
+  TString lPartNames[22] = {
     "PiPlus", "PiMinus", 
     "KaPlus", "KaMinus", 
     "Proton", "AntiProton",
@@ -216,7 +216,8 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
     "D0", "AntiD0", 
     "DPlus", "DMinus", 
     "Lambdac", "AntiLambdac", 
-    "JPsi"
+    "JPsi",
+    "Pi0"
   };
   
   //-----------------------------------------------------------------------------
@@ -410,13 +411,13 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
 
   //-----------------------------------------------------------------------------
   if(!f2dHistSPDClRecoVsTrue) {
-    f2dHistSPDClRecoVsTrue = new TH2D("f2dHistSPDClRecoVsTrue", "; SPDClusters centrality (%); SPD Clusters", 100,0.,100., 800, 0, 800.);
+    f2dHistSPDClRecoVsTrue = new TH2D("f2dHistSPDClRecoVsTrue", "; SPDClusters centrality (%); SPD Clusters (true)", 100,0.,100., 800, 0, 800.);
     fListHist->Add(f2dHistSPDClRecoVsTrue);
   }
 
   //-----------------------------------------------------------------------------
   if(!f2dHistV0MRecoVsTrue) {
-    f2dHistV0MRecoVsTrue = new TH2D("f2dHistV0MRecoVsTrue", ";V0M centrality (%); V0M Multiplicity",100,0.,100., 500, 0, 500.);
+    f2dHistV0MRecoVsTrue = new TH2D("f2dHistV0MRecoVsTrue", ";V0M centrality (%); V0M Multiplicity (true)",100,0.,100., 500, 0, 500.);
     fListHist->Add(f2dHistV0MRecoVsTrue);
   }
 
@@ -475,12 +476,12 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
   Bool_t lIsPhysicalPrimary = kFALSE;
 
   //Particle info
-  Int_t lPartCounter[21];
-  for(int i = 0; i<21; i++){
+  Int_t lPartCounter[22];
+  for(int i = 0; i<22; i++){
     lPartCounter[i] = 0;
   }
 
-  TString lPartNames[21] = {
+  TString lPartNames[22] = {
     "PiPlus", "PiMinus", 
     "KaPlus", "KaMinus", 
     "Proton", "AntiProton",
@@ -492,9 +493,10 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
     "D0", "AntiD0", 
     "DPlus", "DMinus", 
     "Lambdac", "AntiLambdac", 
-    "JPsi"
+    "JPsi",
+    "Pi0"
   };
-  Int_t lPDGCodes[21] = {
+  Int_t lPDGCodes[22] = {
     211, -211, 
     321, -321, 
     2212, -2212,
@@ -506,10 +508,11 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
     421, -421, 
     411, -411, 
     4122, -4122, 
-    443    
+    443,
+    111   
   };  
 
-  Bool_t lCheckIsPhysicalPrimary[21] = {
+  Bool_t lCheckIsPhysicalPrimary[22] = {
     kTRUE, kTRUE, 
     kTRUE, kTRUE, 
     kTRUE, kTRUE,
@@ -521,7 +524,8 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
     kFALSE, kFALSE,
     kFALSE, kFALSE, 
     kFALSE, kFALSE, 
-    kFALSE
+    kFALSE,
+    kTRUE
   };
     
   //----- Loop on Stack ----------------------------------------------------------------
@@ -662,7 +666,7 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
     Float_t y       = Rapidity(energy, pz);
         
     if(TMath::Abs(y)<0.5){   
-      for(Int_t ih=0; ih<21; ih++){ //loop over pdg codes
+      for(Int_t ih=0; ih<22; ih++){ //loop over pdg codes
         if( pdg == lPDGCodes[ih] ) {
           //
           if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
@@ -686,51 +690,44 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
   if(f2DHistQ2SPDV0M)        f2DHistQ2SPDV0M        -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_Q2 );
   if(f2DHistbSPDV0M)         f2DHistbSPDV0M         -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_b );
     
-  for(Int_t ih=0; ih<21; ih++){ //loop over pdg codes
+  for(Int_t ih=0; ih<22; ih++){ //loop over pdg codes
     if(f2DHistPartSPDV0M[ih])   f2DHistPartSPDV0M[ih]  -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, lPartCounter[ih]);    
   }
 
 
   //Reco information
 
-  AliAODEvent *lAODevent = 0x0;
-  lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
-  
-  if (!lAODevent) {
-      AliWarning("ERROR: lAODevent not available from InputEvent() trying with AODEvent()");        
-      //  assume that the AOD is in the general output...
-      lAODevent  = AODEvent();
-      if(!lAODevent){
-          AliWarning("ERROR: lAODevent not available from AODEvent() Aborting event!");
-          return;
-      }
+  AliESDEvent *lESDevent = 0x0;    
+  lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
+  if (!lESDevent) {
+      AliWarning("ERROR: lESDevent not available \n");
+      return;
   }
 
   Float_t lV0MPercentile = 300;
   Float_t lSPDClusterspercentile = 300;
 
-  AliMultSelection *MultSelection = 0x0;
-  MultSelection = (AliMultSelection*) lAODevent -> FindListObject("MultSelection");
+  AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
   if( !MultSelection) {
-        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        AliWarning("AliMultSelection object not found!");
-        return;
-    } else {
-        lV0MPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-        lSPDClusterspercentile = MultSelection->GetMultiplicityPercentile("SPDClusters");
+    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+    return;
+  } else {
+      lV0MPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+      lSPDClusterspercentile = MultSelection->GetMultiplicityPercentile("SPDClusters");
   }
     
   fCentrality_V0M = lV0MPercentile;
   fCentrality_SPDClusters = lSPDClusterspercentile; 
     
   // ZDC info ==========================================================
-  const Double_t *aZDCN1 = lAODevent->GetZDCData()->GetZNCTowerEnergy();
+  const Double_t *aZDCN1 = lESDevent->GetESDZDC()->GetZNCTowerEnergy();
   fZNCpp = aZDCN1[0];
-  const Double_t *aZDCN2 = lAODevent->GetZDCData()->GetZNATowerEnergy();
+  const Double_t *aZDCN2 = lESDevent->GetESDZDC()->GetZNATowerEnergy();
   fZNApp = aZDCN2[0];
-  const Double_t *aZDCP1 = lAODevent->GetZDCData()->GetZPCTowerEnergy();
+  const Double_t *aZDCP1 = lESDevent->GetESDZDC()->GetZPCTowerEnergy();
   fZPCpp = aZDCP1[0];  
-  const Double_t *aZDCP2 = lAODevent->GetZDCData()->GetZPATowerEnergy();
+  const Double_t *aZDCP2 = lESDevent->GetESDZDC()->GetZPATowerEnergy();
   fZPApp = aZDCP2[0];  
 
   if(f2dHistZDCVsLE)    f2dHistZDCVsLE         -> Fill ( fZNCpp+fZNApp+fZPCpp+fZPApp , fLeadingE );
