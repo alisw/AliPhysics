@@ -72,6 +72,7 @@ AliAnalysisMeanPtdata::AliAnalysisMeanPtdata() // All data members should be ini
 //  _usePileupCut_PbPb5TeV(0),
   _hProfPileupCut(0),
  _profV0MvsTPCout(0),
+  _fb              (0),
   _nClusterMin          ( 80),
   _dcaZMin              ( -3.2),
   _dcaZMax              (  3.2),
@@ -192,6 +193,7 @@ fVtxZ(0),
  // _usePileupCut_PbPb5TeV(0),
  _hProfPileupCut(0),
 _profV0MvsTPCout(0),
+ _fb              (0),
  _nClusterMin          ( 80),
  _dcaZMin              ( -3.2),
  _dcaZMax              (  3.2),
@@ -637,7 +639,7 @@ static Bool_t AcceptTrack(const AliAODTrack *trk){
 
 	if (!trk) return kFALSE;
 
-	if(!trk->TestFilterBit(768)) return kFALSE;//Hybrid track cuts: filterbit (768) (ITSRefit required + max shared fraction of TPC clusters < 0.4)
+	//	if(!trk->TestFilterBit(768)) return kFALSE;//Hybrid track cuts: filterbit (768) (ITSRefit required + max shared fraction of TPC clusters < 0.4)
 //	if(!trk->TestFilterBit(8)) return kFALSE;	//	if(!trk->TestFilterBit(8)) return kFALSE;
 	if (trk->Charge() == 0) return kFALSE;
 	if (trk->Eta() < -0.8 || trk->Eta() > 0.8) return kFALSE;
@@ -1006,6 +1008,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
 
 
    if (!AcceptTrack(track)) continue;
+   if (!(track->TestFilterBit(_fb)))continue;
    fHistEta->Fill(track->Eta());
    Pt =track->Pt();
    fHistPt->Fill(Pt);
@@ -1275,6 +1278,9 @@ Bool_t AliAnalysisMeanPtdata::StoreEventMultiplicities(AliVEvent *ev)
       //      cout << "_max_eta_1: "<<_max_eta_1<<"\t" << "_nClusterMin: "<<_nClusterMin<<endl;
       //      if (/*(TMath::Abs(aodt->Eta()) < 0.8) &&*/ (aodt->GetTPCNcls() >= _nClusterMin)/* && (aodt->Pt() >= 0.15) && (aodt->Pt() < 2.)*/)
 	      if(AcceptTrack(aodt))
+		if (track->TestFilterBit(_fb))
+		
+
 	{
     	  /*  if ((aodt->GetStatus() & AliVTrack::kTPCout) && aodt->GetID() > 0 )  */ fNoOfTPCoutTracks++;
 	}
