@@ -447,23 +447,23 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
     fhEventCounter->Fill("PercOK",1);
     fCentrality = (Double_t) dPercentile;
   }
-  else if(fIsMC){
-    AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
-    if(!mcEvent) return kFALSE;
-    Int_t ntrackv0aprimary=0;
-
-    for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
-      AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
-      if(!part->IsPhysicalPrimary()) continue;
-      Double_t mceta = part->Eta();
-      if(fBoostAMPT) mceta = TransverseBoost(part);
-
-      if(part->Charge()==0)        continue;
-      if(mceta>2.8 && mceta<5.1) ntrackv0aprimary++;
-    }
-    Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(ntrackv0aprimary);
-    fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
-  }
+  // else if(fIsMC){
+  //   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+  //   if(!mcEvent) return kFALSE;
+  //   Int_t ntrackv0aprimary=0;
+  //
+  //   for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
+  //     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
+  //     if(!part->IsPhysicalPrimary()) continue;
+  //     Double_t mceta = part->Eta();
+  //     if(fBoostAMPT) mceta = TransverseBoost(part);
+  //
+  //     if(part->Charge()==0)        continue;
+  //     if(mceta>2.8 && mceta<5.1) ntrackv0aprimary++;
+  //   }
+  //   Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(ntrackv0aprimary);
+  //   fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
+  // }
   else{
     AliAODVZERO* fvzero = fAOD->GetVZEROData();
     Double_t sum = 0.;
