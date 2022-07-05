@@ -39,7 +39,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            CalNcharge(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera, Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
-		virtual void            FindWdecay(AliAODMCParticle* part, int &label, int &pid);
+		virtual void            FindWZdecay(AliAODMCParticle* part, int &label, int &pid);
 		virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
 
 		Bool_t                  GetEMCalTriggerEG1() { return fEMCEG1; };
@@ -186,7 +186,11 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_LS_forW;
 		TH2F*                   fInv_pT_ULS_forW;
 		TH2F*                   fInv_pT_LS_forZ;
+		TH2F*                   fInv_pT_LS_forZ_pos;
+		TH2F*                   fInv_pT_LS_forZ_neg;
 		TH2F*                   fInv_pT_ULS_forZ;
+		TH2F*                   fInv_pT_ULS_forZ_pos;
+		TH2F*                   fInv_pT_ULS_forZ_neg;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
 		TH2F*                   fHistPt_R_Iso;
@@ -207,6 +211,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fNtrkl_noCorr;
 		TH2F*                   fzvtx_V0M;
 		TH2F*                   fcent_V0M;
+		TH2F*                   fcent_nAcc;
 		TH2F*                   fNchNtr;
 		TH2F*                   fNchNtr_Corr;
 		TH2F*                   fNchMC;
@@ -274,6 +279,9 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistWeOrg;
 		TH1F*                   fHistWeOrgPos;
 		TH1F*                   fHistWeOrgNeg;
+		TH1F*                   fHistZ_Org;
+		TH2F*                   fHistZeOrg;
+		TH1F*                   fHistZeRec;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented

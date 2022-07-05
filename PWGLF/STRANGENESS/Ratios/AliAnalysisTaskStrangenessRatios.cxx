@@ -122,10 +122,10 @@ void AliAnalysisTaskStrangenessRatios::UserCreateOutputObjects()
 
   if (fFillLambdasBDTOut)
   {
-    for (int iB=0; iB<fNctBinsBDT; ++iB)
+    for (int iB=0; iB<(fCtBinsBDT.GetSize()-1); ++iB)
     {
       fBDT.push_back(new AliExternalBDT());
-      if (!fBDT[iB]->LoadXGBoostModel(Form("%s%.0f_%.0f.model",fBDTPath.data(),iB*fDeltaCtBinsBDT,(iB+1)*fDeltaCtBinsBDT)))
+      if (!fBDT[iB]->LoadXGBoostModel(Form("%s%.0f_%.0f.model",fBDTPath.data(),fCtBinsBDT[iB],fCtBinsBDT[iB+1])))
       {
         fBDT[iB] = nullptr;
       }
@@ -463,9 +463,9 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fTreeLambda->Fill();
         if (fFillLambdasBDTOut)
         {
-          if (fRecLambda->radius < fRadiusPreselection || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
+          if (fRecLambda->ct < fCtPreselection || fRecLambda->radius < fRadiusPreselection || fRecLambda->radius > fRadiusOverflowCut || fRecLambda->dcaPiPV > fDCAV0piToPVOverflowCut || fRecLambda->dcaPrPV > fDCAV0prToPVOverflowCut || fRecLambda->dcaV0PV > fDCAV0toPVOverflowCut || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
           int model_index = WhichBDT(fRecLambda->ct);
-          if (model_index > (fNctBinsBDT-1)) {
+          if (model_index > (fCtBinsBDT.GetSize()-2)) {
             continue;
           }
           if (!fBDT[model_index])
@@ -755,7 +755,7 @@ Bool_t AliAnalysisTaskStrangenessRatios::UserNotify()
 int AliAnalysisTaskStrangenessRatios::WhichBDT(double ct)
 {
   int iB=0;
-  while ( (ct < iB*fDeltaCtBinsBDT || ct > (iB+1)*fDeltaCtBinsBDT) && iB < (fNctBinsBDT))
+  while ( (ct < fCtBinsBDT[iB] || ct > fCtBinsBDT[iB+1]) && iB < (fCtBinsBDT.GetSize()-1))
   {
     ++iB;
   }

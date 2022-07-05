@@ -1428,7 +1428,7 @@ Bool_t Config_pphi(
     if(!(TrackCutsP%10000)) TrackCutsP+=3020;//default settings
     Float_t nsigmaPTPC=0.1*(TrackCutsP%100);
     Float_t nsigmaPTOF=0.1*((TrackCutsP/100)%100);
-    Int_t CutTypeP=(TrackCutsP/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+    Int_t CutTypeP=(TrackCutsP/100000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
     
     if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
     Float_t nsigmaKTPC=0.1*(TrackCutsPhi%100);
@@ -1451,6 +1451,9 @@ Bool_t Config_pphi(
     else if(CutTypeP==2) cutSetP=new AliRsnCutSetDaughterParticle(
                                                                   Form("cutProton%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaPTOF),
                                                                   trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kProton,-1.,nsigmaPTOF);
+    else if(CutTypeP==3) cutSetP=new AliRsnCutSetDaughterParticle(
+                                                           Form("cutProton_%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPTPC),
+                                                           trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kProton,nsigmaPTPC,nsigmaPTOF);
     if(!cutSetP){cerr<<"Error in AddTaskResonanceFinder::Config_pphi(): missing cutSetP"<<endl; return kFALSE;}
     
     AliRsnCutSetDaughterParticle* cutSetK=0;
@@ -2581,6 +2584,7 @@ Bool_t Config_kxSigmastar(
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+       if(V0Cuts==1)   v0d_dcaxy=0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -2603,8 +2607,11 @@ Bool_t Config_kxSigmastar(
     Bool_t  lambdaSwitch=kFALSE;
     Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
     
-    if(V0Cuts==1) lambdaDCA=1.e10;
-    else if(V0Cuts==2) lambdaDaughDCA=0.5;
+    if(V0Cuts==2) lambdaDCA=1.e10;
+    else if(V0Cuts==3) lambdaDaughDCA=0.5;
+    else if(V0Cuts==4) lambdaDCA=0.2;
+    else if(V0Cuts==5) lambdaDaughDCA=0.3;
+    else if(V0Cuts==6) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     
@@ -2856,7 +2863,7 @@ Bool_t Config_kxSigmastar(
     Double_t mass;
     Double_t massAll[4]={1.878677, 2.0650, 2.2550, 2.4550}; //masses of Sigma*+K and 3 Ps states
     Int_t ipdgNum[4]={9322131,9322311,9323211,9332211};  //pdgs 4 Ps states
-    Int_t Ps = ((TrackCutsK%100000)/10000); //TrackCutsP = 10000 to turn on Ps MC
+    Int_t Ps = ((TrackCutsK%100000)/10000); //TrackCutsK = 10000 to turn on Ps MC
     AliRsnMiniOutput* out;
     
     task->SetMotherAcceptanceCutMinPt(0.15);
@@ -3084,6 +3091,7 @@ Bool_t Config_k0Sigmastar(
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+        if(K0sCuts==1)   v0d_dcaxy=0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -3107,7 +3115,10 @@ Bool_t Config_k0Sigmastar(
     Bool_t  k0sSwitch=kFALSE;
     Float_t k0sCosPoinAn=0.97;
     
-    if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if(K0sCuts==2) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    else if(K0sCuts==3) k0sDCA=0.15;
+    else if(K0sCuts==4) k0sDaughDCA=0.3;
+    else if(K0sCuts==5) k0sCosPoinAn=0.995;
     
     AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
     cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
@@ -3176,6 +3187,9 @@ Bool_t Config_k0Sigmastar(
     
     if(LambdaCuts==1) lambdaDCA=1.e10;
     else if(LambdaCuts==2) lambdaDaughDCA=0.5;
+    else if(LambdaCuts==3) lambdaDCA=0.2;
+    else if(LambdaCuts==4) lambdaDaughDCA=0.3;
+    else if(LambdaCuts==5) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     
@@ -8492,7 +8506,7 @@ Bool_t Config_Kstar0Lambda(
     if(!(TrackCutsKx)) TrackCutsKx+=3020;//default settings
     Float_t nsigmaKTPC=0.1*(TrackCutsKx%100);
     Float_t nsigmaKTOF=0.1*((TrackCutsKx/100)%100);
-    Int_t pairRotate=((TrackCutsK/10000)%10);
+    Int_t pairRotate=((TrackCutsK/100000)%10);
     
     AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -8517,11 +8531,13 @@ Bool_t Config_Kstar0Lambda(
     Int_t iCutPi=task->AddTrackCuts(cutSetPi);
     Int_t iCutK=task->AddTrackCuts(cutSetK);
     
-    
+    Int_t LambdaCuts=((TrackCutsK/1000000)%10);
+
     // selections for V0 daughters
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+    if(LambdaCuts==1)   v0d_dcaxy=0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");  //not sure about this line
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -8543,6 +8559,12 @@ Bool_t Config_Kstar0Lambda(
     Float_t lambda_massTolVeto=0.004;
     Bool_t  lambdaSwitch=kFALSE;
     Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+    
+    if(LambdaCuts==2) lambdaDCA=1.e10;
+    else if(LambdaCuts==3) lambdaDaughDCA=0.5;
+    else if(LambdaCuts==4) lambdaDCA=0.2;
+    else if(LambdaCuts==5) lambdaDaughDCA=0.3;
+    else if(LambdaCuts==6) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     
@@ -9006,11 +9028,13 @@ Bool_t Config_KstarxLambda(
     Int_t SidebandKstar=(TrackCutsK/1000000)%10;
     Int_t K0sCuts=(TrackCutsK/10000000)%10;
     Int_t pairRotate=(TrackCutsLambda%10);
+    Int_t LambdaCuts=((TrackCutsLambda/10)%10);
     
     // selections for V0 daughters
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+    if(K0sCuts==1)  v0d_dcaxy = 0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -9034,7 +9058,10 @@ Bool_t Config_KstarxLambda(
     Bool_t  k0sSwitch=kFALSE;
     Float_t k0sCosPoinAn=0.97;
     
-    if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if(K0sCuts==2) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    else if(K0sCuts==3)    k0sDCA = 0.15;
+    else if(K0sCuts==4)    k0sDaughDCA = 0.3;
+    else if(K0sCuts==5)    k0sCosPoinAn = 0.995;
     
     AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
     cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
@@ -9070,6 +9097,12 @@ Bool_t Config_KstarxLambda(
     Float_t lambda_massTolVeto=0.004;
     Bool_t  lambdaSwitch=kFALSE;
     Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+    
+    if(LambdaCuts==1) lambdaDCA=1.e10;
+    else if(LambdaCuts==2) lambdaDaughDCA=0.5;
+    else if(LambdaCuts==3) lambdaDCA=0.2;
+    else if(LambdaCuts==4) lambdaDaughDCA=0.3;
+    else if(LambdaCuts==5) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     

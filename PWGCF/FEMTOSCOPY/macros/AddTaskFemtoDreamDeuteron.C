@@ -41,18 +41,19 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   TrackCutsAntiDeuteronMass->SetCutCharge(-1);
   TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.0);
   //Oton's selections for deuterons
-  if (suffix == "1")
-  {
-    TrackCutsDeuteronDCA->SetPtRange(0.8, 2.4);
-    TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 2.4);
-    TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
-    TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
-  }if(suffix == "2")
-  {
-    TrackCutsDeuteronDCA->SetPtRange(0.8,1.4);
-    TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 1.4);
-    TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
-    TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+  if (!SystematicLowpT) {
+    if (suffix == "1") {
+      TrackCutsDeuteronDCA->SetPtRange(0.8, 2.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 2.4);
+      TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
+      TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+    }
+    if (suffix == "2") {
+      TrackCutsDeuteronDCA->SetPtRange(0.8, 1.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 1.4);
+      TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
+      TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+    }
   }
   AliFemtoDreamTrackCuts *TrackCutsProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);

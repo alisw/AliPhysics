@@ -20,7 +20,7 @@ struct MiniLambda {
   Double32_t mass;
   Double32_t ct;
   Double32_t radius;      //[0,101.6,8]
-  Double32_t dcaV0PV;     //[0,10.16,8]
+  Double32_t dcaV0PV;     //[0,10.16,16]
   Double32_t dcaPiPV;     //[0,20.32,8]
   Double32_t dcaPrPV;     //[0,20.32,8]
   Double32_t dcaV0tracks; //[0,2.54,8]
@@ -152,13 +152,16 @@ public:
   void SetMinCentrality(int minCentrality = 0) { fMinCentrality = minCentrality; }
   void SetMaxCentrality(int maxCentrality = 90) { fMaxCentrality = maxCentrality; }
   void SetRadiusPreselection(double cut = 3.) { fRadiusPreselection = cut; }
+  void SetRadiusOverflowCut(double cut = 100.) { fRadiusOverflowCut = cut; }
   void SetTpcClV0PiPreselection(int cut = 70) { fTpcClV0PiPreselection = cut; }
   void SetTpcClV0PrPreselection(int cut = 70) { fTpcClV0PrPreselection = cut; }
+  void SetDCAV0piToPVOverflowCut(double cut = 20.) { fDCAV0piToPVOverflowCut = cut; }
+  void SetDCAV0prToPVOverflowCut(double cut = 20.) { fDCAV0prToPVOverflowCut = cut; }
+  void SetDCAV0toPVOverflowCut(double cut = 10.) { fDCAV0toPVOverflowCut = cut; }
   void SetBdtOutputBackgroundCut(double cut = 0.15) { fBdtOutputBackgroundCut = cut; }
 
   void SetBDTPath(const char *path = "") { fBDTPath = path; }
-  void SetNctBinsBDT(int nBins = 8) { fNctBinsBDT = nBins; }
-  void SetDeltaCtBinsBDT(double deltaCtBinsBDT = 5) { fDeltaCtBinsBDT = deltaCtBinsBDT; }
+  void SetCtBinsBDT(int nBins, double *ctBins) { fCtBinsBDT.Set(nBins+1,ctBins); }
 
 private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
@@ -213,9 +216,14 @@ private:
   double fLambdaLeastCRawsOvF;
   double fMinCentrality = 0;
   double fMaxCentrality = 90;
+  double fCtPreselection = 1.;
   double fRadiusPreselection = 3;
+  double fRadiusOverflowCut = 100;
   int fTpcClV0PiPreselection = 70;
   int fTpcClV0PrPreselection = 70;
+  double fDCAV0piToPVOverflowCut = 20;
+  double fDCAV0prToPVOverflowCut = 20;
+  double fDCAV0toPVOverflowCut = 10;
   double fBdtOutputBackgroundCut = 0.15;
 
   float fCosPALambda = 0.97;
@@ -224,8 +232,7 @@ private:
   float fCutLambdaMass[2] = {1.09f, 1.15f};
   bool fUseOnTheFly = false;
 
-  int fNctBinsBDT = 8;
-  double fDeltaCtBinsBDT = 5.;
+  TArrayD fCtBinsBDT;
   std::string fBDTPath = "";
 
   bool IsTopolSelected(bool isXi = true);

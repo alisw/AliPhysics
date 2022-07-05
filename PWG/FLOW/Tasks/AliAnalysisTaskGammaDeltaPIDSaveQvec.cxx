@@ -392,6 +392,47 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec(const
     }
   }
 
+  for(Int_t c=0;c<2;c++) {
+	fCMEQ2Re4[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2[c] = NULL; // w^3*sin(2phi)
+    fCMEw0[c] = NULL;    // w^0
+    fCMEw1[c] = NULL;    // w^1
+    fCMEw2[c] = NULL;    // w^2
+    fCMEw3[c] = NULL;    // w^3
+    fCMEw4[c] = NULL;    // w^4
+  
+	fCMEQ2Re4Pion[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Pion[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Pion[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Pion[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Pion[c] = NULL;    // w^0
+    fCMEw1Pion[c] = NULL;    // w^1
+    fCMEw2Pion[c] = NULL;    // w^2
+    fCMEw3Pion[c] = NULL;    // w^3
+    fCMEw4Pion[c] = NULL;    // w^4
+    
+    fCMEQ2Re4Kaon[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Kaon[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Kaon[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Kaon[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Kaon[c] = NULL;    // w^0
+    fCMEw1Kaon[c] = NULL;    // w^1
+    fCMEw2Kaon[c] = NULL;    // w^2
+    fCMEw3Kaon[c] = NULL;    // w^3
+    fCMEw4Kaon[c] = NULL;    // w^4
+    
+    fCMEQ2Re4Proton[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Proton[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Proton[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Proton[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Proton[c] = NULL;    // w^0
+    fCMEw1Proton[c] = NULL;    // w^1
+    fCMEw2Proton[c] = NULL;    // w^2
+    fCMEw3Proton[c] = NULL;    // w^3
+    fCMEw4Proton[c] = NULL;    // w^4
+  }
   
   //Must be here:
   DefineInput(0,TChain::Class());
@@ -723,6 +764,48 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec():
     }
   }
   
+  for(Int_t c=0;c<2;c++) {
+	fCMEQ2Re4[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2[c] = NULL; // w^3*sin(2phi)
+    fCMEw0[c] = NULL;    // w^0
+    fCMEw1[c] = NULL;    // w^1
+    fCMEw2[c] = NULL;    // w^2
+    fCMEw3[c] = NULL;    // w^3
+    fCMEw4[c] = NULL;    // w^4
+  
+	fCMEQ2Re4Pion[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Pion[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Pion[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Pion[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Pion[c] = NULL;    // w^0
+    fCMEw1Pion[c] = NULL;    // w^1
+    fCMEw2Pion[c] = NULL;    // w^2
+    fCMEw3Pion[c] = NULL;    // w^3
+    fCMEw4Pion[c] = NULL;    // w^4
+    
+    fCMEQ2Re4Kaon[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Kaon[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Kaon[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Kaon[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Kaon[c] = NULL;    // w^0
+    fCMEw1Kaon[c] = NULL;    // w^1
+    fCMEw2Kaon[c] = NULL;    // w^2
+    fCMEw3Kaon[c] = NULL;    // w^3
+    fCMEw4Kaon[c] = NULL;    // w^4
+    
+    fCMEQ2Re4Proton[c] = NULL; // w^2*cos(4phi)
+    fCMEQ3Re2Proton[c] = NULL; // w^3*cos(2phi)
+    fCMEQ2Im4Proton[c] = NULL; // w^2*sin(4phi)
+    fCMEQ3Im2Proton[c] = NULL; // w^3*sin(2phi)
+    fCMEw0Proton[c] = NULL;    // w^0
+    fCMEw1Proton[c] = NULL;    // w^1
+    fCMEw2Proton[c] = NULL;    // w^2
+    fCMEw3Proton[c] = NULL;    // w^3
+    fCMEw4Proton[c] = NULL;    // w^4
+  }
+  
   //Not needed for Empty Constructor:
   //DefineInput(0,TChain::Class());
   //DefineOutput(1,TList::Class());
@@ -1008,8 +1091,8 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
   //cout<<"Before rec: q2xn "<<fQ2xNeg<<"\t q2yn "<<fQ2yNeg<<"\t q2xp "<<fQ2xPos<<"\t q2yp "<<fQ2yPos<<endl;
 
   // *** Rihan: Temporarily Turned off. Uncomment after end of Test.!
-  //ApplyTPCqVectRecenter(centrV0M, 2, fQ2xNeg, fQ2yNeg, fQ2xPos, fQ2yPos);
-  //ApplyTPCqVectRecenter(centrV0M, 3, fQ3xNeg, fQ3yNeg, fQ3xPos, fQ3yPos);  
+  ApplyTPCqVectRecenter(centrV0M, 2, fQ2xNeg, fQ2yNeg, fQ2xPos, fQ2yPos);
+  ApplyTPCqVectRecenter(centrV0M, 3, fQ3xNeg, fQ3yNeg, fQ3xPos, fQ3yPos);  
 
   //cout<<"After  rec: q2xn "<<fQ2xNeg<<"\t q2yn "<<fQ2yNeg<<"\t q2xp "<<fQ2xPos<<"\t q2yp "<<fQ2yPos<<endl;
   //cout<<"------- Bug Testing Mode... we exit here....... "<<endl; return;
@@ -1116,7 +1199,6 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
   fHistV0CDetqVectorvsCent->Fill(centrCL1,TMath::Sqrt(fQnxV0C*fQnxV0C + fQnyV0C*fQnyV0C)); // centrCL1 hardcoded to prevent mismatch!
   fHistV0ADetqVectorvsCent->Fill(centrCL1,TMath::Sqrt(fQnxV0A*fQnxV0A + fQnyV0A*fQnyV0A));
   
-
   
   ///--------> Get V0A and V0C Event Planes 
 
@@ -1187,7 +1269,74 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
     bUseV0EventPlane = kFALSE;
   }
   
-
+  //--------> Get V0A and V0C tower data
+  const AliAODVZERO *fAODV0 = (AliAODVZERO *) fAOD->GetVZEROData();
+  fpQvecEvent->setTowV0Craw0(fAODV0->GetMultiplicity(0));
+  fpQvecEvent->setTowV0Craw1(fAODV0->GetMultiplicity(1));
+  fpQvecEvent->setTowV0Craw2(fAODV0->GetMultiplicity(2));
+  fpQvecEvent->setTowV0Craw3(fAODV0->GetMultiplicity(3));
+  fpQvecEvent->setTowV0Craw4(fAODV0->GetMultiplicity(4));
+  fpQvecEvent->setTowV0Craw5(fAODV0->GetMultiplicity(5));
+  fpQvecEvent->setTowV0Craw6(fAODV0->GetMultiplicity(6));
+  fpQvecEvent->setTowV0Craw7(fAODV0->GetMultiplicity(7));
+  fpQvecEvent->setTowV0Craw8(fAODV0->GetMultiplicity(8));
+  fpQvecEvent->setTowV0Craw9(fAODV0->GetMultiplicity(9));
+  fpQvecEvent->setTowV0Craw10(fAODV0->GetMultiplicity(10));
+  fpQvecEvent->setTowV0Craw11(fAODV0->GetMultiplicity(11));
+  fpQvecEvent->setTowV0Craw12(fAODV0->GetMultiplicity(12));
+  fpQvecEvent->setTowV0Craw13(fAODV0->GetMultiplicity(13));
+  fpQvecEvent->setTowV0Craw14(fAODV0->GetMultiplicity(14));
+  fpQvecEvent->setTowV0Craw15(fAODV0->GetMultiplicity(15));
+  fpQvecEvent->setTowV0Craw16(fAODV0->GetMultiplicity(16));
+  fpQvecEvent->setTowV0Craw17(fAODV0->GetMultiplicity(17));
+  fpQvecEvent->setTowV0Craw18(fAODV0->GetMultiplicity(18));
+  fpQvecEvent->setTowV0Craw19(fAODV0->GetMultiplicity(19));
+  fpQvecEvent->setTowV0Craw20(fAODV0->GetMultiplicity(20));
+  fpQvecEvent->setTowV0Craw21(fAODV0->GetMultiplicity(21));
+  fpQvecEvent->setTowV0Craw22(fAODV0->GetMultiplicity(22));
+  fpQvecEvent->setTowV0Craw23(fAODV0->GetMultiplicity(23));
+  fpQvecEvent->setTowV0Craw24(fAODV0->GetMultiplicity(24));
+  fpQvecEvent->setTowV0Craw25(fAODV0->GetMultiplicity(25));
+  fpQvecEvent->setTowV0Craw26(fAODV0->GetMultiplicity(26));
+  fpQvecEvent->setTowV0Craw27(fAODV0->GetMultiplicity(27));
+  fpQvecEvent->setTowV0Craw28(fAODV0->GetMultiplicity(28));
+  fpQvecEvent->setTowV0Craw29(fAODV0->GetMultiplicity(29));
+  fpQvecEvent->setTowV0Craw30(fAODV0->GetMultiplicity(30));
+  fpQvecEvent->setTowV0Craw31(fAODV0->GetMultiplicity(31));
+  
+  fpQvecEvent->setTowV0Araw0(fAODV0->GetMultiplicity(32));
+  fpQvecEvent->setTowV0Araw1(fAODV0->GetMultiplicity(33));
+  fpQvecEvent->setTowV0Araw2(fAODV0->GetMultiplicity(34));
+  fpQvecEvent->setTowV0Araw3(fAODV0->GetMultiplicity(35));
+  fpQvecEvent->setTowV0Araw4(fAODV0->GetMultiplicity(36));
+  fpQvecEvent->setTowV0Araw5(fAODV0->GetMultiplicity(37));
+  fpQvecEvent->setTowV0Araw6(fAODV0->GetMultiplicity(38));
+  fpQvecEvent->setTowV0Araw7(fAODV0->GetMultiplicity(39));
+  fpQvecEvent->setTowV0Araw8(fAODV0->GetMultiplicity(40));
+  fpQvecEvent->setTowV0Araw9(fAODV0->GetMultiplicity(41));
+  fpQvecEvent->setTowV0Araw10(fAODV0->GetMultiplicity(42));
+  fpQvecEvent->setTowV0Araw11(fAODV0->GetMultiplicity(43));
+  fpQvecEvent->setTowV0Araw12(fAODV0->GetMultiplicity(44));
+  fpQvecEvent->setTowV0Araw13(fAODV0->GetMultiplicity(45));
+  fpQvecEvent->setTowV0Araw14(fAODV0->GetMultiplicity(46));
+  fpQvecEvent->setTowV0Araw15(fAODV0->GetMultiplicity(47));
+  fpQvecEvent->setTowV0Araw16(fAODV0->GetMultiplicity(48));
+  fpQvecEvent->setTowV0Araw17(fAODV0->GetMultiplicity(49));
+  fpQvecEvent->setTowV0Araw18(fAODV0->GetMultiplicity(50));
+  fpQvecEvent->setTowV0Araw19(fAODV0->GetMultiplicity(51));
+  fpQvecEvent->setTowV0Araw20(fAODV0->GetMultiplicity(52));
+  fpQvecEvent->setTowV0Araw21(fAODV0->GetMultiplicity(53));
+  fpQvecEvent->setTowV0Araw22(fAODV0->GetMultiplicity(54));
+  fpQvecEvent->setTowV0Araw23(fAODV0->GetMultiplicity(55));
+  fpQvecEvent->setTowV0Araw24(fAODV0->GetMultiplicity(56));
+  fpQvecEvent->setTowV0Araw25(fAODV0->GetMultiplicity(57));
+  fpQvecEvent->setTowV0Araw26(fAODV0->GetMultiplicity(58));
+  fpQvecEvent->setTowV0Araw27(fAODV0->GetMultiplicity(59));
+  fpQvecEvent->setTowV0Araw28(fAODV0->GetMultiplicity(60));
+  fpQvecEvent->setTowV0Araw29(fAODV0->GetMultiplicity(61));
+  fpQvecEvent->setTowV0Araw30(fAODV0->GetMultiplicity(62));
+  fpQvecEvent->setTowV0Araw31(fAODV0->GetMultiplicity(63));
+  
   //=============== Get the ZDC data ==================== @Shi
  
   AliAODZDC *aodZDC = fAOD->GetZDCData();

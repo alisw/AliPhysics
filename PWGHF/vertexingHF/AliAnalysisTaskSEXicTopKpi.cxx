@@ -168,6 +168,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fProtonID(0x0),
   fKaonID(0x0),
   fPionID(0x0),
+  fElectronID(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
   fVertexerTracksPrimaryVtx(0x0),
@@ -369,6 +370,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fProtonID(0x0),
   fKaonID(0x0),
   fPionID(0x0),
+  fElectronID(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
   fVertexerTracksPrimaryVtx(0x0),
@@ -589,6 +591,7 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fProtonID)delete fProtonID;
   if(fKaonID)delete fKaonID;
   if(fPionID)delete fPionID;
+  if(fElectronID)delete fElectronID;
   if(fTreeVar)delete fTreeVar;
   if(fhsparseMC_ScPeak)delete fhsparseMC_ScPeak;
   if(fHistoPtd0plane)delete fHistoPtd0plane;
@@ -967,12 +970,12 @@ if(!fFillTree){
      if(fFillSparseReflections)  fhSparseAnalysisReflections=new THnSparseF("fhSparseAnalysisReflections","fhSparseAnalysisReflections;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
 
 
-     Int_t nbinsSparse[11]={24,500,10,16,20,10,40,3,3,1,3};
-     Double_t lowEdges[11]={0,2.2,0.,0,0.8,0,-0.000625,0.5,0.5,0.5,-1.5};
-     Double_t upEdges[11]={24,5.,0.0500,8,1.,5,0.,3.5,3.5,1.5,1.5};
+     Int_t nbinsSparse4prong[12]={24,500,10,16,20,10,40,15,3,1,3,6};
+     Double_t lowEdges4prong[12]={0,2.2,0.,0,0.8,0,-0.000625,0.5,0.5,0.5,-1.5,0.5};
+     Double_t upEdges4prong[12]={24,5.8,0.0500,8,1.,5,0.,15.5,3.5,1.5,1.5,6.5};
 
      
-     fhSparseAnalysis4Prong=new THnSparseF("fhSparseAnalysis4Prong","fhSparseAnalysis4Prong;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;d0d0;PIDtrack4;LcMassHypo;chargePairProduct;infoMC",11,nbinsSparse,lowEdges,upEdges);
+     fhSparseAnalysis4Prong=new THnSparseF("fhSparseAnalysis4Prong","fhSparseAnalysis4Prong;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;d0d0;PIDtrack4;LcMassHypo;chargePairProduct;infoMC;lcmassrange",12,nbinsSparse4prong,lowEdges4prong,upEdges4prong);
 
  }
   
@@ -1056,6 +1059,10 @@ if(!fFillTree){
   fPionID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
   fPionID->GetXaxis()->SetBinLabel(1,"MC particles");
   fPionID->GetXaxis()->SetBinLabel(2,"ID'd particles");
+ fElectronID=new TH2F("fElectronID","fElectronID",2,0,2,200,0,20);
+  fElectronID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fElectronID->GetXaxis()->SetBinLabel(1,"MC particles");
+  fElectronID->GetXaxis()->SetBinLabel(2,"ID'd particles");
 
 /*
   //  pt vs. pointing angle, lxy, nlxy, ptP,ptK,ptPi,vtxchi2,sigmaVtx,sumd02,dca1,dca2,dca3,nd01,nd02,nd03,Lc d0
@@ -1177,6 +1184,7 @@ if(!fFillTree){
   fOutput->Add(fProtonID);
   fOutput->Add(fKaonID);
   fOutput->Add(fPionID);
+  fOutput->Add(fElectronID);
   if(fStudyScPeakMC)  fOutput->Add(fhsparseMC_ScPeak);
   fOutput->Add(fPtSoftPionCand);
   fOutput->Add(fPtSoftPionCand_insideScLoop);
@@ -3943,7 +3951,7 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     ftrackArraySel->AddAt(itrack,fnSel);
       
     // PID SELECTION
-    IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelElectron,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,kTRUE);
+    IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelElectron,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,iSelElectronCuts,kTRUE);
     //    if(itrack%50==0)Printf("Track %d, pt: %f",itrack,track->Pt());
 
     /// further cut on minimum track pt (useful if tighter than that in the cut object)
@@ -4010,6 +4018,10 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
       if(iSelProton>0) {
         fProtonID->Fill(1.5, mcpart->Pt());
         if(fIsCdeuteronAnalysis?pdg==1000010020:pdg==2212) fProtonID->Fill(0.5, mcpart->Pt());
+      }
+      if(iSelElectron>0) {
+        fElectronID->Fill(1.5, mcpart->Pt());
+        if(pdg==11)  fElectronID->Fill(0.5, mcpart->Pt());
       }
     }
     
@@ -4619,8 +4631,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	 }	 
 	 delete trackESD;
 	 
-	 Int_t iSelProton=0,iSelKaon=0,iSelPion=0;//,iSelSoftPion=0;
-	 IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,kFALSE);
+	 Int_t iSelProton=0,iSelKaon=0,iSelPion=0,iSelElectron=0;//,iSelSoftPion=0;
+	 IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelElectron,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,iSelElectronCuts,kFALSE);
 	 iSelDebugPion[itr]=iSelPion;
 	 iSelDebugProton[itr]=iSelProton;
 	 iSelDebugKaon[itr]=iSelKaon;
@@ -5090,8 +5102,7 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
   Double_t ptlambdacMC=-1;
   Double_t ylambdacMumMC=-9;
   Double_t ylambdacMC=-9;
-  //Double_t pointlcsc[6];
-
+  Int_t lcmassrange=-1;
   AliAODMCParticle *mcpartLc=0x0;
 
   // if(pLambdacMum){
@@ -5112,21 +5123,71 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
   //   }
   // }
 
-  if( (TMath::Abs(mass1-2.28646)>fLcMassWindowForSigmaC && TMath::Abs(mass2-2.28646)>fLcMassWindowForSigmaC) && (TMath::Abs(mass1-2.468)>fLcMassWindowForSigmaC && TMath::Abs(mass2-2.468)>fLcMassWindowForSigmaC))return; //Lc/Xic mass window selection  
+
+  // LEGEND: ideally go towards the following list, but for masshypo 3 is not straightforward, thus sticking to just define SB as number 2 or 5
+  // lcmassrange=1;// candidate Lc
+  // lcmassrange=2;// candidate Lc left SB
+  // lcmassrange=3;// candidate Lc right SB ... not used, this case is filled as 2
+  // lcmassrange=4;// candidate Xic
+  // lcmassrange=5;// candidate Xic left SB
+  // lcmassrange=6;// candidate Xic right SB... not used, this case is filled as 5
+
+  if(massHypothesis==1){
+    if(mass1>2.468-3.*fLcMassWindowForSigmaC && mass1<2.468-1.5*fLcMassWindowForSigmaC)lcmassrange=5;
+    if(mass1>2.28646-3.*fLcMassWindowForSigmaC && mass1<2.28646-1.5*fLcMassWindowForSigmaC)lcmassrange=2;
+
+    if(mass1>2.468+1.5*fLcMassWindowForSigmaC && mass1<2.468+3.*fLcMassWindowForSigmaC)lcmassrange=5;
+    if(mass1>2.28646+1.5*fLcMassWindowForSigmaC && mass1<2.28646+3.*fLcMassWindowForSigmaC)lcmassrange=2;
+
+    if(TMath::Abs(mass1-2.468)<fLcMassWindowForSigmaC)lcmassrange=4;
+    if(TMath::Abs(mass1-2.28646)<fLcMassWindowForSigmaC)lcmassrange=1;
+  }
+  else if(massHypothesis==2){
+    if(mass2>2.468-3.*fLcMassWindowForSigmaC && mass2<2.468-1.5*fLcMassWindowForSigmaC)lcmassrange=5;
+    if(mass2>2.28646-3.*fLcMassWindowForSigmaC && mass2<2.28646-1.5*fLcMassWindowForSigmaC)lcmassrange=2;
+
+    if(mass2>2.468+1.5*fLcMassWindowForSigmaC && mass2<2.468+3.*fLcMassWindowForSigmaC)lcmassrange=5;
+    if(mass2>2.28646+1.5*fLcMassWindowForSigmaC && mass2<2.28646+3.*fLcMassWindowForSigmaC)lcmassrange=2;
+    
+    if(TMath::Abs(mass2-2.468)<fLcMassWindowForSigmaC)lcmassrange=4;
+    if(TMath::Abs(mass2-2.28646)<fLcMassWindowForSigmaC)lcmassrange=1;
+
+  }
+  else if(massHypothesis==3){// NOTE THAT THERE IS A POSSIBLE ISSUES IF A MASS HYPO IS IN XIC range and the other in LC. For the moment: priviledge Lc (by calculating it as last)
+    if(TMath::Abs(mass1-2.468)<fLcMassWindowForSigmaC || TMath::Abs(mass2-2.468)<fLcMassWindowForSigmaC)lcmassrange=4;
+    else {
+      if(mass1>2.468-3.*fLcMassWindowForSigmaC && mass1<2.468-1.5*fLcMassWindowForSigmaC)lcmassrange=5;
+      if(mass1>2.468+1.5*fLcMassWindowForSigmaC && mass1<2.468+3.*fLcMassWindowForSigmaC)lcmassrange=5;
+      if(mass2>2.468-3.*fLcMassWindowForSigmaC && mass2<2.468-1.5*fLcMassWindowForSigmaC)lcmassrange=5;
+      if(mass2>2.468+1.5*fLcMassWindowForSigmaC && mass2<2.468+3.*fLcMassWindowForSigmaC)lcmassrange=5;
+    }
+    if(TMath::Abs(mass1-2.28646)<fLcMassWindowForSigmaC || TMath::Abs(mass2-2.28646)<fLcMassWindowForSigmaC)lcmassrange=1;
+    else {
+      if(mass1>2.28646-3.*fLcMassWindowForSigmaC && mass1<2.28646-1.5*fLcMassWindowForSigmaC)lcmassrange=2;
+      if(mass1>2.28646+1.5*fLcMassWindowForSigmaC && mass1<2.28646+3.*fLcMassWindowForSigmaC)lcmassrange=2;
+      if(mass2>2.28646-3.*fLcMassWindowForSigmaC && mass2<2.28646-1.5*fLcMassWindowForSigmaC)lcmassrange=2;
+      if(mass2>2.28646+1.5*fLcMassWindowForSigmaC && mass2<2.28646+3.*fLcMassWindowForSigmaC)lcmassrange=2;
+    }
+  }
+  else return;
+  if(lcmassrange==-1)return;
+
   if(fDebug > 1){
     Printf("Good Lc or Xic for pairing , will loop over pions and Electrons");
   }
   
   AliExternalTrackParam *trackHF = new AliExternalTrackParam();
   trackHF->CopyFromVTrack(io3Prong);
-  Int_t flagPart=0;// both ele and pion hypo ok
   for(Int_t iextratr=0;iextratr<fnSel;iextratr++){
+    Int_t flagPart=0;// both ele and pion hypo ok
     Int_t itrackFourth=ftrackArraySelFast->At(iextratr);
     
     if(itrackFourth==itrack1 || itrackFourth==itrack2 || itrackFourth==itrack3)continue;
     if(ftrackSelStatusElectron->At(itrackFourth)>0)flagPart++;
     else if(fOnlyEleFourthLoop)continue;
     if(ftrackSelStatusPion->At(itrackFourth)>0)flagPart+=2;
+    if(ftrackSelStatusKaon->At(itrackFourth)>0)flagPart+=4;
+    if(ftrackSelStatusProton->At(itrackFourth)>0)flagPart+=8;
     if(flagPart==0)continue;//
 	
 
@@ -5221,7 +5282,7 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 
 	// fill Right-Sign and Wrong-Sign sparses on the basis of candidates and charge-pairing: same histo, charge status is in sparse 
 
-	Double_t point4pr[11];
+	Double_t point4pr[12];
 	UInt_t pdg[2]={4122,11};
 	Double_t massLcEle=hfCombined->InvMass(2,pdg);
 	FillArrayVariable4prongs(hfCombined,aod,point4pr);
@@ -5231,6 +5292,7 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	// charge-pair status
 	Short_t charge = io3Prong->Charge()*track4->Charge(); 
 	point4pr[9]= charge == -1 ? 1. : 0;
+	point4pr[11]=lcmassrange;
 	if(mcInfo>=0)point4pr[10]=1;
 	else if(mcInfo==-1)point4pr[10]=0;
 	else point4pr[10]=-1;

@@ -547,7 +547,9 @@ if(!MultSelection) {
   else if (mult >= 20 && mult < 30) fcent = 3;
   else if (mult >= 30 && mult < 40) fcent = 4;
   else if (mult >= 40 && mult < 50) fcent = 5;
-  else if (mult >= 50 && mult < 90) fcent = 6;
+  else if (mult >= 50 && mult < 60) fcent = 6;
+  else if (mult >= 60 && mult < 70) fcent = 7;
+  else if (mult >= 70 && mult < 80) fcent = 8;
   else return;
  
   if (fcent == 0) fHistEvCuts[0]->Fill(1);
@@ -557,7 +559,10 @@ if(!MultSelection) {
   else if(fcent == 4) fHistEvCuts[4]->Fill(1);
   else if(fcent == 5) fHistEvCuts[5]->Fill(1);
   else if(fcent == 6) fHistEvCuts[6]->Fill(1);
+  else if(fcent == 7) fHistEvCuts[7]->Fill(1);
+  else if(fcent == 8) fHistEvCuts[8]->Fill(1);
 
+  
   //"ESDs/pass2/AOD049/*AliAOD.root");
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
   vertex->GetPosition(fV1);
@@ -572,6 +577,8 @@ if(!MultSelection) {
   else if(fcent == 4) fHistEvCuts[4]->Fill(2);
   else if(fcent == 5) fHistEvCuts[5]->Fill(2);
   else if(fcent == 6) fHistEvCuts[6]->Fill(2);
+  else if(fcent == 7) fHistEvCuts[7]->Fill(2);
+  else if(fcent == 8) fHistEvCuts[8]->Fill(2);
   
   AliAnalysisUtils *anaUtil = new AliAnalysisUtils();
     
@@ -608,6 +615,8 @@ if(!MultSelection) {
   else if(fcent == 4) fHistEvCuts[4]->Fill(3);
   else if(fcent == 5) fHistEvCuts[5]->Fill(3);
   else if(fcent == 6) fHistEvCuts[6]->Fill(3);
+  else if(fcent == 7) fHistEvCuts[7]->Fill(3);
+  else if(fcent == 8) fHistEvCuts[8]->Fill(3);
 
   //TString vtxTtl = vertex->GetTitle();
   //if (!vtxTtl.Contains("VertexerTracks")) return;
@@ -622,7 +631,10 @@ if(!MultSelection) {
   else if(fcent == 4) fHistEvCuts[4]->Fill(4);
   else if(fcent == 5) fHistEvCuts[5]->Fill(4);
   else if(fcent == 6) fHistEvCuts[6]->Fill(4);
- //**** getting MC array ******
+  else if(fcent == 7) fHistEvCuts[7]->Fill(4);
+  else if(fcent == 8) fHistEvCuts[8]->Fill(4);
+
+  //**** getting MC array ******
   TClonesArray  *arrayMC;
 
   arrayMC = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));

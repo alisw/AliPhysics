@@ -145,10 +145,12 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster"
     if (cutConfig == 0) {
       MAPfileNames = Form("%sPhiWeights_LHC%s_fullPUcuts_Default_s_%s.root",
         MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
-    } else if ((strcmp(configNames[i].Data(), "zvtx6") == 0) || (strcmp(configNames[i].Data(), "zvtx7") == 0)) {
+    }
+    else if ((strcmp(configName.Data(), "zvtx6") == 0) || (strcmp(configName.Data(), "zvtx7") == 0)) {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx10.root",
           MAPdirName.Data(), sCorrection[period].Data());
-    } else {
+    }
+    else {
       MAPfileNames = Form("%sPhiWeights_LHC%s_fullPUcuts_s_%s.root",
         MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
     }

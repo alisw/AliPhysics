@@ -94,30 +94,34 @@ public:
   void SetTriggerMask(UInt_t triggerMask = AliVEvent::kAny) {fTriggerMask = triggerMask;};
 
   enum PdgCodeType_t {
-    kPDGPionPlus,
-    kPDGPionMinus,
-    kPDGProton,
-    kPDGAntiProton,    
-    kPDGDeuteron,
-    kPDGAntiDeuteron,
-    kPDGTriton,
-    kPDGAntiTriton,
-    kPDGHelium3,
-    kPDGAntiHelium3,
-    kPDGHelium4,
-    kPDGAntiHelium4,
-    kPDGHyperHydrogen3,
-    kPDGAntiHyperHydrogen3,
-    kPDGHyperHydrogen4,
-    kPDGAntiHyperHydrogen4,
-    kPDGHyperHelium4,
-    kPDGAntiHyperHelium4,
-    kPDGHyperHelium5,
-    kPDGAntiHyperHelium5,
-    kPDGDoubleHyperHydrogen4,
-    kPDGAntiDoubleHyperHydrogen4,
-    kPdgCodeMax  // Number of enum entries                                                                                                                                          
-  };
+        kPDGPionPlus,
+        kPDGPionMinus,
+        kPDGProton,
+        kPDGAntiProton,
+        kPDGDeuteron,
+        kPDGAntiDeuteron,
+        kPDGTriton,
+        kPDGAntiTriton,
+        kPDGHelium3,
+        kPDGAntiHelium3,
+        kPDGHelium4,
+        kPDGAntiHelium4,
+        kPDGHyperHydrogen3,
+        kPDGAntiHyperHydrogen3,
+        kPDGHyperHydrogen4,
+        kPDGAntiHyperHydrogen4,
+        kPDGHyperHelium4,
+        kPDGAntiHyperHelium4,
+        kPDGHyperHydrogen4Star,
+        kPDGAntiHyperHydrogen4Star,
+        kPDGHyperHelium4Star,
+        kPDGAntiHyperHelium4Star,
+        kPDGHyperHelium5,
+        kPDGAntiHyperHelium5,
+        kPDGDoubleHyperHydrogen4,
+        kPDGAntiDoubleHyperHydrogen4,
+        kPdgCodeMax  // Number of enum entries
+    };
 
   static const Int_t fgkPdgCode[];
 
@@ -133,13 +137,13 @@ private:
   AliStack              *fStack;     
   AliEventCuts          fEventCuts; 
   TTree                 *fTree;
-  TTree                 *fTreeD;
   TTree                 *fTreeKF;
   TTree                 *gTree;
-  TTree                 *gTreeD;
   TTree                 *gTreeKF;
   TTree                 *hTree;
   TTree                 *hTreeKF;
+  TTree                 *iTree;
+  TTree                 *iTreeKF;
   TTree                 *fTreeGen;
   TTree                 *gTreeGen;
   TList                 *fHistogramList; 
@@ -166,10 +170,10 @@ private:
   //-- Trigger --
   Int_t                 MB, HMV0, HMSPD, HNU, HQU, Central, SemiCentral;
   //-- Tracks -- 
-  AliESDtrack           *track1;
-  AliESDtrack           *track2;
-  AliESDtrack           *track3;
-  AliESDtrack           *track4;
+  AliAODTrack           *track1;
+  AliAODTrack           *track2;
+  AliAODTrack           *track3;
+  AliAODTrack           *track4;
   //-- Full track arrays --
   std::vector < int >   He4PosArray;
   std::vector < int >   He3PosArray;
@@ -195,7 +199,7 @@ private:
   //-- Vertex Reco --
   AliESDVertex          *primVertex;
   KFVertex              primKFVertex;
-  const AliESDVertex    *vertex;
+  const AliAODVertex    *vertex;
   AliESDVertex          *secVertex;
   AliESDVertex          *tertVertex;
   AliESDVertex          *KFtertVertex;
@@ -290,13 +294,14 @@ private:
   //-- saved in Tree --
   Int_t                  fEventID;
   Int_t                  fParticleID;
-  Int_t		             fPeriod; 
+  Int_t		         fPeriod; 
   Int_t                  fMagneticField;
   Int_t                  fCentrality;
   Int_t                  frunnumber;
   Int_t                  fmctruth;
   Int_t                  feventclass;
   Int_t                  fPrimary4LHe;
+  Int_t                  fisExcited;
   Int_t                  fDecayChannel;
   Int_t                  fRecoMethod;
   Int_t                  fisWOTrackVertex;
@@ -395,20 +400,22 @@ private:
   //-- stack label calculation --
   Int_t GetLabel(Int_t labelFirstMother, Int_t particlePdgCode, Int_t motherparticlePdgCode);
   Int_t GetLabel(Int_t labelFirstMother, Int_t particlePdgCode);
-  //-- trigger selection and simulation --
+  //Convert AOD to ESD Vertex
+  AliESDVertex* AODToESDVertex(const AliAODVertex &aodVert);
+  //-- trigger selection and simulation -
   Bool_t TriggerSelection();
   //-- see AliExternalTrackParams --
   Float_t GetInvPtDevFromBC(Int_t b, Int_t c);
   //-- clac of dEdx --
-  Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
+  Double_t Bethe(const AliAODTrack& track, Double_t mass, Int_t charge, Double_t* params);
   //
-  Int_t CustomTrackCut(const AliESDtrack& track, Int_t particle);  
+  Int_t CustomTrackCut(const AliAODTrack& track, Int_t particle);  
   //
-  Double_t GeoLength(const AliESDtrack& track);
+  Double_t GeoLength(const AliAODTrack& track);
   //
   Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi);
   //
-  Double_t GetTOFSignal(const AliESDtrack& track);  
+  Double_t GetTOFSignal(const AliAODTrack& track);  
   //
   void ResetVals(TString mode);
   //

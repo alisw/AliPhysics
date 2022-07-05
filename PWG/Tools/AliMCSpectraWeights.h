@@ -104,7 +104,8 @@ class AliMCSpectraWeights : public TNamed {
                                   factors  moved down*/
     AliMCEvent* fMCEvent;     /*!< MC event */
     int         fNPrimaries;   /*!< MC primaries from last event*/
-    float fMultOrCent;        /*!< counted multiplicity or centrality class */
+    float fMultOrCent;        /*!< counted multiplicity */
+    int fMultClass;           /*!< counted  centrality class */
     int fNPartTypes;          /*!< number of particle species */
     int fNCentralities;       /*!< number of selected centrality classes */
     int fNSysFlags;           /*!< number of all systematic flags */
@@ -115,6 +116,7 @@ class AliMCSpectraWeights : public TNamed {
     bool fUseMBFractions;     /*!< switch to use MB fractions instead of mult.
                                  dependent ones*/
     bool fDoSystematics;
+    bool fDoInterpolation;    
 
     // functions
     // intern getter
@@ -136,11 +138,11 @@ class AliMCSpectraWeights : public TNamed {
     bool CalcMCFractions();                                    //!
     bool CorrectFractionsforRest();                            //!
     bool CalculateSystematicUncertainties(); //!
-
+    
 
     int const CheckAndIdentifyParticle(TParticle* part);
-    int const FindBinEntry(float pt, int const part);
-
+    std::vector<int> const FindBinEntry(float pt, int const part);
+    
     // private = to be deleted
     AliMCSpectraWeights(const AliMCSpectraWeights&);//copy
     AliMCSpectraWeights& operator=(const AliMCSpectraWeights&);//copy assign
@@ -207,6 +209,7 @@ class AliMCSpectraWeights : public TNamed {
         }
     }
     void SetDoSystematics(bool doSys = true) { fDoSystematics = doSys; }
+    void SetDoInterpolation(bool doInter = true) {fDoInterpolation = doInter;}
 
     // Getter
     std::vector<std::string> const GetParticleTypes() const {return fstPartTypes;}

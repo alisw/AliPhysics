@@ -665,6 +665,27 @@ void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
     }
     fHistManager.CreateHistoGroup(groupName);
 
+    TString InclusiveGroupName = TString::Format("%s/Inclusive", groupName.Data());
+    if (fHistManager.FindObject(InclusiveGroupName)) {
+      AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), InclusiveGroupName.Data()));
+      continue;
+    }
+    fHistManager.CreateHistoGroup(InclusiveGroupName);
+
+    TString IPlaneGroupName = TString::Format("%s/InPlane", groupName.Data());
+    if (fHistManager.FindObject(IPlaneGroupName)) {
+      AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), IPlaneGroupName.Data()));
+      continue;
+    }
+    fHistManager.CreateHistoGroup(IPlaneGroupName);
+
+    TString OPlaneGroupName = TString::Format("%s/OutOfPlane", groupName.Data());
+    if (fHistManager.FindObject(OPlaneGroupName)) {
+      AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), OPlaneGroupName.Data()));
+      continue;
+    }
+    fHistManager.CreateHistoGroup(OPlaneGroupName);
+
     // A vs. pT
     if (fForceBeamType == kAA) {
       histName = TString::Format("%s/hRhoVsCent", groupName.Data());
@@ -677,30 +698,10 @@ void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
     }
 
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
-      histName = TString::Format("%s/hJetPt_%d", groupName.Data(), cent);
-      histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histName.Data());
-      fHistManager.CreateTH1(histName, histtitle, fNbins, fMinBinPt, fMaxBinPt);
-
-      histName = TString::Format("%s/hJetArea_%d", groupName.Data(), cent);
-      histtitle = TString::Format("%s;#it{A}_{jet};counts", histName.Data());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, 3);
-
-      histName = TString::Format("%s/hJetPhi_%d", groupName.Data(), cent);
-      histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histName.Data());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-
-      histName = TString::Format("%s/hJetEta_%d", groupName.Data(), cent);
-      histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histName.Data());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 6, -1, 1);
 
       histName = TString::Format("%s/hNJets_%d", groupName.Data(), cent);
       histtitle = TString::Format("%s;number of jets;events", histName.Data());
-      if (fForceBeamType != kpp) {
-        fHistManager.CreateTH1(histName, histtitle, 500, 0, 500);
-      }
-      else {
-        fHistManager.CreateTH1(histName, histtitle, 100, 0, 100);
-      }
+      fHistManager.CreateTH1(histName, histtitle, 500, 0, 500);
 
       // histograms for jet angle relative to the event plane
       histName = TString::Format("%s/hJetPhiMinusPsi2_%d", groupName.Data(), cent);
@@ -738,87 +739,11 @@ void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
         fHistManager.CreateTH1(histName, histtitle, fNbins, 0.0, 300.0);
         histName = TString::Format("%s/hJetRhoLocal_%d", groupName.Data(), cent);
         histtitle = "Rho Local";
+
         fHistManager.CreateTH1(histName, histtitle, fNbins, 0.0, 300.0);
-        histName = TString::Format("%s/hJetCorrPt_%d", groupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} (GeV/#it{c});counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
-        histName = TString::Format("%s/hJetCorrPtLocal_%d", groupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} local (GeV/#it{c});counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
-        
-        // = s = Create histograms of Jet Yeild ====================================================
-        //v2 inlucive
-        histName = TString::Format("%s/hJetsYieldV2_%d", groupName.Data(), cent);
-        histtitle = "Jet yeild (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hCorrJetsYieldV2_%d", groupName.Data(), cent);
-        histtitle = "corr Jet yeild (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hLocalCorrJetsYieldV2_%d", groupName.Data(), cent);
-        histtitle = "local corr Jet yeild (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-
-        //v2 in plane
-        histName = TString::Format("%s/hJetsYieldInPlaneV2_%d", groupName.Data(), cent);
-        histtitle = "Jet yeild of in-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hCorrJetsYieldInPlaneV2_%d", groupName.Data(), cent);
-        histtitle = "corr Jet yeild of in-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hLocalCorrJetsYieldInPlaneV2_%d", groupName.Data(), cent);
-        histtitle = "local corr Jet yeild of in-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-
-        //v2 out of plane
-        histName = TString::Format("%s/hJetsYieldOutPlaneV2_%d", groupName.Data(), cent);
-        histtitle = "Jet yeild of out-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hCorrJetsYieldOutPlaneV2_%d", groupName.Data(), cent);
-        histtitle = "corr Jet yeild of in-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hLocalCorrJetsYieldOutPlaneV2_%d", groupName.Data(), cent);
-        histtitle = "local corr Jet yeild of out-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-
-
-        //v3 inlucive
-        histName = TString::Format("%s/hJetsYieldV3_%d", groupName.Data(), cent);
-        histtitle = "Jet yeild (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hCorrJetsYieldV3_%d", groupName.Data(), cent);
-        histtitle = "corr Jet yeild (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hLocalCorrJetsYieldV3_%d", groupName.Data(), cent);
-        histtitle = "local corr Jet yeild (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-
-        //v3 in plane
-        histName = TString::Format("%s/hJetsYieldInPlaneV3_%d", groupName.Data(), cent);
-        histtitle = "Jet yeild of in-plane (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hCorrJetsYieldInPlaneV3_%d", groupName.Data(), cent);
-        histtitle = "corr Jet yeild of in-plane (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hLocalCorrJetsYieldInPlaneV3_%d", groupName.Data(), cent);
-        histtitle = "local corr Jet yeild of in-plane (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-
-        //v3 out of plane
-        histName = TString::Format("%s/hJetsYieldOutPlaneV3_%d", groupName.Data(), cent);
-        histtitle = "Jet yeild of out-plane (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hCorrJetsYieldOutPlaneV3_%d", groupName.Data(), cent);
-        histtitle = "corr Jet yeild of in-plane (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hLocalCorrJetsYieldOutPlaneV3_%d", groupName.Data(), cent);
-        histtitle = "local corr Jet yeild of out-plane (v3)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        // = e = Create histograms of Jet Yeild ====================================================
-        
-
-
         histName = TString::Format("%s/hJetLocalRhoVsAverageRho_%d", groupName.Data(), cent);
         histtitle = "Local rho versus average rho";
+
         fHistManager.CreateTH2(histName, histtitle, fNbins, 0.0, 300.0, fNbins, 0.0, 300.0);
         histName = TString::Format("%s/hJetCorrPtLocalVsJetCorrPt_%d", groupName.Data(), cent);
         histtitle = "Local rho adjusted jet pT versus average rho adjusted jet pT";
@@ -828,6 +753,69 @@ void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
         histName = TString::Format("%s/hJetRhoVsDeltaPhi_%d", groupName.Data(), cent);
         histtitle = "Local rho versus angle relative to event plane";
         fHistManager.CreateTH2(histName, histtitle, fNbins, 0.0, TMath::TwoPi(), fNbins, 0.0, 300.0);
+
+        
+        // = s = Create histograms of Jet Yeild ====================================================
+        //inlucive
+        histName = TString::Format("%s/hJetPt_%d", InclusiveGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins, fMinBinPt, fMaxBinPt);
+        histName = TString::Format("%s/hJetCorrPt_%d", InclusiveGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} (GeV/#it{c});counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
+        histName = TString::Format("%s/hJetCorrPtLocal_%d", InclusiveGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} local (GeV/#it{c});counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
+        
+        histName = TString::Format("%s/hJetArea_%d", InclusiveGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{A}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, 3);
+
+        histName = TString::Format("%s/hJetPhi_%d", InclusiveGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
+
+        histName = TString::Format("%s/hJetEta_%d", InclusiveGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 6, -1, 1);
+
+        
+        //v2 in plane
+        histName = TString::Format("%s/hJetPt_%d", IPlaneGroupName.Data(), cent);
+        histtitle = "Jet yeild of in-plane (v2)";
+        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
+        histName = TString::Format("%s/hCorrJetPt_%d", IPlaneGroupName.Data(), cent);
+        histtitle = "corr Jet yeild of in-plane (v2)";
+        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
+
+        histName = TString::Format("%s/hJetArea_%d", IPlaneGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{A}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, 3);
+        histName = TString::Format("%s/hJetPhi_%d", IPlaneGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
+        histName = TString::Format("%s/hJetEta_%d", IPlaneGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 6, -1, 1);
+
+        //v2 out of plane
+        histName = TString::Format("%s/hJetPt_%d", OPlaneGroupName.Data(), cent);
+        histtitle = "Jet yeild of out-plane (v2)";
+        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
+        histName = TString::Format("%s/hCorrJetPt_%d", OPlaneGroupName.Data(), cent);
+        histtitle = "corr Jet yeild of in-plane (v2)";
+        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
+
+        histName = TString::Format("%s/hJetArea_%d", OPlaneGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{A}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, 3);
+        histName = TString::Format("%s/hJetPhi_%d", OPlaneGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
+        histName = TString::Format("%s/hJetEta_%d", OPlaneGroupName.Data(), cent);
+        histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histName.Data());
+        fHistManager.CreateTH1(histName, histtitle, fNbins / 6, -1, 1);
+        // = e = Create histograms of Jet Yeild ====================================================
         
       }
     }
@@ -881,7 +869,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::Run()
   DoEventPlane();
   SetModulationRhoFit();
   // std::cout << "Fomula = " << fFitModulation->GetExpFormula() << std::endl;
-  // MeasureTpcEPQA();
+  if(fTPCQnMeasure) MeasureTpcEPQA();
   MeasureBkg();
   DoJetLoop();
   
@@ -1269,15 +1257,6 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
     for(auto jet : jetCont->accepted()) {
       if (!jet) continue;
       count++;
-      
-      histName = TString::Format("%s/hJetPt_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jet->Pt());
-      histName = TString::Format("%s/hJetArea_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jet->Area());
-      histName = TString::Format("%s/hJetPhi_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jet->Phi());
-      histName = TString::Format("%s/hJetEta_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jet->Eta());
 
       // Filling histos for angle relative to event plane
       Double_t phiMinusPsi2 = jet->Phi() - psi2V0[0];
@@ -1320,12 +1299,6 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
       histName = TString::Format("%s/hJetRhoLocal_%d", groupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, localRhoVal); // trying out local rho val
 
-      histName = TString::Format("%s/hJetCorrPt_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jetPtCorr);
-      histName = TString::Format("%s/hJetCorrPtLocal_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jetPtCorrLocal);
-      //fHistManager.FillTH1(histName, jet->Pt() - localRhoValScaled * 0.4);
-
       histName = TString::Format("%s/hJetLocalRhoVsAverageRho_%d", groupName.Data(), fCentBin);
       fHistManager.FillTH2(histName, jetCont->GetRhoVal(), localRhoValScaled);
       histName = TString::Format("%s/hJetCorrPtLocalVsJetCorrPt_%d", groupName.Data(), fCentBin);
@@ -1334,30 +1307,37 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
       fHistManager.FillTH2(histName, deltaPhiJetEP, localRhoValScaled);
       
       
-      //V2 inclusive Jet
-      histName = TString::Format("%s/hJetsYieldV2_%d", groupName.Data(), fCentBin);
+      //inclusive Jet
+      TString InclusiveGroupName = TString::Format("%s/Inclusive", groupName.Data());
+      histName = TString::Format("%s/hJetArea_%d", InclusiveGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, jet->Area());
+      histName = TString::Format("%s/hJetPhi_%d", InclusiveGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, jet->Phi());
+      histName = TString::Format("%s/hJetEta_%d", InclusiveGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, jet->Eta());
+      histName = TString::Format("%s/hJetPt_%d", InclusiveGroupName.Data(), fCentBin);
+
       fHistManager.FillTH1(histName, jet->Pt());
-      histName = TString::Format("%s/hCorrJetsYieldV2_%d", groupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetCorrPt_%d", InclusiveGroupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, jetPtCorr);
-      histName = TString::Format("%s/hLocalCorrJetsYieldV2_%d", groupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetCorrPtLocal_%d", InclusiveGroupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, jetPtCorrLocal);
       
       //V2 In plane Jet
       if ((phiMinusPsi2 < TMath::Pi()/4) || (phiMinusPsi2 >= 7*TMath::Pi()/4)\
       || (phiMinusPsi2 >= 3*TMath::Pi()/4 && phiMinusPsi2 < 5*TMath::Pi()/4)) {
-        histName = TString::Format("%s/hJetsYieldInPlaneV2_%d", groupName.Data(), fCentBin);
+        TString IPlaneGroupName = TString::Format("%s/InPlane", groupName.Data());
+
+        histName = TString::Format("%s/hJetPt_%d", IPlaneGroupName.Data(), fCentBin);
         fHistManager.FillTH1(histName, jet->Pt());
-        histName = TString::Format("%s/hCorrJetsYieldInPlaneV2_%d", groupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jetPtCorr);
-        histName = TString::Format("%s/hLocalCorrJetsYieldInPlaneV2_%d", groupName.Data(), fCentBin);
+        histName = TString::Format("%s/hCorrJetPt_%d", IPlaneGroupName.Data(), fCentBin);
         fHistManager.FillTH1(histName, jetPtCorrLocal);
       }
       else {
-        histName = TString::Format("%s/hJetsYieldOutPlaneV2_%d", groupName.Data(), fCentBin);
+        TString OPlaneGroupName = TString::Format("%s/OutOfPlane", groupName.Data());
+        histName = TString::Format("%s/hJetPt_%d", OPlaneGroupName.Data(), fCentBin);
         fHistManager.FillTH1(histName, jet->Pt());
-        histName = TString::Format("%s/hCorrJetsYieldOutPlaneV2_%d", groupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jetPtCorr);
-        histName = TString::Format("%s/hLocalCorrJetsYieldOutPlaneV2_%d", groupName.Data(), fCentBin);
+        histName = TString::Format("%s/hCorrJetPt_%d", OPlaneGroupName.Data(), fCentBin);
         fHistManager.FillTH1(histName, jetPtCorrLocal);
       }
       
@@ -1472,8 +1452,8 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnGainCalibration(){
   }
   AliAODVZERO* fAodV0 = dynamic_cast<AliAODVZERO*>(fAOD->GetVZEROData());
   
-  AliOADBContainer* cont = (AliOADBContainer*) fOADBFile->Get("hMultV0BefCorPfpx");
-  TH1D* fHistMultV0 = ((TH1D*) cont->GetObject(fRunNumber));
+  // AliOADBContainer* cont = (AliOADBContainer*) fOADBFile->Get("hMultV0BefCorPfpx");
+  // TH1D* fHistMultV0 = ((TH1D*) cont->GetObject(fRunNumber));
 
   AliVEvent *fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   const AliVVertex *pointVtx = fVevent->GetPrimaryVertex();

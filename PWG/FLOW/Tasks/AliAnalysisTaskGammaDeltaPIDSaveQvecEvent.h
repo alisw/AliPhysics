@@ -76,6 +76,135 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   void setVZAM( Double_t VZAM ) { this->fVZAM = VZAM; }
   Double_t getVZAM() { return fVZAM; }
   
+  void setTowV0Craw0( Double_t TowV0Craw0 ) { this->fTowV0Craw0 = TowV0Craw0; }
+  Double_t getTowV0Craw0() { return fTowV0Craw0; }
+  void setTowV0Craw1( Double_t TowV0Craw1 ) { this->fTowV0Craw1 = TowV0Craw1; }
+  Double_t getTowV0Craw1() { return fTowV0Craw1; }
+  void setTowV0Craw2( Double_t TowV0Craw2 ) { this->fTowV0Craw2 = TowV0Craw2; }
+  Double_t getTowV0Craw2() { return fTowV0Craw2; }
+  void setTowV0Craw3( Double_t TowV0Craw3 ) { this->fTowV0Craw3 = TowV0Craw3; }
+  Double_t getTowV0Craw3() { return fTowV0Craw3; }
+  void setTowV0Craw4( Double_t TowV0Craw4 ) { this->fTowV0Craw4 = TowV0Craw4; }
+  Double_t getTowV0Craw4() { return fTowV0Craw4; }
+  void setTowV0Craw5( Double_t TowV0Craw5 ) { this->fTowV0Craw5 = TowV0Craw5; }
+  Double_t getTowV0Craw5() { return fTowV0Craw5; }
+  void setTowV0Craw6( Double_t TowV0Craw6 ) { this->fTowV0Craw6 = TowV0Craw6; }
+  Double_t getTowV0Craw6() { return fTowV0Craw6; }
+  void setTowV0Craw7( Double_t TowV0Craw7 ) { this->fTowV0Craw7 = TowV0Craw7; }
+  Double_t getTowV0Craw7() { return fTowV0Craw7; }
+  void setTowV0Craw8( Double_t TowV0Craw8 ) { this->fTowV0Craw8 = TowV0Craw8; }
+  Double_t getTowV0Craw8() { return fTowV0Craw8; }
+  void setTowV0Craw9( Double_t TowV0Craw9 ) { this->fTowV0Craw9 = TowV0Craw9; }
+  Double_t getTowV0Craw9() { return fTowV0Craw9; }
+  void setTowV0Craw10( Double_t TowV0Craw10 ) { this->fTowV0Craw10 = TowV0Craw10; }
+  Double_t getTowV0Craw10() { return fTowV0Craw10; }
+  void setTowV0Craw11( Double_t TowV0Craw11 ) { this->fTowV0Craw11 = TowV0Craw11; }
+  Double_t getTowV0Craw11() { return fTowV0Craw11; }
+  void setTowV0Craw12( Double_t TowV0Craw12 ) { this->fTowV0Craw12 = TowV0Craw12; }
+  Double_t getTowV0Craw12() { return fTowV0Craw12; }
+  void setTowV0Craw13( Double_t TowV0Craw13 ) { this->fTowV0Craw13 = TowV0Craw13; }
+  Double_t getTowV0Craw13() { return fTowV0Craw13; }
+  void setTowV0Craw14( Double_t TowV0Craw14 ) { this->fTowV0Craw14 = TowV0Craw14; }
+  Double_t getTowV0Craw14() { return fTowV0Craw14; }
+  void setTowV0Craw15( Double_t TowV0Craw15 ) { this->fTowV0Craw15 = TowV0Craw15; }
+  Double_t getTowV0Craw15() { return fTowV0Craw15; }
+  void setTowV0Craw16( Double_t TowV0Craw16 ) { this->fTowV0Craw16 = TowV0Craw16; }
+  Double_t getTowV0Craw16() { return fTowV0Craw16; }
+  void setTowV0Craw17( Double_t TowV0Craw17 ) { this->fTowV0Craw17 = TowV0Craw17; }
+  Double_t getTowV0Craw17() { return fTowV0Craw17; }
+  void setTowV0Craw18( Double_t TowV0Craw18 ) { this->fTowV0Craw18 = TowV0Craw18; }
+  Double_t getTowV0Craw18() { return fTowV0Craw18; }
+  void setTowV0Craw19( Double_t TowV0Craw19 ) { this->fTowV0Craw19 = TowV0Craw19; }
+  Double_t getTowV0Craw19() { return fTowV0Craw19; }
+  void setTowV0Craw20( Double_t TowV0Craw20 ) { this->fTowV0Craw20 = TowV0Craw20; }
+  Double_t getTowV0Craw20() { return fTowV0Craw20; }
+  void setTowV0Craw21( Double_t TowV0Craw21 ) { this->fTowV0Craw21 = TowV0Craw21; }
+  Double_t getTowV0Craw21() { return fTowV0Craw21; }
+  void setTowV0Craw22( Double_t TowV0Craw22 ) { this->fTowV0Craw22 = TowV0Craw22; }
+  Double_t getTowV0Craw22() { return fTowV0Craw22; }
+  void setTowV0Craw23( Double_t TowV0Craw23 ) { this->fTowV0Craw23 = TowV0Craw23; }
+  Double_t getTowV0Craw23() { return fTowV0Craw23; }
+  void setTowV0Craw24( Double_t TowV0Craw24 ) { this->fTowV0Craw24 = TowV0Craw24; }
+  Double_t getTowV0Craw24() { return fTowV0Craw24; }
+  void setTowV0Craw25( Double_t TowV0Craw25 ) { this->fTowV0Craw25 = TowV0Craw25; }
+  Double_t getTowV0Craw25() { return fTowV0Craw25; }
+  void setTowV0Craw26( Double_t TowV0Craw26 ) { this->fTowV0Craw26 = TowV0Craw26; }
+  Double_t getTowV0Craw26() { return fTowV0Craw26; }
+  void setTowV0Craw27( Double_t TowV0Craw27 ) { this->fTowV0Craw27 = TowV0Craw27; }
+  Double_t getTowV0Craw27() { return fTowV0Craw27; }
+  void setTowV0Craw28( Double_t TowV0Craw28 ) { this->fTowV0Craw28 = TowV0Craw28; }
+  Double_t getTowV0Craw28() { return fTowV0Craw28; }
+  void setTowV0Craw29( Double_t TowV0Craw29 ) { this->fTowV0Craw29 = TowV0Craw29; }
+  Double_t getTowV0Craw29() { return fTowV0Craw29; }
+  void setTowV0Craw30( Double_t TowV0Craw30 ) { this->fTowV0Craw30 = TowV0Craw30; }
+  Double_t getTowV0Craw30() { return fTowV0Craw30; }
+  void setTowV0Craw31( Double_t TowV0Craw31 ) { this->fTowV0Craw31 = TowV0Craw31; }
+  Double_t getTowV0Craw31() { return fTowV0Craw31; }
+
+  void setTowV0Araw0( Double_t TowV0Araw0 ) { this->fTowV0Araw0 = TowV0Araw0; }
+  Double_t getTowV0Araw0() { return fTowV0Araw0; }
+  void setTowV0Araw1( Double_t TowV0Araw1 ) { this->fTowV0Araw1 = TowV0Araw1; }
+  Double_t getTowV0Araw1() { return fTowV0Araw1; }
+  void setTowV0Araw2( Double_t TowV0Araw2 ) { this->fTowV0Araw2 = TowV0Araw2; }
+  Double_t getTowV0Araw2() { return fTowV0Araw2; }
+  void setTowV0Araw3( Double_t TowV0Araw3 ) { this->fTowV0Araw3 = TowV0Araw3; }
+  Double_t getTowV0Araw3() { return fTowV0Araw3; }
+  void setTowV0Araw4( Double_t TowV0Araw4 ) { this->fTowV0Araw4 = TowV0Araw4; }
+  Double_t getTowV0Araw4() { return fTowV0Araw4; }
+  void setTowV0Araw5( Double_t TowV0Araw5 ) { this->fTowV0Araw5 = TowV0Araw5; }
+  Double_t getTowV0Araw5() { return fTowV0Araw5; }
+  void setTowV0Araw6( Double_t TowV0Araw6 ) { this->fTowV0Araw6 = TowV0Araw6; }
+  Double_t getTowV0Araw6() { return fTowV0Araw6; }
+  void setTowV0Araw7( Double_t TowV0Araw7 ) { this->fTowV0Araw7 = TowV0Araw7; }
+  Double_t getTowV0Araw7() { return fTowV0Araw7; }
+  void setTowV0Araw8( Double_t TowV0Araw8 ) { this->fTowV0Araw8 = TowV0Araw8; }
+  Double_t getTowV0Araw8() { return fTowV0Araw8; }
+  void setTowV0Araw9( Double_t TowV0Araw9 ) { this->fTowV0Araw9 = TowV0Araw9; }
+  Double_t getTowV0Araw9() { return fTowV0Araw9; }
+  void setTowV0Araw10( Double_t TowV0Araw10 ) { this->fTowV0Araw10 = TowV0Araw10; }
+  Double_t getTowV0Araw10() { return fTowV0Araw10; }
+  void setTowV0Araw11( Double_t TowV0Araw11 ) { this->fTowV0Araw11 = TowV0Araw11; }
+  Double_t getTowV0Araw11() { return fTowV0Araw11; }
+  void setTowV0Araw12( Double_t TowV0Araw12 ) { this->fTowV0Araw12 = TowV0Araw12; }
+  Double_t getTowV0Araw12() { return fTowV0Araw12; }
+  void setTowV0Araw13( Double_t TowV0Araw13 ) { this->fTowV0Araw13 = TowV0Araw13; }
+  Double_t getTowV0Araw13() { return fTowV0Araw13; }
+  void setTowV0Araw14( Double_t TowV0Araw14 ) { this->fTowV0Araw14 = TowV0Araw14; }
+  Double_t getTowV0Araw14() { return fTowV0Araw14; }
+  void setTowV0Araw15( Double_t TowV0Araw15 ) { this->fTowV0Araw15 = TowV0Araw15; }
+  Double_t getTowV0Araw15() { return fTowV0Araw15; }
+  void setTowV0Araw16( Double_t TowV0Araw16 ) { this->fTowV0Araw16 = TowV0Araw16; }
+  Double_t getTowV0Araw16() { return fTowV0Araw16; }
+  void setTowV0Araw17( Double_t TowV0Araw17 ) { this->fTowV0Araw17 = TowV0Araw17; }
+  Double_t getTowV0Araw17() { return fTowV0Araw17; }
+  void setTowV0Araw18( Double_t TowV0Araw18 ) { this->fTowV0Araw18 = TowV0Araw18; }
+  Double_t getTowV0Araw18() { return fTowV0Araw18; }
+  void setTowV0Araw19( Double_t TowV0Araw19 ) { this->fTowV0Araw19 = TowV0Araw19; }
+  Double_t getTowV0Araw19() { return fTowV0Araw19; }
+  void setTowV0Araw20( Double_t TowV0Araw20 ) { this->fTowV0Araw20 = TowV0Araw20; }
+  Double_t getTowV0Araw20() { return fTowV0Araw20; }
+  void setTowV0Araw21( Double_t TowV0Araw21 ) { this->fTowV0Araw21 = TowV0Araw21; }
+  Double_t getTowV0Araw21() { return fTowV0Araw21; }
+  void setTowV0Araw22( Double_t TowV0Araw22 ) { this->fTowV0Araw22 = TowV0Araw22; }
+  Double_t getTowV0Araw22() { return fTowV0Araw22; }
+  void setTowV0Araw23( Double_t TowV0Araw23 ) { this->fTowV0Araw23 = TowV0Araw23; }
+  Double_t getTowV0Araw23() { return fTowV0Araw23; }
+  void setTowV0Araw24( Double_t TowV0Araw24 ) { this->fTowV0Araw24 = TowV0Araw24; }
+  Double_t getTowV0Araw24() { return fTowV0Araw24; }
+  void setTowV0Araw25( Double_t TowV0Araw25 ) { this->fTowV0Araw25 = TowV0Araw25; }
+  Double_t getTowV0Araw25() { return fTowV0Araw25; }
+  void setTowV0Araw26( Double_t TowV0Araw26 ) { this->fTowV0Araw26 = TowV0Araw26; }
+  Double_t getTowV0Araw26() { return fTowV0Araw26; }
+  void setTowV0Araw27( Double_t TowV0Araw27 ) { this->fTowV0Araw27 = TowV0Araw27; }
+  Double_t getTowV0Araw27() { return fTowV0Araw27; }
+  void setTowV0Araw28( Double_t TowV0Araw28 ) { this->fTowV0Araw28 = TowV0Araw28; }
+  Double_t getTowV0Araw28() { return fTowV0Araw28; }
+  void setTowV0Araw29( Double_t TowV0Araw29 ) { this->fTowV0Araw29 = TowV0Araw29; }
+  Double_t getTowV0Araw29() { return fTowV0Araw29; }
+  void setTowV0Araw30( Double_t TowV0Araw30 ) { this->fTowV0Araw30 = TowV0Araw30; }
+  Double_t getTowV0Araw30() { return fTowV0Araw30; }
+  void setTowV0Araw31( Double_t TowV0Araw31 ) { this->fTowV0Araw31 = TowV0Araw31; }
+  Double_t getTowV0Araw31() { return fTowV0Araw31; }
   
   void setTowZNCraw0( Double_t TowZNCraw0 ) { this->fTowZNCraw0 = TowZNCraw0; }
   Double_t getTowZNCraw0() { return fTowZNCraw0; }
@@ -1113,6 +1242,73 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fVZARe;
   Double_t fVZAIm;
   Double_t fVZAM;
+  
+  // VZ tow
+  Double_t fTowV0Craw0;
+  Double_t fTowV0Craw1;
+  Double_t fTowV0Craw2;
+  Double_t fTowV0Craw3;
+  Double_t fTowV0Craw4;
+  Double_t fTowV0Craw5;
+  Double_t fTowV0Craw6;
+  Double_t fTowV0Craw7;
+  Double_t fTowV0Craw8;
+  Double_t fTowV0Craw9;
+  Double_t fTowV0Craw10;
+  Double_t fTowV0Craw11;
+  Double_t fTowV0Craw12;
+  Double_t fTowV0Craw13;
+  Double_t fTowV0Craw14;
+  Double_t fTowV0Craw15;
+  Double_t fTowV0Craw16;
+  Double_t fTowV0Craw17;
+  Double_t fTowV0Craw18;
+  Double_t fTowV0Craw19;
+  Double_t fTowV0Craw20;
+  Double_t fTowV0Craw21;
+  Double_t fTowV0Craw22;
+  Double_t fTowV0Craw23;
+  Double_t fTowV0Craw24;
+  Double_t fTowV0Craw25;
+  Double_t fTowV0Craw26;
+  Double_t fTowV0Craw27;
+  Double_t fTowV0Craw28;
+  Double_t fTowV0Craw29;
+  Double_t fTowV0Craw30;
+  Double_t fTowV0Craw31;
+
+  Double_t fTowV0Araw0;
+  Double_t fTowV0Araw1;
+  Double_t fTowV0Araw2;
+  Double_t fTowV0Araw3;
+  Double_t fTowV0Araw4;
+  Double_t fTowV0Araw5;
+  Double_t fTowV0Araw6;
+  Double_t fTowV0Araw7;
+  Double_t fTowV0Araw8;
+  Double_t fTowV0Araw9;
+  Double_t fTowV0Araw10;
+  Double_t fTowV0Araw11;
+  Double_t fTowV0Araw12;
+  Double_t fTowV0Araw13;
+  Double_t fTowV0Araw14;
+  Double_t fTowV0Araw15;
+  Double_t fTowV0Araw16;
+  Double_t fTowV0Araw17;
+  Double_t fTowV0Araw18;
+  Double_t fTowV0Araw19;
+  Double_t fTowV0Araw20;
+  Double_t fTowV0Araw21;
+  Double_t fTowV0Araw22;
+  Double_t fTowV0Araw23;
+  Double_t fTowV0Araw24;
+  Double_t fTowV0Araw25;
+  Double_t fTowV0Araw26;
+  Double_t fTowV0Araw27;
+  Double_t fTowV0Araw28;
+  Double_t fTowV0Araw29;
+  Double_t fTowV0Araw30;
+  Double_t fTowV0Araw31;
   
   // ZNC each tow energy
   Double_t fTowZNCraw0;

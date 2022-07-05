@@ -61,7 +61,7 @@ fPtCutHigh(1e6),
 fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
-fMinOpAng(0.0),
+fMinOpAng(-1.),
 fScaleByRAA(kFALSE),
 fHistoRAA(0x0),
 fTF1RAA(0x0),
@@ -186,7 +186,7 @@ fPtCutHigh(1e6),
 fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
-fMinOpAng(0.0),
+fMinOpAng(-1.),
 fScaleByRAA(kFALSE),
 fHistoRAA(0x0),
 fTF1RAA(0x0),
@@ -1859,6 +1859,17 @@ void AliAnalysisTaskCharm::CreateHistos(){
   fOutputList->Add(hMeePtee_LS_eta_pt);
   fOutputList->Add(hMeePtee_ULS_eta08_pt400);
   fOutputList->Add(hMeePtee_LS_eta08_pt400);
+  if(fMinOpAng > -1.) {
+
+    fOutputList->Add(hMeePtee_ULS_eta08_pt200_opAngleCut);
+    fOutputList->Add(hMeePtee_LS_eta08_pt200_opAngleCut);
+    fOutputList->Add(hMeePtee_ULS_eta08_pt300_opAngleCut);
+    fOutputList->Add(hMeePtee_LS_eta08_pt300_opAngleCut);
+    fOutputList->Add(hMeePtee_ULS_eta08_pt400_opAngleCut);
+    fOutputList->Add(hMeePtee_LS_eta08_pt400_opAngleCut);
+
+  }
+  
   fOutputList->Add(hMotherPt_ULS_eta08_pt200);
   fOutputList->Add(hMotherPt_LS_eta08_pt200);
   fOutputList->Add(hMotherPt_ULS_eta08_pt400);

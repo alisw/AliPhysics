@@ -513,6 +513,64 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
     mclabel    = -1;
     efrac      = 0.;
 
+    //
+    // Assign as MC label the label of the neighboring cell with highest energy
+    // within the same T-Card. Follow same approach for time.
+    // Simplest assumption, not fully correct.
+    // Still assign 0 as fraction of energy.
+
+    // First get the iphi and ieta of this tower
+    Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+    fGeom->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+    //printf("--- Start: Added cell ID %d, ieta %d, iphi %d, E %1.3f, time %1.3e, mc label %d\n",
+    //       absId, ieta, iphi, amp, time, mclabel);
+
+    // Loop on the nearest cells around, check the highest energy one,
+    // and assign its MC label
+    Float_t ampMax = 0;
+    for(Int_t ietai = ieta-1; ietai <= ieta+1; ietai++ )
+    {
+      for(Int_t iphii = iphi-1; iphii <= iphi+1; iphii++ )
+      {
+        //printf("\t Check ieta %d, iphi %d\n",ietai,iphii);
+
+        // Avoid same cell
+        if ( iphii==0 && ietai == 0) continue;
+
+        // Avoid cells out of SM
+        if (  ietai < 0 || ietai >= AliEMCALGeoParams::fgkEMCALCols ||
+              iphii < 0 || iphii >= AliEMCALGeoParams::fgkEMCALRows   ) continue;
+
+        Int_t absIDi = fGeom->GetAbsCellIdFromCellIndexes(imod, iphii, ietai);
+        Float_t ampi = fAODCellsTmp->GetCellAmplitude(absIDi);
+
+        // Remove cells with no energy
+        if ( ampi <= 0.01 ) continue;
+
+        // Only same TCard
+        Int_t rowDiff = -100; Int_t colDiff = -100;
+        if ( !fRecoUtils->IsAbsIDsFromTCard(absId, absIDi, rowDiff, colDiff) ) continue;
+
+        Int_t   mclabeli = fAODCellsTmp->GetCellMCLabel(absIDi);
+        Float_t timei    = fAODCellsTmp->GetCellTime(absIDi);
+
+        //printf ("\t \t Same TCard ID %d, mcLabel %d, amp %1.3f, time %1.3e \n",absIDi,mclabeli,ampi,timei);
+
+        if ( ampi > ampMax && mclabeli >= 0 )
+        {
+          ampMax  = ampi;
+          mclabel = mclabeli;
+          time    = timei;
+        }
+      } // loop phi
+    } // loop eta
+    // End Assign MC label
+    //printf ( "Final ampMax %1.2f\n",ampMax);
+    //printf("--- End  : Added cell ID %d, ieta %d, iphi %d, E %1.3f, time %1.3e, mc label %d\n",
+    //       absId, ieta, iphi, amp, time, mclabel);
+
+    // Add the new cell
     Int_t ok = fCaloCells->SetCell(cellNumber, absId, amp, time, mclabel, efrac,1);
     
     if ( !ok ) AliError("Induced new cell could not be added!");
