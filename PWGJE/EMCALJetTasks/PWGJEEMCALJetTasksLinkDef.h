@@ -327,6 +327,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropData+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskTracksInJet+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetProperties+;
 #pragma link C++ class AliAnalysisTaskEmcalJetCDF+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
 #ifdef WITH_ROOUNFOLD
