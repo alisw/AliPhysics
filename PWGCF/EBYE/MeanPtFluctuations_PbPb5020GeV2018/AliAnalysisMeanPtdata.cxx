@@ -72,6 +72,7 @@ AliAnalysisMeanPtdata::AliAnalysisMeanPtdata() // All data members should be ini
 //  _usePileupCut_PbPb5TeV(0),
   _hProfPileupCut(0),
  _profV0MvsTPCout(0),
+  _fb              (0),
   _nClusterMin          ( 80),
   _dcaZMin              ( -3.2),
   _dcaZMax              (  3.2),
@@ -192,6 +193,7 @@ fVtxZ(0),
  // _usePileupCut_PbPb5TeV(0),
  _hProfPileupCut(0),
 _profV0MvsTPCout(0),
+ _fb              (0),
  _nClusterMin          ( 80),
  _dcaZMin              ( -3.2),
  _dcaZMax              (  3.2),
@@ -637,7 +639,7 @@ static Bool_t AcceptTrack(const AliAODTrack *trk){
 
 	if (!trk) return kFALSE;
 
-	if(!trk->TestFilterBit(768)) return kFALSE;//Hybrid track cuts: filterbit (768) (ITSRefit required + max shared fraction of TPC clusters < 0.4)
+	//	if(!trk->TestFilterBit(768)) return kFALSE;//Hybrid track cuts: filterbit (768) (ITSRefit required + max shared fraction of TPC clusters < 0.4)
 //	if(!trk->TestFilterBit(8)) return kFALSE;	//	if(!trk->TestFilterBit(8)) return kFALSE;
 	if (trk->Charge() == 0) return kFALSE;
 	if (trk->Eta() < -0.8 || trk->Eta() > 0.8) return kFALSE;
@@ -747,47 +749,10 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
                             
     fVtxZCont->Fill(vtxZ); // VtxZ after cut on nContributors
 
-    /*    if (fMaxVertexZDiff1 > 0.) {
-      if(vtxZdiff1 > fMaxVertexZDiff1 || vtxZdiff1 < (-1.*fMaxVertexZDiff1)) {
-	//       Printf("VertexZ Diff (TPC - global) out of range, vtxZdiff1 = %f",vtxZ);
-	return;
-      }
-      }*/
     fEvents->Fill(6);  //vertex difference global and TPC
     fVtxZCutDiff->Fill(vtxZ); // VtxZ after cut on vtxZDiff
 
-    // --- Vertex cuts  ends ---   
-    /*    if(vtxZ > fMaxVertexZ || vtxZ < (-1.*fMaxVertexZ)) {
-      //     Printf("VertexZ out of range, Zv = %f",vtxZ);
-      return;
-      }*/
-
-
-    /*    if(!(vtxNCont > 1)) {
-      cout<<"             REJECTED DUE TO POOR CONTRIBUTION         "<<endl;
-      return;
-    }
-
-    fEventSee->Fill(4);  //after vertex poor contribution                                
-
-    const AliAODVertex* vtxAODTPC=fAOD->GetPrimaryVertexTPC();
-    vtxZTPC = vtxAODTPC->GetZ();
-    vtxZdiff = vtxZTPC - zv;
-    cout<<"                  TPC       00000000   "<<vtxZTPC<<endl;//Got TPC vertex  
-    cout<<"                 TPC  - global     00000000   "<<vtxZdiff<<endl;//Got TPC vertex                                                                                     
-  if(TMath::Abs(vtxZdiff)>1)
-    {
-      cout<<" ************ tpc-global difference is too high *************  "<<endl;
-      return;
-    }
- cout<<"         CONTRI               "<<fPrimaryVtx->GetNContributors()<<endl;
-    */
-    
-
-
-
-
-
+   
     Int_t event=0;
     event++;
 
@@ -990,22 +955,11 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
      printf("ERROR: Could not receive track %d\n", iTracks);
      continue;
    }
-   
-    //method which checks if track
-    //have at least 1 hit in ITS 
-   //    bool passTrackPileUp = false;
-    //loop over the 4 ITS Layrs and check for a hit!
-    /*    for (int i = 0; i < 2; ++i) {
-      //we use layers 0, 1 /OR/ 0, 1, 4, 5
-      // if(i==2 || i==3) i+=2;
-      if (track->HasPointOnITSLayer(i)) passTrackPileUp = true;
-    }
-    if (!passTrackPileUp) {
-      continue;
-      }*/
+ 
 
 
    if (!AcceptTrack(track)) continue;
+   if (!(track->TestFilterBit(_fb)))continue;
    fHistEta->Fill(track->Eta());
    Pt =track->Pt();
    fHistPt->Fill(Pt);
@@ -1013,8 +967,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
    trkDCAxy=  track->DCA();
    trkDCAz=   track->ZAtDCA();
 
-   //   if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
-
+  
      if ((TMath::Abs(trkDCAxy)==999)||(TMath::Abs(trkDCAz)==999))
        {
 	 Double_t    bval[2] = {-99., -99.};
@@ -1057,18 +1010,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
      fTpcNCrossedRows->Fill(nCrossedRowsTPC);
      fTpcNCluster->Fill(nTPCNcls);
 
-     //     cout<<"After DCA Z    "<< trkDCAzA<<" After XY  " <<trkDCAxyA<<endl;
-     
-     //     cout<<"nCrossedRowsTPC  "<<nCrossedRowsTPC<<endl;
-
-
-   //   cout<<" dcaxy BEFORE  "<<TMath::Abs(track->DCA())<<"  dcaz BEFORE "<< TMath::Abs(track->ZAtDCA())<<endl;  
-   //if(!(TMath::Abs(track->DCA())<_dcaXYMax))continue;
-   //   if(!( TMath::Abs(track->ZAtDCA())<_dcaZMax ))continue;
-   //   cout<<" dcaxy after  "<<track->DCA()<<"  dcaz after "<<track->ZAtDCA()<<endl;
-   //   cout<<" chisq per tpc before  "<<track->GetTPCchi2perCluster()<<endl;
-   //   if(!(track->GetTPCchi2perCluster()<_chi2perTPC))continue;
-   //   cout<<" chisq per tpc after  "<<track->GetTPCchi2perCluster()<<endl;
+   
    Int_t nClustersITS = 0;
    nClustersITS =track->GetITSNcls();
    //   if(nClustersITS==0)continue;
@@ -1092,27 +1034,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
   
  }
  
- // cout<<"before cut fNoOfTPCoutTracks XXXXXX  "<<fNoOfTPCoutTracks<<" nParts XXXXXX "<<nParts<<endl;
-
- /*if(fcentrality > 0.0 && fcentrality < 2.5 && nParts>2000)
-
- cout<<"after cut fcentrality  XXXXXX  1 -- "<<fcentrality<<" nParts XXXXXX "<<nParts<<endl;
-
- if(fcentrality > 2.5 && fcentrality <= 10.0 && nParts>1500)
- cout<<"after cut fcentrality  XXXXXX  2 -- "<<fcentrality<<" nParts XXXXXX "<<nParts<<endl;
- if(fcentrality > 10.0 && fcentrality <= 20.0 && nParts>1000)
- cout<<"after cut fcentrality  XXXXXX  3 -- "<<fcentrality<<" nParts XXXXXX "<<nParts<<endl;
- if(fcentrality > 20.0 && fcentrality <= 30.0 && nParts>700)
- cout<<"after cut fcentrality  XXXXXX  4 -- "<<fcentrality<<" nParts XXXXXX "<<nParts<<endl;
- if(fcentrality > 30.0 && fcentrality <= 40.0 && nParts>500)
- cout<<"after cut fcentrality  XXXXXX  5 -- "<<fcentrality<<" nParts XXXXXX "<<nParts<<endl;
- if(fcentrality > 40.0 && fcentrality <= 100.0 && nParts>1)
- cout<<"after cut fcentrality  XXXXXX  6 -- "<<fcentrality<<" nParts XXXXXX "<<nParts<<endl;
-
-
-   cout<<"nParts         "<<nParts<<endl;
-   
- */
+ 
  ftrack->Fill(nParts);
    Double_t nPairs=0., nTriplets=0., nQuads=0., meanQ1 = 0.0;
    
@@ -1143,8 +1065,7 @@ void AliAnalysisMeanPtdata::UserExec(Option_t *)
 	  fourpart1 =  ((Q1*Q1*Q1*Q1) - (6*Q2*Q1*Q1) + (3*Q2*Q2) + (8*Q3*Q1) - 6*Q4) / (nQuads) ;
 	}
 	
-	//  pTquadavg =  (pow(pT,4) - (6*pTsqr*(pow(pT,2))) + (3*(pow(pTsqr,2))) + (8*pTcube*pT) - (6*(pTquad)) )/(mnum2*(mnum2-1)*(mnum2-2)*(mnum2-3)) ;}
-	
+
 	eventcount++;
 
      fCount->Fill(nParts,1);
@@ -1275,6 +1196,9 @@ Bool_t AliAnalysisMeanPtdata::StoreEventMultiplicities(AliVEvent *ev)
       //      cout << "_max_eta_1: "<<_max_eta_1<<"\t" << "_nClusterMin: "<<_nClusterMin<<endl;
       //      if (/*(TMath::Abs(aodt->Eta()) < 0.8) &&*/ (aodt->GetTPCNcls() >= _nClusterMin)/* && (aodt->Pt() >= 0.15) && (aodt->Pt() < 2.)*/)
 	      if(AcceptTrack(aodt))
+		if (aodt->TestFilterBit(_fb))
+		
+
 	{
     	  /*  if ((aodt->GetStatus() & AliVTrack::kTPCout) && aodt->GetID() > 0 )  */ fNoOfTPCoutTracks++;
 	}
