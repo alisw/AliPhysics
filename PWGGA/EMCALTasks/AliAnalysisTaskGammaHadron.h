@@ -211,6 +211,21 @@ protected:
   static const double LHC18qrParam_10_30_eta[11];                  //!<! 10-30% eta parameters
   static const double LHC18qrParam_30_50_eta[11];                  //!<! 30-50% eta parameters
   static const double LHC18qrParam_50_90_eta[11];                  //!<! 50-90% eta parameters
+
+  // Parameters for new parametrization using LHC20j6, anchored to 15o Pass2
+  // LHC15oP2 efficiency parameters
+  // pt parameters
+  static const double LHC15oP2Param_0_10_pt[11];                    //!<! 0-10% pt parameters
+  static const double LHC15oP2Param_10_30_pt[11];                   //!<! 10-30% pt parameters
+  static const double LHC15oP2Param_30_50_pt[11];                   //!<! 30-50% pt parameters
+  static const double LHC15oP2Param_50_90_pt[11];                   //!<! 50-90% pt parameters
+  // Eta parameters
+  static const double LHC15oP2Param_0_10_eta[11];                   //!<! 0-10% eta parameters
+  static const double LHC15oP2Param_10_30_eta[11];                  //!<! 10-30% eta parameters
+  static const double LHC15oP2Param_30_50_eta[11];                  //!<! 30-50% eta parameters
+  static const double LHC15oP2Param_50_90_eta[11];                  //!<! 50-90% eta parameters
+
+
   // Helper functions for determining the LHC15o tracking efficiency
   static double LHC18qrPtEfficiency(const double trackPt, const double params[11]);
 

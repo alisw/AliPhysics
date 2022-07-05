@@ -196,6 +196,46 @@ const double AliAnalysisTaskGammaHadron::LHC18qrParam_50_90_eta[11] = {0.783412,
               -0.00357013, 0.903991, 0.734531, 0.0056072, 0.68324,
               0.659263};
 
+
+// Parameters for LHC15o Pass2, calculated with LHC20j6_HIJING
+
+// 0-10% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_0_10_pt[11] = {
+0.68479, 0.327364, -0.270812, 0.104918, -0.015284, 0.889987,
+-0.0314805, 0.00715624, -0.00045383,   -2.02408e-05,  2.16292e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_0_10_eta[11] = {
+0.835791, 0.00342724, 0.300875, -0.053104, 0.680688, 0.0255011,
+1.1134, 0.720639, 0.0063448, 0.735691, 0.672345};
+
+// 10-30% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_10_30_pt[11] = {
+0.702991, 0.295492, -0.237913, 0.0907758, -0.0131305, 0.902102,
+-0.0337796, 0.00693128, -0.000195277, -6.13476e-05, 4.12663e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_10_30_eta[11] = {
+ 0.823899, 0.00282205, 0.3209, -0.0413709, 0.69076, 0.0200196,
+ 1.06905, 0.732554, 0.00568939, 0.687603, 0.685426};
+
+// 30-50% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_30_50_pt[11] = {
+ 0.709754, 0.292528, -0.239098, 0.0928744, -0.0136577, 1.07672,
+ -0.1991, 0.0683799, -0.0111161, 0.000868109, -2.62688e-05};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_30_50_eta[11] = {
+ 0.819134, 0.00266454, 0.332053, -0.0376824, 0.695236, 0.0200025,
+ 1.11778, 0.73767, 0.00549236,  0.6747,  0.679545};
+
+// 50-90% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_50_90_pt[11] = {
+ 0.713552, 0.285557, -0.23174, 0.0891146, -0.0129781, 0.892923,
+ -0.021774, 0.00250209, 0.000690796, -0.000149362, 7.45951e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_50_90_eta[11] = {
+ 0.81354, 0.00267767, 0.339068, -0.0376914, 0.693847, 0.021269,
+ 1.1552, 0.735639, 0.00563201, 0.687909, 0.683795};
+
+
 /**
  * Determine the pt efficiency axis for LHC18qr. This is the main interface
  * for getting the efficiency.
@@ -4886,6 +4926,33 @@ Double_t AliAnalysisTaskGammaHadron::GetTrackEff(Double_t pT, Double_t eta)
       case 3:
         ptParams = LHC18qrParam_50_90_pt;
         etaParams = LHC18qrParam_50_90_eta;
+        break;
+      default:
+        AliFatal("Invalid centrality for determine tracking efficiency.\n");
+    }
+    // Calculate the efficiency using the parameters.
+    double ptAxis = LHC18qrPtEfficiency(pT, ptParams);
+    double etaAxis = LHC18qrEtaEfficiency(eta, etaParams);
+    DetectionEff = ptAxis * etaAxis;
+  } else if (fCorrectEff == 3) { // LHC15oP2 Parameterization using Charles' code with simulation LHC20j6
+    const double* ptParams = nullptr;
+    const double* etaParams = nullptr;
+    switch (centBin) {
+      case 0:
+        ptParams = LHC15oP2Param_0_10_pt;
+        etaParams = LHC15oP2Param_0_10_eta;
+        break;
+      case 1:
+        ptParams = LHC15oP2Param_10_30_pt;
+        etaParams = LHC15oP2Param_10_30_eta;
+        break;
+      case 2:
+        ptParams = LHC15oP2Param_30_50_pt;
+        etaParams = LHC15oP2Param_30_50_eta;
+        break;
+      case 3:
+        ptParams = LHC15oP2Param_50_90_pt;
+        etaParams = LHC15oP2Param_50_90_eta;
         break;
       default:
         AliFatal("Invalid centrality for determine tracking efficiency.\n");
