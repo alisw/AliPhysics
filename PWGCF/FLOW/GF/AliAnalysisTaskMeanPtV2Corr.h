@@ -20,6 +20,9 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliVMultiplicity.h"
+#include "AliGFWFilter.h"
+#include "TRegexp.h"
+#include "TFile.h"
 
 
 class TList;
@@ -56,18 +59,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   Bool_t CheckTrigger(Double_t);
-  Bool_t AcceptAOD(AliAODEvent*, Double_t lvtxXYZ[3]);
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void SetEventCutFlag(Int_t newval) { fEventCutFlag = newval; };
-  void FillWeights(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void FillWeightsMC(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void SetupFlagsByIndex(Int_t); //Setting up event and track flags
+  void CovSkipMpt(AliGFWFlags *lFlags, AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
-  void LoadWeightAndMPT();
-  void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
   void FillWPCounter(Double_t[5], Double_t, Double_t);
   Bool_t LoadMyWeights(const Int_t &lRunNo = 0);
   Int_t GetBayesPIDIndex(AliVTrack*);
@@ -76,6 +74,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetV0MBins(Int_t nBins, Double_t *multibins);
+  void SetEtaEffBins(Int_t nBins, Double_t *etabins);
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; fEtaLow=-9999; };
   void SetEta(Double_t etaLow, Double_t etaHigh) { fEtaLow = etaLow; fEta = etaHigh; };
@@ -94,8 +93,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
   void SetWeightSubfix(TString newval) { fWeightSubfix=newval; }; //base (runno) + subfix (systflag), delimited by ;. First argument always base, unless is blank. In that case, w{RunNo} is used for base.
   void SetPseudoEfficiency(Double_t newval) {fPseudoEfficiency = newval; };
-  void SetNchCorrelationCut(Double_t l_slope=1, Double_t l_offset=0, Bool_t l_enable=kTRUE) { fCorrPar[0] = l_slope; fCorrPar[1] = l_offset; fUseCorrCuts = l_enable; };
-  Bool_t CheckNchCorrelation(const Int_t &lNchGen, const Int_t &lNchRec) { return (fCorrPar[0]*lNchGen + fCorrPar[1] < lNchRec); };
   void SetBypassTriggerAndEventCuts(Bool_t newval) { fBypassTriggerAndEvetCuts = newval; };
   void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000);
 }
@@ -107,6 +104,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t fStageSwitch;
   Int_t fSystFlag;
   Int_t fEventCutFlag; //0 for standard AliEventCuts; 1 for LHC15o pass2; 2 for LHC18qr pass3
+  Int_t fEvNomFlag; //GFWFilter implementation
+  Int_t fTrNomFlag; //GFWFilter implementation
   TString *fContSubfix;
   TString *fCentEst;
   Bool_t fExtendV0MAcceptance;
@@ -119,10 +118,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
   TAxis *fV0MMultiAxis;
+  TAxis *fEtaAxis; //Only relevant for efficiencies when running p-Pb
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
+  Double_t *fEtaBins; //!
+  Int_t fNEtaBins; //!
   Bool_t fUseNch;
   Bool_t fUseWeightsOne;
   Double_t fEta;
@@ -172,20 +174,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
+  Bool_t LoadWeights(const Int_t &runno);
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(AliProfileBS* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm);
-  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
-  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
-  Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
-  Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
-  Bool_t AcceptCustomEvent(AliAODEvent*);
-  Bool_t AcceptCustomEvent(AliESDEvent*);
-  void FillTPCITSClusters(AliVEvent*);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;
-  AliEffFDContainer *fEfFd;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };

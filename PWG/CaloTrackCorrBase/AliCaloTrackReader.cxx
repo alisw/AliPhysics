@@ -62,8 +62,9 @@ ClassImp(AliCaloTrackReader) ;
 //________________________________________
 AliCaloTrackReader::AliCaloTrackReader() :
 TObject(),                   fEventNumber(-1), //fCurrentFileName(""),
+fRunNumber(-1),              fYear(-1),
 fDataType(0),                fDebug(0),
-fFiducialCut(0x0),           fCheckFidCut(kFALSE),
+fFiducialCut(0x0),           fCheckFidCut(kFALSE), fMaskRun2HardcodedEMCalRegions(0),
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
 fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fComparePtHardAndPromptPhotonPt(0),fPtHardAndPromptPhotonPtFactor(0),
@@ -759,7 +760,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       {
         Int_t centMin = 0; // LHC11h
         Int_t centMax = 50;
-        if ( fInputEvent->GetRunNumber() > 295274 ) 
+        if ( fRunNumber > 295274 )
         {
           centMin = 30; // LHC18qr
         }
@@ -798,7 +799,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if  ( fEventTrigEMCALL1Gamma2 || fEventTrigEMCALL1Gamma2CaloOnly || 
             fEventTrigDCALL1Gamma2  || fEventTrigDCALL1Gamma2CaloOnly    )
       {
-        if ( centrality < 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G2"))
+        if ( centrality < 50 && fRunNumber > 295274 && fFiredTriggerClassName.Contains("G2"))
         {
           //printf("%s\n",GetFiredTriggerClasses().Data());
           AliDebug(1,Form("Skip L1-G2 event with centrality %2.1f",centrality));
@@ -809,7 +810,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if ( (fEventTrigEMCALL1Gamma1 || fEventTrigEMCALL1Gamma1CaloOnly || 
             fEventTrigDCALL1Gamma1  || fEventTrigDCALL1Gamma1CaloOnly)   )
       {
-        if ( centrality > 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G1") )
+        if ( centrality > 50 && fRunNumber > 295274 && fFiredTriggerClassName.Contains("G1") )
         {
           //printf("%s\n",GetFiredTriggerClasses().Data());
           AliDebug(1,Form("Skip L1-G1 event with centrality %2.1f",centrality));
@@ -992,12 +993,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
 
   //-------------------------------------------------------------------------------------
   // Reject event if large clusters with large energy
-  // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
-  // If clusterzer NxN or V2 it does not help
   //-------------------------------------------------------------------------------------
-  
-  //Int_t run = fInputEvent->GetRunNumber();
-  
+
   if ( fRemoveLEDEvents )
   {
     Bool_t reject = RejectLEDEvents();
@@ -1253,12 +1250,12 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
 
   TString evtCutLabels[] = {"Input","Event Type","Mixing Event","Trigger string","Trigger Bit","L1 no L2","Good EMC Trigger",
     "!Fast Cluster","!LED","Time stamp","Primary vertex","Null 3 vertex","Z vertex window","Pile-up",
-    "V0AND","Centrality","GenHeader","PtHard-Jet","PtHard-Gam","N Track>0","TOF BC","AliEventCuts"};
+    "V0AND","Centrality","EventPlane","GenHeader","PtHard-Jet","PtHard-Gam","N Track>0","TOF BC","AliEventCuts"};
   if ( !fHistoCentDependent )
   {
-    fhNEventsAfterCut = new TH1F("hNEventsAfterCut", "Number of analyzed events", 22, 0, 22) ;
+    fhNEventsAfterCut = new TH1F("hNEventsAfterCut", "Number of analyzed events", 23, 0, 23) ;
     fhNEventsAfterCut->SetYTitle("# events");
-    for(Int_t icut = 1; icut <= 22; icut++ )
+    for(Int_t icut = 1; icut <= 23; icut++ )
       fhNEventsAfterCut->GetXaxis()->SetBinLabel(icut ,Form("%d=%s",icut,evtCutLabels[icut-1].Data()));
     fOutputContainer->Add(fhNEventsAfterCut);
 
@@ -1289,10 +1286,10 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   }
   else
   {
-    fhNEventsAfterCutCen = new TH2F("hNEventsAfterCutCen", "Number of analyzed events", 22, 0, 22, 50, 0, 100) ;
+    fhNEventsAfterCutCen = new TH2F("hNEventsAfterCutCen", "Number of analyzed events", 23, 0, 23, 50, 0, 100) ;
     fhNEventsAfterCutCen->SetZTitle("# events");
     fhNEventsAfterCutCen->SetYTitle("Centrality (%)");
-    for(Int_t icut = 1; icut <= 22; icut++ )
+    for(Int_t icut = 1; icut <= 23; icut++ )
       fhNEventsAfterCutCen->GetXaxis()->SetBinLabel(icut ,Form("%d=%s",icut,evtCutLabels[icut-1].Data()));
     fOutputContainer->Add(fhNEventsAfterCutCen);
 
@@ -1413,14 +1410,14 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     fOutputContainer->Add(fhEMCALClusterDisToBadE);
     
     fhEMCALClusterEtaPhi  = new TH2F 
-    ("hEMCALReaderEtaPhi","#eta vs #varphi",80,-2, 2,100, 0,10);
+    ("hEMCALReaderEtaPhi","#eta vs #varphi",70,-1, 1,220, 0,TMath::TwoPi());
     // Very open limits to check problems
     fhEMCALClusterEtaPhi->SetXTitle("#eta");
     fhEMCALClusterEtaPhi->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhi);    
     
     fhEMCALClusterEtaPhiFidCut  = new TH2F 
-    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",80,-2, 2,100, 0,10);
+    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",70,-1, 1,220,0,TMath::TwoPi());
     fhEMCALClusterEtaPhiFidCut->SetXTitle("#eta");
     fhEMCALClusterEtaPhiFidCut->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhiFidCut);
@@ -1690,7 +1687,7 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   parList+=onePar ;
   snprintf(onePar,buffersize,"EMC time cut single window (%2.2f,%2.2f); ",fEMCALTimeCutMin,fEMCALTimeCutMax) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Check: calo fid cut %d; ",fCheckFidCut) ;
+  snprintf(onePar,buffersize,"Check: calo fid cut %d, activate Run 2 EMCal mask %d; ",fCheckFidCut,fMaskRun2HardcodedEMCalRegions) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Track: status %d, SPD hit %d; ITS cluster >= %d; ITS chi2 > %2.1f; TPC cluster >= %d; TPC chi2 > %2.1f ",
            (Int_t) fTrackStatus,  fSelectSPDHitTracks,
@@ -2002,6 +1999,7 @@ void AliCaloTrackReader::InitParameters()
   fCentralityClass  = "V0M";
   fCentralityOpt    = 100;
   fCentralityBin[0] = fCentralityBin[1]=-1;
+  fEventPlaneBin[0] = fEventPlaneBin[1]=-1;
   
   fEventPlaneMethod = "V0";
   
@@ -2243,6 +2241,37 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     return kFALSE;
   }
 
+  // Check if run number changes
+  if ( fRunNumber != fInputEvent->GetRunNumber() )
+  {
+    AliInfo(Form("Change run from %d to %d", fRunNumber, fInputEvent->GetRunNumber()));
+
+    fRunNumber = fInputEvent->GetRunNumber();
+
+    // Assign year, only for Run 2.
+    //
+    // LHC15   pp: n 244340-244628; PbPb: o 244824-246994,
+    // LHC16   pp: i 255515-255650; j 256146-256420; k 256504-258574; l 258883-260187; o 262395-264035; p 264076-264347
+    // LHC16  pPb: q 265015-265525; r 265589-266318; s 266405-267131; t 267161-267166
+    // LHC17   pp: h 271839-273103; i 274442-274442; j 274591-274671; k 274690-276508; l 276551-278729; m 278818-280140; o 280282-281961; r 282504-282704
+    // LHC17   Xe: n 280234-280235; pp 5 TeV: p 282008-282343 ; q 282365-282441
+    // LHC18   pp: d 285978-286350; e 286380-286958; f 286982-287977; g 288619-288750; h 288804-288806; ij 288861-288943; k 289165-289201; l 289240-289971
+    //             m 290167-292839; n 293357-293362; o 293368-293898; p 294009-295232;
+    // LHC18 PbPb: q 295274-296623 ; r 296690-297624
+
+    // Adding this run to a period. It will unlikely change during the analsis
+    // but do it once per change of run.
+    if      ( fRunNumber >=  220139 &&  fRunNumber <= 246994 ) fYear = 15;
+    else if ( fRunNumber >=  249954 &&  fRunNumber <= 267166 ) fYear = 16;
+    else if ( fRunNumber >=  270531 &&  fRunNumber <= 282704 ) fYear = 17;
+    else if ( fRunNumber >=  284706 &&  fRunNumber <= 297624 ) fYear = 18;
+    else
+    {
+      fYear = -1;
+      AliWarning(Form("Run number %d out of expected ranges, year not set", fRunNumber));
+    }
+  }
+
   if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(0.5);
   else                        fhNEventsAfterCutCen->Fill(0.5,cen);
   
@@ -2396,6 +2425,25 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   }
 
   //----------------------------------------------------------------
+  //Check if there is an event plane angle value, PbPb analysis,
+  // and if an event plane angle bin selection is requested
+  //----------------------------------------------------------------
+  
+  Float_t ep =  GetEventPlaneAngle();
+  if ( fEventPlaneBin[0] >= 0 && fEventPlaneBin[1] >= 0 )
+  {
+    AliDebug(1,Form("Angle %f in [%f,%f]?", ep, fEventPlaneBin[0], fEventPlaneBin[1]));
+
+    if ( ep >= fEventPlaneBin[0] || ep <  fEventPlaneBin[1]   )  return kFALSE; //reject events out of bin.
+    
+    AliDebug(1,"Pass event plane angle rejection");
+    
+    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(16.5);
+    else                        fhNEventsAfterCutCen->Fill(16.5,cen);
+  }
+
+
+  //----------------------------------------------------------------
   // MC events selections
   //----------------------------------------------------------------
   if ( GetMC() )
@@ -2428,8 +2476,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       
       AliDebug(1,"Pass Event header selection");
       
-      if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(16.5);
-      else                        fhNEventsAfterCutCen->Fill(16.5,cen);
+      if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(17.5);
+      else                        fhNEventsAfterCutCen->Fill(17.5,cen);
     }
     
     // Pythia header
@@ -2467,8 +2515,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
         
         AliDebug(1,"Pass Pt Hard - Jet rejection");
         
-        if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(17.5);
-        else                        fhNEventsAfterCutCen->Fill(17.5,cen);
+        if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(18.5);
+        else                        fhNEventsAfterCutCen->Fill(18.5,cen);
       }
       
       if ( fComparePtHardAndClusterPt )
@@ -2479,8 +2527,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
         
         if ( !fComparePtHardAndPromptPhotonPt ) // avoid double counting in next filling
         {
-          if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(18.5);
-          else                        fhNEventsAfterCutCen->Fill(18.5,cen);
+          if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(19.5);
+          else                        fhNEventsAfterCutCen->Fill(19.5,cen);
         }
       }
 
@@ -2490,8 +2538,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
 
         AliDebug(1,"Pass Pt Hard - Prompt photon rejection");
 
-        if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(18.5);
-        else                        fhNEventsAfterCutCen->Fill(18.5,cen);
+        if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(19.5);
+        else                        fhNEventsAfterCutCen->Fill(19.5,cen);
       }
 
     } // pythia header
@@ -2530,8 +2578,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass rejection of null track events");
 
-    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(19.5);
-    else                        fhNEventsAfterCutCen->Fill(19.5,cen);
+    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(20.5);
+    else                        fhNEventsAfterCutCen->Fill(20.5,cen);
   }
   
   if ( fDoVertexBCEventSelection )
@@ -2541,8 +2589,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass rejection of events with vertex at BC!=0");
     
-    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(20.5);
-    else                        fhNEventsAfterCutCen->Fill(20.5,cen);
+    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(21.5);
+    else                        fhNEventsAfterCutCen->Fill(21.5,cen);
   }
   
   //-----------------------------------
@@ -2556,8 +2604,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass AliEventCuts!");
     
-    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(21.5);
-    else                        fhNEventsAfterCutCen->Fill(21.5,cen);
+    if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(22.5);
+    else                        fhNEventsAfterCutCen->Fill(22.5,cen);
   }
   
   if ( fCalculateSpherocity && fFillCTS )
@@ -3301,7 +3349,10 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   energyOrMom = clus->E();
   if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
   
-  fhEMCALClusterEtaPhi->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+  Float_t etaCls = fMomentum.Eta();
+  Float_t phiCls = GetPhi(fMomentum.Phi());
+
+  fhEMCALClusterEtaPhi->Fill(etaCls,phiCls);
   
   // Check effect linearity correction, energy smearing
   if ( fScaleEPerSM ||  fCorrectELinearity )
@@ -3339,8 +3390,8 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   Bool_t bDCAL  = kFALSE;
   if ( fCheckFidCut )
   {
-    if ( fFillEMCAL && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL) ) bEMCAL = kTRUE ;
-    if ( fFillDCAL  && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kDCAL ) ) bDCAL  = kTRUE ;
+    if ( fFillEMCAL && fFiducialCut->IsInFiducialCut(etaCls, phiCls, kEMCAL) ) bEMCAL = kTRUE ;
+    if ( fFillDCAL  && fFiducialCut->IsInFiducialCut(etaCls, phiCls, kDCAL ) ) bDCAL  = kTRUE ;
   }
   else
   {
@@ -3353,7 +3404,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   if ( GetCaloUtils()->GetNMaskCellColumns() )
   {
     AliDebug(2,Form("Masked collumn: cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
-                    fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+                    fMomentum.E(),fMomentum.Pt(),RadToDeg(phiCls),etaCls));
     
     if ( GetCaloUtils()->MaskFrameCluster(iSupMod, ietaMax) )
     {
@@ -3362,6 +3413,68 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     }
   }
   
+  // Apply hard mask for  Run 2
+  if ( fMaskRun2HardcodedEMCalRegions )
+  {
+    //Int_t runNumber = fInputEvent->GetRunNumber();
+    // fYear set at start of FillInputEvent()
+    if ( fYear == 15 )
+    {
+      // Skip DCal 1/3 SM (not calibrated in 18)
+      if ( iSupMod > 17 ) return;
+    }
+    else if ( fYear == 16 )
+    {
+      // Skip DCal 1/3 SM
+      if ( iSupMod > 17 ) return;
+      // Remove DCal for pp periods
+      if ( iSupMod > 11 && fRunNumber < 265015 ) return;
+
+      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
+      if ( iSupMod == 1 && etaCls <-0.55                  && phiCls > 1.396 && phiCls < 1.513 ) return;
+      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod == 7 && etaCls >-0.28 && etaCls <-0.22 && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod ==10 && etaCls > 0.05 && etaCls < 0.10 ) return;
+      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
+      if ( iSupMod ==11 && etaCls >-0.05 && etaCls < 0.00 ) return;
+      if ( iSupMod ==13 && etaCls >-0.45 && etaCls <-0.30 && phiCls > 4.654 ) return;
+    }
+    else if ( fYear == 17 )
+    {
+      if ( iSupMod == 15 || iSupMod == 17 ) return;
+
+      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
+      if ( iSupMod == 2 && etaCls > 0.44                  && fRunNumber <  258883 ) return; // LHC17hilk
+      if ( iSupMod == 4 && etaCls > 0.22 && etaCls < 0.44 && fRunNumber >= 258883 ) return; // from LHC17l
+      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod ==10 && etaCls > 0.05 && etaCls < 0.10 ) return;
+      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
+      if ( iSupMod ==18 && etaCls > 0.00 && etaCls < 0.05 ) return;
+      if ( iSupMod ==18 && etaCls > 0.45 && etaCls < 0.55 ) return;
+      if ( iSupMod ==19 && etaCls >-0.05 && etaCls < 0.00 ) return;
+    }
+    else if ( fYear == 18 )
+    {
+      if ( iSupMod == 15 || iSupMod == 17 ) return;
+
+      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
+      if ( iSupMod == 1 && etaCls >-0.20 && etaCls <-0.15 && phiCls > 1.513 && phiCls < 1.629 ) return;
+      if ( iSupMod == 4 && etaCls > 0.22 && etaCls < 0.44 ) return; // from LHC17l
+      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
+      if ( iSupMod ==10 && etaCls > 0.00 && etaCls < 0.10 ) return;
+      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
+      if ( iSupMod ==10 && etaCls > 0.30 && etaCls < 0.35 ) return;
+      if ( iSupMod ==11 && etaCls >-0.10 && etaCls <-0.05 ) return;
+      if ( iSupMod ==12 && etaCls > 0.35 && etaCls < 0.45 && phiCls > 4.537 && phiCls < 4.654 ) return;
+      if ( iSupMod ==18 && etaCls > 0.00 && etaCls < 0.05 ) return;
+      if ( iSupMod ==18 && etaCls > 0.45 && etaCls < 0.55 ) return;
+      if ( iSupMod ==19 && etaCls >-0.05 && etaCls < 0.00 ) return;
+    }
+  }
+
   // Check effect of energy and fiducial cuts  
   if ( bEMCAL || bDCAL ) 
   {
@@ -3374,7 +3487,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
       else                        fhEMCALClusterCutsECenSignal[4]->Fill(energyOrMom,cen);
     }
     
-    fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+    fhEMCALClusterEtaPhiFidCut->Fill(etaCls,phiCls);
   }
   else 
   {
@@ -3462,7 +3575,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     if ( fUseEMCALTimeCut ) 
     {
       AliDebug(2,Form("Out of time window E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, time %e",
-                      fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(),tof));
+                      fMomentum.E(),fMomentum.Pt(),RadToDeg(phiCls),etaCls,tof));
       
       return ;
     }
@@ -3549,7 +3662,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   
   //if((fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10)
   AliDebug(2,Form("Selected clusters (EMCAL%d, DCAL%d), E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
-                  bEMCAL,bDCAL,fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+                  bEMCAL,bDCAL,fMomentum.E(),fMomentum.Pt(),RadToDeg(phiCls),etaCls));
 
   
   if      ( bEMCAL ) fEMCALClusters->Add(clus);
@@ -4446,16 +4559,16 @@ void AliCaloTrackReader::SetEMCALTriggerThresholds()
   if( IsEventEMCALL0() && fTriggerL0EventThreshold < 0)
   { 
     // Revise for periods > LHC11d 
-    Int_t runNumber = fInputEvent->GetRunNumber();
-    if     (runNumber < 146861) fTriggerL0EventThreshold = 3. ;  // LHC11a
-    else if(runNumber < 154000) fTriggerL0EventThreshold = 4. ;  // LHC11b,c
-    else if(runNumber < 165000) fTriggerL0EventThreshold = 5.5;  // LHC11c,d,e
-    else if(runNumber < 194000) fTriggerL0EventThreshold = 2  ;  // LHC12
-    else if(runNumber < 197400) fTriggerL0EventThreshold = 3  ;  // LHC13def 
-    else if(runNumber < 197400) fTriggerL0EventThreshold = 2  ;  // LHC13g 
-    else if(runNumber < 244300) fTriggerL0EventThreshold = 5  ;  // LHC15 in, phys 1, 5 in phys2 
-    else if(runNumber < 266400) fTriggerL0EventThreshold = 2.5;  // LHC16ir 
-    else                        fTriggerL0EventThreshold = 3.5;  // LHC16s 
+    //Int_t runNumber = fInputEvent->GetRunNumber();
+    if     (fRunNumber < 146861) fTriggerL0EventThreshold = 3. ;  // LHC11a
+    else if(fRunNumber < 154000) fTriggerL0EventThreshold = 4. ;  // LHC11b,c
+    else if(fRunNumber < 165000) fTriggerL0EventThreshold = 5.5;  // LHC11c,d,e
+    else if(fRunNumber < 194000) fTriggerL0EventThreshold = 2  ;  // LHC12
+    else if(fRunNumber < 197400) fTriggerL0EventThreshold = 3  ;  // LHC13def
+    else if(fRunNumber < 197400) fTriggerL0EventThreshold = 2  ;  // LHC13g
+    else if(fRunNumber < 244300) fTriggerL0EventThreshold = 5  ;  // LHC15 in, phys 1, 5 in phys2
+    else if(fRunNumber < 266400) fTriggerL0EventThreshold = 2.5;  // LHC16ir
+    else                         fTriggerL0EventThreshold = 3.5;  // LHC16s
   }  
 }
 
@@ -5051,9 +5164,9 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
         if ( GetFiredTriggerClasses().Contains("DJ2") ) fEventTrigDCALL1Jet2CaloOnly = kTRUE;
       }
       
-      Int_t runNumber = fInputEvent->GetRunNumber();
+      //Int_t runNumber = fInputEvent->GetRunNumber();
       
-      if ( runNumber >= 295584 )
+      if ( fRunNumber >= 295584 )
       {
         if ( GetFiredTriggerClasses().Contains("CDMC7PER") )
         {

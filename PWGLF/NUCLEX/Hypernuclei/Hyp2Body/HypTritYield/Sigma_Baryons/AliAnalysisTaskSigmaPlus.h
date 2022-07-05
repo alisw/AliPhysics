@@ -123,6 +123,9 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              primaryVtxPosX;             //Position of the primary Vertex of the Event
         Double_t              primaryVtxPosY;             //Position of the primary Vertex of the Event
         Double_t              primaryVtxPosZ;             //Position of the primary Vertex of the Event
+        Double_t              primaryVtxPosXMC;           //Position of the MC primary Vertex of the Event
+        Double_t              primaryVtxPosYMC;           //Position of the MC primary Vertex of the Event
+        Double_t              primaryVtxPosZMC;           //Position of the MC primary Vertex of the Event
         Int_t                 nTracks;                    //Number of Tracks in the Event
 
         Double_t              Centrality;                 //Centrality of the Event
@@ -167,32 +170,32 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMaxZBin = 10;
 
         //FillProtonArray Cuts
-        Double_t              fMaxProtEta = 0.9;    
-        Double_t              fMinTPCClustProt = 60;
-        Double_t              fMaxNsigProtTPC = 3.5;
+        Double_t              fMaxProtEta = 1.1;                 // 0.9  
+        Double_t              fMinTPCClustProt = 40;             // 60
+        Double_t              fMaxNsigProtTPC = 4;               // 3
         Bool_t                fRequireProtonTPC = kTRUE;  
         Bool_t                fRequireProtonTOF = kFALSE;  
         Bool_t                fRequireProtonTOFforPairs = kTRUE;  
-        Double_t              fMaxNsigProtTOF = 5;  
-        Double_t              fMaxpOnlyTPCPID = 0.8;
-        Double_t              fMinProtpt = 0; 
-        Double_t              fMaxProtpt = 15;  
+        Double_t              fMaxNsigProtTOF = 6;                // 5
+        Double_t              fMaxpOnlyTPCPID = 0.9;              // - 
+        Double_t              fMinProtpt = 0;                     // -
+        Double_t              fMaxProtpt = 15;                    // - 
 
         //ProcessMCParticles Cuts
-        Double_t              fMaxMCEta = 0.9;    
+        Double_t              fMaxMCEta = 0.9;                    // 0.9
 
         //FillV0PhotonArray Cuts
-        Double_t              fMaxDaughtEta = 0.9;    
-        Double_t              fMinTPCClustDaught = 30;
-        Double_t              fMaxNsigDaughtTPC = 5;
-        Double_t              fMaxalpha = 1;
-        Double_t              fMaxqt = 0.05;
-        Double_t              fMaxopenangle = 0.3;
-        Double_t              fMaxdeltatheta = 0.1;
-        Double_t              fMinV0CPA = 0.8;
-        Double_t              fMinV0Radius = 3; 
-        Double_t              fMaxV0Radius = 220;
-        Double_t              fMaxphotonmass = 0.1;
+        Double_t              fMaxDaughtEta = 1.5;                // 0.9    
+        Double_t              fMinTPCClustDaught = 20;            // 30
+        Double_t              fMaxNsigDaughtTPC = 6;              // 5
+        Double_t              fMaxalpha = 1.1;                    // 0.9
+        Double_t              fMaxqt = 0.06;                      // 0.03
+        Double_t              fMaxopenangle = 0.5;                // 0.3
+        Double_t              fMaxdeltatheta = 0.2;               // 0.1
+        Double_t              fMinV0CPA = 0.8;                    // 0.8
+        Double_t              fMinV0Radius = 1;                   // 3
+        Double_t              fMaxV0Radius = 250;                 // 220
+        Double_t              fMaxphotonmass = 0.2;               // 0.06
 
         //FindAddPhotons Cuts. CAUTION: Uses same Cuts for Daughters as used for V0s 
         Double_t              fMinDCADaughtPV = 0.1;
@@ -208,14 +211,15 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //Fill Sigma Tree Cuts     (Coarse Cuts to reduce Tree Size)
         Bool_t                fCleanAutoCorr = kTRUE;
-        Double_t              fMinPi0Mass = 0.06;    
-        Double_t              fMaxPi0Mass = 0.19;    
-        Double_t              fMaxSigmaPA = 0.1;     
+        Double_t              fMinPi0Mass = 0.06;                   // 0.1
+        Double_t              fMaxPi0Mass = 0.19;                   // 0.16
+        Double_t              fMaxSigmaPA = 0.06;                   // 0.04
         Double_t              fMaxSigmaMass = 1.4;    
-        Double_t              fMinProtonDCAxy = 0.005;    
+        Double_t              fMinProtonDCAxy = 0.005;              // 0.01
         Double_t              fMinProtonDCAz = -1; //Dummy Value
-        Double_t              fMaxProtonDCAxy = 5;    
+        Double_t              fMaxProtonDCAxy = 5;                  // 2
         Double_t              fMaxProtonDCAz = 9999; //Dummy Value
+        Bool_t                fRequireDCACut = kFALSE;
         Double_t              flowkstar = 0.3;    
         Double_t              fverylowkstar = 0.15;    
         Double_t              fveryverylowkstar = 0.05;        
@@ -315,6 +319,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetProtonMinDCAz(Double_t minprotondcaz) {fMinProtonDCAz = minprotondcaz;}
         void SetProtonMaxDCAxy(Double_t maxprotondcaxy) {fMaxProtonDCAxy = maxprotondcaxy;}
         void SetProtonMaxDCAz(Double_t maxprotondcaz) {fMaxProtonDCAz = maxprotondcaz;}
+        void SetRequireDCA(Bool_t requiredca) {fRequireDCACut = requiredca;}
         void SetLowkstar(Double_t lowkstar) {flowkstar = lowkstar;}
         void SetVeryLowkstar(Double_t verylowkstar) {fverylowkstar = verylowkstar;}
         void SetVeryVeryLowkstar(Double_t veryverylowkstar) {fveryverylowkstar = veryverylowkstar;}
@@ -359,6 +364,9 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fPrimVertX;        
         Float_t               fPrimVertY;        
         Float_t               fPrimVertZ;        
+        Float_t               fPrimVertXMC;        
+        Float_t               fPrimVertYMC;        
+        Float_t               fPrimVertZMC;        
         Float_t               fSigDecayVertX;        
         Float_t               fSigDecayVertY;        
         Float_t               fSigDecayVertZ;        
@@ -368,11 +376,22 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fSigPxMC;        
         Float_t               fSigPyMC;        
         Float_t               fSigPzMC;        
+        Float_t               fPhoton1Px;        
+        Float_t               fPhoton1Py;        
+        Float_t               fPhoton1Pz;        
+        Float_t               fPhoton2Px;        
+        Float_t               fPhoton2Py;        
+        Float_t               fPhoton2Pz;        
+        Float_t               fPhotonDaughtMaxEta;        
+        Float_t               fPhotonsMaxDeltaTheta;        
+        Float_t               fPhoton1CPA;        
+        Float_t               fPhoton2CPA;        
         Float_t               fPhoton1Radius;        
         Float_t               fPhoton2Radius;        
         Float_t               fPhoton1DCAPV;        
         Float_t               fPhoton2DCAPV;
         Float_t               fPhotonsMinCluster;
+        Float_t               fPhotonsMinITSCluster;
         Float_t               fPhotonsMaxalpha;
         Float_t               fPhotonsMaxqt;
         Float_t               fPhotonsMaxOpenAngle;
@@ -390,6 +409,9 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fProtonPx;        
         Float_t               fProtonPy;        
         Float_t               fProtonPz;        
+        Float_t               fProtonPxatDCA;        
+        Float_t               fProtonPyatDCA;        
+        Float_t               fProtonPzatDCA;        
         Float_t               fProtonpropPx;        
         Float_t               fProtonpropPy;        
         Float_t               fProtonpropPz;        
@@ -399,6 +421,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fProtonNSigTPC;
         Float_t               fProtonNSigTOF;
         Int_t                 fProtonNCluster;  
+        Int_t                 fProtonNITSCluster;  
         Float_t               fProtonChi2;  
         Float_t               fProtonNSigTPCPion;
         Float_t               fProtonNSigTPCKaon;
@@ -429,6 +452,9 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fPairProtonPx;        
         Float_t               fPairProtonPy;        
         Float_t               fPairProtonPz;        
+        Float_t               fPairProtonPxatDCA;        
+        Float_t               fPairProtonPyatDCA;        
+        Float_t               fPairProtonPzatDCA;        
         Float_t               fPairProtonCharge;        
         Float_t               fPairProtonDCAtoPVxy;
         Float_t               fPairProtonDCAtoPVz;        
@@ -442,6 +468,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fPairProtNSigTOFElec;
         Float_t               fPairProtonChi2;
         Int_t                 fPairProtonCluster;
+        Int_t                 fPairProtonITSCluster;
         Int_t                 fPairProtonID;
         ULong64_t             fPairProtonStatus;
         //End of Extra Branches of "fSigmaPairTree"
@@ -479,10 +506,12 @@ class AliAODTrackreduced : public TObject
             if(!aodTrack) {std::cout << "WARNING: Input source 'AOD Track' does not exit!\n"; return;}            
             aodTrack->GetXYZ(x);
             aodTrack->GetPxPyPz(p);
+            aodTrack->PxPyPzAtDCA(pAtDCA);
             aodTrack->GetCovarianceXYZPxPyPz(covMatrix);
             aodTrack->GetImpactParameters(dcaxy,dcaz);
             charge = aodTrack->Charge();
             tpcncls = aodTrack->GetTPCNcls();
+            itsncls = aodTrack->GetITSNcls();
             id = aodTrack->GetID();
             status = aodTrack->GetStatus();
             tpcchi2 = aodTrack->GetTPCchi2();
@@ -502,15 +531,19 @@ class AliAODTrackreduced : public TObject
         Double_t Px() const { return p[0]; } 
         Double_t Py() const { return p[1]; } 
         Double_t Pz() const { return p[2]; } 
+        Double_t PxAtDCA() const { return pAtDCA[0]; } 
+        Double_t PyAtDCA() const { return pAtDCA[1]; } 
+        Double_t PzAtDCA() const { return pAtDCA[2]; } 
         Short_t Charge() const { return charge; } 
         Int_t GetTPCNcls() const { return tpcncls; } 
+        Int_t GetITSNcls() const { return itsncls; } 
         Int_t GetID() const { return id; } 
         ULong64_t GetStatus() const { return status; } 
         Double_t GetTPCchi2() const { return tpcchi2; } 
 
         void GetXYZ(Double_t xx[3]) const { for(Int_t i=0; i<3; i++){xx[i]=x[i];} return; }
         void GetPxPyPz(Double_t pp[3]) const { for(Int_t i=0; i<3; i++){pp[i]=p[i];} return; }
-        void GetCovarianceXYZPxPyPz(Double_t cv[21]) const { for(Int_t i=0; i<21; i++){cv[i]=covMatrix[i];} return;                  }
+        void GetCovarianceXYZPxPyPz(Double_t cv[21]) const { for(Int_t i=0; i<21; i++){cv[i]=covMatrix[i];} return; }
         void GetImpactParameters(Float_t &xy, Float_t &z) const { xy = dcaxy; z = dcaz; return; }
 
         Float_t NumberOfSigmasTPCProton() const { return nsigmatpcproton; }
@@ -524,10 +557,12 @@ class AliAODTrackreduced : public TObject
 
     protected:
         Double_t  p[3];
+        Double_t  pAtDCA[3];
         Double_t  x[3];
         Double_t  covMatrix[21];
         Short_t   charge;
         Int_t     tpcncls;
+        Int_t     itsncls;
         Int_t     id;
         ULong64_t status;
         Double_t  tpcchi2;

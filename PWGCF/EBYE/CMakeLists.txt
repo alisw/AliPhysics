@@ -79,6 +79,7 @@ set(SRCS
   Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
+  MeanPtFluctuations_PbPb5020GeV2018/AliAnalysisMeanPtdata.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeMCPbPbESD.cxx
@@ -131,6 +132,8 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx
   HMPTF/AliAnalysisTaskMeanptFluctuationPP.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityMC.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity2.cxx
+  IntermittencyAnalysis/AliAnalysisTaskNFMs.cxx
   )
 
 # Headers from sources

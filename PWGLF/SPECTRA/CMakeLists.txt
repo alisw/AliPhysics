@@ -60,6 +60,8 @@ set(SRCS
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraMC.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskGenRT.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
+  PiKaPr/TPCTOF/AliAnalysisTaskAntiProtons_vs_Rapidity_Data.cxx
+  PiKaPr/TPCTOF/AliAnalysisTaskAntiProtons_vs_Rapidity_Simu.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDParticle.cxx

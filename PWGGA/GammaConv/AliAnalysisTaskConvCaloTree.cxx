@@ -97,6 +97,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fVTrueClusterMCTrueEnergy(),
   fVTrueClusterMCTrueEnergy2(),
   fVTrueClusterMCIsMerged(),
+  fVTrueClusterConvRadius(),
   fVBuffer_Conv_px(),
   fVBuffer_Conv_py(),
   fVBuffer_Conv_pz(),
@@ -185,6 +186,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fVTrueClusterMCTrueEnergy(),
   fVTrueClusterMCTrueEnergy2(),
   fVTrueClusterMCIsMerged(),
+  fVTrueClusterConvRadius(),
   fVBuffer_Conv_px(),
   fVBuffer_Conv_py(),
   fVBuffer_Conv_pz(),
@@ -302,6 +304,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
       fPhotonTree->Branch("Cluster_MCTrueEnergy",   &fVTrueClusterMCTrueEnergy);
       fPhotonTree->Branch("Cluster_MCTrueEnergy2",  &fVTrueClusterMCTrueEnergy2);
       fPhotonTree->Branch("Cluster_MCTrueIsMerged", &fVTrueClusterMCIsMerged);
+      fPhotonTree->Branch("Cluster_MCTrueConvR",    &fVTrueClusterConvRadius);
     }
   }
   if(fSaveConversions)
@@ -548,6 +551,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
         fVTrueClusterMCTrueEnergy.push_back(0);
         fVTrueClusterMCTrueEnergy2.push_back(0);
         fVTrueClusterMCIsMerged.push_back(kFALSE);
+        fVTrueClusterConvRadius.push_back(0);
         delete clus;
         continue;
       }
@@ -588,6 +592,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
 
       Int_t gammaMCLabel          = PhotonCandidate->GetCaloPhotonMCLabel(0);   // get most probable MC label
       Int_t gammaMotherLabel      = -1;
+      Double_t convRadiusConvClus = 0;
 
       AliAODMCParticle * gammaMC = 0x0;
       if(gammaMCLabel != -1){
@@ -599,6 +604,8 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
             if (PhotonCandidate->IsConversion()){
               AliAODMCParticle * gammaGrandMotherMC =  static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gammaMC->GetMother()));
               gammaMotherLabel=gammaGrandMotherMC->GetMother();
+              // get the production vertex of the conversion electron
+              convRadiusConvClus = sqrt(gammaMC->Xv()*gammaMC->Xv() + gammaMC->Yv()*gammaMC->Yv());
             } else gammaMotherLabel=gammaMC->GetMother();
           }
         }
@@ -610,6 +617,9 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
       } else {
         fVTrueClusterMCIsMerged.push_back(kFALSE);
       }
+      // conv radius of conv cluster
+      fVTrueClusterConvRadius.push_back(static_cast<Short_t>(convRadiusConvClus));
+
       if(gammaMotherLabel > -1){
         if(((AliAODMCParticle*)fAODMCTrackArray->At(gammaMotherLabel))->GetPdgCode() == 111){
           fVTrueClusterPi0DaughterIndex.push_back(gammaMotherLabel);
@@ -954,6 +964,7 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVTrueClusterMCTrueEnergy.clear();
   fVTrueClusterMCTrueEnergy2.clear();
   fVTrueClusterMCIsMerged.clear();
+  fVTrueClusterConvRadius.clear();
 
   fVBuffer_Conv_px.clear();
   fVBuffer_Conv_py.clear();

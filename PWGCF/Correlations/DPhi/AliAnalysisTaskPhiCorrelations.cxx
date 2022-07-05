@@ -1520,8 +1520,6 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       // for pp
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
       centrality = tracks->GetEntriesFast();
-      if (centrality > 40)
-        centrality = 41;
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
       delete tracks;
     }

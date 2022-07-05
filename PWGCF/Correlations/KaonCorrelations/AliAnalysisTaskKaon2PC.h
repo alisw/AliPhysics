@@ -1,4 +1,4 @@
-#ifndef AliAnalysisTaskKaon2PC_H
+ #ifndef AliAnalysisTaskKaon2PC_H
 #define AliAnalysisTaskKaon2PC_H
 
 #include "AliAnalysisTaskSE.h"
@@ -98,6 +98,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Double_t        fCosPACut;
        Double_t        fSigPosv0Cut;
        Double_t        fSigNegv0Cut;
+
 
         AliAnalysisTaskKaon2PC(const AliAnalysisTaskKaon2PC&); // not implemented
         AliAnalysisTaskKaon2PC& operator=(const AliAnalysisTaskKaon2PC&); // not implemented

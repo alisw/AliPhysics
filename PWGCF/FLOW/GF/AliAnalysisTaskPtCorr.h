@@ -23,11 +23,22 @@ class AliVEvent;
 
 using namespace std;
 
+namespace PtCorrFlags {
+    enum {
+      noeff = 1,
+      consteff = 2,
+      gausseff = 4,
+      flateff = 8,
+      powereff = 16,
+      realeffin = 32
+    };
+}
+
 class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
 {
   public:
     AliAnalysisTaskPtCorr();
-    AliAnalysisTaskPtCorr(const char *name, bool IsMC, TString ContSubfix);
+    AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool isOnTheFly, unsigned int fl_eff, TString ContSubfix); //pseudoeff: 0 = no eff, 1 = subset of particles, 2 = gaussian distribution
     virtual ~AliAnalysisTaskPtCorr();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -41,19 +52,19 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); if(!fContSubfix->IsNull()) fContSubfix->Prepend("_"); };
     void SetMPar(int m) { mpar = m; }
     void OverrideMC(bool ismc) { fIsMC = ismc; }
-    void OnTheFly(bool otf) { fOnTheFly = otf; }
     void SetTrigger(unsigned int newval) {fTriggerType = newval; };
     void SetEta(double eta) { fEta = eta; }
     void SetEtaGap(double eta) { fEtaGap = eta; }
     void TurnOffPileup(bool off) { fPileupOff = off; }
     void SetPileupCut(double cut) { fPUcut = cut; }
     void SetEventWeight(unsigned int weight) { fEventWeight = weight; }
-    void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
     void SetUseRecNchForMc(bool userec) { fUseRecNchForMC = userec; }
     void SetUseNch(bool usench) { fUseNch = usench; }
     void SetEtaNch(double etanch) { fEtaNch = etanch; }
     void SetNBootstrap(double nboot) { fNbootstrap = nboot; }
-    void SetUsePowerEff(double useeff) { fUsePowerEff = useeff; }
+    void SetEffFlags(unsigned int fl) { eff_flags = fl; }
+    void UseTPCOnlyTracks(bool usetpc) { fUseTPConly = usetpc; };
+    void SetPseudoEffPars(double consteff = 0.8, double sigmaeff = 0.05) { fConstEff = consteff; fSigmaEff = sigmaeff; }
   protected:
     AliEventCuts            fEventCuts;
   private:
@@ -90,40 +101,41 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool                    fUseRecNchForMC;
     bool                    fPileupOff;
     bool                    fUseNch;
-    bool                    fUsePowerEff;
+    bool                    fUseTPConly;
+    unsigned int            eff_flags;
     int                     mpar;
+    double                  fConstEff;
+    double                  fSigmaEff;
     vector<vector<double>>  wp;
     vector<vector<double>>  wpP;
     vector<vector<double>>  wpN;
     unsigned int            fEventWeight;
     TH1D*                   fV0MMulti;    //!
-    TProfile*               pfmpt;      //!
-    AliPtContainer*         fck;      //!
-    AliPtContainer*         fskew;      //!
-    AliPtContainer*         fkur;      //!
-    AliPtContainer*         fp5;      //!
-    AliPtContainer*         fp6;      //!
+    AliPtContainer*         fpt;      //!
+    TH1D*                   fEventCount;
     TH2D*                   fNchTrueVsRec; //!
     TH2D*                   fV0MvsMult; //!
-    TH2D*                   fPtMoms;  //!
-    TH2D*                   fPtDist;  //!
+    TH3D*                   fPtMoms;  //!
+    TH1D*                   fPtDistB;  //!
+    TH1D*                   fPtDistA;  //!
+    TH1D*                   fPtDistC;  //!
     TH3D*                   fPtDCA; //!
+    TH2D*                   fPtVsNTrk; //!
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
     double                  fImpactParameter; 
     map<double,double>      centralitymap;
-    
-
+    int                     EventNo;
     bool AcceptAODTrack(AliAODTrack *tr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp);
     bool AcceptAODTrack(AliAODTrack *mtr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp, int &nTot);
     bool AcceptAODEvent(AliAODEvent *ev, double *vtxXYZ);
-    bool AcceptMCEvent(AliVEvent* inev);
+    AliMCEvent* getMCEvent();
     bool CheckTrigger(Double_t lCent);
     double getCentrality();
-    void FillPtCorr(AliAODEvent* ev, const double &l_Cent, double *vtxXYZ);
+    void FillPtCorr(AliAODEvent* fAOD, const double &l_Cent, double *vtxXYZ);
     void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
     void FillWPCounter(vector<vector<double>> &inarr, vector<double> w, double p);
-    int GetNTracks(AliAODEvent* ev, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
+    int GetNTracks(AliAODEvent* fAOD, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
     double *GetBinsFromAxis(TAxis *inax);
     
   ClassDef(AliAnalysisTaskPtCorr,1);

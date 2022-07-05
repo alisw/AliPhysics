@@ -88,6 +88,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Float_t TrackPx_T[2];
 	Float_t TrackPy_T[2];
 	Float_t TrackPz_T[2];
+	Short_t TrackQ_T[2];
 	Bool_t ChipCut_T;
 	Bool_t TriggerTOF_T;
 	Bool_t TriggerSPD_T;
@@ -159,7 +160,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	AliAnalysisTaskUpcRho0(const AliAnalysisTaskUpcRho0&); //not implemented
 	AliAnalysisTaskUpcRho0& operator =(const AliAnalysisTaskUpcRho0&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpcRho0, 8); 
+ 	ClassDef(AliAnalysisTaskUpcRho0, 9); 
 
 };
 

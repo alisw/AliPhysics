@@ -27,7 +27,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_sscheid_efficiencyV2(TString name =
     printf("file already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hscheid/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data()))) )
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hscheid/PWGDQ/dielectron/macrosLMEE/%s file:./",configFile.Data()))) )
   {
     configBasePath=Form("%s/",gSystem->pwd());
   }

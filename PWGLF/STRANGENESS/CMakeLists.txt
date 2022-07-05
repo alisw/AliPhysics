@@ -38,6 +38,15 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
   )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+# Additional includes for ROOT 6 only dependencies - alphabetical order except ROOT
+  include_directories(${AliPhysics_SOURCE_DIR}/ML
+                    ${TREELITE_ROOT}/include
+                    ${TREELITE_ROOT}/runtime/native/include
+                    ${YAML_CPP_SOURCE_DIR}/include
+    )
+endif()
+
 # Sources - alphabetical order
 set(SRCS
   Cascades/AliAnalysisTaskCheckCascade.cxx
@@ -92,15 +101,18 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictionsEE.cxx
+  Cascades/Run2/AliAnalysisTaskMCPredictionsStrgVsMultVsZDC.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
   Correlationpp/AliAnalysisCorrelationEventCollection.cxx
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCascDATA.cxx
+  Correlationpp/AliAnalysisTaskCorrelationhK0sXi_PureMCOnly.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_PileUpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_SelectionStudies.cxx
+  HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_RStudies.cxx
   Cascades/Run2/AliEventContainer.cxx
   Cascades/Run2/AliCascadeContainer.cxx
   Cascades/Run2/AliV0Container.cxx

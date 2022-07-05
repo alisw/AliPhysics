@@ -795,12 +795,12 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQATrackCandidates()
         }
     }
 
-const Int_t nPtBinsV0Xi = 7;
-const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25}; 
+const Int_t nPtBinsV0Xi = 1;
+const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
 
-const Int_t nPtBins = 8;
-const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+const Int_t nPtBins = 6;
+const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
 
 
 
@@ -1136,14 +1136,12 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisK0s()
         }
     }
 
- 
-  const Int_t nPtBinsV0Xi = 7;
-const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25}; 
+const Int_t nPtBinsV0Xi = 1;
+const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
 
-const Int_t nPtBins = 8;
-const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
-
+const Int_t nPtBins = 6;
+const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
 
 
 
@@ -1341,13 +1339,12 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisLambda()
         }
     }
 
- const Int_t nPtBinsV0Xi = 7;
-const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25}; 
+const Int_t nPtBinsV0Xi = 1;
+const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
 
-const Int_t nPtBins = 8;
-const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
-
+const Int_t nPtBins = 6;
+const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
 
 
 
@@ -1552,12 +1549,12 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisAntiLambda()
         }
     }
 
- const Int_t nPtBinsV0Xi = 7;
-const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25}; 
+const Int_t nPtBinsV0Xi = 1;
+const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
 
-const Int_t nPtBins = 8;
-const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+const Int_t nPtBins = 6;
+const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
 
 
 

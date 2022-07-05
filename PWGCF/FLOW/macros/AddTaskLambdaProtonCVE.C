@@ -94,7 +94,8 @@ AliAnalysisTaskLambdaProtonCVE* AddTaskLambdaProtonCVE(
 
   if (doNUA) {
     if (period.EqualTo("LHC10h")) {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC10h/10hNUAFB768.root","READ");
+      if(filterBit == 1)   fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC10h/10hNUAFB1.root","READ");
+      if(filterBit == 768) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC10h/10hNUAFB768.root","READ");
       fListNUA = dynamic_cast <TList*> (fNUAFile->Get("10hListNUA"));
     }
     if (period.EqualTo("LHC15o")) {

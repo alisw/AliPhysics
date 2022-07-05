@@ -73,7 +73,8 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_info;         //! // General information about the run.
         AliJTH1D fh_centrality;   //! // centrality histogram
         AliJTH1D fh_zvtx;         //! // z-vertex histogram
-        AliJTH1D fh_nch;         //! // Number of charged tracks
+        AliJTH1D fh_nch;          //! // Number of charged tracks
+        AliJTH1D fh_hisWeight;    //! // Histogram weights
 
         AliJTH1D fh_pt;     //! // for pt dist of tracks
         AliJTH1D fh_ptPosEta; //! // for pt dist of tracks with positive eta

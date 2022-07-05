@@ -59,12 +59,11 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
   task->SetDebugLevel(1);
   task->SetReconstructPrimVert(reconstructPrimVert);
   
-  //mgr->AddTask(task);
-  
-  task->UseTrig_kINT7();
+  //mgr->AddTask(task);  
+  task->UseTrig_kINT7();	//jcho
   if (HMTrigOn){
 	task->UseTrig_kHMV0();	//jcho, HM Trigger
-	//task->UseTrig_kHMSPD();  //jcho, HM Trigger
+	task->UseTrig_kHMSPD();  //jcho, HM Trigger
 	}
 
   // Create and connect containers for input/output  
@@ -92,7 +91,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
    AliAnalysisDataContainer *coutputXic4 = mgr->CreateContainer(Form("XicPlus2XiPiPiNorm%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // normalization counter
   mgr->ConnectOutput(task,4,coutputXic4);
 
-  // For HM analysis -------not used for now 
+  // For HM analysis -------jcho
   AliAnalysisDataContainer *coutputXic5 = mgr->CreateContainer(Form("MB_0to100%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); 
   mgr->ConnectOutput(task,5,coutputXic5);
   AliAnalysisDataContainer *coutputXic6 = mgr->CreateContainer(Form("MB_0point1to30%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); 
@@ -101,6 +100,12 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
   mgr->ConnectOutput(task,7,coutputXic7);
   AliAnalysisDataContainer *coutputXic8 = mgr->CreateContainer(Form("HMV0_0to0point1%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(task,8,coutputXic8); 
+
+  AliAnalysisDataContainer *coutputXic9 = mgr->CreateContainer(Form("XicPlusEventvariables%s",outputFileName.Data()),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());	//jcho, Event variables tree
+  mgr->ConnectOutput(task,9,coutputXic9);
+
+  AliAnalysisDataContainer *coutputXic10 = mgr->CreateContainer(Form("HMV0_0to100%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(task,10,coutputXic10);
 
   return task;
 

@@ -132,207 +132,207 @@ if (!isMC) {
   AntiTrackCuts->SetMinimalBooking(suffix != "0");
 }
 
-  if (suffix == "1") {
-    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-    TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
-    AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
-  } else if (suffix == "2") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  // if (suffix == "1") {
+  //   TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+  //   TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  //   AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  // } else if (suffix == "2") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-  } else if (suffix == "3") {
-    TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
-    AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
-    TrackCuts->SetNClsTPC(buddyNClsUp);
-    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
-  } else if (suffix == "4") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  // } else if (suffix == "3") {
+  //   TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  //   AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  //   TrackCuts->SetNClsTPC(buddyNClsUp);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  // } else if (suffix == "4") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-  } else if (suffix == "5") {
-    TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
-    AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
-    TrackCuts->SetNClsTPC(buddyNClsLow);
-    AntiTrackCuts->SetNClsTPC(buddyNClsLow);
-  } else if (suffix == "6") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  // } else if (suffix == "5") {
+  //   TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  //   AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  //   TrackCuts->SetNClsTPC(buddyNClsLow);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsLow);
+  // } else if (suffix == "6") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-  } else if (suffix == "7") {
-    TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
-    AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
-    TrackCuts->SetNClsTPC(buddyNClsUp);
-    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
-  } else if (suffix == "8") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  // } else if (suffix == "7") {
+  //   TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  //   AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  //   TrackCuts->SetNClsTPC(buddyNClsUp);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  // } else if (suffix == "8") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-  } else if (suffix == "9") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    TrackCuts->SetNClsTPC(buddyNClsUp);
-    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
-  } else if (suffix == "10") {
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  // } else if (suffix == "9") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   TrackCuts->SetNClsTPC(buddyNClsUp);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  // } else if (suffix == "10") {
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-    TrackCuts->SetNClsTPC(buddyNClsLow);
-    AntiTrackCuts->SetNClsTPC(buddyNClsLow);
-  } else if (suffix == "11") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  //   TrackCuts->SetNClsTPC(buddyNClsLow);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsLow);
+  // } else if (suffix == "11") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-  } else if (suffix == "12") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    TrackCuts->SetNClsTPC(buddyNClsUp);
-    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
-  } else if (suffix == "13") {
-    TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
-    AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
-    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-  } else if (suffix == "14") {
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  // } else if (suffix == "12") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   TrackCuts->SetNClsTPC(buddyNClsUp);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  // } else if (suffix == "13") {
+  //   TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  //   AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  //   TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+  // } else if (suffix == "14") {
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-    TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
-    AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
-  } else if (suffix == "15") {
-    TrackCuts->SetNClsTPC(buddyNClsUp);
-    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-  } else if (suffix == "16") {
-    TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
-    AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  //   TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  //   AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  // } else if (suffix == "15") {
+  //   TrackCuts->SetNClsTPC(buddyNClsUp);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  // } else if (suffix == "16") {
+  //   TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  //   AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-  } else if (suffix == "17") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    TrackCuts->SetNClsTPC(buddyNClsLow);
-    AntiTrackCuts->SetNClsTPC(buddyNClsLow);
-  } else if (suffix == "18") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  // } else if (suffix == "17") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   TrackCuts->SetNClsTPC(buddyNClsLow);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsLow);
+  // } else if (suffix == "18") {
+  //   TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-  } else if (suffix == "19") {
-    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-    TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
-    AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
-  } else if (suffix == "20") {
-    TrackCuts->SetNClsTPC(buddyNClsLow);
-    AntiTrackCuts->SetNClsTPC(buddyNClsLow);
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  // } else if (suffix == "19") {
+  //   TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+  //   AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+  //   TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  //   AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  // } else if (suffix == "20") {
+  //   TrackCuts->SetNClsTPC(buddyNClsLow);
+  //   AntiTrackCuts->SetNClsTPC(buddyNClsLow);
     
-    // Set PID variations
-    if (aliPIDParticle == AliPID::kProton){
-      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
-    } else if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
-    } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-      AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
-    }
-  }
+  //   // Set PID variations
+  //   if (aliPIDParticle == AliPID::kProton){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+  //   } else if (aliPIDParticle == AliPID::kPion){
+  //     TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+  //     AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+  //   } else if (aliPIDParticle == AliPID::kKaon){
+  //     TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //     AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+  //   }
+  // }
 
   // =====================================================================
   // D mesons
@@ -480,34 +480,35 @@ if (!isMC) {
     task->SetDmesonOriginMCTRUTH(0);
   }
   // Cutvariation currently not implemented for mctruth gen/reco
-  // if(useMCTruthReco){
-  //   task->SetBuddyOriginMCTRUTH(0);
-  //   task->SetDmesonOriginMCTRUTH(0);
-  //   if (suffix == "1") {
-  //     task->SetBuddyOriginMCTRUTH(0);
-  //     task->SetDmesonOriginMCTRUTH(1);
-  //   } 
-  //   if (suffix == "2") {
-  //     task->SetBuddyOriginMCTRUTH(0);
-  //     task->SetDmesonOriginMCTRUTH(2);
-  //   }
-  //   if (suffix == "3") {
-  //     task->SetBuddyOriginMCTRUTH(1);
-  //     task->SetDmesonOriginMCTRUTH(1);
-  //   }  
-  //   if (suffix == "4") {
-  //     task->SetBuddyOriginMCTRUTH(1);
-  //     task->SetDmesonOriginMCTRUTH(2);
-  //   }
-  //   if (suffix == "5") {
-  //     task->SetBuddyOriginMCTRUTH(4);
-  //     task->SetDmesonOriginMCTRUTH(1);
-  //   }  
-  //   if (suffix == "6") {
-  //     task->SetBuddyOriginMCTRUTH(4);
-  //     task->SetDmesonOriginMCTRUTH(2);
-  //   }
-  // }
+
+  if(useMCTruthReco){
+    task->SetBuddyOriginMCTRUTH(0);
+    task->SetDmesonOriginMCTRUTH(0);
+    if (suffix == "1") {
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "2") {
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "3") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "4") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "5") {
+      task->SetBuddyOriginMCTRUTH(2);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "6") {
+      task->SetBuddyOriginMCTRUTH(2);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+  }
 
   mgr->AddTask(task);
 

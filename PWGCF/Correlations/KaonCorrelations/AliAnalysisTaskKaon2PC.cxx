@@ -43,6 +43,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 
 ClassImp(AliAnalysisTaskKaon2PC) // classimp: necessary for root
 
+
 AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(), 
     fAOD(0), PVz(0), fOutputList(0), fPIDResponse(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
     fDecayLv0Cut(8.05), fLpTv0Cut(0.2), fUpTv0Cut(0.5), fEtav0Cut(0.8), fDcaPosToPrimVtxv0Cut(0.1), 
@@ -53,6 +54,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),
     fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0),  fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0), 
     fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), fHistCent(0), fHistSigCent(0), fHistInvCent(0),
     fHistCFPhi(0), fHistCFPhiCuts(0), fHistCFPhiLCuts(0), fHistCFEta(0), fHistCF(0),  fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0)
+
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -68,6 +70,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTa
     fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0),  fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0), 
     fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), fHistCent(0), fHistSigCent(0), fHistInvCent(0),
     fHistCFPhi(0), fHistCFPhiCuts(0), fHistCFPhiLCuts(0), fHistCFEta(0), fHistCF(0), fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0)
+
 {
     // constructor
     DefineInput(0, TChain::Class());    
@@ -85,17 +88,16 @@ AliAnalysisTaskKaon2PC::~AliAnalysisTaskKaon2PC()
 void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 {
     // create output objects
-    //
     // this function is called ONCE at the start of your analysis (RUNTIME)
     // here you ceate the histograms that you want to use 
-    //
     // the histograms are in this case added to a tlist, this list is in the end saved
-    // to an output file
-    //
+    // to an output file.
+
     fOutputList = new TList();          
     fOutputList->SetOwner(kTRUE);       
     
     // example of a histogram
+
     fHistMK0=new TH1F("fHistMK0", "Invariant Mass Distribution of Neutral Kaons", 100, 0.4, 0.6);
     
     fHistPt = new TH1F("fHistPt", "p_{T} distribution", 100, 0, 1);
@@ -175,7 +177,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistNegPhi = new TH2F("fHistNegPhi", "Number of -ve Kaons Vs Track Phi; Centrality", 32,0,2*TMath::Pi(),100,0,100);
     fHistNegPhi->GetXaxis()->SetTitle("Track Phi (in radians)");
     fHistNegPhi->SetOption("colz");
-
+    
     fHistNegEta = new TH2F("fHistNegEta", "", 16,-0.8, 0.8,100,0,100);
     fHistNegEta->GetXaxis()->SetTitle("Track Eta");
     fHistNegEta->SetOption("colz");
@@ -415,8 +417,8 @@ Bool_t AliAnalysisTaskKaon2PC::AcceptNegTrack(const AliAODTrack *Trk) {
     return kTRUE;
 }
 
-
 Bool_t AliAnalysisTaskKaon2PC::AcceptV0(const AliAODv0 *v0, Double_t *vertex) {
+
     Double_t length = v0->DecayLengthV0(vertex);
     if (length > fDecayLv0Cut) return kFALSE;
     Double_t pT = v0->Pt();
@@ -444,23 +446,18 @@ Bool_t AliAnalysisTaskKaon2PC::AcceptV0(const AliAODv0 *v0, Double_t *vertex) {
     return kTRUE;
 }
 
-
-
 //_____________________________________________________________________________
 void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
 {
-    
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());    
     if(!fAOD) return;                                   // if the pointer to the event is empty (getting it failed) skip this event
     Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
-    
+    //cout << "Number of tracks is"<< iTracks << endl;
     //fRunNumber = fAOD->GetRunNumber();
 
     fEventCuts.fUseITSTPCCluCorrelationCut = true;
     if (!fEventCuts.AcceptEvent(fAOD)) return;
-
-    //cout << "Number of tracks is"<< iTracks << endl;
-
+    
     //making a cut in pvz -10 to 10cm
     const AliAODVertex *PrimaryVertex = fAOD->GetVertex(0);
     if(!PrimaryVertex) return;
@@ -487,11 +484,10 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
     if(!MultSelection) return;
     
     double CentV0M = MultSelection->GetMultiplicityPercentile("V0M"); //centrality
+
     //cout << "centrality are " << CentV0M << endl;
-
     //if (CentV0M>10) return;
-    cout << "centrality are " << CentV0M << endl;
-
+    
     //********************************* PID Loop ********************************************************
     
     
@@ -734,64 +730,62 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
         fHistPhi->Fill(track->Phi());
         fHistEta->Fill(track->Eta());
         for(Int_t j(0); j < nv0s; j++) {
-                    AliAODv0 *v0=fAOD->GetV0(j);
-                    if(!v0) continue;
-                    if(v0->MassK0Short() < 0.49 || v0->MassK0Short() > 0.51) continue;
-                    if(!AcceptV0(v0, vertex)) continue;
-                    Double_t V0Phi = v0->Phi();
-                    Double_t V0Eta = v0->Eta();
-                    Double_t deltaEta = fabs(trackEta- V0Eta);
-                    //cout << "deltaeta values are  \n" << deltaEta ;
-                    Double_t deltaPhi = trackPhi-V0Phi;
-                    fHistDEta->Fill(deltaEta);
-                    fHistDEta->Fill(-deltaEta);
-                    if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
-                    if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
-                    fHistDPhi->Fill(deltaPhi);
-                    fHistCFPhi->Fill(deltaPhi,CentV0M);                           // filling deltaphi
-                    if (deltaPhi < (0.5*TMath::Pi())) {
-                        fHistDPhi->Fill(-deltaPhi);
-                        fHistCFPhi->Fill(-deltaPhi,CentV0M);
-                        }
-                    else {
-                        fHistDPhi->Fill(2*TMath::Pi()-deltaPhi);
-                        fHistCFPhi->Fill(2*TMath::Pi()-deltaPhi,CentV0M);
-                        }
-                    if(deltaEta > 0.5) {
-                        if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
-                        if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
-                        fHistCFPhiCuts->Fill(deltaPhi,CentV0M);
-                        if (deltaPhi < (0.5*TMath::Pi())) fHistCFPhiCuts->Fill(-deltaPhi,CentV0M);
-                        else fHistCFPhiCuts->Fill(2*TMath::Pi()-deltaPhi,CentV0M);
-                        }
-                    if(deltaEta < 0.5) {
-                        if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
-                        if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
-                        fHistCFPhiLCuts->Fill(deltaPhi,CentV0M);
-                        if (deltaPhi < (0.5*TMath::Pi())) fHistCFPhiLCuts->Fill(-deltaPhi,CentV0M);
-                        else fHistCFPhiLCuts->Fill(2*TMath::Pi()-deltaPhi,CentV0M);
-                        }
-                    if (0 < deltaPhi < 0.5*(TMath::Pi()) ) {    
-                        fHistCFEta->Fill(deltaEta,CentV0M);
-                        fHistCFEta->Fill(-deltaEta,CentV0M);  // filling DeltaEta 
-                     }
-                    //if (fabs(deltaPhi) < 0.5*(TMath::Pi()) && (deltaEta < 0.5) ) {
-                    if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
-                    if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
-                    fHistCF->Fill(deltaPhi,deltaEta,CentV0M);
-                    fHistCF->Fill(deltaPhi,-deltaEta,CentV0M);
-                    if (deltaPhi < (0.5*TMath::Pi())) {
-                        fHistCF->Fill(-deltaPhi,deltaEta,CentV0M);
-                        fHistCF->Fill(-deltaPhi,-deltaEta,CentV0M); 
-                          }
-                    else {
-                        fHistCF->Fill(2*TMath::Pi()-deltaPhi,deltaEta,CentV0M);
-                        fHistCF->Fill(2*TMath::Pi()-deltaPhi,-deltaEta,CentV0M);}
-
-                    //}      // end of short C(DPhi,DEta) correlation histo filling                                  
-         }     // end of v0 track for loop
-        
-     }   // end of track for loop
+            AliAODv0 *v0=fAOD->GetV0(j);
+            if(!v0) continue;
+            if(v0->MassK0Short() < 0.49 || v0->MassK0Short() > 0.51) continue;
+            if(!AcceptV0(v0, vertex)) continue;
+            Double_t V0Phi = v0->Phi();
+            Double_t V0Eta = v0->Eta();
+            Double_t deltaEta = fabs(trackEta- V0Eta);
+            //cout << "deltaeta values are  \n" << deltaEta ;
+            Double_t deltaPhi = trackPhi-V0Phi;
+            fHistDEta->Fill(deltaEta);
+            fHistDEta->Fill(-deltaEta);
+            if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
+            if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
+            fHistDPhi->Fill(deltaPhi);
+            fHistCFPhi->Fill(deltaPhi,CentV0M);                           // filling deltaphi
+            if (deltaPhi < (0.5*TMath::Pi())) {
+                fHistDPhi->Fill(-deltaPhi);
+                fHistCFPhi->Fill(-deltaPhi,CentV0M);
+                }
+            else {
+                fHistDPhi->Fill(2*TMath::Pi()-deltaPhi);
+                fHistCFPhi->Fill(2*TMath::Pi()-deltaPhi,CentV0M);
+                }
+            if(deltaEta > 0.5) {
+                if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
+                if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
+                fHistCFPhiCuts->Fill(deltaPhi,CentV0M);
+                if (deltaPhi < (0.5*TMath::Pi())) fHistCFPhiCuts->Fill(-deltaPhi,CentV0M);
+                else fHistCFPhiCuts->Fill(2*TMath::Pi()-deltaPhi,CentV0M);
+                }
+            if(deltaEta < 0.5) {
+                if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
+                if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
+                fHistCFPhiLCuts->Fill(deltaPhi,CentV0M);
+                if (deltaPhi < (0.5*TMath::Pi())) fHistCFPhiLCuts->Fill(-deltaPhi,CentV0M);
+                else fHistCFPhiLCuts->Fill(2*TMath::Pi()-deltaPhi,CentV0M);
+                }
+            if (0 < deltaPhi < 0.5*(TMath::Pi()) ) {    
+                fHistCFEta->Fill(deltaEta,CentV0M);
+                fHistCFEta->Fill(-deltaEta,CentV0M);  // filling DeltaEta 
+            }
+            //if (fabs(deltaPhi) < 0.5*(TMath::Pi()) && (deltaEta < 0.5) ) {
+            if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
+            if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
+            fHistCF->Fill(deltaPhi,deltaEta,CentV0M);
+            fHistCF->Fill(deltaPhi,-deltaEta,CentV0M);
+            if (deltaPhi < (0.5*TMath::Pi())) {
+                fHistCF->Fill(-deltaPhi,deltaEta,CentV0M);
+                fHistCF->Fill(-deltaPhi,-deltaEta,CentV0M); 
+                }
+            else {
+                fHistCF->Fill(2*TMath::Pi()-deltaPhi,deltaEta,CentV0M);
+                fHistCF->Fill(2*TMath::Pi()-deltaPhi,-deltaEta,CentV0M);}
+                //}      // end of short C(DPhi,DEta) correlation histo filling                                  
+        }     // end of v0 track for loop
+    }   // end of track for loop
     //Double_t THnsparse; 
 fHistNEvents->Fill(0);
 fHistMult->Fill(iTracks);

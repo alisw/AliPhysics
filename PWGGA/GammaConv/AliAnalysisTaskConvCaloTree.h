@@ -141,6 +141,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Float_t>            fVTrueClusterMCTrueEnergy;                     //!<! vector buffer   store the true MC energy info
     std::vector<Float_t>            fVTrueClusterMCTrueEnergy2;                    //!<! vector buffer   store the MC energy of MC Id of particle with 2nd most energy
     std::vector<Bool_t>             fVTrueClusterMCIsMerged;                       //!<! vector buffer   store the info if cluster is merged cluster
+    std::vector<Short_t>            fVTrueClusterConvRadius;                       //!<! vector buffer  store the radius of the production vertex of a converion cluster
 
     std::vector<Float_t>            fVBuffer_Conv_px;                              //!<! vector buffer  Conversion photon px
     std::vector<Float_t>            fVBuffer_Conv_py;                              //!<! vector buffer  Conversion photon py
@@ -173,7 +174,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>                 fVBuffer_Track_Calo_eta;                   //!<! vector buffer: track eta on Calo surface (*10000)
     std::vector<UShort_t>                fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
 
-    ClassDef(AliAnalysisTaskConvCaloTree, 7);
+    ClassDef(AliAnalysisTaskConvCaloTree, 8);
 };
 
 

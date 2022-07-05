@@ -64,6 +64,7 @@ set(SRCS
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
   AliAnalysisTaskCMWESETrkSyst.cxx
+  AliAnalysisTaskPtFlowCorrelation.cxx
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
@@ -75,6 +76,7 @@ if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS AliAnalysisTaskJetQ.cxx)
   list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
   list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
+  list(APPEND SRCS AliAnalysisTaskCorrForNonlinearFlow.cxx)
   list(APPEND SRCS AliEffFDContainer.cxx)
   list(APPEND SRCS AliGFWFilter.cxx)
   list(APPEND SRCS AliGFWFilterTask.cxx)

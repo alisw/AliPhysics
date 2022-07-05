@@ -2,13 +2,13 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype ="PbPbperi",
+								       TString  fCollisiontype ="pPb",
 								       Bool_t  fDataType       =kFALSE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kFALSE,
-									   TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
-									   //TString anamode         ="FMDFMDwide",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
-								       TString anacent         ="V0M",
+								       TString anamode         ="FMDFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
+								       //TString anamode         ="FMDFMDwide",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
+								       TString anacent         ="V0A",
  								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =32,
 								       Int_t fFMDcutpar        =7,
@@ -16,11 +16,13 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
 								       Bool_t fprim            =kTRUE,
 								       Bool_t fcentcalib       =kTRUE,
 								       Bool_t fptdiff          =kFALSE,
-								       Float_t fPtMin          =0.15,
-								       Float_t fPtMax          =15.,
+								       Float_t fPtMin          =0.,
+								       Float_t fPtMax          =1000.,
 								       Bool_t fextractsec      =kFALSE,
 								       Bool_t ffillcorrelation =kTRUE,
-								       Bool_t fMCclosure=kFALSE
+								       Bool_t fMCclosure=kFALSE,
+								       Bool_t fboost=kTRUE
+								       
 								       )
 {
   // Get the current analysis manager.
@@ -88,7 +90,8 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
   myTask->SetFillCorrelation(ffillcorrelation);
   myTask->SetMCclosure(fMCclosure);
   myTask->SetQAmode(kTRUE);
-  myTask->SetExtractSec(fextractsec);    
+  myTask->SetExtractSec(fextractsec);
+  myTask->SetBoost(fboost);
   
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   //  if(fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);

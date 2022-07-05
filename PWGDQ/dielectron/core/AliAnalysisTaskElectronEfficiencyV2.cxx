@@ -2441,7 +2441,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetCentralityFile(std::string filename
     fCentralityFile = TFile::Open(fCentralityFilename.c_str());
     if (fCentralityFile == 0x0){
       std::cout << "Location in AliEN: " <<  fCentralityFilenameFromAlien << std::endl;
-      gSystem->Exec(Form("alien_cp alien://%s .", fCentralityFilenameFromAlien.c_str()));
+      gSystem->Exec(Form("alien_cp alien://%s file:./", fCentralityFilenameFromAlien.c_str()));
       std::cout << "Copy centrality weighting from Alien" << std::endl;
       fCentralityFile = TFile::Open(fCentralityFilename.c_str());
     }
@@ -2492,7 +2492,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetCocktailWeighting(std::string Cockt
     fCocktailFile = TFile::Open(fCocktailFilename.c_str());
     if (fCocktailFile == 0x0){
       std::cout << "Location in AliEN: " << fCocktailFilenameFromAlien << std::endl;
-      gSystem->Exec(Form("alien_cp alien://%s .", fCocktailFilenameFromAlien.c_str()));
+      gSystem->Exec(Form("alien_cp alien://%s file:./", fCocktailFilenameFromAlien.c_str()));
       std::cout << "Copy cocktail weighting from Alien" << std::endl;
       fCocktailFile = TFile::Open(fCocktailFilename.c_str());
     }
@@ -2535,7 +2535,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetResolutionFile(std::string filename
     fResoFile = TFile::Open(fResoFilename.c_str());
     if (fResoFile == 0x0){
       std::cout << "Location in AliEN: " << fResoFilenameFromAlien << std::endl;
-      gSystem->Exec(Form("alien_cp alien://%s .", fResoFilenameFromAlien.c_str()));
+      gSystem->Exec(Form("alien_cp alien://%s file:./", fResoFilenameFromAlien.c_str()));
       std::cout << "Copy resolution from Alien" << std::endl;
       fResoFile = TFile::Open(fResoFilename.c_str());
     }

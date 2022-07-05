@@ -82,6 +82,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     void SetTPCHalvesEtaGap(double etagap = 0.2)                      {fEtaGapInTPCHalves=etagap;}
     void RemoveDauTracksFromqn(int removedau=1, bool remsoftpi=false) {fRemoveDauFromqn=removedau; fRemoveSoftPion=remsoftpi;}
     void SetRandomDownsamplFromqn(double fractokeep = 0.5)            {fEnableDownsamplqn=true; fFracToKeepDownSamplqn=fractokeep;}
+    void SetRandomResamplCandidate(bool resample = false)             {fEnableResampleCan = resample;}
 
     // methods for ML application
     void SetDoMLApplication(bool flag = true, bool isMultiClass = false)                          {fApplyML = flag; fMultiClass = isMultiClass;}
@@ -111,7 +112,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, std::vector<double> &modelPred, std::vector<double> &modelPredSecond);
     bool LoadSplinesForqnPercentile();
 
-    static const int kVarForSparse = 12;
+    static const int kVarForSparse = 13;
 
     AliAODEvent* fAOD;                      /// AOD event
 
@@ -159,6 +160,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     int fRemoveDauFromqn;                   /// flag to enable removal of D-meson daughter tracks from qn (1->remove single cand, 2->remove all cand of the analysed event)
     bool fRemoveSoftPion;                   /// flag to enable removal of soft pion too (only D*)
     bool fEnableDownsamplqn;                /// flag to enable random downsampling for qn
+    bool fEnableResampleCan;                /// flag to enable random resampling for candidates
     double fFracToKeepDownSamplqn;          /// fraction of tracks to keep in qn with random downsampling
 
     /// variables for ML application
@@ -171,7 +173,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     double fMLOutputMin[3];                 /// min for ML output axis in THnSparse
     double fMLOutputMax[3];                 /// max for ML output axis in THnSparse
 
-    ClassDef(AliAnalysisTaskSECharmHadronvn,7); // AliAnalysisTaskSE for the HF vn analysis
+    ClassDef(AliAnalysisTaskSECharmHadronvn,8); // AliAnalysisTaskSE for the HF vn analysis
 };
 
 #endif

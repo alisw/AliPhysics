@@ -8781,7 +8781,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
           // fine tuning for pp 13 TeV lowB
           if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
-            energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            // energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            energy /= FunctionNL_kSDM(energy, 0.979428, -3.20181, -0.360978); // settings only to be used with dedicated lowB cell scale factors, (EXPERIMENTAL!)
             energy /= 1.0025;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
               energy /= 0.99;
@@ -9424,6 +9425,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC16P1EPOS") == 0 ||
             namePeriod.CompareTo("LHC17d20b1") == 0 ||
             namePeriod.CompareTo("LHC17d20b2") == 0 )   return kPP13T16P1EPOS;
+  // pp 13 TeV Phojet production. Give it the same enum as Pythia as NonLin etc. should be the same
+  else if ( namePeriod.CompareTo("LHC16P1Pho") == 0 ||
+            namePeriod.CompareTo("LHC21k3b2") == 0)     return kPP13T16P1Pyt8;
   // pp 13 TeV 2016 JJ prod
   else if ( namePeriod.CompareTo("LHC16P1JJ") == 0 ||
             namePeriod.CompareTo("LHC17f8a") == 0 ||
@@ -9551,6 +9555,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC19i3b2") == 0 ||
             namePeriod.CompareTo("LHC19i3c1") == 0 ||
             namePeriod.CompareTo("LHC19i3c2") == 0 ) return kPP13T18P1JJTrigger;
+  // pp 13 TeV EPOS. Give it the same period enum as Pythia as treated completely the same
+  else if ( namePeriod.CompareTo("LHC20f14a") == 0 ) return kPP13T18P1Pyt8;
   // PbPb 5 TeV 2015 Gamma-Jet MC
   else if ( namePeriod.CompareTo("LHC18b11c") == 0 ) return  kLHC18b11c;
 

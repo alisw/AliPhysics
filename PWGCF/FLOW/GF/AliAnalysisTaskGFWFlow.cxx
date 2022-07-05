@@ -289,26 +289,44 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     };
     CreateCorrConfigs();
   };
-  // mywatchFill.Reset();
-  // mywatchStore.Reset();
-  // mywatch.Start(kTRUE);
 };
-/*
-AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
-if(!ev) { AliFatal("MC event not found!"); return 0; }
-AliCollisionGeometry* headerH;
-headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
-impactParameter = headerH->ImpactParameter();
-*/
+
 
 AliMCEvent *AliAnalysisTaskGFWFlow::FetchMCEvent(Double_t &impactParameter) {
+  /*
+  //Reverting to the old implementation. The new one fails on trains (but old one fails locally :( )
   if(!fIsTrain) { AliFatal("Snap, Jim! Ain't no train here!\n"); return 0; }
   AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
   if(!ev) { AliFatal("MC event not found!"); return 0; }
-  AliGenHepMCEventHeader
-   *header = dynamic_cast<AliGenHepMCEventHeader*>(ev->GenEventHeader());
+  AliGenHepMCEventHeader *header = dynamic_cast<AliGenHepMCEventHeader*>(ev->GenEventHeader());
   if(!header) { AliFatal("MC event not generated!"); return 0; }
   impactParameter = header->impact_parameter();
+  return ev;*/
+
+  //The old implementation
+  if(!fIsTrain) { AliFatal("Snap, Jim! Ain't no train here!\n"); return 0; }
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
+  if(!ev) { AliFatal("MC event not found!"); return 0; }
+  if(fOverrideCentrality>=0) return ev;
+  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+  if(!header) { AliFatal("MC event not generated!"); return 0; }
+  AliCollisionGeometry* headerH;
+  TString genName;
+  TList *ltgen = (TList*)ev->GetCocktailList();
+  if (ltgen) {
+  for(auto&& listObject: *ltgen){
+    genName = Form("%s",listObject->GetName());
+    if (genName.Contains("Hijing")) {
+      headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+      break;
+      }
+    }
+  }
+  else
+    headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
+  if(headerH){
+      impactParameter = headerH->ImpactParameter();
+  }
   return ev;
 }
 
@@ -317,8 +335,11 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     Double_t lImpactParameter = -1;
     AliMCEvent *fEv = FetchMCEvent(lImpactParameter);
     if(!fEv) return;
-    if(lImpactParameter < 0) AliFatal("Impact parameter is negative!\n");
-    Double_t l_Cent = GetCentFromIP(lImpactParameter);
+    Double_t l_Cent;
+    if(fOverrideCentrality>0) l_Cent = fOverrideCentrality; else {
+      if(lImpactParameter < 0) AliFatal("Impact parameter is negative!\n");
+      l_Cent = GetCentFromIP(lImpactParameter);
+    };
     fMultiDist->Fill(l_Cent);
     if(l_Cent>70 || l_Cent<5) return; //not considering anything below 5% or above 70%
     Int_t nTracks = fEv->GetNumberOfPrimaries();

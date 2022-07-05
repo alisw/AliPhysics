@@ -24,25 +24,22 @@
 #include "TH1F.h"
 #include "TH2F.h"
 
-
 ClassImp(AliAnalysisTaskTritonVsMultiplicity_XeXe)
 
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskTritonVsMultiplicity_XeXe::AliAnalysisTaskTritonVsMultiplicity_XeXe():
 AliAnalysisTaskSE(),
-fAODevent(NULL),
-fPIDResponse(NULL),
+fAODevent(nullptr),
+fPIDResponse(nullptr),
 fAODeventCuts(),
-fUtils(NULL),
-fOutputList(NULL),
-reducedTree_Triton(NULL),
-//fQAList(NULL),
+fUtils(nullptr),
+fOutputList(nullptr),
 fCentralityMin(0),
 fCentralityMax(0),
 fVertexZmin(0),
 fVertexZmax(0),
 fNumberVertexContributorsMin(0),
-fCentralityEstimator(NULL),
+fCentralityEstimator(nullptr),
 fPtMin(0),
 fPtMax(0),
 fEtaMax(0),
@@ -53,7 +50,7 @@ fNumberCrossedRowsTPCMin(0),
 fCrossedRowsFindableClsMin(0),
 fNumberClustersTPCdEdxMin(0),
 fChiSquarePerNDFMax(0),
-fITSrequirement(NULL),
+fITSrequirement(nullptr),
 fDCAzMax(0),
 fDCAxyMax(0),
 fnSigmaTOFmax(0),
@@ -67,8 +64,12 @@ fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
 fpar1_sigma_TOF(0),
 multPercentile_V0M(-1),
+multPercentile_V0A(0),
 pt(0),
 p(0),
+px(0),
+py(0),
+pz(0),
 eta(0),
 y(0),
 q(0),
@@ -82,35 +83,34 @@ nTPC_CrossedRows(0),
 nTPC_Clusters_dEdx(0),
 HasPointOnITSLayer0(0),
 HasPointOnITSLayer1(0),
-HasSharedPointOnITSLayer0(0),
-HasSharedPointOnITSLayer1(0),
+HasPointOnITSLayer2(0),
+HasPointOnITSLayer3(0),
+HasPointOnITSLayer4(0),
+HasPointOnITSLayer5(0),
 chi2_TPC(0),
-chi2_NDF(0),
 chi2_ITS(0),
 ITSsignal(0),
 TPCsignal(0),
 TOFsignal(0),
-TRDsignal(0),
+nSigmaITS_Trit(0),
 nSigmaTPC_Trit(0),
-nSigmaTOF_Trit(0),
-nSigmaTRD_Trit(0)
+nSigmaTOF_Trit(0)
 {}
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskTritonVsMultiplicity_XeXe::AliAnalysisTaskTritonVsMultiplicity_XeXe(const char *name):
 AliAnalysisTaskSE(name),
-fAODevent(NULL),
-fPIDResponse(NULL),
+fAODevent(nullptr),
+fPIDResponse(nullptr),
 fAODeventCuts(),
-fUtils(NULL),
-fOutputList(NULL),
-reducedTree_Triton(NULL),
-//fQAList(NULL),
+fUtils(nullptr),
+fOutputList(nullptr),
+//fQAList(nullptr),
 fCentralityMin(0),
 fCentralityMax(0),
 fVertexZmin(0),
 fVertexZmax(0),
 fNumberVertexContributorsMin(0),
-fCentralityEstimator(NULL),
+fCentralityEstimator(nullptr),
 fPtMin(0),
 fPtMax(0),
 fEtaMax(0),
@@ -121,7 +121,7 @@ fNumberCrossedRowsTPCMin(0),
 fCrossedRowsFindableClsMin(0),
 fNumberClustersTPCdEdxMin(0),
 fChiSquarePerNDFMax(0),
-fITSrequirement(NULL),
+fITSrequirement(nullptr),
 fDCAzMax(0),
 fDCAxyMax(0),
 fnSigmaTOFmax(0),
@@ -135,8 +135,12 @@ fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
 fpar1_sigma_TOF(0),
 multPercentile_V0M(-1),
+multPercentile_V0A(0),
 pt(0),
 p(0),
+px(0),
+py(0),
+pz(0),
 eta(0),
 y(0),
 q(0),
@@ -150,18 +154,18 @@ nTPC_CrossedRows(0),
 nTPC_Clusters_dEdx(0),
 HasPointOnITSLayer0(0),
 HasPointOnITSLayer1(0),
-HasSharedPointOnITSLayer0(0),
-HasSharedPointOnITSLayer1(0),
+HasPointOnITSLayer2(0),
+HasPointOnITSLayer3(0),
+HasPointOnITSLayer4(0),
+HasPointOnITSLayer5(0),
 chi2_TPC(0),
-chi2_NDF(0),
 chi2_ITS(0),
 ITSsignal(0),
 TPCsignal(0),
 TOFsignal(0),
-TRDsignal(0),
+nSigmaITS_Trit(0),
 nSigmaTPC_Trit(0),
-nSigmaTOF_Trit(0),
-nSigmaTRD_Trit(0)
+nSigmaTOF_Trit(0)
 {
     fUtils = new AliAnalysisUtils();
     DefineInput(0, TChain::Class());
@@ -185,9 +189,12 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserCreateOutputObjects()
 {
     fOutputList = new TList();
     fOutputList -> SetOwner();
+
     //fQAList = new TList();
     //fQAList -> SetOwner();
+
     //fAODeventCuts.AddQAplotsToList(fQAList);//Add event selection QA plots
+
 
     //Number of Events
     histoNumberOfEvents = new TH1F("histoNumberOfEvents","Events after selection steps",10,0,10);
@@ -277,8 +284,12 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserCreateOutputObjects()
     //Reduced Tree (Triton)
     reducedTree_Triton = new TTree("reducedTree_Triton","reducedTree_Triton");
     reducedTree_Triton -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
+    reducedTree_Triton -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
     reducedTree_Triton -> Branch("pt",&pt,"pt/D");
     reducedTree_Triton -> Branch("p",&p,"p/D");
+    reducedTree_Triton -> Branch("px",&px,"px/D");
+    reducedTree_Triton -> Branch("py",&py,"py/D");
+    reducedTree_Triton -> Branch("pz",&pz,"pz/D");
     reducedTree_Triton -> Branch("eta",&eta,"eta/D");
     reducedTree_Triton -> Branch("y",&y,"y/D");
     reducedTree_Triton -> Branch("q",&q,"q/I");
@@ -292,17 +303,18 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserCreateOutputObjects()
     reducedTree_Triton -> Branch("nTPC_Clusters_dEdx",&nTPC_Clusters_dEdx,"nTPC_Clusters_dEdx/I");
     reducedTree_Triton -> Branch("HasPointOnITSLayer0",&HasPointOnITSLayer0,"HasPointOnITSLayer0/O");
     reducedTree_Triton -> Branch("HasPointOnITSLayer1",&HasPointOnITSLayer1,"HasPointOnITSLayer1/O");
-    reducedTree_Triton -> Branch("HasSharedPointOnITSLayer0",&HasSharedPointOnITSLayer0,"HasSharedPointOnITSLayer0/O");
-    reducedTree_Triton -> Branch("HasSharedPointOnITSLayer1",&HasSharedPointOnITSLayer1,"HasSharedPointOnITSLayer1/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer2",&HasPointOnITSLayer2,"HasPointOnITSLayer2/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer3",&HasPointOnITSLayer3,"HasPointOnITSLayer3/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer4",&HasPointOnITSLayer4,"HasPointOnITSLayer4/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer5",&HasPointOnITSLayer5,"HasPointOnITSLayer5/O");
     reducedTree_Triton -> Branch("chi2_TPC",&chi2_TPC,"chi2_TPC/D");
     reducedTree_Triton -> Branch("chi2_ITS",&chi2_ITS,"chi2_ITS/D");
     reducedTree_Triton -> Branch("ITSsignal",&ITSsignal,"ITSsignal/D");
     reducedTree_Triton -> Branch("TPCsignal",&TPCsignal,"TPCsignal/D");
     reducedTree_Triton -> Branch("TOFsignal",&TOFsignal,"TOFsignal/D");
-    reducedTree_Triton -> Branch("TRDsignal",&TRDsignal,"TRDsignal/D");
+    reducedTree_Triton -> Branch("nSigmaITS_Trit",&nSigmaITS_Trit,"nSigmaITS_Trit/D");
     reducedTree_Triton -> Branch("nSigmaTPC_Trit",&nSigmaTPC_Trit,"nSigmaTPC_Trit/D");
     reducedTree_Triton -> Branch("nSigmaTOF_Trit",&nSigmaTOF_Trit,"nSigmaTOF_Trit/D");
-    reducedTree_Triton -> Branch("nSigmaTRD_Trit",&nSigmaTRD_Trit,"nSigmaTRD_Trit/D");
 
 
 
@@ -331,12 +343,10 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
         AliAODTrack *track = (AliAODTrack*) fAODevent -> GetTrack(i);
         if ( !track ) continue;
         if ( PassedTrackQualityCutsNoDCA (track)) {
-
             if (IsCleanTritonCandidate(track))  {
                 if (track->Charge()>0) histoDCAxyTriton_vs_pt     -> Fill (track->Pt(),GetDCAxy(track));
                 if (track->Charge()<0) histoDCAxyAntiTriton_vs_pt -> Fill (track->Pt(),GetDCAxy(track));
             }
-
         }
 
         if ( PassedTrackQualityCuts (track)) {
@@ -346,10 +356,7 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
             Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kTriton);
             Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kTriton);
 
-
             //TPC Signal vs. pT
-
-
             if (track->Charge()>0) histoNsigmaTPCtriton_vs_p_notof	    -> Fill (track->P(),nsigmaTPC);
             if (track->Charge()<0) histoNsigmaTPCantitriton_vs_p_notof -> Fill (track->P(),nsigmaTPC);
 
@@ -360,48 +367,43 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
                 if (track->Charge()<0) histoNsigmaTPCantitriton_vs_pt -> Fill (track->Pt(),nsigmaTPC);
                 if (track->Charge()>0) histoNsigmaTPCtriton_vs_p      -> Fill (track->P(),nsigmaTPC);
                 if (track->Charge()<0) histoNsigmaTPCantitriton_vs_p  -> Fill (track->P(),nsigmaTPC);
-
                 if (track->Charge()>0) histoNsigmaTPCtriton_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTPC(track));
                 if (track->Charge()<0) histoNsigmaTPCantitriton_vs_pt_centered -> Fill (track->Pt(),Centered_nsigmaTPC(track));
-
-
             }
 
             //TOF Signal vs. pT
             if (PassedTPCSelection(track))  {
-
                 if (track->Charge()>0) histoNsigmaTOFtriton_vs_pt     -> Fill (track->Pt(),nsigmaTOF);
                 if (track->Charge()<0) histoNsigmaTOFantitriton_vs_pt -> Fill (track->Pt(),nsigmaTOF);
                 if (track->Charge()>0) histoNsigmaTOFtriton_vs_p      -> Fill (track->P(),nsigmaTOF);
                 if (track->Charge()<0) histoNsigmaTOFantitriton_vs_p  -> Fill (track->P(),nsigmaTOF);
-
-
                 if (track->Charge()>0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFtriton_vs_pt_trd     -> Fill (track->Pt(),nsigmaTOF);
                 if (track->Charge()<0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFantitriton_vs_pt_trd -> Fill (track->Pt(),nsigmaTOF);
-
                 if (track->Charge()>0) histoNsigmaTOFtriton_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTOF(track));
                 if (track->Charge()<0) histoNsigmaTOFantitriton_vs_pt_centered -> Fill (track->Pt(),Centered_nsigmaTOF(track));
-
-
-
             }
+
         }
 
         if (IsTritonCandidate(track)){
 
             pt = track -> Pt();
-            p = track -> P();
+            p  = track -> P();
+            px = track -> Px();
+            py = track -> Py();
+            pz = track -> Pz();
+
 
             q  = (Int_t) track -> Charge();
             eta = track -> Eta();
 
             //Rapidity Calculation
             Double_t m  = AliPID::ParticleMass(AliPID::kTriton);
-            Double_t px = track -> Px();
-            Double_t py = track -> Py();
-            Double_t pz = track -> Pz();
-            Double_t E = TMath::Sqrt(m*m + px*px + py*py + pz*pz);
-            TLorentzVector P (px,py,pz,E);
+            Double_t fpx = track -> Px();
+            Double_t fpy = track -> Py();
+            Double_t fpz = track -> Pz();
+            Double_t E = TMath::Sqrt(m*m + fpx*fpx + fpy*fpy + fpz*fpz);
+            TLorentzVector P (fpx,fpy,fpz,E);
             y = P.Rapidity();
 
             //DCA
@@ -418,9 +420,10 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
 
             HasPointOnITSLayer0 = track->HasPointOnITSLayer(0);
             HasPointOnITSLayer1 = track->HasPointOnITSLayer(1);
-
-            HasSharedPointOnITSLayer0 = track->HasSharedPointOnITSLayer(0);
-            HasSharedPointOnITSLayer1 = track->HasSharedPointOnITSLayer(1);
+            HasPointOnITSLayer2 = track->HasPointOnITSLayer(2);
+            HasPointOnITSLayer3 = track->HasPointOnITSLayer(3);
+            HasPointOnITSLayer4 = track->HasPointOnITSLayer(4);
+            HasPointOnITSLayer5 = track->HasPointOnITSLayer(5);
 
             chi2_TPC = track -> GetTPCchi2();//    check -> seems to be 0
             chi2_ITS = track -> GetITSchi2();//    check
@@ -428,21 +431,20 @@ void AliAnalysisTaskTritonVsMultiplicity_XeXe::UserExec(Option_t *)
             ITSsignal = track->GetITSsignal();
             TPCsignal = track->GetTPCsignal();
             TOFsignal = track->GetTOFsignal();
-            TRDsignal = track->GetTRDsignal();
 
+            nSigmaITS_Trit = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kTriton);
             nSigmaTPC_Trit = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
             nSigmaTOF_Trit = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
-            nSigmaTRD_Trit = fPIDResponse -> NumberOfSigmasTRD(track,AliPID::kTriton);
 
             reducedTree_Triton -> Fill();
+
         }
-
     }
-
 
     PostData(1, fOutputList);
     PostData(2,reducedTree_Triton);
     //PostData(2, fQAList);
+
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::GetInputEvent ()  {
@@ -466,6 +468,8 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::GetInputEvent ()  {
     Double_t centrality = multiplicitySelection->GetMultiplicityPercentile(fCentralityEstimator);
 
 
+    multPercentile_V0A  = multiplicitySelection->GetMultiplicityPercentile("V0A");
+
     //Selection of Centrality Range
     if (centrality<fCentralityMin || centrality>=fCentralityMax ) return false;
     histoNumberOfEvents -> Fill(3.5);
@@ -482,7 +486,6 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::GetInputEvent ()  {
 
     if ( vertex->GetNContributors() < fNumberVertexContributorsMin ) return false;
     histoNumberOfEvents -> Fill(6.5);
-
     multPercentile_V0M  = multiplicitySelection->GetMultiplicityPercentile("V0M");
 
     return true;
@@ -587,11 +590,11 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::IsTritonCandidate (AliAODTrack 
 
   Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
   if (track->Pt() < 1.5) {
-    if ( TMath::Abs(nsigmaTPC) > 6. ) return false;
+    if ( TMath::Abs(nsigmaTPC) > 7. ) return false;
   } else {
     Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
     if ( TMath::Abs(nsigmaTOF) > 7. ) return false;
-    if ( TMath::Abs(nsigmaTPC) > 6. ) return false;
+    if ( TMath::Abs(nsigmaTPC) > 7. ) return false;
   }
 
   return true;
@@ -643,7 +646,7 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::PassedTOFSelection (AliAODTrack
 Bool_t AliAnalysisTaskTritonVsMultiplicity_XeXe::PassedTPCSelection (AliAODTrack *track)  {
 
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kTriton);
-    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax) return false;
+    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax || (track->GetStatus()&AliAODTrack::kTOFout)!=0) return false;
 
     //TPC-TOF Matching
 //   if ((track->GetStatus()&AliAODTrack::kTOFout)==0) hasTOFhit=0;//Track with no TOF hit

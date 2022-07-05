@@ -86,6 +86,7 @@
 #pragma link C++ class AliFemtoQinvCorrFctnEMCIC;
 #pragma link C++ class AliFemtoCorrFctn3DSphericalEMCIC;
 #pragma link C++ class AliFemtoCorrFctnPtKstar;
+#pragma link C++ class AliFemtoCorrFctnPtKstarBeta;
 #pragma link C++ class AliFemtoBPLCMS3DCorrFctnEMCIC;
 #pragma link C++ class AliFemtoPairCutPt;
 #pragma link C++ class AliFemtoAvgSepCorrFctn;
@@ -199,7 +200,10 @@
 #pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle+;
 #pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle::ParentPIDInfo+;
 #pragma link C++ class AliFemtoCorrFctnPairsForCorrFit;
+//wiola
+#pragma link C++ class AliAnalysisTaskParticleEffWRZ+;
 #pragma link C++ class AliFemtoWRzTrackCut;
+
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimpleWithCorrections;
 
 

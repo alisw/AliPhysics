@@ -60,6 +60,12 @@ protected:
 
   TH1D *fParticleOrigin; ///< particle origin from MC
   TH1D *fParticleId;     ///< true particle identification from MC
+
+  TH2D *fTPCdEdx_pT;        ///< TPC dEdx information
+  TH2D *fTOFTime_pT;        ///< TOF time
+  TH2D *fTOFNSigma_pT;      ///< TOF NSigma values vs mom
+  TH2D *fTPCNSigma_pT;      ///< TPC NSigma values vs mom
+
 };
 
 #endif

@@ -166,7 +166,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 				inNUA = TFile::Open("alien:///alice/cern.ch/user/e/enielsen/Weights/NUA/WeightsPbPb15o.root");
 				//inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zhlu/NUA_from_enielsen/WeightsPbPb15o.root");
 				//inNUA = TFile::Open("/home/liscklu/Workdir/alice/NonlinearFlow/Analysis/AnaFlow20210423Mult/WeightsPbPb15o.root");
-				task->SetUseWeigthsRunByRun(true);
+				//task->SetUseWeigthsRunByRun(true);
             } else if (fPeriod.EqualTo("LHC17")) {
 	            task->SetUsePeriodWeigths(true);
 				inNUA = TFile::Open("alien:///alice/cern.ch/user/v/vvislavi/Weights/pp_NUA/Weights_pp17.root");
@@ -251,14 +251,18 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 
 			AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TFile::Class(), AliAnalysisManager::kInputContainer);
 			TFile *inNUE=nullptr;
-			// XeXe Dataset
+			// Xe-Xe Dataset
 			if (fPeriod.EqualTo("LHC17n")){
 				inNUE =TFile::Open("alien:///alice/cern.ch/user/e/enielsen/LHC17nEfficiency_tmp.root");
 			}
-			// pp Dataset
+			// Pb-Pb Dataset
+			else if(fPeriod.EqualTo("LHC15o")){
+				inNUE =TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
+			}
+			// p-p Dataset
 			else{
 				inNUE =TFile::Open("alien:///alice/cern.ch/user/v/vvislavi/Aux/LHC17d20a1_WithModEff_Syst.root");
-			}			
+			}		
 			TList* weight_listEff = NULL;
 			weight_listEff = dynamic_cast<TList*>(inNUE->Get("EffAndFD"));
 			//TFile *inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"): TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");

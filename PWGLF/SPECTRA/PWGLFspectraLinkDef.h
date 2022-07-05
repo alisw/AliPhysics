@@ -37,6 +37,8 @@
 #pragma link C++ class AliAnalysisTaskSpectraMC+;
 #pragma link C++ class AliAnalysisTaskGenRT+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
+#pragma link C++ class AliAnalysisTaskAntiProtons_vs_Rapidity_Data+;
+#pragma link C++ class AliAnalysisTaskAntiProtons_vs_Rapidity_Simu+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
 #pragma link C++ class AliAnTOFtrack+;
@@ -113,7 +115,6 @@
 #pragma link C++ class AliMEStender+;
 #pragma link C++ class AliMEStender::AliMESconfigTender+;
 #pragma link C++ class AliMESpp13+;
-#pragma link C++ class AliMESpp13::AliMESconfigTender+;
 #pragma link C++ class AliMESpidTask+;
 #pragma link C++ class AliMESchgTask+;
 #pragma link C++ class AliMESppColTask+;

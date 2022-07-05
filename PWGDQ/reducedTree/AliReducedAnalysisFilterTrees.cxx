@@ -301,7 +301,7 @@ void AliReducedAnalysisFilterTrees::BuildCandidatePairs() {
    fLeg1Tracks.Clear("C"); fLeg2Tracks.Clear("C"); 
    fLeg1PrefilteredTracks.Clear("C"); fLeg2PrefilteredTracks.Clear("C"); 
    RunCandidateLegsSelection(1);
-   RunCandidateLegsSelection(2);
+   //RunCandidateLegsSelection(2);
    
    if(fRunCandidatePrefilter) {
       RunCandidateLegsPrefilter(1);

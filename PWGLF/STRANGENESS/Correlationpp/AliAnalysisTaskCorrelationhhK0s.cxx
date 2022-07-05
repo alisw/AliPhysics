@@ -664,7 +664,7 @@ void AliAnalysisTaskCorrelationhhK0s::ProcessMCParticles(Bool_t Generated, AliAO
 	}
 
 	fHistGeneratedV0Pt->Fill(particle->Pt(), lPercentiles );
-	
+
 	if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, header, AODMCTrackArraybis)) {
 	  fHistGeneratedV0PtOOBPileUp->Fill(particle->Pt(), lPercentiles );
 	}
@@ -1770,6 +1770,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     PostData(6, fOutputList4);     
     return;
   }        
+    
   fHistEventMult->Fill(24);
   
   // fEventCuts.SetManualMode(true);
@@ -1790,7 +1791,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     PostData(6, fOutputList4);     
     return;
   }
-
   fHistEventMult->Fill(1);
   
   Int_t iTracks(fAOD->GetNumberOfTracks());         
@@ -1815,7 +1815,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     return;
   }
   fHistEventMult->Fill(2);
-
 
   AliVVertex *vertexmain =0x0;
   vertexmain = (AliVVertex*) lPrimaryBestAODVtx;
@@ -2046,45 +2045,46 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 
 
   //*****************create a global track to get the correct DCA*******************************
-  for (Int_t igt = 0; igt < fTrackBufferSize; igt++) farrGT[igt] = -1;
- 
-  if (fFilterBitValue==128 || fFilterBitValue==512){
-    // Read and store global tracks to retrieve PID information for TPC only tracks
-    for (Int_t igt = 0; igt < iTracks; igt++) {
-      globaltrack = (AliAODTrack*) fAOD->GetTrack(igt);
+  if (!(fReadMCTruth && !isEfficiency && !isHybridMCTruth)){
+    for (Int_t igt = 0; igt < fTrackBufferSize; igt++) farrGT[igt] = -1;
+    if (fFilterBitValue==128 || fFilterBitValue==512){
+      // Read and store global tracks to retrieve PID information for TPC only tracks
+      for (Int_t igt = 0; igt < iTracks; igt++) {
+	globaltrack = (AliAODTrack*) fAOD->GetTrack(igt);
 
-      if (!globaltrack) continue; 
-      if (globaltrack->GetID()<0 ) continue;
-      if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) continue; // there are such tracks with no TPC clusters
+	if (!globaltrack) continue; 
+	if (globaltrack->GetID()<0 ) continue;
+	if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) continue; // there are such tracks with no TPC clusters
 
-      // Check id is not too big for buffer
-      if (globaltrack->GetID()>=fTrackBufferSize) {
-	printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n",globaltrack->GetID(),fTrackBufferSize);
-	fHistTrackBufferOverflow->Fill(1);
-	continue;
+	// Check id is not too big for buffer
+	if (globaltrack->GetID()>=fTrackBufferSize) {
+	  printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n",globaltrack->GetID(),fTrackBufferSize);
+	  fHistTrackBufferOverflow->Fill(1);
+	  continue;
+	}
+
+	//    if ( !(globaltrack->GetFilterMap()) ) { 
+	//        cout<<" No filter map for this global track!!  "<<globaltrack->GetFilterMap()<<endl;
+	//        continue;
+	//    }
+
+	if ( globaltrack->GetTPCNcls()<=0   ) { // such tracks do not have the TPC refit either, filter map is 2 --> ITS constrained
+	  //      cout<<" No TPC cl for this global track!!  "<<igt<<endl;
+	  //      if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) cout<<" ... and also no tpc refit  "<<globaltrack->GetFilterMap()<<endl;
+	  continue;
+	}
+	//cout<<" The array will contain "<<igt<<" , it contains "<<farrGT[globaltrack->GetID()]<<endl; 
+
+	// Warn if we overwrite a track
+	if (farrGT[globaltrack->GetID()]>=0) { // Two tracks same id  --> checked that it never happens
+	  //      cout<<" Array already filled "<<farrGT[globaltrack->GetID()]<<endl;
+	} else { 
+	  farrGT[globaltrack->GetID()] = igt;           // solution adopted in the femto framework
+	  //    cout<<" Set array, now it contains  "<<farrGT[globaltrack->GetID()]<<endl;
+	}
       }
-
-      //    if ( !(globaltrack->GetFilterMap()) ) { 
-      //        cout<<" No filter map for this global track!!  "<<globaltrack->GetFilterMap()<<endl;
-      //        continue;
-      //    }
-
-      if ( globaltrack->GetTPCNcls()<=0   ) { // such tracks do not have the TPC refit either, filter map is 2 --> ITS constrained
-	//      cout<<" No TPC cl for this global track!!  "<<igt<<endl;
-	//      if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) cout<<" ... and also no tpc refit  "<<globaltrack->GetFilterMap()<<endl;
-	continue;
-      }
-      //cout<<" The array will contain "<<igt<<" , it contains "<<farrGT[globaltrack->GetID()]<<endl; 
-
-      // Warn if we overwrite a track
-      if (farrGT[globaltrack->GetID()]>=0) { // Two tracks same id  --> checked that it never happens
-	//      cout<<" Array already filled "<<farrGT[globaltrack->GetID()]<<endl;
-      } else { 
-	farrGT[globaltrack->GetID()] = igt;           // solution adopted in the femto framework
-	//    cout<<" Set array, now it contains  "<<farrGT[globaltrack->GetID()]<<endl;
-      }
-    }
-  } //end if on filterbit value
+    } //end if on filterbit value
+  }
   globaltrack = 0x0; 
 
   //***********************************************************************************
@@ -2923,8 +2923,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
       for(Int_t i(0); i < V0Tracks; i++) {       
 	isaK0s=0; //it will be put to 1 for true K0s in MC
 	rapidityV0=0;
-	EV0[2]={0};
-	kctau[2]={0};
 	goodPiPlus=kFALSE;
 	goodPiMinus=kFALSE;
 
