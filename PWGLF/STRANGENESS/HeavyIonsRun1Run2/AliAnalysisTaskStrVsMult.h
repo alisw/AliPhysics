@@ -31,6 +31,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetDefOnly(bool);
     void SetCutVal(bool, bool, int, double);
     void SetParametricBacBarCosPA(int, float*, float*, int);
+    void SetParametricTrackLengthCut(int, float*, int*);
 
     //binning setters
     void SetCentbinning(int, double*);
@@ -156,6 +157,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     TH1F *fHist_PtBacBarCosPA;                                //
     int fCentLimit_BacBarCosPA;                               //
 
+    bool fisParametricTrackLengthCut;                         //
+    TH1I *fHist_CentTrackLengthCut;                           //
+
     //cut values to be set
     double cutval_V0[kV0cutsnum];                             //
     int nvarcut_V0[kV0cutsnum];                               //
@@ -186,8 +190,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 16); 
-    //version 16: remove V0_Radius bins
+    ClassDef(AliAnalysisTaskStrVsMult, 17); 
+    //version 17: add parametrick track length cut selection
 };
 
 #endif

@@ -136,7 +136,10 @@ fCasc_BacTrackStatus(0),
 fCasc_BacBarCosPA(0),
 fisParametricBacBarCosPA(kFALSE),                            
 fHist_PtBacBarCosPA(0),
-fCentLimit_BacBarCosPA(0)
+fCentLimit_BacBarCosPA(0),
+fisParametricTrackLengthCut(kFALSE),                            
+fHist_CentTrackLengthCut(0),
+fncentbins(0)
 {
   //default constructor
 }
@@ -238,7 +241,10 @@ fCasc_BacTrackStatus(0),
 fCasc_BacBarCosPA(0),
 fisParametricBacBarCosPA(kFALSE),                            
 fHist_PtBacBarCosPA(0),
-fCentLimit_BacBarCosPA(0)
+fCentLimit_BacBarCosPA(0),
+fisParametricTrackLengthCut(kFALSE),                            
+fHist_CentTrackLengthCut(0),
+fncentbins(0)
 {
   //setting default cuts
   SetDefCutVals(); 
@@ -326,7 +332,7 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
         }
         if (fParticleAnalysisStatus[klam]) {
           if (icut!=kV0_PropLifetK0s) {
-            fHistos_Lam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins fmassbinning[kLam], fncentbins, fcentbinning);
+            fHistos_Lam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
             fHistos_ALam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
             if(fisMC){
               fHistos_Lam->CreateTH3(Form("h3_FDmtxNUM[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
@@ -1103,6 +1109,15 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         }
       }
 
+      // Apply parametric TrackLengthCut cut, if requested
+      if (fisParametricTrackLengthCut) {
+        if (lPercentile>=fHist_CentTrackLengthCut->GetXaxis()->GetXmin() && lPercentile<=fHist_CentTrackLengthCut->GetXaxis()->GetXmax()) {
+          SetCutVal(kFALSE, kTRUE, kCasc_TrackLengthCut, fHist_CentTrackLengthCut->GetBinContent(fHist_CentTrackLengthCut->GetXaxis()->FindBin(lPercentile)));
+        } else {
+          SetCutVal(kFALSE, kTRUE, kCasc_TrackLengthCut, fCasc_Cuts[kCasc_TrackLengthCut]);
+        }
+      }
+
       //fills TH3 with default cuts
       if (fParticleAnalysisStatus[kxip]) {
         if( physprim && assFlag[kxim] && ApplyCuts(kxim)) fHistos_XiMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
@@ -1145,6 +1160,13 @@ void AliAnalysisTaskStrVsMult::SetParametricBacBarCosPA(int nbins, float *ptbins
   fCentLimit_BacBarCosPA = cent_limit;
   fHist_PtBacBarCosPA = new TH1F("", "", nbins, ptbins);
   for (int iBin=1; iBin<=nbins; iBin++) fHist_PtBacBarCosPA->SetBinContent(iBin, values[iBin-1]);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskStrVsMult::SetParametricTrackLengthCut(int nbins, float *centbins, int *values) {
+  fisParametricTrackLengthCut = kTRUE;
+  fHist_CentTrackLengthCut = new TH1I("", "", nbins, centbins);
+  for (int iBin=1; iBin<=nbins; iBin++) fHist_CentTrackLengthCut->SetBinContent(iBin, values[iBin-1]);
 }
 
 //________________________________________________________________________
@@ -1430,6 +1452,13 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
             SetCutVal(kFALSE, kTRUE, kCasc_BacBarCosPA, fHist_PtBacBarCosPA->GetBinContent(fHist_PtBacBarCosPA->GetXaxis()->FindBin(fCasc_Pt)));
           } else {
             SetCutVal(kFALSE, kTRUE, kCasc_BacBarCosPA, fCasc_Cuts[kCasc_BacBarCosPA]);
+          }
+        }
+        if (fisParametricTrackLengthCut && i_cut!=kCasc_TrackLengthCut) {
+          if (perc>=fHist_CentTrackLengthCut->GetXaxis()->GetXmin() && perc<=fHist_CentTrackLengthCut->GetXaxis()->GetXmax()) {
+            SetCutVal(kFALSE, kTRUE, kCasc_TrackLengthCut, fHist_CentTrackLengthCut->GetBinContent(fHist_CentTrackLengthCut->GetXaxis()->FindBin(perc)));
+          } else {
+            SetCutVal(kFALSE, kTRUE, kCasc_TrackLengthCut, fCasc_Cuts[kCasc_TrackLengthCut]);
           }
         }
         //Xi filling
