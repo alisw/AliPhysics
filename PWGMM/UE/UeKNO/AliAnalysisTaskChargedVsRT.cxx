@@ -418,11 +418,11 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
     if (fChisqITSVar1) fCutsHybrid0->SetMaxChi2PerClusterITS(25);
     else if (fChisqITSVar2) fCutsHybrid0->SetMaxChi2PerClusterITS(49);
-    fCutsHybrid0->SetMaxChi2PerClusterITS(36);  //Default
+    else fCutsHybrid0->SetMaxChi2PerClusterITS(36);  //Default
 
     if (fDcazVar1) fCutsHybrid1->SetMaxDCAToVertexZ(1);
     else if (fDcazVar2) fCutsHybrid1->SetMaxDCAToVertexZ(3);
-    fCutsHybrid1->SetMaxDCAToVertexZ(2); //Default
+    else fCutsHybrid1->SetMaxDCAToVertexZ(2); //Default
 
     fCutsHybrid0->SetAcceptKinkDaughters(kFALSE);
     fCutsHybrid0->SetRequireTPCRefit(kTRUE);
@@ -461,11 +461,11 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
     if (fChisqITSVar1) fCutsHybrid1->SetMaxChi2PerClusterITS(25);
     else if (fChisqITSVar2) fCutsHybrid1->SetMaxChi2PerClusterITS(49);
-    fCutsHybrid1->SetMaxChi2PerClusterITS(36);  //Default
+    else fCutsHybrid1->SetMaxChi2PerClusterITS(36);  //Default
 
     if (fDcazVar1) fCutsHybrid1->SetMaxDCAToVertexZ(1);
     else if (fDcazVar2) fCutsHybrid1->SetMaxDCAToVertexZ(3);
-    fCutsHybrid1->SetMaxDCAToVertexZ(2); //Default
+    else fCutsHybrid1->SetMaxDCAToVertexZ(2); //Default
 
     fCutsHybrid1->SetAcceptKinkDaughters(kFALSE);
     fCutsHybrid1->SetRequireTPCRefit(kTRUE);
