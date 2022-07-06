@@ -2093,14 +2093,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    Int_t nTracklets = tracklets->GetNumberOfTracklets();
    */
    // Multiplicity Object
-   if(fcollisiontype=="HMPPSPD" && fcuthighmult>0){
 
+   if(fcollisiontype=="HMPPSPD" && fcuthighmult>0){
      AliVMultiplicity *tracklets = ((AliAODEvent*)fEvent)->GetTracklets();
      //    if (!tracklets) return;
      Int_t nTracklets = tracklets->GetNumberOfTracklets();
      Int_t nITScluster= tracklets->GetNumberOfITSClusters(0)+tracklets->GetNumberOfITSClusters(1);
      Int_t nTracks = fEvent->GetNumberOfTracks();
-     
      fh2_SPD_multcorr->Fill(nTracklets,nITScluster);
      fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
      if(nTracklets<fcuthighmult){
@@ -2117,28 +2116,31 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        PostData(3, fOutputList2);
        return;
      }
-   }else if(fCentType=="Manual"){
-       TObjArray *selectedTracksLeading = new TObjArray;
+   }
+         
+   if(fCentType=="Manual"){
+     TObjArray *selectedTracksLeading = new TObjArray;
        selectedTracksLeading->SetOwner(kTRUE);
        selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksLeading);
        Int_t nTracks=selectedTracksLeading->GetEntriesFast();
-	   Float_t nefficorrTrack=0;
-	   for(Int_t n = 0; n< nTracks; n++){
-		 AliAssociatedTrackYS* track = (AliAssociatedTrackYS*) selectedTracksLeading->At(n);
-		 Float_t corrected_multi=track->Multiplicity();
-		 nefficorrTrack+=corrected_multi;
-	   }
-	   //       lCentrality=nTracks;
+       Float_t nefficorrTrack=0;
+       for(Int_t n = 0; n< nTracks; n++){
+	 AliAssociatedTrackYS* track = (AliAssociatedTrackYS*) selectedTracksLeading->At(n);
+	 Float_t corrected_multi=track->Multiplicity();
+	 nefficorrTrack+=corrected_multi;
+       }
+       //       lCentrality=nTracks;
 	   lCentrality=nefficorrTrack;
 	   dynamic_cast<TH2F*>(fOutputList->FindObject("fhist_trackeffi"))->Fill(nTracks,nefficorrTrack);
-       selectedTracksLeading->Clear();
-       delete selectedTracksLeading;
+	   selectedTracksLeading->Clear();
+	   delete selectedTracksLeading;
    }else{
      lCentrality = multSelection->GetMultiplicityPercentile(fCentType);
      Int_t qual = multSelection->GetEvSelCode();
      if (qual == 199)  lCentrality = -999;
      if (lCentrality < 0. || lCentrality > 100. - 0.0000001)   return;
    }
+
    Double_t *CentBins = fCentBins;
      poolmin = CentBins[0];
      poolmax = CentBins[fNCentBins];
