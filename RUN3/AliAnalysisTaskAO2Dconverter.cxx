@@ -1356,32 +1356,34 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
       SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
 
-    if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
+    if (fUseTriggerAnalysis) {
+      if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
 
-    if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
+      if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
 
-    if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
+      if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
 
-    if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
+      if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
+    }
   }
   else {
     //PH AOD case: What should we use here?
