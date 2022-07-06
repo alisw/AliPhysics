@@ -46,7 +46,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  IsMyGoodLifeTimeAntiLambda(const AliAODv0 *V0);
         Bool_t                  IsMyGoodPID(const AliAODTrack *TrackPos, const AliAODTrack *TrackNeg);
         Bool_t                  IsMyGoodDaughterTrack(const AliAODTrack *t)  ;
-        Bool_t                  IsMyGoodDaughterTrackESD(const AliESDtrack *t)  ;
+        Bool_t                  IsMyGoodDaughterTrackESD(const AliESDtrack *t, const AliESDv0 *v0)  ;
         Bool_t                  IsMyGoodV0(const AliAODv0 *v0,const AliAODTrack* myTrackPos, const AliAODTrack* myTrackNeg, Int_t oSta);
         Bool_t                  IsMyGoodV0ESD(const AliESDv0 *v0,const AliESDtrack* myTrackPos, const AliESDtrack* myTrackNeg, Int_t oSta);
         Bool_t                  IsMyGoodV0Topology(const AliAODv0 *v0, Bool_t K0s, Bool_t Lambda);
@@ -338,7 +338,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 42);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 43);
 };
 
 class AliV0ChParticle : public AliVParticle
