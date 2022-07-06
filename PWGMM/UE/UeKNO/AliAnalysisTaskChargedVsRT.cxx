@@ -118,6 +118,8 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
     fnGen(-1),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
+    fTPCclustersVar1(kFALSE),
+    fTPCclustersVar2(kFALSE),
     fGeoTPCVar1(kFALSE),
     fGeoTPCVar2(kFALSE),
     fGeoTPCVar3(kFALSE),
@@ -225,6 +227,8 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
     fnGen(-1),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
+    fTPCclustersVar1(kFALSE),
+    fTPCclustersVar2(kFALSE),
     fGeoTPCVar1(kFALSE),
     fGeoTPCVar2(kFALSE),
     fGeoTPCVar3(kFALSE),
@@ -364,28 +368,28 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCuts->SetMaxChi2PerClusterTPC(4);
     fCuts->SetMaxDCAToVertexZ(2);
 
-    if (fGeoTPCVar1) {fCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar2) {fCuts->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar3) {fCuts->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar4) {fCuts->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
-    else {fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
-
-    if (fNcrVar1) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
-    else if (fNcrVar2) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
-    else {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
-
-    if (fChisqTPCVar1) {fCuts->SetMaxChi2PerClusterTPC(3);}
-    else if (fChisqTPCVar2) {fCuts->SetMaxChi2PerClusterTPC(5);}
-    else {fCuts->SetMaxChi2PerClusterTPC(4);}// Default
-
-    if (fDcazVar1) {fCuts->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
-    else if (fDcazVar2) {fCuts->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
-    else {fCuts->SetMaxDCAToVertexZ(2);}// Default
-    
-    if (fChisqITSVar1) {fCuts->SetMaxChi2PerClusterITS(25);}//
-    else if (fChisqITSVar2) {fCuts->SetMaxChi2PerClusterITS(49);}//
-    else {fCuts->SetMaxChi2PerClusterITS(36);}// Default
-    
+    // if (fGeoTPCVar1) {fCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
+    // else if (fGeoTPCVar2) {fCuts->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
+    // else if (fGeoTPCVar3) {fCuts->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
+    // else if (fGeoTPCVar4) {fCuts->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
+    //else {fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
+    fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);// Default
+    // if (fNcrVar1) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
+    // else if (fNcrVar2) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
+    // else {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
+    fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    // if (fChisqTPCVar1) {fCuts->SetMaxChi2PerClusterTPC(3);}
+    // else if (fChisqTPCVar2) {fCuts->SetMaxChi2PerClusterTPC(5);}
+    // else {fCuts->SetMaxChi2PerClusterTPC(4);}// Default
+    fCuts->SetMaxChi2PerClusterTPC(4);
+    // if (fDcazVar1) {fCuts->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
+    // else if (fDcazVar2) {fCuts->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
+    // else {fCuts->SetMaxDCAToVertexZ(2);}// Default
+    fCuts->SetMaxDCAToVertexZ(2);
+    // if (fChisqITSVar1) {fCuts->SetMaxChi2PerClusterITS(25);}//
+    // else if (fChisqITSVar2) {fCuts->SetMaxChi2PerClusterITS(49);}//
+    // else {fCuts->SetMaxChi2PerClusterITS(36);}// Default
+    fCuts->SetMaxChi2PerClusterITS(36);
     fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
     fCuts->SetMaxChi2PerClusterITS(36);
     
@@ -404,10 +408,25 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     SetCutsHybrid0WoDCA(fCutsHybrid0woDCA);
 
     //to be considered for systematics...
-    fCutsHybrid0->SetMinNCrossedRowsTPC(70);       // TBC
-    fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    fCutsHybrid0->SetMaxChi2PerClusterTPC(4);
-    fCutsHybrid0->SetMaxDCAToVertexZ(2);
+    if (fNcrVar1) fCutsHybrid0->SetMinNCrossedRowsTPC(60);
+    else if (fNcrVar2) fCutsHybrid0->SetMinNCrossedRowsTPC(100);
+    else fCutsHybrid0->SetMinNCrossedRowsTPC(70); //Default
+    
+    if (fTPCclustersVar1)fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+    else if (fTPCclustersVar2) fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+    else fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);  //Default
+
+    if (fChisqTPCVar1) fCutsHybrid0->SetMaxChi2PerClusterTPC(3);
+    else if (fChisqTPCVar2) fCutsHybrid0->SetMaxChi2PerClusterTPC(5);
+    else fCutsHybrid0->SetMaxChi2PerClusterTPC(4);  //Default
+
+    if (fChisqITSVar1) fCutsHybrid0->SetMaxChi2PerClusterITS(25);
+    else if (fChisqITSVar2) fCutsHybrid0->SetMaxChi2PerClusterITS(49);
+    else fCutsHybrid0->SetMaxChi2PerClusterITS(36);  //Default
+
+    if (fDcazVar1) fCutsHybrid0->SetMaxDCAToVertexZ(1);
+    else if (fDcazVar2) fCutsHybrid0->SetMaxDCAToVertexZ(3);
+    else fCutsHybrid0->SetMaxDCAToVertexZ(2); //Default
 
     fCutsHybrid0->SetAcceptKinkDaughters(kFALSE);
     fCutsHybrid0->SetRequireTPCRefit(kTRUE);
@@ -417,7 +436,6 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCutsHybrid0->SetRequireSigmaToVertex(kFALSE);
     fCutsHybrid0->SetEtaRange(-0.8,0.8);
     fCutsHybrid0->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-    fCutsHybrid0->SetMaxChi2PerClusterITS(36);
     fTrackFilterHybrid0->AddCuts(fCutsHybrid0);
 
     // Define Hybrid 1
@@ -433,10 +451,25 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     SetCutsHybrid1WoDCA(fCutsHybrid1woDCA);
 
     //to be considered for systematics...
-    fCutsHybrid1->SetMinNCrossedRowsTPC(70);            //TBC
-    fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    fCutsHybrid1->SetMaxChi2PerClusterTPC(4);
-    fCutsHybrid1->SetMaxDCAToVertexZ(2);
+    if (fNcrVar1) fCutsHybrid1->SetMinNCrossedRowsTPC(60);
+    else if (fNcrVar2) fCutsHybrid1->SetMinNCrossedRowsTPC(100);
+    else fCutsHybrid1->SetMinNCrossedRowsTPC(70); //Default
+    
+    if (fTPCclustersVar1)fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+    else if (fTPCclustersVar2) fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+    else fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);  //Default
+
+    if (fChisqTPCVar1) fCutsHybrid1->SetMaxChi2PerClusterTPC(3);
+    else if (fChisqTPCVar2) fCutsHybrid1->SetMaxChi2PerClusterTPC(5);
+    else fCutsHybrid1->SetMaxChi2PerClusterTPC(4);  //Default
+
+    if (fChisqITSVar1) fCutsHybrid1->SetMaxChi2PerClusterITS(25);
+    else if (fChisqITSVar2) fCutsHybrid1->SetMaxChi2PerClusterITS(49);
+    else fCutsHybrid1->SetMaxChi2PerClusterITS(36);  //Default
+
+    if (fDcazVar1) fCutsHybrid1->SetMaxDCAToVertexZ(1);
+    else if (fDcazVar2) fCutsHybrid1->SetMaxDCAToVertexZ(3);
+    else fCutsHybrid1->SetMaxDCAToVertexZ(2); //Default
 
     fCutsHybrid1->SetAcceptKinkDaughters(kFALSE);
     fCutsHybrid1->SetRequireTPCRefit(kTRUE);
@@ -446,7 +479,7 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCutsHybrid1->SetRequireSigmaToVertex(kFALSE);
     fCutsHybrid1->SetEtaRange(-0.8,0.8);
     fCutsHybrid1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-    fCutsHybrid1->SetMaxChi2PerClusterITS(36);
+    
     fTrackFilterHybrid1->AddCuts(fCutsHybrid1);
 
 

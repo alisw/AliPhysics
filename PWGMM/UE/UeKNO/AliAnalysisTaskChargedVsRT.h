@@ -99,6 +99,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         // Systematic------------------------------------
         Bool_t       fNcrVar1;
         Bool_t       fNcrVar2;
+	Bool_t       fTPCclustersVar1;
+        Bool_t       fTPCclustersVar2;
         Bool_t       fGeoTPCVar1;
         Bool_t       fGeoTPCVar2;
         Bool_t       fGeoTPCVar3;

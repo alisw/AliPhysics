@@ -58,8 +58,8 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     taskKno->SetNchNbin(NchNbins);
     taskKno->SetNchBinMax(maxbinNch);
     // Systematic -------------------------------
-    //taskKno->SetTPCclustersVar1(TPCclustersVar1);
-    //taskKno->SetTPCclustersVar2(TPCclustersVar2);
+    taskKno->SetTPCclustersVar1(TPCclustersVar1);
+    taskKno->SetTPCclustersVar2(TPCclustersVar2);
     taskKno->SetNcrVar1(NcrVar1);
     taskKno->SetNcrVar2(NcrVar2);
     taskKno->SetChisqTPCVar1(ChisqTPCVar1);
@@ -70,10 +70,10 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     //taskKno->SetChisqITSmTPCVar2(ChisqITSmTPCVar2);
     taskKno->SetDcazVar1(DcazVar1);
     taskKno->SetDcazVar2(DcazVar2);
-    taskKno->SetGeoTPCVar1(GeoTPCVar1);
-    taskKno->SetGeoTPCVar2(GeoTPCVar2);
-    taskKno->SetGeoTPCVar3(GeoTPCVar3);
-    taskKno->SetGeoTPCVar4(GeoTPCVar4);
+    //taskKno->SetGeoTPCVar1(GeoTPCVar1);
+    //taskKno->SetGeoTPCVar2(GeoTPCVar2);
+    //taskKno->SetGeoTPCVar3(GeoTPCVar3);
+    //taskKno->SetGeoTPCVar4(GeoTPCVar4);
     //taskKno->SetSPDreqVar1(SPDreqVar1);
     // Systematic -------------------------------
     mgr->AddTask(taskKno);
