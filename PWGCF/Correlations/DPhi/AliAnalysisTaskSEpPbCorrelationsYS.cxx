@@ -31,7 +31,7 @@
 #include "AliCFContainer.h"
 #include "AliGenEventHeader.h"
 #include "AliTHn.h"
-
+#include <stdio.h>
 
 #include "AliAODEvent.h"
 #include "AliESDAD.h"
@@ -118,6 +118,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fNEntries(0),
       lCentrality(0),
       calibmode(0),
+      feffi(0),
       fheffipt(0),
       fheffipteta(0), 
       bSign(0),
@@ -285,8 +286,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
   for(Int_t i=0;i<65;i++){
     fhFMDmult_runbyrun_aside[i]=0;
   }
-
-
+  
 }
 AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const char *name)
     : AliAnalysisTaskSE(name),
@@ -309,7 +309,8 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fCentType("ZNA"),
       fNEntries(0),
       lCentrality(0),
-	  calibmode(0),
+      calibmode(0),
+      feffi(0),
       fheffipt(0), 
       fheffipteta(0), 
       bSign(0),
@@ -482,7 +483,6 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
 	for(Int_t i=0;i<65;i++){
 	  fhFMDmult_runbyrun_aside[i]=0;
 	}
-
 	
 	//	DefineInput(1, AliForwardTaskValidation::Class());
         DefineOutput(1, TList::Class());
@@ -563,24 +563,28 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   // }
   
   if(fefficalib){
-	TGrid::Connect("alien://");
-	//TFile* file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency.root");
-	//TFile*file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d_3D.root",fcollisiontype.Data(),ffilterbit));
-	TFile*file;
-	//	if(fcollisiontype=="PbPb" || fcollisiontype=="pPb")file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
-	if(fcollisiontype.Contains("PbPb") || fcollisiontype=="pPb"){
-	  if(calibmode==2)file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_particlecomp_efficiency_%s_filterbit%d_20211123.root",fcollisiontype.Data(),ffilterbit));
-	  else if(calibmode==1) file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
-	  else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
-	}else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_LHC18_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
-	
-	if(!file) AliError("No correction factor");
-
-	if(calibmode){
-	  fheffipteta=(TH2F*)file->Get("h_effi");
-	}else{
-	  fheffipt=(TH1F*)file->Get("fheffipt");
-	}
+    TGrid::Connect("alien://");
+    //TFile* file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency.root");
+    //TFile*file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d_3D.root",fcollisiontype.Data(),ffilterbit));
+    TFile*file;
+    //	if(fcollisiontype=="PbPb" || fcollisiontype=="pPb")file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+    if(fcollisiontype.Contains("PbPb") || fcollisiontype=="pPb"){
+      if(calibmode==2)file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_particlecomp_efficiency_%s_filterbit%d_20211123.root",fcollisiontype.Data(),ffilterbit));
+      else if(calibmode==1) file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+      else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+      if(!file) AliError("No correction factor");
+      if(calibmode){
+	fheffipteta=(TH2F*)file->Get("h_effi");
+      }else{
+	fheffipt=(TH1F*)file->Get("fheffipt");
+      }
+    }else if(fcollisiontype=="MBPP" || fcollisiontype=="HMPPV0"){
+      //file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_LHC18_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+      
+      feffi=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/byvytautas/Effi_pp_FB%d.root",ffilterbit));
+      if(!feffi) return;
+    }
+   
   }
 
 
@@ -1926,7 +1930,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
     AliWarning("ERROR: fEvent not available \n");
     return;
   }
-
+  
   fHist_Stat->Fill(0);
   
   if(fcollisiontype=="HMPPV0") fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0,true);  
@@ -2117,7 +2121,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      }
      
    }
-      
+   
    if(fCentType=="Manual"){
        TObjArray *selectedTracksLeading = new TObjArray;
        selectedTracksLeading->SetOwner(kTRUE);
@@ -2931,16 +2935,42 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
     Float_t efficiencyerr=-1;
     Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
     if(fefficalib){
-	  if(calibmode){
-		Int_t iPt=fheffipteta->GetXaxis()->FindBin(trackpt);
-		Int_t iEta=fheffipteta->GetYaxis()->FindBin(tracketa);
-		efficiency=fheffipteta->GetBinContent(iPt,iEta);
-		efficiencyerr=fheffipteta->GetBinError(iPt,iEta);
-		if(efficiency==0.) return 0;
-	  }else{
-		  Int_t iPt=fheffipt->GetXaxis()->FindBin(trackpt);
-		  efficiency=fheffipt->GetBinContent(iPt);
-	  }
+      if(fcollisiontype=="MBPP" || fcollisiontype.Contains("HMPP")){
+	TString MCperiod=GetMCperiod(fEvent->GetRunNumber());
+	if(MCperiod=="noperiod") return 0;
+
+	TH1D* heff[4];
+	TH1D* hFD[4];
+	for(int n =0 ;n<4;n++){
+	  heff[n]=(TH1D*)feffi->Get(Form("Eff_%s_etabin_%d",MCperiod.Data(),n));
+	  hFD[n]=(TH1D*)feffi->Get(Form("FD_%s_etabin_%d",MCperiod.Data(),n));
+	}
+
+	Int_t iPt=heff[0]->GetXaxis()->FindBin(trackpt);
+	Int_t iEta=999;
+	if(tracketa>-0.8 && tracketa<-0.4) iEta=0;
+	else if(tracketa>-0.4 && tracketa<0) iEta=1;
+	else if(tracketa>0 && tracketa<0.4) iEta=2;
+	else if(tracketa>0.4 && tracketa<0.8) iEta=3;
+	else iEta=-1;
+	if(iEta<0) return 0;
+
+	Float_t eff=heff[iEta]->GetBinContent(iPt);
+	Float_t FD=hFD[iEta]->GetBinContent(iPt);
+	efficiency=eff/FD;
+	if(efficiency==0.) return 0;
+      }else{
+	if(calibmode){
+	  Int_t iPt=fheffipteta->GetXaxis()->FindBin(trackpt);
+	  Int_t iEta=fheffipteta->GetYaxis()->FindBin(tracketa);
+	  efficiency=fheffipteta->GetBinContent(iPt,iEta);
+	  efficiencyerr=fheffipteta->GetBinError(iPt,iEta);
+	  if(efficiency==0.) return 0;
+	}else{
+	  Int_t iPt=fheffipt->GetXaxis()->FindBin(trackpt);
+	efficiency=fheffipt->GetBinContent(iPt);
+	}
+      }
     }else{
       efficiency=1.;
     }
@@ -4655,6 +4685,24 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
   }
   gObjectTable->Print();
   */
+}
+
+
+TString AliAnalysisTaskSEpPbCorrelationsYS::GetMCperiod(Int_t run){
+  TString MCperiod;
+  if(run<255539+1 && run>255618-1)  MCperiod="LHC17d3";//LHC16i
+  else if(run<264035+1 && run>262418-1) MCperiod="LHC17d16"; //LHC16o
+  else if(run<254332+1 && run>254128-1) MCperiod="LHC17d17"; //LHC16g
+  else if(run<264347+1 && run>264076-1)MCperiod="LHC17d18";//LHC16p
+  else if(run<256420+1 && run>256146-1) MCperiod="LHC17e5";//LHC16j
+  else if(run<255469+1 && run>254604-1) MCperiod="LHC17f5";//LHC16h
+  else if(run<252375+1 && run>252235-1) MCperiod="LHC17f6";//LHC16d
+  else if(run<253591+1 && run>252858-1) MCperiod="LHC17f9";//LHC16e
+  else if(run<260014+1 && run>258883-1) MCperiod="LHC18d8";//LHC16l
+  else if(run<258537+1 && run>256504-1) MCperiod="LHC18f1";//LHC16k
+  else return MCperiod="noperiod";
+  return MCperiod;
+  
 }
 
  Int_t AliAnalysisTaskSEpPbCorrelationsYS::ConvertRunNumber(Int_t run){
