@@ -39,6 +39,9 @@ public:
   void SetUseEventCuts(Bool_t useEventCuts=kTRUE) { fUseEventCuts = useEventCuts;}
   Bool_t GetUseEventCuts() const {return fUseEventCuts;}
 
+  void SetUseTriggerAnalysis(Bool_t useTriggerAnalysis=kTRUE) { fUseTriggerAnalysis = useTriggerAnalysis;}
+  Bool_t GetUseTriggerAnalysis() const {return fUseTriggerAnalysis;}
+
   virtual void Init() {}
   virtual void NotifyRun();
   virtual void UserCreateOutputObjects();
@@ -177,9 +180,10 @@ public:
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
-  Bool_t fUseEventCuts = kFALSE;         //! Use or not event cuts
-  AliEventCuts fEventCuts;      //! Standard event cuts
-  AliTriggerAnalysis fTriggerAnalysis; //! Trigger analysis object for event selection
+  Bool_t fUseEventCuts = kFALSE;         // Use or not event cuts
+  Bool_t fUseTriggerAnalysis = kTRUE;    // Use or not trigger analysis
+  AliEventCuts fEventCuts;      // Standard event cuts
+  AliTriggerAnalysis fTriggerAnalysis; // Trigger analysis object for event selection
   AliGRPObject *fGRP;           //! Global run parameters
   AliVEvent *fVEvent = nullptr; //! input ESD or AOD event
   AliESDEvent *fESD  = nullptr; //! input ESD event
@@ -652,7 +656,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 28);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 29);
 };
 
 #endif
