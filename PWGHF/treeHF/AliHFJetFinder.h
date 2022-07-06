@@ -53,13 +53,14 @@ class AliHFJetFinder : public TObject
 
   virtual ~AliHFJetFinder();
 
-  void SetFJWrapper(); 
+  void SetFJWrapper();
   AliHFJet GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass=0);
   AliHFJet GetHFMCJet(TClonesArray *array, AliAODMCParticle *mcpart);
   std::vector<AliHFJet> GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass);
   std::vector<AliHFJet> GetHFMCJets(TClonesArray *array, AliAODMCParticle *mcpart);
   std::vector<AliHFJet> GetJets(TClonesArray *array);
   std::vector<AliHFJet> GetMCJets(TClonesArray *array);
+  void FindDaughters(AliAODRecoDecay* cand, std::vector<Int_t>& daughter_vec);
   void FindJets(TClonesArray *array, AliAODRecoDecayHF *cand=nullptr, Double_t invmass=0);
   void FindMCDaughters(TClonesArray *array, AliAODMCParticle *mcpart, std::vector<Int_t>& daughter_vec);
   void FindMCJets(TClonesArray *array, AliAODMCParticle *mcpart=nullptr);
@@ -98,7 +99,7 @@ class AliHFJetFinder : public TObject
   void SetMaxParticleEta(Float_t f)        {fMaxParticleEta = f;}
   void SetCharged(Int_t i)                 {fCharged = i;}
   void SetTrackingEfficiency(Double_t d)   {fTrackingEfficiency = d;}
-  
+
 
   Float_t                  fMinJetPt;
   Float_t                  fJetRadius;
@@ -127,7 +128,7 @@ class AliHFJetFinder : public TObject
   Float_t                  fCharged;
 
   Double_t                 fTrackingEfficiency;
-  
+
   Bool_t                   fDoJetSubstructure;
   AliFJWrapper            *fFastJetWrapper;
   std::vector<std::pair<Int_t,Double_t>>   fConstituentCharge;
