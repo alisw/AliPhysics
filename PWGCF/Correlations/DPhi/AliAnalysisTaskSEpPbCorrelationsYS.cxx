@@ -2109,9 +2109,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        PostData(3, fOutputList2);
        return;
      }
-   }
-
-   if(fcollisiontype=="HMPPV0" && fcuthighmult>0){
+   }else if(fcollisiontype=="HMPPV0" && fcuthighmult>0){
      Double_t fCentrality = multSelection->GetMultiplicityPercentile("V0M");
      if(fCentrality>fcuthighmult){
        PostData(1, fOutputList);
@@ -2119,10 +2117,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        PostData(3, fOutputList2);
        return;
      }
-     
-   }
-   
-   if(fCentType=="Manual"){
+   }else if(fCentType=="Manual"){
        TObjArray *selectedTracksLeading = new TObjArray;
        selectedTracksLeading->SetOwner(kTRUE);
        selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksLeading);
@@ -2138,13 +2133,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
 	   dynamic_cast<TH2F*>(fOutputList->FindObject("fhist_trackeffi"))->Fill(nTracks,nefficorrTrack);
        selectedTracksLeading->Clear();
        delete selectedTracksLeading;
-     }else{
-       lCentrality = multSelection->GetMultiplicityPercentile(fCentType);
-       Int_t qual = multSelection->GetEvSelCode();
-       if (qual == 199)  lCentrality = -999;
-       if (lCentrality < 0. || lCentrality > 100. - 0.0000001)   return;
-     }
-     Double_t *CentBins = fCentBins;
+   }else{
+     lCentrality = multSelection->GetMultiplicityPercentile(fCentType);
+     Int_t qual = multSelection->GetEvSelCode();
+     if (qual == 199)  lCentrality = -999;
+     if (lCentrality < 0. || lCentrality > 100. - 0.0000001)   return;
+   }
+   Double_t *CentBins = fCentBins;
      poolmin = CentBins[0];
      poolmax = CentBins[fNCentBins];
      fHist_Stat->Fill(4);
@@ -4690,7 +4685,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
 
 TString AliAnalysisTaskSEpPbCorrelationsYS::GetMCperiod(Int_t run){
   TString MCperiod;
-  if(run<255539+1 && run>255618-1)  MCperiod="LHC17d3";//LHC16i
+  if(run<255618+1 && run>255539-1)  MCperiod="LHC17d3";//LHC16i
   else if(run<264035+1 && run>262418-1) MCperiod="LHC17d16"; //LHC16o
   else if(run<254332+1 && run>254128-1) MCperiod="LHC17d17"; //LHC16g
   else if(run<264347+1 && run>264076-1)MCperiod="LHC17d18";//LHC16p
