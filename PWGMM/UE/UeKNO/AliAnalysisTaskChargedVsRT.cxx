@@ -118,6 +118,8 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
     fnGen(-1),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
+    fTPCclustersVar1(kFALSE),
+    fTPCclustersVar2(kFALSE),
     fGeoTPCVar1(kFALSE),
     fGeoTPCVar2(kFALSE),
     fGeoTPCVar3(kFALSE),
@@ -225,6 +227,8 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
     fnGen(-1),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
+    fTPCclustersVar1(kFALSE),
+    fTPCclustersVar2(kFALSE),
     fGeoTPCVar1(kFALSE),
     fGeoTPCVar2(kFALSE),
     fGeoTPCVar3(kFALSE),
@@ -404,12 +408,12 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     SetCutsHybrid0WoDCA(fCutsHybrid0woDCA);
 
     //to be considered for systematics...
-    if (fNcrVarTPC1) fCutsHybrid0->SetMinNCrossedRowsTPC(60);
+    if (fNcrVar1) fCutsHybrid0->SetMinNCrossedRowsTPC(60);
     else if (fNcrVar2) fCutsHybrid0->SetMinNCrossedRowsTPC(100);
     else fCutsHybrid0->SetMinNCrossedRowsTPC(70); //Default
     
-    if (TPCclustersVar1)fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
-    else if (TPCclustersVar2) fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+    if (fTPCclustersVar1)fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+    else if (fTPCclustersVar2) fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
     else fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);  //Default
 
     if (fChisqTPCVar1) fCutsHybrid0->SetMaxChi2PerClusterTPC(3);
@@ -447,12 +451,12 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     SetCutsHybrid1WoDCA(fCutsHybrid1woDCA);
 
     //to be considered for systematics...
-    if (fNcrVarTPC1) fCutsHybrid1->SetMinNCrossedRowsTPC(60);
+    if (fNcrVar1) fCutsHybrid1->SetMinNCrossedRowsTPC(60);
     else if (fNcrVar2) fCutsHybrid1->SetMinNCrossedRowsTPC(100);
     else fCutsHybrid1->SetMinNCrossedRowsTPC(70); //Default
     
-    if (TPCclustersVar1)fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
-    else if (TPCclustersVar2) fCutsHybrid2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+    if (fTPCclustersVar1)fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+    else if (fTPCclustersVar2) fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
     else fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);  //Default
 
     if (fChisqTPCVar1) fCutsHybrid1->SetMaxChi2PerClusterTPC(3);
