@@ -162,9 +162,11 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fInv_pT_LS_forW(0),
 	fInv_pT_ULS_forW(0),
 	fInv_pT_LS_forZ(0),
+	fInv_pT_LS_forZ_level(0),
 	fInv_pT_LS_forZ_pos(0),
 	fInv_pT_LS_forZ_neg(0),
 	fInv_pT_ULS_forZ(0),
+	fInv_pT_ULS_forZ_level(0),
 	fInv_pT_ULS_forZ_pos(0),
 	fInv_pT_ULS_forZ_neg(0),
 	fHistPt_Inc(0),
@@ -365,9 +367,11 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fInv_pT_LS_forW(0),
 	fInv_pT_ULS_forW(0),
 	fInv_pT_LS_forZ(0),
+	fInv_pT_LS_forZ_level(0),
 	fInv_pT_LS_forZ_pos(0),
 	fInv_pT_LS_forZ_neg(0),
 	fInv_pT_ULS_forZ(0),
+	fInv_pT_ULS_forZ_level(0),
 	fInv_pT_ULS_forZ_pos(0),
 	fInv_pT_ULS_forZ_neg(0),
 	fHistPt_Inc(0),
@@ -670,9 +674,11 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fInv_pT_LS_forW = new TH2F("fInv_pT_LS_forW", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1000,0,1.0);
 	fInv_pT_ULS_forW = new TH2F("fInv_pT_ULS_forW", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",100,0,100,1000,0,1.0);
 	fInv_pT_LS_forZ = new TH2F("fInv_pT_LS_forZ", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
+	fInv_pT_LS_forZ_level = new TH2F("fInv_pT_LS_forZ_level", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fInv_pT_LS_forZ_pos = new TH2F("fInv_pT_LS_forZ_pos", "Invariant mass vs p_{T} distribution(LS,pos) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fInv_pT_LS_forZ_neg = new TH2F("fInv_pT_LS_forZ_neg", "Invariant mass vs p_{T} distribution(LS,neg) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fInv_pT_ULS_forZ = new TH2F("fInv_pT_ULS_forZ", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
+	fInv_pT_ULS_forZ_level = new TH2F("fInv_pT_ULS_forZ_level", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fInv_pT_ULS_forZ_pos = new TH2F("fInv_pT_ULS_forZ_pos", "Invariant mass vs p_{T} distribution(ULS,pos) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fInv_pT_ULS_forZ_neg = new TH2F("fInv_pT_ULS_forZ_neg", "Invariant mass vs p_{T} distribution(ULS,neg) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fHistMCorgPi0 = new TH2F("fHistMCorgPi0","MC org Pi0",2,-0.5,1.5,100,0,50);
@@ -741,9 +747,11 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fInv_pT_LS_forW);
 	fOutputList->Add(fInv_pT_ULS_forW);
 	fOutputList->Add(fInv_pT_LS_forZ);
+	fOutputList->Add(fInv_pT_LS_forZ_level);
 	fOutputList->Add(fInv_pT_LS_forZ_pos);
 	fOutputList->Add(fInv_pT_LS_forZ_neg);
 	fOutputList->Add(fInv_pT_ULS_forZ);
+	fOutputList->Add(fInv_pT_ULS_forZ_level);
 	fOutputList->Add(fInv_pT_ULS_forZ_pos);
 	fOutputList->Add(fInv_pT_ULS_forZ_neg);
 	fOutputList->Add(fHistPt_Inc);
@@ -1781,7 +1789,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		//-------loose cut on partner electron
 		if(ptAsso <CutptAsso) continue;
 		//if(ptAsso <0.2) continue;
-		if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
+		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
+		if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;  // for Z cross section
 		if(nsigma < -3 || nsigma > 3) continue;
 		if(AssoTPCchi2perNDF >= 4) continue;
 		if(!(aAssotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aAssotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
@@ -1799,13 +1808,15 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		//-------Get mass
 		Int_t MassCorrect;
 		MassCorrect = recg.GetMass(mass,width);
-
+                Double_t RecoPt = recg.GetPt();
+ 
 		if(fFlagLS){
 			if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
 			if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
 			if(track->Pt()>1){
 				if(iIsocut)fInv_pT_LS_forW->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_LS_forZ->Fill(TrkPt,mass);
+				if(iIsocut)fInv_pT_LS_forZ_level->Fill(RecoPt,mass);
 				if(iIsocut && charge>0)fInv_pT_LS_forZ_pos->Fill(TrkPt,mass);
 				if(iIsocut && charge<0)fInv_pT_LS_forZ_neg->Fill(TrkPt,mass);
 				fInv_pT_LS->Fill(TrkPt,mass);
@@ -1817,6 +1828,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 				fInv_pT_ULS->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_ULS_forW->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_ULS_forZ->Fill(TrkPt,mass);
+				if(iIsocut)fInv_pT_ULS_forZ_level->Fill(RecoPt,mass);
 				if(iIsocut && charge>0)fInv_pT_ULS_forZ_pos->Fill(TrkPt,mass);
 				if(iIsocut && charge<0)fInv_pT_ULS_forZ_neg->Fill(TrkPt,mass);
 				if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
