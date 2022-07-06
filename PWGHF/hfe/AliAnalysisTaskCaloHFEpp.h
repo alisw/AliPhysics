@@ -186,9 +186,11 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_LS_forW;
 		TH2F*                   fInv_pT_ULS_forW;
 		TH2F*                   fInv_pT_LS_forZ;
+		TH2F*                   fInv_pT_LS_forZ_level;
 		TH2F*                   fInv_pT_LS_forZ_pos;
 		TH2F*                   fInv_pT_LS_forZ_neg;
 		TH2F*                   fInv_pT_ULS_forZ;
+		TH2F*                   fInv_pT_ULS_forZ_level;
 		TH2F*                   fInv_pT_ULS_forZ_pos;
 		TH2F*                   fInv_pT_ULS_forZ_neg;
 		TH1F*                   fHistPt_Inc;
