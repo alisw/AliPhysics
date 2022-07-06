@@ -420,9 +420,9 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     else if (fChisqITSVar2) fCutsHybrid0->SetMaxChi2PerClusterITS(49);
     else fCutsHybrid0->SetMaxChi2PerClusterITS(36);  //Default
 
-    if (fDcazVar1) fCutsHybrid1->SetMaxDCAToVertexZ(1);
-    else if (fDcazVar2) fCutsHybrid1->SetMaxDCAToVertexZ(3);
-    else fCutsHybrid1->SetMaxDCAToVertexZ(2); //Default
+    if (fDcazVar1) fCutsHybrid0->SetMaxDCAToVertexZ(1);
+    else if (fDcazVar2) fCutsHybrid0->SetMaxDCAToVertexZ(3);
+    else fCutsHybrid0->SetMaxDCAToVertexZ(2); //Default
 
     fCutsHybrid0->SetAcceptKinkDaughters(kFALSE);
     fCutsHybrid0->SetRequireTPCRefit(kTRUE);
