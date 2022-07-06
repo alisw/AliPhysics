@@ -2403,13 +2403,8 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodDaughterTrack(const AliAODTrack
 	if (nCrossedRowsTPC < fnumOfTPCcrossedRows) return kFALSE;
 	Int_t findable=t->GetTPCNclsF();
 
-  if(fSystem=="PbPb"){
-    if(t->GetIntegratedLength()<fTrackLength) { return kFALSE; }
-    if (nCrossedRowsTPC/t->GetIntegratedLength() < fTPCrowsRindableRatio) return kFALSE;
-  }else{
     if (findable <= 0) return kFALSE;
     if (nCrossedRowsTPC/findable < fTPCrowsRindableRatio) return kFALSE;
-  }
 
 
     if (TMath::Abs(t->Eta())>=fEtaCut) return kFALSE;
@@ -2418,15 +2413,25 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodDaughterTrack(const AliAODTrack
 
 }
 //____________________________________________________________________________
-Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodDaughterTrackESD(const AliESDtrack *t) {
+Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodDaughterTrackESD(const AliESDtrack *t, const AliESDv0 *v0) {
     // TPC refit
 
     if (!t->IsOn(AliESDtrack::kTPCrefit)) return kFALSE;
     Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);
     if (nCrossedRowsTPC < fnumOfTPCcrossedRows) return kFALSE;
     Int_t findable=t->GetTPCNclsF();
-    if (findable <= 0) return kFALSE;
-    if (nCrossedRowsTPC/findable < 0.8) return kFALSE;
+
+    if(fSystem=="PbPb"){
+      Float_t trackLength = t->GetLengthInActiveZone(1, 2.0, 220.0, fMagneticField);
+      if(trackLength<fTrackLength) { return kFALSE; }
+      Double_t tDecayVertexV0[3];
+      v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
+      Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+      if(nCrossedRowsTPC/(trackLength-TMath::Max(lV0Radius-85.,0.)) < fTPCrowsRindableRatio) return kFALSE;
+    }else{
+      if (findable <= 0) return kFALSE;
+      if (nCrossedRowsTPC/findable < fTPCrowsRindableRatio) return kFALSE;
+    }
 
     if (TMath::Abs(t->Eta())>=fEtaCut) return kFALSE;
 
@@ -2486,7 +2491,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0ESD(const AliESDv0 *v0,const 
         }
     }
     // Track cuts for daughter tracks
-    if ( !(IsMyGoodDaughterTrackESD(myTrackPos)) || !(IsMyGoodDaughterTrackESD(myTrackNeg)) ) return kFALSE;
+    if ( !(IsMyGoodDaughterTrackESD(myTrackPos,v0)) || !(IsMyGoodDaughterTrackESD(myTrackNeg,v0)) ) return kFALSE;
     return kTRUE;
 }
 //______________________________________________________________________
@@ -2571,7 +2576,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0TopologyESD(const AliESDv0 *v
     Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
 
     if(K0s && lV0Radius<=fK0sRadius) return kFALSE;
-    if(!K0s && lV0Radius<=fK0sRadius) return kFALSE;
+    if(!K0s && lV0Radius<=fLambdaRadius) return kFALSE;
 
     return kTRUE;
 }
