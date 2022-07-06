@@ -33,7 +33,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetParametricBacBarCosPA(int, float*, float*, int);
 
     //binning setters
-    void SetCentbinning(int, int, double*);
+    void SetCentbinning(int, double*);
     void SetMassbinning(int, int, double, double);
     void SetPtbinning(int, int, double*);
 
@@ -167,8 +167,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double varhighcut_Casc[kCasccutsnum];                     //
 
     //variables to handle binning
-    int fncentbins[knumpart];                                 //
-    double fcentbinning[knumpart][150];                       //
+    int fncentbins;                                           //
+    double fcentbinning[150];                                 //
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //
@@ -186,8 +186,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 14); 
-    //version 14: add variations based on V0Rad
+    ClassDef(AliAnalysisTaskStrVsMult, 15); 
+    //version 15: use same centrality binning for all particles
 };
 
 #endif
