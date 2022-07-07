@@ -1417,8 +1417,13 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     }
   }
  
-  if ( kAnaCutsString.Contains("PerSM") ) 
-    ana->SwitchOnFillHistogramsPerSM(); 
+  if ( kAnaCutsString.Contains("PerSM") )
+  {
+    ana->SwitchOnFillHistogramsPerSM();
+
+    if ( kAnaCutsString.Contains("PerSMInCone") )
+      ana->SwitchOnFillHistogramsPerSMInCone();
+  }
 
   if ( kAnaCutsString.Contains("PerNCells") ) 
     ana->SwitchOnStudyNCellsCut();
