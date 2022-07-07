@@ -805,6 +805,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   TH3F * fhLam0Eta[fgkNSectors];                    //!<! Cluster lambda0 vs  Pt vs eta
 //TH3F * fhLam0EtaEn[fgkNSectors];                  //!<! Cluster lambda0 vs Energy vs eta
+  TH3F * fhLam0EtaTriggerG1[fgkNSectors];           //!<! Cluster lambda0 vs  Pt vs eta
+  TH3F * fhLam0EtaTriggerG2[fgkNSectors];           //!<! Cluster lambda0 vs  Pt vs eta
+  TH3F * fhLam0EtaTriggerL0[fgkNSectors];           //!<! Cluster lambda0 vs  Pt vs eta
+
   TH3F * fhLam0EtaVzPos[fgkNSectors];               //!<! Cluster lambda0 vs  Pt vs eta
   ///<  Cluster   shower shape  vs  pT vs eta, per centrality
   TH3F **fhLam0EtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
@@ -880,7 +884,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,67) ;
+  ClassDef(AliAnaPhoton,68) ;
   /// \endcond
 
 } ;
