@@ -90,8 +90,6 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetV0sTaus(Double_t k0s, Double_t lambda) { fCutTauK0s = k0s; fCutTauLambda = lambda; }
         void                    SetNSigmaTPC(Double_t cut) { fSigmaTPC = cut; }
         void                    SetnTPCcrossedRows(Int_t cut) { fnTPCcrossedRows = cut; }
-        void                    SetMinimalTrackLength(Double_t cut) { fTrackLength = cut; }
-        void                    SetCrossedLengthRatio(Double_t cut) { fV0ratioLength = cut; }
         void                    SetMassRejWindowK0(Double_t cut) { fMassRejWindowK0 = cut; }
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
 
@@ -239,8 +237,6 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fCutTauK0s; // [0.]
         Double_t                fCutTauLambda; // [0.]
         Double_t                fSigmaTPC; // [3.0]
-        Double_t                fTrackLength; // [90]
-        Double_t                fV0ratioLength; // [0.8]
         Double_t                fMassRejWindowK0; // [0.005]
         Double_t                fMassRejWindowLambda; // [0.01]
         TString                 fCentEstimator; //"V0M"
@@ -257,7 +253,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 14);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 15);
 };
 
 #endif

@@ -98,7 +98,6 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fSigmaTPC(3.),
-    fTrackLength(90),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
     fCentEstimator("V0M"),
@@ -190,7 +189,6 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fSigmaTPC(3.),
-    fTrackLength(90),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
     fCentEstimator("V0M"),
@@ -592,18 +590,11 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
   if(daughterPos->GetTPCNcls() < fTPCclMin || daughterNeg->GetTPCNcls() < fTPCclMin) { return kFALSE; }
   if(daughterPos->GetTPCNCrossedRows() < fnTPCcrossedRows || daughterNeg->GetTPCNCrossedRows() < fnTPCcrossedRows) { return kFALSE; }
 
-  if(fColSystem==sPP||fColSystem==sPPb){
-    if(daughterPos->GetTPCNclsF() < 1 || daughterNeg->GetTPCNclsF() < 1) { return kFALSE; }
+  if(daughterPos->GetTPCNclsF() < 1 || daughterNeg->GetTPCNclsF() < 1) { return kFALSE; }
 
-    Double_t dRatioCrossFindPos = (Double_t) daughterPos->GetTPCNCrossedRows() / (Double_t) daughterPos->GetTPCNclsF();
-    Double_t dRatioCrossFindNeg = (Double_t) daughterNeg->GetTPCNCrossedRows() / (Double_t) daughterNeg->GetTPCNclsF();
-    if( dRatioCrossFindPos < fV0ratioClusters || dRatioCrossFindNeg < fV0ratioClusters) { return kFALSE; }
-  }else{
-    if(daughterPos->GetIntegratedLength()<fTrackLength || daughterNeg->GetIntegratedLength()<fTrackLength ) { return kFALSE; }
-    Double_t dRatioCrossLengthPos = (Double_t) daughterPos->GetTPCNCrossedRows() / daughterPos->GetIntegratedLength();
-    Double_t dRatioCrossLengthNeg = (Double_t) daughterNeg->GetTPCNCrossedRows() / daughterNeg->GetIntegratedLength();
-    if( dRatioCrossLengthPos < fV0ratioLength || dRatioCrossLengthNeg < fV0ratioLength) { return kFALSE; }
-  }
+  Double_t dRatioCrossFindPos = (Double_t) daughterPos->GetTPCNCrossedRows() / (Double_t) daughterPos->GetTPCNclsF();
+  Double_t dRatioCrossFindNeg = (Double_t) daughterNeg->GetTPCNCrossedRows() / (Double_t) daughterNeg->GetTPCNclsF();
+  if( dRatioCrossFindPos < fV0ratioClusters || dRatioCrossFindNeg < fV0ratioClusters) { return kFALSE; }
 
   return kTRUE;
 }
