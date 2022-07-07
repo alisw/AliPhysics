@@ -139,7 +139,7 @@ fLEDLowEnergyCutSM3Strip(0), fLEDLowNCellsCutSM3Strip(0),
 //Trigger rejection
 fRemoveBadTriggerEventsFromEMCalTriggerMaker(0),
 fEMCalTriggerMakerDecisionContainerName(0),
-fFillTriggerMakerDecisionHisto(0), fNTrigMakerDecision(0),
+fFillTriggerMakerDecisionHisto(0), fFillTriggerMakerDecisionHistoList(""), fNTrigMakerDecision(0),
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
 fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
@@ -2088,6 +2088,7 @@ void AliCaloTrackReader::InitParameters()
   fSpherocityMinPtCuts[2] = 3; fSpherocityMinPtCuts[3] = 4;
 
   fFillTriggerMakerDecisionHisto = kFALSE;
+  fFillTriggerMakerDecisionHistoList = "G1_G2_L0";
   fNTrigMakerDecision = 10;
   fTrigMakerLabels[0] = "L0" ;
   fTrigMakerLabels[1] = "EL0";

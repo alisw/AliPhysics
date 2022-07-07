@@ -453,7 +453,9 @@ public:
   void             SwitchOnBadTriggerEventsFromTriggerMakerRemoval()       { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kTRUE  ; }
   
   Bool_t           AreTriggerMakerDecisionHistoFill()   const { return fFillTriggerMakerDecisionHisto  ; }
-  void             SwitchOnTriggerMakerDecisionHistoFill ()   { fFillTriggerMakerDecisionHisto = kTRUE ; }
+  TString          GetTriggerMakerDecisionHistoList()   const { return fFillTriggerMakerDecisionHistoList  ; }
+  void             SwitchOnTriggerMakerDecisionHistoFill (TString trigList = "L0_G1_G2")
+  { fFillTriggerMakerDecisionHisto = kTRUE ;  fFillTriggerMakerDecisionHistoList = trigList; }
   void             SwitchOffTriggerMakerDecisionHistoFill()   { fFillTriggerMakerDecisionHisto = kFALSE; }
   TString          GetTriggerMakerDecisionName(Int_t i) const { if (i < fNTrigMakerDecision && i >= 0 ) return fTrigMakerLabels[i]  ;
                                                                  else                                     return ""; }
@@ -1172,12 +1174,13 @@ public:
   // Triggered event selection
   
   Bool_t           fRemoveBadTriggerEventsFromEMCalTriggerMaker;  ///<  Remove triggered events because recalculated trigger was bad
-  TString          fEMCalTriggerMakerDecisionContainerName;      ///<  Name of container with trigger decission
+  TString          fEMCalTriggerMakerDecisionContainerName;      ///<  Name of container with trigger decision
   
-  Bool_t           fFillTriggerMakerDecisionHisto;               ///< Fill histograms with trigger maker decisission
+  Bool_t           fFillTriggerMakerDecisionHisto;               ///< Fill histograms with trigger maker decision
+  TString          fFillTriggerMakerDecisionHistoList;           ///<  List of triggers active to be checked in analysis
   Int_t            fNTrigMakerDecision;                          ///< Number of trigger maker checks
-  TString          fTrigMakerLabels[10];                          ///< Trigger decission names
-  Bool_t           fTriggerMakerDecisionBoolArr[10];             ///< Trigger decission bits per trigger
+  TString          fTrigMakerLabels[10];                         ///< Trigger decision names
+  Bool_t           fTriggerMakerDecisionBoolArr[10];             ///< Trigger decision bits per trigger
 
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
@@ -1341,7 +1344,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,100) ;
+  ClassDef(AliCaloTrackReader,101) ;
   /// \endcond
 
 } ;
