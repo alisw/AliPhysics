@@ -596,6 +596,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
   Double_t dRatioCrossFindNeg = (Double_t) daughterNeg->GetTPCNCrossedRows() / (Double_t) daughterNeg->GetTPCNclsF();
   if( dRatioCrossFindPos < fV0ratioClusters || dRatioCrossFindNeg < fV0ratioClusters) { return kFALSE; }
 
+  //reject out of bunch pile-up
+  if (!(((daughterNeg->IsOn(AliAODTrack::kTPCrefit)&&daughterNeg->IsOn(AliAODTrack::kITSrefit))||daughterNeg->IsOn(AliAODTrack::kTOFout))||
+        ((daughterPos->IsOn(AliAODTrack::kTPCrefit)&&daughterPos->IsOn(AliAODTrack::kITSrefit))||daughterPos->IsOn(AliAODTrack::kTOFout)))) return kFALSE;
+
   return kTRUE;
 }
 //_____________________________________________________________________________
