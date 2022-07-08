@@ -4120,7 +4120,8 @@ Bool_t Config_Xik0(
     
     if(isMC){
         AliRsnCutMiniPair* cutEta=new AliRsnCutMiniPair("cutPseudorapidity", AliRsnCutMiniPair::kPseudorapidityRangeMC);
-        cutEta->SetRangeD(-0.9,0.9);
+        //cutEta->SetRangeD(-0.9,0.9);
+        cutEta->SetRangeD(-1000.0,1000.0);
         
         AliRsnCutSet* cutsPairDaughter=new AliRsnCutSet("pairCutsDaughter", AliRsnTarget::kMother);
         cutsPairDaughter->AddCut(cutEta);
