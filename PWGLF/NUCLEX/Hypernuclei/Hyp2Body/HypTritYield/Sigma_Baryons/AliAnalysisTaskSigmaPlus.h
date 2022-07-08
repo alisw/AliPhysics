@@ -214,6 +214,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMinPi0Mass = 0.06;                   // 0.1
         Double_t              fMaxPi0Mass = 0.19;                   // 0.16
         Double_t              fMaxSigmaPA = 0.06;                   // 0.04
+        Double_t              fMaxSigmaY  = 0.9;                    // 0.8
         Double_t              fMaxSigmaMass = 1.4;    
         Double_t              fMinProtonDCAxy = 0.005;              // 0.01
         Double_t              fMinProtonDCAz = -1; //Dummy Value
@@ -314,6 +315,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetPi0MinMass(Double_t minpi0mass) {fMinPi0Mass = minpi0mass;}
         void SetPi0MaxMass(Double_t maxpi0mass) {fMaxPi0Mass = maxpi0mass;}
         void SetSigmaMaxPA(Double_t maxpa) {fMaxSigmaPA = maxpa;}
+        void SetSigmaMaxY(Double_t maxy) {fMaxSigmaY = maxy;}
         void SetSigmaMaxMass(Double_t maxsigmass) {fMaxSigmaMass = maxsigmass;}
         void SetProtonMinDCAxy(Double_t minprotondcaxy) {fMinProtonDCAxy = minprotondcaxy;}
         void SetProtonMinDCAz(Double_t minprotondcaz) {fMinProtonDCAz = minprotondcaz;}
