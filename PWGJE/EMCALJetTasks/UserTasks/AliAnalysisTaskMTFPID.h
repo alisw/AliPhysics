@@ -588,7 +588,7 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   TH3D* fh3DCA_XY_WeakDecays_Negative;
   TH3D* fh3DCA_XY_Material_Negative;  
   
-  ClassDef(AliAnalysisTaskMTFPID, 2);
+  ClassDef(AliAnalysisTaskMTFPID, 3);
 };
 
 
