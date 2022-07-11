@@ -44,6 +44,17 @@ class AliGFWFlowContainer;
 class AliPIDResponse;
 class AliPIDCombined;
 
+namespace EFF_FLAG {
+    enum {
+      noeff = 1,
+      consteff = 2,
+      gausseff = 4,
+      flateff = 8,
+      powereff = 16,
+      inputeff = 32
+    };
+}
+
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskDeform();
@@ -68,6 +79,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
   void FillWPCounter(Double_t[5], Double_t, Double_t);
   void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
+  void FillWPCounter(vector<vector<double>> &inarr, vector<double> w, double p);
   Bool_t LoadMyWeights(const Int_t &lRunNo = 0);
   Int_t GetBayesPIDIndex(AliVTrack*);
   Int_t GetPIDIndex(const Int_t &pdgcode);
@@ -101,6 +113,9 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetBypassTriggerAndEventCuts(Bool_t newval) { fBypassTriggerAndEvetCuts = newval; };
   void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000); }
   void SetEventWeight(unsigned int weight) { fEventWeight = weight; }
+  void SetUse15oPass2PU(bool use) { fUSe15opass2PU = use; }
+  void SetPseudoEffPars(double fConstEff, double fSigmaEff);
+  void SetEfficiencyFlag(UInt_t newval) {fEfficiencyFlag = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -114,6 +129,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   Bool_t fBypassTriggerAndEvetCuts;
+  Bool_t fUSe15opass2PU;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   Bool_t fUseMCNchForReco; //Flag to use Nch from generated, when running MC closure
@@ -165,6 +181,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D **fEfficiency; //TH2Ds for efficiency calculation
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
+  TH3D *fPtvsCentvsPower;
   TH3D *fDCAxyVsPt_noChi2;
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
@@ -180,9 +197,12 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
   int EventNo;
+  double fConstEff;
+  double fSigmaEff;
   unsigned int fEventWeight; 
   vector<vector<double>>  wpPt;
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
+  template <typename T> void sortedMerge(T a[], T b[], T c[], T res[], int n1, int n2, int n3);
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(AliProfileBS* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm);
@@ -192,8 +212,11 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptCustomEvent(AliAODEvent*);
   Bool_t AcceptCustomEvent(AliESDEvent*);
+  Double_t getEfficiency(double &lpt, int iCent);
+  vector<Double_t> getPowerEfficiency(double &lpt, int iCent);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
+  UInt_t fEfficiencyFlag;
   Bool_t fRequireReloadOnRunChange;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskDeform,1);
