@@ -1745,12 +1745,12 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
         if(fSpeed==kOneBinSB) {
       	  Int_t nBins; Double_t mBin;      
       	  if(i>=9) { //signal range is xxx to xxx, plus 1 bin L and R for sidebands
-      	    nBins = 21;
-      	    mBin = 2.2464;
+      	    nBins = 67;
+      	    mBin = 2.1704;
       	  }
           else { //signal range is xxx to xxx, plus 1 bin L and R for sidebands
-            nBins = 21;
-      	    mBin = 2.2464;
+            nBins = 43;
+      	    mBin = 2.2224;
           }
      	
           Double_t varBins[nBins+1];
@@ -1964,9 +1964,9 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
      	
           Double_t varBins[nBins+1];
           varBins[0] = 1.9864;
-          varBins[1] = 2.0048;
+          varBins[1] = 1.9904;
       	  for(int j = 2; j<nBins-1; j++) {varBins[j]=mBin; mBin+=0.004;}
-      	  varBins[nBins-1] = 2.5664;
+      	  varBins[nBins-1] = 2.5824;
       	  varBins[nBins] = 2.5864;
         
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
