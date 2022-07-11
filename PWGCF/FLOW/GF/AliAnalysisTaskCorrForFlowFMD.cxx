@@ -46,7 +46,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fSkipCorr(kFALSE),
     fIsAntiparticleCheck(kFALSE),
     fDoAntiparticleOnly(kFALSE),
-    fRejectHighPtEvents(kFALSE),
+    fVetoJetEvents(kFALSE),
     fBoostAMPT(kFALSE),
     fFilterBit(96),
     fbSign(0),
@@ -100,6 +100,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fSigmaTPC(3.),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
+    fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
     fPoolMaxNEvents(2000),
@@ -137,7 +138,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fSkipCorr(kFALSE),
     fIsAntiparticleCheck(kFALSE),
     fDoAntiparticleOnly(kFALSE),
-    fRejectHighPtEvents(kFALSE),
+    fVetoJetEvents(kFALSE),
     fBoostAMPT(kFALSE),
     fFilterBit(96),
     fbSign(0),
@@ -191,6 +192,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fSigmaTPC(3.),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
+    fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
     fPoolMaxNEvents(2000),
@@ -418,8 +420,8 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::Terminate(Option_t *)
 {
-   if(fPoolMgr) delete fPoolMgr;
-   if(fOutputListCharged) delete fOutputListCharged;
+   // if(fPoolMgr) delete fPoolMgr;
+   // if(fOutputListCharged) delete fOutputListCharged;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
@@ -1324,15 +1326,17 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
   fNofTracks = 0;
-  Int_t iNofHighPtParticles = 0;
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
+
+  TObjArray* fTracksJets = nullptr;
+  if(fVetoJetEvents) fTracksJets = new TObjArray;
 
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
       AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
       if(!track || !IsTrackSelected(track)) { continue; }
 
       Double_t trackPt = track->Pt();
-      if(trackPt > 10.) iNofHighPtParticles++;
+      if(fVetoJetEvents && trackPt > fJetParticleLowPt) fTracksJets->Add((AliAODTrack*)track);
       if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
         fNofTracks++;
         if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
@@ -1373,10 +1377,25 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
     fhEventMultiplicity->Fill(fNofTracks);
   }
 
-  if(fRejectHighPtEvents){
-    fhEventCounter->Fill("Before HPC",1); //HPC = high pt cut
-    if(iNofHighPtParticles > fNofMinHighPtTracksForRejection) return kFALSE;
-    fhEventCounter->Fill("After HPC",1);
+  if(fVetoJetEvents){
+    Double_t foundSomething = kFALSE;
+    fhEventCounter->Fill("Before Jet Veto",1); //HPC = high pt cut
+    for(Int_t iTrig(0); iTrig < fTracksJets->GetEntriesFast(); iTrig++){
+      AliAODTrack* trackTrig = (AliAODTrack*)fTracksJets->At(iTrig);
+      if(!trackTrig) continue;
+      Double_t trigPhi = trackTrig->Phi();
+
+      for(Int_t iAss(iTrig+1); iAss < fTracksJets->GetEntriesFast()+1; iAss++){
+        AliAODTrack* trackAss = (AliAODTrack*)fTracksJets->At(iAss);
+        if(!trackAss) continue;
+        Double_t assPhi = trackAss->Phi();
+
+        Double_t deltaPhi = RangePhi(trigPhi - assPhi);
+        if(TMath::Abs(deltaPhi - TMath::Pi()) < 0.5) foundSomething = kTRUE;
+      }
+    }
+    if(foundSomething){ fhEventCounter->Fill("After Jet Veto",1); }
+    else { return kFALSE; }
   }
 
   if(fDoV0){
@@ -1601,7 +1620,7 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fUseOppositeSidesOnly: (Bool_t) %s\n", fUseOppositeSidesOnly ? "kTRUE" : "kFALSE");
   printf("\t fIsAntiparticleCheck: (Bool_t) %s\n", fIsAntiparticleCheck ? "kTRUE" : "kFALSE");
   printf("\t fDoAntiparticleOnly: (Bool_t) %s\n", fDoAntiparticleOnly ? "kTRUE" : "kFALSE");
-  printf("\t fRejectHighPtEvents: (Bool_t) %s\n", fRejectHighPtEvents ? "kTRUE" : "kFALSE");
+  printf("\t fVetoJetEvents: (Bool_t) %s\n", fVetoJetEvents ? "kTRUE" : "kFALSE");
   printf("\t fNOfSamples: (Int_t) %d\n", (Int_t) fNOfSamples);
   printf(" **************************** \n");
   printf("\t fSystematicsFlag: (TString) %s\n", fSystematicsFlag.Data());
