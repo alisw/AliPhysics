@@ -29,10 +29,6 @@ class THnSparse;
 class TProfile;
 class AliRhoParameter;                
 
-#include "AliAnalysisTaskEmcalJet.h"
-#include "THistManager.h"
-#include "AliAnalysisTaskEmcalJetTagger.h" 
-
 /**
  * \class AliAnalysisTaskEmcalJetProperties
  * \brief Implementation of a sample jet analysis task.
