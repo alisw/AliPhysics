@@ -47,6 +47,17 @@ class AliAnalysisTaskEmcalJetProperties : public AliAnalysisTaskEmcalJet {
   void UserCreateOutputObjects();
   void Terminate(Option_t *option);
   
+  
+ protected:
+  void ExecOnce();
+  Bool_t FillHistograms();
+  Bool_t Run();
+
+  Bool_t IsRec = kTRUE;//True for matched rec jet list, false for matched gen jet list
+
+  TClonesArray *fJets = new TClonesArray();     //!<! jets
+  UInt_t fNExclLeadJets = 2; // number of leading jets to be excluded from the median calculation
+
   Double_t BkgSubtracted(Int_t KtJetCont, Int_t AktJetCont);
   Double_t GetNch(Bool_t Isrec);
   Double_t GetNchUEPC(Bool_t Isrec);
@@ -74,15 +85,6 @@ class AliAnalysisTaskEmcalJetProperties : public AliAnalysisTaskEmcalJet {
   void MatchJets(Int_t c1, Int_t c2, Double_t maxDist, TList* matchedListJet1, TList* matchedListJet2);
   // Int_t MyMatchJets(Int_t c1, Int_t c2, Double_t maxDist, TList* matchedListParton, TList* matchedListJet);
 
- protected:
-  void ExecOnce();
-  Bool_t FillHistograms();
-  Bool_t Run();
-
-  Bool_t IsRec = kTRUE;//True for matched rec jet list, false for matched gen jet list
-
-  TClonesArray *fJets = new TClonesArray();     //!<! jets
-  UInt_t fNExclLeadJets = 2; // number of leading jets to be excluded from the median calculation
 
   void AllocateJetHistograms();
   void  FillJetProperties();
@@ -99,6 +101,7 @@ class AliAnalysisTaskEmcalJetProperties : public AliAnalysisTaskEmcalJet {
   Double_t fCfactor = 1.0;
   void FillMy2DResponseMatrices();
   //  void FillMy2DResponseMatricesTest();
+  
 
 
   THistManager fHistManager;///< Histogram manager
