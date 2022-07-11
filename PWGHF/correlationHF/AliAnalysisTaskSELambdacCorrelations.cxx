@@ -1745,20 +1745,20 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
         if(fSpeed==kOneBinSB) {
       	  Int_t nBins; Double_t mBin;      
       	  if(i>=9) { //signal range is xxx to xxx, plus 1 bin L and R for sidebands
-      	    nBins = 67;
-      	    mBin = 2.1704;
+      	    nBins = 21;
+      	    mBin = 2.2464;
       	  }
           else { //signal range is xxx to xxx, plus 1 bin L and R for sidebands
-            nBins = 43;
-      	    mBin = 2.2224;
+            nBins = 21;
+      	    mBin = 2.2464;
           }
      	
           Double_t varBins[nBins+1];
           varBins[0] = 1.9864;
-          varBins[1] = 2.0064;
+          varBins[1] = 1.9904;
       	  for(int j = 2; j<nBins-1; j++) {varBins[j]=mBin; mBin+=0.004;}
-      	  varBins[nBins-1] = 2.5864;
-      	  varBins[nBins] = 2.5904;
+      	  varBins[nBins-1] = 2.5824;
+      	  varBins[nBins] = 2.5864;
         
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
@@ -3015,10 +3015,10 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
         if(mLambdac > fSignLeft_HighPt && mLambdac < fSignRight_HighPt) allowLambdac = 1;
         if(mLambdacbar > fSignLeft_HighPt && mLambdacbar < fSignRight_HighPt) allowLambdacbar = 1;
       }
-      if(mLambdac > fLSBLowLim.at(ptbin) && mLambdac < fLSBUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 2.00; fillSpWeigLambdac[1] = 2.00;} //in LSB bin!
-      if(mLambdacbar > fLSBLowLim.at(ptbin) && mLambdacbar < fLSBUppLim.at(ptbin)) {allowLambdacbar = 1; fillSpPhiLambdacbar[1] = 2.00; fillSpWeigLambdacbar[1] = 2.00;} //in LSB bin!
-      if(mLambdac > fRSBLowLim.at(ptbin) && mLambdac < fRSBUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 2.50; fillSpWeigLambdac[1] = 2.50;} //in RSB bin!
-      if(mLambdacbar > fRSBLowLim.at(ptbin) && mLambdacbar < fRSBUppLim.at(ptbin)) {allowLambdacbar = 1; fillSpPhiLambdacbar[1] = 2.50; fillSpWeigLambdacbar[1] = 2.50;} //in RSB bin!
+      if(mLambdac > fLSBLowLim.at(ptbin) && mLambdac < fLSBUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 1.99; fillSpWeigLambdac[1] = 1.99;} //in LSB bin!
+      if(mLambdacbar > fLSBLowLim.at(ptbin) && mLambdacbar < fLSBUppLim.at(ptbin)) {allowLambdacbar = 1; fillSpPhiLambdacbar[1] = 1.99; fillSpWeigLambdacbar[1] = 1.99;} //in LSB bin!
+      if(mLambdac > fRSBLowLim.at(ptbin) && mLambdac < fRSBUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 2.585; fillSpWeigLambdac[1] = 2.585;} //in RSB bin!
+      if(mLambdacbar > fRSBLowLim.at(ptbin) && mLambdacbar < fRSBUppLim.at(ptbin)) {allowLambdacbar = 1; fillSpPhiLambdacbar[1] = 2.585; fillSpWeigLambdacbar[1] = 2.585;} //in RSB bin!
     } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
     if(fSpeed==kOneBinSBandS) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
       if(mLambdac > fSignLowLim.at(ptbin) && mLambdac < fSignUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 0; fillSpWeigLambdac[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
@@ -3136,10 +3136,10 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
         if(mLambdac > fSignLeft_HighPt && mLambdac < fSignRight_HighPt) allowLambdac = 1;
         if(mLambdacbar > fSignLeft_HighPt && mLambdacbar < fSignRight_HighPt) allowLambdacbar = 1;
       }
-      if(mLambdac > fLSBLowLim.at(ptbin) && mLambdac < fLSBUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 2.00;} //in LSB bin!
-      if(mLambdacbar > fLSBLowLim.at(ptbin) && mLambdacbar < fLSBUppLim.at(ptbin)) {allowLambdacbar = 1; fillSpPhiLambdacbar[1] = 2.00;} //in LSB bin!
-      if(mLambdac > fRSBLowLim.at(ptbin) && mLambdac < fRSBUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 2.50;} //in RSB bin!
-      if(mLambdacbar > fRSBLowLim.at(ptbin) && mLambdacbar < fRSBUppLim.at(ptbin)) {allowLambdacbar = 1; fillSpPhiLambdacbar[1] = 2.50;} //in RSB bin!
+      if(mLambdac > fLSBLowLim.at(ptbin) && mLambdac < fLSBUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 1.99;} //in LSB bin!
+      if(mLambdacbar > fLSBLowLim.at(ptbin) && mLambdacbar < fLSBUppLim.at(ptbin)) {allowLambdacbar = 1; fillSpPhiLambdacbar[1] = 1.99;} //in LSB bin!
+      if(mLambdac > fRSBLowLim.at(ptbin) && mLambdac < fRSBUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 2.585;} //in RSB bin!
+      if(mLambdacbar > fRSBLowLim.at(ptbin) && mLambdacbar < fRSBUppLim.at(ptbin)) {allowLambdacbar = 1; fillSpPhiLambdacbar[1] = 2.585;} //in RSB bin!
     } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
     if(fSpeed==kOneBinSBandS) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
       if(mLambdac > fSignLowLim.at(ptbin) && mLambdac < fSignUppLim.at(ptbin)) {allowLambdac = 1; fillSpPhiLambdac[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
