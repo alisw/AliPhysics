@@ -7,6 +7,7 @@
 #pragma link C++ class AliPMDpPbAnalysisTaskData+;
 #pragma link C++ class AliPMDpPbAnalysisTaskSim+;
 #pragma link C++ class AliPMDppAnalysisTaskSim+;
+#pragma link C++ class AliPMDppAnalysisTaskData++;
 
 #endif /* __CINT__ */
 
