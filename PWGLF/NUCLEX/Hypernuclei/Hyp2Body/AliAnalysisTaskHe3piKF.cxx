@@ -179,6 +179,8 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
     tgr |= kHighMultV0;
   int magField = esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
+  KFParticle::SetField(magField);
+
   fRecHyper->trigger = tgr + magField;
 
   std::vector<int> checkedHyperLabel;
