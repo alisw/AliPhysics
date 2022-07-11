@@ -2443,6 +2443,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411799709fe30230000","0s631031000000d0"); // INT7 EMC FT
     cuts.AddCutCalo("00010113","411799809fe30230000","0s631031000000d0"); // INT7 PCM-EMC FT
   } else if (trainConfig == 1917){  // pp 13 TeV variations: cluster time
+    cuts.AddCutCalo("00010113","411790100fe30230000","0s631031000000d0"); // INT7 time -500+500
     cuts.AddCutCalo("00010113","411790105fe30230000","0s631031000000d0"); // INT7 time -50+50
     cuts.AddCutCalo("00010113","411790106fe30230000","0s631031000000d0"); // INT7 time -30+35
     cuts.AddCutCalo("00010113","411790108fe30230000","0s631031000000d0"); // INT7 time -20+30
