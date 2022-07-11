@@ -5,12 +5,11 @@
  * \brief Declaration of class AliAnalysisTaskEmcalJetProperties
  *
  * In this header file the class AliAnalysisTaskEmcalJetProperties is declared.
- * This is a sample task that shows how to write a simple user analysis task
- * using the EMCal jet framework. It is also used to do automatic benchmark
- * tests of the software.
+ * This is a task used for the measurement of charged jet properties.
  *
  * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
- * \date Apr 27, 2016
+ * \Modified by Sidharth Kumar Prasad, Prottoy Das and Debjani Banerjee from Bose Institute
+ * 
  */
 
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
