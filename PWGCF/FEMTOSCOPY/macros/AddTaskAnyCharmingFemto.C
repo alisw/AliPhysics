@@ -123,8 +123,8 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     buddyNsigmaUp = 3;
     buddyMaxPt = 4.0;
     aliPIDParticle = AliPID::kKaon;
-    kaonPIDTight = { {"COMB", 2.85}, {"TPC", 2.7}, {"EXCLUSION", 3.3}, }; // for SetPIDkd() when using oton's K selection
-    kaonPIDLoose = { {"COMB", 3.15}, {"TPC", 3.3}, {"EXCLUSION", 2.7}, };
+    kaonPIDTight = { {"COMB", 2.7}, {"TPC", 2.7}, {"EXCLUSION", 3.3}, }; // for SetPIDkd() when using oton's K selection
+    kaonPIDLoose = { {"COMB", 3.3}, {"TPC", 3.3}, {"EXCLUSION", 2.7}, };
   } 
 
 if (!isMC) {
@@ -158,8 +158,8 @@ if (!isMC) {
     TrackCuts->SetNClsTPC(buddyNClsUp);
     AntiTrackCuts->SetNClsTPC(buddyNClsUp);
   } else if (suffix == "4") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
     
     // Set PID variations
     if (aliPIDParticle == AliPID::kProton){
@@ -198,8 +198,8 @@ if (!isMC) {
     TrackCuts->SetNClsTPC(buddyNClsUp);
     AntiTrackCuts->SetNClsTPC(buddyNClsUp);
   } else if (suffix == "8") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
     
     // Set PID variations
     if (aliPIDParticle == AliPID::kProton){
@@ -298,8 +298,8 @@ if (!isMC) {
     TrackCuts->SetNClsTPC(buddyNClsLow);
     AntiTrackCuts->SetNClsTPC(buddyNClsLow);
   } else if (suffix == "18") {
-    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
     
     // Set PID variations
     if (aliPIDParticle == AliPID::kProton){
