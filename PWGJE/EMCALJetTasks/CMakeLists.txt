@@ -317,7 +317,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskSDKL.cxx
         UserTasks/AliAnalysisTaskSDKLResponse.cxx
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
-	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
+	UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
 	UserTasks/AliAnalysisTaskEmcalJetProperties.cxx
         Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
