@@ -3050,6 +3050,7 @@ Int_t AliConvEventCuts::GetEMCalClusterMultiplicity(AliVEvent* event)
     if (clus->IsEMCAL()){
       nClusCalo++;
     }
+    delete clus;
   }
   return nClusCalo;
 };
