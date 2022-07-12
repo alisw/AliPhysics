@@ -52,6 +52,7 @@ public:
   bool HasRecVertex();
 
 protected:
+    //
 private:
   AliESDEvent *fESD; //! input ESD event
   AliEventCuts fEventCuts;
@@ -87,8 +88,14 @@ private:
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
-  TProfile *hActivityV0DataSect;
-  TProfile *hActivityV0McSect;
+  TProfile *pActivityV0DataSect;
+  TProfile *pActivityV0ADataSect;
+  TProfile *pActivityV0CDataSect;
+  TProfile *pActivityV0multData;
+  TProfile *pActivityV0AmultData;
+  TProfile *pActivityV0CmultData;
+  TProfile *pActivityV0McSect;
+  TProfile *pActivityV0multMc;
   TH2D *hFlatVsNchMC;
   TH1D *hNchV0M;
   TH1D *hNchV0a;
