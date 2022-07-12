@@ -237,7 +237,7 @@ public:
                 Double_t r[3],  //radius vector
                 Double_t g[3],  //first defivatives
                 Double_t gg[3]); //second derivatives
-<<<<<<< HEAD
+
   //---------------------------------------------------------------------------------------
   Float_t GetDCAz(AliESDtrack *lTrack);
   Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
@@ -247,11 +247,7 @@ public:
     fkSaveSpecificConfig = kTRUE;
   }
   //---------------------------------------------------------------------------------------
-  
-  Double_t MLCascadeNeuralNetworkForward(Double_t v[11], Float_t lpT);
-  
-  //---------------------------------------------------------------------------------------
-=======
+
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
@@ -334,7 +330,6 @@ private:
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   AliAnalysisTaskWeakDecayVertexer *fWDV; //helper
   
-<<<<<<< HEAD
   AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
   
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
@@ -531,11 +526,6 @@ private:
   Float_t fTreeCascVarDistOverTotMom;               //!
   Float_t fTreeCascVarMaxChi2PerCluster; //!
   Float_t fTreeCascVarMinTrackLength; //!
-  
-  //-------------------------------------------
-  //ML Prediction
-  Double_t fTreeCascVarMLCascadeNNPrediction; //!
-  //-------------------------------------------
   
   //TPC dEdx
   Float_t fTreeCascVarNegNSigmaPion;   //!
@@ -739,7 +729,7 @@ private:
   
   ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 4);
   //1: first implementation
-=======
+
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
