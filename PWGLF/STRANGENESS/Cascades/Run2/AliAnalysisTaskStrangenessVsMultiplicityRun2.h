@@ -237,6 +237,7 @@ public:
                 Double_t r[3],  //radius vector
                 Double_t g[3],  //first defivatives
                 Double_t gg[3]); //second derivatives
+<<<<<<< HEAD
   //---------------------------------------------------------------------------------------
   Float_t GetDCAz(AliESDtrack *lTrack);
   Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
@@ -250,6 +251,29 @@ public:
   Double_t MLCascadeNeuralNetworkForward(Double_t v[11], Float_t lpT);
   
   //---------------------------------------------------------------------------------------
+=======
+//---------------------------------------------------------------------------------------
+    Float_t GetDCAz(AliESDtrack *lTrack);
+    Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
+//---------------------------------------------------------------------------------------
+    void SetSaveSpecificCascadeConfig(TString lConfig){
+        fkConfigToSave = lConfig;
+        fkSaveSpecificConfig = kTRUE; 
+    }
+//---------------------------------------------------------------------------------------
+
+    Double_t ML_NeuralNetwork_Prediction_XiMinus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_XiPlus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_OmegaMinus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_OmegaPlus(Double_t v[11]);
+
+    Double_t ML_BDT_Prediction_XiMinus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_XiPlus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_OmegaMinus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_OmegaPlus(Double_t v[11]);
+
+//---------------------------------------------------------------------------------------
+>>>>>>> Machine Learning functions to classify cascade candidates added
 private:
   // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
   // your data member object is created on the worker nodes and streaming is not needed.
@@ -310,6 +334,7 @@ private:
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   AliAnalysisTaskWeakDecayVertexer *fWDV; //helper
   
+<<<<<<< HEAD
   AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
   
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
@@ -714,6 +739,405 @@ private:
   
   ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 4);
   //1: first implementation
+=======
+    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
+
+    Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
+    Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+
+    Double_t fLambdaMassMean[5]; //Array to store the lambda mass mean parametrization
+    //[0]+[1]*TMath::Exp([2]*x)+[3]*TMath::Exp([4]*x)
+
+    Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
+    //[0]+[1]*x+[2]*TMath::Exp([3]*x)
+
+    Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
+
+    //if true, save sandbox mode info (beware large files!)
+    Bool_t fkSandboxMode;
+    
+    //if true, fill cascade TTree with a config with a given name
+    Bool_t fkSaveSpecificConfig;
+    TString fkConfigToSave; 
+    
+//===========================================================================================
+//   Variables for Event Tree
+//===========================================================================================
+    Float_t fCentrality; //!
+    UInt_t fEvSel_TriggerMask; //! save full info for checking later
+    Bool_t fMVPileupFlag; //!
+    Bool_t fOOBPileupFlag; //!
+
+    //TOF info for OOB pileuo study
+    Int_t  fNTOFClusters;  //!
+    Int_t  fNTOFMatches;   //!
+    Int_t  fNTracksITSsa2010; //!
+    Int_t  fNTracksGlobal2015; //!
+    Int_t  fNTracksGlobal2015TriggerPP; //!
+
+    //V0 info for OOB pileup study
+    Float_t fAmplitudeV0A; //!
+    Float_t fAmplitudeV0C; //!
+
+    //IR info for OOB pileup study
+    Int_t fClosestNonEmptyBC; //!
+
+//===========================================================================================
+//   Variables for V0 Tree
+//===========================================================================================
+    Float_t fTreeVariableChi2V0;         //!
+    Float_t fTreeVariableDcaV0Daughters; //!
+    Float_t fTreeVariableDcaV0ToPrimVertex; //!
+    Float_t fTreeVariableDcaPosToPrimVertex; //!
+    Float_t fTreeVariableDcaNegToPrimVertex; //!
+    Float_t fTreeVariableV0CosineOfPointingAngle; //!
+    Float_t fTreeVariableV0Radius; //!
+    Float_t fTreeVariablePt; //!
+
+    Float_t fTreeVariableRapK0Short; //!
+    Float_t fTreeVariableRapLambda; //!
+    Float_t fTreeVariableInvMassK0s; //!
+    Float_t fTreeVariableInvMassLambda; //!
+    Float_t fTreeVariableInvMassAntiLambda; //!
+    Float_t fTreeVariableAlphaV0; //!
+    Float_t fTreeVariablePtArmV0;//!
+    Float_t fTreeVariableNegEta; //!
+    Float_t fTreeVariablePosEta; //!
+
+    Float_t fTreeVariableNSigmasPosProton; //!
+    Float_t fTreeVariableNSigmasPosPion; //!
+    Float_t fTreeVariableNSigmasNegProton; //!
+    Float_t fTreeVariableNSigmasNegPion; //!
+
+    Float_t fTreeVariableDistOverTotMom;//!
+    Int_t   fTreeVariableLeastNbrCrossedRows;//!
+    Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
+    Float_t fTreeVariableMaxChi2PerCluster; //!
+    Float_t fTreeVariableMinTrackLength; //!
+
+    //Variables for debugging Wrong PID hypothesis in tracking bug
+    // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
+    Int_t fTreeVariablePosPIDForTracking; //! uses AliPID EParticleType code (0=electron, 1=muon, 2=pion, etc)
+    Int_t fTreeVariableNegPIDForTracking; //!
+    Float_t fTreeVariablePosdEdx; //!
+    Float_t fTreeVariableNegdEdx; //!
+    Float_t fTreeVariablePosInnerP; //!
+    Float_t fTreeVariableNegInnerP; //!
+    //Decay Length issue debugging: ULong_t with track status
+    ULong64_t fTreeVariableNegTrackStatus; //!
+    ULong64_t fTreeVariablePosTrackStatus; //!
+    Float_t fTreeVariableNegDCAz; //!
+    Float_t fTreeVariablePosDCAz; //!
+
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSClusters0;
+    Bool_t fTreeVariablePosITSClusters1;
+    Bool_t fTreeVariablePosITSClusters2;
+    Bool_t fTreeVariablePosITSClusters3;
+    Bool_t fTreeVariablePosITSClusters4;
+    Bool_t fTreeVariablePosITSClusters5;
+    
+    Bool_t fTreeVariableNegITSClusters0;
+    Bool_t fTreeVariableNegITSClusters1;
+    Bool_t fTreeVariableNegITSClusters2;
+    Bool_t fTreeVariableNegITSClusters3;
+    Bool_t fTreeVariableNegITSClusters4;
+    Bool_t fTreeVariableNegITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSSharedClusters0;
+    Bool_t fTreeVariablePosITSSharedClusters1;
+    Bool_t fTreeVariablePosITSSharedClusters2;
+    Bool_t fTreeVariablePosITSSharedClusters3;
+    Bool_t fTreeVariablePosITSSharedClusters4;
+    Bool_t fTreeVariablePosITSSharedClusters5;
+    
+    Bool_t fTreeVariableNegITSSharedClusters0;
+    Bool_t fTreeVariableNegITSSharedClusters1;
+    Bool_t fTreeVariableNegITSSharedClusters2;
+    Bool_t fTreeVariableNegITSSharedClusters3;
+    Bool_t fTreeVariableNegITSSharedClusters4;
+    Bool_t fTreeVariableNegITSSharedClusters5;
+    
+    Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
+
+    //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
+    Float_t fTreeVariableNegTOFExpTDiff; //!
+    Float_t fTreeVariablePosTOFExpTDiff; //!
+    Float_t fTreeVariableNegTOFSignal; //!
+    Float_t fTreeVariablePosTOFSignal; //!
+    Int_t   fTreeVariableNegTOFBCid; //!
+    Int_t   fTreeVariablePosTOFBCid; //! 
+    //Event info
+    Float_t fTreeVariableAmplitudeV0A; //!
+    Float_t fTreeVariableAmplitudeV0C; //!
+    Int_t   fTreeVariableClosestNonEmptyBC; //!
+
+    //Event Multiplicity Variables
+    Float_t fTreeVariableCentrality; //!
+    UInt_t fTreeVariable_TriggerMask; //! save full info for checking later
+    Bool_t fTreeVariableMVPileupFlag; //!
+    Bool_t fTreeVariableOOBPileupFlag; //!
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Sandbox V0
+    Float_t fTreeVariablePrimVertexX;
+    Float_t fTreeVariablePrimVertexY;
+    Float_t fTreeVariablePrimVertexZ;
+
+    
+    AliExternalTrackParam *fTreeVariablePosTrack; //!
+    AliExternalTrackParam *fTreeVariableNegTrack; //!
+    
+    Float_t fTreeVariableMagneticField;
+    Int_t fTreeVariableRunNumber;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+//===========================================================================================
+//   Variables for Cascade Candidate Tree
+//===========================================================================================
+    Int_t fTreeCascVarCharge;         //!
+    Float_t fTreeCascVarMassAsXi;     //!
+    Float_t fTreeCascVarMassAsOmega;  //!
+    Float_t fTreeCascVarPt;           //!
+    Float_t fTreeCascVarRapXi;        //!
+    Float_t fTreeCascVarRapOmega;     //!
+    Float_t fTreeCascVarNegEta;       //!
+    Float_t fTreeCascVarPosEta;       //!
+    Float_t fTreeCascVarBachEta;      //!
+    Float_t fTreeCascVarDCACascDaughters; //!
+    Float_t fTreeCascVarDCABachToPrimVtx; //!
+    Float_t fTreeCascVarDCAV0Daughters;   //!
+    Float_t fTreeCascVarDCAV0ToPrimVtx;   //!
+    Float_t fTreeCascVarDCAPosToPrimVtx;  //!
+    Float_t fTreeCascVarDCANegToPrimVtx;  //!
+    Float_t fTreeCascVarCascCosPointingAngle;         //!
+    Float_t fTreeCascVarCascDCAtoPVxy;         //!
+    Float_t fTreeCascVarCascDCAtoPVz;         //!
+    Float_t fTreeCascVarCascRadius;                   //!
+    Float_t fTreeCascVarV0Mass;                       //!
+    Float_t fTreeCascVarV0MassLambda;                       //!
+    Float_t fTreeCascVarV0MassAntiLambda;                       //!
+    Float_t fTreeCascVarV0CosPointingAngle;           //!
+    Float_t fTreeCascVarV0CosPointingAngleSpecial;    //!
+    Float_t fTreeCascVarV0Radius;                     //!
+    Float_t fTreeCascVarDCABachToBaryon;                     //!
+    Float_t fTreeCascVarWrongCosPA;                   //!
+    Int_t   fTreeCascVarLeastNbrClusters;             //!
+    Int_t fTreeCascVarLeastNbrCrossedRows;
+    Float_t fTreeCascVarNbrCrossedRowsOverLength;
+    Float_t fTreeCascVarDistOverTotMom;               //!
+    Float_t fTreeCascVarMaxChi2PerCluster; //!
+    Float_t fTreeCascVarMinTrackLength; //!
+
+    //-------------------------------------------
+    //ML Prediction
+    Double_t fTreeCascVarMLNNPredXiMinus; //!
+    Double_t fTreeCascVarMLNNPredXiPlus; //!
+    Double_t fTreeCascVarMLNNPredOmegaMinus; //!
+    Double_t fTreeCascVarMLNNPredOmegaPlus; //!
+
+    Double_t fTreeCascVarMLBDTPredXiMinus; //!
+    Double_t fTreeCascVarMLBDTPredXiPlus; //!
+    Double_t fTreeCascVarMLBDTPredOmegaMinus; //!
+    Double_t fTreeCascVarMLBDTPredOmegaPlus; //!
+    //-------------------------------------------
+
+    //TPC dEdx
+    Float_t fTreeCascVarNegNSigmaPion;   //!
+    Float_t fTreeCascVarNegNSigmaProton; //!
+    Float_t fTreeCascVarPosNSigmaPion;   //!
+    Float_t fTreeCascVarPosNSigmaProton; //!
+    Float_t fTreeCascVarBachNSigmaPion;  //!
+    Float_t fTreeCascVarBachNSigmaKaon;  //!
+    
+    //TOF (experimental, not corrected for weak decay traj)
+    Float_t fTreeCascVarNegTOFNSigmaPion;   //!
+    Float_t fTreeCascVarNegTOFNSigmaProton; //!
+    Float_t fTreeCascVarPosTOFNSigmaPion;   //!
+    Float_t fTreeCascVarPosTOFNSigmaProton; //!
+    Float_t fTreeCascVarBachTOFNSigmaPion;  //!
+    Float_t fTreeCascVarBachTOFNSigmaKaon;  //!
+    
+    Float_t fTreeCascVarNegITSNSigmaPion;   //!
+    Float_t fTreeCascVarNegITSNSigmaProton; //!
+    Float_t fTreeCascVarPosITSNSigmaPion;   //!
+    Float_t fTreeCascVarPosITSNSigmaProton; //!
+    Float_t fTreeCascVarBachITSNSigmaPion;  //!
+    Float_t fTreeCascVarBachITSNSigmaKaon;  //!
+    
+    //ChiSquares
+    Float_t fTreeCascVarChiSquareV0;
+    Float_t fTreeCascVarChiSquareCascade;
+    
+    //Extended information: uncertainties at point closest to pV
+    Float_t fTreeCascVarBachDCAPVSigmaX2; //
+    Float_t fTreeCascVarBachDCAPVSigmaY2; //
+    Float_t fTreeCascVarBachDCAPVSigmaZ2; //
+    Float_t fTreeCascVarPosDCAPVSigmaX2; //
+    Float_t fTreeCascVarPosDCAPVSigmaY2; //
+    Float_t fTreeCascVarPosDCAPVSigmaZ2; //
+    Float_t fTreeCascVarNegDCAPVSigmaX2; //
+    Float_t fTreeCascVarNegDCAPVSigmaY2; //
+    Float_t fTreeCascVarNegDCAPVSigmaZ2; //
+
+    //Variables for debugging Wrong PID hypothesis in tracking bug
+    // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
+    Int_t fTreeCascVarPosPIDForTracking; //! uses AliPID EParticleType code (0=electron, 1=muon, 2=pion, etc)
+    Int_t fTreeCascVarNegPIDForTracking; //!
+    Int_t fTreeCascVarBachPIDForTracking; //!
+    Float_t fTreeCascVarNegInnerP; //!
+    Float_t fTreeCascVarPosInnerP; //!
+    Float_t fTreeCascVarBachInnerP; //!
+    Float_t fTreeCascVarNegdEdx; //!
+    Float_t fTreeCascVarPosdEdx; //!
+    Float_t fTreeCascVarBachdEdx; //!
+
+    //Decay Length issue debugging: ULong_t with track status
+    ULong64_t fTreeCascVarNegTrackStatus; //!
+    ULong64_t fTreeCascVarPosTrackStatus; //!
+    ULong64_t fTreeCascVarBachTrackStatus; //!
+
+    Float_t fTreeCascVarNegDCAz; //!
+    Float_t fTreeCascVarPosDCAz; //!
+    Float_t fTreeCascVarBachDCAz; //!
+
+    //Variables for debugging the invariant mass bump
+    //Full momentum information
+    Float_t fTreeCascVarNegPx; //!
+    Float_t fTreeCascVarNegPy; //!
+    Float_t fTreeCascVarNegPz; //!
+    Float_t fTreeCascVarPosPx; //!
+    Float_t fTreeCascVarPosPy; //!
+    Float_t fTreeCascVarPosPz; //!
+    Float_t fTreeCascVarBachPx; //!
+    Float_t fTreeCascVarBachPy; //!
+    Float_t fTreeCascVarBachPz; //!
+
+    Float_t fTreeCascVarV0DecayX; //!
+    Float_t fTreeCascVarV0DecayY; //!
+    Float_t fTreeCascVarV0DecayZ; //!
+    Float_t fTreeCascVarCascadeDecayX; //!
+    Float_t fTreeCascVarCascadeDecayY; //!
+    Float_t fTreeCascVarCascadeDecayZ; //!
+    Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
+    //Track Labels (check for duplicates, etc)
+    Int_t fTreeCascVarNegIndex; //!
+    Int_t fTreeCascVarPosIndex; //!
+    Int_t fTreeCascVarBachIndex; //!
+    //Event Number (check same-event index mixups)
+    ULong64_t fTreeCascVarEventNumber; //!
+
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSClusters0;
+    Bool_t fTreeCascVarPosITSClusters1;
+    Bool_t fTreeCascVarPosITSClusters2;
+    Bool_t fTreeCascVarPosITSClusters3;
+    Bool_t fTreeCascVarPosITSClusters4;
+    Bool_t fTreeCascVarPosITSClusters5;
+    
+    Bool_t fTreeCascVarNegITSClusters0;
+    Bool_t fTreeCascVarNegITSClusters1;
+    Bool_t fTreeCascVarNegITSClusters2;
+    Bool_t fTreeCascVarNegITSClusters3;
+    Bool_t fTreeCascVarNegITSClusters4;
+    Bool_t fTreeCascVarNegITSClusters5;
+    
+    Bool_t fTreeCascVarBachITSClusters0;
+    Bool_t fTreeCascVarBachITSClusters1;
+    Bool_t fTreeCascVarBachITSClusters2;
+    Bool_t fTreeCascVarBachITSClusters3;
+    Bool_t fTreeCascVarBachITSClusters4;
+    Bool_t fTreeCascVarBachITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSSharedClusters0;
+    Bool_t fTreeCascVarPosITSSharedClusters1;
+    Bool_t fTreeCascVarPosITSSharedClusters2;
+    Bool_t fTreeCascVarPosITSSharedClusters3;
+    Bool_t fTreeCascVarPosITSSharedClusters4;
+    Bool_t fTreeCascVarPosITSSharedClusters5;
+    
+    Bool_t fTreeCascVarNegITSSharedClusters0;
+    Bool_t fTreeCascVarNegITSSharedClusters1;
+    Bool_t fTreeCascVarNegITSSharedClusters2;
+    Bool_t fTreeCascVarNegITSSharedClusters3;
+    Bool_t fTreeCascVarNegITSSharedClusters4;
+    Bool_t fTreeCascVarNegITSSharedClusters5;
+    
+    Bool_t fTreeCascVarBachITSSharedClusters0;
+    Bool_t fTreeCascVarBachITSSharedClusters1;
+    Bool_t fTreeCascVarBachITSSharedClusters2;
+    Bool_t fTreeCascVarBachITSSharedClusters3;
+    Bool_t fTreeCascVarBachITSSharedClusters4;
+    Bool_t fTreeCascVarBachITSSharedClusters5;
+
+    //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
+    Float_t fTreeCascVarNegTOFExpTDiff; //!
+    Float_t fTreeCascVarPosTOFExpTDiff; //!
+    Float_t fTreeCascVarBachTOFExpTDiff; //!
+    Float_t fTreeCascVarNegTOFSignal; //!
+    Float_t fTreeCascVarPosTOFSignal; //!
+    Float_t fTreeCascVarBachTOFSignal; //!
+    Int_t   fTreeCascVarNegTOFBCid; //!
+    Int_t   fTreeCascVarPosTOFBCid; //!
+    Int_t   fTreeCascVarBachTOFBCid; //!
+    //Event info
+    Float_t fTreeCascVarAmplitudeV0A; //!
+    Float_t fTreeCascVarAmplitudeV0C; //!
+    Int_t   fTreeCascVarClosestNonEmptyBC; //!
+
+    //Event Multiplicity Variables
+    Float_t fTreeCascVarCentrality; //!
+    UInt_t fTreeCascVar_TriggerMask; //! save full info for checking later
+    Bool_t fTreeCascVarMVPileupFlag; //!
+    Bool_t fTreeCascVarOOBPileupFlag; //!
+    
+    //Kink tagging
+    Bool_t fTreeCascVarBachIsKink;
+    Bool_t fTreeCascVarPosIsKink;
+    Bool_t fTreeCascVarNegIsKink;
+    
+    //Cowboy/sailor studies
+    Bool_t  fTreeCascVarIsCowboy;   //store if V0 is cowboy-like or sailor-like in XY plane
+    Float_t fTreeCascVarCowboyness; //negative -> cowboy, positive -> sailor
+    Bool_t  fTreeCascVarIsCascadeCowboy;   //store if V0 is cowboy-like or sailor-like in XY plane
+    Float_t fTreeCascVarCascadeCowboyness; //negative -> cowboy, positive -> sailor
+    
+    //Select charge (testing / checks)
+    Int_t fkSelectCharge;
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Sandbox mode for cascades
+    Float_t fTreeCascVarPrimVertexX;
+    Float_t fTreeCascVarPrimVertexY;
+    Float_t fTreeCascVarPrimVertexZ;
+    
+    AliExternalTrackParam *fTreeCascVarBachTrack;//!
+    AliExternalTrackParam *fTreeCascVarPosTrack; //!
+    AliExternalTrackParam *fTreeCascVarNegTrack; //!
+    
+    Float_t fTreeCascVarMagneticField;
+    Int_t fTreeCascVarRunNumber;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+//===========================================================================================
+//   Histograms
+//===========================================================================================
+
+    TH1D *fHistEventCounter; //!
+    TH1D *fHistEventCounterDifferential; //!
+    TH1D *fHistCentrality; //!
+    TH2D *fHistEventMatrix; //!
+  TH1D *fRecPointRadii; 
+
+    AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
+    AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented
+
+    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 4);
+    //1: first implementation
+>>>>>>> Machine Learning functions to classify cascade candidates added
 };
 
 #endif
