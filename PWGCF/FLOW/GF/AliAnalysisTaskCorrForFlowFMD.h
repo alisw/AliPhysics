@@ -62,6 +62,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
         void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
+        void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
         void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
 
@@ -185,6 +186,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fIsAntiparticleCheck; // [kFALSE]
         Bool_t                  fDoAntiparticleOnly; // [kFALSE] == positive particles only and lambdas
         Bool_t                  fVetoJetEvents; // [kFALSE]
+        Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
@@ -255,7 +257,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 16);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 17);
 };
 
 #endif

@@ -47,6 +47,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fIsAntiparticleCheck(kFALSE),
     fDoAntiparticleOnly(kFALSE),
     fVetoJetEvents(kFALSE),
+    fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
     fFilterBit(96),
     fbSign(0),
@@ -139,6 +140,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fIsAntiparticleCheck(kFALSE),
     fDoAntiparticleOnly(kFALSE),
     fVetoJetEvents(kFALSE),
+    fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
     fFilterBit(96),
     fbSign(0),
@@ -517,6 +519,13 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) 
   }
 
   if(fCutTPCchi2pCl > 0. && track->GetTPCchi2perCluster() > fCutTPCchi2pCl)  { return kFALSE; }
+
+  if(fRejectSecondariesFromMC){
+    AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+    if(!mcEvent) return kFALSE;
+    AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(track->GetLabel());
+    if(!part->IsPhysicalPrimary()) { return kFALSE; }
+  }
 
   return kTRUE;
 }
