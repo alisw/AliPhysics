@@ -7,8 +7,9 @@
  * In this header file the class AliAnalysisTaskEmcalJetProperties is declared.
  * This is a task used for the measurement of charged jet properties.
  *
- * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
- * \Modified by Sidharth Kumar Prasad, Prottoy Das and Debjani Banerjee from Bose Institute
+ * \author Sidharth Kumar Prasad <sidharth.kumar.prasad@cern.ch>, Bose Institute
+ * \author Debjani Banerjee <banerjee.debjani@cern.ch>, Bose Institute
+ * \author Prottoy Das <prottoy.das@cern.ch>, Bose Institute
  * 
  */
 
@@ -26,7 +27,10 @@ class TH2F;
 class TH3F;
 class THnSparse;
 class TProfile;
-class AliRhoParameter;                
+class AliRhoParameter;  
+
+#include "AliAnalysisTaskEmcalJet.h"
+#include "THistManager.h"
 
 /**
  * \class AliAnalysisTaskEmcalJetProperties
