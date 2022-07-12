@@ -1,3 +1,10 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AliAnalysisMultPt:
+// Description: Analysis task to get multiplicity
+// and pT distributions
+// Author: Negin Alizadehvandchali
+// (negin.alizadehvandchali@cern.ch)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef AliAnalysisMultPt_H
 #define AliAnalysisMultPt_H
 
@@ -12,17 +19,16 @@ class TTree;
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
-
 class AliAnalysisMultPt : public AliAnalysisTaskSE
 {
     public:
-                                AliAnalysisMultPt();
-                                AliAnalysisMultPt(const char *name);
-        virtual                 ~AliAnalysisMultPt();
+                        AliAnalysisMultPt();
+                        AliAnalysisMultPt(const char *name);
+        virtual         ~AliAnalysisMultPt();
 
-        virtual void            UserCreateOutputObjects();
-        virtual void            UserExec(Option_t* option);
-        virtual void            Terminate(Option_t* option);
+        virtual void    UserCreateOutputObjects();
+        virtual void    UserExec(Option_t* option);
+        virtual void    Terminate(Option_t* option);
 
         
         void            SetMCRead(Bool_t flag) { fIsMC = flag; }
@@ -41,39 +47,40 @@ class AliAnalysisMultPt : public AliAnalysisTaskSE
         void            SetGeneratorName(TString generator) {fGenName = generator; }
  
     private:
-        AliAODEvent             *fAOD;             //! input event
-        TList                   *fOutputList;      //! output list
-        TH1D                    *MultHist;         //! Mult histogram
-        TH2D                    *MultPtHist;       //! pT-Mult histogram
-        TH2D                    *MultPtHistRec;    //! pT-Mult MC histogram
-        TH2D                    *MultPtHistGen;    //! pT-Mult MC histogram
-        TH2D                    *MultHistRatio;    //! Ratio of Gen mult vs rec mult histogram
-        TH1D                    *fptRatio;         //!pt ratio
+        void            BuildData();
+        void            BuildMC();
+        AliAODEvent     *fAOD;             // input event
+        TList           *fOutputList;      // output list
+        TH1D            *MultHist;         // Mult histogram
+        TH2D            *MultPtHist;       // pT-Mult histogram
+        TH2D            *MultPtHistRec;    // pT-Mult MC histogram
+        TH2D            *MultPtHistGen;    // pT-Mult MC histogram
+        TH2D            *MultHistRatio;    // Ratio of Gen mult vs rec mult histogram
+        TH1D            *fptRatio;         //pt ratio
     
-    
-    
-    
-        Bool_t          fIsMC;                     //! MC flag
-        Double_t        fPtmin;                    //! min PT
-        Double_t        fPtmax;                    //! max PT
-        Double_t        fEtaMin;                   //! min eta
-        Double_t        fEtaMax;                   //! max eta
-        Int_t           fBit;                      //! filter bit
-        Float_t         fPVzMax;                   //! max PVz
-        Float_t         fPVzMin;                   //! min PVz
-        Double_t        fChi2DoF;                  //! limit for chi2
+        Bool_t          fIsMC;             // MC flag
+        Double_t        fPtmin;            // min PT
+        Double_t        fPtmax;            // max PT
+        Double_t        fEtaMin;           // min eta
+        Double_t        fEtaMax;           // max eta
+        Int_t           fBit;              // filter bit
+        Float_t         fPVzMax;           //max PVz
+        Float_t         fPVzMin;           //min PVz
+        Double_t        fChi2DoF;          // limit for chi2
         UShort_t        fTPCNCrossedRows;
-        Bool_t          fIsRunFBOnly;              //! only filterbit cuts
-        Int_t           fTPCNcls;                  //! limit for TPC Ncls
-        AliEventCuts    fEventCuts;
-        Bool_t          fIsPileUpCuts;             //! pile up cuts flag
+        Bool_t          fIsRunFBOnly;      // only filterbit cuts
+        Int_t           fTPCNcls;          // limit for TPC Ncls
+        Bool_t          fIsPileUpCuts;     // pile up cuts flag
         Int_t           fPileUpLevel;
-        TString         fGenName;                  //! MC generator name
+        TString         fGenName;          // MC generator name
+    
+    
+        AliEventCuts    fEventCuts;
 
-    AliAnalysisMultPt(const AliAnalysisMultPt&); // not implemented
-    AliAnalysisMultPt& operator=(const AliAnalysisMultPt&); // not implemented
+        AliAnalysisMultPt(const AliAnalysisMultPt&); // not implemented
+        AliAnalysisMultPt& operator=(const AliAnalysisMultPt&); // not implemented
 
-    ClassDef(AliAnalysisMultPt, 2);
+        ClassDef(AliAnalysisMultPt, 2);
 };
 
 #endif
