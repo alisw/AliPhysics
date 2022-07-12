@@ -5243,7 +5243,6 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	GetTrackMomentumAtSecVert(&et4,secvtx,momentum,bz);
 	px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
   
-
 	Double_t d0z0[2],covd0z0[3];
 	AliAODVertex *primVertexCand=0x0;
 	Int_t id4[4];
@@ -5254,23 +5253,50 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	  }
 	  id4[3]=track4->GetID(); 
 	  primVertexCand=RemoveDaughtersFromPrimaryVtxCascHF(id4,aod);
-	  trackHF->PropagateToDCA(primVertexCand,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
+	  if(primVertexCand){
+	    trackHF->PropagateToDCA(primVertexCand,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 	   
+	  }
+	  else {
+	    trackHF->PropagateToDCA(fprimVtx,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
+	  }
 	  d0[0] = d0z0[0];
-	  d0err[0] = TMath::Sqrt(covd0z0[0]);
-	  et4.PropagateToDCA(primVertexCand,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
-	  d0[1] = d0z0[1];
-	  d0err[1] = TMath::Sqrt(covd0z0[1]);
+	  if(covd0z0[0]>=0.)d0err[0] = TMath::Sqrt(covd0z0[0]);
+	  else {
+	    d0[0]=-999; // set like this as a protection, hard to spot at analysis level differences otherwise, only alternative could be: d0err[0]=-0.00000001;
+	    d0err[0]=1.;
+	  }
+	  if(primVertexCand){
+	    et4.PropagateToDCA(primVertexCand,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
+	  }
+	  else {
+	    et4.PropagateToDCA(fprimVtx,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 	
+	  }
+	  d0[1] = d0z0[0];
+	  if(covd0z0[0]>=0.)d0err[1] = TMath::Sqrt(covd0z0[0]);
+	  else {
+	    d0[1]=-999; // set like this as a protection, hard to spot at analysis level differences otherwise, only alternative could be: d0err[1]=-0.00000001;
+	    d0err[1]=1.;
+	  }
 	}
 	else{
 	  trackHF->PropagateToDCA(fprimVtx,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
+	
 	  d0[0] = d0z0[0];
-	  d0err[0] = TMath::Sqrt(covd0z0[0]);
+	  if(covd0z0[0]>=0.) d0err[0] = TMath::Sqrt(covd0z0[0]);
+	  else {
+	    d0[0]=-999; // set like this as a protection, hard to spot at analysis level differences otherwise, only alternative could be: d0err[0]=-0.00000001;
+	   d0err[0]=1.;
+	  }
 	  Float_t d0z0f[2],covd0z0f[3];
 	  et4.GetImpactParameters(d0z0f,covd0z0f);// need to convert to float?
-	  d0[1] = d0z0[1];
-	  d0err[1] = TMath::Sqrt(covd0z0[1]);
+	  d0[1] = d0z0f[0];
+	  if(covd0z0f[0]>=0.)d0err[1] = TMath::Sqrt(covd0z0f[0]);
+	  else {
+	    d0[1]=-999;// set like this as a protection, hard to spot at analysis level differences otherwise, only alternative could be: d0err[1]=-0.00000001;
+	    d0err[1]=1.;	  
+	  }
 	}
-
+	
 
 	UShort_t ids[2];
 	ids[0]= 0; 
@@ -5285,6 +5311,11 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	Double_t point4pr[12];
 	UInt_t pdg[2]={4122,11};
 	Double_t massLcEle=hfCombined->InvMass(2,pdg);
+	// FOLLOWING LINES JUST FOR DEBUGGING, KEEP (COMMENTED) FOR HTE MOMENT
+	//	Printf("TREGETTING VARIABLS");
+	//AliAODVertex* secVtxTMP=(AliAODVertex*)hfCombined->GetSecondaryVtx();
+	//Double_t errlxy2=secVtxTMP->Error2DistanceXYToVertex(hfCombined->GetPrimaryVtx());
+	// Printf("VARIABLS EVIL CANDIDATES: %f,%f,%f,%f,%f,%f,%f,%f,%f, prop %d,%d,%d,%d", hfCombined->Getd0Prong(0), hfCombined->Getd0Prong(1),hfCombined->Getd0errProng(0),hfCombined->Getd0errProng(1),hfCombined->DecayLengthXY(),errlxy2,hfCombined->Pt(),hfCombined->PtProng(0),hfCombined->PtProng(1),propagateResult[0],propagateResult[1],propagateResult[2],propagateResult[3]);
 	FillArrayVariable4prongs(hfCombined,aod,point4pr);
 	point4pr[1]=massLcEle;
 	point4pr[7]=flagPart;
@@ -5316,16 +5347,13 @@ void AliAnalysisTaskSEXicTopKpi::FillArrayVariable4prongs(AliAODRecoDecayHF2Pron
   point[2]=io2Prong->DecayLengthXY();
   point[3]=io2Prong->NormalizedDecayLengthXY();
   point[4]=io2Prong->CosPointingAngle();
-  Double_t diffIP[3], errdiffIP[3],normIP[3],maxIP=0;
+  Double_t diffIP[2], errdiffIP[2],normIP[2],maxIP=0;
   io2Prong->Getd0MeasMinusExpProng(0,aod->GetMagneticField(),diffIP[0],errdiffIP[0]);
   io2Prong->Getd0MeasMinusExpProng(1,aod->GetMagneticField(),diffIP[1],errdiffIP[1]);
-  io2Prong->Getd0MeasMinusExpProng(2,aod->GetMagneticField(),diffIP[2],errdiffIP[2]);
   normIP[0]=diffIP[0]/errdiffIP[0];
   maxIP=TMath::Abs(  normIP[0]);
   normIP[1]=diffIP[1]/errdiffIP[1];
   if(TMath::Abs(  normIP[1])>maxIP)maxIP=TMath::Abs(  normIP[1]);
-  normIP[2]=diffIP[2]/errdiffIP[2];
-  if(TMath::Abs(  normIP[2])>maxIP)maxIP=TMath::Abs(  normIP[2]);
   point[5]=maxIP;
   point[6]=io2Prong->Prodd0d0();//FlagCandidateWithVariousCuts(io2Prong,aod,massHypothesis);// not needed for SigmaC! (replaced by ITSrefit for soft pion)
   point[7]=-1;
