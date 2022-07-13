@@ -264,7 +264,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fRejFactorFastAnalysis(1.1)
   ,fFillSparseReflections(kFALSE)
   ,fLoopOverSignalOnly(kFALSE)
-   ,fptLoop1(2.)
+  ,fptLoop1(2.)
   ,fptLoop2(1.)
   ,fptLoop3(0.7)
   ,fminptTracksFastLoop(0.3)
@@ -284,6 +284,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fUseBayesInFiltering(kFALSE)
   ,fLcInvMassBins(125)
   ,fOnlyEleFourthLoop(kFALSE)
+  ,fFillNtuple4Prong(kFALSE)
+  ,fNtuple4Prong(0x0)
 {
   /// Default constructor
 
@@ -485,6 +487,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fUseBayesInFiltering(kFALSE)
   ,fLcInvMassBins(125)
   ,fOnlyEleFourthLoop(kFALSE)
+  ,fFillNtuple4Prong(kFALSE)
+  ,fNtuple4Prong(0x0)
 {
   /// Default constructor
   
@@ -494,6 +498,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   DefineOutput(4,TTree::Class());
   DefineOutput(5,TNtuple::Class());
   DefineOutput(6,TNtuple::Class());
+  DefineOutput(7,TNtuple::Class());
   fCuts=cuts;
 }
 
@@ -608,7 +613,7 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fTuplePID_TOFreq){
     delete fTuplePID_TOFreq;
   }
-       
+  if(fNtuple4Prong) delete fNtuple4Prong;       
 }
 
 //________________________________________________________________________
@@ -1133,6 +1138,8 @@ if(!fFillTree){
 
   fTuplePID_TOFreq=new TNtuple("fTuplePID_TOFreq","fTuplePID_TOFreq","pt_LcpKpi:mass_LcpKpi:daug0_isTPCsel:daug1_isTPCsel:daug2_isTPCsel:daug0_isTOFmatched:daug1_isTOFmatched:daug2_isTOFmatched:daug0_isCombTPCTOFSel:daug1_isCombTPCTOFSel:daug2_isCombTPCTOFSel",128000);
 
+  fNtuple4Prong=new TNtuple("fNtuple4Prong","fNtuple4Prong","pt:mass:Lxy:nLxy:cosThatPoint:normImpParXY:d0d0:PIDtrack4:LcMassHypo:chargePairProduct:infoMC:lcmassrange:truelxy",128000);
+
   fHistFastInvMass=new TH2D("fHistFastInvMass","Inv Mass Fast;M(p,K,pi);pt",400,2.18,2.58,48,0,24);
   fOutput->Add(fDist12Signal);
   fOutput->Add(fDist12SignalFilter);
@@ -1203,6 +1210,8 @@ if(!fFillTree){
   PostData(4,fTreeVar);
   PostData(5,ftnFastVariables);
   PostData(6,fTuplePID_TOFreq);
+  PostData(7,fNtuple4Prong);
+
   return;
 }
 
@@ -1366,6 +1375,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
       PostData(6,fTuplePID_TOFreq);
+      PostData(7,fNtuple4Prong);
+  
       return;
     }
   }
@@ -1419,6 +1430,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     PostData(4,fTreeVar);
     PostData(5,ftnFastVariables);
     PostData(6,fTuplePID_TOFreq);
+    PostData(7,fNtuple4Prong);
+  
     return;
   }
 
@@ -1436,6 +1449,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
       PostData(6,fTuplePID_TOFreq);
+      PostData(7,fNtuple4Prong);
+  
       return;
     }
   }
@@ -1453,6 +1468,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
       PostData(6,fTuplePID_TOFreq);
+  PostData(7,fNtuple4Prong);
+
       return;
     }
   }
@@ -2464,6 +2481,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   PostData(4,fTreeVar);
   PostData(5,ftnFastVariables);
   PostData(6,fTuplePID_TOFreq);
+  PostData(7,fNtuple4Prong);
+
 
   return;
 }
@@ -4333,15 +4352,16 @@ Int_t AliAnalysisTaskSEXicTopKpi::MatchToMC4prong(Int_t checkorigin,AliAODRecoDe
  
   AliAODMCParticle *partTrack=(AliAODMCParticle*)fmcArray->At(TMath::Abs(labelTrack));
   Int_t trackPdg=partTrack->GetPdgCode();
-  if(TMath::Abs(trackPdg)!=11){// checking only electron from Lb->Lc e X  for the time being...
-    return -1;
-  }
+  
   Int_t labelTrackMum=partTrack->GetMother();
   // electron must come directly from Lb decay, not from a resonant intermediate state (cannot be)
   if(labelTrackMum==labelLcMum){
     // cross check charge state (remember pdg(e-)=11 pdg(e+)=-1)
-    if((pdgLc>0 && trackPdg<0) || (pdgLc<0&&trackPdg>0))labelLcMum*=-1;// wrong charges
-    return labelLcMum;	      
+    // if((pdgLc>0 && trackPdg<0) || (pdgLc<0&&trackPdg>0))labelLcMum*=-1;// wrong charges
+    if(TMath::Abs(trackPdg)!=11){// checking only electron from Lb->Lc e X  for the time being...
+      return -1*labelLcMum;
+    }      
+    return labelLcMum;	
   }
   else return -1;     
 }
@@ -5308,8 +5328,12 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 
 	// fill Right-Sign and Wrong-Sign sparses on the basis of candidates and charge-pairing: same histo, charge status is in sparse 
 
-	Double_t point4pr[12];
+	Double_t point4pr[13];
 	UInt_t pdg[2]={4122,11};
+	if(flagPart==2)pdg[1]=211;
+	else if(flagPart==4)pdg[1]=321;
+	else if(flagPart==8)pdg[1]=2212;
+	if(lcmassrange>=4)pdg[0]=4232;
 	Double_t massLcEle=hfCombined->InvMass(2,pdg);
 	// FOLLOWING LINES JUST FOR DEBUGGING, KEEP (COMMENTED) FOR HTE MOMENT
 	//	Printf("TREGETTING VARIABLS");
@@ -5324,11 +5348,24 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	Short_t charge = io3Prong->Charge()*track4->Charge(); 
 	point4pr[9]= charge == -1 ? 1. : 0;
 	point4pr[11]=lcmassrange;
+	point4pr[12]=-1;
 	if(mcInfo>=0)point4pr[10]=1;
 	else if(mcInfo==-1)point4pr[10]=0;
 	else point4pr[10]=-1;
+	if(fReadMC && (mcInfo>0 || mcInfo<-1)){// note that this is not optimal, since Lb with label 0 or 1 (to Lc h, with h not electron) will not be included ... but it's unlikely that happens. Can be fixed later
+	  AliAODMCParticle *partLb=(AliAODMCParticle*)fmcArray->At(TMath::Abs(mcInfo));
+	  if(partLb){
+	    AliAODMCParticle *part3prong=(AliAODMCParticle*)fmcArray->At(label3prong);
+	    Double_t secvtx4p[3]={999.,999.,999.},primVtxMC[3]={-999.,-999,-999.};
+	    partLb->XvYvZv(primVtxMC);
+	    part3prong->XvYvZv(secvtx4p);
+	    point4pr[12]=TMath::Sqrt((secvtx4p[0]-primVtxMC[0])*(secvtx4p[0]-primVtxMC[0])
+				     +(secvtx4p[1]-primVtxMC[1])*(secvtx4p[1]-primVtxMC[1]));
+	  }
+	}
+	
 	fhSparseAnalysis4Prong->Fill(point4pr);	
-
+	if(fFillNtuple4Prong)fNtuple4Prong->Fill(point4pr[0],point4pr[1],point4pr[2],point4pr[3],point4pr[4],point4pr[5],point4pr[6],point4pr[7],point4pr[8],point4pr[9],point4pr[10],point4pr[11],point4pr[12]);// may change point4pr to float everywhere in the future
 	//	delete esdtr4;
 	delete hfCombined;
 	delete secvtx;
