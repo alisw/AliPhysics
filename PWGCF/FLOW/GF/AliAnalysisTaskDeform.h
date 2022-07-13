@@ -75,6 +75,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
+  void CreateQAHists();
   void LoadWeightAndMPT();
   void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
   void FillWPCounter(Double_t[5], Double_t, Double_t);
@@ -116,6 +117,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetUse15oPass2PU(bool use) { fUSe15opass2PU = use; }
   void SetPseudoEffPars(double fConstEff, double fSigmaEff);
   void SetEfficiencyFlag(UInt_t newval) {fEfficiencyFlag = newval;}
+  void FillQAHists(bool newval) { fFillQAHists = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -130,6 +132,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fIsMC;
   Bool_t fBypassTriggerAndEvetCuts;
   Bool_t fUSe15opass2PU;
+  Bool_t fFillQAHists;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   Bool_t fUseMCNchForReco; //Flag to use Nch from generated, when running MC closure
@@ -181,7 +184,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D **fEfficiency; //TH2Ds for efficiency calculation
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
-  TH3D *fPtvsCentvsPower;
+  TH3D *fPtvsCentvsPower; //!
+  TH2D *fPtDist; //!
   TH3D *fDCAxyVsPt_noChi2;
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
