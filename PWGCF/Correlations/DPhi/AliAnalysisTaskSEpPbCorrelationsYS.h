@@ -165,6 +165,7 @@ private:
   Bool_t fmakehole;
   Bool_t ffillcorrelation;
   Bool_t fefficalib;
+  TString MCperiod;
   Float_t fcuthighmult;
   Bool_t fOnfly;
   TString fAnaMode;
