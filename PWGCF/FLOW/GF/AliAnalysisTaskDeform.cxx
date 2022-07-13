@@ -51,6 +51,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fIsMC(kFALSE),
   fBypassTriggerAndEvetCuts(kFALSE),
   fUSe15opass2PU(kFALSE),
+  fFillQAHists(kFALSE),
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
   fUseMCNchForReco(kFALSE),
@@ -101,6 +102,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fEfficiencies(0),
   fPseudoEfficiency(2.),
   fPtvsCentvsPower(0),
+  fPtDist(0),
   fDCAxyVsPt_noChi2(0),
   fWithinDCAvsPt_withChi2(0),
   fDCAxyVsPt_withChi2(0),
@@ -136,6 +138,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fIsMC(IsMC),
   fBypassTriggerAndEvetCuts(kFALSE),
   fUSe15opass2PU(kFALSE),
+  fFillQAHists(kFALSE),
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
   fUseMCNchForReco(kFALSE),
@@ -186,6 +189,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fEfficiencies(0),
   fPseudoEfficiency(2.),
   fPtvsCentvsPower(0),
+  fPtDist(0),
   fDCAxyVsPt_noChi2(0),
   fWithinDCAvsPt_withChi2(0),
   fDCAxyVsPt_withChi2(0),
@@ -438,24 +442,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     TString eventCutLabel[6]={"Input","Centrality","Trigger","AliEventCuts","Vertex","Tracks"};
     for(int i=0;i<nEventCutLabel;++i) fEventCount->GetXaxis()->SetBinLabel(i+1,eventCutLabel[i].Data());
     fQAList->Add(fEventCount);
-    const int NBins1 = 52;
-    double lBins1[] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,
-    1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.5,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5};
-    const Int_t NBins2 = 44;
-    Double_t *lBins2 = new Double_t[NBins2+1];
-    for(Int_t i=0;i<=NBins2; i++) lBins2[i] = 10+2*i;
-    const Int_t NBins3 = 32;
-    Double_t *lBins3 = new Double_t[NBins3+1];
-    for(Int_t i=0;i<=NBins3; i++) lBins3[i] = 100+20*i;
-    double lPtPowBins[NBins1+NBins2+NBins3+3];
-    sortedMerge(lBins1,lBins2,lBins3,lPtPowBins,NBins1+1,NBins2+1,NBins3+1);
-    int NPtPowBins = NBins1+NBins2+NBins3+2;
-    int NPowBins = 6;
-    double lPowBins[] = {0,1,2,3,4,5,6};
-    int NCentBins = 9;
-    double lCentBins[]={0,5,10,20,30,40,50,60,70,80,90};
-    fPtvsCentvsPower = new TH3D("fPtvsCentvsPower",";#it{p}_{T};Centrality;Power",NPtPowBins,lPtPowBins,NCentBins,lCentBins,NPowBins,lPowBins);
-    fQAList->Add(fPtvsCentvsPower);
+    if(fFillQAHists) CreateQAHists();
     PostData(4,fQAList);
   }
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
@@ -796,7 +783,10 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
       if(TMath::Abs(leta)<fEta)  { //for mean pt, only consider -0.4-0.4 region
         FillWPCounter(wp,(fEfficiencyFlag&EFF_FLAG::powereff)?weffv[0]:weff,lpt); 
         (fEfficiencyFlag&EFF_FLAG::powereff)?FillWPCounter(wpPt,weffv,lpt):FillWPCounter(wpPt,weff,lpt);
-        for(int p(1);p<=6;++p) fPtvsCentvsPower->Fill(pow(lpt,p),l_Cent,p-0.5);
+        if(fFillQAHists) { 
+          for(int p(1);p<=6;++p) fPtvsCentvsPower->Fill(pow(lpt,p),l_Cent,p-0.5); 
+          fPtDist->Fill(lpt,l_Cent);
+        }
       }  //Actually, no need for if() statememnt now since GFW knows about eta's, so I can fill it all the time
       fGFW->Fill(leta,1,lPart->Phi(),1,3); //filling both gap (bit mask 1) and full (bit mas 2). Since this is MC, weight is 1.
     };
@@ -837,7 +827,10 @@ void AliAnalysisTaskDeform::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, co
       if(TMath::Abs(lTrack->Eta())<fEta)  { //for mean pt, only consider -0.4-0.4 region
         FillWPCounter(wp,(fEfficiencyFlag&EFF_FLAG::powereff)?weffv[0]:weff,lpt); 
         (fEfficiencyFlag&EFF_FLAG::powereff)?FillWPCounter(wpPt,weffv,lpt):FillWPCounter(wpPt,weff,lpt);
-        for(int p(1);p<=6;++p) fPtvsCentvsPower->Fill(pow(lpt,p),l_Cent,p-0.5); 
+        if(fFillQAHists) { 
+          for(int p(1);p<=6;++p) fPtvsCentvsPower->Fill(pow(lpt,p),l_Cent,p-0.5); 
+          fPtDist->Fill(lpt,l_Cent);
+        }
       }  //Actually, no need for if() statememnt now since GFW knows about eta's, so I can fill it all the time
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mas 2)
     };
@@ -969,9 +962,34 @@ Double_t AliAnalysisTaskDeform::getEfficiency(double &lpt, int iCent){
 vector<Double_t> AliAnalysisTaskDeform::getPowerEfficiency(double &lpt, int iCent){
   vector<double> weff;
   for(int p(0);p<6;++p) {
-    weff.push_back(fEfficiencies[iCent*6+p]->GetBinContent(fEfficiencies[iCent*6+p]->FindBin(lpt)));
+    weff.push_back(fEfficiencies[iCent*6+p]->GetBinContent(fEfficiencies[iCent*6+p]->FindBin(pow(lpt,p+1))));
   }
   return weff;
+}
+void AliAnalysisTaskDeform::CreateQAHists() {
+    const int NBins1 = 52;
+    double lBins1[] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,
+    1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.5,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5};
+    const Int_t NBins2 = 44;
+    Double_t *lBins2 = new Double_t[NBins2+1];
+    for(Int_t i=0;i<=NBins2; i++) lBins2[i] = 10+2*i;
+    const Int_t NBins3 = 32;
+    Double_t *lBins3 = new Double_t[NBins3+1];
+    for(Int_t i=0;i<=NBins3; i++) lBins3[i] = 100+20*i;
+    double lPtPowBins[NBins1+NBins2+NBins3+3];
+    sortedMerge(lBins1,lBins2,lBins3,lPtPowBins,NBins1+1,NBins2+1,NBins3+1);
+    int NPtPowBins = NBins1+NBins2+NBins3+2;
+    int NPowBins = 6;
+    double lPowBins[] = {0,1,2,3,4,5,6};
+    int NCentBins = 9;
+    double lCentBins[]={0,5,10,20,30,40,50,60,70,80,90};
+    fPtvsCentvsPower = new TH3D("fPtvsCentvsPower",";#it{p}_{T};Centrality;Power",NPtPowBins,lPtPowBins,NCentBins,lCentBins,NPowBins,lPowBins);
+    fQAList->Add(fPtvsCentvsPower);
+    Int_t NFineBins = 280;
+    Double_t* lFineBins = new Double_t[NFineBins+1];
+    for(int i(0);i<=NFineBins;++i) lFineBins[i] = 0.2+0.01*i;
+    fPtDist = new TH2D("fPtDist",";PtDist;#it{p}_{T} (GeV/#it{c};Counts",NFineBins,lFineBins,NCentBins,lCentBins);  
+    fQAList->Add(fPtDist);
 }
 void AliAnalysisTaskDeform::CreateCorrConfigs() {
 
