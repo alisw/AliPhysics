@@ -204,7 +204,7 @@ void AliAnalysisSPCRun2::InitializeArrays()
   }
 
   // Harmonics combinations.
-  for (Int_t i = 0; i < 10; i++)
+  for (Int_t i = 0; i < 12; i++)
   {
     for (Int_t j = 0; j < 8; j++) {fHarmosArray[i][j] = 0;}
   }
@@ -331,28 +331,28 @@ void AliAnalysisSPCRun2::BookFinalResultsHistograms()
     if (fCentralityArray[icent+1] < 0) {break;}
 
     fResults[icent] = new TProfile("fResults", "Numerators and denominators for SPC",
-      20, 0., 20.,"s");
+      24, 0., 24.,"s");
     fResults[icent]->GetXaxis()->SetTitle("");
     fResults[icent]->GetYaxis()->SetTitle("");
     fResults[icent]->Sumw2();
     fFinalResultsList[icent]->Add(fResults[icent]);
 
     fResultsAlternativeError[icent] = new TProfile("fResultsAlternativeError",
-      "Numerators and denominators for SPC (not 's' option)", 20, 0.,20.);
+      "Numerators and denominators for SPC (not 's' option)", 24, 0.,24.);
     fResultsAlternativeError[icent]->GetXaxis()->SetTitle("");
     fResultsAlternativeError[icent]->GetYaxis()->SetTitle("");
     fResultsAlternativeError[icent]->Sumw2();
     fFinalResultsList[icent]->Add(fResultsAlternativeError[icent]);
 
     fCovResults[icent] = new TProfile("fCovResults",
-      "Results for the covariance terms", 40, 0.,40., "s");
+      "Results for the covariance terms", 48, 0.,48., "s");
     fCovResults[icent]->GetXaxis()->SetTitle("");
     fCovResults[icent]->GetYaxis()->SetTitle("");
     fCovResults[icent]->Sumw2();
     fFinalResultsList[icent]->Add(fCovResults[icent]); 
 
     fJoinedCovResults[icent] = new TProfile("fJoinedCovResults",
-      "Joined Covariance calculated as one correlator <z> and not as <x*y>", 20, 0., 20.);
+      "Joined Covariance calculated as one correlator <z> and not as <x*y>", 24, 0., 24.);
     fJoinedCovResults[icent]->GetXaxis()->SetTitle("");
     fJoinedCovResults[icent]->GetYaxis()->SetTitle("");
     fJoinedCovResults[icent]->Sumw2();
@@ -526,7 +526,7 @@ void AliAnalysisSPCRun2::MainTask(Int_t centBin, Int_t mult,
     Double_t weightCorrelationJoinedCov;
 
     // Loop over the combinations of harmonics and calculate the corresponding SPC num and den.
-    for (Int_t j = 0; j < 10; j++) {
+    for (Int_t j = 0; j < 12; j++) {
       if (fHarmosArray[j][0] == 0) {continue;}  // Skip null correlator list.
 
       // Calculate the numerator.

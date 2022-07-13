@@ -18,6 +18,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
   bool removeBadArea = kFALSE; bool useTightCuts = kFALSE;
   int debug = 0;
+  const int maxNrComb = 12;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   //Explanation: 
@@ -230,8 +231,8 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
   }
 
 // Configuration of the analysis task itself.
-  const int SPCCombination = 3;
-  TString SPC[SPCCombination] = { "2SPC", "3SPC", "4SPC" };
+  const int SPCCombination = 4;
+  TString SPC[SPCCombination] = { "2SPC", "3SPC", "4SPC", "5SPC"};
   AliJSPCTaskRun2 *myTask[Nsets][SPCCombination];
 
   for (Int_t i = 0; i < PassedVariations; i++){
@@ -248,7 +249,7 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
 
       	if(j==0){
 
-          Int_t harmonicArray1[10][8] = {
+          Int_t harmonicArray1[maxNrComb][8] = {
                                           {4, 6,-2,-2,-2, 0, 0, 0},
                                           {3, 6,-3,-3, 0, 0, 0, 0},
                                           {3, 4,-2,-2, 0, 0, 0, 0},
@@ -258,17 +259,19 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
                                           {6, 2, 2, 2, 2, -4, -4, 0},
                                           {0, 4, 4, 4, -3, -3, -3, -3},  // Too heavy for the moment.
                                           {0, 5, 5, -2, -2, -2, -2, -2}, // Too heavy for the moment.
-                                          {0, 3, 3, 3, 3, -4, -4,-4}     // Too heavy for the moment.
+                                          {0, 3, 3, 3, 3, -4, -4,-4}, // Too heavy for the moment.
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0}
                                         };
 
-            for (int k = 0; k<10; k++){
+            for (int k = 0; k<maxNrComb; k++){
               myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray1[k]);
             }
         }
 
         if(j==1){
 
-          Int_t harmonicArray2[10][8] = {
+          Int_t harmonicArray2[maxNrComb][8] = {
                                           {4, 3,-4,-4, 5, 0, 0,0},
                                           {3, 2, 4,-6, 0, 0, 0,0},
                                           {3, 2, 3,-5, 0, 0, 0,0},
@@ -276,24 +279,29 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
                                           {5, 2, 3, 3,-4,-4, 0,0},
                                           {6, 2, 2, 2, 2,-3,-5,0},
                                           {5, 3, 3, 3,-4,-5, 0,0},
-                                          {0, 2, 2, 2, 2, 2, -4,-6}, // Too heavy for the moment.
-                                          {0, 0, 0,0, 0, 0, 0,0},
-                                          {0, 0, 0,0, 0, 0, 0,0}
+                                          {4, 2, 2, 3, -7, 0, 0,0},
+                                          {3, 3, 4, -7, 0, 0, 0,0},
+                                          {3, 2, 5, -7, 0, 0, 0,0},
+                                          {3, 3, 5, -8, 0, 0, 0,0},
+                                          {4, 2, 2, 4, -8, 0, 0,0}
+                                          // {0, 2, 2, 2, 2, 2, -4,-6} // Too heavy for the moment.
                                         };
 
 
-            for (int k = 0; k<10; k++){
+            for (int k = 0; k<maxNrComb; k++){
               myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray2[k]);
             }
         }
 
         if(j==2){
 
-          Int_t harmonicArray3[10][8] = {       
+          Int_t harmonicArray3[maxNrComb][8] = {       
                                           {4, 2,-3,-4, 5, 0, 0,0}, 
                                           {6, 2, 2, 2, 3,-4,-5,0}, 
                                           {5, 2, 2,-3, 4,-5, 0,0},
                                           {6, 2, 2, 3, 3,-4,-6,0},
+                                          {4, 2, 7, -4, -5, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
                                           {0, 0, 0,0, 0, 0, 0,0},
                                           {0, 0, 0,0, 0, 0, 0,0},
                                           {0, 0, 0,0, 0, 0, 0,0},
@@ -302,8 +310,30 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
                                           {0, 0, 0,0, 0, 0, 0,0}
                                         };
 
-            for (int k = 0; k<10; k++){
+            for (int k = 0; k<maxNrComb; k++){
               myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray3[k]);
+            }
+        }
+
+        if(j==3){
+
+          Int_t harmonicArray4[maxNrComb][8] = {
+                                          {5, 2, 3, -4, 5, -6, 0,0},
+                                          {6, 2, 3, 4, 4, -6, -7,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0},
+                                          {0, 0, 0,0, 0, 0, 0,0}
+                                        };
+                                        
+            for (int k = 0; k<maxNrComb; k++){
+              myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray4[k]);
             }
 
       	}
