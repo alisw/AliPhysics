@@ -195,7 +195,6 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fTrackCutsV0Dau{nullptr},
   fMaxTracksToProcess(9999999),
   fNPtBinsSingleTrack(6),
-  fNPtBinsDzero(25),
   fPtWithoutVtxToll(0.1),
   fMinPtDzero(0.),
   fMaxPtDzero(9999.),
@@ -204,13 +203,14 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMinPtJpsi(0.),
   fMaxPtJpsi(9999.),
   fCandidateCutLevel(1),
-  fSelectD0(1),
-  fSelectD0bar(1),
   fMinPt3Prong(0.),
   fMaxRapidityCand(0.8),
+  fNPtBinsDzero(25),
   fNPtBinsDplus(12),
   fNPtBinsJpsi(9),
   fNPtBinsLc(10),
+  fSelectD0(1),
+  fSelectD0bar(1),
   fSelectDplus(1),
   fSelectJpsi(1),
   fSelectLcpKpi(1),
@@ -477,7 +477,7 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
     {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
      {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
 
-  for(Int_t ib=0; ib<fNPtBins; ib++){
+  for(Int_t ib=0; ib<2; ib++){
     for(Int_t jc=0; jc<kNCutVars2Prong; jc++){
       fDzeroSkimCuts[ib][jc]=defaultDzeroSkimCuts[ib][jc];
       fJpsiSkimCuts[ib][jc]=defaultJpsiSkimCuts[ib][jc];
@@ -1361,7 +1361,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   fO2Vertexer3Prong.setUseAbsDCA(fVertexerUseAbsDCA);
 
 
-  std::clock_t clockStartTrack;
+  std::clock_t clockStartTrack = std::clock();
   std::chrono::time_point<std::chrono::high_resolution_clock> startTimeTrack;
   if(fEnableCPUTimeCheck) {
     clockStartTrack = std::clock();
@@ -1389,7 +1389,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     if(status[iTrack] & 4) fHistTrackStatus->Fill(3);
   }
 
-  std::clock_t clockStartCand;
+  std::clock_t clockStartCand = std::clock();;
   std::chrono::time_point<std::chrono::high_resolution_clock> startTimeCand;
   if(fEnableCPUTimeCheck) {
     // count time elapsed for track selection

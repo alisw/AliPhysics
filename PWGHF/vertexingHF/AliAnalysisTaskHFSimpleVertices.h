@@ -7,7 +7,7 @@
 //*************************************************************************
 // Class AliAnalysisTaskHFSimpleVertices
 // AliAnalysisTaskSE to extract D meson candidates from ESDs
-//          
+//
 //*************************************************************************
 
 #include <map>
@@ -21,7 +21,7 @@ class AliESDEvent;
 class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
  public:
-  
+
   AliAnalysisTaskHFSimpleVertices();
   virtual ~AliAnalysisTaskHFSimpleVertices();
 
@@ -79,7 +79,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t JpsiSelectionCuts(AliAODRecoDecayHF2Prong* cand,AliESDtrack* trk_p,AliESDtrack* trk_n,AliESDVertex* primvtx,float bzkG);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong *cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const;
-  
+
   enum ESelBits2prong {kbitDzero = 0,kbitDzerobar,kbitJpsi};
   enum ESelBits3prong {kbitDplus = 0,kbitDs,kbitLc};
   enum {kMaxNPtBinsDzero = 100, kNCutVarsDzero=11};
@@ -114,7 +114,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistImpParSelTracks3prong;  //!<!  histo with d0 selected tracks
   TH1F* fHistITSmapAllTracks;        //!<!  histo with its map all tracks
   TH1F* fHistITSmapSelTracks;        //!<!  histo withits map selected tracks
-  
+
   TH1F* fHistPrimVertX;              //!<!  histo of prim vertex x
   TH1F* fHistPrimVertY;              //!<!  histo of prim vertex y
   TH1F* fHistPrimVertZ;              //!<!  histo of prim vertex z
@@ -147,7 +147,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistD0SignalVertZ;          //!<!  histo of D0 (MC truth) vertex z
   TH1F* fHistInvMassD0Signal;        //!<!  histo with D0 (MC truth) inv mass
   TH1F* fHistInvMassD0Refl;          //!<!  histo with D0 (reflection) inv mass
- 
+
   TH1F* fHistInvMassJpsi;              //!<!  histo with Jpsi inv mass
   TH1F* fHistPtJpsi;                   //!<!  histo with Jpsi pt
   TH1F* fHistPtJpsiDau0;               //!<!  histo with Jpsi prong pt
@@ -218,7 +218,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPtRecoGenPtFeeddw[5];  //!<! histos for efficiency (from B)
   TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
   TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
-  
+
   TH2F* fHistCPUTimeTrackVsNTracks;  //!<! histo with CPU time for track selection vs number of selected tracks for candidates
   TH2F* fHistCPUTimeCandVsNTracks;   //!<! histo with CPU time for candidate selection vs number of selected tracks for candidates
   TH2F* fHistWallTimeTrackVsNTracks; //!<! histo with wall time for track selection vs number of selected tracks for candidates
@@ -235,7 +235,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMaxZVert;          // cut on z vertex position
   Bool_t  fDo3Prong;           // flag yes/no for 3 prongs
   Double_t fMaxDecVertRadius2; // square of max radius of decay vertex
-  
+
   Double_t fMassDzero;         // D0 mass from PDG
   Double_t fMassJpsi;          // Jpsi mass from PDG
   Double_t fMassDplus;         // D+ mass from PDG
@@ -270,10 +270,9 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fPtBinLimsDsSkims[kMaxNPtBins3ProngsSkims];     // pt bins for Ds+ skim selections
   Double_t fPtBinLimsLcSkims[kMaxNPtBins3ProngsSkims];     // pt bins for Lc+ skim selections
   Double_t fPtBinLimsXicSkims[kMaxNPtBins3ProngsSkims];    // pt bins for Xic+ skim selections
-  Double_t fPtWithoutVtxToll;                              // pt tolerance for selections before vertex reconstruction 
+  Double_t fPtWithoutVtxToll;                              // pt tolerance for selections before vertex reconstruction
 
-  Int_t fNPtBins;                     // Number of pt bins
-  Double_t fPtBinLims[kMaxNPtBinsDzero];   // [fNPtBins+1] limits of pt bins
+  Double_t fPtBinLims[kMaxNPtBinsDzero];   // limits of pt bins
   Double_t fMinPtDzero;               // D0 min pt
   Double_t fMaxPtDzero;               // D0 max pt
   Double_t fMinPtDplus;               // D+ min pt
@@ -290,21 +289,21 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fDzeroCuts[kMaxNPtBinsDzero][kNCutVarsDzero]; // D0 cuts
   Double_t fDplusCuts[kMaxNPtBinsDplus][kNCutVarsDplus]; // D+ cuts
   Double_t fJpsiCuts[kMaxNPtBinsJpsi][kNCutVarsJpsi]; // Jpsi cuts
-  Int_t fSelectD0;                    // flag to activate cuts for D0
-  Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
+  Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
   Double_t fMaxRapidityCand;          // Max rapidity cut (if -999 use pt dependent cut)
   Int_t fNPtBinsDzero;                          // Number of pt bins Dzero
   Int_t fNPtBinsDplus;                          // Number of pt bins Dplus
   Int_t fNPtBinsJpsi;                           // Number of pt bins Jpsi
   Int_t fNPtBinsLc;                             // Number of pt bins Lc
+  Double_t fPtBinLimsDzero[kMaxNPtBinsDzero];   // [fNPtBinsDzero+1] limits of pt bins
+  Double_t fPtBinLimsDplus[kMaxNPtBinsDplus];   // [fNPtBinsDplus+1] limits of pt bins
+  Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];     // [fNPtBinsJpsi+1] limits of pt bins
+  Double_t fPtBinLimsLc[kMaxNPtBinsLc];         // [fNPtBinsLc+1] limits of pt bins
+  Int_t fSelectD0;                              // flag to activate cuts for D0
+  Int_t fSelectD0bar;                           // flag to activate cuts for D0bar
   Int_t fSelectDplus;                           // flag to activate cuts for Dplus
   Int_t fSelectJpsi;                            // flag to activate cuts for Jpsi
-  Double_t fPtBinLimsDzero[kMaxNPtBinsDzero];        // [fNPtBinsDzero+1] limits of pt bins 
-  Double_t fPtBinLimsDplus[kMaxNPtBinsDplus];   // [fNPtBinsDplus+1] limits of pt bins
-  Double_t fPtBinLimsLc[kMaxNPtBinsLc];         // [fNPtBinsLc+1] limits of pt bins
-  Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];     // [fNPtBinsJpsi+1] limits of pt bins
-  Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
   Bool_t fFindVertexForCascades;                // flag to activate vertex reco for V0+bachelor
   Double_t fMinPtV0;                            // minimum V0 pt for Lc->pK0s
@@ -313,7 +312,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
   Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
-  
+
   ClassDef(AliAnalysisTaskHFSimpleVertices,25);
 };
 
