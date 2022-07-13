@@ -107,7 +107,7 @@ class AliAnalysisSPCRun2 {
   TProfile *fProfileTrackCuts;      //! Storage of the values used in some cuts.
 
   TComplex fQvector[113][15];       // All combinations of Q-vectors.
-  Int_t fHarmosArray[10][8];        // Array of combinations of harmonics for the SPC.
+  Int_t fHarmosArray[12][8];        // Array of combinations of harmonics for the SPC.
   
   TList *fCentralityList[16];       //! Results per centrality bins. Up to 16 possible bins.
     // Size: [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]

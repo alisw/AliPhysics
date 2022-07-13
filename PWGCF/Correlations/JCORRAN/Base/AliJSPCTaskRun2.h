@@ -103,7 +103,7 @@ class AliJSPCTaskRun2 : public AliAnalysisTaskSE {
   Bool_t bAliSPCRun2UseWeightsNUA;    // kTRUE: Use non-unit NUA weights.
  
   Bool_t bJSPCRun2SaveAllQA;
-  Int_t fAliSPCRun2HarmosArray[10][8];  // Array of combinations of harmonics for the SPC.
+  Int_t fAliSPCRun2HarmosArray[12][8];  // Array of combinations of harmonics for the SPC.
     // Can deal with maximum 10 different SPC.
 
   Bool_t bAliSPCRun2ComputeEtaGap;    // Do eta gap computation if kTRUE. Default kFALSE
