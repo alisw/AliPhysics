@@ -162,3 +162,15 @@ bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
 
     return true;
 }
+
+//________________________________________________________________
+void AliHFMLVarHandlerDstoKKpi::FillTree() {
+    //if fill only signal and not signal/reflection/D+ candidate, do not store
+    if(fFillOnlySignal && !(fCandType&kSignal) && !(fCandType&kRefl) && !(fCandType&kDplustoKKpi)) {
+        fCandType = 0;
+    }
+    else {      
+        fTreeVar->Fill(); 
+        fCandType = 0;
+    }
+}
