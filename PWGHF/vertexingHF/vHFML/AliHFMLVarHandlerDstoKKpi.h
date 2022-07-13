@@ -39,6 +39,7 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
 
         virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
         virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliAODPidHF *pidrespo = nullptr);
+        virtual void FillTree() override;
 
         void SetMassKKOption(int opt) {fMassKKOpt = opt;}
         void SetIsDplustoKKpi(bool isDplus) {

@@ -1263,16 +1263,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               isSignalWoQuark = kTRUE;
           }
           else {
-            if(!isCandInjected)
-              isbkg = kTRUE;
             if(labDplus >= 0)
             {
+              if(pdgCode0 == 211)
+                isrefl = kTRUE;
               fMLhandler->SetIsDplustoKKpi(kTRUE);
               if(orig == 4)
                 isprompt = kTRUE;
               else if(orig == 5)
                 isFD = kTRUE;
             }
+            if(!isCandInjected)
+              isbkg = kTRUE;
           }          
           fMLhandler->SetBeautyMotherPt(ptB);
           fMLhandler->SetBeautyMotherPDG(pdgBmother);
@@ -1309,16 +1311,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               isSignalWoQuark = kTRUE;
           } 
           else {
-            if(!isCandInjected)
-              isbkg = kTRUE;
             if(labDplus >= 0)
             {
+              if(pdgCode0 == 211)
+                isrefl = kFALSE;
               fMLhandler->SetIsDplustoKKpi(kTRUE);
               if(orig == 4)
                 isprompt = kTRUE;
               else if(orig == 5)
                 isFD = kTRUE;
             }
+            if(!isCandInjected)
+              isbkg = kTRUE;
           }
           fMLhandler->SetBeautyMotherPt(ptB);
           fMLhandler->SetBeautyMotherPDG(pdgBmother);
