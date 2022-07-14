@@ -45,15 +45,15 @@ ClassImp(AliAnalysisTaskKaon2PC) // classimp: necessary for root
 
 
 AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(), 
-    fAOD(0), PVz(0), fOutputList(0), fPIDResponse(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
+    fAOD(0), fOutputList(0), fPIDResponse(0), PVz(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
     fDecayLv0Cut(8.05), fLpTv0Cut(0.2), fUpTv0Cut(0.5), fEtav0Cut(0.8), fDcaPosToPrimVtxv0Cut(0.1), 
     fDcaNegToPrimVtxv0Cut(0.1), fEtaPosv0Cut(0.8), fEtaNegv0Cut(0.8), fCosPACut(0.99), fSigPosv0Cut(2.0), 
-    fSigNegv0Cut(2.0), fHistMK0(0), fHistPt(0), fVtx(0),  fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
-    fHistK0PhiEta(0), fNsigmaTOFK(0), fNsigmaTOFKaon(0), fNsigmaTPCTOFK(0), /* fKaonSparse(0), 
-    fHistK0Eta(0),*/ fHistChPhi(0), fHistChEta(0), fHistChRap(0), fHistPosPhi(0), fHistPosEta(0), fHistPosPhiEta(0),
-    fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0),  fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0), 
-    fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), fHistCent(0), fHistSigCent(0), fHistInvCent(0),
-    fHistCFPhi(0), fHistCFPhiCuts(0), fHistCFPhiLCuts(0), fHistCFEta(0), fHistCF(0),  fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0)
+    fSigNegv0Cut(2.0), fHistMK0(0), fHistPt(0), fVtx(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
+    fHistK0PhiEta(0), fHistK0Phi(0), fHistK0Eta(0), fHistChPhi(0), fHistChEta(0), fHistChRap(0), fHistPosPhi(0), fHistPosEta(0), 
+    fHistPosPhiEta(0), fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0), fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0),
+    fNsigmaTOFK(0), fNsigmaTOFKaon(0),  fNsigmaTPCTOFK(0), fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), 
+    fHistCent(0), fHistSigCent(0), fHistInvCent(0), fHistCFPhi(0), fHistCFPhiCuts(0), fHistCFPhiLCuts(0), fHistCFEta(0), fHistCF(0),  
+    fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0)
 
 {
     // default constructor, don't allocate memory here!
@@ -61,15 +61,16 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), PVz(0), fOutputList(0), fPIDResponse(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
+    fAOD(0), fOutputList(0), fPIDResponse(0), PVz(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
     fDecayLv0Cut(8.05), fLpTv0Cut(0.2), fUpTv0Cut(0.5), fEtav0Cut(0.8), fDcaPosToPrimVtxv0Cut(0.1), 
     fDcaNegToPrimVtxv0Cut(0.1), fEtaPosv0Cut(0.8), fEtaNegv0Cut(0.8), fCosPACut(0.99), fSigPosv0Cut(2.0), 
-    fSigNegv0Cut(2.0), fHistMK0(0), fHistPt(0), fVtx(0),  fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0),
-    fHistK0PhiEta(0), fNsigmaTOFK(0), fNsigmaTOFKaon(0), fNsigmaTPCTOFK(0), /* fKaonSparse(0),
-    fHistK0Eta(0),*/ fHistChPhi(0), fHistChEta(0), fHistChRap(0), fHistPosPhi(0), fHistPosEta(0), fHistPosPhiEta(0),
-    fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0),  fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0), 
-    fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), fHistCent(0), fHistSigCent(0), fHistInvCent(0),
-    fHistCFPhi(0), fHistCFPhiCuts(0), fHistCFPhiLCuts(0), fHistCFEta(0), fHistCF(0), fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0)
+    fSigNegv0Cut(2.0), fHistMK0(0), fHistPt(0), fVtx(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
+    fHistK0PhiEta(0), fHistK0Phi(0), fHistK0Eta(0), fHistChPhi(0), fHistChEta(0), fHistChRap(0), fHistPosPhi(0), fHistPosEta(0), 
+    fHistPosPhiEta(0), fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0), fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0),
+    fNsigmaTOFK(0), fNsigmaTOFKaon(0),  fNsigmaTPCTOFK(0), fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), 
+    fHistCent(0), fHistSigCent(0), fHistInvCent(0), fHistCFPhi(0), fHistCFPhiCuts(0), fHistCFPhiLCuts(0), fHistCFEta(0), fHistCF(0),  
+    fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0)
+
 
 {
     // constructor
@@ -190,15 +191,15 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistNegRap->GetXaxis()->SetTitle("Rapidity");
     fHistNegRap->SetOption("colz");
 
-    fNsigmaKaon = new TH2F("fNsigmaKaon","|NSigma|<2 Vs Pt of Kaons",700,0.1,2,700,-20.0,20.0);
-    fNsigmaKaon->GetXaxis()->SetTitle("Transverse Momentum [GeV/c]");
-    fNsigmaKaon->GetYaxis()->SetTitle("NSigma of Kaon");
-    fNsigmaKaon->SetOption("colz");
-
     fnsigmakaon = new TH2F("fnsigmakaon","NSigma of Kaon Vs Transverse Momentum",700,0.1,2,700,-20.0,20.0);
     fnsigmakaon->GetXaxis()->SetTitle("Transverse Momentum [GeV/c]");
     fnsigmakaon->GetYaxis()->SetTitle("NSigma of Kaon");
     fnsigmakaon->SetOption("colz");
+
+    fNsigmaKaon = new TH2F("fNsigmaKaon","|NSigma|<2 Vs Pt of Kaons",700,0.1,2,700,-20.0,20.0);
+    fNsigmaKaon->GetXaxis()->SetTitle("Transverse Momentum [GeV/c]");
+    fNsigmaKaon->GetYaxis()->SetTitle("NSigma of Kaon");
+    fNsigmaKaon->SetOption("colz");
 
     fNsigmaTOFK = new TH2F("fNsigmaTOFK","",700,0.2,2,700,-60.0,60.0);
     fNsigmaTOFK->GetXaxis()->SetTitle("Transverse Momentum [GeV/c]");

@@ -35,53 +35,53 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         AliAODEvent*            fAOD;           //! input event
        TList*                  fOutputList;    //! output list
        AliPIDResponse*         fPIDResponse;  //! pid response object’
-       TH1F*                   fHistMK0;
-       TH1F*                   fHistPt;
-       TH1F*                   fVtx;
-       TH2F*                   fPID;
-       TH2F*                   fPIDKa;
-       TH2F*                   fPIDKaon;
-       TH2F*                   fPIDK;
-       TH2F*                   fPIDKeCut;
-       TH2F*                   fPIDKpiCut;
-       TH3F*                   fHistK0PhiEta;
-       TH2F*                   fHistK0Phi;
-       TH2F*                   fHistK0Eta;
-       TH2F*                   fHistChPhi;
-       TH2F*                   fHistChEta;
-       TH2F*                   fHistChRap;
-       TH2F*                   fHistPosPhi;
-       TH2F*                   fHistPosEta;
-       TH3F*                   fHistPosPhiEta;
-       TH2F*                   fHistPosRap;
-       TH2F*                   fHistNegPhi;
-       TH2F*                   fHistNegEta;
-       TH3F*                   fHistNegPhiEta;
-       TH2F*                   fHistNegRap;
-       TH2F*                   fnsigmakaon;
-       TH2F*                   fNsigmaKaon;
-       TH2F*                   fNsigmaTOFK;
-       TH2F*                   fNsigmaTOFKaon;
-       TH2F*                   fNsigmaTPCTOFK;
+       TH1F*                   fHistMK0;        //! dummy histogram
+       TH1F*                   fHistPt;     //! dummy histogram
+       TH1F*                   fVtx;        //! dummy histogram
+       TH2F*                   fPID;        //! dummy histogram
+       TH2F*                   fPIDKa;      //! dummy histogram
+       TH2F*                   fPIDKaon;        //! dummy histogram
+       TH2F*                   fPIDK;       //! dummy histogram
+       TH2F*                   fPIDKeCut;       //! dummy histogram
+       TH2F*                   fPIDKpiCut;      //! dummy histogram
+       TH3F*                   fHistK0PhiEta;       //! dummy histogram
+       TH2F*                   fHistK0Phi;          //! dummy histogram
+       TH2F*                   fHistK0Eta;      //! dummy histogram
+       TH2F*                   fHistChPhi;      //! dummy histogram
+       TH2F*                   fHistChEta;      //! dummy histogram
+       TH2F*                   fHistChRap;      //! dummy histogram
+       TH2F*                   fHistPosPhi;     //! dummy histogram
+       TH2F*                   fHistPosEta;     //! dummy histogram
+       TH3F*                   fHistPosPhiEta;  //! dummy histogram
+       TH2F*                   fHistPosRap;     //! dummy histogram
+       TH2F*                   fHistNegPhi;     //! dummy histogram
+       TH2F*                   fHistNegEta;     //! dummy histogram
+       TH3F*                   fHistNegPhiEta;  //! dummy histogram
+       TH2F*                   fHistNegRap;     //! dummy histogram
+       TH2F*                   fnsigmakaon;     //! dummy histogram
+       TH2F*                   fNsigmaKaon;     //! dummy histogram
+       TH2F*                   fNsigmaTOFK;     //! dummy histogram
+       TH2F*                   fNsigmaTOFKaon;      //! dummy histogram
+       TH2F*                   fNsigmaTPCTOFK;      //! dummy histogram
        TH1F*                   fHistNEvents;        //! dummy histogram
        TH1F*                   fHistEta;        //! dummy histogram
-       TH1F*                   fHistDEta;
+       TH1F*                   fHistDEta;       //! dummy histogram
        TH1F*                   fHistPhi;        //! dummy histogram
-       TH1F*                   fHistDPhi;
+       TH1F*                   fHistDPhi;       //! dummy histogram
        TH1F*                   fHistMult;        //! dummy histogram
-       TH1F*                   fHistCent;
-       TH2F*                   fHistSigCent;
-       TH2F*                   fHistInvCent;
-       TH2F*                   fHistCFPhi;
-       TH2F*                   fHistCFPhiCuts;
-       TH2F*                   fHistCFPhiLCuts;
-       TH2F*                   fHistCFEta;
-       TH3F*                   fHistCF;
-       TH3F*                   fHistKChCh;
-       TH3F*                   fHistKPosKPos;
-       TH3F*                   fHistKPosKNeg;
-       TH3F*                   fHistKNegKNeg;
-       TH3F*                   fHistK0K0;
+       TH1F*                   fHistCent;       //! dummy histogram
+       TH2F*                   fHistSigCent;    //! dummy histogram
+       TH2F*                   fHistInvCent;    //! dummy histogram
+       TH2F*                   fHistCFPhi;      //! dummy histogram
+       TH2F*                   fHistCFPhiCuts;          //! dummy histogram
+       TH2F*                   fHistCFPhiLCuts;     //! dummy histogram
+       TH2F*                   fHistCFEta;      //! dummy histogram
+       TH3F*                   fHistCF;     //! dummy histogram
+       TH3F*                   fHistKChCh;      //! dummy histogram
+       TH3F*                   fHistKPosKPos;       //! dummy histogram
+       TH3F*                   fHistKPosKNeg;       //! dummy histogram
+       TH3F*                   fHistKNegKNeg;       //! dummy histogram
+       TH3F*                   fHistK0K0;       //! dummy histogram
        Double_t        PVz;
        Double_t        fLpTCut;        //not a pointer???
        Double_t        fUpTCut;
