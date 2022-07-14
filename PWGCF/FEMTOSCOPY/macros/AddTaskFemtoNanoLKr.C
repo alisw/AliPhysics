@@ -261,12 +261,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     std::map<std::string, float> kaonPIDLoose;
 
     kaonPIDTight = {
-        {"COMB", 3.7},
+        {"COMB", 2.7},
         {"TPC", 2.7},
         {"EXCLUSION", 3.3},
     };  // for SetPIDkd() when using oton's K selection
     kaonPIDLoose = {
-        {"COMB", 4.3},
+        {"COMB", 3.3},
         {"TPC", 3.3},
         {"EXCLUSION", 2.7},
     };
