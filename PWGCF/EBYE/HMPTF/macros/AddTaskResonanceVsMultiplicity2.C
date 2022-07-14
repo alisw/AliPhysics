@@ -20,7 +20,11 @@ AliAnalysisTaskResonanceVsMultiplicity2 *AddTaskResonanceVsMultiplicity2(Int_t f
 
   TString TaskMeanpt;
   TaskMeanpt.Form("gTaskMeanpt%d_%d_%s", gCentMin, gCentMax, " ");
-  //gROOT->LoadMacro("AliAnalysisTaskResonanceVsMultiplicity.cxx++g");                                                           
+  //gROOT->LoadMacro("AliAnalysisTaskResonanceVsMultiplicity.cxx++g");                                                  
+
+  gInterpreter->ProcessLine(".x AliAnalysisTaskResonanceVsMultiplicity2.cxx++g");
+
+         
   AliAnalysisTaskResonanceVsMultiplicity2 *task_Mpt = new AliAnalysisTaskResonanceVsMultiplicity2(TaskMeanpt);
 
   /*
