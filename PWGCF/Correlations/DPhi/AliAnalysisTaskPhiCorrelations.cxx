@@ -1579,6 +1579,11 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       else if (hepMCHeader)
         centrality = hepMCHeader->impact_parameter();
     }
+    else if (fCentralityMethod == "MCGen_TRACKS_MANUAL") {
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+      centrality = tracks->GetEntriesFast();
+      delete tracks;
+    }
     else if (fCentralityMethod == "MCGen_V0M") {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
       TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
