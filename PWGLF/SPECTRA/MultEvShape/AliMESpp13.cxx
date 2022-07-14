@@ -99,6 +99,18 @@ AliMESpp13::~AliMESpp13()
   }
   if (fUtils)
     delete fUtils;
+
+  if (fTracksIO)
+    fTracksIO->Delete();
+
+  if (fMCtracksIO)
+    fMCtracksIO->Delete();
+
+  if (fMCGenTracksIO)
+    fMCGenTracksIO->Delete();
+
+  if (fMCtracksMissIO)
+    fMCtracksMissIO->Delete();
 }
 
 //________________________________________________________________________
@@ -408,7 +420,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     PostData(kQA, fHistosQA);
     return;
   }
-  fTracksIO->Delete();
+  fTracksIO->Clear("C");
   PostData(kEventTree + 1, fEventTree);
   PostData(kTracksTree + 1, fTracksTree);
 
@@ -555,21 +567,24 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     // std::cout << "trk id " << i << " MC label " << t->GetLabel() << std::endl;
     if (t->GetLabel() >= nTracks_MC)
     {
-      AliWarning(Form("MC label %d request outside range %d", t->GetLabel(), nTracks_MC));
+      AliError(Form("MC label %d request outside range %d", t->GetLabel(), nTracks_MC));
       continue;
     }
     if (!(tMC = (AliMEStrackInfo *)fMCtracks->At(t->GetLabel())))
       continue;
     // std::cout << "MC trk id " << t->GetLabel() << " ESD label " << tMC->GetLabel() << std::endl;
     if (tMC->GetLabel() != i)
+    {
       AliError(Form("ESD label %d from MC track differ from ESD id %d", tMC->GetLabel(), i));
+      continue;
+    }
 
     new ((*fTracksIO)[j]) AliMEStrackInfo(*t);
     new ((*fMCtracksIO)[j]) AliMEStrackInfo(*tMC);
     j++;
   }
-  cout << "!!!!!! fTracksIO entries  = " << fTracksIO->GetEntries() << endl;
-  cout << "!!!!!! fMCtracksIO entries  = " << fMCtracksIO->GetEntries() << endl;
+  // cout << "!!!!!! fTracksIO entries  = " << fTracksIO->GetEntries() << endl;
+  // cout << "!!!!!! fMCtracksIO entries  = " << fMCtracksIO->GetEntries() << endl;
 
   Double_t fPt_MC(0.), fEta_MC(0.), fPhi_MC(0.), fCharge_MC(0.), fPhiLP_MC(0.), fPtLP_MC(0.), fEtaLP_MC(0.), fDeltaPhi_MC(0.), fDeltaEta_MC(0.), fPrimary_MC(0.), fSecondary_MC(0.), fMaterial_MC(0.);
   Double_t pxLP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kTRUE);
@@ -786,12 +801,17 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // printf("MCtracks missed %d\n", fMCtracksMissIO->GetEntries());
   // printf("Closure %d\n", fMCtracks->GetEntries() - fMCtracksMissIO->GetEntries() - fMCtracksIO->GetEntries());
 
+  if((fMCtracks->GetEntries() - fMCtracksMissIO->GetEntries() - fMCtracksIO->GetEntries())!=0)
+  {
+    AliError("the closure test for MC is not passed!");
+  }
+
   AliDebug(2, Form("Tracks REC[%d] MC[%d]", fTracks->GetEntries(), fMCtracks ? fMCtracks->GetEntries() : 0));
 
-  fTracksIO->Delete();
-  fMCtracksIO->Delete();
-  fMCGenTracksIO->Delete();
-  fMCtracksMissIO->Delete();
+  fTracksIO->Clear("C");
+  fMCtracksIO->Clear("C");
+  fMCGenTracksIO->Clear("C");
+  fMCtracksMissIO->Clear("C");
 
   PostData(kQA, fHistosQA);
   PostData(kEventTree + 1, fEventTree);
