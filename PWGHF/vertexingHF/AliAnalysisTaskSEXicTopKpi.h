@@ -357,6 +357,7 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   THnF *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
 
   TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
+  THnSparseF* fhistMCSpectrumAccLbToLcEle;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
   THnSparseF* fhSparseAnalysis4Prong;//! sparse for 4-prong analysis
   THnSparseF* fhSparseAnalysisReflections;//! sparse for analysis - reflections
@@ -605,7 +606,7 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   Bool_t fOnlyEleFourthLoop;// flag for limiting to electron candidate 4th-particle loop
   Bool_t fFillNtuple4Prong;// flag to switch on filling of 4-prong ntuple 
   TNtuple *fNtuple4Prong;// ntuple for 4-prong candidates
-  ClassDef(AliAnalysisTaskSEXicTopKpi,34); /// AliAnalysisTaskSE for Xic->pKpi  
+  ClassDef(AliAnalysisTaskSEXicTopKpi,35); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 
