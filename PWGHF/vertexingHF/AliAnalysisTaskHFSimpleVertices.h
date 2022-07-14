@@ -327,7 +327,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Bool_t fEnableCPUTimeCheck;      // flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds; // flag to switch from seconds (default) to milliseconds
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices, 25);
+  ClassDef(AliAnalysisTaskHFSimpleVertices, 26);
 };
 
 #endif
