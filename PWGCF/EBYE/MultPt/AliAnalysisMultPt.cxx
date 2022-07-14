@@ -77,7 +77,7 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
     MultPtHist->SetXTitle("N_{ch}");
     MultPtHist->SetYTitle("pT");
     MultPtHist->SetMarkerSize(1.2);
-        //______________________________________ Reconstructed:
+    //______________________________________ Reconstructed:
     MultPtHistRec = new TH2D("MultPtHistRec", "MultPt-Rec", 4000, 0, 4000, 50, 0, 5);
     fOutputList->Add(MultPtHistRec);
     MultPtHistRec->SetTitle("pT vs Reconstructed Multiplicity");
