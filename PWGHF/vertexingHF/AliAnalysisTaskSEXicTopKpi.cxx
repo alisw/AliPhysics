@@ -5447,7 +5447,7 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	    part3prong->XvYvZv(secvtx4p);
 	    point4pr[12]=TMath::Sqrt((secvtx4p[0]-primVtxMC[0])*(secvtx4p[0]-primVtxMC[0])
 				     +(secvtx4p[1]-primVtxMC[1])*(secvtx4p[1]-primVtxMC[1]));
-	    point4pr[13]=part3prong->Pt();
+	    point4pr[13]=partLb->Pt();
 	    
 	    if(mcInfo>0){
 	      Double_t pLc[3],pvLch[3];
