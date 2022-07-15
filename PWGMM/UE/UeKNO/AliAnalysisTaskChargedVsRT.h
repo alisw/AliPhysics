@@ -58,8 +58,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         void       SetCutsHybrid1WoDCA(AliESDtrackCuts *name);
         void       SetCutsFilterWoDCA(AliESDtrackCuts *name);
         //Systematic ============================
-//         void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
-//         void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
+	void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
+        void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
         void       SetNcrVar1(Bool_t NcrVar1 = kFALSE) {fNcrVar1 = NcrVar1;}
         void       SetNcrVar2(Bool_t NcrVar2 = kFALSE) {fNcrVar2 = NcrVar2;}
         void       SetChisqTPCVar1(Bool_t ChisqTPCVar1 = kFALSE) {fChisqTPCVar1 = ChisqTPCVar1;}
