@@ -374,6 +374,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	    if(fUseTOFMassCut){
 		//Mass square!
 		float TmpTOFMass = ReturnTOFMass(track,imost);
+		if(TmpTOFMass == -999) return false;	
 		//if(TmpTOFMass == -999){cout<<"imost"<<imost<<endl; return false;}
 	    	if(TmpTOFMass < TOFMassLowLimit || TmpTOFMass > TOFMassUpLimit){
 			return false;
