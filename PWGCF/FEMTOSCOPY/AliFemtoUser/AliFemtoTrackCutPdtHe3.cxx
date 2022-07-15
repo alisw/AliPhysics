@@ -35,6 +35,7 @@ AliFemtoESDTrackCut()
     fOnlyTPCreject = 1;
     
     fPionHe3cut = 0;
+    fUseDCAvsPt_cut = 0;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -65,6 +66,7 @@ AliFemtoESDTrackCut(aCut)
     fUsePtCut = aCut.fUsePtCut;
     fOnlyTPCreject = aCut.fOnlyTPCreject;
     fPionHe3cut = aCut.fPionHe3cut;
+    fUseDCAvsPt_cut = aCut.fUseDCAvsPt_cut;
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -105,6 +107,7 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
     fUsePtCut = aCut.fUsePtCut;
     fPionHe3cut = aCut.fPionHe3cut;
+    fUseDCAvsPt_cut = aCut.fUseDCAvsPt_cut;
     return *this;
 }
 
@@ -312,6 +315,11 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 		if( fOtherNsigmacut && RejectFakeP(track,track->P().Mag()) ){
 			imost = 0;			
 		}
+		if(fUseDCAvsPt_cut){
+			float tmpDCAr = TMath::Abs(track->ImpactD());
+			float tmpCut = Return_DCAvsPt_cut_p(track->Pt(),fCharge);  
+			if(  tmpDCAr > tmpCut ) imost = 0;		
+		}
             }
 	    //\ for deuteron PID
             else if (fMostProbable == 13){   //cut on Nsigma deuteron
@@ -326,6 +334,12 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
                 if ( fdEdxcut && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
                     	imost = 0;
                 }
+		if(fUseDCAvsPt_cut && fCharge>0){
+			float tmpDCAr = TMath::Abs(track->ImpactD());
+			float tmpCut = Return_DCAvsPt_cut_d(track->Pt(),fCharge);
+			if(  tmpDCAr > tmpCut ) imost = 0;
+			
+		}
             }
 	    //\ for triton PID
             else if (fMostProbable == 14){   //cut on Nsigma triton
@@ -360,7 +374,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	    if(fUseTOFMassCut){
 		//Mass square!
 		float TmpTOFMass = ReturnTOFMass(track,imost);
-		if(TmpTOFMass == -999) return false;
+		if(TmpTOFMass == -999){cout<<"imost"<<imost<<endl; return false;}
 	    	if(TmpTOFMass < TOFMassLowLimit || TmpTOFMass > TOFMassUpLimit){
 			return false;
 		}
@@ -716,5 +730,35 @@ bool AliFemtoTrackCutPdtHe3::RejectFakeD(const AliFemtoTrack* track, float mom){
 	return false;
 
 }
+float AliFemtoTrackCutPdtHe3::SetfUseDCAvsPt_cut(int aUseDCAvsPt_cut){
+	fUseDCAvsPt_cut = aUseDCAvsPt_cut; 
+}
+float AliFemtoTrackCutPdtHe3::Return_DCAvsPt_cut_p(float pt,int charge){
+	int WhichBin = (pt - 0.4)/0.2;
+	if(charge>0){
+		return v_DCAvspTcut_p[WhichBin];		
+	} 
+	if(charge<0){
+		return v_DCAvspTcut_antip[WhichBin];	
+	}
+
+}
+float AliFemtoTrackCutPdtHe3::Return_DCAvsPt_cut_d(float pt,int charge){
+	int WhichBin = (pt - 0.4)/0.2;
+	return v_DCAvspTcut_d[WhichBin];	
+
+}
+void AliFemtoTrackCutPdtHe3::Set_DCAvsPt_cut(float *input_v,int label){
+	if(label==0){
+		for(int i=0;i<18;i++) v_DCAvspTcut_p[i] = input_v[i];
+	}
+	if(label==1){
+		for(int i=0;i<18;i++) v_DCAvspTcut_antip[i] = input_v[i];			
+	}
+	if(label==2){
+		for(int i=0;i<18;i++) v_DCAvspTcut_d[i] = input_v[i];			
+	}
+}
+
 
 
