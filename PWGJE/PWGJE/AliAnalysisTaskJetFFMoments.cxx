@@ -264,6 +264,9 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
     fHistListJets[iJetBranch] = 0x0;
   }
 
+   fh2JetPtResponse = 0x0;
+   fhnJetPtResponse = 0x0;
+  
   Double_t pi = TMath::Pi();
   Double_t halfWidth = (fFFMNMax - fFFMNMin)/(fFFMMomMax-1)/2.;
   Double_t nAxisMin = fFFMNMin - halfWidth;
@@ -1153,6 +1156,8 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
           uRecJet->Pt() - jetBkgPtRec , uRecJet->Eta(), uRecJet->Phi(), uRecJet->EffectiveAreaCharged(), (Double_t)( (TRefArray *) (uRecJet->GetRefTracks()) )->GetEntries(),
         };
         for(Int_t iAxis=0; iAxis<5; iAxis++) fh2MatchedJets[iAxis]->Fill(jetEntriesMatch[iAxis], jetEntriesMatch[iAxis+5]);
+        
+        FillResponse(uRecJet,uGenJet);
 
         if(listUsedJets[0]->GetEntries()) {
           //At least we need rec and gen, if no-matching, we MATCH the rec_jet and gen_jet with same number
@@ -2387,7 +2392,16 @@ void AliAnalysisTaskJetFFMoments::CreateHistos()
 
   } // End loop on iJetBranch
 
-  //events
+   const Int_t dim = 2;
+   Int_t nbins[dim]={200,200};
+   Double_t xmin[dim]={0,0};
+   Double_t xmax[dim]={200,200};
+   
+   //response
+   fh2JetPtResponse = new TH2D("fh2JetPtResponse", "Jet Pt response", 200, 0, 200, 200, 0, 200); 
+   fhnJetPtResponse = new THnSparseF("fhnJetPtResponse", "GenJets:RecJets", dim, nbins, xmin, xmax);
+
+  //event
   if( fkIsPbPb ) {
     fHistList->Add(fh1CentralitySelect);
     fHistList->Add(fh1CentralityPhySel);
@@ -2463,6 +2477,10 @@ void AliAnalysisTaskJetFFMoments::CreateHistos()
 	fHistListJets[iJetBranch]->Add(fp2JetFFM_Sub[iJetBranch]);
 	fHistListJets[iJetBranch]->Add(fp2JetFFM_Imp[iJetBranch]);
   }
+
+   //response
+   fHistListJets[1]->Add(fh2JetPtResponse);
+   fHistListJets[1]->Add(fhnJetPtResponse);
 
   if (fDebug != 0) printf("AliAnalysisTaskJetFFMoments::CreateHistos() end!\n");
 }
@@ -3385,4 +3403,50 @@ AliGenHerwigEventHeader *AliAnalysisTaskJetFFMoments::GetHerwigHeader()  {
      }
     }
     return HerwigHeader;
+}
+
+//___________________________________________________________________________________
+void AliAnalysisTaskJetFFMoments::FillResponse(AliAODJet* recJet, AliAODJet* genJet)
+{
+  // match tracks of two jets, using MC labels (-> does not work for data tracks)	
+
+  TClonesArray *tca = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(!tca) return;
+
+  Double_t jetPtRec = recJet ? recJet->Pt() : -1; 
+  Double_t jetPtGen = genJet ? genJet->Pt() : -1;
+
+  if(recJet && !genJet){
+    cout<<" FillResponse: rec jet w/o gen ! "<<endl;
+  }
+
+
+  // get tracks in jet
+  TList* recjettracklist = new TList();
+  Bool_t isBadJet     = kFALSE;
+  if(recJet)  GetJetTracksTrackrefs(recjettracklist, recJet, GetJetMinLTrackPt(), GetJetMaxTrackPt(), isBadJet);
+
+  if(fJetMinnTracks>0 && recjettracklist->GetSize()<=fJetMinnTracks) isBadJet = kTRUE;
+      
+  if(isBadJet){
+    recjettracklist->Clear();
+    recJet = 0;  // treat as inefficiency in response  
+  }
+
+  TList* genjettracklist = new TList();
+  if(genJet)  GetJetTracksTrackrefs(genjettracklist, genJet, GetJetMinLTrackPt(), GetJetMaxTrackPt(), isBadJet);
+ 
+  // -----------
+  // jet response
+
+  if(recJet){
+
+    if(genJet){
+      Double_t entriesRespJetPt[] = {jetPtRec,jetPtGen};
+
+      fhnJetPtResponse->Fill(entriesRespJetPt);
+      fh2JetPtResponse->Fill(jetPtGen,jetPtRec);     
+    }
+  }
+
 }
