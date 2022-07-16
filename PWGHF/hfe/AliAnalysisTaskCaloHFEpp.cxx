@@ -257,6 +257,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistWeOrgNeg(0),
         fHistZ_Org(0),
         fHistZeOrg(0),
+        fHistZeOrgNeg(0),
+        fHistZeOrgPos(0),
         fHistZeRec(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
@@ -462,6 +464,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistWeOrgNeg(0),
         fHistZ_Org(0),
         fHistZeOrg(0),
+        fHistZeOrgNeg(0),
+        fHistZeOrgPos(0),
         fHistZeRec(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
@@ -610,6 +614,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistWeOrgNeg        = new TH1F("fHistWeOrgNeg","particle level W->e minus",90,10,100);
 	fHistZ_Org        = new TH1F("fHistZ_Org","particle level Z",90,10,100);
 	fHistZeOrg        = new TH2F("fHistZeOrg","particle level Z->e",90,10,100,90,10,100);
+	fHistZeOrgPos        = new TH2F("fHistZeOrgPos","particle level Z->e",40,-2,2,90,10,100);
+	fHistZeOrgNeg        = new TH2F("fHistZeOrgNeg","particle level Z->e",40,-2,2,90,10,100);
 	fHistZeRec        = new TH1F("fHistZeRec","particle level Z->e",90,10,100);
 
 
@@ -817,6 +823,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistWeOrgNeg); 
 	fOutputList->Add(fHistZ_Org); 
 	fOutputList->Add(fHistZeOrg); 
+	fOutputList->Add(fHistZeOrgNeg); 
+	fOutputList->Add(fHistZeOrgPos); 
 	fOutputList->Add(fHistZeRec); 
 
 
@@ -2167,6 +2175,8 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Doubl
 	      if(pdgorg==24 && pdgStatus==1)fHistWeOrgPos->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
 	      if(pdgorg==-24 && pdgStatus==1)fHistWeOrgNeg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
 	      if(pdgorg==23 && pdgStatus==1)fHistZeOrg->Fill(fMCparticle->Pt(),fMCparticleWZ->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	      if(pdgorg==23 && pdgStatus==1 && pdgGen==-11)fHistZeOrgNeg->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	      if(pdgorg==23 && pdgStatus==1 && pdgGen==11)fHistZeOrgPos->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
             }
  }
 
