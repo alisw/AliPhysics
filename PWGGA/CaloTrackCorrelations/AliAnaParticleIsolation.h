@@ -342,6 +342,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtEventPlane[2][2] ;                      //!<! Number of non/isolated narrow/wide particles event plane angle vs pT.
   TH2F *   fhPtNLocMax[2][2] ;                         //!<! Number of non/isolated narrow/wide particles vs NLM in cluster.
   TH3F *   fhPtEtaPhi[2][2] ;                          //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles.
+  TH3F *   fhPtEtaPhiG1[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. G1 events froom trigger decision.
+  TH3F *   fhPtEtaPhiG2[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. G2 events froom trigger decision.
+  TH3F *   fhPtEtaPhiL0[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. L0 events froom trigger decision.
   TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
   TH2F *   fhPtPerTrigger   [2][2] ;                   //!<! Number of non/isolated narrow/wide particles vs pT vs calo trigger from maker.
