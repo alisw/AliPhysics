@@ -614,8 +614,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistWeOrgNeg        = new TH1F("fHistWeOrgNeg","particle level W->e minus",90,10,100);
 	fHistZ_Org        = new TH1F("fHistZ_Org","particle level Z",90,10,100);
 	fHistZeOrg        = new TH2F("fHistZeOrg","particle level Z->e",90,10,100,90,10,100);
-	fHistZeOrgPos        = new TH2F("fHistZeOrg","particle level Z->e",40,-2,2,90,10,100);
-	fHistZeOrgNeg        = new TH2F("fHistZeOrg","particle level Z->e",40,-2,2,90,10,100);
+	fHistZeOrgPos        = new TH2F("fHistZeOrgPos","particle level Z->e",40,-2,2,90,10,100);
+	fHistZeOrgNeg        = new TH2F("fHistZeOrgNeg","particle level Z->e",40,-2,2,90,10,100);
 	fHistZeRec        = new TH1F("fHistZeRec","particle level Z->e",90,10,100);
 
 
