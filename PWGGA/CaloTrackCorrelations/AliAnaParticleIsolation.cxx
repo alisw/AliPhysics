@@ -264,6 +264,9 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     {
       fhPt          [i][ishsh] = 0 ; 
       fhPtEtaPhi    [i][ishsh] = 0 ;
+      fhPtEtaPhiG1  [i][ishsh] = 0 ;
+      fhPtEtaPhiG2  [i][ishsh] = 0 ;
+      fhPtEtaPhiL0  [i][ishsh] = 0 ;
       fhPtCentrality[i][ishsh] = 0 ;
       fhPtEventPlane[i][ishsh] = 0 ;      
       fhPtNLocMax   [i][ishsh] = 0 ;
@@ -1170,7 +1173,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     m02Title[0] = ""; 
     m02Title[1] = ""; 
   }
-  
+
+  TString trigString = GetReader()->GetTriggerMakerDecisionHistoList();
+
   // Reference histograms
   
   for(Int_t iso = 0; iso < 2; iso++)
@@ -1264,8 +1269,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       fhPtEtaPhi[iso][ishsh]  = new TH3F
       (Form("hPtEtaPhi%s%s",isoName[iso].Data(), m02Name[ishsh].Data()),
-       Form("%s%s, %s",
-            isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+       Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
        ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
           etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),      
           phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
@@ -1274,6 +1278,51 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtEtaPhi[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtEtaPhi[iso][ishsh]) ;
       
+      if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
+      {
+        if ( trigString.Contains("G1") )
+        {
+          fhPtEtaPhiG1[iso][ishsh]  = new TH3F
+          (Form("hPtEtaPhi%s%s_TriggerG1",isoName[iso].Data(), m02Name[ishsh].Data()),
+           Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+           ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+           etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
+           phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
+          fhPtEtaPhiG1[iso][ishsh]->SetYTitle("#eta");
+          fhPtEtaPhiG1[iso][ishsh]->SetZTitle("#varphi (rad)");
+          fhPtEtaPhiG1[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPtEtaPhiG1[iso][ishsh]) ;
+        }
+
+        if ( trigString.Contains("G2") )
+        {
+          fhPtEtaPhiG2[iso][ishsh]  = new TH3F
+          (Form("hPtEtaPhi%s%s_TriggerG2",isoName[iso].Data(), m02Name[ishsh].Data()),
+           Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+           ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+              etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
+              phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
+          fhPtEtaPhiG2[iso][ishsh]->SetYTitle("#eta");
+          fhPtEtaPhiG2[iso][ishsh]->SetZTitle("#varphi (rad)");
+          fhPtEtaPhiG2[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPtEtaPhiG2[iso][ishsh]) ;
+        }
+
+        if ( trigString.Contains("L0") )
+        {
+          fhPtEtaPhiL0[iso][ishsh]  = new TH3F
+          (Form("hPtEtaPhi%s%s_TriggerL0",isoName[iso].Data(), m02Name[ishsh].Data()),
+           Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+           ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+              etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
+              phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
+          fhPtEtaPhiL0[iso][ishsh]->SetYTitle("#eta");
+          fhPtEtaPhiL0[iso][ishsh]->SetZTitle("#varphi (rad)");
+          fhPtEtaPhiL0[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPtEtaPhiL0[iso][ishsh]) ;
+        }
+      } // Trigger decision
+
       if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected())
       {
         // For histograms in arrays, index in the array, corresponding to any particle origin
@@ -3465,8 +3514,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
           if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
           {
-            TString trigString = GetReader()->GetTriggerMakerDecisionHistoList();
-
             if ( trigString.Contains("G1") )
             {
               fhPtPerSMTriggerG1[iso][ishsh] = new TH2F
@@ -5308,6 +5355,39 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     fhPtEtaPhi[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
     
+    if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
+    {
+      TString trigString = GetReader()->GetTriggerMakerDecisionHistoList();
+
+      for(Int_t itrig = 0; itrig < GetReader()->GetNumberOfTriggerMakerDecisions(); itrig++)
+      {
+        if ( GetReader()->GetTriggerMakerDecision(itrig) )
+        {
+          if ( itrig == 3  && trigString.Contains("G1") )
+            fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EGA
+
+          if ( iSM < 12 ) // EMCal
+          {
+            if ( itrig == 6  && trigString.Contains("G1") )
+              fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EG1
+            if ( itrig == 8  && trigString.Contains("G2") )
+              fhPtEtaPhiG2[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EG2
+            if ( itrig == 1  && trigString.Contains("L0") )
+              fhPtEtaPhiL0[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EL0
+          }
+          else // DCal
+          {
+            if ( itrig == 7  && trigString.Contains("G1") )
+              fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DG1
+            if ( itrig == 9  && trigString.Contains("G2") )
+              fhPtEtaPhiG2[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DG2
+            if ( itrig == 2  && trigString.Contains("L0") )
+              fhPtEtaPhiL0[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DL0
+          }
+        }
+      }
+    } // eta-phi trigger
+
     if ( IsDataMC() && mcIndex < fNumberMCParticleCases && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       // For histograms in arrays, index in the array, corresponding to any particle origin
