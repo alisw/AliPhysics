@@ -197,7 +197,7 @@ void AliFemtoCorrFctnPtKstarBeta::AddRealPair( AliFemtoPair* pair){
   double py22 = pair->Track2()->Track()->P().y();
 
   double pT1 = TMath::Hypot(px1, py1);
-  double pT2 = TMath::Hypot(px22, py22); 
+  //double pT2 = TMath::Hypot(px22, py22); 
   
   double pxpair = px1 + px22;
   double pypair = py1 + py22;
