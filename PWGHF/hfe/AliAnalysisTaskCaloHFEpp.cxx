@@ -2175,8 +2175,8 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Doubl
 	      if(pdgorg==24 && pdgStatus==1)fHistWeOrgPos->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
 	      if(pdgorg==-24 && pdgStatus==1)fHistWeOrgNeg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
 	      if(pdgorg==23 && pdgStatus==1)fHistZeOrg->Fill(fMCparticle->Pt(),fMCparticleWZ->Pt());  // W->e(status 21) -> e(status 1) same electron 
-	      if(pdgorg==23 && pdgStatus==1 && pdgGen==-11)fHistZeOrgNeg->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
-	      if(pdgorg==23 && pdgStatus==1 && pdgGen==11)fHistZeOrgPos->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	      if(pdgorg==23 && pdgStatus==1 && fMCparticle->Charge()<0)fHistZeOrgNeg->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	      if(pdgorg==23 && pdgStatus==1 && fMCparticle->Charge()>0)fHistZeOrgPos->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
             }
  }
 
