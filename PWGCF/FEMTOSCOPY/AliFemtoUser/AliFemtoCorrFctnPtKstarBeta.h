@@ -38,6 +38,10 @@ private:
 
   TH2D *fPtKstar2part;   // pt vs k* 
   TH2D *fPtKstarDen2part;   // pt vs k* mixed pairs 
+
+  TH2D *fPtBeta;   // pt vs k* part1
+  TH2D *fPtBeta2part;  //pt vs k* part2
+
   
   TH2D *fPairPtKstar2part;   // pair pt vs k* 
   TH2D *fPairPtKstarDen2part;   // pair pt vs k* mixed pairs 
