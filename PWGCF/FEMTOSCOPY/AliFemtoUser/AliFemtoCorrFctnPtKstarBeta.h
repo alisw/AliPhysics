@@ -43,6 +43,8 @@ private:
 
   TH2D *fPtBeta[10];   // pt vs k* part1
   TH2D *fPtBeta2part[10];  //pt vs k* part2
+  
+  bool fBtPtKStart;
 
   
   TH2D *fPairPtKstar2part;   // pair pt vs k* 
