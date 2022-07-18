@@ -113,17 +113,26 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_ptHard; //! // for pt_hard
 
         AliJTH1D fh_dijetInvM;                     //! // for dijet invariant mass
-        AliJTH1D fh_dijetInvMLin;                     //! // for dijet invariant mass
+        AliJTH1D fh_dijetInvMLin;                  //! // for dijet invariant mass
         AliJTH1D fh_dijetInvMTrunc;                //! // for dijet invariant mass truncated above and below
-        AliJTH1D fh_dijetInvMTrunc2;                //! // for dijet invariant mass truncated above and below
+        AliJTH1D fh_dijetInvMTrunc2;               //! // for dijet invariant mass truncated above and below
         AliJTH1D fh_dijetPtPair;                   //! // for dijet pt
         AliJTH1D fh_dijetDeltaPhi;                 //! // for dijet deltaPhi
+        AliJTH1D fh_dijetCosDeltaPhi;              //! // for cos(dijet deltaPhi)
+        AliJTH1D fh_dijetDeltaEta;                 //! // for dijet deltaPhi
+        AliJTH1D fh_dijetCoshDeltaEta;             //! // for Cosh(dijet deltaPhi)
+        AliJTH1D fh_dijetSqrt2pt12;                //! // for sqrt(2*pt1*pt2)
         AliJTH1D fh_dijetPtPairDeltaPhiCut;        //! // for dijet pt after deltaPhi cut
         AliJTH1D fh_dijetInvMDeltaPhiCut;          //! // for dijet invariant mass after deltaPhi cut
-        AliJTH1D fh_dijetInvMDeltaPhiCutLin;          //! // for dijet invariant mass after deltaPhi cut
+        AliJTH1D fh_dijetInvMDeltaPhiCutLin;       //! // for dijet invariant mass after deltaPhi cut
         AliJTH1D fh_dijetInvMDeltaPhiCutTrunc;     //! // for dijet invariant mass after deltaPhi cut truncated above and below
-        AliJTH1D fh_dijetInvMDeltaPhiCutTrunc2;     //! // for dijet invariant mass after deltaPhi cut truncated above and below
+        AliJTH1D fh_dijetInvMDeltaPhiCutTrunc2;    //! // for dijet invariant mass after deltaPhi cut truncated above and below
+        AliJTH1D fh_dijetPtPairDeltaPhiCutWithCut; //! // for dijet pt after deltaPhi cut
         AliJTH1D fh_dijetDeltaPhiWithCut;          //! // for dijet delta phi after deltaPhi cut
+        AliJTH1D fh_dijetCosDeltaPhiWithCut;       //! // for cos(dijet deltaPhi) (with deltaPhi cut)
+        AliJTH1D fh_dijetDeltaEtaWithCut;          //! // for dijet deltaPhi (with deltaPhi cut)
+        AliJTH1D fh_dijetCoshDeltaEtaWithCut;      //! // for Cosh(dijet deltaPhi) (with deltaPhi cut)
+        AliJTH1D fh_dijetSqrt2pt12WithCut;         //! // for sqrt(2*pt1*pt2) (with deltaPhi cut)
 
         AliJTH1D fh_responseInfo;                  //! // for counting response related things.
         AliJTH1D fh_jetResponseDeltaR;             //! // true jet vs. detector jet deltaR
