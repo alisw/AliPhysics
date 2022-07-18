@@ -614,8 +614,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistWeOrgNeg        = new TH1F("fHistWeOrgNeg","particle level W->e minus",90,10,100);
 	fHistZ_Org        = new TH1F("fHistZ_Org","particle level Z",90,10,100);
 	fHistZeOrg        = new TH2F("fHistZeOrg","particle level Z->e",90,10,100,90,10,100);
-	fHistZeOrgPos        = new TH2F("fHistZeOrgPos","particle level Z->e",40,-2,2,90,10,100);
-	fHistZeOrgNeg        = new TH2F("fHistZeOrgNeg","particle level Z->e",40,-2,2,90,10,100);
+	fHistZeOrgPos        = new TH2F("fHistZeOrgPos","particle level Z->e",60,-3,3,0,0,100);
+	fHistZeOrgNeg        = new TH2F("fHistZeOrgNeg","particle level Z->e",60,-3,3,0,0,100);
 	fHistZeRec        = new TH1F("fHistZeRec","particle level Z->e",90,10,100);
 
 
@@ -2158,25 +2158,28 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Doubl
              }
            }
 
-	 if(TMath::Abs(fMCparticle->Eta())>CutEta)continue; 
+	 //if(TMath::Abs(fMCparticle->Eta())>CutEta)continue; 
 
          // ---- W->e , Z->e info.
          if(TMath::Abs(pdgGen)==11)
             {
-
-
 	      // get W->e
 	      Int_t ilabelM = -1;
 	      Int_t pdgorg = -1;
 	      FindWZdecay(fMCparticle,ilabelM,pdgorg);
 	      AliAODMCParticle* fMCparticleWZ = (AliAODMCParticle*) fMCarray->At(ilabelM);
 	      //cout << "MCcheck : pdgorg = " << pdgorg << " ; " << imc << " ; status = " << pdgStatus << endl;
-	      if(TMath::Abs(pdgorg)==24 && pdgStatus==1)fHistWeOrg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
-	      if(pdgorg==24 && pdgStatus==1)fHistWeOrgPos->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
-	      if(pdgorg==-24 && pdgStatus==1)fHistWeOrgNeg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
-	      if(pdgorg==23 && pdgStatus==1)fHistZeOrg->Fill(fMCparticle->Pt(),fMCparticleWZ->Pt());  // W->e(status 21) -> e(status 1) same electron 
-	      if(pdgorg==23 && pdgStatus==1 && fMCparticle->Charge()<0)fHistZeOrgNeg->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	      
+              if(pdgorg==23 && pdgStatus==1 && fMCparticle->Charge()<0)fHistZeOrgNeg->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
 	      if(pdgorg==23 && pdgStatus==1 && fMCparticle->Charge()>0)fHistZeOrgPos->Fill(fMCparticle->Eta(),fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	      
+	      if(TMath::Abs(fMCparticle->Eta())<CutEta)
+                 {
+                  if(TMath::Abs(pdgorg)==24 && pdgStatus==1)fHistWeOrg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	          if(pdgorg==24 && pdgStatus==1)fHistWeOrgPos->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	          if(pdgorg==-24 && pdgStatus==1)fHistWeOrgNeg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	          if(pdgorg==23 && pdgStatus==1)fHistZeOrg->Fill(fMCparticle->Pt(),fMCparticleWZ->Pt());  // W->e(status 21) -> e(status 1) same electron
+                } 
             }
  }
 
