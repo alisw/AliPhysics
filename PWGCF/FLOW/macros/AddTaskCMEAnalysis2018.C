@@ -29,7 +29,8 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
 					Int_t whichData = 2011,
                                         Double_t gChargeRP = 0.,
                                         Bool_t doQA = kFALSE);
-                                        
+                                      
+//kTRUE,2018,"q",kTRUE,kTRUE,AliFlowEventCuts::kVZERO,"Qa",0.0,kFALSE,768,2.4,3.2,0,0,70,0.1,4.0,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,2,"FB768"
 void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 			Int_t whichData = 2018,
 			TString period = "q", // only for 2018, diff pile up function for 2018r and 2018q
@@ -868,7 +869,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 		} else if (period == "r") {
 		  taskMHLS_PP[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHLS_PP[iCentralityBin]->SetIs2018Data(kTRUE);
-		  taskMHLS_PP[iCentralityBin]->SetupPileUpRemovalFunctions18qPass3();
+		  taskMHLS_PP[iCentralityBin]->SetupPileUpRemovalFunctions18rPass3();
 		}
 	  }
 	}
@@ -908,7 +909,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 		} else if (period == "r") {
 		  taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHLS_PP2[iCentralityBin]->SetIs2018Data(kTRUE);
-		  taskMHLS_PP2[iCentralityBin]->SetupPileUpRemovalFunctions18qPass3();
+		  taskMHLS_PP2[iCentralityBin]->SetupPileUpRemovalFunctions18rPass3();
 		}
 	  }
 	}
@@ -950,7 +951,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 		} else if (period == "r") {
 		  taskMHLS_NN[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHLS_NN[iCentralityBin]->SetIs2018Data(kTRUE);
-		  taskMHLS_NN[iCentralityBin]->SetupPileUpRemovalFunctions18qPass3();
+		  taskMHLS_NN[iCentralityBin]->SetupPileUpRemovalFunctions18rPass3();
 		}
 	  }
 	}
@@ -990,7 +991,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 		} else if (period == "r") {
 		  taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHLS_NN2[iCentralityBin]->SetIs2018Data(kTRUE);
-		  taskMHLS_NN2[iCentralityBin]->SetupPileUpRemovalFunctions18qPass3();
+		  taskMHLS_NN2[iCentralityBin]->SetupPileUpRemovalFunctions18rPass3();
 		}
 	  }
 	}
@@ -1034,7 +1035,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 		} else if (period == "r") {
 		  taskMHUS[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHUS[iCentralityBin]->SetIs2018Data(kTRUE);
-		  taskMHUS[iCentralityBin]->SetupPileUpRemovalFunctions18qPass3();
+		  taskMHUS[iCentralityBin]->SetupPileUpRemovalFunctions18rPass3();
 		}
 	  }
 	}
@@ -1076,7 +1077,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 		} else if (period == "r") {
 		  taskMHUS2[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHUS2[iCentralityBin]->SetIs2018Data(kTRUE);
-		  taskMHUS2[iCentralityBin]->SetupPileUpRemovalFunctions18qPass3();
+		  taskMHUS2[iCentralityBin]->SetupPileUpRemovalFunctions18rPass3();
 		}
 	  }
 	}
