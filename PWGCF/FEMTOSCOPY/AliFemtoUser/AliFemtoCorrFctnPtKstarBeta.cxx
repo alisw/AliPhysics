@@ -32,8 +32,8 @@ AliFemtoCorrFctn(),
   fPtKstar2part_kT[i] = NULL;    
   fPairPtKstar2part_kT[i] = NULL;
 
-  fPtBeta[i] = Null;
-  fPtBeta2part[i] = Null;
+  fPtBeta[i] = NULL;
+  fPtBeta2part[i] = NULL;
   
   }
   
@@ -100,7 +100,7 @@ AliFemtoCorrFctnPtKstarBeta::~AliFemtoCorrFctnPtKstarBeta(){
     delete  fPtKstar2part_kT[i];    
     delete  fPairPtKstar2part_kT[i];
     delete  fPtBeta[i];
-    delete  fPtBeta2par[i];
+    delete  fPtBeta2part[i];
 
     }
 }
