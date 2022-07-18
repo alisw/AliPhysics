@@ -45,6 +45,7 @@
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AliAnaParticleJetFinderCorrelation.h"
 #include "AliHistogramRanges.h"
+#include "TCustomBinning.h"
 
 #endif
 
@@ -510,6 +511,16 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 327*TMath::DegToRad(), 247) ;
     histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA, revise
     histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA, revise
+
+    // For TH3 eta vs phi histograms, avoid binning in EMCal-DCal gap
+    TCustomBinning  phiBinning;
+    phiBinning.SetMinimum(80*TMath::DegToRad());
+    phiBinning.AddStep(187*TMath::DegToRad(),  1*TMath::DegToRad());
+    phiBinning.AddStep(260*TMath::DegToRad(), 73*TMath::DegToRad());
+    phiBinning.AddStep(327*TMath::DegToRad(),  1*TMath::DegToRad());
+    TArrayD phiBinsArray;
+    phiBinning.CreateBinEdges(phiBinsArray);
+    histoRanges->SetHistoPhiArr(phiBinsArray);
   }
   
   histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 2.9, 300);
