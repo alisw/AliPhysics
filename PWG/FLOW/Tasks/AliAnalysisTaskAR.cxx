@@ -3219,7 +3219,7 @@ void AliAnalysisTaskAR::SC2(std::vector<Int_t> sc, Int_t index) {
 
       norm = c_k->GetBinContent(bin) * c_l->GetBinContent(bin);
 
-      if (std::abs(norm) > 1e-15) {
+      if (std::abs(norm) > 1e-25) {
         nsc_kl->SetBinContent(bin, sc_value / norm);
       }
     }
@@ -3277,7 +3277,7 @@ void AliAnalysisTaskAR::SC3(std::vector<Int_t> sc, Int_t index) {
       norm = c_k->GetBinContent(bin) * c_l->GetBinContent(bin) *
              c_n->GetBinContent(bin);
 
-      if (std::abs(norm) > 1e-15) {
+      if (std::abs(norm) > 1e-25) {
         nsc_kln->SetBinContent(bin, sc_value / norm);
       }
     }
