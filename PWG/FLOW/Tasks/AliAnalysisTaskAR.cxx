@@ -1627,9 +1627,9 @@ void AliAnalysisTaskAR::SetDefaultCuts(Int_t Filterbit, Double_t cenMin,
   fTrackCuts[kTPCNCLS][kMAX] = 160;
   fUseTrackCuts[kTPCNCLS] = kTRUE;
 
-  fTrackCuts[kTPCCROSSEDROWS][kMIN] = 70;
-  fTrackCuts[kTPCCROSSEDROWS][kMAX] = 160;
-  fUseTrackCuts[kTPCCROSSEDROWS] = kTRUE;
+  fTrackCuts[kTPCNCLS][kMIN] = 70;
+  fTrackCuts[kTPCNCLS][kMAX] = 160;
+  fUseTrackCuts[kTPCNCLS] = kTRUE;
 
   fTrackCuts[kTPCNCLSFRACTIONSHARED][kMIN] = 0;
   fTrackCuts[kTPCNCLSFRACTIONSHARED][kMAX] = 0.4;
