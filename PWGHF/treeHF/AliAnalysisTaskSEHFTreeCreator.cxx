@@ -2403,13 +2403,11 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
           bool isFeeddown=kFALSE;
           bool issignal=kFALSE;
           bool isbkg=kFALSE;
-          Int_t pdgCode=-2;
           if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
             if(labDp>=0){
               Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partDp,!fITSUpgradeProduction);//Prompt = 4, FeedDown = 5
               if(orig==4 || orig==5) {
                 issignal=kTRUE;
-                pdgCode=TMath::Abs(partDp->GetPdgCode());
                 if(orig==4){
                   isPrimary=kTRUE;
                   isFeeddown=kFALSE;
@@ -3168,7 +3166,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, Ali
 
             Bool_t trackInjected = kFALSE;
             if(fReadMC){
-              Bool_t trackInjected = AliVertexingHFUtils::IsTrackInjected(pionTrack,mcHeader,arrMC);
+              trackInjected = AliVertexingHFUtils::IsTrackInjected(pionTrack,mcHeader,arrMC);
               if(preSelectedBplus==3 && trackInjected) continue;
             }
 
