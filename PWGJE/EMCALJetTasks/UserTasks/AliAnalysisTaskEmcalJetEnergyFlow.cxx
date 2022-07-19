@@ -417,27 +417,7 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
           histname = TString::Format("hJetPtDeltaR_R%03d_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaR between %.2f and %.2f jet radii;P_{t,R=%.2f};#DeltaR",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
           fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,fNDRBins,fMinDRBin,fMaxDRBin);
- /* 
-          histname = TString::Format("hDeltaPt_overPt_R%03d_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii over P_{t,R=%.2f};P_{t,jet(R=%f)}(GeV/c);#Delta P_{t}/P_{t,jet(R=%f)}",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1),Rstep*(i+1),Rstep*(i+1));
-          fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,100,0,2);
   
-          histname = TString::Format("hEtaJetDeltaR_R%03d_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#DeltaR between %.2f and %.2f jet radii;#eta_{jet(R=%f)};#Delta R",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
-          fHistManager.CreateTH2(histname,histtitle,fNEtaBins,-fMaxEtaBin,fMaxEtaBin,fNDRBins,fMinDRBin,fMaxDRBin);
-  
-          histname = TString::Format("hDeltaPtvPtvDeltaEta_R%03d_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#Delta#eta vs the #DeltaP_{t} between %.2f and %.2f jet radii;#Delta P_{t};P_{t,jet(R=%f)}(GEV/v);#Delta #eta",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
-          fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,200,0,2);
-  
-          histname = TString::Format("hDeltaPtvPtvEta_low_R%03d_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii vs #Eta vs P_{t} of %.2f;#Delta P_{t};P_{t,jet(R=%f)}(GEV/v); #eta_{R=%f}",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1),Rstep*(i+1  ),Rstep*(i+1));
-          fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,fNEtaBins,-fMaxEtaBin,fMaxEtaBin);
-  
-          histname = TString::Format("hDeltaPtvPtvEta_high_R%03d_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii vs #Eta vs P_{t} of %.2f;#Delta P_{t};P_{t,jet(R=%f)}(GEV/v); #eta_{R=%f}",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1),Rstep*(i+1  ),Rstep*(i+2));
-          fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,fNEtaBins,-fMaxEtaBin,fMaxEtaBin);
-  */
           histname = TString::Format("hDeltaPtvPtvMultiplicity_R%03d_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii vs P_{t} vs Multiplicity;#Delta P_{t};P_{t,jet(R=%f)}(GEV/v); Multiplicity",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
           fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,20,0,100);
@@ -478,27 +458,7 @@ for(Int_t i=0;i<Pair_number;i++){
           histname = TString::Format("hJetPtDeltaR_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaR between %.2f and %.2f jet radii (Generator level);P_{t,R=%.2f};#DeltaR",  Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
           fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,fNDRBins,fMinDRBin,fMaxDRBin);
-/*  
-          histname = TString::Format("hDeltaPt_overPt_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii over P_{t,R=%.2f}(Generator level);  P_{t,jet(R=%f)}(GeV/c);#Delta P_{t}/P_{t,jet(R=%f)}",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1),Rstep*(i+1),Rstep*(i+1));
-          fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,100,0,2);
-      
-          histname = TString::Format("hEtaJetDeltaR_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#DeltaR between %.2f and %.2f jet radii (Generator level);#eta_{jet(R=%f)};#Delta R",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
-          fHistManager.CreateTH2(histname,histtitle,fNEtaBins,-fMaxEtaBin,fMaxEtaBin,fNDRBins,fMinDRBin,fMaxDRBin);
-  
-          histname = TString::Format("hDeltaPtvPtvDeltaEta_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#Delta#eta vs the #DeltaP_{t} between %.2f and %.2f jet radii (Generator level);  #Delta P_{t};P_{t,jet(R=%f)}(GEV/v);#Delta #eta",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
-          fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,200,0,2);
-  
-          histname = TString::Format("hDeltaPtvPtvEta_low_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii vs #Eta vs P_{t} of %.2f (Generator level);#Delta P_{t};P_{t,jet(R=%f)}(GEV/v); #eta_{R=%f}",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1),Rstep*(i+1),Rstep*(i+1));
-          fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,fNEtaBins,-fMaxEtaBin,fMaxEtaBin);
-  
-          histname = TString::Format("hDeltaPtvPtvEta_high_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii vs #Eta vs P_{t} of %.2f (Generator level);#Delta P_{t};P_{t,jet(R=%f)}(GEV/v); #eta_{R=%f}",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1),Rstep*(i+1),Rstep*(i+2));
-          fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,fNEtaBins,-fMaxEtaBin,fMaxEtaBin);
-  */
+ 
           histname = TString::Format("hDeltaPtvPtvMultiplicity_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii vs P_{t} vs Multiplicity (Generator level);#Delta P_{t};P_{t,jet(R=%f)}(GEV/v); Multiplicity",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
           fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,20,0,100);
@@ -660,7 +620,7 @@ else NumJet =fJetCollArray.GetEntries();
             iLowRIndex_det.Set(DetHighRJetsList.GetEntries()); iHighRIndex_det.Set(DetLowRJetsList.GetEntries());
             JetMatcher(&DetLowRJetsList,kLowRJets,&DetHighRJetsList,kHighRJets, iLowRIndex_det,iHighRIndex_det,0,Max_dist,max_eta);
   //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                for (Int_t j=0; j<iHighRIndex_det.GetSize()-1;j++)      // loop over the low R jets (Detector level)
+                for (Int_t j=0; j<iHighRIndex_det.GetSize();j++)      // loop over the low R jets (Detector level)
                     {
                             if(iHighRIndex_det[j]>=0){                  // if there is a match
                             Int_t match_index = iHighRIndex_det[j];
@@ -690,28 +650,12 @@ else NumJet =fJetCollArray.GetEntries();
                      histname = TString::Format("hJetPtDeltaRDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                      fHistManager.FillTH3(histname,pt_low,DeltaR,DeltaPt_det);
 
- /* 
-                    histname = TString::Format("hDeltaPt_overPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                    fHistManager.FillTH2(histname,pt_low,DeltaPt_det/pt_low);
-  
-                    histname = TString::Format("hEtaJetDeltaR_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                    fHistManager.FillTH2(histname,eta_low,DeltaR);
-  
-                    histname = TString::Format("hDeltaPtvPtvDeltaEta_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                    fHistManager.FillTH3(histname,DeltaPt_det,pt_low,DeltaEta);
-  */
                     histname = TString::Format("hMatchedJetPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                     fHistManager.FillTH1(histname,pt_low);
   
                     histname = TString::Format("hMatchedJetEta_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                     fHistManager.FillTH1(histname,eta_low);
- /* 
-                    histname = TString::Format("hDeltaPtvPtvEta_low_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                    fHistManager.FillTH3(histname,DeltaPt_det,pt_low,eta_low);
-  
-                    histname = TString::Format("hDeltaPtvPtvEta_high_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                    fHistManager.FillTH3(histname,DeltaPt_det,pt_low,eta_high);
-  */
+                    
                     histname = TString::Format("hDeltaPtvPtvMultiplicity_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                     fHistManager.FillTH3(histname,DeltaPt_det,pt_low,(dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->GetNumberOfConstituents());
                        
@@ -733,7 +677,7 @@ else NumJet =fJetCollArray.GetEntries();
               iLowRIndex_gen.Set(GenHighRJetsList.GetEntries()); iHighRIndex_gen.Set(MatchGenDetList.GetEntries());
               JetMatcher(&MatchGenDetList,kLowRJets,&GenHighRJetsList,kHighRJets, iLowRIndex_gen,iHighRIndex_gen,0,Max_dist,max_eta);
    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                  for (Int_t j=0; j<iHighRIndex_gen.GetSize()-1;j++) // loop over the low R jets (Generator level that match to Detector level)
+                  for (Int_t j=0; j<iHighRIndex_gen.GetSize();j++) // loop over the low R jets (Generator level that match to Detector level)
                       {
                               if(iHighRIndex_gen[j]>=0){        // if there is a match
                               Int_t match_index = iHighRIndex_gen[j];
@@ -784,29 +728,13 @@ else NumJet =fJetCollArray.GetEntries();
                       histname = TString::Format("hJetPtDeltaR_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
                       fHistManager.FillTH2(histname,pt_low,DeltaR);
   
-/*
-                      histname = TString::Format("hDeltaPt_overPt_R%03d_gen",int(Rstep*(i+1)*100));
-                      fHistManager.FillTH2(histname,pt_low,DeltaPt_gen/pt_low);
-   
-                      histname = TString::Format("hEtaJetDeltaR_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
-                      fHistManager.FillTH2(histname,eta_low,DeltaR);
-  
-                      histname = TString::Format("hDeltaPtvPtvDeltaEta_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
-                      fHistManager.FillTH3(histname,DeltaPt_gen,pt_low,DeltaEta);
-  */
                       histname = TString::Format("hMatchedJetPt_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
                       fHistManager.FillTH1(histname,pt_low);
   
                       histname = TString::Format("hMatchedJetEta_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
                       fHistManager.FillTH1(histname,eta_low);
   
-    /*                  histname = TString::Format("hDeltaPtvPtvEta_low_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
-                      fHistManager.FillTH3(histname,DeltaPt_gen,pt_low,eta_low);
-  
-                      histname = TString::Format("hDeltaPtvPtvEta_high_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
-                      fHistManager.FillTH3(histname,DeltaPt_gen,pt_low,eta_high);
-  
-      */                histname = TString::Format("hDeltaPtvPtvMultiplicity_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
+                      histname = TString::Format("hDeltaPtvPtvMultiplicity_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
                       fHistManager.FillTH3(histname,DeltaPt_gen,pt_low,Jet_genlowR->GetNumberOfConstituents());
   
                      // histname = TString::Format("ResponseMatrix_R%03d",int(Rstep*(i+1)*100));
@@ -841,7 +769,7 @@ else NumJet =fJetCollArray.GetEntries();
           JetMatcher(&DetLowRJetsList,kLowRJets,&DetHighRJetsList,kHighRJets, iLowRIndex_det,iHighRIndex_det,0,Max_dist,max_eta);
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
 
-                for (Int_t j=0; j<iHighRIndex_det.GetSize()-1;j++) // loop over the low R jets
+                for (Int_t j=0; j<iHighRIndex_det.GetSize();j++) // loop over the low R jets
                   {
                           if(iHighRIndex_det[j]>=0){  // if there is a match
                           Int_t match_index = iHighRIndex_det[j];
@@ -872,28 +800,13 @@ else NumJet =fJetCollArray.GetEntries();
 
                   histname = TString::Format("hJetPtDeltaRDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                   fHistManager.FillTH3(histname,pt_low,DeltaR,DeltaPt_det);
- /* 
-                  histname = TString::Format("hDeltaPt_overPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                  fHistManager.FillTH2(histname,pt_low,DeltaPt_det/pt_low);
-
-                  histname = TString::Format("hEtaJetDeltaR_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                  fHistManager.FillTH2(histname,eta_low,DeltaR);
-
-                  histname = TString::Format("hDeltaPtvPtvDeltaEta_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                  fHistManager.FillTH3(histname,DeltaPt_det,pt_low,DeltaEta);
-*/
+                  
                   histname = TString::Format("hMatchedJetPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                   fHistManager.FillTH1(histname,pt_low);
         
                   histname = TString::Format("hMatchedJetEta_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                   fHistManager.FillTH1(histname,eta_low);
 
-  /*                histname = TString::Format("hDeltaPtvPtvEta_low_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                  fHistManager.FillTH3(histname,DeltaPt_det,pt_low,eta_low);
-
-                  histname = TString::Format("hDeltaPtvPtvEta_high_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                  fHistManager.FillTH3(histname,DeltaPt_det,pt_low,eta_high);
-*/
                   histname = TString::Format("hDeltaPtvPtvMultiplicity_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                   fHistManager.FillTH3(histname,DeltaPt_det,pt_low,(dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->GetNumberOfConstituents());
 
