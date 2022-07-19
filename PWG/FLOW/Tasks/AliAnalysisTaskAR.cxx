@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 18.07.2022
+ * Last Modified Date: 19.07.2022
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -4281,12 +4281,22 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
     Fatal("GetPointersForFinalResults", "Invalid Pointer");
   }
 
-  // get pointers for fFinalResultCorrelatorsList
+  // get pointers for fFinalResultSymmetricCumulantsList
   fFinalResultSymmetricCumulantsList = dynamic_cast<TList *>(
       fFinalResultsList->FindObject(fFinalResultSymmetricCumulantsListName));
   if (!fFinalResultSymmetricCumulantsList) {
     std::cout << __LINE__ << ": Did not get "
               << fFinalResultSymmetricCumulantsListName << std::endl;
+    Fatal("GetPointersForFinalResults", "Invalid Pointer");
+  }
+
+  // get pointers for fFinalResultNormalizedSymmetricCumulantsList
+  fFinalResultNormalizedSymmetricCumulantsList =
+      dynamic_cast<TList *>(fFinalResultsList->FindObject(
+          fFinalResultNormalizedSymmetricCumulantsListName));
+  if (!fFinalResultNormalizedSymmetricCumulantsList) {
+    std::cout << __LINE__ << ": Did not get "
+              << fFinalResultNormalizedSymmetricCumulantsListName << std::endl;
     Fatal("GetPointersForFinalResults", "Invalid Pointer");
   }
 
