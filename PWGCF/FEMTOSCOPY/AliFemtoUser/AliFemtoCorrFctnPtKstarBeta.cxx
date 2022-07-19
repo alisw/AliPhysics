@@ -24,17 +24,23 @@ AliFemtoCorrFctn(),
   fPtKstarDen2part(0),
   fPairPtKstar2part(0),
   fPairPtKstarDen2part(0),
+  fBtPtKStart(false),
   fKstarBetaT(0)
 {
   for(int i=0;i<=7;i++){
   fPtKstar_kT[i] = NULL;  
   fPtKstar2part_kT[i] = NULL;    
-  fPairPtKstar2part_kT[i] = NULL;  
+  fPairPtKstar2part_kT[i] = NULL;
+
+  fPtBeta[i] = NULL;
+  fPtBeta2part[i] = NULL;
+  
   }
   
   fPtKstar = new TH2D(Form("PtvsKstar1part%s",title),"Pt vs kstar (part 1)",200,0.0,2.0, 200, 0.0, 4.0);
   fPtKstarDen = new TH2D(Form("PtvsKstarDen1part%s",title),"Pt vs kstar in mixed events (part 1)",200,0.0,2.0, 200, 0.0, 4.0);
 
+  
   fPtKstar2part = new TH2D(Form("PtvsKstar2part%s",title),"Pt vs kstar (part 2)",200,0.0,2.0, 200, 0.0, 4.0);
   fPtKstarDen2part = new TH2D(Form("PtvsKstarDen2part%s",title),"Pt vs kstar in mixed events (part 2)",200,0.0,2.0, 200, 0.0, 4.0);
 
@@ -48,6 +54,10 @@ AliFemtoCorrFctn(),
   fPtKstar_kT[i] = new TH2D(Form("PtvsKstar1part%s_beta%d",title,i),"Pt vs kstar (part 1)",100,0.0,0.5, 240, 0.1, 2.5);  
   fPtKstar2part_kT[i] = new TH2D(Form("PtvsKstar2part%s_beta%d",title,i),"Pt vs kstar (part 2)",100,0.0,0.5, 240, 0.1, 2.5);
   fPairPtKstar2part_kT[i] = new TH2D(Form("PairPtvsKstar%s_beta%d",title,i),"Pair Pt vs kstar ",100,0.0,0.5, 300, 0.0, 6.0);
+
+  fPtBeta[i] = new TH2D(Form("PtvsbT1part%s_beta%d",title,i),"Pt vs kstarbT (part 1)",250,0.0,2.5, 20, 0.0, 1.0);
+   fPtBeta2part[i] = new TH2D(Form("PtvsbT2part%s_beta%d",title,i),"Pt vs kstarbT (part 2)",250,0.0,2.5, 20, 0.0, 1.0);
+
     }
 
   }
@@ -57,10 +67,13 @@ AliFemtoCorrFctnPtKstarBeta::AliFemtoCorrFctnPtKstarBeta(const AliFemtoCorrFctnP
   AliFemtoCorrFctn(),
   fPtKstar(0),
   fPtKstarDen(0),
+  //  fPtBeta(0),
+  //fPtBeta2part(0),
   fPtKstar2part(0),
   fPtKstarDen2part(0),
   fPairPtKstar2part(0),
   fPairPtKstarDen2part(0),
+  fBtPtKStart(false),
   fKstarBetaT(0)
 {
   // copy constructor
@@ -75,6 +88,7 @@ AliFemtoCorrFctnPtKstarBeta::~AliFemtoCorrFctnPtKstarBeta(){
   // destructor
     delete  fPtKstar;
     delete  fPtKstarDen;
+    
     delete  fPtKstar2part;
     delete  fPtKstarDen2part;
     delete  fPairPtKstar2part;
@@ -84,7 +98,10 @@ AliFemtoCorrFctnPtKstarBeta::~AliFemtoCorrFctnPtKstarBeta(){
     for(int i=0;i<=7;i++){
     delete  fPtKstar_kT[i];
     delete  fPtKstar2part_kT[i];    
-    delete  fPairPtKstar2part_kT[i];  
+    delete  fPairPtKstar2part_kT[i];
+    delete  fPtBeta[i];
+    delete  fPtBeta2part[i];
+
     }
 }
 //_________________________
@@ -100,6 +117,7 @@ AliFemtoCorrFctnPtKstarBeta& AliFemtoCorrFctnPtKstarBeta::operator=(const AliFem
   if (fPtKstarDen) delete fPtKstarDen;
   fPtKstarDen = new TH2D(*aCorrFctn.fPtKstarDen);
 
+    
   if (fPtKstar2part) delete fPtKstar2part;
   fPtKstar2part = new TH2D(*aCorrFctn.fPtKstar2part);
   
@@ -122,7 +140,14 @@ AliFemtoCorrFctnPtKstarBeta& AliFemtoCorrFctnPtKstarBeta::operator=(const AliFem
   
   if (fPairPtKstar2part_kT[i]) delete fPairPtKstar2part_kT[i];
   fPairPtKstar2part_kT[i] = new TH2D(*aCorrFctn.fPairPtKstar2part_kT[i]);
-    
+
+
+  if (fPtBeta[i]) delete fPtBeta[i];
+  fPtBeta[i] = new TH2D(*aCorrFctn.fPtBeta[i]);
+  
+  if (fPtBeta2part[i]) delete fPtBeta2part[i];
+  fPtBeta2part[i] = new TH2D(*aCorrFctn.fPtBeta2part[i]);
+
   }
 
   
@@ -177,6 +202,10 @@ void AliFemtoCorrFctnPtKstarBeta::AddRealPair( AliFemtoPair* pair){
   double px22 = pair->Track2()->Track()->P().x();
   double py1 = pair->Track1()->Track()->P().y();
   double py22 = pair->Track2()->Track()->P().y();
+
+  double pT1 = TMath::Hypot(px1, py1);
+  //double pT2 = TMath::Hypot(px22, py22); 
+  
   double pxpair = px1 + px22;
   double pypair = py1 + py22;
   double pTpair = TMath::Sqrt(pxpair*pxpair + pypair*pypair);
@@ -196,18 +225,21 @@ void AliFemtoCorrFctnPtKstarBeta::AddRealPair( AliFemtoPair* pair){
   // Calculate betaT:
   double betaT = pTpair / mTpair;
 
-  fKstarBetaT->Fill(tKStar,betaT);
-
+  fKstarBetaT->Fill(tKStar,betaT);  
+  
   double bt_values[8]={0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
 
-
-  for(int i=0;i<7;i++){  
+  if(fBtPtKStart){
+    for(int i=0;i<7;i++){  
     if((betaT>bt_values[i])&&(betaT<=bt_values[i+1])){
-      fPtKstar_kT[i]->Fill(tKStar,pT);
+      /* fPtKstar_kT[i]->Fill(tKStar,pT);
       fPtKstar2part_kT[i]->Fill(tKStar,pT2);
-      fPairPtKstar2part_kT[i]->Fill(tKStar,tPairPt);
+      fPairPtKstar2part_kT[i]->Fill(tKStar,tPairPt);*/
+      fPtBeta[i]->Fill(pT1,tKStar);
+      fPtBeta2part[i]->Fill(pT2,tKStar);
+       }
+      }
     }
-  }
   
 }
 //____________________________
@@ -242,12 +274,15 @@ void AliFemtoCorrFctnPtKstarBeta::WriteHistos()
   fPairPtKstarDen2part->Write();
   fKstarBetaT->Write();
 
+  if(fBtPtKStart){
   for(int i=0;i<=7;i++){
-  fPtKstar_kT[i]->Write();
+    /*  fPtKstar_kT[i]->Write();
   fPtKstar2part_kT[i]->Write();  
-  fPairPtKstar2part_kT[i]->Write();  
-  }
-
+  fPairPtKstar2part_kT[i]->Write();  */
+      fPtBeta[i]->Write();
+      fPtBeta2part[i]->Write();  
+     }
+   }
 }
 
 TList* AliFemtoCorrFctnPtKstarBeta::GetOutputList()
@@ -262,12 +297,22 @@ TList* AliFemtoCorrFctnPtKstarBeta::GetOutputList()
   tOutputList->Add(fPairPtKstar2part);
   tOutputList->Add(fPairPtKstarDen2part);
   tOutputList->Add(fKstarBetaT);
-
+     
+  if(fBtPtKStart){
   for(int i=0;i<=7;i++){
-    tOutputList->Add(fPtKstar_kT[i]);
+    /*tOutputList->Add(fPtKstar_kT[i]);
     tOutputList->Add(fPtKstar2part_kT[i]);  
-    tOutputList->Add(fPairPtKstar2part_kT[i]);  
+    tOutputList->Add(fPairPtKstar2part_kT[i]); */
+    tOutputList->Add(fPtBeta[i]);
+    tOutputList->Add(fPtBeta2part[i]);
+    }
   }
 
   return tOutputList;
+}
+
+
+void AliFemtoCorrFctnPtKstarBeta::SetBtPtKStart(bool BtPtKStart)
+{
+  fBtPtKStart = BtPtKStart;
 }

@@ -1,3 +1,10 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AliAnalysisMultPt:
+// Description: Analysis task to get multiplicity
+// and pT distributions
+// Author: Negin Alizadehvandchali
+// (negin.alizadehvandchali@cern.ch)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AliAnalysisMultPt* AddMultPt(const char *suffix = "")
 {
   // get the manager via the static access member. since it's static, you don't need
@@ -12,9 +19,7 @@ AliAnalysisMultPt* AddMultPt(const char *suffix = "")
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
-
-  // resolve the name of the output file
-
+    
   TString name;
   name.Form("MulttpT%s", suffix);
     // by default, a file is open for writing. here, we get the filename
@@ -24,24 +29,23 @@ AliAnalysisMultPt* AddMultPt(const char *suffix = "")
   // now we create an instance of your task
   AliAnalysisMultPt* task = new AliAnalysisMultPt(name.Data());
   if(!task) return 0x0;
-  task->SelectCollisionCandidates(AliVEvent::kINT7); //to check which triggers are selected
-  task->SetMCRead(kTRUE);
+    
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  task->SetMCRead(kFALSE);
   task->SetPileUpRead(kFALSE);
-  task->SetChi2DoF(4);
   task->SetPtLimits(0.2, 5.0);
   task->SetEtaMinLimit(-0.8);
   task->SetEtaMaxLimit(0.8);
-  
+    
   printf("Container name is %s\n",name.Data());
     
   // add your task to the manager
   mgr->AddTask(task);
-
-  // connect the manager to your task
+  // your task needs input: here we connect the manager to your task
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   // same for the output
   mgr->ConnectOutput(task,1,mgr->CreateContainer(name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-
-  // important: return a pointer to your task
+  // in the end, this macro returns a pointer to your task. this will be convenient later on
+  // when you will run your analysis in an analysis train on grid
   return task;
 }

@@ -47,7 +47,12 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	void SetfUsePtCut(int aUsePtCut);
 
 	void SetfOnlyTPCreject(int aOnlyTPCreject);
-	void SetPionHe3Cut(int aPionHe3cut);	
+	void SetPionHe3Cut(int aPionHe3cut);
+	// DCA 
+	float SetfUseDCAvsPt_cut(int aUseDCAvsPt_cut);
+	float Return_DCAvsPt_cut_p(float pt,int charge);
+	float Return_DCAvsPt_cut_d(float pt,int charge);
+	void Set_DCAvsPt_cut(float *input_v,int label);	
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -99,6 +104,11 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	// real reject, now, only for p
 	bool RejectFakeP(const AliFemtoTrack* track, float mom);
 	bool RejectFakeD(const AliFemtoTrack* track, float mom);
+	// DCA
+	int fUseDCAvsPt_cut;
+	float v_DCAvspTcut_p[18];
+	float v_DCAvspTcut_antip[18];
+	float v_DCAvspTcut_d[18];
 
 };
 

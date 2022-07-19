@@ -37,6 +37,7 @@
 #include "AliEventPoolManager.h"
 #include "AliMCEvent.h"
 
+#include "AliEmcalTriggerDecisionContainer.h"
 
 #include "AliAnalysisTaskJetQnVectors.h"
 
@@ -53,8 +54,9 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ1VectorReader(0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
-  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
-  fRtoD(0),fSubDetector(0),
+  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
+  fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
+  fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
@@ -106,8 +108,9 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ1VectorReader(0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
-  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
-  fRtoD(0),fSubDetector(0),
+  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
+  fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
+  fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
@@ -192,6 +195,46 @@ const double AliAnalysisTaskGammaHadron::LHC18qrParam_50_90_pt[11] = { 0.734614,
 const double AliAnalysisTaskGammaHadron::LHC18qrParam_50_90_eta[11] = {0.783412,  0.00219941, 0.389413, -0.0156538, 0.696907,
               -0.00357013, 0.903991, 0.734531, 0.0056072, 0.68324,
               0.659263};
+
+
+// Parameters for LHC15o Pass2, calculated with LHC20j6_HIJING
+
+// 0-10% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_0_10_pt[11] = {
+0.68479, 0.327364, -0.270812, 0.104918, -0.015284, 0.889987,
+-0.0314805, 0.00715624, -0.00045383,   -2.02408e-05,  2.16292e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_0_10_eta[11] = {
+0.835791, 0.00342724, 0.300875, -0.053104, 0.680688, 0.0255011,
+1.1134, 0.720639, 0.0063448, 0.735691, 0.672345};
+
+// 10-30% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_10_30_pt[11] = {
+0.702991, 0.295492, -0.237913, 0.0907758, -0.0131305, 0.902102,
+-0.0337796, 0.00693128, -0.000195277, -6.13476e-05, 4.12663e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_10_30_eta[11] = {
+ 0.823899, 0.00282205, 0.3209, -0.0413709, 0.69076, 0.0200196,
+ 1.06905, 0.732554, 0.00568939, 0.687603, 0.685426};
+
+// 30-50% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_30_50_pt[11] = {
+ 0.709754, 0.292528, -0.239098, 0.0928744, -0.0136577, 1.07672,
+ -0.1991, 0.0683799, -0.0111161, 0.000868109, -2.62688e-05};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_30_50_eta[11] = {
+ 0.819134, 0.00266454, 0.332053, -0.0376824, 0.695236, 0.0200025,
+ 1.11778, 0.73767, 0.00549236,  0.6747,  0.679545};
+
+// 50-90% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_50_90_pt[11] = {
+ 0.713552, 0.285557, -0.23174, 0.0891146, -0.0129781, 0.892923,
+ -0.021774, 0.00250209, 0.000690796, -0.000149362, 7.45951e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_50_90_eta[11] = {
+ 0.81354, 0.00267767, 0.339068, -0.0376914, 0.693847, 0.021269,
+ 1.1552, 0.735639, 0.00563201, 0.687909, 0.683795};
+
 
 /**
  * Determine the pt efficiency axis for LHC18qr. This is the main interface
@@ -2315,6 +2358,8 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 			if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
 			return kFALSE;
 		}
+
+
      /* // For some wired reason gives an error in alibild when doing pull request
         // need to check that later again because it's an exact copy from "AliAnalysisTaskEmcal"
 		std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
@@ -2371,6 +2416,31 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 		}*/
 	}
 
+  // EMCal Trigger rejection (for use with EMCalTriggerMakerNew
+  // Check if EMCal Trigger requirement is set
+  if (fAcceptEMCalTriggers.size() > 0) {
+    auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
+    //auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(input->FindListObject("EmcalTriggerDecision"))
+    if (trgsel == 0) {
+      cout << "AliAnalysisGammaHadron:: Could not find EMCal Trigger Decision container named: " << fNameEMCalTriggerDecisionContainer << endl;
+      return kFALSE;
+    }
+
+    bool fRejectForLackOfEMCalTrigger = true;
+
+    for (TString fEMCalTriggerString : fAcceptEMCalTriggers) {
+      if(trgsel->IsEventSelected(fEMCalTriggerString.Data())) {
+        fRejectForLackOfEMCalTrigger = false;
+        break;
+      }
+    }
+
+    if (fRejectForLackOfEMCalTrigger) {
+      return kFALSE;
+    }
+  }
+
+
 	if (fTriggerTypeSel != kND)
 	{
 		if (!HasTriggerType(fTriggerTypeSel))
@@ -2385,6 +2455,13 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 //      if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1); // Disabling cent bin
       return kFALSE;
     }
+  }
+
+  // Load QnVector, skip event in case of qvector=0
+  bool fQVectorSuccess = LoadQnCorrectedEventPlane();
+
+  if (!fQVectorSuccess) {
+    return kFALSE;
   }
 
     /*
@@ -2474,7 +2551,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
   fHistEventHash->Fill((float) iEventHash);
 
   // Getting corrected event plane, saving information
-  LoadQnCorrectedEventPlane();
+  //LoadQnCorrectedEventPlane(); // now done in is event selected
   if (fIsMC && fMCHeader) {
     fMCReactionPlaneAngle = fMCHeader->GetReactionPlaneAngle();
     fMCReactionPlane->Fill(fMCReactionPlaneAngle);
@@ -4857,6 +4934,33 @@ Double_t AliAnalysisTaskGammaHadron::GetTrackEff(Double_t pT, Double_t eta)
     double ptAxis = LHC18qrPtEfficiency(pT, ptParams);
     double etaAxis = LHC18qrEtaEfficiency(eta, etaParams);
     DetectionEff = ptAxis * etaAxis;
+  } else if (fCorrectEff == 3) { // LHC15oP2 Parameterization using Charles' code with simulation LHC20j6
+    const double* ptParams = nullptr;
+    const double* etaParams = nullptr;
+    switch (centBin) {
+      case 0:
+        ptParams = LHC15oP2Param_0_10_pt;
+        etaParams = LHC15oP2Param_0_10_eta;
+        break;
+      case 1:
+        ptParams = LHC15oP2Param_10_30_pt;
+        etaParams = LHC15oP2Param_10_30_eta;
+        break;
+      case 2:
+        ptParams = LHC15oP2Param_30_50_pt;
+        etaParams = LHC15oP2Param_30_50_eta;
+        break;
+      case 3:
+        ptParams = LHC15oP2Param_50_90_pt;
+        etaParams = LHC15oP2Param_50_90_eta;
+        break;
+      default:
+        AliFatal("Invalid centrality for determine tracking efficiency.\n");
+    }
+    // Calculate the efficiency using the parameters.
+    double ptAxis = LHC18qrPtEfficiency(pT, ptParams);
+    double etaAxis = LHC18qrEtaEfficiency(eta, etaParams);
+    DetectionEff = ptAxis * etaAxis;
   }
 
 	return DetectionEff;
@@ -4880,7 +4984,7 @@ Int_t AliAnalysisTaskGammaHadron::CalculateEventHash() {
   }
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
+bool AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   //..This function is called at the beginning of FillHistograms
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane()"<<endl;
 
@@ -4890,7 +4994,7 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
 
   if (fIsMC && fUseMCReactionPlane && fMCHeader) {
     fQnCorrEventPlaneAngle = fMCHeader->GetReactionPlaneAngle();
-    return;
+    return kTRUE;
   }
 
 
@@ -4918,23 +5022,23 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   Double_t fQnScaleTPC = 0.0;
 
   if (fEventPlaneSource == 0) {
-    if (fFlowQnVectorMgr == 0) return;
+    if (fFlowQnVectorMgr == 0) return kFALSE;
 
     fV0MQnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZEROQoverM");
     fTPCAQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCPosEtaQoverM");
     fTPCCQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCNegEtaQoverM");
 
-    if (fV0MQnVector != NULL) fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic); else return;
-    if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return;
-    if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return;
+    if (fV0MQnVector != NULL) fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic); else return kFALSE;
+    if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return kFALSE;
+    if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return kFALSE;
   } else { // assume 1 for now, add switch if more options added
     if (fQ2VectorReader == 0) {
       AliError("Missing fQ2Vector");
-      return;
+      return kFALSE;
     }
     if (fQ3VectorReader == 0) {
       AliError("Missing fQ3Vector");
-      return;
+      return kFALSE;
     }
     // Q2
     fV0MQnEP = fQ2VectorReader->GetEPangleV0M();
@@ -4961,6 +5065,14 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
     fQ2V0AScaleVsAngle->Fill(fV0AQnEP,fQnScaleV0A);
     fQ2V0CScaleVsAngle->Fill(fV0CQnEP,fQnScaleV0C);
     fQ2TPCScaleVsAngle->Fill(fTPCQnEP,fQnScaleTPC);
+
+
+    if (fQnScaleV0M == 0) {
+      // removing rare events where Q2 = 0
+      AliError("Found Q2 = 0.");
+      return kFALSE;
+    }
+
 
   }
 
@@ -5175,6 +5287,7 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
     fEP4R_CosD3[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi3));
   }
 
+  return kTRUE;
 }
 
 /**

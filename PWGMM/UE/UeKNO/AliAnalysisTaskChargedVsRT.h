@@ -47,6 +47,9 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         void       SetPtMin(Double_t val)              {fPtMin = val;}   // Set pT cut for associated particles
         void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
         void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
+        void       SetNchNbin(Int_t NchNbins)    {fNchNbin = NchNbins;}   // use different bining
+        void       SetNchBinMax(Double_t maxbinNch)    {fNchBinMax = maxbinNch;}   // use different bin max
+    
         void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
         void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
         void       SetIsHybridAnalysis(Bool_t isHy = kFALSE)    {fIsHybAna = isHy;}
@@ -55,8 +58,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         void       SetCutsHybrid1WoDCA(AliESDtrackCuts *name);
         void       SetCutsFilterWoDCA(AliESDtrackCuts *name);
         //Systematic ============================
-//         void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
-//         void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
+	void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
+        void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
         void       SetNcrVar1(Bool_t NcrVar1 = kFALSE) {fNcrVar1 = NcrVar1;}
         void       SetNcrVar2(Bool_t NcrVar2 = kFALSE) {fNcrVar2 = NcrVar2;}
         void       SetChisqTPCVar1(Bool_t ChisqTPCVar1 = kFALSE) {fChisqTPCVar1 = ChisqTPCVar1;}
@@ -96,6 +99,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         // Systematic------------------------------------
         Bool_t       fNcrVar1;
         Bool_t       fNcrVar2;
+	Bool_t       fTPCclustersVar1;
+        Bool_t       fTPCclustersVar2;
         Bool_t       fGeoTPCVar1;
         Bool_t       fGeoTPCVar2;
         Bool_t       fGeoTPCVar3;
@@ -119,6 +124,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         Double_t fPtMin;
         Double_t fLeadPtCutMin;
         Double_t fLeadPtCutMax;
+        Int_t fNchNbin;
+        Double_t fNchBinMax;
         Double_t fGenLeadPhi;
         Double_t fGenLeadPt;
         Int_t    fGenLeadIn;

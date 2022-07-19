@@ -14,6 +14,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
                                               int filterBit = 128,
                                               int WhichKaonCut = 0,
                                               const char *sTcut = "0",
+                                              bool DoAncestors = false,
                                               const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
@@ -162,6 +163,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   // pair QA extended
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
+  std::vector<float> mTBins = {0.9, 1.15, 1.4, 4.5, 999.};
+
   // pairs:
   // K+K+               0
   // K+K-               1
@@ -184,15 +187,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     pairQA.push_back(0);
   }
 
-  if (suffix != "0")
+  if (suffix != "0" )
   {
     pairQA[2] = 12;
     pairQA[3] = 12;
     pairQA[5] = 12;
     pairQA[6] = 12;
-    pairQA[7] = 22;
-    pairQA[8] = 22;
-    pairQA[9] = 22;
   }
   else
   {
@@ -206,18 +206,21 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     pairQA[7] = 22;
     pairQA[8] = 22;
     pairQA[9] = 22;
+    closeRejection[0] = true;
+    closeRejection[1] = true;
+    closeRejection[4] = true;
   }
 
-  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
 
   config->SetPDGCodes(PDGParticles);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
+  config->SetMultBinning(true);
   config->SetClosePairRejection(closeRejection);
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMultBinning(true);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
@@ -231,9 +234,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     config->SetMassQA(true);
     config->SetkTBinning(true);
     config->SetMultBinning(true);
+    config->SetmTBins(mTBins);
+    config->SetDomTMultBinning(true);
     config->SetmTBinning(true);
   }
-  if (suffix != 0)
+  
+  if (suffix != "0")
   {
     config->SetMinimalBookingME(true);
   }
@@ -241,6 +247,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   if (isMC)
   {
     config->SetMomentumResolution(true);
+    if (DoAncestors) {
+      config->SetAncestors(true);
+      config->GetDoAncestorsPlots();
+    }
   }
   else
   {
@@ -1184,6 +1194,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   AliAnalysisTaskNanoLambdaKaon *task =
       new AliAnalysisTaskNanoLambdaKaon(
           "AliAnalysisTaskNanoLambdaKaon", isMC);
+
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector

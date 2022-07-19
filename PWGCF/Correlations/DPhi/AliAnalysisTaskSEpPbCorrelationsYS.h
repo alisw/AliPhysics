@@ -14,7 +14,7 @@
 #include "THnSparse.h"
 #include "TString.h"
 #include "AliEventCuts.h"
-
+#include <stdio.h>
 
 
 class TList;
@@ -127,6 +127,7 @@ private:
   Double_t RangePhi2(Double_t DPhi);
   Int_t      ConvertRunNumber(Int_t run);
   Bool_t HasValidFMDYS(TH2D h);
+  TString GetMCperiod(Int_t runnumber);
   
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
@@ -150,6 +151,9 @@ private:
                              Float_t phi2, Float_t pt2, Float_t charge2,
                              Float_t radius, Float_t bSign);
 
+ 
+
+
   TString fcollisiontype;
   Bool_t fDataType;
   Bool_t frun2;
@@ -161,6 +165,7 @@ private:
   Bool_t fmakehole;
   Bool_t ffillcorrelation;
   Bool_t fefficalib;
+  TString MCperiod;
   Float_t fcuthighmult;
   Bool_t fOnfly;
   TString fAnaMode;
@@ -174,6 +179,7 @@ private:
   Double_t lCentrality;
 
   Int_t calibmode;
+  TFile* feffi;
   TH1F* fheffipt;
   TH2F* fheffipteta;
   Float_t bSign;

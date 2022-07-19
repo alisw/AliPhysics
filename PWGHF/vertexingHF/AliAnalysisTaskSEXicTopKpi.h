@@ -171,7 +171,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetNSoftPionRotations(Int_t nrot){nrot < 0 ? Printf("Cannot set negative number of rotations, setting 0"), fNRotations=0 : fNRotations=nrot;}
   void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
   void SetPDGcodeForFiducialYreco(Int_t pdgcode){fPdgFiducialYreco=pdgcode;}
-
+  void SetFill4ProngNtuple(Bool_t fill4prnt){fFillNtuple4Prong=fill4prnt;}
   // set binning of Lc mass distribution
   void SetLcInvMassBins(Int_t bins) {fLcInvMassBins=bins;}
   
@@ -357,6 +357,7 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   THnF *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
 
   TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
+  THnSparseF* fhistMCSpectrumAccLbToLcEle;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
   THnSparseF* fhSparseAnalysis4Prong;//! sparse for 4-prong analysis
   THnSparseF* fhSparseAnalysisReflections;//! sparse for analysis - reflections
@@ -603,7 +604,9 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   TNtuple* fTuplePID_TOFreq;  //! tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
   Bool_t fUseBayesInFiltering;// use bayesPID (max prob) in Filtering: note this does not match identically the usual Bayes selection
   Bool_t fOnlyEleFourthLoop;// flag for limiting to electron candidate 4th-particle loop
-  ClassDef(AliAnalysisTaskSEXicTopKpi,33); /// AliAnalysisTaskSE for Xic->pKpi  
+  Bool_t fFillNtuple4Prong;// flag to switch on filling of 4-prong ntuple 
+  TNtuple *fNtuple4Prong;// ntuple for 4-prong candidates
+  ClassDef(AliAnalysisTaskSEXicTopKpi,35); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 

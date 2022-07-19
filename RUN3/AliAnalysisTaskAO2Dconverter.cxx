@@ -1356,32 +1356,34 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
       SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
 
-    if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
+    if (fUseTriggerAnalysis) {
+      if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
 
-    if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
+      if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
 
-    if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
+      if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
 
-    if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
+      if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
+    }
   }
   else {
     //PH AOD case: What should we use here?
@@ -1600,6 +1602,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         mcparticle.fIndexSlice_Daughters[1] = kineIndex[mcparticle.fIndexSlice_Daughters[1]] > -1 ? kineIndex[mcparticle.fIndexSlice_Daughters[1]] + fOffsetLabel : -1;
       if (mcparticle.fIndexSlice_Daughters[0] > -1 && mcparticle.fIndexSlice_Daughters[1] == -1)
         mcparticle.fIndexSlice_Daughters[1] = mcparticle.fIndexSlice_Daughters[0];
+      if (mcparticle.fIndexSlice_Daughters[1] > -1 && mcparticle.fIndexSlice_Daughters[0] == -1)
+        mcparticle.fIndexSlice_Daughters[0] = mcparticle.fIndexSlice_Daughters[1];
       mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle ? particle->GetWeight() : 1., mMcParticleW);
 
       mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle ? particle->Px() : aodmcpt->Px(), mMcParticleMom);
@@ -2657,7 +2661,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (fStoreHF) {
         // Read input from HF task
         TTree *hf2ProngCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hf2ProngCandidateTree");
-        Printf("HF hf2ProngCandidateTree has %lld entries", hf2ProngCandidateTree->GetEntries());
+        //Printf("HF hf2ProngCandidateTree has %lld entries", hf2ProngCandidateTree->GetEntries());
         hf2ProngCandidateTree->SetBranchAddress("trackId0", &hf2Prong.fIndexTracks_0);
         hf2ProngCandidateTree->SetBranchAddress("trackId1", &hf2Prong.fIndexTracks_1);
         hf2ProngCandidateTree->SetBranchAddress("hfflag", &hf2Prong.fHFflag);
@@ -2672,7 +2676,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         eventextra.fNentries[kHF2Prong] = n2prong_filled;
 
         TTree *hf3ProngCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hf3ProngCandidateTree");
-        Printf("HF hf3ProngCandidateTree has %lld entries", hf3ProngCandidateTree->GetEntries());
+        //Printf("HF hf3ProngCandidateTree has %lld entries", hf3ProngCandidateTree->GetEntries());
         hf3ProngCandidateTree->SetBranchAddress("trackId0", &hf3Prong.fIndexTracks_0);
         hf3ProngCandidateTree->SetBranchAddress("trackId1", &hf3Prong.fIndexTracks_1);
         hf3ProngCandidateTree->SetBranchAddress("trackId2", &hf3Prong.fIndexTracks_2);
@@ -2688,7 +2692,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         eventextra.fNentries[kHF3Prong] = hf3ProngCandidateTree->GetEntries();
 
         TTree *hfDstarCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfDstarCandidateTree");
-        Printf("HF hfDstarCandidateTree has %lld entries", hfDstarCandidateTree->GetEntries());
+        //Printf("HF hfDstarCandidateTree has %lld entries", hfDstarCandidateTree->GetEntries());
         hfDstarCandidateTree->SetBranchAddress("trackSoftPi", &hfDStar.fIndexTracks_0);
         hfDstarCandidateTree->SetBranchAddress("trackD0", &hfDStar.fIndexHf2Prongs);
 
@@ -2701,7 +2705,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         eventextra.fNentries[kHFDStar] = hfDstarCandidateTree->GetEntries();
 
         TTree *hfCascadeCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfCascadeCandidateTree");
-        Printf("HF hfCascadeCandidateTree has %lld entries", hfCascadeCandidateTree->GetEntries());
+        //Printf("HF hfCascadeCandidateTree has %lld entries", hfCascadeCandidateTree->GetEntries());
         Int_t v0Index = -1;
         hfCascadeCandidateTree->SetBranchAddress("v0index", &v0Index);
         hfCascadeCandidateTree->SetBranchAddress("trackBachel", &hfCascades.fIndexTracks_0);

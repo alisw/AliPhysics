@@ -247,7 +247,7 @@ void AliPtContainer::FillSkew(const vector<vector<double>> &inarr, const double 
     double lwskew = lwpt*lwpt*lwpt - 3*inarr[2][0]*inarr[1][0]+2*inarr[3][0];
     if(lwskew==0 || lwpt==0) return;
     /* Full expression
-    <skew> =  <(w1p1)^3-3*w2p2*wp + 2*w3p3>
+    <dptdptdpt> =  <(w1p1)^3-3*w2p2*wp + 2*w3p3>
     -3[pt]*   <(w1p1)^2*w1p0 - 2*w2p1*w1p1 + 2*w3p2 - w2p2*w1p0>
     +3[pt]^2* <w1p1*(w1p0)^2 - 2*w2p1*w1p0 + 2*w3p1 - w1p1*w2p0>
     -[pt]^3*  <(w1p0)^3-3*(w2p0)*(w1p0)+2*w3p0>   ----------> Cancelled by division of the weight
@@ -263,20 +263,25 @@ void AliPtContainer::FillKurtosis(const vector<vector<double>> &inarr, const dou
     double lwkur = lwpt*lwpt*lwpt*lwpt-6*inarr[2][0]*lwpt*lwpt+8*lwpt*inarr[3][0]+3*inarr[2][0]*inarr[2][0]-6*inarr[4][0];
     if(lwkur==0 || lwpt==0) return;
     /* Full expression
-    <kurtosis> = <(w1p1)^4-4*w3p3*w1p1
-    -4
-    +
-    -
-    +[pt]^4*     <(w1p0)^4-
+    <dptdptdptdpt> = <(w1p1)^4 - 4*w3p3*w1p1 - 6*( w2p2(w1p1)^2-(w2p2)^2-2w3p3*w1p1 ) - 3(w2p2)^2 - 6*w4p4>
+    -4*[pt]* <(w1p1)^3*w1p0 - w3p3*w1p0 - 3*w3p2*w1p1 - 3*( w2p2*w1p1*w1p0 - w3p3*w1p0 - w3p2*w1*p1 - w2p2*w2p1 ) - 3*( w2p1*(w1p1)^2-2*w3p2*w1p1-w2p1*w2p2 ) -3*w2p1*w2p2 - 6*w4p3>
+    +6*[pt]^2* <(w1p1)^2*(w1p0)^2 - 2*w3p2*w1p0 - 2*w3p1*w1p1 - ( w2p2*(w1p0)^2 - w2p2*w2p0 - 2*w3p2*w1p0 ) - ( w2p0*(w1p1)^2 - w2p2*w2p0 -2*w3p1*w1p1 ) -4*( w2p1*w1p1*w1p0 - w3p2*w1p0 - w3p1*w1p1 - (w2p1)^2) - w2p2*w2p0 - 2*(w2p1)^2 - 6*w4p2>
+
+    Simplified expression
+    <dptdptdptdpt> = <(w1p1)^4 + 8*w3p3*w1p1 - 6*w2p2(w1p1)^2 + 3*(w2p2)^2 - 6*w4p4>  
+    -4*[pt]* <(w1p1)^3*w1p0 + 2*w3p3*w1p0 + 6*w3p2*w1p1 - 3*w2p2*w1p1*w1p0 - 3*w2p1*(w1p1)^2 + 3*w2p2*w2p1 - 6*w4p3>
+    +6*[pt]^2* <(w1p1)^2*(w1p0)^2 - w2p2*(w1p0)^2 - w2p0*(w1p1)^2 + w2p2*w2p0 - 4*w2p1*w1p1*w1p0 + 4*w3p2*w1p0 + 4*w3p1*w1p1 + 2*(w2p1)^2 - 6*w4p2>
+    -4*[pt]^3* <w1p1*(w1p0)^3 - 3*w2p1*(w1p0)^2 - 3*w1p1*w2p0*w1p0 + 3*w2p1*w2p0 + 2*w1p1*w3p0 + 6*w3p1*w1p0 - 6*w4p1>
+    +[pt]^4*     <(w1p0)^4 + 8*w3p0*w1p0 - 6*w2p0*(w1p0)^2 + 3*(w2p0)^2 - 6*w4p0>
     */
     ((AliProfileBS*)fKurtosisTermList->At(0))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][1]*inarr[1][1]-6*inarr[2][2]*inarr[1][1]*inarr[1][1]
                                                     +3*inarr[2][2]*inarr[2][2]+8*inarr[1][1]*inarr[3][3]-6*inarr[4][4])/lwkur,(fEventWeight==PtSpace::kOne)?1.0:lwkur,rn);
     ((AliProfileBS*)fKurtosisTermList->At(1))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*inarr[1][1]*lwpt-3*inarr[2][2]*inarr[1][1]*lwpt
                                                     -3*inarr[1][1]*inarr[1][1]*inarr[2][1]+3*inarr[2][2]*inarr[2][1]
                                                     +6*inarr[1][1]*inarr[3][2]+2*inarr[3][3]*lwpt-6*inarr[4][3])/lwkur,(fEventWeight==PtSpace::kOne)?1.0:lwkur,rn);
-    ((AliProfileBS*)fKurtosisTermList->At(2))->FillProfile(lMult,(-inarr[2][2]*lwpt*lwpt
-                                                    -4*inarr[1][1]*inarr[2][1]*lwpt+inarr[2][2]*inarr[2][0]+2*inarr[2][1]*inarr[2][1]
-                                                    +4*inarr[1][1]*inarr[3][1]+4*inarr[3][2]*lwpt-6*inarr[4][2])/lwkur,(fEventWeight==PtSpace::kOne)?1.0:lwkur,rn);
+    ((AliProfileBS*)fKurtosisTermList->At(2))->FillProfile(lMult,(inarr[1][1]*inarr[1][1]*lwpt*lwpt-inarr[2][2]*lwpt*lwpt-inarr[2][0]*inarr[1][1]*inarr[1][1] 
+                                                    +inarr[2][0]*inarr[2][2]-4*inarr[2][1]*inarr[1][1]*lwpt+4*inarr[3][2]*lwpt 
+                                                    +4*inarr[3][1]*inarr[1][1]+2*inarr[2][1]*inarr[2][1]-6*inarr[4][2])/lwkur,(fEventWeight==PtSpace::kOne)?1.0:lwkur,rn);
     ((AliProfileBS*)fKurtosisTermList->At(3))->FillProfile(lMult,(inarr[1][1]*lwpt*lwpt*lwpt-3*inarr[2][1]*lwpt*lwpt
                                                     -3*inarr[1][1]*inarr[2][0]*lwpt+3*inarr[2][1]*inarr[2][0]+2*inarr[1][1]*inarr[3][0]
                                                     +6*inarr[3][1]*lwpt-6*inarr[4][1])/lwkur,(fEventWeight==PtSpace::kOne)?1.0:lwkur,rn);
@@ -413,15 +418,15 @@ TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh) {
   inh[1]->Multiply(inh[4]);
   inh[1]->Scale(4);
   TH1 *mptsq = (TH1*)inh[4]->Clone("mptSquared");
-  TH1 *mptcb = (TH1*)inh[4]->Clone("mptCubed");
-  TH1 *mpt4th = (TH1*)inh[4]->Clone("mpt4th");
   mptsq->Multiply(inh[4]);
+  TH1 *mptcb = (TH1*)mptsq->Clone("mptCubed");
+  mptcb->Multiply(inh[4]);
+  TH1 *mpt4th = (TH1*)mptcb->Clone("mpt4th");
+  mpt4th->Multiply(inh[4]);
   inh[2]->Multiply(mptsq);
   inh[2]->Scale(6);
-  mptcb->Multiply(mptsq);
   inh[3]->Multiply(mptcb);
   inh[3]->Scale(4);
-  mpt4th->Multiply(mptcb);
   TH1 *hWeights = (TH1*)inh[0]->Clone("ForErrors");
   inh[0]->Add(inh[1],-1);
   inh[0]->Add(inh[2]);

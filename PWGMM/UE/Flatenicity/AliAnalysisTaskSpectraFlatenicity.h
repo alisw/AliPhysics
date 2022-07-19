@@ -34,6 +34,8 @@ public:
   virtual void Terminate(Option_t *option);
   Double_t GetFlatenicity();
   Double_t GetFlatenicityMC();
+  void CheckMultiplicities();
+  void CheckMultiplicitiesMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
 
@@ -50,6 +52,7 @@ public:
   bool HasRecVertex();
 
 protected:
+    //
 private:
   AliESDEvent *fESD; //! input ESD event
   AliEventCuts fEventCuts;
@@ -57,6 +60,12 @@ private:
   AliMCEvent *fMC;    //! MC Event
   Bool_t fUseMC;      // analyze MC events
   Int_t fV0Mindex;
+  Float_t fmultV0A;
+  Float_t fmultV0C;
+  Float_t fmultTPC;
+  Float_t fmultV0Amc;
+  Float_t fmultV0Cmc;
+  Float_t fmultTPCmc;
   Bool_t fIsMCclosure;
   Bool_t fRemoveTrivialScaling;
   Int_t fnGen;
@@ -79,11 +88,24 @@ private:
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
-  TProfile *hActivityV0DataSect;
-  TProfile *hActivityV0McSect;
+  TProfile *pActivityV0DataSect;
+  TProfile *pActivityV0ADataSect;
+  TProfile *pActivityV0CDataSect;
+  TProfile *pActivityV0multData;
+  TProfile *pActivityV0AmultData;
+  TProfile *pActivityV0CmultData;
+  TProfile *pActivityV0McSect;
+  TProfile *pActivityV0multMc;
   TH2D *hFlatVsNchMC;
+  TH1D *hNchV0M;
+  TH1D *hNchV0a;
+  TH1D *hNchV0c;
   TH1D *hNchV0MMC;
+  TH1D *hNchV0aMC;
+  TH1D *hNchV0cMC;
   TH2D *hFlatVsV0M;
+  TH1D *hEta;
+  TH1D *hEtamc;
   TH1D *hCounter;
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];

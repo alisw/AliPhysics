@@ -31,6 +31,8 @@
 #pragma link C++ class AliJHOCFATask+;
 #pragma link C++ class AliAnalysisSPC+;
 #pragma link C++ class AliJSPCTask+;
+#pragma link C++ class AliAnalysisSPCRun2+;
+#pragma link C++ class AliJSPCTaskRun2+;
 #pragma link C++ class AliJXtTask+;
 #pragma link C++ class AliJXtAnalysis+;
 #pragma link C++ class AliJHistogramInterface+;

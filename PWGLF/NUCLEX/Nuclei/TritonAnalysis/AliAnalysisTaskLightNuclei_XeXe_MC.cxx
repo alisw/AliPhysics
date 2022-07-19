@@ -255,7 +255,7 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserCreateOutputObjects(){
 
 
     //Number of Events
-    histoNumberOfEvents                     = new TH1F("histoNumberOfEvents","Events after selection steps",10,0,10);
+    histoNumberOfEvents                     = new TH1F("histoNumberOfEvents","Events after selection steps",20,0,10);
     fQAList                                 -> Add (histoNumberOfEvents);
     fAODeventCuts.AddQAplotsToList(fQAList);                //Add event selection QA plots
     //Signal Extraction
@@ -518,7 +518,7 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
 
 
         // Filling histograms for He3
-        if (PassedTrackQualityCuts (track) && track->PdgCode() == 1000020030) {
+        if (PassedTrackQualityCuts (track)) {
             //Variables
             Double_t nsigma_TPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kHe3);
             Double_t nsigma_TOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kHe3);
@@ -618,12 +618,12 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
         chi2_ITS            = track -> GetITSchi2();
 
         //PID
-        if (track->PdgCode() == 1000020030 ){
+        if (TMath::Abs(track->PdgCode()) == 1000020030 ){
             nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kHe3);
             nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kHe3);
             nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kHe3);
         }
-        else if(track->PdgCode() == 1000010030){
+        else if(TMath::Abs(track->PdgCode()) == 1000010030){
             nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kTriton);
             nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
             nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);

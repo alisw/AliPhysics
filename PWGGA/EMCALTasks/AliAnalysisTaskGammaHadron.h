@@ -55,6 +55,8 @@ public:
 
   //..setters for the analysis
   void                        SetDebug(Int_t input)                                 { fDebug           = input  ; }
+  void                        SetNameEMCalTriggerDecisionContainer(TString input)        { fNameEMCalTriggerDecisionContainer = input; }
+  void                        AddEMCalTriggerRequirement(TString input)             { fAcceptEMCalTriggers.push_back(input); }
   void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
   void                        SetEventWeightChoice(Int_t input)                     { fEventWeightChoice = input; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
@@ -136,7 +138,7 @@ protected:
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
   //..Function for event plane purposes
-  void                        LoadQnCorrectedEventPlane();
+  bool                        LoadQnCorrectedEventPlane(); // returns true if succesful
 
 
   //..Correlate and fill
@@ -209,6 +211,21 @@ protected:
   static const double LHC18qrParam_10_30_eta[11];                  //!<! 10-30% eta parameters
   static const double LHC18qrParam_30_50_eta[11];                  //!<! 30-50% eta parameters
   static const double LHC18qrParam_50_90_eta[11];                  //!<! 50-90% eta parameters
+
+  // Parameters for new parametrization using LHC20j6, anchored to 15o Pass2
+  // LHC15oP2 efficiency parameters
+  // pt parameters
+  static const double LHC15oP2Param_0_10_pt[11];                    //!<! 0-10% pt parameters
+  static const double LHC15oP2Param_10_30_pt[11];                   //!<! 10-30% pt parameters
+  static const double LHC15oP2Param_30_50_pt[11];                   //!<! 30-50% pt parameters
+  static const double LHC15oP2Param_50_90_pt[11];                   //!<! 50-90% pt parameters
+  // Eta parameters
+  static const double LHC15oP2Param_0_10_eta[11];                   //!<! 0-10% eta parameters
+  static const double LHC15oP2Param_10_30_eta[11];                  //!<! 10-30% eta parameters
+  static const double LHC15oP2Param_30_50_eta[11];                  //!<! 30-50% eta parameters
+  static const double LHC15oP2Param_50_90_eta[11];                  //!<! 50-90% eta parameters
+
+
   // Helper functions for determining the LHC15o tracking efficiency
   static double LHC18qrPtEfficiency(const double trackPt, const double params[11]);
 
@@ -247,6 +264,10 @@ protected:
 
   static const Bool_t         bEnableTrackPtAxis = 1;    ///< Whether to swap the xi axis with a track pT axis. Currently must be set here
   static const Bool_t         bEnableEventHashMixing = 1;///< Whether to split events up into 2 classes (odd and even) for event mixing to avoid autocorrelation
+
+  TString                     fNameEMCalTriggerDecisionContainer;
+
+  vector<TString>             fAcceptEMCalTriggers; ///< Array of EMCal trigger types to accept
 
   //..cuts
 	Int_t                       fSubDetector;              ///< Whether to use all clusters, ECal only, or DCal only
@@ -517,6 +538,6 @@ protected:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 14) // Class to analyze gamma- and pi0- hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 15) // Class to analyze gamma- and pi0- hadron correlations
 };
 #endif

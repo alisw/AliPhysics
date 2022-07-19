@@ -117,7 +117,7 @@ Bool_t ConfigLStar_PbPb2018(
   TString output         =  "SPARSE" ;
   
   for (Int_t i = 0; i < 16; i++) {
-    if (!use[i]) continue;
+    if (!use[i] && !isMC) continue;
     AliRsnMiniOutput *out = task->CreateOutput(Form("Lstar_PbPb_%s%s", name[i].Data(), suffix), output.Data(), comp[i].Data());
     //
     out->SetDaughter(0, AliRsnDaughter::kProton);

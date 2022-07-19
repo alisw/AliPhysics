@@ -87,9 +87,9 @@ private:
   TH2D *f2DHistNMPISPDV0M; //!
   TH2D *f2DHistQ2SPDV0M; //!
   TH2D *f2DHistbSPDV0M; //!
-  TH1D *fHistPt[21]; //! 
-  TH2D *f2DHistPartSPDV0M[21]; //!
-  TH2D *f2DHistAvPtSPDV0M[21]; //!
+  TH1D *fHistPt[22]; //! 
+  TH2D *f2DHistPartSPDV0M[22]; //!
+  TH2D *f2DHistAvPtSPDV0M[22]; //!
   TH2D *f2dHistZDCVsLE; //!
   TH2D *f2dHistZDCVsEE; //!
   TH2D *f2dHistZDCVsLEA; //!

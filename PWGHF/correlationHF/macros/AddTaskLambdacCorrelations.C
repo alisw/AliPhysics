@@ -250,10 +250,10 @@ AliAnalysisTaskSELambdacCorrelations *AddTaskLambdacCorrelations(Bool_t readMC=k
 
 
   //needed for fSpeed==0 and ==1 (i.e. when inv mass axis of THnSparse has the normal signal bins)
-  Double_t LeftSignReg_LowPt = 2.0968;
-  Double_t RightSignReg_LowPt = 2.5828;
-  Double_t LeftSignReg_HighPt = 1.7488;
-  Double_t RightSignReg_HighPt = 2.8008;
+  Double_t LeftSignReg_LowPt = 2.2224;
+  Double_t RightSignReg_LowPt = 2.3944;
+  Double_t LeftSignReg_HighPt = 2.2224;
+  Double_t RightSignReg_HighPt = 2.3944;
 
   massLambdacTask->SetLeftSignReg_LowPt(LeftSignReg_LowPt);
   massLambdacTask->SetRightSignReg_LowPt(RightSignReg_LowPt);
@@ -293,11 +293,11 @@ AliAnalysisTaskSELambdacCorrelations *AddTaskLambdacCorrelations(Bool_t readMC=k
     if(speed==2) {printf("Error! fSpeed 2 set with useCutFileMassRanges==kTRUE, this is not allowed!\nYou have to pass the signal ranges via cut file with fSpeed=2! Exiting...\n"); return 0;}
 
     if(!pporpPb_lims) { //pp limits
-				//      1-2    2-3    3-4    4-5    5-6    6-7    7-8   8-12   12-16  16-20  20-24   24+
-      Double_t LSBLowLim[14] = {0.,0.,1.7688,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,1.7088,1.7088,1.7088}; //to be filled looking at results from invariant mass fits!
-      Double_t LSBUppLim[14] = {0.,0.,1.8168,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,1.7648,1.7648,1.7648};
-      Double_t RSBLowLim[14] = {0.,0.,1.9168,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,1.9768,1.9768,1.9768};
-      Double_t RSBUppLim[14] = {0.,0.,1.9688,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,2.0808,2.0808,2.0808};
+	              //         3-4    4-5    5-6    6-7    7-8   8-12   
+      Double_t LSBLowLim[7] = {2.2144,2.2144,2.1904,2.2144,2.2064,2.1664,0.}; //to be filled looking at results from invariant mass fits!
+      Double_t LSBUppLim[7] = {2.2584,2.2584,2.2464,2.2544,2.2504,2.2384,0.};
+      Double_t RSBLowLim[7] = {2.3264,2.3264,2.3304,2.3264,2.3304,2.3424,0.};
+      Double_t RSBUppLim[7] = {2.3704,2.3704,2.3904,2.3764,2.3744,2.4104,0.};
  
       massLambdacTask->SetLSBLowLim(LSBLowLim);
       massLambdacTask->SetLSBHighLim(LSBUppLim);

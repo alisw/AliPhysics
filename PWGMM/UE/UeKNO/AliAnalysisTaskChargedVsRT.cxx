@@ -98,6 +98,8 @@ double binsDCAxy3[nBinsDCAxy+1] = {-3.025,-2.975,-2.925,-2.875,-2.825,-2.775,-2.
 
 
 const Double_t pi = 3.141592653589793238;
+//Bin Nch
+const Double_t minbinNch = -0.5;
 
 using namespace std;            // std namespace: so you can do things like 'cout' etc
 
@@ -116,6 +118,8 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
     fnGen(-1),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
+    fTPCclustersVar1(kFALSE),
+    fTPCclustersVar2(kFALSE),
     fGeoTPCVar1(kFALSE),
     fGeoTPCVar2(kFALSE),
     fGeoTPCVar3(kFALSE),
@@ -138,6 +142,8 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
     fPtMin(0.5),
     fLeadPtCutMin(5.0),
     fLeadPtCutMax(40.0),
+    fNchNbin(200),
+    fNchBinMax(199.5),
     fGenLeadPhi(0),
     fGenLeadPt(0),
     fGenLeadIn(0),
@@ -221,6 +227,8 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
     fnGen(-1),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
+    fTPCclustersVar1(kFALSE),
+    fTPCclustersVar2(kFALSE),
     fGeoTPCVar1(kFALSE),
     fGeoTPCVar2(kFALSE),
     fGeoTPCVar3(kFALSE),
@@ -243,6 +251,8 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
     fPtMin(0.5),
     fLeadPtCutMin(5.0),
     fLeadPtCutMax(40.0),
+    fNchNbin(200),
+    fNchBinMax(199.5),
     fGenLeadPhi(0),
     fGenLeadPt(0),
     fGenLeadIn(0),
@@ -358,28 +368,28 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCuts->SetMaxChi2PerClusterTPC(4);
     fCuts->SetMaxDCAToVertexZ(2);
 
-    if (fGeoTPCVar1) {fCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar2) {fCuts->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar3) {fCuts->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar4) {fCuts->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
-    else {fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
-
-    if (fNcrVar1) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
-    else if (fNcrVar2) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
-    else {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
-
-    if (fChisqTPCVar1) {fCuts->SetMaxChi2PerClusterTPC(3);}
-    else if (fChisqTPCVar2) {fCuts->SetMaxChi2PerClusterTPC(5);}
-    else {fCuts->SetMaxChi2PerClusterTPC(4);}// Default
-
-    if (fDcazVar1) {fCuts->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
-    else if (fDcazVar2) {fCuts->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
-    else {fCuts->SetMaxDCAToVertexZ(2);}// Default
-    
-    if (fChisqITSVar1) {fCuts->SetMaxChi2PerClusterITS(25);}//
-    else if (fChisqITSVar2) {fCuts->SetMaxChi2PerClusterITS(49);}//
-    else {fCuts->SetMaxChi2PerClusterITS(36);}// Default
-    
+    // if (fGeoTPCVar1) {fCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
+    // else if (fGeoTPCVar2) {fCuts->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
+    // else if (fGeoTPCVar3) {fCuts->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
+    // else if (fGeoTPCVar4) {fCuts->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
+    //else {fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
+    fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);// Default
+    // if (fNcrVar1) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
+    // else if (fNcrVar2) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
+    // else {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
+    fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    // if (fChisqTPCVar1) {fCuts->SetMaxChi2PerClusterTPC(3);}
+    // else if (fChisqTPCVar2) {fCuts->SetMaxChi2PerClusterTPC(5);}
+    // else {fCuts->SetMaxChi2PerClusterTPC(4);}// Default
+    fCuts->SetMaxChi2PerClusterTPC(4);
+    // if (fDcazVar1) {fCuts->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
+    // else if (fDcazVar2) {fCuts->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
+    // else {fCuts->SetMaxDCAToVertexZ(2);}// Default
+    fCuts->SetMaxDCAToVertexZ(2);
+    // if (fChisqITSVar1) {fCuts->SetMaxChi2PerClusterITS(25);}//
+    // else if (fChisqITSVar2) {fCuts->SetMaxChi2PerClusterITS(49);}//
+    // else {fCuts->SetMaxChi2PerClusterITS(36);}// Default
+    fCuts->SetMaxChi2PerClusterITS(36);
     fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
     fCuts->SetMaxChi2PerClusterITS(36);
     
@@ -398,10 +408,25 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     SetCutsHybrid0WoDCA(fCutsHybrid0woDCA);
 
     //to be considered for systematics...
-    fCutsHybrid0->SetMinNCrossedRowsTPC(70);       // TBC
-    fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    fCutsHybrid0->SetMaxChi2PerClusterTPC(4);
-    fCutsHybrid0->SetMaxDCAToVertexZ(2);
+    if (fNcrVar1) fCutsHybrid0->SetMinNCrossedRowsTPC(60);
+    else if (fNcrVar2) fCutsHybrid0->SetMinNCrossedRowsTPC(100);
+    else fCutsHybrid0->SetMinNCrossedRowsTPC(70); //Default
+    
+    if (fTPCclustersVar1)fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+    else if (fTPCclustersVar2) fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+    else fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);  //Default
+
+    if (fChisqTPCVar1) fCutsHybrid0->SetMaxChi2PerClusterTPC(3);
+    else if (fChisqTPCVar2) fCutsHybrid0->SetMaxChi2PerClusterTPC(5);
+    else fCutsHybrid0->SetMaxChi2PerClusterTPC(4);  //Default
+
+    if (fChisqITSVar1) fCutsHybrid0->SetMaxChi2PerClusterITS(25);
+    else if (fChisqITSVar2) fCutsHybrid0->SetMaxChi2PerClusterITS(49);
+    else fCutsHybrid0->SetMaxChi2PerClusterITS(36);  //Default
+
+    if (fDcazVar1) fCutsHybrid0->SetMaxDCAToVertexZ(1);
+    else if (fDcazVar2) fCutsHybrid0->SetMaxDCAToVertexZ(3);
+    else fCutsHybrid0->SetMaxDCAToVertexZ(2); //Default
 
     fCutsHybrid0->SetAcceptKinkDaughters(kFALSE);
     fCutsHybrid0->SetRequireTPCRefit(kTRUE);
@@ -411,7 +436,6 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCutsHybrid0->SetRequireSigmaToVertex(kFALSE);
     fCutsHybrid0->SetEtaRange(-0.8,0.8);
     fCutsHybrid0->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-    fCutsHybrid0->SetMaxChi2PerClusterITS(36);
     fTrackFilterHybrid0->AddCuts(fCutsHybrid0);
 
     // Define Hybrid 1
@@ -427,10 +451,25 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     SetCutsHybrid1WoDCA(fCutsHybrid1woDCA);
 
     //to be considered for systematics...
-    fCutsHybrid1->SetMinNCrossedRowsTPC(70);            //TBC
-    fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    fCutsHybrid1->SetMaxChi2PerClusterTPC(4);
-    fCutsHybrid1->SetMaxDCAToVertexZ(2);
+    if (fNcrVar1) fCutsHybrid1->SetMinNCrossedRowsTPC(60);
+    else if (fNcrVar2) fCutsHybrid1->SetMinNCrossedRowsTPC(100);
+    else fCutsHybrid1->SetMinNCrossedRowsTPC(70); //Default
+    
+    if (fTPCclustersVar1)fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+    else if (fTPCclustersVar2) fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+    else fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);  //Default
+
+    if (fChisqTPCVar1) fCutsHybrid1->SetMaxChi2PerClusterTPC(3);
+    else if (fChisqTPCVar2) fCutsHybrid1->SetMaxChi2PerClusterTPC(5);
+    else fCutsHybrid1->SetMaxChi2PerClusterTPC(4);  //Default
+
+    if (fChisqITSVar1) fCutsHybrid1->SetMaxChi2PerClusterITS(25);
+    else if (fChisqITSVar2) fCutsHybrid1->SetMaxChi2PerClusterITS(49);
+    else fCutsHybrid1->SetMaxChi2PerClusterITS(36);  //Default
+
+    if (fDcazVar1) fCutsHybrid1->SetMaxDCAToVertexZ(1);
+    else if (fDcazVar2) fCutsHybrid1->SetMaxDCAToVertexZ(3);
+    else fCutsHybrid1->SetMaxDCAToVertexZ(2); //Default
 
     fCutsHybrid1->SetAcceptKinkDaughters(kFALSE);
     fCutsHybrid1->SetRequireTPCRefit(kTRUE);
@@ -440,7 +479,7 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCutsHybrid1->SetRequireSigmaToVertex(kFALSE);
     fCutsHybrid1->SetEtaRange(-0.8,0.8);
     fCutsHybrid1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-    fCutsHybrid1->SetMaxChi2PerClusterITS(36);
+    
     fTrackFilterHybrid1->AddCuts(fCutsHybrid1);
 
 
@@ -454,22 +493,22 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     if(fUseMC)
     {
 
-        hNchTSGen = new TH1D("hNchTSGen","",200,-0.5,199.5);
+        hNchTSGen = new TH1D("hNchTSGen","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchTSGen);
 
-        hNchTSGenTest = new TH1D("hNchTSGenTest","",200,-0.5,199.5);
+        hNchTSGenTest = new TH1D("hNchTSGenTest","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchTSGenTest);
 
-        hNchTSRecTest = new TH1D("hNchTSRecTest","",200,-0.5,199.5);
+        hNchTSRecTest = new TH1D("hNchTSRecTest","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchTSRecTest);
 
-        hNchGen = new TH1D("hNchGen","",200,-0.5,199.5);
+        hNchGen = new TH1D("hNchGen","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchGen);
 
-        hNchGenTest = new TH1D("hNchGenTest","",200,-0.5,199.5);
+        hNchGenTest = new TH1D("hNchGenTest","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchGenTest);
 
-        hNchRecTest = new TH1D("hNchRecTest","",200,-0.5,199.5);
+        hNchRecTest = new TH1D("hNchRecTest","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchRecTest);
 
         for(Int_t i=0;i<3;++i){
@@ -477,7 +516,7 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
             fOutputList->Add(hPhiGen[i]);
         }
 
-        hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",200,-0.5,199.5,200,-0.5,199.5);
+        hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",fNchNbin,minbinNch,fNchBinMax,fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchResponse);
 
         hPtInPrim = new TH1D("hPtInPrim","pT prim true; pT; Nch",ptNbins,ptbins1_3);
@@ -551,10 +590,10 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
         for(Int_t i=0;i<3;++i){
 
-            hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
             fOutputList->Add(hPtVsUEGenTest[i]);
 
-            hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
             fOutputList->Add(hPtVsNchGenTest[i]);
 
         }
@@ -574,10 +613,10 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
     }
 
-    hNchTSRec = new TH1D("hNchTSRec","",200,-0.5,199.5);
+    hNchTSRec = new TH1D("hNchTSRec","",fNchNbin,minbinNch,fNchBinMax);
     fOutputList->Add(hNchTSRec);
 
-    hNchRec = new TH1D("hNchRec","",200,-0.5,199.5);
+    hNchRec = new TH1D("hNchRec","",fNchNbin,minbinNch,fNchBinMax);
     fOutputList->Add(hNchTSRec);
     hPhiTotal = new TH1F("hPhiSum","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
     fOutputList->Add(hPhiTotal);
@@ -596,27 +635,27 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
     for(Int_t i=0;i<3;++i){
 
-        hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+        hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
         fOutputList->Add(hPtVsUERecTest[i]);
 
-        hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+        hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
         fOutputList->Add(hPtVsNchRecTest[i]);
 
     }
 
     if(!fUseMC){
-        hNchTSData = new TH1D("hNchTSData","",200,-0.5,199.5);
+        hNchTSData = new TH1D("hNchTSData","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchTSData);
 
-        hNchData = new TH1D("hNchData","",200,-0.5,199.5);
+        hNchData = new TH1D("hNchData","",fNchNbin,minbinNch,fNchBinMax);
         fOutputList->Add(hNchData);
 
         for(Int_t i=0;i<3;++i){
 
-            hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_3[i]),"data pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
             fOutputList->Add(hPtVsUEData[i]);
 
-            hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_3[i]),"data pT vs nch_transverse",fNchNbin,minbinNch,fNchBinMax,ptNbins,ptbins1_3);
             fOutputList->Add(hPtVsNchData[i]);
 
         }
