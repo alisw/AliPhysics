@@ -14,7 +14,6 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                                   Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE,
                                   Int_t doSPC = 0)
 {
-    
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
   bool removeBadArea = kFALSE; bool useTightCuts = kFALSE;
   int debug = 0;
@@ -22,11 +21,10 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   //Explanation: 
-  //doSPC  	0: normal SPC
-  //		1: test v2 and SC
-  // 		2: test rho 
+  //doSPC   0: 2SPC, 4SPC and 5SPC
+  //        1: 3SPC
 
-  if(doSPC < 0 || doSPC > 2) return 0;
+  if(doSPC < 0 || doSPC > 1) return 0;
 
   //-------- Read in passed Variations -------- 
   std::istringstream iss(Variations);
@@ -35,27 +33,26 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   std::string PossibleVariations[NPossibleVariations] = { "default","hybrid", "SPD", "noPileup",
                                                           "pileup10", "zvtx6","zvtx10","zvtx7",
                                                           "NTPC80", "NTPC90", "NTPC100",
-                                                          "chi2def", "chi2tight", "DCAz1", "DCAz05",
+                                                          "chi2def", "chi2tight23", "DCAz1", "DCAz05",
                                                           "nqq", "pqq", "subA"}; //for reference, these variations are allowed
     
   int PassedVariations = 0;
   std::vector<TString> configNames;
 
   do {
-        std::string subs;
-        iss >> subs;
-  
-        // Check if valid variation
-        bool exists = std::find(std::begin(PossibleVariations), std::end(PossibleVariations), subs) != std::end(PossibleVariations); 
-	if(exists)
-	{
-		PassedVariations++;
-		configNames.push_back(subs);
-	}
+    std::string subs;
+    iss >> subs;
+    
+    // Check if valid variation
+    bool exists = std::find(std::begin(PossibleVariations), std::end(PossibleVariations), subs) != std::end(PossibleVariations); 
+    if(exists) {
+      PassedVariations++;
+      configNames.push_back(subs);
+    }
 
-    } while (iss);
+  } while (iss);
 
-  if(PassedVariations == 0) return 0; //Protection in case no valid Variation is passed
+  if (PassedVariations == 0) return 0; //Protection in case no valid Variation is passed
 
   //-------- JFlucWagons -------
   const int Nsets  = PassedVariations; // number of configurations // TBC: if this does not work, then do const int Nsets  = 10; //default max number of variations
@@ -70,10 +67,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   std::cout << "AddTaskJHOCFAMaster:: taskName = " << taskName << "\nPeriod = " << period 
     << std::endl;
 
-
-// Corrections fetching 
-
-if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
+  // Corrections fetching 
+  if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
     cMapTask->EnableCentFlattening(Form(
       "alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root",
       sPeriod[period].Data() ));
@@ -122,14 +117,12 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;   
-    }
+    } // End switch.
 
     cMapTask->EnablePhiCorrection(i, MAPfileNames[i]);  // i: index for 'SetPhiCorrectionIndex(i)'.
-  }
+  } // End loop over Nsets.
 
-
-
-// Setting of the general parameters.
+  // Setting of the general parameters.
   Int_t hybridCut = 768;
   Int_t globalCut = 96;
 
@@ -231,24 +224,22 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
   }
 
 // Configuration of the analysis task itself.
-  const int SPCCombination = 4;
-  TString SPC[SPCCombination] = { "2SPC", "3SPC", "4SPC", "5SPC"};
+  const int SPCCombination = 3; // We do 3SPC only if doSPC == 1 for time running sake.
+  TString SPC[SPCCombination] = { "2SPC", "4SPC", "5SPC"};
   AliJSPCTaskRun2 *myTask[Nsets][SPCCombination];
 
-  for (Int_t i = 0; i < PassedVariations; i++){
-    if (doSPC == 0) {  
-      for(Int_t j = 0; j < SPCCombination; j++){
+  for (Int_t i = 0; i < PassedVariations; i++) {
+    if (doSPC == 0) {
+      for (Int_t j = 0; j < SPCCombination; j++) {
         myTask[i][j] = new AliJSPCTaskRun2(Form("%s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[j].Data()));
-      	myTask[i][j]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
-
-      	myTask[i][j]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
-      	myTask[i][j]->AliSPCRun2SetSaveAllQA(kTRUE);
-      	myTask[i][j]->AliSPCRun2SetMinNuPar(14.);
-      	myTask[i][j]->AliSPCRun2SetUseWeights(useWeightsNUE, useWeightsNUA);
+        myTask[i][j]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
+        myTask[i][j]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+        myTask[i][j]->AliSPCRun2SetSaveAllQA(kTRUE);
+        myTask[i][j]->AliSPCRun2SetMinNuPar(14.);
+        myTask[i][j]->AliSPCRun2SetUseWeights(useWeightsNUE, useWeightsNUA);
         myTask[i][j]->AliSPCRun2SetEtaGaps(ComputeEtaGap, EtaGap);
 
-      	if(j==0){
-
+        if (j == 0) {
           Int_t harmonicArray1[maxNrComb][8] = {
                                           {4, 6,-2,-2,-2, 0, 0, 0},
                                           {3, 6,-3,-3, 0, 0, 0, 0},
@@ -264,37 +255,12 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
                                           {0, 0, 0,0, 0, 0, 0,0}
                                         };
 
-            for (int k = 0; k<maxNrComb; k++){
-              myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray1[k]);
-            }
-        }
+          for (int k = 0; k<maxNrComb; k++){
+            myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray1[k]);
+          }
+        } // End j == 0, 2SPC.
 
-        if(j==1){
-
-          Int_t harmonicArray2[maxNrComb][8] = {
-                                          {4, 3,-4,-4, 5, 0, 0,0},
-                                          {3, 2, 4,-6, 0, 0, 0,0},
-                                          {3, 2, 3,-5, 0, 0, 0,0},
-                                          {4, 2,-3,-3, 4, 0, 0,0},
-                                          {5, 2, 3, 3,-4,-4, 0,0},
-                                          {6, 2, 2, 2, 2,-3,-5,0},
-                                          {5, 3, 3, 3,-4,-5, 0,0},
-                                          {4, 2, 2, 3, -7, 0, 0,0},
-                                          {3, 3, 4, -7, 0, 0, 0,0},
-                                          {3, 2, 5, -7, 0, 0, 0,0},
-                                          {3, 3, 5, -8, 0, 0, 0,0},
-                                          {4, 2, 2, 4, -8, 0, 0,0}
-                                          // {0, 2, 2, 2, 2, 2, -4,-6} // Too heavy for the moment.
-                                        };
-
-
-            for (int k = 0; k<maxNrComb; k++){
-              myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray2[k]);
-            }
-        }
-
-        if(j==2){
-
+        if (j == 1) {
           Int_t harmonicArray3[maxNrComb][8] = {       
                                           {4, 2,-3,-4, 5, 0, 0,0}, 
                                           {6, 2, 2, 2, 3,-4,-5,0}, 
@@ -310,13 +276,12 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
                                           {0, 0, 0,0, 0, 0, 0,0}
                                         };
 
-            for (int k = 0; k<maxNrComb; k++){
-              myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray3[k]);
-            }
-        }
+          for (int k = 0; k<maxNrComb; k++){
+            myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray3[k]);
+          }
+        } // End j == 1, 4SPC.
 
-        if(j==3){
-
+        if (j == 2) {
           Int_t harmonicArray4[maxNrComb][8] = {
                                           {5, 2, 3, -4, 5, -6, 0,0},
                                           {6, 2, 3, 4, 4, -6, -7,0},
@@ -332,16 +297,46 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
                                           {0, 0, 0,0, 0, 0, 0,0}
                                         };
                                         
-            for (int k = 0; k<maxNrComb; k++){
-              myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray4[k]);
-            }
-
-      	}
+          for (int k = 0; k<maxNrComb; k++){
+            myTask[i][j]->AliSPCRun2SetCorrSet(k,harmonicArray4[k]);
+          }
+        } // End j == 2, 5SPC.
 
         mgr->AddTask((AliAnalysisTask *) myTask[i][j]);
+      } // End for (Int_t j = 0; j < SPCCombination; j++).
+    } // End if (doSPC == 0)
+
+    else if (doSPC == 1) {
+      myTask[i][0] = new AliJSPCTaskRun2(Form("%s_%s_3SPC", taskName.Data(), configNames[i].Data()));
+      myTask[i][0]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
+      myTask[i][0]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+      myTask[i][0]->AliSPCRun2SetSaveAllQA(kTRUE);
+      myTask[i][0]->AliSPCRun2SetMinNuPar(14.);
+      myTask[i][0]->AliSPCRun2SetUseWeights(useWeightsNUE, useWeightsNUA);
+      myTask[i][0]->AliSPCRun2SetEtaGaps(ComputeEtaGap, EtaGap);
+
+      Int_t harmonicArray2[maxNrComb][8] = {
+                                      {4, 3,-4,-4, 5, 0, 0,0},
+                                      {3, 2, 4,-6, 0, 0, 0,0},
+                                      {3, 2, 3,-5, 0, 0, 0,0},
+                                      {4, 2,-3,-3, 4, 0, 0,0},
+                                      {5, 2, 3, 3,-4,-4, 0,0},
+                                      {6, 2, 2, 2, 2,-3,-5,0},
+                                      {5, 3, 3, 3,-4,-5, 0,0},
+                                      {4, 2, 2, 3, -7, 0, 0,0},
+                                      {3, 3, 4, -7, 0, 0, 0,0},
+                                      {3, 2, 5, -7, 0, 0, 0,0},
+                                      {3, 3, 5, -8, 0, 0, 0,0},
+                                      {4, 2, 2, 4, -8, 0, 0,0}
+                                      // {0, 2, 2, 2, 2, 2, -4,-6} // Too heavy for the moment.
+                                    };
+
+      for (int k = 0; k<maxNrComb; k++){
+        myTask[i][0]->AliSPCRun2SetCorrSet(k,harmonicArray2[k]);
       }
-    } // if (doSPC)
-  }
+
+    } // End else if (doSPC == 1)
+  } // End for (Int_t i = 0; i < PassedVariations; i++)
 
 // Connect the input and output.
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -351,8 +346,8 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
     mgr->ConnectInput(fJCatalyst[i], 0, cinput);
 
     if (doSPC == 0) {
-      for(Int_t j = 0; j < SPCCombination; j++){
-  	    mgr->ConnectInput(myTask[i][j], 0, cinput);
+      for(Int_t j = 0; j < SPCCombination; j++) {
+        mgr->ConnectInput(myTask[i][j], 0, cinput);
         jHist[i][j] = new AliAnalysisDataContainer();     
         jHist[i][j] = mgr->CreateContainer(Form ("%s", myTask[i][j]->GetName()),
           TList::Class(), AliAnalysisManager::kOutputContainer,
@@ -360,14 +355,13 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
         mgr->ConnectOutput(myTask[i][j], 1, jHist[i][j]);
       }
 
-        jHist[i][SPCCombination] = new AliAnalysisDataContainer();
+      jHist[i][SPCCombination] = new AliAnalysisDataContainer();
       jHist[i][SPCCombination] = mgr->CreateContainer(Form ("%s", fJCatalyst[i]->GetName()),
-          TList::Class(), AliAnalysisManager::kOutputContainer,
-          Form("%s", AliAnalysisManager::GetCommonFileName()));
+        TList::Class(), AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
       mgr->ConnectOutput(fJCatalyst[i], 1, jHist[i][SPCCombination]);
-    }
-    else if (doSPC == 1) {
 
+    } else if (doSPC == 1) {
       mgr->ConnectInput(myTask[i][0], 0, cinput);
       jHist[i][0] = new AliAnalysisDataContainer();     
       jHist[i][0] = mgr->CreateContainer(Form ("%s", myTask[i][0]->GetName()),
@@ -375,33 +369,13 @@ if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
           Form("%s:outputAnalysis", AliAnalysisManager::GetCommonFileName()));
       mgr->ConnectOutput(myTask[i][0], 1, jHist[i][0]);
 
-
       jHist[i][SPCCombination] = new AliAnalysisDataContainer();
       jHist[i][SPCCombination] = mgr->CreateContainer(Form ("%s", fJCatalyst[i]->GetName()),
           TList::Class(), AliAnalysisManager::kOutputContainer,
           Form("%s", AliAnalysisManager::GetCommonFileName()));
       mgr->ConnectOutput(fJCatalyst[i], 1, jHist[i][SPCCombination]);
     }
-    else if (doSPC == 2) {
-      for(Int_t j = 0; j < 2; j++){
-  	    mgr->ConnectInput(myTask[i][j], 0, cinput);
-        jHist[i][j] = new AliAnalysisDataContainer();     
-        jHist[i][j] = mgr->CreateContainer(Form ("%s", myTask[i][j]->GetName()),
-          TList::Class(), AliAnalysisManager::kOutputContainer,
-          Form("%s:outputAnalysis", AliAnalysisManager::GetCommonFileName()));
-        mgr->ConnectOutput(myTask[i][j], 1, jHist[i][j]);
-      }
-
-        jHist[i][SPCCombination] = new AliAnalysisDataContainer();
-      jHist[i][SPCCombination] = mgr->CreateContainer(Form ("%s", fJCatalyst[i]->GetName()),
-          TList::Class(), AliAnalysisManager::kOutputContainer,
-          Form("%s", AliAnalysisManager::GetCommonFileName()));
-      mgr->ConnectOutput(fJCatalyst[i], 1, jHist[i][SPCCombination]);
-    }
-
-
-  }
+  } // End for (Int_t i = 0; i < PassedVariations; i++)
 
   return myTask[0][0];
 }
-
