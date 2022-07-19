@@ -32,6 +32,7 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+  virtual void  SetPeriod(const char* dataset) { fDataSet = dataset; }  
   Double_t GetFlatenicity();
   Double_t GetFlatenicityMC();
   void CheckMultiplicities();
@@ -49,11 +50,17 @@ public:
   void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
     fRemoveTrivialScaling = flat_flag;
   }
+  void SetUseCalibration(Bool_t flat_flag = kFALSE) {
+    fUseCalib = flat_flag;
+  }  
   bool HasRecVertex();
 
 protected:
     //
 private:
+    
+  Double_t V0AmplCalibration(const Int_t &chnl);    
+    
   AliESDEvent *fESD; //! input ESD event
   AliEventCuts fEventCuts;
   AliStack *fMCStack; //! MC stack
@@ -88,6 +95,10 @@ private:
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
+  Bool_t fUseCalib;
+  TString fDataSet;
+  TF1 *fV0Camp;
+  TF1 *fV0Aamp;
   TProfile *pActivityV0DataSect;
   TProfile *pActivityV0ADataSect;
   TProfile *pActivityV0CDataSect;
