@@ -2007,7 +2007,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                         if(CosPointingAngleCut){ //V0 Cosine of Pointing Angle
                             fHistLambdaMassPtCut->Fill(massLambda,v0pt,7.5);
 
-                            if (TMath::Abs(massK0-0.497614)>fMassRejectCutLam){
+                            if (TMath::Abs(massK0-0.497614)>fMassRejectCutLam||fSystem=="PbPb"){
                                 fHistLambdaMassPtCut->Fill(massLambda,v0pt,8.5);
 
                                 if(fAnalysisMC){
@@ -2049,7 +2049,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                         if (CosPointingAngleCut){ //V0 Cosine of Pointing Angle
                             fHistK0MassPtCut->Fill(massK0,v0pt,7.5);
 
-                            if(TMath::Abs(massLambda-1.115683)>fMassRejectCutK0&&TMath::Abs(massAntilambda-1.115683)>fMassRejectCutK0) {
+                            if((TMath::Abs(massLambda-1.115683)>fMassRejectCutK0&&TMath::Abs(massAntilambda-1.115683)>fMassRejectCutK0)||fSystem=="PbPb") {
                                 fHistK0MassPtCut->Fill(massK0,v0pt,8.5);
 
                                 if(fAnalysisMC){
@@ -2092,7 +2092,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                         if (CosPointingAngleCut){
                             fHistAntiLambdaMassPtCut->Fill(massAntilambda,v0pt,7.5);
 
-                            if(TMath::Abs(massK0-0.497614)>fMassRejectCutLam){
+                            if(TMath::Abs(massK0-0.497614)>fMassRejectCutLam||fSystem=="PbPb"){
                                 fHistAntiLambdaMassPtCut->Fill(massAntilambda,v0pt,8.5);
 
 
