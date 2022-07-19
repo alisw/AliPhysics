@@ -235,8 +235,8 @@ void AliFemtoCorrFctnPtKstarBeta::AddRealPair( AliFemtoPair* pair){
       /* fPtKstar_kT[i]->Fill(tKStar,pT);
       fPtKstar2part_kT[i]->Fill(tKStar,pT2);
       fPairPtKstar2part_kT[i]->Fill(tKStar,tPairPt);*/
-      fPtBeta[i]->Fill(pT1,betaT);
-      fPtBeta2part[i]->Fill(pT2,betaT);
+      fPtBeta[i]->Fill(pT1,tKStar);
+      fPtBeta2part[i]->Fill(pT2,tKStar);
        }
       }
     }
