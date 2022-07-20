@@ -42,7 +42,7 @@ Bool_t AliAnalysisTaskRho::Run()
     fOutRhoScaled->SetVal(0);
 
   if (!fJets){
-    AliErrorStream() << "No jet container attached container" << std::endl;
+    AliErrorStream() << "No jet container attached" << std::endl;
     return kFALSE;
   }
 
