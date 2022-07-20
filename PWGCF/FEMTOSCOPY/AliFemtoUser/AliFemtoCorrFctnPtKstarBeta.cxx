@@ -55,8 +55,8 @@ AliFemtoCorrFctn(),
   fPtKstar2part_kT[i] = new TH2D(Form("PtvsKstar2part%s_beta%d",title,i),"Pt vs kstar (part 2)",100,0.0,0.5, 240, 0.1, 2.5);
   fPairPtKstar2part_kT[i] = new TH2D(Form("PairPtvsKstar%s_beta%d",title,i),"Pair Pt vs kstar ",100,0.0,0.5, 300, 0.0, 6.0);
 
-  fPtBeta[i] = new TH2D(Form("PtvsbT1part%s_beta%d",title,i),"Pt vs kstarbT (part 1)",250,0.0,2.5, 20, 0.0, 1.0);
-   fPtBeta2part[i] = new TH2D(Form("PtvsbT2part%s_beta%d",title,i),"Pt vs kstarbT (part 2)",250,0.0,2.5, 20, 0.0, 1.0);
+  fPtBeta[i] = new TH2D(Form("PtvsbT1part%s_beta%d",title,i),"Pt vs kstarbT (part 1)",200, 0.0, 1.0, 250,0.0,2.5);
+  fPtBeta2part[i] = new TH2D(Form("PtvsbT2part%s_beta%d",title,i),"Pt vs kstarbT (part 2)",200, 0.0, 1.0, 250,0.0,2.5);
 
     }
 
@@ -235,8 +235,8 @@ void AliFemtoCorrFctnPtKstarBeta::AddRealPair( AliFemtoPair* pair){
       /* fPtKstar_kT[i]->Fill(tKStar,pT);
       fPtKstar2part_kT[i]->Fill(tKStar,pT2);
       fPairPtKstar2part_kT[i]->Fill(tKStar,tPairPt);*/
-      fPtBeta[i]->Fill(pT1,tKStar);
-      fPtBeta2part[i]->Fill(pT2,tKStar);
+      fPtBeta[i]->Fill(tKStar,pT1);
+      fPtBeta2part[i]->Fill(tKStar,pT2);
        }
       }
     }
