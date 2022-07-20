@@ -12,6 +12,11 @@
 // (3) output objects: histograms or trees
 ****************************************************************************/
 
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#endif
+
 Bool_t ConfigLStar_PbPb2018(
 			    AliRsnMiniAnalysisTask *task, 
 			    Float_t                 yCut              = 0.5,
@@ -83,7 +88,9 @@ Bool_t ConfigLStar_PbPb2018(
   // -- Monitoring --------------------------------------------------------------------------------
 
   Printf("======== Cut monitoring enabled");
+  #ifdef __CINT__	
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+  #endif
   AddMonitorOutput(isMC, cutQ->GetMonitorOutput(), "");
   AddMonitorOutput(isMC, cutP->GetMonitorOutput(), "");
   AddMonitorOutput(isMC, cutK->GetMonitorOutput(), "");
