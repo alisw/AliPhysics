@@ -15,7 +15,11 @@
 //  kFALSE --> initialization failed (some config gave errors)
 //
 ****************************************************************************/
-
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/ConfigLStar_PbPb2018.C>
+#endif
+	
 AliRsnMiniAnalysisTask *
 AddAnalysisTaskLStar_PbPb2018(
 			      UInt_t      triggerMask       = AliVEvent::kINT7,
@@ -95,9 +99,15 @@ AddAnalysisTaskLStar_PbPb2018(
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   
+   #ifdef __CINT__
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLStar_PbPb2018.C");
-   ConfigLStar_PbPb2018(task, yCut, aodFilterBit, useTPCCrossedRows, qualityCut, pidCut, nsPr, nsPr, isMC, suffix);
+   #endif
+   
+   if(!ConfigLStar_PbPb2018(task, yCut, aodFilterBit, useTPCCrossedRows, qualityCut, pidCut, nsPr, nsPr, isMC, suffix))
+   {
+     ::Error("ConfigLStar_PbPb2018", "No analysisConfig task is loaded.");
+      return 0x0;
+   }
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
