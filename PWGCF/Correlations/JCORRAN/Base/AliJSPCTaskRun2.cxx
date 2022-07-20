@@ -125,7 +125,7 @@ void AliJSPCTaskRun2::UserCreateOutputObjects()
 
   //fSPC->SetUseWeights(bAliSPCRun2UseWeightsNUE, bAliSPCRun2UseWeightsNUA);
 
-  for (int i=0; i<10; i++) {
+  for (int i=0; i<12; i++) {
     fSPC->SetCorrSet(i, fAliSPCRun2HarmosArray[i]);
   }
 

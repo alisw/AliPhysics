@@ -53,8 +53,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     case 4 :    // Syst: (pileup > 15000) changed to (pileup > 10000).
       configNames.push_back("pileup10");
       break;
-    case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 10|.
-      configNames.push_back("zvtx10");
+    case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 9|.
+      configNames.push_back("zvtx9");
       break;
     case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 6|.
       configNames.push_back("zvtx6");
@@ -215,8 +215,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetCentDetName("V0M");
     } 
 
-    if (strcmp(configNames[i].Data(), "zvtx10") == 0) {
-      fJCatalyst[i]->SetZVertexCut(10.0);
+    if (strcmp(configNames[i].Data(), "zvtx9") == 0) {
+      fJCatalyst[i]->SetZVertexCut(9.0);
     } else if (strcmp(configNames[i].Data(), "zvtx6") == 0) {
       fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {

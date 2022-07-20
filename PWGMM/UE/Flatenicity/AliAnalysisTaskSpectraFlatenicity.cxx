@@ -108,7 +108,8 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
       pActivityV0CDataSect(0), pActivityV0multData(0), pActivityV0AmultData(0), 
       pActivityV0CmultData(0), pActivityV0McSect(0), pActivityV0multMc(0),
       hFlatVsNchMC(0), hNchV0MMC(0), hNchV0aMC(0), hNchV0cMC(0), hNchV0M(0), 
-      hNchV0a(0), hNchV0c(0), hFlatVsV0M(0), hEta(0), hEtamc(0), hCounter(0)
+      hNchV0a(0), hNchV0c(0), hFlatVsV0M(0), hEta(0), hEtamc(0), hCounter(0),
+      fDataSet("16kl"), fUseCalib(1), fV0Camp(0x0), fV0Aamp(0x0)
 {
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
         hFlatVsPtV0M[i_c] = 0;
@@ -132,7 +133,8 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
       pActivityV0CDataSect(0), pActivityV0multData(0), pActivityV0AmultData(0), 
       pActivityV0CmultData(0), pActivityV0McSect(0), pActivityV0multMc(0),
       hFlatVsNchMC(0), hNchV0MMC(0), hNchV0aMC(0), hNchV0cMC(0), hNchV0M(0), 
-      hNchV0a(0), hNchV0c(0), hFlatVsV0M(0), hEta(0), hEtamc(0), hCounter(0)
+      hNchV0a(0), hNchV0c(0), hFlatVsV0M(0), hEta(0), hEtamc(0), hCounter(0),
+      fDataSet("16kl"), fUseCalib(1), fV0Camp(0x0), fV0Aamp(0x0)
 {
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
         hFlatVsPtV0M[i_c] = 0;
@@ -269,6 +271,9 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   
   }
 
+  fV0Camp = new TF1("fitActivityV0CDataSect","pol0",0., 31.);
+  fV0Aamp = new TF1("fitActivityV0ADataSect","pol0",32., 64.);
+  
   pActivityV0DataSect = new TProfile("pActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
   fOutputList->Add(pActivityV0DataSect);
   pActivityV0ADataSect = new TProfile("pActivityV0ADataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
@@ -661,7 +666,17 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicity() {
       detaV0 = maxEtaV0A[nringA] - minEtaV0A[nringA];
     }
     RhoLattice[iCh] = mult / detaV0; // needed to consider the different eta coverage
-    multLattice[iCh] = mult; 
+    
+    // Equalize V0 amplitudes (calibration functions "fV0Camp" and "fV0Aamp" obtained from post analysis macro)
+    if(!fUseCalib){
+        multLattice[iCh] = mult; 
+    }
+    else{
+        if(iCh<32)
+            multLattice[iCh] = mult*1.84016/V0AmplCalibration(iCh);
+        if(iCh>=32)
+            multLattice[iCh] = mult*1.31996/V0AmplCalibration(iCh);
+    }
   }
 
   // Filling histos with mult info
@@ -819,6 +834,7 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicityMC() {
   return flatenicity;
 }
 
+//______________________________________________________________________________
 Bool_t AliAnalysisTaskSpectraFlatenicity::HasRecVertex() {
 
   float fMaxDeltaSpdTrackAbsolute = 0.5f;
@@ -886,3 +902,30 @@ Bool_t AliAnalysisTaskSpectraFlatenicity::HasRecVertex() {
 
   return hasVtx;
 }
+
+//______________________________________________________________________________
+Double_t AliAnalysisTaskSpectraFlatenicity::V0AmplCalibration(const Int_t &chnl){
+
+	Double_t V0Apar = 0.;
+    Double_t V0Cpar = 0.;
+    
+    // values for a given dataset
+
+    if(strcmp(fDataSet,"16kl")==0){
+		V0Apar = 1.31996; V0Cpar = 1.84016; 
+    }
+    else{
+		V0Apar = -999.; V0Cpar = -999.; 
+    }
+    
+    if(chnl<32){
+		fV0Camp->SetParameter(0,V0Cpar);
+        return fV0Camp->Eval(chnl);    
+    }
+    else if(chnl>=32){
+		fV0Aamp->SetParameter(0,V0Apar);
+        return fV0Aamp->Eval(chnl);    
+    }
+    
+}    
+
