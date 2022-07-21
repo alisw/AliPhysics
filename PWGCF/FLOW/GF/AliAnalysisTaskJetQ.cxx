@@ -14,6 +14,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  fNormCounter(0),
  fCorrPlot(0),
  fMixCorrPlot(0),
+ fNtriggers(0),
  fPtAssocMin(2.),
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
@@ -34,6 +35,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
  fNormCounter(0),
  fCorrPlot(0),
  fMixCorrPlot(0),
+ fNtriggers(0),
  fPtAssocMin(2.),
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
@@ -87,6 +89,7 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
     //Setting up correlation plots
     fCorrPlot    = new TH1**[fCentAxis->GetNbins()];
     fMixCorrPlot = new TH1**[fCentAxis->GetNbins()];
+    fNtriggers   = new TH1*[fCentAxis->GetNbins()];
     for(Int_t iCent=0;iCent<fCentAxis->GetNbins();iCent++) {
       fCorrPlot[iCent] = new TH1*[fPtAxis->GetNbins()];
       fMixCorrPlot[iCent] = new TH1*[fPtAxis->GetNbins()];
@@ -98,6 +101,10 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
         fOutList->Add(fCorrPlot[iCent][iPt]);
         fOutList->Add(fMixCorrPlot[iCent][iPt]);
       };
+      fNtriggers[iCent]    = new TH1D(Form("fNtriggers_Cent%i",iCent),Form("fNtriggers_Cent%i; v_{z}; dN_{trig}/dv_{z}",iCent),fVzBins.size()-1,-10,10);
+      fNtriggers[iCent]->GetZaxis()->Set(fVzBins.size()-1,fVzBins.data());
+      fOutList->Add(fNtriggers[iCent]);
+
     };
     PostData(1, fOutList);
 }
@@ -189,6 +196,7 @@ Int_t AliAnalysisTaskJetQ::FillCorrelations(Int_t &triggerIndex, Int_t &centVal,
   Double_t l_TrEta = lTriggerTrack->Eta();
   Double_t l_TrPhi = lTriggerTrack->Phi();
   Int_t centBin = centVal-1;
+  fNtriggers[centBin]->Fill(vzValue);
   for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(i);
     if(!lTrack->TestFilterBit(96)) continue;

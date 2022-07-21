@@ -63,6 +63,7 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         TH2D *fNormCounter; //!
         TH1 ***fCorrPlot; //!
         TH1 ***fMixCorrPlot; //!
+        TH1 **fNtriggers; //!
         vector<Double_t> fCentBins;
         vector<Double_t> fVzBins;
         vector<Double_t> fPtBins;
