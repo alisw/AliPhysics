@@ -1128,6 +1128,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             Printf("No MC particle branch found");
             return;
         }
+        if(fSystem=="PbPb"&&AliAnalysisUtils::IsPileupInGeneratedEvent(fmcEvent,"Hijing")) return;
 
         AliVVertex * mcVertex = (AliVVertex* ) fmcEvent->GetPrimaryVertex();
         fPV[2] = mcVertex->GetZ();
