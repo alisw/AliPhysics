@@ -134,6 +134,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityMC.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity2.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFMs.cxx
   )
 
