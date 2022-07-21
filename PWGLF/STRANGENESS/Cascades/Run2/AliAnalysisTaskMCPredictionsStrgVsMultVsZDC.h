@@ -64,6 +64,7 @@ private:
   // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
   // your data member object is created on the worker nodes and streaming is not needed.
   // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
+
   TList  *fListHist;  //! List of Cascade histograms
   
   //Histograms 
@@ -73,13 +74,15 @@ private:
   TH1D *fHistV0CMult; //! 
   TH1D *fHistMult05; //! 
   TH1D *fHistMult08; //! 
+  TH1D *fHistMult10; //! 
   TH1D *fHistMult08to15; //! 
   TH1D *fHistSPDClusters; //! 
   TH1D *fHistNMPI; //! 
   TH1D *fHistQ2; //! 
   TH1D *fHistb; //! 
   TH1D *fHistLeadingE; //!
-  TH1D *fHistEffEnergy; //! 
+  TH1D *fHistEffEnergy; //!
+  TH1D *fHistRxy; //! 
   TH2D *f2DHistINELgt0SPDV0M; //!
   TH2D *f2DHistLeadingESPDV0M; //!
   TH2D *f2DHistEffEnergySPDV0M; //!
@@ -89,6 +92,7 @@ private:
   TH2D *f2DHistbSPDV0M; //!
   TH1D *fHistPt[22]; //! 
   TH2D *f2DHistPartSPDV0M[22]; //!
+  TH2D *f2DHistPartSPDClNch0815[22]; //!
   TH2D *f2DHistAvPtSPDV0M[22]; //!
   TH2D *f2dHistZDCVsLE; //!
   TH2D *f2dHistZDCVsEE; //!
@@ -96,8 +100,14 @@ private:
   TH2D *f2dHistZDCVsLEC; //!
   TH2D *f2dHistZPVsLP; //!
   TH2D *f2dHistZNVsLN; //!
+  TH2D *f2dHistZDCVsLEnoacc; //!
+  TH2D *f2dHistZPVsLPnoacc; //!
+  TH2D *f2dHistZNVsLNnoacc; //!
   TH2D *f2dHistSPDClRecoVsTrue; //!
   TH2D *f2dHistV0MRecoVsTrue; //!
+  TH2D *f2dHistTrueVsRecoSPDCl; //!
+  TH3D *f3dHistPi0SPDMultSPDCl; //!
+  TH2D *f2dHistPi0SPDMultSPDCl; //!
   
   //Bool
   Bool_t fkSelectINELgtZERO;  
