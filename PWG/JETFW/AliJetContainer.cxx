@@ -183,6 +183,9 @@ void AliJetContainer::SetArray(const AliVEvent *event)
   // Set jet array
 
   AliEmcalContainer::SetArray(event);
+  if(fRhoName.Length()) LoadRho(event);
+  if(fRhoMassName.Length()) LoadRhoMass(event);
+  if(fLocalRhoName.Length()) LoadLocalRho(event);
 }
 
 void AliJetContainer::UpdateArrayName(){
