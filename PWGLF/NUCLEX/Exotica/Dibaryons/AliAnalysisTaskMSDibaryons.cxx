@@ -143,6 +143,7 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   Double_t multBins[]={1,4,8,12,16,20,24,28,32,36,40,50,60,70,80,90,100,200};
   Int_t nZvtxBins = 4;
   Double_t vertexBins[]={-10,-5,0,5,10};
+  //Int_t nZvtxBins = vertexBins/vertexBins[0]-1;
 
   Int_t nMultiBinslamxi = 15;
   Double_t multBinslamxi[]={1,5,10,15,20,25,30,35,40,50,60,70,80,90,100,200};
@@ -186,6 +187,58 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   fOutputList->Add(new TH1F("hCentralityV0A","centrality V0A",101,0,101));
   fOutputList->Add(new TH1F("hCentralityV0C","centrality V0C",101,0,101));
   fOutputList->Add(new TH1F("hCentralityMain","centrality Main",101,0,101));
+
+  const Double_t Pi = TMath::Pi();
+  const Double_t TwoPi = TMath::TwoPi();
+  Int_t fHarmonics =2;
+
+  TString fTPCEPName[3] = {"TPC","TPCNegEta","TPCPosEta"};
+  TString fV0EPName[3] = {"VZERO","VZEROA","VZEROC"};
+  TString fQNormalization = "QoverM";
+
+  for(Int_t i=0;i<3;i++){
+    fOutputList->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQNormalization.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fTPCEPName[i].Data(),fQNormalization.Data()),100,0,100,30,0,Pi));
+  }
+  for(Int_t i=0;i<3;i++){
+    fOutputList->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),100,0,100,30,0,Pi));
+  }
+  Double_t SPlimit = 0.2;
+  Int_t NbinSP     = 200;
+  //if(fQnStep == 5){//In Qn correction task, rescaling of Q vector is applied for V0 after step4
+  //  SPlimit = 15.;
+  //  NbinSP  = 600;
+  //}
+  fOutputList->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,NbinSP,-SPlimit,SPlimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{2}} #upoint #vec{Q_{3}};centrality (%%);SP #vec{Q_{2}} #upoint #vec{Q_{3}}",fEstimator.Data()),100,0,100,NbinSP,-SPlimit,SPlimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{3}} #upoint #vec{Q_{1}};centrality (%%);SP #vec{Q_{3}} #upoint #vec{Q_{1}}",fEstimator.Data()),100,0,100,NbinSP,-SPlimit,SPlimit));
+
+  Double_t Qxylimit = 1;
+  Int_t NbinQxy     = 200;
+  //if(fQnStep == 5){//In Qn correction task, rescaling of Q vector is applied for V0 after step4
+  //  Qxylimit = 10.;
+  //  NbinQxy  = 200;
+  //}
+
+  fOutputList->Add(new TH2F(Form("hCentrality%svsNormQ1",fEstimator.Data()),Form("Centrality %s vs. |Q_{1}|;centrality (%%);|Q_{1}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsNormQ2",fEstimator.Data()),Form("Centrality %s vs. |Q_{2}|;centrality (%%);|Q_{2}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsNormQ3",fEstimator.Data()),Form("Centrality %s vs. |Q_{3}|;centrality (%%);|Q_{3}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+
+  fOutputList->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsQ2x",fEstimator.Data()),Form("Centrality %s vs. Q_{2x};centrality (%%);Q_{2x}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsQ2y",fEstimator.Data()),Form("Centrality %s vs. Q_{2y};centrality (%%);Q_{2y}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsQ3x",fEstimator.Data()),Form("Centrality %s vs. Q_{3x};centrality (%%);Q_{3x}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsQ3y",fEstimator.Data()),Form("Centrality %s vs. Q_{3y};centrality (%%);Q_{3y}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+
+  fOutputList->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+
+  fOutputList->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputList->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+
+  fOutputList->Add(new TH1F("hEventPlane","",100,-10,20));
 
   //========== multiplicity ==========
   TH2F *fmultiplicity                      =new TH2F("fmultiplicity","",2000,0,200,40,-20,20);
@@ -309,7 +362,6 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
 	  }
   }
 
-
   PostData(1,fOutputList);
 }
 
@@ -355,7 +407,6 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   //Bool_t isEvtMB=((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & ftrigBit);
   //if(!isEvtMB) return;
 
-  printf("before Event selection\n");
   dynamic_cast<TH1F*>(fOutputList->FindObject("fEvtCounter"))->Fill(0.5);
   // Event pile-up
   Bool_t isPileupEvt = fAOD->IsPileupFromSPD();
@@ -391,6 +442,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	  centralityZNA  = fMultSelection->GetMultiplicityPercentile("ZNA");
 	  centralityZNC  = fMultSelection->GetMultiplicityPercentile("ZNC");
 	  centralityMain = fMultSelection->GetMultiplicityPercentile(fEstimator);
+	  fCentralityMain = fMultSelection->GetMultiplicityPercentile(fEstimator);
   }
 
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityV0M")) ->Fill(centralityV0M);
@@ -402,11 +454,7 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityCL1")) ->Fill(centralityCL1);
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityMain"))->Fill(centralityMain);
 
-	printf("before Qn\n");
-
   Bool_t isok = ExtractQnVector();
-  printf("isok = %d\n",isok);
-
  
   //============= variable definition
   Int_t    nTracks   =fAOD->GetNumberOfTracks();
@@ -1973,7 +2021,6 @@ Bool_t AliAnalysisTaskMSDibaryons::ExtractQnVector()
     QnVectorTPCDet[i] = GetQnVectorFromList(qnlist,Form("%s%s",fTPCEPName[i].Data(),fQNormalization.Data()),"latest","plain");
     if(!QnVectorTPCDet[i]){
       AliInfo("Event is rejected because event plane is not found or bad event plane quality in TPC.");
-      Printf("Event is rejected because event plane is not found or bad event plane quality in TPC.");
       return kFALSE;//Qn vector correction does not exist or bad quality.
     }
     TPCEP[i] = QnVectorTPCDet[i]->EventPlane(fHarmonics);
@@ -1987,13 +2034,11 @@ Bool_t AliAnalysisTaskMSDibaryons::ExtractQnVector()
     QnVectorV0Det[i]  = GetQnVectorFromList(qnlist,Form("%s%s",fV0EPName[i].Data(),fQNormalization.Data()),"latest","raw");
     if(!QnVectorV0Det[i]){
       AliInfo("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
-      Printf("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
       return kFALSE;//Qn vector correction does not exist or bad quality.
     }
     V0EP[i] = QnVectorV0Det[i]->EventPlane(fHarmonics);
     if(V0EP[i] < 0)  V0EP[i]  += 2./(Double_t) fHarmonics * TMath::Pi();
     AliInfo(Form("harmonics %d | V0  sub detector name %s%s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data(),fQNormalization.Data(),V0EP[i]));
-    //Printf("harmonics %d | V0  sub detector name %s%s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data(),fQNormalization.Data(),V0EP[i]);
   }
 
   //0 < event plane < 2*pi/fHarmonics.
@@ -2082,7 +2127,16 @@ Bool_t AliAnalysisTaskMSDibaryons::ExtractQnVector()
   Double_t sp31 =  QVector3 * fQVector1;//scalar product between Q3 vector and Q1 vector
 
   AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , Q3x = %e , Q3y = %e ,  SP12 = %e ,  SP23 = %e ,  SP31 = %e",Q1[0],Q1[1],Q2[0],Q2[1],Q3[0],Q3[1],sp12,sp23,sp31));
-  Printf("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , Q3x = %e , Q3y = %e ,  SP12 = %e ,  SP23 = %e ,  SP31 = %e",Q1[0],Q1[1],Q2[0],Q2[1],Q3[0],Q3[1],sp12,sp23,sp31);
+
+  dynamic_cast<TH2F*>(fOutputList->FindObject(Form("hCentrality%svsQ1x",fEstimator.Data())))->Fill(fCentralityMain,Q1[0]);
+  dynamic_cast<TH2F*>(fOutputList->FindObject(Form("hCentrality%svsQ1y",fEstimator.Data())))->Fill(fCentralityMain,Q1[1]);
+  dynamic_cast<TH2F*>(fOutputList->FindObject(Form("hCentrality%svsQ2x",fEstimator.Data())))->Fill(fCentralityMain,Q2[0]);
+  dynamic_cast<TH2F*>(fOutputList->FindObject(Form("hCentrality%svsQ2y",fEstimator.Data())))->Fill(fCentralityMain,Q2[1]);
+  dynamic_cast<TH2F*>(fOutputList->FindObject(Form("hCentrality%svsQ3x",fEstimator.Data())))->Fill(fCentralityMain,Q3[0]);
+  dynamic_cast<TH2F*>(fOutputList->FindObject(Form("hCentrality%svsQ3y",fEstimator.Data())))->Fill(fCentralityMain,Q3[1]);
+
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hEventPlane")->Fill(EP2);
+
   
 //  const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
 //  fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
