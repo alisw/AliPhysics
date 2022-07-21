@@ -2974,10 +2974,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411790109fe30250000","0s631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 0.3
 
   } else if (trainConfig == 2079){  // Cut studie with V2 Clusters // no NCell cut (low vs nomB)
+    cuts.AddCutCalo("00010113","411790109fe33230000","0s631031000000d0"); // with NCell cut
     cuts.AddCutCalo("00010113","4117901090e30230000","0s631031000000d0"); // No TM cut
-    cuts.AddCutCalo("00010113","411790100fe30230000","0s631031000000d0"); // No timing
+    cuts.AddCutCalo("00010113","411790105fe30230000","0s631031000000d0"); // 50ns timing
     cuts.AddCutCalo("00010113","411790109fe30000000","0s631031000000d0"); // No M02
-    cuts.AddCutCalo("00010113","4117901000e30000000","0s631031000000d0"); // No M02, timing, TM cut
+    cuts.AddCutCalo("00010113","411790109fe30200000","0s631031000000d0"); // No M02 upper limit
+    cuts.AddCutCalo("00010113","4117901050e30200000","0s631031000000d0"); // No M02 upper limit,  50ns timing,  no TM cut
 
 
 
