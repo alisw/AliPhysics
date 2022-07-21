@@ -238,7 +238,7 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   fOutputList->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
   fOutputList->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
 
-  //fOutputList->Add(new TH1F("hEventPlane","",100,-10,20));
+  fOutputList->Add(new TH1F("hEventPlane","",100,-10,20));
 
   //========== multiplicity ==========
   TH2F *fmultiplicity                      =new TH2F("fmultiplicity","",2000,0,200,40,-20,20);
@@ -2135,7 +2135,7 @@ Bool_t AliAnalysisTaskMSDibaryons::ExtractQnVector()
   dynamic_cast<TH2F*>(fOutputList->FindObject(Form("hCentrality%svsQ3x",fEstimator.Data())))->Fill(fCentralityMain,Q3[0]);
   dynamic_cast<TH2F*>(fOutputList->FindObject(Form("hCentrality%svsQ3y",fEstimator.Data())))->Fill(fCentralityMain,Q3[1]);
 
-  //dynamic_cast<TH1F*>(fOutputList->FindObject("hEventPlane")->Fill(EP2);
+  dynamic_cast<TH1F*>(fOutputList->FindObject("hEventPlane")->Fill(EP2);
 
   
 //  const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
