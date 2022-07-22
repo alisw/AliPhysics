@@ -5253,8 +5253,8 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
     if ( GetFiredTriggerClasses().Contains( "G2") ) trigBit [9] = kTRUE;
     if ( GetFiredTriggerClasses().Contains("EG1") ) trigBit[10] = kTRUE;
     if ( GetFiredTriggerClasses().Contains("EG2") ) trigBit[11] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains("EG1") ) trigBit[12] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains("EG2") ) trigBit[13] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains("DG1") ) trigBit[12] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains("DG2") ) trigBit[13] = kTRUE;
   }
   if ( fEventTriggerMaskInput & AliVEvent::kCaloOnly )
   {
