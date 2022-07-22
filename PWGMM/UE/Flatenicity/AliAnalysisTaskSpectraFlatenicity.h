@@ -60,6 +60,7 @@ protected:
 private:
     
   Double_t V0AmplCalibration(const Int_t &chnl);    
+  Double_t V0AmplCalibrationTruth(const Int_t &chnl);    
     
   AliESDEvent *fESD; //! input ESD event
   AliEventCuts fEventCuts;
