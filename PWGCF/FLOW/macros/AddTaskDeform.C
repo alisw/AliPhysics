@@ -13,9 +13,8 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
   Int_t StageSwitch = 0;
   printf("Stage switch name: %s\n",stage.Data());
   if(stage.Contains("weights")) StageSwitch=1;
-  if(stage.Contains("Efficiency")) StageSwitch=7;
-  if(stage.Contains("CovSkipMpt")) StageSwitch=9;
-  if(stage.Contains("EfTest")) StageSwitch=10;
+  if(stage.Contains("Efficiency")) StageSwitch=2;
+  if(stage.Contains("VnMpt")) StageSwitch=3;
   if(StageSwitch==0) return 0;
   TString l_ContName(subfix1);
   if(!subfix2.IsNull()) l_ContName+="_"+subfix2;
@@ -43,13 +42,13 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
     mgr->ConnectOutput(task,1,weightCont);
     return task;
   }
-  if(StageSwitch==7) { //Producing Pt spectra with filter bit
+  if(StageSwitch==2) { //Producing Pt spectra with filter bit
     AliAnalysisDataContainer *spectraCont = mgr->CreateContainer(Form("SpectraList%s",l_ContName.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     mgr->ConnectOutput(task,1,spectraCont);
     return task;
   }
   //Full
-  if(StageSwitch==9) {
+  if(StageSwitch==3) {
     TObjArray *AllContainers = mgr->GetContainers();
     // AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MPTProfileList%s",l_ContName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     Bool_t gridConnected=kFALSE;
@@ -86,12 +85,6 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
     mgr->ConnectOutput(task,4,cOutputQA); //For QA
     return task;
   };
-  if(StageSwitch==10) {
-    AliAnalysisDataContainer *effCont = mgr->CreateContainer(Form("EffList%s",l_ContName.Data()),AliEffFDContainer::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-    mgr->ConnectOutput(task,1,effCont);
-    return task;
-  }
-
   return 0;
 }
 AliAnalysisTaskDeform* AddTaskDeform(TString name="name", Bool_t IsMC=kFALSE, TString stage="Efficiency",
