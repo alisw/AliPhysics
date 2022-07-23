@@ -159,6 +159,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>            fVBuffer_Conv_PElec1;                          //!<! vector buffer  Momentum of electron 1 (multiplied by 100)
     std::vector<Short_t>            fVBuffer_Conv_PElec2;                          //!<! vector buffer  Momentum of electron 2 (multiplied by 100)
     std::vector<Short_t>            fVBuffer_Conv_CosPAngle;                       //!<! vector buffer  pointing angle (multiplied by 1000)
+    std::vector<UShort_t>           fVBuffer_Conv_Chi2;                            //!<! vector buffer  Chi2/ndf for photon
 
     std::vector<unsigned int>       fVTrueConvPi0DaughterIndex;                    //!<! vector buffer   store the MC stack ID of mother pi0 for true information
     std::vector<unsigned int>       fVTrueConvEtaDaughterIndex;                    //!<! vector buffer   store the MC stack ID of mother pi0 for true information
@@ -166,6 +167,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<float>              fVTrueConvMCTruePx;                            //!<! vector buffer   store the MC true px
     std::vector<float>              fVTrueConvMCTruePy;                            //!<! vector buffer   store the MC true py
     std::vector<float>              fVTrueConvMCTruePz;                            //!<! vector buffer   store the MC true pz
+    std::vector<UShort_t>           fVTrueConvMCLabel;                             //!<! vector buffer   store the MC label
 
     std::vector<Short_t>                 fVBuffer_Track_px;                         //!<! vector buffer: track px (*100)
     std::vector<Short_t>                 fVBuffer_Track_py;                         //!<! vector buffer: track py (*100)
@@ -174,7 +176,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>                 fVBuffer_Track_Calo_eta;                   //!<! vector buffer: track eta on Calo surface (*10000)
     std::vector<UShort_t>                fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
 
-    ClassDef(AliAnalysisTaskConvCaloTree, 8);
+    ClassDef(AliAnalysisTaskConvCaloTree, 9);
 };
 
 
