@@ -31,6 +31,7 @@
 #include "AliHFMLResponse.h"
 #include "AliHFMLResponseDstartoD0pi.h"
 #include "AliHFMLResponseD0toKpi.h"
+#include "AliVertexerTracks.h"
 
 class AliAnalysisTaskSEDstarPolarization : public AliAnalysisTaskSE
 {
@@ -46,11 +47,14 @@ public:
     AliAnalysisTaskSEDstarPolarization(const char *name, AliRDHFCuts *analysiscuts);
     virtual ~AliAnalysisTaskSEDstarPolarization();
 
+    TClonesArray* RecomputeDstarCombinatorial();
+
     void SetReadMC(bool readMC = true)                                                                          {fReadMC = readMC;}
     void SetAODMismatchProtection(int opt = 0)                                                                  {fAODProtection = opt;}
     void SetAnalysisCuts(AliRDHFCuts *cuts)                                                                     {fRDCuts = cuts;}
     void SetUseFinePtBinsForSparse(bool useFineBins = true)                                                     {fUseFinPtBinsForSparse = useFineBins;}
     void SetFillNSparseAcceptanceLevel(bool fill = true)                                                        {fFillAcceptanceLevel = fill;}
+    void SetRecomputeDstarCombinatorial(bool recompute = true)                                                  {fRecomputeDstarCombinatorial = recompute;}
 
     /// methods for ML application
     void SetDoMLApplication(bool flag = true)                                                                   {fApplyML = flag;}
@@ -84,6 +88,10 @@ private:
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
     AliAnalysisTaskSEDstarPolarization &operator=(const AliAnalysisTaskSEDstarPolarization &source);
+
+    AliAODRecoCascadeHF *MakeCascade(AliAODRecoDecayHF2Prong* trackD0, AliAODTrack *trackPi);
+    TClonesArray* RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks);
+    bool SelectInvMassAndPtDstarD0pi(double *px, double *py, double *pz);
 
     int IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx,
                             std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond, std::vector<double> &scores, std::vector<double> &scoresSecond);
@@ -135,9 +143,12 @@ private:
     ROOT::Math::PxPyPzMVector fourVecPiCM{};                                        /// four vector for reconstructed pion in the D* RF
 
     bool fFillBkgSparse = false;                                                    /// flag to fill or not fill bkg sparses
+    bool fRecomputeDstarCombinatorial = false;                                      /// flag to recompute D* combinatorial (D*->D0pi)
+    AliVertexerTracks* fVertexerTracks;                                             /// vertexer, to compute secondary vertices
+    double fBzkG;                                                                   /// z componenent of field in kG
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDstarPolarization, 6); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDstarPolarization, 7); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 
