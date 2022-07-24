@@ -100,6 +100,11 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
     fTriggerOnSample=triggerOnSample;
   } 
 
+  void SetRunppp0ppL1(bool runpppppL) {
+    fRunppp0ppL1=runpppppL;
+  } 
+
+
   void SetQ3Limit(float Q3Limit) {
     fQ3Limit = Q3Limit;
   }  
@@ -173,6 +178,7 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   bool fTriggerOn;
   bool fTriggerOnSample;
   bool fIsMC;
+  bool fRunppp0ppL1;
 
   float fQ3Limit;
   float fQ3LimitSample;
