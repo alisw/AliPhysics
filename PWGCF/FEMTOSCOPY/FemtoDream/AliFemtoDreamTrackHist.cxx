@@ -146,20 +146,20 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fHistList->Add(fTrackCutQA[i]);
 
     TString ptName = Form("pTDist_%s", sName[i].Data());
-    fpTDist[i] = new TH1F(ptName.Data(), ptName.Data(), 2. * ptBins, ptmin, ptmax);
+    fpTDist[i] = new TH1F(ptName.Data(), ptName.Data(),1000 * ptmax, 0, ptmax);
     fpTDist[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fpTDist[i]->GetYaxis()->SetTitle("Entries");
     fTrackCutQA[i]->Add(fpTDist[i]);
 
     TString pITSName = Form("pDist_%s", sName[i].Data());
-    fpDist[i] = new TH1F(pITSName.Data(), pITSName.Data(), ptBins, ptmin,
+    fpDist[i] = new TH1F(pITSName.Data(), pITSName.Data(), 1000 * ptmax, 0,
                             ptmax);
     fpDist[i]->GetXaxis()->SetTitle("#it{p}_{} (GeV/#it{c})");
     fpDist[i]->GetYaxis()->SetTitle("Entries");
     fTrackCutQA[i]->Add(fpDist[i]);
 
     TString pTPCName = Form("pTPCDist_%s", sName[i].Data());
-    fpTPCDist[i] = new TH1F(pTPCName.Data(), pTPCName.Data(), ptBins, ptmin,
+    fpTPCDist[i] = new TH1F(pTPCName.Data(), pTPCName.Data(), 1000 * ptmax, 0,
                             ptmax);
     fpTPCDist[i]->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
     fpTPCDist[i]->GetYaxis()->SetTitle("Entries");

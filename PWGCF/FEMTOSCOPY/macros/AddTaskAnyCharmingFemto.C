@@ -60,9 +60,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(96);
     TrackCuts->SetCutCharge(1);
+    TrackCuts->SetPtRange(0, 4.0);
+
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(96);
     AntiTrackCuts->SetCutCharge(-1);
+    AntiTrackCuts->SetPtRange(0, 4.0);
   }
   else if(std::abs(pdgBuddy) == 321) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
