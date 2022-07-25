@@ -36,7 +36,8 @@ class AliAnalysisTaskHOCFA {
   // General methods specific to this class.  //TODO.
   virtual void InitialiseArrayMembers();
   virtual void BookFinalResults();
-  virtual void CalculateQvectors(Long64_t myMulti, double myAngles[], double myWeights[]);
+  virtual void CalculateQvectors(Long64_t myMulti,
+    double myAngles[], double myWeights[], float myCentWeight);
   TComplex Q(int n, int p);
   TComplex CalculateRecursion(int n, int *harmonic, int mult=1, int skip=0);
   virtual void ComputeAllTerms();
@@ -64,6 +65,7 @@ class AliAnalysisTaskHOCFA {
   void SetParticleWeights(bool weightsNUE, bool weightsNUA) {
     fUseWeightsNUE = weightsNUE; fUseWeightsNUA = weightsNUA;
   }
+  void SetCentralityWeights(bool weightsCent) {fUseWeightsCent = weightsCent;}
 
   /// Analysis observables.
   void SetObservable(bool thisObs, bool thisOrder) {fGetSC = thisObs; fGetLowerHarmos = thisOrder;
@@ -96,6 +98,7 @@ class AliAnalysisTaskHOCFA {
   bool fApplyEtaGap;            // kTRUE: Get the 2-p correlators with an eta gap.
   bool fUseWeightsNUE;          // kTRUE: Enable the non-unit NUE corrections.
   bool fUseWeightsNUA;          // kTRUE: Enable the non-unit NUA corrections.
+  bool fUseWeightsCent;         // kTRUE: Enable the non-unit centrality correction for LHC15o.
 
   int fHarmoArray2h[13][2];     // Combinations of 2-harmonics for AC/SC.
     // 13: max number of combinations of 2 harmonics.
@@ -109,6 +112,7 @@ class AliAnalysisTaskHOCFA {
 
   TProfile *fHistoConfig;       //! Configuration of the analysis (8 bins).
   TH1F *fHistoCent[16];         //! Centrality distribution of selected tracks.
+  TH1F *fHistoCentCorrect[16];  //! Corrected centrality distribution of the selected tracks.
   TH1I *fHistoMulti[16];        //! Multiplicity of the selected tracks.
   TH1D *fHistoPt[16];           //! pT distribution of the selected tracks.
   TH1D *fHistoEta[16];          //! eta distribution of the selected tracks.
@@ -126,7 +130,7 @@ class AliAnalysisTaskHOCFA {
   TProfile *fErrorTermsAC41[6][16];   //! Error propagation (AC_41(m,n)).
 */
 
-  ClassDef(AliAnalysisTaskHOCFA, 6);
+  ClassDef(AliAnalysisTaskHOCFA, 7);
 };
 
 #endif  // ALIANALYSISTASKHOCFA_H
