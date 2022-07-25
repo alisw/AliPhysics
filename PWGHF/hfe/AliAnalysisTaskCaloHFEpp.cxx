@@ -614,8 +614,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistWeOrgNeg        = new TH1F("fHistWeOrgNeg","particle level W->e minus",90,10,100);
 	fHistZ_Org        = new TH1F("fHistZ_Org","particle level Z",90,10,100);
 	fHistZeOrg        = new TH2F("fHistZeOrg","particle level Z->e",90,10,100,90,10,100);
-	fHistZeOrgPos        = new TH2F("fHistZeOrgPos","particle level Z->e",60,-3,3,0,0,100);
-	fHistZeOrgNeg        = new TH2F("fHistZeOrgNeg","particle level Z->e",60,-3,3,0,0,100);
+	fHistZeOrgPos        = new TH2F("fHistZeOrgPos","particle level Z->e",100,-5,5,100,0,100);
+	fHistZeOrgNeg        = new TH2F("fHistZeOrgNeg","particle level Z->e",100,-5,5,100,0,100);
 	fHistZeRec        = new TH1F("fHistZeRec","particle level Z->e",90,10,100);
 
 
@@ -1797,8 +1797,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		//-------loose cut on partner electron
 		if(ptAsso <CutptAsso) continue;
 		//if(ptAsso <0.2) continue;
-		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
-		if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;  // for Z cross section
+		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;  //for maximize finding Zee eff.
 		if(nsigma < -3 || nsigma > 3) continue;
 		if(AssoTPCchi2perNDF >= 4) continue;
 		if(!(aAssotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aAssotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
@@ -1819,8 +1818,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                 Double_t RecoPt = recg.GetPt();
  
 		if(fFlagLS){
-			if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
-			if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
+			//if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
+			//if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
 			if(track->Pt()>1){
 				if(iIsocut)fInv_pT_LS_forW->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_LS_forZ->Fill(TrkPt,mass);
