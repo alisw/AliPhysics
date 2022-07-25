@@ -295,6 +295,9 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
                 Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t			fUseCorrectedNTracks;	// flag for online track correction
 
+
+		Double_t			fCurrCentrality;	//! Centrality of Ongoing Event
+
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
 
