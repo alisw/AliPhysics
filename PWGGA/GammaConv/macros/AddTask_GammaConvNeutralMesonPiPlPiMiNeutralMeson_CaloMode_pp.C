@@ -606,6 +606,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // EG2
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // EG1
 
+  } else if( trainConfig == 261) { // Pion Mass cut as for Omega
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32l51070a","0103603l00000000","0453503000000000"); // trainConfig == 2000 
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l51070a","0103603l00000000","0453503000000000"); // trainConfig == 3000
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32l51070a","0103603l00000000","0453503000000000"); // trainConfig == 4000
+
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //                                          D0 MESON
@@ -631,6 +636,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if( trainConfig == 303) {
     // same as 102 but only MB
     cuts.AddCutHeavyMesonCalo("00010113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
+
+  } else if( trainConfig == 310) { // No Pion Mass cut
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32l510700","0103103x00000000","0453503000000000"); // trainConfig == 2000 
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l510700","01031v3x00000000","0453503000000000"); // trainConfig == 3000
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32l510700","01031v3x00000000","0453503000000000"); // trainConfig == 4000
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
