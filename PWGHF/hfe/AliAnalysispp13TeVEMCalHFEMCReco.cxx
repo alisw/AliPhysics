@@ -1,7 +1,7 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //            
-// AliAnalysispp13TeVEMCalHFEMCReco.cxx                               //
+// AliAnalysispp13TeVEMCalHFEMCReco.cxx                          //
 // Author: Vivek Singh                                           //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
@@ -931,35 +931,35 @@ if(fIsMC)
   fEtaEmbWeightInvmassULS->Sumw2();
   fOutputList->Add(fEtaEmbWeightInvmassULS);
 
-  fRecoLSeEmbTrkPt  = new TH1F("fRecoLSeEmbTrkPt","Reco LS electrons from embedded #pi^{0} and #eta + No mom;p_{T} (GeV/c);counts",250,0,25);
+  fRecoLSeEmbTrkPt  = new TH1F("fRecoLSeEmbTrkPt","Reco LS electrons from embedded #pi^{0} and #eta + No mom;p_{T} (GeV/c);counts",350,0,35);
   fRecoLSeEmbTrkPt->Sumw2();
   fOutputList->Add(fRecoLSeEmbTrkPt);
         
-  fRecoLSeEmbWeightTrkPt = new TH1F("fRecoLSeEmbWeightTrkPt","Reco LS electrons from embedded #pi^{0} and #eta  + No mom with weight;p_{T} (GeV/c);counts",250,0,25);
+  fRecoLSeEmbWeightTrkPt = new TH1F("fRecoLSeEmbWeightTrkPt","Reco LS electrons from embedded #pi^{0} and #eta  + No mom with weight;p_{T} (GeV/c);counts",350,0,35);
   fRecoLSeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoLSeEmbWeightTrkPt);
         
-  fRecoPi0LSeEmbWeightTrkPt = new TH1F("fRecoPi0LSeEmbWeightTrkPt","Reco LS electrons from embedded #pi^{0}  + No mom with weight;p_{T} (GeV/c);counts",250,0,25);
+  fRecoPi0LSeEmbWeightTrkPt = new TH1F("fRecoPi0LSeEmbWeightTrkPt","Reco LS electrons from embedded #pi^{0}  + No mom with weight;p_{T} (GeV/c);counts",350,0,35);
   fRecoPi0LSeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoPi0LSeEmbWeightTrkPt);
         
-  fRecoEtaLSeEmbWeightTrkPt  = new TH1F("fRecoEtaLSeEmbWeightTrkPt","Reco LS electrons from embedded #eta  + No mom with weight;p_{T} (GeV/c);counts",250,0,25);
+  fRecoEtaLSeEmbWeightTrkPt  = new TH1F("fRecoEtaLSeEmbWeightTrkPt","Reco LS electrons from embedded #eta  + No mom with weight;p_{T} (GeV/c);counts",350,0,35);
   fRecoEtaLSeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoEtaLSeEmbWeightTrkPt);
         
-  fRecoULSeEmbTrkPt = new TH1F("fRecoULSeEmbTrkPt","Reco ULS electrons from embedded #pi^{0} and #eta + No mom;p_{T} (GeV/c);counts",250,0,25);
+  fRecoULSeEmbTrkPt = new TH1F("fRecoULSeEmbTrkPt","Reco ULS electrons from embedded #pi^{0} and #eta + No mom;p_{T} (GeV/c);counts",350,0,35);
   fRecoULSeEmbTrkPt->Sumw2();
   fOutputList->Add(fRecoULSeEmbTrkPt);
         
-  fRecoULSeEmbWeightTrkPt = new TH1F("fRecoULSeEmbWeightTrkPt","Reco ULS electrons from embedded #pi^{0} and #eta  + No mom with weight;p_{T} (GeV/c);counts",250,0,25);
+  fRecoULSeEmbWeightTrkPt = new TH1F("fRecoULSeEmbWeightTrkPt","Reco ULS electrons from embedded #pi^{0} and #eta  + No mom with weight;p_{T} (GeV/c);counts",350,0,35);
   fRecoULSeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoULSeEmbWeightTrkPt);
         
-  fRecoPi0ULSeEmbWeightTrkPt = new TH1F("fRecoPi0ULSeEmbWeightTrkPt","Reco ULS electrons from embedded #pi^{0}  + No mom with weight;p_{T} (GeV/c);counts",250,0,25);
+  fRecoPi0ULSeEmbWeightTrkPt = new TH1F("fRecoPi0ULSeEmbWeightTrkPt","Reco ULS electrons from embedded #pi^{0}  + No mom with weight;p_{T} (GeV/c);counts",350,0,35);
   fRecoPi0ULSeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoPi0ULSeEmbWeightTrkPt);
   
-  fRecoEtaULSeEmbWeightTrkPt = new TH1F("fRecoEtaULSeEmbWeightTrkPt","Reco ULS electrons from embedded #eta  + No mom with weight;p_{T} (GeV/c);counts",250,0,25);
+  fRecoEtaULSeEmbWeightTrkPt = new TH1F("fRecoEtaULSeEmbWeightTrkPt","Reco ULS electrons from embedded #eta  + No mom with weight;p_{T} (GeV/c);counts",350,0,35);
   fRecoEtaULSeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoEtaULSeEmbWeightTrkPt);
 
