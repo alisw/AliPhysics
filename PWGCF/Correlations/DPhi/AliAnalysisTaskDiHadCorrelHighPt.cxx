@@ -1128,6 +1128,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             Printf("No MC particle branch found");
             return;
         }
+        if(fSystem=="PbPb"&&AliAnalysisUtils::IsPileupInGeneratedEvent(fmcEvent,"Hijing")) return;
 
         AliVVertex * mcVertex = (AliVVertex* ) fmcEvent->GetPrimaryVertex();
         fPV[2] = mcVertex->GetZ();
@@ -1968,26 +1969,13 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             if (Lambda&&cutLambdaPid) fHistLambdaMassPtCut->Fill(massLambda,v0pt,3.5);
             if (Antilambda&&cutAntiLambdaPid) fHistAntiLambdaMassPtCut->Fill(massAntilambda,v0pt,3.5);
 
-            if(fAOD){
-                if(k0&&!IsMyGoodV0Topology(V0AOD,kTRUE,kFALSE)) continue; //topoligical cuts
-                if(Lambda&&!IsMyGoodV0Topology(V0AOD,kFALSE,kTRUE)) continue; //topoligical cut
-                if(Antilambda&&!IsMyGoodV0Topology(V0AOD,kFALSE,kFALSE)) continue; //topoligical cut
-            }if(fESD){
-                if(k0&&!IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kTRUE,kFALSE)) continue;
-                if(Lambda&&!IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kFALSE,kTRUE)) continue;
-                if(Antilambda&&!IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kFALSE,kFALSE)) continue;
-            }
-
-
-            if (k0&&cutK0Pid) fHistK0MassPtCut->Fill(massK0,v0pt,4.5);
-            if (Lambda&&cutLambdaPid) fHistLambdaMassPtCut->Fill(massLambda,v0pt,4.5);
-            if (Antilambda&&cutAntiLambdaPid) fHistAntiLambdaMassPtCut->Fill(massAntilambda,v0pt,4.5);
-
             Bool_t RapidityCut = kFALSE;
             Bool_t LifetimeCut = kFALSE;
             Bool_t CosPointingAngleCut = kFALSE;
 
             if (Lambda&&cutLambdaPid){
+              if((fAOD&&IsMyGoodV0Topology(V0AOD,kFALSE,kTRUE))||(fESD&&IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kFALSE,kTRUE))){
+                if (Lambda&&cutLambdaPid) fHistLambdaMassPtCut->Fill(massLambda,v0pt,4.5);
 
                 if(fAOD) RapidityCut = IsMyGoodV0RapidityLambda(V0AOD);
                 if(fESD) RapidityCut = IsMyGoodV0RapidityLambdaESD(V0esd);
@@ -2007,7 +1995,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                         if(CosPointingAngleCut){ //V0 Cosine of Pointing Angle
                             fHistLambdaMassPtCut->Fill(massLambda,v0pt,7.5);
 
-                            if (TMath::Abs(massK0-0.497614)>fMassRejectCutLam){
+                            if (TMath::Abs(massK0-0.497614)>fMassRejectCutLam||fSystem=="PbPb"){
                                 fHistLambdaMassPtCut->Fill(massLambda,v0pt,8.5);
 
                                 if(fAnalysisMC){
@@ -2021,16 +2009,19 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                                     fHistPhiEta->Fill(phiEtaLamData);
                                     fselectedV0Assoc-> Add(new AliV0ChParticle(v0Eta, v0phi, v0pt, 6,0,(Int_t)posProp[4],(Int_t)negProp[4],massLambda,posProp[0],posProp[1],posProp[2],(Int_t)posProp[3],negProp[0],negProp[1],negProp[2],(Int_t)negProp[3]));
                                 }
-                            }
-                        }
+                             }
+                         }
+                     }
                     }
-                }
-            }
+                 }
+             }
             RapidityCut = kFALSE;
             LifetimeCut =kFALSE;
             CosPointingAngleCut=kFALSE;
 
             if (k0&&cutK0Pid){
+              if((IsMyGoodV0Topology(V0AOD,kTRUE,kFALSE))||(fESD&&IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kTRUE,kFALSE))){
+                if (k0&&cutK0Pid) fHistK0MassPtCut->Fill(massK0,v0pt,4.5);
                 if(fAOD) RapidityCut = IsMyGoodV0RapidityK0(V0AOD);
                 if(fESD) RapidityCut = IsMyGoodV0RapidityK0ESD(V0esd);
 
@@ -2049,7 +2040,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                         if (CosPointingAngleCut){ //V0 Cosine of Pointing Angle
                             fHistK0MassPtCut->Fill(massK0,v0pt,7.5);
 
-                            if(TMath::Abs(massLambda-1.115683)>fMassRejectCutK0&&TMath::Abs(massAntilambda-1.115683)>fMassRejectCutK0) {
+                            if((TMath::Abs(massLambda-1.115683)>fMassRejectCutK0&&TMath::Abs(massAntilambda-1.115683)>fMassRejectCutK0)||fSystem=="PbPb") {
                                 fHistK0MassPtCut->Fill(massK0,v0pt,8.5);
 
                                 if(fAnalysisMC){
@@ -2063,17 +2054,19 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                                     fHistPhiEta->Fill(phiEtaK0Data);
                                     fselectedV0Assoc-> Add(new AliV0ChParticle(v0Eta, v0phi, v0pt,5,0,(Int_t)posProp[4],(Int_t)negProp[4],massK0,posProp[0],posProp[1],posProp[2],(Int_t)posProp[3],negProp[0],negProp[1],negProp[2],(Int_t)negProp[3]));
                                 }
-                            }
-                        }
-                    }
-                }
+                             }
+                         }
+                     }
+                  }
+                 }
             }
             RapidityCut = kFALSE;
             LifetimeCut =kFALSE;
             CosPointingAngleCut=kFALSE;
 
             if (Antilambda&&cutAntiLambdaPid){
-
+              if((IsMyGoodV0Topology(V0AOD,kFALSE,kFALSE))||(fESD&&IsMyGoodV0TopologyESD(V0esd, myTrackPosESD, myTrackNegESD,kFALSE,kFALSE))){
+                if (Antilambda&&cutAntiLambdaPid) fHistAntiLambdaMassPtCut->Fill(massAntilambda,v0pt,4.5);
                 if(fAOD) RapidityCut = IsMyGoodV0RapidityLambda(V0AOD);
                 if(fESD) RapidityCut = IsMyGoodV0RapidityLambdaESD(V0esd);
 
@@ -2092,7 +2085,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                         if (CosPointingAngleCut){
                             fHistAntiLambdaMassPtCut->Fill(massAntilambda,v0pt,7.5);
 
-                            if(TMath::Abs(massK0-0.497614)>fMassRejectCutLam){
+                            if(TMath::Abs(massK0-0.497614)>fMassRejectCutLam||fSystem=="PbPb"){
                                 fHistAntiLambdaMassPtCut->Fill(massAntilambda,v0pt,8.5);
 
 
@@ -2108,11 +2101,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                                     fHistPhiEta->Fill(phiEtaAlamData);
                                     fselectedV0Assoc-> Add(new AliV0ChParticle(v0Eta, v0phi, v0pt, 7,0,(Int_t)posProp[4],(Int_t)negProp[4],massAntilambda,posProp[0],posProp[1],posProp[2],(Int_t)posProp[3],negProp[0],negProp[1],negProp[2],(Int_t)negProp[3]));
                                 }
-                            }
-                        }
-                    }
-                }
-            }
+                             }
+                         }
+                     }
+                 }
+             }
+           }
         }
         }
 
@@ -2304,7 +2298,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0RapidityLambda(const AliAODv0
 		//Rapidity
 		if(TMath::Abs(t->RapLambda())>=fRapidityCut) return kFALSE;
     //Pseudorap
-   // if(TMath::Abs(t->Eta())>=0.8) return kFALSE;
+  //if(TMath::Abs(t->Eta())>=0.8) return kFALSE;
 
 		return kTRUE;
 }
@@ -2520,9 +2514,9 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0Topology(const AliAODv0 *v0, 
       	if(v0->DcaPosToPrimVertex()<=fDCAposDaughterLamda) return kFALSE;
       }else{
         //DCA Negative Track to PV
-      	if(v0->DcaNegToPrimVertex()<=fDCAposDaughterLamda) return kFALSE;
+        if(v0->DcaNegToPrimVertex()<=fDCAposDaughterLamda) return kFALSE;
       	//DCA Positive Track to PV
-      	if(v0->DcaPosToPrimVertex()<=fDCAnegDaughterLamda) return kFALSE;
+     	  if(v0->DcaPosToPrimVertex()<=fDCAnegDaughterLamda) return kFALSE;
       }
       //DCA V0 daughters
     	if(v0->DcaV0Daughters()>=fDCAV0DaughtersLambda) return kFALSE;

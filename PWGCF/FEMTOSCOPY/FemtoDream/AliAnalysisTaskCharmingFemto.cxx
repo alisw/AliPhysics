@@ -53,6 +53,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fDChargedHistList(nullptr),
       fResultList(nullptr),
       fResultQAList(nullptr),
+      fHistBuddyplusEtaVsp(nullptr),
+      fHistBuddyminusEtaVsp(nullptr),
       fHistDplusInvMassPt(nullptr),
       fHistDplusInvMassPtSel(nullptr),
       fHistDplusEta(nullptr),
@@ -65,6 +67,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDplusMCPhiRes(nullptr),
       fHistDplusMCThetaRes(nullptr),
       fHistDplusMCOrigin(nullptr),
+      fHistDplusEtaVsp(nullptr),
       fHistDminusInvMassPt(nullptr),
       fHistDminusInvMassPtSel(nullptr),
       fHistDminusEta(nullptr),
@@ -77,6 +80,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
       fHistDminusMCOrigin(nullptr),
+      fHistDminusEtaVsp(nullptr),
       fDoDorigPlots(false),
       fHistDplusMCtruthmotherPDG(nullptr),
       fHistDplusMCtruthQuarkOrigin(nullptr),
@@ -144,6 +148,8 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fDChargedHistList(nullptr),
       fResultList(nullptr),
       fResultQAList(nullptr),
+      fHistBuddyplusEtaVsp(nullptr),
+      fHistBuddyminusEtaVsp(nullptr),
       fHistDplusInvMassPt(nullptr),
       fHistDplusInvMassPtSel(nullptr),
       fHistDplusEta(nullptr),
@@ -158,6 +164,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDplusMCPhiRes(nullptr),
       fHistDplusMCThetaRes(nullptr),
       fHistDplusMCOrigin(nullptr),
+      fHistDplusEtaVsp(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
       fHistDminusChildPt(),
@@ -168,6 +175,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
       fHistDminusMCOrigin(nullptr),
+      fHistDminusEtaVsp(nullptr),
       fDoDorigPlots(false),
       fHistDplusMCtruthmotherPDG(nullptr),
       fHistDplusMCtruthQuarkOrigin(nullptr),
@@ -432,6 +440,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
         protons.push_back(*fProtonTrack);
+        fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
@@ -440,6 +449,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
         antiprotons.push_back(*fProtonTrack);
+        fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }      
     }
   }
@@ -664,6 +674,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           fHistDplusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDplusEta->Fill(dMeson->Eta());
           fHistDplusPhi->Fill(dMeson->Phi());
+          fHistDplusEtaVsp->Fill(dMeson->P(), dMeson->Eta());
           if (fIsMC) {
             fHistDplusMCPDGPt->Fill(dplusCand.GetPt(),
                                     dplusCand.GetMotherPDG());
@@ -712,6 +723,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           fHistDminusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDminusEta->Fill(dMeson->Eta());
           fHistDminusPhi->Fill(dMeson->Phi());
+          fHistDminusEtaVsp->Fill(dMeson->P(), dMeson->Eta());
+
           if (fIsMC) {
             fHistDminusMCPDGPt->Fill(dminusCand.GetPt(),
                                      dminusCand.GetMotherPDG());
@@ -862,6 +875,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartProton && fTrackCutsPartProton->GetQAHists()) {
     fTrackCutHistList = fTrackCutsPartProton->GetQAHists();
+    fHistBuddyplusEtaVsp = new TH2F("fHistEtaVsp",
+                             ";p;#eta", 200, 0, 20, 100, -1, 1);
+    fTrackCutHistList->Add(fHistBuddyplusEtaVsp);
     if (fIsMC && fTrackCutsPartProton->GetMCQAHists()
         && fTrackCutsPartProton->GetIsMonteCarlo()) {
       fTrackCutHistMCList = fTrackCutsPartProton->GetMCQAHists();
@@ -874,6 +890,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartAntiProton && fTrackCutsPartAntiProton->GetQAHists()) {
     fAntiTrackCutHistList = fTrackCutsPartAntiProton->GetQAHists();
+    fHistBuddyminusEtaVsp = new TH2F("fHistEtaVsp",
+                             ";p;#eta", 200, 0, 20, 100, -1, 1);
+    fAntiTrackCutHistList->Add(fHistBuddyminusEtaVsp);
     if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists()
         && fTrackCutsPartAntiProton->GetIsMonteCarlo()) {
       fAntiTrackCutHistMCList = fTrackCutsPartAntiProton->GetMCQAHists();
@@ -927,6 +946,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     fHistDplusPhi = new TH1F(TString::Format("fHist%sPhi", nameD.Data()),
                              ";#phi; Entries", 100, 0., 2. * TMath::Pi());
     fDChargedHistList->Add(fHistDplusPhi);
+    fHistDplusEtaVsp = new TH2F(TString::Format("fHist%sEtaVsp", nameD.Data()),
+                             ";p;#eta", 200, 0, 20, 100, -1, 1);
+    fDChargedHistList->Add(fHistDplusEtaVsp);
 
     if (fIsMC) {
       fHistDplusMCPDGPt = new TH2F(
@@ -1015,6 +1037,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     fHistDminusPhi = new TH1F(TString::Format("fHist%sPhi", nameDminus.Data()),
                               ";#phi; Entries", 100, 0., 2. * TMath::Pi());
     fDChargedHistList->Add(fHistDminusPhi);
+    fHistDminusEtaVsp = new TH2F(TString::Format("fHist%sEtaVsp", nameD.Data()),
+                             ";p;#eta", 2000, 0, 20, 400, -2, 2);
+    fDChargedHistList->Add(fHistDminusEtaVsp);
 
     if (fIsMC) {
       fHistDminusMCPDGPt = new TH2F(

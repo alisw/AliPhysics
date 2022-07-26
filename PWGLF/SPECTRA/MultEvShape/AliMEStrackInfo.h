@@ -1,6 +1,7 @@
 #ifndef ALIMESTRACKINFO_H
 #define ALIMESTRACKINFO_H
 
+
 ////////////////////////////////////////////////////////////////////////////
 //  Track summary data for the Multiplicity and Event Shape group         //
 //  Authors:                                                              //
@@ -21,6 +22,7 @@ class AliPIDResponse;
 class AliPIDCombined;
 class AliMCParticle;
 class AliStack;
+class AliMCEvent;
 class AliMEStrackInfo : public AliVParticle
 {
 public:
@@ -83,7 +85,8 @@ public:
   AliMEStrackInfo(const AliMEStrackInfo &t);
   AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCombined *pidComb);
   AliMEStrackInfo(AliESDtrack *t);
-  AliMEStrackInfo(AliMCParticle *t, AliStack *mcStack);
+	AliMEStrackInfo(AliMCParticle *t, AliStack *mcStack);
+  AliMEStrackInfo(AliMCParticle *t, AliMCEvent *mcEvent);
   ~AliMEStrackInfo();
 
   Bool_t      PxPyPz(Double_t*) const;

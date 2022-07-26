@@ -514,8 +514,12 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	float cl1Centr = 0;
 	float cl0Centr = 0;
 
-	fCentralityDis->Fill(centrV0);
-	fV0CentralityDis->Fill(cent);
+	fCentralityDis->Fill(cent);
+	fV0CentralityDis->Fill(centrV0);
+	fCurrCentrality = cent;
+	//printf("==========\n========\n==========\n========\n");
+	//printf("Current Centrality is %lf\n",fCurrCentrality);
+	//printf("==========\n========\n==========\n========\n");
 
 
         // checking the run number for aplying weights & loading TList with weights
@@ -1293,8 +1297,26 @@ int AliAnalysisTaskFlowPPTask::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
+	Int_t IntCent = 0;
+	if(fCurrCentrality>=5 && fCurrCentrality<10)IntCent=1;
+	else if(fCurrCentrality>=10 && fCurrCentrality<20)IntCent=2;
+	else if(fCurrCentrality>=20 && fCurrCentrality<30)IntCent=3;
+	else if(fCurrCentrality>=30 && fCurrCentrality<40)IntCent=4;
+	else if(fCurrCentrality>=40 && fCurrCentrality<50)IntCent=5;
+	else if(fCurrCentrality>=50 && fCurrCentrality<60)IntCent=6;
+	else if(fCurrCentrality>=60)IntCent=7;
 	//Pt Weight is extract from Efficiency
-	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject("EffRescaled_Cent0");
+	if(fCurrSystFlag==0)
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
+	else if(fCurrSystFlag>0&&fCurrSystFlag<9)
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
+	else
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag+7));
+
+	//printf("========\n=======\n=======\n=======\n");
+	//printf("Using NUE flag%d Cent%d\n",fCurrSystFlag,IntCent);
+	//printf("========\n=======\n=======\n=======\n");
+
 	if(!hTrackEfficiencyRun){
 		printf("Can't get Track Efficiency\n");
 		return 1;

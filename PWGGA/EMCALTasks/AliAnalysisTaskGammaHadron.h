@@ -101,7 +101,7 @@ public:
   void                        SetEventPlaneSource(Int_t input)                      { fEventPlaneSource  = input;}
   void                        SetEventPlaneChoice(Int_t input)                      { fEventPlaneChoice  = input;}
 
-
+  void                        SetOverrideCentEventCut(Bool_t input)                 { fOverrideCentEventCut = input;}
   void                        SetMCEmbedReweightMode(Int_t input)                   { fMCEmbedReweightMode = input;}
   void                        SetUseMCReactionPlane(Int_t input)                    { fUseMCReactionPlane  = input;}
 
@@ -320,6 +320,7 @@ protected:
   //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
   Bool_t                      fIsMC;                     ///< Trigger, MC analysis
+  Bool_t                      fOverrideCentEventCut;     ///< In MC, set true to override centrality cuts in AliEventCut
   Int_t                       fMCEmbedReweightMode;      ///< Whether to reweight embedded MC particles. 0 = none, 1 = reweight function, 2 = veto embed etas
   Int_t                       fUseMCReactionPlane;       ///< Whether to set the 2nd order event plane to the reaction plane in the MC Header.
   UInt_t                      fAODfilterBits[2];         ///< AOD track filter bit map
@@ -538,6 +539,6 @@ protected:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 15) // Class to analyze gamma- and pi0- hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 16) // Class to analyze gamma- and pi0- hadron correlations
 };
 #endif

@@ -290,6 +290,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
                                               const double area_error = 0,
                                               const bool   is_pure_ghost = false);                       // fj
  Double_t GetMCStrangenessFactorCMS(AliAODMCParticle* daughter);
+ void     FillResponse(AliAODJet* recJet, AliAODJet* genJet);
 
   AliAODEvent*       fAOD;			    //! Input AOD
   AliAODEvent*       fAODJets;			    // Input jet AOD
@@ -467,6 +468,9 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   THnSparse**     fhnJetMomN_Raw;			       //! Raw M_N distributions (fFFMMomMax distributions)
   THnSparse**     fhnJetMomN_Sub;			       //! M_N distributions after background subtraction (Cacciari's et al. method)
   THnSparse**     fhnJetMomN_Imp;			       //! M_N distributions after improved background subtraction (Cacciari's et al. method)
+
+  THnSparse*  fhnJetPtResponse;                                    //! Jet Pt response
+  TH2*        fh2JetPtResponse;                                    //! Jet Pt response
 
   //----------------------------------------------------------------------
   /// a class that behaves like CompositeJetStructure, except that the user

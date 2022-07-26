@@ -250,6 +250,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskRawJetWithEP.cxx
     UserTasks/AliAnalysisTaskEmbeddingJetWithEP.cxx
     UserTasks/AliPieceWisePoly.cxx
+    UserTasks/AliAnalysisTaskEmcalJetProperties.cxx
     FlowVectorCorrections/AliAnalysisTaskFlowVectorCorrectionsPWGJE.cxx
 )
 

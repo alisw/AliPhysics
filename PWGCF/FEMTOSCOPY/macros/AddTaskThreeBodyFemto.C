@@ -16,7 +16,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
                                      float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
                                      const char *cutVariation = "0", bool ClosePairRejectionForAll = false, 
                                      bool run2Body = false, int mixinfChoice = 0, bool mix21 = false,
-                                     int whichTripletsToRun = 11,
+                                     int whichTripletsToRun = 11, bool Runppp0ppL1 = false,
                                      const char *triggerVariation = "0") {
 
 
@@ -2441,6 +2441,7 @@ if(suffixTrigger=="5"){
       taskAOD->Setv0CutsTrigger(v0CutsTrigger);  
       taskAOD->SetAntiv0CutsTrigger(Antiv0CutsTrigger);  
       taskAOD->SetQ3Limit(Q3Limit);
+      taskAOD->SetRunppp0ppL1(Runppp0ppL1);
       if(TriggerOnSample){
         taskAOD->SetQ3LimitSample(Q3LimitSample);
         taskAOD->SetTriggerOnSample(TriggerOnSample);

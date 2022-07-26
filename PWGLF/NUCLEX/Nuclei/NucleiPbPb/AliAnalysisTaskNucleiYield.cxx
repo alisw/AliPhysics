@@ -804,7 +804,7 @@ int AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
   bool tofPID = true, itsPID = true, tpcPID = true, electronRejection = true;
 
   if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
-    itsPID = TMath::Abs(fPID->NumberOfSigmasITS(t, fParticle)) < fRequireITSpidSigmas;
+    itsPID = TMath::Abs(GetITSsigmas(t)) < fRequireITSpidSigmas;
   }
   electronRejection = TMath::Abs(fPID->NumberOfSigmasITS(t, AliPID::kElectron)) > fITSelectronRejectionSigma;
 

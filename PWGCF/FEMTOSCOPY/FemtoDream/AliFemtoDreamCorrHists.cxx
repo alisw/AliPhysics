@@ -959,8 +959,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
 
         if (fillHists && fPtQA) {
           TString PtQAName = TString::Format("PtQA_Particle%d_Particle%d", iPar1, iPar2);
-          fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 100, 0,
-                                        10, 100, 0, 10);
+          fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 1000, 0,
+                                        10, 1000, 0, 10);
           fPtQADist[Counter]->GetXaxis()->SetTitle(
               TString::Format("#it{p}_{T} Particle %d (GeV/#it{c})", iPar1));
           fPtQADist[Counter]->GetYaxis()->SetTitle(

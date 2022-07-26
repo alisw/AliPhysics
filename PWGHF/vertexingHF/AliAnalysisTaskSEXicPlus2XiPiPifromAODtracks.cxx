@@ -116,7 +116,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fFillSparse(kFALSE),
   fHMTrigOn(kFALSE), //jcho
   fVariablesTree(0),
-  fEventTree(0),  //jcho
+//  fEventTree(0),  //jcho
   fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
@@ -126,7 +126,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fIsHMV0(kFALSE), //jcho
   fIsHMSPD(kFALSE), //jcho
   fCandidateVariables(),
-  fEventTreeVariables(), //jcho
+//  fEventTreeVariables(), //jcho
   fVtx1(0),
   fV1(0),
   fBzkG(0),
@@ -217,7 +217,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fFillSparse(fillSparse),
   fHMTrigOn(HMTrigOn), //jcho
   fVariablesTree(0),
-  fEventTree(0), //jcho
+//  fEventTree(0), //jcho
   fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
@@ -227,7 +227,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fIsHMV0(kFALSE), //jcho
   fIsHMSPD(kFALSE),  //jcho
   fCandidateVariables(),
-  fEventTreeVariables(), //jcho
+//  fEventTreeVariables(), //jcho
   fVtx1(0),
   fV1(0),
   fBzkG(0),
@@ -347,21 +347,20 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::~AliAnalysisTaskSEXicPlus2XiPiPifr
     fVariablesTree = 0;
   }
 
-  if (fEventTree) {			//jcho
-	delete fEventTree;		//jcho
-	fEventTree = 0;			//jcho
-
-  }
+//  if (fEventTree) {			//jcho
+//	delete fEventTree;		//jcho
+//	fEventTree = 0;			//jcho
+//  }
   
   if(fCandidateVariables){
     delete fCandidateVariables;
     fCandidateVariables = 0;
   }
 
-  if(fEventTreeVariables){			//jcho
-	delete fEventTreeVariables;		//jcho
-	fEventTreeVariables = 0;		//jcho
-}
+//  if(fEventTreeVariables){			//jcho
+//	delete fEventTreeVariables;		//jcho
+//	fEventTreeVariables = 0;		//jcho
+//}
 
 
   if(fHistoXicMass) delete fHistoXicMass;
@@ -562,7 +561,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
    if (fHMTrigOn==true)
    {
 	   //Filling the event tree
-	   for(int i=0; i<4; i++) fEventTreeVariables[i] = -999; //Initialize 
+/*	   for(int i=0; i<4; i++) fEventTreeVariables[i] = -999; //Initialize 
 	   fEventTreeVariables[ 0] = fCentrality;      // CentralityV0M
 	   fEventTreeVariables[ 1] = fCentralSPD;    // CentralitySPD 
 	   fEventTreeVariables[ 2] = fNSPDTracklets;   // SPD tracklet
@@ -579,7 +578,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 	   if (!fUseMCInfo) fEventTreeVarTrig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	   
 	   fEventTree->Fill(); 
-
+*/
 	   //Counter for MB[0.1,30],[30,100],[0,100] and HM[0,0.1],[0,100]  -- NOTE: HM[0,100] is not implemented yet!
 	   if (IsTrigFired_MB)
 	   {
@@ -672,7 +671,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   MakeAnalysis(aodEvent, mcArray, mcHeader); 
   
   PostData(1,fOutput);
-  if (fHMTrigOn==true) PostData(9, fEventTree);  //jcho
+//  if (fHMTrigOn==true) PostData(9, fEventTree);  //jcho
   if(fWriteVariableTree){
     PostData(3,fVariablesTree);
   }else{
@@ -775,7 +774,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   fOutput->SetName("chist0");
   DefineGeneralHistograms(); // define general histograms
   PostData(1,fOutput);
-  if (fHMTrigOn==true) PostData(9, fEventTree);	//jcho
+//  if (fHMTrigOn==true) PostData(9, fEventTree);	//jcho
 
   if (fWriteVariableTree) {
     DefineTreeVariables();
@@ -1645,7 +1644,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fCentralityOfEvt->GetXaxis()->SetBinLabel(6,"[0,0.1]");
   fOutput->Add(fCentralityOfEvt);
 
-  if (fHMTrigOn==true)
+/*  if (fHMTrigOn==true)
   {
   //---Define the Event tree variables ------------------// jcho, refer to Xi0 Semileptinic
 	  fEventTree = new TTree("EventTree", "Event variable tree");
@@ -1664,7 +1663,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
 	  //if (Trigg > 1) 
 	  fEventTree->Branch("fTriggerBit", &fEventTreeVarTrig, "fTrigBit/i"); 
   } //--HM event tree end
-
+*/
   return;
 }
 

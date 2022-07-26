@@ -47,7 +47,7 @@ AliAnalysisTaskHOCFA::AliAnalysisTaskHOCFA():
   fNCentralityBins(9), fCentralityBin(-1), fMultiplicityMin(10),
   fPtMin(0.2), fPtMax(5.),
   fEtaGap(0.), fApplyEtaGap(kFALSE), 
-  fUseWeightsNUE(kTRUE), fUseWeightsNUA(kFALSE),
+  fUseWeightsNUE(kTRUE), fUseWeightsNUA(kFALSE), fUseWeightsCent(kFALSE),
   fNCombi(7), fGetSC(kTRUE), fGetLowerHarmos(kTRUE),
   fHistoConfig(0)
 {
@@ -65,7 +65,7 @@ AliAnalysisTaskHOCFA::AliAnalysisTaskHOCFA(const char *name):
   fNCentralityBins(9), fCentralityBin(-1), fMultiplicityMin(10),
   fPtMin(0.2), fPtMax(5.),
   fEtaGap(0.), fApplyEtaGap(kFALSE), 
-  fUseWeightsNUE(kTRUE), fUseWeightsNUA(kFALSE),
+  fUseWeightsNUE(kTRUE), fUseWeightsNUA(kFALSE), fUseWeightsCent(kFALSE),
   fNCombi(7), fGetSC(kTRUE), fGetLowerHarmos(kTRUE),
   fHistoConfig(0)
 {
@@ -124,6 +124,7 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
   double *iWeights = new double[fMultiplicity]();
   double iEffCorr = 1.;         // Efficiency (pT-weight = 1/efficiency).
   double iPhiModuleCorr = 1.;   // (phi, eta, PVz)-weight.
+  float iCentWeight = 1.;       // Centrality weight for LHC15o.
 
   for (Long64_t iTrack = 0; iTrack < fMultiplicity; iTrack++) {
     AliJBaseTrack *aTrack = (AliJBaseTrack*)fInputList->At(iTrack);
@@ -134,6 +135,7 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
     if (fUseWeightsNUE) {iEffCorr = aTrack->GetTrackEff();}
     if (fUseWeightsNUA) {iPhiModuleCorr = aTrack->GetWeight();}
     if (fDebugLevel > 10) printf("iEffCorr: %.6f iPhiModuleCorr: %.6f \n", iEffCorr, iPhiModuleCorr);
+    if (fUseWeightsCent) {iCentWeight = aTrack->GetCentWeight();} // Same for all tracks in an event.
     iWeights[iTrack] = (1.0/iEffCorr)/iPhiModuleCorr;
 
     fHistoPt[fCentralityBin]->Fill(aTrack->Pt(), (1./iEffCorr));
@@ -142,8 +144,11 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
     fHistoCharge[fCentralityBin]->Fill(aTrack->GetCharge());
   } // Go to the next track.
 
+// Fill the QA for the centrality*weight for this event.
+  fHistoCentCorrect[fCentralityBin]->Fill(fCentrality, iCentWeight);
+
 // Compute the Q-vectors and multiparticle correlations.
-  CalculateQvectors(fMultiplicity, iPhi, iWeights);
+  CalculateQvectors(fMultiplicity, iPhi, iWeights, iCentWeight);
   ComputeAllTerms();
 
 // If true, calculate the 2-particle correlators for v1 to v8 using eta gaps.
@@ -173,6 +178,7 @@ void AliAnalysisTaskHOCFA::InitialiseArrayMembers()
     fCentralityArray[i] = 0.;
 
     fHistoCent[i] = NULL;
+    fHistoCentCorrect[i] = NULL;
     fHistoMulti[i] = NULL;
     fHistoPt[i] = NULL;
     fHistoEta[i] = NULL;
@@ -282,6 +288,12 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
     fHistoCent[i]->SetStats(kTRUE);
     fCentralityList[i]->Add(fHistoCent[i]);
 
+    fHistoCentCorrect[i] = new TH1F("", "", 100, 0., 100.);
+    fHistoCentCorrect[i]->SetName(Form("fHistoCentCorrect_Bin%d", i));
+    fHistoCentCorrect[i]->SetTitle(Form("Corrected centrality distribution, bin%d", i));
+    fHistoCentCorrect[i]->SetStats(kTRUE);
+    fCentralityList[i]->Add(fHistoCentCorrect[i]);
+
     fHistoMulti[i] = new TH1I("", "", 5000, 0., 5000.);
     fHistoMulti[i]->SetName(Form("fHistoMulti_Bin%d", i));
     fHistoMulti[i]->SetTitle(Form("Multiplicity distribution, bin%d", i));
@@ -370,7 +382,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
 
 // ------------------------------------------------------------------------- //
 void AliAnalysisTaskHOCFA::CalculateQvectors(Long64_t myMulti,
-  double myAngles[], double myWeights[])
+  double myAngles[], double myWeights[], float myCentWeight)
 {
 // Calculate the Q-vectors needed for the analysis.
   double iAngle = 0.;           // Azimuthal angle of the current track.
@@ -392,8 +404,8 @@ void AliAnalysisTaskHOCFA::CalculateQvectors(Long64_t myMulti,
     for (int iHarmo = 0; iHarmo < 81; iHarmo++) {
       for (int iPower = 0; iPower < 11; iPower++) {
         iWeightToPowerP = TMath::Power(iWeight, iPower);
-        fQvectors[iHarmo][iPower] += TComplex(iWeightToPowerP*TMath::Cos(iHarmo*iAngle),
-          iWeightToPowerP*TMath::Sin(iHarmo*iAngle));
+        fQvectors[iHarmo][iPower] += TComplex(myCentWeight*iWeightToPowerP*TMath::Cos(iHarmo*iAngle),
+          myCentWeight*iWeightToPowerP*TMath::Sin(iHarmo*iAngle));
       }
     }
   } // Go to the next track.

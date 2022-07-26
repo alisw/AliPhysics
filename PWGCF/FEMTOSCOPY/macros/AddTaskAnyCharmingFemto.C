@@ -60,9 +60,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(96);
     TrackCuts->SetCutCharge(1);
+    TrackCuts->SetPtRange(0, 4.0);
+
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(96);
     AntiTrackCuts->SetCutCharge(-1);
+    AntiTrackCuts->SetPtRange(0, 4.0);
   }
   else if(std::abs(pdgBuddy) == 321) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
@@ -115,10 +118,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     buddyNsigmaLow = 2.85;
     buddyNsigmaUp = 3.15;
     buddyMaxPt = 4.0;
+    // buddyNClsLow = 75;
+    // buddyNClsUp = 85;
     aliPIDParticle = AliPID::kPion;
   } else if (pdgBuddy == 321){ // kaon+
-    buddyPtlow = 0.11;
-    buddyPtup = 0.19;
+    buddyPtlow = 0.1;
+    buddyPtup = 0.2;
     buddyNsigmaLow = 3;
     buddyNsigmaUp = 3;
     buddyMaxPt = 4.0;
@@ -158,8 +163,8 @@ if (!isMC) {
     TrackCuts->SetNClsTPC(buddyNClsUp);
     AntiTrackCuts->SetNClsTPC(buddyNClsUp);
   } else if (suffix == "4") {
-    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
     // Set PID variations
     if (aliPIDParticle == AliPID::kProton){
@@ -198,8 +203,8 @@ if (!isMC) {
     TrackCuts->SetNClsTPC(buddyNClsUp);
     AntiTrackCuts->SetNClsTPC(buddyNClsUp);
   } else if (suffix == "8") {
-    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
     // Set PID variations
     if (aliPIDParticle == AliPID::kProton){
@@ -298,8 +303,8 @@ if (!isMC) {
     TrackCuts->SetNClsTPC(buddyNClsLow);
     AntiTrackCuts->SetNClsTPC(buddyNClsLow);
   } else if (suffix == "18") {
-    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
-    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
     
     // Set PID variations
     if (aliPIDParticle == AliPID::kProton){
