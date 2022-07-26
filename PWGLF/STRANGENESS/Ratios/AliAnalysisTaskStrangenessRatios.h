@@ -8,6 +8,7 @@
 #include <TString.h>
 #include "AliEventCuts.h"
 #include "AliExternalBDT.h"
+#include "AliAODMCParticle.h"
 
 class AliPIDResponse;
 class TH2F;
@@ -41,6 +42,7 @@ struct MiniLambdaMC : public MiniLambda {
   float ctMC;
   float yMC;
   float ptMotherMC;
+  float ctMotherMC;
   int pdg;
   bool isPrimary;
   bool isReconstructed;
@@ -239,6 +241,7 @@ private:
   bool IsTopolSelectedLambda();
   float Eta2y(float pt, float m, float eta) const;
   int WhichBDT(double ct);
+  void FindWDLambdaMother(AliAODMCParticle *track);
 
 
   /// \cond CLASSDEF
