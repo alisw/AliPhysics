@@ -48,7 +48,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),
     fAOD(0), fOutputList(0), fPIDResponse(0), PVz(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
     fDecayLv0Cut(8.05), fLpTv0Cut(0.2), fUpTv0Cut(0.5), fEtav0Cut(0.8), fDcaPosToPrimVtxv0Cut(0.1), 
     fDcaNegToPrimVtxv0Cut(0.1), fEtaPosv0Cut(0.8), fEtaNegv0Cut(0.8), fCosPACut(0.99), fSigPosv0Cut(2.0), 
-    fSigNegv0Cut(2.0), fHistMK0(0), fHistPt(0), fVtx(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
+    fSigNegv0Cut(2.0), fHistMK0(0), fHistMK0Cuts(0), fHistPt(0), fVtx(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
     fHistK0PhiEta(0), fHistK0Phi(0), fHistK0Eta(0), fHistChPhi(0), fHistChEta(0), fHistChRap(0), fHistPosPhi(0), fHistPosEta(0), 
     fHistPosPhiEta(0), fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0), fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0),
     fNsigmaTOFK(0), fNsigmaTOFKaon(0),  fNsigmaTPCTOFK(0), fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), 
@@ -64,7 +64,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTa
     fAOD(0), fOutputList(0), fPIDResponse(0), PVz(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
     fDecayLv0Cut(8.05), fLpTv0Cut(0.2), fUpTv0Cut(0.5), fEtav0Cut(0.8), fDcaPosToPrimVtxv0Cut(0.1), 
     fDcaNegToPrimVtxv0Cut(0.1), fEtaPosv0Cut(0.8), fEtaNegv0Cut(0.8), fCosPACut(0.99), fSigPosv0Cut(2.0), 
-    fSigNegv0Cut(2.0), fHistMK0(0), fHistPt(0), fVtx(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
+    fSigNegv0Cut(2.0), fHistMK0(0), fHistMK0Cuts(0), fHistPt(0), fVtx(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
     fHistK0PhiEta(0), fHistK0Phi(0), fHistK0Eta(0), fHistChPhi(0), fHistChEta(0), fHistChRap(0), fHistPosPhi(0), fHistPosEta(0), 
     fHistPosPhiEta(0), fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0), fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0),
     fNsigmaTOFK(0), fNsigmaTOFKaon(0),  fNsigmaTPCTOFK(0), fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), 
@@ -100,6 +100,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     // example of a histogram
 
     fHistMK0=new TH1F("fHistMK0", "Invariant Mass Distribution of Neutral Kaons", 100, 0.4, 0.6);
+    fHistMK0Cuts=new TH1F("fHistMK0Cuts", "Invariant Mass Distribution of Neutral Kaons", 100, 0.4, 0.6);
     
     fHistPt = new TH1F("fHistPt", "p_{T} distribution", 100, 0, 1);
 
@@ -281,6 +282,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistK0K0->SetOption("SURF1");
 
     fOutputList->Add(fHistMK0);
+    fOutputList->Add(fHistMK0Cuts);
     fOutputList->Add(fHistPt);
     fOutputList->Add(fVtx);
     fOutputList->Add(fPID);
@@ -533,8 +535,9 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
         continue;
         }
         fHistMK0->Fill(v0->MassK0Short());
-        fHistInvCent->Fill(CentV0M, v0->MassK0Short());
         if(!AcceptV0(v0, vertex)) continue;
+        fHistMK0Cuts->Fill(v0->MassK0Short());
+        fHistInvCent->Fill(CentV0M, v0->MassK0Short());
         if(v0->MassK0Short() < 0.49 || v0->MassK0Short() > 0.51) continue;
         Double_t V0Phi = v0->Phi();
         Double_t V0Eta = v0->Eta();
@@ -772,7 +775,6 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
                 fHistCFEta->Fill(deltaEta,CentV0M);
                 fHistCFEta->Fill(-deltaEta,CentV0M);  // filling DeltaEta 
             }
-            //if (fabs(deltaPhi) < 0.5*(TMath::Pi()) && (deltaEta < 0.5) ) {
             if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
             if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
             fHistCF->Fill(deltaPhi,deltaEta,CentV0M);
@@ -783,11 +785,9 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
                 }
             else {
                 fHistCF->Fill(2*TMath::Pi()-deltaPhi,deltaEta,CentV0M);
-                fHistCF->Fill(2*TMath::Pi()-deltaPhi,-deltaEta,CentV0M);}
-                //}      // end of short C(DPhi,DEta) correlation histo filling                                  
+                fHistCF->Fill(2*TMath::Pi()-deltaPhi,-deltaEta,CentV0M);}                                 
         }     // end of v0 track for loop
     }   // end of track for loop
-    //Double_t THnsparse; 
 fHistNEvents->Fill(0);
 fHistMult->Fill(iTracks);
 fHistCent->Fill(CentV0M);                          //Nevents vs centrality
