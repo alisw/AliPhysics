@@ -134,6 +134,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t   GetPi0EtaType(AliAODMCParticle *part);
     
     void    RemovePileUpInMCGen(Bool_t fSwitch) {fRemovePileUpinMCGen = fSwitch;};
+    
+    void    SetTrackMatchPar(Double_t deltaEta, Double_t deltaPhi){fDeltaEta = deltaEta; fDeltaPhi = deltaPhi;};
 
   private:
     Bool_t GetNMCPartProduced();
@@ -163,6 +165,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t              fFlagEleSPDkFirst;//
     Double_t            fEtaCutEleMin;// Electron track Eta cut min
     Double_t            fEtaCutEleMax;// Electron track Eta cut max
+    Double_t            fDeltaEta;//
+    Double_t            fDeltaPhi;//
     Double_t            fTPCnSigma;//!
     Double_t            fTPCnSigmaMin;//
     Double_t            fTPCnSigmaMax;//
@@ -222,6 +226,9 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNpureMC;//! N of particles from main generator (Hijing/Pythia)
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
+    
+    TF1                 *fFuncPtDepEta;//!
+    TF1                 *fFuncPtDepPhi;//!
 
     Int_t               fNDelPhiBins; //number of bins to be used for deltaphi distribution
     TList       	   	*fOutputList;		//!output list

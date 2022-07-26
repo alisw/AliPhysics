@@ -119,6 +119,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fFlagEleSPDkFirst(kFALSE),
   fEtaCutEleMin(-0.6),
   fEtaCutEleMax(0.6),
+  fDeltaEta(0.05),
+  fDeltaPhi(0.05),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -177,6 +179,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fNpureMC(0),
   fNembMCpi0(0),
   fNembMCeta(0),
+  fFuncPtDepEta(0),
+  fFuncPtDepPhi(0),
   fNDelPhiBins(32),
   fOutputList(0),
   fNevents(0),
@@ -315,6 +319,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fFlagEleSPDkFirst(kFALSE),
   fEtaCutEleMin(-0.6),
   fEtaCutEleMax(0.6),
+  fDeltaEta(0.05),
+  fDeltaPhi(0.05),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -373,6 +379,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fNpureMC(0),
   fNembMCpi0(0),
   fNembMCeta(0),
+  fFuncPtDepEta(0),
+  fFuncPtDepPhi(0),
   fNDelPhiBins(32),
   fOutputList(0),
   fNevents(0),
@@ -546,19 +554,20 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   }
     
   if(fIspPb){
-  
    if(fpPbPASS2weight){
-   
            fPi0Weight->SetParameters(1.53790e+02,9.59471e-02,-2.43197e-03,1.31348e+00,5.31726e+00);
            fEtaWeight->SetParameters(6.81328e+00,1.06621e+00,-2.47101e-02,1.13821e+00,4.20900e+00);
-  
   }
    if(!fpPbPASS2weight){
-  
-  
         fPi0Weight->SetParameters(5.04011e+02,-3.62390e-02,-9.98778e-04,1.58097e+00,5.34769e+00);
         fEtaWeight->SetParameters(3.65122e+02,3.78278e-02,8.73001e-03,1.52167e+00,5.65169e+00);
-  }}
+   }
+  }
+
+  fFuncPtDepEta = new TF1("fFuncPtDepEta", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
+  fFuncPtDepPhi = new TF1("fFuncPtDepPhi", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
 
   ////////////////////////
   //Initiale mixed event//
@@ -610,7 +619,29 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       vertexBins[5] = 5;
       vertexBins[6] = 10.01;
     }
-    if(fCentralityMax == 20)
+    if(fCentralityMin==0 && fCentralityMax == 10){
+      if(!fFlagMEBinChange){
+        CentralityBinsPbPb[0] = 0;
+        CentralityBinsPbPb[1] = 1;
+        CentralityBinsPbPb[2] = 2;
+        CentralityBinsPbPb[3] = 3;
+        CentralityBinsPbPb[4] = 5;
+        CentralityBinsPbPb[5] = 7.5;
+        CentralityBinsPbPb[6] = 10.01;
+      }
+    }
+    if(fCentralityMin==30 && fCentralityMax == 50){
+      if(!fFlagMEBinChange){
+          CentralityBinsPbPb[0] = 30;
+          CentralityBinsPbPb[1] = 32;
+          CentralityBinsPbPb[2] = 35;
+          CentralityBinsPbPb[3] = 38;
+          CentralityBinsPbPb[4] = 41;
+          CentralityBinsPbPb[5] = 45;
+          CentralityBinsPbPb[6] = 50.01;
+        }
+    }
+    if(fCentralityMin==0 && fCentralityMax == 20)
     {
       if(!fFlagMEBinChange){
         CentralityBinsPbPb[0] = 0;
@@ -631,7 +662,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[6] = 20.01;
       }
     }
-    if(fCentralityMax == 50)
+    if(fCentralityMin==20 && fCentralityMax == 50)
     {
       if(!fFlagMEBinChange){
         CentralityBinsPbPb[0] = 20;
@@ -665,7 +696,6 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       }
     }
   }
-
   if(fIspPb){
     if(!fFlagMEBinChange){
       vertexBins[0] = -10.01;
@@ -698,7 +728,6 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       CentralityBinspPb[4] = 100.01;
     }
   }
-
   if(fIspp){
     if(!fFlagMEBinChange){
       vertexBinspp[0] = -10.01;
@@ -718,7 +747,6 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       vertexBinspp[4] = 10.01;
 
       CentralityBinspp[0] = 0;
-
       CentralityBinspp[1] = 100.01;
 
     }
@@ -1296,7 +1324,12 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
       fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
 
-      if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
+      if(fDeltaPhi < 0)
+          fDeltaPhi = fFuncPtDepPhi->Eval(track->Pt());
+      if(fDeltaEta < 0)
+          fDeltaEta = fFuncPtDepEta->Eval(track->Pt());
+        
+      if(TMath::Abs(fPhiDiff) > fDeltaPhi || TMath::Abs(fEtaDiff)> fDeltaEta) continue;
 
       /////////////////////////////////
       //Select EMCAL or DCAL clusters//
