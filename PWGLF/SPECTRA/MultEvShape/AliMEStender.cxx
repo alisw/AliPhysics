@@ -24,10 +24,12 @@
 
 #include <AliMultiplicity.h>
 #include <AliCentrality.h>
+#include <AliMultSelection.h>
 #include <AliPID.h>
 #include <AliPIDResponse.h>
 #include <AliAnalysisUtils.h>
 #include <AliPPVsMultUtils.h>
+#include <AliEventCuts.h>
 
 #include "AliMESbaseTask.h"
 #include "AliMEStender.h"
@@ -86,6 +88,8 @@ Bool_t AliMEStender::ConfigTask(AliMESconfigTender::EMESconfigEventCuts ec,
 AliMEStender::AliMEStender()
   : AliAnalysisTaskSE()
   ,fConfig()
+  ,fEventFilterMB(NULL)
+  ,fEventFilterHM(NULL)
   ,fTrackFilter(NULL)
   ,fPIDcomb(NULL)
   ,fTracks(NULL)
@@ -103,6 +107,8 @@ AliMEStender::AliMEStender()
 AliMEStender::AliMEStender(const char *name)
   : AliAnalysisTaskSE(name)
   ,fConfig()
+  ,fEventFilterMB(NULL)
+  ,fEventFilterHM(NULL)
   ,fTrackFilter(NULL)
   ,fPIDcomb(NULL)
   ,fTracks(NULL)
@@ -136,6 +142,8 @@ AliMEStender::~AliMEStender()
   //
   // Destructor
   //
+  if(fEventFilterMB) delete fEventFilterMB;
+  if(fEventFilterHM) delete fEventFilterHM;
   if(fTrackFilter) delete fTrackFilter;
   if(fPIDcomb) delete fPIDcomb;
 
@@ -175,6 +183,12 @@ void AliMEStender::UserCreateOutputObjects()
 	    AliDebug(2, "No track cuts selected");
 	    break;
   }
+
+  // configure event selection
+  fEventFilterMB = new AliEventCuts();
+  fEventFilterHM = new AliEventCuts();
+  fEventFilterHM->OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0);
+  // fEventFilterMB->AddQAplotsToList(fHistosQA, 1);
 
   // PID priors
 //   fPIDcomb = new AliPIDCombined();
@@ -250,50 +264,53 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
-  if (!pidResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
+  // AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
+  // if (!pidResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
+	AliPIDResponse *pidResponse = NULL;
 
   //init magnetic field
   if(!TGeoGlobalMagField::Instance()->GetField() && !TGeoGlobalMagField::Instance()->IsLocked()){
-    AliGRPManager grpManager;
-    if(!grpManager.ReadGRPEntry()) AliError("Cannot get GRP entry for magnetic field");
-    if(!grpManager.SetMagField()) AliError("Problem with magnetic field setup");
+    // AliGRPManager grpManager;
+    // if(!grpManager.ReadGRPEntry()) AliError("Cannot get GRP entry for magnetic field");
+    // if(!grpManager.SetMagField()) AliError("Problem with magnetic field setup");
+		fESD->InitMagneticField();
   }
 
 
   ((TH1*)fHistosQA->At(kEfficiency))->Fill(0);  // all events
-  if( AliPPVsMultUtils::IsMinimumBias(fESD) ) {
-	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);  // events after Physics Selection (for MB normalisation to INEL)
+  
+  if ((inputHandler->IsEventSelected())){
+    ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);  // events after Physics Selection
+    if(fEventFilterMB->PassedCut(AliEventCuts::kPileUp) && fEventFilterMB->PassedCut(AliEventCuts::kTPCPileUp) ){
+      ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);  // events after pileup rejection
+      if (fEventFilterMB->PassedCut(AliEventCuts::kTrigger)){
+        ((TH1*)fHistosQA->At(kEfficiency))->Fill(3);  // events after trigger
+        if (fEventFilterMB->PassedCut(AliEventCuts::kVertex)){
+          ((TH1*)fHistosQA->At(kEfficiency))->Fill(4);  // events after vertex
+          if (fEventFilterMB->CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex)) {
+            ((TH1 *)fHistosQA->At(kEfficiency))->Fill(5);
+            if (fEventFilterMB->CheckNormalisationMask(AliEventCuts::kPassesNonVertexRelatedSelections)) {
+              ((TH1 *)fHistosQA->At(kEfficiency))->Fill(6);
+              if (fEventFilterMB->CheckNormalisationMask(AliEventCuts::kPassesAllCuts)) {
+                ((TH1 *)fHistosQA->At(kEfficiency))->Fill(7);
+              }
+            }
+          }
+        }
+      }
+    }
   }
-  if( (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kMB)) && (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kHighMult)) ) {
-	  return;
-  }
-  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);  // analyzed events
 
 
-  // TRIGGER SELECTION
-  // MB & HM triggers
-	Bool_t triggerMB = 0;
-	Bool_t triggerHM = 0;
-	switch(fConfig.fEventCuts){
-	  case AliMESconfigTender::k7TeV:
-			triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
-	    triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
-			break;
-		case AliMESconfigTender::k13TeV:
-			triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kINT7),
-			triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);	// to be checked
-			break;
-		default:
-			AliDebug(2, "No event cuts selected");
-	}
-
-  if(!triggerHM && !triggerMB){
-    AliDebug(2, "Miss trigger");
-//     ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);
+  if(fEventFilterMB->AcceptEvent(fESD)){
+   fEvInfo->SetTriggerMB();
+   ((TH1 *)fHistosQA->At(kEfficiency))->Fill(8);
   }
-  if(triggerMB) fEvInfo->SetTriggerMB();
-  if(triggerHM) fEvInfo->SetTriggerHM();
+  else if(fEventFilterHM->AcceptEvent(fESD)){
+    fEvInfo->SetTriggerHM();
+    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(9);
+  }
+  else return;
 
   // vertex selection
   const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
@@ -328,19 +345,21 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   AliESDtrackCuts *tc(NULL);
   if((tc = dynamic_cast<AliESDtrackCuts*>(fTrackFilter->GetCuts()->At(0)/*FindObject("std10TC")*/))){
     //MakeMultiplicityESD(fESD, "Combined")
-	fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
-	// fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD));
+    fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
+    // fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD));
     // MakeMultiplicityESD(fESD, "Global")
     fEvInfo->SetMultiplicity(AliMESeventInfo::kGlob08, tc->CountAcceptedTracks(fESD));
-	// V0M
-	fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M, fUtils->GetMultiplicityPercentile(fESD, "V0M"));
-	// Combined multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
-	fEvInfo->SetMultiplicity(AliMESeventInfo::kComb0408, (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8) - tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.4)));
-  } else {
+    // V0M
+    // fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M, fUtils->GetMultiplicityPercentile(fESD, "V0M"));    
+    AliMultSelection *multSelection = (AliMultSelection *)fESD->FindListObject("MultSelection");
+    // Combined multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
+    fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M, multSelection->GetMultiplicityPercentile("V0M"));
+    fEvInfo->SetMultiplicity(AliMESeventInfo::kComb0408, (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8) - tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.4)));
+  }
+  else{
     AliWarning("No track cuts defined. No multiplicity computed for REC data.");
     fTrackFilter->GetCuts()->ls();
   }
-
 
   Double_t val[7] = {0.};
   THnSparse *H(NULL);
@@ -486,12 +505,15 @@ void AliMEStender::UserExec(Option_t */*opt*/)
       AliWarning("MC particle pointer is null !!!");
       continue;
     }
-    if(particle->E()-TMath::Abs(particle->Pz()) < 0.){
+
+		if(TMath::Abs(particle->Charge()) < 3) continue;
+
+    if(particle->E()-TMath::Abs(particle->Pz()) < -1e-7){
       AliWarning("pz > E !!");
       continue;
     }
-    if(TMath::Abs(particle->Charge()) < 3) continue;
-    tmes = new AliMEStrackInfo(particle, fMCStack);
+		// tmes = new AliMEStrackInfo(particle, fMCStack);
+    tmes = new AliMEStrackInfo(particle, fMC);
     fMCtracks->AddLast(tmes);
 
     // fill tracks QA
@@ -645,13 +667,18 @@ Bool_t AliMEStender::BuildQAHistos()
   fHistosQA = new TList(); fHistosQA->SetOwner(kTRUE);
   fHistosQA->AddAt(&fConfig, kConfig);
 
-  TH1 *hEff = new TH1I("hEff", "Cuts efficiency;cut;entries", 3, -0.5, 2.5);
+  TH1 *hEff = new TH1I("hEff", "Cuts efficiency;cut;entries", 10, -0.5, 9.5);
   TAxis *ax = hEff->GetXaxis();
-  ax->SetBinLabel(1, "OK");
-  ax->SetBinLabel(2, "Trigger");
-  ax->SetBinLabel(3, "Vertex");
-//   ax->SetBinLabel(4, "PileUp");
-
+  ax->SetBinLabel(1, "All");
+  ax->SetBinLabel(2, "IsSelected");
+  ax->SetBinLabel(3, "PileUp");
+  ax->SetBinLabel(4, "Trigger MB");
+  ax->SetBinLabel(5, "Vertex");
+  ax->SetBinLabel(6, "RecVertex");
+  ax->SetBinLabel(7, "NonVertex");
+  ax->SetBinLabel(8, "OK");
+  ax->SetBinLabel(9, "Accepted MB");
+  ax->SetBinLabel(10, "Accepted HM");
   fHistosQA->AddAt(hEff, kEfficiency);
 
   TString st;
@@ -716,23 +743,23 @@ Int_t AliMEStender::MakeMultiplicityMC(AliMCEvent * const mc)
 //     Int_t nPrim = stack->GetNprimary();
   Int_t charged(0);
   AliMCParticle *particle(NULL);
+	
   for (Int_t ipart=0; ipart<mc->GetNumberOfTracks(); ipart++) {
     if(!( particle = dynamic_cast<AliMCParticle*>(mc->GetTrack(ipart)))) continue;
 
-    if(particle->E()-TMath::Abs(particle->Pz()) < 0.){
-      printf(" - E - AliMEStender::MakeMultiplicityMC : pz > E !!\n");
+		//  ---------  Charged  ----------
+		if(TMath::Abs(particle->Charge()) < 3) continue;
+		
+		// if(!(mc->IsPhysicalPrimary(particle->GetLabel()))) continue;
+		if(!(mc->IsPhysicalPrimary(ipart))) continue;
+
+    if(particle->E()-TMath::Abs(particle->Pz()) < -1e-7){
       continue;
     }
-
-    if(!(stack->IsPhysicalPrimary(particle->GetLabel()))) continue;
-
-    //  ---------  Charged  ----------
-    if(TMath::Abs(particle->Charge()) < 3) continue;
 
     if(TMath::Abs(particle->Eta()) > 0.8) continue;
 
     charged++;
-
   }//end track loop
 
   return charged;
@@ -749,15 +776,15 @@ Int_t AliMEStender::MakeMultiplicity0408MC(AliMCEvent * const mc)
 	for (Int_t ipart=0; ipart<mc->GetNumberOfTracks(); ipart++) {
 		if(!( particle = dynamic_cast<AliMCParticle*>(mc->GetTrack(ipart)))) continue;
 
-		if(particle->E()-TMath::Abs(particle->Pz()) < 0.){
+		//  ---------  Charged  ----------
+		if(TMath::Abs(particle->Charge()) < 3) continue;
+
+		if(!(mc->IsPhysicalPrimary(particle->GetLabel()))) continue;
+
+		if(particle->E()-TMath::Abs(particle->Pz()) < -1e-7){
 			printf(" - E - AliMEStender::MakeMultiplicityMC : pz > E !!\n");
 			continue;
 		}
-
-		if(!(stack->IsPhysicalPrimary(particle->GetLabel()))) continue;
-
-		//  ---------  Charged  ----------
-		if(TMath::Abs(particle->Charge()) < 3) continue;
 
 		if(TMath::Abs(particle->Eta()) > 0.8) continue;
 		if(TMath::Abs(particle->Eta()) < 0.4) continue;
@@ -780,15 +807,15 @@ Int_t AliMEStender::MakeMultiplicityV0MMC(AliMCEvent * const mc)
 	for (Int_t ipart=0; ipart<mc->GetNumberOfTracks(); ipart++) {
 		if(!( particle = dynamic_cast<AliMCParticle*>(mc->GetTrack(ipart)))) continue;
 
-		if(particle->E()-TMath::Abs(particle->Pz()) < 0.){
+		//  ---------  Charged  ----------
+		if(TMath::Abs(particle->Charge()) < 3) continue;
+
+		if(!(mc->IsPhysicalPrimary(particle->GetLabel()))) continue;
+
+		if(particle->E()-TMath::Abs(particle->Pz()) < -1e-7){
 			printf(" - E - AliMEStender::MakeMultiplicityMC : pz > E !!\n");
 			continue;
 		}
-
-		if(!(stack->IsPhysicalPrimary(particle->GetLabel()))) continue;
-
-		//  ---------  Charged  ----------
-		if(TMath::Abs(particle->Charge()) < 3) continue;
 
 		if( particle->Eta() < 5.1 &&  particle->Eta() > 2.8 ) charged++;   // V0A
 		if( particle->Eta() < -1.7 &&  particle->Eta() > -3.7 ) charged++;   // V0C
