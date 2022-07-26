@@ -25,6 +25,7 @@
 
 #include "AliEventPoolManager.h"
 #include "AliBasicParticle.h"
+#include "AliESDUtils.h"
 
 ClassImp(AliMESppColTask)
 
@@ -122,9 +123,28 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	
 	Double_t vec_hNoEvts[7]; // vector used to fill hNoEvts
 	THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(0);
-    
-	Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);// combined multiplicity with |eta| < 0.8
-    if(mult_comb08 < 0.) return;
+
+
+  AliESDEvent *fESD = NULL;
+  // if(DebugLevel()>0){
+  fESD = dynamic_cast<AliESDEvent *>(InputEvent());
+  if (!fESD)
+  {
+    AliError("ESD event not available");
+    return;
+  }
+
+  Double_t V0signal = -9999;
+  if (fEvInfo->HasTriggerHM())
+  {
+    Double_t V0Asignal = AliESDUtils::GetCorrV0A(fESD->GetVZEROData()->GetMTotV0A(), fESD->GetPrimaryVertexSPD()->GetZ());
+    Double_t V0Csignal = AliESDUtils::GetCorrV0C(fESD->GetVZEROData()->GetMTotV0C(), fESD->GetPrimaryVertexSPD()->GetZ());
+    V0signal = V0Asignal + V0Csignal;
+    if (V0signal < 415.)
+      return;
+  }
+  Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);// combined multiplicity with |eta| < 0.8
+    // if(mult_comb08 < 0.) return;
 	// event shape for data (from ESD)
 	Double_t sfer = fEvInfo->GetEventShape()->GetSphericity();
 	
@@ -175,9 +195,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         etaL = t->Eta();
 	}
   }
-
   vec_hNoEvts[3] = pTlead;
-
   vec_hNoEvts[6] = -99; 
   if( HasMCdata() ){
 	  for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
@@ -198,13 +216,16 @@ void AliMESppColTask::UserExec(Option_t *opt)
   hNoEvts->Fill(vec_hNoEvts);
   //---------------end of ESD loop for leading determination--------------------
 
-
-
   // //basic track info sparse
-  Double_t vec_hbTrk[7];
+  Double_t vec_hbTrk[9];
   THnSparseD *hbTrk = (THnSparseD *)fHistosQA->At(147);
   Double_t vec_hbMCTrk[7];
   THnSparseD *hbMCTrk = (THnSparseD *)fHistosQA->At(148);
+
+  if (fEvInfo->HasTriggerMB())
+    vec_hbTrk[8] = 0;
+  else if (fEvInfo->HasTriggerHM())
+    vec_hbTrk[8] = 1;
 
   for (Int_t it(0); it < fTracks->GetEntries(); it++)
   {
@@ -216,8 +237,12 @@ void AliMESppColTask::UserExec(Option_t *opt)
 		if( !(tMC= (AliMEStrackInfo*)fMCtracks->At(t->GetLabel())) ) continue;
 	}
         vec_hbTrk[0]=mult_comb08;
-        if(sfer > 0.0 ) {vec_hbTrk[1]=sfer;}
-            else vec_hbTrk[1]= -999.;
+        vec_hbTrk[7] = V0signal;
+        if (sfer > 0.0)
+        {
+          vec_hbTrk[1] = sfer;
+        }
+        else vec_hbTrk[1] = -999.;
         if(idLead == it) {vec_hbTrk[2]= pTlead; vec_hbTrk[6]= 1;} 
             else {vec_hbTrk[2]= -999.; vec_hbTrk[6]= -1;}
         if(((t->Pt()) < pTlead) && (idLead != it)) {vec_hbTrk[3] = t->Pt();
@@ -1090,15 +1115,20 @@ Bool_t AliMESppColTask::BuildQAHistos()
   THnSparseD *hMCTrk = new THnSparseD("infoMCTrk","infoMCTrk;multComb08MC;sferMC;dEtaMC;dPhiMC;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
   fHistosQA->AddAt(hMCTrk, 146);
   
-const Int_t ndimbTrk(7);
-  const Int_t cldNbinsbTrk[ndimbTrk]   = { 150, 30, 100, 100, 36, 60, 3};
-  const Double_t cldMinbTrk[ndimbTrk]  = { 0.5, 0., 0., 0.,-1.5, -0.5*TMath::Pi(), -1.5},
-					  cldMaxbTrk[ndimbTrk]  = {150.5, 1., 5., 5., 1.5, 1.5*TMath::Pi(), 1.5};
-                      
-  THnSparseD *hbTrk = new THnSparseD("basicInfoTrk","basicInfoTrk;multComb08;sfer;p_{T}^{L};p_{T}^{As};dEta;dPhi;as;",ndimbTrk, cldNbinsbTrk, cldMinbTrk, cldMaxbTrk);
+  const Int_t ndimbTrk(9);
+  const Int_t cldNbinsbTrk[ndimbTrk]   = { 150, 30, 100, 100, 36, 60, 3, 500, 2};
+  const Double_t cldMinbTrk[ndimbTrk]  = { 0.5, 0., 0., 0.,-1.5, -0.5*TMath::Pi(), -1.5, 0., 0.},
+					  cldMaxbTrk[ndimbTrk]  = {150.5, 1., 5., 5., 1.5, 1.5*TMath::Pi(), 1.5, 500., 2.};
+
+  const Int_t ndimbTrkMC(7);
+  const Int_t cldNbinsbTrkMC[ndimbTrkMC] = {150, 30, 100, 100, 36, 60, 3};
+  const Double_t cldMinbTrkMC[ndimbTrkMC] = {0.5, 0., 0., 0., -1.5, -0.5 * TMath::Pi(), -1.5},
+                 cldMaxbTrkMC[ndimbTrkMC] = {150.5, 1., 5., 5., 1.5, 1.5 * TMath::Pi(), 1.5};
+
+  THnSparseD *hbTrk = new THnSparseD("basicInfoTrk", "basicInfoTrk;multComb08;sfer;p_{T}^{L};p_{T}^{As};dEta;dPhi;as;V0Msignal;trigg;", ndimbTrk, cldNbinsbTrk, cldMinbTrk, cldMaxbTrk);
   fHistosQA->AddAt(hbTrk, 147);
 
-  THnSparseD *hbMCTrk = new THnSparseD("basicInfoMCTrk","basicInfoMCTrk;multComb08MC;sferMC;p_{T}^{L};p_{T}^{As};dEtaMC;dPhiMC;asMC;",ndimbTrk, cldNbinsbTrk, cldMinbTrk, cldMaxbTrk);
+  THnSparseD *hbMCTrk = new THnSparseD("basicInfoMCTrk", "basicInfoMCTrk;multComb08MC;sferMC;p_{T}^{L};p_{T}^{As};dEtaMC;dPhiMC;asMC;", ndimbTrkMC, cldNbinsbTrkMC, cldMinbTrkMC, cldMaxbTrkMC);
   fHistosQA->AddAt(hbMCTrk, 148);
   
   
