@@ -52,7 +52,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	float SetfUseDCAvsPt_cut(int aUseDCAvsPt_cut);
 	float Return_DCAvsPt_cut_p(float pt,int charge);
 	float Return_DCAvsPt_cut_d(float pt,int charge);
-	void Set_DCAvsPt_cut(float *input_v,int label);	
+	void Set_DCAvsPt_cut(float *input_v,int label);
+	//
+	void SetInversePID(int aInversePID); 
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -75,7 +77,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	float fMinTPCFoundFraction;
 	// 2022.4.18 for pi- + He3+ pair
         int fPionHe3cut;        
-        bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP);
+        bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP, float tmp_switch);
         bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
         bool IsTritonNSigma(    float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
         bool IsHe3NSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3);
@@ -102,13 +104,16 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	int fOnlyTPCreject;
 	
 	// real reject, now, only for p
-	bool RejectFakeP(const AliFemtoTrack* track, float mom);
+	bool RejectFakeP(const AliFemtoTrack* track, float mom,float tmp_switch);
 	bool RejectFakeD(const AliFemtoTrack* track, float mom);
 	// DCA
 	int fUseDCAvsPt_cut;
 	float v_DCAvspTcut_p[18];
 	float v_DCAvspTcut_antip[18];
 	float v_DCAvspTcut_d[18];
+
+	// 
+	int fInversePID;
 
 };
 
