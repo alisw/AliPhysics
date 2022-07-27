@@ -15,6 +15,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
                                               int WhichKaonCut = 0,
                                               const char *sTcut = "0",
                                               bool DoAncestors = false,
+                                              bool IsSystematics = false,
                                               const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
@@ -92,7 +93,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     TrackNegKaonCuts->SetPIDkd(true, true); // Ramona
   }
 
-  if (suffix != "0")
+  if (IsSystematics)
   {
     evtCuts->SetMinimalBooking(true);
     TrackPosKaonCuts->SetMinimalBooking(true);
@@ -187,7 +188,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
     pairQA.push_back(0);
   }
 
-  if (suffix != "0" )
+  if (IsSystematics)
   {
     pairQA[2] = 12;
     pairQA[3] = 12;
@@ -228,26 +229,27 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   config->SetMixingDepth(30);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
-  if (suffix == "0")
+  config->SetMultBinning(true);
+  config->SetmTBins(mTBins);
+  config->SetDomTMultBinning(true);
+  config->SetmTBinning(true);
+
+  if (IsSystematics)
+  {
+    config->SetMinimalBookingME(true);
+  }
+  else if (!IsSystematics)
   {
     config->SetPtQA(true);
     config->SetMassQA(true);
     config->SetkTBinning(true);
-    config->SetMultBinning(true);
-    config->SetmTBins(mTBins);
-    config->SetDomTMultBinning(true);
-    config->SetmTBinning(true);
-  }
-  
-  if (suffix != "0")
-  {
-    config->SetMinimalBookingME(true);
   }
 
   if (isMC)
   {
     config->SetMomentumResolution(true);
-    if (DoAncestors) {
+    if (DoAncestors)
+    {
       config->SetAncestors(true);
       config->GetDoAncestorsPlots();
     }
@@ -272,18 +274,18 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   std::map<std::string, float> kaonPIDLoose;
 
   kaonPIDTight = {
-      {"COMB", 3.7},
+      {"COMB", 2.7},
       {"TPC", 2.7},
       {"EXCLUSION", 3.3},
   }; // for SetPIDkd() when using oton's K selection
   kaonPIDLoose = {
-      {"COMB", 4.3},
+      {"COMB", 3.3},
       {"TPC", 3.3},
       {"EXCLUSION", 2.7},
   };
 
   /// Systematic variations (taken from pφ and ΛΚ)
-  if (suffix != "0")
+  if (IsSystematics)
   {
     if (suffix == "1")
     {
