@@ -32,6 +32,8 @@
 #include "AliHFMLResponseDstartoD0pi.h"
 #include "AliHFMLResponseD0toKpi.h"
 #include "AliVertexerTracks.h"
+#include "AliESDtrackCuts.h"
+#include "AliAnalysisFilter.h"
 
 class AliAnalysisTaskSEDstarPolarization : public AliAnalysisTaskSE
 {
@@ -89,8 +91,8 @@ private:
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
     AliAnalysisTaskSEDstarPolarization &operator=(const AliAnalysisTaskSEDstarPolarization &source);
 
-    AliAODRecoCascadeHF *MakeCascade(AliAODRecoDecayHF2Prong* trackD0, AliAODTrack *trackPi);
-    TClonesArray* RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks);
+    AliAODRecoCascadeHF *MakeCascade(AliAODRecoDecayHF2Prong* trackD0, AliAODTrack *track, AliESDtrack *esdTrackPi, AliESDVertex *fV1);
+    std::vector<AliAODRecoCascadeHF*> RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks);
     bool SelectInvMassAndPtDstarD0pi(double *px, double *py, double *pz);
 
     int IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx,
@@ -147,8 +149,11 @@ private:
     AliVertexerTracks* fVertexerTracks;                                             /// vertexer, to compute secondary vertices
     double fBzkG;                                                                   /// z componenent of field in kG
 
+    AliESDtrackCuts *fEsdTrackCutsSoftPi = nullptr;                                 /// ESD track cuts for soft pion in case of combinatoric recomputation
+    AliAnalysisFilter *fTrkFilterSoftPi = nullptr;                                   /// track filter for soft pion in case of combinatoric recomputation
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDstarPolarization, 7); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDstarPolarization, 8); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

@@ -60,6 +60,10 @@ AliAnalysisTaskSEDstarPolarization::~AliAnalysisTaskSEDstarPolarization()
     delete fRDCuts;
     if (fApplyML && fMLResponse)
         delete fMLResponse;
+    if(fEsdTrackCutsSoftPi)
+        delete fEsdTrackCutsSoftPi;
+    if(fTrkFilterSoftPi)
+        delete fTrkFilterSoftPi;
 }
 
 //________________________________________________________________________
@@ -154,8 +158,19 @@ void AliAnalysisTaskSEDstarPolarization::UserCreateOutputObjects()
         }
     }
 
-
     CreateRecoSparses();
+
+    if (fRecomputeDstarCombinatorial) {
+        fEsdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts", "default");
+        fEsdTrackCutsSoftPi->SetRequireITSRefit(true);
+        fEsdTrackCutsSoftPi->SetMinNClustersITS(2);
+        fEsdTrackCutsSoftPi->SetMaxDCAToVertexXY(1.);  
+        fEsdTrackCutsSoftPi->SetMaxDCAToVertexZ(1.);
+        fEsdTrackCutsSoftPi->SetPtRange(0.1, 1.e10);
+        fEsdTrackCutsSoftPi->SetEtaRange(-0.8, +0.8);
+        fTrkFilterSoftPi = new AliAnalysisFilter("fTrkFilterSoftPi");
+        fTrkFilterSoftPi->AddCuts(fEsdTrackCutsSoftPi);
+    }
 
     PostData(1, fOutput);
 
@@ -185,6 +200,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
     TClonesArray *arrayCand = nullptr;
     TClonesArray *arrayCandDDau = nullptr;
+    std::vector<AliAODRecoCascadeHF*> arrayCandRecomputed{};
     if (!fAOD && AODEvent() && IsStandardAOD())
     {
         // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -200,8 +216,6 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
             arrayCandDDau = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("D0toKpi"));
             if (!fRecomputeDstarCombinatorial)
                 arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
-            else
-                arrayCand = RecomputeDstarCombinatorial(arrayCandDDau, fAOD->GetTracks());
         }
     }
     else if (fAOD)
@@ -209,11 +223,9 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         arrayCandDDau = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("D0toKpi"));
         if (!fRecomputeDstarCombinatorial) 
             arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
-        else
-            arrayCand = RecomputeDstarCombinatorial(arrayCandDDau, fAOD->GetTracks());
     }
 
-    if (!fAOD || !arrayCand || !arrayCandDDau)
+    if (!fAOD || (!fRecomputeDstarCombinatorial && !arrayCand) || !arrayCandDDau)
     {
         AliWarning("Candidate branch not found!\n");
         PostData(1, fOutput);
@@ -285,6 +297,10 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
     fHistNEvents->Fill(4); // accepted event
 
+    if (fRecomputeDstarCombinatorial) {
+        arrayCandRecomputed = RecomputeDstarCombinatorial(arrayCandDDau, fAOD->GetTracks());
+    }
+
     // check if the train includes the common ML selector for the given charm-hadron species
     AliAnalysisTaskSECharmHadronMLSelector *taskMLSelect = nullptr;
     std::vector<int> chHadIdx{};
@@ -301,7 +317,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         scoresFromMLSelector = taskMLSelect->GetMLSCores();
         scoresFromMLSelectorSecond = taskMLSelect->GetMLSCoresSecond();
     }
-    else
+    else if(!fRecomputeDstarCombinatorial)
     {
         for (int iCand = 0; iCand < ((fDecChannel == kDstartoD0pi) ? arrayCand->GetEntriesFast() : arrayCandDDau->GetEntriesFast()); iCand++)
         {
@@ -316,21 +332,35 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     // in order to reduce the size of the file
     AliAnalysisVertexingHF vHF = AliAnalysisVertexingHF();
 
-    for (size_t iCand = 0; iCand < chHadIdx.size(); iCand++)
+    size_t nEntries = (fRecomputeDstarCombinatorial ? arrayCandRecomputed.size() : chHadIdx.size());
+    for (size_t iCand = 0; iCand < nEntries; iCand++)
     {
         AliAODRecoDecayHF *dMeson = nullptr;
         AliAODRecoCascadeHF *dStar = nullptr;
         AliAODRecoDecayHF2Prong *dZeroDau = nullptr;
-        if (fDecChannel == kDstartoD0pi) {
-            dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(chHadIdx[iCand]));
-            dStar = dynamic_cast<AliAODRecoCascadeHF *>(dMeson);
+        if (!fRecomputeDstarCombinatorial) {
+            if (fDecChannel == kDstartoD0pi) {
+                dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(chHadIdx[iCand]));
+                dStar = dynamic_cast<AliAODRecoCascadeHF *>(dMeson);
+                if (dMeson->GetIsFilled()<1)
+                    dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dStar->GetProngID(1)));
+                else
+                    dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(dStar->Get2Prong());
+            }
+            else
+                dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(chHadIdx[iCand]));
+        } 
+        else {
+            dMeson = arrayCandRecomputed[iCand];
+            dStar = arrayCandRecomputed[iCand];
             if (dMeson->GetIsFilled()<1)
                 dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dStar->GetProngID(1)));
-            else
+            else {
                 dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(dStar->Get2Prong());
+            }
+            scoresFromMLSelector.push_back({});
+            scoresFromMLSelectorSecond.push_back({});
         }
-        else
-            dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(chHadIdx[iCand]));
 
         bool unsetVtx = false;
         bool recVtx = false;
@@ -572,8 +602,13 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     }
 
     if (fRecomputeDstarCombinatorial) {
-        arrayCand->Delete();
-        arrayCand = nullptr;
+        for (auto &dStar: arrayCandRecomputed) {
+            if (dStar) {
+                delete dStar;
+                dStar = nullptr;
+            }
+        }
+        arrayCandRecomputed.clear();
     }
 
     PostData(1, fOutput);
@@ -582,7 +617,6 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 //________________________________________________________________________
 int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond, std::vector<double> &scores, std::vector<double> &scoresSecond)
 {
-
     if (!d || (!dZeroDau && fDecChannel == kDstartoD0pi) || !vHF)
         return 0;
     fHistNEvents->Fill(11);
@@ -597,35 +631,36 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
         nDau = 2;
     }
 
-    // Preselection to speed up task
-    TObjArray arrDauTracks(nDau);
+    if(!fRecomputeDstarCombinatorial) {
+        // Preselection to speed up task
+        TObjArray arrDauTracks(nDau);
 
-    for (int iDau = 0; iDau < nDau; iDau++) {
-        AliAODTrack *track = nullptr;
-        if (fDecChannel == kDstartoD0pi) {
-            if (iDau == 0)
-                track = vHF->GetProng(fAOD, dStar, iDau);
-            else
-                track = vHF->GetProng(fAOD, dZeroDau, iDau-1); //D0<-D* daughters
+        for (int iDau = 0; iDau < nDau; iDau++) {
+            AliAODTrack *track = nullptr;
+            if (fDecChannel == kDstartoD0pi) {
+                if (iDau == 0)
+                    track = vHF->GetProng(fAOD, dStar, iDau);
+                else
+                    track = vHF->GetProng(fAOD, dZeroDau, iDau-1); //D0<-D* daughters
+            }
+            else {
+                track = vHF->GetProng(fAOD, d, iDau);
+            }
+            arrDauTracks.AddAt(track, iDau);
         }
-        else {
-            track = vHF->GetProng(fAOD, d, iDau);
+
+        if (!fRDCuts->PreSelect(arrDauTracks)) {
+            fHistNEvents->Fill(15);
+            return 0;
         }
-        arrDauTracks.AddAt(track, iDau);
-    }
-
-    if (!fRDCuts->PreSelect(arrDauTracks)) {
-        fHistNEvents->Fill(15);
-        return 0;
-    }
-
-    if (fDecChannel == kDstartoD0pi && !vHF->FillRecoCasc(fAOD, dStar, false)) {
-        fHistNEvents->Fill(14);
-        return 0;
-    }
-    else if (fDecChannel == kD0toKpi && !d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts) && !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF2Prong *>(d))) {
-        fHistNEvents->Fill(14);
-        return 0;
+        if (fDecChannel == kDstartoD0pi && !vHF->FillRecoCasc(fAOD, dStar, false)) {
+            fHistNEvents->Fill(14);
+            return 0;
+        }
+        else if (fDecChannel == kD0toKpi && !d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts) && !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF2Prong *>(d))) {
+            fHistNEvents->Fill(14);
+            return 0;
+        }
     }
 
     fHistNEvents->Fill(12);
@@ -657,7 +692,10 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
         return 0;
     }
 
-    int isSelected = (fDecChannel == kDstartoD0pi) ? fRDCuts->IsSelected(dStar, AliRDHFCuts::kAll, fAOD) : fRDCuts->IsSelected(d, AliRDHFCuts::kAll, fAOD);
+    int isSelected = 1;
+    if (!fRecomputeDstarCombinatorial) {
+        isSelected = (fDecChannel == kDstartoD0pi) ? fRDCuts->IsSelected(dStar, AliRDHFCuts::kAll, fAOD) : fRDCuts->IsSelected(d, AliRDHFCuts::kAll, fAOD);
+    }
     if (!isSelected) {
         if (unsetVtx) {
             if (fDecChannel == kDstartoD0pi)
@@ -665,7 +703,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
             else
                 d->UnsetOwnPrimaryVtx();
         }
-        return 0;
+        return isSelected;
     }
 
     recVtx = false;
@@ -691,6 +729,12 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
     }
 
     if (!fApplyML) {
+        scores.push_back(-999.);
+        scores.push_back(-999.);
+        scores.push_back(-999.);
+        scoresSecond.push_back(-999.);
+        scoresSecond.push_back(-999.);
+        scoresSecond.push_back(-999.);
         return isSelected;
     }
     else {
@@ -969,46 +1013,75 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
 }
 
 //_________________________________________________________________________
-TClonesArray* AliAnalysisTaskSEDstarPolarization::RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks) {
-    TClonesArray* arrayDstar = new TClonesArray("AliAODRecoCascadeHF", 100);
-    for (int iCand=0; iCand<array2Prongs->GetEntriesFast(); iCand++) {
-        auto dZero = static_cast<AliAODRecoDecayHF2Prong*>(array2Prongs->At(iCand));
-        for (int iTrack=0; iTrack<arrayTracks->GetEntriesFast(); iTrack++) {
-            auto track = static_cast<AliAODTrack*>(arrayTracks->At(iTrack));
-            AliAODRecoCascadeHF *dStar = MakeCascade(dZero, track);
-            if (dStar) {
-                arrayDstar->Add(dStar);
-            }
-        }
-    }
-    return arrayDstar;
-}
+std::vector<AliAODRecoCascadeHF*> AliAnalysisTaskSEDstarPolarization::RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks) {
 
-//----------------------------------------------------------------------------
-AliAODRecoCascadeHF *AliAnalysisTaskSEDstarPolarization::MakeCascade(AliAODRecoDecayHF2Prong* trackD0, AliAODTrack *trackPi) {
-
-    double pxNoVtx[2] = {trackPi->Px(), trackD0->Px()};
-    double pyNoVtx[2] = {trackPi->Py(), trackD0->Py()};
-    double pzNoVtx[2] = {trackPi->Pz(), trackD0->Pz()};
-    if (!SelectInvMassAndPtDstarD0pi(pxNoVtx, pyNoVtx, pzNoVtx))
-        return nullptr;
-
-    AliAODRecoCascadeHF *rCasc = new AliAODRecoCascadeHF();
-    TObjArray* twoTrackArrayCasc = new TObjArray(2);
-    AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(trackD0);
-    AliESDtrack *esdTrackPi = new AliESDtrack(trackPi);
-
-    twoTrackArrayCasc->AddAt(esdTrackPi, 0);
-    twoTrackArrayCasc->AddAt(trackV0, 1);
+    AliAnalysisVertexingHF vHF = AliAnalysisVertexingHF();
 
     fBzkG = (double)fAOD->GetMagneticField();
     const AliVVertex *vprimary = fAOD->GetPrimaryVertex();
-
     double pos[3];
     double cov[6];
     vprimary->GetXYZ(pos);
     vprimary->GetCovarianceMatrix(cov);
     AliESDVertex *fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
+    fV1->GetCovMatrix(cov);
+
+    std::vector<AliAODRecoCascadeHF*> arrayDstar{};
+    for (int iTrack=0; iTrack<arrayTracks->GetEntriesFast(); iTrack++) {
+        auto track = static_cast<AliAODTrack*>(arrayTracks->At(iTrack));
+        AliESDtrack *trackESD = new AliESDtrack(track);
+        if (!trackESD->PropagateToDCA(fV1,fBzkG,kVeryBig)) {
+            delete trackESD;
+            continue;
+        }
+        trackESD->RelateToVertex(fV1,fBzkG,kVeryBig);
+        if (!fTrkFilterSoftPi->IsSelected(trackESD)) {
+            delete trackESD;
+            continue;
+        }
+
+        for (int iCand=0; iCand<array2Prongs->GetEntriesFast(); iCand++) {
+            auto dZero = static_cast<AliAODRecoDecayHF2Prong*>(array2Prongs->At(iCand));
+            if(!vHF.FillRecoCand(fAOD, dZero) || !dZero->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts))
+                continue;
+            AliAODRecoCascadeHF *dStar = MakeCascade(dZero, track, trackESD, fV1);
+            if (dStar) {
+                if (fRDCuts->IsSelected(dStar, AliRDHFCuts::kAll, fAOD))
+                    arrayDstar.push_back(dStar);
+                else {
+                    delete dStar;
+                    dStar = nullptr;
+                }
+            }
+        }
+        delete trackESD; trackESD = nullptr;
+    }
+
+    delete fV1;
+    fV1 = nullptr;
+
+    return arrayDstar;
+}
+
+//----------------------------------------------------------------------------
+AliAODRecoCascadeHF *AliAnalysisTaskSEDstarPolarization::MakeCascade(AliAODRecoDecayHF2Prong* trackD0, AliAODTrack *track, AliESDtrack *esdTrackPi, AliESDVertex *fV1) {
+
+    double pxNoVtx[2] = {esdTrackPi->Px(), trackD0->Px()};
+    double pyNoVtx[2] = {esdTrackPi->Py(), trackD0->Py()};
+    double pzNoVtx[2] = {esdTrackPi->Pz(), trackD0->Pz()};
+    if (!SelectInvMassAndPtDstarD0pi(pxNoVtx, pyNoVtx, pzNoVtx))
+       return nullptr;
+
+    TObjArray* twoTrackArrayCasc = new TObjArray(2);
+    AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(trackD0);
+
+    twoTrackArrayCasc->AddAt(esdTrackPi, 0);
+    twoTrackArrayCasc->AddAt(trackV0, 1);
+
+    const AliVVertex *vprimary = fAOD->GetPrimaryVertex();
+    double pos[3];
+    double cov[6];
+    fV1->GetXYZ(pos);
     fV1->GetCovMatrix(cov);
 
     double dca = 0.;
@@ -1018,8 +1091,6 @@ AliAODRecoCascadeHF *AliAnalysisTaskSEDstarPolarization::MakeCascade(AliAODRecoD
     if(!vtxCasc) {
         twoTrackArrayCasc->Clear();
         twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
-        delete fV1;
-        fV1=nullptr;
         delete esdTrackPi;
         esdTrackPi=nullptr;
         delete vtxCasc;
@@ -1028,11 +1099,6 @@ AliAODRecoCascadeHF *AliAnalysisTaskSEDstarPolarization::MakeCascade(AliAODRecoD
         trackV0=nullptr;
         return nullptr;
     }
-
-    vtxCasc->SetParent(rCasc);
-    rCasc->SetSecondaryVtx(vtxCasc);
-    vtxCasc->AddDaughter(trackD0);
-    rCasc->SetPrimaryVtxRef((AliAODVertex*)fAOD->GetPrimaryVertex());
 
     double px[2],py[2],pz[2],d0[2],d0err[2];
     // propagate tracks to secondary vertex, to compute inv. mass
@@ -1051,11 +1117,17 @@ AliAODRecoCascadeHF *AliAnalysisTaskSEDstarPolarization::MakeCascade(AliAODRecoD
     trackV0->PropagateToDCA(vprimary,fBzkG,kVeryBig,d0z0,covd0z0);
     d0[1] = d0z0[0];
     d0err[1] = TMath::Sqrt(covd0z0[0]);
+    AliAODRecoCascadeHF *rCasc = new AliAODRecoCascadeHF(0x0, 1, px, py, pz, d0, d0err, 0.);
     rCasc->SetPxPyPzProngs(2,px,py,pz);
     rCasc->SetDCA(dca);
     rCasc->Setd0Prongs(2,d0);
     rCasc->Setd0errProngs(2,d0err);
     rCasc->SetOwnPrimaryVtx((AliAODVertex*)fAOD->GetPrimaryVertex());
+    vtxCasc->SetParent(rCasc);
+    rCasc->SetSecondaryVtx(vtxCasc);
+    vtxCasc->AddDaughter(track);
+    vtxCasc->AddDaughter(trackD0);
+    rCasc->SetPrimaryVtxRef((AliAODVertex*)fAOD->GetPrimaryVertex());
     rCasc->SetCharge(esdTrackPi->Charge());
     // get PID info from ESD
     double esdpid0[5]={0.,0.,0.,0.,0.};
@@ -1069,10 +1141,8 @@ AliAODRecoCascadeHF *AliAnalysisTaskSEDstarPolarization::MakeCascade(AliAODRecoD
     rCasc->SetPID(2,esdpid);
     rCasc->SetIsFilled(2);
 
-    delete fV1; fV1=nullptr;
     twoTrackArrayCasc->Clear();
     twoTrackArrayCasc->Delete(); delete twoTrackArrayCasc;
-    delete esdTrackPi; esdTrackPi=nullptr;
     delete trackV0; trackV0=nullptr;
 
     return rCasc;
@@ -1087,7 +1157,8 @@ bool AliAnalysisTaskSEDstarPolarization::SelectInvMassAndPtDstarD0pi(double *px,
   double minPt=0;
   bool retval=false;
 
-  AliAODRecoDecay fMassCalc2;
+  double d02[2]={0.,0.};
+  AliAODRecoDecay fMassCalc2(0x0,2,0,d02);
   fMassCalc2.SetPxPyPzProngs(nprongs,px,py,pz);
   // pt cut
   double ptcand = TMath::Sqrt(fMassCalc2.Pt2());
