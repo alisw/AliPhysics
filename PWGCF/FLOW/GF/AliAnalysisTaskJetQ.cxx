@@ -80,12 +80,16 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
     // creating output lists
     fOutList = new TList();
     fOutList->SetOwner(kTRUE);
+    TH1 *l_ptBins = new TH1D("ptBins","ptBins",fPtBins.size()-1,fPtBins.data());
+    TH1 *l_centBins = new TH1D("centBins","centBins",fCentBins.size()-1,fCentBins.data());
     TH1D *vtzBefore = new TH1D("vtzBefore","vtzBefore",20,-10,10);
     TH1D *vtzAfter  = new TH1D("vtzAfter","vtzAfter",20,-10,10);
     fNormCounter    = new TH2D("NormCounter","NormCounter; multi/cent; index",fCentBins.size()-1, fCentBins.data(), 4, -0.5, 3.5);
     fOutList->Add(vtzBefore);
     fOutList->Add(vtzAfter);
     fOutList->Add(fNormCounter);
+    fOutList->Add(l_ptBins);
+    fOutList->Add(l_centBins);
     //Setting up correlation plots
     fCorrPlot    = new TH1**[fCentAxis->GetNbins()];
     fMixCorrPlot = new TH1**[fCentAxis->GetNbins()];
