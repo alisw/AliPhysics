@@ -1,10 +1,3 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AliAnalysisMultPt:
-// Description: Analysis task to get multiplicity
-// and pT distributions
-// Author: Negin Alizadehvandchali
-// (negin.alizadehvandchali@cern.ch)
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef AliAnalysisMultPt_H
 #define AliAnalysisMultPt_H
 
@@ -49,23 +42,23 @@ class AliAnalysisMultPt : public AliAnalysisTaskSE
     private:
         void            BuildData();
         void            BuildMC();
-        AliAODEvent     *fAOD;             // input event
-        TList           *fOutputList;      // output list
-        TH1D            *MultHist;         // Mult histogram
-        TH2D            *MultPtHist;       // pT-Mult histogram
-        TH2D            *MultPtHistRec;    // pT-Mult MC histogram
-        TH2D            *MultPtHistGen;    // pT-Mult MC histogram
-        TH2D            *MultHistRatio;    // Ratio of Gen mult vs rec mult histogram
-        TH1D            *fptRatio;         //pt ratio
+        AliAODEvent     *fAOD;             //! input event
+        TList           *fOutputList;      //! output list
+        TH1D            *MultHist;         //! Mult histogram
+        TH2D            *MultPtHist;       //! pT-Mult histogram
+        TH2D            *MultPtHistRec;    //! pT-Mult MC-Rec histogram
+        TH2D            *MultPtHistGen;    //! pT-Mult MC-Gen histogram
+        TH2D            *MultHistRatio;    //! Ratio of Gen mult vs rec mult histogram
+        TH1D            *fptRatio;         //! pt ratio
     
         Bool_t          fIsMC;             // MC flag
         Double_t        fPtmin;            // min PT
         Double_t        fPtmax;            // max PT
         Double_t        fEtaMin;           // min eta
         Double_t        fEtaMax;           // max eta
-        Int_t           fBit;              // filter bit
-        Float_t         fPVzMax;           //max PVz
-        Float_t         fPVzMin;           //min PVz
+        Int_t           fBit;              // filterbit
+        Float_t         fPVzMax;           // max PVz
+        Float_t         fPVzMin;           // min PVz
         Double_t        fChi2DoF;          // limit for chi2
         UShort_t        fTPCNCrossedRows;
         Bool_t          fIsRunFBOnly;      // only filterbit cuts
@@ -79,7 +72,6 @@ class AliAnalysisMultPt : public AliAnalysisTaskSE
 
         AliAnalysisMultPt(const AliAnalysisMultPt&); // not implemented
         AliAnalysisMultPt& operator=(const AliAnalysisMultPt&); // not implemented
-
         ClassDef(AliAnalysisMultPt, 2);
 };
 
