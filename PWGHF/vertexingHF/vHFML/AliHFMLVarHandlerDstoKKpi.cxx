@@ -170,9 +170,6 @@ void AliHFMLVarHandlerDstoKKpi::FillTree() {
         fCandType = 0;
     }
     else {
-        if (fCandType&kDplustoKKpi) {
-            std::cout << "MADONNA! " << fCandType << " LARDRA! " << int(fCandType&kSignal) << " DIO! " << fInvMass << std::endl;
-        }
         fTreeVar->Fill();
         fCandType = 0;
     }
