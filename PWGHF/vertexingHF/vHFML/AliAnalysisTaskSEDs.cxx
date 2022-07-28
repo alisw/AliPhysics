@@ -1283,8 +1283,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl)) // add tag in tree handler for signal from pileup events?
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && labDplus<0)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
+        fMLhandler->ResetCandType();
       }
 
       if (isPhipiKK)
@@ -1331,8 +1332,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl)) // add tag in tree handler for signal from pileup events?
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && labDplus<0)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
+        fMLhandler->ResetCandType();
       }
     }
 
