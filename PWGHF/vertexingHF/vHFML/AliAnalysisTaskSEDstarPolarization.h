@@ -146,14 +146,13 @@ private:
 
     bool fFillBkgSparse = false;                                                    /// flag to fill or not fill bkg sparses
     bool fRecomputeDstarCombinatorial = false;                                      /// flag to recompute D* combinatorial (D*->D0pi)
-    AliVertexerTracks* fVertexerTracks;                                             /// vertexer, to compute secondary vertices
-    double fBzkG;                                                                   /// z componenent of field in kG
+    double fBzkG = 0.;                                                              /// z componenent of field in kG
 
     AliESDtrackCuts *fEsdTrackCutsSoftPi = nullptr;                                 /// ESD track cuts for soft pion in case of combinatoric recomputation
     AliAnalysisFilter *fTrkFilterSoftPi = nullptr;                                   /// track filter for soft pion in case of combinatoric recomputation
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDstarPolarization, 8); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDstarPolarization, 9); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 
