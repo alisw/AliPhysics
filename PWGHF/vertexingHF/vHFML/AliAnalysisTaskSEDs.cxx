@@ -56,7 +56,7 @@ ClassImp(AliAnalysisTaskSEDs);
 /// \endcond
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()                                   
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()
 {
   /// Default constructor
 }
@@ -64,7 +64,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()
 //________________________________________________________________________
 AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts, Bool_t createMLtree) : AliAnalysisTaskSE(name),
                                                                                                                      fCreateMLtree(createMLtree)
-{                                                   
+{
   /// Standard constructor
   SetAnalysisCuts(analysiscuts);
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
@@ -508,7 +508,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   //Set seed of gRandom
   if(fCreateMLtree && fEnableEvtSampling)
     gRandom->SetSeed(fSeedSampling);
-  
+
   PostData(1, fOutput);
 
   return;
@@ -522,7 +522,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
   if(fCreateMLtree && fEnableEvtSampling && gRandom->Rndm() > fFracEvtToKeep)
     return;
-  
+
   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(InputEvent());
 
   fHistNEvents->Fill(0); // all events
@@ -599,11 +599,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     fHistCentrality[2]->Fill(evCentr);
     fHistCentralityMult[2]->Fill(ntracks, evCentr);
   }
-  
+
   // no physics selection can be applied for upgrade studies
   if(fSystem == kUpgr && fAnalysisCuts->IsEventRejectedDuePhysicsSelection())
    isEvSel = kTRUE;
-  
+
   Int_t runNumber = aod->GetRunNumber();
 
   TClonesArray *arrayMC = 0;
@@ -741,7 +741,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Double_t invMass_piKK = 0.;
 
     if (fCreateMLtree && fEnableCandSampling) // apply sampling in pt
-    { 
+    {
       Double_t pseudoRand = ptCand * 1000. - (long)(ptCand * 1000);
       if (pseudoRand > fFracCandToKeep && ptCand < fMaxCandPtSampling)
       {
@@ -1064,7 +1064,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         {
           if (!fReadMC)
           {
-            if (fApplyML && fUseMinimalVarForSparse) 
+            if (fApplyML && fUseMinimalVarForSparse)
             {
               var4nSparse = {invMass_KKpi, ptCand};
               var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
@@ -1080,7 +1080,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
           else
           {
-            if (fApplyML && fUseMinimalVarForSparse) 
+            if (fApplyML && fUseMinimalVarForSparse)
             {
               var4nSparse = {invMass_KKpi, ptCand, ptB, static_cast<Double_t>(Borigin)};
               var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
@@ -1247,6 +1247,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
         bool isSignalWoQuark = kFALSE;
+        bool isDplus = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
@@ -1265,27 +1266,29 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           else {
             if(labDplus >= 0)
             {
+              isDplus = kTRUE;
               if(pdgCode0 == 211)
                 isrefl = kTRUE;
-              fMLhandler->SetIsDplustoKKpi(kTRUE);
               if(orig == 4)
                 isprompt = kTRUE;
               else if(orig == 5)
                 isFD = kTRUE;
             }
-            if(!isCandInjected)
+            else if(!isCandInjected)
               isbkg = kTRUE;
-          }          
+          }
           fMLhandler->SetBeautyMotherPt(ptB);
           fMLhandler->SetBeautyMotherPDG(pdgBmother);
         }
-
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
+        fMLhandler->SetIsDplustoKKpi(isDplus);
+        if ( fMLhandler->GetCandType() >= 512 ) {
+          std::cout << "QUAAAAAAAAA signal: " << issignal << " bkg: " << isbkg  << " prompt: " << isprompt << " nonprompt: " << isFD << " isrefl: " << isrefl << " D+ " << isDplus << " mass " << invMass_KKpi << std::endl;
+        }
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && labDplus<0)) // add tag in tree handler for signal from pileup events?
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && !isDplus)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
-        fMLhandler->ResetCandType();
       }
 
       if (isPhipiKK)
@@ -1296,6 +1299,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
         bool isSignalWoQuark = kFALSE;
+        bool isDplus = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
@@ -1305,24 +1309,24 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               isprompt = kTRUE;
             else if(orig == 5 || origWoQuark==5)
               isFD = kTRUE;
-            
+
             if(orig >= 4)
               issignal = kTRUE;
             else if(orig < 4 && origWoQuark >= 4)
               isSignalWoQuark = kTRUE;
-          } 
+          }
           else {
             if(labDplus >= 0)
             {
+              isDplus = kTRUE;
               if(pdgCode0 == 211)
                 isrefl = kFALSE;
-              fMLhandler->SetIsDplustoKKpi(kTRUE);
               if(orig == 4)
                 isprompt = kTRUE;
               else if(orig == 5)
                 isFD = kTRUE;
             }
-            if(!isCandInjected)
+            else if(!isCandInjected)
               isbkg = kTRUE;
           }
           fMLhandler->SetBeautyMotherPt(ptB);
@@ -1331,10 +1335,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
+        fMLhandler->SetIsDplustoKKpi(isDplus);
+        if ( fMLhandler->GetCandType() >= 512 ) {
+          std::cout << "QUAAAAAAAAA signal: " << issignal << " bkg: " << isbkg  << " prompt: " << isprompt << " nonprompt: " << isFD << " isrefl: " << isrefl << " D+ " << isDplus << " mass " << invMass_piKK << std::endl;
+        }
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && labDplus<0)) // add tag in tree handler for signal from pileup events?
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && !isDplus)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
-        fMLhandler->ResetCandType();
       }
     }
 
@@ -1599,12 +1606,12 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
             if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
             {
-              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
+              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
               fnSparseMC[0]->Fill(var4nSparseAcc);
             }
             else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
             {
-              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};            
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};
               fnSparseMC[1]->Fill(var4nSparseAcc);
             }
             else { //no quark found
@@ -1612,12 +1619,12 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
               {
                 if (origWoQuark == 4 && !isParticleFromOutOfBunchPileUpEvent)
                 {
-                  Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
+                  Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
                   fnSparseMC[5]->Fill(var4nSparseAcc);
                 }
                 else if (origWoQuark == 5 && !isParticleFromOutOfBunchPileUpEvent)
                 {
-                  Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};            
+                  Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};
                   fnSparseMC[6]->Fill(var4nSparseAcc);
                 }
               }
@@ -1771,7 +1778,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Int_t nSparseAxes = knVarForSparse;
   if (!fApplyML) {
     nSparseAxes -= 3;
-  } 
+  }
   else {
     if (fUseMinimalVarForSparse)
       nSparseAxes = knVarForSparseMLMinimal;
@@ -1796,7 +1803,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   std::vector<Double_t> xminReco = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
   std::vector<Double_t> xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   std::vector<TString> axis = {"invMassDsAllPhi", "#it{p}_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP",
-                               "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", 
+                               "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}",
                                "ML model output 0", "ML model output 1", "ML model output 2"};
 
   std::vector<Int_t> nBinsRecoMC = {nInvMassBins, nPtBins, nPtBBins, 5, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};

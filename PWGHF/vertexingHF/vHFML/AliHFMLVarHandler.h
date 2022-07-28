@@ -70,6 +70,7 @@ class AliHFMLVarHandler : public TObject
         void SetBeautyMotherPDG(double pdg) {fPDGBMother = pdg;}
         virtual void FillTree();
         void ResetCandType() {fCandType = 0;}
+        int GetCandType() const {return fCandType;}
 
         //to be called for each event
         void SetGlobalEventVariables(AliAODEvent* event);
