@@ -76,12 +76,12 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   // For the HM_V0 trigger, cut the V0 signal above 415 to avoid trigger bias
   Double_t V0signal = -9999;
-  if (fEvInfo->HasTriggerHM()){
+  // if (fEvInfo->HasTriggerHM()){
     Double_t V0Asignal = AliESDUtils::GetCorrV0A(fESD->GetVZEROData()->GetMTotV0A(), fESD->GetPrimaryVertexSPD()->GetZ());
     Double_t V0Csignal = AliESDUtils::GetCorrV0C(fESD->GetVZEROData()->GetMTotV0C(), fESD->GetPrimaryVertexSPD()->GetZ());
     V0signal = V0Asignal + V0Csignal;
-    if(V0signal < 415.) return;
-  }
+    // if(V0signal < 415.) return;
+  // }
 
   // number of events counter
   Double_t vec_hNoEvts[7]; // vector used to fill hNoEvts
@@ -316,7 +316,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
     vec_hAllESD[l_comb08] = mult_comb08;
     vec_hResponse[l_comb08_resp] = mult_comb08;
     // 	AliInfo(Form("mult ESD = %g",vec_hAllESD[0]));
-    vec_hAllESD[l_V0M] = mult_V0M;
+    // vec_hAllESD[l_V0M] = mult_V0M;
+    vec_hAllESD[l_V0M] = V0signal;
     // vec_hAllESD[l_comb0408] = mult_comb0408;
     vec_hAllESD[l_directivity] = directivity;
     vec_hResponse[l_directivity_resp] = directivity;
@@ -328,7 +329,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
     // ---------------------------
     // get charge
-    vec_hAllESD[l_charge] = t->Charge();
+    // vec_hAllESD[l_charge] = t->Charge();
+    vec_hAllESD[l_charge] = vec_hMultEst[l_trigger_mult];
     vec_hResponse[l_trigger_resp] = vec_hMultEst[l_trigger_mult];
     vec_hPIDQA[1] = vec_hAllESD[l_charge];
 
@@ -805,9 +807,9 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   const Int_t ndim(13);
   // const Int_t cldNbins[ndim] = {2, 105, 118, 21, 87, 20, 40, 110, 118, 21, 87, 20, 40};
-  const Int_t cldNbins[ndim] = {2, 105, 500, 21, 87, 20, 40, 110, 118, 21, 87, 20, 40};
+  const Int_t cldNbins[ndim] = {2, 105, 160, 21, 87, 20, 40, 110, 118, 21, 87, 20, 40};
   const Double_t cldMin[ndim]  = {0., -5., 0., 0., 0., -1., 0., -10, -1.5, 0., 0., -1., 0.},
-  cldMax[ndim]  = {2., 100., 500., 1.05, 20., 1., TMath::TwoPi(), 100., 100.5, 1.05, 20., 1., TMath::TwoPi()};
+  cldMax[ndim]  = {2., 100., 800., 1.05, 20., 1., TMath::TwoPi(), 100., 100.5, 1.05, 20., 1., TMath::TwoPi()};
   THnSparseD *hMultEst = new THnSparseD("hMultEst", "hMultEst;trigger;combined 0.8;V0signal;sphericity;LP pT; LP y;LP phi;generated 0.8;generated V0M;generated sphericity;generated LP pT;generated LP y;generated LP phi;", ndim, cldNbins, cldMin, cldMax);
   // hMultEst->GetAxis(2)->Set(118, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
   hMultEst->GetAxis(8)->Set(118, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
@@ -859,16 +861,16 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   // used for raw spectra and a lot of corrections
   const Int_t ndimAllESD(14);
-  const Int_t cldNbinsAllESD[ndimAllESD]   = {9, 118, 5, 87, 2, 5, 5, 20, 2, 4, 9, 5, 20, 2};
+  const Int_t cldNbinsAllESD[ndimAllESD]   = {9, 160, 5, 87, 2, 5, 5, 20, 2, 4, 9, 5, 20, 2};
   // const Int_t cldNbinsAllESD[ndimAllESD]   = {7, 102, 5, 87, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
   // const Int_t cldNbinsAllESD[ndimAllESD]   = {20, 102, 10, 42, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
-  const Double_t cldMinAllESD[ndimAllESD]  = {0., 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, 0., -1.6, -0.5, -1., -0.5},
-  cldMaxAllESD[ndimAllESD]  = {100., 100., 1., 20., 2., 4.5, 4.5, 1., 1.5, 4., 1.6, 4.5, 1.,1.5};
+  const Double_t cldMinAllESD[ndimAllESD]  = {0., 0., 0., 0., 0., -0.5, -0.5, -1., -0.5, 0., -1.6, -0.5, -1., -0.5},
+  cldMaxAllESD[ndimAllESD]  = {100., 800., 1., 20., 2., 4.5, 4.5, 1., 1.5, 4., 1.6, 4.5, 1.,1.5};
   // const Double_t cldMinAllESD[ndimAllESD]  = {0., 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -2., -0.5, -1., -0.5},
   // cldMaxAllESD[ndimAllESD]  = {100., 100., 1., 20., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2., 4.5, 1.,1.5};
   THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;delta_y;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
   hAllESD->GetAxis(0)->Set(9, binLimits_mult);
-  hAllESD->GetAxis(1)->Set(118, binLimitsV0M);
+  // hAllESD->GetAxis(1)->Set(118, binLimitsV0M);
   // hAllESD->GetAxis(3)->Set(42, binLimits_reduced);
   hAllESD->GetAxis(3)->Set(87, binLimits);
   fHistosQA->AddAt(hAllESD, slot_AllESD);
