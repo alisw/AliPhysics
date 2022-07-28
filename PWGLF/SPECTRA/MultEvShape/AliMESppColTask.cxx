@@ -134,17 +134,17 @@ void AliMESppColTask::UserExec(Option_t *opt)
     return;
   }
 
-  Double_t V0signal = -9999;
-  if (fEvInfo->HasTriggerHM())
-  {
+  Double_t V0signal = -9999.;
+  // if (fEvInfo->HasTriggerHM())
+  // {
     Double_t V0Asignal = AliESDUtils::GetCorrV0A(fESD->GetVZEROData()->GetMTotV0A(), fESD->GetPrimaryVertexSPD()->GetZ());
     Double_t V0Csignal = AliESDUtils::GetCorrV0C(fESD->GetVZEROData()->GetMTotV0C(), fESD->GetPrimaryVertexSPD()->GetZ());
     V0signal = V0Asignal + V0Csignal;
-    if (V0signal < 415.)
-      return;
-  }
+    // if (V0signal < 415.)
+      // return;
+  // }
   Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);// combined multiplicity with |eta| < 0.8
-    // if(mult_comb08 < 0.) return;
+    if(mult_comb08 < 0.) return;
 	// event shape for data (from ESD)
 	Double_t sfer = fEvInfo->GetEventShape()->GetSphericity();
 	
@@ -192,7 +192,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 		pTlead=t->Pt(); 
 		idLead = it;  //id of leading particle determination
 		phiL = t->Phi();
-        etaL = t->Eta();
+    etaL = t->Eta();
 	}
   }
   vec_hNoEvts[3] = pTlead;
@@ -262,7 +262,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
 		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
 		if( TMath::Abs(tMC->Eta())> 0.8 ) continue;
-		if( tMC->Pt()< 0.2 ) continue;
+		if( tMC->Pt()< 0.1 ) continue;
             vec_hbMCTrk[0]=MC_mult_glob08;
             if(MC_sfer > 0.0 ) {vec_hbMCTrk[1]=MC_sfer;}
                 else vec_hbMCTrk[1]= -999.;
@@ -306,16 +306,15 @@ void AliMESppColTask::UserExec(Option_t *opt)
 //      }
 
 
-
-	
-//	ESD tracks
+//	ESD tracks - two-particle correlations 
 	Int_t ESD=1;
   
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0. && sfer<=1.0*/){
-//         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
-			TObjArray *selectedTracks1=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 /*&& sfer>0. && sfer<=1.0*/)
+      {
+        //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
+        TObjArray *selectedTracks1 = SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks1) break;
         selectedTracks1->SetOwner(kTRUE);
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0, sfer);
@@ -1109,23 +1108,23 @@ Bool_t AliMESppColTask::BuildQAHistos()
   const Int_t cldNbinsTrk[ndimTrk]   = { 150, 30, 36, 60};
   const Double_t cldMinTrk[ndimTrk]  = { 0.5, 0., -1.5, -0.5*TMath::Pi()},
 					  cldMaxTrk[ndimTrk]  = {150.5, 1., 1.5, 1.5*TMath::Pi()};
-  THnSparseD *hTrk = new THnSparseD("infoTrk","infoTrk;multComb08;sfer;dEta;dPhi;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
+  THnSparseD *hTrk = new THnSparseD("infoTrk","infoTrk;multComb08;Sphericity;#Delta#eta;#Delta#varphi;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
   fHistosQA->AddAt(hTrk, 145);
 
   THnSparseD *hMCTrk = new THnSparseD("infoMCTrk","infoMCTrk;multComb08MC;sferMC;dEtaMC;dPhiMC;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
   fHistosQA->AddAt(hMCTrk, 146);
   
   const Int_t ndimbTrk(9);
-  const Int_t cldNbinsbTrk[ndimbTrk]   = { 150, 30, 100, 100, 36, 60, 3, 500, 2};
+  const Int_t cldNbinsbTrk[ndimbTrk]   = { 150, 30, 100, 100, 36, 60, 3, 160, 2};
   const Double_t cldMinbTrk[ndimbTrk]  = { 0.5, 0., 0., 0.,-1.5, -0.5*TMath::Pi(), -1.5, 0., 0.},
-					  cldMaxbTrk[ndimbTrk]  = {150.5, 1., 5., 5., 1.5, 1.5*TMath::Pi(), 1.5, 500., 2.};
+					  cldMaxbTrk[ndimbTrk]  = {150.5, 1., 10., 10., 1.5, 1.5*TMath::Pi(), 1.5, 800., 2.};
 
   const Int_t ndimbTrkMC(7);
   const Int_t cldNbinsbTrkMC[ndimbTrkMC] = {150, 30, 100, 100, 36, 60, 3};
   const Double_t cldMinbTrkMC[ndimbTrkMC] = {0.5, 0., 0., 0., -1.5, -0.5 * TMath::Pi(), -1.5},
                  cldMaxbTrkMC[ndimbTrkMC] = {150.5, 1., 5., 5., 1.5, 1.5 * TMath::Pi(), 1.5};
 
-  THnSparseD *hbTrk = new THnSparseD("basicInfoTrk", "basicInfoTrk;multComb08;sfer;p_{T}^{L};p_{T}^{As};dEta;dPhi;as;V0Msignal;trigg;", ndimbTrk, cldNbinsbTrk, cldMinbTrk, cldMaxbTrk);
+  THnSparseD *hbTrk = new THnSparseD("basicInfoTrk", "basicInfoTrk;multComb08;Sphericity;p_{T}^{L};p_{T}^{As};#Delta#eta;#Delta#varphi;as;V0Msignal;trigg;", ndimbTrk, cldNbinsbTrk, cldMinbTrk, cldMaxbTrk);
   fHistosQA->AddAt(hbTrk, 147);
 
   THnSparseD *hbMCTrk = new THnSparseD("basicInfoMCTrk", "basicInfoMCTrk;multComb08MC;sferMC;p_{T}^{L};p_{T}^{As};dEtaMC;dPhiMC;asMC;", ndimbTrkMC, cldNbinsbTrkMC, cldMinbTrkMC, cldMaxbTrkMC);
