@@ -49,8 +49,6 @@ public:
     AliAnalysisTaskSEDstarPolarization(const char *name, AliRDHFCuts *analysiscuts);
     virtual ~AliAnalysisTaskSEDstarPolarization();
 
-    TClonesArray* RecomputeDstarCombinatorial();
-
     void SetReadMC(bool readMC = true)                                                                          {fReadMC = readMC;}
     void SetAODMismatchProtection(int opt = 0)                                                                  {fAODProtection = opt;}
     void SetAnalysisCuts(AliRDHFCuts *cuts)                                                                     {fRDCuts = cuts;}
@@ -92,7 +90,7 @@ private:
     AliAnalysisTaskSEDstarPolarization &operator=(const AliAnalysisTaskSEDstarPolarization &source);
 
     AliAODRecoCascadeHF *MakeCascade(AliAODRecoDecayHF2Prong* trackD0, AliAODTrack *track, AliESDtrack *esdTrackPi, AliESDVertex *fV1);
-    std::vector<AliAODRecoCascadeHF*> RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks);
+    bool RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks, std::vector<AliAODRecoCascadeHF*> &arrayDstar);
     bool SelectInvMassAndPtDstarD0pi(double *px, double *py, double *pz);
 
     int IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx,

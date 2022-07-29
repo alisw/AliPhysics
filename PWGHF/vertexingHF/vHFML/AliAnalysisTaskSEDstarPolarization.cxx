@@ -298,7 +298,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     fHistNEvents->Fill(4); // accepted event
 
     if (fRecomputeDstarCombinatorial) {
-        arrayCandRecomputed = RecomputeDstarCombinatorial(arrayCandDDau, fAOD->GetTracks());
+        RecomputeDstarCombinatorial(arrayCandDDau, fAOD->GetTracks(), arrayCandRecomputed);
     }
 
     // check if the train includes the common ML selector for the given charm-hadron species
@@ -604,6 +604,11 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     if (fRecomputeDstarCombinatorial) {
         for (auto &dStar: arrayCandRecomputed) {
             if (dStar) {
+                AliAODVertex *vtxDS = (AliAODVertex*)dStar->GetSecondaryVtx();
+                if(vtxDS) {
+                    delete vtxDS;
+                    vtxDS = nullptr;
+                }
                 delete dStar;
                 dStar = nullptr;
             }
@@ -1013,7 +1018,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
 }
 
 //_________________________________________________________________________
-std::vector<AliAODRecoCascadeHF*> AliAnalysisTaskSEDstarPolarization::RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks) {
+bool AliAnalysisTaskSEDstarPolarization::RecomputeDstarCombinatorial(TClonesArray *array2Prongs, TClonesArray *arrayTracks, std::vector<AliAODRecoCascadeHF*> &arrayDstar) {
 
     AliAnalysisVertexingHF vHF = AliAnalysisVertexingHF();
 
@@ -1026,17 +1031,18 @@ std::vector<AliAODRecoCascadeHF*> AliAnalysisTaskSEDstarPolarization::RecomputeD
     AliESDVertex *fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
     fV1->GetCovMatrix(cov);
 
-    std::vector<AliAODRecoCascadeHF*> arrayDstar{};
     for (int iTrack=0; iTrack<arrayTracks->GetEntriesFast(); iTrack++) {
         auto track = static_cast<AliAODTrack*>(arrayTracks->At(iTrack));
         AliESDtrack *trackESD = new AliESDtrack(track);
-        if (!trackESD->PropagateToDCA(fV1,fBzkG,kVeryBig)) {
+        if (!trackESD->PropagateToDCA(fV1, fBzkG, kVeryBig)) {
             delete trackESD;
+            trackESD = nullptr;
             continue;
         }
-        trackESD->RelateToVertex(fV1,fBzkG,kVeryBig);
+        trackESD->RelateToVertex(fV1, fBzkG, kVeryBig);
         if (!fTrkFilterSoftPi->IsSelected(trackESD)) {
             delete trackESD;
+            trackESD = nullptr;
             continue;
         }
 
@@ -1049,18 +1055,24 @@ std::vector<AliAODRecoCascadeHF*> AliAnalysisTaskSEDstarPolarization::RecomputeD
                 if (fRDCuts->IsSelected(dStar, AliRDHFCuts::kAll, fAOD))
                     arrayDstar.push_back(dStar);
                 else {
+                    AliAODVertex *vtxDS = (AliAODVertex*)dStar->GetSecondaryVtx();
+                        if(vtxDS) {
+                            delete vtxDS;
+                            vtxDS = nullptr;
+                        }
                     delete dStar;
                     dStar = nullptr;
                 }
             }
         }
-        delete trackESD; trackESD = nullptr;
+        delete trackESD;
+        trackESD = nullptr;
     }
 
     delete fV1;
     fV1 = nullptr;
 
-    return arrayDstar;
+    return true;
 }
 
 //----------------------------------------------------------------------------
@@ -1090,9 +1102,8 @@ AliAODRecoCascadeHF *AliAnalysisTaskSEDstarPolarization::MakeCascade(AliAODRecoD
     vtxCasc = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,2);
     if(!vtxCasc) {
         twoTrackArrayCasc->Clear();
-        twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
-        delete esdTrackPi;
-        esdTrackPi=nullptr;
+        twoTrackArrayCasc->Delete();
+        delete twoTrackArrayCasc;
         delete vtxCasc;
         vtxCasc=nullptr;
         delete trackV0;
@@ -1142,8 +1153,10 @@ AliAODRecoCascadeHF *AliAnalysisTaskSEDstarPolarization::MakeCascade(AliAODRecoD
     rCasc->SetIsFilled(2);
 
     twoTrackArrayCasc->Clear();
-    twoTrackArrayCasc->Delete(); delete twoTrackArrayCasc;
-    delete trackV0; trackV0=nullptr;
+    twoTrackArrayCasc->Delete();
+    delete twoTrackArrayCasc;
+    delete trackV0;
+    trackV0=nullptr;
 
     return rCasc;
 }
