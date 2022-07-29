@@ -1311,6 +1311,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isrefl = kFALSE;
         bool isSignalWoQuark = kFALSE;
         bool isDplus = kFALSE;
+        bool isDplustoKpipi = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
