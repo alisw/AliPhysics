@@ -41,8 +41,6 @@ class AliAnalysisTaskParticleEffWRZ :public AliAnalysisTaskSE{
   virtual ~AliAnalysisTaskParticleEffWRZ(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
-  void setMaxMult(double max){maxMult=max;};
-  void setMinMult(double min){minMult=min;};
   
   private:
   AliAnalysisTaskParticleEffWRZ(const AliAnalysisTaskParticleEffWRZ &); // copy constructor
@@ -104,9 +102,7 @@ class AliAnalysisTaskParticleEffWRZ :public AliAnalysisTaskSE{
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
   ClassDef(AliAnalysisTaskParticleEffWRZ, 0);
-  
-  double minMult;
-  double maxMult;
+
 
 };
 
