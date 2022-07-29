@@ -42,11 +42,11 @@ AliAnalysisTaskPionDeuteronMC *AddTaskCustomPionDeuteronMC(TString taskname = "p
   mgr->AddTask(task);
 
   TString output = "AnalysisResults.root";
-  AliAnalysisDataContainer *cont = mgr->CreateContainer(Form("MCcorrelation_%s", tskname.Data()),
+  AliAnalysisDataContainer *cont = mgr->CreateContainer(Form("MCcorrelation_%s", taskname.Data()),
                                                         TList::Class(),
                                                         AliAnalysisManager::kOutputContainer,
                                                         output.Data());
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, cont);
-  return cont;
+  return task;
 }
