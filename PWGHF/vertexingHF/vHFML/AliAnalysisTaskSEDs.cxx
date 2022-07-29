@@ -1351,9 +1351,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetIsDplustoKKpi(isDplus);
-        if ( fMLhandler->GetCandType() >= 512 ) {
-          std::cout << "QUAAAAAAAAA signal: " << issignal << " bkg: " << isbkg  << " prompt: " << isprompt << " nonprompt: " << isFD << " isrefl: " << isrefl << " D+ " << isDplus << " mass " << invMass_piKK << std::endl;
-        }
+        fMLhandler->SetIsDplustoKpipi(isDplustoKpipi);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
         if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && !isDplus)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
