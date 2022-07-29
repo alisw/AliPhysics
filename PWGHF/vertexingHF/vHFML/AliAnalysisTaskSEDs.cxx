@@ -681,6 +681,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     printf("Number of Ds->KKpi: %d\n", n3Prong);
 
   Int_t pdgDstoKKpi[3] = {321, 321, 211};
+  Int_t pdgDplustoKpipi[3] = {211, 321, 211};
   Int_t nSelected = 0;
   Int_t nFiltered = 0;
   Double_t massPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
@@ -838,6 +839,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Int_t indexMCpiKK = -1;
     Int_t labDs = -1;
     Int_t labDplus = -1;
+    Int_t labDplusToKpipi = -1;
     Int_t pdgCode0 = -999;
 
     AliAODMCParticle *partDs = nullptr;
@@ -906,6 +908,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           Int_t labDau0 = ((AliAODTrack *)d->GetDaughter(0))->GetLabel();
           AliAODMCParticle *p = (AliAODMCParticle *)arrayMC->UncheckedAt(TMath::Abs(labDau0));
           pdgCode0 = TMath::Abs(p->GetPdgCode());
+        }
+        else
+        {
+          labDplusToKpipi = d->MatchToMC(411, arrayMC, nProng, pdgDplustoKpipi);
+          if (labDplusToKpipi >= 0)
+            partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
         }
       }
       if(partDs){
@@ -1248,6 +1256,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isrefl = kFALSE;
         bool isSignalWoQuark = kFALSE;
         bool isDplus = kFALSE;
+        bool isDplustoKpipi = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
@@ -1274,6 +1283,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               else if(orig == 5)
                 isFD = kTRUE;
             }
+            else if(labDplusToKpipi >= 0)
+            {
+              isDplustoKpipi = kTRUE;
+            }
             else if(!isCandInjected)
               isbkg = kTRUE;
           }
@@ -1283,6 +1296,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetIsDplustoKKpi(isDplus);
+        fMLhandler->SetIsDplustoKpipi(isDplustoKpipi);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
         if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && !isDplus)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
@@ -1297,6 +1311,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isrefl = kFALSE;
         bool isSignalWoQuark = kFALSE;
         bool isDplus = kFALSE;
+        bool isDplustoKpipi = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
@@ -1323,6 +1338,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               else if(orig == 5)
                 isFD = kTRUE;
             }
+            else if(labDplusToKpipi >= 0)
+            {
+              isDplustoKpipi = kTRUE;
+            }
             else if(!isCandInjected)
               isbkg = kTRUE;
           }
@@ -1333,9 +1352,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetIsDplustoKKpi(isDplus);
-        if ( fMLhandler->GetCandType() >= 512 ) {
-          std::cout << "QUAAAAAAAAA signal: " << issignal << " bkg: " << isbkg  << " prompt: " << isprompt << " nonprompt: " << isFD << " isrefl: " << isrefl << " D+ " << isDplus << " mass " << invMass_piKK << std::endl;
-        }
+        fMLhandler->SetIsDplustoKpipi(isDplustoKpipi);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
         if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && !isDplus)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
