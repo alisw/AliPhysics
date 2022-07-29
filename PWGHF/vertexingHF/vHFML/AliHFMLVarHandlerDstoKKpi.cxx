@@ -100,7 +100,7 @@ bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
     if(!cand)
         return false;
     if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-        if(!(fCandType&kSignal || fCandType&kRefl || fCandType&kDplustoKKpi)) 
+        if(!(fCandType&kSignal || fCandType&kRefl || fCandType&kDplustoKKpi || fCandType&kDplustoKpipi)) 
             return true;
     }
 
@@ -166,7 +166,7 @@ bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
 //________________________________________________________________
 void AliHFMLVarHandlerDstoKKpi::FillTree() {
     //if fill only signal and not signal/reflection/D+ candidate, do not store
-    if(fFillOnlySignal && !(fCandType&kSignal) && !(fCandType&kRefl) && !(fCandType&kDplustoKKpi)) {
+    if(fFillOnlySignal && !(fCandType&kSignal) && !(fCandType&kRefl) && !(fCandType&kDplustoKKpi) && !(fCandType&kDplustoKpipi)) {
         fCandType = 0;
     }
     else {

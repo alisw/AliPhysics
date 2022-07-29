@@ -28,7 +28,10 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
             kpiKK
         };
 
-        static const int kDplustoKKpi = BIT(9);
+        enum bitsDs {
+            kDplustoKKpi  = BIT(9),
+            kDplustoKpipi = BIT(10)
+        };
 
         AliHFMLVarHandlerDstoKKpi();
         AliHFMLVarHandlerDstoKKpi(int PIDopt, int massopt);
@@ -47,6 +50,12 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
                 fCandType |= kDplustoKKpi;
             else 
                 fCandType &= ~kDplustoKKpi;
+        }
+        void SetIsDplustoKpipi(bool isDplus) {
+            if(isDplus) 
+                fCandType |= kDplustoKpipi;
+            else 
+                fCandType &= ~kDplustoKpipi;
         }
 
     private:
