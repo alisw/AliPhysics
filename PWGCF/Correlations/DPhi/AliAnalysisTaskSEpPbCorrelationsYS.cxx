@@ -148,24 +148,10 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fcosMinK0s(0.97),
       fcosMinLambda(0.995),
       fMaxnSigmaTPCV0(5),
-      hv0dcharge(0),
       fclustermin(70),
       fratiocluster(0.8),
       fEtaMaxDaughter(0.8),
       fEtaMinDaughter(0.),
-      fHistMass_K0s(0),
-      fHistMass_K0s_MC(0),
-      fHistMass_Lambda(0),
-      fHistMass_ALambda(0),
-      fHistMass_ALambda_MC(0),
-      fHistMassXiMinus(0),
-      fHistMassXiPlus(0),
-      fHistMassOmegaMinus(0),
-      fHistMassOmegaPlus(0),
-      fHistMass_bumpcorr(0),
-      fHist_V0QA(0),
-      fHist_CascadeQA(0),
-      fHistMass_Lambda_MC(0),
       fEventCuts(0),
       fUtils(),
       fEvent(0),
@@ -183,53 +169,13 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fNzVtxBins(0),
       fNCentBins(0),
       fMaxnSigmaTPCTOF(3.),
-      fHistCentV0vsTrackletsbefore(0),
-      mixedDist(0),
-      mixedDist2(0),
-      fHistLeadQA(0),      
-      fHistPIDQA(0),
-      fhistmcprim(0),
-      fhmcprimvzeta(0),
-      frefetaa(0),
-      frefetac(0),
-      frefvz(0),
-      fhmcprimpdgcode(0),
-      fh2_FMD_acceptance_prim(0),
-      fh2_FMD_eta_phi_prim(0),
-      fh2_SPD_multcorr(0),
-      fh2_SPDtrack_multcorr(0),
       fhistfmdphiacc(0),  
-      fhistits(0), 
-      fhSecFMD(0),
-      fOutliers(0),
       fHist_Stat(0),
-      fHistPhiDTPCNSig(0),
-      fHistPhiDTOFNSig(0),
-      fHistPhiDTPCTOFNSig(0),
-      fHistMass_PhiMeson(0),
-      fHistMass_PhiMeson_MIX(0),
-      fHist_PhiQA(0),
       fHistTriggerTrack(0),
       fHistReconstTrack(0),
       fHistTriggerTrackMix(0),
-      fHistReconstTrackMix(0),
-      fHistQna(0),
-      fHistQnc(0),
-      fHistQn(0),
-      fHistQna_VZERO(0),
-      fHistQnc_VZERO(0),
-      fHistQn_VZERO(0),
-      fHistVn(0),
-      SP_TPCATPCC(0),
-      SP_TPCATPCC_default(0),
-      SP_V0AV0C_default(0),
-      SP_V0ATPC_default(0),
-      SP_V0CTPC_default(0),
-      fHist_V0AV0C(0),
-      fHist_V0ATPC(0),
-      fHist_V0CTPC(0),
-      SP_uTPCA(0),
-      SP_uTPCC(0){
+      fHistReconstTrackMix(0)
+{
   for (Int_t iBin = 0; iBin < 100; iBin++) {
     fZvtxBins[iBin] = 0.;
     fCentBins[iBin] = 0.;
@@ -257,6 +203,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
     fHistCorrQna[i]=0;
     fHistCorrQnc[i]=0;
   }
+  /*
   for (Int_t i = 0; i < 8; i++) {
     SP_uTPC_PP[i]=0;
     SP_uTPC[i]=0;
@@ -274,6 +221,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
     SP_uVZEROC2[i]=0;
     SP_uVZEROC3[i]=0;
   }
+  */
   for(Int_t i=0;i<4;i++){
     fhrefetaFMD[i]=0;
     fhrefphiFMD[i]=0;
@@ -341,24 +289,10 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fcosMinK0s(0.97),
       fcosMinLambda(0.995),
       fMaxnSigmaTPCV0(5),
-      hv0dcharge(0),
       fclustermin(70),
       fratiocluster(0.8),
       fEtaMaxDaughter(0.8),
       fEtaMinDaughter(0.),
-      fHistMass_K0s(0),
-      fHistMass_K0s_MC(0),
-      fHistMass_Lambda(0),
-      fHistMass_ALambda(0),
-      fHistMass_ALambda_MC(0),
-      fHistMassXiMinus(0),
-      fHistMassXiPlus(0),
-      fHistMassOmegaMinus(0),
-      fHistMassOmegaPlus(0),
-      fHistMass_bumpcorr(0),
-      fHist_V0QA(0),
-      fHist_CascadeQA(0),
-      fHistMass_Lambda_MC(0),
       fEventCuts(0),
       fUtils(),
       fEvent(0),
@@ -376,53 +310,13 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fNzVtxBins(0),
       fNCentBins(0),
       fMaxnSigmaTPCTOF(3.),
-      fHistCentV0vsTrackletsbefore(0),
-      mixedDist(0),
-      mixedDist2(0),
-      fHistLeadQA(0),      
-      fHistPIDQA(0),
-      fhistmcprim(0),
-      fhmcprimvzeta(0),
-      frefetaa(0),
-      frefetac(0),
-      frefvz(0),
-      fhmcprimpdgcode(0),
-      fh2_FMD_acceptance_prim(0),
-      fh2_FMD_eta_phi_prim(0),
-      fh2_SPD_multcorr(0),
-      fh2_SPDtrack_multcorr(0),
       fhistfmdphiacc(0),  
-      fhistits(0), 
-      fhSecFMD(0),
-      fOutliers(0),
       fHist_Stat(0),
-      fHistPhiDTPCNSig(0),
-      fHistPhiDTOFNSig(0),
-      fHistPhiDTPCTOFNSig(0),
-      fHistMass_PhiMeson(0),
-      fHistMass_PhiMeson_MIX(0),
-      fHist_PhiQA(0),
       fHistTriggerTrack(0),
       fHistReconstTrack(0),
       fHistTriggerTrackMix(0),
-      fHistReconstTrackMix(0),
-      fHistQna(0),
-      fHistQnc(0),
-      fHistQn(0),
-      fHistQna_VZERO(0),
-      fHistQnc_VZERO(0),
-      fHistQn_VZERO(0),
-      fHistVn(0),
-      SP_TPCATPCC(0),
-      SP_TPCATPCC_default(0),
-      SP_V0AV0C_default(0),
-      SP_V0ATPC_default(0),
-      SP_V0CTPC_default(0),
-      fHist_V0AV0C(0),
-      fHist_V0ATPC(0),
-      fHist_V0CTPC(0),
-      SP_uTPCA(0),
-      SP_uTPCC(0){
+      fHistReconstTrackMix(0)
+      {
         for (Int_t iBin = 0; iBin < 100; iBin++) {
           fZvtxBins[iBin] = 0.;
           fCentBins[iBin] = 0.;
@@ -453,7 +347,8 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
           fHistCorrQna[i]=0;
           fHistCorrQnc[i]=0;
         }
-	
+
+	/*
         for (Int_t i = 0; i < 8; i++) {
           SP_uTPC_PP[i]=0;
           SP_uTPC[i]=0;
@@ -471,6 +366,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
           SP_uVZEROC2[i]=0;
           SP_uVZEROC3[i]=0;
         }
+	*/
         for(Int_t i=0;i<4;i++){
           fhrefetaFMD[i]=0;
           fhrefphiFMD[i]=0;
@@ -547,12 +443,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   
   fEventCuts.AddQAplotsToList(fOutputList);
 
-  frefetac=new TH1F("frefetac","frefetac",30,-3.4,-1.9);
+  TH1F* frefetac=new TH1F("frefetac","frefetac",30,-3.4,-1.9);
   fOutputList2->Add(frefetac);
-  frefetaa=new TH1F("frefetaa","frefetaa",62,1.9,5.0);
+  TH1F* frefetaa=new TH1F("frefetaa","frefetaa",62,1.9,5.0);
   fOutputList2->Add(frefetaa);
   
-  frefvz=new TH1F("frefvz","z-vertex",10,-10,10);
+  TH1F* frefvz=new TH1F("frefvz","z-vertex",10,-10,10);
   fOutputList2->Add(frefvz);
   PostData(3, fOutputList2);
   ///    TGrid::Connect("alien://");
@@ -581,11 +477,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	fheffipt=(TH1F*)file->Get("fheffipt");
       }
     }else if(fcollisiontype=="MBPP" || fcollisiontype=="HMPPV0"){
-      //file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_LHC18_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
       feffi=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/byvytautas/Effi_pp_FB%d.root",ffilterbit));
-      if(!feffi) return;
+      if(!feffi) AliError("No efficinecy file");
     }else if(fcollisiontype=="PbPb"){
       feffi=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/byvytautas/Effi_PbPb_FB%d.root",ffilterbit));
+      if(!feffi) AliError("No efficinecy file");
     }
   }
 
@@ -716,8 +612,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    if(fCentType=="Manual") ncentmax=200;
    else ncentmax=100;
       
-   mixedDist=new TH2F("mixedDist", ";centrality;tracks;events", 100, 0, ncentmax, 200, 0, fPoolMinNTracks*1.5 );
-   mixedDist2=new TH2F("mixedDist2", ";centrality;events;events", 100, 0,ncentmax, 100, 0, 1000) ;
+   TH2F* mixedDist=new TH2F("mixedDist", ";centrality;tracks;events", 100, 0, ncentmax, 200, 0, fPoolMinNTracks*1.5 );
+   TH2F* mixedDist2=new TH2F("mixedDist2", ";centrality;events;events", 100, 0,ncentmax, 100, 0, 1000) ;
    fOutputList2->Add(mixedDist);
    fOutputList2->Add(mixedDist2);
    
@@ -747,16 +643,16 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    Double_t binning_cent[16] = {0., 0.1, 1., 2.,  3.,  5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
    Double_t binning_zvx[11] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
    if(fasso=="PID" && fQA){
-	 fHistPIDQA = new AliTHn("fHistPIDQA", "fHistPIDQA", 3, 4, ipidBin);
-	 fHistPIDQA->SetBinLimits(0, binning_pt_lead);
-	 fHistPIDQA->SetBinLimits(1, binning_eta);
-	 fHistPIDQA->SetBinLimits(2, binning_dphi);
-	 fHistPIDQA->SetBinLimits(3, binning_cent);
-	 fHistPIDQA->SetVarTitle(0, "pt");
-	 fHistPIDQA->SetVarTitle(1, "eta");
-	 fHistPIDQA->SetVarTitle(2, "phi");
-	 fHistPIDQA->SetVarTitle(3, "centrality");
-	 fOutputList1->Add(fHistPIDQA);
+     AliTHn* fHistPIDQA = new AliTHn("fHistPIDQA", "fHistPIDQA", 3, 4, ipidBin);
+     fHistPIDQA->SetBinLimits(0, binning_pt_lead);
+     fHistPIDQA->SetBinLimits(1, binning_eta);
+     fHistPIDQA->SetBinLimits(2, binning_dphi);
+     fHistPIDQA->SetBinLimits(3, binning_cent);
+     fHistPIDQA->SetVarTitle(0, "pt");
+     fHistPIDQA->SetVarTitle(1, "eta");
+     fHistPIDQA->SetVarTitle(2, "phi");
+     fHistPIDQA->SetVarTitle(3, "centrality");
+     fOutputList1->Add(fHistPIDQA);
    }
 
    Double_t binning_cent_leadQA[13] = {0., 0.1,  5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
@@ -764,7 +660,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    if(fCentType=="Manual") fncentbinqa=100;
    else fncentbinqa=12;
    const Int_t ipidBinQA[5] = {11, 40, 72, fncentbinqa,10};
-   fHistLeadQA = new AliTHn("fHistLeadQA", "fHistLeadQA", 1, 5, ipidBinQA);
+   AliTHn*  fHistLeadQA = new AliTHn("fHistLeadQA", "fHistLeadQA", 1, 5, ipidBinQA);
    fHistLeadQA->SetBinLimits(0, binning_pt_lead);
    fHistLeadQA->SetBinLimits(1, binning_eta);
    fHistLeadQA->SetBinLimits(2, binning_dphi);
@@ -798,6 +694,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    const Int_t imcprimbin[4]={11,55,30,10};
    Double_t binning_pt_mcprim[12] = {0.3, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
    if(!fDataType){
+     /*
      fhistmcprim=new AliTHn("fhistmcprim","fhistmcprim",1,4,imcprimbin);
      fhistmcprim->SetBinLimits(0,binning_pt_mcprim);
      fhistmcprim->SetBinLimits(1,-5.5,5.5);
@@ -808,15 +705,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fhistmcprim->SetVarTitle(2,"phi");
      fhistmcprim->SetVarTitle(3,"centrality");
      fOutputList2->Add(fhistmcprim);
-     fhmcprimvzeta=new TH2D("fhmcprimvzeta","fhmcprimvzeta",200,-4,6,20,-10,10);
-     fOutputList2->Add(fhmcprimvzeta);
-     fhmcprimpdgcode=new TH1D("fhmcprimpdgcode","fhmcprimpdgcode",4000,-0.5,3999.5);
-     fOutputList2->Add(fhmcprimpdgcode);
-     fh2_FMD_acceptance_prim=new TH2D("fh2_FMD_acceptance_prim","fh2_FMD_acceptance_prim",200,-4,6,200,-10,10);
-     fOutputList2->Add(fh2_FMD_acceptance_prim);
-     fh2_FMD_eta_phi_prim=new TH2D("fh2_FMD_eta_phi_prim","fh2_FMD_eta_phi_prim",200,-4,6,20,0,2*TMath::Pi());
-     fOutputList2->Add(fh2_FMD_eta_phi_prim);
-	 
+     */
      for(Int_t i=0;i<4;i++){
        fhrefetaFMD[i]=new TH1D(Form("fhrefetaFMD_%d",i),Form("fhrefetaFMD_%d",i),200,-4,6);
        fhrefphiFMD[i]=new TH1D(Form("fhrefphiFMD_%d",i),Form("fhrefphiFMD_%d",i),100,0,2*TMath::Pi());
@@ -838,7 +727,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fOutputList2->Add(fHist_FMDCMultRun);
    
 
-   fOutliers = new TH2D("fOutliers","Maximum #sigma from mean N_{ch} pr. bin",100, 0., 100., 500, 0., 5.); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
+   TH2D* fOutliers = new TH2D("fOutliers","Maximum #sigma from mean N_{ch} pr. bin",100, 0., 100., 500, 0., 5.); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
    fOutputList2->Add(fOutliers);
    
    Float_t nmutFoward;
@@ -874,13 +763,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    TH2F* fh2_ITS_acceptance=new TH2F("fh2_ITS_acceptance","fh2_ITS_acceptance",200,-10,10,200,-4,6);
    fOutputList2->Add(fh2_ITS_acceptance);
    
-   fh2_SPD_multcorr=new TH2F("fh2_SPD_multcorr","fh2_SPD_multcorr",400,0,400,2000,0,2000);
+   TH2F* fh2_SPD_multcorr=new TH2F("fh2_SPD_multcorr","fh2_SPD_multcorr",400,0,400,2000,0,2000);
    fOutputList2->Add(fh2_SPD_multcorr);
    
    TH2F* fh2_SPDV0_multcorr=new TH2F("fh2_SPDV0_multcorr","fh2_SPDV0_multcorr",400,0,400,2000,0,2000);
    fOutputList2->Add(fh2_SPDV0_multcorr);
    
-   fh2_SPDtrack_multcorr=new TH2F("fh2_SPDtrack_multcorr","fh2_SPDtrack_multcorr",400,0,400,400,0,400);
+   TH2F* fh2_SPDtrack_multcorr=new TH2F("fh2_SPDtrack_multcorr","fh2_SPDtrack_multcorr",400,0,400,400,0,400);
    fOutputList2->Add(fh2_SPDtrack_multcorr);
    
    TH1F* fhtrackletsdphi=new TH1F("fhtrackletsdphi","dphi tracklets",100,-100,100);
@@ -940,7 +829,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    MaxITS[1]=2*TMath::Pi();
    MaxITS[2]=100.;
    MaxITS[3]=10.;
-   fhistits=new THnSparseF("fhistits","fhistits",4,iitsbin,MinITS,MaxITS);
+   THnSparseF* fhistits=new THnSparseF("fhistits","fhistits",4,iitsbin,MinITS,MaxITS);
    //   fOutputList2->Add(fhistits);
    
    const Double_t binning_etafmd[51]={
@@ -953,6 +842,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	 4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,4.8,4.9};
    
    const Int_t binfmdsec[5]={160,50,15,20,10};
+   /*
    fhSecFMD= new AliTHn("fhSecFMD","fhSecFMD",2,5,binfmdsec);
    fhSecFMD->SetBinLimits(0,-4.025,3.975);
    fhSecFMD->SetBinLimits(1,binning_etafmd);
@@ -964,7 +854,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fhSecFMD->SetVarTitle(2,"centrality");
    fhSecFMD->SetVarTitle(3,"#Delta#phi");
    fhSecFMD->SetVarTitle(4,"z vertex");
-   fOutputList2->Add(fhSecFMD);
+   */
+   //   fOutputList2->Add(fhSecFMD);
    
    if(fasso=="PID"){
 	 for(Int_t i=0;i<6;i++){
@@ -976,12 +867,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    }
    
    if(fasso=="Phi"){
-	 fHistPhiDTPCNSig = new TH2D("fHistPhiDTPCNSig", "fHistPhiDTPCNSig", 150, 0.,15., 200, -10., 10);
-	 fOutputList2->Add(fHistPhiDTPCNSig);
-	 fHistPhiDTOFNSig = new TH2D("fHistPhiDTOFNSig", "fHistPhiDTOFNSig", 150, 0.,15., 200, -10., 10);
-	 fOutputList2->Add(fHistPhiDTOFNSig);
-	 fHistPhiDTPCTOFNSig = new TH2D("fHistPhiDTPCTOFNSig", "fHistPhiDTPCTOFNSig",150, 0., 15., 200, -10., 10);
-	 fOutputList2->Add(fHistPhiDTPCTOFNSig);
+     TH2D* fHistPhiDTPCNSig = new TH2D("fHistPhiDTPCNSig", "fHistPhiDTPCNSig", 150, 0.,15., 200, -10., 10);
+     fOutputList2->Add(fHistPhiDTPCNSig);
+     TH2D* fHistPhiDTOFNSig = new TH2D("fHistPhiDTOFNSig", "fHistPhiDTOFNSig", 150, 0.,15., 200, -10., 10);
+     fOutputList2->Add(fHistPhiDTOFNSig);
+     TH2D* fHistPhiDTPCTOFNSig = new TH2D("fHistPhiDTPCTOFNSig", "fHistPhiDTPCTOFNSig",150, 0., 15., 200, -10., 10);
+     fOutputList2->Add(fHistPhiDTPCTOFNSig);
    }
    Int_t nBins = 400;
    Double_t mphiMin = 1.02 - 0.1;
@@ -1012,31 +903,31 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    const Double_t spMinBump[3] = {0, PtBinsV0[0], centralityBins[0]};
    const Double_t spMaxBump[3] = {2.5, PtBinsV0[11], centralityBins[15]};
    if(fasso=="V0"){
-     fHistMass_K0s = new THnSparseF("fHistMass_K0s", "mass for K0s", 4, spBinsV0, spMink0s, spMaxk0s);
+     THnSparseF* fHistMass_K0s = new THnSparseF("fHistMass_K0s", "mass for K0s", 4, spBinsV0, spMink0s, spMaxk0s);
      fOutputList2->Add(fHistMass_K0s);
-     fHistMass_K0s_MC = new THnSparseF("fHistMass_K0s_MC", "mass for K0s", 4, spBinsV0, spMink0s, spMaxk0s);
+     THnSparseF* fHistMass_K0s_MC = new THnSparseF("fHistMass_K0s_MC", "mass for K0s", 4, spBinsV0, spMink0s, spMaxk0s);
      fOutputList2->Add(fHistMass_K0s_MC);
 
-     fHistMass_Lambda = new THnSparseF("fHistMass_Lambda", "mass for Lambda", 4,spBinsV0, spMinLambda, spMaxLambda);
+     THnSparseF* fHistMass_Lambda = new THnSparseF("fHistMass_Lambda", "mass for Lambda", 4,spBinsV0, spMinLambda, spMaxLambda);
      fOutputList2->Add(fHistMass_Lambda);
-     fHistMass_Lambda_MC = new THnSparseF("fHistMass_Lambda_MC", "MC mass for Lambda", 4,spBinsV0, spMinLambda, spMaxLambda);
+     THnSparseF* fHistMass_Lambda_MC = new THnSparseF("fHistMass_Lambda_MC", "MC mass for Lambda", 4,spBinsV0, spMinLambda, spMaxLambda);
      fOutputList2->Add(fHistMass_Lambda_MC);
 
-     fHistMass_ALambda = new THnSparseF("fHistMass_ALambda", "mass for Anti Lambda", 4, spBinsV0,spMinLambda, spMaxLambda);
+     THnSparseF* fHistMass_ALambda = new THnSparseF("fHistMass_ALambda", "mass for Anti Lambda", 4, spBinsV0,spMinLambda, spMaxLambda);
      fOutputList2->Add(fHistMass_ALambda);
-     fHistMass_ALambda_MC = new THnSparseF("fHistMass_ALambda_MC", "mass for Anti Lambda", 4, spBinsV0,spMinLambda, spMaxLambda);
+     THnSparseF* fHistMass_ALambda_MC = new THnSparseF("fHistMass_ALambda_MC", "mass for Anti Lambda", 4, spBinsV0,spMinLambda, spMaxLambda);
      fOutputList2->Add(fHistMass_ALambda_MC);
 
-     fHistMass_bumpcorr =new TH2D("fHistMass_bumpcorr", "mass for Lambda bump correlation", 400,mlambdaMin, mlambdaMax, 1000, 0, 1);
+     TH2D* fHistMass_bumpcorr =new TH2D("fHistMass_bumpcorr", "mass for Lambda bump correlation", 400,mlambdaMin, mlambdaMax, 1000, 0, 1);
      fOutputList2->Add(fHistMass_bumpcorr);
 
      const Int_t spBinsQAV0[4] = {40, 72, 7, 20};
      const Double_t spMinV0QA[4] = {-1., 0, -0.5, 0.};
      const Double_t spMaxV0QA[4] = {1., TMath::TwoPi(), 6.5, 100.0};
-     fHist_V0QA = new THnSparseF("fHist_V0QA", "QA for V0 particle", 4, spBinsQAV0, spMinV0QA, spMaxV0QA);
+     THnSparseF* fHist_V0QA = new THnSparseF("fHist_V0QA", "QA for V0 particle", 4, spBinsQAV0, spMinV0QA, spMaxV0QA);
      fOutputList2->Add(fHist_V0QA);
 
-     hv0dcharge = new TH1D("hv0dcharge", "hv0dcharge", 3, -0.5, 2.5);
+     TH1D* hv0dcharge = new TH1D("hv0dcharge", "hv0dcharge", 3, -0.5, 2.5);
      fOutputList2->Add(hv0dcharge);
      for (Int_t i = 0; i < 6; i++) {
        fHistPosNsig[i] = new TH2D(Form("fHistPosNsig_%d", i), "fHistPosNsig", 160, 0., 8., 600, -30., 30);
@@ -1056,8 +947,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fHist_AP[i] = new TH2D(Form("fHist_AP_%d", i), Form("fHist_AP_%d", i), 200, -1, 1, 200, 0, 0.4);
        fOutputList2->Add(fHist_AP[i]);
      }
-
    }
+   
    if(fasso=="Cascade"){
      // QA Plot for Cascade
      Double_t mxiMin = 1.3 - 0.1;
@@ -1068,13 +959,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      const Double_t spMaxXi[3] = {mxiMax, PtBinsV0[11], centralityBins[15]};
      const Double_t spMinOmega[3] = {momegaMin, PtBinsV0[0], centralityBins[0]};
      const Double_t spMaxOmega[3] = {momegaMax, PtBinsV0[11], centralityBins[15]};
-     fHistMassXiMinus = new THnSparseF("fHistMassXiMinus", "mass for Xi-", 3,
+     THnSparseF* fHistMassXiMinus = new THnSparseF("fHistMassXiMinus", "mass for Xi-", 3,
      spBins, spMinXi, spMaxXi);
-     fHistMassXiPlus = new THnSparseF("fHistMassXiPlus", "mass for Xi+", 3, spBins,
+     THnSparseF* fHistMassXiPlus = new THnSparseF("fHistMassXiPlus", "mass for Xi+", 3, spBins,
      spMinXi, spMaxXi);
-     fHistMassOmegaMinus = new THnSparseF("fHistMassOmegaMinus", "mass for Omega-",
+     THnSparseF* fHistMassOmegaMinus = new THnSparseF("fHistMassOmegaMinus", "mass for Omega-",
      3, spBins, spMinOmega, spMaxOmega);
-     fHistMassOmegaPlus = new THnSparseF("fHistMassOmegaPlus", "mass for Omega+",
+     THnSparseF* fHistMassOmegaPlus = new THnSparseF("fHistMassOmegaPlus", "mass for Omega+",
      3, spBins, spMinOmega, spMaxOmega);
      fOutputList2->Add(fHistMassXiMinus);
      fOutputList2->Add(fHistMassXiPlus);
@@ -1085,7 +976,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      const Double_t spMinCascQA[5] = {0, -1., 0, -0.5, 0.};
      const Double_t spMaxCascQA[5] = {10, 1., TMath::TwoPi(), 6.5, 100.0};
 
-     fHist_CascadeQA = new THnSparseF("fHist_CascadeQA", "QA for Cascade particle", 5, spBinsQACasc, spMinCascQA, spMaxCascQA);
+     THnSparseF* fHist_CascadeQA = new THnSparseF("fHist_CascadeQA", "QA for Cascade particle", 5, spBinsQACasc, spMinCascQA, spMaxCascQA);
      fOutputList2->Add(fHist_CascadeQA);
    }
    if(fasso=="Phi"){
@@ -1093,12 +984,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      const Double_t spMinPhi[3] = {mphiMin, PtBinsV0[0], centralityBins[0]};
      const Double_t spMaxPhi[3] = {mphiMax, PtBinsV0[11], centralityBins[15]};
      // Phimeson
-     fHistMass_PhiMeson =
+     THnSparseF* fHistMass_PhiMeson =
      new THnSparseF("fHistMass_PhiMeson", "mass for phi meson", 3, spBins,
      spMinPhi, spMaxPhi);
      fOutputList2->Add(fHistMass_PhiMeson);
 
-     fHistMass_PhiMeson_MIX = new THnSparseF("fHistMass_PhiMeson_MIX",
+     THnSparseF* fHistMass_PhiMeson_MIX = new THnSparseF("fHistMass_PhiMeson_MIX",
      "mass for phi meson of mixed events",
      3, spBins, spMinPhi, spMaxPhi);
      fOutputList2->Add(fHistMass_PhiMeson_MIX);
@@ -1106,7 +997,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      const Int_t spBinsQA[4] = {40, 72, 7, 20};
      const Double_t spMinPhiQA[4] = {-1., 0, -0.5, 0.};
      const Double_t spMaxPhiQA[4] = {1., TMath::TwoPi(), 6.5, 100.0};
-     fHist_PhiQA = new THnSparseF("fHist_PhiQA", "QA for Phimeson", 4, spBinsQA, spMinPhiQA, spMaxPhiQA);
+     THnSparseF* fHist_PhiQA = new THnSparseF("fHist_PhiQA", "QA for Phimeson", 4, spBinsQA, spMinPhiQA, spMaxPhiQA);
      fOutputList2->Add(fHist_PhiQA);
    }
  }
@@ -1785,26 +1676,26 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fOutputList1->Add(fHistReconstTrackMix);
 
  if(fAnaMode=="SP"){
-   fHistQna=new TH2D("fHistQna","fHistQna",200,0.,10.,10,0,100);
+   TH2D* fHistQna=new TH2D("fHistQna","fHistQna",200,0.,10.,10,0,100);
    fOutputList1->Add(fHistQna);
 
-   fHistQnc=new TH2D("fHistQnc","fHistQnc",200,0.,10.,10,0,100);
+   TH2D* fHistQnc=new TH2D("fHistQnc","fHistQnc",200,0.,10.,10,0,100);
    fOutputList1->Add(fHistQnc);
 
 
-   fHistQn=new TH2D("fHistQn","fHistQn",200,0.,10.,10,0,100);
+   TH2D* fHistQn=new TH2D("fHistQn","fHistQn",200,0.,10.,10,0,100);
    fOutputList1->Add(fHistQn);
 
-   fHistQna_VZERO=new TH2D("fHistQna_VZERO","fHistQna_VZERO",200,0.,10.,10,0,100);
+   TH2D* fHistQna_VZERO=new TH2D("fHistQna_VZERO","fHistQna_VZERO",200,0.,10.,10,0,100);
    fOutputList1->Add(fHistQna_VZERO);
 
-   fHistQnc_VZERO=new TH2D("fHistQnc_VZERO","fHistQnc_VZERO",200,0.,10.,10,0,100);
+   TH2D* fHistQnc_VZERO=new TH2D("fHistQnc_VZERO","fHistQnc_VZERO",200,0.,10.,10,0,100);
    fOutputList1->Add(fHistQnc_VZERO);
 
-   fHistQn_VZERO=new TH2D("fHistQn_VZERO","fHistQn_VZERO",200,0.,10.,10,0,100);
+   TH2D* fHistQn_VZERO=new TH2D("fHistQn_VZERO","fHistQn_VZERO",200,0.,10.,10,0,100);
    fOutputList1->Add(fHistQn_VZERO);
 
-   fHistVn=new TH1D("fHistVn","fHistVn",200,-1.,1.);
+   TH1D* fHistVn=new TH1D("fHistVn","fHistVn",200,-1.,1.);
    fOutputList1->Add(fHistVn);
 
    for(Int_t i=0;i<4;i++){
@@ -1819,37 +1710,39 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    }
 
    Double_t binning_cent_QAQC[5]={0.,20.,40.,60.,100.};
+   /*
    SP_TPCATPCC = new TProfile("SP_TPCATPCC","QAQC",4,binning_cent_QAQC,-3,+3,"s");
    fOutputList1->Add(SP_TPCATPCC);
    SP_TPCATPCC_default = new TProfile("SP_TPCATPCC_default","QAQC",4,binning_cent_QAQC,-3,+3);
    fOutputList1->Add(SP_TPCATPCC_default);
 
-   SP_V0AV0C_default = new TProfile("SP_V0AV0C_default","QAQC",4,binning_cent_QAQC,-3,+3);
+   TProfile* SP_V0AV0C_default = new TProfile("SP_V0AV0C_default","QAQC",4,binning_cent_QAQC,-3,+3);
    fOutputList1->Add(SP_V0AV0C_default);
-   SP_V0ATPC_default = new TProfile("SP_V0ATPC_default","QAQC",4,binning_cent_QAQC,-3,+3);
+   TProfile* SP_V0ATPC_default = new TProfile("SP_V0ATPC_default","QAQC",4,binning_cent_QAQC,-3,+3);
    fOutputList1->Add(SP_V0ATPC_default);
-   SP_V0CTPC_default = new TProfile("SP_V0CTPC_default","QAQC",4,binning_cent_QAQC,-3,+3);
+   TProfile* SP_V0CTPC_default = new TProfile("SP_V0CTPC_default","QAQC",4,binning_cent_QAQC,-3,+3);
    fOutputList1->Add(SP_V0CTPC_default);
-
-   fHist_V0AV0C = new TH1F("fHist_V0AV0C","QAQC",200,-1,1);
+   */
+   TH1F* fHist_V0AV0C = new TH1F("fHist_V0AV0C","QAQC",200,-1,1);
    fOutputList1->Add(fHist_V0AV0C);
-   fHist_V0ATPC= new TH1F("fHist_V0ATPC","QAQC",200,-1,1);
+   TH1F* fHist_V0ATPC= new TH1F("fHist_V0ATPC","QAQC",200,-1,1);
    fOutputList1->Add(fHist_V0ATPC);
-   fHist_V0CTPC = new TH1F("fHist_V0CTPC","QAQC",200,-1,1);
+   TH1F* fHist_V0CTPC = new TH1F("fHist_V0CTPC","QAQC",200,-1,1);
    fOutputList1->Add(fHist_V0CTPC);
-
-
-   SP_uTPCA = new TProfile("SP_uTPCA","u x Q_{TPCA}",11,binning_pt_assoc,-3,+3);
+   /*
+   TProfile* SP_uTPCA = new TProfile("SP_uTPCA","u x Q_{TPCA}",11,binning_pt_assoc,-3,+3);
    fOutputList1->Add(SP_uTPCA);
 
-   SP_uTPCC = new TProfile("SP_uTPCC","u x Q_{TPCC}",11,binning_pt_assoc,-3,+3);
+   TProfile*SP_uTPCC = new TProfile("SP_uTPCC","u x Q_{TPCC}",11,binning_pt_assoc,-3,+3);
    fOutputList1->Add(SP_uTPCC);
+   */
    Int_t nbin_uTPC=11;
    Double_t binning_pt_assoc_uTPC[12] = {0.3, 0.5, 0.75, 1.0, 1.25, 1.5,2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
    Int_t     nbin_uTPCPhi=4;
    Double_t binning_pt_assoc_uTPCPhi[5] = {0., 0.5, 2.0, 4.0, 8.0};
    Int_t nbin_uTPCCas=3;
    Double_t binning_pt_assoc_uTPCCas[4] = {0., 1., 4., 8.};
+   /*
    for(Int_t i=0;i<8;i++){
      SP_uVZEROA_PP[i] = new TProfile(Form("SP_uVZEROA_PP_%d",i),"u x Q_{TPC}",nbin_uTPC,binning_pt_assoc_uTPC,-3,+3);
      fOutputList1->Add(SP_uVZEROA_PP[i]);
@@ -1911,8 +1804,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        SP_uTPC3[i] = new TProfile(Form("SP_uTPC3_%d",i),"u x Q_{TPC}",nbin_uTPCCas,binning_pt_assoc_uTPCCas,-3,+3);
        fOutputList1->Add(SP_uTPC3[i]);
       }
-   }
+      }
+   */
  }
+ 
  }
 
 void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
@@ -1937,7 +1832,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
   fHist_Stat->Fill(0);
   
   if(fcollisiontype=="HMPPV0") fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0,true);  
-  if(fcollisiontype=="HMPPSPD") fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultSPD,true);  
+  else if(fcollisiontype=="HMPPSPD") fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultSPD,true);  
   
   if (!fEventCuts.AcceptEvent(fEvent)) {
     PostData(1, fOutputList);
@@ -2103,8 +1998,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      Int_t nTracklets = tracklets->GetNumberOfTracklets();
      Int_t nITScluster= tracklets->GetNumberOfITSClusters(0)+tracklets->GetNumberOfITSClusters(1);
      Int_t nTracks = fEvent->GetNumberOfTracks();
-     fh2_SPD_multcorr->Fill(nTracklets,nITScluster);
-     fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
+     dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_SPD_multcorr"))->Fill(nTracklets,nITScluster);
+     dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_SPDtrack_multcorr"))->Fill(nTracklets,nTracks);
      if(nTracklets<fcuthighmult){
        PostData(1, fOutputList);
        PostData(2, fOutputList1);
@@ -2243,9 +2138,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      eta_ave = (eta_min + eta_max) / 2.;
      if(eta_ave>2.8 && eta_ave<5.03) nV0A_hits_fmdacc+=mult_vzero_eq;
      else if(eta_ave>-3.4 && eta_ave<-2.01) nV0C_hits_fmdacc+=mult_vzero_eq;
-	 dynamic_cast<TH2F*>(fOutputList2->FindObject("fHist_vzeromult"))->Fill(imod, mult_vzero);
-	 dynamic_cast<TH2F*>(fOutputList2->FindObject("fHist_vzeromultEqweighted"))->Fill(imod, mult_vzero_eq);
-	 dynamic_cast<TH3F*>(fOutputList2->FindObject("fHist2dmult"))->Fill(imod, mult_vzero_eq, mult_vzero);
+     dynamic_cast<TH2F*>(fOutputList2->FindObject("fHist_vzeromult"))->Fill(imod, mult_vzero);
+     dynamic_cast<TH2F*>(fOutputList2->FindObject("fHist_vzeromultEqweighted"))->Fill(imod, mult_vzero_eq);
+     dynamic_cast<TH3F*>(fOutputList2->FindObject("fHist2dmult"))->Fill(imod, mult_vzero_eq, mult_vzero);
    }
    
    Float_t nFMD_fwd_hits=0;
@@ -2315,7 +2210,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    
    if(fFMDaddcut && (fcollisiontype.Contains("HMPP")||fcollisiontype=="MBPP")){
      if(!HasValidFMDYS(d2Ndetadphi)){
-       delete hphiacceptance;
+       if(hphiacceptance) delete hphiacceptance;
        PostData(1, fOutputList);
        PostData(2, fOutputList1);
        PostData(3, fOutputList2);
@@ -2505,12 +2400,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        
        if (mostProbableN > 0) {
 	 if(eta>0){
-	   Int_t nfmdetabin1=frefetaa->FindBin(eta);
+	   //	   Int_t nfmdetabin1=dynamic_cast<TH1F*>(fOutputList2->FindObject("frefetaa"))->FindBin(eta);
 	   if(fAnaMode=="TPCFMD" || fAnaMode=="ITSFMD" || fAnaMode=="FMDFMD_Ctrig"||fAnaMode=="SECA") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	 
 	   if(fAnaMode=="FMDFMD" || fAnaMode=="SECA") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
 	   //if(fAnaMode=="FMDFMD_Ctrig"|| fAnaMode=="SECA") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));		
 	 }else if(eta<0){
-	   Int_t nfmdetabin=frefetac->FindBin(eta);
+	   //	   Int_t nfmdetabin=dynamic_cast<TH1F*>(fOutputList2->FindObject("frefetac"))->FindBin(eta);
 	   if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
 	   else if(fAnaMode=="FMDFMD_Ctrig") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
 	 }
@@ -2574,7 +2469,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      //     fh2_SPD_multcorr->Fill(nTracklets,nITScluster);
      //     fh2_SPDV0_multcorr->Fill(nTracklets,fvzero->GetMTotV0A()+fvzero->GetMTotV0C());
      
-     fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
+     //     fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
      
 	 for (Int_t i = 0; i < nTracklets; i++) {
 	   Double_t dphi  = tracklets->GetDeltaPhi(i);
@@ -2600,7 +2495,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
 		 
 		 dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_ITS_acceptance"))->Fill(tPrimaryVtxPosition[2],etaits);
 		 Double_t itsqa[4]={etaits,phiits,lCentrality,tPrimaryVtxPosition[2]};
-		 //     fhistits->Fill(itsqa);
+		 //		 dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fhistits"))->Fill(itsqa);
 		 selectedTracksLeading->Add(new AliAssociatedTrackYS(-999, etaits, phiits, -999, 0, -999,-999, 0, 1));
 	 }
    }
@@ -2760,16 +2655,17 @@ void AliAnalysisTaskSEpPbCorrelationsYS::CalculateSP(){
   Double_t tpca_qmcos=fQTPCACos/fQTPCA;
   Double_t tpca_qmsin=fQTPCASin/fQTPCA;
   Double_t qna=TMath::Sqrt((fQTPCACos*fQTPCACos+fQTPCASin*fQTPCASin)/fQTPCA);
-  if(fQTPCA>1)fHistQna->Fill(qna,lCentrality);
+
+  if(fQTPCA>1) dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistQna"))->Fill(qna,lCentrality);
   Double_t qnc=TMath::Sqrt((fQTPCCCos*fQTPCCCos+fQTPCCSin*fQTPCCSin)/fQTPCC);
-  if(fQTPCC>1)fHistQnc->Fill(qnc,lCentrality);
+  if(fQTPCC>1) dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistQnc"))->Fill(qnc,lCentrality);
   Double_t qn=TMath::Sqrt((fQTPCCos*fQTPCCos+fQTPCSin*fQTPCSin)/fQTPC);
-  if(fQTPC>1)fHistQn->Fill(qn,lCentrality);
+  if(fQTPC>1) dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistQn"))->Fill(qn,lCentrality);
   //  cout<<fQTPCCos<<" "<<fQTPCSin<<" "<<fQTPC<<" "<<qn<<endl;
   Double_t qaqc=tpca_qmcos*tpcc_qmcos+tpca_qmsin*tpcc_qmsin;//Q_a*Q_b/(M_a*M_b)
   //Double_t qaqcsqrt=TMath::Sqrt(tpca_qmcos*tpcc_qmcos+tpca_qmsin*tpcc_qmsin);//Q_a*Q_b/(M_a*M_b)
   if(fQTPCC>0 && fQTPCA>0) {
-  fHistVn->Fill(qaqc);
+  dynamic_cast<TH1D*>(fOutputList2->FindObject("fHistVn"))->Fill(qaqc);
   if(lCentrality>=0. && lCentrality<20.) fHistQAQB[0]->Fill(qaqc);
   if(lCentrality>=20. && lCentrality<40.) fHistQAQB[1]->Fill(qaqc);
   if(lCentrality>=40. && lCentrality<60.) fHistQAQB[2]->Fill(qaqc);
@@ -2837,11 +2733,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::CalculateSP(){
   Double_t vzeroa_qmcos=fQVZEROACos/fQVZEROA;
   Double_t vzeroa_qmsin=fQVZEROASin/fQVZEROA;
   Double_t qna_vzero=TMath::Sqrt((fQVZEROACos*fQVZEROACos+fQVZEROASin*fQVZEROASin)/fQVZEROA);
-  if(fQVZEROA>1) fHistQna_VZERO->Fill(qna_vzero,lCentrality);
+
+  if(fQVZEROA>1) dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistQna_VZERO"))->Fill(qna_vzero,lCentrality);
   Double_t qnc_vzero=TMath::Sqrt((fQVZEROCCos*fQVZEROCCos+fQVZEROCSin*fQVZEROCSin)/fQVZEROC);
-  if(fQVZEROC>1) fHistQnc_VZERO->Fill(qnc_vzero,lCentrality);
+  if(fQVZEROC>1) dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistQnc_VZERO"))->Fill(qnc_vzero,lCentrality);
   Double_t qn_vzero=TMath::Sqrt((fQVZEROCos*fQVZEROCos+fQVZEROSin*fQVZEROSin)/fQVZERO);
-  if(fQVZERO>1)  fHistQn_VZERO->Fill(qn_vzero,lCentrality);
+  if(fQVZERO>1)  dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistQn_VZERO"))->Fill(qn_vzero,lCentrality);
   Double_t qaqc_vzero=vzeroa_qmcos*vzeroc_qmcos+vzeroa_qmsin*vzeroc_qmsin;//Q_a*Q_b/(M_a*M_b)
   Double_t qaqc_vzeroatpc=vzeroa_qmcos*tpc_qmcos+vzeroa_qmsin*tpc_qmsin;//Q_a*Q_b/(M_a*M_b)
   Double_t qaqc_vzeroctpc=vzeroc_qmcos*tpc_qmcos+vzeroc_qmsin*tpc_qmsin;//Q_a*Q_b/(M_a*M_b)
@@ -2863,17 +2760,19 @@ void AliAnalysisTaskSEpPbCorrelationsYS::CalculateSP(){
     if(lCentrality>=20. && lCentrality<40.) fHistQAQB_VZERO[1]->Fill(qaqc_vzero);
     if(lCentrality>=40. && lCentrality<60.) fHistQAQB_VZERO[2]->Fill(qaqc_vzero);
     if(lCentrality>=60. && lCentrality<100.) fHistQAQB_VZERO[3]->Fill(qaqc_vzero);
-    fHist_V0AV0C->Fill(qaqc_vzero);
-    SP_V0AV0C_default->Fill(lCentrality,qaqc_vzero,1);
-  }
-  if(fQVZEROC>0 && fQTPC>0){
-    fHist_V0CTPC->Fill(qaqc_vzeroctpc);
-    SP_V0CTPC_default->Fill(lCentrality,qaqc_vzeroctpc,1);
-  }
-  if(fQVZEROA>0 && fQTPC>0){
-    fHist_V0ATPC->Fill(qaqc_vzeroatpc);
-    SP_V0ATPC_default->Fill(lCentrality,qaqc_vzeroatpc,1);
-  }
+
+  
+  dynamic_cast<TH1F*>(fOutputList1->FindObject("fHist_V0AV0C"))->Fill(qaqc_vzero);
+  dynamic_cast<TProfile*>(fOutputList2->FindObject("SP_V0AV0C_default"))->Fill(lCentrality,qaqc_vzero,1);
+}
+if(fQVZEROC>0 && fQTPC>0){
+  dynamic_cast<TH1F*>(fOutputList1->FindObject("fHist_V0CTPC"))->Fill(qaqc_vzeroctpc);
+  SP_V0CTPC_default->Fill(lCentrality,qaqc_vzeroctpc,1);
+ }
+if(fQVZEROA>0 && fQTPC>0){
+  dynamic_cast<TH1F*>(fOutputList1->FindObject("fHist_V0ATPC"))->Fill(qaqc_vzeroatpc);
+  SP_V0ATPC_default->Fill(lCentrality,qaqc_vzeroatpc,1);
+ }
 
 
   //Calculate uQ
@@ -2968,7 +2867,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
 
     Float_t efficiency=1.;
     Float_t efficiencyerr=-1;
-    Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
+    //    Int_t ivzbin=dynamic_cast<TH1F*>(fOutputList2->FindObject("frefvz"))->GetXaxis()->FindBin(fPrimaryZVtx);
     if(fefficalib){
       if(fcollisiontype=="MBPP" || fcollisiontype.Contains("HMPP")){
 
@@ -3036,8 +2935,8 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
       pidqa[2]=RangePhi(trackphi);
       pidqa[3]=lCentrality;
       pidqa[4]=fPrimaryZVtx;
-      fHistLeadQA->Fill(pidqa,0,1./efficiency);
-	  dynamic_cast<TH2F*>(fOutputList1->FindObject("fHistptreco"))->Fill(trackpt,lCentrality,1./efficiency);
+      dynamic_cast<AliTHn*>(fOutputList1->FindObject("fHistLeadQA"))->Fill(pidqa,0,1./efficiency);
+      dynamic_cast<TH2F*>(fOutputList1->FindObject("fHistptreco"))->Fill(trackpt,lCentrality,1./efficiency);
     }
     Int_t SpAsso=0;
     tracks->Add(new AliAssociatedTrackYS(aodTrack->Charge(), tracketa, trackphi, trackpt, aodTrack->GetID(), -999, -999, SpAsso, 1./efficiency));
@@ -3102,7 +3001,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksPID(AliAODEvent 
     pidqa[2]=RangePhi(aodTrack->Phi());
     pidqa[3]=lCentrality;
     if(SpPID<0) continue;
-    if(fQA) fHistPIDQA->Fill(pidqa, SpPID);
+    if(fQA) dynamic_cast<AliTHn*>(fOutputList1->FindObject("fHistPIDQA"))->Fill(pidqa, SpPID);
     if(SpPID==1) fHistNsigcorr[0]->Fill(nSigmaPionTPC,nSigmaPionTOF);
     if(SpPID==0) fHistNsigcorr[1]->Fill(nSigmaKaonTPC,nSigmaKaonTOF);
     if(SpPID==2) fHistNsigcorr[2]->Fill(nSigmaProtonTPC,nSigmaProtonTOF);
@@ -3153,10 +3052,9 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksAssociated(AliAO
     if (!IsAcceptedPhiDaughterTrack(aodTrack1))
       continue;
 
-    fHistPhiDTPCNSig->Fill(aodTrack1->Pt(), nSigmaKaonTPC_phi1);
-    fHistPhiDTOFNSig->Fill(aodTrack1->Pt(), nSigmaKaonTOF_phi1);
-    fHistPhiDTPCTOFNSig->Fill(aodTrack1->Pt(),
-    TMath::Sqrt(d2sigmaphi1kaontpctof));
+    dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistPhiDTPCNSig"))->Fill(aodTrack1->Pt(), nSigmaKaonTPC_phi1);
+    dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistPhiDTOFNSig"))->Fill(aodTrack1->Pt(), nSigmaKaonTOF_phi1);
+    dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistPhiDTPCTOFNSig"))->Fill(aodTrack1->Pt(),TMath::Sqrt(d2sigmaphi1kaontpctof));
 
     Bool_t isKaon1 = kFALSE;
     // if(nSigmaKaonTOFTPC_phi1<5.0 &&
@@ -3261,7 +3159,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksAssociated(AliAO
       Double_t eta_phi = 0.5 * log((p_phi + pz_phi) / (p_phi - pz_phi));
 
       Double_t PhiQA[3] = {mass_phi, pt_phi, lCentrality};
-      fHistMass_PhiMeson->Fill(PhiQA);
+      dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMass_PhiMeson"))->Fill(PhiQA);
       if (TMath::Abs(eta_phi) > 0.8)
         continue;
 
@@ -3290,7 +3188,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksAssociated(AliAO
                                            aodTrack2->GetID(), SpPhi, 1));
 
       Double_t spPhiQA[4] = {eta_phi, phi_phi, (Float_t)SpPhi, lCentrality};
-      fHist_PhiQA->Fill(spPhiQA);
+      dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHist_PhiQA"))->Fill(spPhiQA);
     }
   }
 
@@ -3345,7 +3243,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksAssociated(AliAO
           if (TMath::Abs(eta_phi_mix) > 0.8)
             continue;
           Double_t PhiQAMix[3] = {mass_phi_mix, pt_phi_mix, lCentrality};
-          fHistMass_PhiMeson_MIX->Fill(PhiQAMix, 1. / (Double_t)nMix);
+          dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMass_PhiMeson_MIX"))->Fill(PhiQAMix, 1. / (Double_t)nMix);
         }
       }
     }
@@ -3420,20 +3318,20 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
     Double_t qt = aodv0->PtArmV0();
 
     if ((myTrackPosTest->Charge() == 1) && (myTrackNegTest->Charge() == -1)) {
-      hv0dcharge->Fill(0);
+      //hv0dcharge->Fill(0);
       myTrackPos = myTrackPosTest;
       myTrackNeg = myTrackNegTest;
     }
 
     if ((myTrackPosTest->Charge() == -1) && (myTrackNegTest->Charge() == 1)) {
-      hv0dcharge->Fill(1);
+      //      hv0dcharge->Fill(1);
       myTrackPos = myTrackNegTest;
       myTrackNeg =  myTrackPosTest;
     }
 
 
     if (myTrackPosTest->Charge() == myTrackNegTest->Charge()) {
-      hv0dcharge->Fill(2);
+      //      hv0dcharge->Fill(2);
       continue;
     }
 
@@ -3578,13 +3476,13 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
     if (IDLa  || IDALa)    fHist_AP[2]->Fill(aodv0->AlphaV0(), aodv0->PtArmV0());
 
     Double_t K0sMassQA[4] = {lInvMassK0, aodv0->Pt(), lCentrality,aodv0->Eta()};
-      if (IDK0s)      fHistMass_K0s->Fill(K0sMassQA);
+    if (IDK0s)      dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMass_K0s"))->Fill(K0sMassQA);
       Double_t LambdaMassQA[4] = {lInvMassLambda, aodv0->Pt(), lCentrality,aodv0->Eta()};
-      if (IDLa)       fHistMass_Lambda->Fill(LambdaMassQA);
+      if (IDLa)     dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMass_Lambda"))->Fill(LambdaMassQA);
       Double_t ALambdaMassQA[4] = {lInvMassAntiLambda, aodv0->Pt(), lCentrality,aodv0->Eta()};
-      if (IDALa)      fHistMass_ALambda->Fill(ALambdaMassQA);
+      if (IDALa)    dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMass_ALambda"))->Fill(ALambdaMassQA);
 
-      if (cutLambdaPid && cutLambdactau && cpaLambda && !k0APcut && kGammaconvcut && mispidmass > 0) fHistMass_bumpcorr->Fill(lInvMassLambda, mispidmass);
+      if (cutLambdaPid && cutLambdactau && cpaLambda && !k0APcut && kGammaconvcut && mispidmass > 0) dynamic_cast<TH2D*>(fOutputList2->FindObject("fHistMass_bumpcorr"))->Fill(lInvMassLambda, mispidmass);
       Int_t SpV0 = -999;
       if ((IDK0s && (TMath::Abs(lInvMassK0 - kK0Mass) < 0.01)))
       SpV0 = 0; // same for step
@@ -3602,7 +3500,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
       SpV0 = 6; // same as step
       if (SpV0 < 0)          continue;
         Double_t spV0QA[4] = {aodv0->Eta(), aodv0->Phi(), (Float_t)SpV0,  lCentrality};
-        fHist_V0QA->Fill(spV0QA);
+        dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHist_V0QA"))->Fill(spV0QA);
         if (fQA) {
           if (IDK0s){
             fHistPosNsigQA[0]->Fill(myTrackPos->Pt(), nSigmaPosPionTPC);
@@ -3652,9 +3550,9 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
         Bool_t IsK0FromMC = (mcPosMother->IsPhysicalPrimary())&&(MotherPdg==310)&&(PosTrackPdg==211)&&(NegTrackPdg==-211);            //Moter track is K0 short, Pos is Pion, Neg is Pion
         Bool_t IsLambdaFromMC = (mcPosMother->IsPhysicalPrimary())&&(MotherPdg==3122)&&(PosTrackPdg==2212)&&(NegTrackPdg==-211);      //Moter track is Lambda, Pos is Proton, Neg is Pion
         Bool_t IsAntiLambdaFromMC = (mcPosMother->IsPhysicalPrimary())&&(MotherPdg==-3122)&&(PosTrackPdg==211)&&(NegTrackPdg==-2212); //Moter track is Anti-Lambda, Pos is pion, Neg is Proton
-        if(IsK0FromMC)          fHistMass_K0s_MC->Fill(K0sMassQA);
-        if(IsLambdaFromMC)      fHistMass_Lambda_MC->Fill(LambdaMassQA);
-        if(IsAntiLambdaFromMC)  fHistMass_ALambda_MC->Fill(ALambdaMassQA);
+        if(IsK0FromMC)          dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMass_K0s_MC"))->Fill(K0sMassQA);
+        if(IsLambdaFromMC)      dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMass_Lambda_MC"))->Fill(LambdaMassQA);
+        if(IsAntiLambdaFromMC)  dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMass_ALambda_MC"))->Fill(ALambdaMassQA);
       }
     }
   return tracks;
@@ -3878,10 +3776,10 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedCascadeTracks(AliAODEv
     Double_t spOmegaMinus[3] = {lInvMassOmegaMinus, lPtCas, lCentrality};
     Double_t spOmegaPlus[3] = {lInvMassOmegaPlus, lPtCas, lCentrality};
 
-    if (cutXiMinussc && cutMassXi)            fHistMassXiMinus->Fill(spXiMinus);
-    if (cutXiPlussc && cutMassXi)             fHistMassXiPlus->Fill(spXiPlus);
-    if (cutOmegaMinussc && cutMassOmega)      fHistMassOmegaMinus->Fill(spOmegaMinus);
-    if (cutOmegaPlussc && cutMassOmega)       fHistMassOmegaPlus->Fill(spOmegaPlus);
+    if (cutXiMinussc && cutMassXi)            dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMassXiMinus"))->Fill(spXiMinus);
+    if (cutXiPlussc && cutMassXi)             dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMassXiPlus"))->Fill(spXiPlus);
+    if (cutOmegaMinussc && cutMassOmega)      dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMassOmegaMinus"))->Fill(spOmegaMinus);
+    if (cutOmegaPlussc && cutMassOmega)       dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHistMassOmegaPlus"))->Fill(spOmegaPlus);
 
 //    if (cutOmegaMinussc)   cout << lInvMassOmegaMinus << endl;
     Double_t etaCas =  0.5 * TMath::Log((lPCas + casc->MomXiZ()) / (lPCas - casc->MomXiZ()));
@@ -3907,7 +3805,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedCascadeTracks(AliAODEv
 
     if(SpCas<0) continue;
     Double_t spCascadeQA[5] = {casc->Pt(),casc->Eta(), casc->Phi(), (Float_t)SpCas,  lCentrality};
-    fHist_CascadeQA->Fill(spCascadeQA);
+    dynamic_cast<THnSparseF*>(fOutputList2->FindObject("fHist_CascadeQA"))->Fill(spCascadeQA);
     tracks->Add(new AliAssociatedTrackYS(1., etaCas, phiCas, lPtCas, myTrackCascPos->GetID(),myTrackCascNeg->GetID(), myTrackCascBach->GetID(), SpCas, 1));
   }
   return tracks;
@@ -4457,8 +4355,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracksMixing(Double_t ce
 		  pvxMix));
   }
   if (pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() > fMinEventsToMix) {
-    mixedDist ->Fill(centrality, pool->NTracksInPool());
-    mixedDist2->Fill(centrality, pool->GetCurrentNEvents());
+    dynamic_cast<TH2F*>(fOutputList2->FindObject("mixedDist")) ->Fill(centrality, pool->NTracksInPool());
+    dynamic_cast<TH2F*>(fOutputList2->FindObject("mixedDist2"))->Fill(centrality, pool->GetCurrentNEvents());
     Int_t nMix = pool->GetCurrentNEvents();
     for (Int_t jMix = 0; jMix < nMix; jMix++) {  
       TObjArray *mixEvents = pool->GetEvent(jMix);
@@ -4533,7 +4431,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracksMixing(Double_t ce
           counterMix++;
           binscontTrig[0]=triggerPt;
           binscontTrig[1]=centrality;
-	  Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
+	  //Int_t ivzbin=dynamic_cast<TH1F*>(fOutputList2->FindObject("frefvz"))->GetXaxis()->FindBin(fPrimaryZVtx);
 	  Double_t triggermultiplicity=trigger->Multiplicity();
 	  /*
 	  Float_t efficiency=999.;
@@ -4730,18 +4628,13 @@ Double_t AliAnalysisTaskSEpPbCorrelationsYS::RangePhi2(Double_t DPhi) {
   return DPhi;
 }
 
-
-
 void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
 {
-  /*
   if(note) {
     printf("TObjectTable::%s",note);
   }
   gObjectTable->Print();
-  */
 }
-
 
 TString AliAnalysisTaskSEpPbCorrelationsYS::GetMCperiod(Int_t run){
   TString period;
@@ -4778,483 +4671,481 @@ TString AliAnalysisTaskSEpPbCorrelationsYS::GetMCperiod(Int_t run){
   else if(run<294925+1 && run>294128-1)period="LHC18k3";//LHC18p
   else return period="noperiod";
   return period;
-  
 }
 
- Int_t AliAnalysisTaskSEpPbCorrelationsYS::ConvertRunNumber(Int_t run){
-   if( (265308<run && run< 265526) || (267160<run && run<267167)){
-   switch(run){
-   case  265309 : return 0;
-   case  265332 : return 1;
-   case  265334 : return 2;
-   case  265336 : return 3;
-   case  265338 : return 4;
-   case  265339 : return 5;
-  case  265342 : return 6;
-  case  265343 : return 7;
-  case  265344 : return 8;
-  case  265377 : return 9;
-  case  265378 : return 10;
-  case  265381 : return 11;
-  case  265383 : return 12;
-  case  265384 : return 13;
-  case  265385 : return 14;
-  case  265387 : return 15;
-  case  265388 : return 16;
-  case  265419 : return 17;
-  case  265420 : return 18;
-  case  265421 : return 19;
-  case  265422 : return 20;
-  case  265424 : return 21;
-  case  265425 : return 22;
-  case  265426 : return 23;
-  case  265427 : return 24;
-  case  265435 : return 25;
-  case  265499 : return 26;
-  case  265500 : return 27;
-  case  265501 : return 28;
-  case  265521 : return 29;
-  case  265525 : return 30;
-  case  267166 : return 31; //16t
-  case  267165 : return 32; //16t
-  case  267164 : return 33; //16t
-  case  267163 : return 34; //16t
-  case  267161 : return 35; //16t
-  default : return 199;
+Int_t AliAnalysisTaskSEpPbCorrelationsYS::ConvertRunNumber(Int_t run){
+  if( (265308<run && run< 265526) || (267160<run && run<267167)){
+    switch(run){
+    case  265309 : return 0;
+    case  265332 : return 1;
+    case  265334 : return 2;
+    case  265336 : return 3;
+    case  265338 : return 4;
+    case  265339 : return 5;
+    case  265342 : return 6;
+    case  265343 : return 7;
+    case  265344 : return 8;
+    case  265377 : return 9;
+    case  265378 : return 10;
+    case  265381 : return 11;
+    case  265383 : return 12;
+    case  265384 : return 13;
+    case  265385 : return 14;
+    case  265387 : return 15;
+    case  265388 : return 16;
+    case  265419 : return 17;
+    case  265420 : return 18;
+    case  265421 : return 19;
+    case  265422 : return 20;
+    case  265424 : return 21;
+    case  265425 : return 22;
+    case  265426 : return 23;
+    case  265427 : return 24;
+    case  265435 : return 25;
+    case  265499 : return 26;
+    case  265500 : return 27;
+    case  265501 : return 28;
+    case  265521 : return 29;
+    case  265525 : return 30;
+    case  267166 : return 31; //16t
+    case  267165 : return 32; //16t
+    case  267164 : return 33; //16t
+    case  267163 : return 34; //16t
+    case  267161 : return 35; //16t
+    default : return 199;
+    }
+  } else if(run> 280281 && run<281962){
+    switch(run){
+    case 281961  : return 0;
+      //     case 281959 : return 1;
+    case 281956 : return 1;
+    case 281953:return 2;
+    case 281940:return 3;
+    case 281939:return 4;
+    case 281932:return 5;
+    case 281931:return 6;
+    case 281928:return 7;
+    case 281920:return 8;
+    case 281918:return 9;
+    case 281915:return 10;//
+    case 281895:return 11;//
+    case 281894:return 12;//
+    case 281892:return 13;//
+    case 281633:return 14;//
+    case 281583:return 15;
+      //     case 281581:return 12;
+      //     case 281580:return 13;
+    case 281574:return 16;
+    case 281569:return 17;
+    case 281568:return 18;
+    case 281562:return 19;
+    case 281557:return 20;
+    case 281511:return 21;
+    case 281509:return 22;
+    case 281477:return 23;
+    case 281475:return 24;
+    case 281450:return 25;
+    case 281449:return 26;
+    case 281444:return 27;
+    case 281443:return 28;
+    case 281441:return 29;
+    case 281415:return 30;
+    case 281321:return 31;
+    case 281301:return 32;
+    case 281277:return 33;
+    case 281275:return 34;
+    case 281273:return 35;
+    case 281271:return 36;
+    case 281243:return 37;
+    case 281242:return 38;
+    case 281241:return 39;
+    case 281240:return 40;
+    case 281213:return 41;
+    case 281212:return 42;
+    case 281191:return 43;
+    case 281190:return 44;
+    case 281189:return 45;
+    case 281181:return 46;
+    case 281180:return 47;//
+    case 281179:return 48;
+    case 281081:return 49;
+    case 281080:return 50;
+    case 281062:return 51;
+    case 281061:return 52;
+    case 281060:return 53;
+    case 280999:return 54;
+    case 280998:return 55;
+    case 280997:return 56;
+    case 280994:return 57;
+    case 280990:return 58;
+    case 280947:return 59;
+    case 280940:return 60;
+    case 280936:return 61;
+    case 280897:return 62;
+    case 280890:return 63;//
+    case 280881:return 64;//
+    case 280880:return 65;
+    case 280856:return 66;
+    case 280849:return 67;
+    case 280848:return 68;
+    case 280847:return 69;
+    case 280845:return 70;//
+    case 280844:return 71;
+    case 280842:return 72;
+    case 280793:return 73;
+    case 280792:return 74;
+    case 280787:return 75;
+    case 280786:return 76;
+    case 280768:return 77;
+    case 280767:return 78;
+    case 280766:return 79;
+    case 280765:return 80;
+    case 280764:return 81;
+    case 280763:return 82;
+    case 280762:return 83;
+    case 280761:return 84;
+    case 280757:return 85;
+    case 280756:return 86;
+    case 280755:return 87;
+    case 280754:return 88;
+    case 280753:return 89;
+    case 280729:return 90;
+    case 280706:return 91;
+    case 280705:return 92;
+    case 280681:return 93;
+    case 280679:return 94;
+      //     case 280676:return 88;
+      //     case 280673:return 89;
+    case 280671:return 95;
+      //     case 280650:return 91;
+      //     case 280648:return 92;
+    case 280647:return 96;
+    case 280645:return 97;
+    case 280639:return 98;
+    case 280637:return 99;
+    case 280636:return 100;
+    case 280634:return 101;
+    case 280613:return 102;
+    case 280583:return 103;
+    case 280581:return 104;
+    case 280576:return 105;//
+    case 280575:return 106;//
+    case 280574:return 107;
+    case 280551:return 108;
+    case 280550:return 109;
+    case 280547:return 110;
+    case 280546:return 111;
+    case 280519:return 112;
+    case 280518:return 113;
+    case 280499:return 114;
+    case 280448:return 115;
+    case 280447:return 116;
+    case 280446:return 117;
+    case 280445:return 118;
+    case 280443:return 119;
+    case 280419:return 120;
+    case 280415:return 121;
+    case 280413:return 122;//
+    case 280406:return 123;
+    case 280405:return 124;
+    case 280403:return 125;
+    case 280375:return 126;
+    case 280374:return 127;
+      //     case 280352:return 122;
+    case 280351:return 128;
+    case 280350:return 129;
+    case 280349:return 130;
+    case 280348:return 131;
+    case 280312:return 132;
+    case 280310:return 133;
+    case 280290:return 134;
+    case 280286:return 135;
+    case 280285:return 136;
+    case 280284:return 137;
+    case 280283:return 138;
+    case 280282:return 139;
+    default : return 199;
+    }
+  }else if (run>274689  && run<286509){
+    switch(run){
+      //LHC17k
+    case 276508:return 0;
+    case 276507:return 1;
+    case 276506:return 2;
+    case 276462:return 3;
+    case 276439:return 4;
+    case 276438:return 5;
+    case 276437:return 6;
+    case 276435:return 7;
+    case 276351:return 8;
+    case 276348:return 9;       
+    case 276312:return 10;
+    case 276307:return 11;
+    case 276302:return 12;
+    case 276297:return 13;
+    case 276294:return 14;
+    case 276292:return 15;
+    case 276291:return 16;
+    case 276290:return 17;
+    case 276259:return 18;
+    case 276257:return 19;
+    case 276230:return 20;
+    case 276205:return 21;
+    case 276178:return 22;
+    case 276170:return 23;
+    case 276104:return 24;
+    case 276102:return 25;
+    case 276099:return 26;
+    case 276098:return 27;
+    case 276097:return 28;
+    case 276045:return 29;
+    case 276041:return 30;
+    case 276040:return 31;
+    case 276020:return 32;
+    case 276019:return 33;
+    case 276017:return 34;
+    case 276013:return 35;
+    case 276012:return 36;
+    case 275925:return 37;
+    case 275924:return 38;
+    case 275847:return 39;
+    case 275664:return 40;
+    case 275661:return 41;
+    case 275657:return 42;
+    case 275650:return 43;
+    case 275648:return 44;
+    case 275647:return 45;
+    case 275624:return 46;
+    case 275623:return 47;       
+    case 275622:return 48;
+    case 275621:return 49;
+    case 275617:return 50;
+    case 275612:return 51;
+    case 275559:return 52;
+    case 275558:return 53;
+    case 275515:return 54;
+    case 275472:return 55;
+    case 275471:return 56;
+    case 275467:return 57;
+    case 275459:return 58;
+    case 275457:return 59;
+    case 275456:return 60;
+    case 275453:return 61;
+    case 275452:return 62;
+    case 275448:return 63;
+    case 275443:return 64;
+    case 275406:return 65;
+    case 275404:return 66;
+    case 275401:return 67;
+    case 275395:return 68;
+    case 275394:return 69;
+    case 275372:return 70;
+    case 275369:return 71;
+    case 275361:return 72;
+    case 275360:return 73;
+    case 275333:return 74;
+    case 275332:return 75;
+    case 275328:return 76;
+    case 275326:return 77;
+    case 275324:return 78;
+    case 275322:return 79;
+    case 275314:return 80;
+    case 275283:return 81;
+    case 275247:return 82;
+    case 275246:return 83;
+    case 275245:return 84;
+    case 275239:return 85;
+    case 275188:return 86;
+    case 275184:return 87;
+    case 275180:return 88;
+    case 275177:return 89;
+    case 275174:return 90;
+    case 275173:return 91;
+    case 275151:return 92;
+    case 275150:return 93;
+    case 275149:return 94;
+    case 275076:return 95;
+    case 275075:return 96;
+    case 275073:return 97;
+    case 275068:return 98;
+    case 275067:return 99;
+    case 274979:return 100;
+    case 274978:return 101;
+    case 274886:return 102;
+    case 274882:return 103;
+    case 274878:return 104;
+    case 274877:return 105;
+    case 274822:return 106;
+    case 274821:return 107;
+    case 274817:return 108;
+    case 274815:return 109;
+    case 274811:return 110;
+    case 274807:return 111;
+    case 274806:return 112;
+    case 274803:return 113;
+    case 274802:return 114;
+    case 274801:return 115;
+    case 274708:return 116;
+    case 274690:return 117;
+    default:return 199;
+    }
+  }else if (run> 271867 && run<273104){
+    switch(run){
+      //LHC17h
+    case 273103:return 0;
+    case 273100:return 1;
+    case 273099:return 2;
+    case 272949:return 3;
+    case 272947:return 4;
+    case 272939:return 5;
+    case 272935:return 6;
+    case 272934:return 7;
+    case 272933:return 8;
+    case 272932:return 9;
+    case 272905:return 10;
+    case 272903:return 11;
+    case 272871:return 12;
+    case 272870:return 13;
+    case 272836:return 14;
+    case 272833:return 15;
+    case 272829:return 16;
+    case 272828:return 17;
+    case 272784:return 18;
+    case 272782:return 19;
+    case 272764:return 20;
+    case 272763:return 21;
+    case 272760:return 22;
+    case 272749:return 23;
+    case 272747:return 24;
+    case 272746:return 25;
+    case 272712:return 26;
+    case 272692:return 27;
+    case 272610:return 28;
+    case 272608:return 29;
+    case 272607:return 30;
+    case 272585:return 31;
+    case 272577:return 32;
+    case 272575:return 33;
+    case 272574:return 34;
+    case 272521:return 35;
+    case 272468:return 36;
+    case 272463:return 37;
+    case 272462:return 38;
+    case 272461:return 39;
+    case 272413:return 40;
+    case 272411:return 41;
+    case 272400:return 42;
+    case 272399:return 43;
+    case 272395:return 44;
+    case 272394:return 45;
+    case 272389:return 46;
+    case 272388:return 47;
+    case 272360:return 48;
+    case 272359:return 49;
+    case 272335:return 50;
+    case 272194:return 51;
+    case 272156:return 52;
+    case 272155:return 53;
+    case 272154:return 54;
+    case 272153:return 55;
+    case 272152:return 56;
+    case 272123:return 57;
+    case 272101:return 58;
+    case 272100:return 59;
+    case 272041:return 60;
+    case 272040:return 61;
+    case 272039:return 62;
+    case 272038:return 63;
+    case 272036:return 64;
+    case 271886:return 65;
+    case 271881:return 66;
+    case 271880:return 67;
+    case 271874:return 68;
+    case 271873:return 69;
+    case 271871:return 70;
+    case 271870:return 71;
+    case 271868:return 72;
+    default:return 199;
+    }
+  }else if (run>273590  && run<274443){
+    switch(run){
+      //LHC17k
+    case 274442:return 0;
+    case 274390:return 1;
+    case 274389:return 2;
+    case 274388:return 3;
+    case 274387:return 4;
+    case 274386:return 5;
+    case 274385:return 6;
+    case 274364:return 7;
+    case 274363:return 8;
+    case 274360:return 9;
+    case 274352:return 10;
+    case 274351:return 11;
+    case 274329:return 12;
+    case 274283:return 13;
+    case 274281:return 14;
+    case 274280:return 15;
+    case 274278:return 16;
+    case 274276:return 17;
+    case 274271:return 18;
+    case 274270:return 19;
+    case 274269:return 20;
+    case 274268:return 21;
+    case 274266:return 22;
+    case 274264:return 23;
+    case 274263:return 24;
+    case 274259:return 25;
+    case 274258:return 26;
+    case 274232:return 27;
+    case 274212:return 28;
+    case 274174:return 29;
+    case 274148:return 30;
+    case 274147:return 31;
+    case 274125:return 32;
+    case 274094:return 33;
+    case 274092:return 34;
+    case 274064:return 35;
+    case 274058:return 36;
+    case 273986:return 37;
+    case 273985:return 38;
+    case 273946:return 39;
+    case 273943:return 40;
+    case 273942:return 41;
+    case 273918:return 42;
+    case 273889:return 43;
+    case 273887:return 44;
+    case 273886:return 45;
+    case 273885:return 46;
+    case 273825:return 47;
+    case 273824:return 48;
+    case 273719:return 49;
+    case 273711:return 50;
+    case 273709:return 51;
+    case 273695:return 52;
+    case 273690:return 53;
+    case 273689:return 54;
+    case 273687:return 55;
+    case 273654:return 56;
+    case 273653:return 57;
+    case 273593:return 58;
+    case 273592:return 59;
+    case 273591:return 60;
+    default :return 199;
+    }
+  }else if (run>274652 && run<274672){
+    switch(run){
+      //LHC17j
+    case 274671:return 0;
+    case 274669:return 1;
+    case 274667:return 2;
+    case 274657:return 3;
+    case 274653:return 4;
+    default:return 199;
+    }
+  } else{
+    return 199;
   }
- } else if(run> 280281 && run<281962){
-     switch(run){
-     case 281961  : return 0;
-       //     case 281959 : return 1;
-     case 281956 : return 1;
-     case 281953:return 2;
-     case 281940:return 3;
-     case 281939:return 4;
-     case 281932:return 5;
-     case 281931:return 6;
-     case 281928:return 7;
-     case 281920:return 8;
-     case 281918:return 9;
-     case 281915:return 10;//
-     case 281895:return 11;//
-     case 281894:return 12;//
-     case 281892:return 13;//
-     case 281633:return 14;//
-     case 281583:return 15;
-       //     case 281581:return 12;
-       //     case 281580:return 13;
-     case 281574:return 16;
-     case 281569:return 17;
-     case 281568:return 18;
-     case 281562:return 19;
-     case 281557:return 20;
-     case 281511:return 21;
-     case 281509:return 22;
-     case 281477:return 23;
-     case 281475:return 24;
-     case 281450:return 25;
-     case 281449:return 26;
-     case 281444:return 27;
-     case 281443:return 28;
-     case 281441:return 29;
-     case 281415:return 30;
-     case 281321:return 31;
-     case 281301:return 32;
-     case 281277:return 33;
-     case 281275:return 34;
-     case 281273:return 35;
-     case 281271:return 36;
-     case 281243:return 37;
-     case 281242:return 38;
-     case 281241:return 39;
-     case 281240:return 40;
-     case 281213:return 41;
-     case 281212:return 42;
-     case 281191:return 43;
-     case 281190:return 44;
-     case 281189:return 45;
-     case 281181:return 46;
-     case 281180:return 47;//
-     case 281179:return 48;
-     case 281081:return 49;
-     case 281080:return 50;
-     case 281062:return 51;
-     case 281061:return 52;
-     case 281060:return 53;
-     case 280999:return 54;
-     case 280998:return 55;
-     case 280997:return 56;
-     case 280994:return 57;
-     case 280990:return 58;
-     case 280947:return 59;
-     case 280940:return 60;
-     case 280936:return 61;
-     case 280897:return 62;
-     case 280890:return 63;//
-     case 280881:return 64;//
-     case 280880:return 65;
-     case 280856:return 66;
-     case 280849:return 67;
-     case 280848:return 68;
-     case 280847:return 69;
-     case 280845:return 70;//
-     case 280844:return 71;
-     case 280842:return 72;
-     case 280793:return 73;
-     case 280792:return 74;
-     case 280787:return 75;
-     case 280786:return 76;
-     case 280768:return 77;
-     case 280767:return 78;
-     case 280766:return 79;
-     case 280765:return 80;
-     case 280764:return 81;
-     case 280763:return 82;
-     case 280762:return 83;
-     case 280761:return 84;
-     case 280757:return 85;
-     case 280756:return 86;
-     case 280755:return 87;
-     case 280754:return 88;
-     case 280753:return 89;
-     case 280729:return 90;
-     case 280706:return 91;
-     case 280705:return 92;
-     case 280681:return 93;
-     case 280679:return 94;
-       //     case 280676:return 88;
-       //     case 280673:return 89;
-     case 280671:return 95;
-       //     case 280650:return 91;
-       //     case 280648:return 92;
-     case 280647:return 96;
-     case 280645:return 97;
-     case 280639:return 98;
-     case 280637:return 99;
-     case 280636:return 100;
-     case 280634:return 101;
-     case 280613:return 102;
-     case 280583:return 103;
-     case 280581:return 104;
-     case 280576:return 105;//
-     case 280575:return 106;//
-     case 280574:return 107;
-     case 280551:return 108;
-     case 280550:return 109;
-     case 280547:return 110;
-     case 280546:return 111;
-     case 280519:return 112;
-     case 280518:return 113;
-     case 280499:return 114;
-     case 280448:return 115;
-     case 280447:return 116;
-     case 280446:return 117;
-     case 280445:return 118;
-     case 280443:return 119;
-     case 280419:return 120;
-     case 280415:return 121;
-     case 280413:return 122;//
-     case 280406:return 123;
-     case 280405:return 124;
-     case 280403:return 125;
-     case 280375:return 126;
-     case 280374:return 127;
-       //     case 280352:return 122;
-     case 280351:return 128;
-     case 280350:return 129;
-     case 280349:return 130;
-     case 280348:return 131;
-     case 280312:return 132;
-     case 280310:return 133;
-     case 280290:return 134;
-     case 280286:return 135;
-     case 280285:return 136;
-     case 280284:return 137;
-     case 280283:return 138;
-     case 280282:return 139;
-     default : return 199;
-     }
-   }     else if (run>274689  && run<286509){
-     switch(run){
-       //LHC17k
-     case 276508:return 0;
-     case 276507:return 1;
-     case 276506:return 2;
-     case 276462:return 3;
-     case 276439:return 4;
-     case 276438:return 5;
-     case 276437:return 6;
-     case 276435:return 7;
-     case 276351:return 8;
-     case 276348:return 9;       
-     case 276312:return 10;
-     case 276307:return 11;
-     case 276302:return 12;
-     case 276297:return 13;
-     case 276294:return 14;
-     case 276292:return 15;
-     case 276291:return 16;
-     case 276290:return 17;
-     case 276259:return 18;
-     case 276257:return 19;
-     case 276230:return 20;
-     case 276205:return 21;
-     case 276178:return 22;
-     case 276170:return 23;
-     case 276104:return 24;
-     case 276102:return 25;
-     case 276099:return 26;
-     case 276098:return 27;
-     case 276097:return 28;
-     case 276045:return 29;
-     case 276041:return 30;
-     case 276040:return 31;
-     case 276020:return 32;
-     case 276019:return 33;
-     case 276017:return 34;
-     case 276013:return	35;
-     case 276012:return 36;
-     case 275925:return 37;
-     case 275924:return 38;
-     case 275847:return 39;
-     case 275664:return 40;
-     case 275661:return 41;
-     case 275657:return 42;
-     case 275650:return 43;
-     case 275648:return 44;
-     case 275647:return 45;
-     case 275624:return 46;
-     case 275623:return 47;       
-     case 275622:return 48;
-     case 275621:return 49;
-     case 275617:return 50;
-     case 275612:return 51;
-     case 275559:return 52;
-     case 275558:return 53;
-     case 275515:return 54;
-     case 275472:return 55;
-     case 275471:return 56;
-     case 275467:return 57;
-     case 275459:return 58;
-     case 275457:return 59;
-     case 275456:return 60;
-     case 275453:return 61;
-     case 275452:return 62;
-     case 275448:return 63;
-     case 275443:return 64;
-     case 275406:return 65;
-     case 275404:return 66;
-     case 275401:return 67;
-     case 275395:return 68;
-     case 275394:return 69;
-     case 275372:return 70;
-     case 275369:return 71;
-     case 275361:return 72;
-     case 275360:return 73;
-     case 275333:return 74;
-     case 275332:return 75;
-     case 275328:return 76;
-     case 275326:return 77;
-     case 275324:return 78;
-     case 275322:return 79;
-     case 275314:return 80;
-     case 275283:return 81;
-     case 275247:return 82;
-     case 275246:return 83;
-     case 275245:return 84;
-     case 275239:return 85;
-     case 275188:return 86;
-     case 275184:return 87;
-     case 275180:return 88;
-     case 275177:return 89;
-     case 275174:return 90;
-     case 275173:return 91;
-     case 275151:return 92;
-     case 275150:return 93;
-     case 275149:return 94;
-     case 275076:return 95;
-     case 275075:return 96;
-     case 275073:return 97;
-     case 275068:return 98;
-     case 275067:return 99;
-     case 274979:return 100;
-     case 274978:return 101;
-     case 274886:return 102;
-     case 274882:return 103;
-     case 274878:return 104;
-     case 274877:return 105;
-     case 274822:return 106;
-     case 274821:return 107;
-     case 274817:return 108;
-     case 274815:return 109;
-     case 274811:return 110;
-     case 274807:return 111;
-     case 274806:return 112;
-     case 274803:return 113;
-     case 274802:return 114;
-     case 274801:return 115;
-     case 274708:return 116;
-     case 274690:return 117;
-     default:return 199;
-     }
-   }     else if (run> 271867 && run<273104){
-     switch(run){
-       //LHC17h
-     case 273103:return 0;
-     case 273100:return 1;
-     case 273099:return 2;
-     case 272949:return 3;
-     case 272947:return 4;
-     case 272939:return 5;
-     case 272935:return 6;
-     case 272934:return 7;
-     case 272933:return 8;
-     case 272932:return 9;
-     case 272905:return 10;
-     case 272903:return 11;
-     case 272871:return 12;
-     case 272870:return 13;
-     case 272836:return 14;
-     case 272833:return 15;
-     case 272829:return 16;
-     case 272828:return 17;
-     case 272784:return 18;
-     case 272782:return 19;
-     case 272764:return 20;
-     case 272763:return 21;
-     case 272760:return 22;
-     case 272749:return 23;
-     case 272747:return 24;
-     case 272746:return 25;
-     case 272712:return 26;
-     case 272692:return 27;
-     case 272610:return 28;
-     case 272608:return 29;
-     case 272607:return 30;
-     case 272585:return 31;
-     case 272577:return 32;
-     case 272575:return 33;
-     case 272574:return 34;
-     case 272521:return 35;
-     case 272468:return 36;
-     case 272463:return 37;
-     case 272462:return 38;
-     case 272461:return 39;
-     case 272413:return 40;
-     case 272411:return 41;
-     case 272400:return 42;
-     case 272399:return 43;
-     case 272395:return 44;
-     case 272394:return 45;
-     case 272389:return 46;
-     case 272388:return 47;
-     case 272360:return 48;
-     case 272359:return 49;
-     case 272335:return 50;
-     case 272194:return 51;
-     case 272156:return 52;
-     case 272155:return 53;
-     case 272154:return 54;
-     case 272153:return 55;
-     case 272152:return 56;
-     case 272123:return 57;
-     case 272101:return 58;
-     case 272100:return 59;
-     case 272041:return 60;
-     case 272040:return 61;
-     case 272039:return 62;
-     case 272038:return 63;
-     case 272036:return 64;
-     case 271886:return 65;
-     case 271881:return 66;
-     case 271880:return 67;
-     case 271874:return 68;
-     case 271873:return 69;
-     case 271871:return 70;
-     case 271870:return 71;
-     case 271868:return 72;
-     default:return 199;
-     }
-   }     else if (run>273590  && run<27443){
-     switch(run){
-       //LHC17k
-     case 274442:return 0;
-     case 274390:return 1;
-     case 274389:return 2;
-     case 274388:return 3;
-     case 274387:return 4;
-     case 274386:return 5;
-     case 274385:return 6;
-     case 274364:return 7;
-     case 274363:return 8;
-     case 274360:return 9;
-     case 274352:return 10;
-     case 274351:return 11;
-     case 274329:return 12;
-     case 274283:return 13;
-     case 274281:return 14;
-     case 274280:return 15;
-     case 274278:return 16;
-     case 274276:return 17;
-     case 274271:return 18;
-     case 274270:return 19;
-     case 274269:return 20;
-     case 274268:return 21;
-     case 274266:return 22;
-     case 274264:return 23;
-     case 274263:return 24;
-     case 274259:return 25;
-     case 274258:return 26;
-     case 274232:return 27;
-     case 274212:return 28;
-     case 274174:return 29;
-     case 274148:return 30;
-     case 274147:return 31;
-     case 274125:return 32;
-     case 274094:return 33;
-     case 274092:return 34;
-     case 274064:return 35;
-     case 274058:return 36;
-     case 273986:return 37;
-     case 273985:return 38;
-     case 273946:return 39;
-     case 273943:return 40;
-     case 273942:return 41;
-     case 273918:return 42;
-     case 273889:return 43;
-     case 273887:return 44;
-     case 273886:return 45;
-     case 273885:return 46;
-     case 273825:return 47;
-     case 273824:return 48;
-     case 273719:return 49;
-     case 273711:return 50;
-     case 273709:return 51;
-     case 273695:return 52;
-     case 273690:return 53;
-     case 273689:return 54;
-     case 273687:return 55;
-     case 273654:return 56;
-     case 273653:return 57;
-     case 273593:return 58;
-     case 273592:return 59;
-     case 273591:return 60;
-     default :return 199;
-       }
-   }     else if (run>274652 && run<274672){
-     switch(run){
-       //LHC17j
-     case 274671:return 0;
-     case 274669:return 1;
-     case 274667:return 2;
-     case 274657:return 3;
-     case 274653:return 4;
-     default:return 199;
-     }
-   } else{
-     return 199;
-   }
-
 }
 
 Bool_t AliAnalysisTaskSEpPbCorrelationsYS::HasValidFMDYS(TH2D h){
@@ -5303,7 +5194,7 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsYS::HasValidFMDYS(TH2D h){
       Double_t stdev = (nInAvg > 1 ? TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg) : 0);
       Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
 
-      fOutliers->Fill(lCentrality,nSigma);
+      dynamic_cast<TH2D*>(fOutputList2->FindObject("fOutliers"))->Fill(lCentrality,nSigma);
       //std::cout << "sigma = " << nSigma << std::endl;
       //
       if (fSigmaCut > 0. && nSigma >= fSigmaCut) nBadBins++;
