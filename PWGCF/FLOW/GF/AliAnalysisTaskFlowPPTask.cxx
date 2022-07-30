@@ -367,6 +367,15 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	MyEventNumber = new TH1F("MyEventNumber","Record the event number",4000,244000,248000);
 	fListOfObjects->Add(MyEventNumber);
 
+	hDCAxyBefore = new TH2F("hDCAxyBefore","DCAxy before cuts; DCAxy; Pt",100,0,10,100,0,10);
+	fListOfObjects->Add(hDCAxyBefore);
+	hDCAxy = new TH2F("hDCAxy","DCAxy after cuts; DCAxy; Pt",100,0,0.4,100,0,3);
+	fListOfObjects->Add(hDCAxy);
+	hDCAzBefore = new TH2F("hDCAzBefore","DCAz before cuts; DCAz; Pt",100,0,10,100,0,10);
+	fListOfObjects->Add(hDCAzBefore);
+	hDCAz = new TH2F("hDCAz","DCAz before cuts; DCAz; Pt",100,0,0.4,100,0,3);
+	fListOfObjects->Add(hDCAz);
+
     Int_t inSlotCounter=1;
 	if(fNUA) {
                 fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
@@ -432,6 +441,28 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	hEventCount->GetXaxis()->SetBinLabel(3,"AOD OK");
 	hEventCount->Fill(2.5);
 	
+	//Fill Some Histogram before Cuts
+	double vz, vx, vy;
+	vz = fInputEvent->GetPrimaryVertex()->GetZ();
+	vx = fInputEvent->GetPrimaryVertex()->GetX();
+	vy = fInputEvent->GetPrimaryVertex()->GetY();
+	double vtxp[3] = {vx, vy, vz};
+	for(Int_t nt = 0; nt < fInputEvent->GetNumberOfTracks(); nt++){
+		AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
+
+		if (!aodTrk){
+			delete aodTrk;
+			continue;
+		}
+
+		double pos[3];
+		aodTrk->GetXYZ(pos);
+		pos[0] = pos[0]-vtxp[0];
+    	pos[1] = pos[1]-vtxp[1];
+    	pos[2] = pos[2]-vtxp[2];
+		hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
+		hDCAzBefore->Fill(pos[2],aodTrk->Pt());
+	}
 	
 	if(fTrigger==0){
 		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
@@ -732,7 +763,14 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		aodTrk->GetXYZ(pos);
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
-
+		//Fill DCAxy&z after Cuts
+		double trackXYZ[3];
+		aodTrk->GetXYZ(trackXYZ);
+		trackXYZ[0] = trackXYZ[0]-vtxp[0];
+    	trackXYZ[1] = trackXYZ[1]-vtxp[1];
+    	trackXYZ[2] = trackXYZ[2]-vtxp[2];
+		hDCAxy->Fill(sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),aodTrk->Pt());
+		hDCAz->Fill(trackXYZ[2],aodTrk->Pt());
 		// //manual Tracks cut
 		// double dcaZ = 100;
 		// double dcaX = 100;
