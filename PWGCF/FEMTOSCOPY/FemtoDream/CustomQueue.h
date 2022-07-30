@@ -45,7 +45,7 @@ public:
     fCollection.clear();
   }
 
-  int GetDepth() { return (int)fDepth; }
+  int GetDepth() { return fDepth; }
 
   bool IsFull() { return (int)fCollection.size() == fDepth; }
 
@@ -53,7 +53,7 @@ public:
 
 private:
   std::deque<T> fCollection;
-  unsigned int fDepth;
+  int fDepth;
 
   ClassDefNV(CustomQueue, 1);
 };
