@@ -239,6 +239,12 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     fHistFMDeta = new TH2D("fHistFMDeta", "FMD eta vs. PVz; eta; PVz [cm]", 90, -4, 5, 20, -10, 10);
     fOutputListCharged->Add(fHistFMDeta);
 
+    TString fmdv0corrNames[4] = {"A_Before","C_Before", "A_After", "C_After"};
+    for(Int_t i(0); i < 4; i++){
+      fh2FMDvsV0[i] = new TH2D(Form("fh2FMDvsV0%s",fmdv0corrNames[i].Data()), "FMD vs. V0; FMD; V0", 250, 0, 1000, 250, 0, 1000);
+      fOutputListCharged->Add(fh2FMDvsV0[i]);
+    }
+
     TString pidName[6] = {"", "_Pion", "_Kaon", "_Proton", "_K0s", "_Lambda"};
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     const Int_t sizeOfSamples = (Int_t) fNOfSamples;
@@ -1403,7 +1409,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
         if(TMath::Abs(deltaPhi - TMath::Pi()) < 0.5) foundSomething = kTRUE;
       }
     }
-    if(foundSomething){ fhEventCounter->Fill("After Jet Veto",1); }
+    if(!foundSomething){ fhEventCounter->Fill("After Jet Veto",1); }
     else { return kFALSE; }
   }
 
@@ -1484,12 +1490,17 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
     Float_t nV0A_hits = fvzero->GetMTotV0A();
     Float_t nV0C_hits = fvzero->GetMTotV0C();
 
+    fh2FMDvsV0[0]->Fill(nFMD_fwd_hits,nV0A_hits);
+    fh2FMDvsV0[1]->Fill(nFMD_bwd_hits,nV0C_hits);
+
     if((nV0A_hits<(fFMDcutapar0*nFMD_fwd_hits-fFMDcutapar1)) || (nV0C_hits<(fFMDcutcpar0*nFMD_bwd_hits-fFMDcutcpar1))){
       fTracksAss->Clear();
       if(fAnalType == eFMDAFMDC) fTracksTrig[0]->Clear();
       return kFALSE;
     }
     fhEventCounter->Fill("FMD cuts OK",1);
+    fh2FMDvsV0[2]->Fill(nFMD_fwd_hits,nV0A_hits);
+    fh2FMDvsV0[3]->Fill(nFMD_bwd_hits,nV0C_hits);
   }
 
   return kTRUE;

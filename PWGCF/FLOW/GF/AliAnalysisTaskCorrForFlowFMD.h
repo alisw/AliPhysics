@@ -166,6 +166,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT[6]; //!
         TH2D*                   fhPTvsMinv[2]; //!
+        TH2D*                   fh2FMDvsV0[4]; //!
 
         //event and track selection
         AnaType                 fAnalType;
