@@ -913,7 +913,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         {
           labDplusToKpipi = d->MatchToMC(411, arrayMC, nProng, pdgDplustoKpipi);
           if (labDplusToKpipi >= 0)
-            partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
+            partDs = (AliAODMCParticle*)arrayMC->At(labDplusToKpipi);
         }
       }
       if(partDs){
