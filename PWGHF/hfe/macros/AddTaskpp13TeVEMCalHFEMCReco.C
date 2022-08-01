@@ -1,10 +1,12 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //            
-// AddTaskpp13TeVEMCalHFEMCReco                                       //
+// AddTaskpp13TeVEMCalHFEMCReco                                  //
 // Author: Vivek Singh                                           //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
+
+class AliAnalysisDataContainer;
 
 AliAnalysispp13TeVEMCalHFEMCReco* AddTaskpp13TeVEMCalHFEMCReco(
     
@@ -49,16 +51,6 @@ Double_t AssoTPCnsig=  3.0
 
 {
 
-  cout<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  "<<endl;
-  cout<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  "<<endl;
-
-  cout<<" AliVEvent::kINT7 "<< AliVEvent::kINT7  <<"   AliVEvent::kEMCEGA    "<< AliVEvent::kEMCEGA  <<endl;
-
-  cout<<" AliVEvent::EOfflineTriggerTypes  "<< trigger  <<endl;
-
-  cout<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  "<<endl;
-  cout<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  "<<endl;
-
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) { ::Error("AddTaskpp13TeVEMCalHFEMCReco", "No analysis manager to connect to.");
     return NULL;
@@ -79,11 +71,11 @@ Double_t AssoTPCnsig=  3.0
     outBasicname1      += finDirname.Data();
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++   
 
-    TString taskname="Bepp13TeVSpectra";
-    AliAnalysispp13TeVEMCalHFEMCReco *HFeTask = new AliAnalysispp13TeVEMCalHFEMCReco(taskname.Data());
+    //TString taskname="Bepp13TeVSpectra";
+    AliAnalysispp13TeVEMCalHFEMCReco *HFeTask = new AliAnalysispp13TeVEMCalHFEMCReco("TaskBepp13TeVSpectra");
     HFeTask->SetDebugLevel(2);
 
-    //if(!isMC) HFeTask->SelectCollisionCandidates(trigger);
+    HFeTask->SelectCollisionCandidates(trigger);
     HFeTask->SetTrigger(trigger);
     HFeTask->SetMCAnalysis(isMC);
     HFeTask->SetTenderSwitch(useTender);

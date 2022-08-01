@@ -36,6 +36,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TList*                  fOutputList;    //! output list
        AliPIDResponse*         fPIDResponse;  //! pid response object’
        TH1F*                   fHistMK0;        //! dummy histogram
+       TH1F*                   fHistMK0Cuts;        //! dummy histogram
        TH1F*                   fHistPt;     //! dummy histogram
        TH1F*                   fVtx;        //! dummy histogram
        TH2F*                   fPID;        //! dummy histogram

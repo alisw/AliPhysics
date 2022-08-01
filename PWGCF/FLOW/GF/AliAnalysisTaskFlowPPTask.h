@@ -295,6 +295,9 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
                 Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t			fUseCorrectedNTracks;	// flag for online track correction
 
+
+		Double_t			fCurrCentrality;	//! Centrality of Ongoing Event
+
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
 
@@ -386,12 +389,12 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TH1F*				fEtaBefore;		//! eta dist before track cuts
 		TH1F*				fPtDis;			//! pt dist
 		TH1F*				fPtBefore;		//! pt dist before track cuts
-		TH1F*				hDCAxyBefore; 		//!
-		TH1F*				hDCAzBefore; 		//!
+		TH2F*				hDCAxyBefore; 		//!
+		TH2F*				hDCAzBefore; 		//!
 		TH1F*				hITSclustersBefore; 	//!
 		TH1F*				hChi2Before; 		//!
-		TH1F*				hDCAxy; 		//!
-		TH1F*				hDCAz; 			//!
+		TH2F*				hDCAxy; 		//!
+		TH2F*				hDCAz; 			//!
 		TH1F*				hITSclusters; 		//!
 		TH1F*				hChi2; 			//!
 

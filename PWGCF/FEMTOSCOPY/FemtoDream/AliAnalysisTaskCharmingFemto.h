@@ -326,6 +326,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TList *fResultList;              //!
   TList *fResultQAList;            //!
 
+  TH2F *fHistBuddyplusEtaVsp;    //!
+  TH2F *fHistBuddyminusEtaVsp;    //!
+
   TH2F *fHistDplusInvMassPt;   //!
   TH2F *fHistDplusInvMassPtSel;   //!
   TH1F *fHistDplusEta;         //!
@@ -338,6 +341,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH2F *fHistDplusMCPhiRes;    //!
   TH2F *fHistDplusMCThetaRes;  //!
   TH2F *fHistDplusMCOrigin;    //!
+  TH2F *fHistDplusEtaVsp;    //!
 
   TH2F *fHistDminusInvMassPt;   //!
   TH2F *fHistDminusInvMassPtSel;   //!
@@ -351,6 +355,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH2F *fHistDminusMCPhiRes;    //!
   TH2F *fHistDminusMCThetaRes;  //!
   TH2F *fHistDminusMCOrigin;    //!
+  TH2F *fHistDminusEtaVsp;    //!
 
   bool fDoDorigPlots;            //!
   TH2F *fHistDplusMCtruthmotherPDG;  //!
@@ -395,7 +400,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 13)
+ClassDef(AliAnalysisTaskCharmingFemto, 14)
 };
 
 #endif

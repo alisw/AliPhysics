@@ -64,7 +64,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),fEventPlaneSource(0),fEventPlaneChoice(0),
   fQnCorrEventPlane1Angle(0.0),fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
-  fParticleLevel(kFALSE),fIsMC(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
+  fParticleLevel(kFALSE),fIsMC(0),fOverrideCentEventCut(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
   fEP1AngleV0M(0),fEP1AngleV0A(0),fEP1AngleV0C(0),fEP1AngleTPC(0),fEP1AngleTPCA(0),fEP1AngleTPCC(0),
   fEPAngleV0M(0),fEPAngleV0A(0),fEPAngleV0C(0),fEPAngleTPC(0),fEPAngleTPCA(0),fEPAngleTPCC(0),
@@ -118,7 +118,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),fEventPlaneSource(0),fEventPlaneChoice(0),
   fQnCorrEventPlane1Angle(0.0),fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
-  fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
+  fParticleLevel(kFALSE),fIsMC(InputMCorData),fOverrideCentEventCut(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
   fEP1AngleV0M(0),fEP1AngleV0A(0),fEP1AngleV0C(0),fEP1AngleTPC(0),fEP1AngleTPCA(0),fEP1AngleTPCC(0),
   fEPAngleV0M(0),fEPAngleV0A(0),fEPAngleV0C(0),fEPAngleTPC(0),fEPAngleTPCA(0),fEPAngleTPCC(0),
@@ -817,10 +817,13 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		//..this just means that the automatic cut settings
 		//..are not loaded every time the event is checked
 		fEventCuts.SetManualMode();
-		fEventCuts.fMC = false; //FixMe substitute by a real flag in the task!
+		fEventCuts.fMC = fIsMC;
 		fEventCuts.SetupLHC15o();
 		fEventCuts.fUseVariablesCorrelationCuts = true; //..That is specifically for LHC15o!
 	}
+  if (fIsMC && fOverrideCentEventCut) {
+    fEventCuts.OverrideCentralityFramework(0);
+  }
 
 	fEventCuts.AddQAplotsToList(fEventCutList);
 	fOutput->Add(fEventCutList);

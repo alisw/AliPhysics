@@ -124,6 +124,8 @@
 #pragma link C++ class AliAnalysisMeanPtdata+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityMC+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity2+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD+;
 
 #pragma link C++ class AliAnalysisTaskNFMs+;
 #endif

@@ -260,6 +260,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistZeOrgNeg(0),
         fHistZeOrgPos(0),
         fHistZeRec(0),
+        fHist_Zpair_pos(0),
+        fHist_Zpair_neg(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
 
@@ -467,6 +469,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistZeOrgNeg(0),
         fHistZeOrgPos(0),
         fHistZeRec(0),
+        fHist_Zpair_pos(0),
+        fHist_Zpair_neg(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
 {
@@ -614,9 +618,11 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistWeOrgNeg        = new TH1F("fHistWeOrgNeg","particle level W->e minus",90,10,100);
 	fHistZ_Org        = new TH1F("fHistZ_Org","particle level Z",90,10,100);
 	fHistZeOrg        = new TH2F("fHistZeOrg","particle level Z->e",90,10,100,90,10,100);
-	fHistZeOrgPos        = new TH2F("fHistZeOrgPos","particle level Z->e",60,-3,3,0,0,100);
-	fHistZeOrgNeg        = new TH2F("fHistZeOrgNeg","particle level Z->e",60,-3,3,0,0,100);
+	fHistZeOrgPos        = new TH2F("fHistZeOrgPos","particle level Z->e",100,-5,5,100,0,100);
+	fHistZeOrgNeg        = new TH2F("fHistZeOrgNeg","particle level Z->e",100,-5,5,100,0,100);
 	fHistZeRec        = new TH1F("fHistZeRec","particle level Z->e",90,10,100);
+	fHist_Zpair_pos        = new TH2F("fHist_Zpair_pos","pair Z->e",100,-5,5,100,0,100);
+	fHist_Zpair_neg        = new TH2F("fHist_Zpair_neg","pair Z->e",100,-5,5,100,0,100);
 
 
 
@@ -1787,7 +1793,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		if(fAOD) {
 			if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
 			if(aAssotrack->GetTPCNcls() < 80) continue;
-			if(aAssotrack->GetITSNcls() < 3 ) continue;
+			if(aAssotrack->GetITSNcls() < 1 ) continue;
 			if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
 		}
 		else{
@@ -1797,8 +1803,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		//-------loose cut on partner electron
 		if(ptAsso <CutptAsso) continue;
 		//if(ptAsso <0.2) continue;
-		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
-		if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;  // for Z cross section
+		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;  //for maximize finding Zee eff.
 		if(nsigma < -3 || nsigma > 3) continue;
 		if(AssoTPCchi2perNDF >= 4) continue;
 		if(!(aAssotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aAssotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
@@ -1819,8 +1824,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                 Double_t RecoPt = recg.GetPt();
  
 		if(fFlagLS){
-			if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
-			if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
+			//if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
+			//if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
 			if(track->Pt()>1){
 				if(iIsocut)fInv_pT_LS_forW->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_LS_forZ->Fill(TrkPt,mass);
@@ -1837,8 +1842,16 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 				if(iIsocut)fInv_pT_ULS_forW->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_ULS_forZ->Fill(TrkPt,mass);
 				if(iIsocut)fInv_pT_ULS_forZ_level->Fill(RecoPt,mass);
-				if(iIsocut && charge>0)fInv_pT_ULS_forZ_pos->Fill(TrkPt,mass);
-				if(iIsocut && charge<0)fInv_pT_ULS_forZ_neg->Fill(TrkPt,mass);
+				if(iIsocut && charge>0)
+                                   {
+                                    fInv_pT_ULS_forZ_pos->Fill(TrkPt,mass);
+                                    if(mass>75.0 && mass<100.0)fHist_Zpair_pos->Fill(aAssotrack->Eta(),TrkPt);
+                                   }
+				if(iIsocut && charge<0)
+                                   {
+                                    fInv_pT_ULS_forZ_neg->Fill(TrkPt,mass);
+                                    if(mass>75.0 && mass<100.0)fHist_Zpair_neg->Fill(aAssotrack->Eta(),TrkPt);
+                                   }
 				if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
 		}

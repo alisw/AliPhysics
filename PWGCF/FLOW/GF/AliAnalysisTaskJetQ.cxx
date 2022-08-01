@@ -14,6 +14,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  fNormCounter(0),
  fCorrPlot(0),
  fMixCorrPlot(0),
+ fNtriggers(0),
  fPtAssocMin(2.),
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
@@ -34,6 +35,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
  fNormCounter(0),
  fCorrPlot(0),
  fMixCorrPlot(0),
+ fNtriggers(0),
  fPtAssocMin(2.),
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
@@ -78,15 +80,20 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
     // creating output lists
     fOutList = new TList();
     fOutList->SetOwner(kTRUE);
+    TH1 *l_ptBins = new TH1D("ptBins","ptBins",fPtBins.size()-1,fPtBins.data());
+    TH1 *l_centBins = new TH1D("centBins","centBins",fCentBins.size()-1,fCentBins.data());
     TH1D *vtzBefore = new TH1D("vtzBefore","vtzBefore",20,-10,10);
     TH1D *vtzAfter  = new TH1D("vtzAfter","vtzAfter",20,-10,10);
     fNormCounter    = new TH2D("NormCounter","NormCounter; multi/cent; index",fCentBins.size()-1, fCentBins.data(), 4, -0.5, 3.5);
     fOutList->Add(vtzBefore);
     fOutList->Add(vtzAfter);
     fOutList->Add(fNormCounter);
+    fOutList->Add(l_ptBins);
+    fOutList->Add(l_centBins);
     //Setting up correlation plots
     fCorrPlot    = new TH1**[fCentAxis->GetNbins()];
     fMixCorrPlot = new TH1**[fCentAxis->GetNbins()];
+    fNtriggers   = new TH1*[fCentAxis->GetNbins()];
     for(Int_t iCent=0;iCent<fCentAxis->GetNbins();iCent++) {
       fCorrPlot[iCent] = new TH1*[fPtAxis->GetNbins()];
       fMixCorrPlot[iCent] = new TH1*[fPtAxis->GetNbins()];
@@ -98,6 +105,10 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
         fOutList->Add(fCorrPlot[iCent][iPt]);
         fOutList->Add(fMixCorrPlot[iCent][iPt]);
       };
+      fNtriggers[iCent]    = new TH1D(Form("fNtriggers_Cent%i",iCent),Form("fNtriggers_Cent%i; v_{z}; dN_{trig}/dv_{z}",iCent),fVzBins.size()-1,-10,10);
+      fNtriggers[iCent]->GetZaxis()->Set(fVzBins.size()-1,fVzBins.data());
+      fOutList->Add(fNtriggers[iCent]);
+
     };
     PostData(1, fOutList);
 }
@@ -174,11 +185,12 @@ Int_t AliAnalysisTaskJetQ::FindGivenPt(const Double_t &ptMin, const Double_t &pt
   Int_t ind=-1;
   AliAODTrack *lTrack;
   Double_t lPtMax=0;
+  Double_t lPtCur=0;
   for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(i);
-    if(!lTrack->TestFilterBit(96)) continue;
-    lPtMax = lTrack->Pt();
-    if(lPtMax > ptMin && lPtMax < ptMax) { ind=i; break; };
+    if(!lTrack->TestFilterBit(768)) continue;
+    lPtCur = lTrack->Pt();
+    if(lPtCur > ptMin && lPtCur < ptMax && lPtCur > lPtMax) { lPtMax=lPtCur; ind=i;  };
   };
   return ind;
 }
@@ -189,11 +201,15 @@ Int_t AliAnalysisTaskJetQ::FillCorrelations(Int_t &triggerIndex, Int_t &centVal,
   Double_t l_TrEta = lTriggerTrack->Eta();
   Double_t l_TrPhi = lTriggerTrack->Phi();
   Int_t centBin = centVal-1;
+  fNtriggers[centBin]->Fill(vzValue);
+  //Fetch pT trigger & make sure we are not in the same pT bin below
+  lTrack = (AliAODTrack*)fAOD->GetTrack(triggerIndex);
+  Int_t trigBin = fPtAxis->FindBin(lTrack->Pt());
   for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(i);
-    if(!lTrack->TestFilterBit(96)) continue;
+    if(!lTrack->TestFilterBit(768)) continue;
     Int_t ptInd = fPtAxis->FindBin(lTrack->Pt());
-    if(!ptInd || ptInd>fPtAxis->GetNbins()) continue;
+    if(!ptInd || ptInd>fPtAxis->GetNbins() || ptInd == trigBin) continue;
     ptInd--;
     Double_t d_Eta = l_TrEta-lTrack->Eta();
     Double_t d_Phi = l_TrPhi-lTrack->Phi();
@@ -216,12 +232,15 @@ Int_t AliAnalysisTaskJetQ::FillMixedEvent(Int_t &triggerIndex, AliEventPool *l_p
   Double_t l_AsPt;
   TObjArray *mixTracks;
   Int_t centInd = centVal-1;
+  //Fetch pT trigger & make sure we are not in the same pT bin below
+  lTrack = (AliAODTrack*)fAOD->GetTrack(triggerIndex);
+  Int_t trigBin = fPtAxis->FindBin(lTrack->Pt());
   for(Int_t i=0;i<l_pool->GetCurrentNEvents();i++) {
     mixTracks = l_pool->GetEvent(i);
     TObjArrayIter *myIt = new TObjArrayIter(mixTracks);
     while(AliBasicParticle *rTr = (AliBasicParticle*)myIt->Next()) {
       Int_t ptInd = fPtAxis->FindBin(rTr->Pt());
-      if(!ptInd || ptInd>fPtAxis->GetNbins()) continue;
+      if(!ptInd || ptInd>fPtAxis->GetNbins() || ptInd==trigBin) continue;
       ptInd-=1;
       l_AsEta = l_TrEta - rTr->Eta();
       l_AsPhi = l_TrPhi - rTr->Phi();

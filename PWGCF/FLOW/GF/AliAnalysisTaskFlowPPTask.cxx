@@ -367,6 +367,15 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	MyEventNumber = new TH1F("MyEventNumber","Record the event number",4000,244000,248000);
 	fListOfObjects->Add(MyEventNumber);
 
+	hDCAxyBefore = new TH2F("hDCAxyBefore","DCAxy before cuts; DCAxy; Pt",100,0,10,100,0,10);
+	fListOfObjects->Add(hDCAxyBefore);
+	hDCAxy = new TH2F("hDCAxy","DCAxy after cuts; DCAxy; Pt",100,0,0.4,100,0,3);
+	fListOfObjects->Add(hDCAxy);
+	hDCAzBefore = new TH2F("hDCAzBefore","DCAz before cuts; DCAz; Pt",100,0,10,100,0,10);
+	fListOfObjects->Add(hDCAzBefore);
+	hDCAz = new TH2F("hDCAz","DCAz before cuts; DCAz; Pt",100,0,0.4,100,0,3);
+	fListOfObjects->Add(hDCAz);
+
     Int_t inSlotCounter=1;
 	if(fNUA) {
                 fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
@@ -432,6 +441,28 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	hEventCount->GetXaxis()->SetBinLabel(3,"AOD OK");
 	hEventCount->Fill(2.5);
 	
+	//Fill Some Histogram before Cuts
+	double vz, vx, vy;
+	vz = fInputEvent->GetPrimaryVertex()->GetZ();
+	vx = fInputEvent->GetPrimaryVertex()->GetX();
+	vy = fInputEvent->GetPrimaryVertex()->GetY();
+	double vtxp[3] = {vx, vy, vz};
+	for(Int_t nt = 0; nt < fInputEvent->GetNumberOfTracks(); nt++){
+		AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
+
+		if (!aodTrk){
+			delete aodTrk;
+			continue;
+		}
+
+		double pos[3];
+		aodTrk->GetXYZ(pos);
+		pos[0] = pos[0]-vtxp[0];
+    	pos[1] = pos[1]-vtxp[1];
+    	pos[2] = pos[2]-vtxp[2];
+		hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
+		hDCAzBefore->Fill(pos[2],aodTrk->Pt());
+	}
 	
 	if(fTrigger==0){
 		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
@@ -514,8 +545,12 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	float cl1Centr = 0;
 	float cl0Centr = 0;
 
-	fCentralityDis->Fill(centrV0);
-	fV0CentralityDis->Fill(cent);
+	fCentralityDis->Fill(cent);
+	fV0CentralityDis->Fill(centrV0);
+	fCurrCentrality = cent;
+	//printf("==========\n========\n==========\n========\n");
+	//printf("Current Centrality is %lf\n",fCurrCentrality);
+	//printf("==========\n========\n==========\n========\n");
 
 
         // checking the run number for aplying weights & loading TList with weights
@@ -728,7 +763,14 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		aodTrk->GetXYZ(pos);
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
-
+		//Fill DCAxy&z after Cuts
+		double trackXYZ[3];
+		aodTrk->GetXYZ(trackXYZ);
+		trackXYZ[0] = trackXYZ[0]-vtxp[0];
+    	trackXYZ[1] = trackXYZ[1]-vtxp[1];
+    	trackXYZ[2] = trackXYZ[2]-vtxp[2];
+		hDCAxy->Fill(sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),aodTrk->Pt());
+		hDCAz->Fill(trackXYZ[2],aodTrk->Pt());
 		// //manual Tracks cut
 		// double dcaZ = 100;
 		// double dcaX = 100;
@@ -1293,8 +1335,26 @@ int AliAnalysisTaskFlowPPTask::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
+	Int_t IntCent = 0;
+	if(fCurrCentrality>=5 && fCurrCentrality<10)IntCent=1;
+	else if(fCurrCentrality>=10 && fCurrCentrality<20)IntCent=2;
+	else if(fCurrCentrality>=20 && fCurrCentrality<30)IntCent=3;
+	else if(fCurrCentrality>=30 && fCurrCentrality<40)IntCent=4;
+	else if(fCurrCentrality>=40 && fCurrCentrality<50)IntCent=5;
+	else if(fCurrCentrality>=50 && fCurrCentrality<60)IntCent=6;
+	else if(fCurrCentrality>=60)IntCent=7;
 	//Pt Weight is extract from Efficiency
-	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject("EffRescaled_Cent0");
+	if(fCurrSystFlag==0)
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
+	else if(fCurrSystFlag>0&&fCurrSystFlag<9)
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
+	else
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag+7));
+
+	//printf("========\n=======\n=======\n=======\n");
+	//printf("Using NUE flag%d Cent%d\n",fCurrSystFlag,IntCent);
+	//printf("========\n=======\n=======\n=======\n");
+
 	if(!hTrackEfficiencyRun){
 		printf("Can't get Track Efficiency\n");
 		return 1;

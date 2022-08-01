@@ -57,8 +57,9 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         void       SetCutsHybrid0WoDCA(AliESDtrackCuts *name);
         void       SetCutsHybrid1WoDCA(AliESDtrackCuts *name);
         void       SetCutsFilterWoDCA(AliESDtrackCuts *name);
+        void       SetMultPercenV0(const Char_t* MultV0)    {fMultPercenV0 = MultV0;}   // use different bin max
         //Systematic ============================
-	void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
+        void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
         void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
         void       SetNcrVar1(Bool_t NcrVar1 = kFALSE) {fNcrVar1 = NcrVar1;}
         void       SetNcrVar2(Bool_t NcrVar2 = kFALSE) {fNcrVar2 = NcrVar2;}
@@ -96,10 +97,11 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         Int_t        fnRecHy;
         Int_t        fnRecHyWoDCA;
         Int_t        fnGen;
+        const Char_t* fMultPercenV0;
         // Systematic------------------------------------
         Bool_t       fNcrVar1;
         Bool_t       fNcrVar2;
-	Bool_t       fTPCclustersVar1;
+        Bool_t       fTPCclustersVar1;
         Bool_t       fTPCclustersVar2;
         Bool_t       fGeoTPCVar1;
         Bool_t       fGeoTPCVar2;

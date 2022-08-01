@@ -13,6 +13,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool cutTPCpileup = false, bool saveQA_TPCpileup = false,
     bool useEtaGap = true, float etaGap = 1.0,
     bool useWeightsNUE = true, bool useWeightsNUA = false,
+    bool useWeightsCent = false,
     bool getSC = true, bool getLower = true)
 {
   // Configuration of the analysis.
@@ -274,6 +275,13 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);
+    if (period == lhc18q || period == lhc18r) {useWeightsCent = false;} // Security for 18qr.
+    if (useWeightsCent) {   // Centrality weight correction for LHC15o.
+      TString centWeightFile = Form(
+        "alien:///alice/cern.ch/user/c/cimordas/CentWeights/CentralityWeights_LHC15oPass2_%s.root", configNames[i].Data());
+      fJCatalyst[i]->SetInputCentralityWeight15o(true, centWeightFile);
+      printf("Centrality weight will be used.\n");
+    }
 
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   } // Go to the next configuration.
@@ -293,6 +301,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     myTask[i]->HOCFASetPtRange(ptMin, ptMax);
     myTask[i]->HOCFASetEtaGap(useEtaGap, etaGap);
     myTask[i]->HOCFASetParticleWeights(useWeightsNUE, useWeightsNUA);
+    myTask[i]->HOCFASetCentralityWeights(useWeightsCent);    
 
     myTask[i]->HOCFASetObservable(getSC, getLower);
 

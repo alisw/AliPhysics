@@ -10,6 +10,7 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
                                    Bool_t  useMC  = kTRUE,
                                    Bool_t performMCclosuretest = kFALSE,
                                    Bool_t IsHyAna = kFALSE,
+                                   const Char_t* MultV0="V0M",
                                    Double_t minpT=0.5,
                                    Double_t PtLmin = 1.0,
                                    Double_t PtLmax = 15.0,
@@ -57,6 +58,7 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     taskKno->SetLeadingPtMax(PtLmax);
     taskKno->SetNchNbin(NchNbins);
     taskKno->SetNchBinMax(maxbinNch);
+    taskKno->SetMultPercenV0(MultV0);
     // Systematic -------------------------------
     taskKno->SetTPCclustersVar1(TPCclustersVar1);
     taskKno->SetTPCclustersVar2(TPCclustersVar2);
