@@ -527,15 +527,11 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) 
   if(fCutTPCchi2pCl > 0. && track->GetTPCchi2perCluster() > fCutTPCchi2pCl)  { return kFALSE; }
 
   if(fRejectSecondariesFromMC){
-    printf("rejecting secondaries\n");
     AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
     if(!mcEvent) return kFALSE;
-    printf("event ok \n");
     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(track->GetLabel());
     if(!part) return kFALSE;
-    printf("part read \n");
     if(!part->IsPhysicalPrimary()) { return kFALSE; }
-    printf("it is not \n");
   }
 
   return kTRUE;
