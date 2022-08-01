@@ -6,7 +6,7 @@
 #define AliAnalysisTaskFlowPPTask_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliGFWNFCuts.h"
+#include "AliGFWXXCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -260,7 +260,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         
 
 		AliEventCuts	fEventCuts;					// Event cuts
-		AliGFWNFCuts*     fGFWSelection;                                  //!
+		AliGFWXXCuts*     fGFWSelection;                                  //!
 		AliAODEvent* fAOD;                                              //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
