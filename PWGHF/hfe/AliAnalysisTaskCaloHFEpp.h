@@ -286,6 +286,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fHistZeOrgNeg;
 		TH2F*                   fHistZeOrgPos;
 		TH1F*                   fHistZeRec;
+		TH2F*                   fHist_Zpair_pos;
+		TH2F*                   fHist_Zpair_neg;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
