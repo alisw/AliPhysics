@@ -527,10 +527,15 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) 
   if(fCutTPCchi2pCl > 0. && track->GetTPCchi2perCluster() > fCutTPCchi2pCl)  { return kFALSE; }
 
   if(fRejectSecondariesFromMC){
+    printf("rejecting secondaries\n");
     AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
     if(!mcEvent) return kFALSE;
+    printf("event ok \n");
     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(track->GetLabel());
+    if(!part) return kFALSE;
+    printf("part read \n");
     if(!part->IsPhysicalPrimary()) { return kFALSE; }
+    printf("it is not \n");
   }
 
   return kTRUE;
@@ -1641,6 +1646,7 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fIsAntiparticleCheck: (Bool_t) %s\n", fIsAntiparticleCheck ? "kTRUE" : "kFALSE");
   printf("\t fDoAntiparticleOnly: (Bool_t) %s\n", fDoAntiparticleOnly ? "kTRUE" : "kFALSE");
   printf("\t fVetoJetEvents: (Bool_t) %s\n", fVetoJetEvents ? "kTRUE" : "kFALSE");
+  printf("\t fRejectSecondariesFromMC: (Bool_t) %s\n", fRejectSecondariesFromMC ? "kTRUE" : "kFALSE");
   printf("\t fNOfSamples: (Int_t) %d\n", (Int_t) fNOfSamples);
   printf(" **************************** \n");
   printf("\t fSystematicsFlag: (TString) %s\n", fSystematicsFlag.Data());
