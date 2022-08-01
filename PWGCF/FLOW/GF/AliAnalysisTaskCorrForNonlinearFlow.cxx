@@ -465,6 +465,11 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     const Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; Subsample, don't use it so far
     const Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,sizePtTrig,sizePtAss};
 
+    fListOfProfile = new TList();
+    fListOfProfile->SetOwner();
+    
+    fhTracksTrigPt = new TH2D("fhTrigTracks", "fhTrigTracks; pT (trig); PVz", fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), fzVtxBins.size()-1, fzVtxBins.data());
+    fListOfProfile->Add(fhTracksTrigPt);
 
     // mixing
     fPoolMaxNEvents = 2000;
@@ -479,9 +484,6 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     }
     fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
 
-    fListOfProfile = new TList();
-    fListOfProfile->SetOwner();
-    
     fhChargedSE = new AliTHn("fhChargedSE", "fhChargedSE", nSteps, 6, iBinningTPCTPC);
     fhChargedSE->SetBinLimits(0, binning_deta_tpctpc);
     fhChargedSE->SetBinLimits(1, binning_dphi);
@@ -552,7 +554,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 
   // Check if it passed the standard AOD selection
   if (!AcceptAOD(fAOD) ) {
-    PostData(1,fListOfObjects);
+    PostData(1, fListOfObjects);
     PostData(2, fListOfProfile);
     return;
   }
@@ -570,16 +572,25 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 
   if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
 	   if (!fGFWSelection15o->AcceptVertex(fAOD)) {
-	    PostData(1,fListOfObjects);
+	    PostData(1, fListOfObjects);
 	    PostData(2, fListOfProfile);
 	    return;
 	  }
   } else {
 	  if (!fGFWSelection->AcceptVertex(fAOD)) {
-	    PostData(1,fListOfObjects);
+	    PostData(1, fListOfObjects);
 	    PostData(2, fListOfProfile);
 	    return;
 	  }
+  }
+
+  AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+  if(!multSelection) { return; }
+  fCentrality = multSelection->GetMultiplicityPercentile("V0M");
+  if (fCentrality < fCentMin || fCentrality > fCentMax) {
+	    PostData(1, fListOfObjects);
+	    PostData(2, fListOfProfile);
+	    return;
   }
 
   // checking the run number for aplying weights & loading TList with weights
@@ -609,14 +620,11 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 
   }
 
+ 
   // Here we calcuate the multiplicity distribution
   NTracksCalculation(fInputEvent);
 
   fbSign = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
-
-  AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-  if(!multSelection) { return; }
-  fCentrality = multSelection->GetMultiplicityPercentile("V0M"); 
 	
   Int_t nTracks = fInputEvent->GetNumberOfTracks();
   fTracksTrigCharged = new TObjArray;
@@ -650,6 +658,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
     if (pt > fPtMinTrig && pt < fPtMaxTrig) {
         fTracksTrigCharged->Add(track);
         fNofTracksTrig++; // number of trigger tracks in the event
+        fhTracksTrigPt->Fill(pt, fPVz);
         // fhTracksTrigPt->Fill(pt, fPVz);
     }
   }
