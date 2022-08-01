@@ -770,21 +770,6 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
     return;
   }
 
-  if (fLowMultiplicityMode) {
-     // Number of AOD tracks before track cuts
-     const int nAODTracks = fAOD->GetNumberOfTracks();
-     if (nAODTracks > 200) {
-       PostData(1,fListOfObjects);
-       int outputslot = 2;
-       PostData(2, fListOfProfile);
-       for (int i = 0; i < 30; i++) {
-         outputslot++;
-         PostData(outputslot, fListOfProfiles[i]);
-       }
-       return;
-     }
-  }
-
   // Check if it passed the standard AOD selection
   if (!AcceptAOD(fAOD) ) {
     PostData(1,fListOfObjects);
