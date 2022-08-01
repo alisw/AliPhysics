@@ -78,6 +78,8 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetMaxPtAss(Double_t maxPt){fPtMaxAss = maxPt;}
 		virtual void   SetMinPtTrig(Double_t minPt){fPtMinTrig = minPt;}
 		virtual void   SetMaxPtTrig(Double_t maxPt){fPtMaxTrig = maxPt;}
+		virtual void   SetMaxCent(Double_t maxCent){fCentMax = maxCent;}
+		virtual void   SetMinCent(Double_t maxCent){fCentMin = maxCent;}
 	
 		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
 		virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
@@ -148,8 +150,10 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Double_t		fMaxPt;					// Max pt - for histogram limits
 		Double_t                fPtMinAss;                              // Min pt - for Associate particle 
 		Double_t                fPtMaxAss;                              // Min pt - for Associate particle 
-		Double_t                fPtMinTrig;                              // Min pt - for trigger particle 
-		Double_t                fPtMaxTrig;                              // Min pt - for trigger particle 
+		Double_t                fPtMinTrig;                             // Min pt - for trigger particle 
+		Double_t                fPtMaxTrig;                             // Min pt - for trigger particle 
+		Double_t                fCentMin;                               // Min Centrality
+		Double_t                fCentMax;                               // Max Centrality
 		Int_t			fSample;				// number of sample
 		Int_t			fTrigger;				// flag for trigger
 		Int_t			fAliTrigger;				// name for trigger
