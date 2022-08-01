@@ -2270,10 +2270,6 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
             mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
             if(!mcParticle)  continue;
 
-            if(IsTrackInAcceptance(mcParticle, kPartLevel)){
-               fhPtTrkTruePrimGen->Fill(mcParticle->Pt(), mcParticle->Eta(), fMultV0Mnorm_PartLevel); //Track Efficiency denominator
-            }
-
             if(mcParticle->Charge()){
                if((static_cast<AliAODMCParticle*>(mcParticle))->IsPhysicalPrimary()){
                   //get particle level charged particles multiplicities in V0A and V0C
@@ -2299,7 +2295,16 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
             fhSignal_PartLevel[fkV0M]->Fill(fMultV0M_PartLevel); //V0M multiplicity
             fhSignal_PartLevel[fkV0Mnorm1]->Fill(fMultV0Mnorm_PartLevel);
          }
-      
+ 
+	 for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum()){
+            mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
+            if(!mcParticle)  continue;
+
+            if(IsTrackInAcceptance(mcParticle, kPartLevel)){
+               fhPtTrkTruePrimGen->Fill(mcParticle->Pt(), mcParticle->Eta(), fMultV0Mnorm_PartLevel); //Track Efficiency denominator
+            }
+	 }
+     
          //++++++++++++++++++++++++++++++++++++++++++++++++++
          for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
             jet = jetIterator.second;
