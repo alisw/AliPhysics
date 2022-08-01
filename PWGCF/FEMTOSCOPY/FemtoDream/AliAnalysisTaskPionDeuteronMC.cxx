@@ -440,12 +440,12 @@ void AliAnalysisTaskPionDeuteronMC::SetPrimaryPtBins(int nbins, float *bins)
 void AliAnalysisTaskPionDeuteronMC::SetKstarBins(int nbins, float min, float max)
 {
   const float delta = (max - min) / nbins;
-  fPrimaryPtBins.Set(nbins + 1);
+  fKstarBins.Set(nbins + 1);
   for (int iB = 0; iB < nbins; ++iB)
   {
-    fPrimaryPtBins[iB] = min + iB * delta;
+    fKstarBins[iB] = min + iB * delta;
   }
-  fPrimaryPtBins[nbins] = max;
+  fKstarBins[nbins] = max;
 }
 
 void AliAnalysisTaskPionDeuteronMC::SetKstarBins(int nbins, float *bins)
