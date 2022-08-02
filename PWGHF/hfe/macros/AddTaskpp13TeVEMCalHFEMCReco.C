@@ -1,33 +1,31 @@
-
 ///////////////////////////////////////////////////////////////////
 //                                                               //            
-// AddTaskpp13TeVEMCalHFEMCReco                                  //
+// AddTaskpp13TeVEMCalHFEMCReco                                       //
 // Author: Vivek Singh                                           //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
-
 class AliAnalysisDataContainer;
 
 AliAnalysispp13TeVEMCalHFEMCReco* AddTaskpp13TeVEMCalHFEMCReco(
-    
+
 TString name = "", 
-Bool_t isMC=kTRUE,
-AliVEvent::EOfflineTriggerTypes trigger=AliVEvent::kINT7,
+Bool_t PhysSelINT7 =  kTRUE,
+Bool_t isEG1=kFALSE,
+Bool_t isMC=kFALSE,
 Bool_t SwitchPi0EtaWeight=kTRUE,
 Bool_t SwitchNHFEeffi = kTRUE,
 Bool_t SwitchEleRecoEffi = kTRUE,
 Bool_t SwitchMCTempWeight= kTRUE,
 Bool_t SwitchFillMCTemp = kTRUE,
-Bool_t isEG1=kFALSE,
 Bool_t useTender = kTRUE,
 Bool_t ClsTypeEMC = kTRUE,
 Bool_t ClsTypeDCAL = kTRUE,
 Bool_t fSwitchRIP=kTRUE,
-Double_t Etarange= 0.7, 
+Double_t Etarange= 0.6, 
 Int_t TPCNCrRows=70,
 Double_t RatioCrossedRowOverFindable=0.8,
 Int_t ITSNclus= 3,
-Int_t TPCNclusPID= 80,
+Int_t TPCNclusPID= 60,
 Bool_t SPDBoth= kFALSE,
 Bool_t SPDAny= kTRUE,
 Bool_t SPDFirst= kFALSE,
@@ -35,7 +33,7 @@ Double_t DCAxyCut= 1,
 Double_t DCAzCut=2,
 Double_t TPCnsigmin= -1,
 Double_t TPCnsigmax= 3,
-Double_t EopEMin= 0.85,     
+Double_t EopEMin= 0.9,     
 Double_t EopEMax= 1.2,     
 Double_t  M02Min= 0.02,      
 Double_t M02Max1= 0.9,
@@ -47,13 +45,24 @@ Bool_t AssoITSRefit= kTRUE,
 Double_t AssopTMin= 0.1,
 Double_t AssoEtarange= 0.9,
 Double_t AssoTPCnsig=  3.0
+
 )
 
 {
+    AliVEvent::EOfflineTriggerTypes trigger;
+    if(PhysSelINT7)  trigger=AliVEvent::kINT7;
+    if(!PhysSelINT7) trigger=AliVEvent::kEMCEGA;
+
+  cout<<"  PhysSelINT7  ===    "<< PhysSelINT7   <<"  trigger  ===    "<< trigger <<endl;
+
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) { ::Error("AddTaskpp13TeVEMCalHFEMCReco", "No analysis manager to connect to.");
-    return NULL;
+    if (!mgr) { ::Error("AliAnalysispp13TeVEMCalHFEMCReco", "No analysis manager to connect to.");
+    return 0x0;
+    }
+
+    if (!mgr->GetInputEventHandler()) {
+        return 0x0;
     }
 
     // by default, a file is open for writing. here, we get the filename
@@ -71,8 +80,8 @@ Double_t AssoTPCnsig=  3.0
     outBasicname1      += finDirname.Data();
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++   
 
-    //TString taskname="Bepp13TeVSpectra";
-    AliAnalysispp13TeVEMCalHFEMCReco *HFeTask = new AliAnalysispp13TeVEMCalHFEMCReco("TaskBepp13TeVSpectra");
+    TString taskname="ElecAnalysis";
+    AliAnalysispp13TeVEMCalHFEMCReco *HFeTask = new AliAnalysispp13TeVEMCalHFEMCReco(name.Data());
     HFeTask->SetDebugLevel(2);
 
     HFeTask->SelectCollisionCandidates(trigger);
@@ -105,7 +114,8 @@ Double_t AssoTPCnsig=  3.0
 if(trigger==AliVEvent::kINT7)
 {
 
-    cout<<"1 trigger  "<<trigger<<"   "<< isEG1 <<endl;
+  cout<<"  AliVEvent::kINT7  ===    "<< trigger <<" isEG1  "<<isEG1<<endl;
+
 
     isEG1=kFALSE;
     HFeTask->SetEMCalTriggerEG1(kFALSE);
@@ -125,6 +135,7 @@ if(trigger==AliVEvent::kINT7)
         
         BMesonWeightMaps = "alien:///alice/cern.ch/user/v/vksingh/DandBmesonpTweightCorrectionFiles/BMesonpTWeight.root";
         DMesonWeightMaps = "alien:///alice/cern.ch/user/v/vksingh/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root";
+    
         CharmpTWeightMaps = "alien:///alice/cern.ch/user/v/vksingh/DandBmesonpTweightCorrectionFiles/CharmpTWeight.root";
 
         printf("\n### reading file %s ...\n",DMesonWeightMaps.Data());
@@ -159,16 +170,15 @@ if(trigger==AliVEvent::kINT7)
             HFeTask->SetDmesonWeightHistPbPb(D0,DPlus,Ds,Lc);
         }
 
-
-
     }
-        
+
 }
 
 
   if(trigger==AliVEvent::kEMCEGA &&  isEG1==kTRUE){
 
-    cout<<"2 trigger  "<<trigger<<"   "<< isEG1 <<endl;
+  cout<<"  AliVEvent::kEMCEGA and EG1  ===    "<< trigger <<" isEG1  "<<isEG1<<endl;
+
 
     HFeTask->SetEMCalTriggerEG2(kFALSE);
     HFeTask->SetEMCalTriggerDG2(kFALSE);
@@ -191,6 +201,9 @@ if(trigger==AliVEvent::kINT7)
  
   if(trigger==AliVEvent::kEMCEGA && isEG1==kFALSE){
 
+  cout<<"  AliVEvent::kEMCEGA and EG1  ===    "<< trigger <<" isEG1  "<<isEG1<<endl;
+
+
      HFeTask->SetEMCalTriggerEG1(kFALSE);
      HFeTask->SetEMCalTriggerDG1(kFALSE);
                
@@ -207,7 +220,7 @@ if(trigger==AliVEvent::kINT7)
         HFeTask->SetEMCalTriggerDG2(kTRUE);
      }
 
-  }
+    }
 
     mgr->AddTask(HFeTask);    
 
@@ -218,6 +231,8 @@ if(trigger==AliVEvent::kINT7)
     // your HFeTask needs input: here we connect the manager to your HFeTask
     mgr->ConnectInput(HFeTask,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(HFeTask,1,coutput1);
+  //  mgr->ConnectOutput(HFetaskINT7,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
+
 
   return HFeTask;
 }
