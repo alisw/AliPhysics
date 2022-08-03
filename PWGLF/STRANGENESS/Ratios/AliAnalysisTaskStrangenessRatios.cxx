@@ -366,7 +366,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
       if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit) || !(nTrack->GetStatus() & AliVTrack::kTPCrefit) ||
           pTrack->GetTPCsignalN() < 50 || nTrack->GetTPCsignalN() < 50 ||
-          std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8)
+          std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8 ||
+          pTrack->Chi2perNDF() > 4 || nTrack->Chi2perNDF() > 4)
       {
         continue;
       }
@@ -445,7 +446,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fTreeLambda->Fill();
         if (fFillLambdasBDTOut)
         {
-          if (fRecLambda->ct < fCtPreselection || fRecLambda->radius < fRadiusPreselection || fRecLambda->radius > fRadiusOverflowCut || fRecLambda->dcaPiPV > fDCAV0piToPVOverflowCut || fRecLambda->dcaPrPV > fDCAV0prToPVOverflowCut || fRecLambda->dcaV0PV > fDCAV0toPVOverflowCut || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
+          if (fRecLambda->ct < fCtPreselection || fRecLambda->ct > fMaxCt || fRecLambda->pt < fMinPt || fRecLambda->pt > fMaxPt || fRecLambda->radius < fRadiusPreselection || fRecLambda->radius > fRadiusOverflowCut || fRecLambda->dcaPiPV > fDCAV0piToPVOverflowCut || fRecLambda->dcaPrPV > fDCAV0prToPVOverflowCut || fRecLambda->dcaV0PV > fDCAV0toPVOverflowCut || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
           int model_index = WhichBDT(fRecLambda->ct);
           if (model_index > (fCtBinsBDT.GetSize()-2)) {
             continue;
