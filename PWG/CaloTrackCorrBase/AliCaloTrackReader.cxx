@@ -3423,63 +3423,20 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     {
       // Skip DCal 1/3 SM in pp periods, not pPb
       if ( fRunNumber <= 264347 && iSupMod > 17 ) return;
+
+      // Skip half SM16 and full SM15 from periods 16i to 16l
+      if ( fRunNumber >= 255515 && fRunNumber < 262395 )
+      {
+        if ( iSupMod == 15 ) return;
+        if ( iSupMod == 16 &&  etaCls < 0.45 ) return;
+      }
     }
 
-//    if ( fYear == 15 )
-//    {
-//      // Skip DCal 1/3 SM (not calibrated in 18)
-//      if ( iSupMod > 17 ) return;
-//    }
-//    else if ( fYear == 16 )
-//    {
-//      // Skip DCal 1/3 SM
-//      if ( iSupMod > 17 ) return;
-//      // Remove DCal for pp periods
-//      if ( iSupMod > 11 && fRunNumber < 265015 ) return;
-//
-//      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
-//      if ( iSupMod == 1 && etaCls <-0.55                  && phiCls > 1.396 && phiCls < 1.513 ) return;
-//      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
-//      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
-//      if ( iSupMod == 7 && etaCls >-0.28 && etaCls <-0.22 && phiCls > 2.443 && phiCls < 2.548 ) return;
-//      if ( iSupMod ==10 && etaCls > 0.05 && etaCls < 0.10 ) return;
-//      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
-//      if ( iSupMod ==11 && etaCls >-0.05 && etaCls < 0.00 ) return;
-//      if ( iSupMod ==13 && etaCls >-0.45 && etaCls <-0.30 && phiCls > 4.654 ) return;
-//    }
-//    else if ( fYear == 17 )
-//    {
-//      if ( iSupMod == 15 || iSupMod == 17 ) return;
-//
-//      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
-//      if ( iSupMod == 2 && etaCls > 0.44                  && fRunNumber <  258883 ) return; // LHC17hilk
-//      if ( iSupMod == 4 && etaCls > 0.22 && etaCls < 0.44 && fRunNumber >= 258883 ) return; // from LHC17l
-//      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
-//      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
-//      if ( iSupMod ==10 && etaCls > 0.05 && etaCls < 0.10 ) return;
-//      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
-//      if ( iSupMod ==18 && etaCls > 0.00 && etaCls < 0.05 ) return;
-//      if ( iSupMod ==18 && etaCls > 0.45 && etaCls < 0.55 ) return;
-//      if ( iSupMod ==19 && etaCls >-0.05 && etaCls < 0.00 ) return;
-//    }
-//    else if ( fYear == 18 )
-//    {
-//      if ( iSupMod == 15 || iSupMod == 17 ) return;
-//
-//      if ( iSupMod == 0 && etaCls > 0.18 && etaCls < 0.22 && phiCls > 1.396 && phiCls < 1.513 ) return;
-//      if ( iSupMod == 1 && etaCls >-0.20 && etaCls <-0.15 && phiCls > 1.513 && phiCls < 1.629 ) return;
-//      if ( iSupMod == 4 && etaCls > 0.22 && etaCls < 0.44 ) return; // from LHC17l
-//      if ( iSupMod == 6 && etaCls > 0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
-//      if ( iSupMod == 7 && etaCls <-0.55                  && phiCls > 2.443 && phiCls < 2.548 ) return;
-//      if ( iSupMod ==10 && etaCls > 0.00 && etaCls < 0.10 ) return;
-//      if ( iSupMod ==10 && etaCls > 0.55 && etaCls < 0.60 ) return;
-//      if ( iSupMod ==10 && etaCls > 0.30 && etaCls < 0.35 ) return;
-//      if ( iSupMod ==11 && etaCls >-0.10 && etaCls <-0.05 ) return;
-//      if ( iSupMod ==12 && etaCls > 0.35 && etaCls < 0.45 && phiCls > 4.537 && phiCls < 4.654 ) return;
-//      if ( iSupMod ==18 && etaCls > 0.00 && etaCls < 0.05 ) return;
-//      if ( iSupMod ==18 && etaCls > 0.45 && etaCls < 0.55 ) return;
-//      if ( iSupMod ==19 && etaCls >-0.05 && etaCls < 0.00 ) return;
-//    }
+    if ( fYear == 18 )
+    {
+      // Skip EMCal SM11
+      if ( iSupMod == 11 ) return;
+    }
   }
 
   // Check effect of energy and fiducial cuts  
