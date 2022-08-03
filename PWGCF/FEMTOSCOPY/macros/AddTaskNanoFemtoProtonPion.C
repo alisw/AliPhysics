@@ -6,14 +6,19 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoFemtoProtonPion.h"
 
-AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
-   TString trigger = "kHM", //2
-    bool fullBlastQA = true,//3
-    bool UseSphericityCut = false,//4
-    bool UseFemtoPionCuts = true,//5
-    bool DoPairCleaning = false, //6
-    const char *cutVariation = "0", //7
-    bool DoAncestors = false) {
+AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
+    bool isMC = false, //1
+    bool doOfficialFemto = true, //2
+    TString trigger = "kHM", //3
+    bool fullBlastQA = true,//4
+    bool UseSphericityCut = false,//5
+    bool UseFemtoPionCuts = true,//6
+    bool DoPairCleaning = false, //7
+    const char *cutVariation = "0", //8
+    bool DoAncestors = false, //9
+    bool RemoveMCResonances = true //10 
+    ) {
+
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -288,18 +293,19 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   task->SetTrackCutsAntiProton(TrackCutsAntiProton);
   task->SetCollectionConfig(config);
   task->SetDoPairCleaning(DoPairCleaning);
-  task->SetDoOfficialFemto(true); 
+  task->SetDoOfficialFemto(doOfficialFemto); 
 
   //Set-up for own looping & calculus -> needed for 3D studies
   //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
   task->SetCombinationInput("00 11 02 13 03 12"); //p-p barp-barp p-pion barp-barpion p-barpion barp-pion
+  task->SetClosePairRejectionInput("true true true true false false");
   task->SetNameTagInput("Proton AntiProton Pion AntiPion");
-  task->SetDoOwnFemto(false); //Do own looping and calculus 
-  task->SetDoThreeDFemto(false);
-  task->SetRunPlotMult(false);
-  task->SetRunPlotPhiTheta(false); 
-  task->SetDoClosePairRejection(false);
-  task->SetDoAncestors(false); //Does not affect official femto part
+  task->SetDoOwnFemto(!doOfficialFemto); //Do own looping and calculus 
+  task->SetDoThreeDFemto(false); //No 3D femto for now
+  task->SetRunPlotMult(true);
+  task->SetRunPlotPhiTheta(fullBlastQA); 
+  task->SetDoAncestors(DoAncestors); //Does not affect official femto part
+  task->SetRemoveMCResonances(RemoveMCResonances);
 
   mgr->AddTask(task);
 

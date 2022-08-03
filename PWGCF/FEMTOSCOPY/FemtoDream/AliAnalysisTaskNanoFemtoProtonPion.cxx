@@ -24,13 +24,14 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion()
     fDoPairCleaning(false),
     fCombinationInput(""),
     fNameTagInput(""),
+    fClosePairRejectionInput(""),
     fDoOfficialFemto(false),
     fDoOwnFemto(false),
     fDoThreeDFemto(false),
     fRunPlotMult(false),
     fRunPlotPhiTheta(false),
-    fDoClosePairRejection(false),
     fDoAncestors(false),
+    fRemoveMCResonances(true),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -83,13 +84,14 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
     fDoPairCleaning(false),
     fCombinationInput(""),
     fNameTagInput(""),
+    fClosePairRejectionInput(""),
     fDoOfficialFemto(false),
     fDoOwnFemto(false),
     fDoThreeDFemto(false),
     fRunPlotMult(false),
     fRunPlotPhiTheta(false),
-    fDoClosePairRejection(true),
     fDoAncestors(false),
+    fRemoveMCResonances(true),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -280,6 +282,10 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
     fSameEvent_List_OneDimensional->SetOwner();
     fSameEvent_List_OneDimensional->SetName("SameEventOneDimensional");
 
+    //Close Pair Rejection Plots Same Event 
+    fSameEventDeltaEtaDeltaPhi_List = new TList();
+    fSameEventDeltaEtaDeltaPhi_List->SetOwner();
+    fSameEventDeltaEtaDeltaPhi_List->SetName("SameEventDeltaEtaDeltaPhiOneDimensional");
 
     //1D SE Objects for Data and total MC ~~~~~~~~~~~~~~~~~~~
     fSameEvent_OneDimensional = new TH1F*[10];
@@ -297,13 +303,26 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
           fSameEventMult_OneDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
           if(fRunPlotMult){fSameEvent_List_OneDimensional->Add(fSameEventMult_OneDimensional[i]);}
        }
+
+       fSameEventPhiTheta = new TH2F*[20]; 
+        for (int i = 0; i < PassedCombinations; ++i) {
+          std::string titlebefore = "SameEventDeltaEtaDeltaPhi_OneDimensional_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+          std::string titleafter = "SameEventDeltaEtaDeltaPhi_OneDimensional_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+          fSameEventPhiTheta[i] = new TH2F(titlebefore.data(),titlebefore.data(), 500, -0.15,0.15,500,-0.15,0.15);
+          fSameEventPhiTheta[10+i] = new TH2F(titleafter.data(),titleafter.data(), 500, -0.15,0.15,500,-0.15,0.15);
+          if(fRunPlotPhiTheta){
+            fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[i]);
+            fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[10+i]);
+          }
+        }
     }//if(!fDoThreeDFemto)
+
 
     //SE Objects for ancestor studies in MC ~~~~~~~~~~~~~~~~~~~
     fSameEvent_OneDimensional_Ancestors = new TH1F*[20]; //0-9 common ancestors, 10-19 non common
     fSameEventMult_OneDimensional_Ancestors = new TH2F*[20]; //0-9 common ancestors, 10-19 non common
     fSameEventPhiTheta_Ancestors = new TH2F*[40];  //0-9 common ancestors before, 10-19 common after, 20-29 non common before, 30-39 non common after
-    
+
     if(fDoAncestors && !fDoThreeDFemto)
     {
        for (int i = 0; i < PassedCombinations; i++) {
@@ -346,6 +365,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
        
     }//if(fDoAncestors)
 
+
     //3D Same Event ~~~~~~~~~~~~~~~~~~~
     fSameEvent_List_ThreeDimensional = new TList();
     fSameEvent_List_ThreeDimensional->SetOwner();
@@ -359,23 +379,6 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
          fSameEvent_List_ThreeDimensional->Add(fSameEvent_ThreeDimensional[i]);
        }
     }//if(fDoThreeDFemto)
-
-    //Close Pair Rejection Plots Same Event ~~~~~~~~~~~~~~~~~~~
-    fSameEventDeltaEtaDeltaPhi_List = new TList();
-    fSameEventDeltaEtaDeltaPhi_List->SetOwner();
-    fSameEventDeltaEtaDeltaPhi_List->SetName("SameEventDeltaEtaDeltaPhiOneDimensional");
-  
-    fSameEventPhiTheta = new TH2F*[20]; 
-    for (int i = 0; i < PassedCombinations; ++i) {
-      std::string titlebefore = "SameEventDeltaEtaDeltaPhi_OneDimensional_Before_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-      std::string titleafter = "SameEventDeltaEtaDeltaPhi_OneDimensional_After_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
-      fSameEventPhiTheta[i] = new TH2F(titlebefore.data(),titlebefore.data(), 500, -0.15,0.15,500,-0.15,0.15);
-      fSameEventPhiTheta[10+i] = new TH2F(titleafter.data(),titleafter.data(), 500, -0.15,0.15,500,-0.15,0.15);
-      if(fRunPlotPhiTheta){
-        fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[i]);
-        fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[10+i]);
-      }
-    }
 
     //-------------------------------------------------------------------
     //1D Mixed Event ~~~~~~~~~~~~~~~~~~~
@@ -608,9 +611,9 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
 
     for (int i = 0; i < PassedCombinations; i++) {
         if(!fDoAncestors){
-         FillPairDistributionSE(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,i,*fConfig);
+         FillPairDistributionSE(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,i,*fConfig);
       } else {
-         FillPairDistributionSEAncestors(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,fSameEvent_OneDimensional_Ancestors,fSameEventMult_OneDimensional_Ancestors,fSameEventPhiTheta_Ancestors,i,*fConfig);
+         FillPairDistributionSEAncestors(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,fSameEvent_OneDimensional_Ancestors,fSameEventMult_OneDimensional_Ancestors,fSameEventPhiTheta_Ancestors,i,*fConfig);
       }
     }
 
@@ -620,12 +623,12 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
       auto itMult = itZVtx->begin() + bins[1];
 
       for (int i = 0; i < PassedCombinations; i++) {
-       FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
+       FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
 
-   if(fCombinations[i][0] != fCombinations[i][1]) //if the two particles are not the same species, we can mix a second time
-   {
-       FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][1],fCombinations[i][0],PDGCodes,bins[1],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
-   }   
+        if(fCombinations[i][0] != fCombinations[i][1]) //if the two particles are not the same species, we can mix a second time
+        {
+            FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][1],fCombinations[i][0],PDGCodes,bins[1],fClosePairRejection[i],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
+        }   
       } //for (int i = 0; i < PassedCombinations; i++)
 
      SetMixedEvent(ParticleVector, &(*itMult));
@@ -699,7 +702,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::StoreGlobalTrackReference(AliVTrack *tr
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config){
+void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config){
 
   auto Particle1Vector = ParticleVector.begin()+firstSpecies;
   auto Particle2Vector = ParticleVector.begin()+secondSpecies;
@@ -740,10 +743,10 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std:
         float RelativeMomentum = AliFemtoDreamHigherPairMath::RelativePairMomentum(Particle1_LV, Particle2_LV);
 
         bool PassedClosePairRejection = true;
-  if(fDoClosePairRejection)
-  {
-    PassedClosePairRejection =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensional[CombinationNumber],SameEventPhiTheta_OneDimensional[10+CombinationNumber],Config,RelativeMomentum); 
-  }
+        if(DoClosePairRejection)
+        {
+          PassedClosePairRejection =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensional[CombinationNumber],SameEventPhiTheta_OneDimensional[10+CombinationNumber],Config,RelativeMomentum); 
+        }
         if(!PassedClosePairRejection) {continue;}
 
         hist->Fill(RelativeMomentum);
@@ -754,7 +757,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std:
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, TH1F **histAncestor, TH2F **hist2dAncestor, TH2F **SameEventPhiTheta_OneDimensionalAncestor, int CombinationNumber, AliFemtoDreamCollConfig Config){ 
+void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, TH1F **histAncestor, TH2F **hist2dAncestor, TH2F **SameEventPhiTheta_OneDimensionalAncestor, int CombinationNumber, AliFemtoDreamCollConfig Config){ 
 
   auto Particle1Vector = ParticleVector.begin()+firstSpecies;
   auto Particle2Vector = ParticleVector.begin()+secondSpecies;
@@ -794,21 +797,29 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::ve
         // Get momentum
         float RelativeMomentum = AliFemtoDreamHigherPairMath::RelativePairMomentum(Particle1_LV, Particle2_LV);
 
-        bool HasCommonAncestor = CommonAncestors(*iPart1, *iPart2); 
+        bool HasCommonAncestor = CommonAncestors(*iPart1, *iPart2);
+
+
+        if(HasCommonAncestor && fRemoveMCResonances){
+          bool HasCommenMotherResonance = CommonMotherResonance(*iPart1, *iPart2);
+          if(HasCommenMotherResonance){ 
+            continue; 
+          }
+        }
 
         bool PassedClosePairRejection = true; //Close pair rejection for any MC type particle
         bool PassedClosePairRejection_Ancestor = true; //Close pair rejection for any common or non common ancestor MC particles
         
-  if(fDoClosePairRejection)
-  {
-    PassedClosePairRejection =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensional[CombinationNumber],SameEventPhiTheta_OneDimensional[10+CombinationNumber],Config,RelativeMomentum); 
-    
-    if(HasCommonAncestor){
-      PassedClosePairRejection_Ancestor =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensionalAncestor[CombinationNumber],SameEventPhiTheta_OneDimensionalAncestor[10+CombinationNumber],Config,RelativeMomentum);
-    } else {
-      PassedClosePairRejection_Ancestor =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensionalAncestor[20+CombinationNumber],SameEventPhiTheta_OneDimensionalAncestor[30+CombinationNumber],Config,RelativeMomentum);
-    }
-  }
+        if(DoClosePairRejection)
+        {
+          PassedClosePairRejection =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensional[CombinationNumber],SameEventPhiTheta_OneDimensional[10+CombinationNumber],Config,RelativeMomentum); 
+          
+          if(HasCommonAncestor){
+            PassedClosePairRejection_Ancestor =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensionalAncestor[CombinationNumber],SameEventPhiTheta_OneDimensionalAncestor[10+CombinationNumber],Config,RelativeMomentum);
+          } else {
+            PassedClosePairRejection_Ancestor =  DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, PairDaughterIdentifier, SameEventPhiTheta_OneDimensionalAncestor[20+CombinationNumber],SameEventPhiTheta_OneDimensionalAncestor[30+CombinationNumber],Config,RelativeMomentum);
+          }
+        }
   
         if(PassedClosePairRejection){
           hist->Fill(RelativeMomentum); 
@@ -816,13 +827,13 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::ve
         }
         if(PassedClosePairRejection_Ancestor){
           if(HasCommonAncestor){
-      histAncestor[CombinationNumber]->Fill(RelativeMomentum); 
+            histAncestor[CombinationNumber]->Fill(RelativeMomentum); 
             hist2dAncestor[CombinationNumber]->Fill(RelativeMomentum,mult+1); 
-    } else {
-      histAncestor[10+CombinationNumber]->Fill(RelativeMomentum); 
+          } else {
+            histAncestor[10+CombinationNumber]->Fill(RelativeMomentum); 
             hist2dAncestor[10+CombinationNumber]->Fill(RelativeMomentum,mult+1); 
-    }
-        }
+          }
+       }
         
     }
   }
@@ -831,7 +842,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::ve
 //==================================================================================================================================================
 
 
-void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME, std::vector<int> PDGCodes, int mult, TH1F* hist, TH2F* hist2d, TH2F **EventPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config){ 
+void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH2F **EventPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config){ 
 
   auto ParticleSE = ParticleVector.begin()+speciesSE;
   auto MixedEventContainer = fPartContainer.begin()+speciesME;
@@ -870,10 +881,10 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionME(std::vector<std:
         float RelativeMomentum = AliFemtoDreamHigherPairMath::RelativePairMomentum(part1_LorVec, part2_LorVec);
 
         bool PassedClosePairRejection = true;
-  if(fDoClosePairRejection)
-  {
-    PassedClosePairRejection =  DeltaEtaDeltaPhi(speciesSE, speciesME, *iPart1,*iPart2, *itPDGParSE, *itPDGParME, PairDaughterIdentifier, EventPhiThetaArray[CombinationNumber],EventPhiThetaArray[10+CombinationNumber],Config, RelativeMomentum); 
-  }
+        if(DoClosePairRejection)
+        {
+          PassedClosePairRejection =  DeltaEtaDeltaPhi(speciesSE, speciesME, *iPart1,*iPart2, *itPDGParSE, *itPDGParME, PairDaughterIdentifier, EventPhiThetaArray[CombinationNumber],EventPhiThetaArray[10+CombinationNumber],Config, RelativeMomentum); 
+        }
         if(!PassedClosePairRejection) {continue;}
    
         hist->Fill(RelativeMomentum);
@@ -1067,12 +1078,45 @@ bool AliAnalysisTaskNanoFemtoProtonPion::CommonAncestors(AliFemtoDreamBasePart& 
     }
     return IsCommon;
 }
+
+//==================================================================================================================================================
+
+bool AliAnalysisTaskNanoFemtoProtonPion::CommonMotherResonance(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+
+  if(part1.GetMotherID() != part2.GetMotherID()) {
+    AliFatal("AliAnalysisTaskNanoFemtoProtonPion::CommonMotherResonance: The two particle should have a common mother"); 
+  }
+
+  if(part1.GetMotherPDG() != part2.GetMotherPDG()) {
+    AliFatal("AliAnalysisTaskNanoFemtoProtonPion::CommonMotherResonance: PDG of mother not consistent"); 
+  }
+
+  int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
+  int ProtonPion[12] = {2224, 32224, 2222, 12224, 12222, 2226, 22222, 22224, 2228, 12226, 9902228, 99022212};
+
+  // When the element is not found, std::find returns the end of the range
+  if ( std::find(std::begin(ProtonAntiPion), std::end(ProtonAntiPion), abs(part1.GetMotherPDG())) != std::end(ProtonAntiPion) ) {
+    return true;
+  } else {
+    return false;
+  }
+
+  if ( std::find(std::begin(ProtonPion), std::end(ProtonPion), abs(part1.GetMotherPDG())) != std::end(ProtonPion) ) {
+    return true;
+  } else {
+    return false;
+  }
+
+  return true; //in case something weird happens, just ignore the pair
+
+}
 //==================================================================================================================================================
 
 void AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays()
 {
   std::istringstream issCombination(fCombinationInput);
   int Counter = 0;
+  int PassedCombinations = 0;
 
   for(int i=0; i<10; i++)
   {
@@ -1082,36 +1126,39 @@ void AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays()
 
   do {
     if(Counter>9){
-  AliFatal("Max. 10 entries of combinations allowed"); 
-  break; 
+     AliFatal("AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays: Max. 10 entries of combinations allowed"); 
+     break; 
     }
 
     std::string subs;
     issCombination >> subs;
 
     if(subs.size() == 0)
-  continue;
+       continue;
 
     int FirstEntry = ((int)subs[0]) - ((int)'0');
     int SecondEntry = ((int)subs[1]) - ((int)'0');
 
     if(FirstEntry < 0 || SecondEntry < 0) 
-  AliFatal("No number below 0 allowed in passed combinations");
+      AliFatal("No number below 0 allowed in passed combinations");
     if(FirstEntry > 3 || SecondEntry > 3) 
-  AliFatal("No number above 3 allowed in passed combinations");
+      AliFatal("No number above 3 allowed in passed combinations");
 
     fCombinations[Counter][0] = FirstEntry; 
     fCombinations[Counter][1] = SecondEntry;   
 
     Counter++; 
+    PassedCombinations++; 
    } while (issCombination);
 
+
+  //-----------------------------------------------------------------------
   std::istringstream issNameTag(fNameTagInput);
   Counter = 0;
 
   while (issNameTag) {
     if(Counter>3)
-  break;
+    break;
 
     std::string subs;
     issNameTag >> subs;
@@ -1124,7 +1171,43 @@ void AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays()
    } 
 
    if(Counter!=4){
-      AliFatal("Passed NameTag has to have exaclty 4 entries!");
+      AliFatal("AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays: Passed NameTag has to have exaclty 4 entries!");
+   }
+
+  //-----------------------------------------------------------------------
+  for(int i=0; i<10; i++)
+  {
+    fClosePairRejection[i] = false;   
+  }
+
+  std::istringstream issClosePair(fClosePairRejectionInput);
+  Counter = 0;
+
+  while (issClosePair) {
+    if(Counter>9){
+     AliFatal("AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays: Max. 10 entries of combinations allowed"); 
+     break; 
+    }
+
+    std::string subs;
+    issClosePair >> subs;
+
+    if(subs.size() == 0)
+       continue;
+
+    if(subs == "true"){
+       fClosePairRejection[Counter] = true;
+    } else if (subs == "false"){
+       fClosePairRejection[Counter] = false;
+    } else {
+       AliFatal(Form("AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays: Cannot read bool %s", subs.data()));
+    }
+  
+    Counter++; 
+   } 
+
+   if(Counter!=PassedCombinations){
+      AliFatal("AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays: Passed Combinations do not match passed ClosePairRejectiosn!");
    }
 
 } // void AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays()
