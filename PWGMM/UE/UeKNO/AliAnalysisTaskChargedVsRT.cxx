@@ -116,7 +116,7 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
     fnRecHy(-1),
     fnRecHyWoDCA(-1),
     fnGen(-1),
-    fMultPercenV0("V0M"),
+    fMultPercenV0(kFALSE),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
     fTPCclustersVar1(kFALSE),
@@ -226,7 +226,7 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
     fnRecHy(-1),
     fnRecHyWoDCA(-1),
     fnGen(-1),
-    fMultPercenV0("V0M"),
+    fMultPercenV0(kFALSE),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
     fTPCclustersVar1(kFALSE),
@@ -780,7 +780,12 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
     fMultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
     if (!fMultSelection)
         cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
-    fv0mpercentile = fMultSelection->GetMultiplicityPercentile(fMultPercenV0);
+    if (fMultPercenV0) {
+        fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+    } else{
+        fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0A");
+    }
+    
 
     if(fIsMCclosure){
         Double_t randomUE = -1;
