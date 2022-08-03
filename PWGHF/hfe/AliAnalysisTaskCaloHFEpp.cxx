@@ -262,6 +262,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistZeRec(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
+        fHistZeta(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
 
@@ -471,6 +472,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistZeRec(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
+        fHistZeta(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
 {
@@ -623,6 +625,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistZeRec        = new TH1F("fHistZeRec","particle level Z->e",90,10,100);
 	fHist_Zpair_pos        = new TH2F("fHist_Zpair_pos","pair Z->e",100,-5,5,100,0,100);
 	fHist_Zpair_neg        = new TH2F("fHist_Zpair_neg","pair Z->e",100,-5,5,100,0,100);
+	fHistZeta        = new TH1F("fHistZeta","parent Z eta",200,-5,5);
 
 
 
@@ -834,6 +837,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistZeRec); 
 	fOutputList->Add(fHist_Zpair_pos); 
 	fOutputList->Add(fHist_Zpair_neg); 
+	fOutputList->Add(fHistZeta); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -1603,7 +1607,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             fIsoArray->Fill(isoarray);
                             if(IsoEnergy<0.05)fDCAxy_Pt_We->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                             if(IsoEnergy < 0.05 && NtrackCone <3)iIsocut=kTRUE;
-                            //if(iIsocut && TMath::Abs(pdgorg)==23)fHistZeRec->Fill(TrkPt);
+                            if(iIsocut && TMath::Abs(pdgorg)==23 && TrkPt>30.0)
+                              { 
+	                       AliAODMCParticle* fMCparticleWZ = (AliAODMCParticle*) fMCarray->At(ilabelM);
+                               if(track->Charge()<0)fHistZeta->Fill(fMCparticleWZ->Eta());                              
+                              }
                            }
 
                         if(TrkPt>10.0 && ((pid_eleD) || (pid_eleB)))
