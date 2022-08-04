@@ -38,6 +38,12 @@
 #include "AliMCParticle.h"
 #include "AliStack.h"
 #include "AliNamedArrayI.h"
+#include "AliAODMCHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
+#include "TObjString.h"
+
 
 #include "AliLog.h"
 
@@ -45,6 +51,7 @@ ClassImp(AliEmcalRejectMCBackground)
 
 AliEmcalRejectMCBackground::AliEmcalRejectMCBackground() :
   AliAnalysisTaskSE("AliEmcalRejectMCBackground"),
+  fHeaderList(nullptr),
   fParticlesOutName("MCParticlesNotRejected"),
   fParticlesMapName(""),
   fInit(kFALSE),
@@ -57,17 +64,18 @@ AliEmcalRejectMCBackground::AliEmcalRejectMCBackground() :
   fDisabled(kFALSE),
   fDebugLevel(0),
   fnHeaders(0),
-  fNotRejectedStart(NULL),
-  fNotRejectedEnd(NULL),
-  fGeneratorNames(NULL),
+  fAODMCTrackArray(NULL),
+  fNotRejectedStart(0),
+  fNotRejectedEnd(0),
+  fGeneratorNames(0),
   fAddedSignalPDGCode(0),
-  fSignalRejection(0),
-  fHeaderList(nullptr)
+  fSignalRejection(0)
 {
 }
 
 AliEmcalRejectMCBackground::AliEmcalRejectMCBackground(const char *name) :
   AliAnalysisTaskSE(name),
+  fHeaderList(nullptr),
   fParticlesOutName("MCParticlesNotRejected"),
   fParticlesMapName(""),
   fInit(kFALSE),
@@ -80,13 +88,20 @@ AliEmcalRejectMCBackground::AliEmcalRejectMCBackground(const char *name) :
   fDisabled(kFALSE),
   fDebugLevel(0),
   fnHeaders(0),
-  fNotRejectedStart(NULL),
-  fNotRejectedEnd(NULL),
-  fGeneratorNames(NULL),
+  fAODMCTrackArray(NULL),
+  fNotRejectedStart(0),
+  fNotRejectedEnd(0),
+  fGeneratorNames(0),
   fAddedSignalPDGCode(0),
-  fSignalRejection(0),
-  fHeaderList(nullptr)
+  fSignalRejection(0)
 {
+}
+
+AliEmcalRejectMCBackground::~AliEmcalRejectMCBackground() {
+  if(fAODMCTrackArray){
+    delete[] fAODMCTrackArray;
+    fAODMCTrackArray = 0x0;
+  }
 }
 
 void AliEmcalRejectMCBackground::UserExec(Option_t *)
@@ -205,7 +220,7 @@ void AliEmcalRejectMCBackground::CreateParticleMap(AliVEvent *event, AliMCEvent*
         std::endl;
 
     // rejection criteria
-    if(IsParticleFromBGEvent(iPart, mcEvent, event, fDebugLevel)) < 1) continue;
+    if(IsParticleFromBGEvent(iPart, mcEvent, event, fDebugLevel) < 1) continue;
 
     if(partMap) partMap->AddAt(nacc, iPart);
 
@@ -246,7 +261,7 @@ void AliEmcalRejectMCBackground::CreateParticleMapAOD(AliVEvent *event, AliMCEve
     if (!part) continue;
 
     // rejection criteria
-    if(IsParticleFromBGEvent(iPart, mcEvent, event, fDebugLevel)) < 1) continue;
+    if(IsParticleFromBGEvent(iPart, mcEvent, event, fDebugLevel) < 1) continue;
 
     if (partMap) partMap->AddAt(nacc, iPart);
 
@@ -285,7 +300,7 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
     if(cHeaderAOD) headerFound = kTRUE;
   }
 
-  if(fDebugLevel > 0) AliDebugStream() << "event starts here" << std::endl;
+  if(fDebugLevel > 0) AliDebugStream(3) << "event starts here" << std::endl;
 
   if(headerFound){
     TList *genHeaders      = 0x0;
@@ -293,7 +308,7 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
     if(cHeaderAOD){
       genHeaders           = cHeaderAOD->GetCocktailHeaders();
       if(genHeaders->GetEntries()==1){
-        SetRejectExtraSignalsCut(0);
+        fSignalRejection = 0;
         return;
       }
     }
@@ -311,37 +326,36 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
         gh                    = (AliGenEventHeader*)genHeaders->At(i);
         TString GeneratorName = gh->GetName();
         lastindexA            = lastindexA + gh->NProduced();
-        if (fDebugLevel > 0 ) AliDebugStream() << i << "\t" << GeneratorName.Data() << std::endl;
+        if (fDebugLevel > 0 ) AliDebugStream(1) << i << "\t" << GeneratorName.Data() << std::endl;
         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
           TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
-          if(fDebugLevel > 0 )  AliDebugStream() << GeneratorInList.Data() << std::endl;
+          if(fDebugLevel > 0 )  AliDebugStream(1) << GeneratorInList.Data() << std::endl;
           if(GeneratorInList.Contains(GeneratorName) ){
-            if(fDebugLevel > 0 ) AliDebugStream() << "accepted" << std::endl;
+            if(fDebugLevel > 0 ) AliDebugStream(1) << "accepted" << std::endl;
             if(GeneratorInList.BeginsWith("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
               if(fMCEvent){
-                if (fDebugLevel > 0 ) AliDebugStream() << "cond 2: " << fnHeaders << std::endl;
+                if (fDebugLevel > 0 ) AliDebugStream(1) << "cond 2: " << fnHeaders << std::endl;
                 fnHeaders++;
                 continue;
               }
               if (fMCEventAOD){
-                AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindexA));
-                    if (fDebugLevel > 0 ) AliDebugStream() << "cond 2: " << fnHeaders << std::endl;
-                    fnHeaders++;
-                    continue;
-                }
-                continue;
-              }
-              if(GeneratorName.CompareTo(GeneratorInList) == 0 ){
-                if (fDebugLevel > 0 ) AliDebugStream() << "cond 3: "<< fnHeaders << std::endl;
+                if (fDebugLevel > 0 ) AliDebugStream(1) << "cond 2: " << fnHeaders << std::endl;
                 fnHeaders++;
                 continue;
               }
+              continue;
+            }
+            if(GeneratorName.CompareTo(GeneratorInList) == 0 ){
+              if (fDebugLevel > 0 ) AliDebugStream(1) << "cond 3: "<< fnHeaders << std::endl;
+              fnHeaders++;
+              continue;
+            }
           }
         }
         firstindexA       = firstindexA + gh->NProduced();
       }
     }
-    if (fDebugLevel > 0 ) AliDebugStream() << "number of headers: " <<fnHeaders << std::endl;
+    if (fDebugLevel > 0 ) AliDebugStream(1) << "number of headers: " <<fnHeaders << std::endl;
 
     fNotRejectedStart.resize(fnHeaders);
     fNotRejectedEnd.resize(fnHeaders);
@@ -353,7 +367,7 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
       fGeneratorNames[0]      = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
 
       if (fDebugLevel > 0 ){
-        AliDebugStream() << 0 << "\t" <<fGeneratorNames[0] << "\t" << fNotRejectedStart[0] << "\t" <<fNotRejectedEnd[0] << std::endl;
+        AliDebugStream(1) << 0 << "\t" <<fGeneratorNames[0] << "\t" << fNotRejectedStart[0] << "\t" <<fNotRejectedEnd[0] << std::endl;
       }
       return;
     }
@@ -368,7 +382,7 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
       gh = (AliGenEventHeader*)genHeaders->At(i);
       TString GeneratorName = gh->GetName();
       lastindex             = lastindex + gh->NProduced();
-      if(fDebugLevel > 0 ) AliDebugStream() << i << "\t" << GeneratorName.Data() << std::endl;
+      if(fDebugLevel > 0 ) AliDebugStream(1) << i << "\t" << GeneratorName.Data() << std::endl;
       for(Int_t j = 0; j<HeaderList->GetEntries();j++){
         TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
         if(GeneratorInList.Contains(GeneratorName) ){
@@ -381,7 +395,6 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
               continue;
             }
             if ( fMCEventAOD){
-              AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindex));
               fNotRejectedStart[number] = firstindex;
               fNotRejectedEnd[number] = lastindex;
               fGeneratorNames[number] = GeneratorName;
@@ -393,7 +406,7 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
             fNotRejectedStart[number] = firstindex;
             fNotRejectedEnd[number] = lastindex;
             fGeneratorNames[number] = GeneratorName;
-            if (fDebugLevel > 0 )  AliDebugStream() << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << std::endl;
+            if (fDebugLevel > 0 )  AliDebugStream(1) << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << std::endl;
             number++;
             continue;
           }
@@ -403,7 +416,7 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
     }
     if (fDebugLevel > 0 ) {
       for (Int_t i = 0; i < number; i++){
-        AliDebugStream() << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << std::endl;
+        AliDebugStream(1) << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << std::endl;
       }
     }
   } else { // No Cocktail Header Found
@@ -426,7 +439,7 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
 
 Int_t AliEmcalRejectMCBackground::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent, Int_t debug ){
 
-  //   if (debug > 2 ) AliDebugStream() << index << std::endl;
+  //   if (debug > 2 ) AliDebugStream(1) << index << std::endl;
   if(index < 0) return 0; // No Particle
 
   Int_t accepted = 0;
@@ -437,14 +450,14 @@ Int_t AliEmcalRejectMCBackground::IsParticleFromBGEvent(Int_t index, AliMCEvent 
       return IsParticleFromBGEvent(((AliMCParticle*) mcEvent->GetTrack(index))->GetMother(),mcEvent,InputEvent, debug);
     }
     for(Int_t i = 0;i<fnHeaders;i++){
-      //       if (debug > 2 ) AliDebugStream() << "header " << fGeneratorNames[i].Data() << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << std::endl;
+      //       if (debug > 2 ) AliDebugStream(1) << "header " << fGeneratorNames[i].Data() << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << std::endl;
       if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
-        if (debug > 1 ) AliDebugStream() << "accepted:" << index << "\t header " << fGeneratorNames[i].Data()  << ": "<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << std::endl;
+        if (debug > 1 ) AliDebugStream(1) << "accepted:" << index << "\t header " << fGeneratorNames[i].Data()  << ": "<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << std::endl;
         accepted = 1;
         if(i == 0) accepted = 2; // MB Header
       }
     }
-    if (debug > 1 && !accepted) AliDebugStream() << "rejected:" << index << std::endl;
+    if (debug > 1 && !accepted) AliDebugStream(1) << "rejected:" << index << std::endl;
   }
   else if(InputEvent->IsA()==AliAODEvent::Class()){
     if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -501,7 +514,7 @@ AliEmcalRejectMCBackground* AliEmcalRejectMCBackground::AddTaskRejectMCBackgroun
   eTask->SetParticlesOutName(outname);
   eTask->SetSignalRejection(signalRejection);
   eTask->SetDebugLevel(debug);
-  eTask->SetAcceptedHeader(headerList);
+  eTask->SetAcceptedHeader(HeaderList);
 
   // Final settings, pass to manager and set the containers
   mgr->AddTask(eTask);
