@@ -1,7 +1,7 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //            
-// AliAnalysispp13TeVEMCalHFEMCReco.cxx                               //
+// AliAnalysispp13TeVEMCalHFEMCReco.cxx                          //
 // Author: Vivek Singh                                           //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
@@ -49,6 +49,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODTrack.h"
 #include "AliAnalysispp13TeVEMCalHFEMCReco.h"
+#include "AliVTrack.h"
 #include "AliVVertex.h"
 #include "AliVertexerTracks.h"
 
@@ -241,6 +242,11 @@ fULSElecPt(0),
 fLSElecPt(0),
 fULSElecDCA(0),
 fLSElecDCA(0),
+  //------------------------Non-Hfe
+fNonHFE(new AliSelectNonHFE()),
+fInvmassLS1(0),fInvmassULS1(0),
+fPte_ULS(0),fPte_LS(0),
+fDCAULSElec(0),fDCALSElec(0),
 
 //nonhfe efficiency
 
@@ -554,6 +560,11 @@ fULSElecPt(0),
 fLSElecPt(0),
 fULSElecDCA(0),
 fLSElecDCA(0),
+  //------------------------Non-Hfe
+fNonHFE(new AliSelectNonHFE()),
+fInvmassLS1(0),fInvmassULS1(0),
+fPte_ULS(0),fPte_LS(0),
+fDCAULSElec(0),fDCALSElec(0),
 
 //nonhfe efficiency
 
@@ -995,7 +1006,6 @@ void AliAnalysispp13TeVEMCalHFEMCReco::UserCreateOutputObjects()
   fLSElecPt= new TH1F("fLSElecPt","#it{p}_{T} distribution of LS electrons;#it{p}_{T} (GeV/#it{c});counts",250,0,50);
   fLSElecPt->Sumw2();
   fOutputList->Add(fLSElecPt);
-  
     
   fULSElecDCA = new TH2F("fULSElecDCA","ULS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
   fULSElecDCA->Sumw2();
@@ -1004,6 +1014,29 @@ void AliAnalysispp13TeVEMCalHFEMCReco::UserCreateOutputObjects()
   fLSElecDCA = new TH2F("fLSElecDCA","LS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
   fLSElecDCA->Sumw2();
   fOutputList->Add(fLSElecDCA);
+
+ //---------------AliSelectNonHFE-------------------------------------------------------
+  fInvmassLS1 = new TH1F("fInvmassLS1","Inv mass of LS (e,e) for pt^{e}; mass(GeV/c^2); counts;",1000,0,1.0);
+  fOutputList->Add(fInvmassLS1);
+	
+  fInvmassULS1 = new TH1F("fInvmassULS1","Inv mass of ULS (e,e) for pt^{e}; mass(GeV/c^2); counts;",1000,0,1.0);
+  fOutputList->Add(fInvmassULS1);
+		
+  fPte_ULS = new TH1F("fPte_ULS", "ULS electron pt",250,0.,50.);
+  fPte_ULS->Sumw2();
+  fOutputList->Add(fPte_ULS);
+  
+  fPte_LS = new TH1F("fPte_LS", "LS electron pt",250,0.,50.);
+  fPte_LS->Sumw2();
+  fOutputList->Add(fPte_LS);
+
+  fDCAULSElec = new TH2F("fDCAULSElec","AliSelectNonHFE ULS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
+  fDCAULSElec->Sumw2();
+  fOutputList->Add(fDCAULSElec);
+    
+  fDCALSElec = new TH2F("fDCALSElec","AliSelectNonHFE LS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
+  fDCALSElec->Sumw2();
+  fOutputList->Add(fDCALSElec);
 
  //+++++++++++++++++++++++++++++++++++++++++MC++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if(fIsMC)
@@ -1460,11 +1493,9 @@ void AliAnalysispp13TeVEMCalHFEMCReco::UserExec(Option_t *)
 
 
   Int_t Nch=0,count=0,c=0;    
-
   Int_t pdg = -99999;
   Int_t pdg_mother = -99999;
-  Int_t pidM = -1;
-  
+  Int_t pidM = -1;  
   Double_t fTPCnSigma = -999; 
 
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -1545,18 +1576,15 @@ void AliAnalysispp13TeVEMCalHFEMCReco::UserExec(Option_t *)
 
  //PID response
   fPidResponse = fInputHandler->GetPIDResponse();  
-
 //Check PID response
     if(!fPidResponse)
     {
         AliDebug(1, "Using default PID Response");
         fPidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class());        
+        fPID->SetPIDResponse(fPidResponse);
     }
-
     fPID->SetPIDResponse(fPidResponse);
-
   //cout<<" *********************After PIDRespons***************  "<<endl;
-
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
   if(!fExtraCuts)
   fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
@@ -1575,10 +1603,7 @@ void AliAnalysispp13TeVEMCalHFEMCReco::UserExec(Option_t *)
   ///////////////////////////////////
 if(fIsMC)
 {
- 
-
    //cout<<" *********************Entering fIsMC***************  "<<endl;
-
     Double_t qaweights[5];
     Double_t pi0etaweights[3];
 
@@ -1595,7 +1620,6 @@ if(fIsMC)
         GetNMCPartProduced();
         
    //cout<<" *********************After GetNMCPartProduced***************  "<<endl;
-
 
         /////////////////////////////////
         //Calculate Pi0 and Eta weight //
@@ -1623,8 +1647,6 @@ if(fIsMC)
     AliError("Could not find MC Header in AOD");
     return;
     }
-
-    //if(fMCArray->GetEntries() < 1) return; 
 
     for(Int_t iMC = 0; iMC < fMCArray->GetEntries(); iMC++)
     {
@@ -1782,31 +1804,24 @@ for(Int_t icl=0; icl<Nclust; icl++)
             GetTrackHFStatus(track, IsMCEle, IsMCPPEle, IsMCHFEle, IsMCBEle, IsMCDEle);
         }
 
-       /*Double_t p  = track->GetTPCmomentum(); 
-       Double_t pt = track->Pt();
-       Double_t eta = track->Eta();
-       Double_t phi = track->Phi(); */
-  
-    Int_t tracktypeTrig=0;
-    tracktypeTrig=ClassifyTrack(track,vertex);  //track cuts applied
-
-    if(tracktypeTrig!=1) continue;    //==========TRACK cuts Applied =====
-    Nch++;
+        Int_t tracktypeTrig=0;
+        tracktypeTrig=ClassifyTrack(track,vertex);  //track cuts applied
+        if(tracktypeTrig!=1) continue;    //==========TRACK cuts Applied =====
+        Nch++;
     
-    //cout<<" *********************After Trk Selection***************  "<<endl;
-    
-          fHistPt->Fill(track->Pt());
-          fHistEta->Fill(track->Eta());
-          fHistPhi->Fill(track->Phi());          
+        //cout<<" *********************After Trk Selection***************  "<<endl;
+        fHistPt->Fill(track->Pt());
+        fHistEta->Fill(track->Eta());
+        fHistPhi->Fill(track->Phi());          
 
-         Double_t d0z0[2]={-999,-999}, cov[3];
-         if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov)) 
-          fHistdca->Fill( d0z0[0],d0z0[1]); 
+        Double_t d0z0[2]={-999,-999}, cov[3];
+        if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov)) 
+        fHistdca->Fill( d0z0[0],d0z0[1]); 
                   
-          fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+        fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
-          fHistBethe->Fill(track->GetTPCmomentum(),track->GetTPCsignal());  
-          fnSigmaVsP_TPC->Fill(track->GetTPCmomentum(),fTPCnSigma);
+        fHistBethe->Fill(track->GetTPCmomentum(),track->GetTPCsignal());  
+        fnSigmaVsP_TPC->Fill(track->GetTPCmomentum(),fTPCnSigma);
 
     // hf reconstruction efficiency block-----------
 
@@ -1986,6 +2001,37 @@ for(Int_t icl=0; icl<Nclust; icl++)
             if(fMCHeader && fCalculateNonHFEEffi){
             EffiDenom = GetNonHFEEffiDenom(track);
             }
+
+            //////////////////
+		    //AliSelectNonHFE//
+		    //////////////////      
+   		        fNonHFE = new AliSelectNonHFE();
+				fNonHFE->SetAODanalysis(kTRUE);
+				fNonHFE->SetInvariantMassCut(fInvmassCut);
+				fNonHFE->SetAlgorithm("DCA"); //KF,DCA
+				fNonHFE->SetPIDresponse(fPidResponse);
+				fNonHFE->SetTrackCuts(-1*fAssoTPCnsig,fAssoTPCnsig); //TPCnsigma cuts
+				fNonHFE->SetAdditionalCuts(fAssopTMin,fAssoTPCCluster);  //
+
+				if(track->Pt()>=3.5 && track->Pt()<4.5){
+				fNonHFE->SetHistMassBack(fInvmassLS1);
+				fNonHFE->SetHistMass(fInvmassULS1);
+				}
+				fNonHFE->FindNonHFE(iTracks,track,fAOD,fTracks_tender,fUseTender);
+				
+				Int_t fNULS = fNonHFE->GetNULS();
+				Int_t fNLS = fNonHFE->GetNLS();
+			 
+				if(fNonHFE->IsULS())
+				{
+					fPte_ULS->Fill(track->Pt(),fNULS);
+					fDCAULSElec->Fill(track->Pt(),fTrkDCA,fNULS);
+				}
+				if(fNonHFE->IsLS())
+				{
+					fPte_LS->Fill(track->Pt(),fNLS);
+					fDCALSElec->Fill(track->Pt(),fTrkDCA,fNLS);
+				}
 
             ////////////////////
             //NonHFE selection//
@@ -2302,7 +2348,7 @@ void AliAnalysispp13TeVEMCalHFEMCReco::GetPi0EtaWeight(THnSparse *SparseWeight)
 
 //====================================================================================================================================
 
-Bool_t AliAnalysispp13TeVEMCalHFEMCReco::GetNonHFEEffiULSLS(AliAODTrack *track, AliAODTrack *Assotrack, Bool_t fFlagLS, Bool_t fFlagULS, Double_t mass)
+Bool_t AliAnalysispp13TeVEMCalHFEMCReco::GetNonHFEEffiULSLS(AliAODTrack *track, AliVTrack *Assotrack, Bool_t fFlagLS, Bool_t fFlagULS, Double_t mass)
 {
     
     Double_t TrkPt = track->Pt();
@@ -3104,7 +3150,7 @@ void AliAnalysispp13TeVEMCalHFEMCReco::SelectPhotonicElectron(Int_t itrack, AliA
     ///////////////////////////////////////////
     
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    const AliVVertex *pVtx = fAOD->GetPrimaryVertex();
+    const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     Double_t d0z0[2]={-999,-999}, cov[3];
     Double_t DCAxyCut = 1.0, DCAzCut = 2.0; //In paper it is 1 and 2 cm 
     
@@ -3119,14 +3165,14 @@ void AliAnalysispp13TeVEMCalHFEMCReco::SelectPhotonicElectron(Int_t itrack, AliA
     for (Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
         AliVParticle* VAssotrack = 0x0;
         if(!fUseTender) VAssotrack  = fAOD->GetTrack(jtrack);
-        if(fUseTender) VAssotrack = dynamic_cast<AliAODTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+        if(fUseTender) VAssotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
         
         if (!VAssotrack) {
             printf("ERROR: Could not receive track %d\n", jtrack);
             continue;
         }
         
-        AliAODTrack *Assotrack = dynamic_cast<AliAODTrack*>(VAssotrack);
+        AliVTrack *Assotrack = dynamic_cast<AliVTrack*>(VAssotrack);
         AliESDtrack *eAssotrack = dynamic_cast<AliESDtrack*>(VAssotrack);
         AliAODTrack *aAssotrack = dynamic_cast<AliAODTrack*>(VAssotrack);
         
@@ -3140,16 +3186,15 @@ void AliAnalysispp13TeVEMCalHFEMCReco::SelectPhotonicElectron(Int_t itrack, AliA
         ptAsso = Assotrack->Pt();
         
         //------track cuts applied
-        //if(fAOD) {  // Switched off to Match with Shreyasi
+        if(fAOD) { 
             if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
             if(aAssotrack->GetTPCNcls() < fAssoTPCCluster) continue;
             if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             
-            //if(fRecalIP) RecalImpactParam(aAssotrack, d0z0, cov);
-            /*if(aAssotrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov)) Switched off to Match with Shreyasi
-    
-            if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;*/
-        //}
+            if(fRecalIP) RecalImpactParam(aAssotrack, d0z0, cov); 
+            if(aAssotrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))  // Shreyasi did not applied DCA cut here 
+            if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
+        }
         
         //-------loose cut on partner electron     
         if(ptAsso < fAssopTMin) continue;        
