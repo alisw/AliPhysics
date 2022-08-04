@@ -54,11 +54,11 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     // add your task to the manager
     taskKno->SetPtMin(minpT);
     taskKno->SetIsHybridAnalysis(IsHyAna);
+    taskKno->SetMultPercenV0(MultV0);
     taskKno->SetLeadingPtMin(PtLmin);
     taskKno->SetLeadingPtMax(PtLmax);
     taskKno->SetNchNbin(NchNbins);
     taskKno->SetNchBinMax(maxbinNch);
-    taskKno->SetMultPercenV0(MultV0);
     // Systematic -------------------------------
     taskKno->SetTPCclustersVar1(TPCclustersVar1);
     taskKno->SetTPCclustersVar2(TPCclustersVar2);

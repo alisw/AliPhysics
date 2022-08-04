@@ -113,10 +113,10 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
     fUseMC(kFALSE),
     fIsMCclosure(kFALSE),
     fIsHybAna(kFALSE),
+    fMultPercenV0(kFALSE),
     fnRecHy(-1),
     fnRecHyWoDCA(-1),
     fnGen(-1),
-    fMultPercenV0(kFALSE),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
     fTPCclustersVar1(kFALSE),
@@ -223,10 +223,10 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
     fUseMC(kFALSE),
     fIsMCclosure(kFALSE),
     fIsHybAna(kFALSE),
+    fMultPercenV0(kFALSE),
     fnRecHy(-1),
     fnRecHyWoDCA(-1),
     fnGen(-1),
-    fMultPercenV0(kFALSE),
     fNcrVar1(kFALSE),
     fNcrVar2(kFALSE),
     fTPCclustersVar1(kFALSE),
@@ -786,7 +786,6 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
         fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0A");
     }
     
-
     if(fIsMCclosure){
         Double_t randomUE = -1;
         gRandom->SetSeed(0);
