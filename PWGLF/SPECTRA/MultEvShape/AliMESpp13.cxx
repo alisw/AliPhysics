@@ -331,6 +331,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   fSphericity = fEvInfo->GetEventShape()->GetSphericity();
   Int_t nTracks = fTracks->GetEntriesFast();
   Int_t run = fESD->GetRunNumber();
+  Int_t event = fESD->GetEventNumberInFile();
   if (!fTracksIO)
     fTracksIO = new TClonesArray("AliMEStrackInfo");
   for (int i(0); i < fTracks->GetEntriesFast(); i++)
@@ -340,8 +341,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   }
   Double_t dca[2] = {0.};
   Double_t fPassDCA(0.), fPt(0.), fEta(0.), fPhi(0.), fCharge(0.), fPhiLP(0.), fPtLP(0.), fEtaLP(0.), fDeltaPhi(0.), fDeltaEta(0.), fDCAxy(0.), fDCAz(0.), fPx(0.), fPy(0.), fPxLP(0.), fPyLP(0.);
-  Double_t pxLP = fEvInfo->GetEventShape()->GetMomLeading(kTRUE);
-  Double_t pyLP = fEvInfo->GetEventShape()->GetMomLeading(kFALSE);
   sort.QSortTracks(*fTracksIO, 0, nTracks);
   for (int i(0); i < nTracks; i++)
   {
@@ -390,6 +389,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     if (!HasMCdata())
     {
       (*fTreeSRedirector) << "trk"
+                          << "run=" << run
+                          << "event=" << event
                           << "Pt=" << fPt
                           // << "Charge=" << fCharge
                           << "Eta=" << fEta
@@ -407,7 +408,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   {
     (*fTreeSRedirector) << "ev"
                         // << "noEvents=" << noEvents
-                        // << "run=" << run
+                        << "event=" << event
+                        << "run=" << run
                         << "MultComb08=" << fMultComb08
                         << "MultSPDtrk08=" << fMultSPDtrk08
                         << "V0M=" << fV0M
@@ -591,8 +593,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // cout << "!!!!!! fMCtracksIO entries  = " << fMCtracksIO->GetEntries() << endl;
 
   Double_t fPt_MC(0.), fEta_MC(0.), fPhi_MC(0.), fCharge_MC(0.), fPhiLP_MC(0.), fPtLP_MC(0.), fEtaLP_MC(0.), fDeltaPhi_MC(0.), fDeltaEta_MC(0.), fPrimary_MC(0.), fSecondary_MC(0.), fMaterial_MC(0.), fPx_MC(0.), fPy_MC(0.), fPxLP_MC(0.), fPyLP_MC(0.);
-  Double_t pxLP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kTRUE);
-  Double_t pyLP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kFALSE);
   for (int i(0); i < nTracks; i++)
   {
     AliMEStrackInfo *tMC = (AliMEStrackInfo *)(*fMCtracksIO)[i];
@@ -646,6 +646,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     if (!fTreeSRedirector)
       return;
     (*fTreeSRedirector) << "trk"
+                        << "run=" << run
+                        << "event=" << event
                         << "Pt=" << fPt
                         // << "Charge=" << fCharge
                         << "Eta=" << fEta
@@ -669,7 +671,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     return;
   (*fTreeSRedirector) << "ev"
                       // << "noEvents=" << noEvents
-                      // << "run=" << run
+                      << "run=" << run
+                      << "event=" << event
                       << "MultComb08=" << fMultComb08
                       << "MultSPDtrk08=" << fMultSPDtrk08
                       << "V0M=" << fV0M
@@ -738,6 +741,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     // if (!fTreeSRedirector)
     //   return;
     // (*fTreeSRedirector) << "genTrk"
+                           // << "run=" << run
     //                     // << "Pt_Gen=" << fPt_Gen
     //                     // << "Charge_Gen=" << fCharge_Gen
     //                     // << "Eta_Gen=" << fEta_Gen
@@ -749,6 +753,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // if (!fTreeSRedirector)
   //   return;
   // (*fTreeSRedirector) << "ev"
+                         // << "run=" << run
   //                     // << "nTracks_Gen=" << nTracks_MC;
   //                     // << "PtLP_Gen=" << fPtLP_Gen
   //                     // << "EtaLP_Gen=" << fEtaLP_Gen
@@ -789,6 +794,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     // if (!fTreeSRedirector)
     //   return;
     // (*fTreeSRedirector) << "missedTrk"
+                           // << "run=" << run
     //                     // << "Pt_Miss=" << fPt_Miss
     //                     // << "Charge_Miss=" << fCharge_Miss
     //                     // << "Eta_Miss=" << fEta_Miss
@@ -800,6 +806,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // if (!fTreeSRedirector)
   //   return;
   // (*fTreeSRedirector) << "ev"
+                         // << "run=" << run
   //                     // << "nTracks_Miss=" << nTracksMissed
   //                     // << "PtLP_Miss=" << fPtLP_Miss
   //                     // << "EtaLP_Miss=" << fEtaLP_Miss
