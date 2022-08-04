@@ -49,8 +49,7 @@ private:
     float fP0;                 ///< Coalescence momentum p0
     unsigned int fMixingDepth; /// Depth of the mixing buffer
 
-    TArrayF fPrimaryPtBins;  ///<  Transverse momentum bins for protons
-    TArrayF fDeuteronPtBins; ///<  Transverse momentum bins for deuterons
+    TArrayF fPrimaryPtBins;  ///<  Transverse momentum bins
     TArrayF fKstarBins;      ///<  realtive momentum bins
 
     TH1F *fNormalisationHist;   //!<! Event selection
@@ -78,7 +77,7 @@ private:
     float GetKstar(TLorentzVector &p1, TLorentzVector &p2);                                                               ///< return relative momentum in the rest frame of the pair
     void FillMixedEvent(std::vector<TLorentzVector> &vec, CustomQueue<std::vector<TLorentzVector>> &buffer, TH1F *histo); ///< fill mixed event distribution
 
-    ClassDef(AliAnalysisTaskPionDeuteronMC, 1);
+    ClassDef(AliAnalysisTaskPionDeuteronMC, 2);
 };
 //____________________________________________________________________________________________________________________________________
 
