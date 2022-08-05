@@ -1346,7 +1346,13 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 	//Pt Weight is extract from Efficiency
 	if(fCurrSystFlag==0)
 	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
-	else if(fCurrSystFlag>0&&fCurrSystFlag<9)
+	else if(fCurrSystFlag==3){
+		//Be Careful
+		//Here I use DCAxy<6sigma for sys3
+		//And use Default NUE for this Systematics
+		hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
+	}
+	else if(fCurrSystFlag>0&&fCurrSystFlag<9&&fCurrSystFlag!=3)
 	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
 	else
 	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag+7));
@@ -1421,8 +1427,18 @@ const char* AliAnalysisTaskFlowPPTask::GetSpeciesName(const PartSpecies species)
 
 Bool_t AliAnalysisTaskFlowPPTask::LoadWeightsSystematics()
 {
-	if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
-        else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+	if(fCurrSystFlag == 0) {
+		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+	}
+	else if(fCurrSystFlag==3){
+		//Be Careful
+		//Here I use DCAxy<6sigma for sys3
+		//And use Default NUA for this systematics
+		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+	}
+    else {
+		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+	}
         if(!fWeightsSystematics)
         {
 			printf(Form("fAOD->GetRunNumber(): %i\n",fAOD->GetRunNumber()));

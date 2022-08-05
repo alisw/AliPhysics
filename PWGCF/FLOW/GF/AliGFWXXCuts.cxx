@@ -19,7 +19,7 @@ AliESDtrackCuts *AliGFWXXCuts::fTCFB512=0;
 AliGFWXXCuts::AliGFWXXCuts():
   fSystFlag(0),
   fFilterBit(96),
-  fDCAxyCut(6),
+  fDCAxyCut(7),
   //Default DCAxyCut is 7
   //6 sigma is a sys check
   fDCAzCut(2),
@@ -130,7 +130,7 @@ Int_t AliGFWXXCuts::AcceptVertex(AliESDEvent *l_Ev, Int_t BitShift) {
 void AliGFWXXCuts::ResetCuts() {
   fSystFlag=0;
   fFilterBit=96;
-  fDCAxyCut=6;
+  fDCAxyCut=7;
   // Default DCAxyCut is 7
   // 6 sigma is sys Check
   fDCAzCut=2;
@@ -173,7 +173,7 @@ void AliGFWXXCuts::SetupTrackCuts(Int_t sysflag) {
     fPtDepXYCut->SetParameter(0,fDCAxyCut);
     break;
   case 3:
-    fDCAxyCut=4.;
+    fDCAxyCut=6.;
     fPtDepXYCut->SetParameter(0,fDCAxyCut);
     fRequiresExtraWeight=kTRUE;
     break;
