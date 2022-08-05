@@ -118,6 +118,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fCentType("ZNA"),
       fNEntries(0),
       lCentrality(0),
+      lCent_effi(0),
       calibmode(0),
       feffi(0),
       fheffipt(0),
@@ -259,6 +260,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fCentType("ZNA"),
       fNEntries(0),
       lCentrality(0),
+      lCent_effi(0),
       calibmode(0),
       feffi(0),
       fheffipt(0), 
@@ -2032,20 +2034,21 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
          
    if(fCentType=="Manual"){
      TObjArray *selectedTracksLeading = new TObjArray;
-       selectedTracksLeading->SetOwner(kTRUE);
-       selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksLeading);
-       Int_t nTracks=selectedTracksLeading->GetEntriesFast();
-       Float_t nefficorrTrack=0;
-       for(Int_t n = 0; n< nTracks; n++){
-	 AliAssociatedTrackYS* track = (AliAssociatedTrackYS*) selectedTracksLeading->At(n);
-	 Float_t corrected_multi=track->Multiplicity();
-	 nefficorrTrack+=corrected_multi;
-       }
-       //       lCentrality=nTracks;
-	   lCentrality=nefficorrTrack;
-	   dynamic_cast<TH2F*>(fOutputList->FindObject("fhist_trackeffi"))->Fill(nTracks,nefficorrTrack);
-	   selectedTracksLeading->Clear();
-	   delete selectedTracksLeading;
+     selectedTracksLeading->SetOwner(kTRUE);
+     selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksLeading);
+     Int_t nTracks=selectedTracksLeading->GetEntriesFast();
+     Float_t nefficorrTrack=0;
+     for(Int_t n = 0; n< nTracks; n++){
+       AliAssociatedTrackYS* track = (AliAssociatedTrackYS*) selectedTracksLeading->At(n);
+       Float_t corrected_multi=track->Multiplicity();
+       nefficorrTrack+=corrected_multi;
+     }
+     //       lCentrality=nTracks;
+     lCentrality=nefficorrTrack;
+     if(fcollisiontype=="PbPb") lCent_effi=multSelection->GetMultiplicityPercentile("V0M");
+     dynamic_cast<TH2F*>(fOutputList->FindObject("fhist_trackeffi"))->Fill(nTracks,nefficorrTrack);
+     selectedTracksLeading->Clear();
+     delete selectedTracksLeading;
    }else{
      lCentrality = multSelection->GetMultiplicityPercentile(fCentType);
      Int_t qual = multSelection->GetEvSelCode();
@@ -2896,17 +2899,31 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
 	else iEta=-1;
 	
 	Int_t iCent=-1;
-	if(lCentrality<5) iCent=0;
-	else if(lCentrality>5 && lCentrality<10) iCent=1;
-	else if(lCentrality>10 && lCentrality<20) iCent=2;
-	else if(lCentrality>20 && lCentrality<30) iCent=3;
-	else if(lCentrality>30 && lCentrality<40) iCent=4;
-	else if(lCentrality>40 && lCentrality<50) iCent=5;
-	else if(lCentrality>50 && lCentrality<60) iCent=6;
-	else if(lCentrality>60 && lCentrality<70) iCent=7;
-	else if(lCentrality>70 && lCentrality<80) iCent=8;
-	else if(lCentrality>80 && lCentrality<90) iCent=9;
-	else iCent=-1;
+	if(fCentType=="Manual"){
+	  if(lCent_effi<5) iCent=0;
+	  else if(lCent_effi>5 && lCent_effi<10) iCent=1;
+	  else if(lCent_effi>10 && lCent_effi<20) iCent=2;
+	  else if(lCent_effi>20 && lCent_effi<30) iCent=3;
+	  else if(lCent_effi>30 && lCent_effi<40) iCent=4;
+	  else if(lCent_effi>40 && lCent_effi<50) iCent=5;
+	  else if(lCent_effi>50 && lCent_effi<60) iCent=6;
+	  else if(lCent_effi>60 && lCent_effi<70) iCent=7;
+	  else if(lCent_effi>70 && lCent_effi<80) iCent=8;
+	  else if(lCent_effi>80 && lCent_effi<90) iCent=9;
+	  else iCent=-1;
+	}else{
+	  if(lCentrality<5) iCent=0;
+	  else if(lCentrality>5 && lCentrality<10) iCent=1;
+	  else if(lCentrality>10 && lCentrality<20) iCent=2;
+	  else if(lCentrality>20 && lCentrality<30) iCent=3;
+	  else if(lCentrality>30 && lCentrality<40) iCent=4;
+	  else if(lCentrality>40 && lCentrality<50) iCent=5;
+	  else if(lCentrality>50 && lCentrality<60) iCent=6;
+	  else if(lCentrality>60 && lCentrality<70) iCent=7;
+	  else if(lCentrality>70 && lCentrality<80) iCent=8;
+	  else if(lCentrality>80 && lCentrality<90) iCent=9;
+	  else iCent=-1;
+	}
 	if(iEta>0 && iCent>0){
 	  Float_t eff=heff_pbpb[iEta][iCent]->GetBinContent(iPt);
 	  Float_t FD=hFD_pbpb[iEta][iCent]->GetBinContent(iPt);
@@ -4630,10 +4647,12 @@ Double_t AliAnalysisTaskSEpPbCorrelationsYS::RangePhi2(Double_t DPhi) {
 
 void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
 {
+  /*
   if(note) {
     printf("TObjectTable::%s",note);
   }
   gObjectTable->Print();
+  */
 }
 
 TString AliAnalysisTaskSEpPbCorrelationsYS::GetMCperiod(Int_t run){

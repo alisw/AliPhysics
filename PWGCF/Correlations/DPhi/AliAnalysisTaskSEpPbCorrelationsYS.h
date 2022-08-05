@@ -177,6 +177,7 @@ private:
   Int_t fNEntries;
   
   Double_t lCentrality;
+  Double_t lCent_effi;
 
   Int_t calibmode;
   TFile* feffi;
