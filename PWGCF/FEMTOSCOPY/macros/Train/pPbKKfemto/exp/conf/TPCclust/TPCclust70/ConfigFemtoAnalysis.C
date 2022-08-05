@@ -8,7 +8,12 @@
  *                                                                   *
  *********************************************************************/
 
+//#if __cplusplus < 201103L
+//#error "This file requires use of the c++11 standard (ROOT6)"
+//#endif
+
 #if !defined(__CINT__) || defined(__MAKECINT_)
+//#if !defined(__CINT__) && !defined(__CLING__)
 #include "AliFemtoManager.h"
 //#include "AliFemtoEventReaderESDChain.h"
 //#include "AliFemtoEventReaderESDChainKine.h"
@@ -57,6 +62,20 @@
 #include "AliFemtoCutMonitorParticlePtPDG.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoCutMonitorCollections.h"
+
+//#include <TROOT.h>
+//#include <TBase64.h>
+
+//#include <TString.h>
+//#include <TList.h>
+//#include <TObjArray.h>
+//#include <TObjString.h>
+
+//#include <TNamed.h>
+//#include <random>
+
+//#include <TH1.h>
+
 #endif
 
 //________________________________________________________________________
@@ -69,7 +88,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int runmults[3] = {1, 1, 1};
   int multbins[4] = {0, 200, 400, 900};
   //int runmults[6] = {1, 1, 1, 1, 1, 1};
-  //int multbins[7] = {0.01, 50, 100, 200, 400, 600, 800};
+  //double multbins[7] = {0.01, 50, 100, 200, 400, 600, 800};
 
   int runch[2] = {1, 1};
   const char *chrgs[2] = { "Kp", "Km"};
@@ -348,8 +367,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //3D cartesian (without kT bins)
 	  if(run3d){
 	    //cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),60,0.5);
-	    cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),80,-2.0,2.0);
-	    anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
+	    /*cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),80,-2.0,2.0);
+	    anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);*/
 	    
 	  }
 	  

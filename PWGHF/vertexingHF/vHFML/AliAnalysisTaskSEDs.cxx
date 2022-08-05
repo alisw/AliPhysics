@@ -681,7 +681,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     printf("Number of Ds->KKpi: %d\n", n3Prong);
 
   Int_t pdgDstoKKpi[3] = {321, 321, 211};
-  Int_t pdgDplustoKpipi[3] = {211, 321, 211};
+  Int_t pdgDplustoKpipi[3] = {321, 211, 211};
   Int_t nSelected = 0;
   Int_t nFiltered = 0;
   Double_t massPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
@@ -913,7 +913,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         {
           labDplusToKpipi = d->MatchToMC(411, arrayMC, nProng, pdgDplustoKpipi);
           if (labDplusToKpipi >= 0)
-            partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
+            partDs = (AliAODMCParticle*)arrayMC->At(labDplusToKpipi);
         }
       }
       if(partDs){

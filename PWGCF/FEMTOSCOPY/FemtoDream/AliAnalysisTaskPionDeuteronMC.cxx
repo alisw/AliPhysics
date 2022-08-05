@@ -6,6 +6,7 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 #include "TDatabasePDG.h"
+#include "AliPID.h"
 #include "TChain.h"
 #include "TMath.h"
 #include "TH1F.h"
@@ -30,7 +31,6 @@ AliAnalysisTaskPionDeuteronMC::AliAnalysisTaskPionDeuteronMC(const char *name)
       fP0{0.285},
       fMixingDepth{5},
       fPrimaryPtBins{0},
-      fDeuteronPtBins{0},
       fKstarBins{0},
       fNormalisationHist{nullptr},
       hSourceSize{nullptr},
@@ -82,17 +82,15 @@ void AliAnalysisTaskPionDeuteronMC::UserCreateOutputObjects()
       "Event selection",
       "Vertex reconstruction and quality",
       "Vertex position"};
-  fNormalisationHist = new TH1F("fNormalisationHist", ";;", norm_labels.size(), -.5, norm_labels.size() - 0.5);
+  fNormalisationHist = new TH1F("fNormalisationHist", ";;Entries", norm_labels.size(), -.5, norm_labels.size() - 0.5);
   for (size_t iB = 1; iB <= norm_labels.size(); iB++)
   {
-    fNormalisationHist->GetYaxis()->SetBinLabel(iB, norm_labels[iB - 1].data());
+    fNormalisationHist->GetXaxis()->SetBinLabel(iB, norm_labels[iB - 1].data());
   }
   fOutputList->Add(fNormalisationHist);
 
   const int nPrimaryPtBins = fPrimaryPtBins.GetSize() - 1;
   const float *primaryPtBins = fPrimaryPtBins.GetArray();
-  const int nDeuteronPtBins = fDeuteronPtBins.GetSize() - 1;
-  const float *deuteronPtBins = fDeuteronPtBins.GetArray();
   const int nKstarBins = fKstarBins.GetSize() - 1;
   const float *kStarBins = fKstarBins.GetArray();
 
@@ -106,20 +104,20 @@ void AliAnalysisTaskPionDeuteronMC::UserCreateOutputObjects()
     fOutputList->Add(hProtonSpectrum[iCharge]);
     hNeutronSpectrum[iCharge] = new TH1F(Form("h%sNeutronSpectrum", charge_label[iCharge]), ";#it{p} (GeV/#it{c});Entries", nPrimaryPtBins, primaryPtBins);
     fOutputList->Add(hNeutronSpectrum[iCharge]);
-    hDeuteronSpectrum[iCharge] = new TH1F(Form("h%sDeuteronSpectrum", charge_label[iCharge]), ";#it{p} (GeV/#it{c});Entries", nDeuteronPtBins, deuteronPtBins);
+    hDeuteronSpectrum[iCharge] = new TH1F(Form("h%sDeuteronSpectrum", charge_label[iCharge]), ";#it{p} (GeV/#it{c});Entries", nPrimaryPtBins, primaryPtBins);
     fOutputList->Add(hDeuteronSpectrum[iCharge]);
     hSameEventKstarLS[iCharge] = new TH1F(Form("h%sSameEventKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
     fOutputList->Add(hSameEventKstarLS[iCharge]);
     hSameEventKstarUS[iCharge] = new TH1F(Form("h%sSameEventKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
-    fOutputList->Add(hSameEventKstarLS[iCharge]);
+    fOutputList->Add(hSameEventKstarUS[iCharge]);
     hMixedEventKstarLS[iCharge] = new TH1F(Form("h%sMixedEventKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
     fOutputList->Add(hMixedEventKstarLS[iCharge]);
     hMixedEventKstarUS[iCharge] = new TH1F(Form("h%sMixedEventKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
-    fOutputList->Add(hMixedEventKstarLS[iCharge]);
+    fOutputList->Add(hMixedEventKstarUS[iCharge]);
   }
 
   // DeltaP Distribution
-  hDeltaP = new TH1F("hDeltaP", "", 2000, 0, 1);
+  hDeltaP = new TH1F("hDeltaP", ";#Delta p (GeV/#it{c});Entries", 200, 0, 1.);
   hDeltaP->Sumw2();
   fOutputList->Add(hDeltaP);
 
@@ -130,10 +128,10 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
 {
 
   // Particle Masses in GeV
-  double mpion = TDatabasePDG::Instance()->GetParticle(211)->Mass();     // Pion
-  double mp = TDatabasePDG::Instance()->GetParticle(2212)->Mass();       // Proton
-  double mn = TDatabasePDG::Instance()->GetParticle(2112)->Mass();       // Neutron
-  double md = TDatabasePDG::Instance()->GetParticle(1000010020)->Mass(); // Deuteron
+  double mpion = TDatabasePDG::Instance()->GetParticle(211)->Mass(); // Pion
+  double mp = TDatabasePDG::Instance()->GetParticle(2212)->Mass();   // Proton
+  double mn = TDatabasePDG::Instance()->GetParticle(2112)->Mass();   // Neutron
+  double md = AliPID::ParticleMass(AliPID::kDeuteron);
 
   AliAODEvent *ev = (AliAODEvent *)InputEvent();
 
@@ -183,7 +181,7 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
     if (rapidity > 1.0)
       continue;
 
-    float pt = part->Pt();
+    float p = part->P();
     float px = part->Px();
     float py = part->Py();
     float pz = part->Pz();
@@ -194,14 +192,14 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       proton_ID.push_back(iMC);
       if (rapidity <= 0.5)
       {
-        hProtonSpectrum[0]->Fill(pt);
+        hProtonSpectrum[0]->Fill(p);
       }
       break;
     case -2212:
       antiproton_ID.push_back(iMC);
       if (rapidity <= 0.5)
       {
-        hProtonSpectrum[1]->Fill(pt);
+        hProtonSpectrum[1]->Fill(p);
       }
       break;
     case 2112:
@@ -209,7 +207,7 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       neutron_status.push_back(0);
       if (rapidity <= 0.5)
       {
-        hNeutronSpectrum[0]->Fill(pt);
+        hNeutronSpectrum[0]->Fill(p);
       }
       break;
     case -2112:
@@ -217,25 +215,25 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       antineutron_status.push_back(0);
       if (rapidity <= 0.5)
       {
-        hNeutronSpectrum[1]->Fill(pt);
+        hNeutronSpectrum[1]->Fill(p);
       }
       break;
     case 211:
       if (rapidity <= 0.5)
       {
-        hPionSpectrum[0]->Fill(pt);
-        TLorentzVector p;
-        p.SetXYZM(px, py, pz, mpion);
-        v_pospion.push_back(p);
+        hPionSpectrum[0]->Fill(p);
+        TLorentzVector fourvec;
+        fourvec.SetXYZM(px, py, pz, mpion);
+        v_pospion.push_back(fourvec);
       }
       break;
     case -211:
       if (rapidity <= 0.5)
       {
-        hPionSpectrum[1]->Fill(pt);
-        TLorentzVector p;
-        p.SetXYZM(px, py, pz, mpion);
-        v_negpion.push_back(p);
+        hPionSpectrum[1]->Fill(p);
+        TLorentzVector fourvec;
+        fourvec.SetXYZM(px, py, pz, mpion);
+        v_negpion.push_back(fourvec);
       }
       break;
     default:
@@ -264,7 +262,7 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
 
       // Deuteron 4-Momentum
       TLorentzVector p_deuteron;
-      p_deuteron.SetXYZM(proton->Px() + neutron->Px(), proton->Py() + neutron->Py(), proton->Pz() + neutron->Pz(), md);
+      p_deuteron.SetXYZM(p_proton.Px() + p_neutron.Px(), p_proton.Py() + p_neutron.Py(), p_proton.Pz() + p_neutron.Pz(), md);
       v_deuteron.push_back(p_deuteron);
       TVector3 boost_vector = p_deuteron.BoostVector();
 
@@ -289,12 +287,13 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
         double y_deuteron = p_deuteron.Rapidity();
         if (TMath::Abs(y_deuteron) < 0.5)
         {
-          hDeuteronSpectrum[0]->Fill(p_deuteron.Pt(), 3 / 8);
+          hDeuteronSpectrum[0]->Fill(p_deuteron.P());
         }
         break;
       }
     }
   }
+
   // antideuteron
 
   for (int ip = 0; ip < (int)antiproton_ID.size(); ip++)
@@ -308,14 +307,14 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
     {
 
       // Antineutron 4-Momentum
-      AliAODMCParticle *antineutron = (AliAODMCParticle *)stack->UncheckedAt(antineutron_ID[ip]);
+      AliAODMCParticle *antineutron = (AliAODMCParticle *)stack->UncheckedAt(antineutron_ID[in]);
       TLorentzVector p_antineutron;
       p_antineutron.SetXYZM(antineutron->Px(), antineutron->Py(), antineutron->Pz(), mn);
 
       // Antiantideuteron 4-Momentum
       TLorentzVector p_antideuteron;
-      p_antideuteron.SetXYZM(antiproton->Px() + antineutron->Px(), antiproton->Py() + antineutron->Py(), antiproton->Pz() + antineutron->Pz(), md);
-      v_deuteron.push_back(p_antideuteron);
+      p_antideuteron.SetXYZM(p_antiproton.Px() + p_antineutron.Px(), p_antiproton.Py() + p_antineutron.Py(), p_antiproton.Pz() + p_antineutron.Pz(), md);
+      v_antideuteron.push_back(p_antideuteron);
       TVector3 boost_vector = p_antideuteron.BoostVector();
 
       // Lorentz Transformations (from Lab to Antideuteron Frame)
@@ -339,7 +338,7 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
         double y_antideuteron = p_antideuteron.Rapidity();
         if (TMath::Abs(y_antideuteron) < 0.5)
         {
-          hDeuteronSpectrum[1]->Fill(p_antideuteron.Pt(), 3 / 8);
+          hDeuteronSpectrum[1]->Fill(p_antideuteron.P());
         }
         break;
       }
@@ -417,7 +416,7 @@ float AliAnalysisTaskPionDeuteronMC::GetKstar(TLorentzVector &p1, TLorentzVector
   p1_prf.Boost(-boost_vector);
   TLorentzVector p2_prf = p2;
   p2_prf.Boost(-boost_vector);
-  TLorentzVector kStar = p2_prf - p2_prf;
+  TLorentzVector kStar = p1_prf - p2_prf;
   return 0.5 * kStar.P();
 }
 
@@ -440,12 +439,12 @@ void AliAnalysisTaskPionDeuteronMC::SetPrimaryPtBins(int nbins, float *bins)
 void AliAnalysisTaskPionDeuteronMC::SetKstarBins(int nbins, float min, float max)
 {
   const float delta = (max - min) / nbins;
-  fPrimaryPtBins.Set(nbins + 1);
+  fKstarBins.Set(nbins + 1);
   for (int iB = 0; iB < nbins; ++iB)
   {
-    fPrimaryPtBins[iB] = min + iB * delta;
+    fKstarBins[iB] = min + iB * delta;
   }
-  fPrimaryPtBins[nbins] = max;
+  fKstarBins[nbins] = max;
 }
 
 void AliAnalysisTaskPionDeuteronMC::SetKstarBins(int nbins, float *bins)

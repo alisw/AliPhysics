@@ -96,6 +96,7 @@ set(SRCS
   Kinks/AliAnalysisTaskKinksFilimon.cxx
   Kinks/AliAnalysisKinkESDat13.cxx
   Kinks/AliAnalysisKinkESDMC13.cxx
+  Kinks/AliAnalysisKinkESDat13ppHM.cxx
   Kinks/AliAnalysisKinkTaskMult13pp.cxx
   Kinks/AliAnalysisKinkTaskMult13ppMC.cxx
   Kinks/AliAnalysisTaskKinkpp5TeV.cxx

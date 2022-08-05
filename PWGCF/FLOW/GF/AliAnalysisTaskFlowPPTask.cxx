@@ -314,8 +314,8 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	//fEventCuts.fPileUpCutMV = true;
 
 
-	//Create an AliGFWNFCuts Selection
-	fGFWSelection = new AliGFWNFCuts();
+	//Create an AliGFWXXCuts Selection
+	fGFWSelection = new AliGFWXXCuts();
     fGFWSelection->PrintSetup();
 
 

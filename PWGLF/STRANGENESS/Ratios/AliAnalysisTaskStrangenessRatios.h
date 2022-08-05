@@ -57,7 +57,7 @@ struct MiniCascade {
   Double32_t radius; //[0,25.4,8]
   Double32_t radiusV0; //[0,25.4,8]
   Double32_t dcaBachPV; //[0,2.54,8]
-  Double32_t dcaV0PV; //[0,2.54,8]
+  Double32_t dcaV0PV; //[0,2.54,16]
   Double32_t dcaV0piPV; //[0,2.54,8]
   Double32_t dcaV0prPV; //[0,2.54,8]
   Double32_t dcaV0tracks; //[0,2.54,8]
@@ -153,6 +153,10 @@ public:
   void UseOnTheFly(bool toggle = true) { fUseOnTheFly = toggle; }
   void SetMinCentrality(int minCentrality = 0) { fMinCentrality = minCentrality; }
   void SetMaxCentrality(int maxCentrality = 90) { fMaxCentrality = maxCentrality; }
+  void SetCtPreselection(double cut = 1.) { fCtPreselection = cut; }
+  void SetMaxCt(int maxCt = 40.) { fMaxCt = maxCt; }
+  void SetMinPt(int minPt = 0.5) { fMinPt = minPt; }
+  void SetMaxPt(int maxPt = 3.5) { fMaxPt = maxPt; }
   void SetRadiusPreselection(double cut = 3.) { fRadiusPreselection = cut; }
   void SetRadiusOverflowCut(double cut = 100.) { fRadiusOverflowCut = cut; }
   void SetTpcClV0PiPreselection(int cut = 70) { fTpcClV0PiPreselection = cut; }
@@ -219,6 +223,9 @@ private:
   double fMinCentrality = 0;
   double fMaxCentrality = 90;
   double fCtPreselection = 1.;
+  double fMaxCt = 40.;
+  double fMinPt = 0.5;
+  double fMaxPt = 3.5;
   double fRadiusPreselection = 3;
   double fRadiusOverflowCut = 100;
   int fTpcClV0PiPreselection = 70;

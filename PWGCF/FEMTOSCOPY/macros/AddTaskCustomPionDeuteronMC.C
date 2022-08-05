@@ -37,7 +37,7 @@ AliAnalysisTaskPionDeuteronMC *AddTaskCustomPionDeuteronMC(TString taskname = "p
       0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 1.1f, 1.2f, 1.4f, 1.6f,
       1.8f, 2.0f, 2.2f, 2.6f, 3.0f, 3.4f, 3.8f, 4.4f, 5.0f, 6.0f};
   task->SetPrimaryPtBins(19, pt);
-  task->SetKstarBins(500, 0, 2000);
+  task->SetKstarBins(500, 0, 2);
 
   mgr->AddTask(task);
 

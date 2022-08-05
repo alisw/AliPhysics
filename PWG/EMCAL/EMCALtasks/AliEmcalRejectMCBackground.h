@@ -61,7 +61,7 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
   /**
    * @brief Destructor
    */
-  virtual ~AliEmcalRejectMCBackground() {}
+  virtual ~AliEmcalRejectMCBackground();
 
   /**
    * @brief
@@ -158,6 +158,9 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
    */
   void                      CreateParticleMapAOD(AliVEvent *event, AliMCEvent *mcEvent, TClonesArray* partIn, TClonesArray* partOut, AliNamedArrayI* partMap=0);
 
+  TList                    *fHeaderList;         ///<
+
+
   TString                   fParticlesOutName;     ///< name of output particle array
   TString                   fParticlesMapName;     //!<! name of the particle map
   Bool_t                    fInit;                 //!<! true = task initialized
@@ -170,17 +173,18 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
   Bool_t                    fDisabled;             //!<! Disable task if a problem occurs at initialization
   Int_t                     fDebugLevel;           ///< debug level for interactive debugging
   Int_t                     fnHeaders;             ///< Number of Headers
+  TClonesArray             *fAODMCTrackArray;      ///< pointer to track array
+
   std::vector<int>          fNotRejectedStart;
   std::vector<int>          fNotRejectedEnd;
-  std::vector<TString>      fGeneratorNames;       
+  std::vector<TString>      fGeneratorNames;
   Int_t                     fAddedSignalPDGCode;
   Int_t                     fSignalRejection;
-  TList                    *fHeaderList;         ///<
 
  private:
   AliEmcalRejectMCBackground(const AliEmcalRejectMCBackground&);            // not implemented
   AliEmcalRejectMCBackground &operator=(const AliEmcalRejectMCBackground&); // not implemented
 
-  ClassDef(AliEmcalRejectMCBackground, 6);
+  ClassDef(AliEmcalRejectMCBackground, 1);
 };
 #endif

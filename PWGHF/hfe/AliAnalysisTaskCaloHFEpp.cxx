@@ -262,6 +262,9 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistZeRec(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
+        fHistZeta(0),
+        fHist_Zeta_pos(0),
+        fHist_Zeta_neg(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
 
@@ -471,6 +474,9 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistZeRec(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
+        fHistZeta(0),
+        fHist_Zeta_pos(0),
+        fHist_Zeta_neg(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
 {
@@ -623,6 +629,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistZeRec        = new TH1F("fHistZeRec","particle level Z->e",90,10,100);
 	fHist_Zpair_pos        = new TH2F("fHist_Zpair_pos","pair Z->e",100,-5,5,100,0,100);
 	fHist_Zpair_neg        = new TH2F("fHist_Zpair_neg","pair Z->e",100,-5,5,100,0,100);
+	fHistZeta        = new TH1F("fHistZeta","parent Z eta",200,-5,5);
+	fHist_Zeta_pos        = new TH1F("fHist_Zeta_pos","pair Z->e",100,-5,5);
+	fHist_Zeta_neg        = new TH1F("fHist_Zeta_neg","pair Z->e",100,-5,5);
 
 
 
@@ -832,6 +841,11 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistZeOrgNeg); 
 	fOutputList->Add(fHistZeOrgPos); 
 	fOutputList->Add(fHistZeRec); 
+	fOutputList->Add(fHist_Zpair_pos); 
+	fOutputList->Add(fHist_Zpair_neg); 
+	fOutputList->Add(fHistZeta); 
+	fOutputList->Add(fHist_Zeta_pos); 
+	fOutputList->Add(fHist_Zeta_neg); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -1601,7 +1615,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             fIsoArray->Fill(isoarray);
                             if(IsoEnergy<0.05)fDCAxy_Pt_We->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                             if(IsoEnergy < 0.05 && NtrackCone <3)iIsocut=kTRUE;
-                            //if(iIsocut && TMath::Abs(pdgorg)==23)fHistZeRec->Fill(TrkPt);
+                            if(iIsocut && TMath::Abs(pdgorg)==23 && TrkPt>30.0)
+                              { 
+	                       AliAODMCParticle* fMCparticleWZ = (AliAODMCParticle*) fMCarray->At(ilabelM);
+                               if(track->Charge()<0)fHistZeta->Fill(fMCparticleWZ->Eta());                              
+                              }
                            }
 
                         if(TrkPt>10.0 && ((pid_eleD) || (pid_eleB)))
@@ -1822,6 +1840,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		Int_t MassCorrect;
 		MassCorrect = recg.GetMass(mass,width);
                 Double_t RecoPt = recg.GetPt();
+                Double_t RecoEta = recg.GetEta();
  
 		if(fFlagLS){
 			//if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
@@ -1846,11 +1865,13 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                                    {
                                     fInv_pT_ULS_forZ_pos->Fill(TrkPt,mass);
                                     if(mass>75.0 && mass<100.0)fHist_Zpair_pos->Fill(aAssotrack->Eta(),TrkPt);
+                                    if(mass>75.0 && mass<100.0 && TrkPt>30.0)fHist_Zeta_pos->Fill(RecoEta);
                                    }
 				if(iIsocut && charge<0)
                                    {
                                     fInv_pT_ULS_forZ_neg->Fill(TrkPt,mass);
                                     if(mass>75.0 && mass<100.0)fHist_Zpair_neg->Fill(aAssotrack->Eta(),TrkPt);
+                                    if(mass>75.0 && mass<100.0 && TrkPt>30.0)fHist_Zeta_neg->Fill(RecoEta);
                                    }
 				if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
@@ -1942,6 +1963,7 @@ void AliAnalysisTaskCaloHFEpp::FindMother(AliAODMCParticle* part, int &label, in
                cout << "pid = " << pid << " ; status "<<  part->GetStatus() << " ; " << label  <<  " ; mother = " << mm  << endl;
               }
            //cout << "mother pid = " << pid << " ; status "<<  part->GetStatus() << " ; " << label  << endl;
+           if(TMath::Abs(pid)==22 || TMath::Abs(pid)==15 || TMath::Abs(pid)>100)break; 
           }
      
   }
