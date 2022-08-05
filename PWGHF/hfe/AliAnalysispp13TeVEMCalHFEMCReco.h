@@ -1,7 +1,7 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //            
-// AliAnalysispp13TeVEMCalHFEMCReco.h                                 //
+// AliAnalysispp13TeVEMCalHFEMCReco.h                            //
 // Author: Vivek Singh                                           //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ class AliAnalysispp13TeVEMCalHFEMCReco : public AliAnalysisTaskSE {
   Bool_t  IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromMB, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);
   Int_t   GetPi0EtaType(AliAODMCParticle *part);
   Bool_t  GetNonHFEEffiRecoTag(AliAODTrack *track);
-  Bool_t  GetNonHFEEffiULSLS(AliAODTrack *track, AliAODTrack *Assotrack, Bool_t fFlagLS, Bool_t fFlagULS, Double_t mass);
+  Bool_t  GetNonHFEEffiULSLS(AliAODTrack *track, AliVTrack *Assotrack, Bool_t fFlagLS, Bool_t fFlagULS, Double_t mass);
   
   Int_t GetHFE(AliAODMCParticle *, TClonesArray *);
   Int_t GetElecSourceType(AliAODMCParticle *,Double_t &ptm);
@@ -241,14 +241,21 @@ class AliAnalysispp13TeVEMCalHFEMCReco : public AliAnalysisTaskSE {
   Bool_t FindMother(Int_t mcIndex);
   Bool_t IsHFelectronsMC(AliAODTrack *track);
   
-  AliHFEextraCuts *fExtraCuts;//! 
- 
-
   TList       *fOutputList;//! Output list
   AliAODEvent *fAOD;//! AOD object
-
   AliHFEpid   *fPID;//! 
   AliPIDResponse   *fPidResponse;//!
+  AliHFEextraCuts *fExtraCuts;//! 
+
+  	//===============NonHFE========================================
+	 AliSelectNonHFE *fNonHFE; //!
+   TH1F        *fPte_ULS; //! ULS elec Pt
+   TH1F        *fPte_LS;//! LS elec pt  
+   TH1F        *fInvmassLS1; //! LS Invmass 
+   TH1F        *fInvmassULS1;//! ULS Invmass
+   TH2F        *fDCAULSElec; //! ULS elec Pt
+   TH2F        *fDCALSElec;//! LS elec pt 
+
 
   Double_t            fTPCnSigmaHadMin;//!
   Double_t            fTPCnSigmaHadMax;//!
