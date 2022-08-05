@@ -492,6 +492,14 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH1D* fhJetPtEvtByEventPartLevel;                         //! event by event pt spectrum of jets
    TH1D* fhRecoilJetPtEvtByEventPartLevel[fkTTbins];         //! event by event pt spectrum of jets with physical TT
 //   TH1D* fhRecoilJetPtEvtByEventRandomTTPartLevel;           //! event by event pt spectrum of jets with radom TT
+   TH2D* fhNjetsPt10_15[kTG-1];         //! For TTsig  number of recoil jets with pt 10-15 GeV/c in MB and HM
+   TH2D* fhNjetsPtAbove15[kTG-1];       //! For TTsig number of recoil jets with pt above 15 GeV/c in MB and HM
+   TH2D* fhNjetsPt10_15_PartLevel;      //! For TTsig number of recoi jets with pt 10-15 GeV/c in MB and HM
+   TH2D* fhNjetsPtAbove15_PartLevel;    //! For TTsig number of recoil jets with pt above 15 GeV/c in MB and HM
+   TH2D* fhNjetsPt10_15_PartLevelV0MnormDetLev;      //! For TTsig number of recoi jets with pt 10-15 GeV/c in MB and HM
+   TH2D* fhNjetsPtAbove15_PartLevelV0MnormDetLev;    //! For TTsig number of recoil jets with pt above 15 GeV/c in MB and HM
+
+
 
    //EMBEDDING
    TH2D* fhTrackEtaInclEMB;                              //!  Eta dist inclusive embedded tracks vs pT
@@ -597,7 +605,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 38); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 39); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
