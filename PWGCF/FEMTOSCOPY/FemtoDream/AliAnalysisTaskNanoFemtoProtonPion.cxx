@@ -534,11 +534,37 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
   for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack*>(Event->GetTrack(iTrack));
     if (!track) {
-      AliFatal("No Standard AOD");
-      return;
+      continue;
     }
 
     fTrack->SetTrack(track, fInputEvent);
+
+    if (fIsMC && fRemoveMCResonances) {
+      TClonesArray *mcarray = dynamic_cast<TClonesArray *>(Event->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!mcarray) {
+        AliError("SPTrack: MC Array not found");
+      }
+      if (fTrack->GetID() >= 0) {
+        AliAODMCParticle *mcPart = (AliAODMCParticle *)mcarray->At(fTrack->GetID());
+        if (!(mcPart)) {
+          continue;
+        }
+        int motherID = mcPart->GetMother();
+        AliAODMCParticle *mcMother = nullptr;
+        if (motherID != -1) {
+          mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+        }
+        if (mcMother) {
+          int motherPDG = mcMother->GetPdgCode(); 
+          if(IsResonance(motherPDG)){
+             fTrack->SetMotherPDG(motherPDG); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
+          }
+        }
+      } else {
+        continue;  // if we don't have MC Information, don't use that track
+      }
+    }
+
     if (fTrackCutsProton->isSelected(fTrack)) {
       SelectedProtons.push_back(*fTrack);
     }
@@ -799,11 +825,11 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::ve
 
         bool HasCommonAncestor = CommonAncestors(*iPart1, *iPart2);
 
-
+        bool HasCommonMotherResonance = true; 
         if(HasCommonAncestor && fRemoveMCResonances){
-          bool HasCommenMotherResonance = CommonMotherResonance(*iPart1, *iPart2);
-          if(HasCommenMotherResonance){ 
-            continue; 
+          HasCommonMotherResonance = CommonMotherResonance(*iPart1, *iPart2);
+          if(HasCommonMotherResonance){
+            continue;
           }
         }
 
@@ -1087,28 +1113,30 @@ bool AliAnalysisTaskNanoFemtoProtonPion::CommonMotherResonance(AliFemtoDreamBase
     AliFatal("AliAnalysisTaskNanoFemtoProtonPion::CommonMotherResonance: The two particle should have a common mother"); 
   }
 
-  if(part1.GetMotherPDG() != part2.GetMotherPDG()) {
-    AliFatal("AliAnalysisTaskNanoFemtoProtonPion::CommonMotherResonance: PDG of mother not consistent"); 
+  if(part1.GetMotherPDG() != part2.GetMotherPDG()) { //the ID is the same, but the PDG different -> Two tracks from same hard scattering but different resonances.
+    return false; 
   }
+
+  bool HasCommonMotherResonance = true;
+  HasCommonMotherResonance = IsResonance(part1.GetMotherPDG()); //the resonance is of the type that should be removed 
+  return HasCommonMotherResonance; 
+}
+
+//==================================================================================================================================================
+
+bool AliAnalysisTaskNanoFemtoProtonPion::IsResonance(int PDG) {
 
   int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
   int ProtonPion[12] = {2224, 32224, 2222, 12224, 12222, 2226, 22222, 22224, 2228, 12226, 9902228, 99022212};
 
   // When the element is not found, std::find returns the end of the range
-  if ( std::find(std::begin(ProtonAntiPion), std::end(ProtonAntiPion), abs(part1.GetMotherPDG())) != std::end(ProtonAntiPion) ) {
+  if ( std::find(std::begin(ProtonAntiPion), std::end(ProtonAntiPion), abs(PDG)) != std::end(ProtonAntiPion) ) {
+    return true;
+  } else if ( std::find(std::begin(ProtonPion), std::end(ProtonPion), abs(PDG)) != std::end(ProtonPion) ) {
     return true;
   } else {
     return false;
   }
-
-  if ( std::find(std::begin(ProtonPion), std::end(ProtonPion), abs(part1.GetMotherPDG())) != std::end(ProtonPion) ) {
-    return true;
-  } else {
-    return false;
-  }
-
-  return true; //in case something weird happens, just ignore the pair
-
 }
 //==================================================================================================================================================
 

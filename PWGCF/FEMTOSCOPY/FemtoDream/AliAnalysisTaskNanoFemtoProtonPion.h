@@ -42,6 +42,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   void SetMixedEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *PartContainer);
   bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2); //Stolen from AliFemtoDreamHigherPairMath
   bool CommonMotherResonance(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2); //check if two particles are from a certain resonance 
+  bool IsResonance(int PDG); 
 
   double GetQOutLCMS(const TLorentzVector Particle1, const TLorentzVector Particle2);
   double GetQSideLCMS(const TLorentzVector Particle1, const TLorentzVector Particle2);
@@ -140,6 +141,6 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   TList *fMixedEventDeltaEtaDeltaPhi_List;
   TH2F **fMixedEventPhiTheta;
 
-  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 5) 
+  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 6) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFEMTOPROTONPION_H_ */
