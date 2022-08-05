@@ -326,9 +326,12 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
             }
     } 
     else {
-            nn = 10;
-            for (int i = 0; i <= 10; i++) {
-                xbins[i] = i * 10;
+            nn = 12;
+			for (int i = 0; i <= 4; i++) {
+                xbins[i] = i * 5;
+            }
+            for (int i = 5; i <= 12; i++) {
+                xbins[i] = (i-2) * 10;
             }
     }
 
