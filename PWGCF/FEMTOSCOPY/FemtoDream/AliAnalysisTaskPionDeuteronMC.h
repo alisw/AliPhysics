@@ -49,8 +49,8 @@ private:
     float fP0;                 ///< Coalescence momentum p0
     unsigned int fMixingDepth; /// Depth of the mixing buffer
 
-    TArrayF fPrimaryPtBins;  ///<  Transverse momentum bins
-    TArrayF fKstarBins;      ///<  realtive momentum bins
+    TArrayF fPrimaryPtBins; ///<  Transverse momentum bins
+    TArrayF fKstarBins;     ///<  realtive momentum bins
 
     TH1F *fNormalisationHist;   //!<! Event selection
     TH1F *hSourceSize;          //!<! distribution of the source radius
@@ -59,6 +59,8 @@ private:
     TH1F *hNeutronSpectrum[2];  //!<! neutron trasnverse momentum spectrum {0: positive, 1: negative}
     TH1F *hDeuteronSpectrum[2]; //!<! deuteron trasnverse momentum spectrum {0: positive, 1: negative}
     TH1F *hDeltaP;              //!<! delta-P distribution
+
+    TH2F *hNparticles[2]; //!<! number of pions and deuterons per event {0: positive, 1: negative}
 
     TH1F *hSameEventKstarLS[2]; //!<! same-event k* distribution (like-sign) {0: positive, 1: negative}
     TH1F *hSameEventKstarUS[2]; //!<! same-event k* distribution (unlike-sign) {0: positive pion, 1: negative pion}
@@ -77,7 +79,7 @@ private:
     float GetKstar(TLorentzVector &p1, TLorentzVector &p2);                                                               ///< return relative momentum in the rest frame of the pair
     void FillMixedEvent(std::vector<TLorentzVector> &vec, CustomQueue<std::vector<TLorentzVector>> &buffer, TH1F *histo); ///< fill mixed event distribution
 
-    ClassDef(AliAnalysisTaskPionDeuteronMC, 2);
+    ClassDef(AliAnalysisTaskPionDeuteronMC, 3);
 };
 //____________________________________________________________________________________________________________________________________
 
