@@ -113,7 +113,6 @@ AliAnalysisTaskSE(),
   fMultEvV0MEqual(0.),
   fCentEvV0M(0.),
   fzVtx(0.),
-  fSoftPiCut(kTRUE),
   fMEAxisThresh(kFALSE),
   fKaonCorr(kFALSE),
   fSignLeft_LowPt(0),
@@ -199,7 +198,6 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fMultEvV0MEqual(0.),
   fCentEvV0M(0.),
   fzVtx(0.),
-  fSoftPiCut(kTRUE),
   fMEAxisThresh(kFALSE),
   fKaonCorr(kFALSE),
   fSignLeft_LowPt(0),
@@ -309,7 +307,7 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fMultEvV0MEqual(source.fMultEvV0MEqual),
   fCentEvV0M(source.fCentEvV0M),
   fzVtx(source.fzVtx),
-  fSoftPiCut(source.fSoftPiCut),
+//  fSoftPiCut(source.fSoftPiCut),
   fMEAxisThresh(source.fMEAxisThresh),
   fKaonCorr(source.fKaonCorr),
   fSignLeft_LowPt(source.fSignLeft_LowPt),
@@ -448,7 +446,6 @@ AliAnalysisTaskSELambdacCorrelations& AliAnalysisTaskSELambdacCorrelations::oper
   fMultEvV0MEqual = orig.fMultEvV0MEqual;
   fCentEvV0M = orig.fCentEvV0M;
   fzVtx = orig.fzVtx;
-  fSoftPiCut = orig.fSoftPiCut;
   fMEAxisThresh = orig.fMEAxisThresh;
   fKaonCorr = orig.fKaonCorr;
   fSignLeft_LowPt = orig.fSignLeft_LowPt;
@@ -572,10 +569,10 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
   fCorrelatorKc->SetUseReco(fRecoTr);
   fCorrelatorK0->SetUseReco(fRecoTr);
   fCorrelatorKc->SetPIDmode(2); //switch for K+/- PID option
-  if(fMixing && fSoftPiCut) {
-    fCorrelatorTr->SetStoreInfoSoftPiME(kTRUE);
-    fCorrelatorKc->SetStoreInfoSoftPiME(kTRUE);
-  }
+ // if(fMixing && fSoftPiCut) {
+  //  fCorrelatorTr->SetStoreInfoSoftPiME(kTRUE);
+  //  fCorrelatorKc->SetStoreInfoSoftPiME(kTRUE);
+ // }
   Bool_t pooldefTr = fCorrelatorTr->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
   Bool_t pooldefKc = fCorrelatorKc->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
   Bool_t pooldefK0 = fCorrelatorK0->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
@@ -1993,7 +1990,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
  
     //both for SE and for ME
     //D* feeddown pions rejection histos
-    namePlot = "hDstarPionsVsDmass_Bin"; namePlot+=i;
+  /*  namePlot = "hDstarPionsVsDmass_Bin"; namePlot+=i;
     TH2F *hDstarPions = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs D inv mass; # Tracks",2,0.,2.,150,1.9864,2.5864);
     hDstarPions->GetXaxis()->SetBinLabel(1,"Not rejected");
     hDstarPions->GetXaxis()->SetBinLabel(2,"Rejected");
@@ -2006,7 +2003,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hDstarPions2->GetXaxis()->SetBinLabel(2,"Rejected");
     hDstarPions2->SetMinimum(0);
     fOutputStudy->Add(hDstarPions2); 
-
+*/
     if(!fFillTrees) {
       //ME filling control plots
       namePlot="hEvtsPerPool_"; namePlot+=i;
@@ -2516,8 +2513,8 @@ mLambdacbar = d->InvMassLcpiKp();
       AliReducedParticle* track = fCorrelatorTr->GetAssociatedParticle();
 
       if(!fMixing) {
-        Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
-        if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1]) continue; //discards daughters of candidate
+        Int_t idDaughs[3] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID(),((AliVTrack*)d->GetDaughter(2))->GetID()}; //IDs of daughters to be skipped
+        if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1] || track->GetID() == idDaughs[2]) continue; //discards daughters of candidate
       }
       if(track->Pt() < fPtThreshLow.at(ptbin) || track->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
 
@@ -2573,7 +2570,7 @@ mLambdacbar = d->InvMassLcpiKp();
           if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
           if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
           ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorTr->GetDeltaPhi());
-          if(fMixing) FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1,1./eff); //in ME events, fill the THnSparse under the softpi hypothesis
+          if(fMixing) FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1./eff); //in ME events, fill the THnSparse under the softpi hypothesis
     	  continue; 
         } else { //not a soft pion
           if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
@@ -2583,7 +2580,7 @@ mLambdacbar = d->InvMassLcpiKp();
       }
  */
 
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,0,1./eff); //fills for charged tracks
+      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1./eff); //fills for charged tracks
 
       if(!fMixing) N_Charg++;
 
@@ -2630,8 +2627,8 @@ mLambdacbar = d->InvMassLcpiKp();
       AliReducedParticle* kCharg = fCorrelatorKc->GetAssociatedParticle();
 
       if(!fMixing) {  
-        Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
-        if(kCharg->GetID() == idDaughs[0] || kCharg->GetID() == idDaughs[1]) continue; //discards daughters of candidate
+        Int_t idDaughs[3] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID(),((AliVTrack*)d->GetDaughter(2))->GetID()}; //IDs of daughters to be skipped
+        if(kCharg->GetID() == idDaughs[0] || kCharg->GetID() == idDaughs[1] || kCharg->GetID() == idDaughs[2]) continue; //discards daughters of candidate
       }
       if(kCharg->Pt() < fPtThreshLow.at(ptbin) || kCharg->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
   /*
@@ -2942,7 +2939,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
 }
 */
 //________________________________________________________________________
-void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Int_t softpiME, Double_t wg) {
+void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Double_t wg) {
   //
   //fills the THnSparse for correlations, calculating the variables
   //
@@ -3121,10 +3118,10 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
       fillSpPhiLambdac[3] = ptTrack;
       fillSpPhiLambdacbar[3] = ptTrack;
     }
-    if(softpiME==1) { //it's a softPi in the ME analysis! Fill it in the dedicated slice of ME THnSparse
-      fillSpPhiLambdac[4] = 1;
-      fillSpPhiLambdacbar[4] = 1;
-    }
+   // if(softpiME==1) { //it's a softPi in the ME analysis! Fill it in the dedicated slice of ME THnSparse
+    //  fillSpPhiLambdac[4] = 1;
+    //  fillSpPhiLambdacbar[4] = 1;
+   // }
 
     Bool_t allowLambdac = 0;
     Bool_t allowLambdacbar = 0;
@@ -3284,77 +3281,6 @@ Int_t AliAnalysisTaskSELambdacCorrelations::PtBinCorr(Double_t pt) const {
   return ptbin;
 }
 
-//---------------------------------------------------------------------------
-Bool_t AliAnalysisTaskSELambdacCorrelations::SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t opt, Int_t idArrayV0[][2]) const
-{
-  //
-  // Selection for K0 hypotheses
-  // options: 1 = selects mass invariant about 3 sigma inside the peak + threshold of 0.3 GeV
-  // 	      2 = no previous selections
-
-  if(!fCutsTracks->IsKZeroSelected(v0,vtx)) return kFALSE;
-
-  AliAODTrack *v0Daug1 = (AliAODTrack*)v0->GetDaughter(0);
-  if(!v0Daug1) {
-    AliWarning("Error in casting to AOD track. Not a standard AOD?");
-    return kFALSE;
-  }
-  AliAODTrack *v0Daug2 = (AliAODTrack*)v0->GetDaughter(1);
-  if(!v0Daug2) {
-    AliWarning("Error in casting to AOD track. Not a standard AOD?");
-    return kFALSE;
-  }
-
-  if(opt==1) { //additional cuts for correlations (V0 has to be closer than 3 sigma from K0 mass)
-    if(TMath::Abs(v0->MassK0Short()-0.4976) > 3*0.004) return kFALSE;
-  }
-
-  //This part removes double counting for swapped tracks!
-  Int_t i = 0;  //while loop (until the last-written entry pair of ID!
-  while(idArrayV0[i][0]!=-2 && idArrayV0[i][1]!=-2) {
-    if((v0Daug1->GetID()==idArrayV0[i][0] && v0Daug2->GetID()==idArrayV0[i][1])||
-       (v0Daug1->GetID()==idArrayV0[i][1] && v0Daug2->GetID()==idArrayV0[i][0])) return kFALSE;
-    i++;
-  }
-  idArrayV0[i][0]=v0Daug1->GetID();
-  idArrayV0[i][1]=v0Daug2->GetID();
-
-  return kTRUE;
-}
-
-//---------------------------------------------------------------------------
-Bool_t AliAnalysisTaskSELambdacCorrelations::IsSoftPion_MCKine(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* arrayMC) const
-{
-  //
-  // Removes soft pions in Kine
-
-  //Daughter removal in MCKine case
-  Bool_t isSoftPi = kFALSE;
-  Int_t labelLambdac = d->GetLabel();
-
-  Int_t mother = track->GetMother();
-  if(mother<0) return isSoftPi; //safety check
-
-  AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother)); //it's the mother of the track!
-  if(!mcMoth){
-    return isSoftPi;
-  }
-  if(TMath::Abs(mcMoth->GetPdgCode())==413 && mcMoth->GetNDaughters()==2) { //mother is D* with 2 daughs
-    Int_t labdau1 = mcMoth->GetDaughterLabel(0);
-    Int_t labdau2 = mcMoth->GetDaughterLabel(1);
-    AliAODMCParticle* dau1 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labdau1));
-    AliAODMCParticle* dau2 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labdau2));
-    if(!dau1 || !dau2) return isSoftPi; //safety check
-    if(dau1->GetLabel()==labelLambdac || dau2->GetLabel()==labelLambdac) { //one of the daughs is the Lambdac trigger
-      if((TMath::Abs(dau1->GetPdgCode())==4122 && TMath::Abs(dau2->GetPdgCode())==211)||(TMath::Abs(dau1->GetPdgCode())==211 && TMath::Abs(dau2->GetPdgCode())==4122)) {
-	isSoftPi = kTRUE; //ok, soft pion was found
-	return isSoftPi;
-      }
-    }
-  } 
-
-  return isSoftPi;
-}
 
 //____________________________________________________________________________
 TProfile* AliAnalysisTaskSELambdacCorrelations::GetEstimatorHistogram(const AliVEvent* event){
@@ -3551,7 +3477,7 @@ void AliAnalysisTaskSELambdacCorrelations::PrintBinsAndLimits() {
   cout << "--------------------------\n";
   cout << "ME thresh axis = "<<fMEAxisThresh<<"\n";
   cout << "--------------------------\n";
-  cout << "Soft Pi Cut = "<<fSoftPiCut<<"\n";
+  //cout << "Soft Pi Cut = "<<fSoftPiCut<<"\n";
   cout << "--------------------------\n";
   cout << "Speed (1 SBL/SBR and eventually Sign bin) = "<<fSpeed<<"\n";
   cout << "--------------------------\n";
