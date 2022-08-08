@@ -2448,6 +2448,13 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTrigger=1;
       fINELgtZEROTrigger = kTRUE;
       break;
+    case 31: // PHI7, CaloFast, INEL>0 - v
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CPHI7-";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/CPHI7";
+      fINELgtZEROTrigger = kTRUE;
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
