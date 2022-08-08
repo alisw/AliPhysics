@@ -145,7 +145,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
   void                   LoadTrackEfficiencyFunction(const std::string & path, const std::string & name);
-  void                   SetTrackingEfficiencyFromYAML(std::string period = "" , std::string path = "$ALICE_PHYSICS/PWGJE/EMCALJetTasks/TrackEfficiencyConfiguration.yaml");
+  void                   SetArtificialTrackingEfficiencyFromYAML(std::string periodCent = "" , std::string path = "$ALICE_PHYSICS/PWGJE/EMCALJetTasks/TrackEfficiencyConfiguration.yaml");
 
   Bool_t                 IsLocked() const;
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
@@ -218,7 +218,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   TF1                   *fTrackEfficiencyFunction;///< Function that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
   TH1D                  *fTrackEfficiencyHistogram;///< Histogram that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
   Bool_t                 fApplyArtificialTrackingEfficiency; ///< Flag to apply artificial tracking efficiency
-  Bool_t                 fApplyTrackingEfficiencyFromHistogram; ///< Flag to apply tracking efficiency from histogram
   Bool_t                 fApplyQoverPtShift;      ///< Apply Q/pt shift
   TRandom3               fRandom;                 //!<! Random number generator for artificial tracking efficiency
   Bool_t                 fLocked;                 ///< true if lock is set
@@ -236,7 +235,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliFJWrapper           fFastJetWrapper;         //!<!fastjet wrapper
 
   static const Int_t     fgkConstIndexShift;      //!<!contituent index shift
-  PWG::Tools::AliYAMLConfiguration              fYAMLConfig; //!<!YAML config for tracking efficiency
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
@@ -249,7 +247,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTask, 30);
+  ClassDef(AliEmcalJetTask, 31);
   /// \endcond
 };
 #endif

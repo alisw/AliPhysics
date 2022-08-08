@@ -41,7 +41,6 @@
 #include <AliVEventHandler.h>
 #include <AliMultiInputEventHandler.h>
 
-#include "yaml-cpp/yaml.h"
 #include "AliTLorentzVector.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalParticle.h"
@@ -89,7 +88,6 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTrackEfficiencyFunction(nullptr),
   fTrackEfficiencyHistogram(nullptr),
   fApplyArtificialTrackingEfficiency(kFALSE),
-  fApplyTrackingEfficiencyFromHistogram(kFALSE),
   fApplyQoverPtShift(kFALSE),
   fRandom(0),
   fLocked(0),
@@ -103,7 +101,6 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fFillGhost(kFALSE),
   fJets(0),
   fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask"),
-  fYAMLConfig(),
   fClusterContainerIndexMap(),
   fParticleContainerIndexMap()
 {
@@ -134,7 +131,6 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fTrackEfficiencyFunction(nullptr),
   fTrackEfficiencyHistogram(nullptr),
   fApplyArtificialTrackingEfficiency(kFALSE),
-  fApplyTrackingEfficiencyFromHistogram(kFALSE),
   fApplyQoverPtShift(kFALSE),
   fRandom(0),
   fLocked(0),
@@ -148,7 +144,6 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fFillGhost(kFALSE),
   fJets(0),
   fFastJetWrapper(name,name),
-  fYAMLConfig(),
   fClusterContainerIndexMap(),
   fParticleContainerIndexMap()
 {
@@ -187,7 +182,6 @@ void AliEmcalJetTask::InitUtilities()
   TIter next(fUtilities);
   AliEmcalJetUtility *utility = 0;
   while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->Init();
-  fYAMLConfig.Initialize();
 }
 /**
  * This method is called before analyzing each event. It executes
@@ -281,8 +275,13 @@ Int_t AliEmcalJetTask::FindJets()
       // Apply artificial track inefficiency, if supplied (either constant or pT-dependent)
       if (fApplyArtificialTrackingEfficiency) {
         if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
-          Double_t trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
-          if(fApplyTrackingEfficiencyFromHistogram) trackEfficiency -= (1. - fTrackEfficiencyHistogram->GetBinContent(fTrackEfficiencyHistogram->FindBin(it->first.Pt())));
+          Double_t trackEfficiency = 1.;
+          if(fTrackEfficiencyFunction!=nullptr) {
+            trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
+          }
+          if(fTrackEfficiencyHistogram!=nullptr) {
+            trackEfficiency -= (1. - fTrackEfficiencyHistogram->GetBinContent(fTrackEfficiencyHistogram->FindBin(it->first.Pt())));
+          }
           Double_t rnd = fRandom.Rndm();
           if (trackEfficiency < rnd) {
             AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
@@ -429,7 +428,7 @@ void AliEmcalJetTask::ExecOnce()
   // If a constant artificial track efficiency is supplied, create a TF1 that is constant in pT
   if (fTrackEfficiency < 1.) {
     // If a TF1 was already loaded, throw an error
-    if (fApplyArtificialTrackingEfficiency && !fApplyTrackingEfficiencyFromHistogram) {
+    if (fApplyArtificialTrackingEfficiency && fTrackEfficiencyHistogram==nullptr) {
       AliError(Form("%s: fTrackEfficiencyFunction was already loaded! Do not apply multiple artificial track efficiencies.", GetName()));
     }
     
@@ -1072,10 +1071,11 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
  * @param name Name of the TF1
  */
 
-void AliEmcalJetTask::SetTrackingEfficiencyFromYAML(std::string period , std::string path ) {
+void AliEmcalJetTask::SetArtificialTrackingEfficiencyFromYAML(std::string periodCent, std::string path ) {
 
-  AliInfoStream() << "Get pT-dependent Tracking efficiency from" << path << "\".\n";
+  AliInfoStream() << "Get pT-dependent Tracking efficiency from" << path << " for period " << periodCent << "\".\n";
   
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig; 
   int addedConfig = fYAMLConfig.AddConfiguration(path, "yamlConfig");
   if (addedConfig < 0) {
     AliFatal(Form("YAML Configuration in set path %s not found!",path.c_str()));
@@ -1085,28 +1085,33 @@ void AliEmcalJetTask::SetTrackingEfficiencyFromYAML(std::string period , std::st
   std::vector <Double_t> trackingUncertainty;
   bool res = fYAMLConfig.GetProperty("ptBinning", ptBinning, false);
   Int_t nPtBins = ptBinning.size()-1;
-  double* aptBinning = &ptBinning[0];
+  double* aptBinning = ptBinning.data();
 
-  TString sPeriod(period);
+  TObjArray *sPeriodCentArray = TString(periodCent).Tokenize("_");
+  TString sPeriod = sPeriodCentArray->At(0)->GetName();
+  TString sCent = "";
+  Bool_t isCentrality = kFALSE;
+  if(sPeriodCentArray->GetEntries()==3) {
+    sCent = Form("%s_%s",sPeriodCentArray->At(1)->GetName(),sPeriodCentArray->At(2)->GetName());
+    isCentrality = kTRUE;
+  }
+  std::string period = std::string(sPeriod.Data());
+  std::string cent = std::string(sCent.Data());
 
-  if(sPeriod=="LHC18q_010")       res = fYAMLConfig.GetProperty({"leadLead","LHC18q","central"},trackingUncertainty, false);
-  else if(sPeriod=="LHC18q_3050") res = fYAMLConfig.GetProperty({"leadLead","LHC18q","semiCentral"},trackingUncertainty, false);
-  else if(sPeriod=="LHC18r_010")  res = fYAMLConfig.GetProperty({"leadLead","LHC18r","central"},trackingUncertainty, false);
-  else if(sPeriod=="LHC18r_3050") res = fYAMLConfig.GetProperty({"leadLead","LHC18r","semiCentral"},trackingUncertainty, false);
-  else {
-    AliFatal("Setting tracking efficiency period but the period selected is not implemented at present"); 
+  if(isCentrality) res = fYAMLConfig.GetProperty({period,cent},trackingUncertainty, false);
+  else             res = fYAMLConfig.GetProperty(period,trackingUncertainty, false);
+  if(!res){
+    AliFatal(Form("Setting tracking efficiency period but the period %s and centrality %s selected is not implemented at present",period.c_str(),cent.c_str())); 
   }
 
   fTrackEfficiencyHistogram = new TH1D("fTrackEfficiencyHistogram","h",nPtBins,aptBinning);
 
-  AliInfoStream() << "Setting pT-dependent uncertainty" << "\n";
   for(Int_t i=0;i<nPtBins;i++) {
     fTrackEfficiencyHistogram->SetBinContent(i+1,trackingUncertainty.at(i));
-    AliInfoStream() << "pT " << ptBinning.at(i) << " - " << ptBinning.at(i+1) << " track uncertainty: "<< trackingUncertainty.at(i) << "\n";
+    AliDebug(2,Form("pT %f - %f \t track uncertainty: %f", ptBinning.at(i), ptBinning.at(i+1), trackingUncertainty.at(i)));
   }
 
   fApplyArtificialTrackingEfficiency = kTRUE;
-  fApplyTrackingEfficiencyFromHistogram = kTRUE;
 
 }
 
