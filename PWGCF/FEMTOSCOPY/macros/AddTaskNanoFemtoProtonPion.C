@@ -12,11 +12,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     TString trigger = "kHM", //3
     bool fullBlastQA = true,//4
     bool UseSphericityCut = false,//5
-    bool UseFemtoPionCuts = true,//6
-    bool DoPairCleaning = false, //7
-    const char *cutVariation = "0", //8
-    bool DoAncestors = false, //9
-    bool RemoveMCResonances = true //10 
+    float SphericityMinPt = 0.5, //6
+    bool UseFemtoPionCuts = true,//7
+    bool DoPairCleaning = false, //8
+    const char *cutVariation = "0", //9
+    bool DoAncestors = false, //10
+    bool RemoveMCResonances = true //11 
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -36,7 +37,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
 
   if (UseSphericityCut){
     float SpherDown = 0.7;
-    evtCuts->SetSphericityCuts(SpherDown, 1.0); 
+    evtCuts->SetSphericityCuts(SpherDown, 1.0, SphericityMinPt); 
   }
 
 
