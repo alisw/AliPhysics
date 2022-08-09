@@ -101,7 +101,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		// virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		// virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
-
+		virtual void   SetAnaType(TString type) {anaType = type;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
 		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
