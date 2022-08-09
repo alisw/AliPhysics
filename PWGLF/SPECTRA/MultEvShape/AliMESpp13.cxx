@@ -169,6 +169,12 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     return;
   }
 
+    if (!fEventCutsQA.AcceptEvent(ev))
+  {
+    PostData(kQA, fHistosQA);
+    return;
+  }
+
   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!fESD)
   {
@@ -257,8 +263,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // pile-up selection
   if (fESD->IsPileupFromSPDInMultBins())
     fEvInfo->SetPileUp();
-
-  noEvents++;
 
   // multiplicity
   AliESDtrackCuts *tc(NULL);
@@ -421,12 +425,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                         // << "PhiLP=" << fPhiLP
                         // << "nTracks=" << nTracks
                         << "\n";
-  }
-
-  if (!fEventCutsQA.AcceptEvent(ev))
-  {
-    PostData(kQA, fHistosQA);
-    return;
   }
   fTracksIO->Clear("C");
   PostData(kEventTree + 1, fEventTree);
