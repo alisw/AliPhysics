@@ -40,10 +40,12 @@ AliAnalysisTaskPionDeuteronMC::AliAnalysisTaskPionDeuteronMC(const char *name)
       hDeuteronSpectrum{nullptr},
       hDeltaP{nullptr},
       hNparticles{nullptr},
-      hSameEventKstarLS{nullptr},
-      hSameEventKstarUS{nullptr},
-      hMixedEventKstarLS{nullptr},
-      hMixedEventKstarUS{nullptr},
+      hSameEventPionDeuteronKstarLS{nullptr},
+      hSameEventPionDeuteronKstarUS{nullptr},
+      hMixedEventPionDeuteronKstarLS{nullptr},
+      hMixedEventPionDeuteronKstarUS{nullptr},
+      fMixingBufferProtons(),
+      fMixingBufferAntiprotons(),
       fMixingBufferDeuterons(),
       fMixingBufferAntideuterons()
 {
@@ -52,10 +54,14 @@ AliAnalysisTaskPionDeuteronMC::AliAnalysisTaskPionDeuteronMC(const char *name)
   fMultiplicityArray = {0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100};
   fNMultiplicityBins = (int)fMultiplicityArray.size();
   int BufferSize = fNZvtxBins * fNMultiplicityBins;
+  fMixingBufferProtons.reserve(BufferSize);
+  fMixingBufferAntiprotons.reserve(BufferSize);
   fMixingBufferDeuterons.reserve(BufferSize);
   fMixingBufferAntideuterons.reserve(BufferSize);
   for (int i = 0; i < BufferSize; i++)
   {
+    fMixingBufferProtons.push_back(CustomQueue<std::vector<TLorentzVector>>(fMixingDepth));
+    fMixingBufferAntiprotons.push_back(CustomQueue<std::vector<TLorentzVector>>(fMixingDepth));
     fMixingBufferDeuterons.push_back(CustomQueue<std::vector<TLorentzVector>>(fMixingDepth));
     fMixingBufferAntideuterons.push_back(CustomQueue<std::vector<TLorentzVector>>(fMixingDepth));
   }
@@ -109,14 +115,22 @@ void AliAnalysisTaskPionDeuteronMC::UserCreateOutputObjects()
     fOutputList->Add(hDeuteronSpectrum[iCharge]);
     hNparticles[iCharge] = new TH2F(Form("h%sNparticles", charge_label[iCharge]), ";N_{#pi};N_{d}", 51, -0.5, 50.5, 4, -0.5, 3.5);
     fOutputList->Add(hNparticles[iCharge]);
-    hSameEventKstarLS[iCharge] = new TH1F(Form("h%sSameEventKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
-    fOutputList->Add(hSameEventKstarLS[iCharge]);
-    hSameEventKstarUS[iCharge] = new TH1F(Form("h%sSameEventKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
-    fOutputList->Add(hSameEventKstarUS[iCharge]);
-    hMixedEventKstarLS[iCharge] = new TH1F(Form("h%sMixedEventKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
-    fOutputList->Add(hMixedEventKstarLS[iCharge]);
-    hMixedEventKstarUS[iCharge] = new TH1F(Form("h%sMixedEventKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
-    fOutputList->Add(hMixedEventKstarUS[iCharge]);
+    hSameEventPionProtonKstarLS[iCharge] = new TH1F(Form("h%sSameEventPionProtonKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
+    fOutputList->Add(hSameEventPionProtonKstarLS[iCharge]);
+    hSameEventPionProtonKstarUS[iCharge] = new TH1F(Form("h%sSameEventPionProtonKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
+    fOutputList->Add(hSameEventPionProtonKstarUS[iCharge]);
+    hMixedEventPionProtonKstarLS[iCharge] = new TH1F(Form("h%sMixedEventPionProtonKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
+    fOutputList->Add(hMixedEventPionProtonKstarLS[iCharge]);
+    hMixedEventPionProtonKstarUS[iCharge] = new TH1F(Form("h%sMixedEventPionProtonKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
+    fOutputList->Add(hMixedEventPionProtonKstarUS[iCharge]);
+    hSameEventPionDeuteronKstarLS[iCharge] = new TH1F(Form("h%sSameEventPionDeuteronKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
+    fOutputList->Add(hSameEventPionDeuteronKstarLS[iCharge]);
+    hSameEventPionDeuteronKstarUS[iCharge] = new TH1F(Form("h%sSameEventPionDeuteronKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
+    fOutputList->Add(hSameEventPionDeuteronKstarUS[iCharge]);
+    hMixedEventPionDeuteronKstarLS[iCharge] = new TH1F(Form("h%sMixedEventPionDeuteronKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
+    fOutputList->Add(hMixedEventPionDeuteronKstarLS[iCharge]);
+    hMixedEventPionDeuteronKstarUS[iCharge] = new TH1F(Form("h%sMixedEventPionDeuteronKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
+    fOutputList->Add(hMixedEventPionDeuteronKstarUS[iCharge]);
   }
 
   // DeltaP Distribution
@@ -254,25 +268,41 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
   // same event
   for (auto &pion : v_pospion)
   {
+    for (auto &proton : v_proton)
+    {
+      hSameEventPionProtonKstarLS[0]->Fill(GetKstar(pion, proton));
+    }
+    for (auto &antiproton : v_antiproton)
+    {
+      hSameEventPionProtonKstarUS[0]->Fill(GetKstar(pion, antiproton));
+    }
     for (auto &deuteron : v_deuteron)
     {
-      hSameEventKstarLS[0]->Fill(GetKstar(pion, deuteron));
+      hSameEventPionDeuteronKstarLS[0]->Fill(GetKstar(pion, deuteron));
     }
     for (auto &antideuteron : v_antideuteron)
     {
-      hSameEventKstarUS[0]->Fill(GetKstar(pion, antideuteron));
+      hSameEventPionDeuteronKstarUS[0]->Fill(GetKstar(pion, antideuteron));
     }
   }
 
   for (auto &pion : v_negpion)
   {
+    for (auto &proton : v_proton)
+    {
+      hSameEventPionProtonKstarLS[1]->Fill(GetKstar(pion, proton));
+    }
+    for (auto &antiproton : v_antiproton)
+    {
+      hSameEventPionProtonKstarUS[1]->Fill(GetKstar(pion, antiproton));
+    }
     for (auto &antideuteron : v_antideuteron)
     {
-      hSameEventKstarLS[1]->Fill(GetKstar(pion, antideuteron));
+      hSameEventPionDeuteronKstarLS[1]->Fill(GetKstar(pion, antideuteron));
     }
     for (auto &deuteron : v_deuteron)
     {
-      hSameEventKstarUS[1]->Fill(GetKstar(pion, deuteron));
+      hSameEventPionDeuteronKstarUS[1]->Fill(GetKstar(pion, deuteron));
     }
   }
 
@@ -283,18 +313,30 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
 
   if (index >= 0)
   {
-    // match pions with deuterons in the buffer
+    // match pions with particles in the buffer
     if (v_pospion.size() > 0)
     {
-      FillMixedEvent(v_pospion, fMixingBufferDeuterons[index], hMixedEventKstarLS[0]);
-      FillMixedEvent(v_pospion, fMixingBufferAntideuterons[index], hMixedEventKstarUS[0]);
+      FillMixedEvent(v_pospion, fMixingBufferProtons[index], hMixedEventPionProtonKstarLS[0]);
+      FillMixedEvent(v_pospion, fMixingBufferAntiprotons[index], hMixedEventPionProtonKstarUS[0]);
+      FillMixedEvent(v_pospion, fMixingBufferDeuterons[index], hMixedEventPionDeuteronKstarLS[0]);
+      FillMixedEvent(v_pospion, fMixingBufferAntideuterons[index], hMixedEventPionDeuteronKstarUS[0]);
     }
     if (v_negpion.size() > 0)
     {
-      FillMixedEvent(v_negpion, fMixingBufferDeuterons[index], hMixedEventKstarUS[1]);
-      FillMixedEvent(v_negpion, fMixingBufferAntideuterons[index], hMixedEventKstarLS[1]);
+      FillMixedEvent(v_negpion, fMixingBufferProtons[index], hMixedEventPionProtonKstarUS[1]);
+      FillMixedEvent(v_negpion, fMixingBufferAntiprotons[index], hMixedEventPionProtonKstarLS[1]);
+      FillMixedEvent(v_negpion, fMixingBufferDeuterons[index], hMixedEventPionDeuteronKstarUS[1]);
+      FillMixedEvent(v_negpion, fMixingBufferAntideuterons[index], hMixedEventPionDeuteronKstarLS[1]);
     }
-    // update deuteron buffer
+    // update particle buffer
+    if (v_proton.size() > 0)
+    {
+      fMixingBufferProtons[index].Fill(v_proton);
+    }
+    if (v_antiproton.size() > 0)
+    {
+      fMixingBufferAntiprotons[index].Fill(v_antiproton);
+    }
     if (v_deuteron.size() > 0)
     {
       fMixingBufferDeuterons[index].Fill(v_deuteron);
