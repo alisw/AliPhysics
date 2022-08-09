@@ -340,49 +340,51 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     new ((*fTracksIO)[i]) AliMEStrackInfo(*t);
   }
   Double_t dca[2] = {0.};
-  Double_t fPassDCA(0.), fPt(0.), fEta(0.), fPhi(0.), fCharge(0.), fPhiLP(0.), fPtLP(0.), fEtaLP(0.), fDeltaPhi(0.), fDeltaEta(0.), fDCAxy(0.), fDCAz(0.), fPx(0.), fPy(0.), fPxLP(0.), fPyLP(0.);
+  Double_t fPhiLP(0.), fPtLP(0.), fEtaLP(0.), fPxLP(0.), fPyLP(0.);
+  vector<Double_t> fPt, fEta, fPhi, fCharge, fDeltaPhi, fDeltaEta, fPx, fPy, fDCAxy, fDCAz, fPassDCA;
   sort.QSortTracks(*fTracksIO, 0, nTracks);
-  for (int i(0); i < nTracks; i++)
+  // cout << "entries Rec " << fTracksIO->GetEntries() << endl;
+  for (int i(0); i < fTracksIO->GetEntries(); i++)
   {
     AliMEStrackInfo *t = (AliMEStrackInfo *)(*fTracksIO)[i];
-    if (TMath::Abs(t->Eta()) > 0.8 && t->Pt() < 0.15)
-      continue;
-    fCharge = t->Charge();
-    fEta = t->Eta();
-    fPhi = t->Phi();
-    fPt = t->Pt();
-    fPx = t->Px();
-    fPy = t->Py();
-    // cout << "pT_Rec" << fPt << endl;
+    // if (TMath::Abs(t->Eta()) > 0.8 && t->Pt() < 0.15)
+    //   continue;
+    fCharge.push_back(t->Charge());
+    fEta.push_back(t->Eta());
+    fPhi.push_back(t->Phi());
+    fPt.push_back(t->Pt());
+    fPx.push_back(t->Px());
+    fPy.push_back(t->Py());
+    // cout << "pT_Rec" << fPt.at(i) << endl;
     if (i == 0)
     {
-      fPtLP = fPt;
-      fEtaLP = fEta;
-      fPxLP = fPx;
-      fPyLP = fPy;
+      fPtLP = fPt.at(i);
+      fEtaLP = fEta.at(i);
+      fPxLP = fPx.at(i);
+      fPyLP = fPy.at(i);
       fPhiLP = TMath::ATan2(fPyLP, fPxLP);
       fPhiLP = (fPhiLP > 0) ? fPhiLP : (fPhiLP + TMath::TwoPi()); // if negative add 2*pi
     }
     // printf("pt[%i]=%f; pT(LP)=%f\n", i, fPt, fPtLP);
-    fDeltaPhi = deltaPhi.ComputeDeltaPhi(fPhi, fPhiLP);
+    fDeltaPhi.push_back(deltaPhi.ComputeDeltaPhi(fPhi.at(i), fPhiLP));
     if (i == 0)
     {
-      fDeltaEta = -9999;
+      fDeltaEta.push_back(-9999);
     }
     else
     {
-      fDeltaEta = fEtaLP - fEta;
+      fDeltaEta.push_back(fEtaLP - fEta.at(i));
     }
     t->GetDCA(dca);
-    fDCAxy = dca[0];
-    fDCAz = dca[1];
-    if (TMath::Abs(fDCAxy) < (0.0182 + 0.0350 / TMath::Power(fPt, 1.01)))
+    fDCAxy.push_back(dca[0]);
+    fDCAz.push_back(dca[1]);
+    if (TMath::Abs(fDCAxy.at(i)) < (0.0182 + 0.0350 / TMath::Power(fPt.at(i), 1.01)))
     {
-      fPassDCA = 1.;
+      fPassDCA.push_back(1.);
     }
     else
     {
-      fPassDCA = 0.;
+      fPassDCA.push_back(0.);
     }
     if (!fTreeSRedirector)
       return;
@@ -391,14 +393,14 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       (*fTreeSRedirector) << "trk"
                           << "run=" << run
                           << "event=" << event
-                          << "Pt=" << fPt
+                          << "Pt=" << fPt.at(i)
                           // << "Charge=" << fCharge
-                          << "Eta=" << fEta
+                          << "Eta=" << fEta.at(i)
                           // << "Phi=" << fPhi
                           // << "DeltaPhi=" << fDeltaPhi
                           // << "DeltaEta=" << fDeltaEta
-                          << "DCAxy=" << fDCAxy
-                          << "PassDCA=" << fPassDCA
+                          << "DCAxy=" << fDCAxy.at(i)
+                          << "PassDCA=" << fPassDCA.at(i)
                           << "\n";
     }
   }
@@ -591,77 +593,77 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   }
   // cout << "!!!!!! fTracksIO entries  = " << fTracksIO->GetEntries() << endl;
   // cout << "!!!!!! fMCtracksIO entries  = " << fMCtracksIO->GetEntries() << endl;
-
-  Double_t fPt_MC(0.), fEta_MC(0.), fPhi_MC(0.), fCharge_MC(0.), fPhiLP_MC(0.), fPtLP_MC(0.), fEtaLP_MC(0.), fDeltaPhi_MC(0.), fDeltaEta_MC(0.), fPrimary_MC(0.), fSecondary_MC(0.), fMaterial_MC(0.), fPx_MC(0.), fPy_MC(0.), fPxLP_MC(0.), fPyLP_MC(0.);
-  for (int i(0); i < nTracks; i++)
+  //
+  Double_t fPhiLP_MC(0.), fPtLP_MC(0.), fEtaLP_MC(0.), fPxLP_MC(0.), fPyLP_MC(0.);
+  vector<Double_t> fPt_MC, fEta_MC, fPhi_MC, fCharge_MC, fDeltaPhi_MC, fDeltaEta_MC, fPrimary_MC, fSecondary_MC, fMaterial_MC, fPx_MC, fPy_MC;
+  for (int i(0); i < fMCtracksIO->GetEntries(); i++)
   {
     AliMEStrackInfo *tMC = (AliMEStrackInfo *)(*fMCtracksIO)[i];
-    if (TMath::Abs(tMC->Eta()) > 0.8 && tMC->Pt() < 0.15)
-      continue;
-    fPt_MC = tMC->Pt();
-    // cout << "pT_Gen matched" << fPt_MC << endl;
-    fCharge_MC = tMC->Charge();
-    fEta_MC = tMC->Eta();
-    fPhi_MC = tMC->Phi();
-    fPx_MC = tMC->Px();
-    fPy_MC = tMC->Py();
+    fPt_MC.push_back(tMC->Pt());
+    // cout << "pT_Gen matched" << fPt_MC.at(i) << endl;
+    fCharge_MC.push_back(tMC->Charge());
+    fEta_MC.push_back(tMC->Eta());
+    fPhi_MC.push_back(tMC->Phi());
+    fPx_MC.push_back(tMC->Px());
+    fPy_MC.push_back(tMC->Py());
     if (i == 0)
     {
-      fPtLP_MC = fPt_MC;
-      fEtaLP_MC = fEta_MC;
-      fPxLP_MC = fPx_MC;
-      fPyLP_MC = fPy_MC;
+      fPtLP_MC = fPt_MC.at(i);
+      fEtaLP_MC = fEta_MC.at(i);
+      fPxLP_MC = fPx_MC.at(i);
+      fPyLP_MC = fPy_MC.at(i);
       fPhiLP_MC = TMath::ATan2(fPyLP_MC, fPxLP_MC);
       fPhiLP_MC = (fPhiLP_MC > 0) ? fPhiLP_MC : (fPhiLP_MC + TMath::TwoPi());
     }
-    // printf("pT(%i) = %f\n", i, fPt_MC);
-    fDeltaPhi_MC = deltaPhi.ComputeDeltaPhi(fPhi_MC, fPhiLP_MC);
+    // printf("pT(%i) = %f\n", i, fPt_MC.at(i));
+    fDeltaPhi_MC.push_back(deltaPhi.ComputeDeltaPhi(fPhi_MC.at(i), fPhiLP_MC));
     if (i == 0)
     {
-      fDeltaEta_MC = -9999;
+      fDeltaEta_MC.push_back(-9999);
     }
     else
     {
-      fDeltaEta_MC = fEtaLP_MC - fEta_MC;
+      fDeltaEta_MC.push_back(fEtaLP_MC - fEta_MC.at(i));
     }
     if (tMC->HasOrigin(AliMEStrackInfo::kPrimary))
     {
-      fPrimary_MC = 1.;
-      fSecondary_MC = 0.;
-      fMaterial_MC = 0.;
+      fPrimary_MC.push_back(1.);
+      fSecondary_MC.push_back(0.);
+      fMaterial_MC.push_back(0.);
     }
     else if (tMC->HasOrigin(AliMEStrackInfo::kSecondary))
     {
-      fPrimary_MC = 0.;
-      fSecondary_MC = 1.;
-      fMaterial_MC = 0.;
+      fPrimary_MC.push_back(0.);
+      fSecondary_MC.push_back(1.);
+      fMaterial_MC.push_back(0.);
     }
-
     else if (tMC->HasOrigin(AliMEStrackInfo::kMaterial))
     {
-      fPrimary_MC = 0.;
-      fSecondary_MC = 0.;
-      fMaterial_MC = 1.;
+      fPrimary_MC.push_back(0.);
+      fSecondary_MC.push_back(0.);
+      fMaterial_MC.push_back(1.);
     }
+    if (fPrimary_MC.size() != fPt_MC.size() || fSecondary_MC.size() != fPt_MC.size() || fMaterial_MC.size() != fPt_MC.size())
+      continue;
     if (!fTreeSRedirector)
       return;
     (*fTreeSRedirector) << "trk"
                         << "run=" << run
                         << "event=" << event
-                        << "Pt=" << fPt
-                        // << "Charge=" << fCharge
-                        << "Eta=" << fEta
-                        // << "Phi=" << fPhi
-                        // << "DeltaPhi=" << fDeltaPhi
-                        // << "DeltaEta=" << fDeltaEta
-                        << "DCAxy=" << fDCAxy
-                        << "PassDCA=" << fPassDCA
-                        << "Pt_MC=" << fPt_MC
-                        // << "Charge_MC=" << fCharge_MC
-                        << "Eta_MC=" << fEta_MC
-                        << "Primary_MC=" << fPrimary_MC
-                        << "Secondary_MC=" << fSecondary_MC
-                        << "Material_MC=" << fMaterial_MC
+                        << "Pt=" << fPt.at(i)
+                        // << "Charge=" << fCharge.at(i)
+                        << "Eta=" << fEta.at(i)
+                        // << "Phi=" << fPhi.at(i)
+                        // << "DeltaPhi=" << fDeltaPhi.at(i)
+                        // << "DeltaEta=" << fDeltaEta.at(i)
+                        << "DCAxy=" << fDCAxy.at(i)
+                        << "PassDCA=" << fPassDCA.at(i)
+                        << "Pt_MC=" << fPt_MC.at(i)
+                        // // // << "Charge_MC=" << fCharge_MC
+                        << "Eta_MC=" << fEta_MC.at(i)
+                        << "Primary_MC=" << fPrimary_MC.at(i)
+                        << "Secondary_MC=" << fSecondary_MC.at(i)
+                        << "Material_MC=" << fMaterial_MC.at(i)
                         // << "Phi_MC=" << fPhi_MC
                         // << "DeltaPhi_MC=" << fDeltaPhi_MC
                         // << "DeltaEta_MC=" << fDeltaEta_MC
@@ -690,15 +692,15 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                       // << "PhiLP_MC=" << fPhiLP_MC;
                       << "\n";
 
-  // cout << "Debug save " << fTracksIO->GetEntriesFast() << " MC " << fMCtracksIO->GetEntriesFast() << endl;
+  // // cout << "Debug save " << fTracksIO->GetEntriesFast() << " MC " << fMCtracksIO->GetEntriesFast() << endl;
   // for (int i = 0; i < fTracksIO->GetEntries(); i++)
   // {
-  //   std::cout << "REC: index" << i << "constructed at" << fTracksIO->ConstructedAt(i) << std::endl;
+  //   // std::cout << "REC: index" << i << "constructed at" << fTracksIO->ConstructedAt(i) << std::endl;
   //   // std::cout << "GEN: index" << i << "constructed at" << fMCtracksIO->ConstructedAt(i) << std::endl;
   // }
   // for (int i = 0; i < fMCtracksIO->GetEntries(); i++)
   // {
-  //   std::cout << "GEN: index" << i << "constructed at" << fMCtracksIO->ConstructedAt(i) << std::endl;
+  //   // std::cout << "GEN: index" << i << "constructed at" << fMCtracksIO->ConstructedAt(i) << std::endl;
   // }
   // printf("tracksIn %d tracksOut %d\n", fTracks->GetEntries(), fTracksIO->GetEntries());
   // printf("MCtracksIn %d MCtracksOut %d\n", fMCtracks->GetEntries(), fMCtracksIO->GetEntries());
@@ -741,7 +743,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     // if (!fTreeSRedirector)
     //   return;
     // (*fTreeSRedirector) << "genTrk"
-                           // << "run=" << run
+    // << "run=" << run
     //                     // << "Pt_Gen=" << fPt_Gen
     //                     // << "Charge_Gen=" << fCharge_Gen
     //                     // << "Eta_Gen=" << fEta_Gen
@@ -753,7 +755,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // if (!fTreeSRedirector)
   //   return;
   // (*fTreeSRedirector) << "ev"
-                         // << "run=" << run
+  // << "run=" << run
   //                     // << "nTracks_Gen=" << nTracks_MC;
   //                     // << "PtLP_Gen=" << fPtLP_Gen
   //                     // << "EtaLP_Gen=" << fEtaLP_Gen
@@ -794,7 +796,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     // if (!fTreeSRedirector)
     //   return;
     // (*fTreeSRedirector) << "missedTrk"
-                           // << "run=" << run
+    // << "run=" << run
     //                     // << "Pt_Miss=" << fPt_Miss
     //                     // << "Charge_Miss=" << fCharge_Miss
     //                     // << "Eta_Miss=" << fEta_Miss
@@ -806,7 +808,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // if (!fTreeSRedirector)
   //   return;
   // (*fTreeSRedirector) << "ev"
-                         // << "run=" << run
+  // << "run=" << run
   //                     // << "nTracks_Miss=" << nTracksMissed
   //                     // << "PtLP_Miss=" << fPtLP_Miss
   //                     // << "EtaLP_Miss=" << fEtaLP_Miss
@@ -818,7 +820,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   // printf("MCtracks missed %d\n", fMCtracksMissIO->GetEntries());
   // printf("Closure %d\n", fMCtracks->GetEntries() - fMCtracksMissIO->GetEntries() - fMCtracksIO->GetEntries());
 
-  if((fMCtracks->GetEntries() - fMCtracksMissIO->GetEntries() - fMCtracksIO->GetEntries())!=0)
+  if ((fMCtracks->GetEntries() - fMCtracksMissIO->GetEntries() - fMCtracksIO->GetEntries()) != 0)
   {
     AliError("the closure test for MC is not passed!");
   }
