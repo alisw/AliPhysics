@@ -720,6 +720,10 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
                 Double_t chargeAss = trackAss->Charge();
                 Double_t assEff = 1.0; // Efficiency
 
+		if (trackTrig->GetID() == trackAss->GetID()) {
+		  continue;
+		}
+
                 //..check if the tracks are the same
                 // Mingrui: I don't see Zuzana uses this
                 // if (trackTrig == trackAss) continue;
@@ -813,6 +817,10 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
                         Double_t etaAss = trackAss->Eta();
                         Double_t chargeAss = trackAss->Charge();
     
+		        if (trackTrig->GetID() == trackAss->GetID()) {
+		           continue;
+		        }
+
                         //..check if the tracks are the same
                         //
                         // if (trackTrig == trackAss) continue;
