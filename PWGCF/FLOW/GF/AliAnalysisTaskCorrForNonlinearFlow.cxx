@@ -733,7 +733,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 	        binscont[4] = ptTrig;
 	        binscont[5] = NtrksCounter;
 
-	        double fMergingCut = 0;
+	        double fMergingCut = 0.02;
 
 	        // If etaTrig  - etaAss < 0; Cut from Zuzana
 	        if(TMath::Abs(binscont[0]) < fMergingCut){
@@ -830,7 +830,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
        		        binscont[4] = ptTrig;
        		        binscont[5] = ptAss;
        
-       		        double fMergingCut = 0;
+       		        double fMergingCut = 0.02;
        
        		        // If etaTrig  - etaAss < 0; Cut from Zuzana
        		        if(TMath::Abs(binscont[0]) < fMergingCut){
