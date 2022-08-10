@@ -287,7 +287,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 1); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 2); // Analysis task
 };
 
 #endif

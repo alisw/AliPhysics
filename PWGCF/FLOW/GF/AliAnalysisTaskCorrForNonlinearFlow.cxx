@@ -720,6 +720,10 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
                 Double_t chargeAss = trackAss->Charge();
                 Double_t assEff = 1.0; // Efficiency
 
+		if (trackTrig->GetID() == trackAss->GetID()) {
+		  continue;
+		}
+
                 //..check if the tracks are the same
                 // Mingrui: I don't see Zuzana uses this
                 // if (trackTrig == trackAss) continue;
@@ -729,7 +733,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 	        binscont[4] = ptTrig;
 	        binscont[5] = NtrksCounter;
 
-	        double fMergingCut = 0;
+	        double fMergingCut = 0.02;
 
 	        // If etaTrig  - etaAss < 0; Cut from Zuzana
 	        if(TMath::Abs(binscont[0]) < fMergingCut){
@@ -813,6 +817,10 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
                         Double_t etaAss = trackAss->Eta();
                         Double_t chargeAss = trackAss->Charge();
     
+		        if (trackTrig->GetID() == trackAss->GetID()) {
+		           continue;
+		        }
+
                         //..check if the tracks are the same
                         //
                         // if (trackTrig == trackAss) continue;
@@ -822,7 +830,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
        		        binscont[4] = ptTrig;
        		        binscont[5] = ptAss;
        
-       		        double fMergingCut = 0;
+       		        double fMergingCut = 0.02;
        
        		        // If etaTrig  - etaAss < 0; Cut from Zuzana
        		        if(TMath::Abs(binscont[0]) < fMergingCut){
