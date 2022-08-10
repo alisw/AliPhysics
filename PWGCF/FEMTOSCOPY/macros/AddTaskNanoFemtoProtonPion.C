@@ -17,7 +17,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool DoPairCleaning = false, //8
     const char *cutVariation = "0", //9
     bool DoAncestors = false, //10
-    bool RemoveMCResonances = true //11 
+    bool RemoveMCResonances = true, //11 
+    bool RemoveMCResonanceDaughters = true //12
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -306,7 +307,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   task->SetRunPlotMult(true);
   task->SetRunPlotPhiTheta(fullBlastQA); 
   task->SetDoAncestors(DoAncestors); //Does not affect official femto part
-  task->SetRemoveMCResonances(RemoveMCResonances);
+  task->SetRemoveMCResonances(RemoveMCResonances, RemoveMCResonanceDaughters);
 
   mgr->AddTask(task);
 
