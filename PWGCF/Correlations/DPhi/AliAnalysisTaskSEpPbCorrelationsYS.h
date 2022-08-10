@@ -127,6 +127,7 @@ private:
   Double_t RangePhi2(Double_t DPhi);
   Int_t      ConvertRunNumber(Int_t run);
   Bool_t HasValidFMDYS(TH2D h);
+  Bool_t Goodruns(Int_t run);
   TString GetMCperiod(Int_t runnumber);
   
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};

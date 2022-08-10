@@ -328,13 +328,16 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 		// if all TOF cut(pt>0.3 add TOF) did not pass, also not pass this one
 	if(fInversePID){
 		if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP(),0.7)){
+			loose_imost = 999;
 			if( fOtherNsigmacut && RejectFakeP(track,track->P().Mag(), 0.7)){
-				loose_imost = 1;		
+				loose_imost = 0;		
 			}
 		}
 		// no pass strict PID but pass loose PID
-		if(imost==0 && loose_imost==1){
-			imost==4;
+		if(imost==0 && loose_imost==999){
+			imost = 4;
+		}else{
+			imost = 0;
 		}		
 	}
             }

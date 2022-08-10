@@ -154,9 +154,9 @@ public:
   void SetMinCentrality(int minCentrality = 0) { fMinCentrality = minCentrality; }
   void SetMaxCentrality(int maxCentrality = 90) { fMaxCentrality = maxCentrality; }
   void SetCtPreselection(double cut = 1.) { fCtPreselection = cut; }
-  void SetMaxCt(int maxCt = 40.) { fMaxCt = maxCt; }
-  void SetMinPt(int minPt = 0.5) { fMinPt = minPt; }
-  void SetMaxPt(int maxPt = 3.5) { fMaxPt = maxPt; }
+  void SetMaxCt(double maxCt = 40.) { fMaxCt = maxCt; }
+  void SetMinPt(double minPt = 0.5) { fMinPt = minPt; }
+  void SetMaxPt(double maxPt = 3.5) { fMaxPt = maxPt; }
   void SetRadiusPreselection(double cut = 3.) { fRadiusPreselection = cut; }
   void SetRadiusOverflowCut(double cut = 100.) { fRadiusOverflowCut = cut; }
   void SetTpcClV0PiPreselection(int cut = 70) { fTpcClV0PiPreselection = cut; }

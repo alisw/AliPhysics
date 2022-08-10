@@ -39,6 +39,7 @@ AliAnalysisTaskPionDeuteronMC::AliAnalysisTaskPionDeuteronMC(const char *name)
       hNeutronSpectrum{nullptr},
       hDeuteronSpectrum{nullptr},
       hDeltaP{nullptr},
+      hNparticles{nullptr},
       hSameEventKstarLS{nullptr},
       hSameEventKstarUS{nullptr},
       hMixedEventKstarLS{nullptr},
@@ -106,6 +107,8 @@ void AliAnalysisTaskPionDeuteronMC::UserCreateOutputObjects()
     fOutputList->Add(hNeutronSpectrum[iCharge]);
     hDeuteronSpectrum[iCharge] = new TH1F(Form("h%sDeuteronSpectrum", charge_label[iCharge]), ";#it{p} (GeV/#it{c});Entries", nPrimaryPtBins, primaryPtBins);
     fOutputList->Add(hDeuteronSpectrum[iCharge]);
+    hNparticles[iCharge] = new TH2F(Form("h%sNparticles", charge_label[iCharge]), ";N_{#pi};N_{d}", 51, -0.5, 50.5, 4, -0.5, 3.5);
+    fOutputList->Add(hNparticles[iCharge]);
     hSameEventKstarLS[iCharge] = new TH1F(Form("h%sSameEventKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
     fOutputList->Add(hSameEventKstarLS[iCharge]);
     hSameEventKstarUS[iCharge] = new TH1F(Form("h%sSameEventKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
@@ -186,6 +189,8 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
     float py = part->Py();
     float pz = part->Pz();
 
+    TLorentzVector fourvec;
+
     switch (signed_pdg)
     {
     case 2212:
@@ -219,21 +224,19 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       }
       break;
     case 211:
+      fourvec.SetXYZM(px, py, pz, mpion);
+      v_pospion.push_back(fourvec);
       if (rapidity <= 0.5)
       {
         hPionSpectrum[0]->Fill(p);
-        TLorentzVector fourvec;
-        fourvec.SetXYZM(px, py, pz, mpion);
-        v_pospion.push_back(fourvec);
       }
       break;
     case -211:
+      fourvec.SetXYZM(px, py, pz, mpion);
+      v_negpion.push_back(fourvec);
       if (rapidity <= 0.5)
       {
         hPionSpectrum[1]->Fill(p);
-        TLorentzVector fourvec;
-        fourvec.SetXYZM(px, py, pz, mpion);
-        v_negpion.push_back(fourvec);
       }
       break;
     default:
@@ -263,7 +266,6 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       // Deuteron 4-Momentum
       TLorentzVector p_deuteron;
       p_deuteron.SetXYZM(p_proton.Px() + p_neutron.Px(), p_proton.Py() + p_neutron.Py(), p_proton.Pz() + p_neutron.Pz(), md);
-      v_deuteron.push_back(p_deuteron);
       TVector3 boost_vector = p_deuteron.BoostVector();
 
       // Lorentz Transformations (from Lab to Deuteron Frame)
@@ -282,7 +284,7 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       // Simple Coalescence Condition
       if (deltaP < fP0)
       {
-
+        v_deuteron.push_back(p_deuteron);
         neutron_status[in] = 1;
         double y_deuteron = p_deuteron.Rapidity();
         if (TMath::Abs(y_deuteron) < 0.5)
@@ -314,7 +316,6 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       // Antiantideuteron 4-Momentum
       TLorentzVector p_antideuteron;
       p_antideuteron.SetXYZM(p_antiproton.Px() + p_antineutron.Px(), p_antiproton.Py() + p_antineutron.Py(), p_antiproton.Pz() + p_antineutron.Pz(), md);
-      v_antideuteron.push_back(p_antideuteron);
       TVector3 boost_vector = p_antideuteron.BoostVector();
 
       // Lorentz Transformations (from Lab to Antideuteron Frame)
@@ -333,7 +334,7 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       // Simple Coalescence Condition
       if (deltaP < fP0)
       {
-
+        v_antideuteron.push_back(p_antideuteron);
         antineutron_status[in] = 1;
         double y_antideuteron = p_antideuteron.Rapidity();
         if (TMath::Abs(y_antideuteron) < 0.5)
@@ -344,6 +345,17 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
       }
     }
   }
+
+  // count particles
+
+  float nPosPions = (float)v_pospion.size();
+  float nNegPions = (float)v_negpion.size();
+
+  float nDeuterons = (float)v_deuteron.size();
+  float nAntideuterons = (float)v_antideuteron.size();
+
+  hNparticles[0]->Fill(nPosPions, nDeuterons);
+  hNparticles[1]->Fill(nNegPions, nAntideuterons);
 
   // same event
 

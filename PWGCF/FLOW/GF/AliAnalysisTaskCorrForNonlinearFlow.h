@@ -31,6 +31,9 @@
 #include "AliEventPoolManager.h"
 #include "AliTHn.h"
 
+#include "AliAODForwardMult.h"
+#include "AliPartSimpleForCorr.h"
+
 class TList;
 class TF1;
 class TH1;
@@ -98,7 +101,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		// virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		// virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
-
+		virtual void   SetAnaType(TString type) {anaType = type;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
 		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
@@ -115,6 +118,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		AliAnalysisTaskCorrForNonlinearFlow& operator=(const AliAnalysisTaskCorrForNonlinearFlow&);
 
 		virtual void NTracksCalculation(AliVEvent* aod);
+                Bool_t PrepareTPCFMDTracks();
 		virtual void FillCorrelations();
 		virtual void FillCorrelationsMixed();
 		Bool_t AcceptAOD(AliAODEvent *inEv);
@@ -162,6 +166,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
 		bool                    fIsMC;                                  // The observable for MonteCarlo truth
 		TString                 fNtrksName;                             // Cent or Mult
+		TString                 anaType;                                // TPC-TPC or TPC-FMD
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
