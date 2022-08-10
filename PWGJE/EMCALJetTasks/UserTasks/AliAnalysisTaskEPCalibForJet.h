@@ -74,13 +74,35 @@ class AliAnalysisTaskEPCalibForJet : public AliAnalysisTaskEmcalJet {
         const char* ncells             = "usedefault",
         const char *suffix             = "");
 
-    enum runModeType{kLocal, kGrid};
-    enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, \
-                              kIntegratedFlow, kQC2, kQC4 }; // fit type
+    enum runModeType{kLocal = 0,                //!< local run mode
+                    kGrid = 1                   //!< grid run mode
+    };
+    enum fitModulationType  { kNoFit = 0,           //!< plato fit
+                              kV2 = 1,              //!< only v2 function fit
+                              kV3 = 2,              //!< only v3 function fit
+                              kCombined = 3,        //!< v2 + v3 function fit
+                              kFourierSeries = 4,   //!< Fourier series fit
+                              kIntegratedFlow = 5,  //!< Integrated flow fit
+                              kQC2 = 6,             //!< qc2 fit
+                              kQC4 = 7              //!< qc4 fit
+    }; // fit type
     
-    enum DetFlev{kFullTPC,kPosTPC,kNegTPC,kFullV0,kV0A,kV0C};
-    enum detectorType{ kTPC, kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used for event plane
-    enum qnVCalibType{kOrig, kJeHand};
+    enum DetFlev{ kFullTPC = 0,                     //!< use both sides TPC
+                  kPosTPC = 1,                      //!< use only an eta positive side TPC
+                  kNegTPC = 2,                      //!< use only an eta negative side TPC
+                  kFullV0 = 3,                      //!< use both sides V0
+                  kV0A = 4,                         //!< use only V0A
+                  kV0C = 5                          //!< use only V0A
+    };
+    enum detectorType{kTPC = 0,                     //!< detector type use TPC
+                      kVZEROA = 1,                  //!< detector type use only V0A
+                      kVZEROC = 2,                  //!< detector type use only V0C
+                      kVZEROComb = 3,               //!< detector type use V0A and V0C
+                      kFixedEP = 4                  //!< fixed EP
+    };
+    enum qnVCalibType{kOrig = 0,                    //!<  way baesed on Flavor group
+                      kJeHand = 1                   //!<  way based on JeHandlar
+    };
     
     PWG::Tools::AliYAMLConfiguration & GetYAMLConfiguration(){return fYAMLConfig;}
 
@@ -115,16 +137,12 @@ class AliAnalysisTaskEPCalibForJet : public AliAnalysisTaskEmcalJet {
     void       ExecOnce();
     Bool_t     Run();
     
-    THistManager fHistManager;///< Histogram manager
-    AliEventCuts fEventCuts; //
-
     // ### protected #############################################################
-  
-  // ### private ###############################################################
-  private:
-    
+    THistManager fHistManager;                     ///< Histogram manager
+    AliEventCuts fEventCuts;                       ///< event selection
+
     PWG::Tools::AliYAMLConfiguration fYAMLConfig;  //!<! run List the YAML config
-    std::vector<std::string> fUseRunList; //!<! run list vector
+    std::vector<std::string> fUseRunList;          //!<! run list vector
 
     AliAODEvent*  fAOD;               //!<! AOD event
     TList         *fOutputList;       //!<! output list for histograms
@@ -283,9 +301,10 @@ class AliAnalysisTaskEPCalibForJet : public AliAnalysisTaskEmcalJet {
     TF1*               fFitModulation;          //-> modulation fit for rho
     TH1F*              hBkgTracks;              //-> modulation fit for rho
     
-    Int_t CheckRunNum = -1;
-    Int_t fQaEventNum = -1;
+    Int_t CheckRunNum = -1;         //!<! check run number for local 
+    Int_t fQaEventNum = -1;         //!<! qa check run number 
 
+  private:
     AliAnalysisTaskEPCalibForJet(const AliAnalysisTaskEPCalibForJet&)           ; // not implemented
     AliAnalysisTaskEPCalibForJet &operator=(const AliAnalysisTaskEPCalibForJet&); // not implemented
 
