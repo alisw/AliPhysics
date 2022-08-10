@@ -67,7 +67,6 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void SetSystem(Int_t sys){fSys=sys;}
   void SetRejectSDDClusters(Bool_t flag) {fIsRejectSDDClusters=flag; }
   void SetFillGlobalPlots(Bool_t fill=kTRUE){fFillGlobal=fill;}
-  void SetSoftPiFlag(Bool_t piflag) {fSoftPiCut=piflag;}
   void SetMEAxisThresh(Bool_t methresh) {fMEAxisThresh=methresh;}
   void SetKaonCorrelations(Bool_t kaonCorr) {fKaonCorr=kaonCorr;}
   void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
@@ -83,7 +82,6 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   Bool_t GetFillGlobalPlots() const {return fFillGlobal;}
   Double_t GetEtaForCorrel() {return fEtaForCorrel;}
   Double_t GetMultEv() {return fMultEv;}
-  Bool_t GetSoftPiFlag() const {return fSoftPiCut;}
   Bool_t GetMEAxisThresh() const {return fMEAxisThresh;}
   Bool_t GetKaonCorrelations() const {return fKaonCorr;}
   Bool_t GetFillTrees() const {return fFillTrees;}
@@ -185,11 +183,9 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void CreateCorrelationsObjs();
   void CalculateCorrelations(AliAODRecoDecayHF3Prong* d, Int_t labLambdac=-1, TClonesArray* mcArray=0x0);
   void CalculateCorrelationsMCKine(AliAODMCParticle* d, TClonesArray* mcArray=0x0);
-  void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Int_t softpiME, Double_t wg=1.);
+  void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Double_t wg=1.);
   Int_t CheckTrackOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* mcArray) const;
-  Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
-  Bool_t IsSoftPion_MCKine(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* arrayMC) const;
   void FillTreeLambdac(AliAODRecoDecayHF3Prong* d, AliAODEvent* aod);  
   void FillTreeTracks(AliAODEvent* aod);  
   void FillTreeLambdacForCutOptim(AliAODRecoDecayHF3Prong* d, AliAODEvent* aod);  
@@ -245,7 +241,6 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   Double_t  fMultEvV0MEqual;     // event multiplicity (for trigger eff)
   Double_t  fCentEvV0M;     // event multiplicity (for trigger eff)
   Double_t  fzVtx;				// event zVtx position (for track eff)
-  Bool_t    fSoftPiCut;			// flag to activate soft pion cut on Data
   Bool_t    fMEAxisThresh;		// flag to fill threshold axis in ME plots
   Bool_t    fKaonCorr;			// enables correlations of Lambdac-Kcharg and Lambdac-K0
   Double_t  fSignLeft_LowPt;		// Left bound of "signal region" range - up to 8 GeV/c

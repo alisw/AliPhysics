@@ -1,4 +1,4 @@
-AliAnalysisTaskSELambdacCorrelations *AddTaskLambdacCorrelations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoLambdacMC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="cuts_pidOFF.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effLambdacnamec="LambdacEff_From_c_wLimAcc_2D.root", TString effLambdacnameb="LambdacEff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsLambdacname="LctopKpiAnalysisCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagLambdacLambdacbar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Int_t speed=AliAnalysisTaskSELambdacCorrelations::kOneBinSB, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileMassRanges=kFALSE, Double_t ptAssocLim=1., Int_t fillTrees=AliAnalysisTaskSELambdacCorrelations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=0, Bool_t puritystudies=kFALSE, Bool_t reweighMC=kFALSE, TString filenameWeights="",Bool_t flag=kFALSE, Bool_t isMultiClass = kFALSE, TString path = "")
+AliAnalysisTaskSELambdacCorrelations *AddTaskLambdacCorrelations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoLambdacMC = kFALSE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="cuts_pidOFF.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effLambdacnamec="LambdacEff_From_c_wLimAcc_2D.root", TString effLambdacnameb="LambdacEff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsLambdacname="LctopKpiAnalysisCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagLambdacLambdacbar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Int_t speed=AliAnalysisTaskSELambdacCorrelations::kOneBinSB, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileMassRanges=kFALSE, Double_t ptAssocLim=1., Int_t fillTrees=AliAnalysisTaskSELambdacCorrelations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=0, Bool_t puritystudies=kFALSE, Bool_t reweighMC=kFALSE, TString filenameWeights="",Bool_t flag=kFALSE, Bool_t isMultiClass = kFALSE, TString path = "")
 {
   //
   // AddTask for the AliAnalysisTaskSE for Lambdac candidates
@@ -200,7 +200,6 @@ AliAnalysisTaskSELambdacCorrelations *AddTaskLambdacCorrelations(Bool_t readMC=k
   massLambdacTask->SetFillOnlyLambdacLambdacbar(flagLambdacLambdacbar);
   massLambdacTask->SetSystem(system); //0=use multiplicity (pp), 1=use centrality (PbPb). For pA you can choose how to behave
   massLambdacTask->SetEtaForCorrel(etacorr);
-  massLambdacTask->SetSoftPiFlag(flagsoftpicut);
   massLambdacTask->SetMEAxisThresh(MEthresh);
   massLambdacTask->SetUseDeff(useDeff); 
   massLambdacTask->SetUseTrackeff(useTrackeff); 
@@ -294,10 +293,10 @@ AliAnalysisTaskSELambdacCorrelations *AddTaskLambdacCorrelations(Bool_t readMC=k
 
     if(!pporpPb_lims) { //pp limits
 	              //         3-4    4-5    5-6    6-7    7-8   8-12   
-      Double_t LSBLowLim[7] = {2.2144,2.2144,2.1904,2.2144,2.2064,2.1664,0.}; //to be filled looking at results from invariant mass fits!
-      Double_t LSBUppLim[7] = {2.2584,2.2584,2.2464,2.2544,2.2504,2.2384,0.};
-      Double_t RSBLowLim[7] = {2.3264,2.3264,2.3304,2.3264,2.3304,2.3424,0.};
-      Double_t RSBUppLim[7] = {2.3704,2.3704,2.3904,2.3764,2.3744,2.4104,0.};
+      Double_t LSBLowLim[7] = {2.2144,2.2144,2.1904,2.2144,2.2064,2.1664,2.1664}; //to be filled looking at results from invariant mass fits!
+      Double_t LSBUppLim[7] = {2.2584,2.2584,2.2464,2.2544,2.2504,2.2384,2.2384};
+      Double_t RSBLowLim[7] = {2.3264,2.3264,2.3304,2.3264,2.3304,2.3424,2.3424};
+      Double_t RSBUppLim[7] = {2.3704,2.3704,2.3904,2.3764,2.3744,2.4104,2.4104};
  
       massLambdacTask->SetLSBLowLim(LSBLowLim);
       massLambdacTask->SetLSBHighLim(LSBUppLim);
