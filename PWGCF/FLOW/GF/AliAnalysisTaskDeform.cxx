@@ -123,6 +123,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fConsistencyFlag(3),
   fEfficiencyFlag(0),
   fParticleFlag(0),
+  fEfficiencyIndex(0),
   fRequireReloadOnRunChange(kFALSE),
   fRequirePositive(kFALSE),
   fUse2DEff(kFALSE),
@@ -134,7 +135,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   wpPt(0)
 {
 };
-AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TString stageSwitch, TString ContSubfix):
+AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TString stageSwitch, TString ContSubfix, int Nkeys):
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
   fSystFlag(0),
@@ -217,6 +218,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fConsistencyFlag(3),
   fEfficiencyFlag(0),
   fParticleFlag(0),
+  fEfficiencyIndex(0),
   fRequireReloadOnRunChange(kFALSE),
   fRequirePositive(kFALSE),
   fUse2DEff(kFALSE),
@@ -237,8 +239,9 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
     DefineOutput(1,TList::Class());
   if(fStageSwitch==3) {
     if(!fIsMC) { //Efficiency and NUA only important for data
-      DefineInput(1,TList::Class()); //NUE weights; ultimately, should be combined with NUA, but don't want to rerun now
-      DefineInput(2,TList::Class()); //NUA weights from other analysis; quickfix
+      DefineInput(1,TList::Class()); //NUA
+      for(int key(0);key<Nkeys;++key)
+        DefineInput(2+key,TList::Class());  //NUE
     };
     DefineOutput(1,TList::Class());
     DefineOutput(2,AliGFWFlowContainer::Class());
@@ -328,9 +331,11 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   if(fStageSwitch==3) {
     fRndm = new TRandom(0);
     fRequireReloadOnRunChange = kFALSE;
+    fWeightList = (TList*)GetInputData(1);
+    fWeights = new AliGFWWeights*[1];
     const char* species[] = {"_ch","_pi","_ka","_pr"};
     if(!fIsMC) { //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
-      fEfficiencyList = (TList*)GetInputData(1);
+      fEfficiencyList = (TList*)GetInputData(2+fEfficiencyIndex); //Efficiencies start from input slot 2
       if(fUse2DEff) {
         fEfficiency.resize(l_NV0MBinsDefault,vector<TH2D*>(4));
         for(int iSp=0;iSp<4;++iSp) {
@@ -357,9 +362,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
             };
         }
       }
-
-      fWeightList = (TList*)GetInputData(2);
-      fWeights = new AliGFWWeights*[1];
     };
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
     fptVarList = new TList();
@@ -848,11 +850,14 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
       if(!lTrack) continue;
       if(fRequirePositive && lTrack->Charge()<0) continue;
-      Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
-      if(fParticleFlag) {
-        if(PIDIndex==1&&!(fParticleFlag&kPi)) continue;
-        if(PIDIndex==2&&!(fParticleFlag&kKa)) continue;
-        if(PIDIndex==3&&!(fParticleFlag&kPr)) continue;
+      Int_t PIDIndex = 0;
+      if(!fDisablePID){ 
+        PIDIndex = GetBayesPIDIndex(lTrack)+1;
+        if(fParticleFlag) {
+          if(PIDIndex==1&&!(fParticleFlag&kPi)) continue;
+          if(PIDIndex==2&&!(fParticleFlag&kKa)) continue;
+          if(PIDIndex==3&&!(fParticleFlag&kPr)) continue;
+        }
       }
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
