@@ -177,7 +177,7 @@ private:
     std::vector<float> fInvMassResoDeMax{5.0};                                            /// minimum invariant mass values for HF resonance (in case of deuteron combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 2); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 3); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 
