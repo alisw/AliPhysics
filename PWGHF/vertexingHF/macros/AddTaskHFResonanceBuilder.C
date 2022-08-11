@@ -22,9 +22,11 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
                                                                float nSigmaTPCPi = 3.,
                                                                float nSigmaTPCKa = 0.,
                                                                float nSigmaTPCPr = 0.,
+                                                               float nSigmaTPCDe = 0.,
                                                                float nSigmaTOFPi = 3.,
                                                                float nSigmaTOFKa = 0.,
                                                                float nSigmaTOFPr = 0.,
+                                                               float nSigmaTOFDe = 0.,
                                                                float ptMinBach = 0.1,
                                                                std::vector<float> massMinPi = {1.9},
                                                                std::vector<float> massMaxPi = {3.2},
@@ -32,6 +34,8 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
                                                                std::vector<float> massMaxKa = {-1.},
                                                                std::vector<float> massMinPr = {-1.},
                                                                std::vector<float> massMaxPr = {-1.},
+                                                               std::vector<float> massMinDe = {-1.},
+                                                               std::vector<float> massMaxDe = {-1.},
                                                                int AODProtection = 0)
 {
     // \brief: AddTask for AliAnalysisTaskSEHFResonanceBuilder
@@ -74,8 +78,8 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     // Analysis Task
     AliAnalysisTaskSEHFResonanceBuilder *hfResoTask = new AliAnalysisTaskSEHFResonanceBuilder("HFResonanceBuilderAnalysis", decCh, analysisCuts);
     hfResoTask->SetPtBachelorSelection(ptMinBach);
-    hfResoTask->SetNsigmaBachelorSelection(nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr, nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr);
-    hfResoTask->SetCharmResoMassWindows(massMinPi, massMaxPi, massMinKa, massMaxKa, massMinPr, massMaxPr);
+    hfResoTask->SetNsigmaBachelorSelection(nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr, nSigmaTPCDe, nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr, nSigmaTOFDe);
+    hfResoTask->SetCharmResoMassWindows(massMinPi, massMaxPi, massMinKa, massMaxKa, massMinPr, massMaxPr, massMinDe, massMaxDe);
     hfResoTask->SetAODMismatchProtection(AODProtection);
     hfResoTask->SetReadMC(readMC);
     mgr->AddTask(hfResoTask);
@@ -91,15 +95,15 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     AliAnalysisDataContainer *coutputCuts = NULL;
     if(decCh == AliAnalysisTaskSEHFResonanceBuilder::kD0toKpi)
     {
-        coutputCuts = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+        coutputCuts = mgr->CreateContainer(name, AliRDHFCutsD0toKpi::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
     }
     else if(decCh == AliAnalysisTaskSEHFResonanceBuilder::kDplustoKpipi)
     {
-        coutputCuts = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+        coutputCuts = mgr->CreateContainer(name, AliRDHFCutsDplustoKpipi::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
     }
     else if(decCh == AliAnalysisTaskSEHFResonanceBuilder::kDstartoD0pi)
     {
-        coutputCuts = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+        coutputCuts = mgr->CreateContainer(name, AliRDHFCutsDStartoKpipi::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
     }
     name = Form("coutput%s", suffix.Data());
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
