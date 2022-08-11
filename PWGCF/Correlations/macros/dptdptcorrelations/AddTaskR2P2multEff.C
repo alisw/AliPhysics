@@ -545,6 +545,20 @@ AliAnalysisTaskR2P2multEff * AddTaskR2P2multEff
       minCentrality[1] = 30.;     maxCentrality[1]  = 60.;
       minCentrality[2] = 60.;     maxCentrality[2]  = 100.;
     }
+  else if ( CentralityGroup == 51 )
+    {
+      nCentrality = 10;
+      minCentrality[0] = 0;       maxCentrality[0]  = 1.;
+      minCentrality[1] = 1.;      maxCentrality[1]  = 5.;
+      minCentrality[2] = 5.;      maxCentrality[2]  = 10.;
+      minCentrality[3] = 10.;     maxCentrality[3]  = 15.;
+      minCentrality[4] = 15.;     maxCentrality[4]  = 20.;
+      minCentrality[5] = 20.;     maxCentrality[5]  = 30.;
+      minCentrality[6] = 30.;     maxCentrality[6]  = 40.;
+      minCentrality[7] = 40.;     maxCentrality[7]  = 50.;
+      minCentrality[8] = 50.;     maxCentrality[8]  = 70.;
+      minCentrality[9] = 70.;     maxCentrality[9]  = 100.;
+    }
 
   else    return 0;
   
