@@ -78,7 +78,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	// 2022.4.18 for pi- + He3+ pair
         int fPionHe3cut;        
         bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP, float tmp_switch);
-        bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
+        bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD, float tmp_switch);
         bool IsTritonNSigma(    float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
         bool IsHe3NSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3);
 	bool IsPionNSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCPi, float nsigmaTOFPi);	//2022.4.13        
