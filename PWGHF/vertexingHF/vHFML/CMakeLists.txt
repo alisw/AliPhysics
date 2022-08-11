@@ -60,6 +60,7 @@ set(SRCS
     AliAnalysisTaskSECharmHadronMLSelector.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
     AliAnalysisTaskSECheckCharmHadronBkg.cxx
+    AliAnalysisTaskSEHFResonanceBuilder.cxx
     AliAnalysisTaskSEHFTreeCreatorApply.cxx
     AliHFTreeHandlerApply.cxx
     AliHFTreeHandlerApplyDstoKKpi.cxx
