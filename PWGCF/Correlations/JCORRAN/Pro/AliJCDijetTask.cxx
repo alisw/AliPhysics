@@ -444,7 +444,12 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         if(bGoodMCEvent) {
             //cout << "Next det level calculations:" << endl;
             fDetMCFlag = fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC, 1.0);
-            if(fDetMCFlag != 0) bGoodMCEvent=false;
+            //If fDetMCFlag=-1 then we want to discard whole event
+            //as that means there is jet-pt > 4*pt_hard
+            if(fDetMCFlag != 0) { 
+                bGoodMCEvent=false;
+                bGoodEvent=false;
+            }
         }
         if(bGoodMCEvent) {
             fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC, 1.0);
