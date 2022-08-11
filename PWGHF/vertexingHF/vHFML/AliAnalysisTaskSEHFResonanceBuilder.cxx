@@ -689,7 +689,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
             if (isMLsel >= 2) {
                 for(size_t iScore = 0; iScore < fScoresFromMLSelectorSecond[iCand].size(); iScore++) {
-                    fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
+                    fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelectorSecond[iCand][iScore]);
                 }
             }
         }
