@@ -479,11 +479,12 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo) {
                 if (!TESTBIT(selectedTrackIds[iTrack], iHypo))
                     continue;
-                auto fourVecBach = ROOT::Math::PxPyPzMVector(track->Px(), track->Py(), track->Pz(), TDatabasePDG::Instance()->GetParticle(kPdgBachIDs[iHypo])->Mass());
+                double massBachelor = (iHypo != kDeuteron) ? TDatabasePDG::Instance()->GetParticle(kPdgBachIDs[iHypo])->Mass() : 1.87561294257;
+                auto fourVecBach = ROOT::Math::PxPyPzMVector(track->Px(), track->Py(), track->Pz(), massBachelor);
                 auto fourVecReso = fourVecD + fourVecBach;
                 auto invMassReso = fourVecReso.M();
                 if (IsInvMassResoSelected(invMassReso, iHypo)) {
-                    fNtupleCharmReso->Fill(invMassReso, fourVecReso.Pt(), massD[0], massD[1], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), iHypo);
+                    fNtupleCharmReso->Fill(invMassReso, fourVecReso.Pt(), massD[0], massD[1], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                 }
             }
         }
@@ -686,7 +687,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsBachelorSelected(AliAODTrack *&track,
     if (std::abs(track->Eta()) < 0.8)
         return retVal;
 
-    AliPID::EParticleType parthypo[kNumBachIDs] = {AliPID::kPion, AliPID::kKaon, AliPID::kProton};
+    AliPID::EParticleType parthypo[kNumBachIDs] = {AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron};
     for (int iHypo{0}; iHypo<kNumBachIDs; iHypo++)
     {
         double nSigmaTPC = 0.;
@@ -726,6 +727,14 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, in
             for (std::size_t iMass{0}; iMass<fInvMassResoPrMin.size(); ++iMass)
             {
                 if (mass > fInvMassResoPrMin[iMass] && mass < fInvMassResoPrMax[iMass])
+                    return true;   
+            }
+        }
+        case kDeuteron:
+        {
+            for (std::size_t iMass{0}; iMass<fInvMassResoDeMin.size(); ++iMass)
+            {
+                if (mass > fInvMassResoDeMin[iMass] && mass < fInvMassResoDeMax[iMass])
                     return true;   
             }
         }

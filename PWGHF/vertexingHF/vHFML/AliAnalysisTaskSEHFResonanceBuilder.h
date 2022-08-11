@@ -41,6 +41,7 @@ public:
         kPion = 0,
         kKaon,
         kProton,
+        kDeuteron,
         kNumBachIDs
     };
 
@@ -84,12 +85,14 @@ public:
         float nSigmaTPCPi = 3.,
         float nSigmaTPCKa = 0., 
         float nSigmaTPCPr = 0., 
+        float nSigmaTPCDe = 0., 
         float nSigmaTOFPi = 3., 
         float nSigmaTOFKa = 0., 
-        float nSigmaTOFPr = 0.
+        float nSigmaTOFPr = 0.,
+        float nSigmaTOFDe = 0.
     ) {
-        fNsigmaBachelorTPC = std::array{nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr};
-        fNsigmaBachelorTOF = std::array{nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr};
+        fNsigmaBachelorTPC = std::array{nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr, nSigmaTPCDe};
+        fNsigmaBachelorTOF = std::array{nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr, nSigmaTOFDe};
     }
 
     /// methods for charm resonance selection
@@ -99,11 +102,14 @@ public:
         std::vector<float> minMassKa,
         std::vector<float> maxMassKa,
         std::vector<float> minMassPr,
-        std::vector<float> maxMassPr
+        std::vector<float> maxMassPr,
+        std::vector<float> minMassDe,
+        std::vector<float> maxMassDe
     ) {
         fInvMassResoPiMin = minMassPi; fInvMassResoPiMax = maxMassPi;
         fInvMassResoKaMin = minMassKa; fInvMassResoKaMax = maxMassKa;
         fInvMassResoPrMin = minMassPr; fInvMassResoPrMax = maxMassPr;
+        fInvMassResoDeMin = minMassDe; fInvMassResoDeMax = maxMassDe;
     }
 
     // Implementation of interface methods
@@ -120,53 +126,55 @@ private:
     int IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF);
     bool IsInvMassResoSelected(double &mass, int &bachId);
 
-    static constexpr std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212};
+    static constexpr std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
 
-    AliAODEvent* fAOD = nullptr;                                                /// AOD event
+    AliAODEvent* fAOD = nullptr;                                                          /// AOD event
 
-    TList *fOutput = nullptr;                                                   //!<! list send on output slot 0
-    TH1F *fHistNEvents = nullptr;                                               //!<! hist. for No. of events
-    TNtuple *fNtupleCharmReso = nullptr;                                        //!<! ntuple for HF resonances
-    AliNormalizationCounter *fCounter = nullptr;                                //!<! Counter for normalization
+    TList *fOutput = nullptr;                                                             //!<! list send on output slot 0
+    TH1F *fHistNEvents = nullptr;                                                         //!<! hist. for No. of events
+    TNtuple *fNtupleCharmReso = nullptr;                                                  //!<! ntuple for HF resonances
+    AliNormalizationCounter *fCounter = nullptr;                                          //!<! Counter for normalization
 
-    int fDecChannel = kDplustoKpipi;                                            /// channel to analyse
-    int fPdgD = 411;                                                            /// pdg code of the D meson
-    bool fReadMC = false;                                                       /// flag for access to MC
-    bool  fFillAcceptanceLevel = true;                                          /// flag for filling true reconstructed D at acceptance level (see FillMCGenAccHistos)
-    int fAODProtection = 0;                                                     /// flag to activate protection against AOD-dAOD mismatch.
-                                                                                /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-    TList *fListCuts = nullptr;                                                 /// list of cuts
-    AliRDHFCuts *fRDCuts = nullptr;                                             /// Cuts for Analysis
+    int fDecChannel = kDplustoKpipi;                                                      /// channel to analyse
+    int fPdgD = 411;                                                                      /// pdg code of the D meson
+    bool fReadMC = false;                                                                 /// flag for access to MC
+    bool  fFillAcceptanceLevel = true;                                                    /// flag for filling true reconstructed D at acceptance level (see FillMCGenAccHistos)
+    int fAODProtection = 0;                                                               /// flag to activate protection against AOD-dAOD mismatch.
+                                                                                          /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+    TList *fListCuts = nullptr;                                                           /// list of cuts
+    AliRDHFCuts *fRDCuts = nullptr;                                                       /// Cuts for Analysis
 
     // ML application
-    bool fApplyML = false;                                                      /// flag to enable ML application
-    bool fMultiClass = false;                                                   /// flag to enable multi-class models (Bkg, Prompt, FD)
-    std::string fConfigPath = "";                                               /// path to ML config file
-    AliHFMLResponse* fMLResponse = nullptr;                                     //!<! object to handle ML response
-    bool fDependOnMLSelector = false;                                           /// flag to read ML scores from a AliAnalysisTaskSECharmHadronMLSelector task
-    std::vector<float> fPtLimsML{};                                             /// pT bins in case application of ML model is done in MLSelector task
-    std::vector<std::vector<double> > fMLScoreCuts{};                           /// score cuts used in case application of ML model is done in MLSelector task
-    std::vector<std::vector<std::string> > fMLOptScoreCuts{};                   /// score cut options (lower, upper) used in case application of ML model is done in MLSelector task
-    std::string fMLSelectorName = "MLSelector";                                 /// name of MLSelector task
-    std::vector<std::vector<double> > fScoresFromMLSelector{};                  /// scores from MLSelector task
-    std::vector<std::vector<double> > fScoresFromMLSelectorSecond{};            /// scores from MLSelector task for second mass hypothesis
+    bool fApplyML = false;                                                                /// flag to enable ML application
+    bool fMultiClass = false;                                                             /// flag to enable multi-class models (Bkg, Prompt, FD)
+    std::string fConfigPath = "";                                                         /// path to ML config file
+    AliHFMLResponse* fMLResponse = nullptr;                                               //!<! object to handle ML response
+    bool fDependOnMLSelector = false;                                                     /// flag to read ML scores from a AliAnalysisTaskSECharmHadronMLSelector task
+    std::vector<float> fPtLimsML{};                                                       /// pT bins in case application of ML model is done in MLSelector task
+    std::vector<std::vector<double> > fMLScoreCuts{};                                     /// score cuts used in case application of ML model is done in MLSelector task
+    std::vector<std::vector<std::string> > fMLOptScoreCuts{};                             /// score cut options (lower, upper) used in case application of ML model is done in MLSelector task
+    std::string fMLSelectorName = "MLSelector";                                           /// name of MLSelector task
+    std::vector<std::vector<double> > fScoresFromMLSelector{};                            /// scores from MLSelector task
+    std::vector<std::vector<double> > fScoresFromMLSelectorSecond{};                      /// scores from MLSelector task for second mass hypothesis
 
     // bachelor selection
-    int fFilterBitBachelor{4};                                                  /// filter bit for bachelor track
-    std::array<float, 3> fNsigmaBachelorTPC = std::array{0.f, 0.f, 0.f};        /// Nsigma cuts for bachelor track in TPC
-    std::array<float, 3> fNsigmaBachelorTOF = std::array{0.f, 0.f, 0.f};        /// Nsigma cuts for bachelor track in TOF
-    float fPtTrackMin{0.05};                                                    /// minimum pT for bachelor track
+    int fFilterBitBachelor{4};                                                            /// filter bit for bachelor track
+    std::array<float, kNumBachIDs> fNsigmaBachelorTPC = std::array{0.f, 0.f, 0.f, 0.f};   /// Nsigma cuts for bachelor track in TPC
+    std::array<float, kNumBachIDs> fNsigmaBachelorTOF = std::array{0.f, 0.f, 0.f, 0.f};   /// Nsigma cuts for bachelor track in TOF
+    float fPtTrackMin{0.05};                                                              /// minimum pT for bachelor track
 
     // resonance selection
-    std::vector<float> fInvMassResoPiMin{2.0};                                  /// minimum invariant mass values for HF resonance (in case of pion combination)
-    std::vector<float> fInvMassResoPiMax{2.5};                                  /// maximum invariant mass values for HF resonance (in case of pion combination)
-    std::vector<float> fInvMassResoKaMin{2.2};                                  /// minimum invariant mass values for HF resonance (in case of kaon combination)
-    std::vector<float> fInvMassResoKaMax{2.6};                                  /// maximum invariant mass values for HF resonance (in case of kaon combination)
-    std::vector<float> fInvMassResoPrMin{2.7};                                  /// minimum invariant mass values for HF resonance (in case of proton combination)
-    std::vector<float> fInvMassResoPrMax{3.3};                                  /// maximum invariant mass values for HF resonance (in case of proton combination)
+    std::vector<float> fInvMassResoPiMin{2.0};                                            /// minimum invariant mass values for HF resonance (in case of pion combination)
+    std::vector<float> fInvMassResoPiMax{2.5};                                            /// maximum invariant mass values for HF resonance (in case of pion combination)
+    std::vector<float> fInvMassResoKaMin{2.2};                                            /// minimum invariant mass values for HF resonance (in case of kaon combination)
+    std::vector<float> fInvMassResoKaMax{2.6};                                            /// maximum invariant mass values for HF resonance (in case of kaon combination)
+    std::vector<float> fInvMassResoPrMin{2.7};                                            /// minimum invariant mass values for HF resonance (in case of proton combination)
+    std::vector<float> fInvMassResoPrMax{3.3};                                            /// maximum invariant mass values for HF resonance (in case of proton combination)
+    std::vector<float> fInvMassResoDeMin{3.6};                                            /// maximum invariant mass values for HF resonance (in case of deuteron combination)
+    std::vector<float> fInvMassResoDeMax{5.0};                                            /// minimum invariant mass values for HF resonance (in case of deuteron combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 1); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 2); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 
