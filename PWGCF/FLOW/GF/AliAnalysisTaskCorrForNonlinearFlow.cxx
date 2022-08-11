@@ -758,7 +758,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 	    } // endif TPC-TPC
 	    else if (anaType.EqualTo("TPCFMD")) {
 
-                AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(fTracksTrigCharged->At(iAss));
+                AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(fTracksAss->At(iAss));
                 Double_t phiAss = trackAss->Phi();
                 Double_t etaAss = trackAss->Eta();
 
@@ -855,7 +855,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 		    } // end TPC-TPC 
 		    else if (anaType.EqualTo("TPCFMD")) {
 
-                        AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(fTracksTrigCharged->At(iAss));
+                        AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(fTracksAss->At(iAss));
                         Double_t phiAss = trackAss->Phi();
                         Double_t etaAss = trackAss->Eta();
 
