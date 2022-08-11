@@ -132,6 +132,9 @@ private:
 
     TList *fOutput = nullptr;                                                             //!<! list send on output slot 0
     TH1F *fHistNEvents = nullptr;                                                         //!<! hist. for No. of events
+    std::array<TH2F*, kNumBachIDs> fHistNsigmaTPCSelBach{};                               //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
+    std::array<TH2F*, kNumBachIDs> fHistNsigmaTOFSelBach{};                               //!<! array of histograms with NsigmaTOF vs. p for selected bachelor tracks
+    std::array<TH1F*, 3> fHistBDTOutputScore{};                                           //!<! array of histograms with BDT output scores for D mesons
     TNtuple *fNtupleCharmReso = nullptr;                                                  //!<! ntuple for HF resonances
     AliNormalizationCounter *fCounter = nullptr;                                          //!<! Counter for normalization
 

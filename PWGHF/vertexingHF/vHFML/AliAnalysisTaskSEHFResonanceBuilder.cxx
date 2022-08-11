@@ -133,7 +133,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     fOutput->SetOwner();
     fOutput->SetName("OutputHistos");
 
-    fHistNEvents = new TH1F("hNEvents", "number of events ", 16, -0.5, 15.5);
+    fHistNEvents = new TH1F("fHistNEvents", "number of events ", 16, -0.5, 15.5);
     fHistNEvents->GetXaxis()->SetBinLabel(1, "nEventsRead");
     fHistNEvents->GetXaxis()->SetBinLabel(2, "nEvents Matched dAOD");
     fHistNEvents->GetXaxis()->SetBinLabel(3, "nEvents Mismatched dAOD");
@@ -153,6 +153,21 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     fHistNEvents->GetXaxis()->SetNdivisions(1, false);
     fHistNEvents->SetMinimum(0);
     fOutput->Add(fHistNEvents);
+
+    // QA histograms
+    std::array<std::string, kNumBachIDs> partLabel = {"Pi", "Ka", "Pr", "De"};
+    for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo) {
+        fHistNsigmaTPCSelBach[iHypo] = new TH2F(Form("fHistNsigmaTPC%sSelBach", partLabel[iHypo].data()), Form(";#it{p} (GeV/#it{c});#it{N}_{#sigma}^{ TPC} (%s)", partLabel[iHypo].data()), 100, 0., 10., 200, -10., 10.);
+        fHistNsigmaTOFSelBach[iHypo] = new TH2F(Form("fHistNsigmaTOF%sSelBach", partLabel[iHypo].data()), Form(";#it{p} (GeV/#it{c});#it{N}_{#sigma}^{ TOF} (%s)", partLabel[iHypo].data()), 100, 0., 10., 200, -10., 10.);
+        fOutput->Add(fHistNsigmaTOFSelBach[iHypo]);
+        fOutput->Add(fHistNsigmaTPCSelBach[iHypo]);
+    }
+    fHistBDTOutputScore[0] = new TH1F("fHistBDTOutputScoreBkg", ";ML output score for bkg;counts", 1000, 0., 100.);
+    fHistBDTOutputScore[1] = new TH1F("fHistBDTOutputScorePrompt", ";ML output score for prompt D;counts", 1000, 0., 100.);
+    fHistBDTOutputScore[2] = new TH1F("fHistBDTOutputScoreNonPrompt", ";ML output score for nonprompt D;counts", 1000, 0., 100.);
+    fOutput->Add(fHistBDTOutputScore[0]);
+    fOutput->Add(fHistBDTOutputScore[1]);
+    fOutput->Add(fHistBDTOutputScore[2]);
 
     //Counter for Normalization
     fCounter = new AliNormalizationCounter("NormalizationCounter");
@@ -640,6 +655,12 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             {
                 isMLsel += 1;
             }
+
+            if (isMLsel >= 1) {
+                for(size_t iScore = 0; iScore < fScoresFromMLSelector[iCand].size(); iScore++) {
+                    fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
+                }
+            }
         }
         if(fDecChannel == kD0toKpi && isSelected >= 2)
         {
@@ -665,7 +686,14 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             else if(fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 1)){
                 isMLsel += 2;                
             }
+
+            if (isMLsel >= 2) {
+                for(size_t iScore = 0; iScore < fScoresFromMLSelectorSecond[iCand].size(); iScore++) {
+                    fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
+                }
+            }
         }
+
         return isMLsel;
     }
 
@@ -690,12 +718,15 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsBachelorSelected(AliAODTrack *&track,
     AliPID::EParticleType parthypo[kNumBachIDs] = {AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron};
     for (int iHypo{0}; iHypo<kNumBachIDs; iHypo++)
     {
-        double nSigmaTPC = 0.;
-        pidHF->GetnSigmaTPC(track, parthypo[iHypo], nSigmaTPC);
-        double nSigmaTOF = 0.;
-        pidHF->GetnSigmaTOF(track, parthypo[iHypo], nSigmaTOF);
-        if ((std::abs(nSigmaTPC) < fNsigmaBachelorTPC[iHypo]) && (std::abs(nSigmaTOF) < fNsigmaBachelorTOF[iHypo]))
+        double nSigmaTPC = -999.;
+        int okTPC = pidHF->GetnSigmaTPC(track, parthypo[iHypo], nSigmaTPC);
+        double nSigmaTOF = -999.;
+        int okTOF = pidHF->GetnSigmaTOF(track, parthypo[iHypo], nSigmaTOF);
+        if (((std::abs(nSigmaTPC) < fNsigmaBachelorTPC[iHypo]) || okTPC<0) && ((std::abs(nSigmaTOF) < fNsigmaBachelorTOF[iHypo]) || okTOF<0)) {
             retVal |= BIT(iHypo);
+            fHistNsigmaTPCSelBach[iHypo]->Fill(track->P(), nSigmaTPC);
+            fHistNsigmaTOFSelBach[iHypo]->Fill(track->P(), nSigmaTOF);
+        }
     }
 
     return retVal;
