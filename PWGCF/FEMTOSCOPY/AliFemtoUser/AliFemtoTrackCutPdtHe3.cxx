@@ -343,7 +343,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
             }
 	    //\ for deuteron PID
             else if (fMostProbable == 13){   //cut on Nsigma deuteron
-                if ( IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD())){
+                if ( IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), SwitchMom_d)){
 			imost = 13;
 		}
 		//\ reject 
@@ -360,6 +360,18 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 			if(  tmpDCAr > tmpCut ) imost = 0;
 			
 		}
+	if(fInversePID){
+		if ( IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), 1.4)){
+			loose_imost = 999;
+		}
+		// no pass strict PID but pass loose PID
+		if(imost==0 && loose_imost==999){
+			imost = 13;
+		}else{
+			imost = 0;
+		}		
+	}	
+		
             }
 	    //\ for triton PID
             else if (fMostProbable == 14){   //cut on Nsigma triton
@@ -425,11 +437,11 @@ bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float n
     return false;
 
 }
-bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD){
+bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD,  float tmp_switch){
     //double massPDGD=1.8756;
     if (fNsigmaTPCTOF) {
         //Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
-        if (mom > SwitchMom_d){
+        if (mom > tmp_switch){
             if (TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD)
             //if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
                 return true;
