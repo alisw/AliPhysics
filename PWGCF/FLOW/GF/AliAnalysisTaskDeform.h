@@ -58,7 +58,7 @@ enum {kCh = 0, kPi = 1, kKa = 2, kPr = 4};
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskDeform();
-  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="");
+  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
   virtual ~AliAnalysisTaskDeform();
   virtual void UserCreateOutputObjects();
   virtual void NotifyRun();
@@ -120,6 +120,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
   void SetUse2DEfficiencies(bool newval, bool newval2=kFALSE) {fUse2DEff = newval; fUsePIDEff = newval2;};
   void SetParticleFlag(UInt_t newval) {fParticleFlag = newval;};
+  void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -226,6 +227,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   UInt_t fConsistencyFlag;
   UInt_t fEfficiencyFlag;
   UInt_t fParticleFlag;
+  UInt_t fEfficiencyIndex;
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
   Bool_t fUse2DEff;
