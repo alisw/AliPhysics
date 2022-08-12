@@ -103,6 +103,7 @@ set(SRCS
       LMEE/AliAnalysisTaskeeCor.cxx
       LMEE/AliAnalysisTaskMLTreeMaker.cxx
       LMEE/AliAnalysisTaskMLTreeMakerEff.cxx
+      LMEE/AliAnalysisTaskOmegaDielectron_AccEff.cxx
       LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
