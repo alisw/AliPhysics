@@ -683,6 +683,7 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicity() {
     if(fUseCalib)
     {
         multLattice[iCh] *= V0AmplCalibration(iCh)/V0AmpAvgRaw[iCh];
+        RhoLattice[iCh]  *= V0AmplCalibration(iCh)/V0AmpAvgRaw[iCh];
     }
   }
 
@@ -701,37 +702,36 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicity() {
       }
   }
   
-//   Float_t mRho = 0;
+  Float_t mRho = 0;
   Float_t multRho = 0;
   Float_t flatenicity = -1;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
-//     mRho    += RhoLattice[iCh];
+    mRho    += RhoLattice[iCh];
     multRho += multLattice[iCh];
   }
-//   Float_t multiplicityV0M = mRho;
+//   Float_t multV0M = mRho;
   Float_t multV0M = multRho;
 
   // average activity per cell
-//   mRho /= (1.0 * nCells);
-  multRho /= (1.0 * nCells);
+  mRho /= (1.0 * nCells);
+//   multRho /= (1.0 * nCells);
   
   // get sigma
   Double_t sRho_tmp = 0;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
-//     sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
-    sRho_tmp += TMath::Power(1.0 * multLattice[iCh] - multRho, 2);
+    sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
+//     sRho_tmp += TMath::Power(1.0 * multLattice[iCh] - multRho, 2);
   }
   sRho_tmp /= (1.0 * nCells * nCells);
   Float_t sRho = TMath::Sqrt(sRho_tmp);
-//   if (mRho > 0) {
-  if (multRho > 0) {
+  if (mRho > 0) {
+//   if (multRho > 0) {
     if (fRemoveTrivialScaling) {
-    // //       flatenicity = TMath::Sqrt(multiplicityV0M) * sRho / mRho;
     // //       flatenicity = TMath::Sqrt(multV0M) * sRho / mRho; // scaling by absolute tot mult
-      flatenicity = TMath::Sqrt(multV0M) * sRho / multRho; // scaling by absolute tot mult
+      flatenicity = TMath::Sqrt(multV0M) * sRho / mRho; // scaling by absolute tot mult
     } else {
-//       flatenicity = sRho / mRho;
-      flatenicity = sRho / multRho;
+      flatenicity = sRho / mRho;
+//       flatenicity = sRho / multRho;
     }
   } else {
     flatenicity = -1;
@@ -827,40 +827,41 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicityMC() {
       if(fUseCalib)
       {
         multLattice[i_segment] *= V0AmplCalibrationTruth(i_segment)/V0AmpAvgRaw[i_segment];
+        RhoLattice[i_segment]  *= V0AmplCalibrationTruth(i_segment)/V0AmpAvgRaw[i_segment];
       }
     }
   }
 
-//   Float_t mRho = 0;
+  Float_t mRho = 0;
   Float_t multRho = 0;
   Float_t flatenicity = -1;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
-//     mRho    += RhoLattice[iCh];
+    mRho    += RhoLattice[iCh];
     multRho += multLattice[iCh];
   }
 //   Float_t multiplicityV0M = mRho;
   Float_t multV0M = multRho;
 
   // average activity per cell
-//   mRho /= (1.0 * nCells);
-  multRho /= (1.0 * nCells);
+  mRho /= (1.0 * nCells);
+//   multRho /= (1.0 * nCells);
 
   // get sigma
   Float_t sRho_tmp = 0;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
-//     sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
-    sRho_tmp += TMath::Power(1.0 * multLattice[iCh] - multRho, 2);
+    sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
+//     sRho_tmp += TMath::Power(1.0 * multLattice[iCh] - multRho, 2);
   }
   sRho_tmp /= (1.0 * nCells * nCells);
   Float_t sRho = TMath::Sqrt(sRho_tmp);
-//   if (mRho > 0) {
-  if (multRho > 0) {
+  if (mRho > 0) {
+//   if (multRho > 0) {
     if (fRemoveTrivialScaling) {
 //       flatenicity = TMath::Sqrt(1.0 * nMult) * sRho / mRho;
-      flatenicity = TMath::Sqrt(1.0 * multV0M) * sRho / multRho;
+      flatenicity = TMath::Sqrt(1.0 * multV0M) * sRho / mRho;
     } else {
-//       flatenicity = sRho / mRho;
-      flatenicity = sRho / multRho;
+      flatenicity = sRho / mRho;
+//       flatenicity = sRho / multRho;
     }
   } else {
     sRho = -1;
