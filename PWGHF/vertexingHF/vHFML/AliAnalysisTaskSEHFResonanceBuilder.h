@@ -91,8 +91,8 @@ public:
         float nSigmaTOFPr = 0.,
         float nSigmaTOFDe = 0.
     ) {
-        fNsigmaBachelorTPC = std::array{nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr, nSigmaTPCDe};
-        fNsigmaBachelorTOF = std::array{nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr, nSigmaTOFDe};
+        fNsigmaBachelorTPC = {nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr, nSigmaTPCDe};
+        fNsigmaBachelorTOF = {nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr, nSigmaTOFDe};
     }
 
     /// methods for charm resonance selection
@@ -162,8 +162,8 @@ private:
 
     // bachelor selection
     int fFilterBitBachelor{4};                                                            /// filter bit for bachelor track
-    std::array<float, kNumBachIDs> fNsigmaBachelorTPC = std::array{0.f, 0.f, 0.f, 0.f};   /// Nsigma cuts for bachelor track in TPC
-    std::array<float, kNumBachIDs> fNsigmaBachelorTOF = std::array{0.f, 0.f, 0.f, 0.f};   /// Nsigma cuts for bachelor track in TOF
+    std::array<float, kNumBachIDs> fNsigmaBachelorTPC = {0.f, 0.f, 0.f, 0.f};   /// Nsigma cuts for bachelor track in TPC
+    std::array<float, kNumBachIDs> fNsigmaBachelorTOF = {0.f, 0.f, 0.f, 0.f};   /// Nsigma cuts for bachelor track in TOF
     float fPtTrackMin{0.05};                                                              /// minimum pT for bachelor track
 
     // resonance selection
