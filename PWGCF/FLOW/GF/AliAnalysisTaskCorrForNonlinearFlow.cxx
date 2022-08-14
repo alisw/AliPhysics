@@ -456,16 +456,18 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     Int_t nSteps = 1;
     Double_t binning_deta_tpctpc[33] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6};
 
-    Double_t binning_deta_tpcfmd[]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8, 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
+    Double_t binning_deta_tpcfmd[43]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8, 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
     Double_t binning_dphi[73] = { -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0,       0.087266,  0.174533,  0.261799,  0.349066,  0.436332, 0.523599,  0.610865,  0.698132,  0.785398,  0.872665,  0.959931, 1.047198,  1.134464,  1.221730,  1.308997,  1.396263,  1.483530, 1.570796,  1.658063,  1.745329,  1.832596,  1.919862,  2.007129, 2.094395,  2.181662,  2.268928,  2.356194,  2.443461,  2.530727, 2.617994,  2.705260,  2.792527,  2.879793,  2.967060,  3.054326, 3.141593,  3.228859,  3.316126,  3.403392,  3.490659,  3.577925, 3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524, 4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123, 4.712389};
     std::vector<Double_t>   fPtBinsTrigCharged = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0,10.0};    // I don't want to set the things outside
     std::vector<Double_t>   fPtBinsAss = {0.2,0.5,1.0,3.0};            // I don't want to set the things outside
     std::vector<Double_t>   fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150}; //
     std::vector<Double_t>   fzVtxBins = {-10.0, 0, 10.0};
+    const Int_t sizeEta = anaType.EqualTo("TPCTPC") ? 33 : 43;
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
-    const Int_t sizePtAss = fPtBinsAss.size() - 1;
+    // const Int_t sizePtAss = fPtBinsAss.size() - 1;
+    const Int_t sizeCent = fCentBins.size() - 1;
     const Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; Subsample, don't use it so far
-    const Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,sizePtTrig,sizePtAss};
+    const Int_t iBinning[] = {sizeEta,72,10,sizeOfSamples,sizePtTrig,sizeCent};
 
     fListOfProfile = new TList();
     fListOfProfile->SetOwner();
@@ -486,7 +488,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     }
     fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
 
-    fhChargedSE = new AliTHn("fhChargedSE", "fhChargedSE", nSteps, 6, iBinningTPCTPC);
+    fhChargedSE = new AliTHn("fhChargedSE", "fhChargedSE", nSteps, 6, iBinning);
     if (anaType.EqualTo("TPCTPC")) {
       fhChargedSE->SetBinLimits(0, binning_deta_tpctpc);
     } else {
@@ -505,19 +507,19 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     fhChargedSE->SetVarTitle(5, "Mult/Cent");
     fListOfProfile->Add(fhChargedSE);
     //
-    fhChargedME = new AliTHn("fhChargedME", "fhChargedME", nSteps, sizeof(iBinningTPCTPC) / sizeof(Int_t), iBinningTPCTPC);
+    fhChargedME = new AliTHn("fhChargedME", "fhChargedME", nSteps, sizeof(iBinning) / sizeof(Int_t), iBinning);
     fhChargedME->SetBinLimits(0, binning_deta_tpctpc);
     fhChargedME->SetBinLimits(1, binning_dphi);
     fhChargedME->SetBinLimits(2, -10.,10.);
     fhChargedME->SetBinLimits(3,  0.,10.);
     fhChargedME->SetBinLimits(4, fPtBinsTrigCharged.data());
-    fhChargedME->SetBinLimits(5, fPtBinsAss.data());
+    fhChargedME->SetBinLimits(5, fCentBins.data());
     fhChargedME->SetVarTitle(0, "#Delta#eta");
     fhChargedME->SetVarTitle(1, "#Delta#phi");
     fhChargedME->SetVarTitle(2, "PVz");
     fhChargedME->SetVarTitle(3, "sample");
     fhChargedME->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
-    fhChargedME->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
+    fhChargedME->SetVarTitle(5, "Mult/Cent");
     fListOfProfile->Add(fhChargedME);
 
   PostData(1, fListOfObjects);
@@ -790,7 +792,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
     binscont[2] = fPVz;
     binscont[3] = 1;
 
-    AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, fPVz);
+    AliEventPool* pool = fPoolMgr->GetEventPool(NtrksCounter, fPVz);
     if (!pool) {
         return;
     }
@@ -855,7 +857,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 		    } // end TPC-TPC 
 		    else if (anaType.EqualTo("TPCFMD")) {
 
-                        AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(fTracksAss->At(iAss));
+                        AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(mixTracks->At(iAss));
                         Double_t phiAss = trackAss->Phi();
                         Double_t etaAss = trackAss->Eta();
 
