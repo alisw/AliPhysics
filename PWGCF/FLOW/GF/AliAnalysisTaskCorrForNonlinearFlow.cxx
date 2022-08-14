@@ -792,7 +792,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
     binscont[2] = fPVz;
     binscont[3] = 1;
 
-    AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, fPVz);
+    AliEventPool* pool = fPoolMgr->GetEventPool(NtrksCounter, fPVz);
     if (!pool) {
         return;
     }
@@ -857,7 +857,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 		    } // end TPC-TPC 
 		    else if (anaType.EqualTo("TPCFMD")) {
 
-                        AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(fTracksAss->At(iAss));
+                        AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(mixTracks->At(iAss));
                         Double_t phiAss = trackAss->Phi();
                         Double_t etaAss = trackAss->Eta();
 
