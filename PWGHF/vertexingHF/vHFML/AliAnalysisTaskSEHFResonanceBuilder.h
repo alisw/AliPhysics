@@ -126,7 +126,7 @@ private:
     int IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF);
     bool IsInvMassResoSelected(double &mass, int &bachId);
 
-    static constexpr std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
+    const std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
 
     AliAODEvent* fAOD = nullptr;                                                          /// AOD event
 
