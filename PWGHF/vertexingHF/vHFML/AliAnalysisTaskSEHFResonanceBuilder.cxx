@@ -658,7 +658,10 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
             if (isMLsel >= 1) {
                 for(size_t iScore = 0; iScore < fScoresFromMLSelector[iCand].size(); iScore++) {
-                    fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
+                    if(fDependOnMLSelector)
+                        fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
+                    else
+                        fHistBDTOutputScore[iScore]->Fill(modelPred[iScore]);
                 }
             }
         }
@@ -689,7 +692,10 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
             if (isMLsel >= 2) {
                 for(size_t iScore = 0; iScore < fScoresFromMLSelectorSecond[iCand].size(); iScore++) {
-                    fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelectorSecond[iCand][iScore]);
+                    if(fDependOnMLSelector)
+                        fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
+                    else
+                        fHistBDTOutputScore[iScore]->Fill(modelPred[iScore]);
                 }
             }
         }
