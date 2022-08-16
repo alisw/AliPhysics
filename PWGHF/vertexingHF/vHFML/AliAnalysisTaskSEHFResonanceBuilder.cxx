@@ -396,6 +396,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             chHadIdx.push_back(iCand);
     }
 
+    if (chHadIdx.size() == 0) // we don't have charm hadrons
+        continue;
+
     AliAODPidHF *pidHF = fRDCuts->GetPidHF();
 
     // prepare vector of selected tracks
