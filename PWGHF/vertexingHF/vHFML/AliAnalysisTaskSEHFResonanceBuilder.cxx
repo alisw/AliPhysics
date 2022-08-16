@@ -168,6 +168,25 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     fOutput->Add(fHistBDTOutputScore[0]);
     fOutput->Add(fHistBDTOutputScore[1]);
     fOutput->Add(fHistBDTOutputScore[2]);
+    float minMass = -1.;
+    float maxMass = -1.;
+    switch(fDecChannel) 
+    {
+        case kD0toKpi: {
+            minMass = 1.7;
+            maxMass = 2.1;
+        }
+        case kDplustoKpipi: {
+            minMass = 1.7;
+            maxMass = 2.1;
+        }
+        case kDstartoD0pi: {
+            minMass = 0.;
+            maxMass = 0.2;
+        }
+    }
+
+    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{M} (GeV/#it{c});counts", 100, 0., 50., 200., minMass, maxMass);
 
     //Counter for Normalization
     fCounter = new AliNormalizationCounter("NormalizationCounter");
@@ -623,6 +642,26 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             fRDCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fAOD, origOwnVtx);
     }
 
+    float massD[2] = {-1., -1.};
+    switch(fDecChannel)
+    {
+        case kD0toKpi:
+            if (isSelected == 1 || isSelected == 3) {
+                massD[0] = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0();
+            }
+            if (isSelected >= 2) {
+                massD[1] = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0bar();
+            }
+            break;
+        case kDplustoKpipi:
+            massD[0] = dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson)->InvMassDplus();
+            break;
+        case kDstartoD0pi:
+            massD[0] = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->DeltaInvMass();
+            break;
+    }
+
+
     if(fApplyML)
     {
         //variables for ML application
@@ -657,6 +696,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             }
 
             if (isMLsel >= 1) {
+                fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
                 std::size_t nClasses = fDependOnMLSelector ? fScoresFromMLSelector[iCand].size() : modelPred.size();
                 for(size_t iScore = 0; iScore < nClasses; iScore++) {
                     if(fDependOnMLSelector)
@@ -692,6 +732,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             }
 
             if (isMLsel >= 2) {
+                fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
                 std::size_t nClasses = fDependOnMLSelector ? fScoresFromMLSelector[iCand].size() : modelPred.size();
                 for(size_t iScore = 0; iScore < nClasses; iScore++) {
                     if(fDependOnMLSelector)
@@ -704,6 +745,11 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
         return isMLsel;
     }
+
+    if (isSelected == 1 || isSelected == 3)
+        fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
+    if (isSelected >= 2)
+        fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
 
     return isSelected;
 }
