@@ -162,9 +162,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
         fOutput->Add(fHistNsigmaTOFSelBach[iHypo]);
         fOutput->Add(fHistNsigmaTPCSelBach[iHypo]);
     }
-    fHistBDTOutputScore[0] = new TH1F("fHistBDTOutputScoreBkg", ";ML output score for bkg;counts", 1000, 0., 100.);
-    fHistBDTOutputScore[1] = new TH1F("fHistBDTOutputScorePrompt", ";ML output score for prompt D;counts", 1000, 0., 100.);
-    fHistBDTOutputScore[2] = new TH1F("fHistBDTOutputScoreNonPrompt", ";ML output score for nonprompt D;counts", 1000, 0., 100.);
+    fHistBDTOutputScore[0] = new TH1F("fHistBDTOutputScoreBkg", ";ML output score for bkg;counts", 1000, 0., 1.);
+    fHistBDTOutputScore[1] = new TH1F("fHistBDTOutputScorePrompt", ";ML output score for prompt D;counts", 1000, 0., 1.);
+    fHistBDTOutputScore[2] = new TH1F("fHistBDTOutputScoreNonPrompt", ";ML output score for nonprompt D;counts", 1000, 0., 1.);
     fOutput->Add(fHistBDTOutputScore[0]);
     fOutput->Add(fHistBDTOutputScore[1]);
     fOutput->Add(fHistBDTOutputScore[2]);
@@ -657,7 +657,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             }
 
             if (isMLsel >= 1) {
-                for(size_t iScore = 0; iScore < fScoresFromMLSelector[iCand].size(); iScore++) {
+                std::size_t nClasses = fDependOnMLSelector ? fScoresFromMLSelector[iCand].size() : modelPred.size();
+                for(size_t iScore = 0; iScore < nClasses; iScore++) {
                     if(fDependOnMLSelector)
                         fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
                     else
@@ -691,7 +692,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             }
 
             if (isMLsel >= 2) {
-                for(size_t iScore = 0; iScore < fScoresFromMLSelectorSecond[iCand].size(); iScore++) {
+                std::size_t nClasses = fDependOnMLSelector ? fScoresFromMLSelector[iCand].size() : modelPred.size();
+                for(size_t iScore = 0; iScore < nClasses; iScore++) {
                     if(fDependOnMLSelector)
                         fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
                     else
