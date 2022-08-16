@@ -450,7 +450,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             continue;
         }
 
-        fHistNEvents->Fill(13); // candidate selected
+        fHistNEvents->Fill(14); // candidate selected
 
         // get MC truth
         AliAODMCParticle *partD = nullptr;
@@ -574,25 +574,31 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
     switch (fDecChannel)
     {
         case kD0toKpi:
+        {
             isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)))
             {
                 return 0;
             }
             break;
+        }
         case kDplustoKpipi:
+        {
             isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kDplusCuts);
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson)))
             {
                 return 0;
             }
             break;
+        }
         case kDstartoD0pi:
+        {
             if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(dMeson), true))
             {
                 return 0;
             }
             break;
+        }
     }
 
     fHistNEvents->Fill(13);
@@ -746,18 +752,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             }
         }
 
-        if (isMLsel)
-            fHistNEvents->Fill(14);
-
         return isMLsel;
-    }
-
-    if (isSelected) {
-        fHistNEvents->Fill(14);
-        if (isSelected == 1 || isSelected == 3)
-            fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
-        if (isSelected >= 2)
-            fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
     }
 
     return isSelected;
