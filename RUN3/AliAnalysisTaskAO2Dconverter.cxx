@@ -125,7 +125,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2hf3prong",
   "O2hfcascade",
   "O2hfdstar",
-  "O2hepmcxsections",
+  "O2hepmcxsection",
   "O2hepmcpdfinfo",
   "O2hepmcheavyion"
 };
