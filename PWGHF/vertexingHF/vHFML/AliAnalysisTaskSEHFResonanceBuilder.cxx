@@ -187,6 +187,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     }
 
     fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{M} (GeV/#it{c});counts", 100, 0., 50., 200., minMass, maxMass);
+    fOutput->Add(fInvMassVsPt);
 
     //Counter for Normalization
     fCounter = new AliNormalizationCounter("NormalizationCounter");
