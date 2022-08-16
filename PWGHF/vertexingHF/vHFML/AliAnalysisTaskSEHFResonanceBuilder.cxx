@@ -175,18 +175,21 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
         case kD0toKpi: {
             minMass = 1.7;
             maxMass = 2.1;
+            break;
         }
         case kDplustoKpipi: {
             minMass = 1.7;
             maxMass = 2.1;
+            break;
         }
         case kDstartoD0pi: {
             minMass = 0.;
             maxMass = 0.2;
+            break;
         }
     }
 
-    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{M} (GeV/#it{c});counts", 100, 0., 50., 200., minMass, maxMass);
+    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c})", 100, 0., 50., 200., minMass, maxMass);
     fOutput->Add(fInvMassVsPt);
 
     //Counter for Normalization
