@@ -133,23 +133,22 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     fOutput->SetOwner();
     fOutput->SetName("OutputHistos");
 
-    fHistNEvents = new TH1F("fHistNEvents", "number of events ", 16, -0.5, 15.5);
-    fHistNEvents->GetXaxis()->SetBinLabel(1, "nEventsRead");
-    fHistNEvents->GetXaxis()->SetBinLabel(2, "nEvents Matched dAOD");
-    fHistNEvents->GetXaxis()->SetBinLabel(3, "nEvents Mismatched dAOD");
-    fHistNEvents->GetXaxis()->SetBinLabel(4, "nEventsAnal");
-    fHistNEvents->GetXaxis()->SetBinLabel(5, "n. passing IsEvSelected");
-    fHistNEvents->GetXaxis()->SetBinLabel(6, "n. rejected due to trigger");
-    fHistNEvents->GetXaxis()->SetBinLabel(7, "n. rejected due to not reco vertex");
-    fHistNEvents->GetXaxis()->SetBinLabel(8, "n. rejected for contr vertex");
-    fHistNEvents->GetXaxis()->SetBinLabel(9, "n. rejected for vertex out of accept");
-    fHistNEvents->GetXaxis()->SetBinLabel(10, "n. rejected for pileup events");
+    fHistNEvents = new TH1F("fHistNEvents", "number of events ", 15, -0.5, 14.5);
+    fHistNEvents->GetXaxis()->SetBinLabel(1, "no. read events");
+    fHistNEvents->GetXaxis()->SetBinLabel(2, "no. matched dAOD");
+    fHistNEvents->GetXaxis()->SetBinLabel(3, "no. mismatched dAOD");
+    fHistNEvents->GetXaxis()->SetBinLabel(4, "no. analysed events");
+    fHistNEvents->GetXaxis()->SetBinLabel(5, "no. passing IsEvSelected");
+    fHistNEvents->GetXaxis()->SetBinLabel(6, "no. rejected due to trigger");
+    fHistNEvents->GetXaxis()->SetBinLabel(7, "no. rejected due to not reco vertex");
+    fHistNEvents->GetXaxis()->SetBinLabel(8, "no. rejected for contr vertex");
+    fHistNEvents->GetXaxis()->SetBinLabel(9, "no. rejected for vertex out of accept");
+    fHistNEvents->GetXaxis()->SetBinLabel(10, "no. rejected for pileup events");
     fHistNEvents->GetXaxis()->SetBinLabel(11, "no. of out centrality events");
-    fHistNEvents->GetXaxis()->SetBinLabel(12, "no. of D candidates");
-    fHistNEvents->GetXaxis()->SetBinLabel(13, "no. of D after filtering cuts");
-    fHistNEvents->GetXaxis()->SetBinLabel(14, "no. of D after selection cuts");
-    fHistNEvents->GetXaxis()->SetBinLabel(15, "no. of not on-the-fly rec D");
-    fHistNEvents->GetXaxis()->SetBinLabel(16, "no. of D rejected by preselect");
+    fHistNEvents->GetXaxis()->SetBinLabel(12, "no. rejected for phys sel");
+    fHistNEvents->GetXaxis()->SetBinLabel(13, "no. of D candidates");
+    fHistNEvents->GetXaxis()->SetBinLabel(14, "no. of D after filtering cuts");
+    fHistNEvents->GetXaxis()->SetBinLabel(15, "no. of D after selection cuts");
     fHistNEvents->GetXaxis()->SetNdivisions(1, false);
     fHistNEvents->SetMinimum(0);
     fOutput->Add(fHistNEvents);
@@ -345,6 +344,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
         fHistNEvents->Fill(9);
     if (fRDCuts->IsEventRejectedDueToCentrality())
         fHistNEvents->Fill(10);
+    if (TESTBIT(fRDCuts->GetEventRejectionBitMap(), AliRDHFCuts::kPhysicsSelection))
+        fHistNEvents->Fill(11);
 
     TClonesArray *arrayMC = nullptr;
     AliAODMCHeader *mcHeader = nullptr;
@@ -449,7 +450,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             continue;
         }
 
-        fHistNEvents->Fill(13); // candidate selected
+        fHistNEvents->Fill(14); // candidate selected
 
         // get MC truth
         AliAODMCParticle *partD = nullptr;
@@ -546,7 +547,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 {
     if (!dMeson || !dMesonWithVtx || !vHF)
         return 0;
-    fHistNEvents->Fill(11);
+    fHistNEvents->Fill(12);
 
     // Preselection to speed up task
     TObjArray arrDauTracks(3);
@@ -566,7 +567,6 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
     if (!fRDCuts->PreSelect(arrDauTracks))
     {
-        fHistNEvents->Fill(15);
         return 0;
     }
 
@@ -574,31 +574,34 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
     switch (fDecChannel)
     {
         case kD0toKpi:
+        {
             isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)))
             {
-                fHistNEvents->Fill(14);
                 return 0;
             }
             break;
+        }
         case kDplustoKpipi:
+        {
             isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kDplusCuts);
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson)))
             {
-                fHistNEvents->Fill(14);
                 return 0;
             }
             break;
+        }
         case kDstartoD0pi:
+        {
             if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(dMeson), true))
             {
-                fHistNEvents->Fill(14);
                 return 0;
             }
             break;
+        }
     }
 
-    fHistNEvents->Fill(12);
+    fHistNEvents->Fill(13);
 
     unsetVtx = false;
     if (!dMesonWithVtx->GetOwnPrimaryVtx())
@@ -667,7 +670,6 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             massD[0] = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->DeltaInvMass();
             break;
     }
-
 
     if(fApplyML)
     {
@@ -752,11 +754,6 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
         return isMLsel;
     }
-
-    if (isSelected == 1 || isSelected == 3)
-        fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
-    if (isSelected >= 2)
-        fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
 
     return isSelected;
 }
