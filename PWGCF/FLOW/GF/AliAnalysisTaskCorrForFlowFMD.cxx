@@ -574,7 +574,7 @@ Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) con
   for(Int_t i(0); i < AliPID::kSPECIES; i++) pidInd=(l_Probs[i]>l_Probs[pidInd])?i:pidInd;
   Int_t retInd = pidInd-AliPID::kPion+1; //realigning
   if(retInd<1 || retInd>3) return -1;
-  if(l_Probs[pidInd] < l_MaxProb[retInd]) return -1;
+  if(l_Probs[pidInd] < l_MaxProb[retInd-1]) return -1;
   //check nsigma cuts
   if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)pidInd))>3) return -1;
   if(bIsTOFok && l_TOFUsed) if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)pidInd))>3) return -1;
