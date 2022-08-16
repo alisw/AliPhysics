@@ -120,7 +120,7 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
    * @param physPrim Require physical primary particles
    * @return AliEmcalRejectMCBackground*
    */
-  static AliEmcalRejectMCBackground* AddTaskRejectMCBackground(TString outname = "mcparticlebgrej", Int_t signalRejection = 0, Int_t debug = 0);
+  static AliEmcalRejectMCBackground* AddTaskRejectMCBackground(const TString outname = "mcparticlebgrej", const Int_t signalRejection = 0, const Int_t debug = 0);
 
  protected:
 
