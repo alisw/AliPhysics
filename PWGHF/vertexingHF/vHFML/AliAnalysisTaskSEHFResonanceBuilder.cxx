@@ -400,7 +400,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     }
 
     if (chHadIdx.size() == 0) // we don't have charm hadrons
-        continue;
+        return;
 
     AliAODPidHF *pidHF = fRDCuts->GetPidHF();
 
