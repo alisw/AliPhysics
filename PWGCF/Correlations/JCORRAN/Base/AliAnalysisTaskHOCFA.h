@@ -37,14 +37,15 @@ class AliAnalysisTaskHOCFA {
   virtual void InitialiseArrayMembers();
   virtual void BookFinalResults();
   virtual void CalculateQvectors(Long64_t myMulti,
-    double myAngles[], double myWeights[], float myCentWeight);
+    double myAngles[], double myWeights[]);
   TComplex Q(int n, int p);
   TComplex CalculateRecursion(int n, int *harmonic, int mult=1, int skip=0);
-  virtual void ComputeAllTerms();
+  virtual void ComputeAllTerms(float myCentWeight);
   virtual void CalculateCorrelator(int myMulti, int myHarmos[],
-    TProfile *myProfile, int myBin, int myPowers[]);
+    TProfile *myProfile, int myBin, int myPowers[], float myCentWeight);
   //virtual void CalculateCorrelator(int combi, int bin, int nParticles, int harmonics[], double *errorTerms);
-  virtual void ComputeEtaGaps(Long64_t multiplicity, double angles[], double pWeights[], double pseudorapidity[]);  
+  virtual void ComputeEtaGaps(Long64_t multiplicity, double angles[], double pWeights[],
+    double pseudorapidity[], float myCentWeight);  
 
   // Setters/getters specific to this class.
   void SetInputList(TClonesArray *inputArray) {fInputList = inputArray;}
