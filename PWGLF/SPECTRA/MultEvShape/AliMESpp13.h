@@ -42,7 +42,6 @@ public:
   };
   enum EMESpp13QA
   {
-    kConfig = 0,
     kEfficiency,
     kEvInfo,
     kTrkInfo,
@@ -90,6 +89,7 @@ private:
   TTree *fTracksTree;                 //!
   TTree *fMCGenTracksTree;            //!
   TTree *fMCMissedTracksTree;         //!
+
 
   AliPPVsMultUtils *fUtils;
   AliEventCuts fEventCutsQA; //!

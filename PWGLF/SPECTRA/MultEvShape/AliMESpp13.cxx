@@ -40,8 +40,8 @@
 
 using namespace std;
 
-Int_t noEvents(0);
-
+int eventsPassAllCutsMC(0);
+int eventsPassSLCutsMC(0);
 ClassImp(AliMESpp13)
     //________________________________________________________________________
     AliMESpp13::AliMESpp13()
@@ -117,20 +117,24 @@ AliMESpp13::~AliMESpp13()
 void AliMESpp13::UserCreateOutputObjects()
 {
 
+    // Build user objects
+  BuildQAHistos();
+  PostData(kQA, fHistosQA);
+
   OpenFile(1);
   TDirectory *savedir = gDirectory;
   fTreeSRedirector = new TTreeSRedirector();
   savedir->cd();
 
-  // Build user objects
-  BuildQAHistos();
-  PostData(kQA, fHistosQA);
-
   // ------- track cuts
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *lTrackCuts(NULL);
-  lTrackCuts = new AliESDtrackCuts("std11TC", "Standard 2011");
+  lTrackCuts = new AliESDtrackCuts("trkCuts", "Track Cuts");
   lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE, 0); // kTRUE for primaries
+  // lTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.1");
+  lTrackCuts->SetCutGeoNcrNcl(3.0, 130.0, 1.5, 0.85, 0.7);
+  lTrackCuts->SetMinNCrossedRowsTPC(120);
+  lTrackCuts->SetMaxDCAToVertexXY(3.0);
   fTrackFilter->AddCuts(lTrackCuts);
 
   fEventTree = ((*fTreeSRedirector) << "ev").GetTree();
@@ -169,12 +173,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     return;
   }
 
-    if (!fEventCutsQA.AcceptEvent(ev))
-  {
-    PostData(kQA, fHistosQA);
-    return;
-  }
-
   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!fESD)
   {
@@ -204,7 +202,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
 
-  // init magnetic field
+    // init magnetic field
   if (!TGeoGlobalMagField::Instance()->GetField() && !TGeoGlobalMagField::Instance()->IsLocked())
   {
     AliGRPManager grpManager;
@@ -214,32 +212,62 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       AliError("Problem with magnetic field setup");
   }
 
-  Bool_t incompleteDAQ = kFALSE; // if true should be rejected
-  AliAnalysisUtils SPDclustersTrackletsPileup;
-
-  incompleteDAQ = fESD->IsIncompleteDAQ();
-
+  AliAnalysisUtils analysisUtils;
+  eventsPassSLCutsMC = 0;
+  eventsPassAllCutsMC = 0;
   ((TH1 *)fHistosQA->At(kEfficiency))->Fill(0); // all events
-  if (AliPPVsMultUtils::IsMinimumBias(fESD))
+  if (inputHandler->IsEventSelected())
   {
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // events after Physics Selection (for MB normalisation to INEL)
+    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // physics selection 
+    {
+      if(fEventCutsQA.PassedCut(AliEventCuts::kTrigger)) 
+      {
+        ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // trigger selection
+        if(fEventCutsQA.PassedCut(AliEventCuts::kDAQincomplete))
+        {
+          ((TH1 *)fHistosQA->At(kEfficiency))->Fill(3); // DAQ incomplete selection
+          if(!analysisUtils.IsSPDClusterVsTrackletBG(fESD))
+          {
+            ((TH1 *)fHistosQA->At(kEfficiency))->Fill(4); // no background selection
+            if(AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
+            {
+              ((TH1 *)fHistosQA->At(kEfficiency))->Fill(5); // reject pile up evts using SPD
+              fEvInfo->SetPileUp();
+              if(fEventCutsQA.PassedCut(AliEventCuts::kVertex))
+              {
+                ((TH1 *)fHistosQA->At(kEfficiency))->Fill(6); // vertex 
+                eventsPassSLCutsMC=1;
+                if(fEventCutsQA.PassedCut(AliEventCuts::kVertexPosition))
+                {
+                  ((TH1 *)fHistosQA->At(kEfficiency))->Fill(7); // vertex  position
+                  eventsPassSLCutsMC=1;
+                  if(fEventCutsQA.PassedCut(AliEventCuts::kINELgt0))
+                  {
+                    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(8); // INEL > 0
+                    eventsPassAllCutsMC = 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
-  if (!(inputHandler->IsEventSelected()) ||
-      incompleteDAQ ||
-      SPDclustersTrackletsPileup.IsSPDClusterVsTrackletBG(fESD))
+  if (!fEventCutsQA.AcceptEvent(fESD))
   {
+    // PostData(kQA, fHistosQA);
+    // eventsPassAllCutsMC = 0;
     return;
   }
-  ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // analyzed events
+  else{
 
-  // TRIGGER SELECTION
-  // MB & HM triggers
-  Bool_t triggerMB = 0;
-  triggerMB = (inputHandler->IsEventSelected() & AliVEvent::kINT7); // default - for MB
-  // AliVEvent::kMB for crosschecks
-  if (triggerMB)
-    fEvInfo->SetTriggerMB();
+    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(9); // All cuts
+    // eventsPassAllCutsMC = 1;
+  }
+
+      
 
   // vertex selection
   const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
@@ -260,9 +288,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   }
   fEvInfo->SetVertexZ(vertex->GetZ());
 
-  // pile-up selection
-  if (fESD->IsPileupFromSPDInMultBins())
-    fEvInfo->SetPileUp();
 
   // multiplicity
   AliESDtrackCuts *tc(NULL);
@@ -270,10 +295,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   if ((tc = dynamic_cast<AliESDtrackCuts *>(fTrackFilter->GetCuts()->At(0))))
   {
     fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
-    if (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1) >= 1)
-    {
-      fEvInfo->SetMultiplicity(AliMESeventInfo::kSPDtrk, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8));
-    }
+    fEvInfo->SetMultiplicity(AliMESeventInfo::kSPDtrk, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8));
     fEvInfo->SetMultiplicity(AliMESeventInfo::kGlob08, tc->CountAcceptedTracks(fESD));
     fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M, MultSelection->GetMultiplicityPercentile("V0M"));
     fEvInfo->SetMultiplicity(AliMESeventInfo::kComb0408, (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8) - tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.4))); // Combined multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
@@ -398,11 +420,11 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                           << "run=" << run
                           << "event=" << event
                           << "Pt=" << fPt.at(i)
-                          // << "Charge=" << fCharge
+                          // << "Charge=" << fCharge.at(i)
                           << "Eta=" << fEta.at(i)
-                          // << "Phi=" << fPhi
-                          // << "DeltaPhi=" << fDeltaPhi
-                          // << "DeltaEta=" << fDeltaEta
+                          // << "Phi=" << fPhi.at(i)
+                          // << "DeltaPhi=" << fDeltaPhi.at(i)
+                          // << "DeltaEta=" << fDeltaEta.at(i)
                           << "DCAxy=" << fDCAxy.at(i)
                           << "PassDCA=" << fPassDCA.at(i)
                           << "\n";
@@ -413,7 +435,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   if (!HasMCdata())
   {
     (*fTreeSRedirector) << "ev"
-                        // << "noEvents=" << noEvents
                         << "event=" << event
                         << "run=" << run
                         << "MultComb08=" << fMultComb08
@@ -662,9 +683,9 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                         << "Primary_MC=" << fPrimary_MC.at(i)
                         << "Secondary_MC=" << fSecondary_MC.at(i)
                         << "Material_MC=" << fMaterial_MC.at(i)
-                        // << "Phi_MC=" << fPhi_MC
-                        // << "DeltaPhi_MC=" << fDeltaPhi_MC
-                        // << "DeltaEta_MC=" << fDeltaEta_MC
+                        // << "Phi_MC=" << fPhi_MC.at(i)
+                        // << "DeltaPhi_MC=" << fDeltaPhi_MC.at(i)
+                        // << "DeltaEta_MC=" << fDeltaEta_MC.at(i)
                         << "\n";
   }
   if (!fTreeSRedirector)
@@ -684,6 +705,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                       << "Mult08=" << fMult08_MC
                       << "V0M_MC=" << fV0M_MC
                       << "Sphericity_MC=" << fSphericity_MC
+                      // << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
+                      // << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
                       // << "nTracks=" << nTracks;
                       // << "PtLP_MC=" << fPtLP_MC
                       // << "EtaLP_MC=" << fEtaLP_MC
@@ -840,39 +863,29 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
 Bool_t AliMESpp13::BuildQAHistos()
 {
   // Make QA sparse histos for
-  // - task configuration
   // - efficiency
   // - event info
   // - track info
 
-  if (fHistosQA)
-  { // QA histos already created. Check consistency
-    if (fHistosQA->GetEntries() == (HasMCdata() ? kNqa : kMCevInfo))
-    {
-      AliInfo("QA histos already created");
-      return kTRUE;
-    }
-    else
-    {
-      AliError("QA histos wrongly defined.");
-      fHistosQA->ls();
-      return kFALSE;
-    }
-  }
-
   // build QA histos
-  fHistosQA = new TList();
+  fHistosQA = new TList(); 
   fHistosQA->SetOwner(kTRUE);
+
 
   fEventCutsQA.AddQAplotsToList(fHistosQA, kTRUE);
 
-  TH1 *hEff = new TH1I("hEff", "Cuts efficiency;cut;entries", 3, -0.5, 2.5);
+  TH1 *hEff = new TH1I("hEff", "Event selection;;Events", 10, -0.5, 9.5);
   TAxis *ax = hEff->GetXaxis();
-  ax->SetBinLabel(1, "OK");
-  ax->SetBinLabel(2, "Trigger");
-  ax->SetBinLabel(3, "Vertex");
-  //   ax->SetBinLabel(4, "PileUp");
-
+  ax->SetBinLabel(1, "All events");
+  ax->SetBinLabel(2, "Physics selection");
+  ax->SetBinLabel(3, "Trigger (kINT7)");
+  ax->SetBinLabel(4, "Complete DAQ");
+  ax->SetBinLabel(5, "No background");
+  ax->SetBinLabel(6, "No pile up");
+  ax->SetBinLabel(7, "Good vertex");
+  ax->SetBinLabel(8, "|Zvtx|<10 cm");
+  ax->SetBinLabel(9, "INEL > 0");
+  ax->SetBinLabel(10, "All cuts");
   fHistosQA->AddAt(hEff, kEfficiency);
 
   TString st;
