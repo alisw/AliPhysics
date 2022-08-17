@@ -44,6 +44,7 @@
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliAODMCHeader.h"
 #ifndef __CINT__
@@ -857,6 +858,8 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
  // Kinematics
  AliGenPythiaEventHeader *pythiaHeader = GetPythiaHeader();
  AliGenHerwigEventHeader *HerwigHeader = GetHerwigHeader();
+ AliGenHepMCEventHeader  *HepMCEventHeader = GetHepMCEventHeader();
+
  if(pythiaHeader) {
    TArrayF t;
    pythiaHeader->PrimaryVertex(t);
@@ -880,7 +883,19 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
    fh1vZSelect->Fill(t.GetAt(2));
    fh1Xsec->Fill("<#sigma>",  HerwigHeader->Weight());
    fh1Trials->Fill("#sum{ntrials}",HerwigHeader->Trials());
+  } else if(HepMCEventHeader) {
+   Double_t position[3]={0,0,0};
+   MCEvent()->GetPrimaryVertex()->GetXYZ(position); 
+   Float_t xvtx = position[0];
+   Float_t yvtx = position[1];
+   Float_t zvtx = position[2];
+   Float_t r2   = yvtx*yvtx+xvtx*xvtx;
+   if(!(TMath::Abs(zvtx)<fVtxZMax&&r2<fVtxR2Max)) return;
+   fh1vZSelect->Fill(position[2]);
+   fh1Xsec->Fill("<#sigma>", HepMCEventHeader->sigma_gen());
+   fh1Trials->Fill("#sum{ntrials}",HepMCEventHeader->ntrials());
   }
+
 
 
   else  fh1vZSelect->Fill(0);
@@ -3403,6 +3418,26 @@ AliGenHerwigEventHeader *AliAnalysisTaskJetFFMoments::GetHerwigHeader()  {
      }
     }
     return HerwigHeader;
+}
+
+// __________________________________________________________________________________________________________________________________________________________
+AliGenHepMCEventHeader *AliAnalysisTaskJetFFMoments::GetHepMCEventHeader()  {
+     if(!MCEvent()) return 0x0;
+     AliGenHepMCEventHeader *HepMCEventHeader = dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader());
+     if(fDebug>10) HepMCEventHeader->Dump();
+     if (!HepMCEventHeader) {
+       // Check if AOD
+       if(fAOD) {
+       AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
+       if (aodMCH) {
+         for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+           HepMCEventHeader = dynamic_cast<AliGenHepMCEventHeader*>(aodMCH->GetCocktailHeader(i));
+           if (HepMCEventHeader) break;
+        }
+       }
+     }
+    }
+    return HepMCEventHeader;
 }
 
 //___________________________________________________________________________________
