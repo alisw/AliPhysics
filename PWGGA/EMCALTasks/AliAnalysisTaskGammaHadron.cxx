@@ -55,7 +55,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
   fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
-  fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
+  fEMCalTriggerReqMode(0),fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
   fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
@@ -109,7 +109,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
   fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
-  fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
+  fEMCalTriggerReqMode(0),fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
   fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
@@ -2419,27 +2419,48 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 		}*/
 	}
 
-  // EMCal Trigger rejection (for use with EMCalTriggerMakerNew
+  // EMCal Trigger rejection (for use with trigger string selection or EMCalTriggerMakerNew
   // Check if EMCal Trigger requirement is set
   if (fAcceptEMCalTriggers.size() > 0) {
-    auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
-    //auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(input->FindListObject("EmcalTriggerDecision"))
-    if (trgsel == 0) {
-      cout << "AliAnalysisGammaHadron:: Could not find EMCal Trigger Decision container named: " << fNameEMCalTriggerDecisionContainer << endl;
-      return kFALSE;
-    }
+    if (fEMCalTriggerReqMode == 0) {
 
-    bool fRejectForLackOfEMCalTrigger = true;
+      bool fRejectForLackOfEMCalTrigger = true;
 
-    for (TString fEMCalTriggerString : fAcceptEMCalTriggers) {
-      if(trgsel->IsEventSelected(fEMCalTriggerString.Data())) {
-        fRejectForLackOfEMCalTrigger = false;
-        break;
+      TString triggerClasses = InputEvent()->GetFiredTriggerClasses();
+
+      for (TString fEMCalTriggerString : fAcceptEMCalTriggers) {
+        if (triggerClasses.Contains(fEMCalTriggerString.Data())) {
+          fRejectForLackOfEMCalTrigger = false;
+          break;
+        }
+      }
+
+      if (fRejectForLackOfEMCalTrigger) {
+        return kFALSE;
       }
     }
 
-    if (fRejectForLackOfEMCalTrigger) {
-      return kFALSE;
+    if (fEMCalTriggerReqMode == 1) {
+      auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
+      //auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(input->FindListObject("EmcalTriggerDecision"))
+      if (trgsel == 0) {
+        cout << "AliAnalysisGammaHadron:: Could not find EMCal Trigger Decision container named: " << fNameEMCalTriggerDecisionContainer << endl;
+        return kFALSE;
+      }
+
+      bool fRejectForLackOfEMCalTrigger = true;
+
+      for (TString fEMCalTriggerString : fAcceptEMCalTriggers) {
+        if(trgsel->IsEventSelected(fEMCalTriggerString.Data())) {
+          fRejectForLackOfEMCalTrigger = false;
+          break;
+        }
+      }
+
+      if (fRejectForLackOfEMCalTrigger) {
+        if (fGeneralHistograms) fHistEventRejection->Fill("trigTypeSel",1);
+        return kFALSE;
+      }
     }
   }
 

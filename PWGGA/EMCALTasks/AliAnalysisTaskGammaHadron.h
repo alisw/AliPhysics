@@ -55,6 +55,7 @@ public:
 
   //..setters for the analysis
   void                        SetDebug(Int_t input)                                 { fDebug           = input  ; }
+  void                        SetEMCalTriggerReqMode(Int_t input)                   { fEMCalTriggerReqMode = input; }
   void                        SetNameEMCalTriggerDecisionContainer(TString input)        { fNameEMCalTriggerDecisionContainer = input; }
   void                        AddEMCalTriggerRequirement(TString input)             { fAcceptEMCalTriggers.push_back(input); }
   void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
@@ -265,6 +266,8 @@ protected:
   static const Bool_t         bEnableTrackPtAxis = 1;    ///< Whether to swap the xi axis with a track pT axis. Currently must be set here
   static const Bool_t         bEnableEventHashMixing = 1;///< Whether to split events up into 2 classes (odd and even) for event mixing to avoid autocorrelation
 
+
+  Int_t                       fEMCalTriggerReqMode;       ///< How to require EMCal triggers. 0 for trigger string based, 1 for TriggerDecision ContainerBased
   TString                     fNameEMCalTriggerDecisionContainer;
 
   vector<TString>             fAcceptEMCalTriggers; ///< Array of EMCal trigger types to accept
@@ -539,6 +542,6 @@ protected:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 16) // Class to analyze gamma- and pi0- hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 17) // Class to analyze gamma- and pi0- hadron correlations
 };
 #endif
