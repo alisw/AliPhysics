@@ -1247,7 +1247,6 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
     else if(isVZERO)
     cutsPOI->SetEtaRange(gEtaMin,gEtaMax);*/
     
-    
     cutsPOI->SetAcceptKinkDaughters(kFALSE);
     cutsPOI->SetPtRange(0.2,5.);
     cutsPOI->SetEtaRange(gEtaMin,gEtaMax);
