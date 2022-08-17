@@ -56,6 +56,7 @@ class AliAODJetEventBackground;
 class AliAnalysisHelperJetTasks;
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 
 class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
 {
@@ -281,6 +282,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   bool       IsDMeson(int pc);
   AliGenPythiaEventHeader* GetPythiaHeader();
   AliGenHerwigEventHeader* GetHerwigHeader();
+  AliGenHepMCEventHeader*  GetHepMCEventHeader();
   Bool_t IsOutlier(AliGenPythiaEventHeader * const header);
   bool       IsProof() {return AliAnalysisManager::GetAnalysisManager()->IsProofMode();}  
   const char* ProofClearOpt() { if(IsProof()) {return "nodelete";} else { return "";}} 
