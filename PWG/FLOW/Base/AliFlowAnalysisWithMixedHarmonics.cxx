@@ -927,7 +927,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllEventByEventQuantities()
 {
  // Book all event-by-event quantitites.
  
-  // Q_{n,k} and S{p,k}:
+ // Q_{n,k} and S{p,k}:
  fReQnk = new TMatrixD(6,9); // to be improved (check bound on k!)
  fImQnk = new TMatrixD(6,9); // to be improved (check bound on k!)
  fSpk = new TMatrixD(4,4); // to be improved (check bound on p and k!)
