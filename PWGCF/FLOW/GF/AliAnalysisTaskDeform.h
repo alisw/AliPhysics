@@ -121,6 +121,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetUse2DEfficiencies(bool newval, bool newval2=kFALSE) {fUse2DEff = newval; fUsePIDEff = newval2;};
   void SetParticleFlag(UInt_t newval) {fParticleFlag = newval;};
   void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
+  void SetOnTheFly(bool newval) {fOnTheFly = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -135,6 +136,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fIsMC;
   Bool_t fBypassTriggerAndEvetCuts;
   Bool_t fUSe15opass2PU;
+  Bool_t fOnTheFly;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; //For random number generation
@@ -172,6 +174,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TList *fCovList;
   TList *fV2dPtList;
   AliProfileBS **fCovariance; //!
+  AliProfileBS **fMpts; //!
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
@@ -206,21 +209,26 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
+  Double_t fImpactParameterMC;
   int EventNo;
   double fConstEff;
   double fSigmaEff;
   unsigned int fEventWeight; 
   vector<vector<double>>  wpPt;
+  std::map<double,double> centralitymap;  
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(AliProfileBS* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm);
+  void FillMPT(AliProfileBS *target, const Double_t &mpt, const Double_t &cent, const Double_t &wpt, const Double_t &rndmn);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptCustomEvent(AliAODEvent*);
   Bool_t AcceptCustomEvent(AliESDEvent*);
+  AliMCEvent *getMCEvent();
+  double getAMPTCentrality();
   Double_t getEfficiency(double &lpt, int iCent);
   vector<Double_t> getPowerEfficiency(double &lpt, int iCent);
   Bool_t fDisablePID;
