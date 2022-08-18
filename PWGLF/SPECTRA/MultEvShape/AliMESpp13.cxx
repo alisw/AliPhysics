@@ -130,8 +130,8 @@ void AliMESpp13::UserCreateOutputObjects()
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *lTrackCuts(NULL);
   lTrackCuts = new AliESDtrackCuts("trkCuts", "Track Cuts");
-  lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE, 0); // kTRUE for primaries
-  // lTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.1");
+  lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0); // kTRUE for primaries
+  lTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.1");
   lTrackCuts->SetCutGeoNcrNcl(3.0, 130.0, 1.5, 0.85, 0.7);
   lTrackCuts->SetMinNCrossedRowsTPC(120);
   lTrackCuts->SetMaxDCAToVertexXY(3.0);
@@ -420,13 +420,13 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                           << "run=" << run
                           << "event=" << event
                           << "Pt=" << fPt.at(i)
-                          // << "Charge=" << fCharge.at(i)
                           << "Eta=" << fEta.at(i)
-                          // << "Phi=" << fPhi.at(i)
+                          << "Phi=" << fPhi.at(i)
+                          // << "Charge=" << fCharge.at(i)
                           // << "DeltaPhi=" << fDeltaPhi.at(i)
                           // << "DeltaEta=" << fDeltaEta.at(i)
-                          << "DCAxy=" << fDCAxy.at(i)
-                          << "PassDCA=" << fPassDCA.at(i)
+                          // << "DCAxy=" << fDCAxy.at(i)
+                          // << "PassDCA=" << fPassDCA.at(i)
                           << "\n";
     }
   }
@@ -670,22 +670,22 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                         << "run=" << run
                         << "event=" << event
                         << "Pt=" << fPt.at(i)
-                        // << "Charge=" << fCharge.at(i)
                         << "Eta=" << fEta.at(i)
-                        // << "Phi=" << fPhi.at(i)
+                        << "Phi=" << fPhi.at(i)
                         // << "DeltaPhi=" << fDeltaPhi.at(i)
                         // << "DeltaEta=" << fDeltaEta.at(i)
-                        << "DCAxy=" << fDCAxy.at(i)
-                        << "PassDCA=" << fPassDCA.at(i)
+                        // << "Charge=" << fCharge.at(i)
+                        // << "DCAxy=" << fDCAxy.at(i)
+                        // << "PassDCA=" << fPassDCA.at(i)
                         << "Pt_MC=" << fPt_MC.at(i)
-                        // // // << "Charge_MC=" << fCharge_MC
+                        << "Phi_MC=" << fPhi_MC.at(i)
                         << "Eta_MC=" << fEta_MC.at(i)
-                        << "Primary_MC=" << fPrimary_MC.at(i)
-                        << "Secondary_MC=" << fSecondary_MC.at(i)
-                        << "Material_MC=" << fMaterial_MC.at(i)
-                        // << "Phi_MC=" << fPhi_MC.at(i)
                         // << "DeltaPhi_MC=" << fDeltaPhi_MC.at(i)
                         // << "DeltaEta_MC=" << fDeltaEta_MC.at(i)
+                        // << "Charge_MC=" << fCharge_MC
+                        // << "Primary_MC=" << fPrimary_MC.at(i)
+                        // << "Secondary_MC=" << fSecondary_MC.at(i)
+                        // << "Material_MC=" << fMaterial_MC.at(i)
                         << "\n";
   }
   if (!fTreeSRedirector)
@@ -705,8 +705,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                       << "Mult08=" << fMult08_MC
                       << "V0M_MC=" << fV0M_MC
                       << "Sphericity_MC=" << fSphericity_MC
-                      // << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
-                      // << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
+                      << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
+                      << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
                       // << "nTracks=" << nTracks;
                       // << "PtLP_MC=" << fPtLP_MC
                       // << "EtaLP_MC=" << fEtaLP_MC
