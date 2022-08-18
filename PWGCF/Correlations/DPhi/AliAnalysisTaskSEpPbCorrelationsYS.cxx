@@ -478,7 +478,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
       }else{
 	fheffipt=(TH1F*)file->Get("fheffipt");
       }
-    }else if(fcollisiontype=="MBPP" || fcollisiontype=="HMPPV0"){
+    }else if(fcollisiontype=="MBPP" || fcollisiontype.Contains("HMPP")){
       feffi=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/byvytautas/Effi_pp_FB%d_v2.root",ffilterbit));
       if(!feffi) AliError("No efficinecy file");
     }else if(fcollisiontype=="PbPb"){
@@ -527,6 +527,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	 else fmaxcent=100.;
    }
    Double_t binning_cent_1[] = {0., 0.1, 5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
+
    TH2F* fhist_centtrack=new TH2F("fhist_centtrack","fhist_centtrack",fmaxcent,0,fmaxcent,12,binning_cent_1);
    fOutputList->Add(fhist_centtrack);
 				  
@@ -539,7 +540,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    TH1F* fHistCentrality_beforecut = new TH1F("fHistCentrality_beforecut", ";centrality;count", 100, 0, fmaxcent);
    fOutputList->Add(fHistCentrality_beforecut);
   
-   TH2F* fHistCentzvertex = new TH2F("fHistCentzvertex", "Cent;VZ;count", 100,0, fmaxcent, 60, -15, 15);
+   TH2F* fHistCentzvertex = new TH2F("fHistCentzvertex", "Cent;VZ;count", fmaxcent,0, fmaxcent, 60, -15, 15);
    fOutputList->Add(fHistCentzvertex);
 
    Int_t nspdtracks;
