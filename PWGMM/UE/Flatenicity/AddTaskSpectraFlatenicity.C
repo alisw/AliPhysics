@@ -7,6 +7,7 @@ class AliAnalysisDataContainer;
 
 AliAnalysisTaskSpectraFlatenicity*
 AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat", 
+                            TString detForFlat = "V0",
                             Bool_t woTrivialscaling = kFALSE, 
                             Bool_t useMC = kTRUE,
                             Bool_t performMCclosuretest = kFALSE, 
@@ -38,6 +39,7 @@ AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat",
   taskFlat->SetMCclosureTest(performMCclosuretest);
   taskFlat->SetPtMin(minpT);
   taskFlat->SetRemoveTrivialScaling(woTrivialscaling);
+  taskFlat->SetDetectorForFlatenicity(detForFlat);
   taskFlat->SetPeriod(DataSet);
   taskFlat->SetUseCalibration(useCalib);
   mgr->AddTask(taskFlat);
