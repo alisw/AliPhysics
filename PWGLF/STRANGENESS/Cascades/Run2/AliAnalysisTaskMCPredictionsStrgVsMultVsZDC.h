@@ -96,12 +96,17 @@ private:
   TH2D *f2DHistNchRecoPercSPDV0M; //!
   TH2D *f2DHistINELgt0RecoPercSPDV0M; //!
   TH2D *f2DHistNMPISPDV0M; //!
+  TH2D *f2DHistINELgt0Nch0815V0M; //!
+  TH2D *f2DHistLeadingENch0815V0M; //!
+  TH2D *f2DHistEffEnergyNch0815V0M; //!
+  TH2D *f2DHistNchNch0815V0M; //!
+  TH2D *f2DHistNMPINch0815V0M; //!
   TH2D *f2DHistQ2SPDV0M; //!
   TH2D *f2DHistbSPDV0M; //!
   TH1D *fHistPt[22]; //! 
   TH2D *f2DHistPartSPDV0M[22]; //!
   TH2D *f2DHistPartRecoPercSPDV0M[22]; //!
-  TH2D *f2DHistPartSPDClNch0815[22]; //!
+  TH2D *f2DHistPartNch0815V0M[22]; //!
   TH2D *f2DHistAvPtSPDV0M[22]; //!
   TH2D *f2dHistZDCVsLE; //!
   TH2D *f2dHistZDCVsEE; //!

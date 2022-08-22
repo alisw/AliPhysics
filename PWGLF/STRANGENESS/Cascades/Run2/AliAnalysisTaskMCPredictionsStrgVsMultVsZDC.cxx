@@ -127,6 +127,11 @@ f2DHistINELgt0RecoPercSPDV0M(0),
 f2DHistNMPISPDV0M(0),
 f2DHistQ2SPDV0M(0),
 f2DHistbSPDV0M(0),
+f2DHistINELgt0Nch0815V0M(0),
+f2DHistLeadingENch0815V0M(0),
+f2DHistEffEnergyNch0815V0M(0),
+f2DHistNchNch0815V0M(0),
+f2DHistNMPINch0815V0M(0),
 f2dHistZDCVsLE(0),
 f2dHistZDCVsEE(0),
 f2dHistZDCVsLEA(0),
@@ -148,7 +153,7 @@ p2dHistPi0SPDMultSPDCl(0)
     fHistPt[ih] = 0x0;
     f2DHistPartSPDV0M[ih] = 0x0;
     f2DHistAvPtSPDV0M[ih] = 0x0;
-    f2DHistPartSPDClNch0815[ih] = 0x0;
+    f2DHistPartNch0815V0M[ih] = 0x0;
     f2DHistPartRecoPercSPDV0M[ih] = 0x0;
   }
 }
@@ -187,6 +192,11 @@ f2DHistINELgt0RecoPercSPDV0M(0),
 f2DHistNMPISPDV0M(0),
 f2DHistQ2SPDV0M(0),
 f2DHistbSPDV0M(0),
+f2DHistINELgt0Nch0815V0M(0),
+f2DHistLeadingENch0815V0M(0),
+f2DHistEffEnergyNch0815V0M(0),
+f2DHistNchNch0815V0M(0),
+f2DHistNMPINch0815V0M(0),
 f2dHistZDCVsLE(0),
 f2dHistZDCVsEE(0),
 f2dHistZDCVsLEA(0),
@@ -208,7 +218,7 @@ p2dHistPi0SPDMultSPDCl(0)
     fHistPt[ih] = 0x0;
     f2DHistPartSPDV0M[ih] = 0x0;
     f2DHistAvPtSPDV0M[ih] = 0x0;
-    f2DHistPartSPDClNch0815[ih] = 0x0;
+    f2DHistPartNch0815V0M[ih] = 0x0;
     f2DHistPartRecoPercSPDV0M[ih] = 0x0;
   }
   //
@@ -406,7 +416,6 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
     f2DHistNMPISPDV0M = new TH2D( "f2DHistNMPISPDV0M", "NMPI;SPD Clusters; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
     fListHist->Add(f2DHistNMPISPDV0M);
   }
-  
 
   //-----------------------------------------------------------------------------
   if(!f2DHistQ2SPDV0M && fkDoPythia) {
@@ -421,7 +430,36 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
     fListHist->Add(f2DHistbSPDV0M);
   }
   
+  //-----------------------------------------------------------------------------
+  if(!f2DHistINELgt0Nch0815V0M) {
+    f2DHistINELgt0Nch0815V0M = new TH2D( "f2DHistINELgt0Nch0815V0M", "INEL>0 events;Nch 0.8 < |#eta| < 1.5; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistINELgt0Nch0815V0M);
+  }
+  
+  //-----------------------------------------------------------------------------
+  if(!f2DHistLeadingENch0815V0M) {
+    f2DHistLeadingENch0815V0M = new TH2D( "f2DHistLeadingENch0815V0M", "Leading energy (GeV);Nch 0.8 < |#eta| < 1.5; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistLeadingENch0815V0M);
+  }
+  
+  //-----------------------------------------------------------------------------
+  if(!f2DHistEffEnergyNch0815V0M) {
+    f2DHistEffEnergyNch0815V0M = new TH2D( "f2DHistEffEnergyNch0815V0M", "Effective energy (GeV);Nch 0.8 < |#eta| < 1.5; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistEffEnergyNch0815V0M);
+  }
+  
+  //-----------------------------------------------------------------------------
+  if(!f2DHistNchNch0815V0M) {
+    f2DHistNchNch0815V0M = new TH2D( "f2DHistNchNch0815V0M", "Nch (|#eta|<0.5);Nch 0.8 < |#eta| < 1.5; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistNchNch0815V0M);
+  }
 
+  //-----------------------------------------------------------------------------
+  if(!f2DHistNMPINch0815V0M && fkDoPythia) {
+    f2DHistNMPINch0815V0M = new TH2D( "f2DHistNMPINch0815V0M", "NMPI;Nch 0.8 < |#eta| < 1.5; V0M multiplicity", 800, 0, 800., 500, 0, 500.);
+    fListHist->Add(f2DHistNMPINch0815V0M);
+  }
+  
   //-----------------------------------------------------------------------------
   for(Int_t ih=0; ih<22; ih++){
     if(!fHistPt[ih]) {
@@ -440,9 +478,9 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
 
   //-----------------------------------------------------------------------------
   for(Int_t ih=0; ih<22; ih++){
-    if(!f2DHistPartSPDClNch0815[ih]) {
-      f2DHistPartSPDClNch0815[ih] = new TH2D(Form("f2DHistPartSPDClNch0815_%s",lPartNames[ih].Data()), Form("Generated %s;SPD Clusters; Nch 0.8 < |#eta| < 1.5",lPartNames[ih].Data()), 800, 0, 800., 500, 0, 500.);
-      fListHist->Add(f2DHistPartSPDClNch0815[ih]);
+    if(!f2DHistPartNch0815V0M[ih]) {
+      f2DHistPartNch0815V0M[ih] = new TH2D(Form("f2DHistPartNch0815V0M_%s",lPartNames[ih].Data()), Form("Generated %s;Nch 0.8 < |#eta| < 1.5, V0M multiplicity",lPartNames[ih].Data()), 800, 0, 800., 500, 0, 500.);
+      fListHist->Add(f2DHistPartNch0815V0M[ih]);
     }
   }
 
@@ -843,7 +881,7 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
           if(fHistPt[ih]) fHistPt[ih] -> Fill( pt );
           if(f2DHistAvPtSPDV0M[ih]) f2DHistAvPtSPDV0M[ih] -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, pt );
           if(f2DHistPartSPDV0M[ih]) f2DHistPartSPDV0M[ih] -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC );    
-          if(f2DHistPartSPDClNch0815[ih]) f2DHistPartSPDClNch0815[ih] -> Fill( lSPDClusters, lNchEta08to15 );    
+          if(f2DHistPartNch0815V0M[ih]) f2DHistPartNch0815V0M[ih] -> Fill( lNchEta08to15, lNchVZEROA+lNchVZEROC );    
   
           //Counter for specific particles in this event
           lPartCounter[ih]++;          
@@ -859,6 +897,12 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
   if(f2DHistNMPISPDV0M)      f2DHistNMPISPDV0M      -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_NMPI );   
   if(f2DHistQ2SPDV0M)        f2DHistQ2SPDV0M        -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_Q2 );
   if(f2DHistbSPDV0M)         f2DHistbSPDV0M         -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, fMC_b );
+  if(f2DHistINELgt0Nch0815V0M)   f2DHistINELgt0Nch0815V0M   -> Fill( lNchEta08to15, lNchVZEROA+lNchVZEROC );    
+  if(f2DHistLeadingENch0815V0M)  f2DHistLeadingENch0815V0M  -> Fill( lNchEta08to15, lNchVZEROA+lNchVZEROC, fLeadingE );    
+  if(f2DHistEffEnergyNch0815V0M) f2DHistEffEnergyNch0815V0M -> Fill( lNchEta08to15, lNchVZEROA+lNchVZEROC, fEffEnergy );    
+  if(f2DHistNchNch0815V0M)       f2DHistNchNch0815V0M       -> Fill( lNchEta08to15, lNchVZEROA+lNchVZEROC, lNchEta05 );      
+  if(f2DHistNMPINch0815V0M)      f2DHistNMPINch0815V0M      -> Fill( lNchEta08to15, lNchVZEROA+lNchVZEROC, fMC_NMPI );   
+  
     
   //Reco information
   if (!lESDevent) {
