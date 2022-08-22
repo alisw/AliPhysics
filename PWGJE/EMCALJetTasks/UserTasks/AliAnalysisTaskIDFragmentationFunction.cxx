@@ -127,12 +127,9 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fh3trackDensity(0x0)
    ,fh2TrackDef(0x0)
    ,fRandom(0)
-   
    ,fOnlyLeadingJets(kFALSE)
    ,fMCPtHardCut(-1.)
-   
    ,fAnaUtils(0)
-   
    // PID framework
    ,fNumInclusivePIDtasks(0)
    ,fNumJetPIDtasks(0)
@@ -156,7 +153,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fFastSimEffFactor(1.0)
    ,fFastSimRes(0.002)
    ,fFastSimResFactor(1.0)
-	 ,fFFChange(0)
+   ,fFFChange(0)
    ,fRCTrials(1)
    ,fUEMethods(0x0)
    ,fUseRealJetArea(kTRUE)
@@ -252,7 +249,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fFastSimEffFactor(1.0)
   ,fFastSimRes(0.002)
   ,fFastSimResFactor(1.0)  
-	,fFFChange(0)
+  ,fFFChange(0)
   ,fRCTrials(1)
   ,fUEMethods(0x0)
   ,fUseRealJetArea(kTRUE)
@@ -814,7 +811,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   AliVEvent* evtForCentDetermination = handler->InheritsFrom("AliAODInputHandler") ? fAOD : InputEvent();
   
   Int_t multiplicity;
-  if (evtForCentDetermination->ClassName() == "AliESDEvent")
+  if (strcmp(evtForCentDetermination->ClassName(), "AliESDEvent") == 0)
     multiplicity = ((AliESDEvent*)evtForCentDetermination)->GetNumberOfTPCTracks();
   else
     multiplicity = evtForCentDetermination->GetNumberOfESDTracks();
