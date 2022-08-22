@@ -92,7 +92,10 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         bool IsPionNSigmaRejection(     float mom, float nsigmaTPCPi, float nsigmaTOFPi);
         bool IsKaonNSigmaRejection(     float mom, float nsigmaTPCK, float nsigmaTOFK);
         bool IsProtonNSigmaRejection(   float mom, float nsigmaTPCP, float nsigmaTOFP);
-        
+       
+	bool IsPionNSigma(float mom,float nsigmaTPCpi,float nsigmaTOFpi);
+	bool IsKaonNSigma(float mom,float nsigmaTPCk,float nsigmaTOFk);
+	bool Reject_commom(const AliFemtoTrack* track, float mom); 
 	//\ 2022.1.26
 	int fUseTOFMassCut;
 	float TOFMassLowLimit;
