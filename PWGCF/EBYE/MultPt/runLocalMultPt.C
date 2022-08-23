@@ -6,7 +6,7 @@
 // (negin.alizadehvandchali@cern.ch)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "AliAnalysisMultPt.h"
-void runLocal()
+void runLocalMultPt()
 {
     // header location
     gInterpreter->ProcessLine(".include $ROOTSYS/include");
@@ -24,15 +24,8 @@ void runLocal()
     // load the addtask macro and create the task
     AliAnalysisMultPt *task = reinterpret_cast<AliAnalysisMultPt*>(gInterpreter->ExecuteMacro("macros/AddMultPt.C"));
     if(!task) return 0x0;
+
     
-    task->SelectCollisionCandidates(AliVEvent::kINT7);  //????
-    task->SetMCRead(kTRUE);
-    //task->SetPileUpRead(kTRUE);
-    task->SetGeneratorName("Hijing");
-    task->SetEtaMinLimit(-0.8);
-    task->SetEtaMaxLimit(0.8);
-    task->SetFilterBit(128);
-    task->SetChi2DoF(4);
     
     // Add task
     if(!mgr->InitAnalysis()) return;
@@ -42,8 +35,8 @@ void runLocal()
     
     // if you want to run locally, we need to define some input
     TChain* chain = new TChain("aodTree");
-    //chain->Add("/Users/neginav/AODs for Xe-MC/AliAOD1.root");
     chain->Add("/Users/neginav/AODs for Pb-MC/AliAOD1.root");
+
     // start the analysis locally, reading the events from the tchain
     mgr->StartAnalysis("local", chain);
-    }
+}
