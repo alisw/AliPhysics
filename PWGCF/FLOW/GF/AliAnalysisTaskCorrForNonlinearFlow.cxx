@@ -508,7 +508,11 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     fListOfProfile->Add(fhChargedSE);
     //
     fhChargedME = new AliTHn("fhChargedME", "fhChargedME", nSteps, sizeof(iBinning) / sizeof(Int_t), iBinning);
-    fhChargedME->SetBinLimits(0, binning_deta_tpctpc);
+    if (anaType.EqualTo("TPCTPC")) {
+      fhChargedME->SetBinLimits(0, binning_deta_tpctpc);
+    } else {
+      fhChargedME->SetBinLimits(0, binning_deta_tpcfmd);
+    }
     fhChargedME->SetBinLimits(1, binning_dphi);
     fhChargedME->SetBinLimits(2, -10.,10.);
     fhChargedME->SetBinLimits(3,  0.,10.);
