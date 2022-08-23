@@ -992,6 +992,8 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 	else if(fCurrCentrality>=40 && fCurrCentrality<50)IntCent=5;
 	else if(fCurrCentrality>=50 && fCurrCentrality<60)IntCent=6;
 	else if(fCurrCentrality>=60)IntCent=7;
+	//For PbPb, Only have Cent0 in NUE
+	if(fPeriod.EqualTo("LHC15o"))IntCent=0;
 	//Pt Weight is extract from Efficiency
 	if(fCurrSystFlag==0)
 	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
