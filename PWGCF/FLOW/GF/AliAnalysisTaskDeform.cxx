@@ -391,12 +391,12 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     fPtCont->SetEventWeight(fEventWeight);
     fPtCont->InitializeSubsamples(fNBootstrapProfiles);
     fMpts = new AliProfileBS*[6];
-    fMpts[0] = new AliProfileBS(Form("mpt1_%s",spNames[0].Data()),Form("mpt2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fMpts[0] = new AliProfileBS(Form("mpt1_%s",spNames[0].Data()),Form("mpt1_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
     fMpts[1] = new AliProfileBS(Form("mpt2_%s",spNames[0].Data()),Form("mpt2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
-    fMpts[2] = new AliProfileBS(Form("mpt3_%s",spNames[0].Data()),Form("mpt2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
-    fMpts[3] = new AliProfileBS(Form("mpt4_%s",spNames[0].Data()),Form("mpt2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
-    fMpts[4] = new AliProfileBS(Form("mpt5_%s",spNames[0].Data()),Form("mpt2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
-    fMpts[5] = new AliProfileBS(Form("mpt6_%s",spNames[0].Data()),Form("mpt2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fMpts[2] = new AliProfileBS(Form("mpt3_%s",spNames[0].Data()),Form("mpt3_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fMpts[3] = new AliProfileBS(Form("mpt4_%s",spNames[0].Data()),Form("mpt4_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fMpts[4] = new AliProfileBS(Form("mpt5_%s",spNames[0].Data()),Form("mpt5_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fMpts[5] = new AliProfileBS(Form("mpt6_%s",spNames[0].Data()),Form("mpt6_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
     for(int i(0);i<6;++i){fptVarList->Add(fMpts[i]); fMpts[i]->InitializeSubsamples(fNBootstrapProfiles);}
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
@@ -443,6 +443,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     oba->Add(new TNamed("ChSC244","ChSC244")); //for SC{2,3}
 
     oba->Add(new TNamed("ChFull28","ChFull28"));
+    oba->Add(new TNamed("ChFull38","ChFull38"));
 
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
@@ -453,13 +454,13 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     PostData(2,fFC);
     Int_t pows[] = {3,0,2,2,3,3,3}; //5th harm. sum = 3, b/c {-2 -3}
     //Int_t powsFull[] = {5,0,4,4,3,3,3};
-    Int_t powsFull[] = {9,0,8,4,7,3,6,0,5};
+    Int_t powsFull[] = {9,0,8,8,7,3,7,0,5,6,0,0,1};
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",7,pows,-0.8,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",7,pows,fEtaV2Sep,0.8,1,1);
     if(fEtaV2Sep>=0)
     fGFW->AddRegion("subMid",7,pows,-fEtaV2Sep,fEtaV2Sep,1,1);
-    fGFW->AddRegion("mid",9,powsFull,-0.8,0.8,1,2);
+    fGFW->AddRegion("mid",13,powsFull,-0.8,0.8,1,2);
     CreateCorrConfigs();
     //Covariance
     fCovList = new TList();
@@ -1201,6 +1202,7 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChSC244","refP {2 4} refN {-2 -4}", kFALSE));
 
   corrconfigs.push_back(GetConf("ChFull28","mid {2 2 2 2 -2 -2 -2 -2}",kFALSE));
+  corrconfigs.push_back(GetConf("ChFull38","mid {3 3 3 3 -3 -3 -3 -3}",kFALSE));
   return;
 };
 void AliAnalysisTaskDeform::GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf) {
