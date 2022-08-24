@@ -120,7 +120,7 @@ private:
   Int_t fkNNpartBins;
   Int_t fkNEtaBins;
   Int_t fkNSpecies;
-  Bool_t fkSpeciesSwitch[76]; 
+  Bool_t fkSpeciesSwitch[78]; 
   
   Int_t fkNIntervals; //number of eta intervals in "SPD" estimator (def 1)
   Float_t fkIntervalMinEta[10];
@@ -150,16 +150,17 @@ private:
   TH1D *fHistNMPI; //!
   TH2D *fHistNchVsNMPI; //!
   
-  TH1D *fHistPt[76];              //! for keeping track of base spectra
-  TH1D *fHistEta[76];              //! for keeping track of base spectra
-  TH2D *fHistPtVsV0MMult[76];     //! for keeping track of base spectra
-  TH2D *fHistPtVsSPDMult[76];     //! for keeping track of base spectra
-  TH2D *fHistEtaVsSPDMult[76];    //! for keeping track of base spectra
-  TH2D *fHistYVsSPDMult[76];    //! for keeping track of base spectra
-  TH2D *fHistPtVsNpart[76];       //! for keeping track of base spectra
-  TH2D *fHistPtVsB[76];           //! for keeping track of base spectra
-  TH2D *fHistPtVsNMPI[76];       //! for keeping track of base spectra
-
+  TH1D *fHistPt[78];              //! for keeping track of base spectra
+  TH1D *fHistEta[78];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[78];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[78];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[78];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[78];    //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[78];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[78];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[78];       //! for keeping track of base spectra
+  
+ 
   //double-differential analysis
   Long_t fkDDRebin;
   Long_t fkMaxMultDDV0M;
@@ -168,8 +169,8 @@ private:
   TH2D *fHistDDNch; //! DD studies
   TH2D *fHistDDNMPI; //! DD studies
   TH2D *fHistDDQ2; //! DD studies
-  TH2D *fHistDDYield[76]; //! DD studies
-  TH2D *fHistDDPt[76]; //! DD studies
+  TH2D *fHistDDYield[78]; //! DD studies
+  TH2D *fHistDDPt[78]; //! DD studies
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
