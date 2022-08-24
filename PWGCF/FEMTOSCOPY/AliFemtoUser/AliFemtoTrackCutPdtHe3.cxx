@@ -328,6 +328,10 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 				imost = 0;
 			}		
 		}
+		if ( fdEdxcut && !IsProtonTPCdEdx(track->Pt(), track->TPCsignal()) ){
+                        imost = 0;
+                }
+
 		if(fUseDCAvsPt_cut){
 			float tmpDCAr = TMath::Abs(track->ImpactD());
 			float tmpCut = Return_DCAvsPt_cut_p(track->Pt(),fCharge);  
@@ -365,7 +369,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 			}
 		}
                 //\ dE/dx cut for low pt abnormal
-                if ( fdEdxcut && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
+                if ( fdEdxcut && !IsDeuteronTPCdEdx(track->Pt(), track->TPCsignal()) ){
                     	imost = 0;
                 }
 		if(fUseDCAvsPt_cut && fCharge>0){
@@ -603,10 +607,18 @@ bool AliFemtoTrackCutPdtHe3::IsElectronNSigma(float mom, float nsigmaTPCE, float
 void AliFemtoTrackCutPdtHe3::SetPionHe3Cut(int aPionHe3cut){
 	fPionHe3cut = aPionHe3cut;
 }
+bool AliFemtoTrackCutPdtHe3::IsProtonTPCdEdx(float mom, float dEdx){
+    double a1 = -250.,  b1 = 400.;
+    if (mom < 1.) {
+        if (dEdx > a1*mom+b1) return false;
+    }
+    return true;
 
+}
 //\ follow wiola
 bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx){
-
+// mom actually is pt, not total moment!
+//
 //   double a1 = -250.0,  b1 = 400.0;
 //   double a2 = -135.0,  b2 = 270.0;
 //   double a3 = -80,   b3 = 190.0;
@@ -627,9 +639,13 @@ bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx){
 //     if (dEdx < a4*mom+b4) return false;
 //   }
 
-    double a1 = -400./1.5,  b1 = 400.0;
-    if (mom < 1.5) {
+    double a1 = -250.,  b1 = 350.;
+    double a2 = -75.,  b2 = 175.;
+    if (mom < 1.) {
         if (dEdx < a1*mom+b1) return false;
+    }
+    if (1. <= mom && mom <1.5){// for safe choose 1.5, due to after 1.4 add TOF
+	if (dEdx < a2*mom+b2) return false;
     }
     return true;
 
