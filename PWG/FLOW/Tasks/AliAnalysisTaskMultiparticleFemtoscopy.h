@@ -188,8 +188,6 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList* GetControlHistogramsList() const {return this->fControlHistogramsList;}
   void SetControlHistogramsFlagsPro(TProfile* const chfp) {this->fControlHistogramsFlagsPro = chfp;};
   TProfile* GetControlHistogramsFlagsPro() const {return this->fControlHistogramsFlagsPro;};
-  //void SetFillControlHistograms(Bool_t fch) {this->fFillControlHistograms = fch;}; // TBI remove eventually
-  //Bool_t GetFillControlHistograms() const {return this->fFillControlHistograms;}; // TBI remove eventually
   void SetFillControlHistogramsEvent(Bool_t fche) {this->fFillControlHistogramsEvent = fche;};
   Bool_t GetFillControlHistogramsEvent() const {return this->fFillControlHistogramsEvent;};
   void SetFillControlHistogramsNonIdentifiedParticles(Bool_t fchnip) {this->fFillControlHistogramsNonIdentifiedParticles = fchnip;};
