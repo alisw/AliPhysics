@@ -690,7 +690,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
 
 void AliAnalysisTaskMultiparticleFemtoscopy::QA(AliVEvent *ave)
 {
- // Local Quality Assurance. TBI
+ // Local Quality Assurance.
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::QA(AliVEvent *ave)";
 
@@ -1216,7 +1216,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
  if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
 
  // b) Check cut selection criteria:
- if(!PassesCommonTrackCuts(amcparticle)){return;} // TBI have a look at implementation
+ if(!PassesCommonTrackCuts(amcparticle)){return;} 
 
  // c) Fill control histograms:
  Int_t index = -44;
@@ -1237,8 +1237,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
  } // if(2212==TMath::Abs(amcparticle->GetPdgCode()))
  if(-44 != index)
  {
-  Int_t charge = ((amcparticle->GetPdgCode()>0. ? 0 : 1)); // Okay... TBI
-  Int_t isPhysicalPrimary = ((amcparticle->IsPhysicalPrimary() ? 0 : 1)); // Okay... TBI
+  Int_t charge = ((amcparticle->GetPdgCode()>0. ? 0 : 1)); 
+  Int_t isPhysicalPrimary = ((amcparticle->IsPhysicalPrimary() ? 0 : 1));
   fPtPIDHist[index][charge][isPhysicalPrimary]->Fill(amcparticle->Pt());
   fPPIDHist[index][charge][isPhysicalPrimary][0]->Fill(amcparticle->Px());
   fPPIDHist[index][charge][isPhysicalPrimary][1]->Fill(amcparticle->Py());

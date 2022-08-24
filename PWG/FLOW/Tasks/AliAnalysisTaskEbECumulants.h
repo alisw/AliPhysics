@@ -19,7 +19,7 @@
 #include <TH1F.h>
 
 // Global variables:
-const Int_t gEventHistogramsEbE = 7; // total number of event histograms
+const Int_t gEventHistogramsEbE = 7; // total number of event histograms => TBI use the enum trick instead! 
 
 // Enums:
 enum eEventHistogramsEbE { eNumberOfEvents, eTotalMultiplicity, eSelectedParticles, eCentrality, eVertex_x, eVertex_y, eVertex_z };
@@ -61,6 +61,7 @@ class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
   Int_t NumberOfNonEmptyLines(const char *externalFile);  
 
   // *) Setters for event histograms:
+  void SetVerbose(Bool_t v) {this->fVerbose = v;};
   void SetBookEventHistograms(const char* type, Bool_t bookOrNot)
   {
    Int_t var = -44;
@@ -112,7 +113,8 @@ class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
   Bool_t fUseFisherYates; // use SetUseFisherYates(kTRUE); in the steering macro to randomize particle indices
   TArrayI *fRandomIndices; // array to store random indices obtained from Fisher-Yates algorithm 
-  
+  Bool_t fVerbose; // print all additional info like Green(__PRETTY_FUNCTION__); etc.
+
   // *) Event histograms and cuts: 
   TList *fEventHistogramsList; // base list to hold all event histograms
   TProfile *fEventHistogramsPro; // keeps all flags for event histograms
