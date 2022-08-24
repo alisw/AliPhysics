@@ -85,6 +85,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	//\ for e+e femto
         bool IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE);
         // dE/dx
+        bool IsProtonTPCdEdx(float mom, float dEdx);
         bool IsDeuteronTPCdEdx(float mom, float dEdx);
         bool IsTritonTPCdEdx(float mom, float dEdx);
         // reject
