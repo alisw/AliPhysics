@@ -8,12 +8,12 @@
  *                                                                   *
  *********************************************************************/
 
-#if __cplusplus < 201103L
-#error "This file requires use of the c++11 standard (ROOT6)"
-#endif
+//#if __cplusplus < 201103L
+//#error "This file requires use of the c++11 standard (ROOT6)"
+//#endif
 
-//#if !defined(__CINT__) || defined(__MAKECINT_)
-#if !defined(__CINT__) && !defined(__CLING__)
+#if !defined(__CINT__) || defined(__MAKECINT_)
+//#if !defined(__CINT__) && !defined(__CLING__)
 #include "AliFemtoManager.h"
 //#include "AliFemtoEventReaderESDChain.h"
 //#include "AliFemtoEventReaderESDChainKine.h"
@@ -81,9 +81,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	
   //multiplicity bins
   int runmults[3] = {1, 1, 1};//!!orig
-  double multbins[4] = {0.01, 200, 400, 900};//!!orig
+  int multbins[4] = {0, 200, 400, 900};//!!orig
   //int runmults[3] = {1, 0, 0};
-  //int multbins[4] = {0.01, 100000, 400, 900};
+  //int multbins[4] = {0, 100000, 400, 900};
 
   int runch[2] = {1, 1};
   const char *chrgs[2] = { "Kp", "Km"};

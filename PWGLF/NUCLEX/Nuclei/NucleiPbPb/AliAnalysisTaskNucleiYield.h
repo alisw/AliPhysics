@@ -165,7 +165,8 @@ public:
   void SetPtBins (Int_t nbins, Float_t min, Float_t max);
   void SetPtBins (Int_t nbins, Float_t *bins);
   void SetCustomTPCpid (Float_t *par, Float_t sigma);
-  void SetCustomITScalib (Float_t *par);
+  void SetCustomITSpidPtMax (Float_t max) { fCustomITSpidPtMax = max; };
+  void SetCustomITSpidPath (const char *path) { fCustomITSpidPath = path; };
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetSigmaBins (Int_t nbins, Float_t limit);
@@ -318,7 +319,9 @@ private:
   TArrayF               fCentBins;              ///<  Centrality bins
   TArrayF               fDCABins;               ///<  DCA bins
   TArrayF               fPtBins;                ///<  Transverse momentum bins
-  TArrayF               fCustomITScalib;        ///<  ITS pid recalibration parameters
+  TString               fCustomITSpidPath;      ///< ITS custom calibration file path
+  TH1F                 *fCustomITSpid[2];       ///< ITS custom calibration histograms (mean and sigma)
+  Float_t               fCustomITSpidPtMax;     ///< upper \f$p_{T}\f$ limit for ITS recalibration
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
   TArrayF               fPtShapeParams;         ///<  Params used by the pt shape function
@@ -456,7 +459,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
         if ( ( (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
-              (!iR || pid_check) && (iR || pid_mask & 8) && (iR && ((its_pid && pid_mask & 1) || !its_pid))) && (!fRequireLongMCTracks || (fRequireLongMCTracks && IsLongMCTrack(track))) ) {
+              (!iR || pid_check) && (iR || pid_mask & 8) && ((its_pid && pid_mask & 1) || !its_pid)) && (!fRequireLongMCTracks || (fRequireLongMCTracks && IsLongMCTrack(track))) ) {
           bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(part));
           if (isPrimary) {
             if ( TMath::Abs(dca[0]) <= fRequireMaxDCAxy )

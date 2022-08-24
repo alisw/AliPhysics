@@ -31,7 +31,6 @@ ClassImp(AliAnalysisTaskFlowPPTask) // classimp: necessary for root
 AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(), 
     fGFWSelection(NULL),
 	fAOD(0),
-    fitssatrackcuts(0),
     fFilterbit(96),
     fFilterbitDefault(96),
     fEtaCut(0.8),
@@ -59,12 +58,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
 	fUseCorrectedNTracks(false),
     fListOfObjects(0),
 
-    fMultTOFLowCut(0),
-    fMultTOFHighCut(0),
-    fMultCentLowCut(0),
-
     fTrackEfficiency(0),
-    hTrackEfficiency(0),
     hTrackEfficiencyRun(0),
 
     fFlowRunByRunWeights(false),
@@ -72,73 +66,19 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fFlowUse3Dweights(false),
     fFlowWeightsList(nullptr),
 
-    fPhiWeight(0),
-    fPhiWeightPlus(0),
-    fPhiWeightMinus(0),
     hPhiWeight(0),
-    hPhiWeight1D(0),
-    hPhiWeight_LHC15i_part1(0),
-    hPhiWeight_LHC15i_part2(0),
-    hPhiWeight_LHC15j_part1(0),
-    hPhiWeight_LHC15j_part2(0),
-    hPhiWeight_LHC15l_part1(0),
-    hPhiWeight_LHC15l_part2(0),
-    hPhiWeight_LHC15l_part3(0),
-    hPhiWeightPlus_LHC15i_part1(0),
-    hPhiWeightPlus_LHC15i_part2(0),
-    hPhiWeightPlus_LHC15j_part1(0),
-    hPhiWeightPlus_LHC15j_part2(0),
-    hPhiWeightPlus_LHC15l_part1(0),
-    hPhiWeightPlus_LHC15l_part2(0),
-    hPhiWeightPlus_LHC15l_part3(0),
-    hPhiWeightMinus_LHC15i_part1(0),
-    hPhiWeightMinus_LHC15i_part2(0),
-    hPhiWeightMinus_LHC15j_part1(0),
-    hPhiWeightMinus_LHC15j_part2(0),
-    hPhiWeightMinus_LHC15l_part1(0),
-    hPhiWeightMinus_LHC15l_part2(0),
-    hPhiWeightMinus_LHC15l_part3(0),
 
     hEventCount(0),
     hMult(0),
 	hTracksCorrection2d(0),
     hnCorrectedTracks(0),
-    fVtxAfterCuts(0),
     fCentralityDis(0),
-    fV0CentralityDis(0),
-    hMultV0vsNtrksAfterCuts(0),
-    hMultSPDvsNtrksAfterCuts(0),
-    hNtrksVSmultPercentile(0),
-    fCentralityV0MCL1(0),
-    fCentralityV0MCL0(0),
-    fCentralityCL0CL1(0),
-    fMultvsCentr(0),
-    fMult128vsCentr(0),
-    fMultTPCvsTOF(0),
-    fMultTPCvsESD(0),
 
-    hSPDClsVsTrk(0),
-    hV0C012vsTkl(0),
-    hV0C012vsV0C3(0),
-    hV0MOnVsOf(0),
-    hSPDOnVsOf(0),
-
-    fPhiDis1D(0),
-    fPhiDis(0),
-    fEtaDis(0),
-    fEtaBefore(0),
-    fPtDis(0),
-    fPtBefore(0),
     hDCAxyBefore(0),
     hDCAzBefore(0),
-    hITSclustersBefore(0),
-    hChi2Before(0),
     hDCAxy(0),
     hDCAz(0),
-    hITSclusters(0),
-    hChi2(0),
-    rand(32213),
-	MyEventNumber(0)
+    rand(32213)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -147,7 +87,6 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
 AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnalysisTaskSE(name),
     fGFWSelection(NULL),
 	fAOD(0),
-    fitssatrackcuts(0),
 	fFilterbit(96),
 	fEtaCut(0.8),
 	fVtxCut(10.0),
@@ -175,12 +114,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	fUseCorrectedNTracks(false),
 	fListOfObjects(0),
 
-	fMultTOFLowCut(0),
-	fMultTOFHighCut(0),
-	fMultCentLowCut(0),
-
 	fTrackEfficiency(0),
-	hTrackEfficiency(0),
 	hTrackEfficiencyRun(0),
 
         fFlowRunByRunWeights(false),
@@ -188,73 +122,19 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
         fFlowUse3Dweights(false),
         fFlowWeightsList(nullptr),
 
-	fPhiWeight(0),
-	fPhiWeightPlus(0),
-	fPhiWeightMinus(0),
 	hPhiWeight(0),
-	hPhiWeight1D(0),
-	hPhiWeight_LHC15i_part1(0),
-	hPhiWeight_LHC15i_part2(0),
-	hPhiWeight_LHC15j_part1(0),
-	hPhiWeight_LHC15j_part2(0),
-	hPhiWeight_LHC15l_part1(0),
-	hPhiWeight_LHC15l_part2(0),
-	hPhiWeight_LHC15l_part3(0),
-	hPhiWeightPlus_LHC15i_part1(0),
-	hPhiWeightPlus_LHC15i_part2(0),
-	hPhiWeightPlus_LHC15j_part1(0),
-	hPhiWeightPlus_LHC15j_part2(0),
-	hPhiWeightPlus_LHC15l_part1(0),
-	hPhiWeightPlus_LHC15l_part2(0),
-	hPhiWeightPlus_LHC15l_part3(0),
-	hPhiWeightMinus_LHC15i_part1(0),
-	hPhiWeightMinus_LHC15i_part2(0),
-	hPhiWeightMinus_LHC15j_part1(0),
-	hPhiWeightMinus_LHC15j_part2(0),
-	hPhiWeightMinus_LHC15l_part1(0),
-	hPhiWeightMinus_LHC15l_part2(0),
-	hPhiWeightMinus_LHC15l_part3(0),
 
 	hEventCount(0),
 	hMult(0),
 	hTracksCorrection2d(0),
     hnCorrectedTracks(0),
-	fVtxAfterCuts(0),
 	fCentralityDis(0),
-	fV0CentralityDis(0),
-	hMultV0vsNtrksAfterCuts(0),
-	hMultSPDvsNtrksAfterCuts(0),
-	hNtrksVSmultPercentile(0),
-	fCentralityV0MCL1(0),
-	fCentralityV0MCL0(0),
-	fCentralityCL0CL1(0),
-	fMultvsCentr(0),
-	fMult128vsCentr(0),
-	fMultTPCvsTOF(0),
-	fMultTPCvsESD(0),
 
-	hSPDClsVsTrk(0),
-	hV0C012vsTkl(0),
-	hV0C012vsV0C3(0),
-	hV0MOnVsOf(0),
-	hSPDOnVsOf(0),
-
-	fPhiDis1D(0),
-	fPhiDis(0),
-	fEtaDis(0),
-	fEtaBefore(0),
-	fPtDis(0),
-	fPtBefore(0),
 	hDCAxyBefore(0),
 	hDCAzBefore(0),
-	hITSclustersBefore(0),
-	hChi2Before(0),
 	hDCAxy(0),
 	hDCAz(0),
-	hITSclusters(0),
-	hChi2(0),
-	rand(32213),
-	MyEventNumber(0)
+	rand(32213)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -314,8 +194,8 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	//fEventCuts.fPileUpCutMV = true;
 
 
-	//Create an AliGFWNFCuts Selection
-	fGFWSelection = new AliGFWNFCuts();
+	//Create an AliGFWXXCuts Selection
+	fGFWSelection = new AliGFWXXCuts();
     fGFWSelection->PrintSetup();
 
 
@@ -326,9 +206,9 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
             }
     } 
     else {
-            nn = 10;
-            for (int i = 0; i <= 10; i++) {
-                xbins[i] = i * 10;
+            nn = 100;
+			for (int i = 0; i <= 100; i++) {
+                xbins[i] = i;
             }
     }
 
@@ -345,27 +225,17 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
   	hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
   	fListOfObjects->Add(hnCorrectedTracks);
 
-	fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (after cuts); Vtx z [cm]; Counts", 120, -30, 30);
-	fVtxAfterCuts->Sumw2();
-	fListOfObjects->Add(fVtxAfterCuts);
-
 	fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 100, 0, 100);
 	fListOfObjects->Add(fCentralityDis);
 
-	fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 100, 0, 10);
-	fListOfObjects->Add(fV0CentralityDis);
-
-	hMultV0vsNtrksAfterCuts = new TH2F("hMultV0vsNtrksAfterCuts","V0 mult vs. number of tracks; V0 mult; number of tracks", 100, 0, 10, nn, xbins);
-	fListOfObjects->Add(hMultV0vsNtrksAfterCuts);
-
-	hMultSPDvsNtrksAfterCuts = new TH2F("hMultSPDvsNtrksAfterCuts","SPD mult vs. number of tracks; SPD mult; number of tracks", 100, 0, 10, nn, xbins);
-	fListOfObjects->Add(hMultSPDvsNtrksAfterCuts);
-
-	hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 1000, 0, 2000);
-	fListOfObjects->Add(hNtrksVSmultPercentile);
-
-	MyEventNumber = new TH1F("MyEventNumber","Record the event number",4000,244000,248000);
-	fListOfObjects->Add(MyEventNumber);
+	hDCAxyBefore = new TH2F("hDCAxyBefore","DCAxy before cuts; DCAxy; Pt",100,0,10,100,0,10);
+	fListOfObjects->Add(hDCAxyBefore);
+	hDCAxy = new TH2F("hDCAxy","DCAxy after cuts; DCAxy; Pt",100,0,0.4,100,0,3);
+	fListOfObjects->Add(hDCAxy);
+	hDCAzBefore = new TH2F("hDCAzBefore","DCAz before cuts; DCAz; Pt",100,0,10,100,0,10);
+	fListOfObjects->Add(hDCAzBefore);
+	hDCAz = new TH2F("hDCAz","DCAz before cuts; DCAz; Pt",100,0,0.4,100,0,3);
+	fListOfObjects->Add(hDCAz);
 
     Int_t inSlotCounter=1;
 	if(fNUA) {
@@ -432,6 +302,28 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	hEventCount->GetXaxis()->SetBinLabel(3,"AOD OK");
 	hEventCount->Fill(2.5);
 	
+	//Fill Some Histogram before Cuts
+	double vz, vx, vy;
+	vz = fInputEvent->GetPrimaryVertex()->GetZ();
+	vx = fInputEvent->GetPrimaryVertex()->GetX();
+	vy = fInputEvent->GetPrimaryVertex()->GetY();
+	double vtxp[3] = {vx, vy, vz};
+	for(Int_t nt = 0; nt < fInputEvent->GetNumberOfTracks(); nt++){
+		AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
+
+		if (!aodTrk){
+			delete aodTrk;
+			continue;
+		}
+
+		double pos[3];
+		aodTrk->GetXYZ(pos);
+		pos[0] = pos[0]-vtxp[0];
+    	pos[1] = pos[1]-vtxp[1];
+    	pos[2] = pos[2]-vtxp[2];
+		hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
+		hDCAzBefore->Fill(pos[2],aodTrk->Pt());
+	}
 	
 	if(fTrigger==0){
 		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
@@ -492,12 +384,6 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	NTracksCalculation(fInputEvent);
 	//in this case, fVtxCut = fVtxCutDefault = 10.0
 	if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
-	fVtxAfterCuts->Fill(fVtxZ);
-
-	
-
-	//Record Run Number
-	MyEventNumber->Fill(fCurrentRunNumber);
 
 	//..standard event plots (cent. percentiles, mult-vs-percentile)
 
@@ -514,8 +400,11 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	float cl1Centr = 0;
 	float cl0Centr = 0;
 
-	fCentralityDis->Fill(centrV0);
-	fV0CentralityDis->Fill(cent);
+	fCentralityDis->Fill(cent);
+	fCurrCentrality = cent;
+	//printf("==========\n========\n==========\n========\n");
+	//printf("Current Centrality is %lf\n",fCurrCentrality);
+	//printf("==========\n========\n==========\n========\n");
 
 
         // checking the run number for aplying weights & loading TList with weights
@@ -710,7 +599,7 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 
 
 	
-	int run = GetRunPart(fInputEvent->GetRunNumber());
+	//int run = GetRunPart(fInputEvent->GetRunNumber());
 	double runNumber = fInputEvent->GetRunNumber();
 
 	//..LOOP OVER TRACKS........
@@ -728,7 +617,14 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		aodTrk->GetXYZ(pos);
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
-
+		//Fill DCAxy&z after Cuts
+		double trackXYZ[3];
+		aodTrk->GetXYZ(trackXYZ);
+		trackXYZ[0] = trackXYZ[0]-vtxp[0];
+    	trackXYZ[1] = trackXYZ[1]-vtxp[1];
+    	trackXYZ[2] = trackXYZ[2]-vtxp[2];
+		hDCAxy->Fill(sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),aodTrk->Pt());
+		hDCAz->Fill(trackXYZ[2],aodTrk->Pt());
 		// //manual Tracks cut
 		// double dcaZ = 100;
 		// double dcaX = 100;
@@ -1085,216 +981,37 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 //____________________________________________________________________
 //	END OF MAIN PROGRAM
 //____________________________________________________________________
-Bool_t AliAnalysisTaskFlowPPTask::IsGoodPSEvent(AliVEvent* event)
-{
-
-	IsSPDClusterVsTrackletBG(event, true);
-	IsV0C012vsTklBG(event, true);
-	IsV0Casym(event, true);
-	IsV0MOnVsOfPileup(event, true);
-	IsSPDOnVsOfPileup(event, true);
-
-	bool is = true;
-
-	if(IsSPDClusterVsTrackletBG(event, false)) is = false;
-	if(IsV0C012vsTklBG(event, false)) is = false;
-	if(IsV0Casym(event, false)) is = false;
-	if(IsV0MOnVsOfPileup(event, false)) is = false;
-	if(IsSPDOnVsOfPileup(event, false)) is = false;
-	if(IsV0PFPileup(event)) is = false;
-
-	return is;
-
-}
-//-----------------------------------------------------------------------------
-Bool_t AliAnalysisTaskFlowPPTask::IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist){
-	// rejects BG based on SPD tracklets vs. clusters correlation
-	// returns true if the event is BG
-	const AliVMultiplicity* mult = event->GetMultiplicity();
-
-	Int_t nTkl = mult->GetNumberOfTracklets();
-	Int_t nCls = event->GetNumberOfITSClusters(0) + event->GetNumberOfITSClusters(1);
-
-	if(fillHist == true) hSPDClsVsTrk->Fill(nTkl, nCls);
-
-	return nCls > 65 + nTkl*4;
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskFlowPPTask::IsV0C012vsTklBG(const AliVEvent* event, bool fillHist){
-	// rejects BG based on V0C012 vs tracklet correlation
-	// returns true if the event is BG
-	const AliVMultiplicity* mult = event->GetMultiplicity();
-	AliVVZERO* vzero = event->GetVZEROData();
-
-	Float_t nTkl       = mult->GetNumberOfTracklets();
-	Float_t multV0C012 = vzero->GetMTotV0C() - vzero->GetMRingV0C(3);
-
-	if(fillHist == true) hV0C012vsTkl->Fill(nTkl, multV0C012);
-
-	return nTkl < 6 && multV0C012 > 150 + nTkl*20;
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskFlowPPTask::IsV0Casym(const AliVEvent* event, bool fillHist){
-	// rehect BG based on V0C012 vs. V0C3 mult. correlation
-	// returns true if the event is BG
-	AliVVZERO* vzero = event->GetVZEROData();
-
-	Float_t multV0C012 = vzero->GetMRingV0C(0)+vzero->GetMRingV0C(1)+vzero->GetMRingV0C(2);
-	Float_t multV0C3   = vzero->GetMRingV0C(3);
-
-	if(fillHist == true) hV0C012vsV0C3->Fill(multV0C012, multV0C3);
-
-	return (multV0C3 < -25 + 0.15*multV0C012);
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskFlowPPTask::IsV0MOnVsOfPileup(const AliVEvent* event, bool fillHist){
-	// rejects pileup based on V0M online vs offline correlation
-	// return true if the event is pileup
-	AliVVZERO* vzero = event->GetVZEROData();
-
-	// V0A0 excluded from online V0A charge sum => excluding also from offline sum for consistency
-	Float_t on = vzero->GetTriggerChargeA() + vzero->GetTriggerChargeC();
-	Float_t of = vzero->GetMTotV0A() - vzero->GetMRingV0A(0) + vzero->GetMTotV0C();
-
-	if(fillHist == true) hV0MOnVsOf->Fill(of, on);
-
-	return (on < -145 + 7.2*of);
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskFlowPPTask::IsSPDOnVsOfPileup(const AliVEvent* event, bool fillHist){
-	// rejects pileup based on SPD online vs. offline correlation
-	// returns true if the event is pileup
-	AliVMultiplicity* mult = event->GetMultiplicity();
-	TBits onMap = mult->GetFastOrFiredChips();
-	TBits ofMap = mult->GetFiredChipMap();
-
-	Int_t on = onMap.CountBits(0);
-	Int_t of = ofMap.CountBits(0);
-
-	if(fillHist == true) hSPDOnVsOf->Fill(of, on);
-
-	return (on < -4.16 + 0.84*of);
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskFlowPPTask::IsV0PFPileup(const AliVEvent* event){
-	// return true if the event is pileup
-
-	int fVIRBBAflags = 10;
-	int fVIRBBCflags = 10;
-	int fVIRBGAflags = 33;
-	int fVIRBGCflags = 33;
-
-	AliVVZERO* vzero = event->GetVZEROData();
-
-	Bool_t vir[21] = {0};
-	UChar_t bcMod4 = event->GetBunchCrossNumber()%4;
-
-	for (Int_t bc=0;bc<=20;bc++) {
-		UChar_t nBBA=0;
-		UChar_t nBBC=0;
-		UChar_t nBGA=0;
-		UChar_t nBGC=0;
-		if (fVIRBBAflags<33) for (Int_t i=0;i<32;i++) nBBA+=vzero->GetPFBBFlag(i+32,bc);
-		if (fVIRBBCflags<33) for (Int_t i=0;i<32;i++) nBBC+=vzero->GetPFBBFlag(i   ,bc);
-		if (fVIRBGAflags<33) for (Int_t i=0;i<32;i++) nBGA+=vzero->GetPFBGFlag(i+32,bc);
-		if (fVIRBGCflags<33) for (Int_t i=0;i<32;i++) nBGC+=vzero->GetPFBGFlag(i   ,bc);
-		vir[bc] |= nBBA>=fVIRBBAflags;
-		vir[bc] |= nBBC>=fVIRBBCflags;
-		vir[bc] |= nBGA>=fVIRBGAflags;
-		vir[bc] |= nBGC>=fVIRBGCflags;
-	}
-
-	// clock index is counting from future to past
-	Int_t bcMin = 10 - 7 + bcMod4;
-	Int_t bcMax = 10 + 4 + bcMod4;
-	for (Int_t bc=bcMin;bc<=bcMax;bc++) {
-		if (bc==10) continue; // skip current bc
-		if (bc < 0) continue;
-		if (bc >20) continue;
-		if (vir[bc]) return kTRUE;
-	}
-
-	return kFALSE;
-}
-//____________________________________________________________________
-int AliAnalysisTaskFlowPPTask::GetRunPart(int run)
-{
-
-	int fRun = 0;
-
-	//..LHC15i, part 1
-	if(run == 236137 || run == 236138 || run == 236150 || run == 236151 || run == 236153
-			|| run == 236158 || run == 236159 || run == 236163 || run == 236164 || run == 236203
-			|| run == 236204 || run == 236222 || run == 236227 || run == 236234 || run == 236238
-			|| run == 236240 || run == 236242 || run == 236244 || run == 236246 || run == 236248)
-		fRun = 1;
-	//..LHC15i, part2
-	if(run == 236281 || run == 236284 || run == 236285 || run == 236331 || run == 236334
-			|| run == 236337 || run == 236348 || run == 236349 || run == 236352 || run == 236353
-			|| run == 236354 || run == 236356 || run == 236357 || run == 236359 || run == 236360
-			|| run == 236386 || run == 236389 || run == 236393 || run == 236395 || run == 236397
-			|| run == 236441 || run == 236443 || run == 236444 || run == 236446 || run == 236453
-			|| run == 236459 || run == 236462 || run == 236541 || run == 236554 || run == 236556
-			|| run == 236558 || run == 236562 || run == 236563 || run == 236564 || run == 236565
-			|| run == 236569)
-		fRun = 2;
-
-	//..LHC15j, part1
-	if(run == 238091 || run == 238097 || run == 238129 || run == 238131 || run == 238132
-			|| run == 238133 || run == 238136 || run == 238139 || run == 238140 || run == 238142
-			|| run == 238144 || run == 238145 || run == 238147 || run == 238148 || run == 238159
-			|| run == 238160 || run == 238164 || run == 238170 || run == 238570)
-		fRun = 3;
-	//..LHC15j, part2
-	if(run == 237029 || run == 237406 || run == 237408 || run == 237409 || run == 237507
-			|| run == 237512 || run == 237515 || run == 237645 || run == 237670 || run == 237671
-			|| run == 237675 || run == 237676 || run == 237678 || run == 237681 || run == 237684
-			|| run == 237691 || run == 237698 || run == 237699 || run == 237705 || run == 237706
-			|| run == 237707 || run == 237708 || run == 237710 || run == 237711 || run == 237713
-			|| run == 237765 || run == 237768 || run == 237777 || run == 237779 || run == 237780
-			|| run == 237782 || run == 237787 || run == 237789 || run == 237790 || run == 237791
-			|| run == 237793 || run == 237795 || run == 237796 || run == 237806 || run == 237842
-			|| run == 237844 || run == 237845 || run == 237847 || run == 237945 || run == 237948
-			|| run == 237969 || run == 237978 || run == 237982 || run == 237983 || run == 238073
-			|| run == 238176 || run == 238179 || run == 238184 || run == 238185 || run == 238187
-			|| run == 238395 || run == 238451 || run == 238454 || run == 238455 || run == 238456
-			|| run == 238457 || run == 238458 || run == 238459 || run == 238460 || run == 238472
-			|| run == 238474 || run == 238604 || run == 238606 || run == 238607 || run == 238610
-			|| run == 238614 || run == 238621)
-		fRun = 4;
-
-	//..LHC15l, part1
-	if(run == 241257 || run == 241261 || run == 241263 || run == 241267 || run == 241268
-			|| run == 241269 || run == 241281 || run == 241288 || run == 241295 || run == 241296)
-		fRun = 5;
-	//..LHC15l, part2
-	if(run == 240069) fRun = 6;
-	//..LHC15l, part3
-	if(run == 239319 || run == 239324 || run == 239518 || run == 239519 || run == 240183
-			|| run == 240194 || run == 240196 || run == 240201 || run == 240204 || run == 240212
-			|| run == 240220 || run == 240241 || run == 240250 || run == 240256 || run == 240262
-			|| run == 240263 || run == 240265 || run == 240271 || run == 240274 || run == 240293
-			|| run == 240303 || run == 240312 || run == 240376 || run == 240380 || run == 240381
-			|| run == 240382 || run == 240385 || run == 240392 || run == 240394 || run == 240404
-			|| run == 240411 || run == 240443 || run == 240444 || run == 240447 || run == 240450
-			|| run == 240452 || run == 240610 || run == 240612 || run == 240845 || run == 240854
-			|| run == 240860 || run == 240864 || run == 240872 || run == 240874 || run == 240875
-			|| run == 240880 || run == 241001 || run == 241010 || run == 241014 || run == 241021
-			|| run == 241032 || run == 241043 || run == 241047 || run == 241050 || run == 241054
-			|| run == 241055 || run == 241056 || run == 241057 || run == 241062 || run == 241069
-			|| run == 241075 || run == 241141 || run == 241144 || run == 241354 || run == 241360
-			|| run == 241361 || run == 241393 || run == 241396 || run == 241407 || run == 241412)
-		fRun = 7;
-
-
-	return fRun;
-
-}
 //____________________________________________________________________
 double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
+	Int_t IntCent = 0;
+	if(fCurrCentrality>=5 && fCurrCentrality<10)IntCent=1;
+	else if(fCurrCentrality>=10 && fCurrCentrality<20)IntCent=2;
+	else if(fCurrCentrality>=20 && fCurrCentrality<30)IntCent=3;
+	else if(fCurrCentrality>=30 && fCurrCentrality<40)IntCent=4;
+	else if(fCurrCentrality>=40 && fCurrCentrality<50)IntCent=5;
+	else if(fCurrCentrality>=50 && fCurrCentrality<60)IntCent=6;
+	else if(fCurrCentrality>=60)IntCent=7;
+	//For PbPb, Only have Cent0 in NUE
+	if(fPeriod.EqualTo("LHC15o"))IntCent=0;
 	//Pt Weight is extract from Efficiency
-	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject("EffRescaled_Cent0");
+	if(fCurrSystFlag==0)
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
+	else if(fCurrSystFlag==3){
+		//Be Careful
+		//Here I use DCAxy<6sigma for sys3
+		//And use Default NUE for this Systematics
+		hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
+	}
+	else if(fCurrSystFlag>0&&fCurrSystFlag<9&&fCurrSystFlag!=3)
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
+	else
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag+7));
+
+	//printf("========\n=======\n=======\n=======\n");
+	//printf("Using NUE flag%d Cent%d\n",fCurrSystFlag,IntCent);
+	//printf("========\n=======\n=======\n=======\n");
+
 	if(!hTrackEfficiencyRun){
 		printf("Can't get Track Efficiency\n");
 		return 1;
@@ -1319,50 +1036,20 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 	return weight;
 
 }
-//____________________________________________________________________
-double AliAnalysisTaskFlowPPTask::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber)
-{
-	//NUA
-	//Phi Weight
-	TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
-        // cout << "weights_list" << weights_list << endl;
-        // weights_list->ls();
-        
-	TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
-        // cout << "averaged_list" << averaged_list << endl;
-	TH2D* hPhiWeightRun = dynamic_cast<TH2D*>(averaged_list->FindObject("Charged"));
-        // cout << "hist_list" << hPhiWeightRun << endl;
-
-	double weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
-			hPhiWeightRun->GetYaxis()->FindBin(eta));
-			// , hPhiWeightRun->GetZaxis()->FindBin(vz));
-	return weight;
-}
-
-const char* AliAnalysisTaskFlowPPTask::GetSpeciesName(const PartSpecies species) const
-{
-  const char* name;
-
-  switch(species) {
-    case kRefs: name = "Refs"; break;
-    case kCharged: name = "Charged"; break;
-    case kPion: name = "Pion"; break;
-    case kKaon: name = "Kaon"; break;
-    case kProton: name = "Proton"; break;
-    case kCharUnidentified: name = "UnidentifiedCharged"; break;
-    case kK0s: name = "K0s"; break;
-    case kLambda: name = "Lambda"; break;
-    case kPhi: name = "Phi"; break;
-    default: name = "Unknown";
-  }
-
-  return name;
-}
-
 Bool_t AliAnalysisTaskFlowPPTask::LoadWeightsSystematics()
 {
-	if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
-        else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+	if(fCurrSystFlag == 0) {
+		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+	}
+	else if(fCurrSystFlag==3){
+		//Be Careful
+		//Here I use DCAxy<6sigma for sys3
+		//And use Default NUA for this systematics
+		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+	}
+    else {
+		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+	}
         if(!fWeightsSystematics)
         {
 			printf(Form("fAOD->GetRunNumber(): %i\n",fAOD->GetRunNumber()));
@@ -1384,152 +1071,6 @@ Double_t AliAnalysisTaskFlowPPTask::GetFlowWeightSystematics(const AliVParticle*
     return dWeight;
 }
 
-Bool_t AliAnalysisTaskFlowPPTask::LoadWeights()
-{
-  // (Re-) Loading of flow vector weights
-  // ***************************************************************************
-  if(!fFlowWeightsList) { AliError("Flow weights list not found! Terminating!"); return kFALSE; }
-
-  TList* listFlowWeights = nullptr;
-  
-  TString fFlowWeightsTag = "";
-  if(!fFlowWeightsTag.IsNull()) {
-      // using weights Tag if provided (systematics)
-      listFlowWeights = (TList*) fFlowWeightsList->FindObject(fFlowWeightsTag.Data());
-      if(!listFlowWeights) { AliError(Form("TList with tag '%s' not found!",fFlowWeightsTag.Data())); fFlowWeightsList->ls(); return kFALSE; }
-  } else {
-      if(!fFlowRunByRunWeights && !fFlowPeriodWeights) {
-          // loading run-averaged weights
-          listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
-          if(!listFlowWeights) { AliError("TList with flow run-averaged weights not found."); fFlowWeightsList->ls(); return kFALSE; }
-      } else if(fFlowPeriodWeights){
-        // loading period-specific weights
-        listFlowWeights = (TList*) fFlowWeightsList->FindObject(ReturnPPperiod(fAOD->GetRunNumber()));
-        if(!listFlowWeights) { AliError("Loading period weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
-      }
-      else {
-          // loading run-specific weights
-          listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%d",fAOD->GetRunNumber()));
-
-          if(!listFlowWeights) {
-              // run-specific weights not found for this run; loading run-averaged instead
-              AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
-              listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
-              if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
-          }
-      }
-  }
-
-
-  for(Int_t iSpec(0); iSpec <= kRefs; ++iSpec) {
-    if(fFlowUse3Dweights) {
-      fh3Weights[iSpec] = (TH3D*) listFlowWeights->FindObject(Form("%s3D",GetSpeciesName(PartSpecies(iSpec))));
-      if(!fh3Weights[iSpec]) { AliError(Form("Weight 3D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
-    } else {
-      fh2Weights[iSpec] = (TH2D*) listFlowWeights->FindObject(GetSpeciesName(PartSpecies(iSpec)));
-      if(!fh2Weights[iSpec]) { AliError(Form("Weight 2D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
-    }
-  }
-
-  return kTRUE;
-}
-
-Double_t AliAnalysisTaskFlowPPTask::GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species)
-{
-  // if not applying for reconstructed
-  // if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
-
-  Double_t dWeight = 1.0;
-  if(fFlowUse3Dweights) {
-    Int_t iBin = fh3Weights[species]->FindFixBin(track->Phi(),track->Eta(),fVtxZ);
-    dWeight = fh3Weights[species]->GetBinContent(iBin);
-  } else {
-    Int_t iBin = fh2Weights[species]->FindFixBin(track->Phi(),track->Eta());
-    dWeight = fh2Weights[species]->GetBinContent(iBin);
-  }
-
-  if(dWeight <= 0.0) { dWeight = 1.0; }
-  return dWeight;
-}
-//============================================================================
-const char* AliAnalysisTaskFlowPPTask::ReturnPPperiod(const Int_t runNumber) const
-{
-	//ReturnPPperiod according RunNumber
-  Bool_t isHM = kFALSE;
-  if(fAliTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
-
-  if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
-    if(!isHM && runNumber >= 252235 && runNumber <= 252375) return "LHC16de"; //d
-    if(!isHM && runNumber >= 253437 && runNumber <= 253591) return "LHC16de"; //e
-    if(runNumber >= 254128 && runNumber <= 254332) return "LHC16ghi"; //g
-    if(runNumber >= 254604 && runNumber <= 255467) return "LHC16ghi"; //h
-    if(runNumber >= 255539 && runNumber <= 255618) return "LHC16ghi"; //i
-    if(runNumber >= 256219 && runNumber <= 256418) return "LHC16j";
-    if(runNumber >= 256941 && runNumber <= 258537) return "LHC16k";
-    if(runNumber >= 258962 && runNumber <= 259888) return "LHC16l";
-    if(runNumber >= 262424 && runNumber <= 264035) return "LHC16o";
-    if(runNumber >= 264076 && runNumber <= 264347) return "LHC16p";
-  }
-
-  if(runNumber >= 270581 && runNumber <= 282704){ // LHC17
-    if(!isHM && runNumber >= 270581 && runNumber <= 270667) return "LHC17ce";
-    if(runNumber >= 270822 && runNumber <= 270830){
-      if(isHM) return "averaged";
-      else return "LHC17ce";
-    }
-    if(runNumber >= 270854 && runNumber <= 270865){
-      if(isHM) return "averaged";
-      else return "LHC17f";
-    }
-    if(runNumber >= 271870 && runNumber <= 273103) return "LHC17h";
-    if(runNumber >= 273591 && runNumber <= 274442) return "LHC17i";
-    if(!isHM && runNumber >= 274593 && runNumber <= 274671) return "LHC17j";
-    if(runNumber >= 274690 && runNumber <= 276508) return "LHC17k";
-    if(runNumber >= 276551 && runNumber <= 278216) return "LHC17l";
-    if(runNumber >= 278914 && runNumber <= 280140) return "LHC17m";
-    if(runNumber >= 280282 && runNumber <= 281961) return "LHC17o";
-    if(runNumber >= 282528 && runNumber <= 282704) return "LHC17r";
-  }
-
-  if(runNumber >= 285009 && runNumber <= 294925){ // LHC18
-    if(runNumber >= 285009 && runNumber <= 285396){
-      if(isHM) return "LHC18bd";
-      else return "LHC18b";
-    }
-    if(runNumber >= 285978 && runNumber <= 286350){
-      if(isHM) return "LHC18bd";
-      else return "LHC18d";
-    }
-    if(runNumber >= 286380 && runNumber <= 286937) return "LHC18e";
-    if(runNumber >= 287000 && runNumber <= 287658) return "LHC18f";
-    if(runNumber >= 288804 && runNumber <= 288806){
-      if(isHM) return "LHC18hjk";
-      else return "LHC18ghijk";
-    }
-    if(runNumber == 288943){
-      if(isHM) return "LHC18hjk";
-      else return "LHC18ghijk";
-    }
-    if(runNumber >= 289165 && runNumber <= 289201){
-      if(isHM) return "LHC18hjk";
-      else return "LHC18ghijk";
-    }
-    if(!isHM && runNumber >= 288619 && runNumber <= 288750) return "LHC18ghijk"; //g, no HM event, only MB
-    if(!isHM && runNumber >= 288861 && runNumber <= 288909) return "LHC18ghijk"; //i, no HM event, only MB
-    if(runNumber >= 289240 && runNumber <= 289971) return "LHC18l";
-    if(runNumber >= 290323 && runNumber <= 292839){
-      if(isHM) return "LHC18m";
-      else return "LHC18mn";
-    }
-    if(!isHM && runNumber >= 293357 && runNumber <= 293359) return "LHC18mn"; //n, no HM event, only MB
-    if(runNumber >= 293475 && runNumber <= 293898) return "LHC18o";
-    if(runNumber >= 294009 && runNumber <= 294925) return "LHC18p";
-  }
-
-  AliWarning("Unknown period! Returning averaged weights");
-  return "averaged";
-}
-
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowPPTask::Terminate(Option_t *)
 {
@@ -1541,7 +1082,7 @@ void AliAnalysisTaskFlowPPTask::Terminate(Option_t *)
 void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfilePPTask& multProfile, TString label) {
 
 	
-	for(int h=0; h<6; h++)
+	for(int h=0; h<5; h++)
 	{
 		//Fill 2 correlation. 
 		//fChcn2[i]: v_(i+2){2}
@@ -1641,25 +1182,25 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfilePPTask& multProfile, T
 		multProfile.fChcn4_3subGap2[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn4_3subGap2[h]);
 
-		multProfile.fChcn6[h] = new TProfile(Form("fChc%d{6}%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn6[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn6[h]);
+		// multProfile.fChcn6[h] = new TProfile(Form("fChc%d{6}%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		// multProfile.fChcn6[h]->Sumw2();
+		// fListOfObjects->Add(multProfile.fChcn6[h]);
 
-		multProfile.fChcn6_Gap0[h] = new TProfile(Form("fChc%d{6}_Gap0%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn6_Gap0[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn6_Gap0[h]);
+		// multProfile.fChcn6_Gap0[h] = new TProfile(Form("fChc%d{6}_Gap0%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		// multProfile.fChcn6_Gap0[h]->Sumw2();
+		// fListOfObjects->Add(multProfile.fChcn6_Gap0[h]);
 
-		multProfile.fChcn6_Gap10[h] = new TProfile(Form("fChc%d{6}_Gap10%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn6_Gap10[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn6_Gap10[h]);
+		// multProfile.fChcn6_Gap10[h] = new TProfile(Form("fChc%d{6}_Gap10%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		// multProfile.fChcn6_Gap10[h]->Sumw2();
+		// fListOfObjects->Add(multProfile.fChcn6_Gap10[h]);
 
-		multProfile.fChcn8[h] = new TProfile(Form("fChc%d{8}%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn8[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn8[h]);
+		// multProfile.fChcn8[h] = new TProfile(Form("fChc%d{8}%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
+		// multProfile.fChcn8[h]->Sumw2();
+		// fListOfObjects->Add(multProfile.fChcn8[h]);
 
-		multProfile.fChcn8_Gap0[h] = new TProfile(Form("fChc%d{8}_Gap0%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn8_Gap0[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn8_Gap0[h]);
+		// multProfile.fChcn8_Gap0[h] = new TProfile(Form("fChc%d{8}_Gap0%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
+		// multProfile.fChcn8_Gap0[h]->Sumw2();
+		// fListOfObjects->Add(multProfile.fChcn8_Gap0[h]);
 
 	} // harmonics
 
@@ -1905,39 +1446,39 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfilePPTask& multProfile, T
 	multProfile.fChsc4242_3subRRMLB->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc4242_3subRRMLB);
 
-	//5,6 correlation
-	multProfile.fChc5_A42222 = new TProfile("fChc5_A42222", "<<5>> Re; # of tracks", nn, xbins);
-	multProfile.fChc5_A42222->Sumw2();
-	fListOfObjects->Add(multProfile.fChc5_A42222);
+	// //5,6 correlation
+	// multProfile.fChc5_A42222 = new TProfile("fChc5_A42222", "<<5>> Re; # of tracks", nn, xbins);
+	// multProfile.fChc5_A42222->Sumw2();
+	// fListOfObjects->Add(multProfile.fChc5_A42222);
 
-	multProfile.fChc5_A52322 = new TProfile("fChc5_A52322", "<<5>> Re; # of tracks", nn, xbins);
-	multProfile.fChc5_A52322->Sumw2();
-	fListOfObjects->Add(multProfile.fChc5_A52322);
+	// multProfile.fChc5_A52322 = new TProfile("fChc5_A52322", "<<5>> Re; # of tracks", nn, xbins);
+	// multProfile.fChc5_A52322->Sumw2();
+	// fListOfObjects->Add(multProfile.fChc5_A52322);
 
-	multProfile.fChc6_222222 = new TProfile("fChc6_222222", "<<6>> Re; # of tracks", nn, xbins);
-	multProfile.fChc6_222222->Sumw2();
-	fListOfObjects->Add(multProfile.fChc6_222222);
+	// multProfile.fChc6_222222 = new TProfile("fChc6_222222", "<<6>> Re; # of tracks", nn, xbins);
+	// multProfile.fChc6_222222->Sumw2();
+	// fListOfObjects->Add(multProfile.fChc6_222222);
 
-	multProfile.fChc6_322322 = new TProfile("fChc6_322322", "<<6>> Re; # of tracks", nn, xbins);
-	multProfile.fChc6_322322->Sumw2();
-	fListOfObjects->Add(multProfile.fChc6_322322);
+	// multProfile.fChc6_322322 = new TProfile("fChc6_322322", "<<6>> Re; # of tracks", nn, xbins);
+	// multProfile.fChc6_322322->Sumw2();
+	// fListOfObjects->Add(multProfile.fChc6_322322);
 
-	//Additional 3,4 correlation
-	multProfile.fChsc6222_Gap0 = new TProfile(Form("fChsc6222_Gap0%s", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc6222_Gap0->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc6222_Gap0);
+	// //Additional 3,4 correlation
+	// multProfile.fChsc6222_Gap0 = new TProfile(Form("fChsc6222_Gap0%s", label.Data()), "# of tracks", nn, xbins);
+	// multProfile.fChsc6222_Gap0->Sumw2();
+	// fListOfObjects->Add(multProfile.fChsc6222_Gap0);
 
-	multProfile.fChsc6222_Gap10 = new TProfile(Form("fChsc6222_Gap10%s", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc6222_Gap10->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc6222_Gap10);
+	// multProfile.fChsc6222_Gap10 = new TProfile(Form("fChsc6222_Gap10%s", label.Data()), "# of tracks", nn, xbins);
+	// multProfile.fChsc6222_Gap10->Sumw2();
+	// fListOfObjects->Add(multProfile.fChsc6222_Gap10);
 
-	multProfile.fChsc633_Gap0A = new TProfile(Form("fChsc633_Gap0A%s", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc633_Gap0A->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc633_Gap0A);
+	// multProfile.fChsc633_Gap0A = new TProfile(Form("fChsc633_Gap0A%s", label.Data()), "# of tracks", nn, xbins);
+	// multProfile.fChsc633_Gap0A->Sumw2();
+	// fListOfObjects->Add(multProfile.fChsc633_Gap0A);
 
-	multProfile.fChsc633_Gap10A = new TProfile(Form("fChsc633_Gap10A%s", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc633_Gap10A->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc633_Gap10A);
+	// multProfile.fChsc633_Gap10A = new TProfile(Form("fChsc633_Gap10A%s", label.Data()), "# of tracks", nn, xbins);
+	// multProfile.fChsc633_Gap10A->Sumw2();
+	// fListOfObjects->Add(multProfile.fChsc633_Gap10A);
 
 }
 
@@ -2322,9 +1863,9 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 		double v532Gap0ARe = v532Gap0A.Re()/Dn3Gap0A;
 		profile.fChc532_Gap0A->Fill(Ntrks, v532Gap0ARe, Dn3Gap0A);
 
-		TComplex v633Gap0A = correlator.ThreeGap0A(6, -3, -3);
-		double v633Gap0ARe = v633Gap0A.Re()/Dn3Gap0A;
-		profile.fChsc633_Gap0A->Fill(Ntrks, v633Gap0ARe, Dn3Gap0A);
+		// TComplex v633Gap0A = correlator.ThreeGap0A(6, -3, -3);
+		// double v633Gap0ARe = v633Gap0A.Re()/Dn3Gap0A;
+		// profile.fChsc633_Gap0A->Fill(Ntrks, v633Gap0ARe, Dn3Gap0A);
 	}
 
 	// B-type
@@ -2461,9 +2002,9 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 		double v532Gap10ARe = v532Gap10A.Re()/Dn3Gap10A;
 		profile.fChc532_Gap10A->Fill(Ntrks, v532Gap10ARe, Dn3Gap10A);
 
-		TComplex v633Gap10A = correlator.ThreeGap10A(6, -3, -3);
-		double v633Gap10ARe = v633Gap10A.Re()/Dn3Gap10A;
-		profile.fChsc633_Gap10A->Fill(Ntrks, v633Gap10ARe, Dn3Gap10A);
+		// TComplex v633Gap10A = correlator.ThreeGap10A(6, -3, -3);
+		// double v633Gap10ARe = v633Gap10A.Re()/Dn3Gap10A;
+		// profile.fChsc633_Gap10A->Fill(Ntrks, v633Gap10ARe, Dn3Gap10A);
 	}
 
         // B-type
@@ -2572,9 +2113,9 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 		double sc4242Gap0Re = sc4242Gap0.Re()/Dn4Gap0;
 		profile.fChsc4242_Gap0->Fill(Ntrks, sc4242Gap0Re, Dn4Gap0);
 
-		TComplex sc6222Gap0 = correlator.FourGap0(6, -2, -2, -2);
-		double sc6222Gap0Re = sc6222Gap0.Re()/Dn4Gap0;
-		profile.fChsc6222_Gap0->Fill(Ntrks, sc6222Gap0Re, Dn4Gap0);
+		// TComplex sc6222Gap0 = correlator.FourGap0(6, -2, -2, -2);
+		// double sc6222Gap0Re = sc6222Gap0.Re()/Dn4Gap0;
+		// profile.fChsc6222_Gap0->Fill(Ntrks, sc6222Gap0Re, Dn4Gap0);
 	}
 
 	// Gap 2
@@ -2696,9 +2237,9 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 		double sc4242Gap10Re = sc4242Gap10.Re()/Dn4Gap10;
 		profile.fChsc4242_Gap10->Fill(Ntrks, sc4242Gap10Re, Dn4Gap10);
 
-		TComplex sc6222Gap10 = correlator.FourGap10(6, -2, -2, -2);
-		double sc6222Gap10Re = sc6222Gap10.Re()/Dn4Gap10;
-		profile.fChsc6222_Gap10->Fill(Ntrks, sc6222Gap10Re, Dn4Gap10);
+		// TComplex sc6222Gap10 = correlator.FourGap10(6, -2, -2, -2);
+		// double sc6222Gap10Re = sc6222Gap10.Re()/Dn4Gap10;
+		// profile.fChsc6222_Gap10->Fill(Ntrks, sc6222Gap10Re, Dn4Gap10);
 	}
 
 	// Gap 12
@@ -2822,79 +2363,79 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 		profile.fChsc4242_3subRRMLB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subRRML);
 	}
 
-	//..calculate 5-particle correlations
-	//................................
-	double Dn5 = correlator.Five(0, 0, 0, 0, 0).Re();
-	double Dn5Gap10A = correlator.FiveGap10A(0, 0, 0, 0, 0).Re();
-	double Dn5Gap10B = correlator.FiveGap10B(0, 0, 0, 0, 0).Re();
+	// //..calculate 5-particle correlations
+	// //................................
+	// double Dn5 = correlator.Five(0, 0, 0, 0, 0).Re();
+	// double Dn5Gap10A = correlator.FiveGap10A(0, 0, 0, 0, 0).Re();
+	// double Dn5Gap10B = correlator.FiveGap10B(0, 0, 0, 0, 0).Re();
 
-	// A type
-	if(NtrksAfterGap10M > 1 && NtrksAfterGap10P > 2 && Dn5Gap10A != 0)
-	{
+	// // A type
+	// if(NtrksAfterGap10M > 1 && NtrksAfterGap10P > 2 && Dn5Gap10A != 0)
+	// {
 
-		TComplex v5_A42222 = correlator.FiveGap10A(4, 2, -2, -2, -2);
-		double v5_A42222Re = v5_A42222.Re()/Dn5Gap10A;
-		profile.fChc5_A42222->Fill(Ntrks, v5_A42222Re, Dn5Gap10A);
+	// 	TComplex v5_A42222 = correlator.FiveGap10A(4, 2, -2, -2, -2);
+	// 	double v5_A42222Re = v5_A42222.Re()/Dn5Gap10A;
+	// 	profile.fChc5_A42222->Fill(Ntrks, v5_A42222Re, Dn5Gap10A);
 
-		TComplex v5_A52322 = correlator.FiveGap10A(5, 2, -3, -2, -2);
-		double v5_A52322Re = v5_A52322.Re()/Dn5Gap10A;
-		profile.fChc5_A52322->Fill(Ntrks, v5_A52322Re, Dn5Gap10A);
-	}
+	// 	TComplex v5_A52322 = correlator.FiveGap10A(5, 2, -3, -2, -2);
+	// 	double v5_A52322Re = v5_A52322.Re()/Dn5Gap10A;
+	// 	profile.fChc5_A52322->Fill(Ntrks, v5_A52322Re, Dn5Gap10A);
+	// }
 
-	//..calculate 6-particle correlations
-	//................................
-	double Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
-	double Dn6Gap0 = correlator.SixGap0(0, 0, 0, 0, 0, 0).Re();
-	double Dn6Gap10 = correlator.SixGap10(0, 0, 0, 0, 0, 0).Re();
+	// //..calculate 6-particle correlations
+	// //................................
+	// double Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
+	// double Dn6Gap0 = correlator.SixGap0(0, 0, 0, 0, 0, 0).Re();
+	// double Dn6Gap10 = correlator.SixGap10(0, 0, 0, 0, 0, 0).Re();
 
-	if(NtrksAfter > 5 && Dn6 != 0)
-	{
-		// v2{6}
-		TComplex v26 = correlator.Six(2, 2, 2, -2, -2, -2);
-		double v26Re = v26.Re()/Dn6;
-		profile.fChcn6[0]->Fill(Ntrks, v26Re, Dn6);
-	}
+	// if(NtrksAfter > 5 && Dn6 != 0)
+	// {
+	// 	// v2{6}
+	// 	TComplex v26 = correlator.Six(2, 2, 2, -2, -2, -2);
+	// 	double v26Re = v26.Re()/Dn6;
+	// 	profile.fChcn6[0]->Fill(Ntrks, v26Re, Dn6);
+	// }
 
-	if(NtrksAfterGap0M > 2 && NtrksAfterGap0P > 2 && Dn6Gap0 !=0){
-		TComplex v26Gap0 = correlator.SixGap0(2, 2, 2, -2, -2, -2);
-		double v26ReGap0 = v26Gap0.Re()/Dn6Gap0;
-		profile.fChcn6_Gap0[0]->Fill(Ntrks, v26ReGap0, Dn6Gap0);
-	}
+	// if(NtrksAfterGap0M > 2 && NtrksAfterGap0P > 2 && Dn6Gap0 !=0){
+	// 	TComplex v26Gap0 = correlator.SixGap0(2, 2, 2, -2, -2, -2);
+	// 	double v26ReGap0 = v26Gap0.Re()/Dn6Gap0;
+	// 	profile.fChcn6_Gap0[0]->Fill(Ntrks, v26ReGap0, Dn6Gap0);
+	// }
 
-	if(NtrksAfterGap10M > 2 && NtrksAfterGap10P > 2 && Dn6Gap10 !=0)
-	{
-		//..v2{6} with eta Gap > 1.0
-		TComplex v26Gap10 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
-		double v26ReGap10 = v26Gap10.Re()/Dn6Gap10;
-		profile.fChcn6_Gap10[0]->Fill(Ntrks, v26ReGap10, Dn6Gap10);
+	// if(NtrksAfterGap10M > 2 && NtrksAfterGap10P > 2 && Dn6Gap10 !=0)
+	// {
+	// 	//..v2{6} with eta Gap > 1.0
+	// 	TComplex v26Gap10 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
+	// 	double v26ReGap10 = v26Gap10.Re()/Dn6Gap10;
+	// 	profile.fChcn6_Gap10[0]->Fill(Ntrks, v26ReGap10, Dn6Gap10);
 
-		TComplex v6_222222 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
-		double v6_222222Re = v6_222222.Re()/Dn6Gap10;
-		profile.fChc6_222222->Fill(Ntrks, v6_222222Re, Dn6Gap10);
+	// 	TComplex v6_222222 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
+	// 	double v6_222222Re = v6_222222.Re()/Dn6Gap10;
+	// 	profile.fChc6_222222->Fill(Ntrks, v6_222222Re, Dn6Gap10);
 
-		TComplex v6_322322 = correlator.SixGap10(3, 2, 2, -3, -2, -2);
-		double v6_322322Re = v6_322322.Re()/Dn6Gap10;
-		profile.fChc6_322322->Fill(Ntrks, v6_322322Re, Dn6Gap10);
-	}
+	// 	TComplex v6_322322 = correlator.SixGap10(3, 2, 2, -3, -2, -2);
+	// 	double v6_322322Re = v6_322322.Re()/Dn6Gap10;
+	// 	profile.fChc6_322322->Fill(Ntrks, v6_322322Re, Dn6Gap10);
+	// }
 
-	double Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
-	// Gap0 isn't calculated in this version
-	double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	// double Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	// // Gap0 isn't calculated in this version
+	// double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
 
-	if(NtrksAfter > 7 && Dn8 != 0)
-	{
-		// v2{8}
-		TComplex v28 = correlator.Eight(2, 2, 2, 2, -2, -2, -2, -2);
-		double v28Re = v28.Re()/Dn8;
-		profile.fChcn8[0]->Fill(Ntrks, v28Re, Dn8);
-	}
+	// if(NtrksAfter > 7 && Dn8 != 0)
+	// {
+	// 	// v2{8}
+	// 	TComplex v28 = correlator.Eight(2, 2, 2, 2, -2, -2, -2, -2);
+	// 	double v28Re = v28.Re()/Dn8;
+	// 	profile.fChcn8[0]->Fill(Ntrks, v28Re, Dn8);
+	// }
 
-	if(NtrksAfterGap0M > 3 && NtrksAfterGap0P > 3 && Dn8Gap0 !=0){
-		//..v2{8} with eta Gap > 0.
-		TComplex v28Gap0 = correlator.EightGap0(2, 2, 2, 2, -2, -2, -2, -2);
-		double v28ReGap0 = v28Gap0.Re()/Dn8Gap0;
-		profile.fChcn8_Gap0[0]->Fill(Ntrks, v28ReGap0, Dn8Gap0);
-	}
+	// if(NtrksAfterGap0M > 3 && NtrksAfterGap0P > 3 && Dn8Gap0 !=0){
+	// 	//..v2{8} with eta Gap > 0.
+	// 	TComplex v28Gap0 = correlator.EightGap0(2, 2, 2, 2, -2, -2, -2, -2);
+	// 	double v28ReGap0 = v28Gap0.Re()/Dn8Gap0;
+	// 	profile.fChcn8_Gap0[0]->Fill(Ntrks, v28ReGap0, Dn8Gap0);
+	// }
 
 
 }
@@ -2966,14 +2507,14 @@ PhysicsProfilePPTask::PhysicsProfilePPTask() :
 		fChc532_Gap10A(nullptr), 
 		fChc532_Gap10B(nullptr),
 		fChc532_Gap12A(nullptr), 
-		fChc532_Gap12B(nullptr),
-		fChc5_A42222(nullptr),
-		fChc5_A52322(nullptr),
-		fChc6_222222(nullptr),
-		fChc6_322322(nullptr),
-		fChsc6222_Gap0(nullptr),
-		fChsc6222_Gap10(nullptr),
-		fChsc633_Gap10A(nullptr)
+		fChc532_Gap12B(nullptr)
+		// fChc5_A42222(nullptr),
+		// fChc5_A52322(nullptr),
+		// fChc6_222222(nullptr),
+		// fChc6_322322(nullptr),
+		// fChsc6222_Gap0(nullptr),
+		// fChsc6222_Gap10(nullptr),
+		// fChsc633_Gap10A(nullptr)
 {
 		//Initial TProfile memory
 		memset(fChcn2, 0, sizeof(fChcn2));
@@ -3007,10 +2548,10 @@ PhysicsProfilePPTask::PhysicsProfilePPTask() :
 		memset(fChcn4_3subRRML, 0, sizeof(fChcn4_3subRRML));
 		memset(fChcn4_3subGap2, 0, sizeof(fChcn4_3subGap2));
 
-		memset(fChcn6, 0, sizeof(fChcn6));
-		memset(fChcn6_Gap0, 0, sizeof(fChcn6_Gap0));
-		memset(fChcn6_Gap10, 0, sizeof(fChcn6_Gap10));
+		// memset(fChcn6, 0, sizeof(fChcn6));
+		// memset(fChcn6_Gap0, 0, sizeof(fChcn6_Gap0));
+		// memset(fChcn6_Gap10, 0, sizeof(fChcn6_Gap10));
 
-		memset(fChcn8, 0, sizeof(fChcn8));
-		memset(fChcn8_Gap0, 0, sizeof(fChcn8_Gap0));
+		// memset(fChcn8, 0, sizeof(fChcn8));
+		// memset(fChcn8_Gap0, 0, sizeof(fChcn8_Gap0));
 }

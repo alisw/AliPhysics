@@ -30,6 +30,7 @@
 #pragma link C++ class AliAnalysisTaskESEFlow+;
 #pragma link C++ class AliAnalysisTaskFlowSquareBracket+;
 #pragma link C++ class AliAnalysisTaskCMWESETrkSyst+;
+#pragma link C++ class AliAnalysisTaskPtFlowCorrelation+;
 #endif
 
 #ifdef __CLING__
@@ -49,6 +50,7 @@
 #pragma link C++ class AliEffFDContainer+;
 #pragma link C++ class CorrelationCalculator+;
 #pragma link C++ class AliGFWNFCuts+;
+#pragma link C++ class AliGFWXXCuts+;
 #pragma link C++ class PhysicsProfile+;
 #pragma link C++ class PhysicsProfilePPTask+;
 

@@ -170,7 +170,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMaxZBin = 10;
 
         //FillProtonArray Cuts
-        Double_t              fMaxProtEta = 1.1;                 // 0.9  
+        Double_t              fMaxProtEta = 1;                   // 0.9  
         Double_t              fMinTPCClustProt = 40;             // 60
         Double_t              fMaxNsigProtTPC = 4;               // 3
         Bool_t                fRequireProtonTPC = kTRUE;  
@@ -185,17 +185,17 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMaxMCEta = 0.9;                    // 0.9
 
         //FillV0PhotonArray Cuts
-        Double_t              fMaxDaughtEta = 1.5;                // 0.9    
+        Double_t              fMaxDaughtEta = 1.2;                // 0.9    
         Double_t              fMinTPCClustDaught = 20;            // 30
         Double_t              fMaxNsigDaughtTPC = 6;              // 5
         Double_t              fMaxalpha = 1.1;                    // 0.9
-        Double_t              fMaxqt = 0.06;                      // 0.03
-        Double_t              fMaxopenangle = 0.5;                // 0.3
-        Double_t              fMaxdeltatheta = 0.2;               // 0.1
+        Double_t              fMaxqt = 0.04;                      // 0.03
+        Double_t              fMaxopenangle = 0.4;                // 0.3
+        Double_t              fMaxdeltatheta = 0.15;              // 0.1
         Double_t              fMinV0CPA = 0.8;                    // 0.8
         Double_t              fMinV0Radius = 1;                   // 3
         Double_t              fMaxV0Radius = 250;                 // 220
-        Double_t              fMaxphotonmass = 0.2;               // 0.06
+        Double_t              fMaxphotonmass = 0.08;               // 0.06
 
         //FindAddPhotons Cuts. CAUTION: Uses same Cuts for Daughters as used for V0s 
         Double_t              fMinDCADaughtPV = 0.1;
@@ -213,7 +213,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fCleanAutoCorr = kTRUE;
         Double_t              fMinPi0Mass = 0.06;                   // 0.1
         Double_t              fMaxPi0Mass = 0.19;                   // 0.16
-        Double_t              fMaxSigmaPA = 0.1;                    // 0.04
+        Double_t              fMaxSigmaPA = 0.06;                   // 0.04
+        Double_t              fMaxSigmaY  = 0.9;                    // 0.8
         Double_t              fMaxSigmaMass = 1.4;    
         Double_t              fMinProtonDCAxy = 0.005;              // 0.01
         Double_t              fMinProtonDCAz = -1; //Dummy Value
@@ -231,7 +232,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMinPairSigmaMass = 1.13;    
         Double_t              fMaxPairSigmaMass = 1.25;    
         Double_t              fMinPairProtonDCAxy = 0.005;    
-        Double_t              fMaxPairkstar = 1;    
+        Double_t              fMaxPairkstar = 0.6;    
     
     public: //Setter-Functions
 
@@ -314,6 +315,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetPi0MinMass(Double_t minpi0mass) {fMinPi0Mass = minpi0mass;}
         void SetPi0MaxMass(Double_t maxpi0mass) {fMaxPi0Mass = maxpi0mass;}
         void SetSigmaMaxPA(Double_t maxpa) {fMaxSigmaPA = maxpa;}
+        void SetSigmaMaxY(Double_t maxy) {fMaxSigmaY = maxy;}
         void SetSigmaMaxMass(Double_t maxsigmass) {fMaxSigmaMass = maxsigmass;}
         void SetProtonMinDCAxy(Double_t minprotondcaxy) {fMinProtonDCAxy = minprotondcaxy;}
         void SetProtonMinDCAz(Double_t minprotondcaz) {fMinProtonDCAz = minprotondcaz;}

@@ -6,8 +6,34 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-#ifndef AliAnalysisHFEppEMCalBeauty_cxx
-#define AliAnalysisHFEppEMCalBeauty_cxx
+#ifndef AliAnalysisHFEppEMCalBeauty_H
+#define AliAnalysisHFEppEMCalBeauty_H
+
+#include<iostream>
+#include "AliLog.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliAODEvent.h"
+#include "AliVEvent.h"
+#include "AliAODInputHandler.h"
+
+#include "AliAODTrack.h"
+#include "AliAODPid.h"
+#include "TChain.h"
+#include "TList.h"
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "TH1F.h"
+#include "TH2F.h"
+
+#include "AliPID.h"
+#include "AliHFEpid.h"
+#include "AliPIDResponse.h"
+#include "AliAnalysisTaskPIDResponse.h"
+
+#include "AliAODMCParticle.h"
+
+#include "AliHFEextraCuts.h"
 
 class TH1F;
 class TH2F;
@@ -41,374 +67,25 @@ class AliEventPoolManager;
 class AliEventPool;
 class AliGenEventHeader;
 
+class AliHFEextraCuts;
 
-#include<iostream>
-#include "AliLog.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisManager.h"
-#include "AliAODEvent.h"
-#include "AliVEvent.h"
-#include "AliAODInputHandler.h"
-
-#include "AliAODTrack.h"
-#include "AliAODPid.h"
-#include "TChain.h"
-#include "TList.h"
-#include "TCanvas.h"
-#include "TStyle.h"
-#include "TH1F.h"
-#include "TH2F.h"
-
-#include "AliPID.h"
-#include "AliHFEpid.h"
-#include "AliPIDResponse.h"
-#include "AliAnalysisTaskPIDResponse.h"
-
-#include "AliAODMCParticle.h"
 
 
 class AliAnalysisHFEppEMCalBeauty : public AliAnalysisTaskSE {
  public:
 
-  enum EnhanceSigOrNot {kMB,kEnhance};
-  enum pi0etaType {kNoMother, kNoFeedDown, kNotIsPrimary, kLightMesons, kBeauty, kCharm};//0,1,2,3,4,5
-  enum ESourceType {kNoMotherE, kPi0NoFeedDown, kEtaNoFeedDown, kGPi0NoFeedDown, kGEtaNoFeedDown, kDirectGamma, kOthersE};//0,1,2,3,4,5,6
-
-
-AliAnalysisHFEppEMCalBeauty() : AliAnalysisTaskSE(),
-
-fIsMC(kFALSE),
-fIsAOD(kTRUE),
-ftrigger(AliVEvent::kINT7),
- // emcal correction
-fUseTender(kTRUE),
-// flag for emcal dcal
-fFlagClsTypeEMC(kTRUE),
-fFlagClsTypeDCAL(kTRUE),
-// trigger events selection
-fEMCEG1(kFALSE),
-fEMCEG2(kFALSE),
-fDCalDG1(kFALSE),
-fDCalDG2(kFALSE),
-
-fRecalIP(kTRUE),
-
-fEtarange(0.6),
-fTPCNCrRows(70),
-fRatioCrossedRowOverFindable(0.8),
-fITSNclus(3),
-fTPCNclusPID(60),
-fSPDBoth(kTRUE),
-fSPDAny(kFALSE),
-fSPDFirst(kFALSE),
-fDCAxyCut(1),
-fDCAzCut(2),
-fTPCnsigmin(-1),
-fTPCnsigmax(3),
-fCutEopEMin(0.9),
-fCutEopEMax(1.2),
-fM02Min(0.05),
-fM02Max1(0.9),
-fM02Max2(0.7),
-fM02Max3(0.5),
-
-fInvmassCut(0.14),
-fAssoTPCCluster(60),
-fAssoITSRefit(kTRUE),
-fAssopTMin(0.1),
-fAssoEtarange(0.9),
-fAssoTPCnsig(3.0),
-
-
-fTenderClusterName("caloClusters"),
-fTenderTrackName("tracks"),
-fTracks_tender(0),
-fCaloClusters_tender(0),
-
- // events
-fAOD(0),
-fOutputList(0), 
-fHistEvent(0),
-fNentries(0),
-
-fHistVx(0),
-fHistVxwc(0),
-fHistVy(0),
-fHistVywc(0),
-fHistVz(0),
-fHistVzwc(0),
-
-fHistMul(0),
-fHistPt(0),
-EtaPhiWoC(0),
-EtaPhiWC(0),
-EtaPhiAfTCATM(0),
-
-fHistEta(0),
-fHistPhi(0),
-fHistEtaPhi_TPC(0),
-EMCalEta_TPCpT(0),
-
-fHistdca(0),
-fHistdcaxy(0),
-fHistdcaxywc(0),
-fHistdcaz(0),
-fHistdcazwc(0),
- //PID Cut
-fPID(0),   
-fPidResponse(0),
-fHistBethe(0),
-fnSigmaVsP_TPC(0),
-fnSigmaVsP_TOF(0),
-
-
-fHistClustE(0),
-fEMCClsEtaPhi(0), 
-fHistoNCells(0),
-fHistoTimeEMC(0),
-
-fHistPtMatch(0),
-fEMCTrkMatch(0),
-fEMCClsEtaPhiTrkMatch(0),
-fEMCTrkMatch_Phi(0),
-fEMCTrkMatch_Eta(0),
-
-fvalueElectron(0),
-fSparseElectron(0),
-
-//MC
-fMCArray(0),
-fMCHeader(0),
-fMCparticle(0),
-fPthfeGenerated(0),
-fPthfe_rec(0),
-fPthfe_rec_TrkSel(0),
-fNTotMCpart(0),
-fNpureMC(0),
-fNembMCpi0(0),
-fNembMCeta(0),
-
-fMCparticleMother(0),
-fMCparticleGMother(0),
-fMCparticleGGMother(0),
-fMCparticleGGGMother(0),
-
-//Used in the function FindMother
-fIsHFE1(kFALSE),
-fIsHFE2(kFALSE),
-fIsNonHFE(kFALSE),
-fIsFromD(kFALSE),
-fIsFromBarionB(kFALSE),
-fIsFromMesonB(kFALSE),
-fIsFromBarionBD(kFALSE),
-fIsFromMesonBD(kFALSE),
-fIsFromPi0(kFALSE),
-fIsFromEta(kFALSE),
-fIsFromGamma(kFALSE),
-
-//EID Cuts
-fTrkDCA(-999.0),
-
-fEop_AftEID(0),
-fEopNL_AftEID(0),
-
-fHadEovp_AftEID(0),
-fHadEovpNL_AftEID(0),
-fHadPt_AftEID(0),
-
-fHadDCA(0),
-fInclsElecPt(0),
-fInclElecDCA(0),
-
-fNElecInEvt(0),
-fNEle(0),
-
-fTPCnSigma(-999.0),
-
-fTPCnSigmaHadMin(-10),
-fTPCnSigmaHadMax(-3.5),
-
-fInvmassULSPt(0),
-fInvmassLSPt(0),
-fCalculateNonHFEEffi(1),
-
-fULSElecPt(0),
-fLSElecPt(0),
-fULSElecDCA(0),
-fLSElecDCA(0),
-
-//nonhfe efficiency
-
-fIsFrmEmbPi0(kFALSE),
-fIsFrmEmbEta(kFALSE),
-ftype(-1),
-fWeight(1),
-fWeightPi0(1),
-fWeightEta(1),
-
-fPi0Weight(0),
-fEtaWeight(0),
-
-fCalculateWeight(kFALSE), 
-fSprsPi0EtaWeightCal(0),
-fPi0EtaSpectraSp(0),
-pi0MC(0),
-etaMC(0),
-gammaMC(0),
-
-fRealInclsElecPt(0),
-fNonHFeTrkPt(0),
-fNonHFeEmbTrkPt(0),
-fNonHFeEmbWeightTrkPt(0),
-fPi0eEmbWeightTrkPt(0),
-fEtaeEmbWeightTrkPt(0),
-
-fRecoNonHFeTrkPt(0),
-fRecoNonHFeEmbTrkPt(0),
-fRecoNonHFeEmbWeightTrkPt(0),
-fRecoPi0eEmbWeightTrkPt(0),
-fRecoEtaeEmbWeightTrkPt(0),
-
-fNonHFePairInvmassLS(0),
-fNonHFePairInvmassULS(0),
-fNonHFeEmbInvmassLS(0),
-fNonHFeEmbInvmassULS(0),
-fNonHFeEmbWeightInvmassLS(0),
-fNonHFeEmbWeightInvmassULS(0),
-fPi0EmbInvmassLS(0),
-fPi0EmbInvmassULS(0),
-fPi0EmbWeightInvmassLS(0),
-fPi0EmbWeightInvmassULS(0),
-fEtaEmbInvmassLS(0),
-fEtaEmbInvmassULS(0),
-fEtaEmbWeightInvmassLS(0),
-fEtaEmbWeightInvmassULS(0),
-
-fRecoLSeEmbTrkPt(0),
-fRecoLSeEmbWeightTrkPt(0),
-fRecoPi0LSeEmbWeightTrkPt(0),
-fRecoEtaLSeEmbWeightTrkPt(0),
-fRecoULSeEmbTrkPt(0),
-fRecoULSeEmbWeightTrkPt(0),
-fRecoPi0ULSeEmbWeightTrkPt(0),
-fRecoEtaULSeEmbWeightTrkPt(0),
-
-fHadConvRadius(0),
-fIncleConvRadius(0),
-fNonHFeConvRadius(0),
-fHFeConvRadius(0),
-
-fNonHFeEmbTrkRConv(0),
-fPi0eEmbWeightTrkRConv(0),
-fNonHFeEmbWeightTrkRConv(0),
-fEtaeEmbWeightTrkRConv(0),
-
-fRecoNonHFeEmbRConv(0),
-fRecoPi0eEmbWeightTrkRConv(0),
-fRecoNonHFeEmbWeightTrkRConv(0),
-fRecoEtaeEmbWeightTrkRConv(0),
-
-fRVsULSElecPt(0),
-fRVsLSElecPt(0),
-
-fnBinsDCAHisto(400),
-
-fCalculateMCTemplWeightCalc(kFALSE),
-fFillMCTemplates(kFALSE),
-
-fBHadpT(0),
-fBMesonpT(0),
-fBDHadpT(0),
-fDHadpT(0),
-fDMesonpT(0),
-fD0pT(0),
-fDPluspT(0),
-fDspT(0),
-fLambdaCpT(0),
-
-fDcent(0),
-fDUp(0),
-fDDown(0),
-fBcent(0),
-fBMin(0),
-fBMax(0),
-fD0(0),
-fDPlus(0),
-fDs(0),
-fLc(0),
-fB(0),
-fWeightB(1.0),
-fWeightBMin(1.0),
-fWeightBMax(1.0),
-fWeightD(1.0),
-fWeightDUp(1.0),
-fWeightDDown(1.0),
-
-fDElecDCA(0),
-fBElecDCA(0),
-fBHadElecDCA(0),
-fBMesonElecDCA(0),
-fBBaryonElecDCA(0),
-fDHadElecDCA(0),
-fDMesonElecDCA(0),
-fDBaryonElecDCA(0),
-fLambdaCElecDCA(0),
-fD0ElecDCA(0),
-fSprsTemplatesNoWeight(0),
-fSprsTemplatesWeight(0),
-fSprsTemplatesWeightVar1(0),
-fSprsTemplatesWeightVar2(0),
-
-fCalculateElecRecoEffi(kFALSE),
-
-fInclElePhysPriAll(0),
-fHFEPhysPriAll(0),
-fBEPhysPriAll(0),
-fDEPhysPriAll(0),
-fInclElePhysPriTrkCuts(0),
-fHFEPhysPriTrkCuts(0),
-fBEPhysPriTrkCuts(0),
-fDEPhysPriTrkCuts(0),
-fInclElePhysPriOnlyTPCnsig(0),
-fHFEPhysPriOnlyTPCnsig(0),
-fBEPhysPriOnlyTPCnsig(0),
-fDEPhysPriOnlyTPCnsig(0),
-fInclElePhysPriEMCMatch(0),
-fHFEPhysPriEMCMatch(0),
-fBEPhysPriEMCMatch(0),
-fDEPhysPriEMCMatch(0),
-fInclElePhysPriTPCnsig(0),
-fHFEPhysPriTPCnsig(0),
-fBEPhysPriTPCnsig(0),
-fDEPhysPriTPCnsig(0),
-fInclElePhysPriEovPBfrSS(0),
-fHFEPhysPriEovPBfrSS(0),
-fBEPhysPriEovPBfrSS(0),
-fDEPhysPriEovPBfrSS(0),
-fInclElePhysPriSS(0),
-fHFEPhysPriSS(0),
-fBEPhysPriSS(0),
-fDEPhysPriSS(0),
-fInclElePhysPriEovP(0),
-fHFEPhysPriEovP(0),
-fBEPhysPriEovP(0),
-fDEPhysPriEovP(0)
-
-
-{
-fPID = new AliHFEpid("hfePid");
-fvalueElectron = new Double_t[6];
-//fvalueRadius = new Double_t[4];
-}
-  
-   
+  AliAnalysisHFEppEMCalBeauty();
   AliAnalysisHFEppEMCalBeauty(const char *name);
   virtual ~AliAnalysisHFEppEMCalBeauty(); 
   
   virtual void   Init();
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
-  virtual void   Terminate(Option_t *);
+  virtual void   Terminate(Option_t *option);
+
+  enum EnhanceSigOrNot {kMB,kEnhance};
+  enum pi0etaType {kNoMother, kNoFeedDown, kNotIsPrimary, kLightMesons, kBeauty, kCharm};//0,1,2,3,4,5
+  enum ESourceType {kNoMotherE, kPi0NoFeedDown, kEtaNoFeedDown, kGPi0NoFeedDown, kGEtaNoFeedDown, kDirectGamma, kOthersE};//0,1,2,3,4,5,6
 
 //-----------------selections cuts----------------------------------------------------------------  
 
@@ -469,7 +146,7 @@ fvalueElectron = new Double_t[6];
   Bool_t  IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromMB, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);
   Int_t   GetPi0EtaType(AliAODMCParticle *part);
   Bool_t  GetNonHFEEffiRecoTag(AliAODTrack *track);
-  Bool_t  GetNonHFEEffiULSLS(AliAODTrack *track, AliAODTrack *Assotrack, Bool_t fFlagLS, Bool_t fFlagULS, Double_t mass);
+  Bool_t  GetNonHFEEffiULSLS(AliAODTrack *track, AliVTrack *Assotrack, Bool_t fFlagLS, Bool_t fFlagULS, Double_t mass);
   
   Int_t GetHFE(AliAODMCParticle *, TClonesArray *);
   Int_t GetElecSourceType(AliAODMCParticle *,Double_t &ptm);
@@ -502,7 +179,7 @@ fvalueElectron = new Double_t[6];
   void    SetElecRecoEffi(Bool_t fSwitch) {fCalculateElecRecoEffi = fSwitch;};
   void    GetElectronFromStack();    
   void    GetTrackHFStatus(AliAODTrack *track, Bool_t &IsMCEle, Bool_t &IsMCPPEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
-  void    GetEIDRecoEffi(AliAODTrack *track, AliAODCaloCluster *clust, Bool_t IsMCPPEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
+  void    GetEIDRecoEffi(AliAODTrack *track, AliAODCaloCluster *clust, Bool_t IsMCPPEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle, Double_t fTPCnSigma);
 
  private:
   
@@ -563,14 +240,22 @@ fvalueElectron = new Double_t[6];
   Bool_t GetNMCPartProduced();
   Bool_t FindMother(Int_t mcIndex);
   Bool_t IsHFelectronsMC(AliAODTrack *track);
-
- 
-
+  
   TList       *fOutputList;//! Output list
   AliAODEvent *fAOD;//! AOD object
-
   AliHFEpid   *fPID;//! 
-  AliPIDResponse   *fPidResponse;//!pid response 
+  AliPIDResponse   *fPidResponse;//!
+  AliHFEextraCuts *fExtraCuts;//! 
+
+  	//===============NonHFE========================================
+	 AliSelectNonHFE *fNonHFE; //!
+   TH1F        *fPte_ULS; //! ULS elec Pt
+   TH1F        *fPte_LS;//! LS elec pt  
+   TH1F        *fInvmassLS1; //! LS Invmass 
+   TH1F        *fInvmassULS1;//! ULS Invmass
+   TH2F        *fDCAULSElec; //! ULS elec Pt
+   TH2F        *fDCALSElec;//! LS elec pt 
+
 
   Double_t            fTPCnSigmaHadMin;//!
   Double_t            fTPCnSigmaHadMax;//!
@@ -578,43 +263,24 @@ fvalueElectron = new Double_t[6];
   TH1F        *fHistEvent;//! 
   TH1F        *fNentries;//! 
 
-  TH1F        *fHistVx;//! 
-  TH1F        *fHistVy;//! 
   TH1F        *fHistVz;//!  
-  
-  TH1F        *fHistVxwc;//!
-  TH1F        *fHistVywc;//!
   TH1F        *fHistVzwc;//! 
 
   TH1F        *fHistMul;//! 
-
-  TH1F        *fHistPt;//! Pt spectrum
-
-  TH2F        *EtaPhiWoC;//!
-  TH2F        *EtaPhiWC;//!
-  TH2F        *EtaPhiAfTCATM;//!
+  TH1F        *fHistPt;//! 
 
   TH1F        *fHistEta;//! 
   TH1F        *fHistPhi;//!  
-  TH2F        *fHistEtaPhi_TPC;//! 
-  TH1F        *EMCalEta_TPCpT;//!  
 
   TH2F        *fHistdca;//! 
-  TH2F        *fHistdcaxy;//!      
-  TH2F        *fHistdcaxywc;//! 
-  TH2F        *fHistdcaz;//! 
-  TH2F        *fHistdcazwc;//! 
-
-  
+ 
   TH2F  *fHistBethe;//! 
   TH2F  *fnSigmaVsP_TPC;//!
-  TH2F  *fnSigmaVsP_TOF;//!
 
   TH1F  *fHistClustE;//!
   TH2F  *fEMCClsEtaPhi;//!
   TH2F  *fHistoNCells;//!
   TH2F  *fHistoTimeEMC;//!
-
 
   TH1F  *fHistPtMatch;//!
   TH2F  *fEMCTrkMatch;//!
@@ -648,15 +314,12 @@ fvalueElectron = new Double_t[6];
   Double_t  fTrkDCA;//!
  
   TH1F  *fHadPt_AftEID;//!
-
-  TH2F  *fHadEovp_AftEID;//!
   TH2F  *fHadEovpNL_AftEID;//!
 
   TH2F  *fHadDCA;//!
   TH1F  *fInclsElecPt;//!  
   TH2F  *fInclElecDCA;//!
 
-  TH2F  *fEop_AftEID;//!
   TH2F  *fEopNL_AftEID;//!
 
   TH1F  *fNElecInEvt;//!
@@ -817,35 +480,31 @@ fvalueElectron = new Double_t[6];
     TH1F                *fHFEPhysPriAll;//!
     TH1F                *fBEPhysPriAll;//!
     TH1F                *fDEPhysPriAll;//!
+
     TH1F                *fInclElePhysPriTrkCuts;//!
     TH1F                *fHFEPhysPriTrkCuts;//!
     TH1F                *fBEPhysPriTrkCuts;//!
     TH1F                *fDEPhysPriTrkCuts;//!
-    TH1F                *fInclElePhysPriOnlyTPCnsig;//!
-    TH1F                *fHFEPhysPriOnlyTPCnsig;//!
-    TH1F                *fBEPhysPriOnlyTPCnsig;//!
-    TH1F                *fDEPhysPriOnlyTPCnsig;//!
+
     TH1F                *fInclElePhysPriEMCMatch;//!
     TH1F                *fHFEPhysPriEMCMatch;//!
     TH1F                *fBEPhysPriEMCMatch;//!
     TH1F                *fDEPhysPriEMCMatch;//!
-    TH1F                *fInclElePhysPriTPCnsig;//!
-    TH1F                *fHFEPhysPriTPCnsig;//!
-    TH1F                *fBEPhysPriTPCnsig;//!
-    TH1F                *fDEPhysPriTPCnsig;//!
-    TH1F                *fInclElePhysPriEovPBfrSS;//!
-    TH1F                *fHFEPhysPriEovPBfrSS;//!
-    TH1F                *fBEPhysPriEovPBfrSS;//!
-    TH1F                *fDEPhysPriEovPBfrSS;//!
-    TH1F                *fInclElePhysPriSS;//!
-    TH1F                *fHFEPhysPriSS;//!
-    TH1F                *fBEPhysPriSS;//!
-    TH1F                *fDEPhysPriSS;//!
+
     TH1F                *fInclElePhysPriEovP;//!
     TH1F                *fHFEPhysPriEovP;//!
     TH1F                *fBEPhysPriEovP;//!
     TH1F                *fDEPhysPriEovP;//!
+    
+    TH1F                *fInclElePhysPriTPCnsig;//!
+    TH1F                *fHFEPhysPriTPCnsig;//!
+    TH1F                *fBEPhysPriTPCnsig;//!
+    TH1F                *fDEPhysPriTPCnsig;//!
 
+    TH1F                *fInclElePhysPriSS;//!
+    TH1F                *fHFEPhysPriSS;//!
+    TH1F                *fBEPhysPriSS;//!
+    TH1F                *fDEPhysPriSS;//!
 
   AliAnalysisHFEppEMCalBeauty(const AliAnalysisHFEppEMCalBeauty&); // not implemented
   AliAnalysisHFEppEMCalBeauty& operator=(const AliAnalysisHFEppEMCalBeauty&); // not implemented

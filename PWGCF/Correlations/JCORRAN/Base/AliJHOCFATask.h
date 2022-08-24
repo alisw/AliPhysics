@@ -59,6 +59,7 @@ class AliJHOCFATask : public AliAnalysisTaskSE {
   void HOCFASetParticleWeights(bool weightsNUE, bool weightsNUA) {
     fHOCFAUseWeightsNUE = weightsNUE; fHOCFAUseWeightsNUA = weightsNUA;
   }
+  void HOCFASetCentralityWeights(bool weightsCent) {fHOCFAUseWeightsCent = weightsCent;}
   void HOCFASetObservable(bool myObs, bool myOrder) {fHOCFAGetSC = myObs; fHOCFAGetLower = myOrder;}
 
  private:
@@ -79,11 +80,12 @@ class AliJHOCFATask : public AliAnalysisTaskSE {
   bool fHOCFAApplyEtaGap;             // kTRUE: Get the 2p correlators with an eta gap.
   bool fHOCFAUseWeightsNUE;           // kTRUE: Enable the non-unit NUE corrections.
   bool fHOCFAUseWeightsNUA;           // kTRUE: Enable the non-unit NUA corrections.
+  bool fHOCFAUseWeightsCent;          // kTRUE: Enable the non-unit centrality corrections for LHC15o.
 
   bool fHOCFAGetSC;                   // kTRUE: Measure 2-h and 3-h SC, else 2-h AC.
   bool fHOCFAGetLower;                // kTRUE: Measure the terms for the lower harmonics.
 
-  ClassDef(AliJHOCFATask, 5);
+  ClassDef(AliJHOCFATask, 6);
 };
 
 #endif  // AliJHOCFATask_H

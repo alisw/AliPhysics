@@ -32,8 +32,14 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+  virtual void  SetPeriod(const char* dataset) { fDataSet = dataset; }  
+
+  Double_t GetFlatenicityTPC();
+  Double_t GetFlatenicityTPCMC();
   Double_t GetFlatenicity();
   Double_t GetFlatenicityMC();
+  void CheckMultiplicities();
+  void CheckMultiplicitiesMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
 
@@ -44,20 +50,32 @@ public:
     fUseMC = flat_flag;
   } // use to analyse MC data
   void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
-  void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
-    fRemoveTrivialScaling = flat_flag;
-  }
+  void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
+  void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) { fRemoveTrivialScaling = flat_flag; }
+  void SetUseCalibration(Bool_t flat_flag = kFALSE) { fUseCalib = flat_flag; }  
   bool HasRecVertex();
 
 protected:
+    //
 private:
+    
+  Double_t V0AmplCalibration(const Int_t &chnl);    
+  Double_t V0AmplCalibrationTruth(const Int_t &chnl);    
+    
   AliESDEvent *fESD; //! input ESD event
   AliEventCuts fEventCuts;
   AliStack *fMCStack; //! MC stack
   AliMCEvent *fMC;    //! MC Event
   Bool_t fUseMC;      // analyze MC events
   Int_t fV0Mindex;
+  Float_t fmultV0A;
+  Float_t fmultV0C;
+  Float_t fmultTPC;
+  Float_t fmultV0Amc;
+  Float_t fmultV0Cmc;
+  Float_t fmultTPCmc;
   Bool_t fIsMCclosure;
+  TString fDetFlat;
   Bool_t fRemoveTrivialScaling;
   Int_t fnGen;
   AliPIDResponse *fPIDResponse;
@@ -74,19 +92,45 @@ private:
   TH1D *hPtPrimOut;
   TH1D *hPtSecOut;
   TH1D *hPtOut;
+  TH2D *hFlatV0vsFlatTPC;
+  TH2D *hFlatV0vsFlatTPCmc;
   TH1D *hFlatenicity;
   TH1D *hFlatenicityMC;
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
-  TProfile *hActivityV0DataSect;
-  TProfile *hActivityV0McSect;
+  Bool_t fUseCalib;
+  TString fDataSet;
+  TF1 *fV0Camp;
+  TF1 *fV0Aamp;
+  TProfile *pActivityV0DataSect;
+  TProfile *pActivityV0ADataSect;
+  TProfile *pActivityV0CDataSect;
+  TProfile *pActivityV0multData;
+  TProfile *pActivityV0AmultData;
+  TProfile *pActivityV0CmultData;
+  TProfile *pActivityV0McSect;
+  TProfile *pActivityV0multMc;
+  TH2D *hFlatVsNch;
+  TH2D *hFlatVsNchTPC;
   TH2D *hFlatVsNchMC;
+  TH2D *hFlatVsNchTPCmc;
+  TH1D *hNchV0M;
+  TH1D *hNchTPC;
+  TH1D *hNchV0a;
+  TH1D *hNchV0c;
   TH1D *hNchV0MMC;
+  TH1D *hNchTPCmc;
+  TH1D *hNchV0aMC;
+  TH1D *hNchV0cMC;
   TH2D *hFlatVsV0M;
+  TH1D *hEta;
+  TH1D *hEtamc;
   TH1D *hCounter;
   TH2D *hFlatVsPtV0M[9];
+  TH2D *hFlatVsNchTPCV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
+  TH2D *hFlatVsNchTPCV0MMC[9];
 
   AliAnalysisTaskSpectraFlatenicity(
       const AliAnalysisTaskSpectraFlatenicity &); // not implemented

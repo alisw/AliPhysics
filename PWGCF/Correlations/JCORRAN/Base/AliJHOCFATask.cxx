@@ -30,7 +30,7 @@ AliJHOCFATask::AliJHOCFATask():
 	fHOCFAnCentralityBins(9), fHOCFAMultiplicityMin(10),
 	fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
   fHOCFAEtaGap(0.), fHOCFAApplyEtaGap(kFALSE),
-  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE),
+  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE), fHOCFAUseWeightsCent(kFALSE),
   fHOCFAGetSC(kTRUE), fHOCFAGetLower(kTRUE)
 {
 // Dummy constructor of the class.
@@ -47,7 +47,7 @@ AliJHOCFATask::AliJHOCFATask(const char *name):
   fHOCFAnCentralityBins(9), fHOCFAMultiplicityMin(10),
   fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
   fHOCFAEtaGap(0.), fHOCFAApplyEtaGap(kFALSE),
-  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE),
+  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE), fHOCFAUseWeightsCent(kFALSE),
   fHOCFAGetSC(kTRUE), fHOCFAGetLower(kTRUE)
 {
 // Constructor of the class.
@@ -67,6 +67,7 @@ AliJHOCFATask::AliJHOCFATask(const AliJHOCFATask& ap):
   fHOCFAPtMin(ap.fHOCFAPtMin), fHOCFAPtMax(ap.fHOCFAPtMax),
   fHOCFAEtaGap(ap.fHOCFAEtaGap), fHOCFAApplyEtaGap(ap.fHOCFAApplyEtaGap),
   fHOCFAUseWeightsNUE(ap.fHOCFAUseWeightsNUE), fHOCFAUseWeightsNUA(ap.fHOCFAUseWeightsNUA),
+  fHOCFAUseWeightsCent(ap.fHOCFAUseWeightsCent),
   fHOCFAGetSC(ap.fHOCFAGetSC), fHOCFAGetLower(ap.fHOCFAGetLower)
 { 
 // Copy operator of the class.
@@ -112,6 +113,7 @@ void AliJHOCFATask::UserCreateOutputObjects()
   fHOCFATask->SetPtRange(fHOCFAPtMin, fHOCFAPtMax);
   fHOCFATask->SetEtaGap(fHOCFAApplyEtaGap, fHOCFAEtaGap);
   fHOCFATask->SetParticleWeights(fHOCFAUseWeightsNUE, fHOCFAUseWeightsNUA);
+  fHOCFATask->SetCentralityWeights(fHOCFAUseWeightsCent);
 
   fHOCFATask->SetObservable(fHOCFAGetSC, fHOCFAGetLower);
 

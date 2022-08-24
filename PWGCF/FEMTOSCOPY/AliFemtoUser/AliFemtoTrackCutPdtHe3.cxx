@@ -35,6 +35,8 @@ AliFemtoESDTrackCut()
     fOnlyTPCreject = 1;
     
     fPionHe3cut = 0;
+    fUseDCAvsPt_cut = 0;
+    fInversePID = 0;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -65,6 +67,8 @@ AliFemtoESDTrackCut(aCut)
     fUsePtCut = aCut.fUsePtCut;
     fOnlyTPCreject = aCut.fOnlyTPCreject;
     fPionHe3cut = aCut.fPionHe3cut;
+    fUseDCAvsPt_cut = aCut.fUseDCAvsPt_cut;
+    fInversePID = aCut.fInversePID;
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -105,6 +109,8 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
     fUsePtCut = aCut.fUsePtCut;
     fPionHe3cut = aCut.fPionHe3cut;
+    fUseDCAvsPt_cut = aCut.fUseDCAvsPt_cut;
+    fInversePID = aCut.fInversePID;
     return *this;
 }
 
@@ -295,37 +301,91 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
         return false;
     }
     //****N Sigma Method -- electron rejection****
-    if (fElectronRejection)
-        if (!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP()))
+    if (fElectronRejection){
+        if (!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP())){
             return false;
+	}
+    }
     if (fMostProbable>0) {
         
         int imost=0;
+	int loose_imost = 0;
         //****N Sigma Method****
         if (fPIDMethod==0) {
 	    //\ for proton PID
             if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
-                if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) ) {
+                if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP(),SwitchMom_p) ) {
                     	imost = 4;
                 }
+		
 		//\ reject
-		if( fOtherNsigmacut && RejectFakeP(track,track->P().Mag()) ){
+		if( fOtherNsigmacut==1 && RejectFakeP(track,track->P().Mag(), SwitchMom_p)){
 			imost = 0;			
 		}
+		if( fOtherNsigmacut==2){
+			if(Reject_commom(track,track->P().Mag())
+		|| IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), 1.4) ){
+				imost = 0;
+			}		
+		}
+		if(fUseDCAvsPt_cut){
+			float tmpDCAr = TMath::Abs(track->ImpactD());
+			float tmpCut = Return_DCAvsPt_cut_p(track->Pt(),fCharge);  
+			if(  tmpDCAr > tmpCut ) imost = 0;		
+		}
+		// if all TOF cut(pt>0.3 add TOF) did not pass, also not pass this one
+	if(fInversePID){
+		if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP(),0.7)){
+			loose_imost = 999;
+			if( fOtherNsigmacut==1 && RejectFakeP(track,track->P().Mag(), 0.7)){
+				loose_imost = 0;		
+			}
+		}
+		// no pass strict PID but pass loose PID
+		if(imost==0 && loose_imost==999){
+			imost = 4;
+		}else{
+			imost = 0;
+		}		
+	}
             }
 	    //\ for deuteron PID
             else if (fMostProbable == 13){   //cut on Nsigma deuteron
-                if ( IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD())){
+                if ( IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), SwitchMom_d)){
 			imost = 13;
 		}
 		//\ reject 
-                if( fOtherNsigmacut && RejectFakeD(track,track->P().Mag()) ){
+                if( fOtherNsigmacut==1 && RejectFakeD(track,track->P().Mag()) ){
 			imost = 0;			
+		}
+		if( fOtherNsigmacut==2){
+			if(Reject_commom(track,track->P().Mag())
+			|| IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP(),0.7)){
+				imost = 0;
+			}
 		}
                 //\ dE/dx cut for low pt abnormal
                 if ( fdEdxcut && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
                     	imost = 0;
                 }
+		if(fUseDCAvsPt_cut && fCharge>0){
+			float tmpDCAr = TMath::Abs(track->ImpactD());
+			float tmpCut = Return_DCAvsPt_cut_d(track->Pt(),fCharge);
+			if(  tmpDCAr > tmpCut ) imost = 0;
+			
+		}
+	if(fInversePID){
+		if ( IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), 1.4)){
+			loose_imost = 999;
+		}
+		// no pass strict PID but pass loose PID
+		if(imost==0 && loose_imost==999){
+			imost = 13;
+		}else{
+			imost = 0;
+		}		
+	}	
+		
             }
 	    //\ for triton PID
             else if (fMostProbable == 14){   //cut on Nsigma triton
@@ -360,7 +420,8 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	    if(fUseTOFMassCut){
 		//Mass square!
 		float TmpTOFMass = ReturnTOFMass(track,imost);
-		if(TmpTOFMass == -999) return false;
+		if(TmpTOFMass == -999) return false;	
+		//if(TmpTOFMass == -999){cout<<"imost"<<imost<<endl; return false;}
 	    	if(TmpTOFMass < TOFMassLowLimit || TmpTOFMass > TOFMassUpLimit){
 			return false;
 		}
@@ -378,8 +439,8 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 
     
 }
-bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP){
-    if (mom > SwitchMom_p) {
+bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, float tmp_switch){
+    if (mom > tmp_switch) {
 	        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigmaP)
 	            return true;	
 	}
@@ -390,11 +451,11 @@ bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float n
     return false;
 
 }
-bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD){
+bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD,  float tmp_switch){
     //double massPDGD=1.8756;
     if (fNsigmaTPCTOF) {
         //Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
-        if (mom > SwitchMom_d){
+        if (mom > tmp_switch){
             if (TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD)
             //if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
                 return true;
@@ -651,14 +712,15 @@ void AliFemtoTrackCutPdtHe3::SetfUsePtCut(int aUsePtCut){
 void AliFemtoTrackCutPdtHe3::SetfOnlyTPCreject(int aOnlyTPCreject){
 	fOnlyTPCreject = aOnlyTPCreject;
 }
-bool AliFemtoTrackCutPdtHe3::RejectFakeP(const AliFemtoTrack* track, float mom){
+bool AliFemtoTrackCutPdtHe3::RejectFakeP(const AliFemtoTrack* track, float mom, float tmp_switch){
 
 	bool rejected = true;
 	float p_NsigmaCombine = 0.;
 	float k_NsigmaCombine = 0.;
 	float e_NsigmaCombine = 0.;
 	float pi_NsigmaCombine = 0.;
-	if (mom > SwitchMom_p) {
+
+	if (mom > tmp_switch) {
 		p_NsigmaCombine = TMath::Hypot(track->NSigmaTPCP(), track->NSigmaTOFP());
 		k_NsigmaCombine = TMath::Hypot(track->NSigmaTPCK(), track->NSigmaTOFK());
 		e_NsigmaCombine = TMath::Hypot(track->NSigmaTPCE(), track->NSigmaTOFE());
@@ -687,16 +749,16 @@ bool AliFemtoTrackCutPdtHe3::RejectFakeD(const AliFemtoTrack* track, float mom){
 	float d_NsigmaCombine = 0.;
 	float p_NsigmaCombine = 0.;
 	float k_NsigmaCombine = 0.;
-	float e_NsigmaCombine = 0.;
+	//float e_NsigmaCombine = 0.;
 	float pi_NsigmaCombine = 0.;
 	if (mom > SwitchMom_d) {
 		d_NsigmaCombine = TMath::Hypot(track->NSigmaTPCD(), track->NSigmaTOFD());
 		p_NsigmaCombine = TMath::Hypot(track->NSigmaTPCP(), track->NSigmaTOFP());
 		k_NsigmaCombine = TMath::Hypot(track->NSigmaTPCK(), track->NSigmaTOFK());
-		e_NsigmaCombine = TMath::Hypot(track->NSigmaTPCE(), track->NSigmaTOFE());
+		//e_NsigmaCombine = TMath::Hypot(track->NSigmaTPCE(), track->NSigmaTOFE());
 		pi_NsigmaCombine = TMath::Hypot(track->NSigmaTPCPi(), track->NSigmaTOFPi());
 	        if ( 	(k_NsigmaCombine 	< d_NsigmaCombine) || 
-			(e_NsigmaCombine 	< d_NsigmaCombine) || 
+			//(e_NsigmaCombine 	< d_NsigmaCombine) || 
 			(pi_NsigmaCombine 	< d_NsigmaCombine) ||
 			(p_NsigmaCombine 	< d_NsigmaCombine) )
 	            return rejected;	
@@ -705,16 +767,83 @@ bool AliFemtoTrackCutPdtHe3::RejectFakeD(const AliFemtoTrack* track, float mom){
 		d_NsigmaCombine = abs(track->NSigmaTPCD());      	
 		p_NsigmaCombine = abs(track->NSigmaTPCP());
 		k_NsigmaCombine = abs(track->NSigmaTPCK());
-		e_NsigmaCombine = abs(track->NSigmaTPCE());
+		//e_NsigmaCombine = abs(track->NSigmaTPCE());
 		pi_NsigmaCombine = abs(track->NSigmaTPCPi());
 	        if ( 	(k_NsigmaCombine 	< d_NsigmaCombine) || 
-			(e_NsigmaCombine 	< d_NsigmaCombine) || 
+			//(e_NsigmaCombine 	< d_NsigmaCombine) || 
 			(pi_NsigmaCombine 	< d_NsigmaCombine) ||
 			(p_NsigmaCombine 	< d_NsigmaCombine) )
 	            return rejected;
     	}
 	return false;
 
+}
+bool AliFemtoTrackCutPdtHe3::IsPionNSigma(float mom,float nsigmaTPCpi,float nsigmaTOFpi){
+	
+	if (mom > 0.5) {
+	        if (TMath::Hypot( nsigmaTOFpi, nsigmaTPCpi ) < 3)
+	            return true;	
+	}
+    else {
+        if (TMath::Abs(nsigmaTPCpi) < 3.)
+            return true;
+    }
+    return false;
+}
+bool AliFemtoTrackCutPdtHe3::IsKaonNSigma(float mom,float nsigmaTPCk,float nsigmaTOFk){
+	
+	if (mom > 0.5) {
+	        if (TMath::Hypot( nsigmaTPCk, nsigmaTOFk ) < 3)
+	            return true;	
+	}
+    else {
+        if (TMath::Abs(nsigmaTPCk) < 3.)
+            return true;
+    }
+    return false;
+}
+bool AliFemtoTrackCutPdtHe3::Reject_commom(const AliFemtoTrack* track, float mom){
+	bool rejected = true;
+	bool passpi = IsPionNSigma(mom,track->NSigmaTPCPi(), track->NSigmaTOFPi());
+	bool passK = IsKaonNSigma(mom,track->NSigmaTPCK(), track->NSigmaTOFK());
+	if(passpi || passK){ 
+		return rejected;
+	}else{
+		return false;
+	}
+
+}
+float AliFemtoTrackCutPdtHe3::SetfUseDCAvsPt_cut(int aUseDCAvsPt_cut){
+	fUseDCAvsPt_cut = aUseDCAvsPt_cut; 
+}
+float AliFemtoTrackCutPdtHe3::Return_DCAvsPt_cut_p(float pt,int charge){
+	int WhichBin = (pt - 0.4)/0.2;
+	if(charge>0){
+		return v_DCAvspTcut_p[WhichBin];		
+	} 
+	if(charge<0){
+		return v_DCAvspTcut_antip[WhichBin];	
+	}
+
+}
+float AliFemtoTrackCutPdtHe3::Return_DCAvsPt_cut_d(float pt,int charge){
+	int WhichBin = (pt - 0.4)/0.2;
+	return v_DCAvspTcut_d[WhichBin];	
+
+}
+void AliFemtoTrackCutPdtHe3::Set_DCAvsPt_cut(float *input_v,int label){
+	if(label==0){
+		for(int i=0;i<18;i++) v_DCAvspTcut_p[i] = input_v[i];
+	}
+	if(label==1){
+		for(int i=0;i<18;i++) v_DCAvspTcut_antip[i] = input_v[i];			
+	}
+	if(label==2){
+		for(int i=0;i<18;i++) v_DCAvspTcut_d[i] = input_v[i];			
+	}
+}
+void AliFemtoTrackCutPdtHe3::SetInversePID(int aInversePID){
+	fInversePID = aInversePID;
 }
 
 

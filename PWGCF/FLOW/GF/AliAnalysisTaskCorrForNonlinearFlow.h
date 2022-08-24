@@ -31,6 +31,9 @@
 #include "AliEventPoolManager.h"
 #include "AliTHn.h"
 
+#include "AliAODForwardMult.h"
+#include "AliPartSimpleForCorr.h"
+
 class TList;
 class TF1;
 class TH1;
@@ -78,6 +81,8 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetMaxPtAss(Double_t maxPt){fPtMaxAss = maxPt;}
 		virtual void   SetMinPtTrig(Double_t minPt){fPtMinTrig = minPt;}
 		virtual void   SetMaxPtTrig(Double_t maxPt){fPtMaxTrig = maxPt;}
+		virtual void   SetMaxCent(Double_t maxCent){fCentMax = maxCent;}
+		virtual void   SetMinCent(Double_t maxCent){fCentMin = maxCent;}
 	
 		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
 		virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
@@ -96,7 +101,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		// virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		// virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
-
+		virtual void   SetAnaType(TString type) {anaType = type;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
 		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
@@ -113,6 +118,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		AliAnalysisTaskCorrForNonlinearFlow& operator=(const AliAnalysisTaskCorrForNonlinearFlow&);
 
 		virtual void NTracksCalculation(AliVEvent* aod);
+                Bool_t PrepareTPCFMDTracks();
 		virtual void FillCorrelations();
 		virtual void FillCorrelationsMixed();
 		Bool_t AcceptAOD(AliAODEvent *inEv);
@@ -148,8 +154,10 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Double_t		fMaxPt;					// Max pt - for histogram limits
 		Double_t                fPtMinAss;                              // Min pt - for Associate particle 
 		Double_t                fPtMaxAss;                              // Min pt - for Associate particle 
-		Double_t                fPtMinTrig;                              // Min pt - for trigger particle 
-		Double_t                fPtMaxTrig;                              // Min pt - for trigger particle 
+		Double_t                fPtMinTrig;                             // Min pt - for trigger particle 
+		Double_t                fPtMaxTrig;                             // Min pt - for trigger particle 
+		Double_t                fCentMin;                               // Min Centrality
+		Double_t                fCentMax;                               // Max Centrality
 		Int_t			fSample;				// number of sample
 		Int_t			fTrigger;				// flag for trigger
 		Int_t			fAliTrigger;				// name for trigger
@@ -158,6 +166,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
 		bool                    fIsMC;                                  // The observable for MonteCarlo truth
 		TString                 fNtrksName;                             // Cent or Mult
+		TString                 anaType;                                // TPC-TPC or TPC-FMD
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
@@ -265,6 +274,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		AliTHn*                      fhChargedSE;            //!
 		AliTHn*                      fhChargedME;            //!
 		AliEventPoolManager*         fPoolMgr;               //!  event pool manager for Event Mixing
+		TH2D*                        fhTracksTrigPt;         //! Trigger particle histogram
 
 		// Global variables
 		double NtrksCounter = 0;       //!
@@ -277,7 +287,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 1); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 2); // Analysis task
 };
 
 #endif

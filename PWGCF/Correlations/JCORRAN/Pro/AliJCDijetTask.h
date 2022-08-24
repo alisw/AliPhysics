@@ -132,6 +132,8 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         AliJCDijetAna::jetClasses iUnfJetClassTrue;
         AliJCDijetAna::jetClasses iUnfJetClassDet;
         bool bUseCrho;
+        bool bGoodEvent;
+        bool bGoodMCEvent;
 
         ClassDef(AliJCDijetTask, 1); 
 };

@@ -1520,8 +1520,6 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       // for pp
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
       centrality = tracks->GetEntriesFast();
-      if (centrality > 40)
-        centrality = 41;
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
       delete tracks;
     }
@@ -1580,6 +1578,11 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
         centrality = collGeometry->ImpactParameter();
       else if (hepMCHeader)
         centrality = hepMCHeader->impact_parameter();
+    }
+    else if (fCentralityMethod == "MCGen_TRACKS_MANUAL") {
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+      centrality = tracks->GetEntriesFast();
+      delete tracks;
     }
     else if (fCentralityMethod == "MCGen_V0M") {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);

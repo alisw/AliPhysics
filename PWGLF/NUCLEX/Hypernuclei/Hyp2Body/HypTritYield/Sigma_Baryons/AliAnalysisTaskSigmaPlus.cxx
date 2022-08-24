@@ -128,7 +128,7 @@ fZvtxBins(20),
 fMinZBin(-10),
 fMaxZBin(10),
 
-fMaxProtEta(1.1),    
+fMaxProtEta(1),    
 fMinTPCClustProt(40),
 fMaxNsigProtTPC(4),
 fRequireProtonTPC(kTRUE),
@@ -141,17 +141,17 @@ fMaxProtpt(15),
 
 fMaxMCEta(0.9),
 
-fMaxDaughtEta(1.5),
+fMaxDaughtEta(1.2),
 fMinTPCClustDaught(20),
 fMaxNsigDaughtTPC(6),
 fMaxalpha(1.1),
-fMaxqt(0.06),
-fMaxopenangle(0.5),
-fMaxdeltatheta(0.2),
+fMaxqt(0.04),
+fMaxopenangle(0.4),
+fMaxdeltatheta(0.15),
 fMinV0CPA(0.8),
 fMinV0Radius(1), 
 fMaxV0Radius(250),
-fMaxphotonmass(0.2),
+fMaxphotonmass(0.08),
 
 fMinDCADaughtPV(0.1),
 fMaxDCADaught(100),
@@ -166,7 +166,8 @@ fMaxElecpt(5),
 fCleanAutoCorr(kTRUE),
 fMinPi0Mass(0.06), 
 fMaxPi0Mass(0.19),  
-fMaxSigmaPA(0.1),  
+fMaxSigmaPA(0.06),
+fMaxSigmaY(0.9),  
 fMaxSigmaMass(1.4),
 fMinProtonDCAxy(0.005),
 fMinProtonDCAz(-1),
@@ -183,7 +184,7 @@ fMaxPairSigmaPA(0.06),
 fMinPairSigmaMass(1.13),   
 fMaxPairSigmaMass(1.25),   
 fMinPairProtonDCAxy(0.005),
-fMaxPairkstar(1),
+fMaxPairkstar(0.6),
 
 fIsMCSigma(kFALSE),
 fIsMCPrimary(kFALSE),
@@ -362,7 +363,7 @@ fZvtxBins(20),
 fMinZBin(-10),
 fMaxZBin(10),
 
-fMaxProtEta(1.1),    
+fMaxProtEta(1),    
 fMinTPCClustProt(40),
 fMaxNsigProtTPC(4),
 fRequireProtonTPC(kTRUE),
@@ -375,17 +376,17 @@ fMaxProtpt(15),
 
 fMaxMCEta(0.9),
 
-fMaxDaughtEta(1.5),
+fMaxDaughtEta(1.2),
 fMinTPCClustDaught(20),
 fMaxNsigDaughtTPC(6),
 fMaxalpha(1.1),
-fMaxqt(0.06),
-fMaxopenangle(0.5),
-fMaxdeltatheta(0.2),
+fMaxqt(0.04),
+fMaxopenangle(0.4),
+fMaxdeltatheta(0.15),
 fMinV0CPA(0.8),
 fMinV0Radius(1), 
 fMaxV0Radius(250),
-fMaxphotonmass(0.2),
+fMaxphotonmass(0.08),
 
 fMinDCADaughtPV(0.1),
 fMaxDCADaught(100),
@@ -400,7 +401,8 @@ fMaxElecpt(5),
 fCleanAutoCorr(kTRUE),
 fMinPi0Mass(0.06), 
 fMaxPi0Mass(0.19),  
-fMaxSigmaPA(0.1),  
+fMaxSigmaPA(0.06),
+fMaxSigmaY(0.9),  
 fMaxSigmaMass(1.4),
 fMinProtonDCAxy(0.005),
 fMinProtonDCAz(-1),
@@ -417,7 +419,7 @@ fMaxPairSigmaPA(0.06),
 fMinPairSigmaMass(1.13),   
 fMaxPairSigmaMass(1.25),   
 fMinPairProtonDCAxy(0.005),
-fMaxPairkstar(1),
+fMaxPairkstar(0.6),
 
 fIsMCSigma(kFALSE),
 fIsMCPrimary(kFALSE),
@@ -1369,7 +1371,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 /**************************Histograms********************************/
 
     //Book Keeper for used Cuts 
-    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 61, 0.5, 61.5);
+    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 62, 0.5, 62.5);
 
     //Event related                    
     TH1F* fHistVertexZ                 = new TH1F("fHistVertexZ", "Z Vertex Position;z [cm];Counts/mm", 400, -20, 20);
@@ -1624,6 +1626,11 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     TH1F* fHistSigmaPA                 = new TH1F("fHistSigmaPA","#Sigma^{+}/#bar#Sigma^{-} PA;PA [rad];Counts/(0.005)",700,0,3.5);
     TH1F* fHistSigmaPAmix              = new TH1F("fHistSigmaPAmix","#Sigma^{+}/#bar#Sigma^{-} PA mixed;PA [rad];Counts/(0.005)",700,0,3.5);
     TH1F* fHistSigmaPArot              = new TH1F("fHistSigmaPArot","#Sigma^{+}/#bar#Sigma^{-} PA rotated;PA [rad];Counts/(0.005)",700,0,3.5);
+    TH1F* fHistSigmaY                  = new TH1F("fHistSigmaY","#Sigma^{+}/#bar#Sigma^{-} Y;Y;Counts/(0.01)",300,-1.5,1.5);
+    TH1F* fHistMCSigmaY                = new TH1F("fHistMCSigmaY","#Sigma^{+}/#bar#Sigma^{-} Y;Y;Counts/(0.01)",300,-1.5,1.5);
+    TH1F* fHistSigmaYrot               = new TH1F("fHistSigmaYrot","#Sigma^{+}/#bar#Sigma^{-} Y rotated;Y;Counts/(0.01)",300,-1.5,1.5);
+    TH1F* fHistMCSigmaYrot             = new TH1F("fHistMCSigmaYrot","#Sigma^{+}/#bar#Sigma^{-} Y rotated;Y;Counts/(0.01)",300,-1.5,1.5);
+    TH1F* fHistSigmaYmix               = new TH1F("fHistSigmaPAmix","#Sigma^{+}/#bar#Sigma^{-} Y mixed;Y;Counts/(0.01)",300,-1.5,1.5);
     TH1F* fHistInvSigmaMass            = new TH1F("fHistInvSigmaMass","Invariant mass of #Sigma^{+}/#bar#Sigma^{-} Candidates;m_{inv} [GeV/#it{c}^{2}];Counts/(10 MeV/#it{c}^{2})", 500, 0.5, 5.5);
     TH1F* fHistInvSigmaMassmix         = new TH1F("fHistInvSigmaMassmix","Invariant mass of mixed #Sigma^{+}/#bar#Sigma^{-} Candidates;m_{inv} [GeV/#it{c}^{2}];Counts/(10 MeV/#it{c}^{2})", 500, 0.5, 5.5);
     TH1F* fHistInvSigmaMassrot         = new TH1F("fHistInvSigmaMassrot","Invariant mass of rotated #Sigma^{+}/#bar#Sigma^{-} Candidates;m_{inv} [GeV/#it{c}^{2}];Counts/(10 MeV/#it{c}^{2})", 500, 0.5, 5.5);
@@ -1707,23 +1714,24 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(42,"fMinPi0Mass");
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(43,"fMaxPi0Mass");
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(44,"fMaxSigmaPA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(45,"fMaxSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(46,"fMinProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(47,"fMinProtonDCAz");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(48,"fMaxProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(49,"fMaxProtonDCAz");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(50,"fRequireDCACut");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(51,"flowkstar");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(52,"fverylowkstar");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(53,"fveryverylowkstar");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(54,"fMinPairPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(55,"fMaxPairPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(56,"fMaxPairSigmaPA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(57,"fMinPairSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(58,"fMaxPairSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(59,"fMinPairProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(60,"fMaxPairkstar");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(61,"Number of Fills");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(45,"fMaxSigmaY");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(46,"fMaxSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(47,"fMinProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(48,"fMinProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(49,"fMaxProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(50,"fMaxProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(51,"fRequireDCACut");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(52,"flowkstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(53,"fverylowkstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(54,"fveryverylowkstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(55,"fMinPairPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(56,"fMaxPairPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(57,"fMaxPairSigmaPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(58,"fMinPairSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(59,"fMaxPairSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(60,"fMinPairProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(61,"fMaxPairkstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(62,"Number of Fills");
 
     fHistCutBookKeeper->SetBinContent(1,fMaxVertexZ);
     fHistCutBookKeeper->SetBinContent(2,fEvPoolSize);
@@ -1770,23 +1778,24 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistCutBookKeeper->SetBinContent(42,fMinPi0Mass);
     fHistCutBookKeeper->SetBinContent(43,fMaxPi0Mass);
     fHistCutBookKeeper->SetBinContent(44,fMaxSigmaPA);
-    fHistCutBookKeeper->SetBinContent(45,fMaxSigmaMass);
-    fHistCutBookKeeper->SetBinContent(46,fMinProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(47,fMinProtonDCAz);
-    fHistCutBookKeeper->SetBinContent(48,fMaxProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(49,fMaxProtonDCAz);
-    fHistCutBookKeeper->SetBinContent(50,fRequireDCACut);
-    fHistCutBookKeeper->SetBinContent(51,flowkstar);
-    fHistCutBookKeeper->SetBinContent(52,fverylowkstar);
-    fHistCutBookKeeper->SetBinContent(53,fveryverylowkstar);
-    fHistCutBookKeeper->SetBinContent(54,fMinPairPi0Mass);
-    fHistCutBookKeeper->SetBinContent(55,fMaxPairPi0Mass);
-    fHistCutBookKeeper->SetBinContent(56,fMaxPairSigmaPA);
-    fHistCutBookKeeper->SetBinContent(57,fMinPairSigmaMass);
-    fHistCutBookKeeper->SetBinContent(58,fMaxPairSigmaMass);
-    fHistCutBookKeeper->SetBinContent(59,fMinPairProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(60,fMaxPairkstar);
-    fHistCutBookKeeper->SetBinContent(61,1);
+    fHistCutBookKeeper->SetBinContent(45,fMaxSigmaY);
+    fHistCutBookKeeper->SetBinContent(46,fMaxSigmaMass);
+    fHistCutBookKeeper->SetBinContent(47,fMinProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(48,fMinProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(49,fMaxProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(50,fMaxProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(51,fRequireDCACut);
+    fHistCutBookKeeper->SetBinContent(52,flowkstar);
+    fHistCutBookKeeper->SetBinContent(53,fverylowkstar);
+    fHistCutBookKeeper->SetBinContent(54,fveryverylowkstar);
+    fHistCutBookKeeper->SetBinContent(55,fMinPairPi0Mass);
+    fHistCutBookKeeper->SetBinContent(56,fMaxPairPi0Mass);
+    fHistCutBookKeeper->SetBinContent(57,fMaxPairSigmaPA);
+    fHistCutBookKeeper->SetBinContent(58,fMinPairSigmaMass);
+    fHistCutBookKeeper->SetBinContent(59,fMaxPairSigmaMass);
+    fHistCutBookKeeper->SetBinContent(60,fMinPairProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(61,fMaxPairkstar);
+    fHistCutBookKeeper->SetBinContent(62,1);
 
     fHistMCCounter->GetXaxis()->SetBinLabel(1,"Events");
     fHistMCCounter->GetXaxis()->SetBinLabel(2,"MC Particles");
@@ -1813,6 +1822,19 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistEventCounterdoubleINT7->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterINT7LF->GetXaxis()->SetBinLabel(1,"Events");
     fHistEventCounterdoubleINT7LF->GetXaxis()->SetBinLabel(1,"Events");
+
+    fHistEventCounter->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterdouble->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterHM->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterdoubleHM->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterHMV0->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterdoubleHMV0->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterHMSPD->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterdoubleHMSPD->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterINT7->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterdoubleINT7->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterINT7LF->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
+    fHistEventCounterdoubleINT7LF->GetXaxis()->SetBinLabel(2,"Events, |z_{Vertex}|<10cm");
 
     fHistV0Statistics->GetXaxis()->SetBinLabel(1, "On-the-fly V0s");
     fHistV0Statistics->GetXaxis()->SetBinLabel(2, "Offline V0s");
@@ -2248,6 +2270,11 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fOutputList->Add(fHistSigmaPA);
     fOutputList->Add(fHistSigmaPAmix);
     fOutputList->Add(fHistSigmaPArot);
+    fOutputList->Add(fHistSigmaY);
+    fOutputList->Add(fHistMCSigmaY);
+    fOutputList->Add(fHistSigmaYrot);
+    fOutputList->Add(fHistMCSigmaYrot);
+    fOutputList->Add(fHistSigmaYmix);
     fOutputList->Add(fHistInvSigmaMass);         
     fOutputList->Add(fHistInvSigmaMassmix);         
     fOutputList->Add(fHistInvSigmaMassrot);         
@@ -4154,6 +4181,12 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           if(TMath::Abs(DCAxy)>fMaxProtonDCAxy&&fRequireDCACut) continue; 
           if(TMath::Abs(DCAz)>fMaxProtonDCAz&&fRequireDCACut) continue;
 
+          TLorentzVector sig; sig.SetXYZM(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz(),cSigmaMass);
+          Float_t Rapidity = sig.Rapidity();
+          if(isReallySigma) FillHistogram("fHistMCSigmaY",Rapidity);
+          FillHistogram("fHistSigmaY",Rapidity);
+          if(TMath::Abs(Rapidity)>fMaxSigmaY) continue;  //Cut on the rapidity
+
           TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
           TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);
           Float_t SigmaPointingAngle = sigmamomentum.Angle(sigmavertex);
@@ -4550,6 +4583,11 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             if(TMath::Abs(DCAxy)>fMaxProtonDCAxy&&fRequireDCACut) continue; 
             if(TMath::Abs(DCAz)>fMaxProtonDCAz&&fRequireDCACut) continue;
 
+            TLorentzVector sig; sig.SetXYZM(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz(),cSigmaMass);
+            Float_t Rapidity = sig.Rapidity();
+            FillHistogram("fHistSigmaYmix",Rapidity);
+            if(TMath::Abs(Rapidity)>fMaxSigmaY) continue;  //Cut on the rapidity
+
             TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
             TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);
             Float_t SigmaPointingAngle = sigmamomentum.Angle(sigmavertex);
@@ -4719,6 +4757,12 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           if(TMath::Abs(DCAz)>fMaxProtonDCAz&&DCAz!=-999) continue;
           if(TMath::Abs(DCAxy)>fMaxProtonDCAxy&&fRequireDCACut) continue; 
           if(TMath::Abs(DCAz)>fMaxProtonDCAz&&fRequireDCACut) continue;
+
+          TLorentzVector sig; sig.SetXYZM(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz(),cSigmaMass);
+          Float_t Rapidity = sig.Rapidity();
+          if(isReallySigma) FillHistogram("fHistMCSigmaYrot",Rapidity);
+          FillHistogram("fHistSigmaYrot",Rapidity);
+          if(TMath::Abs(Rapidity)>fMaxSigmaY) continue;  //Cut on the rapidity
 
           TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
           TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);

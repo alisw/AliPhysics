@@ -644,7 +644,8 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::IsSelectedCustomizedPtDepeID(AliAODTr
     Double_t pte = trk->Pt();
     Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
     if(pte>5.) nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*5.+fSigmaElectronTPCPtDepPar2*25.;
-    if(nSigmaTPCele<nsigmamin) return kFALSE;
+  //  if(nSigmaTPCele<nsigmamin) return kFALSE;
+    if(nSigmaTPCele<fSigmaElectronTPCMin) return kFALSE; // Presection |nSigma| < 5
     if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
     
     return kTRUE;

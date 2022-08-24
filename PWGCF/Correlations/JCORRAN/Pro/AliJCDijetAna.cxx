@@ -275,7 +275,7 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
         AliJBaseTrack *trk = (AliJBaseTrack*)inList->At(utrack);
         pt = trk->Pt();
         eta = trk->Eta();
-        if (pt>fParticlePtCut && pt<fParticlePtCutMax && TMath::Abs(eta) < fParticleEtaCut){
+        if (pt>fParticlePtCut && TMath::Abs(eta) < fParticleEtaCut){
             if(ftrackingIneff>0.0 && randomGenerator->Uniform(0.0,1.0) < ftrackingIneff) continue;
             phi = trk->Phi() > TMath::Pi() ? trk->Phi()-2*TMath::Pi() : trk->Phi();
             if(DeltaR(randConeEta, eta, randConePhi, phi) < fJetCone) randConePt += pt;
@@ -301,8 +301,24 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
     if(bThisIsTrueMC) {
         rawJets = tempJets;
     } else {
-        for (utrack = 0; utrack < tempJets.size(); utrack++) {
-            if(tempJets.at(utrack).area()>areaCut) rawJets.push_back(tempJets.at(utrack));
+        for (ujet = 0; ujet < tempJets.size(); ujet++) {
+            if(tempJets.at(ujet).area()>areaCut) {  //Check first that jet area is large enough
+                fhistos->fh_events[lCBin]->Fill("area cut ok",1.0);
+                ucount=0;
+                for(uconst=0;uconst<tempJets.at(ujet).constituents().size(); uconst++) {
+                    if(tempJets.at(ujet).constituents().at(uconst).pt() > fParticlePtCutMax ) { // Check if jet has 100 GeV constituents
+                        ucount++;
+                    }
+                }
+                if(ucount==0) {
+                    fhistos->fh_events[lCBin]->Fill("100GeV const cut ok",1.0);
+                    rawJets.push_back(tempJets.at(ujet));
+                } else {
+                    fhistos->fh_events[lCBin]->Fill("100GeV const cut fails",1.0);
+                }
+            } else { //if area cut fails
+                fhistos->fh_events[lCBin]->Fill("area cut fails",1.0);
+            }
         }
     }
 
@@ -668,6 +684,10 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin, double 
                 fhistos->fh_dijetPtPair[lCBin][udijet]->Fill(ptpair,hisWeight);
                 dPhi = GetDeltaPhi(dijets.at(udijet).at(0).at(0), dijets.at(udijet).at(0).at(1));
                 fhistos->fh_dijetDeltaPhi[lCBin][udijet]->Fill(dPhi,hisWeight);
+                fhistos->fh_dijetCosDeltaPhi[lCBin][udijet]->Fill(TMath::Cos(dPhi),hisWeight);
+                fhistos->fh_dijetDeltaEta[lCBin][udijet]->Fill(dijets.at(udijet).at(0).at(0).eta()-dijets.at(udijet).at(0).at(1).eta(),hisWeight);
+                fhistos->fh_dijetCoshDeltaEta[lCBin][udijet]->Fill(TMath::CosH(dijets.at(udijet).at(0).at(0).eta()-dijets.at(udijet).at(0).at(1).eta()),hisWeight);
+                fhistos->fh_dijetSqrt2pt12[lCBin][udijet]->Fill(TMath::Sqrt(2*dijets.at(udijet).at(0).at(0).pt()*dijets.at(udijet).at(0).at(1).pt()),hisWeight);
             }
 
             // Analysis for dijet with deltaPhi cut.
@@ -698,6 +718,10 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin, double 
                     fhistos->fh_dijetPtPairDeltaPhiCut[lCBin][udijet]->Fill(ptpair,hisWeight);
                     dPhi = GetDeltaPhi(dijets.at(udijet).at(1).at(0), dijets.at(udijet).at(1).at(1));
                     fhistos->fh_dijetDeltaPhiWithCut[lCBin][udijet]->Fill(dPhi,hisWeight);
+                    fhistos->fh_dijetCosDeltaPhiWithCut[lCBin][udijet]->Fill(TMath::Cos(dPhi),hisWeight);
+                    fhistos->fh_dijetDeltaEtaWithCut[lCBin][udijet]->Fill(dijets.at(udijet).at(1).at(0).eta()-dijets.at(udijet).at(1).at(1).eta(),hisWeight);
+                    fhistos->fh_dijetCoshDeltaEtaWithCut[lCBin][udijet]->Fill(TMath::CosH(dijets.at(udijet).at(1).at(0).eta()-dijets.at(udijet).at(1).at(1).eta()),hisWeight);
+                    fhistos->fh_dijetSqrt2pt12WithCut[lCBin][udijet]->Fill(TMath::Sqrt(2*dijets.at(udijet).at(1).at(0).pt()*dijets.at(udijet).at(1).at(1).pt()),hisWeight);
                 }
             }
         }
@@ -1162,6 +1186,10 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
         histos->fh_events[iBin]->Fill("kt acc. dijets",0.0);
         histos->fh_events[iBin]->Fill("kt deltaphi cut dijets",0.0);
         histos->fh_events[iBin]->Fill("pt_hard bin cuts",0.0);
+        histos->fh_events[iBin]->Fill("area cut ok",0.0);
+        histos->fh_events[iBin]->Fill("area cut fails",0.0);
+        histos->fh_events[iBin]->Fill("100GeV const cut ok",0.0);
+        histos->fh_events[iBin]->Fill("100GeV const cut fails",0.0);
         histos->fh_events[iBin]->Fill("localRho dropped leading jet",0.0);
         histos->fh_events[iBin]->Fill("localRho dropped subleading jet",0.0);
         histos->fh_events[iBin]->Fill("localRho dropped subleading jet (Alt)",0.0);

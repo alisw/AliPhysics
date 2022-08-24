@@ -61,6 +61,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
+        void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
+        void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
+        void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
+        void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -88,8 +92,6 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetV0sTaus(Double_t k0s, Double_t lambda) { fCutTauK0s = k0s; fCutTauLambda = lambda; }
         void                    SetNSigmaTPC(Double_t cut) { fSigmaTPC = cut; }
         void                    SetnTPCcrossedRows(Int_t cut) { fnTPCcrossedRows = cut; }
-        void                    SetMinimalTrackLength(Double_t cut) { fTrackLength = cut; }
-        void                    SetCrossedLengthRatio(Double_t cut) { fV0ratioLength = cut; }
         void                    SetMassRejWindowK0(Double_t cut) { fMassRejWindowK0 = cut; }
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
 
@@ -106,7 +108,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
         void                    SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
         void                    SetFMDacceptanceCuts(Double_t cutAlower, Double_t cutAupper, Double_t cutClower, Double_t cutCupper) { fFMDAacceptanceCutLower = cutAlower; fFMDAacceptanceCutUpper = cutAupper; fFMDCacceptanceCutLower = cutClower; fFMDCacceptanceCutUpper = cutCupper; }
-
+        void                    SetBoostAMPT(Bool_t flag = kTRUE){ fBoostAMPT = flag; }
 
     private:
 
@@ -138,7 +140,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                GetEff(const Double_t dPt, const Int_t spec = 0, const Double_t dEta = 0.0);
         Int_t                   GetEtaRegion(const Double_t dEta);
         TString                 ReturnPPperiod(const Int_t runNumber) const;
-
+        Double_t                TransverseBoost(const AliMCParticle *track);
 
         AliAnalysisTaskCorrForFlowFMD(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
         AliAnalysisTaskCorrForFlowFMD& operator=(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
@@ -157,13 +159,14 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         AliTHn*                 fhTrigTracks[6]; //!
         AliTHn*                 fhSE[6]; //!
         AliTHn*                 fhME[6]; //!
-        TH2D*                   fhEfficiency[4]; //! not eta dependent
-        TH2D*                   fhEfficiencyEta[4][8]; //! eta dependent (8 sectors)
+        TH2D*                   fhEfficiency[6]; //! not eta dependent
+        TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
         TH1D*                   fhV0Counter[2]; //!
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT[6]; //!
         TH2D*                   fhPTvsMinv[2]; //!
+        TH2D*                   fh2FMDvsV0[4]; //!
 
         //event and track selection
         AnaType                 fAnalType;
@@ -181,13 +184,20 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
         Bool_t                  fUseCentralityCalibration; // [kFALSE]
         Bool_t                  fSkipCorr; // [kFALSE]
+        Bool_t                  fIsAntiparticleCheck; // [kFALSE]
+        Bool_t                  fDoAntiparticleOnly; // [kFALSE] == positive particles only and lambdas
+        Bool_t                  fVetoJetEvents; // [kFALSE]
+        Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
+        Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
         Int_t                   fNofTracks;
+        Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
         Int_t                   fNbinsMinv; // [60]
+        Int_t                   fnTPCcrossedRows; // [70]
         Double_t                fNOfSamples; //[1]
         Double_t                fSampleIndex; //[0]
         Double_t                fPtMinTrig;
@@ -231,11 +241,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fCutTauK0s; // [0.]
         Double_t                fCutTauLambda; // [0.]
         Double_t                fSigmaTPC; // [3.0]
-        Int_t                   fnTPCcrossedRows; // [70]
-        Double_t                fTrackLength; // [90]
-        Double_t                fV0ratioLength; // [0.8]
         Double_t                fMassRejWindowK0; // [0.005]
         Double_t                fMassRejWindowLambda; // [0.01]
+        Double_t                fJetParticleLowPt; // [5.]
         TString                 fCentEstimator; //"V0M"
         TString                 fSystematicsFlag; // ""
         AliEventCuts            fEventCuts;
@@ -250,7 +258,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 12);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 17);
 };
 
 #endif

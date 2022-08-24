@@ -706,8 +706,12 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: SelectTrack(const AliVEvent *eve
         Double_t nSigmaCombined_Ele = -9999.;
         
         if(fAnalCuts->GetIsUsePID()){
-            nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodtpid,AliPID::kElectron);
-            nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodtpid,AliPID::kElectron);
+           // nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodtpid,AliPID::kElectron);
+           // nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodtpid,AliPID::kElectron);
+            
+            AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+            Pid_HF -> GetnSigmaTOF(aodtpid, 0, nsigma_tofele);
+            Pid_HF -> GetnSigmaTPC(aodtpid, 0, nsigma_tpcele);
         }
         if(fAnalCuts->SingleTrkCutsNoPID(aodt,aodtpid,fpVtx)){
             fHistoElectronTPCPID->Fill(aodt->Pt(),nsigma_tpcele);
@@ -907,8 +911,14 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
         AliAODTrack *trk = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrk));
         if(!trk) continue;
         
-        Float_t nSigmaTOF_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk, AliPID::kElectron);
-        Float_t nSigmaTPC_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk, AliPID::kElectron);
+      //  Float_t nSigmaTOF_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk, AliPID::kElectron);
+       // Float_t nSigmaTPC_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk, AliPID::kElectron);
+        
+        Double_t nSigmaTOF_Ele = -999., nSigmaTPC_Ele = -999.;
+        AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+        Pid_HF -> GetnSigmaTOF(trk, 0, nSigmaTOF_Ele);
+        Pid_HF -> GetnSigmaTPC(trk, 0, nSigmaTPC_Ele);
+        
         nSigmaCombined_Ele = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_Ele, nSigmaTOF_Ele);
         
         Double_t mass =9999.; Double_t mass_ss = 9999.;
@@ -1674,9 +1684,14 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(AliAODEve
             (*varvec)[41] = d0z0bach[0];
             (*varvec)[42] = TMath::Sqrt(covd0z0bach[0]);
         
-            double nsigmaTPCE = -999., nsigmaTOFE = -999.;
-            nsigmaTPCE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron); // TPC
-            nsigmaTOFE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron); // TOF
+            Double_t nsigmaTPCE = -999., nsigmaTOFE = -999.;
+           // nsigmaTPCE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron); // TPC
+           // nsigmaTOFE = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron); // TOF
+            
+            AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+            Pid_HF -> GetnSigmaTOF(trk, 0, nsigmaTOFE);
+            Pid_HF -> GetnSigmaTPC(trk, 0, nsigmaTPCE);
+            
             (*varvec)[43] = nsigmaTPCE;
             (*varvec)[44] = nsigmaTOFE;
             (*varvec)[45] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCE, nsigmaTOFE);
@@ -1963,7 +1978,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                         
                         if(fWriteMixedEventTree){
                             if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype);
+                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
                             }
                         } //fWriteMixedEventTree
                         kfpOmegac0.Clear();
@@ -1990,7 +2005,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                         
                         if(fWriteMixedEventTree){
                             if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype);
+                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
                             }
                         }//MixedTree
                         kfpOmegac0.Clear();
@@ -2168,7 +2183,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                         
                         if(fWriteMixedEventTree){
                             if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype);
+                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
                             }
                         }//MixedTree
                         kfpAntiOmegac0.Clear();
@@ -2197,7 +2212,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                         
                         if(fWriteMixedEventTree){
                             if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype);
+                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
                             }
                         }//MixedTree
                         kfpAntiOmegac0.Clear();
@@ -2379,7 +2394,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeElectron(AliAODTrack *tr
 void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpOmegaMinus_woLMassConst, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
-    for (Int_t i=0; i< 43 ; i++){
+    for (Int_t i=0; i< 45 ; i++){
         fVar_Omegac0[i] = -9999.;
     }
     
@@ -2409,12 +2424,26 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     Double_t cosoa = (pxe*pxOmega+pye*pyOmega+pze*pzOmega)/mome/momOmega; // CosOpeningAngle
 
     
-    Float_t nSigmaTOF_EleFromOmegac0 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackElectronFromOmegac0, AliPID::kElectron);
-    Float_t nSigmaTPC_EleFromOmegac0 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackElectronFromOmegac0, AliPID::kElectron);
-    Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
-    Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-    Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
-    Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
+ //   Float_t nSigmaTOF_EleFromOmegac0 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackElectronFromOmegac0, AliPID::kElectron);
+ //  Float_t nSigmaTPC_EleFromOmegac0 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackElectronFromOmegac0, AliPID::kElectron);
+ //   Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
+ //   Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
+ //   Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
+ //   Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
+    
+    //--- using new funtions to get nSigmaTOF and nSigmaTPC
+    
+    Double_t nSigmaTOF_EleFromOmegac0 = -999., nSigmaTPC_EleFromOmegac0 = -999., nSigmaTPC_PiFromLam = -999., nSigmaTPC_PrFromLam = -999., nSigmaTPC_KaonFromOmega = -999., nSigmaTOF_KaonFromOmega = -999.;
+    
+    AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+    Pid_HF -> GetnSigmaTOF(trackElectronFromOmegac0, 0, nSigmaTOF_EleFromOmegac0);
+    Pid_HF -> GetnSigmaTPC(trackElectronFromOmegac0, 0, nSigmaTPC_EleFromOmegac0);
+
+    Pid_HF -> GetnSigmaTPC(trkPion, 2, nSigmaTPC_PiFromLam);
+    Pid_HF -> GetnSigmaTPC(trkProton, 4, nSigmaTPC_PrFromLam);
+    
+    Pid_HF -> GetnSigmaTPC(trackKaonFromOmega, 3, nSigmaTPC_KaonFromOmega);
+    Pid_HF -> GetnSigmaTOF(trackKaonFromOmega, 3, nSigmaTOF_KaonFromOmega);
     
     if ( fabs(nSigmaTPC_PiFromLam)>=4. || fabs(nSigmaTPC_PrFromLam)>=4. || fabs(nSigmaTPC_KaonFromOmega)>=4. ) return;
 
@@ -2625,6 +2654,9 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     fVar_Omegac0[41] = tlv_Orig.Pt();
     fVar_Omegac0[42] = tlv_Orig.M();
     
+    fVar_Omegac0[43] = nSigmaTPC_KaonFromOmega;
+    fVar_Omegac0[44] = nSigmaTOF_KaonFromOmega;
+    
     if (fWriteOmegac0Tree)
     fTree_Omegac0 -> Fill();
     
@@ -2784,7 +2816,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     
     const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
     fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-    Int_t nVar = 43;
+    Int_t nVar = 45;
     fVar_Omegac0 = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -2803,7 +2835,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[12] = "PA_LamToOmega"; // pointing angle of Lmabda (pointing back to Omega) (with Lambda mass const.)
     fVarNames[13] = "PA_OmegaToPV"; // pointing angle of Omega (pointing back to PV) (with Omega mass const.)
     fVarNames[14] = "Mass_Lam"; // mass of Lambda (without Lambda mass const.)
-    fVarNames[15] = "Mass_Omega"; // mass of Omega (without Omega mass const., with Lamda mass const.)
+    fVarNames[15] = "MassOmega_KFP"; // mass of Omega (without Omega mass const., with Lamda mass const.)
     fVarNames[16] = "Pt_EleFromOmegac0"; // pt of electron from Omegac0
     fVarNames[17] = "Pt_EleOmega_KF"; // pt of EleOmega_pairs (with Omega mass const. and with PV const.)
     fVarNames[18] = "Rap_EleOmega_KF"; // rapidity of EleOmega_pairs  (with Omega mass const. and with PV const.)
@@ -2820,7 +2852,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[29] = "Source_Omegac0"; // flag for Omegac0 MC (“4”:prompt, "5": feed-down, “<0”: background)
     fVarNames[30] = "Omegac0_Pt_MC"; // Omegac0 pt distribution in MC
     fVarNames[31] = "Mass_Xi"; // mass of Xi, (with Lambda mass const.) - - to reject
-    fVarNames[32] = "EleOmegaOA";  // Calcualtion from AOD
+    fVarNames[32] = "CosOA";  // Calcualtion from AOD
     fVarNames[33] = "ConvType"; // ee pairs - - prefilter method
     fVarNames[34] = "DecayType";  // flags for WS and RS of EleOmega_pairs
     fVarNames[35] = "Omega_MassConst"; // Omega with Omega mass const
@@ -2832,6 +2864,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[40] = "Rotation_EleOmegaMass";
     fVarNames[41] = "EleOmegapT_OldMethod";
     fVarNames[42] = "EleOmegaMass_OldMethod";
+    fVarNames[43] = "nSigmaTPC_KaonFromOmega";
+    fVarNames[44] = "nSigmaTOF_KaonFromOmega";
     
     for (Int_t ivar = 0; ivar<nVar ; ivar++){
      
@@ -2898,9 +2932,9 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0_QA()
                 
 } //DefineTreeRecoOmegac0_QA
 //____________________________________________________________________________
-void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, AliAODEvent *aodEvent,  Int_t decaytype)
+void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, AliAODEvent *aodEvent,  Int_t decaytype, Double_t nsigmaTPCE, Double_t nsigmaTOFE, Double_t ncombsigmaE )
 {
-    for (Int_t i=0; i<36; i++){
+    for (Int_t i=0; i<38; i++){
         fVar_MixedEvent[i]=-9999.;
     }
     
@@ -2926,13 +2960,24 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     
     Double_t cosoa = (pxe*pxOmega+pye*pyOmega+pze*pzOmega)/mome/momOmega;
     
-    Float_t nSigmaTOF_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackEleFromMixed, AliPID::kElectron);
-    Float_t nSigmaTPC_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackEleFromMixed, AliPID::kElectron);
-    Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
-    Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-    Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
-    Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
-
+ //   Float_t nSigmaTOF_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackEleFromMixed, AliPID::kElectron);
+ //   Float_t nSigmaTPC_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackEleFromMixed, AliPID::kElectron);
+  //  Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
+  //  Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
+  //  Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
+  //  Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
+    
+    
+    //--- using new funtions to get nSigmaTOF and nSigmaTPC
+    
+    Double_t  nSigmaTPC_PiFromLam = -999., nSigmaTPC_PrFromLam = -999., nSigmaTPC_KaonFromOmega = -999., nSigmaTOF_KaonFromOmega = -999.;
+    
+    AliAODPidHF *Pid_HF = fAnalCuts -> GetPidHF();
+    Pid_HF -> GetnSigmaTPC(trkPion, 2, nSigmaTPC_PiFromLam);
+    Pid_HF -> GetnSigmaTPC(trkProton, 4, nSigmaTPC_PrFromLam);
+    Pid_HF -> GetnSigmaTPC(trackKaonFromOmega, 3, nSigmaTPC_KaonFromOmega);
+    Pid_HF -> GetnSigmaTOF(trackKaonFromOmega, 3, nSigmaTOF_KaonFromOmega);
+    
     if ( fabs(nSigmaTPC_PiFromLam)>=4. || fabs(nSigmaTPC_PrFromLam)>=4. || fabs(nSigmaTPC_KaonFromOmega)>=4. ) return;
     
     KFParticle kfpOmegac0_PV = kfpOmegac0;
@@ -3019,9 +3064,14 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     fVar_MixedEvent[9] = mass_Omega; // Omega from KFP
     
     //--- add new branches for ML
-    fVar_MixedEvent[10] = nSigmaTOF_EleFromME;
-    fVar_MixedEvent[11] = nSigmaTPC_EleFromME;
-    fVar_MixedEvent[12] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_EleFromME,nSigmaTOF_EleFromME);
+//    fVar_MixedEvent[10] = nSigmaTOF_EleFromME;
+//    fVar_MixedEvent[11] = nSigmaTPC_EleFromME;
+//    fVar_MixedEvent[12] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_EleFromME,nSigmaTOF_EleFromME);
+    
+    fVar_MixedEvent[10] = nsigmaTOFE;
+    fVar_MixedEvent[11] = nsigmaTPCE;
+    fVar_MixedEvent[12] = ncombsigmaE;
+    
     fVar_MixedEvent[13] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_KaonFromOmega,nSigmaTOF_KaonFromOmega);
     fVar_MixedEvent[14] = nSigmaTPC_PiFromLam;
     fVar_MixedEvent[15] = nSigmaTPC_PrFromLam;
@@ -3068,6 +3118,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     kfpBE_PV.SetProductionVertex(PV);
     fVar_MixedEvent[34] = kfpBE_PV.GetChi2()/kfpBE_PV.GetNDF();  //chi2_prim of Electron to PV
     fVar_MixedEvent[35] = kfpBE.GetDistanceFromVertexXY(PV); // DCA of electron in x-y to PV
+    fVar_MixedEvent[36] = nSigmaTPC_KaonFromOmega;
+    fVar_MixedEvent[37] = nSigmaTOF_KaonFromOmega;
     
     if(fWriteMixedEventTree) fTree_MixedEvent -> Fill();
     
@@ -3080,7 +3132,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
    
     const char* nameoutput = GetOutputSlot(9)->GetContainer()->GetName();
     fTree_MixedEvent = new TTree(nameoutput, "mixed event variables tree");
-    Int_t nVar = 36;
+    Int_t nVar = 38;
     fVar_MixedEvent = new Float_t[nVar];
     TString *fVarNames_MixedEvent = new TString[nVar];
     
@@ -3089,8 +3141,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
     fVarNames_MixedEvent[2] = "EleOmega_pT";
     fVarNames_MixedEvent[3] = "CosOA";
     fVarNames_MixedEvent[4] = "DecayType";
-    fVarNames_MixedEvent[5] = "MassOmega_casc";
-    fVarNames_MixedEvent[6] = "EleOmgeapT_OldMethod";
+    fVarNames_MixedEvent[5] = "Mass_Omega_casc";
+    fVarNames_MixedEvent[6] = "EleOmegapT_OldMethod";
     fVarNames_MixedEvent[7] = "EleOmegaMass_OldMethod";
     fVarNames_MixedEvent[8] = "ConvType";
     fVarNames_MixedEvent[9] = "MassOmega_KFP";
@@ -3120,6 +3172,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
     fVarNames_MixedEvent[33] = "Mass_Xi";
     fVarNames_MixedEvent[34] = "Chi2prim_EleFromOmegac0";
     fVarNames_MixedEvent[35] = "DCAxy_EleFromOmegac0_KF";
+    fVarNames_MixedEvent[36] = "nSigmaTPC_KaonFromOmega";
+    fVarNames_MixedEvent[37] = "nSigmaTOF_KaonFromOmega";
 
     for (Int_t ivar = 0; ivar<nVar; ivar++){
      

@@ -454,17 +454,26 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 
 
     Int_t nSteps = 1;
-    Double_t binning_deta_tpctpc[33] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6};
+    Double_t binning_deta_tpctpc[33] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,  0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6};
+
+    Double_t binning_deta_tpcfmd[43]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8, 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
     Double_t binning_dphi[73] = { -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0,       0.087266,  0.174533,  0.261799,  0.349066,  0.436332, 0.523599,  0.610865,  0.698132,  0.785398,  0.872665,  0.959931, 1.047198,  1.134464,  1.221730,  1.308997,  1.396263,  1.483530, 1.570796,  1.658063,  1.745329,  1.832596,  1.919862,  2.007129, 2.094395,  2.181662,  2.268928,  2.356194,  2.443461,  2.530727, 2.617994,  2.705260,  2.792527,  2.879793,  2.967060,  3.054326, 3.141593,  3.228859,  3.316126,  3.403392,  3.490659,  3.577925, 3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524, 4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123, 4.712389};
     std::vector<Double_t>   fPtBinsTrigCharged = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0,10.0};    // I don't want to set the things outside
     std::vector<Double_t>   fPtBinsAss = {0.2,0.5,1.0,3.0};            // I don't want to set the things outside
-    std::vector<Double_t>   fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100}; //
+    std::vector<Double_t>   fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150}; //
     std::vector<Double_t>   fzVtxBins = {-10.0, 0, 10.0};
+    const Int_t sizeEta = (anaType.EqualTo("TPCTPC") ? 33 : 43) -1;
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
-    const Int_t sizePtAss = fPtBinsAss.size() - 1;
+    // const Int_t sizePtAss = fPtBinsAss.size() - 1;
+    const Int_t sizeCent = fCentBins.size() - 1;
     const Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; Subsample, don't use it so far
-    const Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,sizePtTrig,sizePtAss};
+    const Int_t iBinning[] = {sizeEta,72,10,sizeOfSamples,sizePtTrig,sizeCent};
 
+    fListOfProfile = new TList();
+    fListOfProfile->SetOwner();
+    
+    fhTracksTrigPt = new TH2D("fhTrigTracks", "fhTrigTracks; pT (trig); PVz", fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), fzVtxBins.size()-1, fzVtxBins.data());
+    fListOfProfile->Add(fhTracksTrigPt);
 
     // mixing
     fPoolMaxNEvents = 2000;
@@ -479,37 +488,42 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     }
     fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
 
-    fListOfProfile = new TList();
-    fListOfProfile->SetOwner();
-    
-    fhChargedSE = new AliTHn("fhChargedSE", "fhChargedSE", nSteps, 6, iBinningTPCTPC);
-    fhChargedSE->SetBinLimits(0, binning_deta_tpctpc);
+    fhChargedSE = new AliTHn("fhChargedSE", "fhChargedSE", nSteps, 6, iBinning);
+    if (anaType.EqualTo("TPCTPC")) {
+      fhChargedSE->SetBinLimits(0, binning_deta_tpctpc);
+    } else {
+      fhChargedSE->SetBinLimits(0, binning_deta_tpcfmd);
+    }
     fhChargedSE->SetBinLimits(1, binning_dphi);
     fhChargedSE->SetBinLimits(2, -10,10);
     fhChargedSE->SetBinLimits(3,  0.,10.);
     fhChargedSE->SetBinLimits(4, fPtBinsTrigCharged.data());
-    fhChargedSE->SetBinLimits(5, fPtBinsAss.data());
+    fhChargedSE->SetBinLimits(5, fCentBins.data());
     fhChargedSE->SetVarTitle(0, "#Delta#eta");
     fhChargedSE->SetVarTitle(1, "#Delta#phi");
     fhChargedSE->SetVarTitle(2, "PVz");
     fhChargedSE->SetVarTitle(3, "sample");
     fhChargedSE->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
-    fhChargedSE->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
+    fhChargedSE->SetVarTitle(5, "Mult/Cent");
     fListOfProfile->Add(fhChargedSE);
     //
-    fhChargedME = new AliTHn("fhChargedME", "fhChargedME", nSteps, sizeof(iBinningTPCTPC) / sizeof(Int_t), iBinningTPCTPC);
-    fhChargedME->SetBinLimits(0, binning_deta_tpctpc);
+    fhChargedME = new AliTHn("fhChargedME", "fhChargedME", nSteps, sizeof(iBinning) / sizeof(Int_t), iBinning);
+    if (anaType.EqualTo("TPCTPC")) {
+      fhChargedME->SetBinLimits(0, binning_deta_tpctpc);
+    } else {
+      fhChargedME->SetBinLimits(0, binning_deta_tpcfmd);
+    }
     fhChargedME->SetBinLimits(1, binning_dphi);
     fhChargedME->SetBinLimits(2, -10.,10.);
     fhChargedME->SetBinLimits(3,  0.,10.);
     fhChargedME->SetBinLimits(4, fPtBinsTrigCharged.data());
-    fhChargedME->SetBinLimits(5, fPtBinsAss.data());
+    fhChargedME->SetBinLimits(5, fCentBins.data());
     fhChargedME->SetVarTitle(0, "#Delta#eta");
     fhChargedME->SetVarTitle(1, "#Delta#phi");
     fhChargedME->SetVarTitle(2, "PVz");
     fhChargedME->SetVarTitle(3, "sample");
     fhChargedME->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
-    fhChargedME->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
+    fhChargedME->SetVarTitle(5, "Mult/Cent");
     fListOfProfile->Add(fhChargedME);
 
   PostData(1, fListOfObjects);
@@ -552,7 +566,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 
   // Check if it passed the standard AOD selection
   if (!AcceptAOD(fAOD) ) {
-    PostData(1,fListOfObjects);
+    PostData(1, fListOfObjects);
     PostData(2, fListOfProfile);
     return;
   }
@@ -570,16 +584,25 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 
   if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
 	   if (!fGFWSelection15o->AcceptVertex(fAOD)) {
-	    PostData(1,fListOfObjects);
+	    PostData(1, fListOfObjects);
 	    PostData(2, fListOfProfile);
 	    return;
 	  }
   } else {
 	  if (!fGFWSelection->AcceptVertex(fAOD)) {
-	    PostData(1,fListOfObjects);
+	    PostData(1, fListOfObjects);
 	    PostData(2, fListOfProfile);
 	    return;
 	  }
+  }
+
+  AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+  if(!multSelection) { return; }
+  fCentrality = multSelection->GetMultiplicityPercentile("V0M");
+  if (fCentrality < fCentMin || fCentrality > fCentMax) {
+	    PostData(1, fListOfObjects);
+	    PostData(2, fListOfProfile);
+	    return;
   }
 
   // checking the run number for aplying weights & loading TList with weights
@@ -609,51 +632,22 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 
   }
 
+ 
   // Here we calcuate the multiplicity distribution
-  NTracksCalculation(fInputEvent);
 
-  fbSign = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
-
-  AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-  if(!multSelection) { return; }
-  fCentrality = multSelection->GetMultiplicityPercentile("V0M"); 
-	
-  Int_t nTracks = fInputEvent->GetNumberOfTracks();
-  fTracksTrigCharged = new TObjArray;
-  fTracksAss = new TObjArray;
-
-  //..for DCA
-  double pos[3], vz, vx, vy;
-  vz = fInputEvent->GetPrimaryVertex()->GetZ();
-  vx = fInputEvent->GetPrimaryVertex()->GetX();
-  vy = fInputEvent->GetPrimaryVertex()->GetY();
-  double vtxp[3] = {vx, vy, vz};
-  
-
-  int fNofTracksAss = 0;
-  int fNofTracksTrig = 0;
-  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTrack));
-
-    // Require track to be existing and pass the track selection
-    if (!track) continue;
-    track->GetXYZ(pos);
-    if (!AcceptAODTrack(track, pos,vtxp)) continue;
-    
-    Double_t pt = track->Pt();
-    if (pt > fPtMinAss && pt < fPtMaxAss) {
-        // Mingrui Polarity ??
-        fTracksAss->Add(track);
-        fNofTracksAss++; // number of associate tracks in the event
-    }
-
-    if (pt > fPtMinTrig && pt < fPtMaxTrig) {
-        fTracksTrigCharged->Add(track);
-        fNofTracksTrig++; // number of trigger tracks in the event
-        // fhTracksTrigPt->Fill(pt, fPVz);
-    }
+  if (fNtrksName.EqualTo("Mult")) {
+    NTracksCalculation(fInputEvent);
+  } else {
+    NtrksCounter = fCentrality;
   }
 
+  fbSign = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
+	
+ 
+
+  PrepareTPCFMDTracks();
+
+  
   if (fTracksTrigCharged) {
       FillCorrelations();
       FillCorrelationsMixed();
@@ -684,6 +678,7 @@ Double_t AliAnalysisTaskCorrForNonlinearFlow::RangePhi(Double_t DPhi) {
   if (DPhi > 3 * TMath::Pi() / 2) DPhi -= 2*TMath::Pi();
   return DPhi;
 }
+
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskCorrForNonlinearFlow::GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius){
   // calculates delta phi *
@@ -721,27 +716,33 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
         Double_t trigEff = 1.0; // Efficiency
 
         for (Int_t iAss = 0; iAss < fTracksAss->GetEntriesFast(); iAss++) {
-            AliAODTrack* trackAss = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iAss));
 
-            Double_t ptAss = trackAss->Pt();
-            Double_t phiAss = trackAss->Phi();
-            Double_t etaAss = trackAss->Eta();
-            Double_t chargeAss = trackAss->Charge();
-            Double_t assEff = 1.0; // Efficiency
+	    if (anaType.EqualTo("TPCTPC")) {
 
-            //..check if the tracks are the same
-            // Mingrui: I don't see Zuzana uses this
-            // if (trackTrig == trackAss) continue;
-            // Here these's a complicated way to check whether the pair pass or not
-	    binscont[0] = etaTrig - etaAss;
-	    binscont[1] = RangePhi(phiTrig - phiAss);
-	    binscont[4] = ptTrig;
-	    binscont[5] = ptAss;
+                AliAODTrack* trackAss = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iAss));
+                Double_t ptAss = trackAss->Pt();
+                Double_t phiAss = trackAss->Phi();
+                Double_t etaAss = trackAss->Eta();
+                Double_t chargeAss = trackAss->Charge();
+                Double_t assEff = 1.0; // Efficiency
 
-	    double fMergingCut = 0;
+		if (trackTrig->GetID() == trackAss->GetID()) {
+		  continue;
+		}
 
-	    // If etaTrig  - etaAss < 0; Cut from Zuzana
-	    if(TMath::Abs(binscont[0]) < fMergingCut){
+                //..check if the tracks are the same
+                // Mingrui: I don't see Zuzana uses this
+                // if (trackTrig == trackAss) continue;
+                // Here these's a complicated way to check whether the pair pass or not
+	        binscont[0] = etaTrig - etaAss;
+	        binscont[1] = RangePhi(phiTrig - phiAss);
+	        binscont[4] = ptTrig;
+	        binscont[5] = NtrksCounter;
+
+	        double fMergingCut = 0.02;
+
+	        // If etaTrig  - etaAss < 0; Cut from Zuzana
+	        if(TMath::Abs(binscont[0]) < fMergingCut){
 		    Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
 		    Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
 
@@ -758,11 +759,31 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 			    } // end loop radius
 			    if(bIsBelow) continue;
 		    }
-	    }
+	        } 
+                fhChargedSE->Fill(binscont, 0, 1./(trigEff*assEff));
+	    } // endif TPC-TPC
+	    else if (anaType.EqualTo("TPCFMD")) {
 
-            fhChargedSE->Fill(binscont, 0, 1./(trigEff*assEff));
+                AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(fTracksAss->At(iAss));
+                Double_t phiAss = trackAss->Phi();
+                Double_t etaAss = trackAss->Eta();
+
+                Double_t assEff = 1.0;
+		Double_t assMult = trackAss->Multiplicity(); // Efficiency
+
+                //..check if the tracks are the same
+                // Mingrui: I don't see Zuzana uses this
+                // if (trackTrig == trackAss) continue;
+                // Here these's a complicated way to check whether the pair pass or not
+	        binscont[0] = etaTrig - etaAss;
+	        binscont[1] = RangePhi(phiTrig - phiAss);
+	        binscont[4] = ptTrig;
+	        binscont[5] = NtrksCounter;
+
+                fhChargedSE->Fill(binscont, 0, assMult/(trigEff*assEff));
+	    } // endif TPC-FMD
         }
-    }
+    } // end loop particle pairs
 }
 
 //________________________________________________________________________
@@ -775,7 +796,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
     binscont[2] = fPVz;
     binscont[3] = 1;
 
-    AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, fPVz);
+    AliEventPool* pool = fPoolMgr->GetEventPool(NtrksCounter, fPVz);
     if (!pool) {
         return;
     }
@@ -793,45 +814,71 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
             for (Int_t iMix = 0; iMix < nMix; iMix++) {
                 TObjArray* mixTracks = pool->GetEvent(iMix);
                 for (Int_t iAss = 0; iAss < mixTracks->GetEntriesFast(); iAss++) {
-                    AliAODTrack* trackAss = dynamic_cast<AliAODTrack*>(mixTracks->At(iAss));
 
-                    Double_t ptAss = trackAss->Pt();
-                    Double_t phiAss = trackAss->Phi();
-                    Double_t etaAss = trackAss->Eta();
-                    Double_t chargeAss = trackAss->Charge();
+		    if (anaType.EqualTo("TPCTPC")) {
+                        AliAODTrack* trackAss = dynamic_cast<AliAODTrack*>(mixTracks->At(iAss));
+    
+                        Double_t ptAss = trackAss->Pt();
+                        Double_t phiAss = trackAss->Phi();
+                        Double_t etaAss = trackAss->Eta();
+                        Double_t chargeAss = trackAss->Charge();
+    
+		        if (trackTrig->GetID() == trackAss->GetID()) {
+		           continue;
+		        }
 
-                    //..check if the tracks are the same
-                    //
-                    // if (trackTrig == trackAss) continue;
-                    // Here these's a complicated way to check whether the pair pass or not
-		    binscont[0] = etaTrig - etaAss;
-		    binscont[1] = RangePhi(phiTrig - phiAss);
-		    binscont[4] = ptTrig;
-		    binscont[5] = ptAss;
+                        //..check if the tracks are the same
+                        //
+                        // if (trackTrig == trackAss) continue;
+                        // Here these's a complicated way to check whether the pair pass or not
+       		        binscont[0] = etaTrig - etaAss;
+       		        binscont[1] = RangePhi(phiTrig - phiAss);
+       		        binscont[4] = ptTrig;
+       		        binscont[5] = NtrksCounter;
+       
+       		        double fMergingCut = 0.02;
+       
+       		        // If etaTrig  - etaAss < 0; Cut from Zuzana
+       		        if(TMath::Abs(binscont[0]) < fMergingCut){
+       		                Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
+       		                Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
+       
+       		                const Double_t kLimit = 3.0*fMergingCut;
+       
+       		                if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+       		            	    Bool_t bIsBelow = kFALSE;
+       		            	    for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+       		                                Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, rad);
+       		            		    if(TMath::Abs(dPhiStar) < fMergingCut) {
+       		            			    bIsBelow = kTRUE;
+       		            			    break;
+       		            		    }
+       		            	    } // end loop radius
+       		            	    if(bIsBelow) continue;
+       		                }
+       		        }
+                        fhChargedME->Fill(binscont, 0, 1./nMix);
+		    } // end TPC-TPC 
+		    else if (anaType.EqualTo("TPCFMD")) {
 
-		    double fMergingCut = 0;
+                        AliPartSimpleForCorr* trackAss = dynamic_cast<AliPartSimpleForCorr*>(mixTracks->At(iAss));
+                        Double_t phiAss = trackAss->Phi();
+                        Double_t etaAss = trackAss->Eta();
 
-		    // If etaTrig  - etaAss < 0; Cut from Zuzana
-		    if(TMath::Abs(binscont[0]) < fMergingCut){
-			    Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
-			    Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
+                        Double_t assEff = 1.0;
+		        Double_t assMult = trackAss->Multiplicity(); // Efficiency
 
-			    const Double_t kLimit = 3.0*fMergingCut;
-
-			    if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
-				    Bool_t bIsBelow = kFALSE;
-				    for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
-			                    Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, rad);
-					    if(TMath::Abs(dPhiStar) < fMergingCut) {
-						    bIsBelow = kTRUE;
-						    break;
-					    }
-				    } // end loop radius
-				    if(bIsBelow) continue;
-			    }
-		    }
-
-                    fhChargedME->Fill(binscont, 0, 1./nMix);
+                        //..check if the tracks are the same
+                        //
+                        // if (trackTrig == trackAss) continue;
+                        // Here these's a complicated way to check whether the pair pass or not
+       		        binscont[0] = etaTrig - etaAss;
+       		        binscont[1] = RangePhi(phiTrig - phiAss);
+       		        binscont[4] = ptTrig;
+       		        binscont[5] = NtrksCounter;
+       
+       		        fhChargedME->Fill(binscont, 0, assMult/nMix);
+	            } // end TPC-FMD
                 }
             }
         }
@@ -841,6 +888,68 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
     pool->UpdatePool(cloneArray);
 
     return;
+}
+
+Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
+
+  Int_t nTracks = fInputEvent->GetNumberOfTracks();
+  fTracksTrigCharged = new TObjArray;
+  fTracksAss = new TObjArray;
+  //..for DCA
+  double pos[3], vz, vx, vy;
+  vz = fInputEvent->GetPrimaryVertex()->GetZ();
+  vx = fInputEvent->GetPrimaryVertex()->GetX();
+  vy = fInputEvent->GetPrimaryVertex()->GetY();
+  double vtxp[3] = {vx, vy, vz};
+  
+  // TPC-TPC
+  int fNofTracksAss = 0;
+  int fNofTracksTrig = 0;
+
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTrack));
+
+    // Require track to be existing and pass the track selection
+    if (!track) continue;
+    track->GetXYZ(pos);
+    if (!AcceptAODTrack(track, pos,vtxp)) continue;
+    
+    Double_t pt = track->Pt();
+    // Only if we consider the TPC-TPC correlation, we use this
+    if (anaType.EqualTo("TPCTPC")) {
+	    if (pt > fPtMinAss && pt < fPtMaxAss) {
+		// Mingrui Polarity ??
+		fTracksAss->Add(track);
+		fNofTracksAss++; // number of associate tracks in the event
+	    }
+    }
+
+    if (pt > fPtMinTrig && pt < fPtMaxTrig) {
+        fTracksTrigCharged->Add(track);
+        fNofTracksTrig++; // number of trigger tracks in the event
+        fhTracksTrigPt->Fill(pt, fPVz);
+    }
+  }
+
+
+  if (anaType.EqualTo("TPCFMD")) {
+    AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
+    const TH2D& d2Ndetadphi = aodForward->GetHistogram();
+    int nEta = d2Ndetadphi.GetXaxis()->GetNbins();
+    int nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
+
+    for (int iEta = 1; iEta <= nEta; iEta++) {
+      for (int iPhi = 1; iPhi <= nPhi; iPhi++) {
+        double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta); 
+        double phi = d2Ndetadphi.GetXaxis()->GetBinCenter(iPhi); 
+	double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
+	if (mostProbableN > 0) {
+	    fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
+	}
+      }
+    } 
+  }
+  return true;
 }
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp) {

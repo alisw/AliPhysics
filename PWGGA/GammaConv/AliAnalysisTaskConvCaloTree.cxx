@@ -97,6 +97,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fVTrueClusterMCTrueEnergy(),
   fVTrueClusterMCTrueEnergy2(),
   fVTrueClusterMCIsMerged(),
+  fVTrueClusterConvRadius(),
   fVBuffer_Conv_px(),
   fVBuffer_Conv_py(),
   fVBuffer_Conv_pz(),
@@ -113,11 +114,13 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fVBuffer_Conv_PElec1(),
   fVBuffer_Conv_PElec2(),
   fVBuffer_Conv_CosPAngle(),
+  fVBuffer_Conv_Chi2(),
   fVTrueConvPi0DaughterIndex(),
   fVTrueConvEtaDaughterIndex(),
   fVTrueConvMCTruePx(),
   fVTrueConvMCTruePy(),
   fVTrueConvMCTruePz(),
+  fVTrueConvMCLabel(),
   fVBuffer_Track_px(),
   fVBuffer_Track_py(),
   fVBuffer_Track_pz(),
@@ -185,6 +188,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fVTrueClusterMCTrueEnergy(),
   fVTrueClusterMCTrueEnergy2(),
   fVTrueClusterMCIsMerged(),
+  fVTrueClusterConvRadius(),
   fVBuffer_Conv_px(),
   fVBuffer_Conv_py(),
   fVBuffer_Conv_pz(),
@@ -201,11 +205,13 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fVBuffer_Conv_PElec1(),
   fVBuffer_Conv_PElec2(),
   fVBuffer_Conv_CosPAngle(),
+  fVBuffer_Conv_Chi2(),
   fVTrueConvPi0DaughterIndex(),
   fVTrueConvEtaDaughterIndex(),
   fVTrueConvMCTruePx(),
   fVTrueConvMCTruePy(),
   fVTrueConvMCTruePz(),
+  fVTrueConvMCLabel(),
   fVBuffer_Track_px(),
   fVBuffer_Track_py(),
   fVBuffer_Track_pz(),
@@ -302,6 +308,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
       fPhotonTree->Branch("Cluster_MCTrueEnergy",   &fVTrueClusterMCTrueEnergy);
       fPhotonTree->Branch("Cluster_MCTrueEnergy2",  &fVTrueClusterMCTrueEnergy2);
       fPhotonTree->Branch("Cluster_MCTrueIsMerged", &fVTrueClusterMCIsMerged);
+      fPhotonTree->Branch("Cluster_MCTrueConvR",    &fVTrueClusterConvRadius);
     }
   }
   if(fSaveConversions)
@@ -323,6 +330,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
       fPhotonTree->Branch("Conv_P_Elec1",                   &fVBuffer_Conv_PElec1);
       fPhotonTree->Branch("Conv_P_Elec2",                   &fVBuffer_Conv_PElec2);
       fPhotonTree->Branch("Conv_CosPAngle",                 &fVBuffer_Conv_CosPAngle);
+      fPhotonTree->Branch("Conv_Chi2NDF",                   &fVBuffer_Conv_Chi2);
     }
     if(fIsMC){
       fPhotonTree->Branch("Conv_MotherPi0",         &fVTrueConvPi0DaughterIndex);
@@ -330,6 +338,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
       fPhotonTree->Branch("Conv_MCTruePx",          &fVTrueConvMCTruePx);
       fPhotonTree->Branch("Conv_MCTruePy",          &fVTrueConvMCTruePy);
       fPhotonTree->Branch("Conv_MCTruePz",          &fVTrueConvMCTruePz);
+      fPhotonTree->Branch("Conv_MCLabel",           &fVTrueConvMCLabel);
     }
   }
   if(fSaveTracks)
@@ -548,6 +557,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
         fVTrueClusterMCTrueEnergy.push_back(0);
         fVTrueClusterMCTrueEnergy2.push_back(0);
         fVTrueClusterMCIsMerged.push_back(kFALSE);
+        fVTrueClusterConvRadius.push_back(0);
         delete clus;
         continue;
       }
@@ -588,6 +598,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
 
       Int_t gammaMCLabel          = PhotonCandidate->GetCaloPhotonMCLabel(0);   // get most probable MC label
       Int_t gammaMotherLabel      = -1;
+      Double_t convRadiusConvClus = 0;
 
       AliAODMCParticle * gammaMC = 0x0;
       if(gammaMCLabel != -1){
@@ -599,6 +610,8 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
             if (PhotonCandidate->IsConversion()){
               AliAODMCParticle * gammaGrandMotherMC =  static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gammaMC->GetMother()));
               gammaMotherLabel=gammaGrandMotherMC->GetMother();
+              // get the production vertex of the conversion electron
+              convRadiusConvClus = sqrt(gammaMC->Xv()*gammaMC->Xv() + gammaMC->Yv()*gammaMC->Yv());
             } else gammaMotherLabel=gammaMC->GetMother();
           }
         }
@@ -610,6 +623,9 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
       } else {
         fVTrueClusterMCIsMerged.push_back(kFALSE);
       }
+      // conv radius of conv cluster
+      fVTrueClusterConvRadius.push_back(static_cast<Short_t>(convRadiusConvClus));
+
       if(gammaMotherLabel > -1){
         if(((AliAODMCParticle*)fAODMCTrackArray->At(gammaMotherLabel))->GetPdgCode() == 111){
           fVTrueClusterPi0DaughterIndex.push_back(gammaMotherLabel);
@@ -650,6 +666,8 @@ void AliAnalysisTaskConvCaloTree::ProcessConversionsAOD(){
       fVBuffer_Conv_R.push_back(static_cast<UShort_t>(PhotonCandidate->GetConversionRadius()*10));  // conv radius *10
       fVBuffer_Conv_PsiPair.push_back(static_cast<Short_t>(PhotonCandidate->GetPsiPair()*1000));    // psi pair *1000
       fVBuffer_Conv_CosPAngle.push_back(static_cast<Short_t>(((AliConversionPhotonCuts*)fConversionCuts)->GetCosineOfPointingAngle(PhotonCandidate, fInputEvent)*1000));  // pointing angle *1000
+      fVBuffer_Conv_Chi2.push_back(static_cast<UShort_t>(PhotonCandidate->GetChi2perNDF()*10));  // pointing angle *1000
+      
     }
 
     //get track eta and phi on Calo surface
@@ -728,6 +746,9 @@ void AliAnalysisTaskConvCaloTree::ProcessConversionsAOD(){
         AliAODMCParticle *posDaughter = (AliAODMCParticle*) fAODMCTrackArray->At(PhotonCandidate->GetMCLabelPositive());
 
         AliAODMCParticle *Photon = (AliAODMCParticle*) fAODMCTrackArray->At(posDaughter->GetMother());
+
+        fVTrueConvMCLabel.push_back(Photon->GetLabel());
+
         if(Photon->GetPdgCode() != 22){
           fVTrueConvEtaDaughterIndex.push_back(-1);
           fVTrueConvPi0DaughterIndex.push_back(-1);
@@ -954,6 +975,7 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVTrueClusterMCTrueEnergy.clear();
   fVTrueClusterMCTrueEnergy2.clear();
   fVTrueClusterMCIsMerged.clear();
+  fVTrueClusterConvRadius.clear();
 
   fVBuffer_Conv_px.clear();
   fVBuffer_Conv_py.clear();
@@ -972,6 +994,7 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVBuffer_Conv_PElec1.clear();
   fVBuffer_Conv_PElec2.clear();
   fVBuffer_Conv_CosPAngle.clear();
+  fVBuffer_Conv_Chi2.clear();
 
   fVTrueConvPi0DaughterIndex.clear();
   fVTrueConvEtaDaughterIndex.clear();
@@ -979,6 +1002,7 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVTrueConvMCTruePx.clear();
   fVTrueConvMCTruePy.clear();
   fVTrueConvMCTruePz.clear();
+  fVTrueConvMCLabel.clear();
 
   fVBuffer_Track_px.clear();
   fVBuffer_Track_py.clear();

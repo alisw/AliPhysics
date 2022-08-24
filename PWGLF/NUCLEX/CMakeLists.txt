@@ -54,6 +54,7 @@ endif()
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/Dibaryons/AliAnalysisTaskDibaryons.cxx
+  Exotica/Dibaryons/AliAnalysisTaskMSDibaryons.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNRun2.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
@@ -114,7 +115,9 @@ set(SRCS
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonESD_PbPb.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_XeXe.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskHe3VsMultiplicity_XeXe.cxx
-  Nuclei/TritonAnalysis/AliAnalysisTaskLightNuclei_XeXe_MC.cxx  
+  Nuclei/TritonAnalysis/AliAnalysisTaskDeuteronVsMultiplicity_XeXe.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskLightNuclei_XeXe_MC.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskDeuteron_XeXe_MC.cxx    
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
@@ -140,6 +143,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
       Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piAOD.cxx
       Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piKF.cxx
       Hypernuclei/Hyp2Body/AliAnalysisTaskAlphaPiAOD.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskAlphaPiAODtrk.cxx
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
       Hypernuclei/Hyp3Body/Hypertriton3structures.cxx

@@ -20,9 +20,8 @@
 ClassImp(AliHFJetFinder);
 /// \endcond
 
-
 //________________________________________________________________
-AliHFJetFinder::AliHFJetFinder():
+AliHFJetFinder::AliHFJetFinder() :
   fMinJetPt(0.0),
   fJetRadius(0.4),
   fJetAlgorithm(JetAlgorithm::antikt),
@@ -56,7 +55,7 @@ AliHFJetFinder::AliHFJetFinder():
 }
 
 //________________________________________________________________
-AliHFJetFinder::AliHFJetFinder(char *name):
+AliHFJetFinder::AliHFJetFinder(char* name) :
   fMinJetPt(0.0),
   fJetRadius(0.4),
   fJetAlgorithm(JetAlgorithm::antikt),
@@ -86,7 +85,6 @@ AliHFJetFinder::AliHFJetFinder(char *name):
 {
 }
 
-
 //________________________________________________________________
 AliHFJetFinder::~AliHFJetFinder()
 {
@@ -98,601 +96,681 @@ AliHFJetFinder::~AliHFJetFinder()
 
 //________________________________________________________________
 //Set the jet finding parameters
-void AliHFJetFinder::SetFJWrapper() 
+void AliHFJetFinder::SetFJWrapper()
 {
 
-  
-  fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
+  fFastJetWrapper = new AliFJWrapper("fFastJetWrapper", "fFastJetWrapper");
 
   fFastJetWrapper->Clear();
 
-  fFastJetWrapper->SetR(fJetRadius); 
+  fFastJetWrapper->SetR(fJetRadius);
   fFastJetWrapper->SetAlgorithm(JetAlgorithm(fJetAlgorithm));
   fFastJetWrapper->SetRecombScheme(RecombinationScheme(fJetRecombScheme));
-  fFastJetWrapper->SetGhostArea(fJetGhostArea); 
-  fFastJetWrapper->SetAreaType(AreaType(fJetAreaType)); 
+  fFastJetWrapper->SetGhostArea(fJetGhostArea);
+  fFastJetWrapper->SetAreaType(AreaType(fJetAreaType));
 }
-
 
 //________________________________________________________________
 //returns jet clustered with heavy flavour candidate
-AliHFJet AliHFJetFinder::GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass){ 
+AliHFJet AliHFJetFinder::GetHFJet(TClonesArray* array, AliAODRecoDecayHF* cand, Double_t invmass)
+{
 
   SetFJWrapper();
   AliHFJet hfjet;
-  if (!cand) return hfjet;
-  FindJets(array,cand, invmass);
-  Int_t jet_index=Find_Candidate_Jet();
-  if (jet_index==-1) return hfjet;
- 
+  if (!cand)
+    return hfjet;
+  FindJets(array, cand, invmass);
+  Int_t jet_index = Find_Candidate_Jet();
+  if (jet_index == -1)
+    return hfjet;
+
   std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
   fastjet::PseudoJet jet = inclusive_jets[jet_index];
-  if (jet.perp() < fMinJetPt) return hfjet;
+  if (jet.perp() < fMinJetPt)
+    return hfjet;
   std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(jet_index));
 
-  SetJetVariables(hfjet, constituents, jet, 0, cand); 
+  SetJetVariables(hfjet, constituents, jet, 0, cand);
 
   return hfjet;
 }
-
 
 //________________________________________________________________
 //returns jet clustered with heavy flavour particle (MC)
-AliHFJet AliHFJetFinder::GetHFMCJet(TClonesArray *array, AliAODMCParticle *mcpart){
+AliHFJet AliHFJetFinder::GetHFMCJet(TClonesArray* array, AliAODMCParticle* mcpart)
+{
   SetFJWrapper();
   AliHFJet hfjet;
-  if (!mcpart) return hfjet;
-  FindMCJets(array,mcpart);
-  Int_t jet_index=Find_Candidate_Jet();
-  if (jet_index==-1) return hfjet;
+  if (!mcpart)
+    return hfjet;
+  FindMCJets(array, mcpart);
+  Int_t jet_index = Find_Candidate_Jet();
+  if (jet_index == -1)
+    return hfjet;
 
- 
   std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
   fastjet::PseudoJet jet = inclusive_jets[jet_index];
-  if (jet.perp() < fMinJetPt) return hfjet;
+  if (jet.perp() < fMinJetPt)
+    return hfjet;
   std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(jet_index));
 
   SetMCJetVariables(hfjet, constituents, jet, 0, mcpart);
- 
+
   return hfjet;
 }
 
-
 //________________________________________________________________
 //returns vector of jets, including the jet with the heavy flavour candidate
-std::vector<AliHFJet> AliHFJetFinder::GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass) {
-  
+std::vector<AliHFJet> AliHFJetFinder::GetHFJets(TClonesArray* array, AliAODRecoDecayHF* cand, Double_t invmass)
+{
+
   SetFJWrapper();
   std::vector<AliHFJet> hfjet_vec;
   hfjet_vec.clear();
-  if (!cand) return hfjet_vec;
-  FindJets(array, cand ,invmass);
-  Int_t jet_index=Find_Candidate_Jet();
-  if (jet_index==-1) return hfjet_vec;
+  if (!cand)
+    return hfjet_vec;
+  FindJets(array, cand, invmass);
+  Int_t jet_index = Find_Candidate_Jet();
+  if (jet_index == -1)
+    return hfjet_vec;
 
   std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
-  
-  for (Int_t i=0; i<inclusive_jets.size(); i++){
+
+  for (Int_t i = 0; i < inclusive_jets.size(); i++) {
     fastjet::PseudoJet jet = inclusive_jets[i];
-    if (jet.perp() < fMinJetPt) continue;
+    if (jet.perp() < fMinJetPt)
+      continue;
     std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(i));
 
     AliHFJet hfjet;
 
-    if (i==jet_index) SetJetVariables(hfjet, constituents, jet, i, cand); 
-    else SetJetVariables(hfjet, constituents, jet, i, nullptr); 
+    if (i == jet_index)
+      SetJetVariables(hfjet, constituents, jet, i, cand);
+    else
+      SetJetVariables(hfjet, constituents, jet, i, nullptr);
     hfjet_vec.push_back(hfjet);
   }
   return hfjet_vec;
 }
-
 
 //________________________________________________________________
 //returns vector of jets, including the jet with the heavy flavour particle (MC)
-std::vector<AliHFJet> AliHFJetFinder::GetHFMCJets(TClonesArray *array, AliAODMCParticle *mcpart) {
+std::vector<AliHFJet> AliHFJetFinder::GetHFMCJets(TClonesArray* array, AliAODMCParticle* mcpart)
+{
   SetFJWrapper();
   std::vector<AliHFJet> hfjet_vec;
   hfjet_vec.clear();
-  if (!mcpart) return hfjet_vec;
+  if (!mcpart)
+    return hfjet_vec;
   FindMCJets(array, mcpart);
-  Int_t jet_index=Find_Candidate_Jet();
-  if (jet_index==-1) return hfjet_vec;
+  Int_t jet_index = Find_Candidate_Jet();
+  if (jet_index == -1)
+    return hfjet_vec;
 
   std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
-  
-  for (Int_t i=0; i<inclusive_jets.size(); i++){
+
+  for (Int_t i = 0; i < inclusive_jets.size(); i++) {
     fastjet::PseudoJet jet = inclusive_jets[i];
-    if (jet.perp() < fMinJetPt) continue;
+    if (jet.perp() < fMinJetPt)
+      continue;
     std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(i));
 
     AliHFJet hfjet;
-  
-    if (i==jet_index) SetMCJetVariables(hfjet, constituents, jet, i, mcpart); 
-    else SetMCJetVariables(hfjet, constituents, jet, i, nullptr);
-    
+
+    if (i == jet_index)
+      SetMCJetVariables(hfjet, constituents, jet, i, mcpart);
+    else
+      SetMCJetVariables(hfjet, constituents, jet, i, nullptr);
+
     hfjet_vec.push_back(hfjet);
   }
   return hfjet_vec;
 }
 
-
-
 //________________________________________________________________
 //returns vector of jets
-std::vector<AliHFJet> AliHFJetFinder::GetJets(TClonesArray *array) {
+std::vector<AliHFJet> AliHFJetFinder::GetJets(TClonesArray* array)
+{
 
   //Jet is clustered with heavy flavour meson and the corresponding variables are set
   SetFJWrapper();
   std::vector<AliHFJet> hfjet_vec;
   hfjet_vec.clear();
-  FindJets(array,nullptr);
+  FindJets(array, nullptr);
 
   std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
-  for (Int_t i=0; i<inclusive_jets.size(); i++){
+  for (Int_t i = 0; i < inclusive_jets.size(); i++) {
     fastjet::PseudoJet jet = inclusive_jets[i];
-    if (jet.perp() < fMinJetPt) continue;
+    if (jet.perp() < fMinJetPt)
+      continue;
     std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(i));
 
     AliHFJet hfjet;
 
     SetJetVariables(hfjet, constituents, jet, i, nullptr);
-  
+
     hfjet_vec.push_back(hfjet);
   }
   return hfjet_vec;
 }
 
-
 //________________________________________________________________
 //returns vector of jets (MC)
-std::vector<AliHFJet> AliHFJetFinder::GetMCJets(TClonesArray *array) {
+std::vector<AliHFJet> AliHFJetFinder::GetMCJets(TClonesArray* array)
+{
   //Jet is clustered with heavy flavour meson and the corresponding variables are set
   SetFJWrapper();
   std::vector<AliHFJet> hfjet_vec;
   hfjet_vec.clear();
-  FindMCJets(array,nullptr);
+  FindMCJets(array, nullptr);
 
   std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
-  for (Int_t i=0; i<inclusive_jets.size(); i++){
+  for (Int_t i = 0; i < inclusive_jets.size(); i++) {
     fastjet::PseudoJet jet = inclusive_jets[i];
-    if (jet.perp() < fMinJetPt) continue;
+    if (jet.perp() < fMinJetPt)
+      continue;
     std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(i));
 
     AliHFJet hfjet;
 
     SetMCJetVariables(hfjet, constituents, jet, i, nullptr);
-  
+
     hfjet_vec.push_back(hfjet);
   }
   return hfjet_vec;
 }
 
-
+// Find all track daughters of a candidate
+void AliHFJetFinder::FindDaughters(AliAODRecoDecay* cand, std::vector<Int_t>& daughter_vec)
+{
+  for (Int_t i = 0; i < cand->GetNDaughters(); i++) {
+    auto daughter = dynamic_cast<AliVTrack*>(cand->GetDaughter(i));
+    if (!daughter)
+      continue;
+    if (daughter->InheritsFrom("AliAODTrack")) {
+      daughter_vec.push_back(daughter->GetID());
+    } else if (daughter->InheritsFrom("AliAODRecoDecay")) {
+      FindDaughters(dynamic_cast<AliAODRecoDecay*>(daughter), daughter_vec);
+    }
+  }
+}
 
 //________________________________________________________________
 //Do jet finding, including replacing the daughters of the heavy flavour candidate with the candidiate itself, if needed
-void AliHFJetFinder::FindJets(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass) {
+void AliHFJetFinder::FindJets(TClonesArray* array, AliAODRecoDecayHF* cand, Double_t invmass)
+{
   //Performs jet finding. Jets are stored in the fFastJetWrapper object
 
   std::vector<Int_t> daughter_vec;
-  std::pair<Int_t,Double_t> charge;
+  std::pair<Int_t, Double_t> charge;
   fConstituentCharge.clear();
 
-  if (cand){
-  
+  if (cand) {
     daughter_vec.clear();
-
-    AliVTrack *daughter;
-    for (Int_t i = 0; i < cand->GetNDaughters(); i++) {
-      daughter = dynamic_cast<AliVTrack *>(cand->GetDaughter(i));   
-      if (!daughter) continue;
-      daughter_vec.push_back(daughter->GetID());
-    }
-    AliTLorentzVector cand_lvec(0,0,0,0);
+    FindDaughters(cand, daughter_vec);
+    AliTLorentzVector cand_lvec(0, 0, 0, 0);
     cand_lvec.SetPtEtaPhiM(cand->Pt(), cand->Eta(), cand->Phi(), invmass);
-    fFastJetWrapper->AddInputVector(cand_lvec.Px(), cand_lvec.Py(), cand_lvec.Pz(), cand_lvec.E(),0);
-    charge.first=0;
-    charge.second=cand->Charge();
+    fFastJetWrapper->AddInputVector(cand_lvec.Px(), cand_lvec.Py(), cand_lvec.Pz(), cand_lvec.E(), 0);
+    charge.first = 0;
+    charge.second = cand->Charge();
     fConstituentCharge.push_back(charge);
   }
 
-    
   bool isdaughter;
-  AliAODTrack *track=NULL;
-  for (Int_t i=0; i<array->GetEntriesFast(); i++) {
- 
-    track= dynamic_cast<AliAODTrack*>(array->At(i));
-    if(!CheckTrack(track)) continue; 
-    isdaughter=false;
-    if (cand){
-      for (Int_t j=0; j<daughter_vec.size(); j++){
-	if (track->GetID()==daughter_vec[j]) isdaughter=true;
+  AliAODTrack* track = NULL;
+  for (Int_t i = 0; i < array->GetEntriesFast(); i++) {
+    track = dynamic_cast<AliAODTrack*>(array->At(i));
+    if (!CheckTrack(track))
+      continue;
+    isdaughter = false;
+    if (cand) {
+      for (Int_t j = 0; j < daughter_vec.size(); j++) {
+        if (track->GetID() == daughter_vec[j]) {
+          isdaughter = true;
+          break;
+        }
       }
-      if(isdaughter) continue;
+      if (isdaughter) {
+        continue;
+      }
     }
-    
-    fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(),i+100);
-    charge.first=i+100;
-    charge.second=track->Charge();
+    fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), i + 100);
+    charge.first = i + 100;
+    charge.second = track->Charge();
     fConstituentCharge.push_back(charge);
   }
   fFastJetWrapper->Run();
   //delete track;
 }
 
-
+// Find all measurable decay products in generator level
+void AliHFJetFinder::FindMCDaughters(TClonesArray* array, AliAODMCParticle* mcpart, std::vector<Int_t>& daughter_vec)
+{
+  AliAODMCParticle* daughter;
+  for (Int_t i = 0; i < mcpart->GetNDaughters(); i++) {
+    Int_t daughterLabel = mcpart->GetDaughterLabel(i);
+    if (daughterLabel == -1)
+      continue;
+    daughter = dynamic_cast<AliAODMCParticle*>(array->At(daughterLabel));
+    if (!daughter)
+      continue;
+    if (daughter->IsPhysicalPrimary()) {
+      daughter_vec.push_back(daughter->GetLabel());
+    } else {
+      FindMCDaughters(array, daughter, daughter_vec);
+    }
+  }
+}
 
 //________________________________________________________________
 //Do jet finding, including replacing the daughters of the heavy flavour particle with the cparticle itself, if needed (MC)
-void AliHFJetFinder::FindMCJets(TClonesArray *array, AliAODMCParticle *mcpart) {
+void AliHFJetFinder::FindMCJets(TClonesArray* array, AliAODMCParticle* mcpart)
+{
   //Performs jet finding. Jets are stored in the fFastJetWrapper object
 
   std::vector<Int_t> daughter_vec;
-  std::pair<Int_t,Double_t> charge;
+  std::pair<Int_t, Double_t> charge;
   fConstituentCharge.clear();
 
-  if (mcpart){
-  
-    daughter_vec.clear();
+  if (mcpart) {
 
-    AliAODMCParticle *daughter;
-    for (Int_t i = 0; i < mcpart->GetNDaughters(); i++) {
-      daughter = dynamic_cast<AliAODMCParticle *>(array->At(mcpart->GetDaughterLabel(i)));   
-      if (!daughter) continue;
-      daughter_vec.push_back(daughter->GetLabel());
-    }
-    fFastJetWrapper->AddInputVector(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(),0);
-    charge.first=0;
-    charge.second=mcpart->Charge();
+    daughter_vec.clear();
+    FindMCDaughters(array, mcpart, daughter_vec);
+
+    fFastJetWrapper->AddInputVector(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(), 0);
+    charge.first = 0;
+    charge.second = mcpart->Charge();
     fConstituentCharge.push_back(charge);
   }
 
-    
   bool isdaughter;
-  AliAODMCParticle *particle=NULL;
-  for (Int_t i=0; i<array->GetEntriesFast(); i++) {
- 
-    particle= dynamic_cast<AliAODMCParticle*>(array->At(i));
-    if(!CheckParticle(particle)) continue; 
-    isdaughter=false;
-    if (mcpart){
-      for (Int_t j=0; j<daughter_vec.size(); j++){
-	if (particle->GetLabel()==daughter_vec[j]) isdaughter=true;
+  AliAODMCParticle* particle = NULL;
+  for (Int_t i = 0; i < array->GetEntriesFast(); i++) {
+
+    particle = dynamic_cast<AliAODMCParticle*>(array->At(i));
+    if (!CheckParticle(particle))
+      continue;
+    isdaughter = false;
+    if (mcpart) {
+      for (Int_t j = 0; j < daughter_vec.size(); j++) {
+        if (particle->GetLabel() == daughter_vec[j])
+          isdaughter = true;
       }
-      if(isdaughter) continue;
+      if (isdaughter)
+        continue;
     }
-    fFastJetWrapper->AddInputVector(particle->Px(), particle->Py(), particle->Pz(), particle->E(),i+100);
-    charge.first=i+100;
-    charge.second=particle->Charge();
+    fFastJetWrapper->AddInputVector(particle->Px(), particle->Py(), particle->Pz(), particle->E(), i + 100);
+    charge.first = i + 100;
+    charge.second = particle->Charge();
     fConstituentCharge.push_back(charge);
   }
   fFastJetWrapper->Run();
   //delete track;
 }
 
-
 //________________________________________________________________
 //Set the jet parameters in the AliHFJet object
-void AliHFJetFinder::SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF *cand) {
+void AliHFJetFinder::SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF* cand)
+{
 
-  hfjet.fID=jetID;
-  if (cand)hfjet.fHFMeson=1;
-  else hfjet.fHFMeson=0;
-  hfjet.fPt=jet.perp();
-  hfjet.fEta=jet.pseudorapidity();
-  hfjet.fPhi=jet.phi();
-  std::vector<fastjet::PseudoJet> sorted_constituents=sorted_by_pt(constituents);
-  hfjet.fLeadingPt=sorted_constituents[0].perp();
-  if (cand) hfjet.fDeltaEta=jet.pseudorapidity()-cand->Eta();
-  else hfjet.fDeltaEta=-99;
-  if (cand) hfjet.fDeltaPhi=RelativePhi(jet.phi(),cand->Phi());
-  else hfjet.fDeltaPhi=-99;
-  if (cand) hfjet.fDeltaR=TMath::Sqrt(hfjet.fDeltaEta*hfjet.fDeltaEta + hfjet.fDeltaPhi*hfjet.fDeltaPhi);
-  else hfjet.fDeltaR=-99;
-  hfjet.fN=constituents.size();
-  Double_t Px_Jet=jet.perp()*TMath::Cos(jet.phi());
-  Double_t Py_Jet=jet.perp()*TMath::Sin(jet.phi());
-  Double_t Pz_Jet=jet.perp()*TMath::SinH(jet.eta());
+  hfjet.fID = jetID;
+  if (cand)
+    hfjet.fHFMeson = 1;
+  else
+    hfjet.fHFMeson = 0;
+  hfjet.fPt = jet.perp();
+  hfjet.fEta = jet.pseudorapidity();
+  hfjet.fPhi = jet.phi();
+  std::vector<fastjet::PseudoJet> sorted_constituents = sorted_by_pt(constituents);
+  hfjet.fLeadingPt = sorted_constituents[0].perp();
+  if (cand)
+    hfjet.fDeltaEta = jet.pseudorapidity() - cand->Eta();
+  else
+    hfjet.fDeltaEta = -99;
+  if (cand)
+    hfjet.fDeltaPhi = RelativePhi(jet.phi(), cand->Phi());
+  else
+    hfjet.fDeltaPhi = -99;
+  if (cand)
+    hfjet.fDeltaR = TMath::Sqrt(hfjet.fDeltaEta * hfjet.fDeltaEta + hfjet.fDeltaPhi * hfjet.fDeltaPhi);
+  else
+    hfjet.fDeltaR = -99;
+  hfjet.fN = constituents.size();
+  Double_t Px_Jet = jet.perp() * TMath::Cos(jet.phi());
+  Double_t Py_Jet = jet.perp() * TMath::Sin(jet.phi());
+  Double_t Pz_Jet = jet.perp() * TMath::SinH(jet.eta());
   Double_t Px_Cand;
   Double_t Py_Cand;
   Double_t Pz_Cand;
-  if(cand){
-    Px_Cand=cand->Pt()*TMath::Cos(cand->Phi());
-    Py_Cand=cand->Pt()*TMath::Sin(cand->Phi());
-    Pz_Cand=cand->Pt()*TMath::SinH(cand->Eta());
+  if (cand) {
+    Px_Cand = cand->Pt() * TMath::Cos(cand->Phi());
+    Py_Cand = cand->Pt() * TMath::Sin(cand->Phi());
+    Pz_Cand = cand->Pt() * TMath::SinH(cand->Eta());
+  } else {
+    Px_Cand = sorted_constituents[0].perp() * TMath::Cos(sorted_constituents[0].phi());
+    Py_Cand = sorted_constituents[0].perp() * TMath::Sin(sorted_constituents[0].phi());
+    Pz_Cand = sorted_constituents[0].perp() * TMath::SinH(sorted_constituents[0].eta());
   }
-  else{
-    Px_Cand=sorted_constituents[0].perp()*TMath::Cos(sorted_constituents[0].phi());
-    Py_Cand=sorted_constituents[0].perp()*TMath::Sin(sorted_constituents[0].phi());
-    Pz_Cand=sorted_constituents[0].perp()*TMath::SinH(sorted_constituents[0].eta());
-  }
-  hfjet.fZ= (Px_Jet*Px_Cand + Py_Jet*Py_Cand + Pz_Jet*Pz_Cand)/(Px_Jet*Px_Jet + Py_Jet*Py_Jet + Pz_Jet*Pz_Jet);
-  
-  if (fDoJetSubstructure) SetJetSubstructureVariables(hfjet,jet,constituents);
-  
-}
+  hfjet.fZ = (Px_Jet * Px_Cand + Py_Jet * Py_Cand + Pz_Jet * Pz_Cand) / (Px_Jet * Px_Jet + Py_Jet * Py_Jet + Pz_Jet * Pz_Jet);
 
+  if (fDoJetSubstructure)
+    SetJetSubstructureVariables(hfjet, jet, constituents);
+}
 
 //________________________________________________________________
 //Set the jet parameters in the AliHFJet object (MC)
-void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODMCParticle *mcpart) {
+void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODMCParticle* mcpart)
+{
 
-  hfjet.fID=jetID;
-  if (mcpart)hfjet.fHFMeson=1;
-  else hfjet.fHFMeson=0;
-  hfjet.fPt=jet.perp();
-  hfjet.fEta=jet.pseudorapidity();
-  hfjet.fPhi=jet.phi();
-  std::vector<fastjet::PseudoJet> sorted_constituents=sorted_by_pt(constituents);
-  hfjet.fLeadingPt=sorted_constituents[0].perp();
-  if (mcpart) hfjet.fDeltaEta=jet.pseudorapidity()-mcpart->Eta();
-  else hfjet.fDeltaEta=-99;
-  if (mcpart) hfjet.fDeltaPhi=RelativePhi(jet.phi(),mcpart->Phi());
-  else hfjet.fDeltaPhi=-99;
-  if (mcpart) hfjet.fDeltaR=TMath::Sqrt(hfjet.fDeltaEta*hfjet.fDeltaEta + hfjet.fDeltaPhi*hfjet.fDeltaPhi);
-  else hfjet.fDeltaR=-99;
-  hfjet.fN=constituents.size();
-  Double_t Px_Jet=jet.perp()*TMath::Cos(jet.phi());
-  Double_t Py_Jet=jet.perp()*TMath::Sin(jet.phi());
-  Double_t Pz_Jet=jet.perp()*TMath::SinH(jet.eta());
+  hfjet.fID = jetID;
+  if (mcpart)
+    hfjet.fHFMeson = 1;
+  else
+    hfjet.fHFMeson = 0;
+  hfjet.fPt = jet.perp();
+  hfjet.fEta = jet.pseudorapidity();
+  hfjet.fPhi = jet.phi();
+  std::vector<fastjet::PseudoJet> sorted_constituents = sorted_by_pt(constituents);
+  hfjet.fLeadingPt = sorted_constituents[0].perp();
+  if (mcpart)
+    hfjet.fDeltaEta = jet.pseudorapidity() - mcpart->Eta();
+  else
+    hfjet.fDeltaEta = -99;
+  if (mcpart)
+    hfjet.fDeltaPhi = RelativePhi(jet.phi(), mcpart->Phi());
+  else
+    hfjet.fDeltaPhi = -99;
+  if (mcpart)
+    hfjet.fDeltaR = TMath::Sqrt(hfjet.fDeltaEta * hfjet.fDeltaEta + hfjet.fDeltaPhi * hfjet.fDeltaPhi);
+  else
+    hfjet.fDeltaR = -99;
+  hfjet.fN = constituents.size();
+  Double_t Px_Jet = jet.perp() * TMath::Cos(jet.phi());
+  Double_t Py_Jet = jet.perp() * TMath::Sin(jet.phi());
+  Double_t Pz_Jet = jet.perp() * TMath::SinH(jet.eta());
   Double_t Px_Cand;
   Double_t Py_Cand;
   Double_t Pz_Cand;
-  if(mcpart){
-    Px_Cand=mcpart->Pt()*TMath::Cos(mcpart->Phi());
-    Py_Cand=mcpart->Pt()*TMath::Sin(mcpart->Phi());
-    Pz_Cand=mcpart->Pt()*TMath::SinH(mcpart->Eta());
+  if (mcpart) {
+    Px_Cand = mcpart->Pt() * TMath::Cos(mcpart->Phi());
+    Py_Cand = mcpart->Pt() * TMath::Sin(mcpart->Phi());
+    Pz_Cand = mcpart->Pt() * TMath::SinH(mcpart->Eta());
+  } else {
+    Px_Cand = sorted_constituents[0].perp() * TMath::Cos(sorted_constituents[0].phi());
+    Py_Cand = sorted_constituents[0].perp() * TMath::Sin(sorted_constituents[0].phi());
+    Pz_Cand = sorted_constituents[0].perp() * TMath::SinH(sorted_constituents[0].eta());
   }
-  else{
-    Px_Cand=sorted_constituents[0].perp()*TMath::Cos(sorted_constituents[0].phi());
-    Py_Cand=sorted_constituents[0].perp()*TMath::Sin(sorted_constituents[0].phi());
-    Pz_Cand=sorted_constituents[0].perp()*TMath::SinH(sorted_constituents[0].eta());
-  }
-  hfjet.fZ= (Px_Jet*Px_Cand + Py_Jet*Py_Cand + Pz_Jet*Pz_Cand)/(Px_Jet*Px_Jet + Py_Jet*Py_Jet + Pz_Jet*Pz_Jet);
+  hfjet.fZ = (Px_Jet * Px_Cand + Py_Jet * Py_Cand + Pz_Jet * Pz_Cand) / (Px_Jet * Px_Jet + Py_Jet * Py_Jet + Pz_Jet * Pz_Jet);
 
-  if (fDoJetSubstructure) SetJetSubstructureVariables(hfjet,jet,constituents);
-  
+  if (fDoJetSubstructure)
+    SetJetSubstructureVariables(hfjet, jet, constituents);
 }
-
-
-
 
 //________________________________________________________________
 //Set the jet substrucutre variables in the AliHFJet object (Data and MC)
-void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const fastjet::PseudoJet& jet, const std::vector<fastjet::PseudoJet>& constituents) {
+void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const fastjet::PseudoJet& jet, const std::vector<fastjet::PseudoJet>& constituents)
+{
 
-  Bool_t softdropped=kFALSE;
-  Float_t Pt_jet=0.0;
-  Float_t z=0.0;
-  Float_t r=0.0;
-  Float_t Nsd=0.0;
-  Float_t Pt_splitting=0.0;
-  Float_t k0=0.0, k0_temp=0.0, Zk0=0.0, Rk0=0.0;
-  Float_t k1=0.0, k1_temp=0.0, Zk1=0.0, Rk1=0.0;
-  Float_t k2=0.0, k2_temp=0.0, Zk2=0.0, Rk2=0.0;
-  Float_t kT=0.0, kT_temp=0.0, ZkT=0.0, RkT=0.0;
-  Float_t Angularityk1B1=0.0;
-  Float_t pTDispersion=0.0;
-  Float_t Chargek03=0.0;
-  Float_t Chargek05=0.0;
-  Float_t Chargek07=0.0;
-  Float_t Charge=0.0;
+  Bool_t softdropped = kFALSE;
+  Float_t Pt_jet = 0.0;
+  Float_t z = 0.0;
+  Float_t r = 0.0;
+  Float_t Nsd = 0.0;
+  Float_t Pt_splitting = 0.0;
+  Float_t k0 = 0.0, k0_temp = 0.0, Zk0 = 0.0, Rk0 = 0.0;
+  Float_t k1 = 0.0, k1_temp = 0.0, Zk1 = 0.0, Rk1 = 0.0;
+  Float_t k2 = 0.0, k2_temp = 0.0, Zk2 = 0.0, Rk2 = 0.0;
+  Float_t kT = 0.0, kT_temp = 0.0, ZkT = 0.0, RkT = 0.0;
+  Float_t Angularityk1B1 = 0.0;
+  Float_t pTDispersion = 0.0;
+  Float_t Chargek03 = 0.0;
+  Float_t Chargek05 = 0.0;
+  Float_t Chargek07 = 0.0;
+  Float_t Charge = 0.0;
 
+  for (Int_t i = 0; i < constituents.size(); i++) {
 
-  for (Int_t i=0; i < constituents.size(); i++){
-
-    Angularityk1B1 += TMath::Power(constituents[i].perp(),1)*TMath::Power(jet.delta_R(constituents[i]),1);
-    pTDispersion += constituents[i].perp()*constituents[i].perp();
-    for (Int_t j=0; j<fConstituentCharge.size(); j++){
-      if(constituents[i].user_index() == fConstituentCharge[j].first){
-	Charge = fConstituentCharge[j].second;
-	break;
+    Angularityk1B1 += TMath::Power(constituents[i].perp(), 1) * TMath::Power(jet.delta_R(constituents[i]), 1);
+    pTDispersion += constituents[i].perp() * constituents[i].perp();
+    for (Int_t j = 0; j < fConstituentCharge.size(); j++) {
+      if (constituents[i].user_index() == fConstituentCharge[j].first) {
+        Charge = fConstituentCharge[j].second;
+        break;
       }
     }
-    Chargek03 += Charge*TMath::Power(constituents[i].perp(),0.3);
-    Chargek05 += Charge*TMath::Power(constituents[i].perp(),0.5);
-    Chargek07 += Charge*TMath::Power(constituents[i].perp(),0.7);  
+    Chargek03 += Charge * TMath::Power(constituents[i].perp(), 0.3);
+    Chargek05 += Charge * TMath::Power(constituents[i].perp(), 0.5);
+    Chargek07 += Charge * TMath::Power(constituents[i].perp(), 0.7);
   }
 
-  Angularityk1B1 = Angularityk1B1/(TMath::Power(jet.perp(),1)*TMath::Power(fJetRadius,1));
-  pTDispersion=TMath::Sqrt(pTDispersion)/jet.perp();
-  Chargek03=Chargek03/(TMath::Power(jet.perp(),0.3));
-  Chargek05=Chargek05/(TMath::Power(jet.perp(),0.5));
-  Chargek07=Chargek07/(TMath::Power(jet.perp(),0.7));
+  Angularityk1B1 = Angularityk1B1 / (TMath::Power(jet.perp(), 1) * TMath::Power(fJetRadius, 1));
+  pTDispersion = TMath::Sqrt(pTDispersion) / jet.perp();
+  Chargek03 = Chargek03 / (TMath::Power(jet.perp(), 0.3));
+  Chargek05 = Chargek05 / (TMath::Power(jet.perp(), 0.5));
+  Chargek07 = Chargek07 / (TMath::Power(jet.perp(), 0.7));
 
+  hfjet.fAngularityk1B1 = Angularityk1B1;
+  hfjet.fpTDispersion = pTDispersion;
+  hfjet.fChargek03 = Chargek03;
+  hfjet.fChargek05 = Chargek05;
+  hfjet.fChargek07 = Chargek07;
 
-  hfjet.fAngularityk1B1=Angularityk1B1;
-  hfjet.fpTDispersion=pTDispersion;
-  hfjet.fChargek03=Chargek03;
-  hfjet.fChargek05=Chargek05;
-  hfjet.fChargek07=Chargek07;
+  if (fSubJetRadius == 0.0)
+    fSubJetRadius = fJetRadius * 2.5;
 
+  fastjet::JetDefinition subJet_definition(JetAlgorithm(fSubJetAlgorithm), fSubJetRadius, RecombinationScheme(fSubJetRecombScheme), fastjet::Best);
 
-
-
-  if (fSubJetRadius==0.0) fSubJetRadius=fJetRadius*2.5;
-
-  
-  fastjet::JetDefinition subJet_definition(JetAlgorithm(fSubJetAlgorithm), fSubJetRadius,RecombinationScheme(fSubJetRecombScheme), fastjet::Best);
-
-  
-  try{
+  try {
     fastjet::ClusterSequence cluster_sequence(constituents, subJet_definition);
-    std::vector<fastjet::PseudoJet> reclustered_jet =  cluster_sequence.inclusive_jets(fMinSubJetPt);
+    std::vector<fastjet::PseudoJet> reclustered_jet = cluster_sequence.inclusive_jets(fMinSubJetPt);
     reclustered_jet = sorted_by_pt(reclustered_jet);
-         
+
     fastjet::PseudoJet daughter_jet = reclustered_jet[0];
-    fastjet::PseudoJet parent_subjet_1; 
+    fastjet::PseudoJet parent_subjet_1;
     fastjet::PseudoJet parent_subjet_2;
-    Pt_jet=daughter_jet.perp();
+    Pt_jet = daughter_jet.perp();
 
-    while(daughter_jet.has_parents(parent_subjet_1,parent_subjet_2)){
-      if(parent_subjet_1.perp() < parent_subjet_2.perp()) std::swap(parent_subjet_1,parent_subjet_2);
-      Pt_splitting=parent_subjet_1.perp()+parent_subjet_2.perp();
-      z=parent_subjet_2.perp()/(Pt_splitting);
-      r=parent_subjet_1.delta_R(parent_subjet_2);
+    while (daughter_jet.has_parents(parent_subjet_1, parent_subjet_2)) {
+      if (parent_subjet_1.perp() < parent_subjet_2.perp())
+        std::swap(parent_subjet_1, parent_subjet_2);
+      Pt_splitting = parent_subjet_1.perp() + parent_subjet_2.perp();
+      z = parent_subjet_2.perp() / (Pt_splitting);
+      r = parent_subjet_1.delta_R(parent_subjet_2);
 
-      if (z >= fSoftDropZCut*TMath::Power(r/fJetRadius,fSoftDropBeta)){
-	if(!softdropped){
-	  hfjet.fZg = z;
-	  hfjet.fRg = r;
-	  hfjet.fPt_splitting = Pt_splitting;
-	  softdropped=kTRUE;
-	}
-	Nsd++;
+      if (z >= fSoftDropZCut * TMath::Power(r / fJetRadius, fSoftDropBeta)) {
+        if (!softdropped) {
+          hfjet.fZg = z;
+          hfjet.fRg = r;
+          hfjet.fPt_splitting = Pt_splitting;
+          softdropped = kTRUE;
+        }
+        Nsd++;
       }
-      if (Pt_jet > 0.0){
-	k0_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,0.1);
-	k1_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,1);
-	k2_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,2);
-	kT_temp=z*Pt_splitting*TMath::Sin(r);
-	if (k0_temp > k0){
-	  k0=k0_temp;
-	  Zk0 = z;
-	  Rk0 = r;
-	}
-	if (k1_temp > k1){
-	  k1=k1_temp;
-	  Zk1 = z;
-	  Rk1 = r;
-	}
-	if (k2_temp > k2){
-	  k2=k2_temp;
-	  Zk2 = z;
-	  Rk2 = r;
-	}
-	if (kT_temp > kT){
-	  kT=kT_temp;
-	  ZkT = z;
-	  RkT = r;
-	}
+      if (Pt_jet > 0.0) {
+        k0_temp = (1.0 / Pt_jet) * z * (1 - z) * Pt_splitting * TMath::Power(r / fJetRadius, 0.1);
+        k1_temp = (1.0 / Pt_jet) * z * (1 - z) * Pt_splitting * TMath::Power(r / fJetRadius, 1);
+        k2_temp = (1.0 / Pt_jet) * z * (1 - z) * Pt_splitting * TMath::Power(r / fJetRadius, 2);
+        kT_temp = z * Pt_splitting * TMath::Sin(r);
+        if (k0_temp > k0) {
+          k0 = k0_temp;
+          Zk0 = z;
+          Rk0 = r;
+        }
+        if (k1_temp > k1) {
+          k1 = k1_temp;
+          Zk1 = z;
+          Rk1 = r;
+        }
+        if (k2_temp > k2) {
+          k2 = k2_temp;
+          Zk2 = z;
+          Rk2 = r;
+        }
+        if (kT_temp > kT) {
+          kT = kT_temp;
+          ZkT = z;
+          RkT = r;
+        }
       }
-      
-      daughter_jet=parent_subjet_1;
+
+      daughter_jet = parent_subjet_1;
     }
-    if (constituents.size() > 1){
+    if (constituents.size() > 1) {
       hfjet.fNsd = Nsd;
-      hfjet.fk0=k0;
-      hfjet.fZk0=Zk0;
-      hfjet.fRk0=Rk0;
-      hfjet.fk1=k1;
-      hfjet.fZk1=Zk1;
-      hfjet.fRk1=Rk1;
-      hfjet.fk2=k2;
-      hfjet.fZk2=Zk2;
-      hfjet.fRk2=Rk2;
-      hfjet.fkT=kT;
-      hfjet.fZkT=ZkT;
-      hfjet.fRkT=RkT;
+      hfjet.fk0 = k0;
+      hfjet.fZk0 = Zk0;
+      hfjet.fRk0 = Rk0;
+      hfjet.fk1 = k1;
+      hfjet.fZk1 = Zk1;
+      hfjet.fRk1 = Rk1;
+      hfjet.fk2 = k2;
+      hfjet.fZk2 = Zk2;
+      hfjet.fRk2 = Rk2;
+      hfjet.fkT = kT;
+      hfjet.fZkT = ZkT;
+      hfjet.fRkT = RkT;
     }
 
-         
-  } catch (fastjet::Error) { /*return -1;*/ }
-
-
-  
+  } catch (fastjet::Error) { /*return -1;*/
+  }
 }
-
 
 //________________________________________________________________
 //Apply quality check on tracks
-Bool_t AliHFJetFinder::CheckTrack(AliAODTrack *track) { 
-  if(!track) return false;
+Bool_t AliHFJetFinder::CheckTrack(AliAODTrack* track)
+{
+  if (!track)
+    return false;
 
   TRandom3 Random;
   Random.SetSeed(0);
   Double_t Random_Number;
-  Random_Number=Random.Rndm();
-  if(Random_Number > fTrackingEfficiency) return false;
+  Random_Number = Random.Rndm();
+  if (Random_Number > fTrackingEfficiency)
+    return false;
 
-  AliTLorentzVector track_lvec(0,0,0,0);
+  AliTLorentzVector track_lvec(0, 0, 0, 0);
   track_lvec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.139); //set to mass of Pion
- 
-  if(track_lvec.Pt() > fMaxTrackPt) return false;
-  if(track_lvec.Pt() < fMinTrackPt) return false;
-  if(track_lvec.E() > fMaxTrackE) return false;
-  if(track_lvec.E() < fMinTrackE) return false; 
-  if(TMath::Abs(track_lvec.Eta()) > fMaxTrackEta) return false;
-  if(TMath::Abs(track_lvec.Phi_0_2pi()) > fMaxTrackPhi) return false;
 
-  if(track->Charge()==0) return false;
-  if (!CheckFilterBits(track)) return false;
-  
+  if (track_lvec.Pt() > fMaxTrackPt)
+    return false;
+  if (track_lvec.Pt() < fMinTrackPt)
+    return false;
+  if (track_lvec.E() > fMaxTrackE)
+    return false;
+  if (track_lvec.E() < fMinTrackE)
+    return false;
+  if (TMath::Abs(track_lvec.Eta()) > fMaxTrackEta)
+    return false;
+  if (TMath::Abs(track_lvec.Phi_0_2pi()) > fMaxTrackPhi)
+    return false;
+
+  if (track->Charge() == 0)
+    return false;
+  if (!CheckFilterBits(track))
+    return false;
+
   return true;
 }
 
 //________________________________________________________________
 //Apply filter bit selection on tracks
-Bool_t AliHFJetFinder::CheckFilterBits(AliAODTrack *track) {
+Bool_t AliHFJetFinder::CheckFilterBits(AliAODTrack* track)
+{
 
-  if(!track->TestBit(BIT(4)) && !track->TestBit(BIT(9))) return false;
-  if(!track->IsHybridGlobalConstrainedGlobal()) return false;
+  if (!track->TestBit(BIT(4)) && !track->TestBit(BIT(9)))
+    return false;
+  if (!track->IsHybridGlobalConstrainedGlobal())
+    return false;
   return true;
 }
 
 //________________________________________________________________
 //Apply quality check on particles (MC)
-Bool_t AliHFJetFinder::CheckParticle(AliAODMCParticle *particle) {
-  if(!particle) return false;
-  if(!particle->IsPhysicalPrimary()) return false;
-  if(particle->Pt() > fMaxParticlePt) return false;
-  if(particle->Pt() < fMinParticlePt) return false;
-  if(TMath::Abs(particle->Eta()) > fMaxParticleEta) return false;
-  if(fCharged==Charge::charged && particle->Charge()==0) return false;
-  if (fCharged==Charge::neutral && particle->Charge()!=0) return false;
+Bool_t AliHFJetFinder::CheckParticle(AliAODMCParticle* particle)
+{
+  if (!particle)
+    return false;
+  if (!particle->IsPhysicalPrimary())
+    return false;
+  if (particle->Pt() > fMaxParticlePt)
+    return false;
+  if (particle->Pt() < fMinParticlePt)
+    return false;
+  if (TMath::Abs(particle->Eta()) > fMaxParticleEta)
+    return false;
+  if (fCharged == Charge::charged && particle->Charge() == 0)
+    return false;
+  if (fCharged == Charge::neutral && particle->Charge() != 0)
+    return false;
   return true;
 }
 
-
-
 //________________________________________________________________
 //Find the index of the jet containing the heavy flavour candidtae or particle (Data and MC)
-Int_t AliHFJetFinder::Find_Candidate_Jet() {
+Int_t AliHFJetFinder::Find_Candidate_Jet()
+{
   //Finds the label of the jet with the heavy flvaour meson
-  std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets(); 
-  for (UInt_t i=0; i < inclusive_jets.size(); i++){
+  std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
+  for (UInt_t i = 0; i < inclusive_jets.size(); i++) {
     std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(i));
-    for (UInt_t j = 0; j < constituents.size(); j++) { 
+    for (UInt_t j = 0; j < constituents.size(); j++) {
       if (constituents[j].user_index() == 0) {
-	return i; 
+        return i;
       }
     }
   }
   return -1;
 }
 
-
 //________________________________________________________________________
 //Transform the range of delta_phi from 0 to 2pi into -pi to pi
-Float_t AliHFJetFinder::RelativePhi(Float_t phi_1, Float_t phi_2){
+Float_t AliHFJetFinder::RelativePhi(Float_t phi_1, Float_t phi_2)
+{
 
-  if(phi_1 < -1*TMath::Pi()) phi_1 += (2*TMath::Pi());                                                             
-  else if (phi_1 > TMath::Pi()) phi_1 -= (2*TMath::Pi());
-  if(phi_2 < -1*TMath::Pi()) phi_2 += (2*TMath::Pi());
-  else if (phi_2 > TMath::Pi()) phi_2 -= (2*TMath::Pi());
-  Double_t deltaphi=phi_2-phi_1;
-  if(deltaphi < -1*TMath::Pi()) deltaphi += (2*TMath::Pi());
-  else if (deltaphi > TMath::Pi()) deltaphi -= (2*TMath::Pi());
+  if (phi_1 < -1 * TMath::Pi())
+    phi_1 += (2 * TMath::Pi());
+  else if (phi_1 > TMath::Pi())
+    phi_1 -= (2 * TMath::Pi());
+  if (phi_2 < -1 * TMath::Pi())
+    phi_2 += (2 * TMath::Pi());
+  else if (phi_2 > TMath::Pi())
+    phi_2 -= (2 * TMath::Pi());
+  Double_t deltaphi = phi_2 - phi_1;
+  if (deltaphi < -1 * TMath::Pi())
+    deltaphi += (2 * TMath::Pi());
+  else if (deltaphi > TMath::Pi())
+    deltaphi -= (2 * TMath::Pi());
   return deltaphi;
 }
 //________________________________________________________________________
 //Returning fastjet jet or subjet algorithm
-fastjet::JetFinder AliHFJetFinder::JetAlgorithm(Int_t jetalgo){
-  if (jetalgo==JetAlgorithm::kt) return fastjet::kt_algorithm;
-  else if (jetalgo==JetAlgorithm::ca) return fastjet::cambridge_algorithm; 
-  else return fastjet::antikt_algorithm;
+fastjet::JetFinder AliHFJetFinder::JetAlgorithm(Int_t jetalgo)
+{
+  if (jetalgo == JetAlgorithm::kt)
+    return fastjet::kt_algorithm;
+  else if (jetalgo == JetAlgorithm::ca)
+    return fastjet::cambridge_algorithm;
+  else
+    return fastjet::antikt_algorithm;
 }
 //________________________________________________________________________
 //Returning fastjet jet or subjet recombination scheme
-fastjet::RecombinationScheme AliHFJetFinder::RecombinationScheme(Int_t recombscheme){
-  if (recombscheme==RecombScheme::pt_scheme) return fastjet::pt_scheme;
-  else return fastjet::E_scheme;
+fastjet::RecombinationScheme AliHFJetFinder::RecombinationScheme(Int_t recombscheme)
+{
+  if (recombscheme == RecombScheme::pt_scheme)
+    return fastjet::pt_scheme;
+  else
+    return fastjet::E_scheme;
 }
 //________________________________________________________________________
 //Returning fastjet jet area type
-fastjet::AreaType AliHFJetFinder::AreaType(Int_t area){
-  if (area==AreaType::passive) return fastjet::passive_area;
-  if (area==AreaType::voronoi) return fastjet::voronoi_area;
-  else return fastjet::active_area;
+fastjet::AreaType AliHFJetFinder::AreaType(Int_t area)
+{
+  if (area == AreaType::passive)
+    return fastjet::passive_area;
+  if (area == AreaType::voronoi)
+    return fastjet::voronoi_area;
+  else
+    return fastjet::active_area;
 }
-

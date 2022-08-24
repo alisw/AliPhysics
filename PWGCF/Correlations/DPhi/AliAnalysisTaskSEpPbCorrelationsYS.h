@@ -14,7 +14,7 @@
 #include "THnSparse.h"
 #include "TString.h"
 #include "AliEventCuts.h"
-
+#include <stdio.h>
 
 
 class TList;
@@ -127,6 +127,8 @@ private:
   Double_t RangePhi2(Double_t DPhi);
   Int_t      ConvertRunNumber(Int_t run);
   Bool_t HasValidFMDYS(TH2D h);
+  Bool_t Goodruns(Int_t run);
+  TString GetMCperiod(Int_t runnumber);
   
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
@@ -150,6 +152,9 @@ private:
                              Float_t phi2, Float_t pt2, Float_t charge2,
                              Float_t radius, Float_t bSign);
 
+ 
+
+
   TString fcollisiontype;
   Bool_t fDataType;
   Bool_t frun2;
@@ -161,6 +166,7 @@ private:
   Bool_t fmakehole;
   Bool_t ffillcorrelation;
   Bool_t fefficalib;
+  TString MCperiod;
   Float_t fcuthighmult;
   Bool_t fOnfly;
   TString fAnaMode;
@@ -172,8 +178,10 @@ private:
   Int_t fNEntries;
   
   Double_t lCentrality;
+  Double_t lCent_effi;
 
   Int_t calibmode;
+  TFile* feffi;
   TH1F* fheffipt;
   TH2F* fheffipteta;
   Float_t bSign;
@@ -208,23 +216,13 @@ private:
   Double_t fcosMinLambda;
   Double_t fMaxnSigmaTPCV0;
   // V0 daughter cut
-  TH1D *hv0dcharge;
+  //  TH1D *hv0dcharge;
   Double_t fclustermin;
   Double_t fratiocluster;
   Double_t fEtaMaxDaughter;
   Double_t fEtaMinDaughter;
-  THnSparseF *fHistMass_K0s;
-  THnSparseF *fHistMass_K0s_MC;
-  THnSparseF *fHistMass_Lambda;
-  THnSparseF *fHistMass_ALambda;
-  THnSparseF *fHistMass_ALambda_MC;
-  THnSparseF *fHistMassXiMinus;
-  THnSparseF *fHistMassXiPlus;
-  THnSparseF *fHistMassOmegaMinus;
-  THnSparseF *fHistMassOmegaPlus;
-  TH2D *fHistMass_bumpcorr;
-  THnSparseF *fHist_V0QA;
-  THnSparseF *fHist_CascadeQA;
+
+  //  THnSparseF *fHist_V0QA;
   TH2D *fHist_AP[6];
   TH2D *fHistPosNsig[6];
   TH2D *fHistNsig[6];
@@ -233,8 +231,6 @@ private:
   TH2D *fHistPosNsigQA[6];
   TH3D* fh3NegNsig[3];
   TH3D* fh3PosNsig[3];
-
-  THnSparseF *fHistMass_Lambda_MC;
 
   //	Double_t fPtMinDaughter
 
@@ -265,78 +261,61 @@ private:
 
   // Globaal Histograms
   
-  TH2F* fHistCentV0vsTrackletsbefore;
+  //  TH2F* fHistCentV0vsTrackletsbefore;
 
-  TH2F* mixedDist;
-  TH2F* mixedDist2;
   
-  
-  AliTHn *fHistLeadQA;
-  AliTHn *fHistPIDQA;
+  //  AliTHn *fHistLeadQA;
 
-  AliTHn* fhistmcprim;
-  TH2D*fhmcprimvzeta;
+  //  AliTHn* fhistmcprim;
+  //  TH2D*fhmcprimvzeta;
 
-  TH1F*frefetac;
-  TH1F*frefetaa;
-  TH1F*frefvz;
+  //  TH1F*frefetac;
+  //  TH1F*frefetaa;
+  //  TH1F*frefvz;
   TH2D*fhcorr[10];
 
-  TH1D*fhmcprimpdgcode;
+  //  TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
 
-  TH2D*  fh2_FMD_acceptance_prim;
-  TH2D*  fh2_FMD_eta_phi_prim;
-  TH2F*  fh2_SPD_multcorr;
-  TH2F*  fh2_SPDtrack_multcorr;
+  //  TH2D*  fh2_FMD_acceptance_prim;
+  //  TH2D*  fh2_FMD_eta_phi_prim;
+  //  TH2F*  fh2_SPD_multcorr;
+  //  TH2F*  fh2_SPDtrack_multcorr;
   
   TH2D*  fhistfmdphiacc;
   TH2D* fhFMDmult_runbyrun_cside[31];
   TH2D* fhFMDmult_runbyrun_aside[65];
   
-  THnSparseF* fhistits;
-  AliTHn* fhSecFMD;
+  //  THnSparseF* fhistits;
+  //  AliTHn* fhSecFMD;
   //  const TH2D& d2Ndetadphi;
-  TH2D*fOutliers;
+  //  TH2D*fOutliers;
 
 
   TH1F *fHist_Stat;
 
   // QA histograms
-  TH2D *fHistPhiDTPCNSig;
-  TH2D *fHistPhiDTOFNSig;
-  TH2D *fHistPhiDTPCTOFNSig;
-  THnSparseF *fHistMass_PhiMeson;
-  THnSparseF *fHistMass_PhiMeson_MIX;
-  THnSparseF *fHist_PhiQA;
-
   AliTHn *fHistTriggerTrack;
   AliTHn *fHistReconstTrack;
   AliTHn *fHistTriggerTrackMix;
   AliTHn *fHistReconstTrackMix;
 
-  TH2D* fHistQna;
-  TH2D* fHistQnc;
   TH2D* fHistCorrQna[4];
   TH2D* fHistCorrQnc[4];
-  TH2D* fHistQn;
-  TH2D* fHistQna_VZERO;
-  TH2D* fHistQnc_VZERO;
-  TH2D* fHistQn_VZERO;
-  TH1D* fHistVn;
   TH1D* fHistQAQB[4];
   TH1D* fHistQAQB_VZERO[4];
+  /*
   TProfile* SP_TPCATPCC;
   TProfile* SP_TPCATPCC_default;
   TProfile* SP_V0AV0C_default;
   TProfile* SP_V0ATPC_default;
   TProfile* SP_V0CTPC_default;
-  TH1F* fHist_V0AV0C;
-  TH1F* fHist_V0ATPC;
-  TH1F* fHist_V0CTPC;
-  TProfile* SP_uTPCA;
-  TProfile* SP_uTPCC;
+  */
+
+  //  TProfile* SP_uTPCA;
+  //  TProfile* SP_uTPCC;
+  /*
   TProfile* SP_uTPC_PP[8];
   TProfile* SP_uTPC[8];
   TProfile* SP_uTPC1[8];
@@ -352,7 +331,7 @@ private:
   TProfile* SP_uVZEROC1[8];
   TProfile* SP_uVZEROC2[8];
   TProfile* SP_uVZEROC3[8];
-
+  */
   ClassDef(AliAnalysisTaskSEpPbCorrelationsYS, 2);
 };
 //---------------------------------------------------------------------------------------

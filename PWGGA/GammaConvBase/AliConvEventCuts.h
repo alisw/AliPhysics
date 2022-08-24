@@ -557,6 +557,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
+      Int_t     GetEMCalClusterMultiplicity(AliVEvent* event);
       Bool_t    GetUseNewMultiplicityFramework();
       Bool_t    GetUseINELgtZERO()                                                  { return fINELgtZEROTrigger                                 ; }
       void      GetCorrectEtaShiftFromPeriod();
@@ -565,6 +566,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t     GetNumberOfTPCClusters(AliVEvent *event) const;
       TClonesArray*     GetArrayFromEvent(AliVEvent* event, const char *name, const char *clname=0);
       AliEMCALGeometry* GetGeomEMCAL()                                              { return fGeomEMCAL;}
+
 
       Bool_t    InitializeCutsFromCutString(const TString analysisCutSelection);
       void      SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
@@ -743,6 +745,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameHistoReweightingGamma;             ///< Histogram name for reweighting Gamma
       TString                     fNameDataHistoReweightingGamma;         ///< Histogram Data name for reweighting Gamma
       TString                     fLabelNamePileupCutTPC;                 //<  Label for NEvents histograms depending on pileup cut used
+
       // Histograms
       TH1F*                       fHistoEventCuts;                        ///< bookkeeping for event selection cuts
       TH1F*                       fHistoPastFutureBits;                   ///< bookkeeping for event selection cuts
@@ -814,7 +817,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,90)
+      ClassDef(AliConvEventCuts,91)
       /// \endcond
 };
 

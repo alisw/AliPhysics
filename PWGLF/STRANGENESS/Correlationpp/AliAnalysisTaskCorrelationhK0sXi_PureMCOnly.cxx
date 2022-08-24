@@ -407,7 +407,7 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserCreateOutputObjects()
   Int_t NumBinsMult=100;
   if (fisHM) NumBinsMult=100;
   Float_t UpperLimitMult =300;
-  if (fisHM) UpperLimitMult =0.1;
+  if (fisHM) UpperLimitMult = 300;
 
   fEventColl = new AliAnalysisCorrelationEventCollection **[fzVertexBins]; 
   
@@ -890,14 +890,6 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserCreateOutputObjects()
 void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
 {
 
-  Float_t moltep[6]={0,5,10,30,50,100};  
-  Float_t moltepHM[6]={0,0.001, 0.005, 0.01, 0.05, 0.1};  //V0M multiplicity intervals
-  if (fisHM){
-    for (Int_t i=0; i<=5; i++){
-      moltep[i] = moltepHM[i];
-    }
-  }
-
   Float_t LastzBin;
   Float_t LastcentralityBin;
   Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
@@ -995,9 +987,21 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
       return;
     }
   }
-  fHistEventMult->Fill(5);   
+
   Float_t  lPercentiles = lNchVZEROA + lNchVZEROC;
-  //----- End Loop on Stack ------------------------------------------------------------    
+
+  if (fisHM) {
+    if (lPercentiles < 120) {
+      PostData(1, fOutputList);
+      PostData(2, fSignalTree );
+      PostData(3, fBkgTree);
+      PostData(4, fOutputList2);  
+      PostData(5, fOutputList3);     
+      PostData(6, fOutputList4);
+      return;
+    }
+  }
+  fHistEventMult->Fill(5);   
 
   fHist_multiplicityAllSelEvents->Fill(lPercentiles);
 
@@ -1022,13 +1026,14 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
 
   if (fisHM){
     if(lPercentiles > 300) centralityBin=19; 
-    else if(lPercentiles > 290) centralityBin=18;
-    else if(lPercentiles > 280) centralityBin=17;
-    else if(lPercentiles > 270) centralityBin=16;
-    else if(lPercentiles > 260) centralityBin=15;
-    else if(lPercentiles > 250) centralityBin=14;
-    else if(lPercentiles > 240) centralityBin=13;
-    else centralityBin = 12;
+    else if(lPercentiles > 240) centralityBin=18;
+    else if(lPercentiles > 220) centralityBin=17;
+    else if(lPercentiles > 200) centralityBin=16;
+    else if(lPercentiles > 180) centralityBin=15;
+    else if(lPercentiles > 160) centralityBin=14;
+    else if(lPercentiles > 140) centralityBin=13;
+    else if(lPercentiles > 120) centralityBin=12;
+    else centralityBin = 11;
   }
   else {
     if(lPercentiles > 250) centralityBin=19; 
@@ -1036,12 +1041,16 @@ void AliAnalysisTaskCorrelationhK0sXi_PureMCOnly::UserExec(Option_t *)
     else if(lPercentiles > 200) centralityBin=17;
     else if(lPercentiles > 175) centralityBin=16;
     else if(lPercentiles > 150) centralityBin=15;
-    else if(lPercentiles > 125) centralityBin=14;
-    else if(lPercentiles > 100) centralityBin=13;
-    else if(lPercentiles > 75) centralityBin=12;
-    else if(lPercentiles > 50) centralityBin=11;
-    else if(lPercentiles > 25) centralityBin=10;
-    else centralityBin = 9;
+    else if(lPercentiles > 120) centralityBin=14;
+    else if(lPercentiles > 105) centralityBin=13;
+    else if(lPercentiles > 90) centralityBin=12;
+    else if(lPercentiles > 81) centralityBin=11;
+    else if(lPercentiles > 72) centralityBin=10;
+    else if(lPercentiles > 63) centralityBin=9;
+    else if(lPercentiles > 54) centralityBin=8;
+    else if(lPercentiles > 45) centralityBin=7;
+    else if(lPercentiles > 30) centralityBin=6;
+    else centralityBin = 5;
   }
   if (((centralityBin+1) >fnMultBins) || ((zBin+1) > fzVertexBins)){ 
     //c cout<<" ##################  WARNING: I'm going to break bacause of dimensional issues ########################"<<endl;

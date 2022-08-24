@@ -105,7 +105,7 @@ class AliJCDijetAna : public TObject
         unsigned noTracks;
         bool removed;
         //For loops:
-        unsigned utrack, uktjet, ujet, ujet2, uconst, udijet, ujetDetMC;
+        unsigned utrack, uktjet, ujet, ujet2, uconst, udijet, ujetDetMC, ucount;
         std::vector<bool> bHasDijet;
         std::vector<bool> bHasDeltaPhiDijet;
         bool bHasDeltaPhiSubLeadJet;

@@ -246,8 +246,11 @@ set(SRCS
     UserTasks/AliTrackContainerV0.cxx
     UserTasks/AliTrackContainerToyModel.cxx
     UserTasks/AliMCParticleContainerToyModel.cxx
+    UserTasks/AliAnalysisTaskEPCalibForJet.cxx
     UserTasks/AliAnalysisTaskRawJetWithEP.cxx
+    UserTasks/AliAnalysisTaskEmbeddingJetWithEP.cxx
     UserTasks/AliPieceWisePoly.cxx
+    UserTasks/AliAnalysisTaskEmcalJetProperties.cxx
     FlowVectorCorrections/AliAnalysisTaskFlowVectorCorrectionsPWGJE.cxx
 )
 

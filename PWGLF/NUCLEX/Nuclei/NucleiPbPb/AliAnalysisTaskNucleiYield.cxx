@@ -209,7 +209,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCABins{0}
    ,fPtBins{0}
    ,fCustomTPCpid{0}
-   ,fCustomITScalib{0}
+   ,fCustomITSpidPath{""}
+   ,fCustomITSpid{nullptr}
+   ,fCustomITSpidPtMax{-1.}
    ,fFlatteningProbs{0}
    ,fPtShapeParams{0}
    ,fFunctCollection{nullptr}
@@ -469,6 +471,13 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   }
   if (fTRDvintage == 2013)
     SetupTRD2013(fTRDboundariesNeg, fTRDboundariesPos);
+
+  const char *par[] = {"Mu", "Sigma"};
+  TFile its_file(fCustomITSpidPath.Data());
+  for (int iPar = 0; iPar < 2; ++iPar)
+  {
+    fCustomITSpid[iPar] = (TH1F*)its_file.Get(Form("fCustomITSpid%s",par[iPar]));
+  }  
 }
 
 /// This is the function that is evaluated for each event. The analysis code stays here.
@@ -754,26 +763,18 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
   }
 }
 
-void AliAnalysisTaskNucleiYield::SetCustomITScalib(Float_t *par) {
-  if (par == 0x0) {
-    fCustomITScalib.Set(1);
-  } else {
-    fCustomITScalib.Set(4);
-    for (int i = 0; i < 3; ++i)
-      fCustomITScalib.AddAt(par[i],i);
-  }
-}
-
 float AliAnalysisTaskNucleiYield::GetITSsigmas(AliVTrack* t) {
   AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(t);
   if (nanoT)
     AliFatal("ITS PID not implemented for NanoAOD");
   float its_n_sigma_uncalib = fPID->NumberOfSigmasITS(t, fParticle);
-  if (fCustomITScalib.GetSize() < 4 || fIsMC) return its_n_sigma_uncalib;
   const float pT = t->Pt();
-  const float its_calib_mean = fCustomITScalib[0]+pT*fCustomITScalib[1];
-  const float its_calib_sigma = fCustomITScalib[2]+pT*fCustomITScalib[3];
-  return (its_n_sigma_uncalib-its_calib_mean)/its_calib_sigma;
+  if (!(fCustomITSpid[0] && fCustomITSpid[1]) || pT > fCustomITSpidPtMax) return its_n_sigma_uncalib;
+  double par[2];
+  for (int iPar=0; iPar<2; ++iPar){
+    par[iPar] = fCustomITSpid[iPar]->GetBinContent(fCustomITSpid[iPar]->FindBin(pT));
+  }
+  return (its_n_sigma_uncalib - par[0])/par[1];
 }
 
 float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
@@ -803,7 +804,7 @@ int AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
   bool tofPID = true, itsPID = true, tpcPID = true, electronRejection = true;
 
   if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
-    itsPID = TMath::Abs(fPID->NumberOfSigmasITS(t, fParticle)) < fRequireITSpidSigmas;
+    itsPID = TMath::Abs(GetITSsigmas(t)) < fRequireITSpidSigmas;
   }
   electronRejection = TMath::Abs(fPID->NumberOfSigmasITS(t, AliPID::kElectron)) > fITSelectronRejectionSigma;
 

@@ -20,7 +20,6 @@ using std::string;
 #include "AliAnalysisManager.h"
 #include "AliAODTrack.h"
 #include "AliAODcascade.h"
-#include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
@@ -122,10 +121,10 @@ void AliAnalysisTaskStrangenessRatios::UserCreateOutputObjects()
 
   if (fFillLambdasBDTOut)
   {
-    for (int iB=0; iB<fNctBinsBDT; ++iB)
+    for (int iB=0; iB<(fCtBinsBDT.GetSize()-1); ++iB)
     {
       fBDT.push_back(new AliExternalBDT());
-      if (!fBDT[iB]->LoadXGBoostModel(Form("%s%.0f_%.0f.model",fBDTPath.data(),iB*fDeltaCtBinsBDT,(iB+1)*fDeltaCtBinsBDT)))
+      if (!fBDT[iB]->LoadXGBoostModel(Form("%s%.0f_%.0f.model",fBDTPath.data(),fCtBinsBDT[iB],fCtBinsBDT[iB+1])))
       {
         fBDT[iB] = nullptr;
       }
@@ -367,7 +366,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
       if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit) || !(nTrack->GetStatus() & AliVTrack::kTPCrefit) ||
           pTrack->GetTPCsignalN() < 50 || nTrack->GetTPCsignalN() < 50 ||
-          std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8)
+          std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8 ||
+          pTrack->Chi2perNDF() > 4 || nTrack->Chi2perNDF() > 4)
       {
         continue;
       }
@@ -394,30 +394,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           lambda->XvYvZv(ov);
           posPart->XvYvZv(dv);
           fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * lambda->M() / lambda->P();
+          
           fGenLambda.flag = 0u;
           if (lambda->IsPrimary())
             fGenLambda.flag |= kPrimary;
-          else
-          {
-            if (lambda->IsSecondaryFromWeakDecay())
-            {
-              int mothLambda = lambda->GetMother();
-              auto mother = (AliAODMCParticle *)fMCEvent->GetTrack(mothLambda);
-              switch (std::abs(mother->GetPdgCode())){
-                case kXiPdg:
-                  fGenLambda.flag |= kSecondaryFromWDXi;
-                break;
-                case kOmegaPdg:
-                  fGenLambda.flag |= kSecondaryFromWDOmega;
-                break;
-                default:
-                  fGenLambda.flag |= kSecondaryFromWD;
-                break;
-              }
-              fGenLambda.ptMotherMC = mother->Pt();
-            }
-            else fGenLambda.flag |= kSecondaryFromMaterial;
-          }
+          else if (lambda->IsSecondaryFromWeakDecay())
+            FindWDLambdaMother(lambda);
+          else fGenLambda.flag |= kSecondaryFromMaterial;
         }
         if (fOnlyTrueLambdas && fGenLambda.pdg == 0)
           continue;
@@ -463,9 +446,9 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fTreeLambda->Fill();
         if (fFillLambdasBDTOut)
         {
-          if (fRecLambda->radius < fRadiusPreselection || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
+          if (fRecLambda->ct < fCtPreselection || fRecLambda->ct > fMaxCt || fRecLambda->pt < fMinPt || fRecLambda->pt > fMaxPt || fRecLambda->radius < fRadiusPreselection || fRecLambda->radius > fRadiusOverflowCut || fRecLambda->dcaPiPV > fDCAV0piToPVOverflowCut || fRecLambda->dcaPrPV > fDCAV0prToPVOverflowCut || fRecLambda->dcaV0PV > fDCAV0toPVOverflowCut || fRecLambda->tpcClV0Pi < fTpcClV0PiPreselection || fRecLambda->tpcClV0Pr < fTpcClV0PrPreselection || fRecLambda->centrality < fMinCentrality || fRecLambda->centrality > fMaxCentrality) continue;
           int model_index = WhichBDT(fRecLambda->ct);
-          if (model_index > (fNctBinsBDT-1)) {
+          if (model_index > (fCtBinsBDT.GetSize()-2)) {
             continue;
           }
           if (!fBDT[model_index])
@@ -495,7 +478,6 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
   if (fMC && (fFillCascades||fFillLambdas))
   {
-    fGenCascade.isReconstructed = false;
     //OOB pileup
     AliAODMCHeader *header = static_cast<AliAODMCHeader *>(ev->FindListObject(AliAODMCHeader::StdBranchName()));
     if (!header)
@@ -511,53 +493,58 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       PostAllData();
       return;
     }
-    //loop on generated
-    for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
+
+    if (fFillCascades)
     {
-      auto track = (AliAODMCParticle *)fMCEvent->GetTrack(iT);
-      int pdg = std::abs(track->GetPdgCode());
-      if (pdg != kXiPdg && pdg != kOmegaPdg)
+      fGenCascade.isReconstructed = false;
+      //loop on generated
+      for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
       {
-        continue;
-      }
-      if (std::find(checkedLabel.begin(), checkedLabel.end(), iT) != checkedLabel.end())
-      {
-        continue;
-      }
-      if (std::abs(track->Y()) > fCutY || !track->IsPhysicalPrimary() || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
-      { //removal of OOB pileup, cut on Y and PhysPrim
-        continue;
-      }
-      fGenCascade.ptMC = track->Pt();
-      fGenCascade.etaMC = track->Eta();
-      fGenCascade.yMC = track->Y();
-      fGenCascade.pdg = track->GetPdgCode();
-      double pv[3], sv[3];
-      track->XvYvZv(pv);
-      bool goodDecay{false};
-      for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++)
-      {
-        auto daugh = (AliAODMCParticle *)fMCEvent->GetTrack(iD);
-        if (!daugh)
+        auto track = (AliAODMCParticle *)fMCEvent->GetTrack(iT);
+        int pdg = std::abs(track->GetPdgCode());
+        if (pdg != kXiPdg && pdg != kOmegaPdg)
         {
           continue;
         }
-        if (std::abs(daugh->GetPdgCode()) == kLambdaPdg)
+        if (std::find(checkedLabel.begin(), checkedLabel.end(), iT) != checkedLabel.end())
         {
-          daugh->XvYvZv(sv);
-          goodDecay = true;
-          break;
+          continue;
         }
+        if (std::abs(track->Y()) > fCutY || !track->IsPhysicalPrimary() || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
+        { //removal of OOB pileup, cut on Y and PhysPrim
+          continue;
+        }
+        fGenCascade.ptMC = track->Pt();
+        fGenCascade.etaMC = track->Eta();
+        fGenCascade.yMC = track->Y();
+        fGenCascade.pdg = track->GetPdgCode();
+        double pv[3], sv[3];
+        track->XvYvZv(pv);
+        bool goodDecay{false};
+        for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++)
+        {
+          auto daugh = (AliAODMCParticle *)fMCEvent->GetTrack(iD);
+          if (!daugh)
+          {
+            continue;
+          }
+          if (std::abs(daugh->GetPdgCode()) == kLambdaPdg)
+          {
+            daugh->XvYvZv(sv);
+            goodDecay = true;
+            break;
+          }
+        }
+        if (!goodDecay)
+          continue;
+        fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * track->M() / track->P();
+        fGenCascade.flag = 0u;
+        if (track->IsPrimary())
+          fGenCascade.flag |= kPrimary;
+        else
+          fGenCascade.flag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
+        fTree->Fill();
       }
-      if (!goodDecay)
-        continue;
-      fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * track->M() / track->P();
-      fGenCascade.flag = 0u;
-      if (track->IsPrimary())
-        fGenCascade.flag |= kPrimary;
-      else
-        fGenCascade.flag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
-      fTree->Fill();
     }
 
     if (fFillLambdas && rdmState < fLambdaDownscaling)
@@ -608,27 +595,9 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         fGenLambda.flag = 0u;
         if (track->IsPrimary())
           fGenLambda.flag |= kPrimary;
-        else
-        {
-          if (track->IsSecondaryFromWeakDecay())
-          {
-            int mothLambda = track->GetMother();
-            auto mother = (AliAODMCParticle *)fMCEvent->GetTrack(mothLambda);
-            switch (std::abs(mother->GetPdgCode())){
-              case kXiPdg:
-                fGenLambda.flag |= kSecondaryFromWDXi;
-              break;
-              case kOmegaPdg:
-                fGenLambda.flag |= kSecondaryFromWDOmega;
-              break;
-              default:
-                fGenLambda.flag |= kSecondaryFromWD;
-              break;
-            }
-            fGenLambda.ptMotherMC = mother->Pt();
-          }
-          else fGenLambda.flag |= kSecondaryFromMaterial;
-        }
+        else if (track->IsSecondaryFromWeakDecay())
+          FindWDLambdaMother(track);
+        else fGenLambda.flag |= kSecondaryFromMaterial;
 
         fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * track->M() / track->P();
         fTreeLambda->Fill();
@@ -755,9 +724,62 @@ Bool_t AliAnalysisTaskStrangenessRatios::UserNotify()
 int AliAnalysisTaskStrangenessRatios::WhichBDT(double ct)
 {
   int iB=0;
-  while ( (ct < iB*fDeltaCtBinsBDT || ct > (iB+1)*fDeltaCtBinsBDT) && iB < (fNctBinsBDT))
+  while ( (ct < fCtBinsBDT[iB] || ct > fCtBinsBDT[iB+1]) && iB < (fCtBinsBDT.GetSize()-1))
   {
     ++iB;
   }
   return iB;
+}
+
+void AliAnalysisTaskStrangenessRatios::FindWDLambdaMother(AliAODMCParticle *track)
+{
+  if (!track) return;
+  int mothLambda = track->GetMother();
+  auto mother = (AliAODMCParticle *)fMCEvent->GetTrack(mothLambda);
+  switch (std::abs(mother->GetPdgCode())){
+    case kXiPdg:
+    {
+      if (mother->IsPhysicalPrimary())
+        fGenLambda.flag |= kSecondaryFromWDXi;
+      else {
+        int moth2Lambda = mother->GetMother();
+        auto mother2 = (AliAODMCParticle *)fMCEvent->GetTrack(moth2Lambda);
+        if (std::abs(mother2->GetPdgCode()) == kOmegaPdg && mother2->IsPhysicalPrimary()) {
+          mother = (AliAODMCParticle *)fMCEvent->GetTrack(moth2Lambda);
+          fGenLambda.flag |= kSecondaryFromWDOmega;
+        }
+        else
+          fGenLambda.flag |= kSecondaryFromWD;
+      }
+    }
+    break;
+    case kOmegaPdg:
+    { 
+      if (mother->IsPhysicalPrimary())
+        fGenLambda.flag |= kSecondaryFromWDOmega;
+      else
+        fGenLambda.flag |= kSecondaryFromWD;
+    }
+    break;
+    default:
+      fGenLambda.flag |= kSecondaryFromWD;
+    break;
+  }
+  fGenLambda.ptMotherMC = mother->Pt();
+  double ovMother[3], dvMother[3];
+  for (int iD = mother->GetDaughterFirst(); iD <= mother->GetDaughterLast(); iD++)
+  {
+    mother->XvYvZv(ovMother);
+    auto daugh = (AliAODMCParticle *)fMCEvent->GetTrack(iD);
+    if (!daugh)
+    {
+      continue;
+    }
+    if (std::abs(daugh->GetPdgCode()) == kLambdaPdg)
+    {
+      daugh->XvYvZv(dvMother);
+      break;
+    }
+  }
+  fGenLambda.ctMotherMC = std::sqrt(Sq(ovMother[0] - dvMother[0]) + Sq(ovMother[1] - dvMother[1]) + Sq(ovMother[2] - dvMother[2])) * mother->M() / mother->P();
 }
