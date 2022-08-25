@@ -1,4 +1,6 @@
-AliAnalysisTaskMSDibaryons *AddTaskMSDibaryons(
+#include "AliAnalysisTaskMSDibaryons.h"
+
+AliAnalysisTaskMSDibaryons *AddTaskMSDibaryons2(
 		const TString taskname = "MSDibaryons",
 		const UInt_t trigger = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral,
 		const TString estimator = "V0M",
@@ -17,7 +19,7 @@ AliAnalysisTaskMSDibaryons *AddTaskMSDibaryons(
 	// Task creation
 	//================================================================
 	AliAnalysisTaskMSDibaryons *task=new AliAnalysisTaskMSDibaryons(taskname.Data());
-	task->SelectCollisionCandidates(trigger);
+	task->SetTrigger(trigger);
 	mgr->AddTask(task);
 
 	TString outlistname = Form("outlist_msdibaryons_%02d%02d",int(cenmin),int(cenmax));
