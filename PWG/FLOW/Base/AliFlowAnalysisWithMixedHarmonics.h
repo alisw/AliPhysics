@@ -156,7 +156,15 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile* Get3pPOICorrelatorVsM() const {return this->f3pPOICorrelatorVsM;};
   void SetNonIsotropicTermsVsMPro(TProfile2D* const nitVsMPro) {this->fNonIsotropicTermsVsMPro = nitVsMPro;};
   TProfile2D* GetNonIsotropicTermsVsMPro() const {return this->fNonIsotropicTermsVsMPro;};
-
+  // non-isotropic terms for <<cos(2(phi1-phi2))>>
+  void SetNonIsotropicPOITermsPro(TProfile* const gNonIsotropicPOITermsPro) {this->fNonIsotropicPOITermsPro = gNonIsotropicPOITermsPro;};
+  TProfile* GetNonIsotropicPOITermsPro() const {return this->fNonIsotropicPOITermsPro;};
+  
+  //2p correlators <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> profile
+  void Set2pCorrelatorCosPsiDiffPro(TProfile* const g2pCorrelatorCosPsiDiffPro) {this->f2pCorrelatorCosPsiDiffPro = g2pCorrelatorCosPsiDiffPro;};
+  TProfile* Get2pCorrelatorCosPsiDiffPro() const {return this->f2pCorrelatorCosPsiDiffPro;};
+  void Set2pCorrelatorCos2PsiDiffPro(TProfile* const g2pCorrelatorCos2PsiDiffPro) {this->f2pCorrelatorCos2PsiDiffPro = g2pCorrelatorCos2PsiDiffPro;};
+  TProfile* Get2pCorrelatorCos2PsiDiffPro() const {return this->f2pCorrelatorCos2PsiDiffPro;};
   //2p correlators - pt diff
   void Set2pCorrelatorCosPsiDiffPtDiff(TProfile* const g2pCorrelatorCosPsiDiffPtDiff) {this->f2pCorrelatorCosPsiDiffPtDiff = g2pCorrelatorCosPsiDiffPtDiff;};
   TProfile* Get2pCorrelatorCosPsiDiffPtDiff() const {return this->f2pCorrelatorCosPsiDiffPtDiff;};
@@ -227,7 +235,11 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D* Get3pCorrelatorVsEtaSumDiffHist(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffHist[sd];};  
   void Set3pCorrelatorPOIIntegratedHist(TH1D* const hist) {this->f3pCorrelatorPOIIntegratedHist = hist;};
   TH1D* Get3pCorrelatorPOIIntegratedHist() const {return this->f3pCorrelatorPOIIntegratedHist;}; 
-
+  void Set2pCorrelatorCosPsiDiffHist(TH1D* const hist) {this->f2pCorrelatorCosPsiDiffHist = hist;};
+  TH1D* Get2pCorrelatorCosPsiDiffHist() const {return this->f2pCorrelatorCosPsiDiffHist;}; 
+  void Set2pCorrelatorCos2PsiDiffHist(TH1D* const hist) {this->f2pCorrelatorCos2PsiDiffHist = hist;};
+  TH1D* Get2pCorrelatorCos2PsiDiffHist() const {return this->f2pCorrelatorCos2PsiDiffHist;}; 
+  
  private:
   AliFlowAnalysisWithMixedHarmonics(const AliFlowAnalysisWithMixedHarmonics& afawQc);
   AliFlowAnalysisWithMixedHarmonics& operator=(const AliFlowAnalysisWithMixedHarmonics& afawQc); 
@@ -302,7 +314,11 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile *fImNITEBE[2][2][4]; // [POI_1,POI_2] [all,overlap] [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
   TProfile *fNonIsotropicTermsVsPtSumDiffPro[2][10]; // non-isotropic terms for <<cos[n(psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
   TProfile *fNonIsotropicTermsVsEtaSumDiffPro[2][10]; // non-isotropic terms for <<cos[n(psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
-
+  TProfile *fNonIsotropicPOITermsPro; // non-isotropic terms for <<cos(2(phi1-phi2))>>
+  
+  //2p correlators <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> profile
+  TProfile *f2pCorrelatorCosPsiDiffPro; // <<cos(psi1-psi2)>>
+  TProfile *f2pCorrelatorCos2PsiDiffPro; // <<cos(2*(psi1 - psi2))>>
   //2p correlators vs |Pt1 - Pt2|
   TProfile *f2pCorrelatorCosPsiDiffPtDiff; // <<cos[n(psi1-psi2)] vs pt diff 
   TProfile *f2pCorrelatorCosPsiSumPtDiff; // <<cos[n(psi1+psi2)]  vs pt diff 
@@ -337,8 +353,11 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D *f3pCorrelatorVsPtSumDiffHist[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|] corrected for detector effect
   TH1D *f3pCorrelatorVsEtaSumDiffHist[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|] corrected for detector effect
   //TH1D integrated 3-p correlator for poi
-  TH1D *f3pCorrelatorPOIIntegratedHist; 
-
+  TH1D *f3pCorrelatorPOIIntegratedHist; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> psi1: POI1, psi2: POI2, corrected for detector effects
+  //TH1D integrated 2-p correlator for poi 
+  TH1D *f2pCorrelatorCosPsiDiffHist; // 2-p correlator <<cos(phi1-phi2)>>
+  TH1D *f2pCorrelatorCos2PsiDiffHist; // 2-p correlator <<cos(2(phi1-phi2))>>
+  
   ClassDef(AliFlowAnalysisWithMixedHarmonics, 0);
 
 };

@@ -101,6 +101,11 @@ f3pCorrelatorVsMPro(NULL),
 f3pPOICorrelatorVsM(NULL),
 fNonIsotropicTermsVsMPro(NULL),
 fNonIsotropicTermsList(NULL),
+fNonIsotropicPOITermsPro(NULL),
+f2pCorrelatorCosPsiDiffPro(NULL),
+f2pCorrelatorCos2PsiDiffPro(NULL),
+f2pCorrelatorCosPsiDiffHist(NULL),
+f2pCorrelatorCos2PsiDiffHist(NULL),
 f2pCorrelatorCosPsiDiffPtDiff(NULL),
 f2pCorrelatorCosPsiSumPtDiff(NULL),
 f2pCorrelatorSinPsiDiffPtDiff(NULL),
@@ -312,6 +317,10 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
        fImEtaEBE[1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi1+dPsi2)),1.);
 
        //=========================================================//
+       //2particle correlator fixed to 2nd order <cos(2*(psi1 - psi2))> profile
+       f2pCorrelatorCosPsiDiffPro->Fill(0.5, TMath::Cos(dPsi1-dPsi2));
+       f2pCorrelatorCos2PsiDiffPro->Fill(0.5, TMath::Cos(2*(dPsi1-dPsi2)));
+       
        //2particle correlator <cos(n*(psi1 - ps12))> vs |Pt1-Pt2|
        f2pCorrelatorCosPsiDiffPtDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1-dPsi2)));
        f2pCorrelatorCosPsiSumPtDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1+dPsi2)));
@@ -337,6 +346,16 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
        f2pCorrelatorSinPsiSumEtaSum->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi1+dPsi2)));
        //=========================================================//
        
+       // non-isotropic terms for 2particle correlator <cos(psi1 - psi2)> and <cos(2*(psi1 - psi2))>
+       fNonIsotropicPOITermsPro->Fill(0.5, TMath::Cos(dPsi1),1.);
+       fNonIsotropicPOITermsPro->Fill(1.5, TMath::Sin(dPsi1),1.);
+       fNonIsotropicPOITermsPro->Fill(2.5, TMath::Cos(dPsi2),1.);
+       fNonIsotropicPOITermsPro->Fill(3.5, TMath::Sin(dPsi2),1.);
+       fNonIsotropicPOITermsPro->Fill(4.5, TMath::Cos(2*(dPsi1)),1.);
+       fNonIsotropicPOITermsPro->Fill(5.5, TMath::Sin(2*(dPsi1)),1.);
+       fNonIsotropicPOITermsPro->Fill(6.5, TMath::Cos(2*(dPsi2)),1.);
+       fNonIsotropicPOITermsPro->Fill(7.5, TMath::Sin(2*(dPsi2)),1.);
+       
        // non-isotropic terms, 1st POI:
        fReNITEBE[0][0][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1)),1.);
        fReNITEBE[0][0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1)),1.);
@@ -355,7 +374,7 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
        fImNITEBE[1][0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi2)),1.);
        fImNITEBE[1][0][2]->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi2)),1.);
        fImNITEBE[1][0][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi2)),1.);
-
+	   
        if(b1stPOIisAlsoRP)
        {
         fOverlapEBE[0][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1-dPsi2)),1.);
@@ -644,6 +663,18 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
   this->Set3pCorrelatorPOIIntegratedPro(p3pCorrelatorPOIIntegratedPro);  
  }
  
+ // non-isotropic terms for <<cos(2(phi1-phi2))>>
+ TProfile *gNonIsotropicPOITermsPro = dynamic_cast<TProfile *>(profileList->FindObject("fNonIsotropicPOITermsPro"));
+ if(gNonIsotropicPOITermsPro)
+   this->SetNonIsotropicPOITermsPro(gNonIsotropicPOITermsPro);
+   
+ //2p correlator <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> profile
+ TProfile *g2pCorrelatorCosPsiDiffPro = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiffPro"));
+ if(g2pCorrelatorCosPsiDiffPro)
+   this->Set2pCorrelatorCosPsiDiffPro(g2pCorrelatorCosPsiDiffPro);
+ TProfile *g2pCorrelatorCos2PsiDiffPro = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCos2PsiDiffPro"));
+ if(g2pCorrelatorCos2PsiDiffPro)
+   this->Set2pCorrelatorCos2PsiDiffPro(g2pCorrelatorCos2PsiDiffPro);
  //2p correlator vs |Pt1-Pt2|
  TProfile *g2pCorrelatorCosPsiDiffPtDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiffPtDiff"));
  if(g2pCorrelatorCosPsiDiffPtDiff)
@@ -769,6 +800,18 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
  if(h3pCorrelatorPOIIntegratedHist)
  {
   this->Set3pCorrelatorPOIIntegratedHist(h3pCorrelatorPOIIntegratedHist);  
+ }
+ 
+ TH1D *h2pCorrelatorCosPsiDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject("f2pCorrelatorCosPsiDiffHist"));
+ if(h2pCorrelatorCosPsiDiffHist)
+ {
+  this->Set2pCorrelatorCosPsiDiffHist(h2pCorrelatorCosPsiDiffHist);  
+ }
+ 
+ TH1D *h2pCorrelatorCos2PsiDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject("f2pCorrelatorCos2PsiDiffHist"));
+ if(h2pCorrelatorCos2PsiDiffHist)
+ {
+  this->Set2pCorrelatorCos2PsiDiffHist(h2pCorrelatorCos2PsiDiffHist);  
  }
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
@@ -927,7 +970,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllEventByEventQuantities()
 {
  // Book all event-by-event quantitites.
  
- // Q_{n,k} and S{p,k}:
+  // Q_{n,k} and S{p,k}:
  fReQnk = new TMatrixD(6,9); // to be improved (check bound on k!)
  fImQnk = new TMatrixD(6,9); // to be improved (check bound on k!)
  fSpk = new TMatrixD(4,4); // to be improved (check bound on p and k!)
@@ -994,9 +1037,12 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
  // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects);
  // b) Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>>;
  // c) 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects;
+ // c.2) 3-p correlator where phi1 and phi2 are POI1 and POI2 and phi3 is RP <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects;
  // d) Histogram which quantifies bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>;
- // e) 5-p correlator <<cos[n*(2phi1+2phi2+2phi3-3phi4-3phi5)]>> for all events (not corrected for detector effects - not supported yet).
-
+ // e) 5-p correlator <<cos[n*(2phi1+2phi2+2phi3-3phi4-3phi5)]>> for all events (not corrected for detector effects - not supported yet);
+ // f) 2-p (POI) correlator <<cos(phi1-phi2)>> and <<cos[2(phi1-phi2)]>> and non-isotropic terms for POI (not corrected for detector effects);
+ // g) 2-p (POI) correlator <<cos(phi1-phi2)>> and <<cos[2(phi1-phi2)]>> (corrected for detector effects).
+ 
  // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects);
  TString s3pCorrelatorProName = "f3pCorrelatorPro";
  f3pCorrelatorPro = new TProfile(s3pCorrelatorProName.Data(),"",1,0,1);
@@ -1060,6 +1106,16 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
    }
  fResultsList->Add(f3pCorrelatorHist);
  
+ // c.2) 3-p correlator where phi1 and phi2 are POI1 and POI2 and phi3 is RP <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects:
+ f3pCorrelatorPOIIntegratedHist = new TH1D("f3pCorrelatorPOIIntegratedHist","",1,0.,1);
+ f3pCorrelatorPOIIntegratedHist->SetStats(kFALSE);
+ if(fHarmonic == 1) {
+   f3pCorrelatorPOIIntegratedHist->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT POI");
+ } else {
+   f3pCorrelatorPOIIntegratedHist->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT POI",fHarmonic));
+ }
+ fResultsList->Add(f3pCorrelatorPOIIntegratedHist);
+ 
  // d) Histogram which quantifies bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>:
  TString detectorBiasHistName = "fDetectorBiasHist";
  fDetectorBiasHist = new TH1D(detectorBiasHistName.Data(),"Bias coming from detector inefficiences",1,0,1);
@@ -1087,6 +1143,40 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
     f5pCorrelatorPro->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(2#phi_{1}+2#phi_{2}+2#phi_{3}-3#phi_{4}-3#phi_{5})]#GT#GT",fHarmonic));
    }
  fProfileList->Add(f5pCorrelatorPro);
+ 
+ // f) 2-p (POI) correlator <<cos(phi1-phi2)>> and <<cos[2(phi1-phi2)]>> and non-isotropic terms for POI (not corrected for detector effects):
+ // non-isotropic terms for <<cos(phi1-phi2)>> and <<cos(2(phi1-phi2))>>
+ fNonIsotropicPOITermsPro = new TProfile("fNonIsotropicPOITermsPro","non-isotropic terms for #LT #LT cos(2(#psi_{1} - #psi_{2})) #GT #GT", 8, 0, 8);
+ fNonIsotropicPOITermsPro->SetStats(kFALSE);
+ fNonIsotropicPOITermsPro->GetXaxis()->SetBinLabel(1,"cos(#phi_{POI_1})");
+ fNonIsotropicPOITermsPro->GetXaxis()->SetBinLabel(2,"sin(#phi_{POI_1})");
+ fNonIsotropicPOITermsPro->GetXaxis()->SetBinLabel(3,"cos(#phi_{POI_2})");
+ fNonIsotropicPOITermsPro->GetXaxis()->SetBinLabel(4,"sin(#phi_{POI_2})");	
+ fNonIsotropicPOITermsPro->GetXaxis()->SetBinLabel(5,"cos(2#phi_{POI_1})");
+ fNonIsotropicPOITermsPro->GetXaxis()->SetBinLabel(6,"sin(2#phi_{POI_1})");
+ fNonIsotropicPOITermsPro->GetXaxis()->SetBinLabel(7,"cos(2#phi_{POI_2})");
+ fNonIsotropicPOITermsPro->GetXaxis()->SetBinLabel(8,"sin(2#phi_{POI_2})");	
+ fProfileList->Add(fNonIsotropicPOITermsPro);
+ 
+ //2p correlator <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> profile
+ f2pCorrelatorCosPsiDiffPro = new TProfile("f2pCorrelatorCosPsiDiffPro","; ;#LT #LT cos(#psi_{1} - #psi_{2}) #GT #GT",1,0.,1);
+ f2pCorrelatorCosPsiDiffPro->SetStats(kFALSE);
+ f2pCorrelatorCosPsiDiffPro->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]");
+ f2pCorrelatorCos2PsiDiffPro = new TProfile("f2pCorrelatorCos2PsiDiffPro",";;#LT #LT cos(2(#psi_{1} - #psi_{2})) #GT #GT",1,0.,1);
+ f2pCorrelatorCos2PsiDiffPro->SetStats(kFALSE);
+ f2pCorrelatorCos2PsiDiffPro->SetTitle("#LT#LTcos(2(#psi_{1}-#psi_{2}))#GT#GT #font[72]");
+ fProfileList->Add(f2pCorrelatorCosPsiDiffPro);
+ fProfileList->Add(f2pCorrelatorCos2PsiDiffPro);
+ 
+ // g) 2-p (POI) correlator <<cos(phi1-phi2)>> and <<cos[2(phi1-phi2)]>> (corrected for detector effects):
+ f2pCorrelatorCosPsiDiffHist = new TH1D("f2pCorrelatorCosPsiDiffHist","; ;#LT #LT cos(#psi_{1} - #psi_{2}) #GT #GT",1,0.,1);
+ f2pCorrelatorCosPsiDiffHist->SetStats(kFALSE);
+ f2pCorrelatorCosPsiDiffHist->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]");
+ f2pCorrelatorCos2PsiDiffHist = new TH1D("f2pCorrelatorCos2PsiDiffHist",";;#LT #LT cos(2(#psi_{1} - #psi_{2})) #GT #GT",1,0.,1);
+ f2pCorrelatorCos2PsiDiffHist->SetStats(kFALSE);
+ f2pCorrelatorCos2PsiDiffHist->SetTitle("#LT#LTcos(2(#psi_{1}-#psi_{2}))#GT#GT #font[72]");
+ fResultsList->Add(f2pCorrelatorCosPsiDiffHist);
+ fResultsList->Add(f2pCorrelatorCos2PsiDiffHist);
  
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDefault()     
       
@@ -1313,15 +1403,6 @@ void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
   f3pCorrelatorVsEtaSumDiffHist[sd]->GetXaxis()->SetTitle(psdTitleFlag2[sd].Data());
   fResultsList->Add(f3pCorrelatorVsEtaSumDiffHist[sd]);
  }
- 
- f3pCorrelatorPOIIntegratedHist = new TH1D("f3pCorrelatorPOIIntegratedHist","",1,0.,1);
- f3pCorrelatorPOIIntegratedHist->SetStats(kFALSE);
- if(fHarmonic == 1) {
-   f3pCorrelatorPOIIntegratedHist->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT POI");
- } else {
-   f3pCorrelatorPOIIntegratedHist->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT POI",fHarmonic));
- }
- fResultsList->Add(f3pCorrelatorPOIIntegratedHist);
  
  //TString psdFlag[2] = {"PtSum","PtDiff"};
  //TString psdTitleFlag[2] = {"(p_{T,1}+ p_{T,2})/2","#left|p_{T,1}- p_{T,2}#right|"};
@@ -1804,6 +1885,42 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
   } // end of for(Int_t ao=0;ao<2;ao++) // all/overlap
  } // end of for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
   
+ //2p correlator <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> profile
+ if(!fNonIsotropicPOITermsPro) {
+  cout<<endl;
+  cout<<" WARNING (MH): fNonIsotropicPOITermsPro is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ 
+ //2p correlator <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> profile
+ if(!f2pCorrelatorCosPsiDiffPro) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffPro is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCos2PsiDiffPro) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCos2PsiDiffPro is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ 
+ //2p correlator <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> hist
+ if(!f2pCorrelatorCosPsiDiffHist) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffHist is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCos2PsiDiffHist) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCos2PsiDiffHist is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ 
  //2p correlator vs |Pt1-Pt2|
  if(!f2pCorrelatorCosPsiDiffPtDiff) {
   cout<<endl;
@@ -2057,6 +2174,42 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   exit(0); 
  } 
  
+ //2p correlator <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> profile
+ if(!fNonIsotropicPOITermsPro) {
+  cout<<endl;
+  cout<<" WARNING (MH): fNonIsotropicPOITermsPro is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ 
+ //2p correlator <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> profile
+ if(!f2pCorrelatorCosPsiDiffPro) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffPro is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCos2PsiDiffPro) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCos2PsiDiffPro is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ 
+ //2p correlator <<cos(psi1-psi2)>> and <<cos(2*(psi1 - psi2))>> hist
+ if(!f2pCorrelatorCosPsiDiffHist) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffHist is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCos2PsiDiffHist) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCos2PsiDiffHist is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ 
  //2p correlator vs |Pt1-Pt2|
  if(!f2pCorrelatorCosPsiDiffPtDiff) {
   cout<<endl;
@@ -2245,7 +2398,8 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
 {
  // a.) Correct integrated 3-p correlator cos[n(phi1+phi2-2phi3)] for detector effects;
  // b.) Correct differential 3-p correlator cos[n(psi1+psi2-2phi3)] for detector effects.
-
+ // c.) Correct 2-p correlator cos[2(phi1-phi2)] for detector effects. This is needed for DeltaGamma/v2
+ 
  // a.) Correct integrated 3-p correlator cos[n(phi1+phi2-2phi3)] for detector effects:  
  Double_t measured3pCorrelator = f3pCorrelatorPro->GetBinContent(1); // biased by detector effects
  Double_t corrected3pCorrelator = 0.; // corrected for detector effects
@@ -2291,7 +2445,7 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
   // looping over all bins and calculating reduced correlations: 
   for(Int_t b=1;b<=fnBinsPt;b++)
   {
-   Double_t measured = f3pCorrelatorVsPtSumDiffPro[sd]->GetBinContent(b);
+   Double_t measured = f3pCorrelatorVsPtSumDiffPro[sd]->GetBinContent(b); // cos[n(psi1+psi2-2phi3)]
    Double_t measuredErr = f3pCorrelatorVsPtSumDiffPro[sd]->GetBinError(b);   
    Double_t corrected = 0.; // 3-p correlator corrected for detector effects
    Double_t correctedErr = measuredErr; // to be improved - propagate error also for non-isotropic terms
@@ -2372,6 +2526,34 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
     gIntegratedValue = gSumBinContentTimesWeight/gSumWeight;
   f3pCorrelatorPOIIntegratedHist->SetBinContent(1, gIntegratedValue);
   f3pCorrelatorPOIIntegratedHist->SetBinError(1, f3pCorrelatorPOIIntegratedPro->GetBinError(1)); // to be improved later 
+  
+  // c.) Correct 2-p correlator cos[2(phi1-phi2)] for detector effects. This is needed for DeltaGamma/v2
+  Double_t measured2pPsiCorrelator = f2pCorrelatorCosPsiDiffPro->GetBinContent(1); // cos[2(phi1-phi2)] biased by detector effects
+  Double_t measured2p2PsiCorrelator = f2pCorrelatorCos2PsiDiffPro->GetBinContent(1); // cos[2(phi1-phi2)] biased by detector effects
+  Double_t corrected2pPsiCorrelator = 0.;
+  Double_t corrected2p2PsiCorrelator = 0.;
+  
+  Double_t nonIsotropicTermCosPsiPOI1 = fNonIsotropicPOITermsPro->GetBinContent(1); // cos(#phi_{POI_1})
+  Double_t nonIsotropicTermSinPsiPOI1 = fNonIsotropicPOITermsPro->GetBinContent(2); // sin(#phi_{POI_1})
+  Double_t nonIsotropicTermCosPsiPOI2 = fNonIsotropicPOITermsPro->GetBinContent(3); // cos(#phi_{POI_2})
+  Double_t nonIsotropicTermSinPsiPOI2 = fNonIsotropicPOITermsPro->GetBinContent(4); // sin(#phi_{POI_2})
+  Double_t nonIsotropicTermCos2PsiPOI1 = fNonIsotropicPOITermsPro->GetBinContent(5); // cos(2#phi_{POI_1})
+  Double_t nonIsotropicTermSin2PsiPOI1 = fNonIsotropicPOITermsPro->GetBinContent(6); // sin(2#phi_{POI_1})
+  Double_t nonIsotropicTermCos2PsiPOI2 = fNonIsotropicPOITermsPro->GetBinContent(7); // cos(2#phi_{POI_2})
+  Double_t nonIsotropicTermSin2PsiPOI2 = fNonIsotropicPOITermsPro->GetBinContent(8); // sin(2#phi_{POI_2})
+
+ 
+  // Calculate corrected 2-p correlator:
+  corrected2pPsiCorrelator = measured2pPsiCorrelator - (nonIsotropicTermCosPsiPOI1*nonIsotropicTermCosPsiPOI2+nonIsotropicTermSinPsiPOI1*nonIsotropicTermSinPsiPOI2); // <<cos(phi1-phi2)>> - (<<cos(phi1)>><<cos(phi2)>>+<<sin(phi1)>><<sin(phi2)>>)
+  f2pCorrelatorCosPsiDiffHist->SetBinContent(1, corrected2pPsiCorrelator);
+  f2pCorrelatorCosPsiDiffHist->SetBinError(1, f2pCorrelatorCosPsiDiffPro->GetBinError(1));
+  
+  corrected2p2PsiCorrelator = measured2p2PsiCorrelator - (nonIsotropicTermCos2PsiPOI1*nonIsotropicTermCos2PsiPOI2+nonIsotropicTermSin2PsiPOI1*nonIsotropicTermSin2PsiPOI2); // <<cos(2(phi1-phi2))>> - (<<cos(2phi1)>><<cos(2phi2)>>+<<sin(2phi1)>><<sin(2phi2)>>)
+  f2pCorrelatorCos2PsiDiffHist->SetBinContent(1, corrected2p2PsiCorrelator);
+  f2pCorrelatorCos2PsiDiffHist->SetBinError(1, f2pCorrelatorCos2PsiDiffPro->GetBinError(1));
+  
+  
+  
 } // end of AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
 
 //================================================================================================================
