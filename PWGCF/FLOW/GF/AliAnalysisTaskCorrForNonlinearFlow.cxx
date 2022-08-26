@@ -941,7 +941,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
     for (int iEta = 1; iEta <= nEta; iEta++) {
       for (int iPhi = 1; iPhi <= nPhi; iPhi++) {
         double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta); 
-        double phi = d2Ndetadphi.GetXaxis()->GetBinCenter(iPhi); 
+        double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 
 	double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
 	if (mostProbableN > 0) {
 	    fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
