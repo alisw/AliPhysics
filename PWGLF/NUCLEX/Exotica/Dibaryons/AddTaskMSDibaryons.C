@@ -1,6 +1,6 @@
 #include "AliAnalysisTaskMSDibaryons.h"
 
-AliAnalysisTaskMSDibaryons *AddTaskMSDibaryons2(
+AliAnalysisTaskMSDibaryons *AddTaskMSDibaryons(
 		const TString taskname = "MSDibaryons",
 		const UInt_t trigger = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral,
 		const TString estimator = "V0M",
