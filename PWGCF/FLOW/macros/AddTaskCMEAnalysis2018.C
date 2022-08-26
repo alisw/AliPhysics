@@ -13,10 +13,10 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
                                          Bool_t isVZERO = kFALSE,
                                          Bool_t isPbPb = kTRUE,
                                          Int_t gAODfilterBit = 768,
-					 Int_t whichData = 2011,
-					 Double_t gDCAvtxXY = -1.,
+										 Int_t whichData = 2011,
+										 Double_t gDCAvtxXY = -1.,
                                          Double_t gDCAvtxZ = -1.,
-                                         Double_t gChargePOI = 0.,
+                                         Double_t gChargeRP = 0.,
                                          Int_t gMixNClustersTPC = 70,
                                          Float_t gChi2PerClusterTPCMin = 0.1,
                                          Float_t gChi2PerClusterTPCMax = 4.0,
@@ -26,8 +26,13 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
                                         Int_t gCentralityMax = -1,
                                         Bool_t isVZERO = kFALSE,
                                         Int_t gAODfilterBit = 768,
-					Int_t whichData = 2011,
-                                        Double_t gChargeRP = 0.,
+										Int_t whichData = 2011,
+										Double_t gDCAvtxXY = -1.,
+                                        Double_t gDCAvtxZ = -1.,
+                                        Double_t gChargePOI = 0.,
+                                        Int_t gMixNClustersTPC = 70,
+                                        Float_t gChi2PerClusterTPCMin = 0.1,
+                                        Float_t gChi2PerClusterTPCMax = 4.0,
                                         Bool_t doQA = kFALSE);
                                       
 //kTRUE,2018,"q",kTRUE,kTRUE,AliFlowEventCuts::kVZERO,"Qa",0.0,kFALSE,768,2.4,3.2,0,0,70,0.1,4.0,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,2,"FB768"
@@ -95,7 +100,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 
   gCentrality[0] = 0; gCentrality[1] = 5;
 
-  for(Int_t i = 2; i < 10; i++)
+  for(Int_t i = 2; i < nCentralities; i++)
      gCentrality[i] = (i - 1)*10;
     
 
@@ -151,10 +156,11 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
     //Create the event cut object @Shi only cuts on centrality method, range and vtxZ range
     cutsEvent_wQA[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,whichData,gCentralityEstimator,doQA,checkPileup);
     cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,whichData,gCentralityEstimator,kFALSE,checkPileup);
-        
+    
+											
     //Create the RP cut object
-    cutsRP_wQA[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,gAODfilterBit,whichData,gChargeRP,doQA);
-    cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,gAODfilterBit,whichData,gChargeRP,kFALSE);
+    cutsRP_wQA[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,gAODfilterBit,whichData,gDCAvtxXY,gDCAvtxZ,gChargeRP,gMixNClustersTPC,gChi2PerClusterTPCMin,gChi2PerClusterTPCMax,doQA);
+    cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,gAODfilterBit,whichData,gDCAvtxXY,gDCAvtxZ,gChargeRP,gMixNClustersTPC,gChi2PerClusterTPCMin,gChi2PerClusterTPCMax,kFALSE);
     
     //Create the POI cut object for ++,-- and +-
     cutsPOI_PP[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],qVector,gEtaGap,isVZERO,isPbPb,gAODfilterBit,whichData,gDCAvtxXY,gDCAvtxZ,1,gMixNClustersTPC,gChi2PerClusterTPCMin,gChi2PerClusterTPCMax,kFALSE);
@@ -318,8 +324,6 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
   AliAnalysisTaskScalarProduct *taskSPv2_PN[nCentralities];
   AliAnalysisDataContainer *coutputQCv2_PN[nCentralities];
   AliAnalysisTaskQCumulants *taskQCv2_PN[nCentralities];
-  AliAnalysisDataContainer *coutputMHLS_PN[nCentralities];
-  AliAnalysisTaskMixedHarmonics *taskMHLS_PN[nCentralities];
   //unlike sign:
   AliAnalysisDataContainer *coutputMHUS[nCentralities];
   AliAnalysisTaskMixedHarmonics *taskMHUS[nCentralities];
@@ -328,8 +332,6 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
   AliAnalysisTaskScalarProduct *taskSPv4_PN[nCentralities];
   AliAnalysisDataContainer *coutputQCv4_PN[nCentralities];
   AliAnalysisTaskQCumulants *taskQCv4_PN[nCentralities];
-  AliAnalysisDataContainer *coutputMHLS_PN2[nCentralities];
-  AliAnalysisTaskMixedHarmonics *taskMHLS_PN2[nCentralities];
   //unlike sign:
   AliAnalysisDataContainer *coutputMHUS2[nCentralities];
   AliAnalysisTaskMixedHarmonics *taskMHUS2[nCentralities];
@@ -827,28 +829,13 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 
     //======================================================================//
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //============================== now CME correlator ================================//
-
+  
     //---------- PP -------------
       if(!doHigherHarmonic){
 	TString outputMHLS_PP = fileName;
 	outputMHLS_PP += ":outputMHLSanalysis";
 	outputMHLS_PP += "PlusPlus";
-	taskMHLS_PP[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPP_NameMHLS[iCentralityBin].Data()),kFALSE);
+	taskMHLS_PP[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPP_NameMHLS[iCentralityBin].Data()), kFALSE);
 	taskMHLS_PP[iCentralityBin]->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHLS_PP[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHLS_PP[iCentralityBin]->SetMultipicityBinWidth(1.);
@@ -888,7 +875,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 	TString outputMHLS_PP2 = fileName;
 	outputMHLS_PP2 += ":outputMHLS2analysis";
 	outputMHLS_PP2 += "PlusPlus";     
-	taskMHLS_PP2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPP_NameMHLS2[iCentralityBin].Data()),kFALSE);
+	taskMHLS_PP2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPP_NameMHLS2[iCentralityBin].Data()), kFALSE);
 	taskMHLS_PP2[iCentralityBin]->SetHarmonic(2); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHLS_PP2[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHLS_PP2[iCentralityBin]->SetMultipicityBinWidth(1.);
@@ -970,7 +957,7 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 	TString outputMHLS_NN2 = fileName;
 	outputMHLS_NN2 += ":outputMHLS2analysis";
 	outputMHLS_NN2 += "MinusMinus";     
-	taskMHLS_NN2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotNN_NameMHLS2[iCentralityBin].Data()),kFALSE);
+	taskMHLS_NN2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotNN_NameMHLS2[iCentralityBin].Data()), kFALSE);
 	taskMHLS_NN2[iCentralityBin]->SetHarmonic(2); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHLS_NN2[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHLS_NN2[iCentralityBin]->SetMultipicityBinWidth(1.);
@@ -1181,23 +1168,41 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
                                         Int_t gCentralityMax = -1,
                                         Bool_t isVZERO = kFALSE,
                                         Int_t gAODfilterBit = 768,
-					Int_t whichData = 2011,
+										Int_t whichData = 2011,
+										Double_t gDCAvtxXY = -1.,
+                                        Double_t gDCAvtxZ = -1.,
                                         Double_t gChargeRP = 0.,
+                                        Int_t gMixNClustersTPC = 70,
+                                        Float_t gChi2PerClusterTPCMin = 0.1,
+                                        Float_t gChi2PerClusterTPCMax = 4.0,
                                         Bool_t doQA = kFALSE) {
     //Part of the code that creates the RP cut objects
     Double_t gEtaMin = -0.8, gEtaMax = 0.8;
     Int_t gMinTPCdedx = 10;
    //  Int_t gMinTPCdedx = -999;
- 
+
     //Create the event cut objects
     AliFlowTrackCuts *cutsRP = new AliFlowTrackCuts(Form("rpCutsCentrality%dTo%d",gCentralityMin,gCentralityMax));
     if(!isVZERO) {
         cutsRP->SetPtRange(0.2,5.);
         cutsRP->SetEtaRange(gEtaMin,gEtaMax);
-        cutsRP->SetMinimalTPCdedx(gMinTPCdedx);
+        cutsRP->SetMinimalTPCdedx(gMinTPCdedx); // kick out short tracks
         cutsRP->SetAODfilterBit(gAODfilterBit);       
         if (gChargeRP!=0) cutsRP->SetCharge(gChargeRP);
-    }
+        
+        cutsRP->SetAcceptKinkDaughters(kFALSE); 
+		
+		cutsRP->SetMinNClustersTPC(gMixNClustersTPC);    
+		cutsRP->SetMinChi2PerClusterTPC(gChi2PerClusterTPCMin);
+		cutsRP->SetMaxChi2PerClusterTPC(gChi2PerClusterTPCMax);
+		
+		if(gDCAvtxXY > 0) // no need for 768
+			cutsRP->SetMaxDCAToVertexXYAOD(gDCAvtxXY); // should be AOD
+		if(gDCAvtxZ > 0)
+			cutsRP->SetMaxDCAToVertexZAOD(gDCAvtxZ);
+		}
+    
+    
     else if(isVZERO) { // use vzero sub analysis
         if(whichData == 2010)
             cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010(); // etaRange -10~10, EtaGap -1~1, PhiRange 0-2pi, VZEROgainEq, Recenter
@@ -1247,7 +1252,7 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
     else if(isVZERO)
     cutsPOI->SetEtaRange(gEtaMin,gEtaMax);*/
     
-    cutsPOI->SetAcceptKinkDaughters(kFALSE);
+    cutsPOI->SetAcceptKinkDaughters(kFALSE); // kFALSE because kind daughters affect the real direction of primary tracks. We don't want kink daughters
     cutsPOI->SetPtRange(0.2,5.);
     cutsPOI->SetEtaRange(gEtaMin,gEtaMax);
     cutsPOI->SetMinimalTPCdedx(gMinTPCdedx);
@@ -1259,7 +1264,8 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
     
     if (gChargePOI!=0) 
       cutsPOI->SetCharge(gChargePOI);
-    if(gDCAvtxXY > 0)
+      
+    if(gDCAvtxXY > 0) // no need for 768
         cutsPOI->SetMaxDCAToVertexXYAOD(gDCAvtxXY); // should be AOD
     if(gDCAvtxZ > 0)
         cutsPOI->SetMaxDCAToVertexZAOD(gDCAvtxZ);

@@ -71,6 +71,8 @@ public:
     k2015,
     k2015v6,
     k2015pidfix,
+    k2018r,
+	k2018q,
     kAny
   };
 
@@ -413,7 +415,15 @@ public:
   TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
   void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
   TH1F* GetPhiWeights() const {return this->fPhiWeightsRPs;};
-
+  
+  // functions to get NUA, V0, ZDC recenter for 2018 dataset
+  void GetMCCorrectionHist();
+  void  GetV0MCorrectionHist(Int_t run=0);
+  void  GetZDCCorrectionHist(Int_t run=0);
+  void  GetNUACorrectionHist(Int_t run=0);
+  Double_t GetNUAWeightForTrack(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
+  Double_t GetMCEfficiencyWeightForTrack(Double_t fPt=1.0,Int_t gChrg=1);
+  
   // 2b.) event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
   void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
@@ -2478,6 +2488,16 @@ private:
   Bool_t fbFlagIsBadRunForC34;
   Bool_t fStoreExtraHistoForSubSampling;
 
+  // Other variables defined for input NUA and MC reconstruction efficiency for 2018 data
+  // Lists and histograms holding input weights
+  TList *fListTRKCorr;        //  Supplied from AddTask
+  TH1D *fHCorrectMCPosChrg;   //!
+  TH1D *fHCorrectMCNegChrg;   //!
+  
+  TList *fListNUACorr;        //  Supplied from AddTask
+  TH3F *fHCorrectNUAChrgPos;  //!
+  TH3F *fHCorrectNUAChrgNeg;  //!
+  
   ClassDef(AliFlowAnalysisCRC,75);
 
 };
