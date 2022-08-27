@@ -60,6 +60,7 @@
 #include "AliFemtoCutMonitorParticlePtPDG.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoCutMonitorCollections.h"
+#include "AliFemtoModelCorrFctnTrueQ3D.h"
 #include "AliFemtoModelCorrFctnTrueQ6D.h"
 
 #include <TROOT.h>
@@ -196,6 +197,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[20*10];
   AliFemtoModelCorrFctnSource   *cqinvkttpcmodel[20*8];
+  AliFemtoModelCorrFctnTrueQ3D      *cq3dlcmskttpc[20*10];
   AliFemtoModelCorrFctnTrueQ6D      *cq6dlcmskttpc[20*10];
 
   // *** Begin pion-pion analysis ***
@@ -424,6 +426,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		/*cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),80,-2.0,2.0);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);*/
+
+		cq3dlcmskttpc[ktm] = new AliFemtoModelCorrFctnTrueQ3D("MRC3D", 80, 2.0);
+		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
 
 		cq6dlcmskttpc[ktm] = new AliFemtoModelCorrFctnTrueQ6D("MRC6D", 80, 2.0);
 		cq6dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
