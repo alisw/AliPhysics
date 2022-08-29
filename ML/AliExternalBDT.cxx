@@ -16,6 +16,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <TSystem.h>
 
 namespace {
   inline bool checkFile (const std::string name) {
@@ -39,6 +40,7 @@ AliExternalBDT::AliExternalBDT(std::string name) :
   fOutSize{0u},
   fNumFeatures{0u}
 {
+  gSystem->Setenv("TREELITE_BIND_THREADS","0");
 }
 
 
