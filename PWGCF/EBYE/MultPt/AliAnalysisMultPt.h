@@ -2,7 +2,18 @@
 #define AliAnalysisMultPt_H
 
 
+class TH1;
+class THn;
+class TH1F;
+class TH2D;
+class TH2F;
+class TH3D;
+class TList;
+class TTree;
+
 #include "AliAnalysisTaskSE.h"
+
+#include "AliAnalysisUtils.h"
 #include "AliGenEventHeader.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
@@ -10,15 +21,6 @@
 #include "AliStack.h"
 #include "TParticle.h"
 #include "AliEventCuts.h"
-
-class TH1;
-class THn;
-class TH1F;
-class TH2D;
-class TH3D;
-class TList;
-class TTree;
-
 
 
 class AliAnalysisMultPt : public AliAnalysisTaskSE
@@ -44,18 +46,19 @@ class AliAnalysisMultPt : public AliAnalysisTaskSE
     private:
         void            BuildData();
         void            BuildMC();
-        AliAODEvent     *fAOD;             //! input event
-        AliMCEvent 	    *fMC;              //! MC input event
-        TList           *fOutputList;      //! output list
+    
+        AliAODEvent     *fAOD;             // input event
+        AliMCEvent      *fMC;              // MC input event
+        TList           *fOutputList;      // output list
         
         TH1D            *MultHist;         // Mult histogram
         TH2D            *MultPtHist;       // pT-Mult histogram
         TH2D            *MultPtHistRec;    // pT-Mult MC-Rec histogram
         TH2D            *MultPtHistGen;    // pT-Mult MC-Gen histogram
         TH2D            *MultHistRatio;    // Ratio of Gen mult vs rec mult histogram
-        TH2F		    *hV0MVsPtGen;      // V0 Gen
-        TH2F		    *hV0MVsPtRec;      // V0 Rec
-        TH1D            *fptRatio;         // pt ratio
+        TH2D            *hV0MVsPtGen;      // V0 Gen
+        TH2D            *hV0MVsPtRec;      // V0 Rec
+        
     
         Bool_t          fIsMC;             // MC flag
         Double_t        fPtmin;            // min PT
@@ -65,13 +68,6 @@ class AliAnalysisMultPt : public AliAnalysisTaskSE
         Int_t           fBit;              // filterbit
         Float_t         fPVzMax;           // max PVz
         Float_t         fPVzMin;           // min PVz
-        Double_t        fChi2DoF;          // limit for chi2
-        UShort_t        fTPCNCrossedRows;  // cr
-        Bool_t          fIsRunFBOnly;      // only filterbit cuts
-        Int_t           fTPCNcls;          // limit for TPC Ncls
-        Bool_t          fIsPileUpCuts;     // pile up cuts flag
-        Int_t           fPileUpLevel;      // PLevel
-        TString         fGenName;          // MC generator name
     
         AliEventCuts    fEventCuts;
 
