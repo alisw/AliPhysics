@@ -1,4 +1,4 @@
-AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracksJ(TString finname="",
+AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks(TString finname="",
 										 TString outputFileName="",
 										 Bool_t theMCon=kFALSE,
 										 Bool_t writeVariableTree=kTRUE,
