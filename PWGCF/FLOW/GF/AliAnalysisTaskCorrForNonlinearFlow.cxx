@@ -95,7 +95,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow():
     fLowMultiplicityMode(false),
     fAddTPCPileupCuts(false),
     fESDvsTPConlyLinearCut(15000.),
-    fUseCorrectedNTracks(false),
+    fUseCorrectedNTracks(true),
     fUseFlippedEta(false),
     fUseNarrowBin(false),
     fExtremeEfficiency(0),
@@ -168,7 +168,8 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow():
     hDCAxy(0),
     hDCAz(0),
     hITSclusters(0),
-    hChi2(0)
+    hChi2(0),
+    rand(2333)
 {
 }
 //______________________________________________________________________________
@@ -198,7 +199,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
   fLowMultiplicityMode(false),
   fAddTPCPileupCuts(false),
   fESDvsTPConlyLinearCut(15000.),
-  fUseCorrectedNTracks(false),
+  fUseCorrectedNTracks(true),
   fUseFlippedEta(false),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
@@ -270,7 +271,8 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
   hDCAxy(0),
   hDCAz(0),
   hITSclusters(0),
-  hChi2(0)
+  hChi2(0),
+  rand(2333)
 {
 
   // Output slot #1 writes into a TList
@@ -324,7 +326,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
   fLowMultiplicityMode(false),
   fAddTPCPileupCuts(false),
   fESDvsTPConlyLinearCut(15000.),
-  fUseCorrectedNTracks(false),
+  fUseCorrectedNTracks(true),
   fUseFlippedEta(false),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
@@ -399,7 +401,8 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
   hDCAxy(0),
   hDCAz(0),
   hITSclusters(0),
-  hChi2(0)
+  hChi2(0),
+  rand(2333)
 {
 
   // Output slot #1 writes into a TList
@@ -460,13 +463,14 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     Double_t binning_dphi[73] = { -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0,       0.087266,  0.174533,  0.261799,  0.349066,  0.436332, 0.523599,  0.610865,  0.698132,  0.785398,  0.872665,  0.959931, 1.047198,  1.134464,  1.221730,  1.308997,  1.396263,  1.483530, 1.570796,  1.658063,  1.745329,  1.832596,  1.919862,  2.007129, 2.094395,  2.181662,  2.268928,  2.356194,  2.443461,  2.530727, 2.617994,  2.705260,  2.792527,  2.879793,  2.967060,  3.054326, 3.141593,  3.228859,  3.316126,  3.403392,  3.490659,  3.577925, 3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524, 4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123, 4.712389};
     std::vector<Double_t>   fPtBinsTrigCharged = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0,10.0};    // I don't want to set the things outside
     std::vector<Double_t>   fPtBinsAss = {0.2,0.5,1.0,3.0};            // I don't want to set the things outside
-    std::vector<Double_t>   fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150}; //
+    std::vector<Double_t>   fCentBins = {0,5,10,15,20,25,30,40,50,60,70,80,90,100,110,120,130,140,150}; //
+    for (int i = 0; i < fCentBins.size(); i++) fCentBins[i] += 0.5;
     std::vector<Double_t>   fzVtxBins = {-10.0, 0, 10.0};
     const Int_t sizeEta = (anaType.EqualTo("TPCTPC") ? 33 : 43) -1;
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     // const Int_t sizePtAss = fPtBinsAss.size() - 1;
     const Int_t sizeCent = fCentBins.size() - 1;
-    const Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; Subsample, don't use it so far
+    const Int_t sizeOfSamples = 30; // (Int_t) fNOfSamples; 
     const Int_t iBinning[] = {sizeEta,72,10,sizeOfSamples,sizePtTrig,sizeCent};
 
     fListOfProfile = new TList();
@@ -496,7 +500,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     }
     fhChargedSE->SetBinLimits(1, binning_dphi);
     fhChargedSE->SetBinLimits(2, -10,10);
-    fhChargedSE->SetBinLimits(3,  0.,10.);
+    fhChargedSE->SetBinLimits(3,  0.,30.);
     fhChargedSE->SetBinLimits(4, fPtBinsTrigCharged.data());
     fhChargedSE->SetBinLimits(5, fCentBins.data());
     fhChargedSE->SetVarTitle(0, "#Delta#eta");
@@ -515,7 +519,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     }
     fhChargedME->SetBinLimits(1, binning_dphi);
     fhChargedME->SetBinLimits(2, -10.,10.);
-    fhChargedME->SetBinLimits(3,  0.,10.);
+    fhChargedME->SetBinLimits(3,  0.,30.);
     fhChargedME->SetBinLimits(4, fPtBinsTrigCharged.data());
     fhChargedME->SetBinLimits(5, fCentBins.data());
     fhChargedME->SetVarTitle(0, "#Delta#eta");
@@ -542,7 +546,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::NotifyRun() {
 // ---------------------------------------------------------------------------------
 void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
   // Mingrui: apply the bootstrap later
-  // bootstrap_value = rand.Integer(30);
+  bootstrap_value = rand.Integer(30);
 
   // Check if it can pass the trigger
   //..apply physics selection
@@ -704,7 +708,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 
     Double_t binscont[6];
     binscont[2] = fPVz;
-    binscont[3] = 1;
+    binscont[3] = bootstrap_value;
 
     for (Int_t iTrig = 0; iTrig < fTracksTrigCharged->GetEntriesFast(); iTrig++) {
         AliAODTrack* trackTrig = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iTrig));
@@ -794,7 +798,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 
     Double_t binscont[6];
     binscont[2] = fPVz;
-    binscont[3] = 1;
+    binscont[3] = bootstrap_value;
 
     AliEventPool* pool = fPoolMgr->GetEventPool(NtrksCounter, fPVz);
     if (!pool) {

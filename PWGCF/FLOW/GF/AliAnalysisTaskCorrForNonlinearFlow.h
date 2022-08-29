@@ -277,11 +277,13 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		TH2D*                        fhTracksTrigPt;         //! Trigger particle histogram
 
 		// Global variables
+		TRandom3 rand;                 //!
 		double NtrksCounter = 0;       //!
 		double NTracksCorrected = 0;   //!
 		double NTracksUncorrected = 0; //!
 		int NtrksAfter = 0;            //!
 
+		int bootstrap_value;           //!
 		int lastRunNumber   = 0;       //!
 		double fPVz;                   //!
 		double fCentrality;            //!
