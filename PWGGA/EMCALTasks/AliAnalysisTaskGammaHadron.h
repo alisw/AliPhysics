@@ -55,6 +55,8 @@ public:
 
   //..setters for the analysis
   void                        SetDebug(Int_t input)                                 { fDebug           = input  ; }
+  void                        SetEnablePileupCut(Int_t input)                       { fEnablePileupCut = input ; }
+  void                        SetEnableMVPileupCut(Int_t input)                     { fEnableMVPileupCut = input ; }
   void                        SetEMCalTriggerReqMode(Int_t input)                   { fEMCalTriggerReqMode = input; }
   void                        SetNameEMCalTriggerDecisionContainer(TString input)        { fNameEMCalTriggerDecisionContainer = input; }
   void                        AddEMCalTriggerRequirement(TString input)             { fAcceptEMCalTriggers.push_back(input); }
@@ -185,6 +187,8 @@ protected:
   Float_t                     fDownScaleMT;              ///< Downscale factor to restrict Mixed Trigger statistics/runtime. 1.0 -> no downscale. 0.5 -> cut stats in half.
   Int_t                       fSidebandChoice;           ///< This determines which sideband option is used
   Bool_t                      fDebug;			        ///< Can be set for debugging
+  Int_t                       fEnablePileupCut;          ///< Whether to enable pileup cut in EventCuts. 2,3,4 = looser cut options
+  Int_t                       fEnableMVPileupCut;          ///< Whether to enable MV pileup cut in EventCuts
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Int_t                       fEPCorrMode;               ///< Correlate with EP{n=fEPCorrmode} instead of the trigger particle. 0 => use trigger particle (default)
@@ -441,6 +445,8 @@ protected:
   TH2             *fPtEP4AngleMCPion;         //!<! Histogram of delta Psi_{EP,4} of MC truth pi0 (vs pt)
   TH2             *fPtEP4AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,4} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
 
+  TH2             *fHistNChargedCent;         //!<! Histogram of the number of tracks per event, in centrality bins
+
   TH3             *fHistTrackPsiEP1PtCent;    //!<! Histogram of delta Psi_{EP,1} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEPPtCent;    //!<! Histogram of delta Psi_{EP} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEP3PtCent;    //!<! Histogram of delta Psi_{EP,3} of accepted tracks (vs pt and centrality)
@@ -542,6 +548,6 @@ protected:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 17) // Class to analyze gamma- and pi0- hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 18) // Class to analyze gamma- and pi0- hadron correlations
 };
 #endif

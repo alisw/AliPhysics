@@ -53,7 +53,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   : AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ1VectorReader(0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
-  fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
+  fDebug(0),fEnablePileupCut(1),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
   fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
   fEMCalTriggerReqMode(0),fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
   fSubDetector(0),
@@ -82,6 +82,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fPtEPAnglePionAcc(0),fPtEPAnglePionAccCent(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),
   fPtEP3AnglePionAcc(0),fPtEP3AnglePionAccCent(0),fPtEP3AngleMCPion(0),fPtEP3AngleTrueRecMCPion(0),
   fPtEP4AnglePionAcc(0),fPtEP4AnglePionAccCent(0),fPtEP4AngleMCPion(0),fPtEP4AngleTrueRecMCPion(0),
+  fHistNChargedCent(0),
   fHistTrackPsiEP1PtCent(0),fHistTrackPsiEPPtCent(0),fHistTrackPsiEP3PtCent(0),fHistTrackPsiEP4PtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
@@ -107,7 +108,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   : AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ1VectorReader(0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
-  fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
+  fDebug(0),fEnablePileupCut(1),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
   fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
   fEMCalTriggerReqMode(0),fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
   fSubDetector(0),
@@ -136,6 +137,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fPtEPAnglePionAcc(0),fPtEPAnglePionAccCent(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),
   fPtEP3AnglePionAcc(0),fPtEP3AnglePionAccCent(0),fPtEP3AngleMCPion(0),fPtEP3AngleTrueRecMCPion(0),
   fPtEP4AnglePionAcc(0),fPtEP4AnglePionAccCent(0),fPtEP4AngleMCPion(0),fPtEP4AngleTrueRecMCPion(0),
+  fHistNChargedCent(0),
   fHistTrackPsiEP1PtCent(0),fHistTrackPsiEPPtCent(0),fHistTrackPsiEP3PtCent(0),fHistTrackPsiEP4PtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
@@ -823,6 +825,15 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	}
   if (fIsMC && fOverrideCentEventCut) {
     fEventCuts.OverrideCentralityFramework(0);
+  }
+
+  // TPC Pile-up cuts
+  if (fEnablePileupCut > 0) {
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,fEnablePileupCut);
+  }
+  // Multivertex pileup cuts
+  if (fEnableMVPileupCut > 0) {
+    fEventCuts.fPileUpCutMV = true; // Multivertexer based cut
   }
 
 	fEventCuts.AddQAplotsToList(fEventCutList);
@@ -1805,7 +1816,12 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   Double_t fEventPlane4BinArray[nEventPlaneBins+1];
   GenerateFixedBinArray(nEventPlaneBins,fEventPlaneMin,fEventPlane4Max,fEventPlane4BinArray);
 
+  Int_t nChargedBins = 1000;
+  Double_t fNChargedArray[nChargedBins+1];
+  GenerateFixedBinArray(nChargedBins,0,20000,fNChargedArray);
 
+  fHistNChargedCent = new TH2F("fHistNChargedCent","N_{Charged};N_{Charged};Cent (%)",nChargedBins,fNChargedArray,nCentHistBins,centBinArray);
+  fOutput->Add(fHistNChargedCent);
 
   // pt bins for tracks
   Int_t nTrackPtBins = 200-1; // Bin Size = 150 MeV/c
@@ -1813,9 +1829,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   Double_t fTrackPtMax = 30;
   Double_t fTrackPtArray[nTrackPtBins+1];
   GenerateFixedBinArray(nTrackPtBins,fTrackPtMin,fTrackPtMax,fTrackPtArray);
-
-
-
 
   // Update number of bins after verifying range the v1 is given in for all sources
   fHistTrackPsiEP1PtCent = new TH3F("fHistTrackPsiEP1PtCent","Track #Delta#Psi_{EP,1};#Delta#Psi_{EP,1};p_{T} (GeV/c);Cent (%)",2*nEventPlaneBins,fEventPlane1BinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
@@ -2418,7 +2431,6 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 			return kFALSE;
 		}*/
 	}
-
   // EMCal Trigger rejection (for use with trigger string selection or EMCalTriggerMakerNew
   // Check if EMCal Trigger requirement is set
   if (fAcceptEMCalTriggers.size() > 0) {
@@ -2427,7 +2439,6 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
       bool fRejectForLackOfEMCalTrigger = true;
 
       TString triggerClasses = InputEvent()->GetFiredTriggerClasses();
-
       for (TString fEMCalTriggerString : fAcceptEMCalTriggers) {
         if (triggerClasses.Contains(fEMCalTriggerString.Data())) {
           fRejectForLackOfEMCalTrigger = false;
@@ -2480,6 +2491,7 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
       return kFALSE;
     }
   }
+
 
   // Load QnVector, skip event in case of qvector=0
   bool fQVectorSuccess = LoadQnCorrectedEventPlane();
@@ -2749,6 +2761,7 @@ void AliAnalysisTaskGammaHadron::FillTrackHistograms(AliParticleContainer* track
 
   // fHistTrackPsiRPPtCent fHistTrackPsiEPPtCent
 	Int_t NoOfTracksInEvent =tracks->GetNParticles();
+  fHistNChargedCent->Fill(NoOfTracksInEvent,fCent);
 	AliVParticle* track=0;
 	for(Int_t NoTrack = 0; NoTrack < NoOfTracksInEvent; NoTrack++)
 	{
