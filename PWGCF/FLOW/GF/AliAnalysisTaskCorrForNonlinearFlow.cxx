@@ -169,6 +169,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow():
     hDCAz(0),
     hITSclusters(0),
     hChi2(0),
+    fBootstrapStat(false),
     rand(2333)
 {
 }
@@ -272,6 +273,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
   hDCAz(0),
   hITSclusters(0),
   hChi2(0),
+  fBootstrapStat(false),
   rand(2333)
 {
 
@@ -402,6 +404,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
   hDCAz(0),
   hITSclusters(0),
   hChi2(0),
+  fBootstrapStat(false),
   rand(2333)
 {
 
@@ -467,11 +470,19 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     for (int i = 0; i < fCentBins.size(); i++) fCentBins[i] += 0.5;
     std::vector<Double_t>   fzVtxBins = {-10.0, 0, 10.0};
     const Int_t sizeEta = (anaType.EqualTo("TPCTPC") ? 33 : 43) -1;
-    const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     // const Int_t sizePtAss = fPtBinsAss.size() - 1;
     const Int_t sizeCent = fCentBins.size() - 1;
-    const Int_t sizeOfSamples = 30; // (Int_t) fNOfSamples; 
-    const Int_t iBinning[] = {sizeEta,72,10,sizeOfSamples,sizePtTrig,sizeCent};
+    Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; 
+    Int_t sizeOfVtxZbins = 10; // (Int_t) fNOfSamples; 
+    if (fBootstrapStat) {
+	    sizeOfSamples = 30;
+	    fPtBinsTrigCharged.clear();
+	    fPtBinsTrigCharged.push_back(0.2);
+	    fPtBinsTrigCharged.push_back(3.0);
+
+    }
+    Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
+    const Int_t iBinning[] = {sizeEta,72,sizeOfVtxZbins,sizeOfSamples,sizePtTrig,sizeCent};
 
     fListOfProfile = new TList();
     fListOfProfile->SetOwner();
@@ -500,7 +511,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     }
     fhChargedSE->SetBinLimits(1, binning_dphi);
     fhChargedSE->SetBinLimits(2, -10,10);
-    fhChargedSE->SetBinLimits(3,  0.,30.);
+    fhChargedSE->SetBinLimits(3,  -0.5,sizeOfSamples-0.5);
     fhChargedSE->SetBinLimits(4, fPtBinsTrigCharged.data());
     fhChargedSE->SetBinLimits(5, fCentBins.data());
     fhChargedSE->SetVarTitle(0, "#Delta#eta");
@@ -519,7 +530,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     }
     fhChargedME->SetBinLimits(1, binning_dphi);
     fhChargedME->SetBinLimits(2, -10.,10.);
-    fhChargedME->SetBinLimits(3,  0.,30.);
+    fhChargedSE->SetBinLimits(3,  -0.5,sizeOfSamples-0.5);
     fhChargedME->SetBinLimits(4, fPtBinsTrigCharged.data());
     fhChargedME->SetBinLimits(5, fCentBins.data());
     fhChargedME->SetVarTitle(0, "#Delta#eta");
@@ -546,7 +557,9 @@ void AliAnalysisTaskCorrForNonlinearFlow::NotifyRun() {
 // ---------------------------------------------------------------------------------
 void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
   // Mingrui: apply the bootstrap later
-  bootstrap_value = rand.Integer(30);
+  int sizeOfSamples = 1;
+  if (fBootstrapStat) sizeOfSamples = 30;
+  bootstrap_value = rand.Integer(sizeOfSamples);
 
   // Check if it can pass the trigger
   //..apply physics selection
