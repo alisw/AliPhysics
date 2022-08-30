@@ -470,15 +470,18 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
     for (int i = 0; i < fCentBins.size(); i++) fCentBins[i] += 0.5;
     std::vector<Double_t>   fzVtxBins = {-10.0, 0, 10.0};
     const Int_t sizeEta = (anaType.EqualTo("TPCTPC") ? 33 : 43) -1;
-    const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     // const Int_t sizePtAss = fPtBinsAss.size() - 1;
     const Int_t sizeCent = fCentBins.size() - 1;
     Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; 
     Int_t sizeOfVtxZbins = 10; // (Int_t) fNOfSamples; 
     if (fBootstrapStat) {
 	    sizeOfSamples = 30;
-	    sizeOfVtxZbins  = 1;
+	    fPtBinsTrigCharged.clear();
+	    fPtBinsTrigCharged.push_back(0.2);
+	    fPtBinsTrigCharged.push_back(3.0);
+
     }
+    Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     const Int_t iBinning[] = {sizeEta,72,sizeOfVtxZbins,sizeOfSamples,sizePtTrig,sizeCent};
 
     fListOfProfile = new TList();
@@ -557,7 +560,6 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
   int sizeOfSamples = 1;
   if (fBootstrapStat) sizeOfSamples = 30;
   bootstrap_value = rand.Integer(sizeOfSamples);
-  cout << bootstrap_value << endl;
 
   // Check if it can pass the trigger
   //..apply physics selection
