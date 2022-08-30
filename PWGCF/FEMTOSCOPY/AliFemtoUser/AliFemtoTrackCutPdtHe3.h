@@ -54,7 +54,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	float Return_DCAvsPt_cut_d(float pt,int charge);
 	void Set_DCAvsPt_cut(float *input_v,int label);
 	//
-	void SetInversePID(int aInversePID); 
+	void SetInversePID(int aInversePID);
+        void SetHe3TPCSignal(float aMin,float aMax);
+ 
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -118,6 +120,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 
 	// 
 	int fInversePID;
+
+	float MinHe3TPCSignal;
+    	float MaxHe3TPCSignal;
 
 };
 
