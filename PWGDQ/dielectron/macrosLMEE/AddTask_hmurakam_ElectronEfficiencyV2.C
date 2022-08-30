@@ -1,27 +1,29 @@
-AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TString name             = "test",
-									   Int_t whichGen           = 0,// 0=all sources, 1=HS, 2=Jpsi
-									   Bool_t getFromAlien      = kFALSE,
-									   TString configFile       = "Config_hmurakam_ElectronEfficiencyV2.C",
-									   TString calibFileNameTOF = "alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/calibLMEE/calMaps_TOF_mc.root",
-									   //Binning of Pt,Mass,Ptee
-									   Bool_t usePtVector       = kTRUE,
-									   Bool_t useMassVector     = kFALSE,
-									   Bool_t usePteeVector     = kFALSE,
-									   Bool_t DoULSLS           = kTRUE,
-									   Bool_t DeactivateLS      = kFALSE,
-									   TString year             = "16",
-									   Bool_t usePhiV           = kFALSE,
-									   Double_t maxMee          = 0.04,
-									   Double_t minphiv         = 2.0,
-									   TString suffix           = "",
-									   TString outputFileName   = "LMEE.root",
-									   // Binning of resolution histograms
-									   Int_t NbinsDeltaMom      = 1,
-									   Int_t NbinsRelMom        = 1,
-									   Int_t NbinsDeltaEta      = 1,
-									   Int_t NbinsDeltaTheta    = 1,
-									   Int_t NbinsDeltaPhi      = 1
-									   )
+AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(
+TString name             = "test",
+// 0=all sources, 1=HS, 2=Jpsi
+Int_t whichGen           = 0,
+Bool_t getFromAlien      = kFALSE,
+TString configFile       = "Config_hmurakam_ElectronEfficiencyV2.C",
+TString calibFileNameTOF = "alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/calibLMEE/calMaps_TOF_mc.root",
+//Binning of Pt,Mass,Ptee
+Bool_t usePtVector       = kTRUE,
+Bool_t useMassVector     = kFALSE,
+Bool_t usePteeVector     = kFALSE,
+Bool_t DoULSLS           = kTRUE,
+Bool_t DeactivateLS      = kFALSE,
+TString year             = "16",
+Bool_t usePhiV           = kFALSE,
+Double_t maxMee          = 0.04,
+Double_t minphiv         = 2.0,
+TString suffix           = "",
+TString outputFileName   = "LMEE.root",
+// Binning of resolution histograms
+Int_t NbinsDeltaMom      = 1,
+Int_t NbinsRelMom        = 1,
+Int_t NbinsDeltaEta      = 1,
+Int_t NbinsDeltaTheta    = 1,
+Int_t NbinsDeltaPhi      = 1
+)
 {
 
   //Fiducial cut
@@ -42,7 +44,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
     printf("Configfile already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data()))) ){
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/%s file:./",configFile.Data()))) ){
     printf("Copy Configfile from alien\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
