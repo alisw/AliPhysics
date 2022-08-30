@@ -37,6 +37,9 @@ AliFemtoESDTrackCut()
     fPionHe3cut = 0;
     fUseDCAvsPt_cut = 0;
     fInversePID = 0;
+
+    MinHe3TPCSignal = 10.;
+    MaxHe3TPCSignal = 5000.;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -69,6 +72,10 @@ AliFemtoESDTrackCut(aCut)
     fPionHe3cut = aCut.fPionHe3cut;
     fUseDCAvsPt_cut = aCut.fUseDCAvsPt_cut;
     fInversePID = aCut.fInversePID;
+
+    MinHe3TPCSignal = aCut.MinHe3TPCSignal;
+    MaxHe3TPCSignal = aCut.MaxHe3TPCSignal;
+
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -111,6 +118,8 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     fPionHe3cut = aCut.fPionHe3cut;
     fUseDCAvsPt_cut = aCut.fUseDCAvsPt_cut;
     fInversePID = aCut.fInversePID;
+    MinHe3TPCSignal = aCut.MinHe3TPCSignal;
+    MaxHe3TPCSignal = aCut.MaxHe3TPCSignal;
     return *this;
 }
 
@@ -274,7 +283,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 
     // dowang for pion+he3 cut
     if(fPionHe3cut){
-	if( track->TPCsignal() <10 || track->TPCsignal() > 1000){
+	if( track->TPCsignal() < MinHe3TPCSignal || track->TPCsignal() > MaxHe3TPCSignal){
 		fNTracksFailed++;
 		return false;	
 	}
@@ -862,4 +871,7 @@ void AliFemtoTrackCutPdtHe3::SetInversePID(int aInversePID){
 	fInversePID = aInversePID;
 }
 
-
+void AliFemtoTrackCutPdtHe3::SetHe3TPCSignal(float aMin,float aMax){
+    MinHe3TPCSignal = aMin;
+    MaxHe3TPCSignal = aMax;
+}
