@@ -1378,9 +1378,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","41179010a7032230000","01631031000000d0"); // std
     cuts.AddCutCalo("00010113","41179010ak032230000","01631031000000d0"); // std
   } else if (trainConfig == 471){ // EMCAL updated cuts (Sep 2021)
-    cuts.AddCutCalo("00010113","411790109fe3n220000","0r631031000000d0"); // INT7 with NCell efficiency (PCM-EMC tagged, gamma clus, gaussian param)
-    cuts.AddCutCalo("00010113","411790109fe30220000","0r631031000000d0"); // no NCell cut
-    cuts.AddCutCalo("00010113","4117901090e30220000","0r631031000000d0"); // no NCell cut, no TM
+    cuts.AddCutCalo("00010113","4117901090e30220000","0s631031000000d0"); // 
+    cuts.AddCutCalo("00010113","41179010j0e30220000","0s631031000000d0"); // 
+    cuts.AddCutCalo("00010113","41179010k0e30220000","0s631031000000d0"); // 
+    cuts.AddCutCalo("00010113","41179010l0e30220000","0s631031000000d0"); // 
 
   } else if (trainConfig == 480){ // INT7 EMCAL standard cut with triggers - NO TM - CALO+CALOFAST readout triggers
     cuts.AddCutCalo("000a0113","11111110a0032230000","01631031000000d0"); // std INT7
