@@ -39,6 +39,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistMK0Cuts;        //! dummy histogram
        TH1F*                   fHistPt;     //! dummy histogram
        TH1F*                   fVtx;        //! dummy histogram
+       TH1F*                   fClusters;    //! dummy histogram
        TH2F*                   fPID;        //! dummy histogram
        TH2F*                   fPIDKa;      //! dummy histogram
        TH2F*                   fPIDKaon;        //! dummy histogram
@@ -74,8 +75,6 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH2F*                   fHistSigCent;    //! dummy histogram
        TH2F*                   fHistInvCent;    //! dummy histogram
        TH2F*                   fHistCFPhi;      //! dummy histogram
-       TH2F*                   fHistCFPhiCuts;          //! dummy histogram
-       TH2F*                   fHistCFPhiLCuts;     //! dummy histogram
        TH2F*                   fHistCFEta;      //! dummy histogram
        TH3F*                   fHistCF;     //! dummy histogram
        TH3F*                   fHistKChCh;      //! dummy histogram
