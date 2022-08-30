@@ -109,6 +109,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetPeriod(TString period){fPeriod = period;}
 		virtual void   SetSystFlag(int syst){fCurrSystFlag = syst;} 
 		virtual int    GetSystFlag(){return fCurrSystFlag;}
+		virtual void   UseBootstrap(bool ftest = true){fBootstrapStat = ftest;}
 
 		Double_t RangePhi(Double_t DPhi);
 		Double_t GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
@@ -184,6 +185,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t                   fPoolMaxNEvents;                        // Maximum number of events in a pool
 		Int_t                   fPoolMinNTracks;                        // Minimum number of tracks to mix
 		Int_t                   fMinEventsToMix;                        // Minimum numver of events to mix
+                Bool_t                  fBootstrapStat;                         // Flag to calculate statistical uncertainty with bootstrap
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -289,7 +291,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 2); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 3); // Analysis task
 };
 
 #endif
