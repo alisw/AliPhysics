@@ -1391,11 +1391,13 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	    fCandidateVariables[61] = mcsecverty;
 	    fCandidateVariables[62] = mcdaughter1->Zv();
 
-		fCandidateVariables[83] = mcdaughterPionFromLambda->Pt();	//jcho
-		fCandidateVariables[84] = mcdaughterProtonFromLambda->Pt();	//jcho
-		fCandidateVariables[85] = mcdaughterPionFromXi->Pt();	//jcho
-		
-	  }
+		if(mcdaughterPionFromLambda&&mcdaughterProtonFromLambda&&mcdaughterPionFromXi){
+			fCandidateVariables[83] = mcdaughterPionFromLambda->Pt();	//jcho
+			fCandidateVariables[84] = mcdaughterProtonFromLambda->Pt();	//jcho
+			fCandidateVariables[85] = mcdaughterPionFromXi->Pt();	//jcho
+		} // Jcho, mcdaughter of Xi and Lambda
+
+	  } // mcdaughter1,2 and xi
 	}
       }
       
