@@ -229,7 +229,7 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::UserExec(Option_t *)
       }
     
     //For HIJING
-    if(fMCchoice==1)
+    if(fMCchoice==2)
       {
 	lHIJINGHeader = (AliGenHijingEventHeader*) genHeader;
 	fMCImpactParameter = lHIJINGHeader->ImpactParameter();
