@@ -38,6 +38,7 @@ public:
   Double_t GetFlatenicityTPCMC();
   Double_t GetFlatenicity();
   Double_t GetFlatenicityMC();
+  Double_t GetFlatenicityCombinedMC();
   void CheckMultiplicities();
   void CheckMultiplicitiesMC();
   void MakeMCanalysis();
@@ -74,8 +75,8 @@ private:
   Float_t fmultV0Amc;
   Float_t fmultV0Cmc;
   Float_t fmultTPCmc;
-  Bool_t fIsMCclosure;
   TString fDetFlat;
+  Bool_t fIsMCclosure;
   Bool_t fRemoveTrivialScaling;
   Int_t fnGen;
   AliPIDResponse *fPIDResponse;
@@ -96,6 +97,7 @@ private:
   TH2D *hFlatV0vsFlatTPCmc;
   TH1D *hFlatenicity;
   TH1D *hFlatenicityMC;
+  TH2D *hFlatCominedMC;
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
@@ -115,12 +117,14 @@ private:
   TH2D *hFlatVsNchTPC;
   TH2D *hFlatVsNchMC;
   TH2D *hFlatVsNchTPCmc;
+  TH2D *hFlatVsNchCombinedMC;
   TH1D *hNchV0M;
+  TH1D *hNchV0MMC;
   TH1D *hNchTPC;
+  TH1D *hNchTPCmc;
   TH1D *hNchV0a;
   TH1D *hNchV0c;
-  TH1D *hNchV0MMC;
-  TH1D *hNchTPCmc;
+  TH1D *hNchCombinedmc;
   TH1D *hNchV0aMC;
   TH1D *hNchV0cMC;
   TH2D *hFlatVsV0M;
@@ -132,10 +136,8 @@ private:
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hFlatVsNchTPCV0MMC[9];
 
-  AliAnalysisTaskSpectraFlatenicity(
-      const AliAnalysisTaskSpectraFlatenicity &); // not implemented
-  AliAnalysisTaskSpectraFlatenicity &
-  operator=(const AliAnalysisTaskSpectraFlatenicity &); // not implemented
+  AliAnalysisTaskSpectraFlatenicity(const AliAnalysisTaskSpectraFlatenicity &); // not implemented
+  AliAnalysisTaskSpectraFlatenicity &operator=(const AliAnalysisTaskSpectraFlatenicity &); // not implemented
 
   ClassDef(AliAnalysisTaskSpectraFlatenicity, 3);
 };
