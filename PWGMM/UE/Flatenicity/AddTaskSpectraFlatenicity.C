@@ -50,12 +50,22 @@ AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat",
   } else {
     complement = "wtrivialscal";
   }
-
+  const char *complement2;
+  if (detForFlat == "V0") {
+    complement2 = "V0";
+  }
+  if (detForFlat == "TPC") {
+    complement2 = "TPC";
+  }
+  if (detForFlat == "V0_TPC") {
+    complement2 = "V0_TPC";
+  }
+  
   mgr->ConnectInput(taskFlat, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(
       taskFlat, 1,
       mgr->CreateContainer(
-          Form("cList%s_%s", taskname, complement), TList::Class(),
+          Form("cList%s_%s_%s", taskname, complement, complement2), TList::Class(),
           AliAnalysisManager::kOutputContainer,
           Form("%s:%s", AliAnalysisManager::GetCommonFileName(), taskname)));
 
