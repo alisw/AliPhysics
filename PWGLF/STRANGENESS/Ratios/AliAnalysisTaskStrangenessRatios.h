@@ -28,6 +28,7 @@ struct MiniLambda {
   Double32_t cosPA;       //[0.95,1,16]
   Double32_t tpcNsigmaPi; //[-5,5,8]
   Double32_t tpcNsigmaPr; //[-5,5,8]
+  Double32_t itsNsigmaPr; //[-5,5,8]
   unsigned char tpcClV0Pi;
   unsigned char tpcClV0Pr;
   unsigned char centrality;

@@ -394,7 +394,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           lambda->XvYvZv(ov);
           posPart->XvYvZv(dv);
           fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * lambda->M() / lambda->P();
-          
+
           fGenLambda.flag = 0u;
           if (lambda->IsPrimary())
             fGenLambda.flag |= kPrimary;
@@ -422,6 +422,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecLambda->cosPA = v0->CosPointingAngle(pv);
       fRecLambda->tpcNsigmaPi = fPID->NumberOfSigmasTPC(pion, AliPID::kPion);
       fRecLambda->tpcNsigmaPr = fPID->NumberOfSigmasTPC(proton, AliPID::kProton);
+      fRecLambda->itsNsigmaPr = fPID->NumberOfSigmasITS(proton, AliPID::kProton);
       fRecLambda->tpcClV0Pi = pion->GetTPCsignalN();
       fRecLambda->tpcClV0Pr = proton->GetTPCsignalN();
       fRecLambda->hasTOFhit = !pTrack->GetTOFBunchCrossing(bField) || !nTrack->GetTOFBunchCrossing(bField);
@@ -754,7 +755,7 @@ void AliAnalysisTaskStrangenessRatios::FindWDLambdaMother(AliAODMCParticle *trac
     }
     break;
     case kOmegaPdg:
-    { 
+    {
       if (mother->IsPhysicalPrimary())
         fGenLambda.flag |= kSecondaryFromWDOmega;
       else
