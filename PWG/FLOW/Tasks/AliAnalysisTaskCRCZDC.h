@@ -461,6 +461,7 @@ private:
   TH1D *SpecCorSi[8]; //!
   TH2D *fBadTowerCalibHist[100]; //!
   TH2D *fVZEROGainEqHist; //!
+  TH2F *fHCorrectV0ChWeghts; //! V0 gain eq weight file for 2018 dataset  
   const static Int_t fkVZEROnHar = 4;
 //  TProfile3D *fVZEROQVectorRecQx[fkVZEROnHar]; //!
 //  TProfile3D *fVZEROQVectorRecQy[fkVZEROnHar]; //!

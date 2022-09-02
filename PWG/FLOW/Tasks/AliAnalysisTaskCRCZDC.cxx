@@ -221,6 +221,7 @@ fTrackQAList(NULL),
 fBadTowerStuffList(NULL),
 fVZEROStuffList(NULL),
 fVZEROGainEqHist(NULL),
+fHCorrectV0ChWeghts(NULL),
 fMinRingVZC(1),
 fMaxRingVZC(4),
 fMinRingVZA(5),
@@ -441,6 +442,7 @@ fTrackQAList(NULL),
 fBadTowerStuffList(NULL),
 fVZEROStuffList(NULL),
 fVZEROGainEqHist(NULL),
+fHCorrectV0ChWeghts(NULL),
 fMinRingVZC(1),
 fMaxRingVZC(4),
 fMinRingVZA(5),
@@ -1018,10 +1020,13 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   }
   fVZEROStuffList->Add(fVZEROMult);
 
-  if(fVZEROGainEqList) {
-    fVZEROGainEqHist = (TH2D*)fVZEROGainEqList->FindObject("VZEROEqGain");
-    fVZEROStuffList->Add(fVZEROGainEqHist);
+  if (fDataSet!=k2018r && fDataSet!=k2018q) {
+	if(fVZEROGainEqList) {
+	  fVZEROGainEqHist = (TH2D*)fVZEROGainEqList->FindObject("VZEROEqGain");
+      fVZEROStuffList->Add(fVZEROGainEqHist);
+	}
   }
+  
   if(fVZEROQVecRecList) {
     for (Int_t k=0; k<fkVZEROnHar; k++) {
       fVZEROQVectorRecQxStored[k] = (TProfile3D*)fVZEROQVecRecList->FindObject(Form("fVZEROQVectorRecQx[%d]",k));
@@ -2311,7 +2316,12 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   //********************************************************************************************************************************
 
   if(fAnalysisType == kAUTOMATIC || fAnalysisType == kTracklets) {
-
+	// Vtx Position
+	Double_t vtxpos[3]={0.,0.,0.};
+    vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
+    vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
+    vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
+    
     // PHYSICS SELECTION
     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
@@ -2337,6 +2347,16 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     Double_t multV0A = vzeroAOD->GetMTotV0A();
     Double_t multV0C = vzeroAOD->GetMTotV0C();
 
+	// load VZERO gain weight
+	if (fDataSet==k2018r || fDataSet==k2018q) {
+	  if(RunNum!=fCachedRunNum) {
+	    if(fVZEROGainEqList) {
+	      //V0 Channel Gains:
+	      fHCorrectV0ChWeghts = (TH2F *) fVZEROGainEqList->FindObject(Form("hWgtV0ChannelsvsVzRun%d",RunNum));
+	    }
+      }
+    }
+    
     // set VZERO Q-vectors
     if(fDataSet==k2015 || fDataSet==k2015v6) {   //@Shi no fVZEROQVectorRecQxStored and fVZEROQVectorRecQyStored available for 2018
       Int_t CachednRing = 1;
@@ -2349,10 +2369,14 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 
         // correct multiplicity per channel
         Double_t mult = vzeroAOD->GetMultiplicity(i);
-        if(fVZEROGainEqHist) {
-          Double_t EqFactor = fVZEROGainEqHist->GetBinContent(RunBin+1,i+1);
-          if(EqFactor>0.) mult *= EqFactor;
-        }
+        
+        if (fDataSet!=k2018r && fDataSet!=k2018q) {
+          if(fVZEROGainEqHist) {
+            Double_t EqFactor = fVZEROGainEqHist->GetBinContent(RunBin+1,i+1);
+            if(EqFactor>0.) mult *= EqFactor;
+          }
+		} 
+		
         fVZEROMult->Fill(RunBin+0.5,i+0.5,mult);
 
         // build Q-vector per ring
@@ -2428,11 +2452,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
 	
     if (fDataSet==k2018r || fDataSet==k2018q) {
-		Double_t vtxpos[3]={0.,0.,0.};
-		vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
-		vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
-		vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
-
 		Float_t fMultV0 = 0.;
 		Float_t fPhiV0  = 0.;
 		Float_t fV0chGain = 1.0;
@@ -2452,9 +2471,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 		for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
 		    fMultV0 = vzeroAOD->GetMultiplicity(iV0);
 			/// V0 Channel Gain Correction:
-			if(fVZEROGainEqHist){ 
-			  ibinV0    = fVZEROGainEqHist->FindBin(vtxpos[2],iV0);
-			  fV0chGain = fVZEROGainEqHist->GetBinContent(ibinV0); 
+			if(fHCorrectV0ChWeghts){ 
+			  ibinV0    = fHCorrectV0ChWeghts->FindBin(vtxpos[2],iV0);
+			  fV0chGain = fHCorrectV0ChWeghts->GetBinContent(ibinV0); 
 			}
 
 			fMultV0 = fMultV0*fV0chGain;   //Corrected Multiplicity
@@ -2786,7 +2805,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           xyZNC[1] = numYZNC/denZNC;
         }
         else{
-          xyZNC[0] = xyZNC[1] = 999.;
+          xyZNC[0] = 999.;
+		  xyZNC[1] = 999.;
           zncEnergy = 0.;
         }
         if(denZNA!=0) {
@@ -2794,7 +2814,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           xyZNA[1] = numYZNA/denZNA;
         }
         else{
-          xyZNA[0] = xyZNA[1] = 999.;
+          xyZNA[0] = 999.;
+		  xyZNA[1] = 999.;
           znaEnergy = 0.;
         }
       }
@@ -2820,7 +2841,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 	
       Double_t EZNC = 0, wZNC = 0, denZNC = 0, numXZNC = 0, numYZNC = 0;
       Double_t EZNA = 0, wZNA = 0, denZNA = 0, numXZNA = 0, numYZNA = 0; 
-
+	  
       for(Int_t i=0; i<4; i++){
 		// ZNC part
         // get energy
@@ -2843,13 +2864,24 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         denZNA += wZNA;
         
 	  }
-	
+	  
+	  if (towZNC[1] < 0 || towZNC[2] < 0 || towZNC[3] < 0 || towZNC[4] < 0) { // negative energy in any tower is not reasonable. Reject Q-vec == 999 later
+		xyZNC[0] = 999.;
+        xyZNC[1] = 999.;
+	  }
+	  
+	  if (towZNA[1] < 0 || towZNA[2] < 0 || towZNA[3] < 0 || towZNA[4] < 0) {
+		xyZNA[0] = 999.;
+		xyZNA[1] = 999.;
+	  }
+	  
 	  if(denZNC!=0) {
         xyZNC[0] = numXZNC/denZNC;
         xyZNC[1] = numYZNC/denZNC;
       }
       else{
-        xyZNC[0] = xyZNC[1] = 999.;
+        xyZNC[0] = 999.;
+        xyZNC[1] = 999.;
         zncEnergy = 0.;
       }
       if(denZNA!=0) {
@@ -2857,7 +2889,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         xyZNA[1] = numYZNA/denZNA;
       }
       else{
-        xyZNA[0] = xyZNA[1] = 999.;
+        xyZNA[0] = 999.;
+		xyZNA[1] = 999.;
         znaEnergy = 0.;
       }
       
@@ -2883,11 +2916,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if (centrperc == 100) CentBin = 19; // centrality cannot be larger than 100 and when it is exactly 100, use bin 95-100
     
     // Step 0; The profiles for recentring step 1 are filled
-    Double_t vtxpos[3]={0.,0.,0.};
-    vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
-    vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
-    vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
-    
     if (fStepZDCRecenter >= 0){
 		fAve_VtxX->Fill(RunBin, vtxpos[0]);
 		fAve_VtxY->Fill(RunBin, vtxpos[1]);
