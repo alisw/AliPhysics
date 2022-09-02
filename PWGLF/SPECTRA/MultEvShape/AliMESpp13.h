@@ -52,10 +52,9 @@ public:
   enum MESpp13Containers
   {
     kQA = 1,
-    kEventTree = 1,
-    kTracksTree,
-    kMCGenTracksTree,
-    kMCMissedTracksTree,
+    kTree = 1,
+    kMCGenTree,
+    // kMCMissTree,
     kNcontainers
   };
   AliMESpp13();
@@ -85,11 +84,9 @@ private:
   TClonesArray *fMCtracksIO;          //!
   TClonesArray *fMCGenTracksIO;       //!
   TClonesArray *fMCtracksMissIO;      //!
-  TTree *fEventTree;                  //!
-  TTree *fTracksTree;                 //!
-  TTree *fMCGenTracksTree;            //!
-  TTree *fMCMissedTracksTree;         //!
-
+  TTree *fTree;                       //!
+  TTree *fMCGenTree;                  //!
+  TTree *fMCMissTree;                 //!
 
   AliPPVsMultUtils *fUtils;
   AliEventCuts fEventCutsQA; //!

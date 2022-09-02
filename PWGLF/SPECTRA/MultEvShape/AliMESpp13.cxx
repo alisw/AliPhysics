@@ -45,7 +45,7 @@ int eventsPassSLCutsMC(0);
 ClassImp(AliMESpp13)
     //________________________________________________________________________
     AliMESpp13::AliMESpp13()
-    : AliAnalysisTaskSE(), fTrackFilter(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fTracksIO(NULL), fMCtracksIO(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fEventTree(NULL), fTracksTree(NULL), fMCGenTracksTree(NULL), fMCMissedTracksTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
+    : AliAnalysisTaskSE(), fTrackFilter(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fTracksIO(NULL), fMCtracksIO(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTree(NULL), fMCGenTree(NULL), fMCMissTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
 {
   //
   // Constructor
@@ -54,13 +54,12 @@ ClassImp(AliMESpp13)
 
 //________________________________________________________________________
 AliMESpp13::AliMESpp13(const char *name)
-    : AliAnalysisTaskSE(name), fTrackFilter(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fTracksIO(NULL), fMCtracksIO(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fEventTree(NULL), fTracksTree(NULL), fMCGenTracksTree(NULL), fMCMissedTracksTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
+    : AliAnalysisTaskSE(name), fTrackFilter(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fTracksIO(NULL), fMCtracksIO(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTree(NULL), fMCGenTree(NULL), fMCMissTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
 { //
   // Constructor
   //
   DefineOutput(kQA, TList::Class());
-  DefineOutput(kEventTree + 1, TTree::Class());
-  DefineOutput(kTracksTree + 1, TTree::Class());
+  DefineOutput(kTree + 1, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -70,8 +69,8 @@ void AliMESpp13::SetMCdata(Bool_t mc)
   SetBit(kMCdata, mc);
   if (mc)
   {
-    DefineOutput(kMCGenTracksTree + 1, TTree::Class());
-    DefineOutput(kMCMissedTracksTree + 1, TTree::Class());
+    DefineOutput(kMCGenTree + 1, TTree::Class());
+    // DefineOutput(kMCMissTree + 1, TTree::Class());
   }
 }
 //________________________________________________________________________
@@ -111,13 +110,22 @@ AliMESpp13::~AliMESpp13()
 
   if (fMCtracksMissIO)
     fMCtracksMissIO->Delete();
+
+  // if (fTree)
+  //   delete fTree;
+
+  // if (fMCGenTree)
+  //   delete fMCGenTree;
+
+  // if (fMCMissTree)
+  //   delete fMCMissTree;
 }
 
 //________________________________________________________________________
 void AliMESpp13::UserCreateOutputObjects()
 {
 
-    // Build user objects
+  // Build user objects
   BuildQAHistos();
   PostData(kQA, fHistosQA);
 
@@ -137,14 +145,12 @@ void AliMESpp13::UserCreateOutputObjects()
   lTrackCuts->SetMaxDCAToVertexXY(3.0);
   fTrackFilter->AddCuts(lTrackCuts);
 
-  fEventTree = ((*fTreeSRedirector) << "ev").GetTree();
-  fTracksTree = ((*fTreeSRedirector) << "trk").GetTree();
+  fTree = ((*fTreeSRedirector) << "ev").GetTree();
 
   fTracks = new TObjArray(200);
   fTracks->SetOwner(kTRUE);
   fEvInfo = new AliMESeventInfo;
-  PostData(kEventTree + 1, fEventTree);
-  PostData(kTracksTree + 1, fTracksTree);
+  PostData(kTree + 1, fTree);
 
   fUtils = new AliPPVsMultUtils();
 
@@ -154,11 +160,11 @@ void AliMESpp13::UserCreateOutputObjects()
   fMCtracks->SetOwner(kTRUE);
   fMCevInfo = new AliMESeventInfo;
 
-  fMCGenTracksTree = ((*fTreeSRedirector) << "genTrk").GetTree();
-  fMCMissedTracksTree = ((*fTreeSRedirector) << "missedTrk").GetTree();
+  fMCGenTree = ((*fTreeSRedirector) << "genTrk").GetTree();
+  // fMCMissTree = ((*fTreeSRedirector) << "missedTrk").GetTree();
 
-  PostData(kMCGenTracksTree + 1, fMCGenTracksTree);
-  PostData(kMCMissedTracksTree + 1, fMCMissedTracksTree);
+  PostData(kMCGenTree + 1, fMCGenTree);
+  // PostData(kMCMissTree + 1, fMCMissTree);
 }
 
 #include "AliGRPManager.h"
@@ -202,7 +208,7 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
 
-    // init magnetic field
+  // init magnetic field
   if (!TGeoGlobalMagField::Instance()->GetField() && !TGeoGlobalMagField::Instance()->IsLocked())
   {
     AliGRPManager grpManager;
@@ -218,30 +224,30 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   ((TH1 *)fHistosQA->At(kEfficiency))->Fill(0); // all events
   if (inputHandler->IsEventSelected())
   {
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // physics selection 
+    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // physics selection
     {
-      if(fEventCutsQA.PassedCut(AliEventCuts::kTrigger)) 
+      if (fEventCutsQA.PassedCut(AliEventCuts::kTrigger))
       {
         ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // trigger selection
-        if(fEventCutsQA.PassedCut(AliEventCuts::kDAQincomplete))
+        if (fEventCutsQA.PassedCut(AliEventCuts::kDAQincomplete))
         {
           ((TH1 *)fHistosQA->At(kEfficiency))->Fill(3); // DAQ incomplete selection
-          if(!analysisUtils.IsSPDClusterVsTrackletBG(fESD))
+          if (!analysisUtils.IsSPDClusterVsTrackletBG(fESD))
           {
             ((TH1 *)fHistosQA->At(kEfficiency))->Fill(4); // no background selection
-            if(AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
+            if (AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
             {
               ((TH1 *)fHistosQA->At(kEfficiency))->Fill(5); // reject pile up evts using SPD
               fEvInfo->SetPileUp();
-              if(fEventCutsQA.PassedCut(AliEventCuts::kVertex))
+              if (fEventCutsQA.PassedCut(AliEventCuts::kVertex))
               {
-                ((TH1 *)fHistosQA->At(kEfficiency))->Fill(6); // vertex 
-                eventsPassSLCutsMC=1;
-                if(fEventCutsQA.PassedCut(AliEventCuts::kVertexPosition))
+                ((TH1 *)fHistosQA->At(kEfficiency))->Fill(6); // vertex
+                eventsPassSLCutsMC = 1;
+                if (fEventCutsQA.PassedCut(AliEventCuts::kVertexPosition))
                 {
                   ((TH1 *)fHistosQA->At(kEfficiency))->Fill(7); // vertex  position
-                  eventsPassSLCutsMC=1;
-                  if(fEventCutsQA.PassedCut(AliEventCuts::kINELgt0))
+                  eventsPassSLCutsMC = 1;
+                  if (fEventCutsQA.PassedCut(AliEventCuts::kINELgt0))
                   {
                     ((TH1 *)fHistosQA->At(kEfficiency))->Fill(8); // INEL > 0
                     eventsPassAllCutsMC = 1;
@@ -261,13 +267,12 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     // eventsPassAllCutsMC = 0;
     return;
   }
-  else{
+  else
+  {
 
     ((TH1 *)fHistosQA->At(kEfficiency))->Fill(9); // All cuts
     // eventsPassAllCutsMC = 1;
   }
-
-      
 
   // vertex selection
   const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
@@ -287,7 +292,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     }
   }
   fEvInfo->SetVertexZ(vertex->GetZ());
-
 
   // multiplicity
   AliESDtrackCuts *tc(NULL);
@@ -416,41 +420,25 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       return;
     if (!HasMCdata())
     {
-      (*fTreeSRedirector) << "trk"
+      (*fTreeSRedirector) << "ev"
                           << "run=" << run
-                          << "event=" << event
+                          << "MultComb08=" << fMultComb08
+                          << "MultSPDtrk08=" << fMultSPDtrk08
+                          << "V0M=" << fV0M
+                          << "Sphericity=" << fSphericity
                           << "Pt=" << fPt.at(i)
                           << "Eta=" << fEta.at(i)
                           << "Phi=" << fPhi.at(i)
                           // << "Charge=" << fCharge.at(i)
                           // << "DeltaPhi=" << fDeltaPhi.at(i)
                           // << "DeltaEta=" << fDeltaEta.at(i)
-                          // << "DCAxy=" << fDCAxy.at(i)
-                          // << "PassDCA=" << fPassDCA.at(i)
+                          << "DCAxy=" << fDCAxy.at(i)
+                          << "PassDCA=" << fPassDCA.at(i)
                           << "\n";
     }
   }
-  if (!fTreeSRedirector)
-    return;
-  if (!HasMCdata())
-  {
-    (*fTreeSRedirector) << "ev"
-                        << "event=" << event
-                        << "run=" << run
-                        << "MultComb08=" << fMultComb08
-                        << "MultSPDtrk08=" << fMultSPDtrk08
-                        << "V0M=" << fV0M
-                        << "Sphericity=" << fSphericity
-                        // << "PtLP=" << fPtLP
-                        // << "EtaLP=" << fEtaLP
-                        // << "PhiLP=" << fPhiLP
-                        // << "nTracks=" << nTracks
-                        << "\n";
-  }
   fTracksIO->Clear("C");
-  PostData(kEventTree + 1, fEventTree);
-  PostData(kTracksTree + 1, fTracksTree);
-
+  PostData(kTree + 1, fTree);
   //____ _________________________________
   if (!HasMCdata())
     return;
@@ -666,9 +654,12 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       continue;
     if (!fTreeSRedirector)
       return;
-    (*fTreeSRedirector) << "trk"
+    (*fTreeSRedirector) << "ev"
                         << "run=" << run
-                        << "event=" << event
+                        << "MultComb08=" << fMultComb08
+                        << "MultSPDtrk08=" << fMultSPDtrk08
+                        << "V0M=" << fV0M
+                        << "Sphericity=" << fSphericity
                         << "Pt=" << fPt.at(i)
                         << "Eta=" << fEta.at(i)
                         << "Phi=" << fPhi.at(i)
@@ -677,41 +668,22 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                         // << "Charge=" << fCharge.at(i)
                         // << "DCAxy=" << fDCAxy.at(i)
                         // << "PassDCA=" << fPassDCA.at(i)
+                        << "Mult08=" << fMult08_MC
+                        << "V0M_MC=" << fV0M_MC
+                        << "Sphericity_MC=" << fSphericity_MC
+                        << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
+                        << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
                         << "Pt_MC=" << fPt_MC.at(i)
                         << "Phi_MC=" << fPhi_MC.at(i)
                         << "Eta_MC=" << fEta_MC.at(i)
                         // << "DeltaPhi_MC=" << fDeltaPhi_MC.at(i)
                         // << "DeltaEta_MC=" << fDeltaEta_MC.at(i)
                         // << "Charge_MC=" << fCharge_MC
-                        // << "Primary_MC=" << fPrimary_MC.at(i)
-                        // << "Secondary_MC=" << fSecondary_MC.at(i)
-                        // << "Material_MC=" << fMaterial_MC.at(i)
+                        << "Primary_MC=" << fPrimary_MC.at(i)
+                        << "Secondary_MC=" << fSecondary_MC.at(i)
+                        << "Material_MC=" << fMaterial_MC.at(i)
                         << "\n";
   }
-  if (!fTreeSRedirector)
-    return;
-  (*fTreeSRedirector) << "ev"
-                      // << "noEvents=" << noEvents
-                      << "run=" << run
-                      << "event=" << event
-                      << "MultComb08=" << fMultComb08
-                      << "MultSPDtrk08=" << fMultSPDtrk08
-                      << "V0M=" << fV0M
-                      << "Sphericity=" << fSphericity
-                      // << "PtLP=" << fPtLP
-                      // << "EtaLP=" << fEtaLP
-                      // << "PhiLP=" << fPhiLP
-                      // << "nTracks=" << nTracks
-                      << "Mult08=" << fMult08_MC
-                      << "V0M_MC=" << fV0M_MC
-                      << "Sphericity_MC=" << fSphericity_MC
-                      << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
-                      << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
-                      // << "nTracks=" << nTracks;
-                      // << "PtLP_MC=" << fPtLP_MC
-                      // << "EtaLP_MC=" << fEtaLP_MC
-                      // << "PhiLP_MC=" << fPhiLP_MC;
-                      << "\n";
 
   // // cout << "Debug save " << fTracksIO->GetEntriesFast() << " MC " << fMCtracksIO->GetEntriesFast() << endl;
   // for (int i = 0; i < fTracksIO->GetEntries(); i++)
@@ -761,17 +733,19 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     {
       fDeltaEta_Gen = fEtaLP_Gen - fEta_Gen;
     }
-    // if (!fTreeSRedirector)
-    //   return;
-    // (*fTreeSRedirector) << "genTrk"
-    // << "run=" << run
-    //                     // << "Pt_Gen=" << fPt_Gen
-    //                     // << "Charge_Gen=" << fCharge_Gen
-    //                     // << "Eta_Gen=" << fEta_Gen
-    //                     // << "Phi_Gen=" << fPhi_Gen
-    //                     // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
-    //                     // << "DeltaEta_Gen=" << fDeltaEta_Gen
-    //                     << "\n";
+    if (!fTreeSRedirector)
+      return;
+    (*fTreeSRedirector) << "genTrk"
+                        << "run=" << run
+                        << "Mult08=" << fMult08_MC
+                        << "Sphericity_MC=" << fSphericity_MC
+                        << "Pt_Gen=" << fPt_Gen
+                        //                     << "Charge_Gen=" << fCharge_Gen
+                        << "Eta_Gen=" << fEta_Gen
+                        // << "Phi_Gen=" << fPhi_Gen
+                        // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
+                        // << "DeltaEta_Gen=" << fDeltaEta_Gen
+                        << "\n";
   }
   // if (!fTreeSRedirector)
   //   return;
@@ -854,10 +828,9 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   fMCtracksMissIO->Clear("C");
 
   PostData(kQA, fHistosQA);
-  PostData(kEventTree + 1, fEventTree);
-  PostData(kTracksTree + 1, fTracksTree);
-  PostData(kMCGenTracksTree + 1, fMCGenTracksTree);
-  PostData(kMCMissedTracksTree + 1, fMCMissedTracksTree);
+  PostData(kTree + 1, fTree);
+  PostData(kMCGenTree + 1, fMCGenTree);
+  // PostData(kMCMissTree + 1, fMCMissTree);
 }
 //________________________________________________________
 Bool_t AliMESpp13::BuildQAHistos()
@@ -868,9 +841,8 @@ Bool_t AliMESpp13::BuildQAHistos()
   // - track info
 
   // build QA histos
-  fHistosQA = new TList(); 
+  fHistosQA = new TList();
   fHistosQA->SetOwner(kTRUE);
-
 
   fEventCutsQA.AddQAplotsToList(fHistosQA, kTRUE);
 
