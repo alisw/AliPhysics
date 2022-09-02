@@ -379,7 +379,6 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         TH1F*                   fHistPVy;              //!<! Histogram of primary vertex in y
         TH1F*                   fHistPVz;              //!<! Histogram of primary vertex in z
         TH1F*                   fHCentrality;          //!<! Histogram of centrality
-        TH1F*                   fHistMCXicZeroDecayType; //!<! MC event type of Xic0
         TH1F*                   fHistMCXiDecayType; //!<! MC event type of Xi
         TH1F*                   fHistMCpdg_All;     //!<! PDG of all particle
         TH1F*                   fHistMCpdg_Dau_XicZero;     //!<! PDG of all particle from Xic0 decay
@@ -409,7 +408,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 9);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 10);
 };
 
 #endif
