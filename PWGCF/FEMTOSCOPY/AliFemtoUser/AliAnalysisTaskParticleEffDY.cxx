@@ -592,19 +592,14 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
 
   
   
-  //********** PID ****************
+//********** PID ****************
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fpidResponse = inputHandler->GetPIDResponse();
   std::cout<<"*******"<< fpidResponse<<std::endl;
-
-
-
-
   
   // ************************
-
   PostData(1, fHistoList);
 }
 
@@ -888,6 +883,9 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
   else if(fcent==2)fHistEvCuts[2]->Fill(2);
   else if(fcent==3)fHistEvCuts[3]->Fill(2);
 
+
+//********* Pile-up removal*******************
+  //check this: https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsPileup
   AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
     
   Bool_t fpA2013 = kFALSE;
@@ -987,9 +985,8 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
     if (!track)continue;
     fHistQA[10]->Fill(2);
 
-    //UInt_t filterBit = (1 << (0));
-    UInt_t filterBit = 96;
-    if(!track->TestFilterBit(filterBit))continue;	
+      UInt_t filterBit = fFB;
+    if(!track->TestFilterBit(filterBit))continue;		
 
     //charge
     //  if(track->Charge() < 0 ) continue;
