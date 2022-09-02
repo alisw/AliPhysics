@@ -59,7 +59,10 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 			Bool_t gRunMHUS = kTRUE,
 			Bool_t doQA = kTRUE,
 			Bool_t doHigherHarmonic = kFALSE,
-			Int_t vnHarmonic=2, TString sLabel = "FB768") {
+			Int_t vnHarmonic=2, 
+			TString sDetWgtsFile = "/home/shi/alice/CalibrationFiles/CalibV0GainCorrectionLHC18q_Oct2021.root",
+			TString sZDCCorrFile = "/home/shi/alice/CalibrationFiles/RecenteringResultFinal_2018q_3rdOrderCent_vtx_orbitNo.root",
+			TString sLabel = "FB768") {
   //Macro to be used for studies of CME for charged particles
   //The macro uses as an input a configuration macro that
   //creates the AliFlowEventCuts and AliFlowTrackCuts objects
@@ -350,6 +353,28 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
   TString myNameMHUS2[nCentralities];
   TString        slot[nCentralities];
 
+  //-----------------------------------------------------------------------------
+  TFile* fV0ZDCWgtsFile = TFile::Open(sDetWgtsFile,"READ");
+  TList* fListDetWgts=NULL;
+
+  if(fV0ZDCWgtsFile) {    
+    fListDetWgts = dynamic_cast <TList*> (fV0ZDCWgtsFile->FindObjectAny("fWgtsV0ZDC"));
+    std::cout<<" \n ==============> TList found for V0/ZDC wgts.. GOOD! ";
+  }
+  else{
+    printf("\n\n *** AddTask::WARNING => NO File Found for V0/ZDC Wgts!!\n AddTask::Info() ===> No V0/ZDC Correction!! \n\n");
+  }
+  //-----------------------------------------------------------------------------
+  
+  TFile* fZDCRecenterFile = TFile::Open(sZDCCorrFile, "READ");
+  TList* fListZDCCorr=NULL;
+  
+  if(fZDCRecenterFile) {
+	fListZDCCorr = dynamic_cast <TList*> (fZDCRecenterFile->FindObjectAny("fOutputRecenter"));
+  } else{
+	printf("\n\n *** AddTask::WARNING => NO File Found for ZDC recentering!!\n AddTask::Info() ===> No ZDC Correction!! \n\n");
+  }
+  //=================================================================================
   
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralities - 1; iCentralityBin++) {
 
@@ -849,6 +874,20 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 	    taskMHLS_PP[iCentralityBin]->SetRejectPileUp(checkPileup);
 	    taskMHLS_PP[iCentralityBin]->SetRejectPileUpTight(checkPileup); //@Shi this is not really used
 	  } else if (whichData == 2018) {
+		if(fListDetWgts) {
+          taskMHLS_PP[iCentralityBin]->SetListForV0MCorr(fListDetWgts);
+        }
+        else{
+          printf("\n\n *** AddTask::WARNING => V0/ZDC Weights file Exist, But TList Not Found!!");
+          printf("\n May be wrong TList name? No Correction for V0/ZDC !! \n\n");
+        }
+        if(fListZDCCorr) {
+	      taskMHLS_PP[iCentralityBin]->SetListForZDCCorr(fListZDCCorr);
+        }
+        else{
+	      printf("\n\n *** AddTask::WARNING => ZDC Recentering file Exist, But TList Not Found!!");
+          printf("\n May be wrong TList name? No Correction for ZDC recentering !! \n\n");
+	    }
 		if (period == "q") {
 		  taskMHLS_PP[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHLS_PP[iCentralityBin]->SetIs2018Data(kTRUE);
@@ -889,6 +928,20 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 	    taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	    taskMHLS_PP2[iCentralityBin]->SetRejectPileUpTight(checkPileup); //@Shi this is not really used
 	  } else if (whichData == 2018) {
+		if(fListDetWgts) {
+          taskMHLS_PP2[iCentralityBin]->SetListForV0MCorr(fListDetWgts);
+        }
+        else{
+          printf("\n\n *** AddTask::WARNING => V0/ZDC Weights file Exist, But TList Not Found!!");
+          printf("\n May be wrong TList name? No Correction for V0/ZDC !! \n\n");
+        }
+        if(fListZDCCorr) {
+	      taskMHLS_PP2[iCentralityBin]->SetListForZDCCorr(fListZDCCorr);
+        }
+        else{
+	      printf("\n\n *** AddTask::WARNING => ZDC Recentering file Exist, But TList Not Found!!");
+          printf("\n May be wrong TList name? No Correction for ZDC recentering !! \n\n");
+	    }
 		if (period == "q") {
 		  taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHLS_PP2[iCentralityBin]->SetIs2018Data(kTRUE);
@@ -931,6 +984,16 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 	    taskMHLS_NN[iCentralityBin]->SetRejectPileUp(checkPileup);
 	    taskMHLS_NN[iCentralityBin]->SetRejectPileUpTight(checkPileup); //@Shi this is not really used
 	  } else if (whichData == 2018) {
+		if(fListDetWgts) {
+          taskMHLS_NN[iCentralityBin]->SetListForV0MCorr(fListDetWgts);
+        }
+        else{
+          printf("\n\n *** AddTask::WARNING => V0/ZDC Weights file Exist, But TList Not Found!!");
+          printf("\n May be wrong TList name? No Correction for V0/ZDC !! \n\n");
+        }
+        if(fListZDCCorr) {
+	      taskMHLS_NN[iCentralityBin]->SetListForZDCCorr(fListZDCCorr);
+        }
 		if (period == "q") {
 		  taskMHLS_NN[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHLS_NN[iCentralityBin]->SetIs2018Data(kTRUE);
@@ -971,6 +1034,16 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 	    taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	    taskMHLS_NN2[iCentralityBin]->SetRejectPileUpTight(checkPileup); //@Shi this is not really used
 	  } else if (whichData == 2018) {
+		if(fListDetWgts) {
+          taskMHLS_NN2[iCentralityBin]->SetListForV0MCorr(fListDetWgts);
+        }
+        else{
+          printf("\n\n *** AddTask::WARNING => V0/ZDC Weights file Exist, But TList Not Found!!");
+          printf("\n May be wrong TList name? No Correction for V0/ZDC !! \n\n");
+        }
+        if(fListZDCCorr) {
+	      taskMHLS_NN2[iCentralityBin]->SetListForZDCCorr(fListZDCCorr);
+        }
 		if (period == "q") {
 		  taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHLS_NN2[iCentralityBin]->SetIs2018Data(kTRUE);
@@ -1015,6 +1088,16 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 	    taskMHUS[iCentralityBin]->SetRejectPileUp(checkPileup);
 	    taskMHUS[iCentralityBin]->SetRejectPileUpTight(checkPileup); //@Shi this is not really used
 	  } else if (whichData == 2018) {
+		if(fListDetWgts) {
+          taskMHUS[iCentralityBin]->SetListForV0MCorr(fListDetWgts);
+        }
+        else{
+          printf("\n\n *** AddTask::WARNING => V0/ZDC Weights file Exist, But TList Not Found!!");
+          printf("\n May be wrong TList name? No Correction for V0/ZDC !! \n\n");
+        }
+        if(fListZDCCorr) {
+	      taskMHUS[iCentralityBin]->SetListForZDCCorr(fListZDCCorr);
+        }
 		if (period == "q") {
 		  taskMHUS[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHUS[iCentralityBin]->SetIs2018Data(kTRUE);
@@ -1057,6 +1140,16 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 	    taskMHUS2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	    taskMHUS2[iCentralityBin]->SetRejectPileUpTight(checkPileup); //@Shi this is not really used
 	  } else if (whichData == 2018) {
+		if(fListDetWgts) {
+          taskMHUS2[iCentralityBin]->SetListForV0MCorr(fListDetWgts);
+        }
+        else{
+          printf("\n\n *** AddTask::WARNING => V0/ZDC Weights file Exist, But TList Not Found!!");
+          printf("\n May be wrong TList name? No Correction for V0/ZDC !! \n\n");
+        }
+        if(fListZDCCorr) {
+	      taskMHUS2[iCentralityBin]->SetListForZDCCorr(fListZDCCorr);
+        }
 		if (period == "q") {
 		  taskMHUS2[iCentralityBin]->SetRejectPileUp(checkPileup);
 		  taskMHUS2[iCentralityBin]->SetIs2018Data(kTRUE);

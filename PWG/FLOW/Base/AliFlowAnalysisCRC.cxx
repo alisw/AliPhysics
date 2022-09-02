@@ -166,6 +166,7 @@ fNewMetricD2EBE(0.),
 fCentralityCL1EBE(0.),
 fNITSCL1EBE(0.),
 fCentralityTRKEBE(0.),
+fOrbit(0),
 fZNCQ0(0.),
 fZNAQ0(0.),
 fZNCen(0.),
@@ -566,7 +567,8 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   fCentralityCL1EBE = anEvent->GetCentralityCL1(); // centrality percentile for current event (alternative estimation)
   fCentralityTRKEBE = anEvent->GetCentralityTRK(); // centrality percentile for current event (alternative estimation)
   fNITSCL1EBE = anEvent->GetNITSCL1();
-
+  fOrbit  = anEvent->GetAbsOrbit();
+  
 //  printf("begin AliFlowAnalysisCRC::Make \n");
   
   if(fExactNoRPs > 0 && fNumberOfRPsEBE<fExactNoRPs){return;}
@@ -780,7 +782,12 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     this->PassQAZDCCuts();
     if(fRecenterZDC) {
       //this->RecenterCRCQVecZDC();
-      this->RecenterCRCQVecZDC2();
+      if(fDataSet != k2018q && fDataSet != k2018r) {
+        this->RecenterCRCQVecZDC2();
+      }
+      if(fDataSet == k2018q || fDataSet == k2018r) {
+        this->RecenterCRCQVecZDC2018Pass3();
+      }
     }
   }
   // ZDC-C (eta < -8.8)
@@ -5537,6 +5544,14 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
   for (Int_t i=0; i<3; i++) {
     fVZEROCenHist[i] = NULL;
   }
+  fHCorrectQNxV0C = NULL;
+  fHCorrectQNyV0C = NULL;
+  fHCorrectQNxV0A = NULL;
+  fHCorrectQNyV0A = NULL;
+  fHCorrectQ3xV0C = NULL;
+  fHCorrectQ3yV0C = NULL;
+  fHCorrectQ3xV0A = NULL;
+  fHCorrectQ3yV0A = NULL;
   for (Int_t i=0; i<4; i++) {
     fZDCFitSec[i] = NULL;
   }
@@ -5558,6 +5573,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
         fTPCQVecProTemp[c][et] = NULL;
     }
   }
+  
+  fHZDCCparameters = NULL;
+  fHZDCAparameters = NULL;
   
   for (Int_t i=0; i<4; i++) {
 	  fAvr_Run_CentQ[i] = NULL;
@@ -7311,90 +7329,139 @@ void AliFlowAnalysisCRC::RecenterCRCQVecVZERO()
 
 }
 
+// ===========================================================================================================
+
+void  AliFlowAnalysisCRC::RecenterCRCQVecVZERO2018Pass3()
+{
+  if(fRunNum!=fCachedRunNum) {
+    if(fCRCVZEROCalibList){
+      printf("\n ===========> Info:: V0 Channel Weights Found for Run %d \n ",fRunNum);
+    }
+    //Get V0A, V0C <Q> Vectors:
+    fHCorrectQNxV0C = (TH1D *) fCRCVZEROCalibList->FindObject(Form("fHisAvgQNxvsCentV0CRun%d",fRunNum));
+    fHCorrectQNyV0C = (TH1D *) fCRCVZEROCalibList->FindObject(Form("fHisAvgQNyvsCentV0CRun%d",fRunNum));    
+    fHCorrectQNxV0A = (TH1D *) fCRCVZEROCalibList->FindObject(Form("fHisAvgQNxvsCentV0ARun%d",fRunNum));
+    fHCorrectQNyV0A = (TH1D *) fCRCVZEROCalibList->FindObject(Form("fHisAvgQNyvsCentV0ARun%d",fRunNum));
+	
+    fHCorrectQ3xV0C = (TH1D *) fCRCVZEROCalibList->FindObject(Form("fHisAvgQ3xvsCentV0CRun%d",fRunNum));
+    fHCorrectQ3yV0C = (TH1D *) fCRCVZEROCalibList->FindObject(Form("fHisAvgQ3yvsCentV0CRun%d",fRunNum));    
+    fHCorrectQ3xV0A = (TH1D *) fCRCVZEROCalibList->FindObject(Form("fHisAvgQ3xvsCentV0ARun%d",fRunNum));
+    fHCorrectQ3yV0A = (TH1D *) fCRCVZEROCalibList->FindObject(Form("fHisAvgQ3yvsCentV0ARun%d",fRunNum));    
+    if(fHCorrectQNxV0C && fHCorrectQNyV0C && fHCorrectQNxV0A && fHCorrectQNyV0A){
+      printf(" ===========> Info:: V0A,V0C <Q> Found for Run %d \n ",fRunNum);
+    }
+  }
+
+  // V0-C
+  Double_t QCRe2ndHar = fVZFlowVect[0][1].X(); // second harmonic cos(2psi)
+  Double_t QCIm2ndHar = fVZFlowVect[0][1].Y();
+  Double_t QMC2ndHar  = fVZFlowVect[0][1].GetMult();
+  // V0-A
+  Double_t QARe2ndHar = fVZFlowVect[1][1].X();
+  Double_t QAIm2ndHar = fVZFlowVect[1][1].Y();
+  Double_t QMA2ndHar  = fVZFlowVect[1][1].GetMult();
+  
+  Int_t icentbin = -999;
+  Double_t avgqx = -999;
+  Double_t avgqy = -999;
+  
+  if(fHCorrectQNxV0C && fHCorrectQNyV0C){
+	icentbin = fHCorrectQNxV0C->FindBin(fCentralityEBE);
+    avgqx = fHCorrectQNxV0C->GetBinContent(icentbin);
+    avgqy = fHCorrectQNyV0C->GetBinContent(icentbin);
+    QCRe2ndHar -= avgqx;
+    QCIm2ndHar -= avgqy;
+  }
+  if(fHCorrectQNxV0A && fHCorrectQNyV0A){
+    icentbin = fHCorrectQNxV0A->FindBin(fCentralityEBE);
+    avgqx = fHCorrectQNxV0A->GetBinContent(icentbin);
+    avgqy = fHCorrectQNyV0A->GetBinContent(icentbin);
+    QARe2ndHar -= avgqx;
+    QAIm2ndHar -= avgqy;           
+  }
+    
+  fVZFlowVect[0][1].Set(QCRe2ndHar,QCIm2ndHar);
+  fVZFlowVect[1][1].Set(QARe2ndHar,QAIm2ndHar);
+  
+  // V0-C
+  Double_t QCRe3rdHar = fVZFlowVect[0][1].X(); // second harmonic cos(2psi)
+  Double_t QCIm3rdHar = fVZFlowVect[0][1].Y();
+  Double_t QMC3rdHar  = fVZFlowVect[0][1].GetMult();
+  // V0-A
+  Double_t QARe3rdHar = fVZFlowVect[1][1].X();
+  Double_t QAIm3rdHar = fVZFlowVect[1][1].Y();
+  Double_t QMA3rdHar  = fVZFlowVect[1][1].GetMult();
+  
+  if(fHCorrectQ3xV0C && fHCorrectQ3yV0C){
+    icentbin = fHCorrectQ3xV0C->FindBin(fCentralityEBE);
+    avgqx = fHCorrectQ3xV0C->GetBinContent(icentbin);
+    avgqy = fHCorrectQ3yV0C->GetBinContent(icentbin);
+    QCRe3rdHar -= avgqx;
+    QCIm3rdHar -= avgqy;	
+  }
+  if(fHCorrectQ3xV0A && fHCorrectQ3yV0A){
+    icentbin = fHCorrectQ3xV0A->FindBin(fCentralityEBE);
+    avgqx = fHCorrectQ3xV0A->GetBinContent(icentbin);
+    avgqy = fHCorrectQ3yV0A->GetBinContent(icentbin);
+    QARe3rdHar -= avgqx;
+    QAIm3rdHar -= avgqy;
+  }
+  
+  fVZFlowVect[0][2].Set(QCRe3rdHar,QCIm3rdHar);
+  fVZFlowVect[1][2].Set(QARe3rdHar,QAIm3rdHar);
+  
+  return;
+
+}
+
 //=======================================================================================================================
 
-//void AliFlowAnalysisCRC::RecenterCRCQVecZDC2018Pass3()
-//{
-	//Double_t ZDCCAvgxPosFromVtxFit = 0;
-	//Double_t ZDCCAvgyPosFromVtxFit = 0;
-	
-	//Double_t ZDCAAvgxPosFromVtxFit = 0;
-	//Double_t ZDCAAvgyPosFromVtxFit = 0;
+void AliFlowAnalysisCRC::RecenterCRCQVecZDC2018Pass3()
+{
+	// Read input histograms
+    if(fRunNum!=fCachedRunNum) {
+		fHZDCCparameters = (TH1D*)(fZDCCalibListFinalRunByRun->FindObject(Form("Run %d", fRunNum))->FindObject(Form("fZDCCparameters[%d]",fRunNum)));
+		fHZDCAparameters = (TH1D*)(fZDCCalibListFinalRunByRun->FindObject(Form("Run %d", fRunNum))->FindObject(Form("fZDCAparameters[%d]",fRunNum)));
 
-	//if (gTypeOfRecentering == 0) { // 1st order centrality+vtxPos, 
-		//ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pVtxX + fHZDCCparameters->GetBinContent(8)*pVtxY + fHZDCCparameters->GetBinContent(9)*pVtxZ + fHZDCCparameters->GetBinContent(10);
-		//ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(11)*centrality + fHZDCCparameters->GetBinContent(12)*pVtxX + fHZDCCparameters->GetBinContent(13)*pVtxY + fHZDCCparameters->GetBinContent(14)*pVtxZ + fHZDCCparameters->GetBinContent(15);
-		
-		//ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pVtxX + fHZDCAparameters->GetBinContent(8)*pVtxY + fHZDCAparameters->GetBinContent(9)*pVtxZ + fHZDCAparameters->GetBinContent(10);
-		//ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(11)*centrality + fHZDCAparameters->GetBinContent(12)*pVtxX + fHZDCAparameters->GetBinContent(13)*pVtxY + fHZDCAparameters->GetBinContent(14)*pVtxZ + fHZDCAparameters->GetBinContent(15);
-	//} else if (gTypeOfRecentering == 1) { // 3rd order centrality+vtxpos
-		//ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pow(centrality,2) + fHZDCCparameters->GetBinContent(8)*pow(centrality,3) + fHZDCCparameters->GetBinContent(9)*pVtxX + fHZDCCparameters->GetBinContent(10)*pVtxY + fHZDCCparameters->GetBinContent(11)*pVtxZ + fHZDCCparameters->GetBinContent(12);
-		//ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(13)*centrality + fHZDCCparameters->GetBinContent(14)*pow(centrality,2) + fHZDCCparameters->GetBinContent(15)*pow(centrality,3) + fHZDCCparameters->GetBinContent(16)*pVtxX + fHZDCCparameters->GetBinContent(17)*pVtxY + fHZDCCparameters->GetBinContent(18)*pVtxZ + fHZDCCparameters->GetBinContent(19);
-		
-		//ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12);
-		//ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(13)*centrality + fHZDCAparameters->GetBinContent(14)*pow(centrality,2) + fHZDCAparameters->GetBinContent(15)*pow(centrality,3) + fHZDCAparameters->GetBinContent(16)*pVtxX + fHZDCAparameters->GetBinContent(17)*pVtxY + fHZDCAparameters->GetBinContent(18)*pVtxZ + fHZDCAparameters->GetBinContent(19);
-	//} else if (gTypeOfRecentering == 2) { // 3rd order centrality+vtxpos+orbitNum
-		//ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pow(centrality,2) + fHZDCCparameters->GetBinContent(8)*pow(centrality,3) + fHZDCCparameters->GetBinContent(9)*pVtxX + fHZDCCparameters->GetBinContent(10)*pVtxY + fHZDCCparameters->GetBinContent(11)*pVtxZ + fHZDCCparameters->GetBinContent(12)*fOrbitNumber + fHZDCCparameters->GetBinContent(13);
-		//ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(14)*centrality + fHZDCCparameters->GetBinContent(15)*pow(centrality,2) + fHZDCCparameters->GetBinContent(16)*pow(centrality,3) + fHZDCCparameters->GetBinContent(17)*pVtxX + fHZDCCparameters->GetBinContent(18)*pVtxY + fHZDCCparameters->GetBinContent(19)*pVtxZ + fHZDCCparameters->GetBinContent(20)*fOrbitNumber + fHZDCCparameters->GetBinContent(21);
-		
-		//ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12)*fOrbitNumber + fHZDCAparameters->GetBinContent(13);
-		//ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(14)*centrality + fHZDCAparameters->GetBinContent(15)*pow(centrality,2) + fHZDCAparameters->GetBinContent(16)*pow(centrality,3) + fHZDCAparameters->GetBinContent(17)*pVtxX + fHZDCAparameters->GetBinContent(18)*pVtxY + fHZDCAparameters->GetBinContent(19)*pVtxZ + fHZDCAparameters->GetBinContent(20)*fOrbitNumber + fHZDCAparameters->GetBinContent(21);
-	//} else if (gTypeOfRecentering == 3) { // 1st order tow0 + vtxpos	
-		//ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(10);
-		//ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(11)*pVtxX + fHZDCCparameters->GetBinContent(12)*pVtxY + fHZDCCparameters->GetBinContent(13)*pVtxZ + fHZDCCparameters->GetBinContent(14)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(15);
-		
-		//ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(10);
-		//ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(11)*pVtxX + fHZDCAparameters->GetBinContent(12)*pVtxY + fHZDCAparameters->GetBinContent(13)*pVtxZ + fHZDCAparameters->GetBinContent(14)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(15);
-	//} else if (gTypeOfRecentering == 4) { // 3rd order tow0 + vtxpos
-		//ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(10)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(11)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(12);
-		//ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(13)*pVtxX + fHZDCCparameters->GetBinContent(14)*pVtxY + fHZDCCparameters->GetBinContent(15)*pVtxZ + fHZDCCparameters->GetBinContent(16)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(17)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(18)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(19);
-		
-		//ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(10)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(11)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(12);
-		//ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(13)*pVtxX + fHZDCAparameters->GetBinContent(14)*pVtxY + fHZDCAparameters->GetBinContent(15)*pVtxZ + fHZDCAparameters->GetBinContent(16)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(17)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(18)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(19);
-	//} else if (gTypeOfRecentering == 5) { // 5th order tow0 + vtxpos
-		//ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(10)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(11)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(12)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(13)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(14);
-		//ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(15)*pVtxX + fHZDCCparameters->GetBinContent(16)*pVtxY + fHZDCCparameters->GetBinContent(17)*pVtxZ + fHZDCCparameters->GetBinContent(18)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(19)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(20)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(21)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(22)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(23);
-		
-		//ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(10)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(11)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(12)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(13)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(14);
-		//ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(15)*pVtxX + fHZDCAparameters->GetBinContent(16)*pVtxY + fHZDCAparameters->GetBinContent(17)*pVtxZ + fHZDCAparameters->GetBinContent(18)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(19)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(20)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(21)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(22)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(23);
-	//} else if (gTypeOfRecentering == 6) { // 5th order tow0 + vtxpos + orbitNum
-		//ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9)*fOrbitNumber + fHZDCCparameters->GetBinContent(10)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(11)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(12)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(13)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(14)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(15);
-		//ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(16)*pVtxX + fHZDCCparameters->GetBinContent(17)*pVtxY + fHZDCCparameters->GetBinContent(18)*pVtxZ + fHZDCCparameters->GetBinContent(19)*fOrbitNumber + fHZDCCparameters->GetBinContent(20)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(21)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(22)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(23)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(24)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(25);
-		
-		//ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9)*fOrbitNumber + fHZDCAparameters->GetBinContent(10)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(11)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(12)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(13)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(14)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(15);
-		//ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(16)*pVtxX + fHZDCAparameters->GetBinContent(17)*pVtxY + fHZDCAparameters->GetBinContent(18)*pVtxZ + fHZDCAparameters->GetBinContent(19)*fOrbitNumber + fHZDCAparameters->GetBinContent(20)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(21)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(22)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(23)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(24)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(25);
-	//} else if (gTypeOfRecentering == 7) { // 5th order tow0 + 3rd order centrality + vtxpos + orbitNum
-		//ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pow(centrality,2) + fHZDCCparameters->GetBinContent(8)*pow(centrality,3) + fHZDCCparameters->GetBinContent(9)*pVtxX + fHZDCCparameters->GetBinContent(10)*pVtxY + fHZDCCparameters->GetBinContent(11)*pVtxZ + fHZDCCparameters->GetBinContent(12)*fOrbitNumber + fHZDCCparameters->GetBinContent(13)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(14)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(15)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(16)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(17)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(18);
-		//ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(19)*centrality + fHZDCCparameters->GetBinContent(20)*pow(centrality,2) + fHZDCCparameters->GetBinContent(21)*pow(centrality,3) + fHZDCCparameters->GetBinContent(22)*pVtxX + fHZDCCparameters->GetBinContent(23)*pVtxY + fHZDCCparameters->GetBinContent(24)*pVtxZ + fHZDCCparameters->GetBinContent(25)*fOrbitNumber + fHZDCCparameters->GetBinContent(26)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(27)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(28)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(29)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(30)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(31);
-		
-		//ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12)*fOrbitNumber + fHZDCAparameters->GetBinContent(13)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(14)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(15)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(16)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(17)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(18);
-		//ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(19)*centrality + fHZDCAparameters->GetBinContent(20)*pow(centrality,2) + fHZDCAparameters->GetBinContent(21)*pow(centrality,3) + fHZDCAparameters->GetBinContent(22)*pVtxX + fHZDCAparameters->GetBinContent(23)*pVtxY + fHZDCAparameters->GetBinContent(24)*pVtxZ + fHZDCAparameters->GetBinContent(25)*fOrbitNumber + fHZDCAparameters->GetBinContent(26)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(27)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(28)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(29)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(30)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(31);
-	//}
+		if(fHZDCCparameters && fHZDCAparameters){
+			printf("\n ===========> Info:: ZDC Channel Weights Found for Run %d \n ",fRunNum);
+		}
+	}
 	
-	//fQxZNCC = ZDCCxPosFromLogWeight - ZDCCAvgxPosFromVtxFit;
-	//fQyZNCC = ZDCCyPosFromLogWeight - ZDCCAvgyPosFromVtxFit;
+	Double_t ZDCCAvgxPosFromVtxFit = 0;
+	Double_t ZDCCAvgyPosFromVtxFit = 0;
 	
-	//fQxZNCA = ZDCAxPosFromLogWeight - ZDCAAvgxPosFromVtxFit;
-	//fQyZNCA = ZDCAyPosFromLogWeight - ZDCAAvgyPosFromVtxFit;
+	Double_t ZDCAAvgxPosFromVtxFit = 0;
+	Double_t ZDCAAvgyPosFromVtxFit = 0;
+	
+	// 3rd order centrality+vtxpos+orbitNum
+	ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*fCentralityEBE + fHZDCCparameters->GetBinContent(7)*pow(fCentralityEBE,2) + fHZDCCparameters->GetBinContent(8)*pow(fCentralityEBE,3) + fHZDCCparameters->GetBinContent(9)*fVtxPos[0] + fHZDCCparameters->GetBinContent(10)*fVtxPos[1] + fHZDCCparameters->GetBinContent(11)*fVtxPos[2] + fHZDCCparameters->GetBinContent(12)*fOrbit + fHZDCCparameters->GetBinContent(13);
+	ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(14)*fCentralityEBE + fHZDCCparameters->GetBinContent(15)*pow(fCentralityEBE,2) + fHZDCCparameters->GetBinContent(16)*pow(fCentralityEBE,3) + fHZDCCparameters->GetBinContent(17)*fVtxPos[0] + fHZDCCparameters->GetBinContent(18)*fVtxPos[1] + fHZDCCparameters->GetBinContent(19)*fVtxPos[2] + fHZDCCparameters->GetBinContent(20)*fOrbit + fHZDCCparameters->GetBinContent(21);
+		
+	ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*fCentralityEBE + fHZDCAparameters->GetBinContent(7)*pow(fCentralityEBE,2) + fHZDCAparameters->GetBinContent(8)*pow(fCentralityEBE,3) + fHZDCAparameters->GetBinContent(9)*fVtxPos[0] + fHZDCAparameters->GetBinContent(10)*fVtxPos[1] + fHZDCAparameters->GetBinContent(11)*fVtxPos[2] + fHZDCAparameters->GetBinContent(12)*fOrbit + fHZDCAparameters->GetBinContent(13);
+	ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(14)*fCentralityEBE + fHZDCAparameters->GetBinContent(15)*pow(fCentralityEBE,2) + fHZDCAparameters->GetBinContent(16)*pow(fCentralityEBE,3) + fHZDCAparameters->GetBinContent(17)*fVtxPos[0] + fHZDCAparameters->GetBinContent(18)*fVtxPos[1] + fHZDCAparameters->GetBinContent(19)*fVtxPos[2] + fHZDCAparameters->GetBinContent(20)*fOrbit + fHZDCAparameters->GetBinContent(21);
 	
 	
-	//fZDCFlowVect[0].Set(fQxZNCC,fQyZNCC);
-    //fZDCFlowVect[1].Set(fQxZNCA,fQyZNCA);
+	// ZDCN-C
+	Double_t QCRe = fZDCFlowVect[0].X(); 
+	Double_t QCIm = fZDCFlowVect[0].Y();
+	Double_t QMC  = fZDCFlowVect[0].GetMult();
+	// ZDCN-A
+	Double_t QARe = fZDCFlowVect[1].X();
+	Double_t QAIm = fZDCFlowVect[1].Y();
+	Double_t QMA  = fZDCFlowVect[1].GetMult();
   
-	//// Event plane
+	Double_t fQxZNCC = QCRe - ZDCCAvgxPosFromVtxFit;
+	Double_t fQyZNCC = QCIm - ZDCCAvgyPosFromVtxFit;
+	
+	Double_t fQxZNCA = QARe - ZDCAAvgxPosFromVtxFit;
+	Double_t fQyZNCA = QAIm - ZDCAAvgyPosFromVtxFit;
+	
+	
+	fZDCFlowVect[0].Set(fQxZNCC,fQyZNCC);
+    fZDCFlowVect[1].Set(fQxZNCA,fQyZNCA);
 
-	//fPsiZNCA = TMath::ATan2(fQyZNCA,fQxZNCA); // Psi_{1,A} spectator plane -pi to pi
-	//if (fPsiZNCA < 0) { // Psi_{1,A} should be differ to Psi_{1,C} by pi. 
-	  //fPsiZNCA = fPsiZNCA + TMath::Pi();
-	//} else if (fPsiZNCA >= 0) {
-	  //fPsiZNCA = fPsiZNCA - TMath::Pi();
-	//}
-
-	//fPsiZNCC = TMath::ATan2(fQyZNCC,fQxZNCC); // Psi_{1,C} spectator plane 
-
-	//fPsiZNCCA = TMath::ATan2((fQyZNCC-fQyZNCA),(fQxZNCC-fQxZNCA));
-
-//}
+}
 
 // ======================================================================================
 
@@ -9658,6 +9725,7 @@ void AliFlowAnalysisCRC::CalculateCMESPPP() //@Shi spectator plane participant p
     fCMESPPPEvPlTPCPosEtadistribution->Fill(fCentralityEBE,EvPlTPCPosEta);
     fCMESPPPEvPlTPCNegEtadistribution->Fill(fCentralityEBE,EvPlTPCNegEta);
   }
+  
   // QA for event plane
   fQACMESPPPTPCPro[0]->Fill(fCentralityEBE, cos(2.*EvPlTPC)); 
   fQACMESPPPTPCPro[1]->Fill(fCentralityEBE, sin(2.*EvPlTPC));
@@ -9779,7 +9847,26 @@ void AliFlowAnalysisCRC::CalculateCMESPPP() //@Shi spectator plane participant p
   Double_t ZAIm = fZDCFlowVect[1].Y();
   Double_t ZAM  = fZDCFlowVect[1].GetMult();
   
-  if( fInvertZDC ) ZARe = -ZARe;
+  Double_t ZAPsi; // Psi_{1,A} spectator plane
+  Double_t ZCPsi; // Psi_{1,C} spectator plane
+  Double_t ZCAPsi; // combined SP A-C side
+  
+  // Event plane for 2018 dataset
+  if( fDataSet == k2018q || fDataSet == k2018r) {
+	ZAPsi = TMath::ATan2(ZARe,ZAIm); // Psi_{1,A} spectator plane -pi to pi
+	if (ZAPsi < 0) { // Psi_{1,A} should be differ to Psi_{1,C} by pi. 
+	  ZAPsi = ZAPsi + TMath::Pi();
+	} else if (ZAPsi >= 0) {
+	  ZAPsi = ZAPsi - TMath::Pi();
+	}
+	ZCAPsi = TMath::ATan2(ZCRe,ZCIm); // Psi_{1,C} spectator plane 
+
+	ZCAPsi = TMath::ATan2((ZCRe-ZARe),(ZCIm-ZAIm));  
+  }
+  
+  if(fDataSet != k2018q && fDataSet != k2018r) {
+    if( fInvertZDC ) ZARe = -ZARe;
+  }
 
   // cut on centrality >5%
   if( fCentralityEBE<5. ) return;
@@ -9817,9 +9904,11 @@ void AliFlowAnalysisCRC::CalculateCMESPPP() //@Shi spectator plane participant p
   } // end of for(Int_t EBin=1; EBin<=fCMEQRe[0][0]->GetNbinsX(); EBin++)
   
   // Event plane
-
-  Double_t ZAPsi = TMath::ATan2(ZAIm,ZARe); // Psi_{1,A} spectator plane
-  Double_t ZCPsi = TMath::ATan2(ZCIm,ZCRe); // Psi_{1,C} spectator plane
+  if(fDataSet != k2018q && fDataSet != k2018r) {
+	ZAPsi = TMath::ATan2(ZAIm,ZARe); // Psi_{1,A} spectator plane
+    ZCPsi = TMath::ATan2(ZCIm,ZCRe); // Psi_{1,C} spectator plane  
+  }
+  
   Double_t cosZARe = TMath::Cos(2.*ZAPsi);
   Double_t sinZAIm = TMath::Sin(2.*ZAPsi);
   Double_t cosZCRe = TMath::Cos(2.*ZCPsi);
@@ -10026,49 +10115,95 @@ void AliFlowAnalysisCRC::CalculateCMESPPP() //@Shi spectator plane participant p
 	}
     // **************************************************** ZDC part ************************************
     if (kTRUE) {
-    // ZDC Gamma cos(phi1+phi2-Psi_{1,A}-Psi_{1,C}) 
-    Double_t TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*cos(ZAPsi + ZCPsi) + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*sin(ZAPsi + ZCPsi)) / (uPMZDC*uNMZDC) ;
-    fCMESPPPZDCCorPro[0]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
+		if (fDataSet != k2018q && fDataSet != k2018r) {
+			// ZDC Gamma cos(phi1+phi2-Psi_{1,A}-Psi_{1,C}) 
+			Double_t TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*cos(ZAPsi + ZCPsi) + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*sin(ZAPsi + ZCPsi)) / (uPMZDC*uNMZDC) ;
+			fCMESPPPZDCCorPro[0]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
 
-    Double_t TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*cos(ZAPsi + ZCPsi) + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*sin(ZCPsi + ZAPsi)) / (uPMZDC*uPMZDC-uP2MZDC) ;
-    fCMESPPPZDCCorPro[1]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
+			Double_t TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*cos(ZAPsi + ZCPsi) + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*sin(ZCPsi + ZAPsi)) / (uPMZDC*uPMZDC-uP2MZDC) ;
+			fCMESPPPZDCCorPro[1]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
 
-    Double_t TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*cos(ZCPsi + ZAPsi) + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*sin(ZCPsi + ZAPsi)) / (uNMZDC*uNMZDC-uN2MZDC) ;
-    fCMESPPPZDCCorPro[2]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);
-    
-    // ZDC-C Gamma cos(phi1+phi2-2Psi_{1,C}) 
-    TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*ZCRe + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*ZCIm) / (uPMZDC*uNMZDC) ;
-    fCMESPPPZDCCorPro[3]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
+			Double_t TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*cos(ZCPsi + ZAPsi) + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*sin(ZCPsi + ZAPsi)) / (uNMZDC*uNMZDC-uN2MZDC) ;
+			fCMESPPPZDCCorPro[2]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);
+			
+			// ZDC-C Gamma cos(phi1+phi2-2Psi_{1,C}) 
+			TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*ZCRe + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*ZCIm) / (uPMZDC*uNMZDC) ;
+			fCMESPPPZDCCorPro[3]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
 
-    TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*ZCRe + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*ZCIm) / (uPMZDC*uPMZDC-uP2MZDC) ;
-    fCMESPPPZDCCorPro[4]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
+			TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*ZCRe + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*ZCIm) / (uPMZDC*uPMZDC-uP2MZDC) ;
+			fCMESPPPZDCCorPro[4]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
 
-    TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*ZCRe + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*ZCIm) / (uNMZDC*uNMZDC-uN2MZDC) ;
-    fCMESPPPZDCCorPro[5]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);
+			TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*ZCRe + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*ZCIm) / (uNMZDC*uNMZDC-uN2MZDC) ;
+			fCMESPPPZDCCorPro[5]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);
 
-    // ZDC-A Gamma cos(phi1+phi2-2Psi_{1,A}) 
-    TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*ZARe + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*ZAIm) / (uPMZDC*uNMZDC) ;
-    fCMESPPPZDCCorPro[6]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
+			// ZDC-A Gamma cos(phi1+phi2-2Psi_{1,A}) 
+			TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*ZARe + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*ZAIm) / (uPMZDC*uNMZDC) ;
+			fCMESPPPZDCCorPro[6]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
 
-    TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*ZARe + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*ZAIm) / (uPMZDC*uPMZDC-uP2MZDC) ;
-    fCMESPPPZDCCorPro[7]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
+			TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*ZARe + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*ZAIm) / (uPMZDC*uPMZDC-uP2MZDC) ;
+			fCMESPPPZDCCorPro[7]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
 
-    TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*ZARe + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*ZAIm) / (uNMZDC*uNMZDC-uN2MZDC) ;
-    fCMESPPPZDCCorPro[8]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);   
-    
-    // calculate cos(2phi-Psi_{1,C}) cos(2phi-2Psi_{1,A}) and cos(2phi-Psi_{1,A}-Psi_{1,C}) 
-    
-    // cos(2a-2Psi_{1,ZDC_C})=cos(2a)cos(2Psi_{1,ZDC_C})+sin(2a)sin(2Psi_{1,ZDC_C})
-    Double_t v2ZDCC = (uPN2ReTPC*cosZCRe+uPN2ImTPC*sinZCIm)/uPNMTPC;
-    fCMESPPPV2[4]->Fill(fCentralityEBE, v2ZDCC, fCenWeightEbE);
-    
-    // cos(2a-2Psi_{1,ZDC_A})
-    Double_t v2ZDCA = (uPN2ReTPC*cosZARe+uPN2ImTPC*sinZAIm)/uPNMTPC; 
-    fCMESPPPV2[5]->Fill(fCentralityEBE, v2ZDCA, fCenWeightEbE);
-    
-    //cos(2a-Psi_{1,ZDC_C}-Psi_{1,ZDC_A})
-    Double_t v2ZDCCA = (uPN2ReTPC*cos(ZCPsi+ZAPsi)+uPN2ImTPC*sin(ZCPsi+ZAPsi))/uPNMTPC;
-    fCMESPPPV2[6]->Fill(fCentralityEBE, v2ZDCCA, fCenWeightEbE);
+			TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*ZARe + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*ZAIm) / (uNMZDC*uNMZDC-uN2MZDC) ;
+			fCMESPPPZDCCorPro[8]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);   
+			
+			// calculate cos(2phi-Psi_{1,C}) cos(2phi-2Psi_{1,A}) and cos(2phi-Psi_{1,A}-Psi_{1,C}) 
+			
+			// cos(2a-2Psi_{1,ZDC_C})=cos(2a)cos(2Psi_{1,ZDC_C})+sin(2a)sin(2Psi_{1,ZDC_C})
+			Double_t v2ZDCC = (uPN2ReTPC*cosZCRe+uPN2ImTPC*sinZCIm)/uPNMTPC;
+			fCMESPPPV2[4]->Fill(fCentralityEBE, v2ZDCC, fCenWeightEbE);
+			
+			// cos(2a-2Psi_{1,ZDC_A})
+			Double_t v2ZDCA = (uPN2ReTPC*cosZARe+uPN2ImTPC*sinZAIm)/uPNMTPC; 
+			fCMESPPPV2[5]->Fill(fCentralityEBE, v2ZDCA, fCenWeightEbE);
+			
+			//cos(2a-Psi_{1,ZDC_C}-Psi_{1,ZDC_A})
+			Double_t v2ZDCCA = (uPN2ReTPC*cos(ZCPsi+ZAPsi)+uPN2ImTPC*sin(ZCPsi+ZAPsi))/uPNMTPC;
+			fCMESPPPV2[6]->Fill(fCentralityEBE, v2ZDCCA, fCenWeightEbE);
+		} else if (fDataSet == k2018q || fDataSet == k2018r) {
+			// ZDC Gamma cos(phi1+phi2-2*Psi_{1,ZDC_CA}) 
+			Double_t TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*cos(2*ZCAPsi) + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*sin(2*ZCAPsi)) / (uPMZDC*uNMZDC) ;
+			fCMESPPPZDCCorPro[0]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
+
+			Double_t TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*cos(2*ZCAPsi) + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*sin(2*ZCAPsi)) / (uPMZDC*uPMZDC-uP2MZDC) ;
+			fCMESPPPZDCCorPro[1]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
+
+			Double_t TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*cos(2*ZCAPsi) + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*sin(2*ZCAPsi)) / (uNMZDC*uNMZDC-uN2MZDC) ;
+			fCMESPPPZDCCorPro[2]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);
+			
+			// ZDC-C Gamma cos(phi1+phi2-2Psi_{1,C}) 
+			TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*ZCRe + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*ZCIm) / (uPMZDC*uNMZDC) ;
+			fCMESPPPZDCCorPro[3]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
+
+			TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*ZCRe + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*ZCIm) / (uPMZDC*uPMZDC-uP2MZDC) ;
+			fCMESPPPZDCCorPro[4]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
+
+			TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*ZCRe + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*ZCIm) / (uNMZDC*uNMZDC-uN2MZDC) ;
+			fCMESPPPZDCCorPro[5]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);
+
+			// ZDC-A Gamma cos(phi1+phi2-2Psi_{1,A}) 
+			TwoQpQnV = ((uPReZDC*uNReZDC-uPImZDC*uNImZDC)*ZARe + (uPReZDC*uNImZDC+uPImZDC*uNReZDC)*ZAIm) / (uPMZDC*uNMZDC) ;
+			fCMESPPPZDCCorPro[6]->Fill(fCentralityEBE,TwoQpQnV,fCenWeightEbE);
+
+			TwoQpQpV = ((uPReZDC*uPReZDC-uPImZDC*uPImZDC-uP2Re2ZDC)*ZARe + (2.*uPReZDC*uPImZDC-uP2Im2ZDC)*ZAIm) / (uPMZDC*uPMZDC-uP2MZDC) ;
+			fCMESPPPZDCCorPro[7]->Fill(fCentralityEBE,TwoQpQpV,fCenWeightEbE);
+
+			TwoQnQnV = ((uNReZDC*uNReZDC-uNImZDC*uNImZDC-uN2Re2ZDC)*ZARe + (2.*uNReZDC*uNImZDC-uN2Im2ZDC)*ZAIm) / (uNMZDC*uNMZDC-uN2MZDC) ;
+			fCMESPPPZDCCorPro[8]->Fill(fCentralityEBE,TwoQnQnV,fCenWeightEbE);   
+			
+			// calculate cos(2phi-Psi_{1,C}) cos(2phi-2Psi_{1,A}) and cos(2phi-2*Psi_{1,ZDC_CA}) 
+			
+			// cos(2a-2Psi_{1,ZDC_C})=cos(2a)cos(2Psi_{1,ZDC_C})+sin(2a)sin(2Psi_{1,ZDC_C})
+			Double_t v2ZDCC = (uPN2ReTPC*cosZCRe+uPN2ImTPC*sinZCIm)/uPNMTPC;
+			fCMESPPPV2[4]->Fill(fCentralityEBE, v2ZDCC, fCenWeightEbE);
+			
+			// cos(2a-2Psi_{1,ZDC_A})
+			Double_t v2ZDCA = (uPN2ReTPC*cosZARe+uPN2ImTPC*sinZAIm)/uPNMTPC; 
+			fCMESPPPV2[5]->Fill(fCentralityEBE, v2ZDCA, fCenWeightEbE);
+			
+			//cos(2a-2*Psi_{1,ZDC_CA})
+			Double_t v2ZDCCA = (uPN2ReTPC*cos(2*ZCAPsi)+uPN2ImTPC*sin(2*ZCAPsi))/uPNMTPC;
+			fCMESPPPV2[6]->Fill(fCentralityEBE, v2ZDCCA, fCenWeightEbE);
+		}
 	}
   }
 
@@ -19842,6 +19977,11 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
 		  fTempList->Add(fAvr_Cent_VtxXYZQ[c][i]);
 	  }
   }
+  
+  fHZDCCparameters = new TH1D();
+  fHZDCAparameters = new TH1D();
+  fTempList->Add(fHZDCCparameters);
+  fTempList->Add(fHZDCAparameters);
   
   if(fCRCZDC2DCutList) {
     for(Int_t i=0; i<2; i++) {
