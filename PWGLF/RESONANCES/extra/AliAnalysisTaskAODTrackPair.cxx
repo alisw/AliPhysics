@@ -27,6 +27,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODPid.h"
+#include "AliAODRecoDecay.h"
 #include "AliAODTrack.h"
 #include "AliAODTracklets.h"
 #include "AliAODv0.h"
@@ -83,6 +84,15 @@ ClassImp(AliAnalysisTaskAODTrackPair)
       fSparseULSPairMassPt(NULL), fSparseLSppPairMassPt(NULL),
       fSparseLSmmPairMassPt(NULL),
 
+      fSparseULSPairMassPt_SmallOpeningAngle(NULL),
+      fSparseLSppPairMassPt_SmallOpeningAngle(NULL),
+      fSparseLSmmPairMassPt_SmallOpeningAngle(NULL),
+
+      fSparseULSPairMassPt_SideBandLeftRight(NULL),
+      fSparseULSPairMassPt_SideBandLeft(NULL),
+      fSparseULSPairMassPt_SideBandRight(NULL),
+      fSparseULSPairMassPt_SideBand(NULL),
+
       fTreeULSPair_TightCut(NULL), fTreeLSppPair_TightCut(NULL),
       fTreeLSmmPair_TightCut(NULL),
 
@@ -105,6 +115,9 @@ ClassImp(AliAnalysisTaskAODTrackPair)
 
       fSparseMixULSPairMassPt(NULL), fSparseMixLSppPairMassPt(NULL),
       fSparseMixLSmmPairMassPt(NULL),
+      fSparseMixULSPairMassPt_SmallOpeningAngle(NULL),
+      fSparseMixLSppPairMassPt_SmallOpeningAngle(NULL),
+      fSparseMixLSmmPairMassPt_SmallOpeningAngle(NULL),
 
       fHistMassK0s1K0s2(NULL),
 
@@ -125,6 +138,7 @@ ClassImp(AliAnalysisTaskAODTrackPair)
       fHistTPCNClusts(NULL), fHistSPDNClusts(NULL),
       fHistTPCCrossRowsFindableRatio(NULL), fHistReducedChi2TPC(NULL),
       fHistReducedChi2ITS(NULL), fHistDCAz(NULL), fHistDCAxyPt(NULL),
+      fHistOpeningAngle(NULL),
 
       fHistArmenteros(NULL), fHistV0MassDecayLength(NULL),
       fHistV0MassPointingAngle(NULL), fHistV0MassV0DCA(NULL),
@@ -167,6 +181,15 @@ AliAnalysisTaskAODTrackPair::AliAnalysisTaskAODTrackPair(const char *name)
       fSparseULSPairMassPt(NULL), fSparseLSppPairMassPt(NULL),
       fSparseLSmmPairMassPt(NULL),
 
+      fSparseULSPairMassPt_SmallOpeningAngle(NULL),
+      fSparseLSppPairMassPt_SmallOpeningAngle(NULL),
+      fSparseLSmmPairMassPt_SmallOpeningAngle(NULL),
+
+      fSparseULSPairMassPt_SideBandLeftRight(NULL),
+      fSparseULSPairMassPt_SideBandLeft(NULL),
+      fSparseULSPairMassPt_SideBandRight(NULL),
+      fSparseULSPairMassPt_SideBand(NULL),
+
       fTreeULSPair_TightCut(NULL), fTreeLSppPair_TightCut(NULL),
       fTreeLSmmPair_TightCut(NULL),
 
@@ -189,6 +212,9 @@ AliAnalysisTaskAODTrackPair::AliAnalysisTaskAODTrackPair(const char *name)
 
       fSparseMixULSPairMassPt(NULL), fSparseMixLSppPairMassPt(NULL),
       fSparseMixLSmmPairMassPt(NULL),
+      fSparseMixULSPairMassPt_SmallOpeningAngle(NULL),
+      fSparseMixLSppPairMassPt_SmallOpeningAngle(NULL),
+      fSparseMixLSmmPairMassPt_SmallOpeningAngle(NULL),
 
       fHistMassK0s1K0s2(NULL),
 
@@ -209,6 +235,7 @@ AliAnalysisTaskAODTrackPair::AliAnalysisTaskAODTrackPair(const char *name)
       fHistTPCNClusts(NULL), fHistSPDNClusts(NULL),
       fHistTPCCrossRowsFindableRatio(NULL), fHistReducedChi2TPC(NULL),
       fHistReducedChi2ITS(NULL), fHistDCAz(NULL), fHistDCAxyPt(NULL),
+      fHistOpeningAngle(NULL),
 
       fHistArmenteros(NULL), fHistV0MassDecayLength(NULL),
       fHistV0MassPointingAngle(NULL), fHistV0MassV0DCA(NULL),
@@ -253,35 +280,38 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  double bins_event_hist[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  int binnum_event_hist = sizeof(bins_event_hist) / sizeof(double) - 1;
+  double min_mass = 0.0;
+  double max_mass = 3.0;
+  double width_mass = 0.001;
 
-  std::string event_label[] = {"CMUL7",
-                               "CMLL7",
-                               "CMUL7orCMLL7",
-                               "CMUL7andCMLL7",
-                               "CMUL7withDS",
-                               "CMLL7withDS",
-                               "CMUL7orCMLL7withDS",
-                               "CMUL7andCMLL7withDS"};
-  fEventCounter = new TH2F("fEventCounter", "", 11, 0, 11, 200, 0, 200);
-  for (unsigned int iname = 0;
-       iname < sizeof(event_label) / sizeof(std::string); ++iname) {
-    fEventCounter->GetXaxis()->SetBinLabel(iname + 1,
-                                           event_label[iname].c_str());
-  }
+  double min_pt = 0.0;
+  double max_pt = 20.0;
+  double width_pt = 0.5;
 
-  fOutputList->Add(fEventCounter);
-
-  float min_mass = 0.0;
-  float max_mass = 3.0;
-  float width_mass = 0.01;
-
-  float min_pt = 0.0;
-  float max_pt = 20.0;
-  float width_pt = 0.5;
+  vector<double> bins_cent{0, 1, 5, 10, 20, 40, 60, 80, 100};
+  int binnum_cent = bins_cent.size() - 1;
 
   if (!fIsMidTrackAna) {
+    double bins_event_hist[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    int binnum_event_hist = sizeof(bins_event_hist) / sizeof(double) - 1;
+
+    std::string event_label[] = {"CMUL7",
+                                 "CMLL7",
+                                 "CMUL7orCMLL7",
+                                 "CMUL7andCMLL7",
+                                 "CMUL7withDS",
+                                 "CMLL7withDS",
+                                 "CMUL7orCMLL7withDS",
+                                 "CMUL7andCMLL7withDS"};
+    fEventCounter = new TH2F("fEventCounter", "", 11, 0, 11, 200, 0, 200);
+    for (unsigned int iname = 0;
+         iname < sizeof(event_label) / sizeof(std::string); ++iname) {
+      fEventCounter->GetXaxis()->SetBinLabel(iname + 1,
+                                             event_label[iname].c_str());
+    }
+
+    fOutputList->Add(fEventCounter);
+
     if (!fIsMixingAnalysis) {
       fTreeULSPair = new TTree("fTreeULSPair", "");
       fTreeULSPair->Branch("RecPairPt", &RecPairPt, "RecPairPt/F");
@@ -352,34 +382,59 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
 
   if (fIsMidTrackAna) {
     if (!fIsMixingAnalysis) {
-      fHistULSPairMassPt =
-          new TH2F("fHistULSPairMassPt", "",
-                   int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   int((max_pt - min_pt) / width_pt), min_pt, max_pt);
-      fOutputList->Add(fHistULSPairMassPt);
-      fHistLSppPairMassPt =
-          new TH2F("fHistLSppPairMassPt", "",
-                   int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   int((max_pt - min_pt) / width_pt), min_pt, max_pt);
-      fOutputList->Add(fHistLSppPairMassPt);
-      fHistLSmmPairMassPt =
-          new TH2F("fHistLSmmPairMassPt", "",
-                   int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   int((max_pt - min_pt) / width_pt), min_pt, max_pt);
-      fOutputList->Add(fHistLSmmPairMassPt);
+
       int bins[3] = {int((max_mass - min_mass) / width_mass),
-                     int((max_pt - min_pt) / width_pt), 100};
+                     int((max_pt - min_pt) / width_pt), binnum_cent};
       double min_bins[3] = {min_mass, min_pt, 0};
       double max_bins[3] = {max_mass, max_pt, 100};
+
       fSparseULSPairMassPt = new THnSparseF("fSparseULSPairMassPt", "", 3, bins,
                                             min_bins, max_bins);
       fSparseLSppPairMassPt = new THnSparseF("fSparseLSppPairMassPt", "", 3,
                                              bins, min_bins, max_bins);
       fSparseLSmmPairMassPt = new THnSparseF("fSparseLSmmPairMassPt", "", 3,
                                              bins, min_bins, max_bins);
+      fSparseULSPairMassPt->SetBinEdges(2, bins_cent.data());
+      fSparseLSppPairMassPt->SetBinEdges(2, bins_cent.data());
+      fSparseLSmmPairMassPt->SetBinEdges(2, bins_cent.data());
       fOutputList->Add(fSparseULSPairMassPt);
       fOutputList->Add(fSparseLSppPairMassPt);
       fOutputList->Add(fSparseLSmmPairMassPt);
+
+      fSparseULSPairMassPt_SideBandLeftRight =
+          new THnSparseF("fSparseULSPairMassPt_SideBandLeftRight", "", 3, bins,
+                         min_bins, max_bins);
+      fSparseULSPairMassPt_SideBandLeft = new THnSparseF(
+          "fSparseULSPairMassPt_SideBandLeft", "", 3, bins, min_bins, max_bins);
+      fSparseULSPairMassPt_SideBandRight =
+          new THnSparseF("fSparseULSPairMassPt_SideBandRight", "", 3, bins,
+                         min_bins, max_bins);
+      fSparseULSPairMassPt_SideBand = new THnSparseF(
+          "fSparseULSPairMassPt_SideBand", "", 3, bins, min_bins, max_bins);
+      fSparseULSPairMassPt_SideBandLeftRight->SetBinEdges(2, bins_cent.data());
+      fSparseULSPairMassPt_SideBandLeft->SetBinEdges(2, bins_cent.data());
+      fSparseULSPairMassPt_SideBandRight->SetBinEdges(2, bins_cent.data());
+      fSparseULSPairMassPt_SideBand->SetBinEdges(2, bins_cent.data());
+      fOutputList->Add(fSparseULSPairMassPt_SideBandLeftRight);
+      fOutputList->Add(fSparseULSPairMassPt_SideBandLeft);
+      fOutputList->Add(fSparseULSPairMassPt_SideBandRight);
+      fOutputList->Add(fSparseULSPairMassPt_SideBand);
+
+      fSparseULSPairMassPt_SmallOpeningAngle =
+          new THnSparseF("fSparseULSPairMassPt_SmallOpeningAngle", "", 3, bins,
+                         min_bins, max_bins);
+      fSparseLSppPairMassPt_SmallOpeningAngle =
+          new THnSparseF("fSparseLSppPairMassPt_SmallOpeningAngle", "", 3, bins,
+                         min_bins, max_bins);
+      fSparseLSmmPairMassPt_SmallOpeningAngle =
+          new THnSparseF("fSparseLSmmPairMassPt_SmallOpeningAngle", "", 3, bins,
+                         min_bins, max_bins);
+      fSparseULSPairMassPt_SmallOpeningAngle->SetBinEdges(2, bins_cent.data());
+      fSparseLSppPairMassPt_SmallOpeningAngle->SetBinEdges(2, bins_cent.data());
+      fSparseLSmmPairMassPt_SmallOpeningAngle->SetBinEdges(2, bins_cent.data());
+      fOutputList->Add(fSparseULSPairMassPt_SmallOpeningAngle);
+      fOutputList->Add(fSparseLSppPairMassPt_SmallOpeningAngle);
+      fOutputList->Add(fSparseLSmmPairMassPt_SmallOpeningAngle);
     }
     if (fIsMixingAnalysis) {
       fHistMixULSPairMassPt =
@@ -387,18 +442,47 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
                    int((max_pt - min_pt) / width_pt), min_pt, max_pt);
       fOutputList->Add(fHistMixULSPairMassPt);
+
       int bins[3] = {int((max_mass - min_mass) / width_mass),
-                     int((max_pt - min_pt) / width_pt), 100};
+                     int((max_pt - min_pt) / width_pt), binnum_cent};
       double min_bins[3] = {min_mass, min_pt, 0};
       double max_bins[3] = {max_mass, max_pt, 100};
       fSparseMixULSPairMassPt = new THnSparseF("fSparseMixULSPairMassPt", "", 3,
                                                bins, min_bins, max_bins);
+      fSparseMixLSppPairMassPt = new THnSparseF("fSparseMixLSppPairMassPt", "",
+                                                3, bins, min_bins, max_bins);
+      fSparseMixLSmmPairMassPt = new THnSparseF("fSparseMixLSmmPairMassPt", "",
+                                                3, bins, min_bins, max_bins);
+      fSparseMixULSPairMassPt->SetBinEdges(2, bins_cent.data());
+      fSparseMixLSppPairMassPt->SetBinEdges(2, bins_cent.data());
+      fSparseMixLSmmPairMassPt->SetBinEdges(2, bins_cent.data());
       fOutputList->Add(fSparseMixULSPairMassPt);
+      fOutputList->Add(fSparseMixLSppPairMassPt);
+      fOutputList->Add(fSparseMixLSmmPairMassPt);
+
+      fSparseMixULSPairMassPt_SmallOpeningAngle =
+          new THnSparseF("fSparseMixULSPairMassPt_SmallOpeningAngle", "", 3,
+                         bins, min_bins, max_bins);
+      fSparseMixLSppPairMassPt_SmallOpeningAngle =
+          new THnSparseF("fSparseMixLSppPairMassPt_SmallOpeningAngle", "", 3,
+                         bins, min_bins, max_bins);
+      fSparseMixLSmmPairMassPt_SmallOpeningAngle =
+          new THnSparseF("fSparseMixLSmmPairMassPt_SmallOpeningAngle", "", 3,
+                         bins, min_bins, max_bins);
+      fSparseMixULSPairMassPt_SmallOpeningAngle->SetBinEdges(2,
+                                                             bins_cent.data());
+      fSparseMixLSppPairMassPt_SmallOpeningAngle->SetBinEdges(2,
+                                                              bins_cent.data());
+      fSparseMixLSmmPairMassPt_SmallOpeningAngle->SetBinEdges(2,
+                                                              bins_cent.data());
+      fOutputList->Add(fSparseMixULSPairMassPt_SmallOpeningAngle);
+      fOutputList->Add(fSparseMixLSppPairMassPt_SmallOpeningAngle);
+      fOutputList->Add(fSparseMixLSmmPairMassPt_SmallOpeningAngle);
     }
 
     if (fIsV0TrackPairAna) {
-      min_mass = 0.0;
-      max_mass = 3.0;
+      min_mass = 0.45;
+      max_mass = 0.55;
       width_mass = 0.001;
 
       fHistULSPairMassPt_ProngV0 =
@@ -408,36 +492,36 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
       fOutputList->Add(fHistULSPairMassPt_ProngV0);
 
       fHistMassK0s1K0s2 =
-          new TH2F("fHistMassK0s1K0s2", "", 200, 0.4, 0.6, 200, 0.4, 0.6);
+          new TH2F("fHistMassK0s1K0s2", "", 100, 0.45, 0.55, 100, 0.45, 0.55);
       fOutputList->Add(fHistMassK0s1K0s2);
       fHistArmenteros =
-          new TH2F("fHistArmenteros", "", 200, -3, 3, 400, 0, 0.4);
+          new TH2F("fHistArmenteros", "", 200, -1, 1, 400, 0, 0.4);
       fOutputList->Add(fHistArmenteros);
       fHistSelArmenteros =
-          new TH2F("fHistSelArmenteros", "", 200, -3, 3, 400, 0, 0.4);
+          new TH2F("fHistSelArmenteros", "", 200, -1, 1, 400, 0, 0.4);
       fOutputList->Add(fHistSelArmenteros);
 
       fHistV0MassDecayLength = new TH2F("fHistV0MassDecayLength", "",
                                         int((max_mass - min_mass) / width_mass),
-                                        min_mass, max_mass, 1000, 0., 200.);
+                                        min_mass, max_mass, 500, 0., 100.);
       fHistV0MassPointingAngle =
           new TH2F("fHistV0MassPointingAngle", "",
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   1000, 0.9, 1.0);
+                   500, 0.95, 1.0);
       fHistV0MassV0DCA = new TH2F("fHistV0MassV0DCA", "",
                                   int((max_mass - min_mass) / width_mass),
-                                  min_mass, max_mass, 1000, 0., 200.);
+                                  min_mass, max_mass, 400, 0., 80.);
       fHistV0MassV0TrackDCA = new TH2F("fHistV0MassV0TrackDCA", "",
                                        int((max_mass - min_mass) / width_mass),
-                                       min_mass, max_mass, 1000, 0, 100);
+                                       min_mass, max_mass, 100, 0, 10);
       fHistV0MassV0DecayRadius =
           new TH2F("fHistV0MassV0DecayRadius", "",
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   1000, 0., 200.);
+                   500, 0., 100.);
       fHistV0MassV0PropLifeTime =
           new TH2F("fHistV0MassV0PropLifeTime", "",
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   1000, 0, 200.);
+                   250, 0, 50.);
       fOutputList->Add(fHistV0MassDecayLength);
       fOutputList->Add(fHistV0MassPointingAngle);
       fOutputList->Add(fHistV0MassV0DCA);
@@ -448,26 +532,26 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
       fHistSelV0MassDecayLength =
           new TH2F("fHistSelV0MassDecayLength", "",
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   1000, 0., 200.);
+                   500, 0., 100.);
       fHistSelV0MassPointingAngle =
           new TH2F("fHistSelV0MassPointingAngle", "",
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   1000, 0.9, 1.0);
+                   500, 0.95, 1.0);
       fHistSelV0MassV0DCA = new TH2F("fHistSelV0MassV0DCA", "",
                                      int((max_mass - min_mass) / width_mass),
-                                     min_mass, max_mass, 1000, 0., 200.);
+                                     min_mass, max_mass, 400, 0., 80.);
       fHistSelV0MassV0TrackDCA =
           new TH2F("fHistSelV0MassV0TrackDCA", "",
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   1000, 0, 100);
+                   100, 0, 10);
       fHistSelV0MassV0DecayRadius =
           new TH2F("fHistSelV0MassV0DecayRadius", "",
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   1000, 0., 200.);
+                   500, 0., 100.);
       fHistSelV0MassV0PropLifeTime =
           new TH2F("fHistSelV0MassV0PropLifeTime", "",
                    int((max_mass - min_mass) / width_mass), min_mass, max_mass,
-                   1000, 0, 200.);
+                   250, 0, 50.);
       fOutputList->Add(fHistSelV0MassDecayLength);
       fOutputList->Add(fHistSelV0MassPointingAngle);
       fOutputList->Add(fHistSelV0MassV0DCA);
@@ -504,6 +588,7 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
     fHistReducedChi2ITS = new TH1F("fHistReducedChi2ITS", "", 250, 0, 50);
     fHistDCAz = new TH1F("fHistDCAz", "", 100, 0, 10);
     fHistDCAxyPt = new TH2F("fHistDCAxyPt", "", 200, -1, 1, 100, 0, 10);
+    fHistOpeningAngle = new TH1F("fHistOpeningAngle", "", 100, 0, 100);
 
     fOutputList->Add(fHistTrackP);
     fOutputList->Add(fHistTrackPt);
@@ -515,6 +600,7 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
     fOutputList->Add(fHistReducedChi2ITS);
     fOutputList->Add(fHistDCAz);
     fOutputList->Add(fHistDCAxyPt);
+    fOutputList->Add(fHistOpeningAngle);
 
     double min_dEdx = 0.;
     double max_dEdx = 300.;
@@ -682,6 +768,10 @@ void AliAnalysisTaskAODTrackPair::UserExec(Option_t *) {
         MidV0AnalysisEventMixing(fUtils->getPairTargetPIDs(0),
                                  fUtils->getPairTargetPIDs(1));
       }
+      if (fIsPrimTrackPairAna) {
+        MidPairAnalysisEventMixing(fUtils->getPairTargetPIDs(0),
+                                   fUtils->getPairTargetPIDs(1));
+      }
     }
   }
 }
@@ -737,8 +827,8 @@ bool AliAnalysisTaskAODTrackPair::FwdMuonPairQA(AliAODDimuon *dimuon) {
   int triggerLB1 = AliAnalysisMuonUtility::GetLoCircuit(track1);
   int triggerLB2 = AliAnalysisMuonUtility::GetLoCircuit(track2);
 
-  float pt_max = track1->Pt();
-  float pt_min = track2->Pt();
+  double pt_max = track1->Pt();
+  double pt_min = track2->Pt();
 
   if (track1->Pt() > track2->Pt()) {
     pt_max = track1->Pt();
@@ -762,16 +852,15 @@ bool AliAnalysisTaskAODTrackPair::FwdMuonPairAnalysisEveMixing() {
   TObjArray *fTrackArray = new TObjArray();
   fTrackArray->SetOwner();
 
-  float poolCent = 0.;
-  float poolVtxZ = 0.;
-  float poolPsi = 0.;
+  double poolCent = 0.;
+  double poolVtxZ = 0.;
+  double poolPsi = 0.;
 
   if (onEvtMixingPoolVtxZ) {
     poolVtxZ = fUtils->getVtxZ();
   }
   if (onEvtMixingPoolCent) {
-    // poolCent=fUtils->getCentClass();
-    poolCent = fUtils->getNCorrSPDTrkInfo(1);
+    poolCent = fUtils->getCentClass();
   }
   if (onEvtMixingPoolPsi) {
     poolPsi = fUtils->getPsi();
@@ -814,8 +903,7 @@ bool AliAnalysisTaskAODTrackPair::FwdMuonPairAnalysisEveMixing() {
           RecPairPt = dimuon->Pt();
           RecPairRap = fabs(dimuon->Y());
           RecPairMass = dimuon->M();
-          // RecPairCent = fUtils->getCentClass();
-          RecPairCent = fUtils->getNCorrSPDTrkInfo(1);
+          RecPairCent = fUtils->getCentClass();
           RecPairDS = fUtils->getDS();
 
           string fFiredTrigName = string(fEvent->GetFiredTriggerClasses());
@@ -909,8 +997,7 @@ bool AliAnalysisTaskAODTrackPair::FwdMuonPairAnalysis() {
       RecPairPt = dimuon->Pt();
       RecPairRap = fabs(dimuon->Y());
       RecPairMass = dimuon->M();
-      // RecPairCent = fUtils->getCentClass();
-      RecPairCent = fUtils->getNCorrSPDTrkInfo(1);
+      RecPairCent = fUtils->getCentClass();
       RecPairDS = fUtils->getDS();
 
       if (dimuon->Charge() == 0) {
@@ -929,8 +1016,11 @@ bool AliAnalysisTaskAODTrackPair::FwdMuonPairAnalysis() {
 }
 
 bool AliAnalysisTaskAODTrackPair::MidTrackQualityChecker(AliAODTrack *track) {
+
   fHistTPCNClusts->Fill(track->GetTPCNcls());
+
   int nSPD = 0;
+
   if (track->HasPointOnITSLayer(0)) {
     ++nSPD;
   }
@@ -995,43 +1085,29 @@ bool AliAnalysisTaskAODTrackPair::MidTrackPIDChecker(AliAODTrack *track,
                                                      AliPID::EParticleType pid,
                                                      bool isSel) {
 
-  float p = track->P();
-  float sigTOF = track->GetTOFsignal();
-  float length = track->GetIntegratedLength();
-  float beta =
+  double p = track->P();
+  double sigTOF = track->GetTOFsignal();
+  double length = track->GetIntegratedLength();
+  double beta =
       (sigTOF > 0) ? (double)length / (2.99792457999999984e-02 * sigTOF) : -999;
-  float dEdx = track->GetTPCsignal();
+  double dEdx = track->GetTPCsignal();
 
   if (isSel) {
     fHistSelTPCdEdxP->Fill(p, dEdx);
     fHistSelTPCSigmaElectron->Fill(
         p, fUtils->getTPCSigma(track, AliPID::kElectron));
-    fHistSelTPCSigmaElectron->Fill(
-        p, fUtils->getTPCSigma(track, AliPID::kElectron));
-    fHistSelTPCSigmaMuon->Fill(p, fUtils->getTPCSigma(track, AliPID::kMuon));
     fHistSelTPCSigmaMuon->Fill(p, fUtils->getTPCSigma(track, AliPID::kMuon));
     fHistSelTPCSigmaPion->Fill(p, fUtils->getTPCSigma(track, AliPID::kPion));
-    fHistSelTPCSigmaPion->Fill(p, fUtils->getTPCSigma(track, AliPID::kPion));
     fHistSelTPCSigmaKaon->Fill(p, fUtils->getTPCSigma(track, AliPID::kKaon));
-    fHistSelTPCSigmaKaon->Fill(p, fUtils->getTPCSigma(track, AliPID::kKaon));
-    fHistSelTPCSigmaProton->Fill(p,
-                                 fUtils->getTPCSigma(track, AliPID::kProton));
     fHistSelTPCSigmaProton->Fill(p,
                                  fUtils->getTPCSigma(track, AliPID::kProton));
     if (beta > 0.) {
       fHistSelBetaP->Fill(p, beta);
       fHistSelTOFSigmaElectron->Fill(
           p, fUtils->getTOFSigma(track, AliPID::kElectron));
-      fHistSelTOFSigmaElectron->Fill(
-          p, fUtils->getTOFSigma(track, AliPID::kElectron));
-      fHistSelTOFSigmaMuon->Fill(p, fUtils->getTOFSigma(track, AliPID::kMuon));
       fHistSelTOFSigmaMuon->Fill(p, fUtils->getTOFSigma(track, AliPID::kMuon));
       fHistSelTOFSigmaPion->Fill(p, fUtils->getTOFSigma(track, AliPID::kPion));
-      fHistSelTOFSigmaPion->Fill(p, fUtils->getTOFSigma(track, AliPID::kPion));
       fHistSelTOFSigmaKaon->Fill(p, fUtils->getTOFSigma(track, AliPID::kKaon));
-      fHistSelTOFSigmaKaon->Fill(p, fUtils->getTOFSigma(track, AliPID::kKaon));
-      fHistSelTOFSigmaProton->Fill(p,
-                                   fUtils->getTOFSigma(track, AliPID::kProton));
       fHistSelTOFSigmaProton->Fill(p,
                                    fUtils->getTOFSigma(track, AliPID::kProton));
     }
@@ -1039,29 +1115,17 @@ bool AliAnalysisTaskAODTrackPair::MidTrackPIDChecker(AliAODTrack *track,
     fHistTPCdEdxP->Fill(p, dEdx);
     fHistTPCSigmaElectron->Fill(p,
                                 fUtils->getTPCSigma(track, AliPID::kElectron));
-    fHistTPCSigmaElectron->Fill(p,
-                                fUtils->getTPCSigma(track, AliPID::kElectron));
-    fHistTPCSigmaMuon->Fill(p, fUtils->getTPCSigma(track, AliPID::kMuon));
     fHistTPCSigmaMuon->Fill(p, fUtils->getTPCSigma(track, AliPID::kMuon));
     fHistTPCSigmaPion->Fill(p, fUtils->getTPCSigma(track, AliPID::kPion));
-    fHistTPCSigmaPion->Fill(p, fUtils->getTPCSigma(track, AliPID::kPion));
     fHistTPCSigmaKaon->Fill(p, fUtils->getTPCSigma(track, AliPID::kKaon));
-    fHistTPCSigmaKaon->Fill(p, fUtils->getTPCSigma(track, AliPID::kKaon));
-    fHistTPCSigmaProton->Fill(p, fUtils->getTPCSigma(track, AliPID::kProton));
     fHistTPCSigmaProton->Fill(p, fUtils->getTPCSigma(track, AliPID::kProton));
     if (beta > 0.) {
       fHistBetaP->Fill(p, beta);
       fHistTOFSigmaElectron->Fill(
           p, fUtils->getTOFSigma(track, AliPID::kElectron));
-      fHistTOFSigmaElectron->Fill(
-          p, fUtils->getTOFSigma(track, AliPID::kElectron));
-      fHistTOFSigmaMuon->Fill(p, fUtils->getTOFSigma(track, AliPID::kMuon));
       fHistTOFSigmaMuon->Fill(p, fUtils->getTOFSigma(track, AliPID::kMuon));
       fHistTOFSigmaPion->Fill(p, fUtils->getTOFSigma(track, AliPID::kPion));
-      fHistTOFSigmaPion->Fill(p, fUtils->getTOFSigma(track, AliPID::kPion));
       fHistTOFSigmaKaon->Fill(p, fUtils->getTOFSigma(track, AliPID::kKaon));
-      fHistTOFSigmaKaon->Fill(p, fUtils->getTOFSigma(track, AliPID::kKaon));
-      fHistTOFSigmaProton->Fill(p, fUtils->getTOFSigma(track, AliPID::kProton));
       fHistTOFSigmaProton->Fill(p, fUtils->getTOFSigma(track, AliPID::kProton));
     }
   }
@@ -1069,45 +1133,8 @@ bool AliAnalysisTaskAODTrackPair::MidTrackPIDChecker(AliAODTrack *track,
   return true;
 }
 
-bool AliAnalysisTaskAODTrackPair::MidTrackQA(AliAODTrack *track) {
-
-  float dca_xy = 9999;
-  float dca_z = 9999;
-  track->GetImpactParameters(dca_xy, dca_z);
-
-  AliTOFHeader *tofHeader = (AliTOFHeader *)track->GetTOFHeader();
-  /*
-  fTrackPt = track->Pt();
-  fTrackP = track->P();
-  fTrackTheta = track->Theta();
-  fTrackPhi = track->Phi();
-  fTrackLength = track->GetIntegratedLength();
-  fTrackBeta = beta;
-  fTrackTrackChi2perNDF = track->Chi2perNDF();
-  fTrackTrackITSNcls = track->GetITSNcls();
-  fTrackTrackTPCNcls = track->GetTPCNcls();
-  fTrackTrackTOFNcls = tofHeader->GetNumberOfTOFclusters();
-  fTrackTrackTPCChi2 = track->GetTPCchi2();
-  fTrackTrackITSChi2 = track->GetITSchi2();
-  fTrackTPCCrossedRows = track->GetTPCCrossedRows();
-  fTrackTPCFindableNcls = track->GetTPCNclsF();
-  fTrackTOFBCTime = track->GetTOFBunchCrossing();
-  fTrackTOFKinkIndex = track->GetKinkIndex(0);
-  fTrackDCAxy = dca_xy;
-  fTrackDCAz = dca_z;
-  fTrackTPCsigmaMuon = fUtils->getTPCSigma(track,AliPID::kMuon);
-  fTrackTOFsigmaMuon = fUtils->getTOFSigma(track,AliPID::kMuon);
-  */
-  return true;
-}
-
-bool AliAnalysisTaskAODTrackPair::MidMuonPairQA(AliAODDimuon *dimuon) {
-  return true;
-}
-
 bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
                                                 AliPID::EParticleType pid2) {
-
   Int_t nV0 = fEvent->GetNumberOfV0s();
 
   AliAODv0 *v0_1;
@@ -1126,21 +1153,21 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
     RecPairPt = v0_1->Pt();
     RecPairMass = v0_1->MassK0Short();
     RecPairRap = v0_1->RapK0Short();
-    RecPairArmenterosArmPt = v0_1->PtArmV0();
-    RecPairArmenterosAlpha = v0_1->AlphaV0();
 
     AliAODTrack *pTrack = (AliAODTrack *)v0_1->GetDaughter(0);
     AliAODTrack *nTrack = (AliAODTrack *)v0_1->GetDaughter(1);
 
-    MidV0Checker(v0_1, false);
+    if (fUtils->isAcceptV0Basic(v0_1, 0)) {
+      MidV0Checker(v0_1, false);
+      MidTrackPIDChecker(pTrack, pid1, false);
+      MidTrackPIDChecker(nTrack, pid2, false);
+    }
 
     if (0.4 > RecPairMass || RecPairMass > 0.6) {
       continue;
     }
-    if (!fUtils->isAcceptedK0s(v0_1, pid1, pid2, 0)) {
-      continue;
-    }
-    if (!fUtils->isAcceptArmenterosK0s(v0_1)) {
+
+    if (!fUtils->isAcceptK0s(v0_1)) {
       continue;
     }
 
@@ -1149,18 +1176,11 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
     MidTrackQualityChecker(pTrack);
     MidTrackQualityChecker(nTrack);
 
-    MidTrackPIDChecker(pTrack, AliPID::kPion, false);
-    MidTrackPIDChecker(nTrack, AliPID::kPion, false);
-
     fHistSelArmenteros->Fill(v0_1->Alpha(), v0_1->PtArmV0());
     fHistULSPairMassPt_ProngV0->Fill(RecPairMass, RecPairPt);
 
-    if (!fUtils->isAcceptK0sCandidateMassRange(v0_1->MassK0Short())) {
-      continue;
-    }
-
-    MidTrackPIDChecker(pTrack, AliPID::kPion, true);
-    MidTrackPIDChecker(nTrack, AliPID::kPion, true);
+    MidTrackPIDChecker(pTrack, pid1, true);
+    MidTrackPIDChecker(nTrack, pid2, true);
 
     for (int iV0_2 = iV0_1 + 1; iV0_2 < nV0; ++iV0_2) {
 
@@ -1173,17 +1193,10 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
       if (0.4 > RecPairMass || RecPairMass > 0.6) {
         continue;
       }
-
       if (!fUtils->isAcceptV0Kinematics(v0_2)) {
         continue;
       }
-      if (!fUtils->isAcceptK0sCandidateMassRange(v0_2->MassK0Short())) {
-        continue;
-      }
-      if (!fUtils->isAcceptedK0s(v0_2, pid1, pid2, 0)) {
-        continue;
-      }
-      if (!fUtils->isAcceptArmenterosK0s(v0_2)) {
+      if (!fUtils->isAcceptK0s(v0_2)) {
         continue;
       }
 
@@ -1195,13 +1208,48 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
                        TDatabasePDG::Instance()->GetParticle(310)->Mass());
       lv12 = lv1 + lv2;
 
+      double angle = lv1.Angle(lv2.Vect());
+
       RecPairPt = lv12.Pt();
       RecPairMass = lv12.M();
       RecPairRap = lv12.Rapidity();
 
-      // fHistULSPairMassPt->Fill(RecPairMass,RecPairPt);
-      double fill[] = {RecPairMass, RecPairPt, fUtils->getCentClass(1)};
-      fSparseULSPairMassPt->Fill(fill);
+      double fill[] = {RecPairMass, RecPairPt, fUtils->getCentClass()};
+
+      if (fUtils->isAcceptK0sCandidateMassRange(v0_1->MassK0Short()) &&
+          fUtils->isAcceptK0sCandidateMassRange(v0_2->MassK0Short())) {
+        if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
+          fSparseULSPairMassPt->Fill(fill);
+          fHistOpeningAngle->Fill(TMath::Cos(angle));
+        } else {
+          fSparseULSPairMassPt_SmallOpeningAngle->Fill(fill);
+        }
+      } else {
+        if (fUtils->isAcceptK0sCandidateSideBandRight(v0_1->MassK0Short()) &&
+            fUtils->isAcceptK0sCandidateSideBandRight(v0_2->MassK0Short())) {
+          fSparseULSPairMassPt_SideBandRight->Fill(fill);
+        } else if (fUtils->isAcceptK0sCandidateSideBandLeft(
+                       v0_1->MassK0Short()) &&
+                   fUtils->isAcceptK0sCandidateSideBandLeft(
+                       v0_2->MassK0Short())) {
+          fSparseULSPairMassPt_SideBandLeft->Fill(fill);
+        } else if ((fUtils->isAcceptK0sCandidateSideBandLeft(
+                        v0_1->MassK0Short()) &&
+                    fUtils->isAcceptK0sCandidateSideBandRight(
+                        v0_2->MassK0Short())) ||
+                   (fUtils->isAcceptK0sCandidateSideBandRight(
+                        v0_1->MassK0Short()) &&
+                    fUtils->isAcceptK0sCandidateSideBandLeft(
+                        v0_2->MassK0Short()))) {
+          fSparseULSPairMassPt_SideBandLeftRight->Fill(fill);
+        }
+        if ((fUtils->isAcceptK0sCandidateSideBandRight(v0_1->MassK0Short()) ||
+             fUtils->isAcceptK0sCandidateSideBandLeft(v0_1->MassK0Short())) &&
+            (fUtils->isAcceptK0sCandidateSideBandRight(v0_2->MassK0Short()) ||
+             fUtils->isAcceptK0sCandidateSideBandLeft(v0_2->MassK0Short()))) {
+          fSparseULSPairMassPt_SideBand->Fill(fill);
+        }
+      }
     }
   }
   return true;
@@ -1210,18 +1258,20 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
 bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
     AliPID::EParticleType pid1, AliPID::EParticleType pid2) {
 
+  // cout<<"MidV0AnalysisEventMixing"<<endl;
+
   TObjArray *fTrackArray = new TObjArray();
   fTrackArray->SetOwner();
 
-  float poolCent = 0.;
-  float poolVtxZ = 0.;
-  float poolPsi = 0.;
+  double poolCent = 0.;
+  double poolVtxZ = 0.;
+  double poolPsi = 0.;
 
   if (onEvtMixingPoolVtxZ) {
     poolVtxZ = fUtils->getVtxZ();
   }
   if (onEvtMixingPoolCent) {
-    poolCent = fUtils->getNCorrSPDTrkInfo(1);
+    poolCent = fUtils->getCentClass();
   }
   if (onEvtMixingPoolPsi) {
     poolPsi = fUtils->getPsi();
@@ -1241,6 +1291,10 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
 
     v0_1 = (AliAODv0 *)fEvent->GetV0(iV0_1);
 
+    if (!fUtils->isAcceptV0Kinematics(v0_1)) {
+      continue;
+    }
+
     RecPairPt = v0_1->Pt();
     RecPairMass = v0_1->MassK0Short();
     RecPairRap = v0_1->RapK0Short();
@@ -1248,15 +1302,16 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
     AliAODTrack *pTrack = (AliAODTrack *)v0_1->GetDaughter(0);
     AliAODTrack *nTrack = (AliAODTrack *)v0_1->GetDaughter(1);
 
-    MidV0Checker(v0_1, false);
+    if (fUtils->isAcceptV0Basic(v0_1, 0)) {
+      MidV0Checker(v0_1, false);
+      MidTrackPIDChecker(pTrack, pid1, false);
+      MidTrackPIDChecker(nTrack, pid2, false);
+    }
 
     if (0.4 > RecPairMass || RecPairMass > 0.6) {
       continue;
     }
-    if (!fUtils->isAcceptedK0s(v0_1, pid1, pid2, 0)) {
-      continue;
-    }
-    if (!fUtils->isAcceptArmenterosK0s(v0_1)) {
+    if (!fUtils->isAcceptK0s(v0_1)) {
       continue;
     }
 
@@ -1265,9 +1320,6 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
     MidTrackQualityChecker(pTrack);
     MidTrackQualityChecker(nTrack);
 
-    MidTrackPIDChecker(pTrack, AliPID::kPion, false);
-    MidTrackPIDChecker(nTrack, AliPID::kPion, false);
-
     fHistSelArmenteros->Fill(v0_1->Alpha(), v0_1->PtArmV0());
     fHistULSPairMassPt_ProngV0->Fill(RecPairMass, RecPairPt);
 
@@ -1275,8 +1327,8 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
       continue;
     }
 
-    MidTrackPIDChecker(pTrack, AliPID::kPion, true);
-    MidTrackPIDChecker(nTrack, AliPID::kPion, true);
+    MidTrackPIDChecker(pTrack, pid1, true);
+    MidTrackPIDChecker(nTrack, pid2, true);
 
     if (pool->IsReady()) {
 
@@ -1294,13 +1346,19 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
                            TDatabasePDG::Instance()->GetParticle(310)->Mass());
           lv12 = lv1 + lv2;
 
+          double angle = lv1.Angle(lv2.Vect());
+
           RecPairPt = lv12.Pt();
           RecPairMass = lv12.M();
           RecPairRap = lv12.Rapidity();
 
-          double fill[] = {RecPairMass, RecPairPt, fUtils->getCentClass(1)};
-          fSparseULSPairMassPt->Fill(fill);
-          // fHistMixULSPairMassPt->Fill(RecPairMass,RecPairPt);
+          double fill[] = {RecPairMass, RecPairPt, fUtils->getCentClass()};
+          if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
+            fSparseMixULSPairMassPt->Fill(fill);
+            fHistOpeningAngle->Fill(TMath::Cos(angle));
+          } else {
+            fSparseMixULSPairMassPt_SmallOpeningAngle->Fill(fill);
+          }
         }
       }
     }
@@ -1319,6 +1377,7 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
 
 bool AliAnalysisTaskAODTrackPair::MidPairAnalysis(AliPID::EParticleType pid1,
                                                   AliPID::EParticleType pid2) {
+
   Int_t nTrack = fEvent->GetNumberOfTracks();
 
   AliAODTrack *track1;
@@ -1326,11 +1385,165 @@ bool AliAnalysisTaskAODTrackPair::MidPairAnalysis(AliPID::EParticleType pid1,
 
   TLorentzVector lv1, lv2, lv12;
 
-  std::vector<TLorentzVector> tracks;
-  std::vector<int> charges;
-  std::vector<bool> skip_tracks_ids;
-
   for (Int_t iTrack1 = 0; iTrack1 < nTrack; ++iTrack1) {
+
+    track1 = (AliAODTrack *)fEvent->GetTrack(iTrack1);
+
+    if (!fUtils->isAcceptTrackKinematics(track1)) {
+      continue;
+    }
+    if (!fUtils->isAcceptMidPrimTrackQuality(track1)) {
+      continue;
+    }
+
+    MidTrackPIDChecker(track1, pid1, false);
+
+    if (!fUtils->isAcceptMidPid(track1, pid1)) {
+      continue;
+    }
+
+    MidTrackPIDChecker(track1, pid1, true);
+    MidTrackQualityChecker(track1);
+
+    double mass1 = 0;
+
+    if (pid1 == AliPID::kElectron) {
+      mass1 = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+    } else if (pid1 == AliPID::kPion) {
+      mass1 = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+    } else if (pid1 == AliPID::kKaon) {
+      mass1 = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+    } else if (pid1 == AliPID::kProton) {
+      mass1 = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+    } else if (pid1 == AliPID::kMuon) {
+      mass1 = TDatabasePDG::Instance()->GetParticle(13)->Mass();
+    } else {
+      continue;
+    }
+
+    for (Int_t iTrack2 = iTrack1 + 1; iTrack2 < nTrack; ++iTrack2) {
+
+      track2 = (AliAODTrack *)fEvent->GetTrack(iTrack2);
+
+      if (!fUtils->isAcceptTrackKinematics(track2)) {
+        continue;
+      }
+      if (!fUtils->isAcceptMidPrimTrackQuality(track2)) {
+        continue;
+      }
+      if (!fUtils->isAcceptMidPid(track2, pid2)) {
+        continue;
+      }
+
+      double mass2 = 0;
+
+      if (pid2 == AliPID::kElectron) {
+        mass2 = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+      } else if (pid2 == AliPID::kPion) {
+        mass2 = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+      } else if (pid2 == AliPID::kKaon) {
+        mass2 = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+      } else if (pid2 == AliPID::kProton) {
+        mass2 = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+      } else if (pid2 == AliPID::kMuon) {
+        mass2 = TDatabasePDG::Instance()->GetParticle(13)->Mass();
+      } else {
+        continue;
+      }
+
+      lv1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), mass1);
+      lv2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), mass2);
+
+      lv12 = lv1 + lv2;
+
+      double angle = lv1.Angle(lv2.Vect());
+
+      double fill[] = {lv12.M(), lv12.Pt(), fUtils->getCentClass()};
+
+      if (track1->Charge() + track2->Charge() == 0) {
+        if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
+          fSparseULSPairMassPt->Fill(fill);
+        } else {
+          fSparseULSPairMassPt_SmallOpeningAngle->Fill(fill);
+        }
+      } else if (track1->Charge() + track2->Charge() > 0) {
+        if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
+          fSparseLSppPairMassPt->Fill(fill);
+        } else {
+          fSparseLSppPairMassPt_SmallOpeningAngle->Fill(fill);
+        }
+      } else {
+        if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
+          fSparseLSmmPairMassPt->Fill(fill);
+        } else {
+          fSparseLSmmPairMassPt_SmallOpeningAngle->Fill(fill);
+        }
+      }
+
+    } // end of loop track2
+  }   // end of loop track1
+
+  return true;
+}
+
+bool AliAnalysisTaskAODTrackPair::MidPairAnalysisEventMixing(
+    AliPID::EParticleType pid1, AliPID::EParticleType pid2) {
+  // cout<<"MidPairAnalysisEventMixing"<<endl;
+  double mass1 = 0;
+  double mass2 = 0;
+
+  if (pid1 == AliPID::kElectron) {
+    mass1 = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+  } else if (pid1 == AliPID::kPion) {
+    mass1 = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  } else if (pid1 == AliPID::kKaon) {
+    mass1 = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  } else if (pid1 == AliPID::kProton) {
+    mass1 = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  } else if (pid1 == AliPID::kMuon) {
+    mass1 = TDatabasePDG::Instance()->GetParticle(13)->Mass();
+  }
+
+  if (pid2 == AliPID::kElectron) {
+    mass2 = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+  } else if (pid2 == AliPID::kPion) {
+    mass2 = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  } else if (pid2 == AliPID::kKaon) {
+    mass2 = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  } else if (pid2 == AliPID::kProton) {
+    mass2 = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  } else if (pid2 == AliPID::kMuon) {
+    mass2 = TDatabasePDG::Instance()->GetParticle(13)->Mass();
+  }
+
+  TObjArray *fTrackArray = new TObjArray();
+  fTrackArray->SetOwner();
+
+  double poolCent = 0.;
+  double poolVtxZ = 0.;
+  double poolPsi = 0.;
+
+  if (onEvtMixingPoolVtxZ) {
+    poolVtxZ = fUtils->getVtxZ();
+  }
+  if (onEvtMixingPoolCent) {
+    poolCent = fUtils->getCentClass();
+  }
+  if (onEvtMixingPoolPsi) {
+    poolPsi = fUtils->getPsi();
+  }
+
+  AliEventPool *pool = (AliEventPool *)fPoolMuonTrackMgr->GetEventPool(
+      poolCent, poolVtxZ, poolPsi);
+
+  Int_t nTrack = fEvent->GetNumberOfTracks();
+
+  AliAODTrack *track1;
+  AliAODTrack *track2;
+
+  TLorentzVector lv1, lv2, lv12;
+
+  for (int iTrack1 = 0; iTrack1 < nTrack; ++iTrack1) {
 
     track1 = (AliAODTrack *)fEvent->GetTrack(iTrack1);
 
@@ -1350,175 +1563,53 @@ bool AliAnalysisTaskAODTrackPair::MidPairAnalysis(AliPID::EParticleType pid1,
     MidTrackPIDChecker(track1, pid1, true);
     MidTrackQualityChecker(track1);
 
-    float mass1 = 0;
-
-    if (pid1 == AliPID::kElectron) {
-      mass1 = TDatabasePDG::Instance()->GetParticle(11)->Mass();
-    } else if (pid1 == AliPID::kPion) {
-      mass1 = TDatabasePDG::Instance()->GetParticle(211)->Mass();
-    } else if (pid1 == AliPID::kKaon) {
-      mass1 = TDatabasePDG::Instance()->GetParticle(321)->Mass();
-    } else if (pid1 == AliPID::kProton) {
-      mass1 = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-    } else if (pid1 == AliPID::kMuon) {
-      mass1 = TDatabasePDG::Instance()->GetParticle(13)->Mass();
-    } else {
-      continue;
-    }
-
-    TLorentzVector vec4;
-    vec4.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), mass1);
-    tracks.push_back(vec4);
-    skip_tracks_ids.push_back(false);
-    charges.push_back(track1->Charge());
-  }
-
-  nTrack = tracks.size();
-
-  for (Int_t iTrack1 = 0; iTrack1 < nTrack; ++iTrack1) {
-
-    lv1 = tracks[iTrack1];
-
-    for (Int_t iTrack2 = iTrack1 + 1; iTrack2 < nTrack; ++iTrack2) {
-
-      lv2 = tracks[iTrack2];
-
-      if (charges[iTrack1] + charges[iTrack2] != 0) {
-        continue;
-      }
-
-      lv12 = lv1 + lv2;
-      /*
-      if ( (pid1 == AliPID::kKaon && pid2 == AliPID::kKaon) && lv12.M() < 1.035
-      ) { skip_tracks_ids[iTrack1] = true; skip_tracks_ids[iTrack2] = true; }
-      else if ( (pid1 == AliPID::kPion && pid2 == AliPID::kPion) ) { if
-      (0.48<lv12.M() && lv12.M()<0.51) { skip_tracks_ids[iTrack1] = true;
-          skip_tracks_ids[iTrack2] = true;
-        } else if (0.70<lv12.M() && lv12.M()<0.84) {
-          skip_tracks_ids[iTrack1] = true;
-          skip_tracks_ids[iTrack2] = true;
-        }
-      }
-      */
-    } // end of loop track2
-  }   // end of loop track1
-
-  for (Int_t iTrack1 = 0; iTrack1 < nTrack; ++iTrack1) {
-
-    lv1 = tracks[iTrack1];
-
-    for (Int_t iTrack2 = iTrack1 + 1; iTrack2 < nTrack; ++iTrack2) {
-
-      lv2 = tracks[iTrack2];
-
-      lv12 = lv1 + lv2;
-
-      RecPairPt = lv12.Pt();
-      RecPairMass = lv12.M();
-
-      if (charges[iTrack1] + charges[iTrack2] == 0) {
-        fHistULSPairMassPt->Fill(RecPairMass, RecPairPt);
-      } else if (charges[iTrack1] + charges[iTrack2] > 0) {
-        fHistLSppPairMassPt->Fill(RecPairMass, RecPairPt);
-      } else {
-        fHistLSmmPairMassPt->Fill(RecPairMass, RecPairPt);
-      }
-
-      if (skip_tracks_ids[iTrack1] && skip_tracks_ids[iTrack2]) {
-        continue;
-      }
-
-      if (charges[iTrack1] + charges[iTrack2] == 0) {
-        fHistULSPairMassPt_TightCut->Fill(RecPairMass, RecPairPt);
-      } else if (charges[iTrack1] + charges[iTrack2] > 0) {
-        fHistLSppPairMassPt_TightCut->Fill(RecPairMass, RecPairPt);
-      } else {
-        fHistLSmmPairMassPt_TightCut->Fill(RecPairMass, RecPairPt);
-      }
-
-    } // end of loop track2
-  }   // end of loop track1
-
-  return true;
-}
-
-bool AliAnalysisTaskAODTrackPair::MidMuonPairAnalysisEveMixing() {
-
-  TObjArray *fTrackArray = new TObjArray();
-  fTrackArray->SetOwner();
-
-  float poolCent = 0.;
-  float poolVtxZ = 0.;
-  float poolPsi = 0.;
-
-  if (onEvtMixingPoolVtxZ)
-    poolVtxZ = fUtils->getVtxZ();
-  if (onEvtMixingPoolCent)
-    poolCent = fUtils->getCentClass();
-  if (onEvtMixingPoolPsi)
-    poolPsi = fUtils->getPsi();
-
-  AliEventPool *pool = (AliEventPool *)fPoolMuonTrackMgr->GetEventPool(
-      poolCent, poolVtxZ, poolPsi);
-
-  Int_t nTrack = fEvent->GetNumberOfTracks();
-
-  for (Int_t iTrack1 = 0; iTrack1 < nTrack; ++iTrack1) {
-
-    AliAODTrack *track1 = (AliAODTrack *)fEvent->GetTrack(iTrack1);
-
-    if (!fUtils->isAcceptMidMuonTrack(track1))
-      continue;
-
     if (pool->IsReady()) {
 
       for (Int_t iMixEvt = 0; iMixEvt < pool->GetCurrentNEvents(); iMixEvt++) {
 
         TObjArray *poolTracks = (TObjArray *)pool->GetEvent(iMixEvt);
 
-        for (Int_t iTrack2 = 0; iTrack2 < poolTracks->GetEntriesFast();
-             ++iTrack2) {
+        for (int iTrack2 = 0; iTrack2 < poolTracks->GetEntriesFast();
+             iTrack2++) {
 
-          AliAODTrack *__track2__ = (AliAODTrack *)poolTracks->At(iTrack2);
+          // AliAODTrack *__track2__ = (AliAODTrack *)poolTracks->At(iTrack2);
+          // AliAODTrack *track2 = (AliAODTrack *)__track2__->Clone();
+          track2 = (AliAODTrack *)poolTracks->At(iTrack2);
 
-          AliAODTrack *track2 = (AliAODTrack *)__track2__->Clone();
+          lv1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), mass1);
+          lv2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), mass2);
 
-          if (!fUtils->isAcceptMidMuonTrack(track2))
-            continue;
+          lv12 = lv1 + lv2;
 
-          AliAODDimuon *dimuon = new AliAODDimuon();
-          dimuon->SetMuons(track1, track2);
+          double angle = lv1.Angle(lv2.Vect());
 
-          if (!fUtils->isAcceptMidDimuon(dimuon))
-            continue;
+          double fill[] = {lv12.M(), lv12.Pt(), fUtils->getCentClass()};
 
-          double fill[] = {dimuon->M(), fabs(dimuon->Y()), dimuon->Pt(),
-                           fUtils->getCentClass()};
-
-          RecPairPt = dimuon->Pt();
-          RecPairRap = fabs(dimuon->Y());
-          RecPairMass = dimuon->M();
-          RecPairCent = fUtils->getCentClass();
-          RecPairDS = fUtils->getDS();
-
-          if (dimuon->Charge() == 0) {
-            fTreeMixULSPair->Fill();
-          } else if (dimuon->Charge() > 0) {
-            fTreeMixLSppPair->Fill();
+          if (track1->Charge() + track2->Charge() == 0) {
+            if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
+              fSparseMixULSPairMassPt->Fill(fill);
+            } else {
+              fSparseMixULSPairMassPt_SmallOpeningAngle->Fill(fill);
+            }
+          } else if (track1->Charge() + track2->Charge() > 0) {
+            if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
+              fSparseMixLSppPairMassPt->Fill(fill);
+            } else {
+              fSparseMixLSppPairMassPt_SmallOpeningAngle->Fill(fill);
+            }
           } else {
-            fTreeMixLSmmPair->Fill();
+            if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
+              fSparseMixLSmmPairMassPt->Fill(fill);
+            } else {
+              fSparseMixLSmmPairMassPt_SmallOpeningAngle->Fill(fill);
+            }
           }
-
-          delete track2;
-          delete dimuon;
-
-        } // end of loop track2
-      }   // end of loop iMixEvt
-    }     // poolPion->IsReady()
+        }
+      }
+    }
 
     fTrackArray->Add(track1);
-
-  } // end of loop track1
+  }
 
   TObjArray *fTrackArrayClone = (TObjArray *)fTrackArray->Clone();
   fTrackArrayClone->SetOwner();
