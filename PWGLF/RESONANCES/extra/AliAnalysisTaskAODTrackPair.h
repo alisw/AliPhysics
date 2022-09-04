@@ -27,7 +27,7 @@ public:
   void setUtils(AliAnalysisTaskAODTrackPairUtils *utils) { fUtils = utils; }
   void setEvtMixingTrackDepth(int depth) { fTrackDepth = depth; }
   void setEvtMixingPoolSize(int size) { fPoolSize = size; }
-  void setEvtMixingReadyFraction(float frac) { fReadyFraction = frac; }
+  void setEvtMixingReadyFraction(double frac) { fReadyFraction = frac; }
   void setEvtMixingPoolVtxZ(bool flag) { onEvtMixingPoolVtxZ = flag; }
   void setEvtMixingPoolCent(bool flag) { onEvtMixingPoolCent = flag; }
   void setEvtMixingPoolPsi(bool flag) { onEvtMixingPoolPsi = flag; }
@@ -44,25 +44,26 @@ private:
 
   bool EventQA();
   bool Initialize();
+
   bool FwdMuonPairAnalysis();
   bool FwdMuonPairAnalysisEveMixing();
+
   bool FwdMuonTrackQA(AliAODTrack *track);
   bool FwdMuonPairQA(AliAODDimuon *dimuon);
 
-  bool MidTrackQA(AliAODTrack *track);
   bool MidTrackPIDChecker(AliAODTrack *track, AliPID::EParticleType pid,
                           bool isSel);
+
   bool MidTrackQualityChecker(AliAODTrack *track);
   bool MidV0Checker(AliAODv0 *v0, bool isSel);
 
-  bool MidMuonPairQA(AliAODDimuon *dimuon);
   bool MidPairAnalysis(AliPID::EParticleType pid1, AliPID::EParticleType pid2);
+  bool MidPairAnalysisEventMixing(AliPID::EParticleType pid1,
+                                  AliPID::EParticleType pid2);
 
   bool MidV0Analysis(AliPID::EParticleType pid1, AliPID::EParticleType pid2);
   bool MidV0AnalysisEventMixing(AliPID::EParticleType pid1,
                                 AliPID::EParticleType pid2);
-
-  bool MidMuonPairAnalysisEveMixing();
 
   AliAODEvent *fEvent;
   AliEventPoolManager *fPoolMuonTrackMgr;
@@ -81,7 +82,7 @@ private:
   unsigned int fTriggerMaskForSame;
   unsigned int fTriggerMaskForMixing;
 
-  float fReadyFraction;
+  double fReadyFraction;
 
   bool onEvtMixingPoolVtxZ;
   bool onEvtMixingPoolCent;
@@ -138,6 +139,14 @@ private:
   THnSparse *fSparseLSppPairMassPt;
   THnSparse *fSparseLSmmPairMassPt;
 
+  THnSparse *fSparseULSPairMassPt_SideBandLeftRight;
+  THnSparse *fSparseULSPairMassPt_SideBandLeft;
+  THnSparse *fSparseULSPairMassPt_SideBandRight;
+  THnSparse *fSparseULSPairMassPt_SideBand;
+  THnSparse *fSparseULSPairMassPt_SmallOpeningAngle;
+  THnSparse *fSparseLSppPairMassPt_SmallOpeningAngle;
+  THnSparse *fSparseLSmmPairMassPt_SmallOpeningAngle;
+
   TH2F *fHistULSPairMassPt_ProngV0;
   TH2F *fHistLSppPairMassPt_ProngV0;
   TH2F *fHistLSmmPairMassPt_ProngV0;
@@ -153,16 +162,19 @@ private:
   THnSparse *fSparseMixULSPairMassPt;
   THnSparse *fSparseMixLSppPairMassPt;
   THnSparse *fSparseMixLSmmPairMassPt;
+  THnSparse *fSparseMixULSPairMassPt_SmallOpeningAngle;
+  THnSparse *fSparseMixLSppPairMassPt_SmallOpeningAngle;
+  THnSparse *fSparseMixLSmmPairMassPt_SmallOpeningAngle;
 
   TH2F *fHistMassK0s1K0s2;
 
-  float RecPairPt;
-  float RecPairRap;
-  float RecPairMass;
-  float RecPairArmenterosArmPt;
-  float RecPairArmenterosAlpha;
-  float RecPairCent;
-  float RecPairDS;
+  double RecPairPt;
+  double RecPairRap;
+  double RecPairMass;
+  double RecPairArmenterosArmPt;
+  double RecPairArmenterosAlpha;
+  double RecPairCent;
+  double RecPairDS;
 
   TH2F *fHistTPCdEdxP;
   TH2F *fHistBetaP;
@@ -200,6 +212,7 @@ private:
   TH1F *fHistReducedChi2ITS;
   TH1F *fHistDCAz;
   TH2F *fHistDCAxyPt;
+  TH1F *fHistOpeningAngle;
 
   TH2F *fHistArmenteros;
   TH2F *fHistSelArmenteros;
