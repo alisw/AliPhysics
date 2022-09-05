@@ -2,7 +2,7 @@
 
 AliAnalysisTaskMSDibaryons *AddTaskMSDibaryons(
 		const TString taskname = "MSDibaryons",
-		const UInt_t trigger = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+		const UInt_t trigger = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral,	
 		const TString estimator = "V0M",
 		const Float_t cenmin = 0,
 		const Float_t cenmax = 90
@@ -20,6 +20,7 @@ AliAnalysisTaskMSDibaryons *AddTaskMSDibaryons(
 	//================================================================
 	AliAnalysisTaskMSDibaryons *task=new AliAnalysisTaskMSDibaryons(taskname.Data());
 	task->SetTrigger(trigger);
+	//task->SelectCollisionCandidates(trigger);
 	mgr->AddTask(task);
 
 	TString outlistname = Form("outlist_msdibaryons_%02d%02d",int(cenmin),int(cenmax));
