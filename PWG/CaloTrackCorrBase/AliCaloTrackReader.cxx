@@ -3423,20 +3423,13 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     {
       // Skip DCal 1/3 SM in pp periods, not pPb
       if ( fRunNumber <= 264347 && iSupMod > 17 ) return;
-
-      // Skip half SM16 and full SM15 from periods 16i to 16l
-      if ( fRunNumber >= 255515 && fRunNumber < 262395 )
-      {
-        if ( iSupMod == 15 ) return;
-        if ( iSupMod == 16 &&  etaCls < 0.45 ) return;
-      }
     }
 
-    if ( fYear == 18 )
-    {
-      // Skip EMCal SM11
-      if ( iSupMod == 11 ) return;
-    }
+//    if ( fYear == 18 )
+//    {
+//      // Skip EMCal SM11
+//      if ( iSupMod == 11 ) return;
+//    }
   }
 
   // Check effect of energy and fiducial cuts  
