@@ -329,6 +329,9 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     DisableTree(kMcTrackLabel);
     DisableTree(kMcCaloLabel);
     DisableTree(kMcCollisionLabel);
+    DisableTree(kHepMcCrossSections);
+    DisableTree(kHepMcPdfInfo);
+    DisableTree(kHepMcHeavyIon);
     break;
   default:
     break;
