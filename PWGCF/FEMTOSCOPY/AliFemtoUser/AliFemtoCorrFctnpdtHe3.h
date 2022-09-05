@@ -67,6 +67,11 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetfUseDPhiDEtaQA(int aUseDPhiDEtaQA);
 	void SetDPhiDEtaQAInit(bool aDPhiDEtaQA);
         float ReAvgDphi(AliFemtoPair* aPair);
+	//\ 2022.9.5
+	void SetUseStavinskyMethod(int aUse);
+	void SetStaSkyBkgInit(bool aInit);
+	AliFemtoPair *InversePair(AliFemtoPair* aPair);
+
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -129,7 +134,8 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	TH2F *fNumDPhiDEtaAvgQA;
 	TH2F *fDumDPhiDEtaAvgQA;
 		
-	
+	int fUseStavinskyMethod;
+	TH1F *fStaSkyBkg;
 	
 	
       
