@@ -195,6 +195,10 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   fOutputList->Add(new TH1F("hCentralityV0C","centrality V0C",101,0,101));
   fOutputList->Add(new TH1F("hCentralityMain","centrality Main",101,0,101));
 
+  fOutputList->Add(new TH1F("hCentralityV0M_cent","centrality V0M MostCent",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityV0M_semicent","centrality V0M SemiCent",101,0,101));
+  fOutputList->Add(new TH1F("hCentralityV0M_mb","centrality V0M MB",101,0,101));
+
   //========== multiplicity ==========
   TH2F *fmultiplicity                      =new TH2F("fmultiplicity","",2000,0,200,40,-20,20);
   TH1F *fmultiplicity_lambdalambda         =new TH1F("fmultiplicity_lambdalambda","",2000,0,200);
@@ -279,43 +283,15 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   fOutputList->Add(new TH2F("hInvMassLambdaLambda_onlyprompt","",1000,0,10,1000,2,3));
   fOutputList->Add(new TH2F("hInvMassLambdaLambda","",1000,0,10,10000,2,3));
   fOutputList->Add(new TH2F("hInvMassLambdaLambda_centvsmass","",101,0,101,1000,0,10));
-  /*
-  fOutputList->Add(new TH1F("hInvMassLambdaLambda(CentMB)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassLambdaLambda(Cent0-20)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassLambdaLambda(Cent20-40)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassLambdaLambda(Cent40-60)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassLambdaLambda(Cent60-)","",1000,0,10));
-  */
   //ProtonXi
   fOutputList->Add(new TH2F("hInvMassProtonXi","",1000,0,10,10000,2,3));
   fOutputList->Add(new TH2F("hInvMassProtonXi_centvsmass","",101,0,101,1000,0,10));
-  /*
-  fOutputList->Add(new TH1F("hInvMassProtonXi(CentMB)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassProtonXi(Cent0-20)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassProtonXi(Cent20-40)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassProtonXi(Cent40-60)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassProtonXi(Cent60-)","",1000,0,10));
-  */
   //LambdaXi
   fOutputList->Add(new TH2F("hInvMassLambdaXi","",1000,0,10,10000,2,3));
   fOutputList->Add(new TH2F("hInvMassLambdaXi_centvsmass","",101,0,101,1000,0,10));
-  /*
-  fOutputList->Add(new TH1F("hInvMassLambdaXi(CentMB)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassLambdaXi(Cent0-20)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassLambdaXi(Cent20-40)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassLambdaXi(Cent40-60)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassLambdaXi(Cent60-)","",1000,0,10));
-  */
   //ProtonOmega
   fOutputList->Add(new TH2F("hInvMassProtonOmega","",1000,0,10,10000,2,3));
   fOutputList->Add(new TH2F("hInvMassProtonOmega_centvsmass","",101,0,101,1000,0,10));
-  /*
-  fOutputList->Add(new TH1F("hInvMassProtonOmega(CentMB)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassProtonOmega(Cent0-20)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassProtonOmega(Cent20-40)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassProtonOmega(Cent40-60)","",1000,0,10));
-  fOutputList->Add(new TH1F("hInvMassProtonOmega(Cent60-)","",1000,0,10));
-  */
   //========== baryon-baryon BG ==========
   //LambdaLambda                                                                                                                              
   fOutputList->Add(new TH1F("hInvMassLambdaLambda_evtpool","",1000,0,10));
@@ -355,7 +331,6 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
       AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
     }
   }
-
 
   PostData(1,fOutputList);
 }
@@ -449,8 +424,27 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityCL1")) ->Fill(centralityCL1);
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityMain"))->Fill(centralityMain);
 
+  //Trigger details
+  //TString TriggerClass = fAOD->GetFiredTriggerClasses();
+  //cout<<"GetFiredTriggerClasses = "<<TriggerClass<<endl;
+
+  /*
+  if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & AliVEvent::kINT7){
+    dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityV0M_mb")) ->Fill(centralityV0M);
+    //cout<<"++++++++++++++++++++++ MB! ++++++++++++++++++++++++"<<endl;
+  }
+  if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & AliVEvent::kCentral){
+    dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityV0M_cent")) ->Fill(centralityV0M);
+    //cout<<"++++++++++++++++++++++ Central! ++++++++++++++++++++++++"<<endl;
+  }
+  if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & AliVEvent::kSemiCentral){
+    dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityV0M_semicent")) ->Fill(centralityV0M);
+    //cout<<"++++++++++++++++++++++ Semi Cantral! ++++++++++++++++++++++++"<<endl;
+ }
+  */
+
   printf("before Qn\n");
-  printf("confirmed!\n");
+  printf("Local file confirmed!\n");
 
   Bool_t isok = ExtractQnVector();
   printf("isok = %d\n",isok);
@@ -897,7 +891,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
     if(!(track->GetTPCSharedMap()==0)) continue;
     if(fabs(dcaxy) > 0.1) continue;
     if(fabs(dcaz) > 0.2) continue;
-    Bool_t isProton  =((track->P() < 0.75 && fabs(sigmatpc_pr) < 3) || (track->P() > 0.75 && sigmacomb < 3));
+    //Bool_t isProton  =((track->P() < 0.75 && fabs(sigmatpc_pr) < 3) || (track->P() > 0.75 && sigmacomb < 3));
+    Bool_t isProton  =((track->P() < 0.75 && fabs(sigmatpc_pr) < 3) || (track->P() > 0.75 && fabs(sigmatpc_pr) < 3 && fabs(sigmatof) < 3));
     Bool_t isKaon    =fabs(sigmatpc_ka)<2;
     //Bool_t isProton  =((track->P() < 0.75 && fabs(sigmatpc_pr) < 3) || (track->P() > 0.75 && ((fabs(sigmatpc_pr) < 3)||(fabs(sigmatof) < 3)) ));
     if(isKaon){
