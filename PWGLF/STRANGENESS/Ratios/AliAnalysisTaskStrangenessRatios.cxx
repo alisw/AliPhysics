@@ -51,6 +51,22 @@ namespace
   constexpr double kcTauOmega{2.46129608};
   constexpr double kcTau[2]{kcTauXi, kcTauOmega};
 
+  void getITScls(AliAODTrack* t, int &SPDcls, int &SDDSSDcls)
+  {
+    SPDcls = 0u;
+    SDDSSDcls = 0u;
+    for (int i = 0; i < 6; ++i)
+    {
+      if (t->HasPointOnITSLayer(i)){
+        if (i < 2)
+          SPDcls++;
+        else
+          SDDSSDcls++;
+      }
+    }
+  }
+
+
 }
 
 /// Standard and default constructor of the class.
@@ -410,7 +426,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       auto proton = fRecLambda->matter ? pTrack : nTrack;
       auto pion = fRecLambda->matter ? nTrack : pTrack;
 
+      int nSPDPr = 0u;
+      int nSDDSSDPr = 0u;
+      getITScls(proton, nSPDPr, nSDDSSDPr);
+      if (nSDDSSDPr < fSDDSSDclsCut || nSPDPr < fSPDclsCut)
+        continue;
       fRecLambda->pt = v0->Pt();
+      fRecLambda->ptPr = proton->Pt();
       fRecLambda->eta = v0->Eta();
       fRecLambda->mass = fRecLambda->matter ? v0->MassLambda() : v0->MassAntiLambda();
       fRecLambda->ct = v0->Ct(kLambdaPdg, pv);
