@@ -75,6 +75,7 @@
 #pragma link C++ class AliAnalysisTaskDeuteronVsMultiplicity_XeXe+;
 #pragma link C++ class AliAnalysisTaskLightNuclei_XeXe_MC+;
 #pragma link C++ class AliAnalysisTaskDeuteron_XeXe_MC+;
+#pragma link C++ class AliAnalysisTaskDeuteron_XeXe_MC_noMult+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertriton+;
