@@ -736,15 +736,15 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     if (!fTreeSRedirector)
       return;
     (*fTreeSRedirector) << "genTrk"
-                        << "run=" << run
-                        << "Mult08=" << fMult08_MC
-                        << "Sphericity_MC=" << fSphericity_MC
-                        << "Pt_Gen=" << fPt_Gen
-                        //                     << "Charge_Gen=" << fCharge_Gen
-                        << "Eta_Gen=" << fEta_Gen
-                        // << "Phi_Gen=" << fPhi_Gen
-                        // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
-                        // << "DeltaEta_Gen=" << fDeltaEta_Gen
+//                         << "run=" << run
+//                         << "Mult08=" << fMult08_MC
+//                         << "Sphericity_MC=" << fSphericity_MC
+//                         << "Pt_Gen=" << fPt_Gen
+//                         //                     << "Charge_Gen=" << fCharge_Gen
+//                         << "Eta_Gen=" << fEta_Gen
+//                         // << "Phi_Gen=" << fPhi_Gen
+//                         // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
+//                         // << "DeltaEta_Gen=" << fDeltaEta_Gen
                         << "\n";
   }
   // if (!fTreeSRedirector)
