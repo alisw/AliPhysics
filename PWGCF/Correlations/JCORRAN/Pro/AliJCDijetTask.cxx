@@ -174,6 +174,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
     fOutput = gDirectory;
     fOutput->cd();
 
+    fEventCuts.AddQAplotsToList(fJCatalystTask->GetCataList());
+
     fhistos = new AliJCDijetHistos();
     fhistos->SetName("jcdijet");
     fhistos->SetCentralityBinsHistos(fcentralityBins);
