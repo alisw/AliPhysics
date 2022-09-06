@@ -1055,7 +1055,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   AliAODTrack *aodcascv0postrack = 0x0;
   AliAODTrack *aodcascv0negtrack = 0x0;
   AliESDcascade *esdcasc = 0x0;
-  AliESDtrack *esdcascbachtrack = 0x0;
+FLFl  AliESDtrack *esdcascbachtrack = 0x0;
   AliESDtrack *esdcascv0postrack = 0x0;
   AliESDtrack *esdcascv0negtrack = 0x0;
   
@@ -1074,7 +1074,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
     Float_t PtV0 = -999, EtaV0 = -999, InvMassV0 = -999, InvMassK0S = -999, InvMassGamma = -999;
     Float_t CosPAV0 = -999, DecayRV0 = -999, DecayLengthV0 = -999, PLTV0 = -999;
-    FLoat_t DCAV0PV = -999, DCAV0Daughters = -999;
+    Float_t DCAV0PV = -999, DCAV0Daughters = -999;
     Float_t PPt = -999, NPt = -999, PEta = -999, NEta = -999;
     Float_t PNsigmaPr = -999, NNsigmaPr = -999, PDCAPV = -999, NDCAPV = -999;
     

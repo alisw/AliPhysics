@@ -342,21 +342,21 @@ class AliLightCascade : public TObject, public TArrayF {
   void SetPLTXi(Float_t value) { PLTXi = value; }
   void SetDCAXiPV(Float_t value) { DCAXiPV = value; }
   void SetDCABachPV(Float_t value) { DCABachPV = value; }
-  void SetDCAXiDaughters(FLoat_t value) { DCAXiDaughters = value; } 
+  void SetDCAXiDaughters(Float_t value) { DCAXiDaughters = value; } 
   void SetMCStatus(Int_t value) { MCStatus = value; }
   void SetCascadeV0(AliLightV0 *tempCascadeV0) { CascadeV0 = tempCascadeV0; }
 
   Float_t GetPtXi() { return PtXi; }
   Float_t GetPtBach() { return PtBach; }
-  FLoat_t GetEtaXi() { return EtaXi; }
-  FLoat_t GetEtaBach() { return EtaBach; } 
+  Float_t GetEtaXi() { return EtaXi; }
+  Float_t GetEtaBach() { return EtaBach; } 
   Float_t GetInvMassXi() { return InvMassXi; }
   Float_t GetCosPAXi() { return CosPAXi; }
   Float_t GetDecayRXi() { return DecayRXi; }
   Float_t GetPLTXi() { return PLTXi; } 
   Float_t GetDCAXiPV() { return DCAXiPV; }
   Float_t GetDCABachPV() { return DCABachPV; }
-  FLoat_t GetDCAXiDaughters() { return DCAXiDaughters; }
+  Float_t GetDCAXiDaughters() { return DCAXiDaughters; }
   Int_t GetMCStatus() { return MCStatus; }
   AliLightV0* GetCascadeV0() { return CascadeV0; }
 
