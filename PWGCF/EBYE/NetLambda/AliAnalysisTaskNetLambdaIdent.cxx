@@ -1059,7 +1059,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   AliESDtrack *esdcascv0postrack = 0x0;
   AliESDtrack *esdcascv0negtrack = 0x0;
   
-  for(Int_t iCasc = 0; iCasc < nCascades; i++) {
+  for(Int_t iCasc = 0; iCasc < nCascades; iCasc++) {
     aodcasc = 0x0;
     aodcascv0postrack = 0x0;
     aodcascv0negtrack = 0x0;
@@ -1083,7 +1083,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       aodcasc->GetDecayVertexXi()->GetXYZ(AODXiVertexXYZ);
       Charge = aodcasc->ChargeXi();
       PtXi = TMath::Sqrt(aodcasc->Pt2Xi());
-      PtBach = Tmath::Sqrt(TMath::Power(aodcasc->MomBachX(), 2) + TMath::Power(aodcasc->MomBachY(), 2));
+      PtBach = TMath::Sqrt(TMath::Power(aodcasc->MomBachX(), 2) + TMath::Power(aodcasc->MomBachY(), 2));
       EtaXi = TMath::ATan((aodcasc->MomXiZ())/(TMath::Sqrt(aodcasc->Ptot2Xi())));
       EtaBach = TMath::ATan((aodcasc->MomBachZ())/(TMath::Sqrt(aodcasc->Ptot2Bach())));
       if(Charge < 0) { InvMassXi = aodcasc->MassXi(); }
@@ -1094,7 +1094,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       PLTXi = InvMassXi*DecayLengthXi/(TMath::Sqrt(aodcasc->Ptot2Xi()));
       DCAXiPV = aodcasc->DcaXiToPrimVertex();
       DCABachPV = aodcasc->DcaBachToPrimVertex();
-      DCAXiDaughters = aodcasc->DcaXiDaughers();
+      DCAXiDaughters = aodcasc->DcaXiDaughters();
 
       PtV0 = TMath::Sqrt(aodcasc->Pt2V0());
       EtaV0 = aodcasc->PseudoRapV0();
@@ -1105,10 +1105,10 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       CosPAV0 = aodcasc->CosPointingAngle(AODXiVertexXYZ);
       DecayRV0 = TMath::Sqrt(TMath::Power(aodcasc->DecayVertexV0X(), 2) +
 			     TMath::Power(aodcasc->DecayVertexV0Y(), 2));
-      DecayLengthV0 = aodcasc->DecayLengthV0(AODXiVertexXYZ);
+      DecayLengthV0 = aodcasc->DecayLengthV0();
       PLTV0 = InvMassV0*DecayLengthV0/(TMath::Sqrt(aodcasc->Ptot2V0()));
       DCAV0PV = aodcasc->DcaV0ToPrimVertex();
-      DCAV0Daughters = aodcasc->DCAV0Daughters();  
+      DCAV0Daughters = aodcasc->AliAODv0::DCAV0Daughters();  
       AliAODVertex* cascv0vtx = (AliAODVertex*)aodcasc->GetSecondaryVtx();
       aodcascv0postrack = (AliAODTrack*)cascv0vtx->GetDaughter(0);
       aodcascv0negtrack = (AliAODTrack*)cascv0vtx->GetDaughter(1);
