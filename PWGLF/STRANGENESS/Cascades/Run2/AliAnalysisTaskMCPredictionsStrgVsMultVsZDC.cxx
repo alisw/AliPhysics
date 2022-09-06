@@ -626,7 +626,7 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
   //
   AliGenEventHeader* mcGenH = lMCevent->GenEventHeader();
   //
-  lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );  
+  if (lMCstack->GetNprimary() != lMCstack->GetNtrack()) lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );  
   
   //Get primary vertex position
   Double_t mcVx = lMCevent->GetPrimaryVertex()->GetX();
@@ -846,6 +846,7 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
   if(fHistEffEnergy)    fHistEffEnergy      -> Fill ( fEffEnergy );
 
   //----- Loop on Stack ----------------------------------------------------------------
+  Int_t nPrimaries = lMCstack->GetNprimary();
   for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
   { // This is the begining of the loop on tracks
     
@@ -873,8 +874,19 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
       for(Int_t ih=0; ih<22; ih++){ //loop over pdg codes   
         if( pdg == lPDGCodes[ih] ) {  
 
+          Bool_t IsPrimary = kFALSE;
+          if (!lESDevent){ 
+            // if Fast generator
+            IsPrimary = lIsPhysicalPrimary;
+          } else { 
+            // if Full MC
+            if (part->GetFirstDaughter() >= nPrimaries) IsPrimary = (iCurrentLabelStack < nPrimaries); // drop if the particle has a daughter among the primaries         
+            if (part->GetStatusCode() != 1) IsPrimary = kFALSE; // drop non final state particles
+            if (DeltaR > 1E-6) IsPrimary = kFALSE; // drop if the particle is not produced in the primary vertex
+          } 
+
           //Check if Phyisical Primary if needed
-          if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
+          if( lCheckIsPhysicalPrimary[ih] == kTRUE && IsPrimary == kFALSE) continue;
           if( lCheckIsPhysicalPrimary[ih] == kFALSE && DeltaR>1E-6) continue; 
           
           //Fill histos
@@ -1043,6 +1055,8 @@ Bool_t AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::CheckIsNotPrimary(Bool_t IsF
       } else {
         isnotprimary = kTRUE;
       }
+      if (part->GetPdgCode() == 21) isnotprimary = kTRUE;
+      if (part->GetStatusCode() != 1) isnotprimary = kTRUE;
     } else{
          isnotprimary = (!AliPWG0Helper::IsPrimaryCharged(part, nPrimaries)); // official definition of charged primary    
     }
