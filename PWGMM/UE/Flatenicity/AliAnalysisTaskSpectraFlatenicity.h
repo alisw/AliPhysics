@@ -88,6 +88,7 @@ private:
   Double_t fv0mpercentile;
   Float_t fFlat;
   Float_t fFlatMC;
+  Float_t fFlatMC2;
   AliMultSelection *fMultSelection;
   TH1D *hPtPrimIn;
   TH1D *hPtPrimOut;
@@ -98,6 +99,7 @@ private:
   TH1D *hFlatenicity;
   TH1D *hFlatenicityMC;
   TH2D *hFlatCominedMC;
+  TH2D *hFlat2CominedMC;
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;

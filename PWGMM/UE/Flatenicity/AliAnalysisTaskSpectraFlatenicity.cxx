@@ -101,9 +101,9 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
       fmultV0Amc(-1), fmultV0Cmc(-1), fmultTPCmc(-1), fDetFlat("V0"), fIsMCclosure(kFALSE),
       fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
       fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
-      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1), fFlatMC2(-1), 
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0), 
-      hFlatV0vsFlatTPC(0), hFlatV0vsFlatTPCmc(0), hFlatenicity(0), hFlatenicityMC(0), hFlatCominedMC(0), 
+      hFlatV0vsFlatTPC(0), hFlatV0vsFlatTPCmc(0), hFlatenicity(0), hFlatenicityMC(0), hFlatCominedMC(0), hFlat2CominedMC(0), 
       hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0), fUseCalib(1), fDataSet("16kl"), fV0Camp(0x0), fV0Aamp(0x0), 
       pActivityV0DataSect(0), pActivityV0ADataSect(0), pActivityV0CDataSect(0), pActivityV0multData(0), 
       pActivityV0AmultData(0), pActivityV0CmultData(0), pActivityV0McSect(0), pActivityV0multMc(0),
@@ -128,9 +128,9 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
       fmultV0Amc(-1), fmultV0Cmc(-1), fmultTPCmc(-1), fDetFlat("V0"), fIsMCclosure(kFALSE),
       fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
       fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
-      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1), fFlatMC2(-1), 
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0), 
-      hFlatV0vsFlatTPC(0), hFlatV0vsFlatTPCmc(0), hFlatenicity(0), hFlatenicityMC(0), hFlatCominedMC(0), 
+      hFlatV0vsFlatTPC(0), hFlatV0vsFlatTPCmc(0), hFlatenicity(0), hFlatenicityMC(0), hFlatCominedMC(0), hFlat2CominedMC(0),
       hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0), fUseCalib(1), fDataSet("16kl"), fV0Camp(0x0), fV0Aamp(0x0), 
       pActivityV0DataSect(0), pActivityV0ADataSect(0), pActivityV0CDataSect(0), pActivityV0multData(0), 
       pActivityV0AmultData(0), pActivityV0CmultData(0), pActivityV0McSect(0), pActivityV0multMc(0),
@@ -261,7 +261,11 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
     hFlatCominedMC = new TH2D("hFlatCominedMC", ";comined flat; independent flat",
                              2000, -0.1, 9.9, 2000, -0.1, 9.9);
     fOutputList->Add(hFlatCominedMC);
-    
+
+    hFlat2CominedMC = new TH2D("hFlat2CominedMC", ";comined flat; independent flat",
+                             2000, -0.1, 9.9, 2000, -0.1, 9.9);
+    fOutputList->Add(hFlat2CominedMC);
+
     hFlatVsPtMC = new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})",
                  2000, -0.1, 9.9, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
     fOutputList->Add(hFlatVsPtMC);
@@ -470,17 +474,19 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
 
   // MC
   fFlatMC = -1;
+  fFlatMC2 = -1;
   if (fUseMC) {
       
     Double_t flatV0mc        = GetFlatenicityMC();
     Double_t flatTPCmc       = GetFlatenicityTPCMC();  
     Double_t flatCombinedmc  = GetFlatenicityCombinedMC();
     
-    fFlatMC = flatV0mc; // default V0
+    fFlatMC = (4.3*flatV0mc + 1.6*flatTPCmc)/5.9;
+    fFlatMC2  = (flatV0mc + flatTPCmc) / 2.0;
+
     if (fDetFlat == "VO_TPC") {
-// //         fFlatMC = (flatV0mc + flatTPCmc) / 2.0;
-        fFlatMC = flatV0mc + flatTPCmc;
-// //         fFlatMC = (4.3*flatV0mc + 1.6*flatTPCmc)/5.9;
+        fFlatMC = (4.3*flatV0mc + 1.6*flatTPCmc)/5.9;
+        fFlatMC2 = (flatV0mc + flatTPCmc) / 2.0;
     }
     if (fDetFlat == "TPC") {
         fFlatMC = flatTPCmc;
@@ -500,6 +506,9 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
       
         if(flatCombinedmc>=0){
             hFlatCominedMC->Fill(flatCombinedmc,fFlatMC);
+            if(fFlatMC2 >= 0){
+                hFlat2CominedMC->Fill(flatCombinedmc,fFlatMC2);
+            }
         }
         //
         MakeMCanalysis();
@@ -690,7 +699,6 @@ void AliAnalysisTaskSpectraFlatenicity::CheckMultiplicities() {
   hNchV0a->Fill(fmultV0A);
   hNchV0c->Fill(fmultV0C);
 }
-
 
 //______________________________________________________________________________
 Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicityTPC() {
@@ -949,7 +957,6 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicityCombinedMC() {
   return flatenicity;
   
 }
-
 
 //______________________________________________________________________________
 Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicity() {
