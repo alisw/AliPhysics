@@ -1134,11 +1134,11 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       if(Charge < 0) { InvMassXi = esdcasc->M(); }
       else if(Charge > 0) { InvMassXi = -1*(esdcasc->M()); }
       CosPAXi = esdcasc->GetCascadeCosineOfPointingAngle(fVtx[0], fVtx[1], fVtx[2]);    
-      DecayRXi = TMath::Sqrt(TMath::Pow(esdcasc->Xv(), 2) + TMath::Pow(esdcasc->Yv(), 2));
+      DecayRXi = TMath::Sqrt(TMath::Power(esdcasc->Xv(), 2) + TMath::Power(esdcasc->Yv(), 2));
       DecayLengthXi = TMath::Sqrt(TMath::Power((esdcasc->Xv())-fVtx[0], 2) +
 				  TMath::Power((esdcasc->Yv())-fVtx[1], 2) +
 				  TMath::Power((esdcasc->Zv())-fVtx[2], 2));
-      PLTXi = InvMass*DecayLengthXi/(esdcasc->P());
+      PLTXi = InvMassXi*DecayLengthXi/(esdcasc->P());
       DCAXiPV = esdcasc->GetDcascade(fVtx[0], fVtx[1], fVtx[2]);
       esdcascbachtrack = esdcasc->GetTrack(TMath::Abs(esdcasc->GetBindex()));
       DCABachPV = TMath::Abs(esdcascbachtrack->GetD(fVtx[0], fVtx[1], b));
