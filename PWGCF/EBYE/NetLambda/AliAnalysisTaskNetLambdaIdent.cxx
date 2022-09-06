@@ -1055,7 +1055,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   AliAODTrack *aodcascv0postrack = 0x0;
   AliAODTrack *aodcascv0negtrack = 0x0;
   AliESDcascade *esdcasc = 0x0;
-FLFl  AliESDtrack *esdcascbachtrack = 0x0;
+  AliESDtrack *esdcascbachtrack = 0x0;
   AliESDtrack *esdcascv0postrack = 0x0;
   AliESDtrack *esdcascv0negtrack = 0x0;
   
