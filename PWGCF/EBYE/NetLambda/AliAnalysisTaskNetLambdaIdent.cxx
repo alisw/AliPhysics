@@ -1108,7 +1108,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       DecayLengthV0 = aodcasc->DecayLengthV0();
       PLTV0 = InvMassV0*DecayLengthV0/(TMath::Sqrt(aodcasc->Ptot2V0()));
       DCAV0PV = aodcasc->DcaV0ToPrimVertex();
-      DCAV0Daughters = aodcasc->AliAODv0::DCAV0Daughters();  
+      DCAV0Daughters = aodcasc->DcaV0Daughters();  
       AliAODVertex* cascv0vtx = (AliAODVertex*)aodcasc->GetSecondaryVtx();
       aodcascv0postrack = (AliAODTrack*)cascv0vtx->GetDaughter(0);
       aodcascv0negtrack = (AliAODTrack*)cascv0vtx->GetDaughter(1);
@@ -1128,9 +1128,9 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       esdcasc->GetBPxPyPz(ESDBachMom[0], ESDBachMom[1], ESDBachMom[2]);
       PtBach = TMath::Sqrt(TMath::Power(ESDBachMom[0], 2) + TMath::Power(ESDBachMom[1], 2));    
       EtaXi = esdcasc->Eta();
-      EtaBach = TMath::ATan(ESDBachMom[2]/(TMath::Sqrt(TMath:Power(ESDBachMom[0], 2) +
-						       TMath:Power(ESDBachMom[1], 2) +
-						       TMath:Power(ESDBachMom[2], 2))));
+      EtaBach = TMath::ATan(ESDBachMom[2]/(TMath::Sqrt(TMath::Power(ESDBachMom[0], 2) +
+						       TMath::Power(ESDBachMom[1], 2) +
+						       TMath::Power(ESDBachMom[2], 2))));
       if(Charge < 0) { InvMassXi = esdcasc->M(); }
       else if(Charge > 0) { InvMassXi = -1*(esdcasc->M()); }
       CosPAXi = esdcasc->GetCascadeCosineOfPointingAngle(fVtx[0], fVtx[1], fVtx[2]);    
