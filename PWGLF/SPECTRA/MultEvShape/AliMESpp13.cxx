@@ -138,8 +138,8 @@ void AliMESpp13::UserCreateOutputObjects()
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *lTrackCuts(NULL);
   lTrackCuts = new AliESDtrackCuts("trkCuts", "Track Cuts");
-  lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0); // kTRUE for primaries
-  lTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.1");
+  lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE, 0); // kTRUE for primaries
+  // lTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.1");
   lTrackCuts->SetCutGeoNcrNcl(3.0, 130.0, 1.5, 0.85, 0.7);
   lTrackCuts->SetMinNCrossedRowsTPC(120);
   lTrackCuts->SetMaxDCAToVertexXY(3.0);
@@ -666,13 +666,13 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                         // << "DeltaPhi=" << fDeltaPhi.at(i)
                         // << "DeltaEta=" << fDeltaEta.at(i)
                         // << "Charge=" << fCharge.at(i)
-                        // << "DCAxy=" << fDCAxy.at(i)
-                        // << "PassDCA=" << fPassDCA.at(i)
+                        << "DCAxy=" << fDCAxy.at(i)
+                        << "PassDCA=" << fPassDCA.at(i)
                         << "Mult08=" << fMult08_MC
                         << "V0M_MC=" << fV0M_MC
                         << "Sphericity_MC=" << fSphericity_MC
-                        << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
-                        << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
+//                         << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
+//                         << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
                         << "Pt_MC=" << fPt_MC.at(i)
                         << "Phi_MC=" << fPhi_MC.at(i)
                         << "Eta_MC=" << fEta_MC.at(i)
@@ -736,15 +736,15 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     if (!fTreeSRedirector)
       return;
     (*fTreeSRedirector) << "genTrk"
-                        << "run=" << run
-                        << "Mult08=" << fMult08_MC
-                        << "Sphericity_MC=" << fSphericity_MC
-                        << "Pt_Gen=" << fPt_Gen
-                        //                     << "Charge_Gen=" << fCharge_Gen
-                        << "Eta_Gen=" << fEta_Gen
-                        // << "Phi_Gen=" << fPhi_Gen
-                        // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
-                        // << "DeltaEta_Gen=" << fDeltaEta_Gen
+//                         << "run=" << run
+//                         << "Mult08=" << fMult08_MC
+//                         << "Sphericity_MC=" << fSphericity_MC
+//                         << "Pt_Gen=" << fPt_Gen
+//                         //                     << "Charge_Gen=" << fCharge_Gen
+//                         << "Eta_Gen=" << fEta_Gen
+//                         // << "Phi_Gen=" << fPhi_Gen
+//                         // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
+//                         // << "DeltaEta_Gen=" << fDeltaEta_Gen
                         << "\n";
   }
   // if (!fTreeSRedirector)
