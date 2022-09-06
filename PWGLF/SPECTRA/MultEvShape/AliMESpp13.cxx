@@ -671,8 +671,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                         << "Mult08=" << fMult08_MC
                         << "V0M_MC=" << fV0M_MC
                         << "Sphericity_MC=" << fSphericity_MC
-                        << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
-                        << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
+//                         << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
+//                         << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
                         << "Pt_MC=" << fPt_MC.at(i)
                         << "Phi_MC=" << fPhi_MC.at(i)
                         << "Eta_MC=" << fEta_MC.at(i)
