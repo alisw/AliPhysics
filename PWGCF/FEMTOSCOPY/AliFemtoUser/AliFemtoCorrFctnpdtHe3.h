@@ -71,6 +71,8 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetUseStavinskyMethod(int aUse);
 	void SetStaSkyBkgInit(bool aInit);
 	AliFemtoPair *InversePair(AliFemtoPair* aPair);
+	void SetUse2DpTvsKStar(int aUse);
+        void Set2DpTvsKStarInit(bool aInit);
 
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
@@ -137,6 +139,8 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	int fUseStavinskyMethod;
 	TH1F *fStaSkyBkg;
 	
+        int fUse2DpTvsKStar;
+	TH2F *f2DpTvsKStar;
 	
       
 };

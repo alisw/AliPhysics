@@ -64,7 +64,9 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fNumDPhiDEtaAvgQA(nullptr),
     fDumDPhiDEtaAvgQA(nullptr),
     fUseStavinskyMethod(0),
-    fStaSkyBkg(nullptr)
+    fStaSkyBkg(nullptr),
+    fUse2DpTvsKStar(0),
+    f2DpTvsKStar(nullptr)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -117,7 +119,9 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fNumDPhiDEtaAvgQA(aCorrFctn.fNumDPhiDEtaAvgQA),
     fDumDPhiDEtaAvgQA(aCorrFctn.fDumDPhiDEtaAvgQA),
     fUseStavinskyMethod(aCorrFctn.fUseStavinskyMethod),
-    fStaSkyBkg(aCorrFctn.fStaSkyBkg)
+    fStaSkyBkg(aCorrFctn.fStaSkyBkg),
+    fUse2DpTvsKStar(aCorrFctn.fUse2DpTvsKStar),
+    f2DpTvsKStar(aCorrFctn.f2DpTvsKStar)
 {
     
 
@@ -160,6 +164,7 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete fDumDPhiDEtaAvgQA;
 
     delete fStaSkyBkg;
+    delete f2DpTvsKStar;
  
 
 }
@@ -245,6 +250,10 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
 
     if(fUseStavinskyMethod) delete fStaSkyBkg;
 			fStaSkyBkg = new TH1F(*aCorrFctn.fStaSkyBkg);
+
+    if(fUse2DpTvsKStar) delete f2DpTvsKStar;
+			f2DpTvsKStar = new TH2F(*aCorrFctn.f2DpTvsKStar);
+
     return *this;
 
 }
@@ -295,7 +304,8 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
 
     }
     if(fUseStavinskyMethod) tOutputList->Add(fStaSkyBkg);
-			 
+    if(fUse2DpTvsKStar) tOutputList->Add(f2DpTvsKStar);
+		 
     return tOutputList;
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
@@ -338,7 +348,7 @@ void AliFemtoCorrFctnpdtHe3::Write()
 		  fDumDPhiDEtaAvgQA->Write();
 	}
         if(fUseStavinskyMethod) fStaSkyBkg->Write();
-	
+	if(fUse2DpTvsKStar) f2DpTvsKStar->Write();
 
 }
 void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
@@ -406,7 +416,10 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
 		SSPair = InversePair(fPair);
 		float InverseKStar = fabs(SSPair->KStar());
 		fStaSkyBkg->Fill(InverseKStar);
-}
+	}
+	if(fUse2DpTvsKStar){
+		f2DpTvsKStar->Fill(tKStar,fPair->Track2()->Track()->Pt());
+	}
 	return;
     
  
@@ -818,4 +831,13 @@ AliFemtoPair * AliFemtoCorrFctnpdtHe3::InversePair(AliFemtoPair* aPair)
 
     return fPair;
 }
+void AliFemtoCorrFctnpdtHe3::SetUse2DpTvsKStar(int aUse){
+	fUse2DpTvsKStar = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::Set2DpTvsKStarInit(bool aInit){
+	f2DpTvsKStar = new TH2F(TString::Format("f2DpTvsKStar%s", fTitle.Data()), "f2DpTvsKStar", 200,0,1.0,100,0,5);
+	f2DpTvsKStar->Sumw2();
+}
+
+
 
