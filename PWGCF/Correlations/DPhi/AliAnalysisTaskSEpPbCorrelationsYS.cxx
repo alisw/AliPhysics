@@ -2901,7 +2901,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
 	else if(tracketa>0. && tracketa<0.4) iEta=2;
 	else if(tracketa>0.4 && tracketa<0.8) iEta=3;
 	else iEta=-1;
-	if(iEta>0){
+	if(iEta>-1){
 	  //	  Float_t eff=heff[iEta]->GetBinContent(iPt);
 	  //	  Float_t FD=hFD[iEta]->GetBinContent(iPt);
 	  //	  if(FD==0.) continue;
@@ -2916,6 +2916,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
 	else if(tracketa>0 && tracketa<0.4) iEta=2;
 	else if(tracketa>0.4 && tracketa<0.8) iEta=3;
 	else iEta=-1;
+
 	
 	Int_t iCent=-1;
 	if(fCentType=="Manual"){
@@ -2943,7 +2944,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
 	  else if(lCentrality>80 && lCentrality<90) iCent=9;
 	  else iCent=-1;
 	}
-	if(iEta>0 && iCent>0){
+	if(iEta>-1 && iCent>-1){
 	  Float_t eff=heff_pbpb[iEta][iCent]->GetBinContent(iPt);
 	  Float_t FD=hFD_pbpb[iEta][iCent]->GetBinContent(iPt);
 	  efficiency=eff/FD;
