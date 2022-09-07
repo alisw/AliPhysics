@@ -771,6 +771,19 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
                                  "#LT#LTcos(#psi_{POI_1}-2#phi_{RP})#GT#GT","#LT#LTsin(#psi_{POI_1}-2#phi_{RP})#GT#GT",
                                  "#LT#LTcos(#psi_{POI_2}-2#phi_{RP})#GT#GT","#LT#LTsin(#psi_{POI_2}-2#phi_{RP})#GT#GT",
                                  "#LT#LTcos(#psi_{POI_1}+#psi_{POI_2})#GT#GT","#LT#LTsin(#psi_{POI_1}+#psi_{POI_2})#GT#GT"}; 
+
+ TString nonIsotropicV0Term[8] = {"#LT#LTcos(#psi_{POI_1}-2#Psi_{V0C})#GT#GT","#LT#LTsin(#psi_{POI_1}-2#Psi_{V0C})#GT#GT",
+	                              "#LT#LTcos(#psi_{POI_1}-2#Psi_{V0A})#GT#GT","#LT#LTsin(#psi_{POI_1}-2#Psi_{V0A})#GT#GT",
+                                  "#LT#LTcos(#psi_{POI_2}-2#Psi_{V0C})#GT#GT","#LT#LTsin(#psi_{POI_2}-2#Psi_{V0C})#GT#GT",
+                                  "#LT#LTcos(#psi_{POI_2}-2#Psi_{V0A})#GT#GT","#LT#LTsin(#psi_{POI_2}-2#Psi_{V0A})#GT#GT"};
+                                 
+ TString nonIsotropicZDCTerm[12] = {"#LT#LTcos(#psi_{POI_1}-2#Psi_{ZDCC})#GT#GT","#LT#LTsin(#psi_{POI_1}-2#Psi_{ZDCC})#GT#GT",
+	                              "#LT#LTcos(#psi_{POI_1}-2#Psi_{ZDCA})#GT#GT","#LT#LTsin(#psi_{POI_1}-2#Psi_{ZDCA})#GT#GT",
+	                              "#LT#LTcos(#psi_{POI_1}-2#Psi_{ZDCCA})#GT#GT","#LT#LTsin(#psi_{POI_1}-2#Psi_{ZDCCA})#GT#GT",
+                                  "#LT#LTcos(#psi_{POI_2}-2#Psi_{ZDCC})#GT#GT","#LT#LTsin(#psi_{POI_2}-2#Psi_{ZDCC})#GT#GT",
+                                  "#LT#LTcos(#psi_{POI_2}-2#Psi_{ZDCA})#GT#GT","#LT#LTsin(#psi_{POI_2}-2#Psi_{ZDCA})#GT#GT",
+                                  "#LT#LTcos(#psi_{POI_2}-2#Psi_{ZDCCA})#GT#GT","#LT#LTsin(#psi_{POI_2}-2#Psi_{ZDCCA})#GT#GT"};
+                                  
  for(Int_t sd=0;sd<2;sd++)
  {
   TProfile *p3pCorrelatorVsPtSumDiffPro = dynamic_cast<TProfile*>(profileList->FindObject(Form("f3pCorrelatorVs%sPro",psdFlag[sd].Data())));
@@ -810,22 +823,27 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
   }
   if(nonIsotropicTermsList) 
   {
-   for(Int_t t=0;t<10;t++)
-   {   
-    // Pt:
-    
+   for(Int_t t=0;t<8;t++)
+   {
     TProfile *pNonIsotropicTermsV0VsPtSumDiffPro = dynamic_cast<TProfile*>
-                      (nonIsotropicTermsList->FindObject(Form("fNonIsotropicTermsV0Vs%sPro %s",psdFlag[sd].Data(),nonIsotropicTerm[t].Data())));
+                      (nonIsotropicTermsList->FindObject(Form("fNonIsotropicTermsV0Vs%sPro %s",psdFlag[sd].Data(),nonIsotropicV0Term[t].Data())));
     if(pNonIsotropicTermsV0VsPtSumDiffPro)
     {
      this->SetNonIsotropicTermsV0VsPtSumDiffPro(pNonIsotropicTermsV0VsPtSumDiffPro,sd,t);  
     } 
+   }
+   for(Int_t t=0;t<12;t++)
+   {
     TProfile *pNonIsotropicTermsZDCVsPtSumDiffPro = dynamic_cast<TProfile*>
-                      (nonIsotropicTermsList->FindObject(Form("fNonIsotropicTermsZDCVs%sPro %s",psdFlag[sd].Data(),nonIsotropicTerm[t].Data())));
+                      (nonIsotropicTermsList->FindObject(Form("fNonIsotropicTermsZDCVs%sPro %s",psdFlag[sd].Data(),nonIsotropicZDCTerm[t].Data())));
     if(pNonIsotropicTermsZDCVsPtSumDiffPro)
     {
      this->SetNonIsotropicTermsZDCVsPtSumDiffPro(pNonIsotropicTermsZDCVsPtSumDiffPro,sd,t);  
     } 
+   }
+   for(Int_t t=0;t<10;t++)
+   {   
+    // Pt:
     TProfile *pNonIsotropicTermsVsPtSumDiffPro = dynamic_cast<TProfile*>
                       (nonIsotropicTermsList->FindObject(Form("fNonIsotropicTermsVs%sPro %s",psdFlag[sd].Data(),nonIsotropicTerm[t].Data())));
     if(pNonIsotropicTermsVsPtSumDiffPro)
@@ -842,7 +860,15 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
    } // end of for(Int_t t=0;t<10;t++)
   } // end of if(nonIsotropicTermsList)
  } // end of for(Int_t sd=0;sd<2;sd++)
- 
+ if(nonIsotropicTermsList) {
+   TProfile *pNonIsotropicTermsV0EvPlPro = dynamic_cast<TProfile *>(nonIsotropicTermsList->FindObject("fNonIsotropicTermsV0EvPlPro"));
+   if(pNonIsotropicTermsV0EvPlPro)
+     this->SetNonIsotropicTermsV0EvPlPro(pNonIsotropicTermsV0EvPlPro);
+  
+   TProfile *pNonIsotropicTermsZDCSpPlPPro = dynamic_cast<TProfile *>(nonIsotropicTermsList->FindObject("fNonIsotropicTermsZDCSpPlPPro"));
+   if(pNonIsotropicTermsZDCSpPlPPro)
+     this->SetNonIsotropicTermsZDCSpPlPPro(pNonIsotropicTermsZDCSpPlPPro);
+ }
  // non-isotropic terms for <<cos(2(phi1-phi2))>>
  TProfile *pNonIsotropicPOITermsPro = dynamic_cast<TProfile *>(profileList->FindObject("fNonIsotropicPOITermsPro"));
  if(pNonIsotropicPOITermsPro)
@@ -853,6 +879,7 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
  {
   this->Set3pCorrelatorPOIIntegratedPro(p3pCorrelatorPOIIntegratedPro);  
  }
+ 
  TProfile *p3pCorrelatorPOIm2V0CIntegratedPro = dynamic_cast<TProfile*>(profileList->FindObject("f3pCorrelatorPOIm2V0CIntegratedPro"));
  if(p3pCorrelatorPOIm2V0CIntegratedPro)
  {
@@ -1000,6 +1027,33 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
   if(h3pCorrelatorVsPtSumDiffHist)
   {
    this->Set3pCorrelatorVsPtSumDiffHist(h3pCorrelatorVsPtSumDiffHist,sd);  
+  }
+  
+  
+  TH1D *h3pCorrelatorV0CVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  if(h3pCorrelatorV0CVsPtSumDiffHist)
+  {
+   this->Set3pCorrelatorV0CVsPtSumDiffHist(h3pCorrelatorV0CVsPtSumDiffHist,sd);  
+  }
+  TH1D *h3pCorrelatorV0AVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  if(h3pCorrelatorV0AVsPtSumDiffHist)
+  {
+   this->Set3pCorrelatorV0AVsPtSumDiffHist(h3pCorrelatorV0AVsPtSumDiffHist,sd);  
+  }
+  TH1D *h3pCorrelatorZDCCVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  if(h3pCorrelatorZDCCVsPtSumDiffHist)
+  {
+   this->Set3pCorrelatorZDCCVsPtSumDiffHist(h3pCorrelatorZDCCVsPtSumDiffHist,sd);  
+  }
+  TH1D *h3pCorrelatorZDCAVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  if(h3pCorrelatorZDCAVsPtSumDiffHist)
+  {
+   this->Set3pCorrelatorZDCAVsPtSumDiffHist(h3pCorrelatorZDCAVsPtSumDiffHist,sd);  
+  }
+  TH1D *h3pCorrelatorZDCCAVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  if(h3pCorrelatorZDCCAVsPtSumDiffHist)
+  {
+   this->Set3pCorrelatorZDCCAVsPtSumDiffHist(h3pCorrelatorZDCCAVsPtSumDiffHist,sd);  
   }
   TH1D *h3pCorrelatorVsEtaSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag2[sd].Data())));
   if(h3pCorrelatorVsEtaSumDiffHist)
@@ -2671,7 +2725,10 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
  */  
  
  // Differential correlators:
-
+ 
+ cout<<"======> in Finish() fEvaluateDifferential3pCorrelator = "<<fEvaluateDifferential3pCorrelator<<endl;
+ fEvaluateDifferential3pCorrelator = kTRUE;
+ 
  if(!fEvaluateDifferential3pCorrelator){return;} 
  // non-isotropic terms for V0 and ZDC
  if(!(fNonIsotropicTermsV0EvPlPro))
@@ -3130,7 +3187,8 @@ void AliFlowAnalysisWithMixedHarmonics::AccessSettings()
  fEvaluateDifferential3pCorrelator = (Bool_t)fAnalysisSettings->GetBinContent(8);    
  fCalculateVsM = (Bool_t)fAnalysisSettings->GetBinContent(9);  
  fShowBinLabelsVsM = (Bool_t)fAnalysisSettings->GetBinContent(10); 
-                                                                                                                                                                                                                                                                                                                                                                                      
+ 
+                                             
 } // end of AliFlowAnalysisWithMixedHarmonics::AccessSettings()
 
 //================================================================================================================

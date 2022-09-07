@@ -265,6 +265,16 @@ class AliFlowAnalysisWithMixedHarmonics
   //TH1D* Get2pCorrelatorHist() const {return this->f2pCorrelatorHist;};    
   void Set3pCorrelatorVsPtSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorVsPtSumDiffHist[sd] = hist;};
   TH1D* Get3pCorrelatorVsPtSumDiffHist(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffHist[sd];};
+  void Set3pCorrelatorV0CVsPtSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorV0CVsPtSumDiffHist[sd] = hist;};
+  TH1D* Get3pCorrelatorV0CVsPtSumDiffHist(Int_t sd) const {return this->f3pCorrelatorV0CVsPtSumDiffHist[sd];};
+  void Set3pCorrelatorV0AVsPtSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorV0AVsPtSumDiffHist[sd] = hist;};
+  TH1D* Get3pCorrelatorV0AVsPtSumDiffHist(Int_t sd) const {return this->f3pCorrelatorV0AVsPtSumDiffHist[sd];};
+  void Set3pCorrelatorZDCCVsPtSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorZDCCVsPtSumDiffHist[sd] = hist;};
+  TH1D* Get3pCorrelatorZDCCVsPtSumDiffHist(Int_t sd) const {return this->f3pCorrelatorZDCCVsPtSumDiffHist[sd];};
+  void Set3pCorrelatorZDCAVsPtSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorZDCAVsPtSumDiffHist[sd] = hist;};
+  TH1D* Get3pCorrelatorZDCAVsPtSumDiffHist(Int_t sd) const {return this->f3pCorrelatorZDCAVsPtSumDiffHist[sd];};
+  void Set3pCorrelatorZDCCAVsPtSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorZDCCAVsPtSumDiffHist[sd] = hist;};
+  TH1D* Get3pCorrelatorZDCCAVsPtSumDiffHist(Int_t sd) const {return this->f3pCorrelatorZDCCAVsPtSumDiffHist[sd];};
   void Set3pCorrelatorVsEtaSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorVsEtaSumDiffHist[sd] = hist;};
   TH1D* Get3pCorrelatorVsEtaSumDiffHist(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffHist[sd];};  
   void Set3pCorrelatorPOIIntegratedHist(TH1D* const hist) {this->f3pCorrelatorPOIIntegratedHist = hist;};

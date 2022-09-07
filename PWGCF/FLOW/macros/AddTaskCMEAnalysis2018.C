@@ -63,6 +63,10 @@ void AddTaskCMEAnalysis2018(Bool_t isPbPb = kTRUE,
 			TString sDetWgtsFile = "/home/shi/alice/CalibrationFiles/CalibV0GainCorrectionLHC18q_Oct2021.root",
 			TString sZDCCorrFile = "/home/shi/alice/CalibrationFiles/RecenteringResultFinal_2018q_3rdOrderCent_vtx_orbitNo.root",
 			TString sLabel = "FB768") {
+				
+"alien:///alice/cern.ch/user/s/sqiu/CalibrationFiles/CalibV0GainCorrectionLHC18r_Oct2021.root","alien:///alice/cern.ch/user/s/sqiu/CalibrationFiles/RecenteringResultFinal_2018r_3rdOrderCent_vtx_orbitNo.root",
+
+"alien:///alice/cern.ch/user/s/sqiu/CalibrationFiles/CalibV0GainCorrectionLHC18q_Oct2021.root","alien:///alice/cern.ch/user/s/sqiu/CalibrationFiles/RecenteringResultFinal_2018q_3rdOrderCent_vtx_orbitNo.root", 
   //Macro to be used for studies of CME for charged particles
   //The macro uses as an input a configuration macro that
   //creates the AliFlowEventCuts and AliFlowTrackCuts objects
