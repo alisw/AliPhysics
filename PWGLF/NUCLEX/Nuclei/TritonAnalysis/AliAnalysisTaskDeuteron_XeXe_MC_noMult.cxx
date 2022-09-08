@@ -51,6 +51,8 @@ fAODArrayMCParticles(nullptr),
 fMCEventHandler(nullptr),
 reducedTree_gen_d(nullptr),
 reducedTree_rec_d(nullptr),
+reducedTree_gen_He3(nullptr),
+reducedTree_rec_He3(nullptr),
 fCentralityMin(0),
 fCentralityMax(0),
 fVertexZmin(0),
@@ -141,6 +143,8 @@ fAODArrayMCParticles(nullptr),
 fMCEventHandler(nullptr),
 reducedTree_gen_d(nullptr),
 reducedTree_rec_d(nullptr),
+reducedTree_gen_He3(nullptr),
+reducedTree_rec_He3(nullptr),
 fCentralityMin(0),
 fCentralityMax(0),
 fVertexZmin(0),
@@ -313,7 +317,7 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserCreateOutputObjects(){
     //Reduced Tree Generated particles
     reducedTree_gen_d = new TTree("reducedTree_gen_d","reducedTree_gen_d");
     reducedTree_gen_d -> Branch("particleType",&particleType,"particleType/I");
-    reducedTree_gen_d -> Branch("centrality",&centrality,"centrality/F");
+    //reducedTree_gen_d -> Branch("centrality",&centrality,"centrality/F");
     //reducedTree_gen_d -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
     reducedTree_gen_d -> Branch("xVertex",&xVertex,"xVertex/F");
     reducedTree_gen_d -> Branch("yVertex",&yVertex,"yVertex/F");
@@ -325,10 +329,24 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserCreateOutputObjects(){
     reducedTree_gen_d -> Branch("charge",&charge,"charge/I");
     reducedTree_gen_d -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
 
+    reducedTree_gen_He3 = new TTree("reducedTree_gen_He3","reducedTree_gen_He3");
+    reducedTree_gen_He3 -> Branch("particleType",&particleType,"particleType/I");
+    //reducedTree_gen_He3 -> Branch("centrality",&centrality,"centrality/F");
+    //reducedTree_gen_He3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
+    reducedTree_gen_He3 -> Branch("xVertex",&xVertex,"xVertex/F");
+    reducedTree_gen_He3 -> Branch("yVertex",&yVertex,"yVertex/F");
+    reducedTree_gen_He3 -> Branch("zVertex",&zVertex,"zVertex/F");
+    reducedTree_gen_He3 -> Branch("px",&px,"px/F");
+    reducedTree_gen_He3 -> Branch("py",&py,"py/F");
+    reducedTree_gen_He3 -> Branch("pz",&pz,"pz/F");
+    reducedTree_gen_He3 -> Branch("pt",&pt,"pt/F");
+    reducedTree_gen_He3 -> Branch("charge",&charge,"charge/I");
+    reducedTree_gen_He3 -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
+
     //Reduced Tree Reconstructed tracks
     reducedTree_rec_d = new TTree("reducedTree_rec_d","reducedTree_rec_d");
     reducedTree_rec_d -> Branch("trackType",&trackType,"trackType/I");
-    reducedTree_rec_d -> Branch("centrality",&centrality,"centrality/F");
+    //reducedTree_rec_d -> Branch("centrality",&centrality,"centrality/F");
     //reducedTree_rec_d -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
     reducedTree_rec_d -> Branch("xVertex",&xVertex,"xVertex/F");
     reducedTree_rec_d -> Branch("yVertex",&yVertex,"yVertex/F");
@@ -372,10 +390,59 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserCreateOutputObjects(){
     reducedTree_rec_d -> Branch("TRDntracklets",&TRDntracklets,"TRDntracklets/I");
     reducedTree_rec_d -> Branch("hasTOFhit",&hasTOFhit,"hasTOFhit/I");
 
+    //Reduced Tree Reconstructed tracks
+    reducedTree_rec_He3 = new TTree("reducedTree_rec_He3","reducedTree_rec_He3");
+    reducedTree_rec_He3 -> Branch("trackType",&trackType,"trackType/I");
+    //reducedTree_rec_He3 -> Branch("centrality",&centrality,"centrality/F");
+    //reducedTree_rec_He3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
+    reducedTree_rec_He3 -> Branch("xVertex",&xVertex,"xVertex/F");
+    reducedTree_rec_He3 -> Branch("yVertex",&yVertex,"yVertex/F");
+    reducedTree_rec_He3 -> Branch("zVertex",&zVertex,"zVertex/F");
+    reducedTree_rec_He3 -> Branch("ID_event",&ID_event,"ID_event/I");
+    //reducedTree_rec_He3 -> Branch("Helium3Sec",&Helium3Sec,"Helium3Sec/I");
+    reducedTree_rec_He3 -> Branch("lp",&lp,"lp/I");
+    reducedTree_rec_He3 -> Branch("px",&px,"px/F");
+    reducedTree_rec_He3 -> Branch("py",&py,"py/F");
+    reducedTree_rec_He3 -> Branch("pz",&pz,"pz/F");
+    reducedTree_rec_He3 -> Branch("pt",&pt,"pt/F");
+    reducedTree_rec_He3 -> Branch("pt_particle",&pt_particle,"pt_particle/F");
+    reducedTree_rec_He3 -> Branch("pz_particle",&pz_particle,"pz_particle/F");
+    reducedTree_rec_He3 -> Branch("deltapt",&deltapt,"deltapt/F");
+    reducedTree_rec_He3 -> Branch("deltapz",&deltapz,"deltapz/F");
+    reducedTree_rec_He3 -> Branch("charge",&charge,"charge/I");
+    reducedTree_rec_He3 -> Branch("dcaxy",&dcaxy,"dcaxy/D");
+    reducedTree_rec_He3 -> Branch("dcaz",&dcaz,"dcaz/D");
+    reducedTree_rec_He3 -> Branch("nTPC_Clusters",&nTPC_Clusters,"nTPC_Clusters/I");
+    reducedTree_rec_He3 -> Branch("nITS_Clusters",&nITS_Clusters,"nITS_Clusters/I");
+    reducedTree_rec_He3 -> Branch("nTPC_Clusters_dEdx",&nTPC_Clusters_dEdx,"nTPC_Clusters_dEdx/I");
+    reducedTree_rec_He3 -> Branch("nTPC_FindableClusters",&nTPC_FindableClusters,"nTPC_FindableClusters/I");
+    reducedTree_rec_He3 -> Branch("nTPC_CrossedRows",&nTPC_CrossedRows,"nTPC_CrossedRows/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer0",&HasPointOnITSLayer0,"HasPointOnITSLayer0/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer1",&HasPointOnITSLayer1,"HasPointOnITSLayer1/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer2",&HasPointOnITSLayer2,"HasPointOnITSLayer2/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer3",&HasPointOnITSLayer3,"HasPointOnITSLayer3/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer4",&HasPointOnITSLayer4,"HasPointOnITSLayer4/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer5",&HasPointOnITSLayer5,"HasPointOnITSLayer5/I");
+    reducedTree_rec_He3 -> Branch("chi2_NDF",&chi2_NDF,"chi2_NDF/F");
+    reducedTree_rec_He3 -> Branch("chi2_ITS",&chi2_ITS,"chi2_ITS/F");
+    reducedTree_rec_He3 -> Branch("nSigmaITS",&nSigmaITS,"nSigmaITS/F");
+    reducedTree_rec_He3 -> Branch("nSigmaTPC",&nSigmaTPC,"nSigmaTPC/F");
+    reducedTree_rec_He3 -> Branch("nSigmaTOF",&nSigmaTOF,"nSigmaTOF/F");
+    reducedTree_rec_He3 -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
+    reducedTree_rec_He3 -> Branch("SecondaryMaterial",&SecondaryMaterial,"SecondaryMaterial/I");
+    reducedTree_rec_He3 -> Branch("SecondaryDecay",&SecondaryDecay,"SecondaryDecay/I");
+    reducedTree_rec_He3 -> Branch("PrimaryTrack",&PrimaryTrack,"PrimaryTrack/I");
+    reducedTree_rec_He3 -> Branch("TPC_signal",&TPC_signal,"TPC_signal/D");
+    reducedTree_rec_He3 -> Branch("ITS_signal",&ITS_signal,"ITS_signal/D");
+    reducedTree_rec_He3 -> Branch("TOF_signal",&TOF_signal,"TOF_signal/D");
+    reducedTree_rec_He3 -> Branch("TRDntracklets",&TRDntracklets,"TRDntracklets/I");
+    reducedTree_rec_He3 -> Branch("hasTOFhit",&hasTOFhit,"hasTOFhit/I");
+
 
 	fOutputList       -> Add(reducedTree_gen_d);
 	fOutputList       -> Add(reducedTree_rec_d);
-
+	fOutputList       -> Add(reducedTree_gen_He3);
+	fOutputList       -> Add(reducedTree_rec_He3);
 
     PostData(1, fOutputList);
     PostData(2, fQAList);
@@ -402,11 +469,11 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserExec(Option_t *){
         //MC Particle
         AliAODMCParticle *particle = (AliAODMCParticle*) fAODArrayMCParticles->At(i);
         if ( !particle) continue;
-        if ( TMath::Abs(particle->GetPdgCode()) != 1000010020 ) continue;
+        if ( TMath::Abs(particle->GetPdgCode()) != 1000010020 and TMath::Abs(particle->GetPdgCode()) != 1000020030) continue;
 
         if (TMath::Abs(particle->GetPdgCode()) == 1000010020) particleType = 1; // 1 for d
         if (TMath::Abs(particle->GetPdgCode()) ==-1000010020) particleType =-1; // -1 for anti-d (check)
-
+        if (TMath::Abs(particle->GetPdgCode()) == 1000020030) particleType = 2; // 2 for (anti)helium
 
         px = particle  -> Px();
         py = particle  -> Py();
@@ -421,7 +488,8 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserExec(Option_t *){
         if (particle->IsSecondaryFromMaterial())  PrimaryParticle = 1;
         if (particle->IsSecondaryFromWeakDecay()) PrimaryParticle = 0;
 
-        if      (TMath::Abs(particle->GetPdgCode()) == 1000010020) reducedTree_gen_d -> Fill();
+        if      (TMath::Abs(particle->GetPdgCode()) == 1000010020) reducedTree_gen_d   -> Fill();
+        if      (TMath::Abs(particle->GetPdgCode()) == 1000020030) reducedTree_gen_He3 -> Fill();
     }
 
 
@@ -486,7 +554,7 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserExec(Option_t *){
 
         if ( !particle) continue;
 
-        if ( TMath::Abs(particle->GetPdgCode()) != 1000010020) continue;
+        if ( TMath::Abs(particle->GetPdgCode()) != 1000010020 and TMath::Abs(particle->GetPdgCode()) != 1000020030) continue;
 
 	//========================================= PDG CODE NUCLEI =========================================//
         //  PDG Code Nuclei = 10LZZZAAAI
@@ -498,9 +566,16 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserExec(Option_t *){
         //
         //===================================================================================================//
 
-        trackType = (particle->GetPdgCode() == 1000010020)? 1: (particle->GetPdgCode() ==-1000010020)? -1: 0;   // 1 for d, 2 for Triton (check)
+        trackType = (particle->GetPdgCode() == 1000010020)?  1:
+                    (particle->GetPdgCode() ==-1000010020)? -1:
+       (TMath::Abs(particle->GetPdgCode())  == 1000020030)?  2:
+                                                             0;   // 1 for d, 2 for helium (check)
 
-        if (!IsdCandidate(track))    continue;
+        //if (!IsdCandidate(track))    continue;
+
+        if      (TMath::Abs(trackType) == 1) {if    (!IsdCandidate(track)) continue;}
+        else if (trackType == 2)             {if  (!IsHe3Candidate(track)) continue;}
+        else                      continue;
 
         ID_event = ID_Event;
 
@@ -539,11 +614,16 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserExec(Option_t *){
         chi2_ITS            = track -> GetITSchi2();
 
         //PID
-
-        nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kDeuteron);
-        nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kDeuteron);
-        nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kDeuteron);
-
+        if (TMath::Abs(track->PdgCode()) == 1000020030 ){
+            nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track, AliPID::kHe3);
+            nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track, AliPID::kHe3);
+            nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track, AliPID::kHe3);
+        }
+        else if(TMath::Abs(track->PdgCode()) == 1000010020){
+            nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track, AliPID::kDeuteron);
+            nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track, AliPID::kDeuteron);
+            nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track, AliPID::kDeuteron);
+        }
 
 
         //TPC-TOF Matching
@@ -570,7 +650,8 @@ void        AliAnalysisTaskDeuteron_XeXe_MC_noMult::UserExec(Option_t *){
         TRDntracklets = track -> GetTRDntrackletsPID();
 
         //Fill the Tree
-        if      (TMath::Abs(particle->GetPdgCode()) == 1000010020) reducedTree_rec_d -> Fill();
+        if      (TMath::Abs(particle->GetPdgCode()) == 1000010020) reducedTree_rec_d   -> Fill();
+        if      (TMath::Abs(particle->GetPdgCode()) == 1000020030) reducedTree_rec_He3 -> Fill();
     }
     PostData(1, fOutputList);
     PostData(2, fQAList);
@@ -683,7 +764,23 @@ Bool_t      AliAnalysisTaskDeuteron_XeXe_MC_noMult::PassedCandidateSelectiond (A
     if ( TMath::Abs(nsigmaDeuteronTPC) > 6.0 ) return false;
     return true;
 }
+//_________________________________________________________________________________________________________________________________________________________________________________________________
+Bool_t      AliAnalysisTaskDeuteron_XeXe_MC_noMult::PassedCandidateSelectionHelium3 (AliAODTrack *track)  {
 
+    Double_t nsigmaHelium3TPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kHe3);
+    //Double_t nsigmaHelium3TOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kHe3);
+    if ( TMath::Abs(nsigmaHelium3TPC) < 6.0 ) return true;
+    //if ( TMath::Abs(nsigmaHelium3TOF) > 6.0 ) return false;
+
+    return false;
+}
+//_________________________________________________________________________________________________________________________________________________________________________________________________
+Bool_t      AliAnalysisTaskDeuteron_XeXe_MC_noMult::PassedCandidateSelectionHe3 (AliAODTrack *track)  {
+
+    Double_t nsigmaHelium3TPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kHe3);
+    if ( TMath::Abs(nsigmaHelium3TPC) > 6.0 ) return false;
+    return true;
+}
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Double_t    AliAnalysisTaskDeuteron_XeXe_MC_noMult::GetDCAxy (AliAODTrack *track)  {
 
@@ -727,6 +824,23 @@ Bool_t      AliAnalysisTaskDeuteron_XeXe_MC_noMult::IsCleandCandidate (AliAODTra
 
     Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kDeuteron);
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kDeuteron);
+    if (TMath::Abs(nsigmaTOF) > fnSigmaTOFmax) return false;
+    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax) return false;
+
+    return true;
+}
+//_________________________________________________________________________________________________________________________________________________________________________________________________
+Bool_t      AliAnalysisTaskDeuteron_XeXe_MC_noMult::IsHe3Candidate (AliAODTrack *track)  {
+
+    Double_t nsigmaHelium3TPC = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kHe3);
+    if ( TMath::Abs(nsigmaHelium3TPC) > 6. ) return false;
+    return true;
+}
+//_________________________________________________________________________________________________________________________________________________________________________________________________
+Bool_t      AliAnalysisTaskDeuteron_XeXe_MC_noMult::IsCleanHe3Candidate (AliAODTrack *track)  {
+
+    Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kHe3);
+    Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kHe3);
     if (TMath::Abs(nsigmaTOF) > fnSigmaTOFmax) return false;
     if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax) return false;
 

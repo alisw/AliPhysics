@@ -36,6 +36,8 @@ public:
     Bool_t      GetInputEvent ();
     Bool_t      PassedMinimalTrackQualityCuts 		(AliAODTrack *track);
     Bool_t      PassedCandidateSelectiond    		(AliAODTrack *track);
+    Bool_t      PassedCandidateSelectionHe3    		(AliAODTrack *track);
+    Bool_t      PassedCandidateSelectionHelium3	    (AliAODTrack *track);
     Double_t    GetDCAxy                      		(AliAODTrack *track);
     Double_t    GetDCAz              		        (AliAODTrack *track);
 
@@ -43,6 +45,8 @@ public:
     Bool_t      PassedTrackQualityCuts              (AliAODTrack *track);
     Bool_t      IsdCandidate                        (AliAODTrack *track);
     Bool_t      IsCleandCandidate                   (AliAODTrack *track);
+    Bool_t      IsHe3Candidate                      (AliAODTrack *track);
+    Bool_t      IsCleanHe3Candidate                 (AliAODTrack *track);
     Double_t    Centered_nsigmaTPC                  (AliAODTrack *track);
     Double_t    Centered_nsigmaTOF                  (AliAODTrack *track);
     Bool_t      PassedTOFSelection                  (AliAODTrack *track);
@@ -122,7 +126,8 @@ private:
     AliMCEventHandler *fMCEventHandler;//!
     TTree             *reducedTree_gen_d;//!
     TTree             *reducedTree_rec_d;//!
-
+    TTree             *reducedTree_gen_He3;//!
+    TTree             *reducedTree_rec_He3;//!
 
 
     Double_t    fCentralityMin;//
