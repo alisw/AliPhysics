@@ -89,9 +89,11 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 double   ktrngkt[numOfkTbins + 1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 1.5};		
 double   ktrngbeta[numOfkTbins + 1] = {0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
-  
- if(PRF==1){ int runshlcms = 0;}// 0:PRF(PAP), 1:LCMS(PP,APAP)
- if(PRF==0){ int runshlcms = 1;}// 0:PRF(PAP), 1:LCMS(PP,APAP)
+  	
+int runshlcms;
+	
+ if(PRF==1){ runshlcms = 0;}// 0:PRF(PAP), 1:LCMS(PP,APAP)
+ if(PRF==0){ runshlcms = 1;}// 0:PRF(PAP), 1:LCMS(PP,APAP)
 
   int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
 
