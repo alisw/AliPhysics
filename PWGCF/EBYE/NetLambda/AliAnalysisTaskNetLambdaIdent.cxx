@@ -24,6 +24,7 @@
 #include "AliMCEvent.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
+#include "AliESDcascade.h"
 #include "AliExternalTrackParam.h"
 #include "AliAnalysisFilter.h"
 #include "AliVMultiplicity.h"
@@ -37,7 +38,6 @@
 #include "AliMultSelection.h"
 #include "AliEventPoolManager.h"
 #include "AliTrackerBase.h"
-#include "AliESDcascade.h"
 //#include "AliAnalysisTaskWeakDecayVertexer.h"
 //#include "PWGLF/STRANGENESS/Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.h"
 // root
@@ -1141,9 +1141,9 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 				  TMath::Power((esdcasc->Zv())-fVtx[2], 2));
       PLTXi = InvMassXi*DecayLengthXi/(esdcasc->P());
       DCAXiPV = esdcasc->GetDcascade(fVtx[0], fVtx[1], fVtx[2]);
-      esdcascbachtrack = esdcasc->GetTrack(TMath::Abs(esdcasc->GetBindex()));
+      esdcascbachtrack = fESD->GetTrack(TMath::Abs(esdcasc->GetBindex()));
       DCABachPV = TMath::Abs(esdcascbachtrack->GetD(fVtx[0], fVtx[1], b));
-      DCAXiDaughters = esdcasc->GetDcaXiDaughers();
+      DCAXiDaughters = esdcasc->GetDcaXiDaughters();
 
       PtV0 = esdcasc->AliESDv0::Pt();
       EtaV0 = esdcasc->AliESDv0::Eta();
@@ -1179,7 +1179,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     tempLightCascadeV0->SetDCAV0(DCAV0PV);
     tempLightCascadeV0->SetDCADaughters(DCAV0Daughters);
     tempLightCascadeV0->SetPosDaughter(PPt, PEta, PNsigmaPr, PDCAPV);
-    tempLightCascadeV0->SetNegDaughter(NPt, NEta, NNSigmaPr, NDCAPV);
+    tempLightCascadeV0->SetNegDaughter(NPt, NEta, NNsigmaPr, NDCAPV);
     if(fCascadeTree) {
       tempLightCascade = new((*fAcceptCascade)[fAcceptCascade->GetEntriesFast()]) AliLightCascade();
       tempLightCascade->SetPtXi(PtXi);
