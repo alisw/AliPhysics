@@ -37,6 +37,7 @@
 #include "AliMultSelection.h"
 #include "AliEventPoolManager.h"
 #include "AliTrackerBase.h"
+#include "AliESDcascade.h"
 //#include "AliAnalysisTaskWeakDecayVertexer.h"
 //#include "PWGLF/STRANGENESS/Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.h"
 // root
