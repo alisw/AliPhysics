@@ -27,6 +27,7 @@ class AliAODv0;
 class AliESDv0;
 class AliEventPoolManager;
 class AliLightV0;
+class AliLightCascade;
 //class AliAnalysisTaskWeakDecayVertexer;
 #include "AliEventCuts.h"
 #include "AliExternalTrackParam.h"
