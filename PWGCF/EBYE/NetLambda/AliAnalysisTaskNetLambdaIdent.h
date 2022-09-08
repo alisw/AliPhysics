@@ -153,10 +153,10 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Int_t fRunNumber;
   TClonesArray *fAcceptV0; //!
   //TClonesArray *fAcceptV0test; //!
+  TClonesArray *fAcceptCascade;
   TClonesArray *fGenLambda; //!
   TClonesArray *fGenCascade; //!
   TClonesArray *fMixV0; //!
-  TClonesArray *fAcceptCascade;
 
   Bool_t fIsMC;
   Bool_t fIsAOD;
@@ -185,7 +185,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,13);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,14);
 };
 
 //_____________________________________________________________________________
