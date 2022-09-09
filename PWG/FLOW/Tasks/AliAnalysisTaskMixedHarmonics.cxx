@@ -374,6 +374,7 @@ void AliAnalysisTaskMixedHarmonics::UserExec(Option_t *)
  xyZNC[1] = fQyZNCC;
  xyZNA[0] = fQxZNCA;
  xyZNA[1] = fQyZNCA;
+
  fEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA); // 1st order ZNC qvec cos(Psi_ZNC) & sin(Psi_ZNC)
  
  // ================================== end of V0 and ZDC Q-vector ============================
@@ -1038,7 +1039,7 @@ Bool_t AliAnalysisTaskMixedHarmonics::GetGainCorrectedZNCQvector(AliAODEvent *fa
  
 }
 
-void AliAnalysisTaskMixedHarmonics::ApplyZNCqVectRecenter(Float_t centrality,Double_t pVtxX,Double_t pVtxY,Double_t pVtxZ,UInt_t fOrbitNumber,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &qnxZNCA,Double_t &qnyZNCA){
+void AliAnalysisTaskMixedHarmonics::ApplyZNCqVectRecenter(Float_t centrality,Double_t pVtxX,Double_t pVtxY,Double_t pVtxZ,Double_t fOrbitNumber,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &qnxZNCA,Double_t &qnyZNCA){
 	
  Double_t ZDCCAvgxPosFromVtxFit = 0;
  Double_t ZDCCAvgyPosFromVtxFit = 0;
@@ -1051,6 +1052,7 @@ void AliAnalysisTaskMixedHarmonics::ApplyZNCqVectRecenter(Float_t centrality,Dou
 	
  ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12)*fOrbitNumber + fHZDCAparameters->GetBinContent(13);
  ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(14)*centrality + fHZDCAparameters->GetBinContent(15)*pow(centrality,2) + fHZDCAparameters->GetBinContent(16)*pow(centrality,3) + fHZDCAparameters->GetBinContent(17)*pVtxX + fHZDCAparameters->GetBinContent(18)*pVtxY + fHZDCAparameters->GetBinContent(19)*pVtxZ + fHZDCAparameters->GetBinContent(20)*fOrbitNumber + fHZDCAparameters->GetBinContent(21);
+
 
  qnxZNCC -= ZDCCAvgxPosFromVtxFit;
  qnyZNCC -= ZDCCAvgyPosFromVtxFit;
