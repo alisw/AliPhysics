@@ -153,7 +153,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Int_t fRunNumber;
   TClonesArray *fAcceptV0; //!
   //TClonesArray *fAcceptV0test; //!
-  TClonesArray *fAcceptCascade;
+  TClonesArray *fAcceptCascade; //!
   TClonesArray *fGenLambda; //!
   TClonesArray *fGenCascade; //!
   TClonesArray *fMixV0; //!
