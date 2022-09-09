@@ -41,8 +41,8 @@
 #include <AliAnalysisManager.h>
 #include <AliVEventHandler.h>
 #include <AliVCluster.h>
-#include <AliLog.h>
 #include <AliVParticle.h>
+#include <AliLog.h>
 
 #include "AliMultSelection.h"
 
@@ -107,8 +107,7 @@ AliAnalysisTaskEPCalibForJet::AliAnalysisTaskEPCalibForJet() :
   fHCorrQ3xV0A(NULL),
   fHCorrQ3yV0A(NULL), 
   fFitModulationType(kNoFit),  fFitModulation(0), hBkgTracks(0),
-  CheckRunNum(0), 
-  fQaEventNum(-1)
+  CheckRunNum(0), fQaEventNum(-1)
 {
     
     for(Int_t i(0); i < 2; i++){
@@ -138,7 +137,7 @@ AliAnalysisTaskEPCalibForJet::AliAnalysisTaskEPCalibForJet() :
       psi2Tpc[i] = 0.;
       psi3Tpc[i] = 0.;
     }
-
+  
 }
 
 // Standard constructor. Should be used by the user. @param[in] name Name of the task
@@ -180,8 +179,7 @@ AliAnalysisTaskEPCalibForJet::AliAnalysisTaskEPCalibForJet(const char *name):
   fHCorrQ3xV0A(NULL),
   fHCorrQ3yV0A(NULL), 
   fFitModulationType(kNoFit),  fFitModulation(0), hBkgTracks(0),
-  CheckRunNum(0),
-  fQaEventNum(-1)
+  CheckRunNum(0), fQaEventNum(-1)
 {
   
     for(Int_t i(0); i < 2; i++){
@@ -216,7 +214,6 @@ AliAnalysisTaskEPCalibForJet::AliAnalysisTaskEPCalibForJet(const char *name):
   
   if(fLocalRhoName=="") fLocalRhoName = Form("LocalRhoFrom_%s", GetName());
   SetMakeGeneralHistograms(kTRUE);
-
 }
 
 // Destructor
@@ -234,6 +231,7 @@ AliAnalysisTaskEPCalibForJet::~AliAnalysisTaskEPCalibForJet()
 
 void AliAnalysisTaskEPCalibForJet::SetRunList(bool removeDummyTask)
 {
+  
   fYAMLConfig.AddConfiguration(fRunListFileName, "runlist");
   fYAMLConfig.Initialize();
   fYAMLConfig.GetProperty("runlist", fUseRunList);
@@ -246,6 +244,7 @@ void AliAnalysisTaskEPCalibForJet::SetRunList(bool removeDummyTask)
  */
 void AliAnalysisTaskEPCalibForJet::UserCreateOutputObjects()
 {
+  
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
@@ -272,7 +271,7 @@ void AliAnalysisTaskEPCalibForJet::UserCreateOutputObjects()
   }
   // == e == Add Objects into output file  #####################################
   
-  /*
+  
   // == s == Calib root file include  ==============================--------===-
   TString tempCalibFileName = AliDataFile::GetFileName(fCalibRefFileName.Data());
   TString tempCalibLocalFileName;
@@ -290,8 +289,7 @@ void AliAnalysisTaskEPCalibForJet::UserCreateOutputObjects()
     return;
   }
   // == e == Calib root file include  ==============================--------===-
-  */
-
+  
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
   
 }
@@ -302,7 +300,9 @@ void AliAnalysisTaskEPCalibForJet::AllocatePileupCutHistograms(){
   TString groupName;
   groupName="PileupCutQA";
 
+  Int_t gMaxGlobalmult  = 4000;
   Int_t gMaxTPCcorrmult = 5000;
+  Int_t gMaxESDtracks   = 20000;
 
   fHistManager.CreateHistoGroup(groupName);
 
@@ -343,7 +343,6 @@ void AliAnalysisTaskEPCalibForJet::AllocateGainCalibHistograms(){
   fHistManager.CreateHistoGroup(groupName);
   THashList *parent = static_cast<THashList *>(fHistManager.FindObject(groupName.Data()));
   
-  
   for(Int_t eventNumBin = 0; eventNumBin < fUseRunList.size(); eventNumBin++){
     Int_t runEventNum = stoi(fUseRunList.at(eventNumBin));
     histName = TString::Format("hAvgV0ChannelsvsVz_%d", runEventNum);
@@ -368,7 +367,7 @@ void AliAnalysisTaskEPCalibForJet::AllocateReCentCalibHistograms(){
   groupName="ReCentCalib";
 
   fHistManager.CreateHistoGroup(groupName);
-  // THashList *parent = static_cast<THashList *>(fHistManager.FindObject(groupName.Data()));
+  THashList *parent = static_cast<THashList *>(fHistManager.FindObject(groupName.Data()));
   
   
   for(Int_t eventNumBin = 0; eventNumBin < fUseRunList.size(); eventNumBin++){
@@ -496,6 +495,7 @@ void AliAnalysisTaskEPCalibForJet::AllocateReCentCalibHistograms(){
   }
 
 }
+
 
 void AliAnalysisTaskEPCalibForJet::AllocateEventPlaneHistograms()
 {
@@ -841,6 +841,7 @@ void AliAnalysisTaskEPCalibForJet::ExecOnce()
       }
   }
   
+  
   AliAnalysisTaskEmcalJet::ExecOnce();
   if(!GetJetContainer()) AliFatal(Form("%s: Couldn't find jet container. Aborting !", GetName()));
   
@@ -857,11 +858,10 @@ void AliAnalysisTaskEPCalibForJet::ExecOnce()
 Bool_t AliAnalysisTaskEPCalibForJet::Run()
 {
   // std::cout << "ChecKuma Run Number === " << CheckRunNum << "==================" << std::endl;
-  // CheckRunNum++;
-
+  
+  CheckRunNum++;
   if(!fEventCuts.AcceptEvent(InputEvent())) return kFALSE;
 
-  /*
   if(fPileupCut){
     SetupPileUpRemovalFunctions();
     Bool_t kPileupCutEvent = CheckEventIsPileUp2018();
@@ -877,7 +877,6 @@ Bool_t AliAnalysisTaskEPCalibForJet::Run()
     //  MeasureTpcEPQA();
     MeasureBkg();
   }
-  */
   
   return kTRUE;
 }
@@ -893,14 +892,16 @@ void AliAnalysisTaskEPCalibForJet::DoMeasureChGainDiff(){
   Double_t fVtxZ = -999;
   fVtxZ  = pointVtx->GetZ();
   
+  Int_t ibinV0 = 0;
   Double_t fMultV0 = 0.;
   
+
   for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
     fMultV0 = fAodV0->GetMultiplicity(iV0);
     
     histName = TString::Format("%s/hAvgV0ChannelsvsVz_%d", groupName.Data(), fRunNumber);
     TProfile2D* tempProfile2DHist = (TProfile2D*) fHistManager.FindObject(histName);
-    tempProfile2DHist->Fill(fVtxZ, iV0, fMultV0);
+    tempProfile2DHist->Fill(fVtxZ, iV0, fMultV0);//?????
     // fHistManager.FillProfile(histName, fVtxZ, iV0, fMultV0);
   }
 }
@@ -1075,7 +1076,7 @@ void AliAnalysisTaskEPCalibForJet::SetModulationRhoFit()
 void AliAnalysisTaskEPCalibForJet::MeasureBkg(){
   TString histName;
   
-  // UInt_t sumAcceptedTracks = 0;
+  UInt_t sumAcceptedTracks = 0;
   AliParticleContainer* partCont = 0;
   TIter next(&fParticleCollArray);
   while ((partCont = static_cast<AliParticleContainer*>(next()))) {
@@ -1172,7 +1173,8 @@ Double_t AliAnalysisTaskEPCalibForJet::CalcEPReso(Int_t n, \
 void AliAnalysisTaskEPCalibForJet::MeasureTpcEPQA(){
   TString histName;
   TString groupName;
-  
+
+  Double_t EtaAcc = 0.9;
   UInt_t sumAcceptedTracks = 0;
   AliParticleContainer* partCont = 0;
   
@@ -1253,8 +1255,8 @@ void  AliAnalysisTaskEPCalibForJet::MeasureQnTPC(){
   centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
   centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
 
-  // AliAODTracklets* aodTrkl = (AliAODTracklets*)fAOD->GetTracklets(); //??????????????????
-  // Int_t nITSTrkls = aodTrkl->GetNumberOfTracklets();
+  AliAODTracklets* aodTrkl = (AliAODTracklets*)fAOD->GetTracklets();
+  Int_t nITSTrkls = aodTrkl->GetNumberOfTracklets();
 
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   Int_t multTrk = 0;
@@ -1266,7 +1268,7 @@ void  AliAnalysisTaskEPCalibForJet::MeasureQnTPC(){
   Double_t fEtaGapPosforEP  = 0.1;    // could be made variable in AddTask Macro.
   Double_t fEtaGapNegforEP  =-0.1;    // could be made variable in AddTask Macro.
 
-  Double_t trkPt=0, trkPhi=0, trkEta=0, trkChi2=0, trkWgt=1.0;  
+  Double_t trkPt=0, trkPhi=0, trkEta=0, trkChi2=0, trkdEdx=0, trkWgt=1.0;  
   Double_t SumQ2xTPCPos = 0., SumQ2yTPCPos = 0., SumQ2xTPCNeg = 0., SumQ2yTPCNeg = 0;
   Double_t SumQ3xTPCPos = 0., SumQ3yTPCPos = 0., SumQ3xTPCNeg = 0., SumQ3yTPCNeg = 0;
   
@@ -1312,7 +1314,7 @@ void  AliAnalysisTaskEPCalibForJet::MeasureQnTPC(){
     }
     
 
-    // Int_t trkID = aodTrk->GetID();
+    Int_t trkID = aodTrk->GetID();
     // trkWgt = GetNUAWeightForTrack(fVertexZEvent,trkPhi,trkEta,trkChrg); //???????
     
     ///Used Pt as weight for Better resolution:
@@ -1556,6 +1558,9 @@ Bool_t  AliAnalysisTaskEPCalibForJet::QnRecenteringCalibration(){
     avgqy = fHCorrQ2yV0C->GetBinContent(icentbin);
     q2VecV0C[0] -= avgqx;
     q2VecV0C[1] -= avgqy;
+    
+    // std::cout << "before q2x:aveQ2x:q2y:aveQ2y = " << q2VecV0C[0] <<" : "<< avgqx\
+    <<" : "<< q2VecV0C[1] <<" : "<< avgqy << std::endl;
   }
   if(fHCorrQ2xV0A && fHCorrQ2yV0A){
     icentbin = fHCorrQ2xV0A->FindBin(fCent);
@@ -1900,7 +1905,7 @@ Bool_t AliAnalysisTaskEPCalibForJet::CheckEventIsPileUp2018(){
   if(Float_t(multTrk) < fMultCutPU->Eval(centrV0M)) BisPileup=kTRUE;
   if(((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) BisPileup=kTRUE;
   if(fAOD->IsIncompleteDAQ()) BisPileup=kTRUE;
-  if (nclsDif > 200000) BisPileup=kTRUE; //can be increased to 200000
+  //if (nclsDif > 200000)//can be increased to 200000
   // BisPileup=kTRUE;
 
   Int_t multEsd = ((AliAODHeader*)fAOD->GetHeader())->GetNumberOfESDTracks();
@@ -1970,7 +1975,9 @@ AliAnalysisTaskEPCalibForJet * AliAnalysisTaskEPCalibForJet::AddTaskEPCalibForJe
   }
   
   enum EDataType_t {kUnknown, kESD, kAOD};
-  // EDataType_t dataType = kAOD;
+
+
+  EDataType_t dataType = kAOD;
   
   //-------------------------------------------------------
   // Init the task and do settings
@@ -2006,11 +2013,9 @@ AliAnalysisTaskEPCalibForJet * AliAnalysisTaskEPCalibForJet::AddTaskEPCalibForJe
   mgr->ConnectInput  (rawJetTask, 0,  cinput1 );
   mgr->ConnectOutput (rawJetTask, 1, coutput1 );
   
+
   return rawJetTask;
 }
-
-
-
 
 
 
