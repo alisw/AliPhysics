@@ -3445,8 +3445,10 @@ void AliAnalysisTaskJetFFMoments::FillResponse(AliAODJet* recJet, AliAODJet* gen
 {
   // match tracks of two jets, using MC labels (-> does not work for data tracks)	
 
+  if(fAOD){ //added for kine
   TClonesArray *tca = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!tca) return;
+  }
 
   Double_t jetPtRec = recJet ? recJet->Pt() : -1; 
   Double_t jetPtGen = genJet ? genJet->Pt() : -1;
