@@ -541,9 +541,9 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
        for (int i = 0; i <= 3000; i++) xbins[i] = i;  
     }
   } else {
-    nn = 10;
-    for (int i = 0; i <= 10; i++) {
-      xbins[i] = i * 10;
+    nn = 100;
+    for (int i = 0; i <= 100; i++) {
+      xbins[i] = i * 100;
     }
   }
 
@@ -2684,9 +2684,12 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) 
 void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
   //..calculate 2-particle correlations
   //..................................
-  double Dn2 = 0, Dn2Gap10 = 0, Dn2Gap14 = 0, Dn2_3subLM = 0, Dn2_3subRM = 0, Dn2_3subLR = 0;
+  double Dn2 = 0, Dn2Gap0 = 0, Dn2Gap10 = 0, Dn2Gap14 = 0, Dn2_3subLM = 0, Dn2_3subRM = 0, Dn2_3subLR = 0;
   if (fuTwoParticleCorrelationStandard || fuTwoParticleCorrelationHigherStandard) {
     Dn2 = correlator.Two(0, 0).Re();
+  }
+  if (fuTwoParticleCorrelation0Gap || fuTwoParticleCorrelationHigher0Gap) {
+    Dn2Gap0 = correlator.TwoGap0(0, 0).Re();
   }
   if (fuTwoParticleCorrelationLargeGap || fuTwoParticleCorrelationHigherLargeGap) {
     Dn2Gap10 = correlator.TwoGap10(0, 0).Re();
@@ -2724,6 +2727,36 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
       TComplex v62 = correlator.Two(6, -6);
       double v62Re = v62.Re()/Dn2;
       profile.fChcn2[4]->Fill(Ntrks, v62Re, Dn2);
+    }
+  }
+
+  if (fuTwoParticleCorrelation0Gap) {
+    if(NtrksAfterGap0M > 0 && NtrksAfterGap0P > 0 && Dn2Gap0 != 0)
+    {
+      //..v2{2} with eta Gap > 1.0
+      TComplex v22Gap0 = correlator.TwoGap0(2, -2);
+      double v22ReGap0 = v22Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[0]->Fill(Ntrks, v22ReGap0, Dn2Gap0);
+
+      //..v3{2} with eta Gap > 1.0
+      TComplex v32Gap0 = correlator.TwoGap0(3, -3);
+      double v32ReGap0 = v32Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[1]->Fill(Ntrks, v32ReGap0, Dn2Gap0);
+
+      //..v4{2} with eta Gap > 1.0
+      TComplex v42Gap0 = correlator.TwoGap0(4, -4);
+      double v42ReGap0 = v42Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[2]->Fill(Ntrks, v42ReGap0, Dn2Gap0);
+
+      //..v5{2} with eta Gap > 1.0
+      TComplex v52Gap0 = correlator.TwoGap0(5, -5);
+      double v52ReGap0 = v52Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[3]->Fill(Ntrks, v52ReGap0, Dn2Gap0);
+
+      //..v6{2} with eta Gap > 1.0
+      TComplex v62Gap0 = correlator.TwoGap0(6, -6);
+      double v62ReGap0 = v62Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[4]->Fill(Ntrks, v62ReGap0, Dn2Gap0);
     }
   }
 
