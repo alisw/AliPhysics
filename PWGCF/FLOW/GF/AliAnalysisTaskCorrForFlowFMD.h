@@ -1,3 +1,15 @@
+/**************************************************************************
+ *    Author:       Zuzana Moravcova                                      *
+ *    Framework for calculating di-hadron correlation                     *
+ *    for extraction of v_n{2} coefficients of identified particles       *
+ *    including primary identified particles (pi, K, p)                   *
+ *    and reconstructed "V0" particles (K0s, Lambda)                      *
+ *    using TPC-TPC and TPC-FMD correlations.                             *
+ *                                                                        *
+ *    If used, modified, or distributed,                                  *
+ *    please aknowledge the author of this code.                          *
+ **************************************************************************/
+
 #ifndef ALIANALYSISTASKCORRFORFLOWFMD_H
 #define ALIANALYSISTASKCORRFORFLOWFMD_H
 
