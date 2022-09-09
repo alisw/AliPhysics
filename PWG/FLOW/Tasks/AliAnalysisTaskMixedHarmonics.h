@@ -106,7 +106,7 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t GetGainCorrectedV0Qvector(AliAODEvent *faod,Double_t fVtxZ,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &sumV0C,Double_t &qnxV0A,Double_t &qnyV0A,Double_t &sumV0A);
   void ApplyV0XqVectRecenter(Float_t fCent,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A);
   Bool_t GetGainCorrectedZNCQvector(AliAODEvent *faod,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &fdenZNC,Double_t &qnxZNCA,Double_t &qnyZNCA,Double_t &fdenZNA);
-  void ApplyZNCqVectRecenter(Float_t centrality,Double_t pVtxX,Double_t pVtxY,Double_t pVtxZ,UInt_t fOrbitNumber,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &qnxZNCA,Double_t &qnyZNCA);
+  void ApplyZNCqVectRecenter(Float_t centrality,Double_t pVtxX,Double_t pVtxY,Double_t pVtxZ,Double_t fOrbitNumber,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &qnxZNCA,Double_t &qnyZNCA);
 
   AliMultSelection*   fMultSelection;    //! MultSelection (RUN2 centrality estimator)
   AliAnalysisUtils*    fAnalysisUtil;    //! Event selection

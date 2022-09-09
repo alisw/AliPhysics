@@ -244,12 +244,12 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  fVZFlowVect2ndHar[0] = vVZQarray[0];
  fVZFlowVect2ndHar[1] = vVZQarray[1];
  // V0-C eta < 0
- Double_t VZCRe = fVZFlowVect2ndHar[0].X();
- Double_t VZCIm = fVZFlowVect2ndHar[0].Y();
+ Double_t VZCIm = fVZFlowVect2ndHar[0].X();
+ Double_t VZCRe = fVZFlowVect2ndHar[0].Y();
  Double_t VZCM  = fVZFlowVect2ndHar[0].GetMult();
  // V0-A eta > 0
- Double_t VZARe = fVZFlowVect2ndHar[1].X();
- Double_t VZAIm = fVZFlowVect2ndHar[1].Y();
+ Double_t VZAIm = fVZFlowVect2ndHar[1].X();
+ Double_t VZARe = fVZFlowVect2ndHar[1].Y();
  Double_t VZAM  = fVZFlowVect2ndHar[1].GetMult();
  // Get event plane for V0
  fPsi2V0C = (1./2)*TMath::ATan2(VZCRe,VZCIm);
@@ -273,14 +273,14 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  fZDCFlowVect[1] = vZDCQarray[1];
  
  // ZDC-C (eta < -8.8)
- Double_t ZCRe = fZDCFlowVect[0].X();
- Double_t ZCIm = fZDCFlowVect[0].Y();
+ Double_t ZCIm = fZDCFlowVect[0].X();
+ Double_t ZCRe = fZDCFlowVect[0].Y();
  Double_t ZCM  = fZDCFlowVect[0].GetMult();
  // ZDC-A (eta > 8.8)
- Double_t ZARe = fZDCFlowVect[1].X();
- Double_t ZAIm = fZDCFlowVect[1].Y();
+ Double_t ZAIm = fZDCFlowVect[1].X();
+ Double_t ZARe = fZDCFlowVect[1].Y();
  Double_t ZAM  = fZDCFlowVect[1].GetMult();
-  
+
  fPsiZNCA = TMath::ATan2(ZARe,ZAIm); // Psi_{1,A} spectator plane -pi to pi
  if (fPsiZNCA < 0) { // Psi_{1,A} should be differ to Psi_{1,C} by pi. 
   fPsiZNCA = fPsiZNCA + TMath::Pi();
@@ -609,6 +609,7 @@ void AliFlowAnalysisWithMixedHarmonics::Finish()
  this->CheckPointersUsedInFinish();
  this->AccessConstants("Finish");          
  this->AccessSettings();
+ fCorrectForDetectorEffects = kTRUE;
  this->CorrectForDetectorEffects();
  if(fCalculateVsM){this->CorrectForDetectorEffectsVsM();}
 
