@@ -518,7 +518,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fEventCuts.fPileUpCutMV = true;
   }
 
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1 and LHC17n
     fGFWSelection15o = new AliGFWNFCuts();
     fGFWSelection15o->PrintSetup();
   } else {
