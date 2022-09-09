@@ -428,8 +428,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                           // << "Charge=" << fCharge.at(i)
                           // << "DeltaPhi=" << fDeltaPhi.at(i)
                           // << "DeltaEta=" << fDeltaEta.at(i)
-                          // << "DCAxy=" << fDCAxy.at(i)
-                          // << "PassDCA=" << fPassDCA.at(i)
+                          << "DCAxy=" << fDCAxy.at(i)
+                          << "PassDCA=" << fPassDCA.at(i)
                           << "\n";
     }
   }
@@ -662,8 +662,8 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
                         // << "DeltaPhi=" << fDeltaPhi.at(i)
                         // << "DeltaEta=" << fDeltaEta.at(i)
                         // << "Charge=" << fCharge.at(i)
-                        // << "DCAxy=" << fDCAxy.at(i)
-                        // << "PassDCA=" << fPassDCA.at(i)
+                        << "DCAxy=" << fDCAxy.at(i)
+                        << "PassDCA=" << fPassDCA.at(i)
                         << "Mult08=" << fMult08_MC
                         << "V0M_MC=" << fV0M_MC
                         << "Sphericity_MC=" << fSphericity_MC
