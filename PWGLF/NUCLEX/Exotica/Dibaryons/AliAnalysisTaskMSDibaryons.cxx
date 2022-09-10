@@ -281,34 +281,34 @@ void AliAnalysisTaskMSDibaryons::UserCreateOutputObjects()
   //========== baryon-baryon FG ==========
   //LambdaLambda
   fOutputList->Add(new TH2F("hInvMassLambdaLambda_onlyprompt","",1000,0,10,1000,2,3));
-  fOutputList->Add(new TH2F("hInvMassLambdaLambda","",1000,0,10,10000,2,3));
-  fOutputList->Add(new TH2F("hInvMassLambdaLambda_centvsmass","",101,0,101,1000,0,10));
+  fOutputList->Add(new TH2F("hInvMassLambdaLambda","",1000,0,10,1000,2,3));
+  fOutputList->Add(new TH2F("hInvMassLambdaLambda_centvsmass","",101,0,101,10000,0,10));
   //ProtonXi
-  fOutputList->Add(new TH2F("hInvMassProtonXi","",1000,0,10,10000,2,3));
-  fOutputList->Add(new TH2F("hInvMassProtonXi_centvsmass","",101,0,101,1000,0,10));
+  fOutputList->Add(new TH2F("hInvMassProtonXi","",1000,0,10,1000,2,3));
+  fOutputList->Add(new TH2F("hInvMassProtonXi_centvsmass","",101,0,101,10000,0,10));
   //LambdaXi
-  fOutputList->Add(new TH2F("hInvMassLambdaXi","",1000,0,10,10000,2,3));
-  fOutputList->Add(new TH2F("hInvMassLambdaXi_centvsmass","",101,0,101,1000,0,10));
+  fOutputList->Add(new TH2F("hInvMassLambdaXi","",1000,0,10,1000,2,3));
+  fOutputList->Add(new TH2F("hInvMassLambdaXi_centvsmass","",101,0,101,10000,0,10));
   //ProtonOmega
-  fOutputList->Add(new TH2F("hInvMassProtonOmega","",1000,0,10,10000,2,3));
-  fOutputList->Add(new TH2F("hInvMassProtonOmega_centvsmass","",101,0,101,1000,0,10));
+  fOutputList->Add(new TH2F("hInvMassProtonOmega","",1000,0,10,1000,2,3));
+  fOutputList->Add(new TH2F("hInvMassProtonOmega_centvsmass","",101,0,101,10000,0,10));
   //========== baryon-baryon BG ==========
   //LambdaLambda                                                                                                                              
-  fOutputList->Add(new TH1F("hInvMassLambdaLambda_evtpool","",1000,0,10));
-  fOutputList->Add(new TH2F("hInvMassLambdaLambda_evtpool_deltaphi","",180,0,180,10000,0,10));
-  fOutputList->Add(new TH2F("hInvMassLambdaLambda_evtpool_centvsmass","",101,0,101,1000,0,10));
+  fOutputList->Add(new TH2F("hInvMassLambdaLambda_evtpool","",1000,0,10,1000,2,3));
+  //fOutputList->Add(new TH2F("hInvMassLambdaLambda_evtpool_deltaphi","",180,0,180,10000,0,10));
+  fOutputList->Add(new TH2F("hInvMassLambdaLambda_evtpool_centvsmass","",101,0,101,10000,0,10));
   //ProtonXi                                                                                                                                     
-  fOutputList->Add(new TH1F("hInvMassProtonXi_evtpool","",1000,0,10));   
-  fOutputList->Add(new TH2F("hInvMassProtonXi_evtpool_deltaphi","",180,0,180,10000,0,10));
-  fOutputList->Add(new TH2F("hInvMassProtonXi_evtpool_centvsmass","",101,0,101,1000,0,10));  
+  fOutputList->Add(new TH2F("hInvMassProtonXi_evtpool","",1000,0,10,1000,2,3));   
+  //fOutputList->Add(new TH2F("hInvMassProtonXi_evtpool_deltaphi","",180,0,180,10000,0,10));
+  fOutputList->Add(new TH2F("hInvMassProtonXi_evtpool_centvsmass","",101,0,101,10000,0,10));  
   //LambdaXi                                                                                                                                
-  fOutputList->Add(new TH1F("hInvMassLambdaXi_evtpool","",1000,0,10));      
-  fOutputList->Add(new TH2F("hInvMassLambdaXi_evtpool_deltaphi","",180,0,180,10000,0,10));
-  fOutputList->Add(new TH2F("hInvMassLambdaXi_evtpool_centvsmass","",101,0,101,1000,0,10));
+  fOutputList->Add(new TH2F("hInvMassLambdaXi_evtpool","",1000,0,10,1000,2,3));      
+  //fOutputList->Add(new TH2F("hInvMassLambdaXi_evtpool_deltaphi","",180,0,180,10000,0,10));
+  fOutputList->Add(new TH2F("hInvMassLambdaXi_evtpool_centvsmass","",101,0,101,10000,0,10));
   //ProtonOmega                                                                                                                     
-  fOutputList->Add(new TH1F("hInvMassProtonOmega_evtpool","",1000,0,10));      
-  fOutputList->Add(new TH2F("hInvMassProtonOmega_evtpool_deltaphi","",180,0,180,10000,0,10));                                                
-  fOutputList->Add(new TH2F("hInvMassProtonOmega_evtpool_centvsmass","",101,0,101,1000,0,10));
+  fOutputList->Add(new TH2F("hInvMassProtonOmega_evtpool","",1000,0,10,1000,2,3));      
+  //fOutputList->Add(new TH2F("hInvMassProtonOmega_evtpool_deltaphi","",180,0,180,10000,0,10));                                                
+  fOutputList->Add(new TH2F("hInvMassProtonOmega_evtpool_centvsmass","",101,0,101,10000,0,10));
   //===============
   fOutputList->Add(new TH1F("fPt_allLambda","",1000,0,10));
   fOutputList->Add(new TH1F("fPt_xidecaylambda","",1000,0,10));
@@ -1600,8 +1600,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	  relmom    =sqrt(pow((l1px-l2px),2)+pow((l1py-l2py),2)+pow((l1pz-l2pz),2))/2;
 	  // cout<<"========== BG lambdalambda =========="<<endl;                                                                  
 	  // cout<<"(l1px,l1py,l1pz,l2px,l2py,l2pz) = "<<"("<<l1px<<","<<l1py<<","<<l1pz<<","<<l2px<<","<<l2py<<","<<l2pz<<")"<<endl;        
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool"))->Fill(pt);                                             
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_deltaphi"))->Fill(deltaphi,invMass);                       
+	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool"))->Fill(pt,invMass);                                             
+	  //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_deltaphi"))->Fill(deltaphi,invMass);                       
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
 	}                                                                                                                                       
       }                                                                                                                                      
@@ -1638,8 +1638,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
 	  pt        =sqrt(pow(l1px+l2px,2)+pow(l1py+l2py,2));                                                                               
 	  invMass   =InvariantMass(l1px,l1py,l1pz,l2px,l2py,l2pz,energysum);                                                                 
 	  relmom    =sqrt(pow((l1px-l2px),2)+pow((l1py-l2py),2)+pow((l1pz-l2pz),2))/2;                                                        
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool"))->Fill(pt);                                             
-	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_deltaphi"))->Fill(deltaphi,invMass);
+	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool"))->Fill(pt,invMass);     
+	  //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_deltaphi"))->Fill(deltaphi,invMass);
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaLambda_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                    
       }                                                                                                                                 
@@ -1689,8 +1689,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           //if(imevt==0) cout<<"========== eventmixing pxi (xi loop) =========="<<endl;                                                               
           //cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;                  
 	  //cout<<"Centrality = "<<centralityV0M<<endl;
-	  dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt);                                                         
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);
+	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt,invMass);                                                  
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
                                                                                                                                                       
         }                                                                                                                                             
@@ -1738,8 +1738,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
                                                                                                                                             
           //if(imevt==0) cout<<"========== eventmixing pxi (proton loop) =========="<<endl;                                                           
           //cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;                  
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt);                                                         
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt,invMass);  
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -1780,8 +1780,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           invMass   =InvariantMass(xipx,xipy,xipz,prpx,prpy,prpz,energysum);                                                                          
           relmom    =sqrt(pow((xipx-prpx),2)+pow((xipy-prpy),2)+pow((xipz-prpz),2))/2;                                                                
                                                                                                                                                       
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt);                                                         
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt,invMass);           
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -1818,8 +1818,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           invMass   =InvariantMass(xipx,xipy,xipz,prpx,prpy,prpz,energysum);                                                                          
           relmom    =sqrt(pow((xipx-prpx),2)+pow((xipy-prpy),2)+pow((xipz-prpz),2))/2;                                                                
                                                                                                                                                       
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt);                                                         
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool"))->Fill(pt,invMass);
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonXi_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -1859,8 +1859,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           invMass     =InvariantMass(xipx,xipy,xipz,lampx,lampy,lampz,energysum);                                                                     
           relmom    =sqrt(pow((xipx-lampx),2)+pow((xipy-lampy),2)+pow((xipz-lampz),2))/2;                                                             
                                                                                                                                                       
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt);                                                         
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt,invMass);                                
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -1897,8 +1897,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           invMass     =InvariantMass(xipx,xipy,xipz,lampx,lampy,lampz,energysum);                                                                     
           relmom    =sqrt(pow((xipx-lampx),2)+pow((xipy-lampy),2)+pow((xipz-lampz),2))/2;                                                             
                                                                                                                                                       
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt);                                                         
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt,invMass);    
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -1938,8 +1938,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           invMass     =InvariantMass(xipx,xipy,xipz,lampx,lampy,lampz,energysum);                                                                     
           relmom    =sqrt(pow((xipx-lampx),2)+pow((xipy-lampy),2)+pow((xipz-lampz),2))/2;                                                             
                                                                                                                                                       
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt);                                                         
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt,invMass);                                   
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -1976,8 +1976,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           invMass     =InvariantMass(xipx,xipy,xipz,lampx,lampy,lampz,energysum);                                                                     
           relmom    =sqrt(pow((xipx-lampx),2)+pow((xipy-lampy),2)+pow((xipz-lampz),2))/2;                                                             
                                                                                                                                                       
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt);                                                         
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool"))->Fill(pt,invMass);
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_deltaphi"))->Fill(deltaphi,invMass);                                  
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassLambdaXi_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -2026,8 +2026,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
                                                                                                                                                       
           //if(imevt==0) cout<<"========== eventmixing pxi (xi loop) =========="<<endl;                                                               
           //cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;                  
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt);                                                      
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass);                               
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt,invMass);                                     
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass);                               
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -2072,14 +2072,14 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
                                                                                                                                                       
           //if(imevt==0) cout<<"========== eventmixing pxi (proton loop) =========="<<endl;                                                           
           //cout<<"(prpx,prpy,prpz,xipx,xipy,xipz) = "<<"("<<prpx<<","<<prpy<<","<<prpz<<","<<xipx<<","<<xipy<<","<<xipz<<")"<<endl;                  
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt);                                                      
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass);                               
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt,invMass);  
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass);                               
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
     }                                                                                                                                                 
   }
-  // pbar + xi+                                                                                                                                       
+  // pbar + omega+                                                                                                                                       
   // protonbar                                                                                                                                        
   if(isantiprotonomega){                                                                                                                              
     for(Int_t itrk=0; itrk < fProtonArrayb->GetEntriesFast(); itrk++){                                                                                
@@ -2113,8 +2113,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           invMass   =InvariantMass(omegapx,omegapy,omegapz,prpx,prpy,prpz,energysum);                                                                 
           relmom    =sqrt(pow((omegapx-prpx),2)+pow((omegapy-prpy),2)+pow((omegapz-prpz),2))/2;                                                       
                                                                                                                                                       
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt);                                                      
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass);                               
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt,invMass); 
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass);                               
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
@@ -2151,8 +2151,8 @@ void AliAnalysisTaskMSDibaryons::UserExec(Option_t *)
           invMass   =InvariantMass(omegapx,omegapy,omegapz,prpx,prpy,prpz,energysum);                                                                 
           relmom    =sqrt(pow((omegapx-prpx),2)+pow((omegapy-prpy),2)+pow((omegapz-prpz),2))/2;                                                       
                                                                                                                                                       
-          dynamic_cast<TH1F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt);                                                      
-          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass);                               
+          dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool"))->Fill(pt,invMass);                               
+          //dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_deltaphi"))->Fill(deltaphi,invMass);                               
 	  dynamic_cast<TH2F*>(fOutputList->FindObject("hInvMassProtonOmega_evtpool_centvsmass"))->Fill(centralityV0M,invMass); 
         }                                                                                                                                             
       }                                                                                                                                               
