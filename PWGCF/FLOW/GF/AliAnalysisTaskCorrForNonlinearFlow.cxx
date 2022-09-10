@@ -169,7 +169,11 @@ ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
 		hDCAz(0),
 		hITSclusters(0),
 		hChi2(0),
-		fBootstrapStat(false),
+		fBootstrapStat(true),
+        fFMDAacceptanceCutLower(1.8),
+        fFMDAacceptanceCutUpper(4.8),
+        fFMDCacceptanceCutLower(-3.2),
+        fFMDCacceptanceCutUpper(-1.8),
 		rand(2333)
 {
 }
@@ -273,7 +277,11 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	hDCAz(0),
 	hITSclusters(0),
 	hChi2(0),
-	fBootstrapStat(false),
+	fBootstrapStat(true),
+    fFMDAacceptanceCutLower(1.8),
+    fFMDAacceptanceCutUpper(4.8),
+    fFMDCacceptanceCutLower(-3.2),
+    fFMDCacceptanceCutUpper(-1.8),
 	rand(2333)
 {
 
@@ -404,7 +412,11 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	hDCAz(0),
 	hITSclusters(0),
 	hChi2(0),
-	fBootstrapStat(false),
+	fBootstrapStat(true),
+    fFMDAacceptanceCutLower(1.8),
+    fFMDAacceptanceCutUpper(4.8),
+    fFMDCacceptanceCutLower(-3.2),
+    fFMDCacceptanceCutUpper(-1.8),
 	rand(2333)
 {
 
@@ -1031,11 +1043,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
-    double fFMDAacceptanceCutLower(1.8);
-    double fFMDAacceptanceCutUpper(4.8);
-    double fFMDCacceptanceCutLower(-3.2);
-    double fFMDCacceptanceCutUpper(-1.8);
-
+    
 	Int_t nTracks = fInputEvent->GetNumberOfTracks();
 	fTracksTrigCharged = new TObjArray;
 	fTracksAss = new TObjArray;
