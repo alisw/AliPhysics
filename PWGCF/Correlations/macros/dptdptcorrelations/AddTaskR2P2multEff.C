@@ -559,6 +559,59 @@ AliAnalysisTaskR2P2multEff * AddTaskR2P2multEff
       minCentrality[8] = 50.;     maxCentrality[8]  = 70.;
       minCentrality[9] = 70.;     maxCentrality[9]  = 100.;
     }
+  else if ( CentralityGroup == 52 ) 
+    {
+      nCentrality = 5;
+      minCentrality[0] = 0;       maxCentrality[0]  = 1.;
+      minCentrality[1] = 1.;      maxCentrality[1]  = 5.;
+      minCentrality[2] = 5.;      maxCentrality[2]  = 10.;
+      minCentrality[3] = 10.;     maxCentrality[3]  = 15.;
+      minCentrality[4] = 15.;     maxCentrality[4]  = 20.;
+    }
+  else if ( CentralityGroup == 53 )
+    {
+      nCentrality = 5;
+      minCentrality[0] = 20.;     maxCentrality[0]  = 30.;
+      minCentrality[1] = 30.;     maxCentrality[1]  = 40.;
+      minCentrality[2] = 40.;     maxCentrality[2]  = 50.;
+      minCentrality[3] = 50.;     maxCentrality[3]  = 70.;
+      minCentrality[4] = 70.;     maxCentrality[4]  = 100.;
+    }
+  else if ( CentralityGroup == 54 )
+    {
+      nCentrality = 3;
+      minCentrality[0] = 0;       maxCentrality[0]  = 1.;
+      minCentrality[1] = 1.;      maxCentrality[1]  = 5.;
+      minCentrality[2] = 5.;      maxCentrality[2]  = 10.;
+    }
+  else if ( CentralityGroup == 55 )
+    {
+      nCentrality = 3;
+      minCentrality[0] = 10.;	 maxCentrality[0]  = 15.;
+      minCentrality[1] = 15.;	 maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;	 maxCentrality[2]  = 30.;
+    }
+  else if ( CentralityGroup == 56 )
+    {
+      nCentrality = 4;
+      minCentrality[0] = 30.;	 maxCentrality[0]  = 40.;
+      minCentrality[1] = 40.;	 maxCentrality[1]  = 50.;
+      minCentrality[2] = 50.;	 maxCentrality[2]  = 70.;
+      minCentrality[3] = 70.;	 maxCentrality[3]  = 100.;
+    }
+  else if ( CentralityGroup == 57 ) //victor
+    {
+      nCentrality = 9;
+      minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+      minCentrality[1] = 5.;	  maxCentrality[1]  = 10.;
+      minCentrality[2] = 10.;	  maxCentrality[2]  = 20.;
+      minCentrality[3] = 20.;	  maxCentrality[3]  = 30.;
+      minCentrality[4] = 30.;	  maxCentrality[4]  = 40.;
+      minCentrality[5] = 40.;	  maxCentrality[5]  = 50.;
+      minCentrality[6] = 50.;	  maxCentrality[6]  = 60.;
+      minCentrality[7] = 60.;	  maxCentrality[7]  = 70.;
+      minCentrality[8] = 70.;	  maxCentrality[8]  = 80.;
+    }		    				
 
   else    return 0;
   
