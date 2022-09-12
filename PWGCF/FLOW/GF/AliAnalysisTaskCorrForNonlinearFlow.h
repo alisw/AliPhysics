@@ -110,12 +110,10 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetSystFlag(int syst){fCurrSystFlag = syst;} 
 		virtual int    GetSystFlag(){return fCurrSystFlag;}
 		virtual void   UseBootstrap(bool ftest = true){fBootstrapStat = ftest;}
-		virtual void   SetFMDCut(double AL, double AH, double CL, double CH) {
-            fFMDAacceptanceCutLower = AL;
-            fFMDAacceptanceCutUpper = AH;
-            fFMDCacceptanceCutLower = CL;
-            fFMDCacceptanceCutUpper = CH;
-		}
+
+        void SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
+        void SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
+		virtual void   SetFMDacceptanceCuts(double AL, double AH, double CL, double CH) { fFMDAacceptanceCutLower = AL; fFMDAacceptanceCutUpper = AH; fFMDCacceptanceCutLower = CL; fFMDCacceptanceCutUpper = CH; }
 
 		Double_t RangePhi(Double_t DPhi);
 		Double_t GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
@@ -192,7 +190,11 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t                   fPoolMinNTracks;                        // Minimum number of tracks to mix
 		Int_t                   fMinEventsToMix;                        // Minimum numver of events to mix
         Bool_t                  fBootstrapStat;                         // Flag to calculate statistical uncertainty with bootstrap
-
+        Bool_t                  fUseFMDcut;                             // [kTRUE]
+        Double_t                fFMDcutapar0;                           // [1.64755]
+        Double_t                fFMDcutapar1;                           // [119.602]
+        Double_t                fFMDcutcpar0;                           // [2.73426]
+        Double_t                fFMDcutcpar1;                           // [150.31]
         Double_t                fFMDAacceptanceCutLower;                // FMDCut
         Double_t                fFMDAacceptanceCutUpper;                // FMDCut
         Double_t                fFMDCacceptanceCutLower;                // FMDCut
@@ -302,7 +304,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 4); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 5); // Analysis task
 };
 
 #endif
