@@ -1093,7 +1093,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       DecayRXi = TMath::Sqrt(TMath::Power(AODXiVertexXYZ[0], 2) + TMath::Power(AODXiVertexXYZ[1], 2));
       DecayLengthXi = aodcasc->DecayLengthXi(fVtx[0], fVtx[1], fVtx[2]);
       PLTXi = TMath::Abs(InvMassXi)*DecayLengthXi/(TMath::Sqrt(aodcasc->Ptot2Xi()));
-      DCAXiPV = aodcasc->DcaXiToPrimVertex();
+      DCAXiPV = aodcasc->DcaXiToPrimVertex(fVtx[0], fVtx[1], fVtx[2]);
       DCABachPV = aodcasc->DcaBachToPrimVertex();
       DCAXiDaughters = aodcasc->DcaXiDaughters();
 
