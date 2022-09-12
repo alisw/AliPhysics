@@ -1047,11 +1047,12 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
   if(fCascadeTree) { fAcceptCascade->Clear(); }
   
-  // Loop over cascades
+  // Start of the cascade analysis
   Int_t nCascades = 0;
   if(fIsAOD) { nCascades = fAOD->GetNumberOfCascades(); }
   else { nCascades = fESD->GetNumberOfCascades(); }
 
+  // Create the cascade and track objects for AOD and ESD
   AliAODcascade *aodcasc = 0x0;
   AliAODTrack *aodcascv0postrack = 0x0;
   AliAODTrack *aodcascv0negtrack = 0x0;
@@ -1059,14 +1060,20 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   AliESDtrack *esdcascbachtrack = 0x0;
   AliESDtrack *esdcascv0postrack = 0x0;
   AliESDtrack *esdcascv0negtrack = 0x0;
-  
+
+  // Loop over the cascades
   for(Int_t iCasc = 0; iCasc < nCascades; iCasc++) {
+
+    // Reset the objects for every event
     aodcasc = 0x0;
     aodcascv0postrack = 0x0;
     aodcascv0negtrack = 0x0;
     esdcasc = 0x0;
     esdcascbachtrack = 0x0;
+    esdcascv0postrack = 0x0;
+    esdcascv0negtrack = 0x0;
 
+    // Define all cascade property parameters
     Int_t Charge = -999, MCStatus = 0;
     Double_t AODXiVertexXYZ[3], ESDBachMom[3];
     Float_t PtXi = -999, PtBach = -999, EtaXi = -999, EtaBach = -999, InvMassXi = -999;
@@ -1078,7 +1085,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     Float_t DCAV0PV = -999, DCAV0Daughters = -999;
     Float_t PPt = -999, NPt = -999, PEta = -999, NEta = -999;
     Float_t PNsigmaPr = -999, NNsigmaPr = -999, PDCAPV = -999, NDCAPV = -999;
-    
+
     if(fIsAOD) {
       aodcasc = fAOD->GetCascade(iCasc);
       aodcasc->GetDecayVertexXi()->GetXYZ(AODXiVertexXYZ);
@@ -1088,7 +1095,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       EtaXi = TMath::ATan((aodcasc->MomXiZ())/(TMath::Sqrt(aodcasc->Ptot2Xi())));
       EtaBach = TMath::ATan((aodcasc->MomBachZ())/(TMath::Sqrt(aodcasc->Ptot2Bach())));
       if(Charge < 0) { InvMassXi = aodcasc->MassXi(); }
-      else if(Charge > 0) { InvMassXi = -1*(aodcasc->MassXi()); }
+      else if(Charge > 0) { InvMassXi = -1*(aodcasc->MassXi()); } // Incorporate the charge in the particle mass
       CosPAXi = aodcasc->CosPointingAngleXi(fVtx[0], fVtx[1], fVtx[2]);    
       DecayRXi = TMath::Sqrt(TMath::Power(AODXiVertexXYZ[0], 2) + TMath::Power(AODXiVertexXYZ[1], 2));
       DecayLengthXi = aodcasc->DecayLengthXi(fVtx[0], fVtx[1], fVtx[2]);
@@ -1100,7 +1107,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       PtV0 = TMath::Sqrt(aodcasc->Pt2V0());
       EtaV0 = aodcasc->PseudoRapV0();
       if(Charge < 0) { InvMassV0 = aodcasc->MassLambda(); }
-      else if(Charge > 0) { InvMassV0 = -1*(aodcasc->MassAntiLambda()); }
+      else if(Charge > 0) { InvMassV0 = -1*(aodcasc->MassAntiLambda()); } // Incorporate the charge in the particle mass
       InvMassK0S = aodcasc->MassK0Short();
       InvMassGamma = aodcasc->InvMass2Prongs(0,1,11,11);
       CosPAV0 = aodcasc->CosPointingAngle(AODXiVertexXYZ);
@@ -1133,7 +1140,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 						       TMath::Power(ESDBachMom[1], 2) +
 						       TMath::Power(ESDBachMom[2], 2))));
       if(Charge < 0) { InvMassXi = esdcasc->M(); }
-      else if(Charge > 0) { InvMassXi = -1*(esdcasc->M()); }
+      else if(Charge > 0) { InvMassXi = -1*(esdcasc->M()); } // Incorporate the charge in the particle mass
       CosPAXi = esdcasc->GetCascadeCosineOfPointingAngle(fVtx[0], fVtx[1], fVtx[2]);    
       DecayRXi = TMath::Sqrt(TMath::Power(esdcasc->Xv(), 2) + TMath::Power(esdcasc->Yv(), 2));
       DecayLengthXi = TMath::Sqrt(TMath::Power((esdcasc->Xv())-fVtx[0], 2) +
@@ -1148,7 +1155,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       PtV0 = esdcasc->AliESDv0::Pt();
       EtaV0 = esdcasc->AliESDv0::Eta();
       if(Charge < 0) { InvMassV0 = esdcasc->GetEffMass(4, 2); }
-      else if(Charge > 0) { InvMassV0 = -1*(esdcasc->GetEffMass(2, 4)); }
+      else if(Charge > 0) { InvMassV0 = -1*(esdcasc->GetEffMass(2, 4)); } // Incorporate the charge in the particle mass
       InvMassK0S = esdcasc->GetEffMass(2, 2);
       InvMassGamma = esdcasc->GetEffMass(0, 0);
       CosPAV0 = esdcasc->GetV0CosineOfPointingAngle(esdcasc->Xv(), esdcasc->Yv(), esdcasc->Zv());
@@ -1174,6 +1181,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       esdcascv0negtrack->GetImpactParameters(D1, D2);
       NDCAPV = TMath::Sqrt(TMath::Power(D1, 2) + TMath::Power(D2, 2));
     }
+
+    // Create an AliLightCascade object and an AliLightV0 object and set their properties
     AliLightCascade *tempLightCascade = 0x0;
     AliLightV0 *tempLightCascadeV0 = new AliLightV0(PtV0, EtaV0, InvMassV0, InvMassK0S, InvMassGamma, CosPAV0, DecayRV0, PLTV0);
     tempLightCascadeV0->SetDCAV0(DCAV0PV);
