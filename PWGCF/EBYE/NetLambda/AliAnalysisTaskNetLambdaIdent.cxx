@@ -1092,7 +1092,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       CosPAXi = aodcasc->CosPointingAngleXi(fVtx[0], fVtx[1], fVtx[2]);    
       DecayRXi = TMath::Sqrt(TMath::Power(AODXiVertexXYZ[0], 2) + TMath::Power(AODXiVertexXYZ[1], 2));
       DecayLengthXi = aodcasc->DecayLengthXi(fVtx[0], fVtx[1], fVtx[2]);
-      PLTXi = InvMassXi*DecayLengthXi/(TMath::Sqrt(aodcasc->Ptot2Xi()));
+      PLTXi = TMath::Abs(InvMassXi)*DecayLengthXi/(TMath::Sqrt(aodcasc->Ptot2Xi()));
       DCAXiPV = aodcasc->DcaXiToPrimVertex();
       DCABachPV = aodcasc->DcaBachToPrimVertex();
       DCAXiDaughters = aodcasc->DcaXiDaughters();
@@ -1107,7 +1107,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       DecayRV0 = TMath::Sqrt(TMath::Power(aodcasc->DecayVertexV0X(), 2) +
 			     TMath::Power(aodcasc->DecayVertexV0Y(), 2));
       DecayLengthV0 = aodcasc->DecayLengthV0();
-      PLTV0 = InvMassV0*DecayLengthV0/(TMath::Sqrt(aodcasc->Ptot2V0()));
+      PLTV0 = TMath::Abs(InvMassV0)*DecayLengthV0/(TMath::Sqrt(aodcasc->Ptot2V0()));
       DCAV0PV = aodcasc->DcaV0ToPrimVertex();
       DCAV0Daughters = aodcasc->DcaV0Daughters();  
       AliAODVertex* cascv0vtx = (AliAODVertex*)aodcasc->GetSecondaryVtx();
@@ -1139,7 +1139,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       DecayLengthXi = TMath::Sqrt(TMath::Power((esdcasc->Xv())-fVtx[0], 2) +
 				  TMath::Power((esdcasc->Yv())-fVtx[1], 2) +
 				  TMath::Power((esdcasc->Zv())-fVtx[2], 2));
-      PLTXi = InvMassXi*DecayLengthXi/(esdcasc->P());
+      PLTXi = TMath::Abs(InvMassXi)*DecayLengthXi/(esdcasc->P());
       DCAXiPV = esdcasc->GetDcascade(fVtx[0], fVtx[1], fVtx[2]);
       esdcascbachtrack = fESD->GetTrack(TMath::Abs(esdcasc->GetBindex()));
       DCABachPV = TMath::Abs(esdcascbachtrack->GetD(fVtx[0], fVtx[1], b));
@@ -1157,7 +1157,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       DecayLengthV0 = TMath::Sqrt(TMath::Power((esdcasc->AliESDv0::Xv())-(esdcasc->Xv()), 2) +
 				  TMath::Power((esdcasc->AliESDv0::Yv())-(esdcasc->Yv()), 2) +
 				  TMath::Power((esdcasc->AliESDv0::Zv())-(esdcasc->Zv()), 2));
-      PLTV0 = InvMassV0*DecayLengthV0/(esdcasc->AliESDv0::P());
+      PLTV0 = TMath::Abs(InvMassV0)*DecayLengthV0/(esdcasc->AliESDv0::P());
       DCAV0PV = esdcasc->GetD(fVtx[0], fVtx[1], fVtx[2]);
       DCAV0Daughters = esdcasc->GetDcaV0Daughters();
       esdcascv0postrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdcasc->GetPindex()));
