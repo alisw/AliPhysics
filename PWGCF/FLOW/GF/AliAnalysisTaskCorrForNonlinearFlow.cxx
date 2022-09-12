@@ -170,10 +170,15 @@ ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
 		hITSclusters(0),
 		hChi2(0),
 		fBootstrapStat(true),
-        fFMDAacceptanceCutLower(1.8),
-        fFMDAacceptanceCutUpper(4.8),
-        fFMDCacceptanceCutLower(-3.2),
-        fFMDCacceptanceCutUpper(-1.8),
+		fUseFMDcut(kTRUE),
+		fFMDcutapar0(1.64755),
+		fFMDcutapar1(119.602),
+		fFMDcutcpar0(2.73426),
+		fFMDcutcpar1(150.31),
+		fFMDAacceptanceCutLower(1.8),
+		fFMDAacceptanceCutUpper(4.8),
+		fFMDCacceptanceCutLower(-3.2),
+		fFMDCacceptanceCutUpper(-1.8),
 		rand(2333)
 {
 }
@@ -278,10 +283,15 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	hITSclusters(0),
 	hChi2(0),
 	fBootstrapStat(true),
-    fFMDAacceptanceCutLower(1.8),
-    fFMDAacceptanceCutUpper(4.8),
-    fFMDCacceptanceCutLower(-3.2),
-    fFMDCacceptanceCutUpper(-1.8),
+	fUseFMDcut(kTRUE),
+	fFMDcutapar0(1.64755),
+	fFMDcutapar1(119.602),
+	fFMDcutcpar0(2.73426),
+	fFMDcutcpar1(150.31),
+	fFMDAacceptanceCutLower(1.8),
+	fFMDAacceptanceCutUpper(4.8),
+	fFMDCacceptanceCutLower(-3.2),
+	fFMDCacceptanceCutUpper(-1.8),
 	rand(2333)
 {
 
@@ -413,10 +423,15 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	hITSclusters(0),
 	hChi2(0),
 	fBootstrapStat(true),
-    fFMDAacceptanceCutLower(1.8),
-    fFMDAacceptanceCutUpper(4.8),
-    fFMDCacceptanceCutLower(-3.2),
-    fFMDCacceptanceCutUpper(-1.8),
+	fUseFMDcut(kTRUE),
+	fFMDcutapar0(1.64755),
+	fFMDcutapar1(119.602),
+	fFMDcutcpar0(2.73426),
+	fFMDcutcpar1(150.31),
+	fFMDAacceptanceCutLower(1.8),
+	fFMDAacceptanceCutUpper(4.8),
+	fFMDCacceptanceCutLower(-3.2),
+	fFMDCacceptanceCutUpper(-1.8),
 	rand(2333)
 {
 
@@ -1043,7 +1058,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
-    
+
 	Int_t nTracks = fInputEvent->GetNumberOfTracks();
 	fTracksTrigCharged = new TObjArray;
 	fTracksAss = new TObjArray;
@@ -1112,8 +1127,8 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
 
 				double etaAccepted = false;
-                if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
-                if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
+				if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
+				if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
 				if (!etaAccepted) continue;
 
 				double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
@@ -1135,8 +1150,8 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 				double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 
 
 				double etaAccepted = false;
-                if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
-                if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
+				if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
+				if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
 				if (!etaAccepted) continue;
 
 				double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
@@ -1146,13 +1161,15 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 						// Set the pt to 1.0
 						fhTracksTrigPt->Fill(1.0, fPVz, mostProbableN);
 					} else {
-							fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
-						}
+						fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
 					}
+				}
 			} // end loop phi
 		} // end loop eta
 	}
-	return true;
+
+
+	return kTRUE;
 }
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp) {
@@ -1232,6 +1249,46 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 	// Vertex Z
 	const Double_t aodVtxZ = vtx->GetZ();
 	if(TMath::Abs(aodVtxZ) > 10) return kFALSE;
+
+	// FMD cut should be checked **before** the Preparation of FMD tracks
+	if(fUseFMDcut){
+
+		double nFMD_fwd_hits = 0;
+		double nFMD_bwd_hits = 0;
+		AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
+		const TH2D& d2Ndetadphi = aodForward->GetHistogram();
+		int nEta = d2Ndetadphi.GetXaxis()->GetNbins();
+		int nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
+
+		for (int iEta = 1; iEta <= nEta; iEta++) {
+			for (int iPhi = 1; iPhi <= nPhi; iPhi++) {
+				double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta); 
+				double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 
+
+				double etaAccepted = false;
+				if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
+				if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
+				if (!etaAccepted) continue;
+
+				double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
+				if (mostProbableN > 0) {
+					if (eta > 0) nFMD_fwd_hits += mostProbableN;
+					else nFMD_fwd_hits += mostProbableN;
+				}
+			}
+		}
+		if(nFMD_fwd_hits==0 || nFMD_bwd_hits==0) {
+			return kFALSE;
+		}
+		AliAODVZERO *fvzero = fAOD->GetVZEROData();
+		if(!fvzero) { AliError("Problem with VZEROData, terminating!"); return kFALSE; }
+		Float_t nV0A_hits = fvzero->GetMTotV0A();
+		Float_t nV0C_hits = fvzero->GetMTotV0C();
+		if((nV0A_hits<(fFMDcutapar0*nFMD_fwd_hits-fFMDcutapar1)) || (nV0C_hits<(fFMDcutcpar0*nFMD_bwd_hits-fFMDcutcpar1))){
+			return kFALSE;
+		}
+	}
+
 	return kTRUE;
 }
 
