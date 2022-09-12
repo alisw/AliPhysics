@@ -375,7 +375,7 @@ class AliLightCascade : public TObject, public TArrayF {
   Int_t MCStatus;
   AliLightV0 *CascadeV0;
 
-  ClassDef(AliLightCascade, 0);
+  ClassDef(AliLightCascade, 1);
 };
   
 #endif
