@@ -138,14 +138,13 @@ private:
   THnSparse *fSparseULSPairMassPt;
   THnSparse *fSparseLSppPairMassPt;
   THnSparse *fSparseLSmmPairMassPt;
+  THnSparse *fSparseULSPairMassPt_LeadingTrack;
+  THnSparse *fSparseULSPairMassPt_RejectKpmStar;
 
   THnSparse *fSparseULSPairMassPt_SideBandLeftRight;
   THnSparse *fSparseULSPairMassPt_SideBandLeft;
   THnSparse *fSparseULSPairMassPt_SideBandRight;
   THnSparse *fSparseULSPairMassPt_SideBand;
-  THnSparse *fSparseULSPairMassPt_SmallOpeningAngle;
-  THnSparse *fSparseLSppPairMassPt_SmallOpeningAngle;
-  THnSparse *fSparseLSmmPairMassPt_SmallOpeningAngle;
 
   TH2F *fHistULSPairMassPt_ProngV0;
   TH2F *fHistLSppPairMassPt_ProngV0;
@@ -162,11 +161,12 @@ private:
   THnSparse *fSparseMixULSPairMassPt;
   THnSparse *fSparseMixLSppPairMassPt;
   THnSparse *fSparseMixLSmmPairMassPt;
-  THnSparse *fSparseMixULSPairMassPt_SmallOpeningAngle;
-  THnSparse *fSparseMixLSppPairMassPt_SmallOpeningAngle;
-  THnSparse *fSparseMixLSmmPairMassPt_SmallOpeningAngle;
+  THnSparse *fSparseMixULSPairMassPt_LeadingTrack;
+  THnSparse *fSparseMixULSPairMassPt_RejectKpmStar;
 
   TH2F *fHistMassK0s1K0s2;
+  TH2F *fHistPionPionCorrelationPlot;
+  TH1F *fHistKpmStarCandMass;
 
   double RecPairPt;
   double RecPairRap;

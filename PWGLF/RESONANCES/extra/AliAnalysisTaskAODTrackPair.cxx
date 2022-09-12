@@ -84,9 +84,8 @@ ClassImp(AliAnalysisTaskAODTrackPair)
       fSparseULSPairMassPt(NULL), fSparseLSppPairMassPt(NULL),
       fSparseLSmmPairMassPt(NULL),
 
-      fSparseULSPairMassPt_SmallOpeningAngle(NULL),
-      fSparseLSppPairMassPt_SmallOpeningAngle(NULL),
-      fSparseLSmmPairMassPt_SmallOpeningAngle(NULL),
+      fSparseULSPairMassPt_LeadingTrack(NULL),
+      fSparseULSPairMassPt_RejectKpmStar(NULL),
 
       fSparseULSPairMassPt_SideBandLeftRight(NULL),
       fSparseULSPairMassPt_SideBandLeft(NULL),
@@ -115,11 +114,12 @@ ClassImp(AliAnalysisTaskAODTrackPair)
 
       fSparseMixULSPairMassPt(NULL), fSparseMixLSppPairMassPt(NULL),
       fSparseMixLSmmPairMassPt(NULL),
-      fSparseMixULSPairMassPt_SmallOpeningAngle(NULL),
-      fSparseMixLSppPairMassPt_SmallOpeningAngle(NULL),
-      fSparseMixLSmmPairMassPt_SmallOpeningAngle(NULL),
 
-      fHistMassK0s1K0s2(NULL),
+      fSparseMixULSPairMassPt_LeadingTrack(NULL),
+      fSparseMixULSPairMassPt_RejectKpmStar(NULL),
+
+      fHistMassK0s1K0s2(NULL), fHistKpmStarCandMass(NULL),
+      fHistPionPionCorrelationPlot(NULL),
 
       fHistTPCdEdxP(NULL), fHistBetaP(NULL), fHistTPCSigmaElectron(NULL),
       fHistTOFSigmaElectron(NULL), fHistTPCSigmaMuon(NULL),
@@ -181,9 +181,8 @@ AliAnalysisTaskAODTrackPair::AliAnalysisTaskAODTrackPair(const char *name)
       fSparseULSPairMassPt(NULL), fSparseLSppPairMassPt(NULL),
       fSparseLSmmPairMassPt(NULL),
 
-      fSparseULSPairMassPt_SmallOpeningAngle(NULL),
-      fSparseLSppPairMassPt_SmallOpeningAngle(NULL),
-      fSparseLSmmPairMassPt_SmallOpeningAngle(NULL),
+      fSparseULSPairMassPt_LeadingTrack(NULL),
+      fSparseULSPairMassPt_RejectKpmStar(NULL),
 
       fSparseULSPairMassPt_SideBandLeftRight(NULL),
       fSparseULSPairMassPt_SideBandLeft(NULL),
@@ -212,11 +211,12 @@ AliAnalysisTaskAODTrackPair::AliAnalysisTaskAODTrackPair(const char *name)
 
       fSparseMixULSPairMassPt(NULL), fSparseMixLSppPairMassPt(NULL),
       fSparseMixLSmmPairMassPt(NULL),
-      fSparseMixULSPairMassPt_SmallOpeningAngle(NULL),
-      fSparseMixLSppPairMassPt_SmallOpeningAngle(NULL),
-      fSparseMixLSmmPairMassPt_SmallOpeningAngle(NULL),
 
-      fHistMassK0s1K0s2(NULL),
+      fSparseMixULSPairMassPt_LeadingTrack(NULL),
+      fSparseMixULSPairMassPt_RejectKpmStar(NULL),
+
+      fHistMassK0s1K0s2(NULL), fHistKpmStarCandMass(NULL),
+      fHistPionPionCorrelationPlot(NULL),
 
       fHistTPCdEdxP(NULL), fHistBetaP(NULL), fHistTPCSigmaElectron(NULL),
       fHistTOFSigmaElectron(NULL), fHistTPCSigmaMuon(NULL),
@@ -281,7 +281,7 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
   fOutputList->SetOwner(true);
 
   double min_mass = 0.0;
-  double max_mass = 3.0;
+  double max_mass = 6.0;
   double width_mass = 0.001;
 
   double min_pt = 0.0;
@@ -290,6 +290,9 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
 
   vector<double> bins_cent{0, 1, 5, 10, 20, 40, 60, 80, 100};
   int binnum_cent = bins_cent.size() - 1;
+
+  vector<double> bins_event{0, 60, 120, 180};
+  int binnum_event = bins_event.size() - 1;
 
   if (!fIsMidTrackAna) {
     double bins_event_hist[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -401,6 +404,12 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
       fOutputList->Add(fSparseLSppPairMassPt);
       fOutputList->Add(fSparseLSmmPairMassPt);
 
+      fSparseULSPairMassPt_RejectKpmStar =
+          new THnSparseF("fSparseULSPairMassPt_RejectKpmStar", "", 3, bins,
+                         min_bins, max_bins);
+      fSparseULSPairMassPt_RejectKpmStar->SetBinEdges(2, bins_cent.data());
+      fOutputList->Add(fSparseULSPairMassPt_RejectKpmStar);
+
       fSparseULSPairMassPt_SideBandLeftRight =
           new THnSparseF("fSparseULSPairMassPt_SideBandLeftRight", "", 3, bins,
                          min_bins, max_bins);
@@ -420,21 +429,16 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
       fOutputList->Add(fSparseULSPairMassPt_SideBandRight);
       fOutputList->Add(fSparseULSPairMassPt_SideBand);
 
-      fSparseULSPairMassPt_SmallOpeningAngle =
-          new THnSparseF("fSparseULSPairMassPt_SmallOpeningAngle", "", 3, bins,
-                         min_bins, max_bins);
-      fSparseLSppPairMassPt_SmallOpeningAngle =
-          new THnSparseF("fSparseLSppPairMassPt_SmallOpeningAngle", "", 3, bins,
-                         min_bins, max_bins);
-      fSparseLSmmPairMassPt_SmallOpeningAngle =
-          new THnSparseF("fSparseLSmmPairMassPt_SmallOpeningAngle", "", 3, bins,
-                         min_bins, max_bins);
-      fSparseULSPairMassPt_SmallOpeningAngle->SetBinEdges(2, bins_cent.data());
-      fSparseLSppPairMassPt_SmallOpeningAngle->SetBinEdges(2, bins_cent.data());
-      fSparseLSmmPairMassPt_SmallOpeningAngle->SetBinEdges(2, bins_cent.data());
-      fOutputList->Add(fSparseULSPairMassPt_SmallOpeningAngle);
-      fOutputList->Add(fSparseLSppPairMassPt_SmallOpeningAngle);
-      fOutputList->Add(fSparseLSmmPairMassPt_SmallOpeningAngle);
+      int bins_leading[3] = {int((max_mass - min_mass) / width_mass),
+                             int((max_pt - min_pt) / width_pt), binnum_event};
+      double min_bins_leading[3] = {min_mass, min_pt, 0};
+      double max_bins_leading[3] = {max_mass, max_pt, 360};
+
+      fSparseULSPairMassPt_LeadingTrack =
+          new THnSparseF("fSparseULSPairMassPt_LeadingTrack", "", 3,
+                         bins_leading, min_bins_leading, max_bins_leading);
+      fSparseULSPairMassPt_LeadingTrack->SetBinEdges(2, bins_event.data());
+      fOutputList->Add(fSparseULSPairMassPt_LeadingTrack);
     }
     if (fIsMixingAnalysis) {
       fHistMixULSPairMassPt =
@@ -460,27 +464,32 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
       fOutputList->Add(fSparseMixLSppPairMassPt);
       fOutputList->Add(fSparseMixLSmmPairMassPt);
 
-      fSparseMixULSPairMassPt_SmallOpeningAngle =
-          new THnSparseF("fSparseMixULSPairMassPt_SmallOpeningAngle", "", 3,
-                         bins, min_bins, max_bins);
-      fSparseMixLSppPairMassPt_SmallOpeningAngle =
-          new THnSparseF("fSparseMixLSppPairMassPt_SmallOpeningAngle", "", 3,
-                         bins, min_bins, max_bins);
-      fSparseMixLSmmPairMassPt_SmallOpeningAngle =
-          new THnSparseF("fSparseMixLSmmPairMassPt_SmallOpeningAngle", "", 3,
-                         bins, min_bins, max_bins);
-      fSparseMixULSPairMassPt_SmallOpeningAngle->SetBinEdges(2,
-                                                             bins_cent.data());
-      fSparseMixLSppPairMassPt_SmallOpeningAngle->SetBinEdges(2,
-                                                              bins_cent.data());
-      fSparseMixLSmmPairMassPt_SmallOpeningAngle->SetBinEdges(2,
-                                                              bins_cent.data());
-      fOutputList->Add(fSparseMixULSPairMassPt_SmallOpeningAngle);
-      fOutputList->Add(fSparseMixLSppPairMassPt_SmallOpeningAngle);
-      fOutputList->Add(fSparseMixLSmmPairMassPt_SmallOpeningAngle);
+      fSparseMixULSPairMassPt_RejectKpmStar =
+          new THnSparseF("fSparseMixULSPairMassPt_RejectKpmStar", "", 3, bins,
+                         min_bins, max_bins);
+      fSparseMixULSPairMassPt_RejectKpmStar->SetBinEdges(2, bins_cent.data());
+      fOutputList->Add(fSparseMixULSPairMassPt_RejectKpmStar);
+
+      int bins_leading[3] = {int((max_mass - min_mass) / width_mass),
+                             int((max_pt - min_pt) / width_pt), binnum_event};
+      double min_bins_leading[3] = {min_mass, min_pt, 0};
+      double max_bins_leading[3] = {max_mass, max_pt, 360};
+
+      fSparseMixULSPairMassPt_LeadingTrack =
+          new THnSparseF("fSparseMixULSPairMassPt_LeadingTrack", "", 3,
+                         bins_leading, min_bins_leading, max_bins_leading);
+      fSparseMixULSPairMassPt_LeadingTrack->SetBinEdges(2, bins_event.data());
+      fOutputList->Add(fSparseMixULSPairMassPt_LeadingTrack);
     }
 
     if (fIsV0TrackPairAna) {
+
+      fHistPionPionCorrelationPlot =
+          new TH2F("fHistPionPionCorrelationPlot", "",
+                   int((max_mass - min_mass) / width_mass), min_mass, max_mass,
+                   int((max_mass - min_mass) / width_mass), min_mass, max_mass);
+      fOutputList->Add(fHistPionPionCorrelationPlot);
+
       min_mass = 0.45;
       max_mass = 0.55;
       width_mass = 0.001;
@@ -492,8 +501,15 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
       fOutputList->Add(fHistULSPairMassPt_ProngV0);
 
       fHistMassK0s1K0s2 =
-          new TH2F("fHistMassK0s1K0s2", "", 100, 0.45, 0.55, 100, 0.45, 0.55);
+          new TH2F("fHistMassK0s1K0s2", "",
+                   int((max_mass - min_mass) / width_mass), min_mass, max_mass,
+                   int((max_mass - min_mass) / width_mass), min_mass, max_mass);
       fOutputList->Add(fHistMassK0s1K0s2);
+
+      fHistKpmStarCandMass =
+          new TH1F("fHistKpsStarCandMass", "", 400, 0.7, 1.1);
+      fOutputList->Add(fHistKpmStarCandMass);
+
       fHistArmenteros =
           new TH2F("fHistArmenteros", "", 200, -1, 1, 400, 0, 0.4);
       fOutputList->Add(fHistArmenteros);
@@ -588,7 +604,7 @@ void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
     fHistReducedChi2ITS = new TH1F("fHistReducedChi2ITS", "", 250, 0, 50);
     fHistDCAz = new TH1F("fHistDCAz", "", 100, 0, 10);
     fHistDCAxyPt = new TH2F("fHistDCAxyPt", "", 200, -1, 1, 100, 0, 10);
-    fHistOpeningAngle = new TH1F("fHistOpeningAngle", "", 100, 0, 100);
+    fHistOpeningAngle = new TH1F("fHistOpeningAngle", "", 100, 0, 1);
 
     fOutputList->Add(fHistTrackP);
     fOutputList->Add(fHistTrackPt);
@@ -1140,7 +1156,18 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
   AliAODv0 *v0_1;
   AliAODv0 *v0_2;
 
-  TLorentzVector lv1, lv2, lv12;
+  TLorentzVector lv1, lv2, lv12, lv_leading;
+
+  int iLeading = -1;
+  AliAODTrack *leadingTrack = 0x0;
+
+  if (fUtils->getLeadingTrack(iLeading)) {
+
+    leadingTrack = (AliAODTrack *)fEvent->GetTrack(iLeading);
+
+    lv_leading.SetPtEtaPhiM(leadingTrack->Pt(), leadingTrack->Eta(),
+                            leadingTrack->Phi(), leadingTrack->M());
+  }
 
   for (int iV0_1 = 0; iV0_1 < nV0; ++iV0_1) {
 
@@ -1154,33 +1181,38 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
     RecPairMass = v0_1->MassK0Short();
     RecPairRap = v0_1->RapK0Short();
 
-    AliAODTrack *pTrack = (AliAODTrack *)v0_1->GetDaughter(0);
-    AliAODTrack *nTrack = (AliAODTrack *)v0_1->GetDaughter(1);
+    AliAODTrack *pTrack1 = (AliAODTrack *)v0_1->GetDaughter(0);
+    AliAODTrack *nTrack1 = (AliAODTrack *)v0_1->GetDaughter(1);
 
     if (fUtils->isAcceptV0Basic(v0_1, 0)) {
       MidV0Checker(v0_1, false);
-      MidTrackPIDChecker(pTrack, pid1, false);
-      MidTrackPIDChecker(nTrack, pid2, false);
+      MidTrackPIDChecker(pTrack1, pid1, false);
+      MidTrackPIDChecker(nTrack1, pid2, false);
     }
-
     if (0.4 > RecPairMass || RecPairMass > 0.6) {
       continue;
     }
-
     if (!fUtils->isAcceptK0s(v0_1)) {
       continue;
     }
 
+    bool isKmpCand1 = false;
+    double MKpm = 0;
+    if (fUtils->isAcceptedK0sFromKpmStar(v0_1, MKpm)) {
+      fHistKpmStarCandMass->Fill(MKpm);
+      isKmpCand1 = true;
+    }
+
     MidV0Checker(v0_1, true);
 
-    MidTrackQualityChecker(pTrack);
-    MidTrackQualityChecker(nTrack);
+    MidTrackQualityChecker(pTrack1);
+    MidTrackQualityChecker(nTrack1);
 
     fHistSelArmenteros->Fill(v0_1->Alpha(), v0_1->PtArmV0());
     fHistULSPairMassPt_ProngV0->Fill(RecPairMass, RecPairPt);
 
-    MidTrackPIDChecker(pTrack, pid1, true);
-    MidTrackPIDChecker(nTrack, pid2, true);
+    MidTrackPIDChecker(pTrack1, pid1, true);
+    MidTrackPIDChecker(nTrack1, pid2, true);
 
     for (int iV0_2 = iV0_1 + 1; iV0_2 < nV0; ++iV0_2) {
 
@@ -1200,7 +1232,43 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
         continue;
       }
 
+      bool isKmpCand2 = false;
+      if (fUtils->isAcceptedK0sFromKpmStar(v0_2, MKpm)) {
+        isKmpCand2 = true;
+      }
+
       fHistMassK0s1K0s2->Fill(v0_1->MassK0Short(), v0_2->MassK0Short());
+
+      {
+        AliAODTrack *pTrack2 = (AliAODTrack *)v0_2->GetDaughter(0);
+        AliAODTrack *nTrack2 = (AliAODTrack *)v0_2->GetDaughter(1);
+
+        lv1.SetPtEtaPhiM(pTrack1->Pt(), pTrack1->Eta(), pTrack1->Phi(),
+                         TDatabasePDG::Instance()->GetParticle(211)->Mass());
+        lv2.SetPtEtaPhiM(pTrack2->Pt(), pTrack2->Eta(), pTrack2->Phi(),
+                         TDatabasePDG::Instance()->GetParticle(211)->Mass());
+        lv12 = lv1 + lv2;
+
+        double pM = lv12.M();
+
+        if (lv1.Angle(lv2.Vect()) < 0.001) {
+          continue;
+        }
+
+        lv1.SetPtEtaPhiM(nTrack1->Pt(), nTrack1->Eta(), nTrack1->Phi(),
+                         TDatabasePDG::Instance()->GetParticle(211)->Mass());
+        lv2.SetPtEtaPhiM(nTrack2->Pt(), nTrack2->Eta(), nTrack2->Phi(),
+                         TDatabasePDG::Instance()->GetParticle(211)->Mass());
+        lv12 = lv1 + lv2;
+
+        double nM = lv12.M();
+
+        if (lv1.Angle(lv2.Vect()) < 0.001) {
+          continue;
+        }
+
+        fHistPionPionCorrelationPlot->Fill(pM, nM);
+      }
 
       lv1.SetPtEtaPhiM(v0_1->Pt(), v0_1->Eta(), v0_1->Phi(),
                        TDatabasePDG::Instance()->GetParticle(310)->Mass());
@@ -1218,11 +1286,19 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
 
       if (fUtils->isAcceptK0sCandidateMassRange(v0_1->MassK0Short()) &&
           fUtils->isAcceptK0sCandidateMassRange(v0_2->MassK0Short())) {
-        if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
-          fSparseULSPairMassPt->Fill(fill);
-          fHistOpeningAngle->Fill(TMath::Cos(angle));
-        } else {
-          fSparseULSPairMassPt_SmallOpeningAngle->Fill(fill);
+
+        fSparseULSPairMassPt->Fill(fill);
+        if (!isKmpCand1 && !isKmpCand2) {
+          fSparseULSPairMassPt_RejectKpmStar->Fill(fill);
+        }
+
+        fHistOpeningAngle->Fill(TMath::Cos(angle));
+
+        if (iLeading > 0) {
+          double leading_angle =
+              lv_leading.Angle(lv12.Vect()) * 180. / TMath::Pi();
+          double fill_leading[] = {RecPairMass, RecPairPt, leading_angle};
+          fSparseULSPairMassPt_LeadingTrack->Fill(fill_leading);
         }
       } else {
         if (fUtils->isAcceptK0sCandidateSideBandRight(v0_1->MassK0Short()) &&
@@ -1258,8 +1334,6 @@ bool AliAnalysisTaskAODTrackPair::MidV0Analysis(AliPID::EParticleType pid1,
 bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
     AliPID::EParticleType pid1, AliPID::EParticleType pid2) {
 
-  // cout<<"MidV0AnalysisEventMixing"<<endl;
-
   TObjArray *fTrackArray = new TObjArray();
   fTrackArray->SetOwner();
 
@@ -1267,13 +1341,30 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
   double poolVtxZ = 0.;
   double poolPsi = 0.;
 
+  TLorentzVector lv1, lv2, lv12, lv_leading;
+
+  int iLeading = -1;
+  AliAODTrack *leadingTrack = 0x0;
+
+  if (fUtils->getLeadingTrack(iLeading)) {
+    leadingTrack = (AliAODTrack *)fEvent->GetTrack(iLeading);
+    lv_leading.SetPtEtaPhiM(leadingTrack->Pt(), leadingTrack->Eta(),
+                            leadingTrack->Phi(), leadingTrack->M());
+  }
+
   if (onEvtMixingPoolVtxZ) {
     poolVtxZ = fUtils->getVtxZ();
   }
   if (onEvtMixingPoolCent) {
     poolCent = fUtils->getCentClass();
   }
+
   if (onEvtMixingPoolPsi) {
+    if (iLeading > 0) {
+      poolPsi = leadingTrack->Phi();
+    } else {
+      poolPsi = fUtils->getPsi();
+    }
     poolPsi = fUtils->getPsi();
   }
 
@@ -1284,8 +1375,6 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
 
   AliAODv0 *v0_1;
   AliAODv0 *v0_2;
-
-  TLorentzVector lv1, lv2, lv12;
 
   for (int iV0_1 = 0; iV0_1 < nV0; ++iV0_1) {
 
@@ -1315,6 +1404,13 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
       continue;
     }
 
+    bool isKmpCand1 = false;
+    double MKpm = 0;
+    if (fUtils->isAcceptedK0sFromKpmStar(v0_1, MKpm)) {
+      fHistKpmStarCandMass->Fill(MKpm);
+      isKmpCand1 = true;
+    }
+
     MidV0Checker(v0_1, true);
 
     MidTrackQualityChecker(pTrack);
@@ -1326,6 +1422,8 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
     if (!fUtils->isAcceptK0sCandidateMassRange(v0_1->MassK0Short())) {
       continue;
     }
+
+    v0_1->SetOnFlyStatus(isKmpCand1);
 
     MidTrackPIDChecker(pTrack, pid1, true);
     MidTrackPIDChecker(nTrack, pid2, true);
@@ -1340,6 +1438,11 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
 
           v0_2 = (AliAODv0 *)poolTracks->At(iV0_2);
 
+          bool isKmpCand2 = false;
+          if (v0_2->GetOnFlyStatus()) {
+            isKmpCand2 = true;
+          }
+
           lv1.SetPtEtaPhiM(v0_1->Pt(), v0_1->Eta(), v0_1->Phi(),
                            TDatabasePDG::Instance()->GetParticle(310)->Mass());
           lv2.SetPtEtaPhiM(v0_2->Pt(), v0_2->Eta(), v0_2->Phi(),
@@ -1353,11 +1456,18 @@ bool AliAnalysisTaskAODTrackPair::MidV0AnalysisEventMixing(
           RecPairRap = lv12.Rapidity();
 
           double fill[] = {RecPairMass, RecPairPt, fUtils->getCentClass()};
-          if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
-            fSparseMixULSPairMassPt->Fill(fill);
-            fHistOpeningAngle->Fill(TMath::Cos(angle));
-          } else {
-            fSparseMixULSPairMassPt_SmallOpeningAngle->Fill(fill);
+
+          fSparseMixULSPairMassPt->Fill(fill);
+          if (!isKmpCand1 && !isKmpCand2) {
+            fSparseMixULSPairMassPt_RejectKpmStar->Fill(fill);
+          }
+          fHistOpeningAngle->Fill(TMath::Cos(angle));
+
+          if (iLeading > 0) {
+            double leading_angle =
+                lv_leading.Angle(lv12.Vect()) * 180. / TMath::Pi();
+            double fill_leading[] = {RecPairMass, RecPairPt, leading_angle};
+            fSparseMixULSPairMassPt_LeadingTrack->Fill(fill_leading);
           }
         }
       }
@@ -1461,23 +1571,11 @@ bool AliAnalysisTaskAODTrackPair::MidPairAnalysis(AliPID::EParticleType pid1,
       double fill[] = {lv12.M(), lv12.Pt(), fUtils->getCentClass()};
 
       if (track1->Charge() + track2->Charge() == 0) {
-        if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
-          fSparseULSPairMassPt->Fill(fill);
-        } else {
-          fSparseULSPairMassPt_SmallOpeningAngle->Fill(fill);
-        }
+        fSparseULSPairMassPt->Fill(fill);
       } else if (track1->Charge() + track2->Charge() > 0) {
-        if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
-          fSparseLSppPairMassPt->Fill(fill);
-        } else {
-          fSparseLSppPairMassPt_SmallOpeningAngle->Fill(fill);
-        }
+        fSparseLSppPairMassPt->Fill(fill);
       } else {
-        if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
-          fSparseLSmmPairMassPt->Fill(fill);
-        } else {
-          fSparseLSmmPairMassPt_SmallOpeningAngle->Fill(fill);
-        }
+        fSparseLSmmPairMassPt->Fill(fill);
       }
 
     } // end of loop track2
@@ -1572,8 +1670,6 @@ bool AliAnalysisTaskAODTrackPair::MidPairAnalysisEventMixing(
         for (int iTrack2 = 0; iTrack2 < poolTracks->GetEntriesFast();
              iTrack2++) {
 
-          // AliAODTrack *__track2__ = (AliAODTrack *)poolTracks->At(iTrack2);
-          // AliAODTrack *track2 = (AliAODTrack *)__track2__->Clone();
           track2 = (AliAODTrack *)poolTracks->At(iTrack2);
 
           lv1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), mass1);
@@ -1586,23 +1682,11 @@ bool AliAnalysisTaskAODTrackPair::MidPairAnalysisEventMixing(
           double fill[] = {lv12.M(), lv12.Pt(), fUtils->getCentClass()};
 
           if (track1->Charge() + track2->Charge() == 0) {
-            if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
-              fSparseMixULSPairMassPt->Fill(fill);
-            } else {
-              fSparseMixULSPairMassPt_SmallOpeningAngle->Fill(fill);
-            }
+            fSparseMixULSPairMassPt->Fill(fill);
           } else if (track1->Charge() + track2->Charge() > 0) {
-            if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
-              fSparseMixLSppPairMassPt->Fill(fill);
-            } else {
-              fSparseMixLSppPairMassPt_SmallOpeningAngle->Fill(fill);
-            }
+            fSparseMixLSppPairMassPt->Fill(fill);
           } else {
-            if (fUtils->isAcceptTrackPairOpeningAngle(TMath::Cos(angle))) {
-              fSparseMixLSmmPairMassPt->Fill(fill);
-            } else {
-              fSparseMixLSmmPairMassPt_SmallOpeningAngle->Fill(fill);
-            }
+            fSparseMixLSmmPairMassPt->Fill(fill);
           }
         }
       }
