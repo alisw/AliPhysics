@@ -32,6 +32,7 @@ public:
   bool isAcceptMidPrimTrackQuality(AliAODTrack *track);
   bool isAcceptMidPid(AliAODTrack *track, AliPID::EParticleType pid);
 
+  bool isAcceptedK0sFromKpmStar(AliAODv0 *v0, double &mass);
   bool isAcceptV0TrackQuality(AliAODTrack *track);
   bool isAcceptV0Basic(AliAODv0 *v0, int charge);
   bool isAcceptV0Quality(AliAODv0 *v0, int charge);
@@ -144,6 +145,11 @@ public:
     }
     return true;
   }
+
+  bool getLeadingTrack(int &iLeading);
+  void setMinLeadingTrackPt(double pt) { fMinLeadingTrackPt = pt; }
+
+  double fMinLeadingTrackPt;
 
   double getSPDTrkCorr(double vtxz, int spec) {
     if (spec == 0) {

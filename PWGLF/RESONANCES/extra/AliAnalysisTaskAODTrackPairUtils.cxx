@@ -95,7 +95,7 @@ ClassImp(AliAnalysisTaskAODTrackPairUtils)
       fTrackTragetPid1(AliPID::kPion), fTrackTragetPid2(AliPID::kPion),
 
       fMinTrackP(0.05), fMaxTrackP(2.0), fMinTrackPt(0.05), fMaxTrackPt(2.0),
-      fMinTrackEta(-0.8), fMaxTrackEta(+0.8),
+      fMinTrackEta(-0.8), fMaxTrackEta(+0.8), fMinLeadingTrackPt(5.0),
 
       fMinPionSigmaTPC(-5.0), fMaxPionSigmaTPC(5.0), fMinPionSigmaTOF(-5.0),
       fMaxPionSigmaTOF(5.0),
@@ -392,6 +392,10 @@ bool AliAnalysisTaskAODTrackPairUtils::isAcceptMidPrimTrackQuality(
     return false;
   }
 
+  if (track->GetTPCNcls() == 0 || track->GetITSNcls() == 0) {
+    return false;
+  }
+
   if (fMinTrackTPCNClusts > track->GetTPCNcls()) {
     return false;
   }
@@ -590,6 +594,46 @@ bool AliAnalysisTaskAODTrackPairUtils::isAcceptV0Quality(AliAODv0 *v0,
   return true;
 }
 
+bool AliAnalysisTaskAODTrackPairUtils::isAcceptedK0sFromKpmStar(AliAODv0 *v0,
+                                                                double &mass) {
+
+  int nTrack = fEvent->GetNumberOfTracks();
+
+  bool isCand = false;
+
+  for (Int_t iTrack1 = 0; iTrack1 < nTrack; ++iTrack1) {
+
+    AliAODTrack *track1 = (AliAODTrack *)fEvent->GetTrack(iTrack1);
+
+    if (!isAcceptTrackKinematics(track1)) {
+      continue;
+    }
+    if (!isAcceptMidPrimTrackQuality(track1)) {
+      continue;
+    }
+
+    if (!isAcceptMidPid(track1, AliPID::kPion)) {
+      return false;
+    }
+
+    TLorentzVector lv1, lv2, lv12;
+    lv1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(),
+                     TDatabasePDG::Instance()->GetParticle(211)->Mass());
+    lv2.SetPtEtaPhiM(v0->Pt(), v0->Eta(), v0->Phi(),
+                     TDatabasePDG::Instance()->GetParticle(310)->Mass());
+
+    lv12 = lv1 + lv2;
+
+    if (0.8 < lv12.M() && lv12.M() < 1.0) {
+      mass = lv12.M();
+      isCand = true;
+      break;
+    }
+  }
+
+  return isCand;
+}
+
 bool AliAnalysisTaskAODTrackPairUtils::isAcceptK0s(AliAODv0 *v0) {
 
   if (!isAcceptV0Quality(v0, 0)) {
@@ -611,14 +655,14 @@ bool AliAnalysisTaskAODTrackPairUtils::isAcceptK0s(AliAODv0 *v0) {
   TLorentzVector lv1, lv2, lv12;
 
   if (pTrack->P() > nTrack->P()) {
-    lv1.SetPtEtaPhiM(pTrack->P(), pTrack->Eta(), pTrack->Phi(),
+    lv1.SetPtEtaPhiM(pTrack->Pt(), pTrack->Eta(), pTrack->Phi(),
                      TDatabasePDG::Instance()->GetParticle(2212)->Mass());
-    lv2.SetPtEtaPhiM(nTrack->P(), nTrack->Eta(), nTrack->Phi(),
+    lv2.SetPtEtaPhiM(nTrack->Pt(), nTrack->Eta(), nTrack->Phi(),
                      TDatabasePDG::Instance()->GetParticle(211)->Mass());
   } else {
-    lv1.SetPtEtaPhiM(pTrack->P(), pTrack->Eta(), pTrack->Phi(),
+    lv1.SetPtEtaPhiM(pTrack->Pt(), pTrack->Eta(), pTrack->Phi(),
                      TDatabasePDG::Instance()->GetParticle(211)->Mass());
-    lv2.SetPtEtaPhiM(nTrack->P(), nTrack->Eta(), nTrack->Phi(),
+    lv2.SetPtEtaPhiM(nTrack->Pt(), nTrack->Eta(), nTrack->Phi(),
                      TDatabasePDG::Instance()->GetParticle(2212)->Mass());
   }
 
@@ -629,9 +673,9 @@ bool AliAnalysisTaskAODTrackPairUtils::isAcceptK0s(AliAODv0 *v0) {
     return false;
   }
 
-  lv1.SetPtEtaPhiM(pTrack->P(), pTrack->Eta(), pTrack->Phi(),
+  lv1.SetPtEtaPhiM(pTrack->Pt(), pTrack->Eta(), pTrack->Phi(),
                    TDatabasePDG::Instance()->GetParticle(11)->Mass());
-  lv2.SetPtEtaPhiM(nTrack->P(), nTrack->Eta(), nTrack->Phi(),
+  lv2.SetPtEtaPhiM(nTrack->Pt(), nTrack->Eta(), nTrack->Phi(),
                    TDatabasePDG::Instance()->GetParticle(11)->Mass());
 
   lv12 = lv1 + lv2;
@@ -1361,6 +1405,37 @@ AliAnalysisTaskAODTrackPairUtils::getTPCSigma(AliAODTrack *track1,
                                               AliPID::EParticleType pid) {
   return fPIDResponse->NumberOfSigmasTPC(track1, pid);
 }
+bool AliAnalysisTaskAODTrackPairUtils::getLeadingTrack(int &iLeading) {
+
+  Int_t nTrack = fEvent->GetNumberOfTracks();
+
+  bool findLeadingTrack = false;
+  double highest_pt = 0;
+
+  for (Int_t iTrack1 = 0; iTrack1 < nTrack; ++iTrack1) {
+
+    AliAODTrack *track1 = (AliAODTrack *)fEvent->GetTrack(iTrack1);
+
+    if (!isAcceptTrackKinematics(track1)) {
+      continue;
+    }
+    if (!isAcceptMidPrimTrackQuality(track1)) {
+      continue;
+    }
+
+    if (fMinLeadingTrackPt > track1->Pt()) {
+      continue;
+    } else {
+      findLeadingTrack = true;
+      if (highest_pt < track1->Pt()) {
+        iLeading = iTrack1;
+      }
+    }
+  }
+
+  return findLeadingTrack;
+}
+
 bool AliAnalysisTaskAODTrackPairUtils::setPeriodInfo() {
 
   if (296690 <= fRunNumber && fRunNumber <= 297624) {
