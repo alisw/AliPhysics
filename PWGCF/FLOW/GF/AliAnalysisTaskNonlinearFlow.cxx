@@ -2207,6 +2207,12 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
       listOfProfile->Add(multProfile.fChcn2[h]);
     }
 
+    if (fuTwoParticleCorrelation0Gap) {
+      multProfile.fChcn2_Gap0[h] = new TProfile(Form("fChc%d{2}_Gap0%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn2_Gap0[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn2_Gap0[h]);
+    }
+
     if (fuTwoParticleCorrelationLargeGap) {
       multProfile.fChcn2_Gap10[h] = new TProfile(Form("fChc%d{2}_Gap10%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
       multProfile.fChcn2_Gap10[h]->Sumw2();
