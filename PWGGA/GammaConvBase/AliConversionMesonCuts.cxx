@@ -44,6 +44,7 @@
 #include "AliAODMCParticle.h"
 #include "AliDalitzAODESDMC.h"
 #include "AliDalitzEventMC.h"
+#include <tuple>
 
 class iostream;
 
@@ -186,7 +187,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fEnableOmegaAPlikeCut(kFALSE),
   fDoGammaMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
-  fSingleDaughterMinE(0.)
+  fSingleDaughterMinE(0.),
+  fInLeadTrackDir(0),
+  fLeadTrackMinPt(4.)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -312,7 +315,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fEnableOmegaAPlikeCut(ref.fEnableOmegaAPlikeCut),
   fDoGammaMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
-  fSingleDaughterMinE(0.)
+  fSingleDaughterMinE(0.),
+  fInLeadTrackDir(ref.fInLeadTrackDir),
+  fLeadTrackMinPt(ref.fLeadTrackMinPt)
 
 {
   // Copy Constructor
@@ -524,6 +529,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(AliMCParticle *fMCMother,AliMCE
     }
     return kTRUE;
   }
+  
   return kFALSE;
 }
 
@@ -1950,6 +1956,10 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
     if (fDoGammaSwappForBg && fGammaSwappMethodBg == 10) printf("\t BG scheme: new in event rotation with TGPS: %d rotations \n", fNumberOfSwappsForBg);
     if (fDoGammaSwappForBg) printf("\t BG scheme: using %d cells distance to EMCal SM border \n", fDistanceToBorderSwappBG);
   }
+  if (fInLeadTrackDir == 1) printf("\t Meson angle w.r.t leading track (pT > %5.4f): in direction of highest pT track", fLeadTrackMinPt);
+  if (fInLeadTrackDir == 2) printf("\t Meson angle w.r.t leading track (pT > %5.4f): underlying event, not in dir. of highest pT track", fLeadTrackMinPt);
+  if (fInLeadTrackDir == 3) printf("\t Meson angle w.r.t leading track (pT > %5.4f): opposite direction to lead track ", fLeadTrackMinPt);
+  if (fInLeadTrackDir == 4) printf("\t Meson angle w.r.t leading track (pT > %5.4f): in direction and opposite direction w.r.t. lead track ", fLeadTrackMinPt);
 }
 
 
@@ -1998,6 +2008,22 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fMesonKind = 0;
     fDoJetAnalysis = kTRUE;
     fDoOutOfJet = 4;
+    break;
+  case 10: // a  in direction of highest pT track
+    fMesonKind = 0;
+    fInLeadTrackDir = 1;
+    break;
+  case 11: // b  underlying event, not in dir. of highest pT track
+    fMesonKind = 0;
+    fInLeadTrackDir = 2;
+    break;
+  case 12: // c  opposite direction to lead track 
+    fMesonKind = 0;
+    fInLeadTrackDir = 3;
+    break;
+  case 13: // d  in direction and opposite direction w.r.t. lead track 
+    fMesonKind = 0;
+    fInLeadTrackDir = 4;
     break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
@@ -5046,4 +5072,73 @@ Bool_t AliConversionMesonCuts::IsParticleInJet(std::vector<Double_t> vectorJetEt
   }
 
   return particleInJet;
+}
+
+
+    
+
+///_____________________________________________________________________________
+//   Function to find highest pT track in event
+template <class T, class U>
+Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(T Event, U meson)
+{
+  if (fInLeadTrackDir == 0) return kTRUE;
+
+  if(!meson) {
+    AliError("Meson not available\n");
+    return kFALSE;
+  }  
+  if(!Event) {
+    AliError("Event not available\n");
+    return kFALSE;
+  }
+
+  Double_t PtLead = 0;
+  Int_t NTotTrack = 0;
+  Double_t Selection = TMath::Pi()/3.; // 120 grad
+
+  AliVTrack* track = nullptr;
+  AliVTrack* trackLead = nullptr;
+
+  for(int i = 0; i < Event->GetNumberOfTracks(); i++)
+  {
+    track = dynamic_cast<AliVTrack*>(Event->GetTrack(i));
+    if(!track) {
+      AliError("Track not available\n");
+      continue;
+    }
+    // TODO: add quality cuts????
+    // apply min pT cut for tracks
+    if(track->Pt() > fLeadTrackMinPt){
+      // Find track with highest Pt
+      if(track->Pt() > PtLead)
+      {
+        PtLead  = track->Pt();
+        trackLead = dynamic_cast<AliVTrack*>(Event->GetTrack(i));
+      }
+      NTotTrack  += 1;
+    }
+  }
+
+  if (NTotTrack > 0) {
+    // get meson phi angle
+    TVector3 vmeson(meson->Px(),meson->Py(),meson->Pz());
+    TVector3 vlead(trackLead->Px(), trackLead->Py(), trackLead->Pz());
+    Double_t AngleToLeadTrack = vmeson.Angle(vlead); // this is in rad
+    //  in lead track direction
+    if(fInLeadTrackDir == 1){  
+      if ( AngleToLeadTrack < Selection/2 ) return kTRUE;
+    //  transwerse to lead track direction
+    } else if(fInLeadTrackDir == 2){
+      if ( AngleToLeadTrack > Selection/2 && AngleToLeadTrack < Selection ) return kTRUE;
+    //  opposite direction to lead track (away)
+    } else if(fInLeadTrackDir == 3){
+      if ( AngleToLeadTrack > Selection && AngleToLeadTrack < TMath::Pi() ) return kTRUE;
+    //  in direction and opposite direction
+    } else if(fInLeadTrackDir == 4){
+      if (( AngleToLeadTrack > Selection/2 && AngleToLeadTrack < Selection ) || ( AngleToLeadTrack > Selection && AngleToLeadTrack < TMath::Pi() )) return kTRUE;
+    }
+  }
+
+  return kFALSE;
 }
