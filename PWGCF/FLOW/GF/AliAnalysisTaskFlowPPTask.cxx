@@ -40,6 +40,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fMaxPt(3.0),
     fTPCclusters(70),
     fChi2PerTPCcluster(10000),
+	fAddTPCPileupCuts(true),
+	fESDvsTPConlyLinearCut(15000.),
     fMinITSClus(0),
     fMaxChi2(0),
     fUseDCAzCut(0),
@@ -93,6 +95,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	fMinPt(0.2),
 	fMaxPt(3.0),
 	fTPCclusters(70),
+	fAddTPCPileupCuts(true),
+	fESDvsTPConlyLinearCut(15000.),
 	fMinITSClus(0),
 	fMaxChi2(0),
 	fUseDCAzCut(0),
@@ -260,6 +264,16 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
     // Post output data.
 	
 }
+
+//_________________________________________________________________
+void AliAnalysisTaskFlowPPTask::NotifyRun() {
+    if (fAddTPCPileupCuts) {
+      Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+      fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+      fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
+    }
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 {
