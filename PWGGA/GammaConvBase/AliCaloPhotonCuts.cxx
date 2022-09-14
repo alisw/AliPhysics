@@ -5894,6 +5894,12 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fEOverPMax = 1.75;
       fUseOnlyMatchedClusters = kTRUE;
       break;
+    case 28: // cut char 's' (very wide track matching window for isolation studies
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      fMaxDistTrackToClusterEta = 0.1;
+      fMinDistTrackToClusterPhi = -0.1;
+      fMaxDistTrackToClusterPhi = 0.1;
+      break;
 
     default:
       AliError(Form("Track Matching Cut not defined %d",trackMatching));
