@@ -53,7 +53,7 @@ public:
   {
     kQA = 1,
     kTree = 1,
-    // kMCGenTree,
+    kMCGenTree,
     // kMCMissTree,
     kNcontainers
   };
