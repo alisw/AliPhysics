@@ -60,6 +60,7 @@ public:
     kRedSingleTrackVars, // only pT, p, eta, phi
     kRedSingleTrackVarsPbPb, //extra TPCclsPID
     kRedSingleTrackVarsPbPbExtreme, //only pt and spdhits
+    kRedSingleTrackVarsHMV0, //only pt, eta, and phi
     kAllSingleTrackVars // all single-track vars
   };
   
@@ -77,6 +78,7 @@ public:
   //for MC gen --> common implementation
   TTree* BuildTreeMCGen(TString name, TString title);
   bool SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart);
+  bool SetMCGenVariablesextra(int pdg, int pdg_mom, int mc_label);
 
   //to be called for each candidate
   void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
@@ -92,10 +94,12 @@ public:
   }
   
   //common methods
+  void SetIncludeML(bool includeML) {fIncludeML=includeML;}
   void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
   void SetOptSingleTrackVars(int opt) {fSingleTrackOpt=opt;}
   void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
   void SetDauInAcceptance(bool dauinacc = true) {fDauInAcceptance=dauinacc;}
+  void SetOnlyDedicatedBranches(bool b) { fOnlyDedicatedBranches = b; }
 
   void SetIsSelectedStd(bool isselected, bool isselectedTopo, bool isselectedPID, bool isselectedTracks) {
     if(isselected) fCandType |= kSelected;
@@ -192,6 +196,10 @@ protected:
   float fImpParXY;                                                     /// candidate impact parameter in the transverse plane
   float fDCA;                                                          /// DCA of candidates prongs
   
+  int fPDG;                                                            /// PDG code candidate
+  int fPDGmom;                                                         /// PDG code mother
+  int fMCLabel;                                                        /// Matched MC label
+
   float fPProng[knMaxProngs];                                          /// prong momentum
   int fSPDhitsProng[knMaxProngs];                                      /// prong hits in the SPD
   float fTPCPProng[knMaxProngs];                                       /// prong TPC momentum
@@ -211,6 +219,8 @@ protected:
   int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; /// PID nsigma variables (integers)
   float fPIDrawVector[knMaxProngs][knMaxDet4Pid];                      /// raw PID variables
   
+  bool fIncludeML;                                                     /// option to have the online applied ML score in TTree
+  bool fOnlyDedicatedBranches;                                         /// variable to disable unnecessary branches
   int fPidOpt;                                                         /// option for PID variables
   int fSingleTrackOpt;                                                 /// option for single-track variables
   bool fFillOnlySignal;                                                /// flag to enable only signal filling
@@ -237,7 +247,7 @@ protected:
   int fNEtabinsNsigmaTPCDataCorr;                                      /// number of eta bins for data-driven NsigmaTPC correction
   
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandlerApply,2); ///
+  ClassDef(AliHFTreeHandlerApply,3); ///
   /// \endcond
 };
 #endif
