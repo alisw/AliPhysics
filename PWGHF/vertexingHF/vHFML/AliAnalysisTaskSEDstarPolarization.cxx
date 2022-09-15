@@ -996,9 +996,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 100, 5, 5, 5, 5, 5, 100};
-    double xminAcc[knVarForSparseAcc] = {0., -1., 0., 0., 0., 0., 0., 0.};
-    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 1., 100.};
+    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 100, 5, 5, 5, 5, 5, 180, 100};
+    double xminAcc[knVarForSparseAcc] = {0., -1., 0., 0., 0., 0., 0., 0., 0.};
+    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 1., TMath::Pi(), 100.};
 
     int nBinsThetaPhiAcc[3] = {nPtBins, 100, 100};
     double xminThetaPhiAcc[3] = {0., 0., 0.};
