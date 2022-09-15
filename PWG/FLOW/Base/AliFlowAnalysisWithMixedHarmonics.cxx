@@ -133,7 +133,12 @@ fResultsList(NULL),
 f3pCorrelatorHist(NULL),
 fDetectorBiasHist(NULL),
 f3pCorrelatorVsMHist(NULL),
-fDetectorBiasVsMHist(NULL)
+fDetectorBiasVsMHist(NULL),
+fQAZDCCAvsV0C(NULL),
+fQAZDCCAvsV0A(NULL),
+fQAV0CEvPldistribution(NULL),
+fQAV0AEvPldistribution(NULL),
+fQAZDCCAEvPldistribution(NULL)
 {
  // Constructor. 
  
@@ -255,6 +260,7 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  fPsi2V0C = (1./2)*TMath::ATan2(VZCRe,VZCIm);
  if(fPsi2V0C < 0) fPsi2V0C += TMath::TwoPi()/2;
  fPsi2V0A = (1./2)*TMath::ATan2(VZARe,VZAIm);
+ if(fPsi2V0A < 0) fPsi2V0A += TMath::TwoPi()/2;
  
  fNonIsotropicTermsV0EvPlPro->Fill(0.5, TMath::Cos(fPsi2V0C));
  fNonIsotropicTermsV0EvPlPro->Fill(1.5, TMath::Sin(fPsi2V0C));
@@ -303,6 +309,11 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  fNonIsotropicTermsZDCSpPlPPro->Fill(10.5, TMath::Cos(2*fPsiZNCCA));
  fNonIsotropicTermsZDCSpPlPPro->Fill(11.5, TMath::Sin(2*fPsiZNCCA));
  
+ fQAZDCCAvsV0C->Fill(fPsiZNCCA, fPsi2V0C);
+ fQAZDCCAvsV0A->Fill(fPsiZNCCA, fPsi2V0A);
+ fQAV0CEvPldistribution->Fill(fPsi2V0C);
+ fQAV0AEvPldistribution->Fill(fPsi2V0A);
+ fQAZDCCAEvPldistribution->Fill(fPsiZNCCA);
  
  // c) Fill common control histograms:
  fCommonHists->FillControlHistograms(anEvent);  
@@ -1031,27 +1042,27 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
   }
   
   
-  TH1D *h3pCorrelatorV0CVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  TH1D *h3pCorrelatorV0CVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorV0CVs%sHist",psdFlag[sd].Data())));
   if(h3pCorrelatorV0CVsPtSumDiffHist)
   {
    this->Set3pCorrelatorV0CVsPtSumDiffHist(h3pCorrelatorV0CVsPtSumDiffHist,sd);  
   }
-  TH1D *h3pCorrelatorV0AVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  TH1D *h3pCorrelatorV0AVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorV0AVs%sHist",psdFlag[sd].Data())));
   if(h3pCorrelatorV0AVsPtSumDiffHist)
   {
    this->Set3pCorrelatorV0AVsPtSumDiffHist(h3pCorrelatorV0AVsPtSumDiffHist,sd);  
   }
-  TH1D *h3pCorrelatorZDCCVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  TH1D *h3pCorrelatorZDCCVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorZDCCVs%sHist",psdFlag[sd].Data())));
   if(h3pCorrelatorZDCCVsPtSumDiffHist)
   {
    this->Set3pCorrelatorZDCCVsPtSumDiffHist(h3pCorrelatorZDCCVsPtSumDiffHist,sd);  
   }
-  TH1D *h3pCorrelatorZDCAVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  TH1D *h3pCorrelatorZDCAVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorZDCAVs%sHist",psdFlag[sd].Data())));
   if(h3pCorrelatorZDCAVsPtSumDiffHist)
   {
    this->Set3pCorrelatorZDCAVsPtSumDiffHist(h3pCorrelatorZDCAVsPtSumDiffHist,sd);  
   }
-  TH1D *h3pCorrelatorZDCCAVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  TH1D *h3pCorrelatorZDCCAVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorZDCCAVs%sHist",psdFlag[sd].Data())));
   if(h3pCorrelatorZDCCAVsPtSumDiffHist)
   {
    this->Set3pCorrelatorZDCCAVsPtSumDiffHist(h3pCorrelatorZDCCAVsPtSumDiffHist,sd);  
@@ -1110,6 +1121,38 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
  {
   this->Set2pCorrelatorCos2PsiDiffHist(h2pCorrelatorCos2PsiDiffHist);  
  }
+ 
+ //QA for V0 and ZDCCA event plane
+ TH2D *hQAZDCCAvsV0C = dynamic_cast<TH2D*>(resultsList->FindObject("fQAZDCCAvsV0C"));
+ if(hQAZDCCAvsV0C)
+ {
+  this->SetQAZDCCAvsV0C(hQAZDCCAvsV0C);  
+ }
+ 
+ TH2D *hQAZDCCAvsV0A = dynamic_cast<TH2D*>(resultsList->FindObject("fQAZDCCAvsV0A"));
+ if(hQAZDCCAvsV0A)
+ {
+  this->SetQAZDCCAvsV0A(hQAZDCCAvsV0A);  
+ }
+ 
+ TH1D *hQAV0CEvPldistribution = dynamic_cast<TH1D*>(resultsList->FindObject("fQAV0CEvPldistribution"));
+ if(hQAV0CEvPldistribution)
+ {
+  this->SetQAV0CEvPldistribution(hQAV0CEvPldistribution);  
+ }
+ 
+ TH1D *hQAV0AEvPldistribution = dynamic_cast<TH1D*>(resultsList->FindObject("fQAV0AEvPldistribution"));
+ if(hQAV0AEvPldistribution)
+ {
+  this->SetQAV0AEvPldistribution(hQAV0AEvPldistribution);  
+ }
+ 
+ TH1D *hQAZDCCAEvPldistribution = dynamic_cast<TH1D*>(resultsList->FindObject("fQAZDCCAEvPldistribution"));
+ if(hQAZDCCAEvPldistribution)
+ {
+  this->SetQAZDCCAEvPldistribution(hQAZDCCAEvPldistribution);  
+ }
+
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
 
@@ -1370,6 +1413,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
  // f) 5-p correlator <<cos[n*(2phi1+2phi2+2phi3-3phi4-3phi5)]>> for all events (not corrected for detector effects - not supported yet);
  // g) 2-p (POI) correlator <<cos(phi1-phi2)>> and <<cos[2(phi1-phi2)]>> and non-isotropic terms for POI (not corrected for detector effects);
  // h) 2-p (POI) correlator <<cos(phi1-phi2)>> and <<cos[2(phi1-phi2)]>> (corrected for detector effects).
+ // i) QA for V0 and ZDC event plane
  
  // a) 2-p (RP) correlator <<cos(2*(phi1-phi_{V0})>> and <<cos(2*(phi1-Psi_{ZDC})>>
  TString s2pCorrelatorCos2PsiDiff2PsiV0ProName = "f2pCorrelatorCos2PsiDiff2PsiV0Pro";
@@ -1551,6 +1595,35 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
  fResultsList->Add(f2pCorrelatorCosPsiDiffHist);
  fResultsList->Add(f2pCorrelatorCos2PsiDiffHist);
  
+ // i) QA for V0 and ZDC event plane
+ fQAZDCCAvsV0C = new TH2D("fQAZDCCAvsV0C","fQAZDCCAvsV0C",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
+ fQAZDCCAvsV0C->Sumw2();
+ fQAZDCCAvsV0C->SetXTitle("#Psi_{ZDCCA}");
+ fQAZDCCAvsV0C->SetYTitle("#Psi_{V0C}");
+ fResultsList->Add(fQAZDCCAvsV0C);
+  
+ fQAZDCCAvsV0A = new TH2D("fQAZDCCAvsV0A","fQAZDCCAvsV0A",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
+ fQAZDCCAvsV0A->Sumw2();
+ fQAZDCCAvsV0A->SetXTitle("#Psi_{ZDCCA}");
+ fQAZDCCAvsV0A->SetYTitle("#Psi_{V0A}");
+ fResultsList->Add(fQAZDCCAvsV0A);
+ 
+ fQAV0CEvPldistribution = new TH1D("fQAV0CEvPldistribution","fQAV0CEvPldistribution",100,0,TMath::Pi());
+ fQAV0CEvPldistribution->Sumw2();
+ fQAV0CEvPldistribution->SetXTitle("#Psi_{V0C}");
+ fResultsList->Add(fQAV0CEvPldistribution);
+ 
+ fQAV0AEvPldistribution = new TH1D("fQAV0AEvPldistribution","fQAV0AEvPldistribution",100,0,TMath::Pi());
+ fQAV0AEvPldistribution->Sumw2();
+ fQAV0AEvPldistribution->SetXTitle("#Psi_{V0A}");
+ fResultsList->Add(fQAV0AEvPldistribution);
+ 
+ fQAZDCCAEvPldistribution = new TH1D("fQAZDCCAEvPldistribution","fQAZDCCAEvPldistribution",100,-TMath::Pi(),TMath::Pi());
+ fQAZDCCAEvPldistribution->Sumw2();
+ fQAZDCCAEvPldistribution->SetXTitle("#Psi_{ZDCCA}");
+ fResultsList->Add(fQAZDCCAEvPldistribution);
+
+
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDefault()     
       
 //================================================================================================================
@@ -2629,6 +2702,38 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
   cout<<endl;
   exit(0);
  }
+ 
+ //QA for V0 and ZDC event plane
+ if(!fQAZDCCAvsV0C) {
+  cout<<endl;
+  cout<<" WARNING (MH): fQAZDCCAvsV0C is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!fQAZDCCAvsV0A) {
+  cout<<endl;
+  cout<<" WARNING (MH): fQAZDCCAvsV0A is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!fQAV0CEvPldistribution) {
+  cout<<endl;
+  cout<<" WARNING (MH): fQAV0CEvPldistribution is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!fQAV0AEvPldistribution) {
+  cout<<endl;
+  cout<<" WARNING (MH): fQAV0AEvPldistribution is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!fQAZDCCAEvPldistribution) {
+  cout<<endl;
+  cout<<" WARNING (MH): fQAZDCCAEvPldistribution is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
 
 } // end of AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
 
@@ -3280,7 +3385,7 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
    Double_t measuredZDCAErr = f3pCorrelatorZDCAVsPtSumDiffPro[sd]->GetBinError(b);
    Double_t measuredZDCCA = f3pCorrelatorZDCCAVsPtSumDiffPro[sd]->GetBinContent(b); // cos[n(psi1+psi2-2phi_ZDCCA)]
    Double_t measuredZDCCAErr = f3pCorrelatorZDCCAVsPtSumDiffPro[sd]->GetBinError(b);
-
+	
    Double_t corrected = 0.; // 3-p correlator corrected for detector effects
    Double_t correctedErr = measuredErr; // to be improved - propagate error also for non-isotropic terms
    Double_t correctedV0C = 0.; // 3-p correlator corrected for detector effects
@@ -3342,9 +3447,9 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
                 - (cosPsiPOI1*cosPsiPOI2m2PhiV0C-sinPsiPOI1*sinPsiPOI2m2PhiV0C 
                 + cosPsiPOI2*cosPsiPOI1m2PhiV0C-sinPsiPOI2*sinPsiPOI1m2PhiV0C); 
                 
-   correctedV0A = measuredV0C 
-                - (cosPsiPOI1*cosPsiPOI2m2PhiRP-sinPsiPOI1*sinPsiPOI2m2PhiRP 
-                + cosPsiPOI2*cosPsiPOI1m2PhiRP-sinPsiPOI2*sinPsiPOI1m2PhiRP); 
+   correctedV0A = measuredV0A 
+                - (cosPsiPOI1*cosPsiPOI2m2PhiV0A-sinPsiPOI1*sinPsiPOI2m2PhiV0A 
+                + cosPsiPOI2*cosPsiPOI1m2PhiV0A-sinPsiPOI2*sinPsiPOI1m2PhiV0A); 
                 
    correctedZDCC = measuredZDCC 
                 - (cosPsiPOI1*cosPsiPOI2m2PhiZDCC-sinPsiPOI1*sinPsiPOI2m2PhiZDCC 
@@ -3452,7 +3557,7 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
     gIntegratedValueZDCA = gSumBinContentTimesWeightZDCA/gSumWeightZDCA;
   if((gSumWeightZDCCA)&&(iBinCounter)) 
     gIntegratedValueZDCCA = gSumBinContentTimesWeightZDCCA/gSumWeightZDCCA;
-    
+  
   f3pCorrelatorPOIIntegratedHist->SetBinContent(1, gIntegratedValue);
   f3pCorrelatorPOIIntegratedHist->SetBinError(1, f3pCorrelatorPOIIntegratedPro->GetBinError(1)); // to be improved later 
    
@@ -3466,7 +3571,7 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
   f3pCorrelatorPOIm2ZDCAIntegratedHist->SetBinError(1, f3pCorrelatorPOIm2ZDCAIntegratedPro->GetBinError(1)); // to be improved later 
   f3pCorrelatorPOIm2ZDCCAIntegratedHist->SetBinContent(1, gIntegratedValueZDCCA);
   f3pCorrelatorPOIm2ZDCCAIntegratedHist->SetBinError(1, f3pCorrelatorPOIm2ZDCCAIntegratedPro->GetBinError(1)); // to be improved later 
- 
+  
   // c.) Correct 2-p correlator cos[2(phi1-phi2)] for detector effects. This is needed for DeltaGamma/v2
   Double_t measured2pPsiCorrelator = f2pCorrelatorCosPsiDiffPro->GetBinContent(1); // cos[2(phi1-phi2)] biased by detector effects
   Double_t measured2p2PsiCorrelator = f2pCorrelatorCos2PsiDiffPro->GetBinContent(1); // cos[2(phi1-phi2)] biased by detector effects

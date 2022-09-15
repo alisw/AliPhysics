@@ -294,6 +294,19 @@ class AliFlowAnalysisWithMixedHarmonics
   void Set2pCorrelatorCos2PsiDiffHist(TH1D* const hist) {this->f2pCorrelatorCos2PsiDiffHist = hist;};
   TH1D* Get2pCorrelatorCos2PsiDiffHist() const {return this->f2pCorrelatorCos2PsiDiffHist;}; 
   
+  // QA for V0 and ZDC event plane
+  void SetQAZDCCAvsV0C(TH2D* const hist) {this->fQAZDCCAvsV0C = hist;};
+  TH2D* GetQAZDCCAvsV0C() const {return this->fQAZDCCAvsV0C;}; 
+  void SetQAZDCCAvsV0A(TH2D* const hist) {this->fQAZDCCAvsV0A = hist;};
+  TH2D* GetQAZDCCAvsV0A() const {return this->fQAZDCCAvsV0A;}; 
+  void SetQAV0CEvPldistribution(TH1D* const hist) {this->fQAV0CEvPldistribution = hist;};
+  TH1D* GetQAV0CEvPldistribution() const {return this->fQAV0CEvPldistribution;}; 
+  void SetQAV0AEvPldistribution(TH1D* const hist) {this->fQAV0AEvPldistribution = hist;};
+  TH1D* GetQAV0AEvPldistribution() const {return this->fQAV0AEvPldistribution;}; 
+  void SetQAZDCCAEvPldistribution(TH1D* const hist) {this->fQAZDCCAEvPldistribution = hist;};
+  TH1D* GetQAZDCCAEvPldistribution() const {return this->fQAZDCCAEvPldistribution;}; 
+  
+
  private:
   AliFlowAnalysisWithMixedHarmonics(const AliFlowAnalysisWithMixedHarmonics& afawQc);
   AliFlowAnalysisWithMixedHarmonics& operator=(const AliFlowAnalysisWithMixedHarmonics& afawQc); 
@@ -446,6 +459,12 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D *f2pCorrelatorCosPsiDiffHist; // 2-p correlator <<cos(phi1-phi2)>>
   TH1D *f2pCorrelatorCos2PsiDiffHist; // 2-p correlator <<cos(2(phi1-phi2))>>
   
+  // 6.) QA for V0 and ZDC eventplane (add these histograms to Results List)
+  TH2D *fQAZDCCAvsV0C;
+  TH2D *fQAZDCCAvsV0A;
+  TH1D *fQAV0CEvPldistribution;
+  TH1D *fQAV0AEvPldistribution;
+  TH1D *fQAZDCCAEvPldistribution;
   ClassDef(AliFlowAnalysisWithMixedHarmonics, 0);
 
 };
