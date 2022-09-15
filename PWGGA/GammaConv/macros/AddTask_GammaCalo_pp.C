@@ -1948,17 +1948,15 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 808){//PHOS PHI7 reconstructed conversion
     cuts.AddCutCalo("00062113","24466190sa01cc00300","0163103100000010"); //PHI7
   } else if (trainConfig == 810){//PHOS Sphericity Check
-    cuts.AddCutCalo("h0510113","24466190sa01cc00000","0163103100000010"); //  0.    - 0.5
-    cuts.AddCutCalo("h5a10113","24466190sa01cc00000","0163103100000010"); //  0.5    - 1.
+    cuts.AddCutCalo("h0310113","24466190sa01cc00000","0163103100000010"); //  0.    - 0.3
+    cuts.AddCutCalo("h3710113","24466190sa01cc00000","0163103100000010"); //  0.3    - 0.7
+    cuts.AddCutCalo("h7a10113","24466190sa01cc00000","0163103100000010"); //  0.7   - 1.
     cuts.AddCutCalo("h0a10113","24466190sa01cc00000","0163103100000010"); //  0.    - 1.
-  } else if (trainConfig == 811){//PHOS Mult Check
-    cuts.AddCutCalo("n0110113","24466190sa01cc00000","0163103100000010"); // INT7 0-10%
-    cuts.AddCutCalo("n1210113","24466190sa01cc00000","0163103100000010"); // INT7 10-20%
-    cuts.AddCutCalo("n2510113","24466190sa01cc00000","0163103100000010"); // INT7 20-50%
-    cuts.AddCutCalo("n5a10113","24466190sa01cc00000","0163103100000010"); // INT7 50-100%
-    cuts.AddCutCalo("m0110113","24466190sa01cc00000","0163103100000010"); // INT7
-    cuts.AddCutCalo("m1510113","24466190sa01cc00000","0163103100000010"); // INT7
-    cuts.AddCutCalo("m5a10113","24466190sa01cc00000","0163103100000010"); // INT7
+  } else if (trainConfig == 811){ // PHOS lead tracks Study 
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","d163103100000010"); // in direction and opposite direction w.r.t. lead track 
   } else if (trainConfig == 812){//PHOS Triggers Timing Cut 0, 100 MeV
     cuts.AddCutCalo("00010113","244661900a09cc00000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","244661900a09cc00000","0163103100000010"); //PHI7
