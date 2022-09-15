@@ -62,11 +62,20 @@ private:
 
     TH2F *hNparticles[2]; //!<! number of pions and deuterons per event {0: positive, 1: negative}
 
-    TH1F *hSameEventKstarLS[2]; //!<! same-event k* distribution (like-sign) {0: positive, 1: negative}
-    TH1F *hSameEventKstarUS[2]; //!<! same-event k* distribution (unlike-sign) {0: positive pion, 1: negative pion}
+    TH1F *hSameEventPionDeuteronKstarLS[2]; //!<! same-event k* distribution for pion-deuteron (like-sign) {0: positive, 1: negative}
+    TH1F *hSameEventPionDeuteronKstarUS[2]; //!<! same-event k* distribution for pion-deuteron (unlike-sign) {0: positive pion, 1: negative pion}
 
-    TH1F *hMixedEventKstarLS[2]; //!<! same-event k* distribution (like-sign) {0: positive, 1: negative}
-    TH1F *hMixedEventKstarUS[2]; //!<! same-event k* distribution (unlike-sign) {0: positive pion, 1: negative pion}
+    TH1F *hMixedEventPionDeuteronKstarLS[2]; //!<! mixed-event k* distribution for pion-deuteron (like-sign) {0: positive, 1: negative}
+    TH1F *hMixedEventPionDeuteronKstarUS[2]; //!<! mixed-event k* distribution for pion-deuteron (unlike-sign) {0: positive pion, 1: negative pion}
+
+    TH1F *hSameEventPionProtonKstarLS[2]; //!<! same-event k* distribution for pion-proton (like-sign) {0: positive, 1: negative}
+    TH1F *hSameEventPionProtonKstarUS[2]; //!<! same-event k* distribution for pion-proton (unlike-sign) {0: positive pion, 1: negative pion}
+
+    TH1F *hMixedEventPionProtonKstarLS[2]; //!<! mixed-event k* distribution for pion-proton (like-sign) {0: positive, 1: negative}
+    TH1F *hMixedEventPionProtonKstarUS[2]; //!<! mixed-event k* distribution for pion-proton (unlike-sign) {0: positive pion, 1: negative pion}
+
+    std::vector<CustomQueue<std::vector<TLorentzVector>>> fMixingBufferProtons;     ///< Mixing buffer for protons
+    std::vector<CustomQueue<std::vector<TLorentzVector>>> fMixingBufferAntiprotons; ///< Mixing buffer for antiprotons
 
     std::vector<CustomQueue<std::vector<TLorentzVector>>> fMixingBufferDeuterons;     ///< Mixing buffer for deuterons
     std::vector<CustomQueue<std::vector<TLorentzVector>>> fMixingBufferAntideuterons; ///< Mixing buffer for antideuterons
@@ -78,6 +87,8 @@ private:
 
     float GetKstar(TLorentzVector &p1, TLorentzVector &p2);                                                               ///< return relative momentum in the rest frame of the pair
     void FillMixedEvent(std::vector<TLorentzVector> &vec, CustomQueue<std::vector<TLorentzVector>> &buffer, TH1F *histo); ///< fill mixed event distribution
+
+    void DoSimpleCoalescence(std::vector<TLorentzVector> &v_proton, std::vector<TLorentzVector> &v_neutron, std::vector<TLorentzVector> &v_deuteron, TH1F *histo); ///< create deuterons from protons and neutrons
 
     ClassDef(AliAnalysisTaskPionDeuteronMC, 3);
 };

@@ -54,7 +54,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	float Return_DCAvsPt_cut_d(float pt,int charge);
 	void Set_DCAvsPt_cut(float *input_v,int label);
 	//
-	void SetInversePID(int aInversePID); 
+	void SetInversePID(int aInversePID);
+        void SetHe3TPCSignal(float aMin,float aMax);
+ 
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -78,13 +80,14 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	// 2022.4.18 for pi- + He3+ pair
         int fPionHe3cut;        
         bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP, float tmp_switch);
-        bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
+        bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD, float tmp_switch);
         bool IsTritonNSigma(    float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
         bool IsHe3NSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3);
 	bool IsPionNSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCPi, float nsigmaTOFPi);	//2022.4.13        
 	//\ for e+e femto
         bool IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE);
         // dE/dx
+        bool IsProtonTPCdEdx(float mom, float dEdx);
         bool IsDeuteronTPCdEdx(float mom, float dEdx);
         bool IsTritonTPCdEdx(float mom, float dEdx);
         // reject
@@ -92,7 +95,10 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         bool IsPionNSigmaRejection(     float mom, float nsigmaTPCPi, float nsigmaTOFPi);
         bool IsKaonNSigmaRejection(     float mom, float nsigmaTPCK, float nsigmaTOFK);
         bool IsProtonNSigmaRejection(   float mom, float nsigmaTPCP, float nsigmaTOFP);
-        
+       
+	bool IsPionNSigma(float mom,float nsigmaTPCpi,float nsigmaTOFpi);
+	bool IsKaonNSigma(float mom,float nsigmaTPCk,float nsigmaTOFk);
+	bool Reject_commom(const AliFemtoTrack* track, float mom); 
 	//\ 2022.1.26
 	int fUseTOFMassCut;
 	float TOFMassLowLimit;
@@ -114,6 +120,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 
 	// 
 	int fInversePID;
+
+	float MinHe3TPCSignal;
+    	float MaxHe3TPCSignal;
 
 };
 

@@ -38,14 +38,17 @@
 #include "AliMCParticle.h"
 #include "AliStack.h"
 #include "AliNamedArrayI.h"
+#include "AliVEventHandler.h"
 
 #include "AliLog.h"
 
 ClassImp(AliEmcalMCTrackSelector)
 
-AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() : 
+AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   AliAnalysisTaskSE("AliEmcalMCTrackSelector"),
   fParticlesOutName("MCParticlesSelected"),
+  fTrackContainerName("usedefault"),
+  fIsContainerSpecified(false),
   fOnlyPhysPrim(kTRUE),
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
@@ -65,9 +68,11 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
 {
 }
 
-AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) : 
+AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   AliAnalysisTaskSE(name),
   fParticlesOutName("MCParticlesSelected"),
+  fTrackContainerName("usedefault"),
+  fIsContainerSpecified(false),
   fOnlyPhysPrim(kTRUE),
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
@@ -87,7 +92,7 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
 {
 }
 
-void AliEmcalMCTrackSelector::UserExec(Option_t *) 
+void AliEmcalMCTrackSelector::UserExec(Option_t *)
 {
   if (fDisabled) return;
 
@@ -101,13 +106,15 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
     if (fEvent->InheritsFrom("AliESDEvent")) fIsESD = kTRUE;
     else fIsESD = kFALSE;
 
+    if(fTrackContainerName == "usedefault") fTrackContainerName = AliAODMCParticle::StdBranchName();
+
     TObject *obj = fEvent->FindListObject(fParticlesOutName);
     if (obj) { // the output array is already present in the array!
       AliErrorStream() << "The output array "  << fParticlesOutName <<  " is already present in the event! Task will be disabled." << std::endl;
       fDisabled = kTRUE;
       return;
     }
-    else {  // copy the array from the standard ESD/AOD collections, and filter if requested      
+    else {  // copy the array from the standard ESD/AOD collections, and filter if requested
 
       fParticlesOut = new TClonesArray("AliAODMCParticle");  // the output will always be of AliAODMCParticle, regardless of the input
       fParticlesOut->SetName(fParticlesOutName);
@@ -126,8 +133,8 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
         fEvent->AddObject(fParticlesMap);
       }
 
-      if (!fIsESD) {
-        fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!fIsESD || (fIsESD && fIsContainerSpecified)) {
+        fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(fTrackContainerName));
         if (!fParticlesIn) {
           AliErrorStream() << "Could not retrieve AOD MC particles! Task will be disabled." << std::endl;
           fDisabled = kTRUE;
@@ -135,7 +142,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
         }
         TClass *cl = fParticlesIn->GetClass();
         if (!cl->GetBaseClass("AliAODMCParticle")) {
-          AliErrorStream() << GetName() << ": Collection  " << AliAODMCParticle::StdBranchName() << " %s does not contain AliAODMCParticle! Task will be disabled." << std::endl;
+          AliErrorStream() << GetName() << ": Collection  " << fTrackContainerName << " %s does not contain AliAODMCParticle! Task will be disabled." << std::endl;
           fDisabled = kTRUE;
           fParticlesIn = 0;
           return;
@@ -153,7 +160,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
     fInit = kTRUE;
   }
 
-  if (fIsESD) ConvertMCParticles(fMC, fParticlesOut, fParticlesMap);
+  if (fIsESD && !fIsContainerSpecified) ConvertMCParticles(fMC, fParticlesOut, fParticlesMap);
   else CopyMCParticles(fParticlesIn, fParticlesOut, fParticlesMap);
 }
 
@@ -192,11 +199,11 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
       if(fSelectStablePi0){
         if((TMath::Abs(part->PdgCode()) == kPi0) || !IsFromPi0Mother(*part)) {
           flag |= AliAODMCParticle::kPhysicalPrim;
-        } 
+        }
       } else {
         flag |= AliAODMCParticle::kPhysicalPrim;
       }
-    } 
+    }
     if (fSelectStablePi0 && (TMath::Abs(part->PdgCode()) == kPi0)) flag |= AliAODMCParticle::kPhysicalPrim;
     if (mcEvent->IsSecondaryFromWeakDecay(iPart)) flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
     if (mcEvent->IsSecondaryFromMaterial(iPart)) flag |= AliAODMCParticle::kSecondaryFromMaterial;
@@ -216,9 +223,9 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
           }
         }
         if(hasPhotonDaughter){
-          AliDebugStream(2) << "Found photon which is the mother of another photon, not selecting ..." << std::endl; 
+          AliDebugStream(2) << "Found photon which is the mother of another photon, not selecting ..." << std::endl;
           continue;
-        } 
+        }
       }
     }
 
@@ -234,11 +241,11 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
 
     // Do not put rejected particles on the output container
     AliAODMCParticle parttmp(part, iPart, flag);
-    parttmp.SetGeneratorIndex(part->GetGeneratorIndex());    
+    parttmp.SetGeneratorIndex(part->GetGeneratorIndex());
     parttmp.SetStatus(part->Particle()->GetStatusCode());
     parttmp.SetMCProcessCode(part->Particle()->GetUniqueID());
 
-    if (!AcceptParticle(&parttmp)) continue;    
+    if (!AcceptParticle(&parttmp)) continue;
 
     new ((*partOut)[nacc]) AliAODMCParticle(parttmp);
     if (partMap) partMap->AddAt(nacc, iPart);
@@ -297,9 +304,9 @@ void AliEmcalMCTrackSelector::CopyMCParticles(TClonesArray* partIn, TClonesArray
           }
         }
         if(hasPhotonDaughter){
-          AliDebugStream(2) << "Found photon which is the mother of another photon, not selecting ..." << std::endl; 
+          AliDebugStream(2) << "Found photon which is the mother of another photon, not selecting ..." << std::endl;
           continue;
-        } 
+        }
       }
     }
 
@@ -341,7 +348,7 @@ bool AliEmcalMCTrackSelector::IsFromPi0Mother(const AliVParticle &part) const {
   return IsFromPi0Mother(*motherparticle);
 }
 
-AliEmcalMCTrackSelector* AliEmcalMCTrackSelector::AddTaskMCTrackSelector(TString outname, Bool_t nk, Bool_t ch, Double_t etamax, Bool_t physPrim)
+AliEmcalMCTrackSelector* AliEmcalMCTrackSelector::AddTaskMCTrackSelector(TString outname, TString nTrackCont, Bool_t nk, Bool_t ch, Double_t etamax, Bool_t physPrim)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -351,10 +358,17 @@ AliEmcalMCTrackSelector* AliEmcalMCTrackSelector::AddTaskMCTrackSelector(TString
   }
 
   // Check the analysis type using the event handlers connected to the analysis manager.
-  if (!mgr->GetInputEventHandler()) {
+  //==============================================================================
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
+  {
     ::Error("AddTaskMCTrackSelector", "This task requires an input event handler");
     return NULL;
   }
+
+  TString trackName(nTrackCont);
+
+  bool isContSpecified = (trackName.Length() && (trackName != "usedefault"));
 
   // Init the task and do settings
   TString name("AliEmcalMCTrackSelector_");
@@ -365,6 +379,8 @@ AliEmcalMCTrackSelector* AliEmcalMCTrackSelector::AddTaskMCTrackSelector(TString
   eTask->SetChargedMC(ch);
   eTask->SetEtaMax(etamax);
   eTask->SetOnlyPhysPrim(physPrim);
+  eTask->SetTrackContainerName(trackName);
+  eTask->SetIsContainerSpecified(isContSpecified);
 
   // Final settings, pass to manager and set the containers
   mgr->AddTask(eTask);

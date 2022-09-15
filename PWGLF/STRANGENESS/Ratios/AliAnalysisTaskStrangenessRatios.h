@@ -17,6 +17,7 @@ class TTree;
 
 struct MiniLambda {
   Double32_t pt;
+  Double32_t ptPr;
   Double32_t eta;
   Double32_t mass;
   Double32_t ct;
@@ -28,6 +29,7 @@ struct MiniLambda {
   Double32_t cosPA;       //[0.95,1,16]
   Double32_t tpcNsigmaPi; //[-5,5,8]
   Double32_t tpcNsigmaPr; //[-5,5,8]
+  Double32_t itsNsigmaPr; //[-5,5,8]
   unsigned char tpcClV0Pi;
   unsigned char tpcClV0Pr;
   unsigned char centrality;
@@ -165,6 +167,8 @@ public:
   void SetDCAV0prToPVOverflowCut(double cut = 20.) { fDCAV0prToPVOverflowCut = cut; }
   void SetDCAV0toPVOverflowCut(double cut = 10.) { fDCAV0toPVOverflowCut = cut; }
   void SetBdtOutputBackgroundCut(double cut = 0.15) { fBdtOutputBackgroundCut = cut; }
+  void SetSDDSSDclsCut(int cut = -1) { fSDDSSDclsCut = cut; }
+  void SetSPDclsCut(int cut = -1) { fSPDclsCut = cut; }
 
   void SetBDTPath(const char *path = "") { fBDTPath = path; }
   void SetCtBinsBDT(int nBins, double *ctBins) { fCtBinsBDT.Set(nBins+1,ctBins); }
@@ -234,6 +238,8 @@ private:
   double fDCAV0prToPVOverflowCut = 20;
   double fDCAV0toPVOverflowCut = 10;
   double fBdtOutputBackgroundCut = 0.15;
+  int fSPDclsCut = -1;
+  int fSDDSSDclsCut = -1;
 
   float fCosPALambda = 0.97;
   float fCutDCALambdaPrToPV = 0.08;

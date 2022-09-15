@@ -65,7 +65,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   void SetRunPlotMult(bool RunPlotMult){fRunPlotMult = RunPlotMult;};
   void SetRunPlotPhiTheta(bool RunPlotPhiTheta){fRunPlotPhiTheta = RunPlotPhiTheta;};
   void SetDoAncestors(bool DoAncestors){fDoAncestors = DoAncestors;};
-  void SetRemoveMCResonances(bool RemoveMCResonances){fRemoveMCResonances = RemoveMCResonances;};
+  void SetRemoveMCResonances(bool RemoveMCResonances, bool RemoveMCResonanceDaughters){fRemoveMCResonances = RemoveMCResonances; fRemoveMCResonanceDaughters = RemoveMCResonanceDaughters;};
 
   private:
   AliAnalysisTaskNanoFemtoProtonPion(const AliAnalysisTaskNanoFemtoProtonPion &task);
@@ -91,6 +91,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   bool fRunPlotPhiTheta; // 
   bool fDoAncestors; //
   bool fRemoveMCResonances; //
+  bool fRemoveMCResonanceDaughters; //
 
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
@@ -141,6 +142,6 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   TList *fMixedEventDeltaEtaDeltaPhi_List;
   TH2F **fMixedEventPhiTheta;
 
-  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 6) 
+  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 7) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFEMTOPROTONPION_H_ */

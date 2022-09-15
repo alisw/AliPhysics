@@ -1,17 +1,18 @@
+//#include "AliAnalysisTaskJetFFMoments.h";
 AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(char* bGen = "AODMC2b", char* bRec1 = "AOD", UInt_t filterMask = 128, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny, Char_t *jf = "ANTIKT", Float_t radius = 0.4, Int_t nSkip = 0, Bool_t kReadJetBranch = kTRUE, char* suffix ="", Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9, Float_t ptJetCut = 5.,  char* anaJetType = "leading", Float_t vertexWindow = 10., Double_t ffmPower = 2, Int_t bType = -1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Bool_t kRandom = kFALSE);
 
-AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(Float_t radius = 0.4, Float_t ptTrackCut = 0.15, Char_t *jf = "ANTIKT", Float_t ptJetCut = 5, char* anaJetType = "leading", Double_t ffmPower = 2, char* bGen = "", Int_t bType = -1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Int_t nSkip = 0, Bool_t kRandom = kFALSE, char* suffix);
+AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(Float_t radius = 0.4, Float_t ptTrackCut = 0.15, Char_t *jf = "ANTIKT", Float_t ptJetCut = 5, char* anaJetType = "leading", Double_t ffmPower = 2, char* bGen = "", Int_t bType = -1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Int_t nSkip = 0, Bool_t kRandom = kFALSE, char* suffix = "");
 
 AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius = 0.4, char* bGen = "KINE2B", Double_t ffmPower = 2, char* bRec1 = "KINEDET", char* suffix ="", Int_t bType = -1, Bool_t kReadJetBranch = kFALSE, char* anaJetType="leading", Float_t ptJetCut = 5., Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Char_t *jf = "ANTIKT", Int_t nSkip = 0, Bool_t kRandom = kFALSE);
 
-AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius = 0.4, char* bGen = "KINE2B", Double_t ffmPower = 2, char* bRec1 = "KINEDET", Int_t bType = -1, Bool_t kReadJetBranch = kFALSE, char* anaJetType="leading", Float_t ptJetCut = 5., Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Char_t *jf = "ANTIKT", Int_t nSkip = 0, Bool_t kRandom = kFALSE, char* suffix);
+AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius = 0.4, char* bGen = "KINE2B", Double_t ffmPower = 2, char* bRec1 = "KINEDET", Int_t bType = -1, Bool_t kReadJetBranch = kFALSE, char* anaJetType="leading", Float_t ptJetCut = 5., Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Char_t *jf = "ANTIKT", Int_t nSkip = 0, Bool_t kRandom = kFALSE, char* suffix = "");
 
 AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius, Float_t ptTrackCut, Char_t *jf, Float_t ptJetCut, char* anaJetType,
                                                  Double_t ffmPower, char* bGen, Int_t bType, Double_t bcut1, Double_t bcut2, double mu,
                                                  Int_t nUsedJets, char* jfTask, Int_t nSkip, Bool_t kRandom, char* suffix)
 {
 
-AddTaskJetFFMoments(bGen, "AOD", AliAnalysisManager::GetGlobalInt("kHighPtFilterMask",gDebug), AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag",gDebug), jf, radius, nSkip, kTRUE, suffix , ptTrackCut,  AliAnalysisManager::GetGlobalDbl("kTrackEtaWindow",gDebug), ptJetCut, anaJetType, AliAnalysisManager::GetGlobalDbl("kVertexWindow",gDebug), ffmPower, bType, bcut1, bcut2, mu, nUsedJets, jfTask, kRandom);
+return AddTaskJetFFMoments(bGen, "AOD", AliAnalysisManager::GetGlobalInt("kHighPtFilterMask",reinterpret_cast<Bool_t&>(gDebug)), AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag",reinterpret_cast<Bool_t&>(gDebug)), jf, radius, nSkip, kTRUE, suffix , ptTrackCut,  AliAnalysisManager::GetGlobalDbl("kTrackEtaWindow",reinterpret_cast<Bool_t&>(gDebug)), ptJetCut, anaJetType, AliAnalysisManager::GetGlobalDbl("kVertexWindow",reinterpret_cast<Bool_t&>(gDebug)), ffmPower, bType, bcut1, bcut2, mu, nUsedJets, jfTask, kRandom);
 
 }
 
@@ -22,7 +23,7 @@ AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius, char* bGen, Dou
                                                  Int_t nUsedJets, char* jfTask,  Char_t *jf, Int_t nSkip, Bool_t kRandom)
 {
 
-AddTaskJetFFMoments(bGen, bRec1, 0 , 0 , jf, radius, nSkip,kReadJetBranch, suffix , 0.15, 0.9 , ptJetCut, anaJetType, 10 , ffmPower, bType, bcut1, bcut2, mu, nUsedJets, jfTask, kRandom);
+return AddTaskJetFFMoments(bGen, bRec1, 0 , 0 , jf, radius, nSkip,kReadJetBranch, suffix , 0.15, 0.9 , ptJetCut, anaJetType, 10 , ffmPower, bType, bcut1, bcut2, mu, nUsedJets, jfTask, kRandom);
 
 }
 
@@ -32,7 +33,7 @@ AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius, char* bGen, Dou
                                                  Int_t nUsedJets, char* jfTask,  Char_t *jf, Int_t nSkip, Bool_t kRandom, char* suffix)
 {
 
-AddTaskJetFFMoments(bGen, bRec1, 0 , 0 , jf, radius, nSkip,kReadJetBranch, suffix , 0.15, 0.9 , ptJetCut, anaJetType, 10 , ffmPower, bType, bcut1, bcut2, mu, nUsedJets, jfTask, kRandom);
+return AddTaskJetFFMoments(bGen, bRec1, 0 , 0 , jf, radius, nSkip,kReadJetBranch, suffix , 0.15, 0.9 , ptJetCut, anaJetType, 10 , ffmPower, bType, bcut1, bcut2, mu, nUsedJets, jfTask, kRandom);
 
 }
 
@@ -172,20 +173,17 @@ AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(char* bGen, char* bRec1, UInt_t
    cAdd.ReplaceAll("clusters","");
   } else {// rec jets
    //define rec algorithm for jet rec
-    switch (jf) {
-     case "ANTIKT":
+    if (!strncmp(jf,"ANTIKT",6)) {
       ffm->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
-      break;
-     case "CA":
+    } else if (!strncmp(jf,"CA",2)) {
       ffm->SetAlgorithm(1); // CA from fastjet/JetDefinition.hh
-      break;
-     case "KT":
+    } else if (!strncmp(jf,"KT",2)) {
       ffm->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
-      break;
-     default:
+   }  else {
       ::Error("AddTaskJetFFMoments", "Wrong jet finder selected\n");
       return 0;
     }
+
   }
 
 

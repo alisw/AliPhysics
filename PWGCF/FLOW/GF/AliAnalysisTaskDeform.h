@@ -58,7 +58,7 @@ enum {kCh = 0, kPi = 1, kKa = 2, kPr = 4};
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskDeform();
-  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="");
+  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
   virtual ~AliAnalysisTaskDeform();
   virtual void UserCreateOutputObjects();
   virtual void NotifyRun();
@@ -118,8 +118,10 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetPseudoEffPars(double fConstEff, double fSigmaEff);
   void SetEfficiencyFlag(UInt_t newval) {fEfficiencyFlag = newval;};
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
-  void SetUse2DEfficiencies(bool newval, bool newval2=kFALSE) {fUse2DEff = newval; fUsePIDEff = newval2;};
+  void SetUse2DEfficiencies(bool newval) {fUse2DEff = newval;};
   void SetParticleFlag(UInt_t newval) {fParticleFlag = newval;};
+  void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
+  void SetOnTheFly(bool newval) {fOnTheFly = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -134,6 +136,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fIsMC;
   Bool_t fBypassTriggerAndEvetCuts;
   Bool_t fUSe15opass2PU;
+  Bool_t fOnTheFly;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; //For random number generation
@@ -166,8 +169,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
   TList *fptVarList;
-  AliCkContainer *fCkCont;
-  AliPtContainer  *fPtCont;
+  AliCkContainer **fCkCont;
+  AliPtContainer  **fPtCont;
   TList *fCovList;
   TList *fV2dPtList;
   AliProfileBS **fCovariance; //!
@@ -205,11 +208,13 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
+  Double_t fImpactParameterMC;
   int EventNo;
   double fConstEff;
   double fSigmaEff;
   unsigned int fEventWeight; 
-  vector<vector<double>>  wpPt;
+  vector<vector<vector<double>>>  wpPt;
+  std::map<double,double> centralitymap;  
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
@@ -220,16 +225,18 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptCustomEvent(AliAODEvent*);
   Bool_t AcceptCustomEvent(AliESDEvent*);
+  AliMCEvent *getMCEvent();
+  double getAMPTCentrality();
   Double_t getEfficiency(double &lpt, int iCent);
   vector<Double_t> getPowerEfficiency(double &lpt, int iCent);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
   UInt_t fEfficiencyFlag;
   UInt_t fParticleFlag;
+  UInt_t fEfficiencyIndex;
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
   Bool_t fUse2DEff;
-  Bool_t fUsePIDEff;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskDeform,1);
 };

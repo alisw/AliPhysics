@@ -191,6 +191,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
   double DeltaPhiMaxpKplus = 0.04;
   double DeltaEtaMaxpKplus = 0.012;
 
+  double Q3cutValue = 1.;
 
 //===================================
   // SYSTEMATICS 
@@ -839,6 +840,10 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       KaonCuts->SetDCAVtxXY(0.12);
       KaonCuts->SetDCAVtxZ(0.24);
       AntiKaonCuts->SetDCAVtxXY(0.12);
+    }else if (suffix == "45"){
+      Q3cutValue = 0.9;
+    }else if (suffix == "46"){
+      Q3cutValue = 1.1;
     }else if (suffix == "50") {
       KaonCuts->SetPtRange(0.1, 10);
       AntiKaonCuts->SetPtRange(0.1, 10);
@@ -1048,6 +1053,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
     taskNano->SetCleanWithLambdas(false);
     taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
     taskNano->SetRunOfficialTwoBody(RunOfficialTwoBody);
+    taskNano->SetRunPlotOtherHistos(false);
     //taskNano->SetDoTwoPrimary(DoTwoPrimary);
     taskNano->SetStandardMixing(StandardMixing);
     taskNano->SetRunPlotQ3Vsq(RunPlotQ3Vsq);
@@ -1058,6 +1064,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
     taskNano->SetDeltaEtaMaxPPrim(DeltaEtaMaxpKplus);
     taskNano->SetDeltaPhiMaxPAPrim(0.);
     taskNano->SetDeltaEtaMaxPAPrim(0.);
+    taskNano->SetQ3cutValue(Q3cutValue);
+    taskNano->SetRunPlotPhiTheta(false);
 
 
     mgr->AddTask(taskNano);

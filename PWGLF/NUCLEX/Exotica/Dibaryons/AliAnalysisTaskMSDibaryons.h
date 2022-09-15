@@ -22,21 +22,21 @@
 
 class AliAnalysisTaskMSDibaryons : public AliAnalysisTaskSE {
  public:
-    enum FlowMethod{
-      kOFF = -1,
-      kEP  = 0,
+  enum FlowMethod{
+    kOFF = -1,
+    kEP  = 0,
       kSP  = 1
-    };
+  };
 
-    enum QnDetector{
-      kNone      = -1,
-      kFullTPC   = 0,
-      kTPCNegEta = 1,
-      kTPCPosEta = 2,
-      kFullV0    = 3,
-      kV0A       = 4,
-      kV0C       = 5
-    };
+  enum QnDetector{
+    kNone      = -1,
+    kFullTPC   = 0,
+    kTPCNegEta = 1,
+    kTPCPosEta = 2,
+    kFullV0    = 3,
+    kV0A       = 4,
+    kV0C       = 5
+  };
   AliAnalysisTaskMSDibaryons();
   AliAnalysisTaskMSDibaryons(const char *name);
   virtual ~AliAnalysisTaskMSDibaryons();
@@ -50,7 +50,7 @@ class AliAnalysisTaskMSDibaryons : public AliAnalysisTaskSE {
   void SetCentralityMin(Float_t min) {fCentralityMin = min;}
   void SetCentralityMax(Float_t max) {fCentralityMax = max;}
 
-protected:
+ protected:
   Bool_t   EventSelection(AliAODEvent *data);
   Bool_t   ProtonSelection(AliAODTrack *trk);
   Double_t InvMassLambda(AliAODcascade *casc);

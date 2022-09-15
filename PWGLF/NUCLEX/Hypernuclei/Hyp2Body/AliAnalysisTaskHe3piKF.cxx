@@ -308,16 +308,15 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
         }
 
         KFParticle kfHyperTriton;
-        if(fMassConstrainedFit) kfHyperTriton.SetConstructMethod(2);
+        if(fMassConstrainedFit) {
+        kfHyperTriton.SetConstructMethod(2);
+        }
         kfHyperTriton.AddDaughter(he3Candidate);
         kfHyperTriton.AddDaughter(pi.particle);
-        kfHyperTriton.SetProductionVertex(prodVertex);
 
         double recoMass = kfHyperTriton.GetMass();
         if (recoMass > fMassRange[1] || recoMass < fMassRange[0])
           continue;
-
-        kfHyperTriton.TransportToDecayVertex();
 
         ROOT::Math::XYZVectorF decayVtx;
         double deltaPos[3]{kfHyperTriton.X() - prodVertex.X(), kfHyperTriton.Y() - prodVertex.Y(), kfHyperTriton.Z() - prodVertex.Z()};
@@ -325,7 +324,7 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
 
         // std::cout << "Rec, Prim VTx x: " << prodVertex.X() << ", y: " << prodVertex.Y() << ", z: " << prodVertex.Z() << std::endl;
         // std::cout << "Rec, Dec VTx x: " << kfHyperTriton.X() << ", y: " << kfHyperTriton.Y() << ", z: " << kfHyperTriton.Z() << std::endl;
-        // std::cout << "Charge: " << kfHyperTriton.GetQ();
+        // std::cout << "Charge: " << int(kfHyperTriton.GetQ()) << std::endl;
 
         fRecHyper->fChi2 = kfHyperTriton.GetChi2() / kfHyperTriton.GetNDF();
         if (fRecHyper->fChi2 > fMaxKFchi2 || fRecHyper->fChi2 < 0.)
@@ -342,6 +341,14 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
                       deltaPos[1] * hyperVector.py() +
                       deltaPos[2] * hyperVector.pz()) /
                      std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2])));
+
+        // std::cout << "-----------------------" << std::endl;
+        // std::cout  << std::setprecision(9) << "Den: " << std::sqrt(hyperVector.P2() * (Sq(deltaPos[0]) + Sq(deltaPos[1]) + Sq(deltaPos[2]))) << std::endl;
+        // std::cout  << std::setprecision(9) << "Num: " << (deltaPos[0] * hyperVector.px() +
+        //               deltaPos[1] * hyperVector.py() +
+        //               deltaPos[2] * hyperVector.pz())   << std::endl;
+        // std::cout << std::setprecision(9) <<"CosPA: " << cpa << std::endl;
+        kfHyperTriton.SetProductionVertex(prodVertex);
 
         fRecHyper->Lrec = sqrt(decayVtx.Mag2());
         fRecHyper->ct = fRecHyper->Lrec * kHyperMass / hyperVector.P();

@@ -237,8 +237,6 @@ public:
   TH1F	*fh1VertexZ;              //! prim vertex z distribution
   TH1F	*fh1EvtMult;              //! number of reconstructed tracks after cuts 
   TH1F	*fh1EvtCent;              //! centrality percentile 
-  
-  TH3F  *fh3trackDensity;
 
   TProfile* fh1Xsec;              //! pythia cross section and trials
   TH1F*     fh1Trials;            //! sum of trials
@@ -258,12 +256,13 @@ public:
   TH2F  *fhDCA_XY;                //! DCA XY for all rec. particles
   TH2F  *fhDCA_Z;                 //! DCA Z for all rec. particles
   
-  TH2F  *fh2TrackDef;           
-  
   TH2F  *fhJetPtRefMultEta5;      //! Jet pT vs. reference multiplicity (|eta|<0.5)
   TH2F  *fhJetPtRefMultEta8;      //! Jet pT vs. reference multiplicity (|eta|<0.8)
   TH2F  *fhJetPtMultPercent;      //! Jet pT vs. multiplicity percentile (usually V0M)
 
+  TH3F  *fh3trackDensity;
+  TH2F  *fh2TrackDef;     
+  
   TH2F  *fhDCA_XY_prim_MCID[AliPID::kSPECIES];   //! DCA XY for all rec. prim. particles sorted by MC-ID
   TH2F  *fhDCA_Z_prim_MCID[AliPID::kSPECIES];    //! DCA Z for all rec. prim. particles sorted by MC-ID
  
@@ -306,7 +305,7 @@ public:
   Double_t fFastSimEffFactor;
   Double_t fFastSimRes;
   Double_t fFastSimResFactor;
-	Int_t fFFChange;                           // 0 for none, 1 for lowPt-Enhancement, 2 for lowPt-Depletion
+  Int_t fFFChange;                           // 0 for none, 1 for lowPt-Enhancement, 2 for lowPt-Depletion
   
   //Underlying event members
   UInt_t fRCTrials;

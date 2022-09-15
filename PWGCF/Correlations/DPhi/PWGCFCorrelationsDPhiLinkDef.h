@@ -122,4 +122,6 @@
 #pragma link C++ class AliAnalysisTaskR2P2multClassGen+;
 #pragma link C++ class AliAnalysisTaskR2P2multEff+;
 #pragma link C++ class AliAnalysisTaskR2P2pp+;
+#pragma link C++ class AliAnalysisTaskBFR2+;
+#pragma link C++ class AliAnalysisTaskBFR2sphero+;
 #endif

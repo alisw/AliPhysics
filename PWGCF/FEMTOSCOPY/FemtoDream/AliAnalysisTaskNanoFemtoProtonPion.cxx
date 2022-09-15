@@ -32,6 +32,7 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion()
     fRunPlotPhiTheta(false),
     fDoAncestors(false),
     fRemoveMCResonances(true),
+    fRemoveMCResonanceDaughters(true),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -92,6 +93,7 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
     fRunPlotPhiTheta(false),
     fDoAncestors(false),
     fRemoveMCResonances(true),
+    fRemoveMCResonanceDaughters(true),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -549,21 +551,39 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
         if (!(mcPart)) {
           continue;
         }
+        if(IsResonance(mcPart->GetPdgCode())){
+           continue; 
+        }
         int motherID = mcPart->GetMother();
+        int lastMother = motherID;
         AliAODMCParticle *mcMother = nullptr;
-        if (motherID != -1) {
+        bool RemoveTrack = false;
+        while (motherID != -1) {
+          lastMother = motherID;
           mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+          motherID = mcMother->GetMother();
+          if(IsResonance(mcMother->GetPdgCode())){
+             fTrack->SetMotherPDG(mcMother->GetPdgCode()); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
+             RemoveTrack = true;
+          }
+        }
+        if ((lastMother != -1)) {
+          mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
         }
         if (mcMother) {
           int motherPDG = mcMother->GetPdgCode(); 
           if(IsResonance(motherPDG)){
              fTrack->SetMotherPDG(motherPDG); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
+             RemoveTrack = true;
           }
+        }
+        if (RemoveTrack && fRemoveMCResonanceDaughters){
+           continue; 
         }
       } else {
         continue;  // if we don't have MC Information, don't use that track
       }
-    }
+    } 
 
     if (fTrackCutsProton->isSelected(fTrack)) {
       SelectedProtons.push_back(*fTrack);

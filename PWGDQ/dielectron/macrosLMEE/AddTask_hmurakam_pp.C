@@ -28,7 +28,7 @@ AliAnalysisTask *AddTask_hmurakam_pp(Bool_t getFromAlien  = kFALSE,
     printf("Configfile already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmuraka/PWGDQ/dielectron/macrosLMEE/%s file:./",cFileName.Data()))) ){
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/%s file:./",cFileName.Data()))) ){
     printf("Copy configfile from alien\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
@@ -45,14 +45,10 @@ AliAnalysisTask *AddTask_hmurakam_pp(Bool_t getFromAlien  = kFALSE,
     gROOT->LoadMacro(configFilePath.Data());
   }
 
-  //trigger
-  TString triggername = "NULL";
-  if(triggerMask == (UInt_t)AliVEvent::kINT7)             triggername = "kINT7";
-  else if(triggerMask == (UInt_t)AliVEvent::kHighMultV0)  triggername = "kHighMultV0";
-
   //=== Create the main dielectron task =============================
   TString appendix="";
-  appendix += TString::Format("cent_%3.2f_%3.2f_%s_%d",cent_min,cent_max,triggername.Data(),version);
+  if(triggerMask == (UInt_t)AliVEvent::kINT7)             appendix = "";
+  else if(triggerMask == (UInt_t)AliVEvent::kHighMultV0)  appendix = "_hm";
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   task->UsePhysicsSelection();
@@ -154,25 +150,25 @@ AliAnalysisTask *AddTask_hmurakam_pp(Bool_t getFromAlien  = kFALSE,
 
   //=== create output containers ===========================
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("tree_lowmass_%s",appendix.Data()),
+    mgr->CreateContainer(Form("tree_lowmass%s",appendix.Data()),
 			 TTree::Class(),
 			 AliAnalysisManager::kExchangeContainer,
 			 Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("Output_Histos_%s",appendix.Data()),
+    mgr->CreateContainer(Form("Output_Histos%s",appendix.Data()),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("Output_CF_%s",appendix.Data()),
+    mgr->CreateContainer(Form("Output_CF%s",appendix.Data()),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("Output_EventStat_%s",appendix.Data()),
+    mgr->CreateContainer(Form("Output_EventStat%s",appendix.Data()),
 			 TH1D::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("%s",outputFileName.Data()));

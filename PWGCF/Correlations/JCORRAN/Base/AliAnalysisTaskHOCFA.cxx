@@ -148,11 +148,11 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
   fHistoCentCorrect[fCentralityBin]->Fill(fCentrality, iCentWeight);
 
 // Compute the Q-vectors and multiparticle correlations.
-  CalculateQvectors(fMultiplicity, iPhi, iWeights, iCentWeight);
-  ComputeAllTerms();
+  CalculateQvectors(fMultiplicity, iPhi, iWeights);
+  ComputeAllTerms(iCentWeight);
 
 // If true, calculate the 2-particle correlators for v1 to v8 using eta gaps.
-  if (fApplyEtaGap) {ComputeEtaGaps(fMultiplicity, iPhi, iWeights, iEta);}
+  if (fApplyEtaGap) {ComputeEtaGaps(fMultiplicity, iPhi, iWeights, iEta, iCentWeight);}
 
 // Reset the variables for the next event.
   fMultiplicity = 0;
@@ -382,7 +382,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
 
 // ------------------------------------------------------------------------- //
 void AliAnalysisTaskHOCFA::CalculateQvectors(Long64_t myMulti,
-  double myAngles[], double myWeights[], float myCentWeight)
+  double myAngles[], double myWeights[])
 {
 // Calculate the Q-vectors needed for the analysis.
   double iAngle = 0.;           // Azimuthal angle of the current track.
@@ -404,8 +404,8 @@ void AliAnalysisTaskHOCFA::CalculateQvectors(Long64_t myMulti,
     for (int iHarmo = 0; iHarmo < 81; iHarmo++) {
       for (int iPower = 0; iPower < 11; iPower++) {
         iWeightToPowerP = TMath::Power(iWeight, iPower);
-        fQvectors[iHarmo][iPower] += TComplex(myCentWeight*iWeightToPowerP*TMath::Cos(iHarmo*iAngle),
-          myCentWeight*iWeightToPowerP*TMath::Sin(iHarmo*iAngle));
+        fQvectors[iHarmo][iPower] += TComplex(iWeightToPowerP*TMath::Cos(iHarmo*iAngle),
+          iWeightToPowerP*TMath::Sin(iHarmo*iAngle));
       }
     }
   } // Go to the next track.
@@ -461,7 +461,7 @@ TComplex AliAnalysisTaskHOCFA::CalculateRecursion(int n, int *harmonic,
 }
 
 // ------------------------------------------------------------------------- //
-void AliAnalysisTaskHOCFA::ComputeAllTerms()
+void AliAnalysisTaskHOCFA::ComputeAllTerms(float myCentWeight)
 {
 // Compute all the terms needed for the ACs/SCs for all the observables.
   if (fDebugLevel > 5) {printf("Compute all the needed correlators.\n");}
@@ -473,7 +473,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
   // Fill the profile for the 2-p as it is common to all analysis cases.
   for (int iBin = 0; iBin < 8; iBin++){
     lHarmo[0] = iBin+1; // Only the first element needs to be filled in the 2-p case.
-    CalculateCorrelator(nPart, lHarmo, fCorrel2p[fCentralityBin], iBin, lPower);
+    CalculateCorrelator(nPart, lHarmo, fCorrel2p[fCentralityBin], iBin, lPower, myCentWeight);
   }
 
   // Fill the 2-harmonic profile according to the analysis configuration.
@@ -503,7 +503,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
       if (fDebugLevel > 5) {printf("Harmo: (%d,%d), nPart: %d\n", lHarmo[0], lHarmo[1], nPart);}
 
       // Calculate the multiparticle correlator itself using the recursion method.
-      CalculateCorrelator(nPart, lHarmo, fCorrel2h[iProf][fCentralityBin], iBin, lPower);
+      CalculateCorrelator(nPart, lHarmo, fCorrel2h[iProf][fCentralityBin], iBin, lPower, myCentWeight);
 
       // Reset the variables for safety purposes.
       lPower[0] = 0.; lPower[1] = 0.;
@@ -518,7 +518,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
       for (int iH = 0; iH < 3; iH++) {lHarmo[iH] = fHarmoArray3h[iBin][iH];}
 
       // Calculate the multiparticle correlator for this combination of harmonics.
-      CalculateCorrelator(nPart, lHarmo, fCorrel3h[fCentralityBin], iBin, lPower);
+      CalculateCorrelator(nPart, lHarmo, fCorrel3h[fCentralityBin], iBin, lPower, myCentWeight);
     } // Go to the next combination of 3 harmonics.
   }
 
@@ -527,7 +527,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
 
 // ------------------------------------------------------------------------- //
 void AliAnalysisTaskHOCFA::CalculateCorrelator(int myMulti, int myHarmos[],
-  TProfile *myProfile, int myBin, int myPowers[])
+  TProfile *myProfile, int myBin, int myPowers[], float myCentWeight)
 {
 // Calculate the multiparticle correlator corresponding to harmonics[].
   if (fDebugLevel > 5) {printf("Calculate correlators for the provided harmonics.\n");}
@@ -583,7 +583,7 @@ void AliAnalysisTaskHOCFA::CalculateCorrelator(int myMulti, int myHarmos[],
   }
 
   // Fill the corresponding bin in the right TProfile.
-  myProfile->Fill( (float)myBin + 0.5, rCorrel, eventWeight );
+  myProfile->Fill( (float)myBin + 0.5, rCorrel, eventWeight*myCentWeight );
 
   if (myMulti == 2) {   // Bins are filled with v1-v8.
     myProfile->GetXaxis()->SetBinLabel(myBin+1, Form("v_{%d}", myBin+1));
@@ -611,7 +611,7 @@ void AliAnalysisTaskHOCFA::CalculateCorrelator(int myMulti, int myHarmos[],
 
 // ------------------------------------------------------------------------- //
 void AliAnalysisTaskHOCFA::ComputeEtaGaps(Long64_t multiplicity,
-  double angles[], double pWeights[], double pseudorapidity[])
+  double angles[], double pWeights[], double pseudorapidity[], float myCentWeight)
 {
 // Calculate the two-particle correlators (v1..v8) with a given eta gap.
   if (fDebugLevel > 5) {printf("Calculate 2-particle correlators with eta gap'.\n");}
@@ -665,7 +665,7 @@ void AliAnalysisTaskHOCFA::ComputeEtaGaps(Long64_t multiplicity,
 
     cCorrel = Qminus[iHarmo]*TComplex::Conjugate(Qplus[iHarmo]);
     rCorrel = (cCorrel.Re())/(Mminus[iHarmo]*Mplus[iHarmo]);
-    fCorrel2pEtaGap[fCentralityBin]->Fill((float)iHarmo + 0.5, rCorrel, Mminus[iHarmo]*Mplus[iHarmo]);
+    fCorrel2pEtaGap[fCentralityBin]->Fill((float)iHarmo + 0.5, rCorrel, Mminus[iHarmo]*Mplus[iHarmo]*myCentWeight);
     fCorrel2pEtaGap[fCentralityBin]->GetXaxis()->SetBinLabel(iHarmo + 1, Form("v_{%d}", iHarmo+1));
 
     // Reset the correlators to prevent mixing between harmonics.

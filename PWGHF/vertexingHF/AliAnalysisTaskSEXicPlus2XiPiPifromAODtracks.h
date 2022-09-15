@@ -47,7 +47,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   enum ECandStatus {kGenLimAcc,kGenAccMother,kGenAccMother08,kGenAcc,kGenAcc08,kReco,kReco08,kRecoCuts,kRecoCuts08,kRecoPID,kRecoPID08};
   
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
-  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE, Bool_t fillSparse=kFALSE, Bool_t HMTrigOn=kFALSE);
+  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE, Bool_t fillSparse=kFALSE, Bool_t HMTrigOn=kFALSE, Bool_t EvtInfo=kFALSE);
   virtual ~AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
 
   /// Implementation of interface methods
@@ -57,7 +57,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused, Bool_t isXiC, Int_t checkOrigin);
+  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused, Bool_t isXiC, Int_t checkOrigin, AliAODTrack *cptrack, AliAODTrack *cntrack, AliAODTrack *cbtrack, AliAODMCParticle *mcdaughterPionFromLambda, AliAODMCParticle *mcdaughterProtonFromLambda, AliAODMCParticle *mcdaughterPionFromXi);	// jcho, add cascade daughter tracks 
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray, AliAODMCHeader *mcHeader);
 
   
@@ -121,6 +121,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
   Bool_t fFillSparse;                 /// flag to decide whether fill the THnSparse
   Bool_t fHMTrigOn;					  /// jcho, flag for HM Trig check
+  Bool_t fEvtInfo;					  /// jcho, flag for Event tree
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 4
   TTree	   *fEventTree;				// jcho, Event variables tree
   Bool_t fReconstructPrimVert;            /// Reconstruct primary vertex excluding candidate tracks
@@ -145,6 +146,24 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   THnSparse*  fSparseXicMass;       //!<! xic sparse to study cut variation
   
   TH3F*  fHistoMCSpectrumAccXic;    //!<! Spectrum of generated particles
+
+  TH1F*	 fHistoMCSpectrum_1;		// jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_2;		// jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_3;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_4;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_5;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_6;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_7;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_8;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_9;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_10;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_11;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_12;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_13;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_14;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_15;        // jcho, generated Xic pT spectrum
+  TH1F*  fHistoMCSpectrum_16;        // jcho, generated Xic pT spectrum
+
   TH1F*  fHistoDcaPi1Pi2;                    //!<!  DCA between pions
   TH1F*  fHistoDcaPi1Casc;                    //!<! DCA between pi and cascade
   TH1F*  fHistoDcaPi2Casc;                    //!<! DCA between pi and cascade
@@ -213,7 +232,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F* fCentralityOfEvt; //jcho 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,15); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,16); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

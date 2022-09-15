@@ -24,6 +24,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
  **************************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Note: Must be run BEFORE track selector task! This task uses information from the  //
+// stack, which is not avalable after running the track selector task.                //
+////////////////////////////////////////////////////////////////////////////////////////
+
 #include "AliEmcalRejectMCBackground.h"
 
 #include <iostream>
@@ -483,7 +489,7 @@ Int_t AliEmcalRejectMCBackground::IsParticleFromBGEvent(Int_t index, AliMCEvent 
   return accepted;
 }
 
-AliEmcalRejectMCBackground* AliEmcalRejectMCBackground::AddTaskRejectMCBackground(TString outname, Int_t signalRejection, Int_t debug)
+AliEmcalRejectMCBackground* AliEmcalRejectMCBackground::AddTaskRejectMCBackground(const TString outname, const Int_t signalRejection, const Int_t debug)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

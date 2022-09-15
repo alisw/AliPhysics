@@ -7,6 +7,7 @@ class AliAnalysisDataContainer;
 
 AliAnalysisTaskSpectraFlatenicity*
 AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat", 
+                            TString detForFlat = "V0",
                             Bool_t woTrivialscaling = kFALSE, 
                             Bool_t useMC = kTRUE,
                             Bool_t performMCclosuretest = kFALSE, 
@@ -38,6 +39,7 @@ AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat",
   taskFlat->SetMCclosureTest(performMCclosuretest);
   taskFlat->SetPtMin(minpT);
   taskFlat->SetRemoveTrivialScaling(woTrivialscaling);
+  taskFlat->SetDetectorForFlatenicity(detForFlat);
   taskFlat->SetPeriod(DataSet);
   taskFlat->SetUseCalibration(useCalib);
   mgr->AddTask(taskFlat);
@@ -48,12 +50,22 @@ AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat",
   } else {
     complement = "wtrivialscal";
   }
-
+  const char *complement2;
+  if (detForFlat == "V0") {
+    complement2 = "V0";
+  }
+  if (detForFlat == "TPC") {
+    complement2 = "TPC";
+  }
+  if (detForFlat == "V0_TPC") {
+    complement2 = "V0_TPC";
+  }
+  
   mgr->ConnectInput(taskFlat, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(
       taskFlat, 1,
       mgr->CreateContainer(
-          Form("cList%s_%s", taskname, complement), TList::Class(),
+          Form("cList%s_%s_%s", taskname, complement, complement2), TList::Class(),
           AliAnalysisManager::kOutputContainer,
           Form("%s:%s", AliAnalysisManager::GetCommonFileName(), taskname)));
 

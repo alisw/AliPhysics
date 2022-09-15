@@ -263,6 +263,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
         fHistZeta(0),
+        fHistZeta_ALICEacc(0),
         fHist_Zeta_pos(0),
         fHist_Zeta_neg(0),
         fMultEstimatorAvg(0),
@@ -475,6 +476,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
         fHistZeta(0),
+        fHistZeta_ALICEacc(0),
         fHist_Zeta_pos(0),
         fHist_Zeta_neg(0),
         fMultEstimatorAvg(0),
@@ -630,6 +632,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHist_Zpair_pos        = new TH2F("fHist_Zpair_pos","pair Z->e",100,-5,5,100,0,100);
 	fHist_Zpair_neg        = new TH2F("fHist_Zpair_neg","pair Z->e",100,-5,5,100,0,100);
 	fHistZeta        = new TH1F("fHistZeta","parent Z eta",200,-5,5);
+	fHistZeta_ALICEacc        = new TH1F("fHistZeta_ACCacc","parent Z eta in ALICE acc",200,-5,5);
 	fHist_Zeta_pos        = new TH1F("fHist_Zeta_pos","pair Z->e",100,-5,5);
 	fHist_Zeta_neg        = new TH1F("fHist_Zeta_neg","pair Z->e",100,-5,5);
 
@@ -844,6 +847,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHist_Zpair_pos); 
 	fOutputList->Add(fHist_Zpair_neg); 
 	fOutputList->Add(fHistZeta); 
+	fOutputList->Add(fHistZeta_ALICEacc); 
 	fOutputList->Add(fHist_Zeta_pos); 
 	fOutputList->Add(fHist_Zeta_neg); 
 
@@ -2179,6 +2183,7 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Doubl
                //cout << "Z -> ee" << endl;
                //cout << fMCparticle_Ze0->GetPdgCode() << " ; " << fMCparticle_Ze1->GetPdgCode() << " ; " << fMCparticle_Ze2->GetPdgCode()  << endl;
 
+               Double_t eta_Z = fMCparticle->Eta(); 
                Double_t eta_Ze0 = fMCparticle_Ze0->Eta(); 
                Double_t eta_Ze1 = fMCparticle_Ze1->Eta(); 
                Double_t pT_Ze0 = fMCparticle_Ze0->Pt(); 
@@ -2187,7 +2192,8 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Doubl
                if((TMath::Abs(eta_Ze0)<0.6 || TMath::Abs(eta_Ze1)<0.6) && (pT_Ze0>30.0 || pT_Ze1>30.0))
                  { 
                   //cout << eta_Ze0 << " ; " << eta_Ze1 << endl;
-	          fHistZ_Org->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	          fHistZ_Org->Fill(fMCparticle->Pt());   
+	          fHistZeta_ALICEacc->Fill(eta_Z);  
                  }
 
              }

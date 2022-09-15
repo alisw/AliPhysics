@@ -112,7 +112,7 @@ fRebinFactor(1),
 fkNBBins(1),
 fkNNpartBins(1),
 fkNEtaBins(1),
-fkNSpecies(76),
+fkNSpecies(78),
 fkNIntervals(1),
 fkSelectINELgtZERO(kTRUE),
 fkWideRapiditySpeciesStudy(kFALSE),
@@ -149,7 +149,7 @@ fHistDDQ2(nullptr)
   }
   fkIntervalMinEta[0] = -1.4;
   fkIntervalMaxEta[0] = +1.4;
-  for(Int_t ih=0; ih<76; ih++){
+  for(Int_t ih=0; ih<78; ih++){
     fkSpeciesSwitch[ih] = kTRUE;
     fHistPt[ih]          = nullptr;
     fHistEta[ih]         = nullptr;
@@ -181,7 +181,7 @@ fRebinFactor(lRebinFactor),
 fkNBBins(lNBBins),
 fkNNpartBins(lNNpartBins),
 fkNEtaBins(lNEtaBins),
-fkNSpecies(76),
+fkNSpecies(78),
 fkNIntervals(1),
 fkSelectINELgtZERO(kTRUE),
 fkWideRapiditySpeciesStudy(kFALSE),
@@ -218,7 +218,7 @@ fHistDDQ2(nullptr)
   }
   fkIntervalMinEta[0] = -1.4;
   fkIntervalMaxEta[0] = +1.4;
-  for(Int_t ih=0; ih<76; ih++){
+  for(Int_t ih=0; ih<78; ih++){
     fkSpeciesSwitch[ih] = kTRUE;
     fHistPt[ih]          = nullptr;
     fHistEta[ih]         = nullptr;
@@ -358,11 +358,11 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   //___________________________________________________
   
   //Identified Particles
-  TString lPartNames[76] = {
+  TString lPartNames[78] = {
     "PiPlus", "PiMinus", "KPlus", "KMinus", "Proton", "AntiProton",
     "K0Short", "Lambda", "AntiLambda",
     "XiMinus", "XiPlus", "OmegaMinus", "OmegaPlus",
-    "Phi", "KStar", "AntiKStar",
+    "Phi", "KStar", "AntiKStar", "LambdaStar", "AntiLambdaStar",
     "D0", "AntiD0", "DPlus", "DMinus", "D0s", "AntiD0s", "DStarPlus", "DStarMinus",
     "Lambdac", "AntiLambdac", "JPsi",
     "Pi0", "AntiPi0", "Eta", "AntiEta",
@@ -704,11 +704,11 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   //------------------------------------------------
   
   //~All relevant PWG-LF Identified Particle Information (for looping)
-  Int_t lPDGCodes[76] = {
+  Int_t lPDGCodes[78] = {
     211, -211, 321, -321, 2212, -2212,
     310, 3122, -3122,
     3312, -3312, 3334, -3334,
-    333, 313, -313,
+    333, 313, -313, 3124, -3124,
     421, -421, 411, -411, 431, -431, 413, -413,
     4122, -4122, 443,
     111,-111,221,-221,
@@ -728,11 +728,11 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     5332, -5332,
     5122, -5122
   };
-  TString lPartNames[76] = {
+  TString lPartNames[78] = {
     "PiPlus", "PiMinus", "KaPlus", "KaMinus", "Proton", "AntiProton",
     "K0Short", "Lambda", "AntiLambda",
     "XiMinus", "XiPlus", "OmegaMinus", "OmegaPlus",
-    "Phi", "KStar", "AntiKStar",
+    "Phi", "KStar", "AntiKStar", "LambdaStar", "AntiLambdaStar",
     "D0", "AntiD0", "DPlus", "DMinus", "D0s", "AntiD0s", "DStarPlus", "DStarMinus",
     "Lambdac", "AntiLambdac", "JPsi",
     "Pi0", "AntiPi0", "Eta", "AntiEta",
@@ -753,11 +753,11 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     "PromptOmegab", "PromptOmegabbar",
     "PromptLambdab", "PromptLambdabbar"
   };
-  Bool_t lCheckIsPhysicalPrimary[76] = {
+  Bool_t lCheckIsPhysicalPrimary[78] = {
     kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE, kTRUE,
-    kFALSE, kFALSE, kFALSE,
+    kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
     kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
     kFALSE, kFALSE, kFALSE,
     kTRUE, kTRUE, kTRUE, kTRUE,
@@ -777,11 +777,11 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     kFALSE, kFALSE,
     kFALSE, kFALSE
   };
-  Bool_t lCheckHFFeeddown[76] = {
+  Bool_t lCheckHFFeeddown[78] = {
     kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
     kFALSE, kFALSE, kFALSE,
     kFALSE, kFALSE, kFALSE, kFALSE,
-    kFALSE, kFALSE, kFALSE,
+    kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
     kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
     kFALSE, kFALSE, kFALSE,
     kFALSE, kFALSE, kFALSE, kFALSE,
@@ -825,7 +825,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     lThisPDG = lPart->GetPdgCode();
     //Continue if this is not a particle of the right PDG Code (avoids y-calculation problems)
     Bool_t lContinue = kTRUE;
-    for(Int_t ih=0; ih<76; ih++) if( lThisPDG == lPDGCodes[ih] ) lContinue = kFALSE;
+    for(Int_t ih=0; ih<78; ih++) if( lThisPDG == lPDGCodes[ih] ) lContinue = kFALSE;
     if ( lContinue ) continue;
     
     lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
@@ -842,7 +842,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                                              TMath::Power( lPart->Vz() , 2)
                                              );
     
-    for(Int_t ih=0; ih<76; ih++){
+    for(Int_t ih=0; ih<78; ih++){
       if( lThisPDG == lPDGCodes[ih] ) {
         //Check if primary (if needed) and if not don't use this particle
         if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
@@ -1027,11 +1027,11 @@ void AliAnalysisTaskMCPredictions::PrintEtaIntervals(){
 
 //______________________________________________________________________
 void AliAnalysisTaskMCPredictions::SetStandardSpecies(){
-  Bool_t lSaveThisSpecies[76] = {
+  Bool_t lSaveThisSpecies[78] = {
     kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE, kTRUE,
-    kTRUE, kTRUE, kTRUE,
+    kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE,
     kTRUE, kTRUE, kTRUE, kTRUE,
@@ -1051,7 +1051,7 @@ void AliAnalysisTaskMCPredictions::SetStandardSpecies(){
     kFALSE, kFALSE,
     kFALSE, kFALSE
   };
-  for(Int_t ii=0; ii<76; ii++){
+  for(Int_t ii=0; ii<78; ii++){
     fkSpeciesSwitch[ii] = lSaveThisSpecies[ii]; 
   }
 }
