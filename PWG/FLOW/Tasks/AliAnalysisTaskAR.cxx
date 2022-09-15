@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 18.07.2022
+ * Last Modified Date: 15.09.2022
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -4297,7 +4297,7 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
   fCorrelators.clear();
   fMapSCtoCor.clear();
 
-  // initalize vectors for computation of symmetric cumulants
+  // get pointers for fFinalResultSymmetricCumulantsList
   for (auto list : *fFinalResultSymmetricCumulantsList) {
     sc.clear();
     name = TString(list->GetName());
@@ -4308,6 +4308,16 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
       sc.push_back(TString(name[i]).Atoi());
     }
     fSymmetricCumulants.push_back(sc);
+  }
+
+  // get pointers for fFinalResultNormalizedSymmetricCumulantsList
+  fFinalResultNormalizedSymmetricCumulantsList =
+      dynamic_cast<TList *>(fFinalResultsList->FindObject(
+          fFinalResultNormalizedSymmetricCumulantsListName));
+  if (!fFinalResultNormalizedSymmetricCumulantsList) {
+    std::cout << __LINE__ << ": Did not get "
+              << fFinalResultNormalizedSymmetricCumulantsListName << std::endl;
+    Fatal("GetPointersForFinalResults", "Invalid Pointer");
   }
 
   Int_t Index = 0;

@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 18.07.2022
+ * Last Modified Date: 15.09.2022
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -691,7 +691,7 @@ private:
   TH1D *fTrackBinsHistogram[kKinematic - 1];
   std::vector<Double_t> fTrackBins[kKinematic];
 
-  ClassDef(AliAnalysisTaskAR, 22); // increase this counter in each new version
+  ClassDef(AliAnalysisTaskAR, 23); // increase this counter in each new version
 };
 
 #endif
