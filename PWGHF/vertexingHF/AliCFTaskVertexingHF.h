@@ -302,6 +302,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 
   void SetAveMultInTransForRT(Double_t opt) {fAveMultInTransForRT=opt;}
   Double_t GetAveMultInTransForRT() const {return fAveMultInTransForRT;}
+  
+  void SetUseHybridTracks(Bool_t useHybrid) {fUseHybridTracks = useHybrid;} 
 
   void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetRejectOOBPileupEvents() {fRejectOOBPileUpEvents=kTRUE; fKeepOnlyOOBPileupEvents=kFALSE;}
@@ -378,10 +380,15 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Float_t fCutOnMomConservation; /// cut on momentum conservation
   Double_t fMinLeadPtRT;   /// minimum pT cut for leading particle in RT calculation
   Double_t fAveMultInTransForRT; ///Average multiplicity in transverse region
-  AliAnalysisFilter* fTrackFilter[18]; //! track filter
+
   AliAnalysisFilter* fTrackFilterGlobal; //! filter to select global tracks
   AliAnalysisFilter* fTrackFilterComplementary; //! filter to select complementary tracks
   Bool_t fUseHybridTracks; /// flag to chose the tracks to use for RT calculation
+  TH1F *fPhiDistributionGlobalTracks; //!<! hist for Phi distribution of selected global tracks
+  TH1F *fPhiDistributionComplementaryTracks; //!<! hist for Phi distribution of selected complementary tracks
+  TH1F *fPhiDistributionHybridTracks; //!<! hist for Phi distribution of selected hybrid tracks
+  TH2F *fPhiEtaDistributionHybridTracks; //!<! hist for PhiEta distribution of selected hybrid tracks
+
 
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
