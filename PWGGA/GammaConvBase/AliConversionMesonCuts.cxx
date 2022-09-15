@@ -44,7 +44,6 @@
 #include "AliAODMCParticle.h"
 #include "AliDalitzAODESDMC.h"
 #include "AliDalitzEventMC.h"
-#include <tuple>
 
 class iostream;
 
@@ -5095,7 +5094,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(T Event, U meson)
 
   Double_t PtLead = 0;
   Int_t NTotTrack = 0;
-  Double_t Selection = TMath::Pi()/3.; // 120 grad
+  Double_t Selection = TMath::Pi()*2/3.; // 120 grad
 
   AliVTrack* track = nullptr;
   AliVTrack* trackLead = nullptr;
@@ -5124,7 +5123,9 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(T Event, U meson)
     // get meson phi angle
     TVector3 vmeson(meson->Px(),meson->Py(),meson->Pz());
     TVector3 vlead(trackLead->Px(), trackLead->Py(), trackLead->Pz());
-    Double_t AngleToLeadTrack = vmeson.Angle(vlead); // this is in rad
+    // Double_t AngleToLeadTrack = vmeson.Angle(vlead); // this is in rad
+    Double_t AngleToLeadTrack = vmeson.Phi()-vlead.Phi(); // this is in rad
+    if (AngleToLeadTrack < 0 ) AngleToLeadTrack += 2+TMath::Pi();
     //  in lead track direction
     if(fInLeadTrackDir == 1){  
       if ( AngleToLeadTrack < Selection/2 ) return kTRUE;
