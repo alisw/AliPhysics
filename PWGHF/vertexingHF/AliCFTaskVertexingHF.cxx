@@ -151,9 +151,6 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fCutOnMomConservation(0.00001),
   fMinLeadPtRT(5.0),
   fAveMultInTransForRT(4.965),
-  fTrackFilterGlobal(0),
-  fTrackFilterComplementary(0),
-  fUseHybridTracks(kTRUE),
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
   fKeepOnlyOOBPileupEvents(kFALSE),
@@ -170,7 +167,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
     //Default ctor
     //
     for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
-
+}
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func) :
   AliAnalysisTaskSE(name),
@@ -241,9 +238,6 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fCutOnMomConservation(0.00001),
   fMinLeadPtRT(5.0),
   fAveMultInTransForRT(4.965),
-  fTrackFilterGlobal(0),
-  fTrackFilterComplementary(0),
-  fUseHybridTracks(kTRUE),
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
   fKeepOnlyOOBPileupEvents(kFALSE),
