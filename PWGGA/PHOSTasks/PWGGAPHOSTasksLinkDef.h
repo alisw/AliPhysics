@@ -148,4 +148,7 @@
 
 //Resonances
 #pragma link C++ class AliAnalysisPHOSResonances+ ;
+
+//Nbar
+#pragma link C++ class AliAnalysisSigmaBarCharged+ ;
 #endif

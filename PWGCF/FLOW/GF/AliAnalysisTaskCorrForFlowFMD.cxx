@@ -1,16 +1,13 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *    Author:       Zuzana Moravcova                                      *
+ *    Framework for calculating di-hadron correlation                     *
+ *    for extraction of v_n{2} coefficients of identified particles       *
+ *    including primary identified particles (pi, K, p)                   *
+ *    and reconstructed "V0" particles (K0s, Lambda)                      *
+ *    using TPC-TPC and TPC-FMD correlations.                             *
  *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
+ *    If used, modified, or distributed,                                  *
+ *    please aknowledge the author of this code.                          *
  **************************************************************************/
 
 #include "AliAnalysisTaskCorrForFlowFMD.h"
@@ -43,13 +40,21 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(kFALSE),
+    fSkipCorr(kFALSE),
+    fIsAntiparticleCheck(kFALSE),
+    fDoAntiparticleOnly(kFALSE),
+    fVetoJetEvents(kFALSE),
+    fRejectSecondariesFromMC(kFALSE),
+    fBoostAMPT(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
     fNofTracks(0),
+    fNofMinHighPtTracksForRejection(0),
     fNchMin(0),
     fNchMax(100000),
     fNbinsMinv(60),
+    fnTPCcrossedRows(70),
     fNOfSamples(1.0),
     fSampleIndex(0.0),
     fPtMinTrig(0.5),
@@ -78,14 +83,22 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fPIDbayesKaon(0.85),
     fPIDbayesProton(0.85),
     fV0ratioClusters(0.8),
-    fV0dcaToPV(0.06),
-    fV0dcaDaugters(1.),
-    fV0radiusMin(0.5),
-    fV0radiusMax(200.),
+    fV0dcaK0ToPV(0.06),
+    fV0dcaNegLambdaToPV(0.25),
+    fV0dcaDaugtersK0(1.),
+    fV0dcaDaugtersLambda(1.),
+    fK0radiusMin(0.5),
+    fK0radiusMax(200.),
+    fLambdaradiusMin(0.5),
+    fLambdaradiusMax(200.),
     fCutCPAK0s(0.97),
     fCutCPALambda(0.995),
     fCutTauK0s(0.),
     fCutTauLambda(0.),
+    fSigmaTPC(3.),
+    fMassRejWindowK0(0.005),
+    fMassRejWindowLambda(0.01),
+    fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
     fPoolMaxNEvents(2000),
@@ -120,13 +133,21 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(bUseCalib),
+    fSkipCorr(kFALSE),
+    fIsAntiparticleCheck(kFALSE),
+    fDoAntiparticleOnly(kFALSE),
+    fVetoJetEvents(kFALSE),
+    fRejectSecondariesFromMC(kFALSE),
+    fBoostAMPT(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
     fNofTracks(0),
+    fNofMinHighPtTracksForRejection(0),
     fNchMin(0),
     fNchMax(100000),
     fNbinsMinv(60),
+    fnTPCcrossedRows(70),
     fNOfSamples(1.0),
     fSampleIndex(0.0),
     fPtMinTrig(0.5),
@@ -155,14 +176,22 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fPIDbayesKaon(0.85),
     fPIDbayesProton(0.85),
     fV0ratioClusters(0.8),
-    fV0dcaToPV(0.06),
-    fV0dcaDaugters(1.),
-    fV0radiusMin(0.5),
-    fV0radiusMax(200.),
+    fV0dcaK0ToPV(0.06),
+    fV0dcaNegLambdaToPV(0.25),
+    fV0dcaDaugtersK0(1.),
+    fV0dcaDaugtersLambda(1.),
+    fK0radiusMin(0.5),
+    fK0radiusMax(200.),
+    fLambdaradiusMin(0.5),
+    fLambdaradiusMax(200.),
     fCutCPAK0s(0.97),
     fCutCPALambda(0.995),
     fCutTauK0s(0.),
     fCutTauLambda(0.),
+    fSigmaTPC(3.),
+    fMassRejWindowK0(0.005),
+    fMassRejWindowLambda(0.01),
+    fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
     fPoolMaxNEvents(2000),
@@ -207,6 +236,12 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     fHistFMDeta = new TH2D("fHistFMDeta", "FMD eta vs. PVz; eta; PVz [cm]", 90, -4, 5, 20, -10, 10);
     fOutputListCharged->Add(fHistFMDeta);
 
+    TString fmdv0corrNames[4] = {"A_Before","C_Before", "A_After", "C_After"};
+    for(Int_t i(0); i < 4; i++){
+      fh2FMDvsV0[i] = new TH2D(Form("fh2FMDvsV0%s",fmdv0corrNames[i].Data()), "FMD vs. V0; FMD; V0", 250, 0, 1000, 250, 0, 1000);
+      fOutputListCharged->Add(fh2FMDvsV0[i]);
+    }
+
     TString pidName[6] = {"", "_Pion", "_Kaon", "_Proton", "_K0s", "_Lambda"};
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     const Int_t sizeOfSamples = (Int_t) fNOfSamples;
@@ -220,6 +255,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     for(Int_t i(0); i < 6; i++){
       if(!fDoPID && i > 0 && i < 4) continue;
       if(!fDoV0 && i > 3) continue;
+      if(fIsAntiparticleCheck && i == 4) continue;
       if(fAnalType == eFMDAFMDC) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 2, binsFMD);
       else if(i < 4) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 3, binsPID);
       else if(i > 3) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 4, binsV0);
@@ -265,13 +301,27 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     if (!fPoolMgr) { AliError("Event Pool manager not created!"); return; }
     fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
 
-    CreateTHnCorrelations();
+    if(!fSkipCorr) CreateTHnCorrelations();
+
+    for(Int_t i(0); i < 6; i++){
+      if(!fDoPID && i > 0 && i < 4) continue;
+      if(!fDoV0 && i > 3) continue;
+      fhPT[i] = new TH1D(Form("PT%s",pidName[i].Data()), "PT", 1000, 0, 10);
+      fhPT[i]->Sumw2();
+      fOutputListCharged->Add(fhPT[i]);
+      if(fDoV0 && i > 3){
+        fhPTvsMinv[i-4] = new TH2D(Form("PT_minv%s",pidName[i].Data()), "PT vs. minv", 1000, 0, 10, sizeMbins, min[i-4],max[i-4]);
+        fhPTvsMinv[i-4]->Sumw2();
+        fOutputListCharged->Add(fhPTvsMinv[i-4]);
+      }
+      if(!fSkipCorr) break;
+    }
 
     if(fUseEfficiency) {
       fInputListEfficiency = (TList*) GetInputData(1);
       if(fAbsEtaMax > 0.8) AliWarning("Efficiency loading -- eta can be out of range!");
       if(fSystematicsFlag.IsNull()) fSystematicsFlag = "Ev0_Tr0";
-      if(fColSystem == sPPb && !AreEfficienciesLoaded()) { AliError("Efficiencies not loaded!"); return; }
+      if(fColSystem == sPPb && fAnalType != eFMDAFMDC && !AreEfficienciesLoaded()) { AliError("Efficiencies not loaded!"); return; }
     }
 
     if(fUseCentralityCalibration){
@@ -279,6 +329,8 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       else fhCentCalib = (TH1D*) GetInputData(1);
       if(!fhCentCalib) { AliError("Centrality calibration histogram not loaded!"); return; }
     }
+
+    if(fAnalType == eFMDAFMDC && fUseEfficiency){ AliWarning("Efficeincies inserted when running FMDA-FMDC. Turning off the flag."); fUseEfficiency = kFALSE; }
 
     PostData(1, fOutputListCharged);
 }
@@ -301,6 +353,17 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     fTracksAss = new TObjArray;
     fTracksTrig[0] = new TObjArray;
 
+    if(fDoPID){
+      for(Int_t i(1); i < 4; i++){
+        fTracksTrig[i] = new TObjArray;
+      }
+    }
+    if(fDoV0){
+      for(Int_t i(4); i < 6; i++){
+        fTracksTrig[i] = new TObjArray;
+      }
+    }
+
     if(fUseEfficiency && fColSystem == sPP && (fRunNumber != fAOD->GetRunNumber()) && !AreEfficienciesLoaded()) { return; }
 
     // FMD - V0 correlation event cut
@@ -313,7 +376,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
-    if(fAnalType != eFMDAFMDC && !fIsTPCgen) {
+    if(!fIsTPCgen || fUseNch)  {
       if(!PrepareTPCTracks()){
         for(Int_t i(0); i < 6; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
@@ -337,10 +400,11 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     } // end MC
 
-    if(!fTracksAss->IsEmpty()){
+    if(!fTracksAss->IsEmpty() && !fSkipCorr){
       for(Int_t i(0); i < 6; i++){
         if(!fDoPID && i > 0 && i < 4) continue;
         if(!fDoV0 && i > 3) continue;
+        if(fIsAntiparticleCheck && i == 4) continue;
 
         FillCorrelations(i);
         FillCorrelationsMixed(i);
@@ -386,11 +450,25 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
     Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
     if(dPercentile > 100 || dPercentile < 0) { return kFALSE; }
     fhEventCounter->Fill("PercOK",1);
-
-    if(fCentMax > 0.0 && (dPercentile < fCentMin || dPercentile > fCentMax)) { return kFALSE; }
-    fhEventCounter->Fill("CentOK",1);
     fCentrality = (Double_t) dPercentile;
   }
+  // else if(fIsMC){
+  //   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+  //   if(!mcEvent) return kFALSE;
+  //   Int_t ntrackv0aprimary=0;
+  //
+  //   for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
+  //     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
+  //     if(!part->IsPhysicalPrimary()) continue;
+  //     Double_t mceta = part->Eta();
+  //     if(fBoostAMPT) mceta = TransverseBoost(part);
+  //
+  //     if(part->Charge()==0)        continue;
+  //     if(mceta>2.8 && mceta<5.1) ntrackv0aprimary++;
+  //   }
+  //   Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(ntrackv0aprimary);
+  //   fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
+  // }
   else{
     AliAODVZERO* fvzero = fAOD->GetVZEROData();
     Double_t sum = 0.;
@@ -404,9 +482,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
 
     Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(sum);
     fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
-    if(fCentrality < fCentMin || fCentrality > fCentMax) { return kFALSE; }
-    fhEventCounter->Fill("CentOK",1);
   }
+  if(fCentrality < fCentMin || fCentrality > fCentMax) { return kFALSE; }
+  fhEventCounter->Fill("CentOK",1);
 
   fPVz = fAOD->GetPrimaryVertex()->GetZ();
   if(TMath::Abs(fPVz) >= fPVzCut) { return kFALSE; }
@@ -424,19 +502,34 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) 
   if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
   if(track->Charge() == 0) { return kFALSE; }
 
-  if(fCutDCAz > 0. || fCutDCAxySigma > 0.){
+  if(fCutDCAz > 0.){
     Double_t vtxXYZ[3], trXYZ[3];
     track->GetXYZ(trXYZ);
     fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
     trXYZ[2] -= vtxXYZ[2];
     if(TMath::Abs(trXYZ[2]) > fCutDCAz) { return kFALSE; }
+  }
 
+  if(fCutDCAxySigma > 0.){
+    Double_t vtxXYZ[3], trXYZ[3];
+    track->GetXYZ(trXYZ);
+    fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
+    trXYZ[0] -= vtxXYZ[0];
+    trXYZ[1] -= vtxXYZ[1];
     Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0] + trXYZ[1]*trXYZ[1]);
     Double_t cutDcaxy = 0.0015+0.0050/TMath::Power(track->Pt(),1.1);
     if(trDcaxy > fCutDCAxySigma*cutDcaxy) { return kFALSE; }
   }
 
   if(fCutTPCchi2pCl > 0. && track->GetTPCchi2perCluster() > fCutTPCchi2pCl)  { return kFALSE; }
+
+  if(fRejectSecondariesFromMC){
+    AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+    if(!mcEvent) return kFALSE;
+    AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(track->GetLabel());
+    if(!part) return kFALSE;
+    if(!part->IsPhysicalPrimary()) { return kFALSE; }
+  }
 
   return kTRUE;
 }
@@ -478,7 +571,7 @@ Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) con
   for(Int_t i(0); i < AliPID::kSPECIES; i++) pidInd=(l_Probs[i]>l_Probs[pidInd])?i:pidInd;
   Int_t retInd = pidInd-AliPID::kPion+1; //realigning
   if(retInd<1 || retInd>3) return -1;
-  if(l_Probs[pidInd] < l_MaxProb[retInd]) return -1;
+  if(l_Probs[pidInd] < l_MaxProb[retInd-1]) return -1;
   //check nsigma cuts
   if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)pidInd))>3) return -1;
   if(bIsTOFok && l_TOFUsed) if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)pidInd))>3) return -1;
@@ -510,30 +603,40 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
 
   // track quality
   if(daughterPos->GetTPCNcls() < fTPCclMin || daughterNeg->GetTPCNcls() < fTPCclMin) { return kFALSE; }
-  if(daughterPos->GetTPCNCrossedRows() < 70 || daughterNeg->GetTPCNCrossedRows() < 70) { return kFALSE; }
+  if(daughterPos->GetTPCNCrossedRows() < fnTPCcrossedRows || daughterNeg->GetTPCNCrossedRows() < fnTPCcrossedRows) { return kFALSE; }
+
   if(daughterPos->GetTPCNclsF() < 1 || daughterNeg->GetTPCNclsF() < 1) { return kFALSE; }
 
   Double_t dRatioCrossFindPos = (Double_t) daughterPos->GetTPCNCrossedRows() / (Double_t) daughterPos->GetTPCNclsF();
   Double_t dRatioCrossFindNeg = (Double_t) daughterNeg->GetTPCNCrossedRows() / (Double_t) daughterNeg->GetTPCNclsF();
   if( dRatioCrossFindPos < fV0ratioClusters || dRatioCrossFindNeg < fV0ratioClusters) { return kFALSE; }
 
-  //DCA
-  if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaToPV ) { return kFALSE; }
-  if( TMath::Abs(v0->DcaV0Daughters()) > fV0dcaDaugters ) { return kFALSE; }
-
-  //radius
-  Double_t dDecayRadius = v0->RadiusV0();
-  if( dDecayRadius < fV0radiusMin || dDecayRadius > fV0radiusMax ) { return kFALSE; }
+  //reject out of bunch pile-up
+  if (!(((daughterNeg->IsOn(AliAODTrack::kTPCrefit)&&daughterNeg->IsOn(AliAODTrack::kITSrefit))||daughterNeg->IsOn(AliAODTrack::kTOFout))||
+        ((daughterPos->IsOn(AliAODTrack::kTPCrefit)&&daughterPos->IsOn(AliAODTrack::kITSrefit))||daughterPos->IsOn(AliAODTrack::kTOFout)))) return kFALSE;
 
   return kTRUE;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
 {
+  if(fIsAntiparticleCheck) return kFALSE;
+
   fhV0Counter[0]->Fill("Input",1);
   Double_t dMass = v0->MassK0Short();
   if(dMass < 0.44 || dMass > 0.56) { return kFALSE; }
   fhV0Counter[0]->Fill("Mass OK",1);
+
+  if(v0->RapK0Short() > 0.5) { return kFALSE; }
+  fhV0Counter[0]->Fill("RapK0 OK",1);
+
+  //DCA
+  if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaK0ToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaK0ToPV ) { return kFALSE; }
+
+  if( TMath::Abs(v0->DcaV0Daughters()) > fV0dcaDaugtersK0 ) { return kFALSE; }
+  //radius
+  Double_t dDecayRadius = v0->RadiusV0();
+  if( dDecayRadius < fK0radiusMin || dDecayRadius > fK0radiusMax ) { return kFALSE; }
 
   // cosine of pointing angle (CPA)
   Double_t dCPA = v0->CosPointingAngle(fAOD->GetPrimaryVertex());
@@ -541,9 +644,11 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
   fhV0Counter[0]->Fill("CPA OK",1);
 
   // Armenteros-Podolanski plot
-  Double_t dPtArm = v0->PtArmV0();
-  Double_t dAlpha = v0->AlphaV0();
-  if(dPtArm < (0.2 * TMath::Abs(dAlpha))) { return kFALSE; }
+  if(fColSystem==sPbPb){
+    Double_t dPtArm = v0->PtArmV0();
+    Double_t dAlpha = v0->AlphaV0();
+    if(dPtArm < (0.2 * TMath::Abs(dAlpha))) { return kFALSE; }
+  }
   fhV0Counter[0]->Fill("AP OK",1);
 
   if(fCutTauK0s > 0.0 && ProperLifetime(v0, 0.497614) > fCutTauK0s) { return kFALSE; }
@@ -560,19 +665,25 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
   fhV0Counter[0]->Fill("TPC sig OK",1);
   Float_t nSigmaPiPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterPos, AliPID::kPion));
   Float_t nSigmaPiNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterNeg, AliPID::kPion));
-  if(nSigmaPiPos > 3.0 || nSigmaPiNeg > 3.0) { return kFALSE; }
+  if(nSigmaPiPos > fSigmaTPC || nSigmaPiNeg > fSigmaTPC) { return kFALSE; }
   fhV0Counter[0]->Fill("3Sigma OK",1);
 
   // cross mass rejection
-  Double_t dMassLambda = v0->MassLambda();
-  Double_t dMassALambda = v0->MassAntiLambda();
-  if(TMath::Abs(dMassLambda - 1.11568) < 0.005) { return kFALSE; }
-  if(TMath::Abs(dMassALambda - 1.11568) < 0.005) { return kFALSE; }
+  if(fColSystem==sPP||fColSystem==sPPb){
+    Double_t dMassLambda = v0->MassLambda();
+    Double_t dMassALambda = v0->MassAntiLambda();
+    if(TMath::Abs(dMassLambda - 1.11568) < fMassRejWindowK0) { return kFALSE; }
+    if(TMath::Abs(dMassALambda - 1.11568) < fMassRejWindowK0) { return kFALSE; }
+  }
   fhV0Counter[0]->Fill("Mass crosscheck OK",1);
 
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
   fhTrigTracks[4]->Fill(binscont,0,1.);
   fTracksTrig[4]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
+  if(fSkipCorr){
+    fhPT[4]->Fill(v0->Pt());
+    fhPTvsMinv[0]->Fill(v0->Pt(),dMass);
+  }
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -588,6 +699,23 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   if( dMassALambda > 1.08 && dMassALambda < 1.15) { isAL = kTRUE; }
   if(!isL && !isAL)  { return kFALSE; }
   fhV0Counter[1]->Fill("Mass OK",1);
+
+  if(v0->RapLambda() > 0.5) { return kFALSE; }
+  fhV0Counter[1]->Fill("RapK0 OK",1);
+
+  if(fIsAntiparticleCheck && fDoAntiparticleOnly && isL) return kFALSE;
+
+  //DCA
+  if(isL){
+    if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaPosLambdaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaNegLambdaToPV ) { return kFALSE; }
+  }
+  if(isAL){
+    if( TMath::Abs(v0->DcaPosToPrimVertex()) < fV0dcaNegLambdaToPV || TMath::Abs(v0->DcaNegToPrimVertex()) < fV0dcaPosLambdaToPV ) { return kFALSE; }
+  }
+  if( TMath::Abs(v0->DcaV0Daughters()) > fV0dcaDaugtersLambda ) { return kFALSE; }
+  //radius
+  Double_t dDecayRadius = v0->RadiusV0();
+  if( dDecayRadius < fLambdaradiusMin || dDecayRadius > fLambdaradiusMax ) { return kFALSE; }
 
   // cosine of pointing angle (CPA)
   Double_t dCPA = v0->CosPointingAngle(fAOD->GetPrimaryVertex());
@@ -609,12 +737,14 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   Float_t nSigmaPiNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterNeg, AliPID::kPion));
   Float_t nSigmaPPos = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterPos, AliPID::kProton));
   Float_t nSigmaPNeg = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(daughterNeg, AliPID::kProton));
-  if(isL && (nSigmaPPos > 3.0 || nSigmaPiNeg > 3.0) ) { return kFALSE; }
-  if(isAL && (nSigmaPiPos > 3.0 || nSigmaPNeg > 3.0) ) { return kFALSE; }
+  if(isL && (nSigmaPPos > fSigmaTPC || nSigmaPiNeg > fSigmaTPC) ) { return kFALSE; }
+  if(isAL && (nSigmaPiPos > fSigmaTPC || nSigmaPNeg > fSigmaTPC) ) { return kFALSE; }
   fhV0Counter[1]->Fill("3Sigma OK",1);
 
-  Double_t dMassK0s = v0->MassK0Short();
-  if(TMath::Abs(dMassK0s - 0.497614) < 0.01) { return kFALSE; }
+  if(fColSystem==sPP||fColSystem==sPPb){
+    Double_t dMassK0s = v0->MassK0Short();
+    if(TMath::Abs(dMassK0s - 0.497614) < fMassRejWindowLambda) { return kFALSE; }
+  }
   fhV0Counter[1]->Fill("Mass crosscheck OK",1);
 
   Double_t dMass = 0.0;
@@ -625,6 +755,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
   fhTrigTracks[5]->Fill(binscont,0,1.);
   fTracksTrig[5]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
+  if(fSkipCorr){
+    fhPT[5]->Fill(v0->Pt());
+    fhPTvsMinv[1]->Fill(v0->Pt(),dMass);
+  }
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -690,7 +824,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigPhi = track->Phi();
       Double_t trigCharge = track->Charge();
       Double_t trigEff = 1.0;
-      if(fUseEfficiency) trigEff = GetEff(trigPt, spec, trigEta);
+      if(fUseEfficiency) {
+        trigEff = GetEff(trigPt, spec, trigEta);
+        if(trigEff < 0.001) continue;
+      }
       binscont[5] = trigPt;
       if(spec > 3) binscont[4] = track->M();
 
@@ -705,7 +842,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPhi = trackAss->Phi();
         Double_t assCharge = trackAss->Charge();
         Double_t assEff = 1.0;
-        if(fUseEfficiency) assEff = GetEff(assPt, 0, assEta);
+        if(fUseEfficiency) {
+          assEff = GetEff(assPt, 0, assEta);
+          if(assEff < 0.001) continue;
+        }
 
         if(!fIsMC && spec < 4 && trackAOD->GetID() == trackAODAss->GetID()) continue;
 
@@ -749,7 +889,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigEta = track->Eta();
       Double_t trigPhi = track->Phi();
       Double_t trigEff = 1.0;
-      if(fUseEfficiency) trigEff = GetEff(trigPt, spec, trigEta);
+      if(fUseEfficiency) {
+        trigEff = GetEff(trigPt, spec, trigEta);
+        if(trigEff < 0.001) continue;
+      }
       binscont[5] = trigPt;
       if(spec > 3) binscont[4] = track->M();
 
@@ -826,6 +969,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigCharge = track->Charge();
         binscont[5] = trigPt;
         if(spec > 3) binscont[4] = track->M();
+        Double_t trigEff = 1.0;
+        if(fUseEfficiency) {
+          trigEff = GetEff(trigPt, spec, trigEta);
+          if(trigEff < 0.001) continue;
+        }
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -837,6 +985,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assEta = trackAss->Eta();
             Double_t assPhi = trackAss->Phi();
             Double_t assCharge = trackAss->Charge();
+            Double_t assEff = 1.0;
+            if(fUseEfficiency) {
+              assEff = GetEff(assPt, 0, assEta);
+              if(assEff < 0.001) continue;
+            }
 
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
@@ -860,7 +1013,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
               }
             }
 
-            fhME[spec]->Fill(binscont,0,1./(Double_t)nMix);
+            fhME[spec]->Fill(binscont,0,1./((Double_t)nMix*(trigEff*assEff)));
           }
         }
       }
@@ -880,6 +1033,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigPhi = track->Phi();
         binscont[5] = trigPt;
         if(spec > 3) binscont[4] = track->M();
+        Double_t trigEff = 1.0;
+        if(fUseEfficiency) {
+          trigEff = GetEff(trigPt, spec, trigEta);
+          if(trigEff < 0.001) continue;
+        }
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -894,7 +1052,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
 
-            fhME[spec]->Fill(binscont,0,assMult/(Double_t)nMix);
+            fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff));
           }
         }
       }
@@ -945,24 +1103,28 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 Bool_t AliAnalysisTaskCorrForFlowFMD::AreEfficienciesLoaded()
 {
   if(!fInputListEfficiency) {AliError("Efficiency input list not loaded"); return kFALSE; }
-  TString part[4] = {"ch", "pi", "ka", "pr"};
+  TString part[6] = {"ch", "pi", "ka", "pr", "K0s", "Lambda"};
   if(fColSystem == sPPb){
     TString etaReg[8] = {"0020", "0200", "0204", "0402", "0406", "0604", "0608", "0806"};
-    for(Int_t p(0); p < 4; p++){
+    for(Int_t p(0); p < 6; p++){
       for(Int_t eta(0); eta < 8; eta++){
+        if(fDoV0 && p < 4) continue;
+        if(fDoPID && !fDoV0 && p > 3) continue;
         fhEfficiencyEta[p][eta] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC17f2b_%s_Eta_%s_%s_wFD",part[p].Data(), etaReg[eta].Data(),fSystematicsFlag.Data()));
         if(!fhEfficiencyEta[p][eta]) {AliError(Form("Efficiency (%s, eta region %s, flag %s) not loaded",part[p].Data(),etaReg[eta].Data(),fSystematicsFlag.Data())); return kFALSE; }
       }
-      if(!fDoPID) break;
+      if(!fDoPID && !fDoV0) break;
     }
     fhEventCounter->Fill("Efficiencies loaded",1);
     return kTRUE;
   }
   else if(fColSystem == sPP){
-    for(Int_t p(0); p < 4; p++){
+    for(Int_t p(0); p < 6; p++){
+      if(fDoV0 && p < 4) continue;
+      if(fDoPID && !fDoV0 && p > 3) continue;
       fhEfficiency[p] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC%s_%s_%s_wFD",ReturnPPperiod(fAOD->GetRunNumber()).Data(),part[p].Data(),fSystematicsFlag.Data()));
       if(!fhEfficiency[p]) {AliError(Form("Efficiency (run %d, part %s, flag %s) not loaded",fAOD->GetRunNumber(),part[p].Data(),fSystematicsFlag.Data())); return kFALSE; }
-      if(!fDoPID) break;
+      if(!fDoPID && !fDoV0) break;
     }
     fhEventCounter->Fill("Efficiencies loaded",1);
     return kTRUE;
@@ -1020,7 +1182,7 @@ TString AliAnalysisTaskCorrForFlowFMD::ReturnPPperiod(const Int_t runNumber) con
 Double_t AliAnalysisTaskCorrForFlowFMD::GetEff(const Double_t dPt, const Int_t spec, const Double_t dEta)
 {
   if(!fUseEfficiency) return 1.0;
-  if(spec < 0 || spec > 3) { AliError("Efficiency loading -- species out of range! ");}
+  if(fDoV0 && spec == eCharged) return 1.0;
   if(fColSystem == sPPb){
     Int_t region = GetEtaRegion(dEta);
     if(region < 0) { AliWarning("Invalid region, returning efficiency 1.0."); return 1.0; }
@@ -1076,6 +1238,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     for(Int_t i(0); i < 6; i++){
       if(!fDoPID && i > 0 && i < 4) continue;
       if(!fDoV0 && i > 3) continue;
+      if(fIsAntiparticleCheck && i == 4) continue;
 
       if(fAnalType == eTPCFMDA){
         fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_tpcfmd, iTrackBin_tpcfmdA);
@@ -1119,6 +1282,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     for(Int_t i(0); i < 6; i++){
       if(!fDoPID && i > 0 && i < 4) continue;
       if(!fDoV0 && i > 3) continue;
+      if(fIsAntiparticleCheck && i == 4) continue;
 
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
       fhSE[i]->SetBinLimits(0, binning_deta_tpctpc);
@@ -1136,6 +1300,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     if(fAnalType == eFMDAFMDC && i > 0) break;
     if(!fDoPID && i > 0 && i < 4) continue;
     if(!fDoV0 && i > 3) continue;
+    if(fIsAntiparticleCheck && i == 4) continue;
 
     fhSE[i]->SetBinLimits(2, -10,10);
     fhSE[i]->SetBinLimits(3, 0,10);
@@ -1173,23 +1338,22 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fAOD) return kFALSE;
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
-  if(fDoPID){
-    for(Int_t i(1); i < 4; i++){
-      fTracksTrig[i] = new TObjArray;
-    }
-  }
-
   fNofTracks = 0;
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
+
+  TObjArray* fTracksJets = nullptr;
+  if(fVetoJetEvents) fTracksJets = new TObjArray;
 
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
       AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
       if(!track || !IsTrackSelected(track)) { continue; }
 
       Double_t trackPt = track->Pt();
+      if(fVetoJetEvents && trackPt > fJetParticleLowPt) fTracksJets->Add((AliAODTrack*)track);
       if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
-        if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); // only if associated from TPC
         fNofTracks++;
+        if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
+        if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); // only if associated from TPC
       }
       if(fAnalType != eFMDAFMDC){
         Double_t trackEta = track->Eta();
@@ -1199,31 +1363,55 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
             if(fAnalType == eTPCFMDC && trackEta < 0.0) continue;
           }
 
-          fTracksTrig[0]->Add((AliAODTrack*)track);
           binscont[2] = trackPt;
+          fhPT[0]->Fill(trackPt);
+          fTracksTrig[0]->Add((AliAODTrack*)track);
           fhTrigTracks[0]->Fill(binscont,0,1.);
 
           if(fDoPID){
             Int_t trackPid = IdentifyTrack(track);
             if(trackPid > 0 && trackPid < 4){
+              if(fIsAntiparticleCheck){
+                if(fDoAntiparticleOnly && track->Charge() > 0.) continue;
+                if(!fDoAntiparticleOnly && track->Charge() < 0.) continue;
+              }
               fTracksTrig[trackPid]->Add((AliAODTrack*)track);
               fhTrigTracks[trackPid]->Fill(binscont,0,1.);
+              if(fSkipCorr) fhPT[trackPid]->Fill(trackPt);
             }
           }
         }
       } // POI from TPC
   } // tracks loop end
-  fhEventMultiplicity->Fill(fNofTracks);
 
   if(fUseNch){
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
+    fhEventMultiplicity->Fill(fNofTracks);
+  }
+
+  if(fVetoJetEvents){
+    Double_t foundSomething = kFALSE;
+    fhEventCounter->Fill("Before Jet Veto",1); //HPC = high pt cut
+    for(Int_t iTrig(0); iTrig < fTracksJets->GetEntriesFast(); iTrig++){
+      AliAODTrack* trackTrig = (AliAODTrack*)fTracksJets->At(iTrig);
+      if(!trackTrig) continue;
+      Double_t trigPhi = trackTrig->Phi();
+
+      for(Int_t iAss(iTrig+1); iAss < fTracksJets->GetEntriesFast()+1; iAss++){
+        AliAODTrack* trackAss = (AliAODTrack*)fTracksJets->At(iAss);
+        if(!trackAss) continue;
+        Double_t assPhi = trackAss->Phi();
+
+        Double_t deltaPhi = RangePhi(trigPhi - assPhi);
+        if(TMath::Abs(deltaPhi - TMath::Pi()) < 0.5) foundSomething = kTRUE;
+      }
+    }
+    if(!foundSomething){ fhEventCounter->Fill("After Jet Veto",1); }
+    else { return kFALSE; }
   }
 
   if(fDoV0){
-    for(Int_t i(4); i < 6; i++){
-      fTracksTrig[i] = new TObjArray;
-    }
     PrepareV0();
   }
 
@@ -1300,12 +1488,17 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
     Float_t nV0A_hits = fvzero->GetMTotV0A();
     Float_t nV0C_hits = fvzero->GetMTotV0C();
 
+    fh2FMDvsV0[0]->Fill(nFMD_fwd_hits,nV0A_hits);
+    fh2FMDvsV0[1]->Fill(nFMD_bwd_hits,nV0C_hits);
+
     if((nV0A_hits<(fFMDcutapar0*nFMD_fwd_hits-fFMDcutapar1)) || (nV0C_hits<(fFMDcutcpar0*nFMD_bwd_hits-fFMDcutcpar1))){
       fTracksAss->Clear();
       if(fAnalType == eFMDAFMDC) fTracksTrig[0]->Clear();
       return kFALSE;
     }
     fhEventCounter->Fill("FMD cuts OK",1);
+    fh2FMDvsV0[2]->Fill(nFMD_fwd_hits,nV0A_hits);
+    fh2FMDvsV0[3]->Fill(nFMD_bwd_hits,nV0C_hits);
   }
 
   return kTRUE;
@@ -1317,24 +1510,22 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
   if(!mcEvent) return kFALSE;
 
-  if(fDoPID){
-    for(Int_t i(1); i < 4; i++){
-      fTracksTrig[i] = new TObjArray;
-    }
-  }
-  if(fDoV0){ AliError("MC not prepared for V0s. Returning!"); return kFALSE; }
-
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
   Double_t binscontFMD[2] = {fPVz, fSampleIndex};
 
   for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
     if(!part->IsPhysicalPrimary()) continue;
-    if(part->Charge()==0.) continue;
     Double_t partEta = part->Eta();
     Double_t partPt = part->Pt();
     Double_t partPhi = part->Phi();
+    Double_t partRapidity = part->Y();
     binscont[2] = partPt;
+
+    if(fBoostAMPT) {
+      partEta=TransverseBoost(part);
+      partRapidity=partRapidity-0.465;
+    }
 
     // TPC region
     if(TMath::Abs(partEta) < 0.8){
@@ -1344,14 +1535,23 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       if(partPDG == 211) partIdx = 1;
       else if(partPDG == 321) partIdx = 2;
       else if(partPDG == 2212) partIdx = 3;
+      else if(partPDG == 310) partIdx = 4;
+      else if(partPDG == 3122) partIdx = 5;
+
+      if(partIdx < 4 && part->Charge()==0.) continue;
 
       if(fAnalType == eTPCTPC){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
           fTracksTrig[0]->Add((AliMCParticle*)part);
           fhTrigTracks[0]->Fill(binscont,0,1.);
-          if(fDoPID && partIdx > 0){
+          if(fDoPID && partIdx > 0 && partIdx < 4){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(binscont,0,1.);
+          }
+          if(fDoV0 && partIdx > 3 && TMath::Abs(partRapidity)<0.5){
+            Double_t binscontV0[4] = {fPVz, fSampleIndex, part->Pt(), part->M()};
+            fhTrigTracks[partIdx]->Fill(binscontV0,0,1.);
+            fTracksTrig[partIdx]->Add(new AliPartSimpleForCorr(part->Eta(),part->Phi(),part->Pt(),part->M()));
           }
         }
         if(partPt > fPtMinAss && partPt < fPtMaxAss) fTracksAss->Add((AliMCParticle*)part);
@@ -1360,9 +1560,14 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
           fTracksTrig[0]->Add((AliMCParticle*)part);
           fhTrigTracks[0]->Fill(binscont,0,1.);
-          if(fDoPID && partIdx > 0){
+          if(fDoPID && partIdx > 0 && partIdx < 4){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(binscont,0,1.);
+          }
+          if(fDoV0 && partIdx > 3 && TMath::Abs(partRapidity)<0.5){
+            Double_t binscontV0[4] = {fPVz, fSampleIndex, part->Pt(), part->M()};
+            fhTrigTracks[partIdx]->Fill(binscontV0,0,1.);
+            fTracksTrig[partIdx]->Add(new AliPartSimpleForCorr(part->Eta(),part->Phi(),part->Pt(),part->M()));
           }
         }
       }
@@ -1393,6 +1598,31 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
   return kTRUE;
 }
 //_____________________________________________________________________________
+Double_t AliAnalysisTaskCorrForFlowFMD::TransverseBoost(const AliMCParticle *track){
+  Float_t boost=0.465;
+  Float_t beta=TMath::TanH(boost);
+  Float_t gamma=1./TMath::Sqrt((1.-TMath::Power(beta,2)));
+
+  Float_t energy=track->E();
+  Float_t mass=track->M();
+  Float_t px=track->Px();
+  Float_t py=track->Py();
+  Float_t pz=track->Pz();
+  Float_t mT=TMath::Sqrt(TMath::Power(energy,2)-TMath::Power(pz,2));
+  Float_t eta=track->Eta();
+  Float_t rap=track->Y();
+
+  Float_t energy_boosted=gamma*energy-gamma*beta*pz;
+  Float_t pz_boosted=-gamma*beta*energy+gamma*pz;
+  Float_t mT_boosted=TMath::Sqrt(TMath::Power(energy_boosted,2)-TMath::Power(pz_boosted,2));
+  Float_t rap_boosted=rap-boost;
+  Float_t numerator=TMath::Sqrt(TMath::Power(mT_boosted,2)*TMath::Power(TMath::CosH(rap_boosted),2)-TMath::Power(mass,2))+mT_boosted*TMath::SinH(rap_boosted);
+  Float_t denumerator=TMath::Sqrt(TMath::Power(mT_boosted,2)*TMath::Power(TMath::CosH(rap_boosted),2)-TMath::Power(mass,2))-mT_boosted*TMath::SinH(rap_boosted);
+  Double_t eta_boosted = 0.5*TMath::Log(numerator/denumerator);
+
+  return eta_boosted;
+}
+//_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\n\n\n ************** Parameters ************** \n");
   printf("\t fAnalType: (Int_t) %d\n", fAnalType);
@@ -1406,6 +1636,10 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fIsHMpp: (Bool_t) %s\n", fIsHMpp ? "kTRUE" : "kFALSE");
   printf("\t fUseEfficiency: (Bool_t) %s\n",  fUseEfficiency ? "kTRUE" : "kFALSE");
   printf("\t fUseOppositeSidesOnly: (Bool_t) %s\n", fUseOppositeSidesOnly ? "kTRUE" : "kFALSE");
+  printf("\t fIsAntiparticleCheck: (Bool_t) %s\n", fIsAntiparticleCheck ? "kTRUE" : "kFALSE");
+  printf("\t fDoAntiparticleOnly: (Bool_t) %s\n", fDoAntiparticleOnly ? "kTRUE" : "kFALSE");
+  printf("\t fVetoJetEvents: (Bool_t) %s\n", fVetoJetEvents ? "kTRUE" : "kFALSE");
+  printf("\t fRejectSecondariesFromMC: (Bool_t) %s\n", fRejectSecondariesFromMC ? "kTRUE" : "kFALSE");
   printf("\t fNOfSamples: (Int_t) %d\n", (Int_t) fNOfSamples);
   printf(" **************************** \n");
   printf("\t fSystematicsFlag: (TString) %s\n", fSystematicsFlag.Data());

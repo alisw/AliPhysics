@@ -6,15 +6,10 @@
 //*************************************************************************************
 // \class AliJEQnVectorHandler
 // \brief helper class to handle the Qn-vectors computed with different calibrations
+// \adapted from HF task
 // \authors:
-// F. Grosa, fabrizio.grosa@cern.ch
-// F. Catalano, fabio.catalano@cern.ch
-// A. Dobrin, alexandru.dobrin@cern.ch
-// A. Festanti, andrea.festanti@cern.ch
-// G. Luparello, grazia.luparello@cern.ch
-// F. Prino, prino@to.infn.it
-// A. Rossi, andrea.rossi@cern.ch
-// S. Trogolo, stefano.trogolo@cern.ch
+// C. Beattie, caitlin.beattie@cern.ch
+// M. Sas, mike.sas@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include <TGrid.h>
@@ -418,17 +413,17 @@ void AliJEQnVectorHandler::GetUnNormQnVecV0(double QnVecFullV0[2], double QnVecV
 //________________________________________________________________
 void AliJEQnVectorHandler::GetqnTPC(double &qnFullTPC, double &qnPosTPC, double &qnNegTPC) 
 {
-    qnFullTPC = fQnVecNormFullTPC / TMath::Sqrt(fMultFullTPC);
-    qnPosTPC  = fQnVecNormPosTPC / TMath::Sqrt(fMultPosTPC);
-    qnNegTPC  = fQnVecNormNegTPC / TMath::Sqrt(fMultNegTPC);
+    fMultFullTPC > 0 ? qnFullTPC = fQnVecNormFullTPC / TMath::Sqrt(fMultFullTPC) : qnFullTPC = 0;
+    fMultPosTPC  > 0 ? qnPosTPC  = fQnVecNormPosTPC / TMath::Sqrt(fMultPosTPC) : qnPosTPC = 0;
+    fMultNegTPC  > 0 ? qnNegTPC  = fQnVecNormNegTPC / TMath::Sqrt(fMultNegTPC) : qnNegTPC = 0;
 }
     
 //________________________________________________________________
 void AliJEQnVectorHandler::GetqnV0(double &qnFullV0, double &qnV0A, double &qnV0C)
 {
-    qnFullV0 = fQnVecNormFullV0 / TMath::Sqrt(fMultFullV0);
-    qnV0A    = fQnVecNormV0A / TMath::Sqrt(fMultV0A);
-    qnV0C    = fQnVecNormV0C / TMath::Sqrt(fMultV0C);
+    fMultFullV0 > 0 ? qnFullV0 = fQnVecNormFullV0 / TMath::Sqrt(fMultFullV0) : qnFullV0 = 0;
+    fMultV0A > 0 ?    qnV0A    = fQnVecNormV0A / TMath::Sqrt(fMultV0A) : qnV0A = 0;
+    fMultV0C > 0 ?    qnV0C    = fQnVecNormV0C / TMath::Sqrt(fMultV0C) : qnV0C = 0;
 }
 
 //________________________________________________________________

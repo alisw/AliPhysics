@@ -145,6 +145,7 @@ AliAnalysisTaskMcKnoUeSystem::AliAnalysisTaskMcKnoUeSystem() : AliAnalysisTaskSE
     hNchTSGen(0), hNchTSRec(0), hNchTSResponse(0), hNchTSGenTest(0), hNchTSRecTest(0), hPhiGen_TS1(0), hPhiGen_TS2(0), hPhiRec_TS1(0), hPhiRec_TS2(0),
     hPhiGenTest_TS1(0), hPhiGenTest_TS2(0), hPhiRecTest_TS1(0), hPhiRecTest_TS2(0), hNchTSminGen(0), hNchTSminRec(0), hNchTSminResponse(0),
     hNchTSminGenTest(0), hNchTSminRecTest(0), hNchTSmaxGen(0), hNchTSmaxRec(0), hNchTSmaxResponse(0), hNchTSmaxGenTest(0), hNchTSmaxRecTest(0),
+    hPtPrimGen(0), hPtPrimRec(0),
     hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0),
     hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0),
     hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0), hRefMult08std(0), hMultV0M(0), hRefMultvsMultV0M(0)
@@ -223,6 +224,7 @@ AliAnalysisTaskMcKnoUeSystem::AliAnalysisTaskMcKnoUeSystem(const char* name) : A
     hNchTSGen(0), hNchTSRec(0), hNchTSResponse(0), hNchTSGenTest(0), hNchTSRecTest(0), hPhiGen_TS1(0), hPhiGen_TS2(0), hPhiRec_TS1(0), hPhiRec_TS2(0),
     hPhiGenTest_TS1(0), hPhiGenTest_TS2(0), hPhiRecTest_TS1(0), hPhiRecTest_TS2(0), hNchTSminGen(0), hNchTSminRec(0), hNchTSminResponse(0),
     hNchTSminGenTest(0), hNchTSminRecTest(0), hNchTSmaxGen(0), hNchTSmaxRec(0), hNchTSmaxResponse(0), hNchTSmaxGenTest(0), hNchTSmaxRecTest(0),
+    hPtPrimGen(0), hPtPrimRec(0),
     hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0),
     hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0),
     hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0), hRefMult08std(0), hMultV0M(0), hRefMultvsMultV0M(0)
@@ -342,7 +344,7 @@ void AliAnalysisTaskMcKnoUeSystem::UserCreateOutputObjects()
 		fCuts1->SetCutGeoNcrNcl(fCutGeoNcrNclZone, fCutGeoNcrNclLength, 1.5, 0.85, 0.7); //3cm(default), 2cm, 4cm;   130(default), 120, 140
 	     
 		if (fIsRequirementSPD) {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);} //kTRUE---kAny(default)
-                else {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);} //kFALSE---kNone
+                //else {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);} //kFALSE---kNone
                 fCuts1->SetMaxChi2PerClusterITS(fCutMaxChi2PerClusterITS); //36(default), 25, 49
 		fCuts1->SetMaxChi2PerClusterTPC(fCutMaxChi2PerClusterTPC); //4(default), 3, 5
                 fCuts1->SetMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal); //36(default), 25, 49
@@ -370,8 +372,8 @@ void AliAnalysisTaskMcKnoUeSystem::UserCreateOutputObjects()
                 fCuts2->SetDCAToVertex2D(kTRUE);
                 fCuts2->SetAcceptKinkDaughters(kFALSE);
 		//2 additional cuts
-		fCuts2->SetRequireITSRefit(fIsTPCRefit); //kTRUE(defalut), kFALSE  
-		fCuts2->SetRequireTPCRefit(fIsITSRefit); //kTRUE(default), kFALSE   
+		fCuts2->SetRequireITSRefit(fIsITSRefit); //kTRUE(defalut), kFALSE  
+		fCuts2->SetRequireTPCRefit(fIsTPCRefit); //kTRUE(default), kFALSE   
 
 		fTrackFilter->AddCuts(fCuts2);
 	}
@@ -522,6 +524,12 @@ void AliAnalysisTaskMcKnoUeSystem::UserCreateOutputObjects()
                 fOutputList->Add(hNchTSmaxGenTest);
                 hNchTSmaxRecTest = new TH1D("hNchTSmaxRecTest","",100,-0.5,99.5);
                 fOutputList->Add(hNchTSmaxRecTest);
+        
+        //tracking efficiency for Nch in transverse, trans-max and trans-min regions
+        hPtPrimGen = new TH1D("hPtPrimGen","pT prim true; pT; Nch",ptNbins,ptbins2);
+        fOutputList->Add(hPtPrimGen);
+        hPtPrimRec = new TH1D("hPtPrimRec","pT prim rec; pT; Nch",ptNbins,ptbins2);
+        fOutputList->Add(hPtPrimRec);
                 
 
 
@@ -959,7 +967,10 @@ void AliAnalysisTaskMcKnoUeSystem::UserExec(Option_t *)
 				      hZvtxCutKnoGen->Fill(vtxMC[2]);
 				      GetDetectorResponse();
 				}
-
+                if(fGenLeadPt>=fPtMin && fRecLeadPt>=fPtMin){
+                    GetTrackingEfficiencyTPConly();
+                }
+                
 				// UE analysis
 				if(fGenLeadPt>=fPtMin && fRecLeadPt>=fPtMin){
 					GetBinByBinCorrections();
@@ -1294,6 +1305,47 @@ void AliAnalysisTaskMcKnoUeSystem::GetBinByBinCorrections(){
 
 	}
 
+}
+
+void AliAnalysisTaskMcKnoUeSystem::GetTrackingEfficiencyTPConly(){
+
+    // loop over generated tracks
+    for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+
+        AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+        if (!particle) continue;
+
+        if (!fMC->IsPhysicalPrimary(i))
+            continue;
+        if (particle->Charge() == 0)
+            continue;
+        if ( TMath::Abs(particle->Eta()) > fEtaCut )
+            continue;
+        if( particle->Pt() < fPtMin)
+            continue;
+
+        hPtPrimGen->Fill(particle->Pt()); // inital pT distribution (MC gen)
+    }
+
+    // loop over reconstructed tracks
+    for(Int_t i=0; i < fESD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
+
+        AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+        if(!track) continue;
+
+        if(!fTrackFilter->IsSelected(track))// for KNO analysis we consider TPConly
+            continue;
+        if(TMath::Abs(track->Eta()) > fEtaCut)
+            continue;
+        if( track->Pt() < fPtMin)
+            continue;
+
+        const Int_t label = TMath::Abs(track->GetLabel());
+
+        if( fMC->IsPhysicalPrimary(label) ){
+            hPtPrimRec->Fill(track->Pt());
+        }
+    }
 }
 
 void AliAnalysisTaskMcKnoUeSystem::GetDetectorResponse() {

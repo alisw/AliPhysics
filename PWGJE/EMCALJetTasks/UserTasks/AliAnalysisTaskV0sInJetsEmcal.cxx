@@ -55,13 +55,14 @@ ClassImp(AliAnalysisTaskV0sInJetsEmcal)
 //const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10, 30, 50, 80}; // Alice Zimmermann
 //const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10, 20, 40, 60, 80}; // Vit Kucera, initial binning
 //const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {5, 10, 20, 40, 60, 80}; // Iouri Belikov, LF analysis
-const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10}; // only central
+//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10}; // only central
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[] = {10, 20, 30, 40, 50, 60, 70, 80, 90}; 
 // edges of centrality bins for event mixing
 Double_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentMixBinRanges[] = {0, 5, 10}; // only central
 // edges of z_vtx bins for event mixing
 Double_t AliAnalysisTaskV0sInJetsEmcal::fgkiZVtxMixBinRanges[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
 // axis: pT of V0
-const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0[] = {0, 12};
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0[] = {0, 15};
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0 = sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0) / sizeof((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) - 1;
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0Init = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) / 0.1); // bin width 0.1 GeV/c
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0InitInJet = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) / 0.5); // bin width 0.5 GeV/c

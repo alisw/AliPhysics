@@ -224,6 +224,30 @@ class AliMCParticleContainer : public AliParticleContainer {
   void                        SetMCFlag(UInt_t m)                             { fMCFlag          = m ; }
 
   /**
+   * @brief Set min. pt cut applied on charged particles
+   * @param minpt Min. pt (in GeV/c)
+   */
+  void                        SetMinPtCharged(Double_t minpt)                 { fMinPtCharged = minpt; }
+
+  /**
+   * @brief Set min. pt cut applied on neutral particles
+   * @param minpt Min. pt (in GeV/c)
+   */
+  void                        SetMinPtNeutral(Double_t minpt)                 { fMinPtNeutral = minpt; }
+
+  /**
+   * @brief Set min. energy cut applied on charged particles
+   * @param minE Min. energy (in GeV)
+   */
+  void                        SetMinECharged(Double_t minE)                   { fMinECharged = minE; }
+
+  /**
+   * @brief Set min. energy cut applied on neutral particles
+   * @param minE Min. energy (in GeV)
+   */
+  void                        SetMinENeutral(Double_t minE)                   { fMinENeutral = minE; }
+
+  /**
    * @brief Require particle to be a physical primary particle
    * @param s If true only physical primary particles are selected 
    */
@@ -274,13 +298,17 @@ class AliMCParticleContainer : public AliParticleContainer {
   virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const { return "mcparticles"; }
 
   UInt_t                      fMCFlag;                        ///< select MC particles with flags
+  Double_t                    fMinPtCharged;                  ///< min. charged particle pt
+  Double_t                    fMinPtNeutral;                  ///< min. neutral particle pt
+  Double_t                    fMinECharged;                   ///< min. charged particle energy
+  Double_t                    fMinENeutral;                   ///< min. neutral particle energy
 
  private:
   AliMCParticleContainer(const AliMCParticleContainer& obj); // copy constructor
   AliMCParticleContainer& operator=(const AliMCParticleContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliMCParticleContainer,1);
+  ClassDef(AliMCParticleContainer,2);
   /// \endcond
 };
 

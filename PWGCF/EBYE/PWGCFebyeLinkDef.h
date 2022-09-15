@@ -13,6 +13,7 @@
 #pragma link C++ class AliAnalysisTaskBF+;
 #pragma link C++ class AliAnalysisTaskBFPsi+;
 #pragma link C++ class AliAnalysisTaskSignedBF+;
+#pragma link C++ class AliAnalysisTaskSignedBFMC+;
 #pragma link C++ class AliAnalysisTaskEventMixingBF+;
 #pragma link C++ class AliAnalysisTaskTriggeredBF+;
 #pragma link C++ class AliAnalysisTaskEfficiencyBF+;
@@ -82,7 +83,10 @@
 #pragma link C++ class AliAnalysisFBMultFluct+;
 #pragma link C++ class AliAnalysisTaskLongFluctuations+;
 #pragma link C++ class AliAnalysisTaskLegendreCoef+;
+#pragma link C++ class AliAnalysisTaskLegendreCoef_local+;
 #pragma link C++ class AliAnalysisTaskEtaDist+;
+
+#pragma link C++ class AliAnalysisMultPt+;
 
 
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
@@ -117,6 +121,13 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity+;
 #pragma link C++ class AliAnalysisTaskMeanptFluctuationPP+;
+#pragma link C++ class AliAnalysisMeanPtdata+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityMC+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity2+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2+;
 
+
+#pragma link C++ class AliAnalysisTaskNFMs+;
 #endif

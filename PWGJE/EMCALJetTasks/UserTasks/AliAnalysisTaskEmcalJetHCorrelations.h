@@ -31,6 +31,7 @@ class AliEventPoolManager;
 #include "THistManager.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisTaskEmcalJetHUtils.h"
+#include "AliAnalysisTaskJetQnVectors.h"
 class AliTLorentzVector;
 class AliEmcalJet;
 class AliJetContainer;
@@ -188,6 +189,8 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   void                   InitializeArraysToZero();
   void                   GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR);
   Double_t               GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const;
+  //for new EP angle calibration
+  AliAnalysisTaskJetQnVectors*   fqnVectorReader;  //!<! Reader for the Qn vector
   // Test for biased jet
   Bool_t                 BiasedJet(AliEmcalJet * jet);
   // Corrections
@@ -235,7 +238,9 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
 
   // Histograms
   THistManager           fHistManager;             ///<  Histogram manager
-  TH1                   *fHistJetHTrackPt;         //!<! Track pt spectrum
+  TH1                   *fHistJetHTrackPtraw;      //!<! Track pt spectrum (for all tracks !)
+  TH1                   *fHistJetHTrackPt;         //!<! Track pt spectrum  (for jet pT > 15 GeV)
+  TH1                   *fHistEPAngle;             //!<! Spectrum of EP angles measured with 2018 method
   TH2                   *fHistJetEtaPhi;           //!<! Jet eta-phi distribution
   TH2                   *fHistTrackEtaPhi[7];      //!<! Track eta-phi distribution (the array corresponds to track pt)
   TH2                   *fHistJetHEtaPhi;          //!<! Eta-phi distribution of jets which are in jet-hadron correlations

@@ -59,6 +59,8 @@
 #pragma link C++ class AliAnalysisTaskWeakDecayVertexer+;
 #pragma link C++ class AliAnalysisTaskStrEffStudy+;
 #pragma link C++ class AliAnalysisTaskMCPredictions+;
+#pragma link C++ class AliAnalysisTaskMCPredictionsEE+;
+#pragma link C++ class AliAnalysisTaskMCPredictionsStrgVsMultVsZDC+;
 #pragma link C++ class AliAnalysisCorrelationEventCollection+;
 #pragma link C++ class AliReconstructedFirstC+;
 #pragma link C++ class AliReconstructedSecondC+;
@@ -67,10 +69,12 @@
 #pragma link C++ class AliAnalysisTaskCorrelationhhK0s+;
 #pragma link C++ class AliAnalysisTaskCorrelationhCasc+;
 #pragma link C++ class AliAnalysisTaskCorrelationhCascDATA+;
+#pragma link C++ class AliAnalysisTaskCorrelationhK0sXi_PureMCOnly+;
 #pragma link C++ class AliAnalysisTaskStrVsMult+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_BumpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_PileUpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_SelectionStudies+;
+#pragma link C++ class AliAnalysisTaskStrVsMult_RStudies+;
 #pragma link C++ class AliEventContainer+;
 #pragma link C++ class AliCascadeContainer+;
 #pragma link C++ class AliV0Container+;
@@ -98,6 +102,7 @@
 #pragma link C++ class MiniCascadeMC+;
 #pragma link C++ class MiniLambda+;
 #pragma link C++ class MiniLambdaMC+;
+#pragma link C++ class MiniLambdaBDTOut+;
 #pragma link C++ class V0filler+;
 #pragma link C++ class Cascfiller+;
 //#pragma link C++ class std::vector<FindableHyperTriton<2>>+;

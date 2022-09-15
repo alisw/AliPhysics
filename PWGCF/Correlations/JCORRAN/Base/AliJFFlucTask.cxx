@@ -166,7 +166,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	if(flags & FLUC_PHI_CORRECTION)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_CORRECTION);
 	
-	gRandom->SetSeed();
+	gRandom->SetSeed(151222);
 
 	//fFFlucAna->SetQCEtaCut( fQC_eta_min, fQC_eta_max, 0.5 ); not used anymore, checked with JP
 

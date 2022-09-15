@@ -1,46 +1,66 @@
-AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TString name        = "test",
-                                                                           Int_t whichGen      = 1, // 0=all sources, 1=HS, 2=Jpsi
-                                                                           Bool_t isAOD        = kFALSE,
-                                                                           Bool_t getFromAlien = kFALSE,
-                                                                           TString configFile  = "./Config_hmurakam_ElectronEfficiencyV2.C",
-                                                                           Bool_t tofcor       = kFALSE,
-                                                                           TString year        = "16",
-                                                                           Bool_t DeactivateLS = kFALSE,
-                                                                           TString outputFileName="LMEE.root",
-                                                                           Bool_t usePhiV      = kTRUE,
-                                                                           Double_t maxMee     = 0.04,
-                                                                           Double_t minphiv    = 2.0,
-                                                                           TString suffix="")
-
+AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(
+TString name             = "test",
+// 0=all sources, 1=HS, 2=Jpsi
+Int_t whichGen           = 0,
+Bool_t getFromAlien      = kFALSE,
+TString configFile       = "Config_hmurakam_ElectronEfficiencyV2.C",
+TString calibFileNameTOF = "alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/calibLMEE/calMaps_TOF_mc.root",
+//Binning of Pt,Mass,Ptee
+Bool_t usePtVector       = kTRUE,
+Bool_t useMassVector     = kFALSE,
+Bool_t usePteeVector     = kFALSE,
+Bool_t DoULSLS           = kTRUE,
+Bool_t DeactivateLS      = kFALSE,
+TString year             = "16",
+Bool_t usePhiV           = kFALSE,
+Double_t maxMee          = 0.04,
+Double_t minphiv         = 2.0,
+TString suffix           = "",
+TString outputFileName   = "LMEE.root",
+// Binning of resolution histograms
+Int_t NbinsDeltaMom      = 1,
+Int_t NbinsRelMom        = 1,
+Int_t NbinsDeltaEta      = 1,
+Int_t NbinsDeltaTheta    = 1,
+Int_t NbinsDeltaPhi      = 1
+)
 {
 
-  std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
-  
-  // Configuring Analysis Manager
+  //Fiducial cut
+  Float_t minPtCut         = 0.2;
+  Float_t maxPtCut         = 15;
+  Float_t minEtaCut        = -0.8;
+  Float_t maxEtaCut        = +0.8;
+
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-  TString fileName = AliAnalysisManager::GetCommonFileName();
-  fileName = outputFileName; // create a subfolder in the file
+  if (!mgr) {
+    Error("AddTask_hmurakam_ElectronEfficiencyV2", "No analysis manager found.");
+    return 0;
+  }
 
-  // Loading individual config file either local or from Alien
-  //TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  TString configBasePath= Form("%s/",gSystem->pwd());
-  //Load updated macros from private ALIEN path
-  if (getFromAlien //&&
-      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data()))))
-    {
-      configBasePath=Form("%s/",gSystem->pwd());
-    }
+  //Base Directory for GRID / LEGO Train
+  TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
+  if (!gSystem->AccessPathName(configFile)) {
+    printf("Configfile already present\n");
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/%s file:./",configFile.Data()))) ){
+    printf("Copy Configfile from alien\n");
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+
   TString configFilePath(configBasePath+configFile);
-  
-  // Loading config and cutlib
-  Bool_t err=kFALSE;
-  err |= gROOT->LoadMacro(configFilePath.Data());
-  if (err) { Error("AddTask_hmurakam_ElectronEfficiencyV2","Config(s) could not be loaded!"); return 0x0; }
-
   std::cout << "Configpath:  " << configFilePath << std::endl;
- 
+
+  // Loading config and cutlib
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject("Config_hmurakam_ElectronEfficiencyV2.C")) {
+    printf("Load macro now\n");
+    gROOT->LoadMacro(configFilePath.Data());
+  }
+
   // Creating an instance of the task
   AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(name.Data());
+  gROOT->GetListOfSpecials()->Add(task);//this is only for ProcessLine(AddMCSignal);
 
   //  Possibility to set generator. If nothing set all generators are taken into account
   if(whichGen == 0){
@@ -63,29 +83,27 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
     task->SetGeneratorULSSignalName("Jpsi2ee_1;B2Jpsi2ee_1");
   }
 
-  // Set TOF correction
-  if(tofcor){
-    SetTOFSigmaEleCorrection(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, year.Data());
-  }
-
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);
-  task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(SetupEventCuts(isAOD)); //returns eventCuts from Config.
-  task->SetCentrality(centMin, centMax);
+  task->SetTriggerMask(AliVEvent::kINT7);
+  task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine("GetEventCuts()"))));
 
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   // Do not set here your analysis pt-cuts
-  task->SetMinPtGen(minGenPt);
-  task->SetMaxPtGen(maxGenPt);
-  task->SetMinEtaGen(minGenEta);
-  task->SetMaxEtaGen(maxGenEta);
+  task->SetMinPtGen(0.1);
+  task->SetMaxPtGen(100);
+  task->SetMinEtaGen(-1.5);
+  task->SetMaxEtaGen(+1.5);
 
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
 
   // Set Binning
   // Pt
+  const Double_t ptBins[] = {
+    0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
+    1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,4.00,5.0,6.0,7.0,10.0,20.0};
+  const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
   if (usePtVector == true) {
     std::vector<double> ptBinsVec;
     for (Int_t i = 0; i < nBinsPt+1; ++i){
@@ -93,12 +111,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
     }
     task->SetPtBins(ptBinsVec);
   }
-  else task->SetPtBinsLinear   (minPtBin,  maxPtBin, stepsPtBin);
-  task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
-  task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
-  task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
+  else task->SetPtBinsLinear(0,  8, 800);
+  task->SetEtaBinsLinear(-1.0, 1.0, 40);
+  task->SetPhiBinsLinear(0, TMath::TwoPi(), 90);
+  task->SetThetaBinsLinear(0, TMath::TwoPi(), 60);
 
   // Mass
+  const Double_t massBins[] = {0.0, 1.0, 2.0, 3.0, 4.0};
+  const Int_t nBinsMass =  ( sizeof(massBins) / sizeof(massBins[0]) )-1;
   if (useMassVector == true) {
     std::vector<double> massBinsVec;
     for (Int_t i = 0; i < nBinsMass+1; ++i){
@@ -106,47 +126,43 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
     }
     task->SetMassBins(massBinsVec);
   }
-  else task->SetMassBinsLinear   (minMass,  maxMassBin, stepsMassBin);
+  else task->SetMassBinsLinear   (0,  4, 800);//Default
 
+  // Pair ptee  2022/03/17
+  const Double_t pteeBins[] = {0.0,
+    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+    1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+    2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0,
+    3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0,
+    5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.0,
+    7.0, 8.0, 9.0, 10.0};
   if (usePteeVector == true) {
+    const Int_t nBinsPtee = ( sizeof(pteeBins) / sizeof(pteeBins[0]) )-1;
     std::vector<double> pteeBinsVec;
     for (Int_t i = 0; i < nBinsPtee+1; ++i){
       pteeBinsVec.push_back(pteeBins[i]);
     }
     task->SetPairPtBins(pteeBinsVec);
   }
-  else task->SetPairPtBinsLinear   (minPtee,  maxPteeBin, stepsPteeBin);
+  else task->SetPairPtBinsLinear   (0,10,50);
 
-
-
-
-  //  task->SetPairPtBins(v_pTee);
-
-  // Resolution File, If resoFilename = "" no correction is applied
-  //  SetResolutionFile(year);
+  TGrid::Connect("alien://");
+  //  Resolution File, If resoFilename = "" no correction is applied
   std::string resoFilename = Form("%s.root",year.Data());
-  std::string resoFilenameFromAlien = Form("/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/%s.root",year.Data());
-  //  printf(Form("%s.root\n",year.Data()));
-
-  cout << resoFilename << endl;
-  //  task->SetResolutionFile(resoFilename);
-  //  task->SetResolutionFileFromAlien(resoFilenameFromAlien);
   task->SetResolutionFile(resoFilename,"/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/" + resoFilename);
-  //  task->SetResolutionFile(resoFilename,resoFilenameFromAlien);
-  task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
-  task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
-  task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
-  task->SetResolutionPhiBinsLinear  (DeltaPhiMin, DeltaPhiMax, NbinsDeltaPhi);
-  task->SetResolutionThetaBinsLinear(DeltaThetaMin, DeltaThetaMax, NbinsDeltaTheta);
+  task->SetResolutionDeltaPtBinsLinear   (-10.0, 2.0, 1);
+  task->SetResolutionRelPtBinsLinear   (0., 2.0, NbinsRelMom);
+  task->SetResolutionEtaBinsLinear  (-0.4, 0.4, NbinsDeltaEta);
+  task->SetResolutionPhiBinsLinear  (-0.4, 0.4, NbinsDeltaPhi);
+  task->SetResolutionThetaBinsLinear(-0.4, 0.4, NbinsDeltaTheta);
 
   // Set centrality correction. If resoFilename = "" no correction is applied
-  //task->SetCentralityFile(centralityFilename);
-
+  // task->SetCentralityFile(centralityFilename);
   // Pairing related config
-  task->SetDoPairing(DoPairing);
+  task->SetDoPairing(kTRUE);
   task->SetULSandLS(DoULSLS);
   task->SetDeactivateLS(DeactivateLS);
-  task->SetPhiVBinsLinear(minPhiVBin, maxPhiVBin, stepsPhiVBin);
+  task->SetPhiVBinsLinear(0, TMath::Pi(), 180);
   task->SetFillPhiV(kFALSE);
 
   //Set Phiv Cut
@@ -217,21 +233,49 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
     printf("no PairMCSignal added\n");
   };
 
-  // Adding cutsettings
-  TObjArray*  arrNames=names.Tokenize(";");
-  const Int_t nDie=arrNames->GetEntriesFast();
 
-  printf("Add %d cuts\n",nDie);
-  for (int iCut = 0; iCut < nDie; ++iCut){
-    //TString cutDefinition(arrNames->At(iCut)->GetName());
-    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(iCut, isAOD);
+  // PID postcalibration
+  // TOF
+  gSystem->Exec(Form("alien_cp %s file:./",calibFileNameTOF.Data()));
+  TH2F* histMean2DTOF  = 0x0;
+  TH2F* histWidth2DTOF = 0x0;
+  TFile *rootfileTOF   = 0x0;
+  printf("reading : %s for TOF PID calibration\n",calibFileNameTOF.Data());
+  rootfileTOF = TFile::Open(calibFileNameTOF,"READ");
+  histMean2DTOF  = (TH2F*)rootfileTOF->Get(Form("m%s",year.Data()));
+  histWidth2DTOF = (TH2F*)rootfileTOF->Get(Form("w%s",year.Data()));
+  printf("%s and %s\n",Form("m%s",year.Data()),Form("w%s",year.Data()));
+
+  for (Int_t i = 0; i <= histMean2DTOF->GetNbinsX()+1; i++){
+    for (Int_t k = 0; k <= histMean2DTOF->GetNbinsY()+1; k++){
+      if ( (i == 0) || (k == 0) || (i > histMean2DTOF->GetNbinsX()) || (k > histMean2DTOF->GetNbinsY())) { // under/overflows
+	histMean2DTOF->SetBinContent(i, k, 0.0 );
+	histWidth2DTOF->SetBinContent(i, k, 1.0 );
+      }
+    }
+  }
+
+  cout<<"Adding mean & width TOF PID correction" <<endl;
+  task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, histWidth2DTOF, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+  task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, histMean2DTOF, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+
+
+  // Adding cutsettings
+  // Cuts
+  // Number of cuts
+  const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
+  //add dielectron analysis with different cuts to the task
+  for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
+    AliAnalysisFilter *filter = reinterpret_cast<AliAnalysisFilter*>(gROOT->ProcessLine(Form("Config_hmurakam_ElectronEfficiencyV2(%d)",i)));
     task->AddTrackCuts(filter);
   }
 
+  TString fileName = AliAnalysisManager::GetCommonFileName();
+  fileName = outputFileName; // create a subfolder in the file
   TString outlistname = Form("efficiency%s",suffix.Data());
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(outlistname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
-  
+
 }

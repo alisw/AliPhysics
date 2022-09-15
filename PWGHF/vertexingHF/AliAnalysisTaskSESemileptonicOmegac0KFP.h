@@ -90,16 +90,49 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
     
     void                    FillTreeElectron(AliAODTrack* trk, AliAODEvent *aodEvent, TClonesArray * mcArray);
     
+     // ----------- mixing
+    void                    SetEventMixingWithPools(Bool_t domixing){fDoEventMixing= domixing;}
+    Bool_t                  GetEventMixingWithPools() const { return fDoEventMixing;}
+    void                    SetNumberOfEventsForMixing(Int_t events){fNumberOfEventsForMixing=events;}
+    
+    void                    SetPoolZVertBinLimits(Int_t NzVertPoolsLimSize, const Double_t *zVertPoolLims){
+                            fNzVertPoolsLimSize = NzVertPoolsLimSize;
+                            for (int ix =0; ix< fNzVertPoolsLimSize+1; ix++ ) {fzVertPoolLims[ix] = zVertPoolLims[ix]; }
+                            }
+    void                    SetMultiplicityBinLimits(Int_t NMultPoolsLimSize, const Double_t *MultPoolLims){
+                            fNMultPoolsLimSize = NMultPoolsLimSize;
+                            for (int ix =0; ix < fNMultPoolsLimSize+1; ix++ ) { fMultPoolLims[ix] = MultPoolLims[ix]; }
+                            }
+    void                    FillMEBackground(std::vector<TVector * > mixTypeE, AliAODEvent *aodEvent, Bool_t *seleCascFlags, KFParticle PV);
+    void                    DoEventMixingWithPools(AliAODEvent *aodEvent, TClonesArray *mcArray, KFParticle PV);
+    void                    ResetPool(Int_t poolIndex);
+    Int_t                   GetPoolIndex(Double_t zvert, Double_t mult);
+    
+    void                    FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV ,  AliAODEvent *aodEvent,  Int_t decaytype, Double_t nsigmaTPCE, Double_t nsigmaTOFE, Double_t ncombsigmaE);
+    
+    void                    SetWriteMixedEventTree(Bool_t a){fWriteMixedEventTree =a;}
+    Bool_t                  GetWriteMixedEventTree() const {return fWriteMixedEventTree;  }
+    
+    void                    SetWriteTrackRotation(Bool_t a){fWriteTrackRotation =a;}
+    Bool_t                  GetwriteTrackRotation() const {return fWriteTrackRotation; }
+    
+    void                    SetQA(Bool_t QA) {fQA = QA;}
+    Bool_t                  GetQA() const {return fQA;}
+    
     //--- private
     
 private:
+    AliAnalysisTaskSESemileptonicOmegac0KFP(const AliAnalysisTaskSESemileptonicOmegac0KFP &source);
+    AliAnalysisTaskSESemileptonicOmegac0KFP& operator=(const AliAnalysisTaskSESemileptonicOmegac0KFP& source);
+    
     void                     DefineEvent();
     void                     DefineTreeRecoOmegac0();
     void                     DefineTreeRecoOmegac0_QA();
     void                     DefineTreeMCGenOmegac0();
     void                     DefineAnaHist();
     void                     DefineTreeElectron();
-  
+    void                     DefineTreeMixedEvent();
+    
     AliPIDResponse*          fPID; ///<
     AliRDHFCutsOmegactoeleOmegafromKFP*   fAnalCuts; /// !<! Cuts
     AliAODVertex*           fpVtx;                //!<! primary vertex
@@ -124,7 +157,7 @@ private:
     Bool_t                  fWriteOmegac0QATree; ///< flag to decide whether to write Omegac0QA tree
     Bool_t                  fWriteOmegac0MCGenTree;  ///<flag to decide whether to write the MC candidate variables on a tree variables
     Bool_t                  fWriteElectronTree;   ///< flag to decide whether to write Electron tree
-    
+    Bool_t                  fQA;  ///< Flag of QA analysis
     
     TH1F*                   fHistEvents;          //!<! Histogram of selected events
     TH1F*                   fHTrigger;            //!<! Histogram of trigger
@@ -136,8 +169,38 @@ private:
     THnSparse*              fHistoMassConversions;          //!<! electron-pairs mass conversion
     THnSparse*              fHistoElectronTPCTOFSelPID;     //!<! TPC, TOF electron PID
     
+    // ----------- mixing
+    Double_t                fVtxZ; /// zVertex
+    Bool_t                  fDoEventMixing; ///< flag for event mixing
+    Int_t                   fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
+  
+    Int_t                   fNzVertPoolsLimSize;       /// number of pools in z vertex for event mixing +1
+    Double_t                fzVertPoolLims[100];        //[fNzVertPoolsLimSize] limits of the pools in zVertex
+    Int_t                   fNMultPoolsLimSize;        /// number of pools in multiplicity for event mixing +1
+    Double_t                fMultPoolLims[100];         //[fNMultPoolsLimSize] limits of the pools in multiplicity
+    
+    Int_t                   fNOfPools; /// number of pools
+    TTree**                 fEventBuffer;   //!<! structure for event mixing
+    TObjString*             fEventInfo; ///unique event id for mixed event check
+    TObjArray*              fElectronTracks; /// array of electron-compatible tracks
+  
+    ULong64_t               fEventID;  /// eventID to store
+    Double_t                fMultiplicityEM;        /// multiplicity for ev mix pools
+    TH2F*                   fHistEventTrackletZvME;          //!<! hist. of evnt Tracklet vs. Zv for Mixed Event (ME)
+    Bool_t                  fWriteMixedEventTree;  ///< flag to decide whether to write MixedEvent tree
+    TTree*                  fTree_MixedEvent;           //!<! tree of mixed event
+    Float_t*                fVar_MixedEvent;              //!<! variables of mixed event to be written to the tree
+    Bool_t                  fWriteTrackRotation;  ///< flag to switch track rotation
+    
+    
+    Int_t fPoolIndex;                                              /// pool index
+    std::vector<Int_t> fNextResVec;                                //!<! Vector storing next reservoir ID
+    std::vector<Bool_t> fReservoirsReady;                          //!<! Vector storing if the reservoirs are ready
+    std::vector<std::vector<std::vector<TVector*>>> fReservoirE;   //!<! reservoir
+    
+    
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,3);   // class for Omegac0 -> e+Omega KFP
+    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,6);   // class for Omegac0 -> e+Omega KFP
     /// \endcond
 };
 

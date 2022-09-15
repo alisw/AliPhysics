@@ -1,3 +1,11 @@
+/**************************************************************************
+ *    Author:       Zuzana Moravcova                                      *
+ *    Framework for calculating di-hadron correlation                     *
+ *    for extraction of v_n{2} and v_n[2] coefficients.                   *
+ *                                                                        *
+ *    If used, modified, or distributed,                                  *
+ *    please aknowledge the author of this code.                          *
+ **************************************************************************/
 
 #ifndef ALIANALYSISTASKCORRFORFLOW_H
 #define ALIANALYSISTASKCORRFORFLOW_H
@@ -53,6 +61,8 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
+        void                    SetEtaPolarity(Int_t polarity) {fEtaPolarity = polarity; }
+             /* code */
 
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; } //systematics setters
         void                    SetutDCAz(Double_t cut) { fCutDCAz = cut; }
@@ -69,6 +79,7 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
+        Bool_t                 IsTrackSelectedPolarity(const AliAODTrack* track) const;
 
         Double_t                RangePhi(Double_t DPhi);
         Double_t                GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
@@ -135,6 +146,7 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         Int_t                   fSampleIndex;
         std::vector<Double_t>   fsampleBins; //sampling
         TString                 fSystematicsFlag; // ""
+        Int_t                   fEtaPolarity; // trig particles in one half of detector, -1,0,1
 
         Double_t                fPVzCut;
         Double_t                fCutDCAz;
@@ -143,7 +155,7 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         Double_t                fTPCclMin;
 
 
-        ClassDef(AliAnalysisTaskCorrForFlow, 7);
+        ClassDef(AliAnalysisTaskCorrForFlow, 8);
 };
 
 #endif

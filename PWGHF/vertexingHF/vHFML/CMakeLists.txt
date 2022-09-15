@@ -60,10 +60,13 @@ set(SRCS
     AliAnalysisTaskSECharmHadronMLSelector.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
     AliAnalysisTaskSECheckCharmHadronBkg.cxx
+    AliAnalysisTaskSEHFResonanceBuilder.cxx
     AliAnalysisTaskSEHFTreeCreatorApply.cxx
     AliHFTreeHandlerApply.cxx
     AliHFTreeHandlerApplyDstoKKpi.cxx
     AliHFTreeHandlerApplyLc2V0bachelor.cxx
+    AliHFTreeHandlerApplyDstartoKpipi.cxx
+    AliParticleTreeHandlerApply.cxx
 )
 
 # Headers from sources

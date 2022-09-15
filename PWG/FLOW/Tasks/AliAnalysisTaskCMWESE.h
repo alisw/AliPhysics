@@ -42,6 +42,9 @@ public:
   TString GetTrigger(){return fTrigger;}
   void SetTrigger(TString x){fTrigger = x;}
 
+  TString GetCentEst(){return fCentEst;}
+  void SetCentEst(TString x){fCentEst = x;}
+
   int    GetFilterBit(){return fFltbit;}
   void SetFilterBit(int x){fFltbit = x;}
 
@@ -141,10 +144,13 @@ private:
   double      GetEventPlane(double qx, double qy);
   int             GetPercCode(double perc);
   void          OpenInfoCalbration(Int_t run);
+  void          OpenInfoCalbration18(Int_t run);
+
     // Cuts and options
     int                     fDebug; // debug level controls amount of output statements
     double              fHarmonic; // value of harmonic
     TString             fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
+    TString             fCentEst;
     int                     fFltbit; // AOD filter bit selection
     int                     fNclsCut; // ncls cut for all tracks 
     float                  fChi2Hg; // upper limmit for chi2
@@ -175,12 +181,13 @@ private:
     const float        fEtaCut; // eta cut
     const float        fDedxCut; //dedx cut
     float                  fZvtxCut; // z-vertex selection for collision  
-    int                     fPUSyst;                  
+    int                     fPUSyst; // 0: default; 1: Tight PU cut; 2: TOF PU cut; 3: Fill PU effect QA; 4: with new Para       
     // Weight List   
     TList*                fListNUE; // read list for NUE
     TList*                fListNUA; // read lists for NUA
     TList*                fListVZEROCALIB; // read list fpr V0 Calib
-
+    TList*                fListwCent;
+    TH1D*               hwCent;
     // Q QStar event-wise
     TComplex        fNegEtaQ;
     TComplex        fNegEtaQStar;
@@ -197,6 +204,7 @@ private:
     TH3F*              hCorrectNUAPos; // Protty
     TH3F*              hCorrectNUANeg; // Protty
     TH2D*             hMultV0Read;
+    TH2F*             fHCorrectV0ChWeghts;
     TH2D*             hQnPercentile;
     TH1D*             hQnPercentile_centThisEvt;
     TSpline3*        sp; 
@@ -229,6 +237,8 @@ private:
     TH2D*             hMQNeg_weight_thisEvt;
     TProfile*          pRefFlow_thisEvt;
     TProfile*          pIntd2_thisEvt;
+    TProfile*          pbufferPt_thisEvt;
+    TProfile*          pbufferEta_thisEvt;
 
     // Read Files for V0Calib
     TProfile3D*     pV0XMeanRead[3]; 
@@ -244,6 +254,7 @@ private:
 
     // Output QA
     TH1D*             hCent[2];
+    TH1D*             hCentRBR[138];
     TH1D*             hVz[2];
     TH2D*             hCentQA[8];
     TH2D*             hMultCentQA[2];
@@ -272,6 +283,12 @@ private:
     TProfile*         pAch[NCENTBINS];
     TH1D*            hMultMb[NQNBINS];
     TH1D*            hAchMb[NQNBINS];
+
+    // pt,eta vs Ach
+    TProfile* pPosPtAch[NCENTBINS];
+    TProfile* pNegPtAch[NCENTBINS];
+    TProfile* pPosEtaAch[NCENTBINS];
+    TProfile* pNegEtaAch[NCENTBINS];
 
     AliAnalysisTaskCMWESE(const AliAnalysisTaskCMWESE&);
     AliAnalysisTaskCMWESE& operator=(const AliAnalysisTaskCMWESE&);

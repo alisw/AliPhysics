@@ -54,7 +54,7 @@ AliHFMLVarHandlerDstoKKpi::~AliHFMLVarHandlerDstoKKpi()
 }
 
 //________________________________________________________________
-TTree* AliHFMLVarHandlerDstoKKpi::BuildTree(TString name, TString title) 
+TTree* AliHFMLVarHandlerDstoKKpi::BuildTree(TString name, TString title)
 {
     if(fTreeVar) {
         delete fTreeVar;
@@ -70,14 +70,14 @@ TTree* AliHFMLVarHandlerDstoKKpi::BuildTree(TString name, TString title)
     if(fAddSingleTrackVar)
         AddSingleTrackBranches();
     //sed pid variables
-    if(fPidOpt != kNoPID) 
+    if(fPidOpt != kNoPID)
         AddPidBranches(true, true, false, true, true);
 
     //set Ds variables
     TString massKKname = "";
-    if(fMassKKOpt == kMassKK) 
+    if(fMassKKOpt == kMassKK)
         massKKname = "mass_KK";
-    else if(fMassKKOpt == kDeltaMassKKPhi) 
+    else if(fMassKKOpt == kDeltaMassKKPhi)
         massKKname = "delta_mass_KK";
 
     fTreeVar->Branch("sig_vert", &fSigmaVertex);
@@ -95,15 +95,15 @@ TTree* AliHFMLVarHandlerDstoKKpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliAODPidHF *pidrespo) 
+bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliAODPidHF *pidrespo)
 {
-    if(!cand) 
+    if(!cand)
         return false;
     if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-        if(!(fCandType&kSignal || fCandType&kRefl)) 
+        if(!(fCandType&kSignal || fCandType&kRefl || fCandType&kDplustoKKpi || fCandType&kDplustoKpipi)) 
             return true;
     }
-    
+
     //topological variables
     //common
     fPt = cand->Pt();
@@ -139,15 +139,15 @@ bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
         cospikphi = cand3p->CosPiKPhiRFramepiKK();
     }
     fCosPiKPhi = cospikphi * cospikphi * cospikphi;
-        
+
     //single-track variables
     AliAODTrack* prongtracks[3];
-    for(unsigned int iProng = 0; iProng < fNProngs; iProng++) 
+    for(unsigned int iProng = 0; iProng < fNProngs; iProng++)
         prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
 
     if(fAddSingleTrackVar) {
-        bool setsingletrack = SetSingleTrackVars(prongtracks);  
-        if(!setsingletrack) 
+        bool setsingletrack = SetSingleTrackVars(prongtracks);
+        if(!setsingletrack)
             return false;
         for(unsigned int iProng = 0; iProng < fNProngs; iProng++)
             fImpParProng[iProng] = cand->Getd0Prong(iProng);
@@ -156,9 +156,21 @@ bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
     //pid variables
     if(fPidOpt != kNoPID) {
         bool setpid = SetPidVars(prongtracks, pidrespo, true, true, false, true, true);
-        if(!setpid) 
+        if(!setpid)
             return false;
     }
 
     return true;
+}
+
+//________________________________________________________________
+void AliHFMLVarHandlerDstoKKpi::FillTree() {
+    //if fill only signal and not signal/reflection/D+ candidate, do not store
+    if(fFillOnlySignal && !(fCandType&kSignal) && !(fCandType&kRefl) && !(fCandType&kDplustoKKpi) && !(fCandType&kDplustoKpipi)) {
+        fCandType = 0;
+    }
+    else {
+        fTreeVar->Fill();
+        fCandType = 0;
+    }
 }

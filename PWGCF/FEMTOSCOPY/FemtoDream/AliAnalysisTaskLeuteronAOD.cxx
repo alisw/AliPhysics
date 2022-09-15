@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskLeuteronAOD.h"
 #include "AliAODTrack.h"
+#include "AliMultSelection.h"
 
 ClassImp(AliAnalysisTaskLeuteronAOD)
 
@@ -18,20 +19,27 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fisSidebandSignal(false),
   fisUpperSideband(false),
   fisLowerSideband(false),
-  fTrackBufferSize(2000),
+  fisPbPb(false),
+  fisCentral(false),
+  fTrackBufferSize(50000),
   fEventList(nullptr),
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
   fDeuteronList(nullptr),
   fDeuteronMassSqTOF(nullptr),
+  fDeuteronMassSqTOFFullPt(nullptr),
+  fDeuteronTPCnSigma(nullptr),
   fAntideuteronList(nullptr),
   fAntideuteronMassSqTOF(nullptr),
+  fAntideuteronMassSqTOFFullPt(nullptr),
+  fAntideuteronTPCnSigma(nullptr),
   fLambdaList(nullptr),
   fAntilambdaList(nullptr),
   fPairCleanerList(nullptr),
   fResultsList(nullptr),
   fResultsQAList(nullptr),
   fSimpleEventCounter(nullptr),
+  fEventCentrality(nullptr),
   fEvent(nullptr),
   fTrack(nullptr),
   fFemtov0(nullptr),
@@ -39,7 +47,11 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fTrackCutsPart1(nullptr),
   fTrackCutsPart2(nullptr),
   fTrackCutsPart3(nullptr),
+  fTrackCutsPart3Mass(nullptr),
+  fTrackCutsPart3Sigma(nullptr),
   fTrackCutsPart4(nullptr),
+  fTrackCutsPart4Mass(nullptr),
+  fTrackCutsPart4Sigma(nullptr),
   fv0CutsPart5(nullptr),
   fv0CutsPart6(nullptr),
   fConfig(nullptr),
@@ -54,27 +66,34 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
 
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool doEventQAPlots,bool doResultsQAPlots):AliAnalysisTaskSE(name),
+AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool isPbPb,bool doEventQAPlots,bool doResultsQAPlots,bool isCentral):AliAnalysisTaskSE(name),
   fIsMC(isMC),
   fIsHighMultV0(isHighMultV0),
   fBruteForceDebugging(BruteForceDebugging),
   fisSidebandSignal(isSidebandSignal),
   fisUpperSideband(isUpperSideband),
   fisLowerSideband(isLowerSideband),
-  fTrackBufferSize(2000),
+  fisPbPb(isPbPb),
+  fisCentral(isCentral),
+  fTrackBufferSize(50000),
   fEventList(nullptr),
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
   fDeuteronList(nullptr),
   fDeuteronMassSqTOF(nullptr),
+  fDeuteronMassSqTOFFullPt(nullptr),
+  fDeuteronTPCnSigma(nullptr),
   fAntideuteronList(nullptr),
   fAntideuteronMassSqTOF(nullptr),
+  fAntideuteronMassSqTOFFullPt(nullptr),
+  fAntideuteronTPCnSigma(nullptr),
   fLambdaList(nullptr),
   fAntilambdaList(nullptr),
   fPairCleanerList(nullptr),
   fResultsList(nullptr),
   fResultsQAList(nullptr),
   fSimpleEventCounter(nullptr),
+  fEventCentrality(nullptr),
   fEvent(nullptr),
   fTrack(nullptr),
   fFemtov0(nullptr),
@@ -82,7 +101,11 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool is
   fTrackCutsPart1(nullptr),
   fTrackCutsPart2(nullptr),
   fTrackCutsPart3(nullptr),
+  fTrackCutsPart3Mass(nullptr),
+  fTrackCutsPart3Sigma(nullptr),
   fTrackCutsPart4(nullptr),
+  fTrackCutsPart4Mass(nullptr),
+  fTrackCutsPart4Sigma(nullptr),
   fv0CutsPart5(nullptr),
   fv0CutsPart6(nullptr),
   fConfig(nullptr),
@@ -112,6 +135,8 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool is
   }
 
 }
+
+
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
 AliAnalysisTaskLeuteronAOD::~AliAnalysisTaskLeuteronAOD(){	// destructor -> check if the object exists, if so delete it 
@@ -144,8 +169,24 @@ AliAnalysisTaskLeuteronAOD::~AliAnalysisTaskLeuteronAOD(){	// destructor -> chec
     delete fTrackCutsPart3;
   }
 
+  if(fTrackCutsPart3Mass){
+    delete fTrackCutsPart3Mass;
+  }
+
+  if(fTrackCutsPart3Sigma){
+    delete fTrackCutsPart3Sigma;
+  }
+
   if(fTrackCutsPart4){
     delete fTrackCutsPart4;
+  }
+
+  if(fTrackCutsPart4Mass){
+    delete fTrackCutsPart4Mass;
+  }
+
+  if(fTrackCutsPart4Sigma){
+    delete fTrackCutsPart4Sigma;
   }
 
   if(fv0CutsPart5){
@@ -242,11 +283,38 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
         fTrackCutsPart3->SetMCName("MCDeuteron");
         fDeuteronList->Add(fTrackCutsPart3->GetMCQAHists());
       }
-    }
-  
+   }
+ 
   if(fBruteForceDebugging){
     std::cout << "x-x-> AliAnalysisTaskAOD: fTrackCutsPart3 (Deuteron) initialized" << std::endl;
   }
+
+
+  if(!fTrackCutsPart3Mass){
+    AliFatal("Track Cuts for DeuteronsMass (fTrackCutsPart3Mass) not set!\n");
+  } else{
+      fTrackCutsPart3Mass->Init();
+      fTrackCutsPart3Mass->SetName("DeuteronMass");
+
+      if(fTrackCutsPart3Mass->GetIsMonteCarlo()){
+        fTrackCutsPart3Mass->SetMCName("MCDeuteronMass");
+      }
+   }
+
+
+  if(!fTrackCutsPart3Sigma){
+    AliFatal("Track Cuts for DeuteronsSigma (fTrackCutsPart3Sigma) not set!\n");
+  } else{
+      fTrackCutsPart3Sigma->Init();
+      fTrackCutsPart3Sigma->SetName("DeuteronSigma");
+
+      if(fTrackCutsPart3Sigma->GetIsMonteCarlo()){
+        fTrackCutsPart3Sigma->SetMCName("MCDeuteronSigma");
+      }
+   }
+
+
+
 
   if(!fTrackCutsPart4){
     AliFatal("Track Cuts for Antideuterons (fTrackCutsPart4) not set!\n");
@@ -264,6 +332,31 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
         fAntideuteronList->Add(fTrackCutsPart4->GetMCQAHists());
       }
   }
+
+  if(!fTrackCutsPart4Mass){
+    AliFatal("Track Cuts for DeuteronsMass (fTrackCutsPart4Mass) not set!\n");
+  } else{
+      fTrackCutsPart4Mass->Init();
+      fTrackCutsPart4Mass->SetName("AntiDeuteronMass");
+
+      if(fTrackCutsPart4Mass->GetIsMonteCarlo()){
+        fTrackCutsPart4Mass->SetMCName("MCAntiDeuteronMass");
+      }
+   }
+
+
+  if(!fTrackCutsPart4Sigma){
+    AliFatal("Track Cuts for AntiDeuteronsSigma (fTrackCutsPart4Sigma) not set!\n");
+  } else{
+      fTrackCutsPart4Sigma->Init();
+      fTrackCutsPart4Sigma->SetName("DeuteronSigma");
+
+      if(fTrackCutsPart4Sigma->GetIsMonteCarlo()){
+        fTrackCutsPart4Sigma->SetMCName("MCAntiDeuteronSigma");
+      }
+   }
+
+
 
   if(fBruteForceDebugging){
     std::cout << "x-x-> AliAnalysisTaskAOD: fTrackCutsPart4 (Antideuteron) initialized" << std::endl;
@@ -327,7 +420,7 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
 
   fGTI = new AliAODTrack*[fTrackBufferSize];
 
-  fPairCleaner = new AliFemtoDreamPairCleaner(2,2,false);
+  fPairCleaner = new AliFemtoDreamPairCleaner(12,2,false);
     // AliFemtoDreamPairCleaner(1,2,3)
     // 1. argument (integer) number of track-decay-combinations to be cleaned (proton-lambda, antiproton-antilambda, deuteron-lambda and antideuteron-antilambda)
     // 2. argument (integer) number of decay-decay-combinations to be cleaned (lambda-lambda and antilambda-antilambda)
@@ -352,15 +445,40 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
   fDeuteronMassSqTOF->GetYaxis()->SetTitle("#it{m}^{2} (GeV^{2}/#it{c}^{4})");
   fDeuteronList->Add(fDeuteronMassSqTOF);
 
+  fDeuteronMassSqTOFFullPt = new TH2F("fDeuteronMassSqTOFFullPt","Deuterons",50,0.0,5.0,400,0.0,8.0);
+  fDeuteronMassSqTOFFullPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fDeuteronMassSqTOFFullPt->GetYaxis()->SetTitle("#it{m}^{2} (GeV^{2}/#it{c}^{4})");
+  fDeuteronList->Add(fDeuteronMassSqTOFFullPt);
+
+  fDeuteronTPCnSigma = new TH2F("fDeuteronTPCnSigma","Deuterons",120,0.0,6.0,1200,-60.0,60.0);
+  fDeuteronTPCnSigma->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
+  fDeuteronTPCnSigma->GetYaxis()->SetTitle("#it{n#sigma}_{TPC}");
+  fDeuteronList->Add(fDeuteronTPCnSigma);
+
   fAntideuteronMassSqTOF = new TH2F("fAntideuteronMassSqTOF","Antideuterons",50,0.0,5.0,400,0.0,8.0);
   fAntideuteronMassSqTOF->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fAntideuteronMassSqTOF->GetYaxis()->SetTitle("#it{m}^{2} (GeV^{2}/#it{c}^{4})");
   fAntideuteronList->Add(fAntideuteronMassSqTOF);
 
+  fAntideuteronMassSqTOFFullPt = new TH2F("fAntideuteronMassSqTOFFullPt","Antideuterons",50,0.0,5.0,400,0.0,8.0);
+  fAntideuteronMassSqTOFFullPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fAntideuteronMassSqTOFFullPt->GetYaxis()->SetTitle("#it{m}^{2} (GeV^{2}/#it{c}^{4})");
+  fAntideuteronList->Add(fAntideuteronMassSqTOFFullPt);
+
+  fAntideuteronTPCnSigma = new TH2F("fDeuteronTPCnSigma","Deuterons",120,0.0,6.0,1200,-60.0,60.0);
+  fAntideuteronTPCnSigma->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
+  fAntideuteronTPCnSigma->GetYaxis()->SetTitle("#it{n#sigma}_{TPC}");
+  fAntideuteronList->Add(fAntideuteronTPCnSigma);
+
   fSimpleEventCounter = new TH1F("fSimpleEventCounter","Number of events",1,0.0,1.0);
   fSimpleEventCounter->GetYaxis()->SetTitle("number of events");
 
+  fEventCentrality = new TH1F("fEventCentrality","Centrality",100,0.0,100.0);
+  fEventCentrality->GetXaxis()->SetTitle("centrality (%)");
+  fEventCentrality->GetYaxis()->SetTitle("counts");
+
   fEventList->Add(fSimpleEventCounter);
+  fEventList->Add(fEventCentrality);
   fResultsList = fPartColl->GetHistList();
   fResultsQAList->Add(fPartColl->GetQAList());
   fEventList->Add(fEvent->GetEvtCutList());
@@ -405,6 +523,35 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  }
 	  StoreGlobalTrackReference(track);
 	}
+
+    double centrality_min = 0.0;
+    double centrality_max = 100.0;
+    double centrality = -999.0;
+
+    if(fisCentral == true){
+
+      centrality_min = 0.0;
+      centrality_max = 10.0;
+
+    }else{
+
+      centrality_min = 30.0;
+      centrality_max = 50.0;
+
+    }
+
+
+    AliMultSelection *MultSelection = (AliMultSelection*) Event->FindListObject("MultSelection");
+    centrality = MultSelection->GetMultiplicityPercentile("V0M");
+
+    if(fisPbPb){
+
+      if((centrality < centrality_min) || (centrality > centrality_max)) return;
+
+    }
+
+    // Fill centrality histo
+    fEventCentrality->Fill(centrality);
 
     // fill the simple event counter
     fSimpleEventCounter->Fill(0.5);
@@ -503,6 +650,22 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 
             }   
           }   
+
+	  // deuteron mass
+	  if(fTrackCutsPart3Mass->isSelected(fTrack)){
+
+	      mass2 = CalculateMassSqTOF(fTrack); 
+              fDeuteronMassSqTOFFullPt->Fill(fTrack->GetPt(),mass2);
+
+	  }
+
+	  // deuteron sigma
+	  if(fTrackCutsPart3Sigma->isSelected(fTrack)){
+
+              fDeuteronTPCnSigma->Fill(fTrack->GetMomTPC(),fTrack->GetnSigmaTPC((int) (AliPID::kDeuteron)));
+
+	  }
+  
 	
 	  // antideuterons
 	  if(fTrackCutsPart4->isSelected(fTrack)){
@@ -557,6 +720,23 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
             }
           }
 
+
+	  // antideuteron mass
+	  if(fTrackCutsPart4Mass->isSelected(fTrack)){
+
+	      mass2 = CalculateMassSqTOF(fTrack); 
+              fAntideuteronMassSqTOFFullPt->Fill(fTrack->GetPt(),mass2);
+
+	  }
+
+	  // antideuteron sigma
+	  if(fTrackCutsPart4Sigma->isSelected(fTrack)){
+
+              fAntideuteronTPCnSigma->Fill(fTrack->GetMomTPC(),fTrack->GetnSigmaTPC((int) (AliPID::kDeuteron)));
+
+	  }
+
+
 	}
 
 	TClonesArray *v01 = static_cast<TClonesArray*>(Event->GetV0s());
@@ -575,12 +755,27 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  }
 	}
 
-	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&Decays,0);		    // clean deuteron-lambda
-	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiDecays,1);	    // clean antideuteron-antilambda
+	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&Decays,0);			    // clean deuteron-lambda
+	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiDecays,1);		    // clean antideuteron-antilambda
 
-	fPairCleaner->CleanDecay(&Decays,0);					    // clean lambda-lambda
-	fPairCleaner->CleanDecay(&AntiDecays,1);				    // clean antilambda-antilambda
-  
+	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&AntiDecays,2);		    // clean deuteron-antilambda
+	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&Decays,3);		    // clean antideuteron-lambda
+
+	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&Decays,4);			    // clean proton-lambda
+	fPairCleaner->CleanTrackAndDecay(&AntiprotonParticles,&AntiDecays,5);		    // clean antiproton-antilambda
+
+	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&AntiDecays,6);		    // clean proton-antilambda
+	fPairCleaner->CleanTrackAndDecay(&AntiprotonParticles,&Decays,7);		    // clean antiproton-lambda
+
+	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&ProtonParticles,8);	    // clean deuteron-proton
+	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiprotonParticles,9);    // clean antideuteron-antiproton
+      
+	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&AntideuteronParticles,10);	    // clean deuteron-antideuteron
+	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&AntiprotonParticles,11);	    // clean proton-antiproton
+
+	fPairCleaner->CleanDecay(&Decays,0);						    // clean lambda-lambda
+	fPairCleaner->CleanDecay(&AntiDecays,1);					    // clean antilambda-antilambda
+ 
 	fPairCleaner->ResetArray();
 	fPairCleaner->StoreParticle(ProtonParticles);
 	fPairCleaner->StoreParticle(AntiprotonParticles);

@@ -17,6 +17,8 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple()
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
+      fhasFemtoTrackCleaning(false),
+      fhasFemtoPairCleaning(false),
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
@@ -56,6 +58,8 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple(const char* name, b
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
+      fhasFemtoTrackCleaning(false),
+      fhasFemtoPairCleaning(false),
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
@@ -200,8 +204,10 @@ void AliAnalysisTaskGeorgiosNTuple::UserCreateOutputObjects() {
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                                 fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,
-                                                fConfig->GetMinimalBookingME());
+    if(fhasFemtoTrackCleaning&&fhasFemtoPairCleaning){ fPairCleaner = new AliFemtoDreamPairCleaner(0,10,fConfig->GetMinimalBookingME()); }
+    else if(fhasFemtoTrackCleaning){ fPairCleaner = new AliFemtoDreamPairCleaner(0, 6,fConfig->GetMinimalBookingME()); }
+    else if(fhasFemtoPairCleaning){ fPairCleaner = new AliFemtoDreamPairCleaner(0, 4,fConfig->GetMinimalBookingME()); }
+    else{ fPairCleaner = new AliFemtoDreamPairCleaner(0, 0,fConfig->GetMinimalBookingME()); }
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
                                   GetCollisionCandidates(), false);
@@ -510,6 +516,10 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   fTVz = PrimVtx[2];
   fTMult = fEvent->GetMultiplicity();
 
+  AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
+
+//#ifndef GEORGIOSDEBUGG
+
   for(int ii=0; ii<MAXv0; ii++){
    fTv0Charge[ii]=-10;
    fTv0DCA[ii]=-100000.;
@@ -591,7 +601,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   //Lambdas
   std::vector<AliFemtoDreamBasePart> Lambdas;
   std::vector<AliFemtoDreamBasePart> AntiLambdas;
-  AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
+
 
   fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
@@ -617,7 +627,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     if(IsAntiLambda){Fillv0(fv0, -1);}
   }
 
-
+//#endif //GEORGIOSDEBUGG
 
 
   //init tree Xi (Cascades)
@@ -716,7 +726,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fCascade->SetCascade(fInputEvent, casc);           
 
     if (fXiBGR->isSelected(fCascade)) {
-      Xis.push_back(*fCascade);
+      XisBGR.push_back(*fCascade);
       IsXiBGR = kTRUE;
     }
     if (fAntiXiBGR->isSelected(fCascade)) {
@@ -737,8 +747,8 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
 
   }
   //fill Tree
-  if(fTnv0>0&&fTnCascade>0) fGeorgiosTree->Fill(); //Select here events with at least on Xi and one Lambda
-  //if(fTnv0>1) fGeorgiosTree->Fill();
+  //if(fTnv0>0&&fTnCascade>0) fGeorgiosTree->Fill(); //Select here events with at least on Xi and one Lambda
+  if(fTnv0>1) fGeorgiosTree->Fill();
 
   //pair cleaner
   fPairCleaner->ResetArray();
@@ -746,9 +756,53 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
 //  fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 0);   // to be set
 //  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiLambdas, 1); // to be set
 
+ //deactivate the track cleaner
+ /*
   fPairCleaner->CleanDecay(&Lambdas, 0);
   fPairCleaner->CleanDecay(&AntiLambdas, 1);
- 
+    
+  fPairCleaner->CleanDecay(&Xis, 2);
+  fPairCleaner->CleanDecay(&AntiXis, 3);
+  fPairCleaner->CleanDecay(&XisBGR, 4);
+  fPairCleaner->CleanDecay(&AntiXisBGR, 5);
+*/
+  /*
+  fPairCleaner->CleanTrackAndDecay(&Lambdas, &XisBGR, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiLambdas, &AntiXisBGR, 1);
+  fPairCleaner->CleanTrackAndDecay(&Lambdas, &Xis, 2); //this is apparently working
+  fPairCleaner->CleanTrackAndDecay(&AntiLambdas, &AntiXis, 3); //this is apparently working
+   */
+
+  int histcounter=0;
+  if(fhasFemtoTrackCleaning){
+  fPairCleaner->CleanDecay(&Lambdas, 0);
+  fPairCleaner->CleanDecay(&AntiLambdas, 1);
+    
+  fPairCleaner->CleanDecay(&Xis, 2);
+  fPairCleaner->CleanDecay(&AntiXis, 3);
+  fPairCleaner->CleanDecay(&XisBGR, 4);
+  fPairCleaner->CleanDecay(&AntiXisBGR, 5);
+  histcounter=6;
+  }
+  if(fhasFemtoPairCleaning){
+  fPairCleaner->CleanDecayAndDecay(&Lambdas, &XisBGR,histcounter+0);
+  fPairCleaner->CleanDecayAndDecay(&AntiLambdas, &AntiXisBGR,histcounter+1);
+  fPairCleaner->CleanDecayAndDecay(&Lambdas, &Xis,histcounter+2); //this is apparently working
+  fPairCleaner->CleanDecayAndDecay(&AntiLambdas, &AntiXis,histcounter+3); //this is apparently working
+  }
+
+
+  fPairCleaner->StoreParticle(Lambdas);
+  fPairCleaner->StoreParticle(AntiLambdas);
+  fPairCleaner->StoreParticle(XisBGR);
+  fPairCleaner->StoreParticle(AntiXisBGR);
+  fPairCleaner->StoreParticle(Xis);
+  fPairCleaner->StoreParticle(AntiXis);
+
+  /*
+  fPairCleaner->CleanDecay(&Lambdas, 0);
+  fPairCleaner->CleanDecay(&AntiLambdas, 1);
+
   fPairCleaner->StoreParticle(Lambdas);
   fPairCleaner->StoreParticle(AntiLambdas);
 
@@ -766,7 +820,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(AntiXis);
   fPairCleaner->StoreParticle(XisBGR);
   fPairCleaner->StoreParticle(AntiXisBGR);
-
+  */
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());

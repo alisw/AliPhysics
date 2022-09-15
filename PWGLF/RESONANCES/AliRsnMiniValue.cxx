@@ -125,6 +125,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kCosThetaTransversity:    return "CosThetaTransversity";
       case kCosThetaHe:   return "CosThetaHe";
       case kCosThetaHeAbs:   return "CosThetaHeAbs";
+      case kCosThetaCsAbs:  return "CosThetaCsAbs";
       case kPhiHePbPb5:   return "PhiHePbPb5";
       case kPhiHePP5:   return "PhiHePP5";
       case kCosThetaToEventPlane:    return "CosThetaToEventPlane";
@@ -143,6 +144,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPairYRes:         return "PairYResolution";
       case kPhiV:         return "PhiV";
       case kAsym:         return "PairAsymmetry";
+   case kpTLstar:         return "pTLstar";     
       default:            return "Undefined";
    }
 }
@@ -239,6 +241,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
            return pair->CosThetaHe(fUseMCInfo);
       case kCosThetaHeAbs:
            return pair->CosThetaHeAbs(fUseMCInfo);
+      case kCosThetaCsAbs:
+	   return pair->CosThetaCsAbs(fUseMCInfo);
       case kPhiHePbPb5:
            return pair->PhiHePbPb5(fUseMCInfo);
       case kPhiHePP5:
@@ -296,6 +300,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->PhiV(fUseMCInfo);
       case kAsym:
          return pair->PairAsymmetry(fUseMCInfo);
+   case kpTLstar:
+     return pair->pTLstar(fUseMCInfo);
       default:
          AliError("Invalid value type");
          return 1E20;

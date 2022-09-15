@@ -1,16 +1,10 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *    Author:       Zuzana Moravcova                                      *
+ *    Framework for calculating di-hadron correlation                     *
+ *    for extraction of v_n{2} and v_n[2] coefficients.                   *
  *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
+ *    If used, modified, or distributed,                                  *
+ *    please aknowledge the author of this code.                          *
  **************************************************************************/
 
 #include "AliAnalysisTaskCorrForFlow.h"
@@ -65,7 +59,8 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fCutDCAz(0.),
     fCutDCAxySigma(0.),
     fCutTPCchi2pCl(0.),
-    fTPCclMin(70.)
+    fTPCclMin(70.),
+    fEtaPolarity(0)
 
 {}
 //_____________________________________________________________________________
@@ -115,7 +110,8 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name, Bool_t 
     fCutDCAz(0.),
     fCutDCAxySigma(0.),
     fCutTPCchi2pCl(0.),
-    fTPCclMin(70.)
+    fTPCclMin(70.),
+    fEtaPolarity(0)
 {
     DefineInput(0, TChain::Class());
     if(bUseEff) { DefineInput(1, TList::Class()); }
@@ -147,6 +143,7 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     //
     fhTrigTracks = new TH3D("fhTrigTracks", "fhTrigTracks; pT (trig); PVz; sample", fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), fzVtxBins.size()-1, fzVtxBins.data(), fsampleBins.size()-1, fsampleBins.data());
     fOutputListCharged->Add(fhTrigTracks);
+
     //
     // //mixing
     fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins, fCentBins.data(), fNzVtxBins, fzVtxBins.data());
@@ -231,12 +228,33 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
 
         Double_t trackPt = track->Pt();
         if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
-          fTracksAss->Add((AliAODTrack*)track);
-          fNofTracks++;
-        }
+             if(fEtaPolarity == 0){
+             fTracksAss->Add((AliAODTrack*)track);
+             fNofTracks++;
+             }
+             else if(fEtaPolarity == -1 && track->Eta() > 0){
+             fTracksAss->Add((AliAODTrack*)track);
+             fNofTracks++;
+             }
+             else if(fEtaPolarity == 1 && track->Eta() < 0){
+             fTracksAss->Add((AliAODTrack*)track);
+             fNofTracks++;
+             }
+     }
+
         if(trackPt > fPtMinTrig && trackPt < fPtMaxTrig) {
-          fTracksTrigCharged->Add((AliAODTrack*)track);
-          fhTrigTracks->Fill(trackPt, fPVz, fSampleIndex);
+          if(fEtaPolarity == 0){
+               fTracksTrigCharged->Add((AliAODTrack*)track);
+               fhTrigTracks->Fill(trackPt, fPVz, fSampleIndex);
+          }
+          else if(fEtaPolarity == -1 && track->Eta() < 0){
+               fTracksTrigCharged->Add((AliAODTrack*)track);
+               fhTrigTracks->Fill(trackPt, fPVz, fSampleIndex);
+          }
+          else if(fEtaPolarity == 1 && track->Eta() > 0){
+               fTracksTrigCharged->Add((AliAODTrack*)track);
+               fhTrigTracks->Fill(trackPt, fPVz, fSampleIndex);
+          }
         }
 
         //example histogram
@@ -311,13 +329,20 @@ Bool_t AliAnalysisTaskCorrForFlow::IsTrackSelected(const AliAODTrack* track) con
   if(track->GetTPCNcls() < fTPCclMin && fFilterBit != 2) { return kFALSE; }
   if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
   if(track->Charge() == 0) { return kFALSE; }
-  if(fCutDCAz > 0. || fCutDCAxySigma > 0.){
+  if(fCutDCAz > 0.){
     Double_t vtxXYZ[3], trXYZ[3];
     track->GetXYZ(trXYZ);
     fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
     trXYZ[2] -= vtxXYZ[2];
     if(TMath::Abs(trXYZ[2]) > fCutDCAz) { return kFALSE; }
+  }
 
+  if(fCutDCAxySigma > 0.){
+    Double_t vtxXYZ[3], trXYZ[3];
+    track->GetXYZ(trXYZ);
+    fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
+    trXYZ[0] -= vtxXYZ[0];
+    trXYZ[1] -= vtxXYZ[1];
     Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0] + trXYZ[1]*trXYZ[1]);
     Double_t cutDcaxy = 0.0015+0.0050/TMath::Power(track->Pt(),1.1);
     if(trDcaxy > fCutDCAxySigma*cutDcaxy) { return kFALSE; }

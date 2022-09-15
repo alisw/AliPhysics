@@ -24,8 +24,15 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                                                        Bool_t PtWeight=kFALSE,
                                                        Int_t recoEstimator = AliAnalysisTaskSEDvsEventShapes::kNtrk10,
                                                        Int_t MCEstimator = AliAnalysisTaskSEDvsEventShapes::kEta10,
-							 Bool_t isPPbData=kFALSE,
-							 Int_t year=18)
+							                           Bool_t isPPbData=kFALSE,
+							                           Int_t year=18, 
+                                                       Bool_t unweightS0=kFALSE,
+                                                       Bool_t S0spline=kFALSE,
+                                                       TString filSpline="",
+                                                       TString splname="",
+                                                       Int_t nmult=0,
+                                                       std::vector<Float_t> multspl={0.}
+                                                       )
 {
     //
     // Macro for the AliAnalysisTaskSE for D candidates vs Multiplicity as a function of Event shape variables
@@ -83,6 +90,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     
     AliAnalysisTaskSEDvsEventShapes *dEvtShapeTask = new AliAnalysisTaskSEDvsEventShapes("dEvtShapeAnalysis",pdgMeson,analysiscuts,isPPbData);
     dEvtShapeTask->SetReadMC(readMC);
+    dEvtShapeTask->SetS0unweight(unweightS0);
     dEvtShapeTask->SetDebugLevel(0);
     dEvtShapeTask->SetUseBit(kTRUE);
     dEvtShapeTask->SetDoImpactParameterHistos(kFALSE);
@@ -94,7 +102,27 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     dEvtShapeTask->SetRemoveD0fromDstar(RemoveD0fromDstar);
     dEvtShapeTask->SetMultiplicityEstimator(recoEstimator);
     dEvtShapeTask->SetMCPrimariesEstimator(MCEstimator);
-    dEvtShapeTask->SetMCOption(MCOption);
+    dEvtShapeTask->SetMCOption(MCOption); 
+    TList* contspli[20];
+    if(S0spline==kTRUE){
+        TFile * spline = TFile::Open(filSpline.Data(), "READ");
+        if(spline){
+            for(int mult = 0; mult<=nmult; mult++){
+                if(mult==nmult)
+                    contspli[mult] = (TList*)spline->Get(Form("%s%0.f-%0.f",splname.Data(),multspl[0],multspl[mult]-1));
+                else
+                    contspli[mult] = (TList*)spline->Get(Form("%s%0.f-%0.f",splname.Data(),multspl[mult],multspl[mult+1]-1));   
+                Printf("Printing content of List from Splines file\n");    
+                contspli[mult]->Print();     
+            }
+            dEvtShapeTask->SetIsS0Spline(S0spline, contspli, splname.Data(), nmult, multspl);
+            spline->Close();
+        }
+        else{
+            Printf("FATAL: Splines file not found");
+            return 0x0;    
+        }
+    }   
     if(isPPbData) dEvtShapeTask->SetIsPPbData();
     
     if(NchWeight){
@@ -138,7 +166,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     }else if(pdgMeson==411)dEvtShapeTask->SetMassLimits(pdgMeson,0.2);
     
     if(estimatorFilename.EqualTo("") ) {
-        printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+        printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
     } else{
         
         TFile* fileEstimator=TFile::Open(estimatorFilename.Data());

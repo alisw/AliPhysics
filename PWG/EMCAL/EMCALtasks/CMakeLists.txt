@@ -72,6 +72,7 @@ set(SRCS
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
+  AliEmcalCorrectionCellEnergyCompression.cxx
   AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction.cxx
   AliEmcalCorrectionCellSingleChannelCalibration.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
@@ -90,6 +91,7 @@ set(SRCS
   AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
+  AliEmcalRejectMCBackground.cxx
   TestAliEmcalAODFilterBitCuts.cxx
   TestAliEmcalTrackSelection.cxx
   )

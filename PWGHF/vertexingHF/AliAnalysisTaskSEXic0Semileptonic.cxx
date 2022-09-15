@@ -263,7 +263,11 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	Double_t bin_old[8]  = {0, 1, 2, 3.2, 4.4, 6, 8, 12};
 	Double_t rapbin[21]  = {-1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
 		0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,	1};
-	Double_t widebin[11] = {0, 1, 2, 3, 4, 5, 6, 8, 12, 16, 20};
+
+	//Double_t widebin[11] = {0, 1, 2, 3, 4, 5, 6, 8, 12, 16, 20};
+	Double_t widebin[] = {0, 1, 2, 3, 4, 5, 6, 8, 12, 16, 20, 24}; //ckim, Feb. 9, 2022
+	const int widebinN = sizeof(widebin)/sizeof(widebin[0]) - 1;
+	const float pTMax = widebin[widebinN];
 
 	fHistos->CreateTH1("Centrality","",100,0,100,"s");
 	fHistos->CreateTH1("NumOfEvtperRun","", (295000-252000),252000,295000,"s"); //kimc
@@ -291,58 +295,56 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 		for (UInt_t a=0; a<hPUCut.size(); a++) hPileupEffect->GetXaxis()->SetBinLabel(a+1, hPUCut[a]);
 	}
 
-	fHistos->CreateTH1("hNonPromptXicRap","",500,-5,5,"s");
-	fHistos->CreateTH1("hPromptXicRap","",500,-5,5,"s");
-	fHistos->CreateTH1("hXicRap","",500,-5,5,"s");
+	fHistos->CreateTH1("hNonPromptXicRap", "", 500,-5,5, "s");
+	fHistos->CreateTH1("hPromptXicRap",    "", 500,-5,5, "s");
+	fHistos->CreateTH1("hXicRap",          "", 500,-5,5, "s");
+	fHistos->CreateTH1("DSElectronPair",   "", 100,0.,0.5, "s");
+	fHistos->CreateTH1("SSElectronPair",   "", 100,0.,0.5, "s");
+	fHistos->CreateTH1("hXimass",          "", 100,1.26,1.38, "s");
+	fHistos->CreateTH1("hXimass_total",    "", 2000,0,3, "s");
+	fHistos->CreateTH2("nSigmaTOFvsPt",    "", 50,0.,5., 15,-5.,5., "s");
+	fHistos->CreateTH2("nSigmaTPCvsPt",    "", 10,0.,5., 200,-10.,10., "s");
+	fHistos->CreateTH2("hXimassvsPt",      "", 100,1.29,1.35, 10,0.,10., "s");
 
-	fHistos->CreateTH2("nSigmaTPCvsPt","",10,0.,5.,200,-10.,10.,"s");
-	fHistos->CreateTH2("nSigmaTOFvsPt","",50,0.,5.,15,-5.,5.,"s");
-	fHistos->CreateTH1("DSElectronPair","",100,0.,0.5,"s");
-	fHistos->CreateTH1("SSElectronPair","",100,0.,0.5,"s");
+	fHistos->CreateTH1("hEleXiMassRS",        "", 10,1.3,3.3, "s");
+	fHistos->CreateTH1("hEleXiMassWS",        "", 10,1.3,3.3, "s");
+	fHistos->CreateTH1("hEleXiPtRS",          "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hEleXiPtWS",          "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hEleXiPtRS_SameSign", "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hEleXiPtWS_SameSign", "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hLooseEleXiPtRS",     "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hLooseEleXiPtWS",     "", widebinN,widebin, "s");
 
-	fHistos->CreateTH1("hXimass","",100,1.26,1.38,"s");
-	fHistos->CreateTH1("hXimass_total","",2000,0,3,"s");
-	fHistos->CreateTH2("hXimassvsPt","",100,1.29,1.35,10,0.,10.,"s");
+	fHistos->CreateTH1("eXiFromXib",     "", widebinN,widebin, "s");
+	fHistos->CreateTH1("Xib",            "", widebinN,widebin, "s");
+	fHistos->CreateTH2("XibvseXiRPM",    "", widebinN,widebin, widebinN,widebin, "s");
+	fHistos->CreateTH1("eXiFromXibGen",  "", widebinN,widebin, "s");
+	fHistos->CreateTH1("XibGen",         "", widebinN,widebin, "s");
+	fHistos->CreateTH1("XibGen05",       "", widebinN,widebin, "s");
+	fHistos->CreateTH2("XibvseXiRPMGen", "", widebinN,widebin, widebinN,widebin, "s");
 
-	fHistos->CreateTH1("hEleXiMassRS","",10,1.3,3.3,"s");
-	fHistos->CreateTH1("hEleXiMassWS","",10,1.3,3.3,"s");
-	fHistos->CreateTH1("hEleXiPtRS","",10,widebin,"s");
-	fHistos->CreateTH1("hEleXiPtWS","",10,widebin,"s");
-	fHistos->CreateTH1("hEleXiPtRS_SameSign","",10,widebin,"s");
-	fHistos->CreateTH1("hEleXiPtWS_SameSign","",10,widebin,"s");
-	fHistos->CreateTH1("hLooseEleXiPtRS","",10,widebin,"s");
-	fHistos->CreateTH1("hLooseEleXiPtWS","",10,widebin,"s");
+	fHistos->CreateTH2("hXicPtRap",             "", widebinN,widebin, 20,rapbin, "s");
+	fHistos->CreateTH1("hTrueXic0_oldbin",      "", 7,bin_old, "s");
+	fHistos->CreateTH1("hTrueXic0_oldbin_rap8", "", 7,bin_old, "s");
+	fHistos->CreateTH1("hTrueXic0",             "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hTrueXic0_rap8",        "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hTruePaireXi",          "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hGenXic0PtFromXib",     "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hGenXic0PtFromXic",     "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hXic0PtFromBottom1",    "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hXic0PtFromBottom2",    "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hXic0PtFromCharm1",     "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hXic0PtFromCharm2",     "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hElectronFromXic0",     "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hCascadeFromXic0",      "", widebinN,widebin, "s");
+	fHistos->CreateTH2("hMCXic0vsPair",         "", widebinN,widebin,widebinN,widebin, "s");
+	fHistos->CreateTH1("hMCXic0AllRap",         "", 12,0,12, "s");
 
-	fHistos->CreateTH1("eXiFromXib","",10,widebin,"s");
-	fHistos->CreateTH1("Xib","",10,widebin,"s");
-	fHistos->CreateTH2("XibvseXiRPM","",10,widebin,10,widebin,"s");
-	fHistos->CreateTH1("eXiFromXibGen","",10,widebin,"s");
-	fHistos->CreateTH1("XibGen","",10,widebin,"s");
-	fHistos->CreateTH1("XibGen05","",10,widebin,"s");
-	fHistos->CreateTH2("XibvseXiRPMGen","",10,widebin,10,widebin,"s");
-
-	fHistos->CreateTH2("hXicPtRap","",10,widebin,20,rapbin,"s");
-	fHistos->CreateTH1("hTrueXic0","",10,widebin,"s");
-	fHistos->CreateTH1("hTrueXic0_oldbin","",7,bin_old,"s");
-	fHistos->CreateTH1("hTrueXic0_rap8","",10,widebin,"s");
-	fHistos->CreateTH1("hTrueXic0_oldbin_rap8","",7,bin_old,"s");
-	fHistos->CreateTH1("hTruePaireXi","",10,widebin,"s");
-	fHistos->CreateTH1("hGenXic0PtFromXib","",10,widebin,"s");
-	fHistos->CreateTH1("hGenXic0PtFromXic","",10,widebin,"s");
-	fHistos->CreateTH1("hXic0PtFromBottom1","",10,widebin,"s");
-	fHistos->CreateTH1("hXic0PtFromBottom2","",10,widebin,"s");
-	fHistos->CreateTH1("hXic0PtFromCharm1","",10,widebin,"s");
-	fHistos->CreateTH1("hXic0PtFromCharm2","",10,widebin,"s");
-	fHistos->CreateTH1("hElectronFromXic0","",10,widebin,"s");
-	fHistos->CreateTH1("hCascadeFromXic0","",10,widebin,"s");
-	fHistos->CreateTH1("hMCXic0AllRap","",12,0,12,"s");
-	fHistos->CreateTH2("hMCXic0vsPair","",10,widebin,10,widebin,"s");
-
-	fHistos->CreateTH2("hXic0vseXiRPM","",10,widebin,10,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt","",10,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt1","",10,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt2","",10,widebin,"s");
-	fHistos->CreateTH1("hRecoPairPt","",10,widebin,"s");
+	fHistos->CreateTH2("hXic0vseXiRPM", "", widebinN,widebin, widebinN,widebin, "s");
+	fHistos->CreateTH1("hGenXic0Pt",    "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hGenXic0Pt1",   "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hGenXic0Pt2",   "", widebinN,widebin, "s");
+	fHistos->CreateTH1("hRecoPairPt",   "", widebinN,widebin, "s");
 
 	vector<TString> DecayChannel ={"e&Xi","!e&Xi","e&!Xi","!e&!Xi"};
 	auto hMCXic0Decays = fHistos->CreateTH1("hMCXic0Decays","",DecayChannel.size(), 0, DecayChannel.size());
@@ -374,32 +376,32 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	auto h11 = fHistos->CreateTH1("e_b_flag","",ent11.size(), 0, ent11.size());
 	for(auto i=0u; i<ent11.size(); i++) h11->GetXaxis()->SetBinLabel(i+1,ent11.at(i).Data());
 
-	fHistos->CreateTH1("hDCAV0PrToPrimVertex","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCAV0PiToPrimVertex","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCABachToPrimVertex","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCAV0ToPrimVertex","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hV0CosineOfPoiningAngleXi","",500,0.,1.,"s");
-	fHistos->CreateTH1("hV0CosineOfPoiningAngleV0Xi","",500,0.,1.,"s");
-	fHistos->CreateTH1("hCascDecayLength","",1000,0.,20.,"s");
-	fHistos->CreateTH1("hDecayLengthV0","",1000,0.,20.,"s");
+	fHistos->CreateTH1("hDCAV0PrToPrimVertex",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCAV0PiToPrimVertex",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCABachToPrimVertex",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCAV0ToPrimVertex",          "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hV0CosineOfPoiningAngleXi",   "", 500,0.,1., "s");
+	fHistos->CreateTH1("hV0CosineOfPoiningAngleV0Xi", "", 500,0.,1., "s");
+	fHistos->CreateTH1("hCascDecayLength",            "", 1000,0.,20., "s");
+	fHistos->CreateTH1("hDecayLengthV0",              "", 1000,0.,20., "s");
 
-	fHistos->CreateTH1("hDCAV0PrToPrimVertex_b","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCAV0PiToPrimVertex_b","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCABachToPrimVertex_b","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCAV0ToPrimVertex_b","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hV0CosineOfPoiningAngleXi_b","",500,0.,1.,"s");
-	fHistos->CreateTH1("hV0CosineOfPoiningAngleV0Xi_b","",500,0.,1.,"s");
-	fHistos->CreateTH1("hCascDecayLength_b","",1000,0.,20.,"s");
-	fHistos->CreateTH1("hDecayLengthV0_b","",1000,0.,20.,"s");
+	fHistos->CreateTH1("hDCAV0PrToPrimVertex_b",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCAV0PiToPrimVertex_b",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCABachToPrimVertex_b",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCAV0ToPrimVertex_b",          "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hV0CosineOfPoiningAngleXi_b",   "", 500,0.,1., "s");
+	fHistos->CreateTH1("hV0CosineOfPoiningAngleV0Xi_b", "", 500,0.,1., "s");
+	fHistos->CreateTH1("hCascDecayLength_b",            "", 1000,0.,20., "s");
+	fHistos->CreateTH1("hDecayLengthV0_b",              "", 1000,0.,20., "s");
 
-	fHistos->CreateTH1("hDCAV0PrToPrimVertex_c","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCAV0PiToPrimVertex_c","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCABachToPrimVertex_c","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hDCAV0ToPrimVertex_c","",2500,0.,5.,"s");
-	fHistos->CreateTH1("hV0CosineOfPoiningAngleXi_c","",500,0.,1.,"s");
-	fHistos->CreateTH1("hV0CosineOfPoiningAngleV0Xi_c","",500,0.,1.,"s");
-	fHistos->CreateTH1("hCascDecayLength_c","",1000,0.,20.,"s");
-	fHistos->CreateTH1("hDecayLengthV0_c","",1000,0.,20.,"s");
+	fHistos->CreateTH1("hDCAV0PrToPrimVertex_c",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCAV0PiToPrimVertex_c",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCABachToPrimVertex_c",        "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hDCAV0ToPrimVertex_c",          "", 2500,0.,5., "s");
+	fHistos->CreateTH1("hV0CosineOfPoiningAngleXi_c",   "", 500,0.,1., "s");
+	fHistos->CreateTH1("hV0CosineOfPoiningAngleV0Xi_c", "", 500,0.,1., "s");
+	fHistos->CreateTH1("hCascDecayLength_c",            "", 1000,0.,20., "s");
+	fHistos->CreateTH1("hDecayLengthV0_c",              "", 1000,0.,20., "s");
 
 	PostData(1, fHistos);
 	PostData(2, fTrackCuts);
@@ -1049,8 +1051,8 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::FilterCascade(AliAODcascade *casc)
 		if (fabs(fPIDResponse->NumberOfSigmasTPC(b_pion,AliPID::kPion))>4) return kFALSE; //4
 	}
 
-	Double_t mLPDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
-	Double_t mxiPDG = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+	Double_t mLPDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass(); //Lambda
+	Double_t mxiPDG = TDatabasePDG::Instance()->GetParticle(3312)->Mass(); //Charged Xi
 	Double_t massLambda = casc->MassLambda();
 	Double_t massAntiLambda = casc->MassAntiLambda();
 	Double_t massXi = casc->MassXi();
@@ -1137,7 +1139,8 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 	Bool_t c_flag = kFALSE; //Xi-
 	Bool_t b_flag = kFALSE; //Xi-
 
-	for (int i=0; i<8; i++) fMCXicTreeVariable[i] = -9999.; //Reset
+	const int nMCXicTreeVariable = 9;
+	for (int i=0; i<nMCXicTreeVariable; i++) fMCXicTreeVariable[i] = -9999.; //Reset
 
 	AliAODMCParticle *MCe = 0;
 	AliAODMCParticle *MCcasc = 0;
@@ -1187,7 +1190,7 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 	}
 	fHistos->FillTH1("hMCXic0AllRap", mcpart->Pt());
 
-	if (e_flag&&xi_flag)
+	if (e_flag && xi_flag)
 	{
 		Double_t pxe = MCe->Px(); Double_t pye = MCe->Py();
 		Double_t pxv = MCcasc->Px(); Double_t pyv = MCcasc->Py();
@@ -1203,6 +1206,7 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 		fMCXicTreeVariable[5] = MCcasc->Y();
 		fMCXicTreeVariable[6] = c_flag;
 		fMCXicTreeVariable[7] = b_flag;
+		fMCXicTreeVariable[8] = mcpart->Zv(); //ckim, Feb. 8, 2022
 		fMCXicTree->Fill();
 
 		if (fabs(mcpart->Y())<0.5)
@@ -1919,7 +1923,8 @@ void AliAnalysisTaskSEXic0Semileptonic::DefineMCXicTree()
 	fMCXicTree = new TTree("MCXicTree","MCXicTree");
 	vector<TString> fTreeVariableName =
 	{
-		"Xic0_pT","e_pT","Xi_pT","Xic0_rap","e_rap","Xi_rap","c_flag","b_flag"
+		"Xic0_pT","e_pT","Xi_pT","Xic0_rap","e_rap","Xi_rap","c_flag","b_flag",
+		"fVtxZ_PV" //ckim, Feb. 8, 2022
 	};
 	fMCXicTreeVariable = new Float_t [fTreeVariableName.size()];
 

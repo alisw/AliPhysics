@@ -260,9 +260,9 @@ Bool_t ConfigKStarPlusMinusPbPb2018arm
       
       // axis W: Centrality                                                                                                                         
       out->AddAxis(centID, multbin, lmultbin, hmultbin);
-      out->AddAxis(fdpt, 200, 0, 20);
-      out->AddAxis(fdp, 200, 0, 20);
-      out->AddAxis(fim, 200, 0.4, 0.6);
+      //out->AddAxis(fdpt, 200, 0, 20);
+      //out->AddAxis(fdp, 200, 0, 20);
+      //out->AddAxis(fim, 200, 0.4, 0.6);
      
         
     }
@@ -840,8 +840,11 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     }
 
     if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
-        trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-        Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
+      trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+      //trkQualityCut->SetDefaults2011(kTRUE,kFALSE);
+      //trkQualityCut->SetPtRange(0.10, 30.0);
+      //trkQualityCut->SetEtaRange(-0.8, 0.8);
+      Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
 
         if(!customFilterBit){//ESD
             if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}

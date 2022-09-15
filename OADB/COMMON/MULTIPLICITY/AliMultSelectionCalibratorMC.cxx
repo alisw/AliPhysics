@@ -210,17 +210,17 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     }
   }
   
-//  //WARNING/FIXME- This will not allow for event selections to change in the middle of the processed dataset
-//  //This will shortly be replaced with a proper selection
-//  //in which the OADB is queried and a run range mapping object is created
-//  fTree->GetEntry ( 0 ) ;
-//  oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(fRunNumber, "Default");
-//  if(!oadbMultSelection) {
-//    AliWarningF("OADB object for run %i not found! Aborting...", fRunNumber );
-//    return kFALSE;
-//  }
-//  AliInfoF("OADB object acquired for run %i, setting up",fRunNumber);
-//  fSelection         = oadbMultSelection->GetMultSelection();
+  //WARNING/FIXME- This will not allow for event selections to change in the middle of the processed dataset
+  //This will shortly be replaced with a proper selection
+  //in which the OADB is queried and a run range mapping object is created
+  fTree->GetEntry ( 0 ) ;
+  oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(fRunNumber, "Default");
+  if(!oadbMultSelection) {
+    AliWarningF("OADB object for run %i not found! Aborting...", fRunNumber );
+    return kFALSE;
+  }
+  AliInfoF("OADB object acquired for run %i, setting up",fRunNumber);
+  fSelection         = oadbMultSelection->GetMultSelection();
 //  fMultSelectionCuts = oadbMultSelection->GetEventCuts();
 //  AliInfo("Setup complete!");
 //  cout<<" * Event Selection Read from OADB: "<<endl;
@@ -609,6 +609,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   Float_t lRebinningEstimator = 10;
   TFile *fOutputDebug = new TFile(fDebugFileName.Data(), "RECREATE");
   
+  TFile *fOutputMaps = new TFile("mc-maps", "RECREATE");
+  
+  fOutputDebug->cd();
+  
   //Create 2D correlation plots as needed
   TH2F *l2dTrackletVsEstimatorData [1000] [lNEstimators];
   TH2F *l2dTrackletVsEstimatorMC   [1000] [lNEstimators];
@@ -794,7 +798,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //============================================================
     
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
-      
+      cout<<"Now fitting profiles for run "<<lRunNumbers[iRun]<<", estimator #"<<iEst<<endl;
       //Check if anchored, disregard anchored range if the case
       Double_t lLowestX=0.0;
       if(fSelection->GetEstimator(iEst)->GetUseAnchor()){
@@ -938,11 +942,16 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   
   cout<<"Write output..."<<endl;
   
+  fOutputDebug -> cd();
+  
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
       l2dTrackletVsEstimatorData[iRun][iEst]->Write(l2dTrackletVsEstimatorData[iRun][iEst]->GetName(), TObject::kOverwrite);
       profdata[iRun][iEst]->Write(profdata[iRun][iEst]->GetName(), TObject::kOverwrite);
       fitdata[iRun][iEst]->Write(fitdata[iRun][iEst]->GetName(), TObject::kOverwrite);
+      fOutputMaps -> cd();
+      fitdata[iRun][iEst]->Write(fitdata[iRun][iEst]->GetName(), TObject::kOverwrite);
+      fOutputDebug -> cd();
     }
   }
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
@@ -950,6 +959,9 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
       l2dTrackletVsEstimatorMC[iRun][iEst]->Write(l2dTrackletVsEstimatorMC[iRun][iEst]->GetName(), TObject::kOverwrite);
       profmc[iRun][iEst]->Write(profmc[iRun][iEst]->GetName(), TObject::kOverwrite);
       fitmc[iRun][iEst]->Write(fitmc[iRun][iEst]->GetName(), TObject::kOverwrite);
+      fOutputMaps -> cd();
+      fitmc[iRun][iEst]->Write(fitdata[iRun][iEst]->GetName(), TObject::kOverwrite);
+      fOutputDebug -> cd();
     }
   }
   
@@ -1006,6 +1018,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //============================================================
     
     if ( sTreeMC[iRun]->GetEntries() > 10 && sTree[iRun]->GetEntries() > 10 ){
+      cout<<"Proceeding to calibration of run "<<lRunNumbers[iRun]<<" with "<<lNEstimators<<" estimators..."<<endl;
       oadbMultSelectionout = new AliOADBMultSelection();
       cuts              = new AliMultSelectionCuts();
       cuts = fMultSelectionCuts;
@@ -1013,6 +1026,9 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
       
       //Write in scaling factors!
       TString lTempDef;
+      if(fkUseQuadraticMapping) cout<<"Estimator loop will do quadratic mapping!"<<endl;
+      if(!fkUseQuadraticMapping) cout<<"Estimator loop will do simple mapping!"<<endl;
+      
       for(Int_t iEst=0; iEst<lNEstimators; iEst++){
         lTempDef = fsels->GetEstimator( iEst )->GetDefinition();
         lTempDef.ReplaceAll("fZnaFired", "1");
@@ -1027,9 +1043,11 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
            !lEstName.Contains("CL0") &&
            !lEstName.Contains("CL1") ){
           if(!fkUseQuadraticMapping){
+            cout<<"Simple scaling factors being applied for run "<<lRunNumbers[iRun]<<" estimator "<<iEst<<endl;
             lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
             lTempDef.Append(")"); //don't forget parentheses...
           }else{
+            cout<<"Attempt supercalibration of run "<<lRunNumbers[iRun]<<" estimator "<<iEst<<endl;
             //Experimental quadratic fit
             TString lTemporary = lTempDef.Data();
             

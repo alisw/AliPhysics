@@ -19,10 +19,10 @@
 #include "AliFemtoDreamPartCollection.h"
 #include "AliFemtoDreamControlSample.h"
 
-///AliAnalysisTaskNanoLKr is our class, which inherits AliAnalysisTaskSE members
-class AliAnalysisTaskNanoLKr : public AliAnalysisTaskSE {
- public:
-  AliAnalysisTaskNanoLKr();  ///constructor 1
+///AliAnalysisTaskNanoLKr is our class, 
+class AliAnalysisTaskNanoLKr : public AliAnalysisTaskSE { //it inherits AliAnalysisTaskSE members
+ public: 
+  AliAnalysisTaskNanoLKr();  ///constructor 1. Not parameters 
   AliAnalysisTaskNanoLKr(const char* name, bool isMC); ///constructor 2
   virtual ~AliAnalysisTaskNanoLKr(); ///destructor
 
@@ -109,5 +109,5 @@ class AliAnalysisTaskNanoLKr : public AliAnalysisTaskSE {
   ClassDef(AliAnalysisTaskNanoLKr,4)
 };
 
-#endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOLKR_H_ */
+#endif 
 ///third include guard, to avoid double inclusion

@@ -38,6 +38,13 @@ AliAnalysisTaskSigmaPlus* AddTaskSigmaPlus(TString name = "SigmaPlus")
     mgr->ConnectOutput(task,1,mgr->CreateContainer("Histogram_List", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2,mgr->CreateContainer("Sigma_Candidate_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,3,mgr->CreateContainer("Sigma_Candidate_Extra_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer("Sigma_Pair_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer("Proton_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,6,mgr->CreateContainer("Sigma_Pair_red_Tree_SE", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,7,mgr->CreateContainer("Sigma_Pair_red_Tree_ME", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,8,mgr->CreateContainer("Sigma_ME_Background_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,9,mgr->CreateContainer("Sigma_Candidate_Tree_rot_Bkg", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+
     // Finally, a pointer to the created task is returned
     return task;
 }

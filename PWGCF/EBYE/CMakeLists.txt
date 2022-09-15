@@ -39,6 +39,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskBF.cxx
   BalanceFunctions/AliAnalysisTaskBFPsi.cxx
   BalanceFunctions/AliAnalysisTaskSignedBF.cxx
+  BalanceFunctions/AliAnalysisTaskSignedBFMC.cxx	
   BalanceFunctions/AliAnalysisTaskEventMixingBF.cxx
   BalanceFunctions/AliAnalysisTaskTriggeredBF.cxx
   BalanceFunctions/AliAnalysisTaskEfficiencyBF.cxx
@@ -78,6 +79,7 @@ set(SRCS
   Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
+  MeanPtFluctuations_PbPb5020GeV2018/AliAnalysisMeanPtdata.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeMCPbPbESD.cxx
@@ -117,8 +119,10 @@ set(SRCS
   NetParticle/AliEbyEPhiDistNew.cxx
   TempFluctuations/AliAnalysisTempFluc.cxx
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
+  MultPt/AliAnalysisMultPt.cxx
   LongAsymmetry/AliAnalysisTaskLongFluctuations.cxx
   LongAsymmetry/AliAnalysisTaskLegendreCoef.cxx
+  LongAsymmetry/AliAnalysisTaskLegendreCoef_local.cxx
   LongAsymmetry/AliAnalysisTaskEtaDist.cxx
   StronglyIntensiveCorrelations/AliAnalysisTaskStronglyIntensiveCorrTree.cxx
   FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
@@ -128,6 +132,11 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx
   HMPTF/AliAnalysisTaskMeanptFluctuationPP.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityMC.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity2.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2.cxx
+  IntermittencyAnalysis/AliAnalysisTaskNFMs.cxx
   )
 
 # Headers from sources
@@ -173,6 +182,7 @@ install(DIRECTORY NetParticle/macros DESTINATION PWGCF/EBYE/NetParticle)
 install(DIRECTORY NetLambda/macros DESTINATION PWGCF/EBYE/NetLambda)
 install(DIRECTORY TempFluctuations/macros DESTINATION PWGCF/EBYE/TempFluctuations)
 install(DIRECTORY LongAsymmetry/macros DESTINATION PWGCF/EBYE/LongAsymmetry)
+install(DIRECTORY MultPt/macros DESTINATION PWGCF/EBYE/MultPt)
 install(DIRECTORY IdentityMethodEbyeFluctuations/macros DESTINATION PWGCF/EBYE/IdentityMethodEbyeFluctuations)
 install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeFluctuations)
 install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyIntensiveCorrelations)

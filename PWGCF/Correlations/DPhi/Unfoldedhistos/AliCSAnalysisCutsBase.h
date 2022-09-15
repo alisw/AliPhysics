@@ -203,8 +203,9 @@ public:
       /// \name 2018
       /// \brief 2018 periods
       ///@{
-      kLHC18q, ///< PbPb 5 TeV
-      kLHC18r, ///< PbPb 5 TeV
+      kLHC18bp, ///< pp 13 TeV
+      kLHC18q,  ///< PbPb 5 TeV
+      kLHC18r,  ///< PbPb 5 TeV
       ///@}
       /// \name 2018MC
       /// \brief MC's corresponding to 2018 data

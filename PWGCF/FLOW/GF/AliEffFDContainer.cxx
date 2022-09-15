@@ -1,3 +1,4 @@
+
 /*
   Container to calculate charged-particle efficiencies with PCC and also record DCAxy distributions for feed-down estimation.
   The PCC framework (AliMCSpectraWeights) used here is written by Patrick Huhn.
@@ -34,6 +35,7 @@ AliEffFDContainer::AliEffFDContainer():
   fDCA(0),
   fWithinDCA(0),
   fPurity(0),
+  fFDvsPhi(0),
   fIdentifier(new TNamed("Identifier","")),
   fSpNames({"","pi_","ka_","pr_"}),
   fPtBins(0),
@@ -79,6 +81,7 @@ AliEffFDContainer::AliEffFDContainer(TString lName, TString lTitle, Bool_t lIsMC
   fDCA(0),
   fWithinDCA(0),
   fPurity(0),
+  fFDvsPhi(0),
   fIdentifier(new TNamed("Identifier","")),
   fSpNames({"","pi_","ka_","pr_"}),
   fPtBins(0),
@@ -208,12 +211,12 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     lPart = (AliMCParticle*)flMCEvent->GetTrack(index);
     if(!lPart) continue;
     if(lPart->Charge()==0.) continue;
-    eta = lPart->Eta();
-    if(!CheckEta(eta)) continue;
+    // eta = lPart->Eta(); ///Eta check either on gen. or rec., not on both
+    // if(!CheckEta(eta)) continue; //Eta check either on gen. or rec., not on both
     if(fUseGenPt) pt = lPart->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     CompWeight = flMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
-    Double_t secWeight = flMCSpectraWeights->GetWeightForSecondaryParticle(lPart->Particle());
+    Double_t secWeight = flMCSpectraWeights->GetWeightForSecondaryParticle(index);
     Int_t lBayesPIDIndex=0;
     Int_t lTruePIDIndex =0;
     Bool_t IndexMatch=kFALSE;
@@ -236,9 +239,9 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
       fDCA[0][0]->Fill(pt,0.,dcaXY,CompWeight);
       if(passChi2) fDCA[0][1]->Fill(pt,0.,dcaXY,CompWeight);
       if(passDCA) {
-        fWithinDCA[0][0]->Fill(pt,0.,CompWeight);
+        fWithinDCA[0][0]->Fill(pt,0.,fCent,CompWeight);
         if(passChi2) {
-          fWithinDCA[0][1]->Fill(pt,0.,CompWeight);
+          fWithinDCA[0][1]->Fill(pt,0.,fCent,CompWeight);
           fEff[0][1]->Fill(pt,fCent,CompWeight);
           fEff[0][3]->Fill(pt,fCent);
         };
@@ -248,9 +251,9 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
         fDCA[lBayesPIDIndex][0]->Fill(pt,0.,dcaXY,CompWeight);
         if(passChi2) fDCA[lBayesPIDIndex][1]->Fill(pt,0.,dcaXY,CompWeight);
         if(passDCA) {
-          fWithinDCA[lBayesPIDIndex][0]->Fill(pt,0.,CompWeight);
+          fWithinDCA[lBayesPIDIndex][0]->Fill(pt,0.,fCent,CompWeight);
           if(passChi2) {
-            fWithinDCA[lBayesPIDIndex][1]->Fill(pt,0.,CompWeight);
+            fWithinDCA[lBayesPIDIndex][1]->Fill(pt,0.,fCent,CompWeight);
             fEff[lBayesPIDIndex][1]->Fill(pt,fCent,CompWeight);
             fEff[lBayesPIDIndex][3]->Fill(pt,fCent);
           };
@@ -260,32 +263,32 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
       fDCA[0][0]->Fill(pt,1.,dcaXY,CompWeight);
       if(passChi2) fDCA[0][1]->Fill(pt,1.,dcaXY,secWeight);
       if(passDCA) {
-        fWithinDCA[0][0]->Fill(pt,1.,secWeight);
-        if(passChi2) fWithinDCA[0][1]->Fill(pt,1.,secWeight);
+        fWithinDCA[0][0]->Fill(pt,1.,fCent,secWeight);
+        if(passChi2) fWithinDCA[0][1]->Fill(pt,1.,fCent,secWeight);
       };
       //PID part:
       if(fillPIDHists) {
         fDCA[lBayesPIDIndex][0]->Fill(pt,1.,dcaXY,CompWeight);
         if(passChi2) fDCA[lBayesPIDIndex][1]->Fill(pt,1.,dcaXY,secWeight);
         if(passDCA) {
-          fWithinDCA[lBayesPIDIndex][0]->Fill(pt,1.,secWeight);
-          if(passChi2) fWithinDCA[lBayesPIDIndex][1]->Fill(pt,1.,secWeight);
+          fWithinDCA[lBayesPIDIndex][0]->Fill(pt,1.,fCent,secWeight);
+          if(passChi2) fWithinDCA[lBayesPIDIndex][1]->Fill(pt,1.,fCent,secWeight);
         };
       };
     } else if(lPart->IsSecondaryFromMaterial()) {
       fDCA[0][0]->Fill(pt,2.,dcaXY,1);
       if(passChi2) fDCA[0][1]->Fill(pt,2.,dcaXY,1);
       if(passDCA) {
-        fWithinDCA[0][0]->Fill(pt,2.,1);
-        if(passChi2) fWithinDCA[0][1]->Fill(pt,2.,1);
+        fWithinDCA[0][0]->Fill(pt,2.,fCent,1);
+        if(passChi2) fWithinDCA[0][1]->Fill(pt,2.,fCent,1);
       };
       //PID part:
       if(fillPIDHists) {
         fDCA[lBayesPIDIndex][0]->Fill(pt,2.,dcaXY,1);
         if(passChi2) fDCA[lBayesPIDIndex][1]->Fill(pt,2.,dcaXY,1);
         if(passDCA) {
-          fWithinDCA[lBayesPIDIndex][0]->Fill(pt,2.,1);
-          if(passChi2) fWithinDCA[lBayesPIDIndex][1]->Fill(pt,2.,1);
+          fWithinDCA[lBayesPIDIndex][0]->Fill(pt,2.,fCent,1);
+          if(passChi2) fWithinDCA[lBayesPIDIndex][1]->Fill(pt,2.,fCent,1);
         };
       }
     };
@@ -352,6 +355,9 @@ void AliEffFDContainer::Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC) {
     Int_t trInd = lFlags->GetTrackIndex(iTr);
     lTrack = (AliAODTrack*)flAODEvent->GetTrack(trInd);
     pt  = lTrack->Pt();
+    //Tracks already prefiltered with a given eta, but we shouldn't cut on both rec. & gen. eta! So here just an extra check of rec. eta, in case of running with multiple eta bins
+    eta = lTrack->Eta();
+    if(!CheckEta(eta)) continue;
     //Fetch the corresponding MC particle
     Int_t fLabel = lTrack->GetLabel();
     Int_t index = TMath::Abs(fLabel);
@@ -360,8 +366,6 @@ void AliEffFDContainer::Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC) {
     lPart = (AliMCParticle*)flMCEvent->GetTrack(index);
     if(!lPart) continue;
     if(lPart->Charge()==0.) continue;
-    eta = lPart->Eta();
-    if(!CheckEta(eta)) continue;
     //Weights -- should be fetched from histograms
     Int_t primIndex = GetMCSWPrimIndex(lPart)+1;
     Int_t ptBin = fMCSWeights->GetYaxis()->FindBin(pt);
@@ -396,36 +400,54 @@ void AliEffFDContainer::Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC) {
         fPurity[lBayesPIDIndex-1][3]->Fill(pt,fCent);
       }
     };
+    //Fetch phi of the track and recenter:
+    Double_t l_phi = lTrack->Phi();
+    if(l_phi<0) l_phi+=TMath::TwoPi();
     //Start filling:
     //Filling DCA distributions doesn't make much sense
     //Also, everything passes the chi2 here (AOD tracks)
     if(lPart->IsPhysicalPrimary()) {
-      fWithinDCA[0][0]->Fill(pt,0.,CompWeight);
-      fWithinDCA[0][1]->Fill(pt,0.,1.);
+      fWithinDCA[0][0]->Fill(pt,0.,fCent,CompWeight);
+      fWithinDCA[0][1]->Fill(pt,0.,fCent,1.);
       fEff[0][1]->Fill(pt,fCent,CompWeight);
       fEff[0][3]->Fill(pt,fCent);
+      //Prim vs Phi. Primaries contribute to both, primaries and all
+      fFDvsPhi[0][0]->Fill(pt,fCent,l_phi,CompWeight);
+      fFDvsPhi[0][1]->Fill(pt,fCent,l_phi,CompWeight);
       //PID part
       if(fillPIDHists) {
-        fWithinDCA[lBayesPIDIndex][0]->Fill(pt,0.,CompWeight);
-        fWithinDCA[lBayesPIDIndex][1]->Fill(pt,0.,1.);
+        fWithinDCA[lBayesPIDIndex][0]->Fill(pt,0.,fCent,CompWeight);
+        fWithinDCA[lBayesPIDIndex][1]->Fill(pt,0.,fCent,1.);
         fEff[lBayesPIDIndex][1]->Fill(pt,fCent,CompWeight);
         fEff[lBayesPIDIndex][3]->Fill(pt,fCent);
+        //Prim vs Phi. Primaries contribute to both, primaries and all
+        fFDvsPhi[lBayesPIDIndex][0]->Fill(pt,fCent,l_phi,CompWeight);
+        fFDvsPhi[lBayesPIDIndex][1]->Fill(pt,fCent,l_phi,CompWeight);
       };
     } else if(lPart->IsSecondaryFromWeakDecay()) {
-      fWithinDCA[0][0]->Fill(pt,1.,secWeight);
-      fWithinDCA[0][1]->Fill(pt,1.,1.);
+      fWithinDCA[0][0]->Fill(pt,1.,fCent,secWeight);
+      fWithinDCA[0][1]->Fill(pt,1.,fCent,1.);
+      //Prim vs Phi. Secondaries contribute to all
+      fFDvsPhi[0][1]->Fill(pt,fCent,l_phi,CompWeight);
       //PID part:
       if(fillPIDHists) {
-        fWithinDCA[lBayesPIDIndex][0]->Fill(pt,1.,secWeight);
-        fWithinDCA[lBayesPIDIndex][1]->Fill(pt,1.,1);
+        fWithinDCA[lBayesPIDIndex][0]->Fill(pt,1.,fCent,secWeight);
+        fWithinDCA[lBayesPIDIndex][1]->Fill(pt,1.,fCent,1);
+        //Prim vs Phi. Secondaries contribute to all
+        fFDvsPhi[lBayesPIDIndex][1]->Fill(pt,fCent,l_phi,CompWeight);
+
       }
     } else if(lPart->IsSecondaryFromMaterial()) {
-      fWithinDCA[0][0]->Fill(pt,2.,1.);
-      fWithinDCA[0][1]->Fill(pt,2.,1.);
+      fWithinDCA[0][0]->Fill(pt,2.,fCent,1.);
+      fWithinDCA[0][1]->Fill(pt,2.,fCent,1.);
+      //Prim vs Phi. Secondaries contribute to all
+      fFDvsPhi[0][1]->Fill(pt,fCent,l_phi,CompWeight);
       //PID part:
       if(fillPIDHists) {
-        fWithinDCA[lBayesPIDIndex][0]->Fill(pt,2.,1);
-        fWithinDCA[lBayesPIDIndex][1]->Fill(pt,2.,1);
+        fWithinDCA[lBayesPIDIndex][0]->Fill(pt,2.,fCent,1);
+        fWithinDCA[lBayesPIDIndex][1]->Fill(pt,2.,fCent,1);
+        //Prim vs Phi. Secondaries contribute to all
+        fFDvsPhi[lBayesPIDIndex][1]->Fill(pt,fCent,l_phi,CompWeight);
       }
     }
   }
@@ -465,9 +487,9 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD) {
     fDCA[0][0]->Fill(pt,fCent,dcaXY);
     if(passChi2) fDCA[0][1]->Fill(pt,fCent,dcaXY);
     if(passDCA) {
-      fWithinDCA[0][0]->Fill(pt,fCent);
+      fWithinDCA[0][0]->Fill(pt,0.,fCent);
       if(passChi2) {
-        fWithinDCA[0][1]->Fill(pt,fCent);
+        fWithinDCA[0][1]->Fill(pt,0.,fCent);
       };
     };
     //PID part
@@ -477,9 +499,9 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD) {
         fDCA[lBayesPIDIndex][0]->Fill(pt,fCent,dcaXY);
         if(passChi2) fDCA[lBayesPIDIndex][1]->Fill(pt,fCent,dcaXY);
         if(passDCA) {
-          fWithinDCA[lBayesPIDIndex][0]->Fill(pt,fCent);
+          fWithinDCA[lBayesPIDIndex][0]->Fill(pt,0.,fCent);
           if(passChi2) {
-            fWithinDCA[lBayesPIDIndex][1]->Fill(pt,fCent);
+            fWithinDCA[lBayesPIDIndex][1]->Fill(pt,0.,fCent);
           };
         };
       };
@@ -513,20 +535,26 @@ void AliEffFDContainer::CreateHistograms(Bool_t forceRecreate) {
   Int_t NbinsDCAFine = 300;
   Double_t binsType[4] = {-0.5,0.5,1.5,2.5};
   Int_t NbinsType = 3;
+  //Phi bins for FD vs phi:
+  const Int_t fNPhiBins=100;
+  Double_t fPhiBins[fNPhiBins+1];
+  for(Int_t i=0;i<=fNPhiBins;i++) fPhiBins[i] = TMath::TwoPi()/fNPhiBins * i;
+  //Setting up y-axis: either centrality or prim/secondary time
   Double_t *lYAxis = fIsMC?binsType:fCentBins;
   Int_t     nYAxis = fIsMC?NbinsType:fNCentBins;
   if(fAddPID) fNSpecies=4; else fNSpecies=1;
   fDCA       = new TH3D**[fNSpecies];
-  fWithinDCA = new TH2D**[fNSpecies];
+  fWithinDCA = new TH3D**[fNSpecies];
   fEff       = new TH2D**[fNSpecies];
+  fFDvsPhi   = new TH3D**[fNSpecies];
   if(fAddPID) fPurity = new TH2D**[fNSpecies-1]; //No need for purity for charged tracks
   for(Int_t iSpecie=0; iSpecie<fNSpecies; iSpecie++) {
     fDCA[iSpecie] = new TH3D*[2];
-    fWithinDCA[iSpecie] = new TH2D*[2];
+    fWithinDCA[iSpecie] = new TH3D*[2];
     fDCA[iSpecie][0] = new TH3D(makeName("DCAxy_noChi2",iSpecie),"DCAxy_noChi2; pt; type; dcaxy", fNPtBins, fPtBins, nYAxis, lYAxis, NbinsDCA, binsDCA);
     fDCA[iSpecie][1] = new TH3D(makeName("DCAxy_withChi2",iSpecie),"DCAxy_withChi2; pt; type; dcaxy", fNPtBins, fPtBins, nYAxis, lYAxis, NbinsDCAFine, binsDCAFine);
-    fWithinDCA[iSpecie][0] = new TH2D(makeName("WithinDCA_noChi2",iSpecie),"WithinDCA_noChi2; pt; type", fNPtBins, fPtBins, nYAxis, lYAxis);
-    fWithinDCA[iSpecie][1] = new TH2D(makeName("WithinDCA_withChi2",iSpecie),"WithinDCA_withChi2; pt; type", fNPtBins, fPtBins, nYAxis, lYAxis);
+    fWithinDCA[iSpecie][0] = new TH3D(makeName("WithinDCA_noChi2",iSpecie),"WithinDCA_noChi2; pt; type; centrality", fNPtBins, fPtBins, NbinsType, binsType, fNCentBins, fCentBins);
+    fWithinDCA[iSpecie][1] = new TH3D(makeName("WithinDCA_withChi2",iSpecie),"WithinDCA_withChi2; pt; type; centrality", fNPtBins, fPtBins, NbinsType, binsType, fNCentBins, fCentBins);
     for(Int_t i=0;i<2;i++) { fDCA[iSpecie][i]->SetDirectory(0); fOutList->Add(fDCA[iSpecie][i]); };
     for(Int_t i=0;i<2;i++) { fWithinDCA[iSpecie][i]->SetDirectory(0); fOutList->Add(fWithinDCA[iSpecie][i]); };
     if(!fIsMC) continue; //If running on data, no need to fill in efficiencies
@@ -537,6 +565,11 @@ void AliEffFDContainer::CreateHistograms(Bool_t forceRecreate) {
     fEff[iSpecie][2] = new TH2D(makeName("nChGen_Uneighted",iSpecie),"ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
     fEff[iSpecie][3] = new TH2D(makeName("nChRec_Uneighted",iSpecie),"ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
     for(Int_t i=0;i<4;i++) { fEff[iSpecie][i]->SetDirectory(0); fOutList->Add(fEff[iSpecie][i]); };
+    //Feeddown vs phi (in given eta bin)
+    fFDvsPhi[iSpecie] = new TH3D*[2];
+    fFDvsPhi[iSpecie][0] = new TH3D(makeName("PrimVsPhi",iSpecie),"PrimariesVsPhi; #it{p}_{T} (GeV/#it{c}); cent.; #varphi", fNPtBins, fPtBins, fNCentBins, fCentBins, fNPhiBins, fPhiBins);
+    fFDvsPhi[iSpecie][1] = new TH3D(makeName("AllVsPhi",iSpecie), "AllVsPhi; #it{p}_{T} (GeV/#it{c}); cent.; #varphi", fNPtBins, fPtBins, fNCentBins, fCentBins, fNPhiBins, fPhiBins);
+    for(Int_t i=0;i<2;i++) { fFDvsPhi[iSpecie][i]->SetDirectory(0); fOutList->Add(fFDvsPhi[iSpecie][i]); };
     if(fAddPID) {
       if(!iSpecie) continue; //Not adding it for charged. Then we have to be carefull when filling
       fPurity[iSpecie-1] = new TH2D*[4];
@@ -717,13 +750,65 @@ TH1 *AliEffFDContainer::get1DRatio(TString numID, TString denID, Int_t iSpecie, 
   delete h1Den;
   return h1Num;
 };
-TH1 *AliEffFDContainer::getPureFeeddown(Int_t iSpecie) {
-  TH2 *l_h2 = (TH2*)fetchObj("WithinDCA_withChi2",iSpecie);
-  if(!l_h2) {printf("Could not find %s in %s!\n",makeName("WithinDCA_withChi2",iSpecie).Data(), this->GetName()); return 0; };
-  TH1 *hPrim = (TH1*)l_h2->ProjectionX(makeName("PrimOverAll",iSpecie),1,1);
+TH1 *AliEffFDContainer::getPureFeeddown(Int_t iSpecie, Int_t centBin1, Int_t centBin2) {
+  TObject *obj = fetchObj("WithinDCA_withChi2",iSpecie);
+  //Older versions have TH2 instead of TH3 (that is, no centrality. Don't want to break it.)
+  TH2 *l_h2 = dynamic_cast<TH2*>(obj);
+  if(!l_h2) {
+    TH3 *l_h3 = dynamic_cast<TH3*>(obj);
+    if(!l_h3) {
+      printf("Could not find %s in %s!\n",makeName("WithinDCA_withChi2",iSpecie).Data(), this->GetName());
+      return 0;
+    };
+    if(centBin1<1) centBin1 = 1;
+    if(centBin2>l_h3->GetNbinsZ() || centBin2<1) centBin2 = l_h3->GetNbinsZ();
+    l_h3->GetZaxis()->SetRange(centBin1,centBin2);
+    l_h2 = (TH2*)l_h3->Project3D("yx");
+    l_h3->GetZaxis()->SetRange(1,l_h3->GetNbinsZ());
+  };
+  return getPureFeeddown(iSpecie,l_h2);
+}
+TH1 *AliEffFDContainer::getPureFeeddown(Int_t iSpecie, TH2 *inh) {
+  TH1 *hPrim = (TH1*)inh->ProjectionX(makeName("PrimOverAll",iSpecie),1,1);
   hPrim->SetDirectory(0);
-  TH1 *hAll  = (TH1*)l_h2->ProjectionX("All",1,l_h2->GetNbinsX());
+  TH1 *hAll  = (TH1*)inh->ProjectionX("All",1,inh->GetNbinsX());
   hPrim->Divide(hAll);
   delete hAll;
   return hPrim;
+}
+TH2 *AliEffFDContainer::getFDvsPhi(Int_t iSpecie, Bool_t RatioToIntegrated, Int_t cBin1, Int_t cBin2) {
+  TH3D *hPrim = (TH3D*)fetchObj("PrimVsPhi",iSpecie);
+  if(cBin1<1) cBin1=1;
+  if(cBin2<cBin1 || cBin2<1 || cBin2>hPrim->GetNbinsY()) cBin2=hPrim->GetNbinsY();
+  TString hName("FDvsPhi");
+  if(cBin1==1 && cBin2==hPrim->GetNbinsY()) hName.Append("_MB");
+  else hName.Append(Form("_CentBin_%i_%i",cBin1,cBin2));
+  TH3D *hAll = (TH3D*)fetchObj("AllVsPhi",iSpecie);
+  hPrim->GetYaxis()->SetRange(cBin1,cBin2);
+  hAll ->GetYaxis()->SetRange(cBin1,cBin2);
+  TH2D *h2Prim = (TH2D*)hPrim->Project3D("zx");
+  TH2D *h2All  = (TH2D*)hAll ->Project3D("zx");
+  h2Prim->SetDirectory(0);
+  h2Prim->SetName(makeName(hName,iSpecie).Data());
+  // h2Prim->Divide(h2Prim,h2All,1,1,"B"); //if we want binomial error propagation
+  h2Prim->Divide(h2All);
+  delete h2All;
+  if(RatioToIntegrated) { //Normalize by central value, if required
+    TH1D *h1Prim = (TH1D*)hPrim->Project3D("x");
+    TH1D *h1All  = (TH1D*)hAll ->Project3D("x");
+    h1Prim->Divide(h1All);
+    delete h1All;
+    for(Int_t ix=1;ix<=h1Prim->GetNbinsX();ix++) {
+      Double_t intVal = h1Prim->GetBinContent(ix);
+      if(!intVal) continue;
+      for(Int_t iy=1;iy<=h2Prim->GetNbinsY();iy++) {
+        h2Prim->SetBinContent(ix,iy,h2Prim->GetBinContent(ix,iy)/intVal);
+        h2Prim->SetBinError(ix,iy,h2Prim->GetBinError(ix,iy)/intVal);
+      };
+    };
+    delete h1Prim;
+  }
+  hPrim->GetYaxis()->SetRange(1,hPrim->GetNbinsY());
+  hAll->GetYaxis()->SetRange(1,hAll->GetNbinsY());
+  return h2Prim;
 }

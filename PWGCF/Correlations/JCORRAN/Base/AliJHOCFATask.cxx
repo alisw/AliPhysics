@@ -22,17 +22,16 @@
 / -------------------------------------------------------------------------- */
 AliJHOCFATask::AliJHOCFATask():   
 	AliAnalysisTaskSE("JHOCFATask"),
-	fJCatalystTask(NULL),
-	fJCatalystTaskName("JCatalystTask"),
+	fJCatalystTask(NULL), fJCatalystTaskName("JCatalystTask"),
+  fHOCFATask(NULL),
 	fIsMC(kFALSE),
-	fHOCFATask(NULL),
 	fHOCFADebugLevel(0),
+  fHOCFAvalues(""),
 	fHOCFAnCentralityBins(9), fHOCFAMultiplicityMin(10),
 	fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
-  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE),
-  fHOCFAGetSC3h(kTRUE),
-  fHOCFAGetEtaGap(kFALSE), fHOCFAEtaGap(0.),
-  fHOCFANCombi(6), fHOCFAvalues(0), fHOCFAcombi(0)
+  fHOCFAEtaGap(0.), fHOCFAApplyEtaGap(kFALSE),
+  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE), fHOCFAUseWeightsCent(kFALSE),
+  fHOCFAGetSC(kTRUE), fHOCFAGetLower(kTRUE)
 {
 // Dummy constructor of the class.
 }
@@ -40,17 +39,16 @@ AliJHOCFATask::AliJHOCFATask():
 // ------------------------------------------------------------------------- //
 AliJHOCFATask::AliJHOCFATask(const char *name):
 	AliAnalysisTaskSE(name),
-	fJCatalystTask(NULL),
-	fJCatalystTaskName("JCatalystTask"),
-	fIsMC(kFALSE),
-	fHOCFATask(NULL),
-	fHOCFADebugLevel(0),
-	fHOCFAnCentralityBins(9), fHOCFAMultiplicityMin(10),
-	fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
-  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE),
-  fHOCFAGetSC3h(kTRUE),
-  fHOCFAGetEtaGap(kFALSE), fHOCFAEtaGap(0.),
-  fHOCFANCombi(6), fHOCFAvalues(0), fHOCFAcombi(0)
+  fJCatalystTask(NULL), fJCatalystTaskName("JCatalystTask"),
+  fHOCFATask(NULL),
+  fIsMC(kFALSE),
+  fHOCFADebugLevel(0),
+  fHOCFAvalues(""),
+  fHOCFAnCentralityBins(9), fHOCFAMultiplicityMin(10),
+  fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
+  fHOCFAEtaGap(0.), fHOCFAApplyEtaGap(kFALSE),
+  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE), fHOCFAUseWeightsCent(kFALSE),
+  fHOCFAGetSC(kTRUE), fHOCFAGetLower(kTRUE)
 {
 // Constructor of the class.
 	AliInfo("AliJHOCFATask Constructor");
@@ -60,23 +58,17 @@ AliJHOCFATask::AliJHOCFATask(const char *name):
 // ------------------------------------------------------------------------- //
 AliJHOCFATask::AliJHOCFATask(const AliJHOCFATask& ap):
 	AliAnalysisTaskSE(ap.GetName()), 
-	fJCatalystTask(ap.fJCatalystTask),
-	fJCatalystTaskName(ap.fJCatalystTaskName),
+  fJCatalystTask(ap.fJCatalystTask), fJCatalystTaskName(ap.fJCatalystTaskName),
+  fHOCFATask(ap.fHOCFATask),
   fIsMC(ap.fIsMC),
-	fHOCFATask(ap.fHOCFATask),
-	fHOCFADebugLevel(ap.fHOCFADebugLevel),
-	fHOCFAnCentralityBins(ap.fHOCFAnCentralityBins),
-  fHOCFAMultiplicityMin(ap.fHOCFAMultiplicityMin),
-  fHOCFAPtMin(ap.fHOCFAPtMin),
-  fHOCFAPtMax(ap.fHOCFAPtMax),
-  fHOCFAUseWeightsNUE(ap.fHOCFAUseWeightsNUE),
-  fHOCFAUseWeightsNUA(ap.fHOCFAUseWeightsNUA),
-  fHOCFAGetSC3h(ap.fHOCFAGetSC3h),
-  fHOCFAGetEtaGap(ap.fHOCFAGetEtaGap),
-  fHOCFAEtaGap(ap.fHOCFAEtaGap),
-  fHOCFANCombi(ap.fHOCFANCombi),
+  fHOCFADebugLevel(ap.fHOCFADebugLevel),
   fHOCFAvalues(ap.fHOCFAvalues),
-  fHOCFAcombi(ap.fHOCFAcombi)
+  fHOCFAnCentralityBins(ap.fHOCFAnCentralityBins), fHOCFAMultiplicityMin(ap.fHOCFAMultiplicityMin),
+  fHOCFAPtMin(ap.fHOCFAPtMin), fHOCFAPtMax(ap.fHOCFAPtMax),
+  fHOCFAEtaGap(ap.fHOCFAEtaGap), fHOCFAApplyEtaGap(ap.fHOCFAApplyEtaGap),
+  fHOCFAUseWeightsNUE(ap.fHOCFAUseWeightsNUE), fHOCFAUseWeightsNUA(ap.fHOCFAUseWeightsNUA),
+  fHOCFAUseWeightsCent(ap.fHOCFAUseWeightsCent),
+  fHOCFAGetSC(ap.fHOCFAGetSC), fHOCFAGetLower(ap.fHOCFAGetLower)
 { 
 // Copy operator of the class.
 	AliInfo("DEBUG AliJHOCFATask COPY");
@@ -113,15 +105,18 @@ void AliJHOCFATask::UserCreateOutputObjects()
 // Create an instance of the analysis task.
 	fHOCFATask = new AliAnalysisTaskHOCFA("HOCFA");
 	fHOCFATask->SetDebugLevel(fHOCFADebugLevel);
+
   fHOCFATask->SetCentralityBinning(fHOCFAnCentralityBins);
   fHOCFATask->SetCentralityArray(fHOCFAvalues);
   fHOCFATask->SetMinMultiplicity(fHOCFAMultiplicityMin);
+
   fHOCFATask->SetPtRange(fHOCFAPtMin, fHOCFAPtMax);
+  fHOCFATask->SetEtaGap(fHOCFAApplyEtaGap, fHOCFAEtaGap);
   fHOCFATask->SetParticleWeights(fHOCFAUseWeightsNUE, fHOCFAUseWeightsNUA);
-  fHOCFATask->SetObservable(fHOCFAGetSC3h);
-  fHOCFATask->SetNumberCombi(fHOCFANCombi);
-  fHOCFATask->SetHarmoArray(fHOCFAcombi);
-  fHOCFATask->SetEtaGaps(fHOCFAGetEtaGap, fHOCFAEtaGap);
+  fHOCFATask->SetCentralityWeights(fHOCFAUseWeightsCent);
+
+  fHOCFATask->SetObservable(fHOCFAGetSC, fHOCFAGetLower);
+
 	OpenFile(1);
 
 	fHOCFATask->UserCreateOutputObjects();

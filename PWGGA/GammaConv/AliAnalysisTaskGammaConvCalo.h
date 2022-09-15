@@ -69,6 +69,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void ProcessConversionPhotonsForMissingTags     ();
     void ProcessConversionPhotonsForMissingTagsAOD  ();
     void ProcessJets();
+    void InitJets();
 
     // switches for additional analysis streams or outputs
     void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
@@ -296,9 +297,11 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCEtaWOWeightPt;              //! array of histos with unweighted eta, pT
     TH1F**                  fHistoMCEtaWOEvtWeightPt;           //! array of histos without evt weight eta, pT
     TH1F**                  fHistoMCPi0InAccPt;                 //! array of histos with weighted pi0 in acceptance, pT
+    TH1F**                  fHistoMCPi0InAccPtNotTriggered;     //! array of histos with weighted pi0 in acceptance, pT
     TH1F**                  fHistoMCPi0WOWeightInAccPt;         //! array of histos without weight pi0 in acceptance, pT
     TH1F**                  fHistoMCPi0WOEvtWeightInAccPt;      //! array of histos without evt weight pi0 in acceptance, pT
     TH1F**                  fHistoMCEtaInAccPt;                 //! array of histos with weighted eta in acceptance, pT
+    TH1F**                  fHistoMCEtaInAccPtNotTriggered;     //! array of histos with weighted eta in acceptance, pT
     TH1F**                  fHistoMCEtaWOWeightInAccPt;         //! array of histos without weight eta in acceptance, pT
     TH1F**                  fHistoMCEtaWOEvtWeightInAccPt;      //! array of histos without evt weight eta in acceptance, pT
     TH2F**                  fHistoMCPi0PtY;                     //! array of histos with weighted pi0, pT, Y
@@ -517,6 +520,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     vector<Double_t>      fTrueVectorJetEta;                                    //! Vector of True JetEta
     vector<Double_t>      fTrueVectorJetPhi;                                    //! Vector of True JetPhi
 
+    std::map<Int_t, Int_t> MapRecJetsTrueJets;                                  //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
+
     // variable to keep track of multiple & missing reco
     vector<Int_t>           fVectorRecTruePi0s;                                 //! array of strings containing the stack position of the reconstructed validated pi0
     vector<Int_t>           fVectorRecTrueEtas;                                 //! array of strings containing the stack position of the reconstructed validated eta
@@ -611,7 +616,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 70);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 72);
 };
 
 #endif

@@ -23,7 +23,7 @@
 class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskOtonkd();
-  AliAnalysisTaskOtonkd(const char *name, bool isMC, bool isMCtruth);
+  AliAnalysisTaskOtonkd(const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing, bool DOpd);
   virtual ~AliAnalysisTaskOtonkd();
   Float_t GetMass2sq(AliFemtoDreamTrack *track)const;
   float MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const;
@@ -55,7 +55,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
 
   Bool_t FillKaon(AliFemtoDreamTrack *TheTrack);
   Bool_t FillProton(AliFemtoDreamTrack *TheTrack);
-  Bool_t FillDeuteron(AliFemtoDreamTrack *TheTrack);
+  Bool_t FillDeuteron(AliFemtoDreamTrack *TheTrack, int IsBkgProton = 0);
 
 
 
@@ -72,6 +72,10 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   int fTrackBufferSize;                     //
   bool fIsMC;                               //
   bool fIsMCtruth;                               //
+  bool fdoFDpairing;                               //
+  bool fDOpd;                               //
+  bool fisIncludeSomeProtons;                               //
+  bool fisPions;                               //
   bool fdoSideband;                         //
   float fSigmaUp;                           //
   float fSigmaLow;                          //
@@ -133,6 +137,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Float_t fTKaonPx[30];
   Float_t fTKaonPy[30];
   Float_t fTKaonPz[30];
+  Float_t fTKaonPTPC[30];
   Float_t fTKaonVPx[30];
   Float_t fTKaonVPy[30];
   Float_t fTKaonVPz[30];
@@ -160,6 +165,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Int_t fTKaonNcl[30];
   Int_t fTKaonShared[30];
   Float_t fTKaonTPCchi2[30];
+  Bool_t fTKaonSPDtime[30];
   Bool_t fTKaonITStime[30];
   Bool_t fTKaonTOFtime[30];
   Bool_t fTKaonTPConly[30];
@@ -183,6 +189,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Float_t fTDeuteronPx[10];
   Float_t fTDeuteronPy[10];
   Float_t fTDeuteronPz[10];
+  Float_t fTDeuteronPTPC[10];
   Float_t fTDeuteronVPx[10];
   Float_t fTDeuteronVPy[10];
   Float_t fTDeuteronVPz[10];
@@ -210,6 +217,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Int_t fTDeuteronNcl[10];
   Int_t fTDeuteronShared[10];
   Float_t fTDeuteronTPCchi2[10];
+  Bool_t fTDeuteronSPDtime[10];
   Bool_t fTDeuteronITStime[10];
   Bool_t fTDeuteronTOFtime[10];
   Bool_t fTDeuteronTPConly[10];

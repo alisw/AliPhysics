@@ -49,7 +49,7 @@ public:
     Vertexmin = f_Vertexmin;
     Vertexmax = f_Vertexmax;
   }
-  virtual void SetParams(Bool_t f_IsMC, Bool_t f_pbpb, int f_nSigma, int f_nCrossedRows, int f_movePhi)
+  virtual void SetParams(Bool_t f_IsMC, Bool_t f_pbpb, Float_t f_nSigma, int f_nCrossedRows, int f_movePhi)
   {
     IsMC = f_IsMC;
     pbpb = f_pbpb; // pp if false
@@ -61,7 +61,7 @@ public:
     {
         nCentrClassesUsed = f_nCentrClassesUsed;
         Float_t f_CentrPercentiles[] = {cent0, cent1, cent2, cent3, cent4, cent5};
-        for (int i = 0; i < nCentrClasses+1; i++)
+        for (int i = 0; i < nCentrClassesUsed+1; i++)
         {
         CentrPercentiles[i] = f_CentrPercentiles[i];
         }
@@ -82,11 +82,11 @@ private:
   Bool_t pbpb, IsMC;
   Bool_t SPDvsV0MCut, LargeTPCCut;
   AliEventCuts *fAliEventCuts; //!
-  int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
-  Float_t minP, maxP, Vertexmin, Vertexmax;
-  Float_t CentrPercentiles[100];
+  int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nCrossedRows, movePhi;
+  Float_t minP, maxP, Vertexmin, Vertexmax, nSigma;
+  Float_t CentrPercentiles[10];
   int nCentrClassesUsed;
-  static const int nCentrClasses = 100, nEtaClasses = 16, nSorts = 8;
+  static const int nCentrClasses = 10, nEtaClasses = 16, nSorts = 8;
   //Efficiency Maps
   //Tracking:
   TH3D *NGenTracks[nCentrClasses][nEtaClasses][nSorts];            //!

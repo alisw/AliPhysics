@@ -184,7 +184,7 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
 {
   // compute leading particle direction
 
-  memset(pxy, 0, 2*sizeof(Double_t));
+  memset(pxy, -9999., 2*sizeof(Double_t));
   Int_t ntracks(0);
   if(!(ntracks=tracks->GetEntries())) return kFALSE;
 

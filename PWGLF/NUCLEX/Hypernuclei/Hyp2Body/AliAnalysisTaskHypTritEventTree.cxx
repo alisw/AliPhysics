@@ -342,6 +342,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     AliESDtrack* trackN = fESDevent->GetTrack(fV0->GetIndex(0));
     AliESDtrack* trackP = fESDevent->GetTrack(fV0->GetIndex(1));
     // Checks charge because of bug in V0 interface.
+    if (trackN->GetSign() ==  trackP->GetSign()) continue;
     if (trackN->GetSign() > 0 ) {
       trackN = fESDevent->GetTrack(fV0->GetIndex(1));
       trackP = fESDevent->GetTrack(fV0->GetIndex(0));
@@ -439,12 +440,24 @@ void AliAnalysisTaskHypTritEventTree::SetMomentum(Int_t charge, Bool_t v0ChargeC
 		TVector3 momentumVectorN(mvec[0],mvec[1],mvec[2]); 	
 
 		if (charge > 0) {
-			fMomPos.SetVect(charge * momentumVectorP);
-			fMomNeg.SetVect(momentumVectorN); 
+		  if (v0ChargeCorrect) {
+			  fMomPos.SetVect(charge * momentumVectorP);
+			  fMomNeg.SetVect(momentumVectorN); 
+		  }
+		  else {
+		  	fMomPos.SetVect(charge * momentumVectorN);
+			  fMomNeg.SetVect(momentumVectorP); 
+		  }
 		}
 		else {
-			fMomPos.SetVect(momentumVectorP);
-			fMomNeg.SetVect(-charge * momentumVectorN);
+		  if (v0ChargeCorrect) {
+			  fMomPos.SetVect(momentumVectorP);
+			  fMomNeg.SetVect(-charge * momentumVectorN);
+		  }
+		  else {
+			  fMomPos.SetVect(momentumVectorN);
+			  fMomNeg.SetVect(-charge * momentumVectorP);		  
+		  }
 		}
 		return;
   }

@@ -4609,7 +4609,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
       fhEventCutClusterEtaPhiGrid[icase]->SetYTitle("row-#varphi (rad)");
       outputContainer->Add(fhEventCutClusterEtaPhiGrid[icase]);
       
-      fhEventCutBunchCrossing[icase] = new TH1I 
+      fhEventCutBunchCrossing[icase] = new TH1F
       (Form("hEventCutBunchCrossing_%s"        ,evtSelName[icase].Data()),
        Form("Selected event bunch crossing, %s",evtSelName[icase].Data()),
        3564, -0.5, 3563.5) ;

@@ -286,7 +286,7 @@ TH1F* M02PtDependentCut
 //         gapMax,gapMin,
 //         param0,param1);
 
-  for(int i=1 ; i<(hsource->GetNbinsX())+1 ; ++i)
+  for(int i=1 ; i <= hsource->GetNbinsX() ; ++i)
   {
     double pt = hsource->GetXaxis()->GetBinCenter(i);
 
@@ -306,7 +306,7 @@ TH1F* M02PtDependentCut
 
     //printf("\t pt %2.2f, min %2.2f, max %2.2f\n",pt,min,max);
 
-    for(int ii=1; ii<(hsource->GetNbinsY()); ++ii)
+    for(int ii=1; ii < hsource->GetNbinsY(); ++ii)
     {
       if ( min < hsource->GetYaxis()->GetBinCenter(ii)  &&  hsource->GetYaxis()->GetBinCenter(ii) < max )
       {
@@ -365,7 +365,7 @@ void RemovePointsOutOfRangeOrLargeErrorFromGraph
 //-----------------------------------------------------------------------------
 static void ScaleBinBySize(TH1D* h)
 {
-  for(Int_t ibin = 1; ibin < h->GetNbinsX();ibin++)
+  for(Int_t ibin = 1; ibin <= h->GetNbinsX();ibin++)
   {
     Double_t width   = h->GetBinWidth(ibin);
     Double_t content = h->GetBinContent(ibin);

@@ -17,9 +17,12 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
       bool                  v0eston=false,
       bool                  v0gaineq=false,
       bool                  v0qmean=false,
+      bool                  v0qmean18=false,
       bool                  v0calib=false,
+      bool                  v0calib18=false,
       bool                  v0QA=false,
       bool                  fillwNUA=false,
+      TString             period="LHC10h",
       int                     debug=0, // debug level controls amount of output statements
       double              Harmonic=2,
       TString             trigger="kMB",
@@ -27,11 +30,10 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
       float                  ptmax=2.0, // maximum pt for Q-vector components
       int                     cbinlo=0, // lower centrality bin for histogram array
       int                     cbinhg=8, // higher centrality bin for histogram array
-      TString             period="LHC10h", // period
       float                  centcut=7.5, // centrality restriction for V0M and TRK
       TString             uniqueID=""
       )	
-{	
+{
 	// Creates a pid task and adds it to the analysis manager
 	// Get the pointer to the existing analysis manager via the static
 	//access method
@@ -53,7 +55,7 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
   	// --- instantiate analysis task
-  	AliAnalysisTaskEPCalib *task = new AliAnalysisTaskEPCalib("TaskEPCalib");
+  	AliAnalysisTaskEPCalib *task = new AliAnalysisTaskEPCalib("TaskEPCalib", period);
   	task->SetTPCEstOn(tpceston);
   	task->SetTPCNUAWeight(tpcnua);
   	task->SetFillTPCQMean(tpcqmean);
@@ -62,7 +64,9 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
   	task->SetVZEROEstOn(v0eston);
   	task->SetVZEROGainEq(v0gaineq);
   	task->SetFillVZEROQMean(v0qmean);
+      task->SetFillVZEROQMean18(v0qmean18);
   	task->SetVZEROCalib(v0calib);
+      task->SetVZEROCalib18(v0calib18);
   	task->SetfQAV0(v0QA);
       task->SetfFillWNUA(fillwNUA);
 	task->SetDebug(debug);
@@ -72,7 +76,6 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
 	task->SetPtMax(ptmax);
 	task->SetCentBinLow(cbinlo);
 	task->SetCentBinHigh(cbinhg);
-	task->SetPeriod(period);
 	task->SetCentCut(centcut);
 	// task->SelectCollisionCandidates(AliVEvent::kINT7);
 	mgr->AddTask(task);
@@ -89,6 +92,32 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
    	mgr->ConnectInput (task, 0, cinput);
   	mgr->ConnectOutput(task, 1, coutput);
 
-	return task;
-}	
+      if(period.EqualTo("LHC18q") || period.EqualTo("LHC18r") ) {
+        
+         Int_t inSlotCounter=1;
+         TGrid::Connect("alien:");
+         TObjArray *AllContainers = mgr->GetContainers();
 
+          TFile *inV0Calib;
+          if(!AllContainers->FindObject("V0Calib")) {
+            if (period.EqualTo("LHC18q")) inV0Calib = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/CalibV0GainCorrectionLHC18q_Sept2021NoAvgQ.root");
+            if (period.EqualTo("LHC18r")) inV0Calib = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/CalibV0GainCorrectionLHC18r_Sept2021NoAvgQ.root");
+
+            AliAnalysisDataContainer *cin_V0Calib = mgr->CreateContainer(Form("inV0Calib_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);             
+            TList* V0Calib_list = NULL;
+            V0Calib_list = dynamic_cast<TList*>(inV0Calib->Get("fWgtsV0ZDC"));
+            if (!V0Calib_list) printf("Read TList wrong!\n");
+            cin_V0Calib->SetData(V0Calib_list);      
+            mgr->ConnectInput(task,inSlotCounter,cin_V0Calib);
+            inSlotCounter++;
+          }
+          else {
+            mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("V0Calib"));
+            inSlotCounter++;
+            printf("V0Calib already loaded\n");
+          }
+      };
+
+	return task;
+}
+	

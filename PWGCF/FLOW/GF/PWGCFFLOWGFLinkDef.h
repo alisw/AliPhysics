@@ -19,6 +19,7 @@
 #pragma link C++ class AliPartSimpleForCorr+;
 #pragma link C++ class AliProfileSubset+;
 #pragma link C++ class AliProfileBS+;
+#pragma link C++ class AliPtContainer+;
 #pragma link C++ class AliCkContainer+;
 #pragma link C++ class AliGFWFlowContainer+;
 #pragma link C++ class AliUniFlowCorrTask+;
@@ -29,11 +30,14 @@
 #pragma link C++ class AliAnalysisTaskESEFlow+;
 #pragma link C++ class AliAnalysisTaskFlowSquareBracket+;
 #pragma link C++ class AliAnalysisTaskCMWESETrkSyst+;
+#pragma link C++ class AliAnalysisTaskPtFlowCorrelation+;
+#pragma link C++ class AliAnalysisTaskMomentumFlowCorrelation++;
 #endif
 
 #ifdef __CLING__
 
 #pragma link C++ class AliAnalysisTaskCreateNUA+;
+#pragma link C++ class AliAnalysisTaskCreatePeriodNUA+;
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
 #pragma link C++ class AliAnalysisTaskFlowPPTask+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
@@ -43,9 +47,11 @@
 #pragma link C++ class AliAnalysisTaskJetQ+;
 #pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
+#pragma link C++ class AliAnalysisTaskCorrForNonlinearFlow+;
 #pragma link C++ class AliEffFDContainer+;
 #pragma link C++ class CorrelationCalculator+;
 #pragma link C++ class AliGFWNFCuts+;
+#pragma link C++ class AliGFWXXCuts+;
 #pragma link C++ class PhysicsProfile+;
 #pragma link C++ class PhysicsProfilePPTask+;
 

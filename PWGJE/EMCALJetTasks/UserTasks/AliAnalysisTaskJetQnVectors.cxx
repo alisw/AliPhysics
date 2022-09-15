@@ -32,23 +32,43 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
+    fHistResolution_epV0AV0C_qV0M(nullptr),
+    fHistResolution_epV0CTPC_qV0M(nullptr),
+    fHistResolution_epV0ATPC_qV0M(nullptr),
+    fHistResolution_epV0AV0C_qV0A(nullptr),
+    fHistResolution_epV0CTPC_qV0A(nullptr),
+    fHistResolution_epV0ATPC_qV0A(nullptr),
+    fHistResolution_epV0AV0C_qV0C(nullptr),
+    fHistResolution_epV0CTPC_qV0C(nullptr),
+    fHistResolution_epV0ATPC_qV0C(nullptr),
+    fHistResolution_epTPCpTPCn_qV0M(nullptr),
+    fHistResolution_epV0MTPCp_qV0M(nullptr),
+    fHistResolution_epV0MTPCn_qV0M(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
-    fJEQnVecHandler(nullptr),
+    fJEQnVecHandler1(nullptr),
+    fJEQnVecHandler2(nullptr),
     fHarmonic(2),
     fCalibType(AliJEQnVectorHandler::kQnCalib),
     fNormMethod(AliJEQnVectorHandler::kQoverM),
-    fOADBFileName(""),
+    fOADBFileName1(""),
+    fOADBFileName2(""),
     fAOD(nullptr),
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
+    fRejectTPCPileup(false),
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
+    fq2TPC(0),
+    fEPangleFullTPC(0),
+    fEPanglePosTPC(0),
+    fEPangleNegTPC(0),
     fEPangleV0M(0),
     fEPangleV0A(0),
-    fEPangleV0C(0)
+    fEPangleV0C(0),
+    fEventCuts("")
 {
     //
     // default constructor
@@ -67,28 +87,48 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
 }
 
 //________________________________________________________________________
-AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int harmonic, int calibType, TString oadbFileName) :
+AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int harmonic, int calibType, TString oadbFileName1, TString oadbFileName2) :
     AliAnalysisTaskSE(name),
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
+    fHistResolution_epV0AV0C_qV0M(nullptr),
+    fHistResolution_epV0CTPC_qV0M(nullptr),
+    fHistResolution_epV0ATPC_qV0M(nullptr),
+    fHistResolution_epV0AV0C_qV0A(nullptr),
+    fHistResolution_epV0CTPC_qV0A(nullptr),
+    fHistResolution_epV0ATPC_qV0A(nullptr),
+    fHistResolution_epV0AV0C_qV0C(nullptr),
+    fHistResolution_epV0CTPC_qV0C(nullptr),
+    fHistResolution_epV0ATPC_qV0C(nullptr),
+    fHistResolution_epTPCpTPCn_qV0M(nullptr),
+    fHistResolution_epV0MTPCp_qV0M(nullptr),
+    fHistResolution_epV0MTPCn_qV0M(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
-    fJEQnVecHandler(nullptr),
+    fJEQnVecHandler1(nullptr),
+    fJEQnVecHandler2(nullptr),
     fHarmonic(harmonic),
     fCalibType(calibType),
     fNormMethod(AliJEQnVectorHandler::kQoverSqrtM),
-    fOADBFileName(oadbFileName),
+    fOADBFileName1(oadbFileName1),
+    fOADBFileName2(oadbFileName2),
     fAOD(nullptr),
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
+    fRejectTPCPileup(false),
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
+    fq2TPC(0),
+    fEPangleFullTPC(0),
+    fEPanglePosTPC(0),
+    fEPangleNegTPC(0),
     fEPangleV0M(0),
     fEPangleV0A(0),
-    fEPangleV0C(0)
+    fEPangleV0C(0),
+    fEventCuts("")
 {
     //
     // standard constructor
@@ -109,6 +149,7 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     DefineOutput(1, TList::Class());
     DefineOutput(2, TH2F::Class());
     DefineOutput(3, TH2F::Class());
+    DefineOutput(4, TH3F::Class());
 }
 
 //________________________________________________________________________
@@ -121,18 +162,32 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 		if(!fOutputList->IsOwner()) {
 			delete fHistNEvents;
 			delete fHistCentrality;
+                        delete fHistResolution_epV0AV0C_qV0M;
+                        delete fHistResolution_epV0CTPC_qV0M;
+                        delete fHistResolution_epV0ATPC_qV0M;
+                        delete fHistResolution_epV0AV0C_qV0A;
+                        delete fHistResolution_epV0CTPC_qV0A;
+                        delete fHistResolution_epV0ATPC_qV0A;
+                        delete fHistResolution_epV0AV0C_qV0C;
+                        delete fHistResolution_epV0CTPC_qV0C;
+                        delete fHistResolution_epV0ATPC_qV0C;
+                        delete fHistResolution_epTPCpTPCn_qV0M;
+                        delete fHistResolution_epV0MTPCp_qV0M;
+                        delete fHistResolution_epV0MTPCn_qV0M;
+
 			for(int iDet=0; iDet<3; iDet++) {
 				delete fHistEventPlaneTPC[iDet];
-				delete fHistEventPlaneV0[iDet];
+                                delete fHistEventPlaneV0[iDet];
 				delete fHistqnVsCentrTPC[iDet];
-				delete fHistqnVsCentrV0[iDet];
+      				delete fHistqnVsCentrV0[iDet];
 				if(fSplineListqnPercTPC[iDet]) delete fSplineListqnPercTPC[iDet];
 				if(fSplineListqnPercV0[iDet]) delete fSplineListqnPercV0[iDet];
 			}
 		}
 		delete fOutputList;
     }
-    if(fJEQnVecHandler) delete fJEQnVecHandler;
+    if(fJEQnVecHandler1) delete fJEQnVecHandler1;
+    if(fJEQnVecHandler2) delete fJEQnVecHandler2;
     for(int iDet=0; iDet<3; iDet++) {
         if(fQvecTPCVsCentrDistr[iDet]) delete fQvecTPCVsCentrDistr[iDet];
         if(iDet<2) {
@@ -144,31 +199,64 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 //________________________________________________________________________
 void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
 {
-    fJEQnVecHandler = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName);
-    fJEQnVecHandler->EnablePhiDistrHistos();
-
+    fJEQnVecHandler1 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName1);
+    fJEQnVecHandler2 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName2);
+    fJEQnVecHandler1->EnablePhiDistrHistos();
+    fJEQnVecHandler2->EnablePhiDistrHistos();
+    
     fOutputList = new TList();
     fOutputList->SetOwner(true);
 
-    fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",4,0.5,4.5);
+    fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",5,0.5,5.5);
     fHistNEvents->Sumw2();
     fHistNEvents->SetMinimum(0);
     fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
     fHistNEvents->GetXaxis()->SetBinLabel(2,"Pass Phys. Sel. + Trig");
     fHistNEvents->GetXaxis()->SetBinLabel(3,"Centrality > 90%");
     fHistNEvents->GetXaxis()->SetBinLabel(4,"No vertex");
+    fHistNEvents->GetXaxis()->SetBinLabel(5,"Fail Pileup");
     fOutputList->Add(fHistNEvents);
 
     fHistCentrality = new TH1F("fHistCentrality","Centrality distribution;;Number of events",100,0.,100.);
     fOutputList->Add(fHistCentrality);
+   
+    //V0M Resolution Hists
+    fHistResolution_epV0AV0C_qV0M = new TH3F("fHistResolution_epV0AV0C_qV0M", "fHistResolution_epV0AV0C_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0AV0C_qV0M);
+    fHistResolution_epV0CTPC_qV0M = new TH3F("fHistResolution_epV0CTPC_qV0M", "fHistResolution_epV0CTPC_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0CTPC_qV0M);
+    fHistResolution_epV0ATPC_qV0M = new TH3F("fHistResolution_epV0ATPC_qV0M", "fHistResolution_epV0ATPC_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0ATPC_qV0M);
+    fHistResolution_epTPCpTPCn_qV0M = new TH3F("fHistResolution_epTPCpTPCn_qV0M", "fHistResolution_epTPCpTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epTPCpTPCn_qV0M);
+    fHistResolution_epV0MTPCp_qV0M = new TH3F("fHistResolution_epV0MTPCp_qV0M", "fHistResolution_epV0MTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0MTPCp_qV0M);
+    fHistResolution_epV0MTPCn_qV0M = new TH3F("fHistResolution_epV0MTPCn_qV0M", "fHistResolution_epV0MTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0MTPCn_qV0M);
+
+    //V0A Resolution Hists
+    fHistResolution_epV0AV0C_qV0A = new TH3F("fHistResolution_epV0AV0C_qV0A", "fHistResolution_epV0AV0C_qV0A", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0AV0C_qV0A);
+    fHistResolution_epV0CTPC_qV0A = new TH3F("fHistResolution_epV0CTPC_qV0A", "fHistResolution_epV0CTPC_qV0A", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0CTPC_qV0A);
+    fHistResolution_epV0ATPC_qV0A = new TH3F("fHistResolution_epV0ATPC_qV0A", "fHistResolution_epV0ATPC_qV0A", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0ATPC_qV0A);
+
+    //V0C Resolution Hists
+    fHistResolution_epV0AV0C_qV0C = new TH3F("fHistResolution_epV0AV0C_qV0C", "fHistResolution_epV0AV0C_qV0C", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0AV0C_qV0C);
+    fHistResolution_epV0CTPC_qV0C = new TH3F("fHistResolution_epV0CTPC_qV0C", "fHistResolution_epV0CTPC_qV0C", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0CTPC_qV0C);
+    fHistResolution_epV0ATPC_qV0C = new TH3F("fHistResolution_epV0ATPC_qV0C", "fHistResolution_epV0ATPC_qV0C", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0ATPC_qV0C);
 
     TString TPCNames[3] = {"FullTPC","PosTPC","NegTPC"};
     TString V0Names[3] = {"FullV0","V0A","V0C"};
     for(int iDet=0; iDet<3; iDet++) {
         fHistEventPlaneTPC[iDet] = new TH1F(Form("fHistEventPlane%s",TPCNames[iDet].Data()),Form(";%s #psi_{%d};Entries",TPCNames[iDet].Data(),fHarmonic),200,0,TMath::Pi());
         fHistEventPlaneV0[iDet] = new TH1F(Form("fHistEventPlane%s",V0Names[iDet].Data()),Form(";%s #psi_{%d};Entries",V0Names[iDet].Data(),fHarmonic),200,0,TMath::Pi());
-    	fHistqnVsCentrTPC[iDet] = new TH2F(Form("fHistqnVsCentr%s",TPCNames[iDet].Data()),Form(";#it{q}_{%d}^{%s};Entries",fHarmonic,TPCNames[iDet].Data()),100,0.,100.,15000,0.,15.);
-		fHistqnVsCentrV0[iDet] = new TH2F(Form("fHistqnVsCentr%s",V0Names[iDet].Data()),Form(";#it{q}_{%d}^{%s};Entries",fHarmonic,V0Names[iDet].Data()),100,0.,100.,15000,0.,15.);
+    	fHistqnVsCentrTPC[iDet] = new TH2F(Form("fHistqnVsCentr%s",TPCNames[iDet].Data()),Form(";#it{q}_{%d}^{%s};Entries",fHarmonic,TPCNames[iDet].Data()),100,0.,100.,2000,0.,20.);
+		fHistqnVsCentrV0[iDet] = new TH2F(Form("fHistqnVsCentr%s",V0Names[iDet].Data()),Form(";#it{q}_{%d}^{%s};Entries",fHarmonic,V0Names[iDet].Data()),100,0.,100.,2000,0.,20.);
         fOutputList->Add(fHistEventPlaneTPC[iDet]);
         fOutputList->Add(fHistEventPlaneV0[iDet]);
         fOutputList->Add(fHistqnVsCentrTPC[iDet]);
@@ -178,9 +266,11 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
     if(fCalibType==AliJEQnVectorHandler::kQnCalib) {
         if(fEnableTPCPhiVsCentrDistr) {
             OpenFile(2);
-            fTPCPhiVsCentrDistr[0] = dynamic_cast<TH2F*>(fJEQnVecHandler->GetPhiDistrHistosTPCPosEta()->Clone());
+            fTPCPhiVsCentrDistr[0] = dynamic_cast<TH2F*>(fJEQnVecHandler1->GetPhiDistrHistosTPCPosEta()->Clone());
+            fTPCPhiVsCentrDistr[0]->Add(dynamic_cast<TH2F*>(fJEQnVecHandler2->GetPhiDistrHistosTPCPosEta()->Clone())); 
             OpenFile(3);
-            fTPCPhiVsCentrDistr[1] = dynamic_cast<TH2F*>(fJEQnVecHandler->GetPhiDistrHistosTPCNegEta()->Clone());
+            fTPCPhiVsCentrDistr[1] = dynamic_cast<TH2F*>(fJEQnVecHandler1->GetPhiDistrHistosTPCNegEta()->Clone());
+            fTPCPhiVsCentrDistr[1]->Add(dynamic_cast<TH2F*>(fJEQnVecHandler2->GetPhiDistrHistosTPCNegEta()->Clone()));
         }
         if(fEnableQvecTPCVsCentrDistr) {
             OpenFile(4);
@@ -240,6 +330,7 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
         return;
     }
 
+
     AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
     if(!multSelection){
         AliWarning("AliMultSelection could not be found in the aod event list of objects");
@@ -259,6 +350,18 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
         fHistNEvents->Fill(4);
         return;
     }
+    if (fRejectTPCPileup)   {
+        fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+        Bool_t acceptEventCuts = fEventCuts.AcceptEvent(InputEvent());
+        if(!acceptEventCuts)   { 
+           fHistNEvents->Fill(5);
+            return;}
+    }
+
+    //choose calibration file to use (run numbers specific to 2018 pass3)
+    AliJEQnVectorHandler *fJEQnVecHandler;
+    if (fAOD->GetRunNumber() <= 296623) fJEQnVecHandler = fJEQnVecHandler1;   //child1
+    if (fAOD->GetRunNumber() >  296623) fJEQnVecHandler = fJEQnVecHandler2;   //child2
 
     fJEQnVecHandler->ResetAODEvent();
     fJEQnVecHandler->SetAODEvent(fAOD);
@@ -270,6 +373,11 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     double PsinFullV0 = -1., PsinV0A = -1., PsinV0C = -1.;
     fJEQnVecHandler->GetEventPlaneAngleTPC(PsinFullTPC,PsinPosTPC,PsinNegTPC);
     fJEQnVecHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C);
+
+    fEPangleFullTPC = PsinFullTPC;
+    fEPanglePosTPC = PsinPosTPC;
+    fEPangleNegTPC = PsinNegTPC;
+
     fEPangleV0M = PsinFullV0;
     fEPangleV0A = PsinV0A;
     fEPangleV0C = PsinV0C;
@@ -289,6 +397,7 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     fq2V0M = qnFullV0;
     fq2V0A = qnV0A;
     fq2V0C = qnV0C;
+    fq2TPC = qnFullTPC;
 
 	fHistqnVsCentrTPC[0]->Fill(cent,qnFullTPC);
 	fHistqnVsCentrTPC[1]->Fill(cent,qnPosTPC);
@@ -296,6 +405,29 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
 	fHistqnVsCentrV0[0]->Fill(cent,qnFullV0);
 	fHistqnVsCentrV0[1]->Fill(cent,qnV0A);
 	fHistqnVsCentrV0[2]->Fill(cent,qnV0C);
+
+    //fill histos with resolution
+    double resolution1 = cos(2*(PsinV0C-PsinV0A));
+    double resolution2 = cos(2*(PsinV0C-PsinFullTPC));
+    double resolution3 = cos(2*(PsinV0A-PsinFullTPC));
+    double resolution4 = cos(2*(PsinPosTPC-PsinNegTPC));
+    double resolution5 = cos(2*(PsinFullV0-PsinPosTPC));
+    double resolution6 = cos(2*(PsinFullV0-PsinNegTPC));
+
+    fHistResolution_epV0AV0C_qV0M->Fill(resolution1, qnFullV0, cent);  //used to calculate reaction plane resolution
+    fHistResolution_epV0CTPC_qV0M->Fill(resolution2, qnFullV0, cent);  //2nd argument gives detector being used for q2 calculation
+    fHistResolution_epV0ATPC_qV0M->Fill(resolution3, qnFullV0, cent);
+    fHistResolution_epTPCpTPCn_qV0M->Fill(resolution4, qnFullV0, cent);
+    fHistResolution_epV0MTPCp_qV0M->Fill(resolution5, qnFullV0, cent);
+    fHistResolution_epV0MTPCn_qV0M->Fill(resolution6, qnFullV0, cent);
+
+    fHistResolution_epV0AV0C_qV0A->Fill(resolution1, qnV0A, cent); 
+    fHistResolution_epV0CTPC_qV0A->Fill(resolution2, qnV0A, cent); 
+    fHistResolution_epV0ATPC_qV0A->Fill(resolution3, qnV0A, cent);
+
+    fHistResolution_epV0AV0C_qV0C->Fill(resolution1, qnV0C, cent);  
+    fHistResolution_epV0CTPC_qV0C->Fill(resolution2, qnV0C, cent);  
+    fHistResolution_epV0ATPC_qV0C->Fill(resolution3, qnV0C, cent);
 
     int runnumber = fAOD->GetRunNumber();
 

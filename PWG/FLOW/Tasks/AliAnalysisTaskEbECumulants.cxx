@@ -39,12 +39,10 @@ AliAnalysisTaskEbECumulants::AliAnalysisTaskEbECumulants(const char *name):
  fHistList(NULL),
  fUseFisherYates(kFALSE),
  fRandomIndices(NULL),
- // Control histograms:
- fControlHistogramsList(NULL),
- fPtHist(NULL),
- fNbinsPt(1000),
- fMinBinPt(0.),
- fMaxBinPt(10.),
+ fVerbose(kFALSE),
+ // Event histograms:
+ fEventHistogramsList(NULL),
+ fEventHistogramsPro(NULL),
  // Final results:
  fFinalResultsList(NULL)
  {
@@ -84,12 +82,10 @@ AliAnalysisTaskEbECumulants::AliAnalysisTaskEbECumulants():
  fHistList(NULL),
  fUseFisherYates(kFALSE),
  fRandomIndices(NULL),
- // Control histograms:
- fControlHistogramsList(NULL),
- fPtHist(NULL),
- fNbinsPt(1000),
- fMinBinPt(0.),
- fMaxBinPt(10.),
+ fVerbose(kFALSE),
+ // Event histograms:
+ fEventHistogramsList(NULL),
+ fEventHistogramsPro(NULL),
  // Final results:
  fFinalResultsList(NULL)
 {
@@ -128,14 +124,14 @@ void AliAnalysisTaskEbECumulants::UserCreateOutputObjects()
 
  // *) Book random generator:
  delete gRandom;
-  gRandom = new TRandom3(0); // if uiSeed is 0, the seed is determined uniquely in space and time via TUUID 
+ gRandom = new TRandom3(0); // if uiSeed is 0, the seed is determined uniquely in space and time via TUUID 
  //gRandom = new TRandom3(fRandomSeed); // TBI 20211115 add setter for arbitrary seed 
 
  // b) Book and nest all lists:
  this->BookAndNestAllLists();
 
  // c) Book all objects:
- this->BookControlHistograms();
+ this->BookEventHistograms();
  this->BookFinalResultsHistograms();
 
  // *) Trick to avoid name clashes, part 2:
@@ -181,7 +177,7 @@ void AliAnalysisTaskEbECumulants::UserExec(Option_t *)
   if( (0.2 < pt) && (pt < 5.0) ) // example cuts
   {
    // fill some control histograms:
-   fPtHist->Fill(pt); // filling pt distribution
+   //fPtHist->Fill(pt); // filling pt distribution
  
    // do some analysis only with the particles which passed the cuts
    // ... your analysis code ... 
@@ -220,7 +216,21 @@ void AliAnalysisTaskEbECumulants::InitializeArrays()
 {
  // Initialize all data members which are arrays in this method.
 
- // This is important, since these objects cannot be initialized directly in the constructor list. 
+ // *) Event histograms;
+ 
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
+ // *) Event histograms:
+ for(Int_t t=0;t<gEventHistogramsEbE;t++) // type, see enum eEventHistograms
+ {
+  for(Int_t rs=0;rs<2;rs++) // reco/sim
+  {
+   for(Int_t ba=0;ba<2;ba++) // before/after cuts
+   {
+    fEventHistograms[t][rs][ba] = NULL;
+   } // for(Int_t ba=0;ba<2;ba++)
+  } // for(Int_t rs=0;rs<2;rs++) // reco/sim
+ } // for(Int_t t=0;t<gEventHistogramsEbE;t++) // type, see enum eEventHistograms
 
 } // void AliAnalysisTaskEbECumulants::InitializeArrays()
 
@@ -236,11 +246,13 @@ void AliAnalysisTaskEbECumulants::BookAndNestAllLists()
  TString sMethodName = "void AliAnalysisTaskEbECumulants::BookAndNestAllLists()";
  if(!fHistList){Fatal(sMethodName.Data(),"fHistList is NULL");}
 
+ /*
  // a) Book and nest lists for control histograms:
  fControlHistogramsList = new TList();
  fControlHistogramsList->SetName("ControlHistograms");
  fControlHistogramsList->SetOwner(kTRUE);
  fHistList->Add(fControlHistogramsList);
+ */
 
  // b) Book and nest lists for final results:
  fFinalResultsList = new TList();
@@ -252,29 +264,44 @@ void AliAnalysisTaskEbECumulants::BookAndNestAllLists()
 
 //=======================================================================================================================
 
-void AliAnalysisTaskEbECumulants::BookControlHistograms()
+void AliAnalysisTaskEbECumulants::BookEventHistograms()
 {
- // Book all control histograms.
+ // Book all event histograms.
 
- // a) Book histogram to hold pt spectra;
- // b) ...
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- // a) Book histogram to hold pt spectra:
- fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbinsPt,fMinBinPt,fMaxBinPt);
- fPtHist->SetStats(kFALSE);
- fPtHist->SetFillColor(kBlue-10);
- fPtHist->GetXaxis()->SetTitle("p_{t}");
- fControlHistogramsList->Add(fPtHist);
- 
- // b) ...
+ TString stype[gEventHistogramsEbE] = {"NumberOfEvents","TotalMultiplicity","SelectedParticles","Centrality","Vertex_x","Vertex_y","Vertex_z"}; // keep in sync. with enum eEventHistograms
+ TString srs[2] = {"rec","sim"};
+ TString sba[2] = {"before cuts","after cuts"};
 
-} // void AliAnalysisTaskEbECumulants::BookControlHistograms()
+ for(Int_t t=0;t<gEventHistogramsEbE;t++) // type, see enum eEventHistograms
+ {
+  if(!fBookEventHistograms[t]){continue;}
+  for(Int_t rs=0;rs<2;rs++) // reco/sim
+  {
+   for(Int_t ba=0;ba<2;ba++) // before/after cuts
+   {
+    // Skip exceptional cases:
+    if(eSelectedParticles == t && eBefore == ba){continue;} // Number of selected particles makes sense only after cuts
+    // ...
+    // Book the rest:
+    fEventHistograms[t][rs][ba] = new TH1D(Form("fEventHistograms[%d][%d][%d]",t,rs,ba),Form("%s, %s, %s",stype[t].Data(),srs[rs].Data(),sba[ba].Data()),(Int_t)fEventHistogramsBins[t][0],fEventHistogramsBins[t][1],fEventHistogramsBins[t][2]); 
+    //fEventHistograms[t][rs][ba]->SetLineColor(fBeforeAfterColor[ba]);  
+    //fEventHistograms[t][rs][ba]->SetFillColor(fBeforeAfterColor[ba]-10);
+    fEventHistogramsList->Add(fEventHistograms[t][rs][ba]);
+   } // for(Int_t ba=0;ba<2;ba++)
+  } // for(Int_t rs=0;rs<2;rs++) // reco/sim
+ } // for(Int_t t=0;t<gEventHistogramsEbE;t++) // type, see enum 'eEvent'
+
+} // void AliAnalysisTaskEbECumulants::BookEventHistograms()
 
 //=======================================================================================================================
 
 void AliAnalysisTaskEbECumulants::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
 } // void AliAnalysisTaskEbECumulants::BookFinalResultsHistograms()
 
@@ -381,6 +408,8 @@ void AliAnalysisTaskEbECumulants::ResetEventByEventQuantities()
 {
  // Reset all global event-by-event quantities here:
 
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
  // *) Fisher-Yates algorithm:
  if(fUseFisherYates)
  {
@@ -399,7 +428,7 @@ void AliAnalysisTaskEbECumulants::RandomIndices(AliVEvent *ave)
  // b) Get total number of tracks;
  // c) Fisher-Yates algorithm.
 
- //if(fVerbose){Green(__PRETTY_FUNCTION__);} // TBI 20211115 add support for verbose mode eventually
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);

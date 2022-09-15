@@ -65,6 +65,15 @@ class AliReducedBaseEvent : public TObject {
   Float_t   CentralityVZEROA()                const {return fCentrality[4];}
   Float_t   CentralityVZEROC()                const {return fCentrality[5];}
   Float_t   CentralityZNA()                   const {return fCentrality[6];}
+  Float_t   CentralityV0MNew()                const {return fCentrality[7];}
+  Float_t   CentralityV0MNewPlus05()          const {return fCentrality[8];}
+  Float_t   CentralityV0MNewMinus05()         const {return fCentrality[9];}
+  Float_t   CentralityV0MNewPlus10()          const {return fCentrality[10];}
+  Float_t   CentralityV0MNewMinus10()         const {return fCentrality[11];}
+  Float_t   CentralityV0MPlus05()             const {return fCentrality[12];}
+  Float_t   CentralityV0MMinus05()            const {return fCentrality[13];}
+  Float_t   CentralityV0MPlus10()             const {return fCentrality[14];}
+  Float_t   CentralityV0MMinus10()            const {return fCentrality[15];}
   Int_t     CentralityQuality()               const {return fCentQuality;}
   Int_t     NTracksTotal()                    const {return fNtracks[0];}
   Int_t     NTracks()                         const {return fNtracks[1];}
@@ -95,7 +104,7 @@ class AliReducedBaseEvent : public TObject {
   Int_t     fRunNo;                 // run number
   Float_t   fVtx[3];                // global event vertex vector in cm
   Int_t     fNVtxContributors;      // global event vertex contributors
-  Float_t   fCentrality[7];         // centrality; 0-V0M, 1-CL1, 2-TRK, 3-ZEMvsZDC, 4-V0A, 5-V0C, 6-ZNA
+  Float_t   fCentrality[16];        // centrality; 0-V0M, 1-CL1, 2-TRK, 3-ZEMvsZDC, 4-V0A, 5-V0C, 6-ZNA, 7-VOMNew, 8-V0MNewPlus05, 9-V0MNewMinus05, 10-V0MNewPlus10, 11-V0MNewMinus10, 12-V0MPlus05, 13-V0MMinus05, 14-V0MPlus10, 15-V0MMinus10,
   Int_t     fCentQuality;           // quality flag for the centrality 
   Int_t     fNtracks[2];            // number of tracks, [0]-total, [1]-selected for the tree
   Int_t     fNV0candidates[2];      // number of V0 candidates, [0]-total, [1]-selected for the tree
@@ -112,7 +121,7 @@ class AliReducedBaseEvent : public TObject {
   AliReducedBaseEvent& operator= (const AliReducedBaseEvent &c);
   AliReducedBaseEvent(const AliReducedBaseEvent &c);
 
-  ClassDef(AliReducedBaseEvent, 3);
+  ClassDef(AliReducedBaseEvent, 5);
 };
 
 #endif

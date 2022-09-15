@@ -165,8 +165,8 @@ set(SRCS
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
-  AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
+  AliAnalysisTaskSEOmegacZero2XiPifromKFP.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
   AliRDHFCutsCdeuterontodKpi.cxx
@@ -181,12 +181,14 @@ set(SRCS
   AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP.cxx
   AliAnalysisTaskSESemileptonicOmegac0KFP.cxx
   AliRDHFCutsOmegactoeleOmegafromKFP.cxx
+
 )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
   AliAnalysisTaskHFSimpleVertices.cxx
+  AliAnalysisTaskSEHFSystPID.cxx
   )
 endif()
 
@@ -238,6 +240,7 @@ install(FILES
             AddD2HTrain.C
 	    AddGoodRuns.C
             ConfigVertexingHF.C
+	    ConfigVertexingHF_pp_OfflineV0.C
             ConfigVertexingHF_pPbRHF.C
             ConfigVertexingHF_highmult.C
             ConfigVertexingHF_pp_LambdaC.C

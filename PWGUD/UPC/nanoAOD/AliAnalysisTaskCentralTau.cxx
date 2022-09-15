@@ -288,11 +288,6 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
 	TBits fFOCrossedChips(1200);
 	const AliVMultiplicity *mult = fEvent->GetMultiplicity();
 	TBits fFOFiredChips = mult->GetFastOrFiredChips();
-	//
-	// SAVE STG DECISION
-	//
-	TBits fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
-	fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
 
 	//
 	// TRACKS SETTING
@@ -353,6 +348,12 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
 			hParticleTypeCounter->Fill(fTrackPIDid[iTrack]);
 
 		}//Two tracks loop
+		
+		//
+		// SAVE STG DECISION
+		//
+		TBits fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
+		fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
 
 		//
 		// CHARGE? (OPPOSITE, LIKE)

@@ -122,7 +122,7 @@
 #pragma link C++ class AliAnalysisTaskJetV3+;
 #pragma link C++ class AliAnalysisTaskJetVn+;
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
-#pragma link C++ class AliAnalysisTaskPID+;
+#pragma link C++ class AliAnalysisTaskMTFPID+;
 #pragma link C++ class AliAnalysisTaskPIDV0base+;
 #pragma link C++ class AliPieceWisePoly+;
 #pragma link C++ class AliAnalysisTaskPSHFE+;
@@ -131,7 +131,10 @@
 #pragma link C++ class AliEventTree+;
 #pragma link C++ class AliAnalysisTaskEventExtractor+;
 #pragma link C++ class AliEmcalTRDTrackingTask+;
+#pragma link C++ class AliAnalysisTaskEPCalibForJet+;
 #pragma link C++ class AliAnalysisTaskRawJetWithEP+;
+#pragma link C++ class AliAnalysisTaskEmbeddingJetWithEP+;
+#pragma link C++ class AliAnalysisTaskEmcalJetProperties+;
 
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;
@@ -318,6 +321,7 @@
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEA+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskRevEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPythiaBranchEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliLundPlaneHelper+;

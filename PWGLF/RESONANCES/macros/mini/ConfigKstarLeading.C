@@ -61,7 +61,7 @@ Bool_t ConfigKstarLeading(
 
     // Defining output objects
     const Int_t dims = 8;
-    Int_t useIM[dims] = {          1,           1,          1,          1,               0,          0,           isMC,          isMC};
+    Int_t useIM[dims] = {          1,           1,          0,          0,               0,          0,           isMC,          isMC};
     TString name[dims] = {        "UnlikePM", "UnlikeMP", "MixingPM",   "MixingMP",   "LikePP",   "LikeMM",    "True",       "Mother"};
     TString comp[dims] = {        "PAIR",     "PAIR",      "MIX",      "MIX",         "PAIR",     "PAIR",      "TRUE",       "MOTHER"};
     TString output[dims] = {      "SPARSE",   "SPARSE",   "SPARSE",   "SPARSE",       "SPARSE",   "SPARSE",    "SPARSE",     "SPARSE"};
@@ -85,14 +85,14 @@ Bool_t ConfigKstarLeading(
         out->SetMotherMass(motherMass[i]);
 
         out->AddAxis(imID, 85, 0.77, 1.20);
-        out->AddAxis(ptID, 8, 2., 10.);
-        if(!isPP ) out->AddAxis(multID,5,0.,50.);
-        else out->AddAxis(multID, 10, 0., 100.); 
+        out->AddAxis(ptID, 1, 6., 10.);
+       // if(!isPP ) out->AddAxis(multID,1,0.,90.);
+       // else out->AddAxis(multID, 10, 0., 100.); 
 
 
-       out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
-        out->AddAxis(ptlID, 13, 4., 30.); 
-       //  out->AddAxis(detaID, 16, -1.6, 1.6);   
+       out->AddAxis(alID, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+       // out->AddAxis(ptlID, 1, 4., 30.); 
+        out->AddAxis(detaID, 64, -1.6, 1.6);   
        // out->AddAxis(philID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
        // out->AddAxis(phiID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
     }

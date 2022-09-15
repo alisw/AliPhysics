@@ -1226,6 +1226,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d, with overlapping Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 6){
       printf("\t %d - %d, with overlapping Track mult in MC as data \n", fCentralityMin*5, fCentralityMax*5);
+    } else if ( fModCentralityClass == 10){
+      printf("\t %d - %d, cluster multiplicity with EMCal clusters \n", fCentralityMin, fCentralityMax);
     }
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kMB, kCentral, kSemiCentral will be analysed \n");
@@ -1464,6 +1466,11 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fDetectorCentrality=3;
     fModCentralityClass=20;
     break;
+  case 31: // v: pp -> Multiplicity EMCal clusters in single cluster bins (if one selects 36, all events with 3 to 6 clusters are selected)
+    fIsHeavyIon=0;
+    fDetectorCentrality=4;
+    fModCentralityClass=10;
+    break;
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
     return kFALSE;
@@ -1475,7 +1482,7 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
 Bool_t AliConvEventCuts::SetCentralityMin(Int_t minCentrality)
 {
   // Set Cut
-  if(minCentrality<0||minCentrality>20){
+  if(minCentrality<0||minCentrality>50){
     AliError(Form("minCentrality not defined %d",minCentrality));
     return kFALSE;
   }
@@ -1488,7 +1495,7 @@ Bool_t AliConvEventCuts::SetCentralityMin(Int_t minCentrality)
 Bool_t AliConvEventCuts::SetCentralityMax(Int_t maxCentrality)
 {
   // Set Cut
-  if(maxCentrality<0||maxCentrality>20){
+  if(maxCentrality<0||maxCentrality>50){
     AliError(Form("maxCentrality not defined %d",maxCentrality));
     return kFALSE;
   }
@@ -1899,26 +1906,34 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerName="";
       // AliInfo("Info: Nothing to be done");
       break;
-    case 1: // CEMC1 - V0OR and PHOS fired
+    case 1: // CPHI1 - V0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI1;
       fSpecialTriggerName="AliVEvent::kPHI1";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI1";
       break;
-    case 2: // CEMC7 - V0AND and PHOS fired
+    case 2: // CPHI7 - V0AND and PHOS fired
       fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kPHI7;
       fSpecialTriggerName="AliVEvent::kPHI7";
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI7";
       break;
-    case 3: // CEMC8  - T0OR and PHOS fired
+    case 3: // CPHI8  - T0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI8;
       fSpecialTriggerName="AliVEvent::kPHI8";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI8";
+      break;
+    case 4: // CPHI7 - V0AND and PHOS fired but with additional INEL>0 requirement
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fOfflineTriggerMask=AliVEvent::kPHI7;
+      fSpecialTriggerName="AliVEvent::kPHI7";
+      fSpecialSubTriggerName="CPHI7";
+      fINELgtZEROTrigger=kTRUE;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -2406,6 +2421,39 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=2;
       fSpecialSubTriggerName="CEMC8";
       fSpecialSubTriggerNameAdditional="CDMC8";
+      break;
+    case 28: // V0AND and EMCAL OR DCAL fired - s
+      fSpecialSubTrigger=1;
+      fSpecialTriggerName="AliVEvent::kCaloOnly/AliVEvent::kEMC7";
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="CEMC7";
+      fSpecialSubTriggerNameAdditional="CDMC7";
+      fINELgtZEROTrigger = kTRUE;
+      break;
+    case 29: // Gamma Low EMC and DMC - t
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EG2";
+      fSpecialSubTriggerName="7EG2";
+      fSpecialSubTriggerNameAdditional="7DG2";
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      fINELgtZEROTrigger = kTRUE;
+      break;
+    case 30: // INT7, CaloFast, INEL>0 - u
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CINT7";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/INT7";
+      fSpecialSubTrigger=1;
+      fINELgtZEROTrigger = kTRUE;
+      break;
+    case 31: // PHI7, CaloFast, INEL>0 - v
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CPHI7-";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/CPHI7";
+      fINELgtZEROTrigger = kTRUE;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -2986,6 +3034,43 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
 }
 
 //-------------------------------------------------------------
+Int_t AliConvEventCuts::GetEMCalClusterMultiplicity(AliVEvent* event)
+{
+  Int_t nclus                       = 0;
+  TClonesArray * arrClustersProcess = NULL;
+  if(!fCorrTaskSetting.CompareTo("")){
+    nclus = event->GetNumberOfCaloClusters();
+  } else {
+    arrClustersProcess = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(!arrClustersProcess)
+      AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    nclus = arrClustersProcess->GetEntries();
+  }
+  Int_t nClusCalo = 0;
+  for(int i = 0; i < nclus; ++i){
+    AliVCluster* clus = NULL;
+    if(event->IsA()==AliESDEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+      else
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)event->GetCaloCluster(i));
+    } else if(event->IsA()==AliAODEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+      else
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(i));
+    }
+    if(!clus) continue;
+
+    if (clus->IsEMCAL()){
+      nClusCalo++;
+    }
+    delete clus;
+  }
+  return nClusCalo;
+};
+
+//-------------------------------------------------------------
 Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 {   // Get Event Centrality
 
@@ -3038,6 +3123,10 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
           return fESDCentrality->GetCentralityPercentile("ZNA");
       }
     }
+    // Estimation using EMCal clusters
+    if(fDetectorCentrality==4){
+      return GetEMCalClusterMultiplicity(event);
+    }
   }
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
@@ -3071,6 +3160,10 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
     }
     }else{
       if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    }
+    // Estimation using EMCal clusters
+    if(fDetectorCentrality==4){
+      return GetEMCalClusterMultiplicity(event);
     }
   }
   return -1;
@@ -3129,6 +3222,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   }
   else if (fModCentralityClass == 21){  // pp 13 TeV 0.01% mult classes
     centralityC= Int_t(centrality*100);
+    if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
+      return kTRUE;
+    } else return kFALSE;
+  }
+  else if (fModCentralityClass == 10){  // EMCal nCluster multiplicity classes
+    centralityC= Int_t(centrality);
     if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
       return kTRUE;
     } else return kFALSE;
@@ -5738,7 +5837,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 }
 
 //________________________________________________________________________
-Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event){
+Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event)
+{
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
     AliMultSelection* MultSelectionTask = (AliMultSelection*)event->FindListObject("MultSelection");
@@ -5747,8 +5847,62 @@ Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event){
       return kFALSE;
     }
     return MultSelectionTask->GetThisEventINELgtZERO();
-    // return MultSelectionTask->IsINELgtZERO(event);
   }
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsEventTrueINELgtZERO(AliVEvent *event, AliMCEvent  *lMCevent)
+{
+
+  const AliVVertex* primVtxMC   = lMCevent->GetPrimaryVertex();
+  Double_t mcProdVtxX   = primVtxMC->GetX();
+  Double_t mcProdVtxY   = primVtxMC->GetY();
+  Double_t mcProdVtxZ   = primVtxMC->GetZ();
+
+  Bool_t isTrueINELgtZERO = kFALSE;
+  if(!event || event->IsA()==AliESDEvent::Class()){
+    for(Long_t i = 0; i < lMCevent->GetNumberOfTracks(); i++) {
+      if (IsConversionPrimaryESD( lMCevent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+
+        AliMCParticle* particle = (AliMCParticle *)lMCevent->GetTrack(i);
+        if (!particle) continue;
+        if(TMath::Abs(particle->Charge())<0.001) continue;
+        if(fabs(particle -> Eta()) < 1){
+          isTrueINELgtZERO = kTRUE;
+          break;
+        }
+      }
+    }
+  } else if(event->IsA()==AliAODEvent::Class()){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray){
+      // Loop over all primary MC particle
+      for(Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
+        if (!particle) continue;
+
+        Bool_t isPrimary = IsConversionPrimaryAOD(event, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+        if (isPrimary){
+          if(fabs(particle -> Eta()) < 1){
+            isTrueINELgtZERO = kTRUE;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return isTrueINELgtZERO;
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsMCTriggerSelected(AliVEvent *event, AliMCEvent  *lMCevent)
+{
+  // if requested event class is INEL>0, check if it is INEL>0 on MC gen. level
+  if( GetUseINELgtZERO() && !IsEventTrueINELgtZERO(event, lMCevent)){
+    return kFALSE;
+  }
+  // standard, all events should be accepted (all inelastic collisions)
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -6411,7 +6565,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
     if (!mimickedTrigger ) return kFALSE;
 
   if(fINELgtZEROTrigger)
-    if(!isINELgtZERO)         return kFALSE;
+    if(!isINELgtZERO)      return kFALSE;
 
   return kTRUE;
 
@@ -8457,7 +8611,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
       fPeriodEnum = kLHC16P1EPOS;
       fEnergyEnum = k13TeV;
   // 13TeV LHC16d anchors full field Phojet MB
-  } else if ( periodName.CompareTo("LHC16P1PHO") == 0 || periodName.CompareTo("LHC18d6a") == 0 || periodName.CompareTo("LHC18d6a2") == 0  ){
+  } else if ( periodName.CompareTo("LHC16P1PHO") == 0 || periodName.CompareTo("LHC18d6a") == 0 || periodName.CompareTo("LHC18d6a2") == 0 || periodName.CompareTo("LHC21k3b2") == 0  ){
       fPeriodEnum = kLHC16P1PHO;
       fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors full field JJ Pythia 8 MB
@@ -8470,6 +8624,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC16P1JJLowB") == 0 || periodName.CompareTo("LHC17f8b") == 0  ){
     fPeriodEnum = kLHC16P1JJLowB;
     fEnergyEnum = k13TeVLowB;
+
 
   // 13TeV HF-MC anchors LHC16i,j,o,p
   } else if ( periodName.CompareTo("LHC17h8c") == 0){
@@ -8752,6 +8907,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fPeriodEnum = kLHC19i3c2;
     fEnergyEnum = k13TeV;
 
+  // EPOS LHC pp 13 TeV. Use same enum as for Pythia as it is treated in the same way
+  } else if ( periodName.CompareTo("LHC18EPOSNomB13TeV") == 0 ||  periodName.Contains("LHC20f14a")  ){
+    fPeriodEnum = kLHC18P1Pyt8NomB;
+    fEnergyEnum = k13TeV;
 
   // MC upgrade
   } else if (periodName.Contains("LHC13d19")){

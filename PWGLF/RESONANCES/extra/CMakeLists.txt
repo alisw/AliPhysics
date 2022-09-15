@@ -25,12 +25,13 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
 		    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD 
                     ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
-                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY		    
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
-		    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+		    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base		    
                    )
 
 # Sources - alphabetical order
@@ -55,6 +56,10 @@ set(SRCS
   RESOSA/AliAnalysisTaskPhiSA.cxx
   RESOSA/AliAnalysisTaskPhiSAR.cxx
   AliAnalysisTaskPhiCount.cxx
+  AliAnalysisTask_Phi_MC.cxx
+  AliAnalysisTaskAODTrackPairUtils.cxx
+  AliAnalysisTaskAODTrackPair.cxx
+  AliAnalysisTaskAODTrackPairMC.cxx
   )
 
 # Headers from sources
@@ -99,6 +104,8 @@ install(FILES AddTaskXiStarPbPb_RUN2.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskPPVsMultMCRSN.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddAnalysisTaskEffMatrix.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddAnalysisTaskPhiCount.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddAnalysisTask_Phi_MC.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskAODTrackPair.C DESTINATION PWGLF/RESONANCES/extra)
 
 # Install directories
 install(DIRECTORY RESOSA DESTINATION PWGLF/RESONANCES/extra)

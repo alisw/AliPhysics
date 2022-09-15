@@ -134,6 +134,9 @@ public:
 
   AliJetContainer *GetPartLevelJetContainer() const { return GetJetContainer(fNameParticleJets); }
   AliJetContainer *GetDetLevelJetContainer() const { return GetJetContainer(fNameDetectorJets); }
+  AliTrackContainer *GetTracks() const { if(fNameTracks.Length()) return GetTrackContainer(fNameTracks); return NULL;}
+  AliClusterContainer *GetClusters() const { if(fNameClusters.Length()) return GetClusterContainer(fNameClusters); return NULL; }
+  AliMCParticleContainer *GetMCParticles() const { if(fNameMCParticles.Length()) return GetMCParticleContainer(fNameMCParticles); return NULL; }
   const TString &GetNamePartLevelLets() const { return fNameParticleJets; }
   const TString &GetNameDetLevelJets() const { return fNameDetectorJets; }
   AngularityHandler *GetAngularityHandler() const {return fAngularityHandler; }
@@ -141,6 +144,9 @@ public:
 
   void SetNameDetJetContainer(const char *name)  { fNameDetectorJets = name; }
   void SetNamePartJetContainer(const char *name) { fNameParticleJets = name; }
+  void SetNameTracks(const char *name)           { fNameTracks = name;}
+  void SetNameClusters(const char *name)         { fNameClusters = name; }
+  void SetNameMCParticles(const char *name)      { fNameMCParticles = name; }
   void SetTriggerName(const char *name)          { fTriggerSelectionString = name; }
   void SetFractionResponseClosure(double fraction) { fFractionResponseClosure = fraction; }
   void SetFillHSparse(Bool_t doFill)             { fFillHSparse = doFill; }
@@ -182,6 +188,7 @@ public:
 
 protected:
   virtual void UserCreateOutputObjects();
+  virtual void UserRunBeforeEventSelection();
   virtual Bool_t Run(); 
   virtual Bool_t CheckMCOutliers();
   bool IsSelectEmcalTriggers(const TString &triggerstring) const;
@@ -190,6 +197,9 @@ protected:
 private:
   THistManager                *fHistos;                       //!<! Histogram collection
   AngularityHandler           *fAngularityHandler;            ///< Handler for angularity splitting
+  TString                     fNameTracks;                    ///< Name of the container for tracks
+  TString                     fNameClusters;                  ///< Name of the container for EMCAL clusters
+  TString                     fNameMCParticles;               ///< Name of the container for MC particles
   TString                     fNameDetectorJets;              ///< Name of the data jet container
   TString                     fNameParticleJets;              ///< Name of the MC jet container
   TString                     fTriggerSelectionString;        ///< Trigger selection string

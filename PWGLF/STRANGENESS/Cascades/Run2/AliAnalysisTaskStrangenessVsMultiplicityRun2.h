@@ -79,9 +79,7 @@ public:
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
     }
-  void SetSaveEverything           (Bool_t lSaveEverything   = kTRUE ) {
-    fkSaveEverything = lSaveEverything; //danger ... use cautiously
-  }
+
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -241,7 +239,15 @@ public:
     }
 //---------------------------------------------------------------------------------------
 
-    Double_t MLCascadeNeuralNetworkForward(Double_t v[11], Float_t lpT);
+    Double_t ML_NeuralNetwork_Prediction_XiMinus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_XiPlus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_OmegaMinus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_OmegaPlus(Double_t v[11]);
+
+    Double_t ML_BDT_Prediction_XiMinus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_XiPlus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_OmegaMinus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_OmegaPlus(Double_t v[11]);
 
 //---------------------------------------------------------------------------------------
 private:
@@ -278,7 +284,6 @@ private:
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
-  Bool_t fkSaveEverything;
     Bool_t fkPreselectDedx;
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
@@ -495,7 +500,15 @@ private:
 
     //-------------------------------------------
     //ML Prediction
-    Double_t fTreeCascVarMLCascadeNNPrediction; //!
+    Double_t fTreeCascVarMLNNPredXiMinus; //!
+    Double_t fTreeCascVarMLNNPredXiPlus; //!
+    Double_t fTreeCascVarMLNNPredOmegaMinus; //!
+    Double_t fTreeCascVarMLNNPredOmegaPlus; //!
+
+    Double_t fTreeCascVarMLBDTPredXiMinus; //!
+    Double_t fTreeCascVarMLBDTPredXiPlus; //!
+    Double_t fTreeCascVarMLBDTPredOmegaMinus; //!
+    Double_t fTreeCascVarMLBDTPredOmegaPlus; //!
     //-------------------------------------------
 
     //TPC dEdx

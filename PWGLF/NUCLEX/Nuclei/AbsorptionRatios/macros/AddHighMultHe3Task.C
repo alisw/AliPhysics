@@ -25,9 +25,9 @@ AliAnalysisTaskHe3* AddHighMultHe3Task(TString name = "name", ULong64_t triggerM
 	task->SetHighPCut(1e30);
 	task->SetEtaCut(0.8);
 	task->SetMinNITSCl(1);
-	task->SetMaxDCAxyPreCut(1.5);
-	task->SetMaxDCAxyFinal(1.5);
-	task->SetMaxDCAz(1.5);
+	task->SetMaxDCAxyPreCut(3.5);
+	task->SetMaxDCAxyFinal(3.5);
+	task->SetMaxDCAz(3.5);
 	//set PID cuts #### Legacy code not used in analysis anymore ###
 	task->SetMaxTPCnSigma(3.0);
 	task->SetUseTOFPidCut(kFALSE);//kTRUE or kFALSE for use of TOF

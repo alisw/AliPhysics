@@ -2,6 +2,16 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+//
+// Used bits of code from AliAnalysisTaskStrangenessVsMultiplicityRun2
+//					 and  AliAnalysisTaskTPCTOFCascade
+//
+// --- Romain Schotter
+//
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
 #ifndef AliAnalysisTaskStrangeCascadesTriggerAODRun2_H
 #define AliAnalysisTaskStrangeCascadesTriggerAODRun2_H
 
@@ -107,7 +117,7 @@ private:
 //   Histograms
 //===========================================================================================
     TList*                  fOutputList;    //! output list
-    TH1D*                   fHistEventCounter;        //! dummy histogram
+    TH2D*                   fHistEventCounter;        //! dummy histogram
 
     AliAnalysisTaskStrangeCascadesTriggerAODRun2(const AliAnalysisTaskStrangeCascadesTriggerAODRun2&); // not implemented
     AliAnalysisTaskStrangeCascadesTriggerAODRun2& operator=(const AliAnalysisTaskStrangeCascadesTriggerAODRun2&); // not implemented

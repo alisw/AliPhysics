@@ -71,6 +71,8 @@ public:
     k2015,
     k2015v6,
     k2015pidfix,
+    k2018r,
+	k2018q,
     kAny
   };
 
@@ -223,7 +225,9 @@ public:
   virtual void RecenterCRCQVec();
   virtual void RecenterCRCQVecZDC();
   virtual void RecenterCRCQVecZDC2(); //@Shi load my recentering file
+  virtual void RecenterCRCQVecZDC2018Pass3(); 
   virtual void RecenterCRCQVecVZERO();
+  virtual void RecenterCRCQVecVZERO2018Pass3();
   virtual void PassQAZDCCuts();
   virtual Bool_t PassCutZDCQVecDis(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm);
   virtual Bool_t MultCut2015o();
@@ -413,7 +417,15 @@ public:
   TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
   void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
   TH1F* GetPhiWeights() const {return this->fPhiWeightsRPs;};
-
+  
+  // functions to get NUA, V0, ZDC recenter for 2018 dataset
+  void GetMCCorrectionHist();
+  void  GetV0MCorrectionHist(Int_t run=0);
+  void  GetZDCCorrectionHist(Int_t run=0);
+  void  GetNUACorrectionHist(Int_t run=0);
+  Double_t GetNUAWeightForTrack(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
+  Double_t GetMCEfficiencyWeightForTrack(Double_t fPt=1.0,Int_t gChrg=1);
+  
   // 2b.) event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
   void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
@@ -1524,6 +1536,7 @@ private:
   Double_t fCentralityCL1EBE; // centrality (CL1) percentile
   Double_t fNITSCL1EBE; // centrality (TRK) percentile
   Double_t fCentralityTRKEBE; // centrality (TRK) percentile
+  UInt_t fOrbit; // orbit number
   //  3d.) profiles:
   TProfile *fAvMultiplicity; //! profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8
   TProfile *fIntFlowCorrelationsPro; //! average correlations <<2>>, <<4>>, <<6>> and <<8>> (with wrong errors!)
@@ -1871,6 +1884,8 @@ private:
   TProfile *fAvr_Run_CentQ[4]; //!
   TProfile3D *fAvr_Cent_VtxXYZQ[20][4]; //!
   TProfile3D *fAvr_Run_VtxXYZQ[4]; //!
+  TH1D *fHZDCCparameters; //! ZDC-C gain eq and recentering parameters using least square fit for 2018 dataset
+  TH1D *fHZDCAparameters; //! ZDC-A gain eq and recentering parameters using least square fit for 2018 dataset
 
 //  TProfile2D *fCRCZDCQVecCenEComTot[fCRCMaxnRun][4]; //!
   TProfile2D *fCRCZDCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
@@ -1885,6 +1900,15 @@ private:
   TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
   TProfile3D *fZDCVtxCenHistMagPol[10][8]; //! Run-by-run vtxZDCQvec
   TProfile2D *fVZEROCenHist[3];//! Run-by-run VZERO Q-vector (harmonics 1-3)
+  TH1D *fHCorrectQNxV0C; //! Run-by-run VZERO Q-vector 2nd Harmonics for 2018 period
+  TH1D *fHCorrectQNyV0C; //!
+  TH1D *fHCorrectQNxV0A; //!
+  TH1D *fHCorrectQNyV0A; //!
+  TH1D *fHCorrectQ3xV0C; //! Run-by-run VZERO Q-vector 3rd Harmonics for 2018 period
+  TH1D *fHCorrectQ3yV0C; //!
+  TH1D *fHCorrectQ3xV0A; //!
+  TH1D *fHCorrectQ3yV0A; //!
+
   TH3D *fZDCVtxFitHist[4]; //!
   TH1D *fZDCVtxFitCenProjHist[4][3]; //!
   TH3D *fZDCVtxFitHist2[4]; //!
@@ -2478,6 +2502,16 @@ private:
   Bool_t fbFlagIsBadRunForC34;
   Bool_t fStoreExtraHistoForSubSampling;
 
+  // Other variables defined for input NUA and MC reconstruction efficiency for 2018 data
+  // Lists and histograms holding input weights
+  TList *fListTRKCorr;        //  Supplied from AddTask
+  TH1D *fHCorrectMCPosChrg;   //!
+  TH1D *fHCorrectMCNegChrg;   //!
+  
+  TList *fListNUACorr;        //  Supplied from AddTask
+  TH3F *fHCorrectNUAChrgPos;  //!
+  TH3F *fHCorrectNUAChrgNeg;  //!
+  
   ClassDef(AliFlowAnalysisCRC,75);
 
 };

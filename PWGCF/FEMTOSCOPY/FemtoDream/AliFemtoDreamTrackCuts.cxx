@@ -67,7 +67,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fNSigValueITSmin(-3.),
       fNSigValueITSmax(3.),
       fdoITSnSigmaCut(false),
-      fcutCOMBkd(4.),
+      fcutCOMBkd(3.),
       fcutTPCkd(3.),
       fcutEXCLUSIONkd(3.),
       fIsKaon(true),
@@ -637,7 +637,9 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
 
  if(TPCyes){
   float TPCe = fabs(Track->GetnSigmaTPC((int) (AliPID::kElectron)));
+  float TPCe_sign = Track->GetnSigmaTPC((int) (AliPID::kElectron));
   float TPCpi = fabs(Track->GetnSigmaTPC((int) (AliPID::kPion)));
+  float TPCpi_sign = Track->GetnSigmaTPC((int) (AliPID::kPion));
   float TPCk = fabs(Track->GetnSigmaTPC((int) (AliPID::kKaon)));
   float TPCp = fabs(Track->GetnSigmaTPC((int) (AliPID::kProton)));
   float TPCd = fabs(Track->GetnSigmaTPC((int) (AliPID::kDeuteron)));
@@ -652,45 +654,53 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
    float TOFp = fabs(Track->GetnSigmaTOF((int) (AliPID::kProton)));
    float COMBp = sqrt(TPCp*TPCp+TOFp*TOFp);
    float TOFd = fabs(Track->GetnSigmaTOF((int) (AliPID::kDeuteron)));
+   float TOFd_sign = Track->GetnSigmaTOF((int) (AliPID::kDeuteron));
    float COMBd = sqrt(TPCd*TPCd+TOFd*TOFd);
   
    if(fIsKaon){ //Kaon TOF selection
-
     if(!fIsRamona){ // Oton Kaon TOF selection
-     if(COMBk<fcutCOMBkd 
-      && COMBk<COMBpi && COMBk<COMBp) passTOF=true;
-     //reject pions extremely from 1.2GeV:
-     if(p>1.2&&COMBk>2) passTOF=false;
-     if(p>1.2&&COMBpi<6) passTOF=false;
 
+     if( COMBk < fcutCOMBkd ) passTOF=true; // std fcutCOMBkd = 3 
+     if( p>1.2 && COMBk>2 ) passTOF=false;
+     if( p>1.2 && COMBpi<6 ) passTOF=false;
+ 
     }else{ // Ramona Kaon TOF selection
      if(p>0.4&&p<1.4&&TOFk<3&&TPCk<3
       &&!(p>0.8&&TOFp<3&&TPCp<3)) passTOF=true;
     }
-
    }else{ //Deuteron TOF selection
-    //if( COMBd < fcutCOMBkd ) passTOF=true;//COMBd<fcutCOMBkd //comb cut is not what we want to do for deuterons! 
-    if( TOFd < 4 && TPCd < 4 ) passTOF=true; 
+    if( TOFd<10 ) passTOF = true; //start as true and then exclude
+    if(p<1.4) passTOF = false;
+    if( TPCd>fcutTPCkd ) passTOF = false; 
+    if( TOFd_sign<-3 ) passTOF = false; 
+    if( TOFd_sign>5 ) passTOF = false; 
+    if( TOFe<5 ) passTOF = false;
+    if( TOFpi<5 ) passTOF = false;
+    if( TOFk<5 ) passTOF = false;
+    if( TOFp<5 ) passTOF = false;
+    if( TPCpi_sign<3 ) passTOF = false; // use also TPCpi to exclude for TOF selection
    }
-
   }//TOFyes
 
   if(fIsKaon){ //Kaon TPC selection
-  
    if(!fIsRamona){ // Oton Kaon TPC selection
+
     passTPC = true;//for kaonstart with true and then exclude
-    if(p>.3&&p<.8&&TPCe<fcutEXCLUSIONkd) passTPC=false; // exclude TPC electrons
-    if(p>.5&&TPCpi<fcutEXCLUSIONkd) passTPC=false; // exclude TPC pions
+    float maxTPCp = 0.85;
+    if(p>.3 && p<maxTPCp && TPCe<3 ) passTPC=false; // exclude TPC electrons
+    if(p>.5 && TPCpi<3 ) passTPC=false; // exclude TPC pions
     if(TPCk>fcutTPCkd) passTPC=false; // own TPC sigma kaon selection
-    if(p>.5&&p<.65) passTPC=false; //exclude gap
-    if(p>.85) passTPC = false; // momentum limit for TPC selectoin
+    if(p>maxTPCp) passTPC = false; // momentum limit for TPC selection
+    // at the end leave the exclusion band:  => this can go after preliminaries!
+    if(p>.5&&p<.65) passTPC = false;//at the end use exclusion band. This can go after prelims!
 
    }else{ // Ramona Kaon TPC selection
     if(p>0.15&&p<0.3&&TPCk<3) passTPC=true;
    }
-  
   }else{ // Deuteron TPC selection
-   if(p<1.4&&TPCd<fcutTPCkd) passTPC = true;//momentum theshold && own TPC deuteron kaon selection
+   if( TPCd<fcutTPCkd ) passTPC = true; // std fcutTPCkd = 3 
+   if(p>=1.4) passTPC = false;
+   if( TPCe_sign<3 ) passTPC = false; // exclude tpc e (effect only for p>~1.5GeV)
   }
  }else{
   passTPC=false;
@@ -699,7 +709,6 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
  //return an OR!
  return passTPC||passTOF;
 }
-
 
 bool AliFemtoDreamTrackCuts::SmallestNSig(AliFemtoDreamTrack *Track) {
   bool pass = true;

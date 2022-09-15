@@ -25,6 +25,8 @@ public:
                                 Bool_t *checkProximity = NULL); //apply cut on relative position of spd and trk verteces
     
     Bool_t IsGoodSPDvertexRes(const AliAODVertex * spdVertex = NULL);
+	
+	Bool_t GetVertexStatus(const AliAODVertex *vertex);
     
     //setter 
     void SetPrimaryVertexPos(Double_t Pos[3])
@@ -44,18 +46,14 @@ public:
         fPrimVertexCov[5] = Cov[5];
     }
     
-    void SetVertexStatus            (Bool_t value)      { fVertexStatus = value;          }
-    
     void SetTriggerMask(UInt_t mask)    { fTriggerMask = mask ;}
     
     void SetIsCollisionCandidate    (Bool_t value)      { fIsCollisionCandidate = value ; }
-    void SetIsEventSelected         (UInt_t value)      { fIsEventSelected      = value ; }
     void SetEventNumber             (ULong64_t value)   { fEventNumber          = value ; }
     
     
     //getter
     Bool_t      IsCollisionCandidate        ()           const { return fIsCollisionCandidate;       }
-    UInt_t      IsEventSelected             ()           const { return fIsEventSelected;            }
     UInt_t      GetTriggerMask              ()           const { return fTriggerMask;                }
     
     Double_t    GetMagneticField            ()           const { return fMagField;                   }
@@ -67,6 +65,7 @@ public:
     Bool_t      HasVertex                   ()           const { return fHasVertex;                  }
     Bool_t      GetProximityCut             ()           const { return fProximityCut;               }
     Bool_t      HasSPDANDTrkVtx             ()           const { return fHasSPDANDTrkVtx;            }
+    Bool_t      IsVertexSelected2015pp      ()           const { return fVertexSelected2015pp;       }
     
     Float_t     GetV0MPercCorr              ()           const { return fV0MPercCorr;                }
     Float_t     GetV0MPercentile            ()           const { return fV0MPercentile;              }
@@ -89,6 +88,7 @@ public:
     Bool_t      IsINELgtZERO                ()           const { return fIsINELgtZERO;               }
     Bool_t      HasNoInconsistentVertices   ()           const { return fHasNoInconsistentVertices;  }
     Bool_t      IsNotAsymmetricInVZERO      ()           const { return fIsNotAsymmetricInVZERO;     }
+    Bool_t      HasGoodVertex2016      	    ()           const { return fHasGoodVertex2016;     	 }
     
     Bool_t      IsPileupMV                  ()           const { return fIsPileupMV;                 }
     Bool_t      IsPileupOOB                 ()           const { return fIsPileupOOB;                }
@@ -99,17 +99,14 @@ public:
 private:
     //----------------GENERAL-INFO--------------------
     Bool_t      fIsCollisionCandidate;      // is collision candidate
-    UInt_t      fIsEventSelected;           // is event selected
     UInt_t      fTriggerMask;               // save full info for checking later
     
     Double_t    fMagField;                  //
     Int_t       fRunNumber;                 //
     ULong64_t   fEventNumber;               //
     
-    Char_t      fPrimVertexType;            //
     Double_t    fPrimVertex     [3];        // [0] = X ; [1] = Y ; [2] = Z
     Double_t    fPrimVertexCov  [6];        // [0] = XX, [1] = XY, [2] = XZ ; [3] = YY, [4] = YZ, [5] = ZZ
-    Bool_t      fVertexStatus;              //
     Bool_t      fHasVertex;                 //
     Bool_t      fProximityCut;              //
     Bool_t      fHasSPDANDTrkVtx;           //
@@ -138,6 +135,7 @@ private:
     Bool_t      fIsINELgtZERO;              //
     Bool_t      fHasNoInconsistentVertices; //
     Bool_t      fIsNotAsymmetricInVZERO;    //
+    Bool_t		fHasGoodVertex2016;			//
     //---------------PILE-UP-INFO---------------------
     Bool_t      fIsPileupMV;                //
     Bool_t      fIsPileupOOB;               //
@@ -145,6 +143,6 @@ private:
     Bool_t      fIsPileupFromSPDInMultBins; //
     Bool_t      fIsPileupInMultBins;        //
     //------------------------------------------------
-    ClassDef(AliEventContainer, 1);
+    ClassDef(AliEventContainer, 2);
 };
 #endif

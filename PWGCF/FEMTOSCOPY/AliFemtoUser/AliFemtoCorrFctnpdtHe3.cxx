@@ -4,9 +4,14 @@
 
 #include "AliFemtoCorrFctnpdtHe3.h"
 const float ProtonMass = 0.9383;
-const float DeuteronMass= 2.225;
+const float DeuteronMass= 1.8756;
 const float TritonMass = 2.8089;
 const float He3Mass = 2.8084;
+#define PIH 1.57079632679489656
+#define PIT 6.28318530717958623
+#define fphiL -1.4137167	//default 20bin for phi&eta
+#define fphiT 4.8694686
+static float TPCradii[9] = { 0.85, 1.05, 1.25, 1.45, 1.65, 1.85, 2.05, 2.25, 2.45 };
 /*
 AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3():
     AliFemtoCorrFctnpdtHe3("CorrFctnKStar", 200, 0, 1)
@@ -28,12 +33,40 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fP2Mass(0.1),
     fNumerator(nullptr),
     fDenominator(nullptr),
+    fUseVelGate(0),
     fP1EarlierP2Num(nullptr),
     fP1EarlierP2Dum(nullptr),
     fP2EarlierP1Num(nullptr),
     fP2EarlierP1Dum(nullptr),
     fNumHigh3F(nullptr),
-    fDenHigh3F(nullptr)
+    fDenHigh3F(nullptr),
+    fHighCF(false),
+    fSideBand(false),
+    p2Up3Sigma(nullptr),
+    p2Low3Sigma(nullptr),
+    SideBandUp(nullptr),
+    SideBandLow(nullptr),
+    //
+    A1SideBandNum(nullptr),
+    S1SideBandNum(nullptr),
+    A2SideBandNum(nullptr),
+    A1A2SideBandNum(nullptr),
+    SignalAndSideCFNum(nullptr),
+    A1SideBandDum(nullptr),
+    S1SideBandDum(nullptr),
+    A2SideBandDum(nullptr),
+    A1A2SideBandDum(nullptr),
+    SignalAndSideCFDum(nullptr),
+    fUsePt(0),
+    fUseDPhiDEtaQA(0),
+    fNumDPhiDEtaQA(nullptr),
+    fDumDPhiDEtaQA(nullptr),
+    fNumDPhiDEtaAvgQA(nullptr),
+    fDumDPhiDEtaAvgQA(nullptr),
+    fUseStavinskyMethod(0),
+    fStaSkyBkg(nullptr),
+    fUse2DpTvsKStar(0),
+    f2DpTvsKStar(nullptr)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -42,29 +75,8 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fNumerator->Sumw2();
     fDenominator->Sumw2();
 
-    fP1EarlierP2Num = new TH1D(TString::Format("p1Ep2Num_%s", fTitle.Data()), " ", nbins, KStarLo, KStarHi);
-    fP1EarlierP2Dum = new TH1D(TString::Format("p1Ep2Dum_%s", fTitle.Data()), " ", nbins, KStarLo, KStarHi);;
-    fP2EarlierP1Num = new TH1D(TString::Format("p2Ep1Num_%s", fTitle.Data()), " ", nbins, KStarLo, KStarHi);;
-    fP2EarlierP1Dum = new TH1D(TString::Format("p2Ep1Dum_%s", fTitle.Data()), " ", nbins, KStarLo, KStarHi);;
 
-    fP1EarlierP2Num->Sumw2();
-    fP1EarlierP2Dum->Sumw2();
-    fP2EarlierP1Num->Sumw2();
-    fP2EarlierP1Dum->Sumw2();
 
-    int xybin = 19;
-    float testxy[20];
-    for(int i=0;i<20;i++){
-        testxy[i] = 0.2*float(i+1);
-    }
-    float testz[101];
-    for(int i=0;i<101;i++){
-        testz[i] = 0.01*float(i);
-    }
-    fNumHigh3F = new TH3F(TString::Format("fNumHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,100,testz);
-    fDenHigh3F = new TH3F(TString::Format("fDenHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,100,testz);
-    fNumHigh3F->Sumw2();
-    fDenHigh3F->Sumw2();
 }
 AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCorrFctn):
     AliFemtoCorrFctn(aCorrFctn),
@@ -77,12 +89,39 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fP2Mass(aCorrFctn.fP2Mass),
     fNumerator(aCorrFctn.fNumerator ? new TH1D(*aCorrFctn.fNumerator) : nullptr),
     fDenominator(aCorrFctn.fDenominator ? new TH1D(*aCorrFctn.fDenominator) : nullptr),
+    fUseVelGate(aCorrFctn.fUseVelGate),
     fP1EarlierP2Num(aCorrFctn.fP1EarlierP2Num),
     fP1EarlierP2Dum(aCorrFctn.fP1EarlierP2Dum),
     fP2EarlierP1Num(aCorrFctn.fP2EarlierP1Num),
     fP2EarlierP1Dum(aCorrFctn.fP2EarlierP1Dum),
     fNumHigh3F(aCorrFctn.fNumHigh3F),
-    fDenHigh3F(aCorrFctn.fDenHigh3F)
+    fDenHigh3F(aCorrFctn.fDenHigh3F),
+    fHighCF(aCorrFctn.fHighCF),
+    fSideBand(aCorrFctn.fSideBand),
+    p2Up3Sigma(aCorrFctn.p2Up3Sigma),
+    p2Low3Sigma(aCorrFctn.p2Low3Sigma),
+    SideBandUp(aCorrFctn.SideBandUp),
+    SideBandLow(aCorrFctn.SideBandLow),
+    A1SideBandNum(aCorrFctn.A1SideBandNum),
+    S1SideBandNum(aCorrFctn.S1SideBandNum),
+    A2SideBandNum(aCorrFctn.A2SideBandNum),
+    A1A2SideBandNum(aCorrFctn.A1A2SideBandNum),
+    SignalAndSideCFNum(aCorrFctn.SignalAndSideCFNum),
+    A1SideBandDum(aCorrFctn.A1SideBandDum),
+    S1SideBandDum(aCorrFctn.S1SideBandDum),
+    A2SideBandDum(aCorrFctn.A2SideBandDum),
+    A1A2SideBandDum(aCorrFctn.A1A2SideBandDum),
+    SignalAndSideCFDum(aCorrFctn.SignalAndSideCFDum),
+    fUsePt(aCorrFctn.fUsePt),
+    fUseDPhiDEtaQA(aCorrFctn.fUseDPhiDEtaQA),
+    fNumDPhiDEtaQA(aCorrFctn.fNumDPhiDEtaQA),
+    fDumDPhiDEtaQA(aCorrFctn.fDumDPhiDEtaQA),
+    fNumDPhiDEtaAvgQA(aCorrFctn.fNumDPhiDEtaAvgQA),
+    fDumDPhiDEtaAvgQA(aCorrFctn.fDumDPhiDEtaAvgQA),
+    fUseStavinskyMethod(aCorrFctn.fUseStavinskyMethod),
+    fStaSkyBkg(aCorrFctn.fStaSkyBkg),
+    fUse2DpTvsKStar(aCorrFctn.fUse2DpTvsKStar),
+    f2DpTvsKStar(aCorrFctn.f2DpTvsKStar)
 {
     
 
@@ -101,6 +140,32 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     
     delete fNumHigh3F;
     delete fDenHigh3F;
+
+    delete p2Up3Sigma;
+    delete p2Low3Sigma;
+    delete SideBandUp;
+    delete SideBandLow;
+
+    delete A1SideBandNum;
+    delete S1SideBandNum;
+    delete A2SideBandNum;
+    delete A1A2SideBandNum;
+    delete SignalAndSideCFNum;
+
+    delete A1SideBandDum;
+    delete S1SideBandDum;
+    delete A2SideBandDum;
+    delete A1A2SideBandDum;
+    delete SignalAndSideCFDum;
+    
+    delete fNumDPhiDEtaQA;
+    delete fDumDPhiDEtaQA;    
+    delete fNumDPhiDEtaAvgQA;
+    delete fDumDPhiDEtaAvgQA;
+
+    delete fStaSkyBkg;
+    delete f2DpTvsKStar;
+ 
 
 }
 AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctnpdtHe3& aCorrFctn)
@@ -123,7 +188,8 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
         fNumerator = new TH1D(*aCorrFctn.fNumerator);
     if(fDenominator) delete fDenominator;
         fDenominator = new TH1D(*aCorrFctn.fDenominator);
-
+ 
+    fUseVelGate = aCorrFctn.fUseVelGate;
 
     if(fP1EarlierP2Num) delete fP1EarlierP2Num;
         fP1EarlierP2Num = new TH1D(*aCorrFctn.fP1EarlierP2Num);
@@ -134,8 +200,60 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
     if(fP2EarlierP1Dum) delete fP2EarlierP1Dum;
         fP2EarlierP1Dum = new TH1D(*aCorrFctn.fP2EarlierP1Dum);
 
-    fNumHigh3F = new TH3F(*aCorrFctn.fNumHigh3F);
-    fDenHigh3F = new TH3F(*aCorrFctn.fDenHigh3F);
+    fHighCF 	= aCorrFctn.fHighCF;
+    fSideBand 	= aCorrFctn.fSideBand;
+
+    if(fNumHigh3F) delete fNumHigh3F;
+    	fNumHigh3F = new TH3F(*aCorrFctn.fNumHigh3F);
+    if(fDenHigh3F) delete fDenHigh3F;
+    	fDenHigh3F = new TH3F(*aCorrFctn.fDenHigh3F);
+
+    if(p2Up3Sigma) delete p2Up3Sigma;
+	p2Up3Sigma = new TF1(*aCorrFctn.p2Up3Sigma);
+    if(p2Low3Sigma) delete p2Low3Sigma;
+	p2Low3Sigma = new TF1(*aCorrFctn.p2Low3Sigma);
+    if(SideBandUp) delete SideBandUp;
+	SideBandUp = new TF1(*aCorrFctn.SideBandUp);
+    if(SideBandLow) delete SideBandLow;
+	SideBandLow = new TF1(*aCorrFctn.SideBandLow);
+
+	if(A1SideBandNum) delete A1SideBandNum;
+        		A1SideBandNum = new TH1D(*aCorrFctn.A1SideBandNum);
+	if(S1SideBandNum) delete S1SideBandNum;
+			S1SideBandNum = new TH1D(*aCorrFctn.S1SideBandNum);
+	if(A2SideBandNum) delete A2SideBandNum;
+			A2SideBandNum = new TH1D(*aCorrFctn.A2SideBandNum);
+	if(A1A2SideBandNum) delete A1A2SideBandNum;
+			A1A2SideBandNum = new TH1D(*aCorrFctn.A1A2SideBandNum);
+	if(SignalAndSideCFNum) delete SignalAndSideCFNum;
+			SignalAndSideCFNum = new TH1D(*aCorrFctn.SignalAndSideCFNum);
+	if(A1SideBandDum) delete A1SideBandDum;
+			A1SideBandDum 	= new TH1D(*aCorrFctn.A1SideBandDum);
+	if(S1SideBandDum) delete S1SideBandDum;
+			S1SideBandDum 	= new TH1D(*aCorrFctn.S1SideBandDum);
+	if(A2SideBandDum) delete A2SideBandDum;
+			A2SideBandDum 	= new TH1D(*aCorrFctn.A2SideBandDum);
+	if(A1A2SideBandDum) delete A1A2SideBandDum;
+			A1A2SideBandDum = new TH1D(*aCorrFctn.A1A2SideBandDum);
+	if(SignalAndSideCFDum) delete SignalAndSideCFDum;
+			SignalAndSideCFDum = new TH1D(*aCorrFctn.SignalAndSideCFDum);
+    fUsePt = aCorrFctn.fUsePt;
+    fUseDPhiDEtaQA = aCorrFctn.fUseDPhiDEtaQA;
+    if(fNumDPhiDEtaQA) delete fNumDPhiDEtaQA;
+        		fNumDPhiDEtaQA = new TH2F(*aCorrFctn.fNumDPhiDEtaQA);
+    if(fDumDPhiDEtaQA) delete fDumDPhiDEtaQA;
+        		fDumDPhiDEtaQA = new TH2F(*aCorrFctn.fDumDPhiDEtaQA);
+	if(fNumDPhiDEtaAvgQA) delete fNumDPhiDEtaAvgQA;
+        		fNumDPhiDEtaAvgQA = new TH2F(*aCorrFctn.fNumDPhiDEtaAvgQA);
+    	if(fDumDPhiDEtaAvgQA) delete fDumDPhiDEtaAvgQA;
+        		fDumDPhiDEtaAvgQA = new TH2F(*aCorrFctn.fDumDPhiDEtaAvgQA);
+
+    if(fUseStavinskyMethod) delete fStaSkyBkg;
+			fStaSkyBkg = new TH1F(*aCorrFctn.fStaSkyBkg);
+
+    if(fUse2DpTvsKStar) delete f2DpTvsKStar;
+			f2DpTvsKStar = new TH2F(*aCorrFctn.f2DpTvsKStar);
+
     return *this;
 
 }
@@ -155,14 +273,39 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
 
     tOutputList->Add(fNumerator);
     tOutputList->Add(fDenominator);
+	if(fUseVelGate){
+	    tOutputList->Add(fP1EarlierP2Num);
+	    tOutputList->Add(fP1EarlierP2Dum);
+	    tOutputList->Add(fP2EarlierP1Num);
+	    tOutputList->Add(fP2EarlierP1Dum);
+	}
+    if(fHighCF){
+    	tOutputList->Add(fNumHigh3F);
+    	tOutputList->Add(fDenHigh3F);
+    }
+    if(fSideBand){
+	    tOutputList->Add(A1SideBandNum);
+	    tOutputList->Add(S1SideBandNum);
+	    tOutputList->Add(A2SideBandNum);
+	    tOutputList->Add(A1A2SideBandNum);
+	    tOutputList->Add(SignalAndSideCFNum);
+	    
+	    tOutputList->Add(A1SideBandDum);
+	    tOutputList->Add(S1SideBandDum);
+	    tOutputList->Add(A2SideBandDum);
+	    tOutputList->Add(A1A2SideBandDum);
+	    tOutputList->Add(SignalAndSideCFDum);
+    }
+    if(fUseDPhiDEtaQA){
+            tOutputList->Add(fNumDPhiDEtaQA);
+	    tOutputList->Add(fDumDPhiDEtaQA);
+	    tOutputList->Add(fNumDPhiDEtaAvgQA);
+	    tOutputList->Add(fDumDPhiDEtaAvgQA);
 
-    tOutputList->Add(fP1EarlierP2Num);
-    tOutputList->Add(fP1EarlierP2Dum);
-    tOutputList->Add(fP2EarlierP1Num);
-    tOutputList->Add(fP2EarlierP1Dum);
-    
-    tOutputList->Add(fNumHigh3F);
-    tOutputList->Add(fDenHigh3F);
+    }
+    if(fUseStavinskyMethod) tOutputList->Add(fStaSkyBkg);
+    if(fUse2DpTvsKStar) tOutputList->Add(f2DpTvsKStar);
+		 
     return tOutputList;
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
@@ -174,14 +317,38 @@ void AliFemtoCorrFctnpdtHe3::Write()
     // Write out neccessary objects
     fNumerator->Write();
     fDenominator->Write();
+	if(fUseVelGate){
+	    fP1EarlierP2Num->Write();
+	    fP1EarlierP2Dum->Write();
+	    fP2EarlierP1Num->Write();
+	    fP2EarlierP1Dum->Write();
+	}
+ 	if(fHighCF){
+	    fNumHigh3F->Write();
+	    fDenHigh3F->Write();
+	}
+	if(fSideBand){
+	    A1SideBandNum->Write();
+	    S1SideBandNum->Write();
+	    A2SideBandNum->Write();
+	    A1A2SideBandNum->Write();
+	    SignalAndSideCFNum->Write();
 
-    fP1EarlierP2Num->Write();
-    fP1EarlierP2Dum->Write();
-    fP2EarlierP1Num->Write();
-    fP2EarlierP1Dum->Write();
-
-    fNumHigh3F->Write();
-    fDenHigh3F->Write();
+	    A1SideBandDum->Write();
+	    S1SideBandDum->Write();
+	    A2SideBandDum->Write();
+	    A1A2SideBandDum->Write();
+	    SignalAndSideCFDum->Write();
+	    
+        }
+        if(fUseDPhiDEtaQA){
+		  fNumDPhiDEtaQA->Write();
+		  fDumDPhiDEtaQA->Write();
+		  fNumDPhiDEtaAvgQA->Write();
+		  fDumDPhiDEtaAvgQA->Write();
+	}
+        if(fUseStavinskyMethod) fStaSkyBkg->Write();
+	if(fUse2DpTvsKStar) f2DpTvsKStar->Write();
 
 }
 void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
@@ -195,27 +362,65 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
     else{
         fPair = aPair;
     }
-
     
     // add true pair
     if (fPairCut && !fPairCut->Pass(fPair)) {
         return;
     }
-
+    
     double tKStar = fabs(fPair->KStar());
     fNumerator->Fill(tKStar);
-    fNumHigh3F->Fill(fPair->Track1()->Track()->Pt(),fPair->Track2()->Track()->Pt(),tKStar); 
 
-    int VelLabel = ReVelocityGate(fPair);
-    if(VelLabel == 1){
-        fP1EarlierP2Num->Fill(tKStar);
-    }
-    else if(VelLabel == 2){
-        fP2EarlierP1Num->Fill(tKStar);
-    }
-    else if(VelLabel == 3){
-        return;
-    }
+    if(fHighCF){
+	float FillMom1 = 0.;
+	float FillMom2 = 0.;
+	if(fUsePt){
+		FillMom1 = fPair->Track1()->Track()->Pt();
+		FillMom2 = fPair->Track2()->Track()->Pt();
+	}
+	else{
+		FillMom1 = fPair->Track1()->Track()->P().Mag();
+		FillMom2 = fPair->Track2()->Track()->P().Mag();
+	}
+	fNumHigh3F->Fill(FillMom1,FillMom2,tKStar); 
+	}
+    if(fSideBand){
+	FillSideBandNum(fPair);
+	}
+    if(fUseDPhiDEtaQA){
+
+	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
+    	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
+    	  float AvgDPhi = ReAvgDphi(fPair);
+	  double deta = eta1 - eta2;
+
+ 	  fNumDPhiDEtaQA->Fill(deta,AvgDPhi);
+	  fNumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
+	
+	}
+	if(fUseVelGate){
+	    int VelLabel = ReVelocityGate(fPair);
+	    if(VelLabel == 1){
+		fP1EarlierP2Num->Fill(tKStar);
+	    }
+	    else if(VelLabel == 2){
+		fP2EarlierP1Num->Fill(tKStar);
+	    }
+	    else if(VelLabel == 3){
+		return;
+	    }
+	}
+
+      if(fUseStavinskyMethod){
+		AliFemtoPair* SSPair = new AliFemtoPair;
+		SSPair = InversePair(fPair);
+		float InverseKStar = fabs(SSPair->KStar());
+		fStaSkyBkg->Fill(InverseKStar);
+	}
+	if(fUse2DpTvsKStar){
+		f2DpTvsKStar->Fill(tKStar,fPair->Track2()->Track()->Pt());
+	}
+	return;
     
  
 }
@@ -239,18 +444,45 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 
     double tKStar = fabs(fPair->KStar());
     fDenominator->Fill(tKStar);
-    fDenHigh3F->Fill(fPair->Track1()->Track()->Pt(),fPair->Track2()->Track()->Pt(),tKStar);
+    if(fHighCF){
+	float FillMom1 = 0.;
+	float FillMom2 = 0.;
+	if(fUsePt){
+		FillMom1 = fPair->Track1()->Track()->Pt();
+		FillMom2 = fPair->Track2()->Track()->Pt();
+	}
+	else{
+		FillMom1 = fPair->Track1()->Track()->P().Mag();
+		FillMom2 = fPair->Track2()->Track()->P().Mag();
+	}
+	fDenHigh3F->Fill(FillMom1,FillMom2,tKStar);
+    }
+    if(fSideBand){
+	FillSideBandDum(fPair);
+	}
+	if(fUseDPhiDEtaQA){
 
-    int VelLabel = ReVelocityGate(fPair);
-    if(VelLabel == 1){
-        fP1EarlierP2Dum->Fill(tKStar);
-    }
-    else if(VelLabel == 2){
-        fP2EarlierP1Dum->Fill(tKStar);
-    }
-    else if(VelLabel == 3){
-        return;
-    }
+	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
+    	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
+    	  float AvgDPhi = ReAvgDphi(fPair);
+	  double deta = eta1 - eta2;
+
+ 	  fNumDPhiDEtaQA->Fill(deta,AvgDPhi);
+	  fNumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
+	}
+	if(fUseVelGate){
+	    int VelLabel = ReVelocityGate(fPair);
+	    if(VelLabel == 1){
+		fP1EarlierP2Dum->Fill(tKStar);
+	    }
+	    else if(VelLabel == 2){
+		fP2EarlierP1Dum->Fill(tKStar);
+	    }
+	    else if(VelLabel == 3){
+		return;
+	    }
+	}
+	return;
     
 
 }
@@ -310,10 +542,302 @@ int AliFemtoCorrFctnpdtHe3::ReVelocityGate(AliFemtoPair* aPair){
 
     return ReLabel;
 }
+float AliFemtoCorrFctnpdtHe3::ReAvgDphi(AliFemtoPair* aPair){
+	
+  AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  Double_t magsign = 0.0;
+  if (!aodH) {
+   return -999;
+  }
+  else {
+    AliAODEvent *fAOD;
+    fAOD = aodH->GetEvent();
+    magsign = fAOD->GetMagneticField();
+  }
+  float fMagSign = 1.;
+  if (magsign > 1)
+    fMagSign = 1.;
+  else if ( magsign < 1)
+    fMagSign = -1.;
+  else
+    fMagSign = magsign;
+  
+  float magval = 0.5;
+  float dphiAvg = 0.;
+  double phi1 = aPair->Track1()->Track()->P().Phi();
+  double phi2 = aPair->Track2()->Track()->P().Phi();
+  double chg1 = aPair->Track1()->Track()->Charge();
+  double chg2 = aPair->Track2()->Track()->Charge();
+  double pt1 = aPair->Track1()->Track()->Pt();
+  double pt2 = aPair->Track2()->Track()->Pt();
+  for(int i=0;i<9;i++){
+     Double_t rad = TPCradii[i];
+
+    // Calculate dPhiStar:
+    //double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+    //double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
+    double afsi0b = -0.15*magval*chg1*fMagSign*rad/pt1;
+    double afsi1b = -0.15*magval*chg2*fMagSign*rad/pt2;
+    Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
+    dphistar = TVector2::Phi_mpi_pi(dphistar); // returns phi angle in the interval [-PI,PI)
+    dphiAvg += dphistar;
+   }
+   dphiAvg = dphiAvg/9.;
+   return dphiAvg; 
+}
 void AliFemtoCorrFctnpdtHe3::SetP1AndP2Mass(float p1Mass,float p2Mass){
 
     fP1Mass = p1Mass;
     fP2Mass = p2Mass;
 }
+void AliFemtoCorrFctnpdtHe3::SetfUseVelGate(int aUseVelGate){
+	fUseVelGate = aUseVelGate;
+}
+void AliFemtoCorrFctnpdtHe3::SetVelGateInit(bool aUseVelGate){
+	if(aUseVelGate){
+	    fP1EarlierP2Num = new TH1D(TString::Format("p1Ep2Num_%s", fTitle.Data()), " ", fNbinsKStar,fKStarLow,fKStarHigh);
+	    fP1EarlierP2Dum = new TH1D(TString::Format("p1Ep2Dum_%s", fTitle.Data()), " ", fNbinsKStar,fKStarLow,fKStarHigh);
+	    fP2EarlierP1Num = new TH1D(TString::Format("p2Ep1Num_%s", fTitle.Data()), " ", fNbinsKStar,fKStarLow,fKStarHigh);
+	    fP2EarlierP1Dum = new TH1D(TString::Format("p2Ep1Dum_%s", fTitle.Data()), " ", fNbinsKStar,fKStarLow,fKStarHigh);
+
+	    fP1EarlierP2Num->Sumw2();
+	    fP1EarlierP2Dum->Sumw2();
+	    fP2EarlierP1Num->Sumw2();
+	    fP2EarlierP1Dum->Sumw2();
+	
+	    
+	}
+}
+
+void AliFemtoCorrFctnpdtHe3::SetfHighCF(bool aHighCF){
+    fHighCF = aHighCF;
+}
+void AliFemtoCorrFctnpdtHe3::SetHighCFInit(bool aHighCF){
+    if(aHighCF){
+	    int xybin = 19;
+	    float testxy[20];
+	    for(int i=0;i<20;i++){
+		testxy[i] = 0.2*float(i+1);
+	    }
+	    float testz[401];
+	    for(int i=0;i<401;i++){
+		testz[i] = 0.005*float(i);
+	    }
+	    fNumHigh3F = new TH3F(TString::Format("fNumHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,400,testz);
+	    fDenHigh3F = new TH3F(TString::Format("fDenHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,400,testz);
+	    fNumHigh3F->Sumw2();
+	    fDenHigh3F->Sumw2();
+    }
+}
+
+
+void AliFemtoCorrFctnpdtHe3::SetfSideBand(bool aSideBand){
+    fSideBand = aSideBand;
+}
+void AliFemtoCorrFctnpdtHe3::SetSideBandTF1Init(bool aSideBand){
+    if(aSideBand){
+	    //\ dowang 2022.2.15 side band
+	    // signal/side band region:
+	    // mTOF2 = mu + p7 + p8 * f
+	    // mu = p0 + p1*(1-p2/pT)^p3
+	    // f  = p4*pT + p5*pT^2 + p6*pT
+	    // 
+	    p2Up3Sigma	= new TF1(TString::Format("TF1_p2Up3Sigma_%s", fTitle.Data()),MassBandFunc,0,5,9);
+	    p2Up3Sigma->SetParameters(1,1,1,1, 1,1,1,1,1);
+
+	    p2Low3Sigma = new TF1(TString::Format("TF1_p2Low3Sigma_%s", fTitle.Data()),MassBandFunc,0,5,9);
+	    p2Low3Sigma->SetParameters(1,1,1,1, 1,1,1,1,1);
+	   
+
+	    SideBandUp = new TF1(TString::Format("TF1_SideBandUp_%s", fTitle.Data()),MassBandFunc,0,5,9);
+	    SideBandUp->SetParameters(0,0,0,6, 1,1,1,1,1);
+	
+
+	    SideBandLow = new TF1(TString::Format("TF1_SideBandLow_%s", fTitle.Data()),MassBandFunc,0,5,9);
+	    SideBandLow->SetParameters(0,0,0,2, 1,1,1,1,1);
+	 
+    }
+
+}
+void AliFemtoCorrFctnpdtHe3::SetSideBandHistInit(bool aSideBand){
+    if(aSideBand){
+	    A1SideBandNum	= new TH1D(TString::Format("A1SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A1SideBandNum->Sumw2();
+	    S1SideBandNum	= new TH1D(TString::Format("S1SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);S1SideBandNum->Sumw2();
+	    A2SideBandNum	= new TH1D(TString::Format("A2SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A2SideBandNum->Sumw2();
+	    A1A2SideBandNum	= new TH1D(TString::Format("A1A2SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A1A2SideBandNum->Sumw2();
+	    SignalAndSideCFNum  = new TH1D(TString::Format("SignalAndSideCFNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);SignalAndSideCFNum->Sumw2();
+
+	    A1SideBandDum	= new TH1D(TString::Format("A1SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A1SideBandDum->Sumw2();
+	    S1SideBandDum	= new TH1D(TString::Format("S1SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);S1SideBandDum->Sumw2();
+	    A2SideBandDum	= new TH1D(TString::Format("A2SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A2SideBandDum->Sumw2();
+	    A1A2SideBandDum	= new TH1D(TString::Format("A1A2SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A1A2SideBandDum->Sumw2();
+	    SignalAndSideCFDum  = new TH1D(TString::Format("SignalAndSideCFDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);SignalAndSideCFDum->Sumw2();
+    }
+}
+void AliFemtoCorrFctnpdtHe3::SetDPhiDEtaQAInit(bool aDPhiDEtaQA){
+	if(!aDPhiDEtaQA) return;
+fNumDPhiDEtaQA= new TH2F(TString::Format("fNumDPhiDEtaQA%s", fTitle.Data()), " ",200,-2.0,2.0, 100, -TMath::Pi(), TMath::Pi());
+fDumDPhiDEtaQA= new TH2F(TString::Format("fDumDPhiDEtaQA%s", fTitle.Data()), " ",200,-2.0,2.0, 100, -TMath::Pi(), TMath::Pi());
+fNumDPhiDEtaAvgQA = new TH2F(TString::Format("fNumDPhiDEtaAvgQA%s", fTitle.Data()), " ",300, -0.15, 0.15, 400, -0.2, 0.2);
+fDumDPhiDEtaAvgQA = new TH2F(TString::Format("fDumDPhiDEtaAvgQA%s", fTitle.Data()), " ",300, -0.15, 0.15, 400, -0.2, 0.2);
+		
+}
+void AliFemtoCorrFctnpdtHe3::SetTF1ParaUp3Sigma(float *para){
+    p2Up3Sigma->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7],para[8]);
+}
+void AliFemtoCorrFctnpdtHe3::SetTF1ParaLow3Sigma(float *para){
+    p2Low3Sigma->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7],para[8]);
+}
+void AliFemtoCorrFctnpdtHe3::SetTF1PareSideBandUp(float *para){
+    SideBandUp->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7],para[8]);
+}
+void AliFemtoCorrFctnpdtHe3::SetTF1PareSideBandLow(float *para){
+    SideBandLow->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7],para[8]);
+}
+void AliFemtoCorrFctnpdtHe3::FillSideBandNum(AliFemtoPair* aPair){
+
+    float c = 1.;
+    float beta = aPair->Track2()->Track()->VTOF();
+    if(beta==0) return;
+	
+    float tMom = aPair->Track2()->Track()->P().Mag();
+    float massTOF = tMom*tMom/c/c*(1./(beta*beta)-1);
+
+    float EvalMassSideBandUp 	= SideBandUp->Eval(tMom);
+    float EvalMassSideBandLow 	= SideBandLow->Eval(tMom);
+    // return if out of range
+    if(massTOF > EvalMassSideBandUp) return;
+    if(massTOF < EvalMassSideBandLow) return;
+   
+    double dphi = 0.;
+    double deta = 0.;
+
+	
+    float EvalMassp2Up3Sigma 	= p2Up3Sigma->Eval(tMom);
+    float EvalMassp2Low3Sigma 	= p2Low3Sigma->Eval(tMom);
+
+    float tKStar = fabs(aPair->KStar());
+    // total signal
+    SignalAndSideCFNum->Fill(tKStar);
+	//\ 3 sigma
+    if(EvalMassp2Up3Sigma <= massTOF){ 
+	A1SideBandNum->Fill(tKStar);
+	A1A2SideBandNum->Fill(tKStar);
+	
+    }
+    if(EvalMassp2Low3Sigma <= massTOF && massTOF < EvalMassp2Up3Sigma){
+	S1SideBandNum->Fill(tKStar);
+	}
+    if(massTOF < EvalMassp2Low3Sigma){
+	A2SideBandNum->Fill(tKStar);
+	A1A2SideBandNum->Fill(tKStar);
+    }
+    
+
+
+
+}
+void AliFemtoCorrFctnpdtHe3::FillSideBandDum(AliFemtoPair* aPair){
+
+    float c = 1.;
+    float beta = aPair->Track2()->Track()->VTOF();
+    if(beta==0.) return;
+
+    float tMom = aPair->Track2()->Track()->P().Mag();
+    float massTOF = tMom*tMom/c/c*(1./(beta*beta)-1);
+
+    float EvalMassSideBandUp 	= SideBandUp->Eval(tMom);
+    float EvalMassSideBandLow 	= SideBandLow->Eval(tMom);
+    // return if out of range
+    if(massTOF > EvalMassSideBandUp) return;
+    if(massTOF < EvalMassSideBandLow) return;
+
+    float EvalMassp2Up3Sigma 	= p2Up3Sigma->Eval(tMom);
+    float EvalMassp2Low3Sigma 	= p2Low3Sigma->Eval(tMom);
+	
+
+    float tKStar = fabs(aPair->KStar());
+    // total signal
+    SignalAndSideCFDum->Fill(tKStar);
+    
+    if(EvalMassp2Up3Sigma <= massTOF){
+ 	A1SideBandDum->Fill(tKStar);
+	A1A2SideBandDum->Fill(tKStar);
+    }
+    if(EvalMassp2Low3Sigma <= massTOF && massTOF <EvalMassp2Up3Sigma){
+ 	S1SideBandDum->Fill(tKStar);
+	}
+    if(massTOF < EvalMassp2Low3Sigma){
+ 	A2SideBandDum->Fill(tKStar);
+	A1A2SideBandDum->Fill(tKStar);
+    }
+    
+
+
+}
+void AliFemtoCorrFctnpdtHe3::SetfUsePt(int aUsePt){
+	fUsePt = aUsePt;
+}
+void AliFemtoCorrFctnpdtHe3::SetfUseDPhiDEtaQA(int aUseDPhiDEtaQA){
+	fUseDPhiDEtaQA = aUseDPhiDEtaQA;
+}
+
+Double_t MassBandFunc(Double_t *x, Double_t *par){
+    Float_t xx          = x[0];
+    float p0            = par[0];
+    float p1            = par[1];
+    float p2            = par[2];
+    float p3            = par[3];
+	
+    float p4            = par[4];
+    float p5            = par[5];
+    float p6            = par[6];
+    float constIn11     = par[7];
+    float Beforef       = par[8];
+
+    float mu = p0 + p1 * TMath::Power((1. - p2/xx),p3);
+
+    Double_t f   = 0.;
+    f = p4 * xx + p5 * TMath::Power(xx,2) + p6 * TMath::Power(xx,3);
+
+    Double_t re = 0.;
+    re = mu + abs(Beforef) * constIn11 + Beforef * f;
+    return re;
+
+}
+void AliFemtoCorrFctnpdtHe3::SetUseStavinskyMethod(int aUse){
+	fUseStavinskyMethod = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::SetStaSkyBkgInit(bool aInit){
+	fStaSkyBkg = new TH1F(TString::Format("fStaSkyBkg%s", fTitle.Data()), "fStaSkyBkg", fNbinsKStar,fKStarLow,fKStarHigh);
+	fStaSkyBkg->Sumw2();
+}
+
+AliFemtoPair * AliFemtoCorrFctnpdtHe3::InversePair(AliFemtoPair* aPair)
+{
+    AliFemtoPair* fPair = new AliFemtoPair;
+
+    AliFemtoParticle *tPart1 = new AliFemtoParticle(*aPair->Track1());
+    AliFemtoLorentzVector tFourMom1 = AliFemtoLorentzVector(tPart1->FourMomentum());
+    tFourMom1.SetPx(-1.*tFourMom1.px());
+    tFourMom1.SetPy(-1.*tFourMom1.py());
+    tFourMom1.SetPz(-1.*tFourMom1.pz());
+    tPart1->ResetFourMomentum(tFourMom1);
+    fPair->SetTrack1(tPart1);
+
+ AliFemtoParticle *tPart2 = new AliFemtoParticle(*aPair->Track2());
+    fPair->SetTrack2(tPart2);
+
+
+    return fPair;
+}
+void AliFemtoCorrFctnpdtHe3::SetUse2DpTvsKStar(int aUse){
+	fUse2DpTvsKStar = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::Set2DpTvsKStarInit(bool aInit){
+	f2DpTvsKStar = new TH2F(TString::Format("f2DpTvsKStar%s", fTitle.Data()), "f2DpTvsKStar", 200,0,1.0,100,0,5);
+	f2DpTvsKStar->Sumw2();
+}
+
 
 

@@ -2,7 +2,7 @@
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskNanoBBar.h"
+#include "AliAnalysisTaskNanoBenchmark.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCascadeCuts.h"
@@ -1403,7 +1403,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoBenchmark(bool fullBlastQA = false, //1
     }
   }
 
-  AliAnalysisTaskNanoBBar *task = new AliAnalysisTaskNanoBBar("femtoGrandmaBenchmark", isMC);
+  AliAnalysisTaskNanoBenchmark *task = new AliAnalysisTaskNanoBenchmark("femtoGrandmaBenchmark", isMC);
 
   if (!fullBlastQA)
   {

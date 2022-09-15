@@ -58,7 +58,8 @@ class AliJBaseTrack : public TLorentzVector {
             } else return fTracEff;*/ return fTracEff; }
         Bool_t        IsInTriggerBin()  const { return fTriggID>=0; }
         Bool_t        IsInAssocBin()    const { return fAssocID>=0; }
-        Double_t      GetWeight()       const { return fWeight;}             
+        Double_t      GetWeight()       const { return fWeight;}
+        Float_t       GetCentWeight()   const { return fCentWeight; }
         Int_t         GetMCIndex()      const { return fMCIndex;}
 
         void SetID      (const int id){fID=id;}
@@ -74,6 +75,7 @@ class AliJBaseTrack : public TLorentzVector {
         void SetTrackEff(const Double_t inEff){fTracEff = inEff;}
 
         void SetWeight(Double_t weight) { fWeight = weight;}
+        void SetCentWeight(Float_t centWeight) { fCentWeight = centWeight;}
         void SetMCIndex(Int_t idx) {      fMCIndex = idx;}
 
         void SetPrimary(Bool_t b=kTRUE){ SetFlag(kPrimary,b);}
@@ -100,8 +102,9 @@ class AliJBaseTrack : public TLorentzVector {
         Double_t      fTracEff;           //!   //track efficiency
         Int_t         fMCIndex;           //!   //index of corresp. MC track
         Double_t      fWeight;            //!   //particle weight
+        Float_t       fCentWeight;        //!   //centrality weight for LHC15o.
 
-        ClassDef(AliJBaseTrack,2)
+        ClassDef(AliJBaseTrack,3)
 };
 
 #endif

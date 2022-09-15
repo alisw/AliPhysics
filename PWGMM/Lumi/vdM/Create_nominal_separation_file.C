@@ -1,12 +1,12 @@
+
 #include "CandRoot.h"
 #include "GlobalVariables.h"
 #include "InputFromUser.h"
 #include "vdmUtilities.h"
 
-//-------------------------------------------------------
-// Find the nominal separations in the vdm tree
-// within the given inidices 
-//-------------------------------------------------------
+//-----------------------------------------------------------------------
+// Find the nominal separations in the vdm tree within the given inidices 
+//-----------------------------------------------------------------------
 
 void Find_separations(Int_t scan_type, Int_t scan_num, Int_t IdxStart, Int_t IdxEnd)
 // scan_type: 1 => x-scan; 2 => y-scan
@@ -33,19 +33,18 @@ void Find_separations(Int_t scan_type, Int_t scan_num, Int_t IdxStart, Int_t Idx
 	// get separations
 	Double_t separation = 0;
 	Double_t nsep_old = 0;
-	Double_t small = 1e-12;
-
+	Double_t small = 1e-6;
 	Int_t counter = 0; // internal use only
 	Double_t *sep_array = new Double_t[100]; // internal use only
 	Double_t slope_change = 0;  // internal use only
 
-	for (Int_t j=IdxStart; j<IdxEnd; j++)
+	for (Int_t j=IdxStart;j<IdxEnd;j++)
 	{
 		// cout << " idx = " << IdxStart << " -- " << IdxEnd << endl;
 		g_vdm_Tree->GetEntry(j);
-		//  cout << " jgc  " << j << " d " << TMath::Abs(nsep-nsep_old) << endl;
+		if (aqflag==0) continue;
 
-		if (TMath::Abs(nsep-nsep_old)>small)
+		if (TMath::Abs(nsep-nsep_old)>small) // new separation
 		{
 			// new separation 
 			idx_separation_start = j;
@@ -54,34 +53,36 @@ void Find_separations(Int_t scan_type, Int_t scan_num, Int_t IdxStart, Int_t Idx
 			sep_array[counter] = nsep;
 			counter++;
 			nsep_old = nsep;
+			idx_separation_end = j;
+			time_separation_end = (Long_t) time;
 
-			while (TMath::Abs(nsep-nsep_old)<small && j<IdxEnd)
+			while (j<(IdxEnd-1)) // search for the end of this step
 			{
 				j++;
 				g_vdm_Tree->GetEntry(j);
+				if (TMath::Abs(nsep-nsep_old)>small) break;
+				if (aqflag==0) continue;
+				idx_separation_end = j;
+				time_separation_end = (Long_t) time;	
 			}
-			j--;
-
-			g_vdm_Tree->GetEntry(j);      
-			idx_separation_end = j;
-			time_separation_end = (Long_t) time;
+			j--; // go back one step, just before the new sep starts
 
 			// slopes
 			if (counter>2)
 			{
-				slope_change = (sep_array[counter-1] - sep_array[counter-2])*
-					(sep_array[counter-2] - sep_array[counter-3]);
+				slope_change = (sep_array[counter-1] - sep_array[counter-2]) *
+					           (sep_array[counter-2] - sep_array[counter-3]);
 				//	cout << " slope_change  " << slope_change << "  c " << counter << endl;
 			}
 			if ((counter<3) || (slope_change>0))
 			{
 				sep_info_tree->Fill();
-				//  cout << scan_type<< " New separation = " << nsep << " starts at " << time_separation_start
-				// << " ends at " << time_separation_end << " counter " << counter << endl;
+				cout << scan_type<< " New separation = " << sep_array[counter-1]
+					 << " starts at " << time_separation_start
+					 << " ends at " << time_separation_end << " counter " << counter << endl;
 			}
-		}
-		nsep_old = nsep;
-	}
+		} // end of new separation
+	} // end loop over data
 
 	// create file name
 	char *file_name = new char[kg_string_size];
@@ -99,7 +100,7 @@ void Find_separations(Int_t scan_type, Int_t scan_num, Int_t IdxStart, Int_t Idx
 	// -- number of bc
 	Int_t nIBC = GetNumberInteractingBunchCrossings();
 	ScanFile->cd();
-	for(Int_t k=0; k<nIBC; k++) sep_tree->Fill();
+	for(Int_t k=0;k<nIBC;k++) sep_tree->Fill();
 	sep_tree->Write();
 	// fill separation info
 	sep_info_tree->SetDirectory(ScanFile);
@@ -110,12 +111,13 @@ void Find_separations(Int_t scan_type, Int_t scan_num, Int_t IdxStart, Int_t Idx
 	delete [] file_name;
 	delete [] txt_tmp;  
 	delete [] sep_array;
+
+	return;
 }
 
-//-------------------------------------------------------
-// Create root files with the information of
-// the nominal separations
-//-------------------------------------------------------
+//------------------------------------------------------------------
+// Create root files with the information of the nominal separations
+//------------------------------------------------------------------
 
 void Create_nominal_separation_file(Int_t Fill)
 {
@@ -127,9 +129,11 @@ void Create_nominal_separation_file(Int_t Fill)
 	Find_start_and_end_of_scans();
 
 	// create nominal separation files
-	for (Int_t i=0;i<g_n_Scans_in_Fill;i++)
+	for(Int_t i=0;i<g_n_Scans_in_Fill;i++)
 	{
 		Find_separations(1,i,g_Idx_Start_Scan_x[i],g_Idx_End_Scan_x[i]); //x-scans
 		Find_separations(2,i,g_Idx_Start_Scan_y[i],g_Idx_End_Scan_y[i]); //y-scans
 	}
+
+	return;
 }

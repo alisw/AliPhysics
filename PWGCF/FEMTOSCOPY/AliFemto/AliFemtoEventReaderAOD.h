@@ -74,7 +74,7 @@ public:
   bool GetReadCascade() const {
     return fReadCascade;
   }
-
+  void SetPreCentralityCut(double min, double max); // only set pre centrality cut
   void SetCentralityPreSelection(double min, double max);
   std::pair<double, double> GetCentralityPreSelection() const {
     return std::make_pair(fCentRange[0], fCentRange[1]);
@@ -142,7 +142,8 @@ public:
 
     // dowang femto
     void Set15oPass2EventReject(Int_t EventReject);
-    bool Reject15oPass2Event(AliAODEvent *fAOD);
+    bool Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLabel);
+    void SetPbPb15Pass2MC(Int_t PbPb15Pass2MC);
   //---
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
@@ -224,11 +225,18 @@ protected:
   Double_t         fPtmax; //max pT in event
     // dowang femto
     Int_t fEventReject;
+    Int_t fPbPb15Pass2MC;
     TF1 *fCenCutLowPU;
     TF1 *fCenCutHighPU;
     TF1 *fSPDCutPU;
     TF1 *fV0CutPU;
     TF1 *fMultCutPU;
+
+   TF1 *fCenCutLowPU2018;
+    TF1 *fCenCutHighPU2018;
+    TF1 *fSPDCutPU2018;
+    TF1 *fV0CutPU2018;
+    TF1 *fMultCutPU2018;
 private:
 
   AliAODMCParticle *GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel);

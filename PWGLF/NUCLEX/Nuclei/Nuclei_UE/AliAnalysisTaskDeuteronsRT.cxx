@@ -113,7 +113,13 @@ hDCAxy_deuterons_Sec(nullptr),
 hnsigmaTPC_deuterons_Rec_Syst(nullptr),
 hnsigmaTPC_antideuterons_Rec_Syst(nullptr),
 hnsigmaTOF_deuterons_Rec_Syst(nullptr),
-hnsigmaTOF_antideuterons_Rec_Syst(nullptr)
+hnsigmaTOF_antideuterons_Rec_Syst(nullptr),
+hGeneratedDeuterons_vs_Rapidity(nullptr),
+hGeneratedAntiDeuterons_vs_Rapidity(nullptr),
+hReconstructedDeuterons_TPC_vs_Rapidity(nullptr),
+hReconstructedAntiDeuterons_TPC_vs_Rapidity(nullptr),
+hReconstructedDeuterons_TOF_vs_Rapidity(nullptr),
+hReconstructedAntiDeuterons_TOF_vs_Rapidity(nullptr)
 {}
 //__________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronsRT::AliAnalysisTaskDeuteronsRT(const char *name):
@@ -188,7 +194,13 @@ hDCAxy_deuterons_Sec(nullptr),
 hnsigmaTPC_deuterons_Rec_Syst(nullptr),
 hnsigmaTPC_antideuterons_Rec_Syst(nullptr),
 hnsigmaTOF_deuterons_Rec_Syst(nullptr),
-hnsigmaTOF_antideuterons_Rec_Syst(nullptr)
+hnsigmaTOF_antideuterons_Rec_Syst(nullptr),
+hGeneratedDeuterons_vs_Rapidity(nullptr),
+hGeneratedAntiDeuterons_vs_Rapidity(nullptr),
+hReconstructedDeuterons_TPC_vs_Rapidity(nullptr),
+hReconstructedAntiDeuterons_TPC_vs_Rapidity(nullptr),
+hReconstructedDeuterons_TOF_vs_Rapidity(nullptr),
+hReconstructedAntiDeuterons_TOF_vs_Rapidity(nullptr)
 {
     DefineInput (0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -261,6 +273,12 @@ AliAnalysisTaskDeuteronsRT::~AliAnalysisTaskDeuteronsRT()  {
     delete hnsigmaTPC_antideuterons_Rec_Syst;
     delete hnsigmaTOF_deuterons_Rec_Syst;
     delete hnsigmaTOF_antideuterons_Rec_Syst;
+    delete hGeneratedDeuterons_vs_Rapidity;
+    delete hGeneratedAntiDeuterons_vs_Rapidity;
+    delete hReconstructedDeuterons_TPC_vs_Rapidity;
+    delete hReconstructedAntiDeuterons_TPC_vs_Rapidity;
+    delete hReconstructedDeuterons_TOF_vs_Rapidity;
+    delete hReconstructedAntiDeuterons_TOF_vs_Rapidity;
 }
 //__________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
@@ -603,6 +621,32 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
     }
     
     
+    //Efficiency vs. Rapidity
+    if (fIsMC && (!fIsUEanalysis))  {
+        
+        hGeneratedDeuterons_vs_Rapidity             = new TH2F ("hGeneratedDeuterons_vs_Rapidity","",900,0.5,5.0,10,0.0,1.0);
+        hGeneratedAntiDeuterons_vs_Rapidity         = new TH2F ("hGeneratedAntiDeuterons_vs_Rapidity","",900,0.5,5.0,10,0.0,1.0);
+        hReconstructedDeuterons_TPC_vs_Rapidity     = new TH2F ("hReconstructedDeuterons_TPC_vs_Rapidity","",900,0.5,5.0,10,0.0,1.0);
+        hReconstructedAntiDeuterons_TPC_vs_Rapidity = new TH2F ("hReconstructedAntiDeuterons_TPC_vs_Rapidity","",900,0.5,5.0,10,0.0,1.0);
+        hReconstructedDeuterons_TOF_vs_Rapidity     = new TH2F ("hReconstructedDeuterons_TOF_vs_Rapidity","",900,0.5,5.0,10,0.0,1.0);
+        hReconstructedAntiDeuterons_TOF_vs_Rapidity = new TH2F ("hReconstructedAntiDeuterons_TOF_vs_Rapidity","",900,0.5,5.0,10,0.0,1.0);
+        
+        hGeneratedDeuterons_vs_Rapidity             -> Sumw2();
+        hGeneratedAntiDeuterons_vs_Rapidity         -> Sumw2();
+        hReconstructedDeuterons_TPC_vs_Rapidity     -> Sumw2();
+        hReconstructedAntiDeuterons_TPC_vs_Rapidity -> Sumw2();
+        hReconstructedDeuterons_TOF_vs_Rapidity     -> Sumw2();
+        hReconstructedAntiDeuterons_TOF_vs_Rapidity -> Sumw2();
+        
+        fOutputList -> Add(hGeneratedDeuterons_vs_Rapidity);
+        fOutputList -> Add(hGeneratedAntiDeuterons_vs_Rapidity);
+        fOutputList -> Add(hReconstructedDeuterons_TPC_vs_Rapidity);
+        fOutputList -> Add(hReconstructedAntiDeuterons_TPC_vs_Rapidity);
+        fOutputList -> Add(hReconstructedDeuterons_TOF_vs_Rapidity);
+        fOutputList -> Add(hReconstructedAntiDeuterons_TOF_vs_Rapidity);
+    }
+        
+    
     //Track Selection Cuts: Deuterons
     fESDtrackCuts_Deuteron = new AliESDtrackCuts("fESDtrackCuts_Deuteron");
     fESDtrackCuts_Deuteron -> SetAcceptKinkDaughters(kFALSE);
@@ -614,7 +658,7 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
     fESDtrackCuts_Deuteron -> SetClusterRequirementITS (AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
     fESDtrackCuts_Deuteron -> SetMaxChi2PerClusterITS(36);
     fESDtrackCuts_Deuteron -> SetMaxChi2PerClusterTPC(5);
-    fESDtrackCuts_Deuteron -> SetEtaRange(-0.8,0.8);
+    fESDtrackCuts_Deuteron -> SetEtaRange(-2.0,2.0);
     fESDtrackCuts_Deuteron -> SetMaxDCAToVertexXY(2);
     fESDtrackCuts_Deuteron -> SetMaxDCAToVertexZ(2);
     fESDtrackCuts_Deuteron -> SetDCAToVertex2D(kFALSE);
@@ -914,6 +958,14 @@ void AliAnalysisTaskDeuteronsRT::ProcessSimEvent ()  {
         Double_t y_lab = P.Rapidity();
         Double_t y_cms(0);
         
+        //Rapidity-Dependent Efficiency
+        if (!fIsUEanalysis)  {
+            
+            y_cms = y_lab;
+            if (particle->PdgCode()==1000010020)  hGeneratedDeuterons_vs_Rapidity     -> Fill(particle->Pt(),TMath::Abs(y_cms));
+            if (particle->PdgCode()==-1000010020) hGeneratedAntiDeuterons_vs_Rapidity -> Fill(particle->Pt(),TMath::Abs(y_cms));
+        }
+        
         //Rapidity Selection in p-Pb Collisions
         if (fIspPb)  {
             y_cms = y_lab-0.465;
@@ -933,27 +985,62 @@ void AliAnalysisTaskDeuteronsRT::ProcessSimEvent ()  {
     }
        
     //Loop over Reconstructed Tracks
-    for (Int_t i=0 ; i<fESDevent->GetNumberOfTracks() ; i++)  {
+    if (fIsUEanalysis)  {
+        for (Int_t i=0 ; i<fESDevent->GetNumberOfTracks() ; i++)  {
 
-        //Get Reconstructed Track
-        AliESDtrack *track = (AliESDtrack*) fESDevent->GetTrack(i);
-        if (!track) continue;
+            //Get Reconstructed Track
+            AliESDtrack *track = (AliESDtrack*) fESDevent->GetTrack(i);
+            if (!track) continue;
 
-        //Basic Track Quality Cuts
-        if (!PassedBasicTrackQualityCuts (track)) continue;
-        
-        //MC Particle
-        AliMCParticle *particle = (AliMCParticle*) fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
-        if (!particle) continue;
-        if ( TMath::Abs(particle->PdgCode()) != 1000010020 ) continue;
-        
-        //Fill Histograms: Standard Cuts
-        FillHistograms_StandardCuts_Sim (track);
-        
-        //Fill Histograms: Systematic Uncertainties
-        for (Int_t isyst=0 ; isyst<50 ; isyst++)
-            FillHistograms_Systematics_Sim (track,isyst);
+            //Basic Track Quality Cuts
+            if (!PassedBasicTrackQualityCuts (track)) continue;
+            
+            //MC Particle
+            AliMCParticle *particle = (AliMCParticle*) fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
+            if (!particle) continue;
+            if ( TMath::Abs(particle->PdgCode()) != 1000010020 ) continue;
+            
+            //Fill Histograms: Standard Cuts
+            FillHistograms_StandardCuts_Sim (track);
+            
+            //Fill Histograms: Systematic Uncertainties
+            for (Int_t isyst=0 ; isyst<50 ; isyst++)
+                FillHistograms_Systematics_Sim (track,isyst);
+        }
     }
+    
+    
+    //Loop over Reconstructed Tracks
+    if (!fIsUEanalysis)  {
+        for (Int_t i=0 ; i<fESDevent->GetNumberOfTracks() ; i++)  {
+
+            //Get Reconstructed Track
+            AliESDtrack *track = (AliESDtrack*) fESDevent->GetTrack(i);
+            if (!track) continue;
+
+            //Basic Track Quality Cuts
+            if (!PassedBasicTrackQualityCuts_NoRapidityCut (track)) continue;
+            
+            //Rapidity
+            Double_t mass = AliPID::ParticleMass(AliPID::kDeuteron);
+            Double_t p  = track->P();
+            Double_t pz = track->Pz();
+            Double_t E = TMath::Sqrt(mass*mass + p*p);
+            if (E == TMath::Abs(pz)) continue;
+            Double_t y_lab = 0.5*TMath::Log((E+pz)/(E-pz));
+            Double_t y_cms = y_lab;
+            
+            //MC Particle
+            AliMCParticle *particle = (AliMCParticle*) fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
+            if (!particle) continue;
+            if ( TMath::Abs(particle->PdgCode()) != 1000010020 ) continue;
+            
+            //Fill Histograms: Standard Cuts
+            FillHistograms_StandardCuts_Sim (track);
+            
+        }
+    }
+    
 }
 //__________________________________________________________________________________________________________________________________________________
 Int_t AliAnalysisTaskDeuteronsRT::GetLeadingTrack ()  {
@@ -1109,8 +1196,9 @@ Bool_t AliAnalysisTaskDeuteronsRT::PassedBasicTrackQualityCuts (AliESDtrack *tra
     //Initialization
     Bool_t passedTrkSelection=(kFALSE);
     
-    if ( track->GetTPCsignalN() < 50 )         return passedTrkSelection;
+    if ( track->GetTPCsignalN() < 50 )                  return passedTrkSelection;
     if ( !fESDtrackCuts_Deuteron->AcceptTrack (track) ) return passedTrkSelection;
+    if ( TMath::Abs(track->Eta()) > 0.8 )               return passedTrkSelection;
 
     
     //Rapidity Cut
@@ -1296,7 +1384,6 @@ void AliAnalysisTaskDeuteronsRT::FillHistograms_RapidityDependence (AliESDtrack 
 //__________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronsRT::FillHistograms_StandardCuts_Sim (AliESDtrack *track)  {
     
-    
     //Variables
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kDeuteron);
     Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kDeuteron);
@@ -1306,6 +1393,13 @@ void AliAnalysisTaskDeuteronsRT::FillHistograms_StandardCuts_Sim (AliESDtrack *t
     Double_t DCAz      = GetLongitudinalDCA (track);
     Bool_t   hasTOFhit = (track->GetStatus() & AliVTrack::kTOFout) && (track->GetStatus() & AliVTrack::kTIME);
     Double_t length    = track->GetIntegratedLength();
+    Double_t mass      = AliPID::ParticleMass(AliPID::kDeuteron);
+    Double_t p         = track->P();
+    Double_t pz        = track->Pz();
+    Double_t E         = TMath::Sqrt(mass*mass + p*p);
+    Double_t y_lab     = 0.5*TMath::Log((E+pz)/(E-pz));
+    Double_t y_cms     = y_lab;
+    
 
     //MC Particle
     AliMCParticle *particle = (AliMCParticle*) fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
@@ -1329,6 +1423,10 @@ void AliAnalysisTaskDeuteronsRT::FillHistograms_StandardCuts_Sim (AliESDtrack *t
        
         if (charge>0)  hnsigmaTPC_deuterons_Rec     -> Fill (pt,nsigmaTPC);
         if (charge<0)  hnsigmaTPC_antideuterons_Rec -> Fill (pt,nsigmaTPC);
+        if (!fIsUEanalysis)  {
+            if (charge>0 && TMath::Abs(nsigmaTPC)<3.0)  hReconstructedDeuterons_TPC_vs_Rapidity     -> Fill (pt,TMath::Abs(y_cms));
+            if (charge<0 && TMath::Abs(nsigmaTPC)<3.0)  hReconstructedAntiDeuterons_TPC_vs_Rapidity -> Fill (pt,TMath::Abs(y_cms));
+        }
     }
         
     //TOF Analysis
@@ -1339,7 +1437,10 @@ void AliAnalysisTaskDeuteronsRT::FillHistograms_StandardCuts_Sim (AliESDtrack *t
             
     if (charge>0) hnsigmaTOF_deuterons_Rec     -> Fill(pt,nsigmaTOF);
     if (charge<0) hnsigmaTOF_antideuterons_Rec -> Fill(pt,nsigmaTOF);
-
+    if (!fIsUEanalysis)  {
+        if (charge>0 && TMath::Abs(nsigmaTOF)<3.0)  hReconstructedDeuterons_TOF_vs_Rapidity     -> Fill (pt,TMath::Abs(y_cms));
+        if (charge<0 && TMath::Abs(nsigmaTOF)<3.0)  hReconstructedAntiDeuterons_TOF_vs_Rapidity -> Fill (pt,TMath::Abs(y_cms));
+    }
 }
 //__________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronsRT::FillHistograms_Systematics  (Int_t mult_Transverse, Int_t leading_track_ID, AliESDtrack *track, Int_t isyst)  {

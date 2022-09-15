@@ -20,22 +20,23 @@
 #include <string.h>
 
 // Root headers
+#include "TROOT.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TList.h"
 #include "TChain.h"
+#include "TString.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TClonesArray.h"
+#include "TColor.h"
 #include "TRandom.h"
-#include "TRandom3.h"
 
 // AliRoot headers:
-#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEventHandler.h"
@@ -58,9 +59,10 @@
 // My headers:
 #include "AliAnalysisTaskCentralJpsi_DG.h"
 
-class AliAnalysisTaskCentralJpsi_DG; // analysis class
-
 ClassImp(AliAnalysisTaskCentralJpsi_DG) // classimp: necessary for root
+
+using std::cout;
+using std::endl;
 
 AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG() : // initializer list
     AliAnalysisTaskSE(),
@@ -68,6 +70,7 @@ AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG() : // initializer 
     fTimeRangeCut(),
     fTrackCutsBit4(0),
     isMC(kFALSE),
+    isNeutral(kFALSE),
     fEvent(0),
     fOutputList(0),
     fTreeJpsi(0),
@@ -106,12 +109,11 @@ AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG() : // initializer 
     // AD
     fADA_dec(0), fADC_dec(0),
     // Matching SPD clusters with FOhits
-    fMatchingSPD(0),
-    fFOCrossFiredChips(),
+    fMatchingSPD(0), fFOCrossFiredChips(),
     // Trigger inputs for MC data
     fSPDfile(0), fTOFfile(0), fLoadedRun(-1), hTOFeff(0), hSPDeff(0), fTOFmask(0),
     // MC kinematics on generator level
-    fPtGen(0), fMGen(0), fYGen(0), fPhiGen(0)
+    fPtGen(0), fYGen(0), fMGen(0), fPhiGen(0), fPtGen_Psi2s(0)
 {
     // default constructor
 }
@@ -122,6 +124,7 @@ AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG(const char* name) :
     fTimeRangeCut(),
     fTrackCutsBit4(0),
     isMC(kFALSE),
+    isNeutral(kFALSE),
     fEvent(0),
     fOutputList(0),
     fTreeJpsi(0),
@@ -160,12 +163,11 @@ AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG(const char* name) :
     // AD
     fADA_dec(0), fADC_dec(0),
     // Matching SPD clusters with FOhits
-    fMatchingSPD(0),
-    fFOCrossFiredChips(),
+    fMatchingSPD(0), fFOCrossFiredChips(),
     // Trigger inputs for MC data
     fSPDfile(0), fTOFfile(0), fLoadedRun(-1), hTOFeff(0), hSPDeff(0), fTOFmask(0),
     // MC kinematics on generator level
-    fPtGen(0), fMGen(0), fYGen(0), fPhiGen(0)
+    fPtGen(0), fYGen(0), fMGen(0), fPhiGen(0), fPtGen_Psi2s(0)
 {
     // constructor
     for(Int_t i = 0; i < 11; i++) fTriggerInputsMC[i] = kFALSE;
@@ -173,9 +175,7 @@ AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG(const char* name) :
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
                                         // this chain is created by the analysis manager, so no need to worry about it, 
                                         // it does its work automatically
-    DefineOutput(1, TTree::Class());
-    DefineOutput(2, TTree::Class());
-    DefineOutput(3, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
+    DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
                                         // you can add more output objects by calling DefineOutput(2, classname::Class())
                                         // if you add more output objects, make sure to call PostData for all of them, and to
                                         // make changes to your AddTask macro!
@@ -187,11 +187,7 @@ AliAnalysisTaskCentralJpsi_DG::~AliAnalysisTaskCentralJpsi_DG()
 
     if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
         delete fOutputList;
-        fOutputList = 0;
-        delete fTreeJpsi;
-        fTreeJpsi = 0;
-        delete fTreeJpsiMCGen;
-        fTreeJpsiMCGen = 0;
+        fOutputList = 0x0;
     }
 }
 //_____________________________________________________________________________
@@ -202,7 +198,13 @@ void AliAnalysisTaskCentralJpsi_DG::UserCreateOutputObjects()
     fPIDResponse = inputHandler->GetPIDResponse();
 
     fTrackCutsBit4 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-    
+
+    // ##########################################################
+    // OUTPUT LIST:
+
+    fOutputList = new TList();       
+    fOutputList->SetOwner(kTRUE); 
+
     // ##########################################################
     // OUTPUT TREE:
 
@@ -256,10 +258,10 @@ void AliAnalysisTaskCentralJpsi_DG::UserCreateOutputObjects()
         fTreeJpsi->Branch("fMGen", &fMGen, "fMGen/D");
         fTreeJpsi->Branch("fYGen", &fYGen, "fYGen/D");
         fTreeJpsi->Branch("fPhiGen", &fPhiGen, "fPhiGen/D");
-    }    
+        fTreeJpsi->Branch("fPtGen_Psi2s", &fPtGen_Psi2s, "fPtGen_Psi2s/D");
+    }
+    fOutputList->Add(fTreeJpsi);    
     
-    PostData(1, fTreeJpsi);
-
     // ##########################################################
     // OUTPUT TREE MC GEN:
 
@@ -272,21 +274,16 @@ void AliAnalysisTaskCentralJpsi_DG::UserCreateOutputObjects()
         fTreeJpsiMCGen->Branch("fMGen", &fMGen, "fMGen/D");
         fTreeJpsiMCGen->Branch("fYGen", &fYGen, "fYGen/D");
         fTreeJpsiMCGen->Branch("fPhiGen", &fPhiGen, "fPhiGen/D");
-    }
-
-    PostData(2, fTreeJpsiMCGen);
+        fTreeJpsiMCGen->Branch("fPtGen_Psi2s", &fPtGen_Psi2s, "fPtGen_Psi2s/D");
+        fOutputList->Add(fTreeJpsiMCGen); 
+    }   
 
     // ##########################################################
-    // OUTPUT LIST:
-
-    fOutputList = new TList();       
-    fOutputList->SetOwner(kTRUE); 
+    // HISTOGRAMS THAT WILL BE STORED IN THE OUTPUT LIST:
 
     // Counter for events passing each cut
     hCounterCuts = new TH1D("hCounterCuts", "# of events passing each cut", 5, -0.5, 4.5);
     hCounterCuts->GetXaxis()->SetBinLabel(1,"0: non-empty ev");
-    //hCounterCuts->GetXaxis()->SetBinLabel(2,"1: vrtx contrib");
-    //hCounterCuts->GetXaxis()->SetBinLabel(3,"2: vrtx Z dist");
     hCounterCuts->GetXaxis()->SetBinLabel(2,"1: two good trks");
     if(!isMC) hCounterCuts->GetXaxis()->SetBinLabel(3,"2: CCUP31 trigg");
 
@@ -334,9 +331,8 @@ void AliAnalysisTaskCentralJpsi_DG::UserCreateOutputObjects()
     fOutputList->Add(hTPCdEdxElectron);
 
     if(isMC){
-        Int_t n_bins = 2000;
         // x axis = pT from the generator, y axis = pT reconstructed
-        hPtRecGen = new TH2D("hPtRecGen", "pT rec vs pT gen", n_bins, 0., 2., n_bins, 0., 2.);
+        hPtRecGen = new TH2D("hPtRecGen", "pT rec vs pT gen", 2000, 0., 2., 2000, 0., 2.);
         fOutputList->Add(hPtRecGen);
     }
 
@@ -345,7 +341,7 @@ void AliAnalysisTaskCentralJpsi_DG::UserCreateOutputObjects()
     fTrackCutsBit4->SetName("track_cuts");
     fOutputList->Add(fTrackCutsBit4);
 
-    PostData(3, fOutputList); 
+    PostData(1, fOutputList); 
 
 }
 //_____________________________________________________________________________
@@ -363,8 +359,7 @@ void AliAnalysisTaskCentralJpsi_DG::UserExec(Option_t *)
         // If the event is empty, it is skipped
         if(!fEvent)
         {                                          
-            PostData(1, fTreeJpsi);
-            PostData(2, fOutputList);
+            PostData(1, fOutputList);
             return;
         }                               
         hCounterCuts->Fill(iSelectionCounter);
@@ -457,6 +452,22 @@ void AliAnalysisTaskCentralJpsi_DG::UserExec(Option_t *)
             // If the track is empty
             if(!trk) continue;
 
+            // *********************************************************************
+            // if isNeutral requested, then the pion tracks are skipped to simulate 
+            // the feed-down reaction: psi(2s) -> J/psi + pi^0 + pi^0
+            if(isNeutral){
+                if(trk->GetLabel() >= 0){
+                    TDatabasePDG *pdgdat = TDatabasePDG::Instance();
+                    AliMCEvent *mc = MCEvent();
+                    if(!mc) return;
+                    AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk->GetLabel());
+                    // if it is a pion track, skip it (tracks of neutral pions are invisible
+                    // to the ALICE detectors used in this analysis)
+                    if(TMath::Abs(mcPart->PdgCode()) == 211) continue;
+                }
+            }
+            // *********************************************************************
+
             // Count good TPC tracks:
             Bool_t goodTrackTPC = fTrackCutsBit4->AcceptTrack(trk);
             if(goodTrackTPC) nGoodTracksTPC++;
@@ -470,9 +481,7 @@ void AliAnalysisTaskCentralJpsi_DG::UserExec(Option_t *)
         }
         // Continue only if two good central tracks are found
         if(!(nGoodTracksSPD == 2 && nGoodTracksTPC == 2)){                                          
-            PostData(1, fTreeJpsi);
-            PostData(2, fTreeJpsiMCGen);
-            PostData(3, fOutputList);
+            PostData(1, fOutputList);
             delete [] fIndicesOfGoodTracks; 
             return;
         }
@@ -484,9 +493,7 @@ void AliAnalysisTaskCentralJpsi_DG::UserExec(Option_t *)
         if(!isMC){ // skipped for MC
             if(!triggered)
             {
-                PostData(1, fTreeJpsi);
-                PostData(2, fTreeJpsiMCGen);
-                PostData(3, fOutputList);
+                PostData(1, fOutputList);
                 delete [] fIndicesOfGoodTracks; 
                 return;        
             }
@@ -605,9 +612,7 @@ void AliAnalysisTaskCentralJpsi_DG::UserExec(Option_t *)
     fTreeJpsi->Fill();
 
     // Finally post the data
-    PostData(1, fTreeJpsi);
-    PostData(2, fTreeJpsiMCGen);
-    PostData(3, fOutputList);
+    PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCentralJpsi_DG::ReplayTriggersMC(AliVEvent *fEvent)
@@ -721,6 +726,7 @@ void AliAnalysisTaskCentralJpsi_DG::RunMCGenLevel()
     TDatabasePDG *pdgdat = TDatabasePDG::Instance();
 
     vGen.SetPtEtaPhiM(0.,0.,0.,0.);
+    fPtGen_Psi2s = -1;
 
     AliMCEvent *mc = MCEvent();
     if(!mc){
@@ -730,18 +736,20 @@ void AliAnalysisTaskCentralJpsi_DG::RunMCGenLevel()
 
     for(Int_t imc = 0; imc < mc->GetNumberOfTracks(); imc++) {
         AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
+
         if(!mcPart) continue;
     
-        // kCohJpsiToMu, kIncohJpsiToMu, kTwoGammaToMuMedium:
-        // if mu+ or mu- without a mother assigned (STARlight) 
-        if(TMath::Abs(mcPart->PdgCode()) == 13 && mcPart->GetMother() == -1){
+        // if mu+/mu- or e+/e- without a mother assigned (pure STARlight production) 
+        // PdgCode == 11 => kCohJpsiToMu, kIncohJpsiToMu, kTwoGammaToMuMedium
+        // PdgCode == 13 => kCohJpsiToEl, kIncohJpsiToEl, kTwoGammaToElMedium
+        if((TMath::Abs(mcPart->PdgCode()) == 13 || TMath::Abs(mcPart->PdgCode()) == 11) && mcPart->GetMother() == -1){
             // add its 4-vector to vGen
             TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
             vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
             vGen += vDecayProduct;
         }
-        // kCohPsi2sToMuPi, kIncohPsi2sToMuPi:
-        // if J/psi with a mother Psi(2s) (STARlight + EvtGen)
+        // kCohPsi2sToMuPi, kIncohPsi2sToMuPi, kCohPsi2sToElPi, kIncohPsi2sToElPi:
+        // if J/psi with a mother psi(2s) (STARlight + EvtGen)
         if(TMath::Abs(mcPart->PdgCode()) == 443){
             // get its mother
             AliMCParticle *mcMother = (AliMCParticle*) mc->GetTrack(mcPart->GetMother());
@@ -751,6 +759,8 @@ void AliAnalysisTaskCentralJpsi_DG::RunMCGenLevel()
                 TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
                 vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
                 vGen += vDecayProduct;
+                // save the pT of psi(2s) to the MCGenTree 
+                fPtGen_Psi2s = mcMother->Pt();
             }
         }
     } // loop over mc particles
@@ -844,7 +854,7 @@ void AliAnalysisTaskCentralJpsi_DG::Terminate(Option_t *)
 {
     // the end
 
-    fOutputList = dynamic_cast<TList*> (GetOutputData(3));
+    fOutputList = dynamic_cast<TList*> (GetOutputData(1));
     if(!fOutputList)
     {
         Printf("ERROR: fOutputList not available");
@@ -860,7 +870,6 @@ void AliAnalysisTaskCentralJpsi_DG::Terminate(Option_t *)
 
     TFile* file = TFile::Open("track_cuts.root", "RECREATE");
     fTrackCutsBit4->SaveHistograms();
-    file->Write();
     file->Close();
 }
 //_____________________________________________________________________________

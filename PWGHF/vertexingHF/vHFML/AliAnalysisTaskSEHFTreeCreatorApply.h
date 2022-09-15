@@ -15,6 +15,7 @@
 
 #include <TROOT.h>
 #include <TSystem.h>
+#include "TVector.h"
 #include <TNtuple.h>
 #include <TTree.h>
 #include <TH1F.h>
@@ -25,11 +26,14 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsLctoV0.h"
 #include "AliRDHFCutsDstoKKpi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
 #include "AliNormalizationCounter.h"
 #include "AliPIDResponse.h"
 #include "AliHFTreeHandlerApply.h"
 #include "AliHFTreeHandlerApplyLc2V0bachelor.h"
 #include "AliHFTreeHandlerApplyDstoKKpi.h"
+#include "AliHFTreeHandlerApplyDstartoKpipi.h"
+#include "AliParticleTreeHandlerApply.h"
 #include "AliHFMLResponse.h"
 
 class AliAODMCHeader;
@@ -54,6 +58,8 @@ public:
 
   void SetReadMC(Bool_t opt=kFALSE){fReadMC=opt;}
   Bool_t GetReadMC() const {return fReadMC;}
+  void SetDebugMode(Bool_t opt=kFALSE){fDebugMode=opt;}
+  Bool_t GetDebugMode() const {return fDebugMode;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){fUseSelectionBit=opt;}
   Bool_t GetUseSelectionBit() const {return fUseSelectionBit;}
   void SetSystem(Int_t opt){fSys=opt;}
@@ -65,10 +71,16 @@ public:
   Int_t GetFillDsTree() const {return fWriteVariableTreeDs;}
   void SetFillLc2V0bachelorTree(Int_t opt){fWriteVariableTreeLc2V0bachelor=opt;}
   Int_t GetFillLc2V0bachelorTree() const {return fWriteVariableTreeLc2V0bachelor;}
+  void SetFillDstarTree(Int_t opt){fWriteVariableTreeDstar=opt;}
+  Int_t GetFillDstarTree() const {return fWriteVariableTreeDstar;}
+  void SetFillParticleTree(Int_t opt){fWriteVariableTreeParticle=opt;}
+  Int_t GetFillParticleTree() const {return fWriteVariableTreeParticle;}
   void SetPIDoptDsTree(Int_t opt){fPIDoptDs=opt;}
   Int_t GetPIDoptDsTree() const {return fPIDoptDs;}
   void SetPIDoptLc2V0bachelorTree(Int_t opt){fPIDoptLc2V0bachelor=opt;}
   Int_t GetPIDoptLc2V0bachelorTree() const {return fPIDoptLc2V0bachelor;}
+  void SetPIDoptDstarTree(Int_t opt){fPIDoptDstar=opt;}
+  Int_t GetPIDoptDstarTree() const {return fPIDoptDstar;}
   void SetWriteOnlySignalTree(Bool_t opt){fWriteOnlySignal=opt;}
   Bool_t GetWriteOnlySignalTree() const {return fWriteOnlySignal;}
   void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
@@ -105,8 +117,16 @@ public:
   Int_t GetTreeSingleTrackVarsOpt() const {return fTreeSingleTrackVarsOpt;}
   void SetReducePbPbBranches(Bool_t b) { fReducePbPbBranches = b; }
   Bool_t GetReducePbPbBranches() const { return fReducePbPbBranches; }
+  void SetReduceHMV0Branches(Bool_t b) { fReduceHMV0Branches = b; }
+  Bool_t GetReduceHMV0Branches() const { return fReduceHMV0Branches; }
+  void SetOnlyDedicatedBranches(Bool_t b){ fOnlyDedicatedBranches = b; }
+  Bool_t GetOnlyDedicatedBranches() const { return fOnlyDedicatedBranches; }
   void SetSaveSTDSelection(Bool_t b) { fSaveSTDSelection = b; }
   Bool_t GetSaveSTDSelection() const { return fSaveSTDSelection; }
+  void SetSaveMixedEventBkg(Bool_t b) { fSaveMixedEventBkg = b; }
+  Bool_t GetSaveMixedEventBkg() const { return fSaveMixedEventBkg; }
+  void SetNumberOfEventsForMixing(Int_t opt=10) { fNumberOfEventsForMixing = opt; }
+  Int_t GetNumberOfEventsForMixing() const { return fNumberOfEventsForMixing; }
 
   void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
   Int_t GetGoodTrackFilterBit() const { return fGoodTrackFilterBit; }
@@ -152,13 +172,97 @@ public:
   
   void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
   void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
+  void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
+  void ProcessTrack(AliAODEvent *aod, TClonesArray *arrMC, AliAODMCHeader *mcHeader);
   void ProcessMCGen(TClonesArray *mcarray, AliAODMCHeader *mcHeader);
+
+  void DoEventMixingLc2V0bachelor(AliAODEvent *aodEvent);
+  void ProcessCascMixEv(std::vector<TVector * > mixTypeP, AliAODEvent *aod, Float_t bfield);
+  Int_t GetPoolIndex(Double_t zvert, Double_t cent);
 
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau, Bool_t ITSUpgradeStudy);
   Bool_t IsCandidateFromHijing(AliAODRecoDecayHF *cand, AliAODMCHeader *mcHeader, TClonesArray* arrMC, AliAODTrack *tr = 0x0);
   void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
   AliAODVertex* ReconstructDisplVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
   unsigned int GetEvID();
+
+  void MapAODtracks(AliVEvent *aod);
+  
+  void IsSelectedProton(AliAODTrack* tr, AliAODTrack* trGlobal, Bool_t &isprotonstd, Bool_t &isprotonpidloose, Bool_t &isprotonpidtight);
+  //Setters for changing proton selection variables
+  void SetFilterBitProton(int val){ fFilterBitProton = val; }
+  void SetPtMinProton(double val){ fPtMinProton = val; }
+  void SetPtMaxProton(double val){ fPtMaxProton = val; }
+  void SetEtaMaxProton(double val){ fEtaMaxProton = val; }
+  void SetMinNClsTPCProton(double val){ fMinNClsTPCProton = val; }
+  void SetNClsTPCProton(double val){ fNClsTPCProton = val; }
+  void SetMaxNClsTPCProton(double val){ fMaxNClsTPCProton = val; }
+  void SetDCARecalculationProton(bool val){ fDCARecalculationProton = val; }
+  void SetDCAToVertexXYProton(double val){ fDCAToVertexXYProton = val; }
+  void SetDCAToVertexZProton(double val){ fDCAToVertexZProton = val; }
+  void SetCutSharedClsProton(bool val){ fCutSharedClsProton = val; }
+  void SetCutTPCCrossedRowsProton(bool val){ fCutTPCCrossedRowsProton = val; }
+  void SetCrossedRowsProton(double val){ fCrossedRowsProton = val; }
+  void SetRatioCrossedRowsProton(double val){ fRatioCrossedRowsProton = val; }
+  void SetMinPIDPtTPCCutProton(double val){ fMinPIDPtTPCCutProton = val; }
+  void SetPIDSigmaCutProton(double val){ fPIDSigmaCutProton = val; }
+  void SetMinPIDSigmaCutProton(double val){ fMinPIDSigmaCutProton = val; }
+  void SetMaxPIDSigmaCutProton(double val){ fMaxPIDSigmaCutProton = val; }
+  void SetCutSmallestSigProton(bool val){ fCutSmallestSigProton = val; }
+  void SetRejLowPtPionsTOFProton(bool val){ fRejLowPtPionsTOFProton = val; }
+  void SetTPCRefitProton(bool val){ fTPCRefitProton = val; }
+
+  void IsSelectedPion(AliAODTrack* tr, AliAODTrack* trGlobal, Bool_t &ispionstd, Bool_t &ispionpidloose, Bool_t &ispionpidtight);
+  //Setters for changing pion selection variables
+  void SetFilterBitPion(int val){ fFilterBitPion = val; }
+  void SetPtMinPion(double val){ fPtMinPion = val; }
+  void SetPtMaxPion(double val){ fPtMaxPion = val; }
+  void SetEtaMaxPion(double val){ fEtaMaxPion = val; }
+  void SetMinNClsTPCPion(double val){ fMinNClsTPCPion = val; }
+  void SetNClsTPCPion(double val){ fNClsTPCPion = val; }
+  void SetMaxNClsTPCPion(double val){ fMaxNClsTPCPion = val; }
+  void SetDCARecalculationPion(bool val){ fDCARecalculationPion = val; }
+  void SetDCAToVertexXYPion(double val){ fDCAToVertexXYPion = val; }
+  void SetDCAToVertexZPion(double val){ fDCAToVertexZPion = val; }
+  void SetCutSharedClsPion(bool val){ fCutSharedClsPion = val; }
+  void SetCutTPCCrossedRowsPion(bool val){ fCutTPCCrossedRowsPion = val; }
+  void SetCrossedRowsPion(double val){ fCrossedRowsPion = val; }
+  void SetRatioCrossedRowsPion(double val){ fRatioCrossedRowsPion = val; }
+  void SetMinPIDPtTPCCutPion(double val){ fMinPIDPtTPCCutPion = val; }
+  void SetPIDSigmaCutPion(double val){ fPIDSigmaCutPion = val; }
+  void SetMinPIDSigmaCutPion(double val){ fMinPIDSigmaCutPion = val; }
+  void SetMaxPIDSigmaCutPion(double val){ fMaxPIDSigmaCutPion = val; }
+  void SetCutSmallestSigPion(bool val){ fCutSmallestSigPion = val; }
+  void SetRejLowPtPionsTOFPion(bool val){ fRejLowPtPionsTOFPion = val; }
+  void SetTPCRefitPion(bool val){ fTPCRefitPion = val; }
+
+  void IsSelectedKaon(AliAODTrack* tr, AliAODTrack* trGlobal, Bool_t &iskaonstd, Bool_t &iskaonpidloose, Bool_t &iskaonpidtight);
+  //Setters for changing kaon selection variables
+  void SetFilterBitKaon(int val){ fFilterBitKaon = val; }
+  void SetPtMinKaon(double val){ fPtMinKaon = val; }
+  void SetPtMaxKaon(double val){ fPtMaxKaon = val; }
+  void SetEtaMaxKaon(double val){ fEtaMaxKaon = val; }
+  void SetMinNClsTPCKaon(double val){ fMinNClsTPCKaon = val; }
+  void SetNClsTPCKaon(double val){ fNClsTPCKaon = val; }
+  void SetMaxNClsTPCKaon(double val){ fMaxNClsTPCKaon = val; }
+  void SetDCARecalculationKaon(bool val){ fDCARecalculationKaon = val; }
+  void SetDCAToVertexXYKaon(double val){ fDCAToVertexXYKaon = val; }
+  void SetDCAToVertexZKaon(double val){ fDCAToVertexZKaon = val; }
+  void SetCutSharedClsKaon(bool val){ fCutSharedClsKaon = val; }
+  void SetCutTPCCrossedRowsKaon(bool val){ fCutTPCCrossedRowsKaon = val; }
+  void SetCrossedRowsKaon(double val){ fCrossedRowsKaon = val; }
+  void SetRatioCrossedRowsKaon(double val){ fRatioCrossedRowsKaon = val; }
+  void SetMinPIDPtTPCCutKaon(double val){ fMinPIDPtTPCCutKaon = val; }
+  void SetPIDSigmaCutKaon(double val){ fPIDSigmaCutKaon = val; }
+  void SetMinPIDSigmaCutKaon(double val){ fMinPIDSigmaCutKaon = val; }
+  void SetMaxPIDSigmaCutKaon(double val){ fMaxPIDSigmaCutKaon = val; }
+  void SetCutSmallestSigKaon(bool val){ fCutSmallestSigKaon = val; }
+  void SetRejLowPtPionsTOFKaon(bool val){ fRejLowPtPionsTOFKaon = val; }
+  void SetCutPIDkdKaon(bool val){ fCutPIDkdKaon = val; }
+  void SetPIDkdCombKaon(double val){ fPIDkdCombKaon = val; }
+  void SetMinPIDkdCombKaon(double val){ fMinPIDkdCombKaon = val; }
+  void SetMaxPIDkdCombKaon(double val){ fMaxPIDkdCombKaon = val; }
+  void SetTPCRefitKaon(bool val){ fTPCRefitKaon = val; }
 
 private:
 
@@ -174,11 +278,14 @@ private:
   TList                   *fListCuts;                            /// list of cuts sent to output slot 2
   AliRDHFCutsDstoKKpi     *fFiltCutsDstoKKpi;                    /// DstoKKpi filtering (or loose) cuts
   AliRDHFCutsLctoV0       *fFiltCutsLc2V0bachelor;               /// Lc2V0bachelor filtering (or loose) cuts
+  AliRDHFCutsDStartoKpipi *fFiltCutsDstartoKpipi;                /// DstartoKpipi filtering (or loose) cuts
   AliRDHFCutsDstoKKpi     *fCutsDstoKKpi;                        /// DstoKKpi analysis cuts
   AliRDHFCutsLctoV0       *fCutsLc2V0bachelor;                   /// Lc2V0bachelor analysis cuts
+  AliRDHFCutsDStartoKpipi *fCutsDstartoKpipi;                    /// DstartoKpipi analysis cuts
   AliRDHFCuts             *fEvSelectionCuts;                     /// Event selection cuts
 
   Bool_t                  fReadMC;                               /// flag for MC array: kTRUE = read it, kFALSE = do not read it
+  Bool_t                  fDebugMode;                            /// flag to enter debug mode (to validate new against old task)
   Bool_t                  fUseSelectionBit;                      /// flag to use selection bit when looping over TClonesArray
   Int_t                   fSys;                                  /// fSys=0 -> p-p; fSys=1 ->PbPb
   Int_t                   fAODProtection;                        /// flag to activate protection against AOD-dAOD mismatch.
@@ -188,23 +295,34 @@ private:
   Bool_t                  fFillMCGenTrees;                        /// flag to enable fill of the generated trees
   Int_t                   fWriteVariableTreeDs;                   /// flag to decide whether to write the Ds variables on a tree variables
   Int_t                   fWriteVariableTreeLc2V0bachelor;        /// flag to decide whether to write the Lc->pK0s variables on a tree variables
+  Int_t                   fWriteVariableTreeDstar;                /// flag to decide whether to write the Dstar variables on a tree variables
+  Int_t                   fWriteVariableTreeParticle;             /// flag to decide whether to write the (femto) tracks variables on a tree variables
   // 0 don't fill
-  // 1 fill standard tree
+  // 1 fill standard tree (2=p, 3=K, 4=pi for (femto) track Tree)
 
   TTree                   *fVariablesTreeDs;                     //!<! tree of the candidate variables
   TTree                   *fVariablesTreeLc2V0bachelor;          //!<! tree of the candidate variables
+  TTree                   *fVariablesTreeLc2V0bachelorMixEv;     //!<! tree of the candidate variables from mixed events
+  TTree                   *fVariablesTreeDstar;                  //!<! tree of the candidate variables
+  TTree                   *fVariablesTreeParticle;               //!<! tree of the (femto) tracks variables
   TTree                   *fGenTreeDs;                           //!<! tree of the gen Ds variables
   TTree                   *fGenTreeLc2V0bachelor;                //!<! tree of the gen Lc2V0bachelor variables
+  TTree                   *fGenTreeDstar;                        //!<! tree of the gen Dstar variables
   TTree                   *fTreeEvChar;                          //!<! tree of event variables
 
   AliHFTreeHandlerApplyDstoKKpi       *fTreeHandlerDs;                //!<! handler object for the tree with topological variables
   AliHFTreeHandlerApplyLc2V0bachelor  *fTreeHandlerLc2V0bachelor;     //!<! handler object for the tree with topological variables
+  AliHFTreeHandlerApplyLc2V0bachelor  *fTreeHandlerLc2V0bachelorMixEv;//!<! handler object for the tree with topological variables from mixed events
+  AliHFTreeHandlerApplyDstartoKpipi   *fTreeHandlerDstar;             //!<! handler object for the tree with topological variables
+  AliParticleTreeHandlerApply         *fTreeHandlerParticle;          //!<! handler object for the tree with (femto) track variables
   AliHFTreeHandlerApplyDstoKKpi       *fTreeHandlerGenDs;             //!<! handler object for the tree with topological variables
   AliHFTreeHandlerApplyLc2V0bachelor  *fTreeHandlerGenLc2V0bachelor;  //!<! handler object for the tree with topological variables
+  AliHFTreeHandlerApplyDstartoKpipi   *fTreeHandlerGenDstar;          //!<! handler object for the tree with topological variables
 
   AliPIDResponse          *fPIDresp;                             /// PID response
   Int_t                   fPIDoptDs;                             /// PID option for Ds tree
   Int_t                   fPIDoptLc2V0bachelor;                  /// PID option for Lc2V0bachelor tree
+  Int_t                   fPIDoptDstar;                          /// PID option for Dstar tree
 
   UShort_t                fBC;                                   /// bunch crossing number
   Int_t                   fOrbit;                                /// orbit
@@ -215,6 +333,7 @@ private:
   TString                 fFileName;                             /// Store filename for an unique event ID
   unsigned int            fDirNumber;                            /// Store directory number for an unique event ID
 
+  Float_t                 fMagField;                             /// magnetic field
   Float_t                 fCentrality;                           /// event centrality
   Float_t                 fzVtxReco;                             /// reconstructed Zvtx
   Float_t                 fzVtxGen;                              /// generated Zvtx
@@ -253,6 +372,7 @@ private:
   Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
   Float_t                 fPercV0M;                              /// V0M multiplicity percentile
   Float_t                 fMultV0M;                              /// V0M multiplicity from mult selection task
+  Float_t                 fRefMultComb08;                        /// Combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.8
 
   Double_t                fRefMult;                              /// reference multiplicity
   Double_t                fRefMultSHM;                           /// reference multiplicity
@@ -288,10 +408,102 @@ private:
   TString fConfigPath;                                           /// path to ML config file
   AliHFMLResponse* fMLResponse;                                  //!<! object to handle ML response
   Bool_t fReducePbPbBranches;                                    /// variable to disable unnecessary branches in PbPb
+  Bool_t fReduceHMV0Branches;                                    /// variable to disable unnecessary branches in HMV0
+  Bool_t fOnlyDedicatedBranches;                                 /// variable to disable unnecessary branches, 0=off, 3=on Dstar
   Bool_t fSaveSTDSelection;                                      /// variable to store candidates that pass std cuts as well, even when ML < MLcut
+  
+  //Mixed event (track level)
+  Bool_t fSaveMixedEventBkg;                                     /// variable to enable + store background from mixed events (default = Lc->pK0s)
+  Int_t  fNumberOfEventsForMixing;                               /// maximum number of events to be used in event mixing
+  Int_t fNzVtxBins;                                              /// number of z vrtx bins
+  Double_t fZvtxBins[100];                                       // [fNzVtxBinsDim]
+  Int_t fNCentBins;                                              /// number of centrality bins
+  Double_t fCentBins[100];                                       // [fNCentBinsDim]
+  Int_t fNOfPools;                                               /// number of pools
+  Int_t fPoolIndex;                                              /// pool index
+  std::vector<Int_t> fNextResVec;                                //!<! Vector storing next reservoir ID
+  std::vector<Bool_t> fReservoirsReady;                          //!<! Vector storing if the reservoirs are ready
+  std::vector<std::vector<std::vector<TVector*>>> fReservoirP;   //!<! reservoir
+  AliHFMLResponseLctoV0bachelor* fMLResponseMixEv;               //!<! object to handle ML response
+  
+  Int_t fAODMapSize;                                             /// size of fAODMap
+  Int_t *fAODMap;                                                // [fAODMapSize] map between index and ID for AOD tracks
+  
+  //Proton selection variables, to match code in AliFemtoDreamTrackCuts.cxx
+  Int_t fFilterBitProton = 128;
+  Double_t fPtMinProton = 0.45;
+  Double_t fPtMaxProton = 4.05;
+  Double_t fEtaMaxProton = 0.85;
+  Double_t fMinNClsTPCProton = 70;
+  Double_t fNClsTPCProton = 80;
+  Double_t fMaxNClsTPCProton = 90;
+  Bool_t fDCARecalculationProton = true;
+  Double_t fDCAToVertexXYProton = 0.1;
+  Double_t fDCAToVertexZProton = 0.2;
+  Bool_t fCutSharedClsProton = true;
+  Bool_t fCutTPCCrossedRowsProton = true;
+  Double_t fCrossedRowsProton = 70;
+  Double_t fRatioCrossedRowsProton = 0.83;
+  Double_t fMinPIDPtTPCCutProton = 0.75;
+  Double_t fPIDSigmaCutProton = 3.0;
+  Double_t fMinPIDSigmaCutProton = 2.7;
+  Double_t fMaxPIDSigmaCutProton = 3.3;
+  Bool_t fCutSmallestSigProton = true;
+  Bool_t fRejLowPtPionsTOFProton = true;
+  Bool_t fTPCRefitProton = false;
+
+  //Pion selection variables, to match code in AliFemtoDreamTrackCuts.cxx
+  Int_t fFilterBitPion = 96;
+  Double_t fPtMinPion = 0.0;
+  Double_t fPtMaxPion = 4.0;
+  Double_t fEtaMaxPion = 0.85;
+  Double_t fMinNClsTPCPion = 70;
+  Double_t fNClsTPCPion = 80;
+  Double_t fMaxNClsTPCPion = 90;
+  Bool_t fDCARecalculationPion = true;
+  Double_t fDCAToVertexXYPion = 0.3;
+  Double_t fDCAToVertexZPion = 0.3;
+  Bool_t fCutSharedClsPion = false;
+  Bool_t fCutTPCCrossedRowsPion = false;
+  Double_t fCrossedRowsPion = 70;
+  Double_t fRatioCrossedRowsPion = 0.83;
+  Double_t fMinPIDPtTPCCutPion = 0.5;
+  Double_t fPIDSigmaCutPion = 3.0;
+  Double_t fMinPIDSigmaCutPion = 2.7;
+  Double_t fMaxPIDSigmaCutPion = 3.3;
+  Bool_t fCutSmallestSigPion = false;
+  Bool_t fRejLowPtPionsTOFPion = false;
+  Bool_t fTPCRefitPion = false;
+
+  //Kaon selection variables, to match code in AliFemtoDreamTrackCuts.cxx
+  Int_t fFilterBitKaon = 128;
+  Double_t fPtMinKaon = 0.1;
+  Double_t fPtMaxKaon = 4.0;
+  Double_t fEtaMaxKaon = 0.85;
+  Double_t fMinNClsTPCKaon = 70;
+  Double_t fNClsTPCKaon = 80;
+  Double_t fMaxNClsTPCKaon = 90;
+  Bool_t fDCARecalculationKaon = true;
+  Double_t fDCAToVertexXYKaon = 0.1;
+  Double_t fDCAToVertexZKaon = 0.2;
+  Bool_t fCutSharedClsKaon = true;
+  Bool_t fCutTPCCrossedRowsKaon = true;
+  Double_t fCrossedRowsKaon = 70;
+  Double_t fRatioCrossedRowsKaon = 0.8;
+  Double_t fMinPIDPtTPCCutKaon = 0.4;
+  Double_t fPIDSigmaCutKaon = 5.0;
+  Double_t fMinPIDSigmaCutKaon = 2.7;
+  Double_t fMaxPIDSigmaCutKaon = 3.3;
+  Bool_t fCutSmallestSigKaon = true;
+  Bool_t fRejLowPtPionsTOFKaon = false;
+  Bool_t fCutPIDkdKaon = true;
+  Double_t fPIDkdCombKaon = 3;
+  Double_t fMinPIDkdCombKaon = 2.7;
+  Double_t fMaxPIDkdCombKaon = 3.3;
+  Bool_t fTPCRefitKaon = false;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,7);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,9);
   /// \endcond
 };
 

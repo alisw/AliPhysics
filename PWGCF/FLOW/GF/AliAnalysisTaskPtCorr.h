@@ -10,9 +10,10 @@
 #include "TString.h"
 #include "TRandom.h"
 #include "AliESDtrackCuts.h"
-#include "AliGFWWeights.h"
 #include "AliProfileBS.h"
-//#include "AliPtContainer.h"
+#include "AliCkContainer.h"
+#include "AliPtContainer.h"
+#include "TH3D.h"
 
 class TList;
 class TH1;
@@ -22,11 +23,22 @@ class AliVEvent;
 
 using namespace std;
 
+namespace PtCorrFlags {
+    enum {
+      noeff = 1,
+      consteff = 2,
+      gausseff = 4,
+      flateff = 8,
+      powereff = 16,
+      realeffin = 32
+    };
+}
+
 class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
 {
   public:
     AliAnalysisTaskPtCorr();
-    AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool dodynamics, TString analysisStage, TString ContSubfix);
+    AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool isOnTheFly, unsigned int fl_eff, TString ContSubfix); //pseudoeff: 0 = no eff, 1 = subset of particles, 2 = gaussian distribution
     virtual ~AliAnalysisTaskPtCorr();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -40,84 +52,90 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); if(!fContSubfix->IsNull()) fContSubfix->Prepend("_"); };
     void SetMPar(int m) { mpar = m; }
     void OverrideMC(bool ismc) { fIsMC = ismc; }
-    void OnTheFly(bool otf) { fOnTheFly = otf; }
     void SetTrigger(unsigned int newval) {fTriggerType = newval; };
-    void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
-    void DoDynamicCorrelations(bool dodyn) { fdoDynamicCorr = dodyn; }
+    void SetEta(double eta) { fEta = eta; }
+    void SetEtaGap(double eta) { fEtaGap = eta; }
+    void TurnOffPileup(bool off) { fPileupOff = off; }
+    void SetPileupCut(double cut) { fPUcut = cut; }
+    void SetEventWeight(unsigned int weight) { fEventWeight = weight; }
+    void SetUseRecNchForMc(bool userec) { fUseRecNchForMC = userec; }
+    void SetUseNch(bool usench) { fUseNch = usench; }
+    void SetEtaNch(double etanch) { fEtaNch = etanch; }
+    void SetNBootstrap(double nboot) { fNbootstrap = nboot; }
+    void SetEffFlags(unsigned int fl) { eff_flags = fl; }
+    void UseTPCOnlyTracks(bool usetpc) { fUseTPConly = usetpc; };
+    void SetPseudoEffPars(double consteff = 0.8, double sigmaeff = 0.05) { fConstEff = consteff; fSigmaEff = sigmaeff; }
+  protected:
     AliEventCuts            fEventCuts;
-    
   private:
-    static int              fFactorial[9];
-    static int              fSign[9];
+    AliAnalysisTaskPtCorr(const AliAnalysisTaskPtCorr&);
+    AliAnalysisTaskPtCorr& operator=(const AliAnalysisTaskPtCorr&);
     TString*                fCentEst;
     int                     fRunNo; //!
     int                     fSystFlag;
     TString*                fContSubfix;
     bool                    fIsMC; 
+    AliMCEvent*             fMCEvent; //!
     TList*                  fCorrList; //!
-    TList*                  fDynList; //!
-    TList*                  fWeightList; //!
-    TList*                  fEfficiencyList; //!
-    TList*                  fmptList; //!
-    TH2D**                  fEfficiency;     
-    TH1D**                  fEfficiencies;     
-    AliGFWWeights**         fWeights; //!
-    TH1D*                   fmpt;
+    TList*                  fQAList; //!
+    TList*                  fEfficiencyList;
+    TH1D**                  fEfficiencies;
+    TH2D**                  fPowerEfficiencies;     
     TString                 fWeightSubfix;
     AliGFWCuts*             fGFWSelection; 
-    TAxis*                  fV0MAxis; //!
-    TAxis*                  fMultiAxis; //!
+    AliGFWCuts*             fGFWnTrackSelection;
+    TAxis*                  fV0MAxis; 
+    TAxis*                  fMultiAxis; 
     double*                 fMultiBins; //!
-    double                  fNMultiBins; //!
-    TAxis*                  fPtAxis;  //!
+    int                     fNMultiBins; //!
+    TAxis*                  fPtAxis;  
     double*                 fPtBins; //!
     int                     fNPtBins; //!
     double                  fEta;
-    double                  fPtMin;
-    double                  fPtMax;
-    int                     fAnalysisStage;
+    double                  fEtaNch;
+    double                  fEtaGap;
+    double                  fPUcut;
     TRandom*                fRndm;
     int                     fNbootstrap; 
     bool                    fUseWeightsOne;
-    bool                    fdoDynamicCorr;
+    bool                    fUseRecNchForMC;
+    bool                    fPileupOff;
+    bool                    fUseNch;
+    bool                    fUseTPConly;
+    unsigned int            eff_flags;
     int                     mpar;
+    double                  fConstEff;
+    double                  fSigmaEff;
+    vector<vector<double>>  wp;
+    vector<vector<double>>  wpP;
+    vector<vector<double>>  wpN;
+    unsigned int            fEventWeight;
     TH1D*                   fV0MMulti;    //!
-    //AliPtContainer**        fdyncorrnompt;     //!
-    AliProfileBS**          fptcorr;     //!
-    AliProfileBS**          fdyncorr;     //!
-    AliProfileBS*           pfmpt;      //!
-
-    vector<double>          corr;
-    vector<double>          dyncorr;
-    vector<double>          sumw;
-
+    AliPtContainer*         fpt;      //!
+    TH1D*                   fEventCount;
+    TH2D*                   fNchTrueVsRec; //!
+    TH2D*                   fV0MvsMult; //!
+    TH3D*                   fPtMoms;  //!
+    TH1D*                   fPtDistB;  //!
+    TH1D*                   fPtDistA;  //!
+    TH1D*                   fPtDistC;  //!
+    TH3D*                   fPtDCA; //!
+    TH2D*                   fPtVsNTrk; //!
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
     double                  fImpactParameter; 
     map<double,double>      centralitymap;
-    
-
+    int                     EventNo;
     bool AcceptAODTrack(AliAODTrack *tr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp);
+    bool AcceptAODTrack(AliAODTrack *mtr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp, int &nTot);
     bool AcceptAODEvent(AliAODEvent *ev, double *vtxXYZ);
-    bool AcceptMCEvent(AliVEvent* inev);
+    AliMCEvent* getMCEvent();
     bool CheckTrigger(Double_t lCent);
     double getCentrality();
-    void FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-    void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
-    void FillMPT(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ);
-    void FillCorrelationProfiles(const double &l_cent, double &rn);
-    void FillDynamicProfiles(const double &l_cent, double &rn);
-    template <typename T> void FillWPCounter(T& inarr, double w, double p);
-    void MptCounter(double* inarr, int icent);
-    template<typename T> void getMomentumCorrelation(T& wp);
-    template<typename T> void getDynamicMomentumCorrelation(T& wp, double* mpt);
-    //template<typename T> void getDynCorrSkipMpt(T& wp, const double &l_cent, double &rn);
-    //template<typename T> void getTermsOfMpt(int k, int m, T& term, T& wp);
-    double OrderedAddition(std::vector<double> vec, int size);
-    int binomial(const int n, const int m);
-    template<typename T> double DynamicP(int k, T& wp, double* mpt);
-    bool LoadWeights(const int &lRunNo);
-    int GetAnalysisStage(TString instr);
+    void FillPtCorr(AliAODEvent* fAOD, const double &l_Cent, double *vtxXYZ);
+    void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
+    void FillWPCounter(vector<vector<double>> &inarr, vector<double> w, double p);
+    int GetNTracks(AliAODEvent* fAOD, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
     double *GetBinsFromAxis(TAxis *inax);
     
   ClassDef(AliAnalysisTaskPtCorr,1);

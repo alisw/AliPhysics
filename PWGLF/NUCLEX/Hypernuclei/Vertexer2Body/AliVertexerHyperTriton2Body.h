@@ -205,6 +205,7 @@ public:
 
     bool fLikeSign;
     bool fRotation;
+    AliPID::EParticleType fNucleus = AliPID::kHe3;
 
 private:
     bool fMC;

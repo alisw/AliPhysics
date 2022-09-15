@@ -10,20 +10,19 @@
 //-------------------------------------------------------
 void Compute_xs(Int_t Fill, Int_t scan, const char *rate_name, const char *rate_type,
 		const char *sep_type, const char *intensity_type, Int_t fit_type,
-		Double_t lsc, Double_t ghost, Double_t satellite, Double_t non_fact, bool systChk
+		Double_t lsc, Double_t ghost, Double_t satellite, Double_t non_fact
 		)
 {
 	// first get the files and trees
 	// --> create hx/hy file names
-	const char* sfx = systChk?"_syst":"";
 
 	char *hx_file_name = new char[kg_string_size];
-	sprintf(hx_file_name,"../Fill-%d/hxy_%sRate_%s_%sSep_x_Scan_%d_Fit_%s%s.root",
-			g_vdm_Fill,rate_type,rate_name,sep_type,scan,g_fit_model_name[fit_type],sfx);
+	sprintf(hx_file_name,"../Fill-%d/hxy_%sRate_%s_%sSep_x_Scan_%d_Fit_%s.root",
+			g_vdm_Fill,rate_type,rate_name,sep_type,scan,g_fit_model_name[fit_type]);
 
 	char *hy_file_name = new char[kg_string_size];
-	sprintf(hy_file_name,"../Fill-%d/hxy_%sRate_%s_%sSep_y_Scan_%d_Fit_%s%s.root",
-			g_vdm_Fill,rate_type,rate_name,sep_type,scan,g_fit_model_name[fit_type],sfx);
+	sprintf(hy_file_name,"../Fill-%d/hxy_%sRate_%s_%sSep_y_Scan_%d_Fit_%s.root",
+			g_vdm_Fill,rate_type,rate_name,sep_type,scan,g_fit_model_name[fit_type]);
 
 	// --> create intensity file name
 	char *intensity_file_name = new char[kg_string_size];
@@ -79,8 +78,8 @@ void Compute_xs(Int_t Fill, Int_t scan, const char *rate_name, const char *rate_
 	// Next step: create file and tree for output
 	// --> file
 	char *xs_file_name = new char[kg_string_size];
-	sprintf(xs_file_name,"../Fill-%d/xs_%sRate_%s_%sSep_%s_Scan_%d_Fit_%s%s.root",
-			g_vdm_Fill,rate_type,rate_name,sep_type,intensity_type,scan,g_fit_model_name[fit_type],sfx);
+	sprintf(xs_file_name,"../Fill-%d/xs_%sRate_%s_%sSep_%s_Scan_%d_Fit_%s.root",
+			g_vdm_Fill,rate_type,rate_name,sep_type,intensity_type,scan,g_fit_model_name[fit_type]);
 	TFile *xs_file = new TFile(xs_file_name,"recreate");
 	// --> tree
 	TTree *xs_tree = new TTree("XS","XS");
@@ -112,14 +111,21 @@ void Compute_xs(Int_t Fill, Int_t scan, const char *rate_name, const char *rate_
 		if (chi2_dof_x>0 && chi2_dof_y>0)
 		{
 			// compute cross section
-			xs = GetXS(area_x[0],area_y[0],rate_zero_x[0],rate_zero_y[0],bunch_intensity_1[k],bunch_intensity_2[k]);
-			xs_error = GetXSerr(area_x[0], area_x[1],area_y[0], area_y[1],
-					rate_zero_x[0], rate_zero_x[1],rate_zero_y[0], rate_zero_y[1], 
-					bunch_intensity_1[k], bunch_intensity_2[k]);
+			xs = GetXS(
+					area_x[0], area_y[0],
+					rate_zero_x[0], rate_zero_y[0],
+					bunch_intensity_1[k], bunch_intensity_2[k]
+					);
+			xs_error = GetXSerr(
+					area_x[0], area_x[1], area_y[0], area_y[1],
+					rate_zero_x[0], rate_zero_x[1], rate_zero_y[0], rate_zero_y[1], 
+					bunch_intensity_1[k], bunch_intensity_2[k]
+					);
+
 			// correct cross section
 			xs *= total_correction;
 			xs_error *= total_correction;    
-			// cout << " scan " << scan << " bc " << k << " xs " << xs << " +/- " << xs_error << endl;
+			//cout << " scan " << scan << " bc " << k << " xs " << xs << " +/- " << xs_error << endl;
 		}
 
 		// save output
@@ -154,8 +160,7 @@ void Compute_xs(Int_t Fill, Int_t scan, const char *rate_name, const char *rate_
 void Create_xs_file(Int_t Fill, const char *rate_name, const char *rate_type,
 		    const char *sep_type, const char *intensity_type, Int_t fit_type,
 		    Double_t lsc, Double_t ghost,
-		    Double_t satellite, Double_t non_fact,
-			bool systChk = false
+		    Double_t satellite, Double_t non_fact
 			)
 {
 	// initialize
@@ -166,7 +171,7 @@ void Create_xs_file(Int_t Fill, const char *rate_name, const char *rate_type,
 	for(Int_t i=0; i<g_n_Scans_in_Fill; i++)
 	{
 		Compute_xs(Fill, i, rate_name, rate_type, sep_type, intensity_type, fit_type,
-				lsc, ghost, satellite, non_fact, systChk);
+				lsc, ghost, satellite, non_fact);
 	}
 
 	return;

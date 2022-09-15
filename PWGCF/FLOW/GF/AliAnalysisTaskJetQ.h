@@ -37,14 +37,15 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         void SetVtxZBins(Int_t nBins, Double_t *bins) {setupAxis(nBins,bins,fVzBins,fVzAxis); };
         void SetPtBins(Int_t nBins, Double_t *bins) {setupAxis(nBins,bins,fPtBins,fPtAxis); };
         void SetEventMixingCapacity(Int_t nTotEv, Int_t nTotTr, Int_t frReady, Int_t nMinEv) { fEvMixPars[0]=nTotEv; fEvMixPars[1]=nTotTr; fEvMixPars[2]=frReady; fEvMixPars[3]=nMinEv; }; //Fraction is given in %, so should be an integer number!
+        void SetTriggerPt(const Double_t &ptMin, const Double_t &ptMax) {fPtTriggMin=ptMin; fPtTriggMax=ptMax;};
     private:
         AliAnalysisTaskJetQ(const AliAnalysisTaskJetQ&); // not implemented
         AliAnalysisTaskJetQ& operator=(const AliAnalysisTaskJetQ&); // not implemented
         Bool_t CheckTrigger(Double_t);
         Bool_t AcceptAOD(AliAODEvent*, Double_t lvtxXYZ[3]);
         Int_t FindGivenPt(const Double_t &ptMin, const Double_t &ptMax);
-        Int_t FillCorrelations(Int_t &triggerIndex, const Double_t &ptAsMin, const Double_t &ptAsMax);
-        Int_t FillMixedEvent(Int_t &triggerIndex, AliEventPool *inpool);
+        Int_t FillCorrelations(Int_t &triggerIndex, Int_t &centVal, Double_t &vzValue);
+        Int_t FillMixedEvent(Int_t &triggerIndex, AliEventPool *inpool, Int_t &centVal, Double_t &vzValue);
         void fill2DHist(TH1 *&inh, Double_t &xval, Double_t &yval) { ((TH2*)inh)->Fill(xval,yval); };
         void fill3DHist(TH1 *&inh, Double_t &xval, Double_t &yval, Double_t &zval) { ((TH3*)inh)->Fill(xval,yval,zval); };
 
@@ -60,11 +61,16 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         TAxis *fVzAxis;
         TAxis *fPtAxis;
         TH2D *fNormCounter; //!
-        TH1 *fCorrPlot; //!
-        TH1 *fMixCorrPlot; //!
+        TH1 ***fCorrPlot; //!
+        TH1 ***fMixCorrPlot; //!
+        TH1 **fNtriggers; //!
         vector<Double_t> fCentBins;
         vector<Double_t> fVzBins;
         vector<Double_t> fPtBins;
+        Double_t fPtAssocMin;
+        Double_t fPtAssocMax;
+        Double_t fPtTriggMin;
+        Double_t fPtTriggMax;
         Bool_t fPtDif;
         AliEventCuts fEventCuts;
         Int_t fEvMixPars[4];

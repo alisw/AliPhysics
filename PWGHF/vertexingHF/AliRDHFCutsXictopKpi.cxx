@@ -1633,3 +1633,139 @@ void AliRDHFCutsXictopKpi::ExplorePID(AliPIDResponse* pid_resp, AliAODRecoDecayH
 
   return;
 }
+
+
+//---------------------------------------------------------------------------
+void AliRDHFCutsXictopKpi::IsSelectedCombinedPID_testTOFmatching_MCsignal(AliAODRecoDecayHF* obj
+                                            ,Int_t is_pKpi_MC  /// 1: pKpi, 2: piKp
+                                            ,Float_t arr_isTPCsel[3]
+                                            ,Float_t arr_isTOFok[3]
+                                            ,Float_t arr_isCombTPCTOFsel[3]
+  ){
+    
+    if(!fUsePID || !obj) {return;}
+
+    Bool_t isPeriodd=fPidHF->GetOnePad();
+    Bool_t isMC=fPidHF->GetMC();
+
+    if(isPeriodd) {
+	    fPidObjprot->SetOnePad(kTRUE);
+	    fPidObjpion->SetOnePad(kTRUE);
+    }
+    if(isMC) {
+	    fPidObjprot->SetMC(kTRUE);
+	    fPidObjpion->SetMC(kTRUE);
+    }
+
+    AliVTrack *track0=dynamic_cast<AliVTrack*>(obj->GetDaughter(0));
+    AliVTrack *track1=dynamic_cast<AliVTrack*>(obj->GetDaughter(1));
+    AliVTrack *track2=dynamic_cast<AliVTrack*>(obj->GetDaughter(2));
+    if (!track0 || !track1 || !track2) return;
+
+    Double_t prob0[AliPID::kSPECIES];
+    Double_t prob1[AliPID::kSPECIES];
+    Double_t prob2[AliPID::kSPECIES];
+
+    ///////////////////////////
+    ///   PID only with TPC ///
+    ///////////////////////////
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track1,fPidHF->GetPidResponse(),prob1);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track2,fPidHF->GetPidResponse(),prob2);
+    if(is_pKpi_MC == 1){
+      /// pKpi case
+      if(fPIDThreshold[AliPID::kPion]>0. && fPIDThreshold[AliPID::kKaon]>0. && fPIDThreshold[AliPID::kProton]>0.){
+        /// theshold probability criterion
+        arr_isTPCsel[0] = prob0[AliPID::kProton]>fPIDThreshold[AliPID::kProton];
+        arr_isTPCsel[1] = prob1[AliPID::kKaon  ]>fPIDThreshold[AliPID::kKaon  ];
+        arr_isTPCsel[2] = prob2[AliPID::kPion]>fPIDThreshold[AliPID::kPion];
+      }
+      else{
+        /// maximum probability criterion
+        arr_isTPCsel[0] = TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kProton];
+        arr_isTPCsel[1] = TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon];
+        arr_isTPCsel[2] = TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kPion];
+      }
+    }
+    else if(is_pKpi_MC == 2){
+      /// piKp case
+      if(fPIDThreshold[AliPID::kPion]>0. && fPIDThreshold[AliPID::kKaon]>0. && fPIDThreshold[AliPID::kProton]>0.){
+        /// theshold probability criterion
+        arr_isTPCsel[0] = prob0[AliPID::kPion]>fPIDThreshold[AliPID::kPion];
+        arr_isTPCsel[1] = prob1[AliPID::kKaon  ]>fPIDThreshold[AliPID::kKaon  ];
+        arr_isTPCsel[2] = prob2[AliPID::kProton]>fPIDThreshold[AliPID::kProton];
+      }
+      else{
+        /// maximum probability criterion
+        arr_isTPCsel[0] = TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kPion];
+        arr_isTPCsel[1] = TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon];
+        arr_isTPCsel[2] = TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kProton];
+      }
+    }
+    ///////////////////////////
+    ///////////////////////////
+    ///////////////////////////
+
+    ////////////////////////////////////////////
+    ///   PID with TPC and TOF (combined)    ///
+    ///   Opposite to the usual cut objects: ///
+    ///    - default: only TPC               ///
+    ///    - else: TPC and TOF (combined)    ///
+    ////////////////////////////////////////////
+    /// Daughter 0
+    if( !(obj->Pt()<3. && track0->P()<1.) ) {
+      fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+      arr_isTOFok[0] = 1;
+    }
+    fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
+    if( !(obj->Pt()<3. && track0->P()<1.) ) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    /// Daughter 1
+    if( !(obj->Pt()<3. && track1->P()<0.55) ) {
+      fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+      arr_isTOFok[1] = 1;
+    }
+    fPidHF->GetPidCombined()->ComputeProbabilities(track1,fPidHF->GetPidResponse(),prob1);
+    if( !(obj->Pt()<3. && track1->P()<0.55) ) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    /// Daughter 2
+    if( !(obj->Pt()<3. && track2->P()<1.) ) {
+      fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+      arr_isTOFok[2] = 1;  
+    }
+    fPidHF->GetPidCombined()->ComputeProbabilities(track2,fPidHF->GetPidResponse(),prob2);
+    if( !(obj->Pt()<3. && track2->P()<1.) ) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+
+    if(is_pKpi_MC == 1){
+      /// pKpi case
+      if(fPIDThreshold[AliPID::kPion]>0. && fPIDThreshold[AliPID::kKaon]>0. && fPIDThreshold[AliPID::kProton]>0.){
+        /// theshold probability criterion
+        arr_isCombTPCTOFsel[0] = prob0[AliPID::kProton]>fPIDThreshold[AliPID::kProton];
+        arr_isCombTPCTOFsel[1] = prob1[AliPID::kKaon  ]>fPIDThreshold[AliPID::kKaon  ];
+        arr_isCombTPCTOFsel[2] = prob2[AliPID::kPion]>fPIDThreshold[AliPID::kPion];
+      }
+      else{
+        /// maximum probability criterion
+        arr_isCombTPCTOFsel[0] = TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kProton];
+        arr_isCombTPCTOFsel[1] = TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon];
+        arr_isCombTPCTOFsel[2] = TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kPion];
+      }
+    }
+    else if(is_pKpi_MC == 2){
+      /// piKp case
+      if(fPIDThreshold[AliPID::kPion]>0. && fPIDThreshold[AliPID::kKaon]>0. && fPIDThreshold[AliPID::kProton]>0.){
+        /// theshold probability criterion
+        arr_isCombTPCTOFsel[0] = prob0[AliPID::kPion]>fPIDThreshold[AliPID::kPion];
+        arr_isCombTPCTOFsel[1] = prob1[AliPID::kKaon  ]>fPIDThreshold[AliPID::kKaon  ];
+        arr_isCombTPCTOFsel[2] = prob2[AliPID::kProton]>fPIDThreshold[AliPID::kProton];
+      }
+      else{
+        /// maximum probability criterion
+        arr_isCombTPCTOFsel[0] = TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kPion];
+        arr_isCombTPCTOFsel[1] = TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon];
+        arr_isCombTPCTOFsel[2] = TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kProton];
+      }
+    }
+
+    /// restore
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+}

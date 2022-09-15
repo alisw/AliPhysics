@@ -11,7 +11,7 @@ AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7 
   task->SetPeriod(period);
   task->SetBetheSplines(betheSplines);
   
-  
+  task->SetRefitOnFlyV0(kTRUE);  
   
   Double_t he3Params[6];
   Double_t tParams[6];

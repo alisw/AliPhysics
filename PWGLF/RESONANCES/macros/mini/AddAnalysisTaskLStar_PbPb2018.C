@@ -15,15 +15,19 @@
 //  kFALSE --> initialization failed (some config gave errors)
 //
 ****************************************************************************/
-
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/ConfigLStar_PbPb2018.C>
+#endif
+	
 AliRsnMiniAnalysisTask *
 AddAnalysisTaskLStar_PbPb2018(
 			      UInt_t      triggerMask       = AliVEvent::kINT7,
 			      Float_t     yCut              = 0.5,
 			      Int_t       aodFilterBit      = 5,
 			      Bool_t      useTPCCrossedRows = kTRUE,
-			      Int_t       qualityCut        = AliRsnCutSetDaughterParticle::kQualityStd2011,
-			      Int_t       pidCut            = AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed_2018,
+			      AliRsnCutSetDaughterParticle::ERsnDaughterCutSet       qualityCut        = AliRsnCutSetDaughterParticle::kQualityStd2011,
+			      AliRsnCutSetDaughterParticle::ERsnDaughterCutSet       pidCut            = AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed_2018,
 			      Float_t     nsPr              = 1.0, // factor wrt. default n-sigma
 			      Float_t     nsKa              = 1.0, // factor wrt. default n-sigma
 			      Int_t       nMix              = 15,
@@ -95,9 +99,15 @@ AddAnalysisTaskLStar_PbPb2018(
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   
+   #ifdef __CINT__
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLStar_PbPb2018.C");
-   ConfigLStar_PbPb2018(task, yCut, aodFilterBit, useTPCCrossedRows, qualityCut, pidCut, nsPr, nsPr, isMC, suffix);
+   #endif
+   
+   if(!ConfigLStar_PbPb2018(task, yCut, aodFilterBit, useTPCCrossedRows, qualityCut, pidCut, nsPr, nsPr, isMC, suffix))
+   {
+     ::Error("ConfigLStar_PbPb2018", "No analysisConfig task is loaded.");
+      return 0x0;
+   }
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

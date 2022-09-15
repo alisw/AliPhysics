@@ -57,27 +57,33 @@ set(SRCS
   AliPartSimpleForCorr.cxx
   AliProfileSubset.cxx
   AliProfileBS.cxx
+  AliPtContainer.cxx
   AliCkContainer.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
   AliAnalysisTaskCMWESETrkSyst.cxx
+  AliAnalysisTaskPtFlowCorrelation.cxx
+  AliAnalysisTaskMomentumFlowCorrelation.cxx
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS AliAnalysisTaskCreateNUA.cxx)
+  list(APPEND SRCS AliAnalysisTaskCreatePeriodNUA.cxx)
   list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
   list(APPEND SRCS AliAnalysisTaskFlowPPTask.cxx)
   list(APPEND SRCS AliAnalysisTaskGFWFlow.cxx)
   list(APPEND SRCS AliAnalysisTaskJetQ.cxx)
   list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
   list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
+  list(APPEND SRCS AliAnalysisTaskCorrForNonlinearFlow.cxx)
   list(APPEND SRCS AliEffFDContainer.cxx)
   list(APPEND SRCS AliGFWFilter.cxx)
   list(APPEND SRCS AliGFWFilterTask.cxx)
   list(APPEND SRCS CorrelationCalculator.cxx)
   list(APPEND SRCS AliGFWNFCuts.cxx)
+  list(APPEND SRCS AliGFWXXCuts.cxx)
 endif()
 
 # Headers from sources

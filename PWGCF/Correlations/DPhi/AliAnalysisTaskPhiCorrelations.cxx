@@ -25,6 +25,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TRandom.h>
+#include <TRandom3.h>
 #include <TParameter.h>
 
 #include "AliAnalysisTaskPhiCorrelations.h"
@@ -121,6 +122,8 @@ fHistos(0x0),
 fHistosMixed(0),
 fEfficiencyCorrectionTriggers(0),
 fEfficiencyCorrectionAssociated(0),
+fDeltaEtaAcceptance(0),
+fDeltaEtaAcceptanceRNG(0),
 fCentralityWeights(0),
 fCentralityMCGen_V0M(0),
 fCentralityMCGen_CL1(0),
@@ -225,6 +228,8 @@ AliAnalysisTaskPhiCorrelations::~AliAnalysisTaskPhiCorrelations()
 
   if (fListOfHistos  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
     delete fListOfHistos;
+  if (fDeltaEtaAcceptanceRNG)
+    delete fDeltaEtaAcceptanceRNG;
 }
 
 //____________________________________________________________________
@@ -390,6 +395,10 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   if (fEfficiencyCorrectionAssociated) {
     fHistos->SetEfficiencyCorrectionAssociated(fEfficiencyCorrectionAssociated);
     fHistosMixed->SetEfficiencyCorrectionAssociated((THnF*) fEfficiencyCorrectionAssociated->Clone());
+  }
+  if (fDeltaEtaAcceptance) {
+    fDeltaEtaAcceptanceRNG = new TRandom3(151221);
+    fHistos->SetDeltaEtaAcceptance(fDeltaEtaAcceptance,fDeltaEtaAcceptanceRNG);
   }
 
   // add histograms to list
@@ -1436,14 +1445,15 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
     if (!multSelection)
       AliFatal("MultSelection not found in input event");
 
-    if (fUseUncheckedCentrality)
-      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, kFALSE);
-    else
-      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, kTRUE);
+    if (fCentralityMethod.EndsWith(".Value"))
+      centrality = multSelection->GetEstimator(fCentralityMethod(0, fCentralityMethod.Length()-6))->GetValue();
+    else {
+      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, !fUseUncheckedCentrality);
 
-    // error handling
-    if (centrality > 100)
-      centrality = -1;
+      // error handling
+      if (centrality > 100)
+        centrality = -1;
+    }
   }
   else {
     AliCentrality *centralityObj = 0;
@@ -1510,8 +1520,6 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       // for pp
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
       centrality = tracks->GetEntriesFast();
-      if (centrality > 40)
-        centrality = 41;
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
       delete tracks;
     }
@@ -1570,6 +1578,11 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
         centrality = collGeometry->ImpactParameter();
       else if (hepMCHeader)
         centrality = hepMCHeader->impact_parameter();
+    }
+    else if (fCentralityMethod == "MCGen_TRACKS_MANUAL") {
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+      centrality = tracks->GetEntriesFast();
+      delete tracks;
     }
     else if (fCentralityMethod == "MCGen_V0M") {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);

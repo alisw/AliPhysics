@@ -811,6 +811,30 @@ void AliAnalysisTaskThreeBodyFemtoMixedCharge::FillTripletDistribution(std::vect
   unsigned int DoThisPair23 = DaughterPart2*10+DaughterPart3;
   unsigned int DoThisPair31 = DaughterPart3*10+DaughterPart1;
 
+  bool dontDoIfDiffCharge1, dontDoIfDiffCharge2, dontDoIfDiffCharge3;
+  int pairID12=0,  pairID23=0, pairID31=0;
+  pairID12 = firstSpecies*10+secondSpecies;
+  pairID23 = secondSpecies*10+thirdSpecies;
+  pairID31 = thirdSpecies*10+firstSpecies;
+
+  if(pairID12==0||pairID12==11||pairID12==2||pairID12==20||pairID12==13||pairID12==31){
+    dontDoIfDiffCharge1 = false;
+  } else {
+    dontDoIfDiffCharge1 = true;
+  }
+
+  if(pairID23==0||pairID23==11||pairID23==2||pairID23==20||pairID23==13||pairID23==31){
+    dontDoIfDiffCharge2 = false;
+  } else {
+    dontDoIfDiffCharge2 = true;
+  }
+
+  if(pairID31==0||pairID31==11||pairID31==2||pairID31==20||pairID31==13||pairID31==31){
+    dontDoIfDiffCharge3 = false;
+  } else {
+    dontDoIfDiffCharge3 = true;
+  }
+
   // loop over first particle 
   for (auto iPart1 = Particle1Vector->begin(); iPart1 != Particle1Vector->end(); ++iPart1) {
     // if second particle species is different than first - start with the first particle in the vector
@@ -851,32 +875,38 @@ void AliAnalysisTaskThreeBodyFemtoMixedCharge::FillTripletDistribution(std::vect
         if(!fturnoffClosePairRejectionCompletely){
 
           if(fClosePairRejectionForAll){
-            Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
-            Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
-            Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+            if(!dontDoIfDiffCharge1){
+              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
+            }
+            if(!dontDoIfDiffCharge2){
+              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
+            }
+            if(!dontDoIfDiffCharge3){
+              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
+            }
           }
           if(!fClosePairRejectionForAll){
             if(fClosePairRejectionPPPorPPL){
               if(DoThisPair12==11){ 
-                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
               }
               if(DoThisPair23==11){ 
-                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
               }
               if(DoThisPair31==11){ 
-                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
               }
             }
 
             if(!fClosePairRejectionPPPorPPL){
               if(DoThisPair12==21||DoThisPair12==12){ 
-                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
               }
               if(DoThisPair23==21||DoThisPair23==12){ 
-                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
               }
               if(DoThisPair31==21||DoThisPair31==12){ 
-                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
               }
             }
           }
@@ -987,6 +1017,33 @@ void AliAnalysisTaskThreeBodyFemtoMixedCharge::FillTripletDistributionME(std::ve
   unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
   unsigned int DoThisPair23 = DaughterPart2*10+DaughterPart3;
   unsigned int DoThisPair31 = DaughterPart3*10+DaughterPart1;
+
+  bool dontDoIfDiffCharge1, dontDoIfDiffCharge2, dontDoIfDiffCharge3;
+  int pairID12=0,  pairID23=0, pairID31=0;
+  pairID12 = speciesSE*10+speciesME1;
+  pairID23 = speciesME1*10+speciesME2;
+  pairID31 = speciesME2*10+speciesSE;
+  if(pairID12==0||pairID12==11||pairID12==2||pairID12==20||pairID12==13||pairID12==31){
+    dontDoIfDiffCharge1 = false;
+  } else {
+    dontDoIfDiffCharge1 = true;
+  }
+
+  if(pairID23==0||pairID23==11||pairID23==2||pairID23==20||pairID23==13||pairID23==31){
+    dontDoIfDiffCharge2 = false;
+  } else {
+    dontDoIfDiffCharge2 = true;
+  }
+
+
+  if(pairID31==0||pairID31==11||pairID31==2||pairID31==20||pairID31==13||pairID31==31){
+    dontDoIfDiffCharge3 = false;
+  } else {
+    dontDoIfDiffCharge3 = true;
+  }
+
+
+
   
   // loop over first particle 
   for (auto iPart1 = ParticleSE->begin(); iPart1 != ParticleSE->end(); ++iPart1) {
@@ -1027,31 +1084,37 @@ void AliAnalysisTaskThreeBodyFemtoMixedCharge::FillTripletDistributionME(std::ve
             if(!fturnoffClosePairRejectionCompletely){
 
               if(fClosePairRejectionForAll){
-                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
-                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
-                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
+                if(!dontDoIfDiffCharge1){
+                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                 }
+                if(!dontDoIfDiffCharge2){
+                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                }
+                if(!dontDoIfDiffCharge3){
+                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                }
               }
               if(!fClosePairRejectionForAll){
                 if(fClosePairRejectionPPPorPPL){
                   if(DoThisPair12==11){ 
-                    Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
+                    Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
                   }
                   if(DoThisPair23==11){ 
-                    Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
+                    Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
                   }
                   if(DoThisPair31==11){ 
-                    Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
+                    Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
                   }
                 }
                 if(!fClosePairRejectionPPPorPPL){
                   if(DoThisPair12==21||DoThisPair12==12){ 
-                    Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
+                    Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
                   }
                   if(DoThisPair23==21||DoThisPair23==12){ 
-                    Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
+                    Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
                   }
                   if(DoThisPair31==21||DoThisPair31==12){ 
-                    Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config, Q3);
+                    Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
                   }
                 }
               }
@@ -1115,6 +1178,33 @@ void AliAnalysisTaskThreeBodyFemtoMixedCharge::FillTripletDistributionSE2ME1(std
   unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
   unsigned int DoThisPair23 = DaughterPart2*10+DaughterPart3;
   unsigned int DoThisPair31 = DaughterPart3*10+DaughterPart1;
+
+
+  bool dontDoIfDiffCharge1, dontDoIfDiffCharge2, dontDoIfDiffCharge3;
+  int pairID12=0,  pairID23=0, pairID31=0;
+  pairID12 = speciesSE1*10+speciesSE2;
+  pairID23 = speciesSE2*10+speciesME;
+  pairID31 = speciesME*10+speciesSE1;
+  if(pairID12==0||pairID12==11||pairID12==2||pairID12==20||pairID12==13||pairID12==31){
+    dontDoIfDiffCharge1 = false;
+  } else {
+    dontDoIfDiffCharge1 = true;
+  }
+
+  if(pairID23==0||pairID23==11||pairID23==2||pairID23==20||pairID23==13||pairID23==31){
+    dontDoIfDiffCharge2 = false;
+  } else {
+    dontDoIfDiffCharge2 = true;
+  }
+
+
+  if(pairID31==0||pairID31==11||pairID31==2||pairID31==20||pairID31==13||pairID31==31){
+    dontDoIfDiffCharge3 = false;
+  } else {
+    dontDoIfDiffCharge3 = true;
+  }
+
+
   // loop over first particle 
   for (auto iPart1 = ParticleSE1->begin(); iPart1 != ParticleSE1->end(); ++iPart1) {
     auto iPart2 = ParticleSE2->begin();
@@ -1151,31 +1241,37 @@ void AliAnalysisTaskThreeBodyFemtoMixedCharge::FillTripletDistributionSE2ME1(std
           if(!fturnoffClosePairRejectionCompletely){
 
             if(fClosePairRejectionForAll){
-              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
-              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
-              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+              if(!dontDoIfDiffCharge1){
+                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
+              }
+              if(!dontDoIfDiffCharge2){
+                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
+              }
+              if(!dontDoIfDiffCharge3){
+                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
+              }
             }
             if(!fClosePairRejectionForAll){
               if(fClosePairRejectionPPPorPPL){
                 if(DoThisPair12==11){ 
-                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
                 }
                 if(DoThisPair23==11){ 
-                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
                 }
                 if(DoThisPair31==11){ 
-                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
                 }
               }
               if(!fClosePairRejectionPPPorPPL){
                 if(DoThisPair12==21||DoThisPair12==12){ 
-                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
                 }
                 if(DoThisPair23==21||DoThisPair23==12){ 
-                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
                 }
                 if(DoThisPair31==21||DoThisPair31==12){ 
-                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config, Q3);
+                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[23+phiEtaHistNo],Config);
                 }
               }
             }
@@ -1281,96 +1377,4 @@ bool AliAnalysisTaskThreeBodyFemtoMixedCharge::DeltaEtaDeltaPhi(
   return pass;
 }
 
-
-
-bool AliAnalysisTaskThreeBodyFemtoMixedCharge::DeltaEtaDeltaPhi(
-                                                   AliFemtoDreamBasePart &part1,
-                                                   AliFemtoDreamBasePart &part2,
-                                                   bool SEorME,  unsigned int DoThisPair, TH2F* beforeHist,TH2F* afterHist,
-                                                   AliFemtoDreamCollConfig Config, double Q3) {
-  // DoThisPair = ij where i is the number of daughters for first particle, j for the second
-  
-  static const float piHi = TMath::Pi();
-  auto fDeltaPhiSqMax = Config.GetDeltaPhiMax() * Config.GetDeltaPhiMax();
-  auto fDeltaEtaSqMax = Config.GetDeltaEtaMax() * Config.GetDeltaEtaMax() ;
-
-  bool pass = true;
-  // if nDaug == 1 => Single Track, else decay
-  unsigned int nDaug1 = (unsigned int) DoThisPair / 10;
-  if (nDaug1 > 9) {
-    AliWarning("you are doing something wrong \n");
-  }
-  if (nDaug1 > part1.GetPhiAtRaidius().size()) {
-    TString outMessage =
-        TString::Format(
-            "For pair number %u your number of Daughters 1 (%u) and Radii 1 (%u) do not correspond \n",
-            DoThisPair, nDaug1, (unsigned int)part1.GetPhiAtRaidius().size());
-    AliWarning(outMessage.Data());
-  }
-  unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
-
-  if (nDaug2 > part2.GetPhiAtRaidius().size()) {
-    TString outMessage =
-        TString::Format(
-            "For pair number %u your number of Daughters 2 (%u) and Radii 2 (%u) do not correspond \n",
-            DoThisPair, nDaug2, (unsigned int)part2.GetPhiAtRaidius().size());
-    AliWarning(outMessage.Data());
-  }
-  std::vector<float> eta1 = part1.GetEta();
-  std::vector<float> eta2 = part2.GetEta();
-
-  for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
-    std::vector<float> PhiAtRad1 = part1.GetPhiAtRaidius().at(iDaug1);
-    float etaPar1;
-    if (nDaug1 == 1) {
-      etaPar1 = eta1.at(0);
-    } else {
-      etaPar1 = eta1.at(iDaug1 + 1);
-    }
-    for (unsigned int iDaug2 = 0; iDaug2 < nDaug2; ++iDaug2) {
-      std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
-      float etaPar2;
-      if (nDaug2 == 1) {
-        etaPar2 = eta2.at(0);
-      } else {
-        etaPar2 = eta2.at(iDaug2 + 1);
-      }
-      float deta = etaPar1 - etaPar2;
-      const int size =
-          (PhiAtRad1.size() > phiAtRad2.size()) ?
-              phiAtRad2.size() : PhiAtRad1.size();
-      float dphiAvg = 0;
-      for (int iRad = 0; iRad < size; ++iRad) {
-        float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
-        if (dphi > piHi) {
-          dphi += -piHi * 2;
-        } else if (dphi < -piHi) {
-          dphi += piHi * 2;
-        }
-        dphi = TVector2::Phi_mpi_pi(dphi);
-
-        dphiAvg += dphi;
-      }
-      if(fRunPlotPhiTheta){
-        if(Q3<fQ3LimitForDeltaPhiDeltaEta){
-          beforeHist->Fill(dphiAvg/ (float) size, deta);
-        }
-      }
-      if (pass) {
-        if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / fDeltaPhiSqMax
-            + deta * deta / fDeltaEtaSqMax < 1.) {
-          pass = false;
-        }
-        else{
-          if(fRunPlotPhiTheta){
-            if(Q3<fQ3LimitForDeltaPhiDeltaEta){
-              afterHist->Fill(dphiAvg/ (float) size, deta);
-            }
-          }
-        }
-      }
-    }
-  }
-  return pass;
-}
 

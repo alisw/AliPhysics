@@ -7,6 +7,9 @@
 
 #ifndef PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKGEORGIOSNTUPLE_H_
 #define PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKGEORGIOSNTUPLE_H_
+
+#include "TMath.h"
+#include "TTree.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamEvent.h"
@@ -20,9 +23,10 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
-#include "TTree.h"
 
-//#define MONTECARLO
+#define GEORGIOSDEBUGG
+
+#define MONTECARLO
 
 class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
  public:
@@ -43,6 +47,12 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
     fEventCuts = evtCuts;
   }
 
+void SethasFemtoTrackCleaning(bool hasFemtoTrackCleaning){
+    fhasFemtoTrackCleaning = hasFemtoTrackCleaning;
+}
+void SethasFemtoPairCleaning(bool hasFemtoPairCleaning){
+    fhasFemtoPairCleaning = hasFemtoPairCleaning;
+}
 //Lambda
   void SetLambdaCuts(AliFemtoDreamv0Cuts* v0Cuts){
     fLambda = v0Cuts;
@@ -77,7 +87,8 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   AliFemtoDreamEventCuts* fEventCuts;//
   TList* fEvtList;//!
 
-
+bool fhasFemtoTrackCleaning;
+bool fhasFemtoPairCleaning;
 //Lambda
   AliFemtoDreamv0* fv0;
   AliFemtoDreamv0Cuts* fLambda;

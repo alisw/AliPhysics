@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskUeMultDep+;
 #pragma link C++ class AliAnalysisTaskUeSpectraRT+;
 #pragma link C++ class AliAnalysisTaskUeSpectraDphi+;
+#pragma link C++ class AliAnalysisTaskKnoUeChecks+;
 #pragma link C++ class AliAnalysisTaskMcKnoUe+;
 #pragma link C++ class AliAnalysisTaskMcKnoUeSystem+;
 #pragma link C++ class AliAnalysisTaskGenMcKnoUe+;
@@ -20,5 +21,8 @@
 #pragma link C++ class AliAnalysisTaskDataKno+;
 #pragma link C++ class AliAnalysisTaskGenMcKno+;
 #pragma link C++ class AliAnalysisTaskGenUeNchTS+;
+#pragma link C++ class AliAnalysisTaskFlatenicity+;
 #pragma link C++ class AliAnalysisTaskMpiUE+;
+#pragma link C++ class AliAnalysisTaskSpectraFlatenicity+;
+#pragma link C++ class AliAnalysisTaskFlatenicityPiKp+;
 #endif

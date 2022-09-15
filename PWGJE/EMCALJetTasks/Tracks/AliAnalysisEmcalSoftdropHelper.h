@@ -76,10 +76,10 @@ public:
   TBinning *GetZgBinning(double zcut) const;
   TBinning *GetRgBinning(double R) const;
 
-  std::vector<PWGJE::EMCALJetTasks::AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets);
+  std::vector<PWGJE::EMCALJetTasks::AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets, double minPtCharged = 0., double minEcluster = 0.);
 
-  SoftdropResults MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets);
-  SoftdropResults MakeSoftdropStandAlone(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets);
+  SoftdropResults MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets, double minPtTrack = 0., double minEcluster = 0.);
+  SoftdropResults MakeSoftdropStandAlone(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets, double minPtTrack = 0., double minEcluster = 0.);
 
   ClassDef(AliAnalysisEmcalSoftdropHelperImpl, 1);
 };

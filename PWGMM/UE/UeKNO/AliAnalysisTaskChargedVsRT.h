@@ -37,9 +37,9 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
         void       GetLeadingObjectFromArray(const std::vector<Float_t> &pt, const std::vector<Float_t> &phi, Int_t multPart, Bool_t isMC);
-        void       GetDetectorResponse(const std::vector<Float_t> &phiGen, Int_t multGen, const std::vector<Float_t> &phiRec, Int_t multRec);
+        void       GetDetectorResponse(const std::vector<Float_t> &phiGen, Int_t multGen, const std::vector<Float_t> &phiRec, Int_t multRec, const std::vector<Int_t> &idGen);
         void       GetBinByBinCorrections(Int_t multGen, Int_t multRec, const std::vector<Float_t> &ptGen, const std::vector<Float_t> &ptRec, const std::vector<Int_t> &idGen, const std::vector<Int_t> &idRec, const std::vector<Int_t> &isprimRec);
-        void       GetMultiplicityDistributionsTrue(const std::vector<Float_t> &phiGen, const std::vector<Float_t> &ptGen, Int_t multGen );
+        void       GetMultiplicityDistributionsTrue(const std::vector<Float_t> &phiGen, const std::vector<Float_t> &ptGen, Int_t multGen, const std::vector<Int_t> &idGen );
 
         void       GetMultiplicityDistributions(const std::vector<Float_t> &phiRec, const std::vector<Float_t> &ptRec, Int_t multRec, const std::vector<Float_t> &ptRecwodca, const            std::vector<Float_t> &dcaxyRecwodca, const std::vector<Int_t> &isprimwodca, Int_t multRecwodca );
 
@@ -47,13 +47,20 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         void       SetPtMin(Double_t val)              {fPtMin = val;}   // Set pT cut for associated particles
         void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
         void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
+        void       SetNchNbin(Int_t NchNbins)    {fNchNbin = NchNbins;}   // use different bining
+        void       SetNchBinMax(Double_t maxbinNch)    {fNchBinMax = maxbinNch;}   // use different bin max
+    
         void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
         void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
         void       SetIsHybridAnalysis(Bool_t isHy = kFALSE)    {fIsHybAna = isHy;}
+        void       SetMultPercenV0(Bool_t multV0 = kFALSE)    {fMultPercenV0 = multV0;}
         bool       HasRecVertex();
+        void       SetCutsHybrid0WoDCA(AliESDtrackCuts *name);
+        void       SetCutsHybrid1WoDCA(AliESDtrackCuts *name);
+        void       SetCutsFilterWoDCA(AliESDtrackCuts *name);
         //Systematic ============================
-//         void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
-//         void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
+	void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
+        void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
         void       SetNcrVar1(Bool_t NcrVar1 = kFALSE) {fNcrVar1 = NcrVar1;}
         void       SetNcrVar2(Bool_t NcrVar2 = kFALSE) {fNcrVar2 = NcrVar2;}
         void       SetChisqTPCVar1(Bool_t ChisqTPCVar1 = kFALSE) {fChisqTPCVar1 = ChisqTPCVar1;}
@@ -87,12 +94,15 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         Bool_t       fUseMC;                // analyze MC events
         Bool_t       fIsMCclosure;
         Bool_t       fIsHybAna;
+        Bool_t       fMultPercenV0;
         Int_t        fnRecHy;
         Int_t        fnRecHyWoDCA;
         Int_t        fnGen;
         // Systematic------------------------------------
         Bool_t       fNcrVar1;
         Bool_t       fNcrVar2;
+	Bool_t       fTPCclustersVar1;
+        Bool_t       fTPCclustersVar2;
         Bool_t       fGeoTPCVar1;
         Bool_t       fGeoTPCVar2;
         Bool_t       fGeoTPCVar3;
@@ -116,6 +126,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         Double_t fPtMin;
         Double_t fLeadPtCutMin;
         Double_t fLeadPtCutMax;
+        Int_t fNchNbin;
+        Double_t fNchBinMax;
         Double_t fGenLeadPhi;
         Double_t fGenLeadPt;
         Int_t    fGenLeadIn;
@@ -144,6 +156,7 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         TH1D * hNchRec;
         TH1D * hNchRecTest;
         TH1D * hPtInPrim;
+        TH1D * hPtInPrim_lambda;
         TH1D * hPtInPrim_pion;
         TH1D * hPtInPrim_kaon;
         TH1D * hPtInPrim_proton;
@@ -151,10 +164,10 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         TH1D * hPtInPrim_sigmam;
         TH1D * hPtInPrim_omega;
         TH1D * hPtInPrim_xi;
-        TH1D * hPtInPrim_lambda;
         TH1D * hPtInPrim_rest;
         TH1D * hPtOut;
         TH1D * hPtOutPrim;
+        TH1D * hPtOutPrim_lambda;
         TH1D * hPtOutPrim_pion;
         TH1D * hPtOutPrim_kaon;
         TH1D * hPtOutPrim_proton;
@@ -162,7 +175,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         TH1D * hPtOutPrim_sigmam;
         TH1D * hPtOutPrim_omega;
         TH1D * hPtOutPrim_xi;
-        TH1D * hPtOutPrim_lambda;
         TH1D * hPtOutPrim_rest;
         TH1D * hPtOutSec;
         TH1D * hCounter;

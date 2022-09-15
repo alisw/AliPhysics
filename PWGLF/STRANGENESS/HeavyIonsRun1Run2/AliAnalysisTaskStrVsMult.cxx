@@ -31,6 +31,7 @@ class AliAODcascade;
 #include "AliAnalysisUtils.h"
 #include "AliAODMCHeader.h"
 #include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliAnalysisTaskStrVsMult.h"
 
@@ -60,10 +61,12 @@ fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
-fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
+//geometrical cut usage
+fESDTrackCuts(0),
 //variables for V0 cuts
 fV0_DcaV0Daught(0),
 fV0_DcaPosToPV(0),
@@ -80,7 +83,7 @@ fV0_InvMassLam(0),
 fV0_InvMassALam(0),
 fV0_LeastCRaws(0),
 fV0_LeastCRawsOvF(0),
-fV0_LeastTPCcls(0),
+fV0_TrackLengthCut(0),
 fV0_MaxChi2perCls(0),
 fV0_NSigPosProton(0),
 fV0_NSigPosPion(0),
@@ -107,7 +110,7 @@ fCasc_NSigBacPion(0),
 fCasc_NSigBacKaon(0),
 fCasc_LeastCRaws(0),
 fCasc_LeastCRawsOvF(0),
-fCasc_LeastTPCcls(0),
+fCasc_TrackLengthCut(0),
 fCasc_MaxChi2perCls(0),
 fCasc_InvMassLam(0),
 fCasc_DcaV0Daught(0),
@@ -133,7 +136,10 @@ fCasc_BacTrackStatus(0),
 fCasc_BacBarCosPA(0),
 fisParametricBacBarCosPA(kFALSE),                            
 fHist_PtBacBarCosPA(0),
-fCentLimit_BacBarCosPA(0)
+fCentLimit_BacBarCosPA(0),
+fisParametricTrackLengthCut(kFALSE),                            
+fHist_CentTrackLengthCut(0),
+fncentbins(0)
 {
   //default constructor
 }
@@ -160,10 +166,12 @@ fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
-fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 50., 2.5, 5., 20., 30., 0.},
-fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 50., 2.5, 0.005, 1., 0.99, 0.1, 0.1, 0., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 1.},
+fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 125., 0.5, 0.8, 70., 0.8, 1., 2.5, 5., 20., 30., 0.},
+fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 1., 2.5, 0.005, 1., 0.99, 0.1, 0.1, 0., 0.5, 0.8, 3., 3., 3., 85., 0.2, 0.2, 1.},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
+//geometrical cut usage
+fESDTrackCuts(0),
 //variables for V0 cuts
 fV0_DcaV0Daught(0),
 fV0_DcaPosToPV(0),
@@ -180,7 +188,7 @@ fV0_InvMassLam(0),
 fV0_InvMassALam(0),
 fV0_LeastCRaws(0),
 fV0_LeastCRawsOvF(0),
-fV0_LeastTPCcls(0),
+fV0_TrackLengthCut(0),
 fV0_MaxChi2perCls(0),
 fV0_NSigPosProton(0),
 fV0_NSigPosPion(0),
@@ -207,7 +215,7 @@ fCasc_NSigBacPion(0),
 fCasc_NSigBacKaon(0),
 fCasc_LeastCRaws(0),
 fCasc_LeastCRawsOvF(0),
-fCasc_LeastTPCcls(0),
+fCasc_TrackLengthCut(0),
 fCasc_MaxChi2perCls(0),
 fCasc_InvMassLam(0),
 fCasc_DcaV0Daught(0),
@@ -233,16 +241,17 @@ fCasc_BacTrackStatus(0),
 fCasc_BacBarCosPA(0),
 fisParametricBacBarCosPA(kFALSE),                            
 fHist_PtBacBarCosPA(0),
-fCentLimit_BacBarCosPA(0)
+fCentLimit_BacBarCosPA(0),
+fisParametricTrackLengthCut(kFALSE),                            
+fHist_CentTrackLengthCut(0),
+fncentbins(0)
 {
   //setting default cuts
   SetDefCutVals(); 
   SetDefCutVariations();
   //setting default centrality binning
   double centbins[15] = {0, 0.01, 0.1, 1., 5., 10., 15., 20., 30., 40., 50., 60., 70., 80., 90.};
-  for (int ipart=0; ipart<knumpart; ipart++) {
-    SetCentbinning(ipart, 14, centbins);
-  }
+  SetCentbinning(14, centbins);
   //setting default mass binning
   int massbins[4] = {90, 50, 80, 80};
   double minmass[4] = {0.41, 1.07, 1.28, 1.63};
@@ -289,30 +298,29 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
 {
   //histograms for event variables
   fHistos_eve = new THistManager("histos_eve");
-
-  fHistos_eve->CreateTH1("hcent", "", 100, 0, 100, "s");  //storing #events in bins of centrality
   fHistos_eve->CreateTH1("henum", "", 4, -0.5, 3.5);  //storing total #events
   const char *labels[4] = {"Total", "MultSelection", "AliEventCuts", "Pile-up rejection"};
   for (int iLab=1; iLab<=4; iLab++) ((TH1*)fHistos_eve->FindObject("henum"))->GetXaxis()->SetBinLabel(iLab, labels[iLab-1]);
+  fHistos_eve->CreateTH1("hcent", "", fncentbins, fcentbinning);  //storing #events in centrality bins
 
   //histograms for V0 variables
   if (fParticleAnalysisStatus[kk0s]) {
     fHistos_K0S = new THistManager("histos_K0S");
-    if(fisMC) fHistos_K0S->CreateTH2("h2_gen", "", fnptbins[kK0s], fptbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
-    fHistos_K0S->CreateTH3("h3_ptmasscent_def", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
+    if(fisMC) fHistos_K0S->CreateTH2("h2_gen", "", fnptbins[kK0s], fptbinning[kK0s], fncentbins, fcentbinning);
+    fHistos_K0S->CreateTH3("h3_ptmasscent_def", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins, fcentbinning);
   }
   if (fParticleAnalysisStatus[klam]) {
     fHistos_Lam = new THistManager("histos_Lam");
     fHistos_ALam = new THistManager("histos_ALam");
-    fHistos_Lam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-    fHistos_ALam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+    fHistos_Lam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
+    fHistos_ALam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
     if(fisMC) {
-        fHistos_Lam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-        fHistos_Lam->CreateTH3("h3_FDmtxNUM_def", "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
-        fHistos_Lam->CreateTH2("h2_FDmtxDEN_def", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
-        fHistos_ALam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-        fHistos_ALam->CreateTH3("h3_FDmtxNUM_def", "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
-        fHistos_ALam->CreateTH2("h2_FDmtxDEN_def", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
+        fHistos_Lam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins, fcentbinning);
+        fHistos_Lam->CreateTH3("h3_FDmtxNUM_def", "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
+        fHistos_Lam->CreateTH2("h2_FDmtxDEN", "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
+        fHistos_ALam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins, fcentbinning);
+        fHistos_ALam->CreateTH3("h3_FDmtxNUM_def", "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
+        fHistos_ALam->CreateTH2("h2_FDmtxDEN", "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
     }
   }
   if (!fDefOnly && (fParticleAnalysisStatus[kk0s] || fParticleAnalysisStatus[klam])) {
@@ -320,17 +328,15 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
       if (icut==kV0_y || icut==kV0_etaDaugh) continue;
       for (int ivar = 0; ivar<nvarcut_V0[icut]; ivar++) {
         if (fParticleAnalysisStatus[kk0s]) {
-          if (icut!=kV0_PropLifetLam) fHistos_K0S->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
+          if (icut!=kV0_PropLifetLam) fHistos_K0S->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins, fcentbinning);
         }
         if (fParticleAnalysisStatus[klam]) {
           if (icut!=kV0_PropLifetK0s) {
-            fHistos_Lam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-            fHistos_ALam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+            fHistos_Lam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
+            fHistos_ALam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
             if(fisMC){
-              fHistos_Lam->CreateTH3(Form("h3_FDmtxNUM[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
-              fHistos_Lam->CreateTH2(Form("h2_FDmtxDEN[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
-              fHistos_ALam->CreateTH3(Form("h3_FDmtxNUM[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
-              fHistos_ALam->CreateTH2(Form("h2_FDmtxDEN[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
+              fHistos_Lam->CreateTH3(Form("h3_FDmtxNUM[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
+              fHistos_ALam->CreateTH3(Form("h3_FDmtxNUM[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
             }
           }
         }
@@ -341,30 +347,30 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   if (fParticleAnalysisStatus[kxip]) {
     fHistos_XiMin = new THistManager("histos_XiMin");
     fHistos_XiPlu = new THistManager("histos_XiPlu");
-    fHistos_XiMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    fHistos_XiPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    if(fisMC) fHistos_XiMin->CreateTH2("h2_gen", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    if(fisMC) fHistos_XiPlu->CreateTH2("h2_gen", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins, fcentbinning);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins, fcentbinning);
+    if(fisMC) fHistos_XiMin->CreateTH2("h2_gen", "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
+    if(fisMC) fHistos_XiPlu->CreateTH2("h2_gen", "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
   }
   if (fParticleAnalysisStatus[komp]) {
     fHistos_OmMin = new THistManager("histos_OmMin");
     fHistos_OmPlu = new THistManager("histos_OmPlu");
-    fHistos_OmMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    if(fisMC) fHistos_OmMin->CreateTH2("h2_gen", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    if(fisMC) fHistos_OmPlu->CreateTH2("h2_gen", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins, fcentbinning);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins, fcentbinning);
+    if(fisMC) fHistos_OmMin->CreateTH2("h2_gen", "", fnptbins[kOm], fptbinning[kOm], fncentbins, fcentbinning);
+    if(fisMC) fHistos_OmPlu->CreateTH2("h2_gen", "", fnptbins[kOm], fptbinning[kOm], fncentbins, fcentbinning);
   }
   if (!fDefOnly && (fParticleAnalysisStatus[kxip] || fParticleAnalysisStatus[komp])) {
     for (int icut=0; icut<kCasccutsnum; icut++) {
       if (icut==kCasc_y || icut==kCasc_etaDaugh) continue;
       for (int ivar = 0; ivar<nvarcut_Casc[icut]; ivar++) {
         if (fParticleAnalysisStatus[kxip]) {
-          if(icut!=kCasc_PropLifetOm) fHistos_XiMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-          if(icut!=kCasc_PropLifetOm) fHistos_XiPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+          if(icut!=kCasc_PropLifetOm) fHistos_XiMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins, fcentbinning);
+          if(icut!=kCasc_PropLifetOm) fHistos_XiPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins, fcentbinning);
         }
         if (fParticleAnalysisStatus[komp]) {
-          if(icut!=kCasc_PropLifetXi) fHistos_OmMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-          if(icut!=kCasc_PropLifetXi) fHistos_OmPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+          if(icut!=kCasc_PropLifetXi) fHistos_OmMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins, fcentbinning);
+          if(icut!=kCasc_PropLifetXi) fHistos_OmPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins, fcentbinning);
         }
       }
     }
@@ -378,6 +384,8 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   //fEventCuts Setup
   if (fRejectPileupEvts) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
 
+  //geometrical cut Setup
+  fESDTrackCuts.SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
   //Output posting
   DataPosting();
 
@@ -527,8 +535,14 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
           else isOOBpileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i_MCtrk, header, MCTrackArray);
       if(!lPart || lPart->Y()<-0.5 || lPart->Y()>0.5 || !lPart->IsPhysicalPrimary() || isOOBpileup) continue;
       if(fParticleAnalysisStatus[kk0s] && lPart->PdgCode()==310   ) fHistos_K0S->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-      if(fParticleAnalysisStatus[klam] && lPart->PdgCode()==3122  ) fHistos_Lam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-      if(fParticleAnalysisStatus[kalam]&& lPart->PdgCode()==-3122 ) fHistos_ALam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
+      if(fParticleAnalysisStatus[klam]                            ) {
+        if(lPart->PdgCode()==3122) fHistos_Lam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
+        if(lPart->PdgCode()==3312) fHistos_Lam->FillTH2("h2_FDmtxDEN",lPart->Pt(),lPercentile);
+      }
+      if(fParticleAnalysisStatus[kalam]                           ) {
+        if(lPart->PdgCode()==-3122) fHistos_ALam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
+        if(lPart->PdgCode()==-3312) fHistos_ALam->FillTH2("h2_FDmtxDEN",lPart->Pt(),lPercentile);
+      }
       if(fParticleAnalysisStatus[kxim] && lPart->PdgCode()==3312  ) fHistos_XiMin->FillTH2("h2_gen",lPart->Pt(),lPercentile);
       if(fParticleAnalysisStatus[kxip] && lPart->PdgCode()==-3312 ) fHistos_XiPlu->FillTH2("h2_gen",lPart->Pt(),lPercentile);
       if(fParticleAnalysisStatus[komm] && lPart->PdgCode()==3334  ) fHistos_OmMin->FillTH2("h2_gen",lPart->Pt(),lPercentile);
@@ -618,10 +632,9 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double_t lCrosRawsOvFNeg = lCrosRawsNeg / ((double) (nTrack->GetTPCNclsF()));
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
-        //clusters for TPC PID
-        double_t lTPCclsPos = pTrack->GetTPCsignalN();
-        double_t lTPCclsNeg = nTrack->GetTPCsignalN();
-        fV0_LeastTPCcls = (int) TMath::Min(lTPCclsPos, lTPCclsNeg);
+        //track length cut
+        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>50 && nTrack->GetTPCsignalN()>50) ? 1 : 0;
+        if (fESDTrackCuts.AcceptTrack(pTrack) && fESDTrackCuts.AcceptTrack(nTrack)) fV0_TrackLengthCut = fV0_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
         double_t lChi2perTPCclsPos = pTrack->GetTPCchi2()/pTrack->GetNcls(1);
@@ -659,8 +672,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_PosTrackStatus = pTrack->GetStatus();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-        fV0_ITSTOFtracks = 0;
-        if((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
+        fV0_ITSTOFtracks = ((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fV0_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
 
         //MC association
@@ -680,7 +692,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
             int pdg_xi = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->PdgCode();
             double rap_xi = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Y();
             if(pdg_xi==3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = -((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
-              else if(pdg_xi==-3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
+            else if(pdg_xi==-3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
           }
         }
       } else {
@@ -729,10 +741,9 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double_t lCrosRawsOvFNeg = lCrosRawsNeg/((double) (nTrack->GetTPCNclsF()));
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
-        //clusters for TPC PID
-        double_t lTPCclsPos = pTrack->GetTPCsignalN();
-        double_t lTPCclsNeg = nTrack->GetTPCsignalN();
-        fV0_LeastTPCcls = (int) TMath::Min(lTPCclsPos, lTPCclsNeg);
+        //track length cut
+        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>50 && nTrack->GetTPCsignalN()>50) ? 1 : 0;
+        if (fESDTrackCuts.AcceptVTrack(pTrack) && fESDTrackCuts.AcceptVTrack(nTrack)) fV0_TrackLengthCut = fV0_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
         double_t lChi2perTPCclsPos = pTrack->GetTPCchi2perCluster();
@@ -766,8 +777,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_PosTrackStatus = pTrack->GetStatus();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-        fV0_ITSTOFtracks = 0;
-        if((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
+        fV0_ITSTOFtracks = ((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fV0_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
         
         if(fisMC){
@@ -787,7 +797,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
             int pdg_xi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->GetPdgCode();
             double rap_xi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Y();
             if(pdg_xi==3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = -((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
-              else if(pdg_xi==-3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
+            else if(pdg_xi==-3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
           }
         }
       }
@@ -801,11 +811,8 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         if(fisMC){
           //Feeddown matrix filling
           //numerator
-          if ( fdmtx_ptxi<0  && ApplyCuts(klam)) fHistos_Lam->FillTH3("h3_FDmtxNUM_def", fV0_Pt, TMath::Abs(fdmtx_ptxi), lPercentile);
-          else if( fdmtx_ptxi>0 && ApplyCuts(kalam)) fHistos_ALam->FillTH3("h3_FDmtxNUM_def", fV0_Pt, TMath::Abs(fdmtx_ptxi), lPercentile);
-          //denominator
-          if ( assFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH2("h2_FDmtxDEN_def", TMath::Abs(fdmtx_ptxi), lPercentile);
-          if ( assFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH2("h2_FDmtxDEN_def", TMath::Abs(fdmtx_ptxi), lPercentile);
+          if ( fdmtx_ptxi<-0.001 && assFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH3("h3_FDmtxNUM_def", fV0_Pt, TMath::Abs(fdmtx_ptxi), lPercentile);
+          else if( fdmtx_ptxi>0.001 && assFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH3("h3_FDmtxNUM_def", fV0_Pt, TMath::Abs(fdmtx_ptxi), lPercentile);
         }
       }
 
@@ -877,11 +884,9 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double lCrosRawsOvFBac = lCrosRawsBac/((double) (bTrackCasc->GetTPCNclsF()));
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
-        //clusters for TPC PID
-        double_t lTPCclsPos = pTrackCasc->GetTPCsignalN();
-        double_t lTPCclsNeg = nTrackCasc->GetTPCsignalN();
-        double_t lTPCclsBac = bTrackCasc->GetTPCsignalN();
-        fCasc_LeastTPCcls = (int) (lTPCclsPos<lTPCclsNeg ? std::min(lTPCclsPos, lTPCclsBac) : std::min(lTPCclsNeg, lTPCclsBac));
+        //track length cut
+        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>50 && nTrackCasc->GetTPCsignalN()>50 && bTrackCasc->GetTPCsignalN()>50) ? 1 : 0;
+        if (fESDTrackCuts.AcceptTrack(pTrackCasc) && fESDTrackCuts.AcceptTrack(nTrackCasc) && fESDTrackCuts.AcceptTrack(bTrackCasc)) fCasc_TrackLengthCut = fCasc_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
         double_t lChi2perTPCclsPos = pTrackCasc->GetTPCchi2()/pTrackCasc->GetNcls(1);
@@ -910,8 +915,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_BacTrackStatus = bTrackCasc->GetStatus();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-        fCasc_ITSTOFtracks = 0;
-        if((fCasc_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
+        fCasc_ITSTOFtracks = ((fCasc_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fCasc_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
         if((fCasc_BacTrackStatus & AliESDtrack::kITSrefit) || (bTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
 
@@ -1016,11 +1020,9 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double lCrosRawsOvFBac = lCrosRawsBac / ((double)(bTrackCasc->GetTPCNclsF()));
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
-        //clusters for TPC PID
-        double_t lTPCclsPos = pTrackCasc->GetTPCsignalN();
-        double_t lTPCclsNeg = nTrackCasc->GetTPCsignalN();
-        double_t lTPCclsBac = bTrackCasc->GetTPCsignalN();
-        fCasc_LeastTPCcls = (int) (lTPCclsPos<lTPCclsNeg ? std::min(lTPCclsPos, lTPCclsBac) : std::min(lTPCclsNeg, lTPCclsBac));
+        //track length cut
+        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>50 && nTrackCasc->GetTPCsignalN()>50 && bTrackCasc->GetTPCsignalN()>50) ? 1 : 0;
+        if (fESDTrackCuts.AcceptVTrack(pTrackCasc) && fESDTrackCuts.AcceptVTrack(nTrackCasc) && fESDTrackCuts.AcceptVTrack(bTrackCasc)) fCasc_TrackLengthCut = fCasc_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
         double_t lChi2perTPCclsPos = pTrackCasc->GetTPCchi2perCluster();
@@ -1046,8 +1048,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_BacTrackStatus = bTrackCasc->GetStatus();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-        fCasc_ITSTOFtracks = 0;
-        if((fCasc_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
+        fCasc_ITSTOFtracks = ((fCasc_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fCasc_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
         if((fCasc_BacTrackStatus & AliESDtrack::kITSrefit) || (bTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
 
@@ -1109,6 +1110,15 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         }
       }
 
+      // Apply parametric TrackLengthCut cut, if requested
+      if (fisParametricTrackLengthCut) {
+        if (lPercentile>=fHist_CentTrackLengthCut->GetXaxis()->GetXmin() && lPercentile<=fHist_CentTrackLengthCut->GetXaxis()->GetXmax()) {
+          SetCutVal(kFALSE, kTRUE, kCasc_TrackLengthCut, fHist_CentTrackLengthCut->GetBinContent(fHist_CentTrackLengthCut->GetXaxis()->FindBin(lPercentile)));
+        } else {
+          SetCutVal(kFALSE, kTRUE, kCasc_TrackLengthCut, fCasc_Cuts[kCasc_TrackLengthCut]);
+        }
+      }
+
       //fills TH3 with default cuts
       if (fParticleAnalysisStatus[kxip]) {
         if( physprim && assFlag[kxim] && ApplyCuts(kxim)) fHistos_XiMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
@@ -1154,6 +1164,13 @@ void AliAnalysisTaskStrVsMult::SetParametricBacBarCosPA(int nbins, float *ptbins
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskStrVsMult::SetParametricTrackLengthCut(int nbins, float *centbins, int *values) {
+  fisParametricTrackLengthCut = kTRUE;
+  fHist_CentTrackLengthCut = new TH1I("", "", nbins, centbins);
+  for (int iBin=1; iBin<=nbins; iBin++) fHist_CentTrackLengthCut->SetBinContent(iBin, values[iBin-1]);
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskStrVsMult::SetDefCutVals() {
   //V0 part
   if (fParticleAnalysisStatus[kk0s] || fParticleAnalysisStatus[klam]) {
@@ -1189,9 +1206,10 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kFALSE, kV0_DcaNegToPV, 11, 0.10, 0.13);
   SetCutVariation(kFALSE, kV0_V0CosPA, 11, 0.95, 0.999);
   SetCutVariation(kFALSE, kV0_V0Rad, 11, 0.9, 1.3);
+  SetCutVariation(kFALSE, kV0_MaxV0Rad, 5, 45., 125.);
   SetCutVariation(kFALSE, kV0_LeastCRaws, 11, 60, 80);
   SetCutVariation(kFALSE, kV0_LeastCRawsOvF, 11, 0.75, 0.90);
-  SetCutVariation(kFALSE, kV0_LeastTPCcls, 5, 40, 60);
+  SetCutVariation(kFALSE, kV0_TrackLengthCut, 4, 0, 3);
   SetCutVariation(kFALSE, kV0_NSigPID, 6, 2, 7);
   SetCutVariation(kFALSE, kV0_PropLifetK0s, 11, 10, 40);
   SetCutVariation(kFALSE, kV0_PropLifetLam, 11, 10, 40);
@@ -1203,7 +1221,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kTRUE, kCasc_NSigPID, 6, 2, 7);
   SetCutVariation(kTRUE, kCasc_LeastCRaws, 11, 70, 90);
   SetCutVariation(kTRUE, kCasc_LeastCRawsOvF, 11, 0.75, 0.9);
-  SetCutVariation(kTRUE, kCasc_LeastTPCcls, 5, 40, 60);
+  SetCutVariation(kTRUE, kCasc_TrackLengthCut, 4, 0, 3);
   SetCutVariation(kTRUE, kCasc_InvMassLam, 5, 0.002, 0.006);
   SetCutVariation(kTRUE, kCasc_DcaV0Daught, 10, 0.5, 1.4);
   SetCutVariation(kTRUE, kCasc_V0CosPA, 21, 0.95, 0.999);
@@ -1213,6 +1231,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kTRUE, kCasc_PropLifetXi, 7, 2, 5);
   SetCutVariation(kTRUE, kCasc_PropLifetOm, 7, 2, 5);
   SetCutVariation(kTRUE, kCasc_V0Rad, 11, 1., 5.);
+  SetCutVariation(kTRUE, kCasc_MaxV0Rad, 5, 45., 125.);
   SetCutVariation(kTRUE, kCasc_DcaMesToPV, 11, 0.1, 0.3);
   SetCutVariation(kTRUE, kCasc_DcaBarToPV, 11, 0.1, 0.3);
   SetCutVariation(kTRUE, kCasc_BacBarCosPA, 10, 0.999, 0.99999);
@@ -1236,8 +1255,9 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if (fV0_LeastCRaws<cutval_V0[kV0_LeastCRaws]) return kFALSE;
     // check candidate daughters' crossed TPC raws over findable
     if (fV0_LeastCRawsOvF<cutval_V0[kV0_LeastCRawsOvF]) return kFALSE;
-    // check candidate daughters' TPC clusters (note that the checked value is the lowest between the two daughters)
-    if (fV0_LeastTPCcls<cutval_V0[kV0_LeastTPCcls]) return kFALSE;
+    // check candidate daughters' TPC clusters or/and apply geometrical cut
+    if (fV0_TrackLengthCut<cutval_V0[kV0_TrackLengthCut]-0.1) return kFALSE;
+    if (TMath::Abs(cutval_V0[kV0_TrackLengthCut]-1)<0.1 && fV0_TrackLengthCut==2) return kFALSE;
     // check candidate daughters' Chi^2 per TPC cluster
     if (fV0_MaxChi2perCls>cutval_V0[kV0_MaxChi2perCls]) return kFALSE;
     // check candidate daughters' DCA to Primary Vertex (needs to be large because V0 decay is far from the Primary Vertex)
@@ -1246,6 +1266,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if (fV0_DcaV0Daught>cutval_V0[kV0_DcaV0Daught]) return kFALSE;
     // check candidate's 2D decay distance from PV (if it is too small, then it's not a weak decay)
     if (fV0_V0Rad<cutval_V0[kV0_V0Rad]) return kFALSE;
+    if (fV0_V0Rad>cutval_V0[kV0_MaxV0Rad]) return kFALSE;
     // check the cosine of the Pointing Angle (angle between candidate's momentum and vector connecting Primary and secondary vertices)
     if (fV0_V0CosPA<cutval_V0[kV0_V0CosPA]) return kFALSE;
     // check PID for all daughters (particle hypothesis' dependent)
@@ -1256,7 +1277,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if ((part==kk0s) && (0.497*fV0_DistOverTotP>cutval_V0[kV0_PropLifetK0s])) return kFALSE;
     if ((part>kk0s) && (1.115683*fV0_DistOverTotP>cutval_V0[kV0_PropLifetLam])) return kFALSE;
     // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-    if (fV0_ITSTOFtracks<cutval_V0[kV0_ITSTOFtracks]) return kFALSE;
+    if (fV0_ITSTOFtracks<cutval_V0[kV0_ITSTOFtracks]-0.1) return kFALSE;
     // TPC refit, should be already verified for Offline V0s
     if (!(fV0_PosTrackStatus & AliESDtrack::kTPCrefit) || !(fV0_NegTrackStatus & AliESDtrack::kTPCrefit)) return kFALSE;
     // check that none of daughters is a kink
@@ -1275,14 +1296,16 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if(fCasc_LeastCRaws<cutval_Casc[kCasc_LeastCRaws]) return kFALSE;
     // check candidate daughters' crossed TPC raws over findable
     if(fCasc_LeastCRawsOvF<cutval_Casc[kCasc_LeastCRawsOvF]) return kFALSE;
-    // check candidate daughters' TPC clusters
-    if(fCasc_LeastTPCcls<cutval_Casc[kCasc_LeastTPCcls]) return kFALSE;
+    // check candidate daughters' TPC clusters or/and apply geometrical cut
+    if (fCasc_TrackLengthCut<cutval_Casc[kCasc_TrackLengthCut]-0.1) return kFALSE;
+    if (TMath::Abs(cutval_Casc[kCasc_TrackLengthCut]-1)<0.1 && fCasc_TrackLengthCut==2) return kFALSE;
     // check candidate daughters' Chi^2 per TPC cluster
     if(fCasc_MaxChi2perCls>cutval_Casc[kCasc_MaxChi2perCls]) return kFALSE;
     // check candidate's 2D decay distance from PV (if it is too small, then it's not a weak decay)
     if(fCasc_CascRad<cutval_Casc[kCasc_CascRad]) return kFALSE;
-    // check candidate V0 daughter's 2D decay distance from PV (if it is too small, then it's not a weak decay)
+    // check candidate V0 daughter's 2D decay distance from PV (if it is too small, then it's not a weak decay, if it's too large, then Lambda decays in the TPC)
     if(fCasc_V0Rad<cutval_Casc[kCasc_V0Rad]) return kFALSE;
+    if(fCasc_V0Rad>cutval_Casc[kCasc_MaxV0Rad]) return kFALSE;
     // check the cosine of the Pointing Angle for both cascade and V0 (angle between candidate's momentum and vector connecting Primary and secondary vertices)
     if(fCasc_CascCosPA<cutval_Casc[kCasc_CascCosPA]) return kFALSE;
     if(fCasc_V0CosPA<cutval_Casc[kCasc_V0CosPA]) return kFALSE;
@@ -1301,7 +1324,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     // check that none of daughters is a kink
     if(fCasc_kinkidx>0) return kFALSE;
     // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-    if (fCasc_ITSTOFtracks<cutval_Casc[kCasc_ITSTOFtracks]) return kFALSE;
+    if (fCasc_ITSTOFtracks<cutval_Casc[kCasc_ITSTOFtracks]-0.1) return kFALSE;
     // TPC refit, should be already verified for Offline V0s
     if(!(fCasc_PosTrackStatus & AliESDtrack::kTPCrefit) ||
        !(fCasc_NegTrackStatus & AliESDtrack::kTPCrefit) ||
@@ -1338,10 +1361,10 @@ bool AliAnalysisTaskStrVsMult::GetParticleAnalysisStatus(int part) {
   return fParticleAnalysisStatus[part];
 }
 
-void AliAnalysisTaskStrVsMult::SetCentbinning(int ipart, int numcentbins, double *centbins) {
-  fncentbins[ipart] = numcentbins;
-  for(int i=0; i<fncentbins[ipart]+1; i++) {
-    fcentbinning[ipart][i] = centbins[i];
+void AliAnalysisTaskStrVsMult::SetCentbinning(int numcentbins, double *centbins) {
+  fncentbins = numcentbins;
+  for(int i=0; i<fncentbins+1; i++) {
+    fcentbinning[i] = centbins[i];
   }
 }
 
@@ -1410,11 +1433,8 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
             if (fisMC) {
               //Feeddown matrix filling
               //numerator
-              if (ptassxi<0 && ApplyCuts(klam)) fHistos_Lam->FillTH3(Form("h3_FDmtxNUM[%d][%d]", i_cut, i_var), fV0_Pt, TMath::Abs(ptassxi), perc);
-              else if (ptassxi>0 && ApplyCuts(kalam)) fHistos_ALam->FillTH3(Form("h3_FDmtxNUM[%d][%d]", i_cut, i_var), fV0_Pt, TMath::Abs(ptassxi), perc);
-              //denominator
-              if (associFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH2(Form("h2_FDmtxDEN[%d][%d]", i_cut, i_var), TMath::Abs(ptassxi), perc);
-              if (associFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH2(Form("h2_FDmtxDEN[%d][%d]", i_cut, i_var), TMath::Abs(ptassxi), perc);
+              if (ptassxi<-0.001 && associFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH3(Form("h3_FDmtxNUM[%d][%d]", i_cut, i_var), fV0_Pt, TMath::Abs(ptassxi), perc);
+              else if (ptassxi>0.001 && associFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH3(Form("h3_FDmtxNUM[%d][%d]", i_cut, i_var), fV0_Pt, TMath::Abs(ptassxi), perc);
             }
           }
         }
@@ -1430,6 +1450,13 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
             SetCutVal(kFALSE, kTRUE, kCasc_BacBarCosPA, fHist_PtBacBarCosPA->GetBinContent(fHist_PtBacBarCosPA->GetXaxis()->FindBin(fCasc_Pt)));
           } else {
             SetCutVal(kFALSE, kTRUE, kCasc_BacBarCosPA, fCasc_Cuts[kCasc_BacBarCosPA]);
+          }
+        }
+        if (fisParametricTrackLengthCut && i_cut!=kCasc_TrackLengthCut) {
+          if (perc>=fHist_CentTrackLengthCut->GetXaxis()->GetXmin() && perc<=fHist_CentTrackLengthCut->GetXaxis()->GetXmax()) {
+            SetCutVal(kFALSE, kTRUE, kCasc_TrackLengthCut, fHist_CentTrackLengthCut->GetBinContent(fHist_CentTrackLengthCut->GetXaxis()->FindBin(perc)));
+          } else {
+            SetCutVal(kFALSE, kTRUE, kCasc_TrackLengthCut, fCasc_Cuts[kCasc_TrackLengthCut]);
           }
         }
         //Xi filling

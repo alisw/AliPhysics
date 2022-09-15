@@ -104,7 +104,8 @@ class AliMCSpectraWeights : public TNamed {
                                   factors  moved down*/
     AliMCEvent* fMCEvent;     /*!< MC event */
     int         fNPrimaries;   /*!< MC primaries from last event*/
-    float fMultOrCent;        /*!< counted multiplicity or centrality class */
+    float fMultOrCent;        /*!< counted multiplicity */
+    int fMultClass;           /*!< counted  centrality class */
     int fNPartTypes;          /*!< number of particle species */
     int fNCentralities;       /*!< number of selected centrality classes */
     int fNSysFlags;           /*!< number of all systematic flags */
@@ -115,6 +116,7 @@ class AliMCSpectraWeights : public TNamed {
     bool fUseMBFractions;     /*!< switch to use MB fractions instead of mult.
                                  dependent ones*/
     bool fDoSystematics;
+    bool fDoInterpolation;    
 
     // functions
     // intern getter
@@ -139,7 +141,7 @@ class AliMCSpectraWeights : public TNamed {
     
 
     int const CheckAndIdentifyParticle(TParticle* part);
-    int const FindBinEntry(float pt, int const part);
+    std::vector<int> const FindBinEntry(float pt, int const part);
     
     // private = to be deleted
     AliMCSpectraWeights(const AliMCSpectraWeights&);//copy
@@ -156,23 +158,35 @@ class AliMCSpectraWeights : public TNamed {
 
     void Init(); /*!< Function to start initalizing after all setters are made. */
     float const
-    GetMCSpectraWeight(TParticle* mcGenParticle,
+    GetMCSpectraWeight(Int_t mcGenParticle,
                        AliMCEvent* mcEvent); /*!< old; should not be used */
+
+    float const
+    GetMCSpectraWeight(Int_t mcGenParticle,
+                       Int_t SysCase=0); /*!< way to go; SysCase = 0 --> nominal; -1 --> sys. moved down; +1 --> sys. moved up */
 
     float const
     GetMCSpectraWeight(TParticle* mcGenParticle,
                        Int_t SysCase=0); /*!< way to go; SysCase = 0 --> nominal; -1 --> sys. moved down; +1 --> sys. moved up */
 
     float const
-    GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
+    GetMCSpectraWeightNominal(Int_t mcGenParticle);/*!< main function to use. Will
                                                          deliver correct weights to
                                                          re-weight the abundances of
                                                          different particle species */
     float const
+    GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
+                                                    deliver correct weights to
+                                                    re-weight the abundances of
+                                                    different particle species */
+
+    float const
+    GetMCSpectraWeightSystematics(Int_t mcGenParticle, Int_t SysCase = 1);
+    float const
     GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int_t SysCase = 1);
 
-    int const IdentifySecondaryType(TParticle* part);
-    float const GetWeightForSecondaryParticle(TParticle* mcGenParticle, Int_t SysCase=0);
+    int const IdentifySecondaryType(Int_t partLabel);
+    float const GetWeightForSecondaryParticle(Int_t partLabel, Int_t SysCase=0);
 
     void FillMCSpectra(
         AliMCEvent* mcEvent); /*!< function to fill internal mc spectra for
@@ -195,6 +209,7 @@ class AliMCSpectraWeights : public TNamed {
         }
     }
     void SetDoSystematics(bool doSys = true) { fDoSystematics = doSys; }
+    void SetDoInterpolation(bool doInter = true) {fDoInterpolation = doInter;}
 
     // Getter
     std::vector<std::string> const GetParticleTypes() const {return fstPartTypes;}

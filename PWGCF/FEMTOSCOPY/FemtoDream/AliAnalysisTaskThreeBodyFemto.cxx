@@ -2142,9 +2142,7 @@ bool AliAnalysisTaskThreeBodyFemto::DeltaEtaDeltaPhi(
         dphiAvg += dphi;
       }
       if(fRunPlotPhiTheta){
-        if(Q3<fQ3LimitForDeltaPhiDeltaEta){
-          beforeHist->Fill(dphiAvg/ (float) size, deta);
-        }
+        beforeHist->Fill(dphiAvg/ (float) size, deta);
       }
       if (pass) {
         if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / fDeltaPhiSqMax
@@ -2153,9 +2151,7 @@ bool AliAnalysisTaskThreeBodyFemto::DeltaEtaDeltaPhi(
         }
         else{
           if(fRunPlotPhiTheta){
-            if(Q3<fQ3LimitForDeltaPhiDeltaEta){
-              afterHist->Fill(dphiAvg/ (float) size, deta);
-            }
+            afterHist->Fill(dphiAvg/ (float) size, deta);
           }
         }
       }

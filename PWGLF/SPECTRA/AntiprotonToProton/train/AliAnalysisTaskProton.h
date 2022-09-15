@@ -151,11 +151,7 @@ class AliAnalysisTaskProton : public AliAnalysisTaskSE {
 	TH3F		*gHistFieldProtonsCentPt;
 	TH3F		*gHistFieldAntiProtonsCentPt;
 
-	TH3F		*gHistFieldProtonsLengthPt;
-	TH3F		*gHistFieldAntiProtonsLengthPt;
 
-	TH3F		*gHistProtonsLengthCentPt;
-	TH3F		*gHistAntiProtonsLengthCentPt;
 
 		
 
