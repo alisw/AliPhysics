@@ -1674,8 +1674,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				///////-----Identify Non-HFE////////////////////////////
 				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt,DCA[0],Bsign,iIsocut,fFlagZee);
                                 Double_t weta = fWeightEtaZee->Eval(Eta_Z); 
-                                if(iIsocut && TMath::Abs(pdgorg)==23)fHistZeRec0->Fill(TrkPt,weta);
-                                if(iIsocut && TMath::Abs(pdgorg)==23 && fFlagZee)fHistZeRec1->Fill(TrkPt,weta);
+                                if(iIsocut && track->Charge()<0 && TMath::Abs(pdgorg)==23)fHistZeRec0->Fill(TrkPt,weta); // positron eta bias in LHC22f2
+                                if(iIsocut && track->Charge()<0 && TMath::Abs(pdgorg)==23 && fFlagZee)fHistZeRec1->Fill(TrkPt,weta);
 				//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD);
 				if(fFlagIsolation)
                                     {
