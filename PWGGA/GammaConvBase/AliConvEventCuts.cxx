@@ -6438,7 +6438,14 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
   Bool_t mimickedTrigger = kTRUE;
-  if (fMimicTrigger) mimickedTrigger = MimicTrigger(event, isMC);
+  if (fMimicTrigger)
+    if(isMC){
+      mimickedTrigger = MimicTrigger(event, isMC);
+    } else {
+      // For data we only check the trigger decision in case the event is already selected. 
+      // Otherwise it can happen that the trigger decision container is not there which will lead to a crash
+      if(isSelected) mimickedTrigger = MimicTrigger(event, isMC);
+    }
   // cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
 
   Bool_t isINELgtZERO = kFALSE;
