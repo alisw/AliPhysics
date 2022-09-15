@@ -138,7 +138,7 @@ void AliMESpp13::UserCreateOutputObjects()
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *lTrackCuts(NULL);
   lTrackCuts = new AliESDtrackCuts("trkCuts", "Track Cuts");
-  lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 1); // kTRUE for primaries
+  lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE, 1); // kTRUE for primaries
   fTrackFilter->AddCuts(lTrackCuts);
 
   fTree = ((*fTreeSRedirector) << "ev").GetTree();
@@ -412,13 +412,13 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     if (!HasMCdata())
     {
       (*fTreeSRedirector) << "ev"
-                          << "run=" << run
+                          // << "run=" << run
                           << "MultComb08=" << fMultComb08
                           << "MultSPDtrk08=" << fMultSPDtrk08
-                          << "V0M=" << fV0M
+                          // << "V0M=" << fV0M
                           << "Sphericity=" << fSphericity
                           << "Pt=" << fPt
-                          << "Eta=" << fEta
+                          // << "Eta=" << fEta
                           // << "Phi=" << fPhi.at(i)
                           // << "Charge=" << fCharge.at(i)
                           // << "DeltaPhi=" << fDeltaPhi.at(i)
@@ -697,27 +697,27 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     if (!fTreeSRedirector)
       return;
     (*fTreeSRedirector) << "ev"
-                        << "run=" << run
+                        // << "run=" << run
                         << "MultComb08=" << fMultComb08
                         << "MultSPDtrk08=" << fMultSPDtrk08
-                        << "V0M=" << fV0M
+                        // << "V0M=" << fV0M
                         << "Sphericity=" << fSphericity
                         << "Pt=" << fPt
-                        << "Eta=" << fEta
+                        // << "Eta=" << fEta
                         // << "Phi=" << fPhi.at(i)
                         // << "DeltaPhi=" << fDeltaPhi.at(i)
                         // << "DeltaEta=" << fDeltaEta.at(i)
                         // << "Charge=" << fCharge.at(i)
-                        // << "DCAxy=" << fDCAxy.at(i)
-                        // << "PassDCA=" << fPassDCA.at(i)
+                        << "DCAxy=" << fDCAxy
+                        << "PassDCA=" << fPassDCA
                         << "Mult08=" << fMult08_MC
-                        << "V0M_MC=" << fV0M_MC
+                        // << "V0M_MC=" << fV0M_MC
                         << "Sphericity_MC=" << fSphericity_MC
-                        << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
-                        << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
+                        // << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
+                        // << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
                         << "Pt_MC=" << fPt_MC
                         // << "Phi_MC=" << fPhi_MC.at(i)
-                        << "Eta_MC=" << fEta_MC
+                        // << "Eta_MC=" << fEta_MC
                         // << "DeltaPhi_MC=" << fDeltaPhi_MC.at(i)
                         // << "DeltaEta_MC=" << fDeltaEta_MC.at(i)
                         // << "Charge_MC=" << fCharge_MC.at(i)
@@ -859,18 +859,18 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     {
       fDeltaEta_Gen = fEtaLP_Gen - fEta_Gen;
     }
-    if (!fTreeSRedirector)
-      return;
-    (*fTreeSRedirector) << "genTrk"
-                        << "Mult08=" << fMult08_MC
-                        << "Sphericity_MC=" << fSphericity_MC
-                        << "Pt_Gen=" << fPt_Gen
-                        //                     << "Charge_Gen=" << fCharge_Gen
-                        << "Eta_Gen=" << fEta_Gen
-                        // << "Phi_Gen=" << fPhi_Gen
-                        // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
-                        // << "DeltaEta_Gen=" << fDeltaEta_Gen
-                        << "\n";
+    // if (!fTreeSRedirector)
+    //   return;
+    // (*fTreeSRedirector) << "genTrk"
+    //                     // << "Mult08=" << fMult08_MC
+    //                     // << "Sphericity_MC=" << fSphericity_MC
+    //                     // << "Pt_Gen=" << fPt_Gen
+    //                     // //                     << "Charge_Gen=" << fCharge_Gen
+    //                     // << "Eta_Gen=" << fEta_Gen
+    //                     // << "Phi_Gen=" << fPhi_Gen
+    //                     // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
+    //                     // << "DeltaEta_Gen=" << fDeltaEta_Gen
+    //                     << "\n";
     // new ((*fMCGenTracksIO)[j++]) AliMEStrackInfo(*tMC);
   }
 
