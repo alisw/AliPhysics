@@ -2989,12 +2989,11 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
          UInt_t selectDebug = 0;
          if (!fUseHybridTracks && trackFilter)
          {
-            selectDebug = fTrackFilter[i]->IsSelected(part);
+            selectDebug = trackFilter->IsSelected(part);
             if (!selectDebug)
             {
                continue;
             }
-
             fCTSTracks->Add(part);
             fPhiDistributionGlobalTracks->Fill(part->Phi());
             if (!part) continue;
