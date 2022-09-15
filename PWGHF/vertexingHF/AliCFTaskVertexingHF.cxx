@@ -262,7 +262,6 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(3,THnSparseD::Class());
   DefineOutput(4,AliRDHFCuts::Class());
   for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
-  for (Int_t i = 0; i < 18; i++) {fTrackFilter[i] = 0;}
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
   DefineOutput(6,TList::Class());
   fCuts->PrintAll();
@@ -2988,7 +2987,7 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
       for ( Int_t i = 0; i < 1; i++)
       {
          UInt_t selectDebug = 0;
-         if (!fUseHybridTracks && fTrackFilter[i])
+         if (!fUseHybridTracks && trackFilter)
          {
             selectDebug = fTrackFilter[i]->IsSelected(part);
             if (!selectDebug)
