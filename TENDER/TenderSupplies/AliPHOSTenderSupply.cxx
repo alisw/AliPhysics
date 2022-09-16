@@ -1576,6 +1576,9 @@ void AliPHOSTenderSupply::TCardEmulation(AliAODCaloCells * cells){
       int dphi=TMath::Abs(relidTest[2]-relid[2]) ;
       float dAmp = InducedAmpTCard(amp,dphi) ;
       cells->GetCell(test, cellNumber, amplitude, time, mclabel, efrac);
+      if(dAmp<-amplitude){
+        dAmp=-amplitude+0.0001;   
+      }
       amplitude+=dAmp ;
       isHG = cells->GetHighGain(test);
       dE+=dAmp ;
