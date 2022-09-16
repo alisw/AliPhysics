@@ -289,7 +289,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		AliTHn*                      fhChargedSE;            //!
 		AliTHn*                      fhChargedME;            //!
 		AliEventPoolManager*         fPoolMgr;               //!  event pool manager for Event Mixing
-		TH2D*                        fhTracksTrigPt;         //! Trigger particle histogram
+		TH2D*                        fhTracksTrigCent;       //! Trigger particle histogram
 
 		// Global variables
 		TRandom3 rand;                 //!
