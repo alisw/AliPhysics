@@ -516,8 +516,8 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	fListOfProfile = new TList();
 	fListOfProfile->SetOwner();
 
-	fhTracksTrigPt = new TH2D("fhTrigTracks", "fhTrigTracks; pT (trig); PVz", fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), fzVtxBins.size()-1, fzVtxBins.data());
-	fListOfProfile->Add(fhTracksTrigPt);
+	fhTracksTrigCent = new TH2D("fhTrigTracks", "fhTrigTracks; cent; PVz", sizeCent, fCentBins.data(), fzVtxBins.size()-1, fzVtxBins.data());
+	fListOfProfile->Add(fhTracksTrigCent);
 
 	// mixing
 	fPoolMaxNEvents = 2000;
@@ -1093,7 +1093,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 			if (pt > fPtMinTrig && pt < fPtMaxTrig) {
 				fTracksTrigCharged->Add(track);
 				fNofTracksTrig++; // number of trigger tracks in the event
-				fhTracksTrigPt->Fill(pt, fPVz);
+				fhTracksTrigCent->Fill(NtrksCounter, fPVz);
 			}
 		}
 	} else if (anaType.EqualTo("TPCFMD")) {
@@ -1110,7 +1110,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 			if (pt > fPtMinTrig && pt < fPtMaxTrig) {
 				fTracksTrigCharged->Add(track);
 				fNofTracksTrig++; // number of trigger tracks in the event
-				fhTracksTrigPt->Fill(pt, fPVz);
+				fhTracksTrigCent->Fill(NtrksCounter, fPVz);
 			}
 		}
 
@@ -1159,7 +1159,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 					if (eta > 0) {
 						fTracksTrigCharged->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
 						// Set the pt to 1.0
-						fhTracksTrigPt->Fill(1.0, fPVz, mostProbableN);
+						fhTracksTrigCent->Fill(NtrksCounter, fPVz, mostProbableN);
 					} else {
 						fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
 					}
