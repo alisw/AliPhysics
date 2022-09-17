@@ -127,6 +127,7 @@ fDeltaEtaAcceptanceRNG(0),
 fCentralityWeights(0),
 fCentralityMCGen_V0M(0),
 fCentralityMCGen_CL1(0),
+fCentralityCorrection(0),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -476,7 +477,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
                                         90,  92,  94,  96,  98,  100, 102, 104, 106, 108, 110, 
                                         190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210, 
                                         290, 292, 294, 296, 298, 300, 302, 304, 306, 308, 310, 
-                                        390, 392, 394, 396, 398, 400, 402, 404, 406, 408, 410 };
+                                        390, 392, 394, 396, 398, 400, 402, 404, 406, 408, 410 }; //step 10 in case of centrality correction
 
   Int_t nZvtxBins = kNZvtxBins;
   Double_t* zvtxbin = vertexBins;
@@ -656,7 +657,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (!inputEvent)
     inputEvent = fESD;
 
-  Double_t centrality = GetCentrality(inputEvent, mc);
+  Double_t stepCorrectionCent[2]; // Corrected centrality for step6 and 10 (using fCentralityCorrection histogram)
+  Double_t centrality = GetCentrality(inputEvent, mc, stepCorrectionCent);
+  
+  if(!fCentralityCorrection){
+    stepCorrectionCent[0] = centrality;
+    stepCorrectionCent[1] = centrality;
+  }
 
   Float_t bSign = 0;
 
@@ -678,6 +685,20 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
   if (!fAnalyseUE->VertexSelection(vertexSupplier, 0, fZVertex))
     return;
+
+  if (inputEvent) {
+    // Used to create the centrality correction
+    Int_t referenceMultiplicity;
+    if (!fCentralityCorrection) {
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+      referenceMultiplicity = tracks->GetEntriesFast();
+      delete tracks;
+    }
+    else // Reco centrality already obtained - assume MCGen TRKM in use if centrality correction is enabled
+      referenceMultiplicity = (Int_t) stepCorrectionCent[0];
+
+    ((TH2F*) fListOfHistos->FindObject("referenceMultiplicity"))->Fill(centrality, referenceMultiplicity);
+  }
 
   Float_t zVtx = 0;
   if (fAOD)
@@ -984,54 +1005,67 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // (RECO all tracks)
       // STEP 6
       if (!fSkipStep6)
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight);
+        fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight);
 
       // two track cut, STEP 8 (fill it if at least one two-track cut is on, but skip it on request)
       Bool_t fillStep8 = (!fSkipStep8) && ((fTwoTrackEfficiencyCut > 0) || (fCutConversionsV > 0) || (fCutOnK0sV > 0) ||
                                            (fCutOnLambdaV > 0) || (fCutOnPhiV > 0) || (fCutOnRhoV > 0) || (fCutOnCustomV > 0));
       if (fillStep8)
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
+        fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
 
       // apply correction efficiency, STEP 9 and 10
       if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
 
         // all two track cuts disabled, STEP 9
         if (!fSkipStep9)
-          fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, -1, kTRUE);
+          fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, -1, kTRUE);
 
         // STEP 10
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+        fHistos->FillCorrelations(stepCorrectionCent[1], zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
       }
 
       // mixed event
       if (fFillMixed) {
         for (Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++) {
-          AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100, 0., iPool);
-          ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
-          ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool2->GetCurrentNEvents());
+          AliEventPool* pool2 = fPoolMgr->GetEventPool(stepCorrectionCent[0], zVtx + 100, 0., iPool);
+          ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(stepCorrectionCent[0], pool2->NTracksInPool());
+          ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(stepCorrectionCent[0], pool2->GetCurrentNEvents());
           if (pool2->IsReady()) {
             for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) {
               // STEP 6
               if (!fSkipStep6)
-                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
+                fHistosMixed->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
 
               // two track cut, STEP 8
               if (fillStep8)
-                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
+                fHistosMixed->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
 
               // apply correction efficiency, STEP 9 and 10
               if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
 
                 // all two track cuts disabled, STEP 9
                 if (!fSkipStep9)
-                  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, 0, -1, kTRUE);
+                  fHistosMixed->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, 0, -1, kTRUE);
 
                 // STEP 10
-                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+                if (!fCentralityCorrection) //stepCorrectionCent[1] == stepCorrectionCent[0], can use the same pool
+                  fHistosMixed->FillCorrelations(stepCorrectionCent[1], zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
               }
             }
           }
           pool2->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, pool2->GetPtMin(), pool2->GetPtMax()));
+
+          // If centrality correction is enabled, separate event mixing pool is needed
+          if (fCentralityCorrection && (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)) {
+            AliEventPool* poolStep10 = fPoolMgr->GetEventPool(stepCorrectionCent[1], zVtx + 400, 0., iPool);
+            if (poolStep10->IsReady()) {
+              for (Int_t jMix=0; jMix<poolStep10->GetCurrentNEvents(); jMix++) {
+                // STEP 10
+                fHistosMixed->FillCorrelations(stepCorrectionCent[1], zVtx, AliUEHist::kCFStepCorrected, tracks, poolStep10->GetEvent(jMix), 1.0 / poolStep10->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+              }
+            }
+            poolStep10->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, poolStep10->GetPtMin(), poolStep10->GetPtMax()));
+          }
         }
       }
 
@@ -1043,10 +1077,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
             tracksRecoMatchedSecondaries->Add(tracksRecoMatchedAll->At(i));
 
         // Study: Use only secondaries as trigger particles and plot the correlation vs. all particles; store in step 9
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll, weight);
+        fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll, weight);
 
         // Study: Use only primaries as trigger particles and plot the correlation vs. secondaries; store in step 8
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries, weight);
+        fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries, weight);
 
         // plot delta phi vs process id of secondaries
         // trigger particles: primaries in 4 < pT < 10
@@ -1155,7 +1189,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (!inputEvent)
     inputEvent = fESD;
 
-  Double_t centrality = GetCentrality(inputEvent, 0);
+  Double_t centrality = GetCentrality(inputEvent, 0, 0);
 
   Float_t bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
 
@@ -1431,7 +1465,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracksCorrelate;
 }
 
-Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TObject* mc)
+Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TObject* mc, Double_t* stepCorrectionCent)
 {
   // return centrality
 
@@ -1579,10 +1613,22 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       else if (hepMCHeader)
         centrality = hepMCHeader->impact_parameter();
     }
-    else if (fCentralityMethod == "MCGen_TRACKS_MANUAL") {
+    else if (fCentralityMethod == "MCGen_TRACKS_MANUAL") { // Used for MCGen wagons and TRACKS_MANUAL MC closure tests with centrality correction
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
       centrality = tracks->GetEntriesFast();
       delete tracks;
+      //
+      if(fCentralityCorrection){
+        // For step 6, use reco event
+        TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+        stepCorrectionCent[0] = tracks->GetEntriesFast();
+        delete tracks;
+
+        // For step 10, use corrected centrality
+        Int_t bin = fCentralityCorrection->GetYaxis()->FindBin(stepCorrectionCent[0]);
+        TH1D *pProj = fCentralityCorrection->ProjectionX("proj",bin,bin,"e");
+        stepCorrectionCent[1] = pProj->GetRandom();
+      }
     }
     else if (fCentralityMethod == "MCGen_V0M") {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);

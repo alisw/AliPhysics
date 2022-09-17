@@ -91,6 +91,7 @@ public:
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
   void SetCentralityMCGen_V0M(TH1* hist) { fCentralityMCGen_V0M = hist; }
   void SetCentralityMCGen_CL1(TH1* hist) { fCentralityMCGen_CL1 = hist; }
+  void SetCentralityCorrection(TH2* hist) { fCentralityCorrection = hist; }
   // for event QA
   void SetTracksInVertex(Int_t val) { fnTracksVertex = val; }
   void SetZVertex(Double_t val) { fZVertex = val; }
@@ -198,7 +199,7 @@ private:
   void AnalyseCorrectionMode(); // main algorithm to get correction maps
   void AnalyseDataMode();       // main algorithm to get raw distributions
   void Initialize();            // initialize some common pointer
-  Double_t GetCentrality(AliVEvent* inputEvent, TObject* mc);
+  Double_t GetCentrality(AliVEvent* inputEvent, TObject* mc, Double_t* stepCorrectionCent);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks, Double_t minPt = 0., Double_t maxPt = -1.);
   void RemoveDuplicates(TObjArray* tracks);
   void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
@@ -246,6 +247,7 @@ private:
   TH1* fCentralityWeights;               // for centrality flattening
   TH1* fCentralityMCGen_V0M;             // for centrality from generated MCGen_V0M
   TH1* fCentralityMCGen_CL1;             // for centrality from generated MCGen_CL1
+  TH2* fCentralityCorrection;            // for centrality correction
 
   // Handlers and events
   AliAODEvent*             fAOD;             //! AOD Event
