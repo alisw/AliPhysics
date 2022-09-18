@@ -239,7 +239,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliFJWrapper           fFastJetWrapper;         //!<!fastjet wrapper
 
   static const Int_t     fgkConstIndexShift;      //!<!contituent index shift
-  PWG::Tools::AliYAMLConfiguration fYAMLConfig; //!<! yaml configuration
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< yaml configuration
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers

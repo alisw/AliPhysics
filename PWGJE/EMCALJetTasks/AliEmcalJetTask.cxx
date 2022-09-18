@@ -31,7 +31,6 @@
 #include <TRandom3.h>
 #include <TGrid.h>
 #include <TFile.h>
-#include <TSystem.h>
 
 #include <AliVCluster.h>
 #include <AliVEvent.h>
@@ -53,7 +52,6 @@
 #include "AliEmcalParticleJetConstituent.h"
 
 #include "AliEmcalJetTask.h"
-#include "AliPWGJETrainHelpers.h"
 #include "AliProdInfo.h"
 
 using std::cout;
@@ -288,15 +286,17 @@ Int_t AliEmcalJetTask::FindJets()
             trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
           }
           if(fApplyPtDependentTrackingEfficiency) {
+            // if it exists, centrality-integrated tracking efficiency taken from index 0 
             if(fTrackEfficiencyHistogramVector.at(0) ) {
               trackEfficiency -= (1. - fTrackEfficiencyHistogramVector.at(0)->GetBinContent(fTrackEfficiencyHistogramVector.at(0)->FindBin(it->first.Pt())));
             }
+            // otherwise, tracking efficiency taken from corresponding centrality bin stored in index 1-4
             else {
               if(fTrackEfficiencyHistogramVector.at(fCentBin+1)) {
                 trackEfficiency -= (1. - fTrackEfficiencyHistogramVector.at(fCentBin+1)->GetBinContent(fTrackEfficiencyHistogramVector.at(fCentBin+1)->FindBin(it->first.Pt())));
               }
               else {
-                AliFatal(Form("You're running over centrality (%.0f) for which the pt-dependent tracking uncertainty has not been defined",fCent));
+                AliFatal(TString::Format("You're running over centrality (%.0f) for which the pt-dependent tracking uncertainty has not been defined",fCent).Data());
               }
             }
           }
@@ -445,7 +445,9 @@ void AliEmcalJetTask::ExecOnce()
 
   fYAMLConfig.Reinitialize();
 
-  if(fApplyPtDependentTrackingEfficiency) SetArtificialTrackingEfficiencyFromYAML();
+  if(fApplyPtDependentTrackingEfficiency) {
+    SetArtificialTrackingEfficiencyFromYAML();
+  }
   
   // If a constant artificial track efficiency is supplied, create a TF1 that is constant in pT
   if (fTrackEfficiency < 1.) {
@@ -1105,24 +1107,27 @@ void AliEmcalJetTask::SetArtificialTrackingEfficiencyFromYAML() {
   std::string period = prodInfo.GetAnchorProduction().Data();
   AliInfoStream() << "anchor production = " << prodInfo.GetAnchorProduction()<< "\n";
 
+  // index 0 always corresponds to centrality-integrated tracking efficiencies
+  // index 1-4 corresponds to the centrality bins defined below
+  // the vector entry is set to nullptr if the centralities don't exist in the yaml file
   Double_t centMin[5] = {0,0,10,30,50};
   Double_t centMax[5] = {100,10,30,50,90};
   Int_t count = 0;
   for (Int_t icent = 0; icent <= fNcentBins; icent++) {
-    std::string cent = Form("%.0f_%.0f",centMin[icent],centMax[icent]);
+    std::string cent = TString::Format("%.0f_%.0f",centMin[icent],centMax[icent]).Data();
 
     res = fYAMLConfig.GetProperty({period,cent},trackingUncertainty, false);
     if(res) {
       fTrackEfficiencyHistogram = new TH1D("fTrackEfficiencyHistogram","h",nPtBins,aptBinning);
       for(Int_t i = 0; i < nPtBins; i++) {
         fTrackEfficiencyHistogram->SetBinContent(i+1, trackingUncertainty.at(i));
-        AliDebug(2,Form("pT %f - %f \t track uncertainty: %f", ptBinning.at(i), ptBinning.at(i+1), trackingUncertainty.at(i)));
+        AliDebug(2,TString::Format("pT %f - %f \t track uncertainty: %f", ptBinning.at(i), ptBinning.at(i+1), trackingUncertainty.at(i)).Data());
       }
       fTrackEfficiencyHistogramVector.push_back(fTrackEfficiencyHistogram);
       count++;
     }
     else {
-      fTrackEfficiencyHistogramVector.push_back(NULL);
+      fTrackEfficiencyHistogramVector.push_back(nullptr);
     }
   }
   if(count == 0) {
@@ -1147,7 +1152,7 @@ void AliEmcalJetTask::AddArtificialTrackingEfficiencyConfig() {
   Printf("Get pT-dependent Tracking efficiency from %s", path.c_str());
   int addedConfig = fYAMLConfig.AddConfiguration(path, "yamlConfig");
   if (addedConfig < 0) {
-    AliFatal(Form("YAML Configuration in set path %s not found!",path.c_str()));
+    AliFatal(TString::Format("YAML Configuration in set path %s not found!",path.c_str()).Data());
   }
   fYAMLConfig.Initialize();
 
