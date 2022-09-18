@@ -135,6 +135,8 @@ public:
   void SetCutOnK0s(Float_t cutOnK0s) { fCutOnK0sV = cutOnK0s; }
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetCentralityMethod(const char* method) { fCentralityMethod = method; }
+  void SetCentralityMethodStep6(const char* method) { fCentralityMethodStep6 = method; }
+  void SetCentralityMethodStep10(const char* method) { fCentralityMethodStep10 = method; }
   void SetFillpT(Bool_t flag) { fFillpT = flag; }
   void SetStepsFillSkip(Bool_t step0, Bool_t step6, Bool_t step8 = kFALSE, Bool_t step9 = kTRUE) { fFillOnlyStep0 = step0; fSkipStep6 = step6; fSkipStep8 = step8, fSkipStep9 = step9; }
   void SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
@@ -199,7 +201,7 @@ private:
   void AnalyseCorrectionMode(); // main algorithm to get correction maps
   void AnalyseDataMode();       // main algorithm to get raw distributions
   void Initialize();            // initialize some common pointer
-  Double_t GetCentrality(AliVEvent* inputEvent, TObject* mc, Double_t* stepCorrectionCent);
+  Double_t GetCentrality(TString& centralityMethod, AliVEvent* inputEvent, TObject* mc);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks, Double_t minPt = 0., Double_t maxPt = -1.);
   void RemoveDuplicates(TObjArray* tracks);
   void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
@@ -266,6 +268,9 @@ private:
   Double_t            fZVertex;              // Position of Vertex in Z direction
   Bool_t              fAcceptOnlyMuEvents;   // Only Events with at least one muon are accepted
   TString             fCentralityMethod;     // Method to determine centrality
+  TString             fCentralityMethodStep6;// Optionally a different method can be used for step6 to 9
+  TString             fCentralityMethodStep10;  //Optionally a different method can be used for step10
+  Bool_t              fSameCentralityStep6To10; // Optimization: avoid re-evaluation of GetCentrality and later string comparisons
 
   // Track cuts
   Double_t            fTrackEtaCut;          // Maximum Eta cut on particles

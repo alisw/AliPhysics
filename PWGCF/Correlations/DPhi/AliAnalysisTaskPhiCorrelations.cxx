@@ -143,6 +143,9 @@ fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
 fZVertex(7.),
 fAcceptOnlyMuEvents(kFALSE),
 fCentralityMethod("V0M"),
+fCentralityMethodStep6(""),
+fCentralityMethodStep10(""),
+fSameCentralityStep6To10(kTRUE),
 // track cuts
 fTrackEtaCut(0.8),
 fTrackEtaCutMin(-1.),
@@ -531,6 +534,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // save to output if requested
   if (fEventPoolOutputList.size())
     fListOfHistos->Add(fPoolMgr);
+  
+  fSameCentralityStep6To10 = fCentralityMethodStep6 == fCentralityMethodStep10;
 }
 
 //____________________________________________________________________
@@ -657,14 +662,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (!inputEvent)
     inputEvent = fESD;
 
-  Double_t stepCorrectionCent[2]; // Corrected centrality for step6 and 10 (using fCentralityCorrection histogram)
-  Double_t centrality = GetCentrality(inputEvent, mc, stepCorrectionCent);
+  Double_t centrality = GetCentrality(fCentralityMethod, inputEvent, mc);
+  Double_t stepCorrectionCent[2];
+  stepCorrectionCent[0] = fCentralityMethodStep6.Length() > 0 ? GetCentrality(fCentralityMethodStep6, inputEvent, mc) : centrality;
+  stepCorrectionCent[1] = fSameCentralityStep6To10 ? stepCorrectionCent[0] : (fCentralityMethodStep10.Length() > 0 ? GetCentrality(fCentralityMethodStep10, inputEvent, mc) : centrality);
   
-  if(!fCentralityCorrection){
-    stepCorrectionCent[0] = centrality;
-    stepCorrectionCent[1] = centrality;
-  }
-
   Float_t bSign = 0;
 
   if (inputEvent) {
@@ -689,13 +691,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (inputEvent) {
     // Used to create the centrality correction
     Int_t referenceMultiplicity;
-    if (!fCentralityCorrection) {
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
-      referenceMultiplicity = tracks->GetEntriesFast();
-      delete tracks;
-    }
-    else // Reco centrality already obtained - assume MCGen TRKM in use if centrality correction is enabled
-      referenceMultiplicity = (Int_t) stepCorrectionCent[0];
+    TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+    referenceMultiplicity = tracks->GetEntriesFast();
+    delete tracks;
 
     ((TH2F*) fListOfHistos->FindObject("referenceMultiplicity"))->Fill(centrality, referenceMultiplicity);
   }
@@ -1048,7 +1046,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
                   fHistosMixed->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, 0, -1, kTRUE);
 
                 // STEP 10
-                if (!fCentralityCorrection) //stepCorrectionCent[1] == stepCorrectionCent[0], can use the same pool
+                if (fSameCentralityStep6To10)
                   fHistosMixed->FillCorrelations(stepCorrectionCent[1], zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
               }
             }
@@ -1056,7 +1054,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
           pool2->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, pool2->GetPtMin(), pool2->GetPtMax()));
 
           // If centrality correction is enabled, separate event mixing pool is needed
-          if (fCentralityCorrection && (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)) {
+          if (!fSameCentralityStep6To10 && (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)) {
             AliEventPool* poolStep10 = fPoolMgr->GetEventPool(stepCorrectionCent[1], zVtx + 400, 0., iPool);
             if (poolStep10->IsReady()) {
               for (Int_t jMix=0; jMix<poolStep10->GetCurrentNEvents(); jMix++) {
@@ -1189,7 +1187,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (!inputEvent)
     inputEvent = fESD;
 
-  Double_t centrality = GetCentrality(inputEvent, 0, 0);
+  Double_t centrality = GetCentrality(fCentralityMethod, inputEvent, 0);
 
   Float_t bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
 
@@ -1465,11 +1463,11 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracksCorrelate;
 }
 
-Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TObject* mc, Double_t* stepCorrectionCent)
+Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(TString& centralityMethod, AliVEvent* inputEvent, TObject* mc)
 {
   // return centrality
 
-  if (fCentralityMethod.Length() == 0)
+  if (centralityMethod.Length() == 0)
     return 0;
 
   Double_t centrality = 0;
@@ -1479,10 +1477,10 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
     if (!multSelection)
       AliFatal("MultSelection not found in input event");
 
-    if (fCentralityMethod.EndsWith(".Value"))
-      centrality = multSelection->GetEstimator(fCentralityMethod(0, fCentralityMethod.Length()-6))->GetValue();
+    if (centralityMethod.EndsWith(".Value"))
+      centrality = multSelection->GetEstimator(centralityMethod(0, centralityMethod.Length()-6))->GetValue();
     else {
-      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, !fUseUncheckedCentrality);
+      centrality = multSelection->GetMultiplicityPercentile(centralityMethod, !fUseUncheckedCentrality);
 
       // error handling
       if (centrality > 100)
@@ -1492,7 +1490,7 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
   else {
     AliCentrality *centralityObj = 0;
 
-    if (fCentralityMethod == "ZNA_MANUAL") {
+    if (centralityMethod == "ZNA_MANUAL") {
       Bool_t zna = kFALSE;
       for (Int_t j = 0; j < 4; ++j) {
         if (fESD->GetZDCData()->GetZDCTDCData(12,j) != 0) {
@@ -1520,7 +1518,7 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       else
         centrality = -1;
     }
-    else if (fCentralityMethod == "ZNAC") { // pp
+    else if (centralityMethod == "ZNAC") { // pp
       // values from Cvetan
       const Double_t *towZNA = fAOD->GetZDCData()->GetZNATowerEnergy();
       const Double_t *towZNC = fAOD->GetZDCData()->GetZNCTowerEnergy();
@@ -1550,14 +1548,23 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
 
       ((TH1D*) fListOfHistos->FindObject("ZNA+C_energy"))->Fill(enZN);
     }
-    else if (fCentralityMethod == "TRACKS_MANUAL") {
+    else if (centralityMethod == "TRACKS_MANUAL") {
       // for pp
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
       centrality = tracks->GetEntriesFast();
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
       delete tracks;
     }
-    else if (fCentralityMethod == "V0A_MANUAL") {
+    else if (centralityMethod == "TRACKS_MANUAL_CORRECTED") {
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+      centrality = tracks->GetEntriesFast();
+      delete tracks;
+
+      Int_t bin = fCentralityCorrection->GetYaxis()->FindBin(centrality);
+      TH1D *pProj = fCentralityCorrection->ProjectionX("proj",bin,bin,"e");
+      centrality = pProj->GetRandom();
+    }
+    else if (centralityMethod == "V0A_MANUAL") {
       // for pp
 
       //Total multiplicity in the VZERO A detector
@@ -1574,24 +1581,24 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       else
         centrality = -1;
     }
-    else if (fCentralityMethod == "nano") {
+    else if (centralityMethod == "nano") {
       centrality = ((AliNanoAODHeader*) fAOD->GetHeader())->GetCentrality();
     }
-    else if (fCentralityMethod.BeginsWith("Nano.")) {
+    else if (centralityMethod.BeginsWith("Nano.")) {
       AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fAOD->GetHeader());
       if (!nanoHeader)
         AliFatal("Nano Header not found");
 
-      static TString nanoField = fCentralityMethod(5, fCentralityMethod.Length());
+      static TString nanoField = centralityMethod(5, centralityMethod.Length());
       static const Int_t kField = nanoHeader->GetVarIndex(nanoField);
 
       centrality = nanoHeader->GetVar(kField);
     }
-    else if (fCentralityMethod == "PPVsMultUtils") {
+    else if (centralityMethod == "PPVsMultUtils") {
       if (fAnalysisUtils) centrality = fAnalysisUtils->GetMultiplicityPercentile(inputEvent);
       else centrality = -1;
     }
-    else if (fCentralityMethod == "MC_b") {
+    else if (centralityMethod == "MC_b") {
       AliGenEventHeader* eventHeader = GetFirstHeader();
       if (!eventHeader) {
         // We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
@@ -1613,24 +1620,12 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       else if (hepMCHeader)
         centrality = hepMCHeader->impact_parameter();
     }
-    else if (fCentralityMethod == "MCGen_TRACKS_MANUAL") { // Used for MCGen wagons and TRACKS_MANUAL MC closure tests with centrality correction
+    else if (centralityMethod == "MCGen_TRACKS_MANUAL") {
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
       centrality = tracks->GetEntriesFast();
       delete tracks;
-      //
-      if(fCentralityCorrection){
-        // For step 6, use reco event
-        TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
-        stepCorrectionCent[0] = tracks->GetEntriesFast();
-        delete tracks;
-
-        // For step 10, use corrected centrality
-        Int_t bin = fCentralityCorrection->GetYaxis()->FindBin(stepCorrectionCent[0]);
-        TH1D *pProj = fCentralityCorrection->ProjectionX("proj",bin,bin,"e");
-        stepCorrectionCent[1] = pProj->GetRandom();
-      }
     }
-    else if (fCentralityMethod == "MCGen_V0M") {
+    else if (centralityMethod == "MCGen_V0M") {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
       TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
       Float_t MultV0M=0.;
@@ -1667,7 +1662,7 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
           centrality=-1.;
       }
     }
-    else if (fCentralityMethod == "MCGen_CL1") {
+    else if (centralityMethod == "MCGen_CL1") {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
       TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
       Float_t MultCL1=0.;
@@ -1712,9 +1707,9 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
 
       if (centralityObj) {
         if (fUseUncheckedCentrality)
-          centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+          centrality = centralityObj->GetCentralityPercentileUnchecked(centralityMethod);
         else
-          centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+          centrality = centralityObj->GetCentralityPercentile(centralityMethod);
       }
       else
         centrality = -1;
