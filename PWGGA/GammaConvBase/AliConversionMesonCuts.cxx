@@ -92,6 +92,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fHistoDCARMesonPrimVtxAfter(NULL),
   fHistoInvMassBefore(NULL),
   fHistoInvMassAfter(NULL),
+  fHistoLeadTrackPhi(NULL),
+  fHistoLeadTrackPt(NULL),
   fBrem(NULL),
   fFAlphaCut(NULL),
   fFMinOpanCut(NULL),
@@ -220,6 +222,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fHistoDCARMesonPrimVtxAfter(NULL),
   fHistoInvMassBefore(NULL),
   fHistoInvMassAfter(NULL),
+  fHistoLeadTrackPhi(NULL),
+  fHistoLeadTrackPt(NULL),
   fBrem(NULL),
   fFAlphaCut(NULL),
   fFMinOpanCut(NULL),
@@ -483,6 +487,13 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
       fHistoDCARMesonPrimVtxAfter=new TH1F(Form("DCARMesonPrimVtx After %s",GetCutNumber().Data()),"DCARMesonPrimVtx After",200,0,10);
       fHistograms->Add(fHistoDCARMesonPrimVtxAfter);
     }
+  }
+
+  if (fInLeadTrackDir > 0){
+    fHistoLeadTrackPhi=new TH1F(Form("Lead Track Phi %s",GetCutNumber().Data()),"Lead Track Phi",100,0,2*TMath::Pi());
+    fHistograms->Add(fHistoLeadTrackPhi);
+    fHistoLeadTrackPt=new TH1F(Form("Lead Track pT %s",GetCutNumber().Data()),"Lead Track pT",100,0,20);
+    fHistograms->Add(fHistoLeadTrackPt);
   }
 
   TH1::AddDirectory(kTRUE);
@@ -5078,16 +5089,42 @@ Bool_t AliConversionMesonCuts::IsParticleInJet(std::vector<Double_t> vectorJetEt
 
 ///_____________________________________________________________________________
 //   Function to find highest pT track in event
-template <class T, class U>
-Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(T Event, U meson)
+// template <class T, class U>
+// Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(T curEvent, U curmeson)
+Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionMC(AliVEvent* curEvent, AliMCParticle* curmeson)
 {
-  if (fInLeadTrackDir == 0) return kTRUE;
-
-  if(!meson) {
+  if(!curmeson) {
     AliError("Meson not available\n");
     return kFALSE;
   }  
-  if(!Event) {
+  TVector3 vmeson(curmeson->Px(),curmeson->Py(),curmeson->Pz());
+  return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
+}
+
+Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionAODMC(AliVEvent* curEvent, AliAODMCParticle* curmeson)
+{
+  if(!curmeson) {
+    AliError("Meson not available\n");
+    return kFALSE;
+  }  
+  TVector3 vmeson(curmeson->Px(),curmeson->Py(),curmeson->Pz());
+  return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
+}
+
+Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(AliVEvent* curEvent, AliAODConversionMother* curmeson)
+{
+  if(!curmeson) {
+    AliError("Meson not available\n");
+    return kFALSE;
+  }  
+  TVector3 vmeson(curmeson->Px(),curmeson->Py(),curmeson->Pz());
+  return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
+}
+
+Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionBase(AliVEvent* curEvent, TVector3 curmeson)
+{
+  if (fInLeadTrackDir == 0) return kTRUE;
+  if(!curEvent) {
     AliError("Event not available\n");
     return kFALSE;
   }
@@ -5096,48 +5133,60 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(T Event, U meson)
   Int_t NTotTrack = 0;
   Double_t Selection = TMath::Pi()*2/3.; // 120 grad
 
-  AliVTrack* track = nullptr;
-  AliVTrack* trackLead = nullptr;
+  AliVParticle* track = nullptr;
+  AliVParticle* trackLead = nullptr;
 
-  for(int i = 0; i < Event->GetNumberOfTracks(); i++)
+  for(int i = 0; i < curEvent->GetNumberOfTracks(); i++)
   {
-    track = dynamic_cast<AliVTrack*>(Event->GetTrack(i));
+    track = dynamic_cast<AliVTrack*>(curEvent->GetTrack(i));
     if(!track) {
       AliError("Track not available\n");
       continue;
     }
     // TODO: add quality cuts????
-    // apply min pT cut for tracks
-    if(track->Pt() > fLeadTrackMinPt){
-      // Find track with highest Pt
-      if(track->Pt() > PtLead)
-      {
-        PtLead  = track->Pt();
-        trackLead = dynamic_cast<AliVTrack*>(Event->GetTrack(i));
-      }
-      NTotTrack  += 1;
+
+    // Find track with highest Pt
+    if(track->Pt() > PtLead)
+    {
+      PtLead  = track->Pt();
+      trackLead = dynamic_cast<AliVParticle*>(curEvent->GetTrack(i));
     }
+    NTotTrack  += 1;
   }
 
+    // apply min pT cut for tracks
   if (NTotTrack > 0) {
-    // get meson phi angle
-    TVector3 vmeson(meson->Px(),meson->Py(),meson->Pz());
-    TVector3 vlead(trackLead->Px(), trackLead->Py(), trackLead->Pz());
-    // Double_t AngleToLeadTrack = vmeson.Angle(vlead); // this is in rad
-    Double_t AngleToLeadTrack = vmeson.Phi()-vlead.Phi(); // this is in rad
-    if (AngleToLeadTrack < 0 ) AngleToLeadTrack += 2+TMath::Pi();
-    //  in lead track direction
-    if(fInLeadTrackDir == 1){  
-      if ( AngleToLeadTrack < Selection/2 ) return kTRUE;
-    //  transwerse to lead track direction
-    } else if(fInLeadTrackDir == 2){
-      if ( AngleToLeadTrack > Selection/2 && AngleToLeadTrack < Selection ) return kTRUE;
-    //  opposite direction to lead track (away)
-    } else if(fInLeadTrackDir == 3){
-      if ( AngleToLeadTrack > Selection && AngleToLeadTrack < TMath::Pi() ) return kTRUE;
-    //  in direction and opposite direction
-    } else if(fInLeadTrackDir == 4){
-      if (( AngleToLeadTrack > Selection/2 && AngleToLeadTrack < Selection ) || ( AngleToLeadTrack > Selection && AngleToLeadTrack < TMath::Pi() )) return kTRUE;
+    fHistoLeadTrackPt->Fill(PtLead);
+    if(PtLead > fLeadTrackMinPt){
+      // get meson phi angle
+      Double_t AngleToLeadTrack = TMath::Abs(curmeson.Phi()-trackLead->Phi()); // this is in rad
+      if (AngleToLeadTrack > TMath::Pi()) AngleToLeadTrack = TMath::Abs(AngleToLeadTrack - 2*TMath::Pi());
+
+      //  in lead track direction
+      if(fInLeadTrackDir == 1){  
+        if ( AngleToLeadTrack < Selection/2 ) {
+          fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
+          return kTRUE;
+        }
+      //  transwerse to lead track direction
+      } else if(fInLeadTrackDir == 2){
+        if ( AngleToLeadTrack > Selection/2 && AngleToLeadTrack < Selection ) {
+          fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
+          return kTRUE;
+        }
+      //  opposite direction to lead track (away)
+      } else if(fInLeadTrackDir == 3){
+        if ( AngleToLeadTrack > Selection && AngleToLeadTrack < TMath::Pi() ) {
+          fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
+          return kTRUE;
+        }
+      //  in direction and opposite direction
+      } else if(fInLeadTrackDir == 4){
+        if (( AngleToLeadTrack < Selection/2) || ( AngleToLeadTrack > Selection && AngleToLeadTrack < TMath::Pi() )) {
+          fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
+          return kTRUE;
+        }
+      }
     }
   }
 

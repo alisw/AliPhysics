@@ -236,7 +236,11 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
     Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
-    template <class T, class U>  Bool_t MesonLeadTrackSelection(T Event, U meson);
+    // template <class T, class U>  Bool_t MesonLeadTrackSelection(T curEvent, U curmesonmeson);
+    Bool_t   MesonLeadTrackSelectionMC(AliVEvent* curEvent, AliMCParticle* curmeson);
+    Bool_t   MesonLeadTrackSelectionAODMC(AliVEvent* curEvent, AliAODMCParticle* curmeson);
+    Bool_t   MesonLeadTrackSelection(AliVEvent* curEvent, AliAODConversionMother* curmeson);
+    Bool_t   MesonLeadTrackSelectionBase(AliVEvent* curEvent, TVector3 curmeson);
 
     // Jet specific function
     Bool_t  IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand);
@@ -258,6 +262,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TH1F*       fHistoDCARMesonPrimVtxAfter;    ///<
     TH1F*       fHistoInvMassBefore;            ///<
     TH1F*       fHistoInvMassAfter;             ///<
+    TH1F*       fHistoLeadTrackPhi;             ///<
+    TH1F*       fHistoLeadTrackPt;             ///<
 
     TF1*        fBrem;                          ///<
     TF1*        fFAlphaCut;                     ///<
@@ -365,7 +371,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,53)
+    ClassDef(AliConversionMesonCuts,54)
     /// \endcond
 };
 
