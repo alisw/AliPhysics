@@ -353,7 +353,7 @@ private:
   Bool_t fUsePtBinnedEventPool;                   // uses event pool in pt bins
   Bool_t fCheckEventNumberInMixedEvent;           // check event number before correlation in mixed event
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 65); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 66); // Analysis task for delta phi correlations
 };
 
 #endif
