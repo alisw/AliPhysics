@@ -270,7 +270,6 @@ private:
   TString             fCentralityMethod;     // Method to determine centrality
   TString             fCentralityMethodStep6;// Optionally a different method can be used for step6 to 9
   TString             fCentralityMethodStep10;  //Optionally a different method can be used for step10
-  Bool_t              fSameCentralityStep6To10; // Optimization: avoid re-evaluation of GetCentrality and later string comparisons
 
   // Track cuts
   Double_t            fTrackEtaCut;          // Maximum Eta cut on particles

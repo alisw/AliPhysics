@@ -145,7 +145,6 @@ fAcceptOnlyMuEvents(kFALSE),
 fCentralityMethod("V0M"),
 fCentralityMethodStep6(""),
 fCentralityMethodStep10(""),
-fSameCentralityStep6To10(kTRUE),
 // track cuts
 fTrackEtaCut(0.8),
 fTrackEtaCutMin(-1.),
@@ -535,7 +534,6 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   if (fEventPoolOutputList.size())
     fListOfHistos->Add(fPoolMgr);
   
-  fSameCentralityStep6To10 = fCentralityMethodStep6 == fCentralityMethodStep10;
 }
 
 //____________________________________________________________________
@@ -665,7 +663,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   Double_t centrality = GetCentrality(fCentralityMethod, inputEvent, mc);
   Double_t stepCorrectionCent[2];
   stepCorrectionCent[0] = fCentralityMethodStep6.Length() > 0 ? GetCentrality(fCentralityMethodStep6, inputEvent, mc) : centrality;
-  stepCorrectionCent[1] = fSameCentralityStep6To10 ? stepCorrectionCent[0] : (fCentralityMethodStep10.Length() > 0 ? GetCentrality(fCentralityMethodStep10, inputEvent, mc) : centrality);
+  stepCorrectionCent[1] = fCentralityMethodStep10.Length() > 0 ? GetCentrality(fCentralityMethodStep10, inputEvent, mc) : centrality;
   
   Float_t bSign = 0;
 
@@ -1046,7 +1044,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
                   fHistosMixed->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, 0, -1, kTRUE);
 
                 // STEP 10
-                if (fSameCentralityStep6To10)
+                if (fCentralityMethodStep6 == fCentralityMethodStep10)
                   fHistosMixed->FillCorrelations(stepCorrectionCent[1], zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
               }
             }
@@ -1054,7 +1052,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
           pool2->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, pool2->GetPtMin(), pool2->GetPtMax()));
 
           // If centrality correction is enabled, separate event mixing pool is needed
-          if (!fSameCentralityStep6To10 && (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)) {
+          if (fCentralityMethodStep6 != fCentralityMethodStep10 && (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)) {
             AliEventPool* poolStep10 = fPoolMgr->GetEventPool(stepCorrectionCent[1], zVtx + 400, 0., iPool);
             if (poolStep10->IsReady()) {
               for (Int_t jMix=0; jMix<poolStep10->GetCurrentNEvents(); jMix++) {
