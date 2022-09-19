@@ -661,9 +661,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     inputEvent = fESD;
 
   Double_t centrality = GetCentrality(fCentralityMethod, inputEvent, mc);
-  Double_t stepCorrectionCent[2];
-  stepCorrectionCent[0] = fCentralityMethodStep6.Length() > 0 ? GetCentrality(fCentralityMethodStep6, inputEvent, mc) : centrality;
-  stepCorrectionCent[1] = fCentralityMethodStep10.Length() > 0 ? GetCentrality(fCentralityMethodStep10, inputEvent, mc) : centrality;
   
   Float_t bSign = 0;
 
@@ -1000,68 +997,51 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
       // (RECO all tracks)
       // STEP 6
+      if(fCentralityMethodStep6.Length() > 0)
+        centrality = GetCentrality(fCentralityMethodStep6, inputEvent, mc);
+
       if (!fSkipStep6)
-        fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight);
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight);
 
       // two track cut, STEP 8 (fill it if at least one two-track cut is on, but skip it on request)
       Bool_t fillStep8 = (!fSkipStep8) && ((fTwoTrackEfficiencyCut > 0) || (fCutConversionsV > 0) || (fCutOnK0sV > 0) ||
                                            (fCutOnLambdaV > 0) || (fCutOnPhiV > 0) || (fCutOnRhoV > 0) || (fCutOnCustomV > 0));
       if (fillStep8)
-        fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
 
-      // apply correction efficiency, STEP 9 and 10
+      // apply correction efficiency, STEP 9
       if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
-
         // all two track cuts disabled, STEP 9
         if (!fSkipStep9)
-          fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, -1, kTRUE);
-
-        // STEP 10
-        fHistos->FillCorrelations(stepCorrectionCent[1], zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+          fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, -1, kTRUE);
       }
 
       // mixed event
       if (fFillMixed) {
         for (Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++) {
-          AliEventPool* pool2 = fPoolMgr->GetEventPool(stepCorrectionCent[0], zVtx + 100, 0., iPool);
-          ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(stepCorrectionCent[0], pool2->NTracksInPool());
-          ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(stepCorrectionCent[0], pool2->GetCurrentNEvents());
+          AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100, 0., iPool);
+          ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
+          ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool2->GetCurrentNEvents());
           if (pool2->IsReady()) {
             for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) {
               // STEP 6
               if (!fSkipStep6)
-                fHistosMixed->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
+                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
 
               // two track cut, STEP 8
               if (fillStep8)
-                fHistosMixed->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
+                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
 
               // apply correction efficiency, STEP 9 and 10
               if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
 
                 // all two track cuts disabled, STEP 9
                 if (!fSkipStep9)
-                  fHistosMixed->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, 0, -1, kTRUE);
-
-                // STEP 10
-                if (fCentralityMethodStep6 == fCentralityMethodStep10)
-                  fHistosMixed->FillCorrelations(stepCorrectionCent[1], zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+                  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, 0, -1, kTRUE);
               }
             }
           }
           pool2->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, pool2->GetPtMin(), pool2->GetPtMax()));
-
-          // If centrality correction is enabled, separate event mixing pool is needed
-          if (fCentralityMethodStep6 != fCentralityMethodStep10 && (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)) {
-            AliEventPool* poolStep10 = fPoolMgr->GetEventPool(stepCorrectionCent[1], zVtx + 400, 0., iPool);
-            if (poolStep10->IsReady()) {
-              for (Int_t jMix=0; jMix<poolStep10->GetCurrentNEvents(); jMix++) {
-                // STEP 10
-                fHistosMixed->FillCorrelations(stepCorrectionCent[1], zVtx, AliUEHist::kCFStepCorrected, tracks, poolStep10->GetEvent(jMix), 1.0 / poolStep10->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
-              }
-            }
-            poolStep10->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, poolStep10->GetPtMin(), poolStep10->GetPtMax()));
-          }
         }
       }
 
@@ -1073,10 +1053,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
             tracksRecoMatchedSecondaries->Add(tracksRecoMatchedAll->At(i));
 
         // Study: Use only secondaries as trigger particles and plot the correlation vs. all particles; store in step 9
-        fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll, weight);
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll, weight);
 
         // Study: Use only primaries as trigger particles and plot the correlation vs. secondaries; store in step 8
-        fHistos->FillCorrelations(stepCorrectionCent[0], zVtx, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries, weight);
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries, weight);
 
         // plot delta phi vs process id of secondaries
         // trigger particles: primaries in 4 < pT < 10
@@ -1110,6 +1090,31 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         }
 
         delete tracksRecoMatchedSecondaries;
+      }
+
+      // apply correction efficiency, STEP 10
+      if(fCentralityMethodStep10.Length() > 0)
+        centrality = GetCentrality(fCentralityMethodStep10, inputEvent, mc);
+
+      if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
+        // STEP 10
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+
+        if (fFillMixed) {
+          for (Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++) {
+            AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 400, 0., iPool);
+            if (pool2->IsReady()) {
+              for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) {
+                // apply correction efficiency, STEP 10
+                if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
+                  // STEP 10
+                  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+                }
+              }
+            }
+            pool2->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, pool2->GetPtMin(), pool2->GetPtMax()));
+          }
+        }
       }
 
       if (tracksCorrelateRecoMatchedPrim != tracksRecoMatchedPrim)
