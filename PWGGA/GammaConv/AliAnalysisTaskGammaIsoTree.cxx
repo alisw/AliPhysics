@@ -5820,31 +5820,30 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   
   
   if(fIsMC>0){
+    // store truth information for all clusters, even if not a photon
+    trueClusterE = MCPhoton->E();
+    trueClusterPx = MCPhoton->Px();
+    trueClusterPy = MCPhoton->Py();
+    trueClusterPz = MCPhoton->Pz();
+    fracLeadingLabel = clus->GetClusterMCEdepFraction(0);
+    trueClusterMCIsoCharged1 = mcIso.isolationCone.at(0);
+    if(mcIso.isolationCone.size()>1)trueClusterMCIsoCharged2 = mcIso.isolationCone.at(1);
+    if(mcIso.isolationCone.size()>2)trueClusterMCIsoCharged3 = mcIso.isolationCone.at(2);
+    trueClusterMCIsoBckPerp = mcIso.backgroundLeft.at(2) + mcIso.backgroundRight.at(2);
+    TString headerName = fEventCuts->GetParticleHeaderName(photonlabel, fMCEvent, fInputEvent);
+    if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
+      headerName = "";
+    }
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(photonlabel, fMCEvent,headerName,1.);
+    trueClusterIsSignal = tag;
+    trueClusterIsConv = truePhotonFromConv;
     if(isTruePhoton){
-      trueClusterE = MCPhoton->E();
-      trueClusterPx = MCPhoton->Px();
-      trueClusterPy = MCPhoton->Py();
-      trueClusterPz = MCPhoton->Pz();
-      fracLeadingLabel = clus->GetClusterMCEdepFraction(0);
-      trueClusterMCIsoCharged1 = mcIso.isolationCone.at(0);
-      if(mcIso.isolationCone.size()>1)trueClusterMCIsoCharged2 = mcIso.isolationCone.at(1);
-      if(mcIso.isolationCone.size()>2)trueClusterMCIsoCharged3 = mcIso.isolationCone.at(2);
-      trueClusterMCIsoBckPerp = mcIso.backgroundLeft.at(2) + mcIso.backgroundRight.at(2);
-
-      TString headerName = fEventCuts->GetParticleHeaderName(photonlabel, fMCEvent, fInputEvent);
-      if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
-        headerName = "";
-      }
-      Int_t tag = GetMCAnalysisUtils()->CheckOrigin(photonlabel, fMCEvent,headerName,1.);
-      trueClusterIsSignal = tag;
-      trueClusterIsConv = truePhotonFromConv;
       if((m02<=0.5) && (m02>=0.1)){
         fCaloTruePhotonPt->Fill(MCPhoton->Pt(),fWeightJetJetMC);
         fCaloTruePhotonOldPt->Fill(MCPhotonOld->Pt(),fWeightJetJetMC);
         fCaloTruePhotonRecPt->Fill(photon->Pt(),fWeightJetJetMC);
         fCaloTruePhotonRecPtVsTruePt->Fill(MCPhoton->Pt(),photon->Pt(),fWeightJetJetMC);
-      }
-      
+      }  
     }
     fBuffer_TrueClusterE.push_back(trueClusterE);
     fBuffer_TrueClusterPx.push_back(trueClusterPx);
