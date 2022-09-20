@@ -18,8 +18,12 @@ on:
         required: true
         default: 'AliPhysics'
 
+permissions: {}
 jobs:
   cleanup_pr_checks:
+    permissions:
+      repository-projects: write # to add to projects (octokit/graphql-action)
+
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python 3.7
