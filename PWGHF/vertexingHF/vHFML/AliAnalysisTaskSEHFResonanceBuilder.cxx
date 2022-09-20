@@ -519,6 +519,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             AliAODTrack* track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(selectedTrackIndices[iTrack]));
             auto fourVecD = ROOT::Math::PxPyPzMVector(dMeson->Px(), dMeson->Py(), dMeson->Pz(), TDatabasePDG::Instance()->GetParticle(fPdgD)->Mass());
             for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo) {
+                if (IsDaughterTrack(track, dMeson, arrayCandDDau))
+                    continue;
                 if (!TESTBIT(selectedTrackIds[iTrack], iHypo))
                     continue;
                 double massBachelor = (iHypo != kDeuteron) ? TDatabasePDG::Instance()->GetParticle(kPdgBachIDs[iHypo])->Mass() : 1.87561294257;
@@ -826,6 +828,50 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, in
                 if (mass > fInvMassResoDeMin[iMass] && mass < fInvMassResoDeMax[iMass])
                     return true;   
             }
+        }
+    }
+
+    return false;
+}
+
+//________________________________________________________________________
+bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau) {
+
+    int trkIdx = track->GetID();
+    switch(fDecChannel) {
+        case kD0toKpi:
+        {
+            for (int iProng=0; iProng<2; ++iProng) {
+                if (trkIdx == dMeson->GetProngID(iProng))
+                    return true;
+            }
+            break;
+        }
+        case kDplustoKpipi:
+        {
+            for (int iProng=0; iProng<3; ++iProng) {
+                if (trkIdx == dMeson->GetProngID(iProng))
+                    return true;
+            }
+            break;
+        }
+        case kDstartoD0pi:
+        {
+            if (trkIdx == dMeson->GetProngID(0))
+                return true;
+
+            for (int iProng=0; iProng<2; ++iProng) {
+                AliAODRecoDecayHF2Prong* dZero = nullptr;
+                if(dMeson->GetIsFilled()<1)
+                    dZero = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
+                else
+                    dZero = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->Get2Prong();
+                for (int iProng=0; iProng<2; ++iProng) {
+                    if (trkIdx == dZero->GetProngID(iProng))
+                        return true;
+                }
+            }
+            break;
         }
     }
 

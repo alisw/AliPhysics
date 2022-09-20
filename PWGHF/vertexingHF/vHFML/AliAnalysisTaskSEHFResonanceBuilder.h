@@ -125,6 +125,7 @@ private:
     int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, AliAODPidHF *&pidHF, std::size_t &iCand);
     int IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF);
     bool IsInvMassResoSelected(double &mass, int &bachId);
+    bool IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau);
 
     std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
 
