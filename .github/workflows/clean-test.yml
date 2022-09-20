@@ -22,7 +22,7 @@ permissions: {}
 jobs:
   cleanup_pr_checks:
     permissions:
-      repository-projects: write # to add to projects (octokit/graphql-action)
+      pull-requests: read # to get last commit for pr (octokit/graphql-action)
 
     runs-on: ubuntu-latest
     steps:
