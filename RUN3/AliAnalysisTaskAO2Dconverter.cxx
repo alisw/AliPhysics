@@ -1656,6 +1656,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (aodmcpt && aodmcpt->IsPhysicalPrimary()) // AOD
         mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
 
+      if (MCEvt && MCEvt->IsFromBGEvent(i)) // ESD
+        mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
+      if (aodmcpt && aodmcpt->IsFromSubsidiaryEvent()) // AOD: PH Not sure if corresponds to BKG event
+        mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
+
       mcparticle.fIndexArray_Mothers_size = 1;
       mcparticle.fIndexArray_Mothers[0] = particle ? particle->GetMother(0) : aodmcpt->GetMother();
       if (mcparticle.fIndexArray_Mothers[0] > -1)
