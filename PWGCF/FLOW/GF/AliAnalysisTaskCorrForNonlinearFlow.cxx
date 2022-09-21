@@ -1273,7 +1273,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 				double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
 				if (mostProbableN > 0) {
 					if (eta > 0) nFMD_fwd_hits += mostProbableN;
-					else nFMD_fwd_hits += mostProbableN;
+					else nFMD_bwd_hits += mostProbableN;
 				}
 			}
 		}
