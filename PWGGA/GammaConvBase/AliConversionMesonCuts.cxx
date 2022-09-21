@@ -5129,7 +5129,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionBase(AliVEvent* curEvent, 
     return kFALSE;
   }
 
-  Double_t PtLead = 0;
+  Double_t PtLead = -1;
   Int_t NTotTrack = 0;
   Double_t Selection = TMath::Pi()*2/3.; // 120 grad
 
@@ -5156,7 +5156,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionBase(AliVEvent* curEvent, 
 
     // apply min pT cut for tracks
   if (NTotTrack > 0) {
-    fHistoLeadTrackPt->Fill(PtLead);
+    if(fHistoLeadTrackPt)fHistoLeadTrackPt->Fill(PtLead);
     if(PtLead > fLeadTrackMinPt){
       // get meson phi angle
       Double_t AngleToLeadTrack = TMath::Abs(curmeson.Phi()-trackLead->Phi()); // this is in rad
@@ -5165,25 +5165,25 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionBase(AliVEvent* curEvent, 
       //  in lead track direction
       if(fInLeadTrackDir == 1){  
         if ( AngleToLeadTrack < Selection/2 ) {
-          fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
+          if(fHistoLeadTrackPhi) fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
           return kTRUE;
         }
       //  transwerse to lead track direction
       } else if(fInLeadTrackDir == 2){
         if ( AngleToLeadTrack > Selection/2 && AngleToLeadTrack < Selection ) {
-          fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
+          if(fHistoLeadTrackPhi) fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
           return kTRUE;
         }
       //  opposite direction to lead track (away)
       } else if(fInLeadTrackDir == 3){
         if ( AngleToLeadTrack > Selection && AngleToLeadTrack < TMath::Pi() ) {
-          fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
+          if(fHistoLeadTrackPhi) fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
           return kTRUE;
         }
       //  in direction and opposite direction
       } else if(fInLeadTrackDir == 4){
         if (( AngleToLeadTrack < Selection/2) || ( AngleToLeadTrack > Selection && AngleToLeadTrack < TMath::Pi() )) {
-          fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
+          if(fHistoLeadTrackPhi) fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
           return kTRUE;
         }
       }
