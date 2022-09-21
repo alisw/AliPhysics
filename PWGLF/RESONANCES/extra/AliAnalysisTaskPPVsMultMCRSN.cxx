@@ -128,6 +128,9 @@ fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTr
         fHistPtVsV0M_Generated[ih] = 0x0;
         fHistPtVsV0M_DataSelection[ih] = 0x0;
         fHistPtVsV0M_MCSelection[ih] = 0x0;
+        fHistPtVsMidRapidityTrue_Generated[ih] = 0x0;
+        fHistPtVsMidRapidityTrue_DataSelection[ih] = 0x0;
+        fHistPtVsMidRapidityTrue_MCSelection[ih] = 0x0;
         fHistPtVsV0MAmplitude_Generated[ih] = 0x0;
         fHistPtVsV0MAmplitude_DataSelection[ih] = 0x0;
         fHistPtVsV0MAmplitude_MCSelection[ih] = 0x0;
@@ -184,6 +187,9 @@ fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTr
         fHistPtVsV0M_Generated[ih] = 0x0;
         fHistPtVsV0M_DataSelection[ih] = 0x0;
         fHistPtVsV0M_MCSelection[ih] = 0x0;
+        fHistPtVsMidRapidityTrue_Generated[ih] = 0x0;
+        fHistPtVsMidRapidityTrue_DataSelection[ih] = 0x0;
+        fHistPtVsMidRapidityTrue_MCSelection[ih] = 0x0;
         fHistPtVsV0MAmplitude_Generated[ih] = 0x0;
         fHistPtVsV0MAmplitude_DataSelection[ih] = 0x0;
         fHistPtVsV0MAmplitude_MCSelection[ih] = 0x0;
@@ -520,7 +526,30 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
             fListHist->Add(fHistPtVsV0M_MCSelection[ih]);
         }
     }
-   
+    
+        //2-Dimensional Histograms with midrapidity5
+   for(Int_t ih=0; ih<15; ih++){
+        if(! fHistPtVsMidRapidityTrue_Generated[ih] ) {
+            fHistPtVsMidRapidityTrue_Generated[ih] = new TH2F(Form("fHistPtVsMidRapidityTrue_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsMidRapidityTrue_Generated[ih]);
+        }
+    }
+    
+   for(Int_t ih=0; ih<15; ih++){
+        if(! fHistPtVsMidRapidityTrue_DataSelection[ih] ) {
+            fHistPtVsMidRapidityTrue_DataSelection[ih] = new TH2F(Form("fHistPtVsMidRapidityTrue_DataSelection_%s",lPartNames[ih].Data()),    "DataSelection;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsMidRapidityTrue_DataSelection[ih]);
+        }
+    }
+    
+    
+   for(Int_t ih=0; ih<15; ih++){
+        if(! fHistPtVsMidRapidityTrue_MCSelection[ih] ) {
+            fHistPtVsMidRapidityTrue_MCSelection[ih] = new TH2F(Form("fHistPtVsMidRapidityTrue_MCSelection_%s",lPartNames[ih].Data()),    "MCSelection;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsMidRapidityTrue_MCSelection[ih]);
+        }
+    }
+       
  
     //2-Dimensional Histograms with V0M Amplitudes
     for(Int_t ih=0; ih<15; ih++){
@@ -992,6 +1021,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
                 //Fill Histograms
                 fHistPt_Generated     [ih] -> Fill(lThisPt);
                 fHistPtVsV0M_Generated[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                fHistPtVsMidRapidityTrue_Generated[ih] -> Fill(lThisPt, lNchEta5);
                 fHistPtVsV0MAmplitude_Generated[ih] -> Fill(lThisPt,fV0MAmplitude);
                 fHistPtVsV0MTrue_Generated     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 /////
@@ -1005,6 +1035,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
                 if( lDataSelection ){
                     fHistPt_DataSelection     [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_DataSelection[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                    fHistPtVsMidRapidityTrue_DataSelection[ih] -> Fill(lThisPt, lNchEta5);
                     fHistPtVsV0MAmplitude_DataSelection[ih] -> Fill(lThisPt,fV0MAmplitude);
                     fHistPtVsV0MTrue_DataSelection     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                     ////
@@ -1019,6 +1050,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
                 if( lMCSelection   ){
                     fHistPt_MCSelection       [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_MCSelection  [ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                    fHistPtVsMidRapidityTrue_MCSelection[ih] -> Fill(lThisPt, lNchEta5);
                     fHistPtVsV0MAmplitude_MCSelection  [ih] -> Fill(lThisPt,fV0MAmplitude);
                     fHistPtVsV0MTrue_MCSelection       [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                     ////
