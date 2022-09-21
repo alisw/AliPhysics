@@ -234,14 +234,23 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
           track->GetXYZ(posmom);
           track->GetPxPyPz(posmom + 3);
           int charge = track->Charge();
+          track->GetCovarianceXYZPxPyPz(cov);
           if (iT == kHe3)
           {
             posmom[3] *= 2;
             posmom[4] *= 2;
             posmom[5] *= 2;
             charge *= 2;
+            for (int i = 6; i < 21; i++)
+            {
+              cov[i] = cov[i] * 2; /// scale mom space entries of cov matrix by 2
+              if (i == 9 || i == 13 || i == 14 || i == 18 || i == 19 || i == 20)
+              {
+                cov[i] = cov[i] * 2; /// scale mom mom entries of cov matrix by 4
+              }
+            }
           }
-          track->GetCovarianceXYZPxPyPz(cov);
+          
           helper.particle.Create(posmom, cov, charge, kMasses[iT]);
           helper.particle.Chi2() = track->GetTPCchi2();
           helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
@@ -308,8 +317,9 @@ void AliAnalysisTaskHe3piKF::UserExec(Option_t *)
         }
 
         KFParticle kfHyperTriton;
-        if(fMassConstrainedFit) {
-        kfHyperTriton.SetConstructMethod(2);
+        if (fMassConstrainedFit)
+        {
+          kfHyperTriton.SetConstructMethod(2);
         }
         kfHyperTriton.AddDaughter(he3Candidate);
         kfHyperTriton.AddDaughter(pi.particle);
