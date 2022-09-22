@@ -159,23 +159,23 @@ class PhysicsProfilePPTask : public TObject {
 
 	
 		//5,6 particle correlation
-		//TProfile* fChc5_A42222;  		//! <<5>> |#Delta#eta| > 1.0
-		//TProfile* fChc5_A52322;  		//! <<5>> |#Delta#eta| > 1.0
-		//TProfile* fChc6_222222;  		//! <<6>> |#Delta#eta| > 1.0
-		//TProfile* fChc6_322322;  		//! <<6>> |#Delta#eta| > 1.0
+		//TProfile* fChc5_A42222;  		//! <<5>> 
+		//TProfile* fChc5_A52322;  		//! <<5>> 
+		//TProfile* fChc6_222222;  		//! <<6>> 
+		//TProfile* fChc6_322322;  		//! <<6>> 
 
 		//Addtional 6 particle correlation
 		//TProfile* fChsc6222_Gap0;  		//! <<4>> |#Delta#eta| > 1.0
 		//TProfile* fChsc6222_Gap10;  		//! <<4>> |#Delta#eta| > 1.0
 		//TProfile* fChsc633_Gap0A;  		//! <<3>> |#Delta#eta| > 1.0
 		//TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
-		//TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
-		//TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0
-		//TProfile*   fChcn6_Gap0[6];               //! <<6>> |#Delta#eta| > 0.
+		TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
+		TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0
+		TProfile*   fChcn6_Gap0[6];               //! <<6>> |#Delta#eta| > 0.
 
 		// 8 particle correlation
-		//TProfile*	fChcn8[6];  			//! <<8>> in unit bins of Ntrks
-		//TProfile*   fChcn8_Gap0[6];               //! <<8>> |#Delta#eta| > 1.0
+		TProfile*	fChcn8[6];  			//! <<8>> in unit bins of Ntrks
+		TProfile*   fChcn8_Gap0[6];               //! <<8>> |#Delta#eta| > 1.0
 
 		private:
 		ClassDef(PhysicsProfilePPTask, 1);    //Analysis task
