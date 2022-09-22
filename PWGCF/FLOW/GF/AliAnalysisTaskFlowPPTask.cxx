@@ -316,30 +316,30 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	hEventCount->GetXaxis()->SetBinLabel(3,"AOD OK");
 	hEventCount->Fill(2.5);
 	
-	/*
-	//Fill Some Histogram before Cuts
-	double vz, vx, vy;
-	vz = fInputEvent->GetPrimaryVertex()->GetZ();
-	vx = fInputEvent->GetPrimaryVertex()->GetX();
-	vy = fInputEvent->GetPrimaryVertex()->GetY();
-	double vtxp[3] = {vx, vy, vz};
-	for(Int_t nt = 0; nt < fInputEvent->GetNumberOfTracks(); nt++){
-		AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
+	
+	// //Fill Some Histogram before Cuts
+	// double vz, vx, vy;
+	// vz = fInputEvent->GetPrimaryVertex()->GetZ();
+	// vx = fInputEvent->GetPrimaryVertex()->GetX();
+	// vy = fInputEvent->GetPrimaryVertex()->GetY();
+	// double vtxp[3] = {vx, vy, vz};
+	// for(Int_t nt = 0; nt < fInputEvent->GetNumberOfTracks(); nt++){
+	// 	AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
 
-		if (!aodTrk){
-			delete aodTrk;
-			continue;
-		}
+	// 	if (!aodTrk){
+	// 		delete aodTrk;
+	// 		continue;
+	// 	}
 
-		double pos[3];
-		aodTrk->GetXYZ(pos);
-		pos[0] = pos[0]-vtxp[0];
-    	pos[1] = pos[1]-vtxp[1];
-    	pos[2] = pos[2]-vtxp[2];
-		//hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
-		//hDCAzBefore->Fill(pos[2],aodTrk->Pt());
-	}
-	*/
+	// 	double pos[3];
+	// 	aodTrk->GetXYZ(pos);
+	// 	pos[0] = pos[0]-vtxp[0];
+    // 	pos[1] = pos[1]-vtxp[1];
+    // 	pos[2] = pos[2]-vtxp[2];
+	// 	hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
+	// 	hDCAzBefore->Fill(pos[2],aodTrk->Pt());
+	// }
+	
 	
 	if(fTrigger==0){
 		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
@@ -1199,25 +1199,25 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfilePPTask& multProfile, T
 		multProfile.fChcn4_3subGap2[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn4_3subGap2[h]);
 
-		// multProfile.fChcn6[h] = new TProfile(Form("fChc%d{6}%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
-		// multProfile.fChcn6[h]->Sumw2();
-		// fListOfObjects->Add(multProfile.fChcn6[h]);
+		multProfile.fChcn6[h] = new TProfile(Form("fChc%d{6}%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn6[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn6[h]);
 
-		// multProfile.fChcn6_Gap0[h] = new TProfile(Form("fChc%d{6}_Gap0%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
-		// multProfile.fChcn6_Gap0[h]->Sumw2();
-		// fListOfObjects->Add(multProfile.fChcn6_Gap0[h]);
+		multProfile.fChcn6_Gap0[h] = new TProfile(Form("fChc%d{6}_Gap0%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn6_Gap0[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn6_Gap0[h]);
 
-		// multProfile.fChcn6_Gap10[h] = new TProfile(Form("fChc%d{6}_Gap10%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
-		// multProfile.fChcn6_Gap10[h]->Sumw2();
-		// fListOfObjects->Add(multProfile.fChcn6_Gap10[h]);
+		multProfile.fChcn6_Gap10[h] = new TProfile(Form("fChc%d{6}_Gap10%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn6_Gap10[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn6_Gap10[h]);
 
-		// multProfile.fChcn8[h] = new TProfile(Form("fChc%d{8}%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
-		// multProfile.fChcn8[h]->Sumw2();
-		// fListOfObjects->Add(multProfile.fChcn8[h]);
+		multProfile.fChcn8[h] = new TProfile(Form("fChc%d{8}%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn8[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn8[h]);
 
-		// multProfile.fChcn8_Gap0[h] = new TProfile(Form("fChc%d{8}_Gap0%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
-		// multProfile.fChcn8_Gap0[h]->Sumw2();
-		// fListOfObjects->Add(multProfile.fChcn8_Gap0[h]);
+		multProfile.fChcn8_Gap0[h] = new TProfile(Form("fChc%d{8}_Gap0%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn8_Gap0[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn8_Gap0[h]);
 
 	} // harmonics
 
@@ -2399,60 +2399,61 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	// 	profile.fChc5_A52322->Fill(Ntrks, v5_A52322Re, Dn5Gap10A);
 	// }
 
-	// //..calculate 6-particle correlations
-	// //................................
-	// double Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
-	// double Dn6Gap0 = correlator.SixGap0(0, 0, 0, 0, 0, 0).Re();
-	// double Dn6Gap10 = correlator.SixGap10(0, 0, 0, 0, 0, 0).Re();
+	//..calculate 6-particle correlations
+	//................................
+	double Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
+	double Dn6Gap0 = correlator.SixGap0(0, 0, 0, 0, 0, 0).Re();
+	double Dn6Gap10 = correlator.SixGap10(0, 0, 0, 0, 0, 0).Re();
 
-	// if(NtrksAfter > 5 && Dn6 != 0)
-	// {
-	// 	// v2{6}
-	// 	TComplex v26 = correlator.Six(2, 2, 2, -2, -2, -2);
-	// 	double v26Re = v26.Re()/Dn6;
-	// 	profile.fChcn6[0]->Fill(Ntrks, v26Re, Dn6);
-	// }
+	if(NtrksAfter > 5 && Dn6 != 0)
+	{
+		// v2{6}
+		TComplex v26 = correlator.Six(2, 2, 2, -2, -2, -2);
+		double v26Re = v26.Re()/Dn6;
+		profile.fChcn6[0]->Fill(Ntrks, v26Re, Dn6);
+	}
 
-	// if(NtrksAfterGap0M > 2 && NtrksAfterGap0P > 2 && Dn6Gap0 !=0){
-	// 	TComplex v26Gap0 = correlator.SixGap0(2, 2, 2, -2, -2, -2);
-	// 	double v26ReGap0 = v26Gap0.Re()/Dn6Gap0;
-	// 	profile.fChcn6_Gap0[0]->Fill(Ntrks, v26ReGap0, Dn6Gap0);
-	// }
+	if(NtrksAfterGap0M > 2 && NtrksAfterGap0P > 2 && Dn6Gap0 !=0){
+		TComplex v26Gap0 = correlator.SixGap0(2, 2, 2, -2, -2, -2);
+		double v26ReGap0 = v26Gap0.Re()/Dn6Gap0;
+		profile.fChcn6_Gap0[0]->Fill(Ntrks, v26ReGap0, Dn6Gap0);
+	}
 
-	// if(NtrksAfterGap10M > 2 && NtrksAfterGap10P > 2 && Dn6Gap10 !=0)
-	// {
-	// 	//..v2{6} with eta Gap > 1.0
-	// 	TComplex v26Gap10 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
-	// 	double v26ReGap10 = v26Gap10.Re()/Dn6Gap10;
-	// 	profile.fChcn6_Gap10[0]->Fill(Ntrks, v26ReGap10, Dn6Gap10);
+	if(NtrksAfterGap10M > 2 && NtrksAfterGap10P > 2 && Dn6Gap10 !=0)
+	{
+		//..v2{6} with eta Gap > 1.0
+		TComplex v26Gap10 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
+		double v26ReGap10 = v26Gap10.Re()/Dn6Gap10;
+		profile.fChcn6_Gap10[0]->Fill(Ntrks, v26ReGap10, Dn6Gap10);
 
-	// 	TComplex v6_222222 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
-	// 	double v6_222222Re = v6_222222.Re()/Dn6Gap10;
-	// 	profile.fChc6_222222->Fill(Ntrks, v6_222222Re, Dn6Gap10);
+		// TComplex v6_222222 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
+		// double v6_222222Re = v6_222222.Re()/Dn6Gap10;
+		// profile.fChc6_222222->Fill(Ntrks, v6_222222Re, Dn6Gap10);
 
-	// 	TComplex v6_322322 = correlator.SixGap10(3, 2, 2, -3, -2, -2);
-	// 	double v6_322322Re = v6_322322.Re()/Dn6Gap10;
-	// 	profile.fChc6_322322->Fill(Ntrks, v6_322322Re, Dn6Gap10);
-	// }
+		// TComplex v6_322322 = correlator.SixGap10(3, 2, 2, -3, -2, -2);
+		// double v6_322322Re = v6_322322.Re()/Dn6Gap10;
+		// profile.fChc6_322322->Fill(Ntrks, v6_322322Re, Dn6Gap10);
+	}
 
-	// double Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
-	// // Gap0 isn't calculated in this version
-	// double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	// 8-Particles Correlation
+	double Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	// Gap0 isn't calculated in this version
+	double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
 
-	// if(NtrksAfter > 7 && Dn8 != 0)
-	// {
-	// 	// v2{8}
-	// 	TComplex v28 = correlator.Eight(2, 2, 2, 2, -2, -2, -2, -2);
-	// 	double v28Re = v28.Re()/Dn8;
-	// 	profile.fChcn8[0]->Fill(Ntrks, v28Re, Dn8);
-	// }
+	if(NtrksAfter > 7 && Dn8 != 0)
+	{
+		// v2{8}
+		TComplex v28 = correlator.Eight(2, 2, 2, 2, -2, -2, -2, -2);
+		double v28Re = v28.Re()/Dn8;
+		profile.fChcn8[0]->Fill(Ntrks, v28Re, Dn8);
+	}
 
-	// if(NtrksAfterGap0M > 3 && NtrksAfterGap0P > 3 && Dn8Gap0 !=0){
-	// 	//..v2{8} with eta Gap > 0.
-	// 	TComplex v28Gap0 = correlator.EightGap0(2, 2, 2, 2, -2, -2, -2, -2);
-	// 	double v28ReGap0 = v28Gap0.Re()/Dn8Gap0;
-	// 	profile.fChcn8_Gap0[0]->Fill(Ntrks, v28ReGap0, Dn8Gap0);
-	// }
+	if(NtrksAfterGap0M > 3 && NtrksAfterGap0P > 3 && Dn8Gap0 !=0){
+		//..v2{8} with eta Gap > 0.
+		TComplex v28Gap0 = correlator.EightGap0(2, 2, 2, 2, -2, -2, -2, -2);
+		double v28ReGap0 = v28Gap0.Re()/Dn8Gap0;
+		profile.fChcn8_Gap0[0]->Fill(Ntrks, v28ReGap0, Dn8Gap0);
+	}
 
 
 }
