@@ -316,6 +316,7 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	hEventCount->GetXaxis()->SetBinLabel(3,"AOD OK");
 	hEventCount->Fill(2.5);
 	
+	/*
 	//Fill Some Histogram before Cuts
 	double vz, vx, vy;
 	vz = fInputEvent->GetPrimaryVertex()->GetZ();
@@ -335,9 +336,10 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 		pos[0] = pos[0]-vtxp[0];
     	pos[1] = pos[1]-vtxp[1];
     	pos[2] = pos[2]-vtxp[2];
-		hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
-		hDCAzBefore->Fill(pos[2],aodTrk->Pt());
+		//hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
+		//hDCAzBefore->Fill(pos[2],aodTrk->Pt());
 	}
+	*/
 	
 	if(fTrigger==0){
 		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
@@ -632,13 +634,14 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
 		//Fill DCAxy&z after Cuts
-		double trackXYZ[3];
-		aodTrk->GetXYZ(trackXYZ);
-		trackXYZ[0] = trackXYZ[0]-vtxp[0];
-    	trackXYZ[1] = trackXYZ[1]-vtxp[1];
-    	trackXYZ[2] = trackXYZ[2]-vtxp[2];
-		hDCAxy->Fill(sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),aodTrk->Pt());
-		hDCAz->Fill(trackXYZ[2],aodTrk->Pt());
+		//double trackXYZ[3];
+		//aodTrk->GetXYZ(trackXYZ);
+		//trackXYZ[0] = trackXYZ[0]-vtxp[0];
+    	//trackXYZ[1] = trackXYZ[1]-vtxp[1];
+    	//trackXYZ[2] = trackXYZ[2]-vtxp[2];
+		//hDCAxy->Fill(sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]),aodTrk->Pt());
+		//hDCAz->Fill(trackXYZ[2],aodTrk->Pt());
+
 		// //manual Tracks cut
 		// double dcaZ = 100;
 		// double dcaX = 100;
