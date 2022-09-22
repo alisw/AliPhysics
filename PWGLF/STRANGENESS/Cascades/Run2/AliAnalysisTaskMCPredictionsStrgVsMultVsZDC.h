@@ -104,6 +104,7 @@ private:
   TH2D *f2DHistQ2SPDV0M; //!
   TH2D *f2DHistbSPDV0M; //!
   TH1D *fHistPt[22]; //! 
+  TH1D *fHistVtxPos[22]; //!
   TH2D *f2DHistPartSPDV0M[22]; //!
   TH2D *f2DHistPartRecoPercSPDV0M[22]; //!
   TH2D *f2DHistPartNch0815V0M[22]; //!

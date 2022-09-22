@@ -151,6 +151,7 @@ p2dHistPi0SPDMultSPDCl(0)
 {
   for(Int_t ih=0; ih<22; ih++){
     fHistPt[ih] = 0x0;
+    fHistVtxPos[ih] = 0x0;
     f2DHistPartSPDV0M[ih] = 0x0;
     f2DHistAvPtSPDV0M[ih] = 0x0;
     f2DHistPartNch0815V0M[ih] = 0x0;
@@ -216,6 +217,7 @@ p2dHistPi0SPDMultSPDCl(0)
 {
   for(Int_t ih=0; ih<22; ih++){
     fHistPt[ih] = 0x0;
+    fHistVtxPos[ih] = 0x0;
     f2DHistPartSPDV0M[ih] = 0x0;
     f2DHistAvPtSPDV0M[ih] = 0x0;
     f2DHistPartNch0815V0M[ih] = 0x0;
@@ -467,6 +469,14 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserCreateOutputObjects()
       fListHist->Add(fHistPt[ih]);
     }
   }
+
+  //-----------------------------------------------------------------------------
+  for(Int_t ih=0; ih<22; ih++){
+    if(!fHistVtxPos[ih]) {
+      fHistVtxPos[ih] = new TH1D(Form("fHistVtxPos_%s",lPartNames[ih].Data()), Form("Generated %s;Log_{10}(Vtx Pos XY) (mm)",lPartNames[ih].Data()), 40, -20, 20.);
+      fListHist->Add(fHistVtxPos[ih]);
+    }
+  }  
 
   //-----------------------------------------------------------------------------
   for(Int_t ih=0; ih<22; ih++){
@@ -887,10 +897,11 @@ void AliAnalysisTaskMCPredictionsStrgVsMultVsZDC::UserExec(Option_t *)
 
           //Check if Phyisical Primary if needed
           if( lCheckIsPhysicalPrimary[ih] == kTRUE && IsPrimary == kFALSE) continue;
-          if( lCheckIsPhysicalPrimary[ih] == kFALSE && DeltaR>1E-6) continue; 
+          if( lCheckIsPhysicalPrimary[ih] == kFALSE && DeltaR>1) continue; 
           
           //Fill histos
           if(fHistPt[ih]) fHistPt[ih] -> Fill( pt );
+          if(fHistVtxPos[ih]) fHistVtxPos[ih] -> Fill( TMath::Log10(DeltaR+1E-20) );
           if(f2DHistAvPtSPDV0M[ih]) f2DHistAvPtSPDV0M[ih] -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC, pt );
           if(f2DHistPartSPDV0M[ih]) f2DHistPartSPDV0M[ih] -> Fill( lSPDClusters, lNchVZEROA+lNchVZEROC );    
           if(f2DHistPartNch0815V0M[ih]) f2DHistPartNch0815V0M[ih] -> Fill( lNchEta08to15, lNchVZEROA+lNchVZEROC );    
