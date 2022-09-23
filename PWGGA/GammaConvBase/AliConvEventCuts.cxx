@@ -2860,6 +2860,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC18b10 :
     case kLHC18l2 :
     case kLHC17P1PHO :
+    case kLHC17P2Pyt5TeV :
     // pp 13 TeV
     case kLHC15fm :
     case kLHC16NomB :
@@ -7344,7 +7345,7 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
 
   //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
   if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO ||
-       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b){
+       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b || fPeriodEnum == kLHC17P2Pyt5TeV ){
     errorTolerance = 0.6;
   }
 
@@ -7480,7 +7481,7 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, Double_t gammaPTrec, Al
   // check if MC production should be weighted. If it is with added particles check that particle is not rejected
   Int_t kCaseGen = 0;
   if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO ||
-    fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  )
+    fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC17P2Pyt5TeV  )
     kCaseGen = 2;  // regular MC
 
 
@@ -8848,6 +8849,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
               periodName.CompareTo("LHC17l3b_cent_woSDD") == 0 ||
               periodName.Contains("LHC18d6c")  ){
     fPeriodEnum = kLHC17l3b;
+    fEnergyEnum = k5TeV;
+  } else if ( periodName.CompareTo("LHC17P2Pyt5TeV") == 0  ){
+    fPeriodEnum = kLHC17P2Pyt5TeV;
     fEnergyEnum = k5TeV;
   } else if ( periodName.CompareTo("LHC18j2") == 0 || periodName.CompareTo("LHC18j2_fast") == 0 || periodName.CompareTo("LHC18j2_cent") == 0 ||
               periodName.CompareTo("LHC18j2_cent_woSDD") == 0){
