@@ -1797,7 +1797,7 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(9,"Candidates from OOB pile-up");
 
     // TList for output
-  if (fConfiguration==kRT) {
+  //if (fConfiguration==kRT) {
     fOutputRT = new TList();
     fOutputRT->SetOwner();
     fOutputRT->SetName("OutputHistos");
@@ -1824,14 +1824,14 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
     fOutputRT->Add(fPhiDistributionComplementaryTracks);
     fOutputRT->Add(fPhiEtaDistributionHybridTracks);
 
-  }
+  //}
 
   PostData(1,fHistEventsProcessed);
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;
 
     // TList for output
-  if (fConfiguration==kRT) PostData(6,fOutputRT);
+  /*if (fConfiguration==kRT)*/ PostData(6,fOutputRT);
 }
 
 
