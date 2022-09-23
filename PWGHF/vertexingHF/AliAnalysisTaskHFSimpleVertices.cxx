@@ -560,16 +560,16 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
     fPtBinLimsLc[ib] = defaultPtBinsLc[ib];
 
   Double_t defaultLcCuts[10][kNCutVarsLc] =
-    {{0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* pt<1*/
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 1<pt<2*/
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 2<pt<3 */
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 3<pt<4 */
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 4<pt<5 */
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 5<pt<6 */
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 6<pt<8 */
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 8<pt<12 */
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 12<pt<24 */
-     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.}}; /* 24<pt<36 */
+    {{0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* pt<1*/
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 1<pt<2*/
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 2<pt<3 */
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 3<pt<4 */
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 4<pt<5 */
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 5<pt<6 */
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 6<pt<8 */
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 8<pt<12 */
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 12<pt<24 */
+     {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.}}; /* 24<pt<36 */
   for (Int_t ib = 0; ib < fNPtBinsLc; ib++) {
     for (Int_t jc = 0; jc < kNCutVarsLc; jc++) {
       fLcCuts[ib][jc] = defaultLcCuts[ib][jc];
@@ -1922,11 +1922,15 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
   if (massSel & (1 << kbitLc)) {
     fHistDist12LcpKpi->Fill(dist12);
     Int_t lcSel = 3;
-    if (fCandidateCutLevel == 2 && fSelectLcpKpi > 0) {
-      lcSel = LcSelectionCuts(the3Prong);
-      if (dist12 <= fLcCuts[0][4])
-        lcSel = 0; // cut on dist12
-    } else if (fCandidateCutLevel == 1) {
+    if (fCandidateCutLevel == 1 && fSelectLcpKpi > 0) {
+      if ((LcSkimCuts(the3Prong) == 0)){
+        lcSel = 0;
+	} else {
+	  lcSel = LcSelectionCuts(the3Prong);
+	  if (dist12 < fLcCuts[0][4])
+	    lcSel = 0; // cut on dist12
+	}
+    } else if (fCandidateCutLevel == 1 && fSelectLcpKpi == 0) {
       lcSel = LcSkimCuts(the3Prong);
     }
     Double_t rapid = the3Prong->Y(4122);
@@ -2657,9 +2661,9 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
   if (jPtBin == -1)
     return 0;
 
-  if (cand->CosPointingAngle() <= fLcCuts[jPtBin][7])
+  if (cand->CosPointingAngle() <= fLcCuts[jPtBin][6])
     return 0;
-  if (cand->DecayLength() <= fLcCuts[jPtBin][6])
+  if (cand->DecayLength() <= fLcCuts[jPtBin][5])
     return 0;
 
   if (TMath::Abs(cand->InvMassLcpKpi() - fMassLambdaC) > fLcCuts[jPtBin][0])
