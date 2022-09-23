@@ -1947,16 +1947,6 @@ void AddTask_GammaCalo_pp(
     //cuts.AddCutCalo("00062113","24466210sa01cc00000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW Triggered
   } else if (trainConfig == 808){//PHOS PHI7 reconstructed conversion
     cuts.AddCutCalo("00062113","24466190sa01cc00300","0163103100000010"); //PHI7
-  } else if (trainConfig == 810){//PHOS Sphericity Check
-    cuts.AddCutCalo("h0310113","24466190sa01cc00000","0163103100000010"); //  0.    - 0.3
-    cuts.AddCutCalo("h3710113","24466190sa01cc00000","0163103100000010"); //  0.3    - 0.7
-    cuts.AddCutCalo("h7a10113","24466190sa01cc00000","0163103100000010"); //  0.7   - 1.
-    cuts.AddCutCalo("h0a10113","24466190sa01cc00000","0163103100000010"); //  0.    - 1.
-  } else if (trainConfig == 811){ // PHOS lead tracks Study 
-    cuts.AddCutCalo("00010113","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
-    cuts.AddCutCalo("00010113","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
-    cuts.AddCutCalo("00010113","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
-    cuts.AddCutCalo("00010113","24466190sa01cc00000","d163103100000010"); // in direction and opposite direction w.r.t. lead track 
   } else if (trainConfig == 812){//PHOS Triggers Timing Cut 0, 100 MeV
     cuts.AddCutCalo("00010113","244661900a09cc00000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","244661900a09cc00000","0163103100000010"); //PHI7
@@ -4723,6 +4713,32 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("m0115113","24466190sa01cc70000","0163103100000010"); //cc7:   maxM02 == 1.3
     cuts.AddCutCalo("m0115113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
 
+
+  } else if (trainConfig == 5010){ // PHOS lead tracks Study MB
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); // all
+  } else if (trainConfig == 5011){ // PHOS lead tracks Study 0.-0.1
+    cuts.AddCutCalo("r0a78113","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutCalo("r0a78113","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutCalo("r0a78113","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutCalo("r0a78113","24466190sa01cc00000","0163103100000010"); // all
+  } else if (trainConfig == 5012){ // PHOS lead tracks Study 0.-10
+    cuts.AddCutCalo("n0110113","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutCalo("n0110113","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutCalo("n0110113","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutCalo("n0110113","24466190sa01cc00000","0163103100000010"); // all
+  } else if (trainConfig == 5013){ // PHOS Sphericity Check
+    cuts.AddCutCalo("h0310113","24466190sa01cc00000","0163103100000010"); //  0.    - 0.3
+    cuts.AddCutCalo("h3710113","24466190sa01cc00000","0163103100000010"); //  0.3    - 0.7
+    cuts.AddCutCalo("h7a10113","24466190sa01cc00000","0163103100000010"); //  0.7   - 1.
+    cuts.AddCutCalo("h0a10113","24466190sa01cc00000","0163103100000010"); //  0.    - 1.
+  } else if (trainConfig == 5014){ // PHOS Sphericity Check
+    cuts.AddCutCalo("h0378113","24466190sa01cc00000","0163103100000010"); //  0.    - 0.3
+    cuts.AddCutCalo("h3778113","24466190sa01cc00000","0163103100000010"); //  0.3    - 0.7
+    cuts.AddCutCalo("h7a78113","24466190sa01cc00000","0163103100000010"); //  0.7   - 1.
+    cuts.AddCutCalo("h0a78113","24466190sa01cc00000","0163103100000010"); //  0.    - 1.
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

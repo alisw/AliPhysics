@@ -2292,16 +2292,7 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 909){  //PHOS Smearing Check
     cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100b00010"); //b
     cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100o00010"); //o  new approach
-  } else if ( trainConfig == 910){  //PHOS Sphericity Check
-    cuts.AddCutPCMCalo("h0310113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.    - 0.3
-    cuts.AddCutPCMCalo("h3710113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.3    - 0.7
-    cuts.AddCutPCMCalo("h7a10113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.7   - 1.
-    cuts.AddCutPCMCalo("h0a10113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.    - 1.
-  } else if ( trainConfig == 911){  // PHOS lead tracks Study 
-    cuts.AddCutPCMCalo("h0310113","0dd00009f9730000dge0404000","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
-    cuts.AddCutPCMCalo("h0310113","0dd00009f9730000dge0404000","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
-    cuts.AddCutPCMCalo("h0310113","0dd00009f9730000dge0404000","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
-    cuts.AddCutPCMCalo("h0310113","0dd00009f9730000dge0404000","24466190sa01cc00000","d163103100000010"); // in direction and opposite direction w.r.t. lead track 
+
   } else if ( trainConfig == 912){  //PHOS MB and PHI7 Timing Cut 0; 100MeV
     cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","244661900a09cc00000","0163103100000010"); //no Trigger
     cuts.AddCutPCMCalo("00062113","0dd00009f9730000dge0404000","244661900a09cc00000","0163103100000010"); //PHI7
@@ -2468,11 +2459,6 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 2004){ // EMCAL clusters          with trigger mimicing
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // EG2+DG2
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // EG1+DG1
-  } else if (trainConfig == 2005){  // EMCal+DCAL clusters standard cuts, Sphericity
-    cuts.AddCutPCMCalo("h0310113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.    - 0.3
-    cuts.AddCutPCMCalo("h3710113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.3    - 0.7
-    cuts.AddCutPCMCalo("h7a10113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.7   - 1.
-    cuts.AddCutPCMCalo("h0a10113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.    - 1.
   } else if ( trainConfig == 2006){ // EMCAL clusters
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","111110109fe30230000","0r63103100000010"); // EMCal only
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","388550109fe30230000","0r63103100000010"); // DCal only
@@ -2507,11 +2493,6 @@ void AddTask_GammaConvCalo_pp(
 
 
     
-  } else if ( trainConfig == 2015){ // PHOS lead tracks Study 
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","a163103100000010"); // in direction of highest pT track
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","b163103100000010"); // underlying event, not in dir. of highest pT track
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","c163103100000010"); // opposite direction to lead track 
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","d163103100000010"); // in direction and opposite direction w.r.t. lead track 
 
 //////////////////////    R Bins   //////////////////////////////////
 
@@ -4568,8 +4549,58 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("m0115113","0dd00009f97300008ge0404000","24466190s001cc00000","0163103100000010"); // PsiPair<0.18exp(-0.055chi2)
     cuts.AddCutPCMCalo("m0115113","0dd00009f97300008hf0404000","24466190s001cc00000","0163103100000010"); // PsiPair<0.20exp(-0.050chi2)
 
+  } else if ( trainConfig == 5000){ // PCM-EMCal lead tracks Study MB
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","0163103100000010"); // all
+  } else if ( trainConfig == 5001){ // PCM-EMCal lead tracks Study 0.-0.1
+    cuts.AddCutPCMCalo("r0a78113","0dm00009f9730000dge0404000","411790109fe30230000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutPCMCalo("r0a78113","0dm00009f9730000dge0404000","411790109fe30230000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutPCMCalo("r0a78113","0dm00009f9730000dge0404000","411790109fe30230000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutPCMCalo("r0a78113","0dm00009f9730000dge0404000","411790109fe30230000","0163103100000010"); // all
+  } else if ( trainConfig == 5002){ // PCM-EMCal lead tracks Study 0.-10
+    cuts.AddCutPCMCalo("n0110113","0dm00009f9730000dge0404000","411790109fe30230000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutPCMCalo("n0110113","0dm00009f9730000dge0404000","411790109fe30230000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutPCMCalo("n0110113","0dm00009f9730000dge0404000","411790109fe30230000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutPCMCalo("n0110113","0dm00009f9730000dge0404000","411790109fe30230000","0163103100000010"); // all
+  } else if (trainConfig == 5003){  // EMCal+DCAL clusters standard cuts, Sphericity
+    cuts.AddCutPCMCalo("h0310113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.    - 0.3
+    cuts.AddCutPCMCalo("h3710113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.3    - 0.7
+    cuts.AddCutPCMCalo("h7a10113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.7   - 1.
+    cuts.AddCutPCMCalo("h0a10113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.    - 1.
+  } else if (trainConfig == 5004){  // EMCal+DCAL clusters standard cuts, Sphericity
+    cuts.AddCutPCMCalo("h0378113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.    - 0.3
+    cuts.AddCutPCMCalo("h3778113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.3    - 0.7
+    cuts.AddCutPCMCalo("h7a78113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.7   - 1.
+    cuts.AddCutPCMCalo("h0a78113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //  0.    - 1.
 
-
+  } else if ( trainConfig == 5010){  // PCM-PHOS lead tracks Study MB
+    cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // all
+  } else if ( trainConfig == 5011){  // PCM-PHOS lead tracks Study 0.-0.1
+    cuts.AddCutPCMCalo("r0a78113","0dd00009f9730000dge0404000","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutPCMCalo("r0a78113","0dd00009f9730000dge0404000","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutPCMCalo("r0a78113","0dd00009f9730000dge0404000","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutPCMCalo("r0a78113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // all
+  } else if ( trainConfig == 5012){  // PCM-PHOS lead tracks Study 0.-10
+    cuts.AddCutPCMCalo("n0110113","0dd00009f9730000dge0404000","24466190sa01cc00000","a163103100000010"); // in direction of highest pT track
+    cuts.AddCutPCMCalo("n0110113","0dd00009f9730000dge0404000","24466190sa01cc00000","b163103100000010"); // underlying event, not in dir. of highest pT track
+    cuts.AddCutPCMCalo("n0110113","0dd00009f9730000dge0404000","24466190sa01cc00000","c163103100000010"); // opposite direction to lead track 
+    cuts.AddCutPCMCalo("n0110113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // all
+  } else if ( trainConfig == 5013){  // PCM-PHOS Sphericity Check
+    cuts.AddCutPCMCalo("h0310113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.    - 0.3
+    cuts.AddCutPCMCalo("h3710113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.3    - 0.7
+    cuts.AddCutPCMCalo("h7a10113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.7   - 1.
+    cuts.AddCutPCMCalo("h0a10113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.    - 1.
+  } else if ( trainConfig == 5014){  // PCM-PHOS Sphericity Check
+    cuts.AddCutPCMCalo("h0378113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.    - 0.3
+    cuts.AddCutPCMCalo("h3778113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.3    - 0.7
+    cuts.AddCutPCMCalo("h7a78113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.7   - 1.
+    cuts.AddCutPCMCalo("h0a78113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //  0.    - 1.
+    
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
