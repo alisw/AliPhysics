@@ -405,10 +405,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-  
-  if ((fIsMCtruth || fUseMCTruthReco) && fDecChannel != kDplustoKpipi)
-    AliFatal("MC truth only implemented for kDplustoKpipi decay channel.");
-    
+
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
