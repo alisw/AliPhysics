@@ -945,17 +945,19 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	// ----- output data -----
 
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="",output4name="", output5name="";
+	TString output1name="", output2name="", output3name="",output4name="", output5name="", output6name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
 	output4name= "Cuts";
 	output5name= "coutProf";
+	output6name= "checkRT";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 		output1name="CFHFchist0";
 		output3name+="_cOnly";
 		output4name+="_cOnly";
 		output5name+="_cOnly";
+		output6name+="_cOnly";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly";
@@ -963,6 +965,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		output3name+="_bOnly";
 		output4name+="_bOnly";
 		output5name+="_bOnly";
+		output6name+="_bOnly";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB";
@@ -970,12 +973,14 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		output3name+="_all";
 		output4name+="_all";
 		output5name+="_all";
+		output6name+="_all";
 	}
 
 	outputfile += suffix;
 	output1name += suffix;
 	output4name += suffix;
 	output5name += suffix;
+	output6name += suffix;
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -988,7 +993,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 	// estimators list
 	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-
+	AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(output6name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
 	mgr->AddTask(task);
 
@@ -998,6 +1003,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
 	mgr->ConnectOutput(task,5,coutput5);
+	mgr->ConnectOutput(task,6,coutput6);
 
 	return task;
 
