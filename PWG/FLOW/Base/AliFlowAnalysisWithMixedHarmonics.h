@@ -249,10 +249,10 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile* GetNonIsotropicTermsV0EvPlPro() const {return this->fNonIsotropicTermsV0EvPlPro;};
   void SetNonIsotropicTermsZDCSpPlPPro(TProfile* const nt) {this->fNonIsotropicTermsZDCSpPlPPro = nt;};
   TProfile* GetNonIsotropicTermsZDCSpPlPPro() const {return this->fNonIsotropicTermsZDCSpPlPPro;};
-  void SetNonIsotropicTermsV0VsPtSumDiffPro(TProfile* const nt, Int_t const sd, Int_t const t) {this->fNonIsotropicTermsV0VsPtSumDiffPro[sd][t] = nt;};
-  TProfile* GetNonIsotropicTermsV0VsPtSumDiffPro(Int_t sd, Int_t t) const {return this->fNonIsotropicTermsV0VsPtSumDiffPro[sd][t];};
-  void SetNonIsotropicTermsZDCVsPtSumDiffPro(TProfile* const nt, Int_t const sd, Int_t const t) {this->fNonIsotropicTermsZDCVsPtSumDiffPro[sd][t] = nt;};
-  TProfile* GetNonIsotropicTermsZDCVsPtSumDiffPro(Int_t sd, Int_t t) const {return this->fNonIsotropicTermsZDCVsPtSumDiffPro[sd][t];};
+  void SetNonIsotropicTermsV0Pro(TProfile* const nt) {this->fNonIsotropicTermsV0Pro = nt;};
+  TProfile* GetNonIsotropicTermsV0Pro() const {return this->fNonIsotropicTermsV0Pro;};  
+  void SetNonIsotropicTermsZDCPro(TProfile* const nt) {this->fNonIsotropicTermsZDCPro = nt;};
+  TProfile* GetNonIsotropicTermsZDCPro() const {return this->fNonIsotropicTermsZDCPro;};  
   void SetNonIsotropicTermsVsPtSumDiffPro(TProfile* const nt, Int_t const sd, Int_t const t) {this->fNonIsotropicTermsVsPtSumDiffPro[sd][t] = nt;};
   TProfile* GetNonIsotropicTermsVsPtSumDiffPro(Int_t sd, Int_t t) const {return this->fNonIsotropicTermsVsPtSumDiffPro[sd][t];};
   void SetNonIsotropicTermsVsEtaSumDiffPro(TProfile* const nt,Int_t const sd,Int_t const t){this->fNonIsotropicTermsVsEtaSumDiffPro[sd][t] = nt;};
@@ -401,8 +401,8 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile *fImNITEBE[2][2][4]; // [POI_1,POI_2] [all,overlap] [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
   TProfile *fNonIsotropicTermsV0EvPlPro; // non-isotropic terms cos/sin(Psi_{V0}) and cos/sin(2*Psi_{V0})
   TProfile *fNonIsotropicTermsZDCSpPlPPro; // non-isotropic terms cos/sin(Psi_{ZDC}) and cos/sin(2*Psi_{ZDC})
-  TProfile *fNonIsotropicTermsV0VsPtSumDiffPro[2][8]; // non-isotropic terms <<cos/sin(psi1/psi2-2phi_V0)>> vs. (p1+p2)/2,|p1-p2|
-  TProfile *fNonIsotropicTermsZDCVsPtSumDiffPro[2][12]; // non-isotropic terms <<cos/sin(psi1/psi2-2phi_ZDC)>> vs. (p1+p2)/2,|p1-p2|
+  TProfile *fNonIsotropicTermsV0Pro; // non-isotropic terms <<cos/sin(psi1/psi2-2phi_V0)>> 
+  TProfile *fNonIsotropicTermsZDCPro; // non-isotropic terms <<cos/sin(psi1/psi2-2phi_ZDC)>>
   TProfile *fNonIsotropicTermsVsPtSumDiffPro[2][10]; // non-isotropic terms for <<cos[n(psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
   TProfile *fNonIsotropicTermsVsEtaSumDiffPro[2][10]; // non-isotropic terms for <<cos[n(psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
   TProfile *fNonIsotropicPOITermsPro; // non-isotropic terms for <<cos(2(phi1-phi2))>>
