@@ -14,20 +14,23 @@
 #include "TList.h"
 #include "TMath.h"
 #include "TMarker.h"
-#include "AliAnalysisTask.h"
+#include "TRandom3.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
+#include "AliAODv0.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskKaon2PC.h"
 #include "AliAODTrack.h"
 #include "AliMultSelection.h"
 #include "AliPID.h"
 #include "AliVTrack.h"
 #include "AliVEvent.h"
 #include "AliPIDResponse.h"
+#include "AliAODPid.h"
 #include "AliMultiInputEventHandler.h"
 #include "AliAnalysisAlien.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisTaskKaon2PC.h"
 
 
 class AliAnalysisTaskKaon2PC;    // your analysis class
@@ -41,12 +44,12 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),
     fAOD(0), fOutputList(0), fPIDResponse(0), PVz(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
     fDecayLv0Cut(8.05), fLpTv0Cut(0.2), fUpTv0Cut(0.5), fEtav0Cut(0.8), fDcaPosToPrimVtxv0Cut(0.1), 
     fDcaNegToPrimVtxv0Cut(0.1), fEtaPosv0Cut(0.8), fEtaNegv0Cut(0.8), fCosPACut(0.99), fSigPosv0Cut(2.0), 
-    fSigNegv0Cut(2.0), fHistMK0(0), fHistMK0Cuts(0), fHistPt(0), fVtx(0), fClusters(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
+    fSigNegv0Cut(2.0), fHistMK0(0), fHistMK0Cuts(0), fHistNV0(0), fHistPt(0), fVtx(0), fClusters(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
     fHistK0PhiEta(0), fHistK0Phi(0), fHistK0Eta(0), fHistChPhi(0), fHistChEta(0), fHistChRap(0), fHistPosPhi(0), fHistPosEta(0), 
     fHistPosPhiEta(0), fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0), fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0),
     fNsigmaTOFK(0), fNsigmaTOFKaon(0),  fNsigmaTPCTOFK(0), fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), 
     fHistCent(0), fHistSigCent(0), fHistInvCent(0), fHistCFPhi(0), fHistCFEta(0), fHistCF(0),  
-    fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0)
+    fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0), fHistPPionPhi(0), fHistNPionPhi(0), fEventCuts(0)
 
 
 {
@@ -58,12 +61,12 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTa
     fAOD(0), fOutputList(0), fPIDResponse(0), PVz(0), fLpTCut(0.2), fUpTCut(0.5), fEtaCut(0.8), fSigCut(2.0), 
     fDecayLv0Cut(8.05), fLpTv0Cut(0.2), fUpTv0Cut(0.5), fEtav0Cut(0.8), fDcaPosToPrimVtxv0Cut(0.1), 
     fDcaNegToPrimVtxv0Cut(0.1), fEtaPosv0Cut(0.8), fEtaNegv0Cut(0.8), fCosPACut(0.99), fSigPosv0Cut(2.0), 
-    fSigNegv0Cut(2.0), fHistMK0(0), fHistMK0Cuts(0), fHistPt(0), fVtx(0), fClusters(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
+    fSigNegv0Cut(2.0), fHistMK0(0), fHistMK0Cuts(0), fHistNV0(0), fHistPt(0), fVtx(0), fClusters(0), fPID(0), fPIDKa(0), fPIDKaon(0), fPIDK(0), fPIDKeCut(0), fPIDKpiCut(0), 
     fHistK0PhiEta(0), fHistK0Phi(0), fHistK0Eta(0), fHistChPhi(0), fHistChEta(0), fHistChRap(0), fHistPosPhi(0), fHistPosEta(0), 
     fHistPosPhiEta(0), fHistPosRap(0), fHistNegPhi(0), fHistNegEta(0), fHistNegPhiEta(0), fHistNegRap(0), fnsigmakaon(0), fNsigmaKaon(0),
     fNsigmaTOFK(0), fNsigmaTOFKaon(0),  fNsigmaTPCTOFK(0), fHistNEvents(0), fHistEta(0), fHistDEta(0), fHistPhi(0), fHistDPhi(0), fHistMult(0), 
     fHistCent(0), fHistSigCent(0), fHistInvCent(0), fHistCFPhi(0), fHistCFEta(0), fHistCF(0),  
-    fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0)
+    fHistKChCh(0), fHistKPosKPos(0), fHistKPosKNeg(0), fHistKNegKNeg(0), fHistK0K0(0), fHistPPionPhi(0), fHistNPionPhi(0), fEventCuts(0)
 
 
 {
@@ -88,14 +91,17 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     // the histograms are in this case added to a tlist, this list is in the end saved
     // to an output file.
 
+
     fOutputList = new TList();          
     fOutputList->SetOwner(kTRUE);       
     
     // example of a histogram
     fHistMK0=new TH1F("fHistMK0", "Invariant Mass Distribution of Neutral Kaons", 100, 0.4, 0.6);
     fHistMK0Cuts=new TH1F("fHistMK0Cuts", "Invariant Mass Distribution of Neutral Kaons", 100, 0.4, 0.6);
-    
-    fHistPt = new TH1F("fHistPt", "p_{T} distribution", 100, 0, 1);
+
+    fHistNV0 = new TH1F("fHistNV0","Number of V0s",100, 0, 5000);
+
+    fHistPt = new TH1F("fHistPt", "p_{T} distribution of all Charged Kaon Tracks", 100, 0, 1);
     fHistPt->SetOption("HIST E p");
 
     fVtx = new TH1F("fVtx", "PV_{z} distribution of Tracks", 100, -15, 15);
@@ -133,15 +139,16 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fPIDKpiCut->SetOption("colz");
     
     fHistK0PhiEta = new TH3F("fHistK0PhiEta", "Number of K0s Vs Track Phi and Track Eta; Centrality", 60,0,2*Pi,60,-0.8, 0.8,100,0,100);
-    fHistK0PhiEta->GetXaxis()->SetTitle("Track Phi (in radians)");
+    fHistK0PhiEta->GetXaxis()->SetTitle("V0 Phi (in radians)");
     fHistK0PhiEta->SetOption("SURF1");
 
     fHistK0Phi = new TH2F("fHistK0Phi", "Number of K0s Vs Track Phi; Centrality", 16,0,2*Pi,100,0,100);
-    fHistK0Phi->GetXaxis()->SetTitle("Track Phi");
+    fHistK0Phi->GetXaxis()->SetTitle("V0 Phi");
     fHistK0Phi->SetOption("colz");
+    fHistK0Phi->GetYaxis()->SetRangeUser(0,6000);
     
     fHistK0Eta = new TH2F("fHistK0Eta", "Number of K0s Vs Track Eta; Centrality", 16,-0.8, 0.8,100,0,100);
-    fHistK0Eta->GetXaxis()->SetTitle("Track Eta");
+    fHistK0Eta->GetXaxis()->SetTitle("V0 Eta");
     fHistK0Eta->SetOption("colz");
 
     fHistChPhi = new TH2F("fHistChPhi", "Number of charged particles Vs Track Phi; Centrality", 16,0,2*Pi,100,0,100);
@@ -214,15 +221,15 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fNsigmaTPCTOFK->SetOption("colz");
 
     fHistNEvents = new TH1F("fHistNEvents", "fHistNEvents", 1, 0, 1);
-    fHistEta = new TH1F("fHistEta", "fHistEta", 100, -10, 10);
+    fHistEta = new TH1F("fHistEta", "fHistEta", 100, -5, 5);
     fHistDEta = new TH1F("fHistDEta", "fHistDEta", 100, -10, 10);
-    fHistPhi = new TH1F("fHistPhi", "Phi Distribution", 100, 0, 10);
+    fHistPhi = new TH1F("fHistPhi", "Phi Distribution", 100, 0, 7);
     fHistDPhi = new TH1F("fHistDPhi", "fHistDPhi", 100, 0, 10);
     fHistMult = new TH1F("fHistMult", "Number of tracks", 100, 0, 100);
     fHistCent = new TH1F("fHistCent", "CentV0M", 100, 0, 100);
 
-    fHistSigCent = new TH2F("fHistSigCent","", 100,-20,20, 100, 0, 100 );
-    fHistSigCent->SetOption("colz");
+    fHistSigCent = new TH1F("fHistSigCent","", 100,-10,10);
+    //fHistSigCent->SetOption("colz");
 
     fHistInvCent = new TH2F("fHistInvCent", "", 100,0.4,0.6,100,0,100);
     fHistInvCent->SetOption("colz");
@@ -267,8 +274,13 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistK0K0->GetYaxis()->SetTitle("#Delta#eta");
     fHistK0K0->SetOption("SURF1");
 
+    fHistPPionPhi = new TH2F("fHistPPionPhi","Number of +ve piondaughters Vs Track Phi", 16,0,2*Pi,100,0,100);
+    fHistNPionPhi = new TH2F("fHistNPionPhi","Number of -ve piondaughters Vs Track Phi", 16,0,2*Pi,100,0,100);
+
+
     fOutputList->Add(fHistMK0);
     fOutputList->Add(fHistMK0Cuts);
+    fOutputList->Add(fHistNV0);
     fOutputList->Add(fHistPt);
     fOutputList->Add(fVtx);
     fOutputList->Add(fClusters);
@@ -314,6 +326,8 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutputList->Add(fHistKPosKNeg);
     fOutputList->Add(fHistKNegKNeg);
     fOutputList->Add(fHistK0K0);
+    fOutputList->Add(fHistPPionPhi);
+    fOutputList->Add(fHistNPionPhi);
     fEventCuts.AddQAplotsToList(fOutputList);
 
     PostData(1, fOutputList);
@@ -344,12 +358,14 @@ void AliAnalysisTaskKaon2PC::SetV0TrackCuts(Double_t c5, Double_t c6, Double_t c
 }
 
 Bool_t AliAnalysisTaskKaon2PC::AcceptTrack(const AliAODTrack *Trk) {
-    if (!Trk->TestFilterBit(768)) return kFALSE;
+    if (!Trk->TestFilterBit(272)) return kFALSE;
     if (Trk->Charge() == 0) return kFALSE;         //excluding neutral particles
     if (Trk->Pt() <= fLpTCut || Trk->Pt() >= fUpTCut) return kFALSE; // pt cut
     if (fabs(Trk->Eta()) > fEtaCut) return kFALSE; // eta cut
     Double_t nSigmakaon = fPIDResponse->NumberOfSigmasTPC(Trk, AliPID::kKaon);
+    //cout << "nsigma kaon values are" << nSigmakaon << endl;
     Double_t nSigmapion = fPIDResponse->NumberOfSigmasTPC(Trk, AliPID::kPion);
+    //cout << "nsigma pion values are" << nSigmapion << endl;
     Double_t nSigmaelectron = fPIDResponse->NumberOfSigmasTPC(Trk, AliPID::kElectron);
     Double_t nSigmaTOFkaon = fPIDResponse->NumberOfSigmasTOF(Trk, AliPID::kKaon);
     Double_t nSigmaTOFelectron = fPIDResponse->NumberOfSigmasTOF(Trk, AliPID::kElectron);
@@ -392,6 +408,10 @@ Bool_t AliAnalysisTaskKaon2PC::AcceptV0(const AliAODv0 *v0, Double_t *vertex) {
     if (armpt < 0.2*fabs(alpha)) return kFALSE;
     AliAODTrack *pTrack=(AliAODTrack *)v0->GetDaughter(0);
     AliAODTrack *nTrack=(AliAODTrack *)v0->GetDaughter(1);
+    // GetPosID()
+    //if (!ptrack) continue;
+    //if (!ntrack) continue;
+    //cout << pTrack << endl;
     Double_t nSigmaPionPos = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
     if (fabs(nSigmaPionPos) > fSigPosv0Cut) return kFALSE;
     Double_t nSigmaPionNeg = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
@@ -407,47 +427,44 @@ Bool_t AliAnalysisTaskKaon2PC::AcceptV0(const AliAODv0 *v0, Double_t *vertex) {
 //_____________________________________________________________________________
 void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
 {
+    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();     //to get pid response object
+    if (man) {
+        AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+        if (inputHandler) fPIDResponse = inputHandler->GetPIDResponse();
+    }
+
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());    
     if(!fAOD) return;                                   // if the pointer to the event is empty (getting it failed) skip this event
-    Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
-    //cout << "Number of tracks is"<< iTracks << endl;
+    
     //fRunNumber = fAOD->GetRunNumber();
-
+    if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)) return;
     fEventCuts.fUseITSTPCCluCorrelationCut = true;
     if (!fEventCuts.AcceptEvent(fAOD)) return;
-    
+    //cout << "Number of tracks is"<< iTracks << endl;
+    Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
     //making a cut in pvz -10 to 10cm
-    const AliAODVertex *PrimaryVertex = fAOD->GetVertex(0);
-    if(!PrimaryVertex) return;
     //cout << "primary vertices are " << PrimaryVertex << endl;
-    PVz = PrimaryVertex->GetZ();
-    if(fabs(PVz)>10.0) return;
-
-    fVtx->Fill(PVz);
 
     Double_t vertex[3] = { -100.0, -100.0, -100.0 };
     const AliAODVertex *vertexAOD = fAOD->GetPrimaryVertex();
     vertexAOD->GetXYZ(vertex);  //explaination??
+    if(!vertexAOD) return;
 
-    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();     //to get pid response object
-    if (man) {
-        AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
-        if (inputHandler)   fPIDResponse = inputHandler->GetPIDResponse();
-            }
+    PVz = vertexAOD->GetZ();
+    if(fabs(PVz)>10.0) return;
+    fVtx->Fill(PVz);
     
-    if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)) return;
-
     //Multiplicity selection
-    AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-    if(!MultSelection) return;
+    //AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+    //if(!MultSelection) return;
     
-    double CentV0M = MultSelection->GetMultiplicityPercentile("V0M"); //centrality
-
-    //cout << "centrality are " << CentV0M << endl;
+    //double CentV0M = MultSelection->GetMultiplicityPercentile("V0M"); //centrality
+    float CentV0M = fEventCuts.GetCentrality(); //centrality
+    //const PrimaryVertex = fEventCuts.GetPrimaryVertex(); //primary vertex
     //if (CentV0M>10) return;
+    //cout << "centrality are " << CentV0M << endl;
     
     //********************************* PID Loop ********************************************************
-    
     
     for(Int_t i(0); i < iTracks; i++) {
         AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
@@ -458,12 +475,13 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
         Double_t nSigmaTOFelectron = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
         Double_t nSigmaTOFpion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
         Double_t nClustersTPC = track->GetTPCNcls();
+        fHistSigCent->Fill(nSigmakaon);
         if(!track) continue;                            // if we failed, skip this track
         if(abs(track->Eta())>0.8) continue;               // eta cut
-        if (!track->TestFilterBit(768)) continue;       // filterbit selection
+        if (!track->TestFilterBit(272)) continue;       // filterbit selection
+        //cout << "nsigma kaon values are" << nSigmakaon << endl;
         //if (track->Pt() <= fLpTCut || track->Pt() >= fUpTCut) continue; // pt cut (avoided for viewing purposes)
         fClusters->Fill(nClustersTPC);
-        fHistSigCent->Fill(CentV0M, nSigmakaon);
         fPID->Fill(track->Pt(),track->GetTPCsignal());
         Int_t chargetrack = track->Charge();
         if (fabs(nSigmakaon)<5.0) {fPIDKa->Fill(track->Pt(),track->GetTPCsignal());}
@@ -485,14 +503,18 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
     //********************************     V0 Loop  *****************************************************
 
     Int_t nv0s(fAOD->GetNumberOfV0s());                 //number of decay or v0 vertices in the event
+    cout << "Number of v0 vertices are"<< nv0s << endl;
+    fHistNV0->Fill(nv0s);
     for(Int_t i = 0; i < nv0s; i++)  {
         AliAODv0 *v0=fAOD->GetV0(i);                    // pointer to reconstructed v0
         if(!v0) {
         cout<<"No V0 "<<endl;
         continue;
         }
+        AliAODTrack *pTrack=(AliAODTrack *)v0->GetDaughter(0);
+        AliAODTrack *nTrack=(AliAODTrack *)v0->GetDaughter(1);
         fHistMK0->Fill(v0->MassK0Short());
-        //if(v0->MassK0Short() < 0.49 || v0->MassK0Short() > 0.51) continue;
+        if(v0->MassK0Short() < 0.49 || v0->MassK0Short() > 0.51) continue;
         if(!AcceptV0(v0, vertex)) continue;
         fHistMK0Cuts->Fill(v0->MassK0Short());
         fHistInvCent->Fill(CentV0M, v0->MassK0Short());
@@ -501,6 +523,8 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
         fHistK0PhiEta->Fill(V0Phi,V0Eta,CentV0M);                  // Yield of neutral kaons in Phi
         fHistK0Phi->Fill(V0Phi,CentV0M); 
         fHistK0Eta->Fill(V0Eta,CentV0M);                  // Yield of neutral kaons in Eta
+        fHistPPionPhi->Fill(pTrack->Phi(),CentV0M);
+        fHistNPionPhi->Fill(pTrack->Phi(),CentV0M);
     }
 
     //***************************** Charged-Charged Correlation Loop *****************************************************
@@ -635,13 +659,19 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
         if(!v01) continue;
         if(v01->MassK0Short() < 0.49 || v01->MassK0Short() > 0.51) continue;
         if(!AcceptV0(v01, vertex)) continue;
-        Double_t V01Phi = v01->Phi();
-        Double_t V01Eta = v01->Eta();
         for(Int_t j(i+1); j < nv0s; j++) {
             AliAODv0 *v02=fAOD->GetV0(j);
             if(!v02) continue;
             if(v02->MassK0Short() < 0.49 || v02->MassK0Short() > 0.51) continue;
             if(!AcceptV0(v02, vertex)) continue;
+            Int_t PosIDTrack1 = v01->GetPosID();
+            Int_t NegIDTrack1 = v01->GetNegID();
+            Int_t PosIDTrack2 = v02->GetPosID();
+            Int_t NegIDTrack2 = v02->GetNegID();
+            if (PosIDTrack1 == PosIDTrack2) continue;
+            if (NegIDTrack1 == NegIDTrack2) continue;
+            Double_t V01Phi = v01->Phi();
+            Double_t V01Eta = v01->Eta();
             Double_t V02Phi = v02->Phi();
             Double_t V02Eta = v02->Eta();
             Double_t DK0Phi = fabs(V01Phi-V02Phi);
@@ -692,6 +722,11 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
             if(!v0) continue;
             if(v0->MassK0Short() < 0.49 || v0->MassK0Short() > 0.51) continue;
             if(!AcceptV0(v0, vertex)) continue;
+            Int_t KChID = track->GetID();
+            Int_t PosIDTrack = v0->GetPosID();
+            Int_t NegIDTrack = v0->GetNegID();
+            if (KChID == PosIDTrack) continue;
+            if (KChID == NegIDTrack) continue;
             Double_t V0Phi = v0->Phi();
             Double_t V0Eta = v0->Eta();
             Double_t deltaEta = fabs(trackEta-V0Eta);
