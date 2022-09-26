@@ -866,6 +866,8 @@ protected:
   Bool_t Is2013PPB(const char *dataset) const;
   Bool_t Is2013MCPPB(const char *dataset) const;
   Bool_t Is2015PP5TeV(const char *dataset) const;
+  Bool_t Is2015PBPB(const char *dataset) const;
+  Bool_t Is2015MCPBPB(const char *dataset) const;
   Bool_t Is2015MCPP5TeV(const char *dataset) const;
   Bool_t Is2016PPB5TeV(const char *dataset) const;
   Bool_t Is2016MCPPB5TeV(const char *dataset) const;
@@ -875,6 +877,8 @@ protected:
   Bool_t Is2016MCPP(const char *dataset) const;
   Bool_t Is2017PP5TeV(const char *dataset) const;
   Bool_t Is2017MCPP5TeV(const char *dataset) const;
+  Bool_t Is2018PBPB(const char *dataset) const;
+  Bool_t Is2018MCPBPB(const char *dataset) const;
   Bool_t IsSupportedMCSample(const char *period, std::vector<TString> &supportedProductions) const;
  
   AliEmcalTriggerSelectionCuts::AcceptanceType_t  DecodeAcceptanceString(const std::string &acceptancestring);

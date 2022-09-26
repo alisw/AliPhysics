@@ -261,6 +261,21 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2017PP5TeV(const char *dataset) c
   return false;
 }
 
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2015PBPB(const char *dataset) const {
+  TString datasetstring(dataset);
+  datasetstring.ToLower();
+  if(datasetstring.Length() != 6) return false;     // not data period
+  return datasetstring == "lhc15o";
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2018PBPB(const char *dataset) const {
+  TString datasetstring(dataset);
+  datasetstring.ToLower();
+  if(datasetstring.Length() != 6) return false;     // not data period
+  if(datasetstring == "lhc18q" || datasetstring == "lhc18r") return true;
+  return false;
+}
+
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2011MCPP7TeV(const char *dataset) const {
   std::vector<TString> supportedProductions = {"lhc14k1a", "lhc14b7", "lhc14k1b"};
   return IsSupportedMCSample(dataset, supportedProductions);
@@ -303,7 +318,17 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016MCPPB8TeV(const char *dataset
 }
 
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2017MCPP5TeV(const char *dataset) const {
-  std::vector<TString> supportedProductions = {"lhc17l3b", "lhc18j2"};
+  std::vector<TString> supportedProductions = {"lhc17l3b", "lhc18j2", "lhc18l2a_calo", "lhc18l2b_calo", "lhc18b8", "lhc18b10a", "lhc18b10b"};
+  return IsSupportedMCSample(dataset, supportedProductions);
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2015MCPBPB(const char *dataset) const {
+  std::vector<TString> supportedProductions = {"lhc20g3e", "lhc20g3f", "lhc20g3g", "lhc21b8"};
+  return IsSupportedMCSample(dataset, supportedProductions);
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2018MCPBPB(const char *dataset) const {
+  std::vector<TString> supportedProductions = {"lhc20g3a", "lhc20g3b", "lhc20g3c", "lhc20g4"};
   return IsSupportedMCSample(dataset, supportedProductions);
 }
 
