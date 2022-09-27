@@ -71,6 +71,8 @@ ClassImp(AliAnalysisTaskGammaDeltaPIDSaveQvecSimple)
 
 AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvecSimple(const char *name):
   AliAnalysisTaskSE(name),
+  whichData(0),
+  period("0"),
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -249,6 +251,8 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
 //_______________________empty constructor_______________________
 AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvecSimple():
   AliAnalysisTaskSE(),
+  whichData(0),
+  period("0"),
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -477,6 +481,10 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserCreateOutputObjects()
   
   SetupQAHistograms();
   SetupAnalysisHistograms();
+  if (whichData == 2018 && period == 'q')
+	SetupPileUpRemovalFunctions18qPass3();
+  else if (whichData == 2018 && period == 'r')
+    SetupPileUpRemovalFunctions18rPass3();
   //SetupPileUpRemovalFunctions();
   SetupEventAndTaskConfigInfo();
 
@@ -663,9 +671,8 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
   
   //Double_t fMultNeg = 0, fMultPos = 0;
 
-  
   kPileupEvent = CheckEventIsPileUp2018(fAOD);
-  
+
   if(kPileupEvent) return;  // If not a PileUp event, then We have TPC q vectors for EP.
   fDebugwEventCount->Fill(4.1);
 
@@ -1702,6 +1709,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupPileUpRemovalFunctions18qP
 
 void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupPileUpRemovalFunctions18rPass3() { //@Shi for 2018 period Pass3 data
     // 18r pass3
+
     fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
    
     Double_t parV0[8] = {42.4921, 0.823255, 0.0824939, 139.826, 7.27032, 0.0488425, -0.00045769, 1.40891e-06};
@@ -2082,7 +2090,7 @@ Bool_t AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::CheckEventIsPileUp2018(AliAOD
 
   Int_t tpcClsTot = faod->GetNumberOfTPCClusters();
   Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
-
+  
   if (centrCL0 < fCenCutLowPU->Eval(centrV0M)) {
     BisPileup=kTRUE;
   }

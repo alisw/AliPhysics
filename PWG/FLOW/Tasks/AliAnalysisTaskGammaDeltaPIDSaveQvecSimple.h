@@ -59,8 +59,7 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple : public AliAnalysisTaskSE {
   void  SetListForV0MCorr(TList *flist)      {this->fListV0MCorr = (TList *) flist->Clone(); }
   void  SetListForZDCCorr(TList *flist)      {this->fListZDCCorr = (TList *) flist->Clone(); }
 
-  void  SetupPileUpRemovalFunctions18qPass3();
-  void  SetupPileUpRemovalFunctions18rPass3();
+  
   
   void  SetupQvecSavingObjects();
   void  CalculateCMESPPP();
@@ -73,6 +72,8 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple : public AliAnalysisTaskSE {
   void SetFlagSkipPileUpCuts(Bool_t bP)          {this->bSkipPileUpCut     =  bP;}
   void SetVzRangeMin(Double_t vzMin)             {this->fMinVzCut       =  vzMin;}
   void SetVzRangeMax(Double_t vzMax)             {this->fMaxVzCut       =  vzMax;}
+  void SetwhichData(Double_t wD)                 {this->whichData       =  wD;}
+  void Setperiod(TString p)                 {this->period       =  p;}
 
   void ResetEventByEventQuantities();
   
@@ -103,7 +104,8 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple : public AliAnalysisTaskSE {
  protected:
 
  private:
-
+  Int_t whichData;
+  TString period;
 
   AliVEvent             *fVevent;             //! event
   AliESDEvent           *fESD;                //! esd Event
@@ -209,7 +211,7 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple : public AliAnalysisTaskSE {
   
   Bool_t           bUseKinkTracks;  //
   Bool_t           bSkipPileUpCut;  //   
-
+  
 
   
 
@@ -328,7 +330,8 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple : public AliAnalysisTaskSE {
   void  SetupQAHistograms();
   void  SetupAnalysisHistograms();
   void  SetupEventAndTaskConfigInfo();
-
+  void  SetupPileUpRemovalFunctions18qPass3();
+  void  SetupPileUpRemovalFunctions18rPass3();
   
   void  GetMCCorrectionHist();
   void  GetV0MCorrectionHist(Int_t run=0);
