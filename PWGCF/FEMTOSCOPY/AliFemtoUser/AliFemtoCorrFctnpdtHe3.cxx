@@ -874,7 +874,7 @@ bool AliFemtoCorrFctnpdtHe3::PairEtaPhiSelect(AliFemtoPair* aPair){
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   Double_t magsign = 0.0;
   if (!aodH) {
-   return -999;
+   return false;
   }
   else {
     AliAODEvent *fAOD;
