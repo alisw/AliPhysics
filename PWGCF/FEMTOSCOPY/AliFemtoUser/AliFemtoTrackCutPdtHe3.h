@@ -56,7 +56,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	//
 	void SetInversePID(int aInversePID);
         void SetHe3TPCSignal(float aMin,float aMax);
- 
+	// 
+        void SetfUseRejectLowpTPion(int aUse);
+	void SetfTPCThreshold(float aTPCThreshold); 
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -123,6 +125,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 
 	float MinHe3TPCSignal;
     	float MaxHe3TPCSignal;
+	//
+	int fRejectPions;
+	float fTPCThreshold;
 
 };
 

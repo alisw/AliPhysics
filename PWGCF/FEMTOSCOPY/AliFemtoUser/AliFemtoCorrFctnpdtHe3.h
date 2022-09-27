@@ -74,6 +74,11 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetUse2DpTvsKStar(int aUse);
         void Set2DpTvsKStarInit(bool aInit);
 
+	//\ 2022.9.27
+	bool PairEtaPhiSelect(AliFemtoPair* aPair);
+	void SetUsePairCutEtaPhi(int aUsePairCutEtaPhi);
+	void SetPairCutEtaPhi(float aEtaCut,float aPhiCut);
+
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -141,8 +146,12 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	
         int fUse2DpTvsKStar;
 	TH2F *f2DpTvsKStar;
+
+	int fUsePairCutEtaPhi;
+	float fPairCut_eta;
+	float fPairCut_phi;
 	
-      
+
 };
 
 #endif
