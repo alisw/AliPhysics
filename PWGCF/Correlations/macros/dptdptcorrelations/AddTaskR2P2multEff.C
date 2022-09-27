@@ -612,7 +612,57 @@ AliAnalysisTaskR2P2multEff * AddTaskR2P2multEff
       minCentrality[7] = 60.;	  maxCentrality[7]  = 70.;
       minCentrality[8] = 70.;	  maxCentrality[8]  = 80.;
     }		    				
-
+   else if ( CentralityGroup == 101 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 0;       maxCentrality[0]  = 1.;
+    }
+  else if ( CentralityGroup == 102 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 1.;      maxCentrality[0]  = 5.;
+    }
+  else if ( CentralityGroup == 103 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 5.;      maxCentrality[0]  = 10.;
+    }
+  else if ( CentralityGroup == 104 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 10.;	 maxCentrality[0]  = 15.;
+    }
+  else if ( CentralityGroup == 105 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 15.;	 maxCentrality[0]  = 20.;
+    }
+  else if ( CentralityGroup == 106 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 20.;	 maxCentrality[0]  = 30.;
+    }
+  else if ( CentralityGroup == 107 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 30.;	 maxCentrality[0]  = 40.;
+    }
+  else if ( CentralityGroup == 108 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 40.;	 maxCentrality[0]  = 50.;
+    }
+  else if ( CentralityGroup == 109 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 50.;	 maxCentrality[0]  = 70.;
+    }
+  else if ( CentralityGroup == 110 )
+    {
+      nCentrality = 1;
+      minCentrality[0] = 70.;	 maxCentrality[0]  = 100.;
+    }
+  
   else    return 0;
   
   double dedxMin                =  0.0;
