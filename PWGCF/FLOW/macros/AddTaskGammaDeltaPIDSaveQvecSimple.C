@@ -50,10 +50,8 @@ void AddTaskGammaDeltaPIDSaveQvecSimple(Int_t whichData = 2018,TString period = 
   taskGammaPID->SetVzRangeMax(fVzMax);
   taskGammaPID->SetFlagSkipPileUpCuts(bSkipPileUp);  
   
-  if (whichData == 2018 && period == 'q')
-	taskGammaPID->SetupPileUpRemovalFunctions18qPass3();
-  else if (whichData == 2018 && period == 'r')
-    taskGammaPID->SetupPileUpRemovalFunctions18rPass3();
+  taskGammaPID->SetwhichData(whichData);
+  taskGammaPID->Setperiod(period);
 
   cout<<"=========> AddTaskCMW::Info() setting Event Plane Det: "<<sDetForEP<<endl;
   taskGammaPID->SetDetectorforEventPlane(sDetForEP);
