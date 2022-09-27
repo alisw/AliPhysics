@@ -40,6 +40,9 @@ AliFemtoESDTrackCut()
 
     MinHe3TPCSignal = 10.;
     MaxHe3TPCSignal = 5000.;
+
+    fRejectPions  = 0;
+    fTPCThreshold = 0.7;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -76,6 +79,8 @@ AliFemtoESDTrackCut(aCut)
     MinHe3TPCSignal = aCut.MinHe3TPCSignal;
     MaxHe3TPCSignal = aCut.MaxHe3TPCSignal;
 
+    fRejectPions  = aCut.fRejectPions;
+    fTPCThreshold = aCut.fTPCThreshold;
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -120,6 +125,9 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     fInversePID = aCut.fInversePID;
     MinHe3TPCSignal = aCut.MinHe3TPCSignal;
     MaxHe3TPCSignal = aCut.MaxHe3TPCSignal;
+
+    fRejectPions  = aCut.fRejectPions;
+    fTPCThreshold = aCut.fTPCThreshold;
     return *this;
 }
 
@@ -437,6 +445,11 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
                     imost = 16;
                 }
             }
+	    if(fRejectPions==1){
+		if(FillMom  < fTPCThreshold){
+			if(abs(track->NSigmaTOFPi()) < 3) imost = 0;
+		}
+		}
 	    if (imost != fMostProbable) return false;
 	    if(fUseTOFMassCut){
 		//Mass square!
@@ -884,4 +897,9 @@ void AliFemtoTrackCutPdtHe3::SetHe3TPCSignal(float aMin,float aMax){
     MinHe3TPCSignal = aMin;
     MaxHe3TPCSignal = aMax;
 }
-
+void AliFemtoTrackCutPdtHe3::SetfUseRejectLowpTPion(int aUse){
+	fRejectPions = aUse;
+}
+void AliFemtoTrackCutPdtHe3::SetfTPCThreshold(float aTPCThreshold){ 
+	fTPCThreshold = aTPCThreshold;
+}
