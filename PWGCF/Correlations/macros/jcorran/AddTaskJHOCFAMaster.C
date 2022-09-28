@@ -99,9 +99,15 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     case 19 :     // Syst: (chi2 in [0.1, 4]) changed to (chi2 < 2.3).
       configNames.push_back("chi2tight23");
       break; 
-    case 20 :     // Syst: (chi2 in [0.1, 4]) changed to (chi2 < 2.3).
+    case 20 :     // Syst: (chi2 in [0, 1.36])
       configNames.push_back("chi2tight136");
-      break;      
+      break;
+    case 21 :     // Syst: (chi2 in [0.1, 1.36])
+      configNames.push_back("chi2low136");
+      break;  
+    case 22 :     // Syst: (chi2 in [0.1, 2.3])
+      configNames.push_back("chi2low23");
+      break;  
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -256,6 +262,10 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetChi2Cuts(0.0, 2.3);
     } else if (strcmp(configNames[i].Data(), "chi2tight136") == 0) {
       fJCatalyst[i]->SetChi2Cuts(0.0, 1.36);
+    } else if (strcmp(configNames[i].Data(), "chi2low136") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 1.36);
+    } else if (strcmp(configNames[i].Data(), "chi2low23") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 2.3);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetChi2Cuts(0.1, 4.0);
     }
