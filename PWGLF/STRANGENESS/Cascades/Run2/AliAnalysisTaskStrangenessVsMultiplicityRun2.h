@@ -97,6 +97,9 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+  void SetExtraCleanupRapidity ( Bool_t lExtraCleanupRapidity = kTRUE) {
+    fkExtraCleanupRapidity = lExtraCleanupRapidity;
+  }
   void SetDoStrangenessTracking ( Bool_t lOpt = kTRUE) {
     fkDoStrangenessTracking = lOpt;
   }
@@ -304,6 +307,7 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+  Bool_t fkExtraCleanupRapidity;
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   AliAnalysisTaskWeakDecayVertexer *fWDV; //helper 
   
