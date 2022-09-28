@@ -37,8 +37,13 @@ public:
   Double_t GetFlatenicityTPC();
   Double_t GetFlatenicityTPCMC();
   Double_t GetFlatenicity();
+  Double_t GetFlatenicityV0A();
+  Double_t GetFlatenicityV0C();
   Double_t GetFlatenicityMC();
+  Double_t GetFlatenicityV0AMC();
+  Double_t GetFlatenicityV0CMC();
   Double_t GetFlatenicityCombinedMC();
+  Double_t GetFlatenicityCombined();
   void CheckMultiplicities();
   void CheckMultiplicitiesMC();
   void MakeMCanalysis();
@@ -87,19 +92,43 @@ private:
   Double_t ftrackmult08;
   Double_t fv0mpercentile;
   Float_t fFlat;
+  Float_t fFlatV0ATPC;
+  Float_t fFlatV0CTPC;
+  Float_t fFlatV0TPC1;
+  Float_t fFlatV0TPC2;
+  Float_t fFlatV0AV0CTPC;
+  Float_t fFlatV0AV0CTPC2;
   Float_t fFlatMC;
   Float_t fFlatMC2;
+  Float_t fFlatMC3;
+  Float_t fFlatMC4;
+  Float_t fFlatMC5;
+  Float_t fFlatMC6;
   AliMultSelection *fMultSelection;
   TH1D *hPtPrimIn;
   TH1D *hPtPrimOut;
   TH1D *hPtSecOut;
   TH1D *hPtOut;
   TH2D *hFlatV0vsFlatTPC;
+  TH2D *hFlatV0AvsFlatTPC;
+  TH2D *hFlatV0CvsFlatTPC;
   TH2D *hFlatV0vsFlatTPCmc;
+  TH2D *hFlatV0AvsFlatTPCmc;
+  TH2D *hFlatV0CvsFlatTPCmc;
   TH1D *hFlatenicity;
   TH1D *hFlatenicityMC;
   TH2D *hFlatCominedMC;
   TH2D *hFlat2CominedMC;
+  TH2D *hFlat3CominedMC;
+  TH2D *hFlat4CominedMC;
+  TH2D *hFlat5CominedMC;
+  TH2D *hFlat6CominedMC;
+  TH2D *hFlatComined;
+  TH2D *hFlatComined2;
+  TH2D *hFlatComined3;
+  TH2D *hFlatComined4;
+  TH2D *hFlatComined5;
+  TH2D *hFlatComined6;
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
@@ -130,6 +159,12 @@ private:
   TH1D *hNchV0aMC;
   TH1D *hNchV0cMC;
   TH2D *hFlatVsV0M;
+  TH2D* hFlatVsV0ATPC;
+  TH2D* hFlatVsV0CTPC;
+  TH2D* hFlatVsV0TPC1;
+  TH2D* hFlatVsV0TPC2;
+  TH2D* hFlatVsV0AV0CTPC;
+  TH2D* hFlatVsV0AV0CTPC2;
   TH1D *hEta;
   TH1D *hEtamc;
   TH1D *hCounter;
@@ -137,7 +172,7 @@ private:
   TH2D *hFlatVsNchTPCV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hFlatVsNchTPCV0MMC[9];
-
+  
   AliAnalysisTaskSpectraFlatenicity(const AliAnalysisTaskSpectraFlatenicity &); // not implemented
   AliAnalysisTaskSpectraFlatenicity &operator=(const AliAnalysisTaskSpectraFlatenicity &); // not implemented
 
