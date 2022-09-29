@@ -198,7 +198,8 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16e.pass2/TPCPIDResponseOADB_2022_07_22_16e_pass2_It6.root",  252537, 253609, "2");  
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16f.pass2/TPCPIDResponseOADB_2022_07_22_16f_pass2_It6.root",  253610, 253987, "2");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16g.pass2/TPCPIDResponseOADB_2022_07_22_16g_pass2_It6.root",  253988, 254338, "2");
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16hi.pass2/TPCPIDResponseOADB_2022_07_22_16h_pass2_It6.root", 254339, 255798, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16h.pass2/TPCPIDResponseOADB_2022_09_26_16h_pass2_It5.root",  254339, 255476, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16i.pass2/TPCPIDResponseOADB_2022_09_26_16i_pass2_It5.root",  255477, 255798, "2");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16j.pass2/TPCPIDResponseOADB_2022_07_22_16j_pass2_It6.root",  255799, 256489, "2");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16op.pass2/TPCPIDResponseOADB_2022_07_22_16o_pass2_It6.root", 261929, 264895, "2");
 
