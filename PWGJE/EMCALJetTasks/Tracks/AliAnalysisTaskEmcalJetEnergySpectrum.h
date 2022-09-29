@@ -35,7 +35,7 @@
 
 class THistManager;
 class AliEventCuts;
-class AliFJWrapper; 
+class AliFJWrapper;
 class TRandom3;
 
 namespace PWGJE {
@@ -51,7 +51,7 @@ public:
   enum EWeightType_t {
     kCrossSectionWeightType,
     kEventWeightType,
-    kNoWeightType 
+    kNoWeightType
   };
   enum EnergyDefinition_t {
     kDefaultEnergy,       ///< Uncorrected energy measurement
@@ -69,7 +69,7 @@ public:
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetNameJetContainer(EMCAL_STRINGVIEW name) { fNameJetContainer = name; }
   void SetNameTriggerDecisionContainer(EMCAL_STRINGVIEW name) { fNameTriggerDecisionContainer = name; }
-  void SetTriggerSelection(UInt_t triggerbits, EMCAL_STRINGVIEW triggerstring) { 
+  void SetTriggerSelection(UInt_t triggerbits, EMCAL_STRINGVIEW triggerstring) {
     fTriggerSelectionBits = triggerbits;
     fTriggerSelectionString = triggerstring;
   }
@@ -85,7 +85,7 @@ public:
   void SetFillHistosWeighted(EWeightType_t weighttype) { fFillHistosWeighted = weighttype; }
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
   void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
-  void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
+  void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; }
   void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
   void SetEMCALClusterBias(double minE)            { fEMCALClusterBias = minE; }
@@ -103,26 +103,88 @@ public:
   void ConfigureMCMinBias(MCProductionType_t mcprodtype);
   void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
-    Bool_t isMC, 
-    AliJetContainer::EJetType_t jettype, 
-    AliJetContainer::ERecoScheme_t recoscheme, 
-    AliVCluster::VCluUserDefEnergy_t energydef, 
+  //*** Standard add functions. No random cones background subtraction. ***//
+  // Base add function called by both of the two add functions following it.
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrumBase(
+    Bool_t isMC,
+    AliJetContainer::EJetType_t jettype,
+    AliJetContainer::ERecoScheme_t recoscheme,
+    AliVCluster::VCluUserDefEnergy_t energydef,
     double radius,
-    EMCAL_STRINGVIEW namepartcont, 
-    EMCAL_STRINGVIEW trigger, 
+    EMCAL_STRINGVIEW namepartcont,
+    EMCAL_STRINGVIEW trigger,
+    EMCAL_STRINGVIEW nametrackcont,
+    EMCAL_STRINGVIEW nameclustercont,
     EMCAL_STRINGVIEW suffix = ""
   );
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrumBkgSub(
-    Bool_t isMC, 
-    AliJetContainer::EJetType_t jettype, 
-    AliJetContainer::ERecoScheme_t recoscheme, 
-    AliVCluster::VCluUserDefEnergy_t energydef, 
+  // Standard add function. Calls the base add fuction above.
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
+    Bool_t isMC,
+    AliJetContainer::EJetType_t jettype,
+    AliJetContainer::ERecoScheme_t recoscheme,
+    AliVCluster::VCluUserDefEnergy_t energydef,
     double radius,
-    EMCAL_STRINGVIEW namepartcont, 
-    EMCAL_STRINGVIEW nRho, 
-    EMCAL_STRINGVIEW trigger, 
+    EMCAL_STRINGVIEW namepartcont,
+    EMCAL_STRINGVIEW trigger,
+    EMCAL_STRINGVIEW suffix = ""
+  );
+
+  // Add function with embedded MC background rejection handling. Calls the base add function above.
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
+    Bool_t isMC,
+    AliJetContainer::EJetType_t jettype,
+    AliJetContainer::ERecoScheme_t recoscheme,
+    AliVCluster::VCluUserDefEnergy_t energydef,
+    double radius,
+    EMCAL_STRINGVIEW namepartcont,
+    EMCAL_STRINGVIEW trigger,
+    EMCAL_STRINGVIEW nametrackcont,
+    EMCAL_STRINGVIEW nameclustercont,
+    EMCAL_STRINGVIEW suffix = ""
+  );
+
+  //*** Add functions for use with random cones background subtraction. ***//
+  // Base add function called by both of the two add functions following it.
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrumBkgSubBase(
+    Bool_t isMC,
+    AliJetContainer::EJetType_t jettype,
+    AliJetContainer::ERecoScheme_t recoscheme,
+    AliVCluster::VCluUserDefEnergy_t energydef,
+    double radius,
+    EMCAL_STRINGVIEW namepartcont,
+    EMCAL_STRINGVIEW nRho,
+    EMCAL_STRINGVIEW trigger,
+    EMCAL_STRINGVIEW nametrackcont,
+    EMCAL_STRINGVIEW nameclustercont,
+    EMCAL_STRINGVIEW suffix = ""
+  );
+
+  // Standard add function. Calls the base add fuction above.
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrumBkgSub(
+    Bool_t isMC,
+    AliJetContainer::EJetType_t jettype,
+    AliJetContainer::ERecoScheme_t recoscheme,
+    AliVCluster::VCluUserDefEnergy_t energydef,
+    double radius,
+    EMCAL_STRINGVIEW namepartcont,
+    EMCAL_STRINGVIEW nRho,
+    EMCAL_STRINGVIEW trigger,
+    EMCAL_STRINGVIEW suffix = ""
+  );
+
+  // Add function with embedded MC background rejection handling. Calls the base add function above.
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrumBkgSub(
+    Bool_t isMC,
+    AliJetContainer::EJetType_t jettype,
+    AliJetContainer::ERecoScheme_t recoscheme,
+    AliVCluster::VCluUserDefEnergy_t energydef,
+    double radius,
+    EMCAL_STRINGVIEW namepartcont,
+    EMCAL_STRINGVIEW nRho,
+    EMCAL_STRINGVIEW trigger,
+    EMCAL_STRINGVIEW nametrackcont,
+    EMCAL_STRINGVIEW nameclustercont,
     EMCAL_STRINGVIEW suffix = ""
   );
 
@@ -149,11 +211,11 @@ private:
   TString                       fNameTriggerDecisionContainer;  ///< Global trigger decision container
   Bool_t                        fUseTriggerSelectionForData;    ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
   Bool_t                        fUseDownscaleWeight;            ///< Use 1/downscale as weight
-  TString                       fNameJetContainer;              ///< Name of the jet container 
+  TString                       fNameJetContainer;              ///< Name of the jet container
   Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
   Bool_t                        fRequestCentrality;             ///< Request centrality
   EWeightType_t                 fFillHistosWeighted;            ///< Fill histograms with cross section or event weight
-  Bool_t                        fUseRun1Range;                  ///< Use run1 run range for trending plots     
+  Bool_t                        fUseRun1Range;                  ///< Use run1 run range for trending plots
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
   Bool_t                        fUseStandardOutlierRejection;   ///< Use standard outlier rejection
