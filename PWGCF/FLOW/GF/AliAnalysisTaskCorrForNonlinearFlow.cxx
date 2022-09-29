@@ -461,7 +461,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	// Setting for AliEventCuts:
 	fEventCuts.AddQAplotsToList(fListOfObjects);
 
-	if (fPeriod.EqualTo("LHC15o")) {
+	if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n") ) {
 		// Only for LHC15o pass1
 		fGFWSelection15o = new AliGFWNFCuts();
 		fGFWSelection15o->PrintSetup();
@@ -623,7 +623,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 	}
 	hEventCount->Fill("after fEventCuts", 1.);
 
-	if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+	if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n") ) { // Only for LHC15o pass1
 		fGFWSelection15o->ResetCuts();
 	} else {
 		fGFWSelection->ResetCuts();
@@ -633,7 +633,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 	float fVtxZ = vtx->GetZ();
 	fPVz = fVtxZ;
 
-	if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+	if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n") ) { // Only for LHC15o pass1
 		if (!fGFWSelection15o->AcceptVertex(fAOD)) {
 			PostData(1, fListOfObjects);
 			PostData(2, fListOfProfile);
@@ -688,9 +688,23 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 
 	if (fNtrksName.EqualTo("Mult")) {
 		NTracksCalculation(fInputEvent);
+
+		// Put a Ntrks cut to 100 for PbPb and XeXe
+		if (fPeriod.EqualTo("LHC15o") ||
+				fPeriod.EqualTo("LHC15o_pass2") ||
+				fPeriod.EqualTo("LHC18qr_pass3") ||
+				fPeriod.EqualTo("LHC17n")) {
+			if (NtrksCounter > 100) {
+				PostData(1, fListOfObjects);
+				PostData(2, fListOfProfile);
+				return;
+			}
+		}
 	} else {
 		NtrksCounter = fCentrality;
 	}
+
+	
 
 	fbSign = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
 
@@ -1188,7 +1202,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Dou
 	// Additional cut for TPCchi2perCluster
 	if (mtr->GetTPCchi2perCluster()>fTPCchi2perCluster) return kFALSE;
 
-	if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+	if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n") ) { // Only for LHC15o pass1 and LHC17n
 		return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
 	} else {
 		return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
