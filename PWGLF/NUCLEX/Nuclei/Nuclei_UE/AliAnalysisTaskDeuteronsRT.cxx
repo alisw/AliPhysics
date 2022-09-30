@@ -1159,7 +1159,7 @@ Bool_t AliAnalysisTaskDeuteronsRT::IsDeuteronCandidate (AliESDtrack *track)  {
 
     
     //TPC Pre-selection
-    if (TMath::Abs(nsigmaTPC)>5.0) return isDeuteronCandidate;
+    if (TMath::Abs(nsigmaTPC)>10.0) return isDeuteronCandidate;
     
     //Selection on TOF hit & Track Length
     if (pt>1.5 && (!hasTOFhit)) return isDeuteronCandidate;
