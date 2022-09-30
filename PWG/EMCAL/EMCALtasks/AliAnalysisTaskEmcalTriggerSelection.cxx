@@ -384,6 +384,14 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2012(){
   ej1cuts->SetUseRecalcPatches(true);
   ej1cuts->SetThreshold(200);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts));
+
+  AliEmcalTriggerSelectionCuts *emc7cuts = new AliEmcalTriggerSelectionCuts;
+  emc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  emc7cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
+  emc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
+  emc7cuts->SetUseRecalcPatches(true);
+  emc7cuts->SetThreshold(106);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
