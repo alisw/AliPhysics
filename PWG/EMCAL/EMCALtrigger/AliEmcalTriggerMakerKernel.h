@@ -612,7 +612,7 @@ protected:
   Bool_t                                    fDoBackgroundSubtraction;     ///< Swtich for background subtraction (only online ADC)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
-  AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
+  AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes - pure monitoring information
   AliEMCALTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
   AliEMCALTriggerDataGrid<double>           *fPatchADC;                   //!<! ADC values map
   AliEMCALTriggerDataGrid<double>           *fPatchEnergySimpleSmeared;   //!<! Data grid for smeared energy values from cell energies

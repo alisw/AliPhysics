@@ -352,7 +352,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP7TeV2011(){
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
   emcl0cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   emcl0cuts->SetUseRecalcPatches(true);
-  emcl0cuts->SetThreshold(292);
+  emcl0cuts->SetThreshold(73); // MF Using timesums, adapt 2-bitshift L0->L1 292->73
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emcl0cuts));
 }
 
@@ -390,7 +390,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2012(){
   emc7cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
   emc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   emc7cuts->SetUseRecalcPatches(true);
-  emc7cuts->SetThreshold(106);
+  emc7cuts->SetThreshold(26); // MF Using timesums, adapt 2-bitshift L0->L1 106->26
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts));
 }
 
@@ -428,7 +428,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2013(){
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
   emcl0cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   emcl0cuts->SetUseRecalcPatches(true);
-  emcl0cuts->SetThreshold(158);
+  emcl0cuts->SetThreshold(39); // MF Using timesums, adapt 2-bitshift L0->L1 158->39
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emcl0cuts));
 
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
@@ -516,7 +516,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP5TeV2015(){
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
   emcl0cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   emcl0cuts->SetUseRecalcPatches(true);
-  emcl0cuts->SetThreshold(263);
+  emcl0cuts->SetThreshold(66); // MF Using timesums, adapt 2-bitshift L0->L1 263->66
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emcl0cuts));
 
   AliEmcalTriggerSelectionCuts *dmcl0cuts = new AliEmcalTriggerSelectionCuts;
@@ -524,7 +524,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP5TeV2015(){
   dmcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
   dmcl0cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   dmcl0cuts->SetUseRecalcPatches(true);
-  dmcl0cuts->SetThreshold(263);
+  dmcl0cuts->SetThreshold(66); // MF Using timesums, adapt 2-bitshift L0->L1 263->66
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DMCL0", dmcl0cuts));
 
 }
