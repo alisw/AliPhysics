@@ -18,7 +18,10 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  fPtAssocMin(2.),
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
- fPtTriggMax(8.)
+ fPtTriggMax(8.),
+ fCalculateFlow(kFALSE),
+ fFC(0),
+ fGFW(0)
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
@@ -39,7 +42,10 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
  fPtAssocMin(2.),
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
- fPtTriggMax(8.)
+ fPtTriggMax(8.),
+ fCalculateFlow(kFALSE),
+ fFC(0),
+ fGFW(0)
 {
     DefineOutput(1, TList::Class());
 }
@@ -110,6 +116,7 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
       fOutList->Add(fNtriggers[iCent]);
 
     };
+    if(fCalculateFlow) SetupFlowOutput();
     PostData(1, fOutList);
 }
 //_____________________________________________________________________________
@@ -141,6 +148,7 @@ void AliAnalysisTaskJetQ::UserExec(Option_t *)
 
   fNormCounter->Fill(l_Cent,0); //Number of triggers
   Int_t nPairs = FillCorrelations(ind,i_Cent,vz);
+  FillFCs(l_Cent,0.1);
   AliEventPool *pool = fPoolMgr->GetEventPool(i_Cent-1, i_vz-1);
   if(!pool) { printf("Could not find the event pool!\n"); return; };
   // printf("Current numbe of events in pool: %i\n",pool->GetCurrentNEvents());
@@ -186,11 +194,19 @@ Int_t AliAnalysisTaskJetQ::FindGivenPt(const Double_t &ptMin, const Double_t &pt
   AliAODTrack *lTrack;
   Double_t lPtMax=0;
   Double_t lPtCur=0;
+  fGFW->Clear(); //Need to clear up the GFW before filling it in
   for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(i);
     if(!lTrack->TestFilterBit(768)) continue;
     lPtCur = lTrack->Pt();
     if(lPtCur > ptMin && lPtCur < ptMax && lPtCur > lPtMax) { lPtMax=lPtCur; ind=i;  };
+    //Fill in the GFW here:
+    if(fCalculateFlow) {
+      Int_t ptind = fPtAxis->FindBin(lPtCur);
+      if(!ptind) continue; //Beyond the lower end of our pt: throw away
+      if(lPtCur>ptMax) continue; //If above our cutoff, throw away, too
+      fGFW->Fill(lTrack->Eta(),ptind-1,lTrack->Phi(),1,1); //Use weights 1 here
+    }
   };
   return ind;
 }
@@ -250,4 +266,60 @@ Int_t AliAnalysisTaskJetQ::FillMixedEvent(Int_t &triggerIndex, AliEventPool *l_p
     };
   };
   return nPairs;
+};
+void AliAnalysisTaskJetQ::SetupFlowOutput() {
+  if(!fGFW) fGFW = new AliGFW();
+  //Setting up regions
+  Int_t powers[] = {3,2,2,2};
+  fGFW->AddRegion("pos",4,powers,0.5,0.8,1+fPtAxis->GetNbins(),1); //In principle, should be enough with fPtAxis->GetNbins()?
+  fGFW->AddRegion("neg",4,powers,-0.8,-0.5,1+fPtAxis->GetNbins(),1); //In principle, should be enough with fPtAxis->GetNbins()?
+  //Preparing AliGFWFlowContainer:
+  //First, the structure:
+  TObjArray *oba = new TObjArray();
+  for(Int_t hr=1;hr<=3;hr++)
+    for(Int_t i=0;i<=fPtAxis->GetNbins();i++) {
+      oba->Add(new TNamed(Form("GapPV%iTrig%i",hr,i),Form("GapPV%iTrig%i",hr,i)));
+      oba->Add(new TNamed(Form("GapNV%iTrig%i",hr,i),Form("GapNV%iTrig%i",hr,i)));
+      for(Int_t j=i+1;j<=fPtAxis->GetNbins();j++) {
+        oba->Add(new TNamed(Form("GapPV%iTrig%i_pt_%i",hr,i,j),Form("GapPV%iTrig%i_pt_%i",hr,i,j)));
+        oba->Add(new TNamed(Form("GapNV%iTrig%i_pt_%i",hr,i,j),Form("GapNV%iTrig%i_pt_%i",hr,i,j)));
+      };
+    };
+  //Then also calculate centrality bins
+  Double_t *lCentBins = new Double_t[fCentAxis->GetNbins()+1];
+  for(Int_t i=0;i<fCentAxis->GetNbins();i++) lCentBins[i] = fCentAxis->GetBinLowEdge(i);
+  lCentBins[fCentAxis->GetNbins()] = fCentAxis->GetBinUpEdge(fCentAxis->GetNbins());
+  //Initialize flow container
+  fFC = new AliGFWFlowContainer();
+  fFC->SetName("FlowContainer");
+  fFC->SetXAxis(fPtAxis);
+  fFC->Initialize(oba,fCentAxis->GetNbins(),lCentBins,10); //Also probably let's do the bootstrapping
+  fOutList->Add(fFC); //Also, add this to the output list
+  //Create correlator configurations
+  for(Int_t hr=1;hr<=3;hr++)
+    for(Int_t i=0;i<=fPtAxis->GetNbins();i++) {
+      corrconfigs.push_back(GetConf(Form("GapPV%iTrig%i",hr,i),Form("pos {%i %i}",hr,-hr), kFALSE));
+      corrconfigs.push_back(GetConf(Form("GapPV%iTrig%i",hr,i),Form("pos {%i} neg {%i}",hr,-hr), kTRUE));
+      corrconfigs.push_back(GetConf(Form("GapNV%iTrig%i",hr,i),Form("neg {%i %i}",hr,-hr), kFALSE));
+      corrconfigs.push_back(GetConf(Form("GapNV%iTrig%i",hr,i),Form("neg {%i} pos {%i}",hr,-hr), kTRUE));
+    };
+}
+//Have to be very careful here to fill the correct pt bins!
+void AliAnalysisTaskJetQ::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn) {
+  Double_t dnx, val;
+  dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  if(dnx==0) return;
+  if(!corconf.pTDif) {
+    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+    return;
+  };
+  for(Int_t i=0;i<=fPtAxis->GetNbins();i++) {
+    dnx = fGFW->Calculate(corconf,i,kTRUE).Re();
+    if(dnx==0) continue;
+    val = fGFW->Calculate(corconf,i,kFALSE).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
+  };
 };
