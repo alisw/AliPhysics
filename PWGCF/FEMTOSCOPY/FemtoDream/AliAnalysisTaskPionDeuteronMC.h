@@ -40,6 +40,11 @@ public:
 
     void SetMixingDepth(unsigned int depth);
 
+    void SetSimpleCoalescence(bool makeItSimple) { fSimpleCoalescence = makeItSimple; }
+    void SetTwoGauss(bool useTwoGauss) { fTwoGauss = useTwoGauss; }
+
+    static float ComputeRadius(float mt);
+
     AliEventCuts fEventCuts;
 
 private:
@@ -48,6 +53,9 @@ private:
     int fEstimator;            ///< Choose the centrality estimator from AliEventCut
     float fP0;                 ///< Coalescence momentum p0
     unsigned int fMixingDepth; /// Depth of the mixing buffer
+
+    bool fSimpleCoalescence; ///< If true use simple coalescence, otherwise Wigner approach
+    bool fTwoGauss;          ///< If true use two-Gauss deuteron waver function, otherwise simple Gauss
 
     TArrayF fPrimaryPtBins; ///<  Transverse momentum bins
     TArrayF fKstarBins;     ///<  realtive momentum bins
@@ -88,9 +96,9 @@ private:
     float GetKstar(TLorentzVector &p1, TLorentzVector &p2);                                                               ///< return relative momentum in the rest frame of the pair
     void FillMixedEvent(std::vector<TLorentzVector> &vec, CustomQueue<std::vector<TLorentzVector>> &buffer, TH1F *histo); ///< fill mixed event distribution
 
-    void DoSimpleCoalescence(std::vector<TLorentzVector> &v_proton, std::vector<TLorentzVector> &v_neutron, std::vector<TLorentzVector> &v_deuteron, TH1F *histo); ///< create deuterons from protons and neutrons
+    void DoCoalescence(std::vector<TLorentzVector> &v_proton, std::vector<TLorentzVector> &v_neutron, std::vector<TLorentzVector> &v_deuteron, TH1F *histo); ///< create deuterons from protons and neutrons
 
-    ClassDef(AliAnalysisTaskPionDeuteronMC, 3);
+    ClassDef(AliAnalysisTaskPionDeuteronMC, 4);
 };
 //____________________________________________________________________________________________________________________________________
 

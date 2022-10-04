@@ -11,6 +11,7 @@
 #include "TMath.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TRandom3.h"
 
 #include <vector>
 #include <iostream>
@@ -30,6 +31,8 @@ AliAnalysisTaskPionDeuteronMC::AliAnalysisTaskPionDeuteronMC(const char *name)
       fEstimator{1},
       fP0{0.285},
       fMixingDepth{5},
+      fSimpleCoalescence{true},
+      fTwoGauss{false},
       fPrimaryPtBins{0},
       fKstarBins{0},
       fNormalisationHist{nullptr},
@@ -256,8 +259,8 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
     }
   }
 
-  DoSimpleCoalescence(v_proton, v_neutron, v_deuteron, hDeuteronSpectrum[0]);             // deuteron
-  DoSimpleCoalescence(v_antiproton, v_antineutron, v_antideuteron, hDeuteronSpectrum[1]); // antideuteron
+  DoCoalescence(v_proton, v_neutron, v_deuteron, hDeuteronSpectrum[0]);             // deuteron
+  DoCoalescence(v_antiproton, v_antineutron, v_antideuteron, hDeuteronSpectrum[1]); // antideuteron
 
   // count particles
   float nPosPions = (float)v_pospion.size();
@@ -465,7 +468,7 @@ void AliAnalysisTaskPionDeuteronMC::FillMixedEvent(std::vector<TLorentzVector> &
   }
 }
 
-void AliAnalysisTaskPionDeuteronMC::DoSimpleCoalescence(std::vector<TLorentzVector> &v_proton, std::vector<TLorentzVector> &v_neutron, std::vector<TLorentzVector> &v_deuteron, TH1F *histo)
+void AliAnalysisTaskPionDeuteronMC::DoCoalescence(std::vector<TLorentzVector> &v_proton, std::vector<TLorentzVector> &v_neutron, std::vector<TLorentzVector> &v_deuteron, TH1F *histo)
 {
 
   int n_neutrons = (int)v_neutron.size();
@@ -485,26 +488,61 @@ void AliAnalysisTaskPionDeuteronMC::DoSimpleCoalescence(std::vector<TLorentzVect
       proton_prime.Boost(-boost_vector);
       TLorentzVector neutron_prime = v_neutron[in];
       neutron_prime.Boost(-boost_vector);
-      Double_t deltaP = (proton_prime - neutron_prime).P();
+      TLorentzVector deltaPvector = proton_prime - neutron_prime;
+      Double_t deltaP = deltaPvector.P();
 
       // Fill DeltaP Distribution
       hDeltaP->Fill(deltaP);
 
       if (neutron_status[in] == 1)
         continue; // Skip already used neutrons
-
-      // Simple Coalescence Condition
-      if (deltaP < fP0)
+      if (fSimpleCoalescence)
       {
-        v_deuteron.push_back(deuteron);
-        neutron_status[in] = 1;
-        double y_deuteron = deuteron.Rapidity();
-        if (TMath::Abs(y_deuteron) < 0.5)
+        // Simple Coalescence Condition
+        if (deltaP < fP0)
         {
-          histo->Fill(deuteron.P());
+          v_deuteron.push_back(deuteron);
+          neutron_status[in] = 1;
+          double y_deuteron = deuteron.Rapidity();
+          if (TMath::Abs(y_deuteron) < 0.5)
+          {
+            histo->Fill(deuteron.P());
+          }
+          break;
         }
-        break;
+      }
+      else
+      {
+        float value = (float)gRandom->Uniform();
+        float q = 0.5 * deltaP;
+        float mt = 0.5 * deltaPvector.Mt();
+        float radius = ComputeRadius(mt);
+        float prob = 1;
+        if (fTwoGauss)
+        {
+          prob = 3 * (TMath::Power(3.979, 3) / TMath::Power(3.979 * 3.979 + 4 * radius * radius, 1.5) * TMath::Exp(-1 * q * q * 3.979 * 3.979 * 5.068 * 5.068) + (1. - 0.581) * TMath::Power(0.890, 3) / TMath::Power(0.890 * 0.890 + 4 * radius * radius, 1.5) * TMath::Exp(-1 * q * q * 0.890 * 0.890 * 5.068 * 5.068));
+        }
+        else
+        {
+          prob = 3 * TMath::Power(3.2, 3) / TMath::Power(3.2 * 3.2 + radius * radius, 1.5) * TMath::Exp(-1 * q * q * 3.2 * 3.2 * 5.068 * 5.068);
+        }
+        if (value < prob)
+        {
+          v_deuteron.push_back(deuteron);
+          neutron_status[in] = 1;
+          double y_deuteron = deuteron.Rapidity();
+          if (TMath::Abs(y_deuteron) < 0.5)
+          {
+            histo->Fill(deuteron.P());
+          }
+          break;
+        }
       }
     }
   }
+}
+
+float AliAnalysisTaskPionDeuteronMC::ComputeRadius(float mt)
+{
+  return 0.8 + TMath::Exp(1.4 - 1.9 * mt);
 }
