@@ -57,29 +57,23 @@ AliFemtoDreamPairCleaner& AliFemtoDreamPairCleaner::operator=(
 void AliFemtoDreamPairCleaner::CleanTrackAndDecay(
     std::vector<AliFemtoDreamBasePart> *Tracks,
     std::vector<AliFemtoDreamBasePart> *Decay, int histnumber) {
-  int counter = 0;
+  // Until 04/10/2022: flag the decay as not-to-be-used
+  // Since 05/10/2022: flag the track as not-to-be-used
+  int nFlaggedTracks = 0;
   for (auto itTrack = Tracks->begin(); itTrack != Tracks->end(); ++itTrack) {
-    //std::cout  << "New Track" << std::endl;
     for (auto itDecay = Decay->begin(); itDecay != Decay->end(); ++itDecay) {
-      if (itDecay->UseParticle()) {
-        //std::cout  << "New v0" << std::endl;
-        std::vector<int> IDTrack = itTrack->GetIDTracks();
-        std::vector<int> IDDaug = itDecay->GetIDTracks();
-        for (auto itIDs = IDDaug.begin(); itIDs != IDDaug.end(); ++itIDs) {
-          //std::cout <<"ID of Track: "<<IDTrack.at(0)<<" IDs of Daughter: "
-          //              <<*itIDs<<'\n';
-          if (*itIDs == IDTrack.at(0)) {
-            itDecay->SetUse(false);
-            counter++;
-          }
+      std::vector<int> IDTrack = itTrack->GetIDTracks();
+      std::vector<int> IDDaug = itDecay->GetIDTracks();
+      for (auto itIDs = IDDaug.begin(); itIDs != IDDaug.end(); ++itIDs) {
+        if (*itIDs == IDTrack.at(0)) {
+          itTrack->SetUse(false);
+          nFlaggedTracks++;
         }
-      } else {
-        continue;
       }
     }
   }
   if (!fMinimalBooking)
-    fHists->FillDaughtersSharedTrack(histnumber, counter);
+    fHists->FillDaughtersSharedTrack(histnumber, nFlaggedTracks);
 }
 void AliFemtoDreamPairCleaner::CleanDecayAndDecay(
     std::vector<AliFemtoDreamBasePart> *Decay1,
