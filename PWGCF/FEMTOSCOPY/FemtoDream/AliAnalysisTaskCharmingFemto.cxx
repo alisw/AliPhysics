@@ -500,7 +500,95 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
       }
 
-      if ((std::abs(mcpdg)) == absPdgMom && (fDecChannel == kDplustoKpipi)) {
+      if ((std::abs(mcpdg)) == absPdgMom && pt>DmesonPtMin && pt<DmesonPtMax ){
+        if (fDecChannel == kDstartoKpipi){
+          // select the correct decay channel
+          if (std::abs(mcpdg) != 413 || mcPart->GetNDaughters() != 2 ) {
+            continue;
+          }
+          auto *dau1 = (AliAODMCParticle *)fArrayMCAOD->At(mcPart->GetDaughterLabel(0));
+          auto *dau2 = (AliAODMCParticle *)fArrayMCAOD->At(mcPart->GetDaughterLabel(1));
+
+          AliAODMCParticle *D0meson;
+          AliAODMCParticle *softPion;
+          if (std::abs(dau1->GetPdgCode()) == 421){
+            D0meson = dau1;
+            softPion = dau2;
+          } else if (std::abs(dau2->GetPdgCode()) == 421) {
+            D0meson = dau2;
+            softPion = dau1;
+          } else {
+            continue; // reject D* -> D+pi0
+          }
+
+          // select kinem of soft pion
+          if (
+            softPion->Pt() < ptMin   || 
+            softPion->Pt() > ptMax   ||
+            softPion->Eta() < etaMin || 
+            softPion->Eta() > etaMax
+          ){
+            continue;
+          }
+
+          // select the correct decay channel
+          if (D0meson->GetNDaughters() != 2 ) {
+            continue;
+          }
+
+          auto *D0Dau1 = (AliAODMCParticle *)fArrayMCAOD->At(D0meson->GetDaughterLabel(0));
+          auto *D0Dau2 = (AliAODMCParticle *)fArrayMCAOD->At(D0meson->GetDaughterLabel(1));
+
+          AliAODMCParticle *kaonFromD0;
+          AliAODMCParticle *pionFromD0;
+
+          if (std::abs(D0Dau1->GetPdgCode()) == 321 && std::abs(D0Dau2->GetPdgCode()) == 211){
+            kaonFromD0 = D0Dau1;
+            pionFromD0 = D0Dau2;
+          } else if (std::abs(D0Dau1->GetPdgCode()) == 211 && std::abs(D0Dau2->GetPdgCode()) == 321) {
+            kaonFromD0 = D0Dau2;
+            pionFromD0 = D0Dau1;
+          } else {
+            continue; // reject D0 not decaying into Kpi
+          }
+
+          // select D0daughters' kinematics
+          if (
+            kaonFromD0->Pt()  < ptMin  ||
+            kaonFromD0->Pt()  > ptMax  ||
+            kaonFromD0->Eta() < etaMin ||
+            kaonFromD0->Eta() > etaMax ||
+            pionFromD0->Pt()  < ptMin  ||
+            pionFromD0->Pt()  > ptMax  ||
+            pionFromD0->Eta() < etaMin ||
+            pionFromD0->Eta() > etaMax
+          ){
+            continue;
+          }
+
+          // fill histos
+          if (!SelectDmesonOrigin(fArrayMCAOD, mcPart))
+            continue;
+
+          part.SetMCParticleRePart(mcPart);
+
+          part.SetIDTracks(softPion->GetLabel());
+          part.SetIDTracks(kaonFromD0->GetLabel());
+          part.SetIDTracks(pionFromD0->GetLabel());
+          
+          if (mcpdg == 413) {
+            dplus.push_back(part);
+          } else if (mcpdg == -413){
+            dminus.push_back(part);
+          }
+          if(fDoDorigPlots){
+            FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
+            FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
+          }
+        }
+      }
+        
+        if ((std::abs(mcpdg)) == absPdgMom && (fDecChannel == kDplustoKpipi)) {
         if((pt>DmesonPtMin) && (pt<DmesonPtMax)) {
           int NDDaughters=(const int)mcPart->GetNDaughters();
           if (NDDaughters == 3) {
@@ -602,6 +690,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       dMesonWithVtx = dMeson;
     }
 
+    // todo check labels of dmeson daughts
     bool unsetVtx = false;
     bool recVtx = false;
     AliAODVertex *origOwnVtx = nullptr;
