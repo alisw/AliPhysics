@@ -339,6 +339,16 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	// 	hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
 	// 	hDCAzBefore->Fill(pos[2],aodTrk->Pt());
 	// }
+	float CentralityForPileup = (static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")))->GetMultiplicityPercentile("V0M");
+	if(fAddTPCPileupCuts){
+		fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+		if (fPeriod.EqualTo("LHC15o") && CentralityForPileup >=0 && CentralityForPileup <=10){
+			fEventCuts.fESDvsTPConlyLinearCut[0] = 500.;
+		}
+		else{
+			fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
+		}
+	}
 	
 	
 	if(fTrigger==0){
