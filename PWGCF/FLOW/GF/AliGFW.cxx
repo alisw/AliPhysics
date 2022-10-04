@@ -217,23 +217,17 @@ AliGFW::CorrConfig AliGFW::GetCorrelatorConfig(TString config, TString head, Boo
   config.ReplaceAll(","," ");
   config.ReplaceAll(";"," ");
   config.ReplaceAll("| ","|");
+  //If pT-bin is provided, then look for & remove space before "(" (so that it's clean afterwards)
+  while(config.Index(" (")>-1) config.ReplaceAll(" (","(");
   //Then make sure we don't have any double-spaces:
   while(config.Index("  ")>-1) config.ReplaceAll("  "," ");
   vector<Int_t> regs;
   vector<Int_t> hars;
-  Int_t ptbin=0;
   Ssiz_t sz1=0;
   Ssiz_t szend=0;
   TString ts, ts2;
   CorrConfig ReturnConfig;
-  //find the pT-bin:
-  if(config.Tokenize(ts,sz1,"(")) {
-    config.Tokenize(ts,sz1,")");
-    ptbin=ts.Atoi();
-  };
   //Fetch region descriptor
-  if(sz1<0) sz1=0;
-
   if(!config.Tokenize(ts,szend,"{")) {
     printf("Could not find harmonics!\n");
     return ReturnConfig;
@@ -244,7 +238,25 @@ AliGFW::CorrConfig AliGFW::GetCorrelatorConfig(TString config, TString head, Boo
     counter++;
     ReturnConfig.Regs.push_back(vector<Int_t> {});
     ReturnConfig.Hars.push_back(vector<Int_t> {});
+    // ReturnConfig.ptInd.push_back(vector<Int_t> {});
     ReturnConfig.Overlap.push_back(-1); //initially, assume no overlap
+    //Check if there's a particular pT bin I should be using here. If so, store it (otherwise, it's bin 0)
+    Int_t ptbin=-1;
+    Ssiz_t sz2=0;
+    if(ts.Contains("(")) {
+      if(!ts.Contains(")")) {printf("Missing \")\" in the configurator. Returning...\n"); return ReturnConfig; };
+      sz2 = ts.Index("(");
+      sz1=sz2+1;
+      ts.Tokenize(ts2,sz1,")");
+      ptbin=ts2.Atoi();
+      ts.Remove(sz2,(sz1-sz2+1));
+      szend-=(sz1-sz2); //szend also becomes shorter
+      //also need to remove this from config now:
+      sz2 = config.Index("(");
+      sz1 = config.Index(")");
+      config.Remove(sz2,sz1-sz2+1);
+    };
+    ReturnConfig.ptInd.push_back(ptbin);
     sz1=0;
     //Fetch regions
     while(ts.Tokenize(ts2,sz1," ")) {
@@ -269,6 +281,7 @@ AliGFW::CorrConfig AliGFW::GetCorrelatorConfig(TString config, TString head, Boo
   };
   ReturnConfig.Head = head;
   ReturnConfig.pTDif = ptdif;
+  // ReturnConfig.pTbin = ptbin;
   return ReturnConfig;
 };
 
@@ -278,11 +291,21 @@ TComplex AliGFW::Calculate(Int_t poi, Int_t ref, vector<Int_t> hars, Int_t ptbin
   AliGFWCumulant *qovl = qpoi;
   return RecursiveCorr(qpoi, qref, qovl, ptbin, hars);
 };
+// TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap) {
+//    vector<Int_t> ptbins;
+//    for(Int_t i=0;i<(Int_t)corconf.size();i++) ptbins.push_back(ptbin);
+//    return Calculate(corconf,ptbins,SetHarmsToZero,DisableOverlap);
+// }
 TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap) {
   if(corconf.Regs.size()==0) return TComplex(0,0); //Check if we have any regions at all
+  // if(ptbins.size()!=corconf.Regs.size()) {printf("Number of pT-bins is not the same as number of subevents!\n"); return TComplex(0,0); };
   TComplex retval(1,0);
+  Int_t ptInd;
   for(Int_t i=0;i<(Int_t)corconf.Regs.size();i++) { //looping over all regions
     if(corconf.Regs.at(i).size()==0)  return TComplex(0,0); //again, if no regions in the current subevent, then quit immediatelly
+    ptInd = corconf.ptInd.at(i); //for i=0 (potentially, POI)
+    if(ptInd<0) ptInd = ptbin;
+    // Int_t ptbin = ptbins.at(i);
     //picking up the indecies of regions...
     Int_t poi = corconf.Regs.at(i).at(0);
     Int_t ref = (corconf.Regs.at(i).size()>1)?corconf.Regs.at(i).at(1):corconf.Regs.at(i).at(0);
@@ -290,8 +313,8 @@ TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZer
     //and regions themselves
     AliGFWCumulant *qref = &fCumulants.at(ref);
     AliGFWCumulant *qpoi = &fCumulants.at(poi);
-    if(!qref->IsPtBinFilled(ptbin)) return TComplex(0,0); //if REF is not filled, don't even continue. Could be redundant, but should save little CPU time
-    if(!qpoi->IsPtBinFilled(ptbin)) return TComplex(0,0);//if POI is not filled, don't even continue. Could be redundant, but should save little CPU time
+    if(!qref->IsPtBinFilled(ptInd)) return TComplex(0,0); //if REF is not filled, don't even continue. Could be redundant, but should save little CPU time
+    if(!qpoi->IsPtBinFilled(ptInd)) return TComplex(0,0);//if POI is not filled, don't even continue. Could be redundant, but should save little CPU time
     AliGFWCumulant *qovl=0;
     //Check if in the ref. region we have enough particles (no. of particles in the region >= no of harmonics for subevent)
     Int_t sz1 = corconf.Hars.at(i).size();
@@ -302,7 +325,7 @@ TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZer
       qovl = DisableOverlap?0:&fCumulants.at(ovl);
     else if(ref==poi) qovl = qref; //If ref and poi are the same, then the same is for overlap. Only, when OL not explicitly defined
     if(SetHarmsToZero) for(Int_t j=0;j<(Int_t)corconf.Hars.at(i).size();j++) corconf.Hars.at(i).at(j) = 0;
-    retval *= RecursiveCorr(qpoi, qref, qovl, ptbin, corconf.Hars.at(i));
+    retval *= RecursiveCorr(qpoi, qref, qovl, ptInd, corconf.Hars.at(i));
   }
   return retval;
 };
