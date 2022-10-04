@@ -67,7 +67,7 @@ void runCorrelationsStudiesConfigMacro() {
   szpass = "2";
 
   /* Running conditions */
-  szAliPhysicsVersion = "vAN-20220119_ROOT6-1";
+  szAliPhysicsVersion = "vAN-20220627_ROOT6-1";
 
   /* the number of files we want to test */
   nNoOfInputFiles = 30;
@@ -75,7 +75,7 @@ void runCorrelationsStudiesConfigMacro() {
 
   /* load the run numbers */
   // load2010c900RunNumbers();
-  load2010cMC900RunNumbers();
+  // load2010cMC900RunNumbers();
   // load2010bTestRunNumber();
   // loadLocal2010hMCTestRunNumber();
   // load2010hTestRunNumber();
@@ -95,7 +95,7 @@ void runCorrelationsStudiesConfigMacro() {
   // loadAMPT2015oHIRTestRunNumber();
   // load2017nRunNumbers();
   // loadAMPT2760RunNumbers();
-  // load2018qRunNumbers();
+  load2018qRunNumbers();
   // load2018rESDRunNumbers();
   // load2015pPbHIJINGTestRunNumber();
 
@@ -875,25 +875,24 @@ void loadAMPT2760RunNumbers() {
 }
 
 void load2018qRunNumbers() {
-  const Int_t nruns = 14;
+  const Int_t nruns = 125;
   const char *runs[nruns] = {
-      "296068",
-      "296066",
-      "296065",
-      "296063",
-      "296062",
-      "296061",
-      "296060",
-      "295589",
-      "295588",
-      "295587",
-      "295586",
-      "295585",
-      "295584",
-      "295581"
+      "296623", "296622", "296621", "296619", "296618", "296616", "296615", "296594", "296553", "296552", 
+      "296551", "296550", "296548", "296547", "296516", "296512", "296511", "296510", "296509", "296472", 
+      "296433", "296424", "296423", "296420", "296419", "296415", "296414", "296383", "296381", "296380", 
+      "296379", "296378", "296377", "296376", "296375", "296312", "296309", "296304", "296303", "296280", 
+      "296279", "296273", "296270", "296269", "296247", "296246", "296244", "296243", "296242", "296241", 
+      "296240", "296198", "296197", "296196", "296195", "296194", "296192", "296191", "296143", "296142", 
+      "296135", "296134", "296133", "296132", "296123", "296074", "296066", "296065", "296063", "296062", 
+      "296060", "296016", "295942", "295941", "295937", "295936", "295913", "295910", "295909", "295861", 
+      "295860", "295859", "295856", "295855", "295854", "295853", "295831", "295829", "295826", "295825", 
+      "295822", "295819", "295818", "295816", "295791", "295788", "295786", "295763", "295762", "295759", 
+      "295758", "295755", "295754", "295725", "295723", "295721", "295719", "295718", "295717", "295714", 
+      "295712", "295676", "295675", "295673", "295668", "295667", "295666", "295615", "295612", "295611", 
+      "295610", "295589", "295588", "295586", "295585"
   };
 
-  bUseESD                    = kTRUE;
+  bUseESD                    = kFALSE;
   bUseAOD                    = !bUseESD;
 
   /* the GRID working directory */
@@ -902,14 +901,14 @@ void load2018qRunNumbers() {
   bMC = kFALSE;
 
   /* reco pass */
-  szpass = "1";
+  szpass = "3";
 
   /* 2018q */
   szDataDir = "/alice/data/2018/LHC18q";
-  /* 2018q uncalibrated pass 1 */
-  szDataPattern = "*/pass1_uncalibrated/*/AliESDs.root";
+  /* 2018q calibrated pass 3 */
+  szDataPattern = "/pass3/AOD252/AOD/*/AliAOD.root";
 
-  /* the list of runs to analyze 2015o HIR*/
+  /* the list of runs to analyze 20158q */
   for (Int_t i = 0; i < nruns; i++)
     listOfActiveRuns.Add(new TObjString(runs[i]));
 

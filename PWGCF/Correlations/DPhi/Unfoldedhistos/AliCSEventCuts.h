@@ -178,7 +178,8 @@ private:
   Float_t             fSPDTrkVtxDistSigmas;   ///< n total sigmas for the SPD tracks vertexes distance
   Float_t             fTrkVtxDistSigmas;      ///< track vertex n sigmas for the SPD tracks vertexes distance
   Bool_t              fUseNewMultFramework;   ///< kTRUE if the new multiplicity framework for centrality estimation must be used
-  TFormula           *fRun2V0MBasedPileUpCorrelation;    ///< formula to evaluate Run2 additional pileup cut
+  TFormula* fRun2V0MBasedPileUpCorrelationLowLimit; ///< formula to evaluate Run2 additional pileup cut, lower limit
+  TFormula* fRun2V0MBasedPileUpCorrelationUpLimit;  ///< formula to evaluate Run2 additional pileup cut, upper limit
   TF1*                fCentOutLowCut;         ///< cut low for centrality outliers
   TF1*                fCentOutHighCut;        ///< cut high for centrality outliers
   TF1*                fTOFMultOutLowCut;      ///< cut low for TOF multiplicity outliers
