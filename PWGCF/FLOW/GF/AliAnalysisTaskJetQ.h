@@ -23,6 +23,8 @@
 #include "AliEventPoolManager.h"
 #include "AliBasicParticle.h"
 #include "TAxis.h"
+#include "AliGFWFlowContainer.h"
+#include "AliGFW.h"
 using namespace std;
 class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
 {
@@ -38,6 +40,8 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         void SetPtBins(Int_t nBins, Double_t *bins) {setupAxis(nBins,bins,fPtBins,fPtAxis); };
         void SetEventMixingCapacity(Int_t nTotEv, Int_t nTotTr, Int_t frReady, Int_t nMinEv) { fEvMixPars[0]=nTotEv; fEvMixPars[1]=nTotTr; fEvMixPars[2]=frReady; fEvMixPars[3]=nMinEv; }; //Fraction is given in %, so should be an integer number!
         void SetTriggerPt(const Double_t &ptMin, const Double_t &ptMax) {fPtTriggMin=ptMin; fPtTriggMax=ptMax;};
+        void SetCalculateFlow(Bool_t newval) { fCalculateFlow=newval; };
+        void SetupFlowOutput();
     private:
         AliAnalysisTaskJetQ(const AliAnalysisTaskJetQ&); // not implemented
         AliAnalysisTaskJetQ& operator=(const AliAnalysisTaskJetQ&); // not implemented
@@ -51,6 +55,9 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
 
         void fixPhi(Double_t &inPhi) { if(inPhi<-C_PI_HALF) inPhi+=C_TWOPI; else if(inPhi>C_PI_TH) inPhi-=C_TWOPI; };
         void setupAxis(Int_t &nBins, Double_t *&bins, vector<Double_t> &binCont, TAxis *&ax) {if(binCont.size()>0) binCont.clear(); for(Int_t i=0;i<=nBins;i++) binCont.push_back(bins[i]); if(ax) delete ax; ax = new TAxis(nBins, bins); };
+        AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
+        void FillFCs(Double_t cent, Double_t rndm) {for(auto a : corrconfigs) FillFCs(a,cent,rndm); };
+        void FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn);
         AliAODEvent *fAOD; //! do not store
         AliMCEvent *fMCEvent; //! do not store
         AliEventPoolManager *fPoolMgr; //! do not store
@@ -74,6 +81,10 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         Bool_t fPtDif;
         AliEventCuts fEventCuts;
         Int_t fEvMixPars[4];
+        Bool_t fCalculateFlow;
+        AliGFWFlowContainer *fFC;
+        AliGFW *fGFW;
+        vector<AliGFW::CorrConfig> corrconfigs; //! do not store
         ClassDef(AliAnalysisTaskJetQ, 1);
 };
 #endif
