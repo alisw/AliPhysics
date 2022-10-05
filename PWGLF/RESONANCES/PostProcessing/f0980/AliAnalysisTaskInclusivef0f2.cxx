@@ -139,9 +139,14 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  Double1D varcentbinHeavy = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,5,10,15,20,30,40,50,60,70,80,100};
  Double1D Cntbins_HI = {0, 10, 30, 50, 90};
+ Double1D Cntbins_HILOWPT = {0, 50, 60, 70, 80, 90};
+
  binCent = AxisVar("Cent",varcentbinHeavy);
  if( fOption.Contains("PbPb") ){
 	binCent = AxisVar("Cent",Cntbins_HI);
+	if( fOption.Contains("LOWPT") ){
+		binCent = AxisVar("Cent",Cntbins_HILOWPT);
+	}
  }
 
  Double1D verzbin = {-15,-10,-7,7,10,15};
