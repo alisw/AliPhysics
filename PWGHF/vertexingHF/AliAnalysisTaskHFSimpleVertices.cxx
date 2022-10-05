@@ -62,16 +62,22 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistTglAllTracks{nullptr},
   fHistTglSelTracks{nullptr},
   fHistEtaAllTracks{nullptr},
+  fHistPtSelTracks2prong{nullptr},
+  fHistPtSelTracks3prong{nullptr},
+  fHistPtSelTracksbachelor{nullptr},
   fHistEtaSelTracks2prong{nullptr},
   fHistEtaSelTracks3prong{nullptr},
+  fHistEtaSelTracksbachelor{nullptr},
   fHistImpParAllTracks{nullptr},
   fHistImpParSelTracks2prong{nullptr},
   fHistImpParSelTracks3prong{nullptr},
+  fHistImpParSelTracksbachelor{nullptr},
   fHistITSmapAllTracks{nullptr},
   fHistITSmapSelTracks{nullptr},
   fHistPrimVertX{nullptr},
   fHistPrimVertY{nullptr},
   fHistPrimVertZ{nullptr},
+  fHistPrimVertContr{nullptr},
   fHist2ProngVertX{nullptr},
   fHist2ProngVertY{nullptr},
   fHist2ProngVertZ{nullptr},
@@ -163,6 +169,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistWallTimeCandVsNTracks{nullptr},
   fReadMC(kFALSE),
   fUsePhysSel(kTRUE),
+  fUseAliEventCuts(kFALSE),
   fTriggerMask(AliVEvent::kAny),
   fSelectOnCentrality(kFALSE),
   fMinCentrality(-1.),
@@ -188,6 +195,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fVertexerMinParamChange(1.e-3),
   fVertexerMinRelChi2Change(0.9),
   fVertexerUseAbsDCA(true),
+  fEventCuts{},
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
   fTrackCutsBach{nullptr},
@@ -253,16 +261,22 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistTglAllTracks;
     delete fHistTglSelTracks;
     delete fHistEtaAllTracks;
+    delete fHistPtSelTracks2prong;
+    delete fHistPtSelTracks3prong;
+    delete fHistPtSelTracksbachelor;
     delete fHistEtaSelTracks2prong;
     delete fHistEtaSelTracks3prong;
+    delete fHistEtaSelTracksbachelor;
     delete fHistImpParAllTracks;
     delete fHistImpParSelTracks2prong;
     delete fHistImpParSelTracks3prong;
+    delete fHistImpParSelTracksbachelor;
     delete fHistITSmapAllTracks;
     delete fHistITSmapSelTracks;
     delete fHistPrimVertX;
     delete fHistPrimVertY;
     delete fHistPrimVertZ;
+    delete fHistPrimVertContr;
     delete fHist2ProngVertX;
     delete fHist2ProngVertY;
     delete fHist2ProngVertZ;
@@ -418,6 +432,10 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
   fTrackCutsBach = new AliESDtrackCuts("AliESDtrackCuts", "defaultbach");
   fTrackCutsBach->SetPtRange(0.3, 1.e10);
   fTrackCutsBach->SetEtaRange(-0.8, +0.8);
+  fTrackCutsBach->SetRequireITSRefit(kTRUE);
+  fTrackCutsBach->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                           AliESDtrackCuts::kAny);
+
   fTrackCutsBach->SetMinDCAToVertexXYPtDep("0.*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
   fTrackCutsBach->SetMaxDCAToVertexXY(1.);
 
@@ -621,6 +639,10 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("Min pt track (3 prong)= %g\n", ptmintrack3);
     if (ptmintrack3 > 0)
       fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
+    Double_t ptmintrackb = GetJsonFloat(filename.Data(), "pTMinTrack3Bach");
+    printf("Min pt track (bachelor)= %g\n", ptmintrackb);
+    if (ptmintrackb > 0)
+      fTrackCutsBach->SetPtRange(ptmintrackb, 1.e10);
     Int_t do3Prongs = GetJsonInteger(filename.Data(), "do3prong");
     printf("do3prong     = %d\n", do3Prongs);
     if (do3Prongs > 0)
@@ -650,6 +672,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       printf("minncluTPC   = %d\n", minncluTPC);
     fTrackCuts2pr->SetMinNClustersTPC(minncluTPC);
     fTrackCuts3pr->SetMinNClustersTPC(minncluTPC);
+    fTrackCutsBach->SetMinNClustersTPC(minncluTPC);
 
     int nptbinlimsSingleTrack = 0;
     float* ptbinsSingleTrack = GetJsonArray(filename.Data(), "pTBinsTrack", nptbinlimsSingleTrack);
@@ -680,6 +703,10 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("Max eta  (3 prong) = %g\n", etamax3);
     if (etamax3 > 0)
       fTrackCuts3pr->SetEtaRange(-etamax3, +etamax3);
+    Double_t etamaxb = GetJsonFloat(filename.Data(), "etaMaxBach");
+    printf("Max eta  (bachelor) = %g\n", etamaxb);
+    if (etamaxb > 0)
+      fTrackCutsBach->SetEtaRange(-etamaxb, +etamaxb);
 
     // vertexer parameters
     printf("--- DCAFitterN parameters ---\n");
@@ -883,6 +910,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(5, "Pass zSPD-zTrk vert sel");
   fHistNEvents->GetXaxis()->SetBinLabel(6, "Pass |zvert|");
   fHistNEvents->GetXaxis()->SetBinLabel(7, "Pileup cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(8, "Pass AliEventCuts");
   fOutput->Add(fHistNEvents);
 
   fHistTrackStatus = new TH1F("hTrackStatus", "", 4, -0.5, 3.5);
@@ -898,6 +926,9 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistTglAllTracks = new TH1F("hTglAllTracks", " All tracks ; tg#lambda", 100, -5., 5.);
   fHistTglSelTracks = new TH1F("hTglSelTracks", " Selected tracks ; tg#lambda", 100, -5., 5.);
   fHistEtaAllTracks = new TH1F("hEtaAllTracks", " All tracks ; #eta", 100, -1, 1.);
+  fHistPtSelTracks2prong = new TH1F("hPtSelTracks2prong", " Selected tracks ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtSelTracks3prong = new TH1F("hPtSelTracks3prong", " Selected tracks ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtSelTracksbachelor = new TH1F("hPtSelTracksbachelor", " Selected tracks ; p_{T} (GeV/c)", 360, 0., 36.);
   Float_t eta2mincut, eta2maxcut;
   fTrackCuts2pr->GetEtaRange(eta2mincut, eta2maxcut);
   Int_t nBinsETA = 100;
@@ -920,6 +951,17 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
     higlimETA = 1.2 * eta3maxcut;
   }
   fHistEtaSelTracks3prong = new TH1F("hEtaSelTracks3prong", " Selected tracks ; #eta", nBinsETA, lowlimETA, higlimETA);
+  Float_t etabmincut, etabmaxcut;
+  fTrackCutsBach->GetEtaRange(etabmincut, etabmaxcut);
+  nBinsETA = 100;
+  lowlimETA = -1.;
+  higlimETA = 1.;
+  if (etabmaxcut < 10) {
+    nBinsETA = static_cast<int>(1.2 * etabmaxcut * 100);
+    lowlimETA = 1.2 * etabmincut;
+    higlimETA = 1.2 * etabmaxcut;
+  }
+  fHistEtaSelTracksbachelor = new TH1F("hEtaSelTracksbachelor", " Selected tracks ; #eta", nBinsETA, lowlimETA, higlimETA);
   fHistImpParAllTracks = new TH1F("hImpParAllTracks", " All tracks ; d_{0}^{xy} (cm)", 100, -1, 1.);
   Int_t nBinsDCA = 400;
   Double_t lowlimDCA = -2.;
@@ -929,6 +971,10 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   lowlimDCA = -2.;
   higlimDCA = 2.;
   fHistImpParSelTracks3prong = new TH1F("hImpParSelTracks3prong", " Selected tracks ; d_{0}^{xy} (cm)", nBinsDCA, lowlimDCA, higlimDCA);
+  nBinsDCA = 400;
+  lowlimDCA = -2.;
+  higlimDCA = 2.;
+  fHistImpParSelTracksbachelor = new TH1F("hImpParSelTracksbachelor", " Selected tracks ; d_{0}^{xy} (cm)", nBinsDCA, lowlimDCA, higlimDCA);
   fHistITSmapAllTracks = new TH1F("hITSmapAllTracks", " All tracks ; ITS cluster map", 64, -0.5, 63.5);
   fHistITSmapSelTracks = new TH1F("hITSmapSelTracks", " Selected tracks ; ITS cluster map", 64, -0.5, 63.5);
   fOutput->Add(fHistPtAllTracks);
@@ -936,18 +982,24 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistTglAllTracks);
   fOutput->Add(fHistTglSelTracks);
   fOutput->Add(fHistEtaAllTracks);
+  fOutput->Add(fHistPtSelTracks2prong);
+  fOutput->Add(fHistPtSelTracks3prong);
+  fOutput->Add(fHistPtSelTracksbachelor);
   fOutput->Add(fHistEtaSelTracks2prong);
   fOutput->Add(fHistEtaSelTracks3prong);
+  fOutput->Add(fHistEtaSelTracksbachelor);
   fOutput->Add(fHistImpParAllTracks);
   fOutput->Add(fHistImpParSelTracks2prong);
   fOutput->Add(fHistImpParSelTracks3prong);
+  fOutput->Add(fHistImpParSelTracksbachelor);
   fOutput->Add(fHistITSmapAllTracks);
   fOutput->Add(fHistITSmapSelTracks);
 
   // vertex histos
-  fHistPrimVertX = new TH1F("hPrimVertX", " Primary Vertex ; x (cm)", 100, -0.5, 0.5);
-  fHistPrimVertY = new TH1F("hPrimVertY", " Primary Vertex ; y (cm)", 100, -0.5, 0.5);
-  fHistPrimVertZ = new TH1F("hPrimVertZ", " Primary Vertex ; z (cm)", 100, -20.0, 20.0);
+  fHistPrimVertX = new TH1F("hPrimVertX", " Primary Vertex ; x (cm)", 400, -0.5, 0.5);
+  fHistPrimVertY = new TH1F("hPrimVertY", " Primary Vertex ; y (cm)", 400, -0.5, 0.5);
+  fHistPrimVertZ = new TH1F("hPrimVertZ", " Primary Vertex ; z (cm)", 400, -20.0, 20.0);
+  fHistPrimVertContr = new TH1F("fHistPrimVertContr", " Primary Vertex ; N contributors", 20001, -0.5, 20000.5);
   fHist2ProngVertX = new TH1F("h2ProngVertX", " Secondary Vertex ; x (cm)", 1000, -2., 2.);
   fHist2ProngVertY = new TH1F("h2ProngVertY", " Secondary Vertex ; y (cm)", 1000, -2., 2.);
   fHist2ProngVertZ = new TH1F("h2ProngVertZ", " Secondary Vertex ; z (cm)", 1000, -20.0, 20.0);
@@ -958,6 +1010,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistPrimVertX);
   fOutput->Add(fHistPrimVertY);
   fOutput->Add(fHistPrimVertZ);
+  fOutput->Add(fHistPrimVertContr);
   fOutput->Add(fHist2ProngVertX);
   fOutput->Add(fHist2ProngVertY);
   fOutput->Add(fHist2ProngVertZ);
@@ -1215,7 +1268,8 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
 {
   //
 
-  AliESDEvent* esd = (AliESDEvent*)(InputEvent());
+  AliVEvent* vevt = InputEvent();
+  AliESDEvent* esd = (AliESDEvent*)(vevt);
   if (!esd) {
     printf("AliAnalysisTaskHFSimpleVertices::UserExec(): bad ESD\n");
     return;
@@ -1325,6 +1379,13 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
   }
   fHistNEvents->Fill(1);
 
+  if (fUseAliEventCuts) {
+    Bool_t alieventcut = fEventCuts.AcceptEvent(vevt);
+    if (!alieventcut)
+      return;
+  }
+  fHistNEvents->Fill(7);
+
   if (fSelectOnCentrality) {
     if (centr < fMinCentrality || centr > fMaxCentrality)
       return;
@@ -1334,14 +1395,18 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
   AliESDVertex* primVtxTrk = (AliESDVertex*)esd->GetPrimaryVertex();
   AliESDVertex* primVtxSPD = (AliESDVertex*)esd->GetPrimaryVertexSPD();
   TString titTrc = primVtxTrk->GetTitle();
-  if (titTrc.IsNull())
-    return;
-  if (primVtxTrk->IsFromVertexer3D() || primVtxTrk->IsFromVertexerZ())
-    return;
-  if (primVtxTrk->GetNContributors() < 2)
-    return;
-  if (primVtxSPD->GetNContributors() < 1)
-    return;
+  // AliEventCuts ignores the SPD/tracks vertex position and reconstruction individual flags
+  // so the selections below would reject more events than intended. Disable in case AliEventCuts required
+  if(!fUseAliEventCuts){
+    if (titTrc.IsNull())
+      return;
+    if (primVtxTrk->IsFromVertexer3D() || primVtxTrk->IsFromVertexerZ())
+      return;
+    if (primVtxTrk->GetNContributors() < 2)
+      return;
+    if (primVtxSPD->GetNContributors() < 1)
+      return;
+  }
   fHistNEvents->Fill(3);
 
   double covTrc[6], covSPD[6];
@@ -1363,6 +1428,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
   fHistPrimVertX->Fill(primVtxTrk->GetX());
   fHistPrimVertY->Fill(primVtxTrk->GetY());
   fHistPrimVertZ->Fill(primVtxTrk->GetZ());
+  fHistPrimVertContr->Fill(primVtxTrk->GetNContributors());
 
   AliAODVertex* vertexAODp = ConvertToAODVertex(primVtxTrk);
   Double_t bzkG = (Double_t)esd->GetMagneticField();
@@ -1463,10 +1529,17 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
     if (status[iPosTrack_0] & 1) {
       fHistImpParSelTracks2prong->Fill(d0track[0]);
       fHistEtaSelTracks2prong->Fill(track_p0->Eta());
+      fHistPtSelTracks2prong->Fill(track_p0->Pt());
     }
     if (status[iPosTrack_0] & 2) {
       fHistImpParSelTracks3prong->Fill(d0track[0]);
       fHistEtaSelTracks3prong->Fill(track_p0->Eta());
+      fHistPtSelTracks3prong->Fill(track_p0->Pt());
+    }
+    if (status[iPosTrack_0] & 4) {
+      fHistImpParSelTracksbachelor->Fill(d0track[0]);
+      fHistEtaSelTracksbachelor->Fill(track_p0->Eta());
+      fHistPtSelTracksbachelor->Fill(track_p0->Pt());
     }
     fHistITSmapSelTracks->Fill(track_p0->GetITSClusterMap());
     if (status[iPosTrack_0] & 4) { // good bachelor track
@@ -2817,6 +2890,7 @@ std::string AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileN
   }
   fclose(fj);
   TString sValue = value;
+  sValue.ReplaceAll("\",", "");
   sValue.ReplaceAll("\"", "");
   sValue.ReplaceAll("\n", "");
   sValue.ReplaceAll("\t", "");
