@@ -690,7 +690,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       dMesonWithVtx = dMeson;
     }
 
-    // todo check labels of dmeson daughts
     bool unsetVtx = false;
     bool recVtx = false;
     AliAODVertex *origOwnVtx = nullptr;
@@ -701,7 +700,18 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
       fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       
-      int dMesonLabel = dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau);
+      
+      int dMesonLabel;
+      if (fDecChannel == kDplustoKpipi) {
+        dMesonLabel = dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau);
+      }
+      else if (fDecChannel == kDstartoKpipi){
+        int pdgD0Dau[2] = {321, 211};
+        int pdgDstarDau[2] = {421, 211};
+        dMesonLabel = dynamic_cast<const AliAODRecoCascadeHF *>(dMeson)->MatchToMC(413, 421, pdgDstarDau, pdgD0Dau, fArrayMCAOD, false);
+      } else {
+        AliFatal("Decay channel not implemented. Exit!");
+      }
       if(dMesonLabel < 0){
         continue;
       }
