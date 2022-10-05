@@ -783,10 +783,10 @@ void AliAnalysisTaskCorrForFlowFMD::PrepareV0()
 
     if(fRejectSecondariesFromMC){
       AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
-      if(!mcEvent) return kFALSE;
+      if(!mcEvent) continue;
       AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(v0->GetLabel());
-      if(!part) return kFALSE;
-      if(!part->IsPhysicalPrimary()) { return kFALSE; }
+      if(!part) continue;
+      if(!part->IsPhysicalPrimary()) { continue; }
     }
 
     if(!IsV0(v0)) continue;
