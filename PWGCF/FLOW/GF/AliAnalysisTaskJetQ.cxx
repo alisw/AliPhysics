@@ -15,6 +15,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  fCorrPlot(0),
  fMixCorrPlot(0),
  fNtriggers(0),
+ fHMaxPt(0),
  fPtAssocMin(2.),
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
@@ -39,6 +40,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
  fCorrPlot(0),
  fMixCorrPlot(0),
  fNtriggers(0),
+ fHMaxPt(0),
  fPtAssocMin(2.),
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
@@ -48,6 +50,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
  fGFW(0)
 {
     DefineOutput(1, TList::Class());
+    DefineOutput(2, TH1D::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetQ::~AliAnalysisTaskJetQ()
@@ -118,6 +121,12 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
     };
     if(fCalculateFlow) SetupFlowOutput();
     PostData(1, fOutList);
+    //Prepare a histogram to keep highest pT track. Should be outside the fOutList, because the list only gets posted for events with trigger track
+    Int_t lnTrigBins = TMath::Nint(fPtTriggMax/0.1)+1; //One extra bin for "overflow"
+    Double_t *lPtBinsForTrig = new Double_t[lnTrigBins+1]; //And one extra value for upper bin of overflow
+    for(Int_t i=0;i<=lnTrigBins;i++) lPtBinsForTrig[i] = i*0.1;
+    fHMaxPt = new TH1D("MaxPt","MaxPt; #it{p}_{T, max}; d#it{N}/d#it{p}_{T, max}",lnTrigBins,lPtBinsForTrig);
+    PostData(2, fHMaxPt);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetQ::UserExec(Option_t *)
@@ -194,12 +203,14 @@ Int_t AliAnalysisTaskJetQ::FindGivenPt(const Double_t &ptMin, const Double_t &pt
   AliAODTrack *lTrack;
   Double_t lPtMax=0;
   Double_t lPtCur=0;
+  Double_t lAbsMaxPt=0;
   fGFW->Clear(); //Need to clear up the GFW before filling it in
   Int_t ptBinMax = fPtAxis->GetNbins();
   for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(i);
     if(!lTrack->TestFilterBit(768)) continue;
     lPtCur = lTrack->Pt();
+    if(lAbsMaxPt < lPtCur) lAbsMaxPt = lPtCur;
     if(lPtCur > ptMin && lPtCur < ptMax && lPtCur > lPtMax) { lPtMax=lPtCur; ind=i;  };
     //Fill in the GFW here:
     if(fCalculateFlow) {
@@ -213,6 +224,8 @@ Int_t AliAnalysisTaskJetQ::FindGivenPt(const Double_t &ptMin, const Double_t &pt
       // if(lPtCur > 0.5 && lPtCur < 2.) fGFW->Fill(lTrack->Eta(),0,lTrack->Phi(),1,2);
     }
   };
+  fHMaxPt->Fill((lAbsMaxPt>fPtTriggMax)?(fPtTriggMax+0.01):lAbsMaxPt); //In case it's overflow, then store it in appropriate bin
+  PostData(2,fHMaxPt);
   return ind;
 }
 Int_t AliAnalysisTaskJetQ::FillCorrelations(Int_t &triggerIndex, Int_t &centVal, Double_t &vzValue) {

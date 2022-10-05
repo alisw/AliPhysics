@@ -71,6 +71,7 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         TH1 ***fCorrPlot; //!
         TH1 ***fMixCorrPlot; //!
         TH1 **fNtriggers; //!
+        TH1 *fHMaxPt;
         vector<Double_t> fCentBins;
         vector<Double_t> fVzBins;
         vector<Double_t> fPtBins;
