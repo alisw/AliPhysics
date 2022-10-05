@@ -794,7 +794,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::ConfigureJetSelection(Double_t minJetPt
   }
 }
 
-AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBase(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *nametrackcont, const char *nameclustercont, const char *suffix) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
@@ -846,18 +846,22 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   energyscaletask->SetNameMCParticles(kNameMCParticles.data());
 
   AliClusterContainer *clusters(nullptr);
+  TString clustercontname(nameclustercont);
   if(addClusterContainer) {
     const std::string kNameClusterContainer = "EMCALClusters";
-    clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    if(clustercontname == "usedefault") clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    else clusters = energyscaletask->AddClusterContainer(clustercontname.Data());
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
     clusters->SetName(kNameClusterContainer.data());
     energyscaletask->SetNameClusters(kNameClusterContainer.data());
   }
   AliTrackContainer *tracks(nullptr);
+  TString trackcontname(nametrackcont);
   if(addTrackContainer) {
     const std::string kNameTrackContainer = "Tracks";
-    tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    if(trackcontname == "usedefault") tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    else tracks = energyscaletask->AddTrackContainer(trackcontname.Data());
     tracks->SetName(kNameTrackContainer.data());
     energyscaletask->SetNameTracks(kNameTrackContainer.data());
   }
@@ -886,7 +890,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   return energyscaletask;
 }
 
-AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSub(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *suffix) {
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSubBase(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *nametrackcont, const char *nameclustercont, const char *suffix) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
@@ -938,18 +942,22 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   energyscaletask->SetNameMCParticles(kNameMCParticles.data());
 
   AliClusterContainer *clusters(nullptr);
+  TString clustercontname(nameclustercont);
   if(addClusterContainer) {
     const std::string kNameClusterContainer = "EMCALClusters";
-    clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    if(clustercontname == "usedefault") clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    else clusters = energyscaletask->AddClusterContainer(clustercontname.Data());
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
     clusters->SetName(kNameClusterContainer.data());
     energyscaletask->SetNameClusters(kNameClusterContainer.data());
   }
   AliTrackContainer *tracks(nullptr);
+  TString trackcontname(nametrackcont);
   if(addTrackContainer) {
     const std::string kNameTrackContainer = "Tracks";
-    tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    if(trackcontname == "usedefault") tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    else tracks = energyscaletask->AddTrackContainer(trackcontname.Data());
     tracks->SetName(kNameTrackContainer.data());
     energyscaletask->SetNameTracks(kNameTrackContainer.data());
   }
@@ -1075,4 +1083,20 @@ std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::Angul
 std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::AngularityHandler::AngularityBin &bin) {
   bin.PrintStream(stream);
   return stream;
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
+  return AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBase(jettype, recoscheme, energydef, jetradius, useDCAL, namepartcont, trigger, "usedefault", "usedefault", suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *nametrackcont, const char *nameclustercont, const char *suffix) {
+  return AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBase(jettype, recoscheme, energydef, jetradius, useDCAL, namepartcont, trigger, nametrackcont, nameclustercont, suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSub(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *suffix) {
+  return AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSubBase(jettype, recoscheme, energydef, jetradius, useDCAL, namepartcont, nRho, nRhoMC, trigger, "usedefault", "usedefault", suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSub(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *nametrackcont, const char *nameclustercont, const char *suffix) {
+  return AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSubBase(jettype, recoscheme, energydef, jetradius, useDCAL, namepartcont, nRho, nRhoMC, trigger, nametrackcont, nameclustercont, suffix);
 }
