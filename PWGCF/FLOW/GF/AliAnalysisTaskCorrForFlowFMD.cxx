@@ -780,6 +780,15 @@ void AliAnalysisTaskCorrForFlowFMD::PrepareV0()
   for(Int_t i(0); i < nOfV0s; i++){
     AliAODv0* v0 = static_cast<AliAODv0*>(fAOD->GetV0(i));
     if(!v0) continue;
+
+    if(fRejectSecondariesFromMC){
+      AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+      if(!mcEvent) return kFALSE;
+      AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(v0->GetLabel());
+      if(!part) return kFALSE;
+      if(!part->IsPhysicalPrimary()) { return kFALSE; }
+    }
+
     if(!IsV0(v0)) continue;
 
     if(!IsK0s(v0) && !IsLambda(v0)) continue;
