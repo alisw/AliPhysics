@@ -148,16 +148,19 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  binZ = AxisVar("Z",verzbin);
 
  Double1D verptbin = {0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 13.0};
+
+ Double1D verLOWptbin = {0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 1.0};
+
  binPt = AxisVar("Pt",verptbin);
+ if( fOption.Contains("LOWPT") ) binPt = AxisVar("Pt",verLOWptbin);
+
  binPtGen = AxisFix("Pt",200,0.0,20.0);
-
  binType = AxisStr("Type",{"PN","PP","NN"});
-
  binMass = AxisFix("Mass",1000,0,5);
 
  if( fOption.Contains("Fine") ) binMass = AxisFix("Mass",100000,0,5);
  if( fOption.Contains("PbPb") ){
-	binMass = AxisFix("Mass",150,0.5,2);
+	binMass = AxisFix("Mass",380,0.1,2);
  }
  binCharge = AxisFix("Charge",3,-1.5,1.5);
  binTrackCutBit = AxisFix("TrackCut",7,0.5,7.5);
