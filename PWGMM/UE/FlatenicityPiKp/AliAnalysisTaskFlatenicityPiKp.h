@@ -35,31 +35,31 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		virtual void UserCreateOutputObjects();
 		virtual void UserExec(Option_t *option);
 		virtual void Terminate(Option_t *option);
-		Double_t GetFlatenicityV0();
-		Double_t GetFlatenicityTPC();
-		Double_t GetFlatenicityMC();
+		double GetFlatenicityV0();
+		double GetMidRapidityMultiplicity();
+		double GetFlatenicityTPC();
+		double GetFlatenicityMC();
+		double EtaCalibration(const double&);
 		void MakeMCanalysis();
 		void MakeMCanalysisPID();
 		void ElectronsContamination();
 		void MakeDataanalysis();
 		void MakePIDanalysis();
-
 		void SetPtMin(Double_t val) { fPtMin = val; } // Set pT cut for associated particles
 		void SetNcl(UShort_t ncl) { fNcl = ncl; } // Set pT cut for associated particles
 		void SetUseMC(Bool_t flat_flag = kFALSE) { fUseMC = flat_flag; } // use to analyse MC data
+		void SaveDCAxyHistograms(Bool_t saveDCAxy ) { fSaveDCAxyHistograms = saveDCAxy; } 
+		void IsV0MCalibrated(Bool_t V0MCal = kTRUE) { fV0MEqualisation = V0MCal; }
 		void IsdEdxCalibrated(Bool_t dEdxCal = kTRUE) { fdEdxCalibrated = dEdxCal; }
-		void SetV0MBin(TString v0mbin = "0_1") { fV0MBin = v0mbin; }
 		void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
 		void SetDataPeriod(TString period = "16l") { fPeriod = period;}
 		void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
-		void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
-			fRemoveTrivialScaling = flat_flag;
-		}
+		void SetDeltaV0(Bool_t deltav0 = kFALSE) { fDeltaV0 = deltav0; }
+		void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) { fRemoveTrivialScaling = flat_flag; }
+		bool PhiCut(Double_t , Double_t , Double_t , Float_t , TF1* , TF1* );
 		bool HasRecVertex();
-		Bool_t TOFPID(AliESDtrack* );
-		Double_t EtaCalibration(const Double_t& );
-		Bool_t PhiCut(Double_t , Double_t , Double_t , Float_t , TF1* , TF1* );
-		Int_t GetPidCode(Int_t);
+		bool TOFPID(AliESDtrack*);
+		int GetPidCode(Int_t);
 
 
 	protected:
@@ -70,9 +70,10 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		AliMCEvent *fMC;    //! MC Event
 		Bool_t fUseMC;      // analyze MC events
 		Int_t fV0Mindex;
-		TString fV0MBin;
+		Float_t fV0MMultiplicity;
 		TString fDetFlat;
 		Bool_t fIsMCclosure;
+		Bool_t fDeltaV0;
 		Bool_t fRemoveTrivialScaling;
 		Int_t fnGen;
 		AliPIDResponse* fPIDResponse;
@@ -82,35 +83,37 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		Double_t fEtaCut;
 		Double_t fPtMin;
 		Double_t fNcl;
+		Bool_t fV0MEqualisation;
 		Bool_t fdEdxCalibrated;
+		Bool_t fSaveDCAxyHistograms;
 		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;
+		TF1* fV0CCalibration;
+		TF1* fV0ACalibration;
 		TF1* fcutLow;
 		TF1* fcutHigh;
 		TF1* fcutDCAxy;
 		TString fPeriod;
 		Double_t ftrackmult08;
 		Double_t fv0mpercentile;
-		Float_t fFlat;
+		Double_t fMidRapidityMult;
+		Double_t fFlat;
+		Double_t fFlatTPC;
 		Float_t fFlatMC;
 		AliMultSelection *fMultSelection;
 		TH1D *hPtPrimIn;
 		TH1D *hPtPrimOut;
 		TH1D *hPtSecOut;
 		TH1D *hPtOut;
-		TH2D *hFlatV0vsFlatTPC;
-		TH1F *hFlatenicityBefore;
-		TH1D *hFlatenicity;
 		TH1D *hFlatenicityMC;
 		TH2D *hFlatResponse;
-		TH2D *hFlatVsPt;
 		TH2D *hFlatVsPtMC;
+		TH3F *hActivityV0CV0A;
 		TProfile *hActivityV0DataSect;
 		TProfile *hActivityV0McSect;
 		TH2D *hFlatVsNchMC;
-		TH2F *hFlatVsV0M;
-		TH1F *hCounter;
-		TH2D *hFlatVsPtV0M[9];
+		TH3F *hFlatVsV0MVsMult;
+		TH2F *hFlatVsPtV0M[9];
 		TH3F *hNsigmaPiPos[9][4];
 		TH3F *hNsigmaKPos[9][4];
 		TH3F *hNsigmaPPos[9][4];
