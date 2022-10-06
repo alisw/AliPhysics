@@ -12120,7 +12120,7 @@ void AliHFSystErr::InitLctopK0S20161718pp13TeVBDT() {
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff", "fTrackingEff", 24, 0., 24.); //Preliminary (usual track syst from inclusive Lc analysis + 2% soft-pion)
   for (Int_t i = 1; i <= 24; i++) fTrackingEff->SetBinContent(i, 0.0);  // default value is set to zero
-  fTrackingEff->SetBinContent(1, 0.05); //(0,1) GeV/c
+  fTrackingEff->SetBinContent(1, 0.07); //(0,1) GeV/c
   fTrackingEff->SetBinContent(2, 0.05); //(1,2) GeV/c
   fTrackingEff->SetBinContent(3, 0.06); //(2,3) GeV/c
   fTrackingEff->SetBinContent(4, 0.06); //(3,4) GeV/c
