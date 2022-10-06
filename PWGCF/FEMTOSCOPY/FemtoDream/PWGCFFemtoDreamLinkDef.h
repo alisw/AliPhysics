@@ -4,10 +4,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliFemtoDreamEvent+;  
+#pragma link C++ class AliFemtoDreamEvent+;
 #pragma link C++ class AliFemtoDreamEventHist+;
 #pragma link C++ class AliFemtoDreamEventCuts+;
-#pragma link C++ class AliFemtoDreamBasePart+;    
+#pragma link C++ class AliFemtoDreamBasePart+;
 #pragma link C++ class AliFemtoDreamTrack+;
 #pragma link C++ class AliFemtoDreamTrackHist+;
 #pragma link C++ class AliFemtoDreamTrackMCHist+;
@@ -38,7 +38,9 @@
 #pragma link C++ class AliAnalysisTaskLeuteronNanoAOD+;
 #pragma link C++ class AliAnalysisTaskNanoBBar+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamPhi+;
+#pragma link C++ class AliAnalysisTaskDeuteronProtonEfficiency+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamPhi+;
+#pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamLambdaPhi + ;
 #pragma link C++ class AliAnalysisTaskFemtoDreamSigPi+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamSigPi+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamPion+;
@@ -46,6 +48,7 @@
 #pragma link C++ class AliAnalysisTaskNanoAODSigma0Femto+;
 #pragma link C++ class AliAnalysisTaskNanoSigmaPlus+;
 #pragma link C++ class AliAnalysisTaskNanoLD+;
+#pragma link C++ class AliAnalysisTaskLD+;
 #pragma link C++ class AliAnalysisTaskGrandma+;
 #pragma link C++ class AliAnalysisTaskOtonOmega+;
 #pragma link C++ class AliOtonOmegaAnalysis+;
@@ -54,6 +57,8 @@
 #pragma link C++ class AliFemtoDreamHigherPairMath+;
 #pragma link C++ class AliAnalysisTaskNanoLX+;
 #pragma link C++ class AliAnalysisTaskOtonOmegaNanoAOD+;
+#pragma link C++ class AliAnalysisTaskOtonkd+;
+#pragma link C++ class AliAnalysisTaskOtonkdAOD+;
 #pragma link C++ class AliAnalysisTaskGeorgiosNTuple+;
 #pragma link C++ class AliAnalysisTaskNanoPt+;
 #pragma link C++ class AliAnalysisTaskPOmegaPenne+;
@@ -66,6 +71,13 @@
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoAOD+;
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoAODPionProton+;
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoPionProton+;
+#pragma link C++ class AliAnalysisTaskThreeBodyProtonPrimary+;
+#pragma link C++ class AliAnalysisTaskNanoTreeLPhi + ;
+#pragma link C++ class AliAnalysisTaskNanoLambdaKaon + ;
+#pragma link C++ class AliAnalysisTaskNanoLKr + ;
+#pragma link C++ class AliAnalysisTaskThreeBodyFemtoMixedCharge+;
+#pragma link C++ class AliAnalysisTaskNanoBenchmark + ;
+#pragma link C++ class AliAnalysisTaskNanoFemtoProtonPion+;
 
 #pragma link C++ class AliSigma0AODPhotonMotherCuts+;
 #pragma link C++ class AliSigma0PhotonCuts+;
@@ -80,5 +92,8 @@
 
 //the classes below work only in ROOT6
 #pragma link C++ class AliAnalysisTaskCharmingFemto+;
+#pragma link C++ class CustomQueue<std::vector<TLorentzVector>>+;
+#pragma link C++ std::vector<CustomQueue<std::vector<TLorentzVector>>>+;
+#pragma link C++ class AliAnalysisTaskPionDeuteronMC+;
 
 #endif

@@ -1,5 +1,6 @@
 #include <TChain.h>
 #include <TParticle.h>
+#include <TObjString.h>
 
 #include "AliAnalysisCODEXS3task.h"
 #include "AliAnalysisCODEX.h"

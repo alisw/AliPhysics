@@ -39,6 +39,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pPb(
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
+    Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -325,7 +326,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       HeaderList->Add(HeaderP8J);
     }
   }
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
@@ -434,6 +435,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

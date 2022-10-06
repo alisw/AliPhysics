@@ -14,8 +14,11 @@ void AddTask_ConvCaloTree(
   Bool_t    doSaveMCInfo                  = 0,
   Float_t   minTrackMomentum              = 0.3,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
-  TString   settingMaxFacPtHard           = "3."       // maximum factor between hardest jet and ptHard generated
-  ){
+  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
+  Bool_t    useClusterIsolation           = kTRUE,       // if isolation shoul be used
+  Int_t     saveConversionCutInfo         = 2,           // 1 for std. conversions (only momenta will be stored), 2 for extended QA studies
+  Bool_t    enableElecDeDxPostCalibration = kFALSE
+){
 
 
 
@@ -47,6 +50,16 @@ void AddTask_ConvCaloTree(
     return;
   } else {
     cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
+  }
+
+  //========= Check Iso Task in  ANALYSIS manager  =====
+  if(useClusterIsolation){
+    TString PhotonIsolationName = "PhotonIsolation";
+    if( !(AliPhotonIsolation*)mgr->GetTask(PhotonIsolationName.Data()) ){
+      AliPhotonIsolation* fPhotonIsolation = new AliPhotonIsolation(PhotonIsolationName.Data());
+      mgr->AddTask(fPhotonIsolation);
+      mgr->ConnectInput(fPhotonIsolation,0,cinput);
+    }
   }
 
   TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
@@ -116,6 +129,22 @@ void AddTask_ConvCaloTree(
     analysisConversionCuts->SetV0ReaderName(V0ReaderName);
     analysisConversionCuts->InitializeCutsFromCutString(TaskConversionCutnumber.Data());
     analysisConversionCuts->SetFillCutHistograms("");
+
+    TString fileNamedEdxPostCalib = ""; // to be implemented
+    if (enableElecDeDxPostCalibration){
+      if (isMC == 0){
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisConversionCuts->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+        }
+        analysisConversionCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
+      } else{
+        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+        analysisConversionCuts->SetDoElecDeDxPostCalibration(kFALSE);
+      }
+    }
+
   }
 
   AliConversionMesonCuts *analysisMesonCuts = new AliConversionMesonCuts();
@@ -126,7 +155,7 @@ void AddTask_ConvCaloTree(
   AliAnalysisTaskConvCaloTree *fConvCaloTree = new AliAnalysisTaskConvCaloTree(Form("%s_%s_ConvCaloTree",TaskEventCutnumber.Data(),TaskEMCCutnumber.Data()));
 
   if(TaskEMCCutnumber.CompareTo("") != 0 || TaskPHOSCutnumber.CompareTo("") != 0 ) fConvCaloTree->SetSaveClusters(kTRUE);
-  if(TaskConversionCutnumber.CompareTo("") != 0 )fConvCaloTree->SetSaveConversions(kTRUE);
+  if(TaskConversionCutnumber.CompareTo("") != 0 )fConvCaloTree->SetSaveConversions(saveConversionCutInfo);
   fConvCaloTree->SetSaveTracks(doSaveSurroundingTracks);
 
   fConvCaloTree->SetEventCuts(analysisEventCuts,IsHeavyIon);
@@ -136,10 +165,25 @@ void AddTask_ConvCaloTree(
   fConvCaloTree->SetMesonCuts(analysisMesonCuts);
   fConvCaloTree->SetCorrectionTaskSetting(corrTaskSetting);
   fConvCaloTree->SetIsMC(isMC);
+  fConvCaloTree->SetUseClusterIsolation(useClusterIsolation);
   if(isMC && doSaveMCInfo) fConvCaloTree->SetSaveMCInformation(kTRUE);
   fConvCaloTree->SetMinTrackPt(minTrackMomentum);
   fConvCaloTree->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fConvCaloTree);
+
+  //create AliCaloTrackMatcher instance, if there is none present
+  TString TrackMatcherName = Form("CaloTrackMatcher_%i_%i",1,0);
+  if(corrTaskSetting.CompareTo("")){
+    TrackMatcherName = TrackMatcherName+"_"+corrTaskSetting.Data();
+    cout << "Using separate track matcher for correction framework setting: " << TrackMatcherName.Data() << endl;
+  }
+  if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+    AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),1,0);
+    fTrackMatcher->SetV0ReaderName(V0ReaderName);
+    fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
+    mgr->AddTask(fTrackMatcher);
+    mgr->ConnectInput(fTrackMatcher,0,cinput);
+  }
 
   mgr->ConnectInput  (fConvCaloTree, 0,  cinput );
   mgr->ConnectOutput (fConvCaloTree, 1, mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ?  Form("GammaCaloQA_%s_%s", TaskEventCutnumber.Data(), TaskEMCCutnumber.Data()) : Form("GammaCaloQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskEMCCutnumber.Data(),corrTaskSetting.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskEMCCutnumber.Data())) );

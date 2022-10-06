@@ -1,6 +1,6 @@
 // AddTask for AliAnalysisTaskV0ChCorrelationsys task
 
-AliAnalysisTaskV0ChCorrelationsys* AddTaskV0ChCorrelationsys(TString taskName = "",float cenMin, float cenMax,  bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
+AliAnalysisTaskV0ChCorrelationsys* AddTaskV0ChCorrelationsys(TString taskName = "",Int_t cenMin=0, Int_t cenMax=10,  bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
   
  
 
@@ -29,11 +29,15 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   // create task
 
   AliAnalysisTaskV0ChCorrelationsys* task = new AliAnalysisTaskV0ChCorrelationsys(taskName.Data(),  cenMin,cenMax,effCorr);  
-
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetAnalysisMC(isMC);
+  task->SetV0h(kTRUE);
+  task->Sethh(kTRUE);
+  task->SetPileUpRead(kTRUE);
+
   //------------------------------Mixing part------------------------------
-  task->SetMixingTracks(500);
-    task->SetPoolSize(100); 
+  task->SetMixingTracks(50000);
+   task->SetPoolSize(200); 
  //--------------------------------Variable--------------------------------
   task->SetVtxCut(9.);
   task->SetNumOfVzBins(9);//    
@@ -46,7 +50,7 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   task->SetFilterBit(768);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
-  task->SetV0PtMin(3.);
+  task->SetV0PtMin(8.);
   task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);

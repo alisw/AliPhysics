@@ -52,6 +52,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void ProcessPhotonBDT();
     void ProcessClusters();
     void ProcessJets();
+    void InitJets();
     void ProcessPhotonsHighPtHadronAnalysis();
     void CalculatePi0Candidates();
     void CalculateBackground();
@@ -81,7 +82,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
     void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Double_t PhiParticle[]);
-    void FillPhotonCombinatorialMothersHistESD(TParticle *daughter,TParticle *mother);
+    void FillPhotonCombinatorialMothersHistESD(AliMCParticle *daughter,AliMCParticle *mother);
     void FillPhotonCombinatorialMothersHistAOD(AliAODMCParticle *daughter, AliAODMCParticle* motherCombPart);
     void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     void UpdateEventByEventData();
@@ -156,11 +157,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoMotherInvMassPtNonIso;                  //!
     TH2F**                            fHistoMotherInvMassPtMCRecIsoTrueNonIso;      //!
     TH2F**                            fHistoMotherInvMassPtMCRecNonIsoTrueIso;      //!
+    TH2F**                            fHistoMotherInvMassPtCalib;                   //!
     TH2F**                            fHistoMotherEisoPt;                           //!
     TH2F**                            fHistoMotherRisoPt;                           //!
     TH2F**                            fHistoMotherNtracksIsoPt;                     //!
     THnSparseF**                      sESDMotherInvMassPtZM;                        //!
     TH2F**                            fHistoMotherBackInvMassPt;                    //!
+    TH2F**                            fHistoMotherBackInvMassPtCalib;                    //!
     THnSparseF**                      sESDMotherBackInvMassPtZM;                    //!
     TH2F**                            fHistoMotherInvMassEalpha;                    //!
     TH2F**                            fHistoMotherPi0PtY;                           //!
@@ -290,12 +293,18 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoJetArea;                                        // Histogram of Jet Area
     TH1F**                            fHistoNJets;                                          // Histogram of number of jets
     TH1F**                            fHistoEventwJets;                                     // Histogram of number of events with jets > 0
+    TH2F**                            fHistoConvGammaPtwithJet;                             // Histogram of Conversion photons in events with jets
+    TH2F**                            fHistoConvGammaPtwithoutJet;                          // Histogram of Conversion photons in events without jets
+    TH2F**                            fHistoConvGammaPtinJet;                               // Histogram of Conversion photons in jets
+    TH2F**                            fHistoConvGammaPtoutsideJet;                          // Histogram of Conversion photons in outside jets
+    TH1F**                            fHistoNEventsJetTriggers;                             // Histogram of Conversion photons in outside jets
     TH1F**                            fHistoJetPi0PtRatio;                                  // Histogram of PtPi0/PtJet
     TH1F**                            fHistoDoubleCounting;                                 // Histogram if NM candidates are defined within multiple jets
     TH2F**                            fHistoJetMotherInvMassPt;                             // Histogram of NM candidates with a jet in the event
     TH2F**                            fHistoPi0InJetMotherInvMassPt;                        // Histogram of NM candidates that are inside a jet
     TH2F**                            fHistoMotherBackJetInvMassPt;                         // Histogram of Backgrouns candidates that are involved with jets
     TH2F**                            fHistoRJetPi0Cand;                                    // Histogram of RJetPi0Cand vs Pt
+    TH2F**                            fHistoRJetPhotonCand;                                 // Histogram of RJetPhotonCand vs Pt
     TH2F**                            fHistoEtaPhiJetPi0Cand;                               // Histogram of delta eta and delta phi distr between jet and NM candidates
     TH2F**                            fHistoEtaPhiJetWithPi0Cand;                           // Histogram of delta eta and delta phi distr when pi0 is inside a jet
     TH2F**                            fHistoJetFragmFunc;                                   // Histogram to determine fragmentation function
@@ -311,6 +320,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTrueJetFragmFuncZInvMass;                       // Histogram to determine true Inv Mass distribution with z
     TH1F**                            fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                            fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
+    TH1F**                            fHistoMCPi0WOWeightinJetInAccPt;                      // Histogram with pi0 without weights in a jet in acceptance, pT
     TH1F**                            fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
     TH1F**                            fHistoMCEtainJetInAccPt;                              // Histogram with weighted eta in a jet in acceptance, pT
     TH1F**                            fHistoMCPi0JetEventGenerated;                         // Histogram with mesons in a jet event generated, pT
@@ -345,6 +355,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     vector<Double_t>                  fTrueVectorJetPz;                                     // Vector of True JetPz
     vector<Double_t>                  fTrueVectorJetEta;                                    // Vector of True JetEta
     vector<Double_t>                  fTrueVectorJetPhi;                                    // Vector of True JetPhi
+
+    std::map<Int_t, Int_t> MapRecJetsTrueJets;                                  //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
 
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1F**                            fHistoNV0Tracks;                            //!
@@ -414,7 +426,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 53);
+    ClassDef(AliAnalysisTaskGammaConvV1, 56);
 };
 
 #endif

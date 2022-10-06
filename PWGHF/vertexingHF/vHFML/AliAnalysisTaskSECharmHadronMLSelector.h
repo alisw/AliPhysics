@@ -32,8 +32,10 @@ public:
 
     enum
     {
-        kDplustoKpipi = 0,
-        kDstoKKpi     = 1
+        kD0toKpi      = 0,
+        kDplustoKpipi = 1,
+        kDstartoD0pi  = 2,
+        kDstoKKpi     = 3
     };
 
     AliAnalysisTaskSECharmHadronMLSelector();
@@ -50,6 +52,8 @@ public:
     // Getters
     std::vector<int> GetSelectedCandidates() const                                                {return fChHadIdx;}
     std::vector<std::vector<double> > GetMLSCores() const                                         {return fMLScores;}
+    std::vector<std::vector<double> > GetMLSCoresSecond() const                                   {return fMLScoresSecond;}
+    int GetIsSelected() const                                                                     {return fIsSelected;}
 
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -61,32 +65,34 @@ private:
     AliAnalysisTaskSECharmHadronMLSelector(const AliAnalysisTaskSECharmHadronMLSelector &source);
     AliAnalysisTaskSECharmHadronMLSelector &operator=(const AliAnalysisTaskSECharmHadronMLSelector &source);
 
-    int IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAnalysisVertexingHF *vHF, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &modelPred);
+    int IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAODRecoDecayHF *&chHadWithVtx, AliAnalysisVertexingHF *vHF, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &modelPred, std::vector<double> &modelPredSecond);
 
-    AliAODEvent* fAOD = nullptr;                           /// AOD event
+    AliAODEvent* fAOD = nullptr;                            /// AOD event
 
-    TList *fOutput = nullptr;                              //!<! list send on output slot 0
-    TH1F *fHistNEvents = nullptr;                          //!<! hist. for No. of events
-    TH1F *fHistNallCand = nullptr;                         //!<! hist. for No. of all candidates
-    TH1F *fHistNselCand = nullptr;                         //!<! hist. for No. of selected candidates
-    TH2F *fHistMassVsPt = nullptr;                         //!<! hist. with invariant mass vs pT
-    TH2F *fHistBDTOutputVsPt[3] = {};                      //!<! hist. with BDT output scores vs pT (max 3)
+    TList *fOutput = nullptr;                               //!<! list send on output slot 0
+    TH1F *fHistNEvents = nullptr;                           //!<! hist. for No. of events
+    TH1F *fHistNallCand = nullptr;                          //!<! hist. for No. of all candidates
+    TH1F *fHistNselCand = nullptr;                          //!<! hist. for No. of selected candidates
+    TH2F *fHistMassVsPt = nullptr;                          //!<! hist. with invariant mass vs pT
+    TH2F *fHistBDTOutputVsPt[3] = {};                       //!<! hist. with BDT output scores vs pT (max 3)
 
-    int fDecChannel = kDplustoKpipi;                       /// channel to analyse
-    int fAODProtection = 0;                                /// flag to activate protection against AOD-dAOD mismatch.
-                                                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-    TString fTriggerClass = "";                            /// trigger class
-    unsigned long long fTriggerMask = AliVEvent::kAny;     /// trigger mask
-    TList *fListCuts = nullptr;                            /// list of cuts
-    AliRDHFCuts *fRDCuts = nullptr;                        /// Cuts for Analysis
-    TString fConfigPath = "";                              /// path to ML config file
-    AliHFMLResponse* fMLResponse = nullptr;                //!<! object to handle ML response
+    int fDecChannel = kDplustoKpipi;                        /// channel to analyse
+    int fAODProtection = 0;                                 /// flag to activate protection against AOD-dAOD mismatch.
+                                                            /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+    TString fTriggerClass = "";                             /// trigger class
+    unsigned long long fTriggerMask = AliVEvent::kAny;      /// trigger mask
+    TList *fListCuts = nullptr;                             /// list of cuts
+    AliRDHFCuts *fRDCuts = nullptr;                         /// Cuts for Analysis
+    TString fConfigPath = "";                               /// path to ML config file
+    AliHFMLResponse* fMLResponse = nullptr;                 //!<! object to handle ML response
 
-    std::vector<int> fChHadIdx = {};                       /// vector with indexes of charm selected charm hadrons
-    std::vector<std::vector<double> > fMLScores = {};      /// vector of vectors of ML output scores for each selected charm hadron
+    std::vector<int> fChHadIdx = {};                        /// vector with indexes of charm selected charm hadrons
+    std::vector<std::vector<double> > fMLScores = {};       /// vector of vectors of ML output scores for each selected charm hadron
+    std::vector<std::vector<double> > fMLScoresSecond = {}; /// vector of vectors of ML output scores for each selected charm hadron
+    int fIsSelected = -1;                                   /// flag for selection (needed for ambiguous cases, i.e. D0)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSECharmHadronMLSelector, 2); /// AliAnalysisTaskSE for charm-hadron candidate selection with ML
+    ClassDef(AliAnalysisTaskSECharmHadronMLSelector, 3); /// AliAnalysisTaskSE for charm-hadron candidate selection with ML
                                                          /// \endcond
 };
 

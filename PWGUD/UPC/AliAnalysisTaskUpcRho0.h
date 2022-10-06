@@ -88,6 +88,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Float_t TrackPx_T[2];
 	Float_t TrackPy_T[2];
 	Float_t TrackPz_T[2];
+	Short_t TrackQ_T[2];
 	Bool_t ChipCut_T;
 	Bool_t TriggerTOF_T;
 	Bool_t TriggerSPD_T;
@@ -101,6 +102,15 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Float_t Pt_MC_T;
 	Float_t Rapidity_MC_T;
 	Float_t Phi_MC_T;
+	Int_t N_MC_T;
+	Float_t Pt1_MC_T; 
+	Float_t Phi1_MC_T; 
+	Int_t Q1_MC_T; 
+	Float_t Eta1_MC_T;
+	Float_t Pt2_MC_T; 
+	Float_t Phi2_MC_T; 
+	Int_t Q2_MC_T; 
+	Float_t Eta2_MC_T;
 
 	AliPIDResponse *fPIDResponse;
 	TClonesArray *GenPart_T;
@@ -150,7 +160,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	AliAnalysisTaskUpcRho0(const AliAnalysisTaskUpcRho0&); //not implemented
 	AliAnalysisTaskUpcRho0& operator =(const AliAnalysisTaskUpcRho0&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpcRho0, 7); 
+ 	ClassDef(AliAnalysisTaskUpcRho0, 9); 
 
 };
 

@@ -23,7 +23,6 @@ class TF1;
 #include <vector>
 
 
-
 /**
  * @class AliMCSpectraWeights AliMCSpectraWeights.h "AliMCSpectraWeights.h"
  * @brief TODO
@@ -39,7 +38,8 @@ class AliMCSpectraWeights : public TNamed {
         kKaon = 2,
         kSigmaMinus = 3,
         kSigmaPlus = 4,
-        kRest = 5
+        kRest = 5,
+        kLambda = 6
     }; /*!< enumerator of different particle types. */
     enum TaskState {
         kAllEmpty = 0,
@@ -98,9 +98,14 @@ class AliMCSpectraWeights : public TNamed {
     TH3F* fHistMCFractions;   /*!< Histogram for particle abundances from MC */
     TH3F* fHistMCWeights;     /*!< Histogram for weight factors to re-weight
                                  MCabundances to data ones. */
+    TH3F* fHistMCWeightsSysUp; /*!< Histograms for average systematic of weight
+                                factors  moved up*/
+    TH3F* fHistMCWeightsSysDown; /*!< Histograms for average systematic of weight
+                                  factors  moved down*/
     AliMCEvent* fMCEvent;     /*!< MC event */
     int         fNPrimaries;   /*!< MC primaries from last event*/
-    float fMultOrCent;        /*!< counted multiplicity or centrality class */
+    float fMultOrCent;        /*!< counted multiplicity */
+    int fMultClass;           /*!< counted  centrality class */
     int fNPartTypes;          /*!< number of particle species */
     int fNCentralities;       /*!< number of selected centrality classes */
     int fNSysFlags;           /*!< number of all systematic flags */
@@ -111,6 +116,7 @@ class AliMCSpectraWeights : public TNamed {
     bool fUseMBFractions;     /*!< switch to use MB fractions instead of mult.
                                  dependent ones*/
     bool fDoSystematics;
+    bool fDoInterpolation;    
 
     // functions
     // intern getter
@@ -131,9 +137,11 @@ class AliMCSpectraWeights : public TNamed {
     bool CalculateMCWeights();                                 //!
     bool CalcMCFractions();                                    //!
     bool CorrectFractionsforRest();                            //!
+    bool CalculateSystematicUncertainties(); //!
+    
 
     int const CheckAndIdentifyParticle(TParticle* part);
-    int const FindBinEntry(float pt, int const part);
+    std::vector<int> const FindBinEntry(float pt, int const part);
     
     // private = to be deleted
     AliMCSpectraWeights(const AliMCSpectraWeights&);//copy
@@ -150,15 +158,35 @@ class AliMCSpectraWeights : public TNamed {
 
     void Init(); /*!< Function to start initalizing after all setters are made. */
     float const
-    GetMCSpectraWeight(TParticle* mcGenParticle,
+    GetMCSpectraWeight(Int_t mcGenParticle,
                        AliMCEvent* mcEvent); /*!< old; should not be used */
+
     float const
-    GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
+    GetMCSpectraWeight(Int_t mcGenParticle,
+                       Int_t SysCase=0); /*!< way to go; SysCase = 0 --> nominal; -1 --> sys. moved down; +1 --> sys. moved up */
+
+    float const
+    GetMCSpectraWeight(TParticle* mcGenParticle,
+                       Int_t SysCase=0); /*!< way to go; SysCase = 0 --> nominal; -1 --> sys. moved down; +1 --> sys. moved up */
+
+    float const
+    GetMCSpectraWeightNominal(Int_t mcGenParticle);/*!< main function to use. Will
                                                          deliver correct weights to
                                                          re-weight the abundances of
                                                          different particle species */
     float const
-    GetMCSpectraWeightSystematics(TParticle* mcGenParticle);
+    GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
+                                                    deliver correct weights to
+                                                    re-weight the abundances of
+                                                    different particle species */
+
+    float const
+    GetMCSpectraWeightSystematics(Int_t mcGenParticle, Int_t SysCase = 1);
+    float const
+    GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int_t SysCase = 1);
+
+    int const IdentifySecondaryType(Int_t partLabel);
+    float const GetWeightForSecondaryParticle(Int_t partLabel, Int_t SysCase=0);
 
     void FillMCSpectra(
         AliMCEvent* mcEvent); /*!< function to fill internal mc spectra for
@@ -181,6 +209,7 @@ class AliMCSpectraWeights : public TNamed {
         }
     }
     void SetDoSystematics(bool doSys = true) { fDoSystematics = doSys; }
+    void SetDoInterpolation(bool doInter = true) {fDoInterpolation = doInter;}
 
     // Getter
     std::vector<std::string> const GetParticleTypes() const {return fstPartTypes;}
@@ -190,6 +219,8 @@ class AliMCSpectraWeights : public TNamed {
     TH3F* const GetHistDataFraction() const { return fHistDataFractions; }
     TH3F* const GetHistMCFraction() const { return fHistMCFractions; }
     TH3F* const GetHistMCWeights() const { return fHistMCWeights; }
+    TH3F* const GetHistMCWeightsSysUp() const { return fHistMCWeightsSysUp; }
+    TH3F* const GetHistMCWeightsSysDown() const { return fHistMCWeightsSysDown; }
     std::map<SysFlag, TH3F*> const GetHistMCWeightsSys() const {return fHistMCWeightsSys;}
     SysFlag const GetSysFlag() const { return fFlag; }
     float const GetMultOrCent() const { return fMultOrCent; }

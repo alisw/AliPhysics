@@ -76,8 +76,6 @@
 #include <TMVA/Reader.h>
 #include <TMVA/MethodCuts.h>
 
-#include "IClassifierReader.h"
-
 using std::cout;
 using std::endl;
 
@@ -106,7 +104,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fIsEventSelected(kFALSE),
   fVariablesTreeSgn(0),
   fVariablesTreeBkg(0),
-  fCandidateVariables(),
+  fCandidateVariables(0),
+  fCandidateVariableNames(0),
   fHistoCentrality(0),
   fHistoEvents(0),
   fHistoTracklets_1(0),
@@ -175,6 +174,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoArmenterosPodolanskiV0KFSgn(0),
   fHistoArmenterosPodolanskiV0AOD(0),
   fHistoArmenterosPodolanskiV0AODSgn(0),
+  fHistoV0Radius(0),
   fOutputKF(0),
   fmcLabelLc(-1),
   ftopoConstraint(kTRUE),
@@ -200,11 +200,6 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fNTracklets_All(0),
   fCentrality(0),
   fFillTree(0),
-  fUseWeightsLibrary(kFALSE),
-  fBDTReader(0),
-  fTMVAlibName(""),
-  fTMVAlibPtBin(""),
-  fNamesTMVAVar(""),
   fBDTHisto(0),
   fBDTHistoVsMassK0S(0),
   fBDTHistoVstImpParBach(0),
@@ -223,34 +218,40 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fBDTHistoVsBachelorTPCP(0),
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
+  fMake3DHisto(kFALSE),
   fDebugHistograms(kFALSE),
   fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
-  fNVars(14),
+  ffraction(-1),
+  fPtLimForDownscaling(0),
   fTimestampCut(0),
-  fUseXmlWeightsFile(kTRUE),
+  fNReaders(0),
+  fNReadersSet(false),
   fReader(0),
+  fNVars(0),
+  fNamesTMVAVar(0),
   fVarsTMVA(0),
   fNVarsSpectators(0),
+  fNamesTMVAVarSpectators(0),
   fVarsTMVASpectators(0),
-  fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
+  fBDTHistoTMVA3d(0),  
+  fXmlWeightsFile(0),
+  fUseXmlWeightsFileFromCVMFS(kTRUE),
+  fUseMultCorrection(kFALSE),
   fRefMult(9.26),
   fYearNumber(16),
-  fHistoNtrUnCorr(0),
-  fHistoNtrCorr(0),
-  fHistoVzVsNtrUnCorr(0),
-  fHistoVzVsNtrCorr(0),
-  fUseMultCorrection(kFALSE),
   fMultiplicityEstimator(kNtrk10),
   fDoVZER0ParamVertexCorr(1),
   fUseMultiplicityCut(kFALSE),
   fMultiplicityCutMin(0.),
   fMultiplicityCutMax(99999.),
-  fUseXmlFileFromCVMFS(kFALSE),
-  fXmlFileFromCVMFS(""),
-  ffraction(-1),
-  fPtLimForDownscaling(0)
+  fHistoNtrUnCorr(0),
+  fHistoNtrCorr(0),
+  fHistoVzVsNtrUnCorr(0),
+  fHistoVzVsNtrCorr(0),
+  fNamesTMVAVarVec(0),
+  fNTreeVars(30)
 {
   /// Default ctor
   //
@@ -276,7 +277,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fIsEventSelected(kFALSE),
   fVariablesTreeSgn(0),
   fVariablesTreeBkg(0),
-  fCandidateVariables(),
+  fCandidateVariables(0),
+  fCandidateVariableNames(0),
   fHistoCentrality(0),
   fHistoEvents(0),
   fHistoTracklets_1(0),
@@ -345,6 +347,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoArmenterosPodolanskiV0KFSgn(0),
   fHistoArmenterosPodolanskiV0AOD(0),
   fHistoArmenterosPodolanskiV0AODSgn(0),
+  fHistoV0Radius(0),
   fOutputKF(0),
   fmcLabelLc(-1),
   ftopoConstraint(kTRUE),
@@ -370,11 +373,6 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fNTracklets_All(0),
   fCentrality(0),  
   fFillTree(0),
-  fUseWeightsLibrary(kFALSE),
-  fBDTReader(0),
-  fTMVAlibName(""),
-  fTMVAlibPtBin(""),
-  fNamesTMVAVar(""),
   fBDTHisto(0),
   fBDTHistoVsMassK0S(0),
   fBDTHistoVstImpParBach(0),
@@ -393,35 +391,40 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fBDTHistoVsBachelorTPCP(0),
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
+  fMake3DHisto(kFALSE),
   fDebugHistograms(kFALSE),
   fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
-  fNVars(14),
+  ffraction(-1),
+  fPtLimForDownscaling(0),
   fTimestampCut(0),
-  fUseXmlWeightsFile(kTRUE),
+  fNReaders(0),
+  fNReadersSet(false),
   fReader(0),
+  fNVars(0),
+  fNamesTMVAVar(0),
   fVarsTMVA(0),
   fNVarsSpectators(0),
+  fNamesTMVAVarSpectators(0),
   fVarsTMVASpectators(0),
-  fNamesTMVAVarSpectators(""),
-  fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
+  fBDTHistoTMVA3d(0),  
+  fXmlWeightsFile(0),
+  fUseXmlWeightsFileFromCVMFS(kTRUE),
+  fUseMultCorrection(kFALSE),
   fRefMult(9.26),
   fYearNumber(16),
-  fHistoNtrUnCorr(0),
-  fHistoNtrCorr(0),
-  fHistoVzVsNtrUnCorr(0),
-  fHistoVzVsNtrCorr(0),
-  fUseMultCorrection(kFALSE),
   fMultiplicityEstimator(kNtrk10),
   fDoVZER0ParamVertexCorr(1),
   fUseMultiplicityCut(kFALSE),
   fMultiplicityCutMin(0.),
   fMultiplicityCutMax(99999.),
-  fUseXmlFileFromCVMFS(kFALSE),
-  fXmlFileFromCVMFS(""),
-  ffraction(-1),
-  fPtLimForDownscaling(0)
+  fHistoNtrUnCorr(0),
+  fHistoNtrCorr(0),
+  fHistoVzVsNtrUnCorr(0),
+  fHistoVzVsNtrCorr(0),
+  fNamesTMVAVarVec(0),
+  fNTreeVars(30)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -509,24 +512,22 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
     fUtils = 0;
   }
   
-  if (fBDTReader) {
-    //delete fBDTReader;
-    fBDTReader = 0;
-  }
+  for (int i = 0; i < fNReaders; ++i) {
+    if (fReader[i]) {
+      delete fReader[i];
+      fReader[i] = 0;
+    }
 
-  if (fReader) {
-    delete fReader;
-    fReader = 0;
-  }
+    if (fVarsTMVA[i]) {
+      delete fVarsTMVA[i];
+      fVarsTMVA[i] = 0;
+    }
 
-  if (fVarsTMVA) {
-    delete fVarsTMVA;
-    fVarsTMVA = 0;
-  }
+    if (fVarsTMVASpectators[i]) {
+      delete fVarsTMVASpectators[i];
+      fVarsTMVASpectators[i] = 0;
+    }
 
-  if (fVarsTMVASpectators) {
-    delete fVarsTMVASpectators;
-    fVarsTMVASpectators = 0;
   }
 
   for(Int_t i=0; i<14; i++){
@@ -601,6 +602,143 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::Terminate(Option_t*)
 }
 
 //___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNReaders(Int_t n) {
+
+  // setting the number of readers that will be used
+
+  fNReaders = n;
+  fReader.resize(fNReaders);
+  fNVars.resize(fNReaders);
+  fVarsTMVA.resize(fNReaders);
+  fNamesTMVAVar.resize(fNReaders);
+  fNVarsSpectators.resize(fNReaders);
+  fVarsTMVASpectators.resize(fNReaders);
+  fNamesTMVAVarSpectators.resize(fNReaders);
+  fXmlWeightsFile.resize(fNReaders);
+  fNamesTMVAVarVec.resize(fNReaders);
+  fNReadersSet = true;
+
+  AliInfo(Form("Number of readers = %d", fNReaders));
+  
+  return;
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::ResetTMVAConfig() {
+
+  // to reset the vectors for TMVA
+  for (int iR = 0; iR < fNReaders; ++iR) {
+    delete fVarsTMVA[iR];
+    delete fVarsTMVASpectators[iR];
+  }
+  fNReaders = 0;
+  fReader.clear();
+  fNVars.clear();
+  fVarsTMVA.clear();
+  fNamesTMVAVar.clear();
+  fNVarsSpectators.clear();
+  fVarsTMVASpectators.clear();
+  fNamesTMVAVarSpectators.clear();
+  fXmlWeightsFile.clear();
+  fNamesTMVAVarVec.clear();
+  fNReadersSet = false;
+
+  return;
+}
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNVars(std::vector<int> nvars) {
+
+  // setting the number of variables used for each reader
+  if (!fNReadersSet) SetNReaders((int)nvars.size());
+  else {
+    if ((int)nvars.size() != fNReaders) {
+      AliFatal(Form("wrong number of readers with respect to the vector with the number of variables! (%d, should be %d)", fNReaders, (int)nvars.size()));
+    }
+  }
+  fNVars = nvars;
+  for (int iR = 0; iR < fNReaders; ++iR) {
+    AliInfo(Form("Reader %d has %d variables", iR, fNVars[iR]));
+    fNamesTMVAVarVec[iR].resize(fNVars[iR]);
+  }
+  return; 
+
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNamesTMVAVariables(std::vector<TString> names) {
+
+  // setting the variables names for the various readers
+  if (!fNReadersSet) SetNReaders((int)names.size());
+  else {
+    if ((int)names.size() != fNReaders) {
+      AliFatal(Form("wrong number of readers with respect to the vector with the names of variables! (%d, should be %d)", fNReaders, (int)names.size()));
+    }
+  }
+  fNamesTMVAVar = names;
+  for (int iR = 0; iR < fNReaders; ++iR) {
+    TObjArray *tokens = fNamesTMVAVar[iR].Tokenize(",");
+    int nVars = tokens->GetEntries();
+    if (nVars != fNVars[iR]) {
+      AliFatal(Form("Number of variables declared for reader %d differs from the expected one (%d, should be %d)", iR, nVars, fNVars[iR]));
+    }
+    AliInfo(Form("Reader %d has the following variables:", iR));
+    for(Int_t i = 0; i < tokens->GetEntries(); i++){
+      TString variable = ((TObjString*)(tokens->At(i)))->String();
+      AliInfo(Form("%d --> %s", i, variable.Data())); 
+      fNamesTMVAVarVec[iR][i] = variable.Data();
+    }
+    delete tokens;
+  }
+  return;
+  
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNVarsSpectators(std::vector<int> nvars) {
+
+  // setting the number of spectator variables used for each reader
+  if (!fNReadersSet) SetNReaders((int)nvars.size());
+  else {
+    if ((int)nvars.size() != fNReaders) {
+      AliFatal(Form("wrong number of readers with respect to the vector with the number of spectators! (%d, should be %d)", fNReaders, (int)nvars.size()));
+    }
+  }
+  fNVarsSpectators = nvars;
+  return; 
+
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNamesTMVAVariablesSpectators(std::vector<TString> names) {
+
+  // setting the variables names for the various readers
+  if (!fNReadersSet) SetNReaders((int)names.size());
+  else {
+    if ((int)names.size() != fNReaders) {
+      AliFatal(Form("wrong number of readers with respect to the vector with the names of spectators! (%d, should be %d)", fNReaders, (int)names.size()));
+    }
+  }
+  fNamesTMVAVarSpectators = names;
+  return;
+  
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetXmlWeightsFile(std::vector<TString> filenames) {
+
+  // setting the variables names for the various readers
+  if (!fNReadersSet) SetNReaders((int)filenames.size());
+  else {
+   if ((int)filenames.size() != fNReaders) {
+     AliFatal("wrong number of readers with respect to the vector with the names weight files!");
+   }
+  }
+  fXmlWeightsFile = filenames;
+  return;
+  
+}
+
+//___________________________________________________________________________
 void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   /// output
   AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
@@ -614,112 +752,112 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fVariablesTreeSgn = new TTree(Form("%s_Sgn", nameoutput), "Candidates variables tree, Signal");
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
 
-  Int_t nVar; 
-  if (fUseMCInfo)  nVar = 52; //"full" tree if MC
-  else nVar = 35; //"reduced" tree if data
+  if (fUseMCInfo) fNTreeVars = 38; //"full" tree if MC
   
-  fCandidateVariables = new Float_t [nVar];
-  TString * fCandidateVariableNames = new TString[nVar];
+  fCandidateVariables = new Float_t[fNTreeVars];
+  fCandidateVariableNames = new TString[fNTreeVars];
   
   if (fUseMCInfo) { // "full tree" for MC
     fCandidateVariableNames[0] = "massLc2K0Sp";
-    fCandidateVariableNames[1] = "massLc2Lambdapi";
-    fCandidateVariableNames[2] = "massK0S";
-    fCandidateVariableNames[3] = "massLambda";
-    fCandidateVariableNames[4] = "massLambdaBar";
-    fCandidateVariableNames[5] = "cosPAK0S";
-    fCandidateVariableNames[6] = "dcaV0";
-    fCandidateVariableNames[7] = "tImpParBach";
-    fCandidateVariableNames[8] = "tImpParV0";
-    fCandidateVariableNames[9] = "nSigmaTPCpr";
-    fCandidateVariableNames[10] = "nSigmaTOFpr";
-    fCandidateVariableNames[11] = "bachelorPt";
-    fCandidateVariableNames[12] = "V0positivePt";
+    //fCandidateVariableNames[1] = "massLc2Lambdapi";  // CZ 16/04/2021
+    fCandidateVariableNames[1] = "massK0S";
+    //fCandidateVariableNames[3] = "massLambda";  // CZ 16/04/2021
+    //fCandidateVariableNames[4] = "massLambdaBar";  // CZ 16/04/2021
+    fCandidateVariableNames[2] = "cosPAK0S";
+    fCandidateVariableNames[3] = "dcaV0";
+    fCandidateVariableNames[4] = "tImpParBach";
+    fCandidateVariableNames[5] = "tImpParV0";
+    fCandidateVariableNames[6] = "nSigmaTPCpr";
+    fCandidateVariableNames[7] = "nSigmaTOFpr";
+    fCandidateVariableNames[8] = "bachelorPt";
+    fCandidateVariableNames[9] = "V0positivePt";
     //fCandidateVariableNames[13] = "V0negativePt";
-    fCandidateVariableNames[13] = "nSigmaTOFpi";
-    fCandidateVariableNames[14] = "dcaV0pos";
-    fCandidateVariableNames[15] = "dcaV0neg";
-    fCandidateVariableNames[16] = "v0Pt";
-    fCandidateVariableNames[17] = "massGamma";
-    fCandidateVariableNames[18] = "LcPt";
-    fCandidateVariableNames[19] = "combinedProtonProb";
-    fCandidateVariableNames[20] = "LcEta";
-    fCandidateVariableNames[21] = "V0positiveEta";
-    fCandidateVariableNames[22] = "V0negativeEta";
-    fCandidateVariableNames[23] = "TPCProtonProb";
-    fCandidateVariableNames[24] = "TOFProtonProb";
-    fCandidateVariableNames[25] = "bachelorEta";
-    fCandidateVariableNames[26] = "LcP";
-    fCandidateVariableNames[27] = "bachelorP";
-    fCandidateVariableNames[28] = "v0P";
-    fCandidateVariableNames[29] = "V0positiveP";
-    fCandidateVariableNames[30] = "V0negativeP";
-    fCandidateVariableNames[31] = "v0Eta";
-    fCandidateVariableNames[32] = "LcPtMC";
-    fCandidateVariableNames[33] = "DecayLengthK0S";
-    fCandidateVariableNames[34] = "bachCode";
-    fCandidateVariableNames[35] = "k0SCode";
-    fCandidateVariableNames[36] = "alphaArm";
-    fCandidateVariableNames[37] = "ptArm";
-    fCandidateVariableNames[38] = "CosThetaStar";
-    fCandidateVariableNames[39] = "weightPtFlat";
-    fCandidateVariableNames[40] = "weightFONLL5overLHC13d3";
-    fCandidateVariableNames[41] = "weightFONLL5overLHC13d3Lc";
-    fCandidateVariableNames[42] = "weightNch";
-    fCandidateVariableNames[43] = "NtrkRaw";
-    fCandidateVariableNames[44] = "NtrkCorr";
-    fCandidateVariableNames[45] = "signd0";
-    fCandidateVariableNames[46] = "centrality";
-    fCandidateVariableNames[47] = "NtrkAll";
-    fCandidateVariableNames[48] = "origin";
-    fCandidateVariableNames[49] = "nSigmaTPCpi";
-    fCandidateVariableNames[50] = "nSigmaTPCka";
+    fCandidateVariableNames[10] = "nSigmaTOFpi";
+    //fCandidateVariableNames[14] = "dcaV0pos";  // CZ 16/04/2021
+    //fCandidateVariableNames[15] = "dcaV0neg";  // CZ 16/04/2021
+    fCandidateVariableNames[11] = "v0Pt";
+    //fCandidateVariableNames[17] = "massGamma";  // CZ 16/04/2021
+    fCandidateVariableNames[12] = "LcPt";
+    fCandidateVariableNames[13] = "combinedProtonProb";
+    fCandidateVariableNames[14] = "LcEta";
+    //fCandidateVariableNames[21] = "V0positiveEta";  // CZ 16/04/2021
+    fCandidateVariableNames[15] = "V0negativeEta";
+    //fCandidateVariableNames[23] = "TPCProtonProb";  // CZ 16/04/2021
+    //fCandidateVariableNames[24] = "TOFProtonProb";  // CZ 16/04/2021
+    fCandidateVariableNames[16] = "bachelorEta";
+    //fCandidateVariableNames[26] = "LcP";  // CZ 16/04/2021
+    //fCandidateVariableNames[27] = "bachelorP";  // CZ 16/04/2021
+    fCandidateVariableNames[17] = "v0P";  
+    //fCandidateVariableNames[29] = "V0positiveP";  // CZ 16/04/2021
+    //fCandidateVariableNames[30] = "V0negativeP";  // CZ 16/04/2021
+    fCandidateVariableNames[18] = "v0Eta";
+    fCandidateVariableNames[19] = "LcPtMC";
+    fCandidateVariableNames[20] = "DecayLengthK0S";
+    //fCandidateVariableNames[34] = "bachCode";  // CZ 16/04/2021
+    //fCandidateVariableNames[35] = "k0SCode";  // CZ 16/04/2021
+    fCandidateVariableNames[21] = "alphaArm";
+    fCandidateVariableNames[22] = "ptArm";
+    fCandidateVariableNames[23] = "CosThetaStar";
+    fCandidateVariableNames[24] = "weightPtFlat";
+    fCandidateVariableNames[25] = "weightFONLL5overLHC13d3";
+    fCandidateVariableNames[26] = "weightFONLL5overLHC13d3Lc";
+    fCandidateVariableNames[27] = "weightNch";
+    fCandidateVariableNames[28] = "NtrkRaw";
+    fCandidateVariableNames[29] = "NtrkCorr";
+    fCandidateVariableNames[30] = "signd0";
+    fCandidateVariableNames[31] = "centrality";
+    fCandidateVariableNames[32] = "NtrkAll";
+    fCandidateVariableNames[33] = "origin";
+    fCandidateVariableNames[34] = "nSigmaTPCpi";
+    fCandidateVariableNames[35] = "nSigmaTPCka";
     //fCandidateVariableNames[51] = "bachTPCmom";  // AA 15/01/2021
-    fCandidateVariableNames[51] = "nSigmaTOFka";
+    fCandidateVariableNames[36] = "nSigmaTOFka";
+    fCandidateVariableNames[37] = "RadiusV0";
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
     fCandidateVariableNames[1] = "alphaArm";
     fCandidateVariableNames[2] = "massK0S";
-    fCandidateVariableNames[3] = "massLambda";
-    fCandidateVariableNames[4] = "massLambdaBar";
-    fCandidateVariableNames[5] = "cosPAK0S";
-    fCandidateVariableNames[6] = "dcaV0";
-    fCandidateVariableNames[7] = "tImpParBach";
-    fCandidateVariableNames[8] = "tImpParV0";
-    fCandidateVariableNames[9] = "nSigmaTPCpr";
-    fCandidateVariableNames[10] = "nSigmaTOFpr";
-    fCandidateVariableNames[11] = "bachelorPt";
-    fCandidateVariableNames[12] = "V0positivePt";
+    //fCandidateVariableNames[3] = "massLambda";  // CZ 16/04/2021
+    //fCandidateVariableNames[4] = "massLambdaBar";  // CZ 16/04/2021
+    fCandidateVariableNames[3] = "cosPAK0S";
+    fCandidateVariableNames[4] = "dcaV0";
+    fCandidateVariableNames[5] = "tImpParBach";
+    fCandidateVariableNames[6] = "tImpParV0";
+    fCandidateVariableNames[7] = "nSigmaTPCpr";
+    fCandidateVariableNames[8] = "nSigmaTOFpr";
+    fCandidateVariableNames[9] = "bachelorPt";
+    fCandidateVariableNames[10] = "V0positivePt";
     //fCandidateVariableNames[13] = "V0negativePt"; // AA 15/01/2021
-    fCandidateVariableNames[13] = "nSigmaTOFka";
-    fCandidateVariableNames[14] = "dcaV0pos";
-    fCandidateVariableNames[15] = "dcaV0neg";
-    fCandidateVariableNames[16] = "v0Pt";
+    fCandidateVariableNames[11] = "nSigmaTOFka";
+    //fCandidateVariableNames[14] = "dcaV0pos";  // CZ 16/04/2021
+    //fCandidateVariableNames[15] = "dcaV0neg";  // CZ 16/04/2021
+    fCandidateVariableNames[12] = "v0Pt";
     //fCandidateVariableNames[17] = "bachTPCmom"; // AA 15/01/2021
-    fCandidateVariableNames[17] = "nSigmaTOFpi";
-    fCandidateVariableNames[18] = "LcPt";
-    fCandidateVariableNames[19] = "combinedProtonProb";
-    fCandidateVariableNames[20] = "V0positiveEta";
-    fCandidateVariableNames[21] = "bachelorP"; // we replaced the V0negativeEta with the bachelor P as this is more useful (for PID) while the V0 daughters' eta we don't use... And are practically the same (positive and negative)
-    fCandidateVariableNames[22] = "bachelorEta";
-    fCandidateVariableNames[23] = "v0P";
-    fCandidateVariableNames[24] = "DecayLengthK0S";
-    fCandidateVariableNames[25] = "nSigmaTPCpi";
-    fCandidateVariableNames[26] = "nSigmaTPCka";
-    fCandidateVariableNames[27] = "NtrkRaw";
-    fCandidateVariableNames[28] = "NtrkCorr";
-    fCandidateVariableNames[29] = "CosThetaStar";
-    fCandidateVariableNames[30] = "signd0";        
-    fCandidateVariableNames[31] = "centrality"; 
-    fCandidateVariableNames[32] = "NtrkAll";
-    fCandidateVariableNames[33] = "origin";
-    fCandidateVariableNames[34] = "ptArm";
+    fCandidateVariableNames[13] = "nSigmaTOFpi";
+    fCandidateVariableNames[14] = "LcPt";
+    fCandidateVariableNames[15] = "combinedProtonProb";
+    //fCandidateVariableNames[20] = "V0positiveEta";  // CZ 16/04/2021
+    fCandidateVariableNames[16] = "bachelorP"; // we replaced the V0negativeEta with the bachelor P as this is more useful (for PID) while the V0 daughters' eta we don't use... And are practically the same (positive and negative)
+    //fCandidateVariableNames[22] = "bachelorEta";  // CZ 16/04/2021
+    fCandidateVariableNames[17] = "v0P"; 
+    fCandidateVariableNames[18] = "DecayLengthK0S";
+    fCandidateVariableNames[19] = "nSigmaTPCpi";
+    fCandidateVariableNames[20] = "nSigmaTPCka";
+    fCandidateVariableNames[21] = "NtrkRaw";
+    fCandidateVariableNames[22] = "NtrkCorr";
+    fCandidateVariableNames[23] = "CosThetaStar";
+    fCandidateVariableNames[24] = "signd0";        
+    fCandidateVariableNames[25] = "centrality"; 
+    fCandidateVariableNames[26] = "NtrkAll";
+    fCandidateVariableNames[27] = "origin";
+    fCandidateVariableNames[28] = "ptArm";
+    fCandidateVariableNames[29] = "RadiusV0";
   }
   
-  for(Int_t ivar=0; ivar < nVar; ivar++){
-    fVariablesTreeSgn->Branch(fCandidateVariableNames[ivar].Data(), &fCandidateVariables[ivar], Form("%s/f",fCandidateVariableNames[ivar].Data()));
-    fVariablesTreeBkg->Branch(fCandidateVariableNames[ivar].Data(), &fCandidateVariables[ivar], Form("%s/f",fCandidateVariableNames[ivar].Data()));
+  for(Int_t ivar=0; ivar < fNTreeVars; ivar++){
+    fVariablesTreeSgn->Branch(fCandidateVariableNames[ivar].Data(), &fCandidateVariables[ivar], Form("%s/F",fCandidateVariableNames[ivar].Data()));
+    fVariablesTreeBkg->Branch(fCandidateVariableNames[ivar].Data(), &fCandidateVariables[ivar], Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
   
   fHistoCentrality = new TH1F("fHistoCentrality", "fHistoCentrality", 100, 0., 100.);
@@ -731,9 +869,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   }
 
   fHistoTracklets_1 = new TH1F("fHistoTracklets_1", "fHistoTracklets_1", 1000, 0, 5000);
-  fHistoTracklets_1_cent = new TH2F("fHistoTracklets_1_cent", "fHistoTracklets_1_cent; centrality; SPD tracklets [-1, 1]", 100, 0., 100., 1000, 0, 5000);
   fHistoTracklets_All = new TH1F("fHistoTracklets_All", "fHistoTracklets_All", 1000, 0, 5000);
-  fHistoTracklets_All_cent = new TH2F("fHistoTracklets_All_cent", "fHistoTracklets_All_cent; centrality; SPD tracklets [-999, 999]", 100, 0., 100., 1000, 0, 5000);
 
   fHistoLc = new TH1F("fHistoLc", "fHistoLc", 2, -0.5, 1.5);
 
@@ -790,48 +926,63 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fHistoMCLcK0SpGenAcc = new TH1F("fHistoMCLcK0SpGenAcc", "fHistoMCLcK0SpGenAcc", 14, ptbins);
   fHistoMCLcK0SpGenLimAcc = new TH1F("fHistoMCLcK0SpGenLimAcc", "fHistoMCLcK0SpGenLimAcc", 14, ptbins);
 
+  fHistoV0Radius = new TH2D("fHistoV0Radius", "V0 Radius; radius; bkg/signal", 900, 0., 300., 2, -0.5, 1.5);
   
-  // //code to run the BDT Application on-the-fly
-  // TString inputVariablesBDT = "massK0S,tImpParBach,tImpParV0,bachelorPt,combinedProtonProb,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
-  // TObjArray *tokens = inputVariablesBDT.Tokenize(",");
-  // tokens->Print();
-  // std::vector<std::string> inputNamesVec;
-  // for(Int_t i=0; i<tokens->GetEntries(); i++){
-  //   TString variable = ((TObjString*)(tokens->At(i)))->String();
-  //   string tmpvar = variable.Data();
-  //   inputNamesVec.push_back(tmpvar);
-  // }
-  // Printf("************************************************ fBDTReader = %p", fBDTReader);
-  // //fBDTReader = new ReadBDT_Default(inputNamesVec);
-  
+  if(!fFillTree) {
 
-  fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
-  fBDTHistoTMVA = new TH2D("fBDTHistoTMVA", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
+    for (int iR = 0; iR < fNReaders; ++iR) {
+      AliInfo(Form("Reader %d has %d variables", iR, fNVars[iR]));
+      Printf("************************** Reader %d has %d variables", iR, fNVars[iR]);
+      fVarsTMVA[iR] = new Float_t[fNVars[iR]];
+      for (int iVar = 0; iVar < fNVars[iR]; ++iVar) {
+	fVarsTMVA[iR][iVar] = -999999999; // dummy initialization
+      }
+      AliInfo(Form("Reader %d has %d spectators", iR, fNVarsSpectators[iR]));
+      fVarsTMVASpectators[iR] = new Float_t[fNVarsSpectators[iR]];
+      for (int iS = 0; iS < fNVarsSpectators[iR]; ++iS) {
+	fVarsTMVASpectators[iR][iS] = -999999999; // dummy initialization
+      }
+    }
+    
+    if (fMake3DHisto) {
+      fBDTHistoTMVA3d = new TH3D("fBDTHistoTMVA3d", "Lc inv mass vs bdt output vs signd0; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 200, -1, 1, 500, 2.05, 2.55, 200, -1, 1);
+    }
+    else {
+      fBDTHistoTMVA = new TH2D*[fNReaders];
+      for (int i = 0; i < fNReaders; ++i) {
+	AliInfo(Form("Booking histogram for reader = %d", i));
+	fBDTHistoTMVA[i] = new TH2D(Form("fBDTHistoTMVA_%d", i), Form("Lc inv mass vs bdt output, reader %d; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", i), 2000, -1, 1, 500, 2.05, 2.55);
+	AliInfo("done");
+      }
+    }
+  }
   if (fDebugHistograms) {    
-    fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
-    fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
-    fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 1000, -1, 1, 100, -1, 1);
-    fBDTHistoVsBachelorPt = new TH2D("fBDTHistoVsBachelorPt", "bachelor pT vs bdt output; bdt; p_{T, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
-    fBDTHistoVsCombinedProtonProb = new TH2D("fBDTHistoVsCombinedProtonProb", "combined proton probability vs bdt output; bdt; Bayesian PID_{bachelor}", 1000, -1, 1, 100, 0, 1);
-    fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 1000, 0, 100);
-    fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 1000, -1, 1, 100, 0.9, 1);
-    fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 1000, -1, 1, 100, -1, 1);
-    fBDTHistoVsSignd0 = new TH2D("fBDTHistoVsSignd0", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
-    fBDTHistoVsnSigmaTPCpr = new TH2D("fBDTHistoVsnSigmaTPCpr", "nSigmaTPCpr vs bdt output; bdt; n_{#sigma}^{TPC}_{pr}", 1000, -1, 1, 1000, -10, 10);
-    fBDTHistoVsnSigmaTOFpr = new TH2D("fBDTHistoVsnSigmaTOFpr", "nSigmaTOFpr vs bdt output; bdt; n_{#sigma}^{TOF}_{pr}", 1000, -1, 1, 1000, -10, 10);
-    fBDTHistoVsnSigmaTPCpi = new TH2D("fBDTHistoVsnSigmaTPCpi", "nSigmaTPCpi vs bdt output; bdt; n_{#sigma}^{TPC}_{pi}", 1000, -1, 1, 1000, -10, 10);
-    fBDTHistoVsnSigmaTPCka = new TH2D("fBDTHistoVsnSigmaTPCka", "nSigmaTPCka vs bdt output; bdt; n_{#sigma}^{TPC}_{ka}", 1000, -1, 1, 1000, -10, 10);
-    fBDTHistoVsBachelorP = new TH2D("fBDTHistoVsBachelorP", "bachelor p vs bdt output; bdt; p_{bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
-    fBDTHistoVsBachelorTPCP = new TH2D("fBDTHistoVsBachelorTPCP", "bachelor TPC momentum vs bdt output; bdt; p_{TPC, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+    fHistoTracklets_1_cent = new TH2F("fHistoTracklets_1_cent", "fHistoTracklets_1_cent; centrality; SPD tracklets [-1, 1]", 100, 0., 100., 1000, 0, 5000);
+    fHistoTracklets_All_cent = new TH2F("fHistoTracklets_All_cent", "fHistoTracklets_All_cent; centrality; SPD tracklets [-999, 999]", 100, 0., 100., 1000, 0, 5000);
+    if (!fFillTree) { 
+      fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
+      fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
+      fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 1000, -1, 1, 100, -1, 1);
+      fBDTHistoVsBachelorPt = new TH2D("fBDTHistoVsBachelorPt", "bachelor pT vs bdt output; bdt; p_{T, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+      fBDTHistoVsCombinedProtonProb = new TH2D("fBDTHistoVsCombinedProtonProb", "combined proton probability vs bdt output; bdt; Bayesian PID_{bachelor}", 1000, -1, 1, 100, 0, 1);
+      fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 1000, 0, 100);
+      fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 1000, -1, 1, 100, 0.9, 1);
+      fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 1000, -1, 1, 100, -1, 1);
+      fBDTHistoVsSignd0 = new TH2D("fBDTHistoVsSignd0", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
+      fBDTHistoVsnSigmaTPCpr = new TH2D("fBDTHistoVsnSigmaTPCpr", "nSigmaTPCpr vs bdt output; bdt; n_{#sigma}^{TPC}_{pr}", 1000, -1, 1, 1000, -10, 10);
+      fBDTHistoVsnSigmaTOFpr = new TH2D("fBDTHistoVsnSigmaTOFpr", "nSigmaTOFpr vs bdt output; bdt; n_{#sigma}^{TOF}_{pr}", 1000, -1, 1, 1000, -10, 10);
+      fBDTHistoVsnSigmaTPCpi = new TH2D("fBDTHistoVsnSigmaTPCpi", "nSigmaTPCpi vs bdt output; bdt; n_{#sigma}^{TPC}_{pi}", 1000, -1, 1, 1000, -10, 10);
+      fBDTHistoVsnSigmaTPCka = new TH2D("fBDTHistoVsnSigmaTPCka", "nSigmaTPCka vs bdt output; bdt; n_{#sigma}^{TPC}_{ka}", 1000, -1, 1, 1000, -10, 10);
+      fBDTHistoVsBachelorP = new TH2D("fBDTHistoVsBachelorP", "bachelor p vs bdt output; bdt; p_{bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+      fBDTHistoVsBachelorTPCP = new TH2D("fBDTHistoVsBachelorTPCP", "bachelor TPC momentum vs bdt output; bdt; p_{TPC, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+    }
     fHistoNsigmaTPC = new TH2D("fHistoNsigmaTPC", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TPC} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
     fHistoNsigmaTOF = new TH2D("fHistoNsigmaTOF", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TOF} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
   }
   
   fOutput->Add(fHistoEvents);
   fOutput->Add(fHistoTracklets_1);
-  fOutput->Add(fHistoTracklets_1_cent);
   fOutput->Add(fHistoTracklets_All);
-  fOutput->Add(fHistoTracklets_All_cent);
   fOutput->Add(fHistoLc);
   fOutput->Add(fHistoLcOnTheFly);
   fOutput->Add(fHistoLcBeforeCuts);
@@ -844,24 +995,37 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fOutput->Add(fHistoMCLcK0SpGenAcc);
   fOutput->Add(fHistoMCLcK0SpGenLimAcc);
   fOutput->Add(fHistoCentrality);
-  fOutput->Add(fBDTHisto);
-  fOutput->Add(fBDTHistoTMVA);
+  if (!fFillTree) { 
+    if (fMake3DHisto) {
+      fOutput->Add(fBDTHistoTMVA3d);
+    }
+    else {
+      for (int i = 0; i < fNReaders; ++i) {
+	fOutput->Add(fBDTHistoTMVA[i]);
+      }
+    }
+  }
+  fOutput->Add(fHistoV0Radius);
   if (fDebugHistograms) {    
-    fOutput->Add(fBDTHistoVsMassK0S);
-    fOutput->Add(fBDTHistoVstImpParBach);
-    fOutput->Add(fBDTHistoVstImpParV0);
-    fOutput->Add(fBDTHistoVsBachelorPt);
-    fOutput->Add(fBDTHistoVsCombinedProtonProb);
-    fOutput->Add(fBDTHistoVsCtau);
-    fOutput->Add(fBDTHistoVsCosPAK0S);
-    fOutput->Add(fBDTHistoVsCosThetaStar);
-    fOutput->Add(fBDTHistoVsSignd0);
-    fOutput->Add(fBDTHistoVsnSigmaTPCpr);
-    fOutput->Add(fBDTHistoVsnSigmaTOFpr);
-    fOutput->Add(fBDTHistoVsnSigmaTPCpi);
-    fOutput->Add(fBDTHistoVsnSigmaTPCka);
-    fOutput->Add(fBDTHistoVsBachelorP);
-    fOutput->Add(fBDTHistoVsBachelorTPCP);
+    fOutput->Add(fHistoTracklets_1_cent);
+    fOutput->Add(fHistoTracklets_All_cent);
+    if (!fFillTree) {
+      fOutput->Add(fBDTHistoVsMassK0S);
+      fOutput->Add(fBDTHistoVstImpParBach);
+      fOutput->Add(fBDTHistoVstImpParV0);
+      fOutput->Add(fBDTHistoVsBachelorPt);
+      fOutput->Add(fBDTHistoVsCombinedProtonProb);
+      fOutput->Add(fBDTHistoVsCtau);
+      fOutput->Add(fBDTHistoVsCosPAK0S);
+      fOutput->Add(fBDTHistoVsCosThetaStar);
+      fOutput->Add(fBDTHistoVsSignd0);
+      fOutput->Add(fBDTHistoVsnSigmaTPCpr);
+      fOutput->Add(fBDTHistoVsnSigmaTOFpr);
+      fOutput->Add(fBDTHistoVsnSigmaTPCpi);
+      fOutput->Add(fBDTHistoVsnSigmaTPCka);
+      fOutput->Add(fBDTHistoVsBachelorP);
+      fOutput->Add(fBDTHistoVsBachelorTPCP);
+    }
     fOutput->Add(fHistoNsigmaTPC);
     fOutput->Add(fHistoNsigmaTOF);
   }
@@ -1097,42 +1261,33 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   PostData(7, fListWeight);
 
   if (!fFillTree) {
-    Printf("Booking methods");
-    // creating the BDT and TMVA reader
-    fVarsTMVA = new Float_t[fNVars];
-    fVarsTMVASpectators = new Float_t[fNVarsSpectators];
-    fReader = new TMVA::Reader( "!Color:!Silent" );
-    std::vector<std::string> inputNamesVec;
-    TObjArray *tokens = fNamesTMVAVar.Tokenize(",");
-    for(Int_t i = 0; i < tokens->GetEntries(); i++){
-      TString variable = ((TObjString*)(tokens->At(i)))->String();
-      std::string tmpvar = variable.Data();
-      inputNamesVec.push_back(tmpvar);
-      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
-    }      
-    delete tokens;
-    TObjArray *tokensSpectators = fNamesTMVAVarSpectators.Tokenize(",");
-    for(Int_t i = 0; i < tokensSpectators->GetEntries(); i++){
-      TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
-      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddSpectator(variable.Data(), &fVarsTMVASpectators[i]);
-    }
-    delete tokensSpectators;
-    if (fUseWeightsLibrary) {
-      void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
-      void* p = dlsym(lib, Form("%s", fTMVAlibPtBin.Data()));
-      IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
-      fBDTReader = maker1(inputNamesVec);
-    }
-    
-    if (fUseXmlWeightsFile) fReader->BookMVA("BDT method", fXmlWeightsFile);
-
-    if (fUseXmlFileFromCVMFS){
-       TString pathToFileCVMFS = AliDataFile::GetFileName(fXmlFileFromCVMFS.Data());
-       if (pathToFileCVMFS.IsNull()){
+    Printf("\n\n\n\nBooking methods");
+    for (int iR = 0; iR < fNReaders; ++iR) {
+      fReader[iR] = new TMVA::Reader( "!Color:!Silent" );
+      for (int iVar = 0; iVar < fNVars[iR]; ++iVar) {
+	fReader[iR]->AddVariable(fNamesTMVAVarVec[iR][iVar], &fVarsTMVA[iR][iVar]);
+      }      
+      TObjArray *tokensSpectators = fNamesTMVAVarSpectators[iR].Tokenize(",");
+      int nSpectators = tokensSpectators->GetEntries();
+      if (nSpectators != fNVarsSpectators[iR]) {
+	AliFatal(Form("Number of spectators for reader %d does not match the expected one (%d, should be %d)", iR, nSpectators, fNVarsSpectators[iR]));
+      }
+      for(Int_t i = 0; i < nSpectators; i++){
+	TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
+	fReader[iR]->AddSpectator(variable.Data(), &fVarsTMVASpectators[iR][i]);
+      }
+      delete tokensSpectators;
+      TString pathToFileCVMFS = "";
+      if (fUseXmlWeightsFileFromCVMFS){
+	pathToFileCVMFS = AliDataFile::GetFileName(fXmlWeightsFile[iR].Data());
+	if (pathToFileCVMFS.IsNull()){
           AliFatal("Cannot access data files from CVMFS");
-       }
-       fReader->BookMVA("BDT method", pathToFileCVMFS); 
+	}
+      }
+      Printf("Booking method %d with file %s", iR, fUseXmlWeightsFileFromCVMFS ? pathToFileCVMFS.Data() : fXmlWeightsFile[iR].Data());
+      fReader[iR]->BookMVA("BDT method", fUseXmlWeightsFileFromCVMFS ? pathToFileCVMFS : fXmlWeightsFile[iR]); 
     }
+    Printf("\n\n\n\n");
   }
   
   return;
@@ -1352,9 +1507,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
 
   fHistoTracklets_1->Fill(fNTracklets_1);
   fHistoTracklets_All->Fill(fNTracklets_All);
-  fHistoTracklets_1_cent->Fill(fCentrality, fNTracklets_1);
-  fHistoTracklets_All_cent->Fill(fCentrality, fNTracklets_All);
-
+  if (fDebugHistograms) {    
+    fHistoTracklets_1_cent->Fill(fCentrality, fNTracklets_1);
+    fHistoTracklets_All_cent->Fill(fCentrality, fNTracklets_All);
+  }
   fHistoCentrality->Fill(fCentrality);
     
   if(fUseMultCorrection){
@@ -1382,7 +1538,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
     if(!fHistoMCNch) AliInfo("Input histos to evaluate Nch weights missing"); 
     if(fHistoMCNch) nchWeight *= fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(fNTracklets_1));
   }
-
 
   PostData(1, fOutput);
   PostData(2, fListCounters);
@@ -1732,11 +1887,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
   */
 
   //Downscaling for Pb-Pb data tree at low pt
-  if(ffraction > -1 && fFillTree && !fUseMCInfo && part->Pt() < fPtLimForDownscaling && fCurrentEvent%ffraction != 0) return;
-  
+
+  if(ffraction > -1 && fFillTree && !fUseMCInfo && part->Pt() < fPtLimForDownscaling && fCurrentEvent%ffraction != 0) {
+    return;
+  }
+
   Double_t invmassLc = part->InvMassLctoK0sP();
 
   AliAODv0 * v0part = part->Getv0();
+  Double_t radiusV0 = v0part->RadiusV0();
   Bool_t onFlyV0 = v0part->GetOnFlyStatus(); // on-the-flight V0s
   if (onFlyV0){ // on-the-fly V0
     if (isLc) { // Lc
@@ -1981,7 +2140,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     cutsAnal->GetPidHF()->GetnSigmaTOF(bachelor, (AliPID::kKaon), nSigmaTOFka);
     cutsAnal->GetPidHF()->GetnSigmaTOF(bachelor, (AliPID::kProton), nSigmaTOFpr);    
   }
-  
+
   Double_t ptLcMC = -1;
   Double_t weightPythia = -1, weight5LHC13d3 = -1, weight5LHC13d3Lc = -1; 
 
@@ -2101,108 +2260,110 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     if(innerpro<0.) signd0 = -1.;
     
     signd0 = signd0*TMath::Abs(d0z0bach[0]);
-    
+
     if (fUseMCInfo) {   //  save full tree if on MC
       fCandidateVariables[0] = invmassLc;
-      fCandidateVariables[1] = invmassLc2Lpi;
-      fCandidateVariables[2] = invmassK0s;
-      fCandidateVariables[3] = invmassLambda;
-      fCandidateVariables[4] = invmassLambdaBar;
-      fCandidateVariables[5] = part->CosV0PointingAngle();
-      fCandidateVariables[6] = dcaV0;
-      fCandidateVariables[7] = part->Getd0Prong(0);
-      fCandidateVariables[8] = part->Getd0Prong(1);
-      fCandidateVariables[9] = nSigmaTPCpr;
-      fCandidateVariables[10] = nSigmaTOFpr;
-      fCandidateVariables[11] = bachelor->Pt();
-      fCandidateVariables[12] = v0pos->Pt();
+      //fCandidateVariables[1] = invmassLc2Lpi;
+      fCandidateVariables[1] = invmassK0s;
+      //fCandidateVariables[3] = invmassLambda;
+      //fCandidateVariables[4] = invmassLambdaBar;
+      fCandidateVariables[2] = part->CosV0PointingAngle();
+      fCandidateVariables[3] = dcaV0;
+      fCandidateVariables[4] = part->Getd0Prong(0);
+      fCandidateVariables[5] = part->Getd0Prong(1);
+      fCandidateVariables[6] = nSigmaTPCpr;
+      fCandidateVariables[7] = nSigmaTOFpr;
+      fCandidateVariables[8] = bachelor->Pt();
+      fCandidateVariables[9] = v0pos->Pt();
       //fCandidateVariables[13] = v0neg->Pt();
-      fCandidateVariables[13] = nSigmaTOFpi;
-      fCandidateVariables[14] = v0part->Getd0Prong(0);
-      fCandidateVariables[15] = v0part->Getd0Prong(1);
-      fCandidateVariables[16] = v0part->Pt();
-      fCandidateVariables[17] = v0part->InvMass2Prongs(0,1,11,11);
-      fCandidateVariables[18] = part->Pt();
-      fCandidateVariables[19] = probProton;
-      fCandidateVariables[20] = part->Eta();
-      fCandidateVariables[21] = v0pos->Eta();
-      fCandidateVariables[22] = v0neg->Eta();
-      fCandidateVariables[23] = probProtonTPC;
-      fCandidateVariables[24] = probProtonTOF;
-      fCandidateVariables[25] = bachelor->Eta();      
-      fCandidateVariables[26] = part->P();
-      fCandidateVariables[27] = bachelor->P();
-      fCandidateVariables[28] = v0part->P();
-      fCandidateVariables[29] = v0pos->P();
-      fCandidateVariables[30] = v0neg->P();
-      fCandidateVariables[31] = v0part->Eta();
-      fCandidateVariables[32] = ptLcMC;
-      fCandidateVariables[33] = part->DecayLengthV0();
-      fCandidateVariables[34] = bachCode;
-      fCandidateVariables[35] = k0SCode;
-      fCandidateVariables[36] = v0part->AlphaV0();
-      fCandidateVariables[37] = v0part->PtArmV0();
+      fCandidateVariables[10] = nSigmaTOFpi;
+      //fCandidateVariables[14] = v0part->Getd0Prong(0);
+      //fCandidateVariables[15] = v0part->Getd0Prong(1);
+      fCandidateVariables[11] = v0part->Pt();
+      //fCandidateVariables[17] = v0part->InvMass2Prongs(0,1,11,11);
+      fCandidateVariables[12] = part->Pt();
+      fCandidateVariables[13] = probProton;
+      fCandidateVariables[14] = part->Eta();
+      //fCandidateVariables[21] = v0pos->Eta();
+      fCandidateVariables[15] = v0neg->Eta();
+      //fCandidateVariables[23] = probProtonTPC;
+      //fCandidateVariables[24] = probProtonTOF;
+      fCandidateVariables[16] = bachelor->Eta();      
+      //fCandidateVariables[26] = part->P();
+      //fCandidateVariables[27] = bachelor->P();
+      fCandidateVariables[17] = v0part->P();
+      //fCandidateVariables[29] = v0pos->P();
+      //fCandidateVariables[30] = v0neg->P();
+      fCandidateVariables[18] = v0part->Eta();
+      fCandidateVariables[19] = ptLcMC;
+      fCandidateVariables[20] = part->DecayLengthV0();
+      //fCandidateVariables[34] = bachCode;
+      //fCandidateVariables[35] = k0SCode;
+      fCandidateVariables[21] = v0part->AlphaV0();
+      fCandidateVariables[22] = v0part->PtArmV0();
       
       AliDebug(2, Form("v0pos->GetStatus() & AliESDtrack::kITSrefit= %d, v0neg->GetStatus() & AliESDtrack::kITSrefit = %d, v0pos->GetTPCClusterInfo(2, 1)= %f, v0neg->GetTPCClusterInfo(2, 1) = %f", (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), v0pos->GetTPCClusterInfo(2, 1), v0neg->GetTPCClusterInfo(2, 1)));
-      fCandidateVariables[38] = cts;
-      fCandidateVariables[39] = weightPythia;
-      fCandidateVariables[40] = weight5LHC13d3;
-      fCandidateVariables[41] = weight5LHC13d3Lc;
-      fCandidateVariables[42] = weightNch;
-      fCandidateVariables[43] = fNTracklets_1;      
-      fCandidateVariables[44] = countTreta1corr;
-      fCandidateVariables[45] = signd0;
-      fCandidateVariables[46] = fCentrality;
-      fCandidateVariables[47] = fNTracklets_All;
+      fCandidateVariables[23] = cts;
+      fCandidateVariables[24] = weightPythia;
+      fCandidateVariables[25] = weight5LHC13d3;
+      fCandidateVariables[26] = weight5LHC13d3Lc;
+      fCandidateVariables[27] = weightNch;
+      fCandidateVariables[28] = fNTracklets_1;      
+      fCandidateVariables[29] = countTreta1corr;
+      fCandidateVariables[30] = signd0;
+      fCandidateVariables[31] = fCentrality;
+      fCandidateVariables[32] = fNTracklets_All;
       if (partLcMC) 
-	fCandidateVariables[48] = fUtils->CheckOrigin(mcArray, partLcMC, kTRUE);
+	fCandidateVariables[33] = fUtils->CheckOrigin(mcArray, partLcMC, kTRUE);
       else
-	fCandidateVariables[48] = -1;
-      fCandidateVariables[49] = nSigmaTPCpi;
-      fCandidateVariables[50] = nSigmaTPCka;
+	fCandidateVariables[33] = -1;
+      fCandidateVariables[34] = nSigmaTPCpi;
+      fCandidateVariables[35] = nSigmaTPCka;
       //fCandidateVariables[51] = bachelor->GetTPCmomentum();
-      fCandidateVariables[51] = nSigmaTOFka;
+      fCandidateVariables[36] = nSigmaTOFka;
+      fCandidateVariables[37] = radiusV0;
     }      
     else { //remove MC-only variables from tree if data
       fCandidateVariables[0] = invmassLc;
       fCandidateVariables[1] = v0part->AlphaV0();
       fCandidateVariables[2] = invmassK0s;
-      fCandidateVariables[3] = invmassLambda;
-      fCandidateVariables[4] = invmassLambdaBar;
-      fCandidateVariables[5] = part->CosV0PointingAngle();
-      fCandidateVariables[6] = dcaV0;
-      fCandidateVariables[7] = part->Getd0Prong(0);
-      fCandidateVariables[8] = part->Getd0Prong(1);
-      fCandidateVariables[9] = nSigmaTPCpr;
-      fCandidateVariables[10] = nSigmaTOFpr;
-      fCandidateVariables[11] = bachelor->Pt();
-      fCandidateVariables[12] = v0pos->Pt();
+      //fCandidateVariables[3] = invmassLambda;
+      //fCandidateVariables[4] = invmassLambdaBar;
+      fCandidateVariables[3] = part->CosV0PointingAngle();
+      fCandidateVariables[4] = dcaV0;
+      fCandidateVariables[5] = part->Getd0Prong(0);
+      fCandidateVariables[6] = part->Getd0Prong(1);
+      fCandidateVariables[7] = nSigmaTPCpr;
+      fCandidateVariables[8] = nSigmaTOFpr;
+      fCandidateVariables[9] = bachelor->Pt();
+      fCandidateVariables[10] = v0pos->Pt();
       //fCandidateVariables[13] = v0neg->Pt();
-      fCandidateVariables[13] = nSigmaTOFka;
-      fCandidateVariables[14] = v0part->Getd0Prong(0);
-      fCandidateVariables[15] = v0part->Getd0Prong(1);
-      fCandidateVariables[16] = v0part->Pt();
+      fCandidateVariables[11] = nSigmaTOFka;
+      //fCandidateVariables[14] = v0part->Getd0Prong(0);
+      //fCandidateVariables[15] = v0part->Getd0Prong(1);
+      fCandidateVariables[12] = v0part->Pt();
       //fCandidateVariables[17] = bachelor->GetTPCmomentum();
-      fCandidateVariables[17] = nSigmaTOFpi;
-      fCandidateVariables[18] = part->Pt();
-      fCandidateVariables[19] = probProton;
-      fCandidateVariables[20] = v0pos->Eta();
-      fCandidateVariables[21] = bachelor->P();
-      fCandidateVariables[22] = bachelor->Eta();
-      fCandidateVariables[23] = v0part->P();
-      fCandidateVariables[24] = part->DecayLengthV0();
-      fCandidateVariables[25] = nSigmaTPCpi;
-      fCandidateVariables[26] = nSigmaTPCka;
-      fCandidateVariables[27] = fNTracklets_1;
-      fCandidateVariables[28] = countTreta1corr;
-      fCandidateVariables[29] = cts;
-      fCandidateVariables[30] = signd0;       
-      fCandidateVariables[31] = fCentrality;
-      fCandidateVariables[32] = fNTracklets_All;
-      fCandidateVariables[33] = -1;
-      fCandidateVariables[34] = v0part->PtArmV0();
+      fCandidateVariables[13] = nSigmaTOFpi;
+      fCandidateVariables[14] = part->Pt();
+      fCandidateVariables[15] = probProton;
+      //fCandidateVariables[20] = v0pos->Eta();
+      fCandidateVariables[16] = bachelor->P();
+      //fCandidateVariables[22] = bachelor->Eta();
+      fCandidateVariables[17] = v0part->P();
+      fCandidateVariables[18] = part->DecayLengthV0();
+      fCandidateVariables[19] = nSigmaTPCpi;
+      fCandidateVariables[20] = nSigmaTPCka;
+      fCandidateVariables[21] = fNTracklets_1;
+      fCandidateVariables[22] = countTreta1corr;
+      fCandidateVariables[23] = cts;
+      fCandidateVariables[24] = signd0;       
+      fCandidateVariables[25] = fCentrality;
+      fCandidateVariables[26] = fNTracklets_All;
+      fCandidateVariables[27] = -1;
+      fCandidateVariables[28] = v0part->PtArmV0();
+      fCandidateVariables[29] = radiusV0;
     }
-    
+
     // fill multiplicity histograms for events with a candidate   
     //fHistNtrUnCorrEvWithCand->Fill(fNTracklets_1, weightNch);
     //fHistNtrCorrEvWithCand->Fill(countTreta1corr, weightNch);
@@ -2224,113 +2385,88 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       if(fFillTree) fVariablesTreeSgn->Fill();
     }
     
-    
-    if(!fFillTree){
-      std::vector<Double_t> inputVars(fNVars);
-      if (fNVars == 14) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = bachelor->Pt();
-	inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[5] = part->CosV0PointingAngle();
-	inputVars[6] = cts;
-	inputVars[7] = signd0;
-	inputVars[8] = bachelor->P();
-	inputVars[9] = nSigmaTOFpr;
-	inputVars[10] = nSigmaTPCpr;
-	inputVars[11] = nSigmaTPCpi;
-	inputVars[12] = nSigmaTPCka;
-	inputVars[13] = bachelor->GetTPCmomentum();
+    if(!fFillTree) {
+      for (int iR = 0; iR < fNReaders; ++iR) {
+	int foundVars = 0; 
+	for (int ivar = 0; ivar < fNVars[iR]; ++ivar) {
+	  if (fNamesTMVAVarVec[iR][ivar] == "DecayLengthK0S*0.497/v0P") {
+	    //std::cout << "Adding " << fNamesTMVAVarVec[iR][ivar] << std::endl;
+	    fVarsTMVA[iR][ivar] = (part->DecayLengthV0())*0.497/(v0part->P());    // note that fNamesTMVAVarVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
+	    ++foundVars;
+	    continue;
+	  }
+	  if (fNamesTMVAVarVec[iR][ivar] == "combinedProtonProbD2H") {
+	    if (nSigmaTPCpr > -998. && nSigmaTOFpr > -998.) {
+	      fVarsTMVA[iR][ivar] = TMath::Sqrt((nSigmaTPCpr * nSigmaTPCpr + nSigmaTOFpr * nSigmaTOFpr) / 2);
+	    }
+	    else if (nSigmaTPCpr > -998. && nSigmaTOFpr < -998.) {
+	      fVarsTMVA[iR][ivar] = TMath::Abs(nSigmaTPCpr);
+	    }
+	    else if (nSigmaTPCpr < -998. && nSigmaTOFpr > -998.) {
+	      fVarsTMVA[iR][ivar] = TMath::Abs(nSigmaTOFpr);
+	    }
+	    else {
+	      fVarsTMVA[iR][ivar] = -999.;
+	    }
+	    ++foundVars;
+	    continue;
+	  }
+	  if (fNamesTMVAVarVec[iR][ivar] == "ptArm/TMath::Abs(alphaArm)") {
+	    fVarsTMVA[iR][ivar] = v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0());
+	    ++foundVars;
+	    continue;
+	  }
+	  for (int iname = 0; iname < fNTreeVars; ++iname) {
+	    if (fNamesTMVAVarVec[iR][ivar] == fCandidateVariableNames[iname]) {
+	      //std::cout << "Adding " << fNamesTMVAVarVec[iR][ivar] << std::endl;
+	      //std::cout << "Value will be " << fCandidateVariables[iname] << std::endl;
+	      //std::cout << "fVarsTMVA.size() = " << fVarsTMVA.size() << std::endl;
+	      fVarsTMVA[iR][ivar] = fCandidateVariables[iname];    // note that fNamesTMVAVarVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
+	      ++foundVars;
+	      break;
+	    }
+	  }
+	}
+	if (foundVars != fNVars[iR]) {
+	  AliFatal(Form("Not all variables for TMVA for reader %d have been found!! %d, should be %d", iR, foundVars, fNVars[iR]));
+	}
+	Double_t tmva = -1;
+	tmva = fReader[iR]->EvaluateMVA("BDT method");
+	//Printf("tmva = %f", tmva);
+	if (fMake3DHisto) {
+	  if (iR == 0) { // the 3D histogram gets filled only with the first model - we do not foresee to run with more models if we want the 3D histogram
+	    fBDTHistoTMVA3d->Fill(tmva, invmassLc, signd0);
+	  }
+	}
+	else {
+	  fBDTHistoTMVA[iR]->Fill(tmva, invmassLc); 
+	}
+	if (fDebugHistograms && iR == 0) {
+	  fBDTHistoVsMassK0S->Fill(tmva, invmassK0s);
+	  fBDTHistoVstImpParBach->Fill(tmva, part->Getd0Prong(0));
+	  fBDTHistoVstImpParV0->Fill(tmva, part->Getd0Prong(1));
+	  fBDTHistoVsBachelorPt->Fill(tmva, bachelor->Pt());
+	  fBDTHistoVsCombinedProtonProb->Fill(tmva, probProton);
+	  fBDTHistoVsCtau->Fill(tmva, (part->DecayLengthV0())*0.497/(v0part->P()));
+	  fBDTHistoVsCosPAK0S->Fill(tmva, part->CosV0PointingAngle());
+	  fBDTHistoVsSignd0->Fill(tmva, signd0);
+	  fBDTHistoVsCosThetaStar->Fill(tmva, cts);
+	  fBDTHistoVsnSigmaTPCpr->Fill(tmva, nSigmaTPCpr);
+	  fBDTHistoVsnSigmaTOFpr->Fill(tmva, nSigmaTOFpr);
+	  fBDTHistoVsnSigmaTPCpi->Fill(tmva, nSigmaTPCpi);
+	  fBDTHistoVsnSigmaTPCka->Fill(tmva, nSigmaTPCka);
+	  fBDTHistoVsBachelorP->Fill(tmva, bachelor->P());
+	  fBDTHistoVsBachelorTPCP->Fill(tmva, bachelor->GetTPCmomentum());
+	  fHistoNsigmaTPC->Fill(bachelor->P(), nSigmaTPCpr);
+	  fHistoNsigmaTOF->Fill(bachelor->P(), nSigmaTOFpr);
+	}
       }
-      else if (fNVars == 12) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = cts;
-	inputVars[6] = nSigmaTOFpr;
-	inputVars[7] = nSigmaTOFpi;
-	inputVars[8] = nSigmaTOFka;
-	inputVars[9] = nSigmaTPCpr;
-	inputVars[10] = nSigmaTPCpi;
-	inputVars[11] = nSigmaTPCka;
-      }
-      else if (fNVars == 11) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = cts;
-	inputVars[6] = signd0;
-	inputVars[7] = nSigmaTOFpr;
-	inputVars[8] = nSigmaTPCpr;
-	inputVars[9] = nSigmaTPCpi;
-	inputVars[10] = nSigmaTPCka;
-      }
-      else if (fNVars == 10) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = signd0;
-	inputVars[6] = nSigmaTOFpr;
-	inputVars[7] = nSigmaTPCpr;
-	inputVars[8] = nSigmaTPCpi;
-	inputVars[9] = nSigmaTPCka;
-      }
-      else if (fNVars == 7) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = cts;
-	inputVars[6] = signd0;
-      }
-
-      for (Int_t i = 0; i < fNVars; i++) {
-	fVarsTMVA[i] = inputVars[i];
-      }
-      
-      Double_t BDTResponse = -1;
-      Double_t tmva = -1;
-      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) tmva = fReader->EvaluateMVA("BDT method");
-      if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
-      //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
-      //Printf("tmva = %f", tmva); 
-      fBDTHisto->Fill(BDTResponse, invmassLc);
-      fBDTHistoTMVA->Fill(tmva, invmassLc); 
-      if (fDebugHistograms) {
-	if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
-	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
-	fBDTHistoVstImpParBach->Fill(BDTResponse, part->Getd0Prong(0));
-	fBDTHistoVstImpParV0->Fill(BDTResponse, part->Getd0Prong(1));
-	fBDTHistoVsBachelorPt->Fill(BDTResponse, bachelor->Pt());
-	fBDTHistoVsCombinedProtonProb->Fill(BDTResponse, probProton);
-	fBDTHistoVsCtau->Fill(BDTResponse, (part->DecayLengthV0())*0.497/(v0part->P()));
-	fBDTHistoVsCosPAK0S->Fill(BDTResponse, part->CosV0PointingAngle());
-	fBDTHistoVsSignd0->Fill(BDTResponse, signd0);
-	fBDTHistoVsCosThetaStar->Fill(BDTResponse, cts);
-	fBDTHistoVsnSigmaTPCpr->Fill(BDTResponse, nSigmaTPCpr);
-	fBDTHistoVsnSigmaTOFpr->Fill(BDTResponse, nSigmaTOFpr);
-	fBDTHistoVsnSigmaTPCpi->Fill(BDTResponse, nSigmaTPCpi);
-	fBDTHistoVsnSigmaTPCka->Fill(BDTResponse, nSigmaTPCka);
-	fBDTHistoVsBachelorP->Fill(BDTResponse, bachelor->P());
-	fBDTHistoVsBachelorTPCP->Fill(BDTResponse, bachelor->GetTPCmomentum());
-	fHistoNsigmaTPC->Fill(bachelor->P(), nSigmaTPCpr);
-	fHistoNsigmaTOF->Fill(bachelor->P(), nSigmaTOFpr);
-      }
+      fHistoV0Radius->Fill(radiusV0, isLc);
     }
-    
   }
-  
+ 
   return;
-  
-  
+   
 }
 
 //________________________________________________________________________

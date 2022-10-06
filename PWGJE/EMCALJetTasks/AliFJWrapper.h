@@ -270,7 +270,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fFilteredJets      ( )
   , fSubtractedJetsPt  ( )
   , fConstituentSubtrJets ( )
-  , fSoftDrop          ( )
+  , fGroomedJets       ( )
   , fAreaDef           (0)
   , fVorAreaSpec       (0)
   , fGhostedAreaSpec   (0)
@@ -289,6 +289,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fGhostArea         (0.005)
   , fMaxRap            (1.)
   , fR                 (0.4)
+  , fMinJetPt          (0.)
   , fGridScatter       (1.0)
   , fKtScatter         (0.1)
   , fMeanGhostKt       (1e-100)
@@ -305,6 +306,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fGenSubtractor     (0)
   , fConstituentSubtractor (0)
   , fEventConstituentSubtractor (0)    
+  , fSoftDrop          ( )
   , fGenSubtractorInfoJetMass ( )
   , fGenSubtractorInfoGRNum ( )
   , fGenSubtractorInfoGRDen ( )
@@ -1254,6 +1256,9 @@ Int_t AliFJWrapper::DoEventConstituentSubtraction() {
   //Do constituent subtraction
 #ifdef FASTJET_VERSION
   CreateEventConstituentSub();
+  // Clear consituents from the previous event. RE and LH suspect (in May 2021) that this may leak
+  // memory for some allocators (namely, we're worried about jemalloc).
+  fEventSubCorrectedVectors.clear();
   fEventSubCorrectedVectors = fEventConstituentSubtractor->subtract_event(fEventSubInputVectors,fMaxRap); //second argument max rap?
   //clear constituent subtracted jets
   if(fEventConstituentSubtractor) { delete fEventConstituentSubtractor; fEventConstituentSubtractor = NULL; }

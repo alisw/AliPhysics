@@ -1,5 +1,6 @@
 /***************************************************************************
             adash@cern.ch - last modified on 03/04/2013
+            prottay.das@cern.ch - last modified on 29/05/2021
 //
 // General macro to configure the RSN analysis task.
 // It calls all configs desired by the user, by means
@@ -28,6 +29,11 @@ AliRsnMiniAnalysisTask * AddTaskRhoKaon
  Float_t     nsigmakaonTOF = 3.0,
  int         ptpk          =0,
  int         pid           =1,
+ Float_t     lmassrho     =0.5,
+ Float_t     hmassrho     =0.9,
+ Float_t     linvmass     =0.5,
+ Float_t     hinvmass     =0.9,
+ int         invmassbins  =1,
  Bool_t      enableMonitor = kTRUE,
  Float_t     maxDiffVzMix = 1.0,
  Float_t     maxDiffMultMix = 10.0,
@@ -51,8 +57,8 @@ AliRsnMiniAnalysisTask * AddTaskRhoKaon
    TString taskName = Form("TPCPhiMeson%s%s", (isPP? "pp" : "pPb"), (isMC ? "MC" : "Data"));
    
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
-   //   task->SelectCollisionCandidates(AliVEvent::kINT7);
-    task->UseESDTriggerMask(AliVEvent::kINT7); //i have did this
+   //task->SelectCollisionCandidates(AliVEvent::kINT7);
+   task->UseESDTriggerMask(AliVEvent::kINT7); //i have did this
    if (isPP) 
      task->UseMultiplicity("AliMultSelection_V0M");
    else
@@ -142,8 +148,8 @@ AliRsnMiniAnalysisTask * AddTaskRhoKaon
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigRhoKaon.C");
-   // gROOT->LoadMacro("ConfigRhoKaon.C");
-   if (!ConfigRhoKaon(task, isMC, isPP, "",nsigmapionTPC,nsigmakaonTPC,nsigmapionTOF,nsigmakaonTOF,ptpk,pid,enableMonitor,optSy)) return 0x0;
+   //gROOT->LoadMacro("ConfigRhoKaon.C");
+    if (!ConfigRhoKaon(task, isMC, isPP, "",nsigmapionTPC,nsigmakaonTPC,nsigmapionTOF,nsigmakaonTOF,ptpk,pid,lmassrho,hmassrho,linvmass,hinvmass,invmassbins,enableMonitor,optSy)) return 0x0;
 
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

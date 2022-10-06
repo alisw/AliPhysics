@@ -57,12 +57,12 @@ public:
        void SetInputEvent(AliMCEvent* lESDMCEvent){
         fIsESDMC=kTRUE;
         fESDEventMC=lESDMCEvent;
-    };
+    }
     //AOD
        void SetInputEvent(AliAODEvent* lAODMCEvent){
         fIsESDMC=kFALSE;
         fAODEvent=lAODMCEvent;
-       };
+       }
        AliDalitzAODESDMC* Particle(Int_t i);
        
        
@@ -76,7 +76,7 @@ private:
     AliMCEvent* fESDEventMC;
     AliAODEvent* fAODEvent;
     Bool_t fIsESDMC;
-ClassDef( AliDalitzEventMC, 1 );
+ClassDef( AliDalitzEventMC, 1 )
 };
 
 #endif // ALIDALITZEVENTMC_H

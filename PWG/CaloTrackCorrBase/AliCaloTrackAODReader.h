@@ -30,8 +30,8 @@ public:
   
   Bool_t      CheckForPrimaryVertex()  const ;
     
-  TClonesArray   * GetAODMCParticles() const ;
-  AliAODMCHeader * GetAODMCHeader   () const ;
+  TClonesArray     * GetAODMCParticles() const ;
+  AliAODMCHeader   * GetAODMCHeader   () const ;
   AliGenEventHeader* GetGenEventHeader() const ;
 
   TList *     GetCreateControlHistograms() ;
@@ -50,6 +50,10 @@ public:
   ULong_t     GetTrackFilterMaskComplementary()  const { return fTrackFilterMaskComplementary       ; }
   void        SetTrackFilterMaskComplementary(ULong_t bit) {    fTrackFilterMaskComplementary = bit ; }
   
+  Bool_t      IsMCParticleFromOutOfBunchPileupCollision(Int_t index)  const ;
+  Bool_t      IsPileupInGeneratedMCEvent(TString genname="")          const ;
+  Bool_t      IsSameBunchPileupInGeneratedMCEvent(TString genname="") const ;
+
   void        SwitchOnAODHybridTrackSelection()        { fSelectHybridTracks  = kTRUE  ; }
   void        SwitchOffAODHybridTrackSelection()       { fSelectHybridTracks  = kFALSE ; }
   

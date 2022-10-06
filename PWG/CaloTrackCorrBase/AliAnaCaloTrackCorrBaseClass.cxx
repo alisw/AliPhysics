@@ -743,7 +743,7 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fCheckRealCaloAcc    = kFALSE ;
   fRecalculateCaloPID  = kFALSE ;
   fMinPt               = 0.2  ; //Min pt in particle analysis
-  fMaxPt               = 300. ; //Max pt in particle analysis
+  fMaxPt               = 1000. ; //Max pt in particle analysis
   fNZvertBin           = 1;
   fNrpBin              = 1;
   
@@ -1133,6 +1133,30 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     phiBinning.CreateBinEdges(phiBinsArray);
     GetHistogramRanges()->SetHistoPhiArr(phiBinsArray);
   }
+
+  if ( GetHistogramRanges()->GetHistoDeltaEtaArr().GetSize() == 0 )
+  {
+    TCustomBinning detaBinning;
+    detaBinning.SetMinimum(GetHistogramRanges()->GetHistoDeltaEtaMin());
+    Float_t binWidth = ( GetHistogramRanges()->GetHistoDeltaEtaMax() - GetHistogramRanges()->GetHistoDeltaEtaMin() ) / GetHistogramRanges()->GetHistoDeltaEtaBins();
+    detaBinning.AddStep(GetHistogramRanges()->GetHistoDeltaEtaMax(), binWidth);
+
+    TArrayD detaBinsArray;
+    detaBinning.CreateBinEdges(detaBinsArray);
+    GetHistogramRanges()->SetHistoDeltaEtaArr(detaBinsArray);
+  }
+
+  if ( GetHistogramRanges()->GetHistoDeltaPhiArr().GetSize() == 0 )
+  {
+    TCustomBinning dphiBinning;
+    dphiBinning.SetMinimum(GetHistogramRanges()->GetHistoDeltaPhiMin());
+    Float_t binWidth = ( GetHistogramRanges()->GetHistoDeltaPhiMax() - GetHistogramRanges()->GetHistoDeltaPhiMin() ) / GetHistogramRanges()->GetHistoDeltaPhiBins();
+    dphiBinning.AddStep(GetHistogramRanges()->GetHistoDeltaPhiMax(), binWidth);
+
+    TArrayD dphiBinsArray;
+    dphiBinning.CreateBinEdges(dphiBinsArray);
+    GetHistogramRanges()->SetHistoDeltaPhiArr(dphiBinsArray);
+  }
   
   if ( GetHistogramRanges()->GetHistoTrackResidualEtaArr().GetSize() == 0 )
   {
@@ -1448,6 +1472,22 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     GetHistogramRanges()->SetHistoMassArr(massBinsArray);
   }
   
+  if ( GetHistogramRanges()->GetHistoSpherocityArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoSpherocityMin();
+    Float_t max = GetHistogramRanges()->GetHistoSpherocityMax();
+    Float_t binWidth = (max - min) / 20;
+    //GetHistogramRanges()->GetHistoSpherocityBins();
+
+    TCustomBinning spheBinning;
+    spheBinning.SetMinimum(min);
+    spheBinning.AddStep(max, binWidth);
+
+    TArrayD spheBinsArray;
+    spheBinning.CreateBinEdges(spheBinsArray);
+    GetHistogramRanges()->SetHistoSpherocityArr(spheBinsArray);
+  }
+
   if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() == 0 )
     AliAnaCaloTrackCorrBaseClass::SetEventCentralityBins();
 }

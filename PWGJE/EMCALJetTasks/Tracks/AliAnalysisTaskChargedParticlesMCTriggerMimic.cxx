@@ -376,7 +376,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
     // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
     AliVTrack *checktrack(NULL);
     AliVParticle *assocMC(NULL);
-    double ptparticle(-1.), etaparticle(-100.), etaEMCAL(0.), phiEMCAL(0.);
+    double etaEMCAL(0.), phiEMCAL(0.);
     for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
       checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
       if(!checktrack) continue;
@@ -420,8 +420,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
       if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
       // prefer true pt and eta, however in case of running on data take measured values
-      ptparticle = assocMC ? TMath::Abs(assocMC->Pt()) : TMath::Abs(checktrack->Pt());
-      etaparticle = assocMC ? assocMC->Eta() : checktrack->Eta();
+      double ptparticle = assocMC ? TMath::Abs(assocMC->Pt()) : TMath::Abs(checktrack->Pt());
 
       // Calculate eta in cms frame according
       // EPJC74 (2014) 3054:

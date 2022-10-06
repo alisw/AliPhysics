@@ -213,7 +213,7 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
 
     if (fCentBins.size() > 1) {
       fHistLeadJetNconstVsPt[jetCont.first] = new TH2*[fCentBins.size()-1];
-      for (Int_t i = 0; i < fCentBins.size()-1; i++) {
+      for (std::size_t i = 0; i < fCentBins.size()-1; i++) {
         name = TString::Format("%s_fHistJetNconstVsPt_Cent%d_%d", jetCont.first.c_str(), TMath::FloorNint(fCentBins[i]), TMath::FloorNint(fCentBins[i+1]));
         fHistLeadJetNconstVsPt[jetCont.first][i] = new TH2F(name, name, nPtBins, 0, fMaxPt, 150, -0.5, 149.5);
         fHistLeadJetNconstVsPt[jetCont.first][i]->GetXaxis()->SetTitle("#it{p}_{T,jet} (GeV/#it{c})");
@@ -322,7 +322,7 @@ Bool_t AliAnalysisTaskRhoBaseDev::FillHistograms()
       fHistLeadJetPtDensityVsCent[jetCont.first]->Fill(fCent, fLeadingJet[jetCont.first]->Pt() / fLeadingJet[jetCont.first]->Area());
       fHistLeadJetNconstVsCent[jetCont.first]->Fill(fCent, fLeadingJet[jetCont.first]->GetNumberOfConstituents());
       fHistRhoVsLeadJetPt[jetCont.first]->Fill(fLeadingJet[jetCont.first]->Pt(), fOutRho->GetVal());
-      if (fCentBin >=0 && fCentBin < fCentBins.size()-1 && fHistLeadJetNconstVsPt[jetCont.first]) fHistLeadJetNconstVsPt[jetCont.first][fCentBin]->Fill(fLeadingJet[jetCont.first]->Pt(), fLeadingJet[jetCont.first]->GetNumberOfConstituents());
+      if (fCentBin >=0 && fCentBin < static_cast<int>(fCentBins.size())-1 && fHistLeadJetNconstVsPt[jetCont.first]) fHistLeadJetNconstVsPt[jetCont.first][fCentBin]->Fill(fLeadingJet[jetCont.first]->Pt(), fLeadingJet[jetCont.first]->GetNumberOfConstituents());
     }
     if (fHistNjetVsCent[jetCont.first]) fHistNjetVsCent[jetCont.first]->Fill(fCent, fNjets[jetCont.first]);
 

@@ -25,10 +25,11 @@ class AliRsnEventCuts : public AliRsnCut {
   Bool_t         Init(TObject *object);
   Bool_t         IsSelected(TObject *object);
   void           ForceSetupPbPb2018() {fEvCuts.SetManualMode(); fEvCuts.SetupPbPb2018();};
+  void           ForceSetupRun2pp() {fEvCuts.SetManualMode(); fEvCuts.OverrideCentralityFramework(1); fEvCuts.SetupRun2pp();};
   void           SetUseMultSelectionEvtSel() {fEvCuts.SetManualMode(); fEvCuts.UseMultSelectionEventSelection();};
   AliEventCuts   fEvCuts; //pointer to the AliAnalysisUtils object
 
-  ClassDef(AliRsnEventCuts, 2)
+  ClassDef(AliRsnEventCuts, 3)
 
 };
 

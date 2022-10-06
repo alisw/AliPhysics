@@ -1,5 +1,6 @@
-#ifndef ALIANALYSISTASKJETCHARGETEMPLATES_H
-#define ALIANALYSISTASKJETCHARGETEMPLATES_H
+#ifndef ALIANALYSISTASKJETCHARGEFLAVOURTEMPLATES_H
+#define ALIANALYSISTASKJETCHARGEFLAVOURTEMPLATES_H
+
 
 class TTree;
 class AliAnalysisManager;
@@ -20,11 +21,12 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
 
   //Setters
   void SetJetContainer(Int_t c)            { fContainer = c; }
-  void SetJetPtThreshold(Float_t f)        { fPtThreshold = f; }
+  void SetJetPtMinThreshold(Float_t f)     { fPtThreshold = f; }
   void SetCentralitySelectionOn(Bool_t t)  { fCentSelectOn = t; }
   void SetMinCentrality(Float_t t)         { fCentMin = t; }
   void SetMaxCentrality(Float_t t)         { fCentMax = t; }
-  void SetJetRadius(Double_t t)            { fJetRadius = t; }
+  void SetJetRadius(Float_t t)            { fJetRadius = t; }
+  void SetK(Float_t t)                    { JetChargeK = t; }
 
  protected:
   // Obligatory Functions
@@ -33,69 +35,43 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   Bool_t                              FillHistograms();
   // Essential variables
   // Jet container to be analysed: 0 for raw, 1 for subtracted
-  Int_t                               fContainer;
+  Int_t                               fContainer;                           //
   // Jet lower Pt threshold
-  Float_t                             fPtThreshold;
+  Float_t                             fPtThreshold;                         //
   // Switch on/off centrality selection
-  Bool_t                              fCentSelectOn;
+  Bool_t                              fCentSelectOn;                        //
   // Min centrality value
-  Float_t                             fCentMin;
+  Float_t                             fCentMin;                             //
   // Max centrality value
-  Float_t                             fCentMax;
+  Float_t                             fCentMax;                             //
   // Jet radius
+  Float_t                             fJetRadius;
+  // Value of K the scaling factor on jet charge default k = 0.5
+  Float_t                             JetChargeK = 0.5;                     //
 
-  Double_t                            fJetRadius;
-  // Splits Jets into too high and Lower Pt Bins
-  // User histograms and output tree
-  // Histograms first
-
-
-  TH1F                                *fhJetPt;
-  TH1F                                *fhJetPhi;
-  TH1F                                *fhJetEta;
-
-  TH1F                                *JC;
-
-  TH1F                                *JCUp;
-  TH1F                                *JCDown;
-  TH1F                                *JCGluon;
-  TH1F                                *JCOther;
-  TH1F                                *JCUnmatched;
-
-  TH1F                                *JCLow;
-
-  TH1F                                *JCUpLow;
-  TH1F                                *JCDownLow;
-  TH1F                                *JCGluonLow;
-  TH1F                                *JCOtherLow;
-  TH1F                                *JCUnmatchedLow;
-
-  TH1F                                *JCMid;
-
-  TH1F                                *JCUpMid;
-  TH1F                                *JCDownMid;
-  TH1F                                *JCGluonMid;
-  TH1F                                *JCOtherMid;
-  TH1F                                *JCUnmatchedMid;
-
-  TH1F                                *JCHigh;
-
-  TH1F                                *JCUpHigh;
-  TH1F                                *JCDownHigh;
-  TH1F                                *JCGluonHigh;
-  TH1F                                *JCOtherHigh;
-  TH1F                                *JCUnmatchedHigh;
   // Here is the TTree
-  TTree                               *fTreeJets;
+  TTree                               *fTreeJets;                                                  //!
   // These are the branch variables; there are nBranches of them
-  static const Int_t nBranchesJetChargeFlavourTemplates = 27;
-  Double_t                            fTreeBranch[nBranchesJetChargeFlavourTemplates];
-  TChain                              *pChain;
 
- private:
-  AliAnalysisTaskJetChargeFlavourTemplates(const AliAnalysisTaskJetChargeFlavourTemplates&);            // not implemented
-  AliAnalysisTaskJetChargeFlavourTemplates &operator=(const AliAnalysisTaskJetChargeFlavourTemplates&); // not implemented
+  Float_t Pt;                     //
+  Float_t Phi;                    //
+  Float_t Eta;                    //
+  Float_t JetCharge;              //
+  Float_t ParticlePt;             //
+  Float_t ParticlePhi;            //
+  Float_t ParticleEta;            //
+  Float_t ParticleJetCharge;      //
+  Float_t LeadingTrackPt;         //
+  Int_t PdgCode;                  //
+  Int_t PtMatchedPdgCode;         //
+  Int_t GeoMatchedPdgCode;        //
+  Float_t ProgenetorFraction;     //
 
-  ClassDef(AliAnalysisTaskJetChargeFlavourTemplates, 2)
+  
+  TChain                              *pChain;                                                     //
+
+
+
+  ClassDef(AliAnalysisTaskJetChargeFlavourTemplates, 7)
 };
 #endif

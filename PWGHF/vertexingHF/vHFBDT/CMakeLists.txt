@@ -18,11 +18,9 @@ set(MODULEVHFBDT vHFBDT)
 add_definitions(-D_MODULEVHFBDT_="${MODULEVHFBDT}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT
-					${AliRoot_SOURCE_DIR}/STEER/STEERBase
-					${ROOT_INCLUDE_DIRS}
-					)
-
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
+include_directories(${ROOT_INCLUDE_DIRS}
+					${AliRoot_SOURCE_DIR}/STEER/STEERBase)
 
 # Sources - alphabetical order
 set(SRCS
@@ -36,9 +34,7 @@ set(HDRS
   AliRDHFDecisionTree.h
   AliRDHFBDT.h
   )
-
-
-
+  
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)

@@ -82,12 +82,21 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     void SetTPCHalvesEtaGap(double etagap = 0.2)                      {fEtaGapInTPCHalves=etagap;}
     void RemoveDauTracksFromqn(int removedau=1, bool remsoftpi=false) {fRemoveDauFromqn=removedau; fRemoveSoftPion=remsoftpi;}
     void SetRandomDownsamplFromqn(double fractokeep = 0.5)            {fEnableDownsamplqn=true; fFracToKeepDownSamplqn=fractokeep;}
+    void SetRandomResamplCandidate(bool resample = false)             {fEnableResampleCan = resample;}
 
     // methods for ML application
-    void SetDoMLApplication(bool flag = kTRUE) {fApplyML = flag;}
+    void SetDoMLApplication(bool flag = true, bool isMultiClass = false)                          {fApplyML = flag; fMultiClass = isMultiClass;}
     void SetMLConfigFile(TString path = ""){fConfigPath = path;}
-    void SetMLBinsForSparse(int nbins = 300, double min = 0.85, double max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
-
+    void SetMLBinsForSparse(int nbins = 300, double min = 0.85, double max = 1.)                  {fNMLBins[0] = nbins; fMLOutputMin[0] = min; fMLOutputMax[0] = max;}
+    void SetMultiClassMLBinsForSparse(int nbinsBkg = 100, int nbinsPrompt = 100, int nbinsFD = 100,
+                                    double minBkg = 0., double maxBkg = 1.,
+                                    double minPrompt = 0., double maxPrompt = 1.,
+                                    double minFD = 0., double maxFD = 1.)
+    {
+        fNMLBins[0] = nbinsBkg; fNMLBins[1] = nbinsPrompt; fNMLBins[2] = nbinsFD;
+        fMLOutputMin[0] = minBkg; fMLOutputMin[1] = minPrompt; fMLOutputMin[2] = minFD;
+        fMLOutputMax[0] = maxBkg; fMLOutputMax[1] = maxPrompt; fMLOutputMax[2] = maxFD;
+    }
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void LocalInit();
@@ -100,10 +109,10 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     void CalculateInvMasses(AliAODRecoDecayHF* d,float* &masses,int& nmasses);
     void GetMainQnVectorInfo(double &mainPsin, double &mainMultQn, double mainQn[2], double &SubAPsin, double &SubAMultQn, double SubAQn[2], double &SubBPsin, double &SubBMultQn, double SubBQn[2], AliHFQnVectorHandler* HFQnVectorHandler);
     void GetDaughterTracksToRemove(AliAODRecoDecayHF* d, int nDau, vector<AliAODTrack*> &trackstoremove);
-    int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, double modelPred[2]);
+    int IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, std::vector<double> &modelPred, std::vector<double> &modelPredSecond);
     bool LoadSplinesForqnPercentile();
 
-    static const int kVarForSparse = 10;
+    static const int kVarForSparse = 13;
 
     AliAODEvent* fAOD;                      /// AOD event
 
@@ -151,17 +160,20 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     int fRemoveDauFromqn;                   /// flag to enable removal of D-meson daughter tracks from qn (1->remove single cand, 2->remove all cand of the analysed event)
     bool fRemoveSoftPion;                   /// flag to enable removal of soft pion too (only D*)
     bool fEnableDownsamplqn;                /// flag to enable random downsampling for qn
+    bool fEnableResampleCan;                /// flag to enable random resampling for candidates
     double fFracToKeepDownSamplqn;          /// fraction of tracks to keep in qn with random downsampling
 
     /// variables for ML application
     bool fApplyML;                          /// flag to enable ML application
+    bool fMultiClass;                       /// flag to enable multi-class models (Bkg, Prompt, FD)
+
     TString fConfigPath;                    /// path to ML config file
     AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
-    int fNMLBins;                           /// number of bins for ML axis in thnsparse
-    double fMLOutputMin;                    /// minimum value of ML ouptut in thnsparse axis
-    double fMLOutputMax;                    /// maximum value of ML ouptut in thnsparse axis
+    int fNMLBins[3];                        /// number of bins for ML output axis in THnSparse
+    double fMLOutputMin[3];                 /// min for ML output axis in THnSparse
+    double fMLOutputMax[3];                 /// max for ML output axis in THnSparse
 
-    ClassDef(AliAnalysisTaskSECharmHadronvn,6); // AliAnalysisTaskSE for the HF vn analysis
+    ClassDef(AliAnalysisTaskSECharmHadronvn,8); // AliAnalysisTaskSE for the HF vn analysis
 };
 
 #endif

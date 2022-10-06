@@ -7,14 +7,14 @@
 // creates a canvas with the time dependence of the intensities of a given bc
 //-------------------------------------------------------
 
-void get_single_intensities(Int_t opt, Int_t bc)
+void get_single_intensities(Int_t Fill, Int_t opt, Int_t bc)
 // opt = 0 => fBCT; opt = 1 => BPTX
 
 {
   // get the branches with intensity information
   // (also, set the name of the output file)
   char *file_name = new char[kg_string_size];
-  TTree *tree = g_vdm_Tree;
+  TFile *NormFile = NULL;
   g_vdm_Tree->ResetBranchAddresses();
   Double_t *bunch1 = new Double_t[3564];  
   Double_t *bunch2 = new Double_t[3564];
@@ -23,24 +23,30 @@ void get_single_intensities(Int_t opt, Int_t bc)
   if (opt == 0) {
     g_vdm_Tree->SetBranchAddress("bunch1",bunch1);
     g_vdm_Tree->SetBranchAddress("bunch2",bunch2);
+    sprintf(file_name,"../Fill-%d/FBCT_norm.root",g_vdm_Fill);    
   } if (opt == 1) {
     g_vdm_Tree->SetBranchAddress("bptx1",bunch1);
     g_vdm_Tree->SetBranchAddress("bptx2",bunch2);
+    sprintf(file_name,"../Fill-%d/BPTX_norm.root",g_vdm_Fill);
   }
   
-  // get the histograms with DCCT information
-  // two devices: A and B
-  TH1D* DCCT1AH = (TH1D*) g_vdm_File->Get("Beam1A");
-  TH1D* DCCT2AH = (TH1D*) g_vdm_File->Get("Beam2A");
-  TH1D* DCCT1BH = (TH1D*) g_vdm_File->Get("Beam1B");
-  TH1D* DCCT2BH = (TH1D*) g_vdm_File->Get("Beam2B");  
-  
+  // --> set up tree with info on normalisation
+  NormFile = new TFile(file_name);      
+  TTree *norm_tree = (TTree *) NormFile->Get("Beam_Normalisation");
+  Double_t cf_dcct_1 = 0;
+  Double_t cf_dcct_2 = 0;  
+  norm_tree->ResetBranchAddresses();  
+  norm_tree->SetBranchAddress("cf_dcct_1",&cf_dcct_1);
+  norm_tree->SetBranchAddress("cf_dcct_2",&cf_dcct_2);
+ 
   // -- bunch indices
   Int_t nIBC = GetNumberInteractingBunchCrossings();
   Int_t *bunches = new Int_t [nIBC];
   GetBunchIndices(bunches);
-  Int_t *BucketA = new Int_t [nIBC];
-  Int_t *BucketC = new Int_t [nIBC];  
+  // Int_t *BucketA = new Int_t [nIBC];
+  // Int_t *BucketC = new Int_t [nIBC];
+  Int_t BucketA[nIBC];
+  Int_t BucketC[nIBC];  
   GetBucketInfo(BucketA,BucketC);
 
   Int_t idx1 = ((Int_t) (BucketA[bc]/10.0));
@@ -57,41 +63,12 @@ void get_single_intensities(Int_t opt, Int_t bc)
   Double_t imin = 1e20;
   for(Int_t i=0;i<ngr;i++) {
     g_vdm_Tree->GetEntry(i);
-    
-    // varaibles to store  normalisation factors
-    Double_t cf_dcct_1a = 0;
-    Double_t cf_dcct_2a = 0;  
-    Double_t cf_dcct_1b = 0;
-    Double_t cf_dcct_2b = 0;  
-
-    // get the index of each histogram corresponding to the relative time
-    Int_t idx_DCCT1AH = GetHistogramIndex(DCCT1AH,timerel);
-    Int_t idx_DCCT1BH = GetHistogramIndex(DCCT1BH,timerel);  
-    Int_t idx_DCCT2AH = GetHistogramIndex(DCCT2AH,timerel);
-    Int_t idx_DCCT2BH = GetHistogramIndex(DCCT2BH,timerel);
-    
-    // get total intensity
-    Double_t total_beam1 = 0;
-    Double_t total_beam2 = 0;    
-    for(Int_t j=0;j<3564;j++) { // get total intensity
-      total_beam1 += bunch1[j];
-      total_beam2 += bunch2[j];      
-    }
-
-    // get correction factor 
-    cf_dcct_1a = ((DCCT1AH->GetBinContent(idx_DCCT1AH))/total_beam1);
-    cf_dcct_1b = ((DCCT1BH->GetBinContent(idx_DCCT1BH))/total_beam1);
-    cf_dcct_2a = ((DCCT2AH->GetBinContent(idx_DCCT2AH))/total_beam2);
-    cf_dcct_2b = ((DCCT2BH->GetBinContent(idx_DCCT2BH))/total_beam2);    
-    
-    // correction factor is average over A and B factors
-    Double_t cf_dcct_1 = 0.5*(cf_dcct_1a+cf_dcct_1b);
-    Double_t cf_dcct_2 = 0.5*(cf_dcct_2a+cf_dcct_2b);
+    norm_tree->GetEntry(i);
 
     // info on bunch intensities for the given bunch
     time[i] = timerel;
-    beam1[i] = cf_dcct_1*bunch1[idx1];
-    beam2[i] = cf_dcct_2*bunch2[idx2];
+    beam1[i] = cf_dcct_1*bunch1[idx1]/gBeamA;
+    beam2[i] = cf_dcct_2*bunch2[idx2]/gBeamB;
     if (imax<beam1[i]) imax=beam1[i];
     if (imax<beam2[i]) imax=beam2[i];
     if (imin>beam1[i]) imin=beam1[i];
@@ -118,8 +95,8 @@ void get_single_intensities(Int_t opt, Int_t bc)
   frame1->GetYaxis()->SetLabelSize(0.025);
   frame1->SetTitle("beam1 (red), beam2 (blue); timerel; beam intensity");
   gr1->Draw("p,same");
-  gr2->Draw("p,same");  
-  
+  gr2->Draw("p,same");
+  cx->Print(Form("c1c_Fill%i_opt%i_bc%i.%s", Fill, opt, bc, FFormat));
   
    // clean
   delete [] beam1; 
@@ -127,8 +104,8 @@ void get_single_intensities(Int_t opt, Int_t bc)
   delete [] bunch1; 
   delete [] bunch2; 
   delete [] bunches;
-  delete [] BucketA;
-  delete [] BucketC;
+  // delete [] BucketA;
+  // delete [] BucketC;
 
 }
 
@@ -145,6 +122,6 @@ void QA_get_intensities(Int_t Fill, Int_t opt, Int_t bc)
   Set_pointers_to_input_files_and_trees();
 
   // create histograms for all scans
-  get_single_intensities(opt, bc);
+  get_single_intensities(Fill, opt, bc);
     
 }

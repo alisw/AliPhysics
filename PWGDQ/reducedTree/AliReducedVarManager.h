@@ -292,6 +292,15 @@ class AliReducedVarManager : public TObject {
     kCentVZEROA,        // centrality from VZERO-A
     kCentVZEROC,        // centrality from VZERO-C
     kCentZNA,           // centrality from ZNA
+    kCentV0MNew,        // centrality from V0MNew
+    kCentV0MNewPlus10,      // centrality from V0MNewPlus10
+    kCentV0MNewMinus10,     // centrality from V0MNewMinus10
+    kCentV0MNewPlus05,      // centrality from V0MNewPlus05
+    kCentV0MNewMinus05,     // centrality from V0MNewMinus05
+    kCentV0MPlus10,      // centrality from V0MPlus10
+    kCentV0MMinus10,     // centrality from V0MMinus10
+    kCentV0MPlus05,      // centrality from V0MPlus05
+    kCentV0MMinus05,     // centrality from V0MMinus05
     kCentQuality,       // centrality quality   
     kNV0total,          // total number of V0s in the esd      
     kNV0selected,       // number of V0s selected              
@@ -509,6 +518,12 @@ class AliReducedVarManager : public TObject {
     kMass,
     kMassMC,
     kMassMCfromLegs,
+    kPairEff_weight,
+    kPairEffUp_weight,
+    kPairEffDown_weight,
+    kPtTimesPairEff_weight,
+    kPtTimesPairEffUp_weight,
+    kPtTimesPairEffDown_weight,
     kRap,
     kRapAbs,
     kRapMC,
@@ -849,6 +864,8 @@ class AliReducedVarManager : public TObject {
   static Int_t GetCorrectedMultiplicity( Int_t estimator = kMultiplicity, Int_t correction = 0, Int_t reference = 0, Int_t smearing = 0 );
   static void SetWeightSpectrum(TH1F *gReweightMCpt);
   static Double_t CalculateWeightFactor(Double_t Mcpt, Double_t Centrality);
+  static void SetLegEfficiency(TH3F *LegEfficiency, Bool_t usePin);
+  static Float_t GetPairEffWeightFactor(Float_t Cent, Float_t P1, Float_t P2, Float_t Eta1, Float_t Eta2, Int_t type = 1);
   
  private:
   static Int_t     fgCurrentRunNumber;               // current run number
@@ -918,6 +935,8 @@ class AliReducedVarManager : public TObject {
   static Bool_t fgOptionRecenterTPCqVec;           //option to do Q vector recentering for TPC
   static Bool_t fgOptionEventRes;                 //option to divide by resolution
   static TH1F* fgReweightMCpt;  // ratio between nature pt shape and gernareted pT shape
+  static TH3F* fgLegEfficiency; // Leg efficiency for its propagation to the pair level
+  static Bool_t fgUsePinForLegEffPropagation;   //option to propagate leg pid efficiency as a function of pin instead of p
   
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  

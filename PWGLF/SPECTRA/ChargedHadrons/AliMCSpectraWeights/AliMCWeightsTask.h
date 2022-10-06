@@ -21,7 +21,12 @@
 //#define __AliMCWeightsTask_DebugTiming__
 
 enum MCGeneratorType {
+    NONE=-1,
     PP_PYTHIA=0,
+    PP_PYTHIA_PERUGIA11,
+    PP_PYTHIA_PERUGIA0,
+    PP_PYTHIA_OLD,
+    PP_EPOS_LHC,
     PPB_EPOS,
     PBPB_HIJING,
 };
@@ -40,7 +45,7 @@ public:
 
     void SetMCSpectraWeightObject (AliMCSpectraWeights* weights) {fMCSpectraWeights=weights;}
     
-    static AliMCWeightsTask* AddTaskAliMCWeightsTask ();
+    static AliMCWeightsTask* AddTaskAliMCWeightsTask (MCGeneratorType gen=MCGeneratorType::NONE, const char* collisionType = 0,  bool fUsePPMB = false, const char* firstTrainPath = 0);
 
 private:
     TList* fOutputList;      //!<! Output list
@@ -57,3 +62,4 @@ private:
 
 
 #endif /* AliMCWeightsTask_hpp */
+//

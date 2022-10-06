@@ -13,25 +13,25 @@
 
 #include "TMath.h"
 #include "AliConversionPhotonBase.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 // #include "AliV0Reader.h"
 #include "AliESDEvent.h"
 #include "AliPID.h"
-#include "TParticle.h"
+// #include "TParticle.h"
 #include "TF1.h"
 #include "TRandom3.h"
 
 class AliConversionPhotonBase;
 
-class AliKFConversionPhoton : public AliKFParticle, public AliConversionPhotonBase {
+class AliKFConversionPhoton : public AliGAKFParticle, public AliConversionPhotonBase {
 
  public: 
 
   //Constructors
   AliKFConversionPhoton();    
-  AliKFConversionPhoton(AliKFParticle &kfparticle);
+  AliKFConversionPhoton(AliGAKFParticle &kfparticle);
 //   AliKFConversionPhoton(AliV0Reader *fV0Reader);
-  AliKFConversionPhoton(const AliKFParticle &fCurrentNegativeKFParticle,const AliKFParticle &fCurrentPositiveKFParticle);
+  AliKFConversionPhoton(const AliGAKFParticle &fCurrentNegativeKFParticle,const AliGAKFParticle &fCurrentPositiveKFParticle);
 
   //Copy Constructor
   AliKFConversionPhoton(const AliKFConversionPhoton & g);           
@@ -42,27 +42,27 @@ class AliKFConversionPhoton : public AliKFParticle, public AliConversionPhotonBa
   virtual ~AliKFConversionPhoton() {;}
 
   //
- void SetArmenterosQtAlpha(Double_t armenteros[2],const AliKFParticle &fCurrentNegativeKFParticle,const AliKFParticle &fCurrentPositiveKFParticle);
-  void ConstructGamma(const AliKFParticle &fCurrentNegativeKFParticle,const AliKFParticle &fCurrentPositiveKFParticle);
+ void SetArmenterosQtAlpha(Double_t armenteros[2],const AliGAKFParticle &fCurrentNegativeKFParticle,const AliGAKFParticle &fCurrentPositiveKFParticle);
+  void ConstructGamma(const AliGAKFParticle &fCurrentNegativeKFParticle,const AliGAKFParticle &fCurrentPositiveKFParticle);
 
 
   Double_t Phi() const;
 
   // GetInvariantMass
 
-  Double_t M() const {return AliKFParticle::GetMass();}
-  Double_t Pt() const {return AliKFParticle::GetPt();}
-  Double_t P() const {return AliKFParticle::GetP();}
-  Double_t Eta() const {return AliKFParticle::GetEta();}
+  Double_t M() const {return AliGAKFParticle::GetMass();}
+  Double_t Pt() const {return AliGAKFParticle::GetPt();}
+  Double_t P() const {return AliGAKFParticle::GetP();}
+  Double_t Eta() const {return AliGAKFParticle::GetEta();}
 
   virtual Double_t GetPhotonMass() const {return M();}
   virtual Double_t GetPhotonPt() const {return Pt();}
   virtual Double_t GetPhotonP() const {return P();}
   virtual Double_t GetPhotonEta() const {return Eta();}
   virtual Double_t GetPhotonPhi() const {return Phi();} 
-  virtual Double_t GetPx() const { return AliKFParticle::GetPx();}
-  virtual Double_t GetPy() const { return AliKFParticle::GetPy();}
-  virtual Double_t GetPz() const { return AliKFParticle::GetPz();}
+  virtual Double_t GetPx() const { return AliGAKFParticle::GetPx();}
+  virtual Double_t GetPy() const { return AliGAKFParticle::GetPy();}
+  virtual Double_t GetPz() const { return AliGAKFParticle::GetPz();}
 
   ClassDef(AliKFConversionPhoton,1)
 };

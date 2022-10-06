@@ -318,9 +318,9 @@ Bool_t ConfigKStarPlusMinusPbPb2018
     }
       }
 
-    /*
+    
     if (isMC) {
-      
+      /*  
       TString mode = "SPARSE";
       // create output
       AliRsnMiniOutput *out = task->CreateOutput(Form("KStarPlusMinus_MotherMC%s", suffix), mode.Data(), "MOTHER");
@@ -368,7 +368,7 @@ Bool_t ConfigKStarPlusMinusPbPb2018
         if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
         else out->AddAxis(centID, 100, 0.0, 100.);
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
-	
+      */
 	
 		
         AliRsnMiniOutput* outps=task->CreateOutput(Form("K*_phaseSpace%s", suffix),"HIST","TRUE");
@@ -379,28 +379,18 @@ Bool_t ConfigKStarPlusMinusPbPb2018
         outps->SetMotherPDG(323);
         outps->SetMotherMass(0.89166);
         outps->SetPairCuts(PairCutsSame);
-        outps->AddAxis(fdpt,100,0.,10.);
-        outps->AddAxis(sdpt,100,0.,10.);
+        outps->AddAxis(fdpt,200,0.,20.);
+        outps->AddAxis(sdpt,200,0.,20.);
         outps->AddAxis(ptID,200,0.,20.);
 
-        AliRsnMiniOutput* outpsf=task->CreateOutput(Form("K*_phaseSpaceFine%s", suffix),"HIST","TRUE");
-        outpsf->SetDaughter(0,AliRsnDaughter::kKaon0);
-        outpsf->SetDaughter(1,AliRsnDaughter::kPion);
-        outpsf->SetCutID(0,iCutK0s);
-        outpsf->SetCutID(1,iCutPi);
-        outpsf->SetMotherPDG(323);
-        outpsf->SetMotherMass(0.89166);
-        outpsf->SetPairCuts(PairCutsSame);
-        outpsf->AddAxis(fdpt,30,0.,3.);
-        outpsf->AddAxis(sdpt,30,0.,3.);
-        outpsf->AddAxis(ptID,300,0.,3.);
-	
+        
 
     }
-    */
+    
     
     return kTRUE;
 }
+
 
 void AddMonitorOutput_PionPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ppt=0)
 {

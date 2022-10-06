@@ -234,6 +234,9 @@ protected:
   AliOADBContainer                        *fMaskedCellOADB;   //!<! OADB container with masked cells
   AliEMCALRecoUtils                       *fRecoUtils;        //!<! EMCAL reco utils (for bad channel handling)
 
+  AliEmcalFastOrMonitorTask(const AliEmcalFastOrMonitorTask &);
+  AliEmcalFastOrMonitorTask &operator=(const AliEmcalFastOrMonitorTask &);
+
   ClassDef(AliEmcalFastOrMonitorTask, 1);
 };
 

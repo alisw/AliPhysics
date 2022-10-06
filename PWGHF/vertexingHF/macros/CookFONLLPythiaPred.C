@@ -33,13 +33,15 @@ enum { // options for re-weight
   kAccurate // correct each b-hadron contribution indipendently (modify also the pT dependence)
 };
 
-void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFptDepmin_yDcut_pp13TeV_PDG2020.root", // min FONLL predictions
-                         std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFptDepcent_yDcut_pp13TeV_PDG2020.root", // central FONLL predictions
-                         std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFptDepmax_yDcut_pp13TeV_PDG2020.root",  // max FONLL predictions
-                         std::string outFileName = "DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root",
+void CookFONLLPythiaPred(std::string inFileNameMin = "fonll/feeddown/DfromB_FONLLminPythia8_FFppbar_yDcut_pp502TeV_PDG2020.root", // min FONLL predictions
+                         std::string inFileNameCent = "fonll/feeddown/DfromB_FONLLcentPythia8_FFppbar_yDcut_pp502TeV_PDG2020.root", // central FONLL predictions
+                         std::string inFileNameMax = "fonll/feeddown/DfromB_FONLLmaxPythia8_FFppbar_yDcut_pp502TeV_PDG2020.root",  // max FONLL predictions
+                         std::string outFileName = "fonll/feeddown/DmesonLcPredictions_502TeV_y05_FFee_BRpythia8_SepContr_PDG2020.root",
                          int brOpt = kBROriginal,
-                         int ffOpt = kFFOriginal,
-                         int wOpt = kAccurate) {
+                         int ffOpt = kFFee,
+                         int wOpt = kAccurate,
+                         double scale = 1. // value to scale all the FD predictions
+                         ) {
 
   std::array<std::string, 3> inFileNames = {inFileNameMin, inFileNameCent, inFileNameMax};
   std::array<std::string, 3> edgeNames = {"min", "central", "max"};
@@ -283,10 +285,10 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
       hDauPromptPred->Write();
 
       // non-prompt predictions
-      hDauFDPred->Scale(decayBR[iDau] / 1.e-6);
-      hDauFDPredFromNonStrangeB->Scale(decayBR[iDau] / 1.e-6);
-      hDauFDPredFromBs->Scale(decayBR[iDau] / 1.e-6);
-      hDauFDPredFromLb->Scale(decayBR[iDau] / 1.e-6);
+      hDauFDPred->Scale(decayBR[iDau] * scale / 1.e-6);
+      hDauFDPredFromNonStrangeB->Scale(decayBR[iDau] * scale / 1.e-6);
+      hDauFDPredFromBs->Scale(decayBR[iDau] * scale / 1.e-6);
+      hDauFDPredFromLb->Scale(decayBR[iDau] * scale / 1.e-6);
       std::string nameFD = "h" + predTag[iDau] + "fromBpred_" + edgeNames[iFile] + "_corr";
       std::string titleFD = predTag[iDau] + " from B " + edgeNames[iFile] + " value prediction (with BR and B->D correction)";
       hDauFDPred->SetName(nameFD.data());

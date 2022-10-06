@@ -49,8 +49,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // MC functions
     void SetIsMC                        ( Int_t isMC)                                       { fIsMC = isMC                              ;}
-    void ProcessMCParticles             ();
-    void ProcessAODMCParticles          ();
+    void ProcessMCParticles             ( Int_t isCurrentEventSelected = 0);
+    void ProcessAODMCParticles          ( Int_t isCurrentEventSelected = 0);
     void RelabelAODPhotonCandidates     ( Bool_t mode);
     void ProcessTruePhotonCandidates    ( AliAODConversionPhoton* TruePhotonCandidate);
     void ProcessTrueClusterCandidates   ( AliAODConversionPhoton* TruePhotonCandidate,
@@ -69,12 +69,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void ProcessConversionPhotonsForMissingTags     ();
     void ProcessConversionPhotonsForMissingTagsAOD  ();
     void ProcessJets();
+    void InitJets();
 
     // switches for additional analysis streams or outputs
     void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
-    void SetLightOutput                 ( Int_t flag )                                     { fDoLightOutput = flag                       ;}
-    void SetPi0EtaSwitch                ( Int_t flag )                                     { fPi0EtaSwitch = flag                       ;}
-    void SetECalibOutput                ( Bool_t flag )                                     { fDoECalibOutput = flag                      ;}
+    void SetLightOutput                 ( Int_t flag )                                      { fDoLightOutput = flag                       ;}
+    void SetPi0EtaSwitch                ( Int_t flag )                                      { fPi0EtaSwitch = flag                        ;}
+    void SetECalibOutput                ( Int_t flag )                                      { fDoECalibOutput = flag                      ;}
     void SetDoMesonAnalysis             ( Bool_t flag )                                     { fDoMesonAnalysis = flag                     ;}
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
     void SetDoPhotonQA                  ( Int_t flag )                                      { fDoPhotonQA = flag                          ;}
@@ -288,7 +289,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCConvGammaPt;                //! array of histos with converted gamma, pT
     TH2F**                  fHistoMCSecondaryConvGammaPt;       //! array of histos wiht secondary converted gamma, pt
 
-    //histograms for pure MC quantities for mesaon analysis
+    //histograms for pure MC quantities for meson analysis
     TH1F**                  fHistoMCPi0Pt;                      //! array of histos with weighted pi0, pT
     TH1F**                  fHistoMCPi0WOWeightPt;              //! array of histos with unweighted pi0, pT
     TH1F**                  fHistoMCPi0WOEvtWeightPt;           //! array of histos without event weights pi0, pT
@@ -296,9 +297,11 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCEtaWOWeightPt;              //! array of histos with unweighted eta, pT
     TH1F**                  fHistoMCEtaWOEvtWeightPt;           //! array of histos without evt weight eta, pT
     TH1F**                  fHistoMCPi0InAccPt;                 //! array of histos with weighted pi0 in acceptance, pT
+    TH1F**                  fHistoMCPi0InAccPtNotTriggered;     //! array of histos with weighted pi0 in acceptance, pT
     TH1F**                  fHistoMCPi0WOWeightInAccPt;         //! array of histos without weight pi0 in acceptance, pT
     TH1F**                  fHistoMCPi0WOEvtWeightInAccPt;      //! array of histos without evt weight pi0 in acceptance, pT
     TH1F**                  fHistoMCEtaInAccPt;                 //! array of histos with weighted eta in acceptance, pT
+    TH1F**                  fHistoMCEtaInAccPtNotTriggered;     //! array of histos with weighted eta in acceptance, pT
     TH1F**                  fHistoMCEtaWOWeightInAccPt;         //! array of histos without weight eta in acceptance, pT
     TH1F**                  fHistoMCEtaWOEvtWeightInAccPt;      //! array of histos without evt weight eta in acceptance, pT
     TH2F**                  fHistoMCPi0PtY;                     //! array of histos with weighted pi0, pT, Y
@@ -313,6 +316,12 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCSecEtaSource;               //! array of histos with secondary eta, source
     TH2F**                  fHistoMCPi0PtJetPt;                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                 //! array of histos with weighted eta, pT, hardest jet pt
+    TH1F**                  fHistoMCPi0PtNotTriggered;          //! array of histos with weighted pi0 in not triggered events, pT
+    TH1F**                  fHistoMCPi0PtNoVertex;              //! array of histos with weighted pi0 without a vertex, pT
+    TH1F**                  fHistoMCEtaPtNotTriggered;          //! array of histos with weighted eta in not triggered events, pT
+    TH1F**                  fHistoMCEtaPtNoVertex;              //! array of histos with weighted eta without a vertex, pT
+    TH1F**                  fHistoMCGammaPtNotTriggered;        //! array of histos with weighted gamm in not triggered events, pT
+    TH1F**                  fHistoMCGammaPtNoVertex;            //! array of histos with weighted gamm without a vertex, pT
 
     // histograms for pure MC quantites for dir gamma analysis part
     TH2F**                  fHistoMCPi0PtGammaLeg;              //! array of histos with weighted pi0, pT gamma, different legs
@@ -511,6 +520,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     vector<Double_t>      fTrueVectorJetEta;                                    //! Vector of True JetEta
     vector<Double_t>      fTrueVectorJetPhi;                                    //! Vector of True JetPhi
 
+    std::map<Int_t, Int_t> MapRecJetsTrueJets;                                  //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
+
     // variable to keep track of multiple & missing reco
     vector<Int_t>           fVectorRecTruePi0s;                                 //! array of strings containing the stack position of the reconstructed validated pi0
     vector<Int_t>           fVectorRecTrueEtas;                                 //! array of strings containing the stack position of the reconstructed validated eta
@@ -579,7 +590,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
     Int_t                   fDoLightOutput;                                     // switch for running light output, 0 -> normal mode, 1 -> light mode, 2 -> minimum
     Int_t                   fPi0EtaSwitch;                                     // switch for running only pi0, oly eta or both, 0 -> both, 1 -> pi0, 2 -> eta
-    Bool_t                  fDoECalibOutput;                                    // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
+    Int_t                   fDoECalibOutput;                                    // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
     Bool_t                  fDoMesonAnalysis;                                   // flag for meson analysis
     Int_t                   fDoMesonQA;                                         // flag for meson QA
     Int_t                   fDoPhotonQA;                                        // flag for photon QA
@@ -605,7 +616,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 68);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 72);
 };
 
 #endif

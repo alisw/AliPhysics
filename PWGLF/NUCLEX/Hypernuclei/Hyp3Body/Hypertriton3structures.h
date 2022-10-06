@@ -23,7 +23,7 @@ struct RHyperTriton {
   Double32_t dca_lambda_hyper = -1.0; //[0.0,8.0,8]
   Double32_t dca_de = -1.0; //[0.0,8.0,8]
   Double32_t dca_pr = -1.0; //[0.0,8.0,8]
-  Double32_t dca_pi = -1.0; //[0.0,8.0,8]
+  Double32_t dca_pi = -1.0; //[0.0,40.96,12]
   Double32_t tpcNsig_de = -4.0; //[-4.0,4.0,8]
   Double32_t tpcNsig_pr = -4.0; //[-4.0,4.0,8]
   Double32_t tpcNsig_pi = -4.0; //[-4.0,4.0,8]
@@ -48,7 +48,7 @@ struct RHyperTriton {
   bool is_ITSrefit_pr = false;
   bool is_ITSrefit_pi = false;
   bool positive = false;
-  ClassDef(RHyperTriton, 4)
+  ClassDef(RHyperTriton, 5)
 };
 
 struct RHyperTriton3O2 : public RHyperTriton {
@@ -57,8 +57,9 @@ struct RHyperTriton3O2 : public RHyperTriton {
   Double32_t dca_de_sv = -4.0; //[0.0,8.0,8]
   Double32_t dca_pr_sv = -4.0; //[0.0,8.0,8]
   Double32_t dca_pi_sv = -4.0; //[0.0,8.0,8]
-  Double32_t chi2 = -1.f;      //[0.0,16.,16]
-  ClassDef(RHyperTriton3O2,1)
+  Double32_t chi2 = -1.f;      //[0.0,32.,16]
+  char rotation = 0;
+  ClassDef(RHyperTriton3O2,3)
 };
 
 struct RHyperTriton3KF : public RHyperTriton {

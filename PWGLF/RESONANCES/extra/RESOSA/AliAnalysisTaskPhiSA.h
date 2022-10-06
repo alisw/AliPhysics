@@ -12,6 +12,7 @@ class TH2F;
 class TH3F;
 class TProfile;
 class TProfile2D;
+class THnSparse;
 class TList;
 class TString;
 class TVector2;
@@ -32,7 +33,7 @@ class AliMultSelection;
 
 
 
-#ifndef ALIANALYSISTASKSE_H
+//#ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventplane.h"
@@ -43,12 +44,13 @@ class AliMultSelection;
 #include "AliESDtrack.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
-#endif
+
+//#endif
 
 class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskPhiSA();
-  AliAnalysisTaskPhiSA(const char *name, Int_t run, const Bool_t useshift);
+  AliAnalysisTaskPhiSA(const char *name,  const Bool_t useshift);
   virtual ~AliAnalysisTaskPhiSA();
   
   virtual void     UserCreateOutputObjects();
@@ -82,7 +84,7 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
   
  private:
     enum {
-      kDim    = 2000,//Maximum number of tracks.
+      kDim    = 50000,//Maximum number of tracks.
       kDimBuf = 500,//NmixEvent * (NveterxBin + NCentralitiyBin) = 5 * (10+90)
       kCenBin=9,
     };
@@ -126,7 +128,7 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     Float_t  fCurrentEventVy;//!
     Float_t  fCurrentEventVz;//!
     Int_t    fBufferPointer;//!
-    Int_t    fRunNumber;//! runnumber
+    //Int_t    fRunNumber;//! runnumber
 
     TVector2* fQVector;	//! Q-Vector of the event
     TVector2* fQVZeroA;//! Q-Vector of VZero A
@@ -185,7 +187,7 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     
     TH2F  *fHistPionVsKaonMult;//!
     
-    TH1F  *fHistTPCClusterRP;//!
+    /*TH1F  *fHistTPCClusterRP;//!
     TH1F  *fHistITSClusterRP;//!
     TH1F  *fHistChiSqrPerNdfTPCRP;//!
     TH1F  *fHistChiSqrPerNdfITSRP;//!
@@ -201,11 +203,11 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     TH1F  *fHistnCrossRowsPOI;//!
     TH1F  *fHistratioCrossedRowsOverFindableClustersTPC;//!
     TH1F  *fHistDCAxyPOI;//!
-    TH1F  *fHistDCAzPOI;//!
+    TH1F  *fHistDCAzPOI;//!*/
     TProfile *fProCosResThreeSubEventPsiAB;//!
     TProfile *fProCosResThreeSubEventPsiAC;//!
     TProfile *fProCosResThreeSubEventPsiBC;//!
-    
+    /*
     TH3F *fhInvMassSAEPvzeroA[9];//!
     TH3F *fhInvMassLikePPSAEPvzeroA[9];//!
     TH3F *fhInvMassLikeMMSAEPvzeroA[9];//!
@@ -214,6 +216,7 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     TH3F *fhInvMassLikePPSAEPvzeroC[9];//!
     TH3F *fhInvMassLikeMMSAEPvzeroC[9];//!
     TH3F *fhInvMassMixSAEPvzeroC[9];//!
+    */
 
 
     TH1F  *fHistEPTPC[9];//!
@@ -242,6 +245,8 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     TH1F  *fHistEPV0A_sc[9];//!
     TH1F  *fHistEPV0C_sc[9];//!
 
+
+
     // Shift correction
     TProfile2D           *fShiftCosTerm_V0A;   // profile holding av. cosine terms for full and sub events
     TProfile2D           *fShiftSinTerm_V0A;   // profile holding av. sine terms for full and sub events
@@ -253,10 +258,20 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     TProfile2D *fFullSinTerm_V0A;
     TProfile2D *fFullCosTerm_V0C;  
     TProfile2D *fFullSinTerm_V0C;
+
+    THnSparse *fhInvMassSAEPvzeroA;//!
+    THnSparse *fhInvMassLikePPSAEPvzeroA;//!
+    THnSparse *fhInvMassLikeMMSAEPvzeroA;//!
+    THnSparse *fhInvMassMixSAEPvzeroA;//!
+    THnSparse *fhInvMassSAEPvzeroC;//!
+    THnSparse *fhInvMassLikePPSAEPvzeroC;//!
+    THnSparse *fhInvMassLikeMMSAEPvzeroC;//!
+    THnSparse *fhInvMassMixSAEPvzeroC;//!
     
 
     Bool_t   PassEvent(AliVEvent *event);
     Int_t    GetCentrality(AliVEvent *evt);
+    Float_t  GetCentralityValue(AliVEvent *evt);
     Bool_t   PassTrack(AliVTrack *track);
     Int_t    MakeRealPair(TVector2 *qvA, TVector2 *qvC);
     Int_t    MakeLikePair(TVector2 *qvA, TVector2 *qvC);
@@ -267,6 +282,7 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     Double_t GetDipAngle(Double_t aX,Double_t aY,Double_t aZ,
 			 Double_t bX,Double_t bY,Double_t bZ);
     Double_t CosThetaStar(TLorentzVector mother, TLorentzVector daughter0,TVector2& Qvect);
+    Double_t CosPhiPsi(TLorentzVector mother, TLorentzVector daughter0,TVector2& Qvect);
 
     Bool_t   CheckVertex(const AliVVertex *vert);
     Double_t GetNSigmaCut(Double_t pTrack);

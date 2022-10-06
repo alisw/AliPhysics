@@ -64,8 +64,8 @@ Float_t AliCSEventCuts::fgkTrackVertexSigmas = 20.0;
 Float_t AliCSEventCuts::fgkTrackVertexSigmas_pPb = 1e14;
 
 /// Default constructor for serialization
-AliCSEventCuts::AliCSEventCuts() :
-    AliCSAnalysisCutsBase(),
+AliCSEventCuts::AliCSEventCuts()
+  : AliCSAnalysisCutsBase(),
     fSystem(kNoSystem),
     fVertexZ(999.0),
     fCentrality(0.0),
@@ -83,7 +83,8 @@ AliCSEventCuts::AliCSEventCuts() :
     fSPDTrkVtxDistSigmas(fgkSPDTracksVtxDistanceSigmas),
     fTrkVtxDistSigmas(fgkTrackVertexSigmas),
     fUseNewMultFramework(kFALSE),
-    fRun2V0MBasedPileUpCorrelation(NULL),
+    fRun2V0MBasedPileUpCorrelationLowLimit(NULL),
+    fRun2V0MBasedPileUpCorrelationUpLimit(NULL),
     fCentOutLowCut(NULL),
     fCentOutHighCut(NULL),
     fTOFMultOutLowCut(NULL),
@@ -96,6 +97,8 @@ AliCSEventCuts::AliCSEventCuts() :
     fCL1Centrality(0),
     fReferenceMultiplicity(0),
     fV0Multiplicity(0),
+    fCL1Multiplicity(0),
+    fCL1EtaGapMultiplicity(0),
     fNoOfAODTracks(0),
     fNoOfESDTracks(0),
     fNoOfFB32Tracks(0),
@@ -111,6 +114,12 @@ AliCSEventCuts::AliCSEventCuts() :
     fhCutsStatistics(NULL),
     fhUniqueCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
+    fhV0Multiplicity(nullptr),
+    fhCL1Multiplicity(nullptr),
+    fhCL1EtaGapMultiplicity(nullptr),
+    fhV0MCentMult(nullptr),
+    fhCL1CentMult(nullptr),
+    fhCL1EtaGapCentMult(nullptr),
     fhCentrality{NULL},
     fhVertexZ{NULL},
     fhSPDClustersVsTracklets{NULL},
@@ -129,8 +138,8 @@ AliCSEventCuts::AliCSEventCuts() :
 /// Constructor
 /// \param name name of the event cuts
 /// \param title title of the event cuts
-AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
-    AliCSAnalysisCutsBase(kNCuts,kNCutsParameters,name,title),
+AliCSEventCuts::AliCSEventCuts(const char* name, const char* title)
+  : AliCSAnalysisCutsBase(kNCuts, kNCutsParameters, name, title),
     fSystem(kNoSystem),
     fVertexZ(999.0),
     fCentrality(0.0),
@@ -148,7 +157,8 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fSPDTrkVtxDistSigmas(fgkSPDTracksVtxDistanceSigmas),
     fTrkVtxDistSigmas(fgkTrackVertexSigmas),
     fUseNewMultFramework(kFALSE),
-    fRun2V0MBasedPileUpCorrelation(NULL),
+    fRun2V0MBasedPileUpCorrelationLowLimit(NULL),
+    fRun2V0MBasedPileUpCorrelationUpLimit(NULL),
     fCentOutLowCut(NULL),
     fCentOutHighCut(NULL),
     fTOFMultOutLowCut(NULL),
@@ -161,6 +171,8 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fCL1Centrality(0),
     fReferenceMultiplicity(0),
     fV0Multiplicity(0),
+    fCL1Multiplicity(0),
+    fCL1EtaGapMultiplicity(0),
     fNoOfAODTracks(0),
     fNoOfESDTracks(0),
     fNoOfFB32Tracks(0),
@@ -176,6 +188,12 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fhCutsStatistics(NULL),
     fhUniqueCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
+    fhV0Multiplicity(nullptr),
+    fhCL1Multiplicity(nullptr),
+    fhCL1EtaGapMultiplicity(nullptr),
+    fhV0MCentMult(nullptr),
+    fhCL1CentMult(nullptr),
+    fhCL1EtaGapCentMult(nullptr),
     fhCentrality{NULL},
     fhVertexZ{NULL},
     fhSPDClustersVsTracklets{NULL},
@@ -194,8 +212,10 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
 /// Destructor
 AliCSEventCuts::~AliCSEventCuts()
 {
-  if (fRun2V0MBasedPileUpCorrelation != NULL)
-    delete fRun2V0MBasedPileUpCorrelation;
+  if (fRun2V0MBasedPileUpCorrelationLowLimit != NULL)
+    delete fRun2V0MBasedPileUpCorrelationLowLimit;
+  if (fRun2V0MBasedPileUpCorrelationUpLimit != NULL)
+    delete fRun2V0MBasedPileUpCorrelationUpLimit;
   if (fCentOutLowCut != NULL)
     delete fCentOutLowCut;
   if (fCentOutHighCut != NULL)
@@ -253,7 +273,7 @@ void AliCSEventCuts::NotifyEvent() {
   /* let's produce some feedback about MC dataset configuration */
   if (fgIsMC) {
     AliInfo(Form("Handling a MC event with %s format", (fgIsESD ? "ESD" : "AOD")));
-    AliInfo(Form("========= MC handler is %s", ((fgMCHandler != NULL) ? "NOT null" : "NULL")));
+    AliInfo(Form("========= MC handler is %s", ((GetMCEventHandler() != NULL) ? "NOT null" : "NULL")));
   }
 
   if (fgIsMC && !fgIsESD) {
@@ -274,18 +294,23 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
   if (fgIsMC) {
     if (fgIsESD) {
       AliInfo(TString::Format("InitOk: %s, TreeK: %s, TreeTR: %s",
-          fgMCHandler->InitOk() ? "true" : "false",
-              fgMCHandler->TreeK() ? "true" : "false",
-                  fgMCHandler->TreeTR() ? "true" : "false"));
-      if (fgIsMConlyTruth) {
+          GetMCEventHandler()->InitOk() ? "true" : "false",
+              GetMCEventHandler()->TreeK() ? "true" : "false",
+                  GetMCEventHandler()->TreeTR() ? "true" : "false"));
+      if (fgIsOnTheFlyMC) {
+        /* not consistent behaviour when on the fly productions */
+        /* leave the MC data quality checks for the time being  */
+
+      }
+      else if (fgIsMConlyTruth) {
         /* track references are not there if fast MC, i.e. only truth productions */
-        if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK()){
+        if (!GetMCEventHandler()->InitOk() || !GetMCEventHandler()->TreeK()){
           fCutsActivatedMask.SetBitNumber(kMCdataQuality);
           accepted = kFALSE;
         }
       }
       else {
-        if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK()){
+        if (!GetMCEventHandler()->InitOk() || !GetMCEventHandler()->TreeK()){
           fCutsActivatedMask.SetBitNumber(kMCdataQuality);
           accepted = kFALSE;
         }
@@ -431,9 +456,14 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
     }
 
     /* prepare additional data in case they were needed */
-    Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
-    Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
-    Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+    int nClustersLayer0 = 0;
+    int nClustersLayer1 = 0;
+    int nTracklets      = 0;
+    if (!fgIsOnTheFlyMC) {
+      nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
+      nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
+      nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+    }
 
     for (Int_t i = 0; i < 2; i++) {
 
@@ -788,9 +818,10 @@ void AliCSEventCuts::SetActualSystemType() {
   case kLHC15n:
   case kLHC16k:
   case kLHC16l:
-    system = kpp;
-    AliInfo("SYSTEM: p-p");
-    break;
+  case kLHC18bp:
+      system = kpp;
+      AliInfo("SYSTEM: p-p");
+      break;
   case kLHC13bc:
   case kLHC13de:
     system = kpPb;
@@ -999,6 +1030,7 @@ Bool_t AliCSEventCuts::UseNewMultiplicityFramework() const{
   case kLHC15oLIR:
   case kLHC15oHIR:
   case kLHC17n:
+  case kLHC18bp:
   case kLHC18q:
   case kLHC18r:
     AliInfo("Using NEW mulitplicity framework");
@@ -1021,10 +1053,27 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
 
+  if (fgIsOnTheFlyMC) {
+    /* on the fly MC production */
+    switch(fCentralityDetector) {
+    case 0:
+      /* default centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fV0MCentrality;
+    case 1:
+      /* alternative centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fCL1Centrality;
+    default:
+      AliError("Wrong stored centrality detector");
+      return -1.0;
+    }
+  }
+
   if (esdEvent != NULL) {
     /* for the time being, only ESD input supported with fast MC productions */
     if (fgIsMConlyTruth) {
-      AliMCEvent* mcEvent = fgMCHandler->MCEvent();
+      AliMCEvent* mcEvent = GetMCEventHandler()->MCEvent();
 
       /* TODO: this is quick fix to start with AMPT production. Incorporate the kind of generator to automate this */
       AliGenEventHeader* eventHeader = NULL;
@@ -1206,6 +1255,23 @@ Float_t AliCSEventCuts::GetEventAltCentrality(AliVEvent *event) const
 {
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
+
+  if (fgIsOnTheFlyMC) {
+    /* on the fly MC production */
+    switch(fCentralityDetector) {
+    case 0:
+      /* default centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fCL1Centrality;
+    case 1:
+      /* alternative centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fV0MCentrality;
+    default:
+      AliError("Wrong stored centrality detector");
+      return -1.0;
+    }
+  }
 
   if (esdEvent != NULL) {
     AliCentrality *Centrality = event->GetCentrality();
@@ -1784,25 +1850,25 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
   case 0: /* no additional pileup rejection */
     break;
   case 1: /* J/psi analysis pileup removal method */
-    if(fRun2V0MBasedPileUpCorrelation){
-      delete fRun2V0MBasedPileUpCorrelation;
+    if (fRun2V0MBasedPileUpCorrelationLowLimit) {
+      delete fRun2V0MBasedPileUpCorrelationLowLimit;
     }
     switch (GetGlobalAnchorPeriod()) {
     case kLHC10h:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+2.8*x"); /* pass2 with the initial, faulty, method for track count */
+      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x"); /* pass2 with the initial, faulty, method for track count */
       break;
     case kLHC15oLIR:
-      /* fRun2V0MBasedPileUpCorrelation = new TFormula(Form("fRun2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-800+2.93*x"); /* pass3 */
+      /* fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("fRun2V0MBasedPileUpCorrelationLowLimit_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
+      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-800+2.93*x"); /* pass3 */
       break;
     case kLHC15oHIR:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-2000+3.0*x");
+      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-2000+3.0*x");
       break;
     default:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-450+10.5*x");
+      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-450+10.5*x");
       break;
     }
-    AliInfo(Form("2015 pileup removal: V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelation->GetTitle()).ReplaceAll("x","trkTPCout").Data()));
+    AliInfo(Form("2015 pileup removal: V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "trkTPCout").Data()));
     break;
   case 2: /* Centrality and multiplicity correlations for 2015*/
     if (fCentOutLowCut != NULL)
@@ -1827,7 +1893,7 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
       AliWarning("2015 pileup removal: inhibited for LHC15oLIR anchored datasets");
       break;
     case kLHC15oHIR:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-2000+3.0*x");
+      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-2000+3.0*x");
       /* let's initialize the expressions for 2015 pile up rejection */
       fCentOutLowCut = new TF1("fCentOutLowCut", "[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
       fCentOutLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
@@ -1841,7 +1907,7 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
       fMultCentOutLowCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
 
       /* TODO user feedback */
-      // AliInfo(Form("2015 pileup removal: V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelation->GetTitle()).ReplaceAll("x","trkTPCout").Data()));
+      // AliInfo(Form("2015 pileup removal: V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x","trkTPCout").Data()));
       break;
     default:
       /* inhibited, TODO */
@@ -1851,46 +1917,55 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     }
     break;
   case 3: /* J/psi analysis pileup removal initial, corrected, method */
-    if(fRun2V0MBasedPileUpCorrelation){
-      delete fRun2V0MBasedPileUpCorrelation;
+    if (fRun2V0MBasedPileUpCorrelationLowLimit) {
+      delete fRun2V0MBasedPileUpCorrelationLowLimit;
+      fRun2V0MBasedPileUpCorrelationLowLimit = NULL;
+    }
+    if (fRun2V0MBasedPileUpCorrelationUpLimit) {
+      delete fRun2V0MBasedPileUpCorrelationUpLimit;
+      fRun2V0MBasedPileUpCorrelationUpLimit = NULL;
     }
     switch (GetGlobalAnchorPeriod()) {
-    case kLHC10bg:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-300.0+4.0*x");
-      break;
-    case kLHC10h:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+3.1*x");
-      break;
-    case kLHC13bc:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),
-          "(x<150.0)*(19.0-0.1*x+0.010*x*x)+(x>=150.0)*(229+2.9*(x-150))");
-      break;
-    case kLHC15oLIR:
-      /* fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-800+2.93*x"); /* pass3 */
-      break;
-    case kLHC15oHIR:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-2500+5.0*x");
-      break;
-    case kLHC17n:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-900+6.0*x");
-      break;
-    case kLHC18q:
-    case kLHC18r:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1500.0+6.0*x");
-      break;
-    default:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+2.8*x");
-      break;
+      case kLHC10bg:
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-300.0+4.0*x");
+        break;
+      case kLHC10h:
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+3.1*x");
+        break;
+      case kLHC13bc:
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()),
+                                                              "(x<150.0)*(19.0-0.1*x+0.010*x*x)+(x>=150.0)*(229+2.9*(x-150))");
+        break;
+      case kLHC15oLIR:
+        /* fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-800+2.93*x"); /* pass3 */
+        break;
+      case kLHC15oHIR:
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-2500+5.0*x");
+        break;
+      case kLHC17n:
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-900+6.0*x");
+        break;
+      case kLHC18q:
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationLow_%s", GetCutsString()), "-550.183633, 14.200681*x, 0.003153*x*x, -0.000002*x*x*x, 0.000000000339*x*x*x*x");
+        fRun2V0MBasedPileUpCorrelationUpLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationUp_%s", GetCutsString()), "745.342819, 21.804695*x, -0.004939*x*x, 0.000003*x*x*x, -0.000000000580*x*x*x*x");
+        break;
+      case kLHC18r:
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationLow_%s", GetCutsString()), "-510.327628, 13.954490*x, 0.003569*x*x, -0.000002*x*x*x, 0.000000000428*x*x*x*x");
+        fRun2V0MBasedPileUpCorrelationUpLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationUp_%s", GetCutsString()), "653.272285, 21.943426*x, -0.005966*x*x, 0.000004*x*x*x, -0.000000000795*x*x*x*x");
+        break;
+      default:
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
+        break;
     }
-    AliInfo(Form("2015 pileup removal (initial method): V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelation->GetTitle()).ReplaceAll("x","trkTPCout").Data()));
+    AliInfo(Form("2015 pileup removal (initial method): V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "trkTPCout").Data()));
     break;
   case 4: /* centrality estimators correlators for p-Pb system */
     /* do nothing for the time being */
     break;
   case 5: /* J/psi analysis pileup removal based on total number of TPC clusters*/
-    if(fRun2V0MBasedPileUpCorrelation){
-      delete fRun2V0MBasedPileUpCorrelation;
+    if (fRun2V0MBasedPileUpCorrelationLowLimit) {
+      delete fRun2V0MBasedPileUpCorrelationLowLimit;
     }
     switch (GetGlobalAnchorPeriod()) {
     case kLHC10bg:
@@ -1901,16 +1976,16 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     case kLHC17n:
     case kLHC18q:
       AliError("Run2 pileup removal based on number of total TPC clusters still not configured. Fix it!!!");
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+2.8*x");
+      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
       break;
     case kLHC18r:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-2000.0+x*0.012987+x/1000.0*x/1000.0*0.001300");
+      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-2000.0+x*0.012987+x/1000.0*x/1000.0*0.001300");
       break;
     default:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+2.8*x");
+      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
       break;
     }
-    AliInfo(Form("Run2 pileup removal (total number of TPC clusters based): V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelation->GetTitle()).ReplaceAll("x","totalTPCclusters").Data()));
+    AliInfo(Form("Run2 pileup removal (total number of TPC clusters based): V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "totalTPCclusters").Data()));
     break;
   default:
     AliError(Form("Run2 additional pileup removal code %d not supported", fParameters[kRemove2015PileUp]));
@@ -1923,7 +1998,7 @@ Bool_t AliCSEventCuts::Is2015PileUpEvent() const {
 
   switch(fParameters[kRemove2015PileUp]){
   case 1: /* J/psi analysis pileup removal initial, faulty, method */
-    if (fV0Multiplicity  < fRun2V0MBasedPileUpCorrelation->Eval(fNoOfInitialTPCoutTracks))
+    if (fV0Multiplicity < fRun2V0MBasedPileUpCorrelationLowLimit->Eval(fNoOfInitialTPCoutTracks))
       return kTRUE;
     return kFALSE;
     break;
@@ -1949,11 +2024,15 @@ Bool_t AliCSEventCuts::Is2015PileUpEvent() const {
         return kTRUE;
 
       return kFALSE;
-    }
-    break;
+  } break;
   case 3: /* J/psi analysis pileup removal initial, corrected, method */
-    if (fV0Multiplicity  < fRun2V0MBasedPileUpCorrelation->Eval(fNoOfInitialTPCoutTracks))
+    if (fV0Multiplicity < fRun2V0MBasedPileUpCorrelationLowLimit->Eval(fNoOfInitialTPCoutTracks)) {
       return kTRUE;
+    } else if (fRun2V0MBasedPileUpCorrelationUpLimit) {
+      if (fV0Multiplicity > fRun2V0MBasedPileUpCorrelationUpLimit->Eval(fNoOfInitialTPCoutTracks)) {
+        return kTRUE;
+      }
+    }
     return kFALSE;
     break;
   case 4: /* centrality estimation correlations for p-Pb and Pb-p */ {
@@ -1965,7 +2044,7 @@ Bool_t AliCSEventCuts::Is2015PileUpEvent() const {
     }
     break;
   case 5: /* J/psi analysis pileup removal based on total number of TPC clusters */
-    if (fV0Multiplicity  < fRun2V0MBasedPileUpCorrelation->Eval(fNoOfTotalTPCClusters))
+    if (fV0Multiplicity < fRun2V0MBasedPileUpCorrelationLowLimit->Eval(fNoOfTotalTPCClusters))
       return kTRUE;
     return kFALSE;
     break;
@@ -1989,76 +2068,103 @@ Bool_t AliCSEventCuts::StoreEventCentralities(AliVEvent *event) {
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
 
-  if (esdEvent != NULL) {
-    if (fUseNewMultFramework) {
-      AliMultSelection *MultSelection = (AliMultSelection*) event->FindListObject("MultSelection");
-      if (MultSelection != NULL) {
+  if (fgIsOnTheFlyMC) {
+    /* on the fly MC production */
+    /* secure INEL > 0 */
+    if (GetOnTheFlyMultiplicity(event, -1.0, 1.0) > 0) {
+      float V0AM = GetOnTheFlyMultiplicity(event, 2.8, 5.1);
+      float V0CM = GetOnTheFlyMultiplicity(event, -3.7, -1.7);
+      float V0M = V0AM+V0CM;
+      float CL1M = GetOnTheFlyMultiplicity(event, -1.4, 1.4);
+      float CL1EtaGapM = GetOnTheFlyMultiplicity(event, -1.4, -0.8) + GetOnTheFlyMultiplicity(event, 0.8, 1.4);
+      float dNchdeta = GetOnTheFlyMultiplicity(event, -0.5, 0.5);
+      if (fhV0Multiplicity != nullptr) 
+        fhV0Multiplicity->Fill(V0M,dNchdeta);
+      if (fhCL1Multiplicity != nullptr) 
+        fhCL1Multiplicity->Fill(CL1M,dNchdeta);
+      if (fhCL1EtaGapMultiplicity != nullptr) 
+        fhCL1EtaGapMultiplicity->Fill(CL1EtaGapM,dNchdeta);
+      /* extract the centrality / mutiliplicity percentile */
+      if (fhV0MCentMult != nullptr) 
+        fV0MCentrality = fhV0MCentMult->GetBinContent(V0M);
+      if (fhCL1CentMult != nullptr) 
+        fCL1Centrality = fhCL1CentMult->GetBinContent(CL1M);
+      if (fhCL1EtaGapCentMult != nullptr) /* eta gap has priority on CL1 centrality / multiplicity */
+        fCL1Centrality = fhCL1EtaGapCentMult->GetBinContent(CL1EtaGapM);
+    }
+  }
+  else {
+    if (esdEvent != NULL) {
+      if (fUseNewMultFramework) {
+        AliMultSelection *MultSelection = (AliMultSelection*) event->FindListObject("MultSelection");
+        if (MultSelection != NULL) {
+          fV0ACentrality = MultSelection->GetMultiplicityPercentile("V0A");
+          fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0C");
+          fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+          fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL0");
+          fCL1Centrality = MultSelection->GetMultiplicityPercentile("CL1");
+        }
+        else {
+          AliError("No MultSelection object instance for ESD event");
+          return kFALSE;
+        }
+      }
+      else {
+        AliCentrality *Centrality = event->GetCentrality();
+        if (Centrality != NULL) {
+          fV0ACentrality = Centrality->GetCentralityPercentile("V0A");
+          fV0CCentrality = Centrality->GetCentralityPercentile("V0C");
+          fV0MCentrality = Centrality->GetCentralityPercentile("V0M");
+          fCL0Centrality = Centrality->GetCentralityPercentile("CL0");
+          fCL1Centrality = Centrality->GetCentralityPercentile("CL1");
+        }
+        else {
+          AliError("No Centrality object instance for ESD event");
+          return kFALSE;
+        }
+      }
+    }
+
+    if(aodEvent){
+      if(fUseNewMultFramework){
+        AliMultSelection *MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
+        if (MultSelection == NULL) {
+          AliError("No MultSelection object instance for AOD event");
+          return kFALSE;
+        }
         fV0ACentrality = MultSelection->GetMultiplicityPercentile("V0A");
         fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0C");
         fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
         fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL0");
         fCL1Centrality = MultSelection->GetMultiplicityPercentile("CL1");
       }
-      else {
-        AliError("No MultSelection object instance");
-        return kFALSE;
-      }
-    }
-    else {
-      AliCentrality *Centrality = event->GetCentrality();
-      if (Centrality != NULL) {
-        fV0ACentrality = Centrality->GetCentralityPercentile("V0A");
-        fV0CCentrality = Centrality->GetCentralityPercentile("V0C");
-        fV0MCentrality = Centrality->GetCentralityPercentile("V0M");
-        fCL0Centrality = Centrality->GetCentralityPercentile("CL0");
-        fCL1Centrality = Centrality->GetCentralityPercentile("CL1");
-      }
-      else {
-        AliError("No Centrality object instance");
-        return kFALSE;
-      }
-    }
-  }
-
-  if(aodEvent){
-    if(fUseNewMultFramework){
-      AliMultSelection *MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
-      if (MultSelection == NULL) {
-        AliError("No MultSelection object instance");
-        return kFALSE;
-      }
-      fV0ACentrality = MultSelection->GetMultiplicityPercentile("V0A");
-      fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0C");
-      fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-      fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL0");
-      fCL1Centrality = MultSelection->GetMultiplicityPercentile("CL1");
-    }
-    else{
-      if(aodEvent->GetHeader()) {
-        AliCentrality *aodCentrality = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
-        if (aodCentrality != NULL) {
-          fV0ACentrality = aodCentrality->GetCentralityPercentile("V0A");
-          fV0CCentrality = aodCentrality->GetCentralityPercentile("V0C");
-          fV0MCentrality = aodCentrality->GetCentralityPercentile("V0M");
-          fCL0Centrality = aodCentrality->GetCentralityPercentile("CL0");
-          fCL1Centrality = aodCentrality->GetCentralityPercentile("CL1");
+      else{
+        if(aodEvent->GetHeader()) {
+          AliCentrality *aodCentrality = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
+          if (aodCentrality != NULL) {
+            fV0ACentrality = aodCentrality->GetCentralityPercentile("V0A");
+            fV0CCentrality = aodCentrality->GetCentralityPercentile("V0C");
+            fV0MCentrality = aodCentrality->GetCentralityPercentile("V0M");
+            fCL0Centrality = aodCentrality->GetCentralityPercentile("CL0");
+            fCL1Centrality = aodCentrality->GetCentralityPercentile("CL1");
+          }
+          else {
+            AliError("No AliCentrality attached to AOD header");
+            return kFALSE;
+          }
         }
         else {
-          AliError("No AliCentrality attached to AOD header");
+          AliError("Not a standard AOD");
           return kFALSE;
         }
-      }
-      else {
-        AliError("Not a standard AOD");
-        return kFALSE;
       }
     }
   }
 
   AliInfo(Form("Event centralities: V0A: %.2f, V0C: %.2f, V0M: %.2f, CL0: %.2f, CL1: %.2f",
-      Float_t(fV0MCentrality),
       Float_t(fV0ACentrality),
       Float_t(fV0CCentrality),
+      Float_t(fV0MCentrality),
       Float_t(fCL0Centrality),
       Float_t(fCL1Centrality)));
 
@@ -2138,12 +2244,18 @@ void AliCSEventCuts::SetActualFilterTracksCuts() {
     system = "Xe-Xe";
     period = "2017n";
     break;
+  case kLHC18bp:
+      baseSystem = k2011based;
+      basename = "2011";
+      system = "p-p";
+      period = "2018bp";
+      break;
   case kLHC18q:
-    baseSystem = k2011based;
-    basename = "2011";
-    system = "Pb-Pb";
-    period = "2018q";
-    break;
+      baseSystem = k2011based;
+      basename = "2011";
+      system = "Pb-Pb";
+      period = "2018q";
+      break;
   case kLHC18r:
     baseSystem = k2011based;
     basename = "2011";
@@ -2208,7 +2320,7 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
     /* for fast MC we need to infer few of this counting */
     Int_t nTracks = 0;
 
-    AliMCEvent *mcevent = fgMCHandler->MCEvent();
+    AliMCEvent *mcevent = GetMCEventHandler()->MCEvent();
     if (mcevent != NULL) {
       for (Int_t itrk = 0; itrk < mcevent->GetNumberOfTracks(); itrk++) {
         if (AliCSTrackCuts::IsPhysicalPrimary(itrk))
@@ -2217,6 +2329,18 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
 
       fReferenceMultiplicity = nTracks;
       fNoOfAODTracks = fNoOfESDTracks = mcevent->GetNumberOfTracks();
+    }
+    /* secure INEL > 0 */
+    fV0Multiplicity = 0;
+    fCL1Multiplicity = 0;
+    fCL1EtaGapMultiplicity = 0;
+    if (GetOnTheFlyMultiplicity(event, -1.0, 1.0) > 0) {
+      float V0AM = GetOnTheFlyMultiplicity(event, 2.8, 5.1);
+      float V0CM = GetOnTheFlyMultiplicity(event, -3.7, -1.7);
+      fV0Multiplicity = V0AM+V0CM;
+      fCL1Multiplicity = GetOnTheFlyMultiplicity(event, -1.4, 1.4);
+      fCL1EtaGapMultiplicity = GetOnTheFlyMultiplicity(event, -1.4, -0.8) + GetOnTheFlyMultiplicity(event, 0.8, 1.4);
+
     }
   }
   else {
@@ -2354,6 +2478,16 @@ void AliCSEventCuts::InitCuts(const char *name){
   }
 }
 
+/// Stores the centrality / multiplicity estimation histograms
+/// \param v0mh V0M centrality / multiplicity estimation histogram
+/// \param cl1mh CL1M centrality / multiplicity estimation histogram
+void AliCSEventCuts::StoreCentMultEstimationHistos(const TH1 *v0mh, const TH1 *cl1mh, const TH1 *cl1egmh) { 
+  fhV0MCentMult = (v0mh != nullptr) ? v0mh : nullptr; 
+  fhCL1CentMult = (cl1mh != nullptr) ? cl1mh : nullptr; 
+  fhCL1EtaGapCentMult = (cl1egmh != nullptr) ? cl1egmh : nullptr;
+}
+
+
 /// Allocates the different histograms if needed
 ///
 /// It is supposed that the current cuts string is the running one
@@ -2397,6 +2531,23 @@ void AliCSEventCuts::DefineHistograms(){
         fhCutsCorrelation->GetYaxis()->SetBinLabel(i+2,fgkCutsNames[i]);
       }
       fHistogramsList->Add(fhCutsCorrelation);
+    }
+
+    if (fgIsOnTheFlyMC) {
+      if (!fCutsEnabledMask.TestBitNumber(kCentralityCut)) {
+        /* the multiplicity histogram for on the fly productions */
+        double nBinsMult[knSystems] = {0,510,510,3010,3010,510};
+        double nBinsDNdeta[knSystems] = {0,510,510,1010,1010,510};
+        fhV0Multiplicity = new TH2F(TString::Format("V0Multiplicity_%s",GetCutsString()),"V0M;V0M;dN/d#eta;counts",
+                                    nBinsMult[fSystem],-9.5, -9.5+nBinsMult[fSystem], nBinsDNdeta[fSystem],-9.5,-9.5+nBinsDNdeta[fSystem]);
+        fhCL1Multiplicity = new TH2F(TString::Format("CL1Multiplicity_%s",GetCutsString()),"CL1M;CL1M;dN/d#eta;counts",
+                                     nBinsMult[fSystem],-9.5, -9.5+nBinsMult[fSystem], nBinsDNdeta[fSystem],-9.5,-9.5+nBinsDNdeta[fSystem]);
+        fhCL1EtaGapMultiplicity = new TH2F(TString::Format("CL1EtaGapMultiplicity_%s",GetCutsString()),"CL1M (excl |#eta|<0.8);CL1M;dN/d#eta;counts",
+                                           nBinsMult[fSystem],-9.5, -9.5+nBinsMult[fSystem], nBinsDNdeta[fSystem],-9.5,-9.5+nBinsDNdeta[fSystem]);
+        fHistogramsList->Add(fhV0Multiplicity);
+        fHistogramsList->Add(fhCL1Multiplicity);
+        fHistogramsList->Add(fhCL1EtaGapMultiplicity);
+      }
     }
 
     if(fSystem  > kpp){
@@ -2568,7 +2719,47 @@ void AliCSEventCuts::DefineHistograms(){
   }
 }
 
+float AliCSEventCuts::GetOnTheFlyMultiplicity(AliVEvent *event, float etamin, float etamax) const {
+  /* on the fly MC production */
+  /* get event multiplicity according to passed the eta range  */
+  /* event multiplicity as number of primary charged particles */
+  /* based on AliAnalysisTaskPhiCorrelations implementation */
+  float multiplicity = 0.0;
+  for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
+    AliMCParticle *particle = (AliMCParticle *) event->GetTrack(itrk);
+    if (particle != nullptr) {
+      int pdgabs = TMath::Abs(particle->PdgCode());
 
+      /* pdg checks */
+      bool keepcounting = true;
+      switch (pdgabs)
+      {
+      case 9902210: /* proton diffractive */
+        /* the event is rejected */
+        multiplicity = -1.0;
+        keepcounting = false;
+        break;
+      case 211:   /* pions */
+      case 321:   /* kaons */
+      case 2212:  /* protons */
+        /* not clear if we should use IsPhysicalPrimary here */
+        if (0.001 < particle->Pt() && particle->Pt() < 50.0) {
+          float eta = particle->Eta();
+          if (etamin < eta and eta < etamax) {
+            multiplicity += 1;
+          }
+        }
+        break;
+      default:
+        break;
+      }
+      if (!keepcounting) {
+        break;
+      }
+    }
+  }
+  return multiplicity;
+}
 
 /// \cond CLASSIMP
 ClassImp(AliCSEventCuts);

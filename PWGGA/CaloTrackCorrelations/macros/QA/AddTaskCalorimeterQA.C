@@ -48,7 +48,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
                                                           TString outputFile = "",
                                                           Int_t   year = 2015, 
                                                           Bool_t  printSettings = kFALSE,
-                                                          Bool_t  calibrate = kTRUE)
+                                                          Bool_t  calibrate = kTRUE,
+                                                          Bool_t  rejectMCPileUpParticles = kTRUE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -116,6 +117,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   if(calibrate && !simulation) reader->SwitchOnClusterRecalculation();
   else                         reader->SwitchOffClusterRecalculation();
   
+  if ( simulation && rejectMCPileUpParticles )
+    reader->SwitchOnMCParticlePileUpRejection();
+  else
+    reader->SwitchOffMCParticlePileUpRejection();
+
   if(printSettings) reader->Print("");
   
   // *** Calorimeters Utils	***

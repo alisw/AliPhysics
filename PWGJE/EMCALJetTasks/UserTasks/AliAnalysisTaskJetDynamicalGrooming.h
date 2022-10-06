@@ -315,6 +315,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   void SetMaxCentrality(Float_t t) { fCentMax = t; }
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
+  void SetStoreEventPlane(Bool_t t) { fStoreEventPlane = t; }
   void SetStoreRecursiveJetSplittings(bool t = true) { fStoreRecursiveSplittings = t; }
 
   // Initialize the task
@@ -375,7 +376,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   /// Calculate TimeDrop (a = 2) for the earliest splitting.
   double CalculateTimeDrop(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
 
-  void IterativeParents(AliEmcalJet* jet, SubstructureTree::JetSubstructureSplittings& jetSplittings, bool isData);
+  void IterativeParents(AliEmcalJet* jet, SubstructureTree::JetSubstructureSplittings& jetSplittings, bool isData, bool isDetLevelInEmbedding = false);
   void ExtractJetSplittings(SubstructureTree::JetSubstructureSplittings & jetSplittings, fastjet::PseudoJet & inputJet, int splittingNodeIndex, bool followingIterativeSplitting);
   void CheckSubjetResolution(AliEmcalJet* fJet, AliEmcalJet* fJetM);
   bool CheckClosePartner(const AliEmcalJet* jet, const AliVParticle * part1);
@@ -406,6 +407,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   Int_t fDerivSubtrOrder;    ///<  Order of the derivative subtraction.
   Bool_t fStoreDetLevelJets; ///<  If True, store the detector level jet quantities
   bool fStoreRecursiveSplittings; ///<  If true, recursive splittings will be stored.
+  bool fStoreEventPlane;     ///<  If true, store the event plane angle
 
   // Tree variables
   SubstructureTree::JetSubstructureSplittings fDataJetSplittings;       ///<  Data jet splittings.
@@ -421,7 +423,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
 
  private:
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetDynamicalGrooming, 3)  // Jet dynamical grooming
+  ClassDef(AliAnalysisTaskJetDynamicalGrooming, 4)  // Jet dynamical grooming
   /// \endcond
 };
 

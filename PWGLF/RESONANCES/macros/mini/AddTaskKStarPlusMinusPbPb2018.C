@@ -57,7 +57,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPb2018
  TString     monitorOpt="PbPb",
  Float_t     piPIDCut = 2.0,
  Float_t     nsigmaTOF = 3.0,
- Float_t     cutV = 10.0,
+ Float_t     vtxZcut = 10.0,
  Int_t       customQualityCutsID=1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
  Float_t     pi_k0s_PIDCut = 3.0,
@@ -185,11 +185,20 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPb2018
     // - 3rd argument --> minimum required number of contributors
     // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
-  AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-   cutEventUtils->SetCheckAcceptedMultSelection();
+
+    AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+    cutEventUtils->SetCheckAcceptedMultSelection();    
+
+   //AliRsnCutPrimaryVertex *cutVertex = 0;
+   //cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+   AliRsnCutPrimaryVertex *cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+   cutVertex->GetCheckGeneratedVertexZ();
+
+
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
    eventCuts->AddCut(cutEventUtils);
-   eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+   eventCuts->AddCut(cutVertex);
+   eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
    task->SetEventCuts(eventCuts);
 
 
@@ -242,7 +251,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPb2018
     //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018.C");
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018.C");
     //gROOT->LoadMacro("ConfigKStarPlusMinuspPbRun2.C");
-    //gROOT->LoadMacro("ConfigKStarPlusMinusPbPb2018.C");
+    //gROOT->LoadMacro("ConfigKStarPlusMinusPbPb2018grid.C");
 
 
      if (isMC) {

@@ -56,12 +56,13 @@ public:
 		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
                 virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
-		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
-		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
-		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
+//		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
+//		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
+//		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
 		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
-		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
-		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
+		virtual void  SetTrackCutsSystVars(const int TrackCutVar) { fTrackCuts = TrackCutVar; }
+/////		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
+/////		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
 		virtual void  SetPeriod(Int_t isLHC16l) { fLHC16l = isLHC16l; }
 
 	private:
@@ -104,7 +105,7 @@ public:
 		AliAnalysisUtils* utils;
 		TString       fAnalysisType;        //  "ESD" or "AOD"
 		Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
-		Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
+///		Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
 		TRandom*      fRandom;              //! random number generator
 
 		//
@@ -115,8 +116,8 @@ public:
 		Int_t        fNcl;                
 		Double_t     fEtaCut;             // Eta cut used to select particles
 		Int_t        cent; //minimum centrality
-		Float_t      fMinCent; //minimum centrality
-		Float_t      fMaxCent; //maximum centrality
+//		Float_t      fMinCent; //minimum centrality
+//		Float_t      fMaxCent; //maximum centrality
                 const Double_t fDeDxMIPMin;
                 const Double_t fDeDxMIPMax;
                 const Double_t fdEdxHigh;
@@ -142,8 +143,9 @@ public:
 		TH1F*         fV0M;            //! No of accepted events
 		TH1F*         fVtxMC;             //! Event vertex info for ALL MC events
 		Bool_t       fdEdxCalibrated;
-		Bool_t       fMakePid;
-		Bool_t       fLowPt;
+		int fTrackCuts;
+////		Bool_t       fMakePid;
+////		Bool_t       fLowPt;
 		Int_t  fLHC16l;
 		TH1F* fcent;
 		TH1F* fcentAfterPrimaries;

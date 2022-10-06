@@ -131,6 +131,7 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
       Int_t binX(fEtaPhiEff->GetXaxis()->FindBin(track->Eta())), binY(fEtaPhiEff->GetYaxis()->FindBin(track->Phi()+fEtaPhiEff->GetYaxis()->GetXmin()));
       if(fEtaPhiEff->GetBinContent(binX, binY) < gRandom->Uniform(0,1)*(fEtaPhiEff->GetMaximum())) return kFALSE;
   }
+  
   return kTRUE;
 }
 

@@ -309,6 +309,10 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
         Config_K0Lambdastar(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
     }else if(d2==AliRsnDaughter::kLambdastar && d1==AliRsnDaughter::kKaon0){
         Config_K0Lambdastar(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
+    }else if(d1==AliRsnDaughter::kLambdastar && d2==AliRsnDaughter::kKaon){
+        Config_KxLambdastar(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
+    }else if(d2==AliRsnDaughter::kLambdastar && d1==AliRsnDaughter::kKaon){
+        Config_KxLambdastar(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
     }
  
     cerr<<"done configuring"<<endl;
@@ -1420,13 +1424,11 @@ Bool_t Config_pphi(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
     
-    Double_t mass=0.938272+1.019460;
-    
     // set daughter cuts
     if(!(TrackCutsP%10000)) TrackCutsP+=3020;//default settings
     Float_t nsigmaPTPC=0.1*(TrackCutsP%100);
     Float_t nsigmaPTOF=0.1*((TrackCutsP/100)%100);
-    Int_t CutTypeP=(TrackCutsP/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+    Int_t CutTypeP=(TrackCutsP/100000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
     
     if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
     Float_t nsigmaKTPC=0.1*(TrackCutsPhi%100);
@@ -1449,6 +1451,9 @@ Bool_t Config_pphi(
     else if(CutTypeP==2) cutSetP=new AliRsnCutSetDaughterParticle(
                                                                   Form("cutProton%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaPTOF),
                                                                   trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kProton,-1.,nsigmaPTOF);
+    else if(CutTypeP==3) cutSetP=new AliRsnCutSetDaughterParticle(
+                                                           Form("cutProton_%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPTPC),
+                                                           trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kProton,nsigmaPTPC,nsigmaPTOF);
     if(!cutSetP){cerr<<"Error in AddTaskResonanceFinder::Config_pphi(): missing cutSetP"<<endl; return kFALSE;}
     
     AliRsnCutSetDaughterParticle* cutSetK=0;
@@ -1602,24 +1607,36 @@ Bool_t Config_pphi(
     // -- Create all needed outputs -----------------------------------------------------------------
     // use an array for more compact writing, which are different on mixing and charges
     
-    Int_t xID,cut2,pairID,ipdg;
+    Int_t p,xID,cut2,pairID,ipdg;
     TString name,comp;
     Char_t charge1;
     AliRsnMiniOutput* out;
+    Double_t mass;
+    Double_t massAll[4]={1.957732, 2.0650, 2.2550, 2.4550}; //masses phi+p and 3 Ps states
+    Int_t ipdgNum[4]={9322132,9322312,9323212,9332212};  //pdgs Ps states
+    Int_t Ps = ((TrackCutsP%100000)/10000); //TrackCutsP = 10000 to turn on Ps MC
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(i=0;i<2;i++) for(j=0;j<12;j++){
+    for(i=0;i<2;i++) for(j=0;j<12;j++) for(p=0;p<4;p++){
+        ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!i){
             name.Form("Pp");
             charge1='+';
-            ipdg=9322132;
+            ipdg=ipdgNum[p];
         }else{
             name.Form("Pm");
             charge1='-';
-            ipdg=-9322132;
+            ipdg=-ipdgNum[p];
+        }
+        
+        if(!isMC && j>=6) continue;
+        if(isMC && j>=6 && Ps){
+            name.Append(Form("_PsMass_%.3f_", mass));
         }
         
         xID=imID;
@@ -1648,34 +1665,28 @@ Bool_t Config_pphi(
             name.Append("PhiRotated");
             comp.Form("ROTATE1");
         }else if(j==6){
-            if(!isMC) continue;
             name.Append("Phi_gen");
             comp.Form("MOTHER");
             pairID=1;
         }else if(j==7){
-            if(!isMC) continue;
             name.Append("Phi_rec");
             comp.Form("TRUE");
             pairID=1;
         }else if(j==8){
-            if(!isMC) continue;
             name.Append("Phi_recMM");
             comp.Form("TRUE");
             xID=mmID;
             pairID=1;
         }else if(j==9){
-            if(!isMC) continue;
             name.Append("Phi_res");
             comp.Form("TRUE");
             xID=diffID;
             pairID=1;
         }else if(j==10){
-            if(!isMC) continue;
             name.Append("Phi_genPS");
             comp.Form("MOTHER_IN_ACC");
             pairID=1;
         }else if(j==11){
-            if(!isMC) continue;
             name.Append("Phi_recPS");
             comp.Form("TRUE");
             pairID=1;
@@ -2528,8 +2539,6 @@ Bool_t Config_kxSigmastar(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
     
-    Double_t mass=0.493677+1.385;
-    
     // set cuts for primary bachelor kaon
     if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
     Float_t nsigmaKTPC=0.1*(TrackCutsK%100);
@@ -2575,6 +2584,7 @@ Bool_t Config_kxSigmastar(
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+       if(V0Cuts==1)   v0d_dcaxy=0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -2597,8 +2607,11 @@ Bool_t Config_kxSigmastar(
     Bool_t  lambdaSwitch=kFALSE;
     Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
     
-    if(V0Cuts==1) lambdaDCA=1.e10;
-    else if(V0Cuts==2) lambdaDaughDCA=0.5;
+    if(V0Cuts==2) lambdaDCA=1.e10;
+    else if(V0Cuts==3) lambdaDaughDCA=0.5;
+    else if(V0Cuts==4) lambdaDCA=0.2;
+    else if(V0Cuts==5) lambdaDaughDCA=0.3;
+    else if(V0Cuts==6) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     
@@ -2843,18 +2856,24 @@ Bool_t Config_kxSigmastar(
     // -- Create all needed outputs -----------------------------------------------------------------
     // use an array for more compact writing, which are different on mixing and charges
     
-    Int_t k,xID,cut2,pairID,ipdg=3124;
+    Int_t k,p,xID,cut2,pairID,ipdg;
     AliRsnDaughter::ESpecies d2=AliRsnDaughter::kUnknown;
     TString name,comp;
     Char_t charge1,charge2;
-    Double_t rmass;
+    Double_t mass;
+    Double_t massAll[4]={1.878677, 2.0650, 2.2550, 2.4550}; //masses of Sigma*+K and 3 Ps states
+    Int_t ipdgNum[4]={9322131,9322311,9323211,9332211};  //pdgs 4 Ps states
+    Int_t Ps = ((TrackCutsK%100000)/10000); //TrackCutsK = 10000 to turn on Ps MC
     AliRsnMiniOutput* out;
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(i=0;i<2;i++) for(j=0;j<4;j++) for(k=0;k<10;k++){
+    for(i=0;i<2;i++) for(j=0;j<4;j++) for(k=0;k<10;k++) for(p=0;p<4;p++){
+        ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!i){
             name.Form("Kp");
             charge1='+';
@@ -2862,27 +2881,36 @@ Bool_t Config_kxSigmastar(
             name.Form("Km");
             charge1='-';
         }
-        
+
         if(!j){
             name.Append("Sigmastarpp");
             d2=AliRsnDaughter::kSigmastarp;
             charge2='+';
             cut2=0;
+            ipdg=ipdgNum[p];
         }else if(j==1){
             name.Append("Sigmastarma");
             d2=AliRsnDaughter::kSigmastarp;
             charge2='-';
             cut2=1;
+            ipdg=-ipdgNum[p];
         }else if(j==2){
             name.Append("Sigmastarmp");
             d2=AliRsnDaughter::kSigmastarm;
             charge2='-';
             cut2=2;
+            ipdg=ipdgNum[p];
         }else{
             name.Append("Sigmastarpa");
             d2=AliRsnDaughter::kSigmastarm;
             charge2='+';
             cut2=3;
+            ipdg=-ipdgNum[p];
+        }
+        
+        if(!isMC && k>=4) continue;
+        if(isMC && k>=4 && Ps){
+            name.Append(Form("_PsMass_%.3f", mass));
         }
         
         xID=imID;
@@ -2904,29 +2932,23 @@ Bool_t Config_kxSigmastar(
             else {comp.Form("ROTATE2");}
             pairID=0;
         }else if(k==4){
-            if(!isMC) continue;
             name.Append("_gen");
             comp.Form("MOTHER");
         }else if(k==5){
-            if(!isMC) continue;
             name.Append("_rec");
             comp.Form("TRUE");
         }else if(k==6){
-            if(!isMC) continue;
             name.Append("_recMM");
             comp.Form("TRUE");
             xID=mmID;
         }else if(k==7){
-            if(!isMC) continue;
             name.Append("_res");
             comp.Form("TRUE");
             xID=diffID;
         }else if(k==8){
-            if(!isMC) continue;
             name.Append("_genPS");
             comp.Form("MOTHER_IN_ACC");
         }else if(k==9){
-            if(!isMC) continue;
             name.Append("_recPS");
             comp.Form("TRUE");
         }
@@ -3063,14 +3085,13 @@ Bool_t Config_k0Sigmastar(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
     
-    Double_t mass=0.497611+1.385;
-    
     Int_t K0sCuts=TrackCutsK;
     
     // selections for V0 daughters
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+        if(K0sCuts==1)   v0d_dcaxy=0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -3094,7 +3115,10 @@ Bool_t Config_k0Sigmastar(
     Bool_t  k0sSwitch=kFALSE;
     Float_t k0sCosPoinAn=0.97;
     
-    if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if(K0sCuts==2) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    else if(K0sCuts==3) k0sDCA=0.15;
+    else if(K0sCuts==4) k0sDaughDCA=0.3;
+    else if(K0sCuts==5) k0sCosPoinAn=0.995;
     
     AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
     cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
@@ -3163,6 +3187,9 @@ Bool_t Config_k0Sigmastar(
     
     if(LambdaCuts==1) lambdaDCA=1.e10;
     else if(LambdaCuts==2) lambdaDaughDCA=0.5;
+    else if(LambdaCuts==3) lambdaDCA=0.2;
+    else if(LambdaCuts==4) lambdaDaughDCA=0.3;
+    else if(LambdaCuts==5) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     
@@ -3407,39 +3434,55 @@ Bool_t Config_k0Sigmastar(
     // -- Create all needed outputs -----------------------------------------------------------------
     // use an array for more compact writing, which are different on mixing and charges
     
-    Int_t k,xID,cut2,pairID,ipdg;
+    Int_t k,p,xID,cut2,pairID,ipdg;
     AliRsnDaughter::ESpecies d2=AliRsnDaughter::kUnknown;
     TString name,comp;
     Char_t charge1='0',charge2;
     AliRsnMiniOutput* out;
     
+    Double_t mass;
+    Double_t massAll[4]={1.8826, 2.0650, 2.2550, 2.4550}; //masses phi+p and 3 Ps states
+    Int_t ipdgNum[4]={9322132,9322312,9323212,9332212};  //pdgs Ps states
+    Int_t Ps = (TrackCutsK/10)%10; //TrackCutsK = 10 to turn on Ps MC
+    
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(j=0;j<4;j++) for(k=0;k<10;k++){
+    for(j=0;j<4;j++) for(k=0;k<10;k++) for(p=0;p<4;p++){
+        ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!j){
             name.Form("K0Sigmastarpp");
             d2=AliRsnDaughter::kSigmastarp;
             charge2='+';
             cut2=0;
+            ipdg=ipdgNum[p];
         }else if(j==1){
             name.Form("K0Sigmastarma");
             d2=AliRsnDaughter::kSigmastarp;
             charge2='-';
             cut2=1;
+            ipdg=-ipdgNum[p];
         }else if(j==2){
             name.Form("K0Sigmastarmp");
             d2=AliRsnDaughter::kSigmastarm;
             charge2='-';
             cut2=2;
+            ipdg=ipdgNum[p];
         }else{
             name.Form("K0Sigmastarpa");
             d2=AliRsnDaughter::kSigmastarm;
             charge2='+';
             cut2=3;
+            ipdg=-ipdgNum[p];
         }
         
+        if(!isMC && k>=4) continue;
+        if(isMC && k>=4 && Ps){
+            name.Append(Form("_PsMass_%.3f_", mass));
+        }
         xID=imID;
         pairID=1;
         if(!k){
@@ -3458,29 +3501,23 @@ Bool_t Config_k0Sigmastar(
             comp.Form("ROTATE1");
             pairID=0;
         }else if(k==4){
-            if(!isMC) continue;
             name.Append("_gen");
             comp.Form("MOTHER");
         }else if(k==5){
-            if(!isMC) continue;
             name.Append("_rec");
             comp.Form("TRUE");
         }else if(k==6){
-            if(!isMC) continue;
             name.Append("_recMM");
             comp.Form("TRUE");
             xID=mmID;
         }else if(k==7){
-            if(!isMC) continue;
             name.Append("_res");
             comp.Form("TRUE");
             xID=diffID;
         }else if(k==8){
-            if(!isMC) continue;
             name.Append("_genPS");
             comp.Form("MOTHER_IN_ACC");
         }else if(k==9){
-            if(!isMC) continue;
             name.Append("_recPS");
             comp.Form("TRUE");
         }
@@ -3497,7 +3534,7 @@ Bool_t Config_k0Sigmastar(
         
         if(!pairID) out->SetPairCuts(cutsPairSame);
         else out->SetPairCuts(cutsPairMix);
-        out->SetMotherPDG(3124);
+        out->SetMotherPDG(ipdg);
         out->SetMotherMass(mass);
         
         if(k<=7){
@@ -8457,8 +8494,6 @@ Bool_t Config_Kstar0Lambda(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
     
-    Double_t mass= 0.896+1.115683;
-    
     // set cuts for pions and kaons
     Int_t TrackCutsPi=TrackCutsKstar%1000000;//Changed from TrackCutsS?
     if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
@@ -8471,7 +8506,7 @@ Bool_t Config_Kstar0Lambda(
     if(!(TrackCutsKx)) TrackCutsKx+=3020;//default settings
     Float_t nsigmaKTPC=0.1*(TrackCutsKx%100);
     Float_t nsigmaKTOF=0.1*((TrackCutsKx/100)%100);
-    Int_t pairRotate=((TrackCutsK/10000)%10);
+    Int_t pairRotate=((TrackCutsK/100000)%10);
     
     AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -8496,11 +8531,13 @@ Bool_t Config_Kstar0Lambda(
     Int_t iCutPi=task->AddTrackCuts(cutSetPi);
     Int_t iCutK=task->AddTrackCuts(cutSetK);
     
-    
+    Int_t LambdaCuts=((TrackCutsK/1000000)%10);
+
     // selections for V0 daughters
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+    if(LambdaCuts==1)   v0d_dcaxy=0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");  //not sure about this line
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -8522,6 +8559,12 @@ Bool_t Config_Kstar0Lambda(
     Float_t lambda_massTolVeto=0.004;
     Bool_t  lambdaSwitch=kFALSE;
     Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+    
+    if(LambdaCuts==2) lambdaDCA=1.e10;
+    else if(LambdaCuts==3) lambdaDaughDCA=0.5;
+    else if(LambdaCuts==4) lambdaDCA=0.2;
+    else if(LambdaCuts==5) lambdaDaughDCA=0.3;
+    else if(LambdaCuts==6) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     
@@ -8737,15 +8780,23 @@ Bool_t Config_Kstar0Lambda(
     // -- Create all needed outputs -----------------------------------------------------------------
     // use an array for more compact writing, which are different on mixing and charges
     
-    Int_t k,xID,cut1,cut2,pairID,ipdg;
+    Int_t k,p,xID,cut1,cut2,pairID,ipdg;
     TString name,comp;
     AliRsnMiniOutput* out;
+    
+    Double_t mass;
+    Double_t massAll[4]={2.011603, 2.0650, 2.2550, 2.4550}; //masses for K*0 + Lambda and 3 Ps states
+    Int_t ipdgNum[4]={9322131,9322311,9323211,9332211};  //pdgs Ps states
+    Int_t Ps = ((TrackCutsK%100000)/10000); //TrackCutsK = 10000 to turn on Ps MC
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(i=0;i<6;i++) for(j=0;j<2;j++) for(k=0;k<9;k++){
+    for(i=0;i<6;i++) for(j=0;j<2;j++) for(k=0;k<9;k++) for(p=0;p<4;p++){
+        ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!i){
             name.Form("Kstar0p");
             cut2=0;
@@ -8769,15 +8820,18 @@ Bool_t Config_Kstar0Lambda(
         if(!j){
             name.Append("Lambdap");
             cut1=iCutLambda;
-            ipdg=3124;
+            ipdg=ipdgNum[p];
         }else if(j==1){
             name.Append("Lambdaa");
             cut1=iCutAntiLambda;
-            ipdg=-3124;
+            ipdg=-ipdgNum[p];
         }
         
         if(!isMC && k>2) continue;
         if(i>1 && k) continue;
+        if(isMC && Ps && k>=3){
+            name.Append(Form("_PsMass_%.3f", mass));
+        }
         
         xID=imID;
         pairID=1;
@@ -8945,8 +8999,6 @@ Bool_t Config_KstarxLambda(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
     
-    Double_t mass=0.892+1.115683;
-    
     // set cuts for pions
     Int_t TrackCutsPi=TrackCutsK%1000000;
     if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
@@ -8976,11 +9028,13 @@ Bool_t Config_KstarxLambda(
     Int_t SidebandKstar=(TrackCutsK/1000000)%10;
     Int_t K0sCuts=(TrackCutsK/10000000)%10;
     Int_t pairRotate=(TrackCutsLambda%10);
+    Int_t LambdaCuts=((TrackCutsLambda/10)%10);
     
     // selections for V0 daughters
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
+    if(K0sCuts==1)  v0d_dcaxy = 0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -9004,7 +9058,10 @@ Bool_t Config_KstarxLambda(
     Bool_t  k0sSwitch=kFALSE;
     Float_t k0sCosPoinAn=0.97;
     
-    if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if(K0sCuts==2) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    else if(K0sCuts==3)    k0sDCA = 0.15;
+    else if(K0sCuts==4)    k0sDaughDCA = 0.3;
+    else if(K0sCuts==5)    k0sCosPoinAn = 0.995;
     
     AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
     cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
@@ -9040,6 +9097,12 @@ Bool_t Config_KstarxLambda(
     Float_t lambda_massTolVeto=0.004;
     Bool_t  lambdaSwitch=kFALSE;
     Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
+    
+    if(LambdaCuts==1) lambdaDCA=1.e10;
+    else if(LambdaCuts==2) lambdaDaughDCA=0.5;
+    else if(LambdaCuts==3) lambdaDCA=0.2;
+    else if(LambdaCuts==4) lambdaDaughDCA=0.3;
+    else if(LambdaCuts==5) lambdaCosPoinAn=0.995;
     
     // selections for the proton and pion daugthers of Lambda
     
@@ -9230,17 +9293,24 @@ Bool_t Config_KstarxLambda(
     // -- Create all needed outputs -----------------------------------------------------------------
     // use an array for more compact writing, which are different on mixing and charges
     
-    Int_t k,xID,cut1,cut2,pairID,ipdg;
+    Int_t k,p,xID,cut1,cut2,pairID,ipdg;
     AliRsnDaughter::ESpecies d2=AliRsnDaughter::kUnknown;
     TString name,comp;
     Char_t charge1;
     AliRsnMiniOutput* out;
+    Double_t mass;
+    Double_t massAll[4]={2.007683, 2.0650, 2.2550, 2.4550}; //masses K*0 + Lambda and 3 Ps states
+    Int_t ipdgNum[4]={9322132,9322312,9323212,9332212};  //pdgs Ps states
+    Int_t Ps = ((TrackCutsLambda%100000)/10000); //TrackCutsLambda = 10000 to turn on Ps MC
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(i=0;i<4;i++) for(j=0;j<2;j++) for(k=0;k<9;k++){
+    for(i=0;i<4;i++) for(j=0;j<2;j++) for(k=0;k<9;k++) for(p=0;p<4;p++){
+        ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!i){
             name.Form("Kstarp");
             cut1=0;
@@ -9263,10 +9333,17 @@ Bool_t Config_KstarxLambda(
             name.Append("Lambdap");
             d2=AliRsnDaughter::kLambda;
             cut2=iCutLambda;
+            ipdg=ipdgNum[p];
         }else if(j==1){
             name.Append("Lambdaa");
             d2=AliRsnDaughter::kLambda;
             cut2=iCutAntiLambda;
+            ipdg=-ipdgNum[p];
+        }
+        
+        if(!isMC && k>=3) continue;
+        if(isMC && k>=3 && Ps){
+            name.Append(Form("_PsMass_%.3f_", mass));
         }
         
         xID=imID;
@@ -9283,29 +9360,23 @@ Bool_t Config_KstarxLambda(
             else {comp.Form("ROTATE2");}
             pairID=0;
         }else if(k==3){
-            if(!isMC) continue;
             name.Append("_gen");
             comp.Form("MOTHER");
         }else if(k==4){
-            if(!isMC) continue;
             name.Append("_rec");
             comp.Form("TRUE");
         }else if(k==5){
-            if(!isMC) continue;
             name.Append("_recMM");
             comp.Form("TRUE");
             xID=mmID;
         }else if(k==6){
-            if(!isMC) continue;
             name.Append("_res");
             comp.Form("TRUE");
             xID=diffID;
         }else if(k==7){
-            if(!isMC) continue;
             name.Append("_genPS");
             comp.Form("MOTHER_IN_ACC");
         }else if(k==8){
-            if(!isMC) continue;
             name.Append("_recPS");
             comp.Form("TRUE");
         }
@@ -9324,7 +9395,7 @@ Bool_t Config_KstarxLambda(
         
         if(k!=1) out->SetPairCuts(cutsPairSame);
         else out->SetPairCuts(cutsPairMix);
-        out->SetMotherPDG(3124);
+        out->SetMotherPDG(ipdg);
         out->SetMotherMass(mass);
         
         if(k<=6){
@@ -9841,7 +9912,7 @@ Bool_t Config_KxLambdastar(
     cutsL->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassL->GetName(),cutYL->GetName()).Data());
     
     i=0; // Lambda(1520)
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_LambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_LambdaStarp",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'+');
@@ -9854,7 +9925,7 @@ Bool_t Config_KxLambdastar(
     iCutLambdaStar[i]=task->AddResonanceFinder(finder[i]);
     
     i=1; // anti-Lambda1520
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_LambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_LambdaStara",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'+');
@@ -9897,11 +9968,11 @@ Bool_t Config_KxLambdastar(
     cutMassSB->SetRangeD(1.480,1.496);
     AliRsnCutSet* cutsSB=new AliRsnCutSet("pairCutsSB",AliRsnTarget::kMother);
     cutsSB->AddCut(cutMassSB);
-    cutsSB->AddCut(cutYS);
-    cutsSB->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassSB->GetName(),cutYS->GetName()).Data());
+    cutsSB->AddCut(cutYL);
+    cutsSB->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassSB->GetName(),cutYL->GetName()).Data());
     
     i=4; // Lambda(1520) sideband
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStarp",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'+');
@@ -9914,7 +9985,7 @@ Bool_t Config_KxLambdastar(
     iCutLambdaStar[i]=task->AddResonanceFinder(finder[i]);
     
     i=5; // anti-Lambda(1520) sideband
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBAntiLambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStara",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'+');
@@ -10224,19 +10295,8 @@ Bool_t Config_K0Lambdastar(
         AddMonitorOutput(isMC,cutSetP->GetMonitorOutput());
         
         
-        AddMonitorOutput_P(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_Pt(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0NPt(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0PPt(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0Mass(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0DCA(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0Radius(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0Lifetime(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0DaughterDCA(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0CPA(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0DCA2TPV(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0TPCpim(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0TPCpip(pname,cutSetK0s->GetMonitorOutput());
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/qa/AddMonitorOutputV0.C");
+        AddMonitorOutputV0(isMC,cutSetK0s->GetMonitorOutput(), "K0S");
     }
     
     // AliRsnMiniResonanceFinder
@@ -10327,7 +10387,7 @@ Bool_t Config_K0Lambdastar(
     iCutLambdaStar[i]=task->AddResonanceFinder(finder[i]);
     
     i=5; // anti-Lambda(1520) sideband
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBAntiLambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStara",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'-');

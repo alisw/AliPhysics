@@ -151,8 +151,8 @@ Double_t AliGenEMCocktailV2::GetYWeight(Int_t np, TParticle* part) {
 
   Double_t weight = 0.;
   if (fPtYDistribution[np]) {
-    if (part->Pt() > fPtYDistribution[np]->GetXaxis()->GetXmin() && part->Pt() < fPtYDistribution[np]->GetXaxis()->GetXmin()) {
-      if (part->Y() > fPtYDistribution[np]->GetYaxis()->GetXmin() && part->Y() < fPtYDistribution[np]->GetYaxis()->GetXmin()) {
+    if (part->Pt() > fPtYDistribution[np]->GetXaxis()->GetXmin() && part->Pt() < fPtYDistribution[np]->GetXaxis()->GetXmax()) {
+      if (part->Y() > fPtYDistribution[np]->GetYaxis()->GetXmin() && part->Y() < fPtYDistribution[np]->GetYaxis()->GetXmax()) {
         weight = fPtYDistribution[np]->GetBinContent(fPtYDistribution[np]->GetXaxis()->FindBin(part->Pt()), fPtYDistribution[np]->GetYaxis()->FindBin(part->Y()));
         if (weight)
           return weight;

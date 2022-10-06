@@ -1,6 +1,9 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572 by A. Bilandzic et al.)
+A part of <AliGFW.cxx/h>
+A container to store Q vectors for one subevent with an extra layer to recursively calculate particle correlations.
+If used, modified, or distributed, please aknowledge the author of this code.
 */
 #include "AliGFWCumulant.h"
 
@@ -103,3 +106,11 @@ TComplex AliGFWCumulant::Vec(Int_t n, Int_t p, Int_t ptbin) {
   if(n>=0) return fQvector[ptbin][n][p];
   return TComplex::Conjugate(fQvector[ptbin][-n][p]);
 };
+Bool_t AliGFWCumulant::IsPtBinFilled(Int_t ptb) {
+   if(!fFilledPts) return kFALSE;
+   if(ptb>0) {
+     if(fPt==1) ptb=0;
+     else if(ptb>=fPt) return kFALSE; //This is in case we are differential and going out of range for whatever reason.
+   };
+   return fFilledPts[ptb];
+}

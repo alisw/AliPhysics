@@ -18,6 +18,8 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
                                         Int_t NTPCCrossRows = 100.,
                                         Int_t TPCNclus =80.,
                                         Int_t ITSNclus =3.,
+                                        Double_t DeltaEta =0.01,
+                                        Double_t DeltaPhi =0.01,
                                         Double_t DCAxyCut =2.4,
                                         Double_t DCAzCut =3.2,
                                         Double_t Etarange = 0.6,
@@ -75,6 +77,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
         HFEtaskINT7->SetNTPCCluster(TPCNclus);
         HFEtaskINT7->SetNITSCluster(ITSNclus);
         HFEtaskINT7->SetTrackpTMin(TrackPtMin);
+        HFEtaskINT7->SetEMCalMatching(DeltaEta, DeltaPhi);
         HFEtaskINT7->SetDCACut(DCAxyCut,DCAzCut);
         HFEtaskINT7->SetTPCnsigma(TPCNSigMin,TPCNSigMax);
         HFEtaskINT7->SetEopE(EopEMin,EopEMax);
@@ -154,6 +157,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
         HFEtaskGA->SetNTPCCluster(TPCNclus);
         HFEtaskGA->SetNITSCluster(ITSNclus);
         HFEtaskGA->SetTrackpTMin(TrackPtMin);
+        HFEtaskGA->SetEMCalMatching(DeltaEta, DeltaPhi);
         HFEtaskGA->SetDCACut(DCAxyCut,DCAzCut);
         HFEtaskGA->SetTPCnsigma(TPCNSigMin,TPCNSigMax);
         HFEtaskGA->SetEopE(EopEMin,EopEMax);

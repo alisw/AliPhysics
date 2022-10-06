@@ -1,4 +1,3 @@
-//--- Task for investigation of the DoubleHyperHydrogen4 ---
 //---     Author: Janik Ditzel; janik.ditzel@cern.ch     ---
 
 #ifndef ALIANALYSISTASKS3PARTICLEYIELDS_H
@@ -6,6 +5,9 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliTRDonlineTrackMatching.h"
+#include "AliCDBManager.h"
+#include "AliGeomManager.h"
 
 class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
  public:
@@ -87,7 +89,8 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   AliEventCuts          fEventCuts; 	   
   Double_t              fBetheParamsHe[6];   
   Double_t              fBetheParamsT[6]; 
-  Int_t                MB, HMV0, HMSPD, HNU, HQU;
+  Int_t                 MB, HMV0, HMSPD, HNU, HQU;
+  Int_t                 fYear;  // Jahr für  OCDB
   //saved in Tree
   Int_t                 fNumberV0s; 
   Int_t                 fNTracks; 
@@ -97,11 +100,28 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   Int_t			fTrigMB, fTrigHMV0, fTrigHMSPD, fTrigHNU, fTrigHQU;
   Int_t                 fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, fSPDCluster, fSPDTracklets, fSPDFiredChips0, fSPDFiredChips1, fV0Multiplicity;
   Int_t                 fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL, fisWeakL, fisMaterialL, fisPrimaryL;
-  Int_t                 fKinkP, fTPCrefitP, fKinkPi, fTPCrefitPi, fpiNcls, fpiNclsITS, fpNcls, fpNclsITS;
+  Int_t                 fKinkP, fTPCrefitP, fITSrefitP, fKinkPi, fTPCrefitPi, fITSrefitPi, fpiNcls, fpiNclsITS, fpNcls, fpNclsITS;
+  Float_t               fITSchi2P, fITSchi2Pi;
   Float_t               fLambdaM, fLambdaE, fLambdaP, fLambdaPx, fLambdaPy, fLambdaPz, fLambdaPt, fLambdaCt, fLambdaDca, fLambdaCos, fLambdaY;
-  Float_t               fpiP, fpiPt, fpiPx, fpiPy, fpiPz, fpiE, fpiy, fpichi2, fpiDcaSec, fpiDca, fpiDcaz, fpiDedxSigma, fpiDedx, fEtaPi, fPhiPi, fGeoLengthPi, fTOFSignalPi, fpiSigmaYX, fpiSigmaXYZ, fpiSigmaZ;
-  Float_t               fpy, fpP, fpPx, fpPy, fpPz, fpPt, fpE, fpDcaSec, fpDca, fpDcaz, fpchi2, fpDedxSigma, fpDedx, fEtaP, fGeoLengthP, fPhiP, fTOFSignalP, fpSigmaYX, fpSigmaXYZ, fpSigmaZ;
+  Float_t               fpiP, fpiPt, fpiPx, fpiPy, fpiPz, fpiE, fpiy, fpichi2, fpiDcaSec, fpiDca, fpiDcaz, fpiDedxSigma, fpiDedx, fEtaPi, fPhiPi, fGeoLengthPi, fTOFSignalPi, fTOFnSigmaPi, fpiSigmaYX, fpiSigmaXYZ, fpiSigmaZ;
+  Float_t               fpy, fpP, fpPx, fpPy, fpPz, fpPt, fpE, fpDcaSec, fpDca, fpDcaz, fpchi2, fpDedxSigma, fpDedx, fEtaP, fGeoLengthP, fPhiP, fTOFSignalP, fTOFnSigmaP, fpSigmaYX, fpSigmaXYZ, fpSigmaZ;
   Float_t               farmalpha, farmpt, fthetaP, fthetaN; 
+  Int_t                 fTRDvalidP; // has valid TRD track
+  Int_t                 fTRDtrigHNUP; // HNU fired by track
+  Int_t                 fTRDtrigHQUP; // HQU fired by track
+  Int_t                 fTRDPidP;
+  Int_t                 fTRDnTrackletsP;
+  Int_t                 fTRDPtP;
+  Int_t                 fTRDLayerMaskP;
+  Float_t               fTRDSagittaP;
+  Int_t                 fTRDvalidPi; // has valid TRD track
+  Int_t                 fTRDtrigHNUPi; // HNU fired by track
+  Int_t                 fTRDtrigHQUPi; // HQU fired by track
+  Int_t                 fTRDPidPi;
+  Int_t                 fTRDnTrackletsPi;
+  Int_t                 fTRDPtPi;
+  Int_t                 fTRDLayerMaskPi;
+  Float_t               fTRDSagittaPi;
   //Functions
   Bool_t TriggerSelection();
   Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
@@ -116,6 +136,7 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   void ResetVals(TString mode);
   Int_t GetLabel(Int_t labelFirstMother, Int_t particlePdgCode);
   Float_t GetInvPtDevFromBC(Int_t b, Int_t c);
+  Double_t TRDtrack(AliESDtrack* esdTrack, Int_t particleID);
   //
   AliAnalysisTaskS3ParticleYields(const AliAnalysisTaskS3ParticleYields&);
   AliAnalysisTaskS3ParticleYields &operator=(const AliAnalysisTaskS3ParticleYields&);

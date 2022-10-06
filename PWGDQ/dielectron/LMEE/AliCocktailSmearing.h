@@ -21,6 +21,9 @@
 class TObjArray;
 class TLorentzVector;
 class TVector3;
+class TH1F;
+class TH2F;
+class TH3F;
 
 class AliVParticle;
 
@@ -32,7 +35,9 @@ public:
   
   void      	Print();
   void        ReadResoFile(TFile *fRes);
+  void        ReadEffFile(TFile *fEff);
   void        SetSeed(UInt_t rndmseed);
+  void        SetEffType(Int_t typeeff)                               { fUseEffType = typeeff; }
   
   // setters
   void        SetResolutionP(TObjArray *resArr, Bool_t b=kFALSE)      { fPResArr=resArr; fUseRelPResolution=b; }
@@ -40,6 +45,9 @@ public:
   //void      SetArrayCopy(TObjArray *array);
   
   // getters
+  Bool_t      GetTypeEfficiency()     { return fUseEffType; }
+  Double_t    GetEfficiency(const TLorentzVector& vec);
+  
   Bool_t      GetIsRelPResolution()   { return fUseRelPResolution; }
   TObjArray*  GetArrayP()             { return fPResArr; }
   TObjArray*  GetArrayOpeningAngle()  { return fOpeningAngleResArr; }
@@ -54,6 +62,10 @@ protected:
   TLorentzVector  ApplySmearingOton(const TLorentzVector& vec, short ch);
   
   // variables
+  Int_t      fUseEffType;                                // Use to get the type of efficiency (1D, 2D, 3D)
+  TH1F       *fheffPt;                                    // histogram eff as a function of pt
+  TH2F       *fheffPtEta;                                 // histogram eff as a function of pt,eta
+  TH3F       *fheffPtEtaPhi;                              // histogram eff as a function of pt,eta,phi
   Bool_t      fUseRelPResolution;                         // Use to get the type of resolution
   TObjArray  *fPResArr;                                   // Array of resolution histos  old Run 1
   TObjArray  *fOpeningAngleResArr;                        // Array of resolution histos  old Run 1
@@ -67,7 +79,7 @@ protected:
   AliCocktailSmearing(const AliCocktailSmearing &c); // not implemented
   AliCocktailSmearing& operator= (const AliCocktailSmearing &c); // not implemented
   
-  ClassDef(AliCocktailSmearing,1)
+  ClassDef(AliCocktailSmearing,2)
 };
 
 #endif

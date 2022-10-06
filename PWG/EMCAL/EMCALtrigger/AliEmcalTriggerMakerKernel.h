@@ -36,6 +36,7 @@
 //#include <AliEMCALTriggerPatchInfoV1.h>
 
 class TF1;
+class TRandom;
 class TObjArray;
 class AliEMCALTriggerPatchInfo;
 class AliEMCALTriggerRawPatch;
@@ -259,7 +260,7 @@ public:
    * @brief Add a FastOR bad channel to the list
    * @param[in] absId Absolute ID of the bad channel
    */
-  void AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
+  void AddFastORBadChannel(Short_t absId) { if(fBadChannels.find(absId) == fBadChannels.end()) fBadChannels.insert(absId); }
 
   /**
    * @brief Read the FastOR bad channel map from a standard stream
@@ -282,7 +283,7 @@ public:
    * @brief Add an offline bad channel to the set
    * @param[in] absId Absolute ID of the bad channel
    */
-  void AddOfflineBadChannel(Short_t absId) { fOfflineBadChannels.insert(absId); }
+  void AddOfflineBadChannel(Short_t absId) { if(fOfflineBadChannels.find(absId) == fOfflineBadChannels.end()) fOfflineBadChannels.insert(absId); }
 
   /**
    * @brief Read the offline bad channel map from a standard stream
@@ -579,6 +580,7 @@ protected:
 
   AliEMCALTriggerPatchFinder<double>       *fPatchFinder;                 ///< The actual patch finder
   AliEMCALTriggerAlgorithm<double>         *fLevel0PatchFinder;           ///< Patch finder for Level0 patches
+  TRandom                                  *fSmearEngine;                 ///< Random engine for energy smearing
   Int_t                                     fL0MinTime;                   ///< Minimum L0 time
   Int_t                                     fL0MaxTime;                   ///< Maximum L0 time
   Bool_t                                    fApplyL0TimeCut;              ///< Apply time cut (L0 time between fL0MinTime and fL0MaxTime) for L0 patch selection
@@ -610,7 +612,7 @@ protected:
   Bool_t                                    fDoBackgroundSubtraction;     ///< Swtich for background subtraction (only online ADC)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
-  AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
+  AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes - pure monitoring information
   AliEMCALTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
   AliEMCALTriggerDataGrid<double>           *fPatchADC;                   //!<! ADC values map
   AliEMCALTriggerDataGrid<double>           *fPatchEnergySimpleSmeared;   //!<! Data grid for smeared energy values from cell energies

@@ -123,6 +123,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fFillK0s(kTRUE),
   fFillLambda(kTRUE),
   fFillALambda(kTRUE),
+  fWriteEventsWithOnlyV0s(kFALSE),
   fFillCaloClusterInfo(kTRUE),
   fFillFMDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
@@ -200,6 +201,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fFillK0s(kTRUE),
   fFillLambda(kTRUE),
   fFillALambda(kTRUE),
+  fWriteEventsWithOnlyV0s(kFALSE),
   fFillCaloClusterInfo(kTRUE),
   fFillFMDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
@@ -374,40 +376,46 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   fEventsList->SetOwner();
 
   // event statistics histogram
-  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 13, -0.5,12.5,34,-2.5,31.5);
-  const Char_t* offlineTriggerNames[34] = {"Total", "No Phys Sel", "MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
+  const Int_t kNEventSelectionNames = 14;
+  const Int_t kNOfflineTriggerAliases = 34;
+  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", kNEventSelectionNames, -0.5, -0.5+kNEventSelectionNames,
+                                                                     kNOfflineTriggerAliases,-2.5, -2.5+ kNOfflineTriggerAliases);
+  const Char_t* offlineTriggerNames[kNOfflineTriggerAliases] = {"Total", "No Phys Sel", "MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
      "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
      "MUS7/MuonSingleLowPt7", "PHI1", "PHI7/PHI8/PHOSPb", "EMCEJE", "EMCEGA", "Central/HighMultV0", "SemiCentral", "DG/DG5", "ZED", 
      "SPI7/SPI", "INT8", "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8", "MuonUnlikeLowPt8", "MuonUnlikeLowPt0/INT6", "UserDefined", 
      "TRD", "MuonCalo/CaloOnly", "FastOnly", "N/A"
   };  
-  const Char_t* selectionNames[13] = {"All events", 
+  const Char_t* selectionNames[kNEventSelectionNames] = {"All events", 
      "TR and Physics Selection events (PS)", "Rejected due to PS",
      "PS and Trigger Selected (TS)", "Rejected due to TS",
      "TS and Pileup Checked (PC)", "Rejected due to PC",
      "PC and Event cuts Checked (EC)", "Rejected due to EC",
      "EC and Time Range accepted events (TR)", "Rejected due to TR",
-     "Written ev. (track filters passed)", "Written ev. (unbiased)"};
-  for(Int_t i=1;i<=34;++i)
+     "Written ev. (track filters passed)", "Written ev. (unbiased)", "Written ev. (has V0s)"};
+  for(Int_t i=1;i<=kNOfflineTriggerAliases;++i)
      fEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
-  for(Int_t i=1;i<=13;++i)
+  for(Int_t i=1;i<=kNEventSelectionNames;++i)
      fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   fEventsList->Add(fEventsHistogram);
 
   // TRD event statistics histogram
-  const Char_t* offlineTRDTriggerNames[7] = {"Total", "No Phys Sel", "HQU | HSE", "HQU", "HSE", "Nuclei", "Jet"};
-  fTRDEventsHistogram = new TH2I("TRDEventStatistics", "TRD Event statistics", 13, -0.5,12.5,12,-2.5,9.5);
-  for(Int_t i=1;i<=7;++i)  fTRDEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTRDTriggerNames[i-1]);
-  for(Int_t i=1;i<=13;++i) fTRDEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+  const Int_t kNOfflineTRDtrigNames = 7;
+  const Char_t* offlineTRDTriggerNames[kNOfflineTRDtrigNames] = {"Total", "No Phys Sel", "HQU | HSE", "HQU", "HSE", "Nuclei", "Jet"};
+  fTRDEventsHistogram = new TH2I("TRDEventStatistics", "TRD Event statistics", kNEventSelectionNames, -0.5,-0.5+kNEventSelectionNames, kNOfflineTRDtrigNames,-2.5,-2.5+kNOfflineTRDtrigNames);
+  for(Int_t i=1;i<=kNOfflineTRDtrigNames;++i)  fTRDEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTRDTriggerNames[i-1]);
+  for(Int_t i=1;i<=kNEventSelectionNames;++i) fTRDEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
 	fEventsList->Add(fTRDEventsHistogram);
 
   // EMCal event statistics histogram
-  const Char_t* offlineEMCalTriggerNames[22] = {"Total", "No Phys Sel", 
+  const Int_t kNOfflineEMCALtrigNames = 22;
+  const Char_t* offlineEMCalTriggerNames[kNOfflineEMCALtrigNames] = {"Total", "No Phys Sel", 
     "EMC7 | DMC7", "EMC7", "DMC7", "EMC1 | DMC1", "EMC1", "DMC1", "EMCEGA", "EG1 | DG1", "EG2 | DG2", "EG1", 
     "EG2", "DG1", "DG2", "EMCEJE", "EJ1 | DJ1", "EJ2 | DJ2", "EJ1", "EJ2", "DJ1", "DJ2"};
-  fEMCalEventsHistogram = new TH2I("EMCalEventStatistics", "EMCal Event statistics", 13,-0.5,12.5, 22,-2.5,19.5);
-  for(Int_t i=1;i<=22;++i) fEMCalEventsHistogram->GetYaxis()->SetBinLabel(i, offlineEMCalTriggerNames[i-1]);
-  for(Int_t i=1;i<=13;++i) fEMCalEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+  fEMCalEventsHistogram = new TH2I("EMCalEventStatistics", "EMCal Event statistics", kNEventSelectionNames,-0.5,-0.5+kNEventSelectionNames, 
+                                   kNOfflineEMCALtrigNames,-2.5, -2.5+kNOfflineEMCALtrigNames);
+  for(Int_t i=1;i<=kNOfflineEMCALtrigNames;++i) fEMCalEventsHistogram->GetYaxis()->SetBinLabel(i, offlineEMCalTriggerNames[i-1]);
+  for(Int_t i=1;i<=kNEventSelectionNames;++i) fEMCalEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   fEventsList->Add(fEMCalEventsHistogram);
 
   // Event Centrality statistics list of histograms (for the provided trigger mask)
@@ -418,8 +426,8 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   const Char_t* estimatorNames[nCentEstimators] = {"V0M", "ZNA", "CL1"};
   TH2I *centEventsHistogram[nCentEstimators];
   for(Int_t i=0; i<nCentEstimators; ++i) {
-    centEventsHistogram[i] = new TH2I(estimatorNames[i], Form("%s estimator",estimatorNames[i]), 13, -0.5,12.5,120,-5.,115.);
-    for(Int_t xi=1;xi<=13;++xi) 
+    centEventsHistogram[i] = new TH2I(estimatorNames[i], Form("%s estimator",estimatorNames[i]), kNEventSelectionNames, -0.5,-0.5+kNEventSelectionNames,120,-5.,115.);
+    for(Int_t xi=1;xi<=kNEventSelectionNames;++xi) 
       centEventsHistogram[i]->GetXaxis()->SetBinLabel(xi, selectionNames[xi-1]);
     fCentEventsList->Add(centEventsHistogram[i]);
   }
@@ -488,6 +496,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   //
   // Main loop. Called for every event
   //
+  //cout << "***************************** AliAnalysisTaskReducedTreeMaker::UserExec()  IN" << endl;  
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
@@ -501,6 +510,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     AliDielectronVarManager::SetPIDResponse(inputHandler->GetPIDResponse());
   else
     AliFatal("This task needs the PID response attached to the input event handler!");
+  
+ // cout << "***************************** AliAnalysisTaskReducedTreeMaker::UserExec()  1" << endl;  
   
   // Was event selected ?
   UInt_t isPhysSel = AliVEvent::kAny;
@@ -644,7 +655,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   AliKFParticle::SetField(bz);
   
   //Fill event wise information
-  fReducedEvent->ClearEvent();  
+  fReducedEvent->ClearEvent();
   FillEventInfo();
   if(fFillCaloClusterInfo) FillCaloClusters();
   if(fFillFMDInfo) FillFMDInfo(isAOD);
@@ -662,7 +673,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   fNSelectedBaseTracks[fTrackFilter.GetEntries()+4] = 0;
   
   // NOTE: It is important that FillV0PairInfo() is called before FillTrackInfo()
-  if(fFillMCInfo) FillMCTruthInfo();
+  if(fFillMCInfo) FillMCTruthInfo(isAOD);
   if(fFillV0Info && isESD) FillV0PairInfo();
   if(fFillV0Info && isAOD) FillV0PairInfoAOD();
   if(fFillTrackInfo) FillTrackInfo();
@@ -676,7 +687,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
       FillStatisticsHistograms(Bool_t(isPhysSel), isPhysSel, trdtrgtype, emcaltrgtype, 12.0, percentileEstimators, nCentEstimators);
     }
     
-    // if the event was not already selected to be written, check that it fullfills the conditions
+    // check that the event fulfills the event criteria based on track filters
     Bool_t trackFilterAccepted = kTRUE;
     for(Int_t i=0; i<fTrackFilter.GetEntries(); ++i) {
       if(fMinSelectedTracks[i]>=0 && (fNSelectedFullTracks[i]+fNSelectedBaseTracks[i])<fMinSelectedTracks[i]) {
@@ -689,7 +700,20 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     if(trackFilterAccepted) 
       FillStatisticsHistograms(Bool_t(isPhysSel), isPhysSel, trdtrgtype, emcaltrgtype, 11., percentileEstimators, nCentEstimators);
     
-    if(trackFilterAccepted || unbiasedEvent) {
+    // check whether the event has to be written because it contains V0s
+    Bool_t hasV0s = kFALSE;
+    if(fWriteEventsWithOnlyV0s) {
+      for(Int_t itype=0;itype<4;++itype) {
+        if(fNSelectedFullTracks[fTrackFilter.GetEntries()+itype]>0) {
+          hasV0s = kTRUE;
+          break;
+        }
+      }
+    }
+    if(fWriteEventsWithOnlyV0s && hasV0s)
+      FillStatisticsHistograms(Bool_t(isPhysSel), isPhysSel, trdtrgtype, emcaltrgtype, 13., percentileEstimators, nCentEstimators);
+    
+    if(trackFilterAccepted || unbiasedEvent || (fWriteEventsWithOnlyV0s && hasV0s)) {
       fTree->Fill();
       FillTrackStatisticsHistogram();
     }
@@ -952,6 +976,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   else {
      multSelection = (AliMultSelection*)event->FindListObject("MultSelection");
      if(multSelection) {
+        Bool_t is2015PbPb = (event->GetRunNumber() <= 246994 && event->GetRunNumber() >= 244917);
         fReducedEvent->fCentrality[0] = multSelection->GetMultiplicityPercentile("V0M");
         fReducedEvent->fCentrality[1] = multSelection->GetMultiplicityPercentile("CL1");
         fReducedEvent->fCentrality[2] = multSelection->GetMultiplicityPercentile("TRK");
@@ -959,6 +984,22 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
         fReducedEvent->fCentrality[4] = multSelection->GetMultiplicityPercentile("V0A");
         fReducedEvent->fCentrality[5] = multSelection->GetMultiplicityPercentile("V0C");
         fReducedEvent->fCentrality[6] = multSelection->GetMultiplicityPercentile("ZNA");
+        fReducedEvent->fCentrality[7] = multSelection->GetMultiplicityPercentile("V0MNew");
+        if(!is2015PbPb) {
+          fReducedEvent->fCentrality[8] = multSelection->GetMultiplicityPercentile("V0MNewplus05");
+          fReducedEvent->fCentrality[9] = multSelection->GetMultiplicityPercentile("V0MNewminus05");
+        }
+        if (is2015PbPb) {
+          fReducedEvent->fCentrality[10] = multSelection->GetMultiplicityPercentile("V0MNewPlus1");
+          fReducedEvent->fCentrality[11] = multSelection->GetMultiplicityPercentile("V0MNewMinus1");
+        } else {
+          fReducedEvent->fCentrality[10] = multSelection->GetMultiplicityPercentile("V0MNewplus10");
+          fReducedEvent->fCentrality[11] = multSelection->GetMultiplicityPercentile("V0MNewminus10");       
+        }
+        fReducedEvent->fCentrality[12] = multSelection->GetMultiplicityPercentile("V0Mplus05");
+        fReducedEvent->fCentrality[13] = multSelection->GetMultiplicityPercentile("V0Mminus05");
+        fReducedEvent->fCentrality[14] = multSelection->GetMultiplicityPercentile("V0Mplus10");
+        fReducedEvent->fCentrality[15] = multSelection->GetMultiplicityPercentile("V0Mminus10");
         fReducedEvent->fCentQuality   = multSelection->GetEvSelCode();
     }
   }
@@ -1429,7 +1470,76 @@ Bool_t AliAnalysisTaskReducedTreeMaker::CheckParticleSource(AliMCEvent* event, I
 }
 
 //_________________________________________________________________________________
-UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle) {
+Bool_t AliAnalysisTaskReducedTreeMaker::CheckParticleSourceAOD(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal) {
+   //
+   // Check that the particle satisfies the source criteria specified in the mcSignal
+   // Work on just 1 pronged MC signals here
+   // Method: All of the defined generations of the prong must fulfill the defined source bit map
+   //               For a given generation, all the sources for which corresponding bits are enabled, must be fulfilled
+   //
+   if(mcSignal->GetNProngs()>1) return kFALSE;
+   
+
+   // loop over all generations
+   AliVParticle* currentGenerationParticle = event->GetTrack(ipart);
+   Int_t currentGenerationLabel = ipart;
+   for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {
+      if(!mcSignal->GetSources(0,ig)) continue;       // no sources requested
+      if(!currentGenerationParticle) return kFALSE;   // if there are sources requested, but MC history finished, evaluate to FALSE
+      
+      // check all implemented sources
+      UInt_t decision = 0;
+      // use logical XOR between the presence of a given source and the exclude flag
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kPhysicalPrimary) != currentGenerationParticle->IsPhysicalPrimary())
+            decision |= (UInt_t(1) << AliSignalMC::kPhysicalPrimary);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFromBGEvent) != event->IsFromBGEvent(currentGenerationLabel))
+            decision |= (UInt_t(1) << AliSignalMC::kFromBGEvent);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondaryFromWeakDecay) != currentGenerationParticle->IsSecondaryFromWeakDecay())
+            decision |= (UInt_t(1) << AliSignalMC::kSecondaryFromWeakDecay);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondaryFromMaterial) != currentGenerationParticle->IsSecondaryFromMaterial())
+            decision |= (UInt_t(1) << AliSignalMC::kSecondaryFromMaterial);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFromSubsidiaryEvent) != event->IsFromSubsidiaryEvent(currentGenerationLabel))
+            decision |= (UInt_t(1) << AliSignalMC::kFromSubsidiaryEvent);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kRadiativeDecay) != (currentGenerationParticle->GetNDaughters()>2))
+            decision |= (UInt_t(1) << AliSignalMC::kRadiativeDecay);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFirstInStack)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFirstInStack) != (ipart==0))
+            decision |= (UInt_t(1) << AliSignalMC::kFirstInStack);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondInStack)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kSecondInStack) != (ipart==1))
+            decision |= (UInt_t(1) << AliSignalMC::kSecondInStack);
+      }
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFirstTenInStack)) {
+         if(mcSignal->GetSourceExclude(0,ig,AliSignalMC::kFirstTenInStack) != (ipart<10))
+            decision |= (UInt_t(1) << AliSignalMC::kFirstTenInStack);
+      }
+      
+      if(!decision) return kFALSE;
+      decision &= mcSignal->GetSources(0,ig);
+      if(mcSignal->GetUseANDonSourceBits(0,ig) && (decision != mcSignal->GetSources(0,ig))) return kFALSE;  // not all req sources are fullfilled
+      
+      // get the next generation
+      currentGenerationLabel = (currentGenerationParticle ? currentGenerationParticle->GetMother() : 0);
+      currentGenerationParticle = (currentGenerationParticle ? event->GetTrack(currentGenerationLabel) : 0x0);
+   }
+   return kTRUE;
+}
+
+//_________________________________________________________________________________
+UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle, Bool_t isAOD) {
    //
    // check whether the defined MC signals match this particle
    //
@@ -1442,7 +1552,13 @@ UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle) {
    
    UInt_t mcSignalsMap = 0;
    for(Int_t isig=0; isig<nMCsignals; ++isig) {
-      Bool_t mcMatch = CheckPDGcode(event, iparticle, (AliSignalMC*)fMCsignals.At(isig)) && 
+       Bool_t mcMatch = kFALSE;
+       
+       if (isAOD)
+           mcMatch = CheckPDGcode(event, iparticle, (AliSignalMC*)fMCsignals.At(isig)) &&
+                                    CheckParticleSourceAOD(event, iparticle, (AliSignalMC*)fMCsignals.At(isig));
+       else
+           mcMatch = CheckPDGcode(event, iparticle, (AliSignalMC*)fMCsignals.At(isig)) &&
                                     CheckParticleSource(event, iparticle, (AliSignalMC*)fMCsignals.At(isig));
       
       if(mcMatch)
@@ -1467,7 +1583,7 @@ Bool_t AliAnalysisTaskReducedTreeMaker::CheckMCtruthWriteFormat(UInt_t bitMap) {
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo() 
+void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo(Bool_t isAOD)
 {
    //
    // fill MC truth info
@@ -1518,7 +1634,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
         }
       }
       
-      UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
+      UInt_t mcSignalsMap = MatchMCsignals(i,isAOD);    // check which MC signals match this particle and fill the bit map
       if(!mcSignalsMap) continue;
       
       // fill MC statistics summary
@@ -1947,7 +2063,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
        if(fFillMCInfo && hasMC) {
           AliVParticle* mcTruth = AliDielectronMC::Instance()->GetMCTrack(particle);
           if(mcTruth)
-             reducedParticle->fMCFlags = MatchMCsignals(mcTruth->GetLabel());    // check which MC signals match this particle
+             reducedParticle->fMCFlags = MatchMCsignals(mcTruth->GetLabel(),isAOD);    // check which MC signals match this particle
        }
        
       fReducedEvent->fNtracks[1] += 1;
@@ -1976,6 +2092,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     trackInfo->fTPCNclsShared = (UChar_t)values[AliDielectronVarManager::kNclsSTPC];
     trackInfo->fTPCCrossedRows = values[AliDielectronVarManager::kNFclsTPCr];
     trackInfo->fTPCsignal    = values[AliDielectronVarManager::kTPCsignal];
+    trackInfo->fTPCsignalTunedOnData    = values[AliDielectronVarManager::kTPCsignalTunedOnData];
     trackInfo->fTPCsignalN   = values[AliDielectronVarManager::kTPCsignalN];
     trackInfo->fTPCnSig[0]   = values[AliDielectronVarManager::kTPCnSigmaEle];
     trackInfo->fTPCnSig[1]   = values[AliDielectronVarManager::kTPCnSigmaPio];
@@ -2086,7 +2203,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(fFillMCInfo && hasMC) {
          AliMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(esdTrack);
          if(truthParticle) {
-           trackInfo->fMCFlags = MatchMCsignals(truthParticle->GetLabel());    // check which MC signals match this particle and fill the bit map
+           trackInfo->fMCFlags = MatchMCsignals(truthParticle->GetLabel(),kFALSE);    // check which MC signals match this particle and fill the bit map
                       
            trackInfo->fMCMom[0] = truthParticle->Px();
            trackInfo->fMCMom[1] = truthParticle->Py();
@@ -2194,7 +2311,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(fFillMCInfo && hasMC) {
          AliAODMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(aodTrack);
          if(truthParticle) {
-            trackInfo->fMCFlags = MatchMCsignals(aodTrack->GetLabel());    // check which MC signals match this particle and fill the bit map
+            trackInfo->fMCFlags = MatchMCsignals(aodTrack->GetLabel(),kTRUE);    // check which MC signals match this particle and fill the bit map
             
             trackInfo->fMCMom[0] = truthParticle->Px();
             trackInfo->fMCMom[1] = truthParticle->Py();

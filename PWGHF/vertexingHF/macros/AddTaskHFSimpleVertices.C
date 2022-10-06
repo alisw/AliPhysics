@@ -1,6 +1,6 @@
 AliAnalysisTaskHFSimpleVertices *AddTaskHFSimpleVertices(TString suffix="",
-							 TString jsonconfigfile="",
-							 Bool_t readMC=kFALSE)
+                                                         TString jsonconfigfile="",
+                                                         Bool_t readMC=kFALSE)
 {
 
   // Creates, configures and attaches to the train the task for tracking checks
@@ -10,14 +10,14 @@ AliAnalysisTaskHFSimpleVertices *AddTaskHFSimpleVertices(TString suffix="",
   if (!mgr) {
     ::Error("AddTaskHFSimpleVertices", "No analysis manager to connect to.");
     return NULL;
-  }   
-  
+  }
+
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskHFSimpleVertices", "This task requires an input event handler");
     return NULL;
-  }   
+  }
   AliInputEventHandler* h= (AliInputEventHandler*)mgr->GetInputEventHandler();
   h->SetNeedField(kTRUE);
 
@@ -26,10 +26,10 @@ AliAnalysisTaskHFSimpleVertices *AddTaskHFSimpleVertices(TString suffix="",
     ::Error("AddTaskHFSimpleVertices", "This task requires to run on ESD");
     return NULL;
   }
-  
+
   //Bool_t isMC=kFALSE;
   //if (mgr->GetMCtruthEventHandler()) isMC=kTRUE;
-  
+
   // Add MC handler (for kinematics)
   if(readMC){
     AliMCEventHandler* handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
@@ -48,10 +48,10 @@ AliAnalysisTaskHFSimpleVertices *AddTaskHFSimpleVertices(TString suffix="",
     }else jsonconfigfile="local_json.txt";
   }
   if (jsonconfigfile != "") tasktr->InitFromJson(jsonconfigfile);
+  tasktr->SetReadMC(readMC);
 
-  
   mgr->AddTask(tasktr);
-  
+
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
@@ -62,13 +62,13 @@ AliAnalysisTaskHFSimpleVertices *AddTaskHFSimpleVertices(TString suffix="",
   listname+=suffix.Data();
 
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(listname,
-							    TList::Class(),
-							    AliAnalysisManager::kOutputContainer,
-							    outputFileName.Data() );
-  
+                                                            TList::Class(),
+                                                            AliAnalysisManager::kOutputContainer,
+                                                            outputFileName.Data() );
+
   mgr->ConnectInput(tasktr, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(tasktr, 1, coutput1);
-  
+
   return tasktr;
-}   
+}
 

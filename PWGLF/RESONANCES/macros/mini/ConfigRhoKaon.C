@@ -1,5 +1,6 @@
 /***************************************************************************
               adash@cern.ch - last modified on 03/04/2013
+            prottay.das@cern.ch - last modified on 29/05/2021
 
 // *** Configuration script for Phi-Meson analysis with 2013 PPb runs ***
 // 
@@ -20,8 +21,13 @@ Bool_t ConfigRhoKaon(
 			Float_t                nsigmakaonTPC  =2.0,
 			Float_t                nsigmapionTOF = 3.0,
 			Float_t                nsigmakaonTOF = 3.0,
-			int                     ptpk         =0,
-                        int                     pid          =1,
+			int                    ptpk         =0,
+                        int                    pid          =1,
+			Float_t                lmassrho     =0.5,
+			Float_t                hmassrho     =0.9,
+			Float_t                linvmass     =0.5,
+			Float_t                hinvmass     =0.9,
+			int                    invmassbins  =1,
 			Bool_t                 enableMonitor = kTRUE,
 			TString                optSyt="DefaultITSTPC2011"
 			  )
@@ -44,6 +50,7 @@ if (ptpk==0)
 {
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
 }
+/*
 else if (ptpk==1)
 {
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -59,9 +66,9 @@ else if (ptpk==3)
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
     trkQualityCut->SetPtRange(0.3,0.7);
 }
-
+*/
     Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
-  }
+ }
   else if(optSyt.Contains("DefaultTPCOnly")){
     trkQualityCut->SetDefaultsTPCOnly(kTRUE);
     Printf(Form("::::: SetCustomQualityCut:: using TPC-only track quality cuts"));
@@ -141,28 +148,32 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
   cutYRes->SetRangeD(-0.8,0.8);
   
   AliRsnMiniResonanceFinder* Rhofinder= new AliRsnMiniResonanceFinder("rho");
-  AliRsnMiniResonanceFinder* Kstarfinderp= new AliRsnMiniResonanceFinder("kstar");
+  /*AliRsnMiniResonanceFinder* Kstarfinderp= new AliRsnMiniResonanceFinder("kstar");
   AliRsnMiniResonanceFinder* Kstarfinderm= new AliRsnMiniResonanceFinder("antikstar");
  /////////////////////////////////////////////////////////////////////////////
+ */
   AliRsnMiniResonanceFinder* Rhofalsefinder=new AliRsnMiniResonanceFinder("rhobkg");
   Int_t iCutrhofalse;
+  AliRsnMiniResonanceFinder* Rhofalsefinderminus=new AliRsnMiniResonanceFinder("rhobkgminus");
+  Int_t iCutrhofalseminus;
   ///////////////////////////////////////////////////////////////////////////
 
 
   Int_t iCutKstarp,iCutKstarm,iCutRho;
   
-  AliRsnCutMiniPair* cutMassKstar=new AliRsnCutMiniPair("cutMassKstar",AliRsnCutMiniPair::kMassRange);
-  cutMassKstar->SetRangeD(0.7,1.1);
+  /* AliRsnCutMiniPair* cutMassKstar=new AliRsnCutMiniPair("cutMassKstar",AliRsnCutMiniPair::kMassRange);
+     cutMassKstar->SetRangeD(0.7,1.1);*/
 
   AliRsnCutMiniPair* cutMassRho=new AliRsnCutMiniPair("cutMassRho",AliRsnCutMiniPair::kMassRange);
-  cutMassRho->SetRangeD(0.320,1.220);
+  //cutMassRho->SetRangeD(0.320,1.220);
+  cutMassRho->SetRangeD(lmassrho,hmassrho);
 
-  
+  /*
   AliRsnCutSet* cutsKstar=new AliRsnCutSet("pairCutsKstar",AliRsnTarget::kMother);
   cutsKstar->AddCut(cutMassKstar);
   cutsKstar->AddCut(cutYRes);
   cutsKstar->SetCutScheme(TString::Format("%s&%s",cutMassKstar->GetName(),cutYRes->GetName()).Data());
-
+  */
   AliRsnCutSet* cutsRho=new AliRsnCutSet("pairCutsRho",AliRsnTarget::kMother);
   cutsRho->AddCut(cutMassRho);
   cutsRho->AddCut(cutYRes);
@@ -171,7 +182,7 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
 
 
  //////////////////////////////////////////////////////////////////////////////
-    AliRsnCutSet* cutsRhofalse=new AliRsnCutSet("likepairCutsRho",AliRsnTarget::kMother);
+  AliRsnCutSet* cutsRhofalse=new AliRsnCutSet("likepairCutsRho",AliRsnTarget::kMother);
   cutsRhofalse->AddCut(cutMassRho);
   cutsRhofalse->AddCut(cutYRes);
   cutsRhofalse->SetCutScheme(TString::Format("%s&%s",cutMassRho->GetName(),cutYRes->GetName()).Data());
@@ -185,7 +196,7 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
 
 
 
-
+  /*
   Kstarfinderp->SetCutID(0,iCutK);
   Kstarfinderp->SetDaughter(0,AliRsnDaughter::kKaon);
   Kstarfinderp->SetCharge(0,'+');
@@ -207,7 +218,7 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
   //Kstarfinderm->SetResonancePDG(313);
   Kstarfinderm->SetPairCuts(cutsKstar);
   iCutKstarm=task->AddResonanceFinder(Kstarfinderm);
-
+  */
   Rhofinder->SetCutID(0,iCutPi);
   Rhofinder->SetDaughter(0,AliRsnDaughter::kPion);
   Rhofinder->SetCharge(0,'+');
@@ -234,6 +245,18 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
   //Rhofinder->SetResonancePDG(113);
   Rhofalsefinder->SetPairCuts(cutsRhofalse);
   iCutrhofalse=task->AddResonanceFinder(Rhofalsefinder);
+
+
+  Rhofalsefinderminus->SetCutID(0,iCutPi);
+  Rhofalsefinderminus->SetDaughter(0,AliRsnDaughter::kPion);
+  Rhofalsefinderminus->SetCharge(0,'-');
+  Rhofalsefinderminus->SetCutID(1,iCutPi);
+  Rhofalsefinderminus->SetDaughter(1,AliRsnDaughter::kPion);
+  Rhofalsefinderminus->SetCharge(1,'-');
+  //Rhofinder->SetResonanceMass(0.775);
+  //Rhofinder->SetResonancePDG(113);
+  Rhofalsefinderminus->SetPairCuts(cutsRhofalse);
+  iCutrhofalseminus=task->AddResonanceFinder(Rhofalsefinderminus);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -277,18 +300,22 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
   cutsPairMix->SetCutScheme(cutY->GetName());
 
   
-  Bool_t  use     [4] = {1         ,1         ,1 ,1};
-  Bool_t  useIM   [4] = {1         ,1         ,1,1};
-  TString name    [4] = {"UnlikePM","MixingPM","Rotationpm","Mixingrholike"};
-  TString comp    [4] = {"PAIR"    ,"MIX"     ,"ROTATE1","MIX"};
-  TString output  [4] = {"SPARSE"  ,"SPARSE"  ,"SPARSE","SPARSE"};
-  Char_t  charge1 [4] = {'0'       ,'0'       ,'0','0'};
-  Char_t  charge2 [4] = {'+'       ,'+'       ,'+','+'};
-  Int_t   cutIDPi [4] = {iCutRho   ,iCutRho   ,iCutRho,iCutrhofalse};
-  Int_t   cutIDK  [4] = {iCutK,iCutK,iCutK,iCutK};
-  Int_t   PDGCode [4] = {10323       ,10323       ,10323,10323};
 
-  for (Int_t i = 0; i < 4; i++) {
+
+  Bool_t  use     [6] = {1         ,      1,              1,              1,                1,                          1};
+  Bool_t  useIM   [6] = {1         ,      1,              1,              1,                1,                          1};
+  TString name    [6] = {"UnlikeP",  "UnlikeM",       "MixingP",      "MixingM",      " Mixingrholikeminus",   "Mixingrholike"};
+  TString comp    [6] = {"PAIR"    ,   "PAIR",          "MIX",           "MIX",          "MIX",                       "MIX"};
+  TString output  [6] = {"SPARSE"  ,  "SPARSE",        "SPARSE",      "SPARSE",         "SPARSE",                  "SPARSE"};
+  Char_t  charge1 [6] = {  '0'     ,     '0',             '0'  ,          '0',            '0',                        '0'};
+  Char_t  charge2 [6] = {  '+'     ,     '-',             '+',           '-',             '+',                        '-'};
+  Int_t   cutIDPi [6] = {iCutRho   ,   iCutRho,         iCutRho,        iCutRho,       iCutrhofalseminus,      iCutrhofalse};
+  Int_t   cutIDK  [6] = {iCutK     ,    iCutK,           iCutK,          iCutK,           iCutK,                     iCutK};
+  Int_t   PDGCode [6] = {10323     ,    10323,           10323,          10323,           10323,                     10323};
+
+
+
+  for (Int_t i = 0; i < 6; i++) {
     if (!use[i]) continue;
     AliRsnMiniOutput *out = task->CreateOutput(Form("KSTAR_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());
     out->SetDaughter(0, AliRsnDaughter::kPhi);//rho
@@ -302,7 +329,7 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
     //out->SetMotherMass(1.272);
     if(i<=0) out->SetPairCuts(cutsPairSame);
     else out->SetPairCuts(cutsPairMix);
-    out->AddAxis(imID, 190, 0.5, 2.4);
+    out->AddAxis(imID, invmassbins, linvmass, hinvmass);
     out->AddAxis(ptID, 100, 0.0, 10.0);
     out->AddAxis(centID, 100, 0.0, 100.0);
   }
@@ -323,6 +350,7 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
   out->AddAxis(imID,90,0.6,1.5);
   */
 
+  /*
   out=task->CreateOutput("rho0","HIST","PAIR");
   out->SetMotherPDG(Rhofinder->GetResonancePDG());
   
@@ -336,9 +364,25 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
   
   out->SetMotherMass(Rhofinder->GetResonanceMass());
   out->SetPairCuts(cutsRho);
-  out->AddAxis(imID,180,0.3,2.1);
-
+  out->AddAxis(imID,80,0.3,2.1);
+  */
   
+  /*
+  out=task->CreateOutput("rholikebkg","HIST","PAIR");
+  out->SetMotherPDG( Rhofalsefinder->GetResonancePDG());
+
+  out->SetDaughter(0, Rhofalsefinder->GetDaughter(0));
+  out->SetCutID(0, Rhofalsefinder->GetCutID(0));
+  out->SetCharge(0, Rhofalsefinder->GetCharge(0));
+
+  out->SetDaughter(1, Rhofalsefinder->GetDaughter(1));
+  out->SetCutID(1, Rhofalsefinder->GetCutID(1));
+  out->SetCharge(1, Rhofalsefinder->GetCharge(1));
+
+  out->SetMotherMass( Rhofalsefinder->GetResonanceMass());
+  out->SetPairCuts(cutsRhofalse);
+  out->AddAxis(imID,80,0.3,1.1);
+  */
 
   
 

@@ -54,7 +54,11 @@ AliAnalysisTaskSatellites::AliAnalysisTaskSatellites()
     fIsSatellite(0),
     fTrgClassCINTZAC(0),
     fTrgInputV0M(0),
+    fTrgInputTVX(0),
+    fTrgInputV0alt(0),
     fTrgClassC0V0M(0),
+    fTrgClassC0TVX(0),
+    fTrgClassCV0L(0),
     fTrgInputVBA(0),
     fTrgInputVBC(0),
     fTrgInputZAC(0),
@@ -79,7 +83,11 @@ AliAnalysisTaskSatellites::AliAnalysisTaskSatellites(const char *name)
     fIsSatellite(0),
     fTrgClassCINTZAC(0),
     fTrgInputV0M(0),
+    fTrgInputTVX(0),
+    fTrgInputV0alt(0),
     fTrgClassC0V0M(0),
+    fTrgClassC0TVX(0),
+    fTrgClassCV0L(0),
     fTrgInputVBA(0),
     fTrgInputVBC(0),
     fTrgInputZAC(0),
@@ -127,7 +135,11 @@ void AliAnalysisTaskSatellites::UserCreateOutputObjects()
   tOutput ->Branch("fIsSatellite", &fIsSatellite);
   tOutput ->Branch("fTrgClassCINTZAC", &fTrgClassCINTZAC);
   tOutput ->Branch("fTrgInputV0M", &fTrgInputV0M);
+  tOutput ->Branch("fTrgInputV0alt", &fTrgInputV0alt);
+  tOutput ->Branch("fTrgInputTVX", &fTrgInputTVX);
   tOutput ->Branch("fTrgClassC0V0M", &fTrgClassC0V0M);
+  tOutput ->Branch("fTrgClassC0TVX", &fTrgClassC0TVX);
+  tOutput ->Branch("fTrgClassCV0L", &fTrgClassCV0L);
   tOutput ->Branch("fTrgInputVBA", &fTrgInputVBA);
   tOutput ->Branch("fTrgInputVBC", &fTrgInputVBC);
   tOutput ->Branch("fTrgInputZAC", &fTrgInputZAC);
@@ -195,17 +207,34 @@ void AliAnalysisTaskSatellites::UserExec(Option_t *)
   fIsSatellite = IsSatellite(ZDCdata);
 
   //Trigger decisions
-  fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
-  fTrgClassC0V0M = event->GetFiredTriggerClasses().Contains("C0V0M-B-NOPF-");
+  fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");// 2018 PbPb
+  fTrgClassC0V0M = event->GetFiredTriggerClasses().Contains("C0V0M-B-NOPF-");// vdmRuns
+  fTrgClassC0TVX = event->GetFiredTriggerClasses().Contains("C0TVX-B-NOPF-CENTNOTRD");// 2016 pPb
+  fTrgClassCV0L = event->GetFiredTriggerClasses().Contains("CV0L7-B-NOPF-CENT"); //2015 PbPb
 //  if (!fTrgClassCINTZAC) return;
 
   fL0inputs = event->GetHeader()->GetL0TriggerInputs();
   fL1inputs = event->GetHeader()->GetL1TriggerInputs();
-  Int_t inputV0M = 7; //0V0M in Pb-Pb
-  Int_t inputVBA = 1; //0VBA in Pb-Pb
-  Int_t inputVBC = 2; //0VBC in Pb-Pb
-  Int_t inputZAC = 19; //1ZAC in Pb-Pb
-  if (fRunNumber == 280234 || fRunNumber == 280235) inputV0M = 13; //V0M in Xe-Xe
+  Int_t inputTVX = 3; //0TVX in Pb-Pb 18
+  Int_t inputV0alt = 10; //0V0H in Pb-Pb 18
+  Int_t inputV0M = 7; //0V0M in Pb-Pb 18
+  Int_t inputVBA = 1; //0VBA in Pb-Pb 18
+  Int_t inputVBC = 2; //0VBC in Pb-Pb 18
+  Int_t inputZAC = 19; //1ZAC in Pb-Pb 18
+  if (fRunNumber >  244640 && fRunNumber  < 247173) { // setup PbPb 2015
+    Int_t inputV0alt = 6;  // V0L
+    Int_t inputV0M = 4;
+  }
+  if (fRunNumber >  265587 && fRunNumber  < 267131) { // setup pPb/Pbp 2016
+    Int_t inputV0alt = 5;  // 0SMB
+    Int_t inputV0M = 13;
+  }
+  if (fRunNumber == 280234 || fRunNumber == 280235) { // setup XeXe 2017
+    inputV0alt = 5; // 0SMB
+    inputV0M = 13;
+  }
+  fTrgInputTVX =  fL0inputs & (1 << (inputTVX-1));
+  fTrgInputV0alt =  fL0inputs & (1 << (inputV0alt-1));
   fTrgInputV0M =  fL0inputs & (1 << (inputV0M-1));
   fTrgInputVBA =  fL0inputs & (1 << (inputVBA-1));
   fTrgInputVBC =  fL0inputs & (1 << (inputVBC-1));

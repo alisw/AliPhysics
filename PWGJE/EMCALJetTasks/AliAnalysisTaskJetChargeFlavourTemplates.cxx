@@ -6,6 +6,8 @@
 
 
 #include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
 #include <TTree.h>
 #include <TList.h>
 #include <AliAnalysisDataSlot.h>
@@ -22,6 +24,7 @@
 
 //My Header
 #include "AliAnalysisTaskJetChargeFlavourTemplates.h"
+
 
 //Globals
 using std::cout;
@@ -40,46 +43,21 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
-  fJetRadius(0.2),
-
-
-  fhJetPt(0x0),
-  fhJetPhi(0x0),
-  fhJetEta(0x0),
-
-  JC(0x0),
-
-  JCUp(0x0),
-  JCDown(0x0),
-  JCGluon(0x0),
-  JCOther(0x0),
-  JCUnmatched(0x0),
-
-  JCLow(0x0),
-
-  JCUpLow(0x0),
-  JCDownLow(0x0),
-  JCGluonLow(0x0),
-  JCOtherLow(0x0),
-  JCUnmatchedLow(0x0),
-
-
-  JCMid(0x0),
-
-  JCUpMid(0x0),
-  JCDownMid(0x0),
-  JCGluonMid(0x0),
-  JCOtherMid(0x0),
-  JCUnmatchedMid(0x0),
-
-  JCHigh(0x0),
-
-  JCUpHigh(0x0),
-  JCDownHigh(0x0),
-  JCGluonHigh(0x0),
-  JCOtherHigh(0x0),
-  JCUnmatchedHigh(0x0),
-
+  fJetRadius(0),
+  JetChargeK(0.5),
+  Pt(-999),
+  Phi(-999),
+  Eta(-999),
+  JetCharge(-999),
+  ParticlePt(-999),
+  ParticlePhi(-999),
+  ParticleEta(-999),
+  ParticleJetCharge(-999),
+  LeadingTrackPt(-999),
+  PdgCode(0),
+  PtMatchedPdgCode(0),
+  GeoMatchedPdgCode(0),
+  ProgenetorFraction(-1),
 
 
   fTreeJets(0)
@@ -96,55 +74,28 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
-  fJetRadius(0.2),
+  fJetRadius(0),
+  JetChargeK(0.5),
+  Pt(-999),
+  Phi(-999),
+  Eta(-999),
+  JetCharge(-999),
+  ParticlePt(-999),
+  ParticlePhi(-999),
+  ParticleEta(-999),
+  ParticleJetCharge(-999),
+  LeadingTrackPt(-999),
+  PdgCode(0),
+  PtMatchedPdgCode(0),
+  GeoMatchedPdgCode(0),
+  ProgenetorFraction(-1),
 
-
-  fhJetPt(0x0),
-  fhJetPhi(0x0),
-  fhJetEta(0x0),
-
-  JC(0x0),
-
-  JCUp(0x0),
-  JCDown(0x0),
-  JCGluon(0x0),
-  JCOther(0x0),
-  JCUnmatched(0x0),
-
-
-  JCLow(0x0),
-
-  JCUpLow(0x0),
-  JCDownLow(0x0),
-  JCGluonLow(0x0),
-  JCOtherLow(0x0),
-  JCUnmatchedLow(0x0),
-
-
-  JCMid(0x0),
-
-  JCUpMid(0x0),
-  JCDownMid(0x0),
-  JCGluonMid(0x0),
-  JCOtherMid(0x0),
-  JCUnmatchedMid(0x0),
-
-  JCHigh(0x0),
-
-  JCUpHigh(0x0),
-  JCDownHigh(0x0),
-  JCGluonHigh(0x0),
-  JCOtherHigh(0x0),
-  JCUnmatchedHigh(0x0),
 
 
 
   fTreeJets(0)
 {
-  // Standard constructor.
-  for(Int_t i=0;i<nBranchesJetChargeFlavourTemplates;i++){
-    fTreeBranch[i]=0;
-  }
+
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -160,7 +111,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
  void AliAnalysisTaskJetChargeFlavourTemplates::UserCreateOutputObjects()
 {
   // Echo jet radius
-  Info("TaskJets","Using jet radius R=%f",fJetRadius);
+  //Info("TaskJets","Using jet radius R=%f",fJetRadius);
 
   // Create user output.
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
@@ -171,129 +122,27 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeJets = new TTree(nameoutput, nameoutput);
   // Names for the branches
-  TString *fTreeBranchName = new TString [nBranchesJetChargeFlavourTemplates];
 
   // Name the branches of your TTree here
-  fTreeBranchName[0]  = "Pt";
-  fTreeBranchName[1]  = "Phi";
-  fTreeBranchName[2]  = "Eta";
 
-  fTreeBranchName[3]  = "JetCharge";
-
-  fTreeBranchName[4]  = "LowJetCharge";
-
-  fTreeBranchName[5]  = "MidJetCharge";
-
-  fTreeBranchName[6]  = "HighJetCharge";
-
-  fTreeBranchName[7] = "JCUp";
-  fTreeBranchName[8] = "Low_JCUp";
-  fTreeBranchName[9] = "Mid_JCUp";
-  fTreeBranchName[10] = "High_JCUp";
-
-  fTreeBranchName[11] = "JCDown";
-  fTreeBranchName[12] = "Low_JCDown";
-  fTreeBranchName[13] = "Mid_JCDown";
-  fTreeBranchName[14] = "High_JCDown";
-
-
-  fTreeBranchName[15] = "JCGluon";
-  fTreeBranchName[16] = "Low_JCGluon";
-  fTreeBranchName[17] = "Mid_JCGluon";
-  fTreeBranchName[18] = "High_JCGluon";
-
-  fTreeBranchName[19] = "JCOther";
-  fTreeBranchName[20] = "Low_JCOther";
-  fTreeBranchName[21] = "Mid_JCOther";
-  fTreeBranchName[22] = "High_JCOther";
-
-  fTreeBranchName[23] = "JCUnmatched";
-  fTreeBranchName[24] = "Low_JCUnmatched";
-  fTreeBranchName[25] = "Mid_JCUnmatched";
-  fTreeBranchName[26] = "High_JCUnmatched";
-
-  // Associate the branches
-  for(Int_t iBranch=0; iBranch < nBranchesJetChargeFlavourTemplates; iBranch++){
-    cout<<"looping over variables"<<endl;
-    fTreeJets->Branch(fTreeBranchName[iBranch].Data(), &fTreeBranch[iBranch], Form("%s/D", fTreeBranchName[iBranch].Data()));
-  }
-
-  // Define histograms
-  fhJetPt= new TH1F("fhJetPt", "Jet Pt",1500,-0.5,149.5 );
-  fOutput->Add(fhJetPt);
-  fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
-  fOutput->Add(fhJetPhi);
-  fhJetEta= new TH1F("fhJetEta", "Jet Eta",100,-2,2);
-  fOutput->Add(fhJetEta);
-
-  /*
-  fhEventCounter= new TH1F("fhEventCounter", "Event Counter",10,10,10);
-  fOutput->Add(fhEventCounter);
-
-  fhRunNumberCounter= new TH1F("fhRunNumberCounter", "Event Counter",10,10,10);
-  fOutput->Add(fhRunNumberCounter);
-  */
-
-  JC= new TH1F("JC", "Jet Charge", 25, -3, 3);
-  fOutput->Add(JC);
-
-  JCUp= new TH1F("JCUp", "Jet Charge Up", 25, -3, 3);
-  fOutput->Add(JCUp);
-  JCDown= new TH1F("JCDown", "Jet Charge Down", 25, -3, 3);
-  fOutput->Add(JCDown);
-  JCGluon= new TH1F("JCGluon", "Jet Charge Gluon", 25, -3, 3);
-  fOutput->Add(JCGluon);
-  JCOther= new TH1F("JCOther", "Jet Charge Other", 25, -3, 3);
-  fOutput->Add(JCOther);
-  JCUnmatched= new TH1F("JCUnmatched", "Jet Charge Unmatched", 25, -3, 3);
-  fOutput->Add(JCUnmatched);
+  fTreeJets->Branch("Pt",&Pt,"Pt/F");
+  fTreeJets->Branch("Phi",&Phi,"Phi/F");
+  fTreeJets->Branch("Eta",&Eta,"Eta/F");
+  fTreeJets->Branch("JetCharge",&JetCharge,"JetCharge/F");
+  fTreeJets->Branch("ParticlePt",&ParticlePt,"ParticlePt/F");
+  fTreeJets->Branch("ParticlePhi",&ParticlePhi,"ParticlePhi/F");
+  fTreeJets->Branch("ParticleEta",&ParticleEta,"ParticleEta/F");
+  fTreeJets->Branch("ParticleJetCharge",&ParticleJetCharge,"ParticleJetCharge/F");
+  fTreeJets->Branch("LeadingTrackPt",&LeadingTrackPt,"LeadingTrackPt/F");
+  fTreeJets->Branch("PdgCode",&PdgCode,"pdgcode/I");
+  fTreeJets->Branch("PtMatchedPdgCode",&PtMatchedPdgCode,"PtMatchedPdgCode/I");
+  fTreeJets->Branch("GeoMatchedPdgCode",&GeoMatchedPdgCode,"GeoMatchedPdgCode/I");
+  
+  fTreeJets->Branch("ProgenetorFraction",&ProgenetorFraction,"ProgenetorFraction/F");
 
 
 
 
-  JCLow= new TH1F("JCLow", "Jet Charge Low Pt ", 25, -3, 3);
-  fOutput->Add(JCLow);
-
-  JCUpLow= new TH1F("JCUpLow", "Jet Charge Up Low Pt ", 25, -3, 3);
-  fOutput->Add(JCUpLow);
-  JCDownLow= new TH1F("JCDownLow", "Jet Charge Down Low Pt", 25, -3, 3);
-  fOutput->Add(JCDownLow);
-  JCGluonLow= new TH1F("JCGluonLow", "Jet Charge Gluon Low Pt", 25, -3, 3);
-  fOutput->Add(JCGluonLow);
-  JCOtherLow= new TH1F("JCOtherLow", "Jet Charge Other Low Pt", 25, -3, 3);
-  fOutput->Add(JCOtherLow);
-  JCUnmatchedLow= new TH1F("JCUnmatchedLow", "Jet Charge Unmatched Low Pt", 25, -3, 3);
-  fOutput->Add(JCUnmatchedLow);
-
-
-
-  JCMid= new TH1F("JCMid", "Jet Charge Mid Pt ", 25, -3, 3);
-  fOutput->Add(JCMid);
-
-  JCUpMid= new TH1F("JCUpMid", "Jet Charge Up Mid Pt ", 25, -3, 3);
-  fOutput->Add(JCUpMid);
-  JCDownMid= new TH1F("JCDownMid", "Jet Charge Down Mid Pt", 25, -3, 3);
-  fOutput->Add(JCDownMid);
-  JCGluonMid= new TH1F("JCGluonMid", "Jet Charge Gluon Mid Pt", 25, -3, 3);
-  fOutput->Add(JCGluonMid);
-  JCOtherMid= new TH1F("JCOtherMid", "Jet Charge Other Mid Pt", 25, -3, 3);
-  fOutput->Add(JCOtherMid);
-  JCUnmatchedMid= new TH1F("JCUnmatchedMid", "Jet Charge Unmatched Mid Pt", 25, -3, 3);
-  fOutput->Add(JCUnmatchedMid);
-
-  JCHigh= new TH1F("JCHigh", "Jet Charge High Pt ", 25, -3, 3);
-  fOutput->Add(JCHigh);
-
-  JCUpHigh= new TH1F("JCUpHigh", "Jet Charge Up High Pt ", 25, -3, 3);
-  fOutput->Add(JCUpHigh);
-  JCDownHigh= new TH1F("JCDownHigh", "Jet Charge Down High Pt", 25, -3, 3);
-  fOutput->Add(JCDownHigh);
-  JCGluonHigh= new TH1F("JCGluonHigh", "Jet Charge Gluon High Pt", 25, -3, 3);
-  fOutput->Add(JCGluonHigh);
-  JCOtherHigh= new TH1F("JCOtherHigh", "Jet Charge Other High Pt", 25, -3, 3);
-  fOutput->Add(JCOtherHigh);
-  JCUnmatchedHigh= new TH1F("JCUnmatchedHigh", "Jet Charge Unmatched High Pt", 25, -3, 3);
-  fOutput->Add(JCUnmatchedHigh);
 
 
 
@@ -323,53 +172,71 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
       return 0;
   }
 
+  // Reset the Tree Parameters
+  Pt = -999;
+  Phi = -999;
+  Eta = -999;
+  JetCharge = -999;
+  ParticlePt  = -999;
+  ParticlePhi = -999;
+  ParticleEta = -999;
+  ParticleJetCharge = -999;
+  LeadingTrackPt = -999;
+  PdgCode = 0;
+  PtMatchedPdgCode = 0;
+  GeoMatchedPdgCode = 0;
+  ProgenetorFraction = -1;
+
+  // Initialise Jet shapes
+  Int_t fPdgCodes[100] = {};
+  Int_t fCurrentPdg = 0;
+  Int_t nMothers = 0;
+  Float_t jetCharge = 0;
+  Float_t jetChargeParticle = 0;
+
+  Int_t fParticleUniqueID[100] = {};
+  Int_t fCurrentParticleUniqueID = 0;
+
+  Double_t fMotherParticlePt[100] = {};
+  Double_t fCurrentMotherParticlePt = {};
+
+
   // Initialise jet pointer
   //cout << "Running Fill Histograms" << endl;
   AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                                         // Get jet container (0 = ?)
   AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event
-  AliParticleContainer *MCParticleContainer = GetParticleContainer("mcparticles");
-  Int_t nAcceptedJets = JetCont->GetNAcceptedJets();
-  //TClonesArray *trackArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("HybridTracks"));
-  Double_t JetPhi=0;
-  Double_t JetPt_ForThreshold=0;
+  AliEmcalJet *TruthJet = NULL; //Original Jet in the event                                                                                                         // Get jet container (0 = ?)
+  AliJetContainer *JetGen= GetJetContainer(1); //Jet Container for event
 
-  if(JetCont) {
-    // Technical detail; fix possibly corrupted jet container ID
-    JetCont->ResetCurrentID();
-    // Jet is acceptable?
-    while((Jet1=JetCont->GetNextAcceptJet())) {
+
+  AliMCParticleContainer* MCParticleContainer = (AliMCParticleContainer*) JetGen->GetParticleContainer();
+
+  TClonesArray*  MCParticleCloneContainer = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("mcparticles"));
+
+
+  Int_t nAcceptedJets = JetCont->GetNAcceptedJets();
+
+  Float_t JetPhi=0;
+  Float_t JetParticlePhi=0;
+  Float_t JetPt_ForThreshold=0;
+
+
+  if(JetCont)
+  {
+
+    for (auto Jet1 : JetCont->accepted()) 
+    {
+    
       if(!Jet1)
       {
 
         continue;
       }
 
-      // Jet is above threshold?
 
-      //cout << "Running A Jet" << endl;
-
-      // Get the jet constituents
-
-      //AliParticleContainer *fMCContainer = GetParticleContainer(1);
-      //UInt_t nMCConstituents = fMCContainer->GetNParticles();
-
-      //AliParticleContainer * MCTracks  = dynamic_cast<AliParticleContainer *> (GetParticleContainer("embeddedTracks"));
-      //UInt_t nMCTracks = MCTracks->GetNParticles();
-
-      /*
-      TIter nextPartColl(&fParticleCollArray);
-      AliParticleContainer* tracks = 0;
-      while ((tracks = static_cast<AliParticleContainer*>(nextPartColl())))
-      {
-      AliParticleContainer* fMCContainer = tracks;
-      }
-      */
 
       AliParticleContainer *fTrackCont = JetCont->GetParticleContainer();
       UInt_t nJetConstituents = Jet1->GetNumberOfTracks();
-
-      //cout << nTest << "::::" << nMCConstituents << "::::" << nJetConstituents << endl;
-
 
       // Must have at least two constituents
       if( nJetConstituents < 2 )
@@ -386,24 +253,15 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         continue;
       }
       else {
-      	// Filling the histograms here
-      	fhJetPt->Fill(Jet1->Pt());
-      	JetPhi=Jet1->Phi();
-      	if(JetPhi < -1*TMath::Pi())
-      	  JetPhi += (2*TMath::Pi());
-      	else if (JetPhi > TMath::Pi())
-      	  JetPhi -= (2*TMath::Pi());
-      	fhJetPhi->Fill(JetPhi);
-      	fhJetEta->Fill(Jet1->Eta());
-      	// Filling the TTree branch(es) here
-        Double_t JetPt;
 
-        JetPt = Jet1->Pt();
-        fTreeBranch[0]=Jet1->Pt();
+        //Check the jet leading track is Greater than 5 GeV to reduce cominatorial jets
 
-      	fTreeBranch[1]=JetPhi;
-      	fTreeBranch[2]=Jet1->Eta();
+        if(Jet1->GetLeadingTrack()->Pt() < 5)
+        {
+            continue;
+        }
 
+        LeadingTrackPt = Jet1->GetLeadingTrack()->Pt();
 
         // Initialising the Tagged PYTHIA Jet.
         Bool_t kHasTruthJet = kFALSE;
@@ -415,322 +273,369 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           kHasTruthJet = kTRUE;
           TruthJet = Jet1->ClosestJet();
           nTruthConstituents = TruthJet->GetNumberOfTracks();
-
         }
-
-
-      	// Add other branches below this line ...
-        // Initialise Jet shapes
-        Int_t fPdgCodes[100] = {};
-        Int_t fCurrentPdg = 0;
-        Int_t nMothers = 0;
-
-        Double_t jetCharge = 0;
 
         //Finding Pdg Code using TRUTH Jet.
 
 
         if(kHasTruthJet)
         {
-          //cout << "Has Matched Jet " << endl;
 
-          for (UInt_t iTruthConst = 0; iTruthConst < nTruthConstituents; iTruthConst++ )
+          //Initalise the variables for the new technique.
+          Int_t mcEntries=MCParticleCloneContainer->GetEntriesFast();
+          Double_t ptpart=-1;
+          Double_t dR=-99;
+          const Int_t arraySize=99;
+          AliAODMCParticle* CountParticle;
+
+          Int_t countpart[arraySize] = {};
+          Int_t countpartcode[arraySize] = {};
+          Int_t maxInd=-1;
+          Int_t count=0;
+          Double_t maxPt=0;
+          Int_t FoundBottomOrCharm = kFALSE;
+          
+          
+
+
+          //Loop Through All MC Particles          
+          for(Int_t i=0;i<mcEntries;i++)
           {
-            AliMCParticle* TruthParticle = (AliMCParticle*) TruthJet->Track(iTruthConst);
-
-            AliMCParticle *MotherParticle = (AliMCParticle*)  MCParticleContainer->GetParticle(TruthParticle->GetMother());
-
-            while(MotherParticle->GetMother() > 0)
+            AliAODMCParticle* part =  (AliAODMCParticle*)  MCParticleCloneContainer->At(i);
+            // If there is no particle move to the next entry.
+            if(!part)
             {
-              MotherParticle = (AliMCParticle*) MCParticleContainer->GetParticle(MotherParticle->GetMother());
-              //cout <<"Mother Get Result: " << MotherParticle->GetMother() << endl;
-              //cout << "Particle Label: " << MotherParticle->Label() << endl;
-              //cout << "MParticle Pdg: " << MotherParticle->PdgCode() << endl;
-
+              continue;
             }
-
-            if(MotherParticle->E() < 3400)
+            //Gather the pdgcode from the parton
+            Int_t partpdgcode=part->GetPdgCode();
+            
+            //Checks that the particle is a parton
+            if(abs(partpdgcode)==21 || ( abs(partpdgcode)>=1 && abs(partpdgcode)<=5))
             {
-            fCurrentPdg = MotherParticle->PdgCode();
-            fPdgCodes[nMothers] = fCurrentPdg;
-            nMothers++;
+              
+              //Gets the Pt of the Parton and the distance from the jet radius
+              ptpart=part->Pt();
+              dR = TruthJet->DeltaR(part);
+
+              // Checks if the distance between the jet is within the jet radius
+              if(dR<fJetRadius)
+              {
+                
+                //Checks if the Parton is a Bottom Quark/antiquarks
+                if(abs(partpdgcode)==5)
+                {
+                //cout << "Parton Bottom: " <<  part->GetPdgCode() << endl;
+                GeoMatchedPdgCode = part->GetPdgCode();
+                FoundBottomOrCharm = kTRUE;
+                //break;
+                }
+
+                else
+                {
+
+                  //This should only happen if there are too many particles such that the count falls outside of the maximise size of the array
+                  if (count >arraySize-1) 
+                  {
+                    return 0x0; 
+                  }    
+                  
+                  countpartcode[count]=partpdgcode;
+                  countpart[count]=i;
+                  
+                  //Find the Index of the Parton matching the critiea with he maximium parton.
+                  if(ptpart>maxPt)
+                  {
+                    maxPt=ptpart;
+                    maxInd=i;
+                  }
+                  count++;
+                }
+              }
             }
+            
+          }
+
+          //Step through the parton pdg code list and check for any charm quark/antiquarks
+          for(Int_t i=0;i<count;i++)
+          {
+            if(abs(countpartcode[i])==4 && FoundBottomOrCharm == kFALSE )
+            {
+              CountParticle = (AliAODMCParticle*) MCParticleCloneContainer->At(countpart[i]);
+              GeoMatchedPdgCode = CountParticle->GetPdgCode();
+              //break;
+            } 
+          }
+
+          //If the Maximum index has been found Collect the PDGCode for it
+          if(maxInd>-1  && FoundBottomOrCharm == kFALSE)
+          {
+            
+            AliAODMCParticle* partMax = (AliAODMCParticle*)MCParticleCloneContainer->At(maxInd);
+            GeoMatchedPdgCode = partMax->GetPdgCode();
+            //cout << endl << "partMax Label" << partMax->GetLabel() << endl;
+            
+          }
+
+          // For Testing Perposes.
+          //PDGCode = GeoMatchedPdgCode;
+
+
+          if(TruthJet->Pt()<fPtThreshold)
+          {
+            continue;
           }
 
 
-            // New Techniqe for determing Jet PDG Code
 
-            Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
-            Double_t UniquePdgFrequency[20] = {};
-            Int_t nUniques = 0;
+          // Filling the Tree here
 
-            //Loop of PDG code found
-            for(int i = 0; i < nMothers; i++)
+          JetPhi=Jet1->Phi();
+          if(JetPhi < -1*TMath::Pi())
+            JetPhi += (2*TMath::Pi());
+          else if (JetPhi > TMath::Pi())
+            JetPhi -= (2*TMath::Pi());
+
+          JetParticlePhi=TruthJet->Phi();
+          if(JetParticlePhi < -1*TMath::Pi())
+            JetParticlePhi += (2*TMath::Pi());
+          else if (JetParticlePhi > TMath::Pi())
+            JetParticlePhi -= (2*TMath::Pi());
+
+          // Filling the TTree branches here
+          Pt          = Jet1->Pt();
+          Phi         = JetPhi;
+          Eta         = Jet1->Eta();
+
+          ParticlePt  = TruthJet->Pt();
+          ParticlePhi = JetParticlePhi;
+          ParticleEta = TruthJet->Eta();
+
+
+          // Identifing PDG Codes of Mothers
+          for (UInt_t iTruthConst = 0; iTruthConst < nTruthConstituents; iTruthConst++ )
+          {
+            AliAODMCParticle* TruthParticle = (AliAODMCParticle*) TruthJet->Track(iTruthConst);
+            AliAODMCParticle *MotherParticle = (AliAODMCParticle*)  MCParticleContainer->GetParticle(TruthParticle->GetMother());
+            AliAODMCParticle *OneSetBackParticle = MotherParticle;
+            AliAODMCParticle *PtTrackerParticle = MotherParticle;
+            
+            //cout << "Start: " << endl;
+            while(MotherParticle->GetMother() > 0)
             {
-              // consider one pdgCode at the time.
-              fCurrentPdg = fPdgCodes[i];
-              // Loop over unique arry to be filled
-              for(int j = 0; j < nMothers; j++)
+              MotherParticle = (AliAODMCParticle*) MCParticleContainer->GetParticle(MotherParticle->GetMother());
+              
+              //cout << "MotherParticle PDG: " << MotherParticle->PdgCode() << endl;
+              //cout << "MotherParticle Label: " << MotherParticle->Label() << endl;
+              //cout << "MotherParticle Pt: " << MotherParticle->Pt() << endl;
+              
+              if(MotherParticle->PdgCode() == 2212)
               {
-                // If it hasnt matched and the current unique value is empty list the new value and increment frequncy by 1 and then break
-                if(UniquePdgCodes[j] != fCurrentPdg && UniquePdgCodes[j] == 0)
-                {
-                  UniquePdgCodes[j] = fCurrentPdg;
-                  UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
-                  nUniques ++;
-                  break;
-                }
-                //Check if the PDG is already lsited if it matched increase the frequency counter by 1
-                else if(UniquePdgCodes[j] == fCurrentPdg)
-                {
-                  UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
-                  break;
-                }
-
-                // Otherwise the PDG hasnt matched and the value isnt zero check the next value
-
+                //cout << "Proton Label: " <<MotherParticle->Label() << endl;
+                //cout << "One Down Label: " << OneSetBackParticle->Label() << endl;
+                MotherParticle  = OneSetBackParticle;
+                break;
               }
-            }
-
-            // Setting Final Pdg Code
-            // normalising frequency array
-
-            for(unsigned int i = 0; i < nUniques; i++)
-            {
-              UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
-            }
-
-            //Find the index of the max
-            int IndexOfMaximum = -1;
-
-            // assigens index of maximum if the over limit factation of mother particles agree
-            Double_t limitFraction = 0.80;
-            for(unsigned int i = 0; i < nUniques; i++)
-            {
-              if(UniquePdgFrequency[i] > limitFraction)
+              
+              if(MotherParticle->Pt() < 0.0001)
               {
-                IndexOfMaximum = i;
+                PtTrackerParticle = OneSetBackParticle;
+                break; 
               }
+              
+              else
+              {
+              OneSetBackParticle = MotherParticle;           
+              }
+              
             }
 
-            // Set final PDG Code to be used
-            fCurrentPdg = fPdgCodes[IndexOfMaximum];
+            fCurrentParticleUniqueID = MotherParticle->GetLabel();
+            fCurrentMotherParticlePt = MotherParticle->Pt();
 
-            if(IndexOfMaximum < 0)
+            fCurrentPdg = MotherParticle->PdgCode();
+            fPdgCodes[nMothers] = fCurrentPdg;            
+            fParticleUniqueID[nMothers] = fCurrentParticleUniqueID;
+            fMotherParticlePt[nMothers] = fCurrentMotherParticlePt;
+            
+            //cout << "Generator Index: " << MotherParticle->GetGeneratorIndex() << endl;
+            //cout << fPdgCodes[nMothers] << endl;
+            nMothers++;
+          
+          }
+
+          
+          Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
+          Float_t UniquePdgFrequency[20] = {};
+          Int_t nUniques = 0;
+          
+
+          //Loop of PDG code found
+          for(int i = 0; i < nMothers; i++)
+          {
+            
+            // Consider one pdgCode at the time.
+            fCurrentPdg = fPdgCodes[i];
+
+            // Loop over unique arry to be filled
+            for(int j = 0; j < nMothers; j++)
             {
-              fCurrentPdg = 0;
+
+              // If it hasnt matched and the current unique value is empty list the new value and increment frequncy by 1 and then break
+              if(UniquePdgCodes[j] != fCurrentPdg && UniquePdgCodes[j] == 0)
+              {
+                UniquePdgCodes[j] = fCurrentPdg;
+                UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
+                nUniques ++;
+                break;
+              }
+
+              //Check if the PDG is already lsited if it matched increase the frequency counter by 1
+              else if(UniquePdgCodes[j] == fCurrentPdg)
+              {
+                UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
+                //cout << UniquePdgFrequency[j] << endl;
+                break;
+              }
+              // Otherwise the PDG hasnt matched and the value isnt zero check the next value
+
             }
+          }
 
-                  //Outputs for Checking
-          /*
-                  if(nUniques > 1)
-                  {
-                    // output PDG Codes for testing
+          
+          // Setting Final Pdg Code
+          // normalising frequency array
 
-                    cout << "PdgCodes : [" ;
-                    for(unsigned int i = 0; i < nMothers; i++)
-                    {
-                      cout << fPdgCodes[i] << ",";
-                    }
-                    cout << "]" << endl;
+          for(int i = 0; i < nUniques; i++)
+          {
+            UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
+          }
 
-                    // output Unique PDG Codes for testing
+          
+          
+         // Loop to store largest number And corresponding pdg code
+         
+          Float_t CurrentFraction;
 
-                    cout << "Unique PdgCodes : [" ;
-                    for(unsigned int i = 0; i < nMothers; i++)
-                    {
-                      cout << UniquePdgCodes[i] << ",";
-                    }
-                    cout << "]" << endl;
+          int IndexOfMaximum = -1;
+          CurrentFraction = UniquePdgFrequency[0];
+          for(int i = 0; i < nUniques; i++) 
+          {
+            if(UniquePdgFrequency[i] >= CurrentFraction)
+            {
+              IndexOfMaximum = i;
+              CurrentFraction = UniquePdgFrequency[i];
+              //cout << CurrentFraction << endl;
+            }
+          }
+          
 
-                    // ouput PDG Codes fort testing
+          ProgenetorFraction = CurrentFraction;
+          fCurrentPdg = fPdgCodes[IndexOfMaximum];
+          
+          
+          //Testing Picking the Highest momentum particle
+          
+        
+          Int_t IndexOfMaximumPt = 0;
+          Float_t CurrentHighestPt = 0;
 
-                    cout << "Frequency PdgCodes : [" ;
-                    for(unsigned int i = 0; i < nMothers; i++)
-                    {
-                      cout << UniquePdgFrequency[i] << ",";
-                    }
-                    cout << "]" << endl;
+          for(int i = 0; i < nMothers; i++) 
+          {
+            if(fMotherParticlePt[i] > CurrentHighestPt)
+            {
+              //cout << "Current Highest Pt: " << CurrentHighestPt << " - VS - " << fMotherParticlePt[i] << endl;
+              IndexOfMaximumPt = i;
+              CurrentHighestPt = fMotherParticlePt[i];
+            }
+          }
 
-                    //cout << "Number of Mothers: " << nMothers << endl;
-                    //cout << "Number of Uniques: " << nUniques << endl;
-                    cout << "Final PDG Choice: " << fCurrentPdg << endl << endl;
-                  }
-          */
+          PtMatchedPdgCode = fPdgCodes[IndexOfMaximumPt];
+
+          
+
+          // Now Caluclate the jet Charge
+
+
 
           // Loop over the consituents
           for (UInt_t iJetConst = 0; iJetConst < nJetConstituents; iJetConst++ )
           {
             AliVParticle *JetParticle = Jet1->Track(iJetConst);
-            jetCharge += JetParticle->Charge()*pow(JetParticle->Pt(),0.5);
+            jetCharge += JetParticle->Charge()*pow(JetParticle->Pt(),JetChargeK);
+          }
+
+          for (UInt_t iTruthConst = 0; iTruthConst < nTruthConstituents; iTruthConst++ )
+          {
+            AliAODMCParticle* TruthParticle = (AliAODMCParticle*) TruthJet->Track(iTruthConst);
+            //Divided by 3 since its parton level and in units of e/3
+            jetChargeParticle += TruthParticle->Charge()/3*pow(TruthParticle->Pt(),JetChargeK);
           }
 
 
 
+          // Normalise the Non Flavoured Jet CHarge
+          jetCharge/=pow(Jet1->Pt(),0.5);
+
+          // Normalise Particle level jet charge
+          jetChargeParticle/=pow(TruthJet->Pt(),0.5);
 
 
+          //Put The Jet Charge in the right place
+          JetCharge = jetCharge;
+          ParticleJetCharge = jetChargeParticle;
 
-        // Create the Non Flavoured Jet CHarge
+          PdgCode = fCurrentPdg;
+          //PdgCode = PtMatchedPdgCode;
+          //Outputs for Checking
+          
+          
+          //cout << "Original PDG CODE: " << fCurrentPdg << endl;
+          //cout << "Geo PDG CODE: " << GeoMatchedPdgCode << endl;
+          //cout << "Pt PDG CODE: " << PtMatchedPdgCode << endl;
+          
+          //cout << "Progenetor Fraction: " << ProgenetorFraction << endl;
+         /*
+          //Output Frequency of Uniques
+          cout << "Frequency of Uniques: [" ;
+          for(int i = 0; i < nUniques; i++)
+          {
+            cout << UniquePdgFrequency[i] << "," ;
+          }
+          cout << "] " << endl;
+        
+          //Output for checking the list of raw pdgCodes
+          cout << "Pdg Codes: [" ;
+          for(int i = 0; i < nMothers; i++)
+          {
+            cout << fPdgCodes[i] << "," ;
+          }
+          cout << "] " << endl;
 
-        jetCharge/=pow(Jet1->Pt(),0.5);
+          
+          //Outputs for checking Pts
+          cout << "Particle Pt: [" ;
+          for(int i = 0; i < nMothers; i++)
+          {
+            cout <<  fMotherParticlePt[i] << "," ;
+          }
+          cout << "] " << endl;
+          
+         
+          //Outputs for checking Raw ParticleUniqueIDs
+          cout << "Particle Label: [" ;
+          for(int i = 0; i < nMothers; i++)
+          {
+            cout << fParticleUniqueID[i] << "," ;
+          }
+          cout << "] " << endl;
+         
+        
+          cout << endl;
+         */
+         
+          fTreeJets->Fill();
 
-        fTreeBranch[3] = jetCharge;
-        JC->Fill(jetCharge);
-
-        //Split the Jet in to apporpate momentum bin.
-
-        if(JetPt < 40.)
-        {
-          fTreeBranch[4] = jetCharge;
-          JCLow->Fill(jetCharge);
-        }
-        else if( JetPt > 40. && JetPt < 80.)
-        {
-          fTreeBranch[5] = jetCharge;
-          JCMid->Fill(jetCharge);
-        }
-        else
-        {
-          fTreeBranch[6] = jetCharge;
-          JCHigh->Fill(jetCharge);
-        }
-
-
-
-        //Add Up JetCharge
-        if(fCurrentPdg == 2)
-        {
-          fTreeBranch[7] = jetCharge;
-          JCUp->Fill(jetCharge);
-
-
-            if(JetPt < 40.)
-            {
-              fTreeBranch[8] = jetCharge;
-              JCUpLow->Fill(jetCharge);
-            }
-            else if( JetPt > 40. && JetPt < 80.)
-            {
-              fTreeBranch[9] = jetCharge;
-              JCUpMid->Fill(jetCharge);
-            }
-            else
-            {
-              fTreeBranch[10] = jetCharge;
-              JCUpHigh->Fill(jetCharge);
-            }
-
-
-
-        }
-        //Add Down JetCharge
-        else if(fCurrentPdg == 1)
-        {
-          fTreeBranch[11] = jetCharge;
-          JCDown->Fill(jetCharge);
-
-
-            if(JetPt < 40.)
-            {
-              fTreeBranch[12] = jetCharge;
-              JCDownLow->Fill(jetCharge);
-            }
-            else if( JetPt > 40. && JetPt < 80.)
-            {
-              fTreeBranch[13] = jetCharge;
-              JCDownMid->Fill(jetCharge);
-            }
-            else
-            {
-              fTreeBranch[14] = jetCharge;
-              JCDownHigh->Fill(jetCharge);
-            }
-        }
-
-
-        //Add Gluon JetCharge
-        else if(fCurrentPdg == 21)
-        {
-          fTreeBranch[15] = jetCharge;
-          JCGluon->Fill(jetCharge);
-
-
-            if(JetPt < 40.)
-            {
-              fTreeBranch[16] = jetCharge;
-              JCGluonLow->Fill(jetCharge);
-            }
-            else if( JetPt > 40. && JetPt < 80.)
-            {
-              fTreeBranch[17] = jetCharge;
-              JCGluonMid->Fill(jetCharge);
-            }
-            else
-            {
-              fTreeBranch[18] = jetCharge;
-              JCGluonHigh->Fill(jetCharge);
-            }
-
-
-        }
-
-        //Add Unmatched JetCharge Catagory
-        else if(IndexOfMaximum == -1)
-        {
-
-          fTreeBranch[23] = jetCharge;
-          JCUnmatched->Fill(jetCharge);
-
-
-            if(JetPt < 40.)
-            {
-
-              fTreeBranch[24] = jetCharge;
-              JCUnmatchedLow->Fill(jetCharge);
-            }
-            else if( JetPt > 40. && JetPt < 80.)
-            {
-
-              fTreeBranch[25] = jetCharge;
-              JCUnmatchedMid->Fill(jetCharge);
-            }
-            else
-            {
-
-              fTreeBranch[26] = jetCharge;
-              JCUnmatchedHigh->Fill(jetCharge);
-            }
-
-
-        }
-
-        //Adding Other Flavour JetCharge
-        else
-        {
-          fTreeBranch[19] = jetCharge;
-          JCOther->Fill(jetCharge);
-
-
-            if(JetPt < 40.)
-            {
-              fTreeBranch[20] = jetCharge;
-              JCOtherLow->Fill(jetCharge);
-            }
-            else if( JetPt > 40. && JetPt < 80.)
-            {
-              fTreeBranch[21] = jetCharge;
-              JCOtherMid->Fill(jetCharge);
-            }
-            else
-            {
-              fTreeBranch[22] = jetCharge;
-              JCOtherHigh->Fill(jetCharge);
-            }
-
-        }
-
-
-        fTreeJets->Fill();
 
 
 

@@ -739,19 +739,19 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
 	fPtHFEMC_aftertoftpcnsigcut->Sumw2();
   	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertoftpcnsigcut);
 
-  	fPtHFEMC_aftertrackcut_SPD = new TH2F("fPtHFEMC_aftertrackcut_SPD", "fPtHFEMC_aftertrackcut_SPD Distribution",300,0,15,-0.5,299.5);
+  	fPtHFEMC_aftertrackcut_SPD = new TH2F("fPtHFEMC_aftertrackcut_SPD", "fPtHFEMC_aftertrackcut_SPD Distribution",300,0.,15.0,300,-0.5,299.5);
   	fPtHFEMC_aftertrackcut_SPD->Sumw2();
   	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertrackcut_SPD);
 
-	fPtHFEMC_aftertofcut_SPD  = new TH2F("ffPtHFEMC_aftertofcut_SPD", "fPtHFEMC_aftertofcut_SPD",300,0,15,-0.5,299.5);
+	fPtHFEMC_aftertofcut_SPD  = new TH2F("ffPtHFEMC_aftertofcut_SPD", "fPtHFEMC_aftertofcut_SPD",300,0.,15.0,300,-0.5,299.5);
 	fPtHFEMC_aftertofcut_SPD->Sumw2();
   	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertofcut_SPD);
 	
-	fPtHFEMC_aftertpcnsigcut_SPD  = new TH2F("fPtHFEMC_aftertpcnsigcut_SPD", "fPtHFEMC_aftertpcnsigcut_SPD",300,0,15,-0.5,299.5);
+	fPtHFEMC_aftertpcnsigcut_SPD  = new TH2F("fPtHFEMC_aftertpcnsigcut_SPD", "fPtHFEMC_aftertpcnsigcut_SPD",300,0.,15.0,300,-0.5,299.5);
 	fPtHFEMC_aftertpcnsigcut_SPD->Sumw2();
   	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertpcnsigcut_SPD);
 
-	fPtHFEMC_aftertoftpcnsigcut_SPD  = new TH2F("fPtHFEMC_aftertoftpcnsigcut_SPD", "fPtHFEMC_aftertoftpcnsigcut_SPD Distribution",300,0,15,-0.5,299.5);
+	fPtHFEMC_aftertoftpcnsigcut_SPD  = new TH2F("fPtHFEMC_aftertoftpcnsigcut_SPD", "fPtHFEMC_aftertoftpcnsigcut_SPD Distribution",300,0.,15.0,300,-0.5,299.5);
 	fPtHFEMC_aftertoftpcnsigcut_SPD->Sumw2();
   	if(fIsMC) fOutputList->Add(fPtHFEMC_aftertoftpcnsigcut_SPD);
 
@@ -1622,9 +1622,9 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 		fnSigmaVsPt_TOF->Fill(pt,fTOFnSigma);
 		fnBetaVsPt_TOF->Fill(pt,TOFbeta);
 
-		if(fIsMC && track->GetLabel()>=0)
-     	{		
-			fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
+		if(fIsMC && TMath::Abs(track->GetLabel())>0)
+     	        {		
+			fMCparticle=(AliAODMCParticle*)fMCarray->At(TMath::Abs(track->GetLabel()));
 			pdg = fMCparticle->GetPdgCode();
 			if(TMath::Abs(pdg) == 11)
 			{													
@@ -1735,11 +1735,11 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 					fPte_LS_multSPD->Fill(track->Pt(),SPDntr,fNLS);
 				}
   
-				if(fIsMC && track->GetLabel()>=0)
+				if(fIsMC && TMath::Abs(track->GetLabel()) >0)
    				{
 				
 					fElecNos->Fill(0);   						
-					fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
+					fMCparticle=(AliAODMCParticle*)fMCarray->At(TMath::Abs(track->GetLabel()));
 					pdg = fMCparticle->GetPdgCode();
 					Float_t ptMC= fMCparticle->Pt();
 					//fPT_elec_MCtrue->Fill(ptMC);
@@ -1909,7 +1909,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 	////////////////////////////////////////////////////////////////
 	
 	fHistMult->Fill(num);
-	delete fListOfmotherkink;
+	delete [] fListOfmotherkink;
 }
 //--------------------END of UserExec----------------------------------
 
@@ -2356,4 +2356,5 @@ void AliAnalysisTaskHFEmultTPCTOF::Terminate(Option_t *)
 	if (!fOutputList)return;
 
 }
+
 

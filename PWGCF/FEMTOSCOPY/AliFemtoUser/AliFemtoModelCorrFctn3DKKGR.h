@@ -41,6 +41,10 @@ public:
   virtual AliFemtoModelCorrFctn3DKKGR* Clone() const { return new AliFemtoModelCorrFctn3DKKGR(*this); }
 
   void SetFillkT(bool fillkT){fFillkT = fillkT;}
+
+  void SetFillQgenQrecInv(bool FillQgenQrecInv){fFillQgenQrecInv = FillQgenQrecInv;}
+  void SetFillQgenQrecOutSideLong(bool FillQgenQrecOutSideLong){fFillQgenQrecOutSideLong = FillQgenQrecOutSideLong;}
+  void SetFillDpTpTvspT(bool FillDpTpTvspT){fFillDpTpTvspT = FillDpTpTvspT;}
   
   void SetSpecificPairCut(AliFemtoPairCut* aCut);
   
@@ -64,18 +68,26 @@ protected:
   TH3D *fDenominatorIdeal;   // Denominator made with mixed pairs (true qinv)
 
   TH2D *fQgenQrec; // Qinv true (generated) vs. Qinv reconstructed
+  TH2D *fQgenQrecOut; // Qout true (generated) vs. Qout reconstructed
+  TH2D *fQgenQrecSide; // Qside true (generated) vs. Qside reconstructed
+  TH2D *fQgenQrecLong; // Qlong true (generated) vs. Qlong reconstructed
+
+  TH2D *fDpTpTvspT; // (pT_sim - pT_gen)/pT_sim vs. pT_sim
 
 
 private:
 
   //Special MC analysis for K selected by PDG code -->
   Bool_t fKaonPDG;
-
-    bool fFillkT;
-    const int fNbbPairs = 21;
-    TH1D *fkTdists[21]; // histograms with kT distributions for different BB pairs
-    double GetParentsKt(AliFemtoPair *pair);
-    int GetPairNumber(AliFemtoPair *pair); // returns pair code
+  
+  bool fFillkT;
+  bool fFillQgenQrecInv;
+  bool fFillQgenQrecOutSideLong;
+  bool fFillDpTpTvspT;
+  const int fNbbPairs = 21;
+  TH1D *fkTdists[21]; // histograms with kT distributions for different BB pairs
+  double GetParentsKt(AliFemtoPair *pair);
+  int GetPairNumber(AliFemtoPair *pair); // returns pair code
 
 #ifdef __ROOT__
   /// \cond CLASSIMP

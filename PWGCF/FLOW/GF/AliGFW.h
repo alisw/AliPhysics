@@ -1,6 +1,9 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572 by A. Bilandzic et al.)
+Class steers the initialization and calculation of n-particle correlations. Uses recursive function, all terms are calculated only once.
+Latest version includes the calculation of any number of gaps and any combination of harmonics (including eg symmetric cumulants, etc.)
+If used, modified, or distributed, please aknowledge the author of this code.
 */
 #ifndef AliGFW__H
 #define AliGFW__H
@@ -41,6 +44,7 @@ class AliGFW {
     vector<vector<Int_t>> Regs {};
     vector<vector<Int_t>> Hars {};
     vector<Int_t> Overlap;
+    vector<Int_t> ptInd;
     /*vector<Int_t> Regs {};
     vector<Int_t> Hars {};
     vector<Int_t> Regs2 {};
@@ -64,6 +68,7 @@ class AliGFW {
   TComplex Calculate(TString config, Bool_t SetHarmsToZero=kFALSE);
   CorrConfig GetCorrelatorConfig(TString config, TString head = "", Bool_t ptdif=kFALSE);
   TComplex Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
+  // TComplex Calculate(CorrConfig corconf, vector<Int_t> ptbins, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
  private:
   Bool_t fInitialized;
   void SplitRegions();

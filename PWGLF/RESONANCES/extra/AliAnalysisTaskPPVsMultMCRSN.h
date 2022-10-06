@@ -163,6 +163,11 @@ private:
     TH2F *fHistPtVsV0M_DataSelection[15]; //! 15 spectra
     TH2F *fHistPtVsV0M_MCSelection[15];   //! 15 spectra
     
+    //2-dimensional with midrapidity5
+    TH2F *fHistPtVsMidRapidityTrue_Generated[15];//! 15 spectra
+    TH2F *fHistPtVsMidRapidityTrue_DataSelection[15];//! 15 spectra
+    TH2F *fHistPtVsMidRapidityTrue_MCSelection[15];//! 15 spectra
+    
     //2-dimensional with V0M Amplitudes
     TH2F *fHistPtVsV0MAmplitude_Generated[15]; //! 15 spectra
     TH2F *fHistPtVsV0MAmplitude_DataSelection[15]; //! 15 spectra

@@ -60,15 +60,19 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
-    bool IsInPCMAcceptance(TParticle* part) const;
-    bool IsInPHOSAcceptance(TParticle* part) const;
-    bool IsInEMCalAcceptance(TParticle* part) const;
+    void ProcessMultiplicity();
+    bool IsInPCMAcceptance(AliVParticle* part) const;
+    bool IsInPHOSAcceptance(AliVParticle* part) const;
+    bool IsInEMCalAcceptance(AliVParticle* part) const;
+    bool IsInV0Acceptance(AliVParticle* part) const;
+    bool IsSecondary(AliVParticle* motherParticle) const;
 
     // additional functions
     void SetLogBinningXTH1(TH1* histoRebin);
     void SetLogBinningXTH2(TH2* histoRebin);
     void SetIsK0(Int_t isK0){fIsK0 = isK0;}
     void SetMaxPt(Double_t pTmax){fMaxpT = pTmax;}
+    void SetDoMultStudies(Int_t tmp){fDoMultStudies = tmp;}
 
   protected:
     TList*                fOutputContainer;           //! Output container
@@ -157,17 +161,23 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     TH2F*                 fHistPtAlphaPi0FromKGGEMCAccSamePi0;//! histo for Pi0 from K gamma gamma channel, acceptance by same pi0 (Alpha)
     TH2F*                 fHistPtAlphaPi0FromKGGEMCAccDiffPi0;//! histo for Pi0 from K gamma gamma channel, mixed acceptance (Alpha)
 
+    TH1D*                 fHistV0Mult;                        //! histo for Pi0 pt vs V0 multiplicity
+    TH2F*                 fHistPtV0MultPi0GG;                 //! histo for Pi0 pt vs V0 multiplicity
+    TH2F*                 fHistPtV0MultEtaGG;                 //! histo for Eta pt vs V0 multiplicity
+    TH2F*                 fHistPtV0MultEtaPrimeGG;            //! histo for EtaPrime pt vs V0 multiplicity
 
-	Int_t				  fIsK0;					  // k0 flag
-    Int_t                 fIsMC;                      // MC flag
-    Double_t                 fMaxpT;                      // MC flag
-
+	  Int_t				          fIsK0;					  // k0 flag
+    Int_t                 fIsMC;            // MC flag
+    Double_t              fMaxpT;           // Max pT flag
+    Int_t                 fDoMultStudies;   // enable multiplicity dependent studies (0 -> No mult studies, 1 -> Mult estimation with V0, 2 -> Mult estimation with V0 and INEL>0 criterium for multiplicity)
+    Int_t                 fNTracksInV0Acc;  // number of tracks in V0A+C acceptance for multiplicity studies
+    Bool_t                fIsEvtINELgtZERO; // flag if event is INEL>0
 
   private:
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 5);
+    ClassDef(AliAnalysisTaskGammaPureMC, 7);
 };
 
 #endif

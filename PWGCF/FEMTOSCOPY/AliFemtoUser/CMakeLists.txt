@@ -52,9 +52,11 @@ set(SRCS
    AliFemtoModelCorrFctn3DKKGR.cxx
    AliFemtoModelCorrFctn3DKKGRQinv.cxx
    AliFemtoModelGausLCMSFreezeOutGeneratorGR.cxx
+   AliFemtoModelCorrFctn3DKKGR1.cxx
 #  Ludmila
    AliFemtoCutMonitorDphiDeta1.cxx
    AliFemtoESDTrackCutPlusJets25.cxx
+   AliFemtoESDTrackCutMinusJets.cxx
 #
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
@@ -109,6 +111,7 @@ set(SRCS
   AliFemtoCorrFctnQLCMS.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
   AliFemtoCorrFctnPtKstar.cxx
+  AliFemtoCorrFctnPtKstarBeta.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoBPLCMS3DCorrFctnEMCIC.cxx
   AliFemtoPairCutAntiGamma.cxx
@@ -127,7 +130,7 @@ set(SRCS
   AliFemtoPairCutResonances.cxx
   AliFemtoCorrFctnMinvMonitor.cxx
   AliFemtoCorrFctnPairFractions.cxx
-  AliAnalysisTaskParticleEfficiency.cxx
+AliAnalysisTaskParticleEfficiency.cxx
   AliAnalysisTaskParticleFractions.cxx
   AliFemtoPairOriginMonitor.cxx
   AliFemtoPairCutAntiGammaAlpha.cxx
@@ -137,6 +140,7 @@ set(SRCS
   AliFemtoPairCutRadialDistanceAsymmetric.cxx
   AliFemtoPairCutGeneralizedRadialDistance.cxx
   AliFemtoPairCutMergedFraction.cxx
+  AliFemtoPairCutMergedFraction_pik.cxx
   AliFemtoCorrFctnDEtaDPhiSimple.cxx
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
@@ -164,7 +168,15 @@ set(SRCS
   AliFemtoCutMonitorV0CosPointingAngle.cxx
   AliFemtoCutMonitorPairMomRes.cxx
   AliFemtoCorrFctnPairsForCorrFit.cxx
+  AliAnalysisTaskParticleEffWRZ.cxx
   AliFemtoWRzTrackCut.cxx
+  AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
+  AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
+  AliFemtoCorrFctnpdtHe3.cxx
+  AliAnalysisTaskParticleEffDY04.cxx
+  AliAnalysisTaskParticleEffDY06.cxx
+  AliAnalysisTaskParticleEffDY.cxx
+
   )
 
 

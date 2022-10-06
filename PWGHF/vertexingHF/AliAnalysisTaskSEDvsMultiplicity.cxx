@@ -652,17 +652,17 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fPtVsMassVsMult=new TH3F("hPtVsMassvsMult", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMult=new TH3F("hPtVsMassvsMult", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,72,0.,36.);
  
-  fPtVsMassVsMultNoPid=new TH3F("hPtVsMassvsMultNoPid", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.); 
+  fPtVsMassVsMultNoPid=new TH3F("hPtVsMassvsMultNoPid", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,72,0.,36.); 
 
-  fPtVsMassVsMultUncorr=new TH3F("hPtVsMassvsMultUncorr", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultUncorr=new TH3F("hPtVsMassvsMultUncorr", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,72,0.,36.);
 
-  fPtVsMassVsMultPart=new TH3F("hPtVsMassvsMultPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultPart=new TH3F("hPtVsMassvsMultPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,72,0.,36.);
 
-  fPtVsMassVsMultAntiPart=new TH3F("hPtVsMassvsMultAntiPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultAntiPart=new TH3F("hPtVsMassvsMultAntiPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,72,0.,36.);
 
-  fPtVsMassVsMultMC=new TH3F("hPtVsMassvsMultMC", "D true candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultMC=new TH3F("hPtVsMassvsMultMC", "D true candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,72,0.,36.);
 
   fOutput->Add(fPtVsMassVsMult);
   fOutput->Add(fPtVsMassVsMultUncorr);
@@ -1190,10 +1190,13 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	  if(multForCand>0) multForCand-=1;
 	}
       } else {
-	// For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
+	// For the D* case, subtract both D0 daughter and soft pion tracks
 	AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
-	if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
-
+        AliAODTrack* softpifromDstar = NULL;
+	if(fPdgMeson==413){ 
+          d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+          softpifromDstar = (AliAODTrack*)dCascade->GetBachelor();
+        }
 	for(Int_t iDau=0; iDau<nDau; iDau++){
 	  AliAODTrack *t = NULL;
 	  if(fPdgMeson==413){ t = (AliAODTrack*)d0fromDstar->GetDaughter(iDau); }
@@ -1203,6 +1206,11 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	    if(multForCand>0) multForCand-=1;
 	  }
 	}
+        if(fPdgMeson==413){ 
+          if(softpifromDstar->HasPointOnITSLayer(0) && softpifromDstar->HasPointOnITSLayer(1)){
+            if(multForCand>0) multForCand-=1;        
+          }
+        }  
       }
     }
     Bool_t isPrimary=kTRUE;

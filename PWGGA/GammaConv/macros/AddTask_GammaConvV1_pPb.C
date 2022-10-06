@@ -196,6 +196,9 @@ void AddTask_GammaConvV1_pPb(
   } else if (trainConfig == 8){
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000"); // new default
     cuts.AddCutPCM("80010123", "00200009327000008250400000", "0162103500000000"); // new default, no to close
+  } else if (trainConfig == 9){ //V0 reader studies
+    cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000"); // on the fly
+    cuts.AddCutPCM("80010123", "10200009f9730000dge0400000", "0162103500000000"); // offline
 
   // default cut all cents without smearing and to close V0
   } else if (trainConfig == 10) {
@@ -269,6 +272,10 @@ void AddTask_GammaConvV1_pPb(
   } else if (trainConfig == 52){
     cuts.AddCutPCM("86010123", "00200009f9730000dge0400000", "0162103500000000"); //new default
     cuts.AddCutPCM("86010123", "00200009327000008250400000", "0162103500000000"); //new default, no to close
+
+
+  } else if (trainConfig == 70){
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0162103500000000"); //new default
 
   //--------------------------------------------------------------------------
   // Systematics variations for standard ana w/o to close V0, wo smearing

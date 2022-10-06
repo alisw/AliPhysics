@@ -32,6 +32,7 @@
 #pragma link C++ class AliAnalysisTaskCompareAODTrackCuts+;
 #pragma link C++ class AliAnalysisTaskDiJetCorrelationsAllb2b+;
 #pragma link C++ class AliDPhiBasicParticleDiJet+;
+#pragma link C++ class AliEPDependentDiHadronOnTheFlyMCTask+;
 #pragma link C++ class AliEvtPoolManager+;
 #pragma link C++ class AliEvtPool+;
 #pragma link C++ class AliMiniTrack+;
@@ -49,6 +50,10 @@
 #pragma link C++ class AliV0hParticles+;
 #pragma link C++ class AliAnalysisTaskV0ChCorrelationsys+;
 #pragma link C++ class AliV0XiParticles+;
+#pragma link C++ class AliAnalysisTaskCorrelGen+;
+#pragma link C++ class AliV0ChParticleGen+;
+#pragma link C++ class AliAnalysisTaskLambdaK0s+;
+#pragma link C++ class AliV0XiParticleall+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
 #pragma link C++ class AliAnalysisTaskLongFluctuations2PC+;
 #pragma link C++ class LRCParticle;
@@ -90,6 +95,7 @@
 #pragma link C++ class AliAssociatedTrackYSLEGOMC+;
 #pragma link C++ class AliMixTrackYSLEGOMC+;
 #pragma link C++ class AliAssociatedVZEROYSLEGOMC+;
+#pragma link C++ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsJetV2+;
 #pragma link C++ class AliTrigAssoPairST+;
 #pragma link C++ class AliAnalysisTaskSEPbPbCorrelationsJetV2+;
@@ -103,8 +109,20 @@
 #pragma link C++ class AliCSTrackCuts+;
 #pragma link C++ class AliCSTrackMaps+;
 #pragma link C++ class AliCSTrackSelection+;
+#pragma link C++ class AliTwoParticleCorrelationsBase+;
 #pragma link C++ class AliDptDptCorrelations+;
+#pragma link C++ class Ali2PCorrelations+;
 #pragma link C++ class AliAnalysisTaskDiHadCorrelHighPt+;
 #pragma link C++ class AliV0ChParticle+;
 #pragma link C++ class AliAnalysisTaskR2P2+;
+#pragma link C++ class AliAnalysisTaskR2P2Base+;
+#pragma link C++ class AliAnalysisTaskR2P2Corr+;
+#pragma link C++ class AliAnalysisTaskR2P2CorrGen+;
+#pragma link C++ class AliAnalysisTaskR2P2multClass+;
+#pragma link C++ class AliAnalysisTaskR2P2multClassGen+;
+#pragma link C++ class AliAnalysisTaskR2P2multEff+;
+#pragma link C++ class AliAnalysisTaskR2P2highMult+;
+#pragma link C++ class AliAnalysisTaskR2P2pp+;
+#pragma link C++ class AliAnalysisTaskBFR2+;
+#pragma link C++ class AliAnalysisTaskBFR2sphero+;
 #endif

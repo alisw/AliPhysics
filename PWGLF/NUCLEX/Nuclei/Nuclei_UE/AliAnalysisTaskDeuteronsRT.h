@@ -41,7 +41,7 @@ public:
     void SetMultiplicityInterval   (Double_t multMin, Double_t multMax) { fMultMin = multMin; fMultMax = multMax; }
     void SetAverageTransverseMult  (Double_t average_Nch_Transv)        { fAverage_Nch_Transv = average_Nch_Transv; }
     void SetAnalysisParametersSyst (TH2F *h2Dmatrix)                    { hAnalysisParameters = h2Dmatrix; }
-    void SetInputData              (Bool_t isMC)                        { fIsMC = isMC; }
+    void SetInputData              (Bool_t ispPb, Bool_t isMC)          { fIspPb = ispPb; fIsMC = isMC; }
     void SetMinPtLeadingTrack      (Double_t pt)                        { fPt_min_leading = pt; }
     void SetIsUEAnalysis           (Bool_t isUEanalysis)                { fIsUEanalysis = isUEanalysis; }
 
@@ -70,6 +70,7 @@ public:
     Bool_t   IsDeuteronCandidate                 (AliESDtrack *track);
     Bool_t   PassedTrackQualityCuts_Syst         (AliESDtrack *track, Int_t isyst);
     Double_t GetTransverseDCA                    (AliESDtrack *track);
+    Double_t GetLongitudinalDCA                  (AliESDtrack *track);
     Double_t GetRapidity (AliESDtrack *track);
 
     //Standard Event Cuts
@@ -86,12 +87,15 @@ private:
     TList             *fOutputList;//!
     TList             *fQAList;//!
     
+   
+    
     //Input from AddTask
     UInt_t    fTriggerType;//
     Double_t  fMultMin;//
     Double_t  fMultMax;//
     Double_t  fAverage_Nch_Transv;//
     TH2F     *hAnalysisParameters;//
+    Bool_t    fIspPb;//
     Bool_t    fIsMC;//
     Double_t  fPt_min_leading;//
     Bool_t    fIsUEanalysis;//
@@ -144,6 +148,9 @@ private:
     THnSparseF *hnsigmaTPC_antideuterons_Syst;//!
     THnSparseF *hnsigmaTOF_deuterons_Syst;//!
     THnSparseF *hnsigmaTOF_antideuterons_Syst;//!
+    THnSparseF *hDCAxy_deuterons_Syst;//!
+    THnSparseF *hDCAxy_antideuterons_Syst;//!
+
     
     //3-Dimensional Histograms for Deuterons vs. y
     THnSparseF *hnsigmaTPC_deuterons_rap;//!
@@ -158,12 +165,12 @@ private:
     TH1F *h_antideuterons_Gen;//!
 
     //Reconstructed p_{T} Spectra (low p_{T})
-    TH1F *hnsigmaTPC_deuterons_Rec;//!
-    TH1F *hnsigmaTPC_antideuterons_Rec;//!
+    TH2F *hnsigmaTPC_deuterons_Rec;//!
+    TH2F *hnsigmaTPC_antideuterons_Rec;//!
         
     //Reconstructed p_{T} Spectra (high p_{T})
-    TH1F *hnsigmaTOF_deuterons_Rec;//!
-    TH1F *hnsigmaTOF_antideuterons_Rec;//!
+    TH2F *hnsigmaTOF_deuterons_Rec;//!
+    TH2F *hnsigmaTOF_antideuterons_Rec;//!
 
     //DCA_{xy} Distributions
     TH2F *hDCAxy_deuterons_Prim;//!
@@ -174,11 +181,17 @@ private:
     TH2F *hnsigmaTPC_antideuterons_Rec_Syst;//!
     TH2F *hnsigmaTOF_deuterons_Rec_Syst;//!
     TH2F *hnsigmaTOF_antideuterons_Rec_Syst;//!
-    
+
+    //Efficiency vs. Rapidity
+    TH2F *hGeneratedDeuterons_vs_Rapidity;//!
+    TH2F *hGeneratedAntiDeuterons_vs_Rapidity;//!
+    TH2F *hReconstructedDeuterons_TPC_vs_Rapidity;//!
+    TH2F *hReconstructedAntiDeuterons_TPC_vs_Rapidity;//!
+    TH2F *hReconstructedDeuterons_TOF_vs_Rapidity;//!
+    TH2F *hReconstructedAntiDeuterons_TOF_vs_Rapidity;//!
+
     //****************************************************************************************
 
-
-    
     
     AliAnalysisTaskDeuteronsRT(const AliAnalysisTaskDeuteronsRT&);
     AliAnalysisTaskDeuteronsRT& operator=(const AliAnalysisTaskDeuteronsRT&);

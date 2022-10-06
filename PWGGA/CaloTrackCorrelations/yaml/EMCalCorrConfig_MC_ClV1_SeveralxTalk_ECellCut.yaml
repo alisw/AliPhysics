@@ -13,6 +13,8 @@ inputObjects:
             branchName: "cells_xTalkMore"
         cells_xTalkLess:
             branchName: "cells_xTalkLess"
+        cells_xTalkMoreCenEta:
+            branchName: "cells_xTalkMoreCenEta"
     clusterContainers:
         baseClusterContainer:
             branchName: "V1clusters_xTalkOff"
@@ -22,6 +24,8 @@ inputObjects:
             branchName: "V1clusters_xTalkMore"
         baseClusterContainer_xTalkLess:
             branchName: "V1clusters_xTalkLess"
+        baseClusterContainer_xTalkMoreCenEta:
+            branchName: "V1clusters_xTalkMoreCenEta"
        
 # Clone cells branch
 CellCloneContainer:
@@ -39,6 +43,9 @@ CellCloneContainer_xTalkMore:
 CellCloneContainer_xTalkLess:
     enabled: true        
     clonedCellsBranchName: "cells_xTalkLess"
+CellCloneContainer_xTalkMoreCenEta:
+    enabled: true
+    clonedCellsBranchName: "cells_xTalkMoreCenEta"
         
 # Cross talk emulation   
 CellEmulateCrosstalk:   
@@ -104,6 +111,22 @@ CellEmulateCrosstalk_xTalkLess:
                  18: [1.75e-3], 19: [1.75e-3], 20: [1.75e-3], 21: [1.75e-3]} 
     cellsNames:
         - cells_xTalkLess
+CellEmulateCrosstalk_xTalkMoreCenEta:
+    enabled: true
+    inducedEnergyLossMinimumFraction:
+        enabled: true
+        values: {0 : [4.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [2.0e-3], 5 : [2.0e-3],
+                 6 : [4.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 10: [2.5e-3], 11: [2.5e-3],
+                 12: [4.5e-3], 13: [4.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [4.5e-3], 17: [3.5e-3],
+                 18: [3.5e-3], 19: [3.5e-3], 20: [3.5e-3], 21: [3.5e-3]}
+    inducedEnergyLossMinimumFractionCentralEta:
+        enabled: true
+        values: {0 : [6.8e-3], 1 : [7.5e-3], 2 : [6.8e-3], 3 : [9.0e-3], 4 : [4.5e-3], 5 : [4.5e-3],
+                 6 : [6.8e-3], 7 : [9.0e-3], 8 : [5.2e-3], 9 : [5.2e-3], 10: [5.0e-3], 11: [5.0e-3],
+                 12: [6.8e-3], 13: [6.8e-3], 14: [5.2e-3], 15: [5.2e-3], 16: [6.8e-3], 17: [5.2e-3],
+                 18: [6.8e-3], 19: [6.8e-3], 20: [5.2e-3], 21: [5.2e-3]}
+    cellsNames:
+        - cells_xTalkMoreCenEta
    
 # Cell bad channel
 CellBadChannel:
@@ -124,6 +147,10 @@ CellBadChannel_xTalkLess:
     enabled: true
     cellsNames:
         - cells_xTalkLess
+CellBadChannel_xTalkMoreCenEta:
+    enabled: true
+    cellsNames:
+        - cells_xTalkMoreCenEta
     
 # Cell Energy Calib
 CellEnergy:
@@ -171,6 +198,12 @@ Clusterizer_xTalkLess:
         - cells_xTalkLess
     clusterContainersNames:
         - baseClusterContainer_xTalkLess
+Clusterizer_xTalkMoreCenEta:
+    enabled: true
+    cellsNames:
+        - cells_xTalkMoreCenEta
+    clusterContainersNames:
+        - baseClusterContainer_xTalkMoreCenEta
     
 # Non-linearity
 ClusterNonLinearity:
@@ -201,7 +234,12 @@ ClusterNonLinearity_xTalkLess:
         - cells_xTalkLess
     clusterContainersNames:
         - baseClusterContainer_xTalkLess
-
+ClusterNonLinearity_xTalkMoreCenEta:
+    enabled: true
+    cellsNames:
+        - cells_xTalkMoreCenEta
+    clusterContainersNames:
+        - baseClusterContainer_xTalkMoreCenEta
 
 # Non-linearity after burner
 ClusterNonLinearityMCAfterburner:
@@ -233,6 +271,12 @@ ClusterNonLinearityMCAfterburner_xTalkLess:
         - cells_xTalkLess
     clusterContainersNames:
         - baseClusterContainer_xTalkLess
+ClusterNonLinearityMCAfterburner_xTalkMoreCenEta:
+    enabled: true
+    cellsNames:
+        - cells_xTalkMoreCenEta
+    clusterContainersNames:
+        - baseClusterContainer_xTalkMoreCenEta
     
 # Cluster-track matcher
 ClusterTrackMatcher:
@@ -253,3 +297,7 @@ ClusterTrackMatcher_xTalkLess:
     enabled: true
     clusterContainersNames:
         - baseClusterContainer_xTalkLess  
+ClusterTrackMatcher_xTalkMoreCenEta:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_xTalkMoreCenEta

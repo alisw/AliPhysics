@@ -90,6 +90,7 @@ public:
      Double_t GetDCAxy();
      Double_t GetDCAz();
      Bool_t TestFilterBitG(UInt_t bit) const;
+     Bool_t HasSharedPointOnITSLayerG(Int_t i);
      Bool_t   GetIsESD(){
          return fIsESD;
      }
@@ -111,7 +112,7 @@ private:
     AliAODTrack* fAODtrack;
     Double_t b[2];
     Double_t bCov[3];
-    ClassDef( AliDalitzAODESD, 1 );
+    ClassDef( AliDalitzAODESD, 2 );
     };
 
 

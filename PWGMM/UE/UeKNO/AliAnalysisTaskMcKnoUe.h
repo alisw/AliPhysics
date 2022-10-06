@@ -54,6 +54,10 @@ public:
     void       SetParametrizationEfficiency(Bool_t ispy = kFALSE)  {fIsPythia = ispy;}
 	void       SetParametrizationEfficiencyppdata(Bool_t ispp = kFALSE)  {fIsppData = ispp;}
     void       SetParametrizationEfficiencypPbdata(Bool_t ispPb = kFALSE)  {fIspPbData = ispPb;}
+    
+    void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
+    void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
+    
 	bool       HasRecVertex();
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
 
@@ -88,7 +92,10 @@ private:
 	Int_t    fRecLeadIn;
 
 	Float_t fDCAxy;
-	Float_t fDCAz;	
+	Float_t fDCAz;
+    Double_t fRefmult08std;
+    Double_t fpercentileV0M;
+    AliMultSelection *fMultSelection;
     
     
 //     // Corrections
@@ -110,8 +117,34 @@ private:
 	TH1D * hPhiRec[3];
 	TH1D * hNchTSRec;
 	TH1D * hNchTSRecTest;
-	TH1D * hNchTSData;
 	TH2D * hNchResponse;
+        
+        TH1D * hNchTSData;
+        TH1D * hPhiData_TS1;
+        TH1D * hPhiData_TS2;
+        TH1D * hNchTSminData;
+        TH1D * hNchTSmaxData;
+        
+        TH1D * hPhiGen_TS1;
+        TH1D * hPhiGen_TS2;
+        TH1D * hPhiGenTest_TS1;
+        TH1D * hPhiGenTest_TS2;
+        TH1D * hPhiRec_TS1;
+        TH1D * hPhiRec_TS2;
+        TH1D * hPhiRecTest_TS1;
+        TH1D * hPhiRecTest_TS2;
+        
+        TH1D * hNchTSminGen;
+        TH1D * hNchTSminRec;
+        TH2D * hNchTSminResponse;
+        TH1D * hNchTSminGenTest;
+        TH1D * hNchTSminRecTest;
+        
+        TH1D * hNchTSmaxGen;
+        TH1D * hNchTSmaxRec;
+        TH2D * hNchTSmaxResponse;
+        TH1D * hNchTSmaxGenTest;
+        TH1D * hNchTSmaxRecTest;
 
 	// UE 
 	TH1D * hPtInPrim;
@@ -176,6 +209,9 @@ private:
 	TH1D * hPtLeadingGenGood;
 	TH1D * hPtLeadingRecAll;
 	TH1D * hPtLeadingGenAll;
+    TH1D * hRefMult08std;
+    TH1D * hMultV0M;
+    TH2D * hRefMultvsMultV0M;
 
 	AliAnalysisTaskMcKnoUe(const AliAnalysisTaskMcKnoUe&);                  // not implemented
 	AliAnalysisTaskMcKnoUe& operator=(const AliAnalysisTaskMcKnoUe&);       // not implemented

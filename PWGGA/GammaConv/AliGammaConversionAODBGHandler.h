@@ -15,7 +15,7 @@
 
 // --- ROOT system ---
 #include <TObject.h> 
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliAODConversionPhoton.h"
 #include "AliAODConversionMother.h"
 #include "TClonesArray.h"

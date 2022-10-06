@@ -15,7 +15,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
 										const std::string cocktailFilename   ="",
 										const std::string centralityFilename ="",
 										TString calibFileName = "",
-										const TString outname = "LMEE.root")
+										const TString outname = "LMEE.root",
+										Int_t version = 0,
+										TString CentralityEstimator = "")
 {
 
   //get the current analysis manager
@@ -63,21 +65,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   else if(generators.Contains("pizero_0")) suffixgen = "_LF";
   else suffixgen = "";
 
-  // generator index
-  TString suffixgenID = "";
-  std::vector<UInt_t> genID;
-  const Int_t ngenID = (Int_t)gROOT->ProcessLine("GetGenID()");
-  if(ngenID > 0) {
-    for (unsigned int i = 0; i < ngenID+1; ++i){
-      UInt_t valuegenID = (UInt_t)(gROOT->ProcessLine(Form("GetGenID(%d)",i)));
-      genID.push_back(valuegenID);
-      suffixgenID += valuegenID;
-    }
-  }
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_%s_%s_Pileup%d",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data(),rejpileup);
+  appendix += TString::Format("Cen%d_%d_%s_%s_Pileup%d_%d",CenMin,CenMax,triggername.Data(),suffixgen.Data(),rejpileup,version);
+  if(CentralityEstimator.Contains("V0")) appendix += TString::Format("_Cen%s",CentralityEstimator.Data());
   printf("appendix %s\n", appendix.Data());
 
   //##########################################################
@@ -100,8 +92,13 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);//always ON in Run2 analyses for both data and MC.
   task->SetTriggerMask(trigger);
-  task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("GetEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,rejpileup,"V0M")))));
-
+  if(CentralityEstimator.Contains("V0")){
+    printf("Use %s centrality estimator for event selection\n",CentralityEstimator.Data());
+    task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("GetEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,rejpileup,CentralityEstimator.Data())))));
+  } else {
+    printf("Use default old centrality estimator V0M for event selection\n");
+    task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("GetEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,rejpileup,"V0M")))));
+  }
   
   // #########################################################
   // #########################################################
@@ -117,7 +114,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // Set minimum and maximum values for pairing
   task->SetKinematicCuts(PtMin, PtMax, EtaMin, EtaMax);
-
 
   // #########################################################
   // #########################################################
@@ -156,8 +152,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   //task->SetSmearGenerated(kFALSE); // cross check smearing the MC at single level and filling resolution maps
  // Resolution File, If resoFilename = "" no correction is applied
-  task->SetResolutionFile(resolutionFilename);
-  task->SetResolutionFileFromAlien("/alice/cern.ch/user/r/rbailhac/supportFiles/" + resolutionFilename);
+  task->SetResolutionFile(resolutionFilename,"/alice/cern.ch/user/r/rbailhac/supportFiles/" + resolutionFilename);
   task->SetResolutionDeltaPtBinsLinear   (-10., 2., (Int_t)gROOT->ProcessLine("GetNbinsDeltaMom()"));
   task->SetResolutionRelPtBinsLinear   (0., 2.,  (Int_t)gROOT->ProcessLine("GetNbinsRelMom()"));
   task->SetResolutionEtaBinsLinear  (-0.4, 0.4, (Int_t)gROOT->ProcessLine("GetNbinsDeltaEta()"));
@@ -172,8 +167,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
-  task->SetCentralityFile(centralityFilename);
-  task->SetCentralityFileFromAlien("/alice/cern.ch/user/r/rbailhac/supportFiles/" + centralityFilename);
+  task->SetCentralityFile(centralityFilename,"/alice/cern.ch/user/r/rbailhac/supportFiles/" + centralityFilename);
+  if(CentralityEstimator.Contains("V0")){
+    printf("Set %s centrality estimator \n",CentralityEstimator.Data());
+    task->SetCentralityEstimator(CentralityEstimator.Data());
+  } else {
+    printf("Use default old centrality estimator V0M for the task\n");
+  }
+  
 
   // #########################################################
   // #########################################################
@@ -190,19 +191,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   task->SetGeneratorULSSignalName(generators);
 
 
-  //#################################################
-  //#################################################
-  // generator ID to select pile-up or not
-  if(ngenID > 0) {
-    task->SetGeneratorMCSignalIndex(genID);
-    task->SetGeneratorULSSignalIndex(genID);
-    task->SetCheckGenID(kTRUE);
-  }
-  
+ 
   //###############################################
   //##############################################
-  task->SetCocktailWeighting(cocktailFilename);
-  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/r/rbailhac/supportFiles/" + cocktailFilename);
+  if (cocktailFilename != "") task->SetDoCocktailWeighting(kTRUE);
+  task->SetCocktailWeighting(cocktailFilename,"/alice/cern.ch/user/r/rbailhac/supportFiles/" + cocktailFilename);
+
   
   // #########################################################
   // #########################################################
@@ -260,19 +254,19 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
     
     if(hs_mean_ITS_El) {
       cout<<"Adding mean ITS PID correction" <<endl;
-      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_mean_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_mean_ITS_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     }
     if(hs_mean_TOF_El) {
       cout<<"Adding mean TOF PID correction" <<endl;
-      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_mean_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_mean_TOF_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     }
     if(hs_width_ITS_El) {
       cout<<"Adding width ITS PID correction" <<endl;
-      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_width_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_width_ITS_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     }
     if(hs_width_TOF_El) {
       cout<<"Adding width TOF PID correction" <<endl;
-      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_width_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_width_TOF_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     } 
   }
   

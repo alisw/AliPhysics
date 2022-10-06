@@ -256,6 +256,9 @@ protected:
   Double_t                    fResolution;                                ///< Resolution for threshold smearing
   Bool_t                      fUseSmearedEnergy;                          ///< Switch whether to use smeared or original energy
 
+  AliEmcalTriggerOfflineSelection(AliEmcalTriggerOfflineSelection &);
+  AliEmcalTriggerOfflineSelection &operator=(const AliEmcalTriggerOfflineSelection&);
+
   ClassDef(AliEmcalTriggerOfflineSelection, 1);
 };
 

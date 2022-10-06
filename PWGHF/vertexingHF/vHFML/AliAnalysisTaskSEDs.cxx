@@ -56,7 +56,7 @@ ClassImp(AliAnalysisTaskSEDs);
 /// \endcond
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()                                   
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()
 {
   /// Default constructor
 }
@@ -64,7 +64,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE()
 //________________________________________________________________________
 AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts, Bool_t createMLtree) : AliAnalysisTaskSE(name),
                                                                                                                      fCreateMLtree(createMLtree)
-{                                                   
+{
   /// Standard constructor
   SetAnalysisCuts(analysiscuts);
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
@@ -384,19 +384,20 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fChanHist[iHist]);
   }
 
-  fCosPHist3D = new TH3F("fCosPHist3D", "CosP vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
-  fCosPxyHist3D = new TH3F("fCosPxyHist3D", "CosPxy vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
-  fDLenHist3D = new TH3F("fDLenHist3D", "DLen vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.5);
-  fDLenxyHist3D = new TH3F("fDLenxyHist3D", "DLenxy vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.5);
-  fNDLenxyHist3D = new TH3F("fNDLenxyHist3D", "NDLenxy vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 11.);
-  fSigVertHist3D = new TH3F("fSigVertHist3D", "SigVert vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.1);
-  fDCAHist3D = new TH3F("fDCAHist3D", "DCA vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.1);
-  fNormIPHist3D = new TH3F("fNormIPHist3D", "nIP vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 6.);
-  fCosPiDsHist3D = new TH3F("fCosPiDsHist3D", "CosPiDs vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
-  fCosPiKPhiHist3D = new TH3F("fCosPiKPhiHist3D", "CosPiKPhi vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.5);
-  fPtProng0Hist3D = new TH3F("fPtProng0Hist3D", "Pt prong0 vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
-  fPtProng1Hist3D = new TH3F("fPtProng1Hist3D", "Pt prong1 vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
-  fPtProng2Hist3D = new TH3F("fPtProng2Hist3D", "Pt prong2 vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
+  Int_t nPtBins3D=(Int_t)fPtLimits[fNPtBins];
+  fCosPHist3D = new TH3F("fCosPHist3D", "CosP vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
+  fCosPxyHist3D = new TH3F("fCosPxyHist3D", "CosPxy vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
+  fDLenHist3D = new TH3F("fDLenHist3D", "DLen vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.5);
+  fDLenxyHist3D = new TH3F("fDLenxyHist3D", "DLenxy vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.5);
+  fNDLenxyHist3D = new TH3F("fNDLenxyHist3D", "NDLenxy vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 11.);
+  fSigVertHist3D = new TH3F("fSigVertHist3D", "SigVert vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.1);
+  fDCAHist3D = new TH3F("fDCAHist3D", "DCA vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.1);
+  fNormIPHist3D = new TH3F("fNormIPHist3D", "nIP vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 6.);
+  fCosPiDsHist3D = new TH3F("fCosPiDsHist3D", "CosPiDs vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
+  fCosPiKPhiHist3D = new TH3F("fCosPiKPhiHist3D", "CosPiKPhi vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.5);
+  fPtProng0Hist3D = new TH3F("fPtProng0Hist3D", "Pt prong0 vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
+  fPtProng1Hist3D = new TH3F("fPtProng1Hist3D", "Pt prong1 vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
+  fPtProng2Hist3D = new TH3F("fPtProng2Hist3D", "Pt prong2 vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
 
   if (!fReadMC && fDoCutVarHistos)
   {
@@ -415,11 +416,14 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fPtProng2Hist3D);
   }
 
-  fPtVsMass = new TH2F("hPtVsMass", "PtVsMass (prod. cuts)", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins] * 2, 0., fPtLimits[fNPtBins]);
-  fPtVsMassPhi = new TH2F("hPtVsMassPhi", "PtVsMass (phi selection)", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins] * 10, 0., fPtLimits[fNPtBins]);
-  fPtVsMassK0st = new TH2F("hPtVsMassK0st", "PtVsMass (K0* selection)", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins] * 10, 0., fPtLimits[fNPtBins]);
-  fYVsPt = new TH2F("hYVsPt", "YvsPt (prod. cuts)", (Int_t)fPtLimits[fNPtBins] * 2, 0., fPtLimits[fNPtBins], 80, -2., 2.);
-  fYVsPtSig = new TH2F("hYVsPtSig", "YvsPt (MC, only sig., prod. cuts)", (Int_t)fPtLimits[fNPtBins] * 2, 0., fPtLimits[fNPtBins], 80, -2., 2.);
+  Int_t scalptb=10;
+  if(fCustomPtBinWidth && fPtBinWidth>0.) scalptb=TMath::Nint(1./fPtBinWidth);
+  Int_t nPtBins2D=(Int_t)fPtLimits[fNPtBins]*scalptb;
+  fPtVsMass = new TH2F("hPtVsMass", "PtVsMass (prod. cuts)", nInvMassBins, minMass, maxMass, nPtBins2D, 0., fPtLimits[fNPtBins]);
+  fPtVsMassPhi = new TH2F("hPtVsMassPhi", "PtVsMass (phi selection)", nInvMassBins, minMass, maxMass, nPtBins2D, 0., fPtLimits[fNPtBins]);
+  fPtVsMassK0st = new TH2F("hPtVsMassK0st", "PtVsMass (K0* selection)", nInvMassBins, minMass, maxMass, nPtBins2D, 0., fPtLimits[fNPtBins]);
+  fYVsPt = new TH2F("hYVsPt", "YvsPt (prod. cuts)", nPtBins2D, 0., fPtLimits[fNPtBins], 80, -2., 2.);
+  fYVsPtSig = new TH2F("hYVsPtSig", "YvsPt (MC, only sig., prod. cuts)", nPtBins2D, 0., fPtLimits[fNPtBins], 80, -2., 2.);
 
   for (Int_t iPt = 0; iPt < fNPtBins; iPt++)
   {
@@ -494,6 +498,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       if(fFillOnlySignal)
         fMLhandler->SetFillOnlySignal();
       fMLhandler->SetFillBeautyMotherPt();
+      fMLhandler->SetFillBeautyMotherPDG();
     }
     fMLtree = fMLhandler->BuildTree("treeMLDs", "treeMLDs");
     fMLtree->SetMaxVirtualSize(1.e+8);
@@ -503,7 +508,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   //Set seed of gRandom
   if(fCreateMLtree && fEnableEvtSampling)
     gRandom->SetSeed(fSeedSampling);
-  
+
   PostData(1, fOutput);
 
   return;
@@ -517,7 +522,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
   if(fCreateMLtree && fEnableEvtSampling && gRandom->Rndm() > fFracEvtToKeep)
     return;
-  
+
   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(InputEvent());
 
   fHistNEvents->Fill(0); // all events
@@ -594,11 +599,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     fHistCentrality[2]->Fill(evCentr);
     fHistCentralityMult[2]->Fill(ntracks, evCentr);
   }
-  
+
   // no physics selection can be applied for upgrade studies
   if(fSystem == kUpgr && fAnalysisCuts->IsEventRejectedDuePhysicsSelection())
    isEvSel = kTRUE;
-  
+
   Int_t runNumber = aod->GetRunNumber();
 
   TClonesArray *arrayMC = 0;
@@ -676,6 +681,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     printf("Number of Ds->KKpi: %d\n", n3Prong);
 
   Int_t pdgDstoKKpi[3] = {321, 321, 211};
+  Int_t pdgDplustoKpipi[3] = {321, 211, 211};
   Int_t nSelected = 0;
   Int_t nFiltered = 0;
   Double_t massPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
@@ -736,7 +742,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Double_t invMass_piKK = 0.;
 
     if (fCreateMLtree && fEnableCandSampling) // apply sampling in pt
-    { 
+    {
       Double_t pseudoRand = ptCand * 1000. - (long)(ptCand * 1000);
       if (pseudoRand > fFracCandToKeep && ptCand < fMaxCandPtSampling)
       {
@@ -833,6 +839,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Int_t indexMCpiKK = -1;
     Int_t labDs = -1;
     Int_t labDplus = -1;
+    Int_t labDplusToKpipi = -1;
     Int_t pdgCode0 = -999;
 
     AliAODMCParticle *partDs = nullptr;
@@ -841,6 +848,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Bool_t isCandInjected = kFALSE;
     Float_t trueImpParDsFromB = 99999.;
     Float_t ptB = -999.;
+    Int_t pdgBmother = 0, Borigin = -1;
 
     if (fReadMC)
     {
@@ -901,12 +909,37 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           AliAODMCParticle *p = (AliAODMCParticle *)arrayMC->UncheckedAt(TMath::Abs(labDau0));
           pdgCode0 = TMath::Abs(p->GetPdgCode());
         }
+        else
+        {
+          labDplusToKpipi = d->MatchToMC(411, arrayMC, nProng, pdgDplustoKpipi);
+          if (labDplusToKpipi >= 0)
+            partDs = (AliAODMCParticle*)arrayMC->At(labDplusToKpipi);
+        }
       }
       if(partDs){
         orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
         origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kFALSE);
-        if(orig == 5 || origWoQuark==5)
-           ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,partDs);
+        if(orig == 5 || origWoQuark==5) {
+          ptB = AliVertexingHFUtils::GetBeautyMotherPtAndPDG(arrayMC,partDs,pdgBmother);
+          switch(TMath::Abs(pdgBmother))
+          {
+            case 511:
+              Borigin = 1;
+            break;
+            case 521:
+              Borigin = 2;
+            break;
+            case 531:
+              Borigin = 3;
+            break;
+            case 5122:
+              Borigin = 4;
+            break;
+            default:
+              Borigin = 5;
+            break;
+          }
+        }
       }
     }
 
@@ -998,8 +1031,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       Double_t absimpparxy = TMath::Abs(d->ImpParXY());
       //variables for ML application
       AliAODPidHF *Pid_HF = nullptr;
-      Double_t modelPred = -1.;
-      bool isMLsel = true;
+      std::vector<Double_t> modelPred = {};
+      bool isMLsel = false;
       if (fApplyML)
         Pid_HF = fAnalysisCuts->GetPidHF();
 
@@ -1013,46 +1046,60 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         if (fApplyML)
         {
-          isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF, 0);
-
+          isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, d, aod->GetMagneticField(), Pid_HF, 0);
           if (fEnablePIDMLSparses && (!fReadMC || (indexMCKKpi == GetSignalHistoIndex(iPtBin) && orig == 4)))
           {
-            Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred,
-                                                fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
-                                                fMLResponse->GetVariable("nsigTOF_Pi_0"), fMLResponse->GetVariable("nsigTOF_K_0"),
-                                                fMLResponse->GetVariable("nsigTPC_Pi_1"), fMLResponse->GetVariable("nsigTPC_K_1"),
-                                                fMLResponse->GetVariable("nsigTOF_Pi_1"), fMLResponse->GetVariable("nsigTOF_K_1"),
-                                                fMLResponse->GetVariable("nsigTPC_Pi_2"), fMLResponse->GetVariable("nsigTPC_K_2"),
-                                                fMLResponse->GetVariable("nsigTOF_Pi_2"), fMLResponse->GetVariable("nsigTOF_K_2")};
+            std::vector<Double_t> var4nSparsePID = {ptCand, fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_0"), fMLResponse->GetVariable("nsigTOF_K_0"),
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_1"), fMLResponse->GetVariable("nsigTPC_K_1"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_1"), fMLResponse->GetVariable("nsigTOF_K_1"),
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_2"), fMLResponse->GetVariable("nsigTPC_K_2"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_2"), fMLResponse->GetVariable("nsigTOF_K_2")};
+            var4nSparsePID.insert(var4nSparsePID.end(), modelPred.begin(), modelPred.end());
 
-            Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred,
-                                                        fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
+            std::vector<Double_t> var4nSparsePIDcomb = {ptCand, fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
                                                         fMLResponse->GetVariable("nsigComb_Pi_1"), fMLResponse->GetVariable("nsigComb_K_1"),
                                                         fMLResponse->GetVariable("nsigComb_Pi_2"), fMLResponse->GetVariable("nsigComb_K_2")};
+            var4nSparsePIDcomb.insert(var4nSparsePIDcomb.end(), modelPred.begin(), modelPred.end());
 
-            fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID);
-            fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb);
+            fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID.data());
+            fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb.data());
           }
         }
 
-        std::vector<Double_t> var4nSparse(knVarForSparse);
-        if (fApplyML && fUseMinimalVarForSparse) {
-          var4nSparse = {invMass_KKpi, ptCand, modelPred};
-        }
-        else
-        {
-          var4nSparse = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
-                         cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, modelPred};
-        }
-
+        std::vector<Double_t> var4nSparse(knVarForSparse + 1);
         if (!fApplyML || isMLsel)
         {
           if (!fReadMC)
           {
+            if (fApplyML && fUseMinimalVarForSparse)
+            {
+              var4nSparse = {invMass_KKpi, ptCand};
+              var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+            }
+            else
+            {
+              var4nSparse = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+                            cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000};
+              var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+            }
+
             fnSparse->Fill(var4nSparse.data());
           }
           else
           {
+            if (fApplyML && fUseMinimalVarForSparse)
+            {
+              var4nSparse = {invMass_KKpi, ptCand, ptB, static_cast<Double_t>(Borigin)};
+              var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+            }
+            else
+            {
+              var4nSparse = {invMass_KKpi, ptCand, ptB, static_cast<Double_t>(Borigin), deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+                            cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000};
+              var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+            }
+
             if (indexMCKKpi == GetSignalHistoIndex(iPtBin))
             {
               if (orig == 4) fnSparseMC[2]->Fill(var4nSparse.data());
@@ -1080,45 +1127,58 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         if (fApplyML)
         {
-          isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF, 1);
+          isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, d, aod->GetMagneticField(), Pid_HF, 1);
           if (fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig==4)))
           {
-            Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred,
-                                                fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
-                                                fMLResponse->GetVariable("nsigTOF_Pi_0"), fMLResponse->GetVariable("nsigTOF_K_0"),
-                                                fMLResponse->GetVariable("nsigTPC_Pi_1"), fMLResponse->GetVariable("nsigTPC_K_1"),
-                                                fMLResponse->GetVariable("nsigTOF_Pi_1"), fMLResponse->GetVariable("nsigTOF_K_1"),
-                                                fMLResponse->GetVariable("nsigTPC_Pi_2"), fMLResponse->GetVariable("nsigTPC_K_2"),
-                                                fMLResponse->GetVariable("nsigTOF_Pi_2"), fMLResponse->GetVariable("nsigTOF_K_2")};
+            std::vector<Double_t> var4nSparsePID = {ptCand, fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_0"), fMLResponse->GetVariable("nsigTOF_K_0"),
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_1"), fMLResponse->GetVariable("nsigTPC_K_1"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_1"), fMLResponse->GetVariable("nsigTOF_K_1"),
+                                                    fMLResponse->GetVariable("nsigTPC_Pi_2"), fMLResponse->GetVariable("nsigTPC_K_2"),
+                                                    fMLResponse->GetVariable("nsigTOF_Pi_2"), fMLResponse->GetVariable("nsigTOF_K_2")};
+            var4nSparsePID.insert(var4nSparsePID.end(), modelPred.begin(), modelPred.end());
 
-            Double_t var4nSparsePIDcomb[knVarPIDcomb] = {ptCand, modelPred,
-                                                        fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
+            std::vector<Double_t> var4nSparsePIDcomb = {ptCand, fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
                                                         fMLResponse->GetVariable("nsigComb_Pi_1"), fMLResponse->GetVariable("nsigComb_K_1"),
                                                         fMLResponse->GetVariable("nsigComb_Pi_2"), fMLResponse->GetVariable("nsigComb_K_2")};
+            var4nSparsePIDcomb.insert(var4nSparsePIDcomb.end(), modelPred.begin(), modelPred.end());
 
-            fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID);
-            fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb);
+            fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID.data());
+            fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb.data());
           }
         }
 
-        std::vector<Double_t> var4nSparse(knVarForSparse);
-        if (fApplyML && fUseMinimalVarForSparse) {
-          var4nSparse = {invMass_piKK, ptCand, modelPred};
-        }
-        else
-        {
-          var4nSparse = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
-                         cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, modelPred};
-        }
-
+        std::vector<Double_t> var4nSparse(knVarForSparse + 1);
         if (!fApplyML || isMLsel)
         {
           if (!fReadMC)
           {
+            if (fApplyML && fUseMinimalVarForSparse) {
+              var4nSparse = {invMass_piKK, ptCand};
+              var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+            }
+            else
+            {
+              var4nSparse = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+                            cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000};
+              var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+            }
+
             fnSparse->Fill(var4nSparse.data());
           }
           else
           {
+            if (fApplyML && fUseMinimalVarForSparse) {
+              var4nSparse = {invMass_piKK, ptCand, ptB, static_cast<Double_t>(Borigin)};
+              var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+            }
+            else
+            {
+              var4nSparse = {invMass_piKK, ptCand, ptB, static_cast<Double_t>(Borigin), deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+                            cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000};
+              var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+            }
+
             if (indexMCpiKK == GetSignalHistoIndex(iPtBin))
             {
               if (orig == 4) fnSparseMC[2]->Fill(var4nSparse.data());
@@ -1195,6 +1255,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
         bool isSignalWoQuark = kFALSE;
+        bool isDplus = kFALSE;
+        bool isDplustoKpipi = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
@@ -1211,24 +1273,32 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               isSignalWoQuark = kTRUE;
           }
           else {
-            if(!isCandInjected)
-              isbkg = kTRUE;
             if(labDplus >= 0)
             {
-              fMLhandler->SetIsDplustoKKpi(kTRUE);
+              isDplus = kTRUE;
+              if(pdgCode0 == 211)
+                isrefl = kTRUE;
               if(orig == 4)
                 isprompt = kTRUE;
               else if(orig == 5)
                 isFD = kTRUE;
             }
-          }          
+            else if(labDplusToKpipi >= 0)
+            {
+              isDplustoKpipi = kTRUE;
+            }
+            else if(!isCandInjected)
+              isbkg = kTRUE;
+          }
           fMLhandler->SetBeautyMotherPt(ptB);
+          fMLhandler->SetBeautyMotherPDG(pdgBmother);
         }
-
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
+        fMLhandler->SetIsDplustoKKpi(isDplus);
+        fMLhandler->SetIsDplustoKpipi(isDplustoKpipi);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl)) // add tag in tree handler for signal from pileup events?
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && !isDplus)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
       }
 
@@ -1240,6 +1310,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
         bool isSignalWoQuark = kFALSE;
+        bool isDplus = kFALSE;
+        bool isDplustoKpipi = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
@@ -1249,31 +1321,40 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               isprompt = kTRUE;
             else if(orig == 5 || origWoQuark==5)
               isFD = kTRUE;
-            
+
             if(orig >= 4)
               issignal = kTRUE;
             else if(orig < 4 && origWoQuark >= 4)
               isSignalWoQuark = kTRUE;
-          } 
+          }
           else {
-            if(!isCandInjected)
-              isbkg = kTRUE;
             if(labDplus >= 0)
             {
-              fMLhandler->SetIsDplustoKKpi(kTRUE);
+              isDplus = kTRUE;
+              if(pdgCode0 == 211)
+                isrefl = kFALSE;
               if(orig == 4)
                 isprompt = kTRUE;
               else if(orig == 5)
                 isFD = kTRUE;
             }
+            else if(labDplusToKpipi >= 0)
+            {
+              isDplustoKpipi = kTRUE;
+            }
+            else if(!isCandInjected)
+              isbkg = kTRUE;
           }
           fMLhandler->SetBeautyMotherPt(ptB);
+          fMLhandler->SetBeautyMotherPDG(pdgBmother);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
+        fMLhandler->SetIsDplustoKKpi(isDplus);
+        fMLhandler->SetIsDplustoKpipi(isDplustoKpipi);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl)) // add tag in tree handler for signal from pileup events?
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl && !isDplus)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
       }
     }
@@ -1479,17 +1560,24 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
       AliAODMCParticle *mcPart = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iPart));
 
+      Int_t deca = 0;
+      Bool_t isGoodDecay = kFALSE;
+      Int_t labDau[3] = {-1, -1, -1};
+      Bool_t isFidAcc = kFALSE;
+      Bool_t isDaugInAcc = kFALSE;
+
+      Int_t orig = 0, origWoQuark = 0;
+
+      Double_t ptB = -1;
+      Int_t pdgBmother = 0, Borigin = -1; // Borigin: 1=B0, 2=B+, 3=Bs, 4=Lb, 5=other
+
+      Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
+
       if (TMath::Abs(mcPart->GetPdgCode()) == 431)
       {
-        Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
-        Int_t origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
-        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
-
-        Int_t deca = 0;
-        Bool_t isGoodDecay = kFALSE;
-        Int_t labDau[3] = {-1, -1, -1};
-        Bool_t isFidAcc = kFALSE;
-        Bool_t isDaugInAcc = kFALSE;
+        orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
+        origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
+        isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
         deca = AliVertexingHFUtils::CheckDsDecay(arrayMC, mcPart, labDau);
         if (deca == 1)
@@ -1507,15 +1595,37 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
+            if(orig == 5 || origWoQuark == 5)
+            {
+              ptB = AliVertexingHFUtils::GetBeautyMotherPtAndPDG(arrayMC, mcPart, pdgBmother);
+              switch(TMath::Abs(pdgBmother))
+              {
+                case 511:
+                  Borigin = 1;
+                break;
+                case 521:
+                  Borigin = 2;
+                break;
+                case 531:
+                  Borigin = 3;
+                break;
+                case 5122:
+                  Borigin = 4;
+                break;
+                default:
+                  Borigin = 5;
+                break;
+              }
+            }
+
             if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
             {
-              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
+              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
               fnSparseMC[0]->Fill(var4nSparseAcc);
             }
             else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
             {
-              Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};
               fnSparseMC[1]->Fill(var4nSparseAcc);
             }
             else { //no quark found
@@ -1523,13 +1633,12 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
               {
                 if (origWoQuark == 4 && !isParticleFromOutOfBunchPileUpEvent)
                 {
-                  Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
+                  Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
                   fnSparseMC[5]->Fill(var4nSparseAcc);
                 }
                 else if (origWoQuark == 5 && !isParticleFromOutOfBunchPileUpEvent)
                 {
-                  Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-                  Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
+                  Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};
                   fnSparseMC[6]->Fill(var4nSparseAcc);
                 }
               }
@@ -1539,14 +1648,8 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       }
       if (fFillSparseDplus && TMath::Abs(mcPart->GetPdgCode()) == 411)
       {
-        Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
-        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
-
-        Int_t deca = 0;
-        Bool_t isGoodDecay = kFALSE;
-        Int_t labDau[3] = {-1, -1, -1};
-        Bool_t isFidAcc = kFALSE;
-        Bool_t isDaugInAcc = kFALSE;
+        orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
+        isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
         deca = AliVertexingHFUtils::CheckDplusKKpiDecay(arrayMC, mcPart, labDau);
         if (deca == 1)
@@ -1571,8 +1674,26 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
             }
             if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
             {
-              Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};
+              ptB = AliVertexingHFUtils::GetBeautyMotherPtAndPDG(arrayMC, mcPart, pdgBmother);
+              switch(TMath::Abs(pdgBmother))
+              {
+                case 511:
+                  Borigin = 1;
+                break;
+                case 521:
+                  Borigin = 2;
+                break;
+                case 531:
+                  Borigin = 3;
+                break;
+                case 5122:
+                  Borigin = 4;
+                break;
+                default:
+                  Borigin = 5;
+                break;
+              }
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};
               fnSparseMCDplus[1]->Fill(var4nSparseAcc);
             }
           }
@@ -1669,46 +1790,80 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   Int_t nSparseAxes = knVarForSparse;
-  if (!fApplyML)
-    nSparseAxes--;
-  if (fApplyML && fUseMinimalVarForSparse)
-    nSparseAxes = knVarForSparseMLMinimal;
+  if (!fApplyML) {
+    nSparseAxes -= 3;
+  }
+  else {
+    if (fUseMinimalVarForSparse)
+      nSparseAxes = knVarForSparseMLMinimal;
+    if (!fMultiClass)
+      nSparseAxes -= 2;
+  }
+  Int_t nSparseAxesMC = nSparseAxes + 2;
 
   Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
-  if (fUseFinPtBinsForSparse)
+  Int_t nPtBBins = 300;
+  Double_t ptBmax = 150.;
+  if (fUseFinPtBinsForSparse) {
     nPtBins = nPtBins*10;
-  
+    nPtBBins = 1500;
+  }else if(fCustomPtBinWidth && fPtBinWidth>0.){
+    Int_t scalptb=TMath::Nint(1./fPtBinWidth);
+    nPtBins = nPtBins*scalptb;
+  }
+
   // use pp for default values
-  std::vector<Int_t> nBinsReco = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins};
-  std::vector<Double_t> xminReco = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin};
-  std::vector<Double_t> xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
+  std::vector<Int_t> nBinsReco = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  std::vector<Double_t> xminReco = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  std::vector<Double_t> xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   std::vector<TString> axis = {"invMassDsAllPhi", "#it{p}_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP",
-                               "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "ML model output"};
+                               "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}",
+                               "ML model output 0", "ML model output 1", "ML model output 2"};
+
+  std::vector<Int_t> nBinsRecoMC = {nInvMassBins, nPtBins, nPtBBins, 5, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  std::vector<Double_t> xminRecoMC = {minMass, 0., 0., 0.5, 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  std::vector<Double_t> xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], ptBmax, 5.5, 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+  std::vector<TString> axisMC = {"invMassDsAllPhi", "#it{p}_{T}", "p_{T}^{B} (GeV/c)", "B species", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP",
+                                 "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}",
+                                 "ML model output 0", "ML model output 1", "ML model output 2"};
 
   if (fSystem == kPbPb) {
     nInvMassBins = (Int_t)(0.45 / fMassBinSize + 0.5);
     minMass = massDs - 0.5 * nInvMassBins * fMassBinSize;
     maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
-    nBinsReco = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins};
-    xminReco = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin};
-    xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
+    nBinsReco = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    xminReco = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+
+    nBinsRecoMC = {nInvMassBins, nPtBins, nPtBBins, 5, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    xminRecoMC = {minMass, 0., 0., 0.5, 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], ptBmax, 5.5, 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   }
   else if (fSystem == kUpgr) {
-    nBinsReco = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins};
-    xminReco = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin};
-    xmaxReco = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax};
+    nBinsReco = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    xminReco = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    xmaxReco = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+
+    nBinsRecoMC = {nInvMassBins, nPtBins, nPtBBins, 5, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    xminRecoMC = {minMass, 0., 0., 0.5, 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], 5.5, ptBmax, 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   }
 
   if (fApplyML && fUseMinimalVarForSparse) {
-      axis = {axis[0], axis[1], axis[13]};
-      nBinsReco = {nBinsReco[0], nBinsReco[1], nBinsReco[13]};
-      xminReco = {xminReco[0], xminReco[1], xminReco[13]};
-      xmaxReco = {xmaxReco[0], xmaxReco[1], xmaxReco[13]};
+      axis = {axis[0], axis[1], axis[13], axis[14], axis[15]};
+      nBinsReco = {nBinsReco[0], nBinsReco[1], nBinsReco[13], nBinsReco[14], nBinsReco[15]};
+      xminReco = {xminReco[0], xminReco[1], xminReco[13], xminReco[14], xminReco[15]};
+      xmaxReco = {xmaxReco[0], xmaxReco[1], xmaxReco[13], xmaxReco[14], xmaxReco[15]};
+
+      axisMC = {axisMC[0], axisMC[1], axisMC[2], axisMC[3], axisMC[15], axisMC[16], axisMC[17]};
+      nBinsRecoMC = {nBinsRecoMC[0], nBinsRecoMC[1], nBinsRecoMC[2], nBinsRecoMC[3], nBinsRecoMC[15], nBinsRecoMC[16], nBinsRecoMC[17]};
+      xminRecoMC = {xminRecoMC[0], xminRecoMC[1], xminRecoMC[2], xminRecoMC[3], xminRecoMC[15], xminRecoMC[16], xminRecoMC[17]};
+      xmaxRecoMC = {xmaxRecoMC[0], xmaxRecoMC[1], xmaxRecoMC[2], xmaxRecoMC[3], xmaxRecoMC[15], xmaxRecoMC[16], xmaxRecoMC[17]};
   }
 
-  Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
-  Double_t xminAcc[knVarForSparseAccFD] = {0., -10., 0.};
-  Double_t xmaxAcc[knVarForSparseAccFD] = {fPtLimits[fNPtBins], 10., fPtLimits[fNPtBins]};
+  Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBBins, 5};
+  Double_t xminAcc[knVarForSparseAccFD] = {0., -10., 0., 0.5};
+  Double_t xmaxAcc[knVarForSparseAccFD] = {fPtLimits[fNPtBins], 10., ptBmax, 5.5};
 
   if (fReadMC)
   {
@@ -1723,8 +1878,10 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
       fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
       fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
-      if(iHist==1)
+      if(iHist==1) {
         fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
+        fnSparseMC[iHist]->GetAxis(3)->SetTitle("B species");
+      }
       fOutput->Add(fnSparseMC[iHist]);
 
       //Dplus
@@ -1734,27 +1891,29 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
         fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseAccDplus_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMCDplus[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMCDplus[iHist]->GetAxis(1)->SetTitle("#it{y}");
-        if(iHist==3)
+        if(iHist==1) {
             fnSparseMCDplus[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
+            fnSparseMCDplus[iHist]->GetAxis(3)->SetTitle("B species");
+        }
         fOutput->Add(fnSparseMCDplus[iHist]);
       }
     }
     for (Int_t iHist = 2; iHist < nSparseReco + 2; iHist++)
     {
-      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco.data(), xminReco.data(), xmaxReco.data());
-      for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
+      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxesMC, nBinsRecoMC.data(), xminRecoMC.data(), xmaxRecoMC.data());
+      for (Int_t iAxis = 0; iAxis < nSparseAxesMC; iAxis++)
       {
-        fnSparseMC[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
+        fnSparseMC[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axisMC[iAxis].Data()));
       }
       fOutput->Add(fnSparseMC[iHist]);
 
       //Dplus
       if (fFillSparseDplus && iHist<4)
       {
-        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[iHist - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco.data(), xminReco.data(), xmaxReco.data());
-        for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
+        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[iHist - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxesMC, nBinsRecoMC.data(), xminRecoMC.data(), xmaxRecoMC.data());
+        for (Int_t iAxis = 0; iAxis < nSparseAxesMC; iAxis++)
         {
-          fnSparseMCDplus[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
+          fnSparseMCDplus[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axisMC[iAxis].Data()));
         }
         fOutput->Add(fnSparseMCDplus[iHist]);
       }
@@ -1767,8 +1926,10 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
         fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - 5].Data()), titleSparse.Data(), (iHist == 5) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
-        if(iHist==6)
+        if(iHist==6) {
             fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
+            fnSparseMC[iHist]->GetAxis(3)->SetTitle("B species");
+        }
         fOutput->Add(fnSparseMC[iHist]);
       }
     }
@@ -1797,7 +1958,12 @@ void AliAnalysisTaskSEDs::CreateImpactParameterSparses()
   //dimensions for THnSparse
   TString axTit[kVarForImpPar] = {"M_{K#pi#pi} (GeV/c^{2})", "#it{p}_{T} (GeV/c)", "Imp Par (#mum)"};
 
-  Int_t nbins[kVarForImpPar] = {nInvMassBins, (Int_t)fPtLimits[fNPtBins] * 2, 1000};
+  Int_t nPtBins = (Int_t)fPtLimits[fNPtBins]*2; // 500 MeV/c bin width by default
+  if(fCustomPtBinWidth && fPtBinWidth>0.){
+    Int_t scalptb=TMath::Nint(1./fPtBinWidth);
+    nPtBins = nPtBins*scalptb;
+  }
+  Int_t nbins[kVarForImpPar] = {nInvMassBins, nPtBins, 1000};
   Double_t xmin[kVarForImpPar] = {minMass, 0., -1000};
   Double_t xmax[kVarForImpPar] = {maxMass, fPtLimits[fNPtBins], 1000};
 
@@ -1836,28 +2002,36 @@ void AliAnalysisTaskSEDs::CreatePIDMLSparses()
   Double_t PIDmax = 20.;
   Double_t PIDcombMin = 0.;
   Double_t PIDcombMax = 40.;
+  Int_t nSparseAxesPID = knVarPID;
+  Int_t nSparseAxesPIDcomb = knVarPIDcomb;
+  if (fApplyML && !fMultiClass) {
+    nSparseAxesPID -= 2;
+    nSparseAxesPIDcomb -= 2;
+  }
 
-  TString PIDvarnames[knVarPID] = {"#it{p}_{T}", "ML model output", "n#sigmaTPCPi_0", "n#sigmaTPCK_0", "n#sigmaTOFPi_0", "n#sigmaTOFK_0",
-                                         "n#sigmaTPCPi_1", "n#sigmaTPCK_1", "n#sigmaTOFPi_1", "n#sigmaTOFK_1", "n#sigmaTPCPi_2", "n#sigmaTPCK_2",
-                                         "n#sigmaTOFPi_2", "n#sigmaTOFK_2"};
-  Int_t nBinsPID[knVarPID] = {nPtBins, fNMLBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins,
-                                    nPIDbins, nPIDbins};
-  Double_t xminPID[knVarPID] = {0., fMLOutputMin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin};
-  Double_t xmaxPID[knVarPID] = {fPtLimits[fNPtBins], fMLOutputMax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax};
+  TString PIDvarnames[knVarPID] = {"#it{p}_{T}", "n#sigmaTPCPi_0", "n#sigmaTPCK_0", "n#sigmaTOFPi_0", "n#sigmaTOFK_0", "n#sigmaTPCPi_1",
+                                   "n#sigmaTPCK_1", "n#sigmaTOFPi_1", "n#sigmaTOFK_1", "n#sigmaTPCPi_2", "n#sigmaTPCK_2", "n#sigmaTOFPi_2",
+                                   "n#sigmaTOFK_2", "ML model output 0", "ML model output 1", "ML model output 2"};
+  Int_t nBinsPID[knVarPID] = {nPtBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins,
+                              nPIDbins, nPIDbins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  Double_t xminPID[knVarPID] = {0., PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin,
+                                fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  Double_t xmaxPID[knVarPID] = {fPtLimits[fNPtBins], PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax,
+                                PIDmax, PIDmax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-  TString PIDvarnamesComb[knVarPIDcomb] = {"#it{p}_{T}", "ML model output", "n#sigmaCombPi_0", "n#sigmaCombK_0", "n#sigmaCombPi_1", "n#sigmaCombK_1",
-                                                 "n#sigmaCombPi_2", "n#sigmaCombK_2"};
-  Int_t nBinsPIDcomb[knVarPIDcomb] = {nPtBins, fNMLBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins};
-  Double_t xminPIDcomb[knVarPIDcomb] = {0., fMLOutputMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin};
-  Double_t xmaxPIDcomb[knVarPIDcomb] = {fPtLimits[fNPtBins], fMLOutputMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax};
+  TString PIDvarnamesComb[knVarPIDcomb] = {"#it{p}_{T}", "n#sigmaCombPi_0", "n#sigmaCombK_0", "n#sigmaCombPi_1", "n#sigmaCombK_1",
+                                           "n#sigmaCombPi_2", "n#sigmaCombK_2", "ML model output 0", "ML model output 1", "ML model output 2"};
+  Int_t nBinsPIDcomb[knVarPIDcomb] = {nPtBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  Double_t xminPIDcomb[knVarPIDcomb] = {0., PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  Double_t xmaxPIDcomb[knVarPIDcomb] = {fPtLimits[fNPtBins], PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-  fnSparseNsigmaPIDVsML[0] = new THnSparseF("fnSparsePID", "nSparsePID", knVarPID, nBinsPID, xminPID, xmaxPID);
-  for (Int_t iAxis = 0; iAxis < knVarPID; iAxis++)
+  fnSparseNsigmaPIDVsML[0] = new THnSparseF("fnSparsePID", "nSparsePID", nSparseAxesPID, nBinsPID, xminPID, xmaxPID);
+  for (Int_t iAxis = 0; iAxis < nSparseAxesPID; iAxis++)
     fnSparseNsigmaPIDVsML[0]->GetAxis(iAxis)->SetTitle(Form("%s", PIDvarnames[iAxis].Data()));
   fOutput->Add(fnSparseNsigmaPIDVsML[0]);
 
-  fnSparseNsigmaPIDVsML[1] = new THnSparseF("fnSparsePIDcomb", "nSparsePIDcomb", knVarPIDcomb, nBinsPIDcomb, xminPIDcomb, xmaxPIDcomb);
-  for (Int_t iAxis = 0; iAxis < knVarPIDcomb; iAxis++)
+  fnSparseNsigmaPIDVsML[1] = new THnSparseF("fnSparsePIDcomb", "nSparsePIDcomb", nSparseAxesPIDcomb, nBinsPIDcomb, xminPIDcomb, xmaxPIDcomb);
+  for (Int_t iAxis = 0; iAxis < nSparseAxesPIDcomb; iAxis++)
     fnSparseNsigmaPIDVsML[1]->GetAxis(iAxis)->SetTitle(Form("%s", PIDvarnamesComb[iAxis].Data()));
   fOutput->Add(fnSparseNsigmaPIDVsML[1]);
 }

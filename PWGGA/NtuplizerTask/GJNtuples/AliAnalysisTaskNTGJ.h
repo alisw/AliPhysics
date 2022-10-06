@@ -218,6 +218,7 @@ private:
     BRANCH_ARRAY(mc_truth_pdg_code, nmc_truth, S)                   \
     BRANCH_ARRAY(mc_truth_status, nmc_truth, b)                     \
     BRANCH_ARRAY(mc_truth_generator_index, nmc_truth, b)            \
+    BRANCH_ARRAY(mc_truth_is_prompt_photon, nmc_truth, O)           \
     /* BRANCH_ARRAY(mc_truth_physical_primary, nmc_truth, O) */     \
     /* BRANCH_ARRAY(mc_truth_first_parent, nmc_truth, I) */         \
     /* BRANCH_ARRAY(mc_truth_first_child, nmc_truth, I) */          \
@@ -537,6 +538,8 @@ private:
     void doMCParticleLoop(AliMCParticleContainer *mc_container,
                           AliESDEvent *esd_event,
                           std::vector<Int_t> reverse_stored_mc_truth_index);
+    bool getIsPromptPhoton(const AliAODMCParticle *finalParticle,
+                                AliMCParticleContainer *mc_container);
     void doClusterLoop(AliVEvent *event,
                        AliVCaloCells *emcal_cell,
                        AliClusterContainer *cluster_container,

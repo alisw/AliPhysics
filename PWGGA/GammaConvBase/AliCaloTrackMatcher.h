@@ -76,8 +76,10 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     Float_t SumTrackEtAroundCluster(AliVEvent* event, Int_t clusterID, Float_t dR);
 
     void               SetLightOutput( Bool_t flag )                    { fDoLightOutput = flag                       ;}
+    Bool_t             GetLightOutput()                                 { return fDoLightOutput                       ;}
     void               SetMassHypothesis( Double_t mass)                {fMassHypothesis = mass;}
-
+    Int_t              GetRunningMode() {return fRunningMode;}
+    Bool_t             GetNegativeIDAllowed() {return fNegativeTrackIDAllowed;}
   private:
     //typedefs
     typedef pair<Int_t, Int_t> pairInt;
@@ -105,7 +107,8 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
                                                    // (1) matching of all tracks (dedicated for run 1), was standard until Feb 15, 2018
                                                    // (2) ITS matching mode
                                                    // (5) testing mode, (1) + some more restrictions
-                                                   // (6) testing mode, (5) + TrackCuts (primary+secondary)
+                                                   // (6) testing mode, (5) + TrackCuts (primary+secondary) 
+    Bool_t                fNegativeTrackIDAllowed;     // where negative IDs allowed when doing TM?
     TString               fV0ReaderName;           // Name of V0Reader
     TString               fCorrTaskSetting;        // Name of Corr Task Setting
     TString               fAnalysisTrainMode;      // AnalysisTrainMode: Grid or GSI //Grid by default
@@ -142,7 +145,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     Bool_t                fDoLightOutput;          // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
 
     Double_t              fMassHypothesis;          // mass used for track propagation to calorimeter surface
-    ClassDef(AliCaloTrackMatcher,9)
+    ClassDef(AliCaloTrackMatcher,11)
 };
 
 #endif

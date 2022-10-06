@@ -29,6 +29,8 @@
 #include <TProfile.h>
 #include <TDirectoryFile.h>
 #include <TExec.h>
+#include <TGraph.h>
+#include <TGraphErrors.h>
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RResultPtr.hxx"
@@ -95,6 +97,9 @@ void DivideCanvas(TCanvas *c, int nBins);
 void SetStyle();
 void SetTH1Style(TH1 *histo, int markerstyle, int markercolor, float markersize, int linewidth, int linecolor,
                  int fillcolor, float labelsize = -1, float titlesize = -1);
+void SetTGraphStyle(TGraph *graph, int markerstyle, int markercolor, float markersize, int linewidth, int linecolor,
+                    int fillcolor, float labelsize = -1, float titlesize = -1);
+TGraphErrors* ConvertTProfileToGraph(TProfile *prof);
 
 //_____________________________________________________
 //METHOD IMPLEMENTATIONS
@@ -110,7 +115,7 @@ void AnalysePIDTree(TString cfgFileName)
         std::cerr << "\033[31mERROR: yaml config file not found! Exit\033[0m" << std::endl;
         return;
     }
-    else 
+    else
     {
         std::cout << "\n\n*******************************************" << std::endl;
         std::cout << Form("\033[32mLoading configuration from file %s\033[0m\n", cfgFileName.Data()) << std::endl;
@@ -126,7 +131,7 @@ void AnalysePIDTree(TString cfgFileName)
         std::cout << Form("\t- %s", fileName.data()) << std::endl;
     std::cout << Form("\t\tdir: %s", inDirNameData.data()) << std::endl;
     std::cout << Form("\t\t\tlist: %s", inListNameData.data()) << std::endl;
-    
+
     std::vector<std::string> inFileNameMC = config["inputs"]["MC"]["filename"].as<std::vector<std::string> >();
     std::string inDirNameMC = config["inputs"]["MC"]["dirname"].as<std::string>();
     std::string inListNameMC = config["inputs"]["MC"]["listname"].as<std::string>();
@@ -176,7 +181,7 @@ void AnalysePIDTree(TString cfgFileName)
         binLims[iBin] = binMins[iBin];
     }
     binLims[nBins] = binMaxs[nBins-1];
-    
+
     std::vector<double> absEtaBinMins = config["binning"]["absetabins"]["mins"].as<std::vector<double> >();
     std::vector<double> absEtaBinMaxs = config["binning"]["absetabins"]["maxs"].as<std::vector<double> >();
     unsigned int nEtaBins = absEtaBinMins.size();
@@ -221,7 +226,7 @@ void AnalysePIDTree(TString cfgFileName)
         std::cout << "\e[1m\033[32mStarting PID analysis\033[0m\e[0m\n" << std::endl;
 
         PerformPIDAnalysis(inFileNameData, inDirNameData, inListNameData, inFileNameMC, inDirNameMC, inListNameMC,
-                           outDirName, varTitle, var4proj, nBins, binMins, binMaxs, binLims, binLabels, 
+                           outDirName, varTitle, var4proj, nBins, binMins, binMaxs, binLims, binLabels,
                            nEtaBins, absEtaBinMins, absEtaBinMaxs, binEtaLims, etaBinLabels, config);
     }
 
@@ -383,43 +388,43 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromKinks);
     dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
     auto hNsigmaTPCKaonMCKinktagVsPVsPart = dataFrameMCSel.Define("n_sigma_TPC_K_scaled", "static_cast<float>(n_sigma_TPC_K)/100")
-                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                                        .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
-                                                        .Histo3D({"hNsigmaTPCKaonMCKinktagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TPC_K_scaled");
+                                                          .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                          .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                          .Histo3D({"hNsigmaTPCKaonMCKinktagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TPC_K_scaled");
 
     auto hNsigmaTOFKaonMCKinktagVsPVsPart = dataFrameMCSel.Define("n_sigma_TOF_K_scaled", "static_cast<float>(n_sigma_TOF_K)/100")
-                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                                        .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
-                                                        .Histo3D({"hNsigmaTOFKaonMCKinktagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TOF_K_scaled");
+                                                          .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                          .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                          .Histo3D({"hNsigmaTOFKaonMCKinktagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TOF_K_scaled");
 
     std::cout << "Selecting TOF tagged kaons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromTOF);
     dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
     auto hNsigmaTPCKaonMCTOFtagVsPVsPart = dataFrameMCSel.Define("n_sigma_TPC_K_scaled", "static_cast<float>(n_sigma_TPC_K)/100")
-                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                                        .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
-                                                        .Histo3D({"hNsigmaTPCKaonMCTOFtagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TPC_K_scaled");
+                                                         .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                         .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                         .Histo3D({"hNsigmaTPCKaonMCTOFtagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TPC_K_scaled");
 
     std::cout << "Selecting TPC tagged kaons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromTPC);
     dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
     auto hNsigmaTOFKaonMCTPCtagVsPVsPart = dataFrameMCSel.Define("n_sigma_TOF_K_scaled", "static_cast<float>(n_sigma_TOF_K)/100")
-                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                                        .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
-                                                        .Histo3D({"hNsigmaTPCKaonMCTPCtagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TOF_K_scaled");
+                                                         .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                         .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                         .Histo3D({"hNsigmaTPCKaonMCTPCtagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TOF_K_scaled");
 
     std::cout << "Selecting V0 tagged protons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsProtonFromL);
     dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
     auto hNsigmaTPCProtonMCV0tagVsPVsPart = dataFrameMCSel.Define("n_sigma_TPC_p_scaled", "static_cast<float>(n_sigma_TPC_p)/100")
-                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                                        .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
-                                                        .Histo3D({"hNsigmaTPCProtonMCV0tagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TPC_p_scaled");
+                                                          .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                          .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                          .Histo3D({"hNsigmaTPCProtonMCV0tagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TPC_p_scaled");
 
     auto hNsigmaTOFProtonMCV0tagVsPVsPart = dataFrameMCSel.Define("n_sigma_TOF_p_scaled", "static_cast<float>(n_sigma_TOF_p)/100")
-                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                                        .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
-                                                        .Histo3D({"hNsigmaTOFProtonMCV0tagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TOF_p_scaled");
+                                                          .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                          .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                          .Histo3D({"hNsigmaTOFProtonMCV0tagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 1000u, nSigmaLims}, "part", "p_scaled", "n_sigma_TOF_p_scaled");
 
     std::cout << "\n\rProcessing pseudorapidity bin 01/01 (\033[32mMC always only eta integrated\033[0m)";
 
@@ -429,7 +434,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
             std::cout << Form("\n\rProcessing momentum bin %03d/%03d", iBin+1, nBins);
         else
             std::cout << Form("\rProcessing momentum bin %03d/%03d", iBin+1, nBins);
-   
+
         int pMinBin = hNsigmaTPCPionMCV0tagVsPVsPart->GetYaxis()->FindBin(binMins[iBin]*1.0001);
         int pMaxBin = hNsigmaTPCPionMCV0tagVsPVsPart->GetYaxis()->FindBin(binMaxs[iBin]*0.9999);
 
@@ -536,7 +541,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
         else
             listData->Add(listDataTmp);
     }
-    
+
     std::cout << "\n*******************************************\n" << std::endl;
     std::cout << "\033[32mProject data tree\033[0m\n" << std::endl;
     ROOT::RDataFrame dataFrameData(Form("%s/%s", inDirNameData.data(), "fPIDtree"), inFileNameData);
@@ -548,18 +553,20 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     else if(pileupOpt == "keep")
         dataFrameEtaSel = dataFrameEtaSel.Filter(Form("(OOBpileupbits & %d) > 0", pileupSelBit));
 
-    // Nsigma vs. eta and p histos    
+    // Nsigma vs. eta and p histos
     auto hNsigmaTPCKaon = dataFrameEtaSel.Define("n_sigma_TPC_K_scaled", "static_cast<float>(n_sigma_TPC_K)/100")
                                          .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                         .Histo2D({"hNsigmaTPCKaon", Form("%.2f < %s < %.2f GeV/#it{c};%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", binMins[0], varTitle.Data(), binMaxs[nBins-1], varTitle.Data   ()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TPC_K_scaled");
+                                         .Histo2D({"hNsigmaTPCKaon", Form("%.2f < %s < %.2f GeV/#it{c};%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", binMins[0], varTitle.Data(), binMaxs[nBins-1], varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TPC_K_scaled");
 
     auto hNsigmaTOFKaon = dataFrameEtaSel.Define("n_sigma_TOF_K_scaled", "static_cast<float>(n_sigma_TOF_K)/100")
                                          .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                         .Histo2D({"hNsigmaTOFKaon", Form("%.2f < %s < %.2f GeV/#it{c};%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", binMins[0], varTitle.Data(), binMaxs[nBins-1], varTitle.Data  ()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TOF_K_scaled");
+                                         .Histo2D({"hNsigmaTOFKaon", Form("%.2f < %s < %.2f GeV/#it{c};%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", binMins[0], varTitle.Data(), binMaxs[nBins-1], varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TOF_K_scaled");
 
     std::cout << "Selecting V0 tagged pions" << std::endl;
     tagSel = Form("(((tag & %d) > 0) || ((tag & %d) > 0))", AliAnalysisTaskSEHFSystPID::kIsPionFromK0s, AliAnalysisTaskSEHFSystPID::kIsPionFromL);
     auto dataFrameDataSel = dataFrameEtaSel.Filter(tagSel.Data());
+
+    // TPC
     auto hNsigmaTPCPionDataV0tagVsEtaVsP = dataFrameDataSel.Define("n_sigma_TPC_pi_scaled", "static_cast<float>(n_sigma_TPC_pi)/100")
                                                            .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                            .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
@@ -567,12 +574,37 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     auto hNsigmaTPCPionDataV0tagVsEta = static_cast<TH2D*>(hNsigmaTPCPionDataV0tagVsEtaVsP->Project3D("zy"));
     hNsigmaTPCPionDataV0tagVsEta->SetNameTitle("hNsigmaTPCPionDataV0tagVsEta", Form("%.2f < %s < %.2f GeV/#it{c};#it{#eta};N_{#sigma}^{TPC}(#pi)", binMins[0], varTitle.Data(), binMaxs[nBins-1]));
 
+    auto hNsigmaTPCPionDataV0tagVsP = dataFrameDataSel.Define("n_sigma_TPC_pi_scaled", "static_cast<float>(n_sigma_TPC_pi)/100")
+                                                      .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                      .Histo2D({"hNsigmaTPCPionDataV0tagVsP", Form(";%s (GeV/#it{c});N_{#sigma}^{TPC}(#pi)", varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TPC_pi_scaled");
+
+    auto hNsigmaTPCKaonHypoPionDataV0tagVsP = dataFrameDataSel.Define("n_sigma_TPC_K_scaled", "static_cast<float>(n_sigma_TPC_K)/100")
+                                                              .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                              .Histo2D({"hNsigmaTPCKaonHypoPionDataV0tagVsP", Form(";%s (GeV/#it{c});N_{#sigma}^{TPC}(K)", varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TPC_K_scaled");
+
+    auto hNsigmaTPCProtonHypoPionDataV0tagVsP = dataFrameDataSel.Define("n_sigma_TPC_p_scaled", "static_cast<float>(n_sigma_TPC_p)/100")
+                                                                .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                                .Histo2D({"hNsigmaTPCProtonHypoPionDataV0tagVsP", Form(";%s (GeV/#it{c});N_{#sigma}^{TPC}(p)", varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TPC_p_scaled");
+
+    // TOF
     auto hNsigmaTOFPionDataV0tagVsEtaVsP = dataFrameDataSel.Define("n_sigma_TOF_pi_scaled", "static_cast<float>(n_sigma_TOF_pi)/100")
                                                            .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                            .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
                                                            .Histo3D({"hNsigmaTOFPionDataV0tagVsEtaVsP", "", static_cast<int>(nBins), binLims, 100u, etaLims, 1000u, nSigmaLims}, "p_scaled", "eta_scaled", "n_sigma_TOF_pi_scaled");
     auto hNsigmaTOFPionDataV0tagVsEta = static_cast<TH2D*>(hNsigmaTOFPionDataV0tagVsEtaVsP->Project3D("zy"));
     hNsigmaTOFPionDataV0tagVsEta->SetNameTitle("hNsigmaTOFPionDataV0tagVsEta", Form("%.2f < %s < %.2f GeV/#it{c};#it{#eta};N_{#sigma}^{TOF}(#pi)", binMins[0], varTitle.Data(), binMaxs[nBins-1]));
+
+    auto hNsigmaTOFPionDataV0tagVsP = dataFrameDataSel.Define("n_sigma_TOF_pi_scaled", "static_cast<float>(n_sigma_TOF_pi)/100")
+                                                      .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                      .Histo2D({"hNsigmaTOFPionDataV0tagVsP", Form(";%s (GeV/#it{c});N_{#sigma}^{TOF}(#pi)", varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TOF_pi_scaled");
+
+    auto hNsigmaTOFKaonHypoPionDataV0tagVsP = dataFrameDataSel.Define("n_sigma_TOF_K_scaled", "static_cast<float>(n_sigma_TOF_K)/100")
+                                                              .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                              .Histo2D({"hNsigmaTOFKaonHypoPionDataV0tagVsP", Form(";%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TOF_K_scaled");
+
+    auto hNsigmaTOFProtonHypoPionDataV0tagVsP = dataFrameDataSel.Define("n_sigma_TOF_p_scaled", "static_cast<float>(n_sigma_TOF_p)/100")
+                                                                .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                                .Histo2D({"hNsigmaTOFProtonHypoPionDataV0tagVsP", Form(";%s (GeV/#it{c});N_{#sigma}^{TOF}(p)", varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TOF_p_scaled");
 
     std::cout << "Selecting kinks tagged kaons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromKinks);
@@ -650,7 +682,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
                 std::cout << Form("\n\rProcessing momentum bin %03d/%03d", iBin+1, nBins);
             else
                 std::cout << Form("\rProcessing momentum bin %03d/%03d", iBin+1, nBins);
-            
+
             int pMinBin = hNsigmaTPCPionDataV0tagVsEtaVsP->GetXaxis()->FindBin(binMins[iBin]*1.0001);
             int pMaxBin = hNsigmaTPCPionDataV0tagVsEtaVsP->GetXaxis()->FindBin(binMaxs[iBin]*0.9999);
 
@@ -748,7 +780,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
         //compute fractions in data (only TOF)
         std::cout << "\n*******************************************\n" << std::endl;
         std::cout << "\033[32mProduce QA plots\033[0m\n" << std::endl;
-        
+
         PlotQAhistos(listMC, listData, outDirName);
 
         // Produce plots for 2D histograms
@@ -795,7 +827,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 
     int nSigmaBinMin = hNsigmaTPCPionDataV0tagVsEta->GetYaxis()->FindBin(-5.*0.9999);
     int nSigmaBinMax = hNsigmaTPCPionDataV0tagVsEta->GetYaxis()->FindBin(5.*0.9999);
-    
+
     TProfile *hProfileNsigmaTPCPionDataV0tagVsEta = hNsigmaTPCPionDataV0tagVsEta->ProfileX("hProfileNsigmaTPCPionDataV0tagVsEta", nSigmaBinMin, nSigmaBinMax);
     SetTH1Style(hProfileNsigmaTPCPionDataV0tagVsEta, 0, 0, 0., 2, kBlack, kWhite);
     TProfile *hProfileNsigmaTPCProtonDataV0tagVsEta = hNsigmaTPCProtonDataV0tagVsEta->ProfileX("hProfileNsigmaTPCProtonDataV0tagVsEta", nSigmaBinMin, nSigmaBinMax);
@@ -872,6 +904,124 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 
     cNsigmaTPCVsEta->SaveAs(Form("%s/NsigmaTPCvsEta.pdf", outDirName.data()));
     cNsigmaTOFVsEta->SaveAs(Form("%s/NsigmaTOFvsEta.pdf", outDirName.data()));
+
+    TCanvas *cNsigmaAllHyposPionTPCVsP = new TCanvas("cNsigmaAllHyposPionTPCVsP", "", 1920, 1080);
+    cNsigmaAllHyposPionTPCVsP->Divide(2, 1);
+    auto hFrameNsigmaTPCPionSep = cNsigmaAllHyposPionTPCVsP->cd(1)->DrawFrame(binMins[0], -20, binMaxs[nBins-1], 20, Form(";%s;pion tagged #LT N_{#sigma}^{TPC}(i) #GT #pm RMS(N_{#sigma}^{TPC}(i))", hNsigmaTPCPionDataV0tagVsP->GetXaxis()->GetTitle()));
+    hFrameNsigmaTPCPionSep->GetXaxis()->SetMoreLogLabels();
+    cNsigmaAllHyposPionTPCVsP->cd(1)->SetLogx();
+
+    auto gNsigmaTPCPionDataV0tagVsP = ConvertTProfileToGraph(hNsigmaTPCPionDataV0tagVsP->ProfileX("hProfNsigmaTPCPionDataV0tagVsP", -1, -1, "s"));
+    auto gNsigmaTPCKaonHypoPionDataV0tagVsP = ConvertTProfileToGraph(hNsigmaTPCKaonHypoPionDataV0tagVsP->ProfileX("hProfNsigmaTPCKaonHypoPionDataV0tagVsP", -1, -1, "s"));
+    auto gNsigmaTPCProtonHypoPionDataV0tagVsP = ConvertTProfileToGraph(hNsigmaTPCProtonHypoPionDataV0tagVsP->ProfileX("hProfNsigmaTPCProtonHypoPionDataV0tagVsP", -1, -1, "s"));
+    SetTGraphStyle(gNsigmaTPCPionDataV0tagVsP, kFullCircle, pdgColors[kPion], 1., 2, pdgColors[kPion], pdgColors[kPion], 0.045, 0.05);
+    SetTGraphStyle(gNsigmaTPCKaonHypoPionDataV0tagVsP, kFullCircle, pdgColors[kKaon], 1., 2, pdgColors[kKaon], pdgColors[kKaon], 0.045, 0.05);
+    SetTGraphStyle(gNsigmaTPCProtonHypoPionDataV0tagVsP, kFullCircle, pdgColors[kPr], 1., 2, pdgColors[kPr], pdgColors[kPr], 0.045, 0.05);
+    gNsigmaTPCPionDataV0tagVsP->SetName("gNsigmaTPCPionDataV0tagVsP");
+    gNsigmaTPCKaonHypoPionDataV0tagVsP->SetName("gNsigmaTPCKaonHypoPionDataV0tagVsP");
+    gNsigmaTPCProtonHypoPionDataV0tagVsP->SetName("gNsigmaTPCProtonHypoPionDataV0tagVsP");
+    gNsigmaTPCPionDataV0tagVsP->Draw("3C");
+    gNsigmaTPCKaonHypoPionDataV0tagVsP->Draw("3C");
+    gNsigmaTPCProtonHypoPionDataV0tagVsP->Draw("3C");
+
+    auto legPionSep = new TLegend(0.65, 0.75, 0.9, 0.9);
+    legPionSep->SetTextSize(0.045);
+    legPionSep->AddEntry(gNsigmaTPCPionDataV0tagVsP, "i = #pi", "lf");
+    legPionSep->AddEntry(gNsigmaTPCKaonHypoPionDataV0tagVsP, "i = K", "lf");
+    legPionSep->AddEntry(gNsigmaTPCProtonHypoPionDataV0tagVsP, "i = p", "lf");
+    legPionSep->Draw();
+
+    auto hFramePionSepTPC = cNsigmaAllHyposPionTPCVsP->cd(2)->DrawFrame(binMins[0], -20, binMaxs[nBins-1], 20, Form(";%s;pion tagged (#LT N_{#sigma}^{TPC}(i) #GT - #LT N_{#sigma}^{TPC}(#pi) #GT) / #sigma", hNsigmaTPCPionDataV0tagVsP->GetXaxis()->GetTitle()));
+    hFramePionSepTPC->GetXaxis()->SetMoreLogLabels();
+    cNsigmaAllHyposPionTPCVsP->cd(2)->SetLogx();
+
+    auto lineAtZero = new TLine(binMins[0], 0., binMaxs[nBins-1], 0.);
+    lineAtZero->SetLineWidth(2);
+    lineAtZero->SetLineColor(kGray+2);
+    lineAtZero->SetLineStyle(9);
+
+    auto lineAtThree = new TLine(binMins[0], 3., binMaxs[nBins-1], 3.);
+    lineAtThree->SetLineWidth(2);
+    lineAtThree->SetLineColor(kGray+2);
+    lineAtThree->SetLineStyle(9);
+
+    auto lineAtMinusThree = new TLine(binMins[0], -3., binMaxs[nBins-1], -3.);
+    lineAtMinusThree->SetLineWidth(2);
+    lineAtMinusThree->SetLineColor(kGray+2);
+    lineAtMinusThree->SetLineStyle(9);
+
+    lineAtZero->Draw();
+    lineAtThree->Draw();
+    lineAtMinusThree->Draw();
+
+    auto gSepTPCKaonHypoPionDataV0tagVsP = dynamic_cast<TGraphErrors*>(gNsigmaTPCKaonHypoPionDataV0tagVsP->Clone("gSepTPCKaonHypoPionDataV0tagVsP"));
+    auto gSepTPCProtonHypoPionDataV0tagVsP = dynamic_cast<TGraphErrors*>(gNsigmaTPCProtonHypoPionDataV0tagVsP->Clone("gSepTPCProtonHypoPionDataV0tagVsP"));
+    for(int iP=0; iP<gSepTPCKaonHypoPionDataV0tagVsP->GetN(); iP++)
+    {
+        double p, nSigmaPi, nSigmaK, nSigmaPr;
+        gNsigmaTPCPionDataV0tagVsP->GetPoint(iP, p, nSigmaPi);
+        gNsigmaTPCKaonHypoPionDataV0tagVsP->GetPoint(iP, p, nSigmaK);
+        gNsigmaTPCProtonHypoPionDataV0tagVsP->GetPoint(iP, p, nSigmaPr);
+        double sigmaK = TMath::Sqrt(gNsigmaTPCPionDataV0tagVsP->GetErrorY(iP)*gNsigmaTPCPionDataV0tagVsP->GetErrorY(iP) + gNsigmaTPCKaonHypoPionDataV0tagVsP->GetErrorY(iP)*gNsigmaTPCKaonHypoPionDataV0tagVsP->GetErrorY(iP));
+        double sigmaPr = TMath::Sqrt(gNsigmaTPCPionDataV0tagVsP->GetErrorY(iP)*gNsigmaTPCPionDataV0tagVsP->GetErrorY(iP) + gNsigmaTPCProtonHypoPionDataV0tagVsP->GetErrorY(iP)*gNsigmaTPCProtonHypoPionDataV0tagVsP->GetErrorY(iP));
+        gSepTPCKaonHypoPionDataV0tagVsP->SetPoint(iP, p, (nSigmaK-nSigmaPi)/sigmaK);
+        gSepTPCProtonHypoPionDataV0tagVsP->SetPoint(iP, p, (nSigmaPr-nSigmaPi)/sigmaPr);
+        gSepTPCKaonHypoPionDataV0tagVsP->SetPointError(iP, 0., 0.);
+        gSepTPCProtonHypoPionDataV0tagVsP->SetPointError(iP, 0., 0.);
+    }
+    gSepTPCKaonHypoPionDataV0tagVsP->Draw("C");
+    gSepTPCProtonHypoPionDataV0tagVsP->Draw("C");
+
+    gPad->Update();
+    cNsigmaAllHyposPionTPCVsP->SaveAs(Form("%s/Separation_Pions_TPC.pdf", outDirName.data()));
+
+    TCanvas *cNsigmaAllHyposPionTOFVsP = new TCanvas("cNsigmaAllHyposPionTOFVsP", "", 1920, 1080);
+    cNsigmaAllHyposPionTOFVsP->Divide(2, 1);
+    auto hFrameNsigmaTOFPionSep = cNsigmaAllHyposPionTOFVsP->cd(1)->DrawFrame(binMins[0], -50, binMaxs[nBins-1], 50, Form(";%s;pion tagged #LT N_{#sigma}^{TOF}(i) #GT #pm RMS(N_{#sigma}^{TOF}(i))", hNsigmaTOFPionDataV0tagVsP->GetXaxis()->GetTitle()));
+    hFrameNsigmaTOFPionSep->GetXaxis()->SetMoreLogLabels();
+    cNsigmaAllHyposPionTOFVsP->cd(1)->SetLogx();
+
+    auto gNsigmaTOFPionDataV0tagVsP = ConvertTProfileToGraph(hNsigmaTOFPionDataV0tagVsP->ProfileX("hProfNsigmaTOFPionDataV0tagVsP", -1, -1, "s"));
+    auto gNsigmaTOFKaonHypoPionDataV0tagVsP = ConvertTProfileToGraph(hNsigmaTOFKaonHypoPionDataV0tagVsP->ProfileX("hProfNsigmaTOFKaonHypoPionDataV0tagVsP", -1, -1, "s"));
+    auto gNsigmaTOFProtonHypoPionDataV0tagVsP = ConvertTProfileToGraph(hNsigmaTOFProtonHypoPionDataV0tagVsP->ProfileX("hProfNsigmaTOFProtonHypoPionDataV0tagVsP", -1, -1, "s"));
+    SetTGraphStyle(gNsigmaTOFPionDataV0tagVsP, kFullCircle, pdgColors[kPion], 1., 2, pdgColors[kPion], pdgColors[kPion], 0.045, 0.05);
+    SetTGraphStyle(gNsigmaTOFKaonHypoPionDataV0tagVsP, kFullCircle, pdgColors[kKaon], 1., 2, pdgColors[kKaon], pdgColors[kKaon], 0.045, 0.05);
+    SetTGraphStyle(gNsigmaTOFProtonHypoPionDataV0tagVsP, kFullCircle, pdgColors[kPr], 1., 2, pdgColors[kPr], pdgColors[kPr], 0.045, 0.05);
+    gNsigmaTOFPionDataV0tagVsP->SetName("gNsigmaTOFPionDataV0tagVsP");
+    gNsigmaTOFKaonHypoPionDataV0tagVsP->SetName("gNsigmaTOFKaonHypoPionDataV0tagVsP");
+    gNsigmaTOFProtonHypoPionDataV0tagVsP->SetName("gNsigmaTOFProtonHypoPionDataV0tagVsP");
+    gNsigmaTOFPionDataV0tagVsP->Draw("3C");
+    gNsigmaTOFKaonHypoPionDataV0tagVsP->Draw("3C");
+    gNsigmaTOFProtonHypoPionDataV0tagVsP->Draw("3C");
+
+    auto hFramePionSepTOF = cNsigmaAllHyposPionTOFVsP->cd(2)->DrawFrame(binMins[0], -20, binMaxs[nBins-1], 20, Form(";%s;pion tagged (#LT N_{#sigma}^{TOF}(i) #GT - #LT N_{#sigma}^{TOF}(#pi) #GT) / #sigma", hNsigmaTOFPionDataV0tagVsP->GetXaxis()->GetTitle()));
+    hFramePionSepTOF->GetXaxis()->SetMoreLogLabels();
+    cNsigmaAllHyposPionTOFVsP->cd(2)->SetLogx();
+
+    lineAtZero->Draw();
+    lineAtThree->Draw();
+    lineAtMinusThree->Draw();
+
+    auto gSepTOFKaonHypoPionDataV0tagVsP = dynamic_cast<TGraphErrors*>(gNsigmaTOFKaonHypoPionDataV0tagVsP->Clone("gSepTOFKaonHypoPionDataV0tagVsP"));
+    auto gSepTOFProtonHypoPionDataV0tagVsP = dynamic_cast<TGraphErrors*>(gNsigmaTOFProtonHypoPionDataV0tagVsP->Clone("gSepTOFProtonHypoPionDataV0tagVsP"));
+    for(int iP=0; iP<gSepTOFKaonHypoPionDataV0tagVsP->GetN(); iP++)
+    {
+        double p, nSigmaPi, nSigmaK, nSigmaPr;
+        gNsigmaTOFPionDataV0tagVsP->GetPoint(iP, p, nSigmaPi);
+        gNsigmaTOFKaonHypoPionDataV0tagVsP->GetPoint(iP, p, nSigmaK);
+        gNsigmaTOFProtonHypoPionDataV0tagVsP->GetPoint(iP, p, nSigmaPr);
+        double sigmaK = TMath::Sqrt(gNsigmaTOFPionDataV0tagVsP->GetErrorY(iP)*gNsigmaTOFPionDataV0tagVsP->GetErrorY(iP) + gNsigmaTOFKaonHypoPionDataV0tagVsP->GetErrorY(iP)*gNsigmaTOFKaonHypoPionDataV0tagVsP->GetErrorY(iP));
+        double sigmaPr = TMath::Sqrt(gNsigmaTOFPionDataV0tagVsP->GetErrorY(iP)*gNsigmaTOFPionDataV0tagVsP->GetErrorY(iP) + gNsigmaTOFProtonHypoPionDataV0tagVsP->GetErrorY(iP)*gNsigmaTOFProtonHypoPionDataV0tagVsP->GetErrorY(iP));
+        gSepTOFKaonHypoPionDataV0tagVsP->SetPoint(iP, p, (nSigmaK-nSigmaPi)/sigmaK);
+        gSepTOFProtonHypoPionDataV0tagVsP->SetPoint(iP, p, (nSigmaPr-nSigmaPi)/sigmaPr);
+        gSepTOFKaonHypoPionDataV0tagVsP->SetPointError(iP, 0., 0.);
+        gSepTOFProtonHypoPionDataV0tagVsP->SetPointError(iP, 0., 0.);
+    }
+    gSepTOFKaonHypoPionDataV0tagVsP->Draw("C");
+    gSepTOFProtonHypoPionDataV0tagVsP->Draw("C");
+
+    gPad->Update();
+    cNsigmaAllHyposPionTOFVsP->SaveAs(Form("%s/Separation_Pions_TOF.pdf", outDirName.data()));
 
     //compute Fraction and contamination in MC
     std::cout << "\n*******************************************\n" << std::endl;
@@ -950,10 +1100,10 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
         SetTH1Style(hFracTOFKaonMCTPCtag[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.045, 0.05);
         SetTH1Style(hFracTPCProtonMCV0tag[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.045, 0.05);
         SetTH1Style(hFracTOFProtonMCV0tag[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.045, 0.05);
-        
+
         legFracMC->AddEntry(hFracTOFProtonMCV0tag[part.first], part.second.data(), "lp");
 
-        double eff = -1, unc = -1;            
+        double eff = -1, unc = -1;
         for (unsigned int iBin = 0; iBin < nBins; iBin++)
         {
             ComputeEfficiency(intNsTPCPionMCV0tag[iBin][part.first], intNsTPCPionMCV0tag[iBin][kAll], eff, unc);
@@ -1046,7 +1196,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     cFractionTOFMC->SaveAs(Form("%s/PurityTOF_MC.pdf", outDirName.data()));
 
     std::cout << "\033[32mDone\033[0m" << std::endl;
-    
+
     //compute fractions in data (TOF only)
     std::cout << "\n*******************************************\n" << std::endl;
     std::cout << "\033[32mCompute fractions and contaminations in data\033[0m\n" << std::endl;
@@ -1176,15 +1326,15 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
         }
         cFitResultTOFKaonFromTPCtag[iEtaBin]->SaveAs(Form("%s/FitNsigmaDistrTOFKaonFromTPCtag_Data_%s.pdf", outDirName.data(), etaBinLabels[iEtaBin].Data()));
         cFitResultTOFProtonFromV0tag[iEtaBin]->SaveAs(Form("%s/FitNsigmaDistrTOFProtonFromV0tag_Data_%s.pdf", outDirName.data(), etaBinLabels[iEtaBin].Data()));
-    
+
         cTOFFractionData[iEtaBin]->cd(1)->DrawFrame(binMins[0], 1.e-5, binMaxs[nBins-1], 10., Form("TOF K TPC tag;%s (GeV/#it{c});Purity / Contamination", varTitle.Data()));
         cTOFFractionData[iEtaBin]->cd(1)->SetLogy();
-        // cTOFFractionData[iEtaBin]->cd(1)->SetLogx();
+        cTOFFractionData[iEtaBin]->cd(1)->SetLogx();
         for (auto &part : hFracTOFKaonDataTPCtag[iEtaBin])
             hFracTOFKaonDataTPCtag[iEtaBin][part.first]->DrawCopy("same");
         cTOFFractionData[iEtaBin]->cd(2)->DrawFrame(binMins[0], 1.e-5, binMaxs[nBins-1], 10., Form("TOF p from #Lambda;%s (GeV/#it{c});Purity / Contamination", varTitle.Data()));
         cTOFFractionData[iEtaBin]->cd(2)->SetLogy();
-        // cTOFFractionData[iEtaBin]->cd(2)->SetLogx();
+        cTOFFractionData[iEtaBin]->cd(2)->SetLogx();
         for (auto &part : hFracTOFProtonDataV0tag[iEtaBin])
             hFracTOFProtonDataV0tag[iEtaBin][part.first]->DrawCopy("same");
         if(iEtaBin == 0)
@@ -1852,7 +2002,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 
         for (unsigned int iEff = 0; iEff < nEff; iEff++)
         {
-            // cEffPion[iEtaBin]->cd(1)->SetLogx();
+            cEffPion[iEtaBin]->cd(1)->SetLogx();
             cEffPion[iEtaBin]->cd(1)->SetTopMargin(0.035);
             cEffPion[iEtaBin]->cd(1)->SetBottomMargin(0.12);
             cEffPion[iEtaBin]->cd(1)->SetRightMargin(0.035);
@@ -1860,7 +2010,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
             hEffPionTPCDataV0tag[iEtaBin][iEff]->DrawCopy("same");
             legEffPion->Draw();
 
-            // cEffPion[iEtaBin]->cd(2)->SetLogx();
+            cEffPion[iEtaBin]->cd(2)->SetLogx();
             cEffPion[iEtaBin]->cd(2)->SetTopMargin(0.035);
             cEffPion[iEtaBin]->cd(2)->SetBottomMargin(0.12);
             cEffPion[iEtaBin]->cd(2)->SetRightMargin(0.035);
@@ -1868,20 +2018,20 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
             hEffPionTOFDataV0tag[iEtaBin][iEff]->DrawCopy("same");
             legEffPion->Draw();
 
-            // cEffPion[iEtaBin]->cd(3)->SetLogx();
+            cEffPion[iEtaBin]->cd(3)->SetLogx();
             cEffPion[iEtaBin]->cd(3)->SetTopMargin(0.035);
             cEffPion[iEtaBin]->cd(3)->SetBottomMargin(0.12);
             cEffPion[iEtaBin]->cd(3)->SetRightMargin(0.035);
             hRatioEffPionTPCDataV0tag[iEtaBin][iEff]->DrawCopy("same");
 
-            // cEffPion[iEtaBin]->cd(4)->SetLogx();
+            cEffPion[iEtaBin]->cd(4)->SetLogx();
             cEffPion[iEtaBin]->cd(4)->SetTopMargin(0.035);
             cEffPion[iEtaBin]->cd(4)->SetBottomMargin(0.12);
             cEffPion[iEtaBin]->cd(4)->SetRightMargin(0.035);
             hRatioEffPionTOFDataV0tag[iEtaBin][iEff]->DrawCopy("same");
             cEffPion[iEtaBin]->SaveAs(Form("%s/EfficiencyNsigmaPion_MC_Data_%s.pdf", outDirName.data(), etaBinLabels[iEtaBin].Data()));
 
-            // cEffKaon[iEtaBin]->cd(1)->SetLogx();
+            cEffKaon[iEtaBin]->cd(1)->SetLogx();
             cEffKaon[iEtaBin]->cd(1)->SetTopMargin(0.035);
             cEffKaon[iEtaBin]->cd(1)->SetBottomMargin(0.12);
             cEffKaon[iEtaBin]->cd(1)->SetRightMargin(0.035);
@@ -1890,7 +2040,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
             hEffKaonTPCDataTOFtag[iEtaBin][iEff]->DrawCopy("same");
             legEffKaonTPC->Draw();
 
-            // cEffKaon[iEtaBin]->cd(2)->SetLogx();
+            cEffKaon[iEtaBin]->cd(2)->SetLogx();
             cEffKaon[iEtaBin]->cd(2)->SetTopMargin(0.035);
             cEffKaon[iEtaBin]->cd(2)->SetBottomMargin(0.12);
             cEffKaon[iEtaBin]->cd(2)->SetRightMargin(0.035);
@@ -1898,21 +2048,21 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
             hEffKaonTOFDataTPCtag[iEtaBin][iEff]->DrawCopy("same");
             legEffKaonTOF->Draw();
 
-            // cEffKaon[iEtaBin]->cd(3)->SetLogx();
+            cEffKaon[iEtaBin]->cd(3)->SetLogx();
             cEffKaon[iEtaBin]->cd(3)->SetTopMargin(0.035);
             cEffKaon[iEtaBin]->cd(3)->SetBottomMargin(0.12);
             cEffKaon[iEtaBin]->cd(3)->SetRightMargin(0.035);
             hRatioEffKaonTPCDataKinktag[iEtaBin][iEff]->DrawCopy("same");
             hRatioEffKaonTPCDataTOFtag[iEtaBin][iEff]->DrawCopy("same");
 
-            // cEffKaon[iEtaBin]->cd(4)->SetLogx();
+            cEffKaon[iEtaBin]->cd(4)->SetLogx();
             cEffKaon[iEtaBin]->cd(4)->SetTopMargin(0.035);
             cEffKaon[iEtaBin]->cd(4)->SetBottomMargin(0.12);
             cEffKaon[iEtaBin]->cd(4)->SetRightMargin(0.035);
             hRatioEffKaonTOFDataTPCtag[iEtaBin][iEff]->DrawCopy("same");
             cEffKaon[iEtaBin]->SaveAs(Form("%s/EfficiencyNsigmaKaon_MC_Data_%s.pdf", outDirName.data(), etaBinLabels[iEtaBin].Data()));
 
-            // cEffProton[iEtaBin]->cd(1)->SetLogx();
+            cEffProton[iEtaBin]->cd(1)->SetLogx();
             cEffProton[iEtaBin]->cd(1)->SetTopMargin(0.035);
             cEffProton[iEtaBin]->cd(1)->SetBottomMargin(0.12);
             cEffProton[iEtaBin]->cd(1)->SetRightMargin(0.035);
@@ -1920,7 +2070,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
             hEffProtonTPCDataV0tag[iEtaBin][iEff]->DrawCopy("same");
             legEffProton->Draw();
 
-            // cEffProton[iEtaBin]->cd(2)->SetLogx();
+            cEffProton[iEtaBin]->cd(2)->SetLogx();
             cEffProton[iEtaBin]->cd(2)->SetTopMargin(0.035);
             cEffProton[iEtaBin]->cd(2)->SetBottomMargin(0.12);
             cEffProton[iEtaBin]->cd(2)->SetRightMargin(0.035);
@@ -1928,13 +2078,13 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
             hEffProtonTOFDataV0tag[iEtaBin][iEff]->DrawCopy("same");
             legEffProton->Draw();
 
-            // cEffProton[iEtaBin]->cd(3)->SetLogx();
+            cEffProton[iEtaBin]->cd(3)->SetLogx();
             cEffProton[iEtaBin]->cd(3)->SetTopMargin(0.035);
             cEffProton[iEtaBin]->cd(3)->SetBottomMargin(0.12);
             cEffProton[iEtaBin]->cd(3)->SetRightMargin(0.035);
             hRatioEffProtonTPCDataV0tag[iEtaBin][iEff]->DrawCopy("same");
 
-            // cEffProton[iEtaBin]->cd(4)->SetLogx();
+            cEffProton[iEtaBin]->cd(4)->SetLogx();
             cEffProton[iEtaBin]->cd(4)->SetTopMargin(0.035);
             cEffProton[iEtaBin]->cd(4)->SetBottomMargin(0.12);
             cEffProton[iEtaBin]->cd(4)->SetRightMargin(0.035);
@@ -2178,7 +2328,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
         }
     }
     outFileEff.Close();
-    std::cout << Form("File with efficiencies %s/PIDEffSystSingleTrack.root saved", outDirName.data()) << std::endl;    
+    std::cout << Form("File with efficiencies %s/PIDEffSystSingleTrack.root saved", outDirName.data()) << std::endl;
 
     std::array<TDirectoryFile*, nEtaBinsMax+1> dirEtaBinDistr;
     TFile outFileDistr(Form("%s/NsigmaPIDdistr.root", outDirName.data()), "recreate");
@@ -2188,6 +2338,8 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     dirDataDistr->cd();
     cNsigmaTPCVsEta->Write();
     cNsigmaTOFVsEta->Write();
+    cNsigmaAllHyposPionTPCVsP->Write();
+    cNsigmaAllHyposPionTOFVsP->Write();
     hNsigmaTPCPionDataV0tagVsEta->Write();
     hNsigmaTPCProtonDataV0tagVsEta->Write();
     hNsigmaTPCKaonDataTOFtagVsEta->Write();
@@ -2202,6 +2354,16 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     hSigmaKaonTPCDataTOFtagVsEtaVsP->Write();
     hMeanProtonTPCDataV0tagVsEtaVsP->Write();
     hSigmaProtonTPCDataV0tagVsEtaVsP->Write();
+    gNsigmaTPCPionDataV0tagVsP->Write();
+    gNsigmaTPCKaonHypoPionDataV0tagVsP->Write();
+    gNsigmaTPCProtonHypoPionDataV0tagVsP->Write();
+    gSepTPCKaonHypoPionDataV0tagVsP->Write();
+    gSepTPCProtonHypoPionDataV0tagVsP->Write();
+    gNsigmaTOFPionDataV0tagVsP->Write();
+    gNsigmaTOFKaonHypoPionDataV0tagVsP->Write();
+    gNsigmaTOFProtonHypoPionDataV0tagVsP->Write();
+    gSepTOFKaonHypoPionDataV0tagVsP->Write();
+    gSepTOFProtonHypoPionDataV0tagVsP->Write();
     for (unsigned int iEtaBin = 0; iEtaBin < nEtaBins; iEtaBin++)
     {
         dirDataDistr->cd();
@@ -2347,8 +2509,8 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
         }
     }
     outFileDistr.Close();
-    
-    std::cout << Form("File with distributions %s/NsigmaPIDdistr.root saved\n", outDirName.data()) << std::endl;    
+
+    std::cout << Form("File with distributions %s/NsigmaPIDdistr.root saved\n", outDirName.data()) << std::endl;
     std::cout << "\033[32mDone\033[0m" << std::endl;
 }
 
@@ -2391,8 +2553,8 @@ void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std:
     ROOT::EnableImplicitMT(); //tell ROOT to go parallel
     ROOT::RDataFrame dataFrameMC(Form("%s/%s", inDirNameMC.data(), "fPIDtree"), inFileNameMC);
 
-    // histos for TPC-TOF marching efficiency vs. p and true particle species    
-    std::map<int, TH1D*> hPionMCV0tagWithTOF, hKaonMCTPCtagWithTOF, hProtonMCV0tagWithTOF, hPionMCV0tagAll, hKaonMCTPCtagAll, hProtonMCV0tagAll; 
+    // histos for TPC-TOF marching efficiency vs. p and true particle species
+    std::map<int, TH1D*> hPionMCV0tagWithTOF, hKaonMCTPCtagWithTOF, hProtonMCV0tagWithTOF, hPionMCV0tagAll, hKaonMCTPCtagAll, hProtonMCV0tagAll;
     TH1D* hTPCTOFMatchEffPionMCV0tag, *hTPCTOFMatchEffKaonMCTPCtag, *hTPCTOFMatchEffProtonMCV0tag, *hTPCTOFMatchEffPionMCtrue, *hTPCTOFMatchEffKaonMCtrue, *hTPCTOFMatchEffProtonMCtrue;
     TH1D* hRatioTPCTOFMatchEffPionMC, *hRatioTPCTOFMatchEffKaonMC, *hRatioTPCTOFMatchEffProtonMC;
 
@@ -2606,8 +2768,8 @@ void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std:
     else if(pileupOpt == "keep")
         dataFrameDataEtaSel = dataFrameDataEtaSel.Filter(Form("(OOBpileupbits & %d) > 0", pileupSelBit));
 
-    // histos for TPC-TOF marching efficiency vs. eta and p    
-    std::array<TH1D*, nEtaBinsMax+1> hPionDataV0tagWithTOF, hKaonDataTPCtagWithTOF, hProtonDataV0tagWithTOF, hPionDataV0tagAll, hKaonDataTPCtagAll, hProtonDataV0tagAll; 
+    // histos for TPC-TOF marching efficiency vs. eta and p
+    std::array<TH1D*, nEtaBinsMax+1> hPionDataV0tagWithTOF, hKaonDataTPCtagWithTOF, hProtonDataV0tagWithTOF, hPionDataV0tagAll, hKaonDataTPCtagAll, hProtonDataV0tagAll;
     std::array<TH1D*, nEtaBinsMax+1> hTPCTOFMatchEffPionDataV0tag, hTPCTOFMatchEffKaonDataTPCtag, hTPCTOFMatchEffProtonDataV0tag;
     std::array<TH1D*, nEtaBinsMax+1> hRatioTPCTOFMatchEffPionDataV0tagMCtrue, hRatioTPCTOFMatchEffKaonDataTPCtagMCtrue, hRatioTPCTOFMatchEffProtonDataV0tagMCtrue;
     std::array<TCanvas*, nEtaBinsMax+1> cTPCTOFMatchEffDatatagsMCtrue;
@@ -3069,7 +3231,7 @@ void SetStyle()
     gStyle->SetTitleOffset(1.2, "x");
     gStyle->SetPadTopMargin(0.1);
     gStyle->SetPadRightMargin(0.1);
-    gStyle->SetPadLeftMargin(0.15);
+    gStyle->SetPadLeftMargin(0.16);
     gStyle->SetPadBottomMargin(0.14);
     gStyle->SetTitleSize(0.05, "xyzt");
     gStyle->SetLabelSize(0.045, "xyz");
@@ -3106,4 +3268,40 @@ void SetTH1Style(TH1 *histo, int markerstyle, int markercolor, float markersize,
         histo->GetYaxis()->SetTitleSize(labelsize);
         histo->SetTitleSize(labelsize);
     }
+}
+
+//_____________________________________________________
+void SetTGraphStyle(TGraph *graph, int markerstyle, int markercolor, float markersize, int linewidth, int linecolor, int fillcolor, float labelsize, float titlesize)
+{
+
+    graph->SetMarkerStyle(markerstyle);
+    graph->SetMarkerSize(markersize);
+    graph->SetMarkerColor(markercolor);
+    graph->SetLineWidth(linewidth);
+    graph->SetLineColor(linecolor);
+    graph->SetFillColorAlpha(fillcolor, 0.25);
+
+    if (labelsize > 0)
+    {
+        graph->GetXaxis()->SetLabelSize(labelsize);
+        graph->GetYaxis()->SetLabelSize(labelsize);
+    }
+    if (titlesize > 0)
+    {
+        graph->GetXaxis()->SetTitleSize(labelsize);
+        graph->GetYaxis()->SetTitleSize(labelsize);
+    }
+}
+
+//_____________________________________________________
+TGraphErrors* ConvertTProfileToGraph(TProfile *prof)
+{
+    auto graph = new TGraphErrors();
+    for(int iBin=0; iBin<prof->GetNbinsX(); iBin++)
+    {
+        graph->SetPoint(iBin, prof->GetBinCenter(iBin+1), prof->GetBinContent(iBin+1));
+        graph->SetPointError(iBin, 0., prof->GetBinError(iBin+1));
+    }
+
+    return graph;
 }

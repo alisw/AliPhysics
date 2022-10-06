@@ -1,6 +1,6 @@
 // AddTask for AliAnalysisTaskCascadeChCorrelations task
 
-AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(TString taskName = "", float cenMin, float cenMax, bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
+AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(TString taskName = "", Int_t cenMin=0, Int_t cenMax=100, bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
 
 // Creates a V0-Ch correlations analysis task and adds it to the analysis manager.
   
@@ -25,6 +25,8 @@ if (!mgr->GetInputEventHandler()) {
   AliAnalysisTaskV0ChCorrelationppsys* task  = new AliAnalysisTaskV0ChCorrelationppsys(taskName.Data(), cenMin,cenMax,effCorr); 
   
   task->SetAnalysisMC(isMC);
+  task->SetV0h(kTRUE);
+  task->Sethh(kTRUE);
   //------------------------------Mixing part------------------------------
   task->SetMixingTracks(5000);
   task->SetPoolSize(200); 
@@ -45,7 +47,7 @@ if (!mgr->GetInputEventHandler()) {
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
-  task->SetV0PtMin(3.);
+  task->SetV0PtMin(8.);
   task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);

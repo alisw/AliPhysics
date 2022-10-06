@@ -13,6 +13,13 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   AliEmcalAodTrackFilterTask(const char *name);
   virtual ~AliEmcalAodTrackFilterTask();
 
+  static AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(    
+                                const char *name         = "FilterTracks",
+                                const char *inname       = "tracks",
+                                const char *runperiod    = "", 
+                                const char *taskName     = "AliEmcalAodTrackFilterTask",
+                                const char *suffix       = "" );
+
   void               SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)         { fAODfilterBits[0]  = b0  ; fAODfilterBits[1] = b1  ; }
   void               SetAttemptProp(Bool_t b)                             { fAttemptProp       = b   ; }
   void               SetAttemptPropMatch(Bool_t b)                        { fAttemptPropMatch  = b   ; }
@@ -25,7 +32,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   void               SetTracksOutName(const char *name)                   { fTracksOutName     = name; }
   void               SetUseNegativeLabels(Bool_t f)                       { fUseNegativeLabels = f   ; }
   void               SetTrackEfficiency(Double_t eff = 0.95)              { fTrackEfficiency  = new TF1("eff", "[0]", 0, 500); fTrackEfficiency->FixParameter(0,eff); }
-  void               SetKeepInvMassTag(Bool_t f)                          { fKeepInvMassTag = f ; }
+  void               SetKeepInvMassTag(Bool_t f)                          { fKeepInvMassTag = f ; } 
   void               SetTrackEfficiency(TF1* eff)                         { fTrackEfficiency  = eff  ; }
 
  protected:
@@ -52,6 +59,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   AliEmcalAodTrackFilterTask(const AliEmcalAodTrackFilterTask&);            // not implemented
   AliEmcalAodTrackFilterTask &operator=(const AliEmcalAodTrackFilterTask&); // not implemented
 
-  ClassDef(AliEmcalAodTrackFilterTask, 4); // Task to filter Aod tracks
+  ClassDef(AliEmcalAodTrackFilterTask, 5); // Task to filter Aod tracks
 };
 #endif
+

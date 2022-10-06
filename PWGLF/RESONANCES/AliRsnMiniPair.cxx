@@ -4,7 +4,28 @@
 
 #include <AliQnCorrectionsQnVector.h>
 
+
+#include "AliESDpid.h"
+#include "AliAODPid.h"
+#include "AliCentrality.h"
+#include "AliESDUtils.h"
+#include "AliPIDResponse.h"
+#include "AliESDv0.h"
+
+#include "AliRsnEvent.h"
+#include "AliRsnDaughter.h"
+#include "AliRsnMother.h"
+#include "AliRsnDaughterDef.h"
+#include "AliRsnDaughterDef.h"
+#include "AliESDv0.h"
+
+#include "AliRsnValueDaughter.h"
+
+//Modified by Prottay 23/01/2022(prottay.das@cern.ch) to fill K0s inv mass for a given bin of K*+/-
+
 ClassImp(AliRsnMiniPair)
+
+
 
 //__________________________________________________________________________________________________
 void AliRsnMiniPair::Fill
@@ -18,9 +39,14 @@ void AliRsnMiniPair::Fill
    p2->Set4Vector(fP2[0], m2, kFALSE);
    p1->Set4Vector(fP1[1], m1, kTRUE );
    p2->Set4Vector(fP2[1], m2, kTRUE );
+
+
    
    fDCA1 = p1->DCA();
    fDCA2 = p2->DCA();
+	
+   fIndex1 = p1->Index();
+   fIndex2 = p2->Index();
 
    fMother = -1;
    fIsFromB = kFALSE;
@@ -43,6 +69,15 @@ void AliRsnMiniPair::Fill
       fSum[i] = fP1[i] + fP2[i];
       fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), refMass);
    }
+
+    
+   //added by prottay   
+   Double_t K0smass=p1->K0M();
+   K0sIM = K0smass;
+   ////////////////////////////
+
+
+
 
    fNSisters=-1;
    if (p1->NTotSisters()==p2->NTotSisters()) fNSisters = p1->NTotSisters();
@@ -74,6 +109,8 @@ void AliRsnMiniPair::Fill
    fPassesOOBPileupCut = kFALSE;
    if (p1->PassesOOBPileupCut() || p2->PassesOOBPileupCut()) fPassesOOBPileupCut = kTRUE;
 }
+
+
 
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
@@ -149,6 +186,32 @@ Double_t AliRsnMiniPair::CosThetaHe(Bool_t useMC)
     TVector3 zAxisHE = (mother.Vect()).Unit();
     Double_t thetaHE= zAxisHE.Dot((daughter1.Vect()).Unit());
     return thetaHE;
+}
+
+Double_t AliRsnMiniPair::CosThetaCsAbs(Bool_t useMC)
+{
+    // calculate CosTheta in CS frame (akhuntia@cern.ch)
+    Double_t Ebeam = 2510;
+    Double_t beamMass = 0.93827231;
+    Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
+    // return one daughter to the resonance rest frame //ak
+    TLorentzVector &mother   = fSum[ID(useMC)];
+    TLorentzVector daughter1 = fP1[ID(useMC)]; //don't add reference
+    // write four vector of projectile and target //projectile in the muon-arm direction
+    TLorentzVector pProjCM(0,0,-Pbeam,Ebeam);//projectile
+    TLorentzVector pTargCM(0,0,Pbeam,Ebeam);//target
+    // compute components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+    // boost daughter particle(s) to resonance rest frame
+    daughter1.Boost(betaX, betaY, betaZ);
+    pProjCM.Boost(betaX, betaY, betaZ);
+    pTargCM.Boost(betaX, betaY, betaZ);
+    // get the z-axis for the CS frame
+    TVector3 zAxisCS = (((pProjCM.Vect()).Unit())-((pTargCM.Vect()).Unit())).Unit();
+    Double_t thetaCS = TMath::Abs(zAxisCS.Dot((daughter1.Vect()).Unit()));
+    return thetaCS;
 }
 
 Double_t AliRsnMiniPair::CosThetaHeAbs(Bool_t useMC)
@@ -474,6 +537,28 @@ Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
     return fP2[ID(mc)].Pt();
 }
 
+
+//invariant mass of daughters
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::DaughterIM()
+{
+  //returns pt of the <id> daughter
+  // if MC returns generated momenta
+
+
+
+  return K0sIM;
+  
+  
+  /* 
+  if (daughterId==0)
+    return fP1[ID(mc)].M();
+  else
+    return fP2[ID(mc)].M();
+  */
+}
+
+
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterDCA(Int_t daughterId)
 {
@@ -551,4 +636,27 @@ Double_t AliRsnMiniPair::PairAsymmetry(Bool_t mc)
 
   return asym;
   
+}
+//__________________________________________________________________________________________________
+Bool_t AliRsnMiniPair::ContainsIndex(Int_t index)
+{
+
+//
+
+  if (fIndex1 == index) return kTRUE;
+  if (fIndex2 == index) return kTRUE;
+
+  return kFALSE;
+  
+}
+
+Double_t AliRsnMiniPair::pTLstar(Bool_t mc) const
+{
+
+      	TDatabasePDG *db1   = TDatabasePDG::Instance();
+	TParticlePDG *part1 = db1->GetParticle(3124);
+	  Double_t mLstar      = part1->Mass();
+	  Double_t pt2      =   fSum[ID(mc)].Pt()*fSum[ID(mc)].Pt() + fSum[ID(mc)].M()*fSum[ID(mc)].M() - mLstar*mLstar ;
+	  if(pt2 < 0.0) return 1E20;
+	  return TMath::Sqrt(pt2);
 }

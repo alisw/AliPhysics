@@ -49,18 +49,21 @@
 #include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalMCPartonInfo.h"
+#include "AliEmcalPythiaFileHandler.h"
 #include "AliEmcalPythiaInfo.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliESDEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliEventplane.h"
+#include "AliGenCocktailEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
 #include "AliGenHepMCEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliMCParticle.h"
 #include "AliMultiInputEventHandler.h"
 #include "AliMultSelection.h"
@@ -74,9 +77,7 @@
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
-/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEmcal);
-/// \endcond
 
 AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() : 
   AliAnalysisTaskSE("AliAnalysisTaskEmcal"),
@@ -119,6 +120,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
   fIsHepMC(kFALSE),
+  fIsWeighted(kFALSE),
   fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
@@ -136,6 +138,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fUseBuiltinEventSelection(kFALSE),
+  fReadPyxsecFast(true),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
@@ -176,9 +179,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHistTrialsAfterSel(nullptr),
   fHistEventsAfterSel(nullptr),
   fHistXsectionAfterSel(nullptr),
+  fHistWeightsAfterSel(nullptr),
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
+  fHistWeights(nullptr),
   fHistPtHard(nullptr),
   fHistPtHardCorr(nullptr),
   fHistPtHardCorrGlobal(nullptr),
@@ -242,6 +247,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
   fIsHepMC(kFALSE),
+  fIsWeighted(kFALSE),
   fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
@@ -259,6 +265,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fUseBuiltinEventSelection(kFALSE),
+  fReadPyxsecFast(true),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
@@ -299,9 +306,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHistTrialsAfterSel(nullptr),
   fHistEventsAfterSel(nullptr),
   fHistXsectionAfterSel(nullptr),
+  fHistWeightsAfterSel(nullptr),
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
+  fHistWeights(nullptr),
   fHistPtHard(nullptr),
   fHistPtHardCorr(nullptr),
   fHistPtHardCorrGlobal(nullptr),
@@ -425,6 +434,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionAfterSel);
 
+    fHistWeightsAfterSel = new TH1F("fHistWeightsAfterSel", "fHistWeightsAfterSel", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeightsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistWeightsAfterSel->GetYaxis()->SetTitle("integrated weights");
+    fOutput->Add(fHistWeightsAfterSel);
+
     fHistTrials = new TH1F("fHistTrials", "fHistTrials", fNPtHardBins, 0, fNPtHardBins);
     fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
@@ -439,6 +453,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistXsection->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsection);
+
+    fHistWeights = new TH1F("fHistWeights", "fHistWeights", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeights->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistWeights->GetYaxis()->SetTitle("integrated weights");
+    fOutput->Add(fHistWeights);
 
     // Set the bin labels
     Bool_t binningAvailable = false;
@@ -464,10 +483,12 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
         fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEventsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsectionAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistWeightsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
 
         fHistTrials->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsection->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEvents->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistWeights->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
       }
     } else {
       AliErrorStream() << "No suitable binning available - skipping bin labels" << std::endl;
@@ -570,27 +591,32 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
+  double weight = 1.;
+  if(fIsWeighted) {
+    weight = GetEventWeightFromHeader();
+  }
   if (fIsPythia || fIsHerwig || fIsHepMC) {
     // Protection: In case the pt-hard bin handling is not initialized we fall back to the
     // global pt-hard bin (usually 0) in order to aviod mismatch between histograms before
     // and after selection
     fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, 1);
     fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fNTrials);
+    fHistWeightsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
     fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fXsection);
-    fHistPtHard->Fill(fPtHard);
+    fHistPtHard->Fill(fPtHard, weight);
     if(fPtHardInitialized){
-    	fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
-    	fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
-    	fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
+    	fHistPtHardCorr->Fill(fPtHardBin, fPtHard, weight);
+    	fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard, weight);
+    	fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal, weight);
     }
   }
 
 
-  fHistZVertex->Fill(fVertex[2]);
+  fHistZVertex->Fill(fVertex[2], weight);
 
   if (fForceBeamType != kpp) {
-    fHistCentrality->Fill(fCent);
-    fHistEventPlane->Fill(fEPV0);
+    fHistCentrality->Fill(fCent, weight);
+    fHistEventPlane->Fill(fEPV0, weight);
   }
 
   std::unique_ptr<TObjArray> triggerClasses(InputEvent()->GetFiredTriggerClasses().Tokenize(" "));
@@ -652,6 +678,12 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   // depends on it.
   if(fPtHard < fMinPtHard || fPtHard > fMaxPtHard) return;
 
+  // Fill weights before event selection
+  if(fIsPythia || fIsHerwig || fIsHepMC) {
+    auto weight = GetEventWeightFromHeader();
+    fHistWeights->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
+  }
+
   // Apply fallback for pythia cross section if needed
   if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){
     AliDebugStream(1) << "Fallback to cross section from pythia header required" << std::endl;
@@ -669,8 +701,8 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     }
     */
     fHistXsection->Fill(fPtHardBinGlobal, fPythiaHeader->GetXsection());
-    fHistTrials->Fill(fPtHardBin);
-    fHistEvents->Fill(fPtHardBin);
+    fHistTrials->Fill(fPtHardBinGlobal);
+    fHistEvents->Fill(fPtHardBinGlobal);
   }
 
   if(fIsHepMC && fHepMCHeader) {
@@ -678,6 +710,8 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     fHistTrials->Fill(fPtHardBinGlobal, fHepMCHeader->ntrials());
     fHistEvents->Fill(fPtHardBinGlobal);
   }
+
+  UserRunBeforeEventSelection();
 
   if (IsEventSelected()) {
     if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
@@ -849,73 +883,108 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   fXsec = 0;
   fTrials = 1;
 
-  TString file(currFile);
-  // Determine archive type
-  TString archivetype;
-  std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
-  for(auto t : *walk){
-    TString &tok = static_cast<TObjString *>(t)->String();
-    if(tok.Contains(".zip")){
-      archivetype = tok;
-      Int_t pos = archivetype.Index(".zip");
-      archivetype.Replace(pos, archivetype.Length() - pos, "");
+  if(fReadPyxsecFast) {
+    //
+    // Fast method:
+    // Cross section values are cached in a singleton object: The first call
+    // from any task to UpdateFile will update the cache, all consecutive calls
+    // from any other task with the same file will just use the cached value
+    //
+    AliDebugStream(1) << "Using new method obtaining pythia cross section from file" << std::endl;
+    using PYTHIAFileHander = PWG::EMCAL::AliEmcalPythiaFileHandler;
+    auto pythiahandler = PYTHIAFileHander::Instance();
+    try {
+      auto xsectrials = pythiahandler->GetCrossSectionAndNTrials(currFile);
+      fXsec = xsectrials.fCrossSection;
+      fTrials = xsectrials.fNTrials;
+    } catch(PYTHIAFileHander::FileNotFoundException &e) {
+      AliErrorStream() << e.what() << std::endl;
+    } catch(PYTHIAFileHander::FileContentException &e) {
+      AliErrorStream() << e.what() << std::endl;
+    } catch(PYTHIAFileHander::UninitializedException &e) {
+      AliErrorStream() << e.what() << std::endl;
     }
-  }
-  if(archivetype.Length()){
-    AliDebugStream(1) << "Auto-detected archive type " << archivetype << std::endl;
-    Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
-    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
-    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
-    file.Replace(pos+1,pos2-pos1,"");
-  } else {
-    // not an archive take the basename....
-    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
-  }
-  AliDebugStream(1) << "File name: " << file << std::endl;
 
-  // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
-
-  if (!fxsec) {
-    // next trial fetch the histgram file
-    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
-    if (!fxsec){
-      AliErrorStream() << "Failed reading cross section from file " << file << std::endl;
+    if(!fXsec) {
+      AliErrorStream() << "Cross section value from pythia file 0 - use cross section from header" << std::endl;
       fUseXsecFromHeader = true;
-      return kFALSE; // not a severe condition but inciate that we have no information
+      return kFALSE;
     }
-    else {
-      // find the tlist we want to be independtent of the name so use the Tkey
-      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
-      if (!key) return kFALSE;
-      TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) return kFALSE;
-      TProfile *xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
-      // check for failure
-      if(!xSecHist->GetEntries()) {
-        // No cross seciton information available - fall back to raw
-        AliErrorStream() << "No cross section information available in file " << fxsec->GetName() <<" - fall back to cross section in PYTHIA header" << std::endl;
-        fUseXsecFromHeader = true;
-      } else {
-        // Cross section histogram filled - take it from there
-        fXsec = xSecHist->GetBinContent(1);
-        if(!fXsec) AliErrorStream() << GetName() << ": Cross section 0 for file " << file << std::endl;
-        fUseXsecFromHeader = false;
+    return kTRUE;
+  } else {
+    //
+    // Old (slow) method: 
+    // Each task responsible itself for loading the pythia cross section
+    // from file, will lead to multiple file handles.
+    //
+    AliDebugStream(1) << "Using old method obtaining pythia cross section from file" << std::endl;
+    TString file(currFile);
+    // Determine archive type
+    TString archivetype;
+    std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
+    for(auto t : *walk){
+      TString &tok = static_cast<TObjString *>(t)->String();
+      if(tok.Contains(".zip")){
+        archivetype = tok;
+        Int_t pos = archivetype.Index(".zip");
+        archivetype.Replace(pos, archivetype.Length() - pos, "");
       }
-      fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
     }
-  } else { // no tree pyxsec.root
-    TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if (!xtree) return kFALSE;
-    UInt_t   ntrials  = 0;
-    Double_t  xsection  = 0;
-    xtree->SetBranchAddress("xsection",&xsection);
-    xtree->SetBranchAddress("ntrials",&ntrials);
-    xtree->GetEntry(0);
-    fTrials = ntrials;
-    fXsec = xsection;
+    if(archivetype.Length()){
+      AliDebugStream(1) << "Auto-detected archive type " << archivetype << std::endl;
+      Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
+      Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+      Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+      file.Replace(pos+1,pos2-pos1,"");
+    } else {
+      // not an archive take the basename....
+      file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+    }
+    AliDebugStream(1) << "File name: " << file << std::endl;
+
+    // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
+    std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
+
+    if (!fxsec) {
+      // next trial fetch the histgram file
+      fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
+      if (!fxsec){
+        AliErrorStream() << "Failed reading cross section from file " << file << std::endl;
+        fUseXsecFromHeader = true;
+        return kFALSE; // not a severe condition but inciate that we have no information
+      } else {
+        // find the tlist we want to be independtent of the name so use the Tkey
+        TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+        if (!key) return kFALSE;
+        TList *list = dynamic_cast<TList*>(key->ReadObj());
+        if (!list) return kFALSE;
+        TProfile *xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
+        // check for failure
+        if(!xSecHist->GetEntries()) {
+          // No cross seciton information available - fall back to raw
+          AliErrorStream() << "No cross section information available in file " << fxsec->GetName() <<" - fall back to cross section in PYTHIA header" << std::endl;
+          fUseXsecFromHeader = true;
+        } else {
+          // Cross section histogram filled - take it from there
+          fXsec = xSecHist->GetBinContent(1);
+          if(!fXsec) AliErrorStream() << GetName() << ": Cross section 0 for file " << file << std::endl;
+          fUseXsecFromHeader = false;
+        }
+        fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+      }
+    } else { // no tree pyxsec.root
+      TTree *xtree = (TTree*)fxsec->Get("Xsection");
+      if (!xtree) return kFALSE;
+      UInt_t   ntrials  = 0;
+      Double_t  xsection  = 0;
+      xtree->SetBranchAddress("xsection",&xsection);
+      xtree->SetBranchAddress("ntrials",&ntrials);
+      xtree->GetEntry(0);
+      fTrials = ntrials;
+      fXsec = xsection;
+    }
+    return kTRUE;
   }
-  return kTRUE;
 }
 
 Bool_t AliAnalysisTaskEmcal::UserNotify(){
@@ -1626,13 +1695,26 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if (MCEvent()) {
       fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
       if (!fPythiaHeader) {
-        // Check if AOD
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
           for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
             fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
             if (fPythiaHeader) break;
+          }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerobject);
+              if(fPythiaHeader) break;
+            }
           }
         }
       }
@@ -1669,13 +1751,26 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(MCEvent()->GenEventHeader());
      
       if (!fHerwigHeader) {
-        // Check if AOD
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly        
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
           for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
             fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(aodMCH->GetCocktailHeader(i));
             if (fHerwigHeader) break;
+          }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(headerobject);
+              if(fHerwigHeader) break;
+            }
           }
         }
       }
@@ -1710,13 +1805,26 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader());
      
       if (!fHepMCHeader) {
-        // Check if AOD
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly D
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
           for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
             fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(aodMCH->GetCocktailHeader(i));
             if (fHepMCHeader) break;
+          }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(headerobject);
+              if(fHepMCHeader) break;
+            }
           }
         }
       }
@@ -2024,10 +2132,11 @@ void AliAnalysisTaskEmcal::SetMCProductionType(MCProductionType_t prodtype) {
     case MCProductionType_t::kMCHerwig6: SetIsHerwig(true); break;
     case MCProductionType_t::kMCHepMCMB: SetIsHepMC(true); break;
     case MCProductionType_t::kMCHepMCPtHard: SetIsHepMC(true); break;
+    case MCProductionType_t::kMCPythiaWeighted: SetIsPythia(true); SetIsWeighted(true); break;
     case MCProductionType_t::kNoMC: break;
   };
   // In case of min. bias production reduce to 1 pt-hard bin
-  if(prodtype == MCProductionType_t::kMCPythiaMB || prodtype == MCProductionType_t::kMCHepMCMB) {
+  if(prodtype == MCProductionType_t::kMCPythiaMB || prodtype == MCProductionType_t::kMCHepMCMB || prodtype == MCProductionType_t::kMCPythiaWeighted) {
     SetNumberOfPtHardBins(1);
     TArrayI mbbinning(2);
     mbbinning[0] = 0;
@@ -2079,7 +2188,7 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
   namedataset.ToLower();
   PtHardBinning_t binningtype = PtHardBinning_t::kBinningUnknown;
   MCProductionType_t prodtype = MCProductionType_t::kNoMC;
-  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4"};
+  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc16j5", "lhc18b8", "lhc18b9b", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4", "lhc21b8"};
   std::vector<TString> datasetsPthard20HepMC = {"lhc20j3", "lhc20k1"};
   std::vector<TString> datasetsPthard13Pythia = {"lhc18i4a", "lhc18i4b2", "lhc19k3a", "lhc19k3b", "lhc19k3c"};
   std::vector<TString> datasetsPthard10Pythia = {"lhc12a15a", "lhc13b4"};
@@ -2092,6 +2201,9 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
     "lhc18g4", "lhc18g5", "lhc18g6", "lhc18g2", "lhc18h2", "lhc18h4", "lhc18j1", "lhc18j4", "lhc18k1", "lhc18k2", "lhc18k3",      // MB pp 13 TeV, 2018 
     "lhc18h1"                                                                                                                     // MB pp 13 TeV, 2018, low-B
 
+  };
+  std::vector<std::string> datasetsPythiaWeighted = {
+    "lhc21j5"
   };
 
   bool foundDataset = false;
@@ -2152,6 +2264,16 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
     for(auto dset : datasetsMBPythia){
       if(namedataset.Contains(dset)) {
         prodtype = MCProductionType_t::kMCPythiaMB;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPythiaWeighted){
+      if(namedataset.Contains(dset)) {
+        prodtype = MCProductionType_t::kMCPythiaWeighted;
         foundDataset = true;
         break;
       }
@@ -2300,6 +2422,24 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
     fPythiaInfo->SetPythiaEventWeight(ptWeight);}
 }
 
+double AliAnalysisTaskEmcal::GetEventWeightFromHeader() const {
+  double eventweight = -1.;
+  if(fIsPythia || fIsHepMC) {
+    if(fIsPythia && fPythiaHeader) eventweight = fPythiaHeader->EventWeight();
+    if(fIsHepMC && fHepMCHeader) eventweight = fHepMCHeader->EventWeight();
+  }
+  return eventweight;
+}
+
+double AliAnalysisTaskEmcal::GetCrossSectionFromHeader() const {
+  double crosssection = -1.;
+  if(fIsPythia || fIsHepMC) {
+    if(fIsPythia && fPythiaHeader) crosssection = fPythiaHeader->GetXsection();
+    if(fIsHepMC && fHepMCHeader) crosssection = fHepMCHeader->sigma_gen();
+  }
+  return crosssection;
+}
+
 AliAODInputHandler* AliAnalysisTaskEmcal::AddAODHandler()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -2356,3 +2496,14 @@ AliESDInputHandler* AliAnalysisTaskEmcal::AddESDHandler()
   return esdHandler;
 }
 
+AliMCEventHandler* AliAnalysisTaskEmcal::AddMCEventHandler() {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddESDHandler", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  AliMCEventHandler *handler = new AliMCEventHandler;
+  mgr->SetMCtruthEventHandler(handler);
+  return handler;
+}

@@ -32,11 +32,14 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
+    AliAnalysisTaskCentralJpsi_DG.cxx
+    AliAnalysisTaskJPsi_DG.cxx
+    AliAnalysisTaskJPsiMC_DG.cxx
     AliAnalysisTaskLumiStabi.cxx
     AliAnalysisTaskSatellites.cxx
     AliAnalysisTaskUpcEtaC.cxx
     AliAnalysisTaskUpcFilter.cxx
-                AliAnalysisTaskUpcFourPi.cxx
+    AliAnalysisTaskUpcFourPi.cxx
     AliAnalysisTaskUpcK0sK0s.cxx          
     AliAnalysisTaskUpcPhi.cxx
     AliAnalysisTaskUPCPhiTest.cxx
@@ -44,6 +47,7 @@ set(SRCS
     AliAnalysisTaskUpcRho0.cxx
     AliAnalysisTaskUpc4Prongs.cxx
     AliAnalysisTaskUpc4Pi.cxx
+    AliAnalysisTaskUpc2Pi2E.cxx
 		AliAnalysisTaskUpcTree.cxx
 		AliAnalysisTaskADin2018.cxx
 		AliAnalysisTaskForMCpPb.cxx
@@ -58,6 +62,7 @@ set(SRCS
     AliUPCEvent.cxx
     AliUPCMuonTrack.cxx
     AliUPCTrack.cxx
+    nanoAOD/AliAnalysisTaskCentralTau.cxx
     nanoAOD/AliAnalysisTaskFilterUPCNanoAOD.cxx
     nanoAOD/AliAODUPCReplicator.cxx
     nanoAOD/AliAnalysisTaskUpcTriggerCounter.cxx
@@ -66,6 +71,7 @@ set(SRCS
     AliAnalysisTaskTOFTrigger.cxx
     AliAnalysisTaskZDCTree.cxx
     Polarization.cxx
+    AliAnalysisTaskUpcPhi0.cxx
    )
 
 # Headers from sources

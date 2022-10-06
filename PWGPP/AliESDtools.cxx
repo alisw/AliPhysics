@@ -853,6 +853,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t ver
   }
   return 1;
 }
+
 Int_t  AliESDtools::FillTrackCounters(){
   const Float_t vertexNorm=0.14;
   const Int_t kNCRCut=130;
@@ -892,6 +893,7 @@ Int_t  AliESDtools::FillTrackCounters(){
     mPt+=kSigmaBias*TMath::Sqrt(pTrack->GetSigma1Pt2());
     fHist2DTrackSumPt->Fill(phi, pTrack->GetTgl(),1./mPt);
   }
+  return 1;
 }
 
 /// check if the particle belongs to pile-up

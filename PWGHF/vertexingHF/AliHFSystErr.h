@@ -22,7 +22,7 @@ class AliHFSystErr : public TNamed
 {
  public:
 
-  AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
+  AliHFSystErr(const Char_t* name="AliHFSystErr", const Char_t* title="");
 
   virtual ~AliHFSystErr();
 
@@ -55,6 +55,11 @@ class AliHFSystErr : public TNamed
   }
   void  ResetTrackEfficErr(Double_t pt, Double_t val){
     fTrackingEff->SetBinContent(fTrackingEff->FindBin(pt),val);
+  }
+  void  ResetDataDrivenFDErr(Double_t pt, Double_t val){
+    if (fDataDrivenFD) {
+      fDataDrivenFD->SetBinContent(fDataDrivenFD->FindBin(pt),val);
+    }
   }
   /// Setting  the run number
   ///  set the two last numbers of the year (is 10 for 2010)
@@ -344,13 +349,18 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2017pp();
   void InitLctopKpi20161718pp13TeV();
   void InitLctopKpi20161718pp13TeVFineBins();
+  void InitLctopKpi20161718pp13TeVFineBins_woVertexing();
+  void InitLctopKpi2018PbPb010();
+  void InitLctopKpi2018PbPb3050();
 
   void InitLctopK0S2010pp();
   void InitLctopK0S2013pPb();
   void InitLctopK0S2013pPbBDT();
   void InitLctopK0S2016pPb();
   void InitLctopK0S2016pPbBDT();
+  void InitLctopK0S2016pPbBDTLowPtAn();
   void InitLctopK0S2017pp5TeV();
+  void InitLctopK0S2017pp5TeVBDT();
   void InitLctopK0S20161718pp13TeVBDT();
 
   void InitLctopK0S2018PbPb010BDT();
@@ -389,6 +399,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2018PbPb010();
   void InitD0toKpi2018PbPb3050();
   void InitD0toKpi2018PbPb010LowPtAn();
+  void InitD0toKpi2018PbPb3050LowPtAn();
 
   void InitLctopKpiFromScpp13TeV201620172018(); // Lc(<-Sc)
   void InitScpp13TeV201620172018(); // Sc
@@ -396,8 +407,15 @@ class AliHFSystErr : public TNamed
   void InitScpp13TeV201620172018BDT(); // Sc, Lc->pK0S, BDT
 
   // data-driven non-prompt analyses
+  void InitNonPromptDzerotoKpi2017pp5TeVML();
+  void InitNonPromptDzerotoKpi20161718pp13TeVML();
+  void InitNonPromptDzerotoKpi2018PbPb5TeV010ML();
+  void InitNonPromptDzerotoKpi2018PbPb5TeV3050ML();
   void InitNonPromptDplustoKpipi2017pp5TeVML();
+  void InitNonPromptLctopK0s20161718pp13TeVML();
+  void InitNonPromptLctopKpi20161718pp13TeVML();
   void InitNonPromptDstoKKpi2017pp5TeVML();
+  void InitNonPromptDstoKKpi2018PbPb5TeV010ML();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
@@ -430,7 +448,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIsDataDrivenFDAnalysis;   /// flag for the non-prompt data-driven analyses 
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,14);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,18);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 

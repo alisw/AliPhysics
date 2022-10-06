@@ -63,6 +63,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetFillYHistos(Bool_t flag) {fFillYHist=flag;}
   void SetFillImpactParameterHistos(Bool_t flag) {fFillImpParHist=flag;}
   void SetFillSparses(Bool_t flag) {fFillSparses=flag;}
+  void SetFillForPIDcase(Bool_t flag) {fFillForPIDcase=flag;}
   void SetUseRejectionMethod(Bool_t flag=kFALSE, Float_t factor=0.01) {fUseRejectionMethod=flag; fRejectionFactor=factor;}
   void SetSystem(Int_t sys){fSys=sys; if(fSys==1) SetFillVarHists(kFALSE);}
   void SetRejectSDDClusters(Bool_t flag) { fIsRejectSDDClusters=flag; }
@@ -164,6 +165,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fDrawDetSignal;		/// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
   Bool_t    fUseQuarkTagInKine;            // flag for quark/hadron level identification of prompt and feeddown
   Bool_t    fFillSparses;                  // flag to activate THnSparse
+  Bool_t    fFillForPIDcase;               // flag to fill output separating onlyD0, onlyD0bar and D0D0bar cases (used for R/S estimation)
   Bool_t    fUseRejectionMethod;           // flag to activate the Rejection method
   Float_t   fRejectionFactor;              // rejection factor to be used in the rejection method
   THnSparseF *fhStudyImpParSingleTrackSign; //!<! sparse with imp par residual cuts for MC

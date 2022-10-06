@@ -79,7 +79,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *path, Int_t dataperiod) {
 
   if (bOptionsLoaded) CleanOptions();
   if (dataperiod==0)
-  TString szTheFileName = "runoptions.txt";
+    TString szTheFileName = "runoptions.txt";
   else
     TString szTheFileName = "runoptions_18r.txt";
   
@@ -500,7 +500,8 @@ Bool_t loadRunOptions(Bool_t verb,const char *path, Int_t dataperiod) {
       szLocalFileList = "filelist_mc.txt";
     }
     else
-      szLocalFileList = "alien:///alice/cern.ch/user/p/prottay/checktxt/filelist.txt";
+      //szLocalFileList = "filelist.txt";
+      szLocalFileList = "__alice__data__2018__LHC18q__000296244__pass3_root_archive_AliESDs_1.txt";
     printf("  Local data list file: %s\n", (const char*) szLocalFileList);
   }
   bOptionsLoaded = kTRUE;

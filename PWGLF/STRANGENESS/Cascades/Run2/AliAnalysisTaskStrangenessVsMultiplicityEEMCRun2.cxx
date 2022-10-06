@@ -211,12 +211,21 @@ fEvSel_NotIncDAQ(kFALSE),
 fEvSel_NotPileupSPDInMultBins(kFALSE),
 fEvSel_NoInconsSPDandTrackVrtx(kFALSE),
 fEvSel_PassSPDClsVsTrackletsCut(kFALSE),
-fCentrality(0),
+fCentrality_V0M(0),
+fCentrality_ZDC(0),
+fCentrality_ZDCFired(0),
+fCentrality_RefMult05(0),
+fCentrality_RefMult08(0),
+fCentrality_SPDClusters(0),
+fCentrality_SPDTracklets(0),
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
 fNTOFClusters(-1),
 fNTOFMatches(-1),
 fNTracksITSsa2010(-1),
+fSPDtracklets(-1),
+fSPDtrackletsA(-1),
+fSPDtrackletsC(-1),
 fNTracksGlobal2015(-1),
 fNTracksGlobal2015TriggerPP(-1),
 fAmplitudeV0A(-1.),
@@ -315,7 +324,13 @@ fTreeVariableZNCpp(-1.),
 fTreeVariableZPApp(-1.),
 fTreeVariableZPCpp(-1.),
 
-fTreeVariableCentrality(0),
+fTreeVariableCentrality_V0M(0),
+fTreeVariableCentrality_ZDC(0),
+fTreeVariableCentrality_ZDCFired(0),
+fTreeVariableCentrality_RefMult05(0),
+fTreeVariableCentrality_RefMult08(0),
+fTreeVariableCentrality_SPDClusters(0),
+fTreeVariableCentrality_SPDTracklets(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
 //MC Variables
@@ -542,8 +557,13 @@ fTreeCascVarZNCpp(-1.),
 fTreeCascVarZPApp(-1.),
 fTreeCascVarZPCpp(-1.),
 
-
-fTreeCascVarCentrality(0),
+fTreeCascVarCentrality_V0M(0),
+fTreeCascVarCentrality_ZDC(0),
+fTreeCascVarCentrality_ZDCFired(0),
+fTreeCascVarCentrality_RefMult05(0),
+fTreeCascVarCentrality_RefMult08(0),
+fTreeCascVarCentrality_SPDClusters(0),
+fTreeCascVarCentrality_SPDTracklets(0),
 fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarOOBPileupFlag(kFALSE),
 
@@ -828,12 +848,21 @@ fEvSel_NotIncDAQ(kFALSE),
 fEvSel_NotPileupSPDInMultBins(kFALSE),
 fEvSel_NoInconsSPDandTrackVrtx(kFALSE),
 fEvSel_PassSPDClsVsTrackletsCut(kFALSE),
-fCentrality(0),
+fCentrality_V0M(0),
+fCentrality_ZDC(0),
+fCentrality_ZDCFired(0),
+fCentrality_RefMult05(0),
+fCentrality_RefMult08(0),
+fCentrality_SPDClusters(0),
+fCentrality_SPDTracklets(0),
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
 fNTOFClusters(-1),
 fNTOFMatches(-1),
 fNTracksITSsa2010(-1),
+fSPDtracklets(-1),
+fSPDtrackletsA(-1),
+fSPDtrackletsC(-1),
 fNTracksGlobal2015(-1),
 fNTracksGlobal2015TriggerPP(-1),
 fAmplitudeV0A(-1.),
@@ -932,7 +961,13 @@ fTreeVariableZNCpp(-1.),
 fTreeVariableZPApp(-1.),
 fTreeVariableZPCpp(-1.),
 
-fTreeVariableCentrality(0),
+fTreeVariableCentrality_V0M(0),
+fTreeVariableCentrality_ZDC(0),
+fTreeVariableCentrality_ZDCFired(0),
+fTreeVariableCentrality_RefMult05(0),
+fTreeVariableCentrality_RefMult08(0),
+fTreeVariableCentrality_SPDClusters(0),
+fTreeVariableCentrality_SPDTracklets(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
 //MC Variables
@@ -1159,8 +1194,13 @@ fTreeCascVarZNCpp(-1.),
 fTreeCascVarZPApp(-1.),
 fTreeCascVarZPCpp(-1.),
 
-
-fTreeCascVarCentrality(0),
+fTreeCascVarCentrality_V0M(0),
+fTreeCascVarCentrality_ZDC(0),
+fTreeCascVarCentrality_ZDCFired(0),
+fTreeCascVarCentrality_RefMult05(0),
+fTreeCascVarCentrality_RefMult08(0),
+fTreeCascVarCentrality_SPDClusters(0),
+fTreeCascVarCentrality_SPDTracklets(0),
 fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarOOBPileupFlag(kFALSE),
 
@@ -1505,7 +1545,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserCreateOutputObjects()
     if(fkSaveEventTree){
         fTreeEvent = new TTree("fTreeEvent","Event");
         //Branch Definitions
-        fTreeEvent->Branch("fCentrality",&fCentrality,"fCentrality/F");
+        fTreeEvent->Branch("fCentrality_V0M",&fCentrality_V0M,"fCentrality_V0M/F");
+        fTreeEvent->Branch("fCentrality_ZDC",&fCentrality_ZDC,"fCentrality_ZDC/F");
+        fTreeEvent->Branch("fCentrality_ZDCFired",&fCentrality_ZDCFired,"fCentrality_ZDCFired/F");
+        fTreeEvent->Branch("fCentrality_RefMult05",&fCentrality_RefMult05,"fCentrality_RefMult05/F");
+        fTreeEvent->Branch("fCentrality_RefMult08",&fCentrality_RefMult08,"fCentrality_RefMult08/F");
+        fTreeEvent->Branch("fCentrality_SPDClusters",&fCentrality_SPDClusters,"fCentrality_SPDClusters/F");
+        fTreeEvent->Branch("fCentrality_SPDTracklets",&fCentrality_SPDTracklets,"fCentrality_SPDTracklets/F");
         fTreeEvent->Branch("fMVPileupFlag",&fMVPileupFlag,"fMVPileupFlag/O");
         if (fkDebugZDCInfo){
         	fTreeEvent->Branch("fZNApp", &fZNApp,"fZNApp/F");
@@ -1524,6 +1570,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserCreateOutputObjects()
 	    fTreeEvent->Branch("fEvSel_SelectedTrigger", &fEvSel_SelectedTrigger, "fEvSel_SelectedTrigger/O");	    
 	    fTreeEvent->Branch("fEvSel_NotIncDAQ", &fEvSel_NotIncDAQ, "fEvSel_NotIncDAQ/O");	    
 	    fTreeEvent->Branch("fEvSel_PassSPDClsVsTrackletsCut", &fEvSel_PassSPDClsVsTrackletsCut, "fEvSel_PassSPDClsVsTrackletsCut/O");	   
+        fTreeEvent->Branch("fSPDtracklets",&fSPDtracklets,"fSPDtracklets/I");
+        fTreeEvent->Branch("fSPDtrackletsA", &fSPDtrackletsA, "fSPDtrackletsA/I");
+        fTreeEvent->Branch("fSPDtrackletsC", &fSPDtrackletsC, "fSPDtrackletsC/I");
         //
         if ( fkDebugOOBPileup ){
             fTreeEvent->Branch("fOOBPileupFlag",&fOOBPileupFlag,"fOOBPileupFlag/O");
@@ -1575,7 +1624,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariableNegEta",&fTreeVariableNegEta,"fTreeVariableNegEta/F");
         fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
         //-----------MULTIPLICITY-INFO--------------------
-        fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
+        fTreeV0->Branch("fTreeVariableCentrality_V0M",&fTreeVariableCentrality_V0M,"fTreeVariableCentrality_V0M/F");
+        fTreeV0->Branch("fTreeVariableCentrality_ZDC",&fTreeVariableCentrality_ZDC,"fTreeVariableCentrality_ZDC/F");
+        fTreeV0->Branch("fTreeVariableCentrality_ZDCFired",&fTreeVariableCentrality_ZDCFired,"fTreeVariableCentrality_ZDCFired/F");
+        fTreeV0->Branch("fTreeVariableCentrality_RefMult05",&fTreeVariableCentrality_RefMult05,"fTreeVariableCentrality_RefMult05/F");
+        fTreeV0->Branch("fTreeVariableCentrality_RefMult08",&fTreeVariableCentrality_RefMult08,"fTreeVariableCentrality_RefMult08/F");
+        fTreeV0->Branch("fTreeVariableCentrality_SPDClusters",&fTreeVariableCentrality_SPDClusters,"fTreeVariableCentrality_SPDClusters/F");
+        fTreeV0->Branch("fTreeVariableCentrality_SPDTracklets",&fTreeVariableCentrality_SPDTracklets,"fTreeVariableCentrality_SPDTracklets/F");
         fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
         if (fkDebugZDCInfo){
         	fTreeV0->Branch("fTreeVariableZNApp", &fTreeVariableZNApp,"fTreeVariableZNApp/F");
@@ -1743,7 +1798,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarMaxChi2PerCluster",&fTreeCascVarMaxChi2PerCluster,"fTreeCascVarMaxChi2PerCluster/F");
         fTreeCascade->Branch("fTreeCascVarMinTrackLength",&fTreeCascVarMinTrackLength,"fTreeCascVarMinTrackLength/F");
         //-----------MULTIPLICITY-INFO--------------------
-        fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_V0M",&fTreeCascVarCentrality_V0M,"fTreeCascVarCentrality_V0M/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_ZDC",&fTreeCascVarCentrality_ZDC,"fTreeCascVarCentrality_ZDC/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_ZDCFired",&fTreeCascVarCentrality_ZDCFired,"fTreeCascVarCentrality_ZDCFired/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_RefMult05",&fTreeCascVarCentrality_RefMult05,"fTreeCascVarCentrality_RefMult05/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_RefMult08",&fTreeCascVarCentrality_RefMult08,"fTreeCascVarCentrality_RefMult08/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_SPDClusters",&fTreeCascVarCentrality_SPDClusters,"fTreeCascVarCentrality_SPDClusters/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_SPDTracklets",&fTreeCascVarCentrality_SPDTracklets,"fTreeCascVarCentrality_SPDTracklets/F");
         fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
         if (fkDebugZDCInfo){
    			fTreeCascade->Branch("fTreeCascVarZNApp", &fTreeCascVarZNApp,"fTreeCascVarZNApp/F");
@@ -2567,7 +2628,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
     //------------------------------------------------
     // Multiplicity Information Acquistion
     //------------------------------------------------
-    Float_t lPercentile = 500;
+    Float_t lV0percentile = 500;
+    Float_t lZDCpercentile = 500;
+    Float_t lZDCFiredpercentile= 500;
+    Float_t lRefMult05percentile = 500;
+    Float_t lRefMult08percentile = 500;
+    Float_t lSPDClusterspercentile = 500;
+    Float_t lSPDTrackletspercentile = 500;
     Float_t lPercentileEmbeddedSelection = 500;
     Int_t lEvSelCode = 100;
     AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
@@ -2575,13 +2642,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
     } else {
-        //V0M Multiplicity Percentile
-        lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+        //Multiplicity and energy percentiles
+        lV0percentile = MultSelection->GetMultiplicityPercentile("V0M");
+        lZDCpercentile = MultSelection->GetMultiplicityPercentile("ZPNACTowerpp");
+        lZDCFiredpercentile = MultSelection->GetMultiplicityPercentile("ZPNACpp");
+        lRefMult05percentile = MultSelection->GetMultiplicityPercentile("RefMult05");
+        lRefMult08percentile = MultSelection->GetMultiplicityPercentile("RefMult08");
+	    lSPDClusterspercentile = MultSelection->GetMultiplicityPercentile("SPDClusters");
+        lSPDTrackletspercentile = MultSelection->GetMultiplicityPercentile("SPDTracklets");
         lPercentileEmbeddedSelection = MultSelection->GetMultiplicityPercentile("V0M", kTRUE );
         //Event Selection Code
         lEvSelCode = MultSelection->GetEvSelCode();
     }
-    fCentrality = lPercentile;
+    fCentrality_V0M = lV0percentile;
+    fCentrality_ZDC = lZDCpercentile;  
+    fCentrality_ZDCFired = lZDCFiredpercentile; 
+    fCentrality_RefMult05 = lRefMult05percentile; 
+    fCentrality_RefMult08 = lRefMult08percentile; 
+    fCentrality_SPDClusters = lSPDClusterspercentile; 
+    fCentrality_SPDTracklets = lSPDTrackletspercentile; 
 
     //just ask AliMultSelection. It will know.
     fMVPileupFlag = kFALSE;
@@ -2593,7 +2672,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
         AliCentrality* centrality;
         centrality = lESDevent->GetCentrality();
         if ( centrality ) {
-            fCentrality = centrality->GetCentralityPercentile( "V0M" );
+            fCentrality_V0M = centrality->GetCentralityPercentile( "V0M" );
         }
     }
 
@@ -2647,45 +2726,45 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
 
             if( lThisPDG ==   310 && TMath::Abs(lThisRap) < 0.5 ) {
                 fHistPt_GenK0Short -> Fill ( lThisPt );
-                fHistPtVsCentV0M_GenK0Short -> Fill (lThisPt, lPercentile);
+                fHistPtVsCentV0M_GenK0Short -> Fill (lThisPt, lV0percentile);
                 fHistPtVsZDC_GenK0Short -> Fill (lThisPt, lZDCLogSum);
-                fHistPtVsZDCVsCentV0M_GenK0Short -> Fill (lThisPt, lZDCLogSum, lPercentile);
+                fHistPtVsZDCVsCentV0M_GenK0Short -> Fill (lThisPt, lZDCLogSum, lV0percentile);
             }
             if( lThisPDG ==  3122 && TMath::Abs(lThisRap) < 0.5 ) {
                 fHistPt_GenLambda -> Fill ( lThisPt );
-                fHistPtVsCentV0M_GenLambda -> Fill (lThisPt, lPercentile);
+                fHistPtVsCentV0M_GenLambda -> Fill (lThisPt, lV0percentile);
                 fHistPtVsZDC_GenLambda -> Fill (lThisPt, lZDCLogSum);
-                fHistPtVsZDCVsCentV0M_GenLambda -> Fill (lThisPt, lZDCLogSum, lPercentile);
+                fHistPtVsZDCVsCentV0M_GenLambda -> Fill (lThisPt, lZDCLogSum, lV0percentile);
             }
             if( lThisPDG == -3122 && TMath::Abs(lThisRap) < 0.5 ) {
                 fHistPt_GenAntiLambda -> Fill ( lThisPt );
-                fHistPtVsCentV0M_GenAntiLambda -> Fill (lThisPt, lPercentile);
+                fHistPtVsCentV0M_GenAntiLambda -> Fill (lThisPt, lV0percentile);
                 fHistPtVsZDC_GenAntiLambda -> Fill (lThisPt, lZDCLogSum);
-                fHistPtVsZDCVsCentV0M_GenAntiLambda -> Fill (lThisPt, lZDCLogSum, lPercentile);
+                fHistPtVsZDCVsCentV0M_GenAntiLambda -> Fill (lThisPt, lZDCLogSum, lV0percentile);
             }
             if( lThisPDG ==  3312 && TMath::Abs(lThisRap) < 0.5 ) {
                 fHistPt_GenXiMinus -> Fill (lThisPt);
-                fHistPtVsCentV0M_GenXiMinus -> Fill (lThisPt, lPercentile);
+                fHistPtVsCentV0M_GenXiMinus -> Fill (lThisPt, lV0percentile);
                 fHistPtVsZDC_GenXiMinus -> Fill (lThisPt, lZDCLogSum);
-                fHistPtVsZDCVsCentV0M_GenXiMinus -> Fill (lThisPt, lZDCLogSum, lPercentile);
+                fHistPtVsZDCVsCentV0M_GenXiMinus -> Fill (lThisPt, lZDCLogSum, lV0percentile);
             }
             if( lThisPDG == -3312 && TMath::Abs(lThisRap) < 0.5 ) {
                 fHistPt_GenXiPlus -> Fill (lThisPt);
-                fHistPtVsCentV0M_GenXiPlus -> Fill (lThisPt, lPercentile);
+                fHistPtVsCentV0M_GenXiPlus -> Fill (lThisPt, lV0percentile);
                 fHistPtVsZDC_GenXiPlus -> Fill (lThisPt, lZDCLogSum);
-                fHistPtVsZDCVsCentV0M_GenXiPlus -> Fill (lThisPt, lZDCLogSum, lPercentile);
+                fHistPtVsZDCVsCentV0M_GenXiPlus -> Fill (lThisPt, lZDCLogSum, lV0percentile);
             }
             if( lThisPDG ==  3334 && TMath::Abs(lThisRap) < 0.5 ) {
                 fHistPt_GenOmegaMinus -> Fill (lThisPt);
-                fHistPtVsCentV0M_GenOmegaMinus -> Fill (lThisPt, lPercentile);
+                fHistPtVsCentV0M_GenOmegaMinus -> Fill (lThisPt, lV0percentile);
                 fHistPtVsZDC_GenOmegaMinus -> Fill (lThisPt, lZDCLogSum);
-                fHistPtVsZDCVsCentV0M_GenOmegaMinus -> Fill (lThisPt, lZDCLogSum, lPercentile);
+                fHistPtVsZDCVsCentV0M_GenOmegaMinus -> Fill (lThisPt, lZDCLogSum, lV0percentile);
             }
             if( lThisPDG == -3334 && TMath::Abs(lThisRap) < 0.5 ) {
                 fHistPt_GenOmegaPlus -> Fill (lThisPt);
-                fHistPtVsCentV0M_GenOmegaPlus -> Fill (lThisPt, lPercentile);
+                fHistPtVsCentV0M_GenOmegaPlus -> Fill (lThisPt, lV0percentile);
                 fHistPtVsZDC_GenOmegaPlus -> Fill (lThisPt, lZDCLogSum);
-                fHistPtVsZDCVsCentV0M_GenOmegaPlus -> Fill (lThisPt, lZDCLogSum, lPercentile);
+                fHistPtVsZDCVsCentV0M_GenOmegaPlus -> Fill (lThisPt, lZDCLogSum, lV0percentile);
             }
         }
     }//End of loop on track
@@ -2817,6 +2896,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
     ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
      ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
      ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
+
+    //SPDTracklets to get a midrapidity Nch estimator
+    AliMultiplicity* fMultiplicity =  lESDevent->GetMultiplicity();
+    fSPDtracklets = 0;
+    fSPDtrackletsA = 0;
+    fSPDtrackletsC = 0;
+	for (auto it = 0; it<fMultiplicity->GetNumberOfTracklets(); it++) {
+        Double_t eta = fMultiplicity->GetEta(it);
+        if ( abs(eta) < 0.5 ){
+            fSPDtracklets++;
+            if(eta < 0) {fSPDtrackletsA++;}
+            else fSPDtrackletsC++;
+        }
+	}
     
     //Save info for pileup study (high multiplicity triggers pp 13 TeV - 2016 data)
     if( fkDebugOOBPileup ) {
@@ -2850,7 +2943,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
     }    
     
     //Fill centrality histogram
-    fHistCentrality->Fill(fCentrality);
+    fHistCentrality->Fill(fCentrality_V0M);
     
     //Random denial
     Bool_t lKeepEventEntry = kTRUE;
@@ -2885,59 +2978,59 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
             if ( lMCstack->IsPhysicalPrimary(ilab)!=kTRUE ) continue;
             
             if( lThisPDG ==   310 ) {
-                fHistGeneratedPtVsYVsCentralityK0Short       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityK0Short       -> Fill (lThisPt, lThisRap, lV0percentile);
                 if (TMath::Abs(lThisRap) < 0.5) {
                 	fHistGeneratedPtVsZDCK0Short->Fill(lThisPt,lZDCLogSum);
-                	fHistGeneratedPtVsZDCVsCentV0MK0Short->Fill(lThisPt,lZDCLogSum,lPercentile);
+                	fHistGeneratedPtVsZDCVsCentV0MK0Short->Fill(lThisPt,lZDCLogSum,lV0percentile);
                 }
             }
             if( lThisPDG ==  3122 ) {
-                fHistGeneratedPtVsYVsCentralityLambda       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityLambda       -> Fill (lThisPt, lThisRap, lV0percentile);
                 if (TMath::Abs(lThisRap) < 0.5) {
                 	fHistGeneratedPtVsZDCLambda->Fill(lThisPt,lZDCLogSum);
-                	fHistGeneratedPtVsZDCVsCentV0MLambda->Fill(lThisPt,lZDCLogSum,lPercentile);
+                	fHistGeneratedPtVsZDCVsCentV0MLambda->Fill(lThisPt,lZDCLogSum,lV0percentile);
                 }
             }
             if( lThisPDG == -3122 ) {
-                fHistGeneratedPtVsYVsCentralityAntiLambda       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityAntiLambda       -> Fill (lThisPt, lThisRap, lV0percentile);
                 if (TMath::Abs(lThisRap) < 0.5) {
                 	fHistGeneratedPtVsZDCAntiLambda->Fill(lThisPt,lZDCLogSum);
-                	fHistGeneratedPtVsZDCVsCentV0MAntiLambda->Fill(lThisPt,lZDCLogSum,lPercentile);
+                	fHistGeneratedPtVsZDCVsCentV0MAntiLambda->Fill(lThisPt,lZDCLogSum,lV0percentile);
                 }
             }
             if( lThisPDG ==  3312 ) {
-                fHistGeneratedPtVsYVsCentralityXiMinus       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityXiMinus       -> Fill (lThisPt, lThisRap, lV0percentile);
                 if (TMath::Abs(lThisRap) < 0.5) {
                 	fHistGeneratedPtVsZDCXiMinus->Fill(lThisPt,lZDCLogSum);
-                	fHistGeneratedPtVsZDCVsCentV0MXiMinus->Fill(lThisPt,lZDCLogSum,lPercentile);
+                	fHistGeneratedPtVsZDCVsCentV0MXiMinus->Fill(lThisPt,lZDCLogSum,lV0percentile);
                 }
             }
             if( lThisPDG == -3312 ) {
-                fHistGeneratedPtVsYVsCentralityXiPlus       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityXiPlus       -> Fill (lThisPt, lThisRap, lV0percentile);
                 if (TMath::Abs(lThisRap) < 0.5) {
                 	fHistGeneratedPtVsZDCXiPlus->Fill(lThisPt,lZDCLogSum);
-                	fHistGeneratedPtVsZDCVsCentV0MXiPlus->Fill(lThisPt,lZDCLogSum,lPercentile);
+                	fHistGeneratedPtVsZDCVsCentV0MXiPlus->Fill(lThisPt,lZDCLogSum,lV0percentile);
                 }
             }
             if( lThisPDG ==  3334 ) {
-                fHistGeneratedPtVsYVsCentralityOmegaMinus       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityOmegaMinus       -> Fill (lThisPt, lThisRap, lV0percentile);
                 if (TMath::Abs(lThisRap) < 0.5) {
                 	fHistGeneratedPtVsZDCOmegaMinus->Fill(lThisPt,lZDCLogSum);
-                	fHistGeneratedPtVsZDCVsCentV0MOmegaMinus->Fill(lThisPt,lZDCLogSum,lPercentile);
+                	fHistGeneratedPtVsZDCVsCentV0MOmegaMinus->Fill(lThisPt,lZDCLogSum,lV0percentile);
                 }
             }
             if( lThisPDG == -3334 ) {
-                fHistGeneratedPtVsYVsCentralityOmegaPlus       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityOmegaPlus       -> Fill (lThisPt, lThisRap, lV0percentile);
                 if (TMath::Abs(lThisRap) < 0.5) {
                 	fHistGeneratedPtVsZDCOmegaPlus->Fill(lThisPt,lZDCLogSum);
-                	fHistGeneratedPtVsZDCVsCentV0MOmegaPlus->Fill(lThisPt,lZDCLogSum,lPercentile);
+                	fHistGeneratedPtVsZDCVsCentV0MOmegaPlus->Fill(lThisPt,lZDCLogSum,lV0percentile);
                 }
             }
             if( lThisPDG == 1010010030 ) {
-                fHistGeneratedPtVsYVsCentralityHypertriton       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityHypertriton       -> Fill (lThisPt, lThisRap, lV0percentile);
             }
             if( lThisPDG == -1010010030 ) {
-                fHistGeneratedPtVsYVsCentralityAntihypertriton       -> Fill (lThisPt, lThisRap, lPercentile);
+                fHistGeneratedPtVsYVsCentralityAntihypertriton       -> Fill (lThisPt, lThisRap, lV0percentile);
             }
         }
     }//End of loop on tracks
@@ -3291,7 +3384,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
         fTreeVariableDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
         
         //Copy Multiplicity information
-        fTreeVariableCentrality = fCentrality;
+        fTreeVariableCentrality_V0M = fCentrality_V0M;
+        fTreeVariableCentrality_ZDC = fCentrality_ZDC;
+        fTreeVariableCentrality_ZDCFired = fCentrality_ZDCFired;
+        fTreeVariableCentrality_RefMult05 = fCentrality_RefMult05;
+        fTreeVariableCentrality_RefMult08 = fCentrality_RefMult08;
+        fTreeVariableCentrality_SPDClusters = fCentrality_SPDClusters;
+        fTreeVariableCentrality_SPDTracklets = fCentrality_SPDTracklets;
 
         //Copy Effective Energy information
         fTreeVariableZNApp = fZNApp;
@@ -3749,11 +3848,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
                     ){
                     //This satisfies all my conditionals! Fill histogram
                     if( !lV0Result -> GetCutMCUseMCProperties() ){
-                        histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
+                        histoout -> Fill ( fCentrality_V0M , fTreeVariablePt, lMass );
                         if(histoProtonProfile)
                             histoProtonProfile -> Fill( fTreeVariablePt, lBaryonTransvMomMCForG3F );
                     }else{
-                        histoout -> Fill ( fCentrality, fTreeVariablePtMC, lMass );
+                        histoout -> Fill ( fCentrality_V0M , fTreeVariablePtMC, lMass );
                         if(histoProtonProfile)
                             histoProtonProfile -> Fill( fTreeVariablePtMC, lBaryonTransvMomMCForG3F );
                     }
@@ -3769,7 +3868,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
                     //Rough invariant mass selection: could be better, but would be a correction
                     //of the correction -> left as further improvement
                     if( TMath::Abs(lMass-1.116) < 0.010 )
-                        histooutfeeddown -> Fill ( fTreeVariablePt, fTreeVariablePtMother, fCentrality );
+                        histooutfeeddown -> Fill ( fTreeVariablePt, fTreeVariablePtMother, fCentrality_V0M  );
                 }
             }
         }
@@ -5509,7 +5608,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
         fTreeCascVarMaxChi2PerCluster = lBiggestChi2PerCluster;
         
         //Copy Multiplicity information
-        fTreeCascVarCentrality = fCentrality;
+        fTreeCascVarCentrality_V0M = fCentrality_V0M;
+        fTreeCascVarCentrality_ZDC = fCentrality_ZDC;
+        fTreeCascVarCentrality_ZDCFired = fCentrality_ZDCFired;
+        fTreeCascVarCentrality_RefMult05 = fCentrality_RefMult05;
+        fTreeCascVarCentrality_RefMult08 = fCentrality_RefMult08;
+        fTreeCascVarCentrality_SPDClusters = fCentrality_SPDClusters;
+        fTreeCascVarCentrality_SPDTracklets = fCentrality_SPDTracklets;
 
         //Copy Effective Energy information
         fTreeCascVarZNApp = fZNApp;
@@ -6037,11 +6142,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
                 if( lTheOne && fkSaveSpecificConfig ) fTreeCascade->Fill();
                 
                 if( !lCascadeResult -> GetCutMCUseMCProperties() ){
-                    histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
+                    histoout -> Fill ( fCentrality_V0M , fTreeCascVarPt, lMass );
                     if(histoProtonProfile)
                         histoProtonProfile -> Fill( fTreeCascVarPt, lBaryonTransvMomMCForG3F );
                 }else{
-                    histoout -> Fill ( fCentrality, fTreeCascVarPtMC, lMass );
+                    histoout -> Fill ( fCentrality_V0M , fTreeCascVarPtMC, lMass );
                     if(histoProtonProfile)
                         histoProtonProfile -> Fill( fTreeCascVarPtMC, lBaryonTransvMomMCForG3F );
                 }

@@ -42,7 +42,8 @@ AliJBaseTrack::AliJBaseTrack():
     fAssocID(-1),
     fTracEff(1.0),
     fMCIndex(-9999),
-    fWeight(1.0)
+    fWeight(1.0),
+    fCentWeight(1.0)
 {
   // constructor
 }
@@ -60,7 +61,8 @@ AliJBaseTrack::AliJBaseTrack(float px,float py, float pz, float e, Int_t id, Sho
     fAssocID(-1),
     fTracEff(1.0),
     fMCIndex(-9999),
-    fWeight(1.0)
+    fWeight(1.0),
+    fCentWeight(1.0)
 {
   // constructor
 }
@@ -78,7 +80,8 @@ AliJBaseTrack::AliJBaseTrack(const AliJBaseTrack& a):
     fAssocID( a.fAssocID ),
     fTracEff( a.fTracEff ),
     fMCIndex( a.fMCIndex ),
-    fWeight ( a.fWeight  )
+    fWeight ( a.fWeight  ),
+    fCentWeight ( a.fCentWeight )
 {
   //copy constructor
 }
@@ -96,7 +99,8 @@ AliJBaseTrack::AliJBaseTrack(const TLorentzVector& a):
     fAssocID(-1),
     fTracEff(-1),
     fMCIndex(-9999),
-    fWeight(1.0)
+    fWeight(1.0),
+    fCentWeight(1.0)
 {
   //copy constructor
 }
@@ -116,6 +120,7 @@ AliJBaseTrack& AliJBaseTrack::operator=(const AliJBaseTrack& trk){
     fTracEff   = trk.fTracEff;
     fMCIndex   = trk.fMCIndex;
     fWeight       = trk.fWeight;
+    fCentWeight   = trk.fCentWeight;
   }
   return *this;
 }
@@ -136,6 +141,8 @@ void AliJBaseTrack::Print(Option_t *option) const{
   cout<<"fTriggID="<<fTriggID <<endl; 
   cout<<"fAssocID="<<fAssocID <<endl; 
   cout<<"fTracEff="<<fTracEff <<endl; 
+  cout<<"fWeight="<<fWeight <<endl;
+  cout<<"fCentWeight"<<fCentWeight<<endl;
 }
 
 ClassImp(AliJBaseTrack)

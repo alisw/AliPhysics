@@ -1,12 +1,12 @@
-AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFALSE,
-                                    Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
+AliAnalysisTask* AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFALSE,
+                                    AliTPCPIDBase::TPCcutType tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
                                     Bool_t usePhiCut = kFALSE,
                                     Double_t ptThresholdForPhiCut = 0.0,
                                     TString centralityEstimator = ""/*"ITSTPCtracklets" or "ppMultV0M" or ""*/){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_bhess_PIDetaAdv", "No analysis manager found.");
+    Error("AddTaskTPCPIDEtaQA", "No analysis manager found.");
     return 0;
   }
   
@@ -67,16 +67,12 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFA
   printf("UseTPCnclCut: %d\n", task->GetUseTPCnclCut());
   printf("Centrality estimator: \"%s\"\n", task->GetCentralityEstimator().Data());
   
-  
-  
-  
-  
-  
   task->SetZvtxCutEvent(10.0);
   printf("Cut on z position of vertex: %.2f cm\n", task->GetZvtxCutEvent());
   
   printf("UsePhiCut: %d\nPtThresholdForPhiCut: %.3f GeV/c\n\n", task->GetUsePhiCut(), task->GetPtThresholdForPhiCut());
   mgr->AddTask(task);
+  printf("Task added to analysis manager, connecting containers.\n\n");
 
 
   //================================================
@@ -86,13 +82,6 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFA
   //below the trunk version
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
-  //dumm output container
-  AliAnalysisDataContainer *coutput0 =
-      mgr->CreateContainer("TPCPIDEtaQA_tree",
-                           TTree::Class(),
-                           AliAnalysisManager::kExchangeContainer,
-                           "TPCPIDEtaQA_default");
-
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *coutput1 = 
       mgr->CreateContainer("TPCPIDEtaQA", TObjArray::Class(),
@@ -100,7 +89,16 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFA
 
   //connect containers
   mgr->ConnectInput  (task,  0, cinput );
-  mgr->ConnectOutput (task,  0, coutput0);
+  
+  if (mgr->GetCommonOutputContainer()) {
+    //dummy output container
+    AliAnalysisDataContainer *coutput0 =
+    mgr->CreateContainer("TPCPIDEtaQA_dummy",
+                        TTree::Class(),
+                        AliAnalysisManager::kExchangeContainer,
+                        "TPCPIDEtaQA_default");
+    mgr->ConnectOutput (task,  0, coutput0);
+  }
   mgr->ConnectOutput (task,  1, coutput1);
 
   return task;

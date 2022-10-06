@@ -97,6 +97,9 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+  void SetExtraCleanupRapidity ( Bool_t lExtraCleanupRapidity = kTRUE) {
+    fkExtraCleanupRapidity = lExtraCleanupRapidity;
+  }
   void SetDoStrangenessTracking ( Bool_t lOpt = kTRUE) {
     fkDoStrangenessTracking = lOpt;
   }
@@ -238,7 +241,18 @@ public:
         fkSaveSpecificConfig = kTRUE; 
     }
 //---------------------------------------------------------------------------------------
-    
+
+    Double_t ML_NeuralNetwork_Prediction_XiMinus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_XiPlus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_OmegaMinus(Double_t v[11]);
+    Double_t ML_NeuralNetwork_Prediction_OmegaPlus(Double_t v[11]);
+
+    Double_t ML_BDT_Prediction_XiMinus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_XiPlus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_OmegaMinus(Double_t v[11]);
+    Double_t ML_BDT_Prediction_OmegaPlus(Double_t v[11]);
+
+//---------------------------------------------------------------------------------------
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
@@ -293,6 +307,7 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+  Bool_t fkExtraCleanupRapidity;
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   AliAnalysisTaskWeakDecayVertexer *fWDV; //helper 
   
@@ -486,6 +501,19 @@ private:
     Float_t fTreeCascVarDistOverTotMom;               //!
     Float_t fTreeCascVarMaxChi2PerCluster; //!
     Float_t fTreeCascVarMinTrackLength; //!
+
+    //-------------------------------------------
+    //ML Prediction
+    Double_t fTreeCascVarMLNNPredXiMinus; //!
+    Double_t fTreeCascVarMLNNPredXiPlus; //!
+    Double_t fTreeCascVarMLNNPredOmegaMinus; //!
+    Double_t fTreeCascVarMLNNPredOmegaPlus; //!
+
+    Double_t fTreeCascVarMLBDTPredXiMinus; //!
+    Double_t fTreeCascVarMLBDTPredXiPlus; //!
+    Double_t fTreeCascVarMLBDTPredOmegaMinus; //!
+    Double_t fTreeCascVarMLBDTPredOmegaPlus; //!
+    //-------------------------------------------
 
     //TPC dEdx
     Float_t fTreeCascVarNegNSigmaPion;   //!

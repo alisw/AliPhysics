@@ -54,6 +54,8 @@ class TProfile;
 class TClonesArray;
 class TH1F;
 class TH2F;
+class TH1D;
+class TH2D;
 class TF1;
 
 using std::vector;
@@ -127,13 +129,15 @@ class AliVertexingHFUtils : public TObject{
                             Double_t ptMin=0.15, Double_t ptMax=10.,
                             Int_t filtbit1=256, Int_t filtbit2=512,
                             Int_t minMult=3, Double_t phiStepSizeDeg=0.1,
-                            Int_t nTrksToSkip=0, Int_t* idToSkip=0x0);
+                            Int_t nTrksToSkip=0, Int_t* idToSkip=0x0, 
+                            Bool_t unweight=kFALSE);
 
   static void GetGeneratedSpherocity(TClonesArray *arrayMC,
                                      Double_t &spherocity, Double_t &phiRef,
                                      Double_t etaMin=-0.8, Double_t etaMax=0.8,
                                      Double_t ptMin=0.15, Double_t ptMax=10.,
-                                     Int_t minMult=3, Double_t phiStepSizeDeg=0.1);
+                                     Int_t minMult=3, Double_t phiStepSizeDeg=0.1, 
+                                     Bool_t unweight=kFALSE);
 
   static Double_t GetSphericity(AliAODEvent* aod,
                                 Double_t etaMin=-0.8, Double_t etaMax=0.8,
@@ -168,6 +172,7 @@ class AliVertexingHFUtils : public TObject{
   static Bool_t IsTrackFromCharm(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromBeauty(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* tr, TClonesArray* arrayMC);
+  static Double_t GetBeautyMotherPt(AliMCEvent* mcEvent, AliMCParticle *mcPart);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
   static Double_t GetBeautyMotherPtAndPDG(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t &pdgGranma);
   static Int_t CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
@@ -264,6 +269,9 @@ class AliVertexingHFUtils : public TObject{
   static Double_t DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV);
   static Double_t ldlFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
   static Double_t ldlXYFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
+  static TH1D* ComputeGenAccOverGenLimAcc(TFile* fileToyMCoutput, Int_t nPtBins=0, Double_t* binLims=0x0,Bool_t useSimpleFormula=kFALSE);
+  static TH1D* ComputeGenAccOverGenLimAcc(TH2D* hPtVsYGenAccToy, TH2D* hPtVsYGenLimAccToy, Int_t nPtBins=0, Double_t* binLims=0x0,Bool_t useSimpleFormula=kFALSE);
+
 
  private:
 

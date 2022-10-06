@@ -1,3 +1,6 @@
+#ifndef __GLOBAL_VARIABLES_HH__
+#define __GLOBAL_VARIABLES_HH__
+
 //-------------------------------------------------------
 // all global variables used in the code are defined here
 // names of global variables start with g_
@@ -52,3 +55,15 @@ Double_t gBeamB = 0;
 // range of half width given by
 const Int_t gk_half_range = 0; // seconds
 
+//-------------------------------------------------------
+// Bad bunch crossing blacklist related objects: kimc, Apr. 23, 2021
+
+map<int, int> FillToI;
+map<int, int> IToFill;
+set<int> bcBlacklist[20]; //Each index corresponds to a Fill: increase maximum (20) if necessary
+
+//-------------------------------------------------------
+// File format of the plots being printed out: kimc, June 18, 2021
+
+const char* FFormat = "eps"; //png, eps, pdf, etc...
+#endif

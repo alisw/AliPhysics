@@ -1,17 +1,23 @@
+#if !defined(__CINT__) && !defined(__CLING__)
+
+#include <TROOT.h>
+
+#include <TString.h>
+#include <TList.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+
+#include <AliAnalysisManager.h>
+
+#include "AliAnalysisTaskFemto.h"
+
+#endif
 //=============================================================================
 //
 // *** AddTaskFemto.C ***
 // ---train version ---
-// This macro initialize a complete AnalysisTask object for femtoscopy.
-// from:
-// alicepc100/cern/users/erogocha/PbPb2.76/2011/AOD115_0-10_newPID/to_alien_newtag/AddTaskFemto.C
-// ---modified to train---
-//  KM: March 25, 2013
 //=============================================================================
-
-//this line for local: AliAnalysisTaskFemto *AddTaskFemtoKchHBT(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
-
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
 
@@ -56,11 +62,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
   //
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
-  //10-90% only two triggers: SemiCentral and MB
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
   taskfemto->SelectCollisionCandidates(AliVEvent::kAny);
-  //0-10 % all three triggers
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional

@@ -19,9 +19,6 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fisLightWeight(false),
     fTrackBufferSize(),
     fIsMC(false),
-    fdoSideband(false),
-    fSigmaUp(0.0),
-    fSigmaLow(0.0),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -62,9 +59,6 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
     fisLightWeight(false),
     fTrackBufferSize(2000),
     fIsMC(isMC),
-    fdoSideband(false),
-    fSigmaUp(0.0),
-    fSigmaLow(0.0),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -138,25 +132,6 @@ Float_t AliAnalysisTaskFemtoDreamDeuteron::GetMass2sq(
   return mass2sq;
 }
 
-float AliAnalysisTaskFemtoDreamDeuteron::MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const{
-  float pTVal = track->GetPt();
-  float par0 =  3.55375e+00;
-  float par1 = -1.25749e+00;
-  float par2 = -3.60444e-01;
-  float par3 = -1.00250e-01;
-  float par4 = -1.00782e-02;
-  return par0 + TMath::Exp(par1 * pTVal + par2 * pTVal * pTVal+ par3 * pTVal * pTVal * pTVal+ par4 * pTVal* pTVal * pTVal * pTVal);
-};
-float AliAnalysisTaskFemtoDreamDeuteron::SigmaTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const{
-  float pTVal = track->GetPt();
-  Float_t par0 = 1.19287e-02;
-  Float_t par1 = 0.202460e-02;
-  Float_t par2 = 1.23058e-02;//par[2];
-  Float_t par3 = 30.23644e-04;
-  Float_t par4 = 45.80006e-05;
-  return 0.088 + 0.1*(par0 * pTVal + par1 * pTVal * pTVal + par2 * pTVal * pTVal* pTVal+ par3 * pTVal * pTVal* pTVal* pTVal+ par4 * pTVal * pTVal* pTVal* pTVal* pTVal);
-};
-
 void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
 
   fGTI = new AliAODTrack*[fTrackBufferSize];
@@ -173,7 +148,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
     fTrackCutsProtonDCA->Init();
     fProtonList = fTrackCutsProtonDCA->GetQAHists();
     if (fIsMC) {
-      fProtonMCList = fTrackCutsProtonDCA->GetMCQAHists();
+    fProtonMCList = fTrackCutsProtonDCA->GetMCQAHists();
     }
   }
 
@@ -353,38 +328,15 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
         if (fTrackCutsAntiDeuteronMass->isSelected(fTrack)) {
           fAntiDeuteronRestMassNoTOF->Fill(fTrack->GetPt(),GetMass2sq(fTrack));
         }
-
         if (fTrackCutsDeuteronDCA->isSelected(fTrack)){
           float MassSqaured = GetMass2sq(fTrack);
-          if(fdoSideband){
-            float meanMass = MeanTOFMassSqdDeuteron(fTrack);
-            float sigmaMass = SigmaTOFMassSqdDeuteron(fTrack);
-            float upMass = meanMass+ (fSigmaUp* sigmaMass);
-            float LowMass = meanMass+ (fSigmaLow*sigmaMass);
-            if((MassSqaured>= LowMass)&&(MassSqaured<=upMass)) {
-              DCADeuterons.push_back(*fTrack);
-              fDeuteronRestMass->Fill(fTrack->GetPt(), MassSqaured);
-            }
-          }else{
             DCADeuterons.push_back(*fTrack);
             fDeuteronRestMass->Fill(fTrack->GetPt(), MassSqaured);
-          }
         }
         if (fTrackCutsAntiDeuteronDCA->isSelected(fTrack)){
           float MassSqaured = GetMass2sq(fTrack);
-          if(fdoSideband){
-            float meanMass = MeanTOFMassSqdDeuteron(fTrack);
-            float sigmaMass = SigmaTOFMassSqdDeuteron(fTrack);
-            float upMass = meanMass+fSigmaUp*sigmaMass;
-            float LowMass = meanMass+fSigmaLow*sigmaMass;
-            if((MassSqaured >= LowMass)&&(MassSqaured<=upMass)) {
-              DCAAntiDeuterons.push_back(*fTrack);
-              fAntiDeuteronRestMass->Fill(fTrack->GetPt(), MassSqaured);
-            }
-          }else{
             DCAAntiDeuterons.push_back(*fTrack);
             fAntiDeuteronRestMass->Fill(fTrack->GetPt(), MassSqaured);
-          }
         }
       }
       //loop once over the MC stack to calculate Efficiency/Purity
@@ -409,8 +361,8 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
           }
         }
       }
-      fPairCleaner->CleanTrackAndDecay(&DCAProtons, &DCADeuterons, 0);
-      fPairCleaner->CleanTrackAndDecay(&DCAAntiProtons, &DCAAntiDeuterons, 1);
+      //fPairCleaner->CleanTrackAndDecay(&DCAProtons, &DCADeuterons, 0);
+      //fPairCleaner->CleanTrackAndDecay(&DCAAntiProtons, &DCAAntiDeuterons, 0);
       fPairCleaner->ResetArray();
       fPairCleaner->StoreParticle(DCAProtons);
       fPairCleaner->StoreParticle(DCAAntiProtons);
@@ -419,9 +371,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
       fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
                           fEvent->GetZVertex(), fEvent->GetRefMult08(),
                           fEvent->GetV0MCentrality());
-      void SetEvent(std::vector<AliFemtoDreamBasePart> &vec1,
-                    std::vector<AliFemtoDreamBasePart> &vec2,
-                    AliFemtoDreamEvent * evt, const int pdg1, const int pdg2);
     }
   }
 

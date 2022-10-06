@@ -27,7 +27,8 @@
 #include "AliESDUtils.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
-#include "AliRDHFBDT.h"
+#include "AliRDHFCutsD0toKpiBDT.h"
+//~ #include "AliRDHFBDT.h"
 #include "AliNormalizationCounter.h"
 #include "AliEventCuts.h"
 
@@ -38,7 +39,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSED0BDT();
-  AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toKpi* cuts);
+  AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toKpiBDT* cuts);
   virtual ~AliAnalysisTaskSED0BDT();
 
 
@@ -54,6 +55,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
 
   void ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC, Float_t multi);
+  void ProcessBDT2(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC, Float_t multi);
   void SetArray(Int_t type=AliAnalysisTaskSED0BDT::kD0){fArray=type;}
   enum{kD0,kLS};
 
@@ -314,7 +316,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
     
   
   void SetBDTPtCut(Double_t min, Double_t max) {fBDTPtCut[0]=min; fBDTPtCut[1]=max;}
-  void SetBDTPtbins(AliRDHFCutsD0toKpi* cut) {fCut4BDTptbin=cut;}
+  void SetBDTPtbins(AliRDHFCutsD0toKpiBDT* cut) {fCut4BDTptbin=cut;}
   void SetBDTSidebandSamplingFraction(Double_t f) {fBDTSidebandSamplingFraction=f;}
   void SetBDTSampleSideband(Bool_t sb) {fSampleSideband = sb;}
   void SetBDTFullVarString(TString str) {fBDTFullVarString = str;}
@@ -326,7 +328,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
 
   void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
     fEnableCentralityCorrCuts=flag;
-    if(year==2018){
+    if(year==2018){	
       fEventCuts.SetupPbPb2018();
       fEventCuts.SetManualMode();
     }else{
@@ -356,9 +358,9 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   AliAnalysisTaskSED0BDT& operator=(const AliAnalysisTaskSED0BDT& source);
   void	   DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal);
 
-  void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts, TList *listout);
-  void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
-  void     FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts);
+  void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpiBDT *cuts, TList *listout);
+  void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpiBDT *cuts, TList *listout);
+  void     FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpiBDT *cuts);
   AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev);
   void CreateImpactParameterHistos();
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
@@ -386,7 +388,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   THnSparseF *fMCAccPrompt;       //!<!histo for StepMCAcc for D0 prompt (pt,y,ptB)
   THnSparseF *fMCAccBFeed;        //!<!histo for StepMCAcc for D0 FD (pt,y,ptB)
   Bool_t fStepMCAcc;              // flag to activate histos for StepMCAcc
-  AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 4
+  AliRDHFCutsD0toKpiBDT *fCuts;      //  Cuts - sent to output slot 4
   Bool_t    fEnableCentralityCorrCuts; /// flag to enable centrality correlation event cuts
   AliEventCuts  fEventCuts;       // Event cut object for centrality correlation event cuts
   THnSparseF *fHistMassPtImpParTC[5];   //!<! histograms for impact paramter studies
@@ -443,7 +445,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
     TH3F *h3Invmass_19999[8];     //!<!
     TH3F *h3Invmass_6099[8];     //!<!
   // = 																   =
-  AliRDHFCutsD0toKpi *fCut4BDTptbin;
+  AliRDHFCutsD0toKpiBDT *fCut4BDTptbin;
   																	
   TList			*fListRDHFBDT;
   TList			*fListBDTNames;
@@ -457,6 +459,8 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   
   TString		fBDTFullVarString;
   TString		fBDTClassifierVarString;
+  
+  Int_t     fIsSelectedCandidateBDT; /// selection outcome
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskSED0BDT,26); /// AliAnalysisTaskSE for D0->Kpi

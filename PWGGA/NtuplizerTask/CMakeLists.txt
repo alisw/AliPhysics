@@ -19,6 +19,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/NtuplizerTask
+		    ${AliPhysics_SOURCE_DIR}/PWGGA/NtuplizerTask/GJNtuples
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
@@ -46,9 +47,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
                    )
 
 # Sources in alphabetical order
+if(FASTJET_FOUND)
 set(SRCS
     GJNtuples/AliAnalysisTaskNTGJ.cxx
    )
+endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -133,3 +136,7 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Install the macros
+#install(DIRECTORY GJNtuples/macros          DESTINATION  PWGGA/NtuplizerTask/GJNtuples)
+install(DIRECTORY GJNtuples          DESTINATION  PWGGA/NtuplizerTask)

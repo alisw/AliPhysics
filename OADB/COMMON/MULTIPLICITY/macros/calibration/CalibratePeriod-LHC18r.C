@@ -134,11 +134,31 @@ void CalibratePeriod_LHC18r(TString lPeriodName = "LHC18r"){
   // --- Definition of Estimators ---
   //============================================================
   
-    AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "((fAmplitude_V0A)+(fAmplitude_V0C))/((((9.19807e+03)+(1.13465e+01)*(fEvSel_VtxZ)+(-2.66087e-01)*TMath::Power((fEvSel_VtxZ),2)+(2.15205e-02)*TMath::Power((fEvSel_VtxZ),3))/(9.19807e+03)))");
+  AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0MNew = new AliMultEstimator("V0MNew", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0Mplus05 = new AliMultEstimator("V0Mplus05", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0Mplus10 = new AliMultEstimator("V0Mplus10", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0Mminus05 = new AliMultEstimator("V0Mminus05", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0Mminus10 = new AliMultEstimator("V0Mminus10", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
   
   fEstV0M -> SetUseAnchor        ( kTRUE   ) ;
   fEstV0M -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
   fEstV0M -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
+  fEstV0MNew -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0MNew -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0MNew -> SetAnchorPercentile ( 91.5 ) ;
+  fEstV0Mplus05 -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0Mplus05 -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0Mplus05 -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
+  fEstV0Mplus10 -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0Mplus10 -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0Mplus10 -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
+  fEstV0Mminus05 -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0Mminus05 -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0Mminus05 -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
+  fEstV0Mminus10 -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0Mminus10 -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0Mminus10 -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
   
   
   //Only do this in run 2, AD didn't exist in Run 1
@@ -158,9 +178,13 @@ void CalibratePeriod_LHC18r(TString lPeriodName = "LHC18r"){
   //lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
   //lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
   
-  
   //Univeral: V0
   lMultSelDefault -> AddEstimator( fEstV0M );
+  lMultSelDefault -> AddEstimator( fEstV0MNew );
+  lMultSelDefault -> AddEstimator( fEstV0Mminus10 );
+  lMultSelDefault -> AddEstimator( fEstV0Mminus05 );
+  lMultSelDefault -> AddEstimator( fEstV0Mplus05 );
+  lMultSelDefault -> AddEstimator( fEstV0Mplus10 );
   
   //Needed as basis of MC calibrator -- keep this here, please!
   AliMultEstimator *fEstnSPDTracklets = new AliMultEstimator("SPDTracklets", "", "(fnTracklets)");
@@ -168,14 +192,14 @@ void CalibratePeriod_LHC18r(TString lPeriodName = "LHC18r"){
   lMultSelDefault -> AddEstimator( fEstnSPDTracklets );
   
   //Config central CL0
-  AliMultEstimator *fEstCL0 = new AliMultEstimator("CL0", "", "(fnSPDClusters0)/(1 + ((fEvSel_VtxZ)-1.2)*(0.0092 + ((fEvSel_VtxZ)-1.2)*(-0.0018)))");
+  AliMultEstimator *fEstCL0 = new AliMultEstimator("CL0", "", "(fnSPDClusters0)");
   fEstCL0 -> SetUseAnchor        ( kTRUE  ) ;
   fEstCL0 -> SetAnchorPoint      ( lDefaultCL0Anchor   ) ;
   fEstCL0 -> SetAnchorPercentile ( lDefaultCL0Percentile  ) ;
   lMultSelDefault -> AddEstimator( fEstCL0 );
   
   //Config central CL1
-  AliMultEstimator *fEstCL1 = new AliMultEstimator("CL1", "", "(fnSPDClusters1)/(1 + ((fEvSel_VtxZ)-1.2)*(0.0057 - ((fEvSel_VtxZ)-1.2)*(-0.0013)))");
+  AliMultEstimator *fEstCL1 = new AliMultEstimator("CL1", "", "(fnSPDClusters1)");
   fEstCL1 -> SetUseAnchor        ( kTRUE   ) ;
   fEstCL1 -> SetAnchorPoint      ( lDefaultCL1Anchor    ) ;
   fEstCL1 -> SetAnchorPercentile ( lDefaultCL1Percentile  ) ;
@@ -268,7 +292,7 @@ void CalibratePeriod_LHC18r(TString lPeriodName = "LHC18r"){
   //============================================================
   //lCalib -> SetInputFile  ( "~/Dropbox/MultSelCalib/LHC15o/MergedLHC15o.root");
   //lCalib -> SetInputFile  ( "/hera/alice/alberica/centrality/Trees/Singles/LHC15o/muon_calo_pass1_1301/files/AnalysisResults_244918.root");
-  lCalib -> SetInputFile  ( "LHC18r.root");
+  lCalib -> SetInputFile  ( "/storage1/grgarcia/alice/ServiceTask/LHC18r.root");
   //lCalib -> SetInputFile  ( "~/Dropbox/MultSelCalib/LHC15o/files/AnalysisResults_245064.root");
   
   lCalib -> SetBufferFile ( "buffer-LHC18r.root" );

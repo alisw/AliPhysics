@@ -251,6 +251,8 @@ AliAnalysisTaskeeCor::AliAnalysisTaskeeCor()
 ,TOFnSigmaEle_Eta_P_lin(0)
 ,TPCnSigmaEle_Eta_P_lin2(0)
 ,TOFnSigmaEle_Eta_P_lin2(0)
+,fPrimariesCC(0)
+,fPrimariesBB(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -476,6 +478,8 @@ AliAnalysisTaskeeCor::AliAnalysisTaskeeCor(const char* name)
 ,TOFnSigmaEle_Eta_P_lin2(0)
 ,fFillPIDrecMaps(kTRUE)
 ,fFillSmrMaps(kTRUE)
+,fPrimariesCC(0)
+,fPrimariesBB(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // a 'chain' of events created by the analysis manager automatically
@@ -849,6 +853,11 @@ void AliAnalysisTaskeeCor::UserCreateOutputObjects()
     TOFnSigmaEle_Eta_P_lin = new TH3F("TOFnSigmaEle_Eta_P_lin","TOF number of sigmas Electrons vs Eta and P", 200, -1., 1., 200, -10., 10., 100, 0., 5.);
     fOutputListRec->Add(TPCnSigmaEle_Eta_P_lin);
     fOutputListRec->Add(TOFnSigmaEle_Eta_P_lin);
+    
+    fPrimariesCC = new TH3F("fPrimariesCC","IsPrimary vs IsPhysical vs isCharm",  2, -1., 1., 2, -1., 1., 2, -1., 1.);
+    fPrimariesBB = new TH3F("fPrimariesBB","IsPrimary vs IsPhysical vs isBeauty", 2, -1., 1., 2, -1., 1., 2, -1., 1.);
+    fOutputList->Add(fPrimariesCC);
+    fOutputList->Add(fPrimariesBB);
 
     TPCnSigmaEle_Eta_P_lin2 = new TH2F("TPCnSigmaEle_Eta_P_lin2", "TPC nSigma ele hadron rej", 100,0.,10.,100,-5.,5.);
     TPCnSigmaEle_Eta_P_lin2->GetXaxis()->SetTitle("#it{p}, GeV/#it{c}");
@@ -1374,7 +1383,7 @@ void AliAnalysisTaskeeCor::UserExec(Option_t *)
     //get generator header
     TList *l = (TList*)mcEvent->GetCocktailList();
     //printf("GetCocktailList entries = %i", l->GetEntries());
-    AliGenEventHeader* gh=(AliGenEventHeader*)l->At(fPyHeader); //2016: At(1), 2017&2018: At(0)
+    AliGenEventHeader* gh=(AliGenEventHeader*)l->At(fPyHeader);
     TString genname=gh->GetName();
     
     //printf("Genname: %s\n",genname.Data());
@@ -1457,7 +1466,17 @@ void AliAnalysisTaskeeCor::UserExec(Option_t *)
 		Double_t minPtCutBefSmr = fPtMinCut - 0.1;
 		Double_t minEtaCutBefSmr = 1.1;
         if(part->Pt() < minPtCutBefSmr || TMath::Abs(part->Eta()) > minEtaCutBefSmr) continue;
-		if(!part->IsPrimary()) continue;
+		//--------------------------------------------------------------------------------------
+		//In old analysis the cut part->IsPrimary() was added, but that could not be quite right
+		//if(!part->IsPrimary()) continue;
+		//So let's fill some histograms about this cut to understand its behaviour
+		Float_t isPrim = -0.5; if (part->IsPrimary()) isPrim = 0.5;
+		Float_t isPhys = -0.5; if (part->IsPhysicalPrimary()) isPhys = 0.5;
+		Float_t isHFc = -0.5; if (IsCharmedEle(iMC))  isHFc = 0.5;
+		Float_t isHFb = -0.5; if ( IsBeautyEle(iMC)){ isHFb = 0.5; isHFc = -0.5;}
+		if (pythiaCCfile) fPrimariesCC->Fill(isPrim, isPhys, isHFc);
+		if (pythiaBBfile) fPrimariesBB->Fill(isPrim, isPhys, isHFb);
+		//--------------------------------------------------------------------------------------
         if(TMath::Abs(part->PdgCode()) != 11) continue;
 
         Int_t mLab = part->GetMother();
@@ -1493,6 +1512,7 @@ void AliAnalysisTaskeeCor::UserExec(Option_t *)
 
         lmeeLeg.isCharm  = IsCharmedEle(iMC);
         lmeeLeg.isBeauty = IsBeautyEle(iMC);
+        if (lmeeLeg.isCharm && lmeeLeg.isBeauty) lmeeLeg.isCharm = kFALSE;
         
         Double_t partVx = part->Xv();//cm
         Double_t partVy = part->Yv();//cm
@@ -2076,87 +2096,52 @@ void AliAnalysisTaskeeCor::Terminate(Option_t *)
 
 Bool_t AliAnalysisTaskeeCor::IsCharmedEle(Int_t label){
 	AliMCParticle *part = (AliMCParticle*)(mcEvent->GetTrack(label));
-	if (!part)  return kFALSE;
+	if (!part) return kFALSE;
 	Int_t pdg = TMath::Abs(part->PdgCode());
 	if (pdg != 11) return kFALSE;
 
 	AliMCParticle *mother = (AliMCParticle*)(mcEvent->GetTrack(part->GetMother()));
 	if (!mother) return kFALSE;
 	Int_t mpdg = TMath::Abs(mother->PdgCode());
-	if (!((mpdg > 410 && mpdg < 436) || (mpdg > 4113 && mpdg < 4445))) return kFALSE;
-
-	AliMCParticle *gmother = (AliMCParticle*)(mcEvent->GetTrack(mother->GetMother()));
-	if (!gmother) return kFALSE;
-	Int_t gmpdg = TMath::Abs(gmother->PdgCode());
-	if (gmpdg != 4) return kFALSE;
+	if (!((mpdg >= 400 && mpdg <= 439) || (mpdg >= 4000 && mpdg <= 4399))) return kFALSE;
 
 	return kTRUE;
 }
 
 Bool_t AliAnalysisTaskeeCor::IsBeautyEle(Int_t label){
 	AliMCParticle *part = (AliMCParticle*)(mcEvent->GetTrack(label));
-	if (!part)  return kFALSE;
-	Int_t pdg = TMath::Abs(part->PdgCode());
-	if (pdg != 11) return kFALSE;
-
-	Bool_t motherD = 0;
-
-	AliMCParticle *mother = (AliMCParticle*)(mcEvent->GetTrack(part->GetMother()));
-	if (!mother) return kFALSE;
-	Int_t mpdg = TMath::Abs(mother->PdgCode());
-	if ((mpdg > 410 && mpdg < 436) || (mpdg > 4113 && mpdg < 4445)) motherD = 1;
-	else if ((mpdg > 500 && mpdg < 600) || (mpdg > 5000 && mpdg < 6000)) return kTRUE;
-	else return kFALSE;
-
-	AliMCParticle *gmother = (AliMCParticle*)(mcEvent->GetTrack(mother->GetMother()));
-	if (!gmother) return kFALSE;
-	Int_t gmpdg = TMath::Abs(gmother->PdgCode());
-	if ((gmpdg > 500 && gmpdg < 600) || (gmpdg > 5000 && gmpdg < 6000)) return kTRUE;
-	else if (gmpdg == 5) return kTRUE;
-	
-	return kFALSE;
-}
-
-/*Bool_t AliAnalysisTaskeeCor::IsBeautyEle(Int_t label){
-	AliMCParticle *part = (AliMCParticle*)(mcEvent->GetTrack(label));
-	if (!part)  return kFALSE;
+	if (!part) return kFALSE;
 	Int_t pdg = TMath::Abs(part->PdgCode());
 	if (pdg != 11) return kFALSE;
 
 	Bool_t motherD = 0;
 	Bool_t motherB = 0;
-	Bool_t gmotherB = 0;
-	Bool_t ggmotherB = 0;
-	Bool_t gggmotherB = 0;
 
 	AliMCParticle *mother = (AliMCParticle*)(mcEvent->GetTrack(part->GetMother()));
 	if (!mother) return kFALSE;
 	Int_t mpdg = TMath::Abs(mother->PdgCode());
-	if ((mpdg > 410 && mpdg < 436) || (mpdg > 4113 && mpdg < 4445)) motherD = 1;
-	else if ((mpdg > 500 && mpdg < 600) || (mpdg > 5000 && mpdg < 6000)) motherB = 1;
+	if ((mpdg >= 400 && mpdg <= 439) || (mpdg >= 4000 && mpdg <= 4399)){
+		motherD = 1;
+	}
+	else if ((mpdg >= 500 && mpdg <= 549) || (mpdg >= 5000 && mpdg <= 5499)){// || mpdg == 5){
+		motherB = 1;
+		return kTRUE;
+	}
 	else return kFALSE;
 
-	AliMCParticle *gmother = (AliMCParticle*)(mcEvent->GetTrack(mother->GetMother()));
-	if (!gmother) return kFALSE;
-	Int_t gmpdg = TMath::Abs(gmother->PdgCode());
-	if ((gmpdg > 500 && gmpdg < 600) || (gmpdg > 5000 && gmpdg < 6000)) gmotherB = 1;
-	else if (gmpdg == 5) return kTRUE;
-	else return kFALSE;
+	AliMCParticle *gm_i = 0x0;
+	Int_t indexx_i = mother->GetMother(); // First mother of D
+	while (indexx_i > 0){ // recursive loop to check if it comes from beauty.
+	  gm_i = (AliMCParticle*)(mcEvent->GetTrack(indexx_i));
+	  int pid_gm_i = TMath::Abs(gm_i->PdgCode());// pdg of the mother
+	  if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+	    return kTRUE;
+	  }
+	  indexx_i = gm_i->GetMother(); //
+	}
 
-	AliMCParticle *ggmother = (AliMCParticle*)(mcEvent->GetTrack(gmother->GetMother()));
-	if (!ggmother) return kFALSE;
-	Int_t ggmpdg = TMath::Abs(ggmother->PdgCode());
-	if ((ggmpdg > 500 && ggmpdg < 600) || (ggmpdg > 5000 && ggmpdg < 6000)) ggmotherB = 1;
-	else if (ggmpdg == 5) return kTRUE;
-	else return kFALSE;
-
-	AliMCParticle *gggmother = (AliMCParticle*)(mcEvent->GetTrack(ggmother->GetMother()));
-	if (!gggmother) return kFALSE;
-	Int_t gggmpdg = TMath::Abs(gggmother->PdgCode());
-	if (gggmpdg != 5) return kFALSE;
-
-	return kTRUE;
-}*/
+	return kFALSE;
+}
 
 void AliAnalysisTaskeeCor::GetRecalibrationPID(Double_t mom, Double_t eta, Double_t *meanTPC, Double_t *widthTPC, Double_t *meanTOF, Double_t *widthTOF){
 	*meanTPC = 0.;

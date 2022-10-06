@@ -19,17 +19,18 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODPidHF.h"
 #include "AliPIDCombined.h"
+#include "AliAODEvent.h"
 
 class AliHFMLVarHandler : public TObject
 {
     public:
     
         enum candtype {
-            kSignal = BIT(0),
-            kBkg    = BIT(1),
-            kPrompt = BIT(2),
-            kFD     = BIT(3),
-            kRefl   = BIT(4),
+            kSignal        = BIT(0),
+            kBkg           = BIT(1),
+            kPrompt        = BIT(2),
+            kFD            = BIT(3),
+            kRefl          = BIT(4),
             kSignalWoQuark = BIT(5) //up to BIT(8) included for general flags, following BITS particle-specific
         };
     
@@ -41,7 +42,8 @@ class AliHFMLVarHandler : public TObject
             kNsigmaDetAndCombPID,
             kRawAndNsigmaPID,
             kBayesPID,
-            kBayesAndNsigmaCombPID
+            kBayesAndNsigmaCombPID,
+            kBayesAndNsigmaDetAndNsigmaCombPID
         };
 
         enum piddet {
@@ -65,13 +67,21 @@ class AliHFMLVarHandler : public TObject
         void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
         void SetIsSignalWoQuark(bool isSignalWoQuark);
         void SetBeautyMotherPt(double ptB) {fPtBMother = ptB;}
-        void FillTree();
-        
+        void SetBeautyMotherPDG(double pdg) {fPDGBMother = pdg;}
+        virtual void FillTree();
+        void ResetCandType() {fCandType = 0;}
+        int GetCandType() const {return fCandType;}
+
+        //to be called for each event
+        void SetGlobalEventVariables(AliAODEvent* event);
+
         //common methods
         void SetOptPID(int PIDopt) {fPidOpt = PIDopt;}
         void SetAddSingleTrackVars(bool add = true) {fAddSingleTrackVar = add;}
         void SetFillOnlySignal(bool fillopt = true) {fFillOnlySignal = fillopt;}
         void SetFillBeautyMotherPt(bool fillopt = true) {fEnableBMotherPt = fillopt;}
+        void SetFillBeautyMotherPDG(bool fillopt = true) {fEnableBMotherPDG = fillopt;}
+        void SetAddGlobalEventVariables(bool filltrkl = true, bool fillcent = false, std::string centestim = "V0M") {fEnableNtracklets = filltrkl; fEnableCentPercentile = fillcent; fCentEstimator = centestim;}
 
     protected:  
         //constant variables
@@ -85,6 +95,7 @@ class AliHFMLVarHandler : public TObject
         void AddCommonDmesonVarBranches();
         void AddSingleTrackBranches();
         void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
+        void AddGlobalEventVarBranches();
         bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
         bool SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidhf, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     
@@ -105,7 +116,7 @@ class AliHFMLVarHandler : public TObject
         float fCosP = -999.;                                           /// candidate cosine of pointing angle
         float fCosPXY = -999.;                                         /// candidate cosine of pointing angle in the transcverse plane
         float fImpParXY = -999.;                                       /// candidate impact parameter in the transverse plane
-        float fDCA = -999.;                                            /// DCA of candidates prongs
+        float fDCA = -999.;                                            /// DCA of candidates
         float fPtProng[knMaxProngs] = {-999., -999., -999., -999.};    /// prong pt
         float fTPCPProng[knMaxProngs] = {-999., -999., -999., -999.};  /// prong TPC momentum
         int fNTPCclsPidProng[knMaxProngs] = {-999, -999, -999, -999};  /// prong track number of clusters in TPC used for PID
@@ -116,10 +127,17 @@ class AliHFMLVarHandler : public TObject
         float fPIDrawVector[knMaxProngs][knMaxDet4Pid];                                 /// raw PID variables
         bool fEnableBMotherPt = false;                                 /// enable filling of B-mother pT
         float fPtBMother = -999.;                                      /// B-mother pT for feed-down (ML only)
+        bool fEnableBMotherPDG = false;                                /// enable filling of B-mother PDG
+        int fPDGBMother = 0;                                           /// B-mother PDG for feed-down
         AliPIDCombined* fPIDCombined = nullptr;                        //!<! object for combined PID probability (bayesian)
+        bool fEnableNtracklets = false;                                /// Flag to add Ntracklets in tree
+        bool fEnableCentPercentile = false;                            /// Flag to add centrality percentile in tree
+        int fNtracklets = -1;                                          /// Number of trackles in |eta|<1
+        double fCentPercentile = -1.;                                  /// centrality percentile
+        std::string fCentEstimator = "V0M";                            /// centrality estimator
 
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 3); ///
+    ClassDef(AliHFMLVarHandler, 7); ///
     /// \endcond
 };
 #endif

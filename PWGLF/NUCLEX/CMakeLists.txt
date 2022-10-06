@@ -26,13 +26,21 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${ALIROOT_INCLUDE_DIRS}
-                    $ENV{KFPARTICLE_ROOT}/include
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
 		                ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/CommonUtils
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
 		                ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
   )
+if(KFParticle_FOUND)
+  get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+  include_directories(${KFPARTICLE_INCLUDE_DIR})
+  add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
 # Additional includes for ROOT 6 only dependencies - alphabetical order except ROOT
@@ -46,10 +54,12 @@ endif()
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/Dibaryons/AliAnalysisTaskDibaryons.cxx
+  Exotica/Dibaryons/AliAnalysisTaskMSDibaryons.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNRun2.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNv0Bkg.cxx
+  Exotica/LambdaNN/AliAnalysisTaskLambdaNNRun2.cxx
   Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx
   Exotica/dStar/AliAnalysisTaskdStar.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
@@ -60,7 +70,10 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskS3ParticleYields.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3EffTree.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHypTritKf.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisCODEXS3task.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskTRDtriggerTracks.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/Sigma_Baryons/AliAnalysisTaskSigmaPlus.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
@@ -80,6 +93,9 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNEventCuts.cxx
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisH3MC.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisHe3MC.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisH3MC.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3_ESD.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskNuclei.cxx
   Nuclei/AbsorptionRatios/HMAnalysis/AliAnalysisTaskAntipd.cxx
@@ -88,12 +104,21 @@ set(SRCS
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronsRT.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronCoalescence.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskPythiaCoalescence.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeHypertriton.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskTritonESD_PbPb.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_XeXe.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskHe3VsMultiplicity_XeXe.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskDeuteronVsMultiplicity_XeXe.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskLightNuclei_XeXe_MC.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskDeuteron_XeXe_MC.cxx    
+  Nuclei/TritonAnalysis/AliAnalysisTaskDeuteron_XeXe_MC_noMult.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
@@ -116,6 +141,10 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
       Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piAOD.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piKF.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskAlphaPiAOD.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskAlphaPiAODtrk.cxx
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
       Hypernuclei/Hyp3Body/Hypertriton3structures.cxx
@@ -146,7 +175,11 @@ set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWG
 
 # Generate the ROOT map
 # Dependencies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} KFParticle)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
 if(ROOT_VERSION_MAJOR EQUAL 6)
   set(LIBDEPS ${LIBDEPS} ML yaml-cpp)
 endif()
@@ -162,7 +195,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} \-L$ENV{KFPARTICLE_ROOT}/lib ${LIBDEPS})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

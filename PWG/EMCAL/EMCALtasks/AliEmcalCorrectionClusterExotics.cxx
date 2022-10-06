@@ -27,6 +27,7 @@ AliEmcalCorrectionClusterExotics::AliEmcalCorrectionClusterExotics() :
   fEnergyExoticClusters(0),
   fEnergyExoticClustersNDiffCut(0),
   fExoticMinCellAmplitude(0),
+  fExoticMinCellInCrossAmplitude(0),
   fMaxFcross(0),
   fCellCrossMaxTimeDiff(0),
   fHighEnergyNdiffCut(0),
@@ -51,6 +52,8 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   
   fExoticMinCellAmplitude = 4.;
   GetProperty("fExoticMinCellAmplitude", fExoticMinCellAmplitude);
+  fExoticMinCellInCrossAmplitude = 0.1;
+  GetProperty("fExoticMinCellInCrossAmplitude", fExoticMinCellInCrossAmplitude);
   fMaxFcross = 0.97;
   GetProperty("fMaxFcross", fMaxFcross);
   fCellCrossMaxTimeDiff = 1e6;
@@ -65,6 +68,7 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
     fRecoUtils  = new AliEMCALRecoUtils;
   fRecoUtils->SwitchOnRejectExoticCluster();
   fRecoUtils->SetExoticCellMinAmplitudeCut(fExoticMinCellAmplitude);
+  fRecoUtils->SetExoticCellInCrossMinAmplitudeCut(fExoticMinCellInCrossAmplitude);
   fRecoUtils->SetExoticCellFractionCut(fMaxFcross);
   fRecoUtils->SetExoticCellDiffTimeCut(fCellCrossMaxTimeDiff);
   if (fRecoUtils)

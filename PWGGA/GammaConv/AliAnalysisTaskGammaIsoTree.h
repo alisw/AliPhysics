@@ -261,6 +261,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetGenPtCut(Double_t pt){
       fGenPtCut = pt;
     }
+    void SetDebugFlag(Int_t debug = 1){
+      fDebug = debug;
+    }
+    void SetMCFlag(UInt_t m){ fMCFlag= m ;}
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -468,6 +472,14 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     // ─── CALO HISTOS ─────────────────────────────────────────────────
     //
     TH1F*                       fCaloPt;//!
+    TH1F*                       fTrackPt;//!
+    TH1F*                       fTrackEta;//!
+    TH2F*                       fTrackPhiPt;//!
+    TH2F*                       fTrackPhiMaxClusE;//!
+    TH1F*                       fTrackPtHybridOnlyPosID;//!
+    TH1F*                       fTrackEtaHybridOnlyPosID;//!
+    TH1F*                       fTrackPhiHybridOnlyPosID;//!
+
     TH1F*                       fCaloPtBeforeAcc;//!
 
     TH1F*                       fCaloE;//!
@@ -485,6 +497,12 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH2F*                       fCaloRhoTimesAreaLeft[5]; //!
     TH2F*                       fCaloRhoTimesAreaRight[5]; //!
     TH2F*                       fCaloRhoTimesAreaBack[5]; //!
+    // true for QA (always stored)
+    TH1F*                       fCaloTruePhotonPt; //!
+    TH1F*                       fCaloTruePhotonOldPt; //!
+    TH1F*                       fCaloTruePhotonRecPt; //!
+    TH2F*                       fCaloTruePhotonRecPtVsTruePt; //!
+    
     // True conv histos
     TH1F*                       fCaloTruePt; //!
     TH1F*                       fCaloTruePtNotProper; //!
@@ -636,6 +654,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     //
 
     TH1I*                       fHistoMCHeaders;                                      //! array of histos for header names
+    
+    // always on (QA)
+    TH1F*                       fGenPtTruePhoton;//!
+
+    // normal hists
     TH1F*                       fGenPhotonPt;//!
     TH1F*                       fGenPhotonPt_FromDecay;//!
     TH1F*                       fGenPhotonPt_FromDirect;//!
@@ -676,12 +699,13 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fExclusionRadius;//
 
     Int_t                       fDebug;// debug flag
-
+    Double_t                    fMaxClusterE;//
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     // MC cluster & headers 
     Bool_t                fIsFromDesiredHeader;                                 // flag for MC headers
     Bool_t                fIsOverlappingWithOtherHeader;                        // flag for particles in MC overlapping between headers
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
+    
     // //
     // // ─── FOR LIGHT TREE ──────────────────────────────────────────────
     // //
@@ -691,7 +715,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t fBuffer_EventWeight; //
     Float_t fBuffer_EventXsection; //
     UShort_t fBuffer_EventNtrials; //
+    UShort_t fBuffer_EventNPrimaryTracks; //
     Bool_t fBuffer_EventIsTriggered; //
+    Double_t fBuffer_EventZVertex; //
+
     std::vector<Float_t> fBuffer_ClusterE;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPx;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPy;     //!<! array buffer
@@ -699,6 +726,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_ClusterM02; 
     std::vector<Float_t> fBuffer_ClusterM02Recalc; 
     std::vector<Float_t> fBuffer_ClusterM20; 
+    std::vector<UShort_t> fBuffer_ClusterNCells; 
     std::vector<Float_t> fBuffer_ClusterV1SplitMass; 
     std::vector<UShort_t> fBuffer_ClusterNLM; 
     std::vector<UShort_t> fBuffer_ClusterSM; // super module 
@@ -706,12 +734,13 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_ClusterIsoCharged1; // isolation for three different radii 
     std::vector<Float_t> fBuffer_ClusterIsoCharged2; 
     std::vector<Float_t> fBuffer_ClusterIsoCharged3; 
-    std::vector<Float_t> fBuffer_ClusterIsoBckLeft; 
+    std::vector<Float_t> fBuffer_ClusterIsoBckPerp; 
     std::vector<Float_t> fBuffer_ClusterMatchTrackdEta; 
     std::vector<Float_t> fBuffer_ClusterMatchTrackdPhi; 
     std::vector<Float_t> fBuffer_ClusterMatchTrackP; 
     std::vector<Float_t> fBuffer_ClusterMatchTrackPt; 
     std::vector<Bool_t>  fBuffer_ClusterMatchTrackIsConv; 
+    std::vector<Float_t> fBuffer_ClusterDistanceToBadChannel;
     std::vector<Float_t> fBuffer_TrueClusterE; 
     std::vector<Float_t> fBuffer_TrueClusterPx; 
     std::vector<Float_t> fBuffer_TrueClusterPy; 
@@ -720,7 +749,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged1; 
     std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged2; 
     std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged3; 
-    std::vector<Float_t> fBuffer_TrueClusterMCIsoBckLeft; 
+    std::vector<Float_t> fBuffer_TrueClusterMCIsoBckPerp; 
     std::vector<Int_t> fBuffer_TrueClusterMCTag; 
     std::vector<Bool_t> fBuffer_TrueClusterIsConv;
     
@@ -731,9 +760,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_GenPhotonMCIsoCharged1;
     std::vector<Float_t> fBuffer_GenPhotonMCIsoCharged2;
     std::vector<Float_t> fBuffer_GenPhotonMCIsoCharged3;
-    std::vector<Float_t> fBuffer_GenPhotonMCIsoBckLeft;
+    std::vector<Float_t> fBuffer_GenPhotonMCIsoBckPerp;
     std::vector<Bool_t> fBuffer_GenPhotonIsConv;
     std::vector<Int_t> fBuffer_GenPhotonMCTag;
+
+    UInt_t fMCFlag;                        ///< select MC particles with flags    
 
 
 
@@ -748,7 +779,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void ProcessMCConversionPhoton(AliAODConversionPhoton* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
     void ProcessMCCaloPhoton(AliAODCaloCluster* clus,AliAODConversionPhoton* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag, Double_t weight);
     void ProcessCaloPhotons();
-    Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
+    Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack,  Bool_t requirePosID);
     void ProcessTracks();
     void ProcessMCParticles();
     Int_t ProcessTrackMatching(AliAODCaloCluster* clus, TList* tracks);
@@ -785,9 +816,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t IsWithinRadiusEMCal(Double_t eta, Double_t phi, Double_t riso);
     Bool_t IsWithinRadiusTPC(Double_t eta, Double_t phi, Double_t riso);
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
+    Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 34);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 44);
 
 };
 

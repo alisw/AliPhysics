@@ -10,14 +10,14 @@ using namespace std;
 ClassImp(AliKFConversionPhoton)
 
 AliKFConversionPhoton::AliKFConversionPhoton() :
-  AliKFParticle(),
+  AliGAKFParticle(),
   AliConversionPhotonBase()
 {
   //Default constructor
 }
 
-AliKFConversionPhoton::AliKFConversionPhoton(AliKFParticle & kfparticle) :
-  AliKFParticle(kfparticle),
+AliKFConversionPhoton::AliKFConversionPhoton(AliGAKFParticle & kfparticle) :
+  AliGAKFParticle(kfparticle),
   AliConversionPhotonBase()
 
 {
@@ -26,8 +26,8 @@ AliKFConversionPhoton::AliKFConversionPhoton(AliKFParticle & kfparticle) :
 }
 
 
-AliKFConversionPhoton::AliKFConversionPhoton(const AliKFParticle &fCurrentNegativeKFParticle,const AliKFParticle &fCurrentPositiveKFParticle) :
-  AliKFParticle(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle),
+AliKFConversionPhoton::AliKFConversionPhoton(const AliGAKFParticle &fCurrentNegativeKFParticle,const AliGAKFParticle &fCurrentPositiveKFParticle) :
+  AliGAKFParticle(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle),
   AliConversionPhotonBase()
 {
   SetArmenterosQtAlpha(fArmenteros,fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
@@ -39,14 +39,14 @@ AliKFConversionPhoton::AliKFConversionPhoton(const AliKFParticle &fCurrentNegati
 
 
 AliKFConversionPhoton::AliKFConversionPhoton(const AliKFConversionPhoton & original) :
-  AliKFParticle(original),
+  AliGAKFParticle(original),
   AliConversionPhotonBase(original)
 {
 }
 
-void AliKFConversionPhoton::ConstructGamma(const AliKFParticle &fCurrentNegativeKFParticle,const AliKFParticle &fCurrentPositiveKFParticle)
+void AliKFConversionPhoton::ConstructGamma(const AliGAKFParticle &fCurrentNegativeKFParticle,const AliGAKFParticle &fCurrentPositiveKFParticle)
 {
-  AliKFParticle::ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+  AliGAKFParticle::ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
   SetArmenterosQtAlpha(fArmenteros,fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
 }
 
@@ -57,12 +57,12 @@ AliKFConversionPhoton & AliKFConversionPhoton::operator = (const AliKFConversion
 }
 
 
-void AliKFConversionPhoton::SetArmenterosQtAlpha(Double_t armenteros[2],const AliKFParticle &fCurrentNegativeParticle,const AliKFParticle &fCurrentPositiveParticle)
+void AliKFConversionPhoton::SetArmenterosQtAlpha(Double_t armenteros[2],const AliGAKFParticle &fCurrentNegativeParticle,const AliGAKFParticle &fCurrentPositiveParticle)
 {
-  AliKFParticle PosParticle = fCurrentPositiveParticle;
-  AliKFParticle NegParticle = fCurrentNegativeParticle;
+  AliGAKFParticle PosParticle = fCurrentPositiveParticle;
+  AliGAKFParticle NegParticle = fCurrentNegativeParticle;
 
-  AliKFParticle Gamma;
+  AliGAKFParticle Gamma;
   Gamma += fCurrentPositiveParticle;
   Gamma += fCurrentNegativeParticle;
 
@@ -70,13 +70,13 @@ void AliKFConversionPhoton::SetArmenterosQtAlpha(Double_t armenteros[2],const Al
   PosParticle.TransportToPoint(VertexGamma);
   NegParticle.TransportToPoint(VertexGamma);
 
-  AliKFParticle::GetArmenterosPodolanski(PosParticle,NegParticle, armenteros);
+  AliGAKFParticle::GetArmenterosPodolanski(PosParticle,NegParticle, armenteros);
 }
 
 
 Double_t AliKFConversionPhoton::Phi() const
 {
-  Double_t phi = AliKFParticle::GetPhi();
+  Double_t phi = AliGAKFParticle::GetPhi();
   if (phi < 0.) phi += 2. * TMath::Pi();
   return phi;
 }

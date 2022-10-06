@@ -111,6 +111,8 @@ fCutTPCNCls(80.),
 fCutITSNCls(3.),
 fCutDCAxy(2.4),
 fCutDCAz(3.2),
+fCutDeltaEta(0.01),
+fCutDeltaPhi(0.01),
 fCutTrackEta(0.7),
 fCutpTMin(1.),
 //PID Cut
@@ -185,6 +187,8 @@ fvalueCluE(0),
 fTrkMatchTrkPt(0),
 fTrkMatchTrketa(0),
 fTrkMatchTrkphi(0),
+fEMCTrkMatch_Phi(0),
+fEMCTrkMatch_Eta(0),
 fTrkMatchClusetaphi(0x0),
 fEMCTrkMatchcluster(0x0),
 // electron info
@@ -211,6 +215,10 @@ fNembMCeta(0),
 // enhance weight cal.
 ftype(-1),
 fWeight(1),
+
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
+
 fCalculateWeight(kFALSE),
 fCalculateElectronEffi(kTRUE),
 fSprsPi0EtaWeightCal(0),
@@ -305,6 +313,8 @@ fCutTPCNCls(80.),
 fCutITSNCls(3.),
 fCutDCAxy(2.4),
 fCutDCAz(3.2),
+fCutDeltaEta(0.01),
+fCutDeltaPhi(0.01),
 fCutTrackEta(0.7),
 fCutpTMin(1),
 //PID Cut
@@ -378,6 +388,8 @@ fvalueCluE(0),
 fTrkMatchTrkPt(0),
 fTrkMatchTrketa(0),
 fTrkMatchTrkphi(0),
+fEMCTrkMatch_Phi(0),
+fEMCTrkMatch_Eta(0),
 fTrkMatchClusetaphi(0x0),
 fEMCTrkMatchcluster(0x0),
 // electron info
@@ -404,6 +416,10 @@ fNembMCeta(0),
 // enhance weight cal.
 ftype(-1),
 fWeight(1),
+
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
+
 fCalculateWeight(kFALSE),
 fCalculateElectronEffi(kTRUE),
 fSprsPi0EtaWeightCal(0),
@@ -600,9 +616,16 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     fULSElecPt          = new TH1F("fULSElecPt","p_{T} distribution of ULS electrons;p_{T} (GeV/c);counts",500,0,50);
     fLSElecPt         = new TH1F("fLSElecPt","p_{T} distribution of LS electrons;p_{T} (GeV/c);counts",500,0,50);
     
+    fEMCTrkMatch_Phi = new TH2F("fEMCTrkMatch_Phi","Distance of EMCAL cluster to its closest track in #Delta#phi vs p_{T};p_{T};#Delta#phi",500,0,50.0,100,-0.3,0.3);
+       fOutputList->Add(fEMCTrkMatch_Phi);
+       
+    fEMCTrkMatch_Eta = new TH2F("fEMCTrkMatch_Eta","Distance of EMCAL cluster to its closest track in #Delta#eta vs p_{T};p_{T};#Delta#eta",500,0,50.0,100,-0.3,0.3);
+       fOutputList->Add(fEMCTrkMatch_Eta);
     
-    
-    
+    fFuncPtDepEta = new TF1("fFuncPtDepEta", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+    fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
+    fFuncPtDepPhi = new TF1("fFuncPtDepPhi", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+    fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
     
     //---------------THnSparse------------
     Int_t binsE[3]    =          {500, 1000, 350};
@@ -613,7 +636,7 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     
     
     
-    Int_t bins[9]        =          {250,200,100,400,400, 1000, 350,500,300};
+    Int_t bins[9]        =          {250,200,200,400,400, 1000, 350,500,300};
     Double_t xmin[9]    =    {  0, -10,0, 0,0,0, 0,0,-15};
     Double_t xmax[9]    =    {  50,10, 2,2,2, 2000, 350,50,15};
     
@@ -762,8 +785,8 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
         
         fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
         
-        fPi0Weight->SetParameters( 1.46837e+03,-1.02586e-01, 1.18596e-03,1.73410,5.06623);
-        fEtaWeight->SetParameters(   3.67328e+02,-5.34727e-02,2.39322e-05,1.96562,5.23828);
+        fPi0Weight->SetParameters( 1.62474e+03,-1.17372e-01,1.42964e-03,1.64427e+00,4.93761e+00);
+        fEtaWeight->SetParameters(   3.67236e+02,-5.41467e-02,3.76799e-05,1.96809e+00,5.23929e+00);
     }
     fTrkMatchTrkPt->Sumw2();
     fSparseElectron->Sumw2();
@@ -1153,6 +1176,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
         if(!fUseTender) clu  = (AliAODCaloCluster*)fAOD->GetCaloCluster(index) ;
         if(fUseTender) clu = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(index));
         if(!clu) continue;
+       
         
         fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
         if (clu->IsEMCAL()){
@@ -1175,8 +1199,14 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            clut = clu->GetTOF()*1e9 ;
+            clut = clu->GetTOF()*1e+9; // ns
             energy = clu->E();
+              
+            if (!fReadMC) { //should not be applied in MC since it is not implemented
+            if(TMath::Abs(clut) > 50) continue;
+            if(clu->GetIsExotic()) continue; //remove exotic clusters
+            }
+            
             ncells= clu->GetNCells();
             fClusPhi->Fill(cluphi);
             fClusEtaPhi->Fill(clueta,cluphi);
@@ -1262,7 +1292,16 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatchcluster->Fill(fPhiDiff,fEtaDiff);
-            if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
+            
+            if(fCutDeltaPhi < 0)
+                fCutDeltaPhi = fFuncPtDepPhi->Eval(TrkPt);
+            if(fCutDeltaEta < 0)
+                fCutDeltaEta = fFuncPtDepEta->Eval(TrkPt);
+            
+            if(TMath::Abs(fPhiDiff) > fCutDeltaPhi || TMath::Abs(fEtaDiff)> fCutDeltaEta) continue;
+            
+            fEMCTrkMatch_Phi->Fill(TrkPt,fPhiDiff);
+            fEMCTrkMatch_Eta->Fill(TrkPt,fEtaDiff);
             
             Float_t EMCalpos[3];
             clustMatch -> GetPosition(EMCalpos);
@@ -1280,6 +1319,11 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if (!fReadMC) { //should not be applied in MC since it is not implemented
+                if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
+                if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+            }
             fTrkMatchTrkPt->Fill(TrkPt);
             fTrkMatchTrketa->Fill(TrkEta);
             fTrkMatchTrkphi->Fill(TrkPhi);

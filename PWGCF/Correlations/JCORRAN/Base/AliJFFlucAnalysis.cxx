@@ -219,17 +219,19 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fHistCentBin
 		<< "END" ;
 	fh_phi
-		<< TH1D("h_phi", "h_phi", 50,-TMath::Pi(),TMath::Pi())
+		<< TH1D("h_phi", "h_phi", 200,-TMath::Pi(),TMath::Pi())
 		<< fHistCentBin << fBin_Subset
 		<< "END" ;
-	fh_phieta
-		<< TH2D("h_phieta","h_phieta",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0)
-		<< fHistCentBin
-		<< "END";
-	fh_phietaz
-		<< TH3D("h_phietaz","h_phietaz",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
-		<< fHistCentBin
-		<< "END";
+	if(!(flags & FLUC_PHI_CORRECTION)) {
+		fh_phieta
+			<< TH2D("h_phieta","h_phieta",200,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0)
+			<< fHistCentBin
+			<< "END";
+		fh_phietaz
+			<< TH3D("h_phietaz","h_phietaz",200,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
+			<< fHistCentBin
+			<< "END";
+	}
 	/*fh_Qvector
 		<< TH1D("h_QVector", "h_QVector", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
@@ -361,7 +363,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	//AliJTH1D set done.
 
 	fHMG->Print();
-	fHMG->WriteConfig();
+	//fHMG->WriteConfig();
 
 }
 
@@ -753,9 +755,10 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 		Double_t eta = itrack->Eta();
 		Double_t phi = itrack->Phi();
-
-		fh_phieta[fCBin]->Fill(phi,eta);
-		fh_phietaz[fCBin]->Fill(phi,eta,fVertex[2]);
+		if(!(flags & FLUC_PHI_CORRECTION)) {
+			fh_phieta[fCBin]->Fill(phi,eta);
+			fh_phietaz[fCBin]->Fill(phi,eta,fVertex[2]);
+		}
 
 		if(TMath::Abs(eta) < eta1 || TMath::Abs(eta) > eta2)
 			continue;

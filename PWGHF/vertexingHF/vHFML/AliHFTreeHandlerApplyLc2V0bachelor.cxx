@@ -46,8 +46,13 @@ fV0PointingAngle(-9999.),
 fCosThetaStar(-9999.),
 fsignd0(-9999.),
 fArmqTOverAlpha(-9999.),
+fV0radius(-9999.),
 fCalcSecoVtx(0),
-fReducePbPbBranches(false)
+fReducePbPbBranches(false),
+fIsMixedEvent(false),
+fnsigCombPr(-999),
+fnsigTPCPr(-999),
+fnsigTOFPr(-999)
 {
   //
   // Standard constructor
@@ -92,6 +97,7 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
   fTreeVar->Branch("armenteros_K0s", &fArmqTOverAlpha);
   fTreeVar->Branch("ctau_K0s", &fcTauK0s);
   fTreeVar->Branch("cos_p_K0s", &fV0PointingAngle);
+  fTreeVar->Branch("radius_K0s", &fV0radius);
   fTreeVar->Branch("pt_K0s", &fPtK0s);
   if(!fReducePbPbBranches){
     fTreeVar->Branch("eta_K0s", &fEtaK0s);
@@ -115,6 +121,11 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
       bool prongusepid[3] = {true, false, false};
       AddPidBranches(prongusepid, false, false, true, true, true);
     }
+  }
+  if(fIsMixedEvent){
+    fTreeVar->Branch("nsigComb_Pr_0", &fnsigCombPr);
+    fTreeVar->Branch("nsigTPC_Pr_0", &fnsigTPCPr);
+    fTreeVar->Branch("nsigTOF_Pr_0", &fnsigTOFPr);
   }
   
   return fTreeVar;
@@ -162,6 +173,7 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   fDecayLengthK0s=((AliAODRecoCascadeHF*)cand)->DecayLengthV0();
   fInvMassK0s=v0part->MassK0Short();
   fDCAK0s=v0part->GetDCA();
+  fV0radius = v0part->RadiusV0();
   fPtK0s=v0part->Pt();
   fEtaK0s=v0part->Eta();
   fPhiK0s=v0part->Phi();
@@ -182,22 +194,25 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   Double_t cts = TMath::Cos(vpr.Angle(vlc.Vect()));
   fCosThetaStar=cts;
   
-  // Sign of d0 proton (different from regular d0)
-  // (from AliRDHFCutsLctoV0)
-  AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
-  AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
-  Double_t d0z0bach[2], covd0z0bach[3];
-  bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
-  Double_t tx[3];
-  bachelor->GetXYZ(tx);
-  tx[0] -= primvert->GetX();
-  tx[1] -= primvert->GetY();
-  tx[2] -= primvert->GetZ();
-  Double_t innerpro = tx[0]*cand->Px()+tx[1]*cand->Py();
-  Double_t signd0 = 1.;
-  if(innerpro<0.) signd0 = -1.;
-  signd0 = signd0*TMath::Abs(d0z0bach[0]);
-  fsignd0=signd0;
+  if(!fIsMixedEvent){
+    //Possibility to disable this variable, because of the many AliAODTrack warnings/errors
+    // Sign of d0 proton (different from regular d0)
+    // (from AliRDHFCutsLctoV0)
+    AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
+    AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
+    Double_t d0z0bach[2], covd0z0bach[3];
+    bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
+    Double_t tx[3];
+    bachelor->GetXYZ(tx);
+    tx[0] -= primvert->GetX();
+    tx[1] -= primvert->GetY();
+    tx[2] -= primvert->GetZ();
+    Double_t innerpro = tx[0]*cand->Px()+tx[1]*cand->Py();
+    Double_t signd0 = 1.;
+    if(innerpro<0.) signd0 = -1.;
+    signd0 = signd0*TMath::Abs(d0z0bach[0]);
+    fsignd0=signd0;
+  }
   
   //Armenteros qT/|alpha|
   fArmqTOverAlpha= v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0());

@@ -45,7 +45,7 @@
 //________________________________________________________________________
 // FUNCTION PROTOTYPES
 void GenppRefFile(std::string cfgFileName="config_ppref.yml");
-void CreateExtrapReferenceHistos(const int nPtBinsMeas, const double* ptLimsMeas, std::vector<double> ptLimsExtr, std::string FONLLFileName, TH1F* hSigmaPP, TGraphAsymmErrors* gSigmaPPSyst, TGraphAsymmErrors* gSigmaPPSystData, TGraphAsymmErrors* gSigmaPPSystFeedDown, TH1F* &hReference, TH1F* &hReferenceSystData, TH1F* &hCombinedReferenceFlag, TGraphAsymmErrors* &gReference, TGraphAsymmErrors* &gReferenceSyst, TGraphAsymmErrors* &gReferenceFdSyst, bool useFDUnc=true);
+void CreateExtrapReferenceHistos(const int nPtBinsMeas, const double* ptLimsMeas, std::vector<double> ptLimsExtr, std::string FONLLFileName, TH1F* hSigmaPP, TGraphAsymmErrors* gSigmaPPSyst, TGraphAsymmErrors* gSigmaPPSystData, TGraphAsymmErrors* gSigmaPPSystFeedDown, TH1F* &hReference, TH1F* &hReferenceSystData, TH1F* &hCombinedReferenceFlag, TGraphAsymmErrors* &gReference, TGraphAsymmErrors* &gReferenceSyst, TGraphAsymmErrors* &gReferenceFdSyst, std::vector<std::string> scalesToExclude, bool useFDUnc=true);
 void ApplyYshiftToHisto(TGraphAsymmErrors *gyShift, TH1F* histo);
 void ApplyYshiftToGraph(TGraphAsymmErrors *gyShift, TGraphAsymmErrors* graph, bool useUnc=false);
 TGraphAsymmErrors* ComputeCorrForYshift(std::string FONLLfileNameNum, std::string FONLLfileNameDen, const int nPtBinsMeas, const double* ptLimsMeas);
@@ -63,13 +63,16 @@ void GenppRefFile(std::string cfgFileName) {
     YAML::Node config = YAML::LoadFile(cfgFileName.data());
     std::string mesonName = config["meson"].as<std::string>();
     std::string inFileName = config["infilename"].as<std::string>();
+    std::vector<double> ptLimsRebVec = config["ptbins"].as<std::vector<double> >();
     bool doPtExtrap = static_cast<bool>(config["extrap"]["pt"]["doextrap"].as<int>());
     std::string FONLLFileName;
     std::vector<double> ptLimsExtrap;
+    std::vector<std::string> scalesToExclude;
     if(doPtExtrap)
     {
         FONLLFileName = config["extrap"]["pt"]["FONLLfilename"].as<std::string>();
         ptLimsExtrap = config["extrap"]["pt"]["ptlims"].as<std::vector<double> >();
+        scalesToExclude = config["extrap"]["pt"]["excludescales"].as<std::vector<std::string> >();
     }
     bool doYExtrap = static_cast<bool>(config["extrap"]["y"]["doextrap"].as<int>());
     std::string FONLLFileNameMidY;
@@ -85,57 +88,220 @@ void GenppRefFile(std::string cfgFileName) {
     if(!infile)
         return;
 
-    TH1F* hSigmaPP = static_cast<TH1F*>(infile->Get("histoSigmaCorr"));
-    if(!hSigmaPP)
+    TH1F* hSigmaPPOrig = static_cast<TH1F*>(infile->Get("histoSigmaCorr"));
+    if(!hSigmaPPOrig)
     {
         std::cerr << "ERROR: histo with statistical uncertainties not found! Exit" << std::endl;
         return;
     }
-    hSigmaPP->SetDirectory(0);
+    hSigmaPPOrig->SetDirectory(0);
 
-    TGraphAsymmErrors* gSigmaPPSystData = static_cast<TGraphAsymmErrors*>(infile->Get("gSigmaCorr"));
-    if(!gSigmaPPSystData)
+    TGraphAsymmErrors* gSigmaPPSystDataOrig = nullptr;
+    if(mesonName.compare("Lc") != 0)
+        gSigmaPPSystDataOrig = static_cast<TGraphAsymmErrors*>(infile->Get("gSigmaCorr"));
+    else
+        gSigmaPPSystDataOrig = static_cast<TGraphAsymmErrors*>(infile->Get("gSigmaAverageSyst"));
+    if(!gSigmaPPSystDataOrig)
     {
         std::cerr << "ERROR: graph with systematic uncertainties not found! Exit" << std::endl;
         return;
     }
 
-    TGraphAsymmErrors* gSigmaPPSystFeedDown = nullptr;
-    if(mesonName.compare("DzeroLowPtInclusive") != 0) {
-        gSigmaPPSystFeedDown = static_cast<TGraphAsymmErrors*>(infile->Get("gSigmaCorrConservative"));
-        if(!gSigmaPPSystFeedDown)
+    TGraphAsymmErrors* gSigmaPPSystFeedDownOrig = nullptr;
+    if(mesonName.compare("DzeroLowPtInclusive") != 0)
+    {
+        if(mesonName.compare("Lc") != 0)
+            gSigmaPPSystFeedDownOrig = static_cast<TGraphAsymmErrors*>(infile->Get("gSigmaCorrConservative"));
+        else
+        {
+            TGraphAsymmErrors* gfPrompt = static_cast<TGraphAsymmErrors*>(infile->Get("gFDLcAverage"));
+            gSigmaPPSystFeedDownOrig = static_cast<TGraphAsymmErrors*>(gSigmaPPSystDataOrig->Clone("gSigmaCorrConservative"));
+            for(int iPt=0; iPt<gfPrompt->GetN(); iPt++)
+            {
+                double pt=-1., sigma=-1., fprompt=-1.;
+                gfPrompt->GetPoint(iPt, pt, fprompt);
+                gSigmaPPSystFeedDownOrig->GetPoint(iPt, pt, sigma);
+                double systLow = gfPrompt->GetErrorYlow(iPt) / fprompt * sigma;
+                double systHigh = gfPrompt->GetErrorYhigh(iPt) / fprompt * sigma;
+                gSigmaPPSystFeedDownOrig->SetPointError(iPt, 0.3, 0.3, systLow, systHigh);
+            }
+        }
+
+        if(!gSigmaPPSystFeedDownOrig)
         {
             std::cerr << "ERROR: graph with FD systematic uncertainties not found! Exit" << std::endl;
             return;
         }
     }
+
     AliHFSystErr* syst = static_cast<AliHFSystErr*>(infile->Get("AliHFSystErr"));
     if(!syst)
         syst = static_cast<AliHFSystErr*>(infile->Get("AliHFSystErrTopol"));
+    if(!syst)
+    {
+        std::cerr << "ERROR: AliHFSystErr object not found! Exit" << std::endl;
+        return;
+    }
+
+    TH1F* hSystTrackingAverage = nullptr;
+    TH1F* hSystPtShapeAverage = nullptr;
+    TH1F* hSystPidAverage = nullptr;
+    TH1F* hSystBRAverage = nullptr;
+    TH1F* hSystFDHighAverage = nullptr;
+    TH1F* hSystFDLowAverage = nullptr;
+    TH1F* hSystRawYieldAverage = nullptr;
+    TH1F* hSystCutVarAverage = nullptr;
+    if(mesonName.compare("Lc") == 0)
+    {
+        hSystTrackingAverage = static_cast<TH1F*>(infile->Get("hSystTrackingAverage"));
+        hSystPtShapeAverage = static_cast<TH1F*>(infile->Get("hSystPtShapeAverage"));
+        hSystPidAverage = static_cast<TH1F*>(infile->Get("hSystPidAverage"));
+        hSystBRAverage = static_cast<TH1F*>(infile->Get("hSystBRAverage"));
+        hSystFDHighAverage = static_cast<TH1F*>(infile->Get("hSystFDHighAverage"));
+        hSystFDLowAverage = static_cast<TH1F*>(infile->Get("hSystFDLowAverage"));
+        hSystRawYieldAverage = static_cast<TH1F*>(infile->Get("hSystRawYieldAverage"));
+        hSystCutVarAverage = static_cast<TH1F*>(infile->Get("hSystCutVarAverage"));
+        hSystTrackingAverage->SetDirectory(0);
+        hSystPtShapeAverage->SetDirectory(0);
+        hSystPidAverage->SetDirectory(0);
+        hSystBRAverage->SetDirectory(0);
+        hSystFDHighAverage->SetDirectory(0);
+        hSystFDLowAverage->SetDirectory(0);
+        hSystRawYieldAverage->SetDirectory(0);
+        hSystCutVarAverage->SetDirectory(0);
+    }
     infile->Close();
 
-    const int nPtBinsMeas = hSigmaPP->GetNbinsX();
-    const TArrayD* ptLimsMeasArray = hSigmaPP->GetXaxis()->GetXbins();
+    // rebin if needed
+    const int nPtBinsReb = ptLimsRebVec.size()-1;
+    double ptLimsReb[nPtBinsReb+1];
+    TH1F* hSigmaPPReb = nullptr;
+    TGraphAsymmErrors *gSigmaPPSystDataReb = nullptr, *gSigmaPPSystFeedDownReb = nullptr;
+    if(nPtBinsReb > 0)
+    {
+        for(int iPt=0; iPt<=nPtBinsReb; iPt++)
+            ptLimsReb[iPt] = ptLimsRebVec[iPt];
+        std::cout << hSigmaPPOrig->GetBinError(hSigmaPPOrig->GetNbinsX()) << std::endl;
+        for(int iPtOrig=0; iPtOrig<hSigmaPPOrig->GetNbinsX(); iPtOrig++)
+        {
+            hSigmaPPOrig->SetBinContent(iPtOrig+1, hSigmaPPOrig->GetBinContent(iPtOrig+1)*hSigmaPPOrig->GetBinWidth(iPtOrig+1));
+            hSigmaPPOrig->SetBinError(iPtOrig+1, hSigmaPPOrig->GetBinError(iPtOrig+1)*hSigmaPPOrig->GetBinWidth(iPtOrig+1));
+        }
+
+        hSigmaPPReb = static_cast<TH1F*>(hSigmaPPOrig->Rebin(nPtBinsReb, Form("%s_reb", hSigmaPPOrig->GetName()), ptLimsReb));
+        hSigmaPPReb->Scale(1., "width");
+        hSigmaPPOrig->Scale(1., "width");
+        std::cout << hSigmaPPOrig->GetBinError(hSigmaPPOrig->GetNbinsX()) << std::endl;
+        gSigmaPPSystDataReb = new TGraphAsymmErrors(0);
+        gSigmaPPSystFeedDownReb = new TGraphAsymmErrors(0);
+        for(int iPtReb=0; iPtReb<nPtBinsReb; iPtReb++)
+        {
+            double ptCent = hSigmaPPReb->GetBinCenter(iPtReb+1);
+            double sigma = hSigmaPPReb->GetBinContent(iPtReb+1);
+            double binWidth = hSigmaPPReb->GetBinWidth(iPtReb+1);
+            double systUncorr = 0.;
+            double systCorr = 0.;
+            double systFDLow = 0.;
+            double systFDHigh = 0.;
+
+            double ptMin = hSigmaPPReb->GetXaxis()->GetBinLowEdge(iPtReb+1);
+            double ptMax = hSigmaPPReb->GetXaxis()->GetBinUpEdge(iPtReb+1);
+            int ptBinOrigLow = hSigmaPPOrig->FindBin(ptMin*1.0001);
+            int ptBinOrigHigh = hSigmaPPOrig->FindBin(ptMax*0.9999);
+
+            if(mesonName.compare("Lc") != 0)
+            {                    
+                for(int iPtOrig=ptBinOrigLow; iPtOrig<=ptBinOrigHigh; iPtOrig++)
+                {
+                    double ptOrig = hSigmaPPOrig->GetBinCenter(iPtOrig);
+                    double sigmaOrig  = hSigmaPPOrig->GetBinContent(iPtOrig) * hSigmaPPOrig->GetBinWidth(iPtOrig);
+                    double sysRawY    = syst->GetRawYieldErr(ptOrig);
+                    double sysCutV    = syst->GetSeleEffErr(ptOrig);
+                    double sysPID     = syst->GetPIDEffErr(ptOrig);
+                    double sysPtShape = syst->GetMCPtShapeErr(ptOrig);
+                    double sysTrack   = syst->GetTrackingEffErr(ptOrig);
+
+                    systUncorr += sysRawY * sysRawY * sigmaOrig * sigmaOrig;
+                    systCorr += TMath::Sqrt(sysCutV*sysCutV + sysPID*sysPID + sysPtShape*sysPtShape + sysTrack*sysTrack) * sigmaOrig;
+                    for(iPtGraph=0; iPtGraph<gSigmaPPSystFeedDownOrig->GetN(); iPtGraph++)
+                    {
+                        double ptGraph, y;
+                        gSigmaPPSystFeedDownOrig->GetPoint(iPtGraph, ptGraph, y);
+                        if(TMath::Abs(ptGraph - ptOrig) < 1.e-3)
+                        {
+                            systFDLow += gSigmaPPSystFeedDownOrig->GetErrorYlow(iPtGraph) * sigmaOrig;
+                            systFDHigh += gSigmaPPSystFeedDownOrig->GetErrorYhigh(iPtGraph) * sigmaOrig;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for(int iPtOrig=ptBinOrigLow; iPtOrig<=ptBinOrigHigh; iPtOrig++)
+                {
+                    double sigmaOrig  = hSigmaPPOrig->GetBinContent(iPtOrig) * hSigmaPPOrig->GetBinWidth(iPtOrig);
+                    double sysRawY    = hSystRawYieldAverage->GetBinContent(iPtOrig);
+                    double sysCutV    = hSystCutVarAverage->GetBinContent(iPtOrig);
+                    double sysBR      = hSystBRAverage->GetBinContent(iPtOrig);
+                    double sysPID     = hSystPidAverage->GetBinContent(iPtOrig);
+                    double sysPtShape = hSystPtShapeAverage->GetBinContent(iPtOrig);
+                    double sysTrack   = hSystTrackingAverage->GetBinContent(iPtOrig);
+
+                    systUncorr += sysRawY * sysRawY * sigmaOrig * sigmaOrig;
+                    systCorr += TMath::Sqrt(sysCutV*sysCutV + sysBR*sysBR + sysPID*sysPID + sysPtShape*sysPtShape + sysTrack*sysTrack) * sigmaOrig;
+                    systFDLow += hSystFDLowAverage->GetBinContent(iPtOrig) * sigmaOrig;
+                    systFDHigh += hSystFDHighAverage->GetBinContent(iPtOrig) * sigmaOrig;
+                }
+            }
+            systUncorr = TMath::Sqrt(systUncorr) / binWidth;
+            systCorr /= binWidth;
+            double systUncData = TMath::Sqrt(systUncorr*systUncorr + systCorr*systCorr);
+            systFDLow /= binWidth;
+            systFDHigh /= binWidth;
+
+            gSigmaPPSystDataReb->SetPoint(iPtReb, ptCent, sigma);
+            gSigmaPPSystFeedDownReb->SetPoint(iPtReb, ptCent, sigma);
+            gSigmaPPSystDataReb->SetPointError(iPtReb, 0.3, 0.3, systUncData, systUncData);
+            gSigmaPPSystFeedDownReb->SetPointError(iPtReb, 0.3, 0.3, systFDLow, systFDHigh);
+        }
+    }
+
+    const int nPtBinsMeas = hSigmaPPOrig->GetNbinsX();
+    const TArrayD* ptLimsMeasArray = hSigmaPPOrig->GetXaxis()->GetXbins();
     const double* ptLimsMeas = ptLimsMeasArray->GetArray();
+
+    TH1F* hSigmaPP = nullptr;
+    TGraphAsymmErrors *gSigmaPPSystData = nullptr, *gSigmaPPSystFeedDown = nullptr;
+
+    if(hSigmaPPReb)
+    {
+        hSigmaPP = static_cast<TH1F*>(hSigmaPPReb->Clone("fhScaledData"));
+        gSigmaPPSystData = static_cast<TGraphAsymmErrors*>(gSigmaPPSystDataReb->Clone("gScaledDataSystData"));
+        if(mesonName.compare("kDzeroLowPtInclusive") != 0)
+            gSigmaPPSystFeedDown = static_cast<TGraphAsymmErrors*>(gSigmaPPSystFeedDownReb->Clone("gScaledDataSystFeedDown"));
+    }
+    else
+    {
+        hSigmaPP = static_cast<TH1F*>(hSigmaPPOrig->Clone("fhScaledData"));
+        gSigmaPPSystData = static_cast<TGraphAsymmErrors*>(gSigmaPPSystDataOrig->Clone("gScaledDataSystData"));
+        if(mesonName.compare("kDzeroLowPtInclusive") != 0)
+            gSigmaPPSystFeedDown = static_cast<TGraphAsymmErrors*>(gSigmaPPSystFeedDownOrig->Clone("gScaledDataSystFeedDown"));
+    }
 
     if(doPtExtrap)
     {
-        if(ptLimsExtrap[0] != hSigmaPP->GetBinWidth(nPtBinsMeas)+hSigmaPP->GetBinLowEdge(nPtBinsMeas))
+        if(ptLimsExtrap[0] != hSigmaPP->GetXaxis()->GetBinUpEdge(hSigmaPP->GetNbinsX()))
         {
-            std::cerr << "ERROR: extrapolated and measured pT bins do not match! Please check" << std::endl;
+            std::cerr << ptLimsExtrap[0] << "  " << hSigmaPP->GetXaxis()->GetBinUpEdge(hSigmaPP->GetNbinsX()) << "ERROR: extrapolated and measured pT bins do not match! Please check" << std::endl;
             return;
         }
     }
 
-    hSigmaPP->SetName("fhScaledData");
-    gSigmaPPSystData->SetName("gScaledDataSystData");
-    if(mesonName.compare("kDzeroLowPtInclusive") != 0)
-        gSigmaPPSystFeedDown->SetName("gScaledDataSystFeedDown");
-
     TGraphAsymmErrors* gSigmaPPSystTheory = static_cast<TGraphAsymmErrors*>(gSigmaPPSystData->Clone("gScaledDataSystExtrap"));
     TGraphAsymmErrors* gSigmaPPSyst = static_cast<TGraphAsymmErrors*>(gSigmaPPSystData->Clone("gScaledData"));
 
-    for(int iPt=0; iPt<nPtBinsMeas; iPt++) {
+    for(int iPt=0; iPt<hSigmaPP->GetNbinsX(); iPt++) {
         gSigmaPPSystTheory->SetPointEYlow(iPt, 0.);
         gSigmaPPSystTheory->SetPointEYhigh(iPt, 0.);
 
@@ -157,7 +323,11 @@ void GenppRefFile(std::string cfgFileName) {
 
     if(doYExtrap)
     {
-        TGraphAsymmErrors* gyShift = ComputeCorrForYshift(FONLLFileNameMidY, FONLLFileNameShiftY, nPtBinsMeas, ptLimsMeas);
+        TGraphAsymmErrors* gyShift = nullptr;
+        if(hSigmaPPReb)
+            gyShift = ComputeCorrForYshift(FONLLFileNameMidY, FONLLFileNameShiftY, nPtBinsReb, ptLimsReb);
+        else
+            gyShift = ComputeCorrForYshift(FONLLFileNameMidY, FONLLFileNameShiftY, nPtBinsMeas, ptLimsMeas);
 
         ApplyYshiftToHisto(gyShift, hSigmaPP);
         ApplyYshiftToGraph(gyShift, gSigmaPPSyst, true);
@@ -174,10 +344,15 @@ void GenppRefFile(std::string cfgFileName) {
     TGraphAsymmErrors* gReferenceSyst = nullptr;
     TGraphAsymmErrors* gReferenceFdSyst = nullptr;
     if(doPtExtrap)
-        CreateExtrapReferenceHistos(nPtBinsMeas, ptLimsMeas, ptLimsExtrap, FONLLFileName, hSigmaPP, gSigmaPPSyst, gSigmaPPSystData, gSigmaPPSystFeedDown, hReference, hReferenceSystData, hCombinedReferenceFlag, gReference, gReferenceSyst, gReferenceFdSyst, static_cast<bool>(mesonName.compare("DzeroLowPtInclusive") != 0));
+    {
+        if(hSigmaPPReb)
+            CreateExtrapReferenceHistos(nPtBinsReb, ptLimsReb, ptLimsExtrap, FONLLFileName, hSigmaPP, gSigmaPPSyst, gSigmaPPSystData, gSigmaPPSystFeedDown, hReference, hReferenceSystData,   hCombinedReferenceFlag, gReference, gReferenceSyst, gReferenceFdSyst, scalesToExclude, static_cast<bool>(mesonName.compare("DzeroLowPtInclusive") != 0));
+        else
+            CreateExtrapReferenceHistos(nPtBinsMeas, ptLimsMeas, ptLimsExtrap, FONLLFileName, hSigmaPP, gSigmaPPSyst, gSigmaPPSystData, gSigmaPPSystFeedDown, hReference, hReferenceSystData,   hCombinedReferenceFlag, gReference, gReferenceSyst, gReferenceFdSyst, scalesToExclude, static_cast<bool>(mesonName.compare("DzeroLowPtInclusive") != 0));
+    }
 
     TH1F* hSigmaPPSyst = static_cast<TH1F*>(hSigmaPP->Clone("fhScaledSystData"));
-    for(int iPt=0; iPt<nPtBinsMeas; iPt++)
+    for(int iPt=0; iPt<hSigmaPP->GetNbinsX(); iPt++)
     {
         double ptcent = hSigmaPPSyst->GetBinCenter(iPt+1);
         double systunc = -1;
@@ -204,10 +379,22 @@ void GenppRefFile(std::string cfgFileName) {
     for(int iPt=0; iPt<nPtBinsMeas+1; iPt++)
     {
         outFileName.append("_");
-        if(TMath::Abs(static_cast<int>(ptLimsMeas[iPt]) - ptLimsMeas[iPt]) > 0.1)
-            outFileName.append(Form("%0.1f", ptLimsMeas[iPt]));
+        if(hSigmaPPReb)
+        {
+            if(TMath::Abs(static_cast<int>(ptLimsReb[iPt]) - ptLimsReb[iPt]) > 0.1)
+                outFileName.append(Form("%0.1f", ptLimsReb[iPt]));
+            else
+                outFileName.append(Form("%0.f", ptLimsReb[iPt]));
+            if(iPt > nPtBinsReb-1)
+                break;
+        }
         else
-            outFileName.append(Form("%0.f", ptLimsMeas[iPt]));
+        {
+            if(TMath::Abs(static_cast<int>(ptLimsMeas[iPt]) - ptLimsMeas[iPt]) > 0.1)
+                outFileName.append(Form("%0.1f", ptLimsMeas[iPt]));
+            else
+                outFileName.append(Form("%0.f", ptLimsMeas[iPt]));
+        }
     }
 
     if(doPtExtrap)
@@ -248,7 +435,7 @@ void GenppRefFile(std::string cfgFileName) {
 }
 
 //________________________________________________________________________
-void CreateExtrapReferenceHistos(const int nPtBinsMeas, const double* ptLimsMeas, std::vector<double> ptLimsExtr, std::string FONLLFileName, TH1F* hSigmaPP, TGraphAsymmErrors* gSigmaPPSyst, TGraphAsymmErrors* gSigmaPPSystData, TGraphAsymmErrors* gSigmaPPSystFeedDown, TH1F* &hReference, TH1F* &hReferenceSystData, TH1F* &hCombinedReferenceFlag, TGraphAsymmErrors* &gReference, TGraphAsymmErrors* &gReferenceSyst, TGraphAsymmErrors* &gReferenceFdSyst, bool useFDUnc) {
+void CreateExtrapReferenceHistos(const int nPtBinsMeas, const double* ptLimsMeas, std::vector<double> ptLimsExtr, std::string FONLLFileName, TH1F* hSigmaPP, TGraphAsymmErrors* gSigmaPPSyst, TGraphAsymmErrors* gSigmaPPSystData, TGraphAsymmErrors* gSigmaPPSystFeedDown, TH1F* &hReference, TH1F* &hReferenceSystData, TH1F* &hCombinedReferenceFlag, TGraphAsymmErrors* &gReference, TGraphAsymmErrors* &gReferenceSyst, TGraphAsymmErrors* &gReferenceFdSyst, std::vector<std::string> scalesToExclude, bool useFDUnc) {
 
     const int nPtBinsExtr = ptLimsExtr.size() - 1;
     const int nPtBinsNew = nPtBinsMeas + nPtBinsExtr;
@@ -289,6 +476,12 @@ void CreateExtrapReferenceHistos(const int nPtBinsMeas, const double* ptLimsMeas
     double minRatio=1.e9, maxRatio=-1;
     for(auto &el : hFONLL)
     {
+        if(scalesToExclude.size() > 0)
+        {
+            if(std::find(scalesToExclude.begin(), scalesToExclude.end(), el.first) != scalesToExclude.end())
+                continue;
+        }
+
         hFONLLReb[el.first] = static_cast<TH1F*>(el.second->Rebin(nPtBinsNew, Form("%s_reb", el.second->GetName()), ptLimsNew));
         hFONLLReb[el.first]->Scale(1., "width");
         hRatioFONLL[el.first] = static_cast<TH1F*>(hSigmaPP->Clone(Form("%s_ratio", el.second->GetName())));
@@ -319,18 +512,29 @@ void CreateExtrapReferenceHistos(const int nPtBinsMeas, const double* ptLimsMeas
         int ptBinMeas = ptAxisMeas->FindBin(hReference->GetBinCenter(iPt+1));
         if(ptBinMeas!=0 && ptBinMeas!=ptAxisMeas->GetNbins()+1)
         {
-            double systdatalow = gSigmaPPSystData->GetErrorYlow(ptBinMeas);
-            double systdatahigh = gSigmaPPSystData->GetErrorYhigh(ptBinMeas);
+            int ptBinMeasGraph = -1;
+            for(int iPtGraph=0; iPtGraph<gSigmaPPSystData->GetN(); iPtGraph++)
+            {
+                double ptMeasGraph = -1, sigma = -1;
+                gSigmaPPSystData->GetPoint(iPtGraph, ptMeasGraph, sigma);
+                if(TMath::Abs(ptMeasGraph-hReference->GetBinCenter(iPt+1)) < 0.01)
+                {
+                    ptBinMeasGraph = iPtGraph;
+                    break;
+                }
+            }
+            double systdatalow = gSigmaPPSystData->GetErrorYlow(ptBinMeasGraph);
+            double systdatahigh = gSigmaPPSystData->GetErrorYhigh(ptBinMeasGraph);
             double systFDlow = 0.;
             double systFDhigh = 0.;
             if(useFDUnc) 
             {
-                systFDlow = gSigmaPPSystFeedDown->GetErrorYlow(ptBinMeas);
-                systFDhigh = gSigmaPPSystFeedDown->GetErrorYhigh(ptBinMeas);
+                systFDlow = gSigmaPPSystFeedDown->GetErrorYlow(ptBinMeasGraph);
+                systFDhigh = gSigmaPPSystFeedDown->GetErrorYhigh(ptBinMeasGraph);
             }
 
-            double systtotlow = gSigmaPPSyst->GetErrorYlow(ptBinMeas);
-            double systtothigh = gSigmaPPSyst->GetErrorYhigh(ptBinMeas);
+            double systtotlow = gSigmaPPSyst->GetErrorYlow(ptBinMeasGraph);
+            double systtothigh = gSigmaPPSyst->GetErrorYhigh(ptBinMeasGraph);
 
             hReference->SetBinContent(iPt+1, hSigmaPP->GetBinContent(ptBinMeas));
             hReference->SetBinError(iPt+1, hSigmaPP->GetBinError(ptBinMeas));
@@ -380,6 +584,12 @@ void CreateExtrapReferenceHistos(const int nPtBinsMeas, const double* ptLimsMeas
     cPtExtrap->DrawFrame(ptLimsMeas[0], 0., ptLimsMeas[nPtBinsMeas], maxRatio*4, ";#it{p}_{T} (GeV/#it{c});meas/FONLL (a.u)");
     for(auto &el : colors)
     {
+        if(scalesToExclude.size() > 0)
+        {
+            if(std::find(scalesToExclude.begin(), scalesToExclude.end(), el.first) != scalesToExclude.end())
+                continue;
+        }
+
         hRatioFONLL[el.first]->DrawCopy("same");
         fRatioFONLL[el.first]->Draw("same");
         legFONLL->AddEntry(hRatioFONLL[el.first], el.first.data(), "lp");

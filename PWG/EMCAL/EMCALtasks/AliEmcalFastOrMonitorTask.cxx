@@ -66,7 +66,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
   fMinCellTimeNS(-1e9),
   fMaxCellTimeNS(1e9),
   fNameMaskedFastorOADB(),
-  fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
+  fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels_1D.root").data()),
   fMaskedFastorOADB(nullptr),
   fMaskedCellOADB(nullptr),
   fRecoUtils(nullptr)
@@ -85,7 +85,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask(const char *name) :
   fMinCellTimeNS(-1e9),
   fMaxCellTimeNS(1e9),
   fNameMaskedFastorOADB(),
-  fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
+  fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels_1D.root").data()),
   fMaskedFastorOADB(nullptr),
   fMaskedCellOADB(nullptr),
   fRecoUtils(nullptr)
@@ -134,7 +134,7 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   // Helper histograms checking the mask status of cells and FastORs
   fHistosQA->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 7001, -0.5, 7000.5);
   fHistosQA->CreateTH1("hMaskedCells", "Index of masked FastOR; FastOR index; Counts", 20001, -0.5, 20000.5);
-  fHistosQA->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5); 
+  fHistosQA->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5);
   fHistosQA->CreateTH2("hCellTimeBefore", "Cell time before time cut", 2000, -1000., 1000., 200., 0., 200.);
   fHistosQA->CreateTH2("hCellTimeAfter", "Cell time after time cut", 2000, -1000., 1000., 200., 0., 200.);
 
@@ -154,7 +154,7 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   adcAxisL0.SetNameTitle("adcL0", "L0 ADC amplitude");
   adcAxisL1.SetNameTitle("adcL1", "L1 ADC amplitude");
   fHistosQA->CreateTHnSparse("hFastOrADCL0L1", "FastOR ADC in L0 and L1", 3, adcaxes);
-  
+
 
   for(auto h : *(fHistosQA->GetListOfHistograms())) fOutput->Add(h);
   PostData(1, fOutput);
@@ -196,12 +196,11 @@ void AliEmcalFastOrMonitorTask::RunChanged(Int_t newrun){
   // Load masked cell data
   if(fMaskedCellOADB){
     AliInfoStream() << "Loading masked cells for run " << newrun << std::endl;
-    fRecoUtils->SetEMCALChannelStatusMap(static_cast<TObjArray *>(fMaskedCellOADB->GetObject(newrun)));
-    Int_t smod, mod, phimod, etamod, row, col, cellstatus;
+    TObjArray *maskedcells = static_cast<TObjArray *>(fMaskedCellOADB->GetObject(newrun));
+    fRecoUtils->SetEMCALChannelStatusMap1D(static_cast<TH1C*>(maskedcells->FindObject("EMCALBadChannelMap")));
+    Int_t cellstatus;
     for(int icell = 0; icell < fGeom->GetNCells(); icell++) {
-      fGeom->GetCellIndex(icell, smod, mod, phimod, etamod);
-      fGeom->GetCellPhiEtaIndexInSModule(smod, mod, phimod, etamod, row, col);
-      auto masked = fRecoUtils->GetEMCALChannelStatus(smod, col, row, cellstatus);
+      auto masked = fRecoUtils->GetEMCALChannelStatus1D(icell, cellstatus);
       if(masked) fHistosQA->FillTH1("hMaskedCells", icell);
     }
   }
@@ -286,6 +285,10 @@ void AliEmcalFastOrMonitorTask::LoadEventCellData(){
     int position = fCaloCells->GetCellNumber(icell);
     double amplitude = fCaloCells->GetAmplitude(icell),
            celltimeNS = fCaloCells->GetTime(icell) * kSecToNanoSec;
+    if ( position < 0 ) {
+      AliErrorStream() << "Skip: iCell = "<< icell << "Cell Id = " << position <<", E = "<< amplitude <<", time = "<<celltimeNS<<std::endl;
+      continue;
+    }
     if(amplitude > 0) fHistosQA->FillTH2("hCellTimeBefore", celltimeNS, amplitude);
     if(celltimeNS < fMinCellTimeNS || celltimeNS > fMaxCellTimeNS) continue;
     if(amplitude > 0){
@@ -323,8 +326,6 @@ Double_t AliEmcalFastOrMonitorTask::GetTransverseTimeSum(Int_t fastorAbsID, Doub
 
 bool AliEmcalFastOrMonitorTask::IsCellMasked(int absCellID) const {
   if(!fRecoUtils) return false; // In case bad cells are not initialized declare cell as good
-  Int_t smcell, modcell, colcell, rowcell, colcellsm, rowcellsm, channelstatus;
-  fGeom->GetCellIndex(absCellID, smcell, modcell, rowcell, colcell);
-  fGeom->GetCellPhiEtaIndexInSModule(smcell, modcell, rowcell, colcell, rowcellsm, colcellsm);
-  return fRecoUtils->GetEMCALChannelStatus(smcell, colcellsm, rowcellsm, channelstatus);
+  Int_t channelstatus;
+  return fRecoUtils->GetEMCALChannelStatus1D(absCellID, channelstatus);
 }

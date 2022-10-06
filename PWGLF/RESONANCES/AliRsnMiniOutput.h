@@ -47,6 +47,7 @@ public:
       kMotherNoPileup,
       kMotherInAcc,
       kSingle,
+      kSingleRec,
       kComputations
    };
 
@@ -116,6 +117,7 @@ public:
    Bool_t          FillMotherInAcceptance(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
    Bool_t          FillSingle(const AliMCParticle *particle, AliRsnMiniEvent *event, TClonesArray *valueList);
    Bool_t          FillSingle(const AliAODMCParticle *particle, AliRsnMiniEvent *event, TClonesArray *valueList);
+   Bool_t          FillSingleRec(AliRsnMiniEvent *event1, TClonesArray *valueList);
    Bool_t          FillEvent(AliRsnMiniEvent *event, TClonesArray *valueList);
    Int_t           FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList, Bool_t refFirst = kTRUE);
 

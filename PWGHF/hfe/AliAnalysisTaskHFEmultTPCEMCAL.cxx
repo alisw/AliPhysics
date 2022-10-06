@@ -626,9 +626,11 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(fEMCTPCnsig);
 
   fClsEAftMatch = new TH1F("fClsEAftMatch", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 100, 0.0, 50.0);
+  fClsEAftMatch->Sumw2();  
   fOutputList->Add(fClsEAftMatch);
   
    fClsEAftMatch_SPD = new TH2F("fClsEAftMatch_SPD", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 100, 0.0, 50.0,300,-0.5,299.5);
+  fClsEAftMatch_SPD->Sumw2();
   fOutputList->Add(fClsEAftMatch_SPD);
   
   fClsEopAftMatch = new TH1F("fClsEopAftMatch", "EMCAL cluster energy over p distribution after track matching; Cluster E/p;counts", 100, 0.0, 2.0);
@@ -1414,6 +1416,9 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 				  energy = clu->E();
 				  ncells= clu->GetNCells();
 				  
+				  //if(clu->GetIsExotic()) continue; //remove exotic clusters
+				  //if(fEMCClsTimeCut) if(TMath::Abs(clut) > 50) continue;
+				  
 				  //fClusPhi->Fill(cluphi);
 				  //fClusEta->Fill(clueta);
 				  fClusEtaPhi->Fill(clueta,cluphi); 
@@ -1513,7 +1518,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
     	if(clustMatch && clustMatch->IsEMCAL())
     	{
     	 
-    	 	
+    	 	  //if(clustMatch->GetIsExotic()) continue;
 		  Double_t fPhiDiff = -999, fEtaDiff = -999;
 		  GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
 		  fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
@@ -2815,5 +2820,6 @@ void AliAnalysisTaskHFEmultTPCEMCAL::Terminate(Option_t *)
 	if (!fOutputList)return;
 
 }
+
 
 

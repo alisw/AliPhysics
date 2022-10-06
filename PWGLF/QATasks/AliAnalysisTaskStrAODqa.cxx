@@ -155,7 +155,7 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtr
     fV0_NSigNegPion(0),
     fV0_NegTOFBunchCrossing(0), 
     fV0_PosTOFBunchCrossing(0),
-  fIsV0FromOOBPileUp(0),
+    fIsV0FromOOBPileUp(0),
     fV0_DistOverTotP(0),
     fV0_DecayLength(0),
     fV0_CtauK0s(0),
@@ -244,9 +244,9 @@ void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
   fHistos_V0->CreateTH1("V0DCANegToPV",  "", 100, 0., 1.);
   fHistos_V0->CreateTH1("V0DCAPosToPV", "", 100, 0., 1.);
   fHistos_V0->CreateTH1("V0DCAV0Daughters",  "", 55, 0., 2.2);
-  fHistos_V0->CreateTH1("CtauK0s",  "", 65, 0., 13);
-  fHistos_V0->CreateTH1("CtauLambda",  "", 200, 0., 40);
-  fHistos_V0->CreateTH1("CtauAntiLambda",  "", 200, 0., 40);
+  fHistos_V0->CreateTH1("CtauK0s",  "", 65, 0., 13.);
+  fHistos_V0->CreateTH1("CtauLambda",  "", 200, 0., 40.);
+  fHistos_V0->CreateTH1("CtauAntiLambda",  "", 200, 0., 40.);
   fHistos_V0->CreateTH1("DecayLengthK0s", "", 100, 0., 40.);
   fHistos_V0->CreateTH1("DecayLengthLambda", "", 100, 0., 80.);
   fHistos_V0->CreateTH1("DecayLengthAntiLambda", "", 100, 0., 80.);
@@ -257,6 +257,8 @@ void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
   fHistos_V0->CreateTH2("ImassK0S", "", 100, 0., 10., 200, 0.4, 0.6);
   fHistos_V0->CreateTH2("ImassLam", "", 100, 0., 10., 200, 1.07, 1.17);
   fHistos_V0->CreateTH2("ImassALam", "", 100, 0., 10., 200, 1.07, 1.17);
+  fHistos_V0->CreateTH2("ImassLam_Ctau", "", 200, 0., 40., 200, 1.07, 1.17);
+  fHistos_V0->CreateTH2("ImassALam_Ctau", "", 200, 0., 40., 200, 1.07, 1.17);
   fHistos_V0->CreateTH2("ImassK0STrue", "", 100, 0., 10., 200, 0.4, 0.6);
   fHistos_V0->CreateTH2("ImassLamTrue", "", 100, 0., 10., 200, 1.07, 1.17);
   fHistos_V0->CreateTH2("ImassALamTrue", "", 100, 0., 10., 200, 1.07, 1.17);
@@ -557,16 +559,18 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     }
     if(ApplyCuts(1,0,0)){
       fHistos_V0->FillTH2("ImassLam", fV0_Pt, fV0_InvMassLam);
+      fHistos_V0->FillTH2("ImassLam_Ctau", fV0_CtauLambda, fV0_InvMassLam);  
       fHistos_V0->FillTH1("CtauLambda", fV0_CtauLambda);
       fHistos_V0->FillTH1("DecayLengthLambda",fV0_DecayLength);
       if (isLambda)      fHistos_V0->FillTH2("ImassLamTrue", fV0_Pt, fV0_InvMassLam);
       if(fV0_DcaV0Daught < 1.0 && fV0_V0CosPA > 0.999 && TMath::Abs(fV0_InvMassK0s-0.497614) > 0.012 && TMath::Abs(fV0_InvMassALam-1.115683) > 0.08 && TMath::Abs(fV0_InvMassLam-1.115683) < 0.002){ 
-	fHistos_V0->FillTH2("ResponsePionFromLambda", fV0_Pt, fV0_NSigNegPion);
-	fHistos_V0->FillTH2("ResponseProtonFromLambda", fV0_Pt, fV0_NSigPosProton);
+      fHistos_V0->FillTH2("ResponsePionFromLambda", fV0_Pt, fV0_NSigNegPion);
+      fHistos_V0->FillTH2("ResponseProtonFromLambda", fV0_Pt, fV0_NSigPosProton);
       }
     }
-    if(ApplyCuts(2, 0,0)){
-      fHistos_V0->FillTH2("ImassALam", fV0_Pt, fV0_InvMassALam);      
+    if(ApplyCuts(2,0,0)){
+      fHistos_V0->FillTH2("ImassALam", fV0_Pt, fV0_InvMassALam);  
+      fHistos_V0->FillTH2("ImassALam_Ctau", fV0_CtauLambda, fV0_InvMassALam);       
       fHistos_V0->FillTH1("CtauAntiLambda", fV0_CtauLambda);
       fHistos_V0->FillTH1("DecayLengthAntiLambda",fV0_DecayLength);
       if (isAntiLambda)      fHistos_V0->FillTH2("ImassALamTrue", fV0_Pt, fV0_InvMassALam);

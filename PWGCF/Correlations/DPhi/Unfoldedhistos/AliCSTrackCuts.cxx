@@ -299,7 +299,7 @@ Bool_t AliCSTrackCuts::IsTrueTrackAccepted(Int_t itrk) {
       return kFALSE;
 
     /* get the associated particle */
-    AliVParticle *particle = fgMCHandler->MCEvent()->GetTrack(itrk);
+    AliVParticle *particle = GetMCEventHandler()->MCEvent()->GetTrack(itrk);
 
     /* just to be sure */
     if (particle == NULL) return kFALSE;
@@ -501,7 +501,7 @@ Bool_t AliCSTrackCuts::IsPhysicalPrimary(Int_t itrk) {
 
   if (fgIsESD) {
     if (!fgIsMConlyTruth) {
-      return fgMCHandler->MCEvent()->IsPhysicalPrimary(itrk);
+      return GetMCEventHandler()->MCEvent()->IsPhysicalPrimary(itrk);
     }
     else {
       /* taken from AliAnalysisTaskPhiCorrelations */
@@ -516,7 +516,7 @@ Bool_t AliCSTrackCuts::IsPhysicalPrimary(Int_t itrk) {
           130, 310 // K_L0 K_S0
       };
 
-      AliMCEvent* mcEvent = fgMCHandler->MCEvent();
+      AliMCEvent* mcEvent = GetMCEventHandler()->MCEvent();
 
       if (mcEvent != NULL) {
         /* if it is rejected by the own event we have finished */
@@ -831,12 +831,18 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
     system = "Xe-Xe";
     period = "2017n";
     break;
+  case kLHC18bp:
+      fBaseSystem = k2011based;
+      basename = "2011";
+      system = "p-p";
+      period = "2018bp";
+      break;
   case kLHC18q:
-    fBaseSystem = k2011based;
-    basename = "2011";
-    system = "Pb-Pb";
-    period = "2018q";
-    break;
+      fBaseSystem = k2011based;
+      basename = "2011";
+      system = "Pb-Pb";
+      period = "2018q";
+      break;
   case kLHC18r:
     fBaseSystem = k2011based;
     basename = "2011";

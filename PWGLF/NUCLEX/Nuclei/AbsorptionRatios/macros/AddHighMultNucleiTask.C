@@ -1,4 +1,16 @@
-AliAnalysisTaskNuclei* AddHighMultNucleiTask(TString name = "name", ULong64_t triggerMask = AliVEvent::kHighMultV0)
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Rtypes.h>
+#include <TString.h>
+#include "AliAnalysisTaskNuclei.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliPID.h"
+#include "AliVEvent.h"
+#include "AliESDtrackCuts.h"
+#endif
+
+
+AliAnalysisTaskNuclei* AddHighMultNucleiTask(TString tskname = "name", ULong64_t triggerMask = AliVEvent::kHighMultV0, TString suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -16,7 +28,8 @@ AliAnalysisTaskNuclei* AddHighMultNucleiTask(TString name = "name", ULong64_t tr
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":AntiHe3HM";      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskNuclei* task = new AliAnalysisTaskNuclei(name.Data());   
+		tskname.Append(Form("%s",suffix.Data()));
+    AliAnalysisTaskNuclei* task = new AliAnalysisTaskNuclei(tskname.Data());   
     if(!task) return 0x0;
 	//Add task settings here
 	task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
@@ -25,9 +38,9 @@ AliAnalysisTaskNuclei* AddHighMultNucleiTask(TString name = "name", ULong64_t tr
 	task->SetHighPCut(1e30);
 	task->SetEtaCut(0.8);
 	task->SetMinNITSCl(1);
-	task->SetMaxDCAxyPreCut(1.5);
-	task->SetMaxDCAxyFinal(1.5);
-	task->SetMaxDCAz(1.5);
+	task->SetMaxDCAxyPreCut(2.5);
+	task->SetMaxDCAxyFinal(2.5);
+	task->SetMaxDCAz(2.5);
 	//set PID cuts #### Legacy code not used in analysis anymore ###
 	task->SetMaxTPCnSigma(3.0);
 	task->SetUseTOFPidCut(kFALSE);//kTRUE or kFALSE for use of TOF
@@ -62,14 +75,17 @@ AliAnalysisTaskNuclei* AddHighMultNucleiTask(TString name = "name", ULong64_t tr
 	*/
 
 	task->SetTrackCuts(trackCuts);
+	task->SetCentralityFramework(1);
+	task->SetCentralityEstimator(0);
+  task->SetfYlimitFlag(0.5);
 
-    // add your task to the manager
-    mgr->AddTask(task);
-    // your task needs input: here we connect the manager to your task
-    mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainerHighMult", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    // in the end, this macro returns a pointer to your task. this will be convenient later on
-    // when you will run your analysis in an analysis train on grid
-    return task;
+  // add your task to the manager
+  mgr->AddTask(task);
+  // your task needs input: here we connect the manager to your task
+  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+  // same for the output
+  mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("AbsorptionRatio_%s",tskname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  // in the end, this macro returns a pointer to your task. this will be convenient later on
+  // when you will run your analysis in an analysis train on grid
+  return task;
 }

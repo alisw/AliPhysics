@@ -63,7 +63,10 @@ class AliFemtoDreamControlSample {
   float fDeltaPhiMax;
   bool fDoDeltaEtaDeltaPhiCut;
   int fMult;
-  float fCent;ClassDef(AliFemtoDreamControlSample, 4)
+  float fCent;
+  float fSummedPtLimit1;
+  float fSummedPtLimit2;
+  ClassDef(AliFemtoDreamControlSample, 4);
 };
 
 #endif

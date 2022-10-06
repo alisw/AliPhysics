@@ -11,8 +11,6 @@
 #include "THnBase.h"
 #include "TAxis.h"
 
-namespace Hist
-{
 struct Axis
 {
   Axis() = default;
@@ -23,10 +21,6 @@ struct Axis
   std::string title{};
   std::vector<double> binEdges{};
   int nBins{}; // 0 when bin edges are specified directly
-
-  //virtual ~Axis(){};
-  //ClassDef(Axis, 1);
-
 };
 
 template <typename RootHist_t>
@@ -310,7 +304,5 @@ public:
 private:
   RootHist1d_t* fRawHist;
 };
-
-} // end namespace Hist
 
 #endif

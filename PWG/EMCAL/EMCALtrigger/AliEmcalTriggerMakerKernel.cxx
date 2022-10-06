@@ -60,6 +60,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fTriggerBitConfig(nullptr),
   fPatchFinder(nullptr),
   fLevel0PatchFinder(nullptr),
+  fSmearEngine(nullptr),
   fL0MinTime(7),
   fL0MaxTime(10),
   fApplyL0TimeCut(true),
@@ -112,6 +113,7 @@ AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
   delete fPatchFinder;
   delete fLevel0PatchFinder;
   if(fTriggerBitConfig) delete fTriggerBitConfig;
+  if(fSmearEngine) delete fSmearEngine;
 }
 
 void AliEmcalTriggerMakerKernel::Init(){
@@ -141,6 +143,8 @@ void AliEmcalTriggerMakerKernel::Init(){
     fPatchEnergySimpleSmeared = new AliEMCALTriggerDataGrid<double>;
     fPatchEnergySimpleSmeared->Allocate(48, nrows);
   }
+
+  fSmearEngine = new TRandom(0);
 }
 
 void AliEmcalTriggerMakerKernel::AddL1TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize)
@@ -458,6 +462,12 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Double_t amp = cells->GetAmplitude(iCell),
              celltime = cells->GetTime(iCell);
     if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
+
+    if ( cellId < 0 ) {
+      AliErrorStream() << "Skip: iCell = "<< iCell << " Cell Id = " << cellId <<", E = "<< amp <<", time = "<<celltime<<std::endl;
+      continue;
+    }
+
     amp *= fScaleMult;
     if(amp < fMinCellAmplitude) continue;
     if(fScaleShift) amp += fScaleShift;
@@ -511,7 +521,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
         double energysmear = energyorig;
         if(energyorig > fSmearThreshold){
           double mean = fSmearModelMean->Eval(energyorig), sigma = fSmearModelSigma->Eval(energyorig);
-          energysmear =  gRandom->Gaus(mean, sigma);
+          energysmear =  fSmearEngine->Gaus(mean, sigma);
           if(energysmear < 0) energysmear = 0;      // only accept positive or 0 energy values
           AliDebugStream(1) << "Original energy " << energyorig << ", mean " << mean << ", sigma " << sigma << ", smeared " << energysmear << std::endl;
         }
@@ -522,7 +532,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
         }
         if(fAddGaussianNoiseFEESmear) {
           // Accept also the negative part of the gaussian to simulate underfluctuations
-          double noisevalue = gRandom->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear);
+          double noisevalue = fSmearEngine->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear);
           if(noisevalue < 0. && !fUseNegPartGaussNoise) 
             noisevalue = 0.;
           (*fPatchEnergySimpleSmeared)(icol, irow) += noisevalue;
@@ -642,7 +652,15 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
 
   // Find Level0 patches
   std::vector<AliEMCALTriggerRawPatch> l0patches;
-  if (fLevel0PatchFinder) l0patches = fLevel0PatchFinder->FindPatches(*fPatchAmplitudes, *fPatchADCSimple);
+  // Markus: 
+  // Trigger patches also in case of Level0 are based on the timesum. The
+  // timesum is caluclated at L0 in the TRU and sent to the STU. Since we don't 
+  // store the time sum from the TRU the time sum from the STU is a good proxy.
+  // Users have to recall that the L0 uses a 10 bit ADC (ALTRO data), the STU
+  // uses a 12 bit ADC, leading to a bit shift when sending timesums from TRU to
+  // STU. Users must divide the threshold applied in the TRU by 4 when operating
+  // on the timesums from STU  
+  if (fLevel0PatchFinder) l0patches = fLevel0PatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = l0patches.begin(); patchit != l0patches.end(); ++patchit){
     Int_t offlinebits = 0, onlinebits = 0;
     if(HasPHOSOverlap(*patchit)) continue;

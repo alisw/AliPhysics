@@ -41,10 +41,14 @@ public:
    virtual void     UserCreateOutputObjects();
    virtual void     UserExec(Option_t *option);
    virtual void     Terminate(Option_t *);
-   
+
+   void SetData2018(Bool_t Data2018 = kTRUE) {fData2018 = Data2018;}
    void SetAnalysisMC(Bool_t AnalysisMC = kFALSE) {fAnalysisMC = AnalysisMC;}
+   void SetPileUpRead(Bool_t flag) {fIsPileUpCuts = flag;}
    void SetTrackPileUpCut(Bool_t RejectTrackPileUp = kTRUE) {fRejectTrackPileUp = RejectTrackPileUp;}
    void SetV0PileUpCut(Bool_t RejectV0PileUp = kTRUE) {fRejectV0PileUp = RejectV0PileUp;}
+   void SetV0h(Bool_t V0h = kTRUE) {fV0h = V0h;}
+   void Sethh(Bool_t hh = kTRUE) {fhh = hh;}
    void SetOStatus(Int_t OStatus = 1) {fOStatus = OStatus;}
 
  //----------------------Mixing part----------------------------------
@@ -209,6 +213,8 @@ private:
    TObjArray       *selectedAntiLambda;//!
    TObjArray       *selectedTracks;//!
    TObjArray       *trigParticles;//!
+   TObjArray       *selectedTrigTracks;//!
+
 
    //-----------------------------PID-------------------------------------------
    Double_t        fV0PIDSigma;
@@ -231,11 +237,14 @@ private:
  
   Int_t           fOStatus;   // checks for online and offline V0s 
 
-
+   Bool_t            fData2018;//
    Bool_t            fAnalysisMC;
    Bool_t            fRejectTrackPileUp;// 
    Bool_t            fRejectV0PileUp;// 
+   Bool_t            fV0h;// 
+   Bool_t            fhh;// 
    TClonesArray     *fMCArray;//! MC array for AOD
+   Bool_t           fIsPileUpCuts;//!
    //----------------------------Correction-------------------------------
    Bool_t            fEffCorr;
    TList            *fEffList;  //!  

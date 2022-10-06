@@ -339,7 +339,7 @@ Bool_t AliCSPIDCuts::IsTrueTrackAccepted(Int_t itrk) {
 
   if (fgIsESD) {
     /* get the associated particle */
-    AliVParticle *particle = fgMCHandler->MCEvent()->GetTrack(itrk);
+    AliVParticle *particle = GetMCEventHandler()->MCEvent()->GetTrack(itrk);
 
     /* just to be sure */
     if (particle == NULL) return kFALSE;
@@ -386,7 +386,7 @@ Bool_t AliCSPIDCuts::IsTrueTrackAccepted(Int_t itrk) {
 AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVTrack *trk) {
 
   if (fgIsESD) {
-    AliVParticle *particle = fgMCHandler->MCEvent()->GetTrack(TMath::Abs(trk->GetLabel()));
+    AliVParticle *particle = GetMCEventHandler()->MCEvent()->GetTrack(TMath::Abs(trk->GetLabel()));
     return GetTrueSpecies(particle);
   }
   else {
@@ -983,12 +983,14 @@ void AliCSPIDCuts::InitCuts(const char *name){
   if(manager != NULL) {
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (manager->GetInputEventHandler());
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
-    /* if we need PID response instance and it is not there we cannot continue */
-    if ((fPIDResponse == NULL) &&
-        (fCutsEnabledMask.TestBitNumber(kITSdEdxSigmaCut) ||
-            fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut) ||
-            fCutsEnabledMask.TestBitNumber(kTOFSigmaCut)))
-      AliFatal("No PID response instance. ABORTING!!!");
+    if (!AliCSAnalysisCutsBase::IsOnTheFlyMC()) {
+      /* if we need PID response instance and it is not there we cannot continue */
+      if ((fPIDResponse == NULL) &&
+          (fCutsEnabledMask.TestBitNumber(kITSdEdxSigmaCut) ||
+              fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut) ||
+              fCutsEnabledMask.TestBitNumber(kTOFSigmaCut)))
+        AliFatal("No PID response instance. ABORTING!!!");
+    }
   }
   else {
     AliFatal("No analysis manager instance. ABORTING!!!");

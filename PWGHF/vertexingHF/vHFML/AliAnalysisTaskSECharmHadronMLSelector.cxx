@@ -17,10 +17,16 @@
 #include "AliPIDResponse.h"
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsD0toKpi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
 #include "AliHFMLResponseDplustoKpipi.h"
 #include "AliHFMLResponseDstoKKpi.h"
+#include "AliHFMLResponseD0toKpi.h"
+#include "AliHFMLResponseDstartoD0pi.h"
 #include "AliAODRecoDecayHF.h"
+#include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
+#include "AliAODRecoCascadeHF.h"
 #include "AliAODHandler.h"
 #include "AliAnalysisVertexingHF.h"
 
@@ -65,6 +71,16 @@ void AliAnalysisTaskSECharmHadronMLSelector::LocalInit()
     else if (fDecChannel == kDstoKKpi)
     {
         AliRDHFCutsDstoKKpi *copycut = new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi *>(fRDCuts)));
+        PostData(2, copycut);
+    }
+    else if (fDecChannel == kD0toKpi)
+    {
+        AliRDHFCutsD0toKpi *copycut = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi *>(fRDCuts)));
+        PostData(2, copycut);
+    }
+    else if (fDecChannel == kDstartoD0pi)
+    {
+        AliRDHFCutsDStartoKpipi *copycut = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi *>(fRDCuts)));
         PostData(2, copycut);
     }
     return;
@@ -118,9 +134,27 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserCreateOutputObjects()
             fMLResponse->MLResponseInit();
             massD = TDatabasePDG::Instance()->GetParticle(431)->Mass();
             break;
+        case kDstartoD0pi:
+            fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.Data());
+            fMLResponse->MLResponseInit();
+            massD = TDatabasePDG::Instance()->GetParticle(413)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass();
+            break; 
+        case kD0toKpi:
+            fMLResponse = new AliHFMLResponseD0toKpi("D0toKpiMLResponse", "D0toKpiMLResponse", fConfigPath.Data());
+            fMLResponse->MLResponseInit();
+            massD = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+            break; 
     }
 
-    fHistMassVsPt = new TH2F("fHistMassVsPt", ";#it{p}_{T} (GeV/#it{c});inv mass (GeV/#it{c}^{2})", 500, 0., 50., 200, massD-0.2, massD+0.2);
+    double minMass = massD-0.2;
+    double maxMass = massD+0.2;
+    if(fDecChannel == kDstartoD0pi)
+    {
+        minMass = 0.138;
+        maxMass = 0.165;
+    }
+
+    fHistMassVsPt = new TH2F("fHistMassVsPt", ";#it{p}_{T} (GeV/#it{c});inv mass (GeV/#it{c}^{2})", 500, 0., 50., 200, minMass, maxMass);
     fOutput->Add(fHistMassVsPt);
 
     PostData(1, fOutput);
@@ -170,6 +204,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         return;
     }
     TClonesArray *arrayCand = nullptr;
+    TClonesArray *arrayCandDDau = nullptr;
     int absPdgMom = 0;
     if (!fAOD && AODEvent() && IsStandardAOD())
     {
@@ -183,25 +218,60 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         {
             AliAODExtension *ext = dynamic_cast<AliAODExtension *>(aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root"));
             AliAODEvent *aodFromExt = ext->GetAOD();
-            arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Charm3Prong"));
+            switch (fDecChannel)
+            {
+                case kD0toKpi:
+                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("D0toKpi"));
+                    break;
+                case kDplustoKpipi:
+                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Charm3Prong"));
+                    break;
+                case kDstartoD0pi:
+                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
+                    arrayCandDDau = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("D0toKpi"));
+                    break;
+            }
         }
     }
     else if (fAOD)
     {
-        arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Charm3Prong"));
+        switch (fDecChannel)
+        {
+            case kD0toKpi:
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("D0toKpi"));
+                break;
+            case kDplustoKpipi:
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Charm3Prong"));
+                break;
+            case kDstartoD0pi:
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
+                arrayCandDDau = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("D0toKpi"));
+                break;
+        }
     }
 
-    if (!fAOD || !arrayCand)
+    if (!fAOD || !arrayCand || (fDecChannel == kDstartoD0pi && !arrayCandDDau))
     {
         AliWarning("Candidate branch not found!\n");
         PostData(1, fOutput);
         return;
     }
 
-    if(fDecChannel == kDplustoKpipi)
-        absPdgMom = 411;
-    else if(fDecChannel == kDstoKKpi)
-        absPdgMom = 431;
+    switch(fDecChannel)
+    {
+        case kD0toKpi:
+            absPdgMom = 421;
+            break;
+        case kDplustoKpipi:
+            absPdgMom = 411;
+            break;
+        case kDstartoD0pi:
+            absPdgMom = 413;
+            break;
+        case kDstoKKpi:
+            absPdgMom = 431;
+            break;
+    }
 
     AliAODHandler *aodHandler = static_cast<AliAODHandler *>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     if (!aodHandler)
@@ -245,41 +315,67 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
     // select candidates
     fChHadIdx.clear();
     fMLScores.clear();
+    fMLScoresSecond.clear();
     AliAnalysisVertexingHF vHF = AliAnalysisVertexingHF();
 
     for(int iCand = 0; iCand < arrayCand->GetEntriesFast(); iCand++)
     {
         AliAODRecoDecayHF *chHad = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(iCand));
+        AliAODRecoDecayHF *chHadWithVtx;
+        if(fDecChannel == kDstartoD0pi)
+        {
+            if(chHad->GetIsFilled()<1)
+                chHadWithVtx = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(chHad->GetProngID(1)));
+            else
+                chHadWithVtx = dynamic_cast<AliAODRecoDecayHF *>(((AliAODRecoCascadeHF *)chHad)->Get2Prong());
+        }
+        else
+        {
+            chHadWithVtx = chHad;
+        }
 
         bool unsetVtx = false;
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
-        std::vector<double> scores{};
-        int isSelected = IsCandidateSelected(chHad, &vHF, absPdgMom, unsetVtx, recVtx, origOwnVtx, scores);
+        std::vector<double> scores{}, scoresSecond{};
+        int isSelected = IsCandidateSelected(chHad, chHadWithVtx, &vHF, absPdgMom, unsetVtx, recVtx, origOwnVtx, scores, scoresSecond);
 
         if (!isSelected || (fDecChannel == kDstoKKpi && !((isSelected & 4) || (isSelected & 8))))
         {
             if (unsetVtx)
-                chHad->UnsetOwnPrimaryVtx();
+                chHadWithVtx->UnsetOwnPrimaryVtx();
             if (recVtx)
-                fRDCuts->CleanOwnPrimaryVtx(chHad, fAOD, origOwnVtx);
+                fRDCuts->CleanOwnPrimaryVtx(chHadWithVtx, fAOD, origOwnVtx);
             continue;
         }
 
         fChHadIdx.push_back(iCand);
         fMLScores.push_back(scores);
+        fMLScoresSecond.push_back(scoresSecond);
 
         for(size_t iScore = 0; iScore < scores.size(); iScore++)
         {
             if(iScore > 2)
                 break;
-            fHistBDTOutputVsPt[iScore]->Fill(chHad->Pt(), scores[iScore]);
+            if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi || (fDecChannel == kDstoKKpi && (isSelected & 4)))
+                fHistBDTOutputVsPt[iScore]->Fill(chHad->Pt(), scores[iScore]);
+            if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
+                fHistBDTOutputVsPt[iScore]->Fill(chHad->Pt(), scoresSecond[iScore]);
         }
         switch(fDecChannel)
         {
+            case kD0toKpi:
+                if(isSelected == 1 || isSelected == 3)
+                    fHistMassVsPt->Fill(chHad->Pt(), dynamic_cast<AliAODRecoDecayHF2Prong*>(chHad)->InvMassD0());
+                if(isSelected >= 2)
+                    fHistMassVsPt->Fill(chHad->Pt(), dynamic_cast<AliAODRecoDecayHF2Prong*>(chHad)->InvMassD0bar());
+                break;
             case kDplustoKpipi:
                 fHistMassVsPt->Fill(chHad->Pt(), dynamic_cast<AliAODRecoDecayHF3Prong*>(chHad)->InvMassDplus());
+                break;
+            case kDstartoD0pi:
+                fHistMassVsPt->Fill(chHad->Pt(), dynamic_cast<AliAODRecoCascadeHF*>(chHad)->DeltaInvMass());
                 break;
             case kDstoKKpi:
                 if(isSelected & 4)
@@ -290,9 +386,9 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         }        
 
         if (unsetVtx)
-            chHad->UnsetOwnPrimaryVtx();
+            chHadWithVtx->UnsetOwnPrimaryVtx();
         if (recVtx)
-            fRDCuts->CleanOwnPrimaryVtx(chHad, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(chHadWithVtx, fAOD, origOwnVtx);
     }
 
     fHistNselCand->Fill(fChHadIdx.size());
@@ -302,17 +398,27 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAnalysisVertexingHF *vHF,
-                                                                int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &modelPred)
+int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAODRecoDecayHF *&chHadWithVtx, AliAnalysisVertexingHF *vHF,
+                                                                int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx,
+                                                                std::vector<double> &modelPred, std::vector<double> &modelPredSecond)
 {
-    if(!chHad || !vHF )
+    if(!chHad || !chHadWithVtx || !vHF )
         return 0;
 
     //Preselection to speed up task
     TObjArray arrDauTracks(3);
-    for(int iDau=0; iDau < 3; iDau++){
-        AliAODTrack *track = vHF->GetProng(fAOD, chHad, iDau);
-        arrDauTracks.AddAt(track,iDau);
+    int nDau = 3;
+    if (fDecChannel == kD0toKpi)
+        nDau = 2;
+
+    for (int iDau = 0; iDau < nDau; iDau++)
+    {
+        AliAODTrack *track;
+        if (fDecChannel != kDstartoD0pi || iDau == 0)
+            track = vHF->GetProng(fAOD, chHad, iDau);
+        else
+            track = vHF->GetProng(fAOD, chHadWithVtx, iDau-1); //D0<-D* daughters
+        arrDauTracks.AddAt(track, iDau);
     }
 
     if(!fRDCuts->PreSelect(arrDauTracks))
@@ -321,9 +427,18 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     bool isSelBit = true;
     switch (fDecChannel)
     {
+        case kD0toKpi:
+            isSelBit = chHad->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+            if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF2Prong *>(chHad)))
+                return 0;
+            break;
         case kDplustoKpipi:
             isSelBit = chHad->HasSelectionBit(AliRDHFCuts::kDplusCuts);
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF3Prong *>(chHad)))
+                return 0;
+            break;
+        case kDstartoD0pi:
+            if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(chHad), false))
                 return 0;
             break;
         case kDstoKKpi:
@@ -331,32 +446,24 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF3Prong *>(chHad)))
                 return 0;
             break;
+
     }
 
     unsetVtx = false;
-    if (!chHad->GetOwnPrimaryVtx())
+    if (!chHadWithVtx->GetOwnPrimaryVtx())
     {
-        chHad->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
+        chHadWithVtx->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
         unsetVtx = true;
         // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
         // Pay attention if you use continue inside this loop!!!
     }
 
     double ptD = chHad->Pt();
-    double yD = chHad->Y(absPdgMom);
     int ptbin = fRDCuts->PtBin(ptD);
     if (ptbin < 0)
     {
         if (unsetVtx)
-            chHad->UnsetOwnPrimaryVtx();
-        return 0;
-    }
-
-    bool isFidAcc = fRDCuts->IsInFiducialAcceptance(ptD, yD);
-    if (!isFidAcc)
-    {
-        if (unsetVtx)
-            chHad->UnsetOwnPrimaryVtx();
+            chHadWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -364,29 +471,47 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     if (!isSelected)
     {
         if (unsetVtx)
-            chHad->UnsetOwnPrimaryVtx();
+            chHadWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
-
-    // ML application
-    AliAODPidHF *pidHF = fRDCuts->GetPidHF();
-    bool isMLsel = true;
-    isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, chHad, fAOD->GetMagneticField(), pidHF);
-    if (!isMLsel)
-        isSelected = 0;
 
     recVtx = false;
     origOwnVtx = nullptr;
 
     if (fRDCuts->GetIsPrimaryWithoutDaughters())
     {
-        if (chHad->GetOwnPrimaryVtx())
-            origOwnVtx = new AliAODVertex(*chHad->GetOwnPrimaryVtx());
-        if (fRDCuts->RecalcOwnPrimaryVtx(chHad, fAOD))
+        if (chHadWithVtx->GetOwnPrimaryVtx())
+            origOwnVtx = new AliAODVertex(*chHadWithVtx->GetOwnPrimaryVtx());
+        if (fRDCuts->RecalcOwnPrimaryVtx(chHadWithVtx, fAOD))
             recVtx = true;
         else
-            fRDCuts->CleanOwnPrimaryVtx(chHad, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(chHadWithVtx, fAOD, origOwnVtx);
     }
+    
+    // ML application
+    AliAODPidHF *pidHF = fRDCuts->GetPidHF();
+    int isMLsel = 0;
+    modelPred = {};
+    modelPredSecond = {};
+    if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi || (fDecChannel == kDstoKKpi && (isSelected & 4)))
+    {
+        if(fMLResponse->IsSelectedMultiClass(modelPred, chHad, fAOD->GetMagneticField(), pidHF, 0))
+            isMLsel += (fDecChannel != kDstoKKpi) ? 1 : 4;
+    }
+    if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
+    {
+        if(fMLResponse->IsSelectedMultiClass(modelPredSecond, chHad, fAOD->GetMagneticField(), pidHF, 1))
+            isMLsel += (fDecChannel != kDstoKKpi) ? 2 : 8;
+    }
+
+    if(modelPred.size() > modelPredSecond.size())
+        for(int iScore=0; iScore<modelPred.size(); iScore++)
+            modelPredSecond.push_back(-9999.);
+    else if(modelPred.size() < modelPredSecond.size())
+        for(int iScore=0; iScore<modelPredSecond.size(); iScore++)
+            modelPred.push_back(-9999.);
+
+    isSelected = isMLsel;
 
     return isSelected;
 }

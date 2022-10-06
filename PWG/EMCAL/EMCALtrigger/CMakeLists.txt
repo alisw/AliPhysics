@@ -40,11 +40,14 @@ set(SRCS
   AliEmcalTriggerDecisionContainer.cxx
   AliEmcalTriggerSelectionCuts.cxx
   AliEmcalTriggerSelection.cxx
+  AliEmcalTriggerLuminosity.cxx
   AliEmcalTriggerQATask.cxx
   AliEmcalTriggerSimQATask.cxx
   AliEMCALTriggerOfflineQAPP.cxx
   AliEMCALTriggerOfflineLightQAPP.cxx
   AliEMCALTriggerPatchADCInfoAP.cxx
+  AliEmcalTriggerMaskHandlerOCDB.cxx
+  AliEmcalFastorMaskContainer.cxx
   AliEmcalTriggerStringDecoder.cxx
   )
 

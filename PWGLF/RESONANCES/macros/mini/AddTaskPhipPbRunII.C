@@ -27,6 +27,8 @@ AliRsnMiniAnalysisTask * AddTaskPhipPbRunII(
 						Int_t       nmix                = 5,
 						Float_t     maxDiffVzMix        = 1.0,
 						Float_t     maxDiffMultMix      = 5.0,
+						Float_t     y1     = 1.0,
+						Float_t     y2     = 1.0,
 						TString     outNameSuffix       = "pPb"
 						)
 {  
@@ -92,7 +94,7 @@ AliRsnMiniAnalysisTask * AddTaskPhipPbRunII(
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-   cutY->SetRangeD(-0.8, 0.8);
+   cutY->SetRangeD(y1, y2);
    //   cutY->SetRangeD(-0.465, 0.035);// 0 < y_cm < 0.5; y_cm = y_lab + 0.465
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);

@@ -368,6 +368,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Double_t                fupperFactor;                                       // factor maxfit is multiplied by to get upper limit for pi0-gamma angle cut
     Double_t                fMinPi0Pt;                                          // Min Pi0 Pt cut in GeV
     TF1*                    fmaxfit;                                            // function describing location of max. points in the distribution of pi0-gamma angle vs. pT
+    TF1*                    fminfit;                                            // function describing location of min. points in the distribution of pi0-gamma angle vs. pT
 
     Bool_t                  fDoPiZeroGammaAngleCut;                             // flag for pi0-gamma angle cut
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
@@ -383,7 +384,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 24);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 25);
 };
 
 #endif

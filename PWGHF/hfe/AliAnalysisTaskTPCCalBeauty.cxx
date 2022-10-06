@@ -2248,6 +2248,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+            
             fClsEnoTimeCut->Fill(clustMatch->E());
             
             if (fApplyTimeCut) {

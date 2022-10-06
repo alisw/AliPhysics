@@ -43,6 +43,7 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
     fTCardCorrInduceEnerProb   [i] = 0;
     fTCardCorrInduceEnerFracMax[i] = 100;
     fTCardCorrInduceEnerFracMin[i] =-100;
+    fTCardCorrInduceEnerFracMinCentralEta[i] =-100;
     
     for(Int_t j = 0; j < 4 ; j++)
     {
@@ -92,6 +93,7 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Initialize()
   };
   const std::map <std::string, Float_t *> properties1D = {
     {"inducedEnergyLossMinimumFraction", fTCardCorrInduceEnerFracMin},
+    {"inducedEnergyLossMinimumFractionCentralEta", fTCardCorrInduceEnerFracMinCentralEta},
     {"inducedEnergyLossMaximumFraction", fTCardCorrInduceEnerFracMax},
     {"inducedEnergyLossProbability", fTCardCorrInduceEnerProb}
   };
@@ -348,6 +350,28 @@ void AliEmcalCorrectionCellEmulateCrosstalk::CalculateInducedEnergyInTCardCell
   if ( frac < fTCardCorrInduceEnerFracMin[sm] ) frac = fTCardCorrInduceEnerFracMin[sm];
   if ( frac > fTCardCorrInduceEnerFracMax[sm] ) frac = fTCardCorrInduceEnerFracMax[sm];   
   
+  // If active, use different absolute minimum fraction for central eta, exclude DCal 2/3 SM
+  if ( fTCardCorrInduceEnerFracMinCentralEta[sm] > 0 && (sm < 12 || sm > 17) )
+  {
+    Int_t ietaMin = 32; Int_t ietaMax = 47;       // Odd  SM
+    if ( sm % 2 )  { ietaMin = 0; ietaMax = 15; } // Even SM
+
+    // First get the SM, col-row of this tower
+    Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+    fGeom->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+
+    if ( ieta >= ietaMin && ieta <= ietaMax )
+    {
+//      Float_t eta = -10000; Float_t phi = -100000;
+//      fGeom->EtaPhiFromIndex(absId, eta, phi);
+//      printf("Min induced energy fraction for central eta: sm %d, ieta %d, eta %f fracCen %f fracOut %f\n",
+//             sm,ieta,eta,fTCardCorrInduceEnerFracMinCentralEta[sm],fTCardCorrInduceEnerFracMin[sm]);
+
+      if ( frac < fTCardCorrInduceEnerFracMinCentralEta[sm] ) frac = fTCardCorrInduceEnerFracMinCentralEta[sm];
+    }
+  } // central eta
+
   AliDebug(1,Form("\t fraction %2.3f",frac));
   
   // Randomize the induced fraction, if requested
@@ -489,6 +513,64 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
     mclabel    = -1;
     efrac      = 0.;
 
+    //
+    // Assign as MC label the label of the neighboring cell with highest energy
+    // within the same T-Card. Follow same approach for time.
+    // Simplest assumption, not fully correct.
+    // Still assign 0 as fraction of energy.
+
+    // First get the iphi and ieta of this tower
+    Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+    fGeom->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
+    fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+    //printf("--- Start: Added cell ID %d, ieta %d, iphi %d, E %1.3f, time %1.3e, mc label %d\n",
+    //       absId, ieta, iphi, amp, time, mclabel);
+
+    // Loop on the nearest cells around, check the highest energy one,
+    // and assign its MC label
+    Float_t ampMax = 0;
+    for(Int_t ietai = ieta-1; ietai <= ieta+1; ietai++ )
+    {
+      for(Int_t iphii = iphi-1; iphii <= iphi+1; iphii++ )
+      {
+        //printf("\t Check ieta %d, iphi %d\n",ietai,iphii);
+
+        // Avoid same cell
+        if ( iphii==0 && ietai == 0) continue;
+
+        // Avoid cells out of SM
+        if (  ietai < 0 || ietai >= AliEMCALGeoParams::fgkEMCALCols ||
+              iphii < 0 || iphii >= AliEMCALGeoParams::fgkEMCALRows   ) continue;
+
+        Int_t absIDi = fGeom->GetAbsCellIdFromCellIndexes(imod, iphii, ietai);
+        Float_t ampi = fAODCellsTmp->GetCellAmplitude(absIDi);
+
+        // Remove cells with no energy
+        if ( ampi <= 0.01 ) continue;
+
+        // Only same TCard
+        Int_t rowDiff = -100; Int_t colDiff = -100;
+        if ( !fRecoUtils->IsAbsIDsFromTCard(absId, absIDi, rowDiff, colDiff) ) continue;
+
+        Int_t   mclabeli = fAODCellsTmp->GetCellMCLabel(absIDi);
+        Float_t timei    = fAODCellsTmp->GetCellTime(absIDi);
+
+        //printf ("\t \t Same TCard ID %d, mcLabel %d, amp %1.3f, time %1.3e \n",absIDi,mclabeli,ampi,timei);
+
+        if ( ampi > ampMax && mclabeli >= 0 )
+        {
+          ampMax  = ampi;
+          mclabel = mclabeli;
+          time    = timei;
+        }
+      } // loop phi
+    } // loop eta
+    // End Assign MC label
+    //printf ( "Final ampMax %1.2f\n",ampMax);
+    //printf("--- End  : Added cell ID %d, ieta %d, iphi %d, E %1.3f, time %1.3e, mc label %d\n",
+    //       absId, ieta, iphi, amp, time, mclabel);
+
+    // Add the new cell
     Int_t ok = fCaloCells->SetCell(cellNumber, absId, amp, time, mclabel, efrac,1);
     
     if ( !ok ) AliError("Induced new cell could not be added!");
@@ -548,8 +630,9 @@ void AliEmcalCorrectionCellEmulateCrosstalk::PrintTCardParam()
 
   for(Int_t ism = 0; ism < fgkNsm; ism++)
   {
-    printf("\t sm %d, fraction %2.3f, E frac abs min %2.3e max %2.3e \n",
-        ism, fTCardCorrInduceEnerProb[ism],fTCardCorrInduceEnerFracMin[ism],fTCardCorrInduceEnerFracMax[ism]);
+    printf("\t sm %d, fraction %2.3f, E frac abs min %2.3e minCenEta  %2.3e max %2.3e \n",
+        ism, fTCardCorrInduceEnerProb[ism],fTCardCorrInduceEnerFracMin[ism],
+           fTCardCorrInduceEnerFracMinCentralEta[ism],fTCardCorrInduceEnerFracMax[ism]);
 
     for(Int_t icell = 0; icell < 4; icell++)
     {

@@ -36,6 +36,7 @@
 #include <TH2.h>
 #include <TLinearBinning.h>
 #include <TLorentzVector.h>
+#include <TPDGCode.h>
 #include <TRandom.h>
 
 
@@ -74,6 +75,8 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fUseNeutralConstituents(true),
                                                                                fUseStandardOutlierRejection(false),
                                                                                fDropMass0Jets(false),
+                                                                               fMinPtTracksSD(0.),
+                                                                               fMinEClustersSD(0.),
                                                                                fJetTypeOutliers(kOutlierPartJet),
                                                                                fNameMCParticles("mcparticles"),
                                                                                fSampleSplitter(nullptr),
@@ -116,6 +119,8 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fUseNeutralConstituents(true),
                                                                                                fUseStandardOutlierRejection(false),
                                                                                                fDropMass0Jets(false),
+                                                                                               fMinPtTracksSD(0.),
+                                                                                               fMinEClustersSD(0.),
                                                                                                fJetTypeOutliers(kOutlierPartJet),
                                                                                                fNameMCParticles("mcparticles"),
                                                                                                fSampleSplitter(nullptr),
@@ -161,9 +166,9 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
   double R = double(int(GetJetContainer(fNameDetLevelJetContainer.Data())->GetJetRadius() * 1000.))/1000.;  // Save cast from float to double truncating after 3rd decimal digit
 
-  fSampleSplitter = new TRandom;
+  fSampleSplitter = new TRandom(0);
   if (fSampleFraction < 1.)
-    fSampleTrimmer = new TRandom;
+    fSampleTrimmer = new TRandom(0);
 
   if (!fPartLevelPtBinning)
     fPartLevelPtBinning = GetDefaultPartLevelPtBinning(fBinningMode);
@@ -617,6 +622,9 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
     fHistManager.CreateTH2("hSDUsedChargedDRMaxDet", "#DeltaR vs. p_{t,jet} for tracks used in SD (det. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
     fHistManager.CreateTH2("hSDUsedNeutralDRMaxPart", "#DeltaR vs. p_{t,jet} for clusters used in SD (part. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
     fHistManager.CreateTH2("hSDUsedNeutralDRMaxDet", "#DeltaR vs. p_{t,jet} for clusters used in SD (det. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH1("hPartConstPi0", "Particle-level consitutent spectrum of pi0 constituents", 200, 0., 200.);
+    fHistManager.CreateTH1("hPartConstK0s", "Particle-level consitutent spectrum of K0 constituents", 200, 0., 200.);
+    fHistManager.CreateTH1("hPartConstPhoton", "Particle-level consitutent spectrum of photon constituents", 200, 0., 200.);
     // Cluster constituent QA
     fHistManager.CreateTH2("hSDUsedClusterTimeVsE", "Cluster time vs. energy; time (ns); E (GeV)", 1200, -600, 600, 200, 0., 200);
     fHistManager.CreateTH2("hSDUsedClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
@@ -797,11 +805,11 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       AliDebugStream(1) << "No part jet" << std::endl;
     }
 
-    SoftdropResults softdropDet, softdropPart;
+    SoftdropResults softdropDet = {0., 0., 0., 0., 0., 0}, softdropPart = {0., 0., 0., 0., 0., 0};
     std::vector<SoftdropResults> splittingsDet, splittingsPart;
     try {
-      softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
-      splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(), false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+      softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets, fMinPtTracksSD, fMinEClustersSD);
+      splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(), false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets, fMinPtTracksSD, fMinEClustersSD);
     } catch(...) {
       // Failed SoftDrop for det. level jet.
       if(fForceBeamType != kpp) {
@@ -1279,6 +1287,15 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
   // this is of relevance for the jet finding efficiency
   if(fForceBeamType == kpp){
     for(auto partjet : partLevelJets->accepted()){
+      for(auto itrk = 0; itrk < partjet->GetNumberOfTracks(); itrk++) {
+        auto constituent = partjet->Track(itrk);
+        switch(TMath::Abs(constituent->PdgCode())) {
+        case kPi0: fHistManager.FillTH1("hPartConstPi0", constituent->Pt()); break;
+        case kK0Short: fHistManager.FillTH1("hPartConstK0s", constituent->Pt()); break;
+        case kGamma: fHistManager.FillTH1("hPartConstPhoton", constituent->Pt()); break;
+        default: break;
+        };
+      }
       SoftdropResults softdropPart, softdropDet;
       std::vector<SoftdropResults> splittingsPart, splittingsDet;
       try{
@@ -1324,8 +1341,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         // check if for the matched det. level jet we can determine the SoftDrop
         // check this condition first in case not the same acceptance type is required
         try {
-          softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
-          splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+          softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets, fMinPtTracksSD, fMinEClustersSD);
+          splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets, fMinPtTracksSD, fMinEClustersSD);
           tag = kMatchedJetNoAcceptance;
           if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()){
             tag = kPairAccepted;
@@ -1415,7 +1432,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
       auto cluster = jet.Cluster(icl);
       TLorentzVector clustervec;
       cluster->GetMomentum(clustervec, fVertex, energydef);
-      TVector3 clustervec3(clustervec.Pt(), clustervec.Eta(), clustervec.Phi());
+      TVector3 clustervec3(clustervec.Px(), clustervec.Py(), clustervec.Pz());
       fHistManager.FillTH2("hSDUsedNeutralPtjvPtcDet", jet.Pt(), clustervec.Pt());
       fHistManager.FillTH2("hSDUsedNeutralEtaPhiDet", clustervec.Eta(), TVector2::Phi_0_2pi(clustervec.Phi()));
       fHistManager.FillTH2("hSDUsedNeutralDRDet", jet.Pt(), jetvec.DeltaR(clustervec3));
@@ -1447,9 +1464,9 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
   }
 
   if(hasMaxNeutral) {
-    fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxPart", jet.Pt(), maxneutral.Pt());
-    fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxPart", maxneutral.Eta(), TVector2::Phi_0_2pi(maxneutral.Phi()));
-    fHistManager.FillTH2("hSDUsedNeutralDRMaxPart", jet.Pt(), jetvec.DeltaR(maxneutral));
+    fHistManager.FillTH2(Form("hSDUsedNeutralPtjvPcMax%s", tag.data()), jet.Pt(), maxneutral.Pt());
+    fHistManager.FillTH2(Form("hSDUsedNeutralEtaPhiMax%s", tag.data()), maxneutral.Eta(), TVector2::Phi_0_2pi(maxneutral.Phi()));
+    fHistManager.FillTH2(Form("hSDUsedNeutralDRMax%s", tag.data()), jet.Pt(), jetvec.DeltaR(maxneutral));
   }
 }
 

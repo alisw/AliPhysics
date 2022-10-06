@@ -48,7 +48,9 @@ set(SRCS
   AliFlowLYZHist2.cxx 
   AliFlowLYZEventPlane.cxx 
   AliFlowAnalysis.cxx
-  AliFlowAnalysisCRC.cxx 
+  AliFlowAnalysisCRC.cxx
+  AliFlowAnalysisQvec.cxx 
+  AliFlowAnalysisQvecEvent.cxx 
   AliFlowAnalysisWithScalarProduct.cxx 
   AliFlowAnalysisWithSimpleSP.cxx
   AliFlowAnalysisWithMCEventPlane.cxx 

@@ -14,6 +14,7 @@
 #include "THnSparse.h"
 #include "TString.h"
 #include "AliEventCuts.h"
+//#include "AliMCSpectraWeights.h"
 
 class TList;
 class AliCFContainer;
@@ -62,7 +63,7 @@ public:
   virtual void SetExtractSec(Bool_t mode){fextractsec=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
   virtual void SetPtMin(Float_t mode){fPtMin=mode;}
-  
+  virtual void SetBoost(Bool_t mode){fboost=mode;}
   
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
@@ -90,6 +91,10 @@ public:
     }
   }
   void DumpTObjTable(const char* note);
+    
+  //  void SetMCSpectraweightObject(AliMCSpectraWeights*obj){
+  //	fMCSpectraWeights=obj;
+  //  }
 
   
 private:
@@ -123,9 +128,10 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
- Int_t      ConvertRunNumber(Int_t run);
-
-/*
+  Int_t      ConvertRunNumber(Int_t run);
+  Double_t Transboost(const AliAODMCParticle*fTrack);
+  
+  /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
                              TObjArray *selectedTrackArray, AliTHn *triggerHist,
                              AliTHn *associateHist, Bool_t, Float_t, Float_t,
@@ -145,9 +151,14 @@ private:
                              Float_t phi2, Float_t pt2, Float_t charge2,
                              Float_t radius, Float_t bSign);
 
+
+
+  //  AliMCSpectraWeights* fMCSpectraWeights;
+  
   TString fcollisiontype;
   Bool_t fDataType;
   Bool_t fcentcalib;
+  Bool_t fboost;
   Bool_t frun2;
   Bool_t fQA;
   Bool_t fMCclosure;
@@ -252,10 +263,7 @@ private:
   Double_t fMaxnSigmaTPCTOF;
 
   // Global Histograms
-  TH1F *fHistzvertex;
-  TH1F *fHistCentrality;
-  TH1F *fHistCentrality_beforecut;
-  TH2F* fHistCentzvertex;
+
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
@@ -263,67 +271,39 @@ private:
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
-  TH1D* fhistmcprimpt;
-  TH1D* fhistrecopt;
   
   AliTHn* fhistmcprim;
   AliTHn* fhistmcprimfinal;
-  TH2D* fNTrackCorrMC;
-  TH2D*fhmcprimvzeta;
-  TH2D*fhrecovzeta;
-  TH2D*fhmcrapicent;
-  TH1D* fhmcprimforwardpt;
-  TH2D* fhmcpteta[10];
-  TH2D* fhrecopteta[10];
+
+
   
-  TH2D*fhistmeanpt;
   
   TH1F*frefvz;
   TH1D*fhcorr[10];
 
-  TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
 
   TH2D*  fh2_FMD_acceptance_prim;
-  TH2D*  fh2_FMD_eta_phi_prim;
-  TH2D*  fh2_FMD_acceptance;
+
   TH2D*  fh2_ITS_acceptance;
   TH2F*  fh2_SPD_multcorr;
   TH2F*  fh2_SPDV0_multcorr;
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
-  TH2D*  fh2_FMD_eta_phi;
+
   TH1F* fHist_NeventRun;
   TH1F* fHist_V0AMultRun;
   TH1F* fHist_V0CMultRun;
   TH1F* fHist_FMDAMultRun;
   TH1F* fHist_FMDCMultRun;
 
-  TH2D*  fhistfmdphiacc;
-  AliTHn* fhistfmd;
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;
   //  const TH2D& d2Ndetadphi;
-  TH2F*fFMDV0;
-  TH2F*fFMDV0_post;
-  TH2F*fFMDV0A;
-  TH2F*fFMDV0A_post;
-  TH2F*fFMDV0C;
-  TH2F*fFMDV0C_post;
 
-  TH1F*fV0Amultprim;
   TH1F*fV0Amultmodi;
-  TH2F*fh2_V0A;
-  TH2F*fh2_V0A_all;
-  TH2F*fh2_V0C;
-  TH2F*fh2_V0A_comp;
-  TH2F*fh2_V0A_comp_prim;
-  
-  TH2F *fHist_vzeromult;
-  TH2F *fHist_vzeromultEqweighted;
-  TH3F *fHist2dmult;
-  AliTHn *fHistVZERO;
+
 
   TH1F *fHist_Stat;
   TH1F *fHist_V0Stat;

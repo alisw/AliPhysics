@@ -172,6 +172,9 @@
 #pragma link C++ class  AliAnalysisTaskZDCPbPb+;
 // T0
 #pragma link C++ class  AliT0AnalysisTaskQA+;
+#pragma link C++ class  AliAnalysisTaskSpectrumT0::SetEventID_t+;
+#pragma link C++ class  AliAnalysisTaskSpectrumT0::SetRunNums_t+;
+#pragma link C++ class  AliAnalysisTaskSpectrumT0+;
 // AD
 #pragma link C++ class  AliAnalysisTaskADQA+;
 #pragma link C++ class  AliAnalysisTaskADVVQA+;

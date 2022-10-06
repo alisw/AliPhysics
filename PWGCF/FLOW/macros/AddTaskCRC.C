@@ -168,6 +168,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if (sDataSet == "2015") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015);
   if (sDataSet == "2015v6") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015v6);
   if (sDataSet == "2015pidfix") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015pidfix);
+  if (sDataSet == "2018q") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2018q);
   if (sDataSet == "2018r") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2018r);
   taskFE->SetQAOn(bCutsQA);
   // set the analysis type

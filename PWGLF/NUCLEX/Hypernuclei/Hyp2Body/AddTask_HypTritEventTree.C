@@ -10,7 +10,16 @@ AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7 
   task->SetPidQa(pidQa);
   task->SetPeriod(period);
   task->SetBetheSplines(betheSplines);
+  
+  task->SetRefitOnFlyV0(kTRUE);  
+  
+  Double_t he3Params[6];
+  Double_t tParams[6];
 
+  task->SetParamsHe(he3Params);
+  task->SetParamsT(tParams);
+  
+  
   //Data Containers
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 =

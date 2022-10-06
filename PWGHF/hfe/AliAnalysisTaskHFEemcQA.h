@@ -235,6 +235,8 @@ private:
     TH1F        *fHistWpos;
     TH1F        *fHistWele;
 
+    TH2D        *fHistTrCutChecker;
+
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     

@@ -47,6 +47,8 @@ public:
    // called at end of analysis
    virtual void Terminate(Option_t* option);
 
+  void PrintSummary();
+
    enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
    Int_t                GetTriggerMask() const              {return fTriggerMask; }
@@ -70,12 +72,7 @@ public:
    void   SetGeneratorName         (TString generatorName) { fGeneratorName = generatorName;}
    void   SetGeneratorMCSignalName (TString generatorName) { fGeneratorMCSignalName  = generatorName;}
    void   SetGeneratorULSSignalName(TString generatorName) { fGeneratorULSSignalName = generatorName;}
-
-   void   SetCheckGenID(Bool_t flag) { fCheckGenID = flag;}
-   void   SetGeneratorIndex         (std::vector<UInt_t> generatorIndex) { fGeneratorIndex = generatorIndex;}
-   void   SetGeneratorMCSignalIndex (std::vector<UInt_t> generatorIndex) { fGeneratorMCSignalIndex  = generatorIndex;}
-   void   SetGeneratorULSSignalIndex(std::vector<UInt_t> generatorIndex) { fGeneratorULSSignalIndex = generatorIndex;}
-
+   void SetRejectParticleFromOOB(Bool_t flag)             {fRejectParticleFromOOB = flag;}
 
    // Event setter
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
@@ -87,6 +84,7 @@ public:
    void   SetCentralityFile(std::string filename) {fCentralityFilename = filename; }
 
   void   SetCentralityFileFromAlien(std::string filename) {fCentralityFilenameFromAlien = filename; }
+  void   SetCentralityFile(std::string filenamelocal,std::string filenamealien);
 
    // Support Histos
    void   SetSupportHistoMCSignalAndCutsetting(int nMCSignal, int nCutsetting) {fSupportMCSignal = nMCSignal; fSupportCutsetting = nCutsetting;}
@@ -94,6 +92,7 @@ public:
    // Resolution setter
    void   SetResolutionFile(std::string filename) {fResoFilename = filename; }
    void   SetResolutionFileFromAlien(std::string filename) {fResoFilenameFromAlien = filename; }
+   void   SetResolutionFile(std::string filenamelocal,std::string filenamealien);
    void   SetSmearGenerated(bool setSmearingGen) { fDoGenSmearing = setSmearingGen; }
    void   SetResolutionDeltaPtBinsLinear (const double min, const double max, const unsigned int steps){SetBinsLinear("ptDelta_reso", min, max, steps);}
    void   SetResolutionRelPtBinsLinear   (const double min, const double max, const unsigned int steps){SetBinsLinear("ptRel_reso", min, max, steps);}
@@ -123,6 +122,7 @@ public:
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+   void   SetOpeningAngleAccCut(Bool_t op, Double_t opmin, Double_t opmax) {fOpeningAngleAccCut = op; fOpMin = opmin; fOpMax = opmax;}
    void   SetFillPhiV(Bool_t doPhiV) {fDoFillPhiV = doPhiV;}
    void   SetPhiVCut(Bool_t apply, Double_t maxMee, Double_t minphiv){fApplyPhivCut = apply; fMaxMee = maxMee; fMinPhiV = minphiv;}
 
@@ -145,6 +145,7 @@ public:
    void SetDoCocktailWeighting(bool doCocktailWeight) { fDoCocktailWeighting = doCocktailWeight; }
    void SetCocktailWeighting(std::string CocktailFilename) { fCocktailFilename = CocktailFilename; }
    void SetCocktailWeightingFromAlien(std::string CocktailFilenameFromAlien) { fCocktailFilenameFromAlien = CocktailFilenameFromAlien; }
+   void  SetCocktailWeighting(std::string CocktailFilenamelocal,std::string CocktailFilenamealien);
 
    // Generator related setter
    void   SetMinPtGen(double ptMin)   {fPtMinGen = ptMin;}; // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
@@ -197,8 +198,7 @@ private:
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;}
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
-  bool    CheckGenerator(int trackID, std::vector<unsigned int> vecHashes);
-  bool    CheckGeneratorIndex(int trackID, std::vector<unsigned int> vecGenIDs);
+  bool    CheckGenerator(int trackID, std::vector<unsigned int> vecHashes, Bool_t isGen);
   void    CheckIfFromMotherWithDielectronAsDaughter(Particle& part);
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
@@ -268,6 +268,12 @@ private:
   double  fEtaMin; // Kinematic cut for pairing
   double  fEtaMax; // Kinematic cut for pairing
 
+  Bool_t fOpeningAngleAccCut; // opening angle cut in acceptance
+  Double_t fOpMin; // min
+  Double_t fOpMax; // max
+
+
+
   double  fPtMinGen;
   double  fPtMaxGen;
   double  fEtaMinGen;
@@ -283,11 +289,7 @@ private:
   std::vector<unsigned int> fGeneratorHashs;
   std::vector<unsigned int> fGeneratorMCSignalHashs;
   std::vector<unsigned int> fGeneratorULSSignalHashs;
-
-  Bool_t fCheckGenID;
-  std::vector<UInt_t> fGeneratorIndex;
-  std::vector<UInt_t> fGeneratorMCSignalIndex;
-  std::vector<UInt_t> fGeneratorULSSignalIndex;
+  Bool_t fRejectParticleFromOOB;
 
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;
@@ -389,7 +391,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 7);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 10);
 };
 
 

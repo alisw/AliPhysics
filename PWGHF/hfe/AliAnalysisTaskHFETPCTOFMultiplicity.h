@@ -137,8 +137,8 @@ private:
     Double_t         fCutDCAxy;
     Double_t         fCutDCAz;
     Double_t         fCutTrackEta;
-    Double_t         fCutpTMin;//!
-    Double_t         fCutNsigmaTOF;//!
+    Double_t         fCutpTMin;
+    Double_t         fCutNsigmaTOF;
     
     Bool_t fSPDBoth;
     Bool_t fSPDAny;
@@ -149,12 +149,12 @@ private:
     Double_t         fCutNsigmaEMax;
     
     //--------------------Loose cuts for photonic electron pair------------------
-    Int_t         fAssoTPCCluster;//!
-    Int_t         fAssoITSCluster;//!
+    Int_t         fAssoTPCCluster;
+    Int_t         fAssoITSCluster;
     Double_t         fCutAssoEPt;
     Double_t         fCutAssoEEta;
     Double_t         fCutAssoENsigma;
-    Bool_t         fAssoITSRefit;//!
+    Bool_t         fAssoITSRefit;
     //--------------------Mass Cut for photonic electron pair------------------
     Double_t         fCutInvmass;
     
@@ -168,7 +168,7 @@ private:
     TClonesArray*            fMCArray;//! MC array
     TProfile*             GetEstimatorHistogram(const AliAODEvent *fAOD);
     
-    Double_t              fTPCnSigma;//!
+    Double_t              fTPCnSigma;
     Bool_t                 fRejectPUFromSPD;
     Bool_t                fCalculateElectronEffi;//
     

@@ -6,11 +6,38 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno", Bool_t  useMC  = kTRUE, Bool_t performMCclosuretest = kFALSE, Bool_t IspPb = kFALSE, Double_t minpT=0.5, Double_t PtLmin = 5.0, Double_t PtLmax = 40.0, Double_t V0Mmin = 0.0, Double_t V0Mmax = 100.0, Bool_t IsTPConly = kTRUE, Bool_t TPCclustersVar1 = kFALSE, Bool_t TPCclustersVar2 = kFALSE, Bool_t NcrVar1 = kFALSE, Bool_t NcrVar2 = kFALSE, Bool_t ChisqTPCVar1 = kFALSE, Bool_t ChisqTPCVar2 = kFALSE, Bool_t ChisqITSVar1 = kFALSE, Bool_t ChisqITSVar2 = kFALSE, Bool_t ChisqITSmTPCVar1 = kFALSE, Bool_t ChisqITSmTPCVar2 = kFALSE, Bool_t DcazVar1 = kFALSE, Bool_t DcazVar2 = kFALSE, Bool_t GeoTPCVar1 = kFALSE, Bool_t GeoTPCVar2 = kFALSE, Bool_t GeoTPCVar3 = kFALSE, Bool_t GeoTPCVar4 = kFALSE, Bool_t SPDreqVar1 = kFALSE)
+AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno",
+                                   Bool_t  useMC  = kTRUE,
+                                   Bool_t performMCclosuretest = kFALSE,
+                                   Bool_t IspPb = kFALSE,
+                                   Double_t minpT=0.5,
+                                   Double_t PtLmin = 1.0,
+                                   Double_t PtLmax = 15.0,
+                                   Double_t V0Mmin = 0.0,
+                                   Double_t V0Mmax = 100.0,
+                                   Bool_t IsTPCOnlyTrkCuts = kTRUE,
+                                   Bool_t Is2015TrkCuts = kTRUE,
+                                   Bool_t SelectHybridTrks = kFALSE,
+                                   Bool_t TPCclustersVar1 = kFALSE,
+                                   Bool_t TPCclustersVar2 = kFALSE,
+                                   Bool_t NcrVar1 = kFALSE,
+                                   Bool_t NcrVar2 = kFALSE,
+                                   Bool_t ChisqTPCVar1 = kFALSE,
+                                   Bool_t ChisqTPCVar2 = kFALSE,
+                                   Bool_t ChisqITSVar1 = kFALSE,
+                                   Bool_t ChisqITSVar2 = kFALSE,
+                                   Bool_t ChisqITSmTPCVar1 = kFALSE,
+                                   Bool_t ChisqITSmTPCVar2 = kFALSE,
+                                   Bool_t DcazVar1 = kFALSE,
+                                   Bool_t DcazVar2 = kFALSE,
+                                   Bool_t GeoTPCVar1 = kFALSE,
+                                   Bool_t GeoTPCVar2 = kFALSE,
+                                   Bool_t GeoTPCVar3 = kFALSE,
+                                   Bool_t GeoTPCVar4 = kFALSE,
+                                   Bool_t SPDreqVar1 = kFALSE)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
-
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -33,8 +60,11 @@ AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno", Bool_t  useMC
     taskKno->SetLeadingPtMax(PtLmax);
     taskKno->SetV0Mmin(V0Mmin);
     taskKno->SetV0Mmax(V0Mmax);
+    taskKno->SetTrackCutsTypeTPC(IsTPCOnlyTrkCuts);
+    taskKno->SetTrackCutsType2015(Is2015TrkCuts);
+    taskKno->SetHybridTracks(SelectHybridTrks);
     // Systematic -------------------------------
-    taskKno->SetNchTScut(IsTPConly);
+    taskKno->SetNchTScut(IsTPCOnlyTrkCuts);
     taskKno->SetTPCclustersVar1(TPCclustersVar1);
     taskKno->SetTPCclustersVar2(TPCclustersVar2);
     taskKno->SetNcrVar1(NcrVar1);

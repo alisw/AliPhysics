@@ -68,7 +68,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillAcceptanceHistograms();
   
   void         FillShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
-                                                Int_t mcIndex, Int_t noverlaps) ;
+                                                Int_t mcIndex, Int_t noverlaps, Bool_t narrow) ;
   
   void         FillTrackMatchingControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
                                                   Int_t mcIndex) ;
@@ -82,9 +82,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         StudyMCConversionRadius(Float_t  pt, Bool_t isolated, Int_t iSM, 
                                        Float_t m02, Int_t     mcTag, Int_t label) ;
   
-  void         StudyClustersInCone  (AliCaloTrackParticleCorrelation * aodParticle) ;
+  void         StudyClustersInCone  (AliCaloTrackParticleCorrelation * aodParticle,
+                                     Float_t coneptsum, Int_t centbin) ;
   
-  void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle) ;
+  void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle,
+                                     Float_t coneptsum, Int_t centbin) ;
   
   void         StudyClustersUEInCone(AliCaloTrackParticleCorrelation * aodParticle) ;
   
@@ -111,6 +113,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillHistogramsPerSM()         { fFillPerSMHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerSM()        { fFillPerSMHistograms = kFALSE ; }  
   
+  void         SwitchOnFillHistogramsPerSMInCone()   { fFillPerSMHistogramsInCone = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerSMInCone()  { fFillPerSMHistogramsInCone = kFALSE ; }
+
   void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
   
@@ -173,6 +178,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyRCutInCone()             { fStudyRCutInCone = kTRUE ; }
   void         SwitchOffStudyRCutInCone()            { fStudyRCutInCone = kFALSE; }
   
+  void         SwitchOnEmbedPrimaryToUE()            { fEmbedUEInPrimMC = kTRUE ; }
+  void         SwitchOffEmbedPrimaryToUE()           { fEmbedUEInPrimMC = kFALSE; }
+
   void         SetNPtCutInCone(Int_t n)              { if(n < 19) fNPtCutsInCone = n ; }
   void         SetMinPtCutInConeAt(Int_t i,Float_t l){ if(i <= fNPtCutsInCone) fMinPtCutInCone[i] = l; }  
   void         SetMaxPtCutInConeAt(Int_t i,Float_t l){ if(i <= fNPtCutsInCone) fMaxPtCutInCone[i] = l; }
@@ -191,6 +199,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetM02CutForSignal    (Float_t min, Float_t max ) { fM02Narrow[0] = min ; fM02Narrow[1] = max; }
   void         SetM02CutForBackground(Float_t min, Float_t max ) { fM02Wide  [0] = min ; fM02Wide  [1] = max; }
+
+  Bool_t       IsFiducialCutGenLevelOn()       const { return fCheckFidCutGenLevel           ; }
+  void         SwitchOnFiducialCutGenLevel()         { fCheckFidCutGenLevel = kTRUE ;
+                            if ( !fFidCutGenLevel )  fFidCutGenLevel   = new AliFiducialCut(); }
+  void           SwitchOffFiducialCutGenLevel()      { fCheckFidCutGenLevel = kFALSE         ; }
+  AliFiducialCut  * GetFiducialCutGenLevel()         { if ( !fFidCutGenLevel ) fFidCutGenLevel  = new AliFiducialCut() ;
+                                                      return  fFidCutGenLevel                ; }
+  void         SetFiducialCutGenLevel(AliFiducialCut * fc) { delete fFidCutGenLevel;
+                                                         fFidCutGenLevel  = fc               ; }
 
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
@@ -217,6 +234,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots. Activate it only on photon analysis, enables filling of wide/narrow shape histograms.
   Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
+  Bool_t   fFillPerSMHistogramsInCone ;               ///<  Fill histograms per SM, tracks or clusters pt or sum pt in cone
   Bool_t   fFillPerTCardIndexHistograms ;             ///<  Fill histograms per T-Card index.
   Int_t    fTCardIndex;                               ///<  Store here the T-Card index per trigger cluster.
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
@@ -245,6 +263,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t    fNumberMCParticleCases;                    ///< Number of histograms per MC particle type, maximum is fgkNmcPrimTypes
   
+  Int_t    fEmbedUEInPrimMC;                          ///< In case of embedding, activate the embedding of the generated MC particles into data
+
   Bool_t   fStudyPtCutInCone;                         ///<  Activate study of track/cluster min pT on sum of pT in cone
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMinPtCutInCone[20];                       ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
@@ -298,7 +318,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fStudyExoticTrigger;                       ///<  Fill histograms with track and cluster pT when the trigger is exotic
   Int_t    fNExoCutInCandidate;                       ///<  Number of exoticity cuts in cluster selection to test in cone for sum pT calculation.
   Float_t  fExoCutInCandidate[20];                    ///<  List of exoticity cuts in cluster selection to test in cone for sum pT calculation.
-  
+
   TLorentzVector fMomentum;                           //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomIso;                             //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomDaugh1;                          //!<! Temporary vector, avoid creation per event.
@@ -312,6 +332,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t         fIsExoticTrigger;                    //!<! Trigger cluster considered as exotic
   Float_t        fClusterExoticity;                   //!<! Temporary container or currently analyzed cluster exoticity
 
+  Bool_t         fCheckFidCutGenLevel ;               ///< Do analysis for generated particles in defined region.
+  AliFiducialCut * fFidCutGenLevel;                   ///< Acceptance cuts at generator level, detector dependent.
+
   // Histograms  
   
   TH1F *   fhPt[2][2] ;                                //!<! Number of non/isolated narrow/wide particles vs pT.
@@ -319,8 +342,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtEventPlane[2][2] ;                      //!<! Number of non/isolated narrow/wide particles event plane angle vs pT.
   TH2F *   fhPtNLocMax[2][2] ;                         //!<! Number of non/isolated narrow/wide particles vs NLM in cluster.
   TH3F *   fhPtEtaPhi[2][2] ;                          //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles.
+  TH3F *   fhPtEtaPhiG1[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. G1 events froom trigger decision.
+  TH3F *   fhPtEtaPhiG2[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. G2 events froom trigger decision.
+  TH3F *   fhPtEtaPhiL0[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. L0 events froom trigger decision.
   TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
+  TH2F *   fhPtPerTrigger   [2][2] ;                   //!<! Number of non/isolated narrow/wide particles vs pT vs calo trigger from maker.
+  TH3F *   fhPtPerTriggerCen[2][2] ;                   //!<! Number of non/isolated narrow/wide particles vs pT vs centrality vs calo trigger from maker.
+  TH2F *   fhPtMCPhotonPromptPerTrigger   [2][2] ;     //!<! Number of non/isolated narrow/wide particles vs pT vs calo trigger from maker, prompt photon origin.
+  TH3F *   fhPtMCPhotonPromptPerTriggerCen[2][2] ;     //!<! Number of non/isolated narrow/wide particles vs pT  vs centrality vs calo trigger from maker., prompt photon origin
+
   TH1F *   fhPtDecay       [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Number of (non) isolated Pi0 decay particles (invariant mass tag).
   TH2F *   fhEtaPhiDecay   [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! eta vs phi of (not) isolated leading Pi0 decay particles.
   TH2F *   fhPtLambda0Decay[2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously).
@@ -348,6 +379,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhPtM02SumPtConeCharged;                    //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, charged in cone
   TH3F *   fhPtM02SumPtConeChargedMC[fgkNmcTypes];     //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle, charged in cone
   
+  TH3F *   fhSpherocityM02SumPtCone;                   //!<!  ABCD Spherocity vs sum(ET)+sum(pT) cone vs M02, pT > 10 GeV
+  TH3F *   fhSpherocityM02SumPtConeCharged;            //!<!  ABCD Spherocity vs sum(ET)+sum(pT) cone vs M02 charged in cone, pT > 10 GeV
+  TH3F *   fhSpherocityMinPtM02SumPtCone[4];           //!<!  ABCD Spherocity for different pt cuts vs sum(ET)+sum(pT) cone vs M02, pT > 10 GeV
+  TH3F *   fhSpherocityMinPtM02SumPtConeCharged[4];    //!<!  ABCD Spherocity for different pt cuts vs sum(ET)+sum(pT) charged in conevs M02, pT > 10 GeV
+
   /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality
   TH3F **  fhPtM02SumPtConeCent;                       //![GetNCentrBin()] 
   
@@ -362,6 +398,17 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   /// Different centrality bins and MC particle type origin
   TH3F **  fhPtM02SumPtConeChargedCentMC;              //![GetNCentrBin()*fNumberMCParticleCases] 
   
+  /// ABCD TH3F histogram Spherocity, Shower Shape and sum(ET)+sum(pT) cone vs centrality pt > 10 GeV
+  TH3F **  fhSpherocityM02SumPtConeCent;               //![GetNCentrBin()]
+
+  /// ABCD TH3F histogram Spherocity, Shower Shape and sum(ET)+sum(pT) cone vs centrality, charged particles in cone, pt > 10 GeV
+  TH3F **  fhSpherocityM02SumPtConeChargedCent;        //![GetNCentrBin()]
+
+  /// ABCD TH3F histogram Spherocity, for different min pT cut, Shower Shape and sum(ET)+sum(pT) cone vs centrality pt > 10 GeV
+  TH3F **  fhSpherocityMinPtM02SumPtConeCent;          //![GetNCentrBin()*4]
+
+  /// ABCD TH3F histogram Spherocity, for different min pT cut, Shower Shape and sum(ET)+sum(pT) cone vs centrality pt > 10 GeV
+  TH3F **  fhSpherocityMinPtM02SumPtConeChargedCent;   //![GetNCentrBin()*4]
 
   TH2F *   fhConeSumPtM02Cut[2] ;                      //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters
   TH2F *   fhConeSumPtM02CutMC[fgkNmcTypes][2] ;       //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters, per MC particle
@@ -474,7 +521,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhPtLambda0Cent[2];                         //!<! Shower shape of (non) isolated photons (do not apply SS cut previously) vs centrality.
 
   // Selection parameters per supermodule number
-  TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
+  TH2F *   fhPtPerSM[2][2];                            //!<! Input particle pT distribution per SM
+  TH2F *   fhPtPerSMTriggerG1[2][2];                   //!<! Input particle pT distribution per SM when trigger decision is G1
+  TH2F *   fhPtPerSMTriggerG2[2][2];                   //!<! Input particle pT distribution per SM when trigger decision is G2
+  TH2F *   fhPtPerSMTriggerL0[2][2];                   //!<! Input particle pT distribution per SM when trigger decision is L0
   TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously).
   TH2F *   fhPtLambda0PerSMNCellCut[2][20];            //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously). N cell with weight > 4
   TH2F *   fhPtNCellPerSM       [2][20];               //!<! N cells with weight in cluster per cluster pT, per SM
@@ -686,7 +736,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhPtTrackInConeDCA[3];                        //!<! track DCAxy,z,constrained vs track pT, in cone with trigger pT > 10 GeV
   TH2F *   fhPtTrackInPerpConeDCA[3];                    //!<! track DCAxy,z,constrained vs track pT, in perpendicular cone trigger pT > 10 GeV
-   
+
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
     
@@ -694,7 +744,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,51) ;
+  ClassDef(AliAnaParticleIsolation,55) ;
   /// \endcond
 
 } ;

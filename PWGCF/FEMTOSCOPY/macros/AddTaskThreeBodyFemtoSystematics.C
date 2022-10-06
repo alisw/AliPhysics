@@ -11,7 +11,11 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBlastQA = true,
-                                     bool isMC = false, bool isNano = true, bool plotAdditionalPlots=true, bool ClosePairRejectionForAll = "false", const char *cutVariation = "0") {
+                                     bool isMC = false, bool isNano = true,
+                                     bool plotAdditionalPlots=true,  
+                                     int mixingDepthFromTask = 20,
+                                     bool ClosePairRejectionForAll = "false", int mixinfChoice = 0,
+                                      const char *cutVariation = "0") {
 
 
 
@@ -124,7 +128,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(mixingDepthFromTask);
   config->SetUseEventMixing(true);
 
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
@@ -1112,6 +1116,20 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
     v0Cuts->SetCutDCADaugToPrimVtx(0.06);
     Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
   }
+  else if (suffix == "100") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+  }
+  else if (suffix == "101") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+  }
+  else if (suffix == "102") {
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+  }
 
 
 
@@ -1256,6 +1274,10 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
   AliAnalysisDataContainer *coutputAntiv0CutsTrigger;
  
 
+ 
+  bool turnoffClosePairRejectionCompletely = false;
+  bool ClosePairRejectionPPPorPPL = true;
+
   AliAnalysisTaskThreeBodyFemto* taskNano;
   AliAnalysisTaskThreeBodyFemtoAOD* taskAOD;
   if(isNano){
@@ -1293,6 +1315,12 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
+    taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
+    taskNano->SetClosePairRejectionPPPorPPL(ClosePairRejectionPPPorPPL);
+
+
+    taskNano->SetMixingChoice(mixinfChoice);
+
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 

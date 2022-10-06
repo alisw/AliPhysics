@@ -196,6 +196,7 @@ class AliResonanceFits : public TObject {
      if(fBkgFitFunction) delete fBkgFitFunction;
      fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction");
   }
+    void SetBkgFitOption(TString option){fBkgFitOption = option;}
   
   Bool_t Process();
   Double_t* ComputeOutputValues(Double_t minMass, Double_t maxMass, Double_t minPt=-1., Double_t maxPt=-1.);
@@ -312,7 +313,8 @@ class AliResonanceFits : public TObject {
    TMinuit* fMinuitFitter;                    // used if fit option is required
    ///////////////////////////////////////////////////
    TF1*      fResidualFitFunc;            // fit function used to fit the combinatorial bkg subtracted minv distribution
-   
+    TString fBkgFitOption;              //String used to define fit options for the background function
+    
    ////////////////////////////////////////////////////
    
    // Private utility functions

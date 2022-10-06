@@ -174,7 +174,7 @@ void AliAnalysisTaskPIDV0base::UserCreateOutputObjects()
   // PID response object
   fPIDResponse = inputHandler->GetPIDResponse();
   if (!fPIDResponse)
-    AliError("PIDResponse object was not created");
+    AliError("PIDResponse object was not created, no response from input handler");
   
   // V0 Kine cuts 
   fV0KineCuts = new AliESDv0KineCuts;
@@ -235,10 +235,7 @@ Bool_t AliAnalysisTaskPIDV0base::PhiPrimeCut(Double_t trackPt, Double_t trackPhi
   
   Double_t phiPrime = GetPhiPrime(trackPhi, magField, trackCharge);
   
-  if (phiPrime < fPhiCutHigh->Eval(trackPt) && phiPrime > fPhiCutLow->Eval(trackPt))
-    return kFALSE; // reject track
-    
-    return kTRUE;
+  return (phiPrime >= fPhiCutHigh->Eval(trackPt)) || (phiPrime <= fPhiCutLow->Eval(trackPt));
 }
 
 
@@ -341,7 +338,6 @@ Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcu
     const AliESDVertex *spdVertex = esd->GetPrimaryVertexSPD();
   
     Bool_t hasSPD = spdVertex->GetStatus();
-    Bool_t hasTrk = trkVertex->GetStatus();  
   
     if (!hasSPD) 
       return kFALSE;
@@ -373,7 +369,7 @@ Bool_t AliAnalysisTaskPIDV0base::GetIsPileUp(AliVEvent* event, PileUpRejectionTy
   PileUpRejectionType functionPURejectionType = GetPileUpRejectionType();
   
   if (!(pileUpRejection == kPileUpRejectionClass))
-    functionPURejectionType == pileUpRejection;
+    functionPURejectionType = pileUpRejection;
   
   if (functionPURejectionType == kPileUpRejectionOff)
     return kFALSE;
@@ -555,16 +551,9 @@ Bool_t AliAnalysisTaskPIDV0base::TPCCutMIGeo(const AliVTrack* track, const AliVE
 
   if (!track || !evt)
     return kFALSE;
-  
-  const Short_t sign = track->Charge();
-  Double_t xyz[50];
-  Double_t pxpypz[50];
-  Double_t cv[100];
 
-  track->GetXYZ(xyz);
-  track->GetPxPyPz(pxpypz);
-
-  AliExternalTrackParam* par = new AliExternalTrackParam(xyz, pxpypz, cv, sign);
+  AliExternalTrackParam* par = new AliExternalTrackParam();
+  par->CopyFromVTrack(track);
   const AliESDtrack dummy;
 
   const Double_t magField = evt->GetMagneticField();

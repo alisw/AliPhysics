@@ -25,21 +25,26 @@ include_directories(
 # Additional includes - alphabetical order except ROOT
 include_directories(
     ${ROOT_INCLUDE_DIRS}
+    ${AliPhysics_SOURCE_DIR}/CORRFW
     ${AliPhysics_SOURCE_DIR}/OADB
-	${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+	  ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+    ${AliPhysics_SOURCE_DIR}/PWG/Tools
     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF
+    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
+		${AliPhysics_SOURCE_DIR}/EVENTMIX
 )
 
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+  AliAnalysisTaskCorrForFlow.cxx
+  AliAnalysisTaskCorrForFlowFMD.cxx
   AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
-  AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
-  AliAnalysisTaskMeanPtV2Corr.cxx
+  AliAnalysisTaskPtCorr.cxx
   AliAnalysisTaskUniFlow.cxx
   AliAnalysisTaskUniFlowWithSphericity.cxx
   AliAnalysisTaskUniFlowMultiStrange.cxx
@@ -49,14 +54,37 @@ set(SRCS
   AliGFWCuts.cxx
   AliGFWFlowContainer.cxx
   AliGFWWeights.cxx
+  AliPartSimpleForCorr.cxx
   AliProfileSubset.cxx
+  AliProfileBS.cxx
+  AliPtContainer.cxx
+  AliCkContainer.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
-  AliAnalysisTaskNonlinearFlow.cxx
-  CorrelationCalculator.cxx
+  AliAnalysisTaskCMWESETrkSyst.cxx
+  AliAnalysisTaskPtFlowCorrelation.cxx
+  AliAnalysisTaskMomentumFlowCorrelation.cxx
   )
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliAnalysisTaskCreateNUA.cxx)
+  list(APPEND SRCS AliAnalysisTaskCreatePeriodNUA.cxx)
+  list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
+  list(APPEND SRCS AliAnalysisTaskFlowPPTask.cxx)
+  list(APPEND SRCS AliAnalysisTaskGFWFlow.cxx)
+  list(APPEND SRCS AliAnalysisTaskJetQ.cxx)
+  list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
+  list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
+  list(APPEND SRCS AliAnalysisTaskCorrForNonlinearFlow.cxx)
+  list(APPEND SRCS AliEffFDContainer.cxx)
+  list(APPEND SRCS AliGFWFilter.cxx)
+  list(APPEND SRCS AliGFWFilterTask.cxx)
+  list(APPEND SRCS CorrelationCalculator.cxx)
+  list(APPEND SRCS AliGFWNFCuts.cxx)
+  list(APPEND SRCS AliGFWXXCuts.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -71,7 +99,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB EMCALbase)
+set(LIBDEPS ANALYSISalice OADB EMCALbase PWGTools)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

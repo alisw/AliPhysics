@@ -216,13 +216,19 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
     fPhiDistribution->SetParameter(2,fV2vsPtMax)
    );
   } // end of if(fPtDependentV2)  
+  // Check pT efficiency:
+  if(!fUniformEfficiency && !this->AcceptPt(pTrack)){
+    delete pTrack;
+    continue;
+  }
   pTrack->SetPhi(fPhiDistribution->GetRandom());
+  // Check uniform acceptance:
+  if(!fUniformAcceptance && !this->AcceptPhi(pTrack)){
+    delete pTrack;
+    continue;
+  }
   pTrack->SetEta(gRandom->Uniform(-1.,1.));
   pTrack->SetCharge((gRandom->Integer(2)>0.5 ? 1 : -1));
-  // Check uniform acceptance:
-  if(!fUniformAcceptance && !this->AcceptPhi(pTrack)){continue;}
-  // Check pT efficiency:
-  if(!fUniformEfficiency && !this->AcceptPt(pTrack)){continue;}
   // Checking the RP cuts:  	 
   if(cutsRP->PassesCuts(pTrack))
   {

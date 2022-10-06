@@ -57,6 +57,9 @@ fCosP(-9999.),
 fCosPXY(-9999.),
 fImpParXY(-9999.),
 fDCA(-9999.),
+fPDG(-9999),
+fPDGmom(-9999),
+fMCLabel(-9999),
 fPProng{},
 fSPDhitsProng{},
 fTPCPProng{},
@@ -75,6 +78,8 @@ fStartTimeResProng{},
 fPIDNsigmaVector{},
 fPIDNsigmaIntVector{},
 fPIDrawVector{},
+fIncludeML(false),
+fOnlyDedicatedBranches(false),
 fPidOpt(PIDopt),
 fSingleTrackOpt(kRedSingleTrackVars),
 fFillOnlySignal(false),
@@ -157,13 +162,19 @@ TTree* AliHFTreeHandlerApply::BuildTreeMCGen(TString name, TString title) {
   fTreeVar->Branch("run_number",&fRunNumber);
   fTreeVar->Branch("ev_id",&fEvID);
   fTreeVar->Branch("ev_id_ext",&fEvIDExt);
-  fTreeVar->Branch("ev_id_long",&fEvIDLong);
+  if(!fOnlyDedicatedBranches) fTreeVar->Branch("ev_id_long",&fEvIDLong);
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("pt_cand",&fPt);
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
   fTreeVar->Branch("dau_in_acc",&fDauInAcceptance);
+
+  if(fOnlyDedicatedBranches){
+    fTreeVar->Branch("pdg",&fPDG);
+    fTreeVar->Branch("pdg_mom",&fPDGmom);
+    fTreeVar->Branch("mc_label",&fMCLabel);
+  }
   
   return fTreeVar;
 }
@@ -183,6 +194,16 @@ bool AliHFTreeHandlerApply::SetMCGenVariables(int runnumber, int eventID, int ev
   fEta = mcpart->Eta();
   fPhi = mcpart->Phi();
   
+  return true;
+}
+
+//________________________________________________________________
+bool AliHFTreeHandlerApply::SetMCGenVariablesextra(int pdg, int pdg_mom, int mc_label){
+
+  fPDG = pdg;
+  fPDGmom = pdg_mom;
+  fMCLabel = mc_label;
+
   return true;
 }
 
@@ -207,7 +228,7 @@ void AliHFTreeHandlerApply::AddCommonDmesonVarBranches(Bool_t HasSecVtx) {
   fTreeVar->Branch("run_number",&fRunNumber);
   fTreeVar->Branch("ev_id",&fEvID);
   fTreeVar->Branch("ev_id_ext",&fEvIDExt);
-  fTreeVar->Branch("ev_id_long",&fEvIDLong);
+  if(!fOnlyDedicatedBranches) fTreeVar->Branch("ev_id_long",&fEvIDLong);
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("inv_mass",&fInvMass);
   fTreeVar->Branch("pt_cand",&fPt);
@@ -215,7 +236,7 @@ void AliHFTreeHandlerApply::AddCommonDmesonVarBranches(Bool_t HasSecVtx) {
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
-  fTreeVar->Branch("ml_prob",&fMLProb);
+  if(fIncludeML) fTreeVar->Branch("ml_prob",&fMLProb);
   if(HasSecVtx){
     fTreeVar->Branch("d_len",&fDecayLength);
     fTreeVar->Branch("d_len_xy",&fDecayLengthXY);
@@ -252,6 +273,11 @@ void AliHFTreeHandlerApply::AddSingleTrackBranches() {
     else if(fSingleTrackOpt==kRedSingleTrackVarsPbPbExtreme) {
       fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
       fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
+    }
+    else if(fSingleTrackOpt==kRedSingleTrackVarsHMV0) {
+      fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
+      fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
+      fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
     }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
@@ -357,8 +383,11 @@ bool AliHFTreeHandlerApply::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
     } else if(fSingleTrackOpt==kRedSingleTrackVarsPbPbExtreme){
       fPtProng[iProng]=prongtracks[iProng]->Pt();
       fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
-    }
-    else if(fSingleTrackOpt==kAllSingleTrackVars) {
+    } else if(fSingleTrackOpt==kRedSingleTrackVarsHMV0){
+      fPtProng[iProng]=prongtracks[iProng]->Pt();
+      fEtaProng[iProng]=prongtracks[iProng]->Eta();
+      fPhiProng[iProng]=prongtracks[iProng]->Phi();
+    } else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fPtProng[iProng]=prongtracks[iProng]->Pt();
       fEtaProng[iProng]=prongtracks[iProng]->Eta();
       fPhiProng[iProng]=prongtracks[iProng]->Phi();

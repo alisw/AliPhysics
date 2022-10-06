@@ -23,6 +23,7 @@ AliReconstructedFirstC::AliReconstructedFirstC() :
   fDCAxy(0),
   fDCAz(0),
   fPDGcode(0),
+  fLabel(0),
   fMCmumIdx(0),
   fMCmumPDG(0),
   fMCgrandmumIdx(0),
@@ -170,7 +171,10 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   cCharge(0),
   cAssocOrNot(0),
   cIsCommonParton(0),
-  cPdgCommonParton(0)
+  cPdgCommonParton(0),
+  cLabelPos(0),
+  cLabelNeg(0),
+  cLabelBach(0)
 {
   // std::fill(sMomentum,sMomentum+3,0.);
   // std::fill(sMomentumTruth,sMomentumTruth+3,0.);

@@ -102,6 +102,8 @@ public:
 					//cout << "setting : SCpt dep = " << isSCptdep << endl;}
 	void SetParticleCharge( int charge ){ fPcharge = charge;
 					cout << "setting particle charge = " << charge << endl;}
+	void SetRemoveBadArea( Bool_t shallweremove ){ fremovebadarea = shallweremove;
+					cout << "setting RemoveBadArea = " << fremovebadarea << endl;}
 	//void SetSCwithQC( Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC;
 					//cout << "setting : SC with QC = " << isSCwithQC << endl;}
 	//void SetEbEWeight( Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted;
@@ -133,21 +135,31 @@ public:
 	}
 
 	enum{
-		FLUC_MC = 0x1,
-		FLUC_EXCLUDEWDECAY = 0x2,
-		FLUC_KINEONLY = 0x4,
-		//FLUC_PHI_MODULATION = 0x8,
-		FLUC_MULT_BINS = 0x8,
-		FLUC_PHI_CORRECTION = 0x10,
-		//FLUC_PHI_REJECTION = 0x20,
-		FLUC_SCPT = 0x40,
-		FLUC_EBE_WEIGHTING = 0x80,
-		FLUC_CENT_FLATTENING = 0x100,
-		FLUC_CUT_OUTLIERS = 0x200,
-		FLUC_ALICE_IPINFO = 0x400,
+		FLUC_MC              = 0x1,
+		FLUC_EXCLUDEWDECAY   = 0x2,
+		FLUC_KINEONLY        = 0x4,
+		FLUC_MULT_BINS       = 0x8,
+		FLUC_PHI_CORRECTION  = 0x10,
+		FLUC_SCPT            = 0x20,
+		FLUC_EBE_WEIGHTING   = 0x40,
+		FLUC_CENT_FLATTENING = 0x80,
+		FLUC_CUT_OUTLIERS    = 0x100,
+		FLUC_ALICE_IPINFO    = 0x200,
 	};
 	void AddFlags(UInt_t nflags){
 		flags |= nflags;
+	}
+
+// Methods to provide additional selection cuts.
+  void SetChi2Cuts(double chiMin, double chiMax) {
+		fChi2perNDF_min = chiMin; fChi2perNDF_max = chiMax;
+		cout << "setting chi2perNDF cuts, min = " << fChi2perNDF_min << " and max = " << fChi2perNDF_max << endl;
+	}
+	void SetDCAxyCut(double DCAxyMax) {fDCAxy_max = DCAxyMax;
+		cout << "setting DCAxy cut = " << fDCAxy_max << endl;
+	}
+	void SetDCAzCut(double DCAzMax) {fDCAz_max = DCAzMax;
+		cout << "setting DCAz cut = " << fDCAz_max << endl;
 	}
 
 private:
@@ -182,12 +194,18 @@ private:
 	double fPt_min;
 	double fPt_max;
 	double fzvtxCut;
+	Bool_t fremovebadarea;
 
 	UInt_t subeventMask;
 	BINNING binning;
 
 	UInt_t flags;
-	
+
+// Additional cuts for the selection criteria.
+  double fChi2perNDF_min;	// Minimum requirement for chi2/ndf for TPC
+	double fChi2perNDF_max;	// Maximum requirement for chi2/ndf for TPC
+	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
+	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.	
 
 	ClassDef(AliJFFlucTask, 1);
 

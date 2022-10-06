@@ -46,7 +46,8 @@ protected:
     Double_t        fPvecSubLead[3];
     Int_t           fIsData;
 
-    JetData()
+    JetData(): 
+      fIsData(0)
     {
       Reset();
     }

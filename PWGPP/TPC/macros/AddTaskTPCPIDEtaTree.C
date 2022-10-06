@@ -1,18 +1,19 @@
 AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = kFALSE, Bool_t storeMultiplicity = kTRUE,
                                       Bool_t correctdEdxEtaDependence = kFALSE, Bool_t correctdEdxMultiplicityDependence = kFALSE,
                                       Bool_t setDoAdditionalQA = kFALSE,
-                                      Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
-                                      Bool_t usePhiCut = kFALSE){
+                                      AliTPCPIDBase::TPCcutType tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
+                                      Bool_t usePhiCut = kFALSE,
+                                      Bool_t useFilteredTreeCuts = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_bhess_PIDetaTree", "No analysis manager found.");
+    Error("AddTaskTPCPIDetaTree", "No analysis manager found.");
     return 0;
   }
   
   //========= Add task to the ANALYSIS manager =====
   AliTPCPIDEtaTree *task = new AliTPCPIDEtaTree("TPCPIDEtaTree");
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7);
+  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7 | AliVEvent::kINT8);
   
   //
   // Add track filters
@@ -24,12 +25,10 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
   if (period.Contains("LHC11") || period.Contains("LHC12") || period.Contains("LHC13")) {
     esdTrackCutsL = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
     printf("Using standard ITS-TPC track cuts 2011.\n");
-  }
-  else if (period.Contains("LHC10")) {
+  } else if (period.Contains("LHC10")) {
     esdTrackCutsL = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
     printf("Using standard ITS-TPC track cuts 2010.\n");
-  }
-  else  {
+  } else  {
     esdTrackCutsL = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
     printf("WARNING: Cuts not configured for this period!!! Using standard ITS-TPC track cuts 2011\n");
   }
@@ -37,20 +36,23 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
   task->SetStoreMultiplicity(storeMultiplicity);
   if (task->GetStoreMultiplicity()) {
     printf("Storing multiplicity in tree!\n");
-  }
-  else  {
+  } else {
     printf("NOT storing multiplicity in tree!\n");
   }
   
-  
+  if (useFilteredTreeCuts == kTRUE) {
+    esdTrackCutsL->SetMinNClustersTPC(50);
+    esdTrackCutsL->SetMinNCrossedRowsTPC(70);
+    esdTrackCutsL->SetMaxDCAToVertexXY(3.0);
+    esdTrackCutsL->SetMaxDCAToVertexZ(3.0);
+  }
+
   task->SetIsPbpOrpPb(isPbpOrpPb);
   if (task->GetIsPbpOrpPb()) {
     printf("Collision type pPb/Pbp set -> Adapting vertex cuts!\n");
-  }
-  else  {
+  } else {
     printf("Collision type different from pPb/Pbp -> Using standard vertex cuts!\n");
   }
-  
   
   trackFilter->AddCuts(esdTrackCutsL);
   task->SetTrackFilter(trackFilter);
@@ -60,7 +62,6 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
   printf("UsePhiCut: %d\n", task->GetUsePhiCut());
   printf("UseTPCCutMIGeo: %d\n", task->GetUseTPCCutMIGeo());
   printf("UseTPCnclCut: %d\n", task->GetUseTPCnclCut());
-  
   
   task->SetDoAdditionalQA(setDoAdditionalQA);
   
@@ -77,7 +78,14 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
   
   task->SetPtpcPionCut(0.6);
   printf("P_TPC_Pion cut: %.2f\n", task->GetPtpcPionCut());
-  
+
+  task->SetUseFilteredTreeCuts(useFilteredTreeCuts);
+  if (useFilteredTreeCuts == kTRUE){
+  printf("Using additional cuts from filtered tree spline creation!\n");
+  } else {
+  printf("Using old configurations\n");
+  }
+
   task->SetStoreNumOfSubthresholdclusters(kTRUE);
   printf("Store num subthreshold clusters: %d\n", task->GetStoreNumOfSubthresholdclusters());
   
@@ -101,31 +109,33 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
   //            find input container
   //below the trunk version
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(task,  0, cinput );
 
-  //dumm output container
+  //dummy output container
   AliAnalysisDataContainer *coutput0 =
       mgr->CreateContainer("TPCPIDEtaTree_tree",
                            TTree::Class(),
                            AliAnalysisManager::kExchangeContainer,
                            "TPCPIDEtaTree_default");
+  mgr->ConnectOutput(task,  0, coutput0);
 
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *coutput1 = 
       mgr->CreateContainer("TPCPIDEtaTree", TTree::Class(),
                            AliAnalysisManager::kOutputContainer,"TPCPIDEtaTree.root");
+  mgr->ConnectOutput(task,  1, coutput1);
+  
   AliAnalysisDataContainer *coutput2 = 
       mgr->CreateContainer("TPCPIDEtaTreePions", TTree::Class(),
                            AliAnalysisManager::kOutputContainer,"TPCPIDEtaTreePions.root");
-  AliAnalysisDataContainer *coutput3 = 
-      mgr->CreateContainer("TPCPIDEtaTreeAdditionalQA", TObjArray::Class(),
-                           AliAnalysisManager::kOutputContainer,"TPCPIDEtaTreeAddionalQA.root");
-
-  //connect containers
-  mgr->ConnectInput(task,  0, cinput );
-  mgr->ConnectOutput(task,  0, coutput0);
-  mgr->ConnectOutput(task,  1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2); 
-  mgr->ConnectOutput(task, 3, coutput3); 
-
+      
+  if (task->GetDoAdditionalQA()) {
+      AliAnalysisDataContainer *coutput3 = 
+         mgr->CreateContainer("TPCPIDEtaTreeAdditionalQA", TObjArray::Class(),
+                              AliAnalysisManager::kOutputContainer,"TPCPIDEtaTreeAdditonalQA.root");
+      mgr->ConnectOutput(task, 3, coutput3); 
+  }
+  
   return task;
 }

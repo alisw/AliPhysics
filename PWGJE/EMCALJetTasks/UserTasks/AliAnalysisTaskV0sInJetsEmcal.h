@@ -105,7 +105,7 @@ public:
   Double_t GetNormalPhi(Double_t phi) {while(phi >= fgkdDeltaPhiMax) phi -= TMath::TwoPi(); while(phi < fgkdDeltaPhiMin) phi += TMath::TwoPi(); return phi;} // restrict azimuth to desired range
 
   // upper edges of centrality bins
-  static const Int_t fgkiNBinsCent = 1; // number of centrality bins
+  static const Int_t fgkiNBinsCent = 9; // number of centrality bins
   static const Int_t fgkiCentBinRanges[fgkiNBinsCent]; // upper edges of centrality bins
   // centrality bins for event mixing
   static const Int_t fgkiNBinsCentMix = 2; // number of centrality bins for event mixing

@@ -136,6 +136,7 @@ public:
     virtual     void    SetIfContaminationWeakInMC( bool v )    { NoContaminationWeak   = v; }
     virtual     void    SetIfContaminationWeakMaterialInMC( bool v )    { NoContaminationWeakMaterial   = v; }
     virtual     void    SetIfMisIDWeakMaterialInMCClosure( bool v )     { Closure_NoMisIDWeakMaterial   = v; }
+    virtual     void    SetUsePtEff(int v)                { _usePtEff   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
     virtual     void    SetEventPlane(bool v)               { _useEventPlane  = v; }
@@ -185,6 +186,10 @@ public:
     virtual     void    SetDedxMax(double v)            { _dedxMax           = v; }
     virtual     void    SetNClusterMin(int v)           { _nClusterMin       = v; }
     virtual     void    SetTrackFilterBit(int v)        { _trackFilterBit    = v; }
+
+    virtual     void    SetPtEff_1(TH1F * v)           { _hPtEff_1          = v; }
+    virtual     void    SetPtEff_2(TH1F * v)           { _hPtEff_2          = v; }
+    
     virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
     virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
 
@@ -195,7 +200,7 @@ public:
 
     void SetAnalysisType( const char * analysisType ) { fAnalysisType = analysisType; }
     void SetSystemType( const char * systemType )     { fSystemType = systemType; }
-    void SetResonancesCut( Bool_t NoResonances )      { fExcludeResonancesInMC = NoResonances; }
+    void SetResonancesCut( Bool_t NoResonances )      {  fExcludeResonancesInMC = NoResonances; }
     void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
 
     void SetNSigmaCut( double nsigma )             { fNSigmaPID = nsigma; }
@@ -213,7 +218,6 @@ protected:
     AliAODEvent*             fAODEvent;             //! AOD Event
     AliESDEvent*             fESDEvent;             //! ESD Event
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
-    
     AliPIDResponse*          fPIDResponse; 
     AliHelperPID* fHelperPID;       // points to class for PID
     
@@ -221,7 +225,7 @@ protected:
     //TList*              _inputHistoList;
     TList*              _outputHistoList;   
     //int _outputSlot;
-    
+    TClonesArray*                   fMCArray=nullptr; //!
     
     double   _twoPi;
     long     _eventCount;
@@ -237,6 +241,7 @@ protected:
     bool      NoContaminationWeak;
     bool      NoContaminationWeakMaterial;
     bool      Closure_NoMisIDWeakMaterial;
+    int      _usePtEff;
     int      _useWeights;
     int      _useRapidity;
     bool     _useEventPlane;
@@ -299,6 +304,8 @@ protected:
     
     double _field;
     int    _nTracks;
+    int    _nTracksTruth;
+    Int_t nTracksMC;
     int _nTpcCls;
     double _mult0;
     double _mult1;
@@ -345,6 +352,9 @@ protected:
     float  *_correction_2;           //!
     float  *_dedx_2;           //!
     
+    float * _correctionPtEff_1;           //!
+    float * _correctionPtEff_2;           //!
+
     float * _correctionWeight_1;           //!
     float * _correctionWeight_2;           //!
     
@@ -404,8 +414,10 @@ protected:
     double * __n1_1_vsPt_Weak;   //!
     double * __n1_1_vsPt_Material;   //!
     double * __n1_1_vsEtaPhi;     //!
+    double * __n1Nw_1_vsEtaPhi;     //!
     double * __s1pt_1_vsEtaPhi;    //!
     float  * __n1_1_vsZEtaPhiPt;    //!
+    float  * __wt_1_vsEtaPhi;    //! 
     double * __n1_1_vsEta;   //!
     double * __n1Nw_1_vsEta;   //!
     double * __n1_1_vsPhi;   //!
@@ -419,8 +431,10 @@ protected:
     double * __n1_2_vsPt_Weak;   //!
     double * __n1_2_vsPt_Material;   //!
     double * __n1_2_vsEtaPhi;     //!
+    double * __n1Nw_2_vsEtaPhi;     //!
     double * __s1pt_2_vsEtaPhi;    //!
     float  * __n1_2_vsZEtaPhiPt;    //!
+    float  * __wt_2_vsEtaPhi;    //! 
     double * __n1_2_vsEta;   //!
     double * __n1Nw_2_vsEta;   //!
     double * __n1_2_vsPhi;   //!
@@ -434,10 +448,13 @@ protected:
     
     double * __n2_12_vsPtPt;   //!
     float  * __n2_12_vsEtaPhi;   //!
+    float  * __n2Nw_12_vsEtaPhi;   //!
     float  * __s2ptpt_12_vsEtaPhi;   //!
     float  * __s2PtN_12_vsEtaPhi;   //!
     float  * __s2NPt_12_vsEtaPhi;   //!
     
+    TH1F * _hPtEff_1;
+    TH1F * _hPtEff_2;
     TH3F * _weight_1;
     TH3F * _weight_2;
     //    TProfile * _hProfPileupCut;
@@ -446,6 +463,17 @@ protected:
     TH1D * _m0;
     TH1D * _m1;
     TH1D * _m2;
+    TH1D * _m2DiffMultBeforeCut;
+    TH1D * _m2DiffMult;
+    TH1D * _m2RatioMult;
+    TH1D * _m2Ratio2Mult;
+    TH2F *multDiffVsTruth;
+    TH2F *multDiffNegVsTruth;
+    TH2F *multRecoVsTruth;
+
+    TH2F *multDiff2VsTruth;
+    TH2F *multDiff2NegVsTruth;
+    TH2F *multReco2VsTruth;
     TH1D * _m3;
     TH1D * _m4;
     TH1D * _m5;
@@ -603,9 +631,12 @@ protected:
     TH1F      *  _n1Nw_1_vsEta;
     TH1F      *  _n1_1_vsPhi;
     TH1F      *  _n1Nw_1_vsPhi;
+    //    TH1F      * h1f_wt1_vsEtaPhi;
     TH2F      *  _n1_1_vsEtaVsPhi;
+    TH2F      *  _n1Nw_1_vsEtaVsPhi;
     TH2F      *  _s1pt_1_vsEtaVsPhi;
     TH3F      *  _n1_1_vsZVsEtaVsPhiVsPt;
+    TH1F      *  _wt_1_vsEtaVsPhi;
     TProfile *  _n1_1_vsM;  // w/ weight
     TProfile *  _s1pt_1_vsM;
     TProfile *  _n1Nw_1_vsM; // w/o weight
@@ -657,9 +688,12 @@ protected:
     TH1F      *  _n1Nw_2_vsEta;
     TH1F      *  _n1_2_vsPhi;
     TH1F      *  _n1Nw_2_vsPhi;
+    //    TH1F      * h1f_wt2_vsEtaPhi;
     TH2F      *  _n1_2_vsEtaVsPhi;
+    TH2F      *  _n1Nw_2_vsEtaVsPhi;
     TH2F      *  _s1pt_2_vsEtaVsPhi;
     TH3F      *  _n1_2_vsZVsEtaVsPhiVsPt;
+    TH1F      *  _wt_2_vsEtaVsPhi;
     TProfile *  _n1_2_vsM;
     TProfile *  _s1pt_2_vsM;
     TProfile *  _n1Nw_2_vsM; // w/o weight
@@ -669,7 +703,9 @@ protected:
     TH2F      *  _betaVsP_2;
     
     // Pairs 1 & 2
+    //    TH1F      * h1f_wt12_vsEtaPhi;
     TH1F      * _n2_12_vsEtaPhi;
+    TH1F      * _n2Nw_12_vsEtaPhi;
     TH2F      * _n2_12_vsPtVsPt;
     TH1F      * _s2PtPt_12_vsEtaPhi;
     TH1F      * _s2PtN_12_vsEtaPhi;
@@ -794,6 +830,7 @@ protected:
     
     TString _title_etaPhi_12;
     
+    TString _title_wt;
     TString _title_AvgN2_12;
     TString _title_AvgSumPtPt_12;
     TString _title_AvgSumPtN_12;

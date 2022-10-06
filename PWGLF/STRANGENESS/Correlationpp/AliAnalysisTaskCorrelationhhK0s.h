@@ -11,6 +11,8 @@ class AliCentrality;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisCorrelationEventCollection.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
+#include "AliAODMCHeader.h"
 
 class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE  
 {
@@ -35,11 +37,15 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   void SetEtaV0Assoc(Float_t EtaV0Assoc){fEtaV0Assoc = EtaV0Assoc;}
   void SetFilterBit(Int_t FilterBitValue){fFilterBitValue = FilterBitValue;}
   void SetYear (Int_t year = 2010) { fYear = year;}
+  void SetInclusive (Bool_t isInclusive = 1) {fisInclusiveINELgt0 = isInclusive;}
+  void SetHM (Bool_t isHM) { fisHM = isHM;}
+  void SetMinimumMultPercentile (Float_t PercentilesMin) { lPercentilesMin = PercentilesMin;}
+  void SetMaximumMultPercentile (Float_t PercentilesMax) { lPercentilesMax = PercentilesMax;}
   void SetAssocParticle (TString AssocParticle = "K0s") { fV0 = AssocParticle;}
 
   Float_t GetLengthInActiveZone( AliAODTrack *gt, Float_t deltaY, Float_t deltaZ, Float_t b );
 
-  void ProcessMCParticles(Bool_t Generated, AliAODTrack* track, Int_t& labelPrimOrSec, Float_t lPercentiles, Bool_t isV0, Double_t ZAtDCA, Float_t PtTriggMax, Bool_t fIshhCorr, Int_t PdgCode[], Int_t ParticleLabel[]);
+  void ProcessMCParticles(Bool_t Generated, AliAODTrack* track, Int_t& labelPrimOrSec, Float_t lPercentiles, Bool_t isV0, Double_t ZAtDCA, Float_t PtTriggMax, Bool_t fIshhCorr, Int_t PdgCode[], Int_t ParticleLabel[], AliAODMCHeader* header);
   Double_t CalculateDeltaTheta( Double_t theta1, Double_t theta2 ); 
   Double_t CalculateDeltaPhi( Double_t phi1, Double_t phi2 ) ; 
   Double_t CalculateDeltaEta( Double_t eta1, Double_t eta2 ) ; 
@@ -84,7 +90,13 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   Float_t                  fEtaV0Assoc;
   Int_t                    fFilterBitValue;
   Int_t                    fYear;
+  Bool_t                   fisInclusiveINELgt0;
+  Bool_t                   fisHM;
+  Float_t                  lPercentilesMin;
+  Float_t                  lPercentilesMax;
 
+  TH2F*                   fHistEvtNoTrigger;         //! 
+  TH2F*                   fHistInelCorr;             //!
   TH1F*                   fHistPt;                   //! 
   TH1F*                   fHistDCAxym1;              //! 
   TH1F*                   fHistDCAxym2;              //! 
@@ -95,6 +107,8 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F*                   fHistPtTMaxBefAllCfrDataMC; //!
   TH1F*                   fHistPtTMinBefAll;          //! 
   TH1F*                   fHistPtTMinBefAllMC;        //! 
+  TH2F*                   fHistPtMaxvsMultBefRSelection;     //! 
+  TH2F*                   fHistPtMaxvsMultAfterRSelection;     //! 
   TH2F*                   fHistPtvsMult;              //! 
   TH2F*                   fHistPtvsMultBefAll;        //! 
   TH2F*                   fHistPtMaxvsMult;           //! 
@@ -108,10 +122,12 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH3F*                   fHistNumberChargedTrigger; //!
   TH2F*                   fHist_eta_phi;                //!
   TH2F*                   fHist_eta_phi_PtMax;   	//!
+  TH1F*                   fHist_multiplicityAllSelEvents; 		//!
   TH1F*                   fHist_multiplicity; 		//!
   TH1F*                   fHist_multiplicity_EvwTrigger;//!
   TH1F*                   fHistEventMult;   		//!
   TH1F*                   fHistEventV0;   		//!
+  TH2F*                   fHistEventV0Pt;   		//!
   TH1F*                   fHistTrack;       		//!
   TH1F*                   fHistTOFBunchCrossing; //!
   TH2F*                   fHistLengthvsCrossedRowsAfterSel; //!
@@ -151,6 +167,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F*                   fHistMultvsTriggerMCTruth; 	    //!
   TH1F*                   fHistMassPhoton;  		    //!
   TH1F*                   fHistMass2Photon;  		    //!
+  TH1F*                   fHistctau;                        //!
   TH2F*                   fHistPtArmvsAlpha;  		    //!
   TH2F*                   fHistPtArmvsAlphaAfterSelection;  //!
   TH2F*                   fHistPtArmvsAlphaAfterPhotonSelection;          //! 
@@ -163,14 +180,18 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH1F*                   fHistTriggervsMult; 		    //!
   TH1F*                   fHistTriggervsMultMC; 	    //!
   TH2F*                   fHistMultiplicityOfMixedEvent;    //!
+  TH2F* 	          fHistGeneratedV0Pt;               //!
+  TH2F*                   fHistGeneratedV0PtOOBPileUp;      //!
   TH3F *                  fHistGeneratedTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedTriggerPtPhi; 	    //!
+  TH3F **                 fHistSelectedAllTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtPhi;     //!
   TH3F **                 fHistGeneratedV0PtTMaxPhi; 	    //!
   TH3F **                 fHistCPGeneratedV0PtTMaxPhi; 	    //!
   TH3F **                 fHistSelectedV0PtTMaxPhi; 	    //!
   TH3F *                  fHistGeneratedTriggerPtEta; 	    //!
   TH3F **                 fHistSelectedTriggerPtEta; 	    //!
+  TH3F **                 fHistSelectedAllTriggerPtEta; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtEta;     //!
   TH3F **                 fHistGeneratedV0PtTMaxEta; 	    //!
   TH3F **                 fHistCPGeneratedV0PtTMaxEta; 	    //!
@@ -260,6 +281,9 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   Double_t fTreeVariableZvertex;
   Int_t    fTreeVariablePDGCodeTrigger;
   Int_t    fTreeVariablePDGCodeAssoc;
+  Int_t    fTreeVariableLabelTrigger;
+  Int_t    fTreeVariableLabelPos;
+  Int_t    fTreeVariableLabelNeg;
 
   bool FifoShiftok;	                        		      
 

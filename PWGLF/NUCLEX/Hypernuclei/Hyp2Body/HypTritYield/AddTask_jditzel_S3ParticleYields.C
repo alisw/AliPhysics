@@ -19,10 +19,10 @@ AliAnalysisTask *AddTask_jditzel_S3ParticleYields() {
 
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histogramsheLp", TList::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("treep", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("treeL", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
-    AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("treeGenheLp", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histogramsheLp", TList::Class(),AliAnalysisManager::kOutputContainer,"LPTrees_JD.root");//mgr->GetCommonFileName());
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("treep", TTree::Class(),AliAnalysisManager::kOutputContainer,"LPTrees_JD.root");//mgr->GetCommonFileName());
+    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("treeL", TTree::Class(),AliAnalysisManager::kOutputContainer,"LPTrees_JD.root");//mgr->GetCommonFileName());
+    AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("treeGenheLp", TTree::Class(),AliAnalysisManager::kOutputContainer,"LPTrees_JD.root");//mgr->GetCommonFileName());
     mgr->ConnectOutput(task, 1, coutput1);
     mgr->ConnectOutput(task, 2, coutput2);
     mgr->ConnectOutput(task, 3, coutput4);

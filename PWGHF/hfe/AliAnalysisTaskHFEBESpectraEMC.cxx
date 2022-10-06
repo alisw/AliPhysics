@@ -144,6 +144,8 @@ fPi0Weight(0),
 fEtaWeight(0),
 fnBinsDCAHisto(400),
 fTrkDCA(-999.0),
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
 fDcent(0),
 fDUp(0),
 fDDown(0),
@@ -222,6 +224,7 @@ fInvmassLSPt(0),
 fHFmomCorr(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
+fInclsElecPtClsE(0),
 fInclsElecPt(0),
 fHadPt_AftEID(0),
 fHadEovp_AftEID(0),
@@ -413,6 +416,8 @@ fPi0Weight(0),
 fEtaWeight(0),
 fnBinsDCAHisto(400),
 fTrkDCA(-999.0),
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
 fDcent(0),
 fDUp(0),
 fDDown(0),
@@ -491,6 +496,7 @@ fInvmassLSPt(0),
 fHFmomCorr(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
+fInclsElecPtClsE(0),
 fInclsElecPt(0),
 fHadPt_AftEID(0),
 fHadEovp_AftEID(0),
@@ -661,6 +667,11 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
             fEtaWeight->SetParameters(3.23001e+02,-5.86318e-02,-2.14621e-04,1.90352e+00,5.26774e+00);
         }
     }
+    
+    fFuncPtDepEta = new TF1("fFuncPtDepEta", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+    fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
+    fFuncPtDepPhi = new TF1("fFuncPtDepPhi", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+    fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
     
     ///////////////////////////
     //Histos for MC templates//
@@ -870,6 +881,9 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     
     fEleCanITShit = new TH1F("fEleCanITShit","ITS hit map;ITS layer;counts",7,-0.5,6.5);
     fOutputList->Add(fEleCanITShit);
+    
+    fInclsElecPtClsE = new TH2F("fInclsElecPtClsE","Cls E vs pT of inclusive electrons;p_{T} (GeV/c);ClsE",500,0,50,500,0.0, 50.0);
+    fOutputList->Add(fInclsElecPtClsE);
     
     fInclsElecPt = new TH1F("fInclsElecPt","p_{T} distribution of inclusive electrons;p_{T} (GeV/c);counts",500,0,50);
     fOutputList->Add(fInclsElecPt);
@@ -1627,10 +1641,15 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
-            fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
-            fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);
+            
+            if(fDeltaPhi < 0)
+                fDeltaPhi = fFuncPtDepPhi->Eval(track->Pt());
+            if(fDeltaEta < 0)
+                fDeltaEta = fFuncPtDepEta->Eval(track->Pt());
             
             if(TMath::Abs(fPhiDiff) > fDeltaPhi || TMath::Abs(fEtaDiff)> fDeltaEta) continue;
+            fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
+            fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);
             
             /////////////////////////////////
             //Select EMCAL or DCAL clusters//
@@ -1651,6 +1670,11 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if(!fIsMC){
+                if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+                if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
+            }
             
             /////////////////////////////
             //Reconstruction efficiency//
@@ -1745,6 +1769,7 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             
             fInclsElecPt->Fill(TrkPt);
             fInclElecDCA->Fill(TrkPt,fTrkDCA);
+            fInclsElecPtClsE->Fill(TrkPt,clustMatchE);
             
             fNEle++;
             
@@ -2062,6 +2087,12 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
         
         if(clust && clust->IsEMCAL())
         {
+            //Removing exotic clusters using IsExotic function in data and using M02 min cut
+            if(!fIsMC)
+                if(clust->GetIsExotic()) continue;
+            Double_t m02 = clust->GetM02();
+            if(m02 < 0.02) continue;
+            
             Double_t clustE_NL = clust->GetNonLinCorrEnergy();
             Double_t clustE = clust->E();
             if(clustE < 0.3) continue;
@@ -2086,6 +2117,11 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            Float_t tof = clust->GetTOF()*1e+9; // ns
+            fHistoTimeEMC->Fill(clustE,tof);
+            if(!fIsMC)
+                if(TMath::Abs(tof) > 50) continue;
+            
             fHistClustE->Fill(clust->E());
             fHistNonLinClustE->Fill(clustE_NL);
             
@@ -2095,9 +2131,6 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
             Double_t EperCell = -999.9;
             if(clust->GetNCells()>0)EperCell = clustE/clust->GetNCells();
             fHistoEperCell->Fill(clustE,EperCell);
-            
-            Float_t tof = clust->GetTOF()*1e+9; // ns
-            fHistoTimeEMC->Fill(clustE,tof);
             
             //-----Plots for EMC trigger
             Bool_t hasfiredEG1=0;

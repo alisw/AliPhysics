@@ -46,6 +46,7 @@ class AliESDEvent;
 class AliHelperPID;
 class AliAnalysisUtils;
 class TFormula;
+class TRandom3;
 class TMap;
 class AliGenEventHeader;
 class AliVEvent;
@@ -90,6 +91,7 @@ public:
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
   void SetCentralityMCGen_V0M(TH1* hist) { fCentralityMCGen_V0M = hist; }
   void SetCentralityMCGen_CL1(TH1* hist) { fCentralityMCGen_CL1 = hist; }
+  void SetCentralityCorrection(TH2* hist) { fCentralityCorrection = hist; }
   // for event QA
   void SetTracksInVertex(Int_t val) { fnTracksVertex = val; }
   void SetZVertex(Double_t val) { fZVertex = val; }
@@ -114,6 +116,7 @@ public:
   // track cuts
   void SetTrackletDphiCut(Double_t val) { fTrackletDphiCut = val; }
 
+  void SetDeltaEtaAcceptance(TFormula* deltaEtaAcceptance) { fDeltaEtaAcceptance = deltaEtaAcceptance; }
   void SetEventSelectionBit(UInt_t val) { fSelectBit = val;  }
   void SetUseChargeHadrons(Bool_t val) { fUseChargeHadrons = val; }
   void SetSelectParticleSpecies(Int_t trigger, Int_t associated) { fParticleSpeciesTrigger = trigger; fParticleSpeciesAssociated = associated; }
@@ -132,8 +135,10 @@ public:
   void SetCutOnK0s(Float_t cutOnK0s) { fCutOnK0sV = cutOnK0s; }
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetCentralityMethod(const char* method) { fCentralityMethod = method; }
+  void SetCentralityMethodStep6(const char* method) { fCentralityMethodStep6 = method; }
+  void SetCentralityMethodStep10(const char* method) { fCentralityMethodStep10 = method; }
   void SetFillpT(Bool_t flag) { fFillpT = flag; }
-  void SetStepsFillSkip(Bool_t step0, Bool_t step6, Bool_t step9 = kTRUE) { fFillOnlyStep0 = step0; fSkipStep6 = step6; fSkipStep9 = step9; }
+  void SetStepsFillSkip(Bool_t step0, Bool_t step6, Bool_t step8 = kFALSE, Bool_t step9 = kTRUE) { fFillOnlyStep0 = step0; fSkipStep6 = step6; fSkipStep8 = step8, fSkipStep9 = step9; }
   void SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
   void SetRejectZeroTrackEvents(Bool_t flag) { fRejectZeroTrackEvents = flag; }
   void SetRemoveWeakDecays(Bool_t flag = kTRUE) { fRemoveWeakDecays = flag; }
@@ -196,7 +201,7 @@ private:
   void AnalyseCorrectionMode(); // main algorithm to get correction maps
   void AnalyseDataMode();       // main algorithm to get raw distributions
   void Initialize();            // initialize some common pointer
-  Double_t GetCentrality(AliVEvent* inputEvent, TObject* mc);
+  Double_t GetCentrality(TString& centralityMethod, AliVEvent* inputEvent, TObject* mc);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks, Double_t minPt = 0., Double_t maxPt = -1.);
   void RemoveDuplicates(TObjArray* tracks);
   void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
@@ -239,9 +244,12 @@ private:
 
   THnF* fEfficiencyCorrectionTriggers;   // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
   THnF* fEfficiencyCorrectionAssociated; // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+  TFormula*           fDeltaEtaAcceptance; //if non-0, randomly reject particle pairs according to this distribution as a function of delta-eta
+  TRandom3*           fDeltaEtaAcceptanceRNG; //! RNG for the delta-eta rejection
   TH1* fCentralityWeights;               // for centrality flattening
   TH1* fCentralityMCGen_V0M;             // for centrality from generated MCGen_V0M
   TH1* fCentralityMCGen_CL1;             // for centrality from generated MCGen_CL1
+  TH2* fCentralityCorrection;            // for centrality correction
 
   // Handlers and events
   AliAODEvent*             fAOD;             //! AOD Event
@@ -260,6 +268,8 @@ private:
   Double_t            fZVertex;              // Position of Vertex in Z direction
   Bool_t              fAcceptOnlyMuEvents;   // Only Events with at least one muon are accepted
   TString             fCentralityMethod;     // Method to determine centrality
+  TString             fCentralityMethodStep6;// Optionally a different method can be used for step6 to 9
+  TString             fCentralityMethodStep10;  //Optionally a different method can be used for step10
 
   // Track cuts
   Double_t            fTrackEtaCut;          // Maximum Eta cut on particles
@@ -304,6 +314,7 @@ private:
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Bool_t fFillOnlyStep0;         // fill only step 0
   Bool_t fSkipStep6;             // skip step 6 when filling
+  Bool_t fSkipStep8;             // skip step 8 when filling
   Bool_t fSkipStep9;             // skip step 9 when filling
   Bool_t fRejectCentralityOutliers; // enable rejection of outliers in centrality vs no track correlation. Interferes with the event plane dependence code
   Bool_t fRejectZeroTrackEvents; // reject events which have no tracks (using the eta, pT cuts defined)
@@ -342,7 +353,7 @@ private:
   Bool_t fUsePtBinnedEventPool;                   // uses event pool in pt bins
   Bool_t fCheckEventNumberInMixedEvent;           // check event number before correlation in mixed event
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 63); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 66); // Analysis task for delta phi correlations
 };
 
 #endif

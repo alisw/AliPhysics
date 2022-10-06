@@ -107,10 +107,42 @@ public:
    */
   virtual ~AliEmcalTriggerSelectionCuts() {}
 
+  /**
+   * @brief Get patch type used for trigger selection
+   * @return Patch type (gamma, jet, Level0) 
+   */
   PatchType_t GetPatchType() const { return fPatchType; }
+
+  /**
+   * @brief Get the patch selection method (basically energy definition)
+   * @return patch selection method
+   */
   SelectionMethod_t GetSelectionMethod() const { return fSelectionMethod; }
+
+  /**
+   * @brief Get threshold used to select patches
+   * @return Trigger threshold
+   */
   Double_t GetThreshold() const { return fThreshold; }
+
+  /**
+   * @brief Check if selection is done based on simple offline method (energy calculated from patch energy)
+   * @return If true simple offline patches are used for trigger selection
+   */
   Bool_t IsRequestingSimpleOfflinePatches() const { return fUseSimpleOffline; }
+
+  /**
+   * @brief Check if selection is done based on recalc method (energy calculated from patch ADC)
+   * @return If true recalc patches are used for trigger selection
+   */
+  Bool_t IsRequestingRecalc() const { return fUseRecalc; }
+
+  /**
+   * @brief Check if selection is done based on online method (energy calculated from patch ADC + request for STU L1 selection)
+   * @return If true online patches are used for trigger selection
+   */
+  Bool_t IsRequestingOnlinePatches() const { return fUseOnlinePatches; }
+
 
   /**
    * @brief Check whether rho calculation is requested by the selection cuts
@@ -124,12 +156,57 @@ public:
    */
   RhoMethod_t GetRhoMethod() const { return fRhoMethod; }
 
+  /**
+   * @brief Set the patch type for trigger selection
+   * @param patchType Patch type (can be gamma, jet or Level0 patch)
+   */
   void SetPatchType(PatchType_t patchType) { fPatchType = patchType; }
+
+  /**
+   * @brief Set the Acceptance Type object
+   * @param acceptance Acceptance (can be EMCAL or DCAL)
+   */
   void SetAcceptanceType(AcceptanceType_t acceptance) { fAcceptanceType = acceptance; }
+
+  /**
+   * @brief Set selection method (basically energy definition)
+   * @param selectionMethod Patch selection method
+   */
   void SetSelectionMethod(SelectionMethod_t selectionMethod) { fSelectionMethod = selectionMethod; }
+
+  /**
+   * @brief Set the trigger threshold used to select trigger patches
+   * @param threshold Trigger threshold
+   */
   void SetThreshold(Double_t threshold) { fThreshold = threshold; }
+
+  /**
+   * @brief Require simple offline patches for trigger selection
+   * @param doUse If true simple offline patches are required
+   * 
+   * Offline patches are recalculated from cell energies. Selection can
+   * be done based on the patch energy, the smeared patch energy (recommended),
+   * or patch ADC value calculated from the patch energy
+   */
   void SetUseSimpleOfflinePatches(Bool_t doUse = kTRUE) { fUseSimpleOffline = doUse; }
+
+  /**
+   * @brief Require recalc patches for trigger selection
+   * @param doUse  If true recalc patches are required
+   * 
+   * Recalc patches are selected purely on the patch ADC, ignoring 
+   * the trigger decision from the STU
+   */
   void SetUseRecalcPatches(Bool_t doUse = kTRUE) { fUseRecalc = doUse; }
+
+  /**
+   * @brief Require online patches for trigger selection
+   * @param doUse If true online patches are required
+   * 
+   * Online patches are selected based on the ADC value of the patch, however
+   * in addition require a trigger status from the STU
+   */
+  void SetUseOnlinePatches(Bool_t doUse = kTRUE) { fUseOnlinePatches = doUse; }
 
   /**
    * @brief Enable/Disable background subtraction from the patch energy / ADC
@@ -216,6 +293,7 @@ protected:
   Double_t              fThreshold;                 ///< Threshold used
   Bool_t                fUseSimpleOffline;          ///< Request simple offline patches
   Bool_t                fUseRecalc;                 ///< Request recalc patch
+  Bool_t                fUseOnlinePatches;          ///< Request online patches (including selection from STU)
   Bool_t                fSubtractRho;               ///< Subtract rho from trigger patches
   RhoMethod_t           fRhoMethod;                 ///< Method to calculate rho
 

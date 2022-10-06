@@ -28,10 +28,7 @@
 
 class AliAnalysisTaskBaseWeights;
 
-namespace {
-using namespace Hist;
 using namespace std;
-} // namespace
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskBaseWeights)
@@ -41,11 +38,11 @@ ClassImp(AliAnalysisTaskBaseWeights)
 AliAnalysisTaskBaseWeights::AliAnalysisTaskBaseWeights()
 : AliAnalysisTaskMKBase(), fCollSystem(CollisionSystem::pp),
 fUseRandomSeed(kFALSE), fRand(0), fMCSpectraWeights(0), fMCweight(1),
-fMCweightRandom(1), fMCweightSys(1), fMCweightSysRandom(1), fNch(0),
+fMCweightRandom(1), fMCweightSys(1), fMCweightSysDown(1), fMCweightSysRandom(1), fNch(0),
 fNchWeighted(0), fNchWeightedRandom(0), fNchWeightedSys(0),
 fNchWeightedSysRandom(0), fNacc(0), fNaccWeighted(0),
 fNaccWeightedRandom(0), fNaccWeightedSys(0),
-fNaccWeightedSysRandom(0), fHistEffCont{}, fHistMultCorrelation{} {
+fNaccWeightedSysRandom(0), fHistEffContNominal{}, fHistEffContWeighted{}, fHistEffContWeightedRandom{}, fHistEffContWeightedSys{}, fHistEffContWeightedSysDown{}, fHistEffContWeightedSysRandom{}, fHistMultCorrelationNominal{}, fHistMultCorrelationWeighted{}, fHistMultCorrelationWeightedRandom{}, fHistMultCorrelationWeightedSys{}, fHistMultCorrelationWeightedSysRandom{}, fHistPionRec{}, fHistPionGen{} {
     // default contructor
 }
 
@@ -54,11 +51,11 @@ fNaccWeightedSysRandom(0), fHistEffCont{}, fHistMultCorrelation{} {
 AliAnalysisTaskBaseWeights::AliAnalysisTaskBaseWeights(const char* name)
 : AliAnalysisTaskMKBase(name), fCollSystem(CollisionSystem::pp),
 fUseRandomSeed(kFALSE), fRand(0), fMCSpectraWeights(0), fMCweight(1),
-fMCweightRandom(1), fMCweightSys(1), fMCweightSysRandom(1), fNch(0),
+fMCweightRandom(1), fMCweightSys(1),fMCweightSysDown(1), fMCweightSysRandom(1), fNch(0),
 fNchWeighted(0), fNchWeightedRandom(0), fNchWeightedSys(0),
 fNchWeightedSysRandom(0), fNacc(0), fNaccWeighted(0),
 fNaccWeightedRandom(0), fNaccWeightedSys(0),
-fNaccWeightedSysRandom(0), fHistEffCont{}, fHistMultCorrelation{} {
+fNaccWeightedSysRandom(0), fHistEffContNominal{}, fHistEffContWeighted{}, fHistEffContWeightedRandom{}, fHistEffContWeightedSys{}, fHistEffContWeightedSysDown{}, fHistEffContWeightedSysRandom{}, fHistMultCorrelationNominal{}, fHistMultCorrelationWeighted{}, fHistMultCorrelationWeightedRandom{}, fHistMultCorrelationWeightedSys{}, fHistMultCorrelationWeightedSysRandom{}, fHistPionRec{}, fHistPionGen{} {
     // constructor
 }
 //_____________________________________________________________________________
@@ -78,11 +75,7 @@ void AliAnalysisTaskBaseWeights::AddOutput() {
 
     std::vector<double> centBins = {0.,  10., 20., 30., 40.,
         50., 60., 70., 80., 90.};
-    std::vector<double> ptBins = {
-        0.0,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45, 0.5,  0.55,  0.6,
-        0.65, 0.7,  0.75, 0.8,  0.85, 0.9,  0.95, 1.0,  1.1,  1.2,   1.4,
-        1.6,  1.8,  2.0,  2.2,  2.4,  2.6,  2.8,  3.0,  3.2,  3.6,   4.0,
-        5.0,  6.0,  8.0,  10.0, 13.0, 20.0, 30.0, 50.0, 80.0, 100.0, 200.0};
+    std::vector<double> ptBins = {0.0, 0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,10,13,20, 30, 50, 80, 100, 200};
 
     std::vector<double> multBins;
     if (fCollSystem == AliAnalysisTaskBaseWeights::CollisionSystem::pp) {
@@ -114,7 +107,11 @@ void AliAnalysisTaskBaseWeights::AddOutput() {
             multBins.push_back(i);
         }
     }
+    std::vector<double> etaBins{-1,-0.8,0.8,1};
+    std::vector<double> yBins{-1,-0.5,0.5,1};
 
+    Axis etaAxis{"#eta", "pseudorapidity", etaBins};
+    Axis yAxis{"y", "rapidity", yBins};
     Axis centAxis{"cent", "centrality", centBins};
     Axis multAxisNch{"Nch", "#it{N}_{ch}", multBins};
     Axis multAxisNacc{"Nacc", "#it{N}_{acc}", multBins};
@@ -124,7 +121,7 @@ void AliAnalysisTaskBaseWeights::AddOutput() {
                                         // 7=sigmaM, 8=xi, 9=omega, 5=other
     Axis mcInfoAxis{"mcInfo",
         "mcInfo",
-        {-0.3, 3.5},
+        {-0.5, 3.5},
         4}; // 0=prim, 1=decay 2=material, 3=genprim
     Axis mcWeightAxis{"weight",
         "weight",
@@ -134,20 +131,98 @@ void AliAnalysisTaskBaseWeights::AddOutput() {
 
     // Hists
     double requiredMemory = 0.;
-    fHistEffCont.AddAxis(centAxis);
-    fHistEffCont.AddAxis(multAxisNch);
-    fHistEffCont.AddAxis(ptAxis);
-    fHistEffCont.AddAxis(pidAxis);
-    fHistEffCont.AddAxis(mcInfoAxis);
-    fHistEffCont.AddAxis(mcWeightAxis);
-    fOutputList->Add(fHistEffCont.GenerateHist("fHistEffCont"));
-    requiredMemory += fHistEffCont.GetSize();
+//    fHistEffCont.AddAxis(centAxis);
+    fHistEffContNominal.AddAxis(multAxisNch);
+    fHistEffContNominal.AddAxis(ptAxis);
+    fHistEffContNominal.AddAxis(pidAxis);
+    fHistEffContNominal.AddAxis(mcInfoAxis);
+//    fHistEffCont.AddAxis(mcWeightAxis);
+    fHistEffContNominal.AddAxis(etaAxis);
+    fHistEffContNominal.AddAxis(yAxis);
+    fOutputList->Add(fHistEffContNominal.GenerateHist("fHistEffContNominal"));
+    requiredMemory += fHistEffContNominal.GetSize();
 
-    fHistMultCorrelation.AddAxis(centAxis);
-    fHistMultCorrelation.AddAxis(multAxisNch);
-    fHistMultCorrelation.AddAxis(multAxisNacc);
-    fOutputList->Add(fHistMultCorrelation.GenerateHist("fHistMultCorrelation"));
-    requiredMemory += fHistEffCont.GetSize();
+    fHistEffContWeighted.AddAxis(multAxisNch);
+    fHistEffContWeighted.AddAxis(ptAxis);
+    fHistEffContWeighted.AddAxis(pidAxis);
+    fHistEffContWeighted.AddAxis(mcInfoAxis);
+    fHistEffContWeighted.AddAxis(etaAxis);
+    fHistEffContWeighted.AddAxis(yAxis);
+    fOutputList->Add(fHistEffContWeighted.GenerateHist("fHistEffContWeighted"));
+    requiredMemory += fHistEffContWeighted.GetSize();
+
+    fHistEffContWeightedRandom.AddAxis(multAxisNch);
+    fHistEffContWeightedRandom.AddAxis(ptAxis);
+    fHistEffContWeightedRandom.AddAxis(pidAxis);
+    fHistEffContWeightedRandom.AddAxis(mcInfoAxis);
+    fHistEffContWeightedRandom.AddAxis(etaAxis);
+    fHistEffContWeightedRandom.AddAxis(yAxis);
+    fOutputList->Add(fHistEffContWeightedRandom.GenerateHist("fHistEffContWeightedRandom"));
+    requiredMemory += fHistEffContWeightedRandom.GetSize();
+
+    fHistEffContWeightedSys.AddAxis(multAxisNch);
+    fHistEffContWeightedSys.AddAxis(ptAxis);
+    fHistEffContWeightedSys.AddAxis(pidAxis);
+    fHistEffContWeightedSys.AddAxis(mcInfoAxis);
+    fHistEffContWeightedSys.AddAxis(etaAxis);
+    fHistEffContWeightedSys.AddAxis(yAxis);
+    fOutputList->Add(fHistEffContWeightedSys.GenerateHist("fHistEffContWeightedSys"));
+    requiredMemory += fHistEffContWeightedSys.GetSize();
+
+    fHistEffContWeightedSysDown.AddAxis(multAxisNch);
+    fHistEffContWeightedSysDown.AddAxis(ptAxis);
+    fHistEffContWeightedSysDown.AddAxis(pidAxis);
+    fHistEffContWeightedSysDown.AddAxis(mcInfoAxis);
+    fHistEffContWeightedSysDown.AddAxis(etaAxis);
+    fHistEffContWeightedSysDown.AddAxis(yAxis);
+    fOutputList->Add(fHistEffContWeightedSysDown.GenerateHist("fHistEffContWeightedSysDown"));
+    requiredMemory += fHistEffContWeightedSysDown.GetSize();
+
+    fHistEffContWeightedSysRandom.AddAxis(multAxisNch);
+    fHistEffContWeightedSysRandom.AddAxis(ptAxis);
+    fHistEffContWeightedSysRandom.AddAxis(pidAxis);
+    fHistEffContWeightedSysRandom.AddAxis(mcInfoAxis);
+    fHistEffContWeightedSysRandom.AddAxis(etaAxis);
+    fHistEffContWeightedSysRandom.AddAxis(yAxis);
+    fOutputList->Add(fHistEffContWeightedSysRandom.GenerateHist("fHistEffContWeightedSysRandom"));
+    requiredMemory += fHistEffContWeightedSysRandom.GetSize();
+
+    // correlation hists
+    fHistMultCorrelationNominal.AddAxis(multAxisNch);
+    fHistMultCorrelationNominal.AddAxis(multAxisNacc);
+    fOutputList->Add(fHistMultCorrelationNominal.GenerateHist("fHistMultCorrelationNominal"));
+    requiredMemory += fHistMultCorrelationNominal.GetSize();
+
+    fHistMultCorrelationWeighted.AddAxis(multAxisNch);
+    fHistMultCorrelationWeighted.AddAxis(multAxisNacc);
+    fOutputList->Add(fHistMultCorrelationWeighted.GenerateHist("fHistMultCorrelationWeighted"));
+    requiredMemory += fHistMultCorrelationWeighted.GetSize();
+
+    fHistMultCorrelationWeightedRandom.AddAxis(multAxisNch);
+    fHistMultCorrelationWeightedRandom.AddAxis(multAxisNacc);
+    fOutputList->Add(fHistMultCorrelationWeightedRandom.GenerateHist("fHistMultCorrelationWeightedRandom"));
+    requiredMemory += fHistMultCorrelationWeightedRandom.GetSize();
+
+    fHistMultCorrelationWeightedSys.AddAxis(multAxisNch);
+    fHistMultCorrelationWeightedSys.AddAxis(multAxisNacc);
+    fOutputList->Add(fHistMultCorrelationWeightedSys.GenerateHist("fHistMultCorrelationWeightedSys"));
+    requiredMemory += fHistMultCorrelationWeightedSys.GetSize();
+
+    fHistMultCorrelationWeightedSysRandom.AddAxis(multAxisNch);
+    fHistMultCorrelationWeightedSysRandom.AddAxis(multAxisNacc);
+    fOutputList->Add(fHistMultCorrelationWeightedSysRandom.GenerateHist("fHistMultCorrelationWeightedSysRandom"));
+    requiredMemory += fHistMultCorrelationWeightedSysRandom.GetSize();
+
+    // sanity QA
+    fHistPionRec.AddAxis(multAxisNch);
+    fHistPionRec.AddAxis(ptAxis);
+    fOutputList->Add(fHistPionRec.GenerateHist("fHistPionRec"));
+    requiredMemory += fHistPionRec.GetSize();
+
+    fHistPionGen.AddAxis(multAxisNch);
+    fHistPionGen.AddAxis(ptAxis);
+    fOutputList->Add(fHistPionGen.GenerateHist("fHistPionGen"));
+    requiredMemory += fHistPionGen.GetSize();
 
     AliError(Form("Estimated memory usage of histograms: %.0f Bytes (%f MiB)",
                   requiredMemory, requiredMemory / 1048576));
@@ -191,25 +266,24 @@ void AliAnalysisTaskBaseWeights::AnaEventMC() {
     fNaccWeightedSys = 0;
     fNaccWeightedSysRandom = 0;
 
-    fMCSpectraWeights = static_cast<AliMCSpectraWeightsHandler*>(
-                                                                 fEvent->FindListObject("fMCSpectraWeights"))
-    ->fMCSpectraWeight;
+    AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
+    fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
 
-    if (fMCSpectraWeights) {
-        DebugPCC("found fMCSpectraWeights in this event\n");
-        DebugPCC("Status: " << fMCSpectraWeights->GetTaskStatus() << "\n");
-    } else {
-        DebugPCC("could not find fMCSpectraWeights in this event\n");
-    }
+//    if (fMCSpectraWeights) {
+//        DebugPCC("found fMCSpectraWeights in this event\n");
+//        DebugPCC("Status: " << fMCSpectraWeights->GetTaskStatus() << "\n");
+//    } else {
+//        DebugPCC("could not find fMCSpectraWeights in this event\n");
+//    }
 
-    LoopOverAllTracks();
     LoopOverAllParticles();
+    LoopOverAllTracks();
 
-    fHistMultCorrelation.Fill(static_cast<Double_t>(fNch), static_cast<Double_t>(fNacc), static_cast<Double_t>(0));
-    fHistMultCorrelation.Fill(static_cast<Double_t>(fNchWeighted), static_cast<Double_t>(fNaccWeighted), static_cast<Double_t>(1));
-    fHistMultCorrelation.Fill(static_cast<Double_t>(fNchWeightedRandom), static_cast<Double_t>(fNaccWeightedRandom), static_cast<Double_t>(2));
-    fHistMultCorrelation.Fill(static_cast<Double_t>(fNchWeightedSys), static_cast<Double_t>(fNaccWeightedSys), static_cast<Double_t>(3));
-    fHistMultCorrelation.Fill(static_cast<Double_t>(fNchWeightedSysRandom), static_cast<Double_t>(fNaccWeightedSysRandom), static_cast<Double_t>(4));
+    fHistMultCorrelationNominal.Fill(static_cast<Double_t>(fNch), static_cast<Double_t>(fNacc));
+    fHistMultCorrelationWeighted.Fill(static_cast<Double_t>(fNchWeighted), static_cast<Double_t>(fNaccWeighted));
+    fHistMultCorrelationWeightedRandom.Fill(static_cast<Double_t>(fNchWeightedRandom), static_cast<Double_t>(fNaccWeightedRandom));
+    fHistMultCorrelationWeightedSys.Fill(static_cast<Double_t>(fNchWeightedSys), static_cast<Double_t>(fNaccWeightedSys));
+    fHistMultCorrelationWeightedSysRandom.Fill(static_cast<Double_t>(fNchWeightedSysRandom), static_cast<Double_t>(fNaccWeightedSysRandom));
 
     DebugPCC("\tmultiplicities:\t mult\t weighted\t weightedRandom\t weightSys\t "
              "weightSysRandom\n");
@@ -262,31 +336,60 @@ void AliAnalysisTaskBaseWeights::AnaTrackMC(Int_t flag) {
     if (TMath::Abs(fMCQ > 1)) {
         Log("RecTrack.Q>1.PDG.", fMCPDGCode);
     }
+    if(fMCPileUpTrack){
+        Log("PileUpTrack");
+        return;
+    }
 
-    fHistEffCont.FillWeight(
-                            static_cast<Double_t>(1), static_cast<Double_t>(fMultPercentileV0M),
-                            static_cast<Double_t>(fNTracksAcc), static_cast<Double_t>(fMCPt),
-                            static_cast<Double_t>(fMCParticleType),
-                            static_cast<Double_t>(fMCProdcutionType), static_cast<Double_t>(0));
-    fHistEffCont.FillWeight(
-                            fMCweight, fMultPercentileV0M, static_cast<Double_t>(fNTracksAcc),
+    // get the scaling factor
+    if(fMCSpectraWeights && 0==fMCPrimSec && fMCParticle->Particle()){ // only for primary particles
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
+        fMCweightRandom = GetRandomRoundDouble(fMCweight);
+        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    }
+    if(fMCSpectraWeights && 1==fMCPrimSec && fMCParticle->Particle()){ // only for secondaries from decay
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+        fMCweightSys = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
+        fMCweightRandom = GetRandomRoundDouble(fMCweight);
+        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    }
+
+    // Fill Histograms
+    fHistEffContNominal.FillWeight(
+                            static_cast<Double_t>(1),
+                            static_cast<Double_t>(fMCnPrim05), static_cast<Double_t>(fMCPt),
+                            static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(fMCProdcutionType), fMCEta, fMCY);
+    fHistEffContWeighted.FillWeight(
+                            fMCweight, static_cast<Double_t>(fMCnPrim05),
                             static_cast<Double_t>(fMCPt), static_cast<Double_t>(fMCParticleType),
-                            static_cast<Double_t>(fMCProdcutionType), static_cast<Double_t>(1));
-    fHistEffCont.FillWeight(
-                            fMCweightRandom, static_cast<Double_t>(fMultPercentileV0M),
-                            static_cast<Double_t>(fNTracksAcc), fMCPt,
+                            static_cast<Double_t>(fMCProdcutionType), fMCEta, fMCY);
+    fHistEffContWeightedRandom.FillWeight(
+                            fMCweightRandom,
+                            static_cast<Double_t>(fMCnPrim05), static_cast<Double_t>(fMCPt),
                             static_cast<Double_t>(fMCParticleType),
-                            static_cast<Double_t>(fMCProdcutionType), static_cast<Double_t>(2));
-    fHistEffCont.FillWeight(
-                            fMCweightSys, static_cast<Double_t>(fMultPercentileV0M),
-                            static_cast<Double_t>(fNTracksAcc), static_cast<Double_t>(fMCPt),
+                            static_cast<Double_t>(fMCProdcutionType), fMCEta, fMCY);
+    fHistEffContWeightedSys.FillWeight(
+                            fMCweightSys,
+                            static_cast<Double_t>(fMCnPrim05), static_cast<Double_t>(fMCPt),
                             static_cast<Double_t>(fMCParticleType),
-                            static_cast<Double_t>(fMCProdcutionType), static_cast<Double_t>(3));
-    fHistEffCont.FillWeight(
-                            fMCweightSysRandom, static_cast<Double_t>(fMultPercentileV0M),
-                            static_cast<Double_t>(fNTracksAcc), static_cast<Double_t>(fMCPt),
+                            static_cast<Double_t>(fMCProdcutionType), fMCEta, fMCY);
+    fHistEffContWeightedSysDown.FillWeight(
+                                           fMCweightSysDown, static_cast<Double_t>(fMCnPrim05),
+                                           static_cast<Double_t>(fMCPt), static_cast<Double_t>(fMCParticleType),
+                                           static_cast<Double_t>(fMCProdcutionType), fMCEta, fMCY);
+    fHistEffContWeightedSysRandom.FillWeight(
+                            fMCweightSysRandom,
+                            static_cast<Double_t>(fMCnPrim05), static_cast<Double_t>(fMCPt),
                             static_cast<Double_t>(fMCParticleType),
-                            static_cast<Double_t>(fMCProdcutionType), static_cast<Double_t>(4));
+                            static_cast<Double_t>(fMCProdcutionType), fMCEta, fMCY);
+
+    if(fMCParticleType==AlidNdPtTools::ParticleType::kPi){
+        // fill rec
+        fHistPionRec.Fill(fMCnPrim05, fMCPt);
+    }
 
     if (fPt > 0.15 && fPt < 50.0 && TMath::Abs(fEta) < 0.8) {
         ++fNacc;
@@ -304,7 +407,7 @@ void AliAnalysisTaskBaseWeights::AnaParticleMC(Int_t flag) {
         return;
     if (!fMCIsCharged)
         return;
-    if (TMath::Abs(fMCEta) > 0.8)
+    if (TMath::Abs(fMCEta) > 1)
         return;
 
     if (fMCParticleType == AlidNdPtTools::kOther) {
@@ -313,23 +416,51 @@ void AliAnalysisTaskBaseWeights::AnaParticleMC(Int_t flag) {
     if (TMath::Abs(fMCQ > 1)) {
         Log("GenPrim.Q>1.PDG.", fMCPDGCode);
     }
+    if(fMCPileUpTrack){
+        Log("PileUpTrack");
+        return;
+    }
 
-    fHistEffCont.FillWeight(
-                             static_cast<Double_t>(1), fMultPercentileV0M, static_cast<Double_t>(fNTracksAcc), fMCPt,
-                             static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), static_cast<Double_t>(0));
-    fHistEffCont.FillWeight(
-                             static_cast<Double_t>(fMCweight), fMultPercentileV0M, static_cast<Double_t>(fNTracksAcc), fMCPt,
-                             static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), static_cast<Double_t>(1));
-    fHistEffCont.FillWeight(
-                             static_cast<Double_t>(fMCweightRandom), static_cast<Double_t>(fMultPercentileV0M), static_cast<Double_t>(fNTracksAcc),
-                             static_cast<Double_t>(fMCPt), static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), static_cast<Double_t>(2));
-    fHistEffCont.FillWeight(
-                             static_cast<Double_t>(fMCweightSys), static_cast<Double_t>(fMultPercentileV0M), static_cast<Double_t>(fNTracksAcc),
-                             static_cast<Double_t>(fMCPt), static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), static_cast<Double_t>(3));
-    fHistEffCont.FillWeight(static_cast<Double_t>(fMCweightSysRandom), static_cast<Double_t>(fMultPercentileV0M),
-                             static_cast<Double_t>(fNTracksAcc), static_cast<Double_t>(fMCPt),
+    // get the scaling factor
+    if(fMCSpectraWeights && 0==fMCPrimSec && fMCParticle->Particle()){ // only for primary particles
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 0);
+        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCLabel, -1);
+        fMCweightRandom = GetRandomRoundDouble(fMCweight);
+        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    }
+    if(fMCSpectraWeights && 1==fMCPrimSec && fMCParticle->Particle()){ // only for secondaries from decay
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel);
+        fMCweightSys = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCLabel, -1);
+        fMCweightRandom = GetRandomRoundDouble(fMCweight);
+        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    }
+    // fill histograms
+    fHistEffContNominal.FillWeight(
+                             static_cast<Double_t>(1), static_cast<Double_t>(fMCnPrim05), fMCPt,
+                             static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), fMCEta, fMCY);
+    fHistEffContWeighted.FillWeight(
+                             static_cast<Double_t>(fMCweight), static_cast<Double_t>(fMCnPrim05), fMCPt,
+                             static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), fMCEta, fMCY);
+    fHistEffContWeightedRandom.FillWeight(
+                             static_cast<Double_t>(fMCweightRandom), static_cast<Double_t>(fMCnPrim05),
+                             static_cast<Double_t>(fMCPt), static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), fMCEta, fMCY);
+    fHistEffContWeightedSys.FillWeight(
+                             static_cast<Double_t>(fMCweightSys), static_cast<Double_t>(fMCnPrim05),
+                             static_cast<Double_t>(fMCPt), static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), fMCEta, fMCY);
+    fHistEffContWeightedSysDown.FillWeight(
+                                           static_cast<Double_t>(fMCweightSysDown), static_cast<Double_t>(fMCnPrim05),
+                                           static_cast<Double_t>(fMCPt), static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(3), fMCEta, fMCY);
+    fHistEffContWeightedSysRandom.FillWeight(static_cast<Double_t>(fMCweightSysRandom),
+                             static_cast<Double_t>(fMCnPrim05), static_cast<Double_t>(fMCPt),
                              static_cast<Double_t>(fMCParticleType),
-                             static_cast<Double_t>(3), static_cast<Double_t>(4));
+                             static_cast<Double_t>(3), fMCEta, fMCY);
+
+    if(fMCParticleType==AlidNdPtTools::ParticleType::kPi){
+        // fill rec
+        fHistPionGen.Fill(fMCnPrim05, fMCPt);
+    }
 
     if (fPt > 0.15 && fPt < 50.0 && TMath::Abs(fEta) < 0.8) {
         ++fNch;
@@ -342,67 +473,12 @@ void AliAnalysisTaskBaseWeights::AnaParticleMC(Int_t flag) {
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskBaseWeights::LoopOverAllTracks(Int_t flag) {
-    // on data or if fUseMCWeights is not set we do not modify anything
-    if (!fIsMC) {
-        AliAnalysisTaskMKBase::LoopOverAllTracks(flag);
-    }
-
-    fNTracksESD = fESD->GetNumberOfTracks();
-    for (Int_t i = 0; i < fNTracksESD; i++) {
-        fESDTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(i));
-        if (!fESDTrack) {
-            Err("noESDtrack");
-            continue;
-        }
-        InitTrack();
-
-        // get the scaling factor
-        fMCweight = fMCSpectraWeights->GetMCSpectraWeightNominal(
-                                                                 fMCParticle->Particle());
-        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeightSystematics(
-                                                                        fMCParticle->Particle());
-        fMCweightRandom = GetRandomRoundDouble(fMCweight);
-        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
-        BaseAnaTrack(flag);
-    }
-}
-
-//_____________________________________________________________________________
-
-void AliAnalysisTaskBaseWeights::LoopOverAllParticles(Int_t flag) {
-    // this method should not be called on data
-    if (!fIsMC)
-        return;
-
-    fMCnTracks = fMC->GetNumberOfTracks();
-    for (Int_t i = 0; i < fMCnTracks; i++) {
-        fMCParticle = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
-        if (!fMCParticle) {
-            Err("noMCParticle");
-            continue;
-        }
-        fMCLabel = i;
-        InitMCParticle();
-        // get the scaling factor
-        fMCweight = fMCSpectraWeights->GetMCSpectraWeightNominal(
-                                                                 fMCParticle->Particle());
-        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeightSystematics(
-                                                                        fMCParticle->Particle());
-        fMCweightRandom = GetRandomRoundDouble(fMCweight);
-        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
-        BaseAnaParticleMC(flag);
-    }
-}
-
-//_____________________________________________________________________________
-
 Double_t AliAnalysisTaskBaseWeights::MCScalingFactor() {
     // determine the MC scaling factor for the current particle
 
     // in case mcspectraweights are there we use them for primary particles
     if (fMCSpectraWeights && fMCisPrim) {
-        return fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(),
+        return fMCSpectraWeights->GetMCSpectraWeight(fMCLabel,
                                                      fMC);
     }
     if (!fMCisPrim) {
@@ -450,8 +526,8 @@ AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
-    task->SetESDtrackCuts(0, AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta10"));
+    task->SetESDtrackCuts(0, AlidNdPtTools::CreateESDtrackCuts("defaultEta10"));
     task->SetNeedEventMult(kTRUE);
     task->fCollSystem = collisionSystem;
 

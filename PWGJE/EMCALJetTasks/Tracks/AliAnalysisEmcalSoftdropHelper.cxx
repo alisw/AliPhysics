@@ -132,7 +132,7 @@ TBinning *AliAnalysisEmcalSoftdropHelperImpl::GetRgBinning(double R) const {
   return binning;
 }
 
-AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets) {
+AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets, double minPtTrack, double minEcluster) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
   fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
@@ -143,6 +143,7 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
       auto track = jet.Track(itrk);
       if(!track->Charge() && !sdparams.fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
       if(track->Charge() && !sdparams.fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
+      if(TMath::Abs(track->Pt()) < minPtTrack) continue;                        // Optitional cut to reject soft particles below pt threshold
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
@@ -153,9 +154,10 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
     AliDebugGeneralStream("MakeSoftDrop",1) << "Jet substructure: Using neutral constituents" << std::endl;
     for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
       auto cluster = jet.Cluster(icl);
+      if(cluster->GetUserDefEnergy(energydef) < minEcluster) continue;          // Optional cut to reject soft EMCAL clusters below energy threshold
       TLorentzVector clustervec;
       cluster->GetMomentum(clustervec, vertex, energydef);
-      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
+      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetUserDefEnergy(energydef));
       constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
       constituents.push_back(constituentCluster);
     }
@@ -182,6 +184,9 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
     case kCAAlgo: reclusterizingAlgorithm = fastjet::cambridge_aachen_algorithm; break;
     case kKTAlgo: reclusterizingAlgorithm = fastjet::kt_algorithm; break;
     case kAKTAlgo: reclusterizingAlgorithm = fastjet::antikt_algorithm; break;
+    default:
+      AliErrorGeneralStream("MakeSoftdrop") << "Non-supported reclusterizer type" << std::endl;
+      throw 3;
   };
 #if FASTJET_VERSION_NUMBER >= 30302
   fastjet::Recluster reclusterizer(reclusterizingAlgorithm, 1, fastjet::Recluster::keep_only_hardest);
@@ -205,7 +210,7 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
           softdropstruct.dropped_count()};
 }
 
-AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdropStandAlone(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets) {
+AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdropStandAlone(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets, double minPtTrack, double minEcluster) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
   fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
@@ -216,6 +221,7 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
       auto track = jet.Track(itrk);
       if(!track->Charge() && !sdparams.fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
       if(track->Charge() && !sdparams.fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
+      if(TMath::Abs(track->Pt()) < minPtTrack) continue;                        // Optitional cut to reject soft particles below pt threshold
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
@@ -226,9 +232,10 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
     AliDebugGeneralStream("MakeSoftDrop",1) << "Jet substructure: Using neutral constituents" << std::endl;
     for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
       auto cluster = jet.Cluster(icl);
+      if(cluster->GetUserDefEnergy(energydef) < minEcluster) continue;          // Optional cut to reject soft EMCAL clusters below energy threshold
       TLorentzVector clustervec;
       cluster->GetMomentum(clustervec, vertex, energydef);
-      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
+      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetUserDefEnergy(energydef));
       constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
       constituents.push_back(constituentCluster);
     }
@@ -324,7 +331,7 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
   }
 }
 
-std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmcalSoftdropHelperImpl::IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets) {
+std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmcalSoftdropHelperImpl::IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets, double minPtTrack, double minEcluster) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
   fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
@@ -335,6 +342,7 @@ std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmca
       auto track = jet.Track(itrk);
       if(!track->Charge() && !sdparams.fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
       if(track->Charge() && !sdparams.fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
+      if(TMath::Abs(track->Pt()) < minPtTrack) continue;                        // Optitional cut to reject soft particles below pt threshold
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
@@ -345,9 +353,10 @@ std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmca
     AliDebugGeneralStream("MakeSoftDrop",1) << "Jet substructure: Using neutral constituents" << std::endl;
     for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
       auto cluster = jet.Cluster(icl);
+      if(cluster->GetUserDefEnergy(energydef) < minEcluster) continue;          // Optional cut to reject soft EMCAL clusters below energy threshold
       TLorentzVector clustervec;
       cluster->GetMomentum(clustervec, vertex, energydef);
-      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
+      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetUserDefEnergy(energydef));
       constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
       constituents.push_back(constituentCluster);
     }

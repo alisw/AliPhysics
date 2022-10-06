@@ -18,6 +18,7 @@ class AliHeader;
 class AliGenEventHeader;
 class AliESDtrack;
 class AliMCParticle;
+class AliMCSpectraWeights;
 
 class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
   public:
@@ -28,10 +29,10 @@ class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
     virtual void AddOutput();         // called at the beginning
     virtual Bool_t IsEventSelected(); // called for each event
     virtual void AnaEvent();          // called once for every selected event
+    virtual void AnaEventMC();          // called once for every selected MC event
+    virtual void AnaTrackMC(Int_t flag = 0);      //called once for every track in MC event
     virtual void
     AnaTrack(Int_t flag = 0); // called once for every track in DATA+MC event
-    virtual void
-    AnaTrackMC(Int_t flag = 0); // called once for every track in DATA event
     virtual void
     AnaParticleMC(Int_t flag = 0); // called once for every track in MC event
 
@@ -40,15 +41,16 @@ class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
                    const char* outfile = 0);
 
   protected:
-    Hist::Hist<THnF> fHistEffContNCluster; //!<!   efficiency/contamination histogram
-    Hist::Hist<THnF> fHistEffContZ;        //!<!   efficiency/contamination histogram
-    Hist::Hist<THnF> fHistEffContEta;      //!<!   efficiency/contamination histogram
-    Hist::Hist<THnF> fHistEffContPhi;      //!<!   efficiency/contamination histogram
-    Hist::Hist<THnF> fHistTrackNCluster;   //!<!   histogram of pt spectra vs. mult and cent
-    Hist::Hist<THnF> fHistTrackZ;          //!<!   histogram of pt spectra vs. mult and cent
-    Hist::Hist<THnF> fHistTrackEta;        //!<!   histogram of pt spectra vs. mult and cent
-    Hist::Hist<THnF> fHistTrackPhi;        //!<!   histogram of pt spectra vs. mult and cent
-    Hist::Hist<TH3F> fHistEvent;           //!<!   histogram of event numbers etc.
+    Hist<THnF> fHistEffContNCluster; //!<!   efficiency/contamination histogram
+    Hist<THnF> fHistEffContZ;        //!<!   efficiency/contamination histogram
+    Hist<THnF> fHistEffContEta;      //!<!   efficiency/contamination histogram
+    Hist<THnF> fHistEffContPhi;      //!<!   efficiency/contamination histogram
+    Hist<THnF> fHistTrackNCluster;   //!<!   histogram of pt spectra vs. mult and cent
+    Hist<THnF> fHistTrackZ;          //!<!   histogram of pt spectra vs. mult and cent
+    Hist<THnF> fHistTrackEta;        //!<!   histogram of pt spectra vs. mult and cent
+    Hist<THnF> fHistTrackPhi;        //!<!   histogram of pt spectra vs. mult and cent
+    Hist<TH3F> fHistEvent;           //!<!   histogram of event numbers etc.
+    AliMCSpectraWeights*    fMCSpectraWeights; //!<! object to determine efficiency scaling
 
   private:
     AliAnalysisTaskSpectraEtaPhi(

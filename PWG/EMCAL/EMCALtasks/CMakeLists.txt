@@ -72,6 +72,7 @@ set(SRCS
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
+  AliEmcalCorrectionCellEnergyCompression.cxx
   AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction.cxx
   AliEmcalCorrectionCellSingleChannelCalibration.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
@@ -81,6 +82,8 @@ set(SRCS
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
   AliEmcalCorrectionClusterNonLinearityMCAfterburner.cxx
+  AliEmcalCorrectionClusterLowEnergyEfficiency.cxx
+  AliEmcalCorrectionClusterPositionCorrection.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
@@ -88,6 +91,7 @@ set(SRCS
   AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
+  AliEmcalRejectMCBackground.cxx
   TestAliEmcalAODFilterBitCuts.cxx
   TestAliEmcalTrackSelection.cxx
   )
@@ -126,7 +130,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

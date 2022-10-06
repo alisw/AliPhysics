@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////
 
 #include "AliGammaConversionAODBGHandler.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliAODConversionPhoton.h"
 #include "AliAODConversionMother.h"
 
@@ -662,7 +662,7 @@ void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t 
 	
 	// add the gammas to the vector
 	for(Int_t i=0; i< eventGammas->GetEntries();i++){
-		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+		//    AliGAKFParticle *t = new AliGAKFParticle(*(AliGAKFParticle*)(eventGammas->At(i)));
 		fBGEvents[z][m][eventCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventGammas->At(i))));
 	}
 	fBGEventCounter[z][m]++;
@@ -751,7 +751,7 @@ void AliGammaConversionAODBGHandler::AddElectronEvent(TClonesArray* const eventE
 
 	// add the electron to the vector
 	for(Int_t i=0; i< eventENeg->GetEntriesFast();i++){
-		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+		//    AliGAKFParticle *t = new AliGAKFParticle(*(AliGAKFParticle*)(eventGammas->At(i)));
 		fBGEventsENeg[z][m][eventENegCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventENeg->At(i))));
 	}
 	fBGEventENegCounter[z][m]++;
@@ -784,7 +784,7 @@ void AliGammaConversionAODBGHandler::AddMCParticleEvent(TList* const eventGammas
 
 	// add the gammas to the vector
 	for(Int_t i=0; i< eventGammas->GetEntries();i++){
-		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+		//    AliGAKFParticle *t = new AliGAKFParticle(*(AliGAKFParticle*)(eventGammas->At(i)));
 		fBGEventsMCParticle[z][m][eventCounter].push_back(new AliAODMCParticle(*(AliAODMCParticle*)(eventGammas->At(i))));
 	}
 	fBGMCParticleEventCounter[z][m]++;

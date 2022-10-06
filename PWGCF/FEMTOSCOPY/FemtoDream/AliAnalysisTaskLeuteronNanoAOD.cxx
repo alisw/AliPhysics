@@ -16,10 +16,9 @@ AliAnalysisTaskLeuteronNanoAOD::AliAnalysisTaskLeuteronNanoAOD():AliAnalysisTask
   fIsHighMultV0(true),
   fBruteForceDebugging(false),
   fDeuteronSideband(false),
-  fDeuteronSigmaLeft(0.0),
-  fDeuteronSigmaRight(0.0),
-  fAntideuteronSigmaLeft(0.0),
-  fAntideuteronSigmaRight(0.0),
+  fUpperSideband(false),
+  fLowerSideband(false),
+  fSignal(false),
   fTrackBufferSize(2000),
   fEventList(nullptr),
   fProtonList(nullptr),
@@ -53,15 +52,14 @@ AliAnalysisTaskLeuteronNanoAOD::AliAnalysisTaskLeuteronNanoAOD():AliAnalysisTask
 
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-AliAnalysisTaskLeuteronNanoAOD::AliAnalysisTaskLeuteronNanoAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging, bool DeuteronSideband, double DeuteronSigmaLeft, double DeuteronSigmaRight, double AntideuteronSigmaLeft, double AntideuteronSigmaRight):AliAnalysisTaskSE(name),
+AliAnalysisTaskLeuteronNanoAOD::AliAnalysisTaskLeuteronNanoAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging, bool DeuteronSideband, bool UpperSideband, bool LowerSideband, bool Signal):AliAnalysisTaskSE(name),
   fIsMC(isMC),
   fIsHighMultV0(isHighMultV0),
   fBruteForceDebugging(BruteForceDebugging),
   fDeuteronSideband(DeuteronSideband),
-  fDeuteronSigmaLeft(DeuteronSigmaLeft),
-  fDeuteronSigmaRight(DeuteronSigmaRight),
-  fAntideuteronSigmaLeft(AntideuteronSigmaLeft),
-  fAntideuteronSigmaRight(AntideuteronSigmaRight),
+  fUpperSideband(UpperSideband),
+  fLowerSideband(LowerSideband),
+  fSignal(Signal),
   fTrackBufferSize(2000),
   fEventList(nullptr),
   fProtonList(nullptr),
@@ -412,9 +410,11 @@ void AliAnalysisTaskLeuteronNanoAOD::UserExec(Option_t *){
 	  StoreGlobalTrackReference(track);
 	}
 
-	double mass2;
-	double mean;
-	double sigma;
+	double mass2 = 0.0;
+	double pT = 0.0;
+	double mean = 0.0;
+	double limit1 = 0.0;	
+	double limit2 = 0.0;
 
 	static std::vector<AliFemtoDreamBasePart> ProtonParticles;
 	static std::vector<AliFemtoDreamBasePart> AntiprotonParticles;
@@ -454,15 +454,42 @@ void AliAnalysisTaskLeuteronNanoAOD::UserExec(Option_t *){
 	  if(fTrackCutsPart3->isSelected(fTrack)){
 
 	    mass2 = CalculateMassSqTOF(fTrack);
-	    mean = GetDeuteronMass2Mean_pp(fTrack->GetPt());
-	    sigma = GetDeuteronMass2Sigma_pp(fTrack->GetPt());
+	    pT = fTrack->GetPt();
+	    mean = GetDeuteronMass2Mean_pp(pT);
 
 	    if(fDeuteronSideband){
 
-	     if(mass2 >= mean + fDeuteronSigmaLeft*sigma && mass2 <= mean + fDeuteronSigmaRight*sigma){
-		DeuteronParticles.push_back(*fTrack);
-		fDeuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
-	      }
+              // upper sideband
+              if(fUpperSideband){
+
+                limit1 = GetLimit(pT,mean,+1,0.24);
+                limit2 = GetLimit(pT,limit1,+1,0.24);
+
+              }   
+
+              // lower sideband
+              if(fLowerSideband){
+
+                limit2 = GetLimit(pT,mean,-1,0.30);
+                limit1 = GetLimit(pT,limit2,-1,0.30);
+
+              }   
+
+              // signal
+              if(fSignal){
+
+                limit1 = GetLimit(pT,mean,-1,0.30);
+                limit2 = GetLimit(pT,mean,+1,0.24);
+
+              }   
+
+              if(mass2 >= limit1 && mass2 <= limit2){
+
+                DeuteronParticles.push_back(*fTrack);
+                fDeuteronMassSqTOF->Fill(fTrack->GetPt(),mass2); 
+
+              }
+
 
 	    }else{
 	      DeuteronParticles.push_back(*fTrack);
@@ -474,16 +501,44 @@ void AliAnalysisTaskLeuteronNanoAOD::UserExec(Option_t *){
 	  if(fTrackCutsPart4->isSelected(fTrack)){
 
 	    mass2 = CalculateMassSqTOF(fTrack);
-	    mean = GetAntideuteronMass2Mean_pp(fTrack->GetPt());
-	    sigma = GetAntideuteronMass2Sigma_pp(fTrack->GetPt());
+	    pT = fTrack->GetPt();
+	    mean = GetAntideuteronMass2Mean_pp(pT);
 
 	    if(fDeuteronSideband){
 
-	      if(mass2 >= mean + fAntideuteronSigmaLeft*sigma && mass2 <= mean + fAntideuteronSigmaRight*sigma){
-		AntideuteronParticles.push_back(*fTrack);
-		fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
-	      }
-	      
+              // upper sideband
+              if(fUpperSideband){
+
+                limit1 = GetLimit(pT,mean,+1,0.24);
+                limit2 = GetLimit(pT,limit1,+1,0.24);
+
+              }
+
+              // lower sideband
+              if(fLowerSideband){
+
+                limit2 = GetLimit(pT,mean,-1,0.30);
+                limit1 = GetLimit(pT,limit2,-1,0.30);
+
+              }
+
+              // signal
+              if(fSignal){
+
+                limit1 = GetLimit(pT,mean,-1,0.30);
+                limit2 = GetLimit(pT,mean,+1,0.24);
+
+              }
+
+              if(mass2 >= limit1 && mass2 <= limit2){
+
+                AntideuteronParticles.push_back(*fTrack);
+                fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),mass2); 
+
+              }
+
+
+ 
 	    }else{
 	      AntideuteronParticles.push_back(*fTrack);
 	      fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
@@ -585,22 +640,23 @@ Double_t AliAnalysisTaskLeuteronNanoAOD::GetDeuteronMass2Mean_pp(float pT){
 }
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskLeuteronNanoAOD::GetDeuteronMass2Sigma_pp(float pT){
 
-// These values were obtained by fitting the sigma values of the deuteron mass2 projections calculated with the NanoAOD dataset (FemtoTUM_LHC16_17_18_HM)
-  TF1 *fit = new TF1("fit","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x",0.6,4.0);
-  fit->FixParameter(0,5.86771e-01);
-  fit->FixParameter(1,-7.60066e-01);
-  fit->FixParameter(2,3.39309e-01);
-  fit->FixParameter(3,4.36502e-03);
-  fit->FixParameter(4,-2.32912e-02);
-  fit->FixParameter(5,3.06987e-03);
+Double_t AliAnalysisTaskLeuteronNanoAOD::GetLimit(float pT, double mean, double sign, double offset){
+
+  TF1 *fit = new TF1("fit","[0] + ([1] *([2] + ([3]*(x)) + ([4]*(x)*(x)) + ([5]*(x)*(x)*(x))))",1.0,4.0);
+  fit->FixParameter(0,mean);
+  fit->FixParameter(1,sign);
+  fit->FixParameter(2,offset);
+  fit->FixParameter(3,0.003);
+  fit->FixParameter(4,0.002);
+  fit->FixParameter(5,0.009);
 
   Double_t value = fit->Eval(pT);
   fit->Delete();
   return value;
 
 }
+
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
 Double_t AliAnalysisTaskLeuteronNanoAOD::GetAntideuteronMass2Mean_pp(float pT){
@@ -618,23 +674,6 @@ Double_t AliAnalysisTaskLeuteronNanoAOD::GetAntideuteronMass2Mean_pp(float pT){
 
 }
 
-//  -----------------------------------------------------------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskLeuteronNanoAOD::GetAntideuteronMass2Sigma_pp(float pT){
-
-// These values were obtained by fitting the sigma values of the antideuteron mass2 projections calculated with the NanoAOD dataset (FemtoTUM_LHC16_17_18_HM)
-  TF1 *fit = new TF1("fit","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x",0.6,4.0);
-  fit->FixParameter(0,1.87259e+00);
-  fit->FixParameter(1,-4.77338e+00);
-  fit->FixParameter(2,4.97646e+00);
-  fit->FixParameter(3,-2.47283e+00);
-  fit->FixParameter(4,5.91994e-01);
-  fit->FixParameter(5,-5.40950e-02);
-
-  Double_t value = fit->Eval(pT);
-  fit->Delete();
-  return value;
-
-}
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskLeuteronNanoAOD::StoreGlobalTrackReference(AliVTrack *track){

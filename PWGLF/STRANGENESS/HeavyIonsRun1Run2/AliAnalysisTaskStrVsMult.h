@@ -8,6 +8,8 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 #include "THistManager.h"
+#include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 
 class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
   public:
@@ -16,8 +18,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     virtual ~AliAnalysisTaskStrVsMult();
 
     // enum and names.
-    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_TOFBunchCrossing, kV0cutsnum}; 
-    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_TOFBunchCrossing, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; // kCasc_etaPos, kCasc_etaNeg, kCasc_etaBac, kCasc_kinkidx,
+    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_MaxV0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_TrackLengthCut, kV0_MaxChi2perCls, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_ITSTOFtracks, kV0cutsnum};
+    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_TrackLengthCut, kCasc_MaxChi2perCls, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_ITSTOFtracks, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_MaxV0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; 
     enum particles{kK0s, kLam, kXi, kOm, knumpart}; 
     enum signedparticles{kk0s, klam, kalam, kxip, kxim, komp, komm, ksignednumpart}; 
 
@@ -28,9 +30,11 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //cut values setter
     void SetDefOnly(bool);
     void SetCutVal(bool, bool, int, double);
+    void SetParametricBacBarCosPA(int, float*, float*, int);
+    void SetParametricTrackLengthCut(int, float*, int*);
 
     //binning setters
-    void SetCentbinning(int, int, double*);
+    void SetCentbinning(int, double*);
     void SetMassbinning(int, int, double, double);
     void SetPtbinning(int, int, double*);
 
@@ -41,6 +45,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //MC-related setters and getters
     void SetIsMC(bool IsMC){fisMC = IsMC;};
     void SetIsMCassoc(bool IsMCassoc){fisMCassoc = IsMCassoc;};
+
+    //pile-up rejection setter
+    void SetRejectPileUpEvts(bool RejectPileupEvts){fRejectPileupEvts = RejectPileupEvts;};
 
   private:
     THistManager* fHistos_eve;                                //!
@@ -56,6 +63,12 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliPIDResponse *fPIDResponse;                             //!
     UInt_t fTriggerMask;                                      //!
 
+    //AliEventCuts object
+    AliEventCuts fEventCuts;                                  //
+
+    //pile-up rejection flag
+    bool fRejectPileupEvts;                                   //
+
     //MC-realted variables
     bool fisMC;                                               //
     bool fisMCassoc;                                          //
@@ -67,6 +80,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
 
     //particles to be analysed
     bool fParticleAnalysisStatus[ksignednumpart];             //
+
+    //geometrical cut usage
+    AliESDtrackCuts fESDTrackCuts;                            //
 
     //variables for V0 analysis
     double fV0_DcaV0Daught;                                   //!
@@ -84,13 +100,14 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fV0_InvMassALam;                                   //!
     double fV0_LeastCRaws;                                    //!
     double fV0_LeastCRawsOvF;                                 //!
+    int fV0_TrackLengthCut;                                   //!
+    double fV0_MaxChi2perCls;                                 //!
     double fV0_NSigPosProton;                                 //!
     double fV0_NSigPosPion;                                   //!
     double fV0_NSigNegProton;                                 //!
     double fV0_NSigNegPion;                                   //!
     double fV0_DistOverTotP;                                  //!
-    double fV0_NegTOFBunchCrossing;                           //!
-    double fV0_PosTOFBunchCrossing;                           //!
+    int fV0_ITSTOFtracks;                                     //!
     ULong64_t fV0_NegTrackStatus;                             //!
     ULong64_t fV0_PosTrackStatus;                             //!
     double fV0_kinkidx;                                       //!
@@ -111,14 +128,14 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fCasc_NSigBacKaon;                                 //!
     double fCasc_LeastCRaws;                                  //!
     double fCasc_LeastCRawsOvF;                               //!
+    int fCasc_TrackLengthCut;                                 //!
+    double fCasc_MaxChi2perCls;                               //!
     double fCasc_InvMassLam;                                  //!
     double fCasc_DcaV0Daught;                                 //!
     double fCasc_V0CosPA;                                     //!
     double fCasc_DcaV0ToPV;                                   //!
     double fCasc_DcaBachToPV;                                 //!
-    double fCasc_PosTOFBunchCrossing;                         //!
-    double fCasc_NegTOFBunchCrossing;                         //!
-    double fCasc_BacTOFBunchCrossing;                         //!
+    int fCasc_ITSTOFtracks;                                   //!
     double fCasc_yXi;                                         //!
     double fCasc_yOm;                                         //!
     int fCasc_charge;                                         //!
@@ -134,7 +151,14 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     ULong64_t fCasc_NegTrackStatus;                           //!
     ULong64_t fCasc_PosTrackStatus;                           //!
     ULong64_t fCasc_BacTrackStatus;                           //!
-    double fCasc_BacBarCosPA;                                   //!
+    double fCasc_BacBarCosPA;                                 //!
+
+    bool fisParametricBacBarCosPA;                            //
+    TH1F *fHist_PtBacBarCosPA;                                //
+    int fCentLimit_BacBarCosPA;                               //
+
+    bool fisParametricTrackLengthCut;                         //
+    TH1I *fHist_CentTrackLengthCut;                           //
 
     //cut values to be set
     double cutval_V0[kV0cutsnum];                             //
@@ -147,12 +171,12 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double varhighcut_Casc[kCasccutsnum];                     //
 
     //variables to handle binning
-    int fncentbins[knumpart];                                 //
-    double fcentbinning[knumpart][50];                        //
+    int fncentbins;                                           //
+    double fcentbinning[150];                                 //
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //
-    double fptbinning[knumpart][600];                         //
+    double fptbinning[knumpart][2000];                        //
 
     //functions to allow flushing part of code out of UserExec
     bool ApplyCuts(int);
@@ -166,8 +190,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 4); 
-    //version 4: introduced MC handeling
+    ClassDef(AliAnalysisTaskStrVsMult, 17); 
+    //version 17: add parametrick track length cut selection
 };
 
 #endif

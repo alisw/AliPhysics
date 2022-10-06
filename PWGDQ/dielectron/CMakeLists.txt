@@ -103,11 +103,13 @@ set(SRCS
       LMEE/AliAnalysisTaskeeCor.cxx
       LMEE/AliAnalysisTaskMLTreeMaker.cxx
       LMEE/AliAnalysisTaskMLTreeMakerEff.cxx
+      LMEE/AliAnalysisTaskOmegaDielectron_AccEff.cxx
       LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
       LMEE/AliAnalysisTaskReducedTreeDS.cxx
       LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
+      LMEE/AliAnalysisTaskLMeePureMC.cxx	
       LMEE/AliCocktailSmearing.cxx
       LMEE/AliAnalysisTaskCharm.cxx
       LMEE/AliAnalysisTaskBeauty.cxx
