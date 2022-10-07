@@ -23,9 +23,6 @@ public:
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *);
 
-    void SetSourceSizeRadius(TH1F *hSourceR0) { hSourceSize = hSourceR0; }
-    void SetCentralityEstimator(int est) { fEstimator = est; }
-
     // Utils
     void SetPrimaryPtBins(int nbins, float min, float max);
     void SetPrimaryPtBins(int nbins, float *bins);
@@ -33,8 +30,8 @@ public:
     void SetKstarBins(int nbins, float *bins);
     void SetP0(float p0) { fP0 = p0; }
 
-    void SetZvtxArray(std::vector<int> &vec);
-    void SetMultiplicityArray(std::vector<int> &vec);
+    void SetZvtxArray(std::vector<float> &vec);
+    void SetMultiplicityArray(std::vector<float> &vec);
 
     int FindBin(float zvtx, float mult);
 
@@ -50,7 +47,6 @@ public:
 private:
     TList *fOutputList; ///< Output list
 
-    int fEstimator;            ///< Choose the centrality estimator from AliEventCut
     float fP0;                 ///< Coalescence momentum p0
     unsigned int fMixingDepth; /// Depth of the mixing buffer
 
@@ -61,11 +57,11 @@ private:
     TArrayF fKstarBins;     ///<  realtive momentum bins
 
     TH1F *fNormalisationHist;   //!<! Event selection
-    TH1F *hSourceSize;          //!<! distribution of the source radius
-    TH1F *hPionSpectrum[2];     //!<! proton trasnverse momentum spectrum {0: positive, 1: negative}
-    TH1F *hProtonSpectrum[2];   //!<! proton trasnverse momentum spectrum {0: positive, 1: negative}
-    TH1F *hNeutronSpectrum[2];  //!<! neutron trasnverse momentum spectrum {0: positive, 1: negative}
-    TH1F *hDeuteronSpectrum[2]; //!<! deuteron trasnverse momentum spectrum {0: positive, 1: negative}
+
+    TH1F *hPionSpectrum[2];     //!<! proton transverse momentum spectrum {0: positive, 1: negative}
+    TH1F *hProtonSpectrum[2];   //!<! proton transverse momentum spectrum {0: positive, 1: negative}
+    TH1F *hNeutronSpectrum[2];  //!<! neutron transverse momentum spectrum {0: positive, 1: negative}
+    TH1F *hDeuteronSpectrum[2]; //!<! deuteron transverse momentum spectrum {0: positive, 1: negative}
     TH1F *hDeltaP;              //!<! delta-P distribution
 
     TH2F *hNparticles[2]; //!<! number of pions and deuterons per event {0: positive, 1: negative}
