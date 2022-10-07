@@ -562,14 +562,14 @@ void AliAnalysisTaskNanoBBar::UserExec(Option_t *option) {
   }
 
   fPairCleaner->ResetArray();
-  fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 0);
-  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiLambdas, 1);
-  fPairCleaner->CleanTrackAndDecay(&Protons, &AntiLambdas, 2);
-  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Lambdas, 3);
-  fPairCleaner->CleanTrackAndDecay(&Protons, &Xis, 4);
-  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiXis, 5);
-  fPairCleaner->CleanTrackAndDecay(&Protons, &AntiXis, 6);
-  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Xis, 7);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 0,true);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiLambdas, 1,true);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &AntiLambdas, 2,true);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Lambdas, 3,true);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &Xis, 4,true);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiXis, 5,true);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &AntiXis, 6,true);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Xis, 7,true);
 
 
   fPairCleaner->CleanDecay(&Lambdas, 0);
