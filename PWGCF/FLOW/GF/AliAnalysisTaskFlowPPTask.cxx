@@ -1528,18 +1528,30 @@ Bool_t AliAnalysisTaskFlowPPTask::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltr
 void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks) {
 	//..calculate 2-particle correlations
 	//..................................
-	double Dn2 = correlator.Two(0, 0).Re();
-	double Dn2Gap0 = correlator.TwoGap0(0, 0).Re();
-	double Dn2Gap2 = correlator.TwoGap2(0, 0).Re();
-	double Dn2Gap4 = correlator.TwoGap4(0, 0).Re();
-	double Dn2Gap6 = correlator.TwoGap6(0, 0).Re();
-	double Dn2Gap8 = correlator.TwoGap8(0, 0).Re();
-	double Dn2Gap10 = correlator.TwoGap10(0, 0).Re();
-	double Dn2Gap12 = correlator.TwoGap12(0, 0).Re();
-	double Dn2Gap14 = correlator.TwoGap14(0, 0).Re();
-	double Dn2_3subLM = correlator.Two_3SubLM(0, 0).Re();
-	double Dn2_3subRM = correlator.Two_3SubRM(0, 0).Re();
-	double Dn2_3subLR = correlator.Two_3SubLR(0, 0).Re();
+	// double Dn2 = correlator.Two(0, 0).Re();
+	// double Dn2Gap0 = correlator.TwoGap0(0, 0).Re();
+	// double Dn2Gap2 = correlator.TwoGap2(0, 0).Re();
+	// double Dn2Gap4 = correlator.TwoGap4(0, 0).Re();
+	// double Dn2Gap6 = correlator.TwoGap6(0, 0).Re();
+	// double Dn2Gap8 = correlator.TwoGap8(0, 0).Re();
+	// double Dn2Gap10 = correlator.TwoGap10(0, 0).Re();
+	// double Dn2Gap12 = correlator.TwoGap12(0, 0).Re();
+	// double Dn2Gap14 = correlator.TwoGap14(0, 0).Re();
+	// double Dn2_3subLM = correlator.Two_3SubLM(0, 0).Re();
+	// double Dn2_3subRM = correlator.Two_3SubRM(0, 0).Re();
+	// double Dn2_3subLR = correlator.Two_3SubLR(0, 0).Re();
+	double Dn2 = 1.;
+	double Dn2Gap0 = 1.;
+	double Dn2Gap2 = 1.;
+	double Dn2Gap4 = 1.;
+	double Dn2Gap6 = 1.;
+	double Dn2Gap8 = 1.;
+	double Dn2Gap10 = 1.;
+	double Dn2Gap12 = 1.;
+	double Dn2Gap14 = 1.;
+	double Dn2_3subLM = 1.;
+	double Dn2_3subRM = 1.;
+	double Dn2_3subLR = 1.;
 
 	//calculate no eta-gap, gap1.0, gap1.4, 3subevent v2
 	if(NtrksAfter > 1 && Dn2 != 0) {
@@ -1847,21 +1859,36 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 
 	//..calculate 3-particle correlations
 	//................................
-	double Dn3 = correlator.Three(0, 0, 0).Re();
-	double Dn3Gap0A = correlator.ThreeGap0A(0, 0, 0).Re();
-	double Dn3Gap2A = correlator.ThreeGap2A(0, 0, 0).Re();
-	double Dn3Gap4A = correlator.ThreeGap4A(0, 0, 0).Re();
-	double Dn3Gap6A = correlator.ThreeGap6A(0, 0, 0).Re();
-	double Dn3Gap8A = correlator.ThreeGap8A(0, 0, 0).Re();
-	double Dn3Gap10A = correlator.ThreeGap10A(0, 0, 0).Re();
-	double Dn3Gap12A = correlator.ThreeGap12A(0, 0, 0).Re();
-	double Dn3Gap0B = correlator.ThreeGap0B(0, 0, 0).Re();
-	double Dn3Gap2B = correlator.ThreeGap2B(0, 0, 0).Re();
-	double Dn3Gap4B = correlator.ThreeGap4B(0, 0, 0).Re();
-	double Dn3Gap6B = correlator.ThreeGap6B(0, 0, 0).Re();
-	double Dn3Gap8B = correlator.ThreeGap8B(0, 0, 0).Re();
-	double Dn3Gap10B = correlator.ThreeGap10B(0, 0, 0).Re();
-	double Dn3Gap12B = correlator.ThreeGap12B(0, 0, 0).Re();
+	// double Dn3 = correlator.Three(0, 0, 0).Re();
+	// double Dn3Gap0A = correlator.ThreeGap0A(0, 0, 0).Re();
+	// double Dn3Gap2A = correlator.ThreeGap2A(0, 0, 0).Re();
+	// double Dn3Gap4A = correlator.ThreeGap4A(0, 0, 0).Re();
+	// double Dn3Gap6A = correlator.ThreeGap6A(0, 0, 0).Re();
+	// double Dn3Gap8A = correlator.ThreeGap8A(0, 0, 0).Re();
+	// double Dn3Gap10A = correlator.ThreeGap10A(0, 0, 0).Re();
+	// double Dn3Gap12A = correlator.ThreeGap12A(0, 0, 0).Re();
+	// double Dn3Gap0B = correlator.ThreeGap0B(0, 0, 0).Re();
+	// double Dn3Gap2B = correlator.ThreeGap2B(0, 0, 0).Re();
+	// double Dn3Gap4B = correlator.ThreeGap4B(0, 0, 0).Re();
+	// double Dn3Gap6B = correlator.ThreeGap6B(0, 0, 0).Re();
+	// double Dn3Gap8B = correlator.ThreeGap8B(0, 0, 0).Re();
+	// double Dn3Gap10B = correlator.ThreeGap10B(0, 0, 0).Re();
+	// double Dn3Gap12B = correlator.ThreeGap12B(0, 0, 0).Re();
+	double Dn3 = 1.;
+	double Dn3Gap0A = 1.;
+	double Dn3Gap2A = 1.;
+	double Dn3Gap4A = 1.;
+	double Dn3Gap6A = 1.;
+	double Dn3Gap8A = 1.;
+	double Dn3Gap10A = 1.;
+	double Dn3Gap12A = 1.;
+	double Dn3Gap0B = 1.;
+	double Dn3Gap2B = 1.;
+	double Dn3Gap4B = 1.;
+	double Dn3Gap6B = 1.;
+	double Dn3Gap8B = 1.;
+	double Dn3Gap10B = 1.;
+	double Dn3Gap12B = 1.;
 
 
 	if(NtrksAfter > 2 && Dn3 != 0 )
@@ -2076,17 +2103,28 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 
 	//..calculate 4-particle correlations
 	//................................
-	double Dn4 = correlator.Four(0, 0, 0, 0).Re();
-	double Dn4Gap0 = correlator.FourGap0(0, 0, 0, 0).Re();
-	double Dn4Gap2 = correlator.FourGap2(0, 0, 0, 0).Re();
-	double Dn4Gap4 = correlator.FourGap4(0, 0, 0, 0).Re();
-	double Dn4Gap6 = correlator.FourGap6(0, 0, 0, 0).Re();
-	double Dn4Gap8 = correlator.FourGap8(0, 0, 0, 0).Re();
-	double Dn4Gap10 = correlator.FourGap10(0, 0, 0, 0).Re();
-	double Dn4Gap12 = correlator.FourGap12(0, 0, 0, 0).Re();
-	double Dn4_3subMMLR = correlator.Four_3SubMMLR(0, 0, 0, 0).Re();
-	double Dn4_3subLLMR = correlator.Four_3SubLLMR(0, 0, 0, 0).Re();
-	double Dn4_3subRRML = correlator.Four_3SubRRML(0, 0, 0, 0).Re();
+	// double Dn4 = correlator.Four(0, 0, 0, 0).Re();
+	// double Dn4Gap0 = correlator.FourGap0(0, 0, 0, 0).Re();
+	// double Dn4Gap2 = correlator.FourGap2(0, 0, 0, 0).Re();
+	// double Dn4Gap4 = correlator.FourGap4(0, 0, 0, 0).Re();
+	// double Dn4Gap6 = correlator.FourGap6(0, 0, 0, 0).Re();
+	// double Dn4Gap8 = correlator.FourGap8(0, 0, 0, 0).Re();
+	// double Dn4Gap10 = correlator.FourGap10(0, 0, 0, 0).Re();
+	// double Dn4Gap12 = correlator.FourGap12(0, 0, 0, 0).Re();
+	// double Dn4_3subMMLR = correlator.Four_3SubMMLR(0, 0, 0, 0).Re();
+	// double Dn4_3subLLMR = correlator.Four_3SubLLMR(0, 0, 0, 0).Re();
+	// double Dn4_3subRRML = correlator.Four_3SubRRML(0, 0, 0, 0).Re();
+	double Dn4 = 1.;
+	double Dn4Gap0 = 1.;
+	double Dn4Gap2 = 1.;
+	double Dn4Gap4 = 1.;
+	double Dn4Gap6 = 1.;
+	double Dn4Gap8 = 1.;
+	double Dn4Gap10 = 1.;
+	double Dn4Gap12 = 1.;
+	double Dn4_3subMMLR = 1.;
+	double Dn4_3subLLMR = 1.;
+	double Dn4_3subRRML = 1.;
 
 	if(NtrksAfter > 3 && Dn4 != 0)
 	{
@@ -2411,9 +2449,12 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 
 	//..calculate 6-particle correlations
 	//................................
-	double Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
-	double Dn6Gap0 = correlator.SixGap0(0, 0, 0, 0, 0, 0).Re();
-	double Dn6Gap10 = correlator.SixGap10(0, 0, 0, 0, 0, 0).Re();
+	// double Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
+	// double Dn6Gap0 = correlator.SixGap0(0, 0, 0, 0, 0, 0).Re();
+	// double Dn6Gap10 = correlator.SixGap10(0, 0, 0, 0, 0, 0).Re();
+	double Dn6 = 1.;
+	double Dn6Gap0 = 1.;
+	double Dn6Gap10 = 1.;
 
 	if(NtrksAfter > 5 && Dn6 != 0)
 	{
@@ -2446,9 +2487,12 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	}
 
 	// 8-Particles Correlation
-	double Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	// double Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	// // Gap0 isn't calculated in this version
+	// double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	double Dn8 = 1.;
 	// Gap0 isn't calculated in this version
-	double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	double Dn8Gap0 = 1.;
 
 	if(NtrksAfter > 7 && Dn8 != 0)
 	{
