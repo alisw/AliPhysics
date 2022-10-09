@@ -139,7 +139,8 @@ fLEDLowEnergyCutSM3Strip(0), fLEDLowNCellsCutSM3Strip(0),
 //Trigger rejection
 fRemoveBadTriggerEventsFromEMCalTriggerMaker(0),
 fEMCalTriggerMakerDecisionContainerName(0),
-fFillTriggerMakerDecisionHisto(0), fFillTriggerMakerDecisionHistoList(""), fNTrigMakerDecision(0),
+fFillTriggerMakerDecisionHisto(0), fFillTriggerMakerDecisionHistoList(""),
+fNTrigMakerDecision(0),fNTriggerEMCal(0),
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
 fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
@@ -184,7 +185,9 @@ fhPtHardPtJetPtRatio(0),     fhPtHardPromptPhotonPtRatio(0),
 fhPtHardEnClusterRatio(0),   fhPtHardEnClusterCenRatio(0),
 fEnergyHistogramNbins(0),    fHistoCentDependent(0),          fHistoPtDependent(0),
 fhNEventsAfterCut(0),        fhNEventsPerTrigger(0),          fhNEventsPerTriggerMakerSelected(0),
+fhNEventsPerTriggerAfterCut(0),fhNEventsPerTriggerMakerSelectedAfterCut(0),
 fhNEventsAfterCutCen(0),     fhNEventsPerTriggerCen(0),       fhNEventsPerTriggerMakerSelectedCen(0),
+fhNEventsPerTriggerAfterCutCen(0),       fhNEventsPerTriggerMakerSelectedAfterCutCen(0),
 fNMCGenerToAccept(0),        fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1),
 fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0),
@@ -1259,29 +1262,55 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
       fhNEventsAfterCut->GetXaxis()->SetBinLabel(icut ,Form("%d=%s",icut,evtCutLabels[icut-1].Data()));
     fOutputContainer->Add(fhNEventsAfterCut);
 
-    fhNEventsPerTrigger = new TH1F("hNEventsPerTrigger",
-                                   "Number of analyzed events per trigger and their coincidences",
-                                   16,0,16) ;
+    fhNEventsPerTrigger = new
+    TH1F("hNEventsPerTrigger",
+         "Number of analyzed events per trigger and their coincidences",
+         fNTriggerEMCal,0,fNTriggerEMCal) ;
     fhNEventsPerTrigger->SetYTitle("# events");
 
-    for(Int_t itrig = 1; itrig <= 16; itrig++)
+    for(Int_t itrig = 1; itrig <= fNTriggerEMCal; itrig++)
     {
       fhNEventsPerTrigger->GetXaxis()->SetBinLabel(itrig, trigLabels[itrig-1]);
     }
     fOutputContainer->Add(fhNEventsPerTrigger);
 
+    fhNEventsPerTriggerAfterCut = new
+    TH1F("hNEventsPerTriggerAfterCut",
+         "Number of analyzed events per trigger and their coincidences, after all event cuts",
+         fNTriggerEMCal,0,fNTriggerEMCal) ;
+    fhNEventsPerTriggerAfterCut->SetYTitle("# events");
+
+    for(Int_t itrig = 1; itrig <= fNTriggerEMCal; itrig++)
+    {
+      fhNEventsPerTriggerAfterCut->GetXaxis()->SetBinLabel(itrig, trigLabels[itrig-1]);
+    }
+    fOutputContainer->Add(fhNEventsPerTriggerAfterCut);
+
     if ( fFillTriggerMakerDecisionHisto )
     {
-      fhNEventsPerTriggerMakerSelected = new TH1F("hNEventsPerTriggerMakerSelected",
-                                                  "Number of selected events per trigger maker and their coincidences",
-                                                  10,0,10) ;
+      fhNEventsPerTriggerMakerSelected = new
+      TH1F("hNEventsPerTriggerMakerSelected",
+           "Number of selected events per trigger maker and their coincidences",
+           fNTrigMakerDecision,0,fNTrigMakerDecision) ;
       fhNEventsPerTriggerMakerSelected->SetYTitle("# events");
 
-      for(Int_t itrig = 1; itrig <= 10; itrig++)
+      for(Int_t itrig = 1; itrig <= fNTrigMakerDecision; itrig++)
       {
         fhNEventsPerTriggerMakerSelected->GetXaxis()->SetBinLabel(itrig, fTrigMakerLabels[itrig-1]);
       }
       fOutputContainer->Add(fhNEventsPerTriggerMakerSelected);
+
+      fhNEventsPerTriggerMakerSelectedAfterCut = new
+      TH1F("hNEventsPerTriggerMakerSelectedAfterCut",
+           "Number of selected events per trigger maker and their coincidences, after all event cuts",
+           fNTrigMakerDecision,0,fNTrigMakerDecision) ;
+      fhNEventsPerTriggerMakerSelectedAfterCut->SetYTitle("# events");
+
+      for(Int_t itrig = 1; itrig <= fNTrigMakerDecision; itrig++)
+      {
+        fhNEventsPerTriggerMakerSelectedAfterCut->GetXaxis()->SetBinLabel(itrig, fTrigMakerLabels[itrig-1]);
+      }
+      fOutputContainer->Add(fhNEventsPerTriggerMakerSelectedAfterCut);
     }
   }
   else
@@ -1295,28 +1324,51 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
 
     fhNEventsPerTriggerCen = new TH2F("hNEventsPerTriggerCen",
                                    "Number of analyzed events per trigger coincidence",
-                                   16,0,16, 50, 0, 100) ;
+                                   fNTriggerEMCal,0,fNTriggerEMCal, 50, 0, 100) ;
     fhNEventsPerTriggerCen->SetZTitle("# events");
     fhNEventsPerTriggerCen->SetYTitle("Centrality (%)");
 
-    for(Int_t itrig = 1; itrig <= 16; itrig++)
+    for(Int_t itrig = 1; itrig <= fNTriggerEMCal; itrig++)
     {
       fhNEventsPerTriggerCen->GetXaxis()->SetBinLabel(itrig, trigLabels[itrig-1]);
     }
     fOutputContainer->Add(fhNEventsPerTriggerCen);
 
+    fhNEventsPerTriggerAfterCutCen = new TH2F("hNEventsPerTriggerAfterCutCen",
+                                   "Number of analyzed events per trigger coincidence, after all event cuts",
+                                   fNTriggerEMCal,0,fNTriggerEMCal, 50, 0, 100) ;
+    fhNEventsPerTriggerAfterCutCen->SetZTitle("# events");
+    fhNEventsPerTriggerAfterCutCen->SetYTitle("Centrality (%)");
+
+    for(Int_t itrig = 1; itrig <= fNTriggerEMCal; itrig++)
+    {
+      fhNEventsPerTriggerAfterCutCen->GetXaxis()->SetBinLabel(itrig, trigLabels[itrig-1]);
+    }
+    fOutputContainer->Add(fhNEventsPerTriggerAfterCutCen);
+
     if ( fFillTriggerMakerDecisionHisto )
     {
       fhNEventsPerTriggerMakerSelectedCen = new TH2F("hNEventsPerTriggerMakerSelectedCen",
                                                   "Number of selected events per trigger maker and their coincidences",
-                                                  10,0,10, 50, 0, 100) ;
+                                                  fNTrigMakerDecision,0,fNTrigMakerDecision, 50, 0, 100) ;
       fhNEventsPerTriggerMakerSelectedCen->SetZTitle("# events");
 
-      for(Int_t itrig = 1; itrig <= 10; itrig++)
+      for(Int_t itrig = 1; itrig <= fNTrigMakerDecision; itrig++)
       {
         fhNEventsPerTriggerMakerSelectedCen->GetXaxis()->SetBinLabel(itrig, fTrigMakerLabels[itrig-1]);
       }
       fOutputContainer->Add(fhNEventsPerTriggerMakerSelectedCen);
+
+      fhNEventsPerTriggerMakerSelectedAfterCutCen = new TH2F("hNEventsPerTriggerMakerSelectedAfterCutCen",
+                                                  "Number of selected events per trigger maker and their coincidences",
+                                                  fNTrigMakerDecision,0,fNTrigMakerDecision, 50, 0, 100) ;
+      fhNEventsPerTriggerMakerSelectedAfterCutCen->SetZTitle("# events");
+
+      for(Int_t itrig = 1; itrig <= fNTrigMakerDecision; itrig++)
+      {
+        fhNEventsPerTriggerMakerSelectedAfterCutCen->GetXaxis()->SetBinLabel(itrig, fTrigMakerLabels[itrig-1]);
+      }
+      fOutputContainer->Add(fhNEventsPerTriggerMakerSelectedAfterCutCen);
     }
   }
 
@@ -2102,6 +2154,10 @@ void AliCaloTrackReader::InitParameters()
   fTrigMakerLabels[9] = "DG2";
   for(Int_t itrig = 0; itrig < fNTrigMakerDecision; itrig++)
     fTriggerMakerDecisionBoolArr[itrig] = kFALSE;
+
+  fNTriggerEMCal = 16;
+  for(Int_t itrig = 0; itrig < fNTriggerEMCal; itrig++)
+    fTriggerEMCalBoolArr[itrig] = kFALSE;
 }
 
 //__________________________________________________________________________
@@ -2609,6 +2665,36 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     else                        fhNEventsAfterCutCen->Fill(22.5,cen);
   }
   
+  //-----------------------------------
+  // Fill final event counters depending on triggers
+  // after all event selections applied
+  //-----------------------------------
+
+  for(Int_t itrig = 0; itrig < fNTriggerEMCal; itrig++)
+  {
+    if ( fTriggerEMCalBoolArr[itrig] )
+    {
+      if ( !fHistoCentDependent ) fhNEventsPerTriggerAfterCut   ->Fill(itrig+0.5);
+      else                        fhNEventsPerTriggerAfterCutCen->Fill(itrig+0.5,GetEventCentrality());
+    }
+  }
+
+  if ( fFillTriggerMakerDecisionHisto )
+  {
+    for(Int_t itrig = 0; itrig < fNTrigMakerDecision; itrig++)
+    {
+      if ( fTriggerMakerDecisionBoolArr[itrig] )
+      {
+        if ( !fHistoCentDependent )  fhNEventsPerTriggerMakerSelectedAfterCut   ->Fill(itrig+0.5);
+        else                         fhNEventsPerTriggerMakerSelectedAfterCutCen->Fill(itrig+0.5, GetEventCentrality());
+      }
+    }
+  } //  fFillTriggerMakerDecisionHisto
+
+  //-----------------------------------
+  // Get and filter tracks
+  //-----------------------------------
+
   if ( fCalculateSpherocity && fFillCTS )
   {
     fSpherocity = CalculateEventSpherocity(fSpherocityMinPt);
@@ -5179,42 +5265,42 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
                   fEventTrigEMCALL0CaloOnly, fEventTrigEMCALL1Gamma1CaloOnly, fEventTrigEMCALL1Gamma2CaloOnly, fEventTrigEMCALL1Jet1CaloOnly, fEventTrigEMCALL1Jet2CaloOnly,
                   fEventTrigDCALL0CaloOnly , fEventTrigDCALL1Gamma1CaloOnly , fEventTrigDCALL1Gamma2CaloOnly , fEventTrigDCALL1Jet1CaloOnly , fEventTrigDCALL1Jet2CaloOnly  )  );
 
-  // Control event trigger bit correlation
-  Bool_t trigBit[16] = {kFALSE};
+  // Control event trigger bit correlation, init first
+  for(Int_t itrig = 0; itrig < fNTriggerEMCal; itrig++) fTriggerEMCalBoolArr[itrig] = kFALSE;
 
   if ( fEventTriggerMaskInput & AliVEvent::kINT7 )
-    trigBit[0] = kTRUE;
+    fTriggerEMCalBoolArr[0] = kTRUE;
   if ( fEventTriggerMaskInput & AliVEvent::kMB )
-    trigBit[1] = kTRUE;
+    fTriggerEMCalBoolArr[1] = kTRUE;
   if ( fEventTriggerMaskInput & AliVEvent::kCentral )
-    trigBit[2] = kTRUE;
+    fTriggerEMCalBoolArr[2] = kTRUE;
   if ( fEventTriggerMaskInput & AliVEvent::kSemiCentral )
-    trigBit[3] = kTRUE;
+    fTriggerEMCalBoolArr[3] = kTRUE;
   if ( fEventTriggerMaskInput & AliVEvent::kEMC7 )
   {
-    trigBit[4] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains("EMC") ) trigBit[5] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains("DMC") ) trigBit[6] = kTRUE;
+    fTriggerEMCalBoolArr[4] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains("EMC") ) fTriggerEMCalBoolArr[5] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains("DMC") ) fTriggerEMCalBoolArr[6] = kTRUE;
   }
   if ( fEventTriggerMaskInput & AliVEvent::kEMCEGA )
   {
-    trigBit[7] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains( "G1") ) trigBit [8] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains( "G2") ) trigBit [9] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains("EG1") ) trigBit[10] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains("EG2") ) trigBit[11] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains("DG1") ) trigBit[12] = kTRUE;
-    if ( GetFiredTriggerClasses().Contains("DG2") ) trigBit[13] = kTRUE;
+    fTriggerEMCalBoolArr[7] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains( "G1") ) fTriggerEMCalBoolArr [8] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains( "G2") ) fTriggerEMCalBoolArr [9] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains("EG1") ) fTriggerEMCalBoolArr[10] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains("EG2") ) fTriggerEMCalBoolArr[11] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains("DG1") ) fTriggerEMCalBoolArr[12] = kTRUE;
+    if ( GetFiredTriggerClasses().Contains("DG2") ) fTriggerEMCalBoolArr[13] = kTRUE;
   }
   if ( fEventTriggerMaskInput & AliVEvent::kCaloOnly )
   {
-    trigBit[14] = kTRUE;
-    if ( fEventTrigDCALL0CaloOnly ) trigBit[15] = kTRUE;
+    fTriggerEMCalBoolArr[14] = kTRUE;
+    if ( fEventTrigDCALL0CaloOnly ) fTriggerEMCalBoolArr[15] = kTRUE;
   }
 
-  for(Int_t itrig = 0; itrig < 16; itrig++)
+  for(Int_t itrig = 0; itrig < fNTriggerEMCal; itrig++)
   {
-    if ( trigBit[itrig] )
+    if ( fTriggerEMCalBoolArr[itrig] )
     {
       if ( !fHistoCentDependent ) fhNEventsPerTrigger   ->Fill(itrig+0.5);
       else                        fhNEventsPerTriggerCen->Fill(itrig+0.5,GetEventCentrality());
