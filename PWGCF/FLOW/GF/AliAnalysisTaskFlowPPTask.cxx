@@ -223,6 +223,9 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	hMult->Sumw2();
 	fListOfObjects->Add(hMult);
 
+	hMultCent = new TH2F("hMultCent","Multiplicity vs Centrality; Centrality; # of tracks",100,0,100,200,0,3000);
+	fListOfObjects->Add(hMultCent);
+
 	hTracksCorrection2d = new TH2D("hTracksCorrection2d", "Correlation table for number of tracks table", nn, xbins, nn, xbins);
   	fListOfObjects->Add(hTracksCorrection2d);
 
@@ -428,6 +431,7 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 
 	fCentralityDis->Fill(cent);
 	fCurrCentrality = cent;
+	hMultCent->Fill(cent,NtrksCounter);
 	//printf("==========\n========\n==========\n========\n");
 	//printf("Current Centrality is %lf\n",fCurrCentrality);
 	//printf("==========\n========\n==========\n========\n");
