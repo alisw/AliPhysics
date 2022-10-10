@@ -96,7 +96,8 @@ private:
   TH1F *hFakeDeuteronSpectrum[2]; //!<! fake deuteron (obtained via coalescence) transverse momentum spectrum {0: positive, 1: negative}
   TH1F *hDeltaP;                  //!<! delta-P distribution
 
-  TH2F *hNparticles[2]; //!<! number of pions and deuterons per event {0: positive, 1: negative}
+  TH2F *hNparticles[2];     //!<! number of pions and deuterons per event {0: positive, 1: negative}
+  TH2F *hNparticlesFake[2]; //!<! number of pions and fake deuterons per event {0: positive, 1: negative}
 
   TH1F *hSameEventPionDeuteronKstarLS[2]; //!<! same-event k* distribution for pion-deuteron (like-sign) {0: positive, 1: negative}
   TH1F *hSameEventPionDeuteronKstarUS[2]; //!<! same-event k* distribution for pion-deuteron (unlike-sign) {0: positive pion, 1: negative pion}

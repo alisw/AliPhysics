@@ -34,6 +34,7 @@ AliAnalysisTaskPionDeuteron::AliAnalysisTaskPionDeuteron(const char *name)
       hFakeDeuteronSpectrum{nullptr},
       hDeltaP{nullptr},
       hNparticles{nullptr},
+      hNparticlesFake{nullptr},
       hSameEventPionProtonKstarLS{nullptr},
       hSameEventPionProtonKstarUS{nullptr},
       hMixedEventPionProtonKstarLS{nullptr},
@@ -123,6 +124,8 @@ void AliAnalysisTaskPionDeuteron::UserCreateOutputObjects()
     fOutputList->Add(hFakeDeuteronSpectrum[iCharge]);
     hNparticles[iCharge] = new TH2F(Form("h%sNparticles", charge_label[iCharge]), ";N_{#pi};N_{d}", 51, -0.5, 50.5, 4, -0.5, 3.5);
     fOutputList->Add(hNparticles[iCharge]);
+    hNparticlesFake[iCharge] = new TH2F(Form("h%sNparticlesFake", charge_label[iCharge]), ";N_{#pi};N_{d (fake)}", 51, -0.5, 50.5, 4, -0.5, 3.5);
+    fOutputList->Add(hNparticlesFake[iCharge]);
     hSameEventPionProtonKstarLS[iCharge] = new TH1F(Form("h%sSameEventPionProtonKstarLS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
     fOutputList->Add(hSameEventPionProtonKstarLS[iCharge]);
     hSameEventPionProtonKstarUS[iCharge] = new TH1F(Form("h%sSameEventPionProtonKstarUS", charge_label[iCharge]), ";#it{k}* (GeV/#it{c});Entries", nKstarBins, kStarBins);
@@ -279,6 +282,9 @@ void AliAnalysisTaskPionDeuteron::UserExec(Option_t *)
 
   hNparticles[0]->Fill(nPosPions, nDeuterons);
   hNparticles[1]->Fill(nNegPions, nAntideuterons);
+
+  hNparticlesFake[0]->Fill(nPosPions, nFakeDeuterons);
+  hNparticlesFake[1]->Fill(nNegPions, nFakeAntideuterons);
 
   // same event
   for (int iPosPion = 0; iPosPion < (int)v_pospionTLV.size(); iPosPion++)
