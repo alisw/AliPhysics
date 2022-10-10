@@ -852,10 +852,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
 
   // PAIR CLEANING AND FEMTO
-  fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
-  fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
+  fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
+  fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
+  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
+  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
