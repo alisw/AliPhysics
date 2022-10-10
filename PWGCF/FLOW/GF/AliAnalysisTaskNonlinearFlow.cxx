@@ -802,7 +802,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   }
   hEventCount->Fill("after fEventCuts", 1.);
 
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
     fGFWSelection15o->ResetCuts();
   } else {
     fGFWSelection->ResetCuts();
@@ -811,7 +811,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   AliVVertex *vtx = fAOD->GetPrimaryVertex();
   float fVtxZ = vtx->GetZ();
 
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
 	   if (!fGFWSelection15o->AcceptVertex(fAOD)) {
 	    PostData(1,fListOfObjects);
 	    int outputslot = 2;
@@ -865,7 +865,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   NTracksCalculation(fInputEvent);
 
   // Setup AliGFWCuts for a specific systematics
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
     fGFWSelection15o->SetupCuts(fCurrSystFlag);
     if (!fGFWSelection15o->AcceptVertex(fAOD)) {
       PostData(1,fListOfObjects);
@@ -2709,7 +2709,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
   // Additional cut for TPCchi2perCluster
   if (mtr->GetTPCchi2perCluster()>fTPCchi2perCluster) return kFALSE;
 
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
     return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
   } else {
     return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
