@@ -95,5 +95,6 @@
 #pragma link C++ class CustomQueue<std::vector<TLorentzVector>>+;
 #pragma link C++ std::vector<CustomQueue<std::vector<TLorentzVector>>>+;
 #pragma link C++ class AliAnalysisTaskPionDeuteronMC+;
+#pragma link C++ class AliAnalysisTaskPionDeuteron+;
 
 #endif
