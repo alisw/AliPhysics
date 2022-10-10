@@ -670,6 +670,11 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
   fListOfObjects->Add(hnCorrectedTracks);
 
+  hDCAxy = new TH2D("hDCAxy", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  hDCAz  = new TH1D("hDCAz",  "DCAz distribution", 100, 0, 4);
+  hDCAxyBefore = new TH2D("hDCAxyBefore", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  hDCAzBefore  = new TH1D("hDCAzBefore",  "DCAz distribution", 100, 0, 4);
+
   Int_t inSlotCounter=1;
   if(fNUA) {
     if (fPeriod.EqualTo("LHC15oKatarina") ) {
@@ -1072,19 +1077,25 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     }
 
     aodTrk->GetXYZ(pos);
-    if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
+    double pos[3];
+    aodTrk->GetXYZ(pos);
+    double dcaX = pos[0] - vtxp[0]; 
+    double dcaY = pos[1] - vtxp[1];
+    double dcaZ = abs(pos[2] - vtxp[2]);
+    double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
+
+	hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+	hDCAzBefore->Fill(dcaZ);
+
+    if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
     if (fUseAdditionalDCACut) {
-       double pos[3];
-       aodTrk->GetXYZ(pos);
-       double dcaX = pos[0] - vtxp[0]; 
-       double dcaY = pos[1] - vtxp[1];
-       double dcaZ = abs(pos[2] - vtxp[2]);
-       double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
        if (dcaXY > 1) continue;
        if (dcaZ > 1) continue;
     }
 
+	hDCAxy->Fill(dcaXY, aodTrk->Pt());
+	hDCAz->Fill(dcaZ);
     NtrksAfter += 1;
 
     //..get phi-weight for NUA correction
