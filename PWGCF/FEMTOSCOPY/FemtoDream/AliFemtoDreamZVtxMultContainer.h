@@ -24,10 +24,12 @@ class AliFemtoDreamZVtxMultContainer {
   virtual ~AliFemtoDreamZVtxMultContainer();
   void PairParticlesSE(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent);
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+      std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *StarsSE = nullptr);
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent);
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+      std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *StarsME = nullptr);
   void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
                         AliFemtoDreamBasePart &part2, bool SEorME,
                         AliFemtoDreamCorrHists *ResultsHist, float relk);
@@ -44,6 +46,7 @@ class AliFemtoDreamZVtxMultContainer {
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
   std::vector<unsigned int> fWhichPairs;
+  std::vector<float> fKStars;
 //  std::vector<bool> fRejPairs;
 //  bool fDoDeltaEtaDeltaPhiCut;
 //  float fDeltaEtaMax;

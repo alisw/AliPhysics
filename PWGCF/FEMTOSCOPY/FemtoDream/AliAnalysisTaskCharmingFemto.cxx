@@ -20,6 +20,37 @@
 #include "TDatabasePDG.h"
 #include "TRandom.h"
 
+// todo check ml scores when ML selector is used
+// todo check Dstar soft pion
+// check eta selections on dau
+static std::vector<float> dplus_pt;
+static std::vector<float> dplus_eta;
+static std::vector<float> dplus_bkg_score;
+static std::vector<float> dplus_prompt_score;
+
+static std::vector<float> dminus_pt;
+static std::vector<float> dminus_eta;
+static std::vector<float> dminus_bkg_score;
+static std::vector<float> dminus_prompt_score;
+
+static std::vector<float> protons_eta;
+static std::vector<float> protons_pt;
+static std::vector<float> protons_nsigtpc;
+static std::vector<float> protons_nsigtof;
+static std::vector<float> protons_ncls;
+static std::vector<float> protons_ncrossed;
+static std::vector<float> protons_dcaz;
+static std::vector<float> protons_dcaxy;
+
+static std::vector<float> antiprotons_eta;
+static std::vector<float> antiprotons_pt;
+static std::vector<float> antiprotons_nsigtpc;
+static std::vector<float> antiprotons_nsigtof;
+static std::vector<float> antiprotons_ncls;
+static std::vector<float> antiprotons_ncrossed;
+static std::vector<float> antiprotons_dcaz;
+static std::vector<float> antiprotons_dcaxy;
+
 ClassImp(AliAnalysisTaskCharmingFemto)
 
     //____________________________________________________________________________________________________
@@ -235,9 +266,20 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
     }
   }
 
+  int nOutput = 9;
   if (fIsMC) {
-    DefineOutput(9, TList::Class());
-    DefineOutput(10, TList::Class());
+    DefineOutput(nOutput++, TList::Class());
+    DefineOutput(nOutput++, TList::Class());
+  }
+  if (fUseTree) {
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
   }
 }
 
@@ -256,21 +298,21 @@ AliAnalysisTaskCharmingFemto::~AliAnalysisTaskCharmingFemto() {
 //____________________________________________________________________________________________________
 void AliAnalysisTaskCharmingFemto::LocalInit()
 {
-    // Initialization
+  // Initialization
     switch(fDecChannel) {
       case kDplustoKpipi:
       {
         AliRDHFCutsDplustoKpipi* copyCutDplus = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDHFCuts)));
-        PostData(8, copyCutDplus);
-        break;
-      }
+      PostData(8, copyCutDplus);
+      break;
+    }
       case kDstartoKpipi:
       {
         AliRDHFCutsDStartoKpipi* copyCutDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fRDHFCuts)));
-        PostData(8, copyCutDstar);
-        break;
-      }
+      PostData(8, copyCutDstar);
+      break;
     }
+  }
   return;
 }
 
@@ -403,7 +445,40 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   dplus.clear();
   dminus.clear();
 
-  const int multiplicity = fEvent->GetMultiplicity();
+  dplus_pt.clear();
+  dplus_eta.clear();
+  dplus_bkg_score.clear();
+  dplus_prompt_score.clear();
+  dminus_pt.clear();
+  dminus_eta.clear();
+  dminus_bkg_score.clear();
+  dminus_prompt_score.clear();
+
+  // light flavor + CC
+  protons_nsigtpc.clear();
+  protons_nsigtof.clear();
+  protons_nsigtpc.clear();
+  protons_nsigtof.clear();
+  protons_eta.clear();
+  protons_pt.clear();
+  protons_ncls.clear();
+  protons_ncrossed.clear();
+  protons_dcaz.clear();
+  protons_dcaxy.clear();
+  antiprotons_nsigtpc.clear();
+  antiprotons_nsigtof.clear();
+  antiprotons_nsigtpc.clear();
+  antiprotons_nsigtof.clear();
+  antiprotons_eta.clear();
+  antiprotons_pt.clear();
+  antiprotons_ncls.clear();
+  antiprotons_ncrossed.clear();
+  antiprotons_dcaz.clear();
+  antiprotons_dcaxy.clear();
+
+  fFemtoPair.mult = fEvent->GetMultiplicity();
+  fFemtoPair.vz = fEvent->GetZVertex();
+
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
@@ -433,21 +508,57 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
+        protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
+        protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
+        protons_eta.push_back(fProtonTrack->GetEta()[0]);
+        protons_pt.push_back(fProtonTrack->GetPt());
+        protons_ncls.push_back(fProtonTrack->GetNClsTPC());
+        protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
+        protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
+        protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
+        protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
+        protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
+        protons_eta.push_back(fProtonTrack->GetEta()[0]);
+        protons_pt.push_back(fProtonTrack->GetPt());
+        protons_ncls.push_back(fProtonTrack->GetNClsTPC());
+        protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
+        protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
+        protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
+        antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
+        antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
+        antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
+        antiprotons_pt.push_back(fProtonTrack->GetPt());
+        antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
+        antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
+        antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
+        antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
+        antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
+        antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
+        antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
+        antiprotons_pt.push_back(fProtonTrack->GetPt());
+        antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
+        antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
+        antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
+        antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
-      }      
+      }
     }
   }
 
@@ -461,7 +572,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
   if (fIsMCtruth) {
     int noPart = fArrayMCAOD->GetEntriesFast();
-  
+
     for (int iPart = 1; iPart < noPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
       if (!(mcPart)) {
@@ -478,13 +589,16 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       int mcpdg = mcPart->GetPdgCode();
       double pt = mcPart->Pt();
       double eta = mcPart->Eta();
-      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {        
+      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {
         if ((pt < fBuddypThigh && pt > fBuddypTlow) && (eta > -fBuddyeta && eta < fBuddyeta)) {
           if(SelectBuddyOrigin(mcPart)){
             part.SetMCParticleRePart(mcPart);
             part.SetID(mcPart->GetLabel());
             part.SetIDTracks(mcPart->GetLabel());
             protons.push_back(part);
+
+            protons_eta.push_back(mcPart->Eta());
+            protons_pt.push_back(mcPart->Pt());
           }
         }
       }
@@ -496,6 +610,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             part.SetID(mcPart->GetLabel());
             part.SetIDTracks(mcPart->GetLabel());
             antiprotons.push_back(part);
+            
+            antiprotons_eta.push_back(mcPart->Eta());
+            antiprotons_pt.push_back(mcPart->Pt());
           }
         }
       }
@@ -523,11 +640,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
           // select kinem of soft pion
           if (
-            softPion->Pt() < ptMin   || 
-            softPion->Pt() > ptMax   ||
-            softPion->Eta() < etaMin || 
-            softPion->Eta() > etaMax
-          ){
+              softPion->Pt() < ptMin   ||
+              softPion->Pt() > ptMax   ||
+              softPion->Eta() < etaMin ||
+              softPion->Eta() > etaMax
+              ){
             continue;
           }
 
@@ -575,11 +692,15 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           part.SetIDTracks(softPion->GetLabel());
           part.SetIDTracks(kaonFromD0->GetLabel());
           part.SetIDTracks(pionFromD0->GetLabel());
-          
+
           if (mcpdg == 413) {
             dplus.push_back(part);
+            dplus_pt.push_back(part.GetPt());
+            dplus_eta.push_back(part.GetEta()[0]);
           } else if (mcpdg == -413){
             dminus.push_back(part);
+            dminus_pt.push_back(part.GetPt());
+            dminus_eta.push_back(part.GetEta()[0]);
           }
           if(fDoDorigPlots){
             FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
@@ -587,8 +708,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           }
         }
       }
-        
-        if ((std::abs(mcpdg)) == absPdgMom && (fDecChannel == kDplustoKpipi)) {
+
+      if ((std::abs(mcpdg)) == absPdgMom && (fDecChannel == kDplustoKpipi)) {
         if((pt>DmesonPtMin) && (pt<DmesonPtMax)) {
           int NDDaughters=(const int)mcPart->GetNDaughters();
           if (NDDaughters == 3) {
@@ -613,11 +734,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
             if(counter==3){
               std::sort(pdgvec.begin(), pdgvec.end());
-              // cout<<"*** ";
-              // for (int i = 0; i<NDDaughters; i++) {
-              //   cout<<" "<<pdgvec[i];
-              // }
-              // cout<<" ***"<< endl;
               if ((pdgvec.at(0)==-321) && (pdgvec.at(1)==211) && (pdgvec.at(2)==211) && (mcpdg == 411)) {
                 if (SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
                   part.SetMCParticleRePart(mcPart);
@@ -644,7 +760,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                     FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
                   }
                 }
-              }            
+              }
             }
           }
         }
@@ -693,7 +809,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     bool unsetVtx = false;
     bool recVtx = false;
     AliAODVertex *origOwnVtx = nullptr;
-    
+
     int pdgDplusDau[3] = {321, 211, 211};
     int isSelected = 1;
     if(fUseMCTruthReco){
@@ -721,6 +837,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
       if(!SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
         continue;
+      }
+
+      if (fApplyML) {
+        isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
       }
     } else {
       isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
@@ -799,17 +919,22 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fHistDplusChildPhi[iChild]->Fill(track->Phi());
           }
         }
-      } else {
-        AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom,
-                                         fDmesonPDGs);
-        if (fIsMC && fMCBeautyRejection
-            && dminusCand.GetParticleOrigin()
-                == AliFemtoDreamBasePart::kBeauty) {
-          if (gRandom->Uniform() > fMCBeautyScalingFactor)
-            continue;
+
+        if(!fIsMCtruth){
+          dplus_eta.push_back(dplusCand.GetEta()[0]);
+          dplus_pt.push_back(dplusCand.GetPt());
+          if (fApplyML) {
+            dplus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
+            dplus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
+          }
         }
-        if (fIsMC && fUseTrueDOnly
-            && std::abs(dminusCand.GetMCPDGCode()) != absPdgMom) {
+        
+      } else {
+        AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
+        if (fIsMC && fMCBeautyRejection && dminusCand.GetParticleOrigin() == AliFemtoDreamBasePart::kBeauty) {
+          if (gRandom->Uniform() > fMCBeautyScalingFactor) continue;
+        }
+        if (fIsMC && fUseTrueDOnly && std::abs(dminusCand.GetMCPDGCode()) != absPdgMom) {
           continue;
         }
         if (!fIsMCtruth){
@@ -822,20 +947,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           fHistDminusEtaVsp->Fill(dMeson->P(), dMeson->Eta());
 
           if (fIsMC) {
-            fHistDminusMCPDGPt->Fill(dminusCand.GetPt(),
-                                     dminusCand.GetMotherPDG());
-            fHistDminusMCOrigin->Fill(dminusCand.GetPt(),
-                                      dminusCand.GetParticleOrigin());
+            fHistDminusMCPDGPt->Fill(dminusCand.GetPt(), dminusCand.GetMotherPDG());
+            fHistDminusMCOrigin->Fill(dminusCand.GetPt(), dminusCand.GetParticleOrigin());
             if (dminusCand.GetMCPDGCode() != 0) {
-              fHistDminusMCPtRes->Fill(
-                  dminusCand.GetPt() - dminusCand.GetMCPt(),
-                  dminusCand.GetPt());
-              fHistDminusMCPhiRes->Fill(
-                  dminusCand.GetPhi().at(0) - dminusCand.GetMCPhi().at(0),
-                  dminusCand.GetPt());
-              fHistDminusMCThetaRes->Fill(
-                  dminusCand.GetTheta().at(0) - dminusCand.GetMCTheta().at(0),
-                  dminusCand.GetPt());
+              fHistDminusMCPtRes->Fill(dminusCand.GetPt() - dminusCand.GetMCPt(), dminusCand.GetPt());
+              fHistDminusMCPhiRes->Fill(dminusCand.GetPhi().at(0) - dminusCand.GetMCPhi().at(0), dminusCand.GetPt());
+              fHistDminusMCThetaRes->Fill(dminusCand.GetTheta().at(0) - dminusCand.GetMCTheta().at(0),
+                                          dminusCand.GetPt());
             }
           }
           for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
@@ -850,6 +968,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fHistDminusChildPhi[iChild]->Fill(track->Phi());
           }
         }
+        if (!fIsMCtruth) {
+          dminus_eta.push_back(dminusCand.GetEta()[0]);
+          dminus_pt.push_back(dminusCand.GetPt());
+          if(fApplyML) {
+            dminus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
+            dminus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
+          }
+        }
       }
     }
 
@@ -861,7 +987,51 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
   }
 
+
+  // for (auto dpl : dplus){
+  //   auto idtrks = dpl.GetIDTracks();
+
+  //   for (auto id:idtrks){
+  //     AliAODMCParticle *mcDau = (AliAODMCParticle *)fArrayMCAOD->At(id);
+
+  //   }
+  // }
   // PAIR CLEANING AND FEMTO
+
+
+  if (fUseTree) {
+    if (dplus.size() > 0 || dminus.size() > 0) {
+      printf("len: %d - protons\n", protons.size());
+      printf("len: %d - protons_nsigtpc\n", protons_nsigtpc.size());
+      printf("len: %d - protons_nsigtof\n", protons_nsigtof.size());
+      printf("len: %d - protons_eta\n", protons_eta.size());
+      printf("len: %d - protons_pt\n", protons_pt.size());
+      printf("len: %d - protons_ncls\n", protons_ncls.size());
+      printf("len: %d - protons_ncrossed\n", protons_ncrossed.size());
+      printf("len: %d - protons_dcaz\n", protons_dcaz.size());
+      printf("len: %d - protons_dcaxy\n", protons_dcaxy.size());
+      printf("len: %d - antiprotons\n", antiprotons.size());
+      printf("len: %d - antiprotons_nsigtpc\n", antiprotons_nsigtpc.size());
+      printf("len: %d - antiprotons_nsigtof\n", antiprotons_nsigtof.size());
+      printf("len: %d - antiprotons_eta\n", antiprotons_eta.size());
+      printf("len: %d - antiprotons_pt\n", antiprotons_pt.size());
+      printf("len: %d - antiprotons_ncls\n", antiprotons_ncls.size());
+      printf("len: %d - antiprotons_ncrossed\n", antiprotons_ncrossed.size());
+      printf("len: %d - antiprotons_dcaz\n", antiprotons_dcaz.size());
+      printf("len: %d - antiprotons_dcaxy\n\n\n", antiprotons_dcaxy.size());
+      printf("len: %d - dplus\n", dplus.size());
+      printf("len: %d - dplus_eta\n", dplus_eta.size());
+      printf("len: %d - dplus_bkg_score\n", dplus_bkg_score.size());
+      printf("len: %d - dplus_prompt_score\n", dplus_prompt_score.size());
+      printf("len: %d - dplus_pt\n", dplus_pt.size());
+      printf("len: %d - dminus\n", dminus.size());
+      printf("len: %d - dminus_eta\n", dminus_eta.size());
+      printf("len: %d - dminus_bkg_score\n", dminus_bkg_score.size());
+      printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
+      printf("len: %d - dminus_pt\n", dminus_pt.size());
+    }
+  }
+
   fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
   fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
   fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
@@ -873,7 +1043,137 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(dplus);
   fPairCleaner->StoreParticle(dminus);
 
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+  std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsSE = nullptr;
+  std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsME = nullptr;
+
+  if (fUseTree) {
+    kStarsSE = new std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>>();
+    kStarsME = new std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>>();
+
+    kStarsSE->insert({{0, 2}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
+    kStarsSE->insert({{1, 3}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
+    kStarsSE->insert({{0, 3}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
+    kStarsSE->insert({{1, 2}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
+
+    kStarsME->insert({{0, 2}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
+    kStarsME->insert({{1, 3}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
+    kStarsME->insert({{0, 3}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
+    kStarsME->insert({{1, 2}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
+
+    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, kStarsSE, kStarsME);
+
+    // fill SE tree
+    for (auto kStarPair : *kStarsSE) {
+      auto combo = kStarPair.first;
+      auto kStarList = *std::get<0>(kStarPair.second);
+      auto indecesP1 = *std::get<1>(kStarPair.second);
+      auto indecesP2 = *std::get<2>(kStarPair.second);
+
+      for (int iPair = 0; iPair < kStarList.size(); iPair++) {
+        fFemtoPair.kStar = kStarList[iPair];
+        if (combo.second == 2) {
+          fFemtoPair.heavy_pt = dplus_pt[indecesP2[iPair]];
+          fFemtoPair.heavy_eta = dplus_eta[indecesP2[iPair]];
+          if (!fIsMCtruth && fApplyML){ // ML is not used for MC truth @ gen level
+            fFemtoPair.heavy_bkg_score = dplus_bkg_score[indecesP2[iPair]];
+            fFemtoPair.heavy_prompt_score = dplus_prompt_score[indecesP2[iPair]];
+          }
+        } else if (combo.second == 3) {
+          fFemtoPair.heavy_pt = dminus_pt[indecesP2[iPair]];
+          fFemtoPair.heavy_eta = dminus_eta[indecesP2[iPair]];
+          if (!fIsMCtruth && fApplyML){ // ML is not used for MC truth @ gen level
+            fFemtoPair.heavy_bkg_score = dminus_bkg_score[indecesP2[iPair]];
+            fFemtoPair.heavy_prompt_score = dminus_prompt_score[indecesP2[iPair]];
+          }
+        } else {
+          AliFatal("Error");
+        }
+        if (combo.first == 0) {
+          fFemtoPair.light_pt = protons_pt[indecesP1[iPair]];
+          fFemtoPair.light_eta = protons_eta[indecesP1[iPair]];
+          if (!fIsMCtruth) {
+            fFemtoPair.light_nsigtpc = protons_nsigtpc[indecesP1[iPair]];
+            fFemtoPair.light_nsigtof = protons_nsigtof[indecesP1[iPair]];
+            fFemtoPair.light_ncls = protons_ncls[indecesP1[iPair]];
+            fFemtoPair.light_ncrossed = protons_ncrossed[indecesP1[iPair]];
+            fFemtoPair.light_dcaz = protons_dcaz[indecesP1[iPair]];
+            fFemtoPair.light_dcaxy = protons_dcaxy[indecesP1[iPair]];
+          }
+        } else if (combo.first == 1) {
+          fFemtoPair.light_pt = antiprotons_pt[indecesP1[iPair]];
+          fFemtoPair.light_eta = antiprotons_eta[indecesP1[iPair]];
+          if (!fIsMCtruth) {
+            fFemtoPair.light_nsigtpc = antiprotons_nsigtpc[indecesP1[iPair]];
+            fFemtoPair.light_nsigtof = antiprotons_nsigtof[indecesP1[iPair]];
+            fFemtoPair.light_ncls = antiprotons_ncls[indecesP1[iPair]];
+            fFemtoPair.light_ncrossed = antiprotons_ncrossed[indecesP1[iPair]];
+            fFemtoPair.light_dcaz = antiprotons_dcaz[indecesP1[iPair]];
+            fFemtoPair.light_dcaxy = antiprotons_dcaxy[indecesP1[iPair]];
+          }
+        } else {
+          AliFatal("Error");
+        }
+        fPairTreeSE.at(combo)->Fill();
+      }
+    }
+
+    // fill ME tree
+    for (auto kStarPair : *kStarsME) {
+      auto combo = kStarPair.first;
+      auto kStarList = *std::get<0>(kStarPair.second);
+      auto indecesP1 = *std::get<1>(kStarPair.second);
+      auto indecesP2 = *std::get<2>(kStarPair.second);
+
+      for (int iPair = 0; iPair < kStarList.size(); iPair++) {
+        fFemtoPair.kStar = kStarList[iPair];
+        if (combo.second == 2) {
+          fFemtoPair.heavy_pt = dplus_pt[indecesP2[iPair]];
+          fFemtoPair.heavy_eta = dplus_eta[indecesP2[iPair]];
+          if (!fIsMCtruth && fApplyML) {
+            fFemtoPair.heavy_bkg_score = dplus_bkg_score[indecesP2[iPair]];
+            fFemtoPair.heavy_prompt_score = dplus_prompt_score[indecesP2[iPair]];
+          }
+        } else if (combo.second == 3) {
+          fFemtoPair.heavy_pt = dminus_pt[indecesP2[iPair]];
+          fFemtoPair.heavy_eta = dminus_eta[indecesP2[iPair]];
+          if (!fIsMCtruth && fApplyML) {
+            fFemtoPair.heavy_bkg_score = dminus_bkg_score[indecesP2[iPair]];
+            fFemtoPair.heavy_prompt_score = dminus_prompt_score[indecesP2[iPair]];
+          }
+        } else {
+          AliFatal("Error");
+        }
+        if (combo.first == 0) {
+          fFemtoPair.light_pt = protons_pt[indecesP1[iPair]];
+          fFemtoPair.light_eta = protons_eta[indecesP1[iPair]];
+          if (!fIsMCtruth) {
+            fFemtoPair.light_nsigtpc = protons_nsigtpc[indecesP1[iPair]];
+            fFemtoPair.light_nsigtof = protons_nsigtof[indecesP1[iPair]];
+            fFemtoPair.light_ncls = protons_ncls[indecesP1[iPair]];
+            fFemtoPair.light_ncrossed = protons_ncrossed[indecesP1[iPair]];
+            fFemtoPair.light_dcaz = protons_dcaz[indecesP1[iPair]];
+            fFemtoPair.light_dcaxy = protons_dcaxy[indecesP1[iPair]];
+          }
+        } else if (combo.first == 1) {
+          fFemtoPair.light_pt = antiprotons_pt[indecesP1[iPair]];
+          fFemtoPair.light_eta = antiprotons_eta[indecesP1[iPair]];
+          if (!fIsMCtruth) {
+            fFemtoPair.light_nsigtpc = antiprotons_nsigtpc[indecesP1[iPair]];
+            fFemtoPair.light_nsigtof = antiprotons_nsigtof[indecesP1[iPair]];
+            fFemtoPair.light_ncls = antiprotons_ncls[indecesP1[iPair]];
+            fFemtoPair.light_ncrossed = antiprotons_ncrossed[indecesP1[iPair]];
+            fFemtoPair.light_dcaz = antiprotons_dcaz[indecesP1[iPair]];
+            fFemtoPair.light_dcaxy = antiprotons_dcaxy[indecesP1[iPair]];
+          }
+        } else {
+          AliFatal("Error");
+        }
+        fPairTreeME.at(combo)->Fill();
+      }
+    }
+  } else {
+    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+  }
 
   // flush the data
   PostData(1, fQA);
@@ -883,9 +1183,18 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   PostData(5, fDChargedHistList);
   PostData(6, fResultList);
   PostData(7, fResultQAList);
+
+  int nOutput = 9;
   if (fIsMC) {
-    PostData(9, fTrackCutHistMCList);
-    PostData(10, fAntiTrackCutHistMCList);
+    PostData(nOutput++, fTrackCutHistMCList);
+    PostData(nOutput++, fAntiTrackCutHistMCList);
+  }
+  
+  if (fUseTree) {
+    for (auto pair : fPairTreeSE) PostData(nOutput++, pair.second);
+    for (auto pair : fPairTreeME) PostData(nOutput++, pair.second);
+
+    
   }
 }
 
@@ -928,6 +1237,76 @@ void AliAnalysisTaskCharmingFemto::StoreGlobalTrackReference(
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
+  if (fUseTree) {
+    // fPairTreeSE = std::map <std::pair<int, int>, TTree*>();
+    fPairTreeSE.insert({{0, 2}, new TTree("tSE_DstarPi_pp", "tSE_DstarPi_pp")});
+    fPairTreeSE.insert({{1, 3}, new TTree("tSE_DstarPi_mm", "tSE_DstarPi_mm")});
+    fPairTreeSE.insert({{0, 3}, new TTree("tSE_DstarPi_mp", "tSE_DstarPi_mp")});
+    fPairTreeSE.insert({{1, 2}, new TTree("tSE_DstarPi_pm", "tSE_DstarPi_pm")});
+
+    fPairTreeME.insert({{0, 2}, new TTree("tME_DstarPi_pp", "tME_DstarPi_pp")});
+    fPairTreeME.insert({{1, 3}, new TTree("tME_DstarPi_mm", "tME_DstarPi_mm")});
+    fPairTreeME.insert({{0, 3}, new TTree("tME_DstarPi_mp", "tME_DstarPi_mp")});
+    fPairTreeME.insert({{1, 2}, new TTree("tME_DstarPi_pm", "tME_DstarPi_pm")});
+
+    for (auto tree : fPairTreeSE) {
+      // event
+      tree.second->Branch("mult", &fFemtoPair.mult);
+      tree.second->Branch("vz", &fFemtoPair.vz);
+
+      // pair
+      tree.second->Branch("kStar", &fFemtoPair.kStar);
+
+      // heavy particle
+      tree.second->Branch("heavy_pt", &fFemtoPair.heavy_pt);
+      tree.second->Branch("heavy_eta", &fFemtoPair.heavy_eta);
+      if (fApplyML) {
+        tree.second->Branch("heavy_bkg_score", &fFemtoPair.heavy_bkg_score);
+        tree.second->Branch("heavy_prompt_score", &fFemtoPair.heavy_prompt_score);
+      }
+
+      // light particle
+      tree.second->Branch("light_pt", &fFemtoPair.light_pt);
+      tree.second->Branch("light_eta", &fFemtoPair.light_eta);
+      if (!fIsMCtruth) {
+        tree.second->Branch("light_nsigtpc", &fFemtoPair.light_nsigtpc);
+        tree.second->Branch("light_nsigtof", &fFemtoPair.light_nsigtof);
+        tree.second->Branch("light_ncls", &fFemtoPair.light_ncls);
+        tree.second->Branch("light_ncrossed", &fFemtoPair.light_ncrossed);
+        tree.second->Branch("light_dcaz", &fFemtoPair.light_dcaz);
+        tree.second->Branch("light_dcaxy", &fFemtoPair.light_dcaxy);
+      }
+    }
+
+    for (auto tree : fPairTreeME) {
+      // event
+      tree.second->Branch("mult", &fFemtoPair.mult);
+      tree.second->Branch("vz", &fFemtoPair.vz);
+
+      // pair
+      tree.second->Branch("kStar", &fFemtoPair.kStar);
+
+      // heavy
+      tree.second->Branch("heavy_pt", &fFemtoPair.heavy_pt);
+      tree.second->Branch("heavy_eta", &fFemtoPair.heavy_eta);
+      if (fApplyML) {
+        tree.second->Branch("heavy_bkg_score", &fFemtoPair.heavy_bkg_score);
+        tree.second->Branch("heavy_prompt_score", &fFemtoPair.heavy_prompt_score);
+      }
+      // light
+      tree.second->Branch("light_eta", &fFemtoPair.light_eta);
+      tree.second->Branch("light_pt", &fFemtoPair.light_pt);
+      if (!fIsMCtruth) {
+        tree.second->Branch("light_nsigtpc", &fFemtoPair.light_nsigtpc);
+        tree.second->Branch("light_nsigtof", &fFemtoPair.light_nsigtof);
+        tree.second->Branch("light_ncls", &fFemtoPair.light_ncls);
+        tree.second->Branch("light_ncrossed", &fFemtoPair.light_ncrossed);
+        tree.second->Branch("light_dcaz", &fFemtoPair.light_dcaz);
+        tree.second->Branch("light_dcaxy", &fFemtoPair.light_dcaxy);
+      }
+    }
+  }
+
   fGTI = new AliAODTrack *[fTrackBufferSize];
 
   fEvent = new AliFemtoDreamEvent(true, !fIsLightweight, fTrigger);
@@ -1027,8 +1406,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 
   fHistDplusInvMassPt = new TH2F(
       TString::Format("fHist%sInvMassPt", nameD.Data()),
-      TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
-      100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
+                                 TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
+                                 100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
   fDChargedHistList->Add(fHistDplusInvMassPt);
   if (!fIsLightweight) {
     fHistDplusInvMassPtSel = new TH2F(
@@ -1054,7 +1433,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fHistDplusMCPtRes = new TH2F(
           TString::Format("fHist%sMCPtRes", nameD.Data()),
           "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
-          101, -0.5, 0.5, 100, 0, 10);
+                                   101, -0.5, 0.5, 100, 0, 10);
       fHistDplusMCPhiRes = new TH2F(
           TString::Format("fHist%sMCPhiRes", nameD.Data()),
           "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
@@ -1090,36 +1469,36 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
           "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
           250, 0, 25, 5000, 0, 5000);
 
-      fHistDplusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameD.Data()),
+    fHistDplusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameD.Data()),
                                     "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
                                     10, 3, 0.5, 3.5);
-      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
-      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
-      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+    fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+    fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+    fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
 
-      fDChargedHistList->Add(fHistDplusMCtruthmotherPDG);
-      fDChargedHistList->Add(fHistDplusMCtruthQuarkOrigin);
+    fDChargedHistList->Add(fHistDplusMCtruthmotherPDG);
+    fDChargedHistList->Add(fHistDplusMCtruthQuarkOrigin);
 
       fHistDminusMCtruthmotherPDG = new TH2F(
           TString::Format("fHist%sMCPDGPt_MCtruth", nameDminus.Data()),
           "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
           250, 0, 25, 5000, 0, 5000);
-      
-      fHistDminusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameDminus.Data()),
+
+    fHistDminusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameDminus.Data()),
                                     "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
                                     10, 3, 0.5, 3.5);
-      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
-      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
-      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+    fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+    fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+    fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
 
-      fDChargedHistList->Add(fHistDminusMCtruthmotherPDG);
-      fDChargedHistList->Add(fHistDminusMCtruthQuarkOrigin);
+    fDChargedHistList->Add(fHistDminusMCtruthmotherPDG);
+    fDChargedHistList->Add(fHistDminusMCtruthQuarkOrigin);
   }
 
   fHistDminusInvMassPt = new TH2F(
       TString::Format("fHist%sInvMassPt", nameDminus.Data()),
-      TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
-      100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
+                                  TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
+                                  100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
   fDChargedHistList->Add(fHistDminusInvMassPt);
   if (!fIsLightweight) {
     fHistDminusInvMassPtSel = new TH2F(
@@ -1145,7 +1524,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fHistDminusMCPtRes = new TH2F(
           TString::Format("fHist%sMCPtRes", nameDminus.Data()),
           "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
-          101, -0.5, 0.5, 100, 0, 10);
+                                    101, -0.5, 0.5, 100, 0, 10);
       fHistDminusMCPhiRes = new TH2F(
           TString::Format("fHist%sMCPhiRes", nameDminus.Data()),
           "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
@@ -1183,7 +1562,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); ++iChild) {
       fHistDplusChildPt[iChild] = new TH1F(
           TString::Format("fHist%sChildPt_%s", nameD.Data(), nameVec.at(iChild).Data()),
-          "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+                   "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
       fHistDplusChildEta[iChild] = new TH1F(
           TString::Format("fHist%sChildEta_%s", nameD.Data(), nameVec.at(iChild).Data()),
           "; #eta; Entries", 100, -1, 1);
@@ -1195,13 +1574,13 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fDChargedHistList->Add(fHistDplusChildPhi[iChild]);
       fHistDminusChildPt[iChild] = new TH1F(
           TString::Format("fHist%sChildPt_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
-          "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+                   "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
       fHistDminusChildEta[iChild] = new TH1F(
           TString::Format("fHist%sChildEta_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
-          "; #eta; Entries", 100, -1, 1);
+                   "; #eta; Entries", 100, -1, 1);
       fHistDminusChildPhi[iChild] = new TH1F(
           TString::Format("fHist%sChildPhi_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
-          "; #phi; Entries", 100, 0, 2. * TMath::Pi());
+                   "; #phi; Entries", 100, 0, 2. * TMath::Pi());
       fDChargedHistList->Add(fHistDminusChildPt[iChild]);
       fDChargedHistList->Add(fHistDminusChildEta[iChild]);
       fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
@@ -1226,12 +1605,12 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       switch(fDecChannel) {
         case kDplustoKpipi:
             fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
-            fMLResponse->MLResponseInit();
-            break;
+          fMLResponse->MLResponseInit();
+          break;
         case kDstartoKpipi:
             fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.Data());
-            fMLResponse->MLResponseInit();
-            break;
+          fMLResponse->MLResponseInit();
+          break;
       }
     }
     else {
@@ -1258,15 +1637,24 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   PostData(5, fDChargedHistList);
   PostData(6, fResultList);
   PostData(7, fResultQAList);
+  int nOutput = 9;
   if (fIsMC) {
-    PostData(9, fTrackCutHistMCList);
-    PostData(10, fAntiTrackCutHistMCList);
+    PostData(nOutput++, fTrackCutHistMCList);
+    PostData(nOutput++, fAntiTrackCutHistMCList);
+  }
+  if (fUseTree) {
+    for (auto pair : fPairTreeSE) {
+      PostData(nOutput++, pair.second);
+    }
+    for (auto pair : fPairTreeME) {
+      PostData(nOutput++, pair.second);
+    }
   }
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores) {
-
+int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &scores) {
+  
   if(!dMeson || !dMesonWithVtx) {
     return 0;
   }
@@ -1323,11 +1711,11 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
   }
 
   // ML application
+  std::vector<double> modelPred{};
   if(fApplyML) {
     if(!fDependOnMLSelector) { //direct application
       AliAODPidHF* pidHF = fRDHFCuts->GetPidHF();
       bool isMLsel = true;
-      std::vector<double> modelPred{};
       switch(fDecChannel) {
         case kDplustoKpipi:
           isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fInputEvent->GetMagneticField(), pidHF);
@@ -1342,6 +1730,7 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
           }
           break;
       }
+      scores = modelPred;
     }
     else { // read result from common task
       std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptD);

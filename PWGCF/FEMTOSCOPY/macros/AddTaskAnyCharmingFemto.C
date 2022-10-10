@@ -10,11 +10,12 @@
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #endif
-
+ 
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     bool isMC = false,
     bool useMCTruthReco = false,
     bool isMCtruth = false,
+    bool useTree = false,
     bool fullBlastQA = true,
     TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
@@ -457,6 +458,7 @@ if (!isMC) {
   task->SetAODMismatchProtection(useAODProtection);
   task->SetMassSelection(massSelection);
   task->SetUseMCTruthReco(useMCTruthReco);
+  task->SetUseTree(useTree);
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
@@ -591,6 +593,7 @@ if (!isMC) {
       Form("%s:%s", file.Data(), CutObjHFName.Data()));
   mgr->ConnectOutput(task, 8, coutputCutObjHF);
 
+  int nOutput = 9;
   if (isMC) {
     TString TrkCutsMCName = Form("%sTrackCutsMC%s", addon.Data(),
                                  suffix.Data());
@@ -598,7 +601,7 @@ if (!isMC) {
         TrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 9, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, nOutput++, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName = Form("%sAntiTrackCutsMC%s", addon.Data(),
                                      suffix.Data());
@@ -606,8 +609,58 @@ if (!isMC) {
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 10, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, nOutput++, coutputAntiTrkCutsMC);
   }
 
+  if(useTree) {
+    AliAnalysisDataContainer *coutputTreeSE_pp = mgr->CreateContainer(
+        "tSE_pp", TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s", file.Data()));
+    mgr->ConnectOutput(task, nOutput++, coutputTreeSE_pp);
+
+    AliAnalysisDataContainer *coutputTreeSE_mm = mgr->CreateContainer(
+        "tSE_mm", TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s", file.Data()));
+    mgr->ConnectOutput(task, nOutput++, coutputTreeSE_mm);
+
+    AliAnalysisDataContainer *coutputTreeSE_mp = mgr->CreateContainer(
+        "tSE_mp", TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s", file.Data()));
+    mgr->ConnectOutput(task, nOutput++, coutputTreeSE_mp);
+
+    AliAnalysisDataContainer *coutputTreeSE_pm = mgr->CreateContainer(
+        "tSE_pm", TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s", file.Data()));
+    mgr->ConnectOutput(task, nOutput++, coutputTreeSE_pm);
+
+    AliAnalysisDataContainer *coutputTreeME_pp = mgr->CreateContainer(
+        "tME_pp", TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s", file.Data()));
+    mgr->ConnectOutput(task, nOutput++, coutputTreeME_pp);
+
+    AliAnalysisDataContainer *coutputTreeME_mm = mgr->CreateContainer(
+        "tME_mm", TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s", file.Data()));
+    mgr->ConnectOutput(task, nOutput++, coutputTreeME_mm);
+
+    AliAnalysisDataContainer *coutputTreeME_mp = mgr->CreateContainer(
+        "tME_mp", TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s", file.Data()));
+    mgr->ConnectOutput(task, nOutput++, coutputTreeME_mp);
+
+    AliAnalysisDataContainer *coutputTreeME_pm = mgr->CreateContainer(
+        "tME_pm", TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s", file.Data()));
+    mgr->ConnectOutput(task, nOutput++, coutputTreeME_pm);
+
+  }
   return task;
 }
