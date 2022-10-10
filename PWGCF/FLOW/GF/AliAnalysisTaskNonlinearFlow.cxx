@@ -671,9 +671,17 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fListOfObjects->Add(hnCorrectedTracks);
 
   hDCAxy = new TH2D("hDCAxy", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  fListOfObjects->Add(hDCAxy);
   hDCAz  = new TH1D("hDCAz",  "DCAz distribution", 100, 0, 4);
+  fListOfObjects->Add(hDCAz);
   hDCAxyBefore = new TH2D("hDCAxyBefore", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  fListOfObjects->Add(hDCAxyBefore);
   hDCAzBefore  = new TH1D("hDCAzBefore",  "DCAz distribution", 100, 0, 4);
+  fListOfObjects->Add(hDCAzBefore);
+  hChi2  = new TH1D("hChi2", "TPC chi2 per cluster", 100, 0, 5);
+  fListOfObjects->Add(hChi2);
+  hChi2Before  = new TH1D("hChi2Before", "TPC chi2 per cluster", 100, 0, 5);
+  fListOfObjects->Add(hChi2Before);
 
   Int_t inSlotCounter=1;
   if(fNUA) {
@@ -1087,6 +1095,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
 	hDCAzBefore->Fill(dcaZ);
+    hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
 
     if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
     if (fUseAdditionalDCACut) {
@@ -1096,6 +1105,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	hDCAxy->Fill(dcaXY, aodTrk->Pt());
 	hDCAz->Fill(dcaZ);
+    hChi2->Fill(aodTrk->GetTPCchi2perCluster());
     NtrksAfter += 1;
 
     //..get phi-weight for NUA correction

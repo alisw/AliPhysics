@@ -400,14 +400,14 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1D*				fEtaBefore;		//! eta dist before track cuts
 		TH1D*				fPtDis;			//! pt dist
 		TH1D*				fPtBefore;		//! pt dist before track cuts
-		TH1F*				hDCAxyBefore; 		//!
-		TH1F*				hDCAzBefore; 		//!
+		TH2D*				hDCAxyBefore; 		//!
+		TH1D*				hDCAzBefore; 		//!
 		TH1F*				hITSclustersBefore; 	//!
-		TH1F*				hChi2Before; 		//!
-		TH1F*				hDCAxy; 		//!
-		TH1F*				hDCAz; 			//!
+		TH1D*				hChi2Before; 		//!
+		TH2D*				hDCAxy; 		//!
+		TH1D*				hDCAz; 			//!
 		TH1F*				hITSclusters; 		//!
-		TH1F*				hChi2; 			//!
+		TH1D*				hChi2; 			//!
 
 		TH2D*                           hTracksCorrection2d;    //! Corrected Tracks - v.s. uncorrected tracks
 		TProfile*                       hnCorrectedTracks;      //! Averaged number of corrected tracks in a specific bin;
@@ -505,7 +505,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 16);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 17);    //Analysis task
 };
 
 #endif
