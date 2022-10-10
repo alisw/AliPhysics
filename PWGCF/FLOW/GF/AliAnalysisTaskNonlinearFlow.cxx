@@ -136,6 +136,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     hEventCount(0),
     hMult(0),
     fVtxAfterCuts(0),
+	fCentralityCut(100),
     fCentralityDis(0),
     fV0CentralityDis(0),
     hMultV0vsNtrksAfterCuts(0),
@@ -254,6 +255,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   hEventCount(0),
   hMult(0),
   fVtxAfterCuts(0),
+	fCentralityCut(100),
   fCentralityDis(0),
   fV0CentralityDis(0),
   hMultV0vsNtrksAfterCuts(0),
@@ -404,6 +406,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   hEventCount(0),
   hMult(0),
   fVtxAfterCuts(0),
+	fCentralityCut(100),
   fCentralityDis(0),
   fV0CentralityDis(0),
   hMultV0vsNtrksAfterCuts(0),
@@ -639,8 +642,11 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 100, 0, 100);
   fListOfObjects->Add(fCentralityDis);
 
-  fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 100, 0, 10);
+  fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 100, 0, 100);
   fListOfObjects->Add(fV0CentralityDis);
+
+  fV0CentralityDisNarrow = new TH1F("fV0CentralityDisNarrow", "centrality V0/<V0> distribution; centrality; Counts", 1000, 0, 10);
+  fListOfObjects->Add(fV0CentralityDisNarrow);
 
   hMultV0vsNtrksAfterCuts = new TH2F("hMultV0vsNtrksAfterCuts","V0 mult vs. number of tracks; V0 mult; number of tracks", 100, 0, 10, 100, 0, 3000);
   fListOfObjects->Add(hMultV0vsNtrksAfterCuts);
@@ -879,12 +885,25 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   //..standard event plots (cent. percentiles, mult-vs-percentile)
   const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
   const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
-  float centrV0 = 0;
+  float centrV0 = dCentrality;
   float cent = dCentrality;
   float centSPD = 0;
 
-  fCentralityDis->Fill(centrV0);
-  fV0CentralityDis->Fill(cent);
+  fCentralityDis->Fill(cent);
+  fV0CentralityDis->Fill(centrV0);
+  fV0CentralityDisNarrow->Fill(centrV0);
+
+  if (cent > fCentralityCut) {
+	  PostData(1,fListOfObjects);
+	  int outputslot = 2;
+	  PostData(2, fListOfProfile);
+	  for (int i = 0; i < 30; i++) {
+		  outputslot++;
+		  PostData(outputslot, fListOfProfiles[i]);
+	  }
+	  return;
+  }
+
 
   //..all charged particles
   if (!fIsMC) {
