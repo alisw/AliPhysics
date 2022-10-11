@@ -10,7 +10,7 @@
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #endif
- 
+
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     bool isMC = false,
     bool useMCTruthReco = false,
@@ -447,7 +447,7 @@ if (!isMC) {
   config->SetMinimalBookingME(suffix != "0");
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
-      "AliAnalysisTaskCharmingFemto", isMC, isMCtruth);
+      "AliAnalysisTaskCharmingFemto", isMC, isMCtruth, useTree);
   task->SetLightweight(suffix != "0");
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
@@ -458,7 +458,6 @@ if (!isMC) {
   task->SetAODMismatchProtection(useAODProtection);
   task->SetMassSelection(massSelection);
   task->SetUseMCTruthReco(useMCTruthReco);
-  task->SetUseTree(useTree);
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);

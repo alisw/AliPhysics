@@ -20,9 +20,7 @@
 #include "TDatabasePDG.h"
 #include "TRandom.h"
 
-// todo check ml scores when ML selector is used
 // todo check Dstar soft pion
-// check eta selections on dau
 static std::vector<float> dplus_pt;
 static std::vector<float> dplus_eta;
 static std::vector<float> dplus_bkg_score;
@@ -68,6 +66,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fIsMC(false),
       fUseMCTruthReco(false),
       fIsMCtruth(false),
+      fUseTree(false),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -149,7 +148,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
 //____________________________________________________________________________________________________
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
                                                            const bool isMC,
-                                                           const bool isMCtruth)
+                                                           const bool isMCtruth,
+                                                           const bool useTree)
     : AliAnalysisTaskSE(name),
       fInputEvent(nullptr),
       fEvent(nullptr),
@@ -163,6 +163,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fIsMC(isMC),
       fUseMCTruthReco(false),
       fIsMCtruth(isMCtruth),
+      fUseTree(useTree),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -298,19 +299,19 @@ AliAnalysisTaskCharmingFemto::~AliAnalysisTaskCharmingFemto() {
 //____________________________________________________________________________________________________
 void AliAnalysisTaskCharmingFemto::LocalInit()
 {
-  // Initialization
+    // Initialization
     switch(fDecChannel) {
       case kDplustoKpipi:
       {
         AliRDHFCutsDplustoKpipi* copyCutDplus = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDHFCuts)));
-      PostData(8, copyCutDplus);
-      break;
+        PostData(8, copyCutDplus);
+        break;
     }
       case kDstartoKpipi:
       {
         AliRDHFCutsDStartoKpipi* copyCutDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fRDHFCuts)));
-      PostData(8, copyCutDstar);
-      break;
+        PostData(8, copyCutDstar);
+        break;
     }
   }
   return;
@@ -508,26 +509,30 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
-        protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
-        protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
-        protons_eta.push_back(fProtonTrack->GetEta()[0]);
-        protons_pt.push_back(fProtonTrack->GetPt());
-        protons_ncls.push_back(fProtonTrack->GetNClsTPC());
-        protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-        protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-        protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        if (fUseTree) {
+          protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
+          protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
+          protons_eta.push_back(fProtonTrack->GetEta()[0]);
+          protons_pt.push_back(fProtonTrack->GetPt());
+          protons_ncls.push_back(fProtonTrack->GetNClsTPC());
+          protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
+          protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
+          protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        }
 
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
-        protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
-        protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
-        protons_eta.push_back(fProtonTrack->GetEta()[0]);
-        protons_pt.push_back(fProtonTrack->GetPt());
-        protons_ncls.push_back(fProtonTrack->GetNClsTPC());
-        protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-        protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-        protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        if (fUseTree) {
+          protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
+          protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
+          protons_eta.push_back(fProtonTrack->GetEta()[0]);
+          protons_pt.push_back(fProtonTrack->GetPt());
+          protons_ncls.push_back(fProtonTrack->GetNClsTPC());
+          protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
+          protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
+          protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        }
 
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -535,27 +540,31 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
-        antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
-        antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
-        antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
-        antiprotons_pt.push_back(fProtonTrack->GetPt());
-        antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
-        antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-        antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-        antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        if (fUseTree) {
+          antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
+          antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
+          antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
+          antiprotons_pt.push_back(fProtonTrack->GetPt());
+          antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
+          antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
+          antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
+          antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        }
         
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
-        antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
-        antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
-        antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
-        antiprotons_pt.push_back(fProtonTrack->GetPt());
-        antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
-        antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-        antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-        antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        
+        if (fUseTree) {
+          antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
+          antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
+          antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
+          antiprotons_pt.push_back(fProtonTrack->GetPt());
+          antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
+          antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
+          antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
+          antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
+        }
+
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
@@ -597,8 +606,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             part.SetIDTracks(mcPart->GetLabel());
             protons.push_back(part);
 
-            protons_eta.push_back(mcPart->Eta());
-            protons_pt.push_back(mcPart->Pt());
+            if (fUseTree) {
+              protons_eta.push_back(mcPart->Eta());
+              protons_pt.push_back(mcPart->Pt());
+            }
           }
         }
       }
@@ -611,8 +622,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             part.SetIDTracks(mcPart->GetLabel());
             antiprotons.push_back(part);
             
-            antiprotons_eta.push_back(mcPart->Eta());
-            antiprotons_pt.push_back(mcPart->Pt());
+            if (fUseTree) {
+              antiprotons_eta.push_back(mcPart->Eta());
+              antiprotons_pt.push_back(mcPart->Pt());
+            }
           }
         }
       }
@@ -695,12 +708,16 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
           if (mcpdg == 413) {
             dplus.push_back(part);
-            dplus_pt.push_back(part.GetPt());
-            dplus_eta.push_back(part.GetEta()[0]);
+            if (fUseTree) {
+              dplus_pt.push_back(part.GetPt());
+              dplus_eta.push_back(part.GetEta()[0]);
+            }
           } else if (mcpdg == -413){
             dminus.push_back(part);
-            dminus_pt.push_back(part.GetPt());
-            dminus_eta.push_back(part.GetEta()[0]);
+            if (fUseTree) {
+              dminus_pt.push_back(part.GetPt());
+              dminus_eta.push_back(part.GetEta()[0]);
+            }
           }
           if(fDoDorigPlots){
             FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
@@ -741,6 +758,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dplus.push_back(part);
+                  if (fUseTree) {
+                    dplus_pt.push_back(part.GetPt());
+                    dplus_eta.push_back(part.GetEta()[0]);
+                  }
                   if(fDoDorigPlots){
                     FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
                     FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
@@ -755,6 +776,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dminus.push_back(part);
+                  if (fUseTree) {
+                    dminus_pt.push_back(part.GetPt());
+                    dminus_eta.push_back(part.GetEta()[0]);
+                  }
                   if(fDoDorigPlots){
                     FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
                     FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
@@ -968,7 +993,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fHistDminusChildPhi[iChild]->Fill(track->Phi());
           }
         }
-        if (!fIsMCtruth) {
+        if (!fIsMCtruth && fUseTree) {
           dminus_eta.push_back(dminusCand.GetEta()[0]);
           dminus_pt.push_back(dminusCand.GetPt());
           if(fApplyML) {
@@ -999,38 +1024,38 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   // PAIR CLEANING AND FEMTO
 
 
-  if (fUseTree) {
-    if (dplus.size() > 0 || dminus.size() > 0) {
-      printf("len: %d - protons\n", protons.size());
-      printf("len: %d - protons_nsigtpc\n", protons_nsigtpc.size());
-      printf("len: %d - protons_nsigtof\n", protons_nsigtof.size());
-      printf("len: %d - protons_eta\n", protons_eta.size());
-      printf("len: %d - protons_pt\n", protons_pt.size());
-      printf("len: %d - protons_ncls\n", protons_ncls.size());
-      printf("len: %d - protons_ncrossed\n", protons_ncrossed.size());
-      printf("len: %d - protons_dcaz\n", protons_dcaz.size());
-      printf("len: %d - protons_dcaxy\n", protons_dcaxy.size());
-      printf("len: %d - antiprotons\n", antiprotons.size());
-      printf("len: %d - antiprotons_nsigtpc\n", antiprotons_nsigtpc.size());
-      printf("len: %d - antiprotons_nsigtof\n", antiprotons_nsigtof.size());
-      printf("len: %d - antiprotons_eta\n", antiprotons_eta.size());
-      printf("len: %d - antiprotons_pt\n", antiprotons_pt.size());
-      printf("len: %d - antiprotons_ncls\n", antiprotons_ncls.size());
-      printf("len: %d - antiprotons_ncrossed\n", antiprotons_ncrossed.size());
-      printf("len: %d - antiprotons_dcaz\n", antiprotons_dcaz.size());
-      printf("len: %d - antiprotons_dcaxy\n\n\n", antiprotons_dcaxy.size());
-      printf("len: %d - dplus\n", dplus.size());
-      printf("len: %d - dplus_eta\n", dplus_eta.size());
-      printf("len: %d - dplus_bkg_score\n", dplus_bkg_score.size());
-      printf("len: %d - dplus_prompt_score\n", dplus_prompt_score.size());
-      printf("len: %d - dplus_pt\n", dplus_pt.size());
-      printf("len: %d - dminus\n", dminus.size());
-      printf("len: %d - dminus_eta\n", dminus_eta.size());
-      printf("len: %d - dminus_bkg_score\n", dminus_bkg_score.size());
-      printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
-      printf("len: %d - dminus_pt\n", dminus_pt.size());
-    }
-  }
+  // if (fUseTree) {
+  //   if (dplus.size() > 0 || dminus.size() > 0) {
+  //     printf("len: %d - protons\n", protons.size());
+  //     printf("len: %d - protons_nsigtpc\n", protons_nsigtpc.size());
+  //     printf("len: %d - protons_nsigtof\n", protons_nsigtof.size());
+  //     printf("len: %d - protons_eta\n", protons_eta.size());
+  //     printf("len: %d - protons_pt\n", protons_pt.size());
+  //     printf("len: %d - protons_ncls\n", protons_ncls.size());
+  //     printf("len: %d - protons_ncrossed\n", protons_ncrossed.size());
+  //     printf("len: %d - protons_dcaz\n", protons_dcaz.size());
+  //     printf("len: %d - protons_dcaxy\n", protons_dcaxy.size());
+  //     printf("len: %d - antiprotons\n", antiprotons.size());
+  //     printf("len: %d - antiprotons_nsigtpc\n", antiprotons_nsigtpc.size());
+  //     printf("len: %d - antiprotons_nsigtof\n", antiprotons_nsigtof.size());
+  //     printf("len: %d - antiprotons_eta\n", antiprotons_eta.size());
+  //     printf("len: %d - antiprotons_pt\n", antiprotons_pt.size());
+  //     printf("len: %d - antiprotons_ncls\n", antiprotons_ncls.size());
+  //     printf("len: %d - antiprotons_ncrossed\n", antiprotons_ncrossed.size());
+  //     printf("len: %d - antiprotons_dcaz\n", antiprotons_dcaz.size());
+  //     printf("len: %d - antiprotons_dcaxy\n\n\n", antiprotons_dcaxy.size());
+  //     printf("len: %d - dplus\n", dplus.size());
+  //     printf("len: %d - dplus_eta\n", dplus_eta.size());
+  //     printf("len: %d - dplus_bkg_score\n", dplus_bkg_score.size());
+  //     printf("len: %d - dplus_prompt_score\n", dplus_prompt_score.size());
+  //     printf("len: %d - dplus_pt\n", dplus_pt.size());
+  //     printf("len: %d - dminus\n", dminus.size());
+  //     printf("len: %d - dminus_eta\n", dminus_eta.size());
+  //     printf("len: %d - dminus_bkg_score\n", dminus_bkg_score.size());
+  //     printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
+  //     printf("len: %d - dminus_pt\n", dminus_pt.size());
+  //   }
+  // }
 
   fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
   fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);

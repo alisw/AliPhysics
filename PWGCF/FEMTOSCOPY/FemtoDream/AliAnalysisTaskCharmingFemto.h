@@ -69,16 +69,13 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   };
 
   AliAnalysisTaskCharmingFemto();
-  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, const bool isMCtruth);
+  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, const bool isMCtruth, const bool useTree);
   virtual ~AliAnalysisTaskCharmingFemto();
 
   virtual void LocalInit();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
 
-  void SetUseTree(bool useTree = true) {
-    fUseTree = useTree;
-  }
   void SetIsMC(bool isMC) {
     fIsMC = isMC;
   }
