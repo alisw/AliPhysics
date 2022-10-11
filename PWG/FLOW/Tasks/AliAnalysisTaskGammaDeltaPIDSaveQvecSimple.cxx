@@ -105,8 +105,8 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fMaxVzCut(+10.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
-  fDCAxyMax(2.4),
-  fDCAzzMax(3.2),
+  fDCAxyMax(-1), // 2.4
+  fDCAzzMax(-1), // 3.2
   fMinEtaCut(-0.8),
   fMaxEtaCut(+0.8),
   fEtaGapNeg(-0.1),
@@ -287,8 +287,8 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fMaxVzCut(+10.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
-  fDCAxyMax(2.4),
-  fDCAzzMax(3.2),
+  fDCAxyMax(-1),
+  fDCAzzMax(-1),
   fMinEtaCut(-0.8),
   fMaxEtaCut(+0.8),
   fEtaGapNeg(-0.1),
@@ -1001,8 +1001,8 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 
   Double_t posTrk1[3] = {0 , 0, 0};
   Double_t posTrk2[3] = {0 , 0, 0};
-  Double_t vTrk1[3] = {0 , 0, 0};
-  Double_t vTrk2[3] = {0 , 0, 0};
+  //Double_t vTrk1[3] = {0 , 0, 0};
+  //Double_t vTrk2[3] = {0 , 0, 0};
   
 
   ///----------> Starting Analysis track Loop -----------
