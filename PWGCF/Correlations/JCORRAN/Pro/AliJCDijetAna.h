@@ -39,7 +39,7 @@ class AliJCDijetAna : public TObject
         vector<vector<vector<fastjet::PseudoJet>>> GetDijets() { return dijets; }
         bool HasDijet(int iSet) { return bHasDijet.at(iSet); }
         bool HasDeltaPhiDijet(int iSet) { return bHasDeltaPhiDijet.at(iSet); }
-        void InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins);
+        void InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins, int iJetClassTrue, int iJetClassDet);
 
         void SetSettings(int    lDebug,
                          double lParticleEtaCut,
