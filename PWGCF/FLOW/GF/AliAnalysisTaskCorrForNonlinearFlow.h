@@ -172,7 +172,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		bool                    fIsMC;                                  // The observable for MonteCarlo truth
 		TString                 fNtrksName;                             // Cent or Mult
 		TString                 anaType;                                // TPC-TPC or TPC-FMD
-		TString			fPeriod;				// period
+		TString					fPeriod;								// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
 		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region 
@@ -268,22 +268,30 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 
 
 		// Track histograms
-		TH1D*				fPhiDis1D;		//! phi dis 1D
-		TH1D*				fPhiDis1DBefore;		//! phi dis 1D before track cuts
-		TH3D*				fPhiDis;		//! phi dist
-		TH1D*				fEtaDis;		//! eta dist
-		TH1D*				fEtaBefore;		//! eta dist before track cuts
-		TH1D*				fPtDis;			//! pt dist
-		TH1D*				fPtBefore;		//! pt dist before track cuts
+		TH1D*				fPhiDis1D;		    //! phi dis 1D
+		TH1D*				fPhiDis1DBefore;    //! phi dis 1D before track cuts
+		TH3D*				fPhiDis;		    //! phi dist
+		TH1D*				fEtaTriDis;		    //! eta dist
+		TH1D*				fEtaTriDisBefore;	//! eta dist before track cuts
+		TH1D*				fEtaAssDis;		    //! eta dist
+		TH1D*				fEtaAssDisBefore;	//! eta dist before track cuts
+		TH1D*				fPtTriDis;			//! pt dist
+		TH1D*				fPtTriDisBefore;	//! pt dist before track cuts
+		TH1D*				fPtAssDis;			//! pt dist
+		TH1D*				fPtAssDisBefore;	//! pt dist before track cuts
 		TH1F*				hDCAxyBefore; 		//!
 		TH1F*				hDCAzBefore; 		//!
-		TH1F*				hITSclustersBefore; 	//!
+		TH1F*				hITSclustersBefore; //!
 		TH1F*				hChi2Before; 		//!
-		TH1F*				hDCAxy; 		//!
-		TH1F*				hDCAz; 			//!
+		TH1F*				hDCAxy; 	       	//!
+		TH1F*				hDCAz; 			    //!
 		TH1F*				hITSclusters; 		//!
-		TH1F*				hChi2; 			//!
+		TH1F*				hChi2; 			    //!
+		TH2D*               hFMDAvsV0;          //!
+		TH2D*               hFMDCvsV0;          //!
 
+
+		
 		TObjArray*                   fTracksTrigCharged;     //! List of charged tracks
 		TObjArray*                   fTracksAss;             //! List of associate tracks
 		AliTHn*                      fhChargedSE;            //!
@@ -304,7 +312,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 5); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 6); // Analysis task
 };
 
 #endif
