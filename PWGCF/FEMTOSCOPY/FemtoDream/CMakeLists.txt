@@ -123,6 +123,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 set(SRCS
     ${SRCS}
     AliAnalysisTaskCharmingFemto.cxx
+    AliEasyFemto.cxx
     AliAnalysisTaskPionDeuteronMC.cxx
     AliAnalysisTaskPionDeuteron.cxx)
 endif()
