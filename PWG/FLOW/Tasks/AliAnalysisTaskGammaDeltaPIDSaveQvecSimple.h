@@ -79,6 +79,8 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple : public AliAnalysisTaskSE {
   
   /// Track Cut Ranges ///
   void SetTrackCutNclusterMin(Int_t nclTPC)   {this->fTPCclustMin   = nclTPC;}
+  void SetTrackCutTPCsharedMin(Int_t nTPCs)   {this->fTPCsharedCut   = nTPCs;}
+  void SetTrackCutUseTPCCrossedRows(Bool_t bTPCcr)   {this->bUseTPCCrossedRows   = bTPCcr;}
   void SetFlagUseKinkTracks(Bool_t bKink)     {this->bUseKinkTracks = bKink;}
   void SetCumulantHarmonic(Int_t harm)        {this->gHarmonic      = harm;}
   void SetTrackCutdEdxMin(Float_t mindedx)    {this->fTPCdEdxMin    = mindedx;}
@@ -187,8 +189,9 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple : public AliAnalysisTaskSE {
   Int_t                fFilterBit;  //
   Int_t              fTPCclustMin;  //
   Int_t             gOldRunNumber;  //!
-
-
+  Int_t             fTPCsharedCut;
+  Bool_t            bUseTPCCrossedRows;
+  
   Float_t               fMinVzCut;  //
   Float_t               fMaxVzCut;  //
   Float_t               fMinPtCut;  //
