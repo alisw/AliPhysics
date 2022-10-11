@@ -72,6 +72,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
 
     hEventCount(0),
     hMult(0),
+	hMultCent(0),
 	hTracksCorrection2d(0),
     hnCorrectedTracks(0),
     fCentralityDis(0),
@@ -130,6 +131,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 
 	hEventCount(0),
 	hMult(0),
+	hMultCent(0),
 	hTracksCorrection2d(0),
     hnCorrectedTracks(0),
 	fCentralityDis(0),
@@ -187,7 +189,7 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	//So I annotated the code of fEventCuts Settings
     //..Settings for AliEventCuts:
 	//..This adds QA plots to the output
-	fEventCuts.AddQAplotsToList(fListOfObjects);
+	fEventCuts.AddQAplotsToList(fListOfObjects,true);
 	//..kINT7 is set in the class as default, if I want to have kHigHMultV0 in pp, I have to switch to manual mode
     //fEventCuts.SetManualMode();
 	//fEventCuts.fRequireTrackVertex = false; // !!
@@ -223,7 +225,7 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	hMult->Sumw2();
 	fListOfObjects->Add(hMult);
 
-	hMultCent = new TH2F("hMultCent","Multiplicity vs Centrality; Centrality; # of tracks",100,0,100,200,0,3000);
+	hMultCent = new TH2F("hMultCent","Multiplicity vs Centrality; Centrality; # of tracks",100,0,100,100,0,3000);
 	fListOfObjects->Add(hMultCent);
 
 	hTracksCorrection2d = new TH2D("hTracksCorrection2d", "Correlation table for number of tracks table", nn, xbins, nn, xbins);
@@ -266,15 +268,6 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
                                         // so it needs to know what's in the output
     // Post output data.
 	
-}
-
-//_________________________________________________________________
-void AliAnalysisTaskFlowPPTask::NotifyRun() {
-    if (fAddTPCPileupCuts) {
-      Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
-      fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-      fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
-    }
 }
 
 //_____________________________________________________________________________
@@ -341,9 +334,11 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
     // 	pos[2] = pos[2]-vtxp[2];
 	// 	hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
 	// 	hDCAzBefore->Fill(pos[2],aodTrk->Pt());
-	// }
+	// }	
+
 	float CentralityForPileup = (static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")))->GetMultiplicityPercentile("V0M");
 	if(fAddTPCPileupCuts){
+		fEventCuts.fUseVariablesCorrelationCuts = true;
 		fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
 		if (fPeriod.EqualTo("LHC15o") && CentralityForPileup >=0 && CentralityForPileup <=10){
 			fEventCuts.fESDvsTPConlyLinearCut[0] = 500.;
