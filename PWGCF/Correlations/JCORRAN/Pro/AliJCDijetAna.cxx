@@ -881,6 +881,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
         fhistos->fh_deltaPtResponse[iJetSetPart]->Fill(ptTrue+fDeltaPt,ptTrue);
         fhistos->fh_deltaPtResponse_ALICE[iJetSetPart]->Fill(ptTrue+fDeltaPt,ptTrue);
         for (ujetDetMC = 0; ujetDetMC < NjetsDetMC; ujetDetMC++) { //Det MC jets
+            if(bDetJetMatch.at(ujetDetMC)) continue; //We want to match jets only once.
             deltaR = DeltaR(jets.at(iJetSetPart).at(ujet), jetsDetMC.at(iJetSetDet).at(ujetDetMC));
             if(deltaR<minR) minR=deltaR;
             if(deltaR < matchingR && jetsDetMC.at(iJetSetDet).at(ujetDetMC).pt() > maxpt) {
@@ -898,16 +899,16 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             fhistos->fh_jetResponse_ALICE[iJetSetPart][iJetSetDet]->Fill(ptDetMC, ptTrue);
             fhistos->fh_jetResponseDeltaR[iJetSetPart][iJetSetDet]->Fill(deltaRMatch);
             fhistos->fh_jetResponseDeltaPt[iJetSetPart][iJetSetDet]->Fill((ptTrue-ptDetMC)/ptTrue);
-            if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("True jet has pair",1.0);
+            fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("True jet has pair",1.0);
             bTrueJetMatch.at(ujet) = true;
             bDetJetMatch.at(maxptIndex) = true;
         } else {
-            if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("True jet has no pair",1.0);
+            fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("True jet has no pair",1.0);
         }
     }
     for (ujetDetMC = 0; ujetDetMC < NjetsDetMC; ujetDetMC++) { //Det MC jets
         if(!bDetJetMatch.at(ujetDetMC)) {
-            if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Det jet has no pair",1.0);
+            fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Det jet has no pair",1.0);
         }
     }
 
@@ -979,22 +980,23 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
                     << dijetsDetMC.at(iJetSetDet).at(0).at(1).eta() << ")" << endl;
             }
             dijetDetMC = dijetsDetMC.at(iJetSetDet).at(0).at(0) + dijetsDetMC.at(iJetSetDet).at(0).at(1);
+            fhistos->fh_dijetResponseLinNoMatching[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
             if(bLeadingMatch && bSubleadingMatch) {
                 fhistos->fh_dijetResponse[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseLin[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseTrunc[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseTrunc2[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
-                if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Dijet match",1.0);
+                fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Dijet match",1.0);
             } else {
-                if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Dijet not match",1.0);
+                fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Dijet not match",1.0);
             }
         } else {
-            if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Dijet det not found",1.0);
+            fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Dijet det not found",1.0);
         }
     } else {
         if(anaDetMC->HasDijet(iJetSetDet)) {
             //dijetDetMC = dijetsDetMC.at(iJetSetDet).at(0).at(0) + dijetsDetMC.at(iJetSetDet).at(0).at(1);
-            if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Dijet true not found",1.0);
+            fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Dijet true not found",1.0);
         }
     }
     if(fDebug>8) cout << ((anaDetMC->HasDijet(iJetSetDet) && bLeadingMatch && bSubleadingMatch) ? "Dijet match" : "Dijet no match") << endl;
@@ -1039,22 +1041,23 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             dijetDetMC = dijetsDetMC.at(iJetSetDet).at(1).at(0) + dijetsDetMC.at(iJetSetDet).at(1).at(1);
             // Check subleading jet match.
 
+            fhistos->fh_dijetResponseDeltaPhiCutLinNoMatching[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
             if(bLeadingMatch && bSubleadingMatchDeltaPhi) {
                 fhistos->fh_dijetResponseDeltaPhiCut[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseDeltaPhiCutLin[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseDeltaPhiCutTrunc[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseDeltaPhiCutTrunc2[iJetSetPart][iJetSetDet]->Fill(dijetDetMC.m(), dijet.m());
-                if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Dijet DPhi match",1.0);
+                fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Dijet DPhi match",1.0);
             } else {
-                if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Dijet DPhi not match",1.0);
+                fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Dijet DPhi not match",1.0);
             }
         } else {
-            if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Dijet DPhi det not found",1.0);
+            fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Dijet DPhi det not found",1.0);
         }
     } else {
         if(anaDetMC->HasDeltaPhiDijet(iJetSetDet)) {
             //dijetDetMC = dijetsDetMC.at(iJetSetDet).at(1).at(0) + dijetsDetMC.at(iJetSetDet).at(1).at(1);
-            if(iJetSetPart==0 && iJetSetDet==0) fhistos->fh_responseInfo->Fill("Dijet DPhi true not found",1.0);
+            fhistos->fh_responseInfo[iJetSetPart][iJetSetDet]->Fill("Dijet DPhi true not found",1.0);
         }
     }
     if(fDebug>8) cout << ((anaDetMC->HasDeltaPhiDijet(iJetSetDet) && bLeadingMatch && bSubleadingMatchDeltaPhi) ? "Delta Phi Dijet match" : "Delta Phi Dijet no match") << endl;
@@ -1112,7 +1115,7 @@ double AliJCDijetAna::GetDeltaPhi(fastjet::PseudoJet jet1, fastjet::PseudoJet je
 }
 
 // This should be done after SetSettings.
-void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins) {
+void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins, int iJetClassTrue, int iJetClassDet) {
     cout << "Initing histograms for AliJCDijetAna" << endl;
     histos->fh_info->Fill("Count", 1.0);
     histos->fh_info->Fill("MC", bIsMC);
@@ -1197,18 +1200,33 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
         histos->fh_events[iBin]->Fill("localRho increased subleading jet",0.0);
         histos->fh_events[iBin]->Fill("cones overlap",0.0);
         histos->fh_events[iBin]->Fill("cones overlap alt",0.0);
-        if(bIsMC) {
-            histos->fh_responseInfo->Fill("True jet has pair",0.0);
-            histos->fh_responseInfo->Fill("True jet has no pair",0.0);
-            histos->fh_responseInfo->Fill("Det jet has no pair",0.0);
-            histos->fh_responseInfo->Fill("Dijet match",0.0);
-            histos->fh_responseInfo->Fill("Dijet not match",0.0);
-            histos->fh_responseInfo->Fill("Dijet det not found",0.0);
-            histos->fh_responseInfo->Fill("Dijet true not found",0.0);
-            histos->fh_responseInfo->Fill("Dijet DPhi match",0.0);
-            histos->fh_responseInfo->Fill("Dijet DPhi not match",0.0);
-            histos->fh_responseInfo->Fill("Dijet DPhi det not found",0.0);
-            histos->fh_responseInfo->Fill("Dijet DPhi true not found",0.0);
+    }
+    if(bIsMC) {
+        for(int iBin=0; iBin<jetClassesSize-1; iBin++) {
+            histos->fh_responseInfo[iBin][iBin]->Fill("True jet has pair",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("True jet has no pair",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Det jet has no pair",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Dijet match",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Dijet not match",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Dijet det not found",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Dijet true not found",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Dijet DPhi match",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Dijet DPhi not match",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Dijet DPhi det not found",0.0);
+            histos->fh_responseInfo[iBin][iBin]->Fill("Dijet DPhi true not found",0.0);
+        }
+        if(iJetClassDet!=iJetClassTrue) {
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("True jet has pair",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("True jet has no pair",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Det jet has no pair",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Dijet match",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Dijet not match",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Dijet det not found",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Dijet true not found",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Dijet DPhi match",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Dijet DPhi not match",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Dijet DPhi det not found",0.0);
+            histos->fh_responseInfo[iJetClassTrue][iJetClassDet]->Fill("Dijet DPhi true not found",0.0);
         }
     }
     return;
