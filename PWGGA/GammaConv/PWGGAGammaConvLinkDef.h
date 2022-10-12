@@ -63,6 +63,9 @@
 #pragma link C++ class AliAnalysisTaskEtaToPiPlPiMiGamma+;
 #pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson+;
 
+// mesons-jet correlation
+#pragma link C++ class AliAnalysisTaskMesonJetCorrelation+;
+
 // Old tasks
 // #pragma link C++ class AliAnaConvIsolation+;
 // #pragma link C++ class AliAnaConvCorrBase+;

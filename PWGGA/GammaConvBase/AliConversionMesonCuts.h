@@ -244,7 +244,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
     // Jet specific function
     Bool_t  IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand);
-
+    
+    // get source from pdg code
+    int GetSourceClassification(int daughter, int pdgCode);
+    
   protected:
     TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
