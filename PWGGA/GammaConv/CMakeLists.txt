@@ -93,7 +93,9 @@ set(SRCS
     AliAnalysisTaskSigmaPlToProtonPiZero.cxx
     AliAnalysisTaskSigmaPlToProtonPiZeroAOD.cxx
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
-    AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson.cxx    
+    AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson.cxx 
+    # meson jet correlation
+    AliAnalysisTaskMesonJetCorrelation.cxx   
 #     AliAnalysisTaskGCPartToPWG4Part.cxx
 #     AliAnaConvCorrBase.cxx
 #     AliAnaConvCorrPhoton.cxx
