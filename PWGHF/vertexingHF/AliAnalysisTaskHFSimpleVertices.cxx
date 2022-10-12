@@ -160,6 +160,9 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
   fHistCosPointLc{nullptr},
+  fHistImpParLcDau0{nullptr},
+  fHistImpParLcDau1{nullptr},
+  fHistImpParLcDau2{nullptr},
   fHistInvMassK0s{nullptr},
   fHistInvMassLcK0sp{nullptr},
   fHistPtLcK0sp{nullptr},
@@ -359,6 +362,9 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistPtLcDau2;
     delete fHistDecLenLc;
     delete fHistCosPointLc;
+    delete fHistImpParLcDau0;
+    delete fHistImpParLcDau1;
+    delete fHistImpParLcDau2;
     delete fHistInvMassK0s;
     delete fHistInvMassLcK0sp;
     delete fHistPtLcK0sp;
@@ -1175,6 +1181,9 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistPtLcDau2 = new TH1F("hPtLcDau2", " #Lambda_{c} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistDecLenLc = new TH1F("hDecLenLc", " ; Decay Length (cm)", 200, 0., 2.0);
   fHistCosPointLc = new TH1F("hCosPointLc", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fHistImpParLcDau0 = new TH1F("hImpParLcDau0", " #Lambda_{c} prong0 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau1 = new TH1F("hImpParLcDau1", " #Lambda_{c} prong1 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau2 = new TH1F("hImpParLcDau2", " #Lambda_{c} prong2 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
   fOutput->Add(fHistInvMassLc);
   fOutput->Add(fHistPtLc);
   fOutput->Add(fHistYPtLc);
@@ -1183,6 +1192,9 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistPtLcDau2);
   fOutput->Add(fHistDecLenLc);
   fOutput->Add(fHistCosPointLc);
+  fOutput->Add(fHistImpParLcDau0);
+  fOutput->Add(fHistImpParLcDau1);
+  fOutput->Add(fHistImpParLcDau2);
 
   fHistInvMassK0s = new TH1F("hInvMassK0s", " ; M_{#pi#pi} (GeV/c^{2})", 200, 0.4, 0.6);
   fHistInvMassLcK0sp = new TH1F("hInvMassLcK0sp", " ; M_{pK^{0}_{s}} (GeV/c^{2})", 500, 0., 5.);
@@ -1994,17 +2006,12 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
   }
   if (massSel & (1 << kbitLc)) {
     fHistDist12LcpKpi->Fill(dist12);
-    Int_t lcSel = 3;
-    if (fCandidateCutLevel == 1 && fSelectLcpKpi > 0) {
-      if ((LcSkimCuts(the3Prong) == 0)){
-        lcSel = 0;
-	} else {
-	  lcSel = LcSelectionCuts(the3Prong);
-	  if (dist12 < fLcCuts[0][4])
-	    lcSel = 0; // cut on dist12
-	}
-    } else if (fCandidateCutLevel == 1 && fSelectLcpKpi == 0) {
-      lcSel = LcSkimCuts(the3Prong);
+    Int_t lcSel = LcSkimCuts(the3Prong);
+    if (lcSel > 0 && fSelectLcpKpi > 0) {
+      if (dist12 < fLcCuts[0][4])
+	lcSel = 0; // cut on dist12
+      else
+	lcSel = LcSelectionCuts(the3Prong);
     }
     Double_t rapid = the3Prong->Y(4122);
     if (lcSel > 0 && IsInFiducialAcceptance(ptcand_3prong, rapid)) {
@@ -2021,6 +2028,9 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       fHistPtLcDau2->Fill(the3Prong->PtProng(2));
       fHistDecLenLc->Fill(the3Prong->DecayLength());
       fHistCosPointLc->Fill(the3Prong->CosPointingAngle());
+      fHistImpParLcDau0->Fill(the3Prong->Getd0Prong(0));
+      fHistImpParLcDau1->Fill(the3Prong->Getd0Prong(1));
+      fHistImpParLcDau2->Fill(the3Prong->Getd0Prong(2));
       fHistCovMatPrimVXX3Prong->Fill(covMatrixPV[0]);
       fHistCovMatSecVXX3Prong->Fill(covMatrixSV[0]);
       fHist3ProngVertX->Fill(trkv3->GetX());
