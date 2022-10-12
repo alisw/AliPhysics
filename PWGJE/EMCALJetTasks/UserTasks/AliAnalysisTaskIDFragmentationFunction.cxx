@@ -1046,7 +1046,6 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   // Fill efficiency for generated primaries and also fill histos for generated yields (primaries + all)
   // Efficiency, inclusive - particle level
   AliDebugStream(2) << "Starting Inclusive Efficiency..." << std::endl;
-  AliDebugStream(2) << mcParticleContainer << std::endl;
   
   if (fUseInclusivePIDtask && mcParticleContainer && !isPileUpForAllInclusivePIDTasks) {
     for (auto part : mcParticleContainer->accepted()) {
