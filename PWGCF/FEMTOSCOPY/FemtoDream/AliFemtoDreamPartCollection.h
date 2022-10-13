@@ -30,7 +30,9 @@ class AliFemtoDreamPartCollection {
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
                 float ZVtx, float Mult, float cent);
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-                AliFemtoDreamEvent* evt);
+                AliFemtoDreamEvent* evt,
+                std::map<std::pair<int, int>,std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsSE = nullptr,
+                std::map<std::pair<int, int>,std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsME = nullptr);
   void PrintEvent(int ZVtx, int Mult);
   TList* GetHistList() {
     return fHigherMath->GetHistList();

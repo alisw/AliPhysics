@@ -62,15 +62,20 @@ void AliFemtoDreamZVtxMultContainer::SetEvent(
 }
 void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
+    AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+    std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStars) {
   int HistCounter = 0;
   //First loop over all the different Species
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   for (auto itSpec1 = Particles.begin(); itSpec1 != Particles.end();
       ++itSpec1) {
+    int iParticles1 = std::distance(Particles.begin(), itSpec1);
+
     auto itPDGPar2 = fPDGParticleSpecies.begin();
     itPDGPar2 += itSpec1 - Particles.begin();
     for (auto itSpec2 = itSpec1; itSpec2 != Particles.end(); ++itSpec2) {
+      int iParticles2 = std::distance(Particles.begin(), itSpec2);
+
       HigherMath->FillPairCounterSE(HistCounter, itSpec1->size(),
                                     itSpec2->size());
       //Now loop over the actual Particles and correlate them
@@ -83,6 +88,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
         } else {
           itPart2 = itSpec2->begin();
         }
+        auto itStartPart2 = itPart2;
         while (itPart2 != itSpec2->end()) {
           AliFemtoDreamBasePart part2 = *itPart2;
           TLorentzVector PartOne, PartTwo;
@@ -107,6 +113,18 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                                                 *itPDGPar2,
 						fSummedPtLimit1,
 						fSummedPtLimit2);
+
+          // save the list of k* for each pair (required for Dmeson-LF analyses)
+          if (kStars != nullptr){
+            auto key = std::pair<int, int>({iParticles1, iParticles2});
+            if (kStars->find(key) != kStars->end()) { // ignore uninteresting pairs
+                auto kStarTuple = kStars->at(std::pair<int, int>({iParticles1, iParticles2}));
+                std::get<0>(kStarTuple)->push_back(RelativeK);
+                std::get<1>(kStarTuple)->push_back(std::distance(itSpec1->begin(), itPart1));
+                std::get<2>(kStarTuple)->push_back(std::distance(itStartPart2, itPart2));
+            }
+          }
+
           HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPDGPar1,
                                                      *itPart2, *itPDGPar2);
           HigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
@@ -125,18 +143,21 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
+    AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+    std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsME) {
   int HistCounter = 0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   //First loop over all the different Species
   for (auto itSpec1 = Particles.begin(); itSpec1 != Particles.end();
       ++itSpec1) {
+    int iParticles1 = std::distance(Particles.begin(), itSpec1);
     //We dont want to correlate the particles twice. Mixed Event Dist. of
     //Particle1 + Particle2 == Particle2 + Particle 1
     int SkipPart = itSpec1 - Particles.begin();
     auto itPDGPar2 = fPDGParticleSpecies.begin() + SkipPart;
     for (auto itSpec2 = fPartContainer.begin() + SkipPart;
         itSpec2 != fPartContainer.end(); ++itSpec2) {
+      int iParticles2 = std::distance(fPartContainer.begin(), itSpec2);
       if (itSpec1->size() > 0) {
         HigherMath->FillEffectiveMixingDepth(HistCounter,
                                              (int) itSpec2->GetMixingDepth());
@@ -170,6 +191,15 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 *itPart2, *itPDGPar2,
                 AliFemtoDreamCollConfig::kNone);
 
+            if (kStarsME != nullptr){
+              auto key = std::pair<int, int>({iParticles1, iParticles2});
+              if (kStarsME->find(key) != kStarsME->end()) { // ignore uninteresting pairs
+                  auto kStarTuple = kStarsME->at(std::pair<int, int>({iParticles1, iParticles2}));
+                  std::get<0>(kStarTuple)->push_back(RelativeK);
+                  std::get<1>(kStarTuple)->push_back(std::distance(itSpec1->begin(), itPart1));
+                  std::get<2>(kStarTuple)->push_back(std::distance(ParticlesOfEvent.begin(), itPart2));
+              }
+            }
             HigherMath->MEMassQA(HistCounter, RelativeK, *itPart1, *itPDGPar1,
                                                          *itPart2, *itPDGPar2);
             HigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
