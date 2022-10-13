@@ -1287,6 +1287,13 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
     return;
   }
 
+  if (fUseAliEventCuts) {
+    Bool_t alieventcut = fEventCuts.AcceptEvent(vevt);
+    if (!alieventcut)
+      return;
+  }
+  fHistNEvents->Fill(7);
+
   // AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   // AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   // AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
@@ -1390,13 +1397,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
       return;
   }
   fHistNEvents->Fill(1);
-
-  if (fUseAliEventCuts) {
-    Bool_t alieventcut = fEventCuts.AcceptEvent(vevt);
-    if (!alieventcut)
-      return;
-  }
-  fHistNEvents->Fill(7);
 
   if (fSelectOnCentrality) {
     if (centr < fMinCentrality || centr > fMaxCentrality)
