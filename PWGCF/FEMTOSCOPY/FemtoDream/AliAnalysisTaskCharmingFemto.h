@@ -33,6 +33,7 @@ struct FemtoPair {
   double heavy_pt;
   double heavy_eta;
   int heavy_origin;
+  std::vector<int> heavy_daus;
   double heavy_bkg_score;
   double heavy_prompt_score;
   

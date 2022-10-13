@@ -25,6 +25,7 @@ static std::vector<float> dplus_invmass;
 static std::vector<float> dplus_pt;
 static std::vector<float> dplus_eta;
 static std::vector<int> dplus_origin;
+static std::vector<std::vector<int>> dplus_daus;
 static std::vector<float> dplus_bkg_score;
 static std::vector<float> dplus_prompt_score;
 
@@ -32,6 +33,7 @@ static std::vector<float> dminus_invmass;
 static std::vector<float> dminus_pt;
 static std::vector<float> dminus_eta;
 static std::vector<int> dminus_origin;
+static std::vector<std::vector<int>> dminus_daus;
 static std::vector<float> dminus_bkg_score;
 static std::vector<float> dminus_prompt_score;
 
@@ -454,12 +456,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   dplus_pt.clear();
   dplus_eta.clear();
   dplus_origin.clear();
+  dplus_daus.clear();
   dplus_bkg_score.clear();
   dplus_prompt_score.clear();
   dminus_invmass.clear();
   dminus_pt.clear();
   dminus_eta.clear();
   dminus_origin.clear();
+  dminus_daus.clear();
   dminus_bkg_score.clear();
   dminus_prompt_score.clear();
 
@@ -723,6 +727,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
               dplus_pt.push_back(part.GetPt());
               dplus_eta.push_back(part.GetEta()[0]);
               dplus_origin.push_back(part.GetParticleOrigin());
+              dplus_daus.push_back({softPion->GetLabel(), kaonFromD0->GetLabel(), pionFromD0->GetLabel()});
             }
           } else if (mcpdg == -413){
             dminus.push_back(part);
@@ -731,6 +736,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
               dminus_pt.push_back(part.GetPt());
               dminus_eta.push_back(part.GetEta()[0]);
               dminus_origin.push_back(part.GetParticleOrigin());
+              dminus_daus.push_back({softPion->GetLabel(), kaonFromD0->GetLabel(), pionFromD0->GetLabel()});
             }
           }
           if(fDoDorigPlots){
@@ -777,6 +783,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                     dplus_pt.push_back(part.GetPt());
                     dplus_eta.push_back(part.GetEta()[0]);
                     dplus_origin.push_back(part.GetParticleOrigin());
+                    dplus_daus.push_back({labelFirstDau, labelSecondDau, labelThirdDau});
                   }
                   if(fDoDorigPlots){
                     FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
@@ -797,6 +804,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                     dminus_pt.push_back(part.GetPt());
                     dminus_eta.push_back(part.GetEta()[0]);
                     dminus_origin.push_back(part.GetParticleOrigin());
+                    dminus_daus.push_back({labelFirstDau, labelSecondDau, labelThirdDau});
                   }
                   if(fDoDorigPlots){
                     FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
@@ -970,6 +978,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           dplus_pt.push_back(dplusCand.GetPt());
           dplus_eta.push_back(dplusCand.GetEta()[0]);
           dplus_origin.push_back(dplusCand.GetParticleOrigin());
+          dplus_daus.push_back(dplusCand.GetIDTracks());
           if (fApplyML) {
             dplus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
             dplus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
@@ -1020,6 +1029,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           dminus_pt.push_back(dminusCand.GetPt());
           dminus_eta.push_back(dminusCand.GetEta()[0]);
           dminus_origin.push_back(dminusCand.GetParticleOrigin());
+          dminus_daus.push_back(dminusCand.GetIDTracks());
           if(fApplyML) {
             dminus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
             dminus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
@@ -1069,17 +1079,20 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   //     printf("len: %d - antiprotons_dcaz\n", antiprotons_dcaz.size());
   //     printf("len: %d - antiprotons_dcaxy\n\n\n", antiprotons_dcaxy.size());
   //     printf("len: %d - dplus\n", dplus.size());
+  //     printf("len: %d - dplus_pt\n", dplus_pt.size());
   //     printf("len: %d - dplus_eta\n", dplus_eta.size());
+  //     printf("len: %d - dplus_origin\n", dplus_origin.size());
+  //     printf("len: %d - dplus_daus\n", dplus_daus.size());
   //     printf("len: %d - dplus_bkg_score\n", dplus_bkg_score.size());
   //     printf("len: %d - dplus_prompt_score\n", dplus_prompt_score.size());
   //     printf("len: %d - dplus_invmass\n", dplus_invmass.size());
-  //     printf("len: %d - dplus_pt\n", dplus_pt.size());
   //     printf("len: %d - dminus\n", dminus.size());
+  //     printf("len: %d - dminus_pt\n", dminus_pt.size());
   //     printf("len: %d - dminus_eta\n", dminus_eta.size());
   //     printf("len: %d - dminus_origin\n", dminus_origin.size());
+  //     printf("len: %d - dminus_daus\n", dminus_daus.size());
   //     printf("len: %d - dminus_bkg_score\n", dminus_bkg_score.size());
   //     printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
-  //     printf("len: %d - dminus_pt\n", dminus_pt.size());
   //   }
   // }
 
@@ -1136,6 +1149,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           fFemtoPair.heavy_pt = dplus_pt[indecesP2[iPair]];
           fFemtoPair.heavy_eta = dplus_eta[indecesP2[iPair]];
           fFemtoPair.heavy_origin = dplus_origin[indecesP2[iPair]];
+          fFemtoPair.heavy_daus = dplus_daus[indecesP2[iPair]];
           if (!fIsMCtruth && fApplyML){ // ML is not used for MC truth @ gen level
             fFemtoPair.heavy_bkg_score = dplus_bkg_score[indecesP2[iPair]];
             fFemtoPair.heavy_prompt_score = dplus_prompt_score[indecesP2[iPair]];
@@ -1145,6 +1159,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           fFemtoPair.heavy_pt = dminus_pt[indecesP2[iPair]];
           fFemtoPair.heavy_eta = dminus_eta[indecesP2[iPair]];
           fFemtoPair.heavy_origin = dminus_origin[indecesP2[iPair]];
+          fFemtoPair.heavy_daus = dminus_daus[indecesP2[iPair]];
           if (!fIsMCtruth && fApplyML){ // ML is not used for MC truth @ gen level
             fFemtoPair.heavy_bkg_score = dminus_bkg_score[indecesP2[iPair]];
             fFemtoPair.heavy_prompt_score = dminus_prompt_score[indecesP2[iPair]];
@@ -1195,6 +1210,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           fFemtoPair.heavy_pt = dplus_pt[indecesP2[iPair]];
           fFemtoPair.heavy_eta = dplus_eta[indecesP2[iPair]];
           fFemtoPair.heavy_origin = dplus_origin[indecesP2[iPair]];
+          fFemtoPair.heavy_daus = dplus_daus[indecesP2[iPair]];
           if (!fIsMCtruth && fApplyML) {
             fFemtoPair.heavy_bkg_score = dplus_bkg_score[indecesP2[iPair]];
             fFemtoPair.heavy_prompt_score = dplus_prompt_score[indecesP2[iPair]];
@@ -1204,6 +1220,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           fFemtoPair.heavy_pt = dminus_pt[indecesP2[iPair]];
           fFemtoPair.heavy_eta = dminus_eta[indecesP2[iPair]];
           fFemtoPair.heavy_origin = dminus_origin[indecesP2[iPair]];
+          fFemtoPair.heavy_daus = dminus_daus[indecesP2[iPair]];
           if (!fIsMCtruth && fApplyML) {
             fFemtoPair.heavy_bkg_score = dminus_bkg_score[indecesP2[iPair]];
             fFemtoPair.heavy_prompt_score = dminus_prompt_score[indecesP2[iPair]];
@@ -1330,6 +1347,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("heavy_pt", &fFemtoPair.heavy_pt);
       tree.second->Branch("heavy_eta", &fFemtoPair.heavy_eta);
       tree.second->Branch("heavy_origin", &fFemtoPair.heavy_origin);
+      tree.second->Branch("heavy_daus", &fFemtoPair.heavy_daus);
       if (fApplyML) {
         tree.second->Branch("heavy_bkg_score", &fFemtoPair.heavy_bkg_score);
         tree.second->Branch("heavy_prompt_score", &fFemtoPair.heavy_prompt_score);
@@ -1361,6 +1379,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("heavy_pt", &fFemtoPair.heavy_pt);
       tree.second->Branch("heavy_eta", &fFemtoPair.heavy_eta);
       tree.second->Branch("heavy_origin", &fFemtoPair.heavy_origin);
+      tree.second->Branch("heavy_daus", &fFemtoPair.heavy_daus);
       if (fApplyML) {
         tree.second->Branch("heavy_bkg_score", &fFemtoPair.heavy_bkg_score);
         tree.second->Branch("heavy_prompt_score", &fFemtoPair.heavy_prompt_score);
