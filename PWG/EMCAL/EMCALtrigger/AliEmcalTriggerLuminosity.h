@@ -375,7 +375,17 @@ protected:
   void evaluatePP13TeV();
 
   /**
-   * @brief Luminosity evaluation method for p-Pb, $\sqrt{s_{NN}} = 8.16 TeV\f$, 2016
+   * @brief Luminosity evaluation method for pp, $\sqrt{s} = 5.02 TeV\f$, 2017pq
+   */
+  void evaluatePP5TeV();
+
+  /**
+   * @brief Luminosity evaluation method for Pb-Pb $\sqrt{s_{NN}} = 5.02 TeV\f$, 2015o, LHC18q+r
+   */
+  void evaluatePBPB5TeV();
+
+  /**
+   * @brief Luminosity evaluation method for Pb-Pb, $\sqrt{s_{NN}} = 8.16 TeV\f$, 2016
    */
   void evaluatePPB8TeV();
 
