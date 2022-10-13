@@ -503,6 +503,13 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
               continue;
             }
           }
+          if(GeneratorName.Contains(GeneratorInList) ){
+            if(GeneratorInList.Contains("Pythia") || GeneratorInList.Contains("pythia") || GeneratorInList.Contains("PYTHIA")){
+              if (fDebugLevel > 0 ) AliDebugStream(1) << "Pythia header" << std::endl;
+              fnHeaders++;
+              continue;
+            }
+          }
         }
         firstindexA       = firstindexA + gh->NProduced();
       }
@@ -559,6 +566,15 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
             fNotRejectedEnd[number] = lastindex;
             fGeneratorNames[number] = GeneratorName;
             if (fDebugLevel > 0 )  AliDebugStream(1) << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << std::endl;
+            number++;
+            continue;
+          }
+        }
+        if(GeneratorName.Contains(GeneratorInList) ){
+          if(GeneratorInList.Contains("Pythia") || GeneratorInList.Contains("pythia") || GeneratorInList.Contains("PYTHIA")){
+            fNotRejectedStart[number] = firstindex;
+            fNotRejectedEnd[number] = lastindex;
+            fGeneratorNames[number] = GeneratorName;
             number++;
             continue;
           }
@@ -654,7 +670,7 @@ AliEmcalRejectMCBackground* AliEmcalRejectMCBackground::AddTaskRejectMCBackgroun
   TList *HeaderList = new TList();
 
   TObjString *Header1 = new TObjString("AliGenPythiaEventHeader");
-  TObjString *Header2 = new TObjString("Pythia8Jets_1");
+  TObjString *Header2 = new TObjString("Pythia8Jets");
 
   HeaderList->Add(Header1);
   HeaderList->Add(Header2);
