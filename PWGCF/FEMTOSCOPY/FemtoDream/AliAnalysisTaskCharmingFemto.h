@@ -32,6 +32,7 @@ struct FemtoPair {
   double heavy_invmass;
   double heavy_pt;
   double heavy_eta;
+  int heavy_origin;
   double heavy_bkg_score;
   double heavy_prompt_score;
   
@@ -63,6 +64,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   enum MassSelection
   {
+    kAny,
     kSignal,
     kSidebandRight,
     kSidebandLeft,
