@@ -122,6 +122,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetParticleFlag(UInt_t newval) {fParticleFlag = newval;};
   void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
+  void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -174,6 +175,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TList *fCovList;
   TList *fV2dPtList;
   AliProfileBS **fCovariance; //!
+  AliProfileBS **fCovariancePowerMpt; //!
+  AliProfileBS **fMpt; //
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
@@ -237,6 +240,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
   Bool_t fUse2DEff;
+  Bool_t fFillMptPowers;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskDeform,1);
 };
