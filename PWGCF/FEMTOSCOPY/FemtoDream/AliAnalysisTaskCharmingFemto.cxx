@@ -21,11 +21,13 @@
 #include "TRandom.h"
 
 // todo check Dstar soft pion
+static std::vector<float> dplus_invmass;
 static std::vector<float> dplus_pt;
 static std::vector<float> dplus_eta;
 static std::vector<float> dplus_bkg_score;
 static std::vector<float> dplus_prompt_score;
 
+static std::vector<float> dminus_invmass;
 static std::vector<float> dminus_pt;
 static std::vector<float> dminus_eta;
 static std::vector<float> dminus_bkg_score;
@@ -446,10 +448,12 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   dplus.clear();
   dminus.clear();
 
+  dplus_invmass.clear();
   dplus_pt.clear();
   dplus_eta.clear();
   dplus_bkg_score.clear();
   dplus_prompt_score.clear();
+  dminus_invmass.clear();
   dminus_pt.clear();
   dminus_eta.clear();
   dminus_bkg_score.clear();
@@ -633,6 +637,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       if ((std::abs(mcpdg)) == absPdgMom && pt>DmesonPtMin && pt<DmesonPtMax ){
         if (fDecChannel == kDstartoKpipi){
           // select the correct decay channel
+
           if (std::abs(mcpdg) != 413 || mcPart->GetNDaughters() != 2 ) {
             continue;
           }
@@ -697,6 +702,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           }
 
           // fill histos
+          printf("labelll: %d\n", mcPart->GetLabel());
           if (!SelectDmesonOrigin(fArrayMCAOD, mcPart))
             continue;
 
@@ -709,12 +715,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           if (mcpdg == 413) {
             dplus.push_back(part);
             if (fUseTree) {
+              dplus_invmass.push_back(part.GetInvMass());
               dplus_pt.push_back(part.GetPt());
               dplus_eta.push_back(part.GetEta()[0]);
             }
           } else if (mcpdg == -413){
             dminus.push_back(part);
             if (fUseTree) {
+              dminus_invmass.push_back(part.GetInvMass());
               dminus_pt.push_back(part.GetPt());
               dminus_eta.push_back(part.GetEta()[0]);
             }
@@ -759,6 +767,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelThirdDau);
                   dplus.push_back(part);
                   if (fUseTree) {
+                    dplus_invmass.push_back(part.GetInvMass());
                     dplus_pt.push_back(part.GetPt());
                     dplus_eta.push_back(part.GetEta()[0]);
                   }
@@ -838,6 +847,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     int pdgDplusDau[3] = {321, 211, 211};
     int isSelected = 1;
     if(fUseMCTruthReco){
+      
+
       TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
       fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       
@@ -946,8 +957,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
 
         if(!fIsMCtruth){
-          dplus_eta.push_back(dplusCand.GetEta()[0]);
+          dplus_invmass.push_back(dplusCand.GetInvMass());
           dplus_pt.push_back(dplusCand.GetPt());
+          dplus_eta.push_back(dplusCand.GetEta()[0]);
           if (fApplyML) {
             dplus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
             dplus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
@@ -994,8 +1006,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           }
         }
         if (!fIsMCtruth && fUseTree) {
-          dminus_eta.push_back(dminusCand.GetEta()[0]);
+          dminus_invmass.push_back(dminusCand.GetInvMass());
           dminus_pt.push_back(dminusCand.GetPt());
+          dminus_eta.push_back(dminusCand.GetEta()[0]);
           if(fApplyML) {
             dminus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
             dminus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
@@ -1019,7 +1032,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   //   for (auto id:idtrks){
   //     AliAODMCParticle *mcDau = (AliAODMCParticle *)fArrayMCAOD->At(id);
 
-  //   }
+//   }
   // }
   // PAIR CLEANING AND FEMTO
 
@@ -1055,6 +1068,15 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   //     printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
   //     printf("len: %d - dminus_pt\n", dminus_pt.size());
   //   }
+  // }
+
+  // for (auto &dm: dplus) {
+  //   auto orig = dm.GetParticleOrigin();
+  //   printf("orig -- %d\n", orig);
+  //   if (orig == AliFemtoDreamBasePart::kPhysPrimary)
+  //     dm.SetUse(false);
+  //   else
+  //     dm.SetUse(true);
   // }
 
   fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
@@ -1097,6 +1119,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       for (int iPair = 0; iPair < kStarList.size(); iPair++) {
         fFemtoPair.kStar = kStarList[iPair];
         if (combo.second == 2) {
+          fFemtoPair.heavy_invmass = dplus_invmass[indecesP2[iPair]];
           fFemtoPair.heavy_pt = dplus_pt[indecesP2[iPair]];
           fFemtoPair.heavy_eta = dplus_eta[indecesP2[iPair]];
           if (!fIsMCtruth && fApplyML){ // ML is not used for MC truth @ gen level
@@ -1104,6 +1127,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fFemtoPair.heavy_prompt_score = dplus_prompt_score[indecesP2[iPair]];
           }
         } else if (combo.second == 3) {
+          fFemtoPair.heavy_invmass = dminus_invmass[indecesP2[iPair]];
           fFemtoPair.heavy_pt = dminus_pt[indecesP2[iPair]];
           fFemtoPair.heavy_eta = dminus_eta[indecesP2[iPair]];
           if (!fIsMCtruth && fApplyML){ // ML is not used for MC truth @ gen level
@@ -1152,6 +1176,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       for (int iPair = 0; iPair < kStarList.size(); iPair++) {
         fFemtoPair.kStar = kStarList[iPair];
         if (combo.second == 2) {
+          fFemtoPair.heavy_invmass = dplus_invmass[indecesP2[iPair]];
           fFemtoPair.heavy_pt = dplus_pt[indecesP2[iPair]];
           fFemtoPair.heavy_eta = dplus_eta[indecesP2[iPair]];
           if (!fIsMCtruth && fApplyML) {
@@ -1159,6 +1184,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fFemtoPair.heavy_prompt_score = dplus_prompt_score[indecesP2[iPair]];
           }
         } else if (combo.second == 3) {
+          fFemtoPair.heavy_invmass = dminus_invmass[indecesP2[iPair]];
           fFemtoPair.heavy_pt = dminus_pt[indecesP2[iPair]];
           fFemtoPair.heavy_eta = dminus_eta[indecesP2[iPair]];
           if (!fIsMCtruth && fApplyML) {
@@ -1283,6 +1309,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("kStar", &fFemtoPair.kStar);
 
       // heavy particle
+      tree.second->Branch("heavy_invmass", &fFemtoPair.heavy_invmass);
       tree.second->Branch("heavy_pt", &fFemtoPair.heavy_pt);
       tree.second->Branch("heavy_eta", &fFemtoPair.heavy_eta);
       if (fApplyML) {
@@ -1312,6 +1339,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("kStar", &fFemtoPair.kStar);
 
       // heavy
+      tree.second->Branch("heavy_invmass", &fFemtoPair.heavy_invmass);
       tree.second->Branch("heavy_pt", &fFemtoPair.heavy_pt);
       tree.second->Branch("heavy_eta", &fFemtoPair.heavy_eta);
       if (fApplyML) {

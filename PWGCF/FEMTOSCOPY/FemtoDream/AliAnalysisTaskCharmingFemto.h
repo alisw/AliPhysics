@@ -29,6 +29,7 @@ struct FemtoPair {
   double kStar;
 
   // heavy properties
+  double heavy_invmass;
   double heavy_pt;
   double heavy_eta;
   double heavy_bkg_score;
