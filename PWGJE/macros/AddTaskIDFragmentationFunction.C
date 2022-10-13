@@ -48,7 +48,7 @@ void SetEfficiencyFunctionsFastSimulation(AliAnalysisTaskIDFragmentationFunction
   task->SetFastSimEffFactor(effFactor);
   task->SetFastSimRes(kObsResolution);   
   task->SetFastSimResFactor(resFactor);
-  task->SetFFChange(ffChange);
+  task->SetFFChange(static_cast<AliAnalysisTaskIDFragmentationFunction::FragmentationFunctionChange>(ffChange));
   return;
 }
 
@@ -189,12 +189,10 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    //******************************************************************************
 	
 	Bool_t isMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
-    isMC = kFALSE;
-	if (isMC) 
-		std::cout << "MCtruthEventHandler found" << std::endl;
-	
+
 	if (isMC) {
-        AddTaskMCTrackSelector("mcparticles", kFALSE, kFALSE, -1, kFALSE);   
+    std::cout << "MCtruthEventHandler found" << std::endl;
+    AddTaskMCTrackSelector("mcparticles", "usedefault", kFALSE, kFALSE, 1, kFALSE);   
 	}	
   
 	//Create jet Finder
@@ -289,7 +287,9 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    //TODO For PbPb: Search for Centrality estimator  
   
    task->SetUseFastSimulations(useFastSimulation);	
-   SetEfficiencyFunctionsFastSimulation(task, fastSimParamFile);
+   if (useFastSimulation) {
+    SetEfficiencyFunctionsFastSimulation(task, fastSimParamFile);
+   }
 // 	 task->SetDoGroomedJets(bDoJetGrooming);
 // 	 task->SetStudyTransversalJetStructure(bStudyTransversalJetStructure);
 // 	 task->SetMinMaxMultiplicity(kMinMultiplicity,kMaxMultiplicity);
