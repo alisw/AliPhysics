@@ -24,41 +24,6 @@ static float dummyfloat;
 static std::vector<int> dummyvector;
 static int dummyint;
 
-// todo check Dstar soft pion
-static std::vector<float> dplus_invmass;
-static std::vector<float> dplus_pt;
-static std::vector<float> dplus_eta;
-static std::vector<int> dplus_origin;
-static std::vector<std::vector<int>> dplus_daus;
-static std::vector<float> dplus_bkg_score;
-static std::vector<float> dplus_prompt_score;
-
-static std::vector<float> dminus_invmass;
-static std::vector<float> dminus_pt;
-static std::vector<float> dminus_eta;
-static std::vector<int> dminus_origin;
-static std::vector<std::vector<int>> dminus_daus;
-static std::vector<float> dminus_bkg_score;
-static std::vector<float> dminus_prompt_score;
-
-static std::vector<float> protons_eta;
-static std::vector<float> protons_pt;
-static std::vector<float> protons_nsigtpc;
-static std::vector<float> protons_nsigtof;
-static std::vector<float> protons_ncls;
-static std::vector<float> protons_ncrossed;
-static std::vector<float> protons_dcaz;
-static std::vector<float> protons_dcaxy;
-
-static std::vector<float> antiprotons_eta;
-static std::vector<float> antiprotons_pt;
-static std::vector<float> antiprotons_nsigtpc;
-static std::vector<float> antiprotons_nsigtof;
-static std::vector<float> antiprotons_ncls;
-static std::vector<float> antiprotons_ncrossed;
-static std::vector<float> antiprotons_dcaz;
-static std::vector<float> antiprotons_dcaxy;
-
 ClassImp(AliAnalysisTaskCharmingFemto)
 
     //____________________________________________________________________________________________________
@@ -460,43 +425,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   dplus.clear();
   dminus.clear();
 
-  dplus_invmass.clear();
-  dplus_pt.clear();
-  dplus_eta.clear();
-  dplus_origin.clear();
-  dplus_daus.clear();
-  dplus_bkg_score.clear();
-  dplus_prompt_score.clear();
-  dminus_invmass.clear();
-  dminus_pt.clear();
-  dminus_eta.clear();
-  dminus_origin.clear();
-  dminus_daus.clear();
-  dminus_bkg_score.clear();
-  dminus_prompt_score.clear();
-
-  // light flavor + CC
-  protons_nsigtpc.clear();
-  protons_nsigtof.clear();
-  protons_nsigtpc.clear();
-  protons_nsigtof.clear();
-  protons_eta.clear();
-  protons_pt.clear();
-  protons_ncls.clear();
-  protons_ncrossed.clear();
-  protons_dcaz.clear();
-  protons_dcaxy.clear();
-  antiprotons_nsigtpc.clear();
-  antiprotons_nsigtof.clear();
-  antiprotons_nsigtpc.clear();
-  antiprotons_nsigtof.clear();
-  antiprotons_eta.clear();
-  antiprotons_pt.clear();
-  antiprotons_ncls.clear();
-  antiprotons_ncrossed.clear();
-  antiprotons_dcaz.clear();
-  antiprotons_dcaxy.clear();
-
   fFemtoPair.mult = fEvent->GetMultiplicity();
   fFemtoPair.vz = fEvent->GetZVertex();
 
@@ -537,17 +465,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
-        if (fUseTree) {
-           
-          protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(buddyParticle));
-          protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(buddyParticle));
-          protons_eta.push_back(fProtonTrack->GetEta()[0]);
-          protons_pt.push_back(fProtonTrack->GetPt());
-          protons_ncls.push_back(fProtonTrack->GetNClsTPC());
-          protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-          protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-          protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        }
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
         fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
@@ -557,17 +474,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
-        if (fUseTree) {
-          protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(buddyParticle));
-          protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(buddyParticle));
-          protons_eta.push_back(fProtonTrack->GetEta()[0]);
-          protons_pt.push_back(fProtonTrack->GetPt());
-          protons_ncls.push_back(fProtonTrack->GetNClsTPC());
-          protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-          protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-          protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        }
-
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
         fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
@@ -580,17 +486,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
-        if (fUseTree) {
-          antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(buddyParticle));
-          antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(buddyParticle));
-          antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
-          antiprotons_pt.push_back(fProtonTrack->GetPt());
-          antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
-          antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-          antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-          antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        }
-        
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
         fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
@@ -600,17 +495,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
-        if (fUseTree) {
-          antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(buddyParticle));
-          antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(buddyParticle));
-          antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
-          antiprotons_pt.push_back(fProtonTrack->GetPt());
-          antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
-          antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-          antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-          antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        }
-
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
         fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
@@ -657,11 +541,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             part.SetID(mcPart->GetLabel());
             part.SetIDTracks(mcPart->GetLabel());
             protons.push_back(part);
-
-            if (fUseTree) {
-              protons_eta.push_back(mcPart->Eta());
-              protons_pt.push_back(mcPart->Pt());
-            }
           }
         }
       }
@@ -673,11 +552,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             part.SetID(mcPart->GetLabel());
             part.SetIDTracks(mcPart->GetLabel());
             antiprotons.push_back(part);
-            
-            if (fUseTree) {
-              antiprotons_eta.push_back(mcPart->Eta());
-              antiprotons_pt.push_back(mcPart->Pt());
-            }
           }
         }
       }
@@ -762,22 +636,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
           if (mcpdg == 413) {
             dplus.push_back(part);
-            if (fUseTree) {
-              dplus_invmass.push_back(part.GetInvMass());
-              dplus_pt.push_back(part.GetPt());
-              dplus_eta.push_back(part.GetEta()[0]);
-              dplus_origin.push_back(part.GetParticleOrigin());
-              dplus_daus.push_back({softPion->GetLabel(), kaonFromD0->GetLabel(), pionFromD0->GetLabel()});
-            }
           } else if (mcpdg == -413){
             dminus.push_back(part);
-            if (fUseTree) {
-              dminus_invmass.push_back(part.GetInvMass());
-              dminus_pt.push_back(part.GetPt());
-              dminus_eta.push_back(part.GetEta()[0]);
-              dminus_origin.push_back(part.GetParticleOrigin());
-              dminus_daus.push_back({softPion->GetLabel(), kaonFromD0->GetLabel(), pionFromD0->GetLabel()});
-            }
           }
           if(fDoDorigPlots){
             FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
@@ -818,13 +678,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dplus.push_back(part);
-                  if (fUseTree) {
-                    dplus_invmass.push_back(part.GetInvMass());
-                    dplus_pt.push_back(part.GetPt());
-                    dplus_eta.push_back(part.GetEta()[0]);
-                    dplus_origin.push_back(part.GetParticleOrigin());
-                    dplus_daus.push_back({labelFirstDau, labelSecondDau, labelThirdDau});
-                  }
                   if(fDoDorigPlots){
                     FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
                     FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
@@ -839,13 +692,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dminus.push_back(part);
-                  if (fUseTree) {
-                    dminus_invmass.push_back(part.GetInvMass());
-                    dminus_pt.push_back(part.GetPt());
-                    dminus_eta.push_back(part.GetEta()[0]);
-                    dminus_origin.push_back(part.GetParticleOrigin());
-                    dminus_daus.push_back({labelFirstDau, labelSecondDau, labelThirdDau});
-                  }
                   if(fDoDorigPlots){
                     FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
                     FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
@@ -1019,19 +865,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fHistDplusChildPhi[iChild]->Fill(track->Phi());
           }
         }
-
-        if(!fIsMCtruth){
-          dplus_invmass.push_back(dplusCand.GetInvMass());
-          dplus_pt.push_back(dplusCand.GetPt());
-          dplus_eta.push_back(dplusCand.GetEta()[0]);
-          dplus_origin.push_back(dplusCand.GetParticleOrigin());
-          dplus_daus.push_back(dplusCand.GetIDTracks());
-          if (fApplyML) {
-            dplus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
-            dplus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
-          }
-        }
-        
       } else {
         AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
         if (fIsMC && fMCBeautyRejection && dminusCand.GetParticleOrigin() == AliFemtoDreamBasePart::kBeauty) {
@@ -1078,17 +911,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fHistDminusChildPhi[iChild]->Fill(track->Phi());
           }
         }
-        if (!fIsMCtruth && fUseTree) {
-          dminus_invmass.push_back(dminusCand.GetInvMass());
-          dminus_pt.push_back(dminusCand.GetPt());
-          dminus_eta.push_back(dminusCand.GetEta()[0]);
-          dminus_origin.push_back(dminusCand.GetParticleOrigin());
-          dminus_daus.push_back(dminusCand.GetIDTracks());
-          if(fApplyML) {
-            dminus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
-            dminus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
-          }
-        }
       }
     }
 
@@ -1099,18 +921,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
     }
   }
-
-
-  // for (auto dpl : dplus){
-  //   auto idtrks = dpl.GetIDTracks();
-
-  //   for (auto id:idtrks){
-  //     AliAODMCParticle *mcDau = (AliAODMCParticle *)fArrayMCAOD->At(id);
-
-//   }
-  // }
-  // PAIR CLEANING AND FEMTO
-
 
   // if (fUseTree) {
   //   if (dplus.size() > 0 || dminus.size() > 0) {
@@ -1150,15 +960,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   //   }
   // }
 
-  // for (auto &dm: dplus) {
-  //   auto orig = dm.GetParticleOrigin();
-  //   printf("orig -- %d\n", orig);
-  //   if (orig == AliFemtoDreamBasePart::kPhysPrimary)
-  //     dm.SetUse(false);
-  //   else
-  //     dm.SetUse(true);
-  // }
-
   // set event properties
   for (auto &dmeson : dplus) {
     dmeson.SetMult(fEvent->GetMultiplicity());
@@ -1183,6 +984,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     proton.SetZVtx(fEvent->GetZVertex());
   }
 
+  // PAIR CLEANING AND FEMTO
   if (fUseFDPairCleaner) {
     fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
     fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
@@ -1284,7 +1086,6 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       // pair
       tree.second->Branch("kStar", &dummyfloat);
 
-      
       // heavy particle
       tree.second->Branch("heavy_invmass", &dummyfloat);
       tree.second->Branch("heavy_pt", &dummyfloat);
