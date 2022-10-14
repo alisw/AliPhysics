@@ -369,10 +369,9 @@ void AddTask_MesonJetCorr_ConvCalo(
                          AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_ConvCalo_%i_%i.root", meson, trainConfig));
 
   mgr->AddTask(task);
-  cout << "before connect input\n";
   mgr->ConnectInput(task, 0, cinput);
-  cout << "before ConnectOutput\n";
   mgr->ConnectOutput(task, 1, coutput);
 
   return;
 }
+
