@@ -1285,12 +1285,13 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       // pair
       tree.second->Branch("kStar", &dummyfloat);
 
+      
       // heavy particle
       tree.second->Branch("heavy_invmass", &dummyfloat);
       tree.second->Branch("heavy_pt", &dummyfloat);
       tree.second->Branch("heavy_eta", &dummyfloat);
       tree.second->Branch("heavy_origin", &dummyint);
-      // tree.second->Branch("heavy_daus", &dummyvector);
+      tree.second->Branch("heavy_daus", &dummyvector);
       tree.second->Branch("heavy_bkg_score", &dummyfloat);
       tree.second->Branch("heavy_prompt_score", &dummyfloat);
 
@@ -1324,7 +1325,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("heavy_pt", &dummyfloat);
       tree.second->Branch("heavy_eta", &dummyfloat);
       tree.second->Branch("heavy_origin", &dummyint);
-      // tree.second->Branch("heavy_daus", &myDummyStruct.dummyVector);
+      tree.second->Branch("heavy_daus", &dummyvector);
       tree.second->Branch("heavy_bkg_score", &dummyfloat);
       tree.second->Branch("heavy_prompt_score", &dummyfloat);
       // light

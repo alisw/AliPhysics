@@ -11,9 +11,9 @@
 #include "TDatabasePDG.h"
 #include "TVector2.h"
 
-                // struct dummyStruct {
-                //   std::vector<int> dummyVector;
-                // };
+                struct dummyStruct {
+                  std::vector<int> dummyVector;
+                };
 
 ClassImp(AliFemtoDreamPartContainer)
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
@@ -134,12 +134,13 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               float heavy_eta = part2.GetEta()[0];
               int heavy_origin = part2.GetParticleOrigin();
 
-              auto ids = part2.GetIDTracks();
-              for (auto id : ids)
-                printf("  iddss: %d");
-              printf("\n\n");
+              // auto ids = part2.GetIDTracks();
+              // printf("len dau: %d   ->   ", ids.size());
+              // for (auto id : ids)
+              //   printf("  iddss: %d");
+              // printf("\n\n");
 
-              std::vector<int>  heavy_daus = part2.GetDauLabels();
+              std::vector<int>  *heavy_daus = new std::vector<int>(part2.GetIDTracks());
 
               float heavy_bkgscore = part2.GetBkgScore();
               float heavy_promptscore = part2.GetPromptScore();
@@ -153,8 +154,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               float light_dcaz = part1.GetDCAZ();
               float light_dcaxy = part1.GetDCAXY();
 
-              // // dummyStruct myDummyStruct;
-              // myDummyStruct.dummyVector = itPart2->GetIDTracks();
+              dummyStruct myDummyStruct;
+              myDummyStruct.dummyVector = {1, 2, 3};
               
               tree->SetBranchAddress("mult", &mult);
               tree->SetBranchAddress("vz", &zvtx);
@@ -167,7 +168,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("heavy_pt", &heavy_pt);
               tree->SetBranchAddress("heavy_eta", &heavy_eta);
               tree->SetBranchAddress("heavy_origin", &heavy_origin);
-              // tree->SetBranchAddress("heavy_daus", &myDummyStruct.dummyVector);
+              tree->SetBranchAddress("heavy_daus", &heavy_daus);
               tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
               tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
 
@@ -270,7 +271,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 //   printf("  iddss: %d");
                 // printf("\n\n");
 
-                // std::vector<Int_t>  heavy_daus = itPart2->GetIDTracks();
+                std::vector<Int_t>  * heavy_daus = new std::vector<int>(itPart2->GetIDTracks());
 
                 float heavy_bkgscore = itPart2->GetBkgScore();
                 float heavy_promptscore = itPart2->GetPromptScore();
@@ -299,7 +300,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("heavy_pt", &heavy_pt);
                 tree->SetBranchAddress("heavy_eta", &heavy_eta);
                 tree->SetBranchAddress("heavy_origin", &heavy_origin);
-                // tree->SetBranchAddress("heavy_daus", &myDummyStruct.dummyVector );
+                tree->SetBranchAddress("heavy_daus", &heavy_daus);
                 tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
                 tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
 
