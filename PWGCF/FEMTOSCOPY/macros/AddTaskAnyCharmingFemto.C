@@ -463,6 +463,8 @@ if (!isMC) {
     task->SetMLConfigFile(configML);
   }
 
+  task->SetLightPDG(pdgBuddy);
+  
   if (trigger == "kINT7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetTrigger(AliVEvent::kINT7);

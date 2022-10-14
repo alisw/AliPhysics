@@ -20,40 +20,9 @@
 #include "TDatabasePDG.h"
 #include "TRandom.h"
 
-// todo check Dstar soft pion
-static std::vector<float> dplus_invmass;
-static std::vector<float> dplus_pt;
-static std::vector<float> dplus_eta;
-static std::vector<int> dplus_origin;
-static std::vector<std::vector<int>> dplus_daus;
-static std::vector<float> dplus_bkg_score;
-static std::vector<float> dplus_prompt_score;
-
-static std::vector<float> dminus_invmass;
-static std::vector<float> dminus_pt;
-static std::vector<float> dminus_eta;
-static std::vector<int> dminus_origin;
-static std::vector<std::vector<int>> dminus_daus;
-static std::vector<float> dminus_bkg_score;
-static std::vector<float> dminus_prompt_score;
-
-static std::vector<float> protons_eta;
-static std::vector<float> protons_pt;
-static std::vector<float> protons_nsigtpc;
-static std::vector<float> protons_nsigtof;
-static std::vector<float> protons_ncls;
-static std::vector<float> protons_ncrossed;
-static std::vector<float> protons_dcaz;
-static std::vector<float> protons_dcaxy;
-
-static std::vector<float> antiprotons_eta;
-static std::vector<float> antiprotons_pt;
-static std::vector<float> antiprotons_nsigtpc;
-static std::vector<float> antiprotons_nsigtof;
-static std::vector<float> antiprotons_ncls;
-static std::vector<float> antiprotons_ncrossed;
-static std::vector<float> antiprotons_dcaz;
-static std::vector<float> antiprotons_dcaxy;
+static float dummyfloat;
+static std::vector<int> dummyvector;
+static int dummyint;
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
@@ -79,6 +48,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fCheckProtonSPDHit(false),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
+      fLightPDG(0),
+      fUseFDPairCleaner(true),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -176,6 +147,8 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fCheckProtonSPDHit(false),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
+      fLightPDG(0),
+      fUseFDPairCleaner(true),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -452,43 +425,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   dplus.clear();
   dminus.clear();
 
-  dplus_invmass.clear();
-  dplus_pt.clear();
-  dplus_eta.clear();
-  dplus_origin.clear();
-  dplus_daus.clear();
-  dplus_bkg_score.clear();
-  dplus_prompt_score.clear();
-  dminus_invmass.clear();
-  dminus_pt.clear();
-  dminus_eta.clear();
-  dminus_origin.clear();
-  dminus_daus.clear();
-  dminus_bkg_score.clear();
-  dminus_prompt_score.clear();
-
-  // light flavor + CC
-  protons_nsigtpc.clear();
-  protons_nsigtof.clear();
-  protons_nsigtpc.clear();
-  protons_nsigtof.clear();
-  protons_eta.clear();
-  protons_pt.clear();
-  protons_ncls.clear();
-  protons_ncrossed.clear();
-  protons_dcaz.clear();
-  protons_dcaxy.clear();
-  antiprotons_nsigtpc.clear();
-  antiprotons_nsigtof.clear();
-  antiprotons_nsigtpc.clear();
-  antiprotons_nsigtof.clear();
-  antiprotons_eta.clear();
-  antiprotons_pt.clear();
-  antiprotons_ncls.clear();
-  antiprotons_ncrossed.clear();
-  antiprotons_dcaz.clear();
-  antiprotons_dcaxy.clear();
-
   fFemtoPair.mult = fEvent->GetMultiplicity();
   fFemtoPair.vz = fEvent->GetZVertex();
 
@@ -519,64 +455,52 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
 
+    AliPID::EParticleType buddyParticle;
+    if (fLightPDG == 211) {
+      buddyParticle = AliPID::kPion;
+    } else if (fLightPDG == 321) {
+      buddyParticle = AliPID::kKaon;
+    } else {
+      AliFatal("buddy not implemented!");
+    }
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
-        if (fUseTree) {
-          protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
-          protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
-          protons_eta.push_back(fProtonTrack->GetEta()[0]);
-          protons_pt.push_back(fProtonTrack->GetPt());
-          protons_ncls.push_back(fProtonTrack->GetNClsTPC());
-          protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-          protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-          protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        }
-
+        fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
+        fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
+        fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
+        fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
+        fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
+        fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
-        if (fUseTree) {
-          protons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
-          protons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
-          protons_eta.push_back(fProtonTrack->GetEta()[0]);
-          protons_pt.push_back(fProtonTrack->GetPt());
-          protons_ncls.push_back(fProtonTrack->GetNClsTPC());
-          protons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-          protons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-          protons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        }
-
+        fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
+        fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
+        fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
+        fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
+        fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
+        fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
-        if (fUseTree) {
-          antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
-          antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
-          antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
-          antiprotons_pt.push_back(fProtonTrack->GetPt());
-          antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
-          antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-          antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-          antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        }
-        
+        fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
+        fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
+        fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
+        fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
+        fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
+        fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
-        if (fUseTree) {
-          antiprotons_nsigtpc.push_back(fProtonTrack->GetnSigmaTPC(AliPID::kPion));
-          antiprotons_nsigtof.push_back(fProtonTrack->GetnSigmaTOF(AliPID::kPion));
-          antiprotons_eta.push_back(fProtonTrack->GetEta()[0]);
-          antiprotons_pt.push_back(fProtonTrack->GetPt());
-          antiprotons_ncls.push_back(fProtonTrack->GetNClsTPC());
-          antiprotons_ncrossed.push_back(fProtonTrack->GetTPCCrossedRows());
-          antiprotons_dcaxy.push_back(fProtonTrack->GetDCAXYProp());
-          antiprotons_dcaz.push_back(fProtonTrack->GetDCAZProp());
-        }
-
+        fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
+        fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
+        fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
+        fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
+        fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
+        fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
@@ -617,11 +541,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             part.SetID(mcPart->GetLabel());
             part.SetIDTracks(mcPart->GetLabel());
             protons.push_back(part);
-
-            if (fUseTree) {
-              protons_eta.push_back(mcPart->Eta());
-              protons_pt.push_back(mcPart->Pt());
-            }
           }
         }
       }
@@ -633,11 +552,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             part.SetID(mcPart->GetLabel());
             part.SetIDTracks(mcPart->GetLabel());
             antiprotons.push_back(part);
-            
-            if (fUseTree) {
-              antiprotons_eta.push_back(mcPart->Eta());
-              antiprotons_pt.push_back(mcPart->Pt());
-            }
           }
         }
       }
@@ -722,22 +636,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
           if (mcpdg == 413) {
             dplus.push_back(part);
-            if (fUseTree) {
-              dplus_invmass.push_back(part.GetInvMass());
-              dplus_pt.push_back(part.GetPt());
-              dplus_eta.push_back(part.GetEta()[0]);
-              dplus_origin.push_back(part.GetParticleOrigin());
-              dplus_daus.push_back({softPion->GetLabel(), kaonFromD0->GetLabel(), pionFromD0->GetLabel()});
-            }
           } else if (mcpdg == -413){
             dminus.push_back(part);
-            if (fUseTree) {
-              dminus_invmass.push_back(part.GetInvMass());
-              dminus_pt.push_back(part.GetPt());
-              dminus_eta.push_back(part.GetEta()[0]);
-              dminus_origin.push_back(part.GetParticleOrigin());
-              dminus_daus.push_back({softPion->GetLabel(), kaonFromD0->GetLabel(), pionFromD0->GetLabel()});
-            }
           }
           if(fDoDorigPlots){
             FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
@@ -778,13 +678,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dplus.push_back(part);
-                  if (fUseTree) {
-                    dplus_invmass.push_back(part.GetInvMass());
-                    dplus_pt.push_back(part.GetPt());
-                    dplus_eta.push_back(part.GetEta()[0]);
-                    dplus_origin.push_back(part.GetParticleOrigin());
-                    dplus_daus.push_back({labelFirstDau, labelSecondDau, labelThirdDau});
-                  }
                   if(fDoDorigPlots){
                     FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
                     FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
@@ -799,13 +692,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dminus.push_back(part);
-                  if (fUseTree) {
-                    dminus_invmass.push_back(part.GetInvMass());
-                    dminus_pt.push_back(part.GetPt());
-                    dminus_eta.push_back(part.GetEta()[0]);
-                    dminus_origin.push_back(part.GetParticleOrigin());
-                    dminus_daus.push_back({labelFirstDau, labelSecondDau, labelThirdDau});
-                  }
                   if(fDoDorigPlots){
                     FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
                     FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
@@ -937,6 +823,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           continue;
         }
         if (!fIsMCtruth) {
+          if (fApplyML) {
+            dplusCand.SetBkgScore(scoresFromMLSelector[iCand][0]);
+            dplusCand.SetPromptScore(scoresFromMLSelector[iCand][1]);
+          } else {
+            dplusCand.SetBkgScore(-1);
+            dplusCand.SetPromptScore(-1);
+          }
           dplus.push_back(dplusCand);
         }
         if (!fIsLightweight) {
@@ -972,19 +865,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fHistDplusChildPhi[iChild]->Fill(track->Phi());
           }
         }
-
-        if(!fIsMCtruth){
-          dplus_invmass.push_back(dplusCand.GetInvMass());
-          dplus_pt.push_back(dplusCand.GetPt());
-          dplus_eta.push_back(dplusCand.GetEta()[0]);
-          dplus_origin.push_back(dplusCand.GetParticleOrigin());
-          dplus_daus.push_back(dplusCand.GetIDTracks());
-          if (fApplyML) {
-            dplus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
-            dplus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
-          }
-        }
-        
       } else {
         AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
         if (fIsMC && fMCBeautyRejection && dminusCand.GetParticleOrigin() == AliFemtoDreamBasePart::kBeauty) {
@@ -994,6 +874,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           continue;
         }
         if (!fIsMCtruth){
+          if (fApplyML) {
+            dminusCand.SetBkgScore(scoresFromMLSelector[iCand][0]);
+            dminusCand.SetPromptScore(scoresFromMLSelector[iCand][1]);
+          } else {
+            dminusCand.SetBkgScore(-1);
+            dminusCand.SetPromptScore(-1);
+          }
           dminus.push_back(dminusCand);
         }
         if (!fIsLightweight) {
@@ -1024,17 +911,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             fHistDminusChildPhi[iChild]->Fill(track->Phi());
           }
         }
-        if (!fIsMCtruth && fUseTree) {
-          dminus_invmass.push_back(dminusCand.GetInvMass());
-          dminus_pt.push_back(dminusCand.GetPt());
-          dminus_eta.push_back(dminusCand.GetEta()[0]);
-          dminus_origin.push_back(dminusCand.GetParticleOrigin());
-          dminus_daus.push_back(dminusCand.GetIDTracks());
-          if(fApplyML) {
-            dminus_bkg_score.push_back(scoresFromMLSelector[iCand][0]);
-            dminus_prompt_score.push_back(scoresFromMLSelector[iCand][1]);
-          }
-        }
       }
     }
 
@@ -1045,18 +921,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
     }
   }
-
-
-  // for (auto dpl : dplus){
-  //   auto idtrks = dpl.GetIDTracks();
-
-  //   for (auto id:idtrks){
-  //     AliAODMCParticle *mcDau = (AliAODMCParticle *)fArrayMCAOD->At(id);
-
-//   }
-  // }
-  // PAIR CLEANING AND FEMTO
-
 
   // if (fUseTree) {
   //   if (dplus.size() > 0 || dminus.size() > 0) {
@@ -1096,19 +960,37 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   //   }
   // }
 
-  // for (auto &dm: dplus) {
-  //   auto orig = dm.GetParticleOrigin();
-  //   printf("orig -- %d\n", orig);
-  //   if (orig == AliFemtoDreamBasePart::kPhysPrimary)
-  //     dm.SetUse(false);
-  //   else
-  //     dm.SetUse(true);
-  // }
+  // set event properties
+  for (auto &dmeson : dplus) {
+    dmeson.SetMult(fEvent->GetMultiplicity());
+    dmeson.SetZVtx(fEvent->GetZVertex());
+  }
+  
+  for (auto &dmeson : dplus) {
+    int m = dmeson.GetMult();
+  }
+  for (auto &dmeson : dminus) {
+    dmeson.SetMult(fEvent->GetMultiplicity());
+    dmeson.SetZVtx(fEvent->GetZVertex());
+  }
+  
+  for (auto &proton : protons) {
+    proton.SetMult(fEvent->GetMultiplicity());
+    proton.SetZVtx(fEvent->GetZVertex());
+  }
+  
+  for (auto &proton : antiprotons) {
+    proton.SetMult(fEvent->GetMultiplicity());
+    proton.SetZVtx(fEvent->GetZVertex());
+  }
 
-  fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
-  fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
+  // PAIR CLEANING AND FEMTO
+  if (fUseFDPairCleaner) {
+    fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
+    fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
+  }
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
@@ -1116,146 +998,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(dplus);
   fPairCleaner->StoreParticle(dminus);
 
-  std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsSE = nullptr;
-  std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsME = nullptr;
-
   if (fUseTree) {
-    kStarsSE = new std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>>();
-    kStarsME = new std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>>();
+    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, fPairTreeSE, fPairTreeME);
 
-    kStarsSE->insert({{0, 2}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
-    kStarsSE->insert({{1, 3}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
-    kStarsSE->insert({{0, 3}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
-    kStarsSE->insert({{1, 2}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
-
-    kStarsME->insert({{0, 2}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
-    kStarsME->insert({{1, 3}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
-    kStarsME->insert({{0, 3}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
-    kStarsME->insert({{1, 2}, {new std::vector<float>(), new std::vector<int>(), new std::vector<int>()}});
-
-    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, kStarsSE, kStarsME);
-
-    // fill SE tree
-    for (auto kStarPair : *kStarsSE) {
-      auto combo = kStarPair.first;
-      auto kStarList = *std::get<0>(kStarPair.second);
-      auto indecesP1 = *std::get<1>(kStarPair.second);
-      auto indecesP2 = *std::get<2>(kStarPair.second);
-
-      for (int iPair = 0; iPair < kStarList.size(); iPair++) {
-        fFemtoPair.kStar = kStarList[iPair];
-        if (combo.second == 2) {
-          fFemtoPair.heavy_invmass = dplus_invmass[indecesP2[iPair]];
-          fFemtoPair.heavy_pt = dplus_pt[indecesP2[iPair]];
-          fFemtoPair.heavy_eta = dplus_eta[indecesP2[iPair]];
-          fFemtoPair.heavy_origin = dplus_origin[indecesP2[iPair]];
-          fFemtoPair.heavy_daus = dplus_daus[indecesP2[iPair]];
-          if (!fIsMCtruth && fApplyML){ // ML is not used for MC truth @ gen level
-            fFemtoPair.heavy_bkg_score = dplus_bkg_score[indecesP2[iPair]];
-            fFemtoPair.heavy_prompt_score = dplus_prompt_score[indecesP2[iPair]];
-          }
-        } else if (combo.second == 3) {
-          fFemtoPair.heavy_invmass = dminus_invmass[indecesP2[iPair]];
-          fFemtoPair.heavy_pt = dminus_pt[indecesP2[iPair]];
-          fFemtoPair.heavy_eta = dminus_eta[indecesP2[iPair]];
-          fFemtoPair.heavy_origin = dminus_origin[indecesP2[iPair]];
-          fFemtoPair.heavy_daus = dminus_daus[indecesP2[iPair]];
-          if (!fIsMCtruth && fApplyML){ // ML is not used for MC truth @ gen level
-            fFemtoPair.heavy_bkg_score = dminus_bkg_score[indecesP2[iPair]];
-            fFemtoPair.heavy_prompt_score = dminus_prompt_score[indecesP2[iPair]];
-          }
-        } else {
-          AliFatal("Error");
-        }
-        if (combo.first == 0) {
-          fFemtoPair.light_pt = protons_pt[indecesP1[iPair]];
-          fFemtoPair.light_eta = protons_eta[indecesP1[iPair]];
-          if (!fIsMCtruth) {
-            fFemtoPair.light_nsigtpc = protons_nsigtpc[indecesP1[iPair]];
-            fFemtoPair.light_nsigtof = protons_nsigtof[indecesP1[iPair]];
-            fFemtoPair.light_ncls = protons_ncls[indecesP1[iPair]];
-            fFemtoPair.light_ncrossed = protons_ncrossed[indecesP1[iPair]];
-            fFemtoPair.light_dcaz = protons_dcaz[indecesP1[iPair]];
-            fFemtoPair.light_dcaxy = protons_dcaxy[indecesP1[iPair]];
-          }
-        } else if (combo.first == 1) {
-          fFemtoPair.light_pt = antiprotons_pt[indecesP1[iPair]];
-          fFemtoPair.light_eta = antiprotons_eta[indecesP1[iPair]];
-          if (!fIsMCtruth) {
-            fFemtoPair.light_nsigtpc = antiprotons_nsigtpc[indecesP1[iPair]];
-            fFemtoPair.light_nsigtof = antiprotons_nsigtof[indecesP1[iPair]];
-            fFemtoPair.light_ncls = antiprotons_ncls[indecesP1[iPair]];
-            fFemtoPair.light_ncrossed = antiprotons_ncrossed[indecesP1[iPair]];
-            fFemtoPair.light_dcaz = antiprotons_dcaz[indecesP1[iPair]];
-            fFemtoPair.light_dcaxy = antiprotons_dcaxy[indecesP1[iPair]];
-          }
-        } else {
-          AliFatal("Error");
-        }
-        fPairTreeSE.at(combo)->Fill();
-      }
-    }
-
-    // fill ME tree
-    for (auto kStarPair : *kStarsME) {
-      auto combo = kStarPair.first;
-      auto kStarList = *std::get<0>(kStarPair.second);
-      auto indecesP1 = *std::get<1>(kStarPair.second);
-      auto indecesP2 = *std::get<2>(kStarPair.second);
-
-      for (int iPair = 0; iPair < kStarList.size(); iPair++) {
-        fFemtoPair.kStar = kStarList[iPair];
-        if (combo.second == 2) {
-          fFemtoPair.heavy_invmass = dplus_invmass[indecesP2[iPair]];
-          fFemtoPair.heavy_pt = dplus_pt[indecesP2[iPair]];
-          fFemtoPair.heavy_eta = dplus_eta[indecesP2[iPair]];
-          fFemtoPair.heavy_origin = dplus_origin[indecesP2[iPair]];
-          fFemtoPair.heavy_daus = dplus_daus[indecesP2[iPair]];
-          if (!fIsMCtruth && fApplyML) {
-            fFemtoPair.heavy_bkg_score = dplus_bkg_score[indecesP2[iPair]];
-            fFemtoPair.heavy_prompt_score = dplus_prompt_score[indecesP2[iPair]];
-          }
-        } else if (combo.second == 3) {
-          fFemtoPair.heavy_invmass = dminus_invmass[indecesP2[iPair]];
-          fFemtoPair.heavy_pt = dminus_pt[indecesP2[iPair]];
-          fFemtoPair.heavy_eta = dminus_eta[indecesP2[iPair]];
-          fFemtoPair.heavy_origin = dminus_origin[indecesP2[iPair]];
-          fFemtoPair.heavy_daus = dminus_daus[indecesP2[iPair]];
-          if (!fIsMCtruth && fApplyML) {
-            fFemtoPair.heavy_bkg_score = dminus_bkg_score[indecesP2[iPair]];
-            fFemtoPair.heavy_prompt_score = dminus_prompt_score[indecesP2[iPair]];
-          }
-        } else {
-          AliFatal("Error");
-        }
-        if (combo.first == 0) {
-          fFemtoPair.light_pt = protons_pt[indecesP1[iPair]];
-          fFemtoPair.light_eta = protons_eta[indecesP1[iPair]];
-          if (!fIsMCtruth) {
-            fFemtoPair.light_nsigtpc = protons_nsigtpc[indecesP1[iPair]];
-            fFemtoPair.light_nsigtof = protons_nsigtof[indecesP1[iPair]];
-            fFemtoPair.light_ncls = protons_ncls[indecesP1[iPair]];
-            fFemtoPair.light_ncrossed = protons_ncrossed[indecesP1[iPair]];
-            fFemtoPair.light_dcaz = protons_dcaz[indecesP1[iPair]];
-            fFemtoPair.light_dcaxy = protons_dcaxy[indecesP1[iPair]];
-          }
-        } else if (combo.first == 1) {
-          fFemtoPair.light_pt = antiprotons_pt[indecesP1[iPair]];
-          fFemtoPair.light_eta = antiprotons_eta[indecesP1[iPair]];
-          if (!fIsMCtruth) {
-            fFemtoPair.light_nsigtpc = antiprotons_nsigtpc[indecesP1[iPair]];
-            fFemtoPair.light_nsigtof = antiprotons_nsigtof[indecesP1[iPair]];
-            fFemtoPair.light_ncls = antiprotons_ncls[indecesP1[iPair]];
-            fFemtoPair.light_ncrossed = antiprotons_ncrossed[indecesP1[iPair]];
-            fFemtoPair.light_dcaz = antiprotons_dcaz[indecesP1[iPair]];
-            fFemtoPair.light_dcaxy = antiprotons_dcaxy[indecesP1[iPair]];
-          }
-        } else {
-          AliFatal("Error");
-        }
-        fPairTreeME.at(combo)->Fill();
-      }
-    }
   } else {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
   }
@@ -1276,10 +1021,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
   
   if (fUseTree) {
-    for (auto pair : fPairTreeSE) PostData(nOutput++, pair.second);
-    for (auto pair : fPairTreeME) PostData(nOutput++, pair.second);
-
-    
+    for (auto pair : *fPairTreeSE) PostData(nOutput++, pair.second);
+    for (auto pair : *fPairTreeME) PostData(nOutput++, pair.second);
   }
 }
 
@@ -1323,78 +1066,71 @@ void AliAnalysisTaskCharmingFemto::StoreGlobalTrackReference(
 //____________________________________________________________________________________________________
 void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   if (fUseTree) {
-    // fPairTreeSE = std::map <std::pair<int, int>, TTree*>();
-    fPairTreeSE.insert({{0, 2}, new TTree("tSE_DstarPi_pp", "tSE_DstarPi_pp")});
-    fPairTreeSE.insert({{1, 3}, new TTree("tSE_DstarPi_mm", "tSE_DstarPi_mm")});
-    fPairTreeSE.insert({{0, 3}, new TTree("tSE_DstarPi_mp", "tSE_DstarPi_mp")});
-    fPairTreeSE.insert({{1, 2}, new TTree("tSE_DstarPi_pm", "tSE_DstarPi_pm")});
+    fPairTreeSE = new std::map <std::pair<int, int>, TTree*>();
+    fPairTreeSE->insert({{0, 2}, new TTree("tSE_pp", "tSE_pp")});
+    fPairTreeSE->insert({{1, 3}, new TTree("tSE_mm", "tSE_mm")});
+    fPairTreeSE->insert({{0, 3}, new TTree("tSE_mp", "tSE_mp")});
+    fPairTreeSE->insert({{1, 2}, new TTree("tSE_pm", "tSE_pm")});
 
-    fPairTreeME.insert({{0, 2}, new TTree("tME_DstarPi_pp", "tME_DstarPi_pp")});
-    fPairTreeME.insert({{1, 3}, new TTree("tME_DstarPi_mm", "tME_DstarPi_mm")});
-    fPairTreeME.insert({{0, 3}, new TTree("tME_DstarPi_mp", "tME_DstarPi_mp")});
-    fPairTreeME.insert({{1, 2}, new TTree("tME_DstarPi_pm", "tME_DstarPi_pm")});
+    fPairTreeME = new std::map <std::pair<int, int>, TTree*>();
+    fPairTreeME->insert({{0, 2}, new TTree("tME_pp", "tME_pp")});
+    fPairTreeME->insert({{1, 3}, new TTree("tME_mm", "tME_mm")});
+    fPairTreeME->insert({{0, 3}, new TTree("tME_mp", "tME_mp")});
+    fPairTreeME->insert({{1, 2}, new TTree("tME_pm", "tME_pm")});
 
-    for (auto tree : fPairTreeSE) {
+    for (auto tree : *fPairTreeSE) {
       // event
-      tree.second->Branch("mult", &fFemtoPair.mult);
-      tree.second->Branch("vz", &fFemtoPair.vz);
+      tree.second->Branch("mult", &dummyint);
+      tree.second->Branch("vz", &dummyfloat);
 
       // pair
-      tree.second->Branch("kStar", &fFemtoPair.kStar);
+      tree.second->Branch("kStar", &dummyfloat);
 
       // heavy particle
-      tree.second->Branch("heavy_invmass", &fFemtoPair.heavy_invmass);
-      tree.second->Branch("heavy_pt", &fFemtoPair.heavy_pt);
-      tree.second->Branch("heavy_eta", &fFemtoPair.heavy_eta);
-      tree.second->Branch("heavy_origin", &fFemtoPair.heavy_origin);
-      tree.second->Branch("heavy_daus", &fFemtoPair.heavy_daus);
-      if (fApplyML) {
-        tree.second->Branch("heavy_bkg_score", &fFemtoPair.heavy_bkg_score);
-        tree.second->Branch("heavy_prompt_score", &fFemtoPair.heavy_prompt_score);
-      }
+      tree.second->Branch("heavy_invmass", &dummyfloat);
+      tree.second->Branch("heavy_pt", &dummyfloat);
+      tree.second->Branch("heavy_eta", &dummyfloat);
+      tree.second->Branch("heavy_origin", &dummyint);
+      tree.second->Branch("heavy_daus", &dummyvector);
+      tree.second->Branch("heavy_bkg_score", &dummyfloat);
+      tree.second->Branch("heavy_prompt_score", &dummyfloat);
 
       // light particle
-      tree.second->Branch("light_pt", &fFemtoPair.light_pt);
-      tree.second->Branch("light_eta", &fFemtoPair.light_eta);
-      if (!fIsMCtruth) {
-        tree.second->Branch("light_nsigtpc", &fFemtoPair.light_nsigtpc);
-        tree.second->Branch("light_nsigtof", &fFemtoPair.light_nsigtof);
-        tree.second->Branch("light_ncls", &fFemtoPair.light_ncls);
-        tree.second->Branch("light_ncrossed", &fFemtoPair.light_ncrossed);
-        tree.second->Branch("light_dcaz", &fFemtoPair.light_dcaz);
-        tree.second->Branch("light_dcaxy", &fFemtoPair.light_dcaxy);
-      }
+      tree.second->Branch("light_pt", &dummyfloat);
+      tree.second->Branch("light_eta", &dummyfloat);
+      tree.second->Branch("light_nsigtpc", &dummyfloat);
+      tree.second->Branch("light_nsigtof", &dummyfloat);
+      tree.second->Branch("light_ncls", &dummyint);
+      tree.second->Branch("light_ncrossed", &dummyint);
+      tree.second->Branch("light_dcaz", &dummyfloat);
+      tree.second->Branch("light_dcaxy", &dummyfloat);
     }
 
-    for (auto tree : fPairTreeME) {
+    for (auto tree : *fPairTreeME) {
       // event
-      tree.second->Branch("mult", &fFemtoPair.mult);
-      tree.second->Branch("vz", &fFemtoPair.vz);
+      tree.second->Branch("mult", &dummyint);
+      tree.second->Branch("vz", &dummyfloat);
 
       // pair
-      tree.second->Branch("kStar", &fFemtoPair.kStar);
+      tree.second->Branch("kStar", &dummyfloat);
 
-      // heavy
-      tree.second->Branch("heavy_invmass", &fFemtoPair.heavy_invmass);
-      tree.second->Branch("heavy_pt", &fFemtoPair.heavy_pt);
-      tree.second->Branch("heavy_eta", &fFemtoPair.heavy_eta);
-      tree.second->Branch("heavy_origin", &fFemtoPair.heavy_origin);
-      tree.second->Branch("heavy_daus", &fFemtoPair.heavy_daus);
-      if (fApplyML) {
-        tree.second->Branch("heavy_bkg_score", &fFemtoPair.heavy_bkg_score);
-        tree.second->Branch("heavy_prompt_score", &fFemtoPair.heavy_prompt_score);
-      }
+      // // heavy
+      tree.second->Branch("heavy_invmass", &dummyfloat);
+      tree.second->Branch("heavy_pt", &dummyfloat);
+      tree.second->Branch("heavy_eta", &dummyfloat);
+      tree.second->Branch("heavy_origin", &dummyint);
+      tree.second->Branch("heavy_daus", &dummyvector);
+      tree.second->Branch("heavy_bkg_score", &dummyfloat);
+      tree.second->Branch("heavy_prompt_score", &dummyfloat);
       // light
-      tree.second->Branch("light_eta", &fFemtoPair.light_eta);
-      tree.second->Branch("light_pt", &fFemtoPair.light_pt);
-      if (!fIsMCtruth) {
-        tree.second->Branch("light_nsigtpc", &fFemtoPair.light_nsigtpc);
-        tree.second->Branch("light_nsigtof", &fFemtoPair.light_nsigtof);
-        tree.second->Branch("light_ncls", &fFemtoPair.light_ncls);
-        tree.second->Branch("light_ncrossed", &fFemtoPair.light_ncrossed);
-        tree.second->Branch("light_dcaz", &fFemtoPair.light_dcaz);
-        tree.second->Branch("light_dcaxy", &fFemtoPair.light_dcaxy);
-      }
+      tree.second->Branch("light_eta", &dummyfloat);
+      tree.second->Branch("light_pt", &dummyfloat);
+      tree.second->Branch("light_nsigtpc", &dummyfloat);
+      tree.second->Branch("light_nsigtof", &dummyfloat);
+      tree.second->Branch("light_ncls", &dummyint);
+      tree.second->Branch("light_ncrossed", &dummyint);
+      tree.second->Branch("light_dcaz", &dummyfloat);
+      tree.second->Branch("light_dcaxy", &dummyfloat);
     }
   }
 
@@ -1734,10 +1470,10 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     PostData(nOutput++, fAntiTrackCutHistMCList);
   }
   if (fUseTree) {
-    for (auto pair : fPairTreeSE) {
+    for (auto pair : *fPairTreeSE) {
       PostData(nOutput++, pair.second);
     }
-    for (auto pair : fPairTreeME) {
+    for (auto pair : *fPairTreeME) {
       PostData(nOutput++, pair.second);
     }
   }
@@ -1837,6 +1573,8 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
         }
       }
     }
+  } else {
+    scores = modelPred;
   }
 
   recVtx = false;
