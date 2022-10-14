@@ -48,7 +48,7 @@ AliAnalysisEffTaskFilterBit16();
       }
     }
 */
-  AliAnalysisEffTaskFilterBit16(TString name, int pidMethod=0, int filterbit=16); // default constructor
+  AliAnalysisEffTaskFilterBit16(TString name, int pidMethod=3, int filterbit=16); // default constructor
   virtual ~AliAnalysisEffTaskFilterBit16(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec

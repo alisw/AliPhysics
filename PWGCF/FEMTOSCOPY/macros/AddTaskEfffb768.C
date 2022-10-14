@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisEffTaskFilterBit768 *AddTaskEfffb768(TString containerName="femtolist",int method=0, int filterbit=768)
+AliAnalysisEffTaskFilterBit768 *AddTaskEfffb768(TString containerName="femtolist",int method=3, int filterbit=768)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
