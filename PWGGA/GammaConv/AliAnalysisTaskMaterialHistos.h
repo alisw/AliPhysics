@@ -52,6 +52,8 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   
   void ProcessPhotons();
   void ProcessMCPhotons();
+  void ProcessMCPhotonsNoVertex();
+  void ProcessMCPhotonsNoTrig();
   void FillMCHistograms(Int_t eventPos);
   void ProcessPrimaryCandidates();
   void ProcessPrimaryCandidatesNoDCA();
@@ -138,8 +140,13 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   TH2F**            hPositronRdEdx;               //!
   TH2F**            hPositronRNSigmadEdx;         //!
   TH2F**            fHistoMCPrimaryPtvsSource;    //!
+  TH2F**            fHistoMCPrimaryPtvsSourceNoVertex;    //!
+  TH2F**            fHistoMCPrimaryPtvsSourceNoTrig;    //!
   TH1F**            fHistoMCPhysicalPrimaryPt;    //!
   TH1F**            fHistoMCPhysicalPrimaryAPt;   //!
+  TH2F**            fHistoMCPrimaryNMPtvsSource;  //!
+  TH2F**            fHistoMCPrimaryNMPtvsSourceNoVertex;    //!
+  TH2F**            fHistoMCPrimaryNMPtvsSourceNoTrig;    //!
   TH2F**            hMCConversionRPhi;            //!
   TH2F**            hMCConversionRPhiFromConv;    //!
   TH2F**            hMCConversionRPt;             //!
@@ -148,7 +155,12 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   TH1F**            hMCConversionRRejSmall;       //!
   TH1F**            hMCConversionRRejLarge;       //!
   TH1F**            hMCAllGammaPt;                //!
+  TH1F**            hMCAllGammaPtNoVertex;        //!
+  TH1F**            hMCAllGammaPtNoTrig;          //!
   TH1F**            hMCAllGammaWOWeightPt;        //!
+  TH2F**            fHistoMCDecayGammaPtvsSource; //!
+  TH2F**            fHistoMCDecayGammaPtvsSourceNoVertex; //!
+  TH2F**            fHistoMCDecayGammaPtvsSourceNoTrig; //!
   TH2F**            hMCAllSecondaryGammaPt;       //!
   TH3F**            hMCSecondaryConvGammaPtR;      //!
   TH1F**            fHistoMCTruePhysicalPrimaryPt;   //!
@@ -202,7 +214,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
   
   
-  ClassDef(AliAnalysisTaskMaterialHistos, 27);
+  ClassDef(AliAnalysisTaskMaterialHistos, 28);
 };
 
 #endif
