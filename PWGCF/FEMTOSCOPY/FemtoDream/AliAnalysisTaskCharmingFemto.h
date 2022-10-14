@@ -110,6 +110,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void CheckProtonSPDHit() {
     fCheckProtonSPDHit = true;
   }
+  void SetLightPDG(int pdg) {
+    fLightPDG = pdg;
+  }
 
   // HF related setters
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
@@ -344,10 +347,11 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   int fTrackBufferSize;
   std::vector<unsigned int> fDmesonPDGs;
+  int fLightPDG;
   AliAODTrack **fGTI;  //!
 
-  std::map <std::pair<int, int>, TTree*> fPairTreeSE;
-  std::map <std::pair<int, int>, TTree*> fPairTreeME;
+  std::map <std::pair<int, int>, TTree*> * fPairTreeSE;
+  std::map <std::pair<int, int>, TTree*> * fPairTreeME;
   FemtoPair fFemtoPair;
 
   TList *fQA;                      //!
@@ -434,7 +438,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 15)
+ClassDef(AliAnalysisTaskCharmingFemto, 16)
 };
 
 #endif

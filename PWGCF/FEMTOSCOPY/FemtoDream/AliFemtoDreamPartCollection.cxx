@@ -80,8 +80,16 @@ void AliFemtoDreamPartCollection::SetEvent(
 void AliFemtoDreamPartCollection::SetEvent(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamEvent* evt,
-    std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsSE,
-    std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsME) {
+    std::map<std::pair<int, int>, TTree *> *kStarsSE,
+    std::map<std::pair<int, int>, TTree *> *kStarsME) {
+
+
+  for (auto particleList : Particles) {
+    for (auto &dmeson : particleList) {
+      int m = dmeson.GetMult();
+      printf(",mmmmmmmmmmm  in event setter :  %d\n", m);
+    }
+  }
   if (Particles.size() != fNSpecies) {
     TString fatalOut = Form("Too few Species %d for %d", (int) Particles.size(),
                             (int) fNSpecies);

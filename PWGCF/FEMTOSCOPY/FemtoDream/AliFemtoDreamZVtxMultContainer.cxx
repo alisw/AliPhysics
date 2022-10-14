@@ -11,6 +11,10 @@
 #include "TDatabasePDG.h"
 #include "TVector2.h"
 
+                // struct dummyStruct {
+                //   std::vector<int> dummyVector;
+                // };
+
 ClassImp(AliFemtoDreamPartContainer)
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
     : fPartContainer(0),
@@ -63,7 +67,7 @@ void AliFemtoDreamZVtxMultContainer::SetEvent(
 void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
-    std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStars) {
+    std::map<std::pair<int, int>, TTree *> *kStarsSE) {
   int HistCounter = 0;
   //First loop over all the different Species
   auto itPDGPar1 = fPDGParticleSpecies.begin();
@@ -91,6 +95,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
         auto itStartPart2 = itPart2;
         while (itPart2 != itSpec2->end()) {
           AliFemtoDreamBasePart part2 = *itPart2;
+          float id = part2.GetMomentum().X();
+
           TLorentzVector PartOne, PartTwo;
           PartOne.SetXYZM(
               itPart1->GetMomentum().X(), itPart1->GetMomentum().Y(),
@@ -115,14 +121,69 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 						fSummedPtLimit2);
 
           // save the list of k* for each pair (required for Dmeson-LF analyses)
-          if (kStars != nullptr){
-            auto key = std::pair<int, int>({iParticles1, iParticles2});
-            if (kStars->find(key) != kStars->end()) { // ignore uninteresting pairs
-                auto kStarTuple = kStars->at(std::pair<int, int>({iParticles1, iParticles2}));
-                std::get<0>(kStarTuple)->push_back(RelativeK);
-                std::get<1>(kStarTuple)->push_back(std::distance(itSpec1->begin(), itPart1));
-                std::get<2>(kStarTuple)->push_back(std::distance(itStartPart2, itPart2));
+          if (kStarsSE) {
+            auto combo = std::pair<int, int>({iParticles1, iParticles2});
+            if (kStarsSE->find(combo) != kStarsSE->end()) { // ignore uninteresting pairs
+              auto tree = kStarsSE->at(std::pair<int, int>({iParticles1, iParticles2}));
+
+              int mult = part2.GetMult();
+              float zvtx = part1.GetZVtx();
+              
+              float heavy_invmass = part2.GetInvMass();
+              float heavy_pt = part2.GetPt();
+              float heavy_eta = part2.GetEta()[0];
+              int heavy_origin = part2.GetParticleOrigin();
+
+              auto ids = part2.GetIDTracks();
+              for (auto id : ids)
+                printf("  iddss: %d");
+              printf("\n\n");
+
+              std::vector<int>  heavy_daus = part2.GetDauLabels();
+
+              float heavy_bkgscore = part2.GetBkgScore();
+              float heavy_promptscore = part2.GetPromptScore();
+
+              float light_pt = part1.GetPt();
+              float light_eta = part1.GetEta()[0];
+              float light_nsigtpc = part1.GetNSigTPC();
+              float light_nsigtof = part1.GetNSigTOF();
+              int light_ncls = part1.GetNCls();
+              int light_ncrossed = part1.GetNCrossedRows();
+              float light_dcaz = part1.GetDCAZ();
+              float light_dcaxy = part1.GetDCAXY();
+
+              // // dummyStruct myDummyStruct;
+              // myDummyStruct.dummyVector = itPart2->GetIDTracks();
+              
+              tree->SetBranchAddress("mult", &mult);
+              tree->SetBranchAddress("vz", &zvtx);
+
+              // pair
+              tree->SetBranchAddress("kStar", &RelativeK);
+
+              // heavy particle
+              tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
+              tree->SetBranchAddress("heavy_pt", &heavy_pt);
+              tree->SetBranchAddress("heavy_eta", &heavy_eta);
+              tree->SetBranchAddress("heavy_origin", &heavy_origin);
+              // tree->SetBranchAddress("heavy_daus", &myDummyStruct.dummyVector);
+              tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
+              tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
+
+              // light particle
+              tree->SetBranchAddress("light_pt", &light_pt);
+              tree->SetBranchAddress("light_eta", &light_eta);
+              tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
+              tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
+              tree->SetBranchAddress("light_ncls", &light_ncls);
+              tree->SetBranchAddress("light_ncrossed", &light_ncrossed);
+              tree->SetBranchAddress("light_dcaz", &light_dcaz);
+              tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
+              tree->Fill();
             }
+          }else {
+            printf("errorrr\n");
           }
 
           HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPDGPar1,
@@ -144,7 +205,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
-    std::map<std::pair<int, int>, std::tuple<std::vector<float> *, std::vector<int> *, std::vector<int> *>> *kStarsME) {
+    std::map<std::pair<int, int>, TTree *> *kStarsME) {
   int HistCounter = 0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   //First loop over all the different Species
@@ -191,14 +252,70 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 *itPart2, *itPDGPar2,
                 AliFemtoDreamCollConfig::kNone);
 
-            if (kStarsME != nullptr){
-              auto key = std::pair<int, int>({iParticles1, iParticles2});
-              if (kStarsME->find(key) != kStarsME->end()) { // ignore uninteresting pairs
-                  auto kStarTuple = kStarsME->at(std::pair<int, int>({iParticles1, iParticles2}));
-                  std::get<0>(kStarTuple)->push_back(RelativeK);
-                  std::get<1>(kStarTuple)->push_back(std::distance(itSpec1->begin(), itPart1));
-                  std::get<2>(kStarTuple)->push_back(std::distance(ParticlesOfEvent.begin(), itPart2));
+            if (kStarsME) {
+              auto combo = std::pair<int, int>({iParticles1, iParticles2});
+              if (kStarsME->find(combo) != kStarsME->end()) { // ignore uninteresting pairs
+                auto tree = kStarsME->at(std::pair<int, int>({iParticles1, iParticles2}));
+
+                int mult = itPart2->GetMult();
+                float zvtx = itPart2->GetZVtx();
+                
+                float heavy_invmass = itPart2->GetInvMass();
+                float heavy_pt = itPart2->GetPt();
+                float heavy_eta = itPart2->GetEta()[0];
+                int heavy_origin = itPart2->GetParticleOrigin();
+
+                auto ids = itPart2->GetIDTracks();
+                // for (auto id : ids)
+                //   printf("  iddss: %d");
+                // printf("\n\n");
+
+                // std::vector<Int_t>  heavy_daus = itPart2->GetIDTracks();
+
+                float heavy_bkgscore = itPart2->GetBkgScore();
+                float heavy_promptscore = itPart2->GetPromptScore();
+
+                float light_pt = itPart1->GetPt();
+                float light_eta = itPart1->GetEta()[0];
+                float light_nsigtpc = itPart1->GetNSigTPC();
+                float light_nsigtof = itPart1->GetNSigTOF();
+                int light_ncls = itPart1->GetNCls();
+                int light_ncrossed = itPart1->GetNCrossedRows();
+                float light_dcaz = itPart1->GetDCAZ();
+                float light_dcaxy = itPart1->GetDCAXY();
+
+                tree->SetBranchAddress("mult", &mult);
+                tree->SetBranchAddress("vz", &zvtx);
+
+                // pair
+                tree->SetBranchAddress("kStar", &RelativeK);
+
+
+                // dummyStruct myDummyStruct;
+                // myDummyStruct.dummyVector = itPart2->GetIDTracks();
+
+                      // heavy particle
+                tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
+                tree->SetBranchAddress("heavy_pt", &heavy_pt);
+                tree->SetBranchAddress("heavy_eta", &heavy_eta);
+                tree->SetBranchAddress("heavy_origin", &heavy_origin);
+                // tree->SetBranchAddress("heavy_daus", &myDummyStruct.dummyVector );
+                tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
+                tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
+
+                // light particle
+                tree->SetBranchAddress("light_pt", &light_pt);
+                tree->SetBranchAddress("light_eta", &light_eta);
+                tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
+                tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
+                tree->SetBranchAddress("light_ncls", &light_ncls);
+                tree->SetBranchAddress("light_ncrossed", &light_ncrossed);
+                tree->SetBranchAddress("light_dcaz", &light_dcaz);
+                tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
+                tree->Fill();
               }
+            }else {
+              printf("errorrr\n");
             }
             HigherMath->MEMassQA(HistCounter, RelativeK, *itPart1, *itPDGPar1,
                                                          *itPart2, *itPDGPar2);
