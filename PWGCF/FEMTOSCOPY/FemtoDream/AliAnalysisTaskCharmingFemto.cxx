@@ -84,6 +84,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fTrackBufferSize(2500),
       fDmesonPDGs{},
       fLightPDG(0),
+      fUseFDPairCleaner(true),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -182,6 +183,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fTrackBufferSize(2500),
       fDmesonPDGs{},
       fLightPDG(0),
+      fUseFDPairCleaner(true),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -1181,10 +1183,12 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     proton.SetZVtx(fEvent->GetZVertex());
   }
 
-  fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
-  fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
+  if (fUseFDPairCleaner) {
+    fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
+    fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
+  }
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);

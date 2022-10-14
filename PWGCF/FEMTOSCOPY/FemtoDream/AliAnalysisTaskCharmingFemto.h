@@ -113,6 +113,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetLightPDG(int pdg) {
     fLightPDG = pdg;
   }
+  void SetUseFDPairCleaner(int flag) {
+    fUseFDPairCleaner = flag;
+  }
 
   // HF related setters
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
@@ -340,6 +343,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool fUseMCTruthReco;    //
   bool fIsMCtruth;         //
   bool fIsLightweight;     //
+  bool fUseFDPairCleaner;  //
   UInt_t fTrigger;         //
   int fSystem;             //
 
@@ -438,7 +442,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 16)
+ClassDef(AliAnalysisTaskCharmingFemto, 17)
 };
 
 #endif
