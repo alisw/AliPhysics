@@ -276,9 +276,8 @@ class AliFemtoDreamBasePart {
     fUse = use;
   }
   ;
-  void SetMult (int Mult) { this->fMult = Mult; printf("mult seto to %d\n", fMult); };
+  void SetMult (int Mult) { this->fMult = Mult; };
   void SetZVtx (float ZVtx) { fZVtx = ZVtx; };
-  void SetDauLabels (std::vector<int> DauLabels) { fDauLabels = DauLabels; };
   void SetBkgScore (float BkgScore) { fBkgScore = BkgScore; };
   void SetPromptScore (float PromptScore) { fPromptScore = PromptScore; };
   void SetNSigTPC (float NSigTPC) { fNSigTPC = NSigTPC; };
@@ -288,9 +287,8 @@ class AliFemtoDreamBasePart {
   void SetDCAZ (float DCAZ) { fDCAZ = DCAZ; };
   void SetDCAXY (float DCAXY) { fDCAXY = DCAXY; };
 
-  int GetMult ()  {  printf("mult is to %d\n", fMult); return fMult; };
+  int GetMult ()  { return fMult; };
   float GetZVtx ()  { return fZVtx; };
-  std::vector<int> GetDauLabels()  { return fDauLabels; };
   float GetBkgScore ()  { return fBkgScore; };
   float GetPromptScore ()  { return fPromptScore; };
   float GetNSigTPC ()  { return fNSigTPC; };
@@ -346,7 +344,6 @@ class AliFemtoDreamBasePart {
 
   int fMult;
   float fZVtx;
-  std::vector<int> fDauLabels;
   float fBkgScore;
   float fPromptScore;
   float fNSigTPC;
@@ -372,7 +369,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart, 8)
+ClassDef(AliFemtoDreamBasePart, 9)
   ;
 };
 

@@ -261,15 +261,6 @@ void AliFemtoDreamPairCleaner::CleanDecayAtRandom(std::vector<AliFemtoDreamBaseP
 void AliFemtoDreamPairCleaner::StoreParticle(
     std::vector<AliFemtoDreamBasePart> Particles) {
   std::vector<AliFemtoDreamBasePart> tmpParticles;
-
-  for (auto & a : Particles) {
-        printf(" ---------> %d", a.GetMult());
-  }
-  for (auto a : Particles) {
-        printf(" ---------  > %d", a.GetMult());
-  }
-
-
   for (auto itPart : Particles) {
     if (itPart.UseParticle()) {
       tmpParticles.push_back(itPart);

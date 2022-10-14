@@ -82,14 +82,6 @@ void AliFemtoDreamPartCollection::SetEvent(
     AliFemtoDreamEvent* evt,
     std::map<std::pair<int, int>, TTree *> *kStarsSE,
     std::map<std::pair<int, int>, TTree *> *kStarsME) {
-
-
-  for (auto particleList : Particles) {
-    for (auto &dmeson : particleList) {
-      int m = dmeson.GetMult();
-      printf(",mmmmmmmmmmm  in event setter :  %d\n", m);
-    }
-  }
   if (Particles.size() != fNSpecies) {
     TString fatalOut = Form("Too few Species %d for %d", (int) Particles.size(),
                             (int) fNSpecies);

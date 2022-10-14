@@ -758,7 +758,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           part.SetIDTracks(kaonFromD0->GetLabel());
           part.SetIDTracks(pionFromD0->GetLabel());
 
-          // part.SetDauLabels({softPion->GetLabel(), kaonFromD0->GetLabel(), pionFromD0->GetLabel()});
           if (mcpdg == 413) {
             dplus.push_back(part);
             if (fUseTree) {
@@ -767,7 +766,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
               dplus_eta.push_back(part.GetEta()[0]);
               dplus_origin.push_back(part.GetParticleOrigin());
               dplus_daus.push_back({softPion->GetLabel(), kaonFromD0->GetLabel(), pionFromD0->GetLabel()});
-
             }
           } else if (mcpdg == -413){
             dminus.push_back(part);
@@ -817,9 +815,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelFirstDau);
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
-                  // part.SetDauLabels({labelFirstDau, labelSecondDau, labelThirdDau});
                   dplus.push_back(part);
-
                   if (fUseTree) {
                     dplus_invmass.push_back(part.GetInvMass());
                     dplus_pt.push_back(part.GetPt());
@@ -840,7 +836,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelFirstDau);
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
-                  // part.SetDauLabels({labelFirstDau, labelSecondDau, labelThirdDau});
                   dminus.push_back(part);
                   if (fUseTree) {
                     dminus_invmass.push_back(part.GetInvMass());
@@ -1115,7 +1110,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   // PAIR CLEANING AND FEMTO
 
 
-  // if (fUseTree && false) {
+  // if (fUseTree) {
   //   if (dplus.size() > 0 || dminus.size() > 0) {
   //     printf("len: %d - protons\n", protons.size());
   //     printf("len: %d - protons_nsigtpc\n", protons_nsigtpc.size());
@@ -1314,12 +1309,6 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       // pair
       tree.second->Branch("kStar", &dummyfloat);
 
-
-      // struct dummyStruct {
-      //   std::vector<int> dummyVector;
-      // };
-
-      // dummyStruct myDummyStruct;
       // // heavy
       tree.second->Branch("heavy_invmass", &dummyfloat);
       tree.second->Branch("heavy_pt", &dummyfloat);

@@ -11,10 +11,6 @@
 #include "TDatabasePDG.h"
 #include "TVector2.h"
 
-                struct dummyStruct {
-                  std::vector<int> dummyVector;
-                };
-
 ClassImp(AliFemtoDreamPartContainer)
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
     : fPartContainer(0),
@@ -95,8 +91,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
         auto itStartPart2 = itPart2;
         while (itPart2 != itSpec2->end()) {
           AliFemtoDreamBasePart part2 = *itPart2;
-          float id = part2.GetMomentum().X();
-
           TLorentzVector PartOne, PartTwo;
           PartOne.SetXYZM(
               itPart1->GetMomentum().X(), itPart1->GetMomentum().Y(),
@@ -126,25 +120,20 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
             if (kStarsSE->find(combo) != kStarsSE->end()) { // ignore uninteresting pairs
               auto tree = kStarsSE->at(std::pair<int, int>({iParticles1, iParticles2}));
 
+              // load event info
               int mult = part2.GetMult();
               float zvtx = part1.GetZVtx();
               
+              // load dmeson info
               float heavy_invmass = part2.GetInvMass();
               float heavy_pt = part2.GetPt();
               float heavy_eta = part2.GetEta()[0];
               int heavy_origin = part2.GetParticleOrigin();
-
-              // auto ids = part2.GetIDTracks();
-              // printf("len dau: %d   ->   ", ids.size());
-              // for (auto id : ids)
-              //   printf("  iddss: %d");
-              // printf("\n\n");
-
               std::vector<int>  *heavy_daus = new std::vector<int>(part2.GetIDTracks());
-
               float heavy_bkgscore = part2.GetBkgScore();
               float heavy_promptscore = part2.GetPromptScore();
 
+              // load light info
               float light_pt = part1.GetPt();
               float light_eta = part1.GetEta()[0];
               float light_nsigtpc = part1.GetNSigTPC();
@@ -154,9 +143,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               float light_dcaz = part1.GetDCAZ();
               float light_dcaxy = part1.GetDCAXY();
 
-              dummyStruct myDummyStruct;
-              myDummyStruct.dummyVector = {1, 2, 3};
-              
+              // event
               tree->SetBranchAddress("mult", &mult);
               tree->SetBranchAddress("vz", &zvtx);
 
@@ -183,8 +170,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
               tree->Fill();
             }
-          }else {
-            printf("errorrr\n");
           }
 
           HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPDGPar1,
@@ -258,24 +243,20 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
               if (kStarsME->find(combo) != kStarsME->end()) { // ignore uninteresting pairs
                 auto tree = kStarsME->at(std::pair<int, int>({iParticles1, iParticles2}));
 
+                // load event info
                 int mult = itPart2->GetMult();
                 float zvtx = itPart2->GetZVtx();
                 
+                // load dmeson info
                 float heavy_invmass = itPart2->GetInvMass();
                 float heavy_pt = itPart2->GetPt();
                 float heavy_eta = itPart2->GetEta()[0];
                 int heavy_origin = itPart2->GetParticleOrigin();
-
-                auto ids = itPart2->GetIDTracks();
-                // for (auto id : ids)
-                //   printf("  iddss: %d");
-                // printf("\n\n");
-
                 std::vector<Int_t>  * heavy_daus = new std::vector<int>(itPart2->GetIDTracks());
-
                 float heavy_bkgscore = itPart2->GetBkgScore();
                 float heavy_promptscore = itPart2->GetPromptScore();
 
+                // load light flavor info
                 float light_pt = itPart1->GetPt();
                 float light_eta = itPart1->GetEta()[0];
                 float light_nsigtpc = itPart1->GetNSigTPC();
@@ -285,17 +266,14 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 float light_dcaz = itPart1->GetDCAZ();
                 float light_dcaxy = itPart1->GetDCAXY();
 
+                // event
                 tree->SetBranchAddress("mult", &mult);
                 tree->SetBranchAddress("vz", &zvtx);
 
                 // pair
                 tree->SetBranchAddress("kStar", &RelativeK);
 
-
-                // dummyStruct myDummyStruct;
-                // myDummyStruct.dummyVector = itPart2->GetIDTracks();
-
-                      // heavy particle
+                // heavy particle
                 tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
                 tree->SetBranchAddress("heavy_pt", &heavy_pt);
                 tree->SetBranchAddress("heavy_eta", &heavy_eta);
@@ -315,8 +293,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
                 tree->Fill();
               }
-            }else {
-              printf("errorrr\n");
             }
             HigherMath->MEMassQA(HistCounter, RelativeK, *itPart1, *itPDGPar1,
                                                          *itPart2, *itPDGPar2);
