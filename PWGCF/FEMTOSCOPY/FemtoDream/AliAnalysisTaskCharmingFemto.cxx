@@ -471,6 +471,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
+        fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
@@ -480,6 +481,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
+        fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
@@ -492,6 +494,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
+        fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
@@ -501,6 +504,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
+        fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
@@ -1104,6 +1108,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("light_ncrossed", &dummyint);
       tree.second->Branch("light_dcaz", &dummyfloat);
       tree.second->Branch("light_dcaxy", &dummyfloat);
+      tree.second->Branch("light_label", &dummyint);
     }
 
     for (auto tree : *fPairTreeME) {
@@ -1131,6 +1136,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("light_ncrossed", &dummyint);
       tree.second->Branch("light_dcaz", &dummyfloat);
       tree.second->Branch("light_dcaxy", &dummyfloat);
+      tree.second->Branch("light_label", &dummyint);
     }
   }
 
