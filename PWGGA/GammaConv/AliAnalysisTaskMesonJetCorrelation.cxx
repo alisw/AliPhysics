@@ -760,7 +760,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     }
 
     // jet histograms
-    fHistoEventwJets[iCut] = new TH1F("NEvents_with_Jets", "NEvents_with_Jets", 4, 0, 4);
+    fHistoEventwJets[iCut] = new TH1F("NEvents_with_Jets", "NEvents_with_Jets", 4, -0.5, 3.5);
     fJetList[iCut]->Add(fHistoEventwJets[iCut]);
 
     fHistoNJets[iCut] = new TH1F("NJets", "NJets", 10, 0, 10);
@@ -1058,8 +1058,7 @@ void AliAnalysisTaskMesonJetCorrelation::CallSumw2ForLists(TList* l)
     TIter iter(l->MakeIterator());
     while (TObject* obj = iter()) {
       TString className = obj->ClassName();
-      // cout << objectName.Data() << "\t" << className.Data() << endl;
-      if (className.Contains("TH1")) { // is if_constexpr already available in AliPhysics?
+      if (className.Contains("TH1")) {
         static_cast<TH1*>(obj)->Sumw2();
       } else if (className.Contains("TH2")) {
         static_cast<TH2*>(obj)->Sumw2();
@@ -1117,26 +1116,26 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
   // clear map before next event
   MapRecJetsTrueJets.clear();
 
-  fHistoNJets[fiCut]->Fill(fConvJetReader->GetNJets());
+  fHistoNJets[fiCut]->Fill(fConvJetReader->GetNJets(), fWeightJetJetMC);
 
   if (fConvJetReader->GetTrueNJets() > 0) {
-    fHistoEventwJets[fiCut]->Fill(1); // event has true jet
+    fHistoEventwJets[fiCut]->Fill(1., fWeightJetJetMC); // event has true jet
     if (fConvJetReader->GetNJets() > 0) {
-      fHistoEventwJets[fiCut]->Fill(2); // event has true jet and rec. jet
+      fHistoEventwJets[fiCut]->Fill(2., fWeightJetJetMC); // event has true jet and rec. jet
     }
   }
 
   if (fConvJetReader->GetNJets() > 0) {
 
-    fHistoEventwJets[fiCut]->Fill(0); // event has jet
+    fHistoEventwJets[fiCut]->Fill(0., fWeightJetJetMC); // event has jet
     fHighestJetVector.SetXYZ(0, 0, 0);
     fMaxPtJet = 0.;
 
     for (int i = 0; i < fConvJetReader->GetNJets(); i++) {
-      fHistoPtJet[fiCut]->Fill(fVectorJetPt.at(i));
-      fHistoJetEta[fiCut]->Fill(fVectorJetEta.at(i));
-      fHistoJetPhi[fiCut]->Fill(fVectorJetPhi.at(i));
-      fHistoJetArea[fiCut]->Fill(fVectorJetArea.at(i));
+      fHistoPtJet[fiCut]->Fill(fVectorJetPt.at(i), fWeightJetJetMC);
+      fHistoJetEta[fiCut]->Fill(fVectorJetEta.at(i), fWeightJetJetMC);
+      fHistoJetPhi[fiCut]->Fill(fVectorJetPhi.at(i), fWeightJetJetMC);
+      fHistoJetArea[fiCut]->Fill(fVectorJetArea.at(i), fWeightJetJetMC);
 
       if (fIsMC > 0 && fConvJetReader->GetNJets() > 0 && fConvJetReader->GetTrueNJets() > 0) {
         Double_t min = 100;
@@ -1155,8 +1154,8 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
           }
         }
         MapRecJetsTrueJets[i] = match; // store matched jet indices in map
-        fHistoTruevsRecJetPt[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match));
-        fHistoTrueJetPtVsPartonPt[fiCut]->Fill(fTrueVectorJetPt.at(match), fTrueVectorJetPartonPt.at(match));
+        fHistoTruevsRecJetPt[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), fWeightJetJetMC);
+        fHistoTrueJetPtVsPartonPt[fiCut]->Fill(fTrueVectorJetPt.at(match), fTrueVectorJetPartonPt.at(match), fWeightJetJetMC);
       }
       if (fVectorJetPt.at(i) > fMaxPtJet) {
         fMaxPtJet = fVectorJetPt.at(i);
@@ -1680,7 +1679,7 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
       // Fill Z histograms
       float z = GetFrag(pi0cand, matchedJet, false);
 
-      fRespMatrixHandlerMesonInvMassVsZ[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z);                      // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
+      fRespMatrixHandlerMesonInvMassVsZ[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z, fWeightJetJetMC);                      // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
       if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)) { // nominal mass range
         fHistoJetPtVsFrag[fiCut]->Fill(z, ptJet, fWeightJetJetMC);
         if (fDoMesonQA > 0) {
@@ -1712,7 +1711,7 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
       // Fill Z histograms
       float z = GetFrag(pi0cand, matchedJet, false);
 
-      fRespMatrixHandlerMesonInvMassVsZPerpCone[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z);              // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
+      fRespMatrixHandlerMesonInvMassVsZPerpCone[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z, fWeightJetJetMC);              // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
       if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)) { // nominal mass range
         fHistoJetPtVsFragPerpCone[fiCut]->Fill(z, ptJet, fWeightJetJetMC);
       } else if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1)) { // sideband
@@ -1993,7 +1992,7 @@ void AliAnalysisTaskMesonJetCorrelation::FillInvMassBackHistograms(AliAODConvers
   //_______ Fill Inv Mass vs. Z for purity correction _______________
   float ptJet = (matchedJet < 0) ? 0 : fVectorJetPt[matchedJet];
   float z = GetFrag(backgroundCandidate, matchedJet, false);
-  fRespMatrixHandlerMesonBackInvMassVsZ[fiCut]->Fill(ptJet, 0.5, backgroundCandidate->M(), z); // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
+  fRespMatrixHandlerMesonBackInvMassVsZ[fiCut]->Fill(ptJet, 0.5, backgroundCandidate->M(), z, fWeightJetJetMC); // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
 }
 
 //__________________________________________________________________________
@@ -2552,9 +2551,9 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
     float z_true = GetFrag(trueMesonCand, indexTrueJet, true);
 
     if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(Pi0Candidate, 0)) { // nominal mass range
-      fRespMatrixHandlerFrag[fiCut]->Fill(jetPtRec, jetPtTrue, z_rec, z_true);
+      fRespMatrixHandlerFrag[fiCut]->Fill(jetPtRec, jetPtTrue, z_rec, z_true, fWeightJetJetMC);
     }
-    fRespMatrixHandlerMesonInvMass[fiCut]->Fill(jetPtRec, jetPtTrue, Pi0Candidate->M(), Pi0Candidate->Pt());
+    fRespMatrixHandlerMesonInvMass[fiCut]->Fill(jetPtRec, jetPtTrue, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
 
     // fill 4d response matrix
     fRespMatrixHandlerMesonPt[fiCut]->Fill(jetPtRec, jetPtTrue, mesonPtRec, mesonPtTrue, fWeightJetJetMC);

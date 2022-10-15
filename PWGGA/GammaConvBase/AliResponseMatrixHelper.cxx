@@ -53,6 +53,18 @@ MatrixHandler4D::MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float
 }
 
 //____________________________________________________________________________________________________________________________
+MatrixHandler4D::MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float> arrMesonY, std::vector<float> arrJetX, std::vector<float> arrJetY, THnSparse*  h){
+    vecBinsMesonX = arrMesonX;
+    vecBinsMesonY = arrMesonY;
+    vecBinsJetX = arrJetX;
+    vecBinsJetY = arrJetY;
+    useTHNSparese = true;
+    const int nBinsX = (arrMesonX.size() - 1) * (arrJetX.size() - 1); // + 1;
+    const int nBinsY = (arrMesonY.size() - 1) * (arrJetY.size() - 1); // + 1;
+    hSparseResponse = (THnSparseF*) h->Clone();
+}
+
+//____________________________________________________________________________________________________________________________
 MatrixHandler4D::~MatrixHandler4D(){
 //  if(h2d){
 //      delete h2d;

@@ -35,6 +35,7 @@ class MatrixHandler4D
  public:
   MatrixHandler4D() = default;
   MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float> arrMesonY, std::vector<float> arrJetX, std::vector<float> arrJetY, bool useTHN = false);
+  MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float> arrMesonY, std::vector<float> arrJetX, std::vector<float> arrJetY, THnSparse *h = nullptr);
   MatrixHandler4D(const MatrixHandler4D&) = delete;            // copy ctor
   MatrixHandler4D(MatrixHandler4D&&) = delete;                 // move ctor
   MatrixHandler4D& operator=(const MatrixHandler4D&) = delete; // copy assignment
@@ -61,13 +62,16 @@ class MatrixHandler4D
     if (binMesonY < 0)
       return;
 
-    std::array<int, 2> arrFill;
-    arrFill[0] = binJetX * (vecBinsMesonX.size() - 1) + binMesonX + 1; // + 1 due to underflow bin?
-    arrFill[1] = binJetY * (vecBinsMesonY.size() - 1) + binMesonY + 1;
-
     if (useTHNSparese) {
-      hSparseResponse->AddBinContent(arrFill.data(), val); // what happens to the errors?
+      std::array<double, 2> arrFill;
+      arrFill[0] = binJetX * (vecBinsMesonX.size() - 1) + binMesonX + 1 - 0.5; // -0.5 due to the fact that this is not the bin but the bin center
+      arrFill[1] = binJetY * (vecBinsMesonY.size() - 1) + binMesonY + 1 - 0.5;
+      // hSparseResponse->AddBinContent(arrFill.data(), val); // what happens to the errors?
+      hSparseResponse->Fill(arrFill.data(), val);
     } else {
+      std::array<int, 2> arrFill;
+      arrFill[0] = binJetX * (vecBinsMesonX.size() - 1) + binMesonX + 1; // + 1 due to underflow bin?
+      arrFill[1] = binJetY * (vecBinsMesonY.size() - 1) + binMesonY + 1;
       h2d->Fill(h2d->GetXaxis()->GetBinCenter(arrFill[0]), h2d->GetYaxis()->GetBinCenter(arrFill[1]), val);
     }
   }
@@ -135,7 +139,9 @@ class MatrixHandler4D
         for (int y = 0; y < h2d->GetYaxis()->GetNbins(); ++y) {
           std::array<int, 2> arrBins = {x, y};
           double binCont = hSparseResponse->GetBinContent(arrBins.data());
+          double binErr = hSparseResponse->GetBinError(arrBins.data());
           h2d->SetBinContent(x, y, binCont);
+          h2d->SetBinError(x, y, binErr);
         }
       }
       return h2d;
@@ -156,13 +162,17 @@ class MatrixHandler4D
     for (unsigned int x = 0; x < vecBinsMesonX.size(); ++x) {
       for (unsigned int y = 0; y < vecBinsMesonY.size(); ++y) {
         float binCont = 0;
+        float binErr = 0;
         std::array<int, 2> arrBins = {static_cast<int>(x + (binX * (vecBinsMesonX.size() - 1)) + 1), static_cast<int>(y + (binY * (vecBinsMesonY.size() - 1)) + 1)};
         if (useTHNSparese) {
           binCont = hSparseResponse->GetBinContent(arrBins.data());
+          binErr = hSparseResponse->GetBinError(hSparseResponse->GetBin(arrBins.data()));
         } else {
           binCont = h2d->GetBinContent(arrBins[0], arrBins[1]);
+          binErr = h2d->GetBinError(arrBins[0], arrBins[1]);
         }
         hMesonResp->SetBinContent(x + 1, y + 1, binCont);
+        hMesonResp->SetBinError(x + 1, y + 1, binErr);
       }
     }
     return hMesonResp;
