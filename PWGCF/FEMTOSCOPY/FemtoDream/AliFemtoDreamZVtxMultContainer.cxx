@@ -142,6 +142,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               int light_ncrossed = part1.GetNCrossedRows();
               float light_dcaz = part1.GetDCAZ();
               float light_dcaxy = part1.GetDCAXY();
+              int light_label = part1.GetID();
 
               // event
               tree->SetBranchAddress("mult", &mult);
@@ -168,6 +169,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("light_ncrossed", &light_ncrossed);
               tree->SetBranchAddress("light_dcaz", &light_dcaz);
               tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
+              tree->SetBranchAddress("light_label", &light_label);
               tree->Fill();
             }
           }
@@ -265,6 +267,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 int light_ncrossed = itPart1->GetNCrossedRows();
                 float light_dcaz = itPart1->GetDCAZ();
                 float light_dcaxy = itPart1->GetDCAXY();
+                int light_label = itPart1->GetID();
 
                 // event
                 tree->SetBranchAddress("mult", &mult);
@@ -291,6 +294,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("light_ncrossed", &light_ncrossed);
                 tree->SetBranchAddress("light_dcaz", &light_dcaz);
                 tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
+                tree->SetBranchAddress("light_label", &light_label);
                 tree->Fill();
               }
             }
