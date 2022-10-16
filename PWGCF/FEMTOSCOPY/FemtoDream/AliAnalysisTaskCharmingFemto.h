@@ -20,34 +20,6 @@
 class AliVParticle;
 class AliVTrack;
 
-struct FemtoPair {
-  // event properties
-  double mult;
-  double vz;
-
-  // pair
-  double kStar;
-
-  // heavy properties
-  double heavy_invmass;
-  double heavy_pt;
-  double heavy_eta;
-  int heavy_origin;
-  std::vector<int> heavy_daus;
-  double heavy_bkg_score;
-  double heavy_prompt_score;
-  
-  // light hadron properties
-  double light_pt;
-  double light_eta;
-  double light_nsigtpc;
-  double light_nsigtof;
-  double light_ncls;
-  double light_ncrossed;
-  double light_dcaz;
-  double light_dcaxy;
-};
-
 class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
  public:
 
@@ -356,7 +328,6 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   std::map <std::pair<int, int>, TTree*> * fPairTreeSE;
   std::map <std::pair<int, int>, TTree*> * fPairTreeME;
-  FemtoPair fFemtoPair;
 
   TList *fQA;                      //!
   TList *fEvtHistList;             //!
