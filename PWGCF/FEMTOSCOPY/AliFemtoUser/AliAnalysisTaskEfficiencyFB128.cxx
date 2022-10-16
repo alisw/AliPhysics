@@ -32,33 +32,33 @@
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
 
-#include "AliAnalysisEffTaskFilterBit16.h"
+#include "AliAnalysisTaskEfficiencyFB128.h"
 
 
 
 
-ClassImp(AliAnalysisEffTaskFilterBit16)
+ClassImp(AliAnalysisTaskEfficiencyFB128)
 //ClassImp(AliAnalysisTaskParticleEff)
 
-double fV1fb16[3];
+double fV1FB128[3];
 
 
-void AliAnalysisEffTaskFilterBit16::SetFB(int fb)
+void AliAnalysisTaskEfficiencyFB128::SetFB(int fb)
 {
   fFB = fb;
 }
 
-void AliAnalysisEffTaskFilterBit16::SetPidMethod(PidMethod method)
+void AliAnalysisTaskEfficiencyFB128::SetPidMethod(PidMethod method)
 {
   fPidMethod = method;
 }
 
-int AliAnalysisEffTaskFilterBit16::GetPidMethod()
+int AliAnalysisTaskEfficiencyFB128::GetPidMethod()
 {
   return (int)fPidMethod;
 }
 
-void AliAnalysisEffTaskFilterBit16::SetPidMethod(int method)
+void AliAnalysisTaskEfficiencyFB128::SetPidMethod(int method)
 {
   switch(method){
   case 0: fPidMethod=kNSigma;
@@ -76,7 +76,7 @@ void AliAnalysisEffTaskFilterBit16::SetPidMethod(int method)
 
 //_______________________________________________________
 
-AliAnalysisEffTaskFilterBit16::AliAnalysisEffTaskFilterBit16() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(16), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE)
+AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE)
 
     {
 
@@ -102,8 +102,8 @@ AliAnalysisEffTaskFilterBit16::AliAnalysisEffTaskFilterBit16() :  AliAnalysisTas
 
 
 
-AliAnalysisEffTaskFilterBit16::AliAnalysisEffTaskFilterBit16(TString name, int pidMethod, int filterbit) :
-  AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(16), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int pidMethod, int filterbit) :
+  AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
 {
 
@@ -153,7 +153,7 @@ AliAnalysisEffTaskFilterBit16::AliAnalysisEffTaskFilterBit16(TString name, int p
 
 //_______________________________________________________
 
-AliAnalysisEffTaskFilterBit16::~AliAnalysisEffTaskFilterBit16()
+AliAnalysisTaskEfficiencyFB128::~AliAnalysisTaskEfficiencyFB128()
 {
   /* if(centrality) delete centrality;
 s128     if(fHistoList) delete fHistoList;
@@ -167,7 +167,7 @@ s128     if(fHistoList) delete fHistoList;
 
 //_______________________________________________________
 
-void AliAnalysisEffTaskFilterBit16::UserCreateOutputObjects()
+void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
 {
 
   /* create output */
@@ -632,7 +632,7 @@ void AliAnalysisEffTaskFilterBit16::UserCreateOutputObjects()
 
 //_____________________________________________________________________
 
-bool IsPionNSigmaFB16(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigmaFB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -647,7 +647,7 @@ bool IsPionNSigmaFB16(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOF
   return false;
 }
 
-bool IsPionNSigmaV0FB16(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool IsPionNSigmaV0FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
 
   if (TMath::Abs(nsigmaTPCPi) < 3.0) return true;
@@ -655,7 +655,7 @@ bool IsPionNSigmaV0FB16(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
   return false;
 }
 
-bool IsPionNSigmaV0TPC5FB16(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool IsPionNSigmaV0TPC5FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
 
   if (TMath::Abs(nsigmaTPCPi) < 5.0) return true;
@@ -664,7 +664,7 @@ bool IsPionNSigmaV0TPC5FB16(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 }
 
 
-bool IsProtonNSigmaV0TPC5FB16(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool IsProtonNSigmaV0TPC5FB128(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
 
   if (TMath::Abs(nsigmaTPCP) < 5.0) return true;
@@ -672,7 +672,7 @@ bool IsProtonNSigmaV0TPC5FB16(float mom, float nsigmaTPCP, float nsigmaTOFP)
   return false;
 }
 
-bool IsPionNSigma3FB16(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigma3FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -687,7 +687,7 @@ bool IsPionNSigma3FB16(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TO
   return false;
 }
 
-bool IsKaonNSigmaFB16(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigmaFB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
     if (mom > 0.5) {
       //rejection of unwanted contamination
@@ -706,7 +706,7 @@ bool IsKaonNSigmaFB16(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFti
   return false;
 }
 
-bool IsKaonNSigma3FB16(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigma3FB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
   if (mom > 0.5) {
     //rejection of unwanted contamination
@@ -725,7 +725,7 @@ bool IsKaonNSigma3FB16(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFt
   return false;
 }
 
-bool IsProtonNSigmaFB16(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigmaFB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -747,7 +747,7 @@ bool IsProtonNSigmaFB16(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOF
   return false;
 }
 
-bool IsProtonNSigmaV0FB16(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool IsProtonNSigmaV0FB128(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
 
   if (mom < 0.8) {
@@ -763,7 +763,7 @@ bool IsProtonNSigmaV0FB16(float mom, float nsigmaTPCP, float nsigmaTOFP)
   return false;
 }
 
-bool IsProtonNSigma3FB16(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigma3FB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
   if (mom > 0.5) {
    
@@ -785,7 +785,7 @@ bool IsProtonNSigma3FB16(float mom, float nsigmaTPCP, float nsigmaTOFP, float TO
 }
 
 
-bool IsElectronFB16(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
+bool IsElectronFB128(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
   if(TMath::Abs(nsigmaTPCe)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
       return true;
@@ -795,7 +795,7 @@ bool IsElectronFB16(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float 
 
 //_______________________________________________________
 
-void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
+void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
 {
 
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -900,7 +900,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 
   //"ESDs/pass2/AOD049/*AliAOD.root");
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
-  vertex->GetPosition(fV1fb16);
+  vertex->GetPosition(fV1FB128);
   if (!vertex || vertex->GetNContributors()<=0) return;
 
   fHistQA[9]->Fill(2);
@@ -1109,7 +1109,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     float nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectronFB16(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+    if(IsElectronFB128(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
       continue;
     fHistQA[10]->Fill(7);
     
@@ -1160,9 +1160,9 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 
     if(fPidMethod==kNSigma){
     //******** With double counting *******************
-      isPionNsigma = (IsPionNSigmaFB16(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
-      isKaonNsigma = (IsKaonNSigmaFB16(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
-      isProtonNsigma = (IsProtonNSigmaFB16(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmaFB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+      isKaonNsigma = (IsKaonNSigmaFB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+      isProtonNsigma = (IsProtonNSigmaFB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     else if(fPidMethod==kNSigmaNoDoubleCounting){
       //******** Without double counting *******************
@@ -1180,26 +1180,26 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
       }
 
       if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
-	isPionNsigma = (IsPionNSigmaFB16(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+	isPionNsigma = (IsPionNSigmaFB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
       }
       else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
-	isKaonNsigma = (IsKaonNSigmaFB16(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+	isKaonNsigma = (IsKaonNSigmaFB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
       }
       else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
-	isProtonNsigma = (IsProtonNSigmaFB16(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isProtonNsigma = (IsProtonNSigmaFB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
       }
     }
     else if(fPidMethod==kExclusivePID){
       //******** Exclusive PID ********************
-      isPionNsigma = (IsPionNSigmaFB16(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaFB16(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaFB16(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigmaFB16(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaFB16(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaFB16(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigmaFB16(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaFB16(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaFB16(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmaFB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaFB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaFB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNsigma = (!IsPionNSigmaFB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaFB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaFB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNsigma = (!IsPionNSigmaFB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaFB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaFB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     else if(fPidMethod==kExclusivePIDDiffRejection){
       //******** Exclusive PID, different rejection  ********************
-      isPionNsigma = (IsPionNSigmaFB16(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3FB16(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3FB16(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigma3FB16(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaFB16(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3FB16(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigma3FB16(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3FB16(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaFB16(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmaFB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3FB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3FB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNsigma = (!IsPionNSigma3FB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaFB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3FB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNsigma = (!IsPionNSigma3FB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3FB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaFB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     if (isPionNsigma){
       fHistQAPID[0][1][charge]->Fill(tPt,tdEdx);
@@ -1431,8 +1431,8 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
       
-      if (aodv0->CosPointingAngle(fV1fb16) < 0.99) continue;
-      //if (aodv0->CosPointingAngle(fV1fb16) < 0.95) continue;
+      if (aodv0->CosPointingAngle(fV1FB128) < 0.99) continue;
+      //if (aodv0->CosPointingAngle(fV1FB128) < 0.95) continue;
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
       
@@ -1477,7 +1477,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
       //fCutsLambda->Fill(cutLam++);
       //fCutsAntiLambda->Fill(cutALam++);
       
-      if(aodv0->DecayLength(fV1fb16) > 60) continue;
+      if(aodv0->DecayLength(fV1FB128) > 60) continue;
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
  
@@ -1605,10 +1605,10 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
       bool isPionNsigmaNeg = 0;
       bool isProtonNsigmaNeg  = 0;
 
-      isPionNsigmaPos = IsPionNSigmaV0TPC5FB16(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
-      isProtonNsigmaPos = IsProtonNSigmaV0TPC5FB16(trackpos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
-      isPionNsigmaNeg = IsPionNSigmaV0TPC5FB16(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
-      isProtonNsigmaNeg = IsProtonNSigmaV0TPC5FB16(trackneg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
+      isPionNsigmaPos = IsPionNSigmaV0TPC5FB128(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
+      isProtonNsigmaPos = IsProtonNSigmaV0TPC5FB128(trackpos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
+      isPionNsigmaNeg = IsPionNSigmaV0TPC5FB128(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
+      isProtonNsigmaNeg = IsProtonNSigmaV0TPC5FB128(trackneg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
 
       bool Lambda = false;
       bool AntiLambda = false;
@@ -1629,7 +1629,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	    fPtAntiLambda->Fill(aodv0->Pt());
 	    fYAntiLambda->Fill(TMath::Abs(aodv0->Y()));
 	    fHistQALambdas[1]->Fill(1,aodv0->Pt());
-	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt());
+	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt());
 	    fAllVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	  fAllVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
@@ -1653,7 +1653,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	    fPtLambda->Fill(aodv0->Pt());
 	    fYLambda->Fill(TMath::Abs(aodv0->Y()));
 	    fHistQALambdas[0]->Fill(1,aodv0->Pt());
-	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt());
+	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt());
 	    fAllVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 
 	  }
@@ -1733,7 +1733,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	{
 	  fPrimVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt()); 
+	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt()); 
 	    fPrimVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1741,7 +1741,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	{
 	  fPrimVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt()); 
+	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt()); 
 	    fPrimVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1749,7 +1749,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	{
 	  fSecWeakVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt()); 
+	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt()); 
 	    fSecWeakVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1757,7 +1757,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	{
 	  fSecWeakVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt()); 
+	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt()); 
 	    fSecWeakVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt()); 
 	  }
 	}
@@ -1765,7 +1765,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	{
 	fSecMatVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt()); 
+	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt()); 
 	    fSecMatVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1773,7 +1773,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	{
 	fSecMatVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){ 
-	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt()); 
+	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt()); 
 	    fSecMatVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1783,7 +1783,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
 	  fFakeVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt()); 
+	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt()); 
 	    fFakeVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	
@@ -1793,7 +1793,7 @@ void AliAnalysisEffTaskFilterBit16::UserExec(Option_t *)
  
 	  fFakeVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1fb16),aodv0->Pt()); 
+	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1FB128),aodv0->Pt()); 
 	    fFakeVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }	  
 	}

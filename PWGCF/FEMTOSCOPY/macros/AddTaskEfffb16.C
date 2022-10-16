@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisEffTaskFilterBit768 *AddTaskEfffb768(TString containerName="femtolist",int method=3, int filterbit=16)
+AliAnalysisEffTaskFilterBit16 *AddTaskEfffb16(TString containerName="femtolist",int method=3, int filterbit=16)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -20,7 +20,7 @@ AliAnalysisEffTaskFilterBit768 *AddTaskEfffb768(TString containerName="femtolist
   //    manager. The availability of MC handler can also be checked here.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskEfffb768", "This task requires an input event handler");
+    ::Error("AddTaskEfffb16", "This task requires an input event handler");
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -41,10 +41,10 @@ AliAnalysisEffTaskFilterBit768 *AddTaskEfffb768(TString containerName="femtolist
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisEffTaskFilterBit768 *taskEff = new AliAnalysisEffTaskFilterBit768("EffTask",method,filterbit);
+  AliAnalysisEffTaskFilterBit16 *taskEfffb16 = new AliAnalysisEffTaskFilterBit16("EffTaskfb16",method,filterbit);
   //taskEff->SetPidMethod(method);
   //taskEff->SetFB(filterbit);
-  mgr->AddTask(taskEff);
+  mgr->AddTask(taskEfffb16);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
   // arguments of the AddTaskXXX() function.
@@ -59,8 +59,8 @@ AliAnalysisEffTaskFilterBit768 *AddTaskEfffb768(TString containerName="femtolist
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
-   mgr->ConnectInput(taskEff, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(taskEff, 1, cout_femto);
+   mgr->ConnectInput(taskEfffb16, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput(taskEfffb16, 1, cout_femto);
 
    // std::ofstream ofile;
    // ofile.open("test.txt", std::ofstream::app);
@@ -68,5 +68,5 @@ AliAnalysisEffTaskFilterBit768 *AddTaskEfffb768(TString containerName="femtolist
    // ofile.close();
    
    // Return task pointer at the end
-   return taskEff;
+   return taskEfffb16;
 }
