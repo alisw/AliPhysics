@@ -147,34 +147,34 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   // GLobal settings
   //-------------------------------
-  AliV0ReaderV1* fV0Reader;       //! basic photon Selection Task
+  AliV0ReaderV1* fV0Reader;       // basic photon Selection Task
   TString fV0ReaderName;          // name of V0Reader
   TClonesArray* fReaderGammas;    // Array with conversion photons selected by V0Reader Cut
   TString fCaloTriggerHelperName; // name of trigger helper for PHOS
   TString fCorrTaskSetting;       // Correction Task Special Name
-  AliVEvent* fInputEvent;         //! current event
-  AliMCEvent* fMCEvent;           //! corresponding MC event
-  TClonesArray* fAODMCTrackArray; //! pointer to track array
+  AliVEvent* fInputEvent;         // current event
+  AliMCEvent* fMCEvent;           // corresponding MC event
+  TClonesArray* fAODMCTrackArray; // pointer to track array
 
   //-------------------------------
   // Lists for cut folders and output containers
   //-------------------------------
-  TList** fCutFolder;      //! Top level cut folder in which all folders belonging to this cut are stored
-  TList** fESDList;        //! List for standard histograms for data+MC (Inv mass vs pt etc.)
-  TList** fMCList;         //! List for MC generated histograms
-  TList** fTrueList;       //! List for true meson quantities
-  TList** fJetList;        //! List for jet related observables
-  TList** fTrueJetList;    //! List of true jet quantities (response matrix)
-  TList* fOutputContainer; //! Top level output container
-  TList* fEventCutArray;   //! Event cut output container
-  TList* fConvCutArray;    //! Conversion cut output container
-  TList* fClusterCutArray; //! Cluster cut output container
-  TList* fMesonCutArray;   //! Meson cut output container
+  TList** fCutFolder;      // Top level cut folder in which all folders belonging to this cut are stored
+  TList** fESDList;        // List for standard histograms for data+MC (Inv mass vs pt etc.)
+  TList** fMCList;         // List for MC generated histograms
+  TList** fTrueList;       // List for true meson quantities
+  TList** fJetList;        // List for jet related observables
+  TList** fTrueJetList;    // List of true jet quantities (response matrix)
+  TList* fOutputContainer; // Top level output container
+  TList* fEventCutArray;   // Event cut output container
+  TList* fConvCutArray;    // Conversion cut output container
+  TList* fClusterCutArray; // Cluster cut output container
+  TList* fMesonCutArray;   // Meson cut output container
 
   std::vector<AliAODConversionPhoton*> fGammaCandidates;   //! current list of photon candidates
   std::vector<AliAODConversionPhoton*> fClusterCandidates; //! current list of cluster candidates
 
-  EventMixPoolMesonJets* fEventMix; //! Eventmixing class used for events with a jet axis (also works with no jet axis but has no z-vertex bins etc.)
+  EventMixPoolMesonJets* fEventMix; // Eventmixing class used for events with a jet axis (also works with no jet axis but has no z-vertex bins etc.)
 
   TRandom3 fRandom;              //! random generator needed for the rotation background
   TGenPhaseSpace fGenPhaseSpace; //! For generation of decays into two gammas
@@ -192,9 +192,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   // global settings and variables
   //-------------------------------
   int fMesonPDGCode;                                    // PDG code of current meson (111 for pi0 etc.)
-  int fiCut;                                            //! index of the current cut
-  int fIsMC;                                            //! flag for data or MC (JJ MC > 1)
-  int fnCuts;                                           //! number of cuts
+  int fiCut;                                            // index of the current cut
+  int fIsMC;                                            // flag for data or MC (JJ MC > 1)
+  int fnCuts;                                           // number of cuts
   double fWeightJetJetMC;                               //! weights if jet-jet MC is used
   int fDoLightOutput;                                   // flag if light output should be used
   int fDoMesonQA;                                       // flag if meson QA should be switched on
@@ -367,7 +367,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 1);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 2);
 };
 
 #endif

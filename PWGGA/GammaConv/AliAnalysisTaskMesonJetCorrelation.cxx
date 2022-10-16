@@ -354,6 +354,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -369,6 +370,13 @@ void AliAnalysisTaskMesonJetCorrelation::Terminate(const Option_t*)
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskMesonJetCorrelation::Notify()
 {
+  for (Int_t iCut = 0; iCut < fnCuts; iCut++) {
+    if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod) {
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod) {
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }
+  }
   return true;
 }
 
@@ -949,7 +957,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
       if (valInvMass < 0.3)
-        valInvMass += 0.002;
+        valInvMass += 0.004;
       else
         break;
     }
@@ -967,7 +975,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
       if (valInvMass < 0.3)
-        valInvMass += 0.002;
+        valInvMass += 0.004;
       else
         break;
     }
@@ -1456,11 +1464,18 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
 
   fGammaCandidates.clear();
 
+  if (((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetDoElecDeDxPostCalibration()) {
+    if (!(((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber()))) {
+      AliFatal(Form("ERROR: LoadElecDeDxPostCalibration returned kFALSE for %d despite being requested!", fInputEvent->GetRunNumber()));
+    }
+  }
+
   Double_t magField = fInputEvent->GetMagneticField();
   int nV0 = 0;
   TList* GammaCandidatesStepOne = new TList();
   TList* GammaCandidatesStepTwo = new TList();
   // Loop over Photon Candidates allocated by ReaderV1
+
   for (int i = 0; i < fReaderGammas->GetEntriesFast(); i++) {
     AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*)fReaderGammas->At(i);
     if (!PhotonCandidate)
@@ -1674,12 +1689,12 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
       fHistoInvMassVsPt[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), fWeightJetJetMC);
 
       // Fill the inv. mass histograms for all jet pTs
-      fRespMatrixHandlerMesonInvMass[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), ptJet, 0.5, fWeightJetJetMC);
+      fRespMatrixHandlerMesonInvMass[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), pi0cand->Pt(), fWeightJetJetMC);
 
       // Fill Z histograms
       float z = GetFrag(pi0cand, matchedJet, false);
 
-      fRespMatrixHandlerMesonInvMassVsZ[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z, fWeightJetJetMC);                      // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
+      fRespMatrixHandlerMesonInvMassVsZ[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z, fWeightJetJetMC);     // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
       if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)) { // nominal mass range
         fHistoJetPtVsFrag[fiCut]->Fill(z, ptJet, fWeightJetJetMC);
         if (fDoMesonQA > 0) {
@@ -1706,13 +1721,13 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
       fHistoInvMassVsPtPerpCone[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), fWeightJetJetMC);
 
       // Fill the inv. mass histograms for all jet pTs
-      fRespMatrixHandlerMesonInvMassPerpCone[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), ptJet, 0.5, fWeightJetJetMC);
+      fRespMatrixHandlerMesonInvMassPerpCone[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), pi0cand->Pt(), fWeightJetJetMC);
 
       // Fill Z histograms
       float z = GetFrag(pi0cand, matchedJet, false);
 
-      fRespMatrixHandlerMesonInvMassVsZPerpCone[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z, fWeightJetJetMC);              // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
-      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)) { // nominal mass range
+      fRespMatrixHandlerMesonInvMassVsZPerpCone[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z, fWeightJetJetMC); // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
+      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)) {     // nominal mass range
         fHistoJetPtVsFragPerpCone[fiCut]->Fill(z, ptJet, fWeightJetJetMC);
       } else if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1)) { // sideband
         fHistoJetPtVsFragPerpCone_SB[fiCut]->Fill(z, ptJet, fWeightJetJetMC);
