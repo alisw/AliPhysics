@@ -614,59 +614,53 @@ if (!isMC) {
   }
 
   if(useTree) {
+    TString treeDir = Form("%s:%sTrees%s", file.Data(), addon.Data(), suffix.Data());
+
     AliAnalysisDataContainer *coutputTreeSE_pp = mgr->CreateContainer(
-        "tSE_pp", TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s", file.Data()));
+        Form("%stSE_pp%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
     coutputTreeSE_pp->SetSpecialOutput();
     mgr->ConnectOutput(task, nOutput++, coutputTreeSE_pp);
 
     AliAnalysisDataContainer *coutputTreeSE_mm = mgr->CreateContainer(
-        "tSE_mm", TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s", file.Data()));
+        Form("%stSE_mm%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
     coutputTreeSE_mm->SetSpecialOutput();
     mgr->ConnectOutput(task, nOutput++, coutputTreeSE_mm);
 
     AliAnalysisDataContainer *coutputTreeSE_mp = mgr->CreateContainer(
-        "tSE_mp", TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s", file.Data()));
+        Form("%stSE_mp%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
     coutputTreeSE_mp->SetSpecialOutput();
     mgr->ConnectOutput(task, nOutput++, coutputTreeSE_mp);
 
     AliAnalysisDataContainer *coutputTreeSE_pm = mgr->CreateContainer(
-        "tSE_pm", TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s", file.Data()));
+        Form("%stSE_pm%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
     coutputTreeSE_pm->SetSpecialOutput();
     mgr->ConnectOutput(task, nOutput++, coutputTreeSE_pm);
 
     AliAnalysisDataContainer *coutputTreeME_pp = mgr->CreateContainer(
-        "tME_pp", TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s", file.Data()));
+        Form("%stME_pp%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
     coutputTreeME_pp->SetSpecialOutput();
     mgr->ConnectOutput(task, nOutput++, coutputTreeME_pp);
 
     AliAnalysisDataContainer *coutputTreeME_mm = mgr->CreateContainer(
-        "tME_mm", TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s", file.Data()));
+        Form("%stME_mm%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
     coutputTreeME_mm->SetSpecialOutput();
     mgr->ConnectOutput(task, nOutput++, coutputTreeME_mm);
 
     AliAnalysisDataContainer *coutputTreeME_mp = mgr->CreateContainer(
-        "tME_mp", TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s", file.Data()));
+        Form("%stME_mp%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
     coutputTreeME_mp->SetSpecialOutput();
     mgr->ConnectOutput(task, nOutput++, coutputTreeME_mp);
 
     AliAnalysisDataContainer *coutputTreeME_pm = mgr->CreateContainer(
-        "tME_pm", TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s", file.Data()));
+        Form("%stME_pm%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
     coutputTreeME_pm->SetSpecialOutput();
     mgr->ConnectOutput(task, nOutput++, coutputTreeME_pm);
 
