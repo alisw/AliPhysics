@@ -306,7 +306,7 @@ void AddTask_MesonJetCorr_Conv(
   task->SetConversionCutList(numberOfCuts, ConvCutList);
   //   task->SetDoMesonAnalysis(kTRUE); // I think we dont need that!
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-                                         //   task->SetDoTHnSparse(enableTHnSparse);
+  task->SetUseTHnSparseForResponse(enableTHnSparse);
 
   //connect containers
   AliAnalysisDataContainer* coutput =

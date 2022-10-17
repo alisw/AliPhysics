@@ -184,10 +184,10 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("00010103", "411790109fe30230000", "21631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 4) {
     cuts.AddCutCalo("0008e103", "411790109fe30230000", "2s631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0008e103", "411790109fe30230000", "2s631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0008e103", "411790109fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 5) {
-    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
-    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+    cuts.AddCutCalo("0008d103", "411790109fe30230000", "2s631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, rotation back
 
     //---------------------------------------
     // configs for eta meson pp 13 TeV
@@ -308,7 +308,7 @@ void AddTask_MesonJetCorr_Calo(
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
                                          //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-                                         //   task->SetDoTHnSparse(enableTHnSparse);
+  task->SetUseTHnSparseForResponse(enableTHnSparse);
 
   //connect containers
   AliAnalysisDataContainer* coutput =

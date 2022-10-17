@@ -42,7 +42,7 @@ int EventMixPoolMesonJets::getJetPIndex(float jetP)
 }
 
 //________________________________________________________________________________
-void EventMixPoolMesonJets::AddEvent(EventWithJetAxis* ev, float jetP)
+void EventMixPoolMesonJets::AddEvent(std::shared_ptr<EventWithJetAxis> ev, float jetP)
 {
   int index = getJetPIndex(jetP);
   if (index < 0) {
@@ -50,8 +50,8 @@ void EventMixPoolMesonJets::AddEvent(EventWithJetAxis* ev, float jetP)
     return;
   }
   if (mixingPool[index].size() >= poolDepth) {
-    if (mixingPool[index][0])
-      delete mixingPool[index][0];
+    // if (mixingPool[index][0])
+    //   delete mixingPool[index][0];
     mixingPool[index].erase(mixingPool[index].begin());
   }
   mixingPool.at(index).push_back(ev);
@@ -109,9 +109,9 @@ std::vector<std::unique_ptr<AliAODConversionPhoton>> EventMixPoolMesonJets::getP
   for (unsigned int i = 0; i < nGammas; ++i) {
     // E has to stay the same
 
-    double energy = mixingPool[index][nEvt]->getPhoton(i, isCaloPhoton)->E();
-    double theta = mixingPool[index][nEvt]->getPhoton(i, isCaloPhoton)->Theta();
-    double phi = mixingPool[index][nEvt]->getPhoton(i, isCaloPhoton)->Phi();
+    double energy = mixingPool[index][nEvt]->getPhotonE(i, isCaloPhoton);
+    double theta = mixingPool[index][nEvt]->getPhotonTheta(i, isCaloPhoton);
+    double phi = mixingPool[index][nEvt]->getPhotonPhi(i, isCaloPhoton);
 
     theta += diffTheta;
     phi += diffPhi;
