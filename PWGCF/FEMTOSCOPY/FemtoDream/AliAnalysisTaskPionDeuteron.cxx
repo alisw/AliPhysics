@@ -695,7 +695,8 @@ void AliAnalysisTaskPionDeuteron::DoFakeCoalescence(std::vector<TLorentzVector> 
       TLorentzVector pseudoneutron_prime = v_proton[j];
       pseudoneutron_prime.Boost(-boost_vector);
       TLorentzVector deltaPvector = proton_prime - pseudoneutron_prime;
-      Double_t deltaP = deltaPvector.P();
+      double deltaP = deltaPvector.P();
+      double mt = 0.5 * (v_proton[i].Mt() + v_proton[j].Mt());
 
       // Fill DeltaP Distribution
       hDeltaP->Fill(deltaP);
@@ -716,7 +717,6 @@ void AliAnalysisTaskPionDeuteron::DoFakeCoalescence(std::vector<TLorentzVector> 
       {
         float value = (float)gRandom->Uniform();
         float q = 0.5 * deltaP;
-        float mt = 0.5 * deltaPvector.Mt();
         float radius = ComputeRadius(mt);
         float prob = 1;
         if (fTwoGauss)

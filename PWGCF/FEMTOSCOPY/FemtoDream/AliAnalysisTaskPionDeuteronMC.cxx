@@ -495,7 +495,8 @@ void AliAnalysisTaskPionDeuteronMC::DoCoalescence(std::vector<TLorentzVector> &v
       TLorentzVector neutron_prime = v_neutron[in];
       neutron_prime.Boost(-boost_vector);
       TLorentzVector deltaPvector = proton_prime - neutron_prime;
-      Double_t deltaP = deltaPvector.P();
+      double deltaP = deltaPvector.P();
+      double mt = 0.5 * (prot.Mt() + v_neutron[in].Mt());
 
       // Fill DeltaP Distribution
       hDeltaP->Fill(deltaP);
@@ -521,7 +522,6 @@ void AliAnalysisTaskPionDeuteronMC::DoCoalescence(std::vector<TLorentzVector> &v
       {
         float value = (float)gRandom->Uniform();
         float q = 0.5 * deltaP;
-        float mt = 0.5 * deltaPvector.Mt();
         float radius = ComputeRadius(mt);
         float prob = 1;
         if (fTwoGauss)
