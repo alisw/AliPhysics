@@ -425,9 +425,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   dplus.clear();
   dminus.clear();
 
-  fFemtoPair.mult = fEvent->GetMultiplicity();
-  fFemtoPair.vz = fEvent->GetZVertex();
-
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
