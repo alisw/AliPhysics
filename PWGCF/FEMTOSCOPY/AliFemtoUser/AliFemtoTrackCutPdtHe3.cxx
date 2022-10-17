@@ -525,8 +525,16 @@ bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float massTOFPDG, float
 	}
 	else{
 		float tmpcut = fdcutline_k * mom + fdcutline_b;
-		if(nsigmaTPCD >= tmpcut && abs(nsigmaTPCD) < fNsigmaD){
-			return true;
+
+		if(tmp_switch > 4.0){	// only TPC
+			if(nsigmaTPCD >= tmpcut && abs(nsigmaTPCD) < fNsigmaD){
+				return true;
+			}
+		}
+		else{	
+			if(nsigmaTPCD >= tmpcut && abs(nsigmaTPCD) < fNsigmaD && TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD){
+				return true;
+			}
 		}
 	}
     return false;
