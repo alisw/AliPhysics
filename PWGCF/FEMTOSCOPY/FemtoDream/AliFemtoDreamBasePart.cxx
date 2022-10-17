@@ -43,6 +43,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const int part)
       fNCrossedRows(0),
       fDCAZ(0),
       fDCAXY(0),
+      fDzeroLabel(0),
       fPDGCode(0),
       fMCPDGCode(0),
       fPDGMotherWeak(0),
@@ -87,6 +88,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fNCrossedRows(part.fNCrossedRows),
       fDCAZ(part.fDCAZ),
       fDCAXY(part.fDCAXY),
+      fDzeroLabel(part.fDzeroLabel),
       fPDGCode(part.fPDGCode),
       fMCPDGCode(part.fMCPDGCode),
       fPDGMotherWeak(part.fPDGMotherWeak),
@@ -135,6 +137,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fNCrossedRows = obj.fNCrossedRows,
   fDCAZ = obj.fDCAZ,
   fDCAXY = obj.fDCAXY,
+  fDzeroLabel = obj.fDzeroLabel,
   fPDGCode = obj.fPDGCode;
   fMCPDGCode = obj.fMCPDGCode;
   fPDGMotherWeak = obj.fPDGMotherWeak;
@@ -182,6 +185,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fNCrossedRows(0),
       fDCAZ(0),
       fDCAXY(0),
+      fDzeroLabel(0),
       fPDGCode(),
       fMCPDGCode(),
       fPDGMotherWeak(0),
@@ -282,6 +286,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       fNCrossedRows(0),
       fDCAZ(0),
       fDCAXY(0),
+      fDzeroLabel(0),
       fPDGCode(0),
       fMCPDGCode(0),
       fPDGMotherWeak(0),
@@ -342,6 +347,8 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       int pdgD0Dau[2] = {321, 211};
       int pdgDstarDau[2] = {421, 211};
       label = dynamic_cast<const AliAODRecoCascadeHF *>(dmeson)->MatchToMC(413, 421, pdgDstarDau, pdgD0Dau, mcarray, false);
+      auto d0to2prong = dynamic_cast<const AliAODRecoCascadeHF *>(dmeson)->Get2Prong();
+      fDzeroLabel = d0to2prong->MatchToMC(421, mcarray, 2, pdgD0Dau);
     }
 
     if (label < 0) {
