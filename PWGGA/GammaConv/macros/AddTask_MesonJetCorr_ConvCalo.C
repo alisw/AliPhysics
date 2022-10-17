@@ -193,9 +193,9 @@ void AddTask_MesonJetCorr_ConvCalo(
     cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 4) {
     cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2r63103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, rotation back
-    cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2r63103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 5) {
-    cuts.AddCutPCMCalo("0008d103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // EG1 in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCMCalo("0008d103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2r63103400000010"); // EG1 in-Jet, mass cut pi0: 0.1-0.15, rotation back
     cuts.AddCutPCMCalo("0008d103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // EG1 in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
 
     //---------------------------------------
@@ -361,7 +361,7 @@ void AddTask_MesonJetCorr_ConvCalo(
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
                                          //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-                                         //   task->SetDoTHnSparse(enableTHnSparse);
+  task->SetUseTHnSparseForResponse(enableTHnSparse);
 
   //connect containers
   AliAnalysisDataContainer* coutput =

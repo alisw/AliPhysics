@@ -151,6 +151,7 @@ class MatrixHandler4D
         printf("Attention! 2d histogram does not exist yet!\n");
         return nullptr;
       }
+      h2d->SetName(name);
       return h2d;
     }
   }
@@ -190,7 +191,7 @@ class MatrixHandler4D
   TH1F* h1dMeson = nullptr;
   THnSparseF* hSparseResponse = nullptr;
 
-  ClassDef(MatrixHandler4D, 1)
+  ClassDef(MatrixHandler4D, 2)
 };
 
 #endif
