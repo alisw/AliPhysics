@@ -286,6 +286,7 @@ class AliFemtoDreamBasePart {
   void SetNCrossedRows (int NCrossedRows) { fNCrossedRows = NCrossedRows; };
   void SetDCAZ (float DCAZ) { fDCAZ = DCAZ; };
   void SetDCAXY (float DCAXY) { fDCAXY = DCAXY; };
+  void SetDzeroLabel (int label) { fDzeroLabel = label; };
 
   int GetMult ()  { return fMult; };
   float GetZVtx ()  { return fZVtx; };
@@ -297,6 +298,7 @@ class AliFemtoDreamBasePart {
   int GetNCrossedRows ()  { return fNCrossedRows; };
   float GetDCAZ ()  { return fDCAZ; };
   float GetDCAXY ()  { return fDCAXY; };
+  int GetDzeroLabel () { return fDzeroLabel; }
   
   bool UseParticle() const {
     return fUse;
@@ -352,6 +354,7 @@ class AliFemtoDreamBasePart {
   int fNCrossedRows;
   float fDCAZ;
   float fDCAXY;
+  int fDzeroLabel;
 
 // pdg code as set by the track cuts, used for invariant mass calculation/mc matching in v0s
   int fPDGCode;
@@ -369,7 +372,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart, 9)
+ClassDef(AliFemtoDreamBasePart, 10)
   ;
 };
 

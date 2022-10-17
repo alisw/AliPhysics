@@ -132,6 +132,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               std::vector<int>  *heavy_daus = new std::vector<int>(part2.GetIDTracks());
               float heavy_bkgscore = part2.GetBkgScore();
               float heavy_promptscore = part2.GetPromptScore();
+              int heavy_d0label = part2.GetDzeroLabel();
 
               // load light info
               float light_pt = part1.GetPt();
@@ -159,6 +160,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("heavy_daus", &heavy_daus);
               tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
               tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
+              tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
 
               // light particle
               tree->SetBranchAddress("light_pt", &light_pt);
@@ -257,6 +259,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 std::vector<Int_t>  * heavy_daus = new std::vector<int>(itPart2->GetIDTracks());
                 float heavy_bkgscore = itPart2->GetBkgScore();
                 float heavy_promptscore = itPart2->GetPromptScore();
+                int heavy_d0label = itPart2->GetDzeroLabel();
 
                 // load light flavor info
                 float light_pt = itPart1->GetPt();
@@ -284,6 +287,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("heavy_daus", &heavy_daus);
                 tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
                 tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
+                tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
 
                 // light particle
                 tree->SetBranchAddress("light_pt", &light_pt);
