@@ -625,7 +625,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           }
 
           // fill histos
-          printf("labelll: %d\n", mcPart->GetLabel());
           if (!SelectDmesonOrigin(fArrayMCAOD, mcPart))
             continue;
 
