@@ -507,7 +507,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 {
                     int labDau0 = dynamic_cast<AliAODTrack *>(dMeson->GetDaughter(0))->GetLabel();
                     AliAODMCParticle *dau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(TMath::Abs(labDau0)));
-                    pdgCode0 = TMath::Abs(dau0->GetPdgCode());
+                    pdgCode0 = std::abs(dau0->GetPdgCode());
                 }
             }
             if (partD)
@@ -586,6 +586,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 if (fDecChannel != kD0toKpi || ((isSelected == 1 || isSelected == 3) && track->Charge() > 0.)) {
                     fourVecReso += fourVecD[0];
                     double deltaInvMassReso = fourVecReso.M() - massD[0];
+                    if (std::abs(pdgCode0) == 321)
+                        orig *= -1.; //refelcted signal
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
                         fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                     }
@@ -593,6 +595,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 if (fDecChannel == kD0toKpi && isSelected >= 2 && track->Charge() < 0.) {
                     fourVecReso += fourVecD[1];
                     double deltaInvMassReso = fourVecReso.M() - massD[1];
+                    if (std::abs(pdgCode0) == 211)
+                        orig *= -1.; //refelcted signal
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
                         fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                     }
@@ -613,14 +617,23 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
                 auto fourVecReso = ROOT::Math::PxPyPzMVector(v0->Px(), v0->Py(), v0->Pz(), massV0);
                 double deltaInvMassReso[2] = {0., 0.};
-                fourVecReso += fourVecD[0];
-                deltaInvMassReso[0] = fourVecReso.M() - massD[0];
-                if (fDecChannel == kD0toKpi) {
+                bool isRefl[2] = {false, false};
+                if (fDecChannel != kD0toKpi || (isSelected == 1 || isSelected ==3)) {
+                    fourVecReso += fourVecD[0];
+                    deltaInvMassReso[0] = fourVecReso.M() - massD[0];
+                    if (std::abs(pdgCode0) == 321)
+                        isRefl[0] = true;
+                }
+                if (fDecChannel == kD0toKpi && isSelected >= 2) {
                     fourVecReso += fourVecD[1];
                     deltaInvMassReso[1] = fourVecReso.M() - massD[1];
+                    if (std::abs(pdgCode0) == 211)
+                        isRefl[1] = true;
                 }
                 for (int iMass=0; iMass<2; ++iMass) {
                     if (IsInvMassResoSelected(deltaInvMassReso[iMass], iHypo)) {
+                        if (isRefl[iMass])
+                            orig *= -1.;
                         fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD, orig, v0->MassK0Short(), v0->Pt(), kPdgV0IDs[iHypo]);
                     }
                 }
