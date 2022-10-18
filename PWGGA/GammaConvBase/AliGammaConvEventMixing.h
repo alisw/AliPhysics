@@ -155,12 +155,13 @@ class EventMixPoolMesonJets
   ///\param jetAxis Jet axis of the current event
   ///\param isCaloPhoton switch if calo photons or conversion photons should be returned
   ///\return vector of rotated photons that can be used for mixing with th current event
-  std::vector<std::unique_ptr<AliAODConversionPhoton>> getPhotonsRotated(int nEvt, float jetP, TVector3 jetAxis, bool isCaloPhoton);
+  std::vector<std::shared_ptr<AliAODConversionPhoton>> getPhotonsRotated(unsigned int nEvt, float jetP, TVector3 jetAxis, bool isCaloPhoton);
 
  private:
   std::vector<float> vecJetPClasses = {-1, 20, 40, 60, 100, 100000};
-  std::vector<std::vector<std::shared_ptr<EventWithJetAxis>>> mixingPool;
+  std::vector<std::vector<std::shared_ptr<EventWithJetAxis>>> mixingPool = {};
   unsigned int poolDepth = 20;
+
 };
 
 #endif
