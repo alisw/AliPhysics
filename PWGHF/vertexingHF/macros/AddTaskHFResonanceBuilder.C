@@ -111,6 +111,7 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(name, AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
     name = Form("coutputTree%s", suffix.Data());
     AliAnalysisDataContainer *coutputTree = mgr->CreateContainer(name, TNtuple::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+    coutputTree->SetSpecialOutput();
 
     mgr->ConnectInput(hfResoTask, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(hfResoTask, 1, coutput);

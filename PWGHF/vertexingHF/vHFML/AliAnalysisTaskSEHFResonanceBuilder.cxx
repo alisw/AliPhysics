@@ -169,7 +169,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     fOutput->Add(fHistBDTOutputScore[2]);
     float minMass = -1.;
     float maxMass = -1.;
-    switch(fDecChannel) 
+    switch(fDecChannel)
     {
         case kD0toKpi: {
             minMass = 1.7;
@@ -237,8 +237,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
 
     PostData(1, fOutput);
 
-    OpenFile(4);
-    fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "inv_mass_reso:pt_reso:inv_mass_D_1:inv_mass_D_2:pt_D:charge_D:origin_D:pt_track:charge_track:id_track");
+    fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D_1:inv_mass_D_2:pt_D:charge_D:origin_D:pt_track:charge_track:id_track");
     PostData(4, fNtupleCharmReso);
 
     return;
@@ -382,7 +381,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     // check if the train includes the common ML selector for the given charm-hadron species
     AliAnalysisTaskSECharmHadronMLSelector *taskMLSelect = nullptr;
     std::vector<int> chHadIdx{};
-    if(fDependOnMLSelector) 
+    if(fDependOnMLSelector)
     {
         taskMLSelect = dynamic_cast<AliAnalysisTaskSECharmHadronMLSelector*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fMLSelectorName.data()));
         if(!taskMLSelect)
@@ -492,43 +491,80 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             }
         }
 
-        float massD[2] = {-1., -1.};
         int chargeD = 0.;
-        switch(fDecChannel)
-        {
+        std::array<ROOT::Math::PxPyPzMVector, 2> fourVecD{};
+        double massD[2] = {-1, -1};
+        switch(fDecChannel) {
             case kD0toKpi:
-                if (isSelected == 1 || isSelected == 3) {
-                    massD[0] = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0();
+            {
+                double massDau[2] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass()};
+                for (int iProng=0; iProng<2; ++iProng) {
+                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(dMeson->GetProngID(iProng)));
+                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
+                    fourVecD[1] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[1-iProng]);
                 }
-                if (isSelected >= 2) {
-                    massD[1] = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0bar();
-                }
+                massD[0] = fourVecD[0].M()
+                massD[1] = fourVecD[1].M()
                 break;
+            }
             case kDplustoKpipi:
-                massD[0] = dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson)->InvMassDplus();
-                chargeD = vHF.GetProng(fAOD, dMeson, 0)->Charge();
+            {
+                double massDau[3] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass(), TDatabasePDG::Instance()->GetParticle(211)->Mass()};
+                for (int iProng=0; iProng<3; ++iProng) {
+                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(dMeson->GetProngID(iProng)));
+                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
+                }
+                massD[0] = fourVecD[0].M()
                 break;
+            }
             case kDstartoD0pi:
-                massD[0] = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->DeltaInvMass();
-                chargeD = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->GetBachelor()->Charge();
+            {
+                double massDau[3] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass(), TDatabasePDG::Instance()->GetParticle(211)->Mass()};
+                int idxDau[3] = {dMeson->GetProngID(0), -1, -1};
+                AliAODRecoDecayHF2Prong* dZero = nullptr;
+                if(dMeson->GetIsFilled()<1)
+                    dZero = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
+                else
+                    dZero = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->Get2Prong();
+                if (dMeson->Charge() > 0) {
+                    idxDau[1] = dZero->GetProngID(1); // K
+                    idxDau[2] = dZero->GetProngID(0); // pi
+                }
+                else {
+                    idxDau[1] = dZero->GetProngID(0); // K
+                    idxDau[2] = dZero->GetProngID(1); // pi
+                }
+                for (int iProng=0; iProng<3; ++iProng) {
+                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(idxDau[iProng]));
+                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
+                }
+                massD[0] = fourVecD[0].M()
                 break;
+            }
         }
 
         // loop over tracks
         for (std::size_t iTrack{0}; iTrack < selectedTrackIndices.size(); ++iTrack) {
             AliAODTrack* track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(selectedTrackIndices[iTrack]));
-            auto fourVecD = ROOT::Math::PxPyPzMVector(dMeson->Px(), dMeson->Py(), dMeson->Pz(), TDatabasePDG::Instance()->GetParticle(fPdgD)->Mass());
+
             for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo) {
                 if (IsDaughterTrack(track, dMeson, arrayCandDDau))
                     continue;
                 if (!TESTBIT(selectedTrackIds[iTrack], iHypo))
                     continue;
                 double massBachelor = (iHypo != kDeuteron) ? TDatabasePDG::Instance()->GetParticle(kPdgBachIDs[iHypo])->Mass() : 1.87561294257;
-                auto fourVecBach = ROOT::Math::PxPyPzMVector(track->Px(), track->Py(), track->Pz(), massBachelor);
-                auto fourVecReso = fourVecD + fourVecBach;
-                auto invMassReso = fourVecReso.M();
-                if (IsInvMassResoSelected(invMassReso, iHypo)) {
-                    fNtupleCharmReso->Fill(invMassReso, fourVecReso.Pt(), massD[0], massD[1], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
+                auto fourVecReso = ROOT::Math::PxPyPzMVector(track->Px(), track->Py(), track->Pz(), massBachelor);
+                double deltaInvMassReso = 0.;
+                if (fDecChannel != kD0toKpi || track->Charge() > 0.) {
+                    fourVecReso += fourVecD[0];
+                    deltaInvMassReso = fourVecReso.M() - massD[0];
+                }
+                else {
+                    fourVecReso += fourVecD[1];
+                    deltaInvMassReso = fourVecReso.M() - massD[1];
+                }
+                if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
+                    fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], massD[1], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                 }
             }
         }
@@ -739,7 +775,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
                 }
             }
             else if(fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 1)){
-                isMLsel += 2;                
+                isMLsel += 2;
             }
 
             if (isMLsel >= 2) {
@@ -802,7 +838,7 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, in
             for (std::size_t iMass{0}; iMass<fInvMassResoPiMin.size(); ++iMass)
             {
                 if (mass > fInvMassResoPiMin[iMass] && mass < fInvMassResoPiMax[iMass])
-                    return true;   
+                    return true;
             }
         }
         case kKaon:
@@ -810,7 +846,7 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, in
             for (std::size_t iMass{0}; iMass<fInvMassResoKaMin.size(); ++iMass)
             {
                 if (mass > fInvMassResoKaMin[iMass] && mass < fInvMassResoKaMax[iMass])
-                    return true;   
+                    return true;
             }
         }
         case kProton:
@@ -818,7 +854,7 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, in
             for (std::size_t iMass{0}; iMass<fInvMassResoPrMin.size(); ++iMass)
             {
                 if (mass > fInvMassResoPrMin[iMass] && mass < fInvMassResoPrMax[iMass])
-                    return true;   
+                    return true;
             }
         }
         case kDeuteron:
@@ -826,7 +862,7 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, in
             for (std::size_t iMass{0}; iMass<fInvMassResoDeMin.size(); ++iMass)
             {
                 if (mass > fInvMassResoDeMin[iMass] && mass < fInvMassResoDeMax[iMass])
-                    return true;   
+                    return true;
             }
         }
     }
@@ -860,16 +896,14 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, A
             if (trkIdx == dMeson->GetProngID(0))
                 return true;
 
+            AliAODRecoDecayHF2Prong* dZero = nullptr;
+            if(dMeson->GetIsFilled()<1)
+                dZero = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
+            else
+                dZero = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->Get2Prong();
             for (int iProng=0; iProng<2; ++iProng) {
-                AliAODRecoDecayHF2Prong* dZero = nullptr;
-                if(dMeson->GetIsFilled()<1)
-                    dZero = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
-                else
-                    dZero = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->Get2Prong();
-                for (int iProng=0; iProng<2; ++iProng) {
-                    if (trkIdx == dZero->GetProngID(iProng))
-                        return true;
-                }
+                if (trkIdx == dZero->GetProngID(iProng))
+                    return true;
             }
             break;
         }
