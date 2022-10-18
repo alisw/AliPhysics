@@ -8,7 +8,11 @@
 #ifndef ALIFEMTODREAMZVTXMULTCONTAINER_H_
 #define ALIFEMTODREAMZVTXMULTCONTAINER_H_
 #include <vector>
+#include <map>
+#include <utility>
+
 #include "Rtypes.h"
+#include "TTree.h"
 
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamCorrHists.h"

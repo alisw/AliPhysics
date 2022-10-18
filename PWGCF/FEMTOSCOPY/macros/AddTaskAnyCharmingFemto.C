@@ -1,5 +1,6 @@
 #ifndef __CINT__
 #include <vector>
+#include <map>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliFemtoDreamEventCuts.h"
@@ -9,6 +10,7 @@
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
+#include "TTree.h"
 #endif
 
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(

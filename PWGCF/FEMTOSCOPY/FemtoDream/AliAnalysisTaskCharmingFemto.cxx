@@ -1,3 +1,6 @@
+#include <map>
+#include <utility>
+
 #include "AliAnalysisTaskCharmingFemto.h"
 
 #include "yaml-cpp/yaml.h"
@@ -19,6 +22,7 @@
 #include "AliMLModelHandler.h"
 #include "TDatabasePDG.h"
 #include "TRandom.h"
+#include "TTree.h"
 
 static float dummyfloat;
 static std::vector<int> dummyvector;

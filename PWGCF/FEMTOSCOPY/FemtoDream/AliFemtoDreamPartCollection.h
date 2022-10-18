@@ -8,9 +8,13 @@
 #ifndef ALIFEMTODREAMPARTCOLLECTION_H_
 #define ALIFEMTODREAMPARTCOLLECTION_H_
 #include <deque>
+#include <map>
+#include <utility>
+
 #include <vector>
 #include "Rtypes.h"
 #include "TList.h"
+#include "TTree.h"
 
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamCorrHists.h"
