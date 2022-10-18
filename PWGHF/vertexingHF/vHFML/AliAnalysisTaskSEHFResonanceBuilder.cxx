@@ -125,6 +125,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     if (fInvMassResoPrMin.size() != fInvMassResoPrMax.size())
         AliFatal("Different size of fInvMassResoPrMin and fInvMassResoPrMax");
 
+    if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0) && std::accumulate(fEnableV0.begin(), fEnableV0.end(), 0))
+        AliFatal("Combination with bachelors and V0s simultenously is not supported");
+
     /// Create the output container
     //
 
@@ -237,7 +240,11 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
 
     PostData(1, fOutput);
 
-    fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D_1:inv_mass_D_2:pt_D:charge_D:origin_D:pt_track:charge_track:id_track");
+    if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0))
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:pt_track:charge_track:id_track");
+    else 
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:inv_mass_v0:pt_v0:id_v0");
+
     PostData(4, fNtupleCharmReso);
 
     return;
@@ -407,13 +414,31 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     // prepare vector of selected tracks
     std::vector<int> selectedTrackIndices{};
     std::vector<int> selectedTrackIds{};
-    for (int iTrack{0}; iTrack < fAOD->GetNumberOfTracks(); ++iTrack) {
-        AliAODTrack *track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(iTrack));
-        int id = IsBachelorSelected(track, pidHF);
-        if (id > 0)
-        {
-            selectedTrackIndices.push_back(iTrack);
-            selectedTrackIds.push_back(id);
+    if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0)) {
+        for (int iTrack{0}; iTrack < fAOD->GetNumberOfTracks(); ++iTrack) {
+            AliAODTrack *track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(iTrack));
+            int id = IsBachelorSelected(track, pidHF);
+            if (id > 0)
+            {
+                selectedTrackIndices.push_back(iTrack);
+                selectedTrackIds.push_back(id);
+            }
+        }
+    }
+
+    // prepare vector of selected V0s
+    std::vector<int> selectedV0Indices{};
+    std::vector<int> selectedV0Ids{};
+
+    if (std::accumulate(fEnableV0.begin(), fEnableV0.end(), 0)) {
+        for (int iV0{0}; iV0 < fAOD->GetNumberOfV0s(); ++iV0) {
+            AliAODv0 *v0 = fAOD->GetV0(iV0);
+            int id = IsV0Selected(v0);
+            if (id > 0)
+            {
+                selectedV0Indices.push_back(iV0);
+                selectedV0Ids.push_back(id);
+            }
         }
     }
 
@@ -503,8 +528,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
                     fourVecD[1] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[1-iProng]);
                 }
-                massD[0] = fourVecD[0].M()
-                massD[1] = fourVecD[1].M()
+                if (isSelected == 1 || isSelected == 3)
+                    massD[0] = fourVecD[0].M();
+                if (isSelected >=2)
+                    massD[1] = fourVecD[1].M();
                 break;
             }
             case kDplustoKpipi:
@@ -514,7 +541,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(dMeson->GetProngID(iProng)));
                     fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
                 }
-                massD[0] = fourVecD[0].M()
+                massD[0] = fourVecD[0].M();
                 break;
             }
             case kDstartoD0pi:
@@ -538,7 +565,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(idxDau[iProng]));
                     fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
                 }
-                massD[0] = fourVecD[0].M()
+                massD[0] = fourVecD[0].M();
                 break;
             }
         }
@@ -548,23 +575,54 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             AliAODTrack* track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(selectedTrackIndices[iTrack]));
 
             for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo) {
+                if(fEnableBachelor[iHypo])
+                    continue;
                 if (IsDaughterTrack(track, dMeson, arrayCandDDau))
                     continue;
                 if (!TESTBIT(selectedTrackIds[iTrack], iHypo))
                     continue;
                 double massBachelor = (iHypo != kDeuteron) ? TDatabasePDG::Instance()->GetParticle(kPdgBachIDs[iHypo])->Mass() : 1.87561294257;
                 auto fourVecReso = ROOT::Math::PxPyPzMVector(track->Px(), track->Py(), track->Pz(), massBachelor);
-                double deltaInvMassReso = 0.;
-                if (fDecChannel != kD0toKpi || track->Charge() > 0.) {
+                if (fDecChannel != kD0toKpi || ((isSelected == 1 || isSelected == 3) && track->Charge() > 0.)) {
                     fourVecReso += fourVecD[0];
-                    deltaInvMassReso = fourVecReso.M() - massD[0];
+                    double deltaInvMassReso = fourVecReso.M() - massD[0];
+                    if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
+                        fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
+                    }
                 }
-                else {
+                if (fDecChannel == kD0toKpi && isSelected >= 2 && track->Charge() < 0.) {
                     fourVecReso += fourVecD[1];
-                    deltaInvMassReso = fourVecReso.M() - massD[1];
+                    double deltaInvMassReso = fourVecReso.M() - massD[1];
+                    if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
+                        fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
+                    }
                 }
-                if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
-                    fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], massD[1], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
+            }
+        }
+
+        // loop over V0s
+        for (std::size_t iV0{0}; iV0 < selectedV0Indices.size(); ++iV0) {
+            AliAODv0* v0 = dynamic_cast<AliAODv0 *>(fAOD->GetV0(selectedV0Indices[iV0]));
+            for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo) {
+                if(fEnableV0[iHypo])
+                    continue;
+                if (!TESTBIT(selectedV0Ids[iV0], iHypo))
+                    continue;
+
+                double massV0 = TDatabasePDG::Instance()->GetParticle(kPdgV0IDs[iHypo])->Mass();
+
+                auto fourVecReso = ROOT::Math::PxPyPzMVector(v0->Px(), v0->Py(), v0->Pz(), massV0);
+                double deltaInvMassReso[2] = {0., 0.};
+                fourVecReso += fourVecD[0];
+                deltaInvMassReso[0] = fourVecReso.M() - massD[0];
+                if (fDecChannel == kD0toKpi) {
+                    fourVecReso += fourVecD[1];
+                    deltaInvMassReso[1] = fourVecReso.M() - massD[1];
+                }
+                for (int iMass=0; iMass<2; ++iMass) {
+                    if (IsInvMassResoSelected(deltaInvMassReso[iMass], iHypo)) {
+                        fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD, orig, v0->MassK0Short(), v0->Pt(), kPdgV0IDs[iHypo]);
+                    }
                 }
             }
         }
@@ -812,8 +870,11 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsBachelorSelected(AliAODTrack *&track,
         return retVal;
 
     AliPID::EParticleType parthypo[kNumBachIDs] = {AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron};
-    for (int iHypo{0}; iHypo<kNumBachIDs; iHypo++)
+    for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo)
     {
+        if (!fEnableBachelor[iHypo])
+            continue;
+
         double nSigmaTPC = -999.;
         int okTPC = pidHF->GetnSigmaTPC(track, parthypo[iHypo], nSigmaTPC);
         double nSigmaTOF = -999.;
@@ -823,6 +884,68 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsBachelorSelected(AliAODTrack *&track,
             fHistNsigmaTPCSelBach[iHypo]->Fill(track->P(), nSigmaTPC);
             fHistNsigmaTOFSelBach[iHypo]->Fill(track->P(), nSigmaTOF);
         }
+    }
+
+    return retVal;
+}
+
+//________________________________________________________________________
+int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
+{
+    int retVal = 0;
+
+    if (!v0)
+        return retVal;
+
+    if (v0->GetOnFlyStatus())
+        return retVal;
+
+    AliAODTrack *pTrack=dynamic_cast<AliAODTrack *>(v0->GetDaughter(0)); //0->Positive Daughter
+    AliAODTrack *nTrack=dynamic_cast<AliAODTrack *>(v0->GetDaughter(1)); //1->Negative Daughter
+
+    if (!pTrack || !nTrack) {
+      return retVal;
+    }
+
+    if (pTrack->GetID()<0 || nTrack->GetID()<0)
+        return retVal;
+    if (pTrack->Charge() == nTrack->Charge())
+        return retVal;
+
+    const AliVVertex* vtx = fAOD->GetPrimaryVertex();
+    double posPrimVtx[3];
+    vtx->GetXYZ(posPrimVtx);
+
+    // FIXME: hard-coded cut values
+    double cpa = v0->CosPointingAngle(posPrimVtx);
+    if (cpa < 0.95)
+        return retVal;
+
+    double dca = v0->DcaV0Daughters();
+    if (dca > 1.)
+        return retVal;
+
+    double rad = std::sqrt(v0->Xv()*v0->Xv() + v0->Yv()*v0->Yv());
+    if (rad < 0. || rad > 100.)
+        return retVal;
+
+
+    double expMass[kNumV0IDs] = {TDatabasePDG::Instance()->GetParticle(310)->Mass()};
+    double invMasses[kNumV0IDs] = {v0->MassK0Short()};
+    double y[kNumV0IDs] = {v0->RapK0Short()};
+    for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo)
+    {
+        if (!fEnableBachelor[iHypo])
+            continue;
+
+        if (std::abs(y[iHypo]) > 0.8)
+            continue;
+
+        if (std::abs(invMasses[iHypo] - expMass[iHypo]) < 0.05) {
+            continue;
+        }
+
+        retVal |= BIT(iHypo);
     }
 
     return retVal;
