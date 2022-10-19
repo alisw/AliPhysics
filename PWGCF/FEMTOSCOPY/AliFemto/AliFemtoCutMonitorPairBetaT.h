@@ -15,6 +15,7 @@ class AliFemtoV0;
 class AliFemtoKink;
 class AliFemtoPair;
 class TH1D;
+class TH2D;
 class TList;
 //#include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
