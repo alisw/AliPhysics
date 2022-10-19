@@ -6,8 +6,13 @@
  *      Author: gu74req
  */
 #include <iostream>
+#include <map>
+#include <utility>
+
 #include "AliFemtoDreamPartCollection.h"
 #include "AliLog.h"
+#include "TTree.h"
+
 ClassImp(AliFemtoDreamPartCollection)
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
     : fHigherMath(),

@@ -1,6 +1,10 @@
 #ifndef AliAnalysisTaskCharmingFemto_H
 #define AliAnalysisTaskCharmingFemto_H
 
+#include <map>
+#include <utility>
+
+
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "AliFemtoDreamEventCuts.h"
@@ -16,6 +20,7 @@
 #include "AliHFMLResponse.h"
 #include "TChain.h"
 #include "AliVertexingHFUtils.h"
+#include "TTree.h"
 
 class AliVParticle;
 class AliVTrack;
