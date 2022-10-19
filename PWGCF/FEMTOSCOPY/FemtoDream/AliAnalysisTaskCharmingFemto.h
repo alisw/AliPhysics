@@ -326,8 +326,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   int fLightPDG;
   AliAODTrack **fGTI;  //!
 
-  std::map <std::pair<int, int>, TTree*> * fPairTreeSE;
-  std::map <std::pair<int, int>, TTree*> * fPairTreeME;
+  std::map <std::pair<int, int>, TTree*> * fPairTreeSE; //!
+  std::map <std::pair<int, int>, TTree*> * fPairTreeME; //!
 
   TList *fQA;                      //!
   TList *fEvtHistList;             //!
