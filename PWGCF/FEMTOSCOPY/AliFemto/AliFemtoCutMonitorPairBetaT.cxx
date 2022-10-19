@@ -27,8 +27,8 @@ AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT():
   fMaxBetaT = 1.0;
   fBinsBetaT = 100;
   fHistBetaT = new TH1D("BetaT", "BetaT distribution", fBinsBetaT, 0.0, 1.0);
-  fBetaTpT1 = new TH2D(name, "BetaT vs pT for part 1", 20, 0.0, 1.0, 245, 0.0, 5.0);
-  fBetaTpT2 = new TH2D(name, "BetaT vs pT for part 2", 20, 0.0, 1.0, 245, 0.0, 5.0);
+  fBetaTpT1 = new TH2D("BetaT vs pT for part 1", 20, 0.0, 1.0, 245, 0.0, 5.0);
+  fBetaTpT2 = new TH2D("BetaT vs pT for part 2", 20, 0.0, 1.0, 245, 0.0, 5.0);
   fMassPart1 = 0.13957018;
   fMassPart2 = 0.13957018;
 }
