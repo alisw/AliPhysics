@@ -16,6 +16,8 @@
 
 AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT():
   fHistBetaT(0),
+  fBetaTpT1(0),
+  fBetaTpT2(0),
   fBinsBetaT(100),
   fMinBetaT(0.0),
   fMaxBetaT(1.0),
@@ -27,14 +29,16 @@ AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT():
   fMaxBetaT = 1.0;
   fBinsBetaT = 100;
   fHistBetaT = new TH1D("BetaT", "BetaT distribution", fBinsBetaT, 0.0, 1.0);
-  fBetaTpT1 = new TH2D("BetaT vs pT for part 1", 20, 0.0, 1.0, 245, 0.0, 5.0);
-  fBetaTpT2 = new TH2D("BetaT vs pT for part 2", 20, 0.0, 1.0, 245, 0.0, 5.0);
+  fBetaTpT1 = new TH2D("BetaT1pT","BetaT vs pT for part 1", 20, 0.0, 1.0, 245, 0.0, 5.0);
+  fBetaTpT2 = new TH2D("BetaT2pT","BetaT vs pT for part 2", 20, 0.0, 1.0, 245, 0.0, 5.0);
   fMassPart1 = 0.13957018;
   fMassPart2 = 0.13957018;
 }
 
 AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT(const char *aName, const int aBinsBetaT, double aMinBetaT, double aMaxBetaT, double aMassPart1, double aMassPart2):
   fHistBetaT(0),
+  fBetaTpT1(0),
+  fBetaTpT2(0),
   fBinsBetaT(100),
   fMinBetaT(0.0),
   fMaxBetaT(1.0),
@@ -56,6 +60,8 @@ AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT(const char *aName, cons
 
 AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT(const AliFemtoCutMonitorPairBetaT &c):
   fHistBetaT(0),
+  fBetaTpT1(0),
+  fBetaTpT2(0),  
   fBinsBetaT(100),
   fMinBetaT(0.0),
   fMaxBetaT(1.0),
