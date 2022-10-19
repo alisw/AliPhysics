@@ -10,6 +10,7 @@
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoPair.h"
 #include <TH1D.h>
+#include <TH2D.h>
 #include <TList.h>
 #include <TMath.h>
 
