@@ -33,6 +33,7 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion()
     fDoAncestors(false),
     fRemoveMCResonances(true),
     fRemoveMCResonanceDaughters(true),
+    fDoInvMassPlot(false), 
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -62,9 +63,11 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion()
     fSameEventMult_OneDimensional(nullptr),
     fSameEvent_OneDimensional_Ancestors(nullptr),
     fSameEventMult_OneDimensional_Ancestors(nullptr),
+    fSameEvent_InvMass(nullptr),
     fMixedEvent_List_OneDimensional(nullptr),
     fMixedEvent_OneDimensional(nullptr),
     fMixedEventMult_OneDimensional(nullptr),
+    fMixedEvent_InvMass(nullptr),
     fSameEvent_List_ThreeDimensional(nullptr),
     fSameEvent_ThreeDimensional(nullptr),
     fMixedEvent_List_ThreeDimensional(nullptr),
@@ -94,6 +97,7 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
     fDoAncestors(false),
     fRemoveMCResonances(true),
     fRemoveMCResonanceDaughters(true),
+    fDoInvMassPlot(false), 
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -123,9 +127,11 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
     fSameEventMult_OneDimensional(nullptr),
     fSameEvent_OneDimensional_Ancestors(nullptr),
     fSameEventMult_OneDimensional_Ancestors(nullptr),
+    fSameEvent_InvMass(nullptr),
     fMixedEvent_List_OneDimensional(nullptr),
     fMixedEvent_OneDimensional(nullptr),
     fMixedEventMult_OneDimensional(nullptr),
+    fMixedEvent_InvMass(nullptr),
     fSameEvent_List_ThreeDimensional(nullptr),
     fSameEvent_ThreeDimensional(nullptr),
     fMixedEvent_List_ThreeDimensional(nullptr),
@@ -292,6 +298,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
     //1D SE Objects for Data and total MC ~~~~~~~~~~~~~~~~~~~
     fSameEvent_OneDimensional = new TH1F*[10];
     fSameEventMult_OneDimensional = new TH2F*[10];
+    fSameEvent_InvMass = new TH1F*[10];
 
     if(!fDoThreeDFemto){
        for (int i = 0; i < PassedCombinations; i++) {
@@ -317,6 +324,13 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
             fSameEventDeltaEtaDeltaPhi_List->Add(fSameEventPhiTheta[10+i]);
           }
         }
+       if(fDoInvMassPlot){
+         for (int i = 0; i < PassedCombinations; i++) {
+           std::string title = "SameEvent_InvMass_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+           fSameEvent_InvMass[i] =  new TH1F(title.data(),title.data(), 3000, 0, 3.);
+           fSameEvent_List_OneDimensional->Add(fSameEvent_InvMass[i]);
+         }
+       }
     }//if(!fDoThreeDFemto)
 
 
@@ -390,6 +404,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
 
     fMixedEvent_OneDimensional = new TH1F*[10];
     fMixedEventMult_OneDimensional = new TH2F*[10];
+    fMixedEvent_InvMass = new TH1F*[10];
 
     if(!fDoThreeDFemto){
       for (int i = 0; i < PassedCombinations; i++) {
@@ -402,6 +417,14 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
         std::string title = "MixedEventMult_OneDimensional_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
         fMixedEventMult_OneDimensional[i] =  new TH2F(title.data(),title.data(), 3000, 0, 3,26,1,27);
         if(fRunPlotMult){fMixedEvent_List_OneDimensional->Add(fMixedEventMult_OneDimensional[i]);}
+      }
+  
+      if(fDoInvMassPlot){
+        for (int i = 0; i < PassedCombinations; i++) {
+          std::string title = "MixedEvent_InvMass_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+          fMixedEvent_InvMass[i] =  new TH1F(title.data(),title.data(), 3000, 0, 3.);
+          fMixedEvent_List_OneDimensional->Add(fMixedEvent_InvMass[i]);
+        }
       }
     }//if(!fDoThreeDFemto)
 
@@ -657,9 +680,9 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
 
     for (int i = 0; i < PassedCombinations; i++) {
         if(!fDoAncestors){
-         FillPairDistributionSE(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,i,*fConfig);
+         FillPairDistributionSE(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i],fSameEvent_InvMass[i],fSameEventPhiTheta,i,*fConfig);
       } else {
-         FillPairDistributionSEAncestors(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i], fSameEventPhiTheta,fSameEvent_OneDimensional_Ancestors,fSameEventMult_OneDimensional_Ancestors,fSameEventPhiTheta_Ancestors,i,*fConfig);
+         FillPairDistributionSEAncestors(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i],fSameEvent_InvMass[i],fSameEventPhiTheta,fSameEvent_OneDimensional_Ancestors,fSameEventMult_OneDimensional_Ancestors,fSameEventPhiTheta_Ancestors,i,*fConfig);
       }
     }
 
@@ -669,11 +692,11 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
       auto itMult = itZVtx->begin() + bins[1];
 
       for (int i = 0; i < PassedCombinations; i++) {
-       FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
+       FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i],fMixedEvent_InvMass[i],fMixedEventPhiTheta,i,*fConfig);
 
         if(fCombinations[i][0] != fCombinations[i][1]) //if the two particles are not the same species, we can mix a second time
         {
-            FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][1],fCombinations[i][0],PDGCodes,bins[1],fClosePairRejection[i],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i], fMixedEventPhiTheta,i,*fConfig);
+            FillPairDistributionME(ParticleVector,*itMult,fCombinations[i][1],fCombinations[i][0],PDGCodes,bins[1],fClosePairRejection[i],fMixedEvent_OneDimensional[i],fMixedEventMult_OneDimensional[i],fMixedEvent_InvMass[i],fMixedEventPhiTheta,i,*fConfig);
         }   
       } //for (int i = 0; i < PassedCombinations; i++)
 
@@ -748,7 +771,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::StoreGlobalTrackReference(AliVTrack *tr
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config){
+void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config){
 
   auto Particle1Vector = ParticleVector.begin()+firstSpecies;
   auto Particle2Vector = ParticleVector.begin()+secondSpecies;
@@ -797,13 +820,20 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std:
 
         hist->Fill(RelativeMomentum);
         hist2d->Fill(RelativeMomentum,mult+1);
+
+        if(fDoInvMassPlot){
+          TLorentzVector Sum = Particle1_LV + Particle2_LV; 
+          if(Sum.M() >= 0.){
+              HistInvMass->Fill(Sum.M()); 
+          }
+        }
     }
   }
 } //AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH2F **SameEventPhiTheta_OneDimensional, TH1F **histAncestor, TH2F **hist2dAncestor, TH2F **SameEventPhiTheta_OneDimensionalAncestor, int CombinationNumber, AliFemtoDreamCollConfig Config){ 
+void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH2F **SameEventPhiTheta_OneDimensional, TH1F **histAncestor, TH2F **hist2dAncestor, TH2F **SameEventPhiTheta_OneDimensionalAncestor, int CombinationNumber, AliFemtoDreamCollConfig Config){ 
 
   auto Particle1Vector = ParticleVector.begin()+firstSpecies;
   auto Particle2Vector = ParticleVector.begin()+secondSpecies;
@@ -870,6 +900,12 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::ve
         if(PassedClosePairRejection){
           hist->Fill(RelativeMomentum); 
           hist2d->Fill(RelativeMomentum,mult+1); 
+          if(fDoInvMassPlot){
+            TLorentzVector Sum = Particle1_LV + Particle2_LV; 
+            if(Sum.M() >= 0.){
+                HistInvMass->Fill(Sum.M()); 
+            }
+          }
         }
         if(PassedClosePairRejection_Ancestor){
           if(HasCommonAncestor){
@@ -888,7 +924,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSEAncestors(std::ve
 //==================================================================================================================================================
 
 
-void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH2F **EventPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config){ 
+void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH2F **EventPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config){ 
 
   auto ParticleSE = ParticleVector.begin()+speciesSE;
   auto MixedEventContainer = fPartContainer.begin()+speciesME;
@@ -935,6 +971,14 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionME(std::vector<std:
    
         hist->Fill(RelativeMomentum);
         hist2d->Fill(RelativeMomentum,mult+1);
+
+        if(fDoInvMassPlot){
+          TLorentzVector Sum = part1_LorVec + part2_LorVec; 
+          if(Sum.M() >= 0.){
+              HistInvMass->Fill(Sum.M()); 
+          }
+        }
+
       }
     }
   }
