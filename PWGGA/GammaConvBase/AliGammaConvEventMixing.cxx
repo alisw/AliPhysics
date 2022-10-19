@@ -74,36 +74,34 @@ unsigned int EventMixPoolMesonJets::GetNGammasInEvt(float jetP, int evt, bool is
 }
 
 //________________________________________________________________________________
-std::vector<std::unique_ptr<AliAODConversionPhoton>> EventMixPoolMesonJets::getPhotonsRotated(int nEvt, float jetP, TVector3 jetAxis, bool isCaloPhoton)
+std::vector<std::shared_ptr<AliAODConversionPhoton>> EventMixPoolMesonJets::getPhotonsRotated(unsigned int nEvt, float jetP, TVector3 jetAxis, bool isCaloPhoton)
 {
   int index = getJetPIndex(jetP);
   if (index < 0) {
     printf("ERROR: index out of range\n");
-    std::vector<std::unique_ptr<AliAODConversionPhoton>> tmpVec(1);
+    std::vector<std::shared_ptr<AliAODConversionPhoton>> tmpVec(1);
     tmpVec[0] = nullptr;
     return tmpVec;
   }
 
   if (nEvt >= mixingPool[index].size()) {
     printf("index for mixing pool out of range");
-    std::vector<std::unique_ptr<AliAODConversionPhoton>> tmpVec(1);
+    std::vector<std::shared_ptr<AliAODConversionPhoton>> tmpVec(1);
     tmpVec[0] = nullptr;
     return tmpVec;
   }
   // calculate the shift
   double jetThetaCurEv = jetAxis.Theta();
   double jetPhiCurEv = jetAxis.Phi();
-  double jetEnergyCurEv = jetAxis.Mag();
 
   double jetThetaMixEv = mixingPool[index][nEvt]->jetAxis.Theta();
   double jetPhiMixEv = mixingPool[index][nEvt]->jetAxis.Phi();
-  double jetEnergyMixEv = mixingPool[index][nEvt]->jetAxis.Mag();
 
   double diffTheta = jetThetaCurEv - jetThetaMixEv;
   double diffPhi = jetPhiCurEv - jetPhiMixEv;
 
   unsigned int nGammas = mixingPool[index][nEvt]->getNPhotons(isCaloPhoton);
-  std::vector<std::unique_ptr<AliAODConversionPhoton>> vecRotatedGammas(nGammas);
+  std::vector<std::shared_ptr<AliAODConversionPhoton>> vecRotatedGammas(nGammas);
   TLorentzVector LVGammaRot;
   TVector3 tmpVec;
   for (unsigned int i = 0; i < nGammas; ++i) {
@@ -118,7 +116,7 @@ std::vector<std::unique_ptr<AliAODConversionPhoton>> EventMixPoolMesonJets::getP
 
     tmpVec.SetMagThetaPhi(energy, theta, phi);
     LVGammaRot.SetPtEtaPhiM(tmpVec.Pt(), tmpVec.Eta(), tmpVec.Phi(), 0.);
-    vecRotatedGammas[i] = std::move(std::make_unique<AliAODConversionPhoton>(new AliAODConversionPhoton(&LVGammaRot)));
+    vecRotatedGammas[i] = std::make_shared<AliAODConversionPhoton>(&LVGammaRot);
   }
   return vecRotatedGammas;
 }

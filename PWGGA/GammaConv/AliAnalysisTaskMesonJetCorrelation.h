@@ -225,6 +225,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   std::vector<float> fVecBinsMesonInvMass;   //! meson inv. mass binning
   std::vector<float> fVecBinsPhotonPt;       //! photon/cluster pt binning
+  std::vector<float> fVecBinsClusterPt;      //! cluster binning until high pT
   std::vector<float> fVecBinsMesonPt;        //! meson pt binning
   std::vector<float> fVecBinsJetPt;          //! jet pt binning
   std::vector<float> fVecBinsFragment;       //! z (fragmentation function) binning
@@ -271,8 +272,24 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoNEvents;         //! vector of histos with event information
   std::vector<TH1F*> fHistoNEventsWOWeight; //! vector of histos with event information without event weights in case of JJ MC
 
-  std::vector<TH1F*> fHistoNGoodESDTracks; //! vector of histos for number of events
-  std::vector<TH1F*> fHistoVertexZ;        //! vector of histos for number of events without weights
+  std::vector<TH1F*> fHistoNGoodESDTracks;            //! vector of histos for number of tracks
+  std::vector<TH1F*> fHistoNGoodESDTracksEvtWithJets; //! vector of histos for number of tracks in events with jets
+  std::vector<TH1F*> fHistoVertexZ;                   //! vector of histos for number of events without weights
+
+  //-------------------------------
+  // cluster related histograms
+  //-------------------------------
+  std::vector<TH1F*> fHistoClusterPt; //! vector of histos with number of clusters as function of pt
+  std::vector<TH1F*> fHistoClusterE;  //! vector of histos with number of clusters as function of E
+
+  std::vector<TH1F*> fHistoClusterPtInJet; //! vector of histos with number of clusters as function of pt inside of jets
+  std::vector<TH1F*> fHistoClusterEInJet;  //! vector of histos with number of clusters as function of E inside of jets
+
+  //-------------------------------
+  // conversion photon histograms
+  //-------------------------------
+  std::vector<TH1F*> fHistoConvGammaPt;      //! vector of histos conversion photons vs. pt
+  std::vector<TH1F*> fHistoConvGammaPtInJet; //! vector of histos conversion photons vs. pt inside of jet
 
   //-------------------------------
   // Inv. Mass histograms
@@ -289,11 +306,6 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoInvMassVsPtPerpCone;    //! same as fHistoInvMassVsPt but in perpendicular cone
   std::vector<TH2F*> fHistoJetPtVsFragPerpCone;    //! same as fHistoJetPtVsFrag but in perp cone
   std::vector<TH2F*> fHistoJetPtVsFragPerpCone_SB; //! same as fHistoJetPtVsFrag_SB but in perp cone
-
-  //-------------------------------
-  // conversion histograms
-  //-------------------------------
-  std::vector<TH1F*> fHistoConvGammaPt; //! vector of histos conversion photons vs. pt
 
   //-------------------------------
   // Jet related histograms
@@ -370,7 +382,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 3);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 4);
 };
 
 #endif

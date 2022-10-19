@@ -87,6 +87,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              // binnings
                                                                              fVecBinsMesonInvMass({}),
                                                                              fVecBinsPhotonPt({}),
+                                                                             fVecBinsClusterPt({}),
                                                                              fVecBinsMesonPt({}),
                                                                              fVecBinsJetPt({}),
                                                                              fVecBinsFragment({}),
@@ -122,7 +123,16 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoNEvents({}),
                                                                              fHistoNEventsWOWeight({}),
                                                                              fHistoNGoodESDTracks({}),
+                                                                             fHistoNGoodESDTracksEvtWithJets({}),
                                                                              fHistoVertexZ({}),
+                                                                             // cluster histograms
+                                                                             fHistoClusterPt({}),
+                                                                             fHistoClusterE({}),
+                                                                             fHistoClusterPtInJet({}),
+                                                                             fHistoClusterEInJet({}),
+                                                                             // conversion histos
+                                                                             fHistoConvGammaPt({}),
+                                                                             fHistoConvGammaPtInJet({}),
                                                                              // inv mass Histograms
                                                                              fHistoInvMassVsPt({}),
                                                                              fHistoInvMassVsPt_Incl({}),
@@ -134,8 +144,6 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoInvMassVsPtPerpCone({}),
                                                                              fHistoJetPtVsFragPerpCone({}),
                                                                              fHistoJetPtVsFragPerpCone_SB({}),
-                                                                             // conversion histograms
-                                                                             fHistoConvGammaPt({}),
                                                                              // jet related Histograms
                                                                              fHistoEventwJets({}),
                                                                              fHistoNJets({}),
@@ -255,6 +263,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            // binnings
                                                                                            fVecBinsMesonInvMass({}),
                                                                                            fVecBinsPhotonPt({}),
+                                                                                           fVecBinsClusterPt({}),
                                                                                            fVecBinsMesonPt({}),
                                                                                            fVecBinsJetPt({}),
                                                                                            fVecBinsFragment({}),
@@ -290,7 +299,16 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoNEvents({}),
                                                                                            fHistoNEventsWOWeight({}),
                                                                                            fHistoNGoodESDTracks({}),
+                                                                                           fHistoNGoodESDTracksEvtWithJets({}),
                                                                                            fHistoVertexZ({}),
+                                                                                           // cluster histograms
+                                                                                           fHistoClusterPt({}),
+                                                                                           fHistoClusterE({}),
+                                                                                           fHistoClusterPtInJet({}),
+                                                                                           fHistoClusterEInJet({}),
+                                                                                           // conversion histos
+                                                                                           fHistoConvGammaPt({}),
+                                                                                           fHistoConvGammaPtInJet({}),
                                                                                            // inv mass Histograms
                                                                                            fHistoInvMassVsPt({}),
                                                                                            fHistoInvMassVsPt_Incl({}),
@@ -302,8 +320,6 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoInvMassVsPtPerpCone({}),
                                                                                            fHistoJetPtVsFragPerpCone({}),
                                                                                            fHistoJetPtVsFragPerpCone_SB({}),
-                                                                                           // conversion histograms
-                                                                                           fHistoConvGammaPt({}),
                                                                                            // jet related Histograms
                                                                                            fHistoEventwJets({}),
                                                                                            fHistoNJets({}),
@@ -431,6 +447,22 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   if (fIsMC > 1) {
     fHistoNEventsWOWeight.resize(fnCuts);
   }
+  fHistoNGoodESDTracks.resize(fnCuts);
+  fHistoNGoodESDTracksEvtWithJets.resize(fnCuts);
+  fHistoVertexZ.resize(fnCuts);
+
+  // cluster histograms
+  if (!fIsConv) {
+    fHistoClusterPt.resize(fnCuts);
+    fHistoClusterE.resize(fnCuts);
+    fHistoClusterPtInJet.resize(fnCuts);
+    fHistoClusterEInJet.resize(fnCuts);
+  }
+  if (!fIsCalo) {
+    // conversion histos
+    fHistoConvGammaPt.resize(fnCuts);
+    fHistoConvGammaPtInJet.resize(fnCuts);
+  }
 
   //----------------------
   // MC gen histograms
@@ -459,7 +491,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoMCSecMesonInAccPtvsSource.resize(fnCuts);
 
     fHistoMCJetPtVsMesonPt.resize(fnCuts),
-    fHistoMCJetPtVsFrag.resize(fnCuts);
+      fHistoMCJetPtVsFrag.resize(fnCuts);
     fHistoMCJetPtVsFrag_Sec.resize(fnCuts);
     fHistoMCPartonPtVsFrag.resize(fnCuts);
     fHistoMCJetPtVsFragTrueParton.resize(fnCuts);
@@ -636,6 +668,55 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(14, "Pileup V0M-TPCout Tracks");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(15, "Sphericity");
       fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);
+    }
+
+    if (fIsHeavyIon == 1) {
+      fHistoNGoodESDTracks[iCut] = new TH1F("GoodESDTracks", "GoodESDTracks", 4000, -0.5, 3999.5);
+      fHistoNGoodESDTracksEvtWithJets[iCut] = new TH1F("GoodESDTracksEvtsWithJets", "GoodESDTracksEvtsWithJets", 4000, -0.5, 3999.5);
+    } else if (fIsHeavyIon == 2) {
+      fHistoNGoodESDTracks[iCut] = new TH1F("GoodESDTracks", "GoodESDTracks", 400, -0.5, 399.5);
+      fHistoNGoodESDTracksEvtWithJets[iCut] = new TH1F("GoodESDTracksEvtsWithJets", "GoodESDTracksEvtsWithJets", 400, -0.5, 399.5);
+    } else {
+      fHistoNGoodESDTracks[iCut] = new TH1F("GoodESDTracks", "GoodESDTracks", 200, -0.5, 199.5);
+      fHistoNGoodESDTracksEvtWithJets[iCut] = new TH1F("GoodESDTracksEvtsWithJets", "GoodESDTracksEvtsWithJets", 200, -0.5, 199.5);
+    }
+    fHistoNGoodESDTracks[iCut]->GetXaxis()->SetTitle("#primary tracks");
+    fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
+    fHistoNGoodESDTracksEvtWithJets[iCut]->GetXaxis()->SetTitle("#primary tracks");
+    fESDList[iCut]->Add(fHistoNGoodESDTracksEvtWithJets[iCut]);
+
+    fHistoVertexZ[iCut] = new TH1F("VertexZ", "VertexZ", 220, -11, 11);
+    fHistoVertexZ[iCut]->GetXaxis()->SetTitle("Z_{vtx} (cm)");
+    fESDList[iCut]->Add(fHistoVertexZ[iCut]);
+
+    // cluster related histograms
+    if (!fIsConv) {
+      fHistoClusterPt[iCut] = new TH1F("ClusGamma_Pt", "ClusGamma_Pt", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data());
+      fHistoClusterPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fESDList[iCut]->Add(fHistoClusterPt[iCut]);
+
+      fHistoClusterE[iCut] = new TH1F("ClusGamma_E", "ClusGamma_E", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data());
+      fHistoClusterE[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fESDList[iCut]->Add(fHistoClusterE[iCut]);
+
+      fHistoClusterPtInJet[iCut] = new TH1F("ClusGamma_InJet_Pt", "ClusGamma_InJet_Pt", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data());
+      fHistoClusterPtInJet[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fESDList[iCut]->Add(fHistoClusterPtInJet[iCut]);
+
+      fHistoClusterEInJet[iCut] = new TH1F("ClusGamma_InJet_E", "ClusGamma_InJet_E", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data());
+      fHistoClusterEInJet[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fESDList[iCut]->Add(fHistoClusterEInJet[iCut]);
+    }
+
+    // conversion related histograms
+    if (!fIsCalo) {
+      fHistoConvGammaPt[iCut] = new TH1F("ConvGamma_Pt", "ConvGamma_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
+      fHistoConvGammaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
+
+      fHistoConvGammaPtInJet[iCut] = new TH1F("ConvGamma_InJet_Pt", "ConvGamma_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
+      fHistoConvGammaPtInJet[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fESDList[iCut]->Add(fHistoConvGammaPtInJet[iCut]);
     }
 
     // MC histograms
@@ -900,26 +981,26 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fESDList[iCut]->Add(fRespMatrixHandlerMesonInvMass[iCut]->GetTHnSparse("InvMassVsPt_JetPt"));
     else
       fESDList[iCut]->Add(fRespMatrixHandlerMesonInvMass[iCut]->GetTH2("InvMassVsPt_JetPt"));
-    
+
     fRespMatrixHandlerMesonInvMassVsZ[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsFragment, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
     if (fUseThNForResponse)
       fESDList[iCut]->Add(fRespMatrixHandlerMesonInvMassVsZ[iCut]->GetTHnSparse("InvMassVsZ_JetPt"));
     else
       fESDList[iCut]->Add(fRespMatrixHandlerMesonInvMassVsZ[iCut]->GetTH2("InvMassVsZ_JetPt"));
-    
+
     fRespMatrixHandlerMesonBackInvMassVsZ[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsFragment, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
     if (fUseThNForResponse)
       fESDList[iCut]->Add(fRespMatrixHandlerMesonBackInvMassVsZ[iCut]->GetTHnSparse("InvMassVsZ_Background_JetPt"));
     else
       fESDList[iCut]->Add(fRespMatrixHandlerMesonBackInvMassVsZ[iCut]->GetTH2("InvMassVsZ_Background_JetPt"));
-    
+
     // perpendicular cone
     fRespMatrixHandlerMesonInvMassVsZPerpCone[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsFragment, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
     if (fUseThNForResponse)
       fESDList[iCut]->Add(fRespMatrixHandlerMesonInvMassVsZPerpCone[iCut]->GetTHnSparse("InvMassVsZ_JetPt_PerpCone"));
     else
       fESDList[iCut]->Add(fRespMatrixHandlerMesonInvMassVsZPerpCone[iCut]->GetTH2("InvMassVsZ_JetPt_PerpCone"));
-    
+
     fRespMatrixHandlerMesonInvMassPerpCone[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsMesonPt, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
     if (fUseThNForResponse)
       fESDList[iCut]->Add(fRespMatrixHandlerMesonInvMassPerpCone[iCut]->GetTHnSparse("InvMassVsPt_JetPt_PerpCone"));
@@ -932,7 +1013,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fTrueList[iCut]->Add(fRespMatrixHandlerMesonPt[iCut]->GetTHnSparse("MesonPt_JetPt_TrueVsRec"));
       else
         fTrueList[iCut]->Add(fRespMatrixHandlerMesonPt[iCut]->GetTH2("MesonPt_JetPt_TrueVsRec"));
-      
+
       fRespMatrixHandlerFrag[iCut] = new MatrixHandler4D(fVecBinsFragment, fVecBinsFragment, fVecBinsJetPt, fVecBinsJetPt, fUseThNForResponse);
       if (fUseThNForResponse)
         fTrueList[iCut]->Add(fRespMatrixHandlerFrag[iCut]->GetTHnSparse("Frag_JetPt_TrueVsRec"));
@@ -1048,6 +1129,27 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
       valGammaPt += 1;
     else if (valGammaPt < 100)
       valGammaPt += 5;
+    else
+      break;
+  }
+  //---------------------------
+  // Cluster/single part pt Binning
+  //---------------------------
+  double valClusterPt = 0;
+  for (int i = 0; i < 1000; ++i) {
+    fVecBinsClusterPt.push_back(valClusterPt);
+    if (valClusterPt < 1.0)
+      valClusterPt += 0.1;
+    else if (valClusterPt < 5)
+      valClusterPt += 0.2;
+    else if (valClusterPt < 10)
+      valClusterPt += 0.5;
+    else if (valClusterPt < 50)
+      valClusterPt += 1;
+    else if (valClusterPt < 100)
+      valClusterPt += 5;
+    else if (valClusterPt < 200)
+      valClusterPt += 10;
     else
       break;
   }
@@ -1172,7 +1274,7 @@ void AliAnalysisTaskMesonJetCorrelation::InitJets()
 //________________________________________________________________________
 void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
 {
-  // cout << "ProcessJets" << endl;
+
   // clear map before next event
   MapRecJetsTrueJets.clear();
 
@@ -1228,7 +1330,6 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
 //_____________________________________________________________________________
 void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
 {
-  // cout << "in user exec" << endl;
   //
   // Called for each event
   //
@@ -1334,8 +1435,12 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC); // Should be 0 here
     if (fIsMC > 1)
       fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
-    // fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
-    // fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
+
+    fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+    if (fConvJetReader->GetNJets() > 0) {
+      fHistoNGoodESDTracksEvtWithJets[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+    }
+    fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
 
     if (fIsMC > 0) {
       ProcessAODMCParticles(0);
@@ -1465,8 +1570,9 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
       }
     }
 
-    // Bool_t InsideJet = kFALSE;
-    // fNumberOfClusters[fiCut]->Fill(nclus);
+    fHistoClusterPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
+    fHistoClusterE[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+
     Float_t clusPos[3] = {0, 0, 0};
     clus->GetPosition(clusPos);
     TVector3 clusterVectorJets(clusPos[0], clusPos[1], clusPos[2]);
@@ -1477,9 +1583,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
       Double_t RJetPi0Cand;
       int matchedJet = -1;
       if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJet, RJetPi0Cand)) {
-        // InsideJet = kTRUE;
         NClusinJets++;
         // fClusterEtaPhiJets[fiCut]->Fill(phiCluster, etaCluster);
+        fHistoClusterPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
+        fHistoClusterEInJet[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
       }
     }
 
@@ -1561,8 +1668,14 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
       fGammaCandidates.push_back(PhotonCandidate); // if no second loop is required add to events good gammas
 
       if (fIsFromDesiredHeader) {
-        if (!fDoLightOutput)
-          fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+        fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+        if (fConvJetReader->GetNJets() > 0) {
+          double RJetPi0Cand;
+          int matchedJet = -1;
+          if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJet, RJetPi0Cand)) {
+            fHistoConvGammaPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+          }
+        }
       }
       if (fIsMC > 0) {
         ProcessTruePhotonCandidatesAOD(PhotonCandidate);
@@ -1586,10 +1699,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
         continue;
       fIsFromDesiredHeader = kTRUE;
 
-      // Double_t weightMatBudgetGamma = 1.;
-      // if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-      //   weightMatBudgetGamma = ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
-      // }
+      Double_t weightMatBudgetGamma = 1.;
+      if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
+        weightMatBudgetGamma = ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
+      }
 
       if (fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0) {
         int isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
@@ -1602,9 +1715,16 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
         continue;
       if (!((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->UseToCloseV0sCut()) { // To Colse v0s cut diabled, step two not needed
         fGammaCandidates.push_back(PhotonCandidate);
-        // if(fIsFromDesiredHeader){
-        // if(!fDoLightOutput) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
-        // }
+        if (fIsFromDesiredHeader) {
+          fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+          if (fConvJetReader->GetNJets() > 0) {
+            double RJetPi0Cand;
+            int matchedJet = -1;
+            if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJet, RJetPi0Cand)) {
+              fHistoConvGammaPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+            }
+          }
+        }
         if (fIsMC > 0) {
           ProcessTruePhotonCandidatesAOD(PhotonCandidate);
         }
@@ -1621,10 +1741,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
         continue;
       fIsFromDesiredHeader = kTRUE;
 
-      //     Double_t weightMatBudgetGamma = 1.;
-      //     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-      // weightMatBudgetGamma = ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
-      //     }
+      Double_t weightMatBudgetGamma = 1.;
+      if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
+        weightMatBudgetGamma = ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
+      }
 
       if (fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0) {
         int isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
@@ -1635,9 +1755,16 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
       if (!((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->RejectToCloseV0s(PhotonCandidate, GammaCandidatesStepTwo, i))
         continue;
       fGammaCandidates.push_back(PhotonCandidate); // Add gamma to current cut TList
-      // if(fIsFromDesiredHeader){
-      // if(!fDoLightOutput) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
-      // }
+      if (fIsFromDesiredHeader) {
+        fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+        if (fConvJetReader->GetNJets() > 0) {
+          double RJetPi0Cand;
+          int matchedJet = -1;
+          if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJet, RJetPi0Cand)) {
+            fHistoConvGammaPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+          }
+        }
+      }
       if (fIsMC > 0) {
         ProcessTruePhotonCandidatesAOD(PhotonCandidate);
       }
@@ -1862,7 +1989,7 @@ void AliAnalysisTaskMesonJetCorrelation::CalculateBackgroundMix()
 
       for (unsigned int iMix = 0; iMix < fEventMix->GetNBGEvents(fMaxPtJet); iMix++) {
 
-        std::vector<std::unique_ptr<AliAODConversionPhoton>> vecGammaMix = fEventMix->getPhotonsRotated(iMix, fMaxPtJet, fHighestJetVector, true);
+        std::vector<std::shared_ptr<AliAODConversionPhoton>> vecGammaMix = fEventMix->getPhotonsRotated(iMix, fMaxPtJet, fHighestJetVector, true);
         for (const auto& gammaMix : vecGammaMix) {
           int cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(gammaMix->GetPhotonEta(), static_cast<double>((gammaMix->GetPhotonPhi() < 0) ? gammaMix->GetPhotonPhi() + TMath::Pi() * 2. : gammaMix->GetPhotonPhi()));
           if (!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellID, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()))) {
@@ -1882,7 +2009,7 @@ void AliAnalysisTaskMesonJetCorrelation::CalculateBackgroundMix()
 
       for (unsigned int iMix = 0; iMix < fEventMix->GetNBGEvents(fMaxPtJet); iMix++) {
 
-        std::vector<std::unique_ptr<AliAODConversionPhoton>> vecGammaMix = fEventMix->getPhotonsRotated(iMix, fMaxPtJet, fHighestJetVector, true);
+        std::vector<std::shared_ptr<AliAODConversionPhoton>> vecGammaMix = fEventMix->getPhotonsRotated(iMix, fMaxPtJet, fHighestJetVector, true);
         for (const auto& gammaMix : vecGammaMix) {
           int cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(gammaMix->GetPhotonEta(), static_cast<double>((gammaMix->GetPhotonPhi() < 0) ? gammaMix->GetPhotonPhi() + TMath::Pi() * 2. : gammaMix->GetPhotonPhi()));
           if (!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellID, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()))) {
@@ -1903,7 +2030,7 @@ void AliAnalysisTaskMesonJetCorrelation::CalculateBackgroundMix()
 
       for (unsigned int iMix = 0; iMix < fEventMix->GetNBGEvents(fMaxPtJet); iMix++) {
 
-        std::vector<std::unique_ptr<AliAODConversionPhoton>> vecGammaMix = fEventMix->getPhotonsRotated(iMix, fMaxPtJet, fHighestJetVector, false);
+        std::vector<std::shared_ptr<AliAODConversionPhoton>> vecGammaMix = fEventMix->getPhotonsRotated(iMix, fMaxPtJet, fHighestJetVector, false);
         for (const auto& gammaMix : vecGammaMix) {
 
           if (fabs(gammaMix->Eta()) > ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetEtaCut()) {
@@ -1953,14 +2080,16 @@ void AliAnalysisTaskMesonJetCorrelation::CalculateBackgroundSwapp()
           ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(swappedGammas[0]->GetPhotonEta(), static_cast<double>((swappedGammas[0]->GetPhotonPhi() < 0) ? swappedGammas[0]->GetPhotonPhi() + TMath::Pi() * 2. : swappedGammas[0]->GetPhotonPhi())),
           ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(swappedGammas[1]->GetPhotonEta(), static_cast<double>((swappedGammas[1]->GetPhotonPhi() < 0) ? swappedGammas[1]->GetPhotonPhi() + TMath::Pi() * 2. : swappedGammas[1]->GetPhotonPhi()))};
 
-        for (auto const& kCurrentClusterCandidates : fClusterCandidates) {
+        for (unsigned int iCurrent3 = 0; iCurrent3 < fClusterCandidates.size(); iCurrent3++) {
+          AliAODConversionPhoton* currentEventGoodV0Temp3 = (AliAODConversionPhoton*)(fClusterCandidates.at(iCurrent3));
+
           for (unsigned int iSwapped = 0; iSwapped < swappedGammas.size(); ++iSwapped) {
-            if (swappedGammas[iSwapped].get() == ((AliAODConversionPhoton*)kCurrentClusterCandidates)) {
+            if (iCurrent3 == iCurrent1 || iCurrent3 == iCurrent2) {
               continue;
             }
-            std::unique_ptr<AliAODConversionMother> backgroundCandidate(std::make_unique<AliAODConversionMother>(swappedGammas[iSwapped].get(), ((AliAODConversionPhoton*)kCurrentClusterCandidates)));
+            std::unique_ptr<AliAODConversionMother> backgroundCandidate(std::make_unique<AliAODConversionMother>(swappedGammas[iSwapped].get(), ((AliAODConversionPhoton*)currentEventGoodV0Temp3)));
             if (!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton[iSwapped], fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && swappedGammas[iSwapped]->P() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy()) {
-              if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(), kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton[iSwapped], ((AliAODConversionPhoton*)kCurrentClusterCandidates)->GetLeadingCellID())) {
+              if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(), kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton[iSwapped], ((AliAODConversionPhoton*)currentEventGoodV0Temp3)->GetLeadingCellID())) {
                 // Fill histograms here
                 FillInvMassBackHistograms(backgroundCandidate.get());
               }
@@ -1983,31 +2112,39 @@ void AliAnalysisTaskMesonJetCorrelation::CalculateBackgroundSwapp()
 
         int cellIDRotatedPhoton = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(swappedGammas[0]->GetPhotonEta(), static_cast<double>((swappedGammas[0]->GetPhotonPhi() < 0) ? swappedGammas[0]->GetPhotonPhi() + TMath::Pi() * 2. : swappedGammas[0]->GetPhotonPhi()));
 
-        for (auto const& kCurrentClusterCandidates : fClusterCandidates) {
-          if (swappedGammas[1].get() == ((AliAODConversionPhoton*)kCurrentClusterCandidates)) {
-            continue;
-          }
+        for (unsigned int iCurrent3 = 0; iCurrent3 < fClusterCandidates.size(); iCurrent3++) {
+          AliAODConversionPhoton* currentEventGoodV0Temp3 = (AliAODConversionPhoton*)(fClusterCandidates.at(iCurrent3));
 
-          if (swappedGammas[1]->Eta() < ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetEtaCut()) {
-            std::unique_ptr<AliAODConversionMother> backgroundCandidate(std::make_unique<AliAODConversionMother>(swappedGammas[1].get(), ((AliAODConversionPhoton*)kCurrentClusterCandidates)));
+          for (unsigned int iSwapped = 0; iSwapped < swappedGammas.size(); ++iSwapped) {
+            if (iCurrent3 == iCurrent1) {
+              continue;
+            }
 
-            if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(), kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), -1, ((AliAODConversionPhoton*)kCurrentClusterCandidates)->GetLeadingCellID())) {
-              // Fill histograms here
-              FillInvMassBackHistograms(backgroundCandidate.get());
+            if (swappedGammas[1]->Eta() < ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetEtaCut()) {
+              std::unique_ptr<AliAODConversionMother> backgroundCandidate(std::make_unique<AliAODConversionMother>(swappedGammas[1].get(), ((AliAODConversionPhoton*)currentEventGoodV0Temp3)));
+
+              if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(), kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), -1, ((AliAODConversionPhoton*)currentEventGoodV0Temp3)->GetLeadingCellID())) {
+                // Fill histograms here
+                FillInvMassBackHistograms(backgroundCandidate.get());
+              }
             }
           }
-        }
-        for (auto const& kCurrentPhotonCandidates : fGammaCandidates) {
-          if (swappedGammas[0].get() == ((AliAODConversionPhoton*)kCurrentPhotonCandidates)) {
-            continue;
-          }
+          for (unsigned int iCurrent3 = 0; iCurrent3 < fGammaCandidates.size(); iCurrent3++) {
+            AliAODConversionPhoton* currentEventGoodV0Temp3 = (AliAODConversionPhoton*)(fGammaCandidates.at(iCurrent3));
 
-          std::unique_ptr<AliAODConversionMother> backgroundCandidate(std::make_unique<AliAODConversionMother>(swappedGammas[0].get(), ((AliAODConversionPhoton*)kCurrentPhotonCandidates)));
+            for (unsigned int iSwapped = 0; iSwapped < swappedGammas.size(); ++iSwapped) {
+              if (iCurrent3 == iCurrent2) {
+                continue;
+              }
 
-          if (!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && swappedGammas[0]->P() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy()) {
-            if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(), kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton, -1)) {
-              // Fill histograms here
-              FillInvMassBackHistograms(backgroundCandidate.get());
+              std::unique_ptr<AliAODConversionMother> backgroundCandidate(std::make_unique<AliAODConversionMother>(swappedGammas[0].get(), ((AliAODConversionPhoton*)currentEventGoodV0Temp3)));
+
+              if (!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && swappedGammas[0]->P() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy()) {
+                if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(), kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton, -1)) {
+                  // Fill histograms here
+                  FillInvMassBackHistograms(backgroundCandidate.get());
+                }
+              }
             }
           }
         }
@@ -2028,15 +2165,15 @@ void AliAnalysisTaskMesonJetCorrelation::CalculateBackgroundSwapp()
         if (!swappedGammas[0].get())
           continue;
 
-        for (auto const& kCurrentClusterCandidates : fGammaCandidates) {
+        for (unsigned int iCurrent3 = 0; iCurrent3 < fGammaCandidates.size(); iCurrent3++) {
+          AliAODConversionPhoton* currentEventGoodV0Temp3 = (AliAODConversionPhoton*)(fGammaCandidates.at(iCurrent3));
 
           for (unsigned int iSwapped = 0; iSwapped < swappedGammas.size(); ++iSwapped) {
-
-            if (swappedGammas[iSwapped].get() == ((AliAODConversionPhoton*)kCurrentClusterCandidates)) {
+            if (iCurrent3 == iCurrent1 || iCurrent3 == iCurrent2) {
               continue;
             }
 
-            std::unique_ptr<AliAODConversionMother> backgroundCandidate(std::make_unique<AliAODConversionMother>(swappedGammas[iSwapped].get(), ((AliAODConversionPhoton*)kCurrentClusterCandidates)));
+            std::unique_ptr<AliAODConversionMother> backgroundCandidate(std::make_unique<AliAODConversionMother>(swappedGammas[iSwapped].get(), ((AliAODConversionPhoton*)currentEventGoodV0Temp3)));
             if (swappedGammas[iSwapped]->Eta() < ((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->GetEtaCut()) {
               if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(), kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), -1, -1)) {
                 // Fill histograms here
@@ -2049,6 +2186,7 @@ void AliAnalysisTaskMesonJetCorrelation::CalculateBackgroundSwapp()
     }
   }
 }
+
 
 //__________________________________________________________________________
 /// \brief function to fill all histograms related to the meson background (estimated with rotation, mixed evt etc.)
