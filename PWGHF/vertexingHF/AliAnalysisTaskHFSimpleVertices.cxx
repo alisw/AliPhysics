@@ -1658,22 +1658,24 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
         AliAODVertex* vertexAOD = ConvertToAODVertex(trkv);
         AliAODRecoDecayHF2Prong* the2Prong = Make2Prong(twoTrackArray, vertexAOD, bzkG);
         the2Prong->SetOwnPrimaryVtx(vertexAODp);
-        Int_t dzeroSel = 3;
+
+        // Separate case for jpsi for now
         Int_t jpsiSel = 3;
         if (fCandidateCutLevel == 2) {
-          if (fSelectD0 + fSelectD0bar > 0) {
-            dzeroSel = DzeroSelectionCuts(the2Prong);
-          }
           if (fSelectJpsi > 0) {
             jpsiSel = JpsiSelectionCuts(the2Prong, track_p0, track_n0, primVtxTrk, bzkG);
           }
         } else if (fCandidateCutLevel == 1) {
-          dzeroSel = DzeroSkimCuts(the2Prong);
           jpsiSel = JpsiSkimCuts(the2Prong);
         } else if (fCandidateCutLevel == 3) {
           if (fSelectJpsi > 0) {
             jpsiSel = JpsiSkimCuts(the2Prong) + JpsiSelectionCuts(the2Prong, track_p0, track_n0, primVtxTrk, bzkG);
           }
+        }
+
+        Int_t dzeroSel = DzeroSkimCuts(the2Prong);
+        if (dzeroSel > 0 && fSelectD0 + fSelectD0bar > 0) {
+            dzeroSel = DzeroSelectionCuts(the2Prong);
         }
 
         Double_t ptD = the2Prong->Pt();
