@@ -1673,15 +1673,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           }
         }
 
-        Int_t dzeroSel = 3;
-        if (fCandidateCutLevel > 0 && fSelectD0 + fSelectD0bar > 0) {
-          if ((DzeroSkimCuts(the2Prong) == 0)) {
-            dzeroSel = 0;
-          } else {
+        Int_t dzeroSel = DzeroSkimCuts(the2Prong);
+        if (dzeroSel > 0 && fSelectD0 + fSelectD0bar > 0) {
             dzeroSel = DzeroSelectionCuts(the2Prong);
-           }
-        } else if (fCandidateCutLevel > 0 && fSelectD0 + fSelectD0bar == 0) {
-          dzeroSel = DzeroSkimCuts(the2Prong);
         }
 
         Double_t ptD = the2Prong->Pt();
