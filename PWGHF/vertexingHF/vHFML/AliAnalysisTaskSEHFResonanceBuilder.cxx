@@ -191,7 +191,15 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
         }
     }
 
-    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c})", 100, 0., 50., 200., minMass, maxMass);
+    std::array<std::string, kNumV0IDs> v0Label = {"Kz"};
+    std::array<double, kNumV0IDs> v0MassMin = {TDatabasePDG::Instance()->GetParticle(310)->Mass() - 0.05};
+    std::array<double, kNumV0IDs> v0MassMax = {TDatabasePDG::Instance()->GetParticle(310)->Mass() + 0.05};
+    for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo) {
+        fHistMassSelV0[iHypo] = new TH2F(Form("fHistMass%sSel", v0Label[iHypo].data()), ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c}^{2})", 100, 0., 50., 100, v0MassMin[iHypo], v0MassMax[iHypo]);
+        fOutput->Add(fHistMassSelV0[iHypo]);
+    }
+
+    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c}^{2})", 100, 0., 50., 200., minMass, maxMass);
     fOutput->Add(fInvMassVsPt);
 
     //Counter for Normalization
@@ -958,6 +966,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
             continue;
         }
 
+        fHistMassSelV0[iHypo]->Fill(v0->Pt(), invMasses[iHypo]);
         retVal |= BIT(iHypo);
     }
 

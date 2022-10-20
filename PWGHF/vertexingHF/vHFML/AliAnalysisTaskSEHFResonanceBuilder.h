@@ -147,6 +147,7 @@ private:
     TH1F *fHistNEvents = nullptr;                                                         //!<! hist. for No. of events
     std::array<TH2F*, kNumBachIDs> fHistNsigmaTPCSelBach{};                               //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
     std::array<TH2F*, kNumBachIDs> fHistNsigmaTOFSelBach{};                               //!<! array of histograms with NsigmaTOF vs. p for selected bachelor tracks
+    std::array<TH2F*, kNumV0IDs> fHistMassSelV0{};                                        //!<! array of histograms with invariant-mass vs. pT for selected V0s
     std::array<TH1F*, 3> fHistBDTOutputScore{};                                           //!<! array of histograms with BDT output scores for D mesons
     TH2F* fInvMassVsPt{};                                                                 //!<! 2D hist with D-meson inv mass vs pT
     TNtuple *fNtupleCharmReso = nullptr;                                                  //!<! ntuple for HF resonances
@@ -194,7 +195,7 @@ private:
     std::vector<float> fInvMassResoDeMax{5.0};                                            /// minimum invariant mass values for HF resonance (in case of deuteron combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 5); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 6); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 
