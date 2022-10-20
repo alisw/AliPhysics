@@ -1094,6 +1094,22 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   Double_t maxPt = 150;
   Int_t  nPtBins = 300;
 
+  // initialize variable cluster pt binning
+  Int_t nBinsClusterPt        = 500;
+  Float_t maxClusterPt        = 100;
+  Double_t *arrClusPtBinning  = new Double_t[1200];
+    for(Int_t i=0; i<nBinsClusterPt+1;i++){
+      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+      else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
+      else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
+      else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
+      else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
+      else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
+      else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
+      else arrClusPtBinning[i]                = maxClusterPt;
+    }
+
+
   Double_t minMass = 0.;
   Double_t maxMass = 2.;
   Int_t nMassBins = 200;
@@ -1615,7 +1631,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fCaloFolderRec->SetOwner(kTRUE);
   fOutputList->Add(fCaloFolderRec);
   // always fill this for trigger rejection factor and QA
-  fCaloPt = new TH1F("fCaloPt","calo photons in EMC acc;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+  fCaloPt = new TH1F("fCaloPt","calo photons in EMC acc;p_{T} (GeV/c); counts",nBinsClusterPt, arrClusPtBinning);
   fTrackPt = new TH1F("fTrackPt","pt distribution of hybrid tracks;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackEta = new TH1F("fTrackEta","#eta distribution of hybrid tracks;#eta; counts",200,-0.9,0.9);
   fTrackPhiPt = new TH2F("fTrackPhiPt","#phi distribution of hybrid tracks;#phi; counts",200,0,2*TMath::Pi(),nPtBins,minPt,maxPt);
