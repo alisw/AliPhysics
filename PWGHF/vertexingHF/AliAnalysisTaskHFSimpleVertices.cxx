@@ -1371,7 +1371,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           if (isGoodDecay) {
             Double_t ptgen = part->Pt();
             Double_t ygen = part->Y();
-            Int_t isFromB = AliVertexingHFUtils::CheckOrigin(mcEvent, mcPart, kTRUE);
+            Int_t isFromB = AliVertexingHFUtils::CheckOrigin(mcEvent, mcPart, kFALSE);
             if (isFromB == 4) {
               fHistPtGenPrompt[iPart]->Fill(ptgen);
               if (IsInFiducialAcceptance(ptgen, ygen))
@@ -1941,7 +1941,7 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
           fHistInvMassDplusSignal->Fill(mplus);
           AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
           if (dmes) {
-            Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kTRUE);
+            Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kFALSE);
             Double_t ptgen = dmes->Pt();
             if (orig == 4) {
               fHistPtRecoGenPtPrompt[1]->Fill(ptgen);
@@ -1990,7 +1990,7 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
                 fHistInvMassDsRefl->Fill(mpiKK);
               }
             }
-            Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kTRUE);
+            Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kFALSE);
             Double_t ptgen = dmes->Pt();
             if (orig == 4) {
               fHistPtRecoGenPtPrompt[2]->Fill(ptgen);
@@ -2036,7 +2036,7 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
         if (labD >= 0) {
           AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
           if (dmes) {
-            Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kTRUE);
+            Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kFALSE);
             Double_t ptgen = dmes->Pt();
             if (orig == 4) {
               fHistPtRecoGenPtPrompt[3]->Fill(ptgen);
