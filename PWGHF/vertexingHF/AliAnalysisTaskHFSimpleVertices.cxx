@@ -1733,7 +1733,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
               }
               AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
               if (dmes) {
-                Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kTRUE);
+                Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kFALSE);
                 Double_t ptgen = dmes->Pt();
                 if (orig == 4) {
                   fHistPtRecoPrompt[0]->Fill(ptD);
@@ -1892,6 +1892,14 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
   the3Prong->GetPrimaryVtx()->GetCovMatrix(covMatrixPV);
   the3Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixSV);
 
+  if (DplusSkimCuts(the3Prong) || DsSkimCuts(the3Prong) || LcSkimCuts(the3Prong)) {
+    fHist3ProngVertX->Fill(trkv3->GetX());
+    fHist3ProngVertY->Fill(trkv3->GetY());
+    fHist3ProngVertZ->Fill(trkv3->GetZ());
+    fHistCovMatPrimVXX3Prong->Fill(covMatrixPV[0]);
+    fHistCovMatSecVXX3Prong->Fill(covMatrixSV[0]);
+  }
+
   if (massSel & (1 << kbitDplus)) {
     Int_t dplusSel = 1;
     if (fCandidateCutLevel == 2 && fSelectDplus > 0) {
@@ -1927,11 +1935,6 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       fHistImpParXYDplus->Fill(the3Prong->ImpParXY());
       fHistNormIPDplus->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
       fHistoSumSqImpParDplusDau->Fill(sqSumd0Prong);
-      fHistCovMatPrimVXX3Prong->Fill(covMatrixPV[0]);
-      fHistCovMatSecVXX3Prong->Fill(covMatrixSV[0]);
-      fHist3ProngVertX->Fill(trkv3->GetX());
-      fHist3ProngVertY->Fill(trkv3->GetY());
-      fHist3ProngVertZ->Fill(trkv3->GetZ());
       if (fReadMC && mcEvent) {
         Int_t labD = MatchToMC(the3Prong, 411, mcEvent, 3, threeTrackArray, pdgDplusdau);
         if (labD >= 0) {
@@ -1969,11 +1972,6 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       fHistYPtDs->Fill(ptcand_3prong, rapid);
       fHistDecLenDs->Fill(the3Prong->DecayLength());
       fHistCosPointDs->Fill(the3Prong->CosPointingAngle());
-      fHistCovMatPrimVXX3Prong->Fill(covMatrixPV[0]);
-      fHistCovMatSecVXX3Prong->Fill(covMatrixSV[0]);
-      fHist3ProngVertX->Fill(trkv3->GetX());
-      fHist3ProngVertY->Fill(trkv3->GetY());
-      fHist3ProngVertZ->Fill(trkv3->GetZ());
       if (fReadMC && mcEvent) {
         Int_t labD = MatchToMC(the3Prong, 431, mcEvent, 3, threeTrackArray, pdgDsdau);
         if (labD >= 0) {
@@ -2033,11 +2031,6 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       fHistImpParLcDau0->Fill(the3Prong->Getd0Prong(0));
       fHistImpParLcDau1->Fill(the3Prong->Getd0Prong(1));
       fHistImpParLcDau2->Fill(the3Prong->Getd0Prong(2));
-      fHistCovMatPrimVXX3Prong->Fill(covMatrixPV[0]);
-      fHistCovMatSecVXX3Prong->Fill(covMatrixSV[0]);
-      fHist3ProngVertX->Fill(trkv3->GetX());
-      fHist3ProngVertY->Fill(trkv3->GetY());
-      fHist3ProngVertZ->Fill(trkv3->GetZ());
       if (fReadMC && mcEvent) {
         Int_t labD = MatchToMC(the3Prong, 4122, mcEvent, 3, threeTrackArray, pdgLcdau);
         if (labD >= 0) {
