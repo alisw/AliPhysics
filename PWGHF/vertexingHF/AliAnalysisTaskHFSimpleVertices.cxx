@@ -1685,8 +1685,8 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           fHist2ProngVertX->Fill(trkv->GetX());
           fHist2ProngVertY->Fill(trkv->GetY());
           fHist2ProngVertZ->Fill(trkv->GetZ());
-          fHistCovMatPrimVXX2Prong->Fill(covMatrix[0]);
-          fHistCovMatSecVXX2Prong->Fill(covMatrix[0]);
+          fHistCovMatPrimVXX2Prong->Fill(covMatrixPV[0]);
+          fHistCovMatSecVXX2Prong->Fill(covMatrixSV[0]);
         }
 
         Double_t ptD = the2Prong->Pt();
