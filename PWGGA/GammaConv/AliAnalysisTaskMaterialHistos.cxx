@@ -1113,6 +1113,10 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
 
     if(eventQuality != 0){// Event Not Accepted
       // cout << "event rejected due to: " <<eventQuality << endl;
+       cout << "event rejected due to missing vertex: " <<eventQuality << endl;
+      if (eventQuality==5 && fIsMC > 0){
+	ProcessMCPhotonsNoVertex();
+      }
       hNEvents[iCut]->Fill(eventQuality);
       continue;
     }
