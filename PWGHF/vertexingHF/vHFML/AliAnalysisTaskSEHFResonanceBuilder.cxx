@@ -437,7 +437,6 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     // prepare vector of selected V0s
     std::vector<int> selectedV0Indices{};
     std::vector<int> selectedV0Ids{};
-
     if (std::accumulate(fEnableV0.begin(), fEnableV0.end(), 0)) {
         for (int iV0{0}; iV0 < fAOD->GetNumberOfV0s(); ++iV0) {
             AliAODv0 *v0 = fAOD->GetV0(iV0);
@@ -524,32 +523,41 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             }
         }
 
-        int chargeD = 0.;
+        int chargeD[2] = {0, 0};
         std::array<ROOT::Math::PxPyPzMVector, 2> fourVecD{};
         double massD[2] = {-1, -1};
+        double massD4Delta[2] = {-1, -1};
         switch(fDecChannel) {
             case kD0toKpi:
             {
                 double massDau[2] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass()};
                 for (int iProng=0; iProng<2; ++iProng) {
-                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(dMeson->GetProngID(iProng)));
+                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF.GetProng(fAOD, dMeson, iProng));
                     fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
                     fourVecD[1] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[1-iProng]);
                 }
-                if (isSelected == 1 || isSelected == 3)
-                    massD[0] = fourVecD[0].M();
-                if (isSelected >=2)
-                    massD[1] = fourVecD[1].M();
+                if (isSelected == 1 || isSelected == 3) {
+                    massD4Delta[0] = fourVecD[0].M();
+                    massD[0] = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0();
+                    chargeD[0] = 1;
+                }
+                if (isSelected >=2) {
+                    massD4Delta[1] = fourVecD[1].M();
+                    massD[1] = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0bar();
+                    chargeD[1] = -1;
+                }
                 break;
             }
             case kDplustoKpipi:
             {
                 double massDau[3] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass(), TDatabasePDG::Instance()->GetParticle(211)->Mass()};
                 for (int iProng=0; iProng<3; ++iProng) {
-                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(dMeson->GetProngID(iProng)));
+                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF.GetProng(fAOD, dMeson, iProng));
                     fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
                 }
-                massD[0] = fourVecD[0].M();
+                massD4Delta[0] = fourVecD[0].M();
+                massD[0] = dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson)->InvMassDplus();
+                chargeD[0] = dMeson->Charge();
                 break;
             }
             case kDstartoD0pi:
@@ -570,10 +578,12 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     idxDau[2] = dZero->GetProngID(1); // pi
                 }
                 for (int iProng=0; iProng<3; ++iProng) {
-                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(idxDau[iProng]));
+                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF.GetProng(fAOD, dMeson, idxDau[iProng]));
                     fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
                 }
-                massD[0] = fourVecD[0].M();
+                massD4Delta[0] = fourVecD[0].M();
+                massD[0] = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->DeltaInvMass();
+                chargeD[0] = dMeson->Charge();
                 break;
             }
         }
@@ -583,9 +593,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             AliAODTrack* track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(selectedTrackIndices[iTrack]));
 
             for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo) {
-                if(fEnableBachelor[iHypo])
+                if(!fEnableBachelor[iHypo])
                     continue;
-                if (IsDaughterTrack(track, dMeson, arrayCandDDau))
+                if (IsDaughterTrack(track, dMeson, arrayCandDDau, &vHF))
                     continue;
                 if (!TESTBIT(selectedTrackIds[iTrack], iHypo))
                     continue;
@@ -593,20 +603,20 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 auto fourVecReso = ROOT::Math::PxPyPzMVector(track->Px(), track->Py(), track->Pz(), massBachelor);
                 if (fDecChannel != kD0toKpi || ((isSelected == 1 || isSelected == 3) && track->Charge() > 0.)) {
                     fourVecReso += fourVecD[0];
-                    double deltaInvMassReso = fourVecReso.M() - massD[0];
+                    double deltaInvMassReso = fourVecReso.M() - massD4Delta[0];
                     if (std::abs(pdgCode0) == 321)
                         orig *= -1.; //refelcted signal
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
-                        fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
+                        fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD[0], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                     }
                 }
                 if (fDecChannel == kD0toKpi && isSelected >= 2 && track->Charge() < 0.) {
                     fourVecReso += fourVecD[1];
-                    double deltaInvMassReso = fourVecReso.M() - massD[1];
+                    double deltaInvMassReso = fourVecReso.M() - massD4Delta[1];
                     if (std::abs(pdgCode0) == 211)
                         orig *= -1.; //refelcted signal
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
-                        fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD, orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
+                        fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD[1], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                     }
                 }
             }
@@ -616,7 +626,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
         for (std::size_t iV0{0}; iV0 < selectedV0Indices.size(); ++iV0) {
             AliAODv0* v0 = dynamic_cast<AliAODv0 *>(fAOD->GetV0(selectedV0Indices[iV0]));
             for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo) {
-                if(fEnableV0[iHypo])
+                if(!fEnableV0[iHypo])
                     continue;
                 if (!TESTBIT(selectedV0Ids[iV0], iHypo))
                     continue;
@@ -628,13 +638,13 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 bool isRefl[2] = {false, false};
                 if (fDecChannel != kD0toKpi || (isSelected == 1 || isSelected ==3)) {
                     fourVecReso += fourVecD[0];
-                    deltaInvMassReso[0] = fourVecReso.M() - massD[0];
+                    deltaInvMassReso[0] = fourVecReso.M() - massD4Delta[0];
                     if (std::abs(pdgCode0) == 321)
                         isRefl[0] = true;
                 }
                 if (fDecChannel == kD0toKpi && isSelected >= 2) {
                     fourVecReso += fourVecD[1];
-                    deltaInvMassReso[1] = fourVecReso.M() - massD[1];
+                    deltaInvMassReso[1] = fourVecReso.M() - massD4Delta[1];
                     if (std::abs(pdgCode0) == 211)
                         isRefl[1] = true;
                 }
@@ -642,7 +652,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     if (IsInvMassResoSelected(deltaInvMassReso[iMass], iHypo)) {
                         if (isRefl[iMass])
                             orig *= -1.;
-                        fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD, orig, v0->MassK0Short(), v0->Pt(), kPdgV0IDs[iHypo]);
+                        fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD[iMass], orig, v0->MassK0Short(), v0->Pt(), kPdgV0IDs[iHypo]);
                     }
                 }
             }
@@ -956,13 +966,13 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
     double y[kNumV0IDs] = {v0->RapK0Short()};
     for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo)
     {
-        if (!fEnableBachelor[iHypo])
+        if (!fEnableV0[iHypo])
             continue;
 
         if (std::abs(y[iHypo]) > 0.8)
             continue;
 
-        if (std::abs(invMasses[iHypo] - expMass[iHypo]) < 0.05) {
+        if (std::abs(invMasses[iHypo] - expMass[iHypo]) > 0.05) {
             continue;
         }
 
@@ -1016,14 +1026,15 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, in
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau) {
+bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau, AliAnalysisVertexingHF *vHF) {
 
     int trkIdx = track->GetID();
     switch(fDecChannel) {
         case kD0toKpi:
         {
             for (int iProng=0; iProng<2; ++iProng) {
-                if (trkIdx == dMeson->GetProngID(iProng))
+                AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF->GetProng(fAOD, dMeson, dMeson->GetProngID(iProng)));
+                if (trkIdx == dauD->GetID())
                     return true;
             }
             break;
@@ -1031,14 +1042,16 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, A
         case kDplustoKpipi:
         {
             for (int iProng=0; iProng<3; ++iProng) {
-                if (trkIdx == dMeson->GetProngID(iProng))
+                AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF->GetProng(fAOD, dMeson, dMeson->GetProngID(iProng)));
+                if (trkIdx == dauD->GetID())
                     return true;
             }
             break;
         }
         case kDstartoD0pi:
         {
-            if (trkIdx == dMeson->GetProngID(0))
+            AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF->GetProng(fAOD, dMeson, dMeson->GetProngID(0)));
+            if (trkIdx == dauD->GetID())
                 return true;
 
             AliAODRecoDecayHF2Prong* dZero = nullptr;
@@ -1047,7 +1060,8 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, A
             else
                 dZero = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->Get2Prong();
             for (int iProng=0; iProng<2; ++iProng) {
-                if (trkIdx == dZero->GetProngID(iProng))
+                dauD = dynamic_cast<AliAODTrack *>(vHF->GetProng(fAOD, dZero, dZero->GetProngID(iProng)));
+                if (trkIdx == dauD->GetID())
                     return true;
             }
             break;
