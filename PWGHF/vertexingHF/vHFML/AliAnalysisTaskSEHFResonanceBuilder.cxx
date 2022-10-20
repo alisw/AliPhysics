@@ -195,11 +195,11 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     std::array<double, kNumV0IDs> v0MassMin = {TDatabasePDG::Instance()->GetParticle(310)->Mass() - 0.05};
     std::array<double, kNumV0IDs> v0MassMax = {TDatabasePDG::Instance()->GetParticle(310)->Mass() + 0.05};
     for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo) {
-        fHistMassSelV0[iHypo] = new TH2F(Form("fHistMass%sSel", v0Label[iHypo].data()), ";#it{p} (GeV/#it{c});#it{M} (GeV/#it{c})", 100, 0., 50., 100, v0MassMin[iHypo], v0MassMax[iHypo]);
+        fHistMassSelV0[iHypo] = new TH2F(Form("fHistMass%sSel", v0Label[iHypo].data()), ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c}^{2})", 100, 0., 50., 100, v0MassMin[iHypo], v0MassMax[iHypo]);
         fOutput->Add(fHistMassSelV0[iHypo]);
     }
 
-    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c})", 100, 0., 50., 200., minMass, maxMass);
+    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c}^{2})", 100, 0., 50., 200., minMass, maxMass);
     fOutput->Add(fInvMassVsPt);
 
     //Counter for Normalization
