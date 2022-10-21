@@ -39,7 +39,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
 
-  Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Float_t *lVtx);
+  Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Double_t *lVtx);
   void Tracks2V0vertices(TClonesArray* fv0s, TObjArray* ev1, TObjArray* ev2, Bool_t mixing, AliVVertex *vtxT3D, Double_t b);
   Bool_t TrackCutsForTreeAOD(AliAODTrack* trk);
   Bool_t TrackCutsForTreeESD(AliESDtrack* trk);

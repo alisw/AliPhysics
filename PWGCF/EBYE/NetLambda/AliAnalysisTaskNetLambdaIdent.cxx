@@ -1088,7 +1088,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
     if(fIsAOD) {
       aodcasc = fAOD->GetCascade(iCasc);
-      if(aodcasc->GetOnFlyStatus == kTRUE) { continue; }
+      if(aodcasc->GetOnFlyStatus() == kTRUE) { continue; }
       AliAODVertex* cascv0vtx = (AliAODVertex*)aodcasc->GetSecondaryVtx();
       aodcascv0postrack = (AliAODTrack*)cascv0vtx->GetDaughter(0);
       aodcascv0negtrack = (AliAODTrack*)cascv0vtx->GetDaughter(1);
@@ -1136,7 +1136,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     }
     else {
       esdcasc = fESD->GetCascade(iCasc);
-      if(esdcasc->GetOnFlyStatus == kTRUE) { continue; }
+      if(esdcasc->GetOnFlyStatus() == kTRUE) { continue; }
       esdcascbachtrack = fESD->GetTrack(TMath::Abs(esdcasc->GetBindex()));
       esdcascv0postrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdcasc->GetPindex()));
       esdcascv0negtrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdcasc->GetNindex()));
@@ -1232,7 +1232,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 }
 
 // copied from AliRoot/ANALYSIS/ESDfilter/AliAnalysisTaskESDfilter.cxx and modified
-Float_t AliAnalysisTaskNetLambdaIdent::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Float_t *lVtx)
+Float_t AliAnalysisTaskNetLambdaIdent::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Double_t *lVtx)
 //Encapsulation of CosPA calculation (warning: considers AliESDtrack clones)
 {
   Float_t lCosPA = -1;
