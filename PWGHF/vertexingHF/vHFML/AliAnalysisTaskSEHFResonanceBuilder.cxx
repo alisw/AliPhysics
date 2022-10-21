@@ -881,6 +881,13 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
         return isMLsel;
     }
+    if (isSelected == 1 || isSelected == 3) {
+        fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
+    }
+    else if (isSelected >= 2) {
+        fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
+    }
+
 
     return isSelected;
 }
@@ -931,6 +938,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
     if (v0->GetOnFlyStatus())
         return retVal;
 
+    // FIXME: hard-coded cut values
+
     AliAODTrack *pTrack=dynamic_cast<AliAODTrack *>(v0->GetDaughter(0)); //0->Positive Daughter
     AliAODTrack *nTrack=dynamic_cast<AliAODTrack *>(v0->GetDaughter(1)); //1->Negative Daughter
 
@@ -943,13 +952,37 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
     if (pTrack->Charge() == nTrack->Charge())
         return retVal;
 
+
+    if (( pTrack->GetTPCClusterInfo(2,1) < 70 ) || ( nTrack->GetTPCClusterInfo(2,1) ) < 70 )
+        return retVal;
+
+    //GetKinkIndex condition
+    if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 )
+        return retVal;
+
+    //Findable clusters > 0 condition
+    if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 )
+        return retVal;
+
+    //Compute ratio Crossed Rows / Findable clusters
+    double lPosTrackCrossedRowsOverFindable = pTrack->GetTPCClusterInfo(2,1) / ((double)(pTrack->GetTPCNclsF()));
+    double lNegTrackCrossedRowsOverFindable = nTrack->GetTPCClusterInfo(2,1) / ((double)(nTrack->GetTPCNclsF()));
+    if (lPosTrackCrossedRowsOverFindable < 0.8 || lNegTrackCrossedRowsOverFindable < 0.8)
+        return retVal;
+
     const AliVVertex* vtx = fAOD->GetPrimaryVertex();
     double posPrimVtx[3];
     vtx->GetXYZ(posPrimVtx);
 
-    // FIXME: hard-coded cut values
+    if (v0->DcaPosToPrimVertex() < 0.06 || v0->DcaNegToPrimVertex() < 0.06)
+        return retVal;
+
+    // we want only primary V0s
+    if(v0->DcaV0ToPrimVertex() > 0.05)
+        return retVal;
+
     double cpa = v0->CosPointingAngle(posPrimVtx);
-    if (cpa < 0.95)
+    if (cpa < 0.97)
         return retVal;
 
     double dca = v0->DcaV0Daughters();
@@ -957,9 +990,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
         return retVal;
 
     double rad = std::sqrt(v0->Xv()*v0->Xv() + v0->Yv()*v0->Yv());
-    if (rad < 0. || rad > 100.)
+    if (rad < 0.5 || rad > 100.)
         return retVal;
-
 
     double expMass[kNumV0IDs] = {TDatabasePDG::Instance()->GetParticle(310)->Mass()};
     double invMasses[kNumV0IDs] = {v0->MassK0Short()};
