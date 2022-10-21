@@ -46,14 +46,13 @@ class AliFemtoCutMonitorPairBetaT : public AliFemtoCutMonitor {
 
  private:
   TH1D *fHistBetaT;      // BetaT plot
+  TH2D *fHistBetaTpT1;  //BetaT vs pT of part1
+  TH2D *fHistBetaTpT2;  //BetaT vs pT of part2  
   int fBinsBetaT;        // Number of bins in betaT plot
   double fMinBetaT;      // Minimum betaT
   double fMaxBetaT;      // Maximum betaT
   double fMassPart1;     // Mass of the first particle in pair [GeV]
   double fMassPart2;     // Mass of the second particle in pair [GeV]
-
-  TH2D *fBetaTpT1;  //BetaT vs pT of part1
-  TH2D *fBetaTpT2;  //BetaT vs pT of part2
 };
 
 #endif
