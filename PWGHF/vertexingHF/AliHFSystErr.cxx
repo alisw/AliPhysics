@@ -9096,15 +9096,17 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins_woVertexing() {
   ///for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
 
   // Tracking efficiency (+++ From topological analysis +++) plus in quadrature the systematic on material budget
-  // Systematic on material budget estimated as:
+  // Systematic on material budget
+  //  (1) [Preliminary QM2022] estimated as:
   //  - propagation of ITS-TPC material budget uncertainty
   //  - effect of TOF matching on the PID efficiency (2022 March 08: still missing! But expected negligible in 0-1 GeV/c)
+  //  (2) Final: no effect observed when recalculating the efficiencies in MC w/ modified material budget --> 0%
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  fTrackingEff->SetBinContent(1,TMath::Sqrt( 0.045*0.045 + 0.02*0.02)); // 0-1
-  fTrackingEff->SetBinContent(2,TMath::Sqrt( 0.045*0.045 + 0.01*0.01)); // 1-2
-  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.055*0.055 + 0.01*0.01 )); // 2-3, 3-4
-  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.06*0.06 + 0.01*0.01 )); // 4-5, 5-6
-  for(Int_t i=7;i<=10;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.07*0.07 + 0.01*0.01 )); // up to 8-10
+  fTrackingEff->SetBinContent(1,TMath::Sqrt( 0.045*0.045 /*+ 0.02*0.02 (1)*/)); // 0-1
+  fTrackingEff->SetBinContent(2,TMath::Sqrt( 0.045*0.045 /*+ 0.01*0.01 (1)*/)); // 1-2
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.055*0.055 /*+ 0.01*0.01 (1)*/)); // 2-3, 3-4
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.06*0.06 /*+ 0.01*0.01 */ )); // 4-5, 5-6
+  for(Int_t i=7;i<=10;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt( 0.07*0.07 /*+ 0.01*0.01 */ )); // up to 8-10
   for(Int_t i=11;i<=24;i++) fTrackingEff->SetBinContent(i,0.07);
 
   // Raw yield extraction
