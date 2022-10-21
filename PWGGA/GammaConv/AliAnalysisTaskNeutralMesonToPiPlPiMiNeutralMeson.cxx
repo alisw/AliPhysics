@@ -283,6 +283,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM_HighPt(nullptr),
   fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM_HighPt(nullptr),
   fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_HighPt(nullptr),
+  fHistopi0vsmesonmassshiftangle(nullptr),
   fHistoTrueMotherGammaGammaInvMassPt(nullptr),
   fHistoTrueMotherGammaGammaFromHNMInvMassPt(nullptr),
   fHistoTrueConvGammaPt(nullptr),
@@ -607,6 +608,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM_HighPt(nullptr),
   fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM_HighPt(nullptr),
   fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_HighPt(nullptr),
+  fHistopi0vsmesonmassshiftangle(nullptr),
   fHistoTrueMotherGammaGammaInvMassPt(nullptr),
   fHistoTrueMotherGammaGammaFromHNMInvMassPt(nullptr),
   fHistoTrueConvGammaPt(nullptr),
@@ -1905,6 +1907,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fTreePiPiSameMother                                     = new TTree*[fnCuts];
           fTreePiPiPiSameMother                                   = new TTree*[fnCuts];
           fTreeEventInfoHNM                                       = new TTree*[fnCuts];
+          if (fDoMesonQA>2){
+            fHistopi0vsmesonmassshiftangle                             = new TH3F*[fnCuts];
+          }
         }
       }
     }
@@ -2791,6 +2796,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
             fTreeEventInfoHNM[iCut]->Branch("fZVertexHNMEvent", &fZVertexHNMEvent, "fZVertexHNMEvent/F");
             fTreeEventInfoHNM[iCut]->Branch("fPtHNM", &fPtHNM, "fPtHNM/F");
             fTrueTreeList[iCut]->Add(fTreeEventInfoHNM[iCut]);
+            if (fDoMesonQA>2) {
+              fHistopi0vsmesonmassshiftangle[iCut]    = new TH3F("fHistopi0vsmesonmassshiftangle", "fHistopi0vsmesonmassshiftangle", 40, -0.1, 0.1, 40, -0.1, 0.1, 20, 0, TMath::Pi()/10.);
+              if (fIsMC>1) fHistopi0vsmesonmassshiftangle[iCut]->Sumw2();
+              fHistopi0vsmesonmassshiftangle[iCut]->GetXaxis()->SetTitle("M_{#pi^{0}}^{rec.}-M_{#pi^{0}}^{true.} (GeV/c^{2})");
+              fHistopi0vsmesonmassshiftangle[iCut]->GetYaxis()->SetTitle(Form("M_{%s^{0}}^{rec.}-M_{%s^{0}}^{true.} (GeV/c^{2})", NameNDMLatex.Data(), NameNDMLatex.Data()));
+              fHistopi0vsmesonmassshiftangle[iCut]->GetZaxis()->SetTitle("#alpha_{#gamma#gamma}");
+              fTrueList[iCut]->Add(fHistopi0vsmesonmassshiftangle[iCut]);
+            }
           }
         }
       }
@@ -4047,13 +4060,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     }
     Pi0Candidate->SetMCLabel(gamma0MotherLabel);
     if (fEnableTreeTrueNDMFromHNM){
-        Int_t grandmotherLabel = ((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetMother();
+      Int_t grandmotherLabel = ((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetMother();
+      if (grandmotherLabel > 0) { // Some MCs might not have mothers for primary pi0's
         if (((AliAODMCParticle*)AODMCTrackArray->At(grandmotherLabel))->GetPdgCode() == fPDGCodeAnalyzedMeson){
             fPtHNM = ((AliAODMCParticle*)AODMCTrackArray->At(grandmotherLabel))->Pt();
             fPtNDM = Pi0Candidate->Pt();
             fInvMassNDM = Pi0Candidate->M();
             fTreeTrueNDMFromHNM[fiCut]->Fill();
         }
+      }
     }
     if(!fDoLightOutput){
       fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
@@ -4649,13 +4664,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       }
       Pi0Candidate->SetMCLabel(motherRealLabel);
       if (fEnableTreeTrueNDMFromHNM){
-          Int_t grandmotherLabel = ((AliAODMCParticle*)AODMCTrackArray->At(motherRealLabel))->GetMother();
+        Int_t grandmotherLabel = ((AliAODMCParticle*)AODMCTrackArray->At(motherRealLabel))->GetMother();
+        if (grandmotherLabel > 0) { // Some MCs might not have mothers for primary pi0's
           if (((AliAODMCParticle*)AODMCTrackArray->At(grandmotherLabel))->GetPdgCode() == fPDGCodeAnalyzedMeson){
               fPtHNM = ((AliAODMCParticle*)AODMCTrackArray->At(grandmotherLabel))->Pt();
               fPtNDM = Pi0Candidate->Pt();
               fInvMassNDM = Pi0Candidate->M();
               fTreeTrueNDMFromHNM[fiCut]->Fill();
           }
+        }
       }
       if(!fDoLightOutput){
         fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
@@ -7664,6 +7681,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), weighted );
         }
       }
+      //  Fill the 3D histogram with the mass differences for the NDM and the pi0 for different pT
+      fHistopi0vsmesonmassshiftangle[fiCut]->Fill(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM,mesoncand->M()-(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMotherLabel)))->GetCalcMass(),TrueNeutralDecayMesonCandidate->GetOpeningAngle(),weighted);
     }
 
     AliAODConversionMother PosPiontmp, NegPiontmp;
