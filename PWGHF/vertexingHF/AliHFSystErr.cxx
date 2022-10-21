@@ -259,6 +259,8 @@ void AliHFSystErr::Init(Int_t decay){
           InitDplustoKpipi2012pp();
         } else if(fRunNumber==16 || fRunNumber==2016){
           InitDplustoKpipi2016pp13TeV();
+        } else if(fRunNumber==161718 || fRunNumber==201620172018){
+	  InitDplustoKpipi201620172018pp13TeVML();
         } else AliFatal("Not yet implemented");
       }
       else if (fCollisionType==1) {
@@ -3334,6 +3336,72 @@ void AliHFSystErr::InitDplustoKpipi2016pp13TeV(){
   return;
 }
 
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi201620172018pp13TeVML(){
+
+  // Prompt D+ systematics in MB pp 13 TeV (2016+2017+2018) with BDT multi-class selections
+  // Responsible R. Bala
+
+  Float_t xbins[23]={0,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,9,10,12,16,24,36,50};
+  AliInfo(" Settings for prompt D+ --> K pi pi, MB pp collisions at 13 TeV - 2016+2017+2018 runs with BDT multi-class selections");
+  SetNameTitle("AliHFSystErr","SystErrDplustoKpipi201620172018pp13TeVML");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",22,xbins);
+  // fNorm->SetBinContent(1,0.0); // bin 0.-1.
+  for(Int_t i=1;i<=22;i++) fNorm->SetBinContent(i,0.021);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",22,xbins);
+  for(Int_t i=1;i<=22;i++) fBR->SetBinContent(i,0.017); // PDG 2020: BR = 9.38 +/- 0.16
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",22,xbins);
+  fTrackingEff->SetBinContent(1,0.035); //  0-1
+  fTrackingEff->SetBinContent(2,0.035); //  1-1.5
+  fTrackingEff->SetBinContent(3,0.035); //  1.5-2.
+  fTrackingEff->SetBinContent(4,0.045); //  2-2.5
+  fTrackingEff->SetBinContent(5,0.045); //  2.5-3
+  fTrackingEff->SetBinContent(6,0.05); // 3-3.5
+  fTrackingEff->SetBinContent(7,0.05); // 3.5-4.
+  fTrackingEff->SetBinContent(8,0.06); // 4-4.5
+  fTrackingEff->SetBinContent(9,0.06); // 4.5-5.
+  fTrackingEff->SetBinContent(10,0.06); // 5-5.5.
+  fTrackingEff->SetBinContent(11,0.06); // 5.5-6.
+  fTrackingEff->SetBinContent(12,0.065); // 6-6.5.
+  fTrackingEff->SetBinContent(13,0.065); // 6.5-7.
+  fTrackingEff->SetBinContent(14,0.065); // 7-7.5.
+  fTrackingEff->SetBinContent(15,0.065); // 7.5-8.
+  fTrackingEff->SetBinContent(16,0.065); // 8-9
+  fTrackingEff->SetBinContent(17,0.065); // 9-10
+  for(Int_t i=18;i<=22;i++) fTrackingEff->SetBinContent(i,0.07);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",22,xbins);//
+  fRawYield->SetBinContent(1,0.10);//0-1
+  for(Int_t i=2;i<=20;i++) fRawYield->SetBinContent(i,0.02);//1-24
+  for(Int_t i=21;i<=22;i++) fRawYield->SetBinContent(i,0.05);//24-36-50
+  
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",22,xbins);
+  fCutsEff->SetBinContent(1,0.07); //0-1
+  fCutsEff->SetBinContent(2,0.05);//1-1.5
+  fCutsEff->SetBinContent(3,0.05);//1.5-2
+  for(Int_t i=4;i<=19;i++) fCutsEff->SetBinContent(i,0.03);
+  for(Int_t i=20;i<=22;i++) fCutsEff->SetBinContent(i,0.02);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",22,xbins);
+  for(Int_t i=1;i<=22;i++) fPIDEff->SetBinContent(i,0.0);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",22,xbins);
+  fMCPtShape->SetBinContent(1,0.05);
+   for(Int_t i=2;i<=21;i++) fMCPtShape->SetBinContent(i,0);
+
+  return;
+}
 
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstoKKpi2010pp() {
@@ -12345,10 +12413,10 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   cSystErr->SetFillColor(0);
 
   TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{T} (GeV/c); Relative Syst. Unc.",50,0,50,100,-1,+1);
-  hFrame->SetAxisRange(1.,35.9,"X");
+  hFrame->SetAxisRange(1.,49.9,"X");
   hFrame->SetAxisRange(-0.5,0.5,"Y");
   if(fIs5TeVAnalysis && !fIsLowPtAnalysis && (fRunNumber==17 || fRunNumber==2017)){
-    hFrame->SetAxisRange(0.,35.9,"X");
+    hFrame->SetAxisRange(0.,49.9,"X");
     hFrame->SetAxisRange(-0.15,0.15,"Y");
   }
   if(fIsLowPtAnalysis){
