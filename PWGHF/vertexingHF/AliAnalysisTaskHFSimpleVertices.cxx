@@ -1678,6 +1678,17 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
             dzeroSel = DzeroSelectionCuts(the2Prong);
         }
 
+        if (DzeroSkimCuts(the2Prong) || JpsiSkimCuts(the2Prong)) {
+          Double_t covMatrixPV[6], covMatrixSV[6];
+          the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrixPV);
+          the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixSV);
+          fHist2ProngVertX->Fill(trkv->GetX());
+          fHist2ProngVertY->Fill(trkv->GetY());
+          fHist2ProngVertZ->Fill(trkv->GetZ());
+          fHistCovMatPrimVXX2Prong->Fill(covMatrixPV[0]);
+          fHistCovMatSecVXX2Prong->Fill(covMatrixSV[0]);
+        }
+
         Double_t ptD = the2Prong->Pt();
         Double_t rapid = the2Prong->Y(421);
         if (dzeroSel > 0 && IsInFiducialAcceptance(ptD, rapid)) {
@@ -1706,14 +1717,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           fHistImpParErrD0Dau->Fill(the2Prong->Getd0errProng(1));
           fHistDecLenErrD0->Fill(the2Prong->DecayLengthError());
           fHistDecLenXYErrD0->Fill(the2Prong->DecayLengthXYError());
-          Double_t covMatrix[6];
-          the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrix);
-          fHistCovMatPrimVXX2Prong->Fill(covMatrix[0]);
-          the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
-          fHistCovMatSecVXX2Prong->Fill(covMatrix[0]);
-          fHist2ProngVertX->Fill(trkv->GetX());
-          fHist2ProngVertY->Fill(trkv->GetY());
-          fHist2ProngVertZ->Fill(trkv->GetZ());
           if (fReadMC && mcEvent) {
             Int_t labD = MatchToMC(the2Prong, 421, mcEvent, 2, twoTrackArray, pdgD0dau);
             if (labD >= 0) {
@@ -1769,14 +1772,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           fHistDecLenXYJpsi->Fill(decaylengthxy);
           fHistDecLenErrJpsi->Fill(the2Prong->DecayLengthError());
           fHistDecLenXYErrJpsi->Fill(the2Prong->DecayLengthXYError());
-          Double_t covMatrixj[6];
-          the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrixj);
-          fHistCovMatPrimVXX2Prong->Fill(covMatrixj[0]);
-          the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixj);
-          fHistCovMatSecVXX2Prong->Fill(covMatrixj[0]);
-          fHist2ProngVertX->Fill(trkv->GetX());
-          fHist2ProngVertY->Fill(trkv->GetY());
-          fHist2ProngVertZ->Fill(trkv->GetZ());
           if (fReadMC && mcEvent) {
             Int_t labJ = MatchToMC(the2Prong, 443, mcEvent, 2, twoTrackArray, pdgJpsidau);
             if (labJ >= 0) {
@@ -1888,11 +1883,11 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
     delete vertexAOD3;
     return;
   }
-  Double_t covMatrixPV[6], covMatrixSV[6];
-  the3Prong->GetPrimaryVtx()->GetCovMatrix(covMatrixPV);
-  the3Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixSV);
 
   if (DplusSkimCuts(the3Prong) || DsSkimCuts(the3Prong) || LcSkimCuts(the3Prong)) {
+    Double_t covMatrixPV[6], covMatrixSV[6];
+    the3Prong->GetPrimaryVtx()->GetCovMatrix(covMatrixPV);
+    the3Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixSV);
     fHist3ProngVertX->Fill(trkv3->GetX());
     fHist3ProngVertY->Fill(trkv3->GetY());
     fHist3ProngVertZ->Fill(trkv3->GetZ());
