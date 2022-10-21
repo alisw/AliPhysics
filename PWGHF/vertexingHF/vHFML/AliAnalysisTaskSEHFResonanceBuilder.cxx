@@ -881,6 +881,13 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
         return isMLsel;
     }
+    if (isSelected == 1 || isSelected == 3) {
+        fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
+    }
+    else if (isSelected >= 2) {
+        fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
+    }
+
 
     return isSelected;
 }
