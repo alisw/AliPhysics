@@ -185,8 +185,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
             break;
         }
         case kDstartoD0pi: {
-            minMass = 0.;
-            maxMass = 0.2;
+            minMass = 0.14;
+            maxMass = 0.20;
             break;
         }
     }
@@ -606,7 +606,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     double deltaInvMassReso = fourVecReso.M() - massD4Delta[0];
                     if (std::abs(pdgCode0) == 321)
                         orig *= -1.; //refelcted signal
-                    if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
+                    if (IsInvMassResoSelected(deltaInvMassReso, iHypo, -1)) {
                         fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD[0], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                     }
                 }
@@ -615,7 +615,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     double deltaInvMassReso = fourVecReso.M() - massD4Delta[1];
                     if (std::abs(pdgCode0) == 211)
                         orig *= -1.; //refelcted signal
-                    if (IsInvMassResoSelected(deltaInvMassReso, iHypo)) {
+                    if (IsInvMassResoSelected(deltaInvMassReso, iHypo, -1)) {
                         fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD[1], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                     }
                 }
@@ -649,7 +649,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                         isRefl[1] = true;
                 }
                 for (int iMass=0; iMass<2; ++iMass) {
-                    if (IsInvMassResoSelected(deltaInvMassReso[iMass], iHypo)) {
+                    if (IsInvMassResoSelected(deltaInvMassReso[iMass], -1, iHypo)) {
                         if (isRefl[iMass])
                             orig *= -1.;
                         fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD[iMass], orig, v0->MassK0Short(), v0->Pt(), kPdgV0IDs[iHypo]);
@@ -1016,40 +1016,60 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, int &bachHypo)
+bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, int bachHypo, int V0hypo)
 {
-    switch (bachHypo)
-    {
-        case kPion:
+    if (bachHypo >= 0) {
+        switch (bachHypo)
         {
-            for (std::size_t iMass{0}; iMass<fInvMassResoPiMin.size(); ++iMass)
+            case kPion:
             {
-                if (mass > fInvMassResoPiMin[iMass] && mass < fInvMassResoPiMax[iMass])
-                    return true;
+                for (std::size_t iMass{0}; iMass<fInvMassResoPiMin.size(); ++iMass)
+                {
+                    if (mass > fInvMassResoPiMin[iMass] && mass < fInvMassResoPiMax[iMass])
+                        return true;
+                }
+                break;
+            }
+            case kKaon:
+            {
+                for (std::size_t iMass{0}; iMass<fInvMassResoKaMin.size(); ++iMass)
+                {
+                    if (mass > fInvMassResoKaMin[iMass] && mass < fInvMassResoKaMax[iMass])
+                        return true;
+                }
+                break;
+            }
+            case kProton:
+            {
+                for (std::size_t iMass{0}; iMass<fInvMassResoPrMin.size(); ++iMass)
+                {
+                    if (mass > fInvMassResoPrMin[iMass] && mass < fInvMassResoPrMax[iMass])
+                        return true;
+                }
+                break;
+            }
+            case kDeuteron:
+            {
+                for (std::size_t iMass{0}; iMass<fInvMassResoDeMin.size(); ++iMass)
+                {
+                    if (mass > fInvMassResoDeMin[iMass] && mass < fInvMassResoDeMax[iMass])
+                        return true;
+                }
+                break;
             }
         }
-        case kKaon:
+    }
+    else if (V0hypo >= 0) {
+        switch(V0hypo)
         {
-            for (std::size_t iMass{0}; iMass<fInvMassResoKaMin.size(); ++iMass)
+            case kK0S:
             {
-                if (mass > fInvMassResoKaMin[iMass] && mass < fInvMassResoKaMax[iMass])
-                    return true;
-            }
-        }
-        case kProton:
-        {
-            for (std::size_t iMass{0}; iMass<fInvMassResoPrMin.size(); ++iMass)
-            {
-                if (mass > fInvMassResoPrMin[iMass] && mass < fInvMassResoPrMax[iMass])
-                    return true;
-            }
-        }
-        case kDeuteron:
-        {
-            for (std::size_t iMass{0}; iMass<fInvMassResoDeMin.size(); ++iMass)
-            {
-                if (mass > fInvMassResoDeMin[iMass] && mass < fInvMassResoDeMax[iMass])
-                    return true;
+                for (std::size_t iMass{0}; iMass<fInvMassResoKzMin.size(); ++iMass)
+                {
+                    if (mass > fInvMassResoKzMin[iMass] && mass < fInvMassResoKzMax[iMass])
+                        return true;
+                }
+                break;
             }
         }
     }
