@@ -114,12 +114,15 @@ public:
         std::vector<float> minMassPr,
         std::vector<float> maxMassPr,
         std::vector<float> minMassDe,
-        std::vector<float> maxMassDe
+        std::vector<float> maxMassDe,
+        std::vector<float> minMassKz,
+        std::vector<float> maxMassKz
     ) {
         fInvMassResoPiMin = minMassPi; fInvMassResoPiMax = maxMassPi;
         fInvMassResoKaMin = minMassKa; fInvMassResoKaMax = maxMassKa;
         fInvMassResoPrMin = minMassPr; fInvMassResoPrMax = maxMassPr;
         fInvMassResoDeMin = minMassDe; fInvMassResoDeMax = maxMassDe;
+        fInvMassResoKzMin = minMassKz; fInvMassResoKzMax = maxMassKz;
     }
 
     // Implementation of interface methods
@@ -135,7 +138,7 @@ private:
     int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, AliAODPidHF *&pidHF, std::size_t &iCand);
     int IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF);
     int IsV0Selected(AliAODv0 *&track);
-    bool IsInvMassResoSelected(double &mass, int &bachId);
+    bool IsInvMassResoSelected(double &mass, int bachHypo, int V0hypo);
     bool IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau, AliAnalysisVertexingHF *vHF);
 
     std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
@@ -185,17 +188,19 @@ private:
     float fPtTrackMin{0.05};                                                              /// minimum pT for bachelor track
 
     // resonance selection
-    std::vector<float> fInvMassResoPiMin{2.0};                                            /// minimum invariant mass values for HF resonance (in case of pion combination)
-    std::vector<float> fInvMassResoPiMax{2.5};                                            /// maximum invariant mass values for HF resonance (in case of pion combination)
-    std::vector<float> fInvMassResoKaMin{2.2};                                            /// minimum invariant mass values for HF resonance (in case of kaon combination)
-    std::vector<float> fInvMassResoKaMax{2.6};                                            /// maximum invariant mass values for HF resonance (in case of kaon combination)
-    std::vector<float> fInvMassResoPrMin{2.7};                                            /// minimum invariant mass values for HF resonance (in case of proton combination)
-    std::vector<float> fInvMassResoPrMax{3.3};                                            /// maximum invariant mass values for HF resonance (in case of proton combination)
-    std::vector<float> fInvMassResoDeMin{3.6};                                            /// maximum invariant mass values for HF resonance (in case of deuteron combination)
-    std::vector<float> fInvMassResoDeMax{5.0};                                            /// minimum invariant mass values for HF resonance (in case of deuteron combination)
+    std::vector<float> fInvMassResoPiMin{0.0};                                            /// minimum invariant mass values for HF resonance (in case of pion combination)
+    std::vector<float> fInvMassResoPiMax{1.0};                                            /// maximum invariant mass values for HF resonance (in case of pion combination)
+    std::vector<float> fInvMassResoKaMin{0.0};                                            /// minimum invariant mass values for HF resonance (in case of kaon combination)
+    std::vector<float> fInvMassResoKaMax{1.0};                                            /// maximum invariant mass values for HF resonance (in case of kaon combination)
+    std::vector<float> fInvMassResoPrMin{0.0};                                            /// minimum invariant mass values for HF resonance (in case of proton combination)
+    std::vector<float> fInvMassResoPrMax{1.0};                                            /// maximum invariant mass values for HF resonance (in case of proton combination)
+    std::vector<float> fInvMassResoDeMin{0.0};                                            /// maximum invariant mass values for HF resonance (in case of deuteron combination)
+    std::vector<float> fInvMassResoDeMax{2.0};                                            /// minimum invariant mass values for HF resonance (in case of deuteron combination)
+    std::vector<float> fInvMassResoKzMin{0.0};                                            /// maximum invariant mass values for HF resonance (in case of deuteron combination)
+    std::vector<float> fInvMassResoKzMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of deuteron combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 6); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 7); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 

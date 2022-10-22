@@ -86,7 +86,7 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     AliAnalysisTaskSEHFResonanceBuilder *hfResoTask = new AliAnalysisTaskSEHFResonanceBuilder("HFResonanceBuilderAnalysis", decCh, analysisCuts);
     hfResoTask->SetPtBachelorSelection(ptMinBach);
     hfResoTask->SetNsigmaBachelorSelection(nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr, nSigmaTPCDe, nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr, nSigmaTOFDe);
-    hfResoTask->SetCharmResoMassWindows(massMinPi, massMaxPi, massMinKa, massMaxKa, massMinPr, massMaxPr, massMinDe, massMaxDe);
+    hfResoTask->SetCharmResoMassWindows(massMinPi, massMaxPi, massMinKa, massMaxKa, massMinPr, massMaxPr, massMinDe, massMaxDe, massMinKz, massMaxKz);
     hfResoTask->SetAODMismatchProtection(AODProtection);
     hfResoTask->SetReadMC(readMC);
     hfResoTask->EnableBachelors(enablePi, enableKa, enablePr, enableDe);
