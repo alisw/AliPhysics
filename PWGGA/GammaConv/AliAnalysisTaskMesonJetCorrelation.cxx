@@ -2804,10 +2804,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
   float z_true = GetFrag(trueMesonCand, indexTrueJet, true);
 
   // fill all true mesons (primary + secondaries)
-  fRespMatrixHandlerTrueMesonInvMassVsPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), jetPtRec, 0.5, fWeightJetJetMC);
+  fRespMatrixHandlerTrueMesonInvMassVsPt[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
   fHistoTrueMesonInvMassVsTruePt[fiCut]->Fill(Pi0Candidate->M(), trueMesonCand->Pt(), fWeightJetJetMC);
 
-  fRespMatrixHandlerTrueMesonInvMassVsZ[fiCut]->Fill(Pi0Candidate->M(), z_rec, jetPtRec, 0.5, fWeightJetJetMC);
+  fRespMatrixHandlerTrueMesonInvMassVsZ[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
 
   // fill all primary true mesons
   Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
