@@ -34,18 +34,18 @@ class MatrixHandler4D
 
  public:
   MatrixHandler4D() = default;
-  MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float> arrMesonY, std::vector<float> arrJetX, std::vector<float> arrJetY, bool useTHN = false);
-  MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float> arrMesonY, std::vector<float> arrJetX, std::vector<float> arrJetY, THnSparse *h = nullptr);
+  MatrixHandler4D(std::vector<double> arrMesonX, std::vector<double> arrMesonY, std::vector<double> arrJetX, std::vector<double> arrJetY, bool useTHN = false);
+  MatrixHandler4D(std::vector<double> arrMesonX, std::vector<double> arrMesonY, std::vector<double> arrJetX, std::vector<double> arrJetY, THnSparse *h = nullptr);
   MatrixHandler4D(const MatrixHandler4D&) = delete;            // copy ctor
   MatrixHandler4D(MatrixHandler4D&&) = delete;                 // move ctor
   MatrixHandler4D& operator=(const MatrixHandler4D&) = delete; // copy assignment
   MatrixHandler4D& operator=(MatrixHandler4D&&) = delete;      // move assignment
   virtual ~MatrixHandler4D();
 
-  int getBinIndexMesonX(const float val) const;
-  int getBinIndexMesonY(const float val) const;
-  int getBinIndexJetX(const float val) const;
-  int getBinIndexJetY(const float val) const;
+  int getBinIndexMesonX(const double val) const;
+  int getBinIndexMesonY(const double val) const;
+  int getBinIndexJetX(const double val) const;
+  int getBinIndexJetY(const double val) const;
 
   void Fill(double valJetX, double valJetY, double valMesonX, double valMesonY, double val = 1)
   {
@@ -81,12 +81,12 @@ class MatrixHandler4D
     const int sizeY = (vecBinsJetY.size() - 1) * (vecBinsMesonY.size() - 1) + 1;
     vecXBins.resize(sizeX);
     vecYBins.resize(sizeY);
-    float rangeXBinsMesons = std::abs(vecBinsMesonX[0] - vecBinsMesonX.back());
-    float rangeYBinsMesons = std::abs(vecBinsMesonY[0] - vecBinsMesonY.back());
+    double rangeXBinsMesons = std::abs(vecBinsMesonX[0] - vecBinsMesonX.back());
+    double rangeYBinsMesons = std::abs(vecBinsMesonY[0] - vecBinsMesonY.back());
     int counter = 0;
     for (unsigned int jx = 0; jx < vecBinsJetX.size() - 1; ++jx) {
-      float rangeXBinsJet = std::abs(vecBinsJetX[jx] - vecBinsJetX[jx + 1]);
-      float downscalingfacX = rangeXBinsJet / rangeXBinsMesons;
+      double rangeXBinsJet = std::abs(vecBinsJetX[jx] - vecBinsJetX[jx + 1]);
+      double downscalingfacX = rangeXBinsJet / rangeXBinsMesons;
       for (unsigned int mx = 0; mx < vecBinsMesonX.size() - 1; ++mx) {
         vecXBins[counter] = vecBinsJetX[jx] + vecBinsMesonX[mx] * downscalingfacX;
         counter++;
@@ -99,8 +99,8 @@ class MatrixHandler4D
     }
     counter = 0;
     for (unsigned int jy = 0; jy < vecBinsJetY.size() - 1; ++jy) {
-      float rangeYBinsJet = std::abs(vecBinsJetY[jy] - vecBinsJetY[jy + 1]);
-      float downscalingfacY = rangeYBinsJet / rangeYBinsMesons;
+      double rangeYBinsJet = std::abs(vecBinsJetY[jy] - vecBinsJetY[jy + 1]);
+      double downscalingfacY = rangeYBinsJet / rangeYBinsMesons;
       for (unsigned int my = 0; my < vecBinsMesonY.size() - 1; ++my) {
         vecYBins[counter] = vecBinsJetY[jy] + vecBinsMesonY[my] * downscalingfacY;
         counter++;
@@ -162,8 +162,8 @@ class MatrixHandler4D
     TH2F* hMesonResp = new TH2F(nameHist, nameHist, vecBinsMesonX.size() - 1, vecBinsMesonX.data(), vecBinsMesonY.size() - 1, vecBinsMesonY.data());
     for (unsigned int x = 0; x < vecBinsMesonX.size(); ++x) {
       for (unsigned int y = 0; y < vecBinsMesonY.size(); ++y) {
-        float binCont = 0;
-        float binErr = 0;
+        double binCont = 0;
+        double binErr = 0;
         std::array<int, 2> arrBins = {static_cast<int>(x + (binX * (vecBinsMesonX.size() - 1)) + 1), static_cast<int>(y + (binY * (vecBinsMesonY.size() - 1)) + 1)};
         if (useTHNSparese) {
           binCont = hSparseResponse->GetBinContent(arrBins.data());
@@ -182,10 +182,10 @@ class MatrixHandler4D
  private:
   bool useTHNSparese = false;
   int nBinsJet = 0;
-  std::vector<float> vecBinsMesonX = {};
-  std::vector<float> vecBinsMesonY = {};
-  std::vector<float> vecBinsJetX = {};
-  std::vector<float> vecBinsJetY = {};
+  std::vector<double> vecBinsMesonX = {};
+  std::vector<double> vecBinsMesonY = {};
+  std::vector<double> vecBinsJetX = {};
+  std::vector<double> vecBinsJetY = {};
   TH2F* h2d = nullptr;
   TH1F* h1dJet = nullptr;
   TH1F* h1dMeson = nullptr;

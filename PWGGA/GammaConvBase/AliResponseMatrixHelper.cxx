@@ -24,7 +24,7 @@
 #include "AliResponseMatrixHelper.h"
 
 //____________________________________________________________________________________________________________________________
-MatrixHandler4D::MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float> arrMesonY, std::vector<float> arrJetX, std::vector<float> arrJetY, bool useTHN){
+MatrixHandler4D::MatrixHandler4D(std::vector<double> arrMesonX, std::vector<double> arrMesonY, std::vector<double> arrJetX, std::vector<double> arrJetY, bool useTHN){
     vecBinsMesonX = arrMesonX;
     vecBinsMesonY = arrMesonY;
     vecBinsJetX = arrJetX;
@@ -53,7 +53,7 @@ MatrixHandler4D::MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float
 }
 
 //____________________________________________________________________________________________________________________________
-MatrixHandler4D::MatrixHandler4D(std::vector<float> arrMesonX, std::vector<float> arrMesonY, std::vector<float> arrJetX, std::vector<float> arrJetY, THnSparse*  h){
+MatrixHandler4D::MatrixHandler4D(std::vector<double> arrMesonX, std::vector<double> arrMesonY, std::vector<double> arrJetX, std::vector<double> arrJetY, THnSparse*  h){
     vecBinsMesonX = arrMesonX;
     vecBinsMesonY = arrMesonY;
     vecBinsJetX = arrJetX;
@@ -75,7 +75,7 @@ MatrixHandler4D::~MatrixHandler4D(){
 }
 
 //____________________________________________________________________________________________________________________________
-int MatrixHandler4D::getBinIndexMesonX(const float val) const{
+int MatrixHandler4D::getBinIndexMesonX(const double val) const{
     for(unsigned int i = 0; i < vecBinsMesonX.size() - 1; ++i){
         if(vecBinsMesonX[i] < val && vecBinsMesonX[i+1] > val){
             return i;
@@ -85,7 +85,7 @@ int MatrixHandler4D::getBinIndexMesonX(const float val) const{
 }
 
 //____________________________________________________________________________________________________________________________
-int MatrixHandler4D::getBinIndexMesonY(const float val) const{
+int MatrixHandler4D::getBinIndexMesonY(const double val) const{
     for(unsigned int i = 0; i < vecBinsMesonY.size() - 1; ++i){
         if(vecBinsMesonY[i] < val && vecBinsMesonY[i+1] > val){
             return i;
@@ -95,7 +95,7 @@ int MatrixHandler4D::getBinIndexMesonY(const float val) const{
 }
 
 //____________________________________________________________________________________________________________________________
-int MatrixHandler4D::getBinIndexJetX(const float val) const{
+int MatrixHandler4D::getBinIndexJetX(const double val) const{
     for(unsigned int i = 0; i < vecBinsJetX.size() - 1; ++i){
         if(vecBinsJetX[i] < val && vecBinsJetX[i+1] > val){
             return i;
@@ -105,7 +105,7 @@ int MatrixHandler4D::getBinIndexJetX(const float val) const{
 }
 
 //____________________________________________________________________________________________________________________________
-int MatrixHandler4D::getBinIndexJetY(const float val) const{
+int MatrixHandler4D::getBinIndexJetY(const double val) const{
     for(unsigned int i = 0; i < vecBinsJetY.size() - 1; ++i){
         if(vecBinsJetY[i] < val && vecBinsJetY[i+1] > val){
             return i;
