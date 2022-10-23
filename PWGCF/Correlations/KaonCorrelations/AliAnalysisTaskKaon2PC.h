@@ -47,7 +47,12 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistMK0;        //! dummy histogram
        TH1F*                   fHistMK0Cuts;        //! dummy histogram
        TH1F*                   fHistNV0;        //! dummy histogram
-       TH1F*                   fHistPt;     //! dummy histogram
+       TH1F*                   fHistKChPt;     //! dummy histogram
+       TH1F*                   fHistK0Pt;     //! dummy histogram
+       TH1F*                   fKChPhi;     //! dummy histogram
+       TH1F*                   fK0Phi;     //! dummy histogram 
+       TH1F*                   fHistKpPhi;     //! dummy histogram 
+       TH1F*                   fHistKnPhi;     //! dummy histogram 
        TH1F*                   fVtx;        //! dummy histogram
        TH1F*                   fClusters;    //! dummy histogram
        TH2F*                   fPID;        //! dummy histogram
@@ -92,8 +97,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH3F*                   fHistKPosKNeg;       //! dummy histogram
        TH3F*                   fHistKNegKNeg;       //! dummy histogram
        TH3F*                   fHistK0K0;       //! dummy histogram
-       TH2F*                   fHistPPionPhi;       //! dummy histogram
-       TH2F*                   fHistNPionPhi;       //! dummy histogram
+       TH1F*                   fHistPPionPhi;       //! dummy histogram
+       TH1F*                   fHistNPionPhi;       //! dummy histogram
        Double_t        PVz;
        Double_t        fLpTCut;        //not a pointer???
        Double_t        fUpTCut;
