@@ -532,9 +532,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             {
                 double massDau[2] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass()};
                 for (int iProng=0; iProng<2; ++iProng) {
-                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF.GetProng(fAOD, dMeson, iProng));
-                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
-                    fourVecD[1] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[1-iProng]);
+                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dMeson->PxProng(iProng), dMeson->PyProng(iProng), dMeson->PzProng(iProng), massDau[iProng]);
+                    fourVecD[1] += ROOT::Math::PxPyPzMVector(dMeson->PxProng(iProng), dMeson->PyProng(iProng), dMeson->PzProng(iProng), massDau[1-iProng]);
                 }
                 if (isSelected == 1 || isSelected == 3) {
                     massD4Delta[0] = fourVecD[0].M();
@@ -552,8 +551,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             {
                 double massDau[3] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass(), TDatabasePDG::Instance()->GetParticle(211)->Mass()};
                 for (int iProng=0; iProng<3; ++iProng) {
-                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF.GetProng(fAOD, dMeson, iProng));
-                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
+                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dMeson->PxProng(iProng), dMeson->PyProng(iProng), dMeson->PzProng(iProng), massDau[iProng]);
                 }
                 massD4Delta[0] = fourVecD[0].M();
                 massD[0] = dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson)->InvMassDplus();
@@ -562,24 +560,23 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             }
             case kDstartoD0pi:
             {
-                double massDau[3] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass(), TDatabasePDG::Instance()->GetParticle(211)->Mass()};
-                int idxDau[3] = {dMeson->GetProngID(0), -1, -1};
+                fourVecD[0] += ROOT::Math::PxPyPzMVector(dMeson->PxProng(0), dMeson->PyProng(0), dMeson->PzProng(0), TDatabasePDG::Instance()->GetParticle(211)->Mass());
                 AliAODRecoDecayHF2Prong* dZero = nullptr;
                 if(dMeson->GetIsFilled()<1)
                     dZero = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
                 else
                     dZero = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->Get2Prong();
+                double massDau[2];
                 if (dMeson->Charge() > 0) {
-                    idxDau[1] = dZero->GetProngID(1); // K
-                    idxDau[2] = dZero->GetProngID(0); // pi
+                    massDau[1] = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+                    massDau[0] = TDatabasePDG::Instance()->GetParticle(211)->Mass();
                 }
                 else {
-                    idxDau[1] = dZero->GetProngID(0); // K
-                    idxDau[2] = dZero->GetProngID(1); // pi
+                    massDau[0] = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+                    massDau[1] = TDatabasePDG::Instance()->GetParticle(211)->Mass();
                 }
-                for (int iProng=0; iProng<3; ++iProng) {
-                    AliAODTrack* dauD = dynamic_cast<AliAODTrack *>(vHF.GetProng(fAOD, dMeson, idxDau[iProng]));
-                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dauD->Px(), dauD->Py(), dauD->Pz(), massDau[iProng]);
+                for (int iProng=0; iProng<2; ++iProng) {
+                    fourVecD[0] += ROOT::Math::PxPyPzMVector(dZero->PxProng(iProng), dZero->PyProng(iProng), dZero->PzProng(iProng), massDau[iProng]);
                 }
                 massD4Delta[0] = fourVecD[0].M();
                 massD[0] = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->DeltaInvMass();
