@@ -16,6 +16,9 @@
 #include "Math/Vector4D.h"
 #include "Math/GenVector/Boost.h"
 
+#include "AliVTrack.h"
+#include "AliESDtrack.h"
+#include "AliNeutralTrackParam.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoCascadeHF.h"
@@ -596,8 +599,13 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     continue;
                 if (!TESTBIT(selectedTrackIds[iTrack], iHypo))
                     continue;
+
+                // propagate bachelor track to PV to compute invariant mass
+                std::unique_ptr<AliESDtrack> trackESD(new AliESDtrack(track));
+                trackESD.get()->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), kVeryBig);
+
                 double massBachelor = (iHypo != kDeuteron) ? TDatabasePDG::Instance()->GetParticle(kPdgBachIDs[iHypo])->Mass() : 1.87561294257;
-                auto fourVecReso = ROOT::Math::PxPyPzMVector(track->Px(), track->Py(), track->Pz(), massBachelor);
+                auto fourVecReso = ROOT::Math::PxPyPzMVector(trackESD.get()->Px(), trackESD.get()->Py(), trackESD.get()->Pz(), massBachelor);
                 if (fDecChannel != kD0toKpi || ((isSelected == 1 || isSelected == 3) && track->Charge() > 0.)) {
                     fourVecReso += fourVecD[0];
                     double deltaInvMassReso = fourVecReso.M() - massD4Delta[0];
@@ -628,9 +636,15 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 if (!TESTBIT(selectedV0Ids[iV0], iHypo))
                     continue;
 
-                double massV0 = TDatabasePDG::Instance()->GetParticle(kPdgV0IDs[iHypo])->Mass();
+                // propagate V0 track to PV to compute invariant mass
+                const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+                if (!trackVV0)
+                    continue;
+                std::unique_ptr<AliNeutralTrackParam> trackV0(new AliNeutralTrackParam(trackVV0));
+                trackV0.get()->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), kVeryBig);
 
-                auto fourVecReso = ROOT::Math::PxPyPzMVector(v0->Px(), v0->Py(), v0->Pz(), massV0);
+                double massV0 = TDatabasePDG::Instance()->GetParticle(kPdgV0IDs[iHypo])->Mass();
+                auto fourVecReso = ROOT::Math::PxPyPzMVector(trackV0.get()->Px(), trackV0.get()->Py(), trackV0.get()->Pz(), massV0);
                 double deltaInvMassReso[2] = {0., 0.};
                 bool isRefl[2] = {false, false};
                 if (fDecChannel != kD0toKpi || (isSelected == 1 || isSelected ==3)) {
