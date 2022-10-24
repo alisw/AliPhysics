@@ -117,6 +117,7 @@ set(SRCS
   AliAnalysisTaskGammaDeltaPIDSaveQvecSimple.cxx
   AliAnalysisTaskGammaDeltaPIDSaveQvecEventSimple.cxx
   AliAnalysisTaskCME2018NUA.cxx
+  AliAnalysisTaskGammaNonIsotropicCorr.cxx
 )
 
 # Headers from sources
