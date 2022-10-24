@@ -1098,8 +1098,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       Charge = aodcasc->ChargeXi();
       PtXi = TMath::Sqrt(aodcasc->Pt2Xi());
       PtBach = TMath::Sqrt(TMath::Power(aodcasc->MomBachX(), 2) + TMath::Power(aodcasc->MomBachY(), 2));
-      EtaXi = TMath::ATan((aodcasc->MomXiZ())/(TMath::Sqrt(aodcasc->Ptot2Xi())));
-      EtaBach = TMath::ATan((aodcasc->MomBachZ())/(TMath::Sqrt(aodcasc->Ptot2Bach())));
+      EtaXi = TMath::ATanH((aodcasc->MomXiZ())/(TMath::Sqrt(aodcasc->Ptot2Xi())));
+      EtaBach = TMath::ATanH((aodcasc->MomBachZ())/(TMath::Sqrt(aodcasc->Ptot2Bach())));
       if(Charge < 0) { InvMassXi = aodcasc->MassXi(); }
       else if(Charge > 0) { InvMassXi = -1*(aodcasc->MassXi()); } // Incorporate the charge in the particle mass
       CosPAXi = aodcasc->CosPointingAngleXi(fVtx[0], fVtx[1], fVtx[2]);
@@ -1147,7 +1147,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       esdcasc->GetBPxPyPz(ESDBachMom[0], ESDBachMom[1], ESDBachMom[2]);
       PtBach = TMath::Sqrt(TMath::Power(ESDBachMom[0], 2) + TMath::Power(ESDBachMom[1], 2));    
       EtaXi = esdcasc->Eta();
-      EtaBach = TMath::ATan(ESDBachMom[2]/(TMath::Sqrt(TMath::Power(ESDBachMom[0], 2) +
+      EtaBach = TMath::ATanH(ESDBachMom[2]/(TMath::Sqrt(TMath::Power(ESDBachMom[0], 2) +
 						       TMath::Power(ESDBachMom[1], 2) +
 						       TMath::Power(ESDBachMom[2], 2))));
       if(Charge < 0) {
