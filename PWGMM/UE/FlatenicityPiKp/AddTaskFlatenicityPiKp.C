@@ -7,7 +7,7 @@ class AliAnalysisDataContainer;
 
 AliAnalysisTaskFlatenicityPiKp *
 AddTaskFlatenicityPiKp(const Char_t *taskname = "Flat", TString detForFlat = "V0",
-		Bool_t woTrivialscaling = kTRUE, const char* suffix = "")
+		bool woTrivialscaling = kFALSE, const char* suffix = "")
 
 {
 	// detForFlat: "V0", "TPC", "V0_TPC"
@@ -30,7 +30,7 @@ AddTaskFlatenicityPiKp(const Char_t *taskname = "Flat", TString detForFlat = "V0
 	if (!taskFlat)
 		return 0x0;
 
-	taskFlat->SetUseMC(kTRUE);
+	taskFlat->SetUseMC(kFALSE);
 	taskFlat->SetMCclosureTest(kFALSE);
 	taskFlat->SaveDCAxyHistograms(kFALSE);
 	taskFlat->SetDetectorForFlatenicity(detForFlat);
