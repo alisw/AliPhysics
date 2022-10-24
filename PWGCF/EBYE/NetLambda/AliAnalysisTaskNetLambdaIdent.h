@@ -39,6 +39,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
 
+  Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Double_t *lVtx);
   void Tracks2V0vertices(TClonesArray* fv0s, TObjArray* ev1, TObjArray* ev2, Bool_t mixing, AliVVertex *vtxT3D, Double_t b);
   Bool_t TrackCutsForTreeAOD(AliAODTrack* trk);
   Bool_t TrackCutsForTreeESD(AliESDtrack* trk);
@@ -185,7 +186,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,14);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,15);
 };
 
 //_____________________________________________________________________________
@@ -329,7 +330,7 @@ class AliLightV0track : public TObject
 //_____________________________________________________________________________
 class AliLightCascade : public TObject, public TArrayF {
  public:
- AliLightCascade() : TObject(), TArrayF(), PtXi(-999), PtBach(-999), EtaXi(-999), EtaBach(-999), InvMassXi(-999), CosPAXi(-999), DecayRXi(-999), PLTXi(-999), DCAXiPV(-999), DCABachPV(-999), DCAXiDaughters(-999), MCStatus(0), CascadeV0(0x0) {};
+ AliLightCascade() : TObject(), TArrayF(), PtXi(-999), PtBach(-999), EtaXi(-999), EtaBach(-999), InvMassXi(-999), CosPAXi(-999), CosPABachBar(-999), DecayRXi(-999), PLTXi(-999), DCAXiPV(-999), DCABachPV(-999), DCAXiDaughters(-999), MCStatus(0), CascadeV0(0x0) {};
 
   virtual ~AliLightCascade(){};
   void SetPtXi(Float_t value) { PtXi = value; }
@@ -338,6 +339,7 @@ class AliLightCascade : public TObject, public TArrayF {
   void SetEtaBach(Float_t value) { EtaBach = value; }
   void SetInvMassXi(Float_t value) { InvMassXi = value; }
   void SetCosPAXi(Float_t value) { CosPAXi = value; }
+  void SetCosPABachBar(Float_t value) { CosPABachBar = value; }
   void SetDecayRXi(Float_t value) { DecayRXi = value; }
   void SetPLTXi(Float_t value) { PLTXi = value; }
   void SetDCAXiPV(Float_t value) { DCAXiPV = value; }
@@ -352,6 +354,7 @@ class AliLightCascade : public TObject, public TArrayF {
   Float_t GetEtaBach() { return EtaBach; } 
   Float_t GetInvMassXi() { return InvMassXi; }
   Float_t GetCosPAXi() { return CosPAXi; }
+  Float_t GetCosPABachBar() { return CosPABachBar; }
   Float_t GetDecayRXi() { return DecayRXi; }
   Float_t GetPLTXi() { return PLTXi; } 
   Float_t GetDCAXiPV() { return DCAXiPV; }
@@ -367,6 +370,7 @@ class AliLightCascade : public TObject, public TArrayF {
   Float_t EtaBach;
   Float_t InvMassXi;
   Float_t CosPAXi;
+  Float_t CosPABachBar;
   Float_t DecayRXi;
   Float_t PLTXi;
   Float_t DCAXiPV;
@@ -375,7 +379,7 @@ class AliLightCascade : public TObject, public TArrayF {
   Int_t MCStatus;
   AliLightV0 *CascadeV0;
 
-  ClassDef(AliLightCascade, 1);
+  ClassDef(AliLightCascade, 2);
 };
   
 #endif
