@@ -26,6 +26,11 @@ class THnSparse;
 #include "AliStack.h"
 #include "TParticle.h"
 
+#include <iostream>
+#include <string>
+#include <map>
+
+
 class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 	public:
 		AliAnalysisTaskFlatenicityPiKp();
@@ -52,7 +57,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		void IsV0MCalibrated(Bool_t V0MCal = kTRUE) { fV0MEqualisation = V0MCal; }
 		void IsdEdxCalibrated(Bool_t dEdxCal = kTRUE) { fdEdxCalibrated = dEdxCal; }
 		void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
-		void SetDataPeriod(TString period = "16l") { fPeriod = period;}
+		void SetDataPeriod(std::string period = "16l") { fPeriod = period;}
 		void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
 		void SetDeltaV0(Bool_t deltav0 = kFALSE) { fDeltaV0 = deltav0; }
 		void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) { fRemoveTrivialScaling = flat_flag; }
@@ -93,7 +98,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TF1* fcutLow;
 		TF1* fcutHigh;
 		TF1* fcutDCAxy;
-		TString fPeriod;
+		std::string fPeriod;
 		Double_t ftrackmult08;
 		Double_t fv0mpercentile;
 		Double_t fMidRapidityMult;
