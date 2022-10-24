@@ -490,6 +490,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       // get mc spectra weights object for data-driven corrections
       AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
       fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
+      //if (fMCSpectraWeights) fMCSpectraWeights->SetDoInterpolation(false);
     }
   }
 
