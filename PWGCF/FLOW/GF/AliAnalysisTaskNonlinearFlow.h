@@ -236,6 +236,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
 		virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
+		virtual void   SetCentralityCut(Double_t cent = 100) {fCentralityCut = cent;}
 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
 		// unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
@@ -315,6 +316,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
 		Bool_t                  fUseFlippedEta;                         // Flip the eta region to merge the pPb and Pbp sample;
+		Double_t                  fCentralityCut;                         // Apply an extra centrality cut.
                 Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
@@ -371,6 +373,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1F*			fVtxAfterCuts;			//! Vertex z dist after cuts
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
 		TH1F*			fV0CentralityDis;		//! distribution of V0M/<V0M>
+		TH1F*			fV0CentralityDisNarrow;	//! distribution of V0M/<V0M>
 		TH2F*			hMultV0vsNtrksAfterCuts;	//! Number of tracks vs. V0M/<V0M>
 		TH2F*			hMultSPDvsNtrksAfterCuts;	//! Number of tracks vs. SPD/<SPD>
 		TH2F*			hNtrksVSmultPercentile; 	//! Number of tracks vs. percentile using V0M estimator
@@ -397,14 +400,14 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1D*				fEtaBefore;		//! eta dist before track cuts
 		TH1D*				fPtDis;			//! pt dist
 		TH1D*				fPtBefore;		//! pt dist before track cuts
-		TH1F*				hDCAxyBefore; 		//!
-		TH1F*				hDCAzBefore; 		//!
+		TH2D*				hDCAxyBefore; 		//!
+		TH1D*				hDCAzBefore; 		//!
 		TH1F*				hITSclustersBefore; 	//!
-		TH1F*				hChi2Before; 		//!
-		TH1F*				hDCAxy; 		//!
-		TH1F*				hDCAz; 			//!
+		TH1D*				hChi2Before; 		//!
+		TH2D*				hDCAxy; 		//!
+		TH1D*				hDCAz; 			//!
 		TH1F*				hITSclusters; 		//!
-		TH1F*				hChi2; 			//!
+		TH1D*				hChi2; 			//!
 
 		TH2D*                           hTracksCorrection2d;    //! Corrected Tracks - v.s. uncorrected tracks
 		TProfile*                       hnCorrectedTracks;      //! Averaged number of corrected tracks in a specific bin;
@@ -502,7 +505,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 16);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 17);    //Analysis task
 };
 
 #endif

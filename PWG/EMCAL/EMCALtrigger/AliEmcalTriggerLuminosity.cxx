@@ -141,6 +141,14 @@ void AliEmcalTriggerLuminosity::Evaluate() {
     evaluatePP13TeV();
     break;
 
+    case CollisionType_t::kPP5TeV:
+      evaluatePP5TeV();
+      break;
+
+    case CollisionType_t::kPBPB5TeV:
+      evaluatePBPB5TeV();
+      break;
+
   case CollisionType_t::kPPB8TeV:
     evaluatePPB8TeV();
     break;
@@ -189,7 +197,7 @@ void AliEmcalTriggerLuminosity::evaluatePP13TeV() {
 	std::cout << "Correction CENTNOTRD: " << corrCENTNOTRD << std::endl;
 
 	// normalize by reference cross section
-  std::map<int, double> xsecsMB {{2016, 58.44}, {2017, 58.10}, {2018, 57.52}};
+  std::map<int, double> xsecsMB {{2016, 58.44}, {2017, 58.10}, {2018, 57.52}}; // From https://twiki.cern.ch/twiki/pub/ALICE/EventNormalization/LumiUncCombinationExample.pdf
   auto found = xsecsMB.find(fYear);
   if(found == xsecsMB.end()) throw AmbiguityException("Crosssection");
 	double xrefMB =  found->second,
@@ -205,6 +213,126 @@ void AliEmcalTriggerLuminosity::evaluatePP13TeV() {
     double correctedCounts = rawcounts * clustercorrection;
     double luminosity = correctedCounts / xrefPB;
     std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl; 
+    fLuminosities[triggerclass] = luminosity;
+  }
+
+  // extract effective downscalings and effective luminosities based on the trigger correlation of the CENT cluster
+  auto foundCorrelationhist = fCorrelationHistograms.find("CENT");
+  if(foundCorrelationhist != fCorrelationHistograms.end()) {
+    auto corrhist = foundCorrelationhist->second;
+    fEffectiveDownscaling["INT7"] = getEffectiveDownscaling(corrhist, "INT7", "EG1");
+    fEffectiveDownscaling["EMC7"] = getEffectiveDownscaling(corrhist, "EMC7", "EG1");
+    fEffectiveDownscaling["EG1"] = getEffectiveDownscaling(corrhist, "EG1", "EG1");
+    fEffectiveDownscaling["EG2"] = getEffectiveDownscaling(corrhist, "EG2", "EG1");
+    fEffectiveDownscaling["EJ1"] = getEffectiveDownscaling(corrhist, "EJ1", "EJ1");
+    fEffectiveDownscaling["EJ2"] = getEffectiveDownscaling(corrhist, "EJ2", "EJ1");
+    fEffectiveDownscaling["DMC7"] = getEffectiveDownscaling(corrhist, "DMC7", "DG1");
+    fEffectiveDownscaling["DG1"] = getEffectiveDownscaling(corrhist, "DG1", "DG1");
+    fEffectiveDownscaling["DG2"] = getEffectiveDownscaling(corrhist, "DG2", "DG1");
+    fEffectiveDownscaling["DJ1"] = getEffectiveDownscaling(corrhist, "DJ1", "DJ1");
+    fEffectiveDownscaling["DJ2"] = getEffectiveDownscaling(corrhist, "DJ2", "DJ2");
+
+    TH1 *counterINT7 = fClusterCounters["INT7"];
+    auto countsINT7 = getTriggerClusterCounts(counterINT7, "CENT"),
+         refLuminosity = countsINT7 / fEffectiveDownscaling["INT7"];
+    fEffectiveLuminosity["INT7"] = countsINT7 / xrefPB;
+    for(auto &trgdownscale : fEffectiveDownscaling) {
+      auto &triggerclass = trgdownscale.first;
+      if(triggerclass == "INT7") continue;
+      auto &downscaling = trgdownscale.second;
+      double clustercorrection = 1.;
+      if(triggerclass.find("G1") != std::string::npos || triggerclass.find("J1") != std::string::npos) {
+        clustercorrection = corrCENTNOTRD;
+      }
+      fEffectiveLuminosity[triggerclass] = refLuminosity * downscaling * clustercorrection / xrefPB;
+    }
+  }
+}
+
+void AliEmcalTriggerLuminosity::evaluatePP5TeV() {
+  TH1 *counterEG2 = fClusterCounters["EG2"];
+  std::vector<std::string> errorfields;
+  if(!counterEG2) errorfields.push_back("counter EG2");
+  if(errorfields.size()) throw UninitException(errorfields);
+
+  double corrCENTNOTRD = getTriggerClusterCounts(counterEG2, "CENTNOTRD") / getTriggerClusterCounts(counterEG2, "CENT");
+
+  std::cout << "Correction CENTNOTRD: " << corrCENTNOTRD << std::endl;
+
+  // normalize by reference cross section
+  double xrefMB = 51.2, // From: https://cds.cern.ch/record/2202638/files/vdmNote.pdf
+         xrefPB = xrefMB * getConversionToPB(LuminosityUnit_t::kMb); // convert cross section from mb to pb
+  for(int ib = 0; ib < fLuminosityHist->GetXaxis()->GetNbins(); ib++) {
+    std::string triggerclass = fLuminosityHist->GetXaxis()->GetBinLabel(ib+1);
+    std::unique_ptr<TH1> sliceTrigger(fLuminosityHist->ProjectionY("sliceTrigger", ib+1, ib+1));
+    double rawcounts = sliceTrigger->Integral();
+    double clustercorrection = 1.;
+    if(triggerclass.find("G1") != std::string::npos || triggerclass.find("J1") != std::string::npos) {
+      clustercorrection = corrCENTNOTRD;
+    }
+    double correctedCounts = rawcounts * clustercorrection;
+    double luminosity = correctedCounts / xrefPB;
+    std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl;
+    fLuminosities[triggerclass] = luminosity;
+  }
+
+  // extract effective downscalings and effective luminosities based on the trigger correlation of the CENT cluster
+  auto foundCorrelationhist = fCorrelationHistograms.find("CENT");
+  if(foundCorrelationhist != fCorrelationHistograms.end()) {
+    auto corrhist = foundCorrelationhist->second;
+    fEffectiveDownscaling["INT7"] = getEffectiveDownscaling(corrhist, "INT7", "EG2");
+    fEffectiveDownscaling["EMC7"] = getEffectiveDownscaling(corrhist, "EMC7", "EG2");
+    fEffectiveDownscaling["EG1"] = getEffectiveDownscaling(corrhist, "EG1", "EG2");
+    fEffectiveDownscaling["EG2"] = getEffectiveDownscaling(corrhist, "EG2", "EG2");
+    fEffectiveDownscaling["EJ1"] = getEffectiveDownscaling(corrhist, "EJ1", "EJ2");
+    fEffectiveDownscaling["EJ2"] = getEffectiveDownscaling(corrhist, "EJ2", "EJ2");
+    fEffectiveDownscaling["DMC7"] = getEffectiveDownscaling(corrhist, "DMC7", "DG2");
+    fEffectiveDownscaling["DG1"] = getEffectiveDownscaling(corrhist, "DG1", "DG2");
+    fEffectiveDownscaling["DG2"] = getEffectiveDownscaling(corrhist, "DG2", "DG2");
+    fEffectiveDownscaling["DJ1"] = getEffectiveDownscaling(corrhist, "DJ1", "DJ2");
+    fEffectiveDownscaling["DJ2"] = getEffectiveDownscaling(corrhist, "DJ2", "DJ2");
+
+    TH1 *counterINT7 = fClusterCounters["INT7"];
+    auto countsINT7 = getTriggerClusterCounts(counterINT7, "CENT"),
+         refLuminosity = countsINT7 / fEffectiveDownscaling["INT7"];
+    fEffectiveLuminosity["INT7"] = countsINT7 / xrefPB;
+    for(auto &trgdownscale : fEffectiveDownscaling) {
+      auto &triggerclass = trgdownscale.first;
+      if(triggerclass == "INT7") continue;
+      auto &downscaling = trgdownscale.second;
+      double clustercorrection = 1.;
+      if(triggerclass.find("G2") != std::string::npos || triggerclass.find("J2") != std::string::npos) {
+        clustercorrection = corrCENTNOTRD;
+      }
+      fEffectiveLuminosity[triggerclass] = refLuminosity * downscaling * clustercorrection / xrefPB;
+    }
+  }
+}
+
+void AliEmcalTriggerLuminosity::evaluatePBPB5TeV() {
+  TH1 *counterEG1 = fClusterCounters["EG1"];
+  std::vector<std::string> errorfields;
+  if(!counterEG1) errorfields.push_back("counter EG1");
+  if(errorfields.size()) throw UninitException(errorfields);
+
+  double corrCENTNOTRD = getTriggerClusterCounts(counterEG1, "CENTNOTRD") / getTriggerClusterCounts(counterEG1, "CENT");
+
+  std::cout << "Correction CENTNOTRD: " << corrCENTNOTRD << std::endl;
+
+  // normalize by reference cross section
+  double xrefMB =  67.6, //From: https://cds.cern.ch/record/2636623/files/centrality%20determination%20note.pdf
+         xrefPB = xrefMB * getConversionToPB(LuminosityUnit_t::kMb); // convert cross section from mb to pb
+  for(int ib = 0; ib < fLuminosityHist->GetXaxis()->GetNbins(); ib++) {
+    std::string triggerclass = fLuminosityHist->GetXaxis()->GetBinLabel(ib+1);
+    std::unique_ptr<TH1> sliceTrigger(fLuminosityHist->ProjectionY("sliceTrigger", ib+1, ib+1));
+    double rawcounts = sliceTrigger->Integral();
+    double clustercorrection = 1.;
+    if(triggerclass.find("G1") != std::string::npos || triggerclass.find("J1") != std::string::npos) {
+      clustercorrection = corrCENTNOTRD;
+    }
+    double correctedCounts = rawcounts * clustercorrection;
+    double luminosity = correctedCounts / xrefPB;
+    std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl;
     fLuminosities[triggerclass] = luminosity;
   }
 

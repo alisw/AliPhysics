@@ -50,6 +50,14 @@ class AliPtContainer: public TNamed {
         TH1* getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub = false);
         TH1* getSubeventCorrelation(int ind, int m);
         int getMpar() { return mpar;}
+        void CalculateCk();
+        void CalculateSkew();
+        void CalculateKurtosis();
+        TH1* RecalculateCkHists(vector<TH1*> inh);
+        TH1* RecalculateSkewHists(vector<TH1*> inh);
+        TH1* RecalculateKurtosisHists(vector<TH1*> inh);
+        void CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized); 
+        void CalculateRecursive(bool normalized);
         Long64_t Merge(TCollection *collist);
     protected:
         TList* fCkTermList;
@@ -68,14 +76,6 @@ class AliPtContainer: public TNamed {
         double OrderedAddition(vector<double> vec, int size);
         TH1* getPowerHist(TH1* inh, double p);
         void FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, const double &rn, TString sub);
-        void CalculateCk();
-        void CalculateSkew();
-        void CalculateKurtosis();
-        TH1* RecalculateCkHists(vector<TH1*> inh);
-        TH1* RecalculateSkewHists(vector<TH1*> inh);
-        TH1* RecalculateKurtosisHists(vector<TH1*> inh);
-        void CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized); 
-        void CalculateRecursive(bool normalized);
         int factorial(const int n) { return (n<2)?1:factorial(n - 1)*n; }
 
       private:

@@ -1,5 +1,5 @@
 
-void AddTaskGammaDeltaPIDSaveQvecSimple(Int_t whichData = 2018,TString period = "q",Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fPtMax=5.0,Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,Double_t fChi2max=4.0,Int_t gNclustTPC=70, Int_t fparticle=0,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Bool_t bSkipPileUp=kFALSE, TString sCentEstimator="V0M", Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t vnHarmonic=2, TString sDetForEP="TPC", TString sMCfilePath="/home/shi/alice/CalibrationFiles/efficiencyBothpol18qnew.root", TString sNUAFilePath = "/home/shi/alice/CalibrationFiles/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Oct2021.root", TString sDetWgtsFile = "/home/shi/alice/CalibrationFiles/CalibV0GainCorrectionLHC18q_Oct2021.root", TString sZDCCorrFile = "/home/shi/alice/CalibrationFiles/RecenteringResultFinal_2018q_3rdOrderCent_vtx_orbitNo.root", const char *suffix = "LHC18qAnaTPCEPFB768SaveQvec")
+void AddTaskGammaDeltaPIDSaveQvecSimple(Int_t whichData = 2018,TString period = "q",Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fPtMax=5.0,Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,Double_t fChi2max=4.0,Int_t gNclustTPC=70, Bool_t fUseTPCCrossedRows = kFALSE, Int_t fTPCsharedCut = -1, Int_t fparticle=0,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Bool_t bSkipPileUp=kFALSE, TString sCentEstimator="V0M", Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, Double_t fdcaxy=0, Double_t fdcaz=0, TString sTrigger="kINT7", Int_t vnHarmonic=2, TString sDetForEP="TPC", TString sMCfilePath="/home/shi/alice/CalibrationFiles/efficiencyBothpol18qnew.root", TString sNUAFilePath = "/home/shi/alice/CalibrationFiles/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Oct2021.root", TString sDetWgtsFile = "/home/shi/alice/CalibrationFiles/CalibV0GainCorrectionLHC18q_Oct2021.root", TString sZDCCorrFile = "/home/shi/alice/CalibrationFiles/RecenteringResultFinal_2018q_3rdOrderCent_vtx_orbitNo.root", const char *suffix = "LHC18qAnaTPCEPFB768SaveQvec")
 {
 
 
@@ -55,8 +55,13 @@ void AddTaskGammaDeltaPIDSaveQvecSimple(Int_t whichData = 2018,TString period = 
 
   cout<<"=========> AddTaskCMW::Info() setting Event Plane Det: "<<sDetForEP<<endl;
   taskGammaPID->SetDetectorforEventPlane(sDetForEP);
-
-
+  
+  if(fdcaxy > 0) {
+    taskGammaPID->SetDCAXYRangeMax(fdcaxy);
+  }
+  if(fdcaz > 0) {
+    taskGammaPID->SetDCAZRangeMax(fdcaz);
+  }
   
   if(sCentEstimator=="V0" || sCentEstimator=="V0M"){ 
     taskGammaPID->SetCentralityEstimator("V0M");    
@@ -84,7 +89,9 @@ void AddTaskGammaDeltaPIDSaveQvecSimple(Int_t whichData = 2018,TString period = 
   taskGammaPID->SetFlagUseKinkTracks(kFALSE);
   taskGammaPID->SetCumulantHarmonic(vnHarmonic);
   taskGammaPID->SetTrackCutNclusterMin(gNclustTPC);  
- 
+  taskGammaPID->SetTrackCutUseTPCCrossedRows(fUseTPCCrossedRows);
+  taskGammaPID->SetTrackCutTPCsharedMin(fTPCsharedCut);
+
 
    ///  -----> Separate AddTask Added For Lambda-X correlation
    ///  AddTaskGammaDeltaPID.C  

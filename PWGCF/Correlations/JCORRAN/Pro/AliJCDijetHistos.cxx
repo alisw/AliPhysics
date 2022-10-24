@@ -26,6 +26,7 @@
 vector<double> AliJCDijetHistos::CentBin;
 vector<double> AliJCDijetHistos::dijetMBin;
 int AliJCDijetHistos::fNCentBin;
+int AliJCDijetHistos::fNJetClasses;
 int AliJCDijetHistos::fnNewBinsDijet1;
 
 //______________________________________________________________________________
@@ -105,6 +106,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_deltaPtResponseEvery_ALICE(),
     fh_dijetResponse(),
     fh_dijetResponseLin(),
+    fh_dijetResponseLinNoMatching(),
     fh_doubleConeM(),
     fh_doubleConeMAlt(),
     fh_jet2Cone1Dist(),
@@ -129,6 +131,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_dijetResponseTrunc2(),
     fh_dijetResponseDeltaPhiCut(),
     fh_dijetResponseDeltaPhiCutLin(),
+    fh_dijetResponseDeltaPhiCutLinNoMatching(),
     fh_dijetResponseDeltaPhiCutTrunc(),
     fh_dijetResponseDeltaPhiCutTrunc2()
 {
@@ -211,6 +214,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_deltaPtResponseEvery_ALICE(obj.fh_deltaPtResponseEvery_ALICE),
     fh_dijetResponse(obj.fh_dijetResponse),
     fh_dijetResponseLin(obj.fh_dijetResponseLin),
+    fh_dijetResponseLinNoMatching(obj.fh_dijetResponseLinNoMatching),
     fh_doubleConeM(obj.fh_doubleConeM),
     fh_doubleConeMAlt(obj.fh_doubleConeMAlt),
     fh_jet2Cone1Dist(obj.fh_jet2Cone1Dist),
@@ -235,6 +239,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_dijetResponseTrunc2(obj.fh_dijetResponseTrunc2),
     fh_dijetResponseDeltaPhiCut(obj.fh_dijetResponseDeltaPhiCut),
     fh_dijetResponseDeltaPhiCutLin(obj.fh_dijetResponseDeltaPhiCutLin),
+    fh_dijetResponseDeltaPhiCutLinNoMatching(obj.fh_dijetResponseDeltaPhiCutLinNoMatching),
     fh_dijetResponseDeltaPhiCutTrunc(obj.fh_dijetResponseDeltaPhiCutTrunc),
     fh_dijetResponseDeltaPhiCutTrunc2(obj.fh_dijetResponseDeltaPhiCutTrunc2)
 {
@@ -260,7 +265,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     fHMG = new AliJHistManager(Form("AliJCDijetHistManager%s",sMngrName.Data()),sMngrName.Data());
     // set AliJBin here //
     fHistCentBin.Set("CentBin","CentBin","Cent:",AliJBin::kSingle).SetBin(fNCentBin);
-    fJetBin.Set("JetBin","JetBin","Jet bin:",AliJBin::kSingle).SetBin(7);
+    fJetBin.Set("JetBin","JetBin","Jet bin:",AliJBin::kSingle).SetBin(fNJetClasses);
     fMBin.Set("MBin","MBin","dijetM:%.0f-%.0f:").SetBin(fSMBins);
 
     // fh_events counts several things:
@@ -612,6 +617,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     // ============ Response histograms ===========
     fh_responseInfo
         << TH1D("h_responseInfo", "h_responseInfo", 40, 0.0, 40.0 )
+        << fJetBin << fJetBin
         << "END" ;
 
     fh_jetResponseDeltaR
@@ -666,6 +672,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetResponseLin
         << TH2D("h_dijetResponseLin", "h_dijetResponseLin", 500, 0, 500, 500, 0, 500 )
+        << fJetBin << fJetBin << "END" ;
+
+    fh_dijetResponseLinNoMatching
+        << TH2D("h_dijetResponseLinNoMatching", "h_dijetResponseLinNoMatching", 500, 0, 500, 500, 0, 500 )
         << fJetBin << fJetBin << "END" ;
 
     fh_doubleConeM
@@ -762,6 +772,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetResponseDeltaPhiCutLin
         << TH2D("h_dijetResponseDeltaPhiCutLin", "h_dijetResponseDeltaPhiCutLin", 500, 0, 500, 500, 0, 500 )
+        << fJetBin << fJetBin << "END" ;
+
+    fh_dijetResponseDeltaPhiCutLinNoMatching
+        << TH2D("h_dijetResponseDeltaPhiCutLinNoMatching", "h_dijetResponseDeltaPhiCutLinNoMatching", 500, 0, 500, 500, 0, 500 )
         << fJetBin << fJetBin << "END" ;
 
     fh_dijetResponseDeltaPhiCutTrunc

@@ -517,7 +517,11 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
       continue;
     }
   }
-
+/*
+  // INEL>0 selection
+	if( AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0) < 1. )
+        return;
+*/
   CheckMultiplicities();
 
   Double_t flatV0A      = GetFlatenicityV0A();
@@ -1379,7 +1383,7 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicity() {
     flatenicity = -1;
   }
   
-  hFlatVsNch->Fill(flatenicity, multV0Mdeta);
+  hFlatVsNch->Fill(flatenicity, multV0M);
   hNchV0M->Fill(multV0M);
 
   return flatenicity;
@@ -1696,7 +1700,7 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicityMC() {
     sRho = -1;
   }
   
-  hFlatVsNchMC->Fill(flatenicity, multiplicityV0M);
+  hFlatVsNchMC->Fill(flatenicity, multV0M);
   hNchV0MMC->Fill(multV0M);
   
   return flatenicity;

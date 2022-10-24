@@ -612,7 +612,7 @@ AliAnalysisTaskR2P2multEff * AddTaskR2P2multEff
       minCentrality[7] = 60.;	  maxCentrality[7]  = 70.;
       minCentrality[8] = 70.;	  maxCentrality[8]  = 80.;
     }		    				
-   else if ( CentralityGroup == 101 )
+  else if ( CentralityGroup == 101 )
     {
       nCentrality = 1;
       minCentrality[0] = 0;       maxCentrality[0]  = 1.;
@@ -662,8 +662,113 @@ AliAnalysisTaskR2P2multEff * AddTaskR2P2multEff
       nCentrality = 1;
       minCentrality[0] = 70.;	 maxCentrality[0]  = 100.;
     }
+  else if ( CentralityGroup == 111 )
+    {
+      nCentrality = 2;
+      minCentrality[0] = 0;       maxCentrality[0]  = 1.;
+      minCentrality[1] = 1.;      maxCentrality[1]  = 5.;
+    }
+  else if ( CentralityGroup == 112 )
+    {
+      nCentrality = 2;
+      minCentrality[0] = 5.;      maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;	  maxCentrality[1]  = 15.;
+    }
+  else if ( CentralityGroup == 113 )
+    {
+      nCentrality = 2;
+      minCentrality[0] = 15.;	 maxCentrality[0]  = 20.;
+      minCentrality[1] = 20.;	 maxCentrality[1]  = 30.;
+    }
+  else if ( CentralityGroup == 114 )
+    {
+      nCentrality = 2;
+      minCentrality[0] = 30.;	 maxCentrality[0]  = 40.;
+      minCentrality[1] = 40.;	 maxCentrality[1]  = 50.;
+    }
+  else if ( CentralityGroup == 115 )
+    {
+      nCentrality = 2;
+      minCentrality[0] = 50.;	 maxCentrality[0]  = 70.;
+      minCentrality[1] = 70.;	 maxCentrality[1]  = 100.;
+    }
+   else if ( CentralityGroup == 121 ) //victor
+    {
+      nCentrality = 1;
+      minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+    }
+   else if ( CentralityGroup == 122 ) //victor
+    {
+      nCentrality = 2;
+      minCentrality[0] = 5.;	  maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;	  maxCentrality[1]  = 20.;
+    }
+   else if ( CentralityGroup == 123 ) //victor
+    {
+      nCentrality = 2;
+      minCentrality[0] = 20.;	  maxCentrality[0]  = 30.;
+      minCentrality[1] = 30.;	  maxCentrality[1]  = 40.;
+    }
+   else if ( CentralityGroup == 124 ) //victor
+    {
+      nCentrality = 2;
+      minCentrality[0] = 40.;	  maxCentrality[0]  = 50.;
+      minCentrality[1] = 50.;	  maxCentrality[1]  = 60.;
+    }
+   else if ( CentralityGroup == 125 ) //victor
+    {
+      nCentrality = 2;
+      minCentrality[0] = 60.;	  maxCentrality[0]  = 70.;
+      minCentrality[1] = 70.;	  maxCentrality[1]  = 80.;
+    }
+   else if ( CentralityGroup == 131 ) //victor
+    {
+      nCentrality = 1;
+      minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+    }
+   else if ( CentralityGroup == 132 ) //victor
+     {
+       nCentrality = 1;
+       minCentrality[0] = 5.;	  maxCentrality[0]  = 10.;
+     }
+   else if ( CentralityGroup == 133 ) //victor
+     {
+       nCentrality = 1;
+       minCentrality[0] = 10.;	  maxCentrality[0]  = 20.;
+     }
+   else if ( CentralityGroup == 134 ) //victor
+     {
+       nCentrality = 1;
+       minCentrality[0] = 20.;	  maxCentrality[0]  = 30.;
+     }
+   else if ( CentralityGroup == 135 ) //victor
+     {
+       nCentrality = 1;
+       minCentrality[0] = 30.;	  maxCentrality[0]  = 40.;
+     }
+   else if ( CentralityGroup == 136 ) //victor
+     {
+       nCentrality = 1;
+       minCentrality[0] = 40.;	  maxCentrality[0]  = 50.;
+     }
+   else if ( CentralityGroup == 137 ) //victor
+     {
+       nCentrality = 1;
+       minCentrality[0] = 50.;	  maxCentrality[0]  = 60.;
+     }
+   else if ( CentralityGroup == 138 ) //victor
+     {
+       nCentrality = 1;
+       minCentrality[0] = 60.;	  maxCentrality[0]  = 70.;
+     }
+  else if ( CentralityGroup == 139 ) //victor
+     {
+       nCentrality = 1;
+       minCentrality[0] = 70.;	  maxCentrality[0]  = 80.;
+     }	
   
-  else    return 0;
+  
+   else    return 0;
   
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;

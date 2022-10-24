@@ -43,6 +43,10 @@ AliFemtoESDTrackCut()
 
     fRejectPions  = 0;
     fTPCThreshold = 0.7;
+
+    fdNSigmaVspTcut = 0;
+    fdcutline_k = 10/1.1;
+    fdcutline_b = -15.;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -81,6 +85,11 @@ AliFemtoESDTrackCut(aCut)
 
     fRejectPions  = aCut.fRejectPions;
     fTPCThreshold = aCut.fTPCThreshold;
+
+
+    fdNSigmaVspTcut = aCut.fdNSigmaVspTcut;
+    fdcutline_k = aCut.fdcutline_k;
+    fdcutline_b = aCut.fdcutline_b;
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -128,6 +137,11 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
     fRejectPions  = aCut.fRejectPions;
     fTPCThreshold = aCut.fTPCThreshold;
+
+    fdNSigmaVspTcut = aCut.fdNSigmaVspTcut;
+    fdcutline_k = aCut.fdcutline_k;
+    fdcutline_b = aCut.fdcutline_b;
+
     return *this;
 }
 
@@ -474,6 +488,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
     
 }
 bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, float tmp_switch){
+
     if (mom > tmp_switch) {
 	        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigmaP)
 	            return true;	
@@ -482,28 +497,46 @@ bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float n
         if (TMath::Abs(nsigmaTPCP) < fNsigmaP)
             return true;
     }
+
     return false;
 
 }
 bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD,  float tmp_switch){
     //double massPDGD=1.8756;
-    if (fNsigmaTPCTOF) {
-        //Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
-        if (mom > tmp_switch){
-            if (TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD)
-            //if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
-                return true;
-        }
-        else{
-            if (TMath::Abs(nsigmaTPCD) < fNsigmaD)
-                return true;
-        }
-        
-    }
-    else{
-        if (TMath::Abs(nsigmaTPCD) < fNsigmaD)
-            return true;
-    } 
+	if(fdNSigmaVspTcut==0){
+	    if (fNsigmaTPCTOF) {
+		//Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
+		if (mom > tmp_switch){
+		    if (TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD)
+		    //if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
+		        return true;
+		}
+		else{
+		    if (TMath::Abs(nsigmaTPCD) < fNsigmaD)
+		        return true;
+		}
+		
+	    }
+	    else{
+		if (TMath::Abs(nsigmaTPCD) < fNsigmaD)
+		    return true;
+	    } 
+	
+	}
+	else{
+		float tmpcut = fdcutline_k * mom + fdcutline_b;
+
+		if(tmp_switch > 4.0){	// only TPC
+			if(nsigmaTPCD >= tmpcut && abs(nsigmaTPCD) < fNsigmaD){
+				return true;
+			}
+		}
+		else{	
+			if(nsigmaTPCD >= tmpcut && abs(nsigmaTPCD) < fNsigmaD && TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD){
+				return true;
+			}
+		}
+	}
     return false;
 }
 bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT){
@@ -903,3 +936,12 @@ void AliFemtoTrackCutPdtHe3::SetfUseRejectLowpTPion(int aUse){
 void AliFemtoTrackCutPdtHe3::SetfTPCThreshold(float aTPCThreshold){ 
 	fTPCThreshold = aTPCThreshold;
 }
+void AliFemtoTrackCutPdtHe3::SetfdNSigmaVspTcut(int aUse){
+	fdNSigmaVspTcut = aUse;
+}
+void AliFemtoTrackCutPdtHe3::Setfdline(float ak,float ab){
+	fdcutline_k = ak;
+	fdcutline_b = ab;
+}
+
+

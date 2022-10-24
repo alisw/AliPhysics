@@ -42,7 +42,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		double EtaCalibration(const double&);
 		void MakeMCanalysis();
 		void MakeMCanalysisPID();
-		void ElectronsContamination();
+		void nSigmaContamination();
 		void MakeDataanalysis();
 		void MakePIDanalysis();
 		void SetPtMin(Double_t val) { fPtMin = val; } // Set pT cut for associated particles
@@ -131,10 +131,17 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH3F* hdEdx[9][4];
 		TH2F* hPtrTPC[9][4];
 		TH2F* hPtVsP[4];
-		TH2F* hKaonContamination[4];
-		TH2F* hKaondEdx[4];
-		TH2F* hProtonContamination[4];
-		TH2F* hProtondEdx[4];
+
+		TH2F* pion_cont_in_kaon_h[4];
+		TH2F* electron_cont_in_kaon_h[4];
+		TH2F* nsigma_kaon_h[4];
+		TH2F* pion_cont_in_proton_h[4];
+		TH2F* electron_cont_in_proton_h[4];
+		TH2F* nsigma_proton_h[4];
+		TH2F* kaon_cont_in_pion_h[4];
+		TH2F* electron_cont_in_pion_h[4];
+		TH2F* nsigma_pion_h[4];
+
 		TH2F* hPionTOFDCAxyNeg[3];
 		TH2F* hProtonTOFDCAxyNeg[3];
 		TH2F* hPionTOFDCAxyPos[3];
@@ -143,7 +150,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH2F* hProtonTPCDCAxyNeg[3];	
 		TH2F* hPionTPCDCAxyPos[3];	
 		TH2F* hProtonTPCDCAxyPos[3];
-		
+
 		TH1F* hMCPtPionPos;
 		TH1F* hMCPtKaonPos;
 		TH1F* hMCPtProtonPos;

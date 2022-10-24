@@ -29,7 +29,9 @@ AliAnalysisTaskAODTrackPair *AddTaskAODTrackPair(
     double findable = 0.8, string dcaxy = "0.0105+0.035/pow(x,1.1)",
     double dcaz = 2.0, double chi2tpc = 4., double chi2its = 36.,
     int nclusttpc = 70, int nclustits = 1, double pair_opangle = 0.98,
-    int pid1 = 211, int pid2 = 211) {
+    int pid1 = 211, int pid2 = 211, int trackdepth = 100, int poolsize = 100,
+    double readypoolfraction = 0.1, bool onpoolVtx = true,
+    bool onpoolCent = true, bool onpoolPsi = true) {
 
   AliMuonTrackCuts *fMuonTrackCuts =
       new AliMuonTrackCuts("StandardMuonTrackCuts", "StandardMuonTrackCuts");
@@ -109,13 +111,14 @@ AliAnalysisTaskAODTrackPair *AddTaskAODTrackPair(
   if (isSelectEvt) {
     task->SelectCollisionCandidates(offlineTriggerMask);
   }
+
   task->setUtils(utils);
-  task->setEvtMixingTrackDepth(100);
-  task->setEvtMixingPoolSize(100);
-  task->setEvtMixingReadyFraction(0.1);
-  task->setEvtMixingPoolVtxZ(true);
-  task->setEvtMixingPoolCent(true);
-  task->setEvtMixingPoolPsi(true);
+  task->setEvtMixingTrackDepth(trackdepth);
+  task->setEvtMixingPoolSize(poolsize);
+  task->setEvtMixingReadyFraction(readypoolfraction);
+  task->setEvtMixingPoolVtxZ(onpoolVtx);
+  task->setEvtMixingPoolCent(onpoolCent);
+  task->setEvtMixingPoolPsi(onpoolPsi);
   task->setMixingAnalysis(onMixingAnalysis);
   task->setMC(isMC);
   task->setMidTrackAna(isMidTrackAnalysis);
@@ -182,6 +185,12 @@ AliAnalysisTaskAODTrackPair *AddTaskAODTrackPair(
   cout << "pair_opangle=" << pair_opangle << endl;
   cout << "pid1=" << pid1 << endl;
   cout << "pid2=" << pid2 << endl;
+  cout << "trackdepth=" << trackdepth << endl;
+  cout << "poolsize=" << poolsize << endl;
+  cout << "readypoolfraction=" << readypoolfraction << endl;
+  cout << "onpoolVtx=" << onpoolVtx << endl;
+  cout << "onpoolCent=" << onpoolCent << endl;
+  cout << "onpoolPsi=" << onpoolPsi << endl;
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 =

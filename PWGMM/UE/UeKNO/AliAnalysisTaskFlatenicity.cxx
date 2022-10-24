@@ -118,6 +118,9 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hFlatVsPtV0MMC[i_c] = 0;
+  }
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = 0;
   }
@@ -152,6 +155,9 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
+  }
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hFlatVsPtV0MMC[i_c] = 0;
   }
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = 0;
@@ -324,6 +330,15 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                    "; measured combined mult.; true combined mult.", 500, -0.5,
                    499.5, 500, -0.5, 499.5);
       fOutputList->Add(hRmCombinedMult[i_c]);
+    }
+    for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+      hFlatVsPtV0MMC[i_c] =
+          new TH2D(Form("hFlatVsPtV0MMC_c%d", i_c),
+                   Form("Measured %1.0f-%1.0f%%V0M; true Flatenicity; "
+                        "#it{p}_{T} (GeV/#it{c})",
+                        centClass[i_c], centClass[i_c + 1]),
+                   nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+      fOutputList->Add(hFlatVsPtV0MMC[i_c]);
     }
   }
 
@@ -569,6 +584,7 @@ void AliAnalysisTaskFlatenicity::MakeMCanalysis() {
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
     hFlatVsPtMC->Fill(fFlatMC, particle->Pt());
+    hFlatVsPtV0MMC[fV0Mindex]->Fill(fFlatMC, particle->Pt());
     hPtPrimIn->Fill(particle->Pt());
   }
   // rec

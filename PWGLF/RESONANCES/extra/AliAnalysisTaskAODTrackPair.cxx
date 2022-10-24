@@ -60,7 +60,7 @@ ClassImp(AliAnalysisTaskAODTrackPair)
     : AliAnalysisTaskSE(), fEvent(NULL), fPoolMuonTrackMgr(NULL), fUtils(NULL),
       fIsMC(false), fIsMidTrackAna(false), fIsV0TrackPairAna(false),
       fIsPrimTrackPairAna(false), fIsMixingAnalysis(false), fRunNumber(-99999),
-      fTrackDepth(1000), fPoolSize(1), fReadyFraction(0.1),
+      fTrackDepth(1), fPoolSize(1), fReadyFraction(0.1),
       fTriggerMaskForSame(AliVEvent::kMuonUnlikeLowPt7 |
                           AliVEvent::kMuonLikeLowPt7),
       fTriggerMaskForMixing(AliVEvent::kMuonSingleLowPt7),
@@ -156,7 +156,7 @@ AliAnalysisTaskAODTrackPair::AliAnalysisTaskAODTrackPair(const char *name)
     : AliAnalysisTaskSE(name), fEvent(NULL), fPoolMuonTrackMgr(NULL),
       fUtils(NULL), fIsMC(false), fIsMidTrackAna(false),
       fIsV0TrackPairAna(false), fIsPrimTrackPairAna(false),
-      fIsMixingAnalysis(false), fRunNumber(-99999), fTrackDepth(1000),
+      fIsMixingAnalysis(false), fRunNumber(-99999), fTrackDepth(1),
       fPoolSize(1), fReadyFraction(0.1),
       fTriggerMaskForSame(AliVEvent::kMuonUnlikeLowPt7 |
                           AliVEvent::kMuonLikeLowPt7),
@@ -249,7 +249,20 @@ AliAnalysisTaskAODTrackPair::AliAnalysisTaskAODTrackPair(const char *name)
       RecPairArmenterosArmPt(0.), RecPairArmenterosAlpha(0.), RecPairCent(0.),
       RecPairDS(0.) {
 
-  double fCentBins[] = {-1, 9, 15, 21, 26, 34, 42, 51, 61, 99999};
+  // Define input and output slots here
+  // Input slot #0 works with a TChain
+  DefineInput(0, TChain::Class());
+  // Output slot #0 id reserved by the base class for AOD
+  // Output slot #1 writes into a TH1 container
+  DefineOutput(1, TList::Class());
+}
+
+//________________________________________________________________________
+AliAnalysisTaskAODTrackPair::~AliAnalysisTaskAODTrackPair() {}
+//________________________________________________________________________
+void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
+
+  double fCentBins[] = {0, 1, 5, 10, 20, 40, 60, 100};
   double fVtxBins[] = {-50, -10.5, -6, -2, 0, 2, 6, 10.5, 50};
   double fPsiBins[] = {-10, -1.5, -1.0, -0.5, 0, 0.5, 1.0, 1.5, 10};
 
@@ -263,18 +276,6 @@ AliAnalysisTaskAODTrackPair::AliAnalysisTaskAODTrackPair(const char *name)
   fPoolMuonTrackMgr->SetTargetValues(fTrackDepth, (double)fReadyFraction,
                                      fPoolSize);
 
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
-  // Output slot #0 id reserved by the base class for AOD
-  // Output slot #1 writes into a TH1 container
-  DefineOutput(1, TList::Class());
-}
-
-//________________________________________________________________________
-AliAnalysisTaskAODTrackPair::~AliAnalysisTaskAODTrackPair() {}
-//________________________________________________________________________
-void AliAnalysisTaskAODTrackPair::UserCreateOutputObjects() {
   // Create histograms
   // Called once
   fOutputList = new TList();

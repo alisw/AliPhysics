@@ -30,7 +30,7 @@ AddTaskFlatenicityPiKp(const Char_t *taskname = "Flat", TString detForFlat = "V0
 	if (!taskFlat)
 		return 0x0;
 
-	taskFlat->SetUseMC(kFALSE);
+	taskFlat->SetUseMC(kTRUE);
 	taskFlat->SetMCclosureTest(kFALSE);
 	taskFlat->SaveDCAxyHistograms(kFALSE);
 	taskFlat->SetDetectorForFlatenicity(detForFlat);

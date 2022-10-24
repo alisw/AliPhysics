@@ -25,6 +25,7 @@
 #include "TAxis.h"
 #include "AliGFWFlowContainer.h"
 #include "AliGFW.h"
+#include "TRandom.h"
 using namespace std;
 class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
 {
@@ -83,6 +84,7 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         AliEventCuts fEventCuts;
         Int_t fEvMixPars[4];
         Bool_t fCalculateFlow;
+        TRandom *fRndmGen; //! No need to store
         AliGFWFlowContainer *fFC;
         AliGFW *fGFW;
         vector<AliGFW::CorrConfig> corrconfigs; //! do not store

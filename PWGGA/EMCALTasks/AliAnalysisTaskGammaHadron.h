@@ -324,6 +324,13 @@ protected:
   Double_t                    fQnCorrEventPlane3Angle;    //!<! Event plane(3rd order) angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
   Double_t                    fQnCorrEventPlane4Angle;    //!<! Event plane angle (4th order) corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
 
+  // QVector Scales
+  Double_t                    fQnCorrQ1Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ2Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ3Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ4Scale;   //!<! Scale of Q1 Vector for chosen source
+
+
   //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
   Bool_t                      fIsMC;                     ///< Trigger, MC analysis
@@ -452,6 +459,14 @@ protected:
   TH3             *fHistTrackPsiEP3PtCent;    //!<! Histogram of delta Psi_{EP,3} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEP4PtCent;    //!<! Histogram of delta Psi_{EP,4} of accepted tracks (vs pt and centrality)
 
+
+
+  TH3             *fHistPionAccV2ScalarProdPtCent;   //!<! Histogram of u*Q2 for accepted tracks, the scalar produce method of v2 flow (vs pt and centrality)
+  TH3             *fHistPionAccV3ScalarProdPtCent;   //!<! Histogram of u*Q3 for accepted tracks, the scalar produce method of v3 flow (vs pt and centrality)
+
+  TH3             *fHistTrackV2ScalarProdPtCent;   //!<! Histogram of u*Q2 for accepted tracks, the scalar produce method of v2 flow (vs pt and centrality)
+  TH3             *fHistTrackV3ScalarProdPtCent;   //!<! Histogram of u*Q3 for accepted tracks, the scalar produce method of v3 flow (vs pt and centrality)
+
   // Event Plane information (MC information);
   TH1             *fMCReactionPlane;         //!<! Histogram of distribution of reaction plane angle (MC information)
   TH2             *fPtRPAnglePionAcc;        //!<! Histogram of delta Psi_{RP} of accepted pi0 (vs pt)
@@ -548,6 +563,6 @@ protected:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 18) // Class to analyze gamma- and pi0- hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 19) // Class to analyze gamma- and pi0- hadron correlations
 };
 #endif

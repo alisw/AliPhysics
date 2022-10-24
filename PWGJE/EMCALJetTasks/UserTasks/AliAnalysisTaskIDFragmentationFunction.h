@@ -47,6 +47,8 @@ public:
   Bool_t         FillHistograms();
   virtual void   Terminate(Option_t* );
   virtual Bool_t Notify();
+  
+  enum FragmentationFunctionChange { kNoChange = 0, kLowPtEnhancement = 1, kLowPtDepletion = 2};
 
   // Setters and Getters
   virtual void   SetNonStdFile(char* c){fNonStdFile = c;} 
@@ -111,8 +113,8 @@ public:
   virtual Double_t GetFastSimResFactor() const { return fFastSimResFactor; };
   virtual void SetFastSimResFactor(Double_t value) { fFastSimResFactor = value; };  
 	
-	virtual Int_t GetFFChange() const { return fFFChange; }
-  virtual void SetFFChange(Int_t value) { fFFChange = value; } 
+  virtual FragmentationFunctionChange GetFFChange() const { return fFFChange; }
+  virtual void SetFFChange(FragmentationFunctionChange value) { fFFChange = value; } 
    
   virtual Bool_t GetUseInclusivePIDtask() const {return fUseInclusivePIDtask; }
   virtual void SetUseInclusivePIDtask(Bool_t flag) {fUseInclusivePIDtask = flag; }
@@ -305,7 +307,7 @@ public:
   Double_t fFastSimEffFactor;
   Double_t fFastSimRes;
   Double_t fFastSimResFactor;
-  Int_t fFFChange;                           // 0 for none, 1 for lowPt-Enhancement, 2 for lowPt-Depletion
+  FragmentationFunctionChange fFFChange;                           // 0 for none, 1 for lowPt-Enhancement, 2 for lowPt-Depletion
   
   //Underlying event members
   UInt_t fRCTrials;

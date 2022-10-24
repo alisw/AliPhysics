@@ -192,7 +192,6 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
-		virtual void			NotifyRun();
         virtual void            Terminate(Option_t* option);
 
         
@@ -312,6 +311,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TH2D*			hTracksCorrection2d;	//! Correlation table for number of tracks table
 		TProfile*		hnCorrectedTracks;		//! Number of corrected tracks in a ntracks bin
 		TH1F*			hMult;				//! multiplicity distribution
+		TH2F*			hMultCent;				//! multiplicity-centrality distribution
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
 
 

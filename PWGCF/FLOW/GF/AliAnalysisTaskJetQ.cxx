@@ -21,6 +21,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  fPtTriggMin(6.),
  fPtTriggMax(8.),
  fCalculateFlow(kFALSE),
+ fRndmGen(0),
  fFC(0),
  fGFW(0)
 {}
@@ -46,6 +47,7 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
  fPtTriggMin(6.),
  fPtTriggMax(8.),
  fCalculateFlow(kFALSE),
+ fRndmGen(0),
  fFC(0),
  fGFW(0)
 {
@@ -157,7 +159,10 @@ void AliAnalysisTaskJetQ::UserExec(Option_t *)
 
   fNormCounter->Fill(l_Cent,0); //Number of triggers
   Int_t nPairs = FillCorrelations(ind,i_Cent,vz);
-  FillFCs(l_Cent,0.1);
+  if(fCalculateFlow) {
+    Double_t rndm = fRndmGen->Rndm();
+    FillFCs(l_Cent,rndm);
+  };
   AliEventPool *pool = fPoolMgr->GetEventPool(i_Cent-1, i_vz-1);
   if(!pool) { printf("Could not find the event pool!\n"); return; };
   // printf("Current numbe of events in pool: %i\n",pool->GetCurrentNEvents());
@@ -204,7 +209,7 @@ Int_t AliAnalysisTaskJetQ::FindGivenPt(const Double_t &ptMin, const Double_t &pt
   Double_t lPtMax=0;
   Double_t lPtCur=0;
   Double_t lAbsMaxPt=0;
-  fGFW->Clear(); //Need to clear up the GFW before filling it in
+  if(fCalculateFlow) fGFW->Clear(); //Need to clear up the GFW before filling it in
   Int_t ptBinMax = fPtAxis->GetNbins();
   for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(i);
@@ -299,12 +304,15 @@ void AliAnalysisTaskJetQ::SetupFlowOutput() {
   TObjArray *oba = new TObjArray();
   for(Int_t hr=1;hr<=3;hr++)
     for(Int_t i=0;i<=fPtAxis->GetNbins();i++) {
+      //Also ordering so that same configurations go next to each other, so that postprocessing is easier
       oba->Add(new TNamed(Form("GapPV%iRef%i",hr,i),Form("GapPV%iRef%i",hr,i)));
-      oba->Add(new TNamed(Form("GapNV%iRef%i",hr,i),Form("GapNV%iRef%i",hr,i)));
-      for(Int_t j=i+1;j<=fPtAxis->GetNbins();j++) {
+      for(Int_t j=i+1;j<=fPtAxis->GetNbins();j++)
         oba->Add(new TNamed(Form("GapPV%iRef%i_pt_%i",hr,i,j),Form("GapPV%iRef%i_pt_%i",hr,i,j)));
+
+      oba->Add(new TNamed(Form("GapNV%iRef%i",hr,i),Form("GapNV%iRef%i",hr,i)));
+      for(Int_t j=i+1;j<=fPtAxis->GetNbins();j++)
         oba->Add(new TNamed(Form("GapNV%iRef%i_pt_%i",hr,i,j),Form("GapNV%iRef%i_pt_%i",hr,i,j)));
-      };
+
     };
   //Debugging purposes
   // oba->Add(new TNamed("TestNP","TestNP"));
@@ -326,6 +334,8 @@ void AliAnalysisTaskJetQ::SetupFlowOutput() {
       corrconfigs.push_back(GetConf(Form("GapNV%iRef%i",hr,i),Form("neg (%i) {%i} pos (%i) {%i}",i,hr,i,-hr), kFALSE));
       corrconfigs.push_back(GetConf(Form("GapNV%iRef%i",hr,i),Form("neg {%i} pos (%i) {%i}",hr,i,-hr), kTRUE));
     };
+  //Also make random number gen. for bootstrapping
+  fRndmGen = new TRandom(0);
   //Debugging purposes
   // corrconfigs.push_back(GetConf("TestNP","testN {3} testP {-3}",kFALSE));
 }

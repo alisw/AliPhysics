@@ -67,6 +67,8 @@ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2 : public AliAnalysisTask
   Float_t fTreeVariableCentrality; 
   Float_t fvertex;
   Float_t fNch_eta0pt5;
+  Float_t fNpart_1;
+  Float_t fNpart_2;
   Float_t fQ1_gen[2];
   Float_t fQ2_gen[2];
   Float_t fQ3_gen[2];

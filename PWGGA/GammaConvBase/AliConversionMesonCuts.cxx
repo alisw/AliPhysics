@@ -5003,6 +5003,8 @@ Bool_t AliConversionMesonCuts::ArmenterosLikeQtCut(Double_t alpha, Double_t qT){
 /// Function to check if particle fullfills the required inJet criterium (inJet, out of Jet etc.)
 Bool_t AliConversionMesonCuts::IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand){
 
+  if(!fDoJetAnalysis) return kTRUE;
+  
   // set up important variables
   matchedJet = 0;
   RJetPi0Cand = 100; // set to a random high value such that the first jet will overwrite this value
@@ -5101,6 +5103,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionMC(AliVEvent* curEvent, Al
   return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
 }
 
+///_____________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionAODMC(AliVEvent* curEvent, AliAODMCParticle* curmeson)
 {
   if(!curmeson) {
@@ -5111,6 +5114,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionAODMC(AliVEvent* curEvent,
   return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
 }
 
+///_____________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(AliVEvent* curEvent, AliAODConversionMother* curmeson)
 {
   if(!curmeson) {
@@ -5121,6 +5125,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(AliVEvent* curEvent, AliA
   return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
 }
 
+///_____________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionBase(AliVEvent* curEvent, TVector3 curmeson)
 {
   if (fInLeadTrackDir == 0) return kTRUE;
@@ -5189,6 +5194,25 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionBase(AliVEvent* curEvent, 
       }
     }
   }
-
   return kFALSE;
+}
+
+//________________________________________________________________________
+int AliConversionMesonCuts::GetSourceClassification(int daughter, int pdgCode){
+
+  if (daughter == 111) {
+    if (TMath::Abs(pdgCode) == 310) return 1; // k0s
+    else if (TMath::Abs(pdgCode) == 3122) return 2; // Lambda
+    else if (TMath::Abs(pdgCode) == 130) return 3; // K0L
+    else if (TMath::Abs(pdgCode) == 2212) return 4; // proton
+    else if (TMath::Abs(pdgCode) == 2112) return 5; // neutron
+    else if (TMath::Abs(pdgCode) == 211) return 6; // pion
+    else if (TMath::Abs(pdgCode) == 321) return 7; // kaon
+    else if (TMath::Abs(pdgCode) == 113 || TMath::Abs(pdgCode) == 213 ) return 8; // rho 0,+,-
+    else if (TMath::Abs(pdgCode) == 3222 || TMath::Abs(pdgCode) == 3212 || TMath::Abs(pdgCode) == 3112  ) return 9; // Sigma
+    else if (TMath::Abs(pdgCode) == 2224 || TMath::Abs(pdgCode) == 2214 || TMath::Abs(pdgCode) == 2114 || TMath::Abs(pdgCode) == 1114  ) return 10; // Delta
+    else if (TMath::Abs(pdgCode) == 313 || TMath::Abs(pdgCode) == 323   ) return 11; // K*
+    else return 15;
+  }
+  return 15;
 }

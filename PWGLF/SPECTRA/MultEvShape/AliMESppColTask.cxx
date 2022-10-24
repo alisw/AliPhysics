@@ -311,7 +311,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
   
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 /*&& sfer>0. && sfer<=1.0*/)
+      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer>0.0 && sfer<=0.3)
       {
         //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
         TObjArray *selectedTracks1 = SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
@@ -320,29 +320,31 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0, sfer);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-//       if((pTlead>=1. && pTlead<=2.) && mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
-// //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
-// 			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
-//         if(!selectedTracks2) break;
-//         selectedTracks2->SetOwner(kTRUE);
-//         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0, sfer);
-//         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
-//       }
-//       if((pTlead>=1. && pTlead<=2.) && mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
-// //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
-// 			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
-//         if(!selectedTracks3) break;
-//         selectedTracks3->SetOwner(kTRUE);
-//         FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0, sfer);
-//         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
-//       }
+      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer > 0.3 && sfer <= 0.6)
+      {
+        //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
+        TObjArray *selectedTracks2 = SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+        if(!selectedTracks2) break;
+        selectedTracks2->SetOwner(kTRUE);
+        FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0, sfer);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
+      }
+      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer > 0.6 && sfer <= 1.0)
+      {
+        //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
+        TObjArray *selectedTracks3 = SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+        if(!selectedTracks3) break;
+        selectedTracks3->SetOwner(kTRUE);
+        FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0, sfer);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
+      }
         ESD=0;
     }while(ESD==1);
 
   
 	if( HasMCdata()){// run only on MC  
       // NOTE: the intervals are considered half-closed: (a,b]
-      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 > 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/)
+      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 > 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer>0.0 && MC_sfer<=0.3)
       {
         // 		TObjArray *selectedTracksMC1=FindLeadingObjects(fMCtracks, 1);
         TObjArray *selectedTracksMC1 = SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
@@ -352,22 +354,26 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC1, 3, 1, MC_sfer);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC1, 3, 1);
       }
-    /*  if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.3 && MC_sfer<=0.6){
-// // 		TObjArray *selectedTracksMC2=FindLeadingObjects(fMCtracks, 1);
-			TObjArray *selectedTracksMC2=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
-		if(!selectedTracksMC2) return;
-		selectedTracksMC2->SetOwner(kTRUE);
+      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 >= 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer > 0.3 && MC_sfer <= 0.6)
+      {
+        // // 		TObjArray *selectedTracksMC2=FindLeadingObjects(fMCtracks, 1);
+        TObjArray *selectedTracksMC2 = SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
+        if (!selectedTracksMC2)
+          return;
+        selectedTracksMC2->SetOwner(kTRUE);
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC2, 6, 1, MC_sfer);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC2, 6, 1);
       }
-      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.6 && MC_sfer<=1.0){
-// // 		TObjArray *selectedTracksMC3=FindLeadingObjects(fMCtracks, 1);
-			TObjArray *selectedTracksMC3=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
-		if(!selectedTracksMC3) return;
-		selectedTracksMC3->SetOwner(kTRUE);
+      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 >= 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer > 0.6 && MC_sfer <= 1.0)
+      {
+        // // 		TObjArray *selectedTracksMC3=FindLeadingObjects(fMCtracks, 1);
+        TObjArray *selectedTracksMC3 = SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
+        if (!selectedTracksMC3)
+          return;
+        selectedTracksMC3->SetOwner(kTRUE);
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC3, 9, 1, MC_sfer);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC3, 9, 1);
-      }*/
+      }
     }
    
   

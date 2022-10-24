@@ -59,6 +59,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	// 
         void SetfUseRejectLowpTPion(int aUse);
 	void SetfTPCThreshold(float aTPCThreshold); 
+        void SetfdNSigmaVspTcut(int aUse);
+	void Setfdline(float ak,float ab);
+
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -128,6 +131,10 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	//
 	int fRejectPions;
 	float fTPCThreshold;
+
+	int fdNSigmaVspTcut;
+	float fdcutline_k;
+	float fdcutline_b;
 
 };
 

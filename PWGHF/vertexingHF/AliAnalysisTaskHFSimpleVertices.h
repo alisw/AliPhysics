@@ -219,14 +219,17 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistDecLenDs;        //!<!  histo with Ds decay length
   TH1F* fHistCosPointDs;      //!<!  histo with Ds cosine of pointing angle
 
-  TH1F* fHistInvMassLc;  //!<!  histo with LcpKpi+ inv mass
-  TH1F* fHistPtLc;       //!<!  histo with LcpKpi+ pt
-  TH2F* fHistYPtLc;      //!<!  histo with LcpKpi+ y vs pt
-  TH1F* fHistPtLcDau0;   //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistPtLcDau1;   //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistPtLcDau2;   //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistDecLenLc;   //!<!  histo with LcpKpi+ decay length
-  TH1F* fHistCosPointLc; //!<!  histo with LcpKpi+ cosine of pointing angle
+  TH1F* fHistInvMassLc;    //!<!  histo with LcpKpi+ inv mass
+  TH1F* fHistPtLc;         //!<!  histo with LcpKpi+ pt
+  TH2F* fHistYPtLc;        //!<!  histo with LcpKpi+ y vs pt
+  TH1F* fHistPtLcDau0;     //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistPtLcDau1;     //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistPtLcDau2;     //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistDecLenLc;     //!<!  histo with LcpKpi+ decay length
+  TH1F* fHistCosPointLc;   //!<!  histo with LcpKpi+ cosine of pointing angle
+  TH1F* fHistImpParLcDau0; //!<!  histo with LcpKpi+ prong0 d0
+  TH1F* fHistImpParLcDau1; //!<!  histo with LcpKpi+ prong1 d0
+  TH1F* fHistImpParLcDau2; //!<!  histo with LcpKpi+ prong2 d0
 
   TH1F* fHistInvMassK0s;    //!<!  histo with K0s inv mass
   TH1F* fHistInvMassLcK0sp; //!<!  histo with LcpKpi+ inv mass

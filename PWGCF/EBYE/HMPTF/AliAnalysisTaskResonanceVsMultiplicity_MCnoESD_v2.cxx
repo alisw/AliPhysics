@@ -46,7 +46,7 @@ using std::endl;
 
 ClassImp(AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2)
 
-AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0)
+AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fNpart_1(0),fNpart_2(0)
 {
   for(int i=0;i<2;i++)
     {
@@ -63,7 +63,7 @@ AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::AliAnalysisTaskResonanceVsMul
     }
 }
 
-AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0),Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0)
+AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0),Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fNpart_1(0),fNpart_2(0)
 {
   for(int i=0;i<2;i++)
     {
@@ -125,6 +125,8 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::UserCreateOutputObjects(
   fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
   //fTreeEvent->Branch("fvertex",&fvertex,"fvertex/F");
   fTreeEvent->Branch("fNch_eta0pt5",&fNch_eta0pt5,"fNch_eta0pt5/F");
+  fTreeEvent->Branch("fNpart_1", &fNpart_1, "fNpart_1/F");
+  fTreeEvent->Branch("fNpart_2", &fNpart_2, "fNpart_2/F");
   fTreeEvent->Branch("fNch_gen", &fNch_gen, "fNch_gen[2]/F");
   fTreeEvent->Branch("fQ1_gen", &fQ1_gen, "fQ1_gen[2]/F");
   fTreeEvent->Branch("fQ2_gen", &fQ2_gen, "fQ2_gen[2]/F");
@@ -210,12 +212,31 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::UserExec(Option_t *)
     AliGenHepMCEventHeader *lHepMCHeader = 0x0;    // event header for EPOS
    
     Float_t fMCImpactParameter=0.0,fCentImpBin=-10.0;
+    Float_t fNHardScatters=0.0;
+    Float_t fNProjectileParticipants=0.0;
+    Float_t fNTargetParticipants=0.0;
+    Float_t fNNColl=0.0;
+    Float_t fNNwColl=0.0;
+    Float_t fNwNColl=0.0;
+    Float_t fNwNwColl=0.0;
+    Float_t fNpart=0.0;
 
+    int fMCchoice=2;
+    
     //For EPOS
+    
     if(fMCchoice==1)
       {
 	lHepMCHeader = (AliGenHepMCEventHeader*)genHeader;
-	fMCImpactParameter = lHepMCHeader->impact_parameter();
+	fNHardScatters = lHepMCHeader->Ncoll_hard(); // Number of hard scatterings
+        fNProjectileParticipants = lHepMCHeader->Npart_proj(); // Number of projectile participants
+        fNTargetParticipants     = lHepMCHeader->Npart_targ(); // Number of target participants
+        fNNColl   = lHepMCHeader->Ncoll(); // Number of NN (nucleon-nucleon) collisions
+        fNNwColl  = lHepMCHeader->N_Nwounded_collisions(); // Number of N-Nwounded collisions
+        fNwNColl  = lHepMCHeader->Nwounded_N_collisions(); // Number of Nwounded-N collisons
+        fNwNwColl = lHepMCHeader->Nwounded_Nwounded_collisions();// Number of Nwounded-Nwounded collisions
+        
+	fMCImpactParameter = lHepMCHeader->impact_parameter(); //impact parameter
 	if (fMCImpactParameter>=impParArr[0] && fMCImpactParameter<impParArr[1]) fCentImpBin=2.5;
 	if (fMCImpactParameter>=impParArr[1] && fMCImpactParameter<impParArr[2]) fCentImpBin=7.5;
 	if (fMCImpactParameter>=impParArr[2] && fMCImpactParameter<impParArr[3]) fCentImpBin=15.;
@@ -228,10 +249,19 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::UserExec(Option_t *)
 	if (fMCImpactParameter<impParArr[0]  || fMCImpactParameter>impParArr[9]) fCentImpBin=-10.;
       }
     
+    
     //For HIJING
     if(fMCchoice==2)
       {
 	lHIJINGHeader = (AliGenHijingEventHeader*) genHeader;
+	fNHardScatters = lHIJINGHeader->HardScatters();
+	fNProjectileParticipants = lHIJINGHeader->ProjectileParticipants();
+	fNTargetParticipants     = lHIJINGHeader->TargetParticipants();
+	fNpart = lHIJINGHeader->GetTrueNPart();
+	fNNColl   = lHIJINGHeader->NN();
+	fNNwColl  = lHIJINGHeader->NNw();
+	fNwNColl  = lHIJINGHeader->NwN();
+	fNwNwColl = lHIJINGHeader->NwNw();
 	fMCImpactParameter = lHIJINGHeader->ImpactParameter();
 	if (fMCImpactParameter>=impParArr[0] && fMCImpactParameter<impParArr[1]) fCentImpBin=2.5;
 	if (fMCImpactParameter>=impParArr[1] && fMCImpactParameter<impParArr[2]) fCentImpBin=7.5;
@@ -307,8 +337,21 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2::UserExec(Option_t *)
   
 
       cout<<"Value of centrality:"<<fCentImpBin<<endl;
+      cout<<"No of particaipating nucleons: "<<fNpart<<endl;
+      cout<<"No of projectile + target nucleons: "<<fNProjectileParticipants<<" + "<<fNTargetParticipants<<endl;
+      cout<<"No of collisions: "<<fNNColl<<endl;
+
       fTreeVariableCentrality=fCentImpBin;
       fNch_eta0pt5=Nch_eta0pt5;
+      if(fMCchoice==2)
+      	{
+      	  fNpart_1=fNpart;
+      	}
+      else
+      	fNpart_1=0;
+      //fNpart_1=fNpart;
+      fNpart_2=fNProjectileParticipants+fNTargetParticipants;
+      
       fQ1_gen[0]=Q1[0];
       fQ2_gen[0]=Q2[0];
       fQ3_gen[0]=Q3[0];

@@ -3,6 +3,7 @@
 #include "TFile.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "TGrid.h"
 
 #include <cmath>
 
@@ -149,7 +150,10 @@ double AliPieceWisePoly::Eval (double x, double* p) {
 }
 
 void AliPieceWisePoly::ReadFSParameters(TString parameterFile, TF1** effFunctions) {
-  TFile* f = new TFile(parameterFile.Data(), "READ");
+  if(parameterFile.Contains("alien://") && ! gGrid)
+    TGrid::Connect("alien://");
+  
+  TFile* f = TFile::Open(parameterFile.Data(), "READ");
   for (Int_t species=0;species<AliPID::kSPECIES;++species) {
     for (Int_t charge=0;charge<=1;++charge) {     
       TString name = TString::Format("fastSimulationParameters_%s_%s", AliPID::ParticleShortName(species), charge ? "pos" : "neg");

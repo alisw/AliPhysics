@@ -120,10 +120,11 @@ set(SRCS
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
-set(SRCS 
+set(SRCS
     ${SRCS}
     AliAnalysisTaskCharmingFemto.cxx
-    AliAnalysisTaskPionDeuteronMC.cxx)
+    AliAnalysisTaskPionDeuteronMC.cxx
+    AliAnalysisTaskPionDeuteron.cxx)
 endif()
 
 # Headers from sources

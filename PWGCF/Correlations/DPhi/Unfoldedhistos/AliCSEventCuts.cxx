@@ -1947,12 +1947,12 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
         fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-900+6.0*x");
         break;
       case kLHC18q:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationLow_%s", GetCutsString()), "-550.183633, 14.200681*x, 0.003153*x*x, -0.000002*x*x*x, 0.000000000339*x*x*x*x");
-        fRun2V0MBasedPileUpCorrelationUpLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationUp_%s", GetCutsString()), "745.342819, 21.804695*x, -0.004939*x*x, 0.000003*x*x*x, -0.000000000580*x*x*x*x");
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationLow_%s", GetCutsString()), "-1189.702939+7.579171*x-0.000131*x*x");
+        fRun2V0MBasedPileUpCorrelationUpLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationUp_%s", GetCutsString()), "1869.797746+7.868958*x-0.000209*x*x");
         break;
       case kLHC18r:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationLow_%s", GetCutsString()), "-510.327628, 13.954490*x, 0.003569*x*x, -0.000002*x*x*x, 0.000000000428*x*x*x*x");
-        fRun2V0MBasedPileUpCorrelationUpLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationUp_%s", GetCutsString()), "653.272285, 21.943426*x, -0.005966*x*x, 0.000004*x*x*x, -0.000000000795*x*x*x*x");
+        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationLow_%s", GetCutsString()), "-1647.277827+8.126926*x-0.000246*x*x");
+        fRun2V0MBasedPileUpCorrelationUpLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationUp_%s", GetCutsString()), "1759.006633+7.755470*x-0.000212*x*x");
         break;
       default:
         fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");

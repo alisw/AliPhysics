@@ -151,10 +151,15 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 			hPtrTPC[i_c][i_eta] = 0;
 			if (i_c==0){
 				hPtVsP[i_eta] = 0;	
-				hKaonContamination[i_eta] = 0;
-				hKaondEdx[i_eta] = 0;
-				hProtonContamination[i_eta] = 0;
-				hProtondEdx[i_eta] = 0;
+				pion_cont_in_kaon_h[i_eta] = 0;
+				electron_cont_in_kaon_h[i_eta] = 0;
+				nsigma_kaon_h[i_eta] = 0;
+				pion_cont_in_proton_h[i_eta] = 0;
+				electron_cont_in_proton_h[i_eta] = 0;
+				nsigma_proton_h[i_eta] = 0;
+				kaon_cont_in_pion_h[i_eta] = 0;
+				electron_cont_in_pion_h[i_eta] = 0;
+				nsigma_pion_h[i_eta] = 0;
 			}
 		}
 	}
@@ -225,10 +230,15 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 			hPtrTPC[i_c][i_eta] = 0;
 			if (i_c==0){
 				hPtVsP[i_eta] = 0;	
-				hKaonContamination[i_eta] = 0;
-				hKaondEdx[i_eta] = 0;
-				hProtonContamination[i_eta] = 0;
-				hProtondEdx[i_eta] = 0;
+				pion_cont_in_kaon_h[i_eta] = 0;
+				electron_cont_in_kaon_h[i_eta] = 0;
+				nsigma_kaon_h[i_eta] = 0;
+				pion_cont_in_proton_h[i_eta] = 0;
+				electron_cont_in_proton_h[i_eta] = 0;
+				nsigma_proton_h[i_eta] = 0;
+				kaon_cont_in_pion_h[i_eta] = 0;
+				electron_cont_in_pion_h[i_eta] = 0;
+				nsigma_pion_h[i_eta] = 0;
 			}
 		}
 	}
@@ -330,22 +340,24 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	fcutDCAxy->SetParameter(0,0.0105);
 	fcutDCAxy->SetParameter(1,0.0350);
 	fcutDCAxy->SetParameter(2,1.1);
+
+	const int nPtbins = 56;
+	double Ptbins[nPtbins+1] = {
+		0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 
+		0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
+		1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
+		3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0,
+		9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0,
+		20.0,22.0,24.0,26.0,30.0};
+
 	/*
-	   const Int_t nPtbins = 56;
+	   const Int_t nPtbins = 31;
 	   Double_t Ptbins[nPtbins+1] = {
-	   0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 
-	   0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
-	   1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
-	   3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0,
-	   9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0,
-	   20.0,22.0,24.0,26.0,30.0};
+	   0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 
+	   1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 
+	   5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 
+	   18.0, 20.0 };
 	   */
-	const Int_t nPtbins = 31;
-	Double_t Ptbins[nPtbins+1] = {
-		0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 
-		1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 
-		5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 
-		18.0, 20.0 };
 
 	// create output objects
 	float min_flat = -0.01;
@@ -458,7 +470,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 				hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins);
 			}
 
-			if (!fUseMC){ 
+			if (!fUseMC && fV0MEqualisation){ 
 
 				fOutputList->Add(hNsigmaPiPos[i_c][i_eta]);
 				fOutputList->Add(hNsigmaKPos[i_c][i_eta]);
@@ -606,21 +618,29 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 		}
 
-		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta) {
+		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta) 
+		{	
+			pion_cont_in_kaon_h[i_eta] = new TH2F(Form("pion_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(pion_cont_in_kaon_h[i_eta]);
+			nsigma_kaon_h[i_eta] = new TH2F(Form("nsigma_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(nsigma_kaon_h[i_eta]);
+			electron_cont_in_kaon_h[i_eta] = new TH2F(Form("electron_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(electron_cont_in_kaon_h[i_eta]);
 
-			hKaonContamination[i_eta] = new TH2F(Form("hKaonContamination_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); dEdx", nPtbins, Ptbins, nnSigmabins, nSigmabins);
-			fOutputList->Add(hKaonContamination[i_eta]);
+			pion_cont_in_proton_h[i_eta] = new TH2F(Form("pion_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(pion_cont_in_proton_h[i_eta]);
+			nsigma_proton_h[i_eta] = new TH2F(Form("nsigma_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(nsigma_proton_h[i_eta]);
+			electron_cont_in_proton_h[i_eta] = new TH2F(Form("electron_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(electron_cont_in_proton_h[i_eta]);
 
-			hKaondEdx[i_eta] = new TH2F(Form("hKaondEdx_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); dEdx", nPtbins, Ptbins, nnSigmabins, nSigmabins);
-			fOutputList->Add(hKaondEdx[i_eta]);
-
-			hProtonContamination[i_eta] = new TH2F(Form("hProtonContamination_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); dEdx", nPtbins, Ptbins, nnSigmabins, nSigmabins);
-			fOutputList->Add(hProtonContamination[i_eta]);
-
-			hProtondEdx[i_eta] = new TH2F(Form("hProtondEdx_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); dEdx", nPtbins, Ptbins, nnSigmabins, nSigmabins);
-			fOutputList->Add(hProtondEdx[i_eta]);
+			kaon_cont_in_pion_h[i_eta] = new TH2F(Form("kaon_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(kaon_cont_in_pion_h[i_eta]);
+			nsigma_pion_h[i_eta] = new TH2F(Form("nsigma_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(nsigma_pion_h[i_eta]);
+			electron_cont_in_pion_h[i_eta] = new TH2F(Form("electron_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(electron_cont_in_pion_h[i_eta]);
 		}
-
 	}
 
 	// x: Sector y: Multiplicity z: V0M Multiplicity
@@ -740,7 +760,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 			hFlatResponse->Fill(fFlatMC, fFlat);
 			MakeMCanalysis();
 			MakeMCanalysisPID();
-			ElectronsContamination();
+			nSigmaContamination();
 		}
 	}
 
@@ -1646,7 +1666,7 @@ Double_t AliAnalysisTaskFlatenicityPiKp::EtaCalibration(const Double_t &eta) {
 	return Calibration;
 }
 
-void AliAnalysisTaskFlatenicityPiKp::ElectronsContamination() {
+void AliAnalysisTaskFlatenicityPiKp::nSigmaContamination() {
 
 	Int_t iTracks(fESD->GetNumberOfTracks());          
 
@@ -1708,21 +1728,28 @@ void AliAnalysisTaskFlatenicityPiKp::ElectronsContamination() {
 		if ( nh < 0 )
 			continue;
 
-		Float_t nsigk = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
-		Float_t nsigp = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
+		Float_t nsigma_pi = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion);
+		Float_t nsigma_k = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
+		Float_t nsigma_p = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
 		Double_t pt = esdTrack->Pt();
 
-		if (pidCode == 7){
-			hKaonContamination[nh]->Fill(pt,nsigk);
-			hProtonContamination[nh]->Fill(pt,nsigp);
+		if (TMath::Abs(nsigma_k) <= 3.0){
+			if (pidCode==2) { nsigma_kaon_h[nh]->Fill(pt,nsigma_k); }
+			if (pidCode==1) { pion_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+			if (pidCode==7) { electron_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
 		}
 
-		if (pidCode == 2)
-			hKaondEdx[nh]->Fill(pt,nsigk);
+		if (TMath::Abs(nsigma_p) <= 3.0){	
+			if (pidCode==3) { nsigma_proton_h[nh]->Fill(pt,nsigma_p); }
+			if (pidCode==1) { pion_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+			if (pidCode==7) { electron_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+		}
 
-		if (pidCode == 3)
-			hProtondEdx[nh]->Fill(pt,nsigp);
-
+		if (TMath::Abs(nsigma_pi) <= 3.0){	
+			if (pidCode==1) { nsigma_pion_h[nh]->Fill(pt,nsigma_pi); }
+			if (pidCode==2) { kaon_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+			if (pidCode==7) { electron_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+		}
 	} 
 
 }

@@ -157,10 +157,14 @@ ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
 
 		fPhiDis1D(0),
 		fPhiDis(0),
-		fEtaDis(0),
-		fEtaBefore(0),
-		fPtDis(0),
-		fPtBefore(0),
+		fEtaTriDis(0),
+		fEtaTriDisBefore(0),
+		fPtTriDis(0),
+		fPtTriDisBefore(0),
+		fEtaAssDis(0),
+		fEtaAssDisBefore(0),
+		fPtAssDis(0),
+		fPtAssDisBefore(0),
 		hDCAxyBefore(0),
 		hDCAzBefore(0),
 		hITSclustersBefore(0),
@@ -270,10 +274,14 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 
 	fPhiDis1D(0),
 	fPhiDis(0),
-	fEtaDis(0),
-	fEtaBefore(0),
-	fPtDis(0),
-	fPtBefore(0),
+	fEtaTriDis(0),
+	fEtaTriDisBefore(0),
+	fPtTriDis(0),
+	fPtTriDisBefore(0),
+	fEtaAssDis(0),
+	fEtaAssDisBefore(0),
+	fPtAssDis(0),
+	fPtAssDisBefore(0),
 	hDCAxyBefore(0),
 	hDCAzBefore(0),
 	hITSclustersBefore(0),
@@ -410,10 +418,14 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 
 	fPhiDis1D(0),
 	fPhiDis(0),
-	fEtaDis(0),
-	fEtaBefore(0),
-	fPtDis(0),
-	fPtBefore(0),
+	fEtaTriDis(0),
+	fEtaTriDisBefore(0),
+	fPtTriDis(0),
+	fPtTriDisBefore(0),
+	fEtaAssDis(0),
+	fEtaAssDisBefore(0),
+	fPtAssDis(0),
+	fPtAssDisBefore(0),
 	hDCAxyBefore(0),
 	hDCAzBefore(0),
 	hITSclustersBefore(0),
@@ -473,9 +485,12 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
 	fListOfObjects->Add(hEventCount);
 
-	// hMult = new TH1F("hMult", ";number of tracks; entries", nn, xbins);
-	// hMult->Sumw2();
-	// fListOfObjects->Add(hMult);
+	std::vector<Double_t>   fCentBins = {0,5,10,15,20,25,30,40,50,60,70,80,90,100,110,120,130,140,150}; //
+	for (int i = 0; i < fCentBins.size(); i++) fCentBins[i] += 0.5;
+
+	hMult = new TH1F("hMult", ";number of tracks; entries", fCentBins.size()-1, fCentBins.data());
+	hMult->Sumw2();
+	fListOfObjects->Add(hMult);
 
 	// fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (after cuts); Vtx z [cm]; Counts", 120, -30, 30);
 	// fVtxAfterCuts->Sumw2();
@@ -484,23 +499,37 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	// fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 100, 0, 100);
 	// fListOfObjects->Add(fCentralityDis);
 
+    fEtaAssDisBefore = new TH1D("hEtaAssDisBefore", "eta distribution", 1000, -10, 10);
+    fListOfObjects->Add(fEtaAssDisBefore);
+    fPtAssDisBefore = new TH1D("hPtAssDisBefore", "pt distribution", 100, 0, 5);
+    fListOfObjects->Add(fPtAssDisBefore);
+    fEtaTriDisBefore = new TH1D("hEtaTriDisBefore", "eta distribution", 1000, -10, 10);
+    fListOfObjects->Add(fEtaTriDisBefore);
+    fPtTriDisBefore = new TH1D("hPtTriDisBefore", "pt distribution", 100, 0, 5);
+    fListOfObjects->Add(fPtTriDisBefore);
 
+    fEtaAssDis = new TH1D("hEtaAssDis", "eta distribution", 1000, -10, 10);
+    fListOfObjects->Add(fEtaAssDis);
+    fPtAssDis = new TH1D("hPtAssDis", "pt distribution", 100, 0, 5);
+    fListOfObjects->Add(fPtAssDis);
+    fEtaTriDis = new TH1D("hEtaTriDis", "eta distribution", 1000, -10, 10);
+    fListOfObjects->Add(fEtaTriDis);
+    fPtTriDis = new TH1D("hPtTriDis", "pt distribution", 100, 0, 5);
+    fListOfObjects->Add(fPtTriDis);
+
+	hFMDAvsV0 = new TH2D("hFMDAvsV0", "FMDA V0A correlation", 100, 0, 100, 100, 0, 100);
+	hFMDCvsV0 = new TH2D("hFMDCvsV0", "FMDC V0C correlation", 100, 0, 100, 100, 0, 100);
 
 	Int_t nSteps = 1;
-	Double_t binning_deta_tpctpc[33] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,  0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6};
-
+	Double_t binning_deta_tpctpc[37] = {-1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,  0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6, 1.7, 1.8};
 	Double_t binning_deta_tpcfmd[43]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8, 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
-	// Double_t binning_dphi[73] = { -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0,       0.087266,  0.174533,  0.261799,  0.349066,  0.436332, 0.523599,  0.610865,  0.698132,  0.785398,  0.872665,  0.959931, 1.047198,  1.134464,  1.221730,  1.308997,  1.396263,  1.483530, 1.570796,  1.658063,  1.745329,  1.832596,  1.919862,  2.007129, 2.094395,  2.181662,  2.268928,  2.356194,  2.443461,  2.530727, 2.617994,  2.705260,  2.792527,  2.879793,  2.967060,  3.054326, 3.141593,  3.228859,  3.316126,  3.403392,  3.490659,  3.577925, 3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524, 4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123, 4.712389};
 	std::vector<Double_t>   fPtBinsTrigCharged = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0,10.0};    // I don't want to set the things outside
-	std::vector<Double_t>   fPtBinsAss = {0.2,0.5,1.0,3.0};            // I don't want to set the things outside
-	std::vector<Double_t>   fCentBins = {0,5,10,15,20,25,30,40,50,60,70,80,90,100,110,120,130,140,150}; //
-	for (int i = 0; i < fCentBins.size(); i++) fCentBins[i] += 0.5;
-	std::vector<Double_t>   fzVtxBins = {-10.0, 0, 10.0};
+	std::vector<Double_t>   fzVtxBins = {-10.0, -8.0, -6.0, -4.0, -2.0, 0, 2.0, 4.0, 6.0, 8.0, 10.0};
 	Int_t sizeEta = 0;
-	if (anaType.EqualTo("TPCTPC")) sizeEta = 32;
+	if (anaType.EqualTo("TPCTPC")) sizeEta = 36;
 	else if (anaType.EqualTo("TPCFMD")) sizeEta = 42;
 	else if (anaType.EqualTo("FMDFMD")) sizeEta = 25;
-	// const Int_t sizePtAss = fPtBinsAss.size() - 1;
+
 	const Int_t sizeCent = fCentBins.size() - 1;
 	Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; 
 	Int_t sizeOfVtxZbins = 10; // (Int_t) fNOfSamples; 
@@ -508,7 +537,9 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 		sizeOfSamples = 30;
 		fPtBinsTrigCharged.clear();
 		fPtBinsTrigCharged.push_back(0.2);
+		fPtBinsTrigCharged.push_back(1.0);
 		fPtBinsTrigCharged.push_back(3.0);
+		fPtBinsTrigCharged.push_back(4.0);
 	}
 	Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
 	const Int_t iBinning[] = {sizeEta,80,sizeOfVtxZbins,sizeOfSamples,sizePtTrig,sizeCent};
@@ -522,6 +553,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	// mixing
 	fPoolMaxNEvents = 2000;
 	fPoolMinNTracks = 50000;
+    fMinEventsToMix = 5;
 	int fNCentBins = fCentBins.size() - 1;
 	int fNzVtxBins = fzVtxBins.size() - 1;
 	fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins, fCentBins.data(), fNzVtxBins, fzVtxBins.data());
@@ -922,7 +954,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 		return;
 	}
 
-	if (pool->IsReady()) {
+    if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() > fMinEventsToMix) {
 		int nMix = pool->GetCurrentNEvents();
 
 
@@ -1093,6 +1125,13 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
 			// Require track to be existing and pass the track selection
 			if (!track) continue;
+
+			// Fill the QA plot before cuts
+			fPtTriDisBefore->Fill(track->Pt());
+			fPtAssDisBefore->Fill(track->Pt());
+			fEtaTriDisBefore->Fill(track->Eta());
+			fEtaAssDisBefore->Fill(track->Eta());
+
 			track->GetXYZ(pos);
 			if (!AcceptAODTrack(track, pos,vtxp)) continue;
 
@@ -1102,12 +1141,17 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 				// Mingrui Polarity ??
 				fTracksAss->Add(track);
 				fNofTracksAss++; // number of associate tracks in the event
+				// Fill the QA plot after cuts
+				fPtAssDis->Fill(track->Pt());
+				fEtaAssDis->Fill(track->Eta());
 			}
 
 			if (pt > fPtMinTrig && pt < fPtMaxTrig) {
 				fTracksTrigCharged->Add(track);
 				fNofTracksTrig++; // number of trigger tracks in the event
 				fhTracksTrigCent->Fill(NtrksCounter, fPVz);
+				fPtTriDis->Fill(track->Pt());
+				fEtaTriDis->Fill(track->Eta());
 			}
 		}
 	} else if (anaType.EqualTo("TPCFMD")) {
@@ -1116,6 +1160,10 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
 			// Require track to be existing and pass the track selection
 			if (!track) continue;
+
+			fPtTriDisBefore->Fill(track->Pt());
+			fEtaTriDisBefore->Fill(track->Eta());
+
 			track->GetXYZ(pos);
 			if (!AcceptAODTrack(track, pos,vtxp)) continue;
 
@@ -1123,6 +1171,8 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
 			if (pt > fPtMinTrig && pt < fPtMaxTrig) {
 				fTracksTrigCharged->Add(track);
+			    fPtTriDisBefore->Fill(track->Pt());
+			    fEtaTriDisBefore->Fill(track->Eta());
 				fNofTracksTrig++; // number of trigger tracks in the event
 				fhTracksTrigCent->Fill(NtrksCounter, fPVz);
 			}
@@ -1136,6 +1186,8 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
 		for (int iEta = 1; iEta <= nEta; iEta++) {
 			for (int iPhi = 1; iPhi <= nPhi; iPhi++) {
+
+
 				double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta); 
 				double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 
 
@@ -1148,6 +1200,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 				double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
 				if (mostProbableN > 0) {
 					fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
+					fEtaAssDis->Fill(eta, mostProbableN);
 				}
 			}
 		} 
@@ -1174,8 +1227,10 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 						fTracksTrigCharged->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
 						// Set the pt to 1.0
 						fhTracksTrigCent->Fill(NtrksCounter, fPVz, mostProbableN);
+						fEtaTriDis->Fill(eta, mostProbableN);
 					} else {
 						fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
+						fEtaAssDis->Fill(eta, mostProbableN);
 					}
 				}
 			} // end loop phi
@@ -1294,13 +1349,22 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 		if(nFMD_fwd_hits==0 || nFMD_bwd_hits==0) {
 			return kFALSE;
 		}
+
 		AliAODVZERO *fvzero = fAOD->GetVZEROData();
 		if(!fvzero) { AliError("Problem with VZEROData, terminating!"); return kFALSE; }
 		Float_t nV0A_hits = fvzero->GetMTotV0A();
 		Float_t nV0C_hits = fvzero->GetMTotV0C();
+
+        // cout << nV0A_hits << endl;
+		// cout << nV0C_hits << endl;
+		// cout << nFMD_fwd_hits << endl;
+		// cout << nFMD_bwd_hits << endl;
+
 		if((nV0A_hits<(fFMDcutapar0*nFMD_fwd_hits-fFMDcutapar1)) || (nV0C_hits<(fFMDcutcpar0*nFMD_bwd_hits-fFMDcutcpar1))){
 			return kFALSE;
 		}
+		hFMDAvsV0->Fill(nFMD_fwd_hits, nV0A_hits);
+		hFMDCvsV0->Fill(nFMD_bwd_hits, nV0C_hits);
 	}
 
 	return kTRUE;
@@ -1590,15 +1654,6 @@ void AliAnalysisTaskCorrForNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
-		/*
-		//..get phi-weight for NUA correction
-		double weight = 1;
-		if (fPeriod.EqualTo("LHC15oKatarina") ) {
-		if(fNUA == 1) weight = GetWeightKatarina(aodTrk->Phi(), aodTrk->Eta(), fVtxZ);
-		} else {
-		if(fNUA == 1) weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
-		}
-		 */
 		double weightPt = 1;
 		if (fPeriod.EqualTo("LHC15oKatarina") ) {
 			if(fNUE == 1) weightPt = GetPtWeightKatarina(aodTrk->Pt(), aodTrk->Eta(), fVtxZ);

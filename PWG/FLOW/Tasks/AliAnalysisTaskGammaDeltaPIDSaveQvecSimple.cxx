@@ -99,12 +99,14 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fFilterBit(1),
   fTPCclustMin(70),
   gOldRunNumber(1),  
+  fTPCsharedCut(56), // 70*0.8
+  bUseTPCCrossedRows(kFALSE),
   fMinVzCut(-10.0),
   fMaxVzCut(+10.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
-  fDCAxyMax(2.4),
-  fDCAzzMax(3.2),
+  fDCAxyMax(-1), // 2.4
+  fDCAzzMax(-1), // 3.2
   fMinEtaCut(-0.8),
   fMaxEtaCut(+0.8),
   fEtaGapNeg(-0.1),
@@ -279,12 +281,14 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fFilterBit(1),
   fTPCclustMin(70),
   gOldRunNumber(1),  
+  fTPCsharedCut(56), // 70*0.8
+  bUseTPCCrossedRows(kFALSE),
   fMinVzCut(-10.0),
   fMaxVzCut(+10.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
-  fDCAxyMax(2.4),
-  fDCAzzMax(3.2),
+  fDCAxyMax(-1),
+  fDCAzzMax(-1),
   fMinEtaCut(-0.8),
   fMaxEtaCut(+0.8),
   fEtaGapNeg(-0.1),
@@ -492,7 +496,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserCreateOutputObjects()
 
  
     
-  cout<<"Ncls: "<<fTPCclustMin<<" Harm: "<<gHarmonic<<" POI: "<<gParticleID<<" nsigTPC: "<<fNSigmaTPCCut<<" nsigCirc: "<<fNSigmaTOFCut<<endl;
+  cout<<"Ncls: "<<fTPCclustMin<<" TPCsharedCut: "<<fTPCsharedCut<<" UseTPCCrossedRows: "<<bUseTPCCrossedRows<<" Harm: "<<gHarmonic<<" POI: "<<gParticleID<<" nsigTPC: "<<fNSigmaTPCCut<<" nsigCirc: "<<fNSigmaTOFCut<<endl;
   cout<<"FB: "<<fFilterBit<<" chi2min: "<<fTrkChi2Min<<" chi2max: "<<fTrkChi2Max<<" etaMin: "<<fMinEtaCut<<" etaMax: "<<fMaxEtaCut<<endl;
   cout<<"dEdxMin: "<<fTPCdEdxMin<<" dcaXY: "<<fDCAxyMax<<" dcaZ: "<<fDCAzzMax<<"  VzLow: "<<fMinVzCut<<" VzHigh: "<<fMaxVzCut<<endl;
   cout<<"minPt: "<<fMinPtCut<<" maxPt: "<<fMaxPtCut<<" etaGapNeg: "<<fEtaGapNeg<<" etaGapPos: "<<fEtaGapPos<<" oldRun: "<<gOldRunNumber<<endl;
@@ -995,15 +999,18 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
   Double_t trk1Pt=0,trk1Phi=0,trk1Eta=0,trk1DCAxy=0.0, trk1DCAz=0.0,trk1Chi2=0,trk1dEdx=0,trk1Wgt=1.0;
   Double_t trk2Pt=0,trk2Phi=0,trk2Eta=0,trk2DCAxy=0.0, trk2DCAz=0.0,trk2Chi2=0,trk2dEdx=0,trk2Wgt=1.0;
 
-
+  Double_t posTrk1[3] = {0 , 0, 0};
+  Double_t posTrk2[3] = {0 , 0, 0};
+  //Double_t vTrk1[3] = {0 , 0, 0};
+  //Double_t vTrk2[3] = {0 , 0, 0};
   
+
   ///----------> Starting Analysis track Loop -----------
   
   for(Int_t iTrack = 0; iTrack < ntracks; iTrack++) {
 
 	AliAODTrack* AODtrack1 = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
 	if(!AODtrack1) continue;
-	
 	if(AODtrack1->TestFilterBit(fFilterBit)) {  //// Only use FB tracks. 
 
 	  trk1Pt    = AODtrack1->Pt();
@@ -1012,20 +1019,58 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 	  trk1Chrg  = AODtrack1->Charge();
 	  trk1Chi2  = AODtrack1->Chi2perNDF();
 	  trk1TpcNC = AODtrack1->GetTPCNcls();
-	  trk1DCAxy = AODtrack1->DCA(); // do not use DCA for FB 768
-	  trk1DCAz  = AODtrack1->ZAtDCA();            
+	  //trk1DCAxy = AODtrack1->DCA(); // do not use DCA for FB 768
+	  //trk1DCAz  = AODtrack1->ZAtDCA();            
 	  trk1dEdx  = AODtrack1->GetDetPid()->GetTPCsignal();  
 	  
 	  
+	  // for constrained TPConly tracks
+      if(fFilterBit == 128){
+	  	trk1DCAxy = AODtrack1->DCA();      // this is the DCA from global track (not exactly what is cut on)
+	    trk1DCAz  = AODtrack1->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+      }
+      else{
+	    //const AliVVertex *vertex = fVevent->GetPrimaryVertex();
+	    //vertex->GetXYZ(vTrk1);
+	    AODtrack1->GetXYZ(posTrk1);
+	    
+		
+	    trk1DCAxy  = TMath::Sqrt((posTrk1[0] - pVtxX)*(posTrk1[0] - pVtxX) + (posTrk1[1] - pVtxY)*(posTrk1[1] - pVtxY));
+	    trk1DCAz   = posTrk1[2] - pVtxZ;
+      }
+      
+      // DCA cut
+      if (fDCAxyMax>0 && fDCAzzMax>0 && trk1DCAxy>=fDCAxyMax && trk1DCAz>=fDCAzzMax) { // if fDCAxyMax, fDCAzzMax is set to be less than 0, no cut applied
+		continue;
+	  }
+	  
+	  // Crossed Row cut
+	  if (bUseTPCCrossedRows){ // either crossed row or ncluster Min should be applied
+		if ((Float_t)AODtrack1->GetTPCNCrossedRows() < (120 - (5/(Float_t)AODtrack1->Pt())) ){
+		  continue;
+		}
+	  }
+	  
+	  // n cluster Min cut, do not use together with crossed row
+	  if (fTPCclustMin > 0) { 
+		if (trk1TpcNC < fTPCclustMin) {
+		  continue;
+	    }
+	  }
+	  
+	  // shared cluster 
+	  if( fTPCsharedCut > 0 && AODtrack1->GetTPCnclsS() > fTPCsharedCut){
+		continue;
+      }
+      
 	  //Apply track cuts for TPC EP here:
 	  //if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos)) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
-	  if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
-
-	    // ================================ save Qvec ===================================
-	
-	    // Calculate Re[Q_{m,k}] and Im[Q_{m,k}], (m = 1,2,3,4,5,6 and k = 0,1,2,3) for this event:
-	    for(Int_t h=0;h<2;h++) 
-	    {
+	  if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && (trk1dEdx >= fTPCdEdxMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
+		// ================================ save Qvec ===================================
+		
+		// Calculate Re[Q_{m,k}] and Im[Q_{m,k}], (m = 1,2,3,4,5,6 and k = 0,1,2,3) for this event:
+		for(Int_t h=0;h<2;h++) 
+		{
 		  // RP All, OS
 		  // S_{p,k} is in it
 		  fCMEQReRP->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi)); 
@@ -1041,30 +1086,30 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 			fCMEQImPOINeg->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi)); 
 		  }
 		
-	    }
+		}
 	
 	
-	    // Calculate <<cos(2a-2Psi_V0)>> for RP, POI OS
-	    f2pCorrelatorCos2PsiDiff2PsiV0RP->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C))); //<cos(2psi1-2phi_V0C)>
-	    f2pCorrelatorCos2PsiDiff2PsiV0RP->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsi2V0A))); //<cos(2psi1-2phi_V0A)>
-	    // Calculate <<cos(2a-2Psi_ZDC)>> for RP, POI OS
-	    f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCC))); //<cos(2psi1-2phi_ZDCC)>
-	    f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsiZNCA))); //<cos(2psi1-2phi_ZDCA)>
-	    f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(2.5, TMath::Cos(2*(trk1Phi-fPsiZNCCA))); //<cos(2psi1-2phi_ZDCCA)>
+		// Calculate <<cos(2a-2Psi_V0)>> for RP, POI OS
+		f2pCorrelatorCos2PsiDiff2PsiV0RP->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C))); //<cos(2psi1-2phi_V0C)>
+		f2pCorrelatorCos2PsiDiff2PsiV0RP->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsi2V0A))); //<cos(2psi1-2phi_V0A)>
+		// Calculate <<cos(2a-2Psi_ZDC)>> for RP, POI OS
+		f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCC))); //<cos(2psi1-2phi_ZDCC)>
+		f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsiZNCA))); //<cos(2psi1-2phi_ZDCA)>
+		f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(2.5, TMath::Cos(2*(trk1Phi-fPsiZNCCA))); //<cos(2psi1-2phi_ZDCCA)>
 	
-	    fNITV0OS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C)); // <<cos(psi1-2phi_V0C)>>
-	    fNITV0OS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C)); // <<sin(psi1-2phi_V0C)>>
-	    fNITV0OS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A)); // <<cos(psi1-2phi_V0A)>>
-	    fNITV0OS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A)); // <<sin(psi1-2phi_V0A)>>
+		fNITV0OS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C)); // <<cos(psi1-2phi_V0C)>>
+		fNITV0OS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C)); // <<sin(psi1-2phi_V0C)>>
+		fNITV0OS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A)); // <<cos(psi1-2phi_V0A)>>
+		fNITV0OS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A)); // <<sin(psi1-2phi_V0A)>>
 
-	    fNITZDCOS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZNCC)); // <<cos(psi1-2phi_ZDCC)>>
-	    fNITZDCOS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZNCC)); // <<sin(psi1-2phi_ZDCC)>>
-	    fNITZDCOS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZNCA)); // <<cos(psi1-2phi_ZDCA)>>
-	    fNITZDCOS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZNCA)); // <<sin(psi1-2phi_ZDCA)>>
-	    fNITZDCOS->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZNCCA)); // <<cos(psi1-2phi_ZDCCA)>>
-	    fNITZDCOS->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZNCCA)); // <<sin(psi1-2phi_ZDCCA)>>
+		fNITZDCOS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZNCC)); // <<cos(psi1-2phi_ZDCC)>>
+		fNITZDCOS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZNCC)); // <<sin(psi1-2phi_ZDCC)>>
+		fNITZDCOS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZNCA)); // <<cos(psi1-2phi_ZDCA)>>
+		fNITZDCOS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZNCA)); // <<sin(psi1-2phi_ZDCA)>>
+		fNITZDCOS->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZNCCA)); // <<cos(psi1-2phi_ZDCCA)>>
+		fNITZDCOS->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZNCCA)); // <<sin(psi1-2phi_ZDCCA)>>
 	
-	    if (trk1Chrg>0) {
+		if (trk1Chrg>0) {
 		  // Calculate <<cos(2a-2Psi_V0)>> for POI Pos
 		  //f2pCorrelatorCos2PsiDiff2PsiV0POIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C))); 
 		  //f2pCorrelatorCos2PsiDiff2PsiV0POIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0A)));
@@ -1084,9 +1129,9 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 		  fNITZDCPOIPos->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZNCA)); // <<sin(psi1-2phi_ZDCA)>>
 		  fNITZDCPOIPos->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZNCCA)); // <<cos(psi1-2phi_ZDCCA)>>
 		  fNITZDCPOIPos->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZNCCA)); // <<sin(psi1-2phi_ZDCCA)>>
-	    }
+		}
 	
-	    if (trk1Chrg<0) {
+		if (trk1Chrg<0) {
 		  // Calculate <<cos(2a-2Psi_V0)>> for POI Neg
 		  //f2pCorrelatorCos2PsiDiff2PsiV0POINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C))); 
 		  //f2pCorrelatorCos2PsiDiff2PsiV0POINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0A)));
@@ -1106,10 +1151,10 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 		  fNITZDCPOINeg->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZNCA)); // <<sin(psi1-2phi_ZDCA)>>
 		  fNITZDCPOINeg->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZNCCA)); // <<cos(psi1-2phi_ZDCCA)>>
 		  fNITZDCPOINeg->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZNCCA)); // <<sin(psi1-2phi_ZDCCA)>>
-	    }
+		}
 
-	    ///---> 2nd track Loop   
-	    for(Int_t jTrack = iTrack+1; jTrack < ntracks; jTrack++) {  // garanteed no overlap
+		///---> 2nd track Loop   
+		for(Int_t jTrack = iTrack+1; jTrack < ntracks; jTrack++) {  // garanteed no overlap
 
 		  /// skip autocorrelation:
 		  //if(jTrack==iTrack) continue; ///////////////////// Delete later
@@ -1129,11 +1174,48 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 			trk2DCAz  = AODtrack2->ZAtDCA();
 			trk2dEdx  = AODtrack2->GetDetPid()->GetTPCsignal();       
 
+			
+			// for constrained TPConly tracks
+		    if(fFilterBit == 128){
+			  trk2DCAxy = AODtrack2->DCA();      // this is the DCA from global track (not exactly what is cut on)
+			  trk2DCAz  = AODtrack2->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+		    }
+		    else{
+			  //const AliVVertex *vertex = fVevent->GetPrimaryVertex();
+			  //vertex->GetXYZ(vTrk2);
+			  AODtrack2->GetXYZ(posTrk2);
+			  trk2DCAxy  = TMath::Sqrt((posTrk2[0] - pVtxX)*(posTrk2[0] - pVtxX) + (posTrk2[1] - pVtxY)*(posTrk2[1] - pVtxY));
+			  trk2DCAz   = posTrk2[2] - pVtxZ;
+		    }
+		    
+		    if (fDCAxyMax>0 && fDCAzzMax>0 && trk2DCAxy>=fDCAxyMax && trk2DCAz>=fDCAzzMax) { // if fDCAxyMax, fDCAzzMax is set to be less than 0, no cut applied
+			  continue;
+			}
+			
+			if (bUseTPCCrossedRows){
+			  if ((Float_t)AODtrack2->GetTPCNCrossedRows() < (120 - (5/(Float_t)AODtrack2->Pt())) ){
+				continue;
+			  }
+			}
+			
+			if (fTPCclustMin > 0) { 
+			  if (trk2TpcNC < fTPCclustMin) {
+			    continue;
+			  }
+		    }
+		    
+		    // shared cluster 
+			if( fTPCsharedCut > 0 && AODtrack2->GetTPCnclsS() > fTPCsharedCut){
+			  continue;
+			}
+  
 			//Apply track cuts for second track
-			if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && (trk2dEdx >= fTPCdEdxMin) && (trk2TpcNC >= fTPCclustMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
-				
+			if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && (trk2dEdx >= fTPCdEdxMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
+				// v2 for TPC
 				f2pCorrelatorCosPsiDiff->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi)); 
 				f2pCorrelatorCos2PsiDiff->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi))); 
+				
+				
 				if(trk1Chrg*trk2Chrg < 0){ //Opposite sign	
 					fRePEBEOS->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi));
 					fImPEBEOS->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi));
@@ -1156,8 +1238,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 				}
 			}//j-track cuts
 		  }//j-track FB validated
-	    }///j-track loop
-	
+		}///j-track loop
       }//----> i-track loop => All trackCuts applied.     
     }//-----> i-track loop => FB is validated.    
   }///-----> i-track loop Ends here.<--------

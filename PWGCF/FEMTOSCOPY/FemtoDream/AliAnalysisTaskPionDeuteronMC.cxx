@@ -28,7 +28,6 @@ AliAnalysisTaskPionDeuteronMC::AliAnalysisTaskPionDeuteronMC(const char *name)
     : AliAnalysisTaskSE(name),
       fEventCuts{true},
       fOutputList{nullptr},
-      fEstimator{1},
       fP0{0.285},
       fMixingDepth{5},
       fSimpleCoalescence{true},
@@ -36,7 +35,6 @@ AliAnalysisTaskPionDeuteronMC::AliAnalysisTaskPionDeuteronMC(const char *name)
       fPrimaryPtBins{0},
       fKstarBins{0},
       fNormalisationHist{nullptr},
-      hSourceSize{nullptr},
       hPionSpectrum{nullptr},
       hProtonSpectrum{nullptr},
       hNeutronSpectrum{nullptr},
@@ -297,19 +295,19 @@ void AliAnalysisTaskPionDeuteronMC::UserExec(Option_t *)
   {
     for (auto &proton : v_proton)
     {
-      hSameEventPionProtonKstarLS[1]->Fill(GetKstar(pion, proton));
+      hSameEventPionProtonKstarUS[1]->Fill(GetKstar(pion, proton));
     }
     for (auto &antiproton : v_antiproton)
     {
-      hSameEventPionProtonKstarUS[1]->Fill(GetKstar(pion, antiproton));
-    }
-    for (auto &antideuteron : v_antideuteron)
-    {
-      hSameEventPionDeuteronKstarLS[1]->Fill(GetKstar(pion, antideuteron));
+      hSameEventPionProtonKstarLS[1]->Fill(GetKstar(pion, antiproton));
     }
     for (auto &deuteron : v_deuteron)
     {
       hSameEventPionDeuteronKstarUS[1]->Fill(GetKstar(pion, deuteron));
+    }
+    for (auto &antideuteron : v_antideuteron)
+    {
+      hSameEventPionDeuteronKstarLS[1]->Fill(GetKstar(pion, antideuteron));
     }
   }
 
@@ -405,7 +403,7 @@ void AliAnalysisTaskPionDeuteronMC::SetKstarBins(int nbins, float *bins)
   fKstarBins.Set(nbins + 1, bins);
 }
 
-void AliAnalysisTaskPionDeuteronMC::SetZvtxArray(std::vector<int> &vec)
+void AliAnalysisTaskPionDeuteronMC::SetZvtxArray(std::vector<float> &vec)
 {
   fZvtxArray.clear();
   for (auto p : vec)
@@ -415,7 +413,7 @@ void AliAnalysisTaskPionDeuteronMC::SetZvtxArray(std::vector<int> &vec)
   fNZvtxBins = (int)fZvtxArray.size();
 }
 
-void AliAnalysisTaskPionDeuteronMC::SetMultiplicityArray(std::vector<int> &vec)
+void AliAnalysisTaskPionDeuteronMC::SetMultiplicityArray(std::vector<float> &vec)
 {
   fMultiplicityArray.clear();
   for (auto p : vec)
@@ -432,6 +430,14 @@ void AliAnalysisTaskPionDeuteronMC::SetMixingDepth(unsigned int depth)
     p.SetDepth(depth);
   }
   for (auto p : fMixingBufferAntideuterons)
+  {
+    p.SetDepth(depth);
+  }
+  for (auto p : fMixingBufferProtons)
+  {
+    p.SetDepth(depth);
+  }
+  for (auto p : fMixingBufferAntiprotons)
   {
     p.SetDepth(depth);
   }
@@ -489,7 +495,8 @@ void AliAnalysisTaskPionDeuteronMC::DoCoalescence(std::vector<TLorentzVector> &v
       TLorentzVector neutron_prime = v_neutron[in];
       neutron_prime.Boost(-boost_vector);
       TLorentzVector deltaPvector = proton_prime - neutron_prime;
-      Double_t deltaP = deltaPvector.P();
+      double deltaP = deltaPvector.P();
+      double mt = 0.5 * (prot.Mt() + v_neutron[in].Mt());
 
       // Fill DeltaP Distribution
       hDeltaP->Fill(deltaP);
@@ -515,7 +522,6 @@ void AliAnalysisTaskPionDeuteronMC::DoCoalescence(std::vector<TLorentzVector> &v
       {
         float value = (float)gRandom->Uniform();
         float q = 0.5 * deltaP;
-        float mt = 0.5 * deltaPvector.Mt();
         float radius = ComputeRadius(mt);
         float prob = 1;
         if (fTwoGauss)

@@ -109,7 +109,7 @@ fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_D
 fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0),
 /////
 fHistTracklets08Cent_DataSelection(0), fHistTracklets08Cent_MCSelection(0), fHistTracklets08_DataSelection(0), fHistTracklets08_MCSelection(0),
-fHistTracklets08True_DataSelection(0), fHistTracklets08True_MCSelection(0),
+fHistTracklets08True_DataSelection(0), fHistTracklets08True_MCSelection(0), fHistTracklets10True_DataSelection(0), fHistTracklets10True_MCSelection(0),
 fHistTracklets08CentVsMidRapidityTrue_DataSelection(0), fHistTracklets08VsMidRapidityTrue_DataSelection(0), fHistTracklets08TrueVsMidRapidityTrue_DataSelection(0),
 fHistTracklets08CentVsMidRapidityTrue_MCSelection(0), fHistTracklets08VsMidRapidityTrue_MCSelection(0), fHistTracklets08TrueVsMidRapidityTrue_MCSelection(0),
 /////
@@ -169,7 +169,7 @@ fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_D
 fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0),
 /////
 fHistTracklets08Cent_DataSelection(0), fHistTracklets08Cent_MCSelection(0), fHistTracklets08_DataSelection(0), fHistTracklets08_MCSelection(0),
-fHistTracklets08True_DataSelection(0), fHistTracklets08True_MCSelection(0),
+fHistTracklets08True_DataSelection(0), fHistTracklets08True_MCSelection(0),fHistTracklets10True_DataSelection(0), fHistTracklets10True_MCSelection(0),
 fHistTracklets08CentVsMidRapidityTrue_DataSelection(0), fHistTracklets08VsMidRapidityTrue_DataSelection(0), fHistTracklets08TrueVsMidRapidityTrue_DataSelection(0),
 fHistTracklets08CentVsMidRapidityTrue_MCSelection(0), fHistTracklets08VsMidRapidityTrue_MCSelection(0), fHistTracklets08TrueVsMidRapidityTrue_MCSelection(0),
 /////
@@ -358,9 +358,20 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
         fHistTracklets08True_DataSelection = new TH1F("fHistTracklets08True_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound);
         fListHist->Add(fHistTracklets08True_DataSelection);
     }
+   
     if(! fHistTracklets08True_MCSelection ) {
         fHistTracklets08True_MCSelection = new TH1F("fHistTracklets08True_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound);
         fListHist->Add(fHistTracklets08True_MCSelection);
+    }
+    
+    if(! fHistTracklets10True_DataSelection ) {
+        fHistTracklets10True_DataSelection = new TH1F("fHistTracklets10True_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets10True_DataSelection);
+    }
+    
+     if(! fHistTracklets10True_MCSelection ) {
+        fHistTracklets10True_MCSelection = new TH1F("fHistTracklets10True_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets10True_MCSelection);
     }
     // 0.8 < |Ntrckl| < 1.5
     if(! fHistTracklets0815Cent_DataSelection ) {
@@ -925,6 +936,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
         fHistTracklets08Cent_DataSelection -> Fill( fCentrality_Tracklets08Unselected );
         fHistTracklets08_DataSelection -> Fill( nSPDtrackl08);
         fHistTracklets08True_DataSelection -> Fill( lNchEta8 );
+        fHistTracklets10True_DataSelection -> Fill( lNchEta10 );
         ////
         fHistTracklets0815Cent_DataSelection -> Fill( fCentrality_Tracklets0815Unselected );
         fHistTracklets0815_DataSelection -> Fill( nSPDtrackl0815);
@@ -938,6 +950,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
         fHistTracklets08Cent_MCSelection -> Fill( fCentrality_Tracklets08Unselected );
         fHistTracklets08_MCSelection -> Fill( nSPDtrackl08);
         fHistTracklets08True_MCSelection -> Fill( lNchEta8 );
+        fHistTracklets10True_MCSelection -> Fill( lNchEta10 );
         ////
         fHistTracklets0815Cent_MCSelection -> Fill( fCentrality_Tracklets0815Unselected );
         fHistTracklets0815_MCSelection -> Fill( nSPDtrackl0815);

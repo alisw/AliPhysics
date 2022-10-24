@@ -285,6 +285,7 @@ if(FASTJET_FOUND)
         AliLundPlaneHelper.cxx
       AliAnalysisTaskJetCharge.cxx
       AliAnalysisTaskJetChargeFlavourTemplates.cxx
+      AliAnalysisTaskJetChargeFlavourPb.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
             UserTasks/AliAnalysisTaskJetPull.cxx

@@ -118,6 +118,9 @@ private:
     TH1F *fHistTracklets08_MCSelection;   //!
     TH1F *fHistTracklets08True_DataSelection; //!
     TH1F *fHistTracklets08True_MCSelection;   //!
+    // same for Ntrackl10
+    TH1F *fHistTracklets10True_DataSelection; //!
+    TH1F *fHistTracklets10True_MCSelection;   //!
     //// same for Ntrackl0815
     TH1F *fHistTracklets0815Cent_DataSelection; //!
     TH1F *fHistTracklets0815Cent_MCSelection;   //!

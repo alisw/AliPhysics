@@ -276,6 +276,30 @@ class AliFemtoDreamBasePart {
     fUse = use;
   }
   ;
+  void SetMult (int Mult) { this->fMult = Mult; };
+  void SetZVtx (float ZVtx) { fZVtx = ZVtx; };
+  void SetBkgScore (float BkgScore) { fBkgScore = BkgScore; };
+  void SetPromptScore (float PromptScore) { fPromptScore = PromptScore; };
+  void SetNSigTPC (float NSigTPC) { fNSigTPC = NSigTPC; };
+  void SetNSigTOF (float NSigTOF) { fNSigTOF = NSigTOF; };
+  void SetNCls (float NCls) { fNCls = NCls; };
+  void SetNCrossedRows (int NCrossedRows) { fNCrossedRows = NCrossedRows; };
+  void SetDCAZ (float DCAZ) { fDCAZ = DCAZ; };
+  void SetDCAXY (float DCAXY) { fDCAXY = DCAXY; };
+  void SetDzeroLabel (int label) { fDzeroLabel = label; };
+
+  int GetMult ()  { return fMult; };
+  float GetZVtx ()  { return fZVtx; };
+  float GetBkgScore ()  { return fBkgScore; };
+  float GetPromptScore ()  { return fPromptScore; };
+  float GetNSigTPC ()  { return fNSigTPC; };
+  float GetNSigTOF ()  { return fNSigTOF; };
+  int GetNCls ()  { return fNCls; };
+  int GetNCrossedRows ()  { return fNCrossedRows; };
+  float GetDCAZ ()  { return fDCAZ; };
+  float GetDCAXY ()  { return fDCAXY; };
+  int GetDzeroLabel () { return fDzeroLabel; }
+  
   bool UseParticle() const {
     return fUse;
   }
@@ -319,6 +343,19 @@ class AliFemtoDreamBasePart {
   float fCPA;
   float fInvMass;
   PartOrigin fOrigin;
+
+  int fMult;
+  float fZVtx;
+  float fBkgScore;
+  float fPromptScore;
+  float fNSigTPC;
+  float fNSigTOF;
+  int fNCls;
+  int fNCrossedRows;
+  float fDCAZ;
+  float fDCAXY;
+  int fDzeroLabel;
+
 // pdg code as set by the track cuts, used for invariant mass calculation/mc matching in v0s
   int fPDGCode;
 // pdg code as obtained from the MC for this particle
@@ -335,7 +372,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart, 7)
+ClassDef(AliFemtoDreamBasePart, 10)
   ;
 };
 

@@ -1,6 +1,10 @@
 #ifndef AliAnalysisTaskCharmingFemto_H
 #define AliAnalysisTaskCharmingFemto_H
 
+#include <map>
+#include <utility>
+
+
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "AliFemtoDreamEventCuts.h"
@@ -16,6 +20,7 @@
 #include "AliHFMLResponse.h"
 #include "TChain.h"
 #include "AliVertexingHFUtils.h"
+#include "TTree.h"
 
 class AliVParticle;
 class AliVTrack;
@@ -37,6 +42,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   enum MassSelection
   {
+    kAny,
     kSignal,
     kSidebandRight,
     kSidebandLeft,
@@ -44,7 +50,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   };
 
   AliAnalysisTaskCharmingFemto();
-  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, const bool isMCtruth);
+  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, const bool isMCtruth, const bool useTree);
   virtual ~AliAnalysisTaskCharmingFemto();
 
   virtual void LocalInit();
@@ -80,6 +86,12 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   }
   void CheckProtonSPDHit() {
     fCheckProtonSPDHit = true;
+  }
+  void SetLightPDG(int pdg) {
+    fLightPDG = pdg;
+  }
+  void SetUseFDPairCleaner(int flag) {
+    fUseFDPairCleaner = flag;
   }
 
   // HF related setters
@@ -287,7 +299,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
       const AliAnalysisTaskCharmingFemto &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
-  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores);
+  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &scores);
   bool MassSelection(const double mass, const double pt, const int pdg);
 
   // Track / event selection objects
@@ -303,10 +315,12 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliFemtoDreamPairCleaner *fPairCleaner;            //!
   AliFemtoDreamPartCollection *fPartColl;            //!
 
+  bool fUseTree;           //
   bool fIsMC;              //
   bool fUseMCTruthReco;    //
   bool fIsMCtruth;         //
   bool fIsLightweight;     //
+  bool fUseFDPairCleaner;  //
   UInt_t fTrigger;         //
   int fSystem;             //
 
@@ -314,7 +328,11 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   int fTrackBufferSize;
   std::vector<unsigned int> fDmesonPDGs;
+  int fLightPDG;
   AliAODTrack **fGTI;  //!
+
+  std::map <std::pair<int, int>, TTree*> * fPairTreeSE; //!
+  std::map <std::pair<int, int>, TTree*> * fPairTreeME; //!
 
   TList *fQA;                      //!
   TList *fEvtHistList;             //!
@@ -400,7 +418,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 14)
+ClassDef(AliAnalysisTaskCharmingFemto, 17)
 };
 
 #endif

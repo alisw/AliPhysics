@@ -332,7 +332,7 @@ void AliAnalysisTaskCharm::UserCreateOutputObjects()
   if(fHistoRAA && fScaleByRAA) printf("  Scale HFE RAA with histo\n");
   printf("  use Decay weight:    %s\n", fApplywm?"YES":"NO");
   printf("  use Event weight:    %s\n", fEventWeight?"YES":"NO");
- 
+
   std::cout << std::endl;
 
   AliCocktailSmearing::Print();
@@ -359,7 +359,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
   //
   //Nb event
   //
-  
+
   fNbEventCounter++;
   if(fNbEvent>0 && fNbEventCounter<fNbEvent) return;
 
@@ -379,7 +379,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
 
   int nparticles = fMcEvent->GetNumberOfTracks();
- 
+
   double opAngleCut   = fMinOpAng; // 50 mrad
 
   // one can intialize it out of the event loop (if one reset this in the event loop after each event) :
@@ -389,7 +389,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
   bool IsCharm_y1         = kFALSE;
   bool IsElectron_totaly  = kFALSE;
   bool IsElectron_y1      = kFALSE;
-  
+
   //
   //bool foundanticharm = kFALSE;
   bool foundbeauty = kFALSE;
@@ -428,7 +428,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
   Double_t phielectron = -1000.;
   Double_t phipositron = -1000.;
 
- 
+
   //printf("how many particles %d\n",nparticles);
 
   //// First loop over particles
@@ -475,63 +475,63 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       for(int d=k1; d <= k2; d++) {
         if(d>0){
           AliVParticle *decay = fMcEvent->GetTrack(d);
-	  if(!decay) continue;
+          if(!decay) continue;
           int pdgdecay = decay->PdgCode();
           if ( int(TMath::Abs(pdgdecay)/100.) == 4 || int(TMath::Abs(pdgdecay)/1000.) == 4 ) {
             if(p->PdgCode()==4) {
               Method1ncquarkintheeventp ++;
-	      Method1ptquarkp = p->Pt();
-	      //printf("pdg decay %d (%d) for 4 quark %d\n",pdgdecay,d,iparticle);
+              Method1ptquarkp = p->Pt();
+              //printf("pdg decay %d (%d) for 4 quark %d\n",pdgdecay,d,iparticle);
             }
             if(p->PdgCode()==-4) {
               Method1ncquarkintheeventn ++;
-	      Method1ptquarkn = p->Pt();
-	      //printf("pdg decay %d (%d) for -4 quark %d\n",pdgdecay,d,iparticle);
+              Method1ptquarkn = p->Pt();
+              //printf("pdg decay %d (%d) for -4 quark %d\n",pdgdecay,d,iparticle);
             }
-	  }
-	}
+          }
+        }
       }
     }
-    
+
 
     // Found electrons with history
-    if ((pdg == 11) && (!p->IsPrimary())) { 
-      
-	int num = p->GetMother();
-	AliVParticle *mom = fMcEvent->GetTrack ( num );
-	if(!mom) continue;
-	int ppid = TMath::Abs( mom->PdgCode() );
+    if ((pdg == 11) && (!p->IsPrimary())) {
 
-	// fill the single electron histogram, if mother is charm and doughter is electron
-	bool is_charm = kFALSE;
-	bool is_beauty2charm = kFALSE;
-	bool is_cquark = kFALSE;
-	//Int_t icquark = -1;
-	if (((abs(ppid)>=400) && (abs(ppid)<=439)) || ((abs(ppid)>=4000) && (abs(ppid)<=4399))) is_charm = kTRUE;
-	// Check if the D meson comes from B
-	if(is_charm == kTRUE) {
-	  AliVParticle *gm_i = 0x0;
-	  Int_t indexx_i = mom->GetMother(); // First mother of D
-	  while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
-	    gm_i = fMcEvent->GetTrack ( indexx_i );
-	    if(gm_i) {
-	      int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-	      if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-		is_beauty2charm = kTRUE;
-	      }
-	      if(pid_gm_i==4){
-		is_cquark = kTRUE;
-		//icquark = indexx_i;
-	      }
-	    indexx_i = gm_i->GetMother(); //
-	    }
-	    else indexx_i = -1;
-	  }
-	}
-	if(is_charm && !is_beauty2charm) {
-	  //printf("Found one HFE %d from open heavy-flavour %d with c quark %d\n",iparticle,ppid,icquark);
-	  if(!is_cquark) elecwithhistory = kFALSE;
-	}
+        int num = p->GetMother();
+        AliVParticle *mom = fMcEvent->GetTrack ( num );
+        if(!mom) continue;
+        int ppid = TMath::Abs( mom->PdgCode() );
+
+        // fill the single electron histogram, if mother is charm and doughter is electron
+        bool is_charm = kFALSE;
+        bool is_beauty2charm = kFALSE;
+        bool is_cquark = kFALSE;
+        //Int_t icquark = -1;
+        if (((abs(ppid)>=400) && (abs(ppid)<=439)) || ((abs(ppid)>=4000) && (abs(ppid)<=4399))) is_charm = kTRUE;
+        // Check if the D meson comes from B
+        if(is_charm == kTRUE) {
+          AliVParticle *gm_i = 0x0;
+          Int_t indexx_i = mom->GetMother(); // First mother of D
+          while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
+            gm_i = fMcEvent->GetTrack ( indexx_i );
+            if(gm_i) {
+              int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+              if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+                is_beauty2charm = kTRUE;
+              }
+              if(pid_gm_i==4){
+                is_cquark = kTRUE;
+                //icquark = indexx_i;
+              }
+            indexx_i = gm_i->GetMother(); //
+            }
+            else indexx_i = -1;
+          }
+        }
+        if(is_charm && !is_beauty2charm) {
+          //printf("Found one HFE %d from open heavy-flavour %d with c quark %d\n",iparticle,ppid,icquark);
+          if(!is_cquark) elecwithhistory = kFALSE;
+        }
     }
   }
 
@@ -551,7 +551,8 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
   // Calculate the CNM event weight if select only one ccbar pair
   if(fScaleByCNM && fSelectoneccbar && !fSelectcleanhistory){
-    eventcnm = 0.5*(scale_CNM(Method1ptquarkp)+scale_CNM(Method1ptquarkn));
+    if(!fScaleByRAA) eventcnm = 0.5*(scale_CNM(Method1ptquarkp)+scale_CNM(Method1ptquarkn));
+    else eventcnm = scale_CNM(Method1ptquarkp)*scale_CNM(Method1ptquarkn);
     //printf("CNM mean weight %f\n",eventcnm);
   }
 
@@ -605,20 +606,20 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       if((p->PdgCode()==4) && (Method2ncquarkintheeventp==0)) {
         Method2ncquarkintheeventp ++;
         Method2yquarkp = rap;
-	Method2phiquarkp = p->Phi();
-	Method2ptquarkp = p->Pt();
-	Method2partquarkp = p;
+        Method2phiquarkp = p->Phi();
+        Method2ptquarkp = p->Pt();
+        Method2partquarkp = p;
         hRapCharmQuarkMethod2->Fill(rap,eventw);
-	hQuarkMethod2->Fill(rap,p->Pt(),eventw);
+        hQuarkMethod2->Fill(rap,p->Pt(),eventw);
       }
       if((p->PdgCode()==-4) && (Method2ncquarkintheeventn==0)) {
         Method2ncquarkintheeventn ++;
         Method2yquarkn = rap;
-	Method2phiquarkn = p->Phi();
-	Method2ptquarkn = p->Pt();
-	Method2partquarkn = p;
+        Method2phiquarkn = p->Phi();
+        Method2ptquarkn = p->Pt();
+        Method2partquarkn = p;
         hRapCharmQuarkMethod2->Fill(rap,eventw);
-	hQuarkMethod2->Fill(rap,p->Pt(),eventw);
+        hQuarkMethod2->Fill(rap,p->Pt(),eventw);
       }
       // Method 1 now
       //printf("Found a c quark %d with rapidity %f and pseudorapidity %f\n",p->PdgCode(),rap,eta);
@@ -629,7 +630,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       for(int d=k1; d <= k2; d++) {
         if(d>0){
           AliVParticle *decay = fMcEvent->GetTrack(d);
-	  if(!decay) continue;
+          if(!decay) continue;
           int pdgdecay = decay->PdgCode();
           //printf("Mesons %d and pdg %d, index %d\n",d,pdgdecay,d);
           if ( int(TMath::Abs(pdgdecay)/100.) == 4 || int(TMath::Abs(pdgdecay)/1000.) == 4 ) {
@@ -637,86 +638,86 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
             if(p->PdgCode()==4) {
               Method1ncquarkintheeventp ++;
               Method1yquarkp = rap;
-	      Method1phiquarkp = p->Phi();
-	      Method1ptquarkp = p->Pt();
-	      Method1partquarkp= p;
+              Method1phiquarkp = p->Phi();
+              Method1ptquarkp = p->Pt();
+              Method1partquarkp= p;
             }
             if(p->PdgCode()==-4) {
               Method1ncquarkintheeventn ++;
               Method1yquarkn = rap;
-	      Method1phiquarkn = p->Phi();
-	      Method1ptquarkn = p->Pt();
-	      Method1partquarkn = p;
+              Method1phiquarkn = p->Phi();
+              Method1ptquarkn = p->Pt();
+              Method1partquarkn = p;
             }
             //printf("Found a quark with rapidity %f and pdg %d\n",rap,p->PdgCode());
             double rapD = decay->Y();
-	    double ptD = decay->Pt();
+            double ptD = decay->Pt();
             int kk1 = decay->GetDaughterFirst();
             int kk2 = decay->GetDaughterLast();
             //cout << "first doughter decay: " << kk1 << " last doughter decay: " << kk2 << endl;
             hRapCquarkDmeson->Fill(rap,rapD,eventw);
-	    if(TMath::Abs(rap)<1.) hPtCquarkDmeson->Fill(pt,ptD,eventw);
+            if(TMath::Abs(rap)<1.) hPtCquarkDmeson->Fill(pt,ptD,eventw);
             // Daughter of D mesons or D baryons
             for(int dd=kk1; dd <= kk2; dd++) {
               if(dd>0){
                 AliVParticle *ddecay = fMcEvent->GetTrack(dd);
-		if(!ddecay) continue;
+                if(!ddecay) continue;
                 int pdgddecay = ddecay->PdgCode();
                 //printf("Leptons %d and pdg %d, IsPrimary %d\n",dd,pdgddecay,ddecay->IsPrimary());
                 if ( int(TMath::Abs(pdgddecay)) == 11 ) {
-		  //printf("Found the decay electron, is it primary %d\n",(Int_t) ddecay->IsPrimary());
+                  //printf("Found the decay electron, is it primary %d\n",(Int_t) ddecay->IsPrimary());
                   double rape = ddecay->Y();
-		  double pte = ddecay->Pt();
+                  double pte = ddecay->Pt();
                   hRapDmesonElectron->Fill(rapD,rape,eventw);
-		  if(TMath::Abs(rap)<1.) hPtDmesonElectron->Fill(ptD,pte,eventw);
+                  if(TMath::Abs(rap)<1.) hPtDmesonElectron->Fill(ptD,pte,eventw);
                 }
-		if(pdgddecay==11) {
-		  Numberofpositron ++;
-		  if(TMath::Abs(decay->Pt()) > 3.) highptDmesons++;
-		  if(Numberofpositron==1) {
-		    etapositron = ddecay->Eta();
-		    phipositron = ddecay->Phi();
-		  }
-		}
-		if(pdgddecay==-11) {
-		  Numberofelectron ++;
-		  if(TMath::Abs(decay->Pt()) > 3.) highptDmesons++;
-		  if(Numberofelectron==1) {
-		    etaelectron = ddecay->Eta();
-		    phielectron = ddecay->Phi();
-		  }
-		}
-		// Grand daughter of D mesons or D baryons (in case of D*(2007)->D0 for example)
-		if ( int(TMath::Abs(pdgddecay)/100.) == 4 || int(TMath::Abs(pdgddecay)/1000.) == 4 ) {
-		  int kkk1 = ddecay->GetDaughterFirst();
-		  int kkk2 = ddecay->GetDaughterLast();
-		  for(int ddd=kkk1; ddd <= kkk2; ddd++) {
-		    if(ddd>0){
-		      AliVParticle *dddecay = fMcEvent->GetTrack(ddd);
-		      if(!dddecay) continue;
-		      int pdgdddecay = dddecay->PdgCode();
-		      //printf("New Leptons %d and pdg %d, IsPrimary %d\n",ddd,pdgdddecay,dddecay->IsPrimary());
-		      if(pdgdddecay==11) {
-			//printf("Found the decay electron, is it primary %d\n",(Int_t) ddecay->IsPrimary());
-			Numberofpositron ++;
-			if(TMath::Abs(ddecay->Pt()) > 3.) highptDmesons++;
-			if(Numberofpositron==1) {
-			  etapositron = dddecay->Eta();
-			  phipositron = dddecay->Phi();
-			}
-		      }
-		      if(pdgdddecay==-11) {
-			//printf("Found the decay electron, is it primary %d\n",(Int_t) ddecay->IsPrimary());
-			Numberofelectron ++;
-			if(TMath::Abs(ddecay->Pt()) > 3.) highptDmesons++;
-			// Take the first pairs found
-			if(Numberofelectron==1) {
-			  etaelectron = dddecay->Eta();
-			  phielectron = dddecay->Phi();
-			}
-		      }
-		    }
-		  }
+                if(pdgddecay==11) {
+                  Numberofpositron ++;
+                  if(TMath::Abs(decay->Pt()) > 3.) highptDmesons++;
+                  if(Numberofpositron==1) {
+                    etapositron = ddecay->Eta();
+                    phipositron = ddecay->Phi();
+                  }
+                }
+                if(pdgddecay==-11) {
+                  Numberofelectron ++;
+                  if(TMath::Abs(decay->Pt()) > 3.) highptDmesons++;
+                  if(Numberofelectron==1) {
+                    etaelectron = ddecay->Eta();
+                    phielectron = ddecay->Phi();
+                  }
+                }
+                // Grand daughter of D mesons or D baryons (in case of D*(2007)->D0 for example)
+                if ( int(TMath::Abs(pdgddecay)/100.) == 4 || int(TMath::Abs(pdgddecay)/1000.) == 4 ) {
+                  int kkk1 = ddecay->GetDaughterFirst();
+                  int kkk2 = ddecay->GetDaughterLast();
+                  for(int ddd=kkk1; ddd <= kkk2; ddd++) {
+                    if(ddd>0){
+                      AliVParticle *dddecay = fMcEvent->GetTrack(ddd);
+                      if(!dddecay) continue;
+                      int pdgdddecay = dddecay->PdgCode();
+                      //printf("New Leptons %d and pdg %d, IsPrimary %d\n",ddd,pdgdddecay,dddecay->IsPrimary());
+                      if(pdgdddecay==11) {
+                        //printf("Found the decay electron, is it primary %d\n",(Int_t) ddecay->IsPrimary());
+                        Numberofpositron ++;
+                        if(TMath::Abs(ddecay->Pt()) > 3.) highptDmesons++;
+                        if(Numberofpositron==1) {
+                          etapositron = dddecay->Eta();
+                          phipositron = dddecay->Phi();
+                        }
+                      }
+                      if(pdgdddecay==-11) {
+                        //printf("Found the decay electron, is it primary %d\n",(Int_t) ddecay->IsPrimary());
+                        Numberofelectron ++;
+                        if(TMath::Abs(ddecay->Pt()) > 3.) highptDmesons++;
+                        // Take the first pairs found
+                        if(Numberofelectron==1) {
+                          etaelectron = dddecay->Eta();
+                          phielectron = dddecay->Phi();
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -725,27 +726,27 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       }
       //printf("Found hadrons %d\n",foundhadrons);
       if(foundhadrons)  {
-	hQuarkMethod1->Fill(rap,p->Pt(),eventw);
-	hRapCharmQuarkMethod1  ->Fill(rap,eventw);
-	hPtCharmQuarkMethod1->Fill(pt,eventw);
-	if(fScaleByCNM){
-	  Double_t wcnm = 1.;
-	  if(fSelectoneccbar && !fSelectcleanhistory){
-	    wcnm = eventcnm;}
-	  else {
-	    wcnm = scale_CNM(pt);
-	  }
-	  hPtCharmQuarkMethod1CNM->Fill(pt,wcnm*eventw);
-	}
+        hQuarkMethod1->Fill(rap,p->Pt(),eventw);
+        hRapCharmQuarkMethod1  ->Fill(rap,eventw);
+        hPtCharmQuarkMethod1->Fill(pt,eventw);
+        if(fScaleByCNM){
+          Double_t wcnm = 1.;
+          if(fSelectoneccbar && !fSelectcleanhistory){
+            wcnm = eventcnm;}
+          else {
+            wcnm = scale_CNM(pt);
+          }
+          hPtCharmQuarkMethod1CNM->Fill(pt,wcnm*eventw);
+        }
       }
     }
   }
 
-     
+
   /////////////////////////////////////////
   // Second loop for single D and e spectra
   //////////////////////////////////////////
-  
+
   for(int iparticle=0; iparticle<nparticles;iparticle++){
 
     AliVParticle * p = fMcEvent->GetTrack(iparticle);
@@ -766,7 +767,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     //
 
     // D from B mesons
-    
+
     Bool_t is_Dmeson = kFALSE;
     Bool_t is_DfromBmeson = kFALSE;
     Double_t pt_cquark = -1.;
@@ -782,54 +783,54 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       AliVParticle *gm_i = 0x0;
       Int_t indexx_i = p->GetMother(); // First mother of D
       while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
-	gm_i = fMcEvent->GetTrack ( indexx_i );
-	if(gm_i) {
-	  int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-	  //printf("First mother %d with pdg %d\n",indexx_i,pid_gm_i);
-	  if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-	    is_DfromBmeson = kTRUE;
-	  }
-	  // Take the last open-charmed hadrons in the chain
-	  if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
-	    pt_Dmeson = gm_i->Pt();
-	  }
-	  if((pid_gm_i==4) && (pt_cquark<0.)){
-	    //i_c_quark = indexx_i;
-	    pt_cquark = gm_i->Pt();
-	  }
-	  indexx_i = gm_i->GetMother(); //
-	} else indexx_i = -1;
+        gm_i = fMcEvent->GetTrack ( indexx_i );
+        if(gm_i) {
+          int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+          //printf("First mother %d with pdg %d\n",indexx_i,pid_gm_i);
+          if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+            is_DfromBmeson = kTRUE;
+          }
+          // Take the last open-charmed hadrons in the chain
+          if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+            pt_Dmeson = gm_i->Pt();
+          }
+          if((pid_gm_i==4) && (pt_cquark<0.)){
+            //i_c_quark = indexx_i;
+            pt_cquark = gm_i->Pt();
+          }
+          indexx_i = gm_i->GetMother(); //
+        } else indexx_i = -1;
       }
     }
-    
+
     // weight
     Double_t wcnm = 1.;
     if(fScaleByCNM && is_Dmeson && !is_DfromBmeson){
       if(fSelectoneccbar && !fSelectcleanhistory){
-	wcnm = eventcnm;
-      } 
+        wcnm = eventcnm;
+      }
       else if(!fTakeptOfDCNM) {
-	if(pt_cquark > 0.){
-	  wcnm = scale_CNM(pt_cquark);
-	}
-	else {
-	  wcnm = -1.;
-	}
+        if(pt_cquark > 0.){
+          wcnm = scale_CNM(pt_cquark);
+        }
+        else {
+          wcnm = -1.;
+        }
       }
       else {
-	if(pt_Dmeson > 0.){
-	  wcnm = scale_CNM(pt_Dmeson);
-	}
-	else {
-	  wcnm = -1.;
-	}
+        if(pt_Dmeson > 0.){
+          wcnm = scale_CNM(pt_Dmeson);
+        }
+        else {
+          wcnm = -1.;
+        }
       }
       if(!fTakeptOfDCNM) hweightcnmD->Fill(wcnm,pt_cquark);
       else hweightcnmD->Fill(wcnm,pt_Dmeson);
     }
 
     // **** default ****
-    
+
     // fill the single histograms
     // mesons w/ charm quarks
     if(is_Dmeson && !is_DfromBmeson)         hCharm        ->Fill(rap,pt,eventw*wcnm);
@@ -848,13 +849,13 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     /////********
 
 
-      
+
     //------------->>>> electrons are daughters
     //
     if (!( pdg == 11 )) continue;
     if ( p->IsPrimary() ) continue;
 
-      
+
     int num = p->GetMother();
     AliVParticle *mom = fMcEvent->GetTrack ( num );
     if(!mom) continue;
@@ -880,21 +881,21 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       AliVParticle *gm_i = 0x0;
       Int_t indexx_i = mom->GetMother(); // First mother of D
       while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
-	gm_i = fMcEvent->GetTrack ( indexx_i );
-	if(gm_i) {
-	  int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-	  if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-	    is_beauty2charm = kTRUE;
-	  }
-	  if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
-	    pt_Dmeson = gm_i->Pt();
-	  }
-	  if((pid_gm_i==4) && (pt_cquark < 0.)){
-	    //i_c_quark = indexx_i;
-	    pt_cquark = gm_i->Pt();
-	  }
-	  indexx_i = gm_i->GetMother(); //
-	} else indexx_i = -1;
+        gm_i = fMcEvent->GetTrack ( indexx_i );
+        if(gm_i) {
+          int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+          if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+            is_beauty2charm = kTRUE;
+          }
+          if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+            pt_Dmeson = gm_i->Pt();
+          }
+          if((pid_gm_i==4) && (pt_cquark < 0.)){
+            //i_c_quark = indexx_i;
+            pt_cquark = gm_i->Pt();
+          }
+          indexx_i = gm_i->GetMother(); //
+        } else indexx_i = -1;
       }
     }
 
@@ -904,47 +905,47 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     if(fApplywm) {
       if(ppid==411) wm = 0.1607;
       else if(ppid==421) wm = 0.0649;
-      else if(ppid==431) wm = 0.065; 
+      else if(ppid==431) wm = 0.065;
       else if(ppid==4122) wm = 0.036;
       else wm = 0.;
     }
     wm = wm*eventw;
-    
-    
+
+
     // weight CNM
     if(fScaleByCNM && is_charm && !is_beauty2charm){
       Double_t wcnme = 1.;
       if(fSelectoneccbar && !fSelectcleanhistory){
-	wcnme = eventcnm;
-	// For check
-	//if(pt_cquark > 0.){
-	  //printf("HFE: mean weight %f and single weight %f\n",wcnme,scale_CNM(pt_cquark));
-	//}
+        wcnme = eventcnm;
+        // For check
+        //if(pt_cquark > 0.){
+          //printf("HFE: mean weight %f and single weight %f\n",wcnme,scale_CNM(pt_cquark));
+        //}
       } else if(!fTakeptOfDCNM) {
-	if(pt_cquark>0){
-	  wcnme = scale_CNM(pt_cquark);
-	}
-	else {
-	  wcnme = -1.;
-	  //printf("HFE %d with c quark %d\n",iparticle,i_c_quark);
-	}
+        if(pt_cquark>0){
+          wcnme = scale_CNM(pt_cquark);
+        }
+        else {
+          wcnme = -1.;
+          //printf("HFE %d with c quark %d\n",iparticle,i_c_quark);
+        }
       } else {
-	if(pt_Dmeson>0){
-	  wcnme = scale_CNM(pt_Dmeson);
-	}
-	else {
-	  wcnme = -1.;
-	  //printf("HFE %d with c quark %d\n",iparticle,i_c_quark);
-	}
+        if(pt_Dmeson>0){
+          wcnme = scale_CNM(pt_Dmeson);
+        }
+        else {
+          wcnme = -1.;
+          //printf("HFE %d with c quark %d\n",iparticle,i_c_quark);
+        }
       }
       //printf("HFE: wcnme %f\n",wcnme);
       wm = wm*wcnme;
       if(!fTakeptOfDCNM) hweightcnmHFE->Fill(wcnme,pt_cquark);
       else hweightcnmHFE->Fill(wcnme,pt_Dmeson);
     }
-   
+
     if(is_charm && !is_beauty2charm){
-     
+
       hRapDMom2e->Fill(rapMom,rap,wm);
       hPtEtaElectron->Fill(pt, eta,wm); // generated pt vs eta of electrons from charm
       if(p->PdgCode() ==   11) hPtEtaElectronE->Fill(pt, eta,wm); // generated pt vs eta of electrons from charm
@@ -973,11 +974,11 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
   //
   //================================== D meson correlation =================================
   // For LHCb paper at 7 TeV
-  // 
+  //
   for(int i=1; i<nparticles;i++) {
     AliVParticle * p_i = fMcEvent->GetTrack(i);
     if (!p_i) continue;
-   
+
     int pid_i = p_i->PdgCode();
     if( ! ((TMath::Abs( pid_i ) == 421) || (TMath::Abs( pid_i ) == 411) || (TMath::Abs( pid_i ) == 431)) ) continue;
 
@@ -996,7 +997,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     //double phi_i = TVector2::Phi_mpi_pi(p_i->Phi());
     //double phicheck_i = p_i->Phi();
 
-   
+
 
     if((pt_i < 3) || (pt_i > 12)) continue;
 
@@ -1006,20 +1007,20 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     TLorentzVector ppoe_i;
     for(int d=k1_i; d <= k2_i; d++) {
       if(d>0){
-	AliVParticle *decay = fMcEvent->GetTrack(d);
-	if(!decay) continue;
-	int pdgdecay = decay->PdgCode();
-	if(TMath::Abs(pdgdecay)==11) {
-	  decay->Momentum(ppoe_i);
-	  founde_i = pdgdecay; 
-	}
+        AliVParticle *decay = fMcEvent->GetTrack(d);
+        if(!decay) continue;
+        int pdgdecay = decay->PdgCode();
+        if(TMath::Abs(pdgdecay)==11) {
+          decay->Momentum(ppoe_i);
+          founde_i = pdgdecay;
+        }
       }
     }
 
     for(int j=i+1; j<nparticles;j++) {
       AliVParticle * p_j = fMcEvent->GetTrack(j);
       if(!p_j) continue;
-      
+
       int pid_j = p_j->PdgCode();
       //if ( p_j->IsPrimary() ) continue;
       if( ! ((TMath::Abs( pid_j ) == 421) || (TMath::Abs( pid_j ) == 411) || (TMath::Abs( pid_j ) == 431)) ) continue;
@@ -1030,7 +1031,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       if(!mom_j) continue;
       int ppid_j = TMath::Abs( mom_j->PdgCode());
       if ( int(TMath::Abs(ppid_j)/100.) == 5 || int(TMath::Abs(ppid_j)/1000.) == 5 ) continue;
-      
+
       double px_j  = p_j->Px();
       double py_j  = p_j->Py();
       //double eta_j = p_j->Eta();
@@ -1038,7 +1039,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       double pt_j  = sqrt(px_j*px_j+py_j*py_j);
       //double phi_j = TVector2::Phi_mpi_pi(p_j->Phi());
       //double phicheck_j = p_j->Phi();
-      
+
 
       if((pt_j < 3) || (pt_j > 12)) continue;
 
@@ -1053,15 +1054,15 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       Int_t founde_j = 0;
       TLorentzVector ppoe_j;
       for(int d=k1_j; d <= k2_j; d++) {
-	if(d>0){
-	  AliVParticle *decay = fMcEvent->GetTrack(d);
-	  if(!decay) continue;
-	  int pdgdecay = decay->PdgCode();
-	  if(TMath::Abs(pdgdecay)==11) {
-	    decay->Momentum(ppoe_j);
-	    founde_j = pdgdecay; 
-	  }
-	}
+        if(d>0){
+          AliVParticle *decay = fMcEvent->GetTrack(d);
+          if(!decay) continue;
+          int pdgdecay = decay->PdgCode();
+          if(TMath::Abs(pdgdecay)==11) {
+            decay->Momentum(ppoe_j);
+            founde_j = pdgdecay;
+          }
+        }
       }
 
       //Double_t deltaphie = TMath::Abs(TVector2::Phi_mpi_pi(phi_i-phi_j));
@@ -1070,18 +1071,18 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
       // ULS
       if(pid_i * pid_j <0.){
-	  hDeltaPhi_D0->Fill(deltaphie);
-	  if((rap_i > 2) && (rap_i < 4) && (rap_j > 2) && (rap_j < 4)) {
-	    hDeltaPhi_D0_LHCb->Fill(deltaphie);
-	  }
-	}
+          hDeltaPhi_D0->Fill(deltaphie);
+          if((rap_i > 2) && (rap_i < 4) && (rap_j > 2) && (rap_j < 4)) {
+            hDeltaPhi_D0_LHCb->Fill(deltaphie);
+          }
+        }
 
       // ULS decay
       if(founde_i * founde_j <0.){
-	if((rap_i > 2) && (rap_i < 4) && (rap_j > 2) && (rap_j < 4)) {
-	  Double_t deltaphiee = TMath::Abs(ppoe_i.DeltaPhi(ppoe_j));
-	    hDeltaPhi_D0_LHCb_e->Fill(deltaphiee);
-	}
+        if((rap_i > 2) && (rap_i < 4) && (rap_j > 2) && (rap_j < 4)) {
+          Double_t deltaphiee = TMath::Abs(ppoe_i.DeltaPhi(ppoe_j));
+            hDeltaPhi_D0_LHCb_e->Fill(deltaphiee);
+        }
       }
 
     }
@@ -1089,7 +1090,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
   //
   //================================== pair loop =================================
-  // For dielectron final spectra 
+  // For dielectron final spectra
   //
 
   for(int i=1; i<nparticles;i++) {
@@ -1137,16 +1138,16 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       if(pid_j>0) ch_j = -1; // 11 is electron, -11 is positron
       TLorentzVector pp_i,pp_j;
       if(!fOton) {
-	pp_i = Smear(p_i);
-	pp_j = Smear(p_j);
-	// smearing of p is only linear, so we need to smear the opening angle explicitly in addition.
-	// in order not to overdo the corrections, the vectors are just rotated in this procedure.
-	SmearOpeningAngle(pp_i, pp_j);
+        pp_i = Smear(p_i);
+        pp_j = Smear(p_j);
+        // smearing of p is only linear, so we need to smear the opening angle explicitly in addition.
+        // in order not to overdo the corrections, the vectors are just rotated in this procedure.
+        SmearOpeningAngle(pp_i, pp_j);
       } else {
-	pp_i = ApplySmearingOton(ppo_i,ch_i);
-	pp_j = ApplySmearingOton(ppo_j,ch_j);
+        pp_i = ApplySmearingOton(ppo_i,ch_i);
+        pp_j = ApplySmearingOton(ppo_j,ch_j);
       }
-      
+
 
       double eta_i  = pp_i.Eta();
       double pt_i   = pp_i.Pt();
@@ -1170,7 +1171,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       double ppx_i  = mom_i->Px();
       double ppy_i  = mom_i->Py();
       double ppt_i  = sqrt(ppx_i*ppx_i+ppy_i*ppy_i);
-      
+
 
       int num_j = p_j->GetMother();
       AliVParticle *mom_j = fMcEvent->GetTrack ( num_j );
@@ -1179,37 +1180,37 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       double ppx_j  = mom_j->Px();
       double ppy_j  = mom_j->Py();
       double ppt_j  = sqrt(ppx_j*ppx_j+ppy_j*ppy_j);
-      
+
        // i electron
       bool i_is_charm = kFALSE;
       bool i_is_beauty2charm = kFALSE;
       Double_t i_pt_c = -1.;
       Double_t i_pt_D = -1.;
       if (((abs(ppid_i)>=400) && (abs(ppid_i)<=439)) || ((abs(ppid_i)>=4000) && (abs(ppid_i)<=4399))) {
-	i_is_charm = kTRUE;
-	i_pt_D = mom_i->Pt();
+        i_is_charm = kTRUE;
+        i_pt_D = mom_i->Pt();
       }
       // Check if the D meson comes from B
       if(i_is_charm == kTRUE) {
-	AliVParticle *gm_i = 0x0;
-	Int_t indexx_i = mom_i->GetMother(); // First mother of D
-	while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
-	  gm_i = fMcEvent->GetTrack ( indexx_i );
-	  if(gm_i) {
-	    int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-	    if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-	      i_is_beauty2charm = kTRUE;
-	    }
-	    if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
-	      i_pt_D = gm_i->Pt();
-	    }
-	    if((pid_gm_i==4) && (i_pt_c < 0.)) {
-	      i_pt_c = gm_i->Pt();
-	    }
-	    indexx_i = gm_i->GetMother(); //
-	  } else indexx_i = -1;
-	}
-	if(i_is_beauty2charm == kTRUE) i_is_charm = kFALSE; // it is a charm that comes from beauty.
+        AliVParticle *gm_i = 0x0;
+        Int_t indexx_i = mom_i->GetMother(); // First mother of D
+        while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
+          gm_i = fMcEvent->GetTrack ( indexx_i );
+          if(gm_i) {
+            int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+            if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+              i_is_beauty2charm = kTRUE;
+            }
+            if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+              i_pt_D = gm_i->Pt();
+            }
+            if((pid_gm_i==4) && (i_pt_c < 0.)) {
+              i_pt_c = gm_i->Pt();
+            }
+            indexx_i = gm_i->GetMother(); //
+          } else indexx_i = -1;
+        }
+        if(i_is_beauty2charm == kTRUE) i_is_charm = kFALSE; // it is a charm that comes from beauty.
       }
       // j electron
       bool j_is_charm = kFALSE;
@@ -1217,48 +1218,48 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       Double_t j_pt_c = -1.;
       Double_t j_pt_D = -1.;
       if (((abs(ppid_j)>=400) && (abs(ppid_j)<=439)) || ((abs(ppid_j)>=4000) && (abs(ppid_j)<=4399))) {
-	j_is_charm = kTRUE;
-	j_pt_D = mom_j->Pt();
+        j_is_charm = kTRUE;
+        j_pt_D = mom_j->Pt();
       }
       // Check if the D meson comes from B
       if(j_is_charm == kTRUE) {
-	AliVParticle *gm_j = 0x0;
-	Int_t indexx_j = mom_j->GetMother(); // First mother of D
-	while (indexx_j > 0) { // recursive loop to check if it comes from beauty.
-	  gm_j = fMcEvent->GetTrack ( indexx_j );
-	  if(gm_j){
-	    int pid_gm_j = TMath::Abs( gm_j->PdgCode() );// pdg of the mother
-	    if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
-	      j_is_beauty2charm = kTRUE;
-	    }
-	    if (((pid_gm_j>=400) && (pid_gm_j<=439)) || ((pid_gm_j>=4000) && (pid_gm_j<=4399))) {
-	      j_pt_D = gm_j->Pt();
-	    }
-	    if((pid_gm_j==4) && (j_pt_c < 0.)){
-	      j_pt_c = gm_j->Pt();
-	    }
-	    indexx_j = gm_j->GetMother(); //
-	  } else indexx_j = -1;
-	}
-	if(j_is_beauty2charm == kTRUE) j_is_charm = kFALSE; // it is a charm that comes from beauty.
+        AliVParticle *gm_j = 0x0;
+        Int_t indexx_j = mom_j->GetMother(); // First mother of D
+        while (indexx_j > 0) { // recursive loop to check if it comes from beauty.
+          gm_j = fMcEvent->GetTrack ( indexx_j );
+          if(gm_j){
+            int pid_gm_j = TMath::Abs( gm_j->PdgCode() );// pdg of the mother
+            if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
+              j_is_beauty2charm = kTRUE;
+            }
+            if (((pid_gm_j>=400) && (pid_gm_j<=439)) || ((pid_gm_j>=4000) && (pid_gm_j<=4399))) {
+              j_pt_D = gm_j->Pt();
+            }
+            if((pid_gm_j==4) && (j_pt_c < 0.)){
+              j_pt_c = gm_j->Pt();
+            }
+            indexx_j = gm_j->GetMother(); //
+          } else indexx_j = -1;
+        }
+        if(j_is_beauty2charm == kTRUE) j_is_charm = kFALSE; // it is a charm that comes from beauty.
       }
-      
+
       //
       Double_t wm_i = 1.;
       Double_t wm_j = 1.;
       Double_t wm = 1.;
       if(fApplywm) {
-	if(ppid_i==411) wm_i = 0.1607;
-	else if(ppid_i==421) wm_i = 0.0649;
-	else if(ppid_i==431) wm_i = 0.065; 
-	else if(ppid_i==4122) wm_i = 0.036;
-	else wm_i = 0.;
-	if(ppid_j==411) wm_j = 0.1607;
-	else if(ppid_j==421) wm_j = 0.0649;
-	else if(ppid_j==431) wm_j = 0.065; 
-	else if(ppid_j==4122) wm_j = 0.036;
-	else wm_j = 0.;
-	wm = wm_i * wm_j;
+        if(ppid_i==411) wm_i = 0.1607;
+        else if(ppid_i==421) wm_i = 0.0649;
+        else if(ppid_i==431) wm_i = 0.065;
+        else if(ppid_i==4122) wm_i = 0.036;
+        else wm_i = 0.;
+        if(ppid_j==411) wm_j = 0.1607;
+        else if(ppid_j==421) wm_j = 0.0649;
+        else if(ppid_j==431) wm_j = 0.065;
+        else if(ppid_j==4122) wm_j = 0.036;
+        else wm_j = 0.;
+        wm = wm_i * wm_j;
       }
       wm = wm*eventw;
 
@@ -1274,65 +1275,67 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
        // R_AA CNM quark
       if (fScaleByCNM && i_is_charm && j_is_charm) {
-	Double_t cnmw = 1.;
-	if(fSelectoneccbar && !fSelectcleanhistory){
-	  cnmw = eventcnm;
-	  // For check
-	  //if((i_pt_c > 0.) && (j_pt_c>0.)){
-	    //printf("ee: mean weight %f and single weight %f\n",cnmw,0.5*(scale_CNM(i_pt_c)+scale_CNM(j_pt_c)));
-	  //}
-	} else if(!fTakeptOfDCNM) {
-	  if((i_pt_c > 0.) && (j_pt_c>0.)) {
-	    cnmw = 0.5*(scale_CNM(i_pt_c)+scale_CNM(j_pt_c));
-	  }
-	  else {
-	    cnmw = -1.;
-	    //printf("ee: Event with negative weight %d and pt1 %f pt2 %f\n",fNbEventCounter,i_pt_c,j_pt_c);
-	  }
-	} else {
-	  if((i_pt_D > 0.) && (j_pt_D>0.)) {
-	    cnmw = 0.5*(scale_CNM(i_pt_D)+scale_CNM(j_pt_D));
-	  }
-	  else {
-	    cnmw = -1.;
-	    //printf("ee: Event with negative weight %d and pt1 %f pt2 %f\n",fNbEventCounter,i_pt_c,j_pt_c);
-	  }
-	}
-	//printf("ee: cnmw %f\n",cnmw);
-	if(!fTakeptOfDCNM) {
-	  hweightcnmee->Fill(cnmw,i_pt_c);
-	  hweightcnmee->Fill(cnmw,j_pt_c);
-	} else {
-	  hweightcnmee->Fill(cnmw,i_pt_D);
-	  hweightcnmee->Fill(cnmw,j_pt_D);
-	}
-	ptweight2 *= cnmw;
-	ptweight3 *= cnmw;
-	ptweight4 *= cnmw;
-	ptweight5 *= cnmw;
+        Double_t cnmw = 1.;
+        if(fSelectoneccbar && !fSelectcleanhistory){
+          cnmw = eventcnm;
+          // For check
+          //if((i_pt_c > 0.) && (j_pt_c>0.)){
+            //printf("ee: mean weight %f and single weight %f\n",cnmw,0.5*(scale_CNM(i_pt_c)+scale_CNM(j_pt_c)));
+          //}
+        } else if(!fTakeptOfDCNM) {
+          if((i_pt_c > 0.) && (j_pt_c>0.)) {
+            if(!fScaleByRAA) cnmw = 0.5*(scale_CNM(i_pt_c)+scale_CNM(j_pt_c));
+            else cnmw = scale_CNM(i_pt_c)*scale_CNM(j_pt_c);
+          }
+          else {
+            cnmw = -1.;
+            //printf("ee: Event with negative weight %d and pt1 %f pt2 %f\n",fNbEventCounter,i_pt_c,j_pt_c);
+          }
+        } else {
+          if((i_pt_D > 0.) && (j_pt_D>0.)) {
+            if(!fScaleByRAA) cnmw = 0.5*(scale_CNM(i_pt_D)+scale_CNM(j_pt_D));
+            else cnmw = scale_CNM(i_pt_D)*scale_CNM(j_pt_D);
+          }
+          else {
+            cnmw = -1.;
+            //printf("ee: Event with negative weight %d and pt1 %f pt2 %f\n",fNbEventCounter,i_pt_c,j_pt_c);
+          }
+        }
+        //printf("ee: cnmw %f\n",cnmw);
+        if(!fTakeptOfDCNM) {
+          hweightcnmee->Fill(cnmw,i_pt_c);
+          hweightcnmee->Fill(cnmw,j_pt_c);
+        } else {
+          hweightcnmee->Fill(cnmw,i_pt_D);
+          hweightcnmee->Fill(cnmw,j_pt_D);
+        }
+        ptweight2 *= cnmw;
+        ptweight3 *= cnmw;
+        ptweight4 *= cnmw;
+        ptweight5 *= cnmw;
       }
-      
-      
+
+
       // HFE R_AA scaling
-      if (fScaleByRAA) {
-	//printf("Check: scale Raa %f for pt %f\n",scale_RAA(pt_i),pt_i);
+      if (fScaleByRAA && !fScaleByCNM) {
+        //printf("Check: scale Raa %f for pt %f\n",scale_RAA(pt_i),pt_i);
         ptweight2 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight3 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight4 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
       }
 
-      
+
       // efficiency if any
       Double_t efficiency_i = GetEfficiency(pp_i);
-      Double_t efficiency_j = GetEfficiency(pp_j); 
+      Double_t efficiency_j = GetEfficiency(pp_j);
 
       // if not apply w or event w, then 1 for wm
       ptweight2 *= wm*efficiency_i*efficiency_j;
       ptweight3 *= wm*efficiency_i*efficiency_j;
       ptweight4 *= wm*efficiency_i*efficiency_j;
       ptweight5 *= wm*efficiency_i*efficiency_j;
-      
+
 
       //--------------------------------------- ULS pairs -------------------------------------------//
 
@@ -1351,15 +1354,15 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
           if(fabs(etao_i)<0.35  && fabs(etao_j)<0.35)  {
             hMeePtee_ULS_eta035->Fill(masso,pt_pair,wm);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) {
-	      hMeePtee_ULS_eta035_phenixacc->Fill(masso,pt_pair,wm);// dphi cut, pt>0.2
-	    }
+              hMeePtee_ULS_eta035_phenixacc->Fill(masso,pt_pair,wm);// dphi cut, pt>0.2
+            }
           }//|eta|<0.35
           //_________________________________________________________
 
-	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+          if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
             hMeePtee_ULS_eta_pt->Fill(mass,pt_pair,ptweight5); // pt>fptmin
-	  }
-	  
+          }
+
 
           if(fabs(eta_i)<0.8  && fabs(eta_j)<0.8)  {
             hMee_ULS_eta08->Fill(mass,wm);
@@ -1375,18 +1378,18 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
               hMeePtee_ULS_eta08_pt300_opAngleCut->Fill(mass,pt_pair,ptweight3); // pt>0.3
               hMeePtee_ULS_eta08_pt400_opAngleCut->Fill(mass,pt_pair,ptweight4); // pt>0.4
             }
-	    // 3D
-	    hPhiee_ULS_eta08_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
-	    if((ppt_i>3) || (ppt_j>3))  hPhiee_ULS_eta08_highoneDmeson_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
-	    if((ppt_i>3) && (ppt_j>3))  hPhiee_ULS_eta08_highbothDmeson_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
-	    hPhiee_ULS_eta08_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
-	    if((ppt_i>3) || (ppt_j>3))  hPhiee_ULS_eta08_highoneDmeson_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
-	    if((ppt_i>3) && (ppt_j>3))  hPhiee_ULS_eta08_highbothDmeson_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
-	    // D meson pt
-	    hMotherPt_ULS_eta08_pt200->Fill(ppt_i,mass,pt_pair,ptweight2);
-	    hMotherPt_ULS_eta08_pt200->Fill(ppt_j,mass,pt_pair,ptweight2);
-	    hMotherPt_ULS_eta08_pt400->Fill(ppt_i,mass,pt_pair,ptweight4);
-	    hMotherPt_ULS_eta08_pt400->Fill(ppt_j,mass,pt_pair,ptweight4);
+            // 3D
+            hPhiee_ULS_eta08_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
+            if((ppt_i>3) || (ppt_j>3))  hPhiee_ULS_eta08_highoneDmeson_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
+            if((ppt_i>3) && (ppt_j>3))  hPhiee_ULS_eta08_highbothDmeson_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
+            hPhiee_ULS_eta08_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
+            if((ppt_i>3) || (ppt_j>3))  hPhiee_ULS_eta08_highoneDmeson_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
+            if((ppt_i>3) && (ppt_j>3))  hPhiee_ULS_eta08_highbothDmeson_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
+            // D meson pt
+            hMotherPt_ULS_eta08_pt200->Fill(ppt_i,mass,pt_pair,ptweight2);
+            hMotherPt_ULS_eta08_pt200->Fill(ppt_j,mass,pt_pair,ptweight2);
+            hMotherPt_ULS_eta08_pt400->Fill(ppt_i,mass,pt_pair,ptweight4);
+            hMotherPt_ULS_eta08_pt400->Fill(ppt_j,mass,pt_pair,ptweight4);
           } //  |eta|<0.8
 
         }//charm
@@ -1416,15 +1419,15 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
           if(fabs(etao_i)<0.35  && fabs(etao_j)<0.35)  {
             hMeePtee_LS_eta035->Fill(masso,pt_pair,wm);
-	    if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) {
-	      hMeePtee_LS_eta035_phenixacc->Fill(masso,pt_pair,wm);// dphi cut, pt>0.2
-	    }
+            if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) {
+              hMeePtee_LS_eta035_phenixacc->Fill(masso,pt_pair,wm);// dphi cut, pt>0.2
+            }
           }//|eta|<0.35
           //_________________________________________________________
-	  
-	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+
+          if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
             hMeePtee_LS_eta_pt->Fill(mass,pt_pair,ptweight5); // pt>fptmin
-	  }
+          }
 
           if(fabs(eta_i)<0.8  && fabs(eta_j)<0.8)  {
             hMee_LS_eta08->Fill(mass,wm);
@@ -1440,18 +1443,18 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
               hMeePtee_LS_eta08_pt300_opAngleCut->Fill(mass,pt_pair,ptweight3); // pt>0.3
               hMeePtee_LS_eta08_pt400_opAngleCut->Fill(mass,pt_pair,ptweight4); // pt>0.4
             }
-	    // 3D
-	    hPhiee_LS_eta08_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
-	    if((ppt_i>3) || (ppt_j>3))  hPhiee_LS_eta08_highoneDmeson_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
-	    if((ppt_i>3) && (ppt_j>3))  hPhiee_LS_eta08_highbothDmeson_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
-	    hPhiee_LS_eta08_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
-	    if((ppt_i>3) || (ppt_j>3))  hPhiee_LS_eta08_highoneDmeson_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
-	    if((ppt_i>3) && (ppt_j>3))  hPhiee_LS_eta08_highbothDmeson_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
-	     // D meson pt
-	    hMotherPt_LS_eta08_pt200->Fill(ppt_i,mass,pt_pair,ptweight2);
-	    hMotherPt_LS_eta08_pt200->Fill(ppt_j,mass,pt_pair,ptweight2);
-	    hMotherPt_LS_eta08_pt400->Fill(ppt_i,mass,pt_pair,ptweight4);
-	    hMotherPt_LS_eta08_pt400->Fill(ppt_j,mass,pt_pair,ptweight4);
+            // 3D
+            hPhiee_LS_eta08_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
+            if((ppt_i>3) || (ppt_j>3))  hPhiee_LS_eta08_highoneDmeson_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
+            if((ppt_i>3) && (ppt_j>3))  hPhiee_LS_eta08_highbothDmeson_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
+            hPhiee_LS_eta08_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
+            if((ppt_i>3) || (ppt_j>3))  hPhiee_LS_eta08_highoneDmeson_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
+            if((ppt_i>3) && (ppt_j>3))  hPhiee_LS_eta08_highbothDmeson_pt400->Fill(deltaphi,mass,pt_pair,ptweight4);
+             // D meson pt
+            hMotherPt_LS_eta08_pt200->Fill(ppt_i,mass,pt_pair,ptweight2);
+            hMotherPt_LS_eta08_pt200->Fill(ppt_j,mass,pt_pair,ptweight2);
+            hMotherPt_LS_eta08_pt400->Fill(ppt_i,mass,pt_pair,ptweight4);
+            hMotherPt_LS_eta08_pt400->Fill(ppt_j,mass,pt_pair,ptweight4);
           } // |eta|<0.8
         }//charm
       }//like-sign
@@ -1514,7 +1517,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
   //printf("Number of electron found %d\n",Numberofelectron);
   //printf("Number of positron found %d\n",Numberofpositron);
   //printf("Number of high D mesons %d\n",highptDmesons);
-  
+
   PostData(1, fOutputList);
 
   return;
@@ -1543,7 +1546,7 @@ void AliAnalysisTaskCharm::CreateHistos(){
   hNEvents    = new TH1F("hNEvents","",8,0.,8.);
   hNEventsW   = new TH1F("hNEventsW","",1000,0.,100.);
 
- 
+
   Int_t   nBinRap   =  200;
   Float_t RapMin    = -10.;
   Float_t RapMax    =  10.;
@@ -1553,7 +1556,7 @@ void AliAnalysisTaskCharm::CreateHistos(){
   Int_t   nBinPtEle =  200;
   Float_t PtEleMin  =   0.;
   Float_t PtEleMax  =  10.;
-  
+
   // Histograms for mesons including charm quark
   hQuarkMethod1  = new TH2F("hQuarkMethod1"  ,"rap vs pt;y;p_{T}"   ,nBinRap,RapMin,RapMax,nBinPtHad,PtHadMin,PtHadMax);
   hQuarkMethod2  = new TH2F("hQuarkMethod2"  ,"rap vs pt;y;p_{T}"   ,nBinRap,RapMin,RapMax,nBinPtHad,PtHadMin,PtHadMax);
@@ -1679,10 +1682,10 @@ void AliAnalysisTaskCharm::CreateHistos(){
   hMotherPt_LS_eta08_pt400          = new TH3F("hMotherPt_LS_eta08_pt400","",nBinPairPtl,PairPtMinl,PairPtMaxl,nBinMassl,MassMinl,MassMaxl,nBinPairPtl,PairPtMinl,PairPtMaxl);
 
   // Monitor CNM weighting procedure
-  hweightcnmD      = new TH2F("hweightcnmD"  ,"w vs pt;w;p_{T}"   ,50,-2.,2.,nBinPtHad,PtHadMin,PtHadMax); 
-  hweightcnmHFE    = new TH2F("hweightcnmHFE"  ,"w vs pt;w;p_{T}"   ,50,-2.,2.,nBinPtHad,PtHadMin,PtHadMax); 
-  hweightcnmee      = new TH2F("hweightcnmee"  ,"w vs pt;w;p_{T}"   ,50,-2.,2.,nBinPtHad,PtHadMin,PtHadMax); 
-     
+  hweightcnmD      = new TH2F("hweightcnmD"  ,"w vs pt;w;p_{T}"   ,50,-2.,2.,nBinPtHad,PtHadMin,PtHadMax);
+  hweightcnmHFE    = new TH2F("hweightcnmHFE"  ,"w vs pt;w;p_{T}"   ,50,-2.,2.,nBinPtHad,PtHadMin,PtHadMax);
+  hweightcnmee      = new TH2F("hweightcnmee"  ,"w vs pt;w;p_{T}"   ,50,-2.,2.,nBinPtHad,PtHadMin,PtHadMax);
+
 
   hNEventsW->Sumw2();
   hNEvents->Sumw2();
@@ -1869,7 +1872,7 @@ void AliAnalysisTaskCharm::CreateHistos(){
     fOutputList->Add(hMeePtee_LS_eta08_pt400_opAngleCut);
 
   }
-  
+
   fOutputList->Add(hMotherPt_ULS_eta08_pt200);
   fOutputList->Add(hMotherPt_LS_eta08_pt200);
   fOutputList->Add(hMotherPt_ULS_eta08_pt400);
@@ -1877,7 +1880,7 @@ void AliAnalysisTaskCharm::CreateHistos(){
   fOutputList->Add(hweightcnmD);
   fOutputList->Add(hweightcnmHFE);
   fOutputList->Add(hweightcnmee);
- 
+
 
 }
 
@@ -1928,7 +1931,7 @@ Double_t AliAnalysisTaskCharm::scale_RAA(Double_t pT) {
 
 Double_t AliAnalysisTaskCharm::scale_CNM(Double_t pT) {
   if(!fgraphCNM) return 0.;
-  return fgraphCNM->Eval(pT); // 
+  return fgraphCNM->Eval(pT); //
 }
 
 Bool_t AliAnalysisTaskCharm::Inphenixacc(Double_t phi,Double_t pt, Int_t pdg){

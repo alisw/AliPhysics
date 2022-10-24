@@ -1182,6 +1182,9 @@ public:
   TString          fTrigMakerLabels[10];                         ///< Trigger decision names
   Bool_t           fTriggerMakerDecisionBoolArr[10];             ///< Trigger decision bits per trigger
 
+  Int_t            fNTriggerEMCal;                               ///< Number of EMCal trigger types checked
+  Bool_t           fTriggerEMCalBoolArr[16];                     ///< Trigger EMCal  types active in event
+
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -1314,12 +1317,16 @@ public:
   Bool_t           fHistoPtDependent;              ///< Fill control histograms with Pt not E 
   
   TH1F  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
-  TH1F  *          fhNEventsPerTrigger;            //!<! Each bin represents number of event from a trigger, correlation of trigger coincidences
-  TH1F  *          fhNEventsPerTriggerMakerSelected;//!<! Each bin represents number of event selected by trigger maker, correlation of trigger coincidences
+  TH1F  *          fhNEventsPerTrigger;            //!<! Each bin represents number of event from a trigger
+  TH1F  *          fhNEventsPerTriggerMakerSelected;//!<! Each bin represents number of event selected by trigger maker
+  TH1F  *          fhNEventsPerTriggerAfterCut;    //!<! Each bin represents number of event from a trigger, after all other event cuts applied
+  TH1F  *          fhNEventsPerTriggerMakerSelectedAfterCut;//!<! Each bin represents number of event selected by trigger maker, after all other event cuts applied
 
   TH2F  *          fhNEventsAfterCutCen;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
-  TH2F  *          fhNEventsPerTriggerCen;            //!<! Each bin represents number of event from a trigger, correlation of trigger coincidences
-  TH2F  *          fhNEventsPerTriggerMakerSelectedCen;//!<! Each bin represents number of event selected by trigger maker, correlation of trigger coincidences
+  TH2F  *          fhNEventsPerTriggerCen;            //!<! Each bin represents number of event from a trigger,
+  TH2F  *          fhNEventsPerTriggerMakerSelectedCen;//!<! Each bin represents number of event selected by trigger maker
+  TH2F  *          fhNEventsPerTriggerAfterCutCen;             //!<! Each bin represents number of event from a trigger, after all other event cuts applied
+  TH2F  *          fhNEventsPerTriggerMakerSelectedAfterCutCen;//!<! Each bin represents number of event selected by trigger maker, after all other event cuts applied
 
   // MC labels to accept
   Int_t            fNMCGenerToAccept;              ///<  Number of MC generators that should not be included in analysis
@@ -1344,7 +1351,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,101) ;
+  ClassDef(AliCaloTrackReader,102) ;
   /// \endcond
 
 } ;

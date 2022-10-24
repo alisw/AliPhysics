@@ -73,6 +73,8 @@ set(SRCS
     AliDalitzData.cxx
     AliGAKFParticle.cxx
     AliGAKFVertex.cxx
+    AliResponseMatrixHelper.cxx
+    AliGammaConvEventMixing.cxx
    )
 
 # Headers from sources
