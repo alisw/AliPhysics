@@ -194,11 +194,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
         }
     }
 
-    std::array<std::string, kNumV0IDs> v0Label = {"Kz"};
-    std::array<double, kNumV0IDs> v0MassMin = {TDatabasePDG::Instance()->GetParticle(310)->Mass() - 0.05};
-    std::array<double, kNumV0IDs> v0MassMax = {TDatabasePDG::Instance()->GetParticle(310)->Mass() + 0.05};
+    std::array<std::string, kNumV0IDs> v0Label = {"Kz", "La"};
     for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo) {
-        fHistMassSelV0[iHypo] = new TH2F(Form("fHistMass%sSel", v0Label[iHypo].data()), ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c}^{2})", 100, 0., 50., 100, v0MassMin[iHypo], v0MassMax[iHypo]);
+        auto massV0 = TDatabasePDG::Instance()->GetParticle(kPdgV0IDs[iHypo])->Mass();
+        fHistMassSelV0[iHypo] = new TH2F(Form("fHistMass%sSel", v0Label[iHypo].data()), ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c}^{2})", 100, 0., 50., 100, massV0-0.1, massV0+0.1);
         fOutput->Add(fHistMassSelV0[iHypo]);
     }
 
@@ -254,7 +253,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0))
         fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:pt_track:charge_track:id_track");
     else 
-        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:inv_mass_v0:pt_v0:id_v0");
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:inv_mass_v0:pt_v0:charge_v0:id_v0");
 
     PostData(4, fNtupleCharmReso);
 
@@ -663,7 +662,22 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     if (IsInvMassResoSelected(deltaInvMassReso[iMass], -1, iHypo)) {
                         if (isRefl[iMass])
                             orig *= -1.;
-                        fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD[iMass], orig, v0->MassK0Short(), v0->Pt(), kPdgV0IDs[iHypo]);
+                        double invMassV0 = -999.;
+                        double chargeV0 = 0.;
+                        if (iHypo == kK0S) {
+                            invMassV0 = v0->MassK0Short();
+                        }
+                        else if (iHypo == kLambda) {
+                            if (TESTBIT(selectedV0Ids[iV0], kNumV0IDs)) {
+                                invMassV0 = v0->MassAntiLambda();
+                                chargeV0 = -1.;
+                            }
+                            else {
+                                invMassV0 = v0->MassLambda();
+                                chargeV0 = 1.;
+                            }
+                        }
+                        fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD[iMass], orig, invMassV0, v0->Pt(), chargeV0, kPdgV0IDs[iHypo]);
                     }
                 }
             }
@@ -992,10 +1006,6 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
     if(v0->DcaV0ToPrimVertex() > 0.05)
         return retVal;
 
-    double cpa = v0->CosPointingAngle(posPrimVtx);
-    if (cpa < 0.97)
-        return retVal;
-
     double dca = v0->DcaV0Daughters();
     if (dca > 1.)
         return retVal;
@@ -1004,23 +1014,35 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
     if (rad < 0.5 || rad > 100.)
         return retVal;
 
-    double expMass[kNumV0IDs] = {TDatabasePDG::Instance()->GetParticle(310)->Mass()};
-    double invMasses[kNumV0IDs] = {v0->MassK0Short()};
-    double y[kNumV0IDs] = {v0->RapK0Short()};
+    double invMasses[kNumV0IDs] = {v0->MassK0Short(), v0->MassLambda()};
+    double invMassesAntiPart[kNumV0IDs] = {-999., v0->MassAntiLambda()};
+    double y[kNumV0IDs] = {v0->RapK0Short(), v0->RapLambda()};
+    double cpaMin[kNumV0IDs] = {0.97, 0.99};
     for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo)
     {
         if (!fEnableV0[iHypo])
             continue;
 
+        if (v0->CosPointingAngle(posPrimVtx) < cpaMin[iHypo])
+            continue;
+
         if (std::abs(y[iHypo]) > 0.8)
             continue;
 
-        if (std::abs(invMasses[iHypo] - expMass[iHypo]) > 0.05) {
+        auto expMass = TDatabasePDG::Instance()->GetParticle(kPdgV0IDs[iHypo])->Mass();
+        bool isPart = false, isAntiPart = false;
+        if (std::abs(invMasses[iHypo] - expMass) < 0.1)
+            isPart = true;
+        if (std::abs(invMassesAntiPart[iHypo] - expMass) < 0.1)
+            isAntiPart = true;
+
+        if (!isPart && !isAntiPart)
             continue;
-        }
 
         fHistMassSelV0[iHypo]->Fill(v0->Pt(), invMasses[iHypo]);
         retVal |= BIT(iHypo);
+        if (isAntiPart)
+            retVal |= BIT(kNumV0IDs); // N+1 V0 tells us that is selected as antiparticle
     }
 
     return retVal;

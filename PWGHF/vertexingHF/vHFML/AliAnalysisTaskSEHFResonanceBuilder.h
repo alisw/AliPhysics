@@ -49,6 +49,7 @@ public:
     enum v0ID
     {
         kK0S = 0,
+        kLambda,
         kNumV0IDs
     };
 
@@ -86,7 +87,7 @@ public:
     }
 
     void EnableBachelors(bool pi = true, bool ka = false, bool pr = false, bool de = false)       {fEnableBachelor = {pi, ka, pr, de};}
-    void EnableV0s(bool kz = true)                                                                {fEnableV0 = {kz};}
+    void EnableV0s(bool kz = true, bool lam = false)                                              {fEnableV0 = {kz, lam};}
 
     /// methods for bachelor selection
     void SetBachelorFB(int filterBit = 4)                                                         {fFilterBitBachelor = filterBit;}
@@ -116,13 +117,16 @@ public:
         std::vector<float> minMassDe,
         std::vector<float> maxMassDe,
         std::vector<float> minMassKz,
-        std::vector<float> maxMassKz
+        std::vector<float> maxMassKz,
+        std::vector<float> minMassLa,
+        std::vector<float> maxMassLa
     ) {
         fInvMassResoPiMin = minMassPi; fInvMassResoPiMax = maxMassPi;
         fInvMassResoKaMin = minMassKa; fInvMassResoKaMax = maxMassKa;
         fInvMassResoPrMin = minMassPr; fInvMassResoPrMax = maxMassPr;
         fInvMassResoDeMin = minMassDe; fInvMassResoDeMax = maxMassDe;
         fInvMassResoKzMin = minMassKz; fInvMassResoKzMax = maxMassKz;
+        fInvMassResoLaMin = minMassLa; fInvMassResoLaMax = maxMassLa;
     }
 
     // Implementation of interface methods
@@ -142,7 +146,7 @@ private:
     bool IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau, AliAnalysisVertexingHF *vHF);
 
     std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
-    std::array<int, kNumV0IDs> kPdgV0IDs = {310};
+    std::array<int, kNumV0IDs> kPdgV0IDs = {310, 3122};
 
     AliAODEvent* fAOD = nullptr;                                                          /// AOD event
 
@@ -179,7 +183,7 @@ private:
     std::vector<std::vector<double> > fScoresFromMLSelectorSecond{};                      /// scores from MLSelector task for second mass hypothesis
 
     std::array<bool, kNumBachIDs> fEnableBachelor = {true, false, false, false};          /// flag to enable bachelors
-    std::array<bool, kNumV0IDs> fEnableV0 = {false};                                      /// flag to enable V0s
+    std::array<bool, kNumV0IDs> fEnableV0 = {false, false};                               /// flag to enable V0s
 
     // bachelor selection
     int fFilterBitBachelor{4};                                                            /// filter bit for bachelor track
@@ -196,11 +200,13 @@ private:
     std::vector<float> fInvMassResoPrMax{1.0};                                            /// maximum invariant mass values for HF resonance (in case of proton combination)
     std::vector<float> fInvMassResoDeMin{0.0};                                            /// maximum invariant mass values for HF resonance (in case of deuteron combination)
     std::vector<float> fInvMassResoDeMax{2.0};                                            /// minimum invariant mass values for HF resonance (in case of deuteron combination)
-    std::vector<float> fInvMassResoKzMin{0.0};                                            /// maximum invariant mass values for HF resonance (in case of deuteron combination)
-    std::vector<float> fInvMassResoKzMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of deuteron combination)
+    std::vector<float> fInvMassResoKzMin{0.0};                                            /// maximum invariant mass values for HF resonance (in case of kzero combination)
+    std::vector<float> fInvMassResoKzMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of kzero combination)
+    std::vector<float> fInvMassResoLaMin{0.0};                                            /// maximum invariant mass values for HF resonance (in case of lambda combination)
+    std::vector<float> fInvMassResoLaMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of lambda combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 7); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 8); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 
