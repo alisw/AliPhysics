@@ -24,6 +24,7 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
                                                                bool enablePr = false,
                                                                bool enableDe = false,
                                                                bool enableKz = false,
+                                                               bool enableLa = false,
                                                                float nSigmaTPCPi = 3.,
                                                                float nSigmaTPCKa = 0.,
                                                                float nSigmaTPCPr = 0.,
@@ -43,6 +44,8 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
                                                                std::vector<float> massMaxDe = {-1.},
                                                                std::vector<float> massMinKz = {-1.},
                                                                std::vector<float> massMaxKz = {-1.},
+                                                               std::vector<float> massMinLa = {-1.},
+                                                               std::vector<float> massMaxLa = {-1.},
                                                                int AODProtection = 0)
 {
     // \brief: AddTask for AliAnalysisTaskSEHFResonanceBuilder
@@ -86,11 +89,11 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     AliAnalysisTaskSEHFResonanceBuilder *hfResoTask = new AliAnalysisTaskSEHFResonanceBuilder("HFResonanceBuilderAnalysis", decCh, analysisCuts);
     hfResoTask->SetPtBachelorSelection(ptMinBach);
     hfResoTask->SetNsigmaBachelorSelection(nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr, nSigmaTPCDe, nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr, nSigmaTOFDe);
-    hfResoTask->SetCharmResoMassWindows(massMinPi, massMaxPi, massMinKa, massMaxKa, massMinPr, massMaxPr, massMinDe, massMaxDe, massMinKz, massMaxKz);
+    hfResoTask->SetCharmResoMassWindows(massMinPi, massMaxPi, massMinKa, massMaxKa, massMinPr, massMaxPr, massMinDe, massMaxDe, massMinKz, massMaxKz, massMinLa, massMaxLa);
     hfResoTask->SetAODMismatchProtection(AODProtection);
     hfResoTask->SetReadMC(readMC);
     hfResoTask->EnableBachelors(enablePi, enableKa, enablePr, enableDe);
-    hfResoTask->EnableV0s(enableKz);
+    hfResoTask->EnableV0s(enableKz, enableLa);
     mgr->AddTask(hfResoTask);
 
     // Create containers for input/output
