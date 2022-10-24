@@ -3966,6 +3966,18 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("11310e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
     cuts.AddCutPCM("13530e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
     cuts.AddCutPCM("15910e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
+    // same with particle rejection == 2, copy c
+  } else if (trainConfig == 2513){ 
+    cuts.AddCutPCM("10130e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
+    cuts.AddCutPCM("11310e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
+    cuts.AddCutPCM("13530e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
+    cuts.AddCutPCM("15910e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
+    // same with particle rejection == 2, copy d
+  } else if (trainConfig == 2514){ 
+    cuts.AddCutPCM("10130e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
+    cuts.AddCutPCM("11310e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
+    cuts.AddCutPCM("13530e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
+    cuts.AddCutPCM("15910e23", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
