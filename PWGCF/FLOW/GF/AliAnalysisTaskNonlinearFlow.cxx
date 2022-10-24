@@ -759,6 +759,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 void AliAnalysisTaskNonlinearFlow::NotifyRun() {
     if (fAddTPCPileupCuts) {
       Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+	  fEventCuts.fUseVariablesCorrelationCuts = true;
       fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
       fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
     }
