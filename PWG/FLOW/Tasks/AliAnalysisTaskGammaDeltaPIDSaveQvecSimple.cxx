@@ -682,7 +682,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 
   
   //if(fMultNeg<0.1 || fMultPos<0.1) return;  //// This means there is not enough track in the the event. 
-  fDebugwEventCount->Fill(5.1);
+  
   
   //Double_t fQ2xNeg = 0., fQ2yNeg = 0., fQ2xPos = 0., fQ2yPos = 0.;  ///q = Q/Mult Vector from TPC;
   //Double_t fQ3xNeg = 0., fQ3yNeg = 0., fQ3xPos = 0., fQ3yPos = 0.;  ///q = Q/Mult Vector from TPC;
@@ -785,7 +785,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 
 
   if(!kPassV0) return;           /// V0 does not have signal for this event.  
-  fDebugwEventCount->Fill(6.1);
+  fDebugwEventCount->Fill(5.1);
 
 
   ApplyV0XqVectRecenter(centrCL1, 2, fQnxV0C, fQnyV0C, fQnxV0A, fQnyV0A);
@@ -868,6 +868,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 	if((fZNCTowerRawAOD[0]<0) || (fZNCTowerRawAOD[1]<0) || (fZNCTowerRawAOD[2]<0) || (fZNCTowerRawAOD[3]<0) || (fZNCTowerRawAOD[4] < 0)) {
 		return;
 	}
+	fDebugwEventCount->Fill(6.1);
 	
 	Double_t towZNCraw1GainEq = 0, towZNCraw2GainEq = 0, towZNCraw3GainEq = 0, towZNCraw4GainEq = 0;
 	towZNCraw1GainEq = fZNCTowerRawAOD[1]*fHZDCCparameters->GetBinContent(1);
@@ -920,6 +921,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 	if (denZNC==0) {return;}
 	if (denZNA==0) {return;}
 	
+	fDebugwEventCount->Fill(7.1);
 	fpQvecEvent->setTowZNCraw0(fZNCTowerRawAOD[0]);
 	fpQvecEvent->setTowZNCraw1(fZNCTowerRawAOD[1]);
 	fpQvecEvent->setTowZNCraw2(fZNCTowerRawAOD[2]);
@@ -1252,7 +1254,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
   // Reset event-by-event variables
   ResetEventByEventQuantities();
   
-  fDebugwEventCount->Fill(9.1); ///Left for Analysis
+  fDebugwEventCount->Fill(8.1); ///Left for Analysis
   
   fHistVertexZcm->Fill(pVtxZ);
   fCentDistAfterCut->Fill(centrality);  
@@ -1573,9 +1575,10 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupQAHistograms(){
   fDebugwEventCount->GetXaxis()->SetBinLabel(3,"Centrality cut");
   fDebugwEventCount->GetXaxis()->SetBinLabel(4,"nTrkAOD>4");
   fDebugwEventCount->GetXaxis()->SetBinLabel(5,"PileUp cut");
-  fDebugwEventCount->GetXaxis()->SetBinLabel(6,"TPCmult>0.1");
-  fDebugwEventCount->GetXaxis()->SetBinLabel(7,"V0Mult>0.0001");
-  fDebugwEventCount->GetXaxis()->SetBinLabel(10,"Analyzed");
+  fDebugwEventCount->GetXaxis()->SetBinLabel(6,"V0Mult>0.0001");
+  fDebugwEventCount->GetXaxis()->SetBinLabel(7,"ZDC towE>0");
+  fDebugwEventCount->GetXaxis()->SetBinLabel(8,"denZNCA>0");
+  fDebugwEventCount->GetXaxis()->SetBinLabel(9,"Analyzed");
   
   /// 2D QA:
   
