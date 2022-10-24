@@ -45,11 +45,12 @@ enum eventMixConfig { kDisabled = -1,
 };
 
 
-//#ifdef __CLING__
-//R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
-//#include <PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018arm.C>
-#include "ConfigKStKSh.C"
-//#endif
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/ConfigKStKSh.C>
+#endif
+
+//#include "ConfigKStKSh.C"
 
 
 AliRsnMiniAnalysisTask *AddTaskKStKSh
