@@ -111,7 +111,7 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
       pActivityV0DataSect(0), pActivityV0ADataSect(0), pActivityV0CDataSect(0), pActivityV0multData(0), 
       pActivityV0AmultData(0), pActivityV0CmultData(0), pActivityV0McSect(0), pActivityV0multMc(0),
       hFlatVsNch(0), hFlatVsNchTPC(0), hFlatVsNchMC(0), hFlatVsNchTPCmc(0), hFlatVsNchCombinedMC(0), 
-      hNchV0M(0), hNchV0MMC(0), hNchTPC(0), hNchTPCmc(0), hNchV0a(0), hNchV0c(0), hNchCombinedmc(0),
+      hNchV0M(0), hNchV0MMC(0), hNchTPC(0), hNchTPCmc(0), hNchMidRapMC(0), hNchV0a(0), hNchV0c(0), hNchCombinedmc(0),
       hNchV0aMC(0), hNchV0cMC(0), hFlatVsV0M(0), hFlatVsV0ATPC(0), hFlatVsV0CTPC(0), hFlatVsV0TPC1(0), 
       hFlatVsV0TPC2(0), hFlatVsV0AV0CTPC(0), hFlatVsV0AV0CTPC2(0), hEta(0), hEtamc(0), hCounter(0)
 {
@@ -142,7 +142,7 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
       pActivityV0DataSect(0), pActivityV0ADataSect(0), pActivityV0CDataSect(0), pActivityV0multData(0), 
       pActivityV0AmultData(0), pActivityV0CmultData(0), pActivityV0McSect(0), pActivityV0multMc(0),
       hFlatVsNch(0), hFlatVsNchTPC(0), hFlatVsNchMC(0), hFlatVsNchTPCmc(0), hFlatVsNchCombinedMC(0), 
-      hNchV0M(0), hNchV0MMC(0), hNchTPC(0), hNchTPCmc(0), hNchV0a(0), hNchV0c(0), hNchCombinedmc(0),
+      hNchV0M(0), hNchV0MMC(0), hNchTPC(0), hNchTPCmc(0), hNchMidRapMC(0), hNchV0a(0), hNchV0c(0), hNchCombinedmc(0),
       hNchV0aMC(0), hNchV0cMC(0), hFlatVsV0M(0), hFlatVsV0ATPC(0), hFlatVsV0CTPC(0), hFlatVsV0TPC1(0), 
       hFlatVsV0TPC2(0), hFlatVsV0AV0CTPC(0), hFlatVsV0AV0CTPC2(0), hEta(0), hEtamc(0), hCounter(0)
 {
@@ -343,6 +343,11 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
     hNchTPCmc = new TH1D("hNchTPCmc", ";true Nch; counts", 400, -0.5, 399.5);
     hNchTPCmc->Sumw2();
     fOutputList->Add(hNchTPCmc);
+
+    hNchMidRapMC = new TH1D("hNchMidRapMC", ";true Nch; counts", 400, -0.5, 399.5);
+    hNchMidRapMC->Sumw2();
+    fOutputList->Add(hNchMidRapMC);
+
     
     hNchCombinedmc = new TH1D("hNchCombinedmc", ";true Nch; counts", 400, -0.5, 399.5);
     hNchCombinedmc->Sumw2();
@@ -720,6 +725,7 @@ void AliAnalysisTaskSpectraFlatenicity::MakeMCanalysis() {
     hPtPrimIn->Fill(particle->Pt());
     hEtamc->Fill(particle->Eta());
     hFlatVsNchTPCV0MMC[fV0Mindex]->Fill(fFlatMC, fmultTPCmc);
+    hNchMidRapMC->Fill(fmultTPCmc);
   }
   // rec
   Int_t nTracks = fESD->GetNumberOfTracks();
@@ -1700,8 +1706,8 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicityMC() {
     sRho = -1;
   }
   
-  hFlatVsNchMC->Fill(flatenicity, multV0M);
-  hNchV0MMC->Fill(multV0M);
+  hFlatVsNchMC->Fill(flatenicity, nMult);
+  hNchV0MMC->Fill(nMult);
   
   return flatenicity;
 }
