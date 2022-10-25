@@ -195,6 +195,10 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr(const
   fPsiZDCCA = 0; 
   fCMEQReRP = NULL;
   fCMEQImRP = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent = NULL;
+  f2pCorrelatorCosPsiDiffPerEvent = NULL;
+  f2pCorrelatorCos2PsiDiffPerEvent = NULL;
   fCMEQRePOIPos = NULL;
   fCMEQImPOIPos = NULL;
   fCMEQRePOINeg = NULL;
@@ -229,6 +233,14 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr(const
   
   f2pCorrelatorCosPsiDiff = NULL;
   f2pCorrelatorCos2PsiDiff = NULL;
+  
+  f2pCorrelatorCosPsiDiffEBE = NULL;
+  f2pCorrelatorCos2PsiDiffEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE = NULL;
   
   // 3-p correlator
   f3pCorrelatorTPCOSPro = NULL; // cos[n(psi1+psi2-2phi3)] OS
@@ -418,6 +430,10 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr():
   fPsiZDCCA = 0; 
   fCMEQReRP = NULL;
   fCMEQImRP = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent = NULL;
+  f2pCorrelatorCosPsiDiffPerEvent = NULL;
+  f2pCorrelatorCos2PsiDiffPerEvent = NULL;
   fCMEQRePOIPos = NULL;
   fCMEQImPOIPos = NULL;
   fCMEQRePOINeg = NULL;
@@ -452,6 +468,14 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr():
   
   f2pCorrelatorCosPsiDiff = NULL;
   f2pCorrelatorCos2PsiDiff = NULL;
+  
+  f2pCorrelatorCosPsiDiffEBE = NULL;
+  f2pCorrelatorCos2PsiDiffEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE = NULL;
   
   // 3-p correlator
   f3pCorrelatorTPCOSPro = NULL; // cos[n(psi1+psi2-2phi3)] OS
@@ -744,10 +768,11 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
   //Double_t fSumQnyPos[3] = {0,};  
   
   //Double_t fMultNeg = 0, fMultPos = 0;
-
+  if (!bSkipPileUpCut) {
   kPileupEvent = CheckEventIsPileUp2018(fAOD);
 
   if(kPileupEvent) return;  // If not a PileUp event, then We have TPC q vectors for EP.
+  }
   fDebugwEventCount->Fill(4.1);
 
   
@@ -1133,6 +1158,12 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
 	
 	
 		// Calculate <<cos(2a-2Psi_V0)>> for RP, POI OS
+		f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C)));
+		f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsi2V0A)));
+		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZDCC)));
+		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsiZDCA)));
+		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(2.5, TMath::Cos(2*(trk1Phi-fPsiZDCCA)));
+		
 		f2pCorrelatorCos2PsiDiff2PsiV0CRP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsi2V0C))); //<cos(2psi1-2phi_V0C)> // no event-by-event
 		f2pCorrelatorCos2PsiDiff2PsiV0ARP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsi2V0A))); //<cos(2psi1-2phi_V0A)> // no event-by-event
 		// Calculate <<cos(2a-2Psi_ZDC)>> for RP, POI OS
@@ -1258,6 +1289,8 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
 				f2pCorrelatorCosPsiDiff->Fill(centrality, TMath::Cos(trk1Phi-trk2Phi)); // no event-by-event
 				f2pCorrelatorCos2PsiDiff->Fill(centrality, TMath::Cos(2*(trk1Phi-trk2Phi))); // no event-by-event
 				
+				f2pCorrelatorCosPsiDiffPerEvent->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi));
+				f2pCorrelatorCos2PsiDiffPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)));
 				
 				if(trk1Chrg*trk2Chrg < 0){ //Opposite sign	
 					fRePEBEOS->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi));
@@ -1287,7 +1320,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
   }///-----> i-track loop Ends here.<--------
   
 
-  
+  Calculate2pCorrelator();
   CalculateNonIsotropicTerms();
   CalculateDifferential3pCorrelator();
   
@@ -1312,6 +1345,10 @@ void AliAnalysisTaskGammaNonIsotropicCorr::ResetEventByEventQuantities(){
   fPsiZDCCA = 0; 
   fCMEQReRP->Reset();
   fCMEQImRP->Reset();
+  f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->Reset();
+  f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Reset();
+  f2pCorrelatorCosPsiDiffPerEvent->Reset();
+  f2pCorrelatorCos2PsiDiffPerEvent->Reset();
   fCMEQRePOIPos->Reset();
   fCMEQImPOIPos->Reset();
   fCMEQRePOINeg->Reset();
@@ -1399,6 +1436,34 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupAnalysisHistograms(){
   f2pCorrelatorCos2PsiDiff->Sumw2();
   fListHist->Add(f2pCorrelatorCos2PsiDiff);
   
+  f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE = new TProfile("f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE", "f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE; Centrality; #LTcos(2#phi_{RP}-2#Psi_{V0C})#GT",fCMESPPPCenBin,0,90);
+  f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE->Sumw2();
+  fListHist->Add(f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE);
+  
+  f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE = new TProfile("f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE", "f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE; Centrality; #LTcos(2#phi_{RP}-2#Psi_{V0A})#GT",fCMESPPPCenBin,0,90);
+  f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE->Sumw2();
+  fListHist->Add(f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE);
+  
+  f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE = new TProfile("f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE", "f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE; Centrality; #LTcos(2#phi_{RP}-2#Psi_{ZDCC})#GT",fCMESPPPCenBin,0,90);
+  f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE->Sumw2();
+  fListHist->Add(f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE);
+  
+  f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE = new TProfile("f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE", "f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE; Centrality; #LTcos(2#phi_{RP}-2#Psi_{ZDCA})#GT",fCMESPPPCenBin,0,90);
+  f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE->Sumw2();
+  fListHist->Add(f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE);
+  
+  f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE = new TProfile("f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE", "f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE; Centrality; #LTcos(2#phi_{RP}-2#Psi_{ZDCCA})#GT",fCMESPPPCenBin,0,90);
+  f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE->Sumw2();
+  fListHist->Add(f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE);
+  
+  f2pCorrelatorCosPsiDiffEBE = new TProfile("f2pCorrelatorCosPsiDiffEBE", "f2pCorrelatorCosPsiDiffEBE; Centrality; #LTcos(#phi_{1}-#phi_{2})#GT",fCMESPPPCenBin,0,90);
+  f2pCorrelatorCosPsiDiffEBE->Sumw2();
+  fListHist->Add(f2pCorrelatorCosPsiDiffEBE);
+  
+  f2pCorrelatorCos2PsiDiffEBE = new TProfile("f2pCorrelatorCos2PsiDiffEBE", "f2pCorrelatorCos2PsiDiffEBE; Centrality; #LTcos(2#phi_{1}-2#phi_{2})#GT",fCMESPPPCenBin,0,90);
+  f2pCorrelatorCos2PsiDiffEBE->Sumw2();
+  fListHist->Add(f2pCorrelatorCos2PsiDiffEBE);
+
   // 3-p correlator
   f3pCorrelatorTPCOSPro = new TProfile("f3pCorrelatorTPCOSPro","f3pCorrelatorTPCOSPro; Centrality; #LTcos(#phi_{1}+#phi_{2}-2#phi_{3})#GT",fCMESPPPCenBin,0.,90.); // cos[n(psi1+psi2-2phi3)] OS
   f3pCorrelatorTPCOSPro->Sumw2();
@@ -1582,6 +1647,20 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupAnalysisHistograms(){
     fListHist->Add(fNonIsotropicTermsZDCSSPro[i]);
   }
   
+}
+
+//=======================================================================================================================
+
+void AliAnalysisTaskGammaNonIsotropicCorr::Calculate2pCorrelator()
+{
+	f2pCorrelatorCosPsiDiffEBE->Fill(centrality, f2pCorrelatorCosPsiDiffPerEvent->GetBinContent(1));
+	f2pCorrelatorCos2PsiDiffEBE->Fill(centrality, f2pCorrelatorCos2PsiDiffPerEvent->GetBinContent(1));
+	f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE->Fill(centrality, f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->GetBinContent(1)); //<cos(2psi1-2phi_V0C)> // no event-by-event
+	f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE->Fill(centrality, f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->GetBinContent(2)); //<cos(2psi1-2phi_V0A)> // no event-by-event
+	// Calculate <<cos(2a-2Psi_ZDC)>> for RP, POI OS
+	f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE->Fill(centrality, f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->GetBinContent(1)); //<cos(2psi1-2phi_ZDCC)> // no event-by-event
+	f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE->Fill(centrality, f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->GetBinContent(2)); //<cos(2psi1-2phi_ZDCA)> // no event-by-event
+	f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE->Fill(centrality, f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->GetBinContent(3)); //<cos(2psi1-2phi_ZDCCA)> // no event-by-event		
 }
 
 //=======================================================================================================================
@@ -1846,33 +1925,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
   Double_t q1nImPOI1OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //Sin(dPsi1) POI1&RP
   Double_t mqPOI1OS = fCMEQReRP->GetBinEntries(1); 
   
-  
-    // =========> begin same multiplicity #2 All Positive particles ===========
-  Double_t uPOIPosReTPC = fCMEQRePOIPos->GetBinContent(1); // Cos(phi_POIPos)
-  Double_t uPOIPosMult = fCMEQRePOIPos->GetBinEntries(1);
-  Double_t uPOIPosImTPC = fCMEQImPOIPos->GetBinContent(1);
-  // end same multiplicity #2 All Positive particles ===========
-
-  // =========> begin same multiplicity #3 All Negative particles ===========
-  Double_t uPOINegReTPC = fCMEQRePOINeg->GetBinContent(1); // Cos(phi_POINeg)
-  Double_t uPOINegMult = fCMEQRePOINeg->GetBinEntries(1);
-  Double_t uPOINegImTPC = fCMEQImPOINeg->GetBinContent(1);
-  // end same multiplicity #3 All Negative particles ===========
-
-  if(uPOIPosMult<0.1 || uPOINegMult<0.1) return;  //// This means there is not enough track in the the event. 
-  
-  // =========> begin same multiplicity #2 All Positive particles =========== (appear before no need to save)
-  Double_t uPOIPos2ReTPC = fCMEQRePOIPos->GetBinContent(2); // Cos(2phi_POIPos)
-  Double_t uPOIPos2ImTPC = fCMEQImPOIPos->GetBinContent(2);
-  // end same multiplicity #2 All Positive particles ===========
-
-  // =========> begin same multiplicity #3 All Negative particles =========== (appear before no need to save)
-  Double_t uPOINeg2ReTPC = fCMEQRePOINeg->GetBinContent(2); // Cos(2phi_POINeg)
-  Double_t uPOINeg2ImTPC = fCMEQImPOINeg->GetBinContent(2);
-  // end same multiplicity #3 All Negative particles ===========
-  
-  
-  Double_t p1nRePOI1PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinContent(1); //Cos(dPsi1) POI1
+  Double_t p1nRePOI1PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //Cos(dPsi1) POI1
   Double_t p1nImPOI1PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //Sin(dPsi1) POI1
   Double_t mpPOI1PP = fCMEQRePOIPos->GetBinEntries(1);
   Double_t q1nRePOI1PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
@@ -2293,6 +2346,18 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupQAHistograms(){
   
   fCMEQImRP = new TProfile("fCMEQImRP", "fCMEQImRP",2,0,2);
   fTempList->Add(fCMEQImRP);
+  
+  f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent = new TProfile("f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent", "f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent",2,0,2);
+  fTempList->Add(f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent);
+  
+  f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent = new TProfile("f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent", "f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent",3,0,3);
+  fTempList->Add(f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent);
+  
+  f2pCorrelatorCosPsiDiffPerEvent = new TProfile("f2pCorrelatorCosPsiDiffPerEvent", "f2pCorrelatorCosPsiDiffPerEvent",1,0,1);
+  fTempList->Add(f2pCorrelatorCosPsiDiffPerEvent);
+  
+  f2pCorrelatorCos2PsiDiffPerEvent = new TProfile("f2pCorrelatorCos2PsiDiffPerEvent", "f2pCorrelatorCos2PsiDiffPerEvent",1,0,1);
+  fTempList->Add(f2pCorrelatorCos2PsiDiffPerEvent);
   
   fCMEQRePOIPos = new TProfile("fCMEQRePOIPos", "fCMEQRePOIPos",2,0,2);
   fTempList->Add(fCMEQRePOIPos);
