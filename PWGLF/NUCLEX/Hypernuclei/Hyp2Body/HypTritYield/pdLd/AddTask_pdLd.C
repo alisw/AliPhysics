@@ -1,5 +1,3 @@
-#include "AliAnalysisTask_pdLd.h"
-#include "AliAnalysisTask_pdLd.cxx"
 
 //AliAnalysisTask* AddTask_pdLd(TString name = "name") {
 AliAnalysisTask* AddTask_pdLd(
