@@ -119,6 +119,8 @@ private:
 
   AliESDtrackCuts                   *fESDTrackCuts;                      ///< the ESD track cuts instance
   UInt_t                             fAODFilterBits;                     ///< the AOD track filter bits selected
+  bool                               fAODHandling;                       ///< AOD track special handling
+  float                              fAODTPCChi2;                        ///< Chi2 per TPC cluster
 
 
   /* histograms with two indices: before (0) / after (1) applying the cut */

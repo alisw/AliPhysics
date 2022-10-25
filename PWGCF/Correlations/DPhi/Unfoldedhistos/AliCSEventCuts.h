@@ -178,8 +178,8 @@ private:
   Float_t             fSPDTrkVtxDistSigmas;   ///< n total sigmas for the SPD tracks vertexes distance
   Float_t             fTrkVtxDistSigmas;      ///< track vertex n sigmas for the SPD tracks vertexes distance
   Bool_t              fUseNewMultFramework;   ///< kTRUE if the new multiplicity framework for centrality estimation must be used
-  TFormula* fRun2V0MBasedPileUpCorrelationLowLimit; ///< formula to evaluate Run2 additional pileup cut, lower limit
-  TFormula* fRun2V0MBasedPileUpCorrelationUpLimit;  ///< formula to evaluate Run2 additional pileup cut, upper limit
+  TFormula* fRun2PileUpCorrelationLowLimit; ///< formula to evaluate Run2 additional pileup cut, lower limit
+  TFormula* fRun2PileUpCorrelationUpLimit;  ///< formula to evaluate Run2 additional pileup cut, upper limit
   TF1*                fCentOutLowCut;         ///< cut low for centrality outliers
   TF1*                fCentOutHighCut;        ///< cut high for centrality outliers
   TF1*                fTOFMultOutLowCut;      ///< cut low for TOF multiplicity outliers
@@ -203,6 +203,7 @@ private:
   Int_t               fNoOfTPCoutTracks;      ///< the number of tracks with TPCout flag on
   Int_t               fNoOfInitialTPCoutTracks;      ///< the number of tracks with TPCout flag on, initial track counting method
   Int_t               fNoOfTotalTPCClusters;  ///< the total number of TPC clusters for the event
+  Int_t               fNoOfSDDSSDClusters;    ///< the total number of SDD plus SSD clusters for the event
 
 
   AliAnalysisUtils    fAnalysisUtils;         ///< analysis utilities for pile up detection
@@ -225,6 +226,7 @@ private:
   TH2F               *fhV0MvsTracksTPCout[2];          ///< V0 multiplicity vs number of TPCout tracks histogram (b/a)
   TH2F               *fhV0MvsTracksInitialTPCout[2];   ///< V0 multiplicity vs number of initial method TPCout tracks histogram (b/a)
   TH2F               *fhV0MvsTotalTPCClusters[2];      ///< V0 multiplicity vs number of total TPC clusters (b/a)
+  TH2F               *fhSDDSSDCustersvsTPCClusters[2]; ///< Total SDD+SSD clusters vs number of total TPC clusters (b/a)
   TH2F               *fhCentralityAltVsSel[2];         ///< Centrality correlation alternative vs selected detector
   TH2F               *fhCL0vsV0MCentrality[2];         ///< Centrality correlation CL0 vs V0M
   TH2F               *fhESDvsTPConlyMultiplicity[2];   ///< Multiplicity ESD tracks vs TPC only tracks
