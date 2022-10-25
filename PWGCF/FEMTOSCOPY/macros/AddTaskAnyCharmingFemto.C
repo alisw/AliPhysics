@@ -51,6 +51,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   AliFemtoDreamTrackCuts *TrackCuts = nullptr;
   AliFemtoDreamTrackCuts *AntiTrackCuts = nullptr;
 
+  // overwritten later if useTree == true
   if(std::abs(pdgBuddy) == 2212) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
@@ -342,6 +343,30 @@ if (!isMC) {
     }
   }
 
+  // overwrite previous settings and use loose selections if trees are used
+  if (useTree) {
+    // pt
+    TrackCuts->SetPtRange(0, 10);
+    AntiTrackCuts->SetPtRange(0, 10);
+
+    // eta
+    TrackCuts->SetEtaRange(-1, 1);
+    AntiTrackCuts->SetEtaRange(-1, 1);
+    
+    // ncls
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+    
+    // PID
+    if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, 3.5, 3.5, 2.5);
+      AntiTrackCuts->SetPIDkd(true, false, 3.5, 3.5, 2.5);
+    }
+  }
+  
   // =====================================================================
   // D mesons
   TFile* fileCuts = TFile::Open(fileCutObjHF.Data());
