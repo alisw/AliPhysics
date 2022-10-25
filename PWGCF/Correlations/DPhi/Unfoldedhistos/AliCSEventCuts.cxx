@@ -83,8 +83,8 @@ AliCSEventCuts::AliCSEventCuts()
     fSPDTrkVtxDistSigmas(fgkSPDTracksVtxDistanceSigmas),
     fTrkVtxDistSigmas(fgkTrackVertexSigmas),
     fUseNewMultFramework(kFALSE),
-    fRun2V0MBasedPileUpCorrelationLowLimit(NULL),
-    fRun2V0MBasedPileUpCorrelationUpLimit(NULL),
+    fRun2PileUpCorrelationLowLimit(NULL),
+    fRun2PileUpCorrelationUpLimit(NULL),
     fCentOutLowCut(NULL),
     fCentOutHighCut(NULL),
     fTOFMultOutLowCut(NULL),
@@ -108,6 +108,7 @@ AliCSEventCuts::AliCSEventCuts()
     fNoOfTPCoutTracks(0),
     fNoOfInitialTPCoutTracks(0),
     fNoOfTotalTPCClusters(0),
+    fNoOfSDDSSDClusters(0),
     fAnalysisUtils(),
     fESDFB32(NULL),
     fESDFB128(NULL),
@@ -126,6 +127,7 @@ AliCSEventCuts::AliCSEventCuts()
     fhV0MvsTracksTPCout{NULL},
     fhV0MvsTracksInitialTPCout{NULL},
     fhV0MvsTotalTPCClusters{NULL},
+    fhSDDSSDCustersvsTPCClusters{nullptr},
     fhCentralityAltVsSel{NULL},
     fhCL0vsV0MCentrality{NULL},
     fhESDvsTPConlyMultiplicity{NULL},
@@ -157,8 +159,8 @@ AliCSEventCuts::AliCSEventCuts(const char* name, const char* title)
     fSPDTrkVtxDistSigmas(fgkSPDTracksVtxDistanceSigmas),
     fTrkVtxDistSigmas(fgkTrackVertexSigmas),
     fUseNewMultFramework(kFALSE),
-    fRun2V0MBasedPileUpCorrelationLowLimit(NULL),
-    fRun2V0MBasedPileUpCorrelationUpLimit(NULL),
+    fRun2PileUpCorrelationLowLimit(NULL),
+    fRun2PileUpCorrelationUpLimit(NULL),
     fCentOutLowCut(NULL),
     fCentOutHighCut(NULL),
     fTOFMultOutLowCut(NULL),
@@ -182,6 +184,7 @@ AliCSEventCuts::AliCSEventCuts(const char* name, const char* title)
     fNoOfTPCoutTracks(0),
     fNoOfInitialTPCoutTracks(0),
     fNoOfTotalTPCClusters(0),
+    fNoOfSDDSSDClusters(0),
     fAnalysisUtils(),
     fESDFB32(NULL),
     fESDFB128(NULL),
@@ -200,6 +203,7 @@ AliCSEventCuts::AliCSEventCuts(const char* name, const char* title)
     fhV0MvsTracksTPCout{NULL},
     fhV0MvsTracksInitialTPCout{NULL},
     fhV0MvsTotalTPCClusters{NULL},
+    fhSDDSSDCustersvsTPCClusters{nullptr},
     fhCentralityAltVsSel{NULL},
     fhCL0vsV0MCentrality{NULL},
     fhESDvsTPConlyMultiplicity{NULL},
@@ -212,10 +216,10 @@ AliCSEventCuts::AliCSEventCuts(const char* name, const char* title)
 /// Destructor
 AliCSEventCuts::~AliCSEventCuts()
 {
-  if (fRun2V0MBasedPileUpCorrelationLowLimit != NULL)
-    delete fRun2V0MBasedPileUpCorrelationLowLimit;
-  if (fRun2V0MBasedPileUpCorrelationUpLimit != NULL)
-    delete fRun2V0MBasedPileUpCorrelationUpLimit;
+  if (fRun2PileUpCorrelationLowLimit != NULL)
+    delete fRun2PileUpCorrelationLowLimit;
+  if (fRun2PileUpCorrelationUpLimit != NULL)
+    delete fRun2PileUpCorrelationUpLimit;
   if (fCentOutLowCut != NULL)
     delete fCentOutLowCut;
   if (fCentOutHighCut != NULL)
@@ -475,6 +479,7 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
         fhV0MvsTracksTPCout[i]->Fill(fNoOfTPCoutTracks, fV0Multiplicity);
         fhV0MvsTracksInitialTPCout[i]->Fill(fNoOfInitialTPCoutTracks, fV0Multiplicity);
         fhV0MvsTotalTPCClusters[i]->Fill(fNoOfTotalTPCClusters, fV0Multiplicity);
+        fhSDDSSDCustersvsTPCClusters[i]->Fill(fNoOfTotalTPCClusters,fNoOfSDDSSDClusters);
         fhCentralityAltVsSel[i]->Fill(fCentrality,fAltCentrality);
         fhCL0vsV0MCentrality[i]->Fill(fV0MCentrality,fCL0Centrality);
         fhESDvsTPConlyMultiplicity[i]->Fill(fNoOfFB128Tracks,fNoOfESDTracks);
@@ -728,6 +733,10 @@ void AliCSEventCuts::PrintCutWithParams(Int_t paramID) const {
       break;
     case 5: /* use J/psi Run2 pile up rejection total number of TPC clusters based method*/
       printf("    using J/psi Run2 pile up rejection , based on the total number of TPC clusters\n");
+      printf("    actual cut will depend on data period\n");
+      break;
+    case 6: /* use J/psi Run2 pile up rejection total number of SDD+SSD clusters versus total TPC clusters based method*/
+      printf("    using J/psi Run2 pile up rejection , based on the total number of SDD+SSD clusters vs total number of TPC clusters\n");
       printf("    actual cut will depend on data period\n");
       break;
     default:
@@ -1492,10 +1501,13 @@ void AliCSEventCuts::SetActualActiveTrigger()
     case kLHC16k:
     case kLHC16l:
     case kLHC17n:
-    case kLHC18q:
-    case kLHC18r:
       fOfflineTriggerMask = AliVEvent::kINT7;
       AliInfo("Using AliVEvent::kINT7 as MB trigger");
+      break;
+    case kLHC18q:
+    case kLHC18r:
+      fOfflineTriggerMask = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+      AliInfo("Using AliVEvent::kINT7+kCentral+kSemiCentral as MB trigger");
       break;
     default:
       fOfflineTriggerMask = AliVEvent::kMB;
@@ -1813,6 +1825,7 @@ Double_t AliCSEventCuts::GetVertexZ(AliVEvent *event) const {
 ///    |  3 | J/psi analysis pileup removal, initial (corrected) track counting method |
 ///    |  4 | Use the correlation between centrality estimators for removing p-Pb pile-up |
 ///    |  5 | J/psi analysis pileup removal, total number of TPC clusters based method |
+///    |  6 | J/psi analysis pileup removal, total number of SDD+SSD clusters vs. total number of TPC clusters based method |
 /// \return kTRUE for proper and supported Run2 additional pileup removal procedures
 Bool_t AliCSEventCuts::SetRemove2015PileUp(Int_t pupcode)
 {
@@ -1835,6 +1848,9 @@ Bool_t AliCSEventCuts::SetRemove2015PileUp(Int_t pupcode)
   case 5: /* J/psi analysis pileup removal total TPC clusters based method */
     fCutsEnabledMask.SetBitNumber(k2015PileUpCut);
     break;
+  case 6: /* J/psi analysis pileup removal total number of SDD+SSD clusters vs. total number of TPC clusters based method */
+    fCutsEnabledMask.SetBitNumber(k2015PileUpCut);
+    break;
   default:
     AliError(Form("2015 additional pileup removal procedure %d not supported", pupcode));
     return kFALSE;
@@ -1850,25 +1866,25 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
   case 0: /* no additional pileup rejection */
     break;
   case 1: /* J/psi analysis pileup removal method */
-    if (fRun2V0MBasedPileUpCorrelationLowLimit) {
-      delete fRun2V0MBasedPileUpCorrelationLowLimit;
+    if (fRun2PileUpCorrelationLowLimit) {
+      delete fRun2PileUpCorrelationLowLimit;
     }
     switch (GetGlobalAnchorPeriod()) {
     case kLHC10h:
-      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x"); /* pass2 with the initial, faulty, method for track count */
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x"); /* pass2 with the initial, faulty, method for track count */
       break;
     case kLHC15oLIR:
-      /* fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("fRun2V0MBasedPileUpCorrelationLowLimit_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
-      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-800+2.93*x"); /* pass3 */
+      /* fRun2PileUpCorrelationLowLimit = new TFormula(Form("fRun2PileUpCorrelationLowLimit_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-800+2.93*x"); /* pass3 */
       break;
     case kLHC15oHIR:
-      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-2000+3.0*x");
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-2000+3.0*x");
       break;
     default:
-      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-450+10.5*x");
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-450+10.5*x");
       break;
     }
-    AliInfo(Form("2015 pileup removal: V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "trkTPCout").Data()));
+    AliInfo(Form("2015 pileup removal: V0 mult < %s\n", TString(fRun2PileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "trkTPCout").Data()));
     break;
   case 2: /* Centrality and multiplicity correlations for 2015*/
     if (fCentOutLowCut != NULL)
@@ -1893,7 +1909,7 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
       AliWarning("2015 pileup removal: inhibited for LHC15oLIR anchored datasets");
       break;
     case kLHC15oHIR:
-      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-2000+3.0*x");
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-2000+3.0*x");
       /* let's initialize the expressions for 2015 pile up rejection */
       fCentOutLowCut = new TF1("fCentOutLowCut", "[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
       fCentOutLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
@@ -1907,7 +1923,7 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
       fMultCentOutLowCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
 
       /* TODO user feedback */
-      // AliInfo(Form("2015 pileup removal: V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x","trkTPCout").Data()));
+      // AliInfo(Form("2015 pileup removal: V0 mult < %s\n", TString(fRun2PileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x","trkTPCout").Data()));
       break;
     default:
       /* inhibited, TODO */
@@ -1917,55 +1933,55 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     }
     break;
   case 3: /* J/psi analysis pileup removal initial, corrected, method */
-    if (fRun2V0MBasedPileUpCorrelationLowLimit) {
-      delete fRun2V0MBasedPileUpCorrelationLowLimit;
-      fRun2V0MBasedPileUpCorrelationLowLimit = NULL;
+    if (fRun2PileUpCorrelationLowLimit) {
+      delete fRun2PileUpCorrelationLowLimit;
+      fRun2PileUpCorrelationLowLimit = NULL;
     }
-    if (fRun2V0MBasedPileUpCorrelationUpLimit) {
-      delete fRun2V0MBasedPileUpCorrelationUpLimit;
-      fRun2V0MBasedPileUpCorrelationUpLimit = NULL;
+    if (fRun2PileUpCorrelationUpLimit) {
+      delete fRun2PileUpCorrelationUpLimit;
+      fRun2PileUpCorrelationUpLimit = NULL;
     }
     switch (GetGlobalAnchorPeriod()) {
       case kLHC10bg:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-300.0+4.0*x");
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-300.0+4.0*x");
         break;
       case kLHC10h:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+3.1*x");
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-1000+3.1*x");
         break;
       case kLHC13bc:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()),
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()),
                                                               "(x<150.0)*(19.0-0.1*x+0.010*x*x)+(x>=150.0)*(229+2.9*(x-150))");
         break;
       case kLHC15oLIR:
-        /* fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-800+2.93*x"); /* pass3 */
+        /* fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-800+2.93*x"); /* pass3 */
         break;
       case kLHC15oHIR:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-2500+5.0*x");
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-2500+5.0*x");
         break;
       case kLHC17n:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-900+6.0*x");
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-900+6.0*x");
         break;
       case kLHC18q:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationLow_%s", GetCutsString()), "-1189.702939+7.579171*x-0.000131*x*x");
-        fRun2V0MBasedPileUpCorrelationUpLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationUp_%s", GetCutsString()), "1869.797746+7.868958*x-0.000209*x*x");
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelationLow_%s", GetCutsString()), "-1189.702939+7.579171*x-0.000131*x*x");
+        fRun2PileUpCorrelationUpLimit = new TFormula(Form("Run2PileUpCorrelationUp_%s", GetCutsString()), "1869.797746+7.868958*x-0.000209*x*x");
         break;
       case kLHC18r:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationLow_%s", GetCutsString()), "-1647.277827+8.126926*x-0.000246*x*x");
-        fRun2V0MBasedPileUpCorrelationUpLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelationUp_%s", GetCutsString()), "1759.006633+7.755470*x-0.000212*x*x");
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelationLow_%s", GetCutsString()), "-1647.277827+8.126926*x-0.000246*x*x");
+        fRun2PileUpCorrelationUpLimit = new TFormula(Form("Run2PileUpCorrelationUp_%s", GetCutsString()), "1759.006633+7.755470*x-0.000212*x*x");
         break;
       default:
-        fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
+        fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
         break;
     }
-    AliInfo(Form("2015 pileup removal (initial method): V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "trkTPCout").Data()));
+    AliInfo(Form("2015 pileup removal (initial method): V0 mult < %s\n", TString(fRun2PileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "trkTPCout").Data()));
     break;
   case 4: /* centrality estimators correlators for p-Pb system */
     /* do nothing for the time being */
     break;
   case 5: /* J/psi analysis pileup removal based on total number of TPC clusters*/
-    if (fRun2V0MBasedPileUpCorrelationLowLimit) {
-      delete fRun2V0MBasedPileUpCorrelationLowLimit;
+    if (fRun2PileUpCorrelationLowLimit) {
+      delete fRun2PileUpCorrelationLowLimit;
     }
     switch (GetGlobalAnchorPeriod()) {
     case kLHC10bg:
@@ -1976,16 +1992,31 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     case kLHC17n:
     case kLHC18q:
       AliError("Run2 pileup removal based on number of total TPC clusters still not configured. Fix it!!!");
-      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
       break;
     case kLHC18r:
-      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-2000.0+x*0.012987+x/1000.0*x/1000.0*0.001300");
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-2000.0+x*0.012987+x/1000.0*x/1000.0*0.001300");
       break;
     default:
-      fRun2V0MBasedPileUpCorrelationLowLimit = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-1000+2.8*x");
       break;
     }
-    AliInfo(Form("Run2 pileup removal (total number of TPC clusters based): V0 mult < %s\n", TString(fRun2V0MBasedPileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "totalTPCclusters").Data()));
+    AliInfo(Form("Run2 pileup removal (total number of TPC clusters based): V0 mult < %s\n", TString(fRun2PileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "totalTPCclusters").Data()));
+    break;
+  case 6: /* J/psi analysis pileup removal total number of SDD+SSD clusters vs. total number of TPC clusters based method */
+    if (fRun2PileUpCorrelationLowLimit) {
+      delete fRun2PileUpCorrelationLowLimit;
+    }
+    switch (GetGlobalAnchorPeriod()) {
+    case kLHC18q:
+    case kLHC18r:
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-3000.+0.0099*x+9.426e-10*x*x");
+      break;
+    default:
+      AliError("Run2 pileup removal total number of SDD+SSD clusters vs. total number of TPC clusters based still not configured. Fix it!!!");
+      break;
+    }
+    AliInfo(Form("Run2 pileup removal (total number of SDD+SSD clusters vs. total number of TPC clusters based): SDD+SSD clusters < %s\n", TString(fRun2PileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "totalTPCclusters").Data()));
     break;
   default:
     AliError(Form("Run2 additional pileup removal code %d not supported", fParameters[kRemove2015PileUp]));
@@ -1998,7 +2029,7 @@ Bool_t AliCSEventCuts::Is2015PileUpEvent() const {
 
   switch(fParameters[kRemove2015PileUp]){
   case 1: /* J/psi analysis pileup removal initial, faulty, method */
-    if (fV0Multiplicity < fRun2V0MBasedPileUpCorrelationLowLimit->Eval(fNoOfInitialTPCoutTracks))
+    if (fV0Multiplicity < fRun2PileUpCorrelationLowLimit->Eval(fNoOfInitialTPCoutTracks))
       return kTRUE;
     return kFALSE;
     break;
@@ -2026,10 +2057,10 @@ Bool_t AliCSEventCuts::Is2015PileUpEvent() const {
       return kFALSE;
   } break;
   case 3: /* J/psi analysis pileup removal initial, corrected, method */
-    if (fV0Multiplicity < fRun2V0MBasedPileUpCorrelationLowLimit->Eval(fNoOfInitialTPCoutTracks)) {
+    if (fV0Multiplicity < fRun2PileUpCorrelationLowLimit->Eval(fNoOfInitialTPCoutTracks)) {
       return kTRUE;
-    } else if (fRun2V0MBasedPileUpCorrelationUpLimit) {
-      if (fV0Multiplicity > fRun2V0MBasedPileUpCorrelationUpLimit->Eval(fNoOfInitialTPCoutTracks)) {
+    } else if (fRun2PileUpCorrelationUpLimit) {
+      if (fV0Multiplicity > fRun2PileUpCorrelationUpLimit->Eval(fNoOfInitialTPCoutTracks)) {
         return kTRUE;
       }
     }
@@ -2044,7 +2075,12 @@ Bool_t AliCSEventCuts::Is2015PileUpEvent() const {
     }
     break;
   case 5: /* J/psi analysis pileup removal based on total number of TPC clusters */
-    if (fV0Multiplicity < fRun2V0MBasedPileUpCorrelationLowLimit->Eval(fNoOfTotalTPCClusters))
+    if (fV0Multiplicity < fRun2PileUpCorrelationLowLimit->Eval(fNoOfTotalTPCClusters))
+      return kTRUE;
+    return kFALSE;
+    break;
+  case 6: /* J/psi analysis pileup removal total number of SDD+SSD clusters vs. total number of TPC clusters based method */
+    if (fNoOfSDDSSDClusters < fRun2PileUpCorrelationLowLimit->Eval(fNoOfTotalTPCClusters))
       return kTRUE;
     return kFALSE;
     break;
@@ -2314,6 +2350,7 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
   fNoOfTPCoutTracks = 0;
   fNoOfInitialTPCoutTracks = 0;
   fNoOfTotalTPCClusters = 0;
+  fNoOfSDDSSDClusters = 0;
   fReferenceMultiplicity = -1;
 
   if (fgIsMConlyTruth) {
@@ -2344,6 +2381,10 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
     }
   }
   else {
+    AliVMultiplicity* mult = event->GetMultiplicity();
+    for (Int_t iLay=2; iLay<6; iLay++) {
+      fNoOfSDDSSDClusters+=mult->GetNumberOfITSClusters(iLay);
+    }
 
     Int_t nTracks = 0;
 
@@ -2650,6 +2691,16 @@ void AliCSEventCuts::DefineHistograms(){
               TMath::Min(1000,int(maxTotalTPCClusters[fSystem])),0,maxTotalTPCClusters[fSystem],300,0,maxV0multiplicityClusters[fSystem]);
       fHistogramsList->Add(fhV0MvsTotalTPCClusters[0]);
       fHistogramsList->Add(fhV0MvsTotalTPCClusters[1]);
+
+      Double_t maxSDDSSDClusters[knSystems] = {0, 1000, 1000, 50000, 50000, 1000};
+      fhSDDSSDCustersvsTPCClusters[0] = 
+          new TH2F(Form("SDDSDDClustersvsTPCClustersB_%s", GetCutsString()),"Total SDD+SSD clusters vs total number of TPC clusters before cut;# TPC clusters;# SDD+SSD clusters",
+              TMath::Min(1000,int(maxTotalTPCClusters[fSystem])), 0, maxTotalTPCClusters[fSystem],300,0,maxSDDSSDClusters[fSystem]);
+      fhSDDSSDCustersvsTPCClusters[1] = 
+          new TH2F(Form("SDDSDDClustersvsTPCClustersA_%s", GetCutsString()),"Total SDD+SSD clusters vs total number of TPC clusters;# TPC clusters;# SDD+SSD clusters",
+              TMath::Min(1000,int(maxTotalTPCClusters[fSystem])), 0, maxTotalTPCClusters[fSystem],300,0,maxSDDSSDClusters[fSystem]);
+      fHistogramsList->Add(fhSDDSSDCustersvsTPCClusters[0]);
+      fHistogramsList->Add(fhSDDSSDCustersvsTPCClusters[1]);
 
       const char *sel;
       const char *alt;
