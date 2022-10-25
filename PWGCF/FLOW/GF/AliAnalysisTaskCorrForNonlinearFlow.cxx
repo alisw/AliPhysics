@@ -978,9 +978,12 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 						Double_t etaAss = trackAss->Eta();
 						Double_t chargeAss = trackAss->Charge();
 
+						// We should not use this to reject self correlation in mixed event
+						/*
 						if (trackTrig->GetID() == trackAss->GetID()) {
 							continue;
 						}
+						*/
 
 						//..check if the tracks are the same
 						//
