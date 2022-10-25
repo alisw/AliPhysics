@@ -8,6 +8,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventPoolManager.h"
 #include "AliEventCuts.h"
+#include "AliPIDCombined.h"
 
 class AliPIDResponse;
 class AliEventPoolManager;
@@ -18,6 +19,7 @@ class AliESDEvent;
 class AliESDtrack;
 class AliESDcascade;
 class AliMCParticle;
+class THnSparse;
 
 class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 {
@@ -93,6 +95,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetCorrelationsV0h(Bool_t correl) { fV0hCorr = correl; }
         void                    SetCorrelationshh(Bool_t correl) { fhhCorr = correl; }
         void                    SetCorrelationshV0(Bool_t correl) { fhV0Corr = correl; }
+        void                    SetCorrelationshPion(Bool_t correl) { fhPionCorr = correl; }
         void                    SetFilterBit (Int_t filter) { fFilterBit = filter; }
         void                    SetRemoveHadronsFromV0 (Bool_t rem) { fRemoveHadrFromV0 = rem; }
         void                    SetRemoveLamhFromCascade (Bool_t rem) { fRemoveLamhFromCascade = rem; }
@@ -152,10 +155,18 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetDCAmesonDaughterPV(Double_t dca) { fDCAmesonDaughterPV = dca; }
         Int_t                   GetOriginalPartonPDG(const AliMCParticle* mcTrack);
         void                    SetOnTheFlyMCTrain(Bool_t tr) { fonTheFlyMC = tr; }
-        void                    SetFlowEffPtBins(Bool_t cut) { fFlowEffPtBins = cut; }
         void                    SetTPCrowsRindableRatio(Double_t ratio) { fTPCrowsRindableRatio = ratio; }
         void                    SetMinimalTrackLenght(Int_t cut) { fTrackLength = cut; }
         void                    SetCollisionSystem(TString system) { fSystem = system; }
+        void                    SetBayesPIDPioncut(Double_t pion) { fPIDbayesPion = pion; }
+        Bool_t                  IsPionTrack(const AliAODTrack* track);
+        Bool_t                  HasTrackPIDTPC(const AliAODTrack* track);
+        Bool_t                  HasTrackPIDTOF(const AliAODTrack* track);
+        void                    LoadEfficiencies();
+        void                    SetAxisTitles(THnSparse *hist);
+        Double_t                GetEff(Double_t pt, Double_t eta,Int_t candidate);
+        Int_t                   GetPvzBin();
+
         AliEventCuts *           fAliEventCuts; //!
 
     private:
@@ -163,9 +174,10 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         AliESDEvent*            fESD;                   //! input event
         AliMCEvent*             fmcEvent;               //! input MC event
         AliPIDResponse*         fPIDResponse;           //!
+        AliPIDCombined*         fPIDCombined; //!
         TList*                  fOutputList;    		//! output list
-        TH3F*					fHistLambdaMassPtCut;	//!
-        TH3F*					fHistK0MassPtCut;		//!
+        TH3F*					          fHistLambdaMassPtCut;	//!
+        TH3F*					          fHistK0MassPtCut;		//!
         TH3F*                   fHistAntiLambdaMassPtCut; //!
         THnSparse*              fHistKorelacie;             //!
         THnSparse*              fHistdPhidEtaMix;           //!
@@ -241,6 +253,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fV0hCorr; // enable to run V0-h correlations separately
         Bool_t                  fhhCorr; // enable to run h-h correlations separately
         Bool_t                  fhV0Corr; // enable to run h-V0 correlations separately
+        Bool_t                  fhPionCorr; //enable to run h-Pion correlations separately
         Int_t                   fFilterBit; // enable to vary filter bit for systematic studies
         Bool_t                  fRemoveLamhFromCascade; // enable to remove hh corelations, which are from the same V0
         Bool_t                  fRemoveHadrFromV0; // enable to remove Lamh corelations, which are from the same cascade
@@ -295,13 +308,17 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TObjArray *             fselectedTriggerTracks; //!
         TObjArray *             fselectedV0Triggers; //!
         TObjArray *             fselectedV0Assoc; //!
-        THnSparse *             fHistEffCorrectionHadron; //!
-        THnSparse *             fHistEffCorrectionK0; //!
-        THnSparse *             fHistEffCorrectionLam; //!
-        THnSparse *             fHistEffCorrectionAntiLam; //!
-        THnSparse *             fHistEffCorrectionNegXi; //!
-        THnSparse *             fHistEffCorrectionPosXi; //!
+        TH2D *                  fHistEffCorrectionHadron[9]; //!
+        TH2D *                  fHistEffCorrectionK0[9]; //!
+        TH2D *                  fHistEffCorrectionLam[9]; //!
+        TH2D *                  fHistEffCorrectionAntiLam[9]; //!
+        TH2D *                  fHistEffCorrectionNegXi[9]; //!
+        TH2D *                  fHistEffCorrectionPosXi[9]; //!
+        TH2D *                  fHistEffCorrectionNegPion[9]; //!
+        TH2D *                  fHistEffCorrectionPosPion[9]; //!
         TH1F *                  fHistSecondaryCont; //!
+        TH1F *                  fHistSecondaryContPosPion; //!
+        TH1F *                  fHistSecondaryContNegPion; //!
         TList *                 fEffList; //!
         Bool_t                  fUseEff;
         Bool_t                  fMixCorrect; // enable efficiency correction for mixing
@@ -329,16 +346,16 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                fDCAmesonDaughterPV; // DCA of cascade meson daughter track to PV cut
         TH1D *                  fHistV0AmplitudeVsPVposition; //!
         Bool_t                  fonTheFlyMC; // on the fly MC train usage
-        Bool_t                  fFlowEffPtBins; //Different pt bins setting for efficiency calculation
         Double_t                fPercentile;// th V0M multiplicity percentile
         Double_t                fTPCrowsRindableRatio; // ratio of crossed rows in TPC and Finadable clusters
         Int_t                   fTrackLength;//V0 daughter track lenght
         TString                 fSystem; //
+        Double_t                fPIDbayesPion; // [0.95]
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 43);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 44);
 };
 
 class AliV0ChParticle : public AliVParticle
