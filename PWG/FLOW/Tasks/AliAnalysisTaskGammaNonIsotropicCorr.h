@@ -57,7 +57,7 @@ class AliAnalysisTaskGammaNonIsotropicCorr : public AliAnalysisTaskSE {
   void  SetListForV0MCorr(TList *flist)      {this->fListV0MCorr = (TList *) flist->Clone(); }
   void  SetListForZDCCorr(TList *flist)      {this->fListZDCCorr = (TList *) flist->Clone(); }
 
-  
+  void  Calculate2pCorrelator();
   void  CalculateNonIsotropicTerms();
   void  CalculateDifferential3pCorrelator();
   //// Event Cuts or Ranges ////
@@ -142,6 +142,10 @@ class AliAnalysisTaskGammaNonIsotropicCorr : public AliAnalysisTaskSE {
   Double_t fPsiZDCCA = 0; 
   TProfile *fCMEQReRP;        //! real part cos(n psi_RP), n from 1 to 2, RP is same as POI OS
   TProfile *fCMEQImRP;        //! imaginary part sin(n psi_RP)
+  TProfile *f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent;        //! cos(2PsiRP-2PsiV0) for v2
+  TProfile *f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent;        //! cos(2PsiRP-2PsiZDC) for v2
+  TProfile *f2pCorrelatorCosPsiDiffPerEvent;        //! cos(dPsi1-dPsi2)
+  TProfile *f2pCorrelatorCos2PsiDiffPerEvent;        //! cos(2(dPsi1-dPsi2)) for v2 TPC
   TProfile *fCMEQRePOIPos;        //! real part cos(n psi_POIPos)
   TProfile *fCMEQImPOIPos;        //! imaginary part sin(n psi_POIPos)
   TProfile *fCMEQRePOINeg;        //! real part cos(n psi_POINeg)
@@ -278,6 +282,14 @@ class AliAnalysisTaskGammaNonIsotropicCorr : public AliAnalysisTaskSE {
   TProfile *f2pCorrelatorCosPsiDiff;        //! cos(dPsi1-dPsi2)
   TProfile *f2pCorrelatorCos2PsiDiff;        //! cos(2(dPsi1-dPsi2)) for v2 TPC
   
+  TProfile *f2pCorrelatorCosPsiDiffEBE; //!
+  TProfile *f2pCorrelatorCos2PsiDiffEBE; //!
+  TProfile *f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE; //!
+  TProfile *f2pCorrelatorCos2PsiDiff2PsiV0ARPEBE; //!
+  TProfile *f2pCorrelatorCos2PsiDiff2PsiZDCCRPEBE; //!
+  TProfile *f2pCorrelatorCos2PsiDiff2PsiZDCARPEBE; //!
+  TProfile *f2pCorrelatorCos2PsiDiff2PsiZDCCARPEBE; //!
+	
   // 3-p correlator
   TProfile *f3pCorrelatorTPCOSPro; //! cos[n(psi1+psi2-2phi3)] OS
   TProfile *f3pCorrelatorV0COSPro; //!
