@@ -153,6 +153,7 @@ private:
   TH1D *hNchV0MMC;
   TH1D *hNchTPC;
   TH1D *hNchTPCmc;
+  TH1D *hNchMidRapMC;
   TH1D *hNchV0a;
   TH1D *hNchV0c;
   TH1D *hNchCombinedmc;
