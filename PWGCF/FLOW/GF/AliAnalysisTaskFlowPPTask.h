@@ -192,6 +192,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
+		virtual void   			NotifyRun();
         virtual void            Terminate(Option_t* option);
 
         

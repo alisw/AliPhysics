@@ -270,6 +270,16 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	
 }
 
+//_________________________________________________________________
+void AliAnalysisTaskFlowPPTask::NotifyRun() {
+    if (fAddTPCPileupCuts) {
+      Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+	  fEventCuts.fUseVariablesCorrelationCuts = true;
+      fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+      fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
+    }
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 {
@@ -334,19 +344,14 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
     // 	pos[2] = pos[2]-vtxp[2];
 	// 	hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
 	// 	hDCAzBefore->Fill(pos[2],aodTrk->Pt());
-	// }	
+	// }
 
-	float CentralityForPileup = (static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")))->GetMultiplicityPercentile("V0M");
-	if(fAddTPCPileupCuts){
-		fEventCuts.fUseVariablesCorrelationCuts = true;
-		fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-		if (fPeriod.EqualTo("LHC15o") && CentralityForPileup >=0 && CentralityForPileup <=10){
-			fEventCuts.fESDvsTPConlyLinearCut[0] = 500.;
-		}
-		else{
-			fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
-		}
-	}
+
+	// if(fAddTPCPileupCuts){
+	// 	fEventCuts.fUseVariablesCorrelationCuts = true;
+	// 	fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+	// 	fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
+	// }
 	
 	
 	if(fTrigger==0){
