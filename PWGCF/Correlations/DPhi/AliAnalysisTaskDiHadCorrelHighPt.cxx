@@ -573,7 +573,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistKorelacieMCrec->GetAxis(6)->Set(902,binsMass);
     fHistKorelacieMCrec->GetAxis(4)->Set(NofZVrtxBins,ZBins);
     if(fNMultiplicityBins==16)fHistKorelacieMCrec->GetAxis(7)->Set(16,binsMult);
-    if(fNMultiplicityBins==3)fHistKorelacieMCrec->GetAxis(7)->Set(3,binsMultHM);
+    if(fNMultiplicityBins==4)fHistKorelacieMCrec->GetAxis(7)->Set(4,binsMultHM);
 
     bins[7] = 500;
     max[7] = 500;
@@ -677,7 +677,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggers->GetAxis(3)->Set(902,binsMass);
     fHistNumberOfTriggers->GetAxis(1)->Set(NofZVrtxBins,ZBins);
     if(fNMultiplicityBins==16)fHistNumberOfTriggers->GetAxis(4)->Set(16,binsMult);
-    if(fNMultiplicityBins==3)fHistNumberOfTriggers->GetAxis(4)->Set(3,binsMultHM);
+    if(fNMultiplicityBins==4)fHistNumberOfTriggers->GetAxis(4)->Set(4,binsMultHM);
 
     fHistNumberOfTriggersRec = new THnSparseF("fHistNumberOfTriggersRec","fHistNumberOfTriggersRec",5,bins2d,mis2d,maxs2d);
     fHistNumberOfTriggersRec->GetAxis(0)->SetTitle("p_{T}");
@@ -690,7 +690,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggersRec->GetAxis(3)->Set(902,binsMass);
     fHistNumberOfTriggersRec->GetAxis(1)->Set(NofZVrtxBins,ZBins);
     if(fNMultiplicityBins==16)fHistNumberOfTriggersRec->GetAxis(4)->Set(16,binsMult);
-    if(fNMultiplicityBins==3)fHistNumberOfTriggersRec->GetAxis(4)->Set(3,binsMultHM);
+    if(fNMultiplicityBins==4)fHistNumberOfTriggersRec->GetAxis(4)->Set(4,binsMultHM);
 
     bins2d[4] = 500;
     maxs2d[4] = 500;
@@ -709,14 +709,16 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggersGen->Sumw2();
     fHistNumberOfTriggersGen->GetAxis(1)->Set(NofZVrtxBins,ZBins);
     if(fNMultiplicityBins==16)fHistNumberOfTriggersGen->GetAxis(4)->Set(16,binsMult);
-    if(fNMultiplicityBins==3)fHistNumberOfTriggersGen->GetAxis(4)->Set(3,binsMultHM);
+    if(fNMultiplicityBins==4)fHistNumberOfTriggersGen->GetAxis(4)->Set(4,binsMultHM);
 
     fHistSelection = new TH1D("fHistSelection","fHistSelection",4,0,4);
     fOutputList->Add(fHistSelection);
 
-    fHistMultipPercentile = new TH1F("fHistMultipPercentile","fHistMultipPercentile",10,0,100);
+    fHistMultipPercentile = new TH1F("fHistMultipPercentile","fHistMultipPercentile",fNMultiplicityBins,0,100);
     fOutputList->Add(fHistMultipPercentile);
     fHistMultipPercentile->Sumw2();
+    if(fNMultiplicityBins==16)fHistMultipPercentile->GetXaxis()->Set(16,binsMult);
+    if(fNMultiplicityBins==4)fHistMultipPercentile->GetXaxis()->Set(4,binsMultHM);
 
     Int_t binsCuts[11] = {12,902,100,100,20,100,500,200,100,3,2};
     Double_t binsMinCuts[11] = {fPtTrigMin,0.44,0.03,0.03,0,0,0.95,0.,0,0,0};
@@ -825,7 +827,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fOutputList->Add(fHistV0AmplitudeVsPVposition);
 
     if(!fAnalysisAOD){
-        if(fFilterBit==32) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kTRUE);
+        if(fFilterBit==32||fFilterBit==96) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kTRUE);
         if(fFilterBit==16||fFilterBit==256) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kFALSE);
         if(fFilterBit==128) fESDTrackCuts = AliESDtrackCuts:: GetStandardTPCOnlyTrackCuts();
         if(fFilterBit==1){
@@ -908,7 +910,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     AliAODVertex *myPrimVertex = 0x0;
     AliESDVertex *myPrimVertexESD = 0x0;
 
-    if(fCorrelations||fEfficiency||fMixing){
+    if((fCorrelations||fEfficiency||fMixing||fCorrelationsGen)&&(!fonTheFlyMC)){
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
         AliAODInputHandler *inEvMain = (AliAODInputHandler *) mgr->GetInputEventHandler();
 
@@ -1098,9 +1100,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                       fHistMCPtAs->Fill(eff); // for reconstruction efficiency calculation
                     }
                 }
-                if(fCorrelationsGen&&!fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),cha));
-                if(fCorrelationsGen&&mcPartPdg==211&&fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),13,mcTrack->GetLabel(),mcTrack->GetLabel(),cha)); // pi+
-                if(fCorrelationsGen&&mcPartPdg==-211&&fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),14,mcTrack->GetLabel(),mcTrack->GetLabel(),cha)); //pi-
+                if((fMixingGen||fCorrelationsGen)&&!fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),cha));
+                if((fMixingGen||fCorrelationsGen)&&mcPartPdg==211&&fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),13,mcTrack->GetLabel(),mcTrack->GetLabel(),cha)); // pi+
+                if((fMixingGen||fCorrelationsGen)&&mcPartPdg==-211&&fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),14,mcTrack->GetLabel(),mcTrack->GetLabel(),cha)); //pi-
 
                 if(fMixingGen){
                     genTrackMix = SetAliAODTrack(mcTrack->Theta(),mcTrack->Phi(),mcTrack->Pt(),mcTrack->Charge());
@@ -2212,6 +2214,10 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodPrimaryTrackESD(const AliESDtra
                 fESDTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
                 fESDTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
             }
+          }
+          if(fFilterBit==96){
+            fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+            fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
           }
           if(!fESDTrackCuts->AcceptTrack(t)) return kFALSE;
 
