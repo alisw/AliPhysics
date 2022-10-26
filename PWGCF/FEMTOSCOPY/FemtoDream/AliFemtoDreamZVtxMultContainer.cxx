@@ -150,6 +150,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               float light_dcaz = part1.GetDCAZ();
               float light_dcaxy = part1.GetDCAXY();
               int light_label = part1.GetID();
+              int light_motherPdg = part1.GetMotherPDG();
 
               // event
               tree->SetBranchAddress("mult", &mult);
@@ -180,6 +181,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("light_dcaz", &light_dcaz);
               tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
               tree->SetBranchAddress("light_label", &light_label);
+              tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
               tree->Fill();
             }
           }
@@ -281,6 +283,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 float light_dcaz = itPart1->GetDCAZ();
                 float light_dcaxy = itPart1->GetDCAXY();
                 int light_label = itPart1->GetID();
+                int light_motherPdg = itPart1->GetMotherPDG();
 
                 // event
                 tree->SetBranchAddress("mult", &mult);
@@ -311,6 +314,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("light_dcaz", &light_dcaz);
                 tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
                 tree->SetBranchAddress("light_label", &light_label);
+                tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
                 tree->Fill();
               }
             }

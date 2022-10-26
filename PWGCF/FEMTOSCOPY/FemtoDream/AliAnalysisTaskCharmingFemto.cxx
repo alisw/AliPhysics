@@ -466,6 +466,18 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     } else {
       AliFatal("buddy not implemented!");
     }
+    
+    int protonMotherPdg = 0;
+    if (fIsMC && (fTrackCutsPartProton->isSelected(fProtonTrack) || fTrackCutsPartAntiProton->isSelected(fProtonTrack))){
+      mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
+      if(mcPart){
+        mcpdg = mcPart->GetPdgCode();
+        int idxMother = mcPart->GetMother();
+        auto mcMotherPart = (AliAODMCParticle *)fArrayMCAOD->At(idxMother);
+        protonMotherPdg = mcMotherPart->GetPdgCode();
+      }
+    }
+    
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
@@ -475,6 +487,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
@@ -485,6 +498,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
@@ -498,6 +512,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
@@ -508,6 +523,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
@@ -1124,6 +1140,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("light_dcaz", &dummyfloat);
       tree.second->Branch("light_dcaxy", &dummyfloat);
       tree.second->Branch("light_label", &dummyint);
+      tree.second->Branch("light_motherpdg", &dummyint);
     }
 
     for (auto tree : *fPairTreeME) {
@@ -1156,6 +1173,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("light_dcaz", &dummyfloat);
       tree.second->Branch("light_dcaxy", &dummyfloat);
       tree.second->Branch("light_label", &dummyint);
+      tree.second->Branch("light_motherpdg", &dummyint);
     }
   }
 
