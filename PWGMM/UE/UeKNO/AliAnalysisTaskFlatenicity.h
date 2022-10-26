@@ -99,6 +99,7 @@ private:
   TProfile *hActivityV0McSect;
   TH2D *hFlatVsNchMC;
   TH2D *hFlatVsV0M;
+  TH2D *hFlatMCVsV0M;
   TH1D *hEtamc;
   TH1D *hEtamcAlice;
   TH1D *hCounter;

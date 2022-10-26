@@ -114,7 +114,7 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
       hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
-      hFlatVsV0M(0), hEtamc(0), hEtamcAlice(0), hCounter(0) {
+      hFlatVsV0M(0), hFlatMCVsV0M(0), hEtamc(0), hEtamcAlice(0), hCounter(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
@@ -150,7 +150,7 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
       hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
-      hFlatVsV0M(0), hEtamc(0), hEtamcAlice(0), hCounter(0)
+      hFlatVsV0M(0), hFlatMCVsV0M(0), hEtamc(0), hEtamcAlice(0), hCounter(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -340,6 +340,10 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                    nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
       fOutputList->Add(hFlatVsPtV0MMC[i_c]);
     }
+
+    hFlatMCVsV0M = new TH2D("hFlatMCVsV0M", "", nCent, centClass, nbins_flat,
+                            min_flat, max_flat);
+    fOutputList->Add(hFlatMCVsV0M);
   }
 
   hActivityV0DataSect =
@@ -525,6 +529,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     if (fFlatMC >= 0) {
       hFlatenicityMC->Fill(fFlatMC);
       hFlatResponse->Fill(fFlatMC, fFlat);
+      hFlatMCVsV0M->Fill(fv0mpercentile, fFlatMC);
       MakeMCanalysis();
     }
   }
