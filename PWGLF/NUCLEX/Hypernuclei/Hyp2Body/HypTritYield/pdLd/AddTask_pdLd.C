@@ -1,6 +1,9 @@
+//#include "AliAnalysisTask_pdLd.h"
+//#include "AliAnalysisTask_pdLd.cxx"
 
 //AliAnalysisTask* AddTask_pdLd(TString name = "name") {
 AliAnalysisTask* AddTask_pdLd(
+  TString Name = "AnalysisTask_pdLd",
   int CollisionSystem = 1,
   const char *Variation = "0") {
 
@@ -54,7 +57,7 @@ AliAnalysisTask* AddTask_pdLd(
 
   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
 
-  AliAnalysisTask_pdLd* task = new AliAnalysisTask_pdLd("AnalysisTask_pdLd",CollisionSystem);   
+  AliAnalysisTask_pdLd* task = new AliAnalysisTask_pdLd(Name.Data(),CollisionSystem);   
 
   // add the task to the manager
   manager->AddTask(task);
