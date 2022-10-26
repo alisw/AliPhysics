@@ -267,6 +267,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistZeta_ALICEacc(0),
         fHist_Zeta_pos(0),
         fHist_Zeta_neg(0),
+        fHistZmassALICE(0),
         fWeightEtaZee(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
@@ -482,6 +483,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistZeta_ALICEacc(0),
         fHist_Zeta_pos(0),
         fHist_Zeta_neg(0),
+        fHistZmassALICE(0),
         fWeightEtaZee(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
@@ -639,7 +641,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistZeta        = new TH1F("fHistZeta","parent Z eta",200,-5,5);
 	fHistZeta_ALICEacc        = new TH1F("fHistZeta_ACCacc","parent Z eta in ALICE acc",200,-5,5);
 	fHist_Zeta_pos        = new TH1F("fHist_Zeta_pos","pair Z->e",100,-5,5);
-	fHist_Zeta_neg        = new TH1F("fHist_Zeta_neg","pair Z->e",100,-5,5);
+ 	fHist_Zeta_neg        = new TH1F("fHist_Zeta_neg","pair Z->e",100,-5,5);
+        fHistZmassALICE       = new TH1F("fHistZmassALICE","Z mass in ALICE",150,0,150);
 
         fHistZeRec0->Sumw2();
         fHistZeRec1->Sumw2();
@@ -860,6 +863,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistZeta_ALICEacc); 
 	fOutputList->Add(fHist_Zeta_pos); 
 	fOutputList->Add(fHist_Zeta_neg); 
+	fOutputList->Add(fHistZmassALICE); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -1893,6 +1897,10 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                                    }
 				if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
+
+
+                       if(track->Pt()>30.0 && aAssotrack->Pt()>30.0 && TMath::Abs(aAssotrack->Eta())<0.6)fHistZmassALICE->Fill(mass);
+
 		}
 
 
