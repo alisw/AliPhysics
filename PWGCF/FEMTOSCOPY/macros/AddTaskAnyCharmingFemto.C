@@ -28,6 +28,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     int useAODProtection = 0,
     int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
     int pdgBuddy = 2212,
+    int mixingDepth = 10,
     const char *cutVariation = "0"
   ) {
   TString suffix = TString::Format("%s", cutVariation);
@@ -346,12 +347,12 @@ if (!isMC) {
   // overwrite previous settings and use loose selections if trees are used
   if (useTree) {
     // pt
-    TrackCuts->SetPtRange(0, 10);
-    AntiTrackCuts->SetPtRange(0, 10);
+    TrackCuts->SetPtRange(0.14, 10);
+    AntiTrackCuts->SetPtRange(0.14, 10);
 
     // eta
-    TrackCuts->SetEtaRange(-1, 1);
-    AntiTrackCuts->SetEtaRange(-1, 1);
+    TrackCuts->SetEtaRange(-0.9, 0.9);
+    AntiTrackCuts->SetEtaRange(-0.9, 0.9);
     
     // ncls
     TrackCuts->SetNClsTPC(70);
@@ -362,8 +363,8 @@ if (!isMC) {
       TrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
     } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPIDkd(true, false, 3.5, 3.5, 2.5);
-      AntiTrackCuts->SetPIDkd(true, false, 3.5, 3.5, 2.5);
+      TrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
+      AntiTrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
     }
   }
   
@@ -468,7 +469,7 @@ if (!isMC) {
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(mixingDepth);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   config->SetMinimalBookingME(suffix != "0");
