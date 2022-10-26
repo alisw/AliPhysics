@@ -287,6 +287,7 @@ class AliFemtoDreamBasePart {
   void SetDCAZ (float DCAZ) { fDCAZ = DCAZ; };
   void SetDCAXY (float DCAXY) { fDCAXY = DCAXY; };
   void SetDzeroLabel (int label) { fDzeroLabel = label; };
+  void SetParticleMult (int mult) { fParticleMult = mult; };
 
   int GetMult ()  { return fMult; };
   float GetZVtx ()  { return fZVtx; };
@@ -299,6 +300,7 @@ class AliFemtoDreamBasePart {
   float GetDCAZ ()  { return fDCAZ; };
   float GetDCAXY ()  { return fDCAXY; };
   int GetDzeroLabel () { return fDzeroLabel; }
+  int GetParticleMult () { return fParticleMult; }
   
   bool UseParticle() const {
     return fUse;
@@ -343,6 +345,7 @@ class AliFemtoDreamBasePart {
   float fCPA;
   float fInvMass;
   PartOrigin fOrigin;
+  int fParticleMult;
 
   int fMult;
   float fZVtx;
@@ -372,7 +375,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart, 10)
+ClassDef(AliFemtoDreamBasePart, 11)
   ;
 };
 

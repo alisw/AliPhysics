@@ -129,6 +129,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               float zvtx = part1.GetZVtx();
               
               // load dmeson info
+              int heavy_mult = part2.GetParticleMult();
               float heavy_invmass = part2.GetInvMass();
               float heavy_pt = part2.GetPt();
               float heavy_eta = part2.GetEta()[0];
@@ -139,6 +140,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               int heavy_d0label = part2.GetDzeroLabel();
 
               // load light info
+              int light_mult = part1.GetParticleMult();
               float light_pt = part1.GetPt();
               float light_eta = part1.GetEta()[0];
               float light_nsigtpc = part1.GetNSigTPC();
@@ -157,6 +159,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("kStar", &RelativeK);
 
               // heavy particle
+              tree->SetBranchAddress("heavy_mult", &heavy_mult);
               tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
               tree->SetBranchAddress("heavy_pt", &heavy_pt);
               tree->SetBranchAddress("heavy_eta", &heavy_eta);
@@ -167,6 +170,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
 
               // light particle
+              tree->SetBranchAddress("light_mult", &light_mult);
               tree->SetBranchAddress("light_pt", &light_pt);
               tree->SetBranchAddress("light_eta", &light_eta);
               tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
@@ -256,6 +260,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 float zvtx = itPart2->GetZVtx();
                 
                 // load dmeson info
+                int heavy_mult = itPart2->GetParticleMult();
                 float heavy_invmass = itPart2->GetInvMass();
                 float heavy_pt = itPart2->GetPt();
                 float heavy_eta = itPart2->GetEta()[0];
@@ -266,6 +271,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 int heavy_d0label = itPart2->GetDzeroLabel();
 
                 // load light flavor info
+                int light_mult = itPart1->GetParticleMult();
                 float light_pt = itPart1->GetPt();
                 float light_eta = itPart1->GetEta()[0];
                 float light_nsigtpc = itPart1->GetNSigTPC();
@@ -284,6 +290,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("kStar", &RelativeK);
 
                 // heavy particle
+                tree->SetBranchAddress("heavy_mult", &heavy_mult);
                 tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
                 tree->SetBranchAddress("heavy_pt", &heavy_pt);
                 tree->SetBranchAddress("heavy_eta", &heavy_eta);
@@ -294,6 +301,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
 
                 // light particle
+                tree->SetBranchAddress("light_mult", &light_mult);
                 tree->SetBranchAddress("light_pt", &light_pt);
                 tree->SetBranchAddress("light_eta", &light_eta);
                 tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);

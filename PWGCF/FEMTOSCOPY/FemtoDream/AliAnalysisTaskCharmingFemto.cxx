@@ -54,6 +54,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fDmesonPDGs{},
       fLightPDG(0),
       fUseFDPairCleaner(true),
+      fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -153,6 +154,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fDmesonPDGs{},
       fLightPDG(0),
       fUseFDPairCleaner(true),
+      fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -965,27 +967,32 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   // }
 
   // set event properties
+  int partMult = dplus.size();
   for (auto &dmeson : dplus) {
     dmeson.SetMult(fEvent->GetMultiplicity());
     dmeson.SetZVtx(fEvent->GetZVertex());
+    dmeson.SetParticleMult(partMult);
   }
   
-  for (auto &dmeson : dplus) {
-    int m = dmeson.GetMult();
-  }
+  partMult = dminus.size();
   for (auto &dmeson : dminus) {
     dmeson.SetMult(fEvent->GetMultiplicity());
     dmeson.SetZVtx(fEvent->GetZVertex());
+    dmeson.SetParticleMult(partMult);
   }
   
+  partMult = protons.size();
   for (auto &proton : protons) {
     proton.SetMult(fEvent->GetMultiplicity());
     proton.SetZVtx(fEvent->GetZVertex());
+    proton.SetParticleMult(partMult);
   }
   
+  partMult = antiprotons.size();
   for (auto &proton : antiprotons) {
     proton.SetMult(fEvent->GetMultiplicity());
     proton.SetZVtx(fEvent->GetZVertex());
+    proton.SetParticleMult(partMult);
   }
 
   // PAIR CLEANING AND FEMTO
@@ -1002,9 +1009,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(dplus);
   fPairCleaner->StoreParticle(dminus);
 
+  if (fUseLFFromEvtsWithPairs) {
+    if (dplus.size() == 0 && dminus.size() == 0) {
+      return;
+    } 
+  }
+
   if (fUseTree) {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, fPairTreeSE, fPairTreeME);
-
   } else {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
   }
@@ -1091,6 +1103,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("kStar", &dummyfloat);
 
       // heavy particle
+      tree.second->Branch("heavy_mult", &dummyint);
       tree.second->Branch("heavy_invmass", &dummyfloat);
       tree.second->Branch("heavy_pt", &dummyfloat);
       tree.second->Branch("heavy_eta", &dummyfloat);
@@ -1101,6 +1114,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("heavy_d0label", &dummyint);
 
       // light particle
+      tree.second->Branch("light_mult", &dummyint);
       tree.second->Branch("light_pt", &dummyfloat);
       tree.second->Branch("light_eta", &dummyfloat);
       tree.second->Branch("light_nsigtpc", &dummyfloat);
@@ -1121,6 +1135,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("kStar", &dummyfloat);
 
       // // heavy
+      tree.second->Branch("heavy_mult", &dummyint);
       tree.second->Branch("heavy_invmass", &dummyfloat);
       tree.second->Branch("heavy_pt", &dummyfloat);
       tree.second->Branch("heavy_eta", &dummyfloat);
@@ -1131,6 +1146,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("heavy_d0label", &dummyint);
 
       // light
+      tree.second->Branch("light_mult", &dummyint);
       tree.second->Branch("light_eta", &dummyfloat);
       tree.second->Branch("light_pt", &dummyfloat);
       tree.second->Branch("light_nsigtpc", &dummyfloat);
