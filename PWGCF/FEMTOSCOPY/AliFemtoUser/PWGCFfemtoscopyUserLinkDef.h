@@ -105,6 +105,8 @@
 #pragma link C++ class AliAnalysisTaskEfficiencyFB128+;
 #pragma link C++ class AliAnalysisEffTaskExclusivePID+;
 #pragma link C++ class AliAnalysisEffTaskDoubleCountPID+;
+#pragma link C++ class AliAnalysisEfficiencyPbPbExclusivePID+;
+#pragma link C++ class AliAnalysisEfficiencyPbPbNodoublecount+;
 #pragma link C++ class AliAnalysisTaskParticleFractions+;
 #pragma link C++ class AliFemtoPairOriginMonitor+;
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
