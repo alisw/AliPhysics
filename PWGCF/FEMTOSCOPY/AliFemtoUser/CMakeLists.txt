@@ -181,6 +181,8 @@ set(SRCS
   AliAnalysisTaskEfficiencyFB128.cxx
   AliAnalysisEffTaskDoubleCountPID.cxx
   AliAnalysisEffTaskExclusivePID.cxx
+  AliAnalysisEfficiencyPbPbExclusivePID.cxx
+  AliAnalysisEfficiencyPbPbNodoublecount.cxx
   
 
   )
