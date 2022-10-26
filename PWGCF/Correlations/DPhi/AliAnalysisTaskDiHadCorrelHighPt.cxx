@@ -1335,6 +1335,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                           if(track->Charge()>0)purhadrPrim[2]=12.5;
                           if(track->Charge()<0)purhadrPrim[2]=13.5;
                           fHistPurityCheck->Fill(purhadrPrim);
+                          if(TMath::Abs(mcTrack->PdgCode())==211){
+                            purhadrPrim[3] = 3.5; // good ID prim pions
+                            fHistPurityCheck->Fill(purhadrPrim);
+                          }
                         }
                         fHistPtResolution->Fill(genPt,ptTrack,3.5);
                         if(fEfficiency) {
