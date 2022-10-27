@@ -464,6 +464,7 @@ if (!isMC) {
 
   config->SetmTBinning((suffix == "0" && fullBlastQA));
   config->SetPtQA((suffix == "0" && fullBlastQA));
+  config->SetPhiEtaBinnign(suffix == "0" && fullBlastQA);
   config->SetMassQA((suffix == "0" && fullBlastQA));
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
