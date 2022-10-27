@@ -163,7 +163,7 @@ Int_t NbinsDeltaPhi      = 1
   //  Resolution File, If resoFilename = "" no correction is applied
   std::string resoFilename = Form("%s.root",year.Data());
   task->SetResolutionFile(resoFilename,"/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/" + resoFilename);
-  task->SetResolutionDeltaPtBinsLinear   (-10.0, 2.0, 1);
+  task->SetResolutionDeltaPtBinsLinear   (-10.0, 2.0, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (0., 2.0, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (-0.4, 0.4, NbinsDeltaEta);
   task->SetResolutionPhiBinsLinear  (-0.4, 0.4, NbinsDeltaPhi);
