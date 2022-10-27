@@ -112,7 +112,7 @@ public:
   void SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
   void SetTrackStatus(UInt_t status) { fTrackStatus = status; }
   void SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
-  void SetGeneratorIndexMask(Int_t mask) { fGeneratorIndexMask = mask; }
+  void SetGeneratorIndexMask(ULong64_t mask) { fGeneratorIndexMask = mask; }
 
   // track cuts
   void SetTrackletDphiCut(Double_t val) { fTrackletDphiCut = val; }
@@ -291,7 +291,7 @@ private:
   Int_t               fParticleSpeciesTrigger; // Select which particle to use for the trigger [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
   Int_t               fParticleSpeciesAssociated; // Select which particle to use for the associated [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
   Bool_t              fCheckMotherPDG;       // Check the PDG code of mother for secondaries
-  Int_t               fGeneratorIndexMask;   // if non-0, check the MC generator indices for cocktails
+  ULong64_t           fGeneratorIndexMask;   // if non-0, check the MC generator indices for cocktails
 
   // Tracklets cuts
   Double_t            fTrackletDphiCut;      // maximum Dphi cut on tracklets

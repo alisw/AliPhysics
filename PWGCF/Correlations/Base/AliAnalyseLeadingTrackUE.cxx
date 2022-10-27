@@ -396,7 +396,7 @@ void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcOb
 }
 
 //-------------------------------------------------------------------
-TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts, Bool_t speciesOnTracks, Double_t evtPlane, Bool_t onlyCharged, Int_t generatorIndexMask)
+TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts, Bool_t speciesOnTracks, Double_t evtPlane, Bool_t onlyCharged, ULong64_t generatorIndexMask)
 {
   // Returns an array of particles that pass the cuts, if arrayMC is given each reconstructed particle is replaced by its corresponding MC particles, depending on the parameter onlyprimaries only for primaries 
   // particleSpecies: -1 all particles are returned
@@ -456,7 +456,8 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
       if (!part)continue;
     }
     
-    if (generatorIndexMask != 0 && (1<<part->GetGeneratorIndex() & generatorIndexMask) == 0){
+    ULong64_t genIndex = (ULong64_t)part->GetGeneratorIndex();
+    if (generatorIndexMask != 0ull && (genIndex >= 64 || (1ull<<genIndex & generatorIndexMask) == 0)){
       if (hasOwnership)
         delete part;
       continue;
