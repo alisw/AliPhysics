@@ -69,6 +69,15 @@ class AliFemtoDreamBasePart {
   float GetP() const {
     return GetMomentum().Mag();
   }
+  float GetPx() const {
+    return GetMomentum().Px();
+  }
+  float GetPy() const {
+    return GetMomentum().Py();
+  }
+  float GetPz() const {
+    return GetMomentum().Pz();
+  }
   void SetMCMomentum(float px, float py, float pz) {
     fMCP.SetXYZ(px, py, pz);
   }

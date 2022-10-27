@@ -1131,7 +1131,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 
       // light particle
       tree.second->Branch("light_mult", &dummyint);
-      tree.second->Branch("light_pt", &dummyfloat);
+      tree.second->Branch("light_px", &dummyfloat);
+      tree.second->Branch("light_py", &dummyfloat);
+      tree.second->Branch("light_pz", &dummyfloat);
       tree.second->Branch("light_eta", &dummyfloat);
       tree.second->Branch("light_nsigtpc", &dummyfloat);
       tree.second->Branch("light_nsigtof", &dummyfloat);
@@ -1165,7 +1167,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       // light
       tree.second->Branch("light_mult", &dummyint);
       tree.second->Branch("light_eta", &dummyfloat);
-      tree.second->Branch("light_pt", &dummyfloat);
+      tree.second->Branch("light_px", &dummyfloat);
+      tree.second->Branch("light_py", &dummyfloat);
+      tree.second->Branch("light_pz", &dummyfloat);
       tree.second->Branch("light_nsigtpc", &dummyfloat);
       tree.second->Branch("light_nsigtof", &dummyfloat);
       tree.second->Branch("light_ncls", &dummyint);
