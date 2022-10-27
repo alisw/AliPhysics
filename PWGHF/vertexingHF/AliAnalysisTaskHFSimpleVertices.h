@@ -10,6 +10,7 @@
 //
 //*************************************************************************
 
+#include "AliFJWrapper.h"
 #include <map>
 #include <string>
 #include "DCAFitterN.h"
@@ -48,6 +49,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
     fEnableCPUTimeCheck = enable;
     fCountTimeInMilliseconds = milliseconds;
   }
+  void SetDoJetFinding(Bool_t set) {doJetFinding=set;}
+  void SetJetMatching(Bool_t set) {matchedJetsOnly = set;}
+  void SetDoJetSubstructure(Bool_t set) {doJetSubstructure=set;}
+
 
  private:
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices& source);
@@ -84,7 +89,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Int_t JpsiSelectionCuts(AliAODRecoDecayHF2Prong* cand, AliESDtrack* trk_p, AliESDtrack* trk_n, AliESDVertex* primvtx, float bzkG);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent, Int_t ndgCk, const TObjArray* trkArray, const Int_t* pdgDg) const;
-
+  void FindJets(AliESDEvent *esd, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong, AliESDVertex* primVtx, AliMCEvent* mcEvent = nullptr, Int_t labD=-100);
+  void FindGenJets(AliMCEvent* mcEvent, Int_t labD);
   enum ESelBits2prong { kbitDzero = 0,
                         kbitDzerobar,
                         kbitJpsi };
@@ -303,6 +309,27 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH2F* fHistWallTimeTrackVsNTracks; //!<! histo with wall time for track selection vs number of selected tracks for candidates
   TH2F* fHistWallTimeCandVsNTracks;  //!<! histo with wall time for candidate selection vs number of selected tracks for candidates
 
+  TH1F* fHistJetPt; //!<! histo with Jet transverse momentum
+  TH1F* fHistJetE; //!<! histo with Jet energy
+  TH1F* fHistJetPhi; //!<! histo with Jet phi
+  TH1F* fHistJetEta; //!<! histo with Jet pseudorapidity
+  TH1F* fHistJetNConstituents; //!<! histo with number of jet constituents
+  TH1F* fHistJetCandPt; //!<! histo with HF candidate transverese momentum in Jet
+  TH1F* fHistJetZg; //!<! histo with Zg
+  TH1F* fHistJetRg; //!<! histo with Rg
+  TH1F* fHistJetNsd; //!<! histo with Nsd
+
+  TH1F* fHistJetPt_Part; //!<! histo with Jet transverse momentum at particle level
+  TH1F* fHistJetE_Part; //!<! histo with Jet energy at particle level
+  TH1F* fHistJetPhi_Part; //!<! histo with Jet phi at particle level
+  TH1F* fHistJetEta_Part; //!<! histo with Jet pseudorapidity at particle level
+  TH1F* fHistJetNConstituents_Part; //!<! histo with number of jet constituents at particle level
+  TH1F* fHistJetCandPt_Part; //!<! histo with HF candidate transverese momentum in Jet at particle level
+  TH1F* fHistJetZg_Part; //!<! histo with Zg at particle level
+  TH1F* fHistJetRg_Part; //!<! histo with Rg at particle level
+  TH1F* fHistJetNsd_Part; //!<! histo with Nsd at particle level
+
+
   Bool_t fReadMC;              // flag for access to MC
   Bool_t fUsePhysSel;          // flag use/not use phys sel
   Bool_t fUseAliEventCuts;     // flag to use/not use default AliEventCuts
@@ -395,6 +422,41 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
 
   Bool_t fEnableCPUTimeCheck;      // flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds; // flag to switch from seconds (default) to milliseconds
+  
+  Bool_t doJetFinding;
+  Bool_t matchedJetsOnly;
+  Bool_t doJetSubstructure;
+  AliFJWrapper* fFastJetWrapper;
+  AliFJWrapper* fFastJetWrapper_Part;
+
+  Double_t jetPtMin;                         // minimum jet pT
+  Double_t jetPtMax;                         // maximum jet pT
+  Double_t jetR;                             // jet resolution parameter
+  Double_t jetTrackPtMin;                   // minimum track pT for jet finding
+  Double_t jetTrackPtMax;                   // maximum track pT for jet finding
+  Double_t jetTrackEtaMin;                  // maximum track eta for jet finding
+  Double_t jetTrackEtaMax;                  // minimum track eta for jet finding
+  Double_t jetCandPtMin;                   // maximum candidate pT for jet finding
+  Double_t jetCandPtMax;                   // minimum candidate pT for jet find
+  Double_t jetCandYMin;                    // maximum candidate rapidity for jet find
+  Double_t jetCandYMax;                    // minimum candidate rapidity for jet find
+
+  Double_t jetPtMin_Part;
+  Double_t jetPtMax_Part;
+  Double_t jetR_Part;
+  Double_t jetTrackPtMin_Part;
+  Double_t jetTrackPtMax_Part;
+  Double_t jetTrackEtaMin_Part;
+  Double_t jetTrackEtaMax_Part;
+  Double_t jetCandPtMin_Part;
+  Double_t jetCandPtMax_Part;
+  Double_t jetCandYMin_Part;
+  Double_t jetCandYMax_Part;
+
+  Double_t zCut;
+  Double_t beta;
+  Double_t zCut_Part;
+  Double_t beta_Part;
 
   ClassDef(AliAnalysisTaskHFSimpleVertices, 28);
 };
