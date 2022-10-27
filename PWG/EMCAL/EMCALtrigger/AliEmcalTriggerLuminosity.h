@@ -306,6 +306,24 @@ public:
   void Evaluate();
 
   /**
+   * @brief Get the fraction of CENTNOTRD events  compared to CENT
+   * @return CENTNOTRD correction
+   *
+   * Get the fraction of CENTNOTRD events  compared to CENT calculated in evaluate
+   */
+  double GetCENTNOTRDCorrection() const { return fCorrCENTNOTRD; }
+
+  /**
+   * @brief Get the number of Event scalers corrected
+   * @param trigger Trigger for which to determine the luminosity
+   * @return corrected counts
+   * @throw TriggerNotFoundException in case of access to unsupported trigger
+   *
+   * Access the corrected scaler counts calculated in evaluate.
+   */
+  double GetCorrectedCountsForTrigger(const char *trigger) const;
+
+  /**
    * @brief Get the integrated luminosity evaluated for a certain trigger 
    * @param trigger Trigger for which to determine the luminosity
    * @param unit Unit in which the luminosity is expressed
@@ -463,10 +481,12 @@ private:
   std::map<std::string, TH1 *> fClusterCounters;        ///< Cluster counter histogram for various trigger classes
   std::map<std::string, TH2 *> fCorrelationHistograms;  ///< Trigger correlation histograms for various trigger clusters
   std::map<std::string, double> fLuminosities;          ///< Evaluated integrated luminosities for all trigger classes, in pb-1
+  std::map<std::string, double> fCountsCorr;            ///< Counted events after corrrections
   std::map<std::string, double> fEffectiveDownscaling;  ///< Effective downscaling factors
   std::map<std::string, double> fEffectiveLuminosity;   ///< Effective luminosity, calcuated from from INT7 event counts and effective downscalings, in pb-1
+  float fCorrCENTNOTRD;                                 ///< Correction CENTNOTRD compared to CENT
 
-  ClassDef(AliEmcalTriggerLuminosity, 1);
+  ClassDef(AliEmcalTriggerLuminosity, 2);
 };
 
 }
