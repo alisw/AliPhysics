@@ -45,7 +45,9 @@ AliEmcalTriggerLuminosity::AliEmcalTriggerLuminosity():
   fYear(-1),
   fLuminosityHist(nullptr),
   fClusterCounters(),
-  fLuminosities()
+  fLuminosities(),
+  fCountsCorr(),
+  fCorrCENTNOTRD(0)
 {
 
 }
@@ -56,7 +58,9 @@ AliEmcalTriggerLuminosity::AliEmcalTriggerLuminosity(const char *fname, const ch
   fYear(-1),
   fLuminosityHist(nullptr),
   fClusterCounters(),
-  fLuminosities()
+  fLuminosities(),
+  fCountsCorr(),
+  fCorrCENTNOTRD(0)
 {
   InitFromFile(fname, directory);
 }
@@ -67,7 +71,9 @@ AliEmcalTriggerLuminosity::AliEmcalTriggerLuminosity(TList *luminosityHistograms
   fYear(-1),
   fLuminosityHist(nullptr),
   fClusterCounters(),
-  fLuminosities()
+  fLuminosities(),
+  fCountsCorr(),
+  fCorrCENTNOTRD(0)
 {
   InitFromList(luminosityHistograms);
 }
@@ -129,6 +135,7 @@ void AliEmcalTriggerLuminosity::InitFromList(TList *luminosityHistograms) {
 
 void AliEmcalTriggerLuminosity::Evaluate() {
   fLuminosities.clear();
+  fCountsCorr.clear();
   std::vector<std::string> errorfields;
   if(fYear == 0) errorfields.push_back("year");
   if(fCollisionType == CollisionType_t::kUnknown) errorfields.push_back("collision type");
@@ -165,6 +172,12 @@ double AliEmcalTriggerLuminosity::GetLuminosityForTrigger(const char *trigger, L
   return convertLuminosity(found->second, unit);
 }
 
+double AliEmcalTriggerLuminosity::GetCorrectedCountsForTrigger(const char *trigger) const {
+  auto found = fCountsCorr.find(trigger);
+  if(found == fCountsCorr.end()) throw TriggerNotFoundException(trigger);
+  return found->second;
+}
+
 double AliEmcalTriggerLuminosity::GetEffectiveLuminosityForTrigger(const char *trigger, LuminosityUnit_t unit) const {
   auto found = fEffectiveLuminosity.find(trigger);
   if(found == fEffectiveLuminosity.end()) throw TriggerNotFoundException(trigger);
@@ -193,6 +206,7 @@ void AliEmcalTriggerLuminosity::evaluatePP13TeV() {
   if(errorfields.size()) throw UninitException(errorfields);
 
 	double corrCENTNOTRD = getTriggerClusterCounts(counterEG1, "CENTNOTRD") / getTriggerClusterCounts(counterEG1, "CENT");
+  fCorrCENTNOTRD =  corrCENTNOTRD;
 
 	std::cout << "Correction CENTNOTRD: " << corrCENTNOTRD << std::endl;
 
@@ -214,6 +228,7 @@ void AliEmcalTriggerLuminosity::evaluatePP13TeV() {
     double luminosity = correctedCounts / xrefPB;
     std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl; 
     fLuminosities[triggerclass] = luminosity;
+    fCountsCorr  [triggerclass] = correctedCounts;
   }
 
   // extract effective downscalings and effective luminosities based on the trigger correlation of the CENT cluster
@@ -256,11 +271,13 @@ void AliEmcalTriggerLuminosity::evaluatePP5TeV() {
   if(errorfields.size()) throw UninitException(errorfields);
 
   double corrCENTNOTRD = getTriggerClusterCounts(counterEG2, "CENTNOTRD") / getTriggerClusterCounts(counterEG2, "CENT");
+  fCorrCENTNOTRD =  corrCENTNOTRD;
 
   std::cout << "Correction CENTNOTRD: " << corrCENTNOTRD << std::endl;
 
   // normalize by reference cross section
-  double xrefMB = 51.2, // From: https://cds.cern.ch/record/2202638/files/vdmNote.pdf
+  //double xrefMB = 51.2, // From: https://cds.cern.ch/record/2202638/files/vdmNote.pdf, LHC15n
+  double xrefMB = 50.87, // V0, From: http://cds.cern.ch/record/2648933/files/vdmNote.pdf, LHC17p+q, unc 2.1%
          xrefPB = xrefMB * getConversionToPB(LuminosityUnit_t::kMb); // convert cross section from mb to pb
   for(int ib = 0; ib < fLuminosityHist->GetXaxis()->GetNbins(); ib++) {
     std::string triggerclass = fLuminosityHist->GetXaxis()->GetBinLabel(ib+1);
@@ -274,6 +291,7 @@ void AliEmcalTriggerLuminosity::evaluatePP5TeV() {
     double luminosity = correctedCounts / xrefPB;
     std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl;
     fLuminosities[triggerclass] = luminosity;
+    fCountsCorr  [triggerclass] = correctedCounts;
   }
 
   // extract effective downscalings and effective luminosities based on the trigger correlation of the CENT cluster
@@ -316,6 +334,7 @@ void AliEmcalTriggerLuminosity::evaluatePBPB5TeV() {
   if(errorfields.size()) throw UninitException(errorfields);
 
   double corrCENTNOTRD = getTriggerClusterCounts(counterEG1, "CENTNOTRD") / getTriggerClusterCounts(counterEG1, "CENT");
+  fCorrCENTNOTRD =  corrCENTNOTRD;
 
   std::cout << "Correction CENTNOTRD: " << corrCENTNOTRD << std::endl;
 
@@ -334,6 +353,7 @@ void AliEmcalTriggerLuminosity::evaluatePBPB5TeV() {
     double luminosity = correctedCounts / xrefPB;
     std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl;
     fLuminosities[triggerclass] = luminosity;
+    fCountsCorr  [triggerclass] = correctedCounts;
   }
 
   // extract effective downscalings and effective luminosities based on the trigger correlation of the CENT cluster
@@ -380,6 +400,7 @@ void AliEmcalTriggerLuminosity::evaluatePPB8TeV() {
 	double corrCENTNOPMD = getTriggerClusterCounts(counterEMC7, "CENTNOPMD") / getTriggerClusterCounts(counterEMC7, "CENT");
 	double corrCENTNOTRD = getTriggerClusterCounts(counterEG1, "CENTNOTRD") / getTriggerClusterCounts(counterEG1, "CENTNOPMD");
   double corrCombined = corrCENTNOPMD * corrCENTNOTRD;
+  fCorrCENTNOTRD =  corrCENTNOTRD;
 
 	std::cout << "Correction CENTNOPMD: " << corrCENTNOPMD << std::endl;
 	std::cout << "Correction CENTNOTRD: " << corrCENTNOTRD << std::endl;
@@ -402,6 +423,7 @@ void AliEmcalTriggerLuminosity::evaluatePPB8TeV() {
     double luminosity = correctedCounts / xrefPB;
     std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl; 
     fLuminosities[triggerclass] = luminosity;
+    fCountsCorr  [triggerclass] = correctedCounts;
   }
 
   // extract effective downscalings and effective luminosities based on the trigger correlation of the CENT cluster
