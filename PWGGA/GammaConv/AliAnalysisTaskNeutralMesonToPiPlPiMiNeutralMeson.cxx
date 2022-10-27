@@ -7711,7 +7711,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       }
     }
 
-    if(fDoMesonQA>0){
+    if(fDoMesonQA>0 && !fDoLightOutput){
       //Dalitz plot
       TLorentzVector PosPionTLVtmp;
       TLorentzVector NegPionTLVtmp;
@@ -7774,7 +7774,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
         }
       }
       //  Fill the 3D histogram with the mass differences for the NDM and the pi0 for different pT
-      fHistopi0vsmesonmassshiftangle[fiCut]->Fill(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM,mesoncand->M()-(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMotherLabel)))->GetCalcMass(),TrueNeutralDecayMesonCandidate->GetOpeningAngle(),weighted);
+      if(fDoMesonQA>2) fHistopi0vsmesonmassshiftangle[fiCut]->Fill(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM,mesoncand->M()-(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMotherLabel)))->GetCalcMass(),TrueNeutralDecayMesonCandidate->GetOpeningAngle(),weighted);
     }
 
     AliAODConversionMother PosPiontmp, NegPiontmp;
@@ -8259,7 +8259,6 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GammaIsNeutralMesonPiP
   Int_t grandMotherLabel = mother->GetMother();
   if( grandMotherLabel < 0 || grandMotherLabel >= trackArray->GetEntriesFast()) return kFALSE;
   AliAODMCParticle* grandmother = static_cast<AliAODMCParticle*>(trackArray->At(grandMotherLabel));
-
   switch( fSelectedHeavyNeutralMeson ) {
   case 0: // ETA MESON
   case 1: // OMEGA MESON

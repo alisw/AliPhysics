@@ -539,7 +539,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(AliMCParticle *fMCMother,AliMCE
     }
     return kTRUE;
   }
-  
+
   return kFALSE;
 }
 
@@ -2027,11 +2027,11 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fMesonKind = 0;
     fInLeadTrackDir = 2;
     break;
-  case 12: // c  opposite direction to lead track 
+  case 12: // c  opposite direction to lead track
     fMesonKind = 0;
     fInLeadTrackDir = 3;
     break;
-  case 13: // d  in direction and opposite direction w.r.t. lead track 
+  case 13: // d  in direction and opposite direction w.r.t. lead track
     fMesonKind = 0;
     fInLeadTrackDir = 4;
     break;
@@ -2222,6 +2222,10 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
       fMaxPt = 22.;
       fDoMaxPtCut = kTRUE;
       break;
+  case 35: //z
+    fMinPt = 2.;
+    fDoMinPtCut = kTRUE;
+    break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
@@ -5004,7 +5008,7 @@ Bool_t AliConversionMesonCuts::ArmenterosLikeQtCut(Double_t alpha, Double_t qT){
 Bool_t AliConversionMesonCuts::IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand){
 
   if(!fDoJetAnalysis) return kTRUE;
-  
+
   // set up important variables
   matchedJet = 0;
   RJetPi0Cand = 100; // set to a random high value such that the first jet will overwrite this value
@@ -5087,7 +5091,7 @@ Bool_t AliConversionMesonCuts::IsParticleInJet(std::vector<Double_t> vectorJetEt
 }
 
 
-    
+
 
 ///_____________________________________________________________________________
 //   Function to find highest pT track in event
@@ -5098,7 +5102,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionMC(AliVEvent* curEvent, Al
   if(!curmeson) {
     AliError("Meson not available\n");
     return kFALSE;
-  }  
+  }
   TVector3 vmeson(curmeson->Px(),curmeson->Py(),curmeson->Pz());
   return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
 }
@@ -5109,7 +5113,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionAODMC(AliVEvent* curEvent,
   if(!curmeson) {
     AliError("Meson not available\n");
     return kFALSE;
-  }  
+  }
   TVector3 vmeson(curmeson->Px(),curmeson->Py(),curmeson->Pz());
   return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
 }
@@ -5120,7 +5124,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelection(AliVEvent* curEvent, AliA
   if(!curmeson) {
     AliError("Meson not available\n");
     return kFALSE;
-  }  
+  }
   TVector3 vmeson(curmeson->Px(),curmeson->Py(),curmeson->Pz());
   return MesonLeadTrackSelectionBase((AliVEvent*) curEvent, vmeson);
 }
@@ -5168,7 +5172,7 @@ Bool_t AliConversionMesonCuts::MesonLeadTrackSelectionBase(AliVEvent* curEvent, 
       if (AngleToLeadTrack > TMath::Pi()) AngleToLeadTrack = TMath::Abs(AngleToLeadTrack - 2*TMath::Pi());
 
       //  in lead track direction
-      if(fInLeadTrackDir == 1){  
+      if(fInLeadTrackDir == 1){
         if ( AngleToLeadTrack < Selection/2 ) {
           if(fHistoLeadTrackPhi) fHistoLeadTrackPhi->Fill(AngleToLeadTrack);
           return kTRUE;
