@@ -91,6 +91,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fEventQuality(-1),
   fGeomEMCAL(NULL),
   fAODMCTrackArray(NULL),
+  fAODMCHeader(NULL),
   fV0Reader(NULL),
   fIsHeavyIon(0),
   fDetectorCentrality(-1),
@@ -236,6 +237,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fEventQuality(ref.fEventQuality),
   fGeomEMCAL(ref.fGeomEMCAL),
   fAODMCTrackArray(ref.fAODMCTrackArray),
+  fAODMCHeader(ref.fAODMCHeader),
   fV0Reader(NULL),
   fIsHeavyIon(ref.fIsHeavyIon),
   fDetectorCentrality(ref.fDetectorCentrality),
@@ -1285,6 +1287,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
   if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
     else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
     else if (fRejectExtraSignals == 4) printf("\t special handling for Jets embedded in MB events \n");
+    else if (fRejectExtraSignals == 5) printf("\t reject particles from out-of-bunch pileup \n");
     else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
   printf("\t minimum factor between jet and pt hard = %2.2f \n", fMinFacPtHard);
   printf("\t maximum factor between jet and pt hard = %2.2f \n", fMaxFacPtHard);
@@ -2789,6 +2792,9 @@ Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
   case 4:
     fRejectExtraSignals = 4;
     break; // Special handling of Jet weights for Jets embedded in MB events
+  case 5:
+    fRejectExtraSignals = 5;
+    break; // reject particles from out-of-bunch pileup
   default:
     AliError(Form("Extra Signal Rejection not defined %d",extraSignal));
     return kFALSE;
@@ -6586,10 +6592,12 @@ TString AliConvEventCuts::GetCutNumber(){
 }
 
 // todo: refactoring seems worthwhile. abandon static arrays in order to need only one loop over the event headers
+// what it does: fills fNotRejectedStart[] and fNotRejectedEnd[] such that it is known which particles are to be rejected (based on their indices)
 //________________________________________________________________________
 void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event){
 
   if ( rejection==0 || // No rejection
+       rejection==5 || // reject particles from out-of-bunch pileup
       (fPeriodEnum==kLHC20g10 && (rejection==1 || rejection==3))){
     // LHC20g10 contains added particles only. See comment from Stiefelmaier in https://alice.its.cern.ch/jira/browse/ALIROOT-8519
     return;
@@ -6915,12 +6923,12 @@ Bool_t AliConvEventCuts::PhotonPassesAddedParticlesCriterion(AliMCEvent         
     Int_t lIsNegFromMBHeader = IsParticleFromBGEvent(thePhoton.GetMCLabelNegative(), theMCEvent, theInputEvent);
     theIsFromSelectedHeader = bothFromFirstHeader(lIsNegFromMBHeader, lIsPosFromMBHeader);
   }
-  else{ // 1,2,4
+  else{ // 1,2,4,5
     if (!lIsPosFromMBHeader) return kFALSE;
     Int_t lIsNegFromMBHeader = IsParticleFromBGEvent(thePhoton.GetMCLabelNegative(), theMCEvent, theInputEvent);
     if (!lIsNegFromMBHeader) return kFALSE;
 
-    if (fRejectExtraSignals!=2) {
+    if (fRejectExtraSignals==1 || fRejectExtraSignals==4) {
       theIsFromSelectedHeader = bothFromFirstHeader(lIsNegFromMBHeader, lIsPosFromMBHeader);
     }
   }
@@ -6953,6 +6961,15 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
   else if(InputEvent->IsA()==AliAODEvent::Class()){
     if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     if (fAODMCTrackArray){
+
+      if(fRejectExtraSignals==5){
+        if(!fAODMCHeader) fAODMCHeader = dynamic_cast<AliAODMCHeader*>(InputEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+        if(fAODMCHeader && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(index, fAODMCHeader, fAODMCTrackArray)){
+          return 0; // particle is from out-of-bunch pileup
+        }
+        return 1;
+      }
+
       AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index));
       if(!aodMCParticle) return 0; // no particle
 

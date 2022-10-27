@@ -2518,6 +2518,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
                                               fMCEvent);
         }
         else if(fInputEvent->IsA()==AliAODEvent::Class()){
+          if(fiEventCut->GetSignalRejection()==5) fiEventCut->ResetMcHeader();
           fiEventCut->GetNotRejectedParticles(fiEventCut->GetSignalRejection(),
                                               fiEventCut->GetAcceptedHeader(),
                                               fInputEvent);

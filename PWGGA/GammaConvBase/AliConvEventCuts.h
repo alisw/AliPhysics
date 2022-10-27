@@ -411,6 +411,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
 
+      void    ResetMcHeader()                                                       { fAODMCHeader = 0x0;}
+
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
@@ -683,6 +685,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fEventQuality;                          ///< EventQuality
       AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
       TClonesArray*               fAODMCTrackArray;                       ///< pointer to track array
+      AliAODMCHeader*             fAODMCHeader;                           ///< pointer to mc header
       AliV0ReaderV1*              fV0Reader;                              //!
       //cuts
       Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
