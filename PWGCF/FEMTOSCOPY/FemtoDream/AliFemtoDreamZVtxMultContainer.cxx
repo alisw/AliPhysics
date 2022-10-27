@@ -141,7 +141,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 
               // load light info
               int light_mult = part1.GetParticleMult();
-              float light_pt = part1.GetPt();
+              float light_px = part1.GetPx();
+              float light_py = part1.GetPy();
+              float light_pz = part1.GetPz();
               float light_eta = part1.GetEta()[0];
               float light_nsigtpc = part1.GetNSigTPC();
               float light_nsigtof = part1.GetNSigTOF();
@@ -172,7 +174,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 
               // light particle
               tree->SetBranchAddress("light_mult", &light_mult);
-              tree->SetBranchAddress("light_pt", &light_pt);
+              tree->SetBranchAddress("light_px", &light_px);
+              tree->SetBranchAddress("light_py", &light_py);
+              tree->SetBranchAddress("light_pz", &light_pz);
               tree->SetBranchAddress("light_eta", &light_eta);
               tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
               tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
@@ -274,7 +278,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
 
                 // load light flavor info
                 int light_mult = itPart1->GetParticleMult();
-                float light_pt = itPart1->GetPt();
+                float light_px = itPart1->GetPx();
+                float light_py = itPart1->GetPy();
+                float light_pz = itPart1->GetPz();
                 float light_eta = itPart1->GetEta()[0];
                 float light_nsigtpc = itPart1->GetNSigTPC();
                 float light_nsigtof = itPart1->GetNSigTOF();
@@ -305,7 +311,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
 
                 // light particle
                 tree->SetBranchAddress("light_mult", &light_mult);
-                tree->SetBranchAddress("light_pt", &light_pt);
+                tree->SetBranchAddress("light_px", &light_px);
+                tree->SetBranchAddress("light_py", &light_py);
+                tree->SetBranchAddress("light_pz", &light_pz);
                 tree->SetBranchAddress("light_eta", &light_eta);
                 tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
                 tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
