@@ -69,7 +69,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
       }
       if(tempStr.BeginsWith("UNSMEARING")){ // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted
         TString tempType = tempStr;
-        tempType.Replace(0,10,"");
+        tempType.Replace(0,9,"");
         unsmearingoutputs = tempType;
         cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb will output the following minv_pT histograms:" << endl;
         if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
