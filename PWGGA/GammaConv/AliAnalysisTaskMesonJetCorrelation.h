@@ -111,6 +111,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetTrackMatcherRunningMode(Int_t mode) { fTrackMatcherRunningMode = mode; }
   void SetUseTHnSparseForResponse(bool tmp) { fUseThNForResponse = tmp; }
   void SetMesonKind(int meson) { (meson == 0) ? fMesonPDGCode = 111 : fMesonPDGCode = 221; }
+  void SetOtherMesons(std::vector<int> vec) { fOtherMesonsPDGCodes = vec; }
 
   void SetEventCutList(Int_t nCuts,
                        TList* CutArray)
@@ -192,6 +193,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   // global settings and variables
   //-------------------------------
   int fMesonPDGCode;                                    // PDG code of current meson (111 for pi0 etc.)
+  std::vector<int> fOtherMesonsPDGCodes;                // PDG code of other mesons (eta code if we are looking for a pi0)
   int fiCut;                                            // index of the current cut
   int fIsMC;                                            // flag for data or MC (JJ MC > 1)
   int fnCuts;                                           // number of cuts
@@ -263,6 +265,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMass;            //! Response matrix for meson inv. mass and meson pt for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMassVsZ;         //! Response matrix for meson inv. mass and meson z for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonBackInvMassVsZ;     //! Response matrix for meson inv. mass and meson z for background candidates (mixed evt/rotation) for each jet pt true vs. rec. bin
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonBackInvMassVsPt;    //! Response matrix for meson inv. mass and meson pT for background candidates (mixed evt/rotation) for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMassPerpCone;    //! Same as fRespMatrixHandlerMesonInvMass but in perpendicular cone
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMassVsZPerpCone; //! Same as fRespMatrixHandlerMesonInvMassVsZ but in perpendicular cone
 
@@ -292,11 +295,17 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoClusterPtInJet; //! vector of histos with number of clusters as function of pt inside of jets
   std::vector<TH1F*> fHistoClusterEInJet;  //! vector of histos with number of clusters as function of E inside of jets
 
+  //perpendicular cone
+  std::vector<TH1F*> fHistoClusterPtPerpCone; //! vector of histos with number of clusters as function of pt in perpendicular cone
+
   //-------------------------------
   // conversion photon histograms
   //-------------------------------
   std::vector<TH1F*> fHistoConvGammaPt;      //! vector of histos conversion photons vs. pt
   std::vector<TH1F*> fHistoConvGammaPtInJet; //! vector of histos conversion photons vs. pt inside of jet
+
+  //perpendicular cone
+  std::vector<TH1F*> fHistoConvGammaPtPerpCone; //! vector of histos conversion photons vs. pt in perpendicular cone
 
   //-------------------------------
   // Inv. Mass histograms
@@ -317,26 +326,36 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   // Jet related histograms
   //-------------------------------
-  std::vector<TH1F*> fHistoEventwJets;          //! vector of histos for events with jets
-  std::vector<TH1F*> fHistoNJets;               //! vector of histos with number of jets per event
-  std::vector<TH1F*> fHistoPtJet;               //! vector of histos with pt of jets
-  std::vector<TH1F*> fHistoJetEta;              //! vector of histos with eta of jets
-  std::vector<TH1F*> fHistoJetPhi;              //! vector of histos with phi of jets
-  std::vector<TH1F*> fHistoJetArea;             //! vector of histos with jet area
-  std::vector<TH2F*> fHistoTruevsRecJetPt;      //! vector of histos response matrix for jets
-  std::vector<TH2F*> fHistoTrueJetPtVsPartonPt; //! vector of histos true jet pt vs. parton pt
+  std::vector<TH1F*> fHistoEventwJets;                //! vector of histos for events with jets
+  std::vector<TH1F*> fHistoNJets;                     //! vector of histos with number of jets per event
+  std::vector<TH1F*> fHistoPtJet;                     //! vector of histos with pt of jets
+  std::vector<TH1F*> fHistoJetEta;                    //! vector of histos with eta of jets
+  std::vector<TH1F*> fHistoJetPhi;                    //! vector of histos with phi of jets
+  std::vector<TH1F*> fHistoJetArea;                   //! vector of histos with jet area
+  std::vector<TH2F*> fHistoTruevsRecJetPt;            //! vector of histos response matrix for jets
+  std::vector<TH2F*> fHistoTruevsRecJetPtForTrueJets; //! vector of histos response matrix for true jets
+  std::vector<TH2F*> fHistoTrueJetPtVsPartonPt;       //! vector of histos true jet pt vs. parton pt
+  std::vector<TH1F*> fHistoMatchedPtJet;              //! vector of histos with pt of jets for jets that got matched with a true jet
+  std::vector<TH1F*> fHistoUnMatchedPtJet;            //! vector of histos with pt of jets for jets that did not get matched with a true jet
+  std::vector<TH1F*> fHistoTruePtJet;                 //! vector of histos with pt of true jets
+  std::vector<TH1F*> fHistoTrueMatchedPtJet;          //! vector of histos with pt of true jets that are matched to a rec jet
+  std::vector<TH1F*> fHistoTrueUnMatchedPtJet;        //! vector of histos with pt of jets that are not matched to a rec jet
 
   //-------------------------------
   // True meson histograms
   //-------------------------------
-  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueMesonInvMassVsPt; //! vector of histos inv. mass vs. pT for true mesons
-  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueMesonInvMassVsZ;  //! vector of histos inv. mass vs. Z for true mesons
-  std::vector<TH2F*> fHistoTrueMesonInvMassVsTruePt;                    //! vector of histos inv. mass vs. true pT for true mesons
-  std::vector<TH2F*> fHistoTruePrimaryMesonInvMassPt;                   //! vector of histos inv. mass vs. pT for true primary mesons
-  std::vector<TH2F*> fHistoTrueSecondaryMesonInvMassPt;                 //! vector of histos inv. mass vs. pT for true secondary mesons
-  std::vector<TH2F*> fHistoTrueMesonJetPtVsTruePt;                      //! vector of histos true meson pt vs true jet pt
-  std::vector<TH2F*> fHistoTrueMesonJetPtVsTrueZ;                       //! vector of histos true meson z vs true jet pt
-  std::vector<TH2F*> fHistoMesonResponse;                               //! vector of histos with meson response matrix
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueMesonInvMassVsPt;          //! vector of histos inv. mass vs. pT for true mesons
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueMesonInvMassVsZ;           //! vector of histos inv. mass vs. Z for true mesons
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueOtherMesonInvMassVsPt;     //! vector of histos inv. mass vs. pT for true other mesons (if selected meson is pi0, other mesons are etas and eta prime etc.)
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueOtherMesonInvMassVsZ;      //! vector of histos inv. mass vs. Z for true other mesons (if selected meson is pi0, other mesons are etas and eta prime etc.)
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueSecondaryMesonInvMassVsPt; //! vector of histos inv. mass vs. pT for true secondary mesons
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueSecondaryMesonInvMassVsZ;  //! vector of histos inv. mass vs. pT for true secondary mesons
+  std::vector<TH2F*> fHistoTrueMesonInvMassVsTruePt;                             //! vector of histos inv. mass vs. true pT for true mesons
+  std::vector<TH2F*> fHistoTruePrimaryMesonInvMassPt;                            //! vector of histos inv. mass vs. pT for true primary mesons
+  std::vector<TH2F*> fHistoTrueSecondaryMesonInvMassPt;                          //! vector of histos inv. mass vs. pT for true secondary mesons
+  std::vector<TH2F*> fHistoTrueMesonJetPtVsTruePt;                               //! vector of histos true meson pt vs true jet pt
+  std::vector<TH2F*> fHistoTrueMesonJetPtVsTrueZ;                                //! vector of histos true meson z vs true jet pt
+  std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
 
   //-------------------------------
   // True conversion photon histograms
@@ -392,7 +411,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 5);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 7);
 };
 
 #endif
