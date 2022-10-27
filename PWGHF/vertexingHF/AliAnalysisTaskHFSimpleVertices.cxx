@@ -145,6 +145,10 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistoSumSqImpParDplusDau{nullptr},
   fHistCovMatPrimVXX3Prong{nullptr},
   fHistCovMatSecVXX3Prong{nullptr},
+  fHistCovMatPrimVYY3Prong{nullptr},
+  fHistCovMatSecVYY3Prong{nullptr},
+  fHistCovMatPrimVZZ3Prong{nullptr},
+  fHistCovMatSecVZZ3Prong{nullptr},
   fHistInvMassDs{nullptr},
   fHistInvMassDsSignal{nullptr},
   fHistInvMassDsRefl{nullptr},
@@ -154,15 +158,48 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistCosPointDs{nullptr},
   fHistInvMassLc{nullptr},
   fHistPtLc{nullptr},
+  fHistEtaLc{nullptr},
+  fHistPhiLc{nullptr},
   fHistYPtLc{nullptr},
   fHistPtLcDau0{nullptr},
   fHistPtLcDau1{nullptr},
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
+  fHistDecLenXYLc{nullptr},
+  fHistCtLc{nullptr},
   fHistCosPointLc{nullptr},
+  fHistCosPointXYLc{nullptr},
   fHistImpParLcDau0{nullptr},
   fHistImpParLcDau1{nullptr},
   fHistImpParLcDau2{nullptr},
+  fHistEtaLcPrompt{nullptr},
+  fHistPhiLcPrompt{nullptr},
+  fHistYPtLcPrompt{nullptr},
+  fHistPtLcDau0Prompt{nullptr},
+  fHistPtLcDau1Prompt{nullptr},
+  fHistPtLcDau2Prompt{nullptr},
+  fHistDecLenLcPrompt{nullptr},
+  fHistDecLenXYLcPrompt{nullptr},
+  fHistCtLcPrompt{nullptr},
+  fHistCosPointLcPrompt{nullptr},
+  fHistCosPointXYLcPrompt{nullptr},
+  fHistImpParLcDau0Prompt{nullptr},
+  fHistImpParLcDau1Prompt{nullptr},
+  fHistImpParLcDau2Prompt{nullptr},
+  fHistEtaLcNonPrompt{nullptr},
+  fHistPhiLcNonPrompt{nullptr},
+  fHistYPtLcNonPrompt{nullptr},
+  fHistPtLcDau0NonPrompt{nullptr},
+  fHistPtLcDau1NonPrompt{nullptr},
+  fHistPtLcDau2NonPrompt{nullptr},
+  fHistDecLenLcNonPrompt{nullptr},
+  fHistDecLenXYLcNonPrompt{nullptr},
+  fHistCtLcNonPrompt{nullptr},
+  fHistCosPointLcNonPrompt{nullptr},
+  fHistCosPointXYLcNonPrompt{nullptr},
+  fHistImpParLcDau0NonPrompt{nullptr},
+  fHistImpParLcDau1NonPrompt{nullptr},
+  fHistImpParLcDau2NonPrompt{nullptr},
   fHistInvMassK0s{nullptr},
   fHistInvMassLcK0sp{nullptr},
   fHistPtLcK0sp{nullptr},
@@ -238,7 +275,11 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
     fHistPtGenPrompt[i] = 0x0;
     fHistPtGenFeeddw[i] = 0x0;
     fHistPtGenLimAccPrompt[i] = 0x0;
+    fHistEtaGenLimAccPrompt[i] = 0x0;
+    fHistPhiGenLimAccPrompt[i] = 0x0;
     fHistPtGenLimAccFeeddw[i] = 0x0;
+    fHistEtaGenLimAccFeeddw[i] = 0x0;
+    fHistPhiGenLimAccFeeddw[i] = 0x0;
     fHistPtRecoGenPtPrompt[i] = 0x0;
     fHistPtRecoGenPtFeeddw[i] = 0x0;
     fHistPtRecoPrompt[i] = 0x0;
@@ -347,6 +388,10 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistoSumSqImpParDplusDau;
     delete fHistCovMatPrimVXX3Prong;
     delete fHistCovMatSecVXX3Prong;
+    delete fHistCovMatPrimVYY3Prong;
+    delete fHistCovMatSecVYY3Prong;
+    delete fHistCovMatPrimVZZ3Prong;
+    delete fHistCovMatSecVZZ3Prong;
     delete fHistInvMassDs;
     delete fHistInvMassDsSignal;
     delete fHistInvMassDsRefl;
@@ -356,15 +401,48 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistCosPointDs;
     delete fHistInvMassLc;
     delete fHistPtLc;
+    delete fHistEtaLc;
+    delete fHistPhiLc;
     delete fHistYPtLc;
     delete fHistPtLcDau0;
     delete fHistPtLcDau1;
     delete fHistPtLcDau2;
     delete fHistDecLenLc;
+    delete fHistDecLenXYLc;
+    delete fHistCtLc;
     delete fHistCosPointLc;
+    delete fHistCosPointXYLc;
     delete fHistImpParLcDau0;
     delete fHistImpParLcDau1;
     delete fHistImpParLcDau2;
+    delete fHistEtaLcPrompt;
+    delete fHistPhiLcPrompt;
+    delete fHistYPtLcPrompt;
+    delete fHistPtLcDau0Prompt;
+    delete fHistPtLcDau1Prompt;
+    delete fHistPtLcDau2Prompt;
+    delete fHistDecLenLcPrompt;
+    delete fHistDecLenXYLcPrompt;
+    delete fHistCtLcPrompt;
+    delete fHistCosPointLcPrompt;
+    delete fHistCosPointXYLcPrompt;
+    delete fHistImpParLcDau0Prompt;
+    delete fHistImpParLcDau1Prompt;
+    delete fHistImpParLcDau2Prompt;
+    delete fHistEtaLcNonPrompt;
+    delete fHistPhiLcNonPrompt;
+    delete fHistYPtLcNonPrompt;
+    delete fHistPtLcDau0NonPrompt;
+    delete fHistPtLcDau1NonPrompt;
+    delete fHistPtLcDau2NonPrompt;
+    delete fHistDecLenLcNonPrompt;
+    delete fHistDecLenXYLcNonPrompt;
+    delete fHistCtLcNonPrompt;
+    delete fHistCosPointLcNonPrompt;
+    delete fHistCosPointXYLcNonPrompt;
+    delete fHistImpParLcDau0NonPrompt;
+    delete fHistImpParLcDau1NonPrompt;
+    delete fHistImpParLcDau2NonPrompt;
     delete fHistInvMassK0s;
     delete fHistInvMassLcK0sp;
     delete fHistPtLcK0sp;
@@ -372,7 +450,11 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
       delete fHistPtGenPrompt[i];
       delete fHistPtGenFeeddw[i];
       delete fHistPtGenLimAccPrompt[i];
+      delete fHistEtaGenLimAccPrompt[i];
+      delete fHistPhiGenLimAccPrompt[i];
       delete fHistPtGenLimAccFeeddw[i];
+      delete fHistEtaGenLimAccFeeddw[i];
+      delete fHistPhiGenLimAccFeeddw[i];
       delete fHistPtRecoGenPtPrompt[i];
       delete fHistPtRecoGenPtFeeddw[i];
       delete fHistPtRecoPrompt[i];
@@ -645,7 +727,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("Min pt track (3 prong)= %g\n", ptmintrack3);
     if (ptmintrack3 > 0)
       fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
-    Double_t ptmintrackb = GetJsonFloat(filename.Data(), "pTMinTrack3Bach");
+    Double_t ptmintrackb = GetJsonFloat(filename.Data(), "ptMinTrackBach");
     printf("Min pt track (bachelor)= %g\n", ptmintrackb);
     if (ptmintrackb > 0)
       fTrackCutsBach->SetPtRange(ptmintrackb, 1.e10);
@@ -754,7 +836,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("Max pt Dzero cand = %g\n", ptMaxCand);
     if (ptMaxCand >= 0. && ptMaxCand >= fMinPtDzero)
       fMaxPtDzero = ptMaxCand;
-    Double_t ptMinCand3 = GetJsonFloat(filename.Data(), "cut3ProngPtCandMin");
+    Double_t ptMinCand3 = GetJsonFloat(filename.Data(), "d_pTCandMin");
     printf("Min pt 3-prong cand = %g\n", ptMinCand3);
     if (ptMinCand3 >= 0.)
       fMinPt3Prong = ptMinCand3;
@@ -1132,6 +1214,10 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistoSumSqImpParDplusDau = new TH1F("hSumSqImpParDplusDau", " ; Squared sum of d_{0}^{i} (cm^2)", 100, 0., 1.);
   fHistCovMatPrimVXX3Prong = new TH1F("hCovMatPrimVXX3Prong", " Primary Vertex ; XX element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
   fHistCovMatSecVXX3Prong = new TH1F("hCovMatSecVXX3Prong", " Secondary Vertex 3-prong ; XX element of covariant matrix (cm^2)", 100, 0., 0.2);
+  fHistCovMatPrimVYY3Prong = new TH1F("hCovMatPrimVYY3Prong", " Primary Vertex ; YY element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
+  fHistCovMatSecVYY3Prong = new TH1F("hCovMatSecVYY3Prong", " Secondary Vertex 3-prong ; YY element of covariant matrix (cm^2)", 100, 0., 0.2);
+  fHistCovMatPrimVZZ3Prong = new TH1F("hCovMatPrimVZZ3Prong", " Primary Vertex ; ZZ element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
+  fHistCovMatSecVZZ3Prong = new TH1F("hCovMatSecVZZ3Prong", " Secondary Vertex 3-prong ; ZZ element of covariant matrix (cm^2)", 100, 0., 0.2);
   fOutput->Add(fHistInvMassDplus);
   fOutput->Add(fHistInvMassDplusSignal);
   fOutput->Add(fHistPtDplus);
@@ -1155,6 +1241,10 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistoSumSqImpParDplusDau);
   fOutput->Add(fHistCovMatPrimVXX3Prong);
   fOutput->Add(fHistCovMatSecVXX3Prong);
+  fOutput->Add(fHistCovMatPrimVYY3Prong);
+  fOutput->Add(fHistCovMatSecVYY3Prong);
+  fOutput->Add(fHistCovMatPrimVZZ3Prong);
+  fOutput->Add(fHistCovMatSecVZZ3Prong);
 
   // Ds->KKpi candidate histos
   fHistInvMassDs = new TH1F("hInvMassDs", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
@@ -1173,28 +1263,104 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistCosPointDs);
 
   // Lc pKpi candidate histos
-  fHistInvMassLc = new TH1F("hInvMassLc", " ; M_{pK#pi} (GeV/c^{2})", 500, 0., 5.);
+  fHistInvMassLc = new TH1F("hInvMassLc", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
   fHistPtLc = new TH1F("hPtLc", " ; #Lambda_{c} p_{T} (GeV/c)", 360, 0., 36.);
+  fHistEtaLc = new TH1F("hEtaLc", " ; #Lambda_{c} #it{#eta}", 100, -2., 2.);
+  fHistPhiLc = new TH1F("hPhiLc", " ; #Lambda_{c} #it{#Phi}", 100, 0., 6.3);
   fHistYPtLc = new TH2F("hYPtLc", " ; #Lambda_{c} p_{T} (GeV/c) ; y", 360, 0., 36., 120, -1.2, 1.2);
   fHistPtLcDau0 = new TH1F("hPtLcDau0", " #Lambda_{c} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistPtLcDau1 = new TH1F("hPtLcDau1", " #Lambda_{c} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistPtLcDau2 = new TH1F("hPtLcDau2", " #Lambda_{c} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistDecLenLc = new TH1F("hDecLenLc", " ; Decay Length (cm)", 200, 0., 2.0);
+  fHistDecLenXYLc = new TH1F("hDecLenLcXY", " ; Decay Length xy (cm)", 200, 0., 2.0);
+  fHistCtLc = new TH1F("hCt", " ; proper lifetime (#Lambda_{c}) * #it{c} (cm)", 100, 0., 0.2);
   fHistCosPointLc = new TH1F("hCosPointLc", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fHistCosPointXYLc = new TH1F("hCosPointXYLc", " ; cos(#theta_{P}) xy", 110, -1.1, 1.1);
   fHistImpParLcDau0 = new TH1F("hImpParLcDau0", " #Lambda_{c} prong0 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
   fHistImpParLcDau1 = new TH1F("hImpParLcDau1", " #Lambda_{c} prong1 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
   fHistImpParLcDau2 = new TH1F("hImpParLcDau2", " #Lambda_{c} prong2 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
   fOutput->Add(fHistInvMassLc);
   fOutput->Add(fHistPtLc);
+  fOutput->Add(fHistEtaLc);
+  fOutput->Add(fHistPhiLc);
   fOutput->Add(fHistYPtLc);
   fOutput->Add(fHistPtLcDau0);
   fOutput->Add(fHistPtLcDau1);
   fOutput->Add(fHistPtLcDau2);
   fOutput->Add(fHistDecLenLc);
+  fOutput->Add(fHistCtLc);
+  fOutput->Add(fHistDecLenXYLc);
   fOutput->Add(fHistCosPointLc);
+  fOutput->Add(fHistCosPointXYLc);
   fOutput->Add(fHistImpParLcDau0);
   fOutput->Add(fHistImpParLcDau1);
   fOutput->Add(fHistImpParLcDau2);
+
+    // Lc pKpi candidate histos MC Prompt
+  fHistInvMassLcPrompt = new TH1F("hInvMassLcPrompt", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
+  fHistEtaLcPrompt = new TH1F("hEtaLcPrompt", " ; #Lambda_{c} #it{#eta}", 100, -2., 2.);
+  fHistPhiLcPrompt = new TH1F("hPhiLcPrompt", " ; #Lambda_{c} #it{#Phi}", 100, 0., 6.3);
+  fHistYPtLcPrompt = new TH2F("hYPtLcPrompt", " ; #Lambda_{c} p_{T} (GeV/c) ; y", 360, 0., 36., 120, -1.2, 1.2);
+  fHistPtLcDau0Prompt = new TH1F("hPtLcDau0Prompt", " #Lambda_{c} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtLcDau1Prompt = new TH1F("hPtLcDau1Prompt", " #Lambda_{c} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtLcDau2Prompt = new TH1F("hPtLcDau2Prompt", " #Lambda_{c} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistDecLenLcPrompt = new TH1F("hDecLenLcPrompt", " ; Decay Length (cm)", 200, 0., 2.0);
+  fHistDecLenXYLcPrompt = new TH1F("hDecLenLcXYPrompt", " ; Decay Length xy (cm)", 200, 0., 2.0);
+  fHistCtLcPrompt = new TH1F("hCtPrompt", " ; proper lifetime (#Lambda_{c}) * #it{c} (cm)", 100, 0., 0.2);
+  fHistCosPointLcPrompt = new TH1F("hCosPointLcPrompt", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fHistCosPointXYLcPrompt = new TH1F("hCosPointXYLcPrompt", " ; cos(#theta_{P}) xy", 110, -1.1, 1.1);
+  fHistImpParLcDau0Prompt = new TH1F("hImpParLcDau0Prompt", " #Lambda_{c} prong0 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau1Prompt = new TH1F("hImpParLcDau1Prompt", " #Lambda_{c} prong1 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau2Prompt = new TH1F("hImpParLcDau2Prompt", " #Lambda_{c} prong2 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fOutput->Add(fHistInvMassLcPrompt);
+  fOutput->Add(fHistEtaLcPrompt);
+  fOutput->Add(fHistPhiLcPrompt);
+  fOutput->Add(fHistYPtLcPrompt);
+  fOutput->Add(fHistPtLcDau0Prompt);
+  fOutput->Add(fHistPtLcDau1Prompt);
+  fOutput->Add(fHistPtLcDau2Prompt);
+  fOutput->Add(fHistDecLenLcPrompt);
+  fOutput->Add(fHistCtLcPrompt);
+  fOutput->Add(fHistDecLenXYLcPrompt);
+  fOutput->Add(fHistCosPointLcPrompt);
+  fOutput->Add(fHistCosPointXYLcPrompt);
+  fOutput->Add(fHistImpParLcDau0Prompt);
+  fOutput->Add(fHistImpParLcDau1Prompt);
+  fOutput->Add(fHistImpParLcDau2Prompt);
+
+  // Lc pKpi candidate histos MC NonPrompt
+  fHistInvMassLcNonPrompt = new TH1F("hInvMassLcNonPrompt", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
+  fHistEtaLcNonPrompt = new TH1F("hEtaLcNonPrompt", " ; #Lambda_{c} #it{#eta}", 100, -2., 2.);
+  fHistPhiLcNonPrompt = new TH1F("hPhiLcNonPrompt", " ; #Lambda_{c} #it{#Phi}", 100, 0., 6.3);
+  fHistYPtLcNonPrompt = new TH2F("hYPtLcNonPrompt", " ; #Lambda_{c} p_{T} (GeV/c) ; y", 360, 0., 36., 120, -1.2, 1.2);
+  fHistPtLcDau0NonPrompt = new TH1F("hPtLcDau0NonPrompt", " #Lambda_{c} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtLcDau1NonPrompt = new TH1F("hPtLcDau1NonPrompt", " #Lambda_{c} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtLcDau2NonPrompt = new TH1F("hPtLcDau2NonPrompt", " #Lambda_{c} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistDecLenLcNonPrompt = new TH1F("hDecLenLcNonPrompt", " ; Decay Length (cm)", 200, 0., 2.0);
+  fHistDecLenXYLcNonPrompt = new TH1F("hDecLenLcXYNonPrompt", " ; Decay Length xy (cm)", 200, 0., 2.0);
+  fHistCtLcNonPrompt = new TH1F("hCtNonPrompt", " ; proper lifetime (#Lambda_{c}) * #it{c} (cm)", 100, 0., 0.2);
+  fHistCosPointLcNonPrompt = new TH1F("hCosPointLcNonPrompt", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fHistCosPointXYLcNonPrompt = new TH1F("hCosPointXYLcNonPrompt", " ; cos(#theta_{P}) xy", 110, -1.1, 1.1);
+  fHistImpParLcDau0NonPrompt = new TH1F("hImpParLcDau0NonPrompt", " #Lambda_{c} prong0 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau1NonPrompt = new TH1F("hImpParLcDau1NonPrompt", " #Lambda_{c} prong1 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau2NonPrompt = new TH1F("hImpParLcDau2NonPrompt", " #Lambda_{c} prong2 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fOutput->Add(fHistInvMassLcNonPrompt);
+  fOutput->Add(fHistEtaLcNonPrompt);
+  fOutput->Add(fHistPhiLcNonPrompt);
+  fOutput->Add(fHistYPtLcNonPrompt);
+  fOutput->Add(fHistPtLcDau0NonPrompt);
+  fOutput->Add(fHistPtLcDau1NonPrompt);
+  fOutput->Add(fHistPtLcDau2NonPrompt);
+  fOutput->Add(fHistDecLenLcNonPrompt);
+  fOutput->Add(fHistCtLcNonPrompt);
+  fOutput->Add(fHistDecLenXYLcNonPrompt);
+  fOutput->Add(fHistCosPointLcNonPrompt);
+  fOutput->Add(fHistCosPointXYLcNonPrompt);
+  fOutput->Add(fHistImpParLcDau0NonPrompt);
+  fOutput->Add(fHistImpParLcDau1NonPrompt);
+  fOutput->Add(fHistImpParLcDau2NonPrompt);
+
+
 
   fHistInvMassK0s = new TH1F("hInvMassK0s", " ; M_{#pi#pi} (GeV/c^{2})", 200, 0.4, 0.6);
   fHistInvMassLcK0sp = new TH1F("hInvMassLcK0sp", " ; M_{pK^{0}_{s}} (GeV/c^{2})", 500, 0., 5.);
@@ -1232,6 +1398,36 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
     fOutput->Add(fHistPtGenLimAccPrompt[i]);
     fOutput->Add(fHistPtGenLimAccFeeddw[i]);
   }
+  fHistEtaGenLimAccPrompt[0] = new TH1F("hEtaGenLimAccPromptD0Kpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccPrompt[1] = new TH1F("hEtaGenLimAccPromptDplusKpipi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccPrompt[2] = new TH1F("hEtaGenLimAccPromptDsKKpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccPrompt[3] = new TH1F("hEtaGenLimAccPromptLcpKpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccPrompt[4] = new TH1F("hEtaGenLimAccPromptLcpK0s", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[0] = new TH1F("hEtaGenLimAccFeeddwD0Kpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[1] = new TH1F("hEtaGenLimAccFeeddwDplusKpipi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[2] = new TH1F("hEtaGenLimAccFeeddwDsKKpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[3] = new TH1F("hEtaGenLimAccFeeddwLcpKpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[4] = new TH1F("hEtaGenLimAccFeeddwLcpK0s", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  for (Int_t i = 0; i < 5; i++) {
+    fOutput->Add(fHistEtaGenLimAccPrompt[i]);
+    fOutput->Add(fHistEtaGenLimAccFeeddw[i]);
+  }
+
+  fHistPhiGenLimAccPrompt[0] = new TH1F("hPhiGenLimAccPromptD0Kpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccPrompt[1] = new TH1F("hPhiGenLimAccPromptDplusKpipi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccPrompt[2] = new TH1F("hPhiGenLimAccPromptDsKKpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccPrompt[3] = new TH1F("hPhiGenLimAccPromptLcpKpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccPrompt[4] = new TH1F("hPhiGenLimAccPromptLcpK0s", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[0] = new TH1F("hPhiGenLimAccFeeddwD0Kpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[1] = new TH1F("hPhiGenLimAccFeeddwDplusKpipi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[2] = new TH1F("hPhiGenLimAccFeeddwDsKKpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[3] = new TH1F("hPhiGenLimAccFeeddwLcpKpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[4] = new TH1F("hPhiGenLimAccFeeddwLcpK0s", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  for (Int_t i = 0; i < 5; i++) {
+    fOutput->Add(fHistPhiGenLimAccPrompt[i]);
+    fOutput->Add(fHistPhiGenLimAccFeeddw[i]);
+  }
+
   fHistPtRecoGenPtPrompt[0] = new TH1F("hPtRecoGenPtPromptD0Kpi", " ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistPtRecoGenPtPrompt[1] = new TH1F("hPtRecoGenPtPromptDplusKpipi", " ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistPtRecoGenPtPrompt[2] = new TH1F("hPtRecoGenPtPromptDsKKpi", " ; p_{T} (GeV/c)", 360, 0., 36.);
@@ -1371,15 +1567,23 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           if (isGoodDecay) {
             Double_t ptgen = part->Pt();
             Double_t ygen = part->Y();
+            Double_t etagen = part->Eta();
+            Double_t phigen = part->Phi();
             Int_t isFromB = AliVertexingHFUtils::CheckOrigin(mcEvent, mcPart, kFALSE);
             if (isFromB == 4) {
               fHistPtGenPrompt[iPart]->Fill(ptgen);
-              if (IsInFiducialAcceptance(ptgen, ygen))
+              if (IsInFiducialAcceptance(ptgen, ygen)) {
                 fHistPtGenLimAccPrompt[iPart]->Fill(ptgen);
+                fHistEtaGenLimAccPrompt[iPart]->Fill(etagen);
+                fHistPhiGenLimAccPrompt[iPart]->Fill(phigen);
+              }
             } else if (isFromB == 5) {
               fHistPtGenFeeddw[iPart]->Fill(ptgen);
-              if (IsInFiducialAcceptance(ptgen, ygen))
+              if (IsInFiducialAcceptance(ptgen, ygen)) {
                 fHistPtGenLimAccFeeddw[iPart]->Fill(ptgen);
+                fHistEtaGenLimAccFeeddw[iPart]->Fill(etagen);
+                fHistPhiGenLimAccFeeddw[iPart]->Fill(phigen);
+              }
             }
           }
         }
@@ -1893,6 +2097,10 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
     fHist3ProngVertZ->Fill(trkv3->GetZ());
     fHistCovMatPrimVXX3Prong->Fill(covMatrixPV[0]);
     fHistCovMatSecVXX3Prong->Fill(covMatrixSV[0]);
+    fHistCovMatPrimVYY3Prong->Fill(covMatrixPV[2]);
+    fHistCovMatSecVYY3Prong->Fill(covMatrixSV[2]);
+    fHistCovMatPrimVZZ3Prong->Fill(covMatrixPV[5]);
+    fHistCovMatSecVZZ3Prong->Fill(covMatrixSV[5]);
   }
 
   if (massSel & (1 << kbitDplus)) {
@@ -2004,9 +2212,9 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
     Int_t lcSel = LcSkimCuts(the3Prong);
     if (lcSel > 0 && fSelectLcpKpi > 0) {
       if (dist12 < fLcCuts[0][4])
-	lcSel = 0; // cut on dist12
+	      lcSel = 0; // cut on dist12
       else
-	lcSel = LcSelectionCuts(the3Prong);
+	      lcSel = LcSelectionCuts(the3Prong);
     }
     Double_t rapid = the3Prong->Y(4122);
     if (lcSel > 0 && IsInFiducialAcceptance(ptcand_3prong, rapid)) {
@@ -2017,12 +2225,17 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       if (fSelectLcpKpi == 0 || lcSel == 2 || lcSel == 3)
         fHistInvMassLc->Fill(m0LcpiKp);
       fHistPtLc->Fill(ptcand_3prong);
+      fHistEtaLc->Fill(the3Prong->Eta());
+      fHistPhiLc->Fill(the3Prong->Phi());
       fHistYPtLc->Fill(ptcand_3prong, rapid);
       fHistPtLcDau0->Fill(the3Prong->PtProng(0));
       fHistPtLcDau1->Fill(the3Prong->PtProng(1));
       fHistPtLcDau2->Fill(the3Prong->PtProng(2));
       fHistDecLenLc->Fill(the3Prong->DecayLength());
+      fHistDecLenXYLc->Fill(the3Prong->DecayLengthXY());
+      fHistCtLc->Fill(the3Prong->Ct(4122));
       fHistCosPointLc->Fill(the3Prong->CosPointingAngle());
+      fHistCosPointXYLc->Fill(the3Prong->CosPointingAngleXY());
       fHistImpParLcDau0->Fill(the3Prong->Getd0Prong(0));
       fHistImpParLcDau1->Fill(the3Prong->Getd0Prong(1));
       fHistImpParLcDau2->Fill(the3Prong->Getd0Prong(2));
@@ -2036,9 +2249,46 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
             if (orig == 4) {
               fHistPtRecoGenPtPrompt[3]->Fill(ptgen);
               fHistPtRecoPrompt[3]->Fill(ptcand_3prong);
+              if (fSelectLcpKpi == 0 || lcSel == 1 || lcSel == 3)
+                fHistInvMassLcPrompt->Fill(m0LcpKpi);
+              if (fSelectLcpKpi == 0 || lcSel == 2 || lcSel == 3)
+                fHistInvMassLcPrompt->Fill(m0LcpiKp);
+              fHistEtaLcPrompt->Fill(the3Prong->Eta());
+              fHistPhiLcPrompt->Fill(the3Prong->Phi());
+              fHistYPtLcPrompt->Fill(ptcand_3prong, rapid);
+              fHistPtLcDau0Prompt->Fill(the3Prong->PtProng(0));
+              fHistPtLcDau1Prompt->Fill(the3Prong->PtProng(1));
+              fHistPtLcDau2Prompt->Fill(the3Prong->PtProng(2));
+              fHistDecLenLcPrompt->Fill(the3Prong->DecayLength());
+              fHistDecLenXYLcPrompt->Fill(the3Prong->DecayLengthXY());
+              fHistCtLcPrompt->Fill(the3Prong->Ct(4122));
+              fHistCosPointLcPrompt->Fill(the3Prong->CosPointingAngle());
+              fHistCosPointXYLcPrompt->Fill(the3Prong->CosPointingAngleXY());
+              fHistImpParLcDau0Prompt->Fill(the3Prong->Getd0Prong(0));
+              fHistImpParLcDau1Prompt->Fill(the3Prong->Getd0Prong(1));
+              fHistImpParLcDau2Prompt->Fill(the3Prong->Getd0Prong(2));
+
             } else if (orig == 5) {
               fHistPtRecoGenPtFeeddw[3]->Fill(ptgen);
               fHistPtRecoFeeddw[3]->Fill(ptcand_3prong);
+              if (fSelectLcpKpi == 0 || lcSel == 1 || lcSel == 3)
+                fHistInvMassLcNonPrompt->Fill(m0LcpKpi);
+              if (fSelectLcpKpi == 0 || lcSel == 2 || lcSel == 3)
+                fHistInvMassLcNonPrompt->Fill(m0LcpiKp);
+              fHistEtaLcNonPrompt->Fill(the3Prong->Eta());
+              fHistPhiLcNonPrompt->Fill(the3Prong->Phi());
+              fHistYPtLcNonPrompt->Fill(ptcand_3prong, rapid);
+              fHistPtLcDau0NonPrompt->Fill(the3Prong->PtProng(0));
+              fHistPtLcDau1NonPrompt->Fill(the3Prong->PtProng(1));
+              fHistPtLcDau2NonPrompt->Fill(the3Prong->PtProng(2));
+              fHistDecLenLcNonPrompt->Fill(the3Prong->DecayLength());
+              fHistDecLenXYLcNonPrompt->Fill(the3Prong->DecayLengthXY());
+              fHistCtLcNonPrompt->Fill(the3Prong->Ct(4122));
+              fHistCosPointLcNonPrompt->Fill(the3Prong->CosPointingAngle());
+              fHistCosPointXYLcNonPrompt->Fill(the3Prong->CosPointingAngleXY());
+              fHistImpParLcDau0NonPrompt->Fill(the3Prong->Getd0Prong(0));
+              fHistImpParLcDau1NonPrompt->Fill(the3Prong->Getd0Prong(1));
+              fHistImpParLcDau2NonPrompt->Fill(the3Prong->Getd0Prong(2));
             }
           }
         }
