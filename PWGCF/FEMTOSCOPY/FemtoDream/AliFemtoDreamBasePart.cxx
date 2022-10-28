@@ -30,6 +30,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const int part)
       fMCPhi(0),
       fIDTracks(0),
       fCharge(0),
+      fSoftPionPx(0),
+      fSoftPionPy(0),
+      fSoftPionPz(0),
       fCPA(0),
       fInvMass(0),
       fOrigin(kUnknown),
@@ -76,6 +79,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fMCPhi(part.fMCPhi),
       fIDTracks(part.fIDTracks),
       fCharge(part.fCharge),
+      fSoftPionPx(part.fSoftPionPx),
+      fSoftPionPy(part.fSoftPionPy),
+      fSoftPionPz(part.fSoftPionPz),
       fCPA(part.fCPA),
       fInvMass(part.fInvMass),
       fOrigin(part.fOrigin),
@@ -126,6 +132,9 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fMCPhi = obj.fMCPhi;
   fIDTracks = obj.fIDTracks;
   fCharge = obj.fCharge;
+  fSoftPionPx = obj.fSoftPionPx,
+  fSoftPionPy = obj.fSoftPionPy,
+  fSoftPionPz = obj.fSoftPionPz,
   fCPA = obj.fCPA;
   fInvMass = obj.fInvMass;
   fOrigin = obj.fOrigin;
@@ -175,6 +184,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCPhi(),
       fIDTracks(),
       fCharge(0),
+      fSoftPionPx(0),
+      fSoftPionPy(0),
+      fSoftPionPz(0),
       fCPA(0),
       fInvMass(gamma->GetPhotonMass()),
       fOrigin(kUnknown),
@@ -277,6 +289,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       fMCPhi(),
       fIDTracks(),
       fCharge(),
+      fSoftPionPx(0),
+      fSoftPionPy(0),
+      fSoftPionPz(0),
       fCPA(dmeson->Eta()),
       fInvMass(0),
       fOrigin(kUnknown),
@@ -332,6 +347,11 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
     PhiAtRadii(track, aod->GetMagneticField(), phiAtRadii);
     fPhiAtRadius.push_back(phiAtRadii);
     fCharge.push_back(track->Charge());
+    if (pdgParent == 413 ) {
+      fSoftPionPx = track->Px();
+      fSoftPionPy = track->Py();
+      fSoftPionPz = track->Pz();
+    }
   }
 
   // MC Matching

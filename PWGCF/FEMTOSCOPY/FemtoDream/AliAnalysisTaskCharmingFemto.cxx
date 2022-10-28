@@ -1125,6 +1125,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("heavy_eta", &dummyfloat);
       tree.second->Branch("heavy_origin", &dummyint);
       tree.second->Branch("heavy_daus", &dummyvector);
+      tree.second->Branch("heavy_softpion_px", &dummyfloat);
+      tree.second->Branch("heavy_softpion_py", &dummyfloat);
+      tree.second->Branch("heavy_softpion_pz", &dummyfloat);
       tree.second->Branch("heavy_bkg_score", &dummyfloat);
       tree.second->Branch("heavy_prompt_score", &dummyfloat);
       tree.second->Branch("heavy_d0label", &dummyint);
@@ -1160,6 +1163,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       tree.second->Branch("heavy_eta", &dummyfloat);
       tree.second->Branch("heavy_origin", &dummyint);
       tree.second->Branch("heavy_daus", &dummyvector);
+      tree.second->Branch("heavy_softpion_px", &dummyfloat);
+      tree.second->Branch("heavy_softpion_py", &dummyfloat);
+      tree.second->Branch("heavy_softpion_pz", &dummyfloat);
       tree.second->Branch("heavy_bkg_score", &dummyfloat);
       tree.second->Branch("heavy_prompt_score", &dummyfloat);
       tree.second->Branch("heavy_d0label", &dummyint);

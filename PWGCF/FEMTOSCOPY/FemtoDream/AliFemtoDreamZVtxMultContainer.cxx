@@ -135,6 +135,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               float heavy_eta = part2.GetEta()[0];
               int heavy_origin = part2.GetParticleOrigin();
               std::vector<int>  *heavy_daus = new std::vector<int>(part2.GetIDTracks());
+              float heavy_softpion_px = part2.GetSoftPionPx();
+              float heavy_softpion_py = part2.GetSoftPionPy();
+              float heavy_softpion_pz = part2.GetSoftPionPz();
               float heavy_bkgscore = part2.GetBkgScore();
               float heavy_promptscore = part2.GetPromptScore();
               int heavy_d0label = part2.GetDzeroLabel();
@@ -168,6 +171,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("heavy_eta", &heavy_eta);
               tree->SetBranchAddress("heavy_origin", &heavy_origin);
               tree->SetBranchAddress("heavy_daus", &heavy_daus);
+              tree->SetBranchAddress("heavy_softpion_px", &heavy_softpion_px);
+              tree->SetBranchAddress("heavy_softpion_py", &heavy_softpion_py);
+              tree->SetBranchAddress("heavy_softpion_pz", &heavy_softpion_pz);
               tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
               tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
               tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
@@ -272,6 +278,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 float heavy_eta = itPart2->GetEta()[0];
                 int heavy_origin = itPart2->GetParticleOrigin();
                 std::vector<Int_t>  * heavy_daus = new std::vector<int>(itPart2->GetIDTracks());
+                float heavy_softpion_px = itPart2->GetSoftPionPx();
+                float heavy_softpion_py = itPart2->GetSoftPionPy();
+                float heavy_softpion_pz = itPart2->GetSoftPionPz();
                 float heavy_bkgscore = itPart2->GetBkgScore();
                 float heavy_promptscore = itPart2->GetPromptScore();
                 int heavy_d0label = itPart2->GetDzeroLabel();
@@ -305,6 +314,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("heavy_eta", &heavy_eta);
                 tree->SetBranchAddress("heavy_origin", &heavy_origin);
                 tree->SetBranchAddress("heavy_daus", &heavy_daus);
+                tree->SetBranchAddress("heavy_softpion_px", &heavy_softpion_px);
+                tree->SetBranchAddress("heavy_softpion_py", &heavy_softpion_py);
+                tree->SetBranchAddress("heavy_softpion_pz", &heavy_softpion_pz);
                 tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
                 tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
                 tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
