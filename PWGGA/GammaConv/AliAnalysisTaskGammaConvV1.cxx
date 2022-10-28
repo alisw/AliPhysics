@@ -2537,12 +2537,13 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
       if(fDoCentralityFlat > 0) fHistoNEventsWeighted[iCut]->Fill(eventQuality, fWeightCentrality[iCut]*fWeightJetJetMC);
 
-      if(fIsMC > 0){
-        // event not accepted due to no vertex found. MC particles still have to be taken into account
-        if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessMCParticles(2);
-        if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessAODMCParticles(2);
+      if(eventQuality == 5){ // event not accepted due to no vertex
+        if(fIsMC > 0){
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessMCParticles(2);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessAODMCParticles(2);
+        }
       }
 
       continue;
