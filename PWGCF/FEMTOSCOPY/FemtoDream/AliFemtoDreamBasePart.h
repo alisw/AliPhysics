@@ -197,6 +197,18 @@ class AliFemtoDreamBasePart {
     return fCharge;
   }
   ;
+  float GetSoftPionPx() const {
+    return fSoftPionPx;
+  }
+  ;
+  float GetSoftPionPy() const {
+    return fSoftPionPy;
+  }
+  ;
+  float GetSoftPionPz() const {
+    return fSoftPionPz;
+  }
+  ;
   void SetCPA(float cpa) {
     fCPA = cpa;
   }
@@ -351,6 +363,9 @@ class AliFemtoDreamBasePart {
   std::vector<float> fMCPhi;
   std::vector<int> fIDTracks;
   std::vector<int> fCharge;
+  float fSoftPionPx;
+  float fSoftPionPy;
+  float fSoftPionPz;
   float fCPA;
   float fInvMass;
   PartOrigin fOrigin;
