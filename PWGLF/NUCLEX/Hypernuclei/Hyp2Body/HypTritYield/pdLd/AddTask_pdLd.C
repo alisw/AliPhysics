@@ -49,22 +49,45 @@ AliAnalysisTask* AddTask_pdLd(
 
   if(CollisionSystem > 2)
   {
-    std::cout << "CollisionSystem: " << CollisionSystem << " is not defined!" << std::endl;
+    std::cout << "AddTask_pdLd: CollisionSystem: " << CollisionSystem << " is not defined!" << std::endl;
   }
 
 
 
 
   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
+  if(!manager)
+  {
+    std::cout << "AddTask_pdLd: No AliAnalysisManager found" << std::endl;
+    return nullptr;
+  }
+
+  if(!manager->GetInputEventHandler())
+  {
+    std::cout << "AddTask_pdLd: No InputEventHandler found" << std::endl;
+    return nullptr;
+  }
 
   AliAnalysisTask_pdLd* task = new AliAnalysisTask_pdLd(Name.Data(),CollisionSystem);   
+  if(!task)
+  {
+    std::cout << "AddTask_pdLd: No AliAnalysisTask found" << std::endl;
+    return nullptr;
+  }
 
   // add the task to the manager
   manager->AddTask(task);
 
-  // connect the manager to the task
-  manager->ConnectInput(task,0,manager->GetCommonInputContainer());
+  AliAnalysisDataContainer *container = manager->GetCommonInputContainer();
+  if(!container)
+  {
+    std::cout << "AddTask_pdLd: No CommonInputContainer found" << std::endl;
+    return nullptr;
+  }
 
+  // connect the manager to the task
+  manager->ConnectInput(task,0,container);
+  
 
 
   // pp collisions
