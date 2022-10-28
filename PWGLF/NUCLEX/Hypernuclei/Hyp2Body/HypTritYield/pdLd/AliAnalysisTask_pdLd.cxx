@@ -64,7 +64,6 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fEventPoolManager(0),
   fHistList_Event(0),
   fHistList_Proton(0),
-  fProtonMcHistList(0),
   fHistList_Deuteron(0),
   fHistList_ProtonDeuteron(0),
   fHistList_AntiProton(0),
@@ -235,7 +234,6 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fEventPoolManager(0),
   fHistList_Event(0),
   fHistList_Proton(0),
-  fProtonMcHistList(0),
   fHistList_Deuteron(0),
   fHistList_ProtonDeuteron(0),
   fHistList_AntiProton(0),
@@ -399,8 +397,6 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   DefineOutput(6,TList::Class());
   DefineOutput(7,TList::Class());
 
-
-
 }
 
   
@@ -466,9 +462,6 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
 
   fHistList_Proton = new TList();
   fHistList_Proton->SetOwner();
-
-  fProtonMcHistList = new TList();
-  fProtonMcHistList->SetOwner();
 
   fHistList_Deuteron = new TList();
   fHistList_Deuteron->SetOwner();
@@ -681,35 +674,6 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_Proton_ITS_dEdx_p->GetYaxis()->SetTitle("ITS signal (a.u.)");
   fHistList_Proton->Add(fHist_Proton_ITS_dEdx_p);
 
-
-
-
-  // MC-only histograms for protons
-
-  fMcHistPtRecProton = new TH1F("fMcHistPtRecProton","#it{p}_{T} distribution of reconstructed MC protons",240,0.0,6.0);
-  fMcHistPtRecProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistPtRecProton->GetYaxis()->SetTitle("counts");
-  fProtonMcHistList->Add(fMcHistPtRecProton);
-
-  fMcHistPtGenProton = new TH1F("fMcHistPtGenProton","#it{p}_{T} distribution of generated MC protons",240,0.0,6.0);
-  fMcHistPtGenProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistPtGenProton->GetYaxis()->SetTitle("counts");
-  fProtonMcHistList->Add(fMcHistPtGenProton);
-
-  fMcHistDCAPrimaryProton = new TH2F("fMcHistDCAPrimaryProton","DCA of MC primary protons",240,0.0,6.0,1000,-3.0,+3.0);
-  fMcHistDCAPrimaryProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistDCAPrimaryProton->GetYaxis()->SetTitle("DCA (cm)");
-  fProtonMcHistList->Add(fMcHistDCAPrimaryProton);
-
-  fMcHistDCASecondaryProton = new TH2F("fMcHistDCASecondaryProton","DCA of MC secondary protons",240,0.0,6.0,1000,-3.0,+3.0);
-  fMcHistDCASecondaryProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistDCASecondaryProton->GetYaxis()->SetTitle("DCA (cm)");
-  fProtonMcHistList->Add(fMcHistDCASecondaryProton);
-
-  fMcHistDCAMaterialProton = new TH2F("fMcHistDCAMaterialProton","DCA of MC material protons",240,0.0,6.0,1000,-3.0,+3.0);
-  fMcHistDCAMaterialProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistDCAMaterialProton->GetYaxis()->SetTitle("DCA (cm)");
-  fProtonMcHistList->Add(fMcHistDCAMaterialProton);
 
 
 

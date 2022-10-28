@@ -49,7 +49,6 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     AliStack		  *fStack;
     TList		  *fHistList_Event;
     TList		  *fHistList_Proton;
-    TList		  *fProtonMcHistList;
     TList		  *fHistList_Deuteron;
     TList		  *fHistList_ProtonDeuteron;
     TList		  *fHistList_AntiProton;
