@@ -279,6 +279,11 @@ AliAnalysisTaskCharmingFemto::~AliAnalysisTaskCharmingFemto() {
   if(fApplyML && fMLResponse) {
     delete fMLResponse;
   }
+
+  if (fUseTree) {
+    for (auto pair : *fPairTreeSE) delete pair.second;
+    for (auto pair : *fPairTreeME) delete pair.second;
+  }
 }
 
 //____________________________________________________________________________________________________
