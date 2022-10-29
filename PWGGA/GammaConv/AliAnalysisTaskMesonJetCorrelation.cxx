@@ -1242,11 +1242,13 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
 {
   // cout << " In Make Binning" << endl;
 
+  double epsilon = 1e-6;
+
   if (fMesonPDGCode == 111) { // pi0
     double valInvMass = 0;
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
-      if (valInvMass < 0.3)
+      if (valInvMass < 0.3 - epsilon)
         valInvMass += 0.004;
       else
         break;
@@ -1255,7 +1257,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
     double valInvMass = 0.3;
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
-      if (valInvMass >= 0.3 && valInvMass < 0.8)
+      if (valInvMass >= 0.3 - epsilon && valInvMass < 0.8 - epsilon)
         valInvMass += 0.004;
       else
         break;
@@ -1264,7 +1266,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
     double valInvMass = 0;
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
-      if (valInvMass < 0.3)
+      if (valInvMass < 0.3 - epsilon)
         valInvMass += 0.004;
       else
         break;
@@ -1276,15 +1278,15 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
   double valGammaPt = 0;
   for (int i = 0; i < 1000; ++i) {
     fVecBinsPhotonPt.push_back(valGammaPt);
-    if (valGammaPt < 1.0)
+    if (valGammaPt < 1.0 - epsilon)
       valGammaPt += 0.1;
-    else if (valGammaPt < 5)
+    else if (valGammaPt < 5 - epsilon)
       valGammaPt += 0.2;
-    else if (valGammaPt < 10)
+    else if (valGammaPt < 10 - epsilon)
       valGammaPt += 0.5;
-    else if (valGammaPt < 50)
+    else if (valGammaPt < 50 - epsilon)
       valGammaPt += 1;
-    else if (valGammaPt < 100)
+    else if (valGammaPt < 100 - epsilon)
       valGammaPt += 5;
     else
       break;
@@ -1295,17 +1297,17 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
   double valClusterPt = 0;
   for (int i = 0; i < 1000; ++i) {
     fVecBinsClusterPt.push_back(valClusterPt);
-    if (valClusterPt < 1.0)
+    if (valClusterPt < 1.0 - epsilon)
       valClusterPt += 0.1;
-    else if (valClusterPt < 5)
+    else if (valClusterPt < 5 - epsilon)
       valClusterPt += 0.2;
-    else if (valClusterPt < 10)
+    else if (valClusterPt < 10 - epsilon)
       valClusterPt += 0.5;
-    else if (valClusterPt < 50)
+    else if (valClusterPt < 50 - epsilon)
       valClusterPt += 1;
-    else if (valClusterPt < 100)
+    else if (valClusterPt < 100 - epsilon)
       valClusterPt += 5;
-    else if (valClusterPt < 200)
+    else if (valClusterPt < 200 - epsilon)
       valClusterPt += 10;
     else
       break;
@@ -1316,13 +1318,13 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
   double valMesonPt = 0;
   for (int i = 0; i < 1000; ++i) {
     fVecBinsMesonPt.push_back(valMesonPt);
-    if (valMesonPt < 5)
+    if (valMesonPt < 5 - epsilon)
       valMesonPt += 0.2;
-    else if (valMesonPt < 10)
+    else if (valMesonPt < 10 - epsilon)
       valMesonPt += 0.5;
-    else if (valMesonPt < 20)
+    else if (valMesonPt < 20 - epsilon)
       valMesonPt += 1;
-    else if (valMesonPt < 50)
+    else if (valMesonPt < 50 - epsilon)
       valMesonPt += 5;
     else
       break;
@@ -1333,15 +1335,15 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
   double valJetPt = 0;
   for (int i = 0; i < 1000; ++i) {
     fVecBinsJetPt.push_back(valJetPt);
-    if (valJetPt < 10)
+    if (valJetPt < 10 - epsilon)
       valJetPt += 10;
-    else if (valJetPt < 50.0)
+    else if (valJetPt < 50.0 - epsilon)
       valJetPt += 5;
-    else if (valJetPt < 100)
+    else if (valJetPt < 100 - epsilon)
       valJetPt += 10;
-    else if (valJetPt < 200)
+    else if (valJetPt < 200 - epsilon)
       valJetPt += 20;
-    else if (valJetPt < 500)
+    else if (valJetPt < 500 - epsilon)
       valJetPt += 50;
     else
       break;
@@ -1352,12 +1354,14 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
   double valZ = 0;
   for (int i = 0; i < 1000; ++i) {
     fVecBinsFragment.push_back(valZ);
-    if (valZ < 0.1)
+    if (valZ < 0.1 - epsilon)
       valZ += 0.01;
-    else if (valZ < 0.2)
+    else if (valZ < 0.2 - epsilon)
       valZ += 0.02;
-    else if (valZ < 1)
+    else if (valZ < 1 - epsilon)
       valZ += 0.05;
+    else if (valZ < 1.2 - epsilon)
+      valZ += 0.1;
     else
       break;
   }
@@ -1493,7 +1497,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
   // Process True Jets
   if (fIsMC) {
     for (int i = 0; i < fConvJetReader->GetTrueNJets(); i++) {
-      fHistoTruePtJet[fiCut]->Fill(fTrueVectorJetPt.at(i));
+      fHistoTruePtJet[fiCut]->Fill(fTrueVectorJetPt.at(i), fWeightJetJetMC);
 
       // lambda to find the index of the rec. jet corresponding to the true jet
       auto findResults = std::find_if(std::begin(MapRecJetsTrueJets), std::end(MapRecJetsTrueJets), [&](const std::pair<int, int>& pair) {
@@ -1531,7 +1535,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
   // Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete => abort processing of this event/file
   if (eventQuality == 2 || eventQuality == 3) {
     for (int iCut = 0; iCut < fnCuts; iCut++) {
-      fHistoNEvents[iCut]->Fill(eventQuality);
+      fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC > 1)
         fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
     }

@@ -215,6 +215,7 @@ void MatrixHandler4D::AddBinContent(double valJetX, double valJetY, double valMe
 //____________________________________________________________________________________________________________________________
 void MatrixHandler4D::GetAxisBinning(std::vector<double>& vecXBins, std::vector<double>& vecYBins)
 {
+
   const int sizeX = (vecBinsJetX.size() - 1) * (vecBinsMesonX.size() - 1) + 1;
   const int sizeY = (vecBinsJetY.size() - 1) * (vecBinsMesonY.size() - 1) + 1;
   vecXBins.resize(sizeX);
@@ -226,21 +227,26 @@ void MatrixHandler4D::GetAxisBinning(std::vector<double>& vecXBins, std::vector<
     double rangeXBinsJet = std::abs(vecBinsJetX[jx] - vecBinsJetX[jx + 1]);
     double downscalingfacX = rangeXBinsJet / rangeXBinsMesons;
     for (unsigned int mx = 0; mx < vecBinsMesonX.size() - 1; ++mx) {
-      vecXBins[counter] = vecBinsJetX[jx] + vecBinsMesonX[mx] * downscalingfacX;
+      vecXBins[counter] = vecBinsJetX[jx] + (vecBinsMesonX[mx] - vecBinsMesonX[0]) * downscalingfacX;
+      if (counter > 0) {
+        if (vecXBins[counter] <= vecXBins[counter - 1])
+          printf("Binning is not in ascending order! FIX THIS!!\n");
+      }
       counter++;
     }
   }
   vecXBins[counter] = vecBinsJetX.back();
-  for (unsigned int i = 0; i < vecXBins.size() - 1; ++i) {
-    if (vecXBins[i] >= vecXBins[i + 1])
-      printf("Binning is not in ascending order! FIX THIS!!\n");
-  }
+
   counter = 0;
   for (unsigned int jy = 0; jy < vecBinsJetY.size() - 1; ++jy) {
     double rangeYBinsJet = std::abs(vecBinsJetY[jy] - vecBinsJetY[jy + 1]);
     double downscalingfacY = rangeYBinsJet / rangeYBinsMesons;
     for (unsigned int my = 0; my < vecBinsMesonY.size() - 1; ++my) {
-      vecYBins[counter] = vecBinsJetY[jy] + vecBinsMesonY[my] * downscalingfacY;
+      vecYBins[counter] = vecBinsJetY[jy] + (vecBinsMesonY[my] - vecBinsMesonY[0]) * downscalingfacY;
+      if (counter > 0) {
+        if (vecYBins[counter] <= vecYBins[counter - 1])
+          printf("Binning is not in ascending order! FIX THIS!!\n");
+      }
       counter++;
     }
   }
