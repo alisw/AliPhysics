@@ -1,5 +1,5 @@
-#ifndef AliAnalysisMeanPt_H
-#define AliAnalysisMeanPt_H
+#ifndef AliAnalysisHMMeanPt_H
+#define AliAnalysisHMMeanPt_H
 class TH1F;
 class TH1I;
 class TH2;
@@ -28,12 +28,12 @@ class AliPIDResponse;
 #include "TH1D.h"
 #include "TString.h"
 
-class AliAnalysisMeanPt : public AliAnalysisTaskSE
+class AliAnalysisHMMeanPt : public AliAnalysisTaskSE
 {
 public:
-    AliAnalysisMeanPt();
-    AliAnalysisMeanPt(const char *name);
-    virtual                 ~AliAnalysisMeanPt();
+    AliAnalysisHMMeanPt();
+    AliAnalysisHMMeanPt(const char *name);
+    virtual                 ~AliAnalysisHMMeanPt();
     
     virtual void            UserCreateOutputObjects();
     virtual void            UserExec(Option_t* option);
@@ -117,9 +117,9 @@ private:
   
         TH1F                    *fHistPtcal;    			//!
         
-    AliAnalysisMeanPt(const AliAnalysisMeanPt&);
-    AliAnalysisMeanPt& operator=(const AliAnalysisMeanPt&);
-    ClassDef(AliAnalysisMeanPt, 1);
+    AliAnalysisHMMeanPt(const AliAnalysisHMMeanPt&);
+    AliAnalysisHMMeanPt& operator=(const AliAnalysisHMMeanPt&);
+    ClassDef(AliAnalysisHMMeanPt, 1);
     
 };
 #endif

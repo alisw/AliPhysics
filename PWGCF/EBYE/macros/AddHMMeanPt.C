@@ -1,10 +1,10 @@
-AliAnalysisMeanPt* AddMeanPt(
+AliAnalysisHMMeanPt* AddHMMeanPt(
                              TString suffix= "fb128",
-							 int trackBit = 128,
-							 float vrtxz = 10.,
-							 float p_low = 0.15,
-							 float p_up = 2.0
-							 )
+					int trackBit = 128,
+					float vrtxz = 10.,
+					float p_low = 0.15,
+					float p_up = 2.0
+					)
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -13,11 +13,11 @@ AliAnalysisMeanPt* AddMeanPt(
         return 0x0;
     }
     
-    AliAnalysisMeanPt* task = new AliAnalysisMeanPt("TaskEbyE_buali");
+    AliAnalysisHMMeanPt* task = new AliAnalysisHMMeanPt("TaskEbyE_buali");
     if(!task) return 0x0;
     
-	task->SelectCollisionCandidates(AliVEvent::kINT7);
-	//task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+	//task->SelectCollisionCandidates(AliVEvent::kINT7);
+	task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
    
     mgr->AddTask(task);
         
@@ -29,8 +29,6 @@ AliAnalysisMeanPt* AddMeanPt(
     TString fileName = "meanpt_pp_MB_";
     fileName += suffix.Data();
 
-    //printf("container name: %s\n", fileName.Data());
-  
     //connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     

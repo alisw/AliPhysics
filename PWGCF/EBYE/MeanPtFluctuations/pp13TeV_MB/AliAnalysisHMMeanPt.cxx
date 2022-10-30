@@ -51,9 +51,9 @@
 #include "AliPIDResponse.h"
 #include "AliPID.h"
 #include "THnSparse.h"
-#include "AliAnalysisMeanPt.h"
+#include "AliAnalysisHMMeanPt.h"
 
-class AliAnalysisMeanPt;
+class AliAnalysisHMMeanPt;
 
 #include "TFile.h"
 #include <iostream>
@@ -61,13 +61,13 @@ class AliAnalysisMeanPt;
 
 using namespace std;
 
-ClassImp(AliAnalysisMeanPt)
+ClassImp(AliAnalysisHMMeanPt)
 
 //================================================
 //--------------Constructor-----------------------
 //================================================
 
-AliAnalysisMeanPt::AliAnalysisMeanPt()
+AliAnalysisHMMeanPt::AliAnalysisHMMeanPt()
 : AliAnalysisTaskSE(),
 fAOD(0x0), 
 fPIDResponse(0x0),
@@ -113,7 +113,7 @@ htrk(0)
 }
 //-------------------------------------------------
 
-AliAnalysisMeanPt::AliAnalysisMeanPt(const char* name)
+AliAnalysisHMMeanPt::AliAnalysisHMMeanPt(const char* name)
 :AliAnalysisTaskSE(name),
 fAOD(0x0), 
 fPIDResponse(0x0),
@@ -162,14 +162,14 @@ htrk(0)
 }
 //--------------Destructor----------------------------------
 
-AliAnalysisMeanPt::~AliAnalysisMeanPt()
+AliAnalysisHMMeanPt::~AliAnalysisHMMeanPt()
 {
 	if(fOutputList) 			        delete fOutputList;
 	if(fTreept) 			        delete fTreept;	
 }
 //--------------UserCreateOutputObjects-----------------------
 
-void AliAnalysisMeanPt::UserCreateOutputObjects()
+void AliAnalysisHMMeanPt::UserCreateOutputObjects()
 {
     // create output objects
 
@@ -328,7 +328,7 @@ void AliAnalysisMeanPt::UserCreateOutputObjects()
 }
 //----------------------UserExec------------------------------
 
-void AliAnalysisMeanPt::UserExec(Option_t *){
+void AliAnalysisHMMeanPt::UserExec(Option_t *){
     
 //cout<<"starting analysis"<<endl;
     
@@ -394,7 +394,7 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
     fRunNumber = fInputEvent->GetRunNumber();
     hHighMultRuns->Fill(fRunNumber);
 
-    //fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0);
+    fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0);
 
     if (!fEventCuts.AcceptEvent(fInputEvent)) return;
     
@@ -508,7 +508,7 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 }
 //---------------------------------------------------------------------------------------
 
-bool AliAnalysisMeanPt::AcceptTrack(AliAODTrack* aodtrack) const{
+bool AliAnalysisHMMeanPt::AcceptTrack(AliAODTrack* aodtrack) const{
 if(!aodtrack) return kFALSE;
 Double_t pt = aodtrack->Pt();
     
@@ -525,10 +525,10 @@ return kTRUE;
 }
 //--------------------------------------------------------------------------------
 
-void AliAnalysisMeanPt::Terminate(Option_t *){
+void AliAnalysisHMMeanPt::Terminate(Option_t *){
 // terminate
 // called at the END of the analysis (when all events are processed)
-Info("AliAnalysisMeanPt"," Task Successfully finished");
+Info("AliAnalysisHMMeanPt"," Task Successfully finished");
 AliInfo(Form("Found  %d Analysed events",nevt));
 
 }
