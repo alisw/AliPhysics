@@ -285,6 +285,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
   }else if (trainConfig == 1023){ // Cutvariation for pi0 pT
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0103663o00000000","0453503000000000"); // pi0 pT > 1.5
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","01036z3o00000000","0453503000000000"); // pi0 pT > 2
+  }else if (trainConfig == 1024){ // Asymmetry cut on omega
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0103603o00000000","045350l000000000");
 
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  INT7 run1
