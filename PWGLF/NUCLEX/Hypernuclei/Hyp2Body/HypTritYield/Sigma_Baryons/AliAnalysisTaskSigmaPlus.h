@@ -90,13 +90,14 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         AliPIDResponse*       fPIDResponse;               //!<! PID response object 
 
         AliEventPoolManager*  fEvPoolMgr;                 //!<! Event Pool Manager for Event-Mixing
+        AliEventPoolManager*  fEvPoolMgr2;                //!<! Event Pool Manager for Event-Mixing
 
         TTree*                fSigmaCandTree;             //!<! Tree with Sigma candidates
         TTree*                fSigmaCandTreeExtra;        //!<! Tree with Extra Sigma candidates
         TTree*                fSigmaPairTree;             //!<! Tree with Sigma Proton Pairs
         TTree*                fProtonTree;                //!<! Tree with Protons for Event-Mixing   
-        TTree*                fSigmaRedPairTreeSE;        //!<! Tree with Sigma Proton Pairs Same Event
-        TTree*                fSigmaRedPairTreeME;        //!<! Tree with Sigma Proton Pairs Mixed Event
+        TTree*                fSigmaPairTreeSE;           //!<! Tree with Sigma Proton Pairs Same Event
+        TTree*                fSigmaPairTreeME;           //!<! Tree with Sigma Proton Pairs Mixed Event
         TTree*                fSigmaMEBackgroundTree;     //!<! Tree with Sigma candidate Mixed Event Background
         TTree*                fSigmaCandTreerot;          //!<! Tree with rotated Sigma candidates for Background
 
@@ -107,6 +108,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //Particle Arrays
         std::vector<int>      fProtonArray;               //!<! Proton candidates
+        std::vector<int>      fProtonArray2;              //!<! Stricter Selection for Mixing
         std::vector<int>      fElectronArray;             //!<! Electron candidates
         std::vector<int>      fConvPhotonArray;           //!<! V0 Photon candidates
         std::vector<std::pair<int,int>>  PairIndexArray;  //!<! V0 Photon candidates
@@ -135,6 +137,13 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Short_t               fRefMultComb10;             //combined reference multiplicity (tracklets + ITSTPC) in |eta|<1.0
         ULong64_t             fGlobalEventID;             //Global ID of the Collision  
 
+        Double_t              fMeanProtonpt;              //Mean pt of protons for correlations
+        Bool_t                fEventhasSigma;             //Event has Sigma Candidate(s)
+        Bool_t                fEventhasProton;            //Event has Proton Candidate(s)
+
+        //Remove generated pile-up events (included in pass2/pass3)
+        Bool_t                fRemoveGenPileup = kTRUE;   
+
         //Activate some extra output. Caution: Very anoying!
         Bool_t                fDebug = kFALSE;
 
@@ -148,26 +157,41 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fProcessRecoOff = kFALSE; 
         Bool_t                fProcessRecoOff2 = kFALSE; 
         Bool_t                fProcessOneGamma = kFALSE; 
+        Bool_t                fSavePartCand = kTRUE; 
         Bool_t                fSavePairs = kFALSE; 
         Bool_t                fSaveAllProtons = kFALSE; 
         Bool_t                fFillredPairTreeSE = kTRUE; 
         Bool_t                fFillredPairTreeME = kTRUE; 
-        Bool_t                fSaveMixedBackground = kTRUE; 
-        Bool_t                fSaveRotateBackground = kTRUE; 
+        Bool_t                fSaveMixedBackground = kFALSE; 
+        Bool_t                fSaveRotateBackground = kFALSE; 
 
         //Event Cuts
         Double_t              fMaxVertexZ = 10;    
 
         //Event Mixing Settings
-        Int_t                 fEvPoolSize = 20;        //Number of Events used for Event Mixing for Correlation
+        Int_t                 fEvPoolSize = 10;        //Number of Events used for Event Mixing for Invariant Mass
         Int_t                 fEvTrackSize = 10000;    //Targeted Track Number
-        Int_t                 fMaxBkgMixedEvents = 10;  //Number of Events used for Event Mixing for Invariant Mass
         Int_t                 fCentralityBins = 29;
         Double_t              fMinCentBin = -5;
         Double_t              fMaxCentBin = 140;
-        Int_t                 fZvtxBins = 10;
-        Double_t              fMinZBin = 0;
+        Int_t                 fZvtxBins = 20;
+        Double_t              fMinZBin = -10;
         Double_t              fMaxZBin = 10;
+
+        //Event Mixing Settings
+        Int_t                 fEvPoolSize2 = 20;        //Number of Events used for Event Mixing for Correlation
+        Int_t                 fEvTrackSize2 = 10000;    //Targeted Track Number
+        Int_t                 fCentralityBins2 = 29;
+        Double_t              fMinCentBin2 = -5;
+        Double_t              fMaxCentBin2 = 140;
+        Int_t                 fZvtxBins2 = 20;
+        Double_t              fMinZBin2 = -10;
+        Double_t              fMaxZBin2 = 10;
+        Int_t                 fPtBins2 = 1;
+        Double_t              fMinPtBin2 = 0;
+        Double_t              fMaxPtBin2 = 10;
+        Bool_t                fRequireSigma = kTRUE;
+        Bool_t                fRequireProton = kTRUE;
 
         //FillProtonArray Cuts
         Double_t              fMaxProtEta = 1;                   // 0.9  
@@ -180,6 +204,15 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMaxpOnlyTPCPID = 0.9;              // - 
         Double_t              fMinProtpt = 0;                     // -
         Double_t              fMaxProtpt = 15;                    // - 
+
+        //FillProtonArray2 Cuts
+        Double_t              fStrictMaxProtEta = 0.9;               
+        Double_t              fStrictMinTPCClustProt = 60;        
+        Double_t              fStrictMaxNsigProtTPC = 3;         
+        Double_t              fStrictMaxNsigProtTOF = 5;         
+        Double_t              fStrictMaxpOnlyTPCPID = 0.8;        
+        Double_t              fStrictMinProtpt = 0;              
+        Double_t              fStrictMaxProtpt = 5;              
 
         //ProcessMCParticles Cuts
         Double_t              fMaxMCEta = 0.9;                    // 0.9
@@ -226,15 +259,20 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fveryverylowkstar = 0.05;        
 
         //Fill Pair Tree Cuts     (Coarse Cuts to reduce Tree Size)
-        Double_t              fMinPairPi0Mass = 0.1;    
-        Double_t              fMaxPairPi0Mass = 0.16;    
-        Double_t              fMaxPairSigmaPA = 0.06;     
-        Double_t              fMinPairSigmaMass = 1.13;    
-        Double_t              fMaxPairSigmaMass = 1.25;    
-        Double_t              fMinPairProtonDCAxy = 0.005;    
-        Double_t              fMaxPairkstar = 0.6;    
-    
+        Double_t              fMinCorrPi0Mass = 0.1;    
+        Double_t              fMaxCorrPi0Mass = 0.16;    
+        Double_t              fMaxCorrSigmaPA = 0.06;     
+        Double_t              fMinCorrSigmaMass = 1.13;    
+        Double_t              fMaxCorrSigmaMass = 1.25;    
+        Double_t              fMinCorrProtonDCAxy = 0.005;    
+        Double_t              fMaxCorrPairProtonDCAxy = 0.3;    // Pair only with
+        Double_t              fMaxCorrPairProtonDCAz = 0.6;     // primary Protons
+        Double_t              fMaxCorrkstar = 0.6;    
+
     public: //Setter-Functions
+
+        //Remove generated pile-up
+        void SetRemovePileup(Bool_t removepileup) {fRemoveGenPileup = removepileup;}
 
         //Activate some extra output. Caution: Very anoying!
         void SetActivateDebug(Bool_t debug) {fDebug = debug;}
@@ -249,6 +287,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetActivateRecoOff(Bool_t processrecooff) {fProcessRecoOff = processrecooff;}
         void SetActivateRecoOff2(Bool_t processrecooff2) {fProcessRecoOff2 = processrecooff2;}
         void SetActivateOneGamma(Bool_t processonegamma) {fProcessOneGamma = processonegamma;}
+        void SetActivateCandidates(Bool_t savecand) {fSavePartCand = savecand;}
         void SetActivatePairs(Bool_t savepairs) {fSavePairs = savepairs;}
         void SetActivateAllProtons(Bool_t saveprotons) {fSaveAllProtons = saveprotons;}
         void SetActivateSETree(Bool_t saveSE) {fFillredPairTreeSE = saveSE;}
@@ -262,14 +301,29 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         //Event Mixing Settings
         void SetEventPoolSize(Int_t poolsize) {fEvPoolSize = poolsize;}
         void SetTrackBufferSize(Int_t tracksize) {fEvTrackSize = tracksize;}
-        void SetBkgEventPoolSize(Int_t bkgpoolsize) {fMaxBkgMixedEvents = bkgpoolsize;}
         void SetNMultBins(Int_t nmult) {fCentralityBins = nmult;}
         void SetMinMultBin(Double_t minmult) {fMinCentBin = minmult;}
         void SetMaxMultBin(Double_t maxmult) {fMaxCentBin = maxmult;}
         void SetNZVertBins(Int_t nzvert) {fZvtxBins = nzvert;}
         void SetMinZVertBin(Double_t minz) {fMinZBin = minz;}
         void SetMaxZVertBin(Double_t maxz) {fMaxZBin = maxz;}
-        
+
+        //Event Mixing Settings
+        void SetEventPoolSize2(Int_t poolsize) {fEvPoolSize2 = poolsize;}
+        void SetTrackBufferSize2(Int_t tracksize) {fEvTrackSize2 = tracksize;}
+        void SetNMultBins2(Int_t nmult) {fCentralityBins2 = nmult;}
+        void SetMinMultBin2(Double_t minmult) {fMinCentBin2 = minmult;}
+        void SetMaxMultBin2(Double_t maxmult) {fMaxCentBin2 = maxmult;}
+        void SetNZVertBins2(Int_t nzvert) {fZvtxBins2 = nzvert;}
+        void SetMinZVertBin2(Double_t minz) {fMinZBin2 = minz;}
+        void SetMaxZVertBin2(Double_t maxz) {fMaxZBin2 = maxz;}
+        void SetNPtBins2(Int_t npt) {fPtBins2 = npt;}
+        void SetMinPtBin2(Double_t minpt) {fMinPtBin2 = minpt;}
+        void SetMaxPtBin2(Double_t maxpt) {fMaxPtBin2 = maxpt;}
+
+        void SetRequireSigma(Double_t reqsig) {fRequireSigma = reqsig;}
+        void SetRequireProton(Double_t reqprt) {fRequireProton = reqprt;}
+
         //FillProtonArray Cuts
         void SetProtonMaxEta(Double_t maxeta) {fMaxProtEta = maxeta;}
         void SetProtonMinTPCCluster(Double_t minclst) {fMinTPCClustProt = minclst;}
@@ -281,6 +335,15 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetProtonMaxpOnlyTPCPID(Double_t pmaxonlytpc) {fMaxpOnlyTPCPID = pmaxonlytpc;}
         void SetProtonMinpt(Double_t minpt) {fMinProtpt = minpt;}
         void SetProtonMaxpt(Double_t maxpt) {fMaxProtpt = maxpt;}
+
+        //FillProtonArray2 Cuts
+        void SetStrictProtonMaxEta(Double_t maxeta) {fStrictMaxProtEta = maxeta;}
+        void SetStrictProtonMinTPCCluster(Double_t minclst) {fStrictMinTPCClustProt = minclst;}
+        void SetStrictProtonMaxNSigmaTPC(Double_t nsigtpc) {fStrictMaxNsigProtTPC = nsigtpc;}
+        void SetStrictProtonMaxNSigmaTOF(Double_t nsigtof) {fStrictMaxNsigProtTOF = nsigtof;}
+        void SetStrictProtonMaxpOnlyTPCPID(Double_t pmaxonlytpc) {fStrictMaxpOnlyTPCPID = pmaxonlytpc;}
+        void SetStrictProtonMinpt(Double_t minpt) {fStrictMinProtpt = minpt;}
+        void SetStrictProtonMaxpt(Double_t maxpt) {fStrictMaxProtpt = maxpt;}
 
         //ProcessMCParticles Cuts
         void SetMCMaxEta(Double_t maxeta) {fMaxMCEta = maxeta;}
@@ -327,13 +390,15 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetVeryVeryLowkstar(Double_t veryverylowkstar) {fveryverylowkstar = veryverylowkstar;}
 
         //Fill Pair Tree Cuts     (Coarse Cuts to reduce Tree Size)
-        void SetPairPi0MinMass(Double_t minpi0mass) {fMinPairPi0Mass = minpi0mass;}
-        void SetPairPi0MaxMass(Double_t maxpi0mass) {fMaxPairPi0Mass = maxpi0mass;}
-        void SetPairSigmaMaxPA(Double_t maxpa) {fMaxPairSigmaPA = maxpa;}
-        void SetPairSigmaMinMass(Double_t minsigmass) {fMinPairSigmaMass = minsigmass;}
-        void SetPairSigmaMaxMass(Double_t maxsigmass) {fMaxPairSigmaMass = maxsigmass;}
-        void SetPairProtonMinDCAxy(Double_t minprotondcaxy) {fMinPairProtonDCAxy = minprotondcaxy;}
-        void SetPairMaxkstar(Double_t maxkstar) {fMaxPairkstar = maxkstar;}
+        void SetCorrPi0MinMass(Double_t minpi0mass) {fMinCorrPi0Mass = minpi0mass;}
+        void SetCorrPi0MaxMass(Double_t maxpi0mass) {fMaxCorrPi0Mass = maxpi0mass;}
+        void SetCorrSigmaMaxPA(Double_t maxpa) {fMaxCorrSigmaPA = maxpa;}
+        void SetCorrSigmaMinMass(Double_t minsigmass) {fMinCorrSigmaMass = minsigmass;}
+        void SetCorrSigmaMaxMass(Double_t maxsigmass) {fMaxCorrSigmaMass = maxsigmass;}
+        void SetCorrProtonMinDCAxy(Double_t minprotondcaxy) {fMinCorrProtonDCAxy = minprotondcaxy;}
+        void SetCorrPairProtonMaxDCAxy(Double_t maxpairprotondcaxy) {fMaxCorrPairProtonDCAxy = maxpairprotondcaxy;}
+        void SetCorrPairProtonMaxDCAz(Double_t maxpairprotondcaz) {fMaxCorrPairProtonDCAz = maxpairprotondcaz;}
+        void SetPairMaxkstar(Double_t maxkstar) {fMaxCorrkstar = maxkstar;}
 
     private:
 
@@ -358,11 +423,15 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Short_t               fSigRefMultComb10;        
         Float_t               fSigBField;               
         Float_t               fInvSigMass;               
+        Float_t               fInvSigpropMass;               
         Float_t               fSigPA;               
         Float_t               fSigCharge;        
         Float_t               fSigPx;        
         Float_t               fSigPy;        
         Float_t               fSigPz;        
+        Float_t               fSigpropPx;        
+        Float_t               fSigpropPy;        
+        Float_t               fSigpropPz;        
         Float_t               fPrimVertX;        
         Float_t               fPrimVertY;        
         Float_t               fPrimVertZ;        
@@ -475,9 +544,10 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         ULong64_t             fPairProtonStatus;
         //End of Extra Branches of "fSigmaPairTree"
 
-        //Extra Branches of TTree "fSigmaRedPairTreeSE/ME"
+        //Extra Branches of TTree "fSigmaPairTreeSE/ME"
         Float_t               fSigmaProtonkstar;  //Saved in MeV/c
-        //End of Extra Branches of "fSigmaRedPairTreeSE/ME"
+        Float_t               fSigmaProtonpropkstar; 
+        //End of Extra Branches of "fSigmaPairTreeSE/ME"
 
         AliAnalysisTaskSigmaPlus(const AliAnalysisTaskSigmaPlus&); // not implemented
         AliAnalysisTaskSigmaPlus& operator=(const AliAnalysisTaskSigmaPlus&); // not implemented
@@ -485,7 +555,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         ClassDef(AliAnalysisTaskSigmaPlus, 1);
 };
 
-class AliAODTrackreduced : public TObject
+class AliAODTrackreduced : public TObject //Version with Cov Matrix for Reconstruction
 {
     //This class stores only the info of the AliAODTrack needed for  
     //the Event Mixing. Inherits from TObject so it can be stored in
@@ -580,6 +650,84 @@ class AliAODTrackreduced : public TObject
         Float_t   nsigmatofelectron;
 
     ClassDef(AliAODTrackreduced, 1); // class required for event mixing
+};
+
+class AliAODTrackcorrelation : public TObject //Version without Cov Matrix for Correlations
+{
+    //This class stores only the info of the AliAODTrack needed for  
+    //the Event Mixing. Inherits from TObject so it can be stored in
+    //a TObjArray needed for AliEventPool. Uses (mostly) same getters
+    //as in AliAODTrack for simplicity
+    public:
+        //AliAODTrackcorrelation(){}
+        AliAODTrackcorrelation() :
+        charge(-999), tpcncls(-999), id(-999), status(0), tpcchi2(-999), dcaxy(-999), dcaz(-999), 
+        nsigmatpcproton(-999), nsigmatpckaon(-999), nsigmatpcpion(-999), nsigmatofproton(-999), nsigmatofkaon(-999), nsigmatofpion(-999)
+        {
+            for(Int_t i=0; i<3; i++){p[i]=-999;}            
+        }
+        virtual ~AliAODTrackcorrelation() {}
+
+        //Setter
+        void InitfromTrack(const AliAODTrack *aodTrack, const AliPIDResponse* pidresp = 0) { 
+            if(!aodTrack) {std::cout << "WARNING: Input source 'AOD Track' does not exit!\n"; return;}            
+            aodTrack->GetPxPyPz(p);
+            aodTrack->GetImpactParameters(dcaxy,dcaz);
+            charge = aodTrack->Charge();
+            tpcncls = aodTrack->GetTPCNcls();
+            itsncls = aodTrack->GetITSNcls();
+            id = aodTrack->GetID();
+            status = aodTrack->GetStatus();
+            tpcchi2 = aodTrack->GetTPCchi2();
+            if(!pidresp) {std::cout << "WARNING: Input source 'PID Response' does not exit!\n"; return;}            
+            nsigmatpcproton = pidresp->NumberOfSigmasTPC(aodTrack,AliPID::kProton);
+            nsigmatpckaon = pidresp->NumberOfSigmasTPC(aodTrack,AliPID::kKaon);
+            nsigmatpcpion = pidresp->NumberOfSigmasTPC(aodTrack,AliPID::kPion);
+            nsigmatofproton = pidresp->NumberOfSigmasTOF(aodTrack,AliPID::kProton);
+            nsigmatofkaon = pidresp->NumberOfSigmasTOF(aodTrack,AliPID::kKaon);
+            nsigmatofpion = pidresp->NumberOfSigmasTOF(aodTrack,AliPID::kPion);
+            return;
+        }
+
+        //Getters
+        Double_t Px() const { return p[0]; } 
+        Double_t Py() const { return p[1]; } 
+        Double_t Pz() const { return p[2]; } 
+        Short_t Charge() const { return charge; } 
+        Int_t GetTPCNcls() const { return tpcncls; } 
+        Int_t GetITSNcls() const { return itsncls; } 
+        Int_t GetID() const { return id; } 
+        ULong64_t GetStatus() const { return status; } 
+        Float_t GetTPCchi2() const { return tpcchi2; } 
+
+        void GetPxPyPz(Double_t pp[3]) const { for(Int_t i=0; i<3; i++){pp[i]=p[i];} return; }
+        void GetImpactParameters(Float_t &xy, Float_t &z) const { xy = dcaxy; z = dcaz; return; }
+
+        Float_t NumberOfSigmasTPCProton() const { return nsigmatpcproton; }
+        Float_t NumberOfSigmasTPCKaon() const { return nsigmatpckaon; }
+        Float_t NumberOfSigmasTPCPion() const { return nsigmatpcpion; }
+        Float_t NumberOfSigmasTOFProton() const { return nsigmatofproton; }
+        Float_t NumberOfSigmasTOFKaon() const { return nsigmatofkaon; }
+        Float_t NumberOfSigmasTOFPion() const { return nsigmatofpion; }
+
+    protected:
+        Double_t   p[3];
+        Short_t   charge;
+        Int_t     tpcncls;
+        Int_t     itsncls;
+        Int_t     id;
+        ULong64_t status;
+        Float_t   tpcchi2;
+        Float_t   dcaxy;
+        Float_t   dcaz;
+        Float_t   nsigmatpcproton; 
+        Float_t   nsigmatpckaon; 
+        Float_t   nsigmatpcpion; 
+        Float_t   nsigmatofproton; 
+        Float_t   nsigmatofkaon; 
+        Float_t   nsigmatofpion; 
+
+    ClassDef(AliAODTrackcorrelation, 1); // class required for event mixing
 };
 
 #endif
