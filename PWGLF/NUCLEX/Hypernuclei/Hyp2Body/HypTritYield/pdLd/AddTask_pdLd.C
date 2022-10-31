@@ -50,7 +50,7 @@ AliAnalysisTask* AddTask_pdLd(
     isSemiCentral = true;
   }
 
-  if(CollisionSystem > 2)
+  if((CollisionSystem > 2) || (CollisionSystem < 0))
   {
     std::cout << "AddTask_pdLd: CollisionSystem: " << CollisionSystem << " is not defined!" << std::endl;
   }
@@ -139,13 +139,13 @@ AliAnalysisTask* AddTask_pdLd(
 
 
   TString TaskName = TString::Format("%s:AnalysisTask_pdLd%s",AliAnalysisManager::GetCommonFileName(),suffix.Data());
-  TString EventListName		= "Events";
-  TString ProtonListName	= "Protons";
-  TString DeuteronListName	= "Deuterons";
-  TString pdListName		= "Proton-Deuteron-Pairs";
-  TString AntiProtonListName	= "AntiProtons";
-  TString AntiDeuteronListName	= "AntiDeuterons";
-  TString apadListName		= "AntiProton-AntiDeuteron-Pairs";
+  TString EventListName		= Form("Events%s",suffix.Data());
+  TString ProtonListName	= Form("Protons%s",suffix.Data());
+  TString DeuteronListName	= Form("Deuterons%s",suffix.Data());
+  TString pdListName		= Form("Proton-Deuteron-Pairs%s",suffix.Data());
+  TString AntiProtonListName	= Form("AntiProtons%s",suffix.Data());
+  TString AntiDeuteronListName	= Form("AntiDeuterons%s",suffix.Data());
+  TString apadListName		= Form("AntiProton-AntiDeuteron-Pairs%s",suffix.Data());
 
   if(DebugAddTask) std::cout << "AddTask_pdLd: TString directory names created" << std::endl;
 
@@ -169,7 +169,6 @@ AliAnalysisTask* AddTask_pdLd(
 
   manager->ConnectOutput(task,7,manager->CreateContainer(apadListName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,TaskName.Data()));
   if(DebugAddTask) std::cout << "AddTask_pdLd: Output container 7 connected" << std::endl;
-
 
 
   // return a pointer to the task
