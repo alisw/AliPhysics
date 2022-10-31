@@ -457,7 +457,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
     }
     
     ULong64_t genIndex = (ULong64_t)part->GetGeneratorIndex();
-    if (generatorIndexMask != 0ull && (genIndex >= 64 || (1ull<<genIndex & generatorIndexMask) == 0)){
+    if (generatorIndexMask != 0ull && (genIndex >= 64ull || (1ull<<genIndex & generatorIndexMask) == 0ull)){
       if (hasOwnership)
         delete part;
       continue;
