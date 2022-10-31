@@ -3130,7 +3130,7 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
   Int_t nMCTracks = mcEvent->GetNumberOfTracks();
 
   //loop over all MC tracks
-  for(Int_t iMCtrack = 1; iMCtrack < nMCTracks; iMCtrack++){
+  for(Int_t iMCtrack = 0; iMCtrack < nMCTracks; iMCtrack++){
 
     AliAODMCParticle* mcPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(iMCtrack));
     if(!mcPart) {
