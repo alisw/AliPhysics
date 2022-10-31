@@ -82,6 +82,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   int GetPhotonMotherLabel(AliAODConversionPhoton* gammaCand, int& convertedPhotonLabel, bool isCaloPhoton);
   void RelabelAODPhotonCandidates(Bool_t mode);
   void ProcessTrueMesonCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
+  void ProcessTrueMesonCandidatesInTrueJetsAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
   // void IsTrueParticle(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, Bool_t matched);
   bool CheckAcceptance(AliAODMCParticle* gamma0, AliAODMCParticle* gamma1);
   bool IsParticleFromPartonFrag(AliAODMCParticle* particle, int idParton);
@@ -355,6 +356,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoTrueSecondaryMesonInvMassPt;                          //! vector of histos inv. mass vs. pT for true secondary mesons
   std::vector<TH2F*> fHistoTrueMesonJetPtVsTruePt;                               //! vector of histos true meson pt vs true jet pt
   std::vector<TH2F*> fHistoTrueMesonJetPtVsTrueZ;                                //! vector of histos true meson z vs true jet pt
+  std::vector<TH2F*> fHistoTrueMesonInTrueJet_JetPtVsTruePt;                     //! vector of histos true meson pt vs true jet pt inside true jets
+  std::vector<TH2F*> fHistoTrueMesonInTrueJet_JetPtVsTrueZ;                      //! vector of histos true meson z vs true jet pt inside true jets
   std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
 
   //-------------------------------
@@ -403,6 +406,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMCJetPtVsFrag;              //! vector of histos True Jet pT vs. true Frag (mc particle based distribution)
   std::vector<TH2F*> fHistoMCJetPtVsFragInAcc;         //! vector of histos True Jet pT vs. true Frag (for mesons in detector acceptance)
   std::vector<TH2F*> fHistoMCJetPtVsFrag_Sec;          //! vector of histos True Jet pT vs. true Frag (mc particle based distribution for secondaries)
+  std::vector<TH2F*> fHistoMCJetPtVsMesonPt_Sec;       //! vector of histos True Jet pT vs. true meson pt (mc particle based distribution for secondaries)
   std::vector<TH2F*> fHistoMCPartonPtVsFrag;           //! vector of histos True parton pT vs. true Frag (mc particle based distribution)
   std::vector<TH2F*> fHistoMCJetPtVsFragTrueParton;    //! vector of histos True Jet pT vs. true Frag (mc particle based distribution) for particles originating from hard parton from Jet
   std::vector<TH2F*> fHistoMCPartonPtVsFragTrueParton; //! vector of histos True parton pT vs. true Frag (mc particle based distribution) for particles originating from hard parton from Jet
@@ -411,7 +415,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 7);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 8);
 };
 
 #endif
