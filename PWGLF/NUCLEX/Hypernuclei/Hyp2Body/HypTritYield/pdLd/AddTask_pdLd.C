@@ -7,6 +7,9 @@ AliAnalysisTask* AddTask_pdLd(
   int CollisionSystem = 1,
   const char *Variation = "0") {
 
+
+  bool DebugAddTask = true;
+
   // CollisionSystem:
   //
   // 0 = pp collisions
@@ -62,11 +65,16 @@ AliAnalysisTask* AddTask_pdLd(
     return nullptr;
   }
 
+  if(DebugAddTask) std::cout << "AddTask_pdLd: AliAnalysisManager received" << std::endl;
+
+
   if(!manager->GetInputEventHandler())
   {
     std::cout << "AddTask_pdLd: No InputEventHandler found" << std::endl;
     return nullptr;
   }
+
+  if(DebugAddTask) std::cout << "AddTask_pdLd: InputEventHandler received" << std::endl;
 
   AliAnalysisTask_pdLd* task = new AliAnalysisTask_pdLd(Name.Data(),CollisionSystem);   
   if(!task)
@@ -75,8 +83,12 @@ AliAnalysisTask* AddTask_pdLd(
     return nullptr;
   }
 
+  if(DebugAddTask) std::cout << "AddTask_pdLd: AliAnalysisTask created" << std::endl;
+
   // add the task to the manager
   manager->AddTask(task);
+
+  if(DebugAddTask) std::cout << "AddTask_pdLd: task added to AliAnalysisManager" << std::endl;
 
   AliAnalysisDataContainer *container = manager->GetCommonInputContainer();
   if(!container)
@@ -85,8 +97,11 @@ AliAnalysisTask* AddTask_pdLd(
     return nullptr;
   }
 
+  if(DebugAddTask) std::cout << "AddTask_pdLd: CommonInputContainer received" << std::endl;
+
   // connect the manager to the task
   manager->ConnectInput(task,0,container);
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Input container connected" << std::endl;
   
 
 
@@ -120,6 +135,9 @@ AliAnalysisTask* AddTask_pdLd(
     } // end of isPbPb
 
 
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Collision candidates selected" << std::endl;
+
+
   TString TaskName = TString::Format("%s:AnalysisTask_pdLd%s",AliAnalysisManager::GetCommonFileName(),suffix.Data());
   TString EventListName		= "Events";
   TString ProtonListName	= "Protons";
@@ -129,14 +147,28 @@ AliAnalysisTask* AddTask_pdLd(
   TString AntiDeuteronListName	= "AntiDeuterons";
   TString apadListName		= "AntiProton-AntiDeuteron-Pairs";
 
+  if(DebugAddTask) std::cout << "AddTask_pdLd: TString directory names created" << std::endl;
 
   manager->ConnectOutput(task,1,manager->CreateContainer(EventListName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,TaskName.Data()));
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Output container 1 connected" << std::endl;
+
   manager->ConnectOutput(task,2,manager->CreateContainer(ProtonListName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,TaskName.Data()));
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Output container 2 connected" << std::endl;
+
   manager->ConnectOutput(task,3,manager->CreateContainer(DeuteronListName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,TaskName.Data()));
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Output container 3 connected" << std::endl;
+
   manager->ConnectOutput(task,4,manager->CreateContainer(pdListName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,TaskName.Data()));
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Output container 4 connected" << std::endl;
+
   manager->ConnectOutput(task,5,manager->CreateContainer(AntiProtonListName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,TaskName.Data()));
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Output container 5 connected" << std::endl;
+
   manager->ConnectOutput(task,6,manager->CreateContainer(AntiDeuteronListName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,TaskName.Data()));
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Output container 6 connected" << std::endl;
+
   manager->ConnectOutput(task,7,manager->CreateContainer(apadListName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,TaskName.Data()));
+  if(DebugAddTask) std::cout << "AddTask_pdLd: Output container 7 connected" << std::endl;
 
 
 
