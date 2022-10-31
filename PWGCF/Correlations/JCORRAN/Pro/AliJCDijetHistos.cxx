@@ -71,6 +71,8 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_deltaPt(),
     fh_maxJetptOverPtHard(),
     fh_ptHard(),
+    fh_pythiaSigma(),
+    fh_pythiaTrial(),
     fh_dijetInvM(),
     fh_dijetInvMLin(),
     fh_dijetInvMTrunc(),
@@ -180,6 +182,8 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_deltaPt(obj.fh_deltaPt),
     fh_maxJetptOverPtHard(obj.fh_maxJetptOverPtHard),
     fh_ptHard(obj.fh_ptHard),
+    fh_pythiaSigma(obj.fh_pythiaSigma),
+    fh_pythiaTrial(obj.fh_pythiaTrial),
     fh_dijetInvM(obj.fh_dijetInvM),
     fh_dijetInvMLin(obj.fh_dijetInvMLin),
     fh_dijetInvMTrunc(obj.fh_dijetInvMTrunc),
@@ -503,6 +507,21 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_ptHard
         << TH1D("h_ptHard", "h_ptHard",NBINSJet, LogBinsXJet )
+        << fHistCentBin
+        << "END" ;
+
+    int NBINSsigma=150;
+    double LogBinsXSigma[NBINSsigma+1], LimLSigma=1e-8, LimHSigma=1e3;
+    double logBWSigma = (log(LimHSigma)-log(LimLSigma))/NBINSsigma;
+    for(int isigma=0;isigma<=NBINSsigma;isigma++) LogBinsXSigma[isigma]=LimLSigma*exp(isigma*logBWSigma);
+
+    fh_pythiaSigma
+        << TH1D("h_pythiaSigma", "h_pythiaSigma",NBINSsigma, LogBinsXSigma )
+        << fHistCentBin
+        << "END" ;
+
+    fh_pythiaTrial
+        << TH1D("h_pythiaTrial", "h_pythiaTrial", 10000, 0, 10000)
         << fHistCentBin
         << "END" ;
 
