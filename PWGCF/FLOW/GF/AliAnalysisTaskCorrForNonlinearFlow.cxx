@@ -183,6 +183,7 @@ ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
 		fFMDAacceptanceCutUpper(4.8),
 		fFMDCacceptanceCutLower(-3.2),
 		fFMDCacceptanceCutUpper(-1.8),
+		nSamples(10),
 		rand(2333)
 {
 }
@@ -300,6 +301,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	fFMDAacceptanceCutUpper(4.8),
 	fFMDCacceptanceCutLower(-3.2),
 	fFMDCacceptanceCutUpper(-1.8),
+	nSamples(10),
 	rand(2333)
 {
 
@@ -444,6 +446,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	fFMDAacceptanceCutUpper(4.8),
 	fFMDCacceptanceCutLower(-3.2),
 	fFMDCacceptanceCutUpper(-1.8),
+	nSamples(10),
 	rand(2333)
 {
 
@@ -544,7 +547,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	else if (anaType.EqualTo("FMDFMD")) sizeEta = 25;
 
 	const Int_t sizeCent = fCentBins.size() - 1;
-	Int_t sizeOfSamples = (fBinMethod & 1) ? 30 : 1;
+	Int_t sizeOfSamples = (fBinMethod & 1) ? nSamples : 1;
 	Int_t sizeOfVtxZbins = fzVtxBins.size() - 1; // (Int_t) fNOfSamples; 
 
 	Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
@@ -630,7 +633,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::NotifyRun() {
 void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 	// Mingrui: apply the bootstrap later
 	int sizeOfSamples = 1;
-	if (fBootstrapStat) sizeOfSamples = 30;
+	if (fBootstrapStat) sizeOfSamples = nSamples;
 	bootstrap_value = rand.Integer(sizeOfSamples);
 
 	// Check if it can pass the trigger

@@ -114,6 +114,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
         void SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
         void SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
 		virtual void   SetFMDacceptanceCuts(double AL, double AH, double CL, double CH) { fFMDAacceptanceCutLower = AL; fFMDAacceptanceCutUpper = AH; fFMDCacceptanceCutLower = CL; fFMDCacceptanceCutUpper = CH; }
+		virtual void   SetnSamples(int nsamples) {nSamples = nsamples;}
 		virtual void   SetBinningMethod(unsigned method) {fBinMethod = method;}
 
 		Double_t RangePhi(Double_t DPhi);
@@ -201,6 +202,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
         Double_t                fFMDCacceptanceCutLower;                // FMDCut
         Double_t                fFMDCacceptanceCutUpper;                // FMDCut
 		unsigned                fBinMethod;                             // fBinMethod
+		int                     nSamples;                               // Number of bootstrap samples
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
