@@ -397,14 +397,22 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
                     gh = (AliGenEventHeader*)genHeaders->At(i);
                     AliGenPythiaEventHeader* pythiaGenHeader= dynamic_cast<AliGenPythiaEventHeader*>(gh); //identify pythia header
                     //AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
-                    if(pythiaGenHeader) fptHardBin = pythiaGenHeader->GetPtHard();
-                    else fptHardBin = 0.0;
+                    if(pythiaGenHeader) {
+                        fptHardBin = pythiaGenHeader->GetPtHard();
+                        fPythiaSigma = pythiaGenHeader->GetXsection();
+                        fPythiaTrial = pythiaGenHeader->Trials();
+                    }
+                    else {
+                        fptHardBin = 0.0;
+                        fPythiaSigma = 0.0;
+                        fPythiaTrial = 0.0;
+                    }
                     //cout << "genHeader " << i << ": " << pythiaGenHeader << ", fptHardBin: " << fptHardBin << endl;
                 }
             }
             //cout << "fptHardBin: " << fptHardBin << endl;
-            //fana->SetPtHardBin(fptHardBin);
-            fanaMC->SetPtHardBin(fptHardBin);
+            //fana->SetPythiaInfo(fptHardBin, fPythiaSigma, fPythiaTrial);
+            fanaMC->SetPythiaInfo(fptHardBin, fPythiaSigma, fPythiaTrial);
 
             fhistosDetMC->fh_eventSel->Fill("events",1.0);
             fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);
