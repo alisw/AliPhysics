@@ -263,6 +263,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonPt;                 //! Response matrix for true vs. rec pt for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerFrag;                    //! Response matrix for meson z_rec vs z_true for each jet pt true vs. rec. bin
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerFragTrueJets;            //! Response matrix for meson z_rec_trueJets (true jet pt taken) vs z_true for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMass;            //! Response matrix for meson inv. mass and meson pt for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMassVsZ;         //! Response matrix for meson inv. mass and meson z for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonBackInvMassVsZ;     //! Response matrix for meson inv. mass and meson z for background candidates (mixed evt/rotation) for each jet pt true vs. rec. bin
@@ -296,7 +297,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoClusterPtInJet; //! vector of histos with number of clusters as function of pt inside of jets
   std::vector<TH1F*> fHistoClusterEInJet;  //! vector of histos with number of clusters as function of E inside of jets
 
-  //perpendicular cone
+  // perpendicular cone
   std::vector<TH1F*> fHistoClusterPtPerpCone; //! vector of histos with number of clusters as function of pt in perpendicular cone
 
   //-------------------------------
@@ -305,7 +306,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoConvGammaPt;      //! vector of histos conversion photons vs. pt
   std::vector<TH1F*> fHistoConvGammaPtInJet; //! vector of histos conversion photons vs. pt inside of jet
 
-  //perpendicular cone
+  // perpendicular cone
   std::vector<TH1F*> fHistoConvGammaPtPerpCone; //! vector of histos conversion photons vs. pt in perpendicular cone
 
   //-------------------------------

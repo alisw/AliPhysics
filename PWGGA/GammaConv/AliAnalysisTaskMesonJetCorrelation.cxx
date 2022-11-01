@@ -112,9 +112,10 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fVectorJetEtaPerp({}),
                                                                              fVectorJetPhiPerp({}),
                                                                              MapRecJetsTrueJets(),
-                                                                             //response matrix
+                                                                             // response matrix
                                                                              fRespMatrixHandlerMesonPt({}),
                                                                              fRespMatrixHandlerFrag({}),
+                                                                             fRespMatrixHandlerFragTrueJets({}),
                                                                              fRespMatrixHandlerMesonInvMass({}),
                                                                              fRespMatrixHandlerMesonInvMassVsZ({}),
                                                                              fRespMatrixHandlerMesonBackInvMassVsZ({}),
@@ -312,9 +313,10 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fVectorJetEtaPerp({}),
                                                                                            fVectorJetPhiPerp({}),
                                                                                            MapRecJetsTrueJets(),
-                                                                                           //response matrix
+                                                                                           // response matrix
                                                                                            fRespMatrixHandlerMesonPt({}),
                                                                                            fRespMatrixHandlerFrag({}),
+                                                                                           fRespMatrixHandlerFragTrueJets({}),
                                                                                            fRespMatrixHandlerMesonInvMass({}),
                                                                                            fRespMatrixHandlerMesonInvMassVsZ({}),
                                                                                            fRespMatrixHandlerMesonBackInvMassVsZ({}),
@@ -647,12 +649,13 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   fRespMatrixHandlerMesonInvMass.resize(fnCuts);
   fRespMatrixHandlerMesonBackInvMassVsZ.resize(fnCuts);
   fRespMatrixHandlerMesonBackInvMassVsPt.resize(fnCuts);
-  //perpendicular cone
+  // perpendicular cone
   fRespMatrixHandlerMesonInvMassVsZPerpCone.resize(fnCuts);
   fRespMatrixHandlerMesonInvMassPerpCone.resize(fnCuts);
   if (fIsMC) {
     fRespMatrixHandlerMesonPt.resize(fnCuts);
     fRespMatrixHandlerFrag.resize(fnCuts);
+    fRespMatrixHandlerFragTrueJets.resize(fnCuts);
   }
 
   for (int iCut = 0; iCut < fnCuts; ++iCut) {
@@ -1203,6 +1206,12 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fTrueList[iCut]->Add(fRespMatrixHandlerFrag[iCut]->GetTHnSparse("Frag_JetPt_TrueVsRec"));
       else
         fTrueList[iCut]->Add(fRespMatrixHandlerFrag[iCut]->GetTH2("Frag_JetPt_TrueVsRec"));
+
+      fRespMatrixHandlerFragTrueJets[iCut] = new MatrixHandler4D(fVecBinsFragment, fVecBinsFragment, fVecBinsJetPt, fVecBinsJetPt, fUseThNForResponse);
+      if (fUseThNForResponse)
+        fTrueList[iCut]->Add(fRespMatrixHandlerFragTrueJets[iCut]->GetTHnSparse("Frag_JetPt_TrueVsRec_ForTrueJets"));
+      else
+        fTrueList[iCut]->Add(fRespMatrixHandlerFragTrueJets[iCut]->GetTH2("Frag_JetPt_TrueVsRec_ForTrueJets"));
     }
 
     // Call Sumw2 forall histograms in list
@@ -2204,7 +2213,7 @@ float AliAnalysisTaskMesonJetCorrelation::GetFrag(AliAODMCParticle* Pi0Candidate
     return 0;
   }
   float z = 0;
-  if (isTrueJet) {
+  if (isTrueJet == 1) {
     z = Pi0Candidate->Pt() / fTrueVectorJetPt[matchedJet];
   } else if (isTrueJet == 2) {
     z = Pi0Candidate->Pt() / fTrueVectorJetPartonPt[matchedJet];
@@ -2465,7 +2474,7 @@ void AliAnalysisTaskMesonJetCorrelation::FillInvMassBackHistograms(AliAODConvers
 std::array<std::unique_ptr<AliAODConversionPhoton>, 2> AliAnalysisTaskMesonJetCorrelation::GetGammasSwapped(AliAODConversionPhoton* currentEventGoodV0Temp1, AliAODConversionPhoton* currentEventGoodV0Temp2)
 {
 
-  Double_t rotationAngle = TMath::Pi() / 2.0; //0.78539816339; // rotaion angle 90°
+  Double_t rotationAngle = TMath::Pi() / 2.0; // 0.78539816339; // rotaion angle 90°
 
   // Needed for TGenPhaseSpace
   TVector3 tvEtaPhigamma1, tvEtaPhigamma2, tvEtaPhigamma1Decay, tvEtaPhigamma2Decay, tvNormBeforeDecay, tvNormAfterDecay;
@@ -2995,6 +3004,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
   float jetPtTrue = (indexTrueJet < 0) ? 0 : fTrueVectorJetPt[indexTrueJet];
 
   float z_rec = GetFrag(Pi0Candidate, matchedJet, false);
+  float z_rec_trueJet = GetFrag(Pi0Candidate, indexTrueJet, true);
   float z_true = GetFrag(trueMesonCand, indexTrueJet, true);
 
   // fill all other mesons (eta and eta prime in case pi0 is selected etc.)
@@ -3014,7 +3024,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
   fHistoTrueMesonInvMassVsTruePt[fiCut]->Fill(Pi0Candidate->M(), trueMesonCand->Pt(), fWeightJetJetMC);
 
   // fill all primary true mesons
-  Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+  bool isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 
   if (isPrimary) {
     fHistoTruePrimaryMesonInvMassPt[fiCut]->Fill(mesonMassRec, mesonPtRec, fWeightJetJetMC);
@@ -3028,6 +3038,9 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
     fHistoTrueMesonJetPtVsTruePt[fiCut]->Fill(trueMesonCand->Pt(), jetPtTrue, fWeightJetJetMC);
 
     fRespMatrixHandlerFrag[fiCut]->Fill(jetPtRec, jetPtTrue, z_rec, z_true, fWeightJetJetMC);
+    // response matrix filled with only true jet information. As the jet pT is already corrected at the stage of the meson unfolding
+    fRespMatrixHandlerFragTrueJets[fiCut]->Fill(jetPtRec, jetPtTrue, z_rec_trueJet, z_true, fWeightJetJetMC);
+
     fRespMatrixHandlerMesonInvMass[fiCut]->Fill(jetPtRec, jetPtTrue, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
 
     // fill 4d response matrix
@@ -3106,7 +3119,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTruePhotonCandidatesAOD(AliAODCo
   int pdgCode[2] = {TMath::Abs(posDaughter->GetPdgCode()), TMath::Abs(negDaughter->GetPdgCode())};
 
   if (pdgCode[0] != 11 || pdgCode[1] != 11) {
-    return; //One Particle is not a electron
+    return; // One Particle is not a electron
   }
 
   if (posDaughter->GetPdgCode() == negDaughter->GetPdgCode()) {
