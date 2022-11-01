@@ -114,6 +114,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
         void SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
         void SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
 		virtual void   SetFMDacceptanceCuts(double AL, double AH, double CL, double CH) { fFMDAacceptanceCutLower = AL; fFMDAacceptanceCutUpper = AH; fFMDCacceptanceCutLower = CL; fFMDCacceptanceCutUpper = CH; }
+		virtual void   SetBinningMethod(unsigned method) {fBinMethod = method;}
 
 		Double_t RangePhi(Double_t DPhi);
 		Double_t GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
@@ -199,6 +200,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
         Double_t                fFMDAacceptanceCutUpper;                // FMDCut
         Double_t                fFMDCacceptanceCutLower;                // FMDCut
         Double_t                fFMDCacceptanceCutUpper;                // FMDCut
+		unsigned                fBinMethod;                             // fBinMethod
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -312,7 +314,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 6); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 7); // Analysis task
 };
 
 #endif
