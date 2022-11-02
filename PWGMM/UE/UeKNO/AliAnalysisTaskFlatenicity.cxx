@@ -94,7 +94,17 @@ const Int_t nCent = 9;
 Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
                                  30.0, 40.0, 50.0, 70.0, 100.0};
 // calib MC anchored to LHC16k and LHC16l pass2
-Double_t calibv0[64] = {0.907682, 0.844104, 0.865568, 0.963309, 1.08007, 1.15369, 1.12447, 1.02439, 0.95161, 0.904738, 0.924563, 0.982011, 1.04804, 1.09024, 1.07079, 1.01857, 0.957272, 0.933689, 0.944754, 0.995602, 1.04321, 1.06214, 1.04915, 1.00816, 0.979107, 0.963532, 0.969889, 0.995551, 1.02253, 1.03191, 1.02562, 1.01064, 0.911067, 0.865634, 0.881477, 0.952203, 1.09948, 1.12294, 1.08561, 1.07816, 0.943498, 0.911861, 0.927446, 0.96686, 1.06382, 1.08255, 1.06033, 1.04127, 0.972901, 0.943882, 0.939508, 0.9833, 1.03983, 1.04678, 1.04486, 1.02614, 0.981817, 0.956076, 0.966089, 0.992914, 1.02992, 1.02921, 1.02784, 1.01453};
+Double_t calibv0[64] = {
+    0.675284, 0.627985, 0.643953, 0.716669, 0.803534, 0.858307, 0.836567,
+    0.762113, 0.869664, 0.826828, 0.844946, 0.897446, 0.957792, 0.996354,
+    0.978582, 0.930861, 0.806367, 0.786501, 0.795822, 0.838654, 0.878753,
+    0.894706, 0.883758, 0.849233, 0.832664, 0.819418, 0.824824, 0.846648,
+    0.86959,  0.877573, 0.872222, 0.859481, 1.42577,  1.35467,  1.37947,
+    1.49015,  1.72063,  1.75734,  1.69892,  1.68726,  1.10676,  1.06965,
+    1.08793,  1.13416,  1.2479,   1.26987,  1.24381,  1.22144,  1.18749,
+    1.15207,  1.14673,  1.20018,  1.26918,  1.27766,  1.27531,  1.25246,
+    0.848394, 0.826151, 0.834803, 0.857983, 0.889962, 0.889349, 0.88816,
+    0.876658};
 
 const Int_t nDet = 4;
 const Char_t *DetName[nDet] = {"ADC", "V0C", "V0A", "ADA"};
@@ -538,7 +548,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
 
   hFlatV0vsFlatTPC->Fill(flatenicity_tpc, flatenicity_v0);
   fFlatMC = -1;
-  if (fUseMC) {
+  if ((fUseMC) && (fmultV0Cmc) > 0 && (fmultV0Amc > 0)) {
     fFlatMC = GetFlatenicityMC();
     if (fFlatMC >= 0) {
       hFlatenicityMC->Fill(fFlatMC);
@@ -547,7 +557,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       MakeMCanalysis();
     }
   }
-  if (fFlat >= 0) {
+  if ((fFlat >= 0) && (fmultV0C) > 0 && (fmultV0A > 0)) {
 
     hFlatenicityBefore->Fill(fFlat);
     if (flatenicity_v0 < 0.9 && flatenicity_tpc < 0.9) {
@@ -741,9 +751,6 @@ void AliAnalysisTaskFlatenicity::ExtractMultiplicities() {
     Float_t mult = lVV0->GetMultiplicity(iCh);
     if (iCh < 32) { // V0C
       fmultV0C += mult;
-    } else if (iCh >= 32 &&
-               iCh < 40) { // exclude first ring to avoid overlap with ADA
-      continue;
     } else { // V0A
       fmultV0A += mult;
     }
