@@ -153,7 +153,7 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserExecOnce() {
     AliInfoStream() << "Configuring for p-Pb 8.16 TeV from 2016 ..." << std::endl;
     AddMBTriggerClass("INT7");
     SetForceBeamType(kpA);
-  } else if(IsRun2PbPb5TeV2015(runnumber)) {
+  } else if(IsRun2PbPb5TeV(runnumber)) {
     // Condfigure for PbPb 8 TeV from 2018
     AliInfoStream() << "Configuring for Pb-Pb 5.02 TeV from 2015 or 2018 ..." << std::endl;
     AddMBTriggerClass("INT7");
@@ -382,7 +382,7 @@ void AliAnalysisTaskEmcalTriggerNormalization::RunChanged(int newrun){
     collsysbin = 2;
   } else if(IsRun2pPb8TeV(newrun)) {
     collsysbin = 3;
-  } else if(IsRun2PbPb5TeV2015(newrun)) {
+  } else if(IsRun2PbPb5TeV(newrun)) {
     collsysbin = 4;
   }
   if(collsysbin > -1) fHistos->FillTH1("hCollisionSystem", collsysbin);
