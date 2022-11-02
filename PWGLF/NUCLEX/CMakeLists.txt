@@ -76,6 +76,7 @@ set(SRCS
   Hypernuclei/Hyp2Body/HypTritYield/Sigma_Baryons/AliAnalysisTaskSigmaPlus.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3TriTree.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
