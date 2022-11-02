@@ -61,7 +61,8 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	void SetfTPCThreshold(float aTPCThreshold); 
         void SetfdNSigmaVspTcut(int aUse);
 	void Setfdline(float ak,float ab);
-
+	
+	void Setf2pT(int aUse);
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -135,7 +136,8 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	int fdNSigmaVspTcut;
 	float fdcutline_k;
 	float fdcutline_b;
-
+	
+	int fUse2pT;
 };
 
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }
