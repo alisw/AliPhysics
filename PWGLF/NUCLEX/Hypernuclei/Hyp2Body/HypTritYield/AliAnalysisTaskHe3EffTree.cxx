@@ -712,21 +712,21 @@ void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
 		fYear = 2016;
 		if(!fMCtrue) { // Data
-			// LHC16 + LHC18
-			// Triton
-			fBetheParamsT[0] = 0.427978;
-			fBetheParamsT[1] = 105.46;
-			fBetheParamsT[2] =-7.08642e-07;
-			fBetheParamsT[3] = 2.23332;
-			fBetheParamsT[4] = 18.8231;
-			fBetheParamsT[5] = 0.06;
-			// He3
-			fBetheParamsHe[0] = 1.81085;
-			fBetheParamsHe[1] = 29.4656;
-			fBetheParamsHe[2] = 0.0458225;
-			fBetheParamsHe[3] = 2.08689;
-			fBetheParamsHe[4] = 2.28772;
-			fBetheParamsHe[5] = 0.06;
+      // He3 2016/2018 pass2
+      fBetheParamsHe[0] = 4.20995;
+      fBetheParamsHe[1] = 10.5007;
+      fBetheParamsHe[2] = -0.895979;
+      fBetheParamsHe[3] = 2.01748;
+      fBetheParamsHe[4] = 0.0798937;
+      fBetheParamsHe[5] = 0.06;
+
+      // Triton 2016/2018 pass2
+      fBetheParamsT[0] = 12.0774;
+      fBetheParamsT[1] = 5.70345;
+      fBetheParamsT[2] = 4.764;
+      fBetheParamsT[3] = 1.94198;
+      fBetheParamsT[4] = -3.03895;
+      fBetheParamsT[5] = 0.07;
 		} else { // MC
 			if (runNumber >= 262424 || runNumber <= 256418 ) {
 				//LHC20l7c (-> LHC16)
@@ -783,23 +783,24 @@ void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 	}
 	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
 		fYear = 2017;
-		if(!fMCtrue) {
+		if(!fMCtrue) { //data
 			//LHC17 Data
-			// He3
-			fBetheParamsHe[0] = 3.20025;
-			fBetheParamsHe[1] = 16.4971;
-			fBetheParamsHe[2] = -0.0116571;
-			fBetheParamsHe[3] = 2.3152;
-			fBetheParamsHe[4] = 3.11135;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 0.420434;
-			fBetheParamsT[1] = 106.102;
-			fBetheParamsT[2] = -3.15587e-07;
-			fBetheParamsT[3] = 2.32499;
-			fBetheParamsT[4] = 21.3439;
-			fBetheParamsT[5] = 0.06;	
-		} else {
+      // He3 2017 pass2
+      fBetheParamsHe[0] = 1.65042;
+      fBetheParamsHe[1] = 25.9254;
+      fBetheParamsHe[2] = 0.00600469;
+      fBetheParamsHe[3] = 2.73841;
+      fBetheParamsHe[4] = 10.8988;
+      fBetheParamsHe[5] = 0.06;
+
+      // Triton 2017 pass2
+      fBetheParamsT[0] = 2.82837;
+      fBetheParamsT[1] = 15.4278;
+      fBetheParamsT[2] = 1.03545;
+      fBetheParamsT[3] = 2.2757;
+      fBetheParamsT[4] = 2.7525;
+      fBetheParamsT[5] = 0.06;
+		} else { // MC
 			//LHC20l7b (-> LHC17)
 			// He3
 			fBetheParamsHe[0] = 3.14546;
@@ -818,24 +819,25 @@ void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 		}
 	}
 	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
-		if(!fMCtrue) {
+		if(!fMCtrue) { //data
 			fYear = 2018;
-			// LHC16 + LHC18
-			// He3
-			fBetheParamsT[0] = 0.427978;
-			fBetheParamsT[1] = 105.46;
-			fBetheParamsT[2] =-7.08642e-07;
-			fBetheParamsT[3] = 2.23332;
-			fBetheParamsT[4] = 18.8231;
-			fBetheParamsT[5] = 0.06;
-			// Triton
-			fBetheParamsHe[0] = 1.81085;
-			fBetheParamsHe[1] = 29.4656;
-			fBetheParamsHe[2] = 0.0458225;
-			fBetheParamsHe[3] = 2.08689;
-			fBetheParamsHe[4] = 2.28772;
-			fBetheParamsHe[5] = 0.06;
-		} else {
+      // He3 2016/2018 pass2
+      fBetheParamsHe[0] = 4.20995;
+      fBetheParamsHe[1] = 10.5007;
+      fBetheParamsHe[2] = -0.895979;
+      fBetheParamsHe[3] = 2.01748;
+      fBetheParamsHe[4] = 0.0798937;
+      fBetheParamsHe[5] = 0.06;
+
+      // Triton 2016/2018 pass2
+      fBetheParamsT[0] = 12.0774;
+      fBetheParamsT[1] = 5.70345;
+      fBetheParamsT[2] = 4.764;
+      fBetheParamsT[3] = 1.94198;
+      fBetheParamsT[4] = -3.03895;
+      fBetheParamsT[5] = 0.07;
+      
+		} else { // MC
 			//LHC20l7a (-> LHC18)
 			// He3
 			fBetheParamsHe[0] = 3.07067;

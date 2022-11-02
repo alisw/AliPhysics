@@ -55,6 +55,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   AliESDEvent            *fESDevent;            //!<! ESD event
   AliReducedHypTritEvent *fReducedEvent;        //<   Reduced event containing he3 and pi
   AliReducedHypTritEvent *fReducedEventMCGen;   //<   Reduced MC event containing he3 and pi
+  AliESDtrackCuts        *trackCutsV0;          //<  track cuts for v0 candidates
   AliStack               *fStack;               //!<! MC stack
   AliESDv0               *fV0;                  //!<! ESD v0
   TClonesArray           *fV0Array;             //<   Array of v0s in a event
@@ -106,7 +107,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   AliAnalysisTaskHypTritEventTree &operator=(const AliAnalysisTaskHypTritEventTree&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskHypTritEventTree, 9);
+  ClassDef(AliAnalysisTaskHypTritEventTree, 10);
   /// \endcond
 };
 #endif

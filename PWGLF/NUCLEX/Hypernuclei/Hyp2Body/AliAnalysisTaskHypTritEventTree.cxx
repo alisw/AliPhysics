@@ -45,6 +45,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fReducedEvent(0),
   fReducedEventMCGen(0),
   fStack(),
+  trackCutsV0(0),
   fV0(),
   fV0Array(),
   fHistdEdx(0),
@@ -90,6 +91,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fReducedEvent(0),
   fReducedEventMCGen(0),
   fStack(),
+  trackCutsV0(0),
   fV0(),
   fV0Array(),
   fHistdEdx(0),
@@ -268,11 +270,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   const AliESDVertex *vertex = fESDevent->GetPrimaryVertexTracks();
   fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD);
 
-  if(!fEventCuts.AcceptEvent(fESDevent)) {
-    PostData(1,fHistogramList);
-    return;
-  }
-
+  fReducedEvent->fEvCutsPassed = fEventCuts.AcceptEvent(fESDevent);
   Int_t runNumber = fESDevent->GetRunNumber();
   
   if (!fUseExternalSplines) SetBetheBlochParams(runNumber);
@@ -288,6 +286,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 	AliGeomManager::LoadGeometry();
 	
   TriggerSelection(mcEvent);
+  fReducedEvent->fEventID =   (((ULong64_t)fESDevent->GetPeriodNumber() << 36) | ((ULong64_t)fESDevent->GetOrbitNumber() << 12) | (ULong64_t)fESDevent->GetBunchCrossNumber()); 
+      
   SetMultiplicity();
   fHistNumEvents->Fill(1);
   fReducedEvent->fCentrality = centrality;
@@ -300,25 +300,25 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   fV0Array = fReducedEvent->fV0s;
   fNV0Cand = 0;
   fMCGenRecArray = new TObjArray();
-  AliESDtrackCuts trackCutsV0("AlitrackCutsV0", "AlitrackCutsV0");
+  trackCutsV0 = new AliESDtrackCuts("AlitrackCutsV0", "AlitrackCutsV0");
 
   if(fUseAnalysisTrkSel){
-    trackCutsV0.SetEtaRange(-0.9,0.9);
-    trackCutsV0.SetAcceptKinkDaughters(kTRUE);
-    trackCutsV0.SetRequireTPCRefit(kFALSE);
-    trackCutsV0.SetMaxChi2PerClusterTPC(8);
-    trackCutsV0.SetMinNClustersTPC(40);
+    trackCutsV0->SetEtaRange(-0.9,0.9);
+    trackCutsV0->SetAcceptKinkDaughters(kTRUE);
+    trackCutsV0->SetRequireTPCRefit(kFALSE);
+    trackCutsV0->SetMaxChi2PerClusterTPC(8);
+    trackCutsV0->SetMinNClustersTPC(40);
   } else {
-      trackCutsV0.SetAcceptKinkDaughters(kFALSE);
-      trackCutsV0.SetMinNClustersTPC(80);
-      trackCutsV0.SetMaxChi2PerClusterITS(10);// TO BE INVESTIGATED !!!!!!!!!!!!!!
-      trackCutsV0.SetMaxChi2PerClusterTPC(5);
-      trackCutsV0.SetRequireTPCRefit(kTRUE);
-      trackCutsV0.SetRequireITSRefit(kTRUE);
-      trackCutsV0.SetMinNClustersITS(2);
-      trackCutsV0.SetMaxDCAToVertexXY(0.1);
-      trackCutsV0.SetMaxDCAToVertexZ(0.5);
-      trackCutsV0.SetEtaRange(-0.8,0.8);
+      trackCutsV0->SetAcceptKinkDaughters(kFALSE);
+      trackCutsV0->SetMinNClustersTPC(80);
+      trackCutsV0->SetMaxChi2PerClusterITS(10);// TO BE INVESTIGATED !!!!!!!!!!!!!!
+      trackCutsV0->SetMaxChi2PerClusterTPC(5);
+      trackCutsV0->SetRequireTPCRefit(kTRUE);
+      trackCutsV0->SetRequireITSRefit(kTRUE);
+      trackCutsV0->SetMinNClustersITS(2);
+      trackCutsV0->SetMaxDCAToVertexXY(0.1);
+      trackCutsV0->SetMaxDCAToVertexZ(0.5);
+      trackCutsV0->SetEtaRange(-0.8,0.8);
   }
   // Pidqa loop
   if (fPidQa) {
@@ -348,8 +348,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       trackP = fESDevent->GetTrack(fV0->GetIndex(0));
       v0ChargeCorrect = kFALSE;
     }
-    if (!trackCutsV0.AcceptTrack(trackN)) continue;
-    if (!trackCutsV0.AcceptTrack(trackP)) continue;
+
     fHistdEdxV0->Fill(trackP->GetInnerParam()->GetP() * trackP->GetSign(), trackP->GetTPCsignal());
     fHistdEdxV0->Fill(trackN->GetInnerParam()->GetP() * trackN->GetSign(), trackN->GetTPCsignal());
     if(fPIDCheckOnly) continue;
@@ -394,7 +393,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 //        tritonNegative = kTRUE;
 //      }
     }
-    
+
        	       	
     if (helium3Positive && pionNegative) {
       SetMomentum( 2, v0ChargeCorrect);
@@ -525,6 +524,8 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
   reducedV0->fParticleSpecies = typeNeg * 100 + typePos;
   reducedV0->fOnFlyStatus = fV0->GetOnFlyStatus();
   if (charge < 0) {
+    reducedHe->fTrkCutsPassed = trackCutsV0->AcceptTrack(&trackN);
+    reducedPi->fTrkCutsPassed = trackCutsV0->AcceptTrack(&trackP);
     reducedHe->fP = fMomNeg;
     reducedPi->fP = fMomPos;
     reducedHe->fDedx = trackN.GetTPCsignal();
@@ -564,6 +565,8 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fITSrefit = (trackP.GetStatus() & AliESDtrack::kITSrefit) != 0;
   }
   if (charge > 0) {
+    reducedHe->fTrkCutsPassed = trackCutsV0->AcceptTrack(&trackP);
+    reducedPi->fTrkCutsPassed = trackCutsV0->AcceptTrack(&trackN);
     reducedHe->fP = fMomPos;
     reducedPi->fP = fMomNeg;
     reducedHe->fDedx = trackP.GetTPCsignal();
@@ -844,20 +847,21 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
 	if (runNumber >= 252235 && runNumber <= 265589) { // 2016 pp data
 		fYear = 2016;
-		// He3
-		fBetheParamsHe[0] = 1.81085;
-		fBetheParamsHe[1] = 29.4656;
-		fBetheParamsHe[2] = 0.0458225;
-		fBetheParamsHe[3] = 2.08689;
-		fBetheParamsHe[4] = 2.28772;
-		fBetheParamsHe[5] = 0.06;
-		// Triton
-		fBetheParamsT[0] = 0.427978;
-		fBetheParamsT[1] = 105.46;
-		fBetheParamsT[2] = -7.08642e-07;
-		fBetheParamsT[3] = 2.23332;
-		fBetheParamsT[4] = 18.8231;
-		fBetheParamsT[5] = 0.06;
+    // He3 2016/2018 pass2
+    fBetheParamsHe[0] = 4.20995;
+    fBetheParamsHe[1] = 10.5007;
+    fBetheParamsHe[2] = -0.895979;
+    fBetheParamsHe[3] = 2.01748;
+    fBetheParamsHe[4] = 0.0798937;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2016/2018 pass2
+    fBetheParamsT[0] = 12.0774;
+    fBetheParamsT[1] = 5.70345;
+    fBetheParamsT[2] = 4.764;
+    fBetheParamsT[3] = 1.94198;
+    fBetheParamsT[4] = -3.03895;
+    fBetheParamsT[5] = 0.07;
 	}
 	if (runNumber > 265589 && runNumber <= 267166) { // 2016 p-Pb data
 		fYear = 2016;
@@ -878,37 +882,39 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	} 	
 	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp data
 		fYear = 2017;
-		// He3
-		fBetheParamsHe[0] = 3.20025;
-		fBetheParamsHe[1] = 16.4971;
-		fBetheParamsHe[2] = -0.0116571;
-		fBetheParamsHe[3] = 2.3152;
-		fBetheParamsHe[4] = 3.11135;
-		fBetheParamsHe[5] = 0.06;
-		// Triton
-		fBetheParamsT[0] = 0.420434;
-		fBetheParamsT[1] = 106.102;
-		fBetheParamsT[2] = -3.15587e-07;
-		fBetheParamsT[3] = 2.32499;
-		fBetheParamsT[4] = 21.3439;
-		fBetheParamsT[5] = 0.06;
+    // He3 2017 pass2
+    fBetheParamsHe[0] = 1.65042;
+    fBetheParamsHe[1] = 25.9254;
+    fBetheParamsHe[2] = 0.00600469;
+    fBetheParamsHe[3] = 2.73841;
+    fBetheParamsHe[4] = 10.8988;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2017 pass2
+    fBetheParamsT[0] = 2.82837;
+    fBetheParamsT[1] = 15.4278;
+    fBetheParamsT[2] = 1.03545;
+    fBetheParamsT[3] = 2.2757;
+    fBetheParamsT[4] = 2.7525;
+    fBetheParamsT[5] = 0.06;
 	}
 	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp data
 		fYear = 2018;
-		// He3
-		fBetheParamsHe[0] = 1.81085;
-		fBetheParamsHe[1] = 29.4656;
-		fBetheParamsHe[2] = 0.0458225;
-		fBetheParamsHe[3] = 2.08689;
-		fBetheParamsHe[4] = 2.28772;
-		fBetheParamsHe[5] = 0.06;
-		// Triton
-		fBetheParamsT[0] = 0.427978;
-		fBetheParamsT[1] = 105.46;
-		fBetheParamsT[2] = -7.08642e-07;
-		fBetheParamsT[3] = 2.23332;
-		fBetheParamsT[4] = 18.8231;
-		fBetheParamsT[5] = 0.06;
+    // He3 2016/2018 pass2
+    fBetheParamsHe[0] = 4.20995;
+    fBetheParamsHe[1] = 10.5007;
+    fBetheParamsHe[2] = -0.895979;
+    fBetheParamsHe[3] = 2.01748;
+    fBetheParamsHe[4] = 0.0798937;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2016/2018 pass2
+    fBetheParamsT[0] = 12.0774;
+    fBetheParamsT[1] = 5.70345;
+    fBetheParamsT[2] = 4.764;
+    fBetheParamsT[3] = 1.94198;
+    fBetheParamsT[4] = -3.03895;
+    fBetheParamsT[5] = 0.07;
 	}
 }
 //_____________________________________________________________________________
