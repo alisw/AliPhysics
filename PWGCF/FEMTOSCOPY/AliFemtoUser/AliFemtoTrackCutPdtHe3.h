@@ -54,7 +54,15 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	float Return_DCAvsPt_cut_d(float pt,int charge);
 	void Set_DCAvsPt_cut(float *input_v,int label);
 	//
-	void SetInversePID(int aInversePID); 
+	void SetInversePID(int aInversePID);
+        void SetHe3TPCSignal(float aMin,float aMax);
+	// 
+        void SetfUseRejectLowpTPion(int aUse);
+	void SetfTPCThreshold(float aTPCThreshold); 
+        void SetfdNSigmaVspTcut(int aUse);
+	void Setfdline(float ak,float ab);
+	
+	void Setf2pT(int aUse);
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -85,6 +93,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	//\ for e+e femto
         bool IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE);
         // dE/dx
+        bool IsProtonTPCdEdx(float mom, float dEdx);
         bool IsDeuteronTPCdEdx(float mom, float dEdx);
         bool IsTritonTPCdEdx(float mom, float dEdx);
         // reject
@@ -118,6 +127,17 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	// 
 	int fInversePID;
 
+	float MinHe3TPCSignal;
+    	float MaxHe3TPCSignal;
+	//
+	int fRejectPions;
+	float fTPCThreshold;
+
+	int fdNSigmaVspTcut;
+	float fdcutline_k;
+	float fdcutline_b;
+	
+	int fUse2pT;
 };
 
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }

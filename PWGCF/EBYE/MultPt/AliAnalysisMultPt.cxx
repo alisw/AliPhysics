@@ -8,7 +8,6 @@
 #include "TChain.h"
 #include "TH3D.h"
 #include "TTree.h"
-#include "TProfile.h"
 #include "TString.h"
 #include "TList.h"
 #include "AliAnalysisTask.h"
@@ -21,23 +20,22 @@
 #include "AliAODMCParticle.h"
 #include "AliEventCuts.h"
 #include "AliAODMCHeader.h"
+#include <AliHeader.h>
 #include "TCanvas.h"
 
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 ClassImp(AliAnalysisMultPt)     // classimp: necessary for root
 //___________________________________________________________________________________________
-
 AliAnalysisMultPt::AliAnalysisMultPt() : AliAnalysisTaskSE(),
-fAOD(0), fOutputList(0), MultHist(0), MultPtHist(0), MultPtHistRec(0), MultPtHistGen(0), MultHistRatio(0), fIsMC(0), fPtmin(0.2), fPtmax(5.0), fEtaMin(-0.8), fEtaMax(0.8), fBit(96), fPVzMax(8.0), fPVzMin(0.0), fChi2DoF(3), fTPCNCrossedRows(70), fIsRunFBOnly(0), fTPCNcls(70), fIsPileUpCuts(0), fPileUpLevel(2), fGenName("Hijing"), fEventCuts(0)
+    fAOD(0), fMC(0), fOutputList(0), MultHist(0), MultPtHist(0), MultPtHistRec(0), MultPtHistGen(0), MultHistRatio(0), hV0MVsPtGen(0), hV0MVsPtRec(0), fIsMC(0), fPtmin(0.2), fPtmax(5.0), fEtaMin(-0.8), fEtaMax(0.8), fBit(96), fPVzMax(10.0), fPVzMin(0.0), fEventCuts(0)
 {
-    
+
 
 }
 //___________________________________________________________________________________________
-
 AliAnalysisMultPt::AliAnalysisMultPt(const char* name) : AliAnalysisTaskSE(name),
-fAOD(0), fOutputList(0), MultHist(0), MultPtHist(0), MultPtHistRec(0), MultPtHistGen(0), MultHistRatio(0), fIsMC(0), fPtmin(0.2), fPtmax(5.0), fEtaMin(-0.8), fEtaMax(0.8), fBit(96), fPVzMax(8.0), fPVzMin(0.0), fChi2DoF(3), fTPCNCrossedRows(70), fIsRunFBOnly(0), fTPCNcls(70), fIsPileUpCuts(0), fPileUpLevel(2), fGenName("Hijing"), fEventCuts(0)
+fAOD(0), fMC(0), fOutputList(0), MultHist(0), MultPtHist(0), MultPtHistRec(0), MultPtHistGen(0), MultHistRatio(0), hV0MVsPtGen(0), hV0MVsPtRec(0), fIsMC(0), fPtmin(0.2), fPtmax(5.0), fEtaMin(-0.8), fEtaMax(0.8), fBit(96), fPVzMax(10.0), fPVzMin(0.0), fEventCuts(0)
 {
     // Default constructor
     // Define input and output slots here
@@ -50,19 +48,19 @@ fAOD(0), fOutputList(0), MultHist(0), MultPtHist(0), MultPtHistRec(0), MultPtHis
 
 AliAnalysisMultPt::~AliAnalysisMultPt()
 {
-  // destructor
-  if(fOutputList) {
-    delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
-  }
+    // destructor
+    if(fOutputList) {
+        delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
+    }
 }
 //___________________________________________________________________________________________
 
 void AliAnalysisMultPt::UserCreateOutputObjects()
-    {
+{
     // Initialize output list of containers
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
-    
+
     //______________________________________ Raw Data:
     MultHist = new TH1D("MultHist", "Mult", 4000, 0, 4000);
     fOutputList->Add(MultHist);
@@ -70,7 +68,7 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
     MultHist->SetXTitle("N_{ch}");
     MultHist->SetYTitle("Number of Events");
     MultHist->SetMarkerSize(1.2);
-              
+
     MultPtHist = new TH2D("MultPtHist", "MultpT", 4000, 0, 4000, 50, 0, 5);
     fOutputList->Add(MultPtHist);
     MultPtHist->SetTitle("pT vs Multiplicity - Data");
@@ -99,10 +97,27 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
     MultHistRatio->SetYTitle("Generated N_{ch}");
     MultHistRatio->SetMarkerSize(1.2);
 
-    // add the list to our output file
+    const Int_t nV0Mbins = 9;
+    Double_t V0Mbins[nV0Mbins+1] = {0.0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+
+    const Int_t nPtbins = 53;
+    Double_t Ptbins[nPtbins+1] = {
+        0.0, 0.2, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75,
+        0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
+        1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8,
+        4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0,
+        13.0, 14.0, 15.0, 16.0, 18.0, 20.0 };
+
+    hV0MVsPtGen = new TH2D("hV0MVsPtGen", "; V0M Percentiles;#it{p}_{T} (GeV/#it{c})", nV0Mbins, V0Mbins, nPtbins, Ptbins);
+    fOutputList->Add(hV0MVsPtGen);
+
+    hV0MVsPtRec = new TH2D("hV0MVsPtRec", "; V0M Percentiles;#it{p}_{T} (GeV/#it{c})", nV0Mbins, V0Mbins, nPtbins, Ptbins);
+    fOutputList->Add(hV0MVsPtRec);
+
+    fEventCuts.AddQAplotsToList(fOutputList);
     PostData(1, fOutputList);
 
-    }
+}
 //___________________________________________________________________________________Raw Data
 void AliAnalysisMultPt::BuildData()
 {
@@ -110,11 +125,8 @@ void AliAnalysisMultPt::BuildData()
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     // check if there actually is an event:
     if(!fAOD) return;
-    
-    if(fIsPileUpCuts){
-        fEventCuts.fUseITSTPCCluCorrelationCut = fPileUpLevel;
-        if (!fEventCuts.AcceptEvent(fAOD)) return;
-    }
+
+    if (!fEventCuts.AcceptEvent(fAOD)) return;
     //making a cut in pvz -8 to 8cm
     const AliAODVertex* PrimaryVertex = fAOD->GetVertex(0);
     if(!PrimaryVertex) return;
@@ -128,12 +140,9 @@ void AliAnalysisMultPt::BuildData()
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
         if(!track) continue;
         if(!track->TestFilterBit(fBit)) continue;
-        if(track->Charge()==0)continue;//only get charged tracks
+        if(TMath::Abs(track->Charge()) < 0.1)continue;//only get charged tracks
         if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
-        if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
-        if(!fIsRunFBOnly){
-        if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof
-      }
+        if(track->Pt() < fPtmin || track->Pt() > fPtmax) continue; //pt cut
         Mult++;
     }
     //Number of events vs multiplicity
@@ -144,14 +153,11 @@ void AliAnalysisMultPt::BuildData()
         // if we failed, skip this track:
         if(!track) continue;
         if(!track->TestFilterBit(fBit)) continue;
-        if(!fIsRunFBOnly){
-            if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof
-        }
-        if(track->Charge()==0) continue;//only get charged tracks
+        if(TMath::Abs(track->Charge()) < 0.1) continue;//only get charged tracks
         if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
         if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
         MultPtHist->Fill(Mult, track->Pt());
-        }
+    }
     return;
 }
 //___________________________________________________________________________________MONTE-CARLO:
@@ -160,30 +166,31 @@ void AliAnalysisMultPt::BuildMC()
     // get an event from the analysis manager:
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     // check if there actually is an event:
-    if(!fAOD) return;
-    
-    if(fIsPileUpCuts){
-        fEventCuts.fUseITSTPCCluCorrelationCut = fPileUpLevel;
-        if (!fEventCuts.AcceptEvent(fAOD)) return;
+    if(!fAOD) { return; }
+
+    fMC = dynamic_cast<AliMCEvent *>(MCEvent());
+    if (!fMC) {
+        Printf("%s:%d MCEvent not found in Input Manager", (char *)__FILE__,
+                __LINE__);
+        this->Dump();
+        return;
     }
-    //making a cut in pvz -8 to 8cm
-    const AliAODVertex* PrimaryVertex = fAOD->GetVertex(0);
-    if(!PrimaryVertex) return;
-    Float_t PVz = PrimaryVertex->GetZ();
-    if(fabs(PVz)>fPVzMax) return;
-    if(fabs(PVz)<fPVzMin) return;
-    
-    TClonesArray *stack =0;
+
+    if (!fEventCuts.AcceptEvent(fAOD)) { return; }
+
+    Float_t Centrality = fEventCuts.GetCentrality();
+
+    TClonesArray *stack = nullptr;
     TList *lst = fAOD->GetList();
     stack = (TClonesArray*)lst->FindObject(AliAODMCParticle::StdBranchName());
-    if(!stack) return;
-    
+    if (!stack) { return; }
+
     //______________________________________________________RECONSTRUCTED part:
-    int MultRec=0; //Reconstructed Multiplicity
+    int MultRec = 0; //Reconstructed Multiplicity
     for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
-        if(!track) continue;
-        if(!track->TestFilterBit(fBit)) continue;
+        if (!track) continue;
+        if (!track->TestFilterBit(fBit)) continue;
         int label = TMath::Abs(track->GetLabel());
         AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
         //mcTrack is the reconstructed track
@@ -191,17 +198,12 @@ void AliAnalysisMultPt::BuildMC()
         if (!mcTrack->IsPhysicalPrimary()) continue;
         Float_t etarec  = mcTrack->Eta(); //reconstructed Eta
         Float_t pTrec   = mcTrack->Pt(); //reconstructed pT
-        Float_t ncl = track->GetTPCNcls();
-        Float_t crossedrows = track->GetTPCNCrossedRows();
-        Float_t chi2 = track->Chi2perNDF();
-        if(abs(mcTrack->Charge())<=1)continue;//only get charged tracks
+        if(TMath::Abs(mcTrack->Charge()) < 0.1)continue;//only get charged tracks
         if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
         if(pTrec  < fPtmin || pTrec > fPtmax) continue; //pt cut
-        if(!fIsRunFBOnly){
-          if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof
-        }
         MultRec++;
     }
+
     for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
         if(!track) continue;
@@ -213,68 +215,95 @@ void AliAnalysisMultPt::BuildMC()
         if (!mcTrack->IsPhysicalPrimary()) continue;
         Float_t etarec  = mcTrack->Eta(); //reconstructed Eta
         Float_t pTrec   = mcTrack->Pt(); //reconstructed pT
-        Float_t ncl = track->GetTPCNcls();
-        Float_t crossedrows = track->GetTPCNCrossedRows();
-        Float_t chi2 = track->Chi2perNDF();
-        if(abs(mcTrack->Charge())<=1)continue;//only get charged tracks
+        if(TMath::Abs(mcTrack->Charge()) < 0.1)continue;//only get charged tracks
         if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
         if(pTrec  < fPtmin || pTrec > fPtmax) continue; //pt cut
-        if(!fIsRunFBOnly){
-          if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof
-        }
         MultPtHistRec->Fill(MultRec, pTrec);
+        hV0MVsPtRec->Fill(Centrality,pTrec);
     }
     //______________________________________________________GENERATED part:
+
     int nMCTracks;
     if (!stack) nMCTracks = 0;
     else nMCTracks = stack->GetEntries();
-    
-    if(fIsPileUpCuts){
-        AliAODMCHeader *mcHeader = 0;
-        mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-        if(!mcHeader) {
-            printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
-            return;
-        }
-        Bool_t isPileupInGeneratedEvent = kFALSE;
-        isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, fGenName);
-        if(isPileupInGeneratedEvent) return;
+
+    AliAODMCHeader *mcHeader = 0;
+    mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if(!mcHeader) {
+        printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+        return;
     }
-    
-    int MultGen  = 0;  //Generated Multiplicity
-    for ( Int_t i(0); i < nMCTracks; i++) {
-        AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
-        if(!p1) continue;
-        if(abs(p1->Charge())<=1)continue;//only get charged tracks
-        if(!p1->IsPhysicalPrimary()) continue;
-        Float_t etaMCgen  = p1->Eta();
-        Float_t pTMCgen = p1->Pt();
-        if(etaMCgen > fEtaMax || etaMCgen<fEtaMin ) continue;
-        if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
-        MultGen++;
+
+    TClonesArray* fMCArray = (TClonesArray*)fAOD->FindListObject("mcparticles");
+    if (!fMCArray){
+        Printf("%s:%d AOD MC array not found in Input Manager",(char*)__FILE__,__LINE__);
+        this->Dump();
+        return;
     }
-    for ( Int_t i(0); i < nMCTracks; i++) {
-        AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
-        if(!p1) continue;
-        if(abs(p1->Charge())<=1)continue;//only get charged tracks
-        if(!p1->IsPhysicalPrimary()) continue;
-        Float_t etaMCgen  = p1->Eta();
-        Float_t pTMCgen = p1->Pt();
-        if(etaMCgen > fEtaMax || etaMCgen<fEtaMin ) continue;
-        if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
-        MultPtHistGen->Fill(MultGen, pTMCgen);
+
+    int MyMultGen  = 0;  //Generated Multiplicity
+
+    for (Int_t i= 0; i < fMC->GetNumberOfTracks(); ++i) {
+
+        AliAODMCParticle *particle = (AliAODMCParticle*)fMC->GetTrack(i);
+        if (!particle) { continue; }
+
+        if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, mcHeader, stack)) { continue; }
+
+        Double_t vz = particle->Zv();
+        if (TMath::Abs(vz) > 10.0) { continue; }
+
+        if (!particle->IsPhysicalPrimary()) { continue; }
+
+        Float_t etaMCgen  = particle->Eta();
+        Float_t pTMCgen = particle->Pt();
+
+        if (etaMCgen > fEtaMax || etaMCgen<fEtaMin ) { continue; }
+
+        if (particle->Pt() < fPtmin || particle->Pt() > fPtmax) { continue; }
+
+        if (TMath::Abs(particle->Charge()) < 0.1) { continue; }
+
+        MyMultGen++;
+
+    }
+
+    for (Int_t i= 0; i < fMC->GetNumberOfTracks(); ++i) {
+
+        AliAODMCParticle *particle = (AliAODMCParticle*)fMC->GetTrack(i);
+        if (!particle) { continue; }
+
+        if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, mcHeader, fMCArray)) { continue; }
+
+        Double_t vz = particle->Zv();
+        if (TMath::Abs(vz) > 10.0) { continue; }
+
+        if (!particle->IsPhysicalPrimary()) { continue; }
+
+        Float_t etaMCgen  = particle->Eta();
+        Float_t pTMCgen = particle->Pt();
+
+        if (etaMCgen > fEtaMax || etaMCgen < fEtaMin ) continue;
+        
+        if (particle->Pt() < fPtmin || particle->Pt() > fPtmax) continue;
+
+        if (TMath::Abs(particle->Charge()) < 0.1)
+            continue;
+
+        MultPtHistGen->Fill(MyMultGen, pTMCgen);
+        hV0MVsPtGen->Fill(Centrality,pTMCgen);
+
     }
     //Generated Mult vs Reconstructed Mult
-    MultHistRatio->Fill(MultRec, MultGen);
+    MultHistRatio->Fill(MultRec, MyMultGen);
     return;
 }
 //___________________________________________________________________________________
 void AliAnalysisMultPt::UserExec(Option_t *)
 {
-    if(fIsMC) BuildMC();
-    if(!fIsMC) BuildData();
+    if (fIsMC) { BuildMC(); }
+    if (!fIsMC) { BuildData(); }
     PostData(1, fOutputList);
-    cout<<"Flag is: "<<fIsMC<<endl;
 }
 //________________________________________________________________________
 void AliAnalysisMultPt::Terminate(Option_t *)
@@ -282,19 +311,3 @@ void AliAnalysisMultPt::Terminate(Option_t *)
     // terminate
     // called at the END of the analysis (when all events are processed)
 }
-    
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-  
-

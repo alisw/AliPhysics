@@ -37,6 +37,18 @@ AliFemtoESDTrackCut()
     fPionHe3cut = 0;
     fUseDCAvsPt_cut = 0;
     fInversePID = 0;
+
+    MinHe3TPCSignal = 10.;
+    MaxHe3TPCSignal = 5000.;
+
+    fRejectPions  = 0;
+    fTPCThreshold = 0.7;
+
+    fdNSigmaVspTcut = 0;
+    fdcutline_k = 10/1.1;
+    fdcutline_b = -15.;
+
+    fUse2pT = 0;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -69,6 +81,20 @@ AliFemtoESDTrackCut(aCut)
     fPionHe3cut = aCut.fPionHe3cut;
     fUseDCAvsPt_cut = aCut.fUseDCAvsPt_cut;
     fInversePID = aCut.fInversePID;
+
+    MinHe3TPCSignal = aCut.MinHe3TPCSignal;
+    MaxHe3TPCSignal = aCut.MaxHe3TPCSignal;
+
+    fRejectPions  = aCut.fRejectPions;
+    fTPCThreshold = aCut.fTPCThreshold;
+
+
+    fdNSigmaVspTcut = aCut.fdNSigmaVspTcut;
+    fdcutline_k = aCut.fdcutline_k;
+    fdcutline_b = aCut.fdcutline_b;
+   
+    fUse2pT = aCut.fUse2pT;
+   
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -111,6 +137,18 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     fPionHe3cut = aCut.fPionHe3cut;
     fUseDCAvsPt_cut = aCut.fUseDCAvsPt_cut;
     fInversePID = aCut.fInversePID;
+    MinHe3TPCSignal = aCut.MinHe3TPCSignal;
+    MaxHe3TPCSignal = aCut.MaxHe3TPCSignal;
+
+    fRejectPions  = aCut.fRejectPions;
+    fTPCThreshold = aCut.fTPCThreshold;
+
+    fdNSigmaVspTcut = aCut.fdNSigmaVspTcut;
+    fdcutline_k = aCut.fdcutline_k;
+    fdcutline_b = aCut.fdcutline_b;
+
+    fUse2pT = aCut.fUse2pT;
+
     return *this;
 }
 
@@ -221,7 +259,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
     float tEta = 0.;
     float tTotalP = 0.;
 
-    if(fMostProbable == 15){
+    if(fUse2pT == 1){
         TLorentzVector thisTrackMom;
         tEnergy = ::sqrt(track->P().Mag2() * 4. + fMass * fMass);
         thisTrackMom.SetPxPyPzE(2.*track->P().x(),2.*track->P().y(),2.*track->P().z(),tEnergy);
@@ -274,7 +312,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 
     // dowang for pion+he3 cut
     if(fPionHe3cut){
-	if( track->TPCsignal() <10 || track->TPCsignal() > 1000){
+	if( track->TPCsignal() < MinHe3TPCSignal || track->TPCsignal() > MaxHe3TPCSignal){
 		fNTracksFailed++;
 		return false;	
 	}
@@ -312,22 +350,34 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	int loose_imost = 0;
         //****N Sigma Method****
         if (fPIDMethod==0) {
+
+	float FillMom = 0.;
+	if(fUsePtCut){
+		FillMom = track->Pt();
+	}
+	else{
+		FillMom = track->P().Mag();
+	} 
 	    //\ for proton PID
             if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
-                if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP(),SwitchMom_p) ) {
+                if (IsProtonNSigma(FillMom, track->NSigmaTPCP(), track->NSigmaTOFP(),SwitchMom_p) ) {
                     	imost = 4;
                 }
 		
 		//\ reject
-		if( fOtherNsigmacut==1 && RejectFakeP(track,track->P().Mag(), SwitchMom_p)){
-			imost = 0;			
+		if( fOtherNsigmacut==1 && RejectFakeP(track,FillMom, SwitchMom_p)){
+			imost = 0;		
 		}
 		if( fOtherNsigmacut==2){
-			if(Reject_commom(track,track->P().Mag())
-		|| IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), 1.4) ){
+			if(Reject_commom(track,FillMom)
+		|| IsDeuteronNSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), 1.4) ){
 				imost = 0;
 			}		
 		}
+		if ( fdEdxcut && !IsProtonTPCdEdx(track->Pt(), track->TPCsignal()) ){
+                        imost = 0;
+                }
+
 		if(fUseDCAvsPt_cut){
 			float tmpDCAr = TMath::Abs(track->ImpactD());
 			float tmpCut = Return_DCAvsPt_cut_p(track->Pt(),fCharge);  
@@ -335,9 +385,9 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 		}
 		// if all TOF cut(pt>0.3 add TOF) did not pass, also not pass this one
 	if(fInversePID){
-		if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP(),0.7)){
+		if (IsProtonNSigma(FillMom, track->NSigmaTPCP(), track->NSigmaTOFP(),0.7)){
 			loose_imost = 999;
-			if( fOtherNsigmacut==1 && RejectFakeP(track,track->P().Mag(), 0.7)){
+			if( fOtherNsigmacut==1 && RejectFakeP(track,FillMom, 0.7)){
 				loose_imost = 0;		
 			}
 		}
@@ -351,21 +401,21 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
             }
 	    //\ for deuteron PID
             else if (fMostProbable == 13){   //cut on Nsigma deuteron
-                if ( IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), SwitchMom_d)){
+                if ( IsDeuteronNSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), SwitchMom_d)){
 			imost = 13;
 		}
 		//\ reject 
-                if( fOtherNsigmacut==1 && RejectFakeD(track,track->P().Mag()) ){
+                if( fOtherNsigmacut==1 && RejectFakeD(track,FillMom) ){
 			imost = 0;			
 		}
 		if( fOtherNsigmacut==2){
 			if(Reject_commom(track,track->P().Mag())
-			|| IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP(),0.7)){
+			|| IsProtonNSigma(FillMom, track->NSigmaTPCP(), track->NSigmaTOFP(),0.7)){
 				imost = 0;
 			}
 		}
                 //\ dE/dx cut for low pt abnormal
-                if ( fdEdxcut && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
+                if ( fdEdxcut && !IsDeuteronTPCdEdx(track->Pt(), track->TPCsignal()) ){
                     	imost = 0;
                 }
 		if(fUseDCAvsPt_cut && fCharge>0){
@@ -375,7 +425,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 			
 		}
 	if(fInversePID){
-		if ( IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), 1.4)){
+		if ( IsDeuteronNSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), 1.4)){
 			loose_imost = 999;
 		}
 		// no pass strict PID but pass loose PID
@@ -389,17 +439,16 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
             }
 	    //\ for triton PID
             else if (fMostProbable == 14){   //cut on Nsigma triton
-                if (IsTritonNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT()) ){
+                if (IsTritonNSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT()) ){
                     imost = 14;
                 }
-                if ( fdEdxcut && !IsTritonTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
+                if ( fdEdxcut && !IsTritonTPCdEdx(track->Pt(), track->TPCsignal()) ){
                     imost = 0;
                 }   
             }
  	    //\ for He3 PID
             else if (fMostProbable == 15){
-		        //cout<<"enter He PID"<<endl;
-                if (IsHe3NSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH()) ){
+                if (IsHe3NSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH()) ){
 
 		        imost = 15;
                 }
@@ -407,15 +456,20 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
             }
 	    else if (fMostProbable == 2){
 		 
-                if (IsPionNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCPi(), track->NSigmaTOFPi()) ){
+                if (IsPionNSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCPi(), track->NSigmaTOFPi()) ){
 			imost = 2;
 		}
 	    }
             else if(fMostProbable == 16){
-                if (IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE()) ){
+                if (IsElectronNSigma(FillMom, track->NSigmaTPCE(), track->NSigmaTOFE()) ){
                     imost = 16;
                 }
             }
+	    if(fRejectPions==1){
+		if(FillMom  < fTPCThreshold){
+			if(abs(track->NSigmaTOFPi()) < 3) imost = 0;
+		}
+		}
 	    if (imost != fMostProbable) return false;
 	    if(fUseTOFMassCut){
 		//Mass square!
@@ -440,6 +494,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
     
 }
 bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, float tmp_switch){
+
     if (mom > tmp_switch) {
 	        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigmaP)
 	            return true;	
@@ -448,28 +503,46 @@ bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float n
         if (TMath::Abs(nsigmaTPCP) < fNsigmaP)
             return true;
     }
+
     return false;
 
 }
 bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD,  float tmp_switch){
     //double massPDGD=1.8756;
-    if (fNsigmaTPCTOF) {
-        //Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
-        if (mom > tmp_switch){
-            if (TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD)
-            //if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
-                return true;
-        }
-        else{
-            if (TMath::Abs(nsigmaTPCD) < fNsigmaD)
-                return true;
-        }
-        
-    }
-    else{
-        if (TMath::Abs(nsigmaTPCD) < fNsigmaD)
-            return true;
-    } 
+	if(fdNSigmaVspTcut==0){
+	    if (fNsigmaTPCTOF) {
+		//Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
+		if (mom > tmp_switch){
+		    if (TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD)
+		    //if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
+		        return true;
+		}
+		else{
+		    if (TMath::Abs(nsigmaTPCD) < fNsigmaD)
+		        return true;
+		}
+		
+	    }
+	    else{
+		if (TMath::Abs(nsigmaTPCD) < fNsigmaD)
+		    return true;
+	    } 
+	
+	}
+	else{
+		float tmpcut = fdcutline_k * mom + fdcutline_b;
+
+		if(tmp_switch > 4.0){	// only TPC
+			if(nsigmaTPCD >= tmpcut && abs(nsigmaTPCD) < fNsigmaD){
+				return true;
+			}
+		}
+		else{	
+			if(nsigmaTPCD >= tmpcut && abs(nsigmaTPCD) < fNsigmaD && TMath::Hypot( nsigmaTPCD, nsigmaTOFD ) < fNsigmaD){
+				return true;
+			}
+		}
+	}
     return false;
 }
 bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT){
@@ -477,7 +550,8 @@ bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float s
     if (fNsigmaTPCTOF) {
         //Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
         if (mom > SwitchMom_t){
-            if ((TMath::Abs(nsigmaTPCT) < fNsigmaT) && (TMath::Abs(nsigmaTOFT) < fNsigmaT))
+        if(TMath::Hypot(nsigmaTPCT,nsigmaTOFT) < fNsigmaT )    
+	//if ((TMath::Abs(nsigmaTPCT) < fNsigmaT) && (TMath::Abs(nsigmaTOFT) < fNsigmaT))
                 return true;
         }
         else{
@@ -493,7 +567,7 @@ bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float s
     return false;
 }
 bool AliFemtoTrackCutPdtHe3::IsHe3NSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3){
-	//cout<<"IsHe3NSigma "<<nsigmaTPCHe3<<" "<<nsigmaTOFHe3<<endl;
+//	cout<<"IsHe3NSigma "<<nsigmaTPCHe3<<" "<<nsigmaTOFHe3<<endl;
     //double massPDGD=2.8089;
     if (fNsigmaTPCTOF) {
         if (mom > SwitchMom_He3){
@@ -603,10 +677,18 @@ bool AliFemtoTrackCutPdtHe3::IsElectronNSigma(float mom, float nsigmaTPCE, float
 void AliFemtoTrackCutPdtHe3::SetPionHe3Cut(int aPionHe3cut){
 	fPionHe3cut = aPionHe3cut;
 }
+bool AliFemtoTrackCutPdtHe3::IsProtonTPCdEdx(float mom, float dEdx){
+    double a1 = -250.,  b1 = 400.;
+    if (mom < 1.) {
+        if (dEdx > a1*mom+b1) return false;
+    }
+    return true;
 
+}
 //\ follow wiola
 bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx){
-
+// mom actually is pt, not total moment!
+//
 //   double a1 = -250.0,  b1 = 400.0;
 //   double a2 = -135.0,  b2 = 270.0;
 //   double a3 = -80,   b3 = 190.0;
@@ -627,9 +709,13 @@ bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx){
 //     if (dEdx < a4*mom+b4) return false;
 //   }
 
-    double a1 = -400./1.5,  b1 = 400.0;
-    if (mom < 1.5) {
+    double a1 = -250.,  b1 = 350.;
+    double a2 = -75.,  b2 = 175.;
+    if (mom < 1.) {
         if (dEdx < a1*mom+b1) return false;
+    }
+    if (1. <= mom && mom <1.5){// for safe choose 1.5, due to after 1.4 add TOF
+	if (dEdx < a2*mom+b2) return false;
     }
     return true;
 
@@ -846,4 +932,24 @@ void AliFemtoTrackCutPdtHe3::SetInversePID(int aInversePID){
 	fInversePID = aInversePID;
 }
 
+void AliFemtoTrackCutPdtHe3::SetHe3TPCSignal(float aMin,float aMax){
+    MinHe3TPCSignal = aMin;
+    MaxHe3TPCSignal = aMax;
+}
+void AliFemtoTrackCutPdtHe3::SetfUseRejectLowpTPion(int aUse){
+	fRejectPions = aUse;
+}
+void AliFemtoTrackCutPdtHe3::SetfTPCThreshold(float aTPCThreshold){ 
+	fTPCThreshold = aTPCThreshold;
+}
+void AliFemtoTrackCutPdtHe3::SetfdNSigmaVspTcut(int aUse){
+	fdNSigmaVspTcut = aUse;
+}
+void AliFemtoTrackCutPdtHe3::Setfdline(float ak,float ab){
+	fdcutline_k = ak;
+	fdcutline_b = ab;
+}
+void AliFemtoTrackCutPdtHe3::Setf2pT(int aUse){
+	fUse2pT = aUse;
+}
 

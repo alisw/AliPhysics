@@ -1,16 +1,13 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *    Author:       Zuzana Moravcova                                      *
+ *    Framework for calculating di-hadron correlation                     *
+ *    for extraction of v_n{2} coefficients of identified particles       *
+ *    including primary identified particles (pi, K, p)                   *
+ *    and reconstructed "V0" particles (K0s, Lambda)                      *
+ *    using TPC-TPC and TPC-FMD correlations.                             *
  *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
+ *    If used, modified, or distributed,                                  *
+ *    please aknowledge the author of this code.                          *
  **************************************************************************/
 
 #include "AliAnalysisTaskCorrForFlowFMD.h"
@@ -783,6 +780,15 @@ void AliAnalysisTaskCorrForFlowFMD::PrepareV0()
   for(Int_t i(0); i < nOfV0s; i++){
     AliAODv0* v0 = static_cast<AliAODv0*>(fAOD->GetV0(i));
     if(!v0) continue;
+
+    if(fRejectSecondariesFromMC){
+      AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+      if(!mcEvent) continue;
+      AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(v0->GetLabel());
+      if(!part) continue;
+      if(!part->IsPhysicalPrimary()) { continue; }
+    }
+
     if(!IsV0(v0)) continue;
 
     if(!IsK0s(v0) && !IsLambda(v0)) continue;

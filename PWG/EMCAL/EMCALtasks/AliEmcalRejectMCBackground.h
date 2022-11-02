@@ -33,6 +33,7 @@ class AliVEvent;
 class AliMCEvent;
 class AliNamedArrayI;
 class AliAODMCParticle;
+class AliESDEvent;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -75,7 +76,6 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
    */
   Int_t IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent, Int_t debug );
 
-
   /**
    * @brief
    * @param
@@ -83,7 +83,7 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
   void SetSignalRejection(Int_t signalRejection)                        { fSignalRejection = signalRejection    ; }
 
   /**
-   * @brief Set the name of the output container
+   * @brief Set the name of the particle output container
    *
    * This container is attached to the input event with the corresponding name.
    * This name has to be used in the user tasks to connect the MC particle container
@@ -91,7 +91,29 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
    *
    * @param name Name of the output container attached to the input event
    */
-  void SetParticlesOutName(const char *name)            { fParticlesOutName = name ; }
+  void SetParticlesOutName(const char *namePart)            { fParticlesOutName = namePart ; }
+
+  /**
+   * @brief Set the name of the track output container
+   *
+   * This container is attached to the input event with the corresponding name.
+   * This name has to be used in the user tasks to connect the track container
+   * to the tracks selected by this instance of the task.
+   *
+   * @param name Name of the output container attached to the input event
+   */
+  void SetTracksOutName(const char *nameTrack)            { fTracksOutName = nameTrack ; }
+
+  /**
+   * @brief Set the name of the cluster output container
+   *
+   * This container is attached to the input event with the corresponding name.
+   * This name has to be used in the user tasks to connect the cluster container
+   * to the clusters selected by this instance of the task.
+   *
+   * @param name Name of the output container attached to the input event
+   */
+  void SetClustersOutName(const char *nameClus)            { fClustersOutName = nameClus ; }
 
   /**
    * @brief Set the debug level
@@ -120,7 +142,7 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
    * @param physPrim Require physical primary particles
    * @return AliEmcalRejectMCBackground*
    */
-  static AliEmcalRejectMCBackground* AddTaskRejectMCBackground(const TString outname = "mcparticlebgrej", const Int_t signalRejection = 0, const Int_t debug = 0);
+  static AliEmcalRejectMCBackground* AddTaskRejectMCBackground(TString nParticlesOut = "MCParticlesNotRejected", TString nTracksOut = "MCTracksNotRejected", TString nClustersOut = "MCClustersNotRejected", Int_t signalRejection = 2, Int_t debug = 0);
 
  protected:
 
@@ -148,7 +170,7 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
    * @param partOut Output particle container with selected particles
    * @param partMap
    */
-  void                      CreateParticleMap(AliVEvent *event, AliMCEvent* mcEvent, TClonesArray* partOut, AliNamedArrayI* partMap=0);
+  void CreateParticleMap(AliVEvent *event, AliMCEvent* mcEvent, TClonesArray* partOut, AliNamedArrayI* partMap=0);
 
   /**
    * @brief Convert standard MC AOD particles in a new array, and filter if requested (for AOD analysis).
@@ -156,19 +178,46 @@ class AliEmcalRejectMCBackground : public AliAnalysisTaskSE {
    * @param partOut Output particle container with selected particles
    * @param partMap Index map between particles in input and output container
    */
-  void                      CreateParticleMapAOD(AliVEvent *event, AliMCEvent *mcEvent, TClonesArray* partIn, TClonesArray* partOut, AliNamedArrayI* partMap=0);
+  void CreateParticleMapAOD(AliVEvent *event, AliMCEvent *mcEvent, TClonesArray* partIn, TClonesArray* partOut, AliNamedArrayI* partMap=0);
+
+  /**
+   * @brief
+   * @param
+   */
+  void ProcessClusters();
+
+  /**
+   * @brief
+   * @param
+   */
+  void ProcessTracks();
+
+  /**
+   * @brief
+   * @param
+   */
+  void LinkMothers();
 
   TList                    *fHeaderList;         ///<
 
 
   TString                   fParticlesOutName;     ///< name of output particle array
   TString                   fParticlesMapName;     //!<! name of the particle map
+  TString                   fTracksOutName;        ///< name of output track array
+  TString                   fTracksInName;         ///< name of input track array
+  TString                   fClustersOutName;      ///< name of output cluster array
+  TString                   fClustersInName;       ///< name of input cluster array
   Bool_t                    fInit;                 //!<! true = task initialized
   TClonesArray             *fParticlesIn;          //!<! particle array in (AOD)
   TClonesArray             *fParticlesOut;         //!<! particle array out
   AliNamedArrayI           *fParticlesMap;         //!<! particle index/label
+  TClonesArray             *fTracksIn;             //!<! track array in
+  TClonesArray             *fTracksOut;            //!<! track array out
+  TClonesArray             *fClustersIn;           //!<! cluster array in
+  TClonesArray             *fClustersOut;          //!<! cluster array out
   AliVEvent                *fEvent;                //!<! event
   AliMCEvent               *fMC;                   //!<! MC event (ESD)
+  AliESDEvent              *fEsdEvent;             //!<! esd event
   Bool_t                    fIsESD;                //!<! ESD or AOD analysis
   Bool_t                    fDisabled;             //!<! Disable task if a problem occurs at initialization
   Int_t                     fDebugLevel;           ///< debug level for interactive debugging

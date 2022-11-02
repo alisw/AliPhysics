@@ -223,13 +223,13 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     config->SetMixingDepth(30);  /// how many events i want to mix. 10 is usually okay
     config->SetMinimalBookingME(suffix != "0");
 
-    // if (suffix == "0") {
-    //   config->SetPtQA(true);
-    //   config->SetMassQA(true);
-    //   config->SetkTBinning(true);
-    //   config->SetMultBinning(true);
-    //   config->SetmTBinning(true);
-    // }
+    if (suffix == "0") {
+       config->SetPtQA(true);
+       config->SetMassQA(true);
+       config->SetkTBinning(true);
+       config->SetMultBinning(true);
+       config->SetmTBinning(true);
+    }
 
     if (isMC) {
         /// create a histogram, which says how e.g. k true (montecarlo s), vs the one we reconstruct

@@ -45,6 +45,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
 
   //parse additionalTrainConfig flag
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  TString unsmearingoutputs = "012"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted
 
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){std::cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << std::endl; return;}
@@ -59,6 +60,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
         tempType.Replace(0,2,"");
         trackMatcherRunningMode = tempType.Atoi();
         cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+      }
+      if(tempStr.BeginsWith("UNSMEARING")){
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        unsmearingoutputs = tempType;
+        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb will output the following minv_pT histograms:" << endl;
+        if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
+        if(unsmearingoutputs.Contains("1")) cout << "- SubNDM" << endl;
+        if(unsmearingoutputs.Contains("2")) cout << "- Fixpz" << endl;
+        if(unsmearingoutputs.Contains("3")) cout << "- SubLambda" << endl;
       }
     }
   }
@@ -266,6 +277,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
   }else if (trainConfig == 1020){ // EMC run1 EG2 trigger
     cuts.AddCutHeavyMesonCalo("80085113","111110105f030230000","32c51070a","0103603o00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
 
+    //***********New cutstrings without NCell cut*******************************
+  }else if (trainConfig == 1021){ // EMC  INT7 new standard
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0103603o00000000","0453503000000000");
+  }else if (trainConfig == 1022){ // Cutvariation for NCell cut
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe3n220000","32c51070a","0103603o00000000","0453503000000000");
+  }else if (trainConfig == 1023){ // Cutvariation for pi0 pT
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0103663o00000000","0453503000000000"); // pi0 pT > 1.5
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","01036z3o00000000","0453503000000000"); // pi0 pT > 2
+  }else if (trainConfig == 1024){ // Asymmetry cut on omega
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0103603o00000000","045350l000000000");
+
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  INT7 run1
     cuts.AddCutHeavyMesonCalo("80010113","244440004a013200000","32c51070a","0103603q00000000","0453503000000000");  // 0-100% without NL
@@ -466,6 +488,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetUnsmearedOutputs(unsmearingoutputs);
 
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 

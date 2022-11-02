@@ -118,6 +118,9 @@ private:
     TH1F *fHistTracklets08_MCSelection;   //!
     TH1F *fHistTracklets08True_DataSelection; //!
     TH1F *fHistTracklets08True_MCSelection;   //!
+    // same for Ntrackl10
+    TH1F *fHistTracklets10True_DataSelection; //!
+    TH1F *fHistTracklets10True_MCSelection;   //!
     //// same for Ntrackl0815
     TH1F *fHistTracklets0815Cent_DataSelection; //!
     TH1F *fHistTracklets0815Cent_MCSelection;   //!
@@ -162,6 +165,11 @@ private:
     TH2F *fHistPtVsV0M_Generated[15]; //! 15 spectra
     TH2F *fHistPtVsV0M_DataSelection[15]; //! 15 spectra
     TH2F *fHistPtVsV0M_MCSelection[15];   //! 15 spectra
+    
+    //2-dimensional with midrapidity5
+    TH2F *fHistPtVsMidRapidityTrue_Generated[15];//! 15 spectra
+    TH2F *fHistPtVsMidRapidityTrue_DataSelection[15];//! 15 spectra
+    TH2F *fHistPtVsMidRapidityTrue_MCSelection[15];//! 15 spectra
     
     //2-dimensional with V0M Amplitudes
     TH2F *fHistPtVsV0MAmplitude_Generated[15]; //! 15 spectra

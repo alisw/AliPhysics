@@ -91,6 +91,7 @@ public:
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
   void SetCentralityMCGen_V0M(TH1* hist) { fCentralityMCGen_V0M = hist; }
   void SetCentralityMCGen_CL1(TH1* hist) { fCentralityMCGen_CL1 = hist; }
+  void SetCentralityCorrection(TH2* hist) { fCentralityCorrection = hist; }
   // for event QA
   void SetTracksInVertex(Int_t val) { fnTracksVertex = val; }
   void SetZVertex(Double_t val) { fZVertex = val; }
@@ -111,6 +112,7 @@ public:
   void SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
   void SetTrackStatus(UInt_t status) { fTrackStatus = status; }
   void SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
+  void SetGeneratorIndexMask(ULong64_t mask) { fGeneratorIndexMask = mask; }
 
   // track cuts
   void SetTrackletDphiCut(Double_t val) { fTrackletDphiCut = val; }
@@ -134,6 +136,8 @@ public:
   void SetCutOnK0s(Float_t cutOnK0s) { fCutOnK0sV = cutOnK0s; }
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetCentralityMethod(const char* method) { fCentralityMethod = method; }
+  void SetCentralityMethodStep6(const char* method) { fCentralityMethodStep6 = method; }
+  void SetCentralityMethodStep10(const char* method) { fCentralityMethodStep10 = method; }
   void SetFillpT(Bool_t flag) { fFillpT = flag; }
   void SetStepsFillSkip(Bool_t step0, Bool_t step6, Bool_t step8 = kFALSE, Bool_t step9 = kTRUE) { fFillOnlyStep0 = step0; fSkipStep6 = step6; fSkipStep8 = step8, fSkipStep9 = step9; }
   void SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
@@ -198,7 +202,7 @@ private:
   void AnalyseCorrectionMode(); // main algorithm to get correction maps
   void AnalyseDataMode();       // main algorithm to get raw distributions
   void Initialize();            // initialize some common pointer
-  Double_t GetCentrality(AliVEvent* inputEvent, TObject* mc);
+  Double_t GetCentrality(TString& centralityMethod, AliVEvent* inputEvent, TObject* mc);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks, Double_t minPt = 0., Double_t maxPt = -1.);
   void RemoveDuplicates(TObjArray* tracks);
   void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
@@ -246,6 +250,7 @@ private:
   TH1* fCentralityWeights;               // for centrality flattening
   TH1* fCentralityMCGen_V0M;             // for centrality from generated MCGen_V0M
   TH1* fCentralityMCGen_CL1;             // for centrality from generated MCGen_CL1
+  TH2* fCentralityCorrection;            // for centrality correction
 
   // Handlers and events
   AliAODEvent*             fAOD;             //! AOD Event
@@ -264,6 +269,8 @@ private:
   Double_t            fZVertex;              // Position of Vertex in Z direction
   Bool_t              fAcceptOnlyMuEvents;   // Only Events with at least one muon are accepted
   TString             fCentralityMethod;     // Method to determine centrality
+  TString             fCentralityMethodStep6;// Optionally a different method can be used for step6 to 9
+  TString             fCentralityMethodStep10;  //Optionally a different method can be used for step10
 
   // Track cuts
   Double_t            fTrackEtaCut;          // Maximum Eta cut on particles
@@ -284,6 +291,7 @@ private:
   Int_t               fParticleSpeciesTrigger; // Select which particle to use for the trigger [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
   Int_t               fParticleSpeciesAssociated; // Select which particle to use for the associated [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
   Bool_t              fCheckMotherPDG;       // Check the PDG code of mother for secondaries
+  ULong64_t           fGeneratorIndexMask;   // if non-0, check the MC generator indices for cocktails
 
   // Tracklets cuts
   Double_t            fTrackletDphiCut;      // maximum Dphi cut on tracklets
@@ -347,7 +355,7 @@ private:
   Bool_t fUsePtBinnedEventPool;                   // uses event pool in pt bins
   Bool_t fCheckEventNumberInMixedEvent;           // check event number before correlation in mixed event
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 65); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 66); // Analysis task for delta phi correlations
 };
 
 #endif

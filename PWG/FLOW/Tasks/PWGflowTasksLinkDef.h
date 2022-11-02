@@ -89,5 +89,6 @@
 #pragma link C++ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple+;
 #pragma link C++ class AliAnalysisTaskGammaDeltaPIDSaveQvecEventSimple+;
 #pragma link C++ class AliAnalysisTaskCME2018NUA+;
+#pragma link C++ class AliAnalysisTaskGammaNonIsotropicCorr+;
 #endif
 

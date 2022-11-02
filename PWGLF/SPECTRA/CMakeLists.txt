@@ -97,6 +97,7 @@ set(SRCS
   Kinks/AliAnalysisKinkESDat13.cxx
   Kinks/AliAnalysisKinkESDMC13.cxx
   Kinks/AliAnalysisKinkESDat13ppHM.cxx
+  Kinks/AliAnalysisKinkESDMulPPpi.cxx
   Kinks/AliAnalysisKinkTaskMult13pp.cxx
   Kinks/AliAnalysisKinkTaskMult13ppMC.cxx
   Kinks/AliAnalysisTaskKinkpp5TeV.cxx

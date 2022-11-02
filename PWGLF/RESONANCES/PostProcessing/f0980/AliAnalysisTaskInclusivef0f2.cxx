@@ -139,25 +139,33 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  Double1D varcentbinHeavy = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,5,10,15,20,30,40,50,60,70,80,100};
  Double1D Cntbins_HI = {0, 10, 30, 50, 90};
+ Double1D Cntbins_HILOWPT = {70, 80, 82.5, 85, 87.5, 90};
+
  binCent = AxisVar("Cent",varcentbinHeavy);
  if( fOption.Contains("PbPb") ){
 	binCent = AxisVar("Cent",Cntbins_HI);
+	if( fOption.Contains("UPCMODE") ){
+		binCent = AxisVar("Cent",Cntbins_HILOWPT);
+	}
  }
 
  Double1D verzbin = {-15,-10,-7,7,10,15};
  binZ = AxisVar("Z",verzbin);
 
  Double1D verptbin = {0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 13.0};
+
+ Double1D verLOWptbin = {0.0, 0.01, 0.02, 0.05, 0.1, 0.2};
+
  binPt = AxisVar("Pt",verptbin);
+ if( fOption.Contains("UPCMODE") ) binPt = AxisVar("Pt",verLOWptbin);
+
  binPtGen = AxisFix("Pt",200,0.0,20.0);
-
  binType = AxisStr("Type",{"PN","PP","NN"});
-
  binMass = AxisFix("Mass",1000,0,5);
 
  if( fOption.Contains("Fine") ) binMass = AxisFix("Mass",100000,0,5);
  if( fOption.Contains("PbPb") ){
-	binMass = AxisFix("Mass",150,0.5,2);
+	binMass = AxisFix("Mass",380,0.1,2);
  }
  binCharge = AxisFix("Charge",3,-1.5,1.5);
  binTrackCutBit = AxisFix("TrackCut",7,0.5,7.5);
@@ -762,7 +770,11 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			( IsEventSelectedPbPb && fOption.Contains("2018") ) ){
 			if( fOption.Contains("MismatchCheck") ){
 				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 100)) this -> FillTracks();
-			} else{ if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks(); }
+			} else if( fOption.Contains("UPCMODE") ){
+				if(this -> GoodTracksSelection(0x20, 0, 2, 0, 0.01)) this -> FillTracks(); 
+			} else {
+				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks(); 
+			}
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
 			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
 		}

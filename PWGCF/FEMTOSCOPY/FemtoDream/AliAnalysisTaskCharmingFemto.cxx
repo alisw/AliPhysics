@@ -1,3 +1,6 @@
+#include <map>
+#include <utility>
+
 #include "AliAnalysisTaskCharmingFemto.h"
 
 #include "yaml-cpp/yaml.h"
@@ -19,6 +22,11 @@
 #include "AliMLModelHandler.h"
 #include "TDatabasePDG.h"
 #include "TRandom.h"
+#include "TTree.h"
+
+static float dummyfloat;
+static std::vector<int> dummyvector;
+static int dummyint;
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
@@ -37,12 +45,16 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fIsMC(false),
       fUseMCTruthReco(false),
       fIsMCtruth(false),
+      fUseTree(false),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
       fCheckProtonSPDHit(false),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
+      fLightPDG(0),
+      fUseFDPairCleaner(true),
+      fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -118,7 +130,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
 //____________________________________________________________________________________________________
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
                                                            const bool isMC,
-                                                           const bool isMCtruth)
+                                                           const bool isMCtruth,
+                                                           const bool useTree)
     : AliAnalysisTaskSE(name),
       fInputEvent(nullptr),
       fEvent(nullptr),
@@ -132,12 +145,16 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fIsMC(isMC),
       fUseMCTruthReco(false),
       fIsMCtruth(isMCtruth),
+      fUseTree(useTree),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
       fCheckProtonSPDHit(false),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
+      fLightPDG(0),
+      fUseFDPairCleaner(true),
+      fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -235,9 +252,20 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
     }
   }
 
+  int nOutput = 9;
   if (fIsMC) {
-    DefineOutput(9, TList::Class());
-    DefineOutput(10, TList::Class());
+    DefineOutput(nOutput++, TList::Class());
+    DefineOutput(nOutput++, TList::Class());
+  }
+  if (fUseTree) {
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
+    DefineOutput(nOutput++, TTree::Class());
   }
 }
 
@@ -251,6 +279,11 @@ AliAnalysisTaskCharmingFemto::~AliAnalysisTaskCharmingFemto() {
   if(fApplyML && fMLResponse) {
     delete fMLResponse;
   }
+
+  if (fUseTree) {
+    for (auto pair : *fPairTreeSE) delete pair.second;
+    for (auto pair : *fPairTreeME) delete pair.second;
+  }
 }
 
 //____________________________________________________________________________________________________
@@ -263,14 +296,14 @@ void AliAnalysisTaskCharmingFemto::LocalInit()
         AliRDHFCutsDplustoKpipi* copyCutDplus = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDHFCuts)));
         PostData(8, copyCutDplus);
         break;
-      }
+    }
       case kDstartoKpipi:
       {
         AliRDHFCutsDStartoKpipi* copyCutDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fRDHFCuts)));
         PostData(8, copyCutDstar);
         break;
-      }
     }
+  }
   return;
 }
 
@@ -403,12 +436,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   dplus.clear();
   dminus.clear();
 
-  const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-  
-  if ((fIsMCtruth || fUseMCTruthReco) && fDecChannel != kDplustoKpipi)
-    AliFatal("MC truth only implemented for kDplustoKpipi decay channel.");
-    
+
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
@@ -434,23 +463,75 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
 
+    AliPID::EParticleType buddyParticle;
+    if (fLightPDG == 211) {
+      buddyParticle = AliPID::kPion;
+    } else if (fLightPDG == 321) {
+      buddyParticle = AliPID::kKaon;
+    } else {
+      AliFatal("buddy not implemented!");
+    }
+    
+    int protonMotherPdg = 0;
+    if (fIsMC && (fTrackCutsPartProton->isSelected(fProtonTrack) || fTrackCutsPartAntiProton->isSelected(fProtonTrack))){
+      mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
+      if(mcPart){
+        mcpdg = mcPart->GetPdgCode();
+        int idxMother = mcPart->GetMother();
+        auto mcMotherPart = (AliAODMCParticle *)fArrayMCAOD->At(idxMother);
+        protonMotherPdg = mcMotherPart->GetPdgCode();
+      }
+    }
+    
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
+        fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
+        fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
+        fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
+        fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
+        fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
+        fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
+        fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
+        fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
+        fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
+        fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
+        fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
+        fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
+        fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
+        fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
+        fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
+        fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
+        fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
+        fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
+        fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
+        fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
+        fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth && !fUseMCTruthReco) {
+        fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
+        fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
+        fProtonTrack->SetNCrossedRows(fProtonTrack->GetTPCCrossedRows());
+        fProtonTrack->SetNCls(fProtonTrack->GetNClsTPC());
+        fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
+        fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
+        fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
-      }      
+      }
     }
   }
 
@@ -464,7 +545,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
   if (fIsMCtruth) {
     int noPart = fArrayMCAOD->GetEntriesFast();
-  
+
     for (int iPart = 1; iPart < noPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
       if (!(mcPart)) {
@@ -481,7 +562,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       int mcpdg = mcPart->GetPdgCode();
       double pt = mcPart->Pt();
       double eta = mcPart->Eta();
-      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {        
+      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {
         if ((pt < fBuddypThigh && pt > fBuddypTlow) && (eta > -fBuddyeta && eta < fBuddyeta)) {
           if(SelectBuddyOrigin(mcPart)){
             part.SetMCParticleRePart(mcPart);
@@ -499,6 +580,95 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             part.SetID(mcPart->GetLabel());
             part.SetIDTracks(mcPart->GetLabel());
             antiprotons.push_back(part);
+          }
+        }
+      }
+
+      if ((std::abs(mcpdg)) == absPdgMom && pt>DmesonPtMin && pt<DmesonPtMax ){
+        if (fDecChannel == kDstartoKpipi){
+          // select the correct decay channel
+
+          if (std::abs(mcpdg) != 413 || mcPart->GetNDaughters() != 2 ) {
+            continue;
+          }
+          auto *dau1 = (AliAODMCParticle *)fArrayMCAOD->At(mcPart->GetDaughterLabel(0));
+          auto *dau2 = (AliAODMCParticle *)fArrayMCAOD->At(mcPart->GetDaughterLabel(1));
+
+          AliAODMCParticle *D0meson;
+          AliAODMCParticle *softPion;
+          if (std::abs(dau1->GetPdgCode()) == 421){
+            D0meson = dau1;
+            softPion = dau2;
+          } else if (std::abs(dau2->GetPdgCode()) == 421) {
+            D0meson = dau2;
+            softPion = dau1;
+          } else {
+            continue; // reject D* -> D+pi0
+          }
+
+          // select kinem of soft pion
+          if (
+              softPion->Pt() < ptMin   ||
+              softPion->Pt() > ptMax   ||
+              softPion->Eta() < etaMin ||
+              softPion->Eta() > etaMax
+              ){
+            continue;
+          }
+
+          // select the correct decay channel
+          if (D0meson->GetNDaughters() != 2 ) {
+            continue;
+          }
+
+          auto *D0Dau1 = (AliAODMCParticle *)fArrayMCAOD->At(D0meson->GetDaughterLabel(0));
+          auto *D0Dau2 = (AliAODMCParticle *)fArrayMCAOD->At(D0meson->GetDaughterLabel(1));
+
+          AliAODMCParticle *kaonFromD0;
+          AliAODMCParticle *pionFromD0;
+
+          if (std::abs(D0Dau1->GetPdgCode()) == 321 && std::abs(D0Dau2->GetPdgCode()) == 211){
+            kaonFromD0 = D0Dau1;
+            pionFromD0 = D0Dau2;
+          } else if (std::abs(D0Dau1->GetPdgCode()) == 211 && std::abs(D0Dau2->GetPdgCode()) == 321) {
+            kaonFromD0 = D0Dau2;
+            pionFromD0 = D0Dau1;
+          } else {
+            continue; // reject D0 not decaying into Kpi
+          }
+
+          // select D0daughters' kinematics
+          if (
+            kaonFromD0->Pt()  < ptMin  ||
+            kaonFromD0->Pt()  > ptMax  ||
+            kaonFromD0->Eta() < etaMin ||
+            kaonFromD0->Eta() > etaMax ||
+            pionFromD0->Pt()  < ptMin  ||
+            pionFromD0->Pt()  > ptMax  ||
+            pionFromD0->Eta() < etaMin ||
+            pionFromD0->Eta() > etaMax
+          ){
+            continue;
+          }
+
+          // fill histos
+          if (!SelectDmesonOrigin(fArrayMCAOD, mcPart))
+            continue;
+
+          part.SetMCParticleRePart(mcPart);
+
+          part.SetIDTracks(softPion->GetLabel());
+          part.SetIDTracks(kaonFromD0->GetLabel());
+          part.SetIDTracks(pionFromD0->GetLabel());
+
+          if (mcpdg == 413) {
+            dplus.push_back(part);
+          } else if (mcpdg == -413){
+            dminus.push_back(part);
+          }
+          if(fDoDorigPlots){
+            FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
+            FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
           }
         }
       }
@@ -528,11 +698,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
             if(counter==3){
               std::sort(pdgvec.begin(), pdgvec.end());
-              // cout<<"*** ";
-              // for (int i = 0; i<NDDaughters; i++) {
-              //   cout<<" "<<pdgvec[i];
-              // }
-              // cout<<" ***"<< endl;
               if ((pdgvec.at(0)==-321) && (pdgvec.at(1)==211) && (pdgvec.at(2)==211) && (mcpdg == 411)) {
                 if (SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
                   part.SetMCParticleRePart(mcPart);
@@ -559,7 +724,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                     FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
                   }
                 }
-              }            
+              }
             }
           }
         }
@@ -608,14 +773,27 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     bool unsetVtx = false;
     bool recVtx = false;
     AliAODVertex *origOwnVtx = nullptr;
-    
+
     int pdgDplusDau[3] = {321, 211, 211};
     int isSelected = 1;
     if(fUseMCTruthReco){
+      
+
       TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
       fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       
-      int dMesonLabel = dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau);
+      
+      int dMesonLabel;
+      if (fDecChannel == kDplustoKpipi) {
+        dMesonLabel = dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau);
+      }
+      else if (fDecChannel == kDstartoKpipi){
+        int pdgD0Dau[2] = {321, 211};
+        int pdgDstarDau[2] = {421, 211};
+        dMesonLabel = dynamic_cast<const AliAODRecoCascadeHF *>(dMeson)->MatchToMC(413, 421, pdgDstarDau, pdgD0Dau, fArrayMCAOD, false);
+      } else {
+        AliFatal("Decay channel not implemented. Exit!");
+      }
       if(dMesonLabel < 0){
         continue;
       }
@@ -625,6 +803,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
       if(!SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
         continue;
+      }
+
+      if (fApplyML) {
+        isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
       }
     } else {
       isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
@@ -668,6 +850,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           continue;
         }
         if (!fIsMCtruth) {
+          if (fApplyML) {
+            dplusCand.SetBkgScore(scoresFromMLSelector[iCand][0]);
+            dplusCand.SetPromptScore(scoresFromMLSelector[iCand][1]);
+          } else {
+            dplusCand.SetBkgScore(-1);
+            dplusCand.SetPromptScore(-1);
+          }
           dplus.push_back(dplusCand);
         }
         if (!fIsLightweight) {
@@ -704,19 +893,21 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           }
         }
       } else {
-        AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom,
-                                         fDmesonPDGs);
-        if (fIsMC && fMCBeautyRejection
-            && dminusCand.GetParticleOrigin()
-                == AliFemtoDreamBasePart::kBeauty) {
-          if (gRandom->Uniform() > fMCBeautyScalingFactor)
-            continue;
+        AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
+        if (fIsMC && fMCBeautyRejection && dminusCand.GetParticleOrigin() == AliFemtoDreamBasePart::kBeauty) {
+          if (gRandom->Uniform() > fMCBeautyScalingFactor) continue;
         }
-        if (fIsMC && fUseTrueDOnly
-            && std::abs(dminusCand.GetMCPDGCode()) != absPdgMom) {
+        if (fIsMC && fUseTrueDOnly && std::abs(dminusCand.GetMCPDGCode()) != absPdgMom) {
           continue;
         }
         if (!fIsMCtruth){
+          if (fApplyML) {
+            dminusCand.SetBkgScore(scoresFromMLSelector[iCand][0]);
+            dminusCand.SetPromptScore(scoresFromMLSelector[iCand][1]);
+          } else {
+            dminusCand.SetBkgScore(-1);
+            dminusCand.SetPromptScore(-1);
+          }
           dminus.push_back(dminusCand);
         }
         if (!fIsLightweight) {
@@ -726,20 +917,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           fHistDminusEtaVsp->Fill(dMeson->P(), dMeson->Eta());
 
           if (fIsMC) {
-            fHistDminusMCPDGPt->Fill(dminusCand.GetPt(),
-                                     dminusCand.GetMotherPDG());
-            fHistDminusMCOrigin->Fill(dminusCand.GetPt(),
-                                      dminusCand.GetParticleOrigin());
+            fHistDminusMCPDGPt->Fill(dminusCand.GetPt(), dminusCand.GetMotherPDG());
+            fHistDminusMCOrigin->Fill(dminusCand.GetPt(), dminusCand.GetParticleOrigin());
             if (dminusCand.GetMCPDGCode() != 0) {
-              fHistDminusMCPtRes->Fill(
-                  dminusCand.GetPt() - dminusCand.GetMCPt(),
-                  dminusCand.GetPt());
-              fHistDminusMCPhiRes->Fill(
-                  dminusCand.GetPhi().at(0) - dminusCand.GetMCPhi().at(0),
-                  dminusCand.GetPt());
-              fHistDminusMCThetaRes->Fill(
-                  dminusCand.GetTheta().at(0) - dminusCand.GetMCTheta().at(0),
-                  dminusCand.GetPt());
+              fHistDminusMCPtRes->Fill(dminusCand.GetPt() - dminusCand.GetMCPt(), dminusCand.GetPt());
+              fHistDminusMCPhiRes->Fill(dminusCand.GetPhi().at(0) - dminusCand.GetMCPhi().at(0), dminusCand.GetPt());
+              fHistDminusMCThetaRes->Fill(dminusCand.GetTheta().at(0) - dminusCand.GetMCTheta().at(0),
+                                          dminusCand.GetPt());
             }
           }
           for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
@@ -765,11 +949,80 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
   }
 
+  // if (fUseTree) {
+  //   if (dplus.size() > 0 || dminus.size() > 0) {
+  //     printf("len: %d - protons\n", protons.size());
+  //     printf("len: %d - protons_nsigtpc\n", protons_nsigtpc.size());
+  //     printf("len: %d - protons_nsigtof\n", protons_nsigtof.size());
+  //     printf("len: %d - protons_eta\n", protons_eta.size());
+  //     printf("len: %d - protons_pt\n", protons_pt.size());
+  //     printf("len: %d - protons_ncls\n", protons_ncls.size());
+  //     printf("len: %d - protons_ncrossed\n", protons_ncrossed.size());
+  //     printf("len: %d - protons_dcaz\n", protons_dcaz.size());
+  //     printf("len: %d - protons_dcaxy\n", protons_dcaxy.size());
+  //     printf("len: %d - antiprotons\n", antiprotons.size());
+  //     printf("len: %d - antiprotons_nsigtpc\n", antiprotons_nsigtpc.size());
+  //     printf("len: %d - antiprotons_nsigtof\n", antiprotons_nsigtof.size());
+  //     printf("len: %d - antiprotons_eta\n", antiprotons_eta.size());
+  //     printf("len: %d - antiprotons_pt\n", antiprotons_pt.size());
+  //     printf("len: %d - antiprotons_ncls\n", antiprotons_ncls.size());
+  //     printf("len: %d - antiprotons_ncrossed\n", antiprotons_ncrossed.size());
+  //     printf("len: %d - antiprotons_dcaz\n", antiprotons_dcaz.size());
+  //     printf("len: %d - antiprotons_dcaxy\n\n\n", antiprotons_dcaxy.size());
+  //     printf("len: %d - dplus\n", dplus.size());
+  //     printf("len: %d - dplus_pt\n", dplus_pt.size());
+  //     printf("len: %d - dplus_eta\n", dplus_eta.size());
+  //     printf("len: %d - dplus_origin\n", dplus_origin.size());
+  //     printf("len: %d - dplus_daus\n", dplus_daus.size());
+  //     printf("len: %d - dplus_bkg_score\n", dplus_bkg_score.size());
+  //     printf("len: %d - dplus_prompt_score\n", dplus_prompt_score.size());
+  //     printf("len: %d - dplus_invmass\n", dplus_invmass.size());
+  //     printf("len: %d - dminus\n", dminus.size());
+  //     printf("len: %d - dminus_pt\n", dminus_pt.size());
+  //     printf("len: %d - dminus_eta\n", dminus_eta.size());
+  //     printf("len: %d - dminus_origin\n", dminus_origin.size());
+  //     printf("len: %d - dminus_daus\n", dminus_daus.size());
+  //     printf("len: %d - dminus_bkg_score\n", dminus_bkg_score.size());
+  //     printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
+  //   }
+  // }
+
+  // set event properties
+  int partMult = dplus.size();
+  for (auto &dmeson : dplus) {
+    dmeson.SetMult(fEvent->GetMultiplicity());
+    dmeson.SetZVtx(fEvent->GetZVertex());
+    dmeson.SetParticleMult(partMult);
+  }
+  
+  partMult = dminus.size();
+  for (auto &dmeson : dminus) {
+    dmeson.SetMult(fEvent->GetMultiplicity());
+    dmeson.SetZVtx(fEvent->GetZVertex());
+    dmeson.SetParticleMult(partMult);
+  }
+  
+  partMult = protons.size();
+  for (auto &proton : protons) {
+    proton.SetMult(fEvent->GetMultiplicity());
+    proton.SetZVtx(fEvent->GetZVertex());
+    proton.SetParticleMult(partMult);
+  }
+  
+  partMult = antiprotons.size();
+  for (auto &proton : antiprotons) {
+    proton.SetMult(fEvent->GetMultiplicity());
+    proton.SetZVtx(fEvent->GetZVertex());
+    proton.SetParticleMult(partMult);
+  }
+
   // PAIR CLEANING AND FEMTO
-  fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
-  fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
+  if (fUseFDPairCleaner) {
+    fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
+    fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
+  }
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
@@ -777,7 +1030,17 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(dplus);
   fPairCleaner->StoreParticle(dminus);
 
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+  if (fUseLFFromEvtsWithPairs) {
+    if (dplus.size() == 0 && dminus.size() == 0) {
+      return;
+    } 
+  }
+
+  if (fUseTree) {
+    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, fPairTreeSE, fPairTreeME);
+  } else {
+    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+  }
 
   // flush the data
   PostData(1, fQA);
@@ -787,9 +1050,16 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   PostData(5, fDChargedHistList);
   PostData(6, fResultList);
   PostData(7, fResultQAList);
+
+  int nOutput = 9;
   if (fIsMC) {
-    PostData(9, fTrackCutHistMCList);
-    PostData(10, fAntiTrackCutHistMCList);
+    PostData(nOutput++, fTrackCutHistMCList);
+    PostData(nOutput++, fAntiTrackCutHistMCList);
+  }
+  
+  if (fUseTree) {
+    for (auto pair : *fPairTreeSE) PostData(nOutput++, pair.second);
+    for (auto pair : *fPairTreeME) PostData(nOutput++, pair.second);
   }
 }
 
@@ -832,6 +1102,96 @@ void AliAnalysisTaskCharmingFemto::StoreGlobalTrackReference(
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
+  if (fUseTree) {
+    fPairTreeSE = new std::map <std::pair<int, int>, TTree*>();
+    fPairTreeSE->insert({{0, 2}, new TTree("tSE_pp", "tSE_pp")});
+    fPairTreeSE->insert({{1, 3}, new TTree("tSE_mm", "tSE_mm")});
+    fPairTreeSE->insert({{0, 3}, new TTree("tSE_mp", "tSE_mp")});
+    fPairTreeSE->insert({{1, 2}, new TTree("tSE_pm", "tSE_pm")});
+
+    fPairTreeME = new std::map <std::pair<int, int>, TTree*>();
+    fPairTreeME->insert({{0, 2}, new TTree("tME_pp", "tME_pp")});
+    fPairTreeME->insert({{1, 3}, new TTree("tME_mm", "tME_mm")});
+    fPairTreeME->insert({{0, 3}, new TTree("tME_mp", "tME_mp")});
+    fPairTreeME->insert({{1, 2}, new TTree("tME_pm", "tME_pm")});
+
+    for (auto tree : *fPairTreeSE) {
+      // event
+      tree.second->Branch("mult", &dummyint);
+      tree.second->Branch("vz", &dummyfloat);
+
+      // pair
+      tree.second->Branch("kStar", &dummyfloat);
+
+      // heavy particle
+      tree.second->Branch("heavy_mult", &dummyint);
+      tree.second->Branch("heavy_invmass", &dummyfloat);
+      tree.second->Branch("heavy_pt", &dummyfloat);
+      tree.second->Branch("heavy_eta", &dummyfloat);
+      tree.second->Branch("heavy_origin", &dummyint);
+      tree.second->Branch("heavy_daus", &dummyvector);
+      tree.second->Branch("heavy_softpion_px", &dummyfloat);
+      tree.second->Branch("heavy_softpion_py", &dummyfloat);
+      tree.second->Branch("heavy_softpion_pz", &dummyfloat);
+      tree.second->Branch("heavy_bkg_score", &dummyfloat);
+      tree.second->Branch("heavy_prompt_score", &dummyfloat);
+      tree.second->Branch("heavy_d0label", &dummyint);
+
+      // light particle
+      tree.second->Branch("light_mult", &dummyint);
+      tree.second->Branch("light_px", &dummyfloat);
+      tree.second->Branch("light_py", &dummyfloat);
+      tree.second->Branch("light_pz", &dummyfloat);
+      tree.second->Branch("light_eta", &dummyfloat);
+      tree.second->Branch("light_nsigtpc", &dummyfloat);
+      tree.second->Branch("light_nsigtof", &dummyfloat);
+      tree.second->Branch("light_ncls", &dummyint);
+      tree.second->Branch("light_ncrossed", &dummyint);
+      tree.second->Branch("light_dcaz", &dummyfloat);
+      tree.second->Branch("light_dcaxy", &dummyfloat);
+      tree.second->Branch("light_label", &dummyint);
+      tree.second->Branch("light_motherpdg", &dummyint);
+    }
+
+    for (auto tree : *fPairTreeME) {
+      // event
+      tree.second->Branch("mult", &dummyint);
+      tree.second->Branch("vz", &dummyfloat);
+
+      // pair
+      tree.second->Branch("kStar", &dummyfloat);
+
+      // // heavy
+      tree.second->Branch("heavy_mult", &dummyint);
+      tree.second->Branch("heavy_invmass", &dummyfloat);
+      tree.second->Branch("heavy_pt", &dummyfloat);
+      tree.second->Branch("heavy_eta", &dummyfloat);
+      tree.second->Branch("heavy_origin", &dummyint);
+      tree.second->Branch("heavy_daus", &dummyvector);
+      tree.second->Branch("heavy_softpion_px", &dummyfloat);
+      tree.second->Branch("heavy_softpion_py", &dummyfloat);
+      tree.second->Branch("heavy_softpion_pz", &dummyfloat);
+      tree.second->Branch("heavy_bkg_score", &dummyfloat);
+      tree.second->Branch("heavy_prompt_score", &dummyfloat);
+      tree.second->Branch("heavy_d0label", &dummyint);
+
+      // light
+      tree.second->Branch("light_mult", &dummyint);
+      tree.second->Branch("light_eta", &dummyfloat);
+      tree.second->Branch("light_px", &dummyfloat);
+      tree.second->Branch("light_py", &dummyfloat);
+      tree.second->Branch("light_pz", &dummyfloat);
+      tree.second->Branch("light_nsigtpc", &dummyfloat);
+      tree.second->Branch("light_nsigtof", &dummyfloat);
+      tree.second->Branch("light_ncls", &dummyint);
+      tree.second->Branch("light_ncrossed", &dummyint);
+      tree.second->Branch("light_dcaz", &dummyfloat);
+      tree.second->Branch("light_dcaxy", &dummyfloat);
+      tree.second->Branch("light_label", &dummyint);
+      tree.second->Branch("light_motherpdg", &dummyint);
+    }
+  }
+
   fGTI = new AliAODTrack *[fTrackBufferSize];
 
   fEvent = new AliFemtoDreamEvent(true, !fIsLightweight, fTrigger);
@@ -931,8 +1291,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 
   fHistDplusInvMassPt = new TH2F(
       TString::Format("fHist%sInvMassPt", nameD.Data()),
-      TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
-      100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
+                                 TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
+                                 100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
   fDChargedHistList->Add(fHistDplusInvMassPt);
   if (!fIsLightweight) {
     fHistDplusInvMassPtSel = new TH2F(
@@ -958,7 +1318,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fHistDplusMCPtRes = new TH2F(
           TString::Format("fHist%sMCPtRes", nameD.Data()),
           "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
-          101, -0.5, 0.5, 100, 0, 10);
+                                   101, -0.5, 0.5, 100, 0, 10);
       fHistDplusMCPhiRes = new TH2F(
           TString::Format("fHist%sMCPhiRes", nameD.Data()),
           "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
@@ -994,36 +1354,36 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
           "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
           250, 0, 25, 5000, 0, 5000);
 
-      fHistDplusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameD.Data()),
+    fHistDplusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameD.Data()),
                                     "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
                                     10, 3, 0.5, 3.5);
-      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
-      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
-      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+    fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+    fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+    fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
 
-      fDChargedHistList->Add(fHistDplusMCtruthmotherPDG);
-      fDChargedHistList->Add(fHistDplusMCtruthQuarkOrigin);
+    fDChargedHistList->Add(fHistDplusMCtruthmotherPDG);
+    fDChargedHistList->Add(fHistDplusMCtruthQuarkOrigin);
 
       fHistDminusMCtruthmotherPDG = new TH2F(
           TString::Format("fHist%sMCPDGPt_MCtruth", nameDminus.Data()),
           "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
           250, 0, 25, 5000, 0, 5000);
-      
-      fHistDminusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameDminus.Data()),
+
+    fHistDminusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameDminus.Data()),
                                     "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
                                     10, 3, 0.5, 3.5);
-      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
-      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
-      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+    fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+    fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+    fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
 
-      fDChargedHistList->Add(fHistDminusMCtruthmotherPDG);
-      fDChargedHistList->Add(fHistDminusMCtruthQuarkOrigin);
+    fDChargedHistList->Add(fHistDminusMCtruthmotherPDG);
+    fDChargedHistList->Add(fHistDminusMCtruthQuarkOrigin);
   }
 
   fHistDminusInvMassPt = new TH2F(
       TString::Format("fHist%sInvMassPt", nameDminus.Data()),
-      TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
-      100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
+                                  TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
+                                  100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
   fDChargedHistList->Add(fHistDminusInvMassPt);
   if (!fIsLightweight) {
     fHistDminusInvMassPtSel = new TH2F(
@@ -1049,7 +1409,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fHistDminusMCPtRes = new TH2F(
           TString::Format("fHist%sMCPtRes", nameDminus.Data()),
           "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
-          101, -0.5, 0.5, 100, 0, 10);
+                                    101, -0.5, 0.5, 100, 0, 10);
       fHistDminusMCPhiRes = new TH2F(
           TString::Format("fHist%sMCPhiRes", nameDminus.Data()),
           "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
@@ -1087,7 +1447,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); ++iChild) {
       fHistDplusChildPt[iChild] = new TH1F(
           TString::Format("fHist%sChildPt_%s", nameD.Data(), nameVec.at(iChild).Data()),
-          "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+                   "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
       fHistDplusChildEta[iChild] = new TH1F(
           TString::Format("fHist%sChildEta_%s", nameD.Data(), nameVec.at(iChild).Data()),
           "; #eta; Entries", 100, -1, 1);
@@ -1099,13 +1459,13 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fDChargedHistList->Add(fHistDplusChildPhi[iChild]);
       fHistDminusChildPt[iChild] = new TH1F(
           TString::Format("fHist%sChildPt_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
-          "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+                   "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
       fHistDminusChildEta[iChild] = new TH1F(
           TString::Format("fHist%sChildEta_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
-          "; #eta; Entries", 100, -1, 1);
+                   "; #eta; Entries", 100, -1, 1);
       fHistDminusChildPhi[iChild] = new TH1F(
           TString::Format("fHist%sChildPhi_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
-          "; #phi; Entries", 100, 0, 2. * TMath::Pi());
+                   "; #phi; Entries", 100, 0, 2. * TMath::Pi());
       fDChargedHistList->Add(fHistDminusChildPt[iChild]);
       fDChargedHistList->Add(fHistDminusChildEta[iChild]);
       fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
@@ -1130,12 +1490,12 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       switch(fDecChannel) {
         case kDplustoKpipi:
             fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
-            fMLResponse->MLResponseInit();
-            break;
+          fMLResponse->MLResponseInit();
+          break;
         case kDstartoKpipi:
             fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.Data());
-            fMLResponse->MLResponseInit();
-            break;
+          fMLResponse->MLResponseInit();
+          break;
       }
     }
     else {
@@ -1162,15 +1522,24 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   PostData(5, fDChargedHistList);
   PostData(6, fResultList);
   PostData(7, fResultQAList);
+  int nOutput = 9;
   if (fIsMC) {
-    PostData(9, fTrackCutHistMCList);
-    PostData(10, fAntiTrackCutHistMCList);
+    PostData(nOutput++, fTrackCutHistMCList);
+    PostData(nOutput++, fAntiTrackCutHistMCList);
+  }
+  if (fUseTree) {
+    for (auto pair : *fPairTreeSE) {
+      PostData(nOutput++, pair.second);
+    }
+    for (auto pair : *fPairTreeME) {
+      PostData(nOutput++, pair.second);
+    }
   }
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores) {
-
+int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &scores) {
+  
   if(!dMeson || !dMesonWithVtx) {
     return 0;
   }
@@ -1227,11 +1596,11 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
   }
 
   // ML application
+  std::vector<double> modelPred{};
   if(fApplyML) {
     if(!fDependOnMLSelector) { //direct application
       AliAODPidHF* pidHF = fRDHFCuts->GetPidHF();
       bool isMLsel = true;
-      std::vector<double> modelPred{};
       switch(fDecChannel) {
         case kDplustoKpipi:
           isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fInputEvent->GetMagneticField(), pidHF);
@@ -1246,6 +1615,7 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
           }
           break;
       }
+      scores = modelPred;
     }
     else { // read result from common task
       std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptD);
@@ -1261,6 +1631,8 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
         }
       }
     }
+  } else {
+    scores = modelPred;
   }
 
   recVtx = false;
@@ -1286,6 +1658,10 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
 bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
                                                  const double pt,
                                                  const int pdg) {
+  if (fMassSelectionType == kAny) {
+    return true;
+  }
+
   // simple parametrisation from D+ in 5.02 TeV
   double massMean = TDatabasePDG::Instance()->GetParticle(pdg)->Mass() + 0.0025;  // mass shift observed in all Run2 data samples for all
                                                                                   // D-meson species

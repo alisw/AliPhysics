@@ -133,7 +133,6 @@ AliAnalysisTaskCME2018NUA::AliAnalysisTaskCME2018NUA(const char *name): AliAnaly
   fTPCvsGlobalTrkAfter(NULL),
   fHistTPCVsESDTrkBefore(NULL),
   fHistTPCVsESDTrkAfter(NULL),
-
   fHistPileUpCount(NULL),
   fHistEventCount(NULL),
   fHCorrectEVNTWGTChrg(NULL),
@@ -198,7 +197,6 @@ AliAnalysisTaskCME2018NUA::AliAnalysisTaskCME2018NUA():
   fCentDistBeforCut(NULL),
   fCentDistAfterCut(NULL),  
   fHistAChrgVsCent(NULL),
-
   fHistTPConlyVsCL1Before(NULL),
   fHistTPConlyVsV0MBefore(NULL),
   fHistCL0VsV0MBefore(NULL),

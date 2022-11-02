@@ -366,8 +366,8 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
         
          //***************************  Nch_Transverse,  nsigma_{TPC},                 pt_TPC ***************************************************
          Int_t    bins_TPC[3] = {         nBins_Nch_Tr,           100,           nBins_pt_TPC };
-         Double_t xmin_TPC[3] = {            Nch_Tr[0],          -5.0,              pt_TPC[0] };
-         Double_t xmax_TPC[3] = { Nch_Tr[nBins_Nch_Tr],          +5.0,   pt_TPC[nBins_pt_TPC] };
+         Double_t xmin_TPC[3] = {            Nch_Tr[0],          -10.0,              pt_TPC[0] };
+         Double_t xmax_TPC[3] = { Nch_Tr[nBins_Nch_Tr],          +10.0,   pt_TPC[nBins_pt_TPC] };
          //***************************************************************************************************************************************
          
          hnsigmaTPC_deuterons_Toward         = new THnSparseF ("hnsigmaTPC_deuterons_Toward","",3, bins_TPC, xmin_TPC, xmax_TPC);
@@ -486,8 +486,8 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
          
          //********************************  Nch_Transverse,  nsigma_{TPC},                 pt_TPC, isyst ****************************************
          Int_t    bins_TPC_syst[4] = {         nBins_Nch_Tr,           100,           nBins_pt_TPC,    50 };
-         Double_t xmin_TPC_syst[4] = {            Nch_Tr[0],          -5.0,              pt_TPC[0],     0 };
-         Double_t xmax_TPC_syst[4] = { Nch_Tr[nBins_Nch_Tr],          +5.0,   pt_TPC[nBins_pt_TPC],    50 };
+         Double_t xmin_TPC_syst[4] = {            Nch_Tr[0],          -10.0,              pt_TPC[0],     0 };
+         Double_t xmax_TPC_syst[4] = { Nch_Tr[nBins_Nch_Tr],          +10.0,   pt_TPC[nBins_pt_TPC],    50 };
          //***************************************************************************************************************************************
          
          hnsigmaTPC_deuterons_Syst     = new THnSparseF ("hnsigmaTPC_deuterons_Syst","",4, bins_TPC_syst, xmin_TPC_syst, xmax_TPC_syst);
@@ -1159,7 +1159,7 @@ Bool_t AliAnalysisTaskDeuteronsRT::IsDeuteronCandidate (AliESDtrack *track)  {
 
     
     //TPC Pre-selection
-    if (TMath::Abs(nsigmaTPC)>5.0) return isDeuteronCandidate;
+    if (TMath::Abs(nsigmaTPC)>10.0) return isDeuteronCandidate;
     
     //Selection on TOF hit & Track Length
     if (pt>1.5 && (!hasTOFhit)) return isDeuteronCandidate;

@@ -288,6 +288,7 @@
 #pragma link C++ class AliAnalysisTaskLundPlane+;
 #pragma link C++ class AliAnalysisTaskJetCharge+;
 #pragma link C++ class AliAnalysisTaskJetChargeFlavourTemplates+;
+#pragma link C++ class AliAnalysisTaskJetChargeFlavourPb+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::SubstructureTree;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::Subjets+;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings+;

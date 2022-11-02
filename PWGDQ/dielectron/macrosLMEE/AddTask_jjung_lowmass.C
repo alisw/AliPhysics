@@ -41,8 +41,8 @@ AliAnalysisTask *AddTask_jjung_lowmass(Bool_t getFromAlien=kFALSE,
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
-  //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
-  //gROOT->LoadMacro(configFilePath.Data());  //old root5
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
+  gROOT->LoadMacro(configFilePath.Data());  //old root5
 
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%d", wagonnr));
@@ -58,12 +58,17 @@ AliAnalysisTask *AddTask_jjung_lowmass(Bool_t getFromAlien=kFALSE,
   mgr->AddTask(task);
   std::cout << "Task Added" << std::endl;
 
-  const Int_t nDie = 3;
+  const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
   //add dielectron analysis with different cuts to the task
   #if defined(__CLING__)
-    TMacro conf_die(gSystem->ExpandPathName(configFilePath.Data())); //ROOT6
+    Int_t dot = cFileName.First('.'); 
+    Int_t len = cFileName.Length(); 
+    if (len > 0)
+      cFileName.Remove(dot,len-dot);
+    //TMacro conf_die(gSystem->ExpandPathName(configFilePath.Data())); //ROOT6
     for (Int_t i=0; i<nDie; ++i){ //nDie as argument of add task
-      AliDielectron *diel_low = reinterpret_cast<AliDielectron *>(conf_die.Exec(Form("%i",i)));
+      //AliDielectron *diel_low = reinterpret_cast<AliDielectron *>(conf_die.Exec(Form("%i",i)));
+      AliDielectron *diel_low = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("%s(%i,%i,%i)",cFileName.Data(),i,kFALSE,wagonnr)));
       if(!diel_low)continue;
       task->AddDielectron(diel_low);
     }

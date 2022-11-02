@@ -19,6 +19,12 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
                                                                TString fileName = "",
                                                                TString suffix = "",
                                                                TString cutObjName = "AnalysisCuts",
+                                                               bool enablePi = true,
+                                                               bool enableKa = false,
+                                                               bool enablePr = false,
+                                                               bool enableDe = false,
+                                                               bool enableKz = false,
+                                                               bool enableLa = false,
                                                                float nSigmaTPCPi = 3.,
                                                                float nSigmaTPCKa = 0.,
                                                                float nSigmaTPCPr = 0.,
@@ -36,6 +42,10 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
                                                                std::vector<float> massMaxPr = {-1.},
                                                                std::vector<float> massMinDe = {-1.},
                                                                std::vector<float> massMaxDe = {-1.},
+                                                               std::vector<float> massMinKz = {-1.},
+                                                               std::vector<float> massMaxKz = {-1.},
+                                                               std::vector<float> massMinLa = {-1.},
+                                                               std::vector<float> massMaxLa = {-1.},
                                                                int AODProtection = 0)
 {
     // \brief: AddTask for AliAnalysisTaskSEHFResonanceBuilder
@@ -79,9 +89,11 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     AliAnalysisTaskSEHFResonanceBuilder *hfResoTask = new AliAnalysisTaskSEHFResonanceBuilder("HFResonanceBuilderAnalysis", decCh, analysisCuts);
     hfResoTask->SetPtBachelorSelection(ptMinBach);
     hfResoTask->SetNsigmaBachelorSelection(nSigmaTPCPi, nSigmaTPCKa, nSigmaTPCPr, nSigmaTPCDe, nSigmaTOFPi, nSigmaTOFKa, nSigmaTOFPr, nSigmaTOFDe);
-    hfResoTask->SetCharmResoMassWindows(massMinPi, massMaxPi, massMinKa, massMaxKa, massMinPr, massMaxPr, massMinDe, massMaxDe);
+    hfResoTask->SetCharmResoMassWindows(massMinPi, massMaxPi, massMinKa, massMaxKa, massMinPr, massMaxPr, massMinDe, massMaxDe, massMinKz, massMaxKz, massMinLa, massMaxLa);
     hfResoTask->SetAODMismatchProtection(AODProtection);
     hfResoTask->SetReadMC(readMC);
+    hfResoTask->EnableBachelors(enablePi, enableKa, enablePr, enableDe);
+    hfResoTask->EnableV0s(enableKz, enableLa);
     mgr->AddTask(hfResoTask);
 
     // Create containers for input/output
@@ -111,6 +123,7 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(name, AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
     name = Form("coutputTree%s", suffix.Data());
     AliAnalysisDataContainer *coutputTree = mgr->CreateContainer(name, TNtuple::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+    coutputTree->SetSpecialOutput();
 
     mgr->ConnectInput(hfResoTask, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(hfResoTask, 1, coutput);

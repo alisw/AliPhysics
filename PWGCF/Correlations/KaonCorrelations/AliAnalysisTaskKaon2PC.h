@@ -1,4 +1,11 @@
- #ifndef AliAnalysisTaskKaon2PC_H
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AliAnalysisTaskKaon2PC:
+// Description: Analysis task to calculate Two-Particle Angular Correlation Functions of Neutral and Charged Kaons
+// Author: Anjaly Sasikumar Menon
+// (anjaly.sasikumar.menon@cern.ch)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifndef AliAnalysisTaskKaon2PC_H
 #define AliAnalysisTaskKaon2PC_H
 
 #include "AliAnalysisTaskSE.h"
@@ -6,6 +13,8 @@
 #include "AliPIDResponse.h"
 #include "AliAODv0.h"
 #include "AliAODVertex.h"
+#include "AliAnalysisTaskPIDResponse.h"
+#include "TMacro.h"
 
 class AliAODEvent;
 class TList;
@@ -32,13 +41,20 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         AliEventCuts            fEventCuts; // event cuts
 
     private:
-        AliAODEvent*            fAOD;           //! input event
+       AliAODEvent*            fAOD;           //! input event
        TList*                  fOutputList;    //! output list
        AliPIDResponse*         fPIDResponse;  //! pid response object’
        TH1F*                   fHistMK0;        //! dummy histogram
        TH1F*                   fHistMK0Cuts;        //! dummy histogram
-       TH1F*                   fHistPt;     //! dummy histogram
+       TH1F*                   fHistNV0;        //! dummy histogram
+       TH1F*                   fHistKChPt;     //! dummy histogram
+       TH1F*                   fHistK0Pt;     //! dummy histogram
+       TH1F*                   fKChPhi;     //! dummy histogram
+       TH1F*                   fK0Phi;     //! dummy histogram 
+       TH1F*                   fHistKpPhi;     //! dummy histogram 
+       TH1F*                   fHistKnPhi;     //! dummy histogram 
        TH1F*                   fVtx;        //! dummy histogram
+       TH1F*                   fClusters;    //! dummy histogram
        TH2F*                   fPID;        //! dummy histogram
        TH2F*                   fPIDKa;      //! dummy histogram
        TH2F*                   fPIDKaon;        //! dummy histogram
@@ -71,11 +87,9 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistDPhi;       //! dummy histogram
        TH1F*                   fHistMult;        //! dummy histogram
        TH1F*                   fHistCent;       //! dummy histogram
-       TH2F*                   fHistSigCent;    //! dummy histogram
+       TH1F*                   fHistSigCent;    //! dummy histogram
        TH2F*                   fHistInvCent;    //! dummy histogram
        TH2F*                   fHistCFPhi;      //! dummy histogram
-       TH2F*                   fHistCFPhiCuts;          //! dummy histogram
-       TH2F*                   fHistCFPhiLCuts;     //! dummy histogram
        TH2F*                   fHistCFEta;      //! dummy histogram
        TH3F*                   fHistCF;     //! dummy histogram
        TH3F*                   fHistKChCh;      //! dummy histogram
@@ -83,6 +97,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH3F*                   fHistKPosKNeg;       //! dummy histogram
        TH3F*                   fHistKNegKNeg;       //! dummy histogram
        TH3F*                   fHistK0K0;       //! dummy histogram
+       TH1F*                   fHistPPionPhi;       //! dummy histogram
+       TH1F*                   fHistNPionPhi;       //! dummy histogram
        Double_t        PVz;
        Double_t        fLpTCut;        //not a pointer???
        Double_t        fUpTCut;

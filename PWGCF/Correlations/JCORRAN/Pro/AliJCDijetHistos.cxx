@@ -26,6 +26,7 @@
 vector<double> AliJCDijetHistos::CentBin;
 vector<double> AliJCDijetHistos::dijetMBin;
 int AliJCDijetHistos::fNCentBin;
+int AliJCDijetHistos::fNJetClasses;
 int AliJCDijetHistos::fnNewBinsDijet1;
 
 //______________________________________________________________________________
@@ -70,6 +71,8 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_deltaPt(),
     fh_maxJetptOverPtHard(),
     fh_ptHard(),
+    fh_pythiaSigma(),
+    fh_pythiaTrial(),
     fh_dijetInvM(),
     fh_dijetInvMLin(),
     fh_dijetInvMTrunc(),
@@ -105,6 +108,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_deltaPtResponseEvery_ALICE(),
     fh_dijetResponse(),
     fh_dijetResponseLin(),
+    fh_dijetResponseLinNoMatching(),
     fh_doubleConeM(),
     fh_doubleConeMAlt(),
     fh_jet2Cone1Dist(),
@@ -129,6 +133,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_dijetResponseTrunc2(),
     fh_dijetResponseDeltaPhiCut(),
     fh_dijetResponseDeltaPhiCutLin(),
+    fh_dijetResponseDeltaPhiCutLinNoMatching(),
     fh_dijetResponseDeltaPhiCutTrunc(),
     fh_dijetResponseDeltaPhiCutTrunc2()
 {
@@ -177,6 +182,8 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_deltaPt(obj.fh_deltaPt),
     fh_maxJetptOverPtHard(obj.fh_maxJetptOverPtHard),
     fh_ptHard(obj.fh_ptHard),
+    fh_pythiaSigma(obj.fh_pythiaSigma),
+    fh_pythiaTrial(obj.fh_pythiaTrial),
     fh_dijetInvM(obj.fh_dijetInvM),
     fh_dijetInvMLin(obj.fh_dijetInvMLin),
     fh_dijetInvMTrunc(obj.fh_dijetInvMTrunc),
@@ -211,6 +218,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_deltaPtResponseEvery_ALICE(obj.fh_deltaPtResponseEvery_ALICE),
     fh_dijetResponse(obj.fh_dijetResponse),
     fh_dijetResponseLin(obj.fh_dijetResponseLin),
+    fh_dijetResponseLinNoMatching(obj.fh_dijetResponseLinNoMatching),
     fh_doubleConeM(obj.fh_doubleConeM),
     fh_doubleConeMAlt(obj.fh_doubleConeMAlt),
     fh_jet2Cone1Dist(obj.fh_jet2Cone1Dist),
@@ -235,6 +243,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_dijetResponseTrunc2(obj.fh_dijetResponseTrunc2),
     fh_dijetResponseDeltaPhiCut(obj.fh_dijetResponseDeltaPhiCut),
     fh_dijetResponseDeltaPhiCutLin(obj.fh_dijetResponseDeltaPhiCutLin),
+    fh_dijetResponseDeltaPhiCutLinNoMatching(obj.fh_dijetResponseDeltaPhiCutLinNoMatching),
     fh_dijetResponseDeltaPhiCutTrunc(obj.fh_dijetResponseDeltaPhiCutTrunc),
     fh_dijetResponseDeltaPhiCutTrunc2(obj.fh_dijetResponseDeltaPhiCutTrunc2)
 {
@@ -260,7 +269,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     fHMG = new AliJHistManager(Form("AliJCDijetHistManager%s",sMngrName.Data()),sMngrName.Data());
     // set AliJBin here //
     fHistCentBin.Set("CentBin","CentBin","Cent:",AliJBin::kSingle).SetBin(fNCentBin);
-    fJetBin.Set("JetBin","JetBin","Jet bin:",AliJBin::kSingle).SetBin(7);
+    fJetBin.Set("JetBin","JetBin","Jet bin:",AliJBin::kSingle).SetBin(fNJetClasses);
     fMBin.Set("MBin","MBin","dijetM:%.0f-%.0f:").SetBin(fSMBins);
 
     // fh_events counts several things:
@@ -501,6 +510,21 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << fHistCentBin
         << "END" ;
 
+    int NBINSsigma=150;
+    double LogBinsXSigma[NBINSsigma+1], LimLSigma=1e-8, LimHSigma=1e3;
+    double logBWSigma = (log(LimHSigma)-log(LimLSigma))/NBINSsigma;
+    for(int isigma=0;isigma<=NBINSsigma;isigma++) LogBinsXSigma[isigma]=LimLSigma*exp(isigma*logBWSigma);
+
+    fh_pythiaSigma
+        << TH1D("h_pythiaSigma", "h_pythiaSigma",NBINSsigma, LogBinsXSigma )
+        << fHistCentBin
+        << "END" ;
+
+    fh_pythiaTrial
+        << TH1D("h_pythiaTrial", "h_pythiaTrial", 10000, 0, 10000)
+        << fHistCentBin
+        << "END" ;
+
     int NBINSDijet=170;
     double logBinsXDijet[NBINSDijet+1], LimLDijet=0.1, LimHDijet=1000;
     double logBWDijet = (log(LimHDijet)-log(LimLDijet))/NBINSDijet;
@@ -612,6 +636,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     // ============ Response histograms ===========
     fh_responseInfo
         << TH1D("h_responseInfo", "h_responseInfo", 40, 0.0, 40.0 )
+        << fJetBin << fJetBin
         << "END" ;
 
     fh_jetResponseDeltaR
@@ -666,6 +691,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetResponseLin
         << TH2D("h_dijetResponseLin", "h_dijetResponseLin", 500, 0, 500, 500, 0, 500 )
+        << fJetBin << fJetBin << "END" ;
+
+    fh_dijetResponseLinNoMatching
+        << TH2D("h_dijetResponseLinNoMatching", "h_dijetResponseLinNoMatching", 500, 0, 500, 500, 0, 500 )
         << fJetBin << fJetBin << "END" ;
 
     fh_doubleConeM
@@ -762,6 +791,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetResponseDeltaPhiCutLin
         << TH2D("h_dijetResponseDeltaPhiCutLin", "h_dijetResponseDeltaPhiCutLin", 500, 0, 500, 500, 0, 500 )
+        << fJetBin << fJetBin << "END" ;
+
+    fh_dijetResponseDeltaPhiCutLinNoMatching
+        << TH2D("h_dijetResponseDeltaPhiCutLinNoMatching", "h_dijetResponseDeltaPhiCutLinNoMatching", 500, 0, 500, 500, 0, 500 )
         << fJetBin << fJetBin << "END" ;
 
     fh_dijetResponseDeltaPhiCutTrunc

@@ -130,7 +130,7 @@ set(SRCS
   AliFemtoPairCutResonances.cxx
   AliFemtoCorrFctnMinvMonitor.cxx
   AliFemtoCorrFctnPairFractions.cxx
-AliAnalysisTaskParticleEfficiency.cxx
+  AliAnalysisTaskParticleEfficiency.cxx
   AliAnalysisTaskParticleFractions.cxx
   AliFemtoPairOriginMonitor.cxx
   AliFemtoPairCutAntiGammaAlpha.cxx
@@ -175,7 +175,15 @@ AliAnalysisTaskParticleEfficiency.cxx
   AliFemtoCorrFctnpdtHe3.cxx
   AliAnalysisTaskParticleEffDY04.cxx
   AliAnalysisTaskParticleEffDY06.cxx
+  AliAnalysisEffTaskFilterBit768.cxx
+  AliAnalysisEffTaskFilterBit16.cxx
   AliAnalysisTaskParticleEffDY.cxx
+  AliAnalysisTaskEfficiencyFB128.cxx
+  AliAnalysisEffTaskDoubleCountPID.cxx
+  AliAnalysisEffTaskExclusivePID.cxx
+  AliAnalysisEfficiencyPbPbExclusivePID.cxx
+  AliAnalysisEfficiencyPbPbNodoublecount.cxx
+  
 
   )
 

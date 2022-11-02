@@ -118,10 +118,11 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetPseudoEffPars(double fConstEff, double fSigmaEff);
   void SetEfficiencyFlag(UInt_t newval) {fEfficiencyFlag = newval;};
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
-  void SetUse2DEfficiencies(bool newval, bool newval2=kFALSE) {fUse2DEff = newval; fUsePIDEff = newval2;};
+  void SetUse2DEfficiencies(bool newval) {fUse2DEff = newval;};
   void SetParticleFlag(UInt_t newval) {fParticleFlag = newval;};
   void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
+  void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -169,12 +170,13 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
   TList *fptVarList;
-  AliCkContainer *fCkCont;
-  AliPtContainer  *fPtCont;
+  AliCkContainer **fCkCont;
+  AliPtContainer  **fPtCont;
   TList *fCovList;
   TList *fV2dPtList;
   AliProfileBS **fCovariance; //!
-  AliProfileBS **fMpts; //!
+  AliProfileBS **fCovariancePowerMpt; //!
+  AliProfileBS **fMpt; //
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
@@ -214,13 +216,12 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   double fConstEff;
   double fSigmaEff;
   unsigned int fEventWeight; 
-  vector<vector<double>>  wpPt;
+  vector<vector<vector<double>>>  wpPt;
   std::map<double,double> centralitymap;  
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(AliProfileBS* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm);
-  void FillMPT(AliProfileBS *target, const Double_t &mpt, const Double_t &cent, const Double_t &wpt, const Double_t &rndmn);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
@@ -239,7 +240,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
   Bool_t fUse2DEff;
-  Bool_t fUsePIDEff;
+  Bool_t fFillMptPowers;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskDeform,1);
 };

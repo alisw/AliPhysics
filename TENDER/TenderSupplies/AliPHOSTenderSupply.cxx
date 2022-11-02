@@ -70,6 +70,10 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fIsMC(kFALSE)
   ,fMCProduction("")
   ,fDRN(-1)
+  ,fEmulateCrossTalk(false)
+  ,fTCardCorrMinAmp(0.1)
+  ,fTCardCorrInduceEnerFracMin(0.)
+  ,fTCardCorrInduceEnerFracMax(100.)
 {
 	//
 	// default ctor
@@ -77,7 +81,19 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
    for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
-
+   
+   fTCardCorrInduceEnerFrac[0] = 1.15e-02; 
+   fTCardCorrInduceEnerFrac[1] = 1.15e-02;
+   fTCardCorrInduceEnerFrac[2] = 1.15e-02;
+   fTCardCorrInduceEnerFracP1[0] = -1.1e-03;
+   fTCardCorrInduceEnerFracP1[1] = -1.1e-03;
+   fTCardCorrInduceEnerFracP1[2] = -1.1e-03;
+   fTCardCorrInduceEner[0] = 0.02;
+   fTCardCorrInduceEner[1] = 0.02;
+   fTCardCorrInduceEner[2] = 0.02;
+   fTCardCorrInduceEnerFracWidth[0] = 5.0e-03;
+   fTCardCorrInduceEnerFracWidth[1] = 5.0e-03;
+   fTCardCorrInduceEnerFracWidth[2] = 5.0e-03;
 }
 
 //_____________________________________________________
@@ -102,6 +118,10 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fIsMC(kFALSE)
   ,fMCProduction("")
   ,fDRN(-1)
+  ,fEmulateCrossTalk(false)
+  ,fTCardCorrMinAmp(0.1)
+  ,fTCardCorrInduceEnerFracMin(0.)
+  ,fTCardCorrInduceEnerFracMax(100.)
 {
 	//
 	// named ctor
@@ -110,6 +130,19 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
    for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
    for(Int_t mod=0; mod<5; mod++)fRunByRunCorr[mod]=0.136 ; //Correction contains measured pi0 mass
+
+   fTCardCorrInduceEnerFrac[0] = 1.15e-02; 
+   fTCardCorrInduceEnerFrac[1] = 1.15e-02;
+   fTCardCorrInduceEnerFrac[2] = 1.15e-02;
+   fTCardCorrInduceEnerFracP1[0] = -1.1e-03;
+   fTCardCorrInduceEnerFracP1[1] = -1.1e-03;
+   fTCardCorrInduceEnerFracP1[2] = -1.1e-03;
+   fTCardCorrInduceEner[0] = 0.02;
+   fTCardCorrInduceEner[1] = 0.02;
+   fTCardCorrInduceEner[2] = 0.02;
+   fTCardCorrInduceEnerFracWidth[0] = 5.0e-03;
+   fTCardCorrInduceEnerFracWidth[1] = 5.0e-03;
+   fTCardCorrInduceEnerFracWidth[2] = 5.0e-03;
 }
 
 //_____________________________________________________
@@ -571,6 +604,10 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
 	 Bool_t isHG=cells->GetHighGain(pos) ;
          cells->SetCell(pos, cellNumber, amplitude, time,  mclabel,  efrac, isHG);
       }      
+    }
+  
+    if(fEmulateCrossTalk){
+       TCardEmulation(cells); 
     }
   
     for (Int_t i=0; i<multClust; i++) {
@@ -1473,5 +1510,113 @@ void AliPHOSTenderSupply::DistanceToBadChannel(Int_t mod, TVector3 * locPos, Dou
   }
   
 }
+//________________________________________________________________________
+void AliPHOSTenderSupply::TCardEmulation(AliAODCaloCells * cells){
+  //Perform T-Card cross-talk emulation   
+    
+  // Loop on all cells with signal
+  Int_t nCells = cells->GetNumberOfCells();
+  for (Short_t icell = 0; icell < nCells; icell++)
+  {
+    float amp = cells->GetAmplitude (icell); 
+    if ( amp <= fTCardCorrMinAmp ){
+      continue ;
+    }
+    int id  = cells->GetCellNumber(icell);
+    int relid[4] ;
+    fPHOSGeo->AbsToRelNumbering(id, relid) ; 
+    if(relid[1]!=0){ //not PHOS
+      continue ;  
+    }
+    //Look for cells in in the same T-Card
+    //find smallest and largest cell in the list
+    Short_t lowest=icell, test = lowest-1;
+    int relidTest[4] ;
+    while(test>0){
+      int idTest  = cells->GetCellNumber(test);
+      fPHOSGeo->AbsToRelNumbering(idTest, relidTest) ; 
+      if((relidTest[0]==relid[0]) && (relidTest[1]==0) && 
+         (((relidTest[2]-1)/8)==((relid[2]-1)/8))){ //same TCard
+        lowest= test;
+        test--;
+      }
+      else{
+        break ;
+      }
+    }
+    Short_t highest=icell;
+    test = highest+1;
+    while(test<nCells){
+      int testId  = cells->GetCellNumber(test);
+      if((relidTest[0]==relid[0]) && (relidTest[1]==0) && 
+         (((relidTest[2]-1)/8)==((relid[2]-1)/8))){ //same TCard
+        highest= test;
+        test++;
+      }
+      else{
+        break ;
+      }
+    }
+    Short_t cellNumber;
+    Double_t  amplitude, dE=0., time, efrac ;
+    Int_t  mclabel = -1;
+    Bool_t isHG=kFALSE;
+    //Add energy to cells
+    for(test=lowest; test<=highest; test++){
+      if(test==icell){ //same cell
+        continue ;
+      }
+      int idTest  = cells->GetCellNumber(test);
+      fPHOSGeo->AbsToRelNumbering(idTest, relidTest) ; 
+      if((relidTest[0]!=relid[0]) || 
+         (((relidTest[2]-1)/8)!=((relid[2]-1)/8)) || 
+         (((relidTest[3]-1)/2)!=(relid[3]-1)/2)) { //not same TCard
+        continue ;   
+      }    
+      int dphi=TMath::Abs(relidTest[2]-relid[2]) ;
+      float dAmp = InducedAmpTCard(amp,dphi) ;
+      cells->GetCell(test, cellNumber, amplitude, time, mclabel, efrac);
+      if(dAmp<-amplitude){
+        dAmp=-amplitude+0.0001;   
+      }
+      amplitude+=dAmp ;
+      isHG = cells->GetHighGain(test);
+      dE+=dAmp ;
+      if(dE>amplitude){
+        dE-=dAmp;
+      }
+      else{       
+        cells->SetCell(test, cellNumber, amplitude, time, mclabel, efrac, isHG);
+      }
+    }
+    cells->GetCell(icell, cellNumber, amplitude, time, mclabel, efrac);
+    amplitude-=dE ;
+    isHG = cells->GetHighGain(icell);
+    cells->SetCell(icell, cellNumber, amplitude, time, mclabel, efrac, isHG);
+  }
+}
+//________________________________________________________________________
+Float_t AliPHOSTenderSupply::InducedAmpTCard(float amp, int dphi){
+    
+  if(dphi>2){
+    return 0;
+  }    
 
+  // Get the fraction
+  Float_t frac = fTCardCorrInduceEnerFrac[dphi] + amp * fTCardCorrInduceEnerFracP1[dphi];
+  
+  // Use an absolute minimum and maximum fraction if calculated one is out of range
+  if ( frac < fTCardCorrInduceEnerFracMin ) frac = fTCardCorrInduceEnerFracMin;  //[4.5e-3]
+  if ( frac > fTCardCorrInduceEnerFracMax ) frac = fTCardCorrInduceEnerFracMax;   //[0.018]
+    
+  // Randomize the induced fraction, if requested
+  frac = gRandom->Gaus(frac, fTCardCorrInduceEnerFracWidth[dphi]); //[5.0e-03,5.0e-03,5.0e-03, 0]
+  
+  // If too small or negative, do nothing else
+  if ( frac < 0.0001 ) return 0;
 
+  // Calculate induced energy
+  return fTCardCorrInduceEner[dphi] + amp * frac;
+  
+}
+  

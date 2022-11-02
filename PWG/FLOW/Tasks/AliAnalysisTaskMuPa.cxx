@@ -98,9 +98,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fQvectorList(NULL),
  fQvectorFlagsPro(NULL),
  fCalculateQvector(kTRUE),
- //fMaxHarmonic(6),
  fMaxHarmonic(gMaxHarmonic),
- //fMaxCorrelator(8),
  fMaxCorrelator(gMaxCorrelator),
 
  // Particle weights:
@@ -270,9 +268,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fQvectorList(NULL),
  fQvectorFlagsPro(NULL),
  fCalculateQvector(kTRUE),
- //fMaxHarmonic(6),
  fMaxHarmonic(gMaxHarmonic),
- //fMaxCorrelator(8),
  fMaxCorrelator(gMaxCorrelator),
 
  // Particle weights:
@@ -818,6 +814,8 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  // d) Reset ebe containers for nested loops;
  // e) Fisher-Yates algorithm.
  
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
  // a) Multiplicities:
  fMultiplicity = 0.;
  fSelectedTracks = 0;
@@ -908,6 +906,8 @@ void AliAnalysisTaskMuPa::OnlineMonitoring()
  // a) Update regularly the output file. Only the events which survive cuts are counted. # of events are entries in fSelectedTracksHist;
  // b) Bail out after specified number of events.
 
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
  // a) Update regularly the output file:
  if(fUpdateOutputFile)
  {
@@ -944,6 +944,7 @@ void AliAnalysisTaskMuPa::OnlineMonitoring()
   if(fMaxNumberOfEvents == currentEventNo)
   {
    cout<<Form("\nPer request, bailing out after %d events in the file %s .\n",fMaxNumberOfEvents,fBailOutFile->Data())<<endl;
+   if(fCalculateNestedLoops){this->ComparisonNestedLoopsVsCorrelations();}
    cout<<Form("Output is dumped correctly only if there is 1 task in the train, due to exit(1) below.\n")<<endl;
    sleep(2);
    TFile *f = new TFile(fBailOutFile->Data(),"recreate");
@@ -1065,14 +1066,14 @@ void AliAnalysisTaskMuPa::InitializeArraysForNestedLoopsHistograms()
  // Initialize all arrays for nested loops:
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
   { 
-   for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
+   for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
    {
     for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
     {
      fNestedLoopsPro[k][n][v] = NULL;
     } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality] 
-   } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
-  } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+   } // for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
+  } // for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
 
  ftaNestedLoops[0] = NULL;
  ftaNestedLoops[1] = NULL;
@@ -1144,15 +1145,15 @@ void AliAnalysisTaskMuPa::InitializeArraysForCorrelationsHistograms()
  // Initialize all arrays for correlations (and nested loops):
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
   { 
-   for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
+   for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
    {
     for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
     {
      fCorrelationsPro[k][n][v] = NULL;
      //fNestedLoopsPro[k][n][v] = NULL;
     } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-   } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
-  } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+   } // for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
+  } // for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
 
 
  for(Int_t v=0;v<gKineDependenceVariables;v++)
@@ -2250,7 +2251,7 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
 
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
  {  
-  for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
+  for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
   {
    for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
    {
@@ -2283,8 +2284,8 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
     //fCorrelationsPro[k][n][v]->SetLineColor(colorsW[v]);
     fCorrelationsList->Add(fCorrelationsPro[k][n][v]);
    } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-  } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
- } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+  } // for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
+ } // for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
 
 } // void AliAnalysisTaskMuPa::BookCorrelationsHistograms() 
 
@@ -2353,7 +2354,7 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
 
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
  {  
-  for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
+  for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
   {
    for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
    {
@@ -2387,8 +2388,8 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
      
     fNestedLoopsList->Add(fNestedLoopsPro[k][n][v]);
    } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
-  } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
- } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+  } // for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
+ } // for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
 
 } // void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
 
@@ -2428,13 +2429,13 @@ void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
- fInternalValidationFlagsPro = new TProfile("fInternalValidationFlagsPro","flags for internal validation",13,0.,13.);
+ fInternalValidationFlagsPro = new TProfile("fInternalValidationFlagsPro","flags for internal validation",16,0.,16.);
  fInternalValidationFlagsPro->SetStats(kFALSE);
  fInternalValidationFlagsPro->SetLineColor(COLOR);
  fInternalValidationFlagsPro->SetFillColor(FILLCOLOR);
  fInternalValidationFlagsPro->GetXaxis()->SetLabelSize(0.04); 
  fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(1,"fUseInternalValidation"); fInternalValidationFlagsPro->Fill(0.5,fUseInternalValidation);
- for(Int_t e=0;e<7;e++) // hardwired support for harmonics v1-v6
+ for(Int_t e=0;e<gMaxHarmonic+1;e++)
  {
   fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(e+2,Form("v_{%d}",e+1)); 
   if(fInternalValidationAmplitudes && (e+1 <= fInternalValidationAmplitudes->GetSize()))
@@ -2446,9 +2447,9 @@ void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
    fInternalValidationFlagsPro->Fill(e+1+0.5,0.0); // default values of all harmonics are 0
   }
  } // for(Int_t e=0;e<fInternalValidationAmplitudes->GetSize()) 
- for(Int_t e=8;e<14;e++) // hardwired support for symmetry planesa Psi1-Psi6
+ for(Int_t e=gMaxHarmonic+1;e<17;e++) // this has to be in sync. with ... ,16,0.,16.); above
  {
-  fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(e,Form("#Psi_{%d}",e-7)); 
+  fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(e,Form("#Psi_{%d}",e-(gMaxHarmonic+1))); 
 /* TBI 20210910 fix this later
   if(fInternalValidationPlanes && (e-7 <= fInternalValidationPlanes->GetSize()))
   {
@@ -2848,7 +2849,7 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
  // d) Reference multiplicity (maintained centrally);
  // e) Remaining event distributions.
 
- //if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -4094,7 +4095,7 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
  // b) AOD QA;
  // c) MC QA.
 
- //if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -4670,6 +4671,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
 
  // TBI 20210909 optimize that 2x I do not call e.g. Two(0,0).Re(), etc.
 
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
  // a) Flush 'n' fill the generic Q-vectors:
  this->ResetQ();
  for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
@@ -4884,7 +4887,7 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
    if(i2==i1){continue;}
    Double_t dPhi2 = ftaNestedLoops[0]->GetAt(i2);
    Double_t dW2 = ftaNestedLoops[1]->GetAt(i2);
-   for(int h=0; h<6; h++)
+   for(int h=0; h<gMaxHarmonic; h++)
    {
     // fill cos, 2p, integreated: 
     if(fNestedLoopsPro[0][h][0]){fNestedLoopsPro[0][h][0]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1-dPhi2)),dW1*dW2);}
@@ -4893,8 +4896,8 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
     // fill cos, 2p, vs. centrality: 
     if(fNestedLoopsPro[0][h][2]){fNestedLoopsPro[0][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1-dPhi2)),dW1*dW2);}
    } // for(int h=1; h<=6; h++)
-  } // for(int i2=0; i2<nTracks; ++i2)
- } // for(int i1=0; i1<nTracks; ++i1)
+  } // for(int i2=0; i2<nTracks; i2++)
+ } // for(int i1=0; i1<nTracks; i1++)
 
  // 4p:
  if(nParticles<4){return;}
@@ -4918,7 +4921,7 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
      if(i4==i1||i4==i2||i4==i3){continue;}
      Double_t dPhi4 = ftaNestedLoops[0]->GetAt(i4);
      Double_t dW4 = ftaNestedLoops[1]->GetAt(i4);
-     for(int h=0; h<6; h++)
+     for(int h=0; h<gMaxHarmonic; h++)
      {
       // fill cos, 4p, integreated: 
       if(fNestedLoopsPro[1][h][0]){fNestedLoopsPro[1][h][0]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
@@ -4926,11 +4929,11 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
       if(fNestedLoopsPro[1][h][1]){fNestedLoopsPro[1][h][1]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
       // fill cos, 4p, all harmonics, vs. centrality: 
       if(fNestedLoopsPro[1][h][1]){fNestedLoopsPro[1][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
-     } // for(int h=0; h<6; h++)
+     } // for(int h=0; h<gMaxHarmonic; h++)
     } // for(int i4=0; i4<nParticles; i4++)   
    } // for(int i3=0; i3<nParticles; i3++)
-  } // for(int i2=0; i2<nTracks; ++i2)
- } // for(int i1=0; i1<nTracks; ++i1)
+  } // for(int i2=0; i2<nTracks; i2++)
+ } // for(int i1=0; i1<nTracks; i1++)
 
  // 6p:
  if(nParticles<6){return;}
@@ -4964,7 +4967,7 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
        Double_t dPhi6 = ftaNestedLoops[0]->GetAt(i6);
        Double_t dW6 = ftaNestedLoops[1]->GetAt(i6);
-       for(int h=0; h<6; h++)
+       for(int h=0; h<gMaxHarmonic; h++)
        {
         // fill cos, 6p, integreated: 
         if(fNestedLoopsPro[2][h][0]){fNestedLoopsPro[2][h][0]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
@@ -4972,13 +4975,13 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
         if(fNestedLoopsPro[2][h][1]){fNestedLoopsPro[2][h][1]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
         // fill cos, 6p, all harmonics, vs. M: 
         if(fNestedLoopsPro[2][h][1]){fNestedLoopsPro[2][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
-       } // for(int h=0; h<6; h++)
+       } // for(int h=0; h<gMaxHarmonic; h++)
       } // if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
      } // if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
     } // for(int i4=0; i4<nParticles; i4++)   
    } // for(int i3=0; i3<nParticles; i3++)
-  } // for(int i2=0; i2<nTracks; ++i2)
- } // for(int i1=0; i1<nTracks; ++i1)
+  } // for(int i2=0; i2<nTracks; i2++)
+ } // for(int i1=0; i1<nTracks; i1++)
 
  // 8p:
  if(nParticles<8){return;}
@@ -5022,7 +5025,7 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
          if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7){continue;}
          Double_t dPhi8 = ftaNestedLoops[0]->GetAt(i8);
          Double_t dW8 = ftaNestedLoops[1]->GetAt(i8);
-         for(int h=0; h<6; h++)
+         for(int h=0; h<gMaxHarmonic; h++)
          {
           // fill cos, 8p, integreated: 
           if(fNestedLoopsPro[3][h][0]){fNestedLoopsPro[3][h][0]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
@@ -5030,15 +5033,15 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
           if(fNestedLoopsPro[3][h][1]){fNestedLoopsPro[3][h][1]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
           // fill cos, 8p, all harmonics, vs. M: 
           if(fNestedLoopsPro[3][h][2]){fNestedLoopsPro[3][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
-         } // for(int h=0; h<6; h++)
+         } // for(int h=0; h<gMaxHarmonic; h++)
         } // for(int i8=0; i8<nParticles; i8++)
        } // for(int i7=0; i7<nParticles; i7++)
       } // for(int i6=0; i6<nParticles; i6++) 
      } // for(int i5=0; i5<nParticles; i6++) 
     } // for(int i4=0; i4<nParticles; i4++)   
    } // for(int i3=0; i3<nParticles; i3++)
-  } // for(int i2=0; i2<nParticles; ++i2)
- } // for(int i1=0; i1<nParticles; ++i1)
+  } // for(int i2=0; i2<nParticles; i2++)
+ } // for(int i1=0; i1<nParticles; i1++)
 
 } // void AliAnalysisTaskMuPa::CalculateNestedLoops(void) 
 
@@ -5502,7 +5505,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
  for(Int_t o=0;o<4;o++)
  {
   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-  for(Int_t h=0;h<6;h++)
+  for(Int_t h=0;h<gMaxHarmonic;h++)
   {
    for(Int_t b=1;b<=nBinsQV;b++)
    {
@@ -5518,7 +5521,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
      }
     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
    } // for(Int_t b=1;b<=nBinsQV;b++) 
-  } // for(Int_t h=0;h<6;h++)
+  } // for(Int_t h=0;h<gMaxHarmonic;h++)
   cout<<endl;
  } // for(Int_t o=0;o<4;o++) 
 
@@ -5533,7 +5536,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
  for(Int_t o=0;o<4;o++)
  {
   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-  for(Int_t h=0;h<6;h++)
+  for(Int_t h=0;h<gMaxHarmonic;h++)
   {
    for(Int_t b=1;b<=nBinsQV;b++)
    {
@@ -5549,7 +5552,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
      }
     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
    } // for(Int_t b=1;b<=nBinsQV;b++) 
-  } // for(Int_t h=0;h<6;h++)
+  } // for(Int_t h=0;h<gMaxHarmonic;h++)
   cout<<endl;
  } // for(Int_t o=0;o<4;o++) 
 
@@ -5564,7 +5567,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
  for(Int_t o=0;o<4;o++)
  {
   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-  for(Int_t h=0;h<6;h++)
+  for(Int_t h=0;h<gMaxHarmonic;h++)
   {
    for(Int_t b=1;b<=nBinsQV;b++)
    {
@@ -5580,7 +5583,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
      }
     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
    } // for(Int_t b=1;b<=nBinsQV;b++) 
-  } // for(Int_t h=0;h<6;h++)
+  } // for(Int_t h=0;h<gMaxHarmonic;h++)
   cout<<endl;
  } // for(Int_t o=0;o<4;o++) 
 
@@ -6131,7 +6134,7 @@ void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
  // Storal all Test0 labels in the temporary placeholder. 
 
  // source = "external" => fetch Test0 labels from external file
- // source = "internal" => generate all Test0 labels automatocally with internal code
+ // source = "internal" => generate all Test0 labels automatically with internal code
 
  if(!(TString(source).EqualTo("external") || TString(source).EqualTo("internal"))){cout<<__LINE__<<endl;exit(1);}
 
@@ -6595,7 +6598,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
   {
    fPhiPDF->SetParameter(2*h+1,0.);
   } 
- } // for(Int_t h=0;h<6;h++)
+ } // for(Int_t h=0;h<gMaxHarmonic;h++)
 
  // cross-check set vn's and psin's:
  /*
@@ -6744,7 +6747,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
    for(Int_t o=0;o<4;o++)
    {
     cout<<Form("   ==== <<%d>>-particle correlations (var = %d) ====",2*(o+1),var)<<endl;
-    for(Int_t h=0;h<6;h++)
+    for(Int_t h=0;h<gMaxHarmonic;h++)
     {
      for(Int_t b=1;b<=nBinsQV;b++)
      {
@@ -6754,7 +6757,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
        cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][var]->GetBinError(1)<<endl; 
       } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
      } // for(Int_t b=1;b<=nBinsQV;b++) 
-    } // for(Int_t h=0;h<6;h++)
+    } // for(Int_t h=0;h<gMaxHarmonic;h++)
    } // for(Int_t o=0;o<4;o++)
   } // for(Int_t var=0;var<5;var++) // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta] 
  } // if(fCalculateCorrelations && !fCalculateNestedLoops)

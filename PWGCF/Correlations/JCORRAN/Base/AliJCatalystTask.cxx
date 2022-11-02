@@ -280,6 +280,9 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 
   // load current event and save track, event info
   if(flags & FLUC_KINEONLY) {
+    if(flags & FLUC_EXCLUDE_EPOS){
+        Error("UserExec","FLUC_EXCLUDE_EPOS flag is not set up to work with FLUC_KINEONLY. No EPOS filtering is done.");
+    }
     AliMCEvent *mcEvent;
     if(flags & FLUC_KINEONLYEXT) {
       AliInputEventHandler*  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -440,8 +443,17 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 {
   //aod->Print();
   if(flags & FLUC_MC) {  // how to get a flag to check  MC or not !
-    TClonesArray *mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
-    if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
+    TClonesArray *mcArray;
+    if(flags & FLUC_EXCLUDE_EPOS){
+        mcArray = (TClonesArray*)aod->FindListObject("FilteredParticlesTrueMC");
+        if(!mcArray) {
+            Error("ReadAODTracks","Could not find FilteredParticlesTrueMC, check that you are using AliAnalysisTaskSVtaskMCFilter properly or disable the FLUC_EXCLUDE_EPOS flag");
+            return;
+        }
+    } else {
+        mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
+        if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
+    }
 
     Int_t nt = mcArray->GetEntriesFast();
     Int_t ntrack = 0;
@@ -499,15 +511,30 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
   } // end: if(flags & FLUC_MC)
 
   else {  // Read AOD reco tracks.
-    Int_t nt = aod->GetNumberOfTracks();
-    if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
+    TClonesArray *aodArray;
+    Int_t nt;
+    if(flags & FLUC_EXCLUDE_EPOS){
+        aodArray = (TClonesArray*)aod->FindListObject("FilteredTracksDetMC");
+        if(aodArray) {
+            nt = aodArray->GetEntriesFast();
+            if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
+        } else {
+            Error("ReadAODTracks","Could not find FilteredTracksDetMC, check that you are using AliAnalysisTaskSVtaskMCFilter properly or disable the FLUC_EXCLUDE_EPOS flag");
+            return;
+        }
+    } else {
+        nt = aod->GetNumberOfTracks();
+        if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
+    }
 
     Int_t ntrack =0;
     Double_t PV[3] = {0.};
     ReadVertexInfo(aod, PV);
 
     for( int it=0; it<nt ; it++){
-      AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      AliAODTrack *track;
+      if(flags & FLUC_EXCLUDE_EPOS) track = dynamic_cast<AliAODTrack*>(aodArray->At(it));
+      else track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
       if(!track) {
         Error("ReadEventAOD", "Could not read particle %d", (int) it);
         continue;

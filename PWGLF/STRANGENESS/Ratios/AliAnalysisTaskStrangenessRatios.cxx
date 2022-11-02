@@ -51,6 +51,22 @@ namespace
   constexpr double kcTauOmega{2.46129608};
   constexpr double kcTau[2]{kcTauXi, kcTauOmega};
 
+  void getITScls(AliAODTrack* t, int &SPDcls, int &SDDSSDcls)
+  {
+    SPDcls = 0u;
+    SDDSSDcls = 0u;
+    for (int i = 0; i < 6; ++i)
+    {
+      if (t->HasPointOnITSLayer(i)){
+        if (i < 2)
+          SPDcls++;
+        else
+          SDDSSDcls++;
+      }
+    }
+  }
+
+
 }
 
 /// Standard and default constructor of the class.
@@ -394,7 +410,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           lambda->XvYvZv(ov);
           posPart->XvYvZv(dv);
           fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * lambda->M() / lambda->P();
-          
+
           fGenLambda.flag = 0u;
           if (lambda->IsPrimary())
             fGenLambda.flag |= kPrimary;
@@ -410,7 +426,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       auto proton = fRecLambda->matter ? pTrack : nTrack;
       auto pion = fRecLambda->matter ? nTrack : pTrack;
 
+      int nSPDPr = 0u;
+      int nSDDSSDPr = 0u;
+      getITScls(proton, nSPDPr, nSDDSSDPr);
+      if (nSDDSSDPr < fSDDSSDclsCut || nSPDPr < fSPDclsCut)
+        continue;
       fRecLambda->pt = v0->Pt();
+      fRecLambda->ptPr = proton->Pt();
       fRecLambda->eta = v0->Eta();
       fRecLambda->mass = fRecLambda->matter ? v0->MassLambda() : v0->MassAntiLambda();
       fRecLambda->ct = v0->Ct(kLambdaPdg, pv);
@@ -422,6 +444,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecLambda->cosPA = v0->CosPointingAngle(pv);
       fRecLambda->tpcNsigmaPi = fPID->NumberOfSigmasTPC(pion, AliPID::kPion);
       fRecLambda->tpcNsigmaPr = fPID->NumberOfSigmasTPC(proton, AliPID::kProton);
+      fRecLambda->itsNsigmaPr = fPID->NumberOfSigmasITS(proton, AliPID::kProton);
       fRecLambda->tpcClV0Pi = pion->GetTPCsignalN();
       fRecLambda->tpcClV0Pr = proton->GetTPCsignalN();
       fRecLambda->hasTOFhit = !pTrack->GetTOFBunchCrossing(bField) || !nTrack->GetTOFBunchCrossing(bField);
@@ -754,7 +777,7 @@ void AliAnalysisTaskStrangenessRatios::FindWDLambdaMother(AliAODMCParticle *trac
     }
     break;
     case kOmegaPdg:
-    { 
+    {
       if (mother->IsPhysicalPrimary())
         fGenLambda.flag |= kSecondaryFromWDOmega;
       else

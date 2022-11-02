@@ -174,22 +174,26 @@ void AliJCDijetTask::UserCreateOutputObjects()
     fOutput = gDirectory;
     fOutput->cd();
 
+    fEventCuts.AddQAplotsToList(fJCatalystTask->GetCataList());
+
+    fana = new AliJCDijetAna();
     fhistos = new AliJCDijetHistos();
     fhistos->SetName("jcdijet");
     fhistos->SetCentralityBinsHistos(fcentralityBins);
     fhistos->SetDijetMBinsHistos(fsDijetMBins);
+    fhistos->SetNJetClasses(fana->jetClassesSize);
     fhistos->CreateEventTrackHistos();
     fhistos->fHMG->Print();
-    fana = new AliJCDijetAna();
 
     if(fIsMC) {
+        fanaMC = new AliJCDijetAna();
         fhistosDetMC = new AliJCDijetHistos();
         fhistosDetMC->SetName("jcdijetDetMC");
         fhistosDetMC->SetCentralityBinsHistos(fcentralityBins);
         fhistosDetMC->SetDijetMBinsHistos(fsDijetMBins);
+        fhistosDetMC->SetNJetClasses(fanaMC->jetClassesSize);
         fhistosDetMC->CreateEventTrackHistos();
         fhistosDetMC->fHMG->Print();
-        fanaMC = new AliJCDijetAna();
     }
 
     fUtils = new AliAnalysisUtils();
@@ -314,8 +318,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
 
     // Save information about the settings used.
     // Done after SetSettings
-    fana->InitHistos(fhistos, fIsMC, fcentralityBins.size());
-    if(fIsMC) fanaMC->InitHistos(fhistosDetMC, fIsMC, fcentralityBins.size());
+    fana->InitHistos(fhistos, fIsMC, fcentralityBins.size(), iUnfJetClassTrue, iUnfJetClassDet);
+    if(fIsMC) fanaMC->InitHistos(fhistosDetMC, fIsMC, fcentralityBins.size(), iUnfJetClassTrue, iUnfJetClassDet);
 
 #endif
 
@@ -393,49 +397,28 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
                     gh = (AliGenEventHeader*)genHeaders->At(i);
                     AliGenPythiaEventHeader* pythiaGenHeader= dynamic_cast<AliGenPythiaEventHeader*>(gh); //identify pythia header
                     //AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
-                    if(pythiaGenHeader) fptHardBin = pythiaGenHeader->GetPtHard();
-                    else fptHardBin = 0.0;
+                    if(pythiaGenHeader) {
+                        fptHardBin = pythiaGenHeader->GetPtHard();
+                        fPythiaSigma = pythiaGenHeader->GetXsection();
+                        fPythiaTrial = pythiaGenHeader->Trials();
+                    }
+                    else {
+                        fptHardBin = 0.0;
+                        fPythiaSigma = 0.0;
+                        fPythiaTrial = 0.0;
+                    }
                     //cout << "genHeader " << i << ": " << pythiaGenHeader << ", fptHardBin: " << fptHardBin << endl;
                 }
             }
             //cout << "fptHardBin: " << fptHardBin << endl;
-            //fana->SetPtHardBin(fptHardBin);
-            fanaMC->SetPtHardBin(fptHardBin);
+            //fana->SetPythiaInfo(fptHardBin, fPythiaSigma, fPythiaTrial);
+            fanaMC->SetPythiaInfo(fptHardBin, fPythiaSigma, fPythiaTrial);
 
             fhistosDetMC->fh_eventSel->Fill("events",1.0);
             fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);
             fhistosDetMC->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
 
             fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
-
-            /* //In development:
-            if(mcEvent) {
-                for(int it = 0;it < mcEvent->GetNumberOfTracks();++it){
-
-                    //if ESD AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(it);
-                    //if AOD AliVParticle* part=(AliVParticle*)mcEvent->GetTrack(it);
-
-                    TString genname;
-                    Bool_t yesno=mcEvent->GetCocktailGenerator(it,genname);
-                    //if(!yesno) Printf("no cocktail header list was found for this event");
-                    //if(yesno) {Printf("cocktail header name is %s", genname.Data());}
-                    //you may want to check wether it is Hijing, for example.
-                    if(yesno) {
-                        if(genname.Contains("EPOS")) {
-                            //fInputListDetMC->RemoveAt(it);
-                            fhistosDetMC->fh_events[fCBin]->Fill("EPOS particles",1.0);
-                        } else if(genname.Contains("jetjet")) {
-                            fhistosDetMC->fh_events[fCBin]->Fill("jetjet particles",1.0);
-                        } else {
-                            fhistosDetMC->fh_events[fCBin]->Fill("other particles",1.0);
-                        }
-                    } else {
-                        fhistosDetMC->fh_events[fCBin]->Fill("No coctail header",1.0);
-                    }
-                    //cout << "This particle comes from: " << genname.Data() << endl;
-                }
-            }
-            */
 
         }
 

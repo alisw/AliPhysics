@@ -21,13 +21,13 @@
 
 AliAnalysisTaskBFR2sphero * AddTaskBFR2sphero
 (
- TString AnalysisDataType       = "MCAOD", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- TString prefixName             = "truth_",
+ TString AnalysisDataType       = "MCAODreco", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
+ TString prefixName             = "reco_",
   //************ for Stage2_Step1 starts ************************
  
  int    singlesOnly             =  0,   // 0: full correlations    1: singles only
  
- int    usePtEff                =  0,   // 0: no                   1: yes  
+ int    usePtEff                =  1,   // 0: no                   1: yes  
  TString inputPtEffFileName       = "alien:///alice/cern.ch/user/s/subhadee/inv_efficiency_correction_factor.root", ///alice/cern.ch/user/s/subhadee
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
  const char* taskname           = "ChPM",// ChPM, ChPP, ChMM
@@ -35,7 +35,7 @@ AliAnalysisTaskBFR2sphero * AddTaskBFR2sphero
  
  TString System                 = "pp18_V0_kMB_kFALSE",
  int    CentralityGroup         =  13,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
- int    SpherocityGroup         =  2,   //spherocity groups
+ int    SpherocityGroup         =  1,   //spherocity groups
  double zMax                    =  8.,  // set vertexZ cut   
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  96,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
@@ -557,6 +557,7 @@ AliAnalysisTaskBFR2sphero * AddTaskBFR2sphero
   TString part2Name;
   TString partName;
   TString eventName;
+  TString eventName1;
   TString pileupRejecSuffix = "_PileupRejec";
   TString pairRejecSuffix   = "_PairRejec";
   TString calibSuffix       = "_calib";
@@ -607,6 +608,12 @@ AliAnalysisTaskBFR2sphero * AddTaskBFR2sphero
       eventName += int(1000*minSherocity[isphero] );
       eventName += "So";
       eventName += int(1000*maxSherocity[isphero] );
+
+
+      eventName1 =  "_";
+      eventName1 += int(minCentrality[iCentrality] );
+      eventName1 += "Vo";
+      eventName1 += int(maxCentrality[iCentrality] );
             
 
       baseName     =   prefixName;      
@@ -646,7 +653,7 @@ AliAnalysisTaskBFR2sphero * AddTaskBFR2sphero
 		  TString nameHistoBasePtEff = "hEff_";
 		  TString nameHistoPtEff;
 		  nameHistoBasePtEff += partName;
-		  nameHistoBasePtEff += eventName;
+		  nameHistoBasePtEff += eventName1;
 		  cout <<"\n\n\n nameHistoBasePtEff: "<<nameHistoBasePtEff<<endl;
 		  if (requestedCharge1 == 1)
 		    {

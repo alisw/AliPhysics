@@ -438,11 +438,11 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   const Double_t fkDeltaPrimeLowLimit; // Lower deltaPrime limit
   const Double_t fkDeltaPrimeUpLimit; // Upper deltaPrime limit
   TF1* fConvolutedGausDeltaPrime; //! Gaus convoluted with exponential tail to generate detector response (deltaPrime)
-  
+
   Double_t fConvolutedGaussLambda; // Lambda parameter for convoluted gaus function
+  Double_t fConvolutedGaussTransitionPars[3]; // Parameter for transition from gaussian parameters to asymmetric shape
   
   Int_t fTOFmode; // TOF mode used for TOF PID info (affects num sigma inclusion/exclusion)
-  Double_t fConvolutedGaussTransitionPars[3]; // Parameter for transition from gaussian parameters to asymmetric shape
   static const Double_t fgkSigmaReferenceForTransitionPars; // Reference sigma chosen to calculate transition parameters
   
   Double_t fEtaAbsCutLow; // Lower cut value on |eta|

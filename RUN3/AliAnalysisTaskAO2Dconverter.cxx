@@ -329,6 +329,9 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     DisableTree(kMcTrackLabel);
     DisableTree(kMcCaloLabel);
     DisableTree(kMcCollisionLabel);
+    DisableTree(kHepMcCrossSections);
+    DisableTree(kHepMcPdfInfo);
+    DisableTree(kHepMcHeavyIon);
     break;
   default:
     break;
@@ -1652,6 +1655,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
       if (aodmcpt && aodmcpt->IsPhysicalPrimary()) // AOD
         mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
+
+      if (MCEvt && MCEvt->IsFromBGEvent(i)) // ESD
+        mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
+      if (aodmcpt && aodmcpt->IsFromSubsidiaryEvent()) // AOD: PH Not sure if corresponds to BKG event
+        mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
 
       mcparticle.fIndexArray_Mothers_size = 1;
       mcparticle.fIndexArray_Mothers[0] = particle ? particle->GetMother(0) : aodmcpt->GetMother();

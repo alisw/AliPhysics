@@ -62,7 +62,14 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fNumDPhiDEtaQA(nullptr),
     fDumDPhiDEtaQA(nullptr),
     fNumDPhiDEtaAvgQA(nullptr),
-    fDumDPhiDEtaAvgQA(nullptr)
+    fDumDPhiDEtaAvgQA(nullptr),
+    fUseStavinskyMethod(0),
+    fStaSkyBkg(nullptr),
+    fUse2DpTvsKStar(0),
+    f2DpTvsKStar(nullptr),
+    fUsePairCutEtaPhi(0),
+    fPairCut_eta(0.017),
+    fPairCut_phi(0.017)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -70,7 +77,6 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     
     fNumerator->Sumw2();
     fDenominator->Sumw2();
-
 
 
 
@@ -114,7 +120,14 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fNumDPhiDEtaQA(aCorrFctn.fNumDPhiDEtaQA),
     fDumDPhiDEtaQA(aCorrFctn.fDumDPhiDEtaQA),
     fNumDPhiDEtaAvgQA(aCorrFctn.fNumDPhiDEtaAvgQA),
-    fDumDPhiDEtaAvgQA(aCorrFctn.fDumDPhiDEtaAvgQA)
+    fDumDPhiDEtaAvgQA(aCorrFctn.fDumDPhiDEtaAvgQA),
+    fUseStavinskyMethod(aCorrFctn.fUseStavinskyMethod),
+    fStaSkyBkg(aCorrFctn.fStaSkyBkg),
+    fUse2DpTvsKStar(aCorrFctn.fUse2DpTvsKStar),
+    f2DpTvsKStar(aCorrFctn.f2DpTvsKStar),
+    fUsePairCutEtaPhi(aCorrFctn.fUsePairCutEtaPhi),
+    fPairCut_eta(aCorrFctn.fPairCut_eta),
+    fPairCut_phi(aCorrFctn.fPairCut_phi)
 {
     
 
@@ -156,7 +169,8 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete fNumDPhiDEtaAvgQA;
     delete fDumDPhiDEtaAvgQA;
 
-
+    delete fStaSkyBkg;
+    delete f2DpTvsKStar;
  
 
 }
@@ -240,6 +254,11 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
     	if(fDumDPhiDEtaAvgQA) delete fDumDPhiDEtaAvgQA;
         		fDumDPhiDEtaAvgQA = new TH2F(*aCorrFctn.fDumDPhiDEtaAvgQA);
 
+    if(fUseStavinskyMethod) delete fStaSkyBkg;
+		fStaSkyBkg = new TH1F(*aCorrFctn.fStaSkyBkg);
+
+    if(fUse2DpTvsKStar) delete f2DpTvsKStar;
+		f2DpTvsKStar = new TH2F(*aCorrFctn.f2DpTvsKStar);
 
     return *this;
 
@@ -290,6 +309,9 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
 	    tOutputList->Add(fDumDPhiDEtaAvgQA);
 
     }
+    if(fUseStavinskyMethod) tOutputList->Add(fStaSkyBkg);
+    if(fUse2DpTvsKStar) tOutputList->Add(f2DpTvsKStar);
+		 
     return tOutputList;
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
@@ -331,7 +353,8 @@ void AliFemtoCorrFctnpdtHe3::Write()
 		  fNumDPhiDEtaAvgQA->Write();
 		  fDumDPhiDEtaAvgQA->Write();
 	}
-	
+        if(fUseStavinskyMethod) fStaSkyBkg->Write();
+	if(fUse2DpTvsKStar) f2DpTvsKStar->Write();
 
 }
 void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
@@ -351,6 +374,11 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
         return;
     }
     
+    if(fUsePairCutEtaPhi){
+	if(!PairEtaPhiSelect(fPair)) return;
+    }
+
+
     double tKStar = fabs(fPair->KStar());
     fNumerator->Fill(tKStar);
 
@@ -393,6 +421,25 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
 		return;
 	    }
 	}
+
+      if(fUseStavinskyMethod){
+		bool passpair = false;
+		AliFemtoPair* SSPair = new AliFemtoPair;
+		SSPair = InversePair(fPair);
+		if(fPairCut->Pass(SSPair)){
+			passpair = true;
+			if(fUsePairCutEtaPhi && !PairEtaPhiSelect(fPair)){
+				passpair = false;	
+			}
+		}
+		if(passpair){
+			float InverseKStar = fabs(SSPair->KStar());
+			fStaSkyBkg->Fill(InverseKStar);
+		}
+	}
+	if(fUse2DpTvsKStar){
+		f2DpTvsKStar->Fill(tKStar,fPair->Track2()->Track()->Pt());
+	}
 	return;
     
  
@@ -414,7 +461,9 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
     if (fPairCut && !fPairCut->Pass(fPair)) {
         return;
     } 
-
+    if(fUsePairCutEtaPhi){
+	if(!PairEtaPhiSelect(fPair)) return;
+    }
     double tKStar = fabs(fPair->KStar());
     fDenominator->Fill(tKStar);
     if(fHighCF){
@@ -603,6 +652,7 @@ void AliFemtoCorrFctnpdtHe3::SetHighCFInit(bool aHighCF){
     }
 }
 
+
 void AliFemtoCorrFctnpdtHe3::SetfSideBand(bool aSideBand){
     fSideBand = aSideBand;
 }
@@ -777,4 +827,96 @@ Double_t MassBandFunc(Double_t *x, Double_t *par){
     return re;
 
 }
+void AliFemtoCorrFctnpdtHe3::SetUseStavinskyMethod(int aUse){
+	fUseStavinskyMethod = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::SetStaSkyBkgInit(bool aInit){
+	fStaSkyBkg = new TH1F(TString::Format("fStaSkyBkg%s", fTitle.Data()), "fStaSkyBkg", fNbinsKStar,fKStarLow,fKStarHigh);
+	fStaSkyBkg->Sumw2();
+}
+
+AliFemtoPair * AliFemtoCorrFctnpdtHe3::InversePair(AliFemtoPair* aPair)
+{
+    AliFemtoPair* fPair = new AliFemtoPair;
+
+    AliFemtoParticle *tPart1 = new AliFemtoParticle(*aPair->Track1());
+    AliFemtoLorentzVector tFourMom1 = AliFemtoLorentzVector(tPart1->FourMomentum());
+    tFourMom1.SetPx(-1.*tFourMom1.px());
+    tFourMom1.SetPy(-1.*tFourMom1.py());
+    tFourMom1.SetPz(-1.*tFourMom1.pz());
+    tPart1->ResetFourMomentum(tFourMom1);
+    fPair->SetTrack1(tPart1);
+
+ AliFemtoParticle *tPart2 = new AliFemtoParticle(*aPair->Track2());
+    fPair->SetTrack2(tPart2);
+
+
+    return fPair;
+}
+void AliFemtoCorrFctnpdtHe3::SetUse2DpTvsKStar(int aUse){
+	fUse2DpTvsKStar = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::Set2DpTvsKStarInit(bool aInit){
+	f2DpTvsKStar = new TH2F(TString::Format("f2DpTvsKStar%s", fTitle.Data()), "f2DpTvsKStar", 200,0,1.0,100,0,5);
+	f2DpTvsKStar->Sumw2();
+}
+
+void AliFemtoCorrFctnpdtHe3::SetUsePairCutEtaPhi(int aUsePairCutEtaPhi){
+	fUsePairCutEtaPhi = aUsePairCutEtaPhi;
+}
+void AliFemtoCorrFctnpdtHe3::SetPairCutEtaPhi(float aEtaCut,float aPhiCut){
+	fPairCut_eta = aEtaCut;
+	fPairCut_phi = aPhiCut;
+}
+
+bool AliFemtoCorrFctnpdtHe3::PairEtaPhiSelect(AliFemtoPair* aPair){
+	
+  AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  Double_t magsign = 0.0;
+  if (!aodH) {
+   return false;
+  }
+  else {
+    AliAODEvent *fAOD;
+    fAOD = aodH->GetEvent();
+    magsign = fAOD->GetMagneticField();
+  }
+  float fMagSign = 1.;
+  if (magsign > 1)
+    fMagSign = 1.;
+  else if ( magsign < 1)
+    fMagSign = -1.;
+  else
+    fMagSign = magsign;
+  
+  float magval = 0.5;
+  double phi1 = aPair->Track1()->Track()->P().Phi();
+  double phi2 = aPair->Track2()->Track()->P().Phi();
+  double chg1 = aPair->Track1()->Track()->Charge();
+  double chg2 = aPair->Track2()->Track()->Charge();
+  double pt1 = aPair->Track1()->Track()->Pt();
+  double pt2 = aPair->Track2()->Track()->Pt();
+
+  double eta1 = aPair->Track1()->Track()->P().PseudoRapidity();
+  double eta2 = aPair->Track2()->Track()->P().PseudoRapidity();
+  float deta2 = TMath::Power(eta1-eta2,2);
+  float tmpCut = TMath::Power(fPairCut_eta,2) + TMath::Power(fPairCut_phi,2);
+
+  for(int i=0;i<9;i++){
+     Double_t rad = TPCradii[i];
+    // Calculate dPhiStar:
+    //double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+    //double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
+    double afsi0b = -0.15*magval*chg1*fMagSign*rad/pt1;
+    double afsi1b = -0.15*magval*chg2*fMagSign*rad/pt2;
+    Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
+    dphistar = TVector2::Phi_mpi_pi(dphistar); // returns phi angle in the interval [-PI,PI)
+   
+    float tmp = deta2 + TMath::Power(dphistar,2);
+    if(tmp > tmpCut) return false;
+   }
+   return true;
+  
+}
+
 

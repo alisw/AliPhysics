@@ -44,6 +44,7 @@ class AliGFW {
     vector<vector<Int_t>> Regs {};
     vector<vector<Int_t>> Hars {};
     vector<Int_t> Overlap;
+    vector<Int_t> ptInd;
     /*vector<Int_t> Regs {};
     vector<Int_t> Hars {};
     vector<Int_t> Regs2 {};
@@ -67,6 +68,7 @@ class AliGFW {
   TComplex Calculate(TString config, Bool_t SetHarmsToZero=kFALSE);
   CorrConfig GetCorrelatorConfig(TString config, TString head = "", Bool_t ptdif=kFALSE);
   TComplex Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
+  // TComplex Calculate(CorrConfig corconf, vector<Int_t> ptbins, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
  private:
   Bool_t fInitialized;
   void SplitRegions();

@@ -180,6 +180,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetRapidityCutValueMin()                            { return fRapidityCutMesonMin; }
     Double_t GetRapidityCutValueMax()                            { return fRapidityCutMesonMax; }
     void   SetEnableOmegaAPlikeCut(Bool_t DoOmegaAPlikeCut) {fEnableOmegaAPlikeCut = DoOmegaAPlikeCut;}
+    void   SetLeadTrackPt(Double_t flag) {fLeadTrackMinPt = flag;}
 
     Float_t FunctionMinMassCut(Float_t e);
     Float_t FunctionMaxMassCut(Float_t e);
@@ -207,6 +208,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
     Int_t    DoOutOfJet(){return fDoOutOfJet;}
+    Int_t    GetInLeadTrackDir(){return fInLeadTrackDir;}
+    Double_t GetLeadTrackPt(){return fLeadTrackMinPt;}
     Bool_t   DoIsolatedAnalysis(){return fDoIsolatedAnalysis;}
     Bool_t   DoHighPtHadronAnalysis(){return fDoHighPtHadronAnalysis;}
     Bool_t   UseElecSharingCut(){return fDoSharedElecCut;}
@@ -233,10 +236,18 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
     Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
+    // template <class T, class U>  Bool_t MesonLeadTrackSelection(T curEvent, U curmesonmeson);
+    Bool_t   MesonLeadTrackSelectionMC(AliVEvent* curEvent, AliMCParticle* curmeson);
+    Bool_t   MesonLeadTrackSelectionAODMC(AliVEvent* curEvent, AliAODMCParticle* curmeson);
+    Bool_t   MesonLeadTrackSelection(AliVEvent* curEvent, AliAODConversionMother* curmeson);
+    Bool_t   MesonLeadTrackSelectionBase(AliVEvent* curEvent, TVector3 curmeson);
 
     // Jet specific function
     Bool_t  IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand);
-
+    
+    // get source from pdg code
+    int GetSourceClassification(int daughter, int pdgCode);
+    
   protected:
     TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
@@ -254,6 +265,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TH1F*       fHistoDCARMesonPrimVtxAfter;    ///<
     TH1F*       fHistoInvMassBefore;            ///<
     TH1F*       fHistoInvMassAfter;             ///<
+    TH1F*       fHistoLeadTrackPhi;             ///<
+    TH1F*       fHistoLeadTrackPt;             ///<
 
     TF1*        fBrem;                          ///<
     TF1*        fFAlphaCut;                     ///<
@@ -355,11 +368,13 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoGammaMinEnergyCut;           ///< if enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson need to fulfill fMinSingleDaughterE
     Int_t       fNDaughterEnergyCut;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
     Float_t     fSingleDaughterMinE;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
+    Int_t       fInLeadTrackDir;                ///< switch to Analyse mesons (not) in direction of highest pT track
+    Double_t    fLeadTrackMinPt;                ///< min pT for leading track
 
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,52)
+    ClassDef(AliConversionMesonCuts,54)
     /// \endcond
 };
 

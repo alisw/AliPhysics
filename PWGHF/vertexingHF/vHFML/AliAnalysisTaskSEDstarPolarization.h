@@ -74,6 +74,11 @@ public:
         fMLOutputMax = maxs;
     }
 
+    // method to set Qn-vector calculation
+    void SetComputeQnVector(bool flag = true)                                                                   {fComputeQnVectors = flag;}
+    void SetQnVecTaskName(std::string name)                                                                     {fTenderTaskName = name;}
+    void SetQnCalibFileName(std::string name)                                                                   {fQnCalibFileName = name;}
+
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void LocalInit();
@@ -82,8 +87,8 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 7,
-        knVarForSparseReco   = 11,
+        knVarForSparseAcc    = 9,
+        knVarForSparseReco   = 13,
     };
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
@@ -99,6 +104,7 @@ private:
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
     void CreateRecoSparses();
+    double GetPhiInRange(double phi);
 
     AliAODEvent* fAOD = nullptr;                                                    /// AOD event
 
@@ -122,6 +128,8 @@ private:
     // ML tree application
     THnSparseF* fnSparseReco[4] = {nullptr, nullptr, nullptr, nullptr};             //!<! THnSparse for reco candidates
     THnSparseF* fnSparseRecoThetaPhiStar[4] = {nullptr, nullptr, nullptr, nullptr}; //!<! THnSparse for reco candidates
+
+    TH1F* fHistEvPlane[3] = {nullptr, nullptr, nullptr};                            //!<! Histogram with event plane angle
 
     bool fApplyML = false;                                                          /// flag to enable ML application
     std::string fConfigPath = "";                                                   /// path to ML config file
@@ -147,10 +155,15 @@ private:
     double fBzkG = 0.;                                                              /// z componenent of field in kG
 
     AliESDtrackCuts *fEsdTrackCutsSoftPi = nullptr;                                 /// ESD track cuts for soft pion in case of combinatoric recomputation
-    AliAnalysisFilter *fTrkFilterSoftPi = nullptr;                                   /// track filter for soft pion in case of combinatoric recomputation
+    AliAnalysisFilter *fTrkFilterSoftPi = nullptr;                                  /// track filter for soft pion in case of combinatoric recomputation
+
+    // event-plane calculation
+    bool fComputeQnVectors = false;                                                 /// flag to enable computation of Qn-vectors
+    std::string fTenderTaskName = "HFTenderQnVectors";                              /// name of tender task needed to get the calibrated Qn vectors
+    std::string fQnCalibFileName = "";                                                 /// AODB file name for calibrations (if Qn-framework not used)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDstarPolarization, 9); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDstarPolarization, 10); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

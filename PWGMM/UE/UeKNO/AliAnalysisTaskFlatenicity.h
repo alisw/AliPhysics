@@ -51,6 +51,8 @@ public:
   void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
     fRemoveTrivialScaling = flat_flag;
   }
+  void SetV0Calib(Bool_t calib_flag = kFALSE) { fIsCalib = calib_flag; }
+
   bool HasRecVertex();
 
 protected:
@@ -60,6 +62,8 @@ private:
   AliStack *fMCStack; //! MC stack
   AliMCEvent *fMC;    //! MC Event
   Bool_t fUseMC;      // analyze MC events
+  Bool_t fIsCalib;
+  Float_t fVtxz;
   Int_t fV0Mindex;
   Float_t fmultTPC;
   Float_t fmultV0A;
@@ -95,14 +99,18 @@ private:
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
+  TProfile *hActivityV0DataSectBefore;
   TProfile *hActivityV0DataSect;
+  TProfile *hV0vsVtxz;
   TProfile *hActivityV0McSect;
   TH2D *hFlatVsNchMC;
   TH2D *hFlatVsV0M;
+  TH2D *hFlatMCVsV0M;
   TH1D *hEtamc;
   TH1D *hEtamcAlice;
   TH1D *hCounter;
   TH2D *hFlatVsPtV0M[9];
+  TH2D *hFlatVsPtV0MMC[9];
   TH2D *hComponentsMult[4];
   TH2D *hCombinedMult[3];
   TH2D *hComponentsMultmc[4];

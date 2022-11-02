@@ -38,49 +38,49 @@
 ClassImp(AliAnalysisTaskConvJet);
 /// \endcond
 
-
-AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() :
-  AliAnalysisTaskEmcalJet(),
-  fNJets(0),
-  fVectorJetPt(0),
-  fVectorJetPx(0),
-  fVectorJetPy(0),
-  fVectorJetPz(0),
-  fVectorJetEta(0),
-  fVectorJetPhi(0),
-  fVectorJetR(0),
-  fTrueNJets(0),
-  fTrueVectorJetPt(0),
-  fTrueVectorJetPx(0),
-  fTrueVectorJetPy(0),
-  fTrueVectorJetPz(0),
-  fTrueVectorJetEta(0),
-  fTrueVectorJetPhi(0),
-  fTrueVectorJetR(0)
+AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
+                                                   fNJets(0),
+                                                   fVectorJetPt(0),
+                                                   fVectorJetPx(0),
+                                                   fVectorJetPy(0),
+                                                   fVectorJetPz(0),
+                                                   fVectorJetEta(0),
+                                                   fVectorJetPhi(0),
+                                                   fVectorJetR(0),
+                                                   fTrueNJets(0),
+                                                   fTrueVectorJetPt(0),
+                                                   fTrueVectorJetPx(0),
+                                                   fTrueVectorJetPy(0),
+                                                   fTrueVectorJetPz(0),
+                                                   fTrueVectorJetEta(0),
+                                                   fTrueVectorJetPhi(0),
+                                                   fTrueVectorJetR(0),
+                                                   fTrueVectorJetParton(0),
+                                                   fTrueVectorJetPartonPt(0)
 {
 }
 
-AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name) :
-  AliAnalysisTaskEmcalJet(name, kTRUE),
-  fNJets(0),
-  fVectorJetPt(0),
-  fVectorJetPx(0),
-  fVectorJetPy(0),
-  fVectorJetPz(0),
-  fVectorJetEta(0),
-  fVectorJetPhi(0),
-  fVectorJetR(0),
-  fTrueVectorJetPt(0),
-  fTrueVectorJetPx(0),
-  fTrueVectorJetPy(0),
-  fTrueVectorJetPz(0),
-  fTrueVectorJetEta(0),
-  fTrueVectorJetPhi(0),
-  fTrueVectorJetR(0)
+AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTaskEmcalJet(name, kTRUE),
+                                                                   fNJets(0),
+                                                                   fVectorJetPt(0),
+                                                                   fVectorJetPx(0),
+                                                                   fVectorJetPy(0),
+                                                                   fVectorJetPz(0),
+                                                                   fVectorJetEta(0),
+                                                                   fVectorJetPhi(0),
+                                                                   fVectorJetR(0),
+                                                                   fTrueVectorJetPt(0),
+                                                                   fTrueVectorJetPx(0),
+                                                                   fTrueVectorJetPy(0),
+                                                                   fTrueVectorJetPz(0),
+                                                                   fTrueVectorJetEta(0),
+                                                                   fTrueVectorJetPhi(0),
+                                                                   fTrueVectorJetR(0),
+                                                                   fTrueVectorJetParton(0),
+                                                                   fTrueVectorJetPartonPt(0)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
-
 
 AliAnalysisTaskConvJet::~AliAnalysisTaskConvJet()
 {
@@ -92,7 +92,7 @@ AliAnalysisTaskConvJet::~AliAnalysisTaskConvJet()
  */
 void AliAnalysisTaskConvJet::UserCreateOutputObjects()
 {
-   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
@@ -120,11 +120,11 @@ void AliAnalysisTaskConvJet::DoJetLoop()
   TIter next(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     TString JetName = jetCont->GetTitle();
-    TObjArray *arr = JetName.Tokenize("__");
+    TObjArray* arr = JetName.Tokenize("__");
     TObjString* testObjString = (TObjString*)arr->At(2);
-    if(testObjString->GetString() != "mcparticles"){
+    if (testObjString->GetString() != "mcparticles") {
       UInt_t count = 0;
-      fNJets = 0 ;
+      fNJets = 0;
       fVectorJetPt.clear();
       fVectorJetPx.clear();
       fVectorJetPy.clear();
@@ -132,8 +132,9 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fVectorJetEta.clear();
       fVectorJetPhi.clear();
       fVectorJetR.clear();
-      for(auto const& jet : jetCont->accepted()) {
-        if (!jet) continue;
+      for (auto const& jet : jetCont->accepted()) {
+        if (!jet)
+          continue;
         count++;
         fVectorJetPt.push_back(jet->Pt());
         fVectorJetPx.push_back(jet->Px());
@@ -143,10 +144,10 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fVectorJetPhi.push_back(jet->Phi());
         fVectorJetR.push_back(jet->Area());
       }
-      fNJets = count ;
-    }else{
+      fNJets = count;
+    } else {
       UInt_t count = 0;
-      fTrueNJets = 0 ;
+      fTrueNJets = 0;
       fTrueVectorJetPt.clear();
       fTrueVectorJetPx.clear();
       fTrueVectorJetPy.clear();
@@ -154,8 +155,9 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fTrueVectorJetEta.clear();
       fTrueVectorJetPhi.clear();
       fTrueVectorJetR.clear();
-      for(auto const& jet : jetCont->accepted()) {
-        if (!jet) continue;
+      for (auto const& jet : jetCont->accepted()) {
+        if (!jet)
+          continue;
         count++;
         fTrueVectorJetPt.push_back(jet->Pt());
         fTrueVectorJetPx.push_back(jet->Px());
@@ -165,7 +167,57 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fTrueVectorJetPhi.push_back(jet->Phi());
         fTrueVectorJetR.push_back(jet->Area());
       }
-      fTrueNJets = count ;
+      fTrueNJets = count;
+    }
+  }
+}
+
+/**
+ * This function finds the leading /hardest parton in each jet
+ * The id of the mc particles is written to fTrueVectorJetParton
+ */
+void AliAnalysisTaskConvJet::FindPartonsJet(TClonesArray* arrMCPart)
+{
+  // Loop over all primary MC particle
+  fTrueVectorJetParton.resize(fTrueNJets);
+  fTrueVectorJetPartonPt.resize(fTrueNJets);
+  std::vector<double> partonEnergy(fTrueNJets, -1);
+  double JetR2 = Get_Jet_Radius() * Get_Jet_Radius();
+
+  for (Long_t i = 0; i < arrMCPart->GetEntriesFast(); i++) {
+    AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(arrMCPart->At(i));
+    if (!particle)
+      continue;
+
+    // particle has to be quark or gluon
+    if (std::abs(particle->GetPdgCode()) == 21 || (std::abs(particle->GetPdgCode()) < 9 && std::abs(particle->GetPdgCode()) > 0)) {
+
+      int indexNearestJet = -1;
+      double deltaR2 = 100000;
+      // loop over all jets and find the closest jet to the parton inside the jet radius
+      for (int j = 0; j < fTrueNJets; ++j) {
+        // check if mc particle and jet coincide
+        double dEta = particle->Eta() - fTrueVectorJetEta[j];
+        double dPhi = particle->Phi() - fTrueVectorJetPhi[j];
+        double deltaR2tmp = dEta * dEta + dPhi * dPhi;
+        // std::cout << "deltaR2tmp " << deltaR2tmp << "   deltaR2 " << deltaR2 <<"   JetR2 " << JetR2 << std::endl;
+        if (deltaR2tmp < JetR2 && deltaR2tmp < deltaR2) {
+          indexNearestJet = j;
+          deltaR2 = deltaR2tmp;
+          // std::cout << "indexNearestJet " << indexNearestJet << std::endl;
+          // std::cout << "deltaR2tmp " << deltaR2tmp << "   deltaR2 " << deltaR2 <<"   JetR2 " << JetR2 << std::endl;
+        }
+      }
+      if (indexNearestJet == -1) {
+        continue;
+      }
+
+      // assign a parton to the jet if the parton has an energy thats larger than the previously assigned value
+      if (partonEnergy[indexNearestJet] < particle->Pt()) {
+        partonEnergy[indexNearestJet] = particle->Pt();
+        fTrueVectorJetParton[indexNearestJet] = i;
+        fTrueVectorJetPartonPt[indexNearestJet] = particle->Pt();
+      }
     }
   }
 }
@@ -194,7 +246,7 @@ Bool_t AliAnalysisTaskConvJet::Run()
 /**
  * This function is called once at the end of the analysis.
  */
-void AliAnalysisTaskConvJet::Terminate(Option_t *) 
+void AliAnalysisTaskConvJet::Terminate(Option_t*)
 {
 }
 
@@ -203,17 +255,16 @@ void AliAnalysisTaskConvJet::Terminate(Option_t *)
  * by an AddTask C macro. However, by compiling the code, it ensures that we do not
  * have to deal with difficulties caused by CINT.
  */
-AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
-  const char *ntracks,
-  const char *nclusters,
+AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
+  const char* ntracks,
+  const char* nclusters,
   const char* ncells,
-  const char *suffix)
+  const char* suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr)
-  {
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
     ::Error("AddTask_GammaConvJet", "No analysis manager to connect to.");
     return 0;
   }
@@ -221,8 +272,7 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   AliVEventHandler* handler = mgr->GetInputEventHandler();
-  if (!handler)
-  {
+  if (!handler) {
     ::Error("AddTask_GammaConvJet", "This task requires an input event handler");
     return 0;
   }
@@ -237,8 +287,7 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
 
   if (handler->InheritsFrom("AliESDInputHandler")) {
     dataType = kESD;
-  }
-  else if (handler->InheritsFrom("AliAODInputHandler")) {
+  } else if (handler->InheritsFrom("AliAODInputHandler")) {
     dataType = kAOD;
   }
 
@@ -253,11 +302,9 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   if (trackName == "usedefault") {
     if (dataType == kESD) {
       trackName = "Tracks";
-    }
-    else if (dataType == kAOD) {
+    } else if (dataType == kAOD) {
       trackName = "tracks";
-    }
-    else {
+    } else {
       trackName = "";
     }
   }
@@ -265,11 +312,9 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   if (clusName == "usedefault") {
     if (dataType == kESD) {
       clusName = "CaloClusters";
-    }
-    else if (dataType == kAOD) {
+    } else if (dataType == kAOD) {
       clusName = "caloClusters";
-    }
-    else {
+    } else {
       clusName = "";
     }
   }
@@ -277,11 +322,9 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   if (cellName == "usedefault") {
     if (dataType == kESD) {
       cellName = "EMCALCells";
-    }
-    else if (dataType == kAOD) {
+    } else if (dataType == kAOD) {
       cellName = "emcalCells";
-    }
-    else {
+    } else {
       cellName = "";
     }
   }
@@ -290,48 +333,45 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
 
   AliAnalysisTaskConvJet* sampleTask = new AliAnalysisTaskConvJet(name);
   sampleTask->SetCaloCellsName(cellName);
-  sampleTask->SetVzRange(-10,10);
+  sampleTask->SetVzRange(-10, 10);
 
   if (trackName == "mcparticles") {
     sampleTask->AddMCParticleContainer(trackName);
-  }
-  else if (trackName == "tracks" || trackName == "Tracks") {
+  } else if (trackName == "tracks" || trackName == "Tracks") {
     sampleTask->AddTrackContainer(trackName);
-  }
-  else if (!trackName.IsNull()) {
+  } else if (!trackName.IsNull()) {
     sampleTask->AddParticleContainer(trackName);
   }
   sampleTask->AddClusterContainer(clusName);
-  
+
   sampleTask->GetClusterContainer(0)->SetClusECut(0.);
   sampleTask->GetClusterContainer(0)->SetClusPtCut(0.);
   sampleTask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.);
   sampleTask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
   sampleTask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   sampleTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
-  sampleTask->GetParticleContainer(0)->SetParticleEtaLimits(-0.8,0.8);
+  sampleTask->GetParticleContainer(0)->SetParticleEtaLimits(-0.8, 0.8);
 
-  if(trackName != "mcparticles"){
-      sampleTask->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
-      sampleTask->GetTrackContainer(0)->SetParticlePtCut(0.15);
-      sampleTask->GetTrackContainer(0)->SetParticleEtaLimits(-0.8,0.8);
+  if (trackName != "mcparticles") {
+    sampleTask->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
+    sampleTask->GetTrackContainer(0)->SetParticlePtCut(0.15);
+    sampleTask->GetTrackContainer(0)->SetParticleEtaLimits(-0.8, 0.8);
   }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-
   mgr->AddTask(sampleTask);
 
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+  AliAnalysisDataContainer* cinput1 = mgr->GetCommonInputContainer();
   TString contname(trackName);
   contname += "_histos";
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
-      TList::Class(),AliAnalysisManager::kOutputContainer,
-      Form("%s", AliAnalysisManager::GetCommonFileName()));
-  mgr->ConnectInput  (sampleTask, 0,  cinput1 );
-  mgr->ConnectOutput (sampleTask, 1, coutput1 );
+  AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(contname.Data(),
+                                                            TList::Class(), AliAnalysisManager::kOutputContainer,
+                                                            Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput(sampleTask, 0, cinput1);
+  mgr->ConnectOutput(sampleTask, 1, coutput1);
 
   return sampleTask;
 }

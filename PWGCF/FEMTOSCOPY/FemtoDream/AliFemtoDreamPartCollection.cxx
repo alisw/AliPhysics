@@ -6,8 +6,13 @@
  *      Author: gu74req
  */
 #include <iostream>
+#include <map>
+#include <utility>
+
 #include "AliFemtoDreamPartCollection.h"
 #include "AliLog.h"
+#include "TTree.h"
+
 ClassImp(AliFemtoDreamPartCollection)
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
     : fHigherMath(),
@@ -79,7 +84,9 @@ void AliFemtoDreamPartCollection::SetEvent(
 
 void AliFemtoDreamPartCollection::SetEvent(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    AliFemtoDreamEvent* evt) {
+    AliFemtoDreamEvent* evt,
+    std::map<std::pair<int, int>, TTree *> *kStarsSE,
+    std::map<std::pair<int, int>, TTree *> *kStarsME) {
   if (Particles.size() != fNSpecies) {
     TString fatalOut = Form("Too few Species %d for %d", (int) Particles.size(),
                             (int) fNSpecies);
@@ -96,8 +103,8 @@ void AliFemtoDreamPartCollection::SetEvent(
     itZVtx += bins[0];
     auto itMult = itZVtx->begin();
     itMult += bins[1];
-    itMult->PairParticlesSE(Particles, fHigherMath, bins[1], cent);
-    itMult->PairParticlesME(Particles, fHigherMath, bins[1], cent);
+    itMult->PairParticlesSE(Particles, fHigherMath, bins[1], cent, kStarsSE);
+    itMult->PairParticlesME(Particles, fHigherMath, bins[1], cent, kStarsME);
     itMult->SetEvent(Particles);
   }
   return;

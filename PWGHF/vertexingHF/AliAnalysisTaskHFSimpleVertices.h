@@ -14,6 +14,7 @@
 #include <string>
 #include "DCAFitterN.h"
 #include "AliVEvent.h"
+#include "AliEventCuts.h"
 
 class TList;
 class AliESDEvent;
@@ -41,6 +42,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   void SetUseNoCandidateCuts() { fCandidateCutLevel = 0; }
   void SetUsePtDependentFiducialAcceptance() { fMaxRapidityCand = -999.; }
   void SetMaxRapidityForFiducialAcceptance(Double_t ymax) { fMaxRapidityCand = ymax; }
+  void SetUseAliEventCuts(Bool_t opt) { fUseAliEventCuts = opt; }
   void EnableCPUTimeCheck(Bool_t enable = kTRUE, Bool_t milliseconds = kFALSE)
   {
     fEnableCPUTimeCheck = enable;
@@ -94,7 +96,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   enum { kMaxNPtBinsJpsi = 9,
          kNCutVarsJpsi = 4 };
   enum { kMaxNPtBinsLc = 10,
-         kNCutVarsLc = 8 };
+         kNCutVarsLc = 7 };
   enum { kMaxNPtBinsDplus = 50,
          kNCutVarsDplus = 8 };
   enum { kMaxNPtBinsSingleTrack = 10,
@@ -113,25 +115,31 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
                                               {"kMuonUnlikeLowPt7", AliVEvent::kMuonUnlikeLowPt7},
                                               {"kMuonLikeLowPt7", AliVEvent::kMuonLikeLowPt7}};
 
-  TList* fOutput;                   //!<!  list of output histos
-  TH1F* fHistNEvents;               //!<!  histo with N of events
-  TH1F* fHistTrackStatus;           //!<!  histo with counts of tracks passing cuts
-  TH1F* fHistPtAllTracks;           //!<!  histo with pt all tracks
-  TH1F* fHistPtSelTracks;           //!<!  histo with pt selected tracks
-  TH1F* fHistTglAllTracks;          //!<!  histo with tgl all tracks
-  TH1F* fHistTglSelTracks;          //!<!  histo with tgl selected tracks
-  TH1F* fHistEtaAllTracks;          //!<!  histo with eta all tracks
-  TH1F* fHistEtaSelTracks2prong;    //!<!  histo with eta selected tracks
-  TH1F* fHistEtaSelTracks3prong;    //!<!  histo with eta selected tracks
-  TH1F* fHistImpParAllTracks;       //!<!  histo with d0 all tracks
-  TH1F* fHistImpParSelTracks2prong; //!<!  histo with d0 selected tracks
-  TH1F* fHistImpParSelTracks3prong; //!<!  histo with d0 selected tracks
-  TH1F* fHistITSmapAllTracks;       //!<!  histo with its map all tracks
-  TH1F* fHistITSmapSelTracks;       //!<!  histo withits map selected tracks
+  TList* fOutput;                     //!<!  list of output histos
+  TH1F* fHistNEvents;                 //!<!  histo with N of events
+  TH1F* fHistTrackStatus;             //!<!  histo with counts of tracks passing cuts
+  TH1F* fHistPtAllTracks;             //!<!  histo with pt all tracks
+  TH1F* fHistPtSelTracks;             //!<!  histo with pt selected tracks
+  TH1F* fHistTglAllTracks;            //!<!  histo with tgl all tracks
+  TH1F* fHistTglSelTracks;            //!<!  histo with tgl selected tracks
+  TH1F* fHistEtaAllTracks;            //!<!  histo with eta all tracks
+  TH1F* fHistPtSelTracks2prong;       //!<!  histo with pt selected tracks
+  TH1F* fHistPtSelTracks3prong;       //!<!  histo with pt selected tracks
+  TH1F* fHistPtSelTracksbachelor;     //!<!  histo with pt selected tracks
+  TH1F* fHistEtaSelTracks2prong;      //!<!  histo with eta selected tracks
+  TH1F* fHistEtaSelTracks3prong;      //!<!  histo with eta selected tracks
+  TH1F* fHistEtaSelTracksbachelor;    //!<!  histo with eta selected tracks
+  TH1F* fHistImpParAllTracks;         //!<!  histo with d0 all tracks
+  TH1F* fHistImpParSelTracks2prong;   //!<!  histo with d0 selected tracks
+  TH1F* fHistImpParSelTracks3prong;   //!<!  histo with d0 selected tracks
+  TH1F* fHistImpParSelTracksbachelor; //!<!  histo with d0 selected tracks
+  TH1F* fHistITSmapAllTracks;         //!<!  histo with its map all tracks
+  TH1F* fHistITSmapSelTracks;         //!<!  histo withits map selected tracks
 
   TH1F* fHistPrimVertX;    //!<!  histo of prim vertex x
   TH1F* fHistPrimVertY;    //!<!  histo of prim vertex y
   TH1F* fHistPrimVertZ;    //!<!  histo of prim vertex z
+  TH1F* fHistPrimVertContr;//!<!  histo of prim vertex N contributors
   TH1F* fHist2ProngVertX;  //!<!  histo of 2-prong vertex x
   TH1F* fHist2ProngVertY;  //!<!  histo of 2-prong vertex y
   TH1F* fHist2ProngVertZ;  //!<!  histo of 2-prong vertex z
@@ -211,14 +219,17 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistDecLenDs;        //!<!  histo with Ds decay length
   TH1F* fHistCosPointDs;      //!<!  histo with Ds cosine of pointing angle
 
-  TH1F* fHistInvMassLc;  //!<!  histo with LcpKpi+ inv mass
-  TH1F* fHistPtLc;       //!<!  histo with LcpKpi+ pt
-  TH2F* fHistYPtLc;      //!<!  histo with LcpKpi+ y vs pt
-  TH1F* fHistPtLcDau0;   //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistPtLcDau1;   //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistPtLcDau2;   //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistDecLenLc;   //!<!  histo with LcpKpi+ decay length
-  TH1F* fHistCosPointLc; //!<!  histo with LcpKpi+ cosine of pointing angle
+  TH1F* fHistInvMassLc;    //!<!  histo with LcpKpi+ inv mass
+  TH1F* fHistPtLc;         //!<!  histo with LcpKpi+ pt
+  TH2F* fHistYPtLc;        //!<!  histo with LcpKpi+ y vs pt
+  TH1F* fHistPtLcDau0;     //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistPtLcDau1;     //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistPtLcDau2;     //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistDecLenLc;     //!<!  histo with LcpKpi+ decay length
+  TH1F* fHistCosPointLc;   //!<!  histo with LcpKpi+ cosine of pointing angle
+  TH1F* fHistImpParLcDau0; //!<!  histo with LcpKpi+ prong0 d0
+  TH1F* fHistImpParLcDau1; //!<!  histo with LcpKpi+ prong1 d0
+  TH1F* fHistImpParLcDau2; //!<!  histo with LcpKpi+ prong2 d0
 
   TH1F* fHistInvMassK0s;    //!<!  histo with K0s inv mass
   TH1F* fHistInvMassLcK0sp; //!<!  histo with LcpKpi+ inv mass
@@ -240,6 +251,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
 
   Bool_t fReadMC;              // flag for access to MC
   Bool_t fUsePhysSel;          // flag use/not use phys sel
+  Bool_t fUseAliEventCuts;     // flag to use/not use default AliEventCuts
   Int_t fTriggerMask;          // mask used in physics selection
   Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
   Double_t fMinCentrality;     // centrality: lower limit
@@ -267,6 +279,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Double_t fVertexerMinParamChange;
   Double_t fVertexerMinRelChi2Change;
   Bool_t fVertexerUseAbsDCA;
+  AliEventCuts fEventCuts;          // Standard AliEvent cuts
   AliESDtrackCuts* fTrackCuts2pr;   // Track cut object for 2 prongs
   AliESDtrackCuts* fTrackCuts3pr;   // Track cut object for 3 prongs
   AliESDtrackCuts* fTrackCutsBach;  // Track cut object for bachelor
@@ -327,7 +340,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Bool_t fEnableCPUTimeCheck;      // flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds; // flag to switch from seconds (default) to milliseconds
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices, 26);
+  ClassDef(AliAnalysisTaskHFSimpleVertices, 27);
 };
 
 #endif

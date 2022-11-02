@@ -1,3 +1,9 @@
-AliEmcalRejectMCBackground* AddTaskRejectMCBackground(const char *outname = "mcparticlesbgrej", const Int_t signalRejection = 0, const Int_t debug = 0){
-  return AliEmcalRejectMCBackground::AddTaskRejectMCBackground(outname, signalRejection, debug);
+AliEmcalRejectMCBackground* AddTaskRejectMCBackground(
+  const char *nParticlesOut = "MCParticlesNotRejected",
+  const char *nTracksOut    = "MCTracksNotRejected",
+  const char *nClustersOut  = "MCClustersNotRejected",
+  Int_t signalRejection     = 2,
+  Int_t debug               = 0
+){
+  return AliEmcalRejectMCBackground::AddTaskRejectMCBackground(nParticlesOut, nTracksOut, nClustersOut, signalRejection, debug);
 }

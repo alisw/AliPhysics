@@ -324,6 +324,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18b10,            //!< anchored LHC17p/q pass 1 - gamma-jet MC w/GEANT3,
         kLHC18l2,             //!< anchored LHC17p/q pass 1 - gamma-jet MC w/GEANT3,
         kLHC17P1PHO,          //!< anchored LHC17p only low Intensity Phojet 5 TeV
+	      kLHC17P2Pyt5TeV,      //!< anchored LHC17p only low Intensity Pythia8, 5 TeV (pass2)
         //13 TeV MC 2017
         kLHC17P1Pyt8NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
         kLHC17P1Pyt6NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
@@ -409,6 +410,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
+
+      void    ResetMcHeader()                                                       { fAODMCHeader = 0x0;}
 
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
@@ -682,6 +685,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fEventQuality;                          ///< EventQuality
       AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
       TClonesArray*               fAODMCTrackArray;                       ///< pointer to track array
+      AliAODMCHeader*             fAODMCHeader;                           ///< pointer to mc header
       AliV0ReaderV1*              fV0Reader;                              //!
       //cuts
       Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
@@ -817,7 +821,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,91)
+      ClassDef(AliConvEventCuts,92)
       /// \endcond
 };
 

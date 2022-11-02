@@ -55,6 +55,8 @@ public:
 
   //..setters for the analysis
   void                        SetDebug(Int_t input)                                 { fDebug           = input  ; }
+  void                        SetEnablePileupCut(Int_t input)                       { fEnablePileupCut = input ; }
+  void                        SetEnableMVPileupCut(Int_t input)                     { fEnableMVPileupCut = input ; }
   void                        SetEMCalTriggerReqMode(Int_t input)                   { fEMCalTriggerReqMode = input; }
   void                        SetNameEMCalTriggerDecisionContainer(TString input)        { fNameEMCalTriggerDecisionContainer = input; }
   void                        AddEMCalTriggerRequirement(TString input)             { fAcceptEMCalTriggers.push_back(input); }
@@ -185,6 +187,8 @@ protected:
   Float_t                     fDownScaleMT;              ///< Downscale factor to restrict Mixed Trigger statistics/runtime. 1.0 -> no downscale. 0.5 -> cut stats in half.
   Int_t                       fSidebandChoice;           ///< This determines which sideband option is used
   Bool_t                      fDebug;			        ///< Can be set for debugging
+  Int_t                       fEnablePileupCut;          ///< Whether to enable pileup cut in EventCuts. 2,3,4 = looser cut options
+  Int_t                       fEnableMVPileupCut;          ///< Whether to enable MV pileup cut in EventCuts
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Int_t                       fEPCorrMode;               ///< Correlate with EP{n=fEPCorrmode} instead of the trigger particle. 0 => use trigger particle (default)
@@ -320,6 +324,13 @@ protected:
   Double_t                    fQnCorrEventPlane3Angle;    //!<! Event plane(3rd order) angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
   Double_t                    fQnCorrEventPlane4Angle;    //!<! Event plane angle (4th order) corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
 
+  // QVector Scales
+  Double_t                    fQnCorrQ1Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ2Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ3Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ4Scale;   //!<! Scale of Q1 Vector for chosen source
+
+
   //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
   Bool_t                      fIsMC;                     ///< Trigger, MC analysis
@@ -441,10 +452,20 @@ protected:
   TH2             *fPtEP4AngleMCPion;         //!<! Histogram of delta Psi_{EP,4} of MC truth pi0 (vs pt)
   TH2             *fPtEP4AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,4} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
 
+  TH2             *fHistNChargedCent;         //!<! Histogram of the number of tracks per event, in centrality bins
+
   TH3             *fHistTrackPsiEP1PtCent;    //!<! Histogram of delta Psi_{EP,1} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEPPtCent;    //!<! Histogram of delta Psi_{EP} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEP3PtCent;    //!<! Histogram of delta Psi_{EP,3} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEP4PtCent;    //!<! Histogram of delta Psi_{EP,4} of accepted tracks (vs pt and centrality)
+
+
+
+  TH3             *fHistPionAccV2ScalarProdPtCent;   //!<! Histogram of u*Q2 for accepted tracks, the scalar produce method of v2 flow (vs pt and centrality)
+  TH3             *fHistPionAccV3ScalarProdPtCent;   //!<! Histogram of u*Q3 for accepted tracks, the scalar produce method of v3 flow (vs pt and centrality)
+
+  TH3             *fHistTrackV2ScalarProdPtCent;   //!<! Histogram of u*Q2 for accepted tracks, the scalar produce method of v2 flow (vs pt and centrality)
+  TH3             *fHistTrackV3ScalarProdPtCent;   //!<! Histogram of u*Q3 for accepted tracks, the scalar produce method of v3 flow (vs pt and centrality)
 
   // Event Plane information (MC information);
   TH1             *fMCReactionPlane;         //!<! Histogram of distribution of reaction plane angle (MC information)
@@ -542,6 +563,6 @@ protected:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 17) // Class to analyze gamma- and pi0- hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 19) // Class to analyze gamma- and pi0- hadron correlations
 };
 #endif

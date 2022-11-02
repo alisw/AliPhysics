@@ -65,6 +65,7 @@ set(SRCS
   AliAnalysisTaskFlowSquareBracket.cxx
   AliAnalysisTaskCMWESETrkSyst.cxx
   AliAnalysisTaskPtFlowCorrelation.cxx
+  AliAnalysisTaskMomentumFlowCorrelation.cxx
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)

@@ -127,6 +127,7 @@ fDeltaEtaAcceptanceRNG(0),
 fCentralityWeights(0),
 fCentralityMCGen_V0M(0),
 fCentralityMCGen_CL1(0),
+fCentralityCorrection(0),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -142,6 +143,8 @@ fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
 fZVertex(7.),
 fAcceptOnlyMuEvents(kFALSE),
 fCentralityMethod("V0M"),
+fCentralityMethodStep6(""),
+fCentralityMethodStep10(""),
 // track cuts
 fTrackEtaCut(0.8),
 fTrackEtaCutMin(-1.),
@@ -161,6 +164,7 @@ fUseChargeHadrons(kFALSE),
 fParticleSpeciesTrigger(-1),
 fParticleSpeciesAssociated(-1),
 fCheckMotherPDG(kTRUE),
+fGeneratorIndexMask(0ull),
 fTrackletDphiCut(9999999.),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
@@ -476,7 +480,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
                                         90,  92,  94,  96,  98,  100, 102, 104, 106, 108, 110, 
                                         190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210, 
                                         290, 292, 294, 296, 298, 300, 302, 304, 306, 308, 310, 
-                                        390, 392, 394, 396, 398, 400, 402, 404, 406, 408, 410 };
+                                        390, 392, 394, 396, 398, 400, 402, 404, 406, 408, 410 }; //step 10 in case of centrality correction
 
   Int_t nZvtxBins = kNZvtxBins;
   Double_t* zvtxbin = vertexBins;
@@ -530,6 +534,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // save to output if requested
   if (fEventPoolOutputList.size())
     fListOfHistos->Add(fPoolMgr);
+  
 }
 
 //____________________________________________________________________
@@ -656,8 +661,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (!inputEvent)
     inputEvent = fESD;
 
-  Double_t centrality = GetCentrality(inputEvent, mc);
-
+  Double_t centrality = GetCentrality(fCentralityMethod, inputEvent, mc);
+  
   Float_t bSign = 0;
 
   if (inputEvent) {
@@ -678,6 +683,16 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
   if (!fAnalyseUE->VertexSelection(vertexSupplier, 0, fZVertex))
     return;
+
+  if (inputEvent) {
+    // Used to create the centrality correction
+    Int_t referenceMultiplicity;
+    TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
+    referenceMultiplicity = tracks->GetEntriesFast();
+    delete tracks;
+
+    ((TH2F*) fListOfHistos->FindObject("referenceMultiplicity"))->Fill(centrality, referenceMultiplicity);
+  }
 
   Float_t zVtx = 0;
   if (fAOD)
@@ -753,7 +768,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // debug for certain species
   if (fCheckCertainSpecies > 0) {
     // need to get also neutral particles here
-    TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi, kFALSE);
+    TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi, kFALSE, fGeneratorIndexMask);
     for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
       AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
       if (!particle)
@@ -767,7 +782,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
   // Get MC primaries
   // triggers
-  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
+  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi, kTRUE, fGeneratorIndexMask);
   CleanUp(tmpList, mc, skipParticlesAbove);
   if (fFillYieldRapidity) {
     for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
@@ -783,7 +798,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // associated
   TObjArray* tracksCorrelateMC = tracksMC;
   if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTrackPhiCutEvPlMax > 0.0001) {
-    tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
+    tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesAssociated, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
     CleanUp(tmpList, mc, skipParticlesAbove);
     tracksCorrelateMC = CloneAndReduceTrackList(tmpList);
     delete tmpList;
@@ -852,15 +867,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // loop over particle species
 
       for (Int_t particleSpecies = 0; particleSpecies < 4; particleSpecies++) {
-        TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(mc, 0x0, kTRUE, particleSpecies, kTRUE, kTRUE, evtPlanePhi);
-        TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kFALSE, evtPlanePhi);
-        TObjArray* allRecoTracksMatched  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kFALSE, evtPlanePhi);
+        TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(mc, 0x0, kTRUE, particleSpecies, kTRUE, kTRUE, evtPlanePhi, kTRUE, fGeneratorIndexMask);
+        TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kFALSE, evtPlanePhi, kTRUE, fGeneratorIndexMask);
+        TObjArray* allRecoTracksMatched  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kFALSE, evtPlanePhi, kTRUE, fGeneratorIndexMask);
         TObjArray* primRecoTracksMatchedPID = 0;
         TObjArray* allRecoTracksMatchedPID  = 0;
 
         if (fHelperPID) {
-          primRecoTracksMatchedPID = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kTRUE, evtPlanePhi);
-          allRecoTracksMatchedPID  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kTRUE, evtPlanePhi);
+          primRecoTracksMatchedPID = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE, kTRUE, evtPlanePhi, kTRUE, fGeneratorIndexMask);
+          allRecoTracksMatchedPID  = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE, kTRUE, evtPlanePhi, kTRUE, fGeneratorIndexMask);
         }
 
         CleanUp(primMCParticles, mc, skipParticlesAbove);
@@ -905,7 +920,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
       // Get MC primaries that match reconstructed track
       // triggers
-      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
+      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi, kTRUE, fGeneratorIndexMask);
       CleanUp(tmpList, mc, skipParticlesAbove);
       TObjArray* tracksRecoMatchedPrim = CloneAndReduceTrackList(tmpList);
       delete tmpList;
@@ -913,7 +928,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // associated
       TObjArray* tracksCorrelateRecoMatchedPrim = tracksRecoMatchedPrim;
       if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTrackPhiCutEvPlMax > 0.0001) {
-        tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesAssociated, kTRUE);
+        tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, fParticleSpeciesAssociated, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
         CleanUp(tmpList, mc, skipParticlesAbove);
         tracksCorrelateRecoMatchedPrim = CloneAndReduceTrackList(tmpList);
         delete tmpList;
@@ -936,7 +951,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
       // Get MC primaries + secondaries that match reconstructed track
       // triggers
-      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
+      tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi, kTRUE, fGeneratorIndexMask);
       CleanUp(tmpList, mc, skipParticlesAbove);
       TObjArray* tracksRecoMatchedAll = CloneAndReduceTrackList(tmpList);
       delete tmpList;
@@ -944,7 +959,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // associated
       TObjArray* tracksCorrelateRecoMatchedAll = tracksRecoMatchedAll;
       if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTrackPhiCutEvPlMax > 0.0001) {
-        tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesAssociated, kTRUE);
+        tmpList = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, fParticleSpeciesAssociated, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
         CleanUp(tmpList, mc, skipParticlesAbove);
         tracksCorrelateRecoMatchedAll = CloneAndReduceTrackList(tmpList);
         delete tmpList;
@@ -983,6 +998,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
       // (RECO all tracks)
       // STEP 6
+      if(fCentralityMethodStep6.Length() > 0)
+        centrality = GetCentrality(fCentralityMethodStep6, inputEvent, mc);
+
       if (!fSkipStep6)
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight);
 
@@ -992,15 +1010,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       if (fillStep8)
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
 
-      // apply correction efficiency, STEP 9 and 10
+      // apply correction efficiency, STEP 9
       if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
-
         // all two track cuts disabled, STEP 9
         if (!fSkipStep9)
           fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, -1, kTRUE);
-
-        // STEP 10
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
       }
 
       // mixed event
@@ -1025,9 +1039,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
                 // all two track cuts disabled, STEP 9
                 if (!fSkipStep9)
                   fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, 0, -1, kTRUE);
-
-                // STEP 10
-                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
               }
             }
           }
@@ -1035,51 +1046,29 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         }
       }
 
-      if (0 && !fReduceMemoryFootprint) {
-        // make list of secondaries (matched with MC)
-        TObjArray* tracksRecoMatchedSecondaries = new TObjArray;
-        for (Int_t i=0; i<tracksRecoMatchedAll->GetEntriesFast(); i++)
-          if (((AliAODMCParticle*)tracksRecoMatchedAll->At(i))->IsPhysicalPrimary() == kFALSE)
-            tracksRecoMatchedSecondaries->Add(tracksRecoMatchedAll->At(i));
+      // apply correction efficiency, STEP 10
+      if(fCentralityMethodStep10.Length() > 0)
+        centrality = GetCentrality(fCentralityMethodStep10, inputEvent, mc);
 
-        // Study: Use only secondaries as trigger particles and plot the correlation vs. all particles; store in step 9
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll, weight);
+      if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
+        // STEP 10
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
 
-        // Study: Use only primaries as trigger particles and plot the correlation vs. secondaries; store in step 8
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries, weight);
-
-        // plot delta phi vs process id of secondaries
-        // trigger particles: primaries in 4 < pT < 10
-        // associated particles: secondaries in 1 < pT < 10
-
-        for (Int_t i=0; i<tracksRecoMatchedPrim->GetEntriesFast(); i++) {
-          AliVParticle* triggerParticle = (AliVParticle*) tracksRecoMatchedPrim->At(i);
-
-          if (triggerParticle->Pt() < 4 || triggerParticle->Pt() > 10)
-            continue;
-
-          for (Int_t j=0; j<tracksRecoMatchedSecondaries->GetEntriesFast(); j++) {
-            AliAODMCParticle* particle = (AliAODMCParticle*) tracksRecoMatchedSecondaries->At(j);
-
-            if (particle->Pt() < 1 || particle->Pt() > 10)
-              continue;
-
-            if (particle->Pt() > triggerParticle->Pt())
-              continue;
-
-            Double_t deltaPhi = triggerParticle->Phi() - particle->Phi();
-            if (deltaPhi > 1.5 * TMath::Pi())
-              deltaPhi -= TMath::TwoPi();
-            if (deltaPhi < -0.5 * TMath::Pi())
-              deltaPhi += TMath::TwoPi();
-
-            Int_t processID = fMcEvent->Stack()->Particle(particle->GetLabel())->GetUniqueID();
-
-            ((TH2F*) fListOfHistos->FindObject("processIDs"))->Fill(deltaPhi, processID);
+        if (fFillMixed) {
+          for (Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++) {
+            AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 400, 0., iPool);
+            if (pool2->IsReady()) {
+              for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) {
+                // apply correction efficiency, STEP 10
+                if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
+                  // STEP 10
+                  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+                }
+              }
+            }
+            pool2->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, pool2->GetPtMin(), pool2->GetPtMax()));
           }
         }
-
-        delete tracksRecoMatchedSecondaries;
       }
 
       if (tracksCorrelateRecoMatchedPrim != tracksRecoMatchedPrim)
@@ -1155,7 +1144,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (!inputEvent)
     inputEvent = fESD;
 
-  Double_t centrality = GetCentrality(inputEvent, 0);
+  Double_t centrality = GetCentrality(fCentralityMethod, inputEvent, 0);
 
   Float_t bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
 
@@ -1431,11 +1420,11 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracksCorrelate;
 }
 
-Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TObject* mc)
+Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(TString& centralityMethod, AliVEvent* inputEvent, TObject* mc)
 {
   // return centrality
 
-  if (fCentralityMethod.Length() == 0)
+  if (centralityMethod.Length() == 0)
     return 0;
 
   Double_t centrality = 0;
@@ -1445,10 +1434,10 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
     if (!multSelection)
       AliFatal("MultSelection not found in input event");
 
-    if (fCentralityMethod.EndsWith(".Value"))
-      centrality = multSelection->GetEstimator(fCentralityMethod(0, fCentralityMethod.Length()-6))->GetValue();
+    if (centralityMethod.EndsWith(".Value"))
+      centrality = multSelection->GetEstimator(centralityMethod(0, centralityMethod.Length()-6))->GetValue();
     else {
-      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, !fUseUncheckedCentrality);
+      centrality = multSelection->GetMultiplicityPercentile(centralityMethod, !fUseUncheckedCentrality);
 
       // error handling
       if (centrality > 100)
@@ -1458,7 +1447,7 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
   else {
     AliCentrality *centralityObj = 0;
 
-    if (fCentralityMethod == "ZNA_MANUAL") {
+    if (centralityMethod == "ZNA_MANUAL") {
       Bool_t zna = kFALSE;
       for (Int_t j = 0; j < 4; ++j) {
         if (fESD->GetZDCData()->GetZDCTDCData(12,j) != 0) {
@@ -1486,7 +1475,7 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       else
         centrality = -1;
     }
-    else if (fCentralityMethod == "ZNAC") { // pp
+    else if (centralityMethod == "ZNAC") { // pp
       // values from Cvetan
       const Double_t *towZNA = fAOD->GetZDCData()->GetZNATowerEnergy();
       const Double_t *towZNC = fAOD->GetZDCData()->GetZNCTowerEnergy();
@@ -1516,14 +1505,23 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
 
       ((TH1D*) fListOfHistos->FindObject("ZNA+C_energy"))->Fill(enZN);
     }
-    else if (fCentralityMethod == "TRACKS_MANUAL") {
+    else if (centralityMethod == "TRACKS_MANUAL") {
       // for pp
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
       centrality = tracks->GetEntriesFast();
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
       delete tracks;
     }
-    else if (fCentralityMethod == "V0A_MANUAL") {
+    else if (centralityMethod == "TRACKS_MANUAL_CORRECTED") {
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
+      centrality = tracks->GetEntriesFast();
+      delete tracks;
+
+      Int_t bin = fCentralityCorrection->GetYaxis()->FindBin(centrality);
+      TH1D *pProj = fCentralityCorrection->ProjectionX("proj",bin,bin,"e");
+      centrality = pProj->GetRandom();
+    }
+    else if (centralityMethod == "V0A_MANUAL") {
       // for pp
 
       //Total multiplicity in the VZERO A detector
@@ -1540,24 +1538,24 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       else
         centrality = -1;
     }
-    else if (fCentralityMethod == "nano") {
+    else if (centralityMethod == "nano") {
       centrality = ((AliNanoAODHeader*) fAOD->GetHeader())->GetCentrality();
     }
-    else if (fCentralityMethod.BeginsWith("Nano.")) {
+    else if (centralityMethod.BeginsWith("Nano.")) {
       AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fAOD->GetHeader());
       if (!nanoHeader)
         AliFatal("Nano Header not found");
 
-      static TString nanoField = fCentralityMethod(5, fCentralityMethod.Length());
+      static TString nanoField = centralityMethod(5, centralityMethod.Length());
       static const Int_t kField = nanoHeader->GetVarIndex(nanoField);
 
       centrality = nanoHeader->GetVar(kField);
     }
-    else if (fCentralityMethod == "PPVsMultUtils") {
+    else if (centralityMethod == "PPVsMultUtils") {
       if (fAnalysisUtils) centrality = fAnalysisUtils->GetMultiplicityPercentile(inputEvent);
       else centrality = -1;
     }
-    else if (fCentralityMethod == "MC_b") {
+    else if (centralityMethod == "MC_b") {
       AliGenEventHeader* eventHeader = GetFirstHeader();
       if (!eventHeader) {
         // We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
@@ -1579,14 +1577,14 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       else if (hepMCHeader)
         centrality = hepMCHeader->impact_parameter();
     }
-    else if (fCentralityMethod == "MCGen_TRACKS_MANUAL") {
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+    else if (centralityMethod == "MCGen_TRACKS_MANUAL") {
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
       centrality = tracks->GetEntriesFast();
       delete tracks;
     }
-    else if (fCentralityMethod == "MCGen_V0M") {
+    else if (centralityMethod == "MCGen_V0M") {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
-      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999., kTRUE, fGeneratorIndexMask);
       Float_t MultV0M=0.;
       Float_t dNchdeta = 0.;
       Float_t INEL0 = 0.;
@@ -1621,9 +1619,9 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
           centrality=-1.;
       }
     }
-    else if (fCentralityMethod == "MCGen_CL1") {
+    else if (centralityMethod == "MCGen_CL1") {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
-      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999., kTRUE, fGeneratorIndexMask);
       Float_t MultCL1=0.;
       Float_t dNchdeta = 0.;
       Float_t INEL0 = 0.;
@@ -1666,9 +1664,9 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
 
       if (centralityObj) {
         if (fUseUncheckedCentrality)
-          centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+          centrality = centralityObj->GetCentralityPercentileUnchecked(centralityMethod);
         else
-          centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+          centrality = centralityObj->GetCentralityPercentile(centralityMethod);
       }
       else
         centrality = -1;

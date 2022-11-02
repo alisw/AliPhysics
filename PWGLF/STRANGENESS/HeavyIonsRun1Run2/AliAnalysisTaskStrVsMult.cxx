@@ -317,10 +317,10 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
     if(fisMC) {
         fHistos_Lam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins, fcentbinning);
         fHistos_Lam->CreateTH3("h3_FDmtxNUM_def", "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
-        fHistos_Lam->CreateTH2("h2_FDmtxDEN_def", "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
+        fHistos_Lam->CreateTH2("h2_FDmtxDEN", "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
         fHistos_ALam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins, fcentbinning);
         fHistos_ALam->CreateTH3("h3_FDmtxNUM_def", "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
-        fHistos_ALam->CreateTH2("h2_FDmtxDEN_def", "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
+        fHistos_ALam->CreateTH2("h2_FDmtxDEN", "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
     }
   }
   if (!fDefOnly && (fParticleAnalysisStatus[kk0s] || fParticleAnalysisStatus[klam])) {
@@ -336,9 +336,7 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
             fHistos_ALam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
             if(fisMC){
               fHistos_Lam->CreateTH3(Form("h3_FDmtxNUM[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
-              fHistos_Lam->CreateTH2(Form("h2_FDmtxDEN[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
               fHistos_ALam->CreateTH3(Form("h3_FDmtxNUM[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
-              fHistos_ALam->CreateTH2(Form("h2_FDmtxDEN[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fncentbins, fcentbinning);
             }
           }
         }
@@ -537,8 +535,14 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
           else isOOBpileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i_MCtrk, header, MCTrackArray);
       if(!lPart || lPart->Y()<-0.5 || lPart->Y()>0.5 || !lPart->IsPhysicalPrimary() || isOOBpileup) continue;
       if(fParticleAnalysisStatus[kk0s] && lPart->PdgCode()==310   ) fHistos_K0S->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-      if(fParticleAnalysisStatus[klam] && lPart->PdgCode()==3122  ) fHistos_Lam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-      if(fParticleAnalysisStatus[kalam]&& lPart->PdgCode()==-3122 ) fHistos_ALam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
+      if(fParticleAnalysisStatus[klam]                            ) {
+        if(lPart->PdgCode()==3122) fHistos_Lam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
+        if(lPart->PdgCode()==3312) fHistos_Lam->FillTH2("h2_FDmtxDEN",lPart->Pt(),lPercentile);
+      }
+      if(fParticleAnalysisStatus[kalam]                           ) {
+        if(lPart->PdgCode()==-3122) fHistos_ALam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
+        if(lPart->PdgCode()==-3312) fHistos_ALam->FillTH2("h2_FDmtxDEN",lPart->Pt(),lPercentile);
+      }
       if(fParticleAnalysisStatus[kxim] && lPart->PdgCode()==3312  ) fHistos_XiMin->FillTH2("h2_gen",lPart->Pt(),lPercentile);
       if(fParticleAnalysisStatus[kxip] && lPart->PdgCode()==-3312 ) fHistos_XiPlu->FillTH2("h2_gen",lPart->Pt(),lPercentile);
       if(fParticleAnalysisStatus[komm] && lPart->PdgCode()==3334  ) fHistos_OmMin->FillTH2("h2_gen",lPart->Pt(),lPercentile);
@@ -688,7 +692,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
             int pdg_xi = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->PdgCode();
             double rap_xi = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Y();
             if(pdg_xi==3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = -((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
-              else if(pdg_xi==-3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
+            else if(pdg_xi==-3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
           }
         }
       } else {
@@ -793,7 +797,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
             int pdg_xi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->GetPdgCode();
             double rap_xi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Y();
             if(pdg_xi==3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = -((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
-              else if(pdg_xi==-3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
+            else if(pdg_xi==-3312 && TMath::Abs(rap_xi)<0.5) fdmtx_ptxi = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothV0)))->Pt();
           }
         }
       }
@@ -807,11 +811,8 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         if(fisMC){
           //Feeddown matrix filling
           //numerator
-          if ( fdmtx_ptxi<0  && ApplyCuts(klam)) fHistos_Lam->FillTH3("h3_FDmtxNUM_def", fV0_Pt, TMath::Abs(fdmtx_ptxi), lPercentile);
-          else if( fdmtx_ptxi>0 && ApplyCuts(kalam)) fHistos_ALam->FillTH3("h3_FDmtxNUM_def", fV0_Pt, TMath::Abs(fdmtx_ptxi), lPercentile);
-          //denominator
-          if ( fdmtx_ptxi<0 && assFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH2("h2_FDmtxDEN_def", TMath::Abs(fdmtx_ptxi), lPercentile);
-          if ( fdmtx_ptxi>0 && assFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH2("h2_FDmtxDEN_def", TMath::Abs(fdmtx_ptxi), lPercentile);
+          if ( fdmtx_ptxi<-0.001 && assFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH3("h3_FDmtxNUM_def", fV0_Pt, TMath::Abs(fdmtx_ptxi), lPercentile);
+          else if( fdmtx_ptxi>0.001 && assFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH3("h3_FDmtxNUM_def", fV0_Pt, TMath::Abs(fdmtx_ptxi), lPercentile);
         }
       }
 
@@ -1432,11 +1433,8 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
             if (fisMC) {
               //Feeddown matrix filling
               //numerator
-              if (ptassxi<0 && ApplyCuts(klam)) fHistos_Lam->FillTH3(Form("h3_FDmtxNUM[%d][%d]", i_cut, i_var), fV0_Pt, TMath::Abs(ptassxi), perc);
-              else if (ptassxi>0 && ApplyCuts(kalam)) fHistos_ALam->FillTH3(Form("h3_FDmtxNUM[%d][%d]", i_cut, i_var), fV0_Pt, TMath::Abs(ptassxi), perc);
-              //denominator
-              if (ptassxi<0 && associFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH2(Form("h2_FDmtxDEN[%d][%d]", i_cut, i_var), TMath::Abs(ptassxi), perc);
-              if (ptassxi>0 && associFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH2(Form("h2_FDmtxDEN[%d][%d]", i_cut, i_var), TMath::Abs(ptassxi), perc);
+              if (ptassxi<-0.001 && associFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH3(Form("h3_FDmtxNUM[%d][%d]", i_cut, i_var), fV0_Pt, TMath::Abs(ptassxi), perc);
+              else if (ptassxi>0.001 && associFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH3(Form("h3_FDmtxNUM[%d][%d]", i_cut, i_var), fV0_Pt, TMath::Abs(ptassxi), perc);
             }
           }
         }

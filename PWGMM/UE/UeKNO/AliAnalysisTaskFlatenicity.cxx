@@ -93,6 +93,9 @@ Double_t Ptbins[nPtbins + 1] = {
 const Int_t nCent = 9;
 Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
                                  30.0, 40.0, 50.0, 70.0, 100.0};
+// calib MC anchored to LHC16k and LHC16l pass2
+Double_t calibv0[64] = {0.907682, 0.844104, 0.865568, 0.963309, 1.08007, 1.15369, 1.12447, 1.02439, 0.95161, 0.904738, 0.924563, 0.982011, 1.04804, 1.09024, 1.07079, 1.01857, 0.957272, 0.933689, 0.944754, 0.995602, 1.04321, 1.06214, 1.04915, 1.00816, 0.979107, 0.963532, 0.969889, 0.995551, 1.02253, 1.03191, 1.02562, 1.01064, 0.911067, 0.865634, 0.881477, 0.952203, 1.09948, 1.12294, 1.08561, 1.07816, 0.943498, 0.911861, 0.927446, 0.96686, 1.06382, 1.08255, 1.06033, 1.04127, 0.972901, 0.943882, 0.939508, 0.9833, 1.03983, 1.04678, 1.04486, 1.02614, 0.981817, 0.956076, 0.966089, 0.992914, 1.02992, 1.02921, 1.02784, 1.01453};
+
 const Int_t nDet = 4;
 const Char_t *DetName[nDet] = {"ADC", "V0C", "V0A", "ADA"};
 const Int_t nComb = 3;
@@ -104,19 +107,23 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
 
     AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity()
     : AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fV0Mindex(-1), fmultTPC(-1), fmultV0A(-1), fmultV0C(-1),
-      fmultADA(-1), fmultADC(-1), fmultTPCmc(-1), fmultV0Amc(-1),
-      fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1), fDetFlat("V0"),
-      fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-      fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
-      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+      fUseMC(kFALSE), fIsCalib(kFALSE), fVtxz(-1), fV0Mindex(-1), fmultTPC(-1),
+      fmultV0A(-1), fmultV0C(-1), fmultADA(-1), fmultADC(-1), fmultTPCmc(-1),
+      fmultV0Amc(-1), fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1),
+      fDetFlat("V0"), fRemoveTrivialScaling(kFALSE), fnGen(-1),
+      fPIDResponse(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8),
+      fPtMin(0.5), ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
-      hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
-      hFlatVsV0M(0), hEtamc(0), hEtamcAlice(0), hCounter(0) {
+      hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
+      hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
+      hEtamc(0), hEtamcAlice(0), hCounter(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
+  }
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hFlatVsPtV0MMC[i_c] = 0;
   }
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = 0;
@@ -137,21 +144,25 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
     : AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fV0Mindex(-1), fmultTPC(-1), fmultV0A(-1), fmultV0C(-1),
-      fmultADA(-1), fmultADC(-1), fmultTPCmc(-1), fmultV0Amc(-1),
-      fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1), fDetFlat("V0"),
-      fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-      fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
-      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+      fUseMC(kFALSE), fIsCalib(kFALSE), fVtxz(-1), fV0Mindex(-1), fmultTPC(-1),
+      fmultV0A(-1), fmultV0C(-1), fmultADA(-1), fmultADC(-1), fmultTPCmc(-1),
+      fmultV0Amc(-1), fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1),
+      fDetFlat("V0"), fRemoveTrivialScaling(kFALSE), fnGen(-1),
+      fPIDResponse(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8),
+      fPtMin(0.5), ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
-      hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
-      hFlatVsV0M(0), hEtamc(0), hEtamcAlice(0), hCounter(0)
+      hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
+      hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
+      hEtamc(0), hEtamcAlice(0), hCounter(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
+  }
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hFlatVsPtV0MMC[i_c] = 0;
   }
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = 0;
@@ -211,7 +222,7 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
   // create output objects
   float min_flat = -0.01;
   float max_flat = 1.01;
-  int nbins_flat = 204;
+  int nbins_flat = 1020;
   if (fRemoveTrivialScaling) {
     min_flat = -0.1;
     max_flat = 9.9;
@@ -325,12 +336,34 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                    499.5, 500, -0.5, 499.5);
       fOutputList->Add(hRmCombinedMult[i_c]);
     }
+    for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+      hFlatVsPtV0MMC[i_c] =
+          new TH2D(Form("hFlatVsPtV0MMC_c%d", i_c),
+                   Form("Measured %1.0f-%1.0f%%V0M; true Flatenicity; "
+                        "#it{p}_{T} (GeV/#it{c})",
+                        centClass[i_c], centClass[i_c + 1]),
+                   nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+      fOutputList->Add(hFlatVsPtV0MMC[i_c]);
+    }
+
+    hFlatMCVsV0M = new TH2D("hFlatMCVsV0M", "", nCent, centClass, nbins_flat,
+                            min_flat, max_flat);
+    fOutputList->Add(hFlatMCVsV0M);
   }
 
-  hActivityV0DataSect =
-      new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT",
-                   64, -0.5, 63.5);
+  hActivityV0DataSectBefore = new TProfile(
+      "hActivityV0DataSectBefore",
+      "rec; V0 sector; (before calib) #LTmultiplicity#GT", 64, -0.5, 63.5);
+  fOutputList->Add(hActivityV0DataSectBefore);
+
+  hActivityV0DataSect = new TProfile(
+      "hActivityV0DataSect", "rec; V0 sector; (after calib) #LTmultiplicity#GT",
+      64, -0.5, 63.5);
   fOutputList->Add(hActivityV0DataSect);
+
+  hV0vsVtxz = new TProfile("hV0vsVtxz", ";total amplitude; vtx_z", 30, -15, 15);
+  fOutputList->Add(hV0vsVtxz);
+
   if (fUseMC) {
     hActivityV0McSect =
         new TProfile("hActivityV0McSect", "true; V0 sector; #LTmultiplicity#GT",
@@ -510,6 +543,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     if (fFlatMC >= 0) {
       hFlatenicityMC->Fill(fFlatMC);
       hFlatResponse->Fill(fFlatMC, fFlat);
+      hFlatMCVsV0M->Fill(fv0mpercentile, fFlatMC);
       MakeMCanalysis();
     }
   }
@@ -569,6 +603,7 @@ void AliAnalysisTaskFlatenicity::MakeMCanalysis() {
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
     hFlatVsPtMC->Fill(fFlatMC, particle->Pt());
+    hFlatVsPtV0MMC[fV0Mindex]->Fill(fFlatMC, particle->Pt());
     hPtPrimIn->Fill(particle->Pt());
   }
   // rec
@@ -761,11 +796,33 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityV0() {
     RhoLattice[iCh] = 0.0;
   }
 
+  // before calibration
+  for (Int_t iCh = 0; iCh < nCells; iCh++) {
+    Float_t mult = lVV0->GetMultiplicity(iCh);
+    RhoLattice[iCh] = mult;
+    hActivityV0DataSectBefore->Fill(iCh, RhoLattice[iCh]);
+  }
+  // after calibration
+  if (fIsCalib) {
+    for (Int_t iCh = 0; iCh < nCells; iCh++) {
+      RhoLattice[iCh] *= calibv0[iCh];
+    }
+  }
+
+  // Filling histos with mult info
+  Float_t total_v0 = 0;
+  for (Int_t iCh = 0; iCh < nCells; iCh++) {
+    hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]);
+    total_v0 += RhoLattice[iCh];
+  }
+
+  hV0vsVtxz->Fill(fVtxz, total_v0);
+
   Int_t nringA = 0;
   Int_t nringC = 0;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     Float_t detaV0 = -1;
-    Float_t mult = lVV0->GetMultiplicity(iCh);
+    // Float_t mult = lVV0->GetMultiplicity(iCh);
     if (iCh < 32) { // V0C
       if (iCh < 8) {
         nringC = 0;
@@ -789,12 +846,8 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityV0() {
       }
       detaV0 = maxEtaV0A[nringA] - minEtaV0A[nringA];
     }
-    RhoLattice[iCh] =
-        mult / detaV0; // needed to consider the different eta coverage
-  }
-  // Filling histos with mult info
-  for (Int_t iCh = 0; iCh < nCells; iCh++) {
-    hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]);
+    // consider the different eta coverage
+    RhoLattice[iCh] /= detaV0;
   }
   Float_t mRho = 0;
   Float_t flatenicity = -1;
@@ -1023,6 +1076,6 @@ Bool_t AliAnalysisTaskFlatenicity::HasRecVertex() {
 
   Bool_t hasVtx = (TESTBIT(fFlag, AliEventCuts::kVertex)) &&
                   (TESTBIT(fFlag, AliEventCuts::kVertexQuality));
-
+  fVtxz = vtSPD->GetZ();
   return hasVtx;
 }

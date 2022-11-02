@@ -159,23 +159,23 @@ class PhysicsProfilePPTask : public TObject {
 
 	
 		//5,6 particle correlation
-		//TProfile* fChc5_A42222;  		//! <<5>> |#Delta#eta| > 1.0
-		//TProfile* fChc5_A52322;  		//! <<5>> |#Delta#eta| > 1.0
-		//TProfile* fChc6_222222;  		//! <<6>> |#Delta#eta| > 1.0
-		//TProfile* fChc6_322322;  		//! <<6>> |#Delta#eta| > 1.0
+		//TProfile* fChc5_A42222;  		//! <<5>> 
+		//TProfile* fChc5_A52322;  		//! <<5>> 
+		//TProfile* fChc6_222222;  		//! <<6>> 
+		//TProfile* fChc6_322322;  		//! <<6>> 
 
 		//Addtional 6 particle correlation
 		//TProfile* fChsc6222_Gap0;  		//! <<4>> |#Delta#eta| > 1.0
 		//TProfile* fChsc6222_Gap10;  		//! <<4>> |#Delta#eta| > 1.0
 		//TProfile* fChsc633_Gap0A;  		//! <<3>> |#Delta#eta| > 1.0
 		//TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
-		//TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
-		//TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0
-		//TProfile*   fChcn6_Gap0[6];               //! <<6>> |#Delta#eta| > 0.
+		TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
+		TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0
+		TProfile*   fChcn6_Gap0[6];               //! <<6>> |#Delta#eta| > 0.
 
 		// 8 particle correlation
-		//TProfile*	fChcn8[6];  			//! <<8>> in unit bins of Ntrks
-		//TProfile*   fChcn8_Gap0[6];               //! <<8>> |#Delta#eta| > 1.0
+		TProfile*	fChcn8[6];  			//! <<8>> in unit bins of Ntrks
+		TProfile*   fChcn8_Gap0[6];               //! <<8>> |#Delta#eta| > 1.0
 
 		private:
 		ClassDef(PhysicsProfilePPTask, 1);    //Analysis task
@@ -192,6 +192,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
+		virtual void   			NotifyRun();
         virtual void            Terminate(Option_t* option);
 
         
@@ -205,6 +206,11 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetTPCclusters(Int_t tpcClus){fTPCclusters = tpcClus;}
 		virtual void   SetTPCclustersDefault(Int_t tpcClus){fTPCclustersDefault = tpcClus;} // The tpcCluster for NtrksCounter 
         virtual void   SetChi2PerTPCcluster(Double_t chi2){fChi2PerTPCcluster = chi2;}	    // max. chi2 per TPC cluster
+		virtual void	SetEventWeightSetOne(Bool_t useOne){
+			fEventWeightSetToOne=useOne;	//Set Event Weight to 1
+		}
+		virtual void	SetAddTPCPileupCuts(Bool_t usePileupCuts){fAddTPCPileupCuts=usePileupCuts;} // use TPC pile up Cuts
+		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
 		virtual void   SetMinITSClusters(Int_t minClus){fMinITSClus = minClus;}
 		virtual void   SetMaxChi2(Double_t maxChi){fMaxChi2 = maxChi;}
 		virtual void   SetUseDCAzCut(Bool_t usedcaz){fUseDCAzCut = usedcaz;}
@@ -259,6 +265,9 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		Int_t			fTPCclusters;				// min. TPC clusters
 		Int_t			fTPCclustersDefault;			// min. TPC clusters (for NtrksCounter)
 		Int_t			fChi2PerTPCcluster;			// max. chi2 per TPC cluster
+		Bool_t			fEventWeightSetToOne;		// Set Event weight to 1
+		Bool_t			fAddTPCPileupCuts;			// Pile up Cuts in TPC
+		Double_t		fESDvsTPConlyLinearCut;     // ESDvsTPConlyLinearCut : default = 15000
 		Int_t			fMinITSClus;				// min ITS clusters, LHC15ijl
 		Double_t		fMaxChi2;				// max chi2 per ITS cluster, LHC15ijl
 		Bool_t			fUseDCAzCut;				// switch to choose whether I want to use DCAz cut or not (for systematic studies, otherwise it is in FB selection by default)
@@ -307,6 +316,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TH2D*			hTracksCorrection2d;	//! Correlation table for number of tracks table
 		TProfile*		hnCorrectedTracks;		//! Number of corrected tracks in a ntracks bin
 		TH1F*			hMult;				//! multiplicity distribution
+		TH2F*			hMultCent;				//! multiplicity-centrality distribution
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
 
 

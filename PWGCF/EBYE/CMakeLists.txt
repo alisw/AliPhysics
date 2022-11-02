@@ -79,6 +79,8 @@ set(SRCS
   Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
+  MeanPtFluctuations/pp13TeV_MB/AliAnalysisMeanPt.cxx
+  MeanPtFluctuations/pp13TeV_MB/AliAnalysisHMMeanPt.cxx
   MeanPtFluctuations_PbPb5020GeV2018/AliAnalysisMeanPtdata.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
@@ -135,6 +137,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity2.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFMs.cxx
   )
 

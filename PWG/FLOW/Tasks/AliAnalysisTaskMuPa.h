@@ -52,7 +52,7 @@ const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in 
 const Int_t gQAParticleCutCounter = 40; // see TString spcc[gQAParticleCutCounter] in .cxx . Used also for SequentialParticleCutCounter, via cloning
 const Int_t gGenericCorrelations = 7; // correlations between various quantities (see .cxx for documentation)
 const Int_t gMaxCorrelator = 12; // 
-const Int_t gMaxHarmonic = 6; // 
+const Int_t gMaxHarmonic = 9; // 
 const Int_t gMaxIndex = 300; // per order
 const Int_t gMaxNoBinsKine = 1000; 
 const Int_t gKineDependenceVariables = 2; // pt,eta
@@ -740,23 +740,23 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fCentralityWeightsHist;         // histograms holding centrality weights [V0M, SPDTracklets, CL0, CL1]
 
   // 7) Correlations:
-  TList *fCorrelationsList;            // list to hold all correlations objects
-  TProfile *fCorrelationsFlagsPro;     // profile to hold all flags for correlations
-  Bool_t fCalculateCorrelations;       // calculate and store integrated correlations
-  Bool_t fCalculatePtCorrelations;     // calculate and store pt correlations
-  Bool_t fCalculateEtaCorrelations;    // calculate and store eta correlations
-  TProfile *fCorrelationsPro[4][6][5]; //! multiparticle correlations [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+  TList *fCorrelationsList;                                      // list to hold all correlations objects
+  TProfile *fCorrelationsFlagsPro;                               // profile to hold all flags for correlations
+  Bool_t fCalculateCorrelations;                                 // calculate and store integrated correlations
+  Bool_t fCalculatePtCorrelations;                               // calculate and store pt correlations
+  Bool_t fCalculateEtaCorrelations;                              // calculate and store eta correlations
+  TProfile *fCorrelationsPro[4][gMaxHarmonic][5];                //! multiparticle correlations [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
   Bool_t fUseCustomKineDependenceBins[gKineDependenceVariables]; // use or not custom binning for kine dependence => use setter SetKineDependenceBins(...)
-  TArrayD *fKineDependenceBins[gKineDependenceVariables]; // custom binning kine dependence, SetKineDependenceBins(...). By default the same binning is used as in the corresponding control histograms. 
+  TArrayD *fKineDependenceBins[gKineDependenceVariables];        // custom binning kine dependence, SetKineDependenceBins(...). By default the same binning is used as in the corresponding control histograms. 
 
   // 8) Nested loops:
-  TList *fNestedLoopsList;                 // list to hold all nested loops objects
-  TProfile *fNestedLoopsFlagsPro;          // profile to hold all flags for nested loops
-  Bool_t fCalculateNestedLoops;            // calculate and store correlations with nested loops, as a cross-check
-  Bool_t fCalculateCustomNestedLoop;       // validate e-b-e all correlations with custom nested loop
-  TProfile *fNestedLoopsPro[4][6][5];      //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-  //TProfile *fNestedLoopsPerDemandPro[3]; // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
-  TArrayD *ftaNestedLoops[2];              //! e-b-e container for nested loops [0=angles;1=product of all weights]   
+  TList *fNestedLoopsList;                       // list to hold all nested loops objects
+  TProfile *fNestedLoopsFlagsPro;                // profile to hold all flags for nested loops
+  Bool_t fCalculateNestedLoops;                  // calculate and store correlations with nested loops, as a cross-check
+  Bool_t fCalculateCustomNestedLoop;             // validate e-b-e all correlations with custom nested loop
+  TProfile *fNestedLoopsPro[4][gMaxHarmonic][5]; //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+  //TProfile *fNestedLoopsPerDemandPro[3];       // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TArrayD *ftaNestedLoops[2];                    //! e-b-e container for nested loops [0=angles;1=product of all weights]   
   TArrayD *ftaNestedLoopsKine[gKineDependenceVariables][gMaxNoBinsKine][2]; //! e-b-e container for nested loops [0=pT,1=eta][kine.bin][0=angles;1=product of all weights]   
 
   // 9) Toy NUA:

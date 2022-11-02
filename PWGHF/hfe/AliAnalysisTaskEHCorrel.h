@@ -127,7 +127,9 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi = fSwitch;};
     void    SetWeightCal(Bool_t fSwitch) {fCalPi0EtaWeight = fSwitch;};
     void    GetPi0EtaWeight(THnSparse *SparseWeight);
+    void    GetPi0EtaWeightPbPb2018(THnSparse *SparseWeight);
     Bool_t  GetNonHFEEffiDenom(AliVTrack *track);
+    Bool_t  GetNonHFEEffiDenomPbPb2018(AliVTrack *track);
     Bool_t  GetNonHFEEffiRecoTag(AliVTrack *track);
     Bool_t  IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromMB, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);
     Int_t   GetPi0EtaType(AliAODMCParticle *part);
@@ -138,9 +140,10 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
 
   private:
     Bool_t GetNMCPartProduced();
+    Bool_t GetNMCPartProducedPbPb2018();
 
-    AliVEvent 		    *fVevent;//!V event object
-    AliAODEvent 		*fAOD;//!AOD object
+    AliVEvent           *fVevent;//!V event object
+    AliAODEvent         *fAOD;//!AOD object
     const AliVVertex    *fpVtx; //!
     AliPIDResponse      *fpidResponse; //!pid response
     AliMultSelection    *fMultSelection;//!
@@ -160,7 +163,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t              fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;//switch to select DCAL clusters
     Int_t               fTPCNCrossRElec;// track TPC NClusters
-    Double_t            fRatioTPCNCrossRElec;//    
+    Double_t            fRatioTPCNCrossRElec;//
     Bool_t              fFlagEleSPDkFirst;//
     Double_t            fEtaCutEleMin;// Electron track Eta cut min
     Double_t            fEtaCutEleMax;// Electron track Eta cut max
@@ -230,8 +233,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TF1                 *fFuncPtDepPhi;//!
 
     Int_t               fNDelPhiBins; //number of bins to be used for deltaphi distribution
-    TList       	   	*fOutputList;		//!output list
-    TH1F                *fNevents;		//!no of events
+    TList               *fOutputList;//!output list
+    TH1F                *fNevents;//!no of events
     TH1F                *fVtxZ;//!
     TH1F                *fVtxX;//!
     TH1F                *fVtxY;//!

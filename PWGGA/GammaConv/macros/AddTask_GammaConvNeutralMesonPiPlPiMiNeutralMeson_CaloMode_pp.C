@@ -49,6 +49,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   Bool_t usePionPreselection = kTRUE;
   //parse additionalTrainConfig flag
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  TString unsmearingoutputs = "012"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted
 
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){std::cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << std::endl; return;}
@@ -65,6 +66,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
         cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
       } else if(tempStr.Contains("NoPionPreselection")){
         usePionPreselection = kFALSE;
+      }
+      if(tempStr.BeginsWith("UNSMEARING")){ // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        unsmearingoutputs = tempType;
+        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb will output the following minv_pT histograms:" << endl;
+        if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
+        if(unsmearingoutputs.Contains("1")) cout << "- SubNDM" << endl;
+        if(unsmearingoutputs.Contains("2")) cout << "- Fixpz" << endl;
+        if(unsmearingoutputs.Contains("3")) cout << "- SubLambda" << endl;
       }
 
     }
@@ -599,17 +610,25 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
     cuts.AddCutHeavyMesonCalo("00010113","24466190wa01cc00000","32c510700","0103603l00000010","0453503000000010"); // INT7
     cuts.AddCutHeavyMesonCalo("00062113","24466190wa01cc00000","32c510700","0103603l00000010","0453503000000010"); // PHI7
-  
+
   // pp 5 TeV
-  }  else if( trainConfig == 260 ) {
+  } else if( trainConfig == 260 ) {
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000");
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // EG2
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // EG1
 
-  } else if( trainConfig == 261) { // Pion Mass cut as for Omega
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32l51070a","0103603l00000000","0453503000000000"); // trainConfig == 2000 
+  } else if( trainConfig == 261 ) { // Pion Mass cut as for Omega
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32l51070a","0103603l00000000","0453503000000000"); // trainConfig == 2000
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l51070a","0103603l00000000","0453503000000000"); // trainConfig == 3000
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32l51070a","0103603l00000000","0453503000000000"); // trainConfig == 4000
+
+  } else if( trainConfig == 262 ) {
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000");
+  } else if( trainConfig == 263 ) {
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // EG2
+  } else if( trainConfig == 264 ) {
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // EG1
+
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -638,7 +657,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
 
   } else if( trainConfig == 310) { // No Pion Mass cut
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32l510700","0103103x00000000","0453503000000000"); // trainConfig == 2000 
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32l510700","0103103x00000000","0453503000000000"); // trainConfig == 2000
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l510700","01031v3x00000000","0453503000000000"); // trainConfig == 3000
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32l510700","01031v3x00000000","0453503000000000"); // trainConfig == 4000
 
@@ -2327,6 +2346,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetUnsmearedOutputs(unsmearingoutputs);
 
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 

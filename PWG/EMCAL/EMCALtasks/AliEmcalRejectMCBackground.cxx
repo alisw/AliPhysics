@@ -60,12 +60,21 @@ AliEmcalRejectMCBackground::AliEmcalRejectMCBackground() :
   fHeaderList(nullptr),
   fParticlesOutName("MCParticlesNotRejected"),
   fParticlesMapName(""),
+  fTracksOutName("MCTracksNotRejected"),
+  fTracksInName("tracks"),
+  fClustersOutName("MCClustersNotRejected"),
+  fClustersInName("caloClusters"),
   fInit(kFALSE),
   fParticlesIn(nullptr),
   fParticlesOut(nullptr),
   fParticlesMap(nullptr),
+  fTracksIn(nullptr),
+  fTracksOut(nullptr),
+  fClustersIn(nullptr),
+  fClustersOut(nullptr),
   fEvent(nullptr),
   fMC(nullptr),
+  fEsdEvent(nullptr),
   fIsESD(kFALSE),
   fDisabled(kFALSE),
   fDebugLevel(0),
@@ -84,12 +93,21 @@ AliEmcalRejectMCBackground::AliEmcalRejectMCBackground(const char *name) :
   fHeaderList(nullptr),
   fParticlesOutName("MCParticlesNotRejected"),
   fParticlesMapName(""),
+  fTracksOutName("MCTracksNotRejected"),
+  fTracksInName("tracks"),
+  fClustersOutName("MCClustersNotRejected"),
+  fClustersInName("caloClusters"),
   fInit(kFALSE),
   fParticlesIn(nullptr),
   fParticlesOut(nullptr),
   fParticlesMap(nullptr),
+  fTracksIn(nullptr),
+  fTracksOut(nullptr),
+  fClustersIn(nullptr),
+  fClustersOut(nullptr),
   fEvent(nullptr),
   fMC(nullptr),
+  fEsdEvent(nullptr),
   fIsESD(kFALSE),
   fDisabled(kFALSE),
   fDebugLevel(0),
@@ -135,9 +153,27 @@ void AliEmcalRejectMCBackground::UserExec(Option_t *)
       return;
     }
 
-    TObject *obj = fEvent->FindListObject(fParticlesOutName);
-    if(obj){ // the output array is already present in the array!
+    if(fIsESD){
+      fEsdEvent = dynamic_cast<AliESDEvent*>(InputEvent());
+      if (!fEsdEvent) {
+        AliErrorStream() << "Could not retrieve ESD event! Returning" << std::endl;
+        return;
+      }
+    }
+
+    TObject *objParticle = fEvent->FindListObject(fParticlesOutName);
+    TObject *objTrack    = fEvent->FindListObject(fTracksOutName);
+    TObject *objCluster  = fEvent->FindListObject(fClustersOutName);
+    if(objParticle){ // the output array is already present in the array!
       AliErrorStream() << "The output array "  << fParticlesOutName <<  " is already present in the event! Task will be disabled." << std::endl;
+      fDisabled = kTRUE;
+      return;
+    }else if(objTrack){
+      AliErrorStream() << "The output array "  << fTracksOutName <<  " is already present in the event! Task will be disabled." << std::endl;
+      fDisabled = kTRUE;
+      return;
+    }else if(objCluster){
+      AliErrorStream() << "The output array "  << fClustersOutName <<  " is already present in the event! Task will be disabled." << std::endl;
       fDisabled = kTRUE;
       return;
     }else{  // copy the array from the standard ESD/AOD collections, and filter if requested
@@ -156,6 +192,16 @@ void AliEmcalRejectMCBackground::UserExec(Option_t *)
         fEvent->AddObject(fParticlesMap);
       }
 
+      if(fIsESD) fTracksOut = new TClonesArray("AliESDtrack");
+      else fTracksOut = new TClonesArray("AliAODTrack");
+      fTracksOut->SetName(fTracksOutName);
+      fEvent->AddObject(fTracksOut);
+
+      if(fIsESD) fClustersOut = new TClonesArray("AliESDCaloCluster");
+      else fClustersOut = new TClonesArray("AliAODCaloCluster");
+      fClustersOut->SetName(fClustersOutName);
+      fEvent->AddObject(fClustersOut);
+
       if(!fIsESD){
         fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
         if(!fParticlesIn){
@@ -170,6 +216,27 @@ void AliEmcalRejectMCBackground::UserExec(Option_t *)
           fParticlesIn = 0;
           return;
         }
+
+        fTracksIn = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fTracksInName));
+        if (!fTracksIn) {
+          AliError(Form("Could not retrieve tracks %s!", fTracksInName.Data()));
+          return;
+        }
+        //if (!fTracksIn->GetClass()->GetBaseClass("AliVParticle")) {
+        //  AliError(Form("%s: Collection %s does not contain AliVParticle objects!", GetName(), fTracksInName.Data()));
+        //  return;
+        //}
+
+        fClustersIn = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fClustersInName));
+        if (!fClustersIn) {
+          AliError(Form("Could not retrieve clusters %s!", fClustersInName.Data()));
+          return;
+        }
+        //if (!fClustersIn->GetClass()->GetBaseClass("AliVParticle")) {
+        //  AliError(Form("%s: Collection %s does not contain AliVParticle objects!", GetName(), fClustersInName.Data()));
+        //  return;
+        //}
+
       }
     }
     fInit = kTRUE;
@@ -182,6 +249,80 @@ void AliEmcalRejectMCBackground::UserExec(Option_t *)
 
   if (fIsESD) CreateParticleMap(fEvent, fMC, fParticlesOut, fParticlesMap);
   else CreateParticleMapAOD(fEvent, fMC, fParticlesIn, fParticlesOut, fParticlesMap);
+
+  LinkMothers();
+
+  ProcessTracks();
+  ProcessClusters();
+}
+
+void AliEmcalRejectMCBackground::LinkMothers(){
+  for (Int_t iPart = 0; iPart < fParticlesOut->GetEntries(); iPart++) {
+    AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fParticlesOut->At(iPart));
+    if(part->GetNDaughters() <= 0) continue;
+    if(part->GetDaughterFirst() > -1 && part->GetDaughterLast() > -1) {
+      ((AliAODMCParticle*)(fParticlesOut->At(iPart)))->SetDaughter(0, fParticlesMap->At(part->GetDaughterFirst()));
+      ((AliAODMCParticle*)(fParticlesOut->At(iPart)))->SetDaughter(1, fParticlesMap->At(part->GetDaughterLast()));
+    }
+  }
+}
+
+void AliEmcalRejectMCBackground::ProcessClusters(){
+  // clear container
+  fClustersOut->Delete();
+
+  Int_t ncl;
+  if(fIsESD) ncl = fEvent->GetNumberOfCaloClusters();
+  else ncl = fClustersIn->GetEntriesFast();
+  if(ncl == 0){
+    return;
+  }
+  AliDebugStream(3) << "NClusters = " << ncl << std::endl;
+
+  for(Long_t iCluster = 0, nacc = 0; iCluster < ncl; ++iCluster){
+    AliVCluster* clus = NULL;
+    if(fIsESD) clus = static_cast<AliESDCaloCluster*>(fEvent->GetCaloCluster(iCluster));
+    else clus = static_cast<AliAODCaloCluster*>(fClustersIn->At(iCluster));
+    if (!clus) continue;
+
+    if(IsParticleFromBGEvent(clus->GetLabelAt(0), fMC, fEvent, fDebugLevel) < 1){
+      AliDebugStream(3) << "Parent particle for cluster " << iCluster << " is from bg event. Skipping cluster..." << std::endl;
+      continue;
+    }
+
+    if(fIsESD) new ((*fClustersOut)[nacc++]) AliESDCaloCluster(*(AliESDCaloCluster*)clus);
+    else new ((*fClustersOut)[nacc++]) AliAODCaloCluster(*(AliAODCaloCluster*)clus);
+  }
+  AliDebugStream(3) << "Clusters in:  " << fClustersIn->GetEntries() << ", out: " << fClustersOut->GetEntries() << std::endl;
+}
+
+void AliEmcalRejectMCBackground::ProcessTracks(){
+  // clear container
+  fTracksOut->Delete();
+
+  int ntr;
+  if(fIsESD) ntr = fEsdEvent->GetNumberOfTracks();
+  else ntr = fTracksIn->GetEntriesFast();
+  if(ntr == 0){
+    return;
+  }
+  AliDebugStream(3) << "NTracks = " << ntr << std::endl;
+
+  for (Int_t iTrack=0, nacc=0; iTrack < ntr; ++iTrack) {
+    AliVTrack* track = NULL;
+    if(fIsESD) track = static_cast<AliESDtrack*>(fEsdEvent->GetTrack(iTrack));
+    else track = static_cast<AliAODTrack*>(fTracksIn->At(iTrack));
+    if (!track) continue;
+
+    if(IsParticleFromBGEvent(TMath::Abs(track->GetLabel()), fMC, fEvent, fDebugLevel) < 1){
+      AliDebugStream(3) << "Parent particle for track " << iTrack << " is from bg event. Skipping track..." << std::endl;
+      continue;
+    }
+
+    if(fIsESD) new ((*fTracksOut)[nacc++]) AliESDtrack(*(AliESDtrack*)track);
+    else new ((*fTracksOut)[nacc++]) AliAODTrack(*(AliAODTrack*)track);
+  }
+  AliDebugStream(3) << "Tracks in   : " << fTracksIn->GetEntries() << ", out: " << fTracksOut->GetEntries() << std::endl;
 }
 
 void AliEmcalRejectMCBackground::CreateParticleMap(AliVEvent *event, AliMCEvent* mcEvent, TClonesArray* partOut, AliNamedArrayI* partMap)
@@ -225,7 +366,7 @@ void AliEmcalRejectMCBackground::CreateParticleMap(AliVEvent *event, AliMCEvent*
         ", iPart = " << iPart <<
         std::endl;
 
-    // rejection criteria
+    // rejection criteriaI
     if(IsParticleFromBGEvent(iPart, mcEvent, event, fDebugLevel) < 1) continue;
 
     if(partMap) partMap->AddAt(nacc, iPart);
@@ -267,16 +408,20 @@ void AliEmcalRejectMCBackground::CreateParticleMapAOD(AliVEvent *event, AliMCEve
     if (!part) continue;
 
     // rejection criteria
-    if(IsParticleFromBGEvent(iPart, mcEvent, event, fDebugLevel) < 1) continue;
+    if(IsParticleFromBGEvent(iPart, mcEvent, event, fDebugLevel) < 1){
+      AliDebugStream(3) << "Particle " << iPart << " is from bg event. Skipping particle..." << std::endl;
+      continue;
+    }
 
     if (partMap) partMap->AddAt(nacc, iPart);
 
     AliAODMCParticle *newPart = new ((*partOut)[nacc]) AliAODMCParticle(*part);
     newPart->SetGeneratorIndex(part->GetGeneratorIndex());
+    newPart->SetFlag(part->GetFlag());
 
     nacc++;
   }
-  AliDebugStream(5) << "Particles in: " << partIn->GetEntries() << ", out: " << partOut->GetEntries() << std::endl;
+  AliDebugStream(3) << "Particles in: " << partIn->GetEntries() << ", out: " << partOut->GetEntries() << std::endl;
 }
 
 void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event){
@@ -318,6 +463,7 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
         return;
       }
     }
+
     AliGenEventHeader* gh  = 0;
     fnHeaders              = 0;
     Int_t firstindexA      = 0;
@@ -353,6 +499,13 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
             }
             if(GeneratorName.CompareTo(GeneratorInList) == 0 ){
               if (fDebugLevel > 0 ) AliDebugStream(1) << "cond 3: "<< fnHeaders << std::endl;
+              fnHeaders++;
+              continue;
+            }
+          }
+          if(GeneratorName.Contains(GeneratorInList) ){
+            if(GeneratorInList.Contains("Pythia") || GeneratorInList.Contains("pythia") || GeneratorInList.Contains("PYTHIA")){
+              if (fDebugLevel > 0 ) AliDebugStream(1) << "Pythia header" << std::endl;
               fnHeaders++;
               continue;
             }
@@ -413,6 +566,15 @@ void AliEmcalRejectMCBackground::GetNotRejectedParticles(Int_t rejection, TList 
             fNotRejectedEnd[number] = lastindex;
             fGeneratorNames[number] = GeneratorName;
             if (fDebugLevel > 0 )  AliDebugStream(1) << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << std::endl;
+            number++;
+            continue;
+          }
+        }
+        if(GeneratorName.Contains(GeneratorInList) ){
+          if(GeneratorInList.Contains("Pythia") || GeneratorInList.Contains("pythia") || GeneratorInList.Contains("PYTHIA")){
+            fNotRejectedStart[number] = firstindex;
+            fNotRejectedEnd[number] = lastindex;
+            fGeneratorNames[number] = GeneratorName;
             number++;
             continue;
           }
@@ -489,7 +651,7 @@ Int_t AliEmcalRejectMCBackground::IsParticleFromBGEvent(Int_t index, AliMCEvent 
   return accepted;
 }
 
-AliEmcalRejectMCBackground* AliEmcalRejectMCBackground::AddTaskRejectMCBackground(const TString outname, const Int_t signalRejection, const Int_t debug)
+AliEmcalRejectMCBackground* AliEmcalRejectMCBackground::AddTaskRejectMCBackground(const TString nParticlesOut, const TString nTracksOut, const TString nClustersOut, const Int_t signalRejection, const Int_t debug)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -515,9 +677,11 @@ AliEmcalRejectMCBackground* AliEmcalRejectMCBackground::AddTaskRejectMCBackgroun
 
   // Init the task and do settings
   TString name("AliEmcalRejectMCBackground_");
-  name += outname;
+  name += nParticlesOut;
   AliEmcalRejectMCBackground *eTask = new AliEmcalRejectMCBackground(name);
-  eTask->SetParticlesOutName(outname);
+  eTask->SetParticlesOutName(nParticlesOut);
+  eTask->SetTracksOutName(nTracksOut);
+  eTask->SetClustersOutName(nClustersOut);
   eTask->SetSignalRejection(signalRejection);
   eTask->SetDebugLevel(debug);
   eTask->SetAcceptedHeader(HeaderList);
