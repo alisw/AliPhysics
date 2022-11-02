@@ -596,7 +596,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fOutputList->Add(fHistMCMixingGen);
     fHistMCMixingGen->Sumw2();
     fHistMCMixingGen->GetAxis(4)->Set(NofZVrtxBins,ZBins);
-    fHistMCMixingGen->GetAxis(6)->Set(902,binsMass);
 
     fHistGenMultiplicity = new TH1D ("fHistGenMultiplicity","fHistGenMultiplicity",500,0,500);
     fOutputList->Add(fHistGenMultiplicity);
@@ -817,7 +816,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistMultVZEROTracklets->Sumw2();
     fOutputList->Add(fHistMultVZEROTracklets);
     fHistMultVZEROTracklets->GetXaxis()->SetTitle("V0 Multiplicity");
-    fHistMultVZEROTracklets->GetYaxis()->SetTitle("N rracklets");
+    fHistMultVZEROTracklets->GetYaxis()->SetTitle("N tracklets");
     fHistMultVZEROTracklets->GetZaxis()->SetTitle("V0 percentile");
     fHistMultVZEROTracklets->GetZaxis()->Set(16,binsMult);
 
@@ -2686,6 +2685,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
 
             }
             if(!fCorrelationsGen) weight = GetEff(triggPt,triggEta,trig->WhichCandidate())*GetEff(assocPt,asocEta,assoc->WhichCandidate());
+            if(weight==0) continue;
             Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assocCharge};
             if(hV0) {
               korel[5]=assoc->WhichCandidate()-0.5;
@@ -2722,6 +2722,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
         if(trig->WhichCandidate()<4&&trig->WhichCandidate()>0) continue;
         if(Xih) massTrig=trig->M();
         if(!fCorrelationsGen)weight=GetEff(triggPt,triggEta,trig->WhichCandidate());
+        if(weight==0) continue;
         Double_t triggers[5]={triggPt,fPV[2],trig->WhichCandidate()-2.5,massTrig,perc};
         if(!Xih)triggers[2]=4.5;
         if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers);
@@ -2772,6 +2773,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
             if ((TMath::Abs(bachID))==(TMath::Abs(atrID))) continue;
 
             if(!fCorrelationsGen)weight = GetEff(triggPt,triggEta,trig->WhichCandidate())*GetEff(assocPt,asocEta,assoc->WhichCandidate());
+            if(weight==0) continue;
             Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assoc->Charge()};
             if(!Xih){
               korel[5]=assoc->WhichCandidate()-0.5;
