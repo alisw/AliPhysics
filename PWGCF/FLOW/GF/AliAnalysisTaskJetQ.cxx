@@ -22,11 +22,12 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  fPtTriggMax(8.),
  fCalculateFlow(kFALSE),
  fRndmGen(0),
- fFC(0),
+ fFCIncl(0),
+ fFCTrig(0),
  fGFW(0)
 {}
 //_____________________________________________________________________________
-AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
+AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name, Bool_t lCalcFlow):
  AliAnalysisTaskSE(name),
  fAOD(0),
  fMCEvent(0),
@@ -46,13 +47,18 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name):
  fPtAssocMax(2.5),
  fPtTriggMin(6.),
  fPtTriggMax(8.),
- fCalculateFlow(kFALSE),
+ fCalculateFlow(lCalcFlow),
  fRndmGen(0),
- fFC(0),
+ fFCIncl(0),
+ fFCTrig(0),
  fGFW(0)
 {
     DefineOutput(1, TList::Class());
     DefineOutput(2, TH1D::Class());
+    if(fCalculateFlow) {
+      DefineOutput(3, AliGFWFlowContainer::Class());
+      DefineOutput(4, AliGFWFlowContainer::Class());
+    }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetQ::~AliAnalysisTaskJetQ()
@@ -121,7 +127,6 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
       fOutList->Add(fNtriggers[iCent]);
 
     };
-    if(fCalculateFlow) SetupFlowOutput();
     PostData(1, fOutList);
     //Prepare a histogram to keep highest pT track. Should be outside the fOutList, because the list only gets posted for events with trigger track
     Int_t lnTrigBins = TMath::Nint(fPtTriggMax/0.1)+1; //One extra bin for "overflow"
@@ -129,6 +134,11 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
     for(Int_t i=0;i<=lnTrigBins;i++) lPtBinsForTrig[i] = i*0.1;
     fHMaxPt = new TH1D("MaxPt","MaxPt; #it{p}_{T, max}; d#it{N}/d#it{p}_{T, max}",lnTrigBins,lPtBinsForTrig);
     PostData(2, fHMaxPt);
+    if(fCalculateFlow) {
+      SetupFlowOutput();
+      PostData(3,fFCIncl);
+      PostData(4,fFCTrig);
+    };
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetQ::UserExec(Option_t *)
@@ -149,20 +159,21 @@ void AliAnalysisTaskJetQ::UserExec(Option_t *)
   // Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   ((TH1D*)fOutList->At(0))->Fill(vz);
   Int_t ind = FindGivenPt(fPtTriggMin,fPtTriggMax);
-  if(ind<0) return;
   Int_t i_Cent = fCentAxis->FindBin(l_Cent);
   Int_t i_vz   = fVzAxis->FindBin(vz);
   if(!i_Cent || i_Cent>fCentAxis->GetNbins()) return; //out of centrality/vz range
   if(!i_vz || i_vz>fVzAxis->GetNbins()) return; //out of centrality/vz range
-  ((TH1D*)fOutList->At(1))->Fill(vz);
-
-
-  fNormCounter->Fill(l_Cent,0); //Number of triggers
-  Int_t nPairs = FillCorrelations(ind,i_Cent,vz);
+  //Need to fill flow containers here, b/c I also want to calculate it in events where no trigger track is present
   if(fCalculateFlow) {
     Double_t rndm = fRndmGen->Rndm();
-    FillFCs(l_Cent,rndm);
+    FillFCs(l_Cent,rndm,ind>=0); //Both FCs are filled to save CPU time, but only inclusive is posted for now
+    PostData(3,fFCIncl);
   };
+  if(ind<0) return;
+  ((TH1D*)fOutList->At(1))->Fill(vz);
+  fNormCounter->Fill(l_Cent,0); //Number of triggers
+  Int_t nPairs = FillCorrelations(ind,i_Cent,vz);
+  // PostData(4, fFCTrig);
   AliEventPool *pool = fPoolMgr->GetEventPool(i_Cent-1, i_vz-1);
   if(!pool) { printf("Could not find the event pool!\n"); return; };
   // printf("Current numbe of events in pool: %i\n",pool->GetCurrentNEvents());
@@ -320,13 +331,19 @@ void AliAnalysisTaskJetQ::SetupFlowOutput() {
   Double_t *lCentBins = new Double_t[fCentAxis->GetNbins()+1];
   for(Int_t i=0;i<fCentAxis->GetNbins();i++) lCentBins[i] = fCentAxis->GetBinLowEdge(i+1);
   lCentBins[fCentAxis->GetNbins()] = fCentAxis->GetBinUpEdge(fCentAxis->GetNbins());
-  //Initialize flow container
-  fFC = new AliGFWFlowContainer();
-  fFC->SetName("FlowContainer");
-  fFC->SetXAxis(fPtAxis);
-  fFC->Initialize(oba,fCentAxis->GetNbins(),lCentBins,10); //Also probably let's do the bootstrapping
-  fOutList->Add(fFC); //Also, add this to the output list
-  //Create correlator configurations
+  //Initialize flow containers
+  //First for inclusive (despite the trigger track presence)
+  fFCIncl = new AliGFWFlowContainer();
+  fFCIncl->SetName("FCInclusive");
+  fFCIncl->SetXAxis(fPtAxis);
+  fFCIncl->Initialize(oba,fCentAxis->GetNbins(),lCentBins,10); //Also probably let's do the bootstrapping
+  //Also, for events with trigger track
+  fFCTrig = new AliGFWFlowContainer();
+  fFCTrig->SetName("FCTrigger");
+  fFCTrig->SetXAxis(fPtAxis);
+  fFCTrig->Initialize(oba,fCentAxis->GetNbins(),lCentBins,10); //Also probably let's do the bootstrapping
+
+    //Create correlator configurations
   for(Int_t hr=1;hr<=3;hr++)
     for(Int_t i=0;i<=fPtAxis->GetNbins();i++) {
       corrconfigs.push_back(GetConf(Form("GapPV%iRef%i",hr,i),Form("pos (%i) {%i} neg (%i) {%i}",i,hr,i,-hr), kFALSE));
@@ -340,14 +357,16 @@ void AliAnalysisTaskJetQ::SetupFlowOutput() {
   // corrconfigs.push_back(GetConf("TestNP","testN {3} testP {-3}",kFALSE));
 }
 //Have to be very careful here to fill the correct pt bins!
-void AliAnalysisTaskJetQ::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn) {
+void AliAnalysisTaskJetQ::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, const Bool_t &TrFound) {
   Double_t dnx, val;
   dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
   if(dnx==0) return;
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
-    if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+    if(TMath::Abs(val)<1) {
+      fFCIncl->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+      if(TrFound) fFCTrig->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+    };
     return;
   };
   //It seems that here filling I end up filling non-existing bins. Try to check in GFWFlowContainer what is (attempted) to access
@@ -356,7 +375,8 @@ void AliAnalysisTaskJetQ::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Dou
     if(dnx==0) continue;
     val = fGFW->Calculate(corconf,i,kFALSE).Re()/dnx;
     if(TMath::Abs(val)<1) {
-      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
+      fFCIncl->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
+      if(TrFound) fFCTrig->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
     };
   };
 };

@@ -7,7 +7,7 @@
        const char *nclusters          = "usedefault",
        const char* ncells             = "usedefault",
        Double_t Rstep_EF              = 0.1,
-       AnalysisType fAnType           = AliAnalysisTaskEmcalJetEnergyFlow::kppData,
+       AliAnalysisTaskEmcalJetEnergyFlow::AnalysisType fAnType           = AliAnalysisTaskEmcalJetEnergyFlow::kppData,
        const char *suffix             = ""
      )
      {

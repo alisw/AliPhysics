@@ -110,7 +110,8 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH1D *hPtPrimOut;
 		TH1D *hPtSecOut;
 		TH1D *hPtOut;
-		TH1D *hFlatenicityMC;
+		TH2F *hFlatenicityMC;
+		TH2F *hFlatenicityMCRec;
 		TH2D *hFlatResponse;
 		TH2D *hFlatVsPtMC;
 		TH3F *hActivityV0CV0A;
@@ -137,12 +138,15 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH2F* hPtrTPC[9][4];
 		TH2F* hPtVsP[4];
 
+		TH2F* random_cont_in_kaon_h[4];
 		TH2F* pion_cont_in_kaon_h[4];
 		TH2F* electron_cont_in_kaon_h[4];
 		TH2F* nsigma_kaon_h[4];
+		TH2F* random_cont_in_proton_h[4];
 		TH2F* pion_cont_in_proton_h[4];
 		TH2F* electron_cont_in_proton_h[4];
 		TH2F* nsigma_proton_h[4];
+		TH2F* random_cont_in_pion_h[4];
 		TH2F* kaon_cont_in_pion_h[4];
 		TH2F* electron_cont_in_pion_h[4];
 		TH2F* nsigma_pion_h[4];
