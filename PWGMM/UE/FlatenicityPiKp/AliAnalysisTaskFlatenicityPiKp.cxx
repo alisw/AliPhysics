@@ -108,7 +108,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
 	ftrackmult08(0), fv0mpercentile(0), fMidRapidityMult(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
-	hFlatenicityMC(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
+	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
 	hFlatVsV0MVsMult(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
@@ -151,12 +151,15 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 			hPtrTPC[i_c][i_eta] = 0;
 			if (i_c==0){
 				hPtVsP[i_eta] = 0;	
+				random_cont_in_kaon_h[i_eta] = 0;
 				pion_cont_in_kaon_h[i_eta] = 0;
 				electron_cont_in_kaon_h[i_eta] = 0;
 				nsigma_kaon_h[i_eta] = 0;
+				random_cont_in_proton_h[i_eta] = 0;
 				pion_cont_in_proton_h[i_eta] = 0;
 				electron_cont_in_proton_h[i_eta] = 0;
 				nsigma_proton_h[i_eta] = 0;
+				random_cont_in_pion_h[i_eta] = 0;
 				kaon_cont_in_pion_h[i_eta] = 0;
 				electron_cont_in_pion_h[i_eta] = 0;
 				nsigma_pion_h[i_eta] = 0;
@@ -188,7 +191,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
 	ftrackmult08(0), fv0mpercentile(0), fMidRapidityMult(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
-	hFlatenicityMC(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
+	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
 	hFlatVsV0MVsMult(0), 
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
@@ -230,12 +233,15 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 			hPtrTPC[i_c][i_eta] = 0;
 			if (i_c==0){
 				hPtVsP[i_eta] = 0;	
+				random_cont_in_kaon_h[i_eta] = 0;
 				pion_cont_in_kaon_h[i_eta] = 0;
 				electron_cont_in_kaon_h[i_eta] = 0;
 				nsigma_kaon_h[i_eta] = 0;
+				random_cont_in_proton_h[i_eta] = 0;
 				pion_cont_in_proton_h[i_eta] = 0;
 				electron_cont_in_proton_h[i_eta] = 0;
 				nsigma_proton_h[i_eta] = 0;
+				random_cont_in_pion_h[i_eta] = 0;
 				kaon_cont_in_pion_h[i_eta] = 0;
 				electron_cont_in_pion_h[i_eta] = 0;
 				nsigma_pion_h[i_eta] = 0;
@@ -333,7 +339,19 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			{"16k",{1.72643, 1.84015, 1.79921, 1.56715, 1.70308, 1.34055, 1.70895, 1.85768, 1.52716, 1.9858, 1.6887, 1.56204, 1.75903, 1.57981, 1.70322, 1.44025, 1.84427, 1.72925, 2.16802, 0.790695, 1.60216, 1.86399, 2.08028, 1.87487, 2.10569, 2.15281, 1.76908, 1.91886, 1.73251, 1.73789, 1.73425, 1.7317}},
 			{"16l",{1.65161, 1.84126, 1.76513, 1.55961, 1.72932, 1.30832, 1.69058, 1.8817, 1.54905, 2.00574, 1.71596, 1.55232, 1.73046, 1.55812, 1.70838, 1.36756, 1.87649, 1.73007, 2.20212, 0.789001, 1.56607, 1.87129, 2.12388, 1.90665, 2.13669, 2.18499, 1.80152, 1.95482, 1.70738, 1.71503, 1.76513, 1.7081}},
 			{"16o",{1.48374, 1.7422, 1.66988, 1.48809, 1.69056, 1.20902, 1.60505, 1.79742, 1.49298, 1.93336, 1.69952, 1.46302, 1.65385, 1.46494, 1.6537, 1.2217, 1.78832, 1.6569, 2.2355, 0.736293, 1.4585, 1.8153, 2.15453, 1.8848, 2.1338, 2.17296, 1.78671, 1.94107, 1.62002, 1.60799, 1.74091, 1.62965}},
-			{"16p",{2.93483, 3.20832, 2.99334, 3.3261, 2.54983, 2.89501, 2.51013, 2.90777, 2.55903, 2.45066, 2.62424, 2.58929, 2.3392, 2.49357, 2.29021, 2.7133, 2.41837, 2.80721, 2.56776, 2.43797, 2.51013, 2.74952, 2.36557, 2.4998, 2.60273, 2.52206, 2.57731, 2.49322, 2.6449, 2.50129, 2.47595, 2.59006}}
+			{"16p",{2.93483, 3.20832, 2.99334, 3.3261, 2.54983, 2.89501, 2.51013, 2.90777, 2.55903, 2.45066, 2.62424, 2.58929, 2.3392, 2.49357, 2.29021, 2.7133, 2.41837, 2.80721, 2.56776, 2.43797, 2.51013, 2.74952, 2.36557, 2.4998, 2.60273, 2.52206, 2.57731, 2.49322, 2.6449, 2.50129, 2.47595, 2.59006}},
+			{"18d",{3.0705, 3.14734, 2.53269, 2.78988, 2.25234, 2.72589, 2.48763, 2.63238, 2.41553, 2.37558, 2.15017, 2.64329, 2.29934, 2.39839, 2.25375, 2.43454, 2.36777, 2.59163, 2.47143, 2.39133, 2.50839, 2.13931, 2.25245, 2.35241, 2.38071, 2.28772, 2.40713, 2.18472, 2.3351, 2.61293, 2.40294, 2.61465}},
+			{"18e",{3.02396, 3.12907, 2.50895, 2.76993, 2.24355, 2.64726, 2.47062, 2.62366, 2.41054, 2.3789, 2.1487, 2.62864, 2.30385, 2.371, 2.24949, 2.39337, 2.37222, 2.59958, 2.47397, 2.3656, 2.49349, 2.13968, 2.26987, 2.36458, 2.38284, 2.29216, 2.41156, 2.18318, 2.31997, 2.60461, 2.40244, 2.60859}},
+			{"18f",{2.97463, 3.11562, 2.47893, 2.73606, 2.23815, 2.60906, 2.45092, 2.60899, 2.41081, 2.36412, 2.13275, 2.61339, 2.28378, 2.34939, 2.24951, 2.36418, 2.35999, 2.58915, 2.4779, 2.33922, 2.4836, 2.12712, 2.26497, 2.36263, 2.38324, 2.29319, 2.42376, 2.16909, 2.30442, 2.58722, 2.39945, 2.60361}},
+			{"18g",{2.88071, 3.10159, 2.42844, 2.78716, 2.32997, 2.46117, 2.45172, 2.69474, 2.49334, 2.33229, 2.18501, 2.53084, 2.34269, 2.32048, 2.33723, 2.24911, 2.39719, 2.66591, 2.49365, 2.39723, 2.42477, 2.10153, 2.37976, 2.51532, 2.42291, 2.42315, 2.48471, 2.28951, 2.31141, 2.64284, 2.48925, 2.55139}},
+			{"18h",{2.9191, 3.09868, 2.48411, 2.75118, 2.26419, 2.6706, 2.44062, 2.59906, 2.43689, 2.40734, 2.16209, 2.55784, 2.27091, 2.3396, 2.24962, 2.32488, 2.37001, 2.58933, 2.49001, 2.35087, 2.4707, 2.07221, 2.27772, 2.38686, 2.38722, 2.31913, 2.43662, 2.21327, 2.32336, 2.57368, 2.42845, 2.58833}},
+			{"18i",{2.9574, 3.20372, 2.4924, 2.83474, 2.29383, 2.42112, 2.40437, 2.67238, 2.47689, 2.36947, 2.21064, 2.5682, 2.31418, 2.30989, 2.29315, 2.24719, 2.39801, 2.69544, 2.48819, 2.44001, 2.39726, 2.07442, 2.35663, 2.47369, 2.36768, 2.41879, 2.46522, 2.28373, 2.27772, 2.65826, 2.46805, 2.53935}},
+			{"18j",{2.94407, 3.11162, 2.50074, 2.7399, 2.31152, 2.49305, 2.41368, 2.65324, 2.44389, 2.44213, 2.20162, 2.59654, 2.2857, 2.31291, 2.28705, 2.25515, 2.40706, 2.63495, 2.54743, 2.37169, 2.45889, 2.17384, 2.33003, 2.45635, 2.43883, 2.39996, 2.50873, 2.27015, 2.308, 2.61714, 2.47269, 2.52805}},
+			{"18k",{2.90731, 3.10524, 2.50356, 2.78132, 2.29794, 2.68823, 2.4539, 2.61174, 2.44058, 2.3763, 2.16471, 2.5457, 2.30834, 2.34957, 2.27961, 2.32433, 2.37084, 2.60202, 2.51563, 2.40719, 2.48379, 2.11369, 2.30816, 2.43507, 2.38345, 2.32666, 2.40853, 2.23669, 2.3343, 2.58949, 2.45142, 2.60981}},
+			{"18l",{2.97792, 3.09252, 2.45164, 2.72767, 2.24591, 2.59975, 2.4335, 2.58351, 2.40456, 2.37248, 2.13892, 2.60159, 2.27453, 2.33748, 2.23175, 2.34048, 2.37324, 2.57468, 2.47221, 2.35206, 2.4516, 2.12329, 2.26985, 2.36874, 2.3713, 2.29759, 2.37431, 2.16252, 2.29167, 2.57675, 2.4127, 2.5988}},
+			{"18o",{2.77061, 2.9181, 2.22791, 2.58354, 2.1417, 2.38836, 2.31785, 2.51692, 2.29156, 2.21925, 2.06104, 2.41119, 2.19668, 2.22722, 2.14253, 2.18927, 2.30954, 2.49196, 2.44773, 2.231, 2.2909, 2.07299, 2.23037, 2.31762, 2.28299, 2.29794, 2.31923, 2.14583, 2.19777, 2.49663, 2.34318, 2.52455}},
+			{"18p",{2.71809, 2.8741, 2.19078, 2.54602, 2.12489, 2.30997, 2.28647, 2.48755, 2.26862, 2.20438, 2.04033, 2.39476, 2.18014, 2.20534, 2.11804, 2.1523, 2.28822, 2.46603, 2.43157, 2.20377, 2.25786, 2.05725, 2.23172, 2.31506, 2.28462, 2.28424, 2.30451, 2.12212, 2.17608, 2.48428, 2.33963, 2.49184}}
+
 	};
 
 	std::map<std::string, std::array<double, 32>> v0a_amplitude{
@@ -346,7 +364,18 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			{"16k",{0.717691, 0.694821, 0.778333, 0.759283, 0.676431, 0.695642, 0.636228, 0.524526, 1.0171, 0.791441, 1.13728, 0.954097, 0.855168, 0.789843, 0.404784, 0.854772, 1.12656, 1.334, 1.08943, 1.33638, 1.10253, 1.18247, 1.13922, 1.27195, 0.926424, 1.05565, 1.17978, 0.98097, 1.16752, 1.07625, 1.02955, 1.01988}},
 			{"16l",{0.730942, 0.702341, 0.764773, 0.74559, 0.670661, 0.695912, 0.622083, 0.526797, 1.03737, 0.660458, 1.14032, 0.925708, 0.860489, 0.78269, 0.399954, 0.838301, 1.11309, 1.3313, 1.06263, 1.34133, 1.14764, 1.17188, 1.12735, 1.25473, 0.897143, 1.05527, 1.17419, 0.988507, 1.19467, 1.10918, 1.02128, 1.01135}},
 			{"16o",{0.702296, 0.694677, 0.736833, 0.723689, 0.616863, 0.682144, 0.585175, 0.510394, 1.03063, 0.501502, 1.12609, 0.866576, 0.842466, 0.771877, 0.374963, 0.799778, 1.06629, 1.26713, 1.01831, 1.32292, 1.17846, 1.12289, 1.08058, 1.18916, 0.827616, 1.01742, 1.12101, 0.942487, 1.16264, 1.11224, 0.989178, 0.977369}},
-			{"16p",{1.08752, 1.27984, 1.10662, 1.18225, 1.16856, 1.14696, 1.15924, 1.03697, 1.43828, 1.17132, 1.56374, 1.42847, 1.33222, 1.2136, 1.45564, 1.46616, 1.96471, 1.99107, 1.94726, 1.90175, 1.83788, 1.91058, 1.90391, 1.79922, 1.59777, 1.62144, 1.61936, 1.57554, 1.52186, 1.51251, 1.61308, 1.53794}}
+			{"16p",{1.08752, 1.27984, 1.10662, 1.18225, 1.16856, 1.14696, 1.15924, 1.03697, 1.43828, 1.17132, 1.56374, 1.42847, 1.33222, 1.2136, 1.45564, 1.46616, 1.96471, 1.99107, 1.94726, 1.90175, 1.83788, 1.91058, 1.90391, 1.79922, 1.59777, 1.62144, 1.61936, 1.57554, 1.52186, 1.51251, 1.61308, 1.53794}},
+			{"18d",{1.03547, 1.21255, 1.10661, 1.01664, 1.07067, 1.05409, 1.06893, 1.02957, 1.29723, 1.40247, 1.47046, 1.39044, 1.26849, 1.18913, 1.36425, 1.38743, 1.90076, 1.94909, 1.83833, 1.75814, 1.45789, 1.84467, 1.84217, 1.75002, 1.75289, 1.48591, 1.75049, 1.64159, 1.59108, 1.53666, 1.66915, 1.49595}},
+			{"18e",{1.04106, 1.21742, 1.10153, 1.00584, 1.05324, 1.0461, 1.05875, 1.03337, 1.30513, 1.37176, 1.46995, 1.37208, 1.26994, 1.19205, 1.35772, 1.39702, 1.90049, 1.95363, 1.84112, 1.75547, 1.47283, 1.83909, 1.8462, 1.74582, 1.72977, 1.47165, 1.75579, 1.63349, 1.5981, 1.53789, 1.65331, 1.49858}},
+			{"18f",{1.03521, 1.21303, 1.08178, 0.992882, 1.03612, 1.03595, 1.04813, 1.02718, 1.30164, 1.35294, 1.46126, 1.35675, 1.26414, 1.18675, 1.3465, 1.38513, 1.88575, 1.9359, 1.81367, 1.73644, 1.47388, 1.82419, 1.83461, 1.73407, 1.70888, 1.46237, 1.74618, 1.62422, 1.59631, 1.53684, 1.63262, 1.4979}},
+			{"18g",{1.05174, 1.23916, 1.07648, 0.995146, 1.02495, 1.12372, 1.01998, 1.02499, 1.31893, 1.236, 1.51956, 1.37464, 1.31125, 1.22365, 1.33494, 1.38037, 1.87978, 1.90258, 1.81982, 1.76821, 1.59869, 1.77914, 1.79793, 1.73138, 1.59438, 1.45716, 1.76112, 1.67778, 1.70276, 1.61948, 1.63708, 1.49436}},
+			{"18h",{1.03675, 1.20042, 1.06702, 1.00369, 1.04489, 1.05026, 1.04902, 1.01197, 1.30782, 1.34459, 1.46108, 1.36681, 1.2644, 1.18036, 1.34924, 1.3509, 1.87933, 1.90519, 1.78719, 1.73151, 1.49975, 1.79173, 1.82074, 1.6974, 1.70966, 1.48909, 1.73474, 1.63496, 1.61265, 1.55953, 1.62404, 1.48539}},
+			{"18i",{1.05756, 1.25256, 1.09818, 0.995157, 1.01336, 1.11604, 1.01675, 1.02099, 1.32361, 1.25052, 1.53227, 1.3716, 1.30446, 1.22085, 1.32083, 1.39617, 1.88151, 1.90553, 1.84768, 1.77298, 1.57139, 1.76409, 1.81039, 1.73898, 1.63894, 1.44437, 1.7816, 1.69065, 1.68854, 1.59552, 1.61335, 1.48486}},
+			{"18j",{1.04558, 1.21531, 1.06317, 0.98533, 1.02005, 1.04588, 1.01746, 1.0124, 1.32802, 1.27495, 1.45875, 1.33965, 1.30504, 1.18537, 1.32838, 1.34313, 1.88247, 1.93106, 1.78814, 1.73055, 1.54494, 1.78841, 1.83031, 1.67959, 1.65613, 1.46451, 1.74067, 1.62232, 1.65027, 1.5994, 1.63575, 1.49312}},
+			{"18k",{1.05602, 1.1974, 1.05841, 1.00209, 1.03504, 1.05661, 1.05814, 1.01765, 1.33321, 1.31911, 1.4739, 1.36589, 1.27212, 1.19571, 1.35809, 1.37207, 1.89393, 1.90681, 1.77728, 1.73736, 1.53362, 1.79099, 1.84364, 1.69482, 1.72392, 1.50753, 1.73637, 1.64682, 1.62917, 1.58585, 1.63893, 1.49182}},
+			{"18l",{1.03101, 1.19593, 1.0656, 0.988777, 1.03801, 1.04576, 1.05378, 1.01868, 1.3096, 1.32958, 1.46016, 1.34421, 1.26224, 1.18076, 1.34279, 1.36607, 1.88243, 1.91993, 1.79909, 1.73536, 1.4841, 1.80591, 1.82403, 1.7132, 1.71345, 1.45529, 1.74465, 1.62512, 1.60799, 1.55478, 1.62085, 1.48818}},
+			{"18o",{0.975139, 1.12687, 1.01592, 0.965014, 0.974046, 1.05633, 1.0269, 0.966319, 1.25264, 1.24381, 1.44858, 1.29544, 1.22352, 1.13353, 1.25626, 1.30687, 1.78451, 1.79549, 1.77452, 1.69358, 1.46601, 1.67611, 1.71789, 1.69629, 1.5681, 1.382, 1.70683, 1.59611, 1.58028, 1.49707, 1.5505, 1.4321}},
+			{"18p",{0.967277, 1.13221, 1.00502, 0.948583, 0.957792, 1.04313, 0.995677, 0.960616, 1.24766, 1.21093, 1.4327, 1.26731, 1.21666, 1.1243, 1.25565, 1.30117, 1.76863, 1.77726, 1.74619, 1.67174, 1.46531, 1.65939, 1.70296, 1.67484, 1.54004, 1.35451, 1.69516, 1.56881, 1.57945, 1.49197, 1.52957, 1.4229}}
 	};
 
 	auto key_value_pair_v0c = v0c_amplitude.find(fPeriod);
@@ -562,87 +591,93 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	}
 
 	if (fUseMC) {
-		hPtPrimIn =
-			new TH1D("hPtPrimIn", "Prim In; #it{p}_{T} (GeV/#it{c}; counts)",
-					nPtbins, Ptbins);
-		fOutputList->Add(hPtPrimIn);
+		hPtPrimIn = new TH1D("hPtPrimIn", "Prim In; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
+		/* fOutputList->Add(hPtPrimIn); */
 
-		hPtPrimOut =
-			new TH1D("hPtPrimOut", "Prim Out; #it{p}_{T} (GeV/#it{c}; counts)",
-					nPtbins, Ptbins);
-		fOutputList->Add(hPtPrimOut);
+		hPtPrimOut = new TH1D("hPtPrimOut", "Prim Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
+		/* fOutputList->Add(hPtPrimOut); */
 
-		hPtSecOut =
-			new TH1D("hPtSecOut", "Sec Out; #it{p}_{T} (GeV/#it{c}; counts)",
-					nPtbins, Ptbins);
-		fOutputList->Add(hPtSecOut);
+		hPtSecOut = new TH1D("hPtSecOut", "Sec Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
+		/* fOutputList->Add(hPtSecOut); */
 
-		hPtOut = new TH1D("hPtOut", "all Out; #it{p}_{T} (GeV/#it{c}; counts)",
-				nPtbins, Ptbins);
-		fOutputList->Add(hPtOut);
+		hPtOut = new TH1D("hPtOut", "all Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
+		/* fOutputList->Add(hPtOut); */
 
-		hFlatenicityMC =
-			new TH1D("hFlatenicityMC", "counter", nbins_flat, min_flat, max_flat);
+		hFlatenicityMC = new TH2F("hFlatenicityMC", ";True Flatenicity; V0M Percentile;", nbins_flat, min_flat, max_flat, nCent, centClass );
 		fOutputList->Add(hFlatenicityMC);
-		hFlatResponse =
-			new TH2D("hFlatResponse", "; true flat; measured flat", nbins_flat,
-					min_flat, max_flat, nbins_flat, min_flat, max_flat);
-		fOutputList->Add(hFlatResponse);
-		hFlatVsPtMC =
-			new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})",
-					nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
-		fOutputList->Add(hFlatVsPtMC);
 
-		hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", nbins_flat,
-				min_flat, max_flat, 100, -0.5, 99.5);
+		hFlatenicityMCRec = new TH2F("hFlatenicityMCRec",";rec Flatenicity;V0M Percentile;", nbins_flat, min_flat, max_flat, nCent, centClass );
+		fOutputList->Add(hFlatenicityMCRec);
+
+		hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat", nbins_flat, min_flat, max_flat, nbins_flat, min_flat, max_flat);
+		fOutputList->Add(hFlatResponse);
+
+		hFlatVsPtMC = new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})", nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+		/* fOutputList->Add(hFlatVsPtMC); */
+
+		hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", nbins_flat, min_flat, max_flat, 100, -0.5, 99.5);
 		fOutputList->Add(hFlatVsNchMC);
 
 		hMCPtPionPos = new TH1F("hMCPtPionPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtPionPos);
+
 		hMCPtKaonPos = new TH1F("hMCPtKaonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtKaonPos);
+
 		hMCPtProtonPos = new TH1F("hMCPtProtonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtProtonPos);
 
 		hMCPtPionNeg = new TH1F("hMCPtPionNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtPionNeg);
+
 		hMCPtKaonNeg = new TH1F("hMCPtKaonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtKaonNeg);
+
 		hMCPtProtonNeg = new TH1F("hMCPtProtonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtProtonNeg);
 
 		hTPCRecTracksPionPos = new TH1F("hTPCRecTracksPionPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksPionPos);
+
 		hTPCRecTracksKaonPos = new TH1F("hTPCRecTracksKaonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksKaonPos);
+
 		hTPCRecTracksProtonPos = new TH1F("hTPCRecTracksProtonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksProtonPos);
 
 		hTPCRecTracksPionNeg = new TH1F("hTPCRecTracksPionNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksPionNeg);
+
 		hTPCRecTracksKaonNeg = new TH1F("hTPCRecTracksKaonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksKaonNeg);
+
 		hTPCRecTracksProtonNeg = new TH1F("hTPCRecTracksProtonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksProtonNeg);
 
 		hTOFRecTracksPionPos = new TH1F("hTOFRecTracksPionPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksPionPos);
+
 		hTOFRecTracksKaonPos = new TH1F("hTOFRecTracksKaonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksKaonPos);
+
 		hTOFRecTracksProtonPos = new TH1F("hTOFRecTracksProtonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksProtonPos);
 
 		hTOFRecTracksPionNeg = new TH1F("hTOFRecTracksPionNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksPionNeg);
+
 		hTOFRecTracksKaonNeg = new TH1F("hTOFRecTracksKaonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksKaonNeg);
+
 		hTOFRecTracksProtonNeg = new TH1F("hTOFRecTracksProtonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksProtonNeg);
 
 		hrTPCRecTracksPion = new TH1F("hrTPCRecTracksPion",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hrTPCRecTracksPion);
+
 		hrTPCRecTracksKaon = new TH1F("hrTPCRecTracksKaon",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hrTPCRecTracksKaon);
+
 		hrTPCRecTracksProton = new TH1F("hrTPCRecTracksProton",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hrTPCRecTracksProton);
 
@@ -675,6 +710,8 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			fOutputList->Add(nsigma_kaon_h[i_eta]);
 			electron_cont_in_kaon_h[i_eta] = new TH2F(Form("electron_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(electron_cont_in_kaon_h[i_eta]);
+			random_cont_in_kaon_h[i_eta] = new TH2F(Form("random_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(random_cont_in_kaon_h[i_eta]);
 
 			pion_cont_in_proton_h[i_eta] = new TH2F(Form("pion_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(pion_cont_in_proton_h[i_eta]);
@@ -682,6 +719,8 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			fOutputList->Add(nsigma_proton_h[i_eta]);
 			electron_cont_in_proton_h[i_eta] = new TH2F(Form("electron_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(electron_cont_in_proton_h[i_eta]);
+			random_cont_in_proton_h[i_eta] = new TH2F(Form("random_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(random_cont_in_proton_h[i_eta]);
 
 			kaon_cont_in_pion_h[i_eta] = new TH2F(Form("kaon_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(kaon_cont_in_pion_h[i_eta]);
@@ -689,24 +728,24 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			fOutputList->Add(nsigma_pion_h[i_eta]);
 			electron_cont_in_pion_h[i_eta] = new TH2F(Form("electron_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(electron_cont_in_pion_h[i_eta]);
+			random_cont_in_pion_h[i_eta] = new TH2F(Form("random_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(random_cont_in_pion_h[i_eta]);
 		}
 	}
 
 	// x: Sector y: Multiplicity z: V0M Multiplicity
-	hActivityV0CV0A = new TH3F("hActivityV0CV0A", "; VZERO channel; #it{N}_{ch} per VZERO cahnnel; V0M quantile", nV0Sectorsbins, V0Sectorsbins, nV0Multbins, V0Multbins, nCent, centClass );
+	hActivityV0CV0A = new TH3F("hActivityV0CV0A", "; VZERO channel; #it{N}_{ch} per VZERO cahnnel; V0M quantile", nV0Sectorsbins, V0Sectorsbins, nV0Multbins, V0Multbins, nCent, centClass);
 	fOutputList->Add(hActivityV0CV0A);
 
 	hActivityV0DataSect = new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 	fOutputList->Add(hActivityV0DataSect);
+
 	if (fUseMC) {
-		hActivityV0McSect =
-			new TProfile("hActivityV0McSect", "true; V0 sector; #LTmultiplicity#GT",
-					64, -0.5, 63.5);
+		hActivityV0McSect = new TProfile("hActivityV0McSect", "true; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 		fOutputList->Add(hActivityV0McSect);
 	}
 
-	hFlatVsV0MVsMult = new TH3F("hFlatVsV0MVsMult", "; Flatenicity; #it{N}_{ch}; V0M Percentile", 
-			nFlatbins, Flatbins, nMultbins, Multbins, nCent, centClass);
+	hFlatVsV0MVsMult = new TH3F("hFlatVsV0MVsMult", "; Flatenicity; #it{N}_{ch}; V0M Percentile", nFlatbins, Flatbins, nMultbins, Multbins, nCent, centClass);
 	fOutputList->Add(hFlatVsV0MVsMult);
 
 	fEventCuts.AddQAplotsToList(fOutputList);
@@ -803,14 +842,16 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 
 	fFlatMC = -1;
 	if (fUseMC) {
+		if (!isGoodVtxPosMC) { return; }
 		fFlatMC = GetFlatenicityMC();
-		if (fFlatMC >= 0) {
-			hFlatenicityMC->Fill(fFlatMC);
-			hFlatResponse->Fill(fFlatMC, fFlat);
-			MakeMCanalysis();
-			MakeMCanalysisPID();
-			nSigmaContamination();
-		}
+		//	if (fFlatMC >= 0) {
+		hFlatenicityMC->Fill(fFlatMC,fv0mpercentile);
+		hFlatenicityMCRec->Fill(fFlat,fv0mpercentile);
+		hFlatResponse->Fill(fFlatMC, fFlat);
+		MakeMCanalysis();
+		MakeMCanalysisPID();
+		nSigmaContamination();
+		//	}
 	}
 
 	if (fFlat > 0 && fV0Mindex >= 0) {
@@ -1061,7 +1102,6 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysis() {
 }
 
 //______________________________________________________________________________
-
 void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysisPID() {
 
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
@@ -1077,9 +1117,8 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysisPID() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
-
-		hFlatVsPtMC->Fill(fFlatMC, particle->Pt());
-		hPtPrimIn->Fill(particle->Pt());
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMC))
+			continue;
 
 		Int_t pdgCode = particle->PdgCode();
 		Int_t pidCode = GetPidCode(pdgCode);
@@ -1137,7 +1176,6 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysisPID() {
 		esdTrack->GetImpactParameters(DCAxy,dcaz);
 
 		if( fMC->IsPhysicalPrimary(mcLabel) ){
-
 			if( TOFPID(esdTrack) ){
 
 				if(esdTrack->Charge() < 0.0){
@@ -1353,7 +1391,10 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityV0() {
 		RhoLattice[iCh] = 0.0;
 	}
 
-	std::map<std::string, double> v0_amplitude_mean_values{{"16d",2.028},{"16e",1.991}, {"16g",1.805}, {"16h",1.653}, {"16i",1.514}, {"16j",1.481}, {"16k",1.407}, {"16l",1.404}, {"16o",1.352}, {"16p",2.169}};
+	std::map<std::string, double> v0_amplitude_mean_values{
+		{"16d",2.028},{"16e",1.991}, {"16g",1.805}, {"16h",1.653}, {"16i",1.514}, {"16j",1.481}, {"16k",1.407}, {"16l",1.404}, {"16o",1.352}, {"16p",2.169},
+			{"18d",2.062},{"18e",2.055},{"18f",2.042},{"18g",2.06},{"18h",2.042},{"18i",2.06},{"18j",2.051},{"18k",2.054},{"18l",2.035},{"18o",1.952},{"18p",1.931}
+	};
 	auto key_value_pair = v0_amplitude_mean_values.find(fPeriod);
 	double v0_mean_amplitude = key_value_pair->second;
 
@@ -1508,6 +1549,8 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityMC() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMC))
+			continue;
 		Double_t phi = particle->Phi();
 		Double_t eta = particle->Eta();
 
@@ -1530,9 +1573,13 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityMC() {
 	for (int i_eta = 0; i_eta < nRings; ++i_eta) {
 		for (int i_phi = 0; i_phi < nSectors; ++i_phi) {
 			Float_t deltaEta = TMath::Abs(maxEta[i_eta] - minEta[i_eta]);
+			float mult = RhoLattice[i_segment];
 			RhoLattice[i_segment] /= deltaEta;
 			// Filling histos with mult info
-			hActivityV0McSect->Fill(i_segment, RhoLattice[i_segment]);
+			if (fDeltaV0) { mult /= deltaEta; }
+			else { mult *= 1.0; }
+
+			hActivityV0McSect->Fill(i_segment,mult);
 			i_segment++;
 		}
 	}
@@ -1563,7 +1610,7 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityMC() {
 	hFlatVsNchMC->Fill(flatenicity, nMult);
 	return flatenicity;
 }
-
+//______________________________________________________________________________
 Bool_t AliAnalysisTaskFlatenicityPiKp::HasRecVertex() {
 
 	float fMaxDeltaSpdTrackAbsolute = 0.5f;
@@ -1631,7 +1678,7 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::HasRecVertex() {
 
 	return hasVtx;
 }
-
+//______________________________________________________________________________
 Bool_t AliAnalysisTaskFlatenicityPiKp::TOFPID(AliESDtrack * track) {
 	UInt_t status;
 	status=track->GetStatus();
@@ -1647,7 +1694,7 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::TOFPID(AliESDtrack * track) {
 
 	return kTRUE;
 }
-
+//______________________________________________________________________________
 Double_t AliAnalysisTaskFlatenicityPiKp::EtaCalibration(const Double_t &eta) {
 
 	double aPos = 0.0;
@@ -1718,12 +1765,13 @@ Double_t AliAnalysisTaskFlatenicityPiKp::EtaCalibration(const Double_t &eta) {
 
 	return Calibration;
 }
-
+//______________________________________________________________________________
 void AliAnalysisTaskFlatenicityPiKp::nSigmaContamination() {
 
 	Int_t iTracks(fESD->GetNumberOfTracks());          
 
-	for (Int_t iT = 0; iT < iTracks; ++iT) {                
+	for (Int_t iT = 0; iT < iTracks; ++iT) 
+	{
 
 		AliESDtrack *esdTrack = static_cast<AliESDtrack *>(
 				fESD->GetTrack(iT)); // get a track (type AliesdTrack)
@@ -1752,19 +1800,19 @@ void AliAnalysisTaskFlatenicityPiKp::nSigmaContamination() {
 		Int_t mcLabel = -1;
 		mcLabel = TMath::Abs(esdTrack->GetLabel());
 
-		if (!fMC->IsPhysicalPrimary(mcLabel) )
-			continue;
+		/* if (!fMC->IsPhysicalPrimary(mcLabel) ) */
+		/* 	continue; */
 
-		AliMCParticle *mcTrack = 0;
-		mcTrack = (AliMCParticle*)fMC->GetTrack(mcLabel);
+		AliMCParticle *mc_particle = nullptr;
+		mc_particle = (AliMCParticle*)fMC->GetTrack(mcLabel);
 
-		if (!mcTrack) 
+		if (!mc_particle) 
 			continue;
 
 		if (TMath::Abs(esdTrack->Charge())==0)
 			continue;
 
-		Int_t pdgCode = mcTrack->PdgCode();
+		Int_t pdgCode = mc_particle->PdgCode();
 		Int_t pidCode = GetPidCode(pdgCode);
 
 		Int_t nh = -1;
@@ -1786,28 +1834,30 @@ void AliAnalysisTaskFlatenicityPiKp::nSigmaContamination() {
 		Float_t nsigma_p = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
 		Double_t pt = esdTrack->Pt();
 
-		if (TMath::Abs(nsigma_k) <= 3.0){
-			if (pidCode==2) { nsigma_kaon_h[nh]->Fill(pt,nsigma_k); }
-			if (pidCode==1) { pion_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
-			if (pidCode==7) { electron_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
-		}
+		//	if (TMath::Abs(nsigma_k) <= 4.0){
+		if (pidCode==2) { nsigma_kaon_h[nh]->Fill(pt,nsigma_k); }
+		else if (pidCode==1) { pion_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+		else if (pidCode==7) { electron_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+		else { random_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+		//	}
 
-		if (TMath::Abs(nsigma_p) <= 3.0){	
-			if (pidCode==3) { nsigma_proton_h[nh]->Fill(pt,nsigma_p); }
-			if (pidCode==1) { pion_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
-			if (pidCode==7) { electron_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
-		}
+		//	if (TMath::Abs(nsigma_p) <= 4.0){	
+		if (pidCode==3) { nsigma_proton_h[nh]->Fill(pt,nsigma_p); }
+		else if (pidCode==1) { pion_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+		else if (pidCode==7) { electron_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+		else { random_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+		//	}
 
-		if (TMath::Abs(nsigma_pi) <= 3.0){	
-			if (pidCode==1) { nsigma_pion_h[nh]->Fill(pt,nsigma_pi); }
-			if (pidCode==2) { kaon_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
-			if (pidCode==7) { electron_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
-		}
+		//	if (TMath::Abs(nsigma_pi) <= 3.0){	
+		if (pidCode==1) { nsigma_pion_h[nh]->Fill(pt,nsigma_pi); }
+		else if (pidCode==2) { kaon_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+		else if (pidCode==7) { electron_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+		else { random_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+		//	}
 	} 
 
 }
-
-
+//______________________________________________________________________________
 Bool_t AliAnalysisTaskFlatenicityPiKp::PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t mag, TF1* phiCutLow, TF1* phiCutHigh) {
 
 	if(pt < 2.0)
@@ -1829,7 +1879,7 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::PhiCut(Double_t pt, Double_t phi, Double_
 
 	return kTRUE;
 }
-
+//______________________________________________________________________________
 Int_t AliAnalysisTaskFlatenicityPiKp::GetPidCode(Int_t pdgCode) {
 	// return our internal code for pions, kaons, and protons
 
