@@ -239,7 +239,7 @@
     if (fAnType==kppData)name+= "_ppdata";
     else if (fAnType==kPbPbData)name+= "_PbPbdata";
     else if (fAnType==kppMC)name+= "_ppMC";
-    else if (fAnType==kEmbeded)name+= "_Embed";
+    else if (fAnType==kEmbedded)name+= "_Embed";
   
     if (strcmp(suffix,"") != 0) {
       name += "_";
@@ -252,7 +252,7 @@
     EFTask->SetVzRange(-10,10);
     EFTask->SetAnalysisType(fAnType);
     if((fAnType==kppData)||(fAnType==kppMC))EFTask->SetForceBeamType(AliAnalysisTaskEmcal::kpp);  
-    if((fAnType==kPbPbData)||(fAnType==kEmbeded))EFTask->SetForceBeamType(AliAnalysisTaskEmcal::kAA);
+    if((fAnType==kPbPbData)||(fAnType==kEmbedded))EFTask->SetForceBeamType(AliAnalysisTaskEmcal::kAA);
    // The first case would be used to run only on generator level of MC productions
     if (trackName == "mcparticles") {           
       EFTask->AddMCParticleContainer(trackName);
@@ -263,7 +263,7 @@
     else if (!trackName.IsNull()) {
       EFTask->AddParticleContainer(trackName);
     }
- if ((fAnType==kppMC)||(fAnType==kEmbeded))EFTask->AddMCParticleContainer(trackName2); //In the case of MC analysis, we add the additional particle container for the generator level analysis
+ if ((fAnType==kppMC)||(fAnType==kEmbedded))EFTask->AddMCParticleContainer(trackName2); //In the case of MC analysis, we add the additional particle container for the generator level analysis
     EFTask->AddClusterContainer(clusName);
   
  //-------------------------------------------------------
@@ -396,10 +396,10 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateEnergyflowHistograms(){
     Double_t MinBin[4] = {fMinPtBin,fMinPtBin,fMinDPtBin,fMinDPtBin};
 
   Int_t Pair_number = 3;
-    if((fAnalysisType==kPbPbData)||(fAnalysisType==kEmbeded))fNcentBins=5;
+    if((fAnalysisType==kPbPbData)||(fAnalysisType==kEmbedded))fNcentBins=5;
     else fNcentBins=1;
 
-    if ((fAnalysisType==kppMC)||(fAnalysisType==kEmbeded))Pair_number = (fJetCollArray.GetEntries()/2)-1;
+    if ((fAnalysisType==kppMC)||(fAnalysisType==kEmbedded))Pair_number = (fJetCollArray.GetEntries()/2)-1;
     else Pair_number = fJetCollArray.GetEntries()-1;
 for (Int_t cent = 0; cent < fNcentBins; cent++){
 
@@ -448,7 +448,7 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
                           }
          }
  
-        if((fAnalysisType==kppMC)||(fAnalysisType==kEmbeded)){
+        if((fAnalysisType==kppMC)||(fAnalysisType==kEmbedded)){
         for(Int_t i=0;i<Pair_number;i++){
           histname = TString::Format("hJetPtDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii (Generator level);P_{t,jet(R=%.2f)}(GeV/c);#Delta P_{t}(GeV/c)",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
@@ -554,10 +554,10 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
 
    Int_t Pair_number = 3;
   AliEmcalJet* Jet_genlowR =0; //Convenient pointer for the EF calculations @ Gen-level
-// if ((fAnType==kppMC)||(fAnType==kEmbeded)) Pair_number = fJetCollArray.GetEntries()/2-1;
+// if ((fAnType==kppMC)||(fAnType==kEmbedded)) Pair_number = fJetCollArray.GetEntries()/2-1;
 //  else  Pair_number = fJetCollArray.GetEntries()-1; 
   Int_t NumJet= 4;
-if ((fAnalysisType==kppMC)||(fAnalysisType==kEmbeded)) NumJet=fJetCollArray.GetEntries()/2;
+if ((fAnalysisType==kppMC)||(fAnalysisType==kEmbedded)) NumJet=fJetCollArray.GetEntries()/2;
 else NumJet =fJetCollArray.GetEntries();
 Pair_number= NumJet-1;
 
@@ -573,7 +573,7 @@ Pair_number= NumJet-1;
 
         DetjetCont1=0; DetjetCont2=0; GenjetCont1=0; GenjetCont2=0; //Reseting the containers at the start of each pair loop     
 
-        if((fAnalysisType==kppMC)||(fAnalysisType==kEmbeded)){
+        if((fAnalysisType==kppMC)||(fAnalysisType==kEmbedded)){
                 MatchGenDetList.Clear();
                 GenHighRJetsList.Clear();
 

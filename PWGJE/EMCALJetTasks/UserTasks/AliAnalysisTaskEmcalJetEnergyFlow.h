@@ -30,7 +30,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
                 kppData         = 0,
                 kppMC           = 1,
                 kPbPbData       = 2,
-                kEmbeded        = 3, 
+                kEmbedded       = 3 
                 };
 	
 	AliAnalysisTaskEmcalJetEnergyFlow()			;
@@ -80,7 +80,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,15);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,16);
 	/// \endcond
 };
 #endif
