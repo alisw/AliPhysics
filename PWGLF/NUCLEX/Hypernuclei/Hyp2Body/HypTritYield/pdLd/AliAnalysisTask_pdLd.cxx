@@ -399,7 +399,7 @@ AliAnalysisTask_pdLd::~AliAnalysisTask_pdLd()
       fHistList_Event->Clear();
       delete fHistList_Event;
     }
-/*
+
   if(fHistList_Proton)
     {
       fHistList_Proton->Clear();
@@ -435,7 +435,7 @@ AliAnalysisTask_pdLd::~AliAnalysisTask_pdLd()
       fHistList_AntiProtonAntiDeuteron->Clear();
       delete fHistList_AntiProtonAntiDeuteron;
     }
-*/
+
 
 }
 
