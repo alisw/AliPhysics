@@ -58,16 +58,16 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fAODEvent(0),
   fAODHandler(0),
   fHeader(0),
-  fMCEvent(0),
-  fStack(0),
   fPIDResponse(0),
   fEventPoolManager(0),
+  fStack(0),
   fHistList_Event(0),
   fHistList_Proton(0),
   fHistList_Deuteron(0),
   fHistList_ProtonDeuteron(0),
   fHistList_AntiProton(0),
   fHistList_AntiDeuteron(0),
+  fHistList_AntiProtonAntiDeuteron(0),
   fCollisionSystem(0),
   fHist_Event_CutCounter(0),
   fHist_Event_PrimVertexZ(0),
@@ -100,11 +100,6 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fHist_Proton_TOF_MassSquare_p(0),
   fHist_Proton_ITS_dEdx_pT(0),
   fHist_Proton_ITS_dEdx_p(0),
-  fMcHistPtRecProton(0),
-  fMcHistPtGenProton(0),
-  fMcHistDCAPrimaryProton(0),
-  fMcHistDCASecondaryProton(0),
-  fMcHistDCAMaterialProton(0),
   fHist_Deuteron_CutCounter(0),
   fHist_Deuteron_pT(0),
   fHist_Deuteron_p(0),
@@ -228,16 +223,16 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fAODEvent(0),
   fAODHandler(0),
   fHeader(0),
-  fMCEvent(0),
-  fStack(0),
   fPIDResponse(0),
   fEventPoolManager(0),
+  fStack(0),
   fHistList_Event(0),
   fHistList_Proton(0),
   fHistList_Deuteron(0),
   fHistList_ProtonDeuteron(0),
   fHistList_AntiProton(0),
   fHistList_AntiDeuteron(0),
+  fHistList_AntiProtonAntiDeuteron(0),
   fCollisionSystem(CollisionSystem),
   fHist_Event_CutCounter(0),
   fHist_Event_PrimVertexZ(0),
@@ -270,11 +265,6 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_Proton_TOF_MassSquare_p(0),
   fHist_Proton_ITS_dEdx_pT(0),
   fHist_Proton_ITS_dEdx_p(0),
-  fMcHistPtRecProton(0),
-  fMcHistPtGenProton(0),
-  fMcHistDCAPrimaryProton(0),
-  fMcHistDCASecondaryProton(0),
-  fMcHistDCAMaterialProton(0),
   fHist_Deuteron_CutCounter(0),
   fHist_Deuteron_pT(0),
   fHist_Deuteron_p(0),
@@ -372,6 +362,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_AntiDeuteron_TOF_MassSquare_p(0),
   fHist_AntiDeuteron_ITS_dEdx_pT(0),
   fHist_AntiDeuteron_ITS_dEdx_p(0),
+  fHist_AntiProtonAntiDeuteron_CutCounter(0),
   fHist_AntiProtonAntiDeuteron_SED(0),
   fHist_AntiProtonAntiDeuteron_MED(0),
   fHist_AntiProtonAntiDeuteron_RPD(0),
@@ -408,7 +399,7 @@ AliAnalysisTask_pdLd::~AliAnalysisTask_pdLd()
       fHistList_Event->Clear();
       delete fHistList_Event;
     }
-
+/*
   if(fHistList_Proton)
     {
       fHistList_Proton->Clear();
@@ -444,7 +435,7 @@ AliAnalysisTask_pdLd::~AliAnalysisTask_pdLd()
       fHistList_AntiProtonAntiDeuteron->Clear();
       delete fHistList_AntiProtonAntiDeuteron;
     }
-
+*/
 
 }
 
@@ -1406,8 +1397,8 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 
   bool isMC = false;
 
-  AliMCEvent* fMCEvent = eventHandler->MCEvent();
-  if(!fMCEvent && isMC)::Fatal("AliAnalysisTask_pdLd::UserExec","No MC event found!");
+//  AliMCEvent* fMCEvent = eventHandler->MCEvent();
+//  if(!fMCEvent && isMC)::Fatal("AliAnalysisTask_pdLd::UserExec","No MC event found!");
 
   fAODEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAODEvent)::Fatal("AliAnalysisTask_pdLd::UserExec","No AOD event found!");
