@@ -120,6 +120,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fEnableFixedpzOutput(kTRUE),
   fEnableSubLambdaOutput(kFALSE),
   fLambda(nullptr),
+  fEnablePCMEMCUnsmearing(kFALSE),
   fEnableNDMEfficiency(kFALSE),
   fEnableNDMInputSpectrum(kFALSE),
   fEnableTreeTrueNDMFromHNM(kFALSE),
@@ -200,6 +201,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMotherInvMassSubLambda(nullptr),
   fHistoBackInvMassPtSubLambda(nullptr),
   fHistoMotherLikeSignBackInvMassSubLambdaPt(nullptr),
+  fHistoPCMEMCScalingFactor(nullptr),
   fHistoMCAllGammaPt(nullptr),
   fHistoMCConvGammaPt(nullptr),
   fHistoMCAllMesonPt(nullptr),
@@ -454,6 +456,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fEnableFixedpzOutput(kTRUE),
   fEnableSubLambdaOutput(kFALSE),
   fLambda(nullptr),
+  fEnablePCMEMCUnsmearing(kFALSE),
   fEnableNDMEfficiency(kFALSE),
   fEnableNDMInputSpectrum(kFALSE),
   fEnableTreeTrueNDMFromHNM(kFALSE),
@@ -534,6 +537,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMotherInvMassSubLambda(nullptr),
   fHistoBackInvMassPtSubLambda(nullptr),
   fHistoMotherLikeSignBackInvMassSubLambdaPt(nullptr),
+  fHistoPCMEMCScalingFactor(nullptr),
   fHistoMCAllGammaPt(nullptr),
   fHistoMCConvGammaPt(nullptr),
   fHistoMCAllMesonPt(nullptr),
@@ -1189,6 +1193,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fLambda                                          = new TF1*[fnCuts];
   }
 
+  if(fEnablePCMEMCUnsmearing && fDoMesonQA>1){
+    fHistoPCMEMCScalingFactor                        = new TH1F*[fnCuts];
+  }
+
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     TString cutstringEvent        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
     TString cutstringPion         = ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutNumber();
@@ -1700,6 +1708,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       }
     }
 
+    if(fEnablePCMEMCUnsmearing && fDoMesonQA>1 ){
+      fHistoPCMEMCScalingFactor[iCut]                       = new TH1F("ESD_PCMEMC_ScalingFactor","ESD_PCMEMC_ScalingFactor",100,0,2);
+      fHistoPCMEMCScalingFactor[iCut]->GetXaxis()->SetTitle("Scaling Factor");
+      fHistoPCMEMCScalingFactor[iCut]->GetYaxis()->SetTitle("Counts");
+      if (fIsMC>1) fHistoPCMEMCScalingFactor[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoPCMEMCScalingFactor[iCut]);
+    }
 
     if(!fDoLightOutput){
       fHistoAngleHNMesonPiPlPiMi[iCut]      = new TH2F(Form("ESD_Mother_Angle%sNegPionsPosPions_Pt",NameNeutralMesonAnalyzed.Data()),Form("ESD_Mother_Angle%sNegPionsPosPions_Pt",NameNeutralMesonAnalyzed.Data()), HistoNPtBins, arrPtBinning,360,0,TMath::Pi());
@@ -4461,13 +4476,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
         if((((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelected(NDMcand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
           if (!matched){
-            if(fIsMC){
-              if(fInputEvent->IsA()==AliESDEvent::Class())
-                ProcessTrueNeutralPionCandidatesMixedConvCalo(NDMcand,gamma0,gamma1);
-              if(fInputEvent->IsA()==AliAODEvent::Class())
-                ProcessTrueNeutralPionCandidatesMixedConvCaloAOD(NDMcand,gamma0,gamma1);
-            }
+
             if (((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 0)){
+              if(fEnablePCMEMCUnsmearing){// Calculate the scaling factor for the cluster photon so, that the pi0 mass matches the pi0 pdg mass. Apply only for true or when pi0 is already in mass window.
+                Double_t CorrectedClusterPhotonEnergy = fPDGMassNDM*fPDGMassNDM/(2*gamma0->E()*(1-TMath::Cos(gamma0->Angle(gamma1->Vect()))));
+                Double_t ScalingFactor = CorrectedClusterPhotonEnergy/gamma1->E();
+                gamma1->SetPxPyPzE(gamma1->Px()*ScalingFactor, gamma1->Py()*ScalingFactor, gamma1->Pz()*ScalingFactor, gamma1->E()*ScalingFactor);
+                delete NDMcand;
+                NDMcand=0x0;
+                NDMcand = new AliAODConversionMother(gamma0,gamma1);
+                NDMcand->SetLabels(firstGammaIndex,secondGammaIndex);
+                if(fDoMesonQA>1) fHistoPCMEMCScalingFactor[fiCut]->Fill(ScalingFactor,fWeightJetJetMC*weightMatBudget);
+              }
               fNeutralDecayParticleCandidates->Add(NDMcand);
               fNeutralDecayParticleCandidateMatBudWeights.push_back(weightMatBudget);
 
@@ -4489,7 +4509,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
               if(!fDoLightOutput){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
               }
-            } else{
+            }
+            if(fIsMC){
+              if(fInputEvent->IsA()==AliESDEvent::Class())
+                ProcessTrueNeutralPionCandidatesMixedConvCalo(NDMcand,gamma0,gamma1);
+              if(fInputEvent->IsA()==AliAODEvent::Class())
+                ProcessTrueNeutralPionCandidatesMixedConvCaloAOD(NDMcand,gamma0,gamma1);
+            }
+            else{
               delete NDMcand;
               NDMcand=0x0;
             }
@@ -5672,7 +5699,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                 if(neutralMeson->GetNDaughters() == 3) {
                   // exclude Dalitz-decays
                   reconstructible = kFALSE;
-                } else {
+                } else if(neutralMeson->GetNDaughters() > 0) { // A few pi0's dont have daughters in DPMJet (maybe due to inelastic collisions?)
                   AliMCParticle *photon1 = (AliMCParticle*) fMCEvent->GetTrack(neutralMeson->GetDaughterFirst());
                   AliMCParticle *photon2 = (AliMCParticle*) fMCEvent->GetTrack(neutralMeson->GetDaughterLast());
                   if(!(photon1 && photon2)) reconstructible = kFALSE;
@@ -5685,7 +5712,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                       }
                       case 1: {
                         if(!(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon1,fMCEvent,kFALSE)  &&
-                             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1,fMCEvent)) ||
+                             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon2,fMCEvent)) ||
                            !(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon2,fMCEvent,kFALSE)  &&
                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1,fMCEvent))
                         ) reconstructible = kFALSE;
@@ -5693,7 +5720,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                       }
                       case 2: {
                         if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1,fMCEvent)) reconstructible = kFALSE;
-                        if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1,fMCEvent)) reconstructible = kFALSE;
+                        if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon2,fMCEvent)) reconstructible = kFALSE;
                         break;
                       }
                     };
@@ -6024,7 +6051,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                   if(neutralMeson->GetNDaughters() == 3) {
                     // exclude Dalitz-decays
                     reconstructible = false;
-                  } else {
+                  } else if(neutralMeson->GetNDaughters() > 0) { // A few pi0's dont have daughters in DPMJet (maybe due to inelastic collisions?)
                     AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterFirst())),
                                      *photon2 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterLast()));
                     if(!(photon1 && photon2)) reconstructible = false;
@@ -6037,7 +6064,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                         }
                         case 1: {
                           if(!(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon1, AODMCTrackArray, kFALSE)  &&
-                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) ||
+                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon2, AODMCTrackArray)) ||
                              !(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon2, AODMCTrackArray, kFALSE)  &&
                               ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray))
                           ) reconstructible = false;
@@ -6045,7 +6072,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                         }
                         case 2: {
                           if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) reconstructible = false;
-                          if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) reconstructible = false;
+                          if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon2, AODMCTrackArray)) reconstructible = false;
                           break;
                         }
                       };
