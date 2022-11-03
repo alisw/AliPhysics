@@ -349,6 +349,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Double_t fMaxPtDplus;                                              // D+ max pt
   Double_t fMinPtJpsi;                                               // Jpsi min pt
   Double_t fMaxPtJpsi;                                               // Jpsi max pt
+  Double_t fMinPtLc;                                                 // Lc min pt
+  Double_t fMaxPtLc;                                                 // Lc max pt
   Int_t fCandidateCutLevel;                                          // Cuts: 0 = no, 1 = skim, 2 = analysis
   Double_t fDzeroSkimCuts[kMaxNPtBins2ProngsSkims][kNCutVars2Prong]; // D0 skimming cuts
   Double_t fJpsiSkimCuts[kMaxNPtBins2ProngsSkims][kNCutVars2Prong];  // Jpsi skimming cuts

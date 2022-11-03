@@ -249,6 +249,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMaxPtDplus(9999.),
   fMinPtJpsi(0.),
   fMaxPtJpsi(9999.),
+  fMinPtLc(0.),
+  fMaxPtLc(9999.),
   fCandidateCutLevel(1),
   fMinPt3Prong(0.),
   fMaxRapidityCand(0.8),
@@ -841,6 +843,15 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     if (ptMinCand3 >= 0.)
       fMinPt3Prong = ptMinCand3;
 
+    Double_t ptMinCandLc = GetJsonFloat(filename.Data(), "d_pTCandMinLc");
+    printf("Min pt Lc cand = %g\n", ptMinCandLc);
+    if (ptMinCandLc >= 0.)
+      fMinPtLc = ptMinCandLc;
+    Double_t ptMaxCandLc = GetJsonFloat(filename.Data(), "d_pTCandMaxLc");
+    printf("Max pt Lc cand = %g\n", ptMaxCandLc);
+    if (ptMaxCandLc >= 0. && ptMaxCandLc >= fMinPtLc)
+      fMaxPtLc = ptMaxCandLc;
+
     // Selections used in the skimming
     printf("------- CANDIDATE SELECTIONS FOR SKIMMING -------\n");
 
@@ -955,6 +966,26 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       fCutOnK0sMass = cutinvmV0;
       printf("invmass V0 cut = %g\n", fCutOnK0sMass);
     }
+
+    // Selections used for Lc
+    printf("------- CANDIDATE SELECTIONS Lc -------\n");
+
+    int nptbinlimsLc = 0, ncLc = 0, nptLc = 0;
+    float* ptbinlimsLc = GetJsonArray(filename.Data(), "pTBinsLc", nptbinlimsLc);
+    float** cutsLc = GetJsonMatrix(filename.Data(), "Lc_to_p_K_pi_cuts", nptLc, ncLc);
+    if (nptbinlimsLc - 1 != nptLc)
+      AliFatal("Number of pT bins in JSON for Lc candidate selection is not consistent, please check it");
+
+    for (Int_t ib = 0; ib < nptbinlimsLc; ib++) {
+      fPtBinLimsLc[ib] = ptbinlimsLc[ib];
+    }
+    for (Int_t ib = 0; ib < nptLc; ib++) {
+      for (Int_t jc = 0; jc < ncLc; jc++) {
+        fLcCuts[ib][jc] = cutsLc[ib][jc];
+      }
+      AliInfo(Form("Lc candidate selection cuts: %g < pt < %g  ;  delta mass < %g  ;  pt p > %g  ;  pt K > %g  ;  pt Pi > %g  ;  Chi2PCA < %g  ;  declen > %g  ;  cospoint > %g\n", fPtBinLimsLc[ib], fPtBinLimsLc[ib + 1], fLcCuts[ib][0], fLcCuts[ib][1], fLcCuts[ib][2], fLcCuts[ib][3], fLcCuts[ib][4], fLcCuts[ib][5], fLcCuts[ib][6]));
+    }
+
 
     printf("---------------------------------------------\n");
 
@@ -2082,7 +2113,8 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
   AliAODRecoDecayHF3Prong* the3Prong = Make3Prong(threeTrackArray, vertexAOD3, bzkG);
   the3Prong->SetOwnPrimaryVtx(vertexAODp);
   Double_t ptcand_3prong = the3Prong->Pt();
-  if (ptcand_3prong < fMinPt3Prong) {
+  if (ptcand_3prong < 0.) {
+    printf("daughter ptcand_3prong  %g\n", ptcand_3prong);
     delete the3Prong;
     delete vertexAOD3;
     return;
@@ -2211,10 +2243,11 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
     fHistDist12LcpKpi->Fill(dist12);
     Int_t lcSel = LcSkimCuts(the3Prong);
     if (lcSel > 0 && fSelectLcpKpi > 0) {
-      if (dist12 < fLcCuts[0][4])
-	      lcSel = 0; // cut on dist12
-      else
-	      lcSel = LcSelectionCuts(the3Prong);
+      lcSel = LcSelectionCuts(the3Prong);
+      // if (dist12 < fLcCuts[0][4])
+	    //   lcSel = 0; // cut on dist12
+      // else
+	    //   lcSel = LcSelectionCuts(the3Prong);
     }
     Double_t rapid = the3Prong->Y(4122);
     if (lcSel > 0 && IsInFiducialAcceptance(ptcand_3prong, rapid)) {
@@ -2708,7 +2741,9 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSkimCuts(AliAODRecoDecayHF3Prong* cand)
   bool ispKpi = true;
   bool ispiKp = true;
   Double_t ptCand = cand->Pt();
-  Int_t iPtLc = GetPtBin(ptCand, fPtBinLimsLcSkims, kMaxNPtBins3ProngsSkims);
+  if (ptCand < fMinPtLc || ptCand > fMaxPtLc)
+    return 0;
+  Int_t iPtLc = GetPtBin(ptCand, fPtBinLimsLcSkims, kMaxNPtBins3ProngsSkims); 
   if (iPtLc < 0)
     return 0;
   Double_t mpKpi = cand->InvMassLcpKpi();
@@ -2978,11 +3013,25 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
   bool isLcpKpi = true;
   bool isLcpiKp = true;
   Double_t ptCand = cand->Pt();
-  if (ptCand < 0. || ptCand >= 36.)
-    return 0;
+  // if (ptCand < 0. || ptCand >= 36.)
+  //   return 0;
+  // Double_t PtBinLimsLc2[11] = {0., 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
+  // Int_t jPtBin = 0;
+  // if (ptCand < PtBinLimsLc2[0] || ptCand > PtBinLimsLc2[10]){
+  //   return 0;
+  // } else {
+  //   for (Int_t i = 0; i < 10; i++) {
+  //     if (ptCand >= PtBinLimsLc2[i] && ptCand < PtBinLimsLc2[i + 1]) {
+  //       jPtBin = i;
+  //       break;
+  //     }
+  //   }
+  // }
+
   Int_t jPtBin = GetPtBin(ptCand, fPtBinLimsLc, fNPtBinsLc);
   if (jPtBin == -1)
     return 0;
+    
 
   if (cand->CosPointingAngle() <= fLcCuts[jPtBin][6])
     return 0;
