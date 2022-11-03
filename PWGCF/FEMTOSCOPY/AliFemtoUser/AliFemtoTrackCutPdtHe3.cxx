@@ -49,6 +49,7 @@ AliFemtoESDTrackCut()
     fdcutline_b = -15.;
 
     fUse2pT = 0;
+    AlldEdxmode = 0;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -94,6 +95,8 @@ AliFemtoESDTrackCut(aCut)
     fdcutline_b = aCut.fdcutline_b;
    
     fUse2pT = aCut.fUse2pT;
+    
+    AlldEdxmode = aCut.AlldEdxmode;
    
 }
 
@@ -149,6 +152,7 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
     fUse2pT = aCut.fUse2pT;
 
+    AlldEdxmode = aCut.AlldEdxmode;
     return *this;
 }
 
@@ -309,6 +313,13 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 		return false;
 	    }
     }
+
+    if(AlldEdxmode){
+    	fNTracksPassed++ ;
+    	return true;
+    	
+    }
+
 
     // dowang for pion+he3 cut
     if(fPionHe3cut){
@@ -951,5 +962,8 @@ void AliFemtoTrackCutPdtHe3::Setfdline(float ak,float ab){
 }
 void AliFemtoTrackCutPdtHe3::Setf2pT(int aUse){
 	fUse2pT = aUse;
+}
+void AliFemtoTrackCutPdtHe3::SetAlldEdxMode(int aUse){
+	AlldEdxmode = aUse;
 }
 
