@@ -29,6 +29,6 @@ public:
   //virtual void Print(Option_t *option="") {};
   
 private:
-  ClassDef(AliMachineLearning, 1)
+  ClassDef(AliMachineLearning, 1);
 };
 #endif
