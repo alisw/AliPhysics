@@ -699,11 +699,13 @@ void AliAnalysisKinkESDMulPPpi::UserExec(Option_t *)
         AliWarning("AliMultSelection object not found!");
         } else {
   //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
+//-----------------------------------------------------------------------------------------------
         cent = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);
         //if ((cent < 0) || (cent > 90)) return; //Event selection
         //if ((cent < 0) || (cent >100)) return; //Event selection
         //   if ((cent < 0) || (cent >1)) return; //Event selection
-        if ((cent < 0) || (cent >0.01)) return; //Event selection     3/4/21
+        //if ((cent < 0) || (cent >0.01)) return; //Event selection     3/4/21
+        if ((cent < 0.0) || (cent >0.1)) return; //Event selection    29/9/22
         }
         }
 
@@ -1472,3 +1474,4 @@ Bool_t checkProximity) //apply cut on relative position of spd and trk
           && spdVertex->GetZRes()<0.25)) return kFALSE;
                               return kTRUE;
                                   }
+
