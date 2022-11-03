@@ -128,6 +128,9 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2.cxx
   Cascades/Run2/AliMachineLearning.cxx
+  Cascades/Run2/AliNeuralNetwork.cxx
+  Cascades/Run2/AliBDT.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessML.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
