@@ -95,7 +95,7 @@ double AliBDT::Predict(double* X, int Nt)
 
   double P = 0.0;
 
-  int nodes = int(fFt->GetNBinsX()/Nt); 
+  int nodes = int(fFt->GetNbinsX()/Nt); 
 
   for(int i=0; i<Nt; i++)
   {
@@ -108,7 +108,7 @@ double AliBDT::Predict(double* X, int Nt)
     }
 
     //Sum leaf score
-    P += fSoS->GetBinConten(((nodes*i)+g+1);
+    P += fSoS->GetBinContent( (nodes*i)+g+1 );
   }
 
 /*
