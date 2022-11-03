@@ -164,7 +164,7 @@ fUseChargeHadrons(kFALSE),
 fParticleSpeciesTrigger(-1),
 fParticleSpeciesAssociated(-1),
 fCheckMotherPDG(kTRUE),
-fGeneratorIndexMask(0),
+fGeneratorIndexMask(0ull),
 fTrackletDphiCut(9999999.),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
@@ -687,8 +687,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (inputEvent) {
     // Used to create the centrality correction
     Int_t referenceMultiplicity;
-    //TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
-    TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
+    TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
     referenceMultiplicity = tracks->GetEntriesFast();
     delete tracks;
 

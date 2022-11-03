@@ -605,7 +605,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
                 double massBachelor = (iHypo != kDeuteron) ? TDatabasePDG::Instance()->GetParticle(kPdgBachIDs[iHypo])->Mass() : 1.87561294257;
                 auto fourVecReso = ROOT::Math::PxPyPzMVector(trackESD.get()->Px(), trackESD.get()->Py(), trackESD.get()->Pz(), massBachelor);
-                if (fDecChannel != kD0toKpi || ((isSelected == 1 || isSelected == 3) && track->Charge() > 0.)) {
+                if (fDecChannel != kD0toKpi || ((isSelected == 1 || isSelected == 3))) {
                     fourVecReso += fourVecD[0];
                     double deltaInvMassReso = fourVecReso.M() - massD4Delta[0];
                     if (std::abs(pdgCode0) == 321)
@@ -614,7 +614,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                         fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD[0], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
                     }
                 }
-                if (fDecChannel == kD0toKpi && isSelected >= 2 && track->Charge() < 0.) {
+                if (fDecChannel == kD0toKpi && isSelected >= 2) {
                     fourVecReso += fourVecD[1];
                     double deltaInvMassReso = fourVecReso.M() - massD4Delta[1];
                     if (std::abs(pdgCode0) == 211)
@@ -1100,6 +1100,15 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsInvMassResoSelected(double &mass, in
                 for (std::size_t iMass{0}; iMass<fInvMassResoKzMin.size(); ++iMass)
                 {
                     if (mass > fInvMassResoKzMin[iMass] && mass < fInvMassResoKzMax[iMass])
+                        return true;
+                }
+                break;
+            }
+            case kLambda:
+            {
+                for (std::size_t iMass{0}; iMass<fInvMassResoLaMin.size(); ++iMass)
+                {
+                    if (mass > fInvMassResoLaMin[iMass] && mass < fInvMassResoLaMax[iMass])
                         return true;
                 }
                 break;

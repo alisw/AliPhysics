@@ -45,11 +45,9 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     AliAODHeader	  *fHeader;
     AliPIDResponse	  *fPIDResponse;
     AliEventPoolManager	  *fEventPoolManager;
-    AliMCEvent		  *fMCEvent;
     AliStack		  *fStack;
     TList		  *fHistList_Event;
     TList		  *fHistList_Proton;
-    TList		  *fProtonMcHistList;
     TList		  *fHistList_Deuteron;
     TList		  *fHistList_ProtonDeuteron;
     TList		  *fHistList_AntiProton;
@@ -93,12 +91,6 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH2F      *fHist_Proton_TOF_MassSquare_p;
     TH2F      *fHist_Proton_ITS_dEdx_pT;
     TH2F      *fHist_Proton_ITS_dEdx_p;
-
-    TH1F      *fMcHistPtRecProton;
-    TH1F      *fMcHistPtGenProton;
-    TH2F      *fMcHistDCAPrimaryProton;
-    TH2F      *fMcHistDCASecondaryProton;
-    TH2F      *fMcHistDCAMaterialProton;
 
     // histograms for deuterons
     TH1F      *fHist_Deuteron_CutCounter;
@@ -219,8 +211,6 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH2F      *fHist_AntiProtonAntiDeuteron_PairMultiplicity;
     TH3D      *fHist_AntiProtonAntiDeuteron_pT; 
     TH3D      *fHist_AntiProtonAntiDeuteron_Eta; 
-    
-
 
 
     std::vector<int>	*ProtonTrackArray;

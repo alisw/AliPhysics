@@ -28,6 +28,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     int useAODProtection = 0,
     int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
     int pdgBuddy = 2212,
+    int mixingDepth = 10,
     const char *cutVariation = "0"
   ) {
   TString suffix = TString::Format("%s", cutVariation);
@@ -51,6 +52,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   AliFemtoDreamTrackCuts *TrackCuts = nullptr;
   AliFemtoDreamTrackCuts *AntiTrackCuts = nullptr;
 
+  // overwritten later if useTree == true
   if(std::abs(pdgBuddy) == 2212) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
@@ -342,6 +344,30 @@ if (!isMC) {
     }
   }
 
+  // overwrite previous settings and use loose selections if trees are used
+  if (useTree) {
+    // pt
+    TrackCuts->SetPtRange(0.14, 10);
+    AntiTrackCuts->SetPtRange(0.14, 10);
+
+    // eta
+    TrackCuts->SetEtaRange(-0.9, 0.9);
+    AntiTrackCuts->SetEtaRange(-0.9, 0.9);
+    
+    // ncls
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+    
+    // PID
+    if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
+      AntiTrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
+    }
+  }
+  
   // =====================================================================
   // D mesons
   TFile* fileCuts = TFile::Open(fileCutObjHF.Data());
@@ -438,12 +464,13 @@ if (!isMC) {
 
   config->SetmTBinning((suffix == "0" && fullBlastQA));
   config->SetPtQA((suffix == "0" && fullBlastQA));
+  config->SetPhiEtaBinnign(suffix == "0" && fullBlastQA);
   config->SetMassQA((suffix == "0" && fullBlastQA));
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(mixingDepth);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   config->SetMinimalBookingME(suffix != "0");

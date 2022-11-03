@@ -281,8 +281,8 @@ void AliEmcalRejectMCBackground::ProcessClusters(){
 
   for(Long_t iCluster = 0, nacc = 0; iCluster < ncl; ++iCluster){
     AliVCluster* clus = NULL;
-    if(fIsESD) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fEvent->GetCaloCluster(iCluster));
-    else clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fClustersIn->At(iCluster));
+    if(fIsESD) clus = static_cast<AliESDCaloCluster*>(fEvent->GetCaloCluster(iCluster));
+    else clus = static_cast<AliAODCaloCluster*>(fClustersIn->At(iCluster));
     if (!clus) continue;
 
     if(IsParticleFromBGEvent(clus->GetLabelAt(0), fMC, fEvent, fDebugLevel) < 1){
@@ -310,8 +310,8 @@ void AliEmcalRejectMCBackground::ProcessTracks(){
 
   for (Int_t iTrack=0, nacc=0; iTrack < ntr; ++iTrack) {
     AliVTrack* track = NULL;
-    if(fIsESD) track = new AliESDtrack(*(AliESDtrack*) fEsdEvent->GetTrack(iTrack));
-    else track = new AliAODTrack(*(AliAODTrack*) fTracksIn->At(iTrack));
+    if(fIsESD) track = static_cast<AliESDtrack*>(fEsdEvent->GetTrack(iTrack));
+    else track = static_cast<AliAODTrack*>(fTracksIn->At(iTrack));
     if (!track) continue;
 
     if(IsParticleFromBGEvent(TMath::Abs(track->GetLabel()), fMC, fEvent, fDebugLevel) < 1){

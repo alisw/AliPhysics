@@ -63,10 +63,10 @@ class AliJCDijetAna : public TObject
 
         int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
-        void SetPtHardBin(double flptHardBin) {fptHardBin = flptHardBin; }
+        void SetPythiaInfo(double flptHardBin, double flsigma, double fltrial) {fptHardBin = flptHardBin; fPythiaSigma=flsigma; fPythiaTrial=fltrial;}
         void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
-        void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos);
-        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet);
+        void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos, double hisWeight=1.0);
+        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet, double hisWeight=1.0);
         void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
         double DeltaR(double eta1, double eta2, double phi1, double phi2);
@@ -112,6 +112,8 @@ class AliJCDijetAna : public TObject
         TRandom3 *randomGenerator;
         double fDeltaPt;
         double fptHardBin;
+        double fPythiaSigma;
+        double fPythiaTrial;
         double randConePhi;
         double randConeEta;
         double randConePt;

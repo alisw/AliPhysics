@@ -41,9 +41,9 @@ public:
   virtual ~AliAnalysisTaskIDFragmentationFunction();
   
   virtual void   UserCreateOutputObjects();
-  virtual void   Init();
   virtual void   LocalInit() {Init();};
-
+  void InitialiseFastSimulationFunctions();
+  
   Bool_t         FillHistograms();
   virtual void   Terminate(Option_t* );
   virtual Bool_t Notify();
@@ -103,6 +103,10 @@ public:
   
   virtual TF1** GetEfficiencyFunctions() const { return fEffFunctions;};
   virtual void SetEfficiencyFunctions(TF1** effFunctions) {fEffFunctions = new TF1*[2*AliPID::kSPECIES];for (Int_t i=0;i<2*AliPID::kSPECIES;++i)fEffFunctions[i]=effFunctions[i];};   
+  virtual void ResetEffFunctions() {delete fEffFunctions; fEffFunctions = 0x0;};
+  
+  virtual TString GetFastSimulationParameters() const { return fastSimulationParameters; };
+  virtual void SetFastSimulationParameters(TString value) { fastSimulationParameters = value; };
   
   virtual Double_t GetFastSimEffFactor() const { return fFastSimEffFactor; };
   virtual void SetFastSimEffFactor(Double_t value) { fFastSimEffFactor = value; };
@@ -303,7 +307,8 @@ public:
   Double_t fZSoftDrop;
   
   Bool_t fUseFastSimulations;
-  TF1** fEffFunctions;                       // For fast simulations
+  TString fastSimulationParameters;          // Parameter string to store FastSimulation parameters
+  TF1** fEffFunctions;                       //! For fast simulations
   Double_t fFastSimEffFactor;
   Double_t fFastSimRes;
   Double_t fFastSimResFactor;
@@ -318,7 +323,7 @@ private:
   AliAnalysisTaskIDFragmentationFunction(const  AliAnalysisTaskIDFragmentationFunction&);   //Not implemented in AliAnalysisTaskEmcalJet
   AliAnalysisTaskIDFragmentationFunction& operator=(const  AliAnalysisTaskIDFragmentationFunction);   //Not implemented AliAnalysisTaskEmcalJet
   
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 25);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 26);
 };
 
 

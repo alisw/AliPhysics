@@ -39,7 +39,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 	Int_t		IsSample			= 10;
 	Short_t		nCentFl				= 0;
 	Bool_t		fLS				= false;
-	Bool_t		fAddTPCPileupCuts = true;
+	Bool_t		fAddTPCPileupCuts = false;
 	Double_t	fESDvsTPConlyLinearCut = 15000.;
 	//Bool_t		fNUE 				= true;
 	//Bool_t		fNUA				= true;

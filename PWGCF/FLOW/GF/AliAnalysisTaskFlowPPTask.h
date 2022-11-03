@@ -192,6 +192,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
+		virtual void   			NotifyRun();
         virtual void            Terminate(Option_t* option);
 
         
@@ -205,6 +206,9 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetTPCclusters(Int_t tpcClus){fTPCclusters = tpcClus;}
 		virtual void   SetTPCclustersDefault(Int_t tpcClus){fTPCclustersDefault = tpcClus;} // The tpcCluster for NtrksCounter 
         virtual void   SetChi2PerTPCcluster(Double_t chi2){fChi2PerTPCcluster = chi2;}	    // max. chi2 per TPC cluster
+		virtual void	SetEventWeightSetOne(Bool_t useOne){
+			fEventWeightSetToOne=useOne;	//Set Event Weight to 1
+		}
 		virtual void	SetAddTPCPileupCuts(Bool_t usePileupCuts){fAddTPCPileupCuts=usePileupCuts;} // use TPC pile up Cuts
 		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
 		virtual void   SetMinITSClusters(Int_t minClus){fMinITSClus = minClus;}
@@ -261,6 +265,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		Int_t			fTPCclusters;				// min. TPC clusters
 		Int_t			fTPCclustersDefault;			// min. TPC clusters (for NtrksCounter)
 		Int_t			fChi2PerTPCcluster;			// max. chi2 per TPC cluster
+		Bool_t			fEventWeightSetToOne;		// Set Event weight to 1
 		Bool_t			fAddTPCPileupCuts;			// Pile up Cuts in TPC
 		Double_t		fESDvsTPConlyLinearCut;     // ESDvsTPConlyLinearCut : default = 15000
 		Int_t			fMinITSClus;				// min ITS clusters, LHC15ijl

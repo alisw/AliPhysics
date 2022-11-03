@@ -183,6 +183,7 @@ ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
 		fFMDAacceptanceCutUpper(4.8),
 		fFMDCacceptanceCutLower(-3.2),
 		fFMDCacceptanceCutUpper(-1.8),
+		nSamples(10),
 		rand(2333)
 {
 }
@@ -300,6 +301,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	fFMDAacceptanceCutUpper(4.8),
 	fFMDCacceptanceCutLower(-3.2),
 	fFMDCacceptanceCutUpper(-1.8),
+	nSamples(10),
 	rand(2333)
 {
 
@@ -444,6 +446,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	fFMDAacceptanceCutUpper(4.8),
 	fFMDCacceptanceCutLower(-3.2),
 	fFMDCacceptanceCutUpper(-1.8),
+	nSamples(10),
 	rand(2333)
 {
 
@@ -485,8 +488,14 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
 	fListOfObjects->Add(hEventCount);
 
-	std::vector<Double_t>   fCentBins = {0,5,10,15,20,25,30,40,50,60,70,80,90,100,110,120,130,140,150}; //
+	// BinMethod 1:Bootstrap, 2:Pt, 4:Nch, 8:Vtx
+	std::vector<Double_t>   fCentBins; 
+	std::vector<Double_t>   fCentBinsForMixing;
+	fCentBinsForMixing.assign({0,5,10,15,20,25,30,40,50,60,70,80,90,100,110,120,130,140,150}); 
+	if (fBinMethod & 4) fCentBins.assign({0,5,10,15,20,25,30,40,50,60,70,80,90,100,110,120,130,140,150}); 
+	else fCentBins.assign({0, 150});
 	for (int i = 0; i < fCentBins.size(); i++) fCentBins[i] += 0.5;
+	for (int i = 0; i < fCentBinsForMixing.size(); i++) fCentBinsForMixing[i] += 0.5;
 
 	hMult = new TH1F("hMult", ";number of tracks; entries", fCentBins.size()-1, fCentBins.data());
 	hMult->Sumw2();
@@ -523,24 +532,24 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	Int_t nSteps = 1;
 	Double_t binning_deta_tpctpc[37] = {-1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,  0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6, 1.7, 1.8};
 	Double_t binning_deta_tpcfmd[43]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8, 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
-	std::vector<Double_t>   fPtBinsTrigCharged = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,8.0,10.0};    // I don't want to set the things outside
-	std::vector<Double_t>   fzVtxBins = {-10.0, -8.0, -6.0, -4.0, -2.0, 0, 2.0, 4.0, 6.0, 8.0, 10.0};
+	std::vector<Double_t>   fPtBinsTrigCharged;
+	if (fBinMethod & 2) fPtBinsTrigCharged.assign({0.2, 1.0, 3.0, 4.0});
+	else fPtBinsTrigCharged.assign({0.2, 3.0});
+	std::vector<Double_t>   fzVtxBins;
+	if (fBinMethod & 8) fzVtxBins.assign({-10.0, -8.0, -6.0, -4.0, -2.0, 0, 2.0, 4.0, 6.0, 8.0, 10.0});
+	else fzVtxBins.assign({-10.0, 10.0});
+	std::vector<Double_t>   fzVtxBinsForMixing;
+	fzVtxBinsForMixing.assign({-10.0, -8.0, -6.0, -4.0, -2.0, 0, 2.0, 4.0, 6.0, 8.0, 10.0});
+
 	Int_t sizeEta = 0;
 	if (anaType.EqualTo("TPCTPC")) sizeEta = 36;
 	else if (anaType.EqualTo("TPCFMD")) sizeEta = 42;
 	else if (anaType.EqualTo("FMDFMD")) sizeEta = 25;
 
 	const Int_t sizeCent = fCentBins.size() - 1;
-	Int_t sizeOfSamples = 1; // (Int_t) fNOfSamples; 
-	Int_t sizeOfVtxZbins = 10; // (Int_t) fNOfSamples; 
-	if (fBootstrapStat) {
-		sizeOfSamples = 30;
-		fPtBinsTrigCharged.clear();
-		fPtBinsTrigCharged.push_back(0.2);
-		fPtBinsTrigCharged.push_back(1.0);
-		fPtBinsTrigCharged.push_back(3.0);
-		fPtBinsTrigCharged.push_back(4.0);
-	}
+	Int_t sizeOfSamples = (fBinMethod & 1) ? nSamples : 1;
+	Int_t sizeOfVtxZbins = fzVtxBins.size() - 1; // (Int_t) fNOfSamples; 
+
 	Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
 	const Int_t iBinning[] = {sizeEta,80,sizeOfVtxZbins,sizeOfSamples,sizePtTrig,sizeCent};
 
@@ -554,9 +563,9 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	fPoolMaxNEvents = 2000;
 	fPoolMinNTracks = 50000;
     fMinEventsToMix = 5;
-	int fNCentBins = fCentBins.size() - 1;
-	int fNzVtxBins = fzVtxBins.size() - 1;
-	fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins, fCentBins.data(), fNzVtxBins, fzVtxBins.data());
+	int fNCentBinsForMixing = fCentBinsForMixing.size() - 1;
+	int fNzVtxBinsForMixing = fzVtxBinsForMixing.size() - 1;
+	fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBinsForMixing, fCentBinsForMixing.data(), fNzVtxBinsForMixing, fzVtxBinsForMixing.data());
 
 	if (!fPoolMgr) {
 		AliError("Event Pool manager not created!");
@@ -624,7 +633,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::NotifyRun() {
 void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 	// Mingrui: apply the bootstrap later
 	int sizeOfSamples = 1;
-	if (fBootstrapStat) sizeOfSamples = 30;
+	if (fBootstrapStat) sizeOfSamples = nSamples;
 	bootstrap_value = rand.Integer(sizeOfSamples);
 
 	// Check if it can pass the trigger
@@ -978,9 +987,12 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 						Double_t etaAss = trackAss->Eta();
 						Double_t chargeAss = trackAss->Charge();
 
+						// We should not use this to reject self correlation in mixed event
+						/*
 						if (trackTrig->GetID() == trackAss->GetID()) {
 							continue;
 						}
+						*/
 
 						//..check if the tracks are the same
 						//

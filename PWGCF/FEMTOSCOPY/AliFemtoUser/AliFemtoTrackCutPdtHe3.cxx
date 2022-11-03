@@ -47,6 +47,8 @@ AliFemtoESDTrackCut()
     fdNSigmaVspTcut = 0;
     fdcutline_k = 10/1.1;
     fdcutline_b = -15.;
+
+    fUse2pT = 0;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -90,6 +92,9 @@ AliFemtoESDTrackCut(aCut)
     fdNSigmaVspTcut = aCut.fdNSigmaVspTcut;
     fdcutline_k = aCut.fdcutline_k;
     fdcutline_b = aCut.fdcutline_b;
+   
+    fUse2pT = aCut.fUse2pT;
+   
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -141,6 +146,8 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     fdNSigmaVspTcut = aCut.fdNSigmaVspTcut;
     fdcutline_k = aCut.fdcutline_k;
     fdcutline_b = aCut.fdcutline_b;
+
+    fUse2pT = aCut.fUse2pT;
 
     return *this;
 }
@@ -252,7 +259,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
     float tEta = 0.;
     float tTotalP = 0.;
 
-    if(fMostProbable == 15){
+    if(fUse2pT == 1){
         TLorentzVector thisTrackMom;
         tEnergy = ::sqrt(track->P().Mag2() * 4. + fMass * fMass);
         thisTrackMom.SetPxPyPzE(2.*track->P().x(),2.*track->P().y(),2.*track->P().z(),tEnergy);
@@ -441,7 +448,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
             }
  	    //\ for He3 PID
             else if (fMostProbable == 15){
-		        //cout<<"enter He PID"<<endl;
                 if (IsHe3NSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH()) ){
 
 		        imost = 15;
@@ -561,7 +567,7 @@ bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float s
     return false;
 }
 bool AliFemtoTrackCutPdtHe3::IsHe3NSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3){
-	//cout<<"IsHe3NSigma "<<nsigmaTPCHe3<<" "<<nsigmaTOFHe3<<endl;
+//	cout<<"IsHe3NSigma "<<nsigmaTPCHe3<<" "<<nsigmaTOFHe3<<endl;
     //double massPDGD=2.8089;
     if (fNsigmaTPCTOF) {
         if (mom > SwitchMom_He3){
@@ -943,5 +949,7 @@ void AliFemtoTrackCutPdtHe3::Setfdline(float ak,float ab){
 	fdcutline_k = ak;
 	fdcutline_b = ab;
 }
-
+void AliFemtoTrackCutPdtHe3::Setf2pT(int aUse){
+	fUse2pT = aUse;
+}
 

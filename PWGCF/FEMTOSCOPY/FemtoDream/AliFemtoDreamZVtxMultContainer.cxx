@@ -129,17 +129,24 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               float zvtx = part1.GetZVtx();
               
               // load dmeson info
+              int heavy_mult = part2.GetParticleMult();
               float heavy_invmass = part2.GetInvMass();
               float heavy_pt = part2.GetPt();
               float heavy_eta = part2.GetEta()[0];
               int heavy_origin = part2.GetParticleOrigin();
               std::vector<int>  *heavy_daus = new std::vector<int>(part2.GetIDTracks());
+              float heavy_softpion_px = part2.GetSoftPionPx();
+              float heavy_softpion_py = part2.GetSoftPionPy();
+              float heavy_softpion_pz = part2.GetSoftPionPz();
               float heavy_bkgscore = part2.GetBkgScore();
               float heavy_promptscore = part2.GetPromptScore();
               int heavy_d0label = part2.GetDzeroLabel();
 
               // load light info
-              float light_pt = part1.GetPt();
+              int light_mult = part1.GetParticleMult();
+              float light_px = part1.GetPx();
+              float light_py = part1.GetPy();
+              float light_pz = part1.GetPz();
               float light_eta = part1.GetEta()[0];
               float light_nsigtpc = part1.GetNSigTPC();
               float light_nsigtof = part1.GetNSigTOF();
@@ -148,6 +155,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               float light_dcaz = part1.GetDCAZ();
               float light_dcaxy = part1.GetDCAXY();
               int light_label = part1.GetID();
+              int light_motherPdg = part1.GetMotherPDG();
 
               // event
               tree->SetBranchAddress("mult", &mult);
@@ -157,17 +165,24 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("kStar", &RelativeK);
 
               // heavy particle
+              tree->SetBranchAddress("heavy_mult", &heavy_mult);
               tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
               tree->SetBranchAddress("heavy_pt", &heavy_pt);
               tree->SetBranchAddress("heavy_eta", &heavy_eta);
               tree->SetBranchAddress("heavy_origin", &heavy_origin);
               tree->SetBranchAddress("heavy_daus", &heavy_daus);
+              tree->SetBranchAddress("heavy_softpion_px", &heavy_softpion_px);
+              tree->SetBranchAddress("heavy_softpion_py", &heavy_softpion_py);
+              tree->SetBranchAddress("heavy_softpion_pz", &heavy_softpion_pz);
               tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
               tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
               tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
 
               // light particle
-              tree->SetBranchAddress("light_pt", &light_pt);
+              tree->SetBranchAddress("light_mult", &light_mult);
+              tree->SetBranchAddress("light_px", &light_px);
+              tree->SetBranchAddress("light_py", &light_py);
+              tree->SetBranchAddress("light_pz", &light_pz);
               tree->SetBranchAddress("light_eta", &light_eta);
               tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
               tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
@@ -176,6 +191,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               tree->SetBranchAddress("light_dcaz", &light_dcaz);
               tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
               tree->SetBranchAddress("light_label", &light_label);
+              tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
               tree->Fill();
             }
           }
@@ -256,17 +272,24 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 float zvtx = itPart2->GetZVtx();
                 
                 // load dmeson info
+                int heavy_mult = itPart2->GetParticleMult();
                 float heavy_invmass = itPart2->GetInvMass();
                 float heavy_pt = itPart2->GetPt();
                 float heavy_eta = itPart2->GetEta()[0];
                 int heavy_origin = itPart2->GetParticleOrigin();
                 std::vector<Int_t>  * heavy_daus = new std::vector<int>(itPart2->GetIDTracks());
+                float heavy_softpion_px = itPart2->GetSoftPionPx();
+                float heavy_softpion_py = itPart2->GetSoftPionPy();
+                float heavy_softpion_pz = itPart2->GetSoftPionPz();
                 float heavy_bkgscore = itPart2->GetBkgScore();
                 float heavy_promptscore = itPart2->GetPromptScore();
                 int heavy_d0label = itPart2->GetDzeroLabel();
 
                 // load light flavor info
-                float light_pt = itPart1->GetPt();
+                int light_mult = itPart1->GetParticleMult();
+                float light_px = itPart1->GetPx();
+                float light_py = itPart1->GetPy();
+                float light_pz = itPart1->GetPz();
                 float light_eta = itPart1->GetEta()[0];
                 float light_nsigtpc = itPart1->GetNSigTPC();
                 float light_nsigtof = itPart1->GetNSigTOF();
@@ -275,6 +298,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 float light_dcaz = itPart1->GetDCAZ();
                 float light_dcaxy = itPart1->GetDCAXY();
                 int light_label = itPart1->GetID();
+                int light_motherPdg = itPart1->GetMotherPDG();
 
                 // event
                 tree->SetBranchAddress("mult", &mult);
@@ -284,17 +308,24 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("kStar", &RelativeK);
 
                 // heavy particle
+                tree->SetBranchAddress("heavy_mult", &heavy_mult);
                 tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
                 tree->SetBranchAddress("heavy_pt", &heavy_pt);
                 tree->SetBranchAddress("heavy_eta", &heavy_eta);
                 tree->SetBranchAddress("heavy_origin", &heavy_origin);
                 tree->SetBranchAddress("heavy_daus", &heavy_daus);
+                tree->SetBranchAddress("heavy_softpion_px", &heavy_softpion_px);
+                tree->SetBranchAddress("heavy_softpion_py", &heavy_softpion_py);
+                tree->SetBranchAddress("heavy_softpion_pz", &heavy_softpion_pz);
                 tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
                 tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
                 tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
 
                 // light particle
-                tree->SetBranchAddress("light_pt", &light_pt);
+                tree->SetBranchAddress("light_mult", &light_mult);
+                tree->SetBranchAddress("light_px", &light_px);
+                tree->SetBranchAddress("light_py", &light_py);
+                tree->SetBranchAddress("light_pz", &light_pz);
                 tree->SetBranchAddress("light_eta", &light_eta);
                 tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
                 tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
@@ -303,6 +334,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 tree->SetBranchAddress("light_dcaz", &light_dcaz);
                 tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
                 tree->SetBranchAddress("light_label", &light_label);
+                tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
                 tree->Fill();
               }
             }

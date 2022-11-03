@@ -116,11 +116,13 @@
 #pragma link C++ class AliAnalysisTaskTRDtriggerTracks+;
 #pragma link C++ class AliAnalysisTaskSigmaPlus+;
 #pragma link C++ class AliAODTrackreduced+;
+#pragma link C++ class AliAODTrackcorrelation+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTask_pdLd+;
 #pragma link C++ class AliAODTrackTiny+;
 #pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
+#pragma link C++ class AliAnalysisTaskHe3TriTree+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;

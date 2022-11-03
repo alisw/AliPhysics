@@ -58,17 +58,16 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fAODEvent(0),
   fAODHandler(0),
   fHeader(0),
-  fMCEvent(0),
-  fStack(0),
   fPIDResponse(0),
   fEventPoolManager(0),
+  fStack(0),
   fHistList_Event(0),
   fHistList_Proton(0),
-  fProtonMcHistList(0),
   fHistList_Deuteron(0),
   fHistList_ProtonDeuteron(0),
   fHistList_AntiProton(0),
   fHistList_AntiDeuteron(0),
+  fHistList_AntiProtonAntiDeuteron(0),
   fCollisionSystem(0),
   fHist_Event_CutCounter(0),
   fHist_Event_PrimVertexZ(0),
@@ -101,11 +100,6 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fHist_Proton_TOF_MassSquare_p(0),
   fHist_Proton_ITS_dEdx_pT(0),
   fHist_Proton_ITS_dEdx_p(0),
-  fMcHistPtRecProton(0),
-  fMcHistPtGenProton(0),
-  fMcHistDCAPrimaryProton(0),
-  fMcHistDCASecondaryProton(0),
-  fMcHistDCAMaterialProton(0),
   fHist_Deuteron_CutCounter(0),
   fHist_Deuteron_pT(0),
   fHist_Deuteron_p(0),
@@ -229,17 +223,16 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fAODEvent(0),
   fAODHandler(0),
   fHeader(0),
-  fMCEvent(0),
-  fStack(0),
   fPIDResponse(0),
   fEventPoolManager(0),
+  fStack(0),
   fHistList_Event(0),
   fHistList_Proton(0),
-  fProtonMcHistList(0),
   fHistList_Deuteron(0),
   fHistList_ProtonDeuteron(0),
   fHistList_AntiProton(0),
   fHistList_AntiDeuteron(0),
+  fHistList_AntiProtonAntiDeuteron(0),
   fCollisionSystem(CollisionSystem),
   fHist_Event_CutCounter(0),
   fHist_Event_PrimVertexZ(0),
@@ -272,11 +265,6 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_Proton_TOF_MassSquare_p(0),
   fHist_Proton_ITS_dEdx_pT(0),
   fHist_Proton_ITS_dEdx_p(0),
-  fMcHistPtRecProton(0),
-  fMcHistPtGenProton(0),
-  fMcHistDCAPrimaryProton(0),
-  fMcHistDCASecondaryProton(0),
-  fMcHistDCAMaterialProton(0),
   fHist_Deuteron_CutCounter(0),
   fHist_Deuteron_pT(0),
   fHist_Deuteron_p(0),
@@ -374,6 +362,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_AntiDeuteron_TOF_MassSquare_p(0),
   fHist_AntiDeuteron_ITS_dEdx_pT(0),
   fHist_AntiDeuteron_ITS_dEdx_p(0),
+  fHist_AntiProtonAntiDeuteron_CutCounter(0),
   fHist_AntiProtonAntiDeuteron_SED(0),
   fHist_AntiProtonAntiDeuteron_MED(0),
   fHist_AntiProtonAntiDeuteron_RPD(0),
@@ -398,8 +387,6 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   DefineOutput(5,TList::Class());
   DefineOutput(6,TList::Class());
   DefineOutput(7,TList::Class());
-
-
 
 }
 
@@ -466,9 +453,6 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
 
   fHistList_Proton = new TList();
   fHistList_Proton->SetOwner();
-
-  fProtonMcHistList = new TList();
-  fProtonMcHistList->SetOwner();
 
   fHistList_Deuteron = new TList();
   fHistList_Deuteron->SetOwner();
@@ -681,35 +665,6 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_Proton_ITS_dEdx_p->GetYaxis()->SetTitle("ITS signal (a.u.)");
   fHistList_Proton->Add(fHist_Proton_ITS_dEdx_p);
 
-
-
-
-  // MC-only histograms for protons
-
-  fMcHistPtRecProton = new TH1F("fMcHistPtRecProton","#it{p}_{T} distribution of reconstructed MC protons",240,0.0,6.0);
-  fMcHistPtRecProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistPtRecProton->GetYaxis()->SetTitle("counts");
-  fProtonMcHistList->Add(fMcHistPtRecProton);
-
-  fMcHistPtGenProton = new TH1F("fMcHistPtGenProton","#it{p}_{T} distribution of generated MC protons",240,0.0,6.0);
-  fMcHistPtGenProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistPtGenProton->GetYaxis()->SetTitle("counts");
-  fProtonMcHistList->Add(fMcHistPtGenProton);
-
-  fMcHistDCAPrimaryProton = new TH2F("fMcHistDCAPrimaryProton","DCA of MC primary protons",240,0.0,6.0,1000,-3.0,+3.0);
-  fMcHistDCAPrimaryProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistDCAPrimaryProton->GetYaxis()->SetTitle("DCA (cm)");
-  fProtonMcHistList->Add(fMcHistDCAPrimaryProton);
-
-  fMcHistDCASecondaryProton = new TH2F("fMcHistDCASecondaryProton","DCA of MC secondary protons",240,0.0,6.0,1000,-3.0,+3.0);
-  fMcHistDCASecondaryProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistDCASecondaryProton->GetYaxis()->SetTitle("DCA (cm)");
-  fProtonMcHistList->Add(fMcHistDCASecondaryProton);
-
-  fMcHistDCAMaterialProton = new TH2F("fMcHistDCAMaterialProton","DCA of MC material protons",240,0.0,6.0,1000,-3.0,+3.0);
-  fMcHistDCAMaterialProton->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fMcHistDCAMaterialProton->GetYaxis()->SetTitle("DCA (cm)");
-  fProtonMcHistList->Add(fMcHistDCAMaterialProton);
 
 
 
@@ -1442,8 +1397,8 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 
   bool isMC = false;
 
-  AliMCEvent* fMCEvent = eventHandler->MCEvent();
-  if(!fMCEvent && isMC)::Fatal("AliAnalysisTask_pdLd::UserExec","No MC event found!");
+//  AliMCEvent* fMCEvent = eventHandler->MCEvent();
+//  if(!fMCEvent && isMC)::Fatal("AliAnalysisTask_pdLd::UserExec","No MC event found!");
 
   fAODEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAODEvent)::Fatal("AliAnalysisTask_pdLd::UserExec","No AOD event found!");

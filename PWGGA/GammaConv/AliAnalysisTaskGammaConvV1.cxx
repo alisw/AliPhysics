@@ -377,6 +377,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fFileNameBroken(NULL),
   fFileWasAlreadyReported(kFALSE),
   fAODMCTrackArray(NULL),
+  fAddressChanges(NULL),
   fMapPhotonHeaders()
 {
 
@@ -700,6 +701,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fFileNameBroken(NULL),
   fFileWasAlreadyReported(kFALSE),
   fAODMCTrackArray(NULL),
+  fAddressChanges(NULL),
   fMapPhotonHeaders()
 {
   // Define output slots here
@@ -2374,6 +2376,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   tBrokenFiles = new TTree("BrokenFiles", "BrokenFiles");
   tBrokenFiles->Branch("fileName",&fFileNameBroken);
   fOutputContainer->Add(tBrokenFiles);
+  
+  fAddressChanges = new TH1F("fAddressChanges","fAddressChanges", 2, 0., 2.);
+  fOutputContainer->Add(fAddressChanges);
 
   OpenFile(1);
   PostData(1, fOutputContainer);
@@ -2432,7 +2437,22 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   fInputEvent = InputEvent();
 
   // Set MC events
-  if(fIsMC>0) fMCEvent = MCEvent();
+  if(fIsMC>0) {
+    fMCEvent = MCEvent();
+    
+    if(fInputEvent->IsA()==AliAODEvent::Class()){
+      TClonesArray* lOldAddress = fAODMCTrackArray;
+      fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      // remove next line  and fAddressChanges after first trainrun 
+      if (lOldAddress && fAODMCTrackArray!=lOldAddress) fAddressChanges->Fill(0.5);
+      
+      if (fAODMCTrackArray == NULL){
+        fAddressChanges->Fill(1.5);
+        AliInfo("AODMCTrackArray could not be loaded");
+        return;
+      }
+    }
+  }
 
   //calculating the weight for the centrality flattening
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
@@ -2480,7 +2500,10 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
     fiEventCut = dynamic_cast<AliConvEventCuts*>(fEventCutArray->At(iCut));
     fiPhotonCut = dynamic_cast<AliConversionPhotonCuts*>(fCutArray->At(fiCut));
     fiMesonCut  = dynamic_cast<AliConversionMesonCuts*>(fMesonCutArray->At(fiCut));
-
+    
+    // reset the event cuts fAODMCTrackArray to nullptr at the beginning of each event since in AliConvEventCuts it is only obtained from a new event if it's not a nullptr - hence only once at the beginning of a job. 
+    if(fIsMC) fiEventCut->ResetAODMCTrackArray(); 
+    
     Int_t eventNotAccepted = fiEventCut->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
     if( fIsMC == 2 ){
       Float_t xsection      = -1.;
@@ -2537,12 +2560,13 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
       if(fDoCentralityFlat > 0) fHistoNEventsWeighted[iCut]->Fill(eventQuality, fWeightCentrality[iCut]*fWeightJetJetMC);
 
-      if(fIsMC > 0){
-        // event not accepted due to no vertex found. MC particles still have to be taken into account
-        if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessMCParticles(2);
-        if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessAODMCParticles(2);
+      if(eventQuality == 5){ // event not accepted due to no vertex
+        if(fIsMC > 0){
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessMCParticles(2);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessAODMCParticles(2);
+        }
       }
 
       continue;
@@ -2604,6 +2628,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
                                               fMCEvent);
         }
         else if(fInputEvent->IsA()==AliAODEvent::Class()){
+          if(fiEventCut->GetSignalRejection()==5) fiEventCut->ResetMcHeader();
           fiEventCut->GetNotRejectedParticles(fiEventCut->GetSignalRejection(),
                                               fiEventCut->GetAcceptedHeader(),
                                               fInputEvent);
@@ -3004,11 +3029,6 @@ void AliAnalysisTaskGammaConvV1::InitializeBDT()
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessPhotonBDT()
 {
-  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) {
-    AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
   // Loop over Photon Candidates allocated by ReaderV1
   for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
     AliAODConversionPhoton *PhotonCandidate=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
@@ -3074,13 +3094,6 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
     magFieldFlip =  -1.0;
   }
 
-  //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-
-  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) {
-    AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
   if (fAODMCTrackArray != NULL && TruePhotonCandidate != NULL){
 
     AliAODMCParticle *posDaughter = (AliAODMCParticle*) fAODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
@@ -3401,13 +3414,6 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelecte
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
-
-  //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL){
-    AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
 
   // Check if MC generated particles should be filled for this event using the selected trigger
   if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
@@ -4083,16 +4089,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles(int isCurrentEventSelected)
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
-  // fAODMCTrackArray is used when the flag DoIsolatedAnalysis is True. And can only work on AODs. This "if" is necessary for any  task running in ESDs, otherwise one skips the calculation
-  if(fDoIsolatedAnalysis){
-    if (fIsMC>0){
-      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (fAODMCTrackArray == NULL){
-	AliInfo("AODMCTrackArray could not be loaded");
-	return;
-      }
-    }
-  }
+  
   // Conversion Gammas
   if(fGammaCandidates->GetEntries()>1){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
@@ -4629,11 +4626,6 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
 {
-  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) {
-    AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
   Double_t magField = fInputEvent->GetMagneticField();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();

@@ -40,7 +40,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fMaxPt(3.0),
     fTPCclusters(70),
     fChi2PerTPCcluster(10000),
-	fAddTPCPileupCuts(true),
+	fEventWeightSetToOne(false),
+	fAddTPCPileupCuts(false),
 	fESDvsTPConlyLinearCut(15000.),
     fMinITSClus(0),
     fMaxChi2(0),
@@ -96,7 +97,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	fMinPt(0.2),
 	fMaxPt(3.0),
 	fTPCclusters(70),
-	fAddTPCPileupCuts(true),
+	fEventWeightSetToOne(false),
+	fAddTPCPileupCuts(false),
 	fESDvsTPConlyLinearCut(15000.),
 	fMinITSClus(0),
 	fMaxChi2(0),
@@ -270,6 +272,16 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	
 }
 
+//_________________________________________________________________
+void AliAnalysisTaskFlowPPTask::NotifyRun() {
+    if (fAddTPCPileupCuts) {
+      Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+	  fEventCuts.fUseVariablesCorrelationCuts = true;
+      fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+      fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
+    }
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 {
@@ -334,19 +346,14 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
     // 	pos[2] = pos[2]-vtxp[2];
 	// 	hDCAxyBefore->Fill(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),aodTrk->Pt());
 	// 	hDCAzBefore->Fill(pos[2],aodTrk->Pt());
-	// }	
+	// }
 
-	float CentralityForPileup = (static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")))->GetMultiplicityPercentile("V0M");
-	if(fAddTPCPileupCuts){
-		fEventCuts.fUseVariablesCorrelationCuts = true;
-		fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-		if (fPeriod.EqualTo("LHC15o") && CentralityForPileup >=0 && CentralityForPileup <=10){
-			fEventCuts.fESDvsTPConlyLinearCut[0] = 500.;
-		}
-		else{
-			fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
-		}
-	}
+
+	// if(fAddTPCPileupCuts){
+	// 	fEventCuts.fUseVariablesCorrelationCuts = true;
+	// 	fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+	// 	fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
+	// }
 	
 	
 	if(fTrigger==0){
@@ -1551,6 +1558,20 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	double Weight_Dn2_3subLM = 1.;
 	double Weight_Dn2_3subRM = 1.;
 	double Weight_Dn2_3subLR = 1.;
+	if(!fEventWeightSetToOne){
+		Weight_Dn2=Dn2;
+		Weight_Dn2Gap0 = Dn2Gap0;
+		Weight_Dn2Gap2 = Dn2Gap2;
+		Weight_Dn2Gap4 = Dn2Gap4;
+		Weight_Dn2Gap6 = Dn2Gap6;
+		Weight_Dn2Gap8 = Dn2Gap8;
+		Weight_Dn2Gap10 = Dn2Gap10;
+		Weight_Dn2Gap12 = Dn2Gap12;
+		Weight_Dn2Gap14 = Dn2Gap14;
+		Weight_Dn2_3subLM = Dn2_3subLM;
+		Weight_Dn2_3subRM = Dn2_3subRM;
+		Weight_Dn2_3subLR = Dn2_3subLR;
+	}
 
 	//calculate no eta-gap, gap1.0, gap1.4, 3subevent v2
 	if(NtrksAfter > 1 && Dn2 != 0) {
@@ -1888,6 +1909,23 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	double Weight_Dn3Gap8B = 1.;
 	double Weight_Dn3Gap10B = 1.;
 	double Weight_Dn3Gap12B = 1.;
+	if(!fEventWeightSetToOne){
+		Weight_Dn3 = Dn3;
+		Weight_Dn3Gap0A = Dn3Gap0A;
+		Weight_Dn3Gap2A = Dn3Gap2A;
+		Weight_Dn3Gap4A = Dn3Gap4A;
+		Weight_Dn3Gap6A = Dn3Gap6A;
+		Weight_Dn3Gap8A = Dn3Gap8A;
+		Weight_Dn3Gap10A = Dn3Gap10A;
+		Weight_Dn3Gap12A = Dn3Gap12A;
+		Weight_Dn3Gap0B = Dn3Gap0B;
+		Weight_Dn3Gap2B = Dn3Gap2B;
+		Weight_Dn3Gap4B = Dn3Gap4B;
+		Weight_Dn3Gap6B = Dn3Gap6B;
+		Weight_Dn3Gap8B = Dn3Gap8B;
+		Weight_Dn3Gap10B = Dn3Gap10B;
+		Weight_Dn3Gap12B = Dn3Gap12B;
+	}
 
 
 	if(NtrksAfter > 2 && Dn3 != 0 )
@@ -2124,6 +2162,19 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	double Weight_Dn4_3subMMLR = 1.;
 	double Weight_Dn4_3subLLMR = 1.;
 	double Weight_Dn4_3subRRML = 1.;
+	if(!fEventWeightSetToOne){
+		Weight_Dn4 = Dn4;
+		Weight_Dn4Gap0 = Dn4Gap0;
+		Weight_Dn4Gap2 = Dn4Gap2;
+		Weight_Dn4Gap4 = Dn4Gap4;
+		Weight_Dn4Gap6 = Dn4Gap6;
+		Weight_Dn4Gap8 = Dn4Gap8;
+		Weight_Dn4Gap10 = Dn4Gap10;
+		Weight_Dn4Gap12 = Dn4Gap12;
+		Weight_Dn4_3subMMLR = Dn4_3subMMLR;
+		Weight_Dn4_3subLLMR = Dn4_3subLLMR;
+		Weight_Dn4_3subRRML = Dn4_3subRRML;
+	}
 
 	if(NtrksAfter > 3 && Dn4 != 0)
 	{
@@ -2454,6 +2505,11 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	double Weight_Dn6 = 1.;
 	double Weight_Dn6Gap0 = 1.;
 	double Weight_Dn6Gap10 = 1.;
+	if(!fEventWeightSetToOne){
+		Weight_Dn6 = Dn6;
+		Weight_Dn6Gap0 = Dn6Gap0;
+		Weight_Dn6Gap10 = Dn6Gap10;
+	}
 
 	if(NtrksAfter > 5 && Dn6 != 0)
 	{
@@ -2492,6 +2548,10 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	double Weight_Dn8 = 1.;
 	// Gap0 isn't calculated in this version
 	double Weight_Dn8Gap0 = 1.;
+	if(!fEventWeightSetToOne){
+		Weight_Dn8=Dn8;
+		Weight_Dn8Gap0=Dn8Gap0;
+	}
 
 	if(NtrksAfter > 7 && Dn8 != 0)
 	{

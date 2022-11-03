@@ -44,7 +44,7 @@ class AliReducedHypTritTrack : public TObject {
   Int_t    TPCrefit() const {return fTPCrefit;}
   Int_t    ITSrefit() const {return fITSrefit;}
   Double_t GeoLength() const {return fGeoLength;}
-
+  Int_t    TrkCutsPassed() const {return fTrkCutsPassed;}
   Int_t    TRDvalid() const {return fTRDvalid;}
   Int_t    TRDtrigHNU() const {return fTRDtrigHNU;}
   Int_t    TRDtrigHQU() const {return fTRDtrigHQU;}
@@ -79,7 +79,7 @@ private:
   Int_t           fTPCrefit;        //< TPC refit
   Int_t           fITSrefit;        //< ITS refit
   Double_t        fGeoLength;       //< geometric length cut
-  
+  Int_t           fTrkCutsPassed;   //< track passed track cuts
   Int_t           fTRDvalid;        //< has valid TRD track
   Int_t           fTRDtrigHNU;      //< HNU fired by track
   Int_t           fTRDtrigHQU;      //< HQU fired by track
@@ -99,7 +99,7 @@ private:
 
 AliReducedHypTritTrack(const AliReducedHypTritTrack&);
 AliReducedHypTritTrack &operator = (const AliReducedHypTritTrack&);
-ClassDef(AliReducedHypTritTrack, 7)
+ClassDef(AliReducedHypTritTrack, 8)
 };
 
 class AliReducedHypTritV0 : public TObject {
@@ -190,6 +190,9 @@ class AliReducedHypTritEvent : public TObject {
   Double_t MultSPDCluster() const {return fMultSPDCluster;}
   Double_t MultRef05()const {return fMultRef05;}
   Double_t MultRef08()const {return fMultRef08;}
+  ULong64_t EventID() const {return fEventID;}
+  Int_t EvCutsPassed() const {return fEvCutsPassed;} 
+    
   void ClearEvent();
 
 private:
@@ -208,6 +211,8 @@ private:
   UShort_t      fTrigSPD;        //< Flag for HM-SPD trigger
   TString       fTriggerClasses; //< fired trigger classes
 
+  Int_t         fEvCutsPassed;   //< event passed event cuts
+  ULong64_t     fEventID;        //< global event ID
   Int_t         fRunNumber;      //< number of run
   Double_t      fMagField;
 
@@ -226,7 +231,7 @@ private:
 
   AliReducedHypTritEvent(const AliReducedHypTritEvent&);
   AliReducedHypTritEvent &operator = (const AliReducedHypTritEvent&);
-  ClassDef(AliReducedHypTritEvent, 6);
+  ClassDef(AliReducedHypTritEvent, 7);
 };
 
 #endif

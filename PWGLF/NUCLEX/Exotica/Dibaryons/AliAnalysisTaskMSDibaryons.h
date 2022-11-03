@@ -69,7 +69,8 @@ class AliAnalysisTaskMSDibaryons : public AliAnalysisTaskSE {
 		     Double_t px2,Double_t py2,Double_t pz2);
   Double_t InvariantMass(Double_t px1,Double_t py1,Double_t pz1,
 			 Double_t px2,Double_t py2,Double_t pz2,Double_t energysum);
-  Bool_t ExtractQnVector();
+  //Bool_t ExtractQnVector();
+  Double_t ExtractQnVector();
   const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *qnlist, const char* subdetector, const char *expcorr, const char *altcorr);
 
  private:

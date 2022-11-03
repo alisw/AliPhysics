@@ -131,4 +131,9 @@
 
 
 #pragma link C++ class AliAnalysisTaskNFMs+;
+
+#pragma link C++ class AliAnalysisHMMeanPt+;
+#pragma link C++ class AliAnalysisMeanPt+;
+
+
 #endif

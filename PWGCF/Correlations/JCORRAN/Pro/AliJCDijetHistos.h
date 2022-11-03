@@ -115,6 +115,8 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_deltaPt; //! // for delta-pt distribution
         AliJTH1D fh_maxJetptOverPtHard; //! // for jet pt / pt_hard bin
         AliJTH1D fh_ptHard; //! // for pt_hard
+        AliJTH1D fh_pythiaSigma; //! // for pythia sigma_gen
+        AliJTH1D fh_pythiaTrial; //! // for pythia trial
 
         AliJTH1D fh_dijetInvM;                     //! // for dijet invariant mass
         AliJTH1D fh_dijetInvMLin;                  //! // for dijet invariant mass

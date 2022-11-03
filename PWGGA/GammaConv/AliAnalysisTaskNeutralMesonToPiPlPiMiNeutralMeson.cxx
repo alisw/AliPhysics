@@ -117,9 +117,9 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGCodeAnalyzedMeson(-1),
   fEnableNoCorrOutput(kTRUE),
   fEnableSubNDMOutput(kTRUE),
-  fLambda(nullptr),
   fEnableFixedpzOutput(kTRUE),
   fEnableSubLambdaOutput(kFALSE),
+  fLambda(nullptr),
   fEnableNDMEfficiency(kFALSE),
   fEnableNDMInputSpectrum(kFALSE),
   fEnableTreeTrueNDMFromHNM(kFALSE),
@@ -451,9 +451,9 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGCodeAnalyzedMeson(-1),
   fEnableNoCorrOutput(kTRUE),
   fEnableSubNDMOutput(kTRUE),
-  fLambda(nullptr),
   fEnableFixedpzOutput(kTRUE),
   fEnableSubLambdaOutput(kFALSE),
+  fLambda(nullptr),
   fEnableNDMEfficiency(kFALSE),
   fEnableNDMInputSpectrum(kFALSE),
   fEnableTreeTrueNDMFromHNM(kFALSE),
@@ -1674,8 +1674,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     }
 
     if(fEnableSubLambdaOutput){
-      fLambda[iCut]                                            = new TF1("fLambda","pol4",0.,20);
-      fLambda[iCut]->SetParameters(1.88393,-0.329409,0.0855903,-0.00712377,0.000184257);
+      fLambda[iCut]                                            = new TF1("fLambda","pol2",0.,20);
+      fLambda[iCut]->SetParameters(0.0637,0.483,-0.031074);
       fHistoMotherInvMassSubLambda[iCut]                       = new TH2F("ESD_InvMass_Mother_Sub_Lambda_InvMass_Neutral_Pt","ESD_InvMass_Mother_Sub_InvMass_Neutral_Pt",HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1], HistoNPtBins, arrPtBinning);
       fHistoMotherInvMassSubLambda[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - #lambda#times(M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
       fHistoMotherInvMassSubLambda[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -7711,7 +7711,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       }
     }
 
-    if(fDoMesonQA>0){
+    if(fDoMesonQA>0 && !fDoLightOutput){
       //Dalitz plot
       TLorentzVector PosPionTLVtmp;
       TLorentzVector NegPionTLVtmp;
@@ -7774,7 +7774,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
         }
       }
       //  Fill the 3D histogram with the mass differences for the NDM and the pi0 for different pT
-      fHistopi0vsmesonmassshiftangle[fiCut]->Fill(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM,mesoncand->M()-(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMotherLabel)))->GetCalcMass(),TrueNeutralDecayMesonCandidate->GetOpeningAngle(),weighted);
+      if(fDoMesonQA>2) fHistopi0vsmesonmassshiftangle[fiCut]->Fill(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM,mesoncand->M()-(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMotherLabel)))->GetCalcMass(),TrueNeutralDecayMesonCandidate->GetOpeningAngle(),weighted);
     }
 
     AliAODConversionMother PosPiontmp, NegPiontmp;
@@ -8259,7 +8259,6 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GammaIsNeutralMesonPiP
   Int_t grandMotherLabel = mother->GetMother();
   if( grandMotherLabel < 0 || grandMotherLabel >= trackArray->GetEntriesFast()) return kFALSE;
   AliAODMCParticle* grandmother = static_cast<AliAODMCParticle*>(trackArray->At(grandMotherLabel));
-
   switch( fSelectedHeavyNeutralMeson ) {
   case 0: // ETA MESON
   case 1: // OMEGA MESON
@@ -8492,6 +8491,14 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::MesonIsSelectedByAlpha
                 ((6.30231e-01)-(-3.77337e+00))/(TMath::Exp(((5.60553e-05)-xx)/(1.35591e+00))+(9.99175e-01))+(-3.77337e+00);
         useConst_LowerLimit                 = kTRUE;
         const_LowerLimit                    = -0.8;
+        useConst_UpperLimit                 = kTRUE;
+        const_UpperLimit                    = 0.8;
+        break;
+    case 3:
+        useFunction_UpperLimit              = kTRUE;
+        FunctionValue_UpperLimit            = ((6.30231e-01)-(-3.77337e+00))/(TMath::Exp(((5.60553e-05)-xx)/(1.35591e+00))+(9.99175e-01))+(-3.77337e+00);
+        useConst_LowerLimit                 = kTRUE;
+        const_LowerLimit                    = -0.6;
         useConst_UpperLimit                 = kTRUE;
         const_UpperLimit                    = 0.8;
         break;

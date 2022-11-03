@@ -69,6 +69,15 @@ class AliFemtoDreamBasePart {
   float GetP() const {
     return GetMomentum().Mag();
   }
+  float GetPx() const {
+    return GetMomentum().Px();
+  }
+  float GetPy() const {
+    return GetMomentum().Py();
+  }
+  float GetPz() const {
+    return GetMomentum().Pz();
+  }
   void SetMCMomentum(float px, float py, float pz) {
     fMCP.SetXYZ(px, py, pz);
   }
@@ -188,6 +197,18 @@ class AliFemtoDreamBasePart {
     return fCharge;
   }
   ;
+  float GetSoftPionPx() const {
+    return fSoftPionPx;
+  }
+  ;
+  float GetSoftPionPy() const {
+    return fSoftPionPy;
+  }
+  ;
+  float GetSoftPionPz() const {
+    return fSoftPionPz;
+  }
+  ;
   void SetCPA(float cpa) {
     fCPA = cpa;
   }
@@ -287,6 +308,7 @@ class AliFemtoDreamBasePart {
   void SetDCAZ (float DCAZ) { fDCAZ = DCAZ; };
   void SetDCAXY (float DCAXY) { fDCAXY = DCAXY; };
   void SetDzeroLabel (int label) { fDzeroLabel = label; };
+  void SetParticleMult (int mult) { fParticleMult = mult; };
 
   int GetMult ()  { return fMult; };
   float GetZVtx ()  { return fZVtx; };
@@ -299,6 +321,7 @@ class AliFemtoDreamBasePart {
   float GetDCAZ ()  { return fDCAZ; };
   float GetDCAXY ()  { return fDCAXY; };
   int GetDzeroLabel () { return fDzeroLabel; }
+  int GetParticleMult () { return fParticleMult; }
   
   bool UseParticle() const {
     return fUse;
@@ -340,9 +363,13 @@ class AliFemtoDreamBasePart {
   std::vector<float> fMCPhi;
   std::vector<int> fIDTracks;
   std::vector<int> fCharge;
+  float fSoftPionPx;
+  float fSoftPionPy;
+  float fSoftPionPz;
   float fCPA;
   float fInvMass;
   PartOrigin fOrigin;
+  int fParticleMult;
 
   int fMult;
   float fZVtx;
@@ -372,7 +399,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart, 10)
+ClassDef(AliFemtoDreamBasePart, 11)
   ;
 };
 

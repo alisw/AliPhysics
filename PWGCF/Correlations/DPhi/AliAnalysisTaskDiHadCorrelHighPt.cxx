@@ -18,7 +18,7 @@
  * and calculates correlations with charged unidentified particles in phi and eta.
  * The charged unidentified particles are also taken as trigger particles to have a check.
  * The task works with AOD or ESD (with or without MC info) events only and contains also mixing for acceptance corrections.
- * Last update edited by Lucia Anna Husova, June 2022
+ * Last update edited by Lucia Anna Tarasovicova, October 2022
  */
 
 #include <TChain.h>
@@ -66,6 +66,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fESD(0),
     fmcEvent(0),
     fPIDResponse(0),
+    fPIDCombined(0),
     fOutputList(0),
     fHistLambdaMassPtCut(0),
     fHistK0MassPtCut(0),
@@ -185,13 +186,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fselectedTriggerTracks(0),
     fselectedV0Triggers(0),
     fselectedV0Assoc(0),
-    fHistEffCorrectionHadron(0),
-    fHistEffCorrectionK0(0),
-    fHistEffCorrectionLam(0),
-    fHistEffCorrectionAntiLam(0),
-    fHistEffCorrectionNegXi(0),
-    fHistEffCorrectionPosXi(0),
     fHistSecondaryCont(0),
+    fHistSecondaryContPosPion(0),
+    fHistSecondaryContNegPion(0),
     fEffList(0),
     fUseEff(kFALSE),
     fMixCorrect(kTRUE),
@@ -219,7 +216,6 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fDCAmesonDaughterPV(0.04),
     fHistV0AmplitudeVsPVposition(0),
     fonTheFlyMC(kFALSE),
-    fFlowEffPtBins(kFALSE),
     fPercentile(302),
     fTPCrowsRindableRatio(0.8),
     fSystem("pp")
@@ -236,6 +232,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fESD(0),
     fmcEvent(0),
     fPIDResponse(0),
+    fPIDCombined(0),
     fOutputList(0),
     fHistLambdaMassPtCut(0),
     fHistK0MassPtCut(0),
@@ -355,13 +352,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fselectedTriggerTracks(0),
     fselectedV0Triggers(0),
     fselectedV0Assoc(0),
-    fHistEffCorrectionHadron(0),
-    fHistEffCorrectionK0(0),
-    fHistEffCorrectionLam(0),
-    fHistEffCorrectionAntiLam(0),
-    fHistEffCorrectionNegXi(0),
-    fHistEffCorrectionPosXi(0),
     fHistSecondaryCont(0),
+    fHistSecondaryContPosPion(0),
+    fHistSecondaryContNegPion(0),
     fEffList(0),
     fUseEff(useeff),
     fMixCorrect(kTRUE),
@@ -389,7 +382,6 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fDCAmesonDaughterPV(0.04),
     fHistV0AmplitudeVsPVposition(0),
     fonTheFlyMC(kFALSE),
-    fFlowEffPtBins(kFALSE),
     fPercentile(302),
     fTPCrowsRindableRatio(0.8),
     fSystem("pp")
@@ -440,39 +432,16 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
 
    if(fUseEff) {
         fEffList = dynamic_cast<TList*>(GetInputData(1));
-    }
-    if(fEffList){
-      fHistEffCorrectionK0 = (THnSparseF*)fEffList->FindObject("fHistEffCorrectionK0");
-      fHistEffCorrectionLam = (THnSparseF*)fEffList->FindObject("fHistEffCorrectionLam");
-      fHistEffCorrectionAntiLam = (THnSparseF*)fEffList->FindObject("fHistEffCorrectionAntiLam");
-      fHistEffCorrectionHadron = (THnSparseF*)fEffList->FindObject("fHistEffCorrectionHadron");
-      fHistEffCorrectionNegXi = (THnSparseF*)fEffList->FindObject("fHistEffCorrectionNegXi");
-      fHistEffCorrectionPosXi = (THnSparseF*)fEffList->FindObject("fHistEffCorrectionPosXi");
-      fHistSecondaryCont = (TH1F*)fEffList->FindObject("fHistSecondaryCont");
-
-        if(!fHistEffCorrectionK0 || !fHistEffCorrectionLam || !fHistEffCorrectionAntiLam || !fHistEffCorrectionHadron|| !fHistEffCorrectionNegXi || !fHistEffCorrectionPosXi || !fHistSecondaryCont){
-            if(fCorrelations){
-                if (!fHistEffCorrectionHadron|| !fHistSecondaryCont) {
-                    cout<<"Efficiency histograms hadrons are not available!"<<endl;
-                    return;
-                }
-                if(fV0hCorr||fhV0Corr){
-                    if(!fHistEffCorrectionK0 || !fHistEffCorrectionLam || !fHistEffCorrectionAntiLam) return;
-                }
-                if(fAnalyseFeedDown){
-                    if(!fHistEffCorrectionNegXi || !fHistEffCorrectionPosXi) return;
-                }
-            }
-            if(fMixing&&fUseEff){
-                if (!fHistEffCorrectionHadron|| !fHistSecondaryCont) {
-                    cout<<"Efficiency histograms hadrons are not available for mixing!"<<endl;
-                    return;
-                }
-            }
+        if (!fEffList) {
+            cout<<"List of Efficiency histograms hadrons is not available!"<<endl;
+            return;
         }
+        cout<<"List of Efficiency histograms hadrons is available!"<<endl;
+
+        LoadEfficiencies();
     }
 
-	Float_t kPtBins[20] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+	Float_t kPtBins[21] = {0.5,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
 	Int_t kMassBins = 500;
 	Float_t kMassMinK = 0.4;
 	Float_t kMassMaxK = 0.6;
@@ -504,9 +473,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
 		kCuts[i+1]=kCuts[i]+1;
 	}
 
-    Int_t bins[9]= {fNumberOfPtBinsTrigger,fNumberOfPtBinsAssoc,fNumberOfDeltaPhiBins,fNumberOfDeltaEtaBins,fNumOfVzBins,12,902,fNMultiplicityBins,2};
+    Int_t bins[9]= {fNumberOfPtBinsTrigger,fNumberOfPtBinsAssoc,fNumberOfDeltaPhiBins,fNumberOfDeltaEtaBins,fNumOfVzBins,14,902,fNMultiplicityBins,2};
     Double_t min[9] = {fPtTrigMin,fPtAsocMin, -kPi/2, -2., -10., 0.,0.44,0,-2};
-    Double_t max[9] = {fPtTrigMax, fPtAssocMax, -kPi/2+2*kPi, 2., 10., 12., 1.355,100,2};
+    Double_t max[9] = {fPtTrigMax, fPtAssocMax, -kPi/2+2*kPi, 2., 10., 14., 1.355,100,2};
 
 	Int_t  NofCentBins  = 10;
     Double_t MBins[]={0,10,20,30,40,50,60,70,80,90,100};
@@ -561,15 +530,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fOutputList->Add(fHistCasMC);
 
 	fHistKorelacie = new THnSparseF ("fHistKorelacie","fHistKorelacie", 9, bins, min, max);
-    fHistKorelacie->GetAxis(0)->SetTitle("p_{T}^{trig}");
-    fHistKorelacie->GetAxis(1)->SetTitle("p_{T}^{assoc}");
-    fHistKorelacie->GetAxis(2)->SetTitle("#Delta#phi");
-    fHistKorelacie->GetAxis(3)->SetTitle("#Delta#eta");
-    fHistKorelacie->GetAxis(4)->SetTitle("p_{vz}");
-    fHistKorelacie->GetAxis(5)->SetTitle("trigger");
-    fHistKorelacie->GetAxis(6)->SetTitle("mass");
-    fHistKorelacie->GetAxis(7)->SetTitle("multiplicity percentile");
-    fHistKorelacie->GetAxis(8)->SetTitle("hadron charge");
+  SetAxisTitles(fHistKorelacie);
     fOutputList->Add(fHistKorelacie);
     fHistKorelacie->Sumw2();
 
@@ -585,53 +546,34 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     binsMass[902]=1.355;
     fHistKorelacie->GetAxis(6)->Set(902,binsMass);
     fHistKorelacie->GetAxis(4)->Set(NofZVrtxBins,ZBins);
+
     Double_t binsMult[17]={0,1,2,3,5,7,10,15,20,30,40,50,60,70,80,90,100};
+    Double_t binsMultHM[5]={0,0.01,0.05,0.1,1};
     if(fNMultiplicityBins==16)fHistKorelacie->GetAxis(7)->Set(16,binsMult);
+    if(fNMultiplicityBins==4)fHistKorelacie->GetAxis(7)->Set(4,binsMultHM);
 
 	fHistdPhidEtaMix = new THnSparseF ("fHistdPhidEtaMix", "fHistdPhidEtaMix", 9, bins, min, max);
-    fHistdPhidEtaMix->GetAxis(0)->SetTitle("p_{T}^{trig}");
-    fHistdPhidEtaMix->GetAxis(1)->SetTitle("p_{T}^{assoc}");
-    fHistdPhidEtaMix->GetAxis(2)->SetTitle("#Delta#phi");
-    fHistdPhidEtaMix->GetAxis(3)->SetTitle("#Delta#eta");
-    fHistdPhidEtaMix->GetAxis(4)->SetTitle("p_{vz}");
-    fHistdPhidEtaMix->GetAxis(5)->SetTitle("trigger");
-    fHistdPhidEtaMix->GetAxis(6)->SetTitle("mass");
-    fHistdPhidEtaMix->GetAxis(7)->SetTitle("multiplicity percentile");
-    fHistdPhidEtaMix->GetAxis(8)->SetTitle("hadron charge");
+  SetAxisTitles(fHistdPhidEtaMix);
     fHistdPhidEtaMix->Sumw2();
-	fOutputList->Add(fHistdPhidEtaMix);
+	  fOutputList->Add(fHistdPhidEtaMix);
     fHistdPhidEtaMix->GetAxis(4)->Set(NofZVrtxBins,ZBins);
     fHistdPhidEtaMix->GetAxis(6)->Set(902,binsMass);
 
     fHistMCMixingRec = new THnSparseF ("fHistMCMixingRec", "fHistMCMixingRec", 9, bins, min, max);
-    fHistMCMixingRec->GetAxis(0)->SetTitle("p_{T}^{trig}");
-    fHistMCMixingRec->GetAxis(1)->SetTitle("p_{T}^{assoc}");
-    fHistMCMixingRec->GetAxis(2)->SetTitle("#Delta#phi");
-    fHistMCMixingRec->GetAxis(3)->SetTitle("#Delta#eta");
-    fHistMCMixingRec->GetAxis(4)->SetTitle("p_{vz}");
-    fHistMCMixingRec->GetAxis(5)->SetTitle("trigger");
-    fHistMCMixingRec->GetAxis(6)->SetTitle("mass");
-    fHistMCMixingRec->GetAxis(7)->SetTitle("multiplicity percentile");
-    fHistMCMixingRec->GetAxis(8)->SetTitle("hadron charge");
+    SetAxisTitles(fHistMCMixingRec);
     fOutputList->Add(fHistMCMixingRec);
     fHistMCMixingRec->Sumw2();
     fHistMCMixingRec->GetAxis(4)->Set(NofZVrtxBins,ZBins);
     fHistMCMixingRec->GetAxis(6)->Set(902,binsMass);
 
     fHistKorelacieMCrec = new THnSparseF ("fHistKorelacieMCrec","fHistKorelacieMCrec", 9, bins, min, max);
-    fHistKorelacieMCrec->GetAxis(0)->SetTitle("p_{T}^{trig}");
-    fHistKorelacieMCrec->GetAxis(1)->SetTitle("p_{T}^{assoc}");
-    fHistKorelacieMCrec->GetAxis(2)->SetTitle("#Delta#phi");
-    fHistKorelacieMCrec->GetAxis(3)->SetTitle("#Delta#eta");
-    fHistKorelacieMCrec->GetAxis(4)->SetTitle("p_{vz}");
-    fHistKorelacieMCrec->GetAxis(5)->SetTitle("trigger");
-    fHistKorelacieMCrec->GetAxis(6)->SetTitle("mass");
-    fHistKorelacieMCrec->GetAxis(7)->SetTitle("multiplicity percentile");
-    fHistKorelacieMCrec->GetAxis(8)->SetTitle("hadron charge");
+    SetAxisTitles(fHistKorelacieMCrec);
     fHistKorelacieMCrec->Sumw2();
     fOutputList->Add(fHistKorelacieMCrec);
     fHistKorelacieMCrec->GetAxis(6)->Set(902,binsMass);
     fHistKorelacieMCrec->GetAxis(4)->Set(NofZVrtxBins,ZBins);
+    if(fNMultiplicityBins==16)fHistKorelacieMCrec->GetAxis(7)->Set(16,binsMult);
+    if(fNMultiplicityBins==4)fHistKorelacieMCrec->GetAxis(7)->Set(4,binsMultHM);
 
     bins[7] = 500;
     max[7] = 500;
@@ -641,34 +583,19 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     min[6] = -2;
 
     fHistMCKorelacie = new THnSparseF ("fHistMCKorelacie","fHistMCKorelacie", 9, bins, min, max);
-    fHistMCKorelacie->GetAxis(0)->SetTitle("p_{T}^{trig}");
-    fHistMCKorelacie->GetAxis(1)->SetTitle("p_{T}^{assoc}");
-    fHistMCKorelacie->GetAxis(2)->SetTitle("#Delta#phi");
-    fHistMCKorelacie->GetAxis(3)->SetTitle("#Delta#eta");
-    fHistMCKorelacie->GetAxis(4)->SetTitle("p_{vz}");
-    fHistMCKorelacie->GetAxis(5)->SetTitle("trigger");
+    SetAxisTitles(fHistMCKorelacie);
     fHistMCKorelacie->GetAxis(6)->SetTitle("original parton");
-    fHistMCKorelacie->GetAxis(7)->SetTitle("multiplicity");
-    fHistMCKorelacie->GetAxis(8)->SetTitle("hadron charge");
     fHistMCKorelacie->Sumw2();
     fOutputList->Add(fHistMCKorelacie);
 
     fHistMCKorelacie->GetAxis(4)->Set(NofZVrtxBins,ZBins);
 
     fHistMCMixingGen = new THnSparseF ("fHistMCMixingGen", "fHistMCMixingGen", 9, bins, min, max);
-    fHistMCMixingGen->GetAxis(0)->SetTitle("p_{T}^{trig}");
-    fHistMCMixingGen->GetAxis(1)->SetTitle("p_{T}^{assoc}");
-    fHistMCMixingGen->GetAxis(2)->SetTitle("#Delta#phi");
-    fHistMCMixingGen->GetAxis(3)->SetTitle("#Delta#eta");
-    fHistMCMixingGen->GetAxis(4)->SetTitle("p_{vz}");
-    fHistMCMixingGen->GetAxis(5)->SetTitle("trigger");
-    fHistMCMixingGen->GetAxis(6)->SetTitle("mass");
-    fHistMCMixingGen->GetAxis(7)->SetTitle("multiplicity percentile");
-    fHistMCMixingGen->GetAxis(8)->SetTitle("hadron charge");
+    SetAxisTitles(fHistMCMixingGen);
+    fHistMCMixingGen->GetAxis(6)->SetTitle("original parton");
     fOutputList->Add(fHistMCMixingGen);
     fHistMCMixingGen->Sumw2();
     fHistMCMixingGen->GetAxis(4)->Set(NofZVrtxBins,ZBins);
-    fHistMCMixingGen->GetAxis(6)->Set(902,binsMass);
 
     fHistGenMultiplicity = new TH1D ("fHistGenMultiplicity","fHistGenMultiplicity",500,0,500);
     fOutputList->Add(fHistGenMultiplicity);
@@ -688,11 +615,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
 	fHistMultVtxz = new TH2D ("fHistMultVtxz","fHistMultVtxz",10,0,100,100,-10,10);
 	fOutputList->Add(fHistMultVtxz);
 
-    Int_t binsHadr[5] ={fNumberOfPtBinsAssoc,9,fNumberOfEtaBins,2,fNumberPhiBins};
-    Double_t binsHadrMin[5] = {fPtAsocMin,-10,-0.8,-2,0};
-    Double_t binsHadrMax[5] = {fPtAssocMax,10,0.8,2,2*kPi};
+    Int_t binsHadr[6] ={fNumberOfPtBinsAssoc,9,fNumberOfEtaBins,2,fNumberPhiBins,2};
+    Double_t binsHadrMin[6] = {fPtAsocMin,-10,-0.8,-2,0,0};
+    Double_t binsHadrMax[6] = {fPtAssocMax,10,0.8,2,2*kPi,2};
 
-	fHistMCPtAs = new THnSparseF("fHistMCPtAs","fHistMCPtAs",5,binsHadr,binsHadrMin,binsHadrMax);
+	fHistMCPtAs = new THnSparseF("fHistMCPtAs","fHistMCPtAs",6,binsHadr,binsHadrMin,binsHadrMax);
 	fOutputList->Add(fHistMCPtAs);
     fHistMCPtAs->Sumw2();
     fHistMCPtAs->GetAxis(1)->Set(NofZVrtxBins,ZBins);
@@ -701,8 +628,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistMCPtAs->GetAxis(2)->SetTitle("#eta");
     fHistMCPtAs->GetAxis(3)->SetTitle("charge");
     fHistMCPtAs->GetAxis(4)->SetTitle("#varphi");
+    fHistMCPtAs->GetAxis(5)->SetTitle("particle"); // 0 - unidentified, 1-pion
 
-	fHistRCPtAs = new THnSparseF("fHistRCPtAs","fHistRCPtAs",5,binsHadr,binsHadrMin,binsHadrMax);
+	fHistRCPtAs = new THnSparseF("fHistRCPtAs","fHistRCPtAs",6,binsHadr,binsHadrMin,binsHadrMax);
     fOutputList->Add(fHistRCPtAs);
     fHistRCPtAs->Sumw2();
     fHistRCPtAs->GetAxis(1)->Set(NofZVrtxBins,ZBins);
@@ -711,15 +639,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistRCPtAs->GetAxis(2)->SetTitle("#eta");
     fHistRCPtAs->GetAxis(3)->SetTitle("charge");
     fHistRCPtAs->GetAxis(4)->SetTitle("#varphi");
+    fHistRCPtAs->GetAxis(5)->SetTitle("particle"); // 0 - unidentified, 1-pion
 
     Int_t binsTrig[5]={fNumberOfPtBinsAssoc,9,6,fNumberOfEtaBins,fNumberPhiBins};
     Double_t mintrig[5]={fPtAsocMin,-10,0,-0.8,0};
     Double_t maxtrig[5]={fPtAssocMax,10,6,0.8,2*kPi};
-    if(fFlowEffPtBins){
-        binsTrig[4]=11;
-        mintrig[4]=0;
-        maxtrig[4]=100;
-    }
+
     fHistGenV0 = new THnSparseF("fHistGenV0","fHistGenV0",5,binsTrig,mintrig,maxtrig);
     fOutputList->Add(fHistGenV0);
     fHistGenV0->Sumw2();
@@ -730,41 +655,15 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistGenV0->GetAxis(4)->SetTitle("#varphi");
     fHistGenV0->GetAxis(1)->Set(NofZVrtxBins,ZBins);
 
-    Double_t binsPt[62]={0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,
-                                             1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,
-                                             4.5,5,5.5,6,6.5,7,8,9,10,11,12,13,14,15,16,18,20,22,24,26,30,34,40,50};
-    Double_t multBins[12]={0,5,10,20,30,40,50,60,70,80,90,100};
-    if(fFlowEffPtBins){
-        fHistGenV0->GetAxis(0)->Set(fNumberOfPtBinsAssoc,binsPt);
-        fHistGenV0->GetAxis(4)->SetTitle("V0M");
-        fHistGenV0->GetAxis(4)->Set(11,multBins);
-    }
-
-    Int_t binsTrigRec[6]={fNumberOfPtBinsAssoc,9,6,fNumberOfEtaBins,902,fNumberPhiBins};
-    Double_t mintrigRec[6]={fPtAsocMin,-10,0,-0.8,0.44,0};
-    Double_t maxtrigRec[6]={fPtAssocMax,10,6,0.8,1.355,2*kPi};
-    if(fFlowEffPtBins){
-        binsTrigRec[5]=11;
-        mintrigRec[5]=0;
-        maxtrigRec[5]=100;
-    }
-    fHistRecV0 = new THnSparseF("fHistRecV0","fHistRecV0",6,binsTrigRec,mintrigRec,maxtrigRec);
+    fHistRecV0 = new THnSparseF("fHistRecV0","fHistRecV0",5,binsTrig,mintrig,maxtrig);
     fOutputList->Add(fHistRecV0);
     fHistRecV0->Sumw2();
     fHistRecV0->GetAxis(0)->SetTitle("p_{T}");
     fHistRecV0->GetAxis(1)->SetTitle("p_{vz}");
     fHistRecV0->GetAxis(2)->SetTitle("trigger");
     fHistRecV0->GetAxis(3)->SetTitle("#eta");
-    fHistRecV0->GetAxis(4)->SetTitle("mass");
-    fHistRecV0->GetAxis(5)->SetTitle("#varphi");
-    fHistRecV0->GetAxis(4)->Set(902,binsMass);
+    fHistRecV0->GetAxis(4)->SetTitle("#varphi");
     fHistRecV0->GetAxis(1)->Set(NofZVrtxBins,ZBins);
-
-    if(fFlowEffPtBins){
-        fHistRecV0->GetAxis(0)->Set(fNumberOfPtBinsAssoc,binsPt);
-        fHistRecV0->GetAxis(5)->SetTitle("V0M");
-        fHistRecV0->GetAxis(5)->Set(11,multBins);
-    }
 
 	fHistNumberOfTriggers = new THnSparseF("fHistNumberOfTriggers","fHistNumberOfTriggers",5,bins2d,mis2d, maxs2d);
     fHistNumberOfTriggers->GetAxis(0)->SetTitle("p_{T}");
@@ -777,6 +676,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggers->GetAxis(3)->Set(902,binsMass);
     fHistNumberOfTriggers->GetAxis(1)->Set(NofZVrtxBins,ZBins);
     if(fNMultiplicityBins==16)fHistNumberOfTriggers->GetAxis(4)->Set(16,binsMult);
+    if(fNMultiplicityBins==4)fHistNumberOfTriggers->GetAxis(4)->Set(4,binsMultHM);
 
     fHistNumberOfTriggersRec = new THnSparseF("fHistNumberOfTriggersRec","fHistNumberOfTriggersRec",5,bins2d,mis2d,maxs2d);
     fHistNumberOfTriggersRec->GetAxis(0)->SetTitle("p_{T}");
@@ -788,6 +688,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggersRec->Sumw2();
     fHistNumberOfTriggersRec->GetAxis(3)->Set(902,binsMass);
     fHistNumberOfTriggersRec->GetAxis(1)->Set(NofZVrtxBins,ZBins);
+    if(fNMultiplicityBins==16)fHistNumberOfTriggersRec->GetAxis(4)->Set(16,binsMult);
+    if(fNMultiplicityBins==4)fHistNumberOfTriggersRec->GetAxis(4)->Set(4,binsMultHM);
 
     bins2d[4] = 500;
     maxs2d[4] = 500;
@@ -805,14 +707,17 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fOutputList->Add(fHistNumberOfTriggersGen);
     fHistNumberOfTriggersGen->Sumw2();
     fHistNumberOfTriggersGen->GetAxis(1)->Set(NofZVrtxBins,ZBins);
-
+    if(fNMultiplicityBins==16)fHistNumberOfTriggersGen->GetAxis(4)->Set(16,binsMult);
+    if(fNMultiplicityBins==4)fHistNumberOfTriggersGen->GetAxis(4)->Set(4,binsMultHM);
 
     fHistSelection = new TH1D("fHistSelection","fHistSelection",4,0,4);
     fOutputList->Add(fHistSelection);
 
-    fHistMultipPercentile = new TH1F("fHistMultipPercentile","fHistMultipPercentile",10,0,100);
+    fHistMultipPercentile = new TH1F("fHistMultipPercentile","fHistMultipPercentile",fNMultiplicityBins,0,100);
     fOutputList->Add(fHistMultipPercentile);
     fHistMultipPercentile->Sumw2();
+    if(fNMultiplicityBins==16)fHistMultipPercentile->GetXaxis()->Set(16,binsMult);
+    if(fNMultiplicityBins==4)fHistMultipPercentile->GetXaxis()->Set(4,binsMultHM);
 
     Int_t binsCuts[11] = {12,902,100,100,20,100,500,200,100,3,2};
     Double_t binsMinCuts[11] = {fPtTrigMin,0.44,0.03,0.03,0,0,0.95,0.,0,0,0};
@@ -851,15 +756,15 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistTopolCutMC->GetAxis(10)->SetTitle("OnFly/Offline"); // 0.5 - "On-The-Fly", 1.5 Offline
     fHistTopolCutMC->GetAxis(1)->Set(902,binsMass);
 
-    Int_t binsPur[6] = {fNumberOfPtBinsAssoc,903,4,8,8,40};
+    Int_t binsPur[6] = {fNumberOfPtBinsAssoc,903,14,8,8,40};
     Double_t binsPurMin[6] = {fPtAsocMin,0.44,0.,0.,0,-0.8};
-    Double_t binsPurMax[6] = {fPtAssocMax,1.15,4.,8.,8.,0.8};
+    Double_t binsPurMax[6] = {fPtAssocMax,1.15,14.,8.,8.,0.8};
     fHistPurityCheck = new THnSparseF("fHistPurityCheck","fHistPurityCheck",6,binsPur,binsPurMin,binsPurMax);
     fOutputList->Add(fHistPurityCheck);
     fHistPurityCheck->Sumw2();
     fHistPurityCheck->GetAxis(0)->SetTitle("p_{T}");
     fHistPurityCheck->GetAxis(1)->SetTitle("mass");
-    fHistPurityCheck->GetAxis(2)->SetTitle("V0 type");
+    fHistPurityCheck->GetAxis(2)->SetTitle("particle type");
     fHistPurityCheck->GetAxis(3)->SetTitle("check");
     fHistPurityCheck->GetAxis(5)->SetTitle("#eta");
     fHistPurityCheck->GetAxis(1)->Set(902,binsMass);
@@ -911,7 +816,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistMultVZEROTracklets->Sumw2();
     fOutputList->Add(fHistMultVZEROTracklets);
     fHistMultVZEROTracklets->GetXaxis()->SetTitle("V0 Multiplicity");
-    fHistMultVZEROTracklets->GetYaxis()->SetTitle("N rracklets");
+    fHistMultVZEROTracklets->GetYaxis()->SetTitle("N tracklets");
     fHistMultVZEROTracklets->GetZaxis()->SetTitle("V0 percentile");
     fHistMultVZEROTracklets->GetZaxis()->Set(16,binsMult);
 
@@ -921,7 +826,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fOutputList->Add(fHistV0AmplitudeVsPVposition);
 
     if(!fAnalysisAOD){
-        if(fFilterBit==32) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kTRUE);
+        if(fFilterBit==32||fFilterBit==96) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kTRUE);
         if(fFilterBit==16||fFilterBit==256) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kFALSE);
         if(fFilterBit==128) fESDTrackCuts = AliESDtrackCuts:: GetStandardTPCOnlyTrackCuts();
         if(fFilterBit==1){
@@ -1004,7 +909,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     AliAODVertex *myPrimVertex = 0x0;
     AliESDVertex *myPrimVertexESD = 0x0;
 
-    if(fCorrelations||fEfficiency||fMixing){
+    if((fCorrelations||fEfficiency||fMixing||fCorrelationsGen)&&(!fonTheFlyMC)){
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
         AliAODInputHandler *inEvMain = (AliAODInputHandler *) mgr->GetInputEventHandler();
 
@@ -1023,6 +928,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         }
 
         fPIDResponse = (AliPIDResponse *) inEvMain-> GetPIDResponse();
+
+        fPIDCombined = new AliPIDCombined();
+        fPIDCombined->SetDefaultTPCPriors();
+        fPIDCombined->SetSelectedSpecies(AliPID::kSPECIES);
+        fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
 
         // physics selection
         fHistSelection->Fill(0.5);
@@ -1177,14 +1087,21 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             else cha =0;
             Int_t originalPartonType = -30; // 0 - quark, 1 - gluon
             Int_t pdg_parton = 10;
+            Int_t mcPartPdg = mcTrack->PdgCode();
 
 			if (TrIsPrim && TrPtMin && TrCharge && TrEtaMax) {
 
                 if(fEfficiency) {
-                    Double_t eff[5] = {mcTrackPt,fPV[2],mcTrackEta, Double_t(cha),mcTrack->Phi()};
+                    Double_t eff[6] = {mcTrackPt,fPV[2],mcTrackEta, Double_t(cha),mcTrack->Phi(),0.5};
                     fHistMCPtAs->Fill(eff); // for reconstruction efficiency calculation
+                    if(TMath::Abs(mcPartPdg)==211){
+                      Double_t eff[6] = {mcTrackPt,fPV[2],mcTrackEta, Double_t(cha),mcTrack->Phi(),1.5};
+                      fHistMCPtAs->Fill(eff); // for reconstruction efficiency calculation
+                    }
                 }
-                if(fCorrelationsGen) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),cha));
+                if((fMixingGen||fCorrelationsGen)&&!fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),cha));
+                if((fMixingGen||fCorrelationsGen)&&mcPartPdg==211&&fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),13,mcTrack->GetLabel(),mcTrack->GetLabel(),cha)); // pi+
+                if((fMixingGen||fCorrelationsGen)&&mcPartPdg==-211&&fhPionCorr) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),14,mcTrack->GetLabel(),mcTrack->GetLabel(),cha)); //pi-
 
                 if(fMixingGen){
                     genTrackMix = SetAliAODTrack(mcTrack->Theta(),mcTrack->Phi(),mcTrack->Pt(),mcTrack->Charge());
@@ -1198,12 +1115,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(TMath::Abs(pdg_parton)==21)originalPartonType=1;
 
                 if (mcTrackPt>fPtTrigMin) {
-                    if(fMixingGen||fCorrelationsGen) fmcTracksTrigSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),originalPartonType));
+                    if(fMixingGen||fCorrelationsGen) fmcTracksTrigSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),cha));
                 }
             }
             //--- MC closure test - selection of V0 ----
 
-            Int_t mcPartPdg = mcTrack->PdgCode();
+
             Bool_t isPhysPrim = mcTrack->IsPhysicalPrimary();
             Double_t V0genrapidity = mcTrack->Y();
 
@@ -1278,7 +1195,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),fPV[2],0.5,mcTrack->Eta(),mcTrack->Phi()};
-                        if(fFlowEffPtBins)v0effic[4]=fPercentile;
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1286,7 +1202,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),6,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),fPV[2],1.5,mcTrack->Eta(),mcTrack->Phi()};
-                        if(fFlowEffPtBins)v0effic[4]=fPercentile;
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1294,7 +1209,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),7,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),fPV[2],2.5,mcTrack->Eta(),mcTrack->Phi()};
-                        if(fFlowEffPtBins)v0effic[4]=fPercentile;
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1334,7 +1248,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             if(fV0hCorr) Corelations(fmcTracksV0Sel,fmcTracksSel,kFALSE,kTRUE,nAcceptedParticles,kFALSE);
 
             //h-h
-            if(fhhCorr) Corelations(fmcTracksTrigSel,fmcTracksSel, kFALSE, kFALSE,nAcceptedParticles,kFALSE);
+            if(fhhCorr) Corelations(fmcTracksTrigSel,fmcTracksSel, kTRUE, kFALSE,nAcceptedParticles,kFALSE);
+            //h-Pion
+            if(fhPionCorr)Corelations(fmcTracksTrigSel,fmcTracksSel, kTRUE, kFALSE,nAcceptedParticles,kTRUE);
             //h-V0
             if(fhV0Corr) Corelations(fmcTracksTrigSel,fmcV0AssocSel, kFALSE, kTRUE,nAcceptedParticles,kTRUE);
 
@@ -1352,7 +1268,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     Double_t ptTrack =0.;
     Double_t EtaTrack =0.;
     Double_t phiTrack =0.;
-
+    Bool_t isPion = kFALSE;
     if(fCorrelations||fEfficiency||fMixing){
         for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
             if(fAOD){
@@ -1360,6 +1276,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(!track) continue;                            // if we failed, skip this track
 
                 if(!IsMyGoodPrimaryTrack(track)) continue; // hybrid track selection
+                isPion = IsPionTrack(track);
 
                 ptTrack = track->Pt();
                 EtaTrack = track->Eta();
@@ -1380,13 +1297,22 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
                     Double_t purhadr[6] = {ptTrack,0,3.5,0.5,-1,EtaTrack};
                     fHistPurityCheck->Fill(purhadr);
+                    if(isPion){
+                      if(track->Charge()>0)purhadr[2]=12.5;
+                      if(track->Charge()<0)purhadr[2]=13.5;
+                      fHistPurityCheck->Fill(purhadr);
+                    }
 
                     mcTrack = static_cast<AliMCParticle*>(fmcEvent->GetTrack(AssocLabel));
                     if(!mcTrack) continue;
                     Bool_t isPhyPrim = mcTrack->IsPhysicalPrimary();
                     Double_t genPt = mcTrack->Pt();
                     Double_t genEta = mcTrack->Eta();
-                    if((fMixing||fCorrelations)&&!fPurePrimHadrons) fselectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                    if((fMixing||fCorrelations)&&!fPurePrimHadrons) {
+                      if(!fhPionCorr)fselectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                      if(isPion&&track->Charge()<0&&fhPionCorr)fselectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,14,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                      if(isPion&&track->Charge()>0&&fhPionCorr)fselectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,13,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                    }
                     Double_t phiEtaData[4] = {ptTrack,phiTrack,EtaTrack,3.5};
                     fHistPhiEta->Fill(phiEtaData);
                     if (ptTrack>fPtTrigMin) {
@@ -1394,35 +1320,64 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     }
 
                     if (isPhyPrim) {
-                        if(fCorrelations&&fPurePrimHadrons) fselectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                        if(fCorrelations&&fPurePrimHadrons) {
+                          if(!fhPionCorr)fselectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                          if(isPion&&track->Charge()<0&&fhPionCorr)fselectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,14,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                          if(isPion&&track->Charge()>0&&fhPionCorr)fselectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,13,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                        }
                         if (ptTrack>fPtTrigMin) {
                             if(fCorrelations&&fPurePrimHadrons) fselectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
                         }
                         Double_t purhadrPrim[6] = {ptTrack,0,3.5,1.5,-1,EtaTrack};
                         fHistPurityCheck->Fill(purhadrPrim);
+                        if(isPion){
+                          if(track->Charge()>0)purhadrPrim[2]=12.5;
+                          if(track->Charge()<0)purhadrPrim[2]=13.5;
+                          fHistPurityCheck->Fill(purhadrPrim);
+                          if(TMath::Abs(mcTrack->PdgCode())==211){
+                            purhadrPrim[3] = 3.5; // good ID prim pions
+                            fHistPurityCheck->Fill(purhadrPrim);
+                          }
+                        }
                         fHistPtResolution->Fill(genPt,ptTrack,3.5);
                         if(fEfficiency) {
                             Double_t cha =0.;
                             if (track->Charge()>0) cha=1.;
                             else if (track->Charge()<0) cha= -1.;
-                            Double_t eff[5] = {genPt,fPV[2],genEta,cha,mcTrack->Phi()};
+                            Double_t eff[6] = {genPt,fPV[2],genEta,cha,mcTrack->Phi(),0.5};
                             fHistRCPtAs->Fill(eff);
+                            if(isPion){
+                              eff[5]=1.5;
+                              fHistRCPtAs->Fill(eff);
+                            }
                         } // for recunstruction efficiency calculation
                     }
                     if(mcTrack->IsSecondaryFromMaterial()){
                         Double_t purhadrMater[6] = {ptTrack,0,3.5,2.5,0.5,EtaTrack};
                         fHistPurityCheck->Fill(purhadrMater);
+                        if(isPion){
+                          if(track->Charge()>0)purhadrMater[2]=12.5;
+                          if(track->Charge()<0)purhadrMater[2]=13.5;
+                          fHistPurityCheck->Fill(purhadrMater);
+                        }
                     }
                     if(mcTrack->IsSecondaryFromWeakDecay()){
                         Double_t purhadrDecay[6] = {ptTrack,0,3.5,2.5,1.5,EtaTrack};
                         fHistPurityCheck->Fill(purhadrDecay);
+                        if(isPion){
+                          if(track->Charge()>0)purhadrDecay[2]=12.5;
+                          if(track->Charge()<0)purhadrDecay[2]=13.5;
+                          fHistPurityCheck->Fill(purhadrDecay);
+                        }
                     }
 
                 }else{
                     if(ptTrack>fPtAsocMin) {
                         fselectedAssociatedTracks-> Add(new AliV0ChParticle(EtaTrack, phiTrack, ptTrack, 4, 0,track->GetID(),track->Charge(),track->Pz(),track->E()));
                         Double_t phiEtaData[4] = {ptTrack,phiTrack,EtaTrack,3.5};
-                        fHistPhiEta->Fill(phiEtaData);
+                        if(!fhPionCorr)fHistPhiEta->Fill(phiEtaData);
+                        if(isPion&&track->Charge()>0&&fhPionCorr) fselectedAssociatedTracks-> Add(new AliV0ChParticle(EtaTrack, phiTrack, ptTrack, 13, 0,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                        if(isPion&&track->Charge()<0&&fhPionCorr) fselectedAssociatedTracks-> Add(new AliV0ChParticle(EtaTrack, phiTrack, ptTrack, 14, 0,track->GetID(),track->Charge(),track->Pz(),track->E()));
                     }
                     if(ptTrack>fPtTrigMin&&!fAnalysisMC) fselectedTriggerTracks-> Add(new AliV0ChParticle(EtaTrack, phiTrack, ptTrack, 4,0,track->GetID(),track->Charge(),track->Pz(),track->E()));
                 }
@@ -1632,7 +1587,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     fHistCasMC->Fill(par[0]-0.5,10.5);
 
                     if(fEfficiency){
-                        Double_t cascadeEffic[6]={cascadept,fPV[2],par[0]-1.5,cascadeESD->Eta(),par[1],cascadeESD->Phi()};
+                        Double_t cascadeEffic[5]={cascadept,fPV[2],par[0]-1.5,cascadeESD->Eta(),cascadeESD->Phi()};
                         fHistRecV0->Fill(cascadeEffic);
                     }
                 }
@@ -2121,6 +2076,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
             //h-h MC rec
             if(fhhCorr) Corelations(fselectedMCtrig,fselectedMCassoc,kTRUE,kFALSE,fPercentile,kFALSE);
+            //h-Pion MC rec
+            if(fhPionCorr) Corelations(fselectedMCtrig,fselectedMCassoc,kTRUE,kFALSE,fPercentile,kTRUE);
 
              //MC rec h-V0
             if(fhV0Corr) Corelations(fselectedMCtrig,fselectedMCV0assoc,kFALSE,kTRUE,fPercentile,kTRUE);
@@ -2135,6 +2092,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
     	    //Data h-h
             if(fhhCorr) Corelations(fselectedTriggerTracks,fselectedAssociatedTracks,kTRUE,kFALSE,fPercentile,kFALSE);
+            //Data h-h
+            if(fhPionCorr) Corelations(fselectedTriggerTracks,fselectedAssociatedTracks,kTRUE,kFALSE,fPercentile,kTRUE);
 
             //Data h-V0
             if(fhV0Corr) Corelations(fselectedTriggerTracks,fselectedV0Assoc,kFALSE,kTRUE,fPercentile,kTRUE);
@@ -2165,6 +2124,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fV0hCorr) CorelationsMixing(fselectedMCV0Triggersrec,bgTracks,fPercentile);
                     if(fhhCorr) CorelationsMixing(fselectedMCtrig,bgTracks,fPercentile);
                     if(fhV0Corr) CorelationsMixinghV0(bgTracks,fselectedMCV0assoc,fPercentile);
+                    if(fhPionCorr)CorelationsMixinghV0(bgTracks,fselectedMCassoc,fPercentile);
                     if(fAnalyseFeedDown){
                         CorrelationsXi(fselectedV0Triggers,bgTracks,fPercentile,kTRUE);
                         CorrelationsXi(bgTracks,fselectedV0Assoc,fPercentile,kFALSE);
@@ -2173,6 +2133,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fV0hCorr) CorelationsMixing(fselectedV0Triggers,bgTracks,fPercentile);
                     if(fhhCorr) CorelationsMixing(fselectedTriggerTracks,bgTracks,fPercentile);
                     if(fhV0Corr) CorelationsMixinghV0(bgTracks,fselectedV0Assoc,fPercentile);
+                    if(fhPionCorr) CorelationsMixinghV0(bgTracks,fselectedAssociatedTracks,fPercentile);
                     if(fAnalyseFeedDown){
                         CorrelationsXi(fselectedV0Triggers,bgTracks,fPercentile,kTRUE);
                         CorrelationsXi(bgTracks,fselectedV0Assoc,fPercentile,kFALSE);
@@ -2199,6 +2160,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(fV0hCorr) CorelationsMixing(fmcTracksV0Sel,bgTracksGen,nAcceptedParticles);
                 if(fhhCorr) CorelationsMixing(fmcTracksTrigSel,bgTracksGen,nAcceptedParticles);
                 if(fhV0Corr) CorelationsMixinghV0(bgTracksGen,fmcV0AssocSel,nAcceptedParticles);
+                if(fhPionCorr) CorelationsMixinghV0(bgTracksGen,fmcTracksSel,nAcceptedParticles);
             }
         }
 
@@ -2255,6 +2217,10 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodPrimaryTrackESD(const AliESDtra
                 fESDTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
                 fESDTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
             }
+          }
+          if(fFilterBit==96){
+            fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+            fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
           }
           if(!fESDTrackCuts->AcceptTrack(t)) return kFALSE;
 
@@ -2577,6 +2543,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0TopologyESD(const AliESDv0 *v
 //____________________________________________________________________________
 void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArray *associated,Bool_t hh,Bool_t V0h,Float_t perc,Bool_t hV0){
 
+
     const Double_t kPi = TMath::Pi();
     Int_t nAssoc = associated->GetEntriesFast();
     Int_t nTrig = triggers->GetEntriesFast();
@@ -2600,53 +2567,26 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
         if(trig->WhichCandidate()>7) continue;
 
         if(trig->WhichCandidate()<4) massTrig=trig->M();
-
-        Int_t idbintrigg [4];
-        if(!fCorrelationsGen&&trig->WhichCandidate()<4){
-            idbintrigg[0]=fHistEffCorrectionK0->GetAxis(0)->FindBin(triggPt);
-            idbintrigg[1]=fHistEffCorrectionK0->GetAxis(1)->FindBin(triggEta);
-            idbintrigg[2]=fHistEffCorrectionK0->GetAxis(2)->FindBin(triggPhi);
-            idbintrigg[3]=fHistEffCorrectionK0->GetAxis(3)->FindBin(fPV[2]);
-        }else if(!fCorrelationsGen){
-            idbintrigg[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(triggPt);
-            idbintrigg[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(triggEta);
-            idbintrigg[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(triggPhi);
-            idbintrigg[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
+        if(fCorrelationsGen&&!hV0){
+            if(trig->GetOrigalPartonType()==0) massTrig=-1; // quark is the orinal parton
+            else if(trig->GetOrigalPartonType()==1) massTrig=1;// gluon is the orinal parton
+            else massTrig = -30;
+            triggers[4]=massTrig;
         }
+        if(!fCorrelationsGen)  weight = GetEff(triggPt,triggEta,trig->WhichCandidate());
 
-        if(!hV0){
-            if(!fCorrelationsGen){
-                if(trig->WhichCandidate()==1) weight = fHistEffCorrectionK0->GetBinContent(idbintrigg);
-                else if (trig->WhichCandidate()==2) weight = fHistEffCorrectionLam->GetBinContent(idbintrigg);
-                else if (trig->WhichCandidate()==3) weight = fHistEffCorrectionAntiLam->GetBinContent(idbintrigg);
-                else weight = fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt));
-            }
-            if(weight ==0) continue;
+        if(weight ==0) continue;
+        Double_t triggers[5]={triggPt,fPV[2],trig->WhichCandidate()-0.5,massTrig,perc};
+        if(hV0)triggers[3]=4.5;
 
-            if(fCorrelationsGen){
-                if(trig->GetOrigalPartonType()==0) massTrig=-1; // quark is the orinal parton
-                else if(trig->GetOrigalPartonType()==1) massTrig=1;// gluon is the orinal parton
-                else massTrig = -30;
-            }
-
-            Double_t triggers[5]={triggPt,fPV[2],trig->WhichCandidate()-0.5,massTrig,perc};
-            if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers);
-            else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
-            else fHistNumberOfTriggers->Fill(triggers,1./weight);
-        }else{
-            if(!fCorrelationsGen) weight = fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt));
-
-            if(weight ==0) continue;
-            Double_t triggers[5]={triggPt,fPV[2],4.5,massTrig,perc};
-            if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers);
-            else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
-            else fHistNumberOfTriggers->Fill(triggers,1./weight);
-        }
+        if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers);
+        else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
+        else fHistNumberOfTriggers->Fill(triggers,1./weight);
 
         for (Int_t j=0; j<nAssoc; j++){
              weight =1;
             AliV0ChParticle* assoc = (AliV0ChParticle*)  associated->At(j);
-            if(assoc->WhichCandidate() < 4 || assoc->WhichCandidate()>7) continue;
+            if(assoc->WhichCandidate() < 4 || (assoc->WhichCandidate()>7&&assoc->WhichCandidate()<13)) continue;
             asocEta = assoc->Eta();
             assocPhi = assoc->Phi();
             assocCharge = assoc->Charge();
@@ -2656,8 +2596,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
             assocPt = assoc->Pt();
             if (deltaPhi > (1.5*kPi)) deltaPhi -= 2.0*kPi;
             if (deltaPhi < (-0.5*kPi)) deltaPhi += 2.0*kPi;
-
-            if(triggPt<=assocPt) continue;
 
             //removing autocorrelations
             if(V0h){
@@ -2746,51 +2684,17 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
                 if(TMath::Abs( 1.3872-massSigmaN)< 0.005||TMath::Abs( 1.3828-massSigmaP)<0.005||TMath::Abs( 1.32171-massXiN)<0.005||TMath::Abs( 1.67245-massOmegaN)<0.005) continue;
 
             }
-            Int_t idbinassoc [4];
-            if(!fCorrelationsGen&&assoc->WhichCandidate()>4){
-                idbinassoc[0]=fHistEffCorrectionK0->GetAxis(0)->FindBin(assocPt);
-                idbinassoc[1]=fHistEffCorrectionK0->GetAxis(1)->FindBin(asocEta);
-                idbinassoc[2]=fHistEffCorrectionK0->GetAxis(2)->FindBin(assocPhi);
-                idbinassoc[3]=fHistEffCorrectionK0->GetAxis(3)->FindBin(fPV[2]);
-            }else if(!fCorrelationsGen&&assoc->WhichCandidate()==4){
-                idbinassoc[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(assocPt);
-                idbinassoc[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(asocEta);
-                idbinassoc[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(assocPhi);
-                idbinassoc[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
+            if(!fCorrelationsGen) weight = GetEff(triggPt,triggEta,trig->WhichCandidate())*GetEff(assocPt,asocEta,assoc->WhichCandidate());
+            if(weight==0) continue;
+            Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assocCharge};
+            if(hV0) {
+              korel[5]=assoc->WhichCandidate()-0.5;
+              korel[6]=assoc->M();
+              korel[8]=(Double_t)trig->Charge();
             }
-            if(!hV0) {
-                if(!fCorrelationsGen){
-                    if(trig->WhichCandidate()==1) weight = fHistEffCorrectionK0->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                    else if (trig->WhichCandidate()==2) weight = fHistEffCorrectionLam->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                    else if (trig->WhichCandidate()==3) weight = fHistEffCorrectionAntiLam->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                    else weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt))) * (fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-
-                    if(weight ==0) continue;
-                }
-                if(fCorrelationsGen){
-                    if(trig->GetOrigalPartonType()==0) massTrig=-1; // quark is the orinal parton
-                    else if(trig->GetOrigalPartonType()==1) massTrig=1;// gluon is the orinal parton
-                    else massTrig = -30;
-                }
-                Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assocCharge};
-                if(fCorrelationsGen&&fAnalysisMC) fHistMCKorelacie->Fill(korel);
-                else if(fAnalysisMC) fHistKorelacieMCrec->Fill(korel,1./weight);
-                else fHistKorelacie->Fill(korel,1./weight);
-            }else{
-                if(!fCorrelationsGen){
-                    if(assoc->WhichCandidate()==5) weight = fHistEffCorrectionK0->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-                    else if (assoc->WhichCandidate()==6) weight = fHistEffCorrectionLam->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-                    else if (assoc->WhichCandidate()==7) weight = fHistEffCorrectionAntiLam->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-                    if(weight ==0) continue;
-                }
-
-                massTrig = assoc->M();
-                Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],assoc->WhichCandidate()-0.5,massTrig,perc,(Double_t)trig->Charge()};
-                if(fCorrelationsGen&&fAnalysisMC) fHistMCKorelacie->Fill(korel);
-                else if(fAnalysisMC) fHistKorelacieMCrec->Fill(korel,1./weight);
-                else fHistKorelacie->Fill(korel,1./weight);
-            }
-
+            if(fCorrelationsGen&&fAnalysisMC) fHistMCKorelacie->Fill(korel);
+            else if(fAnalysisMC) fHistKorelacieMCrec->Fill(korel,1./weight);
+            else fHistKorelacie->Fill(korel,1./weight);
         }
     }
 
@@ -2817,41 +2721,14 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
         if(triggPt<fPtTrigMin) continue;
         if(trig->WhichCandidate()<4&&trig->WhichCandidate()>0) continue;
         if(Xih) massTrig=trig->M();
+        if(!fCorrelationsGen)weight=GetEff(triggPt,triggEta,trig->WhichCandidate());
+        if(weight==0) continue;
+        Double_t triggers[5]={triggPt,fPV[2],trig->WhichCandidate()-2.5,massTrig,perc};
+        if(!Xih)triggers[2]=4.5;
+        if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers);
+        else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
+        else fHistNumberOfTriggers->Fill(triggers,1./weight);
 
-        Int_t idbintrigg [4];
-        if(!fCorrelationsGen&&Xih){
-            idbintrigg [0] =fHistEffCorrectionNegXi->GetAxis(0)->FindBin(triggPt);
-            idbintrigg [1] =fHistEffCorrectionNegXi->GetAxis(1)->FindBin(triggEta);
-            idbintrigg [2] =fHistEffCorrectionNegXi->GetAxis(2)->FindBin(triggPhi);
-            idbintrigg [3] =fHistEffCorrectionNegXi->GetAxis(3)->FindBin(fPV[2]);
-        }else if(!fCorrelationsGen){
-            idbintrigg [0] =fHistEffCorrectionHadron->GetAxis(0)->FindBin(triggPt);
-            idbintrigg [1] =fHistEffCorrectionHadron->GetAxis(1)->FindBin(triggEta);
-            idbintrigg [2] =fHistEffCorrectionHadron->GetAxis(2)->FindBin(triggPhi);
-            idbintrigg [3] =fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
-        }
-
-        if(Xih&&!fMixing){
-            if(!fCorrelationsGen){
-                if(trig->WhichCandidate()==8) weight = fHistEffCorrectionNegXi->GetBinContent(idbintrigg);
-                else weight = fHistEffCorrectionPosXi->GetBinContent(idbintrigg);
-                if(weight==0) continue;
-            }
-            Double_t triggers[5]={triggPt,fPV[2],trig->WhichCandidate()-2.5,massTrig,perc};
-            if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers);
-            else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
-            else fHistNumberOfTriggers->Fill(triggers,1./weight);
-        }else if(!fMixing){
-            if(!fCorrelationsGen){
-                weight = fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt));
-                if(weight==0) continue;
-            }
-            Double_t triggers[5]={triggPt,fPV[2],4.5,massTrig,perc};
-            if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers);
-            else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
-            else fHistNumberOfTriggers->Fill(triggers,1./weight);
-
-        }
         if(fMixing&&!Xih){
             if(TMath::Abs(trig->Eta())>0.8) continue;
         }
@@ -2868,8 +2745,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
             assocPt = assoc->Pt();
             if (deltaPhi > (1.5*kPi)) deltaPhi -= 2.0*kPi;
             if (deltaPhi < (-0.5*kPi)) deltaPhi += 2.0*kPi;
-
-            if(triggPt<=assocPt) continue;
 
             if(fMixing&&Xih){
                 if(TMath::Abs(assoc->Eta())>0.8) continue;
@@ -2897,48 +2772,22 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
             if ((TMath::Abs(posID))==(TMath::Abs(atrID))) continue;
             if ((TMath::Abs(bachID))==(TMath::Abs(atrID))) continue;
 
-            Int_t idbinassoc [4];
-
-            if(Xih){
-                if(!fCorrelationsGen){
-                    idbinassoc[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(assocPt);
-                    idbinassoc[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(asocEta);
-                    idbinassoc[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(assocPhi);
-                    idbinassoc[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
-
-                    if(trig->WhichCandidate()==8) weight = fHistEffCorrectionNegXi->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                    else weight = fHistEffCorrectionPosXi->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                    if(weight==0) continue;
-                }
-
-
-                Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assoc->Charge()};
-                if(fCorrelationsGen&&fAnalysisMC&&!fMixing) fHistMCKorelacie->Fill(korel);
-                else if(fAnalysisMC&&!fMixing) fHistKorelacieMCrec->Fill(korel,1./weight);
-                else if(!fMixing) fHistKorelacie->Fill(korel,1./weight);
-                else if(fAnalysisMC&&fMixing) fHistMCMixingRec->Fill(korel);
-                else if (fMixing) fHistdPhidEtaMix->Fill(korel);
-                else if (fMixingGen) fHistMCMixingGen->Fill(korel);
-            }else{
-                if(!fCorrelationsGen){
-                    idbinassoc[0]=fHistEffCorrectionNegXi->GetAxis(0)->FindBin(assocPt);
-                    idbinassoc[1]=fHistEffCorrectionNegXi->GetAxis(1)->FindBin(asocEta);
-                    idbinassoc[2]=fHistEffCorrectionNegXi->GetAxis(2)->FindBin(assocPhi);
-                    idbinassoc[3]=fHistEffCorrectionNegXi->GetAxis(3)->FindBin(fPV[2]);
-
-                    if(assoc->WhichCandidate()==10) weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)))*fHistEffCorrectionNegXi->GetBinContent(idbinassoc);
-                    else weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)))*fHistEffCorrectionPosXi->GetBinContent(idbinassoc);
-                    if(weight==0) continue;
-                }
-                massTrig = assoc->M();
-                Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],assoc->WhichCandidate()-0.5,massTrig,perc,(Double_t)trig->Charge()};
-                if(fCorrelationsGen&&fAnalysisMC&&!fMixing) fHistMCKorelacie->Fill(korel);
-                else if(fAnalysisMC&&!fMixing) fHistKorelacieMCrec->Fill(korel,1./weight);
-                else if(!fMixing) fHistKorelacie->Fill(korel,1./weight);
-                else if(fAnalysisMC&&fMixing) fHistMCMixingRec->Fill(korel);
-                else if (fMixing) fHistdPhidEtaMix->Fill(korel);
-                else if (fMixingGen) fHistMCMixingGen->Fill(korel);
+            if(!fCorrelationsGen)weight = GetEff(triggPt,triggEta,trig->WhichCandidate())*GetEff(assocPt,asocEta,assoc->WhichCandidate());
+            if(weight==0) continue;
+            Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assoc->Charge()};
+            if(!Xih){
+              korel[5]=assoc->WhichCandidate()-0.5;
+              korel[6]=assoc->M();
+              korel[8]=(Double_t)trig->Charge();
             }
+
+            if(fCorrelationsGen&&fAnalysisMC&&!fMixing) fHistMCKorelacie->Fill(korel);
+            else if(fAnalysisMC&&!fMixing) fHistKorelacieMCrec->Fill(korel,1./weight);
+            else if(!fMixing) fHistKorelacie->Fill(korel,1./weight);
+            else if(fAnalysisMC&&fMixing) fHistMCMixingRec->Fill(korel,1./weight);
+            else if (fMixing) fHistdPhidEtaMix->Fill(korel,1./weight);
+            else if (fMixingGen) fHistMCMixingGen->Fill(korel);
+
         }
     }
 
@@ -2950,17 +2799,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
     const Double_t kPi = TMath::Pi();
     Int_t nAssoc = bgTracks->GetEntriesFast();
     Int_t nTrig = triggers->GetEntriesFast();
-    Double_t assocCharge =0.;
-    Double_t asocEta =0.;
-    Double_t assocPhi =0.;
-    Double_t assocPt =0.;
-    Double_t triggPt, triggEta, triggPhi;
+    Double_t assocCharge, asocEta, assocPhi,assocPt,triggPt, triggEta, triggPhi,weight;
 
     AliV0ChParticle* trig = 0x0;
     AliVTrack* assoc = 0x0;
-    Int_t idbinassoc [4];
-    Int_t idbintrigg [4];
-    Double_t weight=1;
 
     for (Int_t i=0; i<nTrig; i++){
         trig = (AliV0ChParticle*)  triggers->At(i);
@@ -2970,30 +2812,19 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
         triggPhi = trig->Phi();
 
         Double_t massTrig = 0.;
-
-        if(fMixCorrect&&trig->WhichCandidate()<4){
-            idbintrigg[0]=fHistEffCorrectionK0->GetAxis(0)->FindBin(triggPt);
-            idbintrigg[1]=fHistEffCorrectionK0->GetAxis(1)->FindBin(triggEta);
-            idbintrigg[2]=fHistEffCorrectionK0->GetAxis(2)->FindBin(triggPhi);
-            idbintrigg[3]=fHistEffCorrectionK0->GetAxis(3)->FindBin(fPV[2]);
-        }else if(fMixCorrect){
-            idbintrigg[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(triggPt);
-            idbintrigg[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(triggEta);
-            idbintrigg[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(triggPhi);
-            idbintrigg[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
-        }
         if(trig->WhichCandidate()<4) massTrig=trig->M();
         for (Int_t j=0; j<nAssoc; j++){
+             weight=1.;
              assoc = (AliVTrack*) bgTracks->At(j);
              if(!assoc) continue;
-
-            if(isnan(assoc->Eta() ))continue;
-            if(TMath::Abs(assoc->Eta())>0.8) continue;
 
              assocCharge = assoc->Charge();
              asocEta = assoc->Eta();
              assocPhi = assoc -> Phi();
              assocPt = assoc->Pt();
+
+             if(isnan(asocEta))continue;
+             if(TMath::Abs(asocEta)>0.8) continue;
 
              if (( assocPt>=trig->Pt() ) || ( assocPt<fPtAsocMin )) continue;
 
@@ -3005,24 +2836,14 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
             if (deltaPhi < (-0.5*kPi)) deltaPhi += 2.0*kPi;
 
             if(fMixCorrect){
-            	idbinassoc[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(assocPt);
-                idbinassoc[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(asocEta);
-                idbinassoc[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(assocPhi);
-                idbinassoc[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
-
-                if(trig->WhichCandidate()==1) weight = fHistEffCorrectionK0->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                else if (trig->WhichCandidate()==2) weight = fHistEffCorrectionLam->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                else if (trig->WhichCandidate()==3) weight = fHistEffCorrectionAntiLam->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                else weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt))) * (fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-
+                weight = GetEff(triggPt,triggEta,trig->WhichCandidate())*GetEff(assocPt,asocEta,4);
                	if(weight ==0) continue;
             }
 
-
             Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assocCharge};
             if(fAnalysisMC&&fMixingGen) fHistMCMixingGen->Fill(korel);
-            else if(fAnalysisMC) fHistMCMixingRec->Fill(korel,weight);
-            else fHistdPhidEtaMix->Fill(korel,weight);
+            else if(fAnalysisMC) fHistMCMixingRec->Fill(korel,1./weight);
+            else fHistdPhidEtaMix->Fill(korel,1./weight);
         }
     }
 
@@ -3035,8 +2856,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixinghV0(TObjArray *bgTracks,
     Int_t nAssoc = assocArray->GetEntriesFast();
     Int_t nTrig = bgTracks->GetEntriesFast();
     Double_t triggPt, triggEta, triggPhi, assocPt, asocEta, assocPhi;
-    Int_t idbinassoc [4];
-    Int_t idbintrigg [4];
     Double_t weight=1;
 
     for (Int_t i=0; i<nTrig; i++){
@@ -3046,13 +2865,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixinghV0(TObjArray *bgTracks,
         triggPt = trig->Pt();
         triggEta = trig->Eta();
         triggPhi = trig->Phi();
-
-        if(fMixCorrect){
-            idbintrigg[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(triggPt);
-            idbintrigg[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(triggEta);
-            idbintrigg[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(triggPhi);
-            idbintrigg[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
-        }
 
         if(TMath::Abs(trig->Eta())>0.8) continue;
 
@@ -3075,29 +2887,14 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixinghV0(TObjArray *bgTracks,
             if (deltaPhi < (-0.5*kPi)) deltaPhi += 2.0*kPi;
 
             if(fMixCorrect){
-            	if(assoc->WhichCandidate()>4){
-		            idbinassoc[0]=fHistEffCorrectionK0->GetAxis(0)->FindBin(assocPt);
-		            idbinassoc[1]=fHistEffCorrectionK0->GetAxis(1)->FindBin(asocEta);
-		            idbinassoc[2]=fHistEffCorrectionK0->GetAxis(2)->FindBin(assocPhi);
-		            idbinassoc[3]=fHistEffCorrectionK0->GetAxis(3)->FindBin(fPV[2]);
-		        }else{
-		        	idbinassoc[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(assocPt);
-                	idbinassoc[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(asocEta);
-                	idbinassoc[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(assocPhi);
-                	idbinassoc[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
-		        }
-
-                if(assoc->WhichCandidate()==5) weight = fHistEffCorrectionK0->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-                else if (assoc->WhichCandidate()==6) weight = fHistEffCorrectionLam->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-                else if (assoc->WhichCandidate()==3) weight = fHistEffCorrectionAntiLam->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-
-               	if(weight ==0) continue;
+            	weight = GetEff(triggPt,triggEta,4)*GetEff(assocPt,asocEta,assoc->WhichCandidate());
+              if(weight ==0) continue;
             }
 
             Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],assoc->WhichCandidate()-0.5,massAssoc,perc,(Double_t)trig->Charge()};
             if(fAnalysisMC&&fMixingGen) fHistMCMixingGen->Fill(korel);
-            else if(fAnalysisMC) fHistMCMixingRec->Fill(korel,weight);
-            else fHistdPhidEtaMix->Fill(korel,weight);
+            else if(fAnalysisMC) fHistMCMixingRec->Fill(korel,1./weight);
+            else fHistdPhidEtaMix->Fill(korel,1./weight);
         }
     }
 }
@@ -3222,8 +3019,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::FillMC(const AliVParticle *V0,Int_t pdgV0
         Double_t V0mcEta = mcPosMother->Eta();
 
         if(fEfficiency){
-            Double_t v0effic[6]={V0mcPt,fPV[2],triggerType-0.5,V0mcEta,mass,mcPosMother->Phi()};
-            if(fFlowEffPtBins)v0effic[5]=fPercentile;
+            Double_t v0effic[5]={V0mcPt,fPV[2],triggerType-0.5,V0mcEta,mcPosMother->Phi()};
             fHistRecV0->Fill(v0effic);
         }
 
@@ -3543,5 +3339,133 @@ Int_t AliAnalysisTaskDiHadCorrelHighPt::GetOriginalPartonPDG(const AliMCParticle
         label_mother=mother->GetMother();
     }
     return pdg;
+
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsPionTrack(const AliAODTrack* track)
+{
+  // checking detector statuses
+  Bool_t bIsTPCok = HasTrackPIDTPC(track);
+  Bool_t bIsTOFok = HasTrackPIDTOF(track);
+
+  if(!bIsTPCok) { return -1; }
+
+  Double_t l_Probs[AliPID::kSPECIES];
+  Bool_t l_TOFUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, l_Probs) & AliPIDResponse::kDetTOF;
+  Int_t pidInd = 0;
+  for(Int_t i(0); i < AliPID::kSPECIES; i++) pidInd=(l_Probs[i]>l_Probs[pidInd])?i:pidInd;
+  Int_t retInd = pidInd-AliPID::kPion+1; //realigning
+  if(retInd<1 || retInd>3) return kFALSE;
+  if(l_Probs[pidInd] < fPIDbayesPion) return kFALSE;
+  //check nsigma cuts
+  if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)pidInd))>3) return kFALSE;
+  if(bIsTOFok && l_TOFUsed) if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)pidInd))>3) return kFALSE;
+
+  if(retInd==1)return kTRUE;
+  else return kFALSE;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskDiHadCorrelHighPt::HasTrackPIDTPC(const AliAODTrack* track)
+{
+  if(!track || !fPIDResponse) return kFALSE;
+  AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track);
+  return (pidStatusTPC == AliPIDResponse::kDetPidOk);
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskDiHadCorrelHighPt::HasTrackPIDTOF(const AliAODTrack* track)
+{
+  if(!track || !fPIDResponse) return kFALSE;
+  AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
+  return ((pidStatusTOF == AliPIDResponse::kDetPidOk) && (track->GetStatus()& AliVTrack::kTOFout) && (track->GetStatus()& AliVTrack::kTIME));
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskDiHadCorrelHighPt::LoadEfficiencies() {
+
+  fHistSecondaryCont = (TH1F*)fEffList->FindObject("fHistSecondaryCont");
+  if(!fHistSecondaryCont){
+    cout << " !! fHistSecondaryCont does not exist and is required !!" << endl;
+    return;
+  }
+  if(fhPionCorr){
+    fHistSecondaryContNegPion = (TH1F*)fEffList->FindObject("fHistSecondaryContNegPion");
+    fHistSecondaryContPosPion = (TH1F*)fEffList->FindObject("fHistSecondaryContPosPion");
+    if(!fHistSecondaryContNegPion||!fHistSecondaryContPosPion){
+      cout << " !! Contamination Hist for Pions do not exist and are required !!" << endl;
+      return;
+    }
+  }
+  for (Int_t i = 0; i < 9; i++) {
+    fHistEffCorrectionHadron[i] = (TH2D*) fEffList->FindObject(Form("fHistEffCorrectionHadron_Pvz%i",i));
+    if(!fHistEffCorrectionHadron[i]){
+      cout << " !! fHistSecondaryCont does not exist and is required !!" << endl;
+      return;
+    }
+    if(fV0hCorr||fhV0Corr){
+      fHistEffCorrectionK0[i] = (TH2D*) fEffList->FindObject(Form("fHistEffCorrectionK0_Pvz%i",i));
+      fHistEffCorrectionLam[i] = (TH2D*) fEffList->FindObject(Form("fHistEffCorrectionLam_Pvz%i",i));
+      fHistEffCorrectionAntiLam[i] = (TH2D*) fEffList->FindObject(Form("fHistEffCorrectionAntiLam_Pvz%i",i));
+      if(!fHistEffCorrectionK0[i]||!fHistEffCorrectionLam[i]||!fHistEffCorrectionAntiLam[i]){
+        cout << " !! Efficiency Hist for V0 do not exist and are required !!" << endl;
+        return;
+      }
+    }
+    if(fhPionCorr){
+      fHistEffCorrectionNegPion[i] = (TH2D*) fEffList->FindObject(Form("fHistEffCorrectionNegPion_Pvz%i",i));
+      fHistEffCorrectionPosPion[i] = (TH2D*) fEffList->FindObject(Form("fHistEffCorrectionPosPion_Pvz%i",i));
+      if(!fHistEffCorrectionNegPion[i]||!fHistEffCorrectionPosPion[i]){
+        cout << " !! Efficiency Hist for Pions do not exist and are required !!" << endl;
+        return;
+      }
+    }
+    if(fAnalyseFeedDown){
+      fHistEffCorrectionNegXi[i] = (TH2D*) fEffList->FindObject(Form("fHistEffCorrectionNegXi_Pvz%i",i));
+      fHistEffCorrectionPosXi[i] = (TH2D*) fEffList->FindObject(Form("fHistEffCorrectionPosXi_Pvz%i",i));
+      if(!fHistEffCorrectionPosXi[i]||!fHistEffCorrectionNegXi[i]){
+        cout << " !! Efficiency Hist for Xis do not exist and are required !!" << endl;
+        return;
+      }
+    }
+  }
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskDiHadCorrelHighPt::SetAxisTitles(THnSparse *hist){
+  hist->GetAxis(0)->SetTitle("p_{T}^{trig}");
+  hist->GetAxis(1)->SetTitle("p_{T}^{assoc}");
+  hist->GetAxis(2)->SetTitle("#Delta#phi");
+  hist->GetAxis(3)->SetTitle("#Delta#eta");
+  hist->GetAxis(4)->SetTitle("p_{vz}");
+  hist->GetAxis(5)->SetTitle("trigger");
+  hist->GetAxis(6)->SetTitle("mass");
+  hist->GetAxis(7)->SetTitle("multiplicity percentile");
+  hist->GetAxis(8)->SetTitle("hadron charge");
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskDiHadCorrelHighPt::GetEff(Double_t pt, Double_t eta,Int_t candidate){
+
+  Int_t pvzBin = GetPvzBin();
+  Double_t weight = 1.;
+  if(candidate==4) weight = fHistEffCorrectionHadron[pvzBin]->Interpolate(pt,eta)/(1. - fHistSecondaryCont->Interpolate(pt));
+  if(candidate==1||candidate==5) weight = fHistEffCorrectionK0[pvzBin]->Interpolate(pt,eta);
+  if(candidate==2||candidate==6) weight = fHistEffCorrectionLam[pvzBin]->Interpolate(pt,eta);
+  if(candidate==3||candidate==7) weight = fHistEffCorrectionAntiLam[pvzBin]->Interpolate(pt,eta);
+  if(candidate==8||candidate==10) weight = fHistEffCorrectionNegXi[pvzBin]->Interpolate(pt,eta);
+  if(candidate==9||candidate==11) weight = fHistEffCorrectionPosXi[pvzBin]->Interpolate(pt,eta);
+  if(candidate==13) weight = fHistEffCorrectionPosPion[pvzBin]->Interpolate(pt,eta)/(1. - fHistSecondaryContPosPion->Interpolate(pt));
+  if(candidate==14) weight = fHistEffCorrectionNegPion[pvzBin]->Interpolate(pt,eta)/(1. - fHistSecondaryContNegPion->Interpolate(pt));
+
+  return weight;
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskDiHadCorrelHighPt::GetPvzBin(){
+
+  if(fPV[2]<-7) return 0;
+  else if(fPV[2]<-5)return 1;
+  else if(fPV[2]<-3)return 2;
+  else if(fPV[2]<-1)return 3;
+  else if(fPV[2]<1)return 4;
+  else if(fPV[2]<3)return 5;
+  else if(fPV[2]<5)return 6;
+  else if(fPV[2]<7)return 7;
+  else return 8;
 
 }
