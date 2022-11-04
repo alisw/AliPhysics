@@ -128,7 +128,9 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
       hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
-      hEtamc(0), hEtamcAlice(0), hCounter(0) {
+      hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
+      hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultaVsV0M(0),
+      hMultcVsV0M(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
@@ -165,7 +167,9 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
       hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
-      hEtamc(0), hEtamcAlice(0), hCounter(0)
+      hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
+      hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultaVsV0M(0),
+      hMultcVsV0M(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -359,6 +363,18 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     hFlatMCVsV0M = new TH2D("hFlatMCVsV0M", "", nCent, centClass, nbins_flat,
                             min_flat, max_flat);
     fOutputList->Add(hFlatMCVsV0M);
+
+    hMultMCmVsV0M =
+        new TH2D("hMultMCmVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
+    fOutputList->Add(hMultMCmVsV0M);
+
+    hMultMCaVsV0M =
+        new TH2D("hMultMCaVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
+    fOutputList->Add(hMultMCaVsV0M);
+
+    hMultMCcVsV0M =
+        new TH2D("hMultMCcVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
+    fOutputList->Add(hMultMCcVsV0M);
   }
 
   hActivityV0DataSectBefore = new TProfile(
@@ -387,6 +403,18 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
 
   hCounter = new TH1D("hCounter", "counter", 10, -0.5, 9.5);
   fOutputList->Add(hCounter);
+
+  hMultmVsV0M =
+      new TH2D("hMultmVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
+  fOutputList->Add(hMultmVsV0M);
+
+  hMultaVsV0M =
+      new TH2D("hMultaVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
+  fOutputList->Add(hMultaVsV0M);
+
+  hMultcVsV0M =
+      new TH2D("hMultcVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
+  fOutputList->Add(hMultcVsV0M);
 
   fEventCuts.AddQAplotsToList(fOutputList);
   PostData(1, fOutputList); // postdata will notify the analysis manager of
@@ -554,6 +582,11 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       hFlatenicityMC->Fill(fFlatMC);
       hFlatResponse->Fill(fFlatMC, fFlat);
       hFlatMCVsV0M->Fill(fv0mpercentile, fFlatMC);
+
+      hMultMCmVsV0M->Fill(fv0mpercentile, fmultV0Cmc + fmultV0Amc);
+      hMultMCcVsV0M->Fill(fv0mpercentile, fmultV0Cmc);
+      hMultMCaVsV0M->Fill(fv0mpercentile, fmultV0Amc);
+
       MakeMCanalysis();
     }
   }
@@ -565,6 +598,11 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     }
     if (fV0Mindex >= 0) {
       hFlatVsV0M->Fill(fv0mpercentile, fFlat);
+
+      hMultmVsV0M->Fill(fv0mpercentile, fmultV0C + fmultV0A);
+      hMultcVsV0M->Fill(fv0mpercentile, fmultV0C);
+      hMultaVsV0M->Fill(fv0mpercentile, fmultV0A);
+
       MakeDataanalysis();
     }
   }
@@ -906,7 +944,7 @@ void AliAnalysisTaskFlatenicity::ExtractMultiplicitiesMC() {
     Double_t eta_a = particle->Eta();
     hEtamc->Fill(eta_a);
     hEtamcAlice->Fill(eta_a);
-    if (eta_a >= 2.8 && eta_a < 4.5) { // v0a acceptance (excluding first ring)
+    if (eta_a >= 2.8 && eta_a < 5.1) { // v0a acceptance (excluding first ring)
       fmultV0Amc++;
     }
     if (eta_a >= 4.8 && eta_a < 6.3) { // ada acceptance
@@ -985,9 +1023,9 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
   for (int i_eta = 0; i_eta < nRings; ++i_eta) {
     for (int i_phi = 0; i_phi < nSectors; ++i_phi) {
       Float_t deltaEta = TMath::Abs(maxEta[i_eta] - minEta[i_eta]);
+      hActivityV0McSect->Fill(i_segment, RhoLattice[i_segment]);
       RhoLattice[i_segment] /= deltaEta;
       // Filling histos with mult info
-      hActivityV0McSect->Fill(i_segment, RhoLattice[i_segment]);
       i_segment++;
     }
   }
