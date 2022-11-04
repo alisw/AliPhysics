@@ -4474,10 +4474,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
           }
         }
 
+        bool NDMisSelected = false; // Delete all NDMcands that are not selected by any mass cut. Change to true when selected by any cut
         if((((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelected(NDMcand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
           if (!matched){
 
             if (((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 0)){
+              NDMisSelected = true;
               if(fEnablePCMEMCUnsmearing){// Calculate the scaling factor for the cluster photon so, that the pi0 mass matches the pi0 pdg mass. Apply only for true or when pi0 is already in mass window.
                 Double_t CorrectedClusterPhotonEnergy = fPDGMassNDM*fPDGMassNDM/(2*gamma0->E()*(1-TMath::Cos(gamma0->Angle(gamma1->Vect()))));
                 Double_t ScalingFactor = CorrectedClusterPhotonEnergy/gamma1->E();
@@ -4496,6 +4498,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
               }
             } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
                       (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 1))){
+              NDMisSelected = true;
               fNeutralDecayParticleSidebandCandidates->Add(NDMcand);
 
               if(!fDoLightOutput){
@@ -4504,6 +4507,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
             } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
                       ((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 2)) ||
                       ((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 3))))){
+              NDMisSelected = true;
               fNeutralDecayParticleSidebandCandidates->Add(NDMcand);
 
               if(!fDoLightOutput){
@@ -4516,15 +4520,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
               if(fInputEvent->IsA()==AliAODEvent::Class())
                 ProcessTrueNeutralPionCandidatesMixedConvCaloAOD(NDMcand,gamma0,gamma1);
             }
-            else{
-              delete NDMcand;
-              NDMcand=0x0;
-            }
-          }else{
-            delete NDMcand;
-            NDMcand=0x0;
           }
-        }else{
+        }
+        if(!NDMisSelected){
           delete NDMcand;
           NDMcand=0x0;
         }
