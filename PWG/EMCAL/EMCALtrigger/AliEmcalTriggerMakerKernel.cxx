@@ -464,7 +464,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
 
     if ( cellId < 0 ) {
-      AliErrorStream() << "Skip: iCell = "<< iCell << " Cell Id = " << cellId <<", E = "<< amp <<", time = "<<celltime<<std::endl;
+      AliDebugStream(1) << "Skip: iCell = "<< iCell << " Cell Id = " << cellId <<", E = "<< amp <<", time = "<<celltime<<std::endl;
       continue;
     }
 

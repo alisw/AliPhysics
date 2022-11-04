@@ -411,6 +411,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
 
+      void    ResetAODMCTrackArray()                                                { fAODMCTrackArray = 0x0;}
       void    ResetMcHeader()                                                       { fAODMCHeader = 0x0;}
 
       void    SetPeriodEnum (TString periodName);

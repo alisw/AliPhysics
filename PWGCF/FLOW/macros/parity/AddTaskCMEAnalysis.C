@@ -836,7 +836,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	outputMHLS_PP2 += ":outputMHLS2analysis";
 	outputMHLS_PP2 += "PlusPlus";     
 	taskMHLS_PP2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPP_NameMHLS2[iCentralityBin].Data()),kFALSE);
-	taskMHLS_PP2[iCentralityBin]->SetHarmonic(2); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
+	taskMHLS_PP2[iCentralityBin]->SetHarmonic(3); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHLS_PP2[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHLS_PP2[iCentralityBin]->SetMultipicityBinWidth(1.);
 	taskMHLS_PP2[iCentralityBin]->SetMinMultiplicity(1.);
@@ -892,7 +892,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	outputMHLS_NN2 += ":outputMHLS2analysis";
 	outputMHLS_NN2 += "MinusMinus";     
 	taskMHLS_NN2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotNN_NameMHLS2[iCentralityBin].Data()),kFALSE);
-	taskMHLS_NN2[iCentralityBin]->SetHarmonic(2); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
+	taskMHLS_NN2[iCentralityBin]->SetHarmonic(3); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHLS_NN2[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHLS_NN2[iCentralityBin]->SetMultipicityBinWidth(1.);
 	taskMHLS_NN2[iCentralityBin]->SetMinMultiplicity(1.);
@@ -951,7 +951,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	outputMHUS2 += ":outputMHUS2analysis";
       
 	taskMHUS2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPN_NameMHUS2[iCentralityBin].Data()),kFALSE);
-	taskMHUS2[iCentralityBin]->SetHarmonic(2); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
+	taskMHUS2[iCentralityBin]->SetHarmonic(3); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHUS2[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHUS2[iCentralityBin]->SetMultipicityBinWidth(1.);
 	taskMHUS2[iCentralityBin]->SetMinMultiplicity(1.);
