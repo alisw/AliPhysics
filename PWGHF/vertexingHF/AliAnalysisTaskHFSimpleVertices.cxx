@@ -2741,8 +2741,6 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSkimCuts(AliAODRecoDecayHF3Prong* cand)
   bool ispKpi = true;
   bool ispiKp = true;
   Double_t ptCand = cand->Pt();
-  if (ptCand < fMinPtLc || ptCand > fMaxPtLc)
-    return 0;
   Int_t iPtLc = GetPtBin(ptCand, fPtBinLimsLcSkims, kMaxNPtBins3ProngsSkims); 
   if (iPtLc < 0)
     return 0;
@@ -3013,21 +3011,8 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
   bool isLcpKpi = true;
   bool isLcpiKp = true;
   Double_t ptCand = cand->Pt();
-  // if (ptCand < 0. || ptCand >= 36.)
-  //   return 0;
-  // Double_t PtBinLimsLc2[11] = {0., 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
-  // Int_t jPtBin = 0;
-  // if (ptCand < PtBinLimsLc2[0] || ptCand > PtBinLimsLc2[10]){
-  //   return 0;
-  // } else {
-  //   for (Int_t i = 0; i < 10; i++) {
-  //     if (ptCand >= PtBinLimsLc2[i] && ptCand < PtBinLimsLc2[i + 1]) {
-  //       jPtBin = i;
-  //       break;
-  //     }
-  //   }
-  // }
-
+  if (ptCand < fMinPtLc || ptCand > fMaxPtLc)
+    return 0;
   Int_t jPtBin = GetPtBin(ptCand, fPtBinLimsLc, fNPtBinsLc);
   if (jPtBin == -1)
     return 0;
