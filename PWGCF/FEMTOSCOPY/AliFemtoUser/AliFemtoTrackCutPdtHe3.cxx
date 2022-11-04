@@ -450,9 +450,11 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
             }
 	    //\ for triton PID
             else if (fMostProbable == 14){   //cut on Nsigma triton
+
                 if (IsTritonNSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT()) ){
                     imost = 14;
                 }
+
                 if ( fdEdxcut && !IsTritonTPCdEdx(track->Pt(), track->TPCsignal()) ){
                     imost = 0;
                 }   
@@ -558,23 +560,38 @@ bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float massTOFPDG, float
 }
 bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT){
     //double massPDGD=2.8089;
-    if (fNsigmaTPCTOF) {
-        //Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
-        if (mom > SwitchMom_t){
-        if(TMath::Hypot(nsigmaTPCT,nsigmaTOFT) < fNsigmaT )    
-	//if ((TMath::Abs(nsigmaTPCT) < fNsigmaT) && (TMath::Abs(nsigmaTOFT) < fNsigmaT))
-                return true;
-        }
-        else{
-            if (TMath::Abs(nsigmaTPCT) < fNsigmaT)
-                return true;
-        }
-        
-    }
-    else{
-        if (TMath::Abs(nsigmaTPCT) < fNsigmaT)
-            return true;
-    } 
+	if(fdNSigmaVspTcut==0){
+	    if (fNsigmaTPCTOF) {
+		//Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
+		if (mom > SwitchMom_t){
+		if(TMath::Hypot(nsigmaTPCT,nsigmaTOFT) < fNsigmaT )    
+		//if ((TMath::Abs(nsigmaTPCT) < fNsigmaT) && (TMath::Abs(nsigmaTOFT) < fNsigmaT))
+		        return true;
+		}
+		else{
+		    if (TMath::Abs(nsigmaTPCT) < fNsigmaT)
+		        return true;
+		}
+		
+	    }
+	    else{
+		if (TMath::Abs(nsigmaTPCT) < fNsigmaT)
+		    return true;
+	    } 
+
+	}else{
+		float tmpcut = fdcutline_k * mom + fdcutline_b;
+		if(SwitchMom_t > 4.0){	// only TPC
+			if(nsigmaTPCT >= tmpcut && abs(nsigmaTPCT) < fNsigmaT){
+				return true;
+			}
+		}
+		else{	
+			if(nsigmaTPCT >= tmpcut && abs(nsigmaTPCT) < fNsigmaT && TMath::Hypot( nsigmaTPCT, nsigmaTOFT ) < fNsigmaT){
+				return true;
+			}
+		}
+	}
     return false;
 }
 bool AliFemtoTrackCutPdtHe3::IsHe3NSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3){
@@ -732,15 +749,11 @@ bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx){
 
 }
 bool AliFemtoTrackCutPdtHe3::IsTritonTPCdEdx(float mom, float dEdx){
-    double a1 = -125.,  b1 = 350.;
-    double a2 = -50.,  b2 = 200.;
-    if (mom < 2) {
-        if (dEdx < a1*mom+b1) return false;
-    }
-    else if (mom >= 2) {
-        if (dEdx < a2*mom+b2) return false;
-    }
-    return true;
+    
+        if (dEdx < MinHe3TPCSignal) return false;
+    
+ 
+    	return true;
 
 }
 
