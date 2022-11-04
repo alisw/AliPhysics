@@ -1327,8 +1327,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
     collision.fCovXX = AliMathBase::TruncateFloatFraction(covmatrix[0], mCollisionPositionCov);
     collision.fCovXY = AliMathBase::TruncateFloatFraction(covmatrix[1], mCollisionPositionCov);
-    collision.fCovXZ = AliMathBase::TruncateFloatFraction(covmatrix[3], mCollisionPositionCov);
-    collision.fCovYY = AliMathBase::TruncateFloatFraction(covmatrix[2], mCollisionPositionCov);
+    collision.fCovXZ = AliMathBase::TruncateFloatFraction(covmatrix[2], mCollisionPositionCov);
+    collision.fCovYY = AliMathBase::TruncateFloatFraction(covmatrix[3], mCollisionPositionCov);
     collision.fCovYZ = AliMathBase::TruncateFloatFraction(covmatrix[4], mCollisionPositionCov);
     collision.fCovZZ = AliMathBase::TruncateFloatFraction(covmatrix[5], mCollisionPositionCov);
 
