@@ -34,6 +34,7 @@ class AliReducedPairInfo : public AliReducedBaseTrack {
     kADzeroToKplusPiminus,   // anti-D0      -> K+ pi-
     kDsplusToK0sKplus,       // Ds+          -> K0s K+
     kDsminusToK0sKminus,     // Ds-          -> K0s K-
+    kBToJpsiK,               // B+/-         -> J/psi K+/-
     kNMaxCandidateTypes
   };
   static const Char_t* fgkDecayChannelNames[kNMaxCandidateTypes][4];
