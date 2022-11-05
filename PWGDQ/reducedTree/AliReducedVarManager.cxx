@@ -66,6 +66,7 @@ const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandida
    1.11568, //ALambda
    1.019455, // Phi
    3.09691599, //Jpsi
+   5.27925, // B+-
    3.686097,   // psi(2S)
    9.460300, //Upsilon
    1.86962, // D+-
@@ -76,7 +77,6 @@ const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandida
    1.86962, // D+-
    1.86484, // D0
    1.86962, // D+-
-   1.96850, // Ds
    1.96850 // Ds
 };
 
@@ -1419,6 +1419,7 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
    //
    //  Fill pure MC truth information
    //
+
    if(fgUsedVars[kPtMC]) values[kPtMC] = p->PtMC();
    if(fgUsedVars[kPMC]) values[kPMC] = p->PMC();
    values[kPxMC] = p->MCmom(0);
@@ -1433,26 +1434,35 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       if(TMath::Abs(p->MCPdg(0))==443)
          values[kMassMC] = fgkPairMass[AliReducedPairInfo::kJpsiToEE];  
       if(TMath::Abs(p->MCPdg(0))==100443)
-         values[kMassMC] = fgkPairMass[AliReducedPairInfo::kPsi2SToEE];  
+         values[kMassMC] = fgkPairMass[AliReducedPairInfo::kPsi2SToEE]; 
+      if(TMath::Abs(p->MCPdg(0))==521 )
+         values[kMassMC] = fgkPairMass[AliReducedPairInfo::kBToJpsiK];  
    }
    if(fgUsedVars[kRapMC]) {
       if(TMath::Abs(p->MCPdg(0))==443)
          values[kRapMC] = p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]); 
       if(TMath::Abs(p->MCPdg(0))==100443)
-         values[kRapMC] = p->RapidityMC(fgkPairMass[AliReducedPairInfo::kPsi2SToEE]); 
+         values[kRapMC] = p->RapidityMC(fgkPairMass[AliReducedPairInfo::kPsi2SToEE]);
+      if(TMath::Abs(p->MCPdg(0))==521 )
+         values[kRapMC] = p->RapidityMC(fgkPairMass[AliReducedPairInfo::kBToJpsiK]); 
    }
   if(fgUsedVars[kRapMCAbs]) {
     if(TMath::Abs(p->MCPdg(0))==443)
       values[kRapMCAbs] = TMath::Abs(p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]));
     if(TMath::Abs(p->MCPdg(0))==100443)
        values[kRapMCAbs] = TMath::Abs(p->RapidityMC(fgkPairMass[AliReducedPairInfo::kPsi2SToEE]));
+    if(TMath::Abs(p->MCPdg(0))==521 )
+      values[kRapMCAbs] = TMath::Abs(p->RapidityMC(fgkPairMass[AliReducedPairInfo::kBToJpsiK])); 
   }
 
   if(fgUsedVars[kPseudoProperDecayTimeMC]){
      if(fgEvent->IsA()==EVENT::Class()){
      EVENT* eventInfo = (EVENT*)fgEvent;
      Double_t lxyMC = ( (p->MCFreezeout(0) - eventInfo->VertexMC(0)) * p->MCmom(0) + (p->MCFreezeout(1) - eventInfo->VertexMC(1)) * p->MCmom(1) ) / p->PtMC();
-     values[kPseudoProperDecayTimeMC] = lxyMC * (fgkPairMass[AliReducedPairInfo::kJpsiToEE])/p->PtMC();
+     if(TMath::Abs(p->MCPdg(0))==443)
+        values[kPseudoProperDecayTimeMC] = lxyMC * (fgkPairMass[AliReducedPairInfo::kJpsiToEE])/p->PtMC();
+     if(TMath::Abs(p->MCPdg(0))==521 )
+        values[kPseudoProperDecayTimeMC] = lxyMC * (fgkPairMass[AliReducedPairInfo::kBToJpsiK])/p->PtMC();
      }
   }
    // compute MC truth variables from decay legs, e.g. from the 2 electrons of a J/psi decay
@@ -2084,7 +2094,7 @@ void AliReducedVarManager::FillPairInfo(PAIR* p, Float_t* values) {
   
   values[kCandidateId]   = p->CandidateId();
   values[kPairType]      = p->PairType();
-  values[kPairTypeSPD]      = p->PairTypeSPD();
+  values[kPairTypeSPD]   = p->PairTypeSPD();
   values[kPairChisquare] = p->Chi2();
   if(fgUsedVars[kMass]) {
     values[kMass] = p->Mass();
@@ -2103,8 +2113,7 @@ void AliReducedVarManager::FillPairInfo(PAIR* p, Float_t* values) {
   
   if(fgUsedVars[kRap])    values[kRap]              = p->Rapidity();
   if(fgUsedVars[kRapAbs]) values[kRapAbs]           = TMath::Abs(p->Rapidity());
-                          values[kPairLxy]          = p->Lxy();
-                          values[kPairPointingAngle]= p->PointingAngle();
+  values[kPairLxy]          = p->Lxy();
 
   // polarization variables
   Bool_t usePolarization=kFALSE;
@@ -2198,8 +2207,7 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
     values[kPairLegITSchi2+1] = ti2->ITSchi2();
   }
   
-  if((fgUsedVars[kPseudoProperDecayTime] || fgUsedVars[kPairLxy]) &&  
-     (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class()) && 
+  if( (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class()) && 
      (fgEvent->IsA()==EVENT::Class())) {
      TRACK* ti1=(TRACK*)t1; 
      TRACK* ti2=(TRACK*)t2;
@@ -2207,9 +2215,26 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
      Double_t errPseudoProperTime2;
      EVENT* eventInfo = (EVENT*)fgEvent;
      AliKFParticle primVtx = BuildKFvertex(eventInfo);
+     if (pairKF.GetNDF())
+        values[kPairChi2prNDOF] = pairKF.GetChi2()/pairKF.GetNDF();
+     else
+        values[kPairChi2prNDOF] = -999.;
+
      if(fgUsedVars[kPseudoProperDecayTime]) 
         values[kPseudoProperDecayTime] = pairKF.GetPseudoProperDecayTime(primVtx, fgkPairMass[type], &errPseudoProperTime2);
-     if(fgUsedVars[kPairLxy]) values[kPairLxy] =  ( (pairKF.X() - primVtx.X())*p.Px() + (pairKF.Y() - primVtx.Y())*p.Py() )/p.Pt(); // = values[kPseudoProperDecayTime]*(p.Pt()/PAIR::fgkPairMass[type]);
+
+     Double_t deltaPrimSecVtx[3]; //vector between the reference point and the V0 vertex
+     deltaPrimSecVtx[0] = pairKF.X() - primVtx.X();
+     deltaPrimSecVtx[1] = pairKF.Y() - primVtx.Y();
+     deltaPrimSecVtx[2] = pairKF.Z() - primVtx.Z();
+     Double_t deltaPrimSecVtx2 = deltaPrimSecVtx[0]*deltaPrimSecVtx[0] + deltaPrimSecVtx[1]*deltaPrimSecVtx[1] + deltaPrimSecVtx[2]*deltaPrimSecVtx[2];
+     Double_t momV02    = p.Px()*p.Px() + p.Py()*p.Py() + p.Pz()*p.Pz();
+     Double_t test = p.Px()*p.Px() + p.Py()*p.Py();
+
+     //values[kPairLxy] = ( deltaPrimSecVtx[0]*p.Px() + deltaPrimSecVtx[1]*p.Py() )/p.Pt();
+     values[kPairLxy] = ( deltaPrimSecVtx[0]*p.Px() + deltaPrimSecVtx[1]*p.Py() )/TMath::Sqrt(test);
+     values[kPairLxyz] = ( deltaPrimSecVtx[0]*p.Px() + deltaPrimSecVtx[1]*p.Py() + deltaPrimSecVtx[2]*p.Pz())/TMath::Sqrt(momV02);
+     values[kPairCosPointingAngle] = values[kPairLxyz] / TMath::Sqrt(deltaPrimSecVtx2);
   }
 
   if ((fgUsedVars[kPairLegEMCALmatchedEnergy] || fgUsedVars[kPairLegEMCALmatchedEnergy+1]) &&
@@ -2452,6 +2477,7 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   // type - Parameter encoding the resonance type 
   //        This is needed for making a mass assumption on the legs
   //
+
   PAIR p;
   p.PxPyPz(t1->Px()+t2->Px(), t1->Py()+t2->Py(), t1->Pz()+t2->Pz());
   p.CandidateId(type);
@@ -2546,6 +2572,31 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
     values[kOneOverPairEff]   = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
+
+  cout << "test" << endl; 
+
+  // Bmeson -> Jpsi + K: t1 is Jpsi candidate, t2 is associated track/kaon candidate 
+  if(fgUsedVars[kMassJpsiK]) {
+    values[kMassJpsiK] = ((PAIR*)t1)->Mass()*((PAIR*)t1)->Mass()+fgkParticleMass[kKaon]*fgkParticleMass[kKaon] + 
+                    2.0*(TMath::Sqrt(((PAIR*)t1)->Mass()*((PAIR*)t1)->Mass()+((PAIR*)t1)->P()*((PAIR*)t1)->P())*TMath::Sqrt(fgkParticleMass[kKaon]*fgkParticleMass[kKaon]+t2->P()*t2->P()) - 
+                    ((PAIR*)t1)->Px()*t2->Px() - ((PAIR*)t1)->Py()*t2->Py() - ((PAIR*)t1)->Pz()*t2->Pz());
+    if(values[kMassJpsiK]<0.0) {
+      cout << "FillPairInfoME(pair, track, type, values): Warning: Very small squared mass found between associated track and trigger track. "<<endl;
+      values[kMassJpsiK] = 0.0;
+    }
+    else values[kMassJpsiK] = TMath::Sqrt(values[kMassJpsiK]);
+  }
+
+  values[kPt_JpsiK] = p.Pt();
+  
+
+  //Armenteros Podanaski
+  float momb = TMath::Sqrt(p.Px()*p.Px() + p.Py()*p.Py() + p.Pz()*p.Pz());
+  float lQl1 = TMath::Abs(p.Px()*t1->Px() + p.Py()*t1->Py() + p.Pz()*t1->Pz()) / momb;
+  float lQl2 = TMath::Abs(p.Px()*t2->Px() + p.Py()*t2->Py() + p.Pz()*t2->Pz()) / momb;
+  values[kArmAlpha] = (lQl1 - lQl2) / (lQl1 + lQl2); 
+
+  cout << momb << " " << lQl1 << " " << lQl2 << endl; 
   
   FillPairMEflow(t1, t2, values);
 }
@@ -2745,6 +2796,96 @@ void AliReducedVarManager::FillPsiPrimeInfo(BASETRACK* trig, BASETRACK* pion1, B
 }
 
 //__________________________________________________________________
+void AliReducedVarManager::FillBcandidateInfo(BASETRACK* trig, BASETRACK* leg1, BASETRACK* leg2, BASETRACK* assoc, Float_t* values) {
+// fill info on B cabdidate (Jpsi+K) by idstoreh
+
+  if (!((leg1->IsA()==TRACK::Class()) && (leg2->IsA()==TRACK::Class()) && 
+    (fgEvent->IsA()==EVENT::Class()) && (trig->IsA()==PAIR::Class()))) return;
+
+  // calculating the invariant mass of the jpsi candidate and the K candidate
+  TLorentzVector trigVec;
+  // Lorentz vector of electron pair
+  trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), ((PAIR*)trig)->Mass());
+  // fill TLorentzVector for kaon track
+  TLorentzVector kaonVec;
+  kaonVec.SetPtEtaPhiM(assoc->Pt(), assoc->Eta(), assoc->Phi(), fgkParticleMass[kKaon]); // NOTE: kaon mass from PDG
+
+  TLorentzVector bCandVec = trigVec + kaonVec;
+
+  values[kP_JpsiK]=bCandVec.P();
+  values[kPt_JpsiK]=bCandVec.Pt();
+  values[kPhi_JpsiK]=bCandVec.Phi();
+  values[kEta_JpsiK]=bCandVec.Eta();
+
+  if(fgUsedVars[kMassJpsiK]) {
+    values[kMassJpsiK] = ((PAIR*)trig)->Mass()*((PAIR*)trig)->Mass()+fgkParticleMass[kKaon]*fgkParticleMass[kKaon] + 
+                    2.0*(TMath::Sqrt(((PAIR*)trig)->Mass()*((PAIR*)trig)->Mass()+((PAIR*)trig)->P()*((PAIR*)trig)->P())*TMath::Sqrt(fgkParticleMass[kKaon]*fgkParticleMass[kKaon]+assoc->P()*assoc->P()) - 
+                    ((PAIR*)trig)->Px()*assoc->Px() - ((PAIR*)trig)->Py()*assoc->Py() - ((PAIR*)trig)->Pz()*assoc->Pz());
+    if(values[kMassJpsiK]<0.0) {
+      cout << "FillPairInfo(pair, track, type, values): Warning: Very small squared mass found between associated track and trigger track. "<<endl;
+      values[kMassJpsiK] = 0.0;
+    }
+    else
+      values[kMassJpsiK] = TMath::Sqrt(values[kMassJpsiK]);
+  } // end if for calculation of B candidates
+
+  // Fit 3 traks 
+  TRACK* eleg1=(TRACK*)leg1; 
+  TRACK* eleg2=(TRACK*)leg2;
+  TRACK* kassoc=(TRACK*) assoc; 
+
+  // variables for distance between jpsicandidate and associated track
+  Double_t doubletAssocDistance = 0; Double_t doubletAssocDeviation = 0; 
+  AliKFParticle tripletKF = BuildKFtriplet(eleg1,fgkParticleMass[kElectron],eleg2,fgkParticleMass[kElectron],kassoc,fgkParticleMass[kKaon], doubletAssocDistance, doubletAssocDeviation);
+  values[kDCADoubletToAssoc] = doubletAssocDistance;
+  values[kDoubletAssocDeviation] = doubletAssocDeviation;
+
+  EVENT* eventInfo = (EVENT*)fgEvent;
+  AliKFParticle primVtx = BuildKFvertex(eventInfo);
+
+  if (tripletKF.GetNDF()) {
+    values[kTripletChi2prNDOF] = tripletKF.GetChi2()/tripletKF.GetNDF(); }
+  else
+    values[kTripletChi2prNDOF] = -999.;
+
+  Double_t errPseudoProperTime3;
+  if(fgUsedVars[kTripletPseudoProperDecayTime])
+    values[kTripletPseudoProperDecayTime] = tripletKF.GetPseudoProperDecayTime(primVtx, fgkPairMass[AliReducedPairInfo::kBToJpsiK], &errPseudoProperTime3);
+
+
+  Double_t deltaPrimTripletVtx[3]; //vector between the reference point and the V0 vertex
+  deltaPrimTripletVtx[0] = tripletKF.X() - primVtx.X();
+  deltaPrimTripletVtx[1] = tripletKF.Y() - primVtx.Y();
+  deltaPrimTripletVtx[2] = tripletKF.Z() - primVtx.Z();
+  Double_t deltaPrimTripletVtx2 = deltaPrimTripletVtx[0]*deltaPrimTripletVtx[0] + deltaPrimTripletVtx[1]*deltaPrimTripletVtx[1] + deltaPrimTripletVtx[2]*deltaPrimTripletVtx[2];
+  Double_t momb2    = bCandVec.Px()*bCandVec.Px() + bCandVec.Py()*bCandVec.Py() + bCandVec.Pz()*bCandVec.Pz();
+
+  values[kTripletLxy] = ( deltaPrimTripletVtx[0]*bCandVec.Px() + deltaPrimTripletVtx[1]*bCandVec.Py() )/bCandVec.Pt();
+  values[kTripletLxyz] = ( deltaPrimTripletVtx[0]*bCandVec.Px() + deltaPrimTripletVtx[1]*bCandVec.Py() + deltaPrimTripletVtx[2]*bCandVec.Pz())/TMath::Sqrt(momb2);
+  values[kTripletCosPointingAngle] = values[kTripletLxyz] / TMath::Sqrt(deltaPrimTripletVtx2);
+
+  //Armenteros Podanaski
+  float momb = TMath::Sqrt(momb2);
+  //float lQl1 = bCandVec.Dot(trigVec)/momb;
+  float lQl1 = TMath::Abs(bCandVec.Px()*trigVec.Px() + bCandVec.Py()*trigVec.Py() + bCandVec.Pz()*trigVec.Pz()) / momb;
+  //float lQl2 = bCandVec.Dot(kaonVec)/momb; 
+  float lQl2 = TMath::Abs(bCandVec.Px()*kaonVec.Px() + bCandVec.Py()*kaonVec.Py() + bCandVec.Pz()*kaonVec.Pz()) / momb;
+  values[kArmAlpha] = (lQl1 - lQl2) / (lQl1 + lQl2); 
+
+  //float dp = bCandVec.Dot(trigVec);
+  values[kArmQTJPsi] = TMath::Sqrt((trigVec.P()*trigVec.P())-(lQl1*lQl1));
+  values[kArmQTK] = TMath::Sqrt((kaonVec.P()*kaonVec.P())-(lQl2*lQl2));
+  //values[kTripletLxy] = ( (tripletKF.X() - primVtx.X())*JpsiKVec.Px() + (tripletKF.Y() - primVtx.Y())*JpsiKVec.Py() )/JpsiKVec.Pt(); 
+
+  /*
+  if( fgUsedVars[kTripletDca]   ) values[kTripletDca]   = TMath::Sqrt( eleg1->DCAxy() * eleg1->DCAxy() + eleg2->DCAxy() * eleg2->DCAxy() + kassoc->DCAxy() * kassoc->DCAxy() + eleg1->DCAz() * eleg1->DCAz() + eleg2->DCAz() * eleg2->DCAz() + kassoc->DCAz() + kassoc->DCAz() );
+  if( fgUsedVars[kTripletDcaXY] ) values[kTripletDcaXY] = TMath::Sqrt( eleg1->DCAxy() * eleg1->DCAxy() + eleg2->DCAxy() * eleg2->DCAxy() + kassoc->DCAxy() * kassoc->DCAxy());
+  if( fgUsedVars[kTripletDcaZ]  ) values[kTripletDcaZ]  = TMath::Sqrt( eleg1->DCAz() * eleg1->DCAz() + eleg2->DCAz() * eleg2->DCAz() + kassoc->DCAz() * kassoc->DCAz());
+  */
+
+} // end function
+
+//__________________________________________________________________
 void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc, Float_t* values) {
   //
   // fill pair-track correlation information
@@ -2832,6 +2973,37 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kDeltaEtaAbs])  values[kDeltaEtaAbs]  = TMath::Abs(trig->Eta() - assoc->Eta());
   if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
 
+// Added by idstoreh
+if(fgUsedVars[kMassJpsiK] && (trig->IsA()==PAIR::Class())) {    
+    TLorentzVector trigVec;
+    // Lorentz vector of electron pair
+    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), ((PAIR*)trig)->Mass());
+    // fill TLorentzVector for kaon track
+    TLorentzVector kaonVec;
+    kaonVec.SetPtEtaPhiM(assoc->Pt(), assoc->Eta(), assoc->Phi(), 0.493677); // NOTE: kaon mass from PDG
+
+    //calculate psiprime mass
+    TLorentzVector JpsiKVec = trigVec + kaonVec;
+    //values[kkMassJpsiK]=JpsiKVec.M();
+    values[kP_JpsiK]=JpsiKVec.P();
+    values[kPt_JpsiK]=JpsiKVec.Pt();
+    values[kPhi_JpsiK]=JpsiKVec.Phi();
+    values[kEta_JpsiK]=JpsiKVec.Eta();
+    }
+    
+  if(fgUsedVars[kMassJpsiK] && (trig->IsA()==PAIR::Class())) {     
+    values[kMassJpsiK] = ((PAIR*)trig)->Mass()*((PAIR*)trig)->Mass()+0.493*0.493 + 
+                    2.0*(TMath::Sqrt(((PAIR*)trig)->Mass()*((PAIR*)trig)->Mass()+((PAIR*)trig)->P()*((PAIR*)trig)->P())*TMath::Sqrt(0.493*0.493+assoc->P()*assoc->P()) - 
+                    ((PAIR*)trig)->Px()*assoc->Px() - ((PAIR*)trig)->Py()*assoc->Py() - ((PAIR*)trig)->Pz()*assoc->Pz());
+    if(values[kMassJpsiK]<0.0) {
+      cout << "FillPairInfo(pair, track, type, values): Warning: Very small squared mass found between associated track and trigger track. ";
+      values[kMassJpsiK] = 0.0;
+    }
+    else
+      values[kMassJpsiK] = TMath::Sqrt(values[kMassJpsiK]);
+  }
+
+// stop: Added by idstoreh
   // J/psi efficiency variables
   if ((fgUsedVars[kTriggerEff] || fgUsedVars[kOneOverTriggerEff]) && fgPairEffMap) {
     Int_t binX = 0;
@@ -3570,10 +3742,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kMassV0+3]          = "m_{#gamma}";            fgVariableUnits[kMassV0+3]          = "GeV/c^{2}";
   fgVariableNames[kPairChisquare]     = "pair #chi^{2}";         fgVariableUnits[kPairChisquare]     = "";
   fgVariableNames[kPairLxy]           = "L_{xy}";                fgVariableUnits[kPairLxy]           = "cm.";
+  fgVariableNames[kPairLxyz]           = "L_{xyz}";              fgVariableUnits[kPairLxyz]           = "cm.";
   fgVariableNames[kPseudoProperDecayTime]  = "t";                fgVariableUnits[kPseudoProperDecayTime]  = "cm./c";
-  fgVariableNames[kPseudoProperDecayTimeMC]  = "t_{MC}";              fgVariableUnits[kPseudoProperDecayTimeMC]  = "cm./c";
+  fgVariableNames[kPseudoProperDecayTimeMC]  = "t_{MC}";         fgVariableUnits[kPseudoProperDecayTimeMC]  = "cm./c";
   fgVariableNames[kPairOpeningAngle]  = "pair opening angle";    fgVariableUnits[kPairOpeningAngle]  = "rad.";    
   fgVariableNames[kPairPointingAngle] = "#theta_{pointing}";     fgVariableUnits[kPairPointingAngle] = "rad.";
+  fgVariableNames[kPairCosPointingAngle] = "cos(#theta_{pointing})";     fgVariableUnits[kPairCosPointingAngle] = "";
   fgVariableNames[kPairThetaCS]       = "cos(#theta^{*}_{CS})";  fgVariableUnits[kPairThetaCS]       = "";  
   fgVariableNames[kPairPhiCS]         = "#varphi^{*}_{CS}";      fgVariableUnits[kPairPhiCS]         = "rad.";  
   fgVariableNames[kPairThetaHE]       = "cos(#theta^{*}_{HE})";  fgVariableUnits[kPairThetaHE]       = "";  
@@ -3739,6 +3913,31 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTriggerEffTimesAssocHadronEff]         = "#epsilon_{trigger} #times #epsilon_{assoc}";   fgVariableUnits[kTriggerEffTimesAssocHadronEff]         = "";
   fgVariableNames[kOneOverTriggerEffTimesAssocHadronEff]  = "1/#epsilon_{trigger} #times #epsilon_{assoc}"; fgVariableUnits[kOneOverTriggerEffTimesAssocHadronEff]  = "";
 
+// Added by idstoreh
+// B -> J/psi variables ------------------------------------------
+  fgVariableNames[kMassJpsiK]           = "m_{K^{#pm} e^{+} e^{-}}";fgVariableUnits[kMassJpsiK]        = "GeV/c^{2}";
+  fgVariableNames[kP_JpsiK]             = "p";                      fgVariableUnits[kP_JpsiK]          = "GeV/c";
+  fgVariableNames[kPt_JpsiK]            = "p_{T}";                  fgVariableUnits[kPt_JpsiK]         = "GeV/c";
+  fgVariableNames[kPhi_JpsiK]           = "#varphi";                fgVariableUnits[kPhi_JpsiK]        = "rad.";
+  fgVariableNames[kEta_JpsiK]           = "#eta";                   fgVariableUnits[kEta_JpsiK]        = "";
+  fgVariableNames[kPairChi2prNDOF]      = "#chi^{2} /NDOF";         fgVariableUnits[kPairChi2prNDOF]   = "";
+  fgVariableNames[kTripletChi2prNDOF]   = "#chi^{2} /NDOF";         fgVariableUnits[kTripletChi2prNDOF]= "";
+  fgVariableNames[kTripletLegPtSum]     = "Triplet leg p_{T,1} + p_{T,2} + p_{T,3}"; fgVariableUnits[kTripletLegPtSum] = "GeV/c";
+  //fgVariableNames[kTripletDca]           = "DCA_{triplet}";         fgVariableUnits[kTripletDca] = "cm";
+  //fgVariableNames[kTripletDcaXY]         = "DCA_{xy,triplet}";      fgVariableUnits[kTripletDcaXY] = "cm";
+  //fgVariableNames[kTripletDcaZ]          = "DCA_{z,triplet}";       fgVariableUnits[kTripletDcaZ] = "cm";
+  fgVariableNames[kTripletLxy]           = "Triplet L_{xy}";         fgVariableUnits[kTripletLxy]           = "cm.";
+  fgVariableNames[kTripletLxyz]          = "Triplet L_{xyz}";        fgVariableUnits[kTripletLxyz]           = "cm.";
+  fgVariableNames[kTripletCosPointingAngle] = "cos(#theta_{pointing})"; fgVariableUnits[kTripletCosPointingAngle] = "";
+  fgVariableNames[kTripletPseudoProperDecayTime]  = "t";             fgVariableUnits[kTripletPseudoProperDecayTime]  = "cm./c";
+  fgVariableNames[kDCADoubletToAssoc] = "DCA_{J/#psi, assoc}";    fgVariableUnits[kDCADoubletToAssoc] = "cm"; 
+  fgVariableNames[kDoubletAssocDeviation] = "#chi^2_{J/#psi, assoc}";fgVariableUnits[kDoubletAssocDeviation] = "cm"; 
+  fgVariableNames[kArmAlpha]             = "#alpha (Armenteros)";    fgVariableUnits[kArmAlpha]         = "";
+  fgVariableNames[kArmQTJPsi]                = "k_{T} JPsi (Armenteros)";     fgVariableUnits[kArmQTJPsi]         = "";
+  fgVariableNames[kArmQTK]                = "k_{T} kaon (Armenteros)";     fgVariableUnits[kArmQTK]         = "";
+
+// Stop: added by idstoreh
+  
 ////////////////////////////////////////////////
   // PsiPrime related variables:
   fgVariableNames[kDeltaRPosPiJPsi]  = "#Delta R";                  fgVariableUnits[kDeltaRPosPiJPsi]  = "";
@@ -4321,4 +4520,42 @@ AliKFParticle AliReducedVarManager::BuildKFvertex( AliReducedEventInfo * event )
    // printf("ndf %d %d %f \n",kVtx.GetNDF(),kVtx.GetQ(),kVtx.GetParameter(0)); getchar();
  
    return kVtx;
+}
+
+//____________________________________________________________________________________
+AliKFParticle AliReducedVarManager::BuildKFtriplet(TRACK* track1, Float_t mh1, TRACK* track2, Float_t mh2, TRACK* track3, Float_t mh3, Double_t& doubletAssocDistance, Double_t& doubletAssocDeviation) {
+ //
+ // build a KF pair from the 3 legs, to be used in Jpsi+K analysis (idstoreh)
+ //
+ Double_t p[6]; Double_t cov[21];
+ for(int i=0; i<6; i++) p[i] = track1->TrackParam(i);
+ for(int i=0; i<21; i++) cov[i] = track1->CovMatrix(i);
+ AliKFParticle kfPart1; 
+ kfPart1.Initialize();
+ kfPart1.Create(p,cov,track1->Charge(),mh1);
+ //
+ for(int i=0; i<6; i++) p[i] = track2->TrackParam(i);
+ for(int i=0; i<21; i++) cov[i] = track2->CovMatrix(i);
+ AliKFParticle kfPart2;  
+ kfPart2.Initialize();
+ kfPart2.Create(p,cov,track2->Charge(),mh2); 
+ //
+ for(int i=0; i<6; i++) p[i] = track3->TrackParam(i);
+ for(int i=0; i<21; i++) cov[i] = track3->CovMatrix(i);
+ AliKFParticle kfPart3;  
+ kfPart3.Initialize();
+ kfPart3.Create(p,cov,track3->Charge(),mh3);
+ //
+ AliKFParticle pairKF; 
+ pairKF.Initialize();
+ pairKF.AddDaughter(kfPart1);
+ pairKF.AddDaughter(kfPart2);
+
+ // compute point of closest approach between Jpsi candidate and associated track
+ doubletAssocDistance = pairKF.GetDistanceFromParticleXY(kfPart3);
+ doubletAssocDeviation = pairKF.GetDeviationFromParticleXY(kfPart3);
+ 
+ pairKF.AddDaughter(kfPart3);
+ 
+ return pairKF;
 }
