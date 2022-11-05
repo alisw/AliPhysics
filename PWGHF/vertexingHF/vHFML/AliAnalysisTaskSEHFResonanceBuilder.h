@@ -139,8 +139,8 @@ private:
     AliAnalysisTaskSEHFResonanceBuilder(const AliAnalysisTaskSEHFResonanceBuilder &source);
     AliAnalysisTaskSEHFResonanceBuilder &operator=(const AliAnalysisTaskSEHFResonanceBuilder &source);
 
-    int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, AliAODPidHF *&pidHF, std::size_t &iCand);
-    int IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF);
+    int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, AliAODPidHF *&pidHF, std::size_t &iCand, std::vector<double> &modelPred, std::vector<double> &modelPredSecond);
+    int IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF, double nSigmaDet[2]);
     int IsV0Selected(AliAODv0 *&track);
     bool IsInvMassResoSelected(double &mass, int bachHypo, int V0hypo);
     bool IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau, AliAnalysisVertexingHF *vHF);
