@@ -407,6 +407,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMCJetPtVsFrag;              //! vector of histos True Jet pT vs. true Frag (mc particle based distribution)
   std::vector<TH2F*> fHistoMCJetPtVsFragInAcc;         //! vector of histos True Jet pT vs. true Frag (for mesons in detector acceptance)
   std::vector<TH2F*> fHistoMCJetPtVsFrag_Sec;          //! vector of histos True Jet pT vs. true Frag (mc particle based distribution for secondaries)
+  std::vector<TH2F*> fHistoMCRecJetPtVsFrag;           //! vector of histos with True Jet pT vs true Frag inside rec. jets (to find the meson reconstruction effi)
+  std::vector<TH2F*> fHistoMCRecJetPtVsMesonPt;        //! vector of histos with True Jet pT vs true meson pt inside rec. jets (to find the meson reconstruction effi)
   std::vector<TH2F*> fHistoMCJetPtVsMesonPt_Sec;       //! vector of histos True Jet pT vs. true meson pt (mc particle based distribution for secondaries)
   std::vector<TH2F*> fHistoMCPartonPtVsFrag;           //! vector of histos True parton pT vs. true Frag (mc particle based distribution)
   std::vector<TH2F*> fHistoMCJetPtVsFragTrueParton;    //! vector of histos True Jet pT vs. true Frag (mc particle based distribution) for particles originating from hard parton from Jet
