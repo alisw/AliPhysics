@@ -2643,7 +2643,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
       // if(!((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
 
       // check photons
-      if (MCParticleIsSelected(particle, fIsConv, false)) { // here we state that this is a conversion, however this also works for calo photons on generator level!
+      if (matchedJet >= 0 && MCParticleIsSelected(particle, fIsConv, false)) { // here we state that this is a conversion, however this also works for calo photons on generator level!
         if (isCurrentEventSelected == 1) {
           fHistoMCGammaPtNotTriggered[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC Gamma
         } else if (isCurrentEventSelected == 2) {
@@ -2697,7 +2697,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
         mesonY = particle->Y() - ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
       }
 
-      if (!fDoLightOutput) {
+      if (!fDoLightOutput && matchedJet >= 0) {
         if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())) {
           if (particle->GetPdgCode() == 211) { // positve pions
             fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., fWeightJetJetMC);
@@ -2740,13 +2740,15 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
           //   mesonY = particle->Y() - ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
           // }
 
-          if (isCurrentEventSelected == 1)
-            fHistoMCMesonPtNotTriggered[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // All MC Pi0 in not triggered collisions
-          else if (isCurrentEventSelected == 2)
-            fHistoMCMesonPtNoVertex[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // All MC Pi0 in not triggered collisions
-          fHistoMCMesonPt[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC);
-          if (fIsMC > 1)
-            fHistoMCMesonWOEvtWeightPt[fiCut]->Fill(particle->Pt());
+          if (matchedJet >= 0) {
+            if (isCurrentEventSelected == 1)
+              fHistoMCMesonPtNotTriggered[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+            else if (isCurrentEventSelected == 2)
+              fHistoMCMesonPtNoVertex[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+            fHistoMCMesonPt[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC);
+            if (fIsMC > 1)
+              fHistoMCMesonWOEvtWeightPt[fiCut]->Fill(particle->Pt());
+          }
 
           //------------------------
           // Fill histograms for meson fragmentation
@@ -2767,22 +2769,22 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
             }
           }
           // inside rec. jet but fill true jet quantities
-          if (matchedRecJet >= 0) {
+          if (matchedRecJet >= 0 && matchedJet >= 0) {
             fHistoMCRecJetPtVsFrag[fiCut]->Fill(z_jet, fTrueVectorJetPt[matchedJet], weighted * fWeightJetJetMC);
             fHistoMCRecJetPtVsMesonPt[fiCut]->Fill(particle->Pt(), fTrueVectorJetPt[matchedJet], weighted * fWeightJetJetMC);
           }
           // Check the acceptance for both gammas
           if (MCParticleIsSelected(daughter0, daughter1, false)) {
             if (CheckAcceptance(daughter0, daughter1)) {
-              fHistoMCMesonInAccPt[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // MC Pi0 with gamma in acc
               if (matchedJet >= 0) {
+                fHistoMCMesonInAccPt[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // MC Pi0 with gamma in acc
                 fHistoMCJetPtVsFragInAcc[fiCut]->Fill(z_jet, fTrueVectorJetPt[matchedJet], weighted * fWeightJetJetMC);
                 fHistoMCJetPtVsMesonPtInAcc[fiCut]->Fill(particle->Pt(), fTrueVectorJetPt[matchedJet], weighted * fWeightJetJetMC);
+                if (isCurrentEventSelected == 1)
+                  fHistoMCMesonInAccPtNotTriggered[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // MC Pi0 with gamma in acc for not triggered events
+                if (fIsMC > 1)
+                  fHistoMCMesonWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc wo any weight
               }
-              if (isCurrentEventSelected == 1)
-                fHistoMCMesonInAccPtNotTriggered[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // MC Pi0 with gamma in acc for not triggered events
-              if (fIsMC > 1)
-                fHistoMCMesonWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc wo any weight
             }
           }
         }
