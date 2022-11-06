@@ -1,3 +1,31 @@
+AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin,
+                                           Int_t gCentralityMax,
+                                           Bool_t isPbPb,
+                                           Double_t whichData,
+                                           AliFlowEventCuts::refMultMethod gCentralityEstimator,
+                                           Bool_t doQA, Bool_t bPileup);
+
+AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin,
+                                        Int_t gCentralityMax,
+                                        Bool_t isVZERO,
+                                        Int_t gAODfilterBit,
+					Double_t whichData,
+                                        Double_t gChargeRP.,
+                                        Bool_t doQA);
+
+AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin,
+                                         Int_t gCentralityMax,
+                                         TString gQvector,
+                                         Double_t gEtaGap,
+                                         Bool_t isVZERO,
+                                         Bool_t isPbPb,
+                                         Int_t gAODfilterBit,
+					 Double_t whichData,
+					 Double_t gDCAvtxXY,
+                                         Double_t gDCAvtxZ,
+                                         Double_t gChargePOI,
+                                         Bool_t doQA);
+
 void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 			Double_t whichData = 2011,
 			Bool_t isData = kTRUE,
@@ -492,10 +520,10 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     taskFE_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
     
     //Sub events
-    Double_t minA = -0.8;//
-    Double_t maxA = -0.5*gEtaGap;//
-    Double_t minB = +0.5*gEtaGap;//
-    Double_t maxB = 0.8;//
+    minA = -0.8;//
+    maxA = -0.5*gEtaGap;//
+    minB = +0.5*gEtaGap;//
+    maxB = 0.8;//
     
     if(!isVZERO)
       taskFE_NN[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
@@ -647,10 +675,10 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     taskFE_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
     
     //Sub events
-    Double_t minA = -0.8;//
-    Double_t maxA = -0.5*gEtaGap;//
-    Double_t minB = +0.5*gEtaGap;//
-    Double_t maxB = 0.8;//
+    minA = -0.8;//
+    maxA = -0.5*gEtaGap;//
+    minB = +0.5*gEtaGap;//
+    maxB = 0.8;//
     
     if(!isVZERO)
       taskFE_PN[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
