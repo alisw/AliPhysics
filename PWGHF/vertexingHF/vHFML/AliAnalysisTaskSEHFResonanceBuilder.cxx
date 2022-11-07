@@ -632,7 +632,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                         if(fDependOnMLSelector)
                             fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD[1], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo], nSigmaTPC[iTrack], nSigmaTOF[iTrack], fScoresFromMLSelectorSecond[iCand][0], fScoresFromMLSelectorSecond[iCand][1], fScoresFromMLSelectorSecond[iCand][2]);
                         else
-                            fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD[0], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo], nSigmaTPC[iTrack], nSigmaTOF[iTrack], scoresSecond[0], scoresSecond[1], scoresSecond[2]);
+                            fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD[1], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo], nSigmaTPC[iTrack], nSigmaTOF[iTrack], scoresSecond[0], scoresSecond[1], scoresSecond[2]);
                     }
                 }
             }
