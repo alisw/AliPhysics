@@ -100,7 +100,7 @@ ClassImp(AliAnalysisTaskFlatenicityPiKp) // classimp: necessary for root
 
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	: AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fIsMCclosure(kFALSE),
+	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE) ,fdEdxCalibrated(kTRUE),
 	fSaveDCAxyHistograms(kFALSE), 
@@ -183,7 +183,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	: AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fIsMCclosure(kFALSE),
+	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE), fdEdxCalibrated(kTRUE), 
 	fSaveDCAxyHistograms(kFALSE), 
@@ -501,9 +501,19 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	}
 
 	OpenFile(1);
-	fOutputList =
-		new TList(); // this is a list which will contain all of your histograms
+	fOutputList = new TList(); // this is a list which will contain all of your histograms
 	fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
+				      //
+	int save_this_mult_bin = -1;
+	if (fV0MBin == "0_1") save_this_mult_bin = 0;
+	else if (fV0MBin == "1_5") save_this_mult_bin = 1;
+	else if (fV0MBin == "5_10") save_this_mult_bin = 2;
+	else if (fV0MBin == "10_20") save_this_mult_bin = 3;
+	else if (fV0MBin == "20_30") save_this_mult_bin = 4;
+	else if (fV0MBin == "30_40") save_this_mult_bin = 5;
+	else if (fV0MBin == "40_50") save_this_mult_bin = 6;
+	else if (fV0MBin == "50_70") save_this_mult_bin = 7;
+	else save_this_mult_bin = 8;
 
 	hPionTPCDCAxyNegData = new TH2F("hPionTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
 	hPionTPCDCAxyPosData = new TH2F("hPionTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
@@ -552,6 +562,8 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 			if (!fUseMC && fV0MEqualisation){ 
 
+				if (save_this_mult_bin != i_c) { continue; }
+
 				fOutputList->Add(hNsigmaPiPos[i_c][i_eta]);
 				fOutputList->Add(hNsigmaKPos[i_c][i_eta]);
 				fOutputList->Add(hNsigmaPPos[i_c][i_eta]);
@@ -570,9 +582,9 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 				fOutputList->Add(hdEdx[i_c][i_eta]);
 				fOutputList->Add(hPtrTPC[i_c][i_eta]);
 
-				if (i_c==0) { fOutputList->Add(hPtVsP[i_eta]); }
+				fOutputList->Add(hPtVsP[i_eta]);
 
-				if ((i_eta==0) && (i_c==0)){
+				if (i_eta==0) {
 					if (fSaveDCAxyHistograms) {
 						fOutputList->Add(hPionTPCDCAxyNegData);
 						fOutputList->Add(hPionTPCDCAxyPosData);
@@ -738,7 +750,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 	// x: Sector y: Multiplicity z: V0M Multiplicity
 	hActivityV0CV0A = new TH3F("hActivityV0CV0A", "; VZERO channel; #it{N}_{ch} per VZERO cahnnel; V0M quantile", nV0Sectorsbins, V0Sectorsbins, nV0Multbins, V0Multbins, nCent, centClass);
-	/* fOutputList->Add(hActivityV0CV0A); */
+	fOutputList->Add(hActivityV0CV0A);
 
 	hActivityV0DataSect = new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 	fOutputList->Add(hActivityV0DataSect);
