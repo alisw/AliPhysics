@@ -50,6 +50,7 @@ fTreeGen(0),
 fBetheParamsHe(),
 fBetheParamsT(),
 fUseExternalSplines(kFALSE),
+matching(0),
 fMCtrue(0),
 fYear(0),
 tRunNumber(0),
@@ -140,6 +141,7 @@ fTreeGen(0),
 fBetheParamsHe(),
 fBetheParamsT(),
 fUseExternalSplines(kFALSE),
+matching(0),
 fMCtrue(0),
 fYear(0),
 tRunNumber(0),
@@ -234,6 +236,8 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 		fInputHandler = dynamic_cast<AliESDInputHandler*> (man->GetInputEventHandler());
 		if (fInputHandler)   fPIDResponse = fInputHandler->GetPIDResponse();
 	}
+	
+	matching = new AliTRDonlineTrackMatching(); 
 
 	fOutputList = new TList();         
 	fOutputList->SetOwner(kTRUE);     
@@ -709,151 +713,76 @@ Double_t AliAnalysisTaskHe3EffTree::GetTOFSignalHe3(AliESDtrack& trackHe, Double
 //_____________________________________________________________________________
 void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
-	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
+	if (runNumber >= 252235 && runNumber <= 265589) { // 2016 pp data
 		fYear = 2016;
-		if(!fMCtrue) { // Data
-      // He3 2016/2018 pass2
-      fBetheParamsHe[0] = 4.20995;
-      fBetheParamsHe[1] = 10.5007;
-      fBetheParamsHe[2] = -0.895979;
-      fBetheParamsHe[3] = 2.01748;
-      fBetheParamsHe[4] = 0.0798937;
-      fBetheParamsHe[5] = 0.06;
+    // He3 2016/2018 pass2
+    fBetheParamsHe[0] = 4.20995;
+    fBetheParamsHe[1] = 10.5007;
+    fBetheParamsHe[2] = -0.895979;
+    fBetheParamsHe[3] = 2.01748;
+    fBetheParamsHe[4] = 0.0798937;
+    fBetheParamsHe[5] = 0.06;
 
-      // Triton 2016/2018 pass2
-      fBetheParamsT[0] = 12.0774;
-      fBetheParamsT[1] = 5.70345;
-      fBetheParamsT[2] = 4.764;
-      fBetheParamsT[3] = 1.94198;
-      fBetheParamsT[4] = -3.03895;
-      fBetheParamsT[5] = 0.07;
-		} else { // MC
-			if (runNumber >= 262424 || runNumber <= 256418 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-			if (runNumber >= 256941 && runNumber <= 258537 ) { 
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-			if (runNumber >= 258962 && runNumber <= 259888 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			} 
-		}
+    // Triton 2016/2018 pass2
+    fBetheParamsT[0] = 12.0774;
+    fBetheParamsT[1] = 5.70345;
+    fBetheParamsT[2] = 4.764;
+    fBetheParamsT[3] = 1.94198;
+    fBetheParamsT[4] = -3.03895;
+    fBetheParamsT[5] = 0.07;
 	}
-	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
+	if (runNumber > 265589 && runNumber <= 267166) { // 2016 p-Pb data
+		fYear = 2016;
+		// He3
+		fBetheParamsHe[0] = 0.715489;
+		fBetheParamsHe[1] = 59.5463;
+		fBetheParamsHe[2] = 4.44487e-12;
+		fBetheParamsHe[3] = 2.69874;
+		fBetheParamsHe[4] = 24.063;
+		fBetheParamsHe[5] = 0.04725;
+		// Triton
+		fBetheParamsT[0] = 0.223948;
+		fBetheParamsT[1] = 180.564;
+		fBetheParamsT[2] = -3.03884e-10;
+		fBetheParamsT[3] = 2.30095;
+		fBetheParamsT[4] = 34.2269;
+		fBetheParamsT[5] = 0.06517;	
+	} 	
+	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp data
 		fYear = 2017;
-		if(!fMCtrue) { //data
-			//LHC17 Data
-      // He3 2017 pass2
-      fBetheParamsHe[0] = 1.65042;
-      fBetheParamsHe[1] = 25.9254;
-      fBetheParamsHe[2] = 0.00600469;
-      fBetheParamsHe[3] = 2.73841;
-      fBetheParamsHe[4] = 10.8988;
-      fBetheParamsHe[5] = 0.06;
+    // He3 2017 pass2
+    fBetheParamsHe[0] = 1.65042;
+    fBetheParamsHe[1] = 25.9254;
+    fBetheParamsHe[2] = 0.00600469;
+    fBetheParamsHe[3] = 2.73841;
+    fBetheParamsHe[4] = 10.8988;
+    fBetheParamsHe[5] = 0.06;
 
-      // Triton 2017 pass2
-      fBetheParamsT[0] = 2.82837;
-      fBetheParamsT[1] = 15.4278;
-      fBetheParamsT[2] = 1.03545;
-      fBetheParamsT[3] = 2.2757;
-      fBetheParamsT[4] = 2.7525;
-      fBetheParamsT[5] = 0.06;
-		} else { // MC
-			//LHC20l7b (-> LHC17)
-			// He3
-			fBetheParamsHe[0] = 3.14546;
-			fBetheParamsHe[1] = 16.2277;
-			fBetheParamsHe[2] = -0.000523081;
-			fBetheParamsHe[3] = 2.28248;
-			fBetheParamsHe[4] = 2.60465;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.88676;
-			fBetheParamsT[1] = 15.3823;
-			fBetheParamsT[2] = 0.580675;
-			fBetheParamsT[3] = 2.28551;
-			fBetheParamsT[4] = 2.47351;
-			fBetheParamsT[5] = 0.06;
-		}
+    // Triton 2017 pass2
+    fBetheParamsT[0] = 2.82837;
+    fBetheParamsT[1] = 15.4278;
+    fBetheParamsT[2] = 1.03545;
+    fBetheParamsT[3] = 2.2757;
+    fBetheParamsT[4] = 2.7525;
+    fBetheParamsT[5] = 0.06;
 	}
-	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
-		if(!fMCtrue) { //data
-			fYear = 2018;
-      // He3 2016/2018 pass2
-      fBetheParamsHe[0] = 4.20995;
-      fBetheParamsHe[1] = 10.5007;
-      fBetheParamsHe[2] = -0.895979;
-      fBetheParamsHe[3] = 2.01748;
-      fBetheParamsHe[4] = 0.0798937;
-      fBetheParamsHe[5] = 0.06;
+	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp data
+		fYear = 2018;
+    // He3 2016/2018 pass2
+    fBetheParamsHe[0] = 4.20995;
+    fBetheParamsHe[1] = 10.5007;
+    fBetheParamsHe[2] = -0.895979;
+    fBetheParamsHe[3] = 2.01748;
+    fBetheParamsHe[4] = 0.0798937;
+    fBetheParamsHe[5] = 0.06;
 
-      // Triton 2016/2018 pass2
-      fBetheParamsT[0] = 12.0774;
-      fBetheParamsT[1] = 5.70345;
-      fBetheParamsT[2] = 4.764;
-      fBetheParamsT[3] = 1.94198;
-      fBetheParamsT[4] = -3.03895;
-      fBetheParamsT[5] = 0.07;
-      
-		} else { // MC
-			//LHC20l7a (-> LHC18)
-			// He3
-			fBetheParamsHe[0] = 3.07067;
-			fBetheParamsHe[1] = 15.8069;
-			fBetheParamsHe[2] = -0.0142383;
-			fBetheParamsHe[3] = 2.15513;
-			fBetheParamsHe[4] = 2.5192;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.95171;
-			fBetheParamsT[1] = 17.7223;
-			fBetheParamsT[2] = 37.7979;
-			fBetheParamsT[3] = 2.03313;
-			fBetheParamsT[4] = 0.730268;
-			fBetheParamsT[5] = 0.06;
-		}
+    // Triton 2016/2018 pass2
+    fBetheParamsT[0] = 12.0774;
+    fBetheParamsT[1] = 5.70345;
+    fBetheParamsT[2] = 4.764;
+    fBetheParamsT[3] = 1.94198;
+    fBetheParamsT[4] = -3.03895;
+    fBetheParamsT[5] = 0.07;
 	}
 }
 //_____________________________________________________________________________
@@ -886,8 +815,7 @@ Double_t AliAnalysisTaskHe3EffTree::TRDtrack(AliESDtrack* esdTrack) {
     }
     
     AliESDTrdTrack* bestGtuTrack = 0x0;
-    AliTRDonlineTrackMatching *matching = new AliTRDonlineTrackMatching();
-    
+       
     Double_t esdPt = esdTrack->GetSignedPt();
     Double_t mag = fESDevent->GetMagneticField();
     Double_t currentMatch = 0;

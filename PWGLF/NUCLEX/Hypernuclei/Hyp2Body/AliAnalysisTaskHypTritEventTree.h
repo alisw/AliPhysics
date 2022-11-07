@@ -90,7 +90,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Double_t                fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
   Bool_t                  fRefitOnFlyV0;        //< Refit OTF V0s due to bug in OnTheFly finder
   Int_t                   fYear;            
-   
+  AliTRDonlineTrackMatching *matching;          //< match TRD with ESD tracks
+       
   void MCStackLoop(AliMCEvent* mcEvent);
   void SetMomentum(Int_t charge, Bool_t v0Charge);
   void CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos, AliMCEvent* mcEvent);
