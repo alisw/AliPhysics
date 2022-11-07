@@ -895,16 +895,14 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_ProtonDeuteron_PairMultiplicity->GetYaxis()->SetTitle("number of protons");
   fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_PairMultiplicity);
 
-  fHist_ProtonDeuteron_pT = new TH3D("fHist_ProtonDeuteron_pT","pair #it{p}_{T}",240,0.0,6.0,240,0.0,6.0,750,0.0,3.0);
+  fHist_ProtonDeuteron_pT = new TH2F("fHist_ProtonDeuteron_pT","pair #it{p}_{T}",240,0.0,6.0,240,0.0,6.0);
   fHist_ProtonDeuteron_pT->GetXaxis()->SetTitle("proton #it{p}_{T} (GeV/#it{c})");
   fHist_ProtonDeuteron_pT->GetYaxis()->SetTitle("deuteron #it{p}_{T} (GeV/#it{c})");
-  fHist_ProtonDeuteron_pT->GetZaxis()->SetTitle("#it{k}* (GeV/#it{c})");
   fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_pT);
 
-  fHist_ProtonDeuteron_Eta = new TH3D("fHist_ProtonDeuteron_Eta","pair #it{#eta}",200,-1.5,1.5,200,-1.5,1.5,750,0.0,3.0);
+  fHist_ProtonDeuteron_Eta = new TH2F("fHist_ProtonDeuteron_Eta","pair #it{#eta}",200,-1.5,1.5,200,-1.5,1.5);
   fHist_ProtonDeuteron_Eta->GetXaxis()->SetTitle("proton #it{#eta}");
   fHist_ProtonDeuteron_Eta->GetYaxis()->SetTitle("deuteron #it{#eta}");
-  fHist_ProtonDeuteron_Eta->GetZaxis()->SetTitle("#it{k}* (GeV/#it{c})");
   fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_Eta);
 
   
@@ -1300,16 +1298,14 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_AntiProtonAntiDeuteron_PairMultiplicity->GetYaxis()->SetTitle("number of antiprotons");
   fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_PairMultiplicity);
 
-  fHist_AntiProtonAntiDeuteron_pT = new TH3D("fHist_AntiProtonAntiDeuteron_pT","pair #it{p}_{T}",240,0.0,6.0,240,0.0,6.0,750,0.0,3.0);
+  fHist_AntiProtonAntiDeuteron_pT = new TH2F("fHist_AntiProtonAntiDeuteron_pT","pair #it{p}_{T}",240,0.0,6.0,240,0.0,6.0);
   fHist_AntiProtonAntiDeuteron_pT->GetXaxis()->SetTitle("antiproton #it{p}_{T} (GeV/#it{c})");
   fHist_AntiProtonAntiDeuteron_pT->GetYaxis()->SetTitle("antideuteron #it{p}_{T} (GeV/#it{c})");
-  fHist_AntiProtonAntiDeuteron_pT->GetZaxis()->SetTitle("#it{k}* (GeV/#it{c})");
   fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_pT);
 
-  fHist_AntiProtonAntiDeuteron_Eta = new TH3D("fHist_AntiProtonAntiDeuteron_Eta","pair #it{#eta}",200,-1.5,1.5,200,-1.5,1.5,750,0.0,3.0);
+  fHist_AntiProtonAntiDeuteron_Eta = new TH2F("fHist_AntiProtonAntiDeuteron_Eta","pair #it{#eta}",200,-1.5,1.5,200,-1.5,1.5);
   fHist_AntiProtonAntiDeuteron_Eta->GetXaxis()->SetTitle("antiproton #it{#eta}");
   fHist_AntiProtonAntiDeuteron_Eta->GetYaxis()->SetTitle("antideuteron #it{#eta}");
-  fHist_AntiProtonAntiDeuteron_Eta->GetZaxis()->SetTitle("#it{k}* (GeV/#it{c})");
   fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_Eta);
 
 
@@ -1538,7 +1534,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
   bool AntiDeuteronIsSelected = false;
 
   int nRotatedPairs = 10;
-
+  double kstar_max = 0.2;
 
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1835,9 +1831,13 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 	nProtonDeuteronPairs++;
 	fHist_ProtonDeuteron_SED->Fill(RelativeMomentum);
 	fHist_ProtonDeuteron_AngleOfPairs->Fill(angle*TMath::RadToDeg(),RelativeMomentum);
-	fHist_ProtonDeuteron_pT->Fill(ProtonTrack->Pt(),DeuteronTrack->Pt(),RelativeMomentum);
-	fHist_ProtonDeuteron_Eta->Fill(ProtonTrack->Eta(),DeuteronTrack->Eta(),RelativeMomentum);
 
+	if(RelativeMomentum <= kstar_max){
+
+	  fHist_ProtonDeuteron_pT->Fill(ProtonTrack->Pt(),DeuteronTrack->Pt(),RelativeMomentum);
+	  fHist_ProtonDeuteron_Eta->Fill(ProtonTrack->Eta(),DeuteronTrack->Eta(),RelativeMomentum);
+
+	}
 
 
 	double phi = ProtonTrack->Phi();
@@ -2324,9 +2324,13 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 	nAntiProtonAntiDeuteronPairs++;
 	fHist_AntiProtonAntiDeuteron_SED->Fill(RelativeMomentum);
 	fHist_AntiProtonAntiDeuteron_AngleOfPairs->Fill(angle*TMath::RadToDeg(),RelativeMomentum);
-	fHist_AntiProtonAntiDeuteron_pT->Fill(AntiProtonTrack->Pt(),AntiDeuteronTrack->Pt(),RelativeMomentum);
-	fHist_AntiProtonAntiDeuteron_Eta->Fill(AntiProtonTrack->Eta(),AntiDeuteronTrack->Eta(),RelativeMomentum);
 
+	if(RelativeMomentum <= kstar_max){
+
+	  fHist_AntiProtonAntiDeuteron_pT->Fill(AntiProtonTrack->Pt(),AntiDeuteronTrack->Pt(),RelativeMomentum);
+	  fHist_AntiProtonAntiDeuteron_Eta->Fill(AntiProtonTrack->Eta(),AntiDeuteronTrack->Eta(),RelativeMomentum);
+
+	}
 
 
 	double phi = AntiProtonTrack->Phi();
@@ -2878,8 +2882,9 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(4);
 
   AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
+  double pT = Track.Pt();
   // check TOF status above threshold
-  if(p >= Proton_ThresholdTPC)
+  if(pT >= Proton_ThresholdTPC)
   {
 
     if(!(statusTOF == AliPIDResponse::kDetPidOk)) return PassedParticleCuts;
@@ -2890,7 +2895,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
 
   // apply TPC and TOF sigma cut
   double nSigmaTOF = -999.0;
-  if(p >= Proton_ThresholdTPC){
+  if(pT >= Proton_ThresholdTPC){
 
     nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kProton);
     if((TMath::Abs(nSigmaTPC) > Proton_TPC_nSigma_max) || (TMath::Abs(nSigmaTOF) > Proton_TOF_nSigma_max)) return PassedParticleCuts;
@@ -2901,7 +2906,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
 
 
   // reject tracks with better sigma for other particles
-  if(p >= Proton_ThresholdTPC){
+  if(pT >= Proton_ThresholdTPC){
 
     // apply TPC and TOF sigma cut
     nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kProton);
@@ -2935,7 +2940,6 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(8);
 
   // apply pT cut
-  double pT = Track.Pt();
   if(pT < Proton_pT_min || pT > Proton_pT_max) return PassedParticleCuts;
   if(isMatter)	fHist_Proton_CutCounter->Fill(9);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(9);
@@ -3040,7 +3044,7 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   int Deuteron_TPC_nCluster_min = 80;
   int Deuteron_TPC_nCrossedRows_min = 70;
   int Deuteron_TPC_nSharedCluster_max = 0;
-  int Deuteron_FilterBit = 8; // FilterBit 7 = 128
+  int Deuteron_FilterBit = 7; // FilterBit 7 = 128
   int Deuteron_ITS_nCluster_min = 2;
   double Deuteron_ITS_nSigma_max = 60;
 
