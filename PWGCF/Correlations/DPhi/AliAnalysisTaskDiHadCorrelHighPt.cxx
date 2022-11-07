@@ -641,11 +641,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistRCPtAs->GetAxis(4)->SetTitle("#varphi");
     fHistRCPtAs->GetAxis(5)->SetTitle("particle"); // 0 - unidentified, 1-pion
 
-    Int_t binsTrig[5]={fNumberOfPtBinsAssoc,9,6,fNumberOfEtaBins,fNumberPhiBins};
-    Double_t mintrig[5]={fPtAsocMin,-10,0,-0.8,0};
-    Double_t maxtrig[5]={fPtAssocMax,10,6,0.8,2*kPi};
+    Int_t binsTrig[6]={fNumberOfPtBinsAssoc,9,6,fNumberOfEtaBins,fNumberPhiBins,902};
+    Double_t mintrig[6]={fPtAsocMin,-10,0,-0.8,0,0.44};
+    Double_t maxtrig[6]={fPtAssocMax,10,6,0.8,2*kPi,1.35};
 
-    fHistGenV0 = new THnSparseF("fHistGenV0","fHistGenV0",5,binsTrig,mintrig,maxtrig);
+    fHistGenV0 = new THnSparseF("fHistGenV0","fHistGenV0",6,binsTrig,mintrig,maxtrig);
     fOutputList->Add(fHistGenV0);
     fHistGenV0->Sumw2();
     fHistGenV0->GetAxis(0)->SetTitle("p_{T}");
@@ -653,9 +653,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistGenV0->GetAxis(2)->SetTitle("trigger");
     fHistGenV0->GetAxis(3)->SetTitle("#eta");
     fHistGenV0->GetAxis(4)->SetTitle("#varphi");
+    fHistGenV0->GetAxis(5)->SetTitle("mass");
     fHistGenV0->GetAxis(1)->Set(NofZVrtxBins,ZBins);
 
-    fHistRecV0 = new THnSparseF("fHistRecV0","fHistRecV0",5,binsTrig,mintrig,maxtrig);
+    fHistRecV0 = new THnSparseF("fHistRecV0","fHistRecV0",6,binsTrig,mintrig,maxtrig);
     fOutputList->Add(fHistRecV0);
     fHistRecV0->Sumw2();
     fHistRecV0->GetAxis(0)->SetTitle("p_{T}");
@@ -663,7 +664,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistRecV0->GetAxis(2)->SetTitle("trigger");
     fHistRecV0->GetAxis(3)->SetTitle("#eta");
     fHistRecV0->GetAxis(4)->SetTitle("#varphi");
+    fHistRecV0->GetAxis(5)->SetTitle("mass");
     fHistRecV0->GetAxis(1)->Set(NofZVrtxBins,ZBins);
+    fHistRecV0->GetAxis(5)->Set(902,binsMass);
 
 	fHistNumberOfTriggers = new THnSparseF("fHistNumberOfTriggers","fHistNumberOfTriggers",5,bins2d,mis2d, maxs2d);
     fHistNumberOfTriggers->GetAxis(0)->SetTitle("p_{T}");
@@ -1194,21 +1197,21 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(IsK0) {
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
-                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],0.5,mcTrack->Eta(),mcTrack->Phi()};
+                        Double_t v0effic[6]={mcTrack->Pt(),fPV[2],0.5,mcTrack->Eta(),mcTrack->Phi(),0};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsLambda) {
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),6,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
-                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],1.5,mcTrack->Eta(),mcTrack->Phi()};
+                        Double_t v0effic[6]={mcTrack->Pt(),fPV[2],1.5,mcTrack->Eta(),mcTrack->Phi(),0};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsAntiLambda) {
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),7,mcTrack->GetLabel(),labelPos,labelNeg,mcTrack->M()));
                     if (fEfficiency){
-                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],2.5,mcTrack->Eta(),mcTrack->Phi()};
+                        Double_t v0effic[6]={mcTrack->Pt(),fPV[2],2.5,mcTrack->Eta(),mcTrack->Phi(),0};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1224,14 +1227,14 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(IsPositiveXi){
                     if (fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),11,mcTrack->M(),1,2,3));
                     if (fEfficiency){
-                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],5.5,mcTrack->Eta(),mcTrack->Phi()};
+                        Double_t v0effic[6]={mcTrack->Pt(),fPV[2],5.5,mcTrack->Eta(),mcTrack->Phi(),0};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsNegativeXi) {
                     if (fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),10,mcTrack->M(),1,2,3));
                     if (fEfficiency){
-                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],4.5,mcTrack->Eta(),mcTrack->Phi()};
+                        Double_t v0effic[6]={mcTrack->Pt(),fPV[2],4.5,mcTrack->Eta(),mcTrack->Phi(),0};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1587,7 +1590,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     fHistCasMC->Fill(par[0]-0.5,10.5);
 
                     if(fEfficiency){
-                        Double_t cascadeEffic[5]={cascadept,fPV[2],par[0]-1.5,cascadeESD->Eta(),cascadeESD->Phi()};
+                        Double_t cascadeEffic[6]={cascadept,fPV[2],par[0]-1.5,cascadeESD->Eta(),cascadeESD->Phi(),par[1]};
                         fHistRecV0->Fill(cascadeEffic);
                     }
                 }
@@ -3019,7 +3022,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::FillMC(const AliVParticle *V0,Int_t pdgV0
         Double_t V0mcEta = mcPosMother->Eta();
 
         if(fEfficiency){
-            Double_t v0effic[5]={V0mcPt,fPV[2],triggerType-0.5,V0mcEta,mcPosMother->Phi()};
+            Double_t v0effic[6]={V0mcPt,fPV[2],triggerType-0.5,V0mcEta,mcPosMother->Phi(),mass};
             fHistRecV0->Fill(v0effic);
         }
 
