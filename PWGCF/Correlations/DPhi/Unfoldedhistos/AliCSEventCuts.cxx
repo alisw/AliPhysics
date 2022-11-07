@@ -735,8 +735,12 @@ void AliCSEventCuts::PrintCutWithParams(Int_t paramID) const {
       printf("    using J/psi Run2 pile up rejection , based on the total number of TPC clusters\n");
       printf("    actual cut will depend on data period\n");
       break;
-    case 6: /* use J/psi Run2 pile up rejection total number of SDD+SSD clusters versus total TPC clusters based method*/
+    case 6: /* use J/psi Run2 pile up rejection total number of SDD+SSD clusters versus total TPC clusters based method */
       printf("    using J/psi Run2 pile up rejection , based on the total number of SDD+SSD clusters vs total number of TPC clusters\n");
+      printf("    actual cut will depend on data period\n");
+      break;
+    case 7: /* use J/psi Run2 pile up rejection method 5 and 6 */
+      printf("    using J/psi Run2 pile up rejection , based on V0M and SDD+SSD clusters vs total number of TPC clusters (method 5 and 6)\n");
       printf("    actual cut will depend on data period\n");
       break;
     default:
@@ -1826,6 +1830,7 @@ Double_t AliCSEventCuts::GetVertexZ(AliVEvent *event) const {
 ///    |  4 | Use the correlation between centrality estimators for removing p-Pb pile-up |
 ///    |  5 | J/psi analysis pileup removal, total number of TPC clusters based method |
 ///    |  6 | J/psi analysis pileup removal, total number of SDD+SSD clusters vs. total number of TPC clusters based method |
+///    |  7 | J/psi analysis pileup removal, combined 5 and 6 methods |
 /// \return kTRUE for proper and supported Run2 additional pileup removal procedures
 Bool_t AliCSEventCuts::SetRemove2015PileUp(Int_t pupcode)
 {
@@ -1849,6 +1854,9 @@ Bool_t AliCSEventCuts::SetRemove2015PileUp(Int_t pupcode)
     fCutsEnabledMask.SetBitNumber(k2015PileUpCut);
     break;
   case 6: /* J/psi analysis pileup removal total number of SDD+SSD clusters vs. total number of TPC clusters based method */
+    fCutsEnabledMask.SetBitNumber(k2015PileUpCut);
+    break;
+  case 7: /* J/psi analysis pileup removal combined 5 and 6 methods */
     fCutsEnabledMask.SetBitNumber(k2015PileUpCut);
     break;
   default:
@@ -2018,6 +2026,28 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     }
     AliInfo(Form("Run2 pileup removal (total number of SDD+SSD clusters vs. total number of TPC clusters based): SDD+SSD clusters < %s\n", TString(fRun2PileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "totalTPCclusters").Data()));
     break;
+  case 7: /* J/psi analysis pileup removal combined 5 and 6 methods */
+    if (fRun2PileUpCorrelationLowLimit) {
+      delete fRun2PileUpCorrelationLowLimit;
+    }
+    if (fRun2PileUpCorrelationUpLimit) {
+      delete fRun2PileUpCorrelationUpLimit;
+    }
+    switch (GetGlobalAnchorPeriod()) {
+    case kLHC18q:
+    case kLHC18r:
+      /* low limit for the SDD+SSD vs TPC clusters */
+      fRun2PileUpCorrelationLowLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-3000.+0.0099*x+9.426e-10*x*x");
+      /* up limit for the V0M vs TPC clusters */
+      fRun2PileUpCorrelationUpLimit = new TFormula(Form("Run2PileUpCorrelation_%s", GetCutsString()), "-2000.0+x*0.012987+x/1000.0*x/1000.0*0.001300");
+      break;
+    default:
+      AliError("Run2 pileup removal method 5 and 6 based still not configured. Fix it!!!");
+      break;
+    }
+    AliInfo(Form("Run2 pileup removal (total number of SDD+SSD clusters vs. total number of TPC clusters based): SDD+SSD clusters < %s\n", TString(fRun2PileUpCorrelationLowLimit->GetTitle()).ReplaceAll("x", "totalTPCclusters").Data()));
+    AliInfo(Form("                    (and V0M vs. total number of TPC clusters based): V0M < %s\n", TString(fRun2PileUpCorrelationUpLimit->GetTitle()).ReplaceAll("x", "totalTPCclusters").Data()));
+    break;
   default:
     AliError(Form("Run2 additional pileup removal code %d not supported", fParameters[kRemove2015PileUp]));
   }
@@ -2081,6 +2111,13 @@ Bool_t AliCSEventCuts::Is2015PileUpEvent() const {
     break;
   case 6: /* J/psi analysis pileup removal total number of SDD+SSD clusters vs. total number of TPC clusters based method */
     if (fNoOfSDDSSDClusters < fRun2PileUpCorrelationLowLimit->Eval(fNoOfTotalTPCClusters))
+      return kTRUE;
+    return kFALSE;
+    break;
+  case 7: /* J/psi analysis pileup removal combined 5 and 6 methods */
+    if (fNoOfSDDSSDClusters < fRun2PileUpCorrelationLowLimit->Eval(fNoOfTotalTPCClusters))
+      return kTRUE;
+    if (fV0Multiplicity < fRun2PileUpCorrelationUpLimit->Eval(fNoOfTotalTPCClusters))
       return kTRUE;
     return kFALSE;
     break;
