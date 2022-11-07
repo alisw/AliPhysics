@@ -53,12 +53,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices& source);
   AliAnalysisTaskHFSimpleVertices& operator=(const AliAnalysisTaskHFSimpleVertices& source);
 
-  std::string GetJsonString(const char* jsonFileName, const char* key);
-  int GetJsonInteger(const char* jsonFileName, const char* key);
-  int GetJsonBool(const char* jsonFileName, const char* key);
-  float GetJsonFloat(const char* jsonFileName, const char* key);
-  float* GetJsonArray(const char* jsonFileName, const char* key, int& size);
-  float** GetJsonMatrix(const char* jsonFileName, const char* key, int& size1, int& size2);
+  std::string GetJsonString(const char* jsonFileName, const char* section, const char* key);
+  int GetJsonInteger(const char* jsonFileName, const char* section, const char* key);
+  int GetJsonBool(const char* jsonFileName, const char* section, const char* key);
+  float GetJsonFloat(const char* jsonFileName, const char* section, const char* key);
+  float* GetJsonArray(const char* jsonFileName, const char* section, const char* key, int& size);
+  float** GetJsonMatrix(const char* jsonFileName, const char* section, const char* key, int& size1, int& size2);
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand, Double_t* ptBinLims, Double_t nPtBins);
   Int_t GetPtBinSingleTrack(Double_t ptTrack);
@@ -164,6 +164,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistDecLenXYErrD0;       //!<!  histo with D0 decay length XY err
   TH1F* fHistCovMatPrimVXX2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
   TH1F* fHistCovMatSecVXX2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
+  TH1F* fHistCovMatPrimVYY2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
+  TH1F* fHistCovMatSecVYY2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
+  TH1F* fHistCovMatPrimVXZ2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
+  TH1F* fHistCovMatSecVXZ2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
+  TH1F* fHistCovMatPrimVZZ2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
+  TH1F* fHistCovMatSecVZZ2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
   TH1F* fHistD0SignalVertX;       //!<!  histo of D0 (MC truth) vertex x
   TH1F* fHistD0SignalVertY;       //!<!  histo of D0 (MC truth) vertex y
   TH1F* fHistD0SignalVertZ;       //!<!  histo of D0 (MC truth) vertex z
@@ -212,6 +218,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistCovMatSecVXX3Prong;   //!<!  histo with cov mat sec vert for the 3-prong candidate
   TH1F* fHistCovMatPrimVYY3Prong;  //!<!  histo with cov mat prim vert for the 3-prong candidate
   TH1F* fHistCovMatSecVYY3Prong;   //!<!  histo with cov mat sec vert for the 3-prong candidate
+  TH1F* fHistCovMatPrimVXZ3Prong;  //!<!  histo with cov mat prim vert for the 3-prong candidate
+  TH1F* fHistCovMatSecVXZ3Prong;   //!<!  histo with cov mat sec vert for the 3-prong candidate
   TH1F* fHistCovMatPrimVZZ3Prong;  //!<!  histo with cov mat prim vert for the 3-prong candidate
   TH1F* fHistCovMatSecVZZ3Prong;   //!<!  histo with cov mat sec vert for the 3-prong candidate
 
@@ -385,7 +393,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Bool_t fEnableCPUTimeCheck;      // flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds; // flag to switch from seconds (default) to milliseconds
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices, 27);
+  ClassDef(AliAnalysisTaskHFSimpleVertices, 28);
 };
 
 #endif
