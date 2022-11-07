@@ -53,12 +53,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices& source);
   AliAnalysisTaskHFSimpleVertices& operator=(const AliAnalysisTaskHFSimpleVertices& source);
 
-  std::string GetJsonString(const char* jsonFileName, const char* key);
-  int GetJsonInteger(const char* jsonFileName, const char* key);
-  int GetJsonBool(const char* jsonFileName, const char* key);
-  float GetJsonFloat(const char* jsonFileName, const char* key);
-  float* GetJsonArray(const char* jsonFileName, const char* key, int& size);
-  float** GetJsonMatrix(const char* jsonFileName, const char* key, int& size1, int& size2);
+  std::string GetJsonString(const char* jsonFileName, const char* section, const char* key);
+  int GetJsonInteger(const char* jsonFileName, const char* section, const char* key);
+  int GetJsonBool(const char* jsonFileName, const char* section, const char* key);
+  float GetJsonFloat(const char* jsonFileName, const char* section, const char* key);
+  float* GetJsonArray(const char* jsonFileName, const char* section, const char* key, int& size);
+  float** GetJsonMatrix(const char* jsonFileName, const char* section, const char* key, int& size1, int& size2);
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand, Double_t* ptBinLims, Double_t nPtBins);
   Int_t GetPtBinSingleTrack(Double_t ptTrack);
@@ -164,6 +164,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistDecLenXYErrD0;       //!<!  histo with D0 decay length XY err
   TH1F* fHistCovMatPrimVXX2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
   TH1F* fHistCovMatSecVXX2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
+  TH1F* fHistCovMatPrimVYY2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
+  TH1F* fHistCovMatSecVYY2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
+  TH1F* fHistCovMatPrimVXZ2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
+  TH1F* fHistCovMatSecVXZ2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
+  TH1F* fHistCovMatPrimVZZ2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
+  TH1F* fHistCovMatSecVZZ2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
   TH1F* fHistD0SignalVertX;       //!<!  histo of D0 (MC truth) vertex x
   TH1F* fHistD0SignalVertY;       //!<!  histo of D0 (MC truth) vertex y
   TH1F* fHistD0SignalVertZ;       //!<!  histo of D0 (MC truth) vertex z
@@ -210,6 +216,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistoSumSqImpParDplusDau; //!<!  histo with squared sum of prong impact parameters
   TH1F* fHistCovMatPrimVXX3Prong;  //!<!  histo with cov mat prim vert for the 3-prong candidate
   TH1F* fHistCovMatSecVXX3Prong;   //!<!  histo with cov mat sec vert for the 3-prong candidate
+  TH1F* fHistCovMatPrimVYY3Prong;  //!<!  histo with cov mat prim vert for the 3-prong candidate
+  TH1F* fHistCovMatSecVYY3Prong;   //!<!  histo with cov mat sec vert for the 3-prong candidate
+  TH1F* fHistCovMatPrimVXZ3Prong;  //!<!  histo with cov mat prim vert for the 3-prong candidate
+  TH1F* fHistCovMatSecVXZ3Prong;   //!<!  histo with cov mat sec vert for the 3-prong candidate
+  TH1F* fHistCovMatPrimVZZ3Prong;  //!<!  histo with cov mat prim vert for the 3-prong candidate
+  TH1F* fHistCovMatSecVZZ3Prong;   //!<!  histo with cov mat sec vert for the 3-prong candidate
 
   TH1F* fHistInvMassDs;       //!<!  histo with Ds->KKpi inv mass
   TH1F* fHistInvMassDsSignal; //!<!  histo with Ds->KKpi inv mass (signal)
@@ -221,15 +233,50 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
 
   TH1F* fHistInvMassLc;    //!<!  histo with LcpKpi+ inv mass
   TH1F* fHistPtLc;         //!<!  histo with LcpKpi+ pt
+  TH1F* fHistEtaLc;         //!<!  histo with LcpKpi+ eta
+  TH1F* fHistPhiLc;         //!<!  histo with LcpKpi+ phi
   TH2F* fHistYPtLc;        //!<!  histo with LcpKpi+ y vs pt
   TH1F* fHistPtLcDau0;     //!<!  histo with LcpKpi+ prong pt
   TH1F* fHistPtLcDau1;     //!<!  histo with LcpKpi+ prong pt
   TH1F* fHistPtLcDau2;     //!<!  histo with LcpKpi+ prong pt
   TH1F* fHistDecLenLc;     //!<!  histo with LcpKpi+ decay length
+  TH1F* fHistDecLenXYLc;     //!<!  histo with LcpKpi+ decay length xy
   TH1F* fHistCosPointLc;   //!<!  histo with LcpKpi+ cosine of pointing angle
+  TH1F* fHistCosPointXYLc;   //!<!  histo with LcpKpi+ cosine of pointing angle xy
+  TH1F* fHistCtLc;   //!<!  histo with LcpKpi+ proper decay length
   TH1F* fHistImpParLcDau0; //!<!  histo with LcpKpi+ prong0 d0
   TH1F* fHistImpParLcDau1; //!<!  histo with LcpKpi+ prong1 d0
   TH1F* fHistImpParLcDau2; //!<!  histo with LcpKpi+ prong2 d0
+  TH1F* fHistInvMassLcPrompt;    //!<!  histo with LcpKpi+ inv mass
+  TH1F* fHistEtaLcPrompt;
+  TH1F* fHistPhiLcPrompt;
+  TH2F* fHistYPtLcPrompt;
+  TH1F* fHistPtLcDau0Prompt;
+  TH1F* fHistPtLcDau1Prompt;
+  TH1F* fHistPtLcDau2Prompt;
+  TH1F* fHistDecLenLcPrompt;
+  TH1F* fHistDecLenXYLcPrompt;
+  TH1F* fHistCtLcPrompt;
+  TH1F* fHistCosPointLcPrompt;
+  TH1F* fHistCosPointXYLcPrompt;
+  TH1F* fHistImpParLcDau0Prompt;
+  TH1F* fHistImpParLcDau1Prompt;
+  TH1F* fHistImpParLcDau2Prompt;
+  TH1F* fHistInvMassLcNonPrompt;    //!<!  histo with LcpKpi+ inv mass
+  TH1F* fHistEtaLcNonPrompt;
+  TH1F* fHistPhiLcNonPrompt;
+  TH2F* fHistYPtLcNonPrompt;
+  TH1F* fHistPtLcDau0NonPrompt;
+  TH1F* fHistPtLcDau1NonPrompt;
+  TH1F* fHistPtLcDau2NonPrompt;
+  TH1F* fHistDecLenLcNonPrompt;
+  TH1F* fHistDecLenXYLcNonPrompt;
+  TH1F* fHistCtLcNonPrompt;
+  TH1F* fHistCosPointLcNonPrompt;
+  TH1F* fHistCosPointXYLcNonPrompt;
+  TH1F* fHistImpParLcDau0NonPrompt;
+  TH1F* fHistImpParLcDau1NonPrompt;
+  TH1F* fHistImpParLcDau2NonPrompt;
 
   TH1F* fHistInvMassK0s;    //!<!  histo with K0s inv mass
   TH1F* fHistInvMassLcK0sp; //!<!  histo with LcpKpi+ inv mass
@@ -239,6 +286,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistPtGenFeeddw[5];       //!<! histos for efficiency (from B)
   TH1F* fHistPtGenLimAccPrompt[5]; //!<! histos for efficiency (prompt)
   TH1F* fHistPtGenLimAccFeeddw[5]; //!<! histos for efficiency (from B)
+  TH1F* fHistEtaGenLimAccPrompt[5]; //!<! histos for efficiency (prompt)
+  TH1F* fHistEtaGenLimAccFeeddw[5]; //!<! histos for efficiency (from B)
+  TH1F* fHistPhiGenLimAccPrompt[5]; //!<! histos for efficiency (prompt)
+  TH1F* fHistPhiGenLimAccFeeddw[5]; //!<! histos for efficiency (from B)
   TH1F* fHistPtRecoGenPtPrompt[5]; //!<! histos for efficiency (prompt)
   TH1F* fHistPtRecoGenPtFeeddw[5]; //!<! histos for efficiency (from B)
   TH1F* fHistPtRecoPrompt[5];      //!<! histos for efficiency (prompt)
@@ -306,6 +357,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Double_t fMaxPtDplus;                                              // D+ max pt
   Double_t fMinPtJpsi;                                               // Jpsi min pt
   Double_t fMaxPtJpsi;                                               // Jpsi max pt
+  Double_t fMinPtLc;                                                 // Lc min pt
+  Double_t fMaxPtLc;                                                 // Lc max pt
   Int_t fCandidateCutLevel;                                          // Cuts: 0 = no, 1 = skim, 2 = analysis
   Double_t fDzeroSkimCuts[kMaxNPtBins2ProngsSkims][kNCutVars2Prong]; // D0 skimming cuts
   Double_t fJpsiSkimCuts[kMaxNPtBins2ProngsSkims][kNCutVars2Prong];  // Jpsi skimming cuts
@@ -340,7 +393,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Bool_t fEnableCPUTimeCheck;      // flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds; // flag to switch from seconds (default) to milliseconds
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices, 27);
+  ClassDef(AliAnalysisTaskHFSimpleVertices, 28);
 };
 
 #endif

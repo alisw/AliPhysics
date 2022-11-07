@@ -101,6 +101,12 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistDecLenXYErrD0{nullptr},
   fHistCovMatPrimVXX2Prong{nullptr},
   fHistCovMatSecVXX2Prong{nullptr},
+  fHistCovMatPrimVYY2Prong{nullptr},
+  fHistCovMatSecVYY2Prong{nullptr},
+  fHistCovMatPrimVXZ2Prong{nullptr},
+  fHistCovMatSecVXZ2Prong{nullptr},
+  fHistCovMatPrimVZZ2Prong{nullptr},
+  fHistCovMatSecVZZ2Prong{nullptr},
   fHistD0SignalVertX{nullptr},
   fHistD0SignalVertY{nullptr},
   fHistD0SignalVertZ{nullptr},
@@ -145,6 +151,12 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistoSumSqImpParDplusDau{nullptr},
   fHistCovMatPrimVXX3Prong{nullptr},
   fHistCovMatSecVXX3Prong{nullptr},
+  fHistCovMatPrimVYY3Prong{nullptr},
+  fHistCovMatSecVYY3Prong{nullptr},
+  fHistCovMatPrimVXZ3Prong{nullptr},
+  fHistCovMatSecVXZ3Prong{nullptr},
+  fHistCovMatPrimVZZ3Prong{nullptr},
+  fHistCovMatSecVZZ3Prong{nullptr},
   fHistInvMassDs{nullptr},
   fHistInvMassDsSignal{nullptr},
   fHistInvMassDsRefl{nullptr},
@@ -154,15 +166,48 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistCosPointDs{nullptr},
   fHistInvMassLc{nullptr},
   fHistPtLc{nullptr},
+  fHistEtaLc{nullptr},
+  fHistPhiLc{nullptr},
   fHistYPtLc{nullptr},
   fHistPtLcDau0{nullptr},
   fHistPtLcDau1{nullptr},
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
+  fHistDecLenXYLc{nullptr},
+  fHistCtLc{nullptr},
   fHistCosPointLc{nullptr},
+  fHistCosPointXYLc{nullptr},
   fHistImpParLcDau0{nullptr},
   fHistImpParLcDau1{nullptr},
   fHistImpParLcDau2{nullptr},
+  fHistEtaLcPrompt{nullptr},
+  fHistPhiLcPrompt{nullptr},
+  fHistYPtLcPrompt{nullptr},
+  fHistPtLcDau0Prompt{nullptr},
+  fHistPtLcDau1Prompt{nullptr},
+  fHistPtLcDau2Prompt{nullptr},
+  fHistDecLenLcPrompt{nullptr},
+  fHistDecLenXYLcPrompt{nullptr},
+  fHistCtLcPrompt{nullptr},
+  fHistCosPointLcPrompt{nullptr},
+  fHistCosPointXYLcPrompt{nullptr},
+  fHistImpParLcDau0Prompt{nullptr},
+  fHistImpParLcDau1Prompt{nullptr},
+  fHistImpParLcDau2Prompt{nullptr},
+  fHistEtaLcNonPrompt{nullptr},
+  fHistPhiLcNonPrompt{nullptr},
+  fHistYPtLcNonPrompt{nullptr},
+  fHistPtLcDau0NonPrompt{nullptr},
+  fHistPtLcDau1NonPrompt{nullptr},
+  fHistPtLcDau2NonPrompt{nullptr},
+  fHistDecLenLcNonPrompt{nullptr},
+  fHistDecLenXYLcNonPrompt{nullptr},
+  fHistCtLcNonPrompt{nullptr},
+  fHistCosPointLcNonPrompt{nullptr},
+  fHistCosPointXYLcNonPrompt{nullptr},
+  fHistImpParLcDau0NonPrompt{nullptr},
+  fHistImpParLcDau1NonPrompt{nullptr},
+  fHistImpParLcDau2NonPrompt{nullptr},
   fHistInvMassK0s{nullptr},
   fHistInvMassLcK0sp{nullptr},
   fHistPtLcK0sp{nullptr},
@@ -212,6 +257,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMaxPtDplus(9999.),
   fMinPtJpsi(0.),
   fMaxPtJpsi(9999.),
+  fMinPtLc(0.),
+  fMaxPtLc(9999.),
   fCandidateCutLevel(1),
   fMinPt3Prong(0.),
   fMaxRapidityCand(0.8),
@@ -238,7 +285,11 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
     fHistPtGenPrompt[i] = 0x0;
     fHistPtGenFeeddw[i] = 0x0;
     fHistPtGenLimAccPrompt[i] = 0x0;
+    fHistEtaGenLimAccPrompt[i] = 0x0;
+    fHistPhiGenLimAccPrompt[i] = 0x0;
     fHistPtGenLimAccFeeddw[i] = 0x0;
+    fHistEtaGenLimAccFeeddw[i] = 0x0;
+    fHistPhiGenLimAccFeeddw[i] = 0x0;
     fHistPtRecoGenPtPrompt[i] = 0x0;
     fHistPtRecoGenPtFeeddw[i] = 0x0;
     fHistPtRecoPrompt[i] = 0x0;
@@ -303,6 +354,12 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistDecLenXYErrD0;
     delete fHistCovMatPrimVXX2Prong;
     delete fHistCovMatSecVXX2Prong;
+    delete fHistCovMatPrimVYY2Prong;
+    delete fHistCovMatSecVYY2Prong;
+    delete fHistCovMatPrimVXZ2Prong;
+    delete fHistCovMatSecVXZ2Prong;
+    delete fHistCovMatPrimVZZ2Prong;
+    delete fHistCovMatSecVZZ2Prong;
     delete fHistD0SignalVertX;
     delete fHistD0SignalVertY;
     delete fHistD0SignalVertZ;
@@ -347,6 +404,12 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistoSumSqImpParDplusDau;
     delete fHistCovMatPrimVXX3Prong;
     delete fHistCovMatSecVXX3Prong;
+    delete fHistCovMatPrimVYY3Prong;
+    delete fHistCovMatSecVYY3Prong;
+    delete fHistCovMatPrimVXZ3Prong;
+    delete fHistCovMatSecVXZ3Prong;
+    delete fHistCovMatPrimVZZ3Prong;
+    delete fHistCovMatSecVZZ3Prong;
     delete fHistInvMassDs;
     delete fHistInvMassDsSignal;
     delete fHistInvMassDsRefl;
@@ -356,15 +419,48 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistCosPointDs;
     delete fHistInvMassLc;
     delete fHistPtLc;
+    delete fHistEtaLc;
+    delete fHistPhiLc;
     delete fHistYPtLc;
     delete fHistPtLcDau0;
     delete fHistPtLcDau1;
     delete fHistPtLcDau2;
     delete fHistDecLenLc;
+    delete fHistDecLenXYLc;
+    delete fHistCtLc;
     delete fHistCosPointLc;
+    delete fHistCosPointXYLc;
     delete fHistImpParLcDau0;
     delete fHistImpParLcDau1;
     delete fHistImpParLcDau2;
+    delete fHistEtaLcPrompt;
+    delete fHistPhiLcPrompt;
+    delete fHistYPtLcPrompt;
+    delete fHistPtLcDau0Prompt;
+    delete fHistPtLcDau1Prompt;
+    delete fHistPtLcDau2Prompt;
+    delete fHistDecLenLcPrompt;
+    delete fHistDecLenXYLcPrompt;
+    delete fHistCtLcPrompt;
+    delete fHistCosPointLcPrompt;
+    delete fHistCosPointXYLcPrompt;
+    delete fHistImpParLcDau0Prompt;
+    delete fHistImpParLcDau1Prompt;
+    delete fHistImpParLcDau2Prompt;
+    delete fHistEtaLcNonPrompt;
+    delete fHistPhiLcNonPrompt;
+    delete fHistYPtLcNonPrompt;
+    delete fHistPtLcDau0NonPrompt;
+    delete fHistPtLcDau1NonPrompt;
+    delete fHistPtLcDau2NonPrompt;
+    delete fHistDecLenLcNonPrompt;
+    delete fHistDecLenXYLcNonPrompt;
+    delete fHistCtLcNonPrompt;
+    delete fHistCosPointLcNonPrompt;
+    delete fHistCosPointXYLcNonPrompt;
+    delete fHistImpParLcDau0NonPrompt;
+    delete fHistImpParLcDau1NonPrompt;
+    delete fHistImpParLcDau2NonPrompt;
     delete fHistInvMassK0s;
     delete fHistInvMassLcK0sp;
     delete fHistPtLcK0sp;
@@ -372,7 +468,11 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
       delete fHistPtGenPrompt[i];
       delete fHistPtGenFeeddw[i];
       delete fHistPtGenLimAccPrompt[i];
+      delete fHistEtaGenLimAccPrompt[i];
+      delete fHistPhiGenLimAccPrompt[i];
       delete fHistPtGenLimAccFeeddw[i];
+      delete fHistEtaGenLimAccFeeddw[i];
+      delete fHistPhiGenLimAccFeeddw[i];
       delete fHistPtRecoGenPtPrompt[i];
       delete fHistPtRecoGenPtFeeddw[i];
       delete fHistPtRecoPrompt[i];
@@ -630,50 +730,50 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
   if (filename != "" && gSystem->Exec(Form("ls %s > /dev/null", filename.Data())) == 0) {
     printf("------Read configuration from JSON file------\n");
 
-    std::string triggerMaskFromJSON = GetJsonString(filename.Data(), "triggerClassName");
+    std::string triggerMaskFromJSON = GetJsonString(filename.Data(), "hf-tag-sel-collisions", "triggerClassName");
 
     if (triggerMask.find(triggerMaskFromJSON) != triggerMask.end()) {
       fUsePhysSel = kTRUE;
       fTriggerMask = triggerMask[triggerMaskFromJSON];
     }
 
-    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "pTMinTrack2Prong");
+    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "hf-tag-sel-tracks", "pTMinTrack2Prong");
     printf("Min pt track (2 prong)= %g\n", ptmintrack2);
     if (ptmintrack2 > 0)
       fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
-    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "pTMinTrack3Prong");
+    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "hf-tag-sel-tracks", "pTMinTrack3Prong");
     printf("Min pt track (3 prong)= %g\n", ptmintrack3);
     if (ptmintrack3 > 0)
       fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
-    Double_t ptmintrackb = GetJsonFloat(filename.Data(), "pTMinTrack3Bach");
+    Double_t ptmintrackb = GetJsonFloat(filename.Data(), "hf-tag-sel-tracks", "ptMinTrackBach");
     printf("Min pt track (bachelor)= %g\n", ptmintrackb);
     if (ptmintrackb > 0)
       fTrackCutsBach->SetPtRange(ptmintrackb, 1.e10);
-    Int_t do3Prongs = GetJsonInteger(filename.Data(), "do3prong");
+    Int_t do3Prongs = GetJsonInteger(filename.Data(), "hf-track-index-skims-creator", "do3prong");
     printf("do3prong     = %d\n", do3Prongs);
     if (do3Prongs > 0)
       fDo3Prong = kTRUE;
-    Int_t selectD0 = GetJsonInteger(filename.Data(), "d_selectionFlagD0");
+    Int_t selectD0 = GetJsonInteger(filename.Data(), "hf-task-d0", "d_selectionFlagD0");
     printf("d_selectionFlagD0 = %d\n", selectD0);
     if (selectD0 >= 0)
       fSelectD0 = selectD0;
-    Int_t selectD0bar = GetJsonInteger(filename.Data(), "d_selectionFlagD0bar");
+    Int_t selectD0bar = GetJsonInteger(filename.Data(), "hf-task-d0", "d_selectionFlagD0bar");
     printf("d_selectionFlagD0bar = %d\n", selectD0bar);
     if (selectD0 >= 0)
       fSelectD0bar = selectD0bar;
-    Int_t selectDplus = GetJsonInteger(filename.Data(), "d_selectionFlagDPlus");
+    Int_t selectDplus = GetJsonInteger(filename.Data(), "hf-task-dplus", "d_selectionFlagDPlus");
     printf("d_selectionFlagDplus = %d\n", selectDplus);
     if (selectDplus >= 0)
       fSelectDplus = selectDplus;
-    Int_t selectJpsi = GetJsonInteger(filename.Data(), "d_selectionFlagJpsi");
+    Int_t selectJpsi = GetJsonInteger(filename.Data(), "hf-task-jpsi", "d_selectionFlagJpsi");
     printf("d_selectionFlagJpsi = %d\n", selectJpsi);
     if (selectJpsi >= 0)
       fSelectJpsi = selectJpsi;
-    Int_t selectLcpKpi = GetJsonInteger(filename.Data(), "d_selectionFlagLc");
+    Int_t selectLcpKpi = GetJsonInteger(filename.Data(), "hf-task-lc", "d_selectionFlagLc");
     printf("d_selectionFlagLc = %d\n", selectLcpKpi);
     if (selectLcpKpi >= 0)
       fSelectLcpKpi = selectLcpKpi;
-    Int_t minncluTPC = GetJsonInteger(filename.Data(), "tpcNClsFound");
+    Int_t minncluTPC = GetJsonInteger(filename.Data(), "hf-tag-sel-tracks", "tpcNClsFound");
     if (minncluTPC > 0)
       printf("minncluTPC   = %d\n", minncluTPC);
     fTrackCuts2pr->SetMinNClustersTPC(minncluTPC);
@@ -681,10 +781,10 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     fTrackCutsBach->SetMinNClustersTPC(minncluTPC);
 
     int nptbinlimsSingleTrack = 0;
-    float* ptbinsSingleTrack = GetJsonArray(filename.Data(), "pTBinsTrack", nptbinlimsSingleTrack);
+    float* ptbinsSingleTrack = GetJsonArray(filename.Data(), "hf-tag-sel-tracks", "pTBinsTrack", nptbinlimsSingleTrack);
     int npt2Prong = 0, npt3Prong = 0, nc2Prong = 0, nc3Prong = 0;
-    float** cutsSingleTrack2Prong = GetJsonMatrix(filename.Data(), "cutsTrack2Prong", npt2Prong, nc2Prong);
-    float** cutsSingleTrack3Prong = GetJsonMatrix(filename.Data(), "cutsTrack3Prong", npt3Prong, nc3Prong);
+    float** cutsSingleTrack2Prong = GetJsonMatrix(filename.Data(), "hf-tag-sel-tracks", "cutsTrack2Prong", npt2Prong, nc2Prong);
+    float** cutsSingleTrack3Prong = GetJsonMatrix(filename.Data(), "hf-tag-sel-tracks", "cutsTrack3Prong", npt3Prong, nc3Prong);
     if ((nptbinlimsSingleTrack - 1 != npt3Prong) || (nptbinlimsSingleTrack - 1 != npt2Prong))
       AliFatal("Number of pT bins in JSON for single track cuts of 2-prong and 3-prongs not consistent, please check it");
 
@@ -701,22 +801,22 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
         AliInfo(Form("3prong %d %d, %d, %g", nc2Prong, ib, jc, cutsSingleTrack2Prong[ib][jc]));
       }
     }
-    Double_t etamax2 = GetJsonFloat(filename.Data(), "etaMax2Prong");
+    Double_t etamax2 = GetJsonFloat(filename.Data(), "hf-tag-sel-tracks", "etaMax2Prong");
     printf("Max eta  (2 prong) = %g\n", etamax2);
     if (etamax2 > 0)
       fTrackCuts2pr->SetEtaRange(-etamax2, +etamax2);
-    Double_t etamax3 = GetJsonFloat(filename.Data(), "etaMax3Prong");
+    Double_t etamax3 = GetJsonFloat(filename.Data(), "hf-tag-sel-tracks", "etaMax3Prong");
     printf("Max eta  (3 prong) = %g\n", etamax3);
     if (etamax3 > 0)
       fTrackCuts3pr->SetEtaRange(-etamax3, +etamax3);
-    Double_t etamaxb = GetJsonFloat(filename.Data(), "etaMaxBach");
+    Double_t etamaxb = GetJsonFloat(filename.Data(), "hf-tag-sel-tracks", "etaMaxBach");
     printf("Max eta  (bachelor) = %g\n", etamaxb);
     if (etamaxb > 0)
       fTrackCutsBach->SetEtaRange(-etamaxb, +etamaxb);
 
     // vertexer parameters
     printf("--- DCAFitterN parameters ---\n");
-    Int_t b_propdca = GetJsonBool(filename.Data(), "propToDCA");
+    Int_t b_propdca = GetJsonBool(filename.Data(), "hf-track-index-skims-creator", "propToDCA");
     if (b_propdca == 1) {
       fVertexerPropagateToPCA = true;
       printf("propdca = %d\n", fVertexerPropagateToPCA);
@@ -724,81 +824,93 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       fVertexerPropagateToPCA = false;
       printf("propdca = %d\n", fVertexerPropagateToPCA);
     }
-    Double_t d_maxr = GetJsonFloat(filename.Data(), "maxRad");
+    Double_t d_maxr = GetJsonFloat(filename.Data(), "hf-track-index-skims-creator", "maxRad");
     if (d_maxr > 0) {
       fMaxDecVertRadius2 = d_maxr * d_maxr;
       fVertexerMaxR = d_maxr;
       printf("maxr = %g\n", fVertexerMaxR);
     }
-    Double_t d_maxdzini = GetJsonFloat(filename.Data(), "maxDZIni");
+    Double_t d_maxdzini = GetJsonFloat(filename.Data(), "hf-track-index-skims-creator", "maxDZIni");
     if (d_maxdzini > 0) {
       fVertexerMaxDZIni = d_maxdzini;
       printf("maxdzini = %g\n", fVertexerMaxDZIni);
     }
-    Double_t d_minparamchange = GetJsonFloat(filename.Data(), "minParamChange");
+    Double_t d_minparamchange = GetJsonFloat(filename.Data(), "hf-track-index-skims-creator", "minParamChange");
     if (d_minparamchange > 0) {
       fVertexerMinParamChange = d_minparamchange;
       printf("minparamchange = %g\n", fVertexerMinParamChange);
     }
-    Double_t d_minrelchi2change = GetJsonFloat(filename.Data(), "minRelChi2Change");
+    Double_t d_minrelchi2change = GetJsonFloat(filename.Data(), "hf-track-index-skims-creator", "minRelChi2Change");
     if (d_minrelchi2change) {
       fVertexerMinRelChi2Change = d_minrelchi2change;
       printf("minrelchi2change = %g\n", fVertexerMinRelChi2Change);
     }
     printf("----------------\n");
-    Double_t ptMinCand = GetJsonFloat(filename.Data(), "d_pTCandMin");
+    Double_t ptMinCand = GetJsonFloat(filename.Data(), "hf-d0-candidate-selector", "d_pTCandMin");
     printf("Min pt Dzero cand = %g\n", ptMinCand);
     if (ptMinCand >= 0.)
       fMinPtDzero = ptMinCand;
-    Double_t ptMaxCand = GetJsonFloat(filename.Data(), "d_pTCandMax");
+    Double_t ptMaxCand = GetJsonFloat(filename.Data(), "hf-d0-candidate-selector", "d_pTCandMax");
     printf("Max pt Dzero cand = %g\n", ptMaxCand);
     if (ptMaxCand >= 0. && ptMaxCand >= fMinPtDzero)
       fMaxPtDzero = ptMaxCand;
-    Double_t ptMinCand3 = GetJsonFloat(filename.Data(), "cut3ProngPtCandMin");
-    printf("Min pt 3-prong cand = %g\n", ptMinCand3);
-    if (ptMinCand3 >= 0.)
-      fMinPt3Prong = ptMinCand3;
+    Double_t ptMinCandDplus = GetJsonFloat(filename.Data(), "hf-dplus-topikpi-candidate-selector", "d_pTCandMin");
+    printf("Min pt Dplus cand = %g\n", ptMinCandDplus);
+    if (ptMinCandDplus >= 0.)
+      fMinPtDplus = ptMinCandDplus;
+    Double_t ptMaxCandDplus = GetJsonFloat(filename.Data(), "hf-dplus-topikpi-candidate-selector", "d_pTCandMax");
+    printf("Max pt Dplus cand = %g\n", ptMaxCandDplus);
+    if (ptMaxCandDplus >= 0. && ptMaxCandDplus >= fMinPtDplus)
+      fMaxPtDplus = ptMaxCandDplus;
+    Double_t ptMinCandLc = GetJsonFloat(filename.Data(), "hf-lc-candidate-selector", "d_pTCandMin");
+    printf("Min pt Lc cand = %g\n", ptMinCandLc);
+    if (ptMinCandLc >= 0.)
+      fMinPtLc = ptMinCandLc;
+    Double_t ptMaxCandLc = GetJsonFloat(filename.Data(), "hf-lc-candidate-selector", "d_pTCandMax");
+    printf("Max pt Lc cand = %g\n", ptMaxCandLc);
+    if (ptMaxCandLc >= 0. && ptMaxCandLc >= fMinPtLc)
+      fMaxPtLc = ptMaxCandLc;
 
     // Selections used in the skimming
     printf("------- CANDIDATE SELECTIONS FOR SKIMMING -------\n");
 
-    Double_t ptTol = GetJsonFloat(filename.Data(), "pTTolerance");
+    Double_t ptTol = GetJsonFloat(filename.Data(), "hf-track-index-skims-creator", "pTTolerance");
     if (ptTol > 0)
       fPtWithoutVtxToll = ptTol;
 
     int nptbinlimsDzeroSkims = 0, ncDzeroSkims = 0, nptDzeroSkims = 0;
-    float* ptbinlimsDzeroSkims = GetJsonArray(filename.Data(), "pTBinsD0ToPiK", nptbinlimsDzeroSkims);
-    float** cutsDzeroSkims = GetJsonMatrix(filename.Data(), "cutsD0ToPiK", nptDzeroSkims, ncDzeroSkims);
+    float* ptbinlimsDzeroSkims = GetJsonArray(filename.Data(), "hf-track-index-skims-creator", "pTBinsD0ToPiK", nptbinlimsDzeroSkims);
+    float** cutsDzeroSkims = GetJsonMatrix(filename.Data(), "hf-track-index-skims-creator", "cutsD0ToPiK", nptDzeroSkims, ncDzeroSkims);
     if (nptbinlimsDzeroSkims - 1 != nptDzeroSkims)
       AliFatal("Number of pT bins in JSON for Dzero at skims level not consistent, please check it");
 
     int nptbinlimsJpsiSkims = 0, ncJpsiSkims = 0, nptJpsiSkims = 0;
-    float* ptbinlimsJpsiSkims = GetJsonArray(filename.Data(), "pTBinsJpsiToEE", nptbinlimsJpsiSkims);
-    float** cutsJpsiSkims = GetJsonMatrix(filename.Data(), "cutsJpsiToEE", nptJpsiSkims, ncJpsiSkims);
+    float* ptbinlimsJpsiSkims = GetJsonArray(filename.Data(), "hf-track-index-skims-creator", "pTBinsJpsiToEE", nptbinlimsJpsiSkims);
+    float** cutsJpsiSkims = GetJsonMatrix(filename.Data(), "hf-track-index-skims-creator", "cutsJpsiToEE", nptJpsiSkims, ncJpsiSkims);
     if (nptbinlimsJpsiSkims - 1 != nptJpsiSkims)
       AliFatal("Number of pT bins in JSON for J/psi at skims level not consistent, please check it");
 
     int nptbinlimsDplusSkims = 0, ncDplusSkims = 0, nptDplusSkims = 0;
-    float* ptbinlimsDplusSkims = GetJsonArray(filename.Data(), "pTBinsDPlusToPiKPi", nptbinlimsDplusSkims);
-    float** cutsDplusSkims = GetJsonMatrix(filename.Data(), "cutsDPlusToPiKPi", nptDplusSkims, ncDplusSkims);
+    float* ptbinlimsDplusSkims = GetJsonArray(filename.Data(), "hf-track-index-skims-creator", "pTBinsDPlusToPiKPi", nptbinlimsDplusSkims);
+    float** cutsDplusSkims = GetJsonMatrix(filename.Data(), "hf-track-index-skims-creator", "cutsDPlusToPiKPi", nptDplusSkims, ncDplusSkims);
     if (nptbinlimsDplusSkims - 1 != nptDplusSkims)
       AliFatal("Number of pT bins in JSON for Dplus at skims level not consistent, please check it");
 
     int nptbinlimsDsSkims = 0, ncDsSkims = 0, nptDsSkims = 0;
-    float* ptbinlimsDsSkims = GetJsonArray(filename.Data(), "pTBinsDsToKKPi", nptbinlimsDsSkims);
-    float** cutsDsSkims = GetJsonMatrix(filename.Data(), "cutsDsToKKPi", nptDsSkims, ncDsSkims);
+    float* ptbinlimsDsSkims = GetJsonArray(filename.Data(), "hf-track-index-skims-creator", "pTBinsDsToKKPi", nptbinlimsDsSkims);
+    float** cutsDsSkims = GetJsonMatrix(filename.Data(), "hf-track-index-skims-creator", "cutsDsToKKPi", nptDsSkims, ncDsSkims);
     if (nptbinlimsDsSkims - 1 != nptDsSkims)
       AliFatal("Number of pT bins in JSON for Ds at skims level not consistent, please check it");
 
     int nptbinlimsLcSkims = 0, ncLcSkims = 0, nptLcSkims = 0;
-    float* ptbinlimsLcSkims = GetJsonArray(filename.Data(), "pTBinsLcToPKPi", nptbinlimsLcSkims);
-    float** cutsLcSkims = GetJsonMatrix(filename.Data(), "cutsLcToPKPi", nptLcSkims, ncLcSkims);
+    float* ptbinlimsLcSkims = GetJsonArray(filename.Data(), "hf-track-index-skims-creator", "pTBinsLcToPKPi", nptbinlimsLcSkims);
+    float** cutsLcSkims = GetJsonMatrix(filename.Data(), "hf-track-index-skims-creator", "cutsLcToPKPi", nptLcSkims, ncLcSkims);
     if (nptbinlimsLcSkims - 1 != nptLcSkims)
       AliFatal("Number of pT bins in JSON for Lc at skims level not consistent, please check it");
 
     int nptbinlimsXicSkims = 0, ncXicSkims = 0, nptXicSkims = 0;
-    float* ptbinlimsXicSkims = GetJsonArray(filename.Data(), "pTBinsXicToPKPi", nptbinlimsXicSkims);
-    float** cutsXicSkims = GetJsonMatrix(filename.Data(), "cutsXicToPKPi", nptXicSkims, ncXicSkims);
+    float* ptbinlimsXicSkims = GetJsonArray(filename.Data(), "hf-track-index-skims-creator", "pTBinsXicToPKPi", nptbinlimsXicSkims);
+    float** cutsXicSkims = GetJsonMatrix(filename.Data(), "hf-track-index-skims-creator", "cutsXicToPKPi", nptXicSkims, ncXicSkims);
     if (nptbinlimsXicSkims - 1 != nptXicSkims)
       AliFatal("Number of pT bins in JSON for Xic at skims level not consistent, please check it");
 
@@ -862,37 +974,87 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       AliInfo(Form("Xic cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsXicSkims[ib], fPtBinLimsXicSkims[ib + 1], fXicSkimCuts[ib][0], fXicSkimCuts[ib][1], fXicSkimCuts[ib][2], fXicSkimCuts[ib][3]));
     }
 
-    Double_t cutcpaV0 = GetJsonFloat(filename.Data(), "cosPAV0");
+    Double_t cutcpaV0 = GetJsonFloat(filename.Data(), "hf-track-index-skims-creator-cascades", "cosPAV0");
     if (cutcpaV0 > 0) {
       fMinCosPointV0 = cutcpaV0;
       printf("cosPAV0 cut = %g\n", fMinCosPointV0);
     }
 
-    Double_t cutinvmV0 = GetJsonFloat(filename.Data(), "cutInvMassV0");
+    Double_t cutinvmV0 = GetJsonFloat(filename.Data(), "hf-track-index-skims-creator-cascades", "cutInvMassV0");
     if (cutinvmV0 > 0) {
       fCutOnK0sMass = cutinvmV0;
       printf("invmass V0 cut = %g\n", fCutOnK0sMass);
     }
 
+    // Selections used for Lc
+    printf("------- CANDIDATE SELECTIONS -------\n");
+
+    int nptbinlimsDzero = 0, ncDzero = 0, nptDzero = 0;
+    float* ptbinlimsDzero = GetJsonArray(filename.Data(), "hf-d0-candidate-selector", "pTBins", nptbinlimsDzero);
+    float** cutsDzero = GetJsonMatrix(filename.Data(), "hf-d0-candidate-selector", "D0_to_pi_K_cuts", nptDzero, ncDzero);
+    if (nptbinlimsDzero - 1 != nptDzero)
+      AliFatal("Number of pT bins in JSON for Dzero at candidate selection level not consistent, please check it");
+
+    int nptbinlimsJpsi = 0, ncJpsi = 0, nptJpsi = 0;
+    float* ptbinlimsJpsi = GetJsonArray(filename.Data(), "hf-jpsi-candidate-selector", "pTBins", nptbinlimsJpsi);
+    float** cutsJpsi = GetJsonMatrix(filename.Data(), "hf-jpsi-candidate-selector", "Jpsi_to_ee_cuts", nptJpsi, ncJpsi);
+    if (nptbinlimsJpsi - 1 != nptJpsi)
+      AliFatal("Number of pT bins in JSON for J/psi at candidate selection level not consistent, please check it");
+
+    int nptbinlimsDplus = 0, ncDplus = 0, nptDplus = 0;
+    float* ptbinlimsDplus = GetJsonArray(filename.Data(), "hf-dplus-topikpi-candidate-selector", "pTBins", nptbinlimsDplus);
+    float** cutsDplus = GetJsonMatrix(filename.Data(), "hf-dplus-topikpi-candidate-selector", "DPlus_to_Pi_K_Pi_cuts", nptDplus, ncDplus);
+    if (nptbinlimsDplus - 1 != nptDplus)
+      AliFatal("Number of pT bins in JSON for Dplus at candidate selection level not consistent, please check it");
+
+    int nptbinlimsLc = 0, ncLc = 0, nptLc = 0;
+    float* ptbinlimsLc = GetJsonArray(filename.Data(), "hf-lc-candidate-selector", "pTBins", nptbinlimsLc);
+    float** cutsLc = GetJsonMatrix(filename.Data(), "hf-lc-candidate-selector", "Lc_to_p_K_pi_cuts", nptLc, ncLc);
+    if (nptbinlimsLc - 1 != nptLc)
+      AliFatal("Number of pT bins in JSON for Lc at candidate selection level not consistent, please check it");
+
+    for (Int_t ib = 0; ib < nptbinlimsDzero; ib++) {
+      fPtBinLimsDzero[ib] = ptbinlimsDzero[ib];
+    }
+    for (Int_t ib = 0; ib < nptDzero; ib++) {
+      for (Int_t jc = 0; jc < ncDzero; jc++) {
+        fDzeroCuts[ib][jc] = cutsDzero[ib][jc];
+      }
+      AliInfo(Form("Dzero cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; d0xd0  < %g\n", fPtBinLimsDzero[ib], fPtBinLimsDzero[ib + 1], fDzeroCuts[ib][0], fDzeroCuts[ib][1], fDzeroCuts[ib][2], fDzeroCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsJpsi; ib++) {
+      fPtBinLimsJpsi[ib] = ptbinlimsJpsi[ib];
+    }
+    for (Int_t ib = 0; ib < nptJpsi; ib++) {
+      for (Int_t jc = 0; jc < ncJpsi; jc++) {
+        fJpsiCuts[ib][jc] = cutsJpsi[ib][jc];
+      }
+      AliInfo(Form("J/psi cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; d0xd0  < %g\n", fPtBinLimsJpsi[ib], fPtBinLimsJpsi[ib + 1], fJpsiCuts[ib][0], fJpsiCuts[ib][1], fJpsiCuts[ib][2], fJpsiCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsDplus; ib++) {
+      fPtBinLimsDplus[ib] = ptbinlimsDplus[ib];
+    }
+    for (Int_t ib = 0; ib < nptDplus; ib++) {
+      for (Int_t jc = 0; jc < ncDplus; jc++) {
+        fDplusCuts[ib][jc] = cutsDplus[ib][jc];
+      }
+      AliInfo(Form("Dplus cuts: %g < pt < %g  ; %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsDplus[ib], fPtBinLimsDplus[ib + 1], fDplusCuts[ib][0], fDplusCuts[ib][1], fDplusCuts[ib][2], fDplusCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsLc; ib++) {
+      fPtBinLimsLc[ib] = ptbinlimsLc[ib];
+    }
+    for (Int_t ib = 0; ib < nptLc; ib++) {
+      for (Int_t jc = 0; jc < ncLc; jc++) {
+        fLcCuts[ib][jc] = cutsLc[ib][jc];
+      }
+      AliInfo(Form("Lc candidate selection cuts: %g < pt < %g  ;  delta mass < %g  ;  pt p > %g  ;  pt K > %g  ;  pt Pi > %g  ;  Chi2PCA < %g  ;  declen > %g  ;  cospoint > %g\n", fPtBinLimsLc[ib], fPtBinLimsLc[ib + 1], fLcCuts[ib][0], fLcCuts[ib][1], fLcCuts[ib][2], fLcCuts[ib][3], fLcCuts[ib][4], fLcCuts[ib][5], fLcCuts[ib][6]));
+    }
+
     printf("---------------------------------------------\n");
 
-    printf("---- TEST READOUT OF ARRAYS ----\n");
-    int nptbinlims;
-    float* ptbins = GetJsonArray(filename.Data(), "pTBins", nptbinlims);
-    printf("%d ptbins. Limits: ", nptbinlims - 1);
-    for (int j = 0; j < nptbinlims; j++)
-      printf("%.1f ", ptbins[j]);
-    printf("\n");
-    int npt, nc;
-    float** cuts = GetJsonMatrix(filename.Data(), "D0_to_pi_K_cuts", npt, nc);
-    printf("D0 2D cuts: %d pt bins, %d cut variables:\n", npt, nc);
-    for (int j = 0; j < npt; j++) {
-      for (int k = 0; k < nc; k++) {
-        printf("%.2f ", cuts[j][k]);
-      }
-      printf("\n");
-    }
-    printf("\n");
   } else {
     AliError(Form("Json configuration file %s not found\n", filename.Data()));
   }
@@ -1042,6 +1204,12 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistDecLenXYErrD0 = new TH1F("hDecLenXYErrD0", " ; #sigma(Decay Length xy) (cm)", 100, 0., 1.0);
   fHistCovMatPrimVXX2Prong = new TH1F("hCovMatPrimVXX2Prong", " Primary Vertex ; XX element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
   fHistCovMatSecVXX2Prong = new TH1F("hCovMatSecVXX2Prong", " Secondary Vertex 2-prong ; XX element of covariant matrix (cm^2)", 100, 0., 0.2);
+  fHistCovMatPrimVYY2Prong = new TH1F("hCovMatPrimVYY2Prong", " Primary Vertex ; YY element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
+  fHistCovMatSecVYY2Prong = new TH1F("hCovMatSecVYY2Prong", " Secondary Vertex 2-prong ; YY element of covariant matrix (cm^2)", 100, 0., 0.2);
+  fHistCovMatPrimVXZ2Prong = new TH1F("hCovMatPrimVXZ2Prong", " Primary Vertex ; XZ element of covariant matrix (cm^2)", 100, -1.0e-4, 1.0e-4);
+  fHistCovMatSecVXZ2Prong = new TH1F("hCovMatSecVXZ2Prong", " Secondary Vertex 2-prong ; XZ element of covariant matrix (cm^2)", 100, -1.0e-4, 0.2);
+  fHistCovMatPrimVZZ2Prong = new TH1F("hCovMatPrimVZZ2Prong", " Primary Vertex ; ZZ element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
+  fHistCovMatSecVZZ2Prong = new TH1F("hCovMatSecVZZ2Prong", " Secondary Vertex 2-prong ; ZZ element of covariant matrix (cm^2)", 100, 0., 0.2);
   fOutput->Add(fHistPtD0);
   fOutput->Add(fHistYPtD0);
   fOutput->Add(fHistInvMassD0);
@@ -1058,6 +1226,12 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistDecLenXYErrD0);
   fOutput->Add(fHistCovMatPrimVXX2Prong);
   fOutput->Add(fHistCovMatSecVXX2Prong);
+  fOutput->Add(fHistCovMatPrimVYY2Prong);
+  fOutput->Add(fHistCovMatSecVYY2Prong);
+  fOutput->Add(fHistCovMatPrimVXZ2Prong);
+  fOutput->Add(fHistCovMatSecVXZ2Prong);
+  fOutput->Add(fHistCovMatPrimVZZ2Prong);
+  fOutput->Add(fHistCovMatSecVZZ2Prong);
 
   // MC truth D0 histos
   fHistD0SignalVertX = new TH1F("hD0SignalVertX", " Secondary Vertex ; x (cm)", 1000, -2., 2.);
@@ -1132,6 +1306,12 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistoSumSqImpParDplusDau = new TH1F("hSumSqImpParDplusDau", " ; Squared sum of d_{0}^{i} (cm^2)", 100, 0., 1.);
   fHistCovMatPrimVXX3Prong = new TH1F("hCovMatPrimVXX3Prong", " Primary Vertex ; XX element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
   fHistCovMatSecVXX3Prong = new TH1F("hCovMatSecVXX3Prong", " Secondary Vertex 3-prong ; XX element of covariant matrix (cm^2)", 100, 0., 0.2);
+  fHistCovMatPrimVYY3Prong = new TH1F("hCovMatPrimVYY3Prong", " Primary Vertex ; YY element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
+  fHistCovMatSecVYY3Prong = new TH1F("hCovMatSecVYY3Prong", " Secondary Vertex 3-prong ; YY element of covariant matrix (cm^2)", 100, 0., 0.2);
+  fHistCovMatPrimVXZ3Prong = new TH1F("hCovMatPrimVXZ3Prong", " Primary Vertex ; XZ element of covariant matrix (cm^2)", 100, -1.0e-4, 1.0e-4);
+  fHistCovMatSecVXZ3Prong = new TH1F("hCovMatSecVXZ3Prong", " Secondary Vertex 3-prong ; XZ element of covariant matrix (cm^2)", 100,-1.0e-4, 0.2);
+  fHistCovMatPrimVZZ3Prong = new TH1F("hCovMatPrimVZZ3Prong", " Primary Vertex ; ZZ element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
+  fHistCovMatSecVZZ3Prong = new TH1F("hCovMatSecVZZ3Prong", " Secondary Vertex 3-prong ; ZZ element of covariant matrix (cm^2)", 100, 0., 0.2);
   fOutput->Add(fHistInvMassDplus);
   fOutput->Add(fHistInvMassDplusSignal);
   fOutput->Add(fHistPtDplus);
@@ -1155,6 +1335,12 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistoSumSqImpParDplusDau);
   fOutput->Add(fHistCovMatPrimVXX3Prong);
   fOutput->Add(fHistCovMatSecVXX3Prong);
+  fOutput->Add(fHistCovMatPrimVYY3Prong);
+  fOutput->Add(fHistCovMatSecVYY3Prong);
+  fOutput->Add(fHistCovMatPrimVXZ3Prong);
+  fOutput->Add(fHistCovMatSecVXZ3Prong);
+  fOutput->Add(fHistCovMatPrimVZZ3Prong);
+  fOutput->Add(fHistCovMatSecVZZ3Prong);
 
   // Ds->KKpi candidate histos
   fHistInvMassDs = new TH1F("hInvMassDs", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
@@ -1173,28 +1359,104 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistCosPointDs);
 
   // Lc pKpi candidate histos
-  fHistInvMassLc = new TH1F("hInvMassLc", " ; M_{pK#pi} (GeV/c^{2})", 500, 0., 5.);
+  fHistInvMassLc = new TH1F("hInvMassLc", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
   fHistPtLc = new TH1F("hPtLc", " ; #Lambda_{c} p_{T} (GeV/c)", 360, 0., 36.);
+  fHistEtaLc = new TH1F("hEtaLc", " ; #Lambda_{c} #it{#eta}", 100, -2., 2.);
+  fHistPhiLc = new TH1F("hPhiLc", " ; #Lambda_{c} #it{#Phi}", 100, 0., 6.3);
   fHistYPtLc = new TH2F("hYPtLc", " ; #Lambda_{c} p_{T} (GeV/c) ; y", 360, 0., 36., 120, -1.2, 1.2);
   fHistPtLcDau0 = new TH1F("hPtLcDau0", " #Lambda_{c} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistPtLcDau1 = new TH1F("hPtLcDau1", " #Lambda_{c} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistPtLcDau2 = new TH1F("hPtLcDau2", " #Lambda_{c} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistDecLenLc = new TH1F("hDecLenLc", " ; Decay Length (cm)", 200, 0., 2.0);
+  fHistDecLenXYLc = new TH1F("hDecLenLcXY", " ; Decay Length xy (cm)", 200, 0., 2.0);
+  fHistCtLc = new TH1F("hCt", " ; proper lifetime (#Lambda_{c}) * #it{c} (cm)", 100, 0., 0.2);
   fHistCosPointLc = new TH1F("hCosPointLc", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fHistCosPointXYLc = new TH1F("hCosPointXYLc", " ; cos(#theta_{P}) xy", 110, -1.1, 1.1);
   fHistImpParLcDau0 = new TH1F("hImpParLcDau0", " #Lambda_{c} prong0 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
   fHistImpParLcDau1 = new TH1F("hImpParLcDau1", " #Lambda_{c} prong1 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
   fHistImpParLcDau2 = new TH1F("hImpParLcDau2", " #Lambda_{c} prong2 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
   fOutput->Add(fHistInvMassLc);
   fOutput->Add(fHistPtLc);
+  fOutput->Add(fHistEtaLc);
+  fOutput->Add(fHistPhiLc);
   fOutput->Add(fHistYPtLc);
   fOutput->Add(fHistPtLcDau0);
   fOutput->Add(fHistPtLcDau1);
   fOutput->Add(fHistPtLcDau2);
   fOutput->Add(fHistDecLenLc);
+  fOutput->Add(fHistCtLc);
+  fOutput->Add(fHistDecLenXYLc);
   fOutput->Add(fHistCosPointLc);
+  fOutput->Add(fHistCosPointXYLc);
   fOutput->Add(fHistImpParLcDau0);
   fOutput->Add(fHistImpParLcDau1);
   fOutput->Add(fHistImpParLcDau2);
+
+    // Lc pKpi candidate histos MC Prompt
+  fHistInvMassLcPrompt = new TH1F("hInvMassLcPrompt", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
+  fHistEtaLcPrompt = new TH1F("hEtaLcPrompt", " ; #Lambda_{c} #it{#eta}", 100, -2., 2.);
+  fHistPhiLcPrompt = new TH1F("hPhiLcPrompt", " ; #Lambda_{c} #it{#Phi}", 100, 0., 6.3);
+  fHistYPtLcPrompt = new TH2F("hYPtLcPrompt", " ; #Lambda_{c} p_{T} (GeV/c) ; y", 360, 0., 36., 120, -1.2, 1.2);
+  fHistPtLcDau0Prompt = new TH1F("hPtLcDau0Prompt", " #Lambda_{c} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtLcDau1Prompt = new TH1F("hPtLcDau1Prompt", " #Lambda_{c} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtLcDau2Prompt = new TH1F("hPtLcDau2Prompt", " #Lambda_{c} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistDecLenLcPrompt = new TH1F("hDecLenLcPrompt", " ; Decay Length (cm)", 200, 0., 2.0);
+  fHistDecLenXYLcPrompt = new TH1F("hDecLenLcXYPrompt", " ; Decay Length xy (cm)", 200, 0., 2.0);
+  fHistCtLcPrompt = new TH1F("hCtPrompt", " ; proper lifetime (#Lambda_{c}) * #it{c} (cm)", 100, 0., 0.2);
+  fHistCosPointLcPrompt = new TH1F("hCosPointLcPrompt", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fHistCosPointXYLcPrompt = new TH1F("hCosPointXYLcPrompt", " ; cos(#theta_{P}) xy", 110, -1.1, 1.1);
+  fHistImpParLcDau0Prompt = new TH1F("hImpParLcDau0Prompt", " #Lambda_{c} prong0 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau1Prompt = new TH1F("hImpParLcDau1Prompt", " #Lambda_{c} prong1 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau2Prompt = new TH1F("hImpParLcDau2Prompt", " #Lambda_{c} prong2 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fOutput->Add(fHistInvMassLcPrompt);
+  fOutput->Add(fHistEtaLcPrompt);
+  fOutput->Add(fHistPhiLcPrompt);
+  fOutput->Add(fHistYPtLcPrompt);
+  fOutput->Add(fHistPtLcDau0Prompt);
+  fOutput->Add(fHistPtLcDau1Prompt);
+  fOutput->Add(fHistPtLcDau2Prompt);
+  fOutput->Add(fHistDecLenLcPrompt);
+  fOutput->Add(fHistCtLcPrompt);
+  fOutput->Add(fHistDecLenXYLcPrompt);
+  fOutput->Add(fHistCosPointLcPrompt);
+  fOutput->Add(fHistCosPointXYLcPrompt);
+  fOutput->Add(fHistImpParLcDau0Prompt);
+  fOutput->Add(fHistImpParLcDau1Prompt);
+  fOutput->Add(fHistImpParLcDau2Prompt);
+
+  // Lc pKpi candidate histos MC NonPrompt
+  fHistInvMassLcNonPrompt = new TH1F("hInvMassLcNonPrompt", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
+  fHistEtaLcNonPrompt = new TH1F("hEtaLcNonPrompt", " ; #Lambda_{c} #it{#eta}", 100, -2., 2.);
+  fHistPhiLcNonPrompt = new TH1F("hPhiLcNonPrompt", " ; #Lambda_{c} #it{#Phi}", 100, 0., 6.3);
+  fHistYPtLcNonPrompt = new TH2F("hYPtLcNonPrompt", " ; #Lambda_{c} p_{T} (GeV/c) ; y", 360, 0., 36., 120, -1.2, 1.2);
+  fHistPtLcDau0NonPrompt = new TH1F("hPtLcDau0NonPrompt", " #Lambda_{c} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtLcDau1NonPrompt = new TH1F("hPtLcDau1NonPrompt", " #Lambda_{c} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtLcDau2NonPrompt = new TH1F("hPtLcDau2NonPrompt", " #Lambda_{c} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistDecLenLcNonPrompt = new TH1F("hDecLenLcNonPrompt", " ; Decay Length (cm)", 200, 0., 2.0);
+  fHistDecLenXYLcNonPrompt = new TH1F("hDecLenLcXYNonPrompt", " ; Decay Length xy (cm)", 200, 0., 2.0);
+  fHistCtLcNonPrompt = new TH1F("hCtNonPrompt", " ; proper lifetime (#Lambda_{c}) * #it{c} (cm)", 100, 0., 0.2);
+  fHistCosPointLcNonPrompt = new TH1F("hCosPointLcNonPrompt", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fHistCosPointXYLcNonPrompt = new TH1F("hCosPointXYLcNonPrompt", " ; cos(#theta_{P}) xy", 110, -1.1, 1.1);
+  fHistImpParLcDau0NonPrompt = new TH1F("hImpParLcDau0NonPrompt", " #Lambda_{c} prong0 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau1NonPrompt = new TH1F("hImpParLcDau1NonPrompt", " #Lambda_{c} prong1 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fHistImpParLcDau2NonPrompt = new TH1F("hImpParLcDau2NonPrompt", " #Lambda_{c} prong2 ; d_{0}^{xy} (cm)", 600, -0.4, 0.4);
+  fOutput->Add(fHistInvMassLcNonPrompt);
+  fOutput->Add(fHistEtaLcNonPrompt);
+  fOutput->Add(fHistPhiLcNonPrompt);
+  fOutput->Add(fHistYPtLcNonPrompt);
+  fOutput->Add(fHistPtLcDau0NonPrompt);
+  fOutput->Add(fHistPtLcDau1NonPrompt);
+  fOutput->Add(fHistPtLcDau2NonPrompt);
+  fOutput->Add(fHistDecLenLcNonPrompt);
+  fOutput->Add(fHistCtLcNonPrompt);
+  fOutput->Add(fHistDecLenXYLcNonPrompt);
+  fOutput->Add(fHistCosPointLcNonPrompt);
+  fOutput->Add(fHistCosPointXYLcNonPrompt);
+  fOutput->Add(fHistImpParLcDau0NonPrompt);
+  fOutput->Add(fHistImpParLcDau1NonPrompt);
+  fOutput->Add(fHistImpParLcDau2NonPrompt);
+
+
 
   fHistInvMassK0s = new TH1F("hInvMassK0s", " ; M_{#pi#pi} (GeV/c^{2})", 200, 0.4, 0.6);
   fHistInvMassLcK0sp = new TH1F("hInvMassLcK0sp", " ; M_{pK^{0}_{s}} (GeV/c^{2})", 500, 0., 5.);
@@ -1232,6 +1494,36 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
     fOutput->Add(fHistPtGenLimAccPrompt[i]);
     fOutput->Add(fHistPtGenLimAccFeeddw[i]);
   }
+  fHistEtaGenLimAccPrompt[0] = new TH1F("hEtaGenLimAccPromptD0Kpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccPrompt[1] = new TH1F("hEtaGenLimAccPromptDplusKpipi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccPrompt[2] = new TH1F("hEtaGenLimAccPromptDsKKpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccPrompt[3] = new TH1F("hEtaGenLimAccPromptLcpKpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccPrompt[4] = new TH1F("hEtaGenLimAccPromptLcpK0s", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[0] = new TH1F("hEtaGenLimAccFeeddwD0Kpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[1] = new TH1F("hEtaGenLimAccFeeddwDplusKpipi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[2] = new TH1F("hEtaGenLimAccFeeddwDsKKpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[3] = new TH1F("hEtaGenLimAccFeeddwLcpKpi", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  fHistEtaGenLimAccFeeddw[4] = new TH1F("hEtaGenLimAccFeeddwLcpK0s", " ; #{eta} (GeV/c)", 100, -2., 2.);
+  for (Int_t i = 0; i < 5; i++) {
+    fOutput->Add(fHistEtaGenLimAccPrompt[i]);
+    fOutput->Add(fHistEtaGenLimAccFeeddw[i]);
+  }
+
+  fHistPhiGenLimAccPrompt[0] = new TH1F("hPhiGenLimAccPromptD0Kpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccPrompt[1] = new TH1F("hPhiGenLimAccPromptDplusKpipi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccPrompt[2] = new TH1F("hPhiGenLimAccPromptDsKKpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccPrompt[3] = new TH1F("hPhiGenLimAccPromptLcpKpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccPrompt[4] = new TH1F("hPhiGenLimAccPromptLcpK0s", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[0] = new TH1F("hPhiGenLimAccFeeddwD0Kpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[1] = new TH1F("hPhiGenLimAccFeeddwDplusKpipi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[2] = new TH1F("hPhiGenLimAccFeeddwDsKKpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[3] = new TH1F("hPhiGenLimAccFeeddwLcpKpi", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  fHistPhiGenLimAccFeeddw[4] = new TH1F("hPhiGenLimAccFeeddwLcpK0s", " ; #{Phi} (GeV/c)", 100, 0., 6.3);
+  for (Int_t i = 0; i < 5; i++) {
+    fOutput->Add(fHistPhiGenLimAccPrompt[i]);
+    fOutput->Add(fHistPhiGenLimAccFeeddw[i]);
+  }
+
   fHistPtRecoGenPtPrompt[0] = new TH1F("hPtRecoGenPtPromptD0Kpi", " ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistPtRecoGenPtPrompt[1] = new TH1F("hPtRecoGenPtPromptDplusKpipi", " ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistPtRecoGenPtPrompt[2] = new TH1F("hPtRecoGenPtPromptDsKKpi", " ; p_{T} (GeV/c)", 360, 0., 36.);
@@ -1371,15 +1663,23 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           if (isGoodDecay) {
             Double_t ptgen = part->Pt();
             Double_t ygen = part->Y();
+            Double_t etagen = part->Eta();
+            Double_t phigen = part->Phi();
             Int_t isFromB = AliVertexingHFUtils::CheckOrigin(mcEvent, mcPart, kFALSE);
             if (isFromB == 4) {
               fHistPtGenPrompt[iPart]->Fill(ptgen);
-              if (IsInFiducialAcceptance(ptgen, ygen))
+              if (IsInFiducialAcceptance(ptgen, ygen)) {
                 fHistPtGenLimAccPrompt[iPart]->Fill(ptgen);
+                fHistEtaGenLimAccPrompt[iPart]->Fill(etagen);
+                fHistPhiGenLimAccPrompt[iPart]->Fill(phigen);
+              }
             } else if (isFromB == 5) {
               fHistPtGenFeeddw[iPart]->Fill(ptgen);
-              if (IsInFiducialAcceptance(ptgen, ygen))
+              if (IsInFiducialAcceptance(ptgen, ygen)) {
                 fHistPtGenLimAccFeeddw[iPart]->Fill(ptgen);
+                fHistEtaGenLimAccFeeddw[iPart]->Fill(etagen);
+                fHistPhiGenLimAccFeeddw[iPart]->Fill(phigen);
+              }
             }
           }
         }
@@ -1687,6 +1987,12 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           fHist2ProngVertZ->Fill(trkv->GetZ());
           fHistCovMatPrimVXX2Prong->Fill(covMatrixPV[0]);
           fHistCovMatSecVXX2Prong->Fill(covMatrixSV[0]);
+          fHistCovMatPrimVYY2Prong->Fill(covMatrixPV[2]);
+          fHistCovMatSecVYY2Prong->Fill(covMatrixSV[2]);
+          fHistCovMatPrimVXZ2Prong->Fill(covMatrixPV[3]);
+          fHistCovMatSecVXZ2Prong->Fill(covMatrixSV[3]);
+          fHistCovMatPrimVZZ2Prong->Fill(covMatrixPV[5]);
+          fHistCovMatSecVZZ2Prong->Fill(covMatrixSV[5]);
         }
 
         Double_t ptD = the2Prong->Pt();
@@ -1878,7 +2184,7 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
   AliAODRecoDecayHF3Prong* the3Prong = Make3Prong(threeTrackArray, vertexAOD3, bzkG);
   the3Prong->SetOwnPrimaryVtx(vertexAODp);
   Double_t ptcand_3prong = the3Prong->Pt();
-  if (ptcand_3prong < fMinPt3Prong) {
+  if (ptcand_3prong < fMinPt3Prong) { //not read from json, so checks pT < 0
     delete the3Prong;
     delete vertexAOD3;
     return;
@@ -1893,6 +2199,12 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
     fHist3ProngVertZ->Fill(trkv3->GetZ());
     fHistCovMatPrimVXX3Prong->Fill(covMatrixPV[0]);
     fHistCovMatSecVXX3Prong->Fill(covMatrixSV[0]);
+    fHistCovMatPrimVYY3Prong->Fill(covMatrixPV[2]);
+    fHistCovMatSecVYY3Prong->Fill(covMatrixSV[2]);
+    fHistCovMatPrimVXZ3Prong->Fill(covMatrixPV[3]);
+    fHistCovMatSecVXZ3Prong->Fill(covMatrixSV[3]);
+    fHistCovMatPrimVZZ3Prong->Fill(covMatrixPV[5]);
+    fHistCovMatSecVZZ3Prong->Fill(covMatrixSV[5]);
   }
 
   if (massSel & (1 << kbitDplus)) {
@@ -2003,10 +2315,11 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
     fHistDist12LcpKpi->Fill(dist12);
     Int_t lcSel = LcSkimCuts(the3Prong);
     if (lcSel > 0 && fSelectLcpKpi > 0) {
-      if (dist12 < fLcCuts[0][4])
-	lcSel = 0; // cut on dist12
-      else
-	lcSel = LcSelectionCuts(the3Prong);
+      lcSel = LcSelectionCuts(the3Prong);
+      // if (dist12 < fLcCuts[0][4])
+	    //   lcSel = 0; // cut on dist12
+      // else
+	    //   lcSel = LcSelectionCuts(the3Prong);
     }
     Double_t rapid = the3Prong->Y(4122);
     if (lcSel > 0 && IsInFiducialAcceptance(ptcand_3prong, rapid)) {
@@ -2017,12 +2330,17 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       if (fSelectLcpKpi == 0 || lcSel == 2 || lcSel == 3)
         fHistInvMassLc->Fill(m0LcpiKp);
       fHistPtLc->Fill(ptcand_3prong);
+      fHistEtaLc->Fill(the3Prong->Eta());
+      fHistPhiLc->Fill(the3Prong->Phi());
       fHistYPtLc->Fill(ptcand_3prong, rapid);
       fHistPtLcDau0->Fill(the3Prong->PtProng(0));
       fHistPtLcDau1->Fill(the3Prong->PtProng(1));
       fHistPtLcDau2->Fill(the3Prong->PtProng(2));
       fHistDecLenLc->Fill(the3Prong->DecayLength());
+      fHistDecLenXYLc->Fill(the3Prong->DecayLengthXY());
+      fHistCtLc->Fill(the3Prong->Ct(4122));
       fHistCosPointLc->Fill(the3Prong->CosPointingAngle());
+      fHistCosPointXYLc->Fill(the3Prong->CosPointingAngleXY());
       fHistImpParLcDau0->Fill(the3Prong->Getd0Prong(0));
       fHistImpParLcDau1->Fill(the3Prong->Getd0Prong(1));
       fHistImpParLcDau2->Fill(the3Prong->Getd0Prong(2));
@@ -2036,9 +2354,46 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
             if (orig == 4) {
               fHistPtRecoGenPtPrompt[3]->Fill(ptgen);
               fHistPtRecoPrompt[3]->Fill(ptcand_3prong);
+              if (fSelectLcpKpi == 0 || lcSel == 1 || lcSel == 3)
+                fHistInvMassLcPrompt->Fill(m0LcpKpi);
+              if (fSelectLcpKpi == 0 || lcSel == 2 || lcSel == 3)
+                fHistInvMassLcPrompt->Fill(m0LcpiKp);
+              fHistEtaLcPrompt->Fill(the3Prong->Eta());
+              fHistPhiLcPrompt->Fill(the3Prong->Phi());
+              fHistYPtLcPrompt->Fill(ptcand_3prong, rapid);
+              fHistPtLcDau0Prompt->Fill(the3Prong->PtProng(0));
+              fHistPtLcDau1Prompt->Fill(the3Prong->PtProng(1));
+              fHistPtLcDau2Prompt->Fill(the3Prong->PtProng(2));
+              fHistDecLenLcPrompt->Fill(the3Prong->DecayLength());
+              fHistDecLenXYLcPrompt->Fill(the3Prong->DecayLengthXY());
+              fHistCtLcPrompt->Fill(the3Prong->Ct(4122));
+              fHistCosPointLcPrompt->Fill(the3Prong->CosPointingAngle());
+              fHistCosPointXYLcPrompt->Fill(the3Prong->CosPointingAngleXY());
+              fHistImpParLcDau0Prompt->Fill(the3Prong->Getd0Prong(0));
+              fHistImpParLcDau1Prompt->Fill(the3Prong->Getd0Prong(1));
+              fHistImpParLcDau2Prompt->Fill(the3Prong->Getd0Prong(2));
+
             } else if (orig == 5) {
               fHistPtRecoGenPtFeeddw[3]->Fill(ptgen);
               fHistPtRecoFeeddw[3]->Fill(ptcand_3prong);
+              if (fSelectLcpKpi == 0 || lcSel == 1 || lcSel == 3)
+                fHistInvMassLcNonPrompt->Fill(m0LcpKpi);
+              if (fSelectLcpKpi == 0 || lcSel == 2 || lcSel == 3)
+                fHistInvMassLcNonPrompt->Fill(m0LcpiKp);
+              fHistEtaLcNonPrompt->Fill(the3Prong->Eta());
+              fHistPhiLcNonPrompt->Fill(the3Prong->Phi());
+              fHistYPtLcNonPrompt->Fill(ptcand_3prong, rapid);
+              fHistPtLcDau0NonPrompt->Fill(the3Prong->PtProng(0));
+              fHistPtLcDau1NonPrompt->Fill(the3Prong->PtProng(1));
+              fHistPtLcDau2NonPrompt->Fill(the3Prong->PtProng(2));
+              fHistDecLenLcNonPrompt->Fill(the3Prong->DecayLength());
+              fHistDecLenXYLcNonPrompt->Fill(the3Prong->DecayLengthXY());
+              fHistCtLcNonPrompt->Fill(the3Prong->Ct(4122));
+              fHistCosPointLcNonPrompt->Fill(the3Prong->CosPointingAngle());
+              fHistCosPointXYLcNonPrompt->Fill(the3Prong->CosPointingAngleXY());
+              fHistImpParLcDau0NonPrompt->Fill(the3Prong->Getd0Prong(0));
+              fHistImpParLcDau1NonPrompt->Fill(the3Prong->Getd0Prong(1));
+              fHistImpParLcDau2NonPrompt->Fill(the3Prong->Getd0Prong(2));
             }
           }
         }
@@ -2728,11 +3083,12 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
   bool isLcpKpi = true;
   bool isLcpiKp = true;
   Double_t ptCand = cand->Pt();
-  if (ptCand < 0. || ptCand >= 36.)
+  if (ptCand < fMinPtLc || ptCand > fMaxPtLc)
     return 0;
   Int_t jPtBin = GetPtBin(ptCand, fPtBinLimsLc, fNPtBinsLc);
   if (jPtBin == -1)
     return 0;
+    
 
   if (cand->CosPointingAngle() <= fLcCuts[jPtBin][6])
     return 0;
@@ -2875,17 +3231,21 @@ Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdga
 }
 
 //______________________________________________________________________________
-std::string AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* key)
+std::string AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* section, const char* key)
 {
   FILE* fj = fopen(jsonFileName, "r");
   char line[500];
   char* value = 0x0;
+  bool corrSection = false;
   while (!feof(fj)) {
     char* rc = fgets(line, 500, fj);
+    if (rc && strstr(line, section) && !(section && !section[0]))
+      corrSection = true;
     if (rc && strstr(line, key)) {
       value = strtok(line, ":");
       value = strtok(NULL, ":");
-      break;
+      if(corrSection || (section && !section[0]))
+        break;
     }
   }
   fclose(fj);
@@ -2898,13 +3258,16 @@ std::string AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileN
   return std::string(sValue.Data());
 }
 //______________________________________________________________________________
-int AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const char* key)
+int AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const char* section, const char* key)
 {
   FILE* fj = fopen(jsonFileName, "r");
   char line[500];
   int value = -1;
+  bool corrSection = false;
   while (!feof(fj)) {
     char* rc = fgets(line, 500, fj);
+    if (rc && strstr(line, section) && !(section && !section[0]))
+      corrSection = true;
     if (rc && strstr(line, key)) {
       char* token = strtok(line, ":");
       token = strtok(NULL, ":");
@@ -2915,7 +3278,8 @@ int AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const
         value = 1;
       if (temp.Contains("false"))
         value = 0;
-      break;
+      if(corrSection || (section && !section[0]))
+        break;
     }
   }
   fclose(fj);
@@ -2923,13 +3287,16 @@ int AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const
 }
 
 //______________________________________________________________________________
-int AliAnalysisTaskHFSimpleVertices::GetJsonInteger(const char* jsonFileName, const char* key)
+int AliAnalysisTaskHFSimpleVertices::GetJsonInteger(const char* jsonFileName, const char* section, const char* key)
 {
   FILE* fj = fopen(jsonFileName, "r");
   char line[500];
   int value = -999;
+  bool corrSection = false;
   while (!feof(fj)) {
     char* rc = fgets(line, 500, fj);
+    if (rc && strstr(line, section) && !(section && !section[0]))
+      corrSection = true;
     if (rc && strstr(line, key)) {
       char* token = strtok(line, ":");
       token = strtok(NULL, ":");
@@ -2937,20 +3304,24 @@ int AliAnalysisTaskHFSimpleVertices::GetJsonInteger(const char* jsonFileName, co
       temp.ReplaceAll("\"", "");
       temp.ReplaceAll(",", "");
       value = temp.Atoi();
-      break;
+      if(corrSection || (section && !section[0]))
+        break;
     }
   }
   fclose(fj);
   return value;
 }
 //______________________________________________________________________________
-float AliAnalysisTaskHFSimpleVertices::GetJsonFloat(const char* jsonFileName, const char* key)
+float AliAnalysisTaskHFSimpleVertices::GetJsonFloat(const char* jsonFileName, const char* section, const char* key)
 {
   FILE* fj = fopen(jsonFileName, "r");
   char line[500];
   float value = -999.;
+  bool corrSection = false;
   while (!feof(fj)) {
     char* rc = fgets(line, 500, fj);
+    if (rc && strstr(line, section) && !(section && !section[0]))
+      corrSection = true;
     if (rc && strstr(line, key)) {
       char* token = strtok(line, ":");
       token = strtok(NULL, ":");
@@ -2958,7 +3329,8 @@ float AliAnalysisTaskHFSimpleVertices::GetJsonFloat(const char* jsonFileName, co
       temp.ReplaceAll("\"", "");
       temp.ReplaceAll(",", "");
       value = temp.Atof();
-      break;
+      if(corrSection || (section && !section[0]))
+        break;
     }
   }
   fclose(fj);
@@ -2966,13 +3338,16 @@ float AliAnalysisTaskHFSimpleVertices::GetJsonFloat(const char* jsonFileName, co
 }
 
 //______________________________________________________________________________
-float* AliAnalysisTaskHFSimpleVertices::GetJsonArray(const char* jsonFileName, const char* key, int& size)
+float* AliAnalysisTaskHFSimpleVertices::GetJsonArray(const char* jsonFileName, const char* section, const char* key, int& size)
 {
   FILE* fj = fopen(jsonFileName, "r");
   char line[500];
   float* arrVals = 0x0;
+  bool corrSection = false;
   while (!feof(fj)) {
     fgets(line, 500, fj);
+    if (strstr(line, section) && !(section && !section[0]))
+      corrSection = true;
     if (strstr(line, key)) {
       TString full = "";
       while (!feof(fj)) {
@@ -3001,19 +3376,24 @@ float* AliAnalysisTaskHFSimpleVertices::GetJsonArray(const char* jsonFileName, c
       }
       arrStr->Delete();
       delete arrStr;
+      if(corrSection)
+        break;
     }
   }
   return arrVals;
 }
 
 //______________________________________________________________________________
-float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName, const char* key, int& size1, int& size2)
+float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName, const char* section, const char* key, int& size1, int& size2)
 {
   FILE* fj = fopen(jsonFileName, "r");
   char line[500];
   float** arrVals = 0x0;
+  bool corrSection = false;
   while (!feof(fj)) {
     fgets(line, 500, fj);
+    if (strstr(line, section) && !(section && !section[0]))
+      corrSection = true;
     if (strstr(line, key)) {
       TString full = "";
       while (!feof(fj)) {
@@ -3048,6 +3428,8 @@ float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName,
           arrVals[j][k] = strval.Atof();
         }
       }
+      if(corrSection)
+        break;
     }
   }
   return arrVals;
