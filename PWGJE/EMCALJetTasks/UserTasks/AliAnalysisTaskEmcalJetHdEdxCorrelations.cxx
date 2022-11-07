@@ -765,6 +765,7 @@ namespace PWGJE
 
         return kTRUE;
       }
+      return kFALSE;
     }
     /**
      * Determine if a jet passes the track or cluster bias and is therefore a "biased" jet.
