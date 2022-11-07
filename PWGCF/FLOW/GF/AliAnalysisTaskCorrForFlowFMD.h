@@ -106,6 +106,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetnTPCcrossedRows(Int_t cut) { fnTPCcrossedRows = cut; }
         void                    SetMassRejWindowK0(Double_t cut) { fMassRejWindowK0 = cut; }
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
+        void                    SetK0MassRange(Double_t min, Double_t max) { fMinK0Mass = min; fMaxK0Mass = max; }
+	    void                    SetLambdaMassRange(Double_t min, Double_t max) { fMinLambdaMass = min; fMaxLambdaMass = max; }
 
         // correlation related
         void                    SetPtRangeTrig(Double_t min, Double_t max) {fPtMinTrig = min; fPtMaxTrig = max; }
@@ -255,6 +257,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fSigmaTPC; // [3.0]
         Double_t                fMassRejWindowK0; // [0.005]
         Double_t                fMassRejWindowLambda; // [0.01]
+        Double_t                fMinK0Mass; // [0.44]
+        Double_t                fMaxK0Mass; // [0.56]
+        Double_t                fMinLambdaMass; // [1.08]
+        Double_t                fMaxLambdaMass; // [1.15]
         Double_t                fJetParticleLowPt; // [5.]
         TString                 fCentEstimator; //"V0M"
         TString                 fSystematicsFlag; // ""

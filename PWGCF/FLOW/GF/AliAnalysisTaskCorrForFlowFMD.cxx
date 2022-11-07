@@ -98,6 +98,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fSigmaTPC(3.),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
+    fMinK0Mass(0.44),
+    fMaxK0Mass(0.56),
+    fMinLambdaMass(1.08),
+    fMaxLambdaMass(1.15),
     fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
@@ -191,6 +195,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fSigmaTPC(3.),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
+    fMinK0Mass(0.44),
+    fMaxK0Mass(0.56),
+    fMinLambdaMass(1.08),
+    fMaxLambdaMass(1.15),
     fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
@@ -249,8 +257,9 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     Int_t binsFMD[] = {10, 10};
     Int_t binsPID[] = {10, 10, sizePtTrig};
     Int_t binsV0[] = {10, 10, sizePtTrig, sizeMbins};
-    Double_t min[2] = {0.44, 1.08};
-    Double_t max[2] = {0.56, 1.15};
+    Double_t min[2] = {fMinK0Mass, fMinLambdaMass};
+    Double_t max[2] = {fMaxK0Mass, fMaxLambdaMass};
+    
 
     for(Int_t i(0); i < 6; i++){
       if(!fDoPID && i > 0 && i < 4) continue;
@@ -624,7 +633,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
 
   fhV0Counter[0]->Fill("Input",1);
   Double_t dMass = v0->MassK0Short();
-  if(dMass < 0.44 || dMass > 0.56) { return kFALSE; }
+  if(dMass < fMinK0Mass || dMass > fMaxK0Mass) { return kFALSE; }
   fhV0Counter[0]->Fill("Mass OK",1);
 
   if(v0->RapK0Short() > 0.5) { return kFALSE; }
@@ -695,8 +704,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   // inv. mass window
   Double_t dMassLambda = v0->MassLambda();
   Double_t dMassALambda = v0->MassAntiLambda();
-  if( dMassLambda > 1.08 && dMassLambda < 1.15) { isL = kTRUE; }
-  if( dMassALambda > 1.08 && dMassALambda < 1.15) { isAL = kTRUE; }
+  if(dMassLambda > fMinLambdaMass && dMassLambda < fMaxLambdaMass) { isL = kTRUE; }
+  if(dMassALambda > fMinLambdaMass && dMassALambda < fMaxLambdaMass) { isAL = kTRUE; }
+  
   if(!isL && !isAL)  { return kFALSE; }
   fhV0Counter[1]->Fill("Mass OK",1);
 
@@ -1230,8 +1240,8 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   const Int_t sizeOfSamples = (Int_t) fNOfSamples;
   const Int_t sizeMbins = fNbinsMinv;
 
-  Double_t min[6] = {0.0, 0.0, 0.0, 0.0, 0.44, 1.08};
-  Double_t max[6] = {2.0, 2.0, 2.0, 2.0, 0.56, 1.15};
+  Double_t min[6] = {0.0, 0.0, 0.0, 0.0, fMinK0Mass, fMinLambdaMass};
+  Double_t max[6] = {2.0, 2.0, 2.0, 2.0, fMaxK0Mass, fMaxLambdaMass};
 
   TString nameS[6] = {"fhChargedSE", "fhPidSE_Pion", "fhPidSE_Kaon", "fhPidSE_Proton", "fhPidSE_K0s", "fhPidSE_Lambda"};
   TString nameM[6] = {"fhChargedME", "fhPidME_Pion", "fhPidME_Kaon", "fhPidME_Proton", "fhPidME_K0s", "fhPidME_Lambda"};
