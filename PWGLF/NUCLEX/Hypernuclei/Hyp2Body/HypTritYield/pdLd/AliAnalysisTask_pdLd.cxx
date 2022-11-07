@@ -2989,7 +2989,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   if(RejectLowPtPions){
 
     //if((pT < Proton_ThresholdTPC) && (statusTOF == AliPIDResponse::kDetPidOk)){
-    if((pT < 1.3) && (statusTOF == AliPIDResponse::kDetPidOk)){
+    if((p < Proton_ThresholdTPC) && (statusTOF == AliPIDResponse::kDetPidOk)){
 
       nSigmaTOF_Pion = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kPion);
       if(TMath::Abs(nSigmaTOF_Pion) < 3.0) return PassedParticleCuts;
@@ -3067,6 +3067,7 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
 
   // use TPC-only below threshold
   double p = Track.P();
+  double pT = Track.Pt();
   double nSigmaTPC = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kDeuteron);
   if((p < Deuteron_ThresholdTPC) && (TMath::Abs(nSigmaTPC) > Deuteron_TPC_nSigma_max)) return PassedParticleCuts;
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(2);
@@ -3137,7 +3138,6 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
 
   } // end of UseBetaTOF
 
-  double pT = Track.Pt();
 
   if(UseMassSquareTOF)
   {
