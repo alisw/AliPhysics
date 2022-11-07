@@ -125,6 +125,8 @@ fSPDAny(kFALSE),
 fSPDFirst(kFALSE),
 fDCAxyCut(1),
 fDCAzCut(2),
+fCutDeltaEta(0.01),
+fCutDeltaPhi(0.01),
 fTPCnsigmin(-1),
 fTPCnsigmax(3),
 fCutEopEMin(0.9),
@@ -180,6 +182,9 @@ fEMCTrkMatch(0),
 fEMCClsEtaPhiTrkMatch(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
+
 
 fvalueElectron(0),
 fSparseElectron(0),
@@ -324,8 +329,8 @@ fRVsLSElecPt(0),
 
 fnBinsDCAHisto(4000),
 
-fCalculateMCTemplWeightCalc(kFALSE),
-fFillMCTemplates(kFALSE),
+fCalculateMCTemplWeightCalc(kTRUE),
+fFillMCTemplates(kTRUE),
 
 fBHadpT(0),
 fBMesonpT(0),
@@ -402,8 +407,9 @@ fHFEPhysPriSS(0),
 fBEPhysPriSS(0),
 fDEPhysPriSS(0),
 
-fExtraCuts(0)
-
+fExtraCuts(0),
+fHFEmcQA(0),
+fBHadToEpT(0)
 
 
 {
@@ -443,6 +449,8 @@ fSPDAny(kFALSE),
 fSPDFirst(kFALSE),
 fDCAxyCut(1),
 fDCAzCut(2),
+fCutDeltaEta(0.01),
+fCutDeltaPhi(0.01),
 fTPCnsigmin(-1),
 fTPCnsigmax(3),
 fCutEopEMin(0.9),
@@ -498,6 +506,8 @@ fEMCTrkMatch(0),
 fEMCClsEtaPhiTrkMatch(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
 
 fvalueElectron(0),
 fSparseElectron(0),
@@ -642,8 +652,8 @@ fRVsLSElecPt(0),
 
 fnBinsDCAHisto(4000),
 
-fCalculateMCTemplWeightCalc(kFALSE),
-fFillMCTemplates(kFALSE),
+fCalculateMCTemplWeightCalc(kTRUE),
+fFillMCTemplates(kTRUE),
 
 fBHadpT(0),
 fBMesonpT(0),
@@ -720,8 +730,9 @@ fHFEPhysPriSS(0),
 fBEPhysPriSS(0),
 fDEPhysPriSS(0),
 
-fExtraCuts(0)
-
+fExtraCuts(0),
+fHFEmcQA(0),
+fBHadToEpT(0)
 
 {
   // Constructor
@@ -790,6 +801,14 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
   fEtaWeight->SetParameters(3.25021e+02,-6.77106e-02,4.16408e-03,2.29748e+00,6.03883e+00);
   fOutputList->Add(fPi0Weight);
   fOutputList->Add(fEtaWeight);
+
+  fFuncPtDepEta = new TF1("fFuncPtDepEta", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
+  fOutputList->Add(fFuncPtDepEta);
+
+  fFuncPtDepPhi = new TF1("fFuncPtDepPhi", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
+  fOutputList->Add(fFuncPtDepPhi);
 
     fHistEvent=new TH1F("fHistEvent","",20,0,20);
     fOutputList->Add(fHistEvent);
@@ -942,7 +961,6 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
 
     fEMCTrkMatch_Eta = new TH2F("fEMCTrkMatch_Eta","Distance of the cluster to its closest track in #Delta#eta vs p_{T};#it{p}(GeV/#it{c});#Delta#eta",500,0,100.0,600,-0.3,0.3);
     fOutputList->Add(fEMCTrkMatch_Eta);
-
 
 //THnSparse
   Int_t bins[6]   =       {500, 200, 200, 200, 200,500};
@@ -1425,7 +1443,7 @@ if(fIsMC)
   {
         fDElecDCA = new TH2F("fDElecDCA","D meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
         fOutputList->Add(fDElecDCA);
-        
+
         fBElecDCA = new TH2F("fBElecDCA","B meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
         fOutputList->Add(fBElecDCA);
         
@@ -1473,9 +1491,18 @@ if(fIsMC)
         fSprsTemplatesWeightVar2->Sumw2();
         fOutputList->Add(fSprsTemplatesWeightVar2);
 
+        //-------------------------------------------------------------------------------------------------------
+        fBHadToEpT = new TH2F("fBHadToEpTDCA","B hadron to e pT ;p_{T} (GeV/c); DCAxMagFieldxSign;counts",70,0,35,  fnBinsDCAHisto,-0.2,0.2);
+        fBHadToEpT->Sumw2();
+        fOutputList->Add(fBHadToEpT);
 
         fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
-        
+
+        //HFe Class
+        fHFEmcQA = new AliHFEmcQA();
+        fHFEmcQA->Init();         
+
+        //-------------------------------------------------------------------------------------------------------
   }
 
 
@@ -1617,28 +1644,28 @@ if(fIsMC)
         ////////////////////////////////
         GetNMCPartProduced();
         
-   //cout<<" *********************After GetNMCPartProduced***************  "<<endl;
+        //cout<<" *********************After GetNMCPartProduced***************  "<<endl;
 
         /////////////////////////////////
         //Calculate Pi0 and Eta weight //
         ///////////////////////////////// 
         if(fCalculateWeight) GetPi0EtaWeight(fSprsPi0EtaWeightCal);
 
-   //cout<<" *********************After GetPi0EtaWeight***************  "<<endl;
+        //cout<<" *********************After GetPi0EtaWeight***************  "<<endl;
 
         /////////////////////////
         //Electrons in MC stack//
         /////////////////////////
         if(fCalculateElecRecoEffi) GetElectronFromStack();
 
-   //cout<<" *********************After GetElectronFromStack***************  "<<endl;
+        //cout<<" *********************After GetElectronFromStack***************  "<<endl;
 
         /////////////////////////////////
         //Histos for MC template Weight//
         /////////////////////////////////    
         if(fCalculateMCTemplWeightCalc) GetMCTemplateWeight();
     
-       //cout<<" *********************After GetMCTemplateWeight***************  "<<endl;
+        //cout<<" *********************After GetMCTemplateWeight***************  "<<endl;
 
     }
     if (!fMCHeader) {
@@ -1859,20 +1886,36 @@ for(Int_t icl=0; icl<Nclust; icl++)
     fTrkDCA = -999.0;
     fTrkDCA = d0z0[0] * track->Charge() * fMagSign;
 
-
+    /*  Impact parameter from ALIHFE Class
     double hfeImpactParam = -999., hfeImpactParamResol = -999.;
     fExtraCuts->GetHFEImpactParameters((AliVTrack *)track, hfeImpactParam, hfeImpactParamResol);
     double IP = hfeImpactParam*fMagSign*track->Charge();
     //cout<< " &&&&&&&&&&&&&&&&&&& I.P.  "<<IP<<endl; 
     //cout<<" After ReCal Imp ----  "<<d0z0[0]<<endl; 
-
+    cout<<" ********* fFillMCTemplates  ***************  "<< fFillMCTemplates <<endl;
 
     Bool_t fFillTem = kFALSE;
-    if(fFillMCTemplates)   //
+    if(fFillMCTemplates)   
     {
        fFillTem = GetMCDCATemplates(track, IP);
+
+       fHFEmcQA->SetMCArray(fMCArray);
+       for(Int_t i = 0;i< fMCArray->GetEntries();i++)
+       {
+
+        AliAODMCParticle *MCpart = dynamic_cast<AliAODMCParticle *>(fMCArray->At(i));
+        Int_t SourceMC = fHFEmcQA->GetElecSource(MCpart, kTRUE);
+        //cout<<" The MC Source =   "<<SourceMC<<"   pT  "<<MCpart->Pt()<<endl;
+        if(SourceMC ==2 || SourceMC ==3)
+        { 
+            fBHadToEpT->Fill(MCpart->Pt(),IP);
+            cout<<" The MC Source =   "<<SourceMC<<"   pT  "<<MCpart->Pt()<<endl;
+        }
+       
+       }
               
     }  
+    */
 //--------------------------cluster matched to tpc properties-------------------------------------------
         ///////////////////////////
         //Track matching to EMCAL//
@@ -1899,9 +1942,14 @@ for(Int_t icl=0; icl<Nclust; icl++)
         {
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
-            
-            if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue; //-------track matching condition------------------
-         
+
+            if(fCutDeltaPhi < 0)
+                fCutDeltaPhi = fFuncPtDepPhi->Eval(track->Pt());
+            if(fCutDeltaEta < 0)
+                fCutDeltaEta = fFuncPtDepEta->Eval(track->Pt());
+
+            if(TMath::Abs(fPhiDiff) > fCutDeltaPhi || TMath::Abs(fEtaDiff)> fCutDeltaEta) continue; //-------track matching condition------------------
+
             /////////////////////////////////
             //Select EMCAL or DCAL clusters//
             /////////////////////////////////
