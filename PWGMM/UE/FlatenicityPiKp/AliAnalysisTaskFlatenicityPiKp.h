@@ -57,6 +57,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		void IsV0MCalibrated(Bool_t V0MCal = kTRUE) { fV0MEqualisation = V0MCal; }
 		void IsdEdxCalibrated(Bool_t dEdxCal = kTRUE) { fdEdxCalibrated = dEdxCal; }
 		void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
+		void SaveThisMultBin(std::string v0bin = "0_1") { fV0MBin = v0bin; }
 		void SetDataPeriod(std::string period = "16l") { fPeriod = period;}
 		void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
 		void SetDeltaV0(Bool_t deltav0 = kFALSE) { fDeltaV0 = deltav0; }
@@ -77,6 +78,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		Int_t fV0Mindex;
 		Float_t fV0MMultiplicity;
 		TString fDetFlat;
+		std::string fV0MBin;
 		Bool_t fIsMCclosure;
 		Bool_t fDeltaV0;
 		Bool_t fRemoveTrivialScaling;

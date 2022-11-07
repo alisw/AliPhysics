@@ -100,7 +100,7 @@ ClassImp(AliAnalysisTaskFlatenicityPiKp) // classimp: necessary for root
 
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	: AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fIsMCclosure(kFALSE),
+	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE) ,fdEdxCalibrated(kTRUE),
 	fSaveDCAxyHistograms(kFALSE), 
@@ -183,7 +183,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	: AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fIsMCclosure(kFALSE),
+	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE), fdEdxCalibrated(kTRUE), 
 	fSaveDCAxyHistograms(kFALSE), 
@@ -451,10 +451,10 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		nbins_flat = 2000;
 	}
 
-	const int nFlatbins = 204;
+	const int nFlatbins = 1020;
 	double Flatbins[nFlatbins+1] = {0.0};
 	for (int i = 0; i <= nFlatbins; ++i) {
-		Flatbins[i] = -0.01 + (double)i * 0.005;
+		Flatbins[i] = -0.01 + (double)i * 0.001;
 	}
 
 	const int nMultbins = 100;
@@ -501,9 +501,19 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	}
 
 	OpenFile(1);
-	fOutputList =
-		new TList(); // this is a list which will contain all of your histograms
+	fOutputList = new TList(); // this is a list which will contain all of your histograms
 	fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
+				      //
+	int save_this_mult_bin = -1;
+	if (fV0MBin == "0_1") save_this_mult_bin = 0;
+	else if (fV0MBin == "1_5") save_this_mult_bin = 1;
+	else if (fV0MBin == "5_10") save_this_mult_bin = 2;
+	else if (fV0MBin == "10_20") save_this_mult_bin = 3;
+	else if (fV0MBin == "20_30") save_this_mult_bin = 4;
+	else if (fV0MBin == "30_40") save_this_mult_bin = 5;
+	else if (fV0MBin == "40_50") save_this_mult_bin = 6;
+	else if (fV0MBin == "50_70") save_this_mult_bin = 7;
+	else save_this_mult_bin = 8;
 
 	hPionTPCDCAxyNegData = new TH2F("hPionTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
 	hPionTPCDCAxyPosData = new TH2F("hPionTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
@@ -548,11 +558,11 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			hdEdx[i_c][i_eta] = new TH3F(Form("hdEdx_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]), ";#it{p} (GeV/#it{c}); dE/dx; Flatenicity", nPtbins_high_pT, Ptbins_high_pT, ndEdxbins, dEdxbins, nFlatbins, Flatbins);
 			hPtrTPC[i_c][i_eta] = new TH2F(Form("hPtrTPC_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_high_pT, Ptbins_high_pT, nFlatbins, Flatbins);
 
-			if (i_c==0){
-				hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins);
-			}
+			if (i_c==0){ hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins); }
 
 			if (!fUseMC && fV0MEqualisation){ 
+
+				if (save_this_mult_bin != i_c) { continue; }
 
 				fOutputList->Add(hNsigmaPiPos[i_c][i_eta]);
 				fOutputList->Add(hNsigmaKPos[i_c][i_eta]);
@@ -574,7 +584,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 				fOutputList->Add(hPtVsP[i_eta]);
 
-				if (i_eta == 0){
+				if (i_eta==0) {
 					if (fSaveDCAxyHistograms) {
 						fOutputList->Add(hPionTPCDCAxyNegData);
 						fOutputList->Add(hPionTPCDCAxyPosData);
@@ -585,9 +595,10 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 						fOutputList->Add(hProtonTOFDCAxyNegData);
 						fOutputList->Add(hProtonTOFDCAxyPosData);
 					}
-					fOutputList->Add(hMIPVsEta);
+
+					/* fOutputList->Add(hMIPVsEta); */
 					fOutputList->Add(pMIPVsEta);
-					fOutputList->Add(hPlateauVsEta);
+					/* fOutputList->Add(hPlateauVsEta); */
 					fOutputList->Add(pPlateauVsEta);
 				}
 			} 

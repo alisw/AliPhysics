@@ -6,7 +6,7 @@
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskFlatenicityPiKp *
-AddTaskFlatenicityPiKp(const Char_t *taskname = "Flat", TString detForFlat = "V0",
+AddTaskFlatenicityPiKp(const Char_t *taskname = "V0_Calibrated", TString detForFlat = "V0",
 		bool woTrivialscaling = kFALSE, const char* suffix = "")
 
 {
@@ -30,7 +30,7 @@ AddTaskFlatenicityPiKp(const Char_t *taskname = "Flat", TString detForFlat = "V0
 	if (!taskFlat)
 		return 0x0;
 
-	taskFlat->SetUseMC(kFALSE);
+	taskFlat->SetUseMC(false);
 	taskFlat->SetMCclosureTest(kFALSE);
 	taskFlat->SaveDCAxyHistograms(kFALSE);
 	taskFlat->SetDetectorForFlatenicity(detForFlat);
@@ -39,6 +39,7 @@ AddTaskFlatenicityPiKp(const Char_t *taskname = "Flat", TString detForFlat = "V0
 	taskFlat->SetRemoveTrivialScaling(woTrivialscaling);	//@ Trivial Nch scaling
 	taskFlat->IsdEdxCalibrated(kTRUE);
 	taskFlat->SetDataPeriod("16l");
+	taskFlat->SaveThisMultBin("0_1");
 	taskFlat->SetPtMin(0.15);
 	taskFlat->SetNcl(70);
 	mgr->AddTask(taskFlat);
