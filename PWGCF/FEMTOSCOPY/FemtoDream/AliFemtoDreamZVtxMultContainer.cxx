@@ -127,7 +127,11 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               // load event info
               int mult = part2.GetMult();
               float zvtx = part1.GetZVtx();
-              
+
+              // pair
+              bool is_oldpcrm = part1.IsRemovedByOldPC() || part2.IsRemovedByOldPC();
+              bool is_newpcrm = part1.IsRemovedByNewPC() || part2.IsRemovedByNewPC();
+
               // load dmeson info
               int heavy_mult = part2.GetParticleMult();
               float heavy_invmass = part2.GetInvMass();
@@ -163,6 +167,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 
               // pair
               tree->SetBranchAddress("kStar", &RelativeK);
+              tree->SetBranchAddress("is_oldpcrm", &is_oldpcrm);
+              tree->SetBranchAddress("is_newpcrm", &is_newpcrm);
+
 
               // heavy particle
               tree->SetBranchAddress("heavy_mult", &heavy_mult);
@@ -271,6 +278,10 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 int mult = itPart2->GetMult();
                 float zvtx = itPart2->GetZVtx();
                 
+                // pair
+                bool is_oldpcrm = itPart1->IsRemovedByOldPC() || itPart2->IsRemovedByOldPC();
+                bool is_newpcrm = itPart1->IsRemovedByNewPC() || itPart2->IsRemovedByNewPC();
+              
                 // load dmeson info
                 int heavy_mult = itPart2->GetParticleMult();
                 float heavy_invmass = itPart2->GetInvMass();
@@ -306,6 +317,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
 
                 // pair
                 tree->SetBranchAddress("kStar", &RelativeK);
+                tree->SetBranchAddress("is_oldpcrm", &is_oldpcrm);
+                tree->SetBranchAddress("is_newpcrm", &is_newpcrm);
 
                 // heavy particle
                 tree->SetBranchAddress("heavy_mult", &heavy_mult);

@@ -251,9 +251,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     PostData(1, fOutput);
 
     if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0))
-        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:pt_track:charge_track:id_track");
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:pt_track:charge_track:id_track:nsigma_tpc_track:nsigma_tof_track:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D");
     else 
-        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:inv_mass_v0:pt_v0:charge_v0:id_v0");
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:inv_mass_D:pt_D:charge_D:origin_D:inv_mass_v0:pt_v0:charge_v0:id_v0:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D");
 
     PostData(4, fNtupleCharmReso);
 
@@ -424,14 +424,19 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     // prepare vector of selected tracks
     std::vector<int> selectedTrackIndices{};
     std::vector<int> selectedTrackIds{};
+    std::vector<double> nSigmaTPC{}, nSigmaTOF{};
+    double nSigmaDetTrk[2] = {0., 0.}; // nsigma TPC and TOF
+  
     if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0)) {
         for (int iTrack{0}; iTrack < fAOD->GetNumberOfTracks(); ++iTrack) {
             AliAODTrack *track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(iTrack));
-            int id = IsBachelorSelected(track, pidHF);
+            int id = IsBachelorSelected(track, pidHF, nSigmaDetTrk);
             if (id > 0)
             {
                 selectedTrackIndices.push_back(iTrack);
                 selectedTrackIds.push_back(id);
+                nSigmaTPC.push_back(nSigmaDetTrk[0]);
+                nSigmaTOF.push_back(nSigmaDetTrk[1]);
             }
         }
     }
@@ -472,8 +477,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
         bool unsetVtx = false;
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
+        std::vector<double> scores{}, scoresSecond{};
 
-        int isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, &vHF, unsetVtx, recVtx, origOwnVtx, pidHF, iCand);
+        int isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, &vHF, unsetVtx, recVtx, origOwnVtx, pidHF, iCand, scores, scoresSecond);
         if (!isSelected)
         {
             if (unsetVtx)
@@ -611,7 +617,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     if (std::abs(pdgCode0) == 321)
                         orig *= -1.; //refelcted signal
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo, -1)) {
-                        fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD[0], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
+                        if(fDependOnMLSelector)
+                            fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD[0], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo], nSigmaTPC[iTrack], nSigmaTOF[iTrack], fScoresFromMLSelector[iCand][0], fScoresFromMLSelector[iCand][1], fScoresFromMLSelector[iCand][2]);
+                        else
+                            fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD[0], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo], nSigmaTPC[iTrack], nSigmaTOF[iTrack], scores[0], scores[1], scores[2]);
                     }
                 }
                 if (fDecChannel == kD0toKpi && isSelected >= 2) {
@@ -620,7 +629,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     if (std::abs(pdgCode0) == 211)
                         orig *= -1.; //refelcted signal
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo, -1)) {
-                        fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD[1], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo]);
+                        if(fDependOnMLSelector)
+                            fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[1], dMeson->Pt(), chargeD[1], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo], nSigmaTPC[iTrack], nSigmaTOF[iTrack], fScoresFromMLSelectorSecond[iCand][0], fScoresFromMLSelectorSecond[iCand][1], fScoresFromMLSelectorSecond[iCand][2]);
+                        else
+                            fNtupleCharmReso->Fill(deltaInvMassReso, fourVecReso.Pt(), massD[0], dMeson->Pt(), chargeD[0], orig, track->Pt(), track->Charge(), kPdgBachIDs[iHypo], nSigmaTPC[iTrack], nSigmaTOF[iTrack], scoresSecond[0], scoresSecond[1], scoresSecond[2]);
                     }
                 }
             }
@@ -677,7 +689,11 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                                 chargeV0 = 1.;
                             }
                         }
-                        fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD[iMass], orig, invMassV0, v0->Pt(), chargeV0, kPdgV0IDs[iHypo]);
+                      
+                        if(fDependOnMLSelector)
+                            fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD[iMass], orig, invMassV0, v0->Pt(), chargeV0, kPdgV0IDs[iHypo], fScoresFromMLSelector[iCand][0], fScoresFromMLSelector[iCand][1], fScoresFromMLSelector[iCand][2]);
+                        else
+                            fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), massD[iMass], dMeson->Pt(), chargeD[iMass], orig, invMassV0, v0->Pt(), chargeV0, kPdgV0IDs[iHypo], scores[0], scores[1], scores[2]);
                     }
                 }
             }
@@ -695,7 +711,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, AliAODPidHF *&pidHF, std::size_t &iCand)
+int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, AliAODPidHF *&pidHF, std::size_t &iCand, std::vector<double> &modelPred, std::vector<double> &modelPredSecond)
 {
     if (!dMeson || !dMesonWithVtx || !vHF)
         return 0;
@@ -826,8 +842,9 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
     if(fApplyML)
     {
         //variables for ML application
-        std::vector<double> modelPred = {};
         int isMLsel = 0;
+        modelPred = {};
+        modelPredSecond = {};
         double ptCand = dMeson->Pt();
 
         if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi)
@@ -888,21 +905,28 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
                     }
                 }
             }
-            else if(fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 1)){
+            else if(fMLResponse->IsSelectedMultiClass(modelPredSecond, dMeson, fAOD->GetMagneticField(), pidHF, 1)){
                 isMLsel += 2;
             }
 
             if (isMLsel >= 2) {
                 fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
-                std::size_t nClasses = fDependOnMLSelector ? fScoresFromMLSelector[iCand].size() : modelPred.size();
+                std::size_t nClasses = fDependOnMLSelector ? fScoresFromMLSelector[iCand].size() : modelPredSecond.size();
                 for(size_t iScore = 0; iScore < nClasses; iScore++) {
                     if(fDependOnMLSelector)
                         fHistBDTOutputScore[iScore]->Fill(fScoresFromMLSelector[iCand][iScore]);
                     else
-                        fHistBDTOutputScore[iScore]->Fill(modelPred[iScore]);
+                        fHistBDTOutputScore[iScore]->Fill(modelPredSecond[iScore]);
                 }
             }
         }
+      
+        if(modelPred.size() > modelPredSecond.size())
+            for(int iScore=0; iScore<modelPred.size(); iScore++)
+                modelPredSecond.push_back(-9999.);
+        else if(modelPred.size() < modelPredSecond.size())
+            for(int iScore=0; iScore<modelPredSecond.size(); iScore++)
+                modelPred.push_back(-9999.);
 
         return isMLsel;
     }
@@ -918,7 +942,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEHFResonanceBuilder::IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF)
+int AliAnalysisTaskSEHFResonanceBuilder::IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF, double nSigmaDet[])
 {
     int retVal = 0;
 
@@ -938,14 +962,14 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsBachelorSelected(AliAODTrack *&track,
         if (!fEnableBachelor[iHypo])
             continue;
 
-        double nSigmaTPC = -999.;
-        int okTPC = pidHF->GetnSigmaTPC(track, parthypo[iHypo], nSigmaTPC);
-        double nSigmaTOF = -999.;
-        int okTOF = pidHF->GetnSigmaTOF(track, parthypo[iHypo], nSigmaTOF);
-        if (((std::abs(nSigmaTPC) < fNsigmaBachelorTPC[iHypo]) || okTPC<0) && ((std::abs(nSigmaTOF) < fNsigmaBachelorTOF[iHypo]) || okTOF<0)) {
+        nSigmaDet[0] = -999.;
+        int okTPC = pidHF->GetnSigmaTPC(track, parthypo[iHypo], nSigmaDet[0]);
+        nSigmaDet[1] = -999.;
+        int okTOF = pidHF->GetnSigmaTOF(track, parthypo[iHypo], nSigmaDet[1]);
+        if (((std::abs(nSigmaDet[0]) < fNsigmaBachelorTPC[iHypo]) || okTPC<0) && ((std::abs(nSigmaDet[1]) < fNsigmaBachelorTOF[iHypo]) || okTOF<0)) {
             retVal |= BIT(iHypo);
-            fHistNsigmaTPCSelBach[iHypo]->Fill(track->P(), nSigmaTPC);
-            fHistNsigmaTOFSelBach[iHypo]->Fill(track->P(), nSigmaTOF);
+            fHistNsigmaTPCSelBach[iHypo]->Fill(track->P(), nSigmaDet[0]);
+            fHistNsigmaTOFSelBach[iHypo]->Fill(track->P(), nSigmaDet[1]);
         }
     }
 

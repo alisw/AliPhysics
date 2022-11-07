@@ -156,13 +156,13 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQCOutputList->Add(fQC_Event_Enum_V0T);
     
     fQC_Event_Vertex_Fll            = new TH1F("fQC_Event_Vertex_Fll",      "Collision Vertex (FULL)",                          zVTX_bin, zVTX_min, zVTX_max);
-    fQC_Event_Vertex_Fll            ->  GetXaxis()  ->  SetTitle("Accepted Events");
-    fQC_Event_Vertex_Fll            ->  GetYaxis()  ->  SetTitle("Vertex z-position (cm)");
+    fQC_Event_Vertex_Fll            ->  GetXaxis()  ->  SetTitle("Vertex z-position (cm)");
+    fQC_Event_Vertex_Fll            ->  GetYaxis()  ->  SetTitle("Accepted Events");
     fQCOutputList->Add(fQC_Event_Vertex_Fll);
     
     fQC_Event_Vertex_Cut            = new TH1F("fQC_Event_Vertex_Cut",      "Collision Vertex (CUTS)",                          zVTX_bin, zVTX_min, zVTX_max);
-    fQC_Event_Vertex_Cut            ->  GetXaxis()  ->  SetTitle("Accepted Events");
-    fQC_Event_Vertex_Cut            ->  GetYaxis()  ->  SetTitle("Vertex z-position (cm)");
+    fQC_Event_Vertex_Cut            ->  GetXaxis()  ->  SetTitle("Vertex z-position (cm)");
+    fQC_Event_Vertex_Fll            ->  GetYaxis()  ->  SetTitle("Accepted Events");
     fQCOutputList->Add(fQC_Event_Vertex_Cut);
     
     fQC_Event_Spherocity            = new TH1F("fQC_Event_Spherocity",      "Event Spherocity",                                 410, -3, 1.1);
@@ -209,7 +209,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     
     fQC_Tracks_Phi                  = new TH2F("fQC_Tracks_Phi",            "Acc. Tracks #phi",                                 2, -1., 1., kPhA_bin, kPhA_min, kPhA_max);
     fQC_Tracks_Phi                  ->  GetXaxis()  ->  SetTitle("Track Sign");
-    fQC_Tracks_Phi                  ->  GetYaxis()  ->  SetTitle("Track #phi");
+    fQC_Tracks_Phi                  ->  GetYaxis()  ->  SetTitle("Track #varphi");
     fQC_Tracks_Phi                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_Phi);
     
@@ -322,7 +322,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     
     fQC_Kaons_Phi                   = new TH2F("fQC_Kaons_Phi",             "Acc. Kaons #phi",                                  2, -1., 1., kPhA_bin, kPhA_min, kPhA_max);
     fQC_Kaons_Phi                   ->  GetXaxis()  ->  SetTitle("Kaon Sign");
-    fQC_Kaons_Phi                   ->  GetYaxis()  ->  SetTitle("Kaon #phi");
+    fQC_Kaons_Phi                   ->  GetYaxis()  ->  SetTitle("Kaon #varphi");
     fQC_Kaons_Phi                   ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Kaons_Phi);
     

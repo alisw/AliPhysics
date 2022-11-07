@@ -429,6 +429,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TObjString*                       fFileNameBroken;                            // string object for broken file name
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
     TClonesArray*                     fAODMCTrackArray;                           //! pointer to track array
+    TH1F*                             fAddressChanges;                                //! count if addresses of aod mc tracks arrays ever change            
 
     AliConversionPhotonCuts::TMapPhotonBool fMapPhotonHeaders;                   // map to remember if the photon tracks are from selected headers
 

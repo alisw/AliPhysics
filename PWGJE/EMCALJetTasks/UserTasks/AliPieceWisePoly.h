@@ -17,7 +17,9 @@ public:
   Int_t GetNParts() {return nParts;};
   Double_t* GetCuts() {return cuts;};
   Int_t* GetNParameters() {return polyParameters;};
-  static void ReadFSParameters(TString parameterFile, TF1** effFunctions);
+  static TString ReadFSParameters(TString parameterFile, TF1** effFunctions);                             // Reads parameters from a fastSimParameter file into functions, additionally returns a string containing all parameters together
+  static void ReadFSParametersFromString(TString parameterString, TF1** effFunctions);  // Reads parameters from a string
+  static TF1* GetFSFunctionFromString(TString parameters, TString nameFunction);           // Gets function from parameter String
   
 private:
   AliPieceWisePoly(const AliPieceWisePoly&)           ;  //Not implemented

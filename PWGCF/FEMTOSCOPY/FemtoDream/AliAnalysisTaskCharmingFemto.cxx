@@ -27,6 +27,7 @@
 static float dummyfloat;
 static std::vector<int> dummyvector;
 static int dummyint;
+static bool dummybool;
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
@@ -1017,24 +1018,73 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
 
   // PAIR CLEANING AND FEMTO
-  if (fUseFDPairCleaner) {
+
+  if (fUseTree) {
+    // flag pair removed by old pair clenaer
+    fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, false);
+    fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, false);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, false);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, false);
+
+    for (auto &p : protons) {
+      p.SetIsRemovedByOldPC(!p.UseParticle());
+      if (!p.UseParticle()) p.SetUse(true);
+    }
+    for (auto &p : antiprotons) {
+      p.SetIsRemovedByOldPC(!p.UseParticle());
+      if (!p.UseParticle()) p.SetUse(true);
+    }
+    for (auto &d : dplus) {
+      d.SetIsRemovedByOldPC(!d.UseParticle());
+      if (!d.UseParticle()) d.SetUse(true);
+    }
+    for (auto &d : dminus) {
+      d.SetIsRemovedByOldPC(!d.UseParticle());
+      if (!d.UseParticle()) d.SetUse(true);
+    }
+
+    // flag pair removed by new pair clenaer
+    fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
+    fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
+
+    for (auto &p : protons) {
+      p.SetIsRemovedByNewPC(!p.UseParticle());
+      if (!p.UseParticle()) p.SetUse(true);
+    }
+    for (auto &p : protons) {
+      printf("slcnk %d\n", p.IsRemovedByOldPC());
+    }
+    for (auto &p : antiprotons) {
+      p.SetIsRemovedByNewPC(!p.UseParticle());
+      if (!p.UseParticle()) p.SetUse(true);
+    }
+    for (auto &d : dplus) {
+      d.SetIsRemovedByNewPC(!d.UseParticle());
+      if (!d.UseParticle()) d.SetUse(true);
+    }
+    for (auto &d : dminus) {
+      d.SetIsRemovedByNewPC(!d.UseParticle());
+      if (!d.UseParticle()) d.SetUse(true);
+    }
+  } else if (fUseFDPairCleaner) {
     fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
     fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
     fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
     fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
   }
 
-  fPairCleaner->StoreParticle(protons);
-  fPairCleaner->StoreParticle(antiprotons);
-
-  fPairCleaner->StoreParticle(dplus);
-  fPairCleaner->StoreParticle(dminus);
-
   if (fUseLFFromEvtsWithPairs) {
     if (dplus.size() == 0 && dminus.size() == 0) {
       return;
     } 
   }
+  
+  fPairCleaner->StoreParticle(protons);
+  fPairCleaner->StoreParticle(antiprotons);
+  fPairCleaner->StoreParticle(dplus);
+  fPairCleaner->StoreParticle(dminus);
 
   if (fUseTree) {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, fPairTreeSE, fPairTreeME);
@@ -1122,6 +1172,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 
       // pair
       tree.second->Branch("kStar", &dummyfloat);
+      tree.second->Branch("is_oldpcrm", &dummybool);
+      tree.second->Branch("is_newpcrm", &dummybool);
 
       // heavy particle
       tree.second->Branch("heavy_mult", &dummyint);
@@ -1160,6 +1212,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 
       // pair
       tree.second->Branch("kStar", &dummyfloat);
+      tree.second->Branch("is_oldpcrm", &dummybool);
+      tree.second->Branch("is_newpcrm", &dummybool);
 
       // // heavy
       tree.second->Branch("heavy_mult", &dummyint);

@@ -109,6 +109,12 @@ private:
   TH1D *hEtamc;
   TH1D *hEtamcAlice;
   TH1D *hCounter;
+  TH2D *hMultMCmVsV0M;
+  TH2D *hMultMCaVsV0M;
+  TH2D *hMultMCcVsV0M;
+  TH2D *hMultmVsV0M;
+  TH2D *hMultaVsV0M;
+  TH2D *hMultcVsV0M;
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hComponentsMult[4];
