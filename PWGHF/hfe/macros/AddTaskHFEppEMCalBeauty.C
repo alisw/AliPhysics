@@ -31,6 +31,8 @@ Bool_t SPDAny= kTRUE,
 Bool_t SPDFirst= kFALSE,
 Double_t DCAxyCut= 1,
 Double_t DCAzCut=2,
+Double_t DeltaEta =0.01,
+Double_t DeltaPhi =0.01,
 Double_t TPCnsigmin= -1,
 Double_t TPCnsigmax= 3,
 Double_t EopEMin= 0.9,     
@@ -49,6 +51,55 @@ Double_t AssoTPCnsig=  3.0
 )
 
 {
+  printf("=======================================\n");
+  printf("==========ADD TASK PARAMETERS==========\n");
+  printf("=======================================\n");
+  printf("Task name: %s \n", name.Data());
+
+  printf("PhysSelINT7 Flag: %i \n",PhysSelINT7);
+  printf("isEG1 Flag: %i \n",isEG1);
+  printf("isMC Flag: %i \n",isMC);
+ 
+  printf("SwitchPi0EtaWeight Flag: %i \n",SwitchPi0EtaWeight);
+  printf("SwitchNHFEeffi Flag: %i \n",SwitchNHFEeffi);
+  printf("SwitchEleRecoEffi Flag: %i \n",SwitchEleRecoEffi);
+  printf("SwitchMCTempWeight Flag: %i \n",SwitchMCTempWeight);
+  printf("SwitchFillMCTemp Flag: %i \n",SwitchFillMCTemp);
+  printf("useTender Flag: %i \n",useTender);
+  printf("ClsTypeEMC Flag: %i \n",ClsTypeEMC);
+  printf("ClsTypeDCAL Flag: %i \n",ClsTypeDCAL);
+
+  printf("fSwitchRIP Flag: %i \n",fSwitchRIP);
+
+  printf("Min. Etarange: %f \n", Etarange);
+  printf("Min. TPCNCrRows: %i \n", TPCNCrRows);
+  printf("Min. RatioCrossedRowOverFindable: %f \n", RatioCrossedRowOverFindable);
+  printf("Min. ITSNclus: %i \n", ITSNclus);
+  printf("Max. TPCNclusPID: %i \n", TPCNclusPID);
+  printf("ITS SPDBoth: %i \n",SPDBoth);
+  printf("ITS SPDAny: %i \n",SPDAny);
+  printf("ITS SPDFirst: %i \n",SPDFirst);
+  printf("Min. DCAxyCut: %f \n",DCAxyCut);
+  printf("Min. DCAzCut: %f \n",DCAzCut);
+  printf("Min. DeltaEta: %f \n",DeltaEta);
+  printf("Min. DeltaPhi: %f \n",DeltaPhi);
+  printf("Min. TPC nsigma: %f \n", TPCnsigmin);
+  printf("Max. TPC nsigma: %f \n", TPCnsigmax);
+  printf("Min. EopEMin: %f \n", EopEMin);
+  printf("Max. EopEMax: %f \n", EopEMax);
+  printf("Min. M02Min: %f \n", M02Min);
+  printf("Max1. M02Max1: %f \n", M02Max1);
+  printf("Min2. M02Max2: %f \n", M02Max2);
+  printf("Max3. M02Max3: %f \n", M02Max3);
+
+  printf("InvmassCut: %f \n", InvmassCut);
+  printf("AssoTPCCluster: %i \n", AssoTPCCluster);
+  printf("AssoITSRefit: %i \n", AssoITSRefit);
+  printf("AssopTMin: %f \n", AssopTMin);
+  printf("AssoEtarange: %f \n", AssoEtarange);
+  printf("AssoTPCnsig: %f \n", AssoTPCnsig);
+  printf("===================================\n\n");
+
     AliVEvent::EOfflineTriggerTypes trigger;
     if(PhysSelINT7)  trigger=AliVEvent::kINT7;
     if(!PhysSelINT7) trigger=AliVEvent::kEMCEGA;
@@ -81,7 +132,7 @@ Double_t AssoTPCnsig=  3.0
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++   
 
     TString taskname="ElecAnalysis";
-    AliAnalysisHFEppEMCalBeauty *HFeTask = new AliAnalysisHFEppEMCalBeauty(name.Data());
+    AliAnalysisHFEppEMCalBeauty *HFeTask = new AliAnalysisHFEppEMCalBeauty(taskname.Data());
     HFeTask->SetDebugLevel(2);
 
     HFeTask->SelectCollisionCandidates(trigger);
@@ -99,6 +150,7 @@ Double_t AssoTPCnsig=  3.0
     HFeTask->SetMinTPCClusterPID(TPCNclusPID);
     HFeTask->SetHitsOnSPDLayers(SPDBoth,SPDAny,SPDFirst);
     HFeTask->SetDCACut(DCAxyCut,DCAzCut);
+    HFeTask->SetEMCalMatching(DeltaEta,DeltaPhi);
     
     HFeTask->SetTPCnsigma(TPCnsigmin,TPCnsigmax);
     HFeTask->SetEopE(EopEMin,EopEMax);
@@ -134,8 +186,7 @@ if(trigger==AliVEvent::kINT7)
         TString DMesonWeightMaps, BMesonWeightMaps, CharmpTWeightMaps;
         
         BMesonWeightMaps = "alien:///alice/cern.ch/user/v/vksingh/DandBmesonpTweightCorrectionFiles/BMesonpTWeight.root";
-        DMesonWeightMaps = "alien:///alice/cern.ch/user/v/vksingh/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root";
-    
+        DMesonWeightMaps = "alien:///alice/cern.ch/user/v/vksingh/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root"; 
         CharmpTWeightMaps = "alien:///alice/cern.ch/user/v/vksingh/DandBmesonpTweightCorrectionFiles/CharmpTWeight.root";
 
         printf("\n### reading file %s ...\n",DMesonWeightMaps.Data());
