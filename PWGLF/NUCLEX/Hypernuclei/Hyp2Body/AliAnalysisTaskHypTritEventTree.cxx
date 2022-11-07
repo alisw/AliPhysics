@@ -57,6 +57,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fHistMcRec(0),
   fTree(0),
   fTreeMCGen(0),
+  matching(0),
   fMCGenRecArray(),
   fYear(0),
   fHistogramList(NULL),
@@ -103,6 +104,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fHistMcRec(0),
   fTree(0),
   fTreeMCGen(0),
+  matching(0),
   fMCGenRecArray(),
   fYear(0),
   fHistogramList(NULL),
@@ -149,6 +151,9 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
     AliError("Could not get PID response.\n");
     return;
   }
+  
+  matching = new AliTRDonlineTrackMatching();
+  
   fHistdEdx = new TH2F("fHistdEdX","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-5.0,5.0,1000,0.0,1500);
   fHistdEdxV0 = new TH2F("fHistdEdXV0","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-5.0,5.0,1000,0.0,1500);
 
@@ -947,7 +952,6 @@ Double_t AliAnalysisTaskHypTritEventTree::TRDtrack(AliESDtrack* esdTrack, AliRed
     }
     
     AliESDTrdTrack* bestGtuTrack = 0x0;
-    AliTRDonlineTrackMatching *matching = new AliTRDonlineTrackMatching();
     
     Double_t esdPt = esdTrack->GetSignedPt();
     Double_t mag = fESDevent->GetMagneticField();
