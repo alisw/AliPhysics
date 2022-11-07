@@ -90,6 +90,10 @@
 #pragma link C++ class AliAnalysisTaskXiNucleusInteraction+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2+;
+#pragma link C++ class AliMachineLearning+;
+#pragma link C++ class AliNeuralNetwork+;
+#pragma link C++ class AliBDT+;
+#pragma link C++ class AliAnalysisTaskStrangenessML+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif

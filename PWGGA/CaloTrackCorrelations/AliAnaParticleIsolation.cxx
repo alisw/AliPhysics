@@ -1165,14 +1165,14 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                          Form(", %2.2f < #sigma_{long}^{2} < %2.2f",fM02Narrow[0],fM02Narrow[1]) };
   
   Int_t nShSh = 2;
-  if( !fFillSSHisto ) 
-  {
-    nShSh       = 1;
-    m02Name [0] = ""; 
-    m02Name [1] = ""; 
-    m02Title[0] = ""; 
-    m02Title[1] = ""; 
-  }
+//  if( !fFillSSHisto )
+//  {
+//    nShSh       = 1;
+//    m02Name [0] = "";
+//    m02Name [1] = "";
+//    m02Title[0] = "";
+//    m02Title[1] = "";
+//  }
 
   TString trigString = GetReader()->GetTriggerMakerDecisionHistoList();
 
@@ -1182,6 +1182,31 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   {
     for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
     {
+      if ( fFillOnlyTH3Histo ) continue;
+
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhPt[iso][ishsh]  = new TH1F
+        (Form("hPt%s%s",isoName[iso].Data(),m02Name[ishsh].Data()),
+         Form("%s%s, %s",
+              isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+         nptbins,ptmin,ptmax);
+        fhPt[iso][ishsh]->SetYTitle("#it{counts}");
+        fhPt[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPt[iso][ishsh]) ;
+
+        fhPtEtaPhi[iso][ishsh]  = new TH3F
+        (Form("hPtEtaPhi%s%s",isoName[iso].Data(), m02Name[ishsh].Data()),
+         Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+         ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+         etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
+         phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
+        fhPtEtaPhi[iso][ishsh]->SetYTitle("#eta");
+        fhPtEtaPhi[iso][ishsh]->SetZTitle("#varphi (rad)");
+        fhPtEtaPhi[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtEtaPhi[iso][ishsh]) ;
+      }
+
       if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
       {
         Int_t ntrig = GetReader()->GetNumberOfTriggerMakerDecisions();
@@ -1213,6 +1238,48 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               fhPtMCPhotonPromptPerTrigger[iso][ishsh]->GetYaxis()->SetBinLabel(itrig, GetReader()->GetTriggerMakerDecisionName(itrig-1));
             }
             outputContainer->Add(fhPtMCPhotonPromptPerTrigger[iso][ishsh] ) ;
+          }
+
+          if ( trigString.Contains("G1") )
+          {
+            fhPtEtaPhiG1[iso][ishsh]  = new TH3F
+            (Form("hPtEtaPhi%s%s_TriggerG1",isoName[iso].Data(), m02Name[ishsh].Data()),
+             Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+             ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+             etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
+             phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
+            fhPtEtaPhiG1[iso][ishsh]->SetYTitle("#eta");
+            fhPtEtaPhiG1[iso][ishsh]->SetZTitle("#varphi (rad)");
+            fhPtEtaPhiG1[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhPtEtaPhiG1[iso][ishsh]) ;
+          }
+
+          if ( trigString.Contains("G2") )
+          {
+            fhPtEtaPhiG2[iso][ishsh]  = new TH3F
+            (Form("hPtEtaPhi%s%s_TriggerG2",isoName[iso].Data(), m02Name[ishsh].Data()),
+             Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+             ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+                etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
+                phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
+            fhPtEtaPhiG2[iso][ishsh]->SetYTitle("#eta");
+            fhPtEtaPhiG2[iso][ishsh]->SetZTitle("#varphi (rad)");
+            fhPtEtaPhiG2[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhPtEtaPhiG2[iso][ishsh]) ;
+          }
+
+          if ( trigString.Contains("L0") )
+          {
+            fhPtEtaPhiL0[iso][ishsh]  = new TH3F
+            (Form("hPtEtaPhi%s%s_TriggerL0",isoName[iso].Data(), m02Name[ishsh].Data()),
+             Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+             ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+                etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
+                phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
+            fhPtEtaPhiL0[iso][ishsh]->SetYTitle("#eta");
+            fhPtEtaPhiL0[iso][ishsh]->SetZTitle("#varphi (rad)");
+            fhPtEtaPhiL0[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhPtEtaPhiL0[iso][ishsh]) ;
           }
         }
         else
@@ -1253,73 +1320,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             }
             outputContainer->Add(fhPtMCPhotonPromptPerTriggerCen[iso][ishsh] ) ;
           }
-        }
-      } // trigger maker
-
-      if ( fFillOnlyTH3Histo ) continue;
-      
-      fhPt[iso][ishsh]  = new TH1F
-      (Form("hPt%s%s",isoName[iso].Data(),m02Name[ishsh].Data()),
-       Form("%s%s, %s",
-            isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
-       nptbins,ptmin,ptmax);
-      fhPt[iso][ishsh]->SetYTitle("#it{counts}");
-      fhPt[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPt[iso][ishsh]) ;
-      
-      fhPtEtaPhi[iso][ishsh]  = new TH3F
-      (Form("hPtEtaPhi%s%s",isoName[iso].Data(), m02Name[ishsh].Data()),
-       Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
-       ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
-          etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),      
-          phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
-      fhPtEtaPhi[iso][ishsh]->SetYTitle("#eta");
-      fhPtEtaPhi[iso][ishsh]->SetZTitle("#varphi (rad)");
-      fhPtEtaPhi[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtEtaPhi[iso][ishsh]) ;
-      
-      if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
-      {
-        if ( trigString.Contains("G1") )
-        {
-          fhPtEtaPhiG1[iso][ishsh]  = new TH3F
-          (Form("hPtEtaPhi%s%s_TriggerG1",isoName[iso].Data(), m02Name[ishsh].Data()),
-           Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
-           ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
-           etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
-           phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
-          fhPtEtaPhiG1[iso][ishsh]->SetYTitle("#eta");
-          fhPtEtaPhiG1[iso][ishsh]->SetZTitle("#varphi (rad)");
-          fhPtEtaPhiG1[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          outputContainer->Add(fhPtEtaPhiG1[iso][ishsh]) ;
-        }
-
-        if ( trigString.Contains("G2") )
-        {
-          fhPtEtaPhiG2[iso][ishsh]  = new TH3F
-          (Form("hPtEtaPhi%s%s_TriggerG2",isoName[iso].Data(), m02Name[ishsh].Data()),
-           Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
-           ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
-              etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
-              phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
-          fhPtEtaPhiG2[iso][ishsh]->SetYTitle("#eta");
-          fhPtEtaPhiG2[iso][ishsh]->SetZTitle("#varphi (rad)");
-          fhPtEtaPhiG2[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          outputContainer->Add(fhPtEtaPhiG2[iso][ishsh]) ;
-        }
-
-        if ( trigString.Contains("L0") )
-        {
-          fhPtEtaPhiL0[iso][ishsh]  = new TH3F
-          (Form("hPtEtaPhi%s%s_TriggerL0",isoName[iso].Data(), m02Name[ishsh].Data()),
-           Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
-           ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
-              etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),
-              phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
-          fhPtEtaPhiL0[iso][ishsh]->SetYTitle("#eta");
-          fhPtEtaPhiL0[iso][ishsh]->SetZTitle("#varphi (rad)");
-          fhPtEtaPhiL0[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          outputContainer->Add(fhPtEtaPhiL0[iso][ishsh]) ;
         }
       } // Trigger decision
 
@@ -1730,7 +1730,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
     {
-      if ( fFillOnlyTH3Histo ) continue;
+      if ( fFillOnlyTH3Histo || !fFillIsolationControlHistograms ) continue;
       
       if ( !IsHighMultiplicityAnalysisOn() )
       {
@@ -1806,13 +1806,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtCentrality[iso][ishsh]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
         outputContainer->Add(fhPtCentrality[iso][ishsh]) ;
         
-        fhPtEventPlane[iso][ishsh]  = new TH2F
-        (Form("hPtEventPlane%s%s",isoName[iso].Data(),m02Name[ishsh].Data()),
-         Form("%s%s, %s",parTitle[iso].Data(), m02Title[ishsh].Data(), isoTitle[iso].Data()),
-         nptbins,ptmin,ptmax, 100,0,TMath::Pi());
-        fhPtEventPlane[iso][ishsh]->SetYTitle("Event plane angle (rad)");
-        fhPtEventPlane[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhPtEventPlane[iso][ishsh]) ;
+//        fhPtEventPlane[iso][ishsh]  = new TH2F
+//        (Form("hPtEventPlane%s%s",isoName[iso].Data(),m02Name[ishsh].Data()),
+//         Form("%s%s, %s",parTitle[iso].Data(), m02Title[ishsh].Data(), isoTitle[iso].Data()),
+//         nptbins,ptmin,ptmax, 100,0,TMath::Pi());
+//        fhPtEventPlane[iso][ishsh]->SetYTitle("Event plane angle (rad)");
+//        fhPtEventPlane[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//        outputContainer->Add(fhPtEventPlane[iso][ishsh]) ;
       }
     }
   }
@@ -5058,7 +5058,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         }
       }
 
-      if ( inM02Windows && !fFillOnlyTH3Histo )
+      if ( inM02Windows && !fFillOnlyTH3Histo && fFillIsolationControlHistograms )
       {
         if ( !IsHighMultiplicityAnalysisOn() )
           fhConeSumPtM02Cut    [narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
@@ -5092,7 +5092,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
               fhPtM02SumPtConeMC[kmcEtaDecayLostPair]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
           }
 
-          if ( inM02Windows  && !fFillOnlyTH3Histo )
+          if ( inM02Windows  && !fFillOnlyTH3Histo && fFillIsolationControlHistograms )
           {
             fhConeSumPtM02CutMC[mcIndex][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
 
@@ -5327,11 +5327,26 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 
     if ( !inM02Windows ) continue; // it is on the wide or narrow window if those are selected, see above
 
+    if ( fFillOnlyTH3Histo ) continue;
+
+    if ( IsHighMultiplicityAnalysisOn() )
+    {
+      fhPtCentrality[isolated][narrow]->Fill(pt, GetEventCentrality(), GetEventWeight()*weightTrig) ;
+      //fhPtEventPlane[isolated][narrow]->Fill(pt, GetEventPlaneAngle(), GetEventWeight()*weightTrig) ;
+    }
+    else
+    {
+      fhPt      [isolated][narrow]->Fill(pt          , GetEventWeight()*weightTrig);
+      fhPtEtaPhi[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
+    }
+
     if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
     {
+      TString trigString = GetReader()->GetTriggerMakerDecisionHistoList();
+
       for(Int_t itrig = 0; itrig < GetReader()->GetNumberOfTriggerMakerDecisions(); itrig++)
       {
-        if( GetReader()->GetTriggerMakerDecision(itrig) )
+        if ( GetReader()->GetTriggerMakerDecision(itrig) )
         {
           if ( IsHighMultiplicityAnalysisOn() )
             fhPtPerTriggerCen[isolated][narrow]->Fill(pt, itrig+0.5, GetEventCentrality(), GetEventWeight()*weightTrig) ;
@@ -5345,44 +5360,30 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
             else
               fhPtMCPhotonPromptPerTrigger   [isolated][narrow]->Fill(pt, itrig+0.5, GetEventWeight()*weightTrig);
           }
-        }
-      }
-    }
-
-    if ( fFillOnlyTH3Histo ) continue;
-    
-    fhPt[isolated][narrow]->Fill(pt    , GetEventWeight()*weightTrig);
-    
-    fhPtEtaPhi[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
-    
-    if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
-    {
-      TString trigString = GetReader()->GetTriggerMakerDecisionHistoList();
-
-      for(Int_t itrig = 0; itrig < GetReader()->GetNumberOfTriggerMakerDecisions(); itrig++)
-      {
-        if ( GetReader()->GetTriggerMakerDecision(itrig) )
-        {
-          if ( itrig == 3  && trigString.Contains("G1") )
-            fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EGA
-
-          if ( iSM < 12 ) // EMCal
+          
+          if ( !IsHighMultiplicityAnalysisOn() )
           {
-            if ( itrig == 6  && trigString.Contains("G1") )
-              fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EG1
-            if ( itrig == 8  && trigString.Contains("G2") )
-              fhPtEtaPhiG2[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EG2
-            if ( itrig == 1  && trigString.Contains("L0") )
-              fhPtEtaPhiL0[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EL0
-          }
-          else // DCal
-          {
-            if ( itrig == 7  && trigString.Contains("G1") )
-              fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DG1
-            if ( itrig == 9  && trigString.Contains("G2") )
-              fhPtEtaPhiG2[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DG2
-            if ( itrig == 2  && trigString.Contains("L0") )
-              fhPtEtaPhiL0[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DL0
+            if ( itrig == 3  && trigString.Contains("G1") )
+              fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EGA
+
+            if ( iSM < 12 ) // EMCal
+            {
+              if ( itrig == 6  && trigString.Contains("G1") )
+                fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EG1
+              if ( itrig == 8  && trigString.Contains("G2") )
+                fhPtEtaPhiG2[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EG2
+              if ( itrig == 1  && trigString.Contains("L0") )
+                fhPtEtaPhiL0[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // EL0
+            }
+            else // DCal
+            {
+              if ( itrig == 7  && trigString.Contains("G1") )
+                fhPtEtaPhiG1[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DG1
+              if ( itrig == 9  && trigString.Contains("G2") )
+                fhPtEtaPhiG2[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DG2
+              if ( itrig == 2  && trigString.Contains("L0") )
+                fhPtEtaPhiL0[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig); // DL0
+            }
           }
         }
       }
@@ -5418,12 +5419,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     if ( fFillNLMHistograms )
       fhPtNLocMax[isolated][narrow] ->Fill(pt, aod->GetNLM(), GetEventWeight()*weightTrig) ;
-    
-    if ( IsHighMultiplicityAnalysisOn() )
-    {
-      fhPtCentrality[isolated][narrow]->Fill(pt, GetEventCentrality(), GetEventWeight()*weightTrig) ;
-      fhPtEventPlane[isolated][narrow]->Fill(pt, GetEventPlaneAngle(), GetEventWeight()*weightTrig) ;
-    }
   }// aod loop
 }
 

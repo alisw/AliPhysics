@@ -33,7 +33,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pPb(
     Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
     TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
-    Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
+    Int_t     doWeightingPart             = kFALSE,                   //enable Weighting
     TString   generatorName               = "HIJING",
     Double_t  tolerance                   = -1,
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
@@ -43,8 +43,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pPb(
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
+    //parse additionalTrainConfig flag
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
-  //parse additionalTrainConfig flag
+  TString unsmearingoutputs = "012"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted, 4: Analytic PCMEMC unsmearing
+
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
   TObjString* rAdditionalTrainConfig;
@@ -58,6 +60,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pPb(
         tempType.Replace(0,2,"");
         trackMatcherRunningMode = tempType.Atoi();
         cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+      }
+      if(tempStr.BeginsWith("UNSMEARING")){
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        unsmearingoutputs = tempType;
+        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb will output the following minv_pT histograms:" << endl;
+        if(unsmearingoutputs.Contains("4")) cout << "- Analytic PCM unsmearing" << endl;
+        else if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
+        if(unsmearingoutputs.Contains("1")) cout << "- SubNDM" << endl;
+        if(unsmearingoutputs.Contains("2")) cout << "- Fixpz" << endl;
+        if(unsmearingoutputs.Contains("3")) cout << "- SubLambda" << endl;
       }
     }
   }
@@ -224,6 +237,11 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if (trainConfig == 1007){ // EMC EMC triggers
     cuts.AddCutHeavyMesonPCMCalo("8008e113","00200009f9730000dge0400000","411790105f032230000","32c51070a","0103603p00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
     cuts.AddCutHeavyMesonPCMCalo("8008e113","00200009f9730000dge0400000","411793105f032230000","32c51070a","0103603p00000000","0453503000000000"); // 0-100% PCM NL just EMC, EG2
+
+  } else if (trainConfig == 1008){ // First guesstimate 5 TeV
+    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe30220000","32c51070a","0103603p00000000","0453503000000000"); // 0-100% without NL just EMC, INT1
+  } else if (trainConfig == 1009){ // First guesstimate 5 TeV to be used with PCMEMC unsmearing
+    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe30220000","32c51070a","0103603p00000000","0453503000000000"); // 0-100% without NL just EMC, INT1
 
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  INT7 run1
@@ -435,6 +453,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetUnsmearedOutputs(unsmearingoutputs);
 
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 

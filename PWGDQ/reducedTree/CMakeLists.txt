@@ -34,11 +34,13 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
+      AliAnalysisTaskComputeLumi.cxx
       AliAnalysisTaskReducedEventProcessor.cxx
       AliAnalysisTaskReducedTreeMaker.cxx
       AliCorrelationExtraction.cxx
       AliHistogramManager.cxx
       AliMixingHandler.cxx
+      AliReducedAnalysisBmeson2JpsiK.cxx
       AliReducedAnalysisFilterTrees.cxx
       AliReducedAnalysisJpsi2ee.cxx
       AliReducedAnalysisJpsi2eeCorrelations.cxx
