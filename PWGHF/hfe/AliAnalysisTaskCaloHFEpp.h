@@ -289,11 +289,13 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistZeRec1;
 		TH2F*                   fHist_Zpair_pos;
 		TH2F*                   fHist_Zpair_neg;
-		TH1F*                   fHistZeta;
-		TH1F*                   fHistZeta_ALICEacc;
+		TH1F*                   fHistZrap;
+		TH1F*                   fHistZrap_ALICEacc;
 		TH1F*                   fHist_Zeta_pos;
 		TH1F*                   fHist_Zeta_neg;
-		TH1F*                   fHistZmassALICE;
+		TH1F*                   fHistZmassALICE_LS;
+		TH1F*                   fHistZmassALICE_ULS;
+		TH1F*                   fHistZmassALICE_org;
                 TF1*                   fWeightEtaZee;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
