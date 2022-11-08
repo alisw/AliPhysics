@@ -263,11 +263,13 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistZeRec1(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
-        fHistZeta(0),
-        fHistZeta_ALICEacc(0),
+        fHistZrap(0),
+        fHistZrap_ALICEacc(0),
         fHist_Zeta_pos(0),
         fHist_Zeta_neg(0),
-        fHistZmassALICE(0),
+        fHistZmassALICE_LS(0),
+        fHistZmassALICE_ULS(0),
+        fHistZmassALICE_org(0),
         fWeightEtaZee(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
@@ -479,11 +481,13 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistZeRec1(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
-        fHistZeta(0),
-        fHistZeta_ALICEacc(0),
+        fHistZrap(0),
+        fHistZrap_ALICEacc(0),
         fHist_Zeta_pos(0),
         fHist_Zeta_neg(0),
-        fHistZmassALICE(0),
+        fHistZmassALICE_LS(0),
+        fHistZmassALICE_ULS(0),
+        fHistZmassALICE_org(0),
         fWeightEtaZee(0),
         fMultEstimatorAvg(0),
         fweightNtrkl(0)
@@ -638,11 +642,13 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistZeRec1        = new TH1F("fHistZeRec1","particle level Z->e",90,10,100);
 	fHist_Zpair_pos        = new TH2F("fHist_Zpair_pos","pair Z->e",100,-5,5,100,0,100);
 	fHist_Zpair_neg        = new TH2F("fHist_Zpair_neg","pair Z->e",100,-5,5,100,0,100);
-	fHistZeta        = new TH1F("fHistZeta","parent Z eta",200,-5,5);
-	fHistZeta_ALICEacc        = new TH1F("fHistZeta_ACCacc","parent Z eta in ALICE acc",200,-5,5);
+	fHistZrap        = new TH1F("fHistZrap","parent Z rap",200,-5,5);
+	fHistZrap_ALICEacc        = new TH1F("fHistZrap_ACCacc","parent Z rap in ALICE acc",200,-5,5);
 	fHist_Zeta_pos        = new TH1F("fHist_Zeta_pos","pair Z->e",100,-5,5);
  	fHist_Zeta_neg        = new TH1F("fHist_Zeta_neg","pair Z->e",100,-5,5);
-        fHistZmassALICE       = new TH1F("fHistZmassALICE","Z mass in ALICE",150,0,150);
+        fHistZmassALICE_LS       = new TH1F("fHistZmassALICE_LS","Z mass in ALICE",150,0,150);
+        fHistZmassALICE_ULS       = new TH1F("fHistZmassALICE_ULS","Z mass in ALICE",150,0,150);
+        fHistZmassALICE_org   = new TH1F("fHistZmassALICE_org","Z mass in ALICE",150,0,150);
 
         fHistZeRec0->Sumw2();
         fHistZeRec1->Sumw2();
@@ -859,11 +865,13 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistZeRec1); 
 	fOutputList->Add(fHist_Zpair_pos); 
 	fOutputList->Add(fHist_Zpair_neg); 
-	fOutputList->Add(fHistZeta); 
-	fOutputList->Add(fHistZeta_ALICEacc); 
+	fOutputList->Add(fHistZrap); 
+	fOutputList->Add(fHistZrap_ALICEacc); 
 	fOutputList->Add(fHist_Zeta_pos); 
 	fOutputList->Add(fHist_Zeta_neg); 
-	fOutputList->Add(fHistZmassALICE); 
+	fOutputList->Add(fHistZmassALICE_LS); 
+	fOutputList->Add(fHistZmassALICE_ULS); 
+	fOutputList->Add(fHistZmassALICE_org); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -1638,7 +1646,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             if(iIsocut && TMath::Abs(pdgorg)==23 && TrkPt>30.0)
                               { 
 	                       AliAODMCParticle* fMCparticleWZ = (AliAODMCParticle*) fMCarray->At(ilabelM);
-                               if(track->Charge()<0)fHistZeta->Fill(fMCparticleWZ->Eta());                              
+                               if(track->Charge()<0)fHistZrap->Fill(fMCparticleWZ->Y());                              
                               }
                            }
 
@@ -1678,8 +1686,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				///////-----Identify Non-HFE////////////////////////////
 				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt,DCA[0],Bsign,iIsocut,fFlagZee);
                                 Double_t weta = fWeightEtaZee->Eval(Eta_Z); 
-                                if(iIsocut && track->Charge()<0 && TMath::Abs(pdgorg)==23)fHistZeRec0->Fill(TrkPt,weta); // positron eta bias in LHC22f2
-                                if(iIsocut && track->Charge()<0 && TMath::Abs(pdgorg)==23 && fFlagZee)fHistZeRec1->Fill(TrkPt,weta);
+                                //if(iIsocut && track->Charge()<0 && TMath::Abs(pdgorg)==23)fHistZeRec0->Fill(TrkPt,weta); // positron eta bias in LHC22f2
+                                //if(iIsocut && track->Charge()<0 && TMath::Abs(pdgorg)==23 && fFlagZee)fHistZeRec1->Fill(TrkPt,weta);
+                                if(iIsocut && track->Charge()<0 && TMath::Abs(pdgorg)==23)fHistZeRec0->Fill(TrkPt); // positron eta bias in LHC22f2
+                                if(iIsocut && track->Charge()<0 && TMath::Abs(pdgorg)==23 && fFlagZee)fHistZeRec1->Fill(TrkPt);
 				//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD);
 				if(fFlagIsolation)
                                     {
@@ -1876,7 +1886,12 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 				fInv_pT_LS->Fill(TrkPt,mass);
 				if(mass<CutmassMin)fDCAxy_Pt_LS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
-		}
+
+                       if(track->Pt()>30.0 && aAssotrack->Pt()>30.0 && TMath::Abs(aAssotrack->Eta())<0.6)fHistZmassALICE_LS->Fill(mass);
+
+		} // LS
+
+
 		if(fFlagULS){
 			if(track->Pt()>1){
 				fInv_pT_ULS->Fill(TrkPt,mass);
@@ -1899,9 +1914,9 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 			}
 
 
-                       if(track->Pt()>30.0 && aAssotrack->Pt()>30.0 && TMath::Abs(aAssotrack->Eta())<0.6)fHistZmassALICE->Fill(mass);
+                       if(track->Pt()>30.0 && aAssotrack->Pt()>30.0 && TMath::Abs(aAssotrack->Eta())<0.6)fHistZmassALICE_ULS->Fill(mass);
 
-		}
+		} // ULS
 
 
 		//if(mass<0.1 && fFlagULS && !flagPhotonicElec)
@@ -2206,17 +2221,19 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Doubl
                //cout << "Z -> ee" << endl;
                //cout << fMCparticle_Ze0->GetPdgCode() << " ; " << fMCparticle_Ze1->GetPdgCode() << " ; " << fMCparticle_Ze2->GetPdgCode()  << endl;
 
-               Double_t eta_Z = fMCparticle->Eta(); 
+               Double_t rap_Z = fMCparticle->Y(); 
                Double_t eta_Ze0 = fMCparticle_Ze0->Eta(); 
                Double_t eta_Ze1 = fMCparticle_Ze1->Eta(); 
                Double_t pT_Ze0 = fMCparticle_Ze0->Pt(); 
                Double_t pT_Ze1 = fMCparticle_Ze1->Pt(); 
 
-               if((TMath::Abs(eta_Ze0)<0.6 || TMath::Abs(eta_Ze1)<0.6) && (pT_Ze0>30.0 || pT_Ze1>30.0))
+               if((TMath::Abs(eta_Ze0)<0.6 && TMath::Abs(eta_Ze1)<0.6) && (pT_Ze0>30.0 && pT_Ze1>30.0))
                  { 
                   //cout << eta_Ze0 << " ; " << eta_Ze1 << endl;
 	          fHistZ_Org->Fill(fMCparticle->Pt());   
-	          fHistZeta_ALICEacc->Fill(eta_Z);  
+	          fHistZrap_ALICEacc->Fill(rap_Z);
+                  Double_t Zmass = sqrt(pow(fMCparticle->E(),2)-pow(fMCparticle->Px(),2)-pow(fMCparticle->Py(),2)-pow(fMCparticle->Pz(),2));  
+	          fHistZmassALICE_org->Fill(Zmass);
                  }
 
              }
