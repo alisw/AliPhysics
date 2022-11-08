@@ -3008,7 +3008,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
 
   // ITS nSigma cut
   double nSigmaITS = fPIDResponse.NumberOfSigmasITS(&Track,AliPID::kProton);
-  if((UseITS) && (pT < Proton_ThresholdTPC) && (TMath::Abs(nSigmaITS) > Proton_ITS_nSigma_max)) return PassedParticleCuts;
+  if((UseITS) && (p < Proton_ThresholdTPC) && (TMath::Abs(nSigmaITS) > Proton_ITS_nSigma_max)) return PassedParticleCuts;
   if(isMatter)	fHist_Proton_CutCounter->Fill(18);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(18);
 
@@ -3148,8 +3148,7 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
     double massSq = CalculateMassSquareTOF(Track);
     double Sigma_TOF_MassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,isMatter);
 
-    if(TMath::Abs(Sigma_TOF_MassSq) >= Deuteron_TOF_MassSquare_nSigma_max) return PassedParticleCuts;
-
+    if((TMath::Abs(nSigmaTPC) > Deuteron_TPC_nSigma_max) || (TMath::Abs(Sigma_TOF_MassSq) >= Deuteron_TOF_MassSquare_nSigma_max)) return PassedParticleCuts;
 
     } // end of UseMassSquareTOF
 
@@ -3213,7 +3212,7 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   if(RejectLowPtPions){
 
     //if((pT < Deuteron_ThresholdTPC) && (statusTOF == AliPIDResponse::kDetPidOk)){
-    if((pT < 1.3) && (statusTOF == AliPIDResponse::kDetPidOk)){
+    if((p < Deuteron_ThresholdTPC) && (statusTOF == AliPIDResponse::kDetPidOk)){
 
       nSigmaTOF_Pion = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kPion);
       if(TMath::Abs(nSigmaTOF_Pion) < 3.0) return PassedParticleCuts;
@@ -3233,7 +3232,7 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
 
   // ITS nSigma cut
   double nSigmaITS = fPIDResponse.NumberOfSigmasITS(&Track,AliPID::kDeuteron);
-  if((UseITS) && (pT < Deuteron_ThresholdTPC) && (TMath::Abs(nSigmaITS) > Deuteron_ITS_nSigma_max)) return PassedParticleCuts;
+  if((UseITS) && (p < Deuteron_ThresholdTPC) && (TMath::Abs(nSigmaITS) > Deuteron_ITS_nSigma_max)) return PassedParticleCuts;
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(20);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(20);
 
