@@ -155,13 +155,16 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistPtD0Dau1;            //!<!  histo with D0 prong pt
   TH1F* fHistImpParD0Dau0;        //!<!  histo with D0 prong d0
   TH1F* fHistImpParD0Dau1;        //!<!  histo with D0 prong d0
+  TH1F* fHistImpParErrD0Dau0;     //!<!  histo with D0 prong d0 err
+  TH1F* fHistImpParErrD0Dau1;     //!<!  histo with D0 prong d0 err
   TH1F* fHistd0Timesd0;           //!<!  histo with d0xd0
   TH1F* fHistCosPointD0;          //!<!  histo with D0 cosine of pointing angle
   TH1F* fHistDecLenD0;            //!<!  histo with D0 decay length
   TH1F* fHistDecLenXYD0;          //!<!  histo with D0 decay length XY
-  TH1F* fHistImpParErrD0Dau;      //!<!  histo with D0 prong d0 err
   TH1F* fHistDecLenErrD0;         //!<!  histo with D0 decay length err
   TH1F* fHistDecLenXYErrD0;       //!<!  histo with D0 decay length XY err
+  TH1F* fHistNormDecLenD0;        //!<!  histo with D0 normalised decay length
+  TH1F* fHistNormDecLenXYD0;      //!<!  histo with D0 normalised decay length XY
   TH1F* fHistCovMatPrimVXX2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
   TH1F* fHistCovMatSecVXX2Prong;  //!<!  histo with cov mat sec vert for the 2-prong candidate
   TH1F* fHistCovMatPrimVYY2Prong; //!<!  histo with cov mat prim vert for the 2-prong candidate
@@ -176,12 +179,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistInvMassD0Signal;     //!<!  histo with D0 (MC truth) inv mass
   TH1F* fHistInvMassD0Refl;       //!<!  histo with D0 (reflection) inv mass
 
-  TH1F* fHistInvMassJpsi; //!<!  histo with Jpsi inv mass
-  TH1F* fHistPtJpsi;      //!<!  histo with Jpsi pt
-  TH1F* fHistPtJpsiDau0;  //!<!  histo with Jpsi prong pt
-  TH1F* fHistPtJpsiDau1;
-  TH1F* fHistImpParJpsiDau0; //!<!  histo with Jpsi prong d0
-  TH1F* fHistImpParJpsiDau1;
+  TH1F* fHistInvMassJpsi;       //!<!  histo with Jpsi inv mass
+  TH1F* fHistPtJpsi;            //!<!  histo with Jpsi pt
+  TH1F* fHistPtJpsiDau0;        //!<!  histo with Jpsi prong pt
+  TH1F* fHistPtJpsiDau1;        //!<!  histo with Jpsi prong pt
+  TH1F* fHistImpParJpsiDau0;    //!<!  histo with Jpsi prong d0
+  TH1F* fHistImpParJpsiDau1;    //!<!  histo with Jpsi prong d0
   TH1F* fHistd0Timesd0Jpsi;     //!<!  histo with d0xd0
   TH1F* fHistCosPointJpsi;      //!<!  histo with Jpsi cosine of pointing angle
   TH1F* fHistDecLenJpsi;        //!<!  histo with Jpsi decay length
@@ -231,69 +234,69 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistDecLenDs;        //!<!  histo with Ds decay length
   TH1F* fHistCosPointDs;      //!<!  histo with Ds cosine of pointing angle
 
-  TH1F* fHistInvMassLc;    //!<!  histo with LcpKpi+ inv mass
-  TH1F* fHistPtLc;         //!<!  histo with LcpKpi+ pt
-  TH1F* fHistEtaLc;         //!<!  histo with LcpKpi+ eta
-  TH1F* fHistPhiLc;         //!<!  histo with LcpKpi+ phi
-  TH2F* fHistYPtLc;        //!<!  histo with LcpKpi+ y vs pt
-  TH1F* fHistPtLcDau0;     //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistPtLcDau1;     //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistPtLcDau2;     //!<!  histo with LcpKpi+ prong pt
-  TH1F* fHistDecLenLc;     //!<!  histo with LcpKpi+ decay length
-  TH1F* fHistDecLenXYLc;     //!<!  histo with LcpKpi+ decay length xy
-  TH1F* fHistCosPointLc;   //!<!  histo with LcpKpi+ cosine of pointing angle
-  TH1F* fHistCosPointXYLc;   //!<!  histo with LcpKpi+ cosine of pointing angle xy
-  TH1F* fHistCtLc;   //!<!  histo with LcpKpi+ proper decay length
-  TH1F* fHistImpParLcDau0; //!<!  histo with LcpKpi+ prong0 d0
-  TH1F* fHistImpParLcDau1; //!<!  histo with LcpKpi+ prong1 d0
-  TH1F* fHistImpParLcDau2; //!<!  histo with LcpKpi+ prong2 d0
-  TH1F* fHistInvMassLcPrompt;    //!<!  histo with LcpKpi+ inv mass
-  TH1F* fHistEtaLcPrompt;
-  TH1F* fHistPhiLcPrompt;
-  TH2F* fHistYPtLcPrompt;
-  TH1F* fHistPtLcDau0Prompt;
-  TH1F* fHistPtLcDau1Prompt;
-  TH1F* fHistPtLcDau2Prompt;
-  TH1F* fHistDecLenLcPrompt;
-  TH1F* fHistDecLenXYLcPrompt;
-  TH1F* fHistCtLcPrompt;
-  TH1F* fHistCosPointLcPrompt;
-  TH1F* fHistCosPointXYLcPrompt;
-  TH1F* fHistImpParLcDau0Prompt;
-  TH1F* fHistImpParLcDau1Prompt;
-  TH1F* fHistImpParLcDau2Prompt;
-  TH1F* fHistInvMassLcNonPrompt;    //!<!  histo with LcpKpi+ inv mass
-  TH1F* fHistEtaLcNonPrompt;
-  TH1F* fHistPhiLcNonPrompt;
-  TH2F* fHistYPtLcNonPrompt;
-  TH1F* fHistPtLcDau0NonPrompt;
-  TH1F* fHistPtLcDau1NonPrompt;
-  TH1F* fHistPtLcDau2NonPrompt;
-  TH1F* fHistDecLenLcNonPrompt;
-  TH1F* fHistDecLenXYLcNonPrompt;
-  TH1F* fHistCtLcNonPrompt;
-  TH1F* fHistCosPointLcNonPrompt;
-  TH1F* fHistCosPointXYLcNonPrompt;
-  TH1F* fHistImpParLcDau0NonPrompt;
-  TH1F* fHistImpParLcDau1NonPrompt;
-  TH1F* fHistImpParLcDau2NonPrompt;
+  TH1F* fHistInvMassLc;             //!<!  histo with LcpKpi+ inv mass
+  TH1F* fHistPtLc;                  //!<!  histo with LcpKpi+ pt
+  TH1F* fHistEtaLc;                 //!<!  histo with LcpKpi+ eta
+  TH1F* fHistPhiLc;                 //!<!  histo with LcpKpi+ phi
+  TH2F* fHistYPtLc;                 //!<!  histo with LcpKpi+ y vs pt
+  TH1F* fHistPtLcDau0;              //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistPtLcDau1;              //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistPtLcDau2;              //!<!  histo with LcpKpi+ prong pt
+  TH1F* fHistDecLenLc;              //!<!  histo with LcpKpi+ decay length
+  TH1F* fHistDecLenXYLc;            //!<!  histo with LcpKpi+ decay length xy
+  TH1F* fHistCosPointLc;            //!<!  histo with LcpKpi+ cosine of pointing angle
+  TH1F* fHistCosPointXYLc;          //!<!  histo with LcpKpi+ cosine of pointing angle xy
+  TH1F* fHistCtLc;                  //!<!  histo with LcpKpi+ proper decay length
+  TH1F* fHistImpParLcDau0;          //!<!  histo with LcpKpi+ prong0 d0
+  TH1F* fHistImpParLcDau1;          //!<!  histo with LcpKpi+ prong1 d0
+  TH1F* fHistImpParLcDau2;          //!<!  histo with LcpKpi+ prong2 d0
+  TH1F* fHistInvMassLcPrompt;       //!<!  histo with prompt LcpKpi+ inv mass
+  TH1F* fHistEtaLcPrompt;           //!<!  histo with prompt LcpKpi+ eta
+  TH1F* fHistPhiLcPrompt;           //!<!  histo with prompt LcpKpi+ phi
+  TH2F* fHistYPtLcPrompt;           //!<!  histo with prompt LcpKpi+ y vs pt
+  TH1F* fHistPtLcDau0Prompt;        //!<!  histo with prompt LcpKpi+ prong pt
+  TH1F* fHistPtLcDau1Prompt;        //!<!  histo with prompt LcpKpi+ prong pt
+  TH1F* fHistPtLcDau2Prompt;        //!<!  histo with prompt LcpKpi+ prong pt
+  TH1F* fHistDecLenLcPrompt;        //!<!  histo with prompt LcpKpi+ decay length
+  TH1F* fHistDecLenXYLcPrompt;      //!<!  histo with prompt LcpKpi+ decay length xy
+  TH1F* fHistCtLcPrompt;            //!<!  histo with prompt LcpKpi+ proper decay length
+  TH1F* fHistCosPointLcPrompt;      //!<!  histo with prompt LcpKpi+ cosine of pointing angle
+  TH1F* fHistCosPointXYLcPrompt;    //!<!  histo with prompt LcpKpi+ cosine of pointing angle xy
+  TH1F* fHistImpParLcDau0Prompt;    //!<!  histo with prompt LcpKpi+ prong0 d0
+  TH1F* fHistImpParLcDau1Prompt;    //!<!  histo with prompt LcpKpi+ prong1 d0
+  TH1F* fHistImpParLcDau2Prompt;    //!<!  histo with prompt LcpKpi+ prong2 d0
+  TH1F* fHistInvMassLcNonPrompt;    //!<!  histo with nonprompt LcpKpi+ inv mass
+  TH1F* fHistEtaLcNonPrompt;        //!<!  histo with nonprompt LcpKpi+ eta
+  TH1F* fHistPhiLcNonPrompt;        //!<!  histo with nonprompt LcpKpi+ phi
+  TH2F* fHistYPtLcNonPrompt;        //!<!  histo with nonprompt LcpKpi+ y vs pt
+  TH1F* fHistPtLcDau0NonPrompt;     //!<!  histo with nonprompt LcpKpi+ prong pt
+  TH1F* fHistPtLcDau1NonPrompt;     //!<!  histo with nonprompt LcpKpi+ prong pt
+  TH1F* fHistPtLcDau2NonPrompt;     //!<!  histo with nonprompt LcpKpi+ prong pt
+  TH1F* fHistDecLenLcNonPrompt;     //!<!  histo with nonprompt LcpKpi+ decay length
+  TH1F* fHistDecLenXYLcNonPrompt;   //!<!  histo with nonprompt LcpKpi+ decay length xy
+  TH1F* fHistCtLcNonPrompt;         //!<!  histo with nonprompt LcpKpi+ proper decay length
+  TH1F* fHistCosPointLcNonPrompt;   //!<!  histo with nonprompt LcpKpi+ cosine of pointing angle
+  TH1F* fHistCosPointXYLcNonPrompt; //!<!  histo with nonprompt LcpKpi+ cosine of pointing angle xy
+  TH1F* fHistImpParLcDau0NonPrompt; //!<!  histo with nonprompt LcpKpi+ prong0 d0
+  TH1F* fHistImpParLcDau1NonPrompt; //!<!  histo with nonprompt LcpKpi+ prong1 d0
+  TH1F* fHistImpParLcDau2NonPrompt; //!<!  histo with nonprompt LcpKpi+ prong2 d0
 
   TH1F* fHistInvMassK0s;    //!<!  histo with K0s inv mass
   TH1F* fHistInvMassLcK0sp; //!<!  histo with LcpKpi+ inv mass
   TH1F* fHistPtLcK0sp;      //!<!  histo with LcpKpi+ pt
 
-  TH1F* fHistPtGenPrompt[5];       //!<! histos for efficiency (prompt)
-  TH1F* fHistPtGenFeeddw[5];       //!<! histos for efficiency (from B)
-  TH1F* fHistPtGenLimAccPrompt[5]; //!<! histos for efficiency (prompt)
-  TH1F* fHistPtGenLimAccFeeddw[5]; //!<! histos for efficiency (from B)
+  TH1F* fHistPtGenPrompt[5];        //!<! histos for efficiency (prompt)
+  TH1F* fHistPtGenFeeddw[5];        //!<! histos for efficiency (from B)
+  TH1F* fHistPtGenLimAccPrompt[5];  //!<! histos for efficiency (prompt)
+  TH1F* fHistPtGenLimAccFeeddw[5];  //!<! histos for efficiency (from B)
   TH1F* fHistEtaGenLimAccPrompt[5]; //!<! histos for efficiency (prompt)
   TH1F* fHistEtaGenLimAccFeeddw[5]; //!<! histos for efficiency (from B)
   TH1F* fHistPhiGenLimAccPrompt[5]; //!<! histos for efficiency (prompt)
   TH1F* fHistPhiGenLimAccFeeddw[5]; //!<! histos for efficiency (from B)
-  TH1F* fHistPtRecoGenPtPrompt[5]; //!<! histos for efficiency (prompt)
-  TH1F* fHistPtRecoGenPtFeeddw[5]; //!<! histos for efficiency (from B)
-  TH1F* fHistPtRecoPrompt[5];      //!<! histos for efficiency (prompt)
-  TH1F* fHistPtRecoFeeddw[5];      //!<! histos for efficiency (from B)
+  TH1F* fHistPtRecoGenPtPrompt[5];  //!<! histos for efficiency (prompt)
+  TH1F* fHistPtRecoGenPtFeeddw[5];  //!<! histos for efficiency (from B)
+  TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
+  TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
 
   TH2F* fHistCPUTimeTrackVsNTracks;  //!<! histo with CPU time for track selection vs number of selected tracks for candidates
   TH2F* fHistCPUTimeCandVsNTracks;   //!<! histo with CPU time for candidate selection vs number of selected tracks for candidates
@@ -324,12 +327,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   AliVertexerTracks* fVertexerTracks;          // Run-2 vertexer
   o2::vertexing::DCAFitter2 fO2Vertexer2Prong; // o2 vertexer
   o2::vertexing::DCAFitter3 fO2Vertexer3Prong; // o2 vertexer
-  Bool_t fVertexerPropagateToPCA;
-  Double_t fVertexerMaxR;
-  Double_t fVertexerMaxDZIni;
-  Double_t fVertexerMinParamChange;
-  Double_t fVertexerMinRelChi2Change;
-  Bool_t fVertexerUseAbsDCA;
+  Bool_t fVertexerPropagateToPCA;              // bool to propagate to PCA
+  Double_t fVertexerMaxR;                      // max r vertexer
+  Double_t fVertexerMaxDZIni;                  // max DZIni vertexer
+  Double_t fVertexerMinParamChange;            // min ParamChange vertexer
+  Double_t fVertexerMinRelChi2Change;          // min rel chi2 change vertexer
+  Bool_t fVertexerUseAbsDCA;                   // use abs DCA vertexer
   AliEventCuts fEventCuts;          // Standard AliEvent cuts
   AliESDtrackCuts* fTrackCuts2pr;   // Track cut object for 2 prongs
   AliESDtrackCuts* fTrackCuts3pr;   // Track cut object for 3 prongs

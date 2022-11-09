@@ -92,13 +92,16 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistPtD0Dau1{nullptr},
   fHistImpParD0Dau0{nullptr},
   fHistImpParD0Dau1{nullptr},
+  fHistImpParErrD0Dau0{nullptr},
+  fHistImpParErrD0Dau1{nullptr},
   fHistd0Timesd0{nullptr},
   fHistCosPointD0{nullptr},
   fHistDecLenD0{nullptr},
   fHistDecLenXYD0{nullptr},
-  fHistImpParErrD0Dau{nullptr},
   fHistDecLenErrD0{nullptr},
   fHistDecLenXYErrD0{nullptr},
+  fHistNormDecLenD0{nullptr},
+  fHistNormDecLenXYD0{nullptr},
   fHistCovMatPrimVXX2Prong{nullptr},
   fHistCovMatSecVXX2Prong{nullptr},
   fHistCovMatPrimVYY2Prong{nullptr},
@@ -174,12 +177,13 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
   fHistDecLenXYLc{nullptr},
-  fHistCtLc{nullptr},
   fHistCosPointLc{nullptr},
   fHistCosPointXYLc{nullptr},
+  fHistCtLc{nullptr},
   fHistImpParLcDau0{nullptr},
   fHistImpParLcDau1{nullptr},
   fHistImpParLcDau2{nullptr},
+  fHistInvMassLcPrompt{nullptr},
   fHistEtaLcPrompt{nullptr},
   fHistPhiLcPrompt{nullptr},
   fHistYPtLcPrompt{nullptr},
@@ -194,6 +198,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistImpParLcDau0Prompt{nullptr},
   fHistImpParLcDau1Prompt{nullptr},
   fHistImpParLcDau2Prompt{nullptr},
+  fHistInvMassLcNonPrompt{nullptr},
   fHistEtaLcNonPrompt{nullptr},
   fHistPhiLcNonPrompt{nullptr},
   fHistYPtLcNonPrompt{nullptr},
@@ -345,13 +350,16 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistPtD0Dau1;
     delete fHistImpParD0Dau0;
     delete fHistImpParD0Dau1;
+    delete fHistImpParErrD0Dau0;
+    delete fHistImpParErrD0Dau1;
     delete fHistd0Timesd0;
     delete fHistCosPointD0;
     delete fHistDecLenD0;
     delete fHistDecLenXYD0;
-    delete fHistImpParErrD0Dau;
     delete fHistDecLenErrD0;
     delete fHistDecLenXYErrD0;
+    delete fHistNormDecLenD0;
+    delete fHistNormDecLenXYD0;
     delete fHistCovMatPrimVXX2Prong;
     delete fHistCovMatSecVXX2Prong;
     delete fHistCovMatPrimVYY2Prong;
@@ -757,9 +765,10 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("d_selectionFlagD0 = %d\n", selectD0);
     if (selectD0 >= 0)
       fSelectD0 = selectD0;
+    // For some reason fSelectD0bar changes when entering UserExec (wrt the value that is read here from json)
     Int_t selectD0bar = GetJsonInteger(filename.Data(), "hf-task-d0", "d_selectionFlagD0bar");
     printf("d_selectionFlagD0bar = %d\n", selectD0bar);
-    if (selectD0 >= 0)
+    if (selectD0bar >= 0)
       fSelectD0bar = selectD0bar;
     Int_t selectDplus = GetJsonInteger(filename.Data(), "hf-task-dplus", "d_selectionFlagDPlus");
     printf("d_selectionFlagDplus = %d\n", selectDplus);
@@ -1195,13 +1204,16 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistPtD0Dau1 = new TH1F("hPtD0Dau1", " D^{0} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistImpParD0Dau0 = new TH1F("hImpParD0Dau0", " D^{0} prong0 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
   fHistImpParD0Dau1 = new TH1F("hImpParD0Dau1", " D^{0} prong1 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
+  fHistImpParErrD0Dau0 = new TH1F("hImpParErrD0Dau0", " D^{0} prong0 ; #sigma(d_{0}^{xy}) (cm)", 800, 0., 0.2);
+  fHistImpParErrD0Dau1 = new TH1F("hImpParErrD0Dau1", " D^{0} prong1 ; #sigma(d_{0}^{xy}) (cm)", 800, 0., 0.2);
   fHistd0Timesd0 = new TH1F("hd0Timesd0", " d_{0}^{xy}x d_{0}^{xy} (cm^{2})", 500, -1.0, 1.0);
   fHistCosPointD0 = new TH1F("hCosPointD0", " ; cos(#theta_{P})", 110, -1.1, 1.1);
-  fHistDecLenD0 = new TH1F("hDecLenD0", " ; Decay Length (cm)", 200, 0., 2.0);
-  fHistDecLenXYD0 = new TH1F("hDecLenXYD0", " ; Decay Length xy (cm)", 200, 0., 2.0);
-  fHistImpParErrD0Dau = new TH1F("hImpParErrD0Dau", " D^{0} prongs ; #sigma(d_{0}^{xy}) (cm)", 100, -1.0, 1.0);
-  fHistDecLenErrD0 = new TH1F("hDecLenErrD0", " ; #sigma(Decay Length) (cm)", 100, 0., 1.0);
-  fHistDecLenXYErrD0 = new TH1F("hDecLenXYErrD0", " ; #sigma(Decay Length xy) (cm)", 100, 0., 1.0);
+  fHistDecLenD0 = new TH1F("hDecLenD0", " ; Decay Length (cm)", 800, 0., 4.0);
+  fHistDecLenXYD0 = new TH1F("hDecLenXYD0", " ; Decay Length xy (cm)", 800, 0., 4.0);
+  fHistDecLenErrD0 = new TH1F("hDecLenErrD0", " ; #sigma(Decay Length) (cm)", 800, 0., 0.2);
+  fHistDecLenXYErrD0 = new TH1F("hDecLenXYErrD0", " ; #sigma(Decay Length xy) (cm)", 800, 0., 0.2);
+  fHistNormDecLenD0 = new TH1F("hNormDecLenD0", " ; Normalised Decay Length (cm)", 800, 0., 40.0);
+  fHistNormDecLenXYD0 = new TH1F("hNormDecLenXYD0", " ; Normalised Decay Length xy (cm)", 800, 0., 40.0);
   fHistCovMatPrimVXX2Prong = new TH1F("hCovMatPrimVXX2Prong", " Primary Vertex ; XX element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
   fHistCovMatSecVXX2Prong = new TH1F("hCovMatSecVXX2Prong", " Secondary Vertex 2-prong ; XX element of covariant matrix (cm^2)", 100, 0., 0.2);
   fHistCovMatPrimVYY2Prong = new TH1F("hCovMatPrimVYY2Prong", " Primary Vertex ; YY element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
@@ -1217,13 +1229,16 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistPtD0Dau1);
   fOutput->Add(fHistImpParD0Dau0);
   fOutput->Add(fHistImpParD0Dau1);
+  fOutput->Add(fHistImpParErrD0Dau0);
+  fOutput->Add(fHistImpParErrD0Dau1);
   fOutput->Add(fHistd0Timesd0);
   fOutput->Add(fHistCosPointD0);
   fOutput->Add(fHistDecLenD0);
   fOutput->Add(fHistDecLenXYD0);
-  fOutput->Add(fHistImpParErrD0Dau);
   fOutput->Add(fHistDecLenErrD0);
   fOutput->Add(fHistDecLenXYErrD0);
+  fOutput->Add(fHistNormDecLenD0);
+  fOutput->Add(fHistNormDecLenXYD0);
   fOutput->Add(fHistCovMatPrimVXX2Prong);
   fOutput->Add(fHistCovMatSecVXX2Prong);
   fOutput->Add(fHistCovMatPrimVYY2Prong);
@@ -1974,7 +1989,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
         }
 
         Int_t dzeroSel = DzeroSkimCuts(the2Prong);
-        if (dzeroSel > 0 && fSelectD0 + fSelectD0bar > 0) {
+        if (dzeroSel > 0 && fSelectD0 > 0) {
+        // fSelectD0bar has a (yet unknown) bug. Disable for the usage for the moment
+        // if (dzeroSel > 0 && fSelectD0 + fSelectD0bar > 0) {
             dzeroSel = DzeroSelectionCuts(the2Prong);
         }
 
@@ -2007,7 +2024,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           Double_t d0xd0 = the2Prong->Prodd0d0();
           if (fSelectD0 == 0 || dzeroSel == 1 || dzeroSel == 3)
             fHistInvMassD0->Fill(m0);
-          if (fSelectD0bar == 0 || dzeroSel == 2 || dzeroSel == 3)
+          // fSelectD0bar has a (yet unknown) bug. Disable for the usage for the moment
+          //if (fSelectD0bar == 0 || dzeroSel == 2 || dzeroSel == 3)
+          if (fSelectD0 == 0 || dzeroSel == 2 || dzeroSel == 3)
             fHistInvMassD0->Fill(m0b);
           fHistPtD0->Fill(ptD);
           fHistYPtD0->Fill(ptD, rapid);
@@ -2019,8 +2038,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           fHistCosPointD0->Fill(the2Prong->CosPointingAngle());
           fHistDecLenD0->Fill(decaylength);
           fHistDecLenXYD0->Fill(decaylengthxy);
-          fHistImpParErrD0Dau->Fill(the2Prong->Getd0errProng(0));
-          fHistImpParErrD0Dau->Fill(the2Prong->Getd0errProng(1));
+          fHistImpParErrD0Dau0->Fill(the2Prong->Getd0errProng(0));
+          fHistImpParErrD0Dau1->Fill(the2Prong->Getd0errProng(1));
+          fHistNormDecLenD0->Fill(the2Prong->NormalizedDecayLength());
+          fHistNormDecLenXYD0->Fill(the2Prong->NormalizedDecayLengthXY());
           fHistDecLenErrD0->Fill(the2Prong->DecayLengthError());
           fHistDecLenXYErrD0->Fill(the2Prong->DecayLengthXYError());
           if (fReadMC && mcEvent) {
@@ -3397,14 +3418,21 @@ float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName,
   char line[500];
   float** arrVals = 0x0;
   bool corrSection = false;
+  bool moveToValues = false;
   while (!feof(fj)) {
     fgets(line, 500, fj);
-    if (strstr(line, section) && !(section && !section[0]))
+    if (strstr(line, section) && !(section && !section[0])){
       corrSection = true;
+      if (strstr(section, "selector"))
+        moveToValues = true;
+    }
     if (strstr(line, key)) {
       TString full = "";
       while (!feof(fj)) {
         fgets(line, 500, fj);
+        if (moveToValues && !strstr(line, "values"))
+          continue;
+        moveToValues = false;
         int len = strlen(line);
         if (line[len - 1] == '\n')
           line[len - 1] = 0;
