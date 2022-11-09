@@ -2577,9 +2577,6 @@ AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(TObjAr
   }
   if (!trkv)
     return 0x0;
-  Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
-  if (vertRadius2 > fMaxDecVertRadius2)
-    return 0x0;
   //  trkv->Print("all");
   //  printf("=============\n");
   return trkv;
