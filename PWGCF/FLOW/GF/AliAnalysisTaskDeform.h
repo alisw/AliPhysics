@@ -123,6 +123,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
+  void SetUseCentralityForOTF(bool newval) { fUseCentralityOTF = newval; }
+  void SetIPBins(Int_t nBins, Double_t *multibins);
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -138,6 +140,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fBypassTriggerAndEvetCuts;
   Bool_t fUSe15opass2PU;
   Bool_t fOnTheFly;
+  Bool_t fUseCentralityOTF;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; //For random number generation
@@ -145,6 +148,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TAxis *fPtAxis;
   TAxis *fEtaAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
+  TAxis *fIPAxis;      //Impact parameter axis for on-the-fly
   TAxis *fV0MMultiAxis;   //Defaults V0M bins
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
@@ -166,6 +170,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TList *fQAList; //
   TH1D* fEventCount; //!
   TH1D *fMultiDist;
+  TH1D *fIPDist;
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;

@@ -575,6 +575,12 @@ AliAnalysisTaskR2P2highMult * AddTaskR2P2highMult
       
       minCentrality[0] = 0.5;      maxCentrality[0]  = 1.0;
     }
+  else if ( CentralityGroup == 65 )
+    {
+      nCentrality = 1;
+      
+      minCentrality[0] = 0.;      maxCentrality[0]  = 1.0;
+    }
       
 
   else    return 0;
