@@ -626,11 +626,11 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
   }
 
   fNPtBinsDzero = 25;
-  Double_t defaultPtBins[26] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
+  Double_t defaultPtBins[fNPtBinsDzero+1] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
   for (Int_t ib = 0; ib < fNPtBinsDzero + 1; ib++)
     fPtBinLimsDzero[ib] = defaultPtBins[ib];
 
-  Double_t defaultD0Cuts[25][kNCutVarsDzero] =
+  Double_t defaultD0Cuts[fNPtBinsDzero][kNCutVarsDzero] =
     {{0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0., 100., 100., 0.0},   /* pt<0.5*/
      {0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0., 100., 100., 0.0},   /* 0.5<pt<1*/
      {0.400, 300. * 1E-4, 0.8, 0.4, 0.4, 1000. * 1E-4, 1000. * 1E-4, -25000. * 1E-8, 0.80, 0., 0., 100., 100., 0.0},  /* 1<pt<1.5 */
@@ -663,11 +663,11 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
   }
 
   fNPtBinsDplus = 12;
-  Double_t defaultPtBinsDplus[13] = {1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 16., 24., 36.};
+  Double_t defaultPtBinsDplus[fNPtBinsDplus+1] = {1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 16., 24., 36.};
   for (Int_t ib = 0; ib < fNPtBinsDplus + 1; ib++)
     fPtBinLimsDplus[ib] = defaultPtBinsDplus[ib];
 
-  Double_t defaultDplusCuts[12][kNCutVarsDplus] =
+  Double_t defaultDplusCuts[fNPtBinsDplus][kNCutVarsDplus] =
     {{0.2, 0.3, 0.3, 0.07, 6., 0.96, 0.985, 2.5},  /* 1<pt<2   */
      {0.2, 0.3, 0.3, 0.07, 5., 0.96, 0.985, 2.5},  /* 2<pt<3   */
      {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.980, 2.5},  /* 3<pt<4   */
@@ -687,11 +687,11 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
   }
 
   fNPtBinsLc = 10;
-  Double_t defaultPtBinsLc[11] = {0., 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
+  Double_t defaultPtBinsLc[fNPtBinsLc+1] = {0., 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
   for (Int_t ib = 0; ib < fNPtBinsLc + 1; ib++)
     fPtBinLimsLc[ib] = defaultPtBinsLc[ib];
 
-  Double_t defaultLcCuts[10][kNCutVarsLc] =
+  Double_t defaultLcCuts[fNPtBinsLc][kNCutVarsLc] =
     {{0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* pt<1*/
      {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 1<pt<2*/
      {0.300, 0.4, 0.4, 0.4, 0., 0.004, 0.},  /* 2<pt<3 */
@@ -709,20 +709,20 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
   }
 
   fNPtBinsJpsi = 9;
-  Double_t defaultPtBinsJpsi[10] = {0, 0.5, 1., 2., 3., 4., 5., 7., 10., 15.};
+  Double_t defaultPtBinsJpsi[fNPtBinsJpsi+1] = {0, 0.5, 1., 2., 3., 4., 5., 7., 10., 15.};
   for (Int_t ib = 0; ib < fNPtBinsJpsi + 1; ib++)
     fPtBinLimsJpsi[ib] = defaultPtBinsJpsi[ib];
 
-  Double_t defaultJpsiCuts[9][kNCutVarsJpsi] =
-    {{0.5, 0.2, 0.4, 1},  /* pt<0.5    */
-     {0.5, 0.2, 0.4, 1},  /* 0.5<pt<1   */
-     {0.5, 0.2, 0.4, 1},  /* 1<pt<2   */
-     {0.5, 0.2, 0.4, 1},  /* 2<pt<3   */
-     {0.5, 0.2, 0.4, 1},  /* 3<pt<4   */
-     {0.5, 0.2, 0.4, 1},  /* 4<pt<5   */
-     {0.5, 0.2, 0.4, 1},  /* 5<pt<7   */
-     {0.5, 0.2, 0.4, 1},  /* 7<pt<10  */
-     {0.5, 0.2, 0.4, 1}}; /* 10<pt<15 */
+  Double_t defaultJpsiCuts[fNPtBinsJpsi][kNCutVarsJpsi] =
+    {{0.5, 0.2, 0.4, 0.5, 1},  /* pt<0.5    */
+     {0.5, 0.2, 0.4, 0.5, 1},  /* 0.5<pt<1   */
+     {0.5, 0.2, 0.4, 0.5, 1},  /* 1<pt<2   */
+     {0.5, 0.2, 0.4, 0.5, 1},  /* 2<pt<3   */
+     {0.5, 0.2, 0.4, 0.5, 1},  /* 3<pt<4   */
+     {0.5, 0.2, 0.4, 0.5, 1},  /* 4<pt<5   */
+     {0.5, 0.2, 0.4, 0.5, 1},  /* 5<pt<7   */
+     {0.5, 0.2, 0.4, 0.5, 1},  /* 7<pt<10  */
+     {0.5, 0.2, 0.4, 0.5, 1}}; /* 10<pt<15 */
 
   for (Int_t ib = 0; ib < fNPtBinsJpsi; ib++) {
     for (Int_t jc = 0; jc < kNCutVarsJpsi; jc++) {
@@ -765,7 +765,6 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("d_selectionFlagD0 = %d\n", selectD0);
     if (selectD0 >= 0)
       fSelectD0 = selectD0;
-    // For some reason fSelectD0bar changes when entering UserExec (wrt the value that is read here from json)
     Int_t selectD0bar = GetJsonInteger(filename.Data(), "hf-task-d0", "d_selectionFlagD0bar");
     printf("d_selectionFlagD0bar = %d\n", selectD0bar);
     if (selectD0bar >= 0)
@@ -995,7 +994,6 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       printf("invmass V0 cut = %g\n", fCutOnK0sMass);
     }
 
-    // Selections used for Lc
     printf("------- CANDIDATE SELECTIONS -------\n");
 
     int nptbinlimsDzero = 0, ncDzero = 0, nptDzero = 0;
@@ -1989,9 +1987,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
         }
 
         Int_t dzeroSel = DzeroSkimCuts(the2Prong);
-        if (dzeroSel > 0 && fSelectD0 > 0) {
-        // fSelectD0bar has a (yet unknown) bug. Disable for the usage for the moment
-        // if (dzeroSel > 0 && fSelectD0 + fSelectD0bar > 0) {
+        if (dzeroSel > 0 && fSelectD0 + fSelectD0bar > 0) {
             dzeroSel = DzeroSelectionCuts(the2Prong);
         }
 
@@ -2579,9 +2575,6 @@ AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(TObjAr
     trkv = new AliESDVertex(vertCoord, vertCov, vertChi2, trkArray->GetEntriesFast());
   }
   if (!trkv)
-    return 0x0;
-  Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
-  if (vertRadius2 > fMaxDecVertRadius2)
     return 0x0;
   //  trkv->Print("all");
   //  printf("=============\n");
