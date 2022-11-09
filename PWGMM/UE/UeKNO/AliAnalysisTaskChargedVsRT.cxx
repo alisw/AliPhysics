@@ -146,7 +146,8 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
       hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0),
       hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0),
       hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0), hPTVsDCAData(0),
-      hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcaAll(0) {
+      hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcaAll(0),
+      hV0MvsNchT(0) {
 
   for (Int_t i = 0; i < 3; ++i) {
     hPtVsUEGenTest[i] = 0;
@@ -190,7 +191,8 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char *name)
       hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0),
       hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0),
       hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0), hPTVsDCAData(0),
-      hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcaAll(0)
+      hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcaAll(0),
+      hV0MvsNchT(0)
 
 {
 
@@ -578,6 +580,9 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects() {
                          5.0 * TMath::Pi() / 2.0);
   fOutputList->Add(hPhiHybrid1);
 
+  hV0MvsNchT = new TProfile("hV0MvsNchT", "", fNchNbin, minbinNch, fNchBinMax);
+  fOutputList->Add(hV0MvsNchT);
+
   for (Int_t i = 0; i < 3; ++i) {
     hPhiRec[i] = new TH1D(Form("hPhiRec_%s", NameReg_3[i]), "", 64,
                           -TMath::Pi() / 2.0, 3.0 * TMath::Pi() / 2.0);
@@ -781,6 +786,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *) {
     } else {
       // KNO scaling
       if ((fRecLeadPt >= fLeadPtCutMin && fRecLeadPt < fLeadPtCutMax))
+
         GetMultiplicityDistributionsData(phiHy, ptHy, fnRecHy, ptHyWoDCA,
                                          dcaxyHyWoDCA, fnRecHyWoDCA);
     }
@@ -969,7 +975,7 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsData(
 
   hNchTSData->Fill(multTSrec);
   hNchData->Fill(multRec);
-
+  hV0MvsNchT->Fill(multRec, fv0mpercentile);
   // Filling rec pT vs UE (for pT *** considering the hybrid track cuts or the
   // 2011 track cuts ***)
   for (Int_t i = 0; i < multRec; ++i) { // loop over all these tracks
