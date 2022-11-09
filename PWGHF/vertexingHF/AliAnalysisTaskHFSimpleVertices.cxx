@@ -267,10 +267,6 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fCandidateCutLevel(1),
   fMinPt3Prong(0.),
   fMaxRapidityCand(0.8),
-  fNPtBinsDzero(25),
-  fNPtBinsDplus(12),
-  fNPtBinsJpsi(9),
-  fNPtBinsLc(10),
   fSelectD0(1),
   fSelectD0bar(1),
   fSelectDplus(1),
@@ -625,7 +621,6 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
     }
   }
 
-  fNPtBinsDzero = 25;
   Double_t defaultPtBins[fNPtBinsDzero+1] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
   for (Int_t ib = 0; ib < fNPtBinsDzero + 1; ib++)
     fPtBinLimsDzero[ib] = defaultPtBins[ib];
@@ -662,7 +657,6 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
     }
   }
 
-  fNPtBinsDplus = 12;
   Double_t defaultPtBinsDplus[fNPtBinsDplus+1] = {1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 16., 24., 36.};
   for (Int_t ib = 0; ib < fNPtBinsDplus + 1; ib++)
     fPtBinLimsDplus[ib] = defaultPtBinsDplus[ib];
@@ -686,7 +680,6 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
     }
   }
 
-  fNPtBinsLc = 10;
   Double_t defaultPtBinsLc[fNPtBinsLc+1] = {0., 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
   for (Int_t ib = 0; ib < fNPtBinsLc + 1; ib++)
     fPtBinLimsLc[ib] = defaultPtBinsLc[ib];
@@ -708,7 +701,6 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
     }
   }
 
-  fNPtBinsJpsi = 9;
   Double_t defaultPtBinsJpsi[fNPtBinsJpsi+1] = {0, 0.5, 1., 2., 3., 4., 5., 7., 10., 15.};
   for (Int_t ib = 0; ib < fNPtBinsJpsi + 1; ib++)
     fPtBinLimsJpsi[ib] = defaultPtBinsJpsi[ib];
