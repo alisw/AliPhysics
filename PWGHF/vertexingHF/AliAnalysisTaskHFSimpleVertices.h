@@ -93,14 +93,14 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
                         kbitLc };
   enum { kMaxNPtBinsDzero = 100,
          kNCutVarsDzero = 14 };
-  enum { kMaxNPtBinsJpsi = 40,
-         kNCutVarsJpsi = 4 };
-  enum { kMaxNPtBinsLc = 20,
+  enum { kMaxNPtBinsJpsi = 100,
+         kNCutVarsJpsi = 5 };
+  enum { kMaxNPtBinsLc = 100,
          kNCutVarsLc = 7 };
-  enum { kMaxNPtBinsDplus = 70,
+  enum { kMaxNPtBinsDplus = 100,
          kNCutVarsDplus = 8 };
-  enum { kMaxNPtBinsSingleTrack = 20,
-         kNCutVarsSingleTrack = 5 };
+  enum { kMaxNPtBinsSingleTrack = 100,
+         kNCutVarsSingleTrack = 2 };
   enum { kMaxNPtBins2ProngsSkims = 100,
          kNCutVars2Prong = 4 };
   enum { kMaxNPtBins3ProngsSkims = 100,
