@@ -2826,6 +2826,203 @@ Int_t AliVertexingHFUtils::CheckB0toDminuspiDecay(TClonesArray* arrayMC, AliAODM
   return decayB0;
 }
 //____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckResoToDplusK0SDecay(TClonesArray *arrayMC, AliAODMCParticle *mcPart, Int_t *arrayDauLab) {
+  /// Checks the D* -> D+(-> K-pi+pi+) K0S(->pi+pi-) decay channel.
+  /// Returns pdg of the resonance, -1 in other cases
+
+  Int_t pdgD = mcPart->GetPdgCode();
+  if (TMath::Abs(pdgD) != 435 && TMath::Abs(pdgD) != 10433)
+    return -1;
+
+  Int_t nDau = mcPart->GetNDaughters();
+  if (nDau != 2)
+    return -1;
+
+  Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
+  Int_t nKaons = 0;
+  Int_t nPions = 0;
+  Double_t sumPxDau = 0.;
+  Double_t sumPyDau = 0.;
+  Double_t sumPzDau = 0.;
+  Int_t nFoundKpi = 0;
+
+  for (Int_t iDau = 0; iDau < nDau; iDau++) {
+    Int_t indDau = labelFirstDau + iDau;
+    if (indDau < 0)
+      return -1;
+    AliAODMCParticle *dau = dynamic_cast<AliAODMCParticle *>(arrayMC->At(indDau));
+    if (!dau)
+      return -1;
+    Int_t pdgdau = dau->GetPdgCode();
+    if (TMath::Abs(pdgdau) == 411) {
+      /// Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2
+      /// for the resonant case, -1 in other cases
+      Int_t labDauDplus[3] = {-1, -1, -1};
+      Int_t decayDplus = CheckDplusDecay(arrayMC, dau, labDauDplus);
+      if (decayDplus < 0 || labDauDplus[0] == -1)
+        return -1;
+
+      nPions += 2;
+      nKaons++;
+      for (Int_t iDplus = 0; iDplus < 3; iDplus++) {
+        AliAODMCParticle *dauDplus = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDauDplus[iDplus]));
+        sumPxDau += dauDplus->Px();
+        sumPyDau += dauDplus->Py();
+        sumPzDau += dauDplus->Pz();
+        arrayDauLab[nFoundKpi++] = labDauDplus[iDplus];
+      }
+      if (nFoundKpi > 4)
+        return -1;
+    } else if (TMath::Abs(pdgdau) == 311) {
+      AliAODMCParticle *v0 = dau;
+      Int_t nK0Dau = dau->GetNDaughters();
+      if (nK0Dau != 1)
+        return -1;
+      Int_t indK0s = dau->GetDaughterLabel(0);
+      if (indK0s < 0)
+        return -1;
+      v0 = dynamic_cast<AliAODMCParticle *>(arrayMC->At(indK0s));
+      if (!v0)
+        return -1;
+      Int_t nV0Dau = v0->GetNDaughters();
+      if (nV0Dau != 2)
+        return -1;
+
+      Int_t indFirstV0Dau = v0->GetDaughterLabel(0);
+      for (Int_t v0Dau = 0; v0Dau < 2; v0Dau++) {
+        Int_t indV0Dau = indFirstV0Dau + v0Dau;
+        if (indV0Dau < 0)
+          return -1;
+        AliAODMCParticle *v0dau = dynamic_cast<AliAODMCParticle *>(arrayMC->At(indV0Dau));
+        if (!v0dau)
+          return -1;
+        Int_t pdgv0dau = v0dau->GetPdgCode();
+        if (TMath::Abs(pdgv0dau) == 211) {
+          sumPxDau += v0dau->Px();
+          sumPyDau += v0dau->Py();
+          sumPzDau += v0dau->Pz();
+          nPions++;
+          arrayDauLab[nFoundKpi++] = indV0Dau;
+          if (nFoundKpi > 4)
+            return -1;
+        }
+      }
+    }
+  }
+
+  if (nPions != 4)
+    return -1;
+  if (nKaons != 1)
+    return -1;
+
+  if (TMath::Abs(mcPart->Px() - sumPxDau) > 0.1)
+    return -1;
+  if (TMath::Abs(mcPart->Py() - sumPyDau) > 0.1)
+    return -1;
+  if (TMath::Abs(mcPart->Pz() - sumPzDau) > 0.1)
+    return -1;
+
+  return TMath::Abs(pdgD);
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckResoToDstarK0SDecay(TClonesArray *arrayMC, AliAODMCParticle *mcPart, Int_t *arrayDauLab) {
+  /// Checks the D* -> D*+(-> D0 pi+ -> K-pi+pi+) K0S(->pi+pi-) decay channel.
+  /// Returns pdg of the resonance, -1 in other cases
+
+  Int_t pdgD = mcPart->GetPdgCode();
+  if (TMath::Abs(pdgD) != 10433 && TMath::Abs(pdgD) != 435)
+    return -1;
+
+  Int_t nDau = mcPart->GetNDaughters();
+  if (nDau != 2)
+    return -1;
+
+  Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
+  Int_t nKaons = 0;
+  Int_t nPions = 0;
+  Double_t sumPxDau = 0.;
+  Double_t sumPyDau = 0.;
+  Double_t sumPzDau = 0.;
+  Int_t nFoundKpi = 0;
+
+  for (Int_t iDau = 0; iDau < nDau; iDau++) {
+    Int_t indDau = labelFirstDau + iDau;
+    if (indDau < 0)
+      return -1;
+    AliAODMCParticle *dau = dynamic_cast<AliAODMCParticle *>(arrayMC->At(indDau));
+    if (!dau)
+      return -1;
+    Int_t pdgdau = dau->GetPdgCode();
+    if (TMath::Abs(pdgdau) == 413) {
+      /// Checks the Dstar decay channel. Returns 1 for the D0pi decay, -1 in other cases
+      Int_t labDauDstar[3] = {-1, -1, -1};
+      Int_t decayDstar = CheckDstarDecay(arrayMC, dau, labDauDstar);
+      if (decayDstar < 0 || labDauDstar[0] == -1)
+        return -1;
+
+      nPions += 2;
+      nKaons++;
+      for (Int_t iDstar = 0; iDstar < 3; iDstar++) {
+        AliAODMCParticle *dauDstar = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDauDstar[iDstar]));
+        sumPxDau += dauDstar->Px();
+        sumPyDau += dauDstar->Py();
+        sumPzDau += dauDstar->Pz();
+        arrayDauLab[nFoundKpi++] = labDauDstar[iDstar];
+      }
+      if (nFoundKpi > 4)
+        return -1;
+    } else if (TMath::Abs(pdgdau) == 311) {
+      AliAODMCParticle *v0 = dau;
+      Int_t nK0Dau = dau->GetNDaughters();
+      if (nK0Dau != 1)
+        return -1;
+      Int_t indK0s = dau->GetDaughterLabel(0);
+      if (indK0s < 0)
+        return -1;
+      v0 = dynamic_cast<AliAODMCParticle *>(arrayMC->At(indK0s));
+      if (!v0)
+        return -1;
+      Int_t nV0Dau = v0->GetNDaughters();
+      if (nV0Dau != 2)
+        return -1;
+
+      Int_t indFirstV0Dau = v0->GetDaughterLabel(0);
+      for (Int_t v0Dau = 0; v0Dau < 2; v0Dau++) {
+        Int_t indV0Dau = indFirstV0Dau + v0Dau;
+        if (indV0Dau < 0)
+          return -1;
+        AliAODMCParticle *v0dau = dynamic_cast<AliAODMCParticle *>(arrayMC->At(indV0Dau));
+        if (!v0dau)
+          return -1;
+        Int_t pdgv0dau = v0dau->GetPdgCode();
+        if (TMath::Abs(pdgv0dau) == 211) {
+          sumPxDau += v0dau->Px();
+          sumPyDau += v0dau->Py();
+          sumPzDau += v0dau->Pz();
+          nPions++;
+          arrayDauLab[nFoundKpi++] = indV0Dau;
+          if (nFoundKpi > 4)
+            return -1;
+        }
+      }
+    }
+  }
+
+  if (nPions != 4)
+    return -1;
+  if (nKaons != 1)
+    return -1;
+
+  if (TMath::Abs(mcPart->Px() - sumPxDau) > 0.1)
+    return -1;
+  if (TMath::Abs(mcPart->Py() - sumPyDau) > 0.1)
+    return -1;
+  if (TMath::Abs(mcPart->Pz() - sumPzDau) > 0.1)
+    return -1;
+
+  return TMath::Abs(pdgD);
+}
+//____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd){
   /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
   /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
