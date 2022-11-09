@@ -765,7 +765,6 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("d_selectionFlagD0 = %d\n", selectD0);
     if (selectD0 >= 0)
       fSelectD0 = selectD0;
-    // For some reason fSelectD0bar changes when entering UserExec (wrt the value that is read here from json)
     Int_t selectD0bar = GetJsonInteger(filename.Data(), "hf-task-d0", "d_selectionFlagD0bar");
     printf("d_selectionFlagD0bar = %d\n", selectD0bar);
     if (selectD0bar >= 0)
@@ -1989,9 +1988,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
         }
 
         Int_t dzeroSel = DzeroSkimCuts(the2Prong);
-        if (dzeroSel > 0 && fSelectD0 > 0) {
-        // fSelectD0bar has a (yet unknown) bug. Disable for the usage for the moment
-        // if (dzeroSel > 0 && fSelectD0 + fSelectD0bar > 0) {
+        if (dzeroSel > 0 && fSelectD0 + fSelectD0bar > 0) {
             dzeroSel = DzeroSelectionCuts(the2Prong);
         }
 
