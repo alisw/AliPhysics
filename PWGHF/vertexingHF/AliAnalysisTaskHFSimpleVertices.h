@@ -375,10 +375,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc];                      // LcpKpi+ cuts
   Double_t fMinPt3Prong;                                             // Min pt for 3 prong candidate
   Double_t fMaxRapidityCand;                                         // Max rapidity cut (if -999 use pt dependent cut)
-  constexpr Int_t fNPtBinsDzero = 25;                                               // Number of pt bins Dzero
-  constexpr Int_t fNPtBinsDplus = 12;                                               // Number of pt bins Dplus
-  constexpr Int_t fNPtBinsJpsi = 9;                                                // Number of pt bins Jpsi
-  constexpr Int_t fNPtBinsLc = 10;                                                  // Number of pt bins Lc
+  static constexpr Int_t fNPtBinsDzero = 25;                                               // Number of pt bins Dzero
+  static constexpr Int_t fNPtBinsDplus = 12;                                               // Number of pt bins Dplus
+  static constexpr Int_t fNPtBinsJpsi = 9;                                                // Number of pt bins Jpsi
+  static constexpr Int_t fNPtBinsLc = 10;                                                  // Number of pt bins Lc
   Double_t fPtBinLimsDzero[kMaxNPtBinsDzero];                        // [fNPtBinsDzero+1] limits of pt bins
   Double_t fPtBinLimsDplus[kMaxNPtBinsDplus];                        // [fNPtBinsDplus+1] limits of pt bins
   Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];                          // [fNPtBinsJpsi+1] limits of pt bins
