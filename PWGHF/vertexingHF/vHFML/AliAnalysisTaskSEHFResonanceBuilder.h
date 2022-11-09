@@ -140,10 +140,12 @@ private:
     AliAnalysisTaskSEHFResonanceBuilder &operator=(const AliAnalysisTaskSEHFResonanceBuilder &source);
 
     int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, AliAODPidHF *&pidHF, std::size_t &iCand, std::vector<double> &modelPred, std::vector<double> &modelPredSecond);
-    int IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF, double nSigmaDet[2]);
+    int IsBachelorSelected(AliAODTrack *&track, AliAODPidHF *&pidHF, std::array<double, kNumBachIDs>& nSigmaTPC, std::array<double, kNumBachIDs>& nSigmaTOF);
     int IsV0Selected(AliAODv0 *&track);
     bool IsInvMassResoSelected(double &mass, int bachHypo, int V0hypo);
     bool IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau, AliAnalysisVertexingHF *vHF);
+
+    void FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
 
     std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
     std::array<int, kNumV0IDs> kPdgV0IDs = {310, 3122};
@@ -152,6 +154,8 @@ private:
 
     TList *fOutput = nullptr;                                                             //!<! list send on output slot 0
     TH1F *fHistNEvents = nullptr;                                                         //!<! hist. for No. of events
+    std::vector<TH2F*> fHistMCGenAccPrompt{};                                             //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
+    std::vector<TH2F*> fHistMCGenAccNonPrompt{};                                          //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
     std::array<TH2F*, kNumBachIDs> fHistNsigmaTPCSelBach{};                               //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
     std::array<TH2F*, kNumBachIDs> fHistNsigmaTOFSelBach{};                               //!<! array of histograms with NsigmaTOF vs. p for selected bachelor tracks
     std::array<TH2F*, kNumV0IDs> fHistMassSelV0{};                                        //!<! array of histograms with invariant-mass vs. pT for selected V0s
@@ -206,7 +210,7 @@ private:
     std::vector<float> fInvMassResoLaMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of lambda combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 8); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 10); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 
