@@ -183,6 +183,7 @@ set(SRCS
   AliAnalysisEffTaskExclusivePID.cxx
   AliAnalysisEfficiencyPbPbExclusivePID.cxx
   AliAnalysisEfficiencyPbPbNodoublecount.cxx
+  AliFemtoPairCutRadialDistanceDR.cxx
   
 
   )
