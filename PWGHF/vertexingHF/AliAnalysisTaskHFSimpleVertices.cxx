@@ -801,7 +801,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
         AliInfo(Form("3prong %d %d, %d, %g", nc2Prong, ib, jc, cutsSingleTrack2Prong[ib][jc]));
       }
     }
-    Double_t etamax2 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "etaMax2Prong");
+    Double_t etamax2 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "etaMaxTrack2Prong");
     printf("Max eta  (2 prong) = %g\n", etamax2);
     if (etamax2 > 0)
       fTrackCuts2pr->SetEtaRange(-etamax2, +etamax2);
