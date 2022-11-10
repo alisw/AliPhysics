@@ -737,7 +737,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       fTriggerMask = triggerMask[triggerMaskFromJSON];
     }
 
-    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "pTMinTrack2Prong");
+    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "ptMinTrack2Prong");
     printf("Min pt track (2 prong)= %g\n", ptmintrack2);
     if (ptmintrack2 > 0)
       fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
