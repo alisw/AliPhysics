@@ -781,7 +781,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     fTrackCutsBach->SetMinNClustersTPC(minncluTPC);
 
     int nptbinlimsSingleTrack = 0;
-    float* ptbinsSingleTrack = GetJsonArray(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "pTBinsTrack", nptbinlimsSingleTrack);
+    float* ptbinsSingleTrack = GetJsonArray(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "binsPtTrack", nptbinlimsSingleTrack);
     int npt2Prong = 0, npt3Prong = 0, nc2Prong = 0, nc3Prong = 0;
     float** cutsSingleTrack2Prong = GetJsonMatrix(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "cutsTrack2Prong", npt2Prong, nc2Prong);
     float** cutsSingleTrack3Prong = GetJsonMatrix(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "cutsTrack3Prong", npt3Prong, nc3Prong);
