@@ -874,7 +874,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     // Selections used in the skimming
     printf("------- CANDIDATE SELECTIONS FOR SKIMMING -------\n");
 
-    Double_t ptTol = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "pTTolerance");
+    Double_t ptTol = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "ptTolerance");
     if (ptTol > 0)
       fPtWithoutVtxToll = ptTol;
 
