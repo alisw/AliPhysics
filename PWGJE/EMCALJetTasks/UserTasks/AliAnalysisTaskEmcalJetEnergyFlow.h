@@ -80,7 +80,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,16);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,17);
 	/// \endcond
 };
 #endif

@@ -310,7 +310,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateJetHistograms(){
   
         histname = TString::Format("%s/histJetArea_%d", groupname.Data(), cent);
         histtitle = TString::Format("%s;#it{A}_{jet};counts", histname.Data());
-        fHistManager.CreateTH1(histname, histtitle, fNPtBins / 2, 0, 3);
+        fHistManager.CreateTH1(histname, histtitle, fNPtBins, 0, 3);
   
         histname = TString::Format("%s/histJetPhi_%d", groupname.Data(), cent);
         histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histname.Data());
@@ -388,8 +388,8 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateEnergyflowHistograms(){
     Int_t fNDPtBins = 100;
     Double_t fMaxDPtBin = 80.0;
     Double_t fMinDPtBin = -20.0;
-    Int_t fNDRBins = 10; //Maybe this is too fine
-    Double_t fMaxDRBin = 0.4;
+    Int_t fNDRBins = 120; //Maybe this is too fine
+    Double_t fMaxDRBin = 0.3;
     Double_t fMinDRBin = 0.0;
     Int_t Bins[4] = {fNPtBins,fNPtBins,fNDPtBins,fNDPtBins}; //These three arrays are needed for the THnSparse Response matrix
     Double_t MaxBin[4] = {fMaxPtBin,fMaxPtBin,fMaxDPtBin,fMaxDPtBin};
@@ -546,6 +546,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
   Float_t Max_dist = 0.2;               //Maximum distance used as a matching criterion for JetMatcher
   Float_t max_eta = 0.5;                //Maximum eta jet acceptance (cross-check within the JetMatcher)
   Double_t ResponseData[4];             //Array needed for filling the THnSparse R-matrix
+  Bool_t SAFE = kTRUE;                  //Boolean flag for the safeguard of considering only positive pt jets
 
   AliJetContainer* DetjetCont1=0; // One container for the jets of the lower R (of each comparison pair)
   AliJetContainer* DetjetCont2=0; // One container for the jets of the higher R (of each comparison pair)
@@ -642,6 +643,7 @@ Pair_number= NumJet-1;
                     Double_t pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt();
                     if(DetjetCont1->GetRhoParameter())pt_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Pt() - DetjetCont1->GetRhoVal() * (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Area();
                     if(DetjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt() - DetjetCont2->GetRhoVal() *(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Area();
+                    if((pt_low<=0)||(pt_high<=0)) continue;
                     Double_t eta_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Eta();
                     Double_t eta_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Eta();
                     if((pt_low>0)&&(pt_high>0)) DeltaPt_det = pt_high-pt_low;
@@ -699,6 +701,7 @@ Pair_number= NumJet-1;
                       Double_t pt_high = (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Pt();
                       if(GenjetCont1->GetRhoParameter())pt_low = Jet_genlowR->Pt() - GenjetCont1->GetRhoVal() * Jet_genlowR->Area();
                       if(GenjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Pt()- GenjetCont2->GetRhoVal()* (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Area();
+                      if((pt_low<=0)||(pt_high<=0)) continue;
                       Double_t eta_low = Jet_genlowR->Eta();
                       Double_t eta_high = (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Eta();
                       DeltaPt_gen = pt_high-pt_low;
@@ -714,8 +717,10 @@ Pair_number= NumJet-1;
                         if(MI>=0){
                         if(((DetLowRJetsList.At(w) == Jet_genlowR->ClosestJet()))&&(iLowRIndex_det[MI]==w)) {
                                  pt_Hdet = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Pt();
+                                 if(DetjetCont2->GetRhoParameter()) pt_Hdet = pt_Hdet - DetjetCont2->GetRhoVal()*(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Area();
                                  DeltaPt_det = pt_Hdet -pt_Ldet;
-
+                        if((pt_Ldet<=0)||(pt_Hdet<=0)) {SAFE = kFALSE; break;}
+                        else SAFE=kTRUE;
                         //        histname = TString::Format("ResponseMatrix_pt_R%03d",int(Rstep*(i+1)*100)); 
                         //        fHistManager.FillTH2(histname,pt_low,pt_Ldet);
                                  histname = TString::Format("ResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
@@ -726,7 +731,8 @@ Pair_number= NumJet-1;
                                  histname = TString::Format("DeltaResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                                 fHistManager.FillTH3(histname,pt_low,pt_Ldet-pt_low,DeltaPt_det-DeltaPt_gen);
                                 break;}}
-                                          }                                                                                          
+                                          }
+                        if(SAFE) {                                                                                         
                       histname = TString::Format("hJetPtDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
                       fHistManager.FillTH2(histname,pt_low,DeltaPt_gen);
 
@@ -763,6 +769,7 @@ Pair_number= NumJet-1;
                       histname = TString::Format("hMatchedJetEta_R%03d_gen_%d",int(Rstep*(i+2)*100),fCentBin);
                       fHistManager.FillTH1(histname,eta_high);
                                                            }
+                                                        } //Safeguard for positive jet pt flag
                                                                 } //And if the match is bijective
                                                     } // if there is a match
                     } // loop over the low R jets (Generator level that match to detector level)
@@ -795,6 +802,7 @@ Pair_number= NumJet-1;
 
                   if(DetjetCont1->GetRhoParameter())pt_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Pt() - DetjetCont1->GetRhoVal() * (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Area();
                   if(DetjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt() - DetjetCont2->GetRhoVal() *(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Area();
+                if((pt_low<=0)||(pt_high<=0)) continue;
                   Double_t eta_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Eta();
                   Double_t eta_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Eta();
                   if((pt_low>0)&&(pt_high>0))DeltaPt_det = pt_high-pt_low;
