@@ -816,7 +816,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
 
     // vertexer parameters
     printf("--- DCAFitterN parameters ---\n");
-    Int_t b_propdca = GetJsonBool(filename.Data(), "hf-track-index-skim-creator", "propToDCA");
+    Int_t b_propdca = GetJsonBool(filename.Data(), "hf-track-index-skim-creator", "propagateToPCA");
     if (b_propdca == 1) {
       fVertexerPropagateToPCA = true;
       printf("propdca = %d\n", fVertexerPropagateToPCA);
