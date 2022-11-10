@@ -19,6 +19,7 @@ class AliAnalysisTaskHe3TriTree : public AliAnalysisTaskSE
     virtual void            UserExec(Option_t* option);
     virtual void            Terminate(Option_t* option);
     void                    SetParamsHe(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsHe[i] = params[i];};
+    void                    SetParamsT(Double_t params[6]) {for (Int_t i = 0; i < 6; i++) fBetheParamsT[i] = params[i];};
     void                    SetUseExternalSplines(Bool_t extspl = kFALSE) {fUseExternalSplines = extspl;}; 
 
   private:

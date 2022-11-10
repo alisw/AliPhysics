@@ -439,8 +439,8 @@ void AliAnalysisTaskHe3TriTree::UserCreateOutputObjects() {
 	fTreeTri->Branch("tDcaXY"           , &tDcaXY           , "tDcaXY/D"           );
 	fTreeTri->Branch("tDcaZ"            , &tDcaZ            , "tDcaZ/D"            );
 	fTreeTri->Branch("tSigmaYX"         , &tSigmaYX         , "tSigmaYX/D"         );
-	fTreeTri->Branch("tSigmaXYZ"        , &tSigmaXYZ        , "tSigmaXYZ"          );
-	fTreeTri->Branch("tSigmaZ"          , &tSigmaZ          , "tSigmaZ"            );
+	fTreeTri->Branch("tSigmaXYZ"        , &tSigmaXYZ        , "tSigmaXYZ/D"          );
+	fTreeTri->Branch("tSigmaZ"          , &tSigmaZ          , "tSigmaZ/D"            );
 	fTreeTri->Branch("tMCtrue"          , &tMCtrue          , "tMCtrue/I"          );
 	fTreeTri->Branch("tTrigMB"          , &tTrigMB          , "tTrigMB/I"          );
 	fTreeTri->Branch("tTrigHMV0"        , &tTrigHMV0        , "tTrigHMV0/I"        );
