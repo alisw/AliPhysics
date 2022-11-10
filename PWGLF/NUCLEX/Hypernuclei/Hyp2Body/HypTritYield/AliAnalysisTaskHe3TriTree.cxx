@@ -52,9 +52,11 @@ fTreeTri(0),
 fBetheParamsHe(),
 fBetheParamsT(),
 fUseExternalSplines(kFALSE),
+matching(0),
 fMCtrue(0),
 fYear(0),
 tRunNumber(0),
+tEventId(0),
 tTrigMB(-999),			
 tTrigHMV0(-999),
 tTrigHMSPD(-999),
@@ -168,9 +170,11 @@ fTreeTri(0),
 fBetheParamsHe(),
 fBetheParamsT(),
 fUseExternalSplines(kFALSE),
+matching(0),
 fMCtrue(0),
 fYear(0),
 tRunNumber(0),
+tEventId(0),
 tTrigMB(-999),			
 tTrigHMV0(-999),
 tTrigHMSPD(-999),
@@ -287,6 +291,8 @@ void AliAnalysisTaskHe3TriTree::UserCreateOutputObjects() {
 		if (fInputHandler)   fPIDResponse = fInputHandler->GetPIDResponse();
 	}
 
+  matching = new AliTRDonlineTrackMatching();
+
 	fOutputList = new TList();         
 	fOutputList->SetOwner(kTRUE);     
  
@@ -322,6 +328,7 @@ void AliAnalysisTaskHe3TriTree::UserCreateOutputObjects() {
 
 	fTree = new TTree("treeHe","fTree");                
 	fTree->Branch("tRunNumber"       , &tRunNumber       , "tRunNumber/I"      );
+	fTree->Branch("tEventId"         , &tEventId         , "tEventId/l"        );	
 	fTree->Branch("tPt"              , &tPt              , "tPt/D"             );
 	fTree->Branch("tCharge"          , &tCharge          , "tCharge/D"         );
 	fTree->Branch("tE"               , &tE               , "tE/D"              );
@@ -416,6 +423,7 @@ void AliAnalysisTaskHe3TriTree::UserCreateOutputObjects() {
 	
 	fTreeTri = new TTree("treeTri", "ftreeTri");
 	fTreeTri->Branch("tRunNumber"       , &tRunNumber       , "tRunNumber/I"       );
+	fTreeTri->Branch("tEventId"         , &tEventId         , "tEventId/l"         );	
 	fTreeTri->Branch("tPt"              , &tPt              , "tPt/D"              );
 	fTreeTri->Branch("tChargeTri"       , &tChargeTri       , "tCharge/D"          );
 	fTreeTri->Branch("tE"               , &tE               , "tE/D"               );
@@ -431,8 +439,8 @@ void AliAnalysisTaskHe3TriTree::UserCreateOutputObjects() {
 	fTreeTri->Branch("tDcaXY"           , &tDcaXY           , "tDcaXY/D"           );
 	fTreeTri->Branch("tDcaZ"            , &tDcaZ            , "tDcaZ/D"            );
 	fTreeTri->Branch("tSigmaYX"         , &tSigmaYX         , "tSigmaYX/D"         );
-	fTreeTri->Branch("tSigmaXYZ"        , &tSigmaXYZ        , "tSigmaXYZ"          );
-	fTreeTri->Branch("tSigmaZ"          , &tSigmaZ          , "tSigmaZ"            );
+	fTreeTri->Branch("tSigmaXYZ"        , &tSigmaXYZ        , "tSigmaXYZ/D"          );
+	fTreeTri->Branch("tSigmaZ"          , &tSigmaZ          , "tSigmaZ/D"            );
 	fTreeTri->Branch("tMCtrue"          , &tMCtrue          , "tMCtrue/I"          );
 	fTreeTri->Branch("tTrigMB"          , &tTrigMB          , "tTrigMB/I"          );
 	fTreeTri->Branch("tTrigHMV0"        , &tTrigHMV0        , "tTrigHMV0/I"        );
@@ -537,6 +545,8 @@ void AliAnalysisTaskHe3TriTree::UserExec(Option_t *) {
 	TRDnEvents();
 	
 	if(!fEventCuts.AcceptEvent(fESDevent)) return;
+	tEventId = (((ULong64_t)fESDevent->GetPeriodNumber() << 36) | ((ULong64_t)fESDevent->GetOrbitNumber() << 12) | (ULong64_t)fESDevent->GetBunchCrossNumber()); 
+	
 	//******************************
 	//*   get trigger information  *
 	//******************************
@@ -918,73 +928,76 @@ Double_t AliAnalysisTaskHe3TriTree::GetTOFSignalTri(AliESDtrack& trackTri, Doubl
 //_____________________________________________________________________________
 void AliAnalysisTaskHe3TriTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
-	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
-		fYear = 2017;
-		if(!fMCtrue) {
-			//LHC17 Data pass 2
-			// He3
-			fBetheParamsHe[0] = 3.13126;
-      		fBetheParamsHe[1] = 16.1848;
-      		fBetheParamsHe[2] = 0.0174936;
-      		fBetheParamsHe[3] = 2.29199;
-      		fBetheParamsHe[4] = 3.24166;
-      		// Triton
-      		fBetheParamsT[0] = 2.85863;
-      		fBetheParamsT[1] = 15.4833;
-      		fBetheParamsT[2] = 2.31675;
-      		fBetheParamsT[3] = 2.27889;
-      		fBetheParamsT[4] = 2.89397;
-		} else {
-			//LHC20l7b (-> anchored to 2017 data pass1))
-			// He3
-			fBetheParamsHe[0] = 2.7814;
-			fBetheParamsHe[1] = 17.5934;
-			fBetheParamsHe[2] = 0.00126067;
-			fBetheParamsHe[3] = 2.37373;
-			fBetheParamsHe[4] = 3.5911;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.37174;
-			fBetheParamsT[1] = 18.845;
-			fBetheParamsT[2] = 0.0340003;
-			fBetheParamsT[3] = 1.99608;
-			fBetheParamsT[4] = -2.78539;
-			fBetheParamsT[5] = 0.06;
-		}
+	if (runNumber >= 252235 && runNumber <= 265589) { // 2016 pp data
+		fYear = 2016;
+    // He3 2016/2018 pass2
+    fBetheParamsHe[0] = 4.20995;
+    fBetheParamsHe[1] = 10.5007;
+    fBetheParamsHe[2] = -0.895979;
+    fBetheParamsHe[3] = 2.01748;
+    fBetheParamsHe[4] = 0.0798937;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2016/2018 pass2
+    fBetheParamsT[0] = 12.0774;
+    fBetheParamsT[1] = 5.70345;
+    fBetheParamsT[2] = 4.764;
+    fBetheParamsT[3] = 1.94198;
+    fBetheParamsT[4] = -3.03895;
+    fBetheParamsT[5] = 0.07;
 	}
-	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
-		if(!fMCtrue) {
-			fYear = 2018;
-			// LHC16 + LHC18 pass 2
-			// He3
-			fBetheParamsHe[0] = 4.20995;
-      		fBetheParamsHe[1] = 10.5007;
-      		fBetheParamsHe[2] = -0.895979;
-			fBetheParamsHe[3] = 2.01748;
-			fBetheParamsHe[4] = 0.0798937;
-			// Triton
-			fBetheParamsT[0] = 12.2077;
-			fBetheParamsT[1] = 5.47827;
-			fBetheParamsT[2] = 3.52047;
-			fBetheParamsT[3] = 1.92601;
-			fBetheParamsT[4] = -1.53268;
-		} else {
-			//LHC20l7a (-> (anchored to 2018 data pass1)
-			// He3
-			fBetheParamsHe[0] = 2.39813;
-			fBetheParamsHe[1] = 20.0405;
-			fBetheParamsHe[2] = -0.00199591;
-			fBetheParamsHe[3] = 2.1579;
-			fBetheParamsHe[4] = 3.25101;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.41372;
-			fBetheParamsT[1] = 19.9857;
-			fBetheParamsT[2] = 14.7137;
-			fBetheParamsT[3] = 2.02158;
-			fBetheParamsT[4] = 0.273873;
-			fBetheParamsT[5] = 0.06;
-		}
+	if (runNumber > 265589 && runNumber <= 267166) { // 2016 p-Pb data
+		fYear = 2016;
+		// He3
+		fBetheParamsHe[0] = 0.715489;
+		fBetheParamsHe[1] = 59.5463;
+		fBetheParamsHe[2] = 4.44487e-12;
+		fBetheParamsHe[3] = 2.69874;
+		fBetheParamsHe[4] = 24.063;
+		fBetheParamsHe[5] = 0.04725;
+		// Triton
+		fBetheParamsT[0] = 0.223948;
+		fBetheParamsT[1] = 180.564;
+		fBetheParamsT[2] = -3.03884e-10;
+		fBetheParamsT[3] = 2.30095;
+		fBetheParamsT[4] = 34.2269;
+		fBetheParamsT[5] = 0.06517;	
+	} 	
+	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp data
+		fYear = 2017;
+    // He3 2017 pass2
+    fBetheParamsHe[0] = 1.65042;
+    fBetheParamsHe[1] = 25.9254;
+    fBetheParamsHe[2] = 0.00600469;
+    fBetheParamsHe[3] = 2.73841;
+    fBetheParamsHe[4] = 10.8988;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2017 pass2
+    fBetheParamsT[0] = 2.82837;
+    fBetheParamsT[1] = 15.4278;
+    fBetheParamsT[2] = 1.03545;
+    fBetheParamsT[3] = 2.2757;
+    fBetheParamsT[4] = 2.7525;
+    fBetheParamsT[5] = 0.06;
+	}
+	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp data
+		fYear = 2018;
+    // He3 2016/2018 pass2
+    fBetheParamsHe[0] = 4.20995;
+    fBetheParamsHe[1] = 10.5007;
+    fBetheParamsHe[2] = -0.895979;
+    fBetheParamsHe[3] = 2.01748;
+    fBetheParamsHe[4] = 0.0798937;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2016/2018 pass2
+    fBetheParamsT[0] = 12.0774;
+    fBetheParamsT[1] = 5.70345;
+    fBetheParamsT[2] = 4.764;
+    fBetheParamsT[3] = 1.94198;
+    fBetheParamsT[4] = -3.03895;
+    fBetheParamsT[5] = 0.07;
 	}
 }
 //_____________________________________________________________________________
@@ -1016,7 +1029,6 @@ Double_t AliAnalysisTaskHe3TriTree::TRDtrack(AliESDtrack* esdTrack) {
     }
     
     AliESDTrdTrack* bestGtuTrack = 0x0;
-    AliTRDonlineTrackMatching *matching = new AliTRDonlineTrackMatching();
     
     Double_t esdPt = esdTrack->GetSignedPt();
     Double_t mag = fESDevent->GetMagneticField();

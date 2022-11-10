@@ -18,7 +18,7 @@ AliAnalysisTaskHe3TriTree* AddTaskHe3TriTree(TString name = "name")
     // now we create an instance of your task
     AliAnalysisTaskHe3TriTree* task = new AliAnalysisTaskHe3TriTree(name.Data());   
     if(!task) return 0x0;
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+    task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD);
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
