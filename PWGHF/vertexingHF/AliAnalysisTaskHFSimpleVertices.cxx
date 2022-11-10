@@ -974,10 +974,10 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       AliInfo(Form("Xic cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsXicSkims[ib], fPtBinLimsXicSkims[ib + 1], fXicSkimCuts[ib][0], fXicSkimCuts[ib][1], fXicSkimCuts[ib][2], fXicSkimCuts[ib][3]));
     }
 
-    Double_t cutcpaV0 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-cascades", "cosPAV0");
+    Double_t cutcpaV0 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-cascades", "cpaV0Min");
     if (cutcpaV0 > 0) {
       fMinCosPointV0 = cutcpaV0;
-      printf("cosPAV0 cut = %g\n", fMinCosPointV0);
+      printf("cpaV0Min cut = %g\n", fMinCosPointV0);
     }
 
     Double_t cutinvmV0 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-cascades", "cutInvMassV0");
