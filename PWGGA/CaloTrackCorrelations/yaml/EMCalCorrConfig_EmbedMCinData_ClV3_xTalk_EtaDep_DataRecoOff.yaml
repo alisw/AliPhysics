@@ -1,4 +1,4 @@
-configurationName: "EMCal correction framework embedding MC in Data, Clusterizer v3"
+configurationName: "EMCal correction framework embedding MC in Data, Run 2 xTalk but larger in central eta, Clusterizer v3"
 recycleUnusedEmbeddedEventsMode: true
 sharedParameters:
     cellBranchName: "usedefault"
@@ -89,6 +89,7 @@ CellEnergy_data:
     enabled: true
     enableNewTempCalib: true
     enableShaperCorrection: true
+    enableAdditionalScale: true
     additionalScaleValuesSM: [0.981, 0.970, 0.980]
     cellsNames:
         - cells
