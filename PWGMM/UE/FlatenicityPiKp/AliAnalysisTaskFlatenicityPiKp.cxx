@@ -750,7 +750,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 	// x: Sector y: Multiplicity z: V0M Multiplicity
 	hActivityV0CV0A = new TH3F("hActivityV0CV0A", "; VZERO channel; #it{N}_{ch} per VZERO cahnnel; V0M quantile", nV0Sectorsbins, V0Sectorsbins, nV0Multbins, V0Multbins, nCent, centClass);
-	fOutputList->Add(hActivityV0CV0A);
+	//fOutputList->Add(hActivityV0CV0A);
 
 	hActivityV0DataSect = new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 	fOutputList->Add(hActivityV0DataSect);
@@ -763,7 +763,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	hFlatVsV0MVsMult = new TH3F("hFlatVsV0MVsMult", "; Flatenicity; #it{N}_{ch}; V0M Percentile", nFlatbins, Flatbins, nMultbins, Multbins, nCent, centClass);
 	fOutputList->Add(hFlatVsV0MVsMult);
 
-	fEventCuts.AddQAplotsToList(fOutputList);
+	/* fEventCuts.AddQAplotsToList(fOutputList); */
 	PostData(1, fOutputList); // postdata will notify the analysis manager of
 				  // changes / updates to the
 }
@@ -823,7 +823,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 
 	// Good events
 	if (!fEventCuts.AcceptEvent(event)) {
-		PostData(1, fOutputList);
+		/* PostData(1, fOutputList); */
 		return;
 	}
 
