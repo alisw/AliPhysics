@@ -824,7 +824,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       fVertexerPropagateToPCA = false;
       printf("propdca = %d\n", fVertexerPropagateToPCA);
     }
-    Double_t d_maxr = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxRad");
+    Double_t d_maxr = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxR");
     if (d_maxr > 0) {
       fMaxDecVertRadius2 = d_maxr * d_maxr;
       fVertexerMaxR = d_maxr;
