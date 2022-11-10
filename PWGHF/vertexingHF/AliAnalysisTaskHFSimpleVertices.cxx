@@ -741,7 +741,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("Min pt track (2 prong)= %g\n", ptmintrack2);
     if (ptmintrack2 > 0)
       fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
-    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "pTMinTrack3Prong");
+    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "ptMinTrack3Prong");
     printf("Min pt track (3 prong)= %g\n", ptmintrack3);
     if (ptmintrack3 > 0)
       fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
