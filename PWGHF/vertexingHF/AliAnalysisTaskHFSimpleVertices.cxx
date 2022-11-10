@@ -989,25 +989,25 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("------- CANDIDATE SELECTIONS -------\n");
 
     int nptbinlimsDzero = 0, ncDzero = 0, nptDzero = 0;
-    float* ptbinlimsDzero = GetJsonArray(filename.Data(), "hf-d0-candidate-selector", "pTBins", nptbinlimsDzero);
+    float* ptbinlimsDzero = GetJsonArray(filename.Data(), "hf-d0-candidate-selector", "binsPt", nptbinlimsDzero);
     float** cutsDzero = GetJsonMatrix(filename.Data(), "hf-d0-candidate-selector", "D0_to_pi_K_cuts", nptDzero, ncDzero);
     if (nptbinlimsDzero - 1 != nptDzero)
       AliFatal("Number of pT bins in JSON for Dzero at candidate selection level not consistent, please check it");
 
     int nptbinlimsJpsi = 0, ncJpsi = 0, nptJpsi = 0;
-    float* ptbinlimsJpsi = GetJsonArray(filename.Data(), "hf-jpsi-candidate-selector", "pTBins", nptbinlimsJpsi);
+    float* ptbinlimsJpsi = GetJsonArray(filename.Data(), "hf-jpsi-candidate-selector", "binsPt", nptbinlimsJpsi);
     float** cutsJpsi = GetJsonMatrix(filename.Data(), "hf-jpsi-candidate-selector", "Jpsi_to_ee_cuts", nptJpsi, ncJpsi);
     if (nptbinlimsJpsi - 1 != nptJpsi)
       AliFatal("Number of pT bins in JSON for J/psi at candidate selection level not consistent, please check it");
 
     int nptbinlimsDplus = 0, ncDplus = 0, nptDplus = 0;
-    float* ptbinlimsDplus = GetJsonArray(filename.Data(), "hf-dplus-topikpi-candidate-selector", "pTBins", nptbinlimsDplus);
+    float* ptbinlimsDplus = GetJsonArray(filename.Data(), "hf-dplus-topikpi-candidate-selector", "binsPt", nptbinlimsDplus);
     float** cutsDplus = GetJsonMatrix(filename.Data(), "hf-dplus-topikpi-candidate-selector", "DPlus_to_Pi_K_Pi_cuts", nptDplus, ncDplus);
     if (nptbinlimsDplus - 1 != nptDplus)
       AliFatal("Number of pT bins in JSON for Dplus at candidate selection level not consistent, please check it");
 
     int nptbinlimsLc = 0, ncLc = 0, nptLc = 0;
-    float* ptbinlimsLc = GetJsonArray(filename.Data(), "hf-lc-candidate-selector", "pTBins", nptbinlimsLc);
+    float* ptbinlimsLc = GetJsonArray(filename.Data(), "hf-lc-candidate-selector", "binsPt", nptbinlimsLc);
     float** cutsLc = GetJsonMatrix(filename.Data(), "hf-lc-candidate-selector", "Lc_to_p_K_pi_cuts", nptLc, ncLc);
     if (nptbinlimsLc - 1 != nptLc)
       AliFatal("Number of pT bins in JSON for Lc at candidate selection level not consistent, please check it");
@@ -3099,7 +3099,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
   Int_t jPtBin = GetPtBin(ptCand, fPtBinLimsLc, fNPtBinsLc);
   if (jPtBin == -1)
     return 0;
-    
+
 
   if (cand->CosPointingAngle() <= fLcCuts[jPtBin][6])
     return 0;
