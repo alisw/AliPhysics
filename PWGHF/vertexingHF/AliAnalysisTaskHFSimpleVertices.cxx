@@ -773,7 +773,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("d_selectionFlagLc = %d\n", selectLcpKpi);
     if (selectLcpKpi >= 0)
       fSelectLcpKpi = selectLcpKpi;
-    Int_t minncluTPC = GetJsonInteger(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "tpcNClsFound");
+    Int_t minncluTPC = GetJsonInteger(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "tpcNClsFoundMin");
     if (minncluTPC > 0)
       printf("minncluTPC   = %d\n", minncluTPC);
     fTrackCuts2pr->SetMinNClustersTPC(minncluTPC);
