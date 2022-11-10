@@ -809,7 +809,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("Max eta  (3 prong) = %g\n", etamax3);
     if (etamax3 > 0)
       fTrackCuts3pr->SetEtaRange(-etamax3, +etamax3);
-    Double_t etamaxb = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "etaMaxBach");
+    Double_t etamaxb = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "etaMaxTrackBach");
     printf("Max eta  (bachelor) = %g\n", etamaxb);
     if (etamaxb > 0)
       fTrackCutsBach->SetEtaRange(-etamaxb, +etamaxb);
