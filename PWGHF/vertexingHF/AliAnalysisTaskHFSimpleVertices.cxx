@@ -885,7 +885,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       AliFatal("Number of pT bins in JSON for Dzero at skims level not consistent, please check it");
 
     int nptbinlimsJpsiSkims = 0, ncJpsiSkims = 0, nptJpsiSkims = 0;
-    float* ptbinlimsJpsiSkims = GetJsonArray(filename.Data(), "hf-track-index-skim-creator", "pTBinsJpsiToEE", nptbinlimsJpsiSkims);
+    float* ptbinlimsJpsiSkims = GetJsonArray(filename.Data(), "hf-track-index-skim-creator", "binsPtJpsiToEE", nptbinlimsJpsiSkims);
     float** cutsJpsiSkims = GetJsonMatrix(filename.Data(), "hf-track-index-skim-creator", "cutsJpsiToEE", nptJpsiSkims, ncJpsiSkims);
     if (nptbinlimsJpsiSkims - 1 != nptJpsiSkims)
       AliFatal("Number of pT bins in JSON for J/psi at skims level not consistent, please check it");
