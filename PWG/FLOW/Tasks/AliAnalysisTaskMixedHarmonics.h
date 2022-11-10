@@ -81,10 +81,6 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   void  SetRejectPileUpTight(Bool_t pileupT) {this->fRejectPileUpTight = pileupT;}
   void  SetFillQAHistograms(Bool_t const fillQA) {this->fFillQAHistograms = fillQA;};
   
-  // set V0 and ZNC gain Eq and recentering files
-  void  SetListForV0MCorr(TList *flist)      {this->fListV0MCorr = (TList *) flist->Clone(); }
-  void  SetListForZDCCorr(TList *flist)      {this->fListZDCCorr = (TList *) flist->Clone(); }
-  
   // set fIs2018Data
   void SetIs2018Data(Bool_t const is2018) {this->fIs2018Data = is2018;};
   Bool_t GetIs2018Data() {return this->fIs2018Data;};
@@ -101,12 +97,6 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t PileUpMultiVertex(const AliAODEvent* faod);
   Bool_t CheckEventIsPileUp2018(AliAODEvent* faod);
   double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
-  void GetV0MCorrectionHist(Int_t run);
-  void GetZDCCorrectionHist(Int_t run);
-  Bool_t GetGainCorrectedV0Qvector(AliAODEvent *faod,Double_t fVtxZ,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &sumV0C,Double_t &qnxV0A,Double_t &qnyV0A,Double_t &sumV0A);
-  void ApplyV0XqVectRecenter(Float_t fCent,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A);
-  Bool_t GetGainCorrectedZNCQvector(AliAODEvent *faod,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &fdenZNC,Double_t &qnxZNCA,Double_t &qnyZNCA,Double_t &fdenZNA);
-  void ApplyZNCqVectRecenter(Float_t centrality,Double_t pVtxX,Double_t pVtxY,Double_t pVtxZ,Double_t fOrbitNumber,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &qnxZNCA,Double_t &qnyZNCA);
 
   AliMultSelection*   fMultSelection;    //! MultSelection (RUN2 centrality estimator)
   AliAnalysisUtils*    fAnalysisUtil;    //! Event selection
@@ -141,44 +131,25 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   TH2F   *fTPCvsESDTrk; //!  Global vs TPC tracks for QA
 
   TList    *fWeightsList; // list with weights
-  
-  // keep track of old run number
-  Int_t fCachedRunNum;  
-  // V0 gain Eq and recentering files
-  TList *fListV0MCorr;        //  Supplied from AddTask  
-  TH2F *fHCorrectV0ChWeghts;     //!
-  TH1D *fHCorrectQNxV0C; //!
-  TH1D *fHCorrectQNyV0C; //!
-  TH1D *fHCorrectQNxV0A; //!
-  TH1D *fHCorrectQNyV0A; //!
-  TH1D *fHCorrectQ3xV0C; //!
-  TH1D *fHCorrectQ3yV0C; //!
-  TH1D *fHCorrectQ3xV0A; //!
-  TH1D *fHCorrectQ3yV0A; //!   
-  
-  // ZNC gain Eq and recentering files
-  TList *fListZDCCorr;        //  Supplied from AddTask
-  TH1D *fHZDCCparameters;          //!
-  TH1D *fHZDCAparameters;          //!
-  
+
   // bool variable for if the data set is 2018
   Bool_t fIs2018Data;
   // Functions for Pile Up Event Removal 2018 period:
-  TF1 *fV0CutPU;      //
-  TF1 *fSPDCutPU;     //
-  TF1 *fMultCutPU;    //
-  TF1 *fCenCutLowPU;  //
-  TF1 *fCenCutHighPU; //
+  TF1                   *fV0CutPU;      //
+  TF1                   *fSPDCutPU;     //
+  TF1                   *fMultCutPU;    //
+  TF1                   *fCenCutLowPU;  //
+  TF1                   *fCenCutHighPU; //
   
   // QA histograms
-  TH2F *fHistTPConlyVsCL1Before; //!
-  TH2F *fHistTPConlyVsCL1After;  //!
-  TH2F *fHistTPConlyVsV0MBefore; //!
-  TH2F *fHistTPConlyVsV0MAfter;  //!
-  TH2F *fHistCentCL0VsV0MBefore; //!
-  TH2F *fHistCentCL0VsV0MAfter;  //!  
-  TH2F *fHistTPCVsESDTrkBefore;  //!
-  TH2F *fHistTPCVsESDTrkAfter;   //!
+  TH2F          *fHistTPConlyVsCL1Before; //!
+  TH2F          *fHistTPConlyVsCL1After;  //!
+  TH2F          *fHistTPConlyVsV0MBefore; //!
+  TH2F          *fHistTPConlyVsV0MAfter;  //!
+  TH2F          *fHistCentCL0VsV0MBefore; //!
+  TH2F          *fHistCentCL0VsV0MAfter;  //!  
+  TH2F          *fHistTPCVsESDTrkBefore;  //!
+  TH2F          *fHistTPCVsESDTrkAfter;   //!
 
 
 
@@ -189,7 +160,6 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
 //================================================================================================================
 
 #endif
-
 
 
 

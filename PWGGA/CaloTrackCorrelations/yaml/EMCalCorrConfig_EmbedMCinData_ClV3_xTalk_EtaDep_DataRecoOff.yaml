@@ -1,4 +1,4 @@
-configurationName: "EMCal correction framework embedding MC in Data, Run 2 xTalk, Clusterizer v3"
+configurationName: "EMCal correction framework embedding MC in Data, Run 2 xTalk but larger in central eta, Clusterizer v3"
 recycleUnusedEmbeddedEventsMode: true
 sharedParameters:
     cellBranchName: "usedefault"
@@ -74,6 +74,8 @@ CellEmulateCrosstalk:
                6 : [4.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 10: [5.0e-3], 11: [4.5e-3],
                12: [4.5e-3], 13: [4.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [4.5e-3], 17: [3.5e-3],
                18: [3.5e-3], 19: [3.5e-3], 20: [3.5e-3], 21: [3.5e-3]} # Run2
+    inducedEnergyLossMinimumFractionCentralEta:
+        enabled: true
 CellEmulateCrosstalk_embed:                 
     enabled: true                            
     cellsNames:

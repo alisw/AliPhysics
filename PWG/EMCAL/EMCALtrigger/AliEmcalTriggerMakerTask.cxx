@@ -249,7 +249,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       if(!fMaskedFastorOADB.Length()) fMaskedFastorOADB = "oadb";
     } else if((runnumber >= 244824 && runnumber <= 246994) || (runnumber >= 295581)){
       fTriggerMaker->ConfigureForPbPb2015();
-      dataset = "Pb-Pb 2015";
+      dataset = "Pb-Pb Run2";
     }
 
     if(fTriggerMaker->IsConfigured()){

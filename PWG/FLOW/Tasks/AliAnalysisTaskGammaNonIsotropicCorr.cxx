@@ -1109,9 +1109,15 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
       }
       
       // DCA cut
-      if (fDCAxyMax>0 && fDCAzzMax>0 && trk1DCAxy>=fDCAxyMax && trk1DCAz>=fDCAzzMax) { // if fDCAxyMax, fDCAzzMax is set to be less than 0, no cut applied
-		continue;
-	  }
+      if(fDCAxyMax>0 && fDCAzzMax>0){
+		if(TMath::Sqrt((trk1DCAxy*trk1DCAxy)/(fDCAxyMax*fDCAxyMax)+(trk1DCAz*trk1DCAz)/(fDCAzzMax*fDCAzzMax)) > 1 ){
+		  continue;  // 2D cut
+		}
+      }
+
+      //if (fDCAxyMax>0 && fDCAzzMax>0 && trk1DCAxy>=fDCAxyMax && trk1DCAz>=fDCAzzMax) { // if fDCAxyMax, fDCAzzMax is set to be less than 0, no cut applied
+		//continue;
+	  //}
 	  
 	  // Crossed Row cut
 	  if (bUseTPCCrossedRows){ // either crossed row or ncluster Min should be applied
@@ -1263,9 +1269,15 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
 			  trk2DCAz   = posTrk2[2] - pVtxZ;
 		    }
 		    
-		    if (fDCAxyMax>0 && fDCAzzMax>0 && trk2DCAxy>=fDCAxyMax && trk2DCAz>=fDCAzzMax) { // if fDCAxyMax, fDCAzzMax is set to be less than 0, no cut applied
-			  continue;
-			}
+		    if(fDCAxyMax>0 && fDCAzzMax>0){
+		      if(TMath::Sqrt((trk2DCAxy*trk2DCAxy)/(fDCAxyMax*fDCAxyMax)+(trk2DCAz*trk2DCAz)/(fDCAzzMax*fDCAzzMax)) > 1 ){
+		        continue;  // 2D cut
+		      }
+      		}
+      		
+		    //if (fDCAxyMax>0 && fDCAzzMax>0 && trk2DCAxy>=fDCAxyMax && trk2DCAz>=fDCAzzMax) { // if fDCAxyMax, fDCAzzMax is set to be less than 0, no cut applied
+			  //continue;
+			//}
 			
 			if (bUseTPCCrossedRows){
 			  if ((Float_t)AODtrack2->GetTPCNCrossedRows() < (120 - (5/(Float_t)AODtrack2->Pt())) ){
