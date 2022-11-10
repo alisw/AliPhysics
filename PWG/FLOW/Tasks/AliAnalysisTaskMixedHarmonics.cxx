@@ -78,20 +78,6 @@ fTPCvsGlobalTrkBefore(NULL),
 fTPCvsGlobalTrkAfter(NULL),
 fTPCvsESDTrk(NULL),
 fWeightsList(NULL),
-fCachedRunNum(0),
-fListV0MCorr(NULL),
-fHCorrectV0ChWeghts(NULL),
-fHCorrectQNxV0C(NULL),
-fHCorrectQNyV0C(NULL),
-fHCorrectQNxV0A(NULL),
-fHCorrectQNyV0A(NULL),
-fHCorrectQ3xV0C(NULL),
-fHCorrectQ3yV0C(NULL),
-fHCorrectQ3xV0A(NULL),
-fHCorrectQ3yV0A(NULL),   
-fListZDCCorr(NULL),
-fHZDCCparameters(NULL),
-fHZDCAparameters(NULL),
 fIs2018Data(kFALSE),
 fV0CutPU(NULL),
 fSPDCutPU(NULL),
@@ -151,20 +137,6 @@ fTPCvsGlobalTrkBefore(NULL),
 fTPCvsGlobalTrkAfter(NULL),
 fTPCvsESDTrk(NULL),
 fWeightsList(NULL),
-fCachedRunNum(0),
-fListV0MCorr(NULL),
-fHCorrectV0ChWeghts(NULL),
-fHCorrectQNxV0C(NULL),
-fHCorrectQNyV0C(NULL),
-fHCorrectQNxV0A(NULL),
-fHCorrectQNyV0A(NULL),
-fHCorrectQ3xV0C(NULL),
-fHCorrectQ3yV0C(NULL),
-fHCorrectQ3xV0A(NULL),
-fHCorrectQ3yV0A(NULL),   
-fListZDCCorr(NULL),
-fHZDCCparameters(NULL),
-fHZDCAparameters(NULL),
 fIs2018Data(kFALSE),
 fV0CutPU(NULL),
 fSPDCutPU(NULL),
@@ -279,6 +251,7 @@ void AliAnalysisTaskMixedHarmonics::UserExec(Option_t *)
 {
 
 
+
  AliAODEvent *aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 
  Bool_t kPileupEvent = kFALSE;
@@ -294,97 +267,18 @@ void AliAnalysisTaskMixedHarmonics::UserExec(Option_t *)
 
  if(fRejectPileUp && kPileupEvent)  return;
 
+
+
+
  // main loop (called for each event)
  fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
- 
+
  //cout<<" tracks = "<<fEvent->NumberOfTracks()<<endl;
- 
- // ================================== V0 and ZDC Q-vector ============================
- // Read current run number
- Int_t runNumber = aodEvent->GetRunNumber();
-
- //-------------- Vtx ---------------
- const AliVVertex *pointVtx = aodEvent->GetPrimaryVertex();
- Double_t pVtxZ = -999, pVtxX = -999, pVtxY=-999;
- pVtxZ  = pointVtx->GetZ();
- pVtxX  = pointVtx->GetX();
- pVtxY  = pointVtx->GetY();
- 
- //-------------- OrbitNum -----------
- UInt_t period = aodEvent->GetPeriodNumber();
- UInt_t orbit24 = aodEvent->GetOrbitNumber();
-  
- if (period > 255) { // 8 bits
-  cout<<"invalid period number"<<endl;
-  period = 255;
-  orbit24 = (1<<24)-1;
- }
-    
- if (orbit24 >= (1<<24)) { // 24 bits
-  cout<<"invalid orbit number"<<endl;
-  period = 255;
-  orbit24 = (1<<24)-1;
- }
-  
- UInt_t orbit = period * (1<<24) + orbit24;
-
- Double_t fOrbitNumber = static_cast<double>(orbit)/1000000.; // scale down by 10^6 to fit to the scale used in least square fit. In least square fit, orbit number is scaled down by 10^6 to weight down the contribution to it. Maybe not necessary to scale down, but it should make the fit more stable in principle
-  
-  
- // Set Up Correction Map for this run:
- if(runNumber!=fCachedRunNum) {
-  if(fListV0MCorr){
-   GetV0MCorrectionHist(runNumber);
-  }
-  if(fListZDCCorr){
-   GetZDCCorrectionHist(runNumber);
-  }
-  fCachedRunNum = runNumber;
- }
- //-------------- centrality --------
- Double_t centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
- Double_t centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-
- // Get V0 Q-vector
- Double_t fQ2xV0C=0, fQ2yV0C=0, fSumM2V0C=0, fQ2xV0A=0, fQ2yV0A=0, fSumM2V0A=0; 
- Bool_t kPassV0 = GetGainCorrectedV0Qvector(aodEvent, pVtxZ, 2, fQ2xV0C, fQ2yV0C, fSumM2V0C, fQ2xV0A, fQ2yV0A, fSumM2V0A); 
-
- Double_t fQ3xV0C=0, fQ3yV0C=0, fSumM3V0C=0, fQ3xV0A=0, fQ3yV0A=0, fSumM3V0A=0;
- kPassV0 = GetGainCorrectedV0Qvector(aodEvent, pVtxZ, 3, fQ3xV0C, fQ3yV0C, fSumM3V0C, fQ3xV0A, fQ3yV0A, fSumM3V0A);
-
- if(!kPassV0) return;           // V0 does not have signal for this event.  
-
- ApplyV0XqVectRecenter(centrCL1, 2, fQ2xV0C, fQ2yV0C, fQ2xV0A, fQ2yV0A);
- ApplyV0XqVectRecenter(centrCL1, 3, fQ3xV0C, fQ3yV0C, fQ3xV0A, fQ3yV0A);
-
- fEvent->SetV02Qsub(fQ2xV0C,fQ2yV0C,fSumM2V0C,fQ2xV0A,fQ2yV0A,fSumM2V0A,2); // 2nd order cos(2Psi_Vo) & sin(2Psi_Vo)
- fEvent->SetV02Qsub(fQ3xV0C,fQ3yV0C,fSumM3V0C,fQ3xV0A,fQ3yV0A,fSumM3V0A,3); // 3rd order cos(3Psi_Vo) & sin(3Psi_Vo)
- 
- // Get ZDC Q-vector
- Double_t fQxZNCC=0, fQyZNCC=0, fQxZNCA=0, fQyZNCA=0; 
- Double_t denZNC=0, denZNA=0;
- 
- Bool_t kPassZNC = GetGainCorrectedZNCQvector(aodEvent, fQxZNCC, fQyZNCC, denZNC, fQxZNCA, fQyZNCA, denZNA);
-
- if(!kPassZNC) return;           // ZNC does not have signal for this event.  
-
- ApplyZNCqVectRecenter(centrV0M, pVtxX, pVtxY, pVtxZ, fOrbitNumber, fQxZNCC, fQyZNCC, fQxZNCA, fQyZNCA);
- Double_t xyZNC[2], xyZNA[2];
- xyZNC[0] = fQxZNCC;
- xyZNC[1] = fQyZNCC;
- xyZNA[0] = fQxZNCA;
- xyZNA[1] = fQyZNCA;
-
- fEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA); // 1st order ZNC qvec cos(Psi_ZNC) & sin(Psi_ZNC)
- 
- // ================================== end of V0 and ZDC Q-vector ============================
 
  // Mixed Harmonics:
  if(fEvent) 
  {
-
   fMH->Make(fEvent);
-
  }
  else 
  {
@@ -810,258 +704,13 @@ double AliAnalysisTaskMixedHarmonics::GetWDist(const AliVVertex* v0, const AliVV
   return dist>0 ? TMath::Sqrt(dist) : -1;
 }
 
-void AliAnalysisTaskMixedHarmonics::GetV0MCorrectionHist(Int_t run){ 
-
-  if(fListV0MCorr){
-    //V0 Channel Gains:
-    fHCorrectV0ChWeghts = (TH2F *) fListV0MCorr->FindObject(Form("hWgtV0ChannelsvsVzRun%d",run));
-    if(fHCorrectV0ChWeghts){
-      printf("\n ===========> Info:: V0 Channel Weights Found for Run %d \n ",run);
-    }
-    //Get V0A, V0C <Q> Vectors:
-    fHCorrectQNxV0C = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQNxvsCentV0CRun%d",run));
-    fHCorrectQNyV0C = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQNyvsCentV0CRun%d",run));    
-    fHCorrectQNxV0A = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQNxvsCentV0ARun%d",run));
-    fHCorrectQNyV0A = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQNyvsCentV0ARun%d",run));
-	
-    fHCorrectQ3xV0C = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQ3xvsCentV0CRun%d",run));
-    fHCorrectQ3yV0C = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQ3yvsCentV0CRun%d",run));    
-    fHCorrectQ3xV0A = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQ3xvsCentV0ARun%d",run));
-    fHCorrectQ3yV0A = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQ3yvsCentV0ARun%d",run));    
-    if(fHCorrectQNxV0C && fHCorrectQNyV0C && fHCorrectQNxV0A && fHCorrectQNyV0A){
-      printf(" ===========> Info:: V0A,V0C <Q> Found for Run %d \n ",run);
-    }    
-  }
-  else{
-    fHCorrectV0ChWeghts=NULL;
-  } 
-}
-
-void AliAnalysisTaskMixedHarmonics::GetZDCCorrectionHist(Int_t run){ 
-  if(fListZDCCorr){
-	fHZDCCparameters = (TH1D*)(fListZDCCorr->FindObject(Form("Run %d", run))->FindObject(Form("fZDCCparameters[%d]",run)));
-	fHZDCAparameters = (TH1D*)(fListZDCCorr->FindObject(Form("Run %d", run))->FindObject(Form("fZDCAparameters[%d]",run)));
-	if(fHZDCCparameters && fHZDCAparameters){
-      printf("\n ===========> Info:: ZDC Channel Weights Found for Run %d \n ",run);
-    }
-  }
-  else{
-	fHZDCCparameters=NULL;
-	fHZDCAparameters=NULL;
-	printf("\n ===========> Info:: ZDC Channel Weights NOT Found for Run %d \n ",run);
-  }
-}
-
-Bool_t AliAnalysisTaskMixedHarmonics::GetGainCorrectedV0Qvector(AliAODEvent *faod,Double_t fVtxZ,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &sumV0C,Double_t &qnxV0A,Double_t &qnyV0A,Double_t &sumV0A){
-
-  const AliAODVZERO *fAODV0 = (AliAODVZERO *) faod->GetVZEROData();
-  Float_t fMultV0 = 0.;
-  Float_t fPhiV0  = 0.;
-  Float_t fV0chGain = 1.0;
-
-  Double_t fQxV0CHarmN=0,fQyV0CHarmN=0,fQxV0AHarmN=0,fQyV0AHarmN=0;
-
-  Double_t fSumMV0A = 0;
-  Double_t fSumMV0C = 0;
-  Int_t ibinV0=0;
-
-  for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
-
-    fMultV0 = fAODV0->GetMultiplicity(iV0);
-
-    /// V0 Channel Gain Correction:
-    if(fHCorrectV0ChWeghts){ 
-      ibinV0    = fHCorrectV0ChWeghts->FindBin(fVtxZ,iV0);
-      fV0chGain = fHCorrectV0ChWeghts->GetBinContent(ibinV0); 
-    }
-    
-    fMultV0 = fMultV0*fV0chGain;   //Corrected Multiplicity
-    
-    fPhiV0  = TMath::PiOver4()*(0.5 + iV0 % 8);
-
-    if(iV0 < 32){
-      qnxV0C   += TMath::Cos(gPsiN*fPhiV0) * fMultV0;
-      qnyV0C   += TMath::Sin(gPsiN*fPhiV0) * fMultV0;
-      fSumMV0C += fMultV0;
-    }
-    else if(iV0 >= 32){
-      qnxV0A   += TMath::Cos(gPsiN*fPhiV0) * fMultV0;
-      qnyV0A   += TMath::Sin(gPsiN*fPhiV0) * fMultV0;
-      fSumMV0A += fMultV0;
-    } 
-  }///V0 Channel loop
-
-  /// Now the q vectors:
-  if(fSumMV0A<=1e-4 || fSumMV0C<=1e-4){
-    qnxV0C = 0;
-    qnyV0C = 0;
-    sumV0C = 0;
-    qnxV0A = 0;
-    qnyV0A = 0;   
-    sumV0A = 0; 
-    return kFALSE;       
-  }
-  else{
-    qnxV0C = qnxV0C/fSumMV0C;
-    qnyV0C = qnyV0C/fSumMV0C;
-    sumV0C = fSumMV0C;
-    qnxV0A = qnxV0A/fSumMV0A;
-    qnyV0A = qnyV0A/fSumMV0A;
-    sumV0A = fSumMV0A;
-    return kTRUE;  
-  }
-  
-}
-
-void AliAnalysisTaskMixedHarmonics::ApplyV0XqVectRecenter(Float_t fCent,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A){
-
-  Int_t icentbin = 0;
-  Double_t avgqx=0,avgqy=0; 
-  //cout<<" => Before qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<"\tqnxV0A "<<qnxV0A<<"\tqnyV0A "<<qnyV0A<<endl;
-  if(gPsiN==3){  ///<Q> correction for Psi3:  
-    if(fHCorrectQ3xV0C && fHCorrectQ3yV0C){
-      icentbin = fHCorrectQ3xV0C->FindBin(fCent);
-      avgqx = fHCorrectQ3xV0C->GetBinContent(icentbin);
-      avgqy = fHCorrectQ3yV0C->GetBinContent(icentbin);
-      qnxV0C -= avgqx;
-      qnyV0C -= avgqy;	
-      //cout<<" V0C PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
-    }
-    if(fHCorrectQ3xV0A && fHCorrectQ3yV0A){
-      icentbin = fHCorrectQ3xV0A->FindBin(fCent);
-      avgqx = fHCorrectQ3xV0A->GetBinContent(icentbin);
-      avgqy = fHCorrectQ3yV0A->GetBinContent(icentbin);
-      qnxV0A -= avgqx;
-      qnyV0A -= avgqy;
-      //cout<<" V0A PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
-    }
-    //cout<<" => After qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<" qnxV0A "<<qnxV0A<<"\tqnyV0A"<<qnyV0A<<endl;
-  }
-  else{ /// Proper File which contain <q> for harmonic 'N' should be set in AddTask!! 
-    if(fHCorrectQNxV0C && fHCorrectQNyV0C){
-      icentbin = fHCorrectQNxV0C->FindBin(fCent);
-      avgqx = fHCorrectQNxV0C->GetBinContent(icentbin);
-      avgqy = fHCorrectQNyV0C->GetBinContent(icentbin);
-      qnxV0C -= avgqx;
-      qnyV0C -= avgqy;      
-      //cout<<" V0C PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
-    }
-    if(fHCorrectQNxV0A && fHCorrectQNyV0A){
-      icentbin = fHCorrectQNxV0A->FindBin(fCent);
-      avgqx = fHCorrectQNxV0A->GetBinContent(icentbin);
-      avgqy = fHCorrectQNyV0A->GetBinContent(icentbin);
-      qnxV0A -= avgqx;
-      qnyV0A -= avgqy;           
-      //cout<<" V0A PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
-    }
-    //cout<<" => After qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<" qnxV0A "<<qnxV0A<<"\tqnyV0A "<<qnyV0A<<endl;
-  }
-
- 
-  return;
-
-}
-
-Bool_t AliAnalysisTaskMixedHarmonics::GetGainCorrectedZNCQvector(AliAODEvent *faod,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &fdenZNC,Double_t &qnxZNCA,Double_t &qnyZNCA,Double_t &fdenZNA){
- AliAODZDC *aodZDC = faod->GetZDCData();
-	
- if(!aodZDC) {
-  printf("\n ********* Error: could not find ZDC data ************ \n ");
-  return kFALSE;
- }
- else {
-  const Double_t *fZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
-  const Double_t *fZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
-  if((fZNATowerRawAOD[0]<0) || (fZNATowerRawAOD[1]<0) || (fZNATowerRawAOD[2]<0) || (fZNATowerRawAOD[3]<0) || (fZNATowerRawAOD[4] < 0)) {
-	return kFALSE;
-  }
-	
-  if((fZNCTowerRawAOD[0]<0) || (fZNCTowerRawAOD[1]<0) || (fZNCTowerRawAOD[2]<0) || (fZNCTowerRawAOD[3]<0) || (fZNCTowerRawAOD[4] < 0)) {
-    return kFALSE;
-  }
-	
-  Double_t towZNCraw1GainEq = 0, towZNCraw2GainEq = 0, towZNCraw3GainEq = 0, towZNCraw4GainEq = 0;
-  towZNCraw1GainEq = fZNCTowerRawAOD[1]*fHZDCCparameters->GetBinContent(1);
-  towZNCraw2GainEq = fZNCTowerRawAOD[2]*fHZDCCparameters->GetBinContent(2);
-  towZNCraw3GainEq = fZNCTowerRawAOD[3]*fHZDCCparameters->GetBinContent(3);
-  towZNCraw4GainEq = fZNCTowerRawAOD[4]*fHZDCCparameters->GetBinContent(4);
-
-  Double_t towZNAraw1GainEq = 0, towZNAraw2GainEq = 0, towZNAraw3GainEq = 0, towZNAraw4GainEq = 0;
-  towZNAraw1GainEq = fZNATowerRawAOD[1]*fHZDCAparameters->GetBinContent(1);
-  towZNAraw2GainEq = fZNATowerRawAOD[2]*fHZDCAparameters->GetBinContent(2);
-  towZNAraw3GainEq = fZNATowerRawAOD[3]*fHZDCAparameters->GetBinContent(3);
-  towZNAraw4GainEq = fZNATowerRawAOD[4]*fHZDCAparameters->GetBinContent(4);
-  
-  const Double_t xZDCC[4] = {-1, 1, -1, 1}; // directional vector
-  const Double_t yZDCC[4] = {-1, -1, 1, 1};
-  const Double_t xZDCA[4] = {1, -1, 1, -1};
-  const Double_t yZDCA[4] = {-1, -1, 1, 1};
-    
-  Double_t towZNC[5] = {fZNCTowerRawAOD[0], towZNCraw1GainEq, towZNCraw2GainEq, towZNCraw3GainEq, towZNCraw4GainEq};
-  Double_t towZNA[5] = {fZNATowerRawAOD[0], towZNAraw1GainEq, towZNAraw2GainEq, towZNAraw3GainEq, towZNAraw4GainEq};
-    
-  Double_t EZNC = 0, wZNC = 0, denZNC = 0, numXZNC = 0, numYZNC = 0;
-  Double_t EZNA = 0, wZNA = 0, denZNA = 0, numXZNA = 0, numYZNA = 0; 
-
-  for(Int_t i=0; i<4; i++){
-   // ZNC part
-   // get energy
-   EZNC = towZNC[i+1];
-       
-   // build ZDCC centroid
-   wZNC = TMath::Max(0., 4.0 + TMath::Log(towZNC[i+1]/fZNCTowerRawAOD[0]));
-   numXZNC += xZDCC[i]*wZNC;
-   numYZNC += yZDCC[i]*wZNC;
-   denZNC += wZNC;
-   
-   // ZNA part
-   // get energy
-   EZNA = towZNA[i+1];
-
-   // build ZDCA centroid
-   wZNA = TMath::Max(0., 4.0 + TMath::Log(towZNA[i+1]/fZNATowerRawAOD[0]));
-   numXZNA += xZDCA[i]*wZNA;
-   numYZNA += yZDCA[i]*wZNA;
-   denZNA += wZNA;
-  }
-  
-  if (denZNC==0) {return kFALSE;}
-  if (denZNA==0) {return kFALSE;}
-  fdenZNC = denZNC;
-  qnxZNCC = numXZNC/denZNC;
-  qnyZNCC = numYZNC/denZNC;
-  fdenZNA = denZNA;
-  qnxZNCA = numXZNA/denZNA;
-  qnyZNCA = numYZNA/denZNA;
-  
-  return kTRUE;
- }
- 
-}
-
-void AliAnalysisTaskMixedHarmonics::ApplyZNCqVectRecenter(Float_t centrality,Double_t pVtxX,Double_t pVtxY,Double_t pVtxZ,Double_t fOrbitNumber,Double_t &qnxZNCC,Double_t &qnyZNCC,Double_t &qnxZNCA,Double_t &qnyZNCA){
-	
- Double_t ZDCCAvgxPosFromVtxFit = 0;
- Double_t ZDCCAvgyPosFromVtxFit = 0;
-	
- Double_t ZDCAAvgxPosFromVtxFit = 0;
- Double_t ZDCAAvgyPosFromVtxFit = 0;
-
- ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pow(centrality,2) + fHZDCCparameters->GetBinContent(8)*pow(centrality,3) + fHZDCCparameters->GetBinContent(9)*pVtxX + fHZDCCparameters->GetBinContent(10)*pVtxY + fHZDCCparameters->GetBinContent(11)*pVtxZ + fHZDCCparameters->GetBinContent(12)*fOrbitNumber + fHZDCCparameters->GetBinContent(13);
- ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(14)*centrality + fHZDCCparameters->GetBinContent(15)*pow(centrality,2) + fHZDCCparameters->GetBinContent(16)*pow(centrality,3) + fHZDCCparameters->GetBinContent(17)*pVtxX + fHZDCCparameters->GetBinContent(18)*pVtxY + fHZDCCparameters->GetBinContent(19)*pVtxZ + fHZDCCparameters->GetBinContent(20)*fOrbitNumber + fHZDCCparameters->GetBinContent(21);
-	
- ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12)*fOrbitNumber + fHZDCAparameters->GetBinContent(13);
- ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(14)*centrality + fHZDCAparameters->GetBinContent(15)*pow(centrality,2) + fHZDCAparameters->GetBinContent(16)*pow(centrality,3) + fHZDCAparameters->GetBinContent(17)*pVtxX + fHZDCAparameters->GetBinContent(18)*pVtxY + fHZDCAparameters->GetBinContent(19)*pVtxZ + fHZDCAparameters->GetBinContent(20)*fOrbitNumber + fHZDCAparameters->GetBinContent(21);
 
 
- qnxZNCC -= ZDCCAvgxPosFromVtxFit;
- qnyZNCC -= ZDCCAvgyPosFromVtxFit;
 
- qnxZNCA -= ZDCAAvgxPosFromVtxFit;
- qnyZNCA -= ZDCAAvgyPosFromVtxFit;
- 
- return;
-}
+
+
+
+
 
 
 
