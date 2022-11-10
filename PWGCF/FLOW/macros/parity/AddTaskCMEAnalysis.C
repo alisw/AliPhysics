@@ -1,18 +1,39 @@
+void AddTaskCMEAnalysis(Bool_t isPbPb,
+			Double_t whichData,
+			Bool_t isData,
+			Bool_t checkPileup,
+			AliFlowEventCuts::refMultMethod gCentralityEstimator,
+			TString qVector,
+			Double_t gEtaGap,
+			Bool_t isVZERO,
+			Int_t gAODfilterBit,
+			Double_t gDCAvtxXY,
+			Double_t gDCAvtxZ,
+			Double_t gChargeRP,
+			Double_t gChargePOI,
+			Bool_t gRunSP,
+			Bool_t gRunQC,
+			Bool_t gRunMHLS,
+			Bool_t gRunMHUS,
+			Bool_t doQA,
+			Bool_t doHigherHarmonic,
+			Int_t harmonicMH,
+			Int_t vnHarmonic, 
+			TString sLabel);
 AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin,
                                            Int_t gCentralityMax,
                                            Bool_t isPbPb,
                                            Double_t whichData,
                                            AliFlowEventCuts::refMultMethod gCentralityEstimator,
-                                           Bool_t doQA, Bool_t bPileup);
-
+                                           Bool_t doQA, 
+					   Bool_t bPileup);
 AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin,
                                         Int_t gCentralityMax,
                                         Bool_t isVZERO,
                                         Int_t gAODfilterBit,
 					Double_t whichData,
-                                        Double_t gChargeRP.,
+                                        Double_t gChargeRP,
                                         Bool_t doQA);
-
 AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin,
                                          Int_t gCentralityMax,
                                          TString gQvector,
@@ -27,7 +48,7 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin,
                                          Bool_t doQA);
 
 void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
-			Double_t whichData = 2011,
+			Int_t whichData = 2011,
 			Bool_t isData = kTRUE,
 			Bool_t checkPileup = kTRUE,
 			AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
@@ -45,7 +66,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 			Bool_t gRunMHUS = kTRUE,
 			Bool_t doQA = kFALSE,
 			Bool_t doHigherHarmonic = kFALSE,
-			Int_t vnHarmonic=2, TString sLabel = "FB96") {
+			Int_t harmonicMH = 3,
+			Int_t vnHarmonic = 6, TString sLabel = "FB96") 
+{
   //Macro to be used for studies of CME for charged particles
   //The macro uses as an input a configuration macro that
   //creates the AliFlowEventCuts and AliFlowTrackCuts objects
@@ -226,22 +249,6 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 
 
   }//loop over centrality classes
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   TString fileName = "AnalysisResults";
   fileName.Append(".root");
@@ -520,10 +527,10 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     taskFE_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
     
     //Sub events
-    minA = -0.8;//
-    maxA = -0.5*gEtaGap;//
-    minB = +0.5*gEtaGap;//
-    maxB = 0.8;//
+    //Double_t minA = -0.8;//
+    //Double_t maxA = -0.5*gEtaGap;//
+    //Double_t minB = +0.5*gEtaGap;//
+    //Double_t maxB = 0.8;//
     
     if(!isVZERO)
       taskFE_NN[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
@@ -675,10 +682,10 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     taskFE_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
     
     //Sub events
-    minA = -0.8;//
-    maxA = -0.5*gEtaGap;//
-    minB = +0.5*gEtaGap;//
-    maxB = 0.8;//
+    //Double_t minA = -0.8;//
+    //Double_t maxA = -0.5*gEtaGap;//
+    //Double_t minB = +0.5*gEtaGap;//
+    //Double_t maxB = 0.8;//
     
     if(!isVZERO)
       taskFE_PN[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
@@ -812,25 +819,10 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	mgr->ConnectOutput(taskQCv4_PN[iCentralityBin],1,coutputQCv4_PN[iCentralityBin]);
 	}*/
     }
-
     //======================================================================//
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     //============================== now CME correlator ================================//
-
     //---------- PP -------------
       if(!doHigherHarmonic){
 	TString outputMHLS_PP = fileName;
@@ -864,7 +856,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	outputMHLS_PP2 += ":outputMHLS2analysis";
 	outputMHLS_PP2 += "PlusPlus";     
 	taskMHLS_PP2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPP_NameMHLS2[iCentralityBin].Data()),kFALSE);
-	taskMHLS_PP2[iCentralityBin]->SetHarmonic(3); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
+	taskMHLS_PP2[iCentralityBin]->SetHarmonic(harmonicMH); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHLS_PP2[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHLS_PP2[iCentralityBin]->SetMultipicityBinWidth(1.);
 	taskMHLS_PP2[iCentralityBin]->SetMinMultiplicity(1.);
@@ -920,7 +912,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	outputMHLS_NN2 += ":outputMHLS2analysis";
 	outputMHLS_NN2 += "MinusMinus";     
 	taskMHLS_NN2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotNN_NameMHLS2[iCentralityBin].Data()),kFALSE);
-	taskMHLS_NN2[iCentralityBin]->SetHarmonic(3); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
+	taskMHLS_NN2[iCentralityBin]->SetHarmonic(harmonicMH); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHLS_NN2[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHLS_NN2[iCentralityBin]->SetMultipicityBinWidth(1.);
 	taskMHLS_NN2[iCentralityBin]->SetMinMultiplicity(1.);
@@ -979,7 +971,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	outputMHUS2 += ":outputMHUS2analysis";
       
 	taskMHUS2[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPN_NameMHUS2[iCentralityBin].Data()),kFALSE);
-	taskMHUS2[iCentralityBin]->SetHarmonic(3); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
+	taskMHUS2[iCentralityBin]->SetHarmonic(harmonicMH); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
 	taskMHUS2[iCentralityBin]->SetNoOfMultipicityBins(10000);
 	taskMHUS2[iCentralityBin]->SetMultipicityBinWidth(1.);
 	taskMHUS2[iCentralityBin]->SetMinMultiplicity(1.);
@@ -1044,7 +1036,9 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
                                            Bool_t isPbPb = kTRUE,
                                            Double_t whichData = 2011,
                                            AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
-                                           Bool_t doQA = kFALSE, Bool_t bPileup=kFALSE) {
+                                           Bool_t doQA = kFALSE, 
+					   Bool_t bPileup = kFALSE) 
+{
     //Part of the code that creates the event cut objects
     Double_t gVertexZmin = -10., gVertexZmax = 10.;
     
@@ -1105,9 +1099,9 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
         if (gChargeRP!=0) cutsRP->SetCharge(gChargeRP);
     }
     else if(isVZERO) { // use vzero sub analysis
-        if(whichData = 2010)
+        if(whichData == 2010)
             cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010();
-        if(whichData = 2011)
+        if(whichData == 2011)
             cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011();
 	else{ cout<<"VZEROonly track cuts for this dataset are automatically set to 2010 settings!"<<endl; cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010();}
    }//VZERO
