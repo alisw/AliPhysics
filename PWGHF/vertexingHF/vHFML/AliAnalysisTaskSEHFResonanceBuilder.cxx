@@ -476,8 +476,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 selectedTrackIds.push_back(id);
                 nSigmaTPC.push_back(nSigmaTrkTPC);
                 nSigmaTOF.push_back(nSigmaTrkTOF);
+                std::array<bool, kNumBachIDs> isSignal = {false, false, false, false};
                 if (fReadMC) { // match to MC signals
-                    std::array<bool, kNumBachIDs> isSignal = {false, false, false, false};
                     if (track->GetLabel() >= 0) {
                         AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(track->GetLabel()));
                         int pdgBach = part->GetPdgCode();
@@ -488,8 +488,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                             }
                         }
                     }
-                    selectedTrackSignal.push_back(isSignal);
                 }
+                selectedTrackSignal.push_back(isSignal);
             }
         }
     }
@@ -507,8 +507,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             {
                 selectedV0Indices.push_back(iV0);
                 selectedV0Ids.push_back(id);
+                std::array<bool, kNumV0IDs> isSignal = {false, false};
                 if (fReadMC) { // match to MC signals
-                    std::array<bool, kNumV0IDs> isSignal = {false, false};
                     std::array<int, kNumV0IDs> mcLab = {-1, -1};
                     if (TESTBIT(id, kK0S)) {
                         int pdgDaus[2] = {211, 211};
@@ -522,8 +522,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                         if (mcLab[kLambda] >= 0)
                             isSignal[kLambda] = true;
                     }
-                    selectedV0Signal.push_back(isSignal);
                 }
+                selectedV0Signal.push_back(isSignal);
             }
         }
     }
