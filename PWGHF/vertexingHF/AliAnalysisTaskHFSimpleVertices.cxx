@@ -816,57 +816,57 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
 
     // vertexer parameters
     printf("--- DCAFitterN parameters ---\n");
-    Int_t b_propdca = GetJsonBool(filename.Data(), "hf-track-index-skim-creator", "propagateToPCA");
-    if (b_propdca == 1) {
+    Int_t propagateToPCA = GetJsonBool(filename.Data(), "hf-track-index-skim-creator", "propagateToPCA");
+    if (propagateToPCA == 1) {
       fVertexerPropagateToPCA = true;
-      printf("propdca = %d\n", fVertexerPropagateToPCA);
-    } else if (b_propdca == 0) {
+      printf("propagateToPCA = %d\n", fVertexerPropagateToPCA);
+    } else if (propagateToPCA == 0) {
       fVertexerPropagateToPCA = false;
-      printf("propdca = %d\n", fVertexerPropagateToPCA);
+      printf("propagateToPCA = %d\n", fVertexerPropagateToPCA);
     }
-    Double_t d_maxr = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxR");
-    if (d_maxr > 0) {
-      fMaxDecVertRadius2 = d_maxr * d_maxr;
-      fVertexerMaxR = d_maxr;
-      printf("maxr = %g\n", fVertexerMaxR);
+    Double_t maxR = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxR");
+    if (maxR > 0) {
+      fMaxDecVertRadius2 = maxR * maxR;
+      fVertexerMaxR = maxR;
+      printf("maxR = %g\n", fVertexerMaxR);
     }
-    Double_t d_maxdzini = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxDZIni");
-    if (d_maxdzini > 0) {
-      fVertexerMaxDZIni = d_maxdzini;
-      printf("maxdzini = %g\n", fVertexerMaxDZIni);
+    Double_t maxDZIni = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxDZIni");
+    if (maxDZIni > 0) {
+      fVertexerMaxDZIni = maxDZIni;
+      printf("maxDZIni = %g\n", fVertexerMaxDZIni);
     }
-    Double_t d_minparamchange = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "minParamChange");
-    if (d_minparamchange > 0) {
-      fVertexerMinParamChange = d_minparamchange;
-      printf("minparamchange = %g\n", fVertexerMinParamChange);
+    Double_t minParamChange = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "minParamChange");
+    if (minParamChange > 0) {
+      fVertexerMinParamChange = minParamChange;
+      printf("minParamChange = %g\n", fVertexerMinParamChange);
     }
-    Double_t d_minrelchi2change = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "minRelChi2Change");
-    if (d_minrelchi2change) {
-      fVertexerMinRelChi2Change = d_minrelchi2change;
-      printf("minrelchi2change = %g\n", fVertexerMinRelChi2Change);
+    Double_t minRelChi2Change = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "minRelChi2Change");
+    if (minRelChi2Change) {
+      fVertexerMinRelChi2Change = minRelChi2Change;
+      printf("minRelChi2Change = %g\n", fVertexerMinRelChi2Change);
     }
     printf("----------------\n");
-    Double_t ptMinCand = GetJsonFloat(filename.Data(), "hf-candidate-selector-d0", "d_pTCandMin");
+    Double_t ptMinCand = GetJsonFloat(filename.Data(), "hf-candidate-selector-d0", "ptCandMin");
     printf("Min pt Dzero cand = %g\n", ptMinCand);
     if (ptMinCand >= 0.)
       fMinPtDzero = ptMinCand;
-    Double_t ptMaxCand = GetJsonFloat(filename.Data(), "hf-candidate-selector-d0", "d_pTCandMax");
+    Double_t ptMaxCand = GetJsonFloat(filename.Data(), "hf-candidate-selector-d0", "ptCandMax");
     printf("Max pt Dzero cand = %g\n", ptMaxCand);
     if (ptMaxCand >= 0. && ptMaxCand >= fMinPtDzero)
       fMaxPtDzero = ptMaxCand;
-    Double_t ptMinCandDplus = GetJsonFloat(filename.Data(), "hf-candidate-selector-dplus-to-pi-k-pi", "d_pTCandMin");
+    Double_t ptMinCandDplus = GetJsonFloat(filename.Data(), "hf-candidate-selector-dplus-to-pi-k-pi", "ptCandMin");
     printf("Min pt Dplus cand = %g\n", ptMinCandDplus);
     if (ptMinCandDplus >= 0.)
       fMinPtDplus = ptMinCandDplus;
-    Double_t ptMaxCandDplus = GetJsonFloat(filename.Data(), "hf-candidate-selector-dplus-to-pi-k-pi", "d_pTCandMax");
+    Double_t ptMaxCandDplus = GetJsonFloat(filename.Data(), "hf-candidate-selector-dplus-to-pi-k-pi", "ptCandMax");
     printf("Max pt Dplus cand = %g\n", ptMaxCandDplus);
     if (ptMaxCandDplus >= 0. && ptMaxCandDplus >= fMinPtDplus)
       fMaxPtDplus = ptMaxCandDplus;
-    Double_t ptMinCandLc = GetJsonFloat(filename.Data(), "hf-candidate-selector-lc", "d_pTCandMin");
+    Double_t ptMinCandLc = GetJsonFloat(filename.Data(), "hf-candidate-selector-lc", "ptCandMin");
     printf("Min pt Lc cand = %g\n", ptMinCandLc);
     if (ptMinCandLc >= 0.)
       fMinPtLc = ptMinCandLc;
-    Double_t ptMaxCandLc = GetJsonFloat(filename.Data(), "hf-candidate-selector-lc", "d_pTCandMax");
+    Double_t ptMaxCandLc = GetJsonFloat(filename.Data(), "hf-candidate-selector-lc", "ptCandMax");
     printf("Max pt Lc cand = %g\n", ptMaxCandLc);
     if (ptMaxCandLc >= 0. && ptMaxCandLc >= fMinPtLc)
       fMaxPtLc = ptMaxCandLc;
