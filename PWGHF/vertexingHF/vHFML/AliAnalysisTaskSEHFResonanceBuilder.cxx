@@ -498,7 +498,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     std::vector<int> selectedV0Indices{};
     std::vector<int> selectedV0Ids{};
     std::vector<std::array<bool, kNumV0IDs>> selectedV0Signal{};
-    std::vector<std::array<bool, kNumV0IDs>> selectedV0Labels{};
+    std::vector<std::array<int, kNumV0IDs>> selectedV0Labels{};
     if (std::accumulate(fEnableV0.begin(), fEnableV0.end(), 0)) {
         for (int iV0{0}; iV0 < fAOD->GetNumberOfV0s(); ++iV0) {
             AliAODv0 *v0 = fAOD->GetV0(iV0);
@@ -508,8 +508,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 selectedV0Indices.push_back(iV0);
                 selectedV0Ids.push_back(id);
                 std::array<bool, kNumV0IDs> isSignal = {false, false};
+                std::array<int, kNumV0IDs> mcLab = {-1, -1};
                 if (fReadMC) { // match to MC signals
-                    std::array<int, kNumV0IDs> mcLab = {-1, -1};
                     if (TESTBIT(id, kK0S)) {
                         int pdgDaus[2] = {211, 211};
                         mcLab[kK0S] = v0->MatchToMC(kPdgV0IDs[kK0S], arrayMC, 2, pdgDaus);
@@ -524,6 +524,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     }
                 }
                 selectedV0Signal.push_back(isSignal);
+                selectedV0Labels.push_back(mcLab);
             }
         }
     }
