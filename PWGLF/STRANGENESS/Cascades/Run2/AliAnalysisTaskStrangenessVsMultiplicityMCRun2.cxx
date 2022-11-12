@@ -373,6 +373,7 @@ fTreeVariablePosTrackRef( new AliTrackReference() ),
 fTreeVariableNegTrackRef( new AliTrackReference() ),
 
 //---> Variables for fTreeCascade
+fTreeCascVarRunNumber(0),
 fTreeCascVarCharge(0),
 fTreeCascVarMassAsXi(0),
 fTreeCascVarMassAsOmega(0),
@@ -949,6 +950,7 @@ fTreeVariablePosTrackRef( new AliTrackReference() ),
 fTreeVariableNegTrackRef( new AliTrackReference() ),
 
 //---> Variables for fTreeCascade
+fTreeCascVarRunNumber(0),
 fTreeCascVarCharge(0),
 fTreeCascVarMassAsXi(0),
 fTreeCascVarMassAsOmega(0),
@@ -2337,6 +2339,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   //Bookkeep event number for debugging
   //Run number
   fTreeVariableRunNumber = lESDevent->GetRunNumber();
+  fTreeCascVarRunNumber = lESDevent->GetRunNumber();
   
   //--- Acquisition of exact event ID
   fTreeCascVarEventNumber =
