@@ -616,6 +616,7 @@ private:
   //===========================================================================================
   //   Variables for Cascade Candidate Tree
   //===========================================================================================
+  Int_t fTreeCascVarRunNumber;      //!
   Int_t fTreeCascVarCharge;         //!
   Float_t fTreeCascVarMassAsXi;     //!
   Float_t fTreeCascVarMassAsOmega;  //!
