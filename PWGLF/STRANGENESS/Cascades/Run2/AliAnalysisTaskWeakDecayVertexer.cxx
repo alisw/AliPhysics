@@ -953,12 +953,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event)
         //==================================================================================
         //Query MC information to check if this track comes from one of the desired species
         Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
-        TParticle* lParticle = lMCstack->Particle( lLabel );
+        //TParticle* lParticle = lMCstack->Particle( lLabel );
+        
+        AliMCParticle* lParticle = (AliMCParticle*) lMCevent->GetTrack( lLabel );
+        
         Int_t lLabelMother = lParticle->GetFirstMother();
         if( lLabelMother < 0 ) continue;
         //Do not select on primaries so that this list can be used for cascades too
         //if( lMCstack->IsPhysicalPrimary(lLabelMother) ) continue;
-        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        //TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        AliMCParticle* lParticleMother = (AliMCParticle*) lMCevent->GetTrack( lLabelMother );
+        
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         Bool_t lOfDesiredType = kFALSE;
         for(Int_t iType=0; iType<lNV0Types; iType++){
@@ -1005,8 +1010,10 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event)
             //Check if same mother
             Int_t lLabelneg = (Int_t) TMath::Abs( ntrk->GetLabel() );
             Int_t lLabelpos = (Int_t) TMath::Abs( ptrk->GetLabel() );
-            TParticle* lParticleneg = lMCstack->Particle( lLabelneg );
-            TParticle* lParticlepos = lMCstack->Particle( lLabelpos );
+            //TParticle* lParticleneg = lMCstack->Particle( lLabelneg );
+            //TParticle* lParticlepos = lMCstack->Particle( lLabelpos );
+            AliMCParticle* lParticleneg = (AliMCParticle*) lMCevent->GetTrack( lLabelneg );
+            AliMCParticle* lParticlepos = (AliMCParticle*) lMCevent->GetTrack( lLabelpos );
             Int_t lLabelMotherneg = lParticleneg->GetFirstMother();
             Int_t lLabelMotherpos = lParticlepos->GetFirstMother();
             if(lLabelMotherneg!=lLabelMotherpos) continue; //discard if combination not good
@@ -1594,10 +1601,12 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         //==================================================================================
         //Query MC information to check if this track comes from one of the desired species
         Int_t lLabel = (Int_t) TMath::Abs( pTrack->GetLabel() );
-        TParticle* lParticle = lMCstack->Particle( lLabel );
+        //TParticle* lParticle = lMCstack->Particle( lLabel );
+        AliMCParticle* lParticle = (AliMCParticle*) lMCevent->GetTrack( lLabel );
         Int_t lLabelMother = lParticle->GetFirstMother();
         if( lLabelMother < 0 ) continue;
-        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        //TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        AliMCParticle* lParticleMother = (AliMCParticle*) lMCevent->GetTrack( lLabelMother );
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         Bool_t lOfDesiredType = kFALSE;
         if( TMath::Abs(lParticleMotherPDG) != 3122  ) continue; //discard K0s (will help a lot)
@@ -1675,10 +1684,12 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         //==================================================================================
         //Query MC information to check if this track comes from one of the desired species
         Int_t lLabel = (Int_t) TMath::Abs( esdtr->GetLabel() );
-        TParticle* lParticle = lMCstack->Particle( lLabel );
+        //TParticle* lParticle = lMCstack->Particle( lLabel );
+        AliMCParticle* lParticle = (AliMCParticle*) lMCevent->GetTrack( lLabel );
         Int_t lLabelMother = lParticle->GetFirstMother();
         if( lLabelMother < 0 ) continue;
-        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        //TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        AliMCParticle* lParticleMother = (AliMCParticle*) lMCevent->GetTrack( lLabelMother );
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         if( TMath::Abs(lParticleMotherPDG) != 3312 &&
            TMath::Abs(lParticleMotherPDG) != 3334 ) continue; //keep only tracks coming from Xi, Omega
