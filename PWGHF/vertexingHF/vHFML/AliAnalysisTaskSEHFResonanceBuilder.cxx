@@ -498,7 +498,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     std::vector<int> selectedV0Indices{};
     std::vector<int> selectedV0Ids{};
     std::vector<std::array<bool, kNumV0IDs>> selectedV0Signal{};
-    std::vector<std::array<bool, kNumV0IDs>> selectedV0Labels{};
+    std::vector<std::array<int, kNumV0IDs>> selectedV0Labels{};
     if (std::accumulate(fEnableV0.begin(), fEnableV0.end(), 0)) {
         for (int iV0{0}; iV0 < fAOD->GetNumberOfV0s(); ++iV0) {
             AliAODv0 *v0 = fAOD->GetV0(iV0);
