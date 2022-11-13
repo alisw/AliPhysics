@@ -254,11 +254,19 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
             case kDplustoKpipi:
             {
                 std::array<std::vector<int>, 2> pdgReso = {std::vector<int>{435, 10433}, std::vector<int>{}}; 
+                std::set<int> pdgResoAllDecays;
+                for (auto &array: pdgReso) {
+                    pdgResoAllDecays.insert(array.begin(), array.end());
+                }
+                for (auto &pdg: pdgResoAllDecays) {
+                    fHistMCGenAccAllDecaysPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                    fHistMCGenAccAllDecaysNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                }
                 for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
                     if (fEnableV0[iV0]) {
                         for (auto iReso{0u}; iReso<pdgReso[iV0].size(); ++iReso) {
-                            fHistMCGenAccPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 100., -1., 1.));
-                            fHistMCGenAccNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 100., -1., 1.));
+                            fHistMCGenAccPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 411 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
+                            fHistMCGenAccNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 411 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
                         }
                     }
                 }
@@ -267,11 +275,19 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
             case kDstartoD0pi:
             {
                 std::array<std::vector<int>, 2> pdgReso = {std::vector<int>{435, 10433}, std::vector<int>{}}; 
+                std::set<int> pdgResoAllDecays;
+                for (auto &array: pdgReso) {
+                    pdgResoAllDecays.insert(array.begin(), array.end());
+                }
+                for (auto &pdg: pdgResoAllDecays) {
+                    fHistMCGenAccAllDecaysPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                    fHistMCGenAccAllDecaysNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                }
                 for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
                     if (fEnableV0[iV0]) {
                         for (auto iReso{0u}; iReso<pdgReso[iV0].size(); ++iReso) {
-                            fHistMCGenAccPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 100., -1., 1.));
-                            fHistMCGenAccNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 100., -1., 1.));
+                            fHistMCGenAccPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 413 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
+                            fHistMCGenAccNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 413 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
                         }
                     }
                 }
@@ -281,6 +297,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
         for (auto iHist{0u}; iHist<fHistMCGenAccPrompt.size(); ++iHist) {
             fOutput->Add(fHistMCGenAccPrompt[iHist]);
             fOutput->Add(fHistMCGenAccNonPrompt[iHist]);
+        }
+        for (auto iHist{0u}; iHist<fHistMCGenAccAllDecaysPrompt.size(); ++iHist) {
+            fOutput->Add(fHistMCGenAccAllDecaysPrompt[iHist]);
+            fOutput->Add(fHistMCGenAccAllDecaysNonPrompt[iHist]);
         }
     }
 
@@ -1322,6 +1342,11 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
         }
     }
 
+    std::set<int> pdgResoAllDecays;
+    for (auto &array: pdgReso) {
+        pdgResoAllDecays.insert(array.begin(), array.end());
+    }
+
     double zMCVertex = mcHeader->GetVtxZ(); // vertex MC
     if (TMath::Abs(zMCVertex) <= fRDCuts->GetMaxVtxZ()) {
         for (int iPart{0}; iPart < arrayMC->GetEntriesFast(); ++iPart) {
@@ -1331,18 +1356,30 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
             int pdgPart = mcPart->GetPdgCode();
             int labDau[5] = {-1, -1, -1, -1, -1};
 
-            for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
-                if (fEnableV0[iV0]) {
-                    for (auto iReso{0u}; iReso<pdgReso[iV0].size(); ++iReso) {
-                        if (TMath::Abs(pdgPart) == pdgReso[iV0][iReso]) {
-                            isGoodReso = true;
-                            break;
-                        }
-                    }
+            for (auto &pdg: pdgResoAllDecays) {
+                if (TMath::Abs(pdgPart) == pdg) {
+                    isGoodReso = true;
+                    break;
                 }
             }
 
             if (isGoodReso) {
+                if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC))
+                    continue;
+
+                int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true);
+                double pt = mcPart->Pt();
+                double rapid = mcPart->Y();
+
+                if (orig < 4)
+                    continue;
+
+                if (orig == 4) {
+                    dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPromptMCGenPtVsY_%d", TMath::Abs(pdgPart))))->Fill(pt, rapid);
+                }
+                else if (orig == 5) {
+                    dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d", TMath::Abs(pdgPart))))->Fill(pt, rapid);
+                }
 
                 switch(fDecChannel) {
                     case kDplustoKpipi:
@@ -1350,7 +1387,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
                         if (fEnableV0[kK0S]) {
                             decay[kK0S] = AliVertexingHFUtils::CheckResoToDplusK0SDecay(arrayMC, mcPart, labDau);
                         }
-                        decay[kLambda] = -1;
+                        decay[kLambda] = -1; //TODO: implement check for Xic* -> D+Lambda
                         break;
                     }
                     case kDstartoD0pi:
@@ -1358,7 +1395,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
                         if (fEnableV0[kK0S]) {
                             decay[kK0S] = AliVertexingHFUtils::CheckResoToDstarK0SDecay(arrayMC, mcPart, labDau);
                         }
-                        decay[kLambda] = -1;
+                        decay[kLambda] = -1; //TODO: implement check for Xic* -> D*Lambda
                         break;
                     }
                 }
@@ -1371,17 +1408,11 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
                 }
 
                 if (decay[whichV0] > 0) {
-                    bool isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
-                    if (!isParticleFromOutOfBunchPileUpEvent) {
-                        int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true);
-                        double pt = mcPart->Pt();
-                        double rapid = mcPart->Y();
-                        if (orig == 4) {
-                            dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d_to_%d_%d", TMath::Abs(decay[whichV0]), fPdgD, kPdgV0IDs[whichV0])))->Fill(pt, rapid);
-                        }
-                        else if (orig == 5) {
-                            dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d_to_%d_%d", TMath::Abs(decay[whichV0]), fPdgD, kPdgV0IDs[whichV0])))->Fill(pt, rapid);
-                        }
+                    if (orig == 4) {
+                        dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPromptMCGenPtVsY_%d_to_%d_%d", TMath::Abs(decay[whichV0]), fPdgD, kPdgV0IDs[whichV0])))->Fill(pt, rapid);
+                    }
+                    else if (orig == 5) {
+                        dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d_to_%d_%d", TMath::Abs(decay[whichV0]), fPdgD, kPdgV0IDs[whichV0])))->Fill(pt, rapid);
                     }
                 }
             }
