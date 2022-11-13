@@ -1883,7 +1883,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   }
   
   // Cluster only histograms
-  if ( GetIsolationCut()->GetParticleTypeInCone()!=AliIsolationCut::kOnlyCharged )
+  if ( particle != AliIsolationCut::kOnlyCharged )
   {      
     if ( fFillPerSMHistograms && fFillPerSMHistogramsInCone )
     {
@@ -2290,7 +2290,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   }
   
   // Track only histograms
-  if ( GetIsolationCut()->GetParticleTypeInCone()!=AliIsolationCut::kOnlyNeutral )
+  if ( particle != AliIsolationCut::kOnlyNeutral )
   {
     if ( fFillPerSMHistograms  && fFillPerSMHistogramsInCone )
     {
@@ -3259,7 +3259,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     }
   }
   
-  if ( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged &&
+  if ( particle == AliIsolationCut::kNeutralAndCharged &&
       fStudyPtCutInCone )
   {
     if ( !IsHighMultiplicityAnalysisOn() )
@@ -4022,23 +4022,26 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           }
         }
 
-        fhConeSumPtNeutralChargedRatioPrimMC[i] = new TH2F
-        (Form("hConeSumPtNeutralChargedRatioPrim_MC%s",ppname[i].Data()),
-         Form("primary #gamma %s: %s",pptype[i].Data(),parTitleR.Data()),
-          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ratBinsArray.GetSize() - 1, ratBinsArray.GetArray());
-        fhConeSumPtNeutralChargedRatioPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhConeSumPtNeutralChargedRatioPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{neutral} / #Sigma #it{p}_{T}^{charged}");
-        outputContainer->Add(fhConeSumPtNeutralChargedRatioPrimMC[i]) ;
+        if ( particle == AliIsolationCut::kNeutralAndCharged )
+        {
+          fhConeSumPtNeutralChargedRatioPrimMC[i] = new TH2F
+          (Form("hConeSumPtNeutralChargedRatioPrim_MC%s",ppname[i].Data()),
+           Form("primary #gamma %s: %s",pptype[i].Data(),parTitleR.Data()),
+           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           ratBinsArray.GetSize() - 1, ratBinsArray.GetArray());
+          fhConeSumPtNeutralChargedRatioPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtNeutralChargedRatioPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{neutral} / #Sigma #it{p}_{T}^{charged}");
+          outputContainer->Add(fhConeSumPtNeutralChargedRatioPrimMC[i]) ;
 
-        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i] = new TH2F
-        (Form("hConeSumPtPerpConeNeutralChargedRatioPrim_MC%s",ppname[i].Data()),
-         Form("primary #gamma %s: %s, #perp cone",pptype[i].Data(),parTitleR.Data()),
-          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ratBinsArray.GetSize() - 1, ratBinsArray.GetArray());
-        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{neutral, #perp cone} / #Sigma #it{p}_{T}^{charged, #perp cone}");
-        outputContainer->Add(fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]) ;
+          fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i] = new TH2F
+          (Form("hConeSumPtPerpConeNeutralChargedRatioPrim_MC%s",ppname[i].Data()),
+           Form("primary #gamma %s: %s, #perp cone",pptype[i].Data(),parTitleR.Data()),
+           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           ratBinsArray.GetSize() - 1, ratBinsArray.GetArray());
+          fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{neutral, #perp cone} / #Sigma #it{p}_{T}^{charged, #perp cone}");
+          outputContainer->Add(fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]) ;
+        }
 
        if ( IsEmbedingAnalysisOn()  && fEmbedUEInPrimMC )
        {
@@ -6578,14 +6581,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         }
       }
 
-      if ( perpConePtSumCh > 0 && perpConePtSumNe > 0 )
+      if ( perpConePtSumCh > 0 && perpConePtSumNe > 0  &&
+           partInConeType == AliIsolationCut::kNeutralAndCharged )
       {
         fhConeSumPtPerpConeNeutralChargedRatioPrimMC[mcIndex]      ->Fill(photonPt, perpConePtSumNe/perpConePtSumCh, GetEventWeight()*weightPt) ;
         if ( !GetReader()->AreMCPromptPhotonsSelected() )
           fhConeSumPtPerpConeNeutralChargedRatioPrimMC[kmcPrimPhoton]->Fill(photonPt, perpConePtSumNe/perpConePtSumCh, GetEventWeight()*weightPt) ;
       }
 
-      if ( sumPtInConeCh > 0 && sumPtInConeNe > 0 )
+      if ( sumPtInConeCh > 0 && sumPtInConeNe > 0  &&
+           partInConeType == AliIsolationCut::kNeutralAndCharged )
       {
         fhConeSumPtNeutralChargedRatioPrimMC[mcIndex]      ->Fill(photonPt, sumPtInConeNe/sumPtInConeCh, GetEventWeight()*weightPt) ;
         if ( !GetReader()->AreMCPromptPhotonsSelected() )
