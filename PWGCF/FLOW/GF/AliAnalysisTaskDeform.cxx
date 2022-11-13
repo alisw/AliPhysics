@@ -370,7 +370,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       TString lBase(""); //base
       TString lSubfix(""); //subfix
       for(int i(0);i<4;++i) {
-        lBase = Form("weight_%s",species[i]); 
+        lBase = Form("weight%s",species[i]); 
         lSubfix = fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():"";
         lBase+=lSubfix;
         fWeights[i] = (AliGFWWeights*)fWeightList->FindObject(lBase.Data());
