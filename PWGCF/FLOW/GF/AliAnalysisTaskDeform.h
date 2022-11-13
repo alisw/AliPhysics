@@ -125,6 +125,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
   void SetUseCentralityForOTF(bool newval) { fUseCentralityOTF = newval; }
   void SetIPBins(Int_t nBins, Double_t *multibins);
+  void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -179,6 +180,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   AliPtContainer  **fPtCont;
   TList *fCovList;
   TList *fV2dPtList;
+  static const int Ncovpfs = 14;
   AliProfileBS **fCovariance; //!
   AliProfileBS **fCovariancePowerMpt; //!
   AliProfileBS **fMpt; //
@@ -245,6 +247,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
   Bool_t fUse2DEff;
+  Bool_t fUsePIDNUA;
   Bool_t fFillMptPowers;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskDeform,1);
