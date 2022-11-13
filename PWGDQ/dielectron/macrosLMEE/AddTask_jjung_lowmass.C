@@ -11,7 +11,8 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 AliAnalysisTask *AddTask_jjung_lowmass(Bool_t getFromAlien=kFALSE,
                                       TString cFileName = "Config_jjung_lowmass.C",
                                       TString outputFileName="LMEE.root",
-                                      Int_t wagonnr=0                                    
+                                      Int_t wagonnr=0,
+                                      UInt_t triggerMask = AliVEvent::kCentral				      
                                       )
 {
   std::cout << "AddTask_jjung_lowmass" << std::endl;
@@ -47,8 +48,8 @@ AliAnalysisTask *AddTask_jjung_lowmass(Bool_t getFromAlien=kFALSE,
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%d", wagonnr));
   if (!hasMC) task->UsePhysicsSelection();
-  task->SetTriggerMask(UInt_t(AliVEvent::kCentral));
-  task->SelectCollisionCandidates(UInt_t(AliVEvent::kCentral));
+  task->SetTriggerMask(UInt_t(triggerMask));
+  task->SelectCollisionCandidates(UInt_t(triggerMask));
 
   std::cout << "Task created" << std::endl;
 
