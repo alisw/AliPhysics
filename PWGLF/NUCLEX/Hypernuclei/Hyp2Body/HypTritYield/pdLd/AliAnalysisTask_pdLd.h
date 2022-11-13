@@ -135,6 +135,8 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH2F      *fHist_ProtonDeuteron_PairMultiplicity;
     TH2F      *fHist_ProtonDeuteron_pT; 
     TH2F      *fHist_ProtonDeuteron_Eta; 
+    TH2F      *fHist_ProtonDeuteron_Centrality; 
+    TH2F      *fHist_ProtonDeuteron_VertexZ; 
 
 
     // histograms for antiprotons
@@ -211,6 +213,8 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH2F      *fHist_AntiProtonAntiDeuteron_PairMultiplicity;
     TH2F      *fHist_AntiProtonAntiDeuteron_pT; 
     TH2F      *fHist_AntiProtonAntiDeuteron_Eta; 
+    TH2F      *fHist_AntiProtonAntiDeuteron_Centrality; 
+    TH2F      *fHist_AntiProtonAntiDeuteron_VertexZ; 
 
 
     std::vector<int>	*ProtonTrackArray;
