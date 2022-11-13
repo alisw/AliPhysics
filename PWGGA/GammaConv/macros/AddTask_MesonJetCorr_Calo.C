@@ -166,7 +166,7 @@ void AddTask_MesonJetCorr_Calo(
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskMesonJetCorrelation* task = NULL;
-  task = new AliAnalysisTaskMesonJetCorrelation(Form("MesonJetCorrelation_Calo_%i", trainConfig));
+  task = new AliAnalysisTaskMesonJetCorrelation(Form("MesonJetCorrelation_Calo_%i_%i", meson, trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -186,8 +186,14 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("0008e103", "411790109fe30230000", "2s631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, rotation back
     cuts.AddCutCalo("0008e103", "411790109fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 5) {
-    cuts.AddCutCalo("0008d103", "411790109fe30230000", "2s631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
-    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0008d103", "411790109fe30230000", "2s631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 6) {
+    cuts.AddCutCalo("0009c103", "411790109fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0009c103", "411790109fe30230000", "21631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 7) {
+    cuts.AddCutCalo("0009b103", "411790109fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0009b103", "411790109fe30230000", "21631034000000d0"); // v in-jet, pi0 mass: 0.1-0.15, mixed jet back
 
     //---------------------------------------
     // configs for eta meson pp 13 TeV

@@ -141,6 +141,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoMCAllGammaPt(NULL),
   fHistoMCGammaPtNotTriggered(NULL),
   fHistoMCGammaPtNoVertex(NULL),
+  fHistoMCEventsTrigg(NULL),
   fHistoMCAllSecondaryGammaPt(NULL),
   fHistoMCDecayGammaPi0Pt(NULL),
   fHistoMCDecayGammaRhoPt(NULL),
@@ -583,6 +584,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMCAllGammaPt(NULL),
   fHistoMCGammaPtNotTriggered(NULL),
   fHistoMCGammaPtNoVertex(NULL),
+  fHistoMCEventsTrigg(NULL),
   fHistoMCAllSecondaryGammaPt(NULL),
   fHistoMCDecayGammaPi0Pt(NULL),
   fHistoMCDecayGammaRhoPt(NULL),
@@ -2249,6 +2251,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoMCAllGammaPt              = new TH1F*[fnCuts];
     fHistoMCGammaPtNotTriggered     = new TH1F*[fnCuts];
     fHistoMCGammaPtNoVertex         = new TH1F*[fnCuts];
+    
+    fHistoMCEventsTrigg             = new TH1D*[fnCuts];
 
     if(!fDoLightOutput){
       fHistoMCHeaders                 = new TH1I*[fnCuts];
@@ -2473,6 +2477,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMCGammaPtNoVertex[iCut]->SetXTitle("p_{T} (GeV/c)");
       fMCList[iCut]->Add(fHistoMCGammaPtNoVertex[iCut]);
 
+      fHistoMCEventsTrigg[iCut]          = new TH1D("MC_NEvents", "MC_NEvents", 2, -0.5, 1.5);
+      fHistoMCEventsTrigg[iCut]->GetXaxis()->SetBinLabel(1, "accepted");
+      fHistoMCEventsTrigg[iCut]->GetXaxis()->SetBinLabel(2, "rejected");
+      fMCList[iCut]->Add(fHistoMCEventsTrigg[iCut]);
+
       if(!fDoLightOutput){
         fHistoMCHeaders[iCut]             = new TH1I("MC_Headers", "MC_Headers", 20, 0, 20);
         fHistoMCHeaders[iCut]->SetXTitle("accepted headers");
@@ -2555,6 +2564,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMCAllGammaPt[iCut]->Sumw2();
         fHistoMCGammaPtNotTriggered[iCut]->Sumw2();
         fHistoMCGammaPtNoVertex[iCut]->Sumw2();
+        fHistoMCEventsTrigg[iCut]->Sumw2();
       }
       if(fDoMesonAnalysis){
         fHistoMCPi0Pt[iCut]           = new TH1F("MC_Pi0_Pt", "MC_Pi0_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
@@ -5070,8 +5080,10 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles(Int_t isCurrentEventSelecte
 
   // Check if MC generated particles should be filled for this event using the selected trigger
   if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
+    fHistoMCEventsTrigg[fiCut]->Fill(1., fWeightJetJetMC); // event is rejected
     return;
   }
+  fHistoMCEventsTrigg[fiCut]->Fill(0., fWeightJetJetMC); // event is accepted
 
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
@@ -5362,8 +5374,10 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles(Int_t isCurrentEventSelected)
 
   // Check if MC generated particles should be filled for this event using the selected trigger
   if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
+    fHistoMCEventsTrigg[fiCut]->Fill(1); // event is rejected
     return;
   }
+  fHistoMCEventsTrigg[fiCut]->Fill(0); // event is accepted
 
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {

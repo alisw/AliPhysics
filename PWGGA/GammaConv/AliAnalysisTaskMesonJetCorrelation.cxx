@@ -3079,7 +3079,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
     // fill 4d response matrix
     fRespMatrixHandlerMesonPt[fiCut]->Fill(jetPtRec, jetPtTrue, mesonPtRec, mesonPtTrue, fWeightJetJetMC);
   } else { // fill all secondary mesons
-    fHistoTrueSecondaryMesonInvMassPt[fiCut]->Fill(mesonPtRec, mesonPtRec, fWeightJetJetMC);
+    fHistoTrueSecondaryMesonInvMassPt[fiCut]->Fill(Pi0Candidate->M(), mesonPtRec, fWeightJetJetMC);
     fRespMatrixHandlerTrueSecondaryMesonInvMassVsPt[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
     fRespMatrixHandlerTrueSecondaryMesonInvMassVsZ[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
   }
