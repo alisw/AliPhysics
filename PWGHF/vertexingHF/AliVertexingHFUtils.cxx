@@ -2903,7 +2903,7 @@ Int_t AliVertexingHFUtils::CheckResoToDplusK0SDecay(TClonesArray *arrayMC, AliAO
           sumPzDau += v0dau->Pz();
           nPions++;
           arrayDauLab[nFoundKpi++] = indV0Dau;
-          if (nFoundKpi > 4)
+          if (nFoundKpi > 5)
             return -1;
         }
       }
@@ -3001,7 +3001,7 @@ Int_t AliVertexingHFUtils::CheckResoToDstarK0SDecay(TClonesArray *arrayMC, AliAO
           sumPzDau += v0dau->Pz();
           nPions++;
           arrayDauLab[nFoundKpi++] = indV0Dau;
-          if (nFoundKpi > 4)
+          if (nFoundKpi > 5)
             return -1;
         }
       }

@@ -144,6 +144,7 @@ private:
     int IsV0Selected(AliAODv0 *&track);
     bool IsInvMassResoSelected(double &mass, int bachHypo, int V0hypo);
     bool IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau, AliAnalysisVertexingHF *vHF);
+    int MatchResoToMC(AliAODMCParticle *partD, AliAODMCParticle *partLight, TClonesArray* arrayMC);
 
     void FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
 
@@ -169,7 +170,6 @@ private:
     int fDecChannel = kDplustoKpipi;                                                      /// channel to analyse
     int fPdgD = 411;                                                                      /// pdg code of the D meson
     bool fReadMC = false;                                                                 /// flag for access to MC
-    bool  fFillAcceptanceLevel = true;                                                    /// flag for filling true reconstructed D at acceptance level (see FillMCGenAccHistos)
     int fAODProtection = 0;                                                               /// flag to activate protection against AOD-dAOD mismatch.
                                                                                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
     TList *fListCuts = nullptr;                                                           /// list of cuts

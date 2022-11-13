@@ -704,12 +704,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                         if (selectedTrackSignal[iTrack][iHypo]) { // bachelor is signal
                             AliAODMCParticle *partD = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labD));
                             AliAODMCParticle *partBach = dynamic_cast<AliAODMCParticle *>(arrayMC->At(track->GetLabel()));
-                            int motherD = partD->GetMother();
-                            int motherBach = partBach->GetMother();
-                            if (motherD == motherBach) {
-                                AliAODMCParticle *partReso = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherD));
-                                signalReso = partReso->GetPdgCode();
-                            }
+                            signalReso = MatchResoToMC(partD, partBach, arrayMC);
                         }
                     }
                 }
@@ -809,12 +804,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                                 if (selectedV0Signal[iV0][iHypo]) { // V0 is signal
                                     AliAODMCParticle *partD = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labD));
                                     AliAODMCParticle *partV0 = dynamic_cast<AliAODMCParticle *>(arrayMC->At(selectedV0Labels[iV0][iHypo]));
-                                    int motherD = partD->GetMother();
-                                    int motherV0 = partV0->GetMother();
-                                    if (motherD == motherV0) {
-                                        AliAODMCParticle *partReso = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherD));
-                                        signalReso = partReso->GetPdgCode();
-                                    }
+                                    signalReso = MatchResoToMC(partD, partV0, arrayMC);
                                 }
                             }
                         }
@@ -1316,6 +1306,46 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, A
     }
 
     return false;
+}
+
+//________________________________________________________________________
+int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, AliAODMCParticle *partLight, TClonesArray* arrayMC) {
+    std::vector<int> modthersD{};
+    std::vector<int> modthersLight{};
+    int motherD = 0;
+    while(motherD >= 0) {
+        motherD = partD->GetMother();
+        modthersD.push_back(motherD);
+    }
+    int motherLight = 0;
+    while(motherLight >= 0) {
+        motherLight = partD->GetMother();
+        modthersLight.push_back(motherLight);
+    }
+
+    double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
+    std::vector<int> commonMothers{};
+    std::set_intersection(modthersD.begin(), modthersD.end(), modthersLight.begin(), modthersLight.end(), std::back_inserter(commonMothers));
+    for (auto &mother: commonMothers) {
+        AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mother));
+        int pdgMother = partMother->GetPdgCode();
+        if ((std::abs(pdgMother)/100 == 4) || (std::abs(pdgMother)/1000 == 4) || ((std::abs(pdgMother)-10000)/100 == 4) || ((std::abs(pdgMother)-20000)/100 == 4)) { // we are interested in charm resonances
+            // let's check also momentum conservation
+            double momMother[3] = {partMother->Px(), partMother->Py(), partMother->Pz()};
+            bool isMomConserved = true;
+            for (int iEl{0}; iEl<3; ++iEl) {
+                if (std::abs(momMother[iEl]-momSumDaughters[iEl]) / (std::abs(momMother[iEl]) + 1.e-13) > 0.00001) {
+                    isMomConserved = false;
+                    break;
+                }
+            }
+            if (isMomConserved) {
+                return pdgMother;
+            }
+        }
+    }
+
+    return -1;
 }
 
 //________________________________________________________________________
