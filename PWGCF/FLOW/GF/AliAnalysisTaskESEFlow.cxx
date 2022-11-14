@@ -19,6 +19,7 @@
  * Event Shape Engineering: TPC,V0C,V0A
  * Event selection
  * Track selection
+
  */
 
 
@@ -47,13 +48,19 @@
 #include "AliAODVZERO.h"
 #include "TRandom3.h"
 
+#include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
+#include "AliGenHijingEventHeader.h"
+
+
 #include "AliUniFlowCorrTask.h"
 
 #include <iostream>
 
 class AliAnalysisTaskESEFlow;
 
-ClassImp(AliAnalysisTaskESEFlow)
+ClassImp(AliAnalysisTaskESEFlow);
 
 AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fEventCuts(),
@@ -93,12 +100,14 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fHistPhi(0),
     fHistEta(0),
     fHistPt(0),
+    fHistPtCorr(0),
     fHistZVertex(0),
     fHistPhiCor(0),
     fHistPhiCor3D(0),
     fHistTPCchi2(0),
     fHistITSchi2(0),
-    fhQAEventsfMult32vsCentr(0), 
+    fHistMCPtEtaVz(0),
+    fhQAEventsfMult32vsCentr(0),
     fhQAEventsfMult128vsCentr(0),
     fhQAEventsfMult96vsCentr(0),
     fhQAEventsfMultTPCvsTOF(0),
@@ -112,11 +121,14 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fSplq3V0A{0},
     fh3Weights{nullptr},
     fhV0Calib{nullptr},
-    
+
     fHistPDG{0},
 
     fFileTrackEff(0),
+    ptEfficiency(0),
     fhTrackNUE(0),
+    fDir_efficiencies(0),
+    fhEfficiency2D(0),
 
     fq2TPC(0),
     fq3TPC(0),
@@ -176,6 +188,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fNEtaBins(32),
     fCentEstimator("V0M"),
     fCutChargedNumTPCclsMin(70),
+    fImpactParameterMC(-1.0),
     fReadMC(kFALSE),
     fMCEvent(0),
     fFlowRFPsPtMin(0.2),
@@ -188,7 +201,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fPtAxis(new TAxis()),
     fCentAxis(new TAxis()),
     ESEPercAxis(new TAxis()),
-    
+
     fTPCEse(kTRUE),
     fV0CEse(kTRUE),
     fV0AEse(kFALSE),
@@ -212,7 +225,9 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fFillQARej(kFALSE),
 
     fUseNUEWeights(kFALSE),
+    fUseEfficiency(kFALSE),
     fNUE(1),
+    fEfficiency(1),
     fIs2018Data(kFALSE),
     fBayesUnfolding(kFALSE),
     fActq2Projections(kFALSE),
@@ -259,12 +274,14 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fHistPhi(0),
     fHistEta(0),
     fHistPt(0),
+    fHistPtCorr(0),
     fHistZVertex(0),
     fHistPhiCor(0),
     fHistPhiCor3D(0),
     fHistTPCchi2(0),
     fHistITSchi2(0),
-    fhQAEventsfMult32vsCentr(0), 
+    fHistMCPtEtaVz(0),
+    fhQAEventsfMult32vsCentr(0),
     fhQAEventsfMult128vsCentr(0),
     fhQAEventsfMult96vsCentr(0),
     fhQAEventsfMultTPCvsTOF(0),
@@ -282,7 +299,10 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fHistPDG{0},
 
     fFileTrackEff(0),
+    ptEfficiency(0),
     fhTrackNUE(0),
+    fDir_efficiencies(0),
+    fhEfficiency2D(0),
 
     fq2TPC(0),
     fq3TPC(0),
@@ -342,6 +362,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fNEtaBins(32),
     fCentEstimator("V0M"),
     fCutChargedNumTPCclsMin(70),
+    fImpactParameterMC(-1.0),
     fReadMC(kFALSE),
     fMCEvent(0),
     fFlowRFPsPtMin(0.2),
@@ -354,7 +375,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fPtAxis(new TAxis()),
     fCentAxis(new TAxis()),
     ESEPercAxis(new TAxis()),
-    
+
     fTPCEse(kTRUE),
     fV0CEse(kTRUE),
     fV0AEse(kFALSE),
@@ -378,7 +399,9 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fFillQARej(kFALSE),
 
     fUseNUEWeights(kFALSE),
+    fUseEfficiency(kFALSE),
     fNUE(1),
+    fEfficiency(1),
     fIs2018Data(kFALSE),
     fBayesUnfolding(kFALSE),
     fActq2Projections(kFALSE),
@@ -457,7 +480,7 @@ Bool_t AliAnalysisTaskESEFlow::InitializeTask()
         AliFatal("Sampling used, but number of samples < 2! Terminating!");
         return kFALSE;
     }
-    
+
     AliInfo("Initialization of weights and calibration succes");
     return kTRUE;
 }
@@ -514,7 +537,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     for (Int_t Perc(0); Perc < ESEPercAxis->GetNbins()+1; ++Perc){
         EventShapeEdges[Perc] = ESEPercAxis->GetBinLowEdge(Perc+1);
     }
-    
+
 
     fHistPhiEtaVz = new TH3F("fHistPhiEtaVz", "fHistPhiEtaVz; #phi; #eta; Vz", fNPhiBins, 0.0, TMath::TwoPi(), fNEtaBins, -1.0, 1.0,fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
     fHistPhiEtaVz->Sumw2();
@@ -523,6 +546,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fHistPhi = new TH1F("fHistPhi", ";#phi", fNPhiBins, 0.0, TMath::TwoPi());
     fHistEta = new TH1F("fHistEta", ";#eta", fNEtaBins,-1.0, 1.0);
     fHistPt = new TH1F("fHistPt", ";p_{T}", nPtBin,PtEdges);
+    fHistPtCorr = new TH1F("fHistPtCorr", ";p_{T}", nPtBin, PtEdges);
     fHistZVertex = new TH1F("fHistZVertex", ";Vtx_{Z}", fVtxZCuts,-10,10);
     fHistPhiCor = new TH1F("fHistPhiCor",";#phiCor", fNPhiBins, 0.0, TMath::TwoPi());
     fHistPhiCor->Sumw2();
@@ -530,7 +554,10 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fHistPhiCor3D->Sumw2();
     fHistTPCchi2 = new TH1F("fHistChi2TPC","fHistChi2TPC",10,0,10);
     fHistITSchi2 = new TH1F("fHistChi2ITS","fHistChi2ITS",40,0,40);
-    
+
+    fHistMCPtEtaVz = new TH3F("fMCHistPtEtaVz","fMCHistPtEtaVz; pT; #eta; Vz", 50, fFlowRFPsPtMin, fFlowRFPsPtMax, fNEtaBins, -1.0, 1.0, fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
+    fHistMCPtEtaVz->Sumw2();
+
     fProfNPar = new TProfile("fProfNparvsCent",";Centrality;N_{Particles}",100,0,100);
 
     fhV0Multiplicity = new TH2F("fV0Multiplicity","",64,0,64,100,0,1250);
@@ -539,7 +566,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fhV0CorrMult = new TH2F("fV0CalibratedMultiplicity","",64,0,64,100,0,1250);
     fhV0CorrMult->Sumw2();
 
-    
+
 
     fq2TPC = new TH2D("fq2vCentTPC","",100,0,100,TPCqnBins,TPCqnBinMin,TPCqnBinMax);
     fq2TPC->Sumw2();
@@ -603,7 +630,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fQnxTPCEse[qi] = new TH2F(Form("fQ%ixvCentTPCEse",qi+2),"",100,0,100,100,-1500,1500);
         fQnxTPCEse[qi]->Sumw2();
         fQnyTPCEse[qi] = new TH2F(Form("fQ%iyvCentTPCEse",qi+2),"",100,0,100,100,-1500,1500);
-        fQnyTPCEse[qi]->Sumw2();        
+        fQnyTPCEse[qi]->Sumw2();
 
         fQnxV0CCor[qi] = new TH2F(Form("fQ%ixvCentV0CCor",qi+2),"",100,0,100,100,-10,10);
         fQnxV0CCor[qi]->Sumw2();
@@ -683,7 +710,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
             TH1* cnESEV0A = nullptr;
             TH1* dnESEV0A = nullptr;
 
-            
+
 
             cn = new TProfile(Form("%s_sample%d",CorrName,iSample),Form("%s",CorrLabel),nCentBin,CentEdges);
 
@@ -829,15 +856,15 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
             TH1* vnSPV0C = nullptr;
             TH1* QQSPV0ATPC = nullptr;
             TH1* QQSPV0AV0C = nullptr;
-            TH1* QQSPTPCV0C = nullptr;  
+            TH1* QQSPTPCV0C = nullptr;
 
             TH1* vnSPV0A_q2V0C = nullptr;
             TH1* vnSPV0C_q2V0C = nullptr;
             TH1* QQSPV0ATPC_q2V0C = nullptr;
             TH1* QQSPV0AV0C_q2V0C = nullptr;
-            TH1* QQSPTPCV0C_q2V0C = nullptr;        
+            TH1* QQSPTPCV0C_q2V0C = nullptr;
 
-            
+
             for(Int_t fCentNum(0) ; fCentNum<nCentBin; ++fCentNum){
                 vnSPV0A = new TProfile(Form("v_{%i}{SP V0A}_%.0f_%.0f",iVN+2,CentEdges[fCentNum],CentEdges[fCentNum+1]),Form("v_{%i}{SP V0A}_%.0f_%.0f",iVN+2,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
                 if(!vnSPV0A) { AliError("Centrality profile not created"); return; }
@@ -947,7 +974,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 
         }
     }
-    
+
 
     if(fReadMC)
     {
@@ -955,7 +982,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fOutputList->Add(fHistPDG);
     }
 
-    
+
     //load q-selection - testing connected splines via addtask macro currently
     /*if(!gGrid) { TGrid::Connect("alien://"); }
 
@@ -1006,8 +1033,16 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 
           if(!fFileTrackEff) { printf("Problem loading NUE file \n"); }
         }
-        
+
     }
+    if(fUseEfficiency){
+      if(!gGrid) { TGrid::Connect("alien://"); }
+      if(fEfficiency==1){
+        ptEfficiency = TFile::Open("alien:///alice/cern.ch/user/j/joachiha/efficiency/2018/Efficiency_default_18.root");
+      }
+      if(!ptEfficiency) { printf("Problem with efficiency file!!! \n"); }
+    }
+
 
     if(fFillQARej){
     fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centr: V0M; TPC Mult (FB32)", 100, 0, 100, 100, 0, 3000);
@@ -1126,7 +1161,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 
       v2YRawB->Sumw2();
       fOutputList->Add(v2YRawB);
-      
+
       TH2* v2XRawAmB = nullptr;
       v2XRawAmB = new TH2D("v2XRawAmB","v2XRawAmB",100,0,100,500,-0.5,0.5);
 
@@ -1169,7 +1204,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
       TH2* v2XRawAmB_q2V0C = nullptr;
       TH2* v2YRawAmB_q2V0C = nullptr;
       //TH3* v2xyAmB_q2V0C = nullptr;
-  
+
       if(fV0CEse){
         for (Int_t iEse(0);iEse<ESEPercAxis->GetNbins();++iEse){
           v2Raw_q2V0C = new TH2D(Form("v2ObsRaw_q2V0C_Perc%i",iEse+1),Form("v2ObsRaw_q2V0C_Perc%i",iEse+1),100,0,100,500,0,0.3);
@@ -1184,7 +1219,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
           v2Raw_q2V0C->Sumw2();
           fOutputList->Add(v2Raw_q2V0C);
 
-          
+
           v2XRawAmB_q2V0C = new TH2D(Form("v2XRawAmB_q2V0C_Perc%i",iEse+1),Form("v2XRawAmB_q2V0C_Perc%i",iEse+1),100,0,100,500,-0.5,0.5);
 
           if(!v2XRawAmB_q2V0C) { AliError("Centrality 2Dhist not created"); return; }
@@ -1197,7 +1232,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
           v2XRawAmB_q2V0C->Sumw2();
           fOutputList->Add(v2XRawAmB_q2V0C);
 
-    
+
           v2YRawAmB_q2V0C = new TH2D(Form("v2YRawAmB_q2V0C_Perc%i",iEse+1),Form("v2YRawAmB_q2V0C_Perc%i",iEse+1),100,0,100,500,-0.5,0.5);
 
           if(!v2YRawAmB_q2V0C) { AliError("Centrality 2Dhist not created"); return; }
@@ -1225,14 +1260,15 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         }
       }
     }
-    
+
 
     fEventCuts.AddQAplotsToList(fQAEvents); //QA plots
-    
+
     fObservables->Add(fHistPhiEtaVz);
     fObservables->Add(fHistPhi);
     fObservables->Add(fHistEta);
     fObservables->Add(fHistPt);
+    fObservables->Add(fHistPtCorr);
     fObservables->Add(fHistZVertex);
     fObservables->Add(fHistPhiCor);
     fObservables->Add(fHistPhiCor3D);
@@ -1241,6 +1277,8 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fObservables->Add(fProfNPar);
     fObservables->Add(fhV0Multiplicity);
     fObservables->Add(fHistPtEtaVz);
+
+    fObservables->Add(fHistMCPtEtaVz);
 
     fObservables->Add(fhV0CorrMult);
 
@@ -1272,7 +1310,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         fqnDist->Add(fQnyV0CCor[qi]);
         fqnDist->Add(fQnxV0ACor[qi]);
         fqnDist->Add(fQnyV0ACor[qi]);
-    
+
 
         fqnDist->Add(fhqnTPCvqnV0C[qi]);
         fqnDist->Add(fhqnV0CvqnV0A[qi]);
@@ -1299,51 +1337,56 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskESEFlow::UserExec(Option_t *)
 {
+  if (!fReadMC)
+  {
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fAOD) { return; }
 
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!fAOD) { return; }
+    fhEventCounter->Fill("Input",1);
 
-  fhEventCounter->Fill("Input",1);
+    if(!IsEventSelected()) { return; }
 
-  if(!IsEventSelected()) { return; }
-  
-  fhEventCounter->Fill("Event OK",1);
+    fhEventCounter->Fill("Event OK",1);
 
-  //centrality
-  Float_t centrality(0);
-  AliMultSelection *multSelection =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-  if(multSelection) centrality = multSelection->GetMultiplicityPercentile(fCentEstimator);
+    //centrality
+    Float_t centrality(0);
+    AliMultSelection *multSelection =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+    if(multSelection) centrality = multSelection->GetMultiplicityPercentile(fCentEstimator);
 
-  if(!fMakeRBRweightsRun){
-      if(fFlowRunByRunWeights){
-          if(!LoadWeights()) { AliFatal("\n \n \n \n \n \n \n \n \n \n Weights not loaded, terminating! \n \n \n \n \n \n \n \n \n \n "); return; }
-      }
+    if(!fMakeRBRweightsRun){
+        if(fFlowRunByRunWeights){
+            if(!LoadWeights()) { AliFatal("\n \n \n \n \n \n \n \n \n \n Weights not loaded, terminating! \n \n \n \n \n \n \n \n \n \n "); return; }
+        }
+    }
+
+    if(fV0RunByRunCalibration){
+        if(!LoadV0Calibration()) { AliFatal("\n \n \n \n \n \n \n \n \n \n V0 Calibration not loaded, terminating! \n \n \n \n \n \n \n \n \n \n "); return; }
+    }
+
+    if(fUseNUEWeights){
+        if(!LoadNUE()) { AliFatal("\n \n \n NUE Weights not loaded properly, terminating! \n \n \n"); return; }
+    }
+    if(fUseEfficiency){
+      if(!LoadEfficiency()){ AliFatal("\n \n \n Efficiency weights not loaded properly, temrinating! \n \n \n"); return; }
+    }
+
+
+    fhEventCounter->Fill("Selected OK",1);
+    FillObsDistributions(centrality);
+
+    Int_t fSpCent = (Int_t)centrality;
+
+    CorrelationTask(centrality, fSpCent);
+  }
+  if(fReadMC)
+  {
+      // fMCEvent = MCEvent();
+      // if(fMCEvent) ProcessMCParticles();
+
+      CreateNUETracks();
   }
 
-  if(fV0RunByRunCalibration){
-      if(!LoadV0Calibration()) { AliFatal("\n \n \n \n \n \n \n \n \n \n V0 Calibration not loaded, terminating! \n \n \n \n \n \n \n \n \n \n "); return; }
-  }
 
-  if(fUseNUEWeights){
-      if(!LoadNUE()) { AliFatal("\n \n \n NUE Weights not loaded properly, terminating! \n \n \n"); return; }
-  }
-  
-
-  fhEventCounter->Fill("Selected OK",1);
-
-  FillObsDistributions(centrality);
-
-  Int_t fSpCent = (Int_t)centrality;
-
-  CorrelationTask(centrality, fSpCent);
-
-  if(fReadMC) 
-  { 
-      fMCEvent = MCEvent();
-      if(fMCEvent) ProcessMCParticles();
-  }
-
-  
   PostData(1, fOutputList);
   PostData(2, fObservables);
   PostData(3, fCorrDist);
@@ -1375,7 +1418,7 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, Int_t fSp
     //if( (CentrCode < 0) || (CentrCode > 8)) { return; }
     if(fV0RunByRunCalibration){
       ReducedqVectorsV0(centrality, fSpCent);
-      
+
       for (Int_t i1(0);i1<2;++i1){
         fhqnTPCvqnV0C[i1]->Fill(qnTPC[i1],qnV0C[i1]);
         fhqnV0CvqnV0A[i1]->Fill(qnV0C[i1],qnV0A[i1]);
@@ -1402,37 +1445,37 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, Int_t fSp
 
     if((!fMakeqSelectionRun && fV0RunByRunCalibration)){
 
-        
+
         Double_t q2TPCInp = 100.*fSplq2TPC[fSpCent]->Eval(qnTPC[0]);
         Double_t q3TPCInp = 100.*fSplq3TPC[fSpCent]->Eval(qnTPC[1]);
 
         Int_t q2ESECodeTPC = GetEsePercentileCode(q2TPCInp);
-        if (q2ESECodeTPC<0) { printf("Problem with q_2 TPC percentile: negative percentile \n"); return; } 
+        if (q2ESECodeTPC<0) { printf("Problem with q_2 TPC percentile: negative percentile \n"); return; }
         Int_t q3ESECodeTPC = GetEsePercentileCode(q3TPCInp);
-        if (q2ESECodeTPC<0) { printf("Problem with q_3 TPC percentile: negative percentile \n"); return; } 
-        
+        if (q2ESECodeTPC<0) { printf("Problem with q_3 TPC percentile: negative percentile \n"); return; }
+
         Double_t q2V0CInp = 100.*fSplq2V0C[fSpCent]->Eval(qnV0C[0]);
         Double_t q3V0CInp = 100.*fSplq3V0C[fSpCent]->Eval(qnV0C[1]);
 
         Int_t q2ESECodeV0C = GetEsePercentileCode(q2V0CInp);
-        if (q2ESECodeV0C<0) { printf("Problem with q_2 V0C percentile: negative percentile \n"); return; } 
+        if (q2ESECodeV0C<0) { printf("Problem with q_2 V0C percentile: negative percentile \n"); return; }
         Int_t q3ESECodeV0C = GetEsePercentileCode(q3V0CInp);
-        if (q3ESECodeV0C<0) { printf("Problem with q_3 V0C percentile: negative percentile \n"); return; } 
-        
+        if (q3ESECodeV0C<0) { printf("Problem with q_3 V0C percentile: negative percentile \n"); return; }
+
 
 
         Double_t q2V0AInp = 100.*fSplq2V0A[fSpCent]->Eval(qnV0A[0]); // do q-selection for V0A
         Double_t q3V0AInp = 100.*fSplq3V0A[fSpCent]->Eval(qnV0A[1]);
 
         Int_t q2ESECodeV0A = GetEsePercentileCode(q2V0AInp);
-        if (q2ESECodeV0A<0) { printf("Problem with q_2 V0A percentile: negative percentile \n"); return; } 
+        if (q2ESECodeV0A<0) { printf("Problem with q_2 V0A percentile: negative percentile \n"); return; }
         Int_t q3ESECodeV0A = GetEsePercentileCode(q3V0AInp);
-        if (q3ESECodeV0A<0) { printf("Problem with q_3 V0A percentile: negative percentile \n"); return; } 
-        
+        if (q3ESECodeV0A<0) { printf("Problem with q_3 V0A percentile: negative percentile \n"); return; }
+
 
         RFPVectors(centrality);
 
-        
+
         FillCorrelation(centrality, -1, q2ESECodeTPC, q3ESECodeTPC, q2ESECodeV0C, q3ESECodeV0C, q2ESECodeV0A, q3ESECodeV0A, 1, 0);
 
         POIVectors(centrality, q2ESECodeTPC, q3ESECodeTPC, q2ESECodeV0C, q3ESECodeV0C, q2ESECodeV0A, q3ESECodeV0A);
@@ -1461,7 +1504,7 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, Int_t fSp
           /// Input for Unfolding
           BayesianUnfolding(centrality, q2ESECodeV0C);
         }
-        
+
     }
 
     return;
@@ -1483,7 +1526,7 @@ void AliAnalysisTaskESEFlow::BayesianUnfolding(Float_t centrality, Int_t q2ESECo
   Double_t MA = 0.0;
   Double_t MB = 0.0;
 
-  
+
 
   for(Int_t i(0); i < iTracks; ++i) {
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
@@ -1492,7 +1535,7 @@ void AliAnalysisTaskESEFlow::BayesianUnfolding(Float_t centrality, Int_t q2ESECo
     double dEta = track->Eta();
     double dPhi = track->Phi();
     //double dPt = track->Pt();
-    
+
     Double_t dWeight = GetFlowWeight(track, dVz);
     if( dEta > dEtaLimit ){
       MA += dWeight;
@@ -1534,7 +1577,7 @@ void AliAnalysisTaskESEFlow::BayesianUnfolding(Float_t centrality, Int_t q2ESECo
 
     Double_t v2xAmv2xB = V2xA/MA - V2xB/MB;
     Double_t v2yAmv2yB = V2yA/MA - V2yB/MB;
-    
+
     TH2D* hv2XRawAmB = (TH2D*)fOutputList->FindObject("v2XRawAmB");
     if(!hv2XRawAmB) {AliError("v2XRawAmB not found"); return;}
     hv2XRawAmB->Fill(centrality, v2xAmv2xB);
@@ -1546,7 +1589,7 @@ void AliAnalysisTaskESEFlow::BayesianUnfolding(Float_t centrality, Int_t q2ESECo
     TH3D* hv2xyAmB = (TH3D*)fOutputList->FindObject("v2xyAmB");
     if(!hv2xyAmB) {AliError("v2xyAmB not found"); return;}
     hv2xyAmB->Fill(centrality, v2xAmv2xB, v2yAmv2yB);
-    
+
     //
     if(fV0CEse){
       TH2D* hv2XRawAmB_q2V0C = (TH2D*)fOutputList->FindObject(Form("v2XRawAmB_q2V0C_Perc%i",q2ESECodeV0C+1));
@@ -1563,7 +1606,7 @@ void AliAnalysisTaskESEFlow::BayesianUnfolding(Float_t centrality, Int_t q2ESECo
       hv2xyAmB_q2V0C->Fill(centrality, v2xAmv2xB, v2yAmv2yB);*/
     }
   }
-  
+
   if(MA>0){
     Double_t v2A = TMath::Sqrt(dq2A)/MA;
 
@@ -1616,9 +1659,9 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
     fHistZVertex->Fill(dVz);
     fProfNPar->Fill(centrality,iTracks);
 
-    
 
-    for(Int_t i(0); i < iTracks; ++i) 
+
+    for(Int_t i(0); i < iTracks; ++i)
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
@@ -1626,12 +1669,19 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
         double dEta = track->Eta();
         double dPhi = track->Phi();
         double dPt = track->Pt();
-        
+
         fHistPhiEtaVz->Fill(dPhi, dEta, dVz);
         fHistPtEtaVz->Fill(dPt, dEta, dVz);
         fHistPhi->Fill(dPhi);
         fHistEta->Fill(dEta);
         fHistPt->Fill(dPt);
+        Double_t dEffWeight = 1.0;
+        if (fUseEfficiency){
+          dEffWeight = GetEfficiency(dPt,centrality);
+          fHistPtCorr->Fill(dPt,dEffWeight); // plus some weight
+        }
+
+
 
         Float_t chi2tpc = track->GetTPCchi2();
         Float_t ntpccls = track->GetTPCNcls();
@@ -1643,7 +1693,7 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
         Float_t itschi2percls = (nitscls==0)?0.0:chi2its/nitscls;
         fHistTPCchi2->Fill(tpcchi2percls);
         fHistITSchi2->Fill(itschi2percls);
-        
+
 
         Double_t dWeight = GetFlowWeight(track, dVz);
         fHistPhiCor->Fill(dPhi,dWeight);
@@ -1677,7 +1727,7 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
             else if (iV0 >= 48 && iV0 < 56)
                 multCor = multV0/fhV0Calib->GetBinContent(iV0+1)*fhV0Calib->GetBinContent(49);
             else if (iV0 >= 56 && iV0 < 64)
-                multCor = multV0/fhV0Calib->GetBinContent(iV0+1)*fhV0Calib->GetBinContent(57);            
+                multCor = multV0/fhV0Calib->GetBinContent(iV0+1)*fhV0Calib->GetBinContent(57);
 
             if (multCor < 0){
                 printf("Problem with multiplicity in V0 in observation func");
@@ -1706,7 +1756,7 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
     Double_t dVz = fAOD->GetPrimaryVertex()->GetZ();
 
     if(iTracks < 1 ) { return; }
-    for(Int_t i(0); i < iTracks; ++i) 
+    for(Int_t i(0); i < iTracks; ++i)
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
@@ -1727,7 +1777,10 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
                 dPtWeight = GetNUEPtWeight(2.5, dEta, dVz);
             }
         }
-        
+        if (fUseEfficiency){
+          dPtWeight = GetEfficiency(dPt,centrality);
+        }
+
         // no eta gap
         for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
         {
@@ -1738,7 +1791,7 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
                 Qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
             }
         }
-    
+
         // eta gap
         if(dEta > dEtaLimit)
         {
@@ -1751,12 +1804,12 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
                     Qvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                 }
             }
-        } 
+        }
         // RFP in negative eta acceptance
         else if(dEta < - dEtaLimit)
         {
             for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
-            { 
+            {
                 for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
                 {
                     Double_t dCos = TMath::Power(dWeight*dPtWeight,iPower) * TMath::Cos(iHarm * dPhi);
@@ -1764,7 +1817,7 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
                     Qvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                 }
             }
-        }            
+        }
     } // ending track loop
 
     return;
@@ -1799,16 +1852,16 @@ void AliAnalysisTaskESEFlow::FillPOI(const Double_t dPtLow, const Double_t dPtHi
         if(!bIsWithinPOI) {continue;}
 
         Double_t dWeight = GetFlowWeight(track,dVz);
-        
+
         if(dPt > dPtLow && dPt <= dPtHigh)
         {
             // q vector
             if(bIsWithinRFP) // check if also within reference particle
             {
                 for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
-                { 
+                {
                     for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
-                    {   
+                    {
                         Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
                         Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                         qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
@@ -1817,7 +1870,7 @@ void AliAnalysisTaskESEFlow::FillPOI(const Double_t dPtLow, const Double_t dPtHi
             }
 
             // NO eta gap for p-vector
-            
+
             for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
             {
                 for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
@@ -1840,11 +1893,11 @@ void AliAnalysisTaskESEFlow::FillPOI(const Double_t dPtLow, const Double_t dPtHi
                     pvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                     }
                 }
-            } 
+            }
             if(dEta < -dEtaLimit)
             {
                 for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
-                { 
+                {
                     for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
                     {
                     Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
@@ -1852,7 +1905,7 @@ void AliAnalysisTaskESEFlow::FillPOI(const Double_t dPtLow, const Double_t dPtHi
                     pvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                     }
                 }
-            }     
+            }
         }
     } // ending track loop
 
@@ -1901,11 +1954,11 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
     Double_t M_SP = 0;
 
     if(iTracks < 1 ) { return; }
-    for(Int_t i(0); i < iTracks; ++i) 
+    for(Int_t i(0); i < iTracks; ++i)
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
-        if(!WithinRedRP(track)){continue;} // 
+        if(!WithinRedRP(track)){continue;} //
 
         double dEta = track->Eta();
         double dPhi = track->Phi();
@@ -1917,7 +1970,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
         {
             M += dWeight;
             for(Int_t iHarm(0); iHarm < 2; ++iHarm)
-            {                
+            {
                 Double_t dCos = dWeight * TMath::Cos( (iHarm+2) * dPhi);
                 Double_t dSin = dWeight * TMath::Sin( (iHarm+2) * dPhi);
                 QxnTPC[iHarm] += dCos;
@@ -1928,7 +1981,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
         if( TMath::Abs(dEta) < fAbsEtaMax){
             M_SP += 1;
             for(Int_t iHarm(0); iHarm < 2; ++iHarm)
-            {                
+            {
                 Double_t dCos = 1 * TMath::Cos( (iHarm+2) * dPhi);
                 Double_t dSin = 1 * TMath::Sin( (iHarm+2) * dPhi);
                 QxnTPCSP[iHarm] += dCos;
@@ -1959,7 +2012,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
     if(M>0)
     {
         for(Int_t iHarm(0); iHarm < 2; ++iHarm)
-        { 
+        {
             Double_t dqnEse = QxnTPC[iHarm]*QxnTPC[iHarm]+QynTPC[iHarm]*QynTPC[iHarm];
             qnTPC[iHarm] = TMath::Sqrt(dqnEse)/TMath::Sqrt(M);
         }
@@ -1967,7 +2020,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsTPC(const Float_t centrality, const 
     }
     if(M_SP>0){
         for(Int_t iHarm(0); iHarm < 2; ++iHarm)
-        { 
+        {
             Double_t dqn_SP = QxnTPCSP[iHarm]*QxnTPCSP[iHarm]+QynTPCSP[iHarm]*QynTPCSP[iHarm];
             qnTPC_SP[iHarm] = TMath::Sqrt(dqn_SP)/TMath::Sqrt(M_SP);
         }
@@ -2018,7 +2071,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality,const In
                 multCorC = multV0/fhV0Calib->GetBinContent(iV0+1)*fhV0Calib->GetBinContent(17);
             else if (iV0 >= 24 && iV0 < 32)
                 multCorC = multV0/fhV0Calib->GetBinContent(iV0+1)*fhV0Calib->GetBinContent(25);
-            
+
 
             if (multCorC < 0){
                 printf("Problem with multiplicity in V0C");
@@ -2026,7 +2079,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality,const In
             }
 
             for(Int_t iHarm(0); iHarm < 2; ++iHarm)
-            {                
+            {
                 Double_t dCosC = multCorC * TMath::Cos( (iHarm+2) * PhiV0);
                 Double_t dSinC = multCorC * TMath::Sin( (iHarm+2) * PhiV0);
                 QxnV0C[iHarm] += dCosC;
@@ -2045,7 +2098,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality,const In
             else if (iV0 >= 48 && iV0 < 56)
                 multCorA = multV0/fhV0Calib->GetBinContent(iV0+1)*fhV0Calib->GetBinContent(49);
             else if (iV0 >= 56 && iV0 < 64)
-                multCorA = multV0/fhV0Calib->GetBinContent(iV0+1)*fhV0Calib->GetBinContent(57);            
+                multCorA = multV0/fhV0Calib->GetBinContent(iV0+1)*fhV0Calib->GetBinContent(57);
 
             if (multCorA < 0){
                 printf("Problem with multiplicity in V0A");
@@ -2053,7 +2106,7 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality,const In
             }
 
             for(Int_t iHarm(0); iHarm < 2; ++iHarm)
-            {                
+            {
                 Double_t dCosA = multCorA * TMath::Cos( (iHarm+2) * PhiV0);
                 Double_t dSinA = multCorA * TMath::Sin( (iHarm+2) * PhiV0);
                 QxnV0A[iHarm] += dCosA;
@@ -2093,14 +2146,14 @@ void AliAnalysisTaskESEFlow::ReducedqVectorsV0(const Float_t centrality,const In
         fQnxV0CEse[nQ]->Fill(centrality,QxnV0CEse[nQ]); // fill after ese corr
         fQnyV0CEse[nQ]->Fill(centrality,QynV0CEse[nQ]);
         fQnxV0AEse[nQ]->Fill(centrality,QxnV0AEse[nQ]);
-        fQnyV0AEse[nQ]->Fill(centrality,QynV0AEse[nQ]); // end after 
+        fQnyV0AEse[nQ]->Fill(centrality,QynV0AEse[nQ]); // end after
 
         if (SPCode >88) { continue; }
         fQnxV0CCor[nQ]->Fill(centrality,QxnV0CCorr[nQ]);
         fQnyV0CCor[nQ]->Fill(centrality,QynV0CCorr[nQ]);
         fQnxV0ACor[nQ]->Fill(centrality,QxnV0ACorr[nQ]);
         fQnyV0ACor[nQ]->Fill(centrality,QynV0ACorr[nQ]);
-    } 
+    }
 
     if(MC>0)
     {
@@ -2149,7 +2202,7 @@ void AliAnalysisTaskESEFlow::SPVienna(const Float_t centrality, Int_t q2ESECodeV
     ResetReducedqVector(vnSPV0C);
 
     if(iTracks < 1 ) { return; }
-    for(Int_t i(0); i < iTracks; ++i) 
+    for(Int_t i(0); i < iTracks; ++i)
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
@@ -2161,7 +2214,7 @@ void AliAnalysisTaskESEFlow::SPVienna(const Float_t centrality, Int_t q2ESECodeV
 
         for (Int_t iVienna(0); iVienna<2; ++iVienna){
             Int_t nHarmv = iVienna+2;
-            vnSPV0A[iVienna] =  (TMath::Cos(nHarmv * track->Phi())*QxnV0ACorr[iVienna] + TMath::Sin(nHarmv * track->Phi())*QynV0ACorr[iVienna]); 
+            vnSPV0A[iVienna] =  (TMath::Cos(nHarmv * track->Phi())*QxnV0ACorr[iVienna] + TMath::Sin(nHarmv * track->Phi())*QynV0ACorr[iVienna]);
             vnSPV0C[iVienna] =  (TMath::Cos(nHarmv * track->Phi())*QxnV0CCorr[iVienna] + TMath::Sin(nHarmv * track->Phi())*QynV0CCorr[iVienna]);
 
             TProfile* SPvProfV0A = (TProfile*)SPFlowList->FindObject(Form("v_{%i}{SP V0A}_%.0f_%.0f",iVienna+2,CentEdges[CentrCode],CentEdges[CentrCode+1]));
@@ -2213,7 +2266,7 @@ void AliAnalysisTaskESEFlow::SPVienna(const Float_t centrality, Int_t q2ESECodeV
         if(!prof3V0C) { AliError(Form("Profile 'ESE V0C <QQ*>_%i{SP_V0C_TPC}' not found",iVienna+2)); return; }
         prof3V0C->Fill(centrality, QQsV0CTPC);
     }
-    
+
     return;
 }
 void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C, Int_t q2ESECodeV0A, Int_t q3ESECodeV0A, Bool_t doRef, Bool_t doDiff)
@@ -2236,12 +2289,12 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
         switch (corrOrder)
         {
         case 2 :
-            if(!bHasGap) { 
+            if(!bHasGap) {
                 if(doDiff) {
                     cDnDiff = TwoDiff(0,0);
                     cNumDiff = TwoDiff(task->fiHarm[0],task->fiHarm[1]);
                 }
-                if(doRef) { 
+                if(doRef) {
                     cDn = Two(0,0);
                     cNum = Two(task->fiHarm[0],task->fiHarm[1]);
                 }
@@ -2355,23 +2408,23 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
             if(!prof) { AliError(Form("Profile %s_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
             prof->Fill(centrality, dValue, dDn);
 
-            
+
 
             if(fTPCEse){
                 TProfile* profESETPCq2 = (TProfile*)fcnESETPC->FindObject(Form("%s_q2TPC_PerCode%i_sample%d",task->fsName.Data(),q2ESECodeTPC+1,fIndexSampling));
                 if(!profESETPCq2) { AliError(Form("Profile %s_q2TPC_PerCode%i_sample%d not found",task->fsName.Data(),q2ESECodeTPC+1,fIndexSampling)); return; }
                 profESETPCq2->Fill(centrality, dValue, dDn);
-        
+
                 TProfile* profESETPCq3 = (TProfile*)fcnESETPC->FindObject(Form("%s_q3TPC_PerCode%i_sample%d",task->fsName.Data(),q3ESECodeTPC+1,fIndexSampling));
                 if(!profESETPCq3) { AliError(Form("Profile %s_q3TPC_PerCode%i_sample%d not found",task->fsName.Data(),q3ESECodeTPC+1,fIndexSampling)); return; }
-                profESETPCq3->Fill(centrality, dValue, dDn);        
+                profESETPCq3->Fill(centrality, dValue, dDn);
             }
 
             if(fV0CEse){
                 TProfile* profESEV0Cq2 = (TProfile*)fcnESEV0C->FindObject(Form("%s_q2V0C_PerCode%i_sample%d",task->fsName.Data(),q2ESECodeV0C+1,fIndexSampling));
                 if(!profESEV0Cq2) { AliError(Form("Profile %s_q2V0C_PerCode%i_sample%d not found",task->fsName.Data(),q2ESECodeV0C+1,fIndexSampling)); return; }
                 profESEV0Cq2->Fill(centrality, dValue, dDn);
-            
+
                 TProfile* profESEV0Cq3 = (TProfile*)fcnESEV0C->FindObject(Form("%s_q3V0C_PerCode%i_sample%d",task->fsName.Data(),q3ESECodeV0C+1,fIndexSampling));
                 if(!profESEV0Cq3) { AliError(Form("Profile %s_q3V0C_PerCode%i_sample%d not found",task->fsName.Data(),q3ESECodeV0C+1,fIndexSampling)); return; }
                 profESEV0Cq3->Fill(centrality, dValue, dDn);
@@ -2381,13 +2434,13 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
                 TProfile* profESEV0Aq2 = (TProfile*)fcnESEV0A->FindObject(Form("%s_q2V0A_PerCode%i_sample%d",task->fsName.Data(),q2ESECodeV0A+1,fIndexSampling));
                 if(!profESEV0Aq2) { AliError(Form("Profile %s_q2V0A_PerCode%i_sample%d not found",task->fsName.Data(),q2ESECodeV0A+1,fIndexSampling)); return; }
                 profESEV0Aq2->Fill(centrality, dValue, dDn);
-            
+
                 TProfile* profESEV0Aq3 = (TProfile*)fcnESEV0A->FindObject(Form("%s_q3V0A_PerCode%i_sample%d",task->fsName.Data(),q3ESECodeV0A+1,fIndexSampling));
                 if(!profESEV0Aq3) { AliError(Form("Profile %s_q3V0C_PerCode%i_sample%d not found",task->fsName.Data(),q3ESECodeV0A+1,fIndexSampling)); return; }
                 profESEV0Aq3->Fill(centrality, dValue, dDn);
             }
         }
-        
+
 
         if(doDiff && corrOrder < 6){
             Double_t dDnDiff = cDnDiff.Re();
@@ -2398,7 +2451,7 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
             if(bFillDiff && TMath::Abs(dValueDiff) > 1.0) { bFillDiff = kFALSE; }
 
             if(!bFillDiff) { return; }
-            
+
             TProfile* dn = (TProfile*)fpTDiff->FindObject(Form("%s_diff_%.0f_%.0f_sample%d",task->fsName.Data(),CentEdges[CentrCode],CentEdges[CentrCode+1],fIndexSampling));
 
             if(!dn) { AliError(Form("Profile %s_diff_sample%d not found in centrality range: %.0f-%.0f",task->fsName.Data(),fIndexSampling,CentEdges[CentrCode],CentEdges[CentrCode+1])); return;}
@@ -2408,7 +2461,7 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
                 TProfile* profESETPCptdiffq2 = (TProfile*)fpTDiffESETPC->FindObject(Form("%s_diff_q2TPC_PerCode%i_%.0f_%.0f_sample%d",task->fsName.Data(),q2ESECodeTPC+1,CentEdges[CentrCode],CentEdges[CentrCode+1],fIndexSampling));
                 if(!profESETPCptdiffq2) { AliError(Form("Profile %s_q2TPC_PerCode%i_sample%d pt differential not found",task->fsName.Data(),q2ESECodeTPC+1,fIndexSampling)); return; }
                 profESETPCptdiffq2->Fill(dPt,dValueDiff,dDnDiff);
-            
+
                 TProfile* profESETPCptdiffq3 = (TProfile*)fpTDiffESETPC->FindObject(Form("%s_diff_q3TPC_PerCode%i_%.0f_%.0f_sample%d",task->fsName.Data(),q3ESECodeTPC+1,CentEdges[CentrCode],CentEdges[CentrCode+1],fIndexSampling));
                 if(!profESETPCptdiffq3) { AliError(Form("Profile %s_q3TPC_PerCode%i_sample%d pt differential not found",task->fsName.Data(),q3ESECodeTPC+1,fIndexSampling)); return; }
                 profESETPCptdiffq3->Fill(dPt,dValueDiff,dDnDiff);
@@ -2418,7 +2471,7 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
                 TProfile* profESEV0Cptdiffq2 = (TProfile*)fpTDiffESEV0C->FindObject(Form("%s_diff_q2V0C_PerCode%i_%.0f_%.0f_sample%d",task->fsName.Data(),q2ESECodeV0C+1,CentEdges[CentrCode],CentEdges[CentrCode+1],fIndexSampling));
                 if(!profESEV0Cptdiffq2) { AliError(Form("Profile %s_q2V0C_PerCode%i_sample%d pt differential not found",task->fsName.Data(),q2ESECodeV0C+1,fIndexSampling)); return; }
                 profESEV0Cptdiffq2->Fill(dPt,dValueDiff,dDnDiff);
-            
+
                 TProfile* profESEV0Cptdiffq3 = (TProfile*)fpTDiffESEV0C->FindObject(Form("%s_diff_q3V0C_PerCode%i_%.0f_%.0f_sample%d",task->fsName.Data(),q3ESECodeV0C+1,CentEdges[CentrCode],CentEdges[CentrCode+1],fIndexSampling));
                 if(!profESEV0Cptdiffq3) { AliError(Form("Profile %s_q3V0C_PerCode%i_sample%d pt differential not found",task->fsName.Data(),q3ESECodeV0C+1,fIndexSampling)); return; }
                 profESEV0Cptdiffq3->Fill(dPt,dValueDiff,dDnDiff);
@@ -2428,7 +2481,7 @@ void AliAnalysisTaskESEFlow::FillCorrelation(Float_t centrality, Double_t dPt, I
                 TProfile* profESEV0Aptdiffq2 = (TProfile*)fpTDiffESEV0A->FindObject(Form("%s_diff_q2V0A_PerCode%i_%.0f_%.0f_sample%d",task->fsName.Data(),q2ESECodeV0A+1,CentEdges[CentrCode],CentEdges[CentrCode+1],fIndexSampling));
                 if(!profESEV0Aptdiffq2) { AliError(Form("Profile %s_q2V0A_PerCode%i_sample%d pt differential not found",task->fsName.Data(),q2ESECodeV0A+1,fIndexSampling)); return; }
                 profESEV0Aptdiffq2->Fill(dPt,dValueDiff,dDnDiff);
-            
+
                 TProfile* profESEV0Aptdiffq3 = (TProfile*)fpTDiffESEV0A->FindObject(Form("%s_diff_q3V0A_PerCode%i_%.0f_%.0f_sample%d",task->fsName.Data(),q3ESECodeV0A+1,CentEdges[CentrCode],CentEdges[CentrCode+1],fIndexSampling));
                 if(!profESEV0Aptdiffq3) { AliError(Form("Profile %s_q3V0A_PerCode%i_sample%d pt differential not found",task->fsName.Data(),q3ESECodeV0A+1,fIndexSampling)); return; }
                 profESEV0Aptdiffq3->Fill(dPt,dValueDiff,dDnDiff);
@@ -2455,7 +2508,7 @@ void AliAnalysisTaskESEFlow::FillqnRedV0(const Float_t centrality, TString V0typ
     fq2V0A->Fill(centrality,qnV0A[0]);
     fq3V0A->Fill(centrality,qnV0A[1]);
     }
-    else { return; } 
+    else { return; }
 
     return;
 }
@@ -2464,7 +2517,7 @@ Bool_t AliAnalysisTaskESEFlow::WithinRFP(const AliVParticle* track) const
     if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
     if(fFlowRFPsPtMin > 0.0 && track->Pt() < fFlowRFPsPtMin) { return kFALSE; }
     if(fFlowRFPsPtMax > 0.0 && track->Pt() > fFlowRFPsPtMax) { return kFALSE; }
-    
+
     return kTRUE;
 }
 Bool_t AliAnalysisTaskESEFlow::WithinPOI(const AliVParticle* track) const
@@ -2472,7 +2525,7 @@ Bool_t AliAnalysisTaskESEFlow::WithinPOI(const AliVParticle* track) const
     if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
     if(fFlowPOIsPtMin > 0.0 && track->Pt() < fFlowPOIsPtMin) { return kFALSE; }
     if(fFlowPOIsPtMax > 0.0 && track->Pt() > fFlowPOIsPtMax) { return kFALSE; }
-    
+
     return kTRUE;
 }
 Bool_t AliAnalysisTaskESEFlow::WithinRedRP(const AliVParticle* track) const
@@ -2480,7 +2533,7 @@ Bool_t AliAnalysisTaskESEFlow::WithinRedRP(const AliVParticle* track) const
     if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
     if(fRedFlowPtMin > 0.0 && track->Pt() < 0.0) { return kFALSE; }
     if(fRedFlowPtMax > 0.0 && track->Pt() > 20.0) { return kFALSE; }
-    
+
     return kTRUE;
 }
 Bool_t AliAnalysisTaskESEFlow::LoadWeights()
@@ -2488,11 +2541,11 @@ Bool_t AliAnalysisTaskESEFlow::LoadWeights()
     if(bUseOwnWeights)
     {
         TList* listFlowWeights = nullptr;
-        
+
         Int_t runno = fAOD->GetRunNumber();
         listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%i", runno));
 
-        if(!listFlowWeights) 
+        if(!listFlowWeights)
         {
             // run-specific weights not found for this run; loading run-averaged instead
             AliWarning(Form("TList with flow weights (run %i) not found. returning", runno));
@@ -2511,7 +2564,7 @@ Bool_t AliAnalysisTaskESEFlow::LoadWeights()
         }
         fWeights->CreateNUA();
     }
-    
+
     return kTRUE;
 }
 Bool_t AliAnalysisTaskESEFlow::LoadNUE()
@@ -2534,10 +2587,19 @@ Bool_t AliAnalysisTaskESEFlow::LoadNUE()
       printf("There is currently no NUE correction for 18 data! \n");
       return kFALSE; //find 2018 NUE
     }
-    
+
     if(!fhTrackNUE) { printf("Problems loading NUE in LoadNUE()! \n"); return kFALSE; }
 
     return kTRUE;
+}
+Bool_t AliAnalysisTaskESEFlow::LoadEfficiency()
+{
+  if (!ptEfficiency) { return kFALSE; }
+  fDir_efficiencies = (TDirectory*)ptEfficiency->Get("efficiency");
+  if (!fDir_efficiencies) { printf("Porblems loading TDirectory with efficiency in LoadEfficiency() !! \n"); return kFALSE;}
+  fhEfficiency2D = (TH2D*)fDir_efficiencies->Get("efficiency2d");
+  if (!fhEfficiency2D) { printf("Problems with retrieving efficiency histogram in LoadEfficiency() !! \n"); return kFALSE;}
+  return kTRUE;
 }
 Bool_t AliAnalysisTaskESEFlow::LoadV0Calibration()
 {
@@ -2590,7 +2652,7 @@ Bool_t AliAnalysisTaskESEFlow::LoadqSelection()
     return kTRUE;
 }
 Double_t AliAnalysisTaskESEFlow::GetFlowWeight(const AliAODTrack* track, const float dVz) const
-{    
+{
     Double_t dWeight = 1.0;
 
     if(fFlowRunByRunWeights){
@@ -2632,6 +2694,17 @@ Double_t AliAnalysisTaskESEFlow::GetNUEPtWeight(Double_t pt, Double_t eta, const
     }
 
     return dPtWeight;
+}
+Double_t AliAnalysisTaskESEFlow::GetEfficiency(Double_t pt, const Float_t centrality)
+{
+  // Int_t CentralityCode = GetCentralityCode(centrality);
+  // TH1* pthist = (TH1*)fDir_efficiencies->Get(Form("efficiency_%i",CentralityCode));
+  Double_t binCent = fhEfficiency2D->GetYaxis()->FindBin(centrality);
+  Double_t binPt = fhEfficiency2D->GetXaxis()->FindBin(pt);
+  Double_t eff = fhEfficiency2D->GetBinContent(binPt,centrality);
+  if (eff<=0) { eff = 1; }
+
+  return eff;
 }
 Int_t AliAnalysisTaskESEFlow::GetSamplingIndex() const
 {
@@ -2687,14 +2760,14 @@ Int_t AliAnalysisTaskESEFlow::GetCentralityCode(const Float_t centrality)
     else if (centrality > 90.){
         centrcode = 10;
     }*/
-    
+
     for (Int_t centr(0); centr<fCentAxis->GetNbins(); ++centr){
         if ((centrality > CentEdges[centr]) && (centrality < CentEdges[centr+1])){
             centrcode = centr;
             return centrcode;
         }
     }
-    
+
     return centrcode;
 }
 Int_t AliAnalysisTaskESEFlow::GetEsePercentileCode(Double_t qPerc) const
@@ -2731,14 +2804,14 @@ Int_t AliAnalysisTaskESEFlow::GetEsePercentileCode(Double_t qPerc) const
     else if (qPerc > 90.){
         qPerccode = 9;
     }*/
-    
+
     for (Int_t code(0); code<ESEPercAxis->GetNbins(); ++code){
         if ((qPerc > EventShapeEdges[code]) && (qPerc < EventShapeEdges[code+1])){
             qPerccode = code;
             return qPerccode;
         }
     }
-    
+
     return qPerccode;
 }
 // ######################### Generic FW #########################
@@ -2779,20 +2852,85 @@ Bool_t AliAnalysisTaskESEFlow::ProcessMCParticles()
     return kTRUE;
 }
 //____________________________________________________________________
+Bool_t AliAnalysisTaskESEFlow::CreateNUETracks()
+{
+
+  fMCEvent = getMCEvent(); //
+  Double_t l_Cent = getAMPTCentrality();
+  Int_t nTracks = fMCEvent->GetNumberOfPrimaries();
+
+  Double_t dVz = fMCEvent->GetPrimaryVertex()->GetZ();
+  if (TMath::Abs(dVz)>fVtxZCuts) {return kFALSE; } //
+
+  if(nTracks < 1) { return kFALSE; }
+
+  for(Int_t i=0;i<nTracks;i++) {
+    AliAODMCParticle* track = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(i));
+
+    if(!track) { continue; };
+
+    Double_t l_pt=track->Pt();
+    Double_t l_eta=track->Eta();
+
+    // MC cuts
+    if(fAbsEtaMax > 0 && TMath::Abs(l_eta) > fAbsEtaMax) { return kFALSE; } // standardize
+    if(fFlowRFPsPtMin > 0.0 && l_pt < fFlowRFPsPtMin) { return kFALSE; }
+    if(fFlowRFPsPtMax > 0.0 && l_pt > fFlowRFPsPtMax) { return kFALSE; }
+
+
+    fHistMCPtEtaVz->Fill(l_pt,l_eta,dVz);
+  }
+
+  return kTRUE;
+}
+//____________________________________________________________________
+AliMCEvent *AliAnalysisTaskESEFlow::getMCEvent() {
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
+  if(!ev) { AliFatal("MC event not found!"); return 0; }
+  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+  if(!header) { AliFatal("MC event not generated!"); return 0; }
+  AliCollisionGeometry* headerH;
+  TString genName;
+  TList *ltgen = (TList*)ev->GetCocktailList();
+  if (ltgen) {
+  for(auto&& listObject: *ltgen){
+    genName = Form("%s",listObject->GetName());
+    if (genName.Contains("Hijing")) {
+      headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+      break;
+      }
+    }
+  }
+  else headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
+  if(headerH){
+      fImpactParameterMC = headerH->ImpactParameter();
+  }
+  return ev;
+//____________________________________________________________________
+}
+double AliAnalysisTaskESEFlow::getAMPTCentrality()
+{
+  std::vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
+  std::vector<double>::iterator it = upper_bound(b.begin(),b.end(),fImpactParameterMC);
+  double l_cent = (fImpactParameterMC<0)?-1.0:(centralitymap[b[it-b.begin()]]+centralitymap[b[it-b.begin()-1]])/2.0;
+  return l_cent;
+}
+//____________________________________________________________________
 Bool_t AliAnalysisTaskESEFlow::IsEventSelected()
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
   UInt_t fSelectMask = inputHandler->IsEventSelected();
   fhEventCounter->Fill("Loaded OK",1);
-  
+
   AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
   if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return -1; }
-  Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator); 
-  
+  Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
+
 
   if(fIs2018Data){
     fEventCuts.SetupPbPb2018();
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE); //
     fhEventCounter->Fill("2018 OK",1);
   }
 
@@ -2811,7 +2949,7 @@ Bool_t AliAnalysisTaskESEFlow::IsEventSelected()
 
 
 
-  
+
   if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
   fhEventCounter->Fill("EventCuts OK",1);
 
@@ -2842,7 +2980,7 @@ Bool_t AliAnalysisTaskESEFlow::IsTrackSelected(const AliAODTrack* track) const
     Float_t tpcchi2percls = (ntpccls==0)?0.0:chi2tpc/ntpccls;
 
     if (tpcchi2percls > vTPCChi2Bound) { return kFALSE; }
-  } 
+  }
   if(fCheckChi2ITS){
     Float_t chi2its = track->GetITSchi2();
     Float_t nitscls = track->GetITSNcls();
@@ -2926,7 +3064,7 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
     if(Double_t(multTrk) < fMultCentLowCut.Eval(v0Centr)) { return kTRUE; }
   }
 
-  
+
 
 
 
@@ -2970,8 +3108,8 @@ void AliAnalysisTaskESEFlow::QAMultFiller(Float_t v0Centr)
   fhQAEventsfMultTPCvsTOF->Fill(multTPC32, multTOF);
   fhQAEventsfMultTPCvsESD->Fill(multTPC128, multESD);
 
-    
-    
+
+
 
   return;
 }
@@ -3179,11 +3317,11 @@ TComplex AliAnalysisTaskESEFlow::TwoDiffGap10_PtA_PtB(int n1, int n2)
 //____________________________________________________________________
 TComplex AliAnalysisTaskESEFlow::Three(int n1, int n2, int n3)
 {
-    
+
     TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)-Q(n1+n2,2)*Q(n3,1)-Q(n2,1)*Q(n1+n3,2)
     - Q(n1,1)*Q(n2+n3,2)+2.*Q(n1+n2+n3,3);
     return formula;
-    
+
 }
 //____________________________________________________________________
 TComplex AliAnalysisTaskESEFlow::ThreeGapM(int n1, int n2, int n3)
@@ -3284,7 +3422,7 @@ TComplex AliAnalysisTaskESEFlow::FourDiffGap10M(int n1, int n2, int n3, int n4)
 //___________________________________________________________________
 TComplex AliAnalysisTaskESEFlow::Five(int n1, int n2, int n3, int n4, int n5)
 {
-    
+
     TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)
     - Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)
     + 2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5,1)
@@ -3312,7 +3450,7 @@ TComplex AliAnalysisTaskESEFlow::Five(int n1, int n2, int n3, int n4, int n5)
     - 2.*Q(n1+n2,2)*Q(n3+n4+n5,3)-6.*Q(n2,1)*Q(n1+n3+n4+n5,4)
     - 6.*Q(n1,1)*Q(n2+n3+n4+n5,4)+24.*Q(n1+n2+n3+n4+n5,5);
     return formula;
-    
+
 }
 //___________________________________________________________________
 TComplex AliAnalysisTaskESEFlow::Six(int n1, int n2, int n3, int n4, int n5, int n6)
@@ -3532,24 +3670,24 @@ TComplex AliAnalysisTaskESEFlow::SixDiff(int n1, int n2, int n3, int n4, int n5,
 //_________________________________________________________________________________
 TComplex AliAnalysisTaskESEFlow::Seven(int n1, int n2, int n3, int n4, int n5, int n6, int n7)
 {
-    
+
     TComplex Correlation = {0, 0};
     int Narray[] = {n1, n2, n3, n4, n5, n6};
-    
+
     for(int k=7; k-->0; )
     {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-        
+
         int array[6] = {0,1,2,3,4,5};
         int iPerm = 0;
         //int argument = 0;
         int count = 0;
-        
+
         // k==6: there is just one combination, we can add it manually
         if(k==6){
             Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
             Six(n1, n2, n3, n4, n5, n6)*Q(n7, 7-k);
         }// k==6
-        
+
         else if(k==5){
             do{
                 iPerm += 1;
@@ -3562,7 +3700,7 @@ TComplex AliAnalysisTaskESEFlow::Seven(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+6));
         }// k==5
-        
+
         else if(k==4){
             do{
                 iPerm += 1;
@@ -3576,7 +3714,7 @@ TComplex AliAnalysisTaskESEFlow::Seven(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+6));
         }// k==4
-        
+
         else if(k==3){
             do{
                 iPerm += 1;
@@ -3589,7 +3727,7 @@ TComplex AliAnalysisTaskESEFlow::Seven(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+6));
         }// k==3
-        
+
         else if(k==2){
             do{
                 iPerm += 1;
@@ -3603,7 +3741,7 @@ TComplex AliAnalysisTaskESEFlow::Seven(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+6));
         }// k==2
-        
+
         else if(k == 1){
             Correlation = Correlation
             + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7, 7-k)
@@ -3613,42 +3751,42 @@ TComplex AliAnalysisTaskESEFlow::Seven(int n1, int n2, int n3, int n4, int n5, i
             + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n5, 1)*Q(n1+n2+n3+n4+n6+n7, 7-k)
             + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7, 7-k);
         }// k==1
-        
+
         else if(k == 0){
             Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1+n2+n3+n4+n5+n6+n7, 7-k);
         }// k==0
-        
+
         else{
             std::cout<<"invalid range of k"<< std::endl;
             return {0,0};
         }
-        
+
     }// loop over k
-    
+
     return Correlation;
-    
+
 }
 //_____________________________________________________________________________
 TComplex AliAnalysisTaskESEFlow::Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
 {
-    
+
     TComplex Correlation = {0, 0};
     int Narray[] = {n1, n2, n3, n4, n5, n6, n7};
-    
+
     for(int k=8; k-->0; )
     {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-        
+
         int array[7] = {0,1,2,3,4,5,6};
         int iPerm = 0;
         //int argument = 0;
         int count = 0;
-        
+
         // k==7: there is just one combination, we can add it manually
         if(k==7){
             Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
             Seven(n1, n2, n3, n4, n5, n6, n7)*Q(n8, 8-k);
         }// k==7
-        
+
         else if(k==6){
             do{
                 iPerm += 1;
@@ -3661,7 +3799,7 @@ TComplex AliAnalysisTaskESEFlow::Eight(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+7));
         }// k==6
-        
+
         else if(k==5){
             do{
                 iPerm += 1;
@@ -3675,7 +3813,7 @@ TComplex AliAnalysisTaskESEFlow::Eight(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+7));
         }// k==5
-        
+
         else if(k==4){
             do{
                 iPerm += 1;
@@ -3688,7 +3826,7 @@ TComplex AliAnalysisTaskESEFlow::Eight(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+7));
         }// k==4
-        
+
         else if(k==3){
             do{
                 iPerm += 1;
@@ -3701,7 +3839,7 @@ TComplex AliAnalysisTaskESEFlow::Eight(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+7));
         }// k==3
-        
+
         else if(k==2){
             do{
                 iPerm += 1;
@@ -3715,7 +3853,7 @@ TComplex AliAnalysisTaskESEFlow::Eight(int n1, int n2, int n3, int n4, int n5, i
                 }
             }while(std::next_permutation(array, array+7));
         }// k==2
-        
+
         else if(k == 1){
             Correlation = Correlation
             + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7+n8, 8-k)
@@ -3726,18 +3864,18 @@ TComplex AliAnalysisTaskESEFlow::Eight(int n1, int n2, int n3, int n4, int n5, i
             + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7+n8, 8-k)
             + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n7, 1)*Q(n1+n2+n3+n4+n5+n6+n8, 8-k);
         }// k==1
-        
+
         else if(k == 0){
             Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1+n2+n3+n4+n5+n6+n7+n8, 8-k);
         }// k==0
-        
+
         else{
             std::cout<<"invalid range of k"<<std::endl;
             return {0,0};
         }
-        
+
     }// loop over k
-    
+
     return Correlation;
 }
 TComplex AliAnalysisTaskESEFlow::SixGap10(int n1, int n2, int n3, int n4, int n5, int n6)
