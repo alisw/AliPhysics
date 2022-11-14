@@ -108,6 +108,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fDeltaPhiMaxPAPrim(0.04),
       fDeltaEtaMaxPAPrim(0.012),
       fQ3cutValue(1.),
+      fQ3MinValue(0.),
       fCleanWithLambdas(false),
       fDoOnlyThreeBody(true),
       fSameEventTripletArray(nullptr),
@@ -294,6 +295,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fDeltaPhiMaxPAPrim(0.04),
       fDeltaEtaMaxPAPrim(0.012),
       fQ3cutValue(1.),
+      fQ3MinValue(0.),
       fCleanWithLambdas(false),
       fDoOnlyThreeBody(true),
       fSameEventTripletArray(nullptr),
@@ -2246,7 +2248,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
         double deltaEta31 = (iPart3->GetEta().at(0) - iPart1->GetEta().at(0));
 
 
-        if(Q3<fQ3cutValue){
+        if(fQ3MinValue <= Q3 && Q3<fQ3cutValue){
           hist2d12->Fill(RelativeMomentum12,mult+1);
           hist2d23->Fill(RelativeMomentum23,mult+1);
           hist2d31->Fill(RelativeMomentum31,mult+1);
@@ -2873,7 +2875,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
 
 
     
-            if(Q3<fQ3cutValue){
+            if(fQ3MinValue <= Q3 && Q3<fQ3cutValue){
               hist2d12->Fill(RelativeMomentum12,mult+1);
               hist2d23->Fill(RelativeMomentum23,mult+1);
               hist2d31->Fill(RelativeMomentum31,mult+1);
