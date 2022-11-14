@@ -184,6 +184,8 @@ ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
 		fFMDCacceptanceCutLower(-3.2),
 		fFMDCacceptanceCutUpper(-1.8),
 		nSamples(10),
+		sampleLow(-100),
+		sampleHigh(100),
 		rand(2333)
 {
 }
@@ -302,6 +304,8 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	fFMDCacceptanceCutLower(-3.2),
 	fFMDCacceptanceCutUpper(-1.8),
 	nSamples(10),
+		sampleLow(-100),
+		sampleHigh(100),
 	rand(2333)
 {
 
@@ -447,6 +451,8 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	fFMDCacceptanceCutLower(-3.2),
 	fFMDCacceptanceCutUpper(-1.8),
 	nSamples(10),
+		sampleLow(-100),
+		sampleHigh(100),
 	rand(2333)
 {
 
@@ -1277,6 +1283,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Dou
 }
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
+	if (bootstrap_value < sampleLow || bootstrap_value >= sampleHigh) return false;
 	// LHC15i, LHC15l, LHC16, LHC17, LHC18: means: pp sample
 	if (fPeriod.EqualTo("LHC15i") ||
 			fPeriod.EqualTo("LHC15l") ||
