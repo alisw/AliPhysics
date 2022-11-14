@@ -253,7 +253,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
             case kDplustoKpipi:
             {
                 std::array<std::vector<int>, 2> pdgReso = {std::vector<int>{435, 10433}, std::vector<int>{}}; 
-                std::set<int> pdgResoAllDecays;
+                std::set<int> pdgResoAllDecays{};
                 for (auto &array: pdgReso) {
                     pdgResoAllDecays.insert(array.begin(), array.end());
                 }
@@ -274,7 +274,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
             case kDstartoD0pi:
             {
                 std::array<std::vector<int>, 2> pdgReso = {std::vector<int>{435, 10433}, std::vector<int>{}}; 
-                std::set<int> pdgResoAllDecays;
+                std::set<int> pdgResoAllDecays{};
                 for (auto &array: pdgReso) {
                     pdgResoAllDecays.insert(array.begin(), array.end());
                 }
@@ -1378,7 +1378,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
         }
     }
 
-    std::set<int> pdgResoAllDecays;
+    std::set<int> pdgResoAllDecays{};
     for (auto &array: pdgReso) {
         pdgResoAllDecays.insert(array.begin(), array.end());
     }
