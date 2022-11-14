@@ -32,7 +32,6 @@
 #include "AliAnalysisUtils.h"
 #include "AliAODHandler.h"
 #include "AliAODExtension.h"
-#include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSECharmHadronMLSelector.h"
 
@@ -254,7 +253,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
             case kDplustoKpipi:
             {
                 std::array<std::vector<int>, 2> pdgReso = {std::vector<int>{435, 10433}, std::vector<int>{}}; 
-                std::set<int> pdgResoAllDecays;
+                std::set<int> pdgResoAllDecays{};
                 for (auto &array: pdgReso) {
                     pdgResoAllDecays.insert(array.begin(), array.end());
                 }
@@ -275,7 +274,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
             case kDstartoD0pi:
             {
                 std::array<std::vector<int>, 2> pdgReso = {std::vector<int>{435, 10433}, std::vector<int>{}}; 
-                std::set<int> pdgResoAllDecays;
+                std::set<int> pdgResoAllDecays{};
                 for (auto &array: pdgReso) {
                     pdgResoAllDecays.insert(array.begin(), array.end());
                 }
@@ -305,6 +304,11 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     }
 
     PostData(1, fOutput);
+
+    fHistMCGenAccPrompt.clear();
+    fHistMCGenAccNonPrompt.clear();
+    fHistMCGenAccAllDecaysPrompt.clear();
+    fHistMCGenAccAllDecaysNonPrompt.clear();
 
     if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0))
         fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:pt_track:charge_track:id_track:signal_track:nsigma_tpc_track:nsigma_tof_track:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D");
@@ -1322,6 +1326,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
         motherLight = partD->GetMother();
         modthersLight.push_back(motherLight);
     }
+    std::sort(modthersD.begin(), modthersD.end());
+    std::sort(modthersLight.begin(), modthersLight.end());
 
     double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
     std::vector<int> commonMothers{};
@@ -1372,7 +1378,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
         }
     }
 
-    std::set<int> pdgResoAllDecays;
+    std::set<int> pdgResoAllDecays{};
     for (auto &array: pdgReso) {
         pdgResoAllDecays.insert(array.begin(), array.end());
     }

@@ -25,6 +25,7 @@
 #include "AliNormalizationCounter.h"
 #include "AliHFMLResponse.h"
 #include "AliAODv0.h"
+#include "AliAODMCParticle.h"
 
 class AliAnalysisTaskSEHFResonanceBuilder : public AliAnalysisTaskSE
 {
