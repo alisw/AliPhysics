@@ -1703,7 +1703,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
       nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(Track,AliPID::kDeuteron);
       beta	= CalculateBetaTOF(*Track);
       massSq	= CalculateMassSquareTOF(*Track);
-      nSigmaTOFMassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,1);
+      nSigmaTOFMassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,true);
 
     }
 
@@ -2202,7 +2202,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
       nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(Track,AliPID::kDeuteron);
       beta	= CalculateBetaTOF(*Track);
       massSq	= CalculateMassSquareTOF(*Track);
-      nSigmaTOFMassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,1);
+      nSigmaTOFMassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,false);
 
     }
       
@@ -2947,7 +2947,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   if(isMatter)	fHist_Proton_CutCounter->Fill(7);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(7);
 
-
+/*
   // reject tracks with better sigma for other particles
   if((p >= Proton_TPC_Threshold) && (TOFisOK)){
 
@@ -2976,7 +2976,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   }
   if(isMatter)	fHist_Proton_CutCounter->Fill(8);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(8);
-
+*/
 
   // apply FilterBit cut
   if(!Track.TestFilterBit(Proton_FilterBit)) return PassedParticleCuts;
