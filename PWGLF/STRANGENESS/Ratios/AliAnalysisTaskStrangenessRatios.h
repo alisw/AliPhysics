@@ -37,6 +37,26 @@ struct MiniLambda {
   bool hasITSrefit;
 };
 
+struct MiniK0s {
+  Double32_t pt;
+  Double32_t eta;
+  Double32_t mass;
+  Double32_t ct;
+  Double32_t radius;      //[0,101.6,8]
+  Double32_t dcaV0PV;     //[0,10.16,16]
+  Double32_t dcaPosPV;    //[0,20.32,8]
+  Double32_t dcaNegPV;    //[0,20.32,8]
+  Double32_t dcaV0tracks; //[0,2.54,8]
+  Double32_t cosPA;       //[0.95,1,16]
+  Double32_t tpcNsigmaPos; //[-5,5,8]
+  Double32_t tpcNsigmaNeg; //[-5,5,8]
+  unsigned char tpcClV0Pos;
+  unsigned char tpcClV0Neg;
+  unsigned char centrality;
+  bool hasTOFhit;
+  bool hasITSrefit;
+};
+
 struct MiniLambdaMC : public MiniLambda {
   float ptMC;
   float etaMC;
@@ -45,6 +65,16 @@ struct MiniLambdaMC : public MiniLambda {
   float ptMotherMC;
   float ctMotherMC;
   int pdg;
+  bool isPrimary;
+  bool isReconstructed;
+  unsigned char flag;
+};
+
+struct MiniK0sMC : public MiniK0s {
+  float ptMC;
+  float etaMC;
+  float ctMC;
+  float yMC;
   bool isPrimary;
   bool isReconstructed;
   unsigned char flag;
@@ -123,10 +153,12 @@ public:
 
   AliEventCuts  fEventCut; ///<
 
+  void SetFillK0s(bool toogle = true) { fFillK0s = toogle; }
   void SetFillLambdas(bool toogle = true) { fFillLambdas = toogle; }
   void SetFillCascades(bool toogle = true) { fFillCascades = toogle; }
   void SetFillLambdasBDTOut(bool toogle = true) { fFillLambdasBDTOut = toogle; }
   void SetLambdaDownscaling(float scale = true) { fLambdaDownscaling = scale; }
+  void SetK0sDownscaling(float scale = true) { fK0sDownscaling = scale; }
 
   //Setters for topological cuts
   void SetRadiusCut(float xi = 1.2, float omega = 1., float lambda = 0.5) {fCutRadius[0]=xi; fCutRadius[1]=omega; fCutRadius[2]=lambda;}
@@ -179,22 +211,28 @@ private:
   TList*          fList = nullptr;             //!<! List of the output histograms
   TTree*          fTree = nullptr;             //!<! Tree for Xis and Omegas
   TTree*          fTreeLambda = nullptr;       //!<! Tree for Lambdas
+  TTree*          fTreeK0s = nullptr;          //!<! Tree for K0s
   TTree*          fTreeLambdaBDTOut = nullptr; //!<! Tree for Lambdas
 
   MiniCascade* fRecCascade = nullptr;          //!<! Transient fRecCascade
   MiniCascadeMC fGenCascade;
   MiniLambda* fRecLambda = nullptr;          //!<! Transient fRecLambda
   MiniLambdaMC fGenLambda;
+  MiniK0s* fRecK0s = nullptr;          //!<! Transient fRecK0s
+  MiniK0sMC fGenK0s;
   MiniLambdaBDTOut *fRecLambdaBDTOut = nullptr;//!<! Transient fRecLambda with BDT output
   AliPIDResponse* fPID = nullptr;              //!<! ALICE PID framework
   std::vector<AliExternalBDT*> fBDT;           //!<! BDTs
   bool fMC;
   bool fOnlyTrueCandidates = false;  ///< Save only true Xi and Omegas in MC
+  bool fFillK0s = false;
   bool fFillLambdas = false;
   bool fFillLambdasBDTOut = false;
   bool fFillCascades = false;
+  bool fOnlyTrueK0s = true;          ///< Save only true K0s in MC
   bool fOnlyTrueLambdas = true;      ///< Save only true Lambdas in MC
   float fLambdaDownscaling = 1.;
+  float fK0sDownscaling = 1.;
 
   //configurable cuts
   float fCutRadius[3] = {1.2, 1.0, 3.0};
@@ -219,8 +257,8 @@ private:
   float fCutRowsOvF = 0.8;
   double fCascLeastCRaws;
   double fCascLeastCRawsOvF;
-  double fLambdaLeastCRaws;
-  double fLambdaLeastCRawsOvF;
+  double fV0LeastCRaws;
+  double fV0LeastCRawsOvF;
   double fMinCentrality = 0;
   double fMaxCentrality = 90;
   double fCtPreselection = 1.;
@@ -240,6 +278,11 @@ private:
   float fCutDCALambdaPrToPV = 0.08;
   float fCutDCALambdaPiToPV = 0.12;
   float fCutLambdaMass[2] = {1.09f, 1.15f};
+
+  float fCosPAK0s = 0.97;
+  float fCutDCAK0sProngToPV = 0.08;
+  float fCutK0sMass[2] = {0.497611 - 0.015, 0.497611 + 0.015};
+
   bool fUseOnTheFly = false;
 
   TArrayD fCtBinsBDT;
@@ -247,6 +290,7 @@ private:
 
   bool IsTopolSelected(bool isXi = true);
   bool IsTopolSelectedLambda();
+  bool IsTopolSelectedK0s();
   float Eta2y(float pt, float m, float eta) const;
   int WhichBDT(double ct);
   void FindWDLambdaMother(AliAODMCParticle *track);
