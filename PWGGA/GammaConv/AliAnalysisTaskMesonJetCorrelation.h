@@ -362,6 +362,13 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
 
   //-------------------------------
+  // Meson double counting
+  //-------------------------------
+  std::vector<int> fMesonDoubleCount;                                             //! keeps track of MC IDs of true mesons and check if one double counts
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount; //! vector of histos inv. mass vs. pT for true mesons which are counted more than once
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount;  //! vector of histos inv. mass vs. Z for true mesons which are counted more than once
+
+  //-------------------------------
   // True conversion photon histograms
   //-------------------------------
   std::vector<TH1F*> fHistoTrueConvGammaPt;               //! vector of histos true conversion pt

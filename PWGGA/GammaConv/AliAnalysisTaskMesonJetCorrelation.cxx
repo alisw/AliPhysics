@@ -183,6 +183,10 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoTrueMesonInTrueJet_JetPtVsTruePt({}),
                                                                              fHistoTrueMesonInTrueJet_JetPtVsTrueZ({}),
                                                                              fHistoMesonResponse({}),
+                                                                             // true meson double counting
+                                                                             fMesonDoubleCount({}),
+                                                                             fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount({}),
+                                                                             fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount({}),
                                                                              // true conv. photons
                                                                              fHistoTrueConvGammaPt({}),
                                                                              fHistoTruePrimaryConvGammaPt({}),
@@ -386,6 +390,10 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoTrueMesonInTrueJet_JetPtVsTruePt({}),
                                                                                            fHistoTrueMesonInTrueJet_JetPtVsTrueZ({}),
                                                                                            fHistoMesonResponse({}),
+                                                                                           // true meson double counting
+                                                                                           fMesonDoubleCount({}),
+                                                                                           fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount({}),
+                                                                                           fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount({}),
                                                                                            // true conv. photons
                                                                                            fHistoTrueConvGammaPt({}),
                                                                                            fHistoTruePrimaryConvGammaPt({}),
@@ -626,6 +634,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
     fHistoTrueMesonInTrueJet_JetPtVsTruePt.resize(fnCuts);
     fHistoTrueMesonInTrueJet_JetPtVsTrueZ.resize(fnCuts);
+
+    fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount.resize(fnCuts);
+    fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount.resize(fnCuts);
   }
 
   if (fDoMesonQA) {
@@ -1121,6 +1132,19 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]->SetXTitle("meson z_{T}");
       fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]);
+
+      fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsFragment, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
+      if (fUseThNForResponse)
+        fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut]->GetTHnSparse("ESD_TrueMother_InvMass_Pt_JetPt_DoubleCount"));
+      else
+        fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut]->GetTH2("ESD_TrueMother_InvMass_Pt_JetPt_DoubleCount"));
+
+      fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsFragment, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
+      if (fUseThNForResponse)
+        fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut]->GetTHnSparse("ESD_TrueMother_InvMass_Z_JetPt_DoubleCount"));
+      else
+        fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut]->GetTH2("ESD_TrueMother_InvMass_Z_JetPt_DoubleCount"));
+
 
       if (fDoMesonQA) {
         fHistoMesonResponse[iCut] = new TH2F("ESD_TrueMeson_RecPt_TruePt", "ESD_TrueMeson_RecPt_TruePt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
@@ -1654,6 +1678,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
 
     // Jets need to be initialized before the ProcessMCParticles because they are needed in ProcessAODMCParticles
     InitJets();
+
+    // reset double counting vector
+    fMesonDoubleCount.clear();
 
     if (eventNotAccepted != 0) {
       fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
@@ -3055,6 +3082,13 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
   fRespMatrixHandlerTrueMesonInvMassVsZ[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
 
   fHistoTrueMesonInvMassVsTruePt[fiCut]->Fill(Pi0Candidate->M(), trueMesonCand->Pt(), fWeightJetJetMC);
+
+  if(std::find(fMesonDoubleCount.begin(), fMesonDoubleCount.end(), gamma0MotherLabel) != fMesonDoubleCount.end()) {
+    fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
+    fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
+  } else {
+    fMesonDoubleCount.push_back(gamma0MotherLabel);
+  }
 
   // fill all primary true mesons
   bool isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
