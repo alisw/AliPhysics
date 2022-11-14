@@ -1133,7 +1133,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]);
 
-      fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsFragment, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
+      fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsMesonPt, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
       if (fUseThNForResponse)
         fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut]->GetTHnSparse("ESD_TrueMother_InvMass_Pt_JetPt_DoubleCount"));
       else
