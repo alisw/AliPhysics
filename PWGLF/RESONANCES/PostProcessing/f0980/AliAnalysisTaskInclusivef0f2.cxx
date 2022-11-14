@@ -260,6 +260,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
  CreateTHnSparse("SignalLossKaon","SignalLossKaon",3,
         {binCentForMC,binPt,binSwitch},"s");
+
  CreateTHnSparse("SignalLoss0Kaon","SignalLoss0Kaon",3,
         {binCentForMC,binPt,binSwitch},"s");
 
@@ -771,8 +772,10 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			if( fOption.Contains("MismatchCheck") ){
 				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 100)) this -> FillTracks();
 			} else if( fOption.Contains("UPCMODE") ){
-				if(this -> GoodTracksSelection(0x20, 0, 2, 0, 0.01)) this -> FillTracks(); 
-			} else {
+				if(this -> GoodTracksSelection(0x20, 2, 0, 2, 0.1)) this -> FillTracks(); 
+			} else if( fOption.Contains("UPCTOFMODE") ){
+				if(this -> GoodTracksSelection(0x20, 0, 2, 0, 0.01)) this -> FillTracks();
+			}else {
 				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks(); 
 			}
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
