@@ -15,8 +15,6 @@ class AliAODEvent;
 class AliVEvent;
 class TString;
 class TObjArray;
-class AliPID;
-class AliPIDResponse;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -45,22 +43,22 @@ public:
     void                    Seteventvrtx(float vrtxz)		{fevtvrtxz		=vrtxz;};
     void                    SettrackBit(int trackBit)		{ftrackBit		=trackBit;};
     void                    Settrackpt(float pt_low, float pt_up)	{ptmin	=pt_low; ptmax	=pt_up;};    
+    void                    Settpcrows(int ftpcrows)	{TPCrows = ftpcrows;};    
         
 private:
 
     	bool AcceptTrack(AliAODTrack* aodtrack) const;    
  
-     	int                   ftrackBit;
-     	float                   fevtvrtxz;     	
-     	float				  ptmin;
-     	float					ptmax;
+     	int                   	ftrackBit; //!
+     	float                   fevtvrtxz;    //! 	
+     	float				  	ptmin;//!
+     	float					ptmax;//!
+		int						TPCrows;//!
      
         
        AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputList;    //! output list
    		TH1I					*fEventCount;	//!
-
-		AliPIDResponse   		*fPIDResponse;
 
 		THnSparse				*fTHnetaptphi; //!
 		
@@ -70,18 +68,18 @@ private:
 	
 		TTree					*fTreept;			//!
 		float					field;			//!
-		float 		        	pt[5000];             	//!       
+		//float 		        	pt[5000];             	//!       
 		float 					cent;			//!
-		int 					charge[5000];		//!
+		//int 					charge[5000];		//!
 		int						nevt;			//!
 		int						ns;			//!
 		int						nch;			//!
-		float						fV0_total;		//!
-        	int						fRunNumber;		//!
+		float					fV0_total;		//!
+        int						fRunNumber;		//!
 		int						sample;		//!
 		int 					Vz;				//!
-		int						TPCrows[500];	//!
-		int						filterbit[500];	//!
+		//int						TPCrows[500];	//!
+		//int						filterbit[500];	//!
 
 		TH2D*					fMulttrkV0;			//!
 		TH2D*					fMulttrkV0_meanpt;	//!
