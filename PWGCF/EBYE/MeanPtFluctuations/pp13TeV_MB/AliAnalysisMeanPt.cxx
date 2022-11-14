@@ -48,8 +48,6 @@
 #include "AliLog.h"
 #include "AliAnalysisUtils.h"
 #include "AliVEventHandler.h"
-#include "AliPIDResponse.h"
-#include "AliPID.h"
 #include "THnSparse.h"
 #include "AliAnalysisMeanPt.h"
 
@@ -70,7 +68,6 @@ ClassImp(AliAnalysisMeanPt)
 AliAnalysisMeanPt::AliAnalysisMeanPt()
 : AliAnalysisTaskSE(),
 fAOD(0x0), 
-fPIDResponse(0x0),
 fOutputList(0), 
 fEventCount(0), 
 fHistPhi(0), 
@@ -116,7 +113,6 @@ htrk(0)
 AliAnalysisMeanPt::AliAnalysisMeanPt(const char* name)
 :AliAnalysisTaskSE(name),
 fAOD(0x0), 
-fPIDResponse(0x0),
 fOutputList(0), 
 fEventCount(0), 
 fHistPhi(0), 
@@ -307,9 +303,9 @@ void AliAnalysisMeanPt::UserCreateOutputObjects()
     fHistPtcal = new TH1F("fHistPtcal", " ", 100, 0, 10);     
     fHistPtcal->StatOverflows(kTRUE);
     
-    TString name = "ftree_";
+ /* 
+ 	TString name = "ftree_";
     name += ftrackBit;
-    
     fTreept = new TTree(name,"making tree"); 
     fTreept->Branch("nevt",&nevt,"nevt/I");
     fTreept->Branch("nch",&nch,"nch/I");
@@ -321,9 +317,10 @@ void AliAnalysisMeanPt::UserCreateOutputObjects()
     fTreept->Branch("TPCrows",&TPCrows,"TPCrows[nch]/I");   
     fTreept->Branch("charge",&charge,"charge[nch]/I");
     fTreept->Branch("pt", &pt,"pt[nch]/F");
+*/
 
     PostData(1, fOutputList);         
-    PostData(2, fTreept);         
+    //PostData(2, fTreept);         
 
 }
 //----------------------UserExec------------------------------
@@ -346,10 +343,10 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 	field = fAOD->GetMagneticField();
 
    	//Physics selection & trigger
-	//UInt_t fSelectMask= fInputHandler->IsEventSelected();
-   	//Bool_t isINT7selected = fSelectMask ;//& AliVEvent::kINT7; //kHighMultV0; 
-	//if(!isINT7selected) return;
-	if(!fInputHandler->IsEventSelected()) return;
+	UInt_t fSelectMask= fInputHandler->IsEventSelected();
+   	Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;  
+	if(!isINT7selected) return;
+	//if(!fInputHandler->IsEventSelected()) return;
 
 	fEventCount ->Fill("Physsel check",1);
 
@@ -362,7 +359,7 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
     double yv=fPrimaryVtx->GetY();
     double zv=fPrimaryVtx->GetZ();
     
-    Vz = zv;
+    //Vz = zv;
     
     fHistVx->Fill(xv);
     fHistVy->Fill(yv);
@@ -394,7 +391,6 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
     fRunNumber = fInputEvent->GetRunNumber();
     hHighMultRuns->Fill(fRunNumber);
 
-    //fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0);
 
     if (!fEventCuts.AcceptEvent(fInputEvent)) return;
     
@@ -408,7 +404,7 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 //----------end of detector cuts---------        
     fHistPtcal->Reset();
   
-    int trk =0;	
+    int trk =1;	
     double sum_trackpt = 0.;
     double sum_ptiptj =0.; 
 
@@ -424,12 +420,12 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 		fHistClustersTPC->Fill(track->GetTPCNcls());
 		fHistChi2perNDF->Fill(track->Chi2perNDF());
 
-		TPCrows[trk] = track->GetTPCCrossedRows();
-		pt[trk] 	= track->Pt();
-		charge[trk] = track->Charge();
+		//TPCrows[trk] = track->GetTPCCrossedRows();
+		//pt[trk] 	= track->Pt();
+		//charge[trk] = track->Charge();
 	
 		fHistEta->Fill(track->Eta());        
-        	fHistPt->Fill(track->Pt()); 
+        fHistPt->Fill(track->Pt()); 
        	fHistPhi->Fill(track->Phi()); 
 
 		sum_trackpt = sum_trackpt + track->Pt() ;
@@ -458,12 +454,12 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 	//===tree=========
 	if(trk < 2) return;
 	
-	nch = trk;
+	//nch = trk;
 	
-	if(ftrackBit == 768 ) fTreept->Fill();
+	//if(ftrackBit == 768 ) fTreept->Fill();
 			
 	double trksq = trk * trk;
-      double meanpt = sum_trackpt / trk;
+    double meanpt = sum_trackpt / trk;
 	double meanptsq = meanpt * meanpt ;
 	
 	double npair = trk*(trk-1);  
@@ -472,8 +468,8 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 	//cout << sum_trackpt << "\t"<< trk << "\t"<< meanpt << "\t"<< npair << "\t" ;
 	//cout << "npair\n";
     
-      //----filling histograms-----
-      htrk		->Fill(trk);
+    //----filling histograms-----
+    htrk		->Fill(trk);
 	hScale	->Fill(sample, trk);
 	hTracks	->Fill(sample, trk, trk);
 	hTrackssq	->Fill(sample, trk, trksq);
@@ -495,15 +491,17 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 	//=============extra plots====
 	fMulttrkV0 ->Fill(fV0_total, trk);
 
-	fMulttrk_pair ->Fill(trk, npair);
+	//fMulttrk_pair ->Fill(trk, npair);
 		
 	fMulttrkV0_meanpt ->Fill(fV0_total, meanpt);	
 	fMulttrk_meanpt ->Fill(trk, meanpt);		
 	//==============    
 	nevt++;
 	fEventCount ->Fill("Events Analyzed",1);    
-      PostData(1, fOutputList);
-	PostData(2, fTreept);                           
+    
+	
+	PostData(1, fOutputList);
+	//PostData(2, fTreept);                           
                                                     
 }
 //---------------------------------------------------------------------------------------
@@ -517,10 +515,9 @@ if( aodtrack->Charge() == 0 ) return kFALSE;
 if(!aodtrack->TestFilterBit(ftrackBit)) return kFALSE;  // for hybrid tracks
 if(aodtrack->Eta() < -0.8 || aodtrack->Eta() > 0.8) return kFALSE;
 
-//cout << ftrackBit << endl;
-//if(aodtrack->GetTPCCrossedRows() < 70) return kFALSE;
-//if(aodtrack->Chi2perNDF() > 4.0) return kFALSE;
-    
+//cout << ftrackBit << "\t"<< TPCrows << endl;
+if(aodtrack->GetTPCCrossedRows() < TPCrows) return kFALSE;
+
 return kTRUE;
 }
 //--------------------------------------------------------------------------------
