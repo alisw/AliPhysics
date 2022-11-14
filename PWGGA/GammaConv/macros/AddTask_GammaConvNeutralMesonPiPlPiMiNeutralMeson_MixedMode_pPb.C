@@ -254,6 +254,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe30220000","32c51070a","0103603p00000000","0453503000000000"); // 0-100% without NL just EMC, INT1
   } else if (trainConfig == 1009){ // First guesstimate 5 TeV to be used with PCMEMC unsmearing
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe30220000","32c51070a","0103603p00000000","0453503000000000"); // 0-100% without NL just EMC, INT1
+  } else if (trainConfig == 1010){ // New standard 5 TeV omega
+    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe30220000","32c51070a","0400003p00000000","0400503000000000"); // PCM-EMC, INT1
 
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  INT7 run1
