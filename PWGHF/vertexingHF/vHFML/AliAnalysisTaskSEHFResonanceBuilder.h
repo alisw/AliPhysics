@@ -11,6 +11,9 @@
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////
 
+#include <array>
+#include <vector>
+
 #include <TNtuple.h>
 
 #include "AliLog.h"
@@ -156,10 +159,6 @@ private:
 
     TList *fOutput = nullptr;                                                             //!<! list send on output slot 0
     TH1F *fHistNEvents = nullptr;                                                         //!<! hist. for No. of events
-    std::vector<TH2F*> fHistMCGenAccPrompt{};                                             //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
-    std::vector<TH2F*> fHistMCGenAccNonPrompt{};                                          //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
-    std::vector<TH2F*> fHistMCGenAccAllDecaysPrompt{};                                    //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
-    std::vector<TH2F*> fHistMCGenAccAllDecaysNonPrompt{};                                 //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
     std::array<TH2F*, kNumBachIDs> fHistNsigmaTPCSelBach{};                               //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
     std::array<TH2F*, kNumBachIDs> fHistNsigmaTOFSelBach{};                               //!<! array of histograms with NsigmaTOF vs. p for selected bachelor tracks
     std::array<TH2F*, kNumV0IDs> fHistMassSelV0{};                                        //!<! array of histograms with invariant-mass vs. pT for selected V0s
@@ -213,7 +212,7 @@ private:
     std::vector<float> fInvMassResoLaMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of lambda combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 11); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 12); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 

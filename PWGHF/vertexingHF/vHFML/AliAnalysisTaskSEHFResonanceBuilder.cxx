@@ -8,6 +8,8 @@
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////
 
+#include <algorithm>
+
 #include "yaml-cpp/yaml.h"
 
 #include <TRandom3.h>
@@ -258,14 +260,14 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
                     pdgResoAllDecays.insert(array.begin(), array.end());
                 }
                 for (auto &pdg: pdgResoAllDecays) {
-                    fHistMCGenAccAllDecaysPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
-                    fHistMCGenAccAllDecaysNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                    fOutput->Add(new TH2F(Form("hPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                    fOutput->Add(new TH2F(Form("hNonPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
                 }
                 for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
                     if (fEnableV0[iV0]) {
                         for (auto iReso{0u}; iReso<pdgReso[iV0].size(); ++iReso) {
-                            fHistMCGenAccPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 411 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
-                            fHistMCGenAccNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 411 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
+                            fOutput->Add(new TH2F(Form("hPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 411 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
+                            fOutput->Add(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 411 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
                         }
                     }
                 }
@@ -279,36 +281,23 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
                     pdgResoAllDecays.insert(array.begin(), array.end());
                 }
                 for (auto &pdg: pdgResoAllDecays) {
-                    fHistMCGenAccAllDecaysPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
-                    fHistMCGenAccAllDecaysNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                    fOutput->Add(new TH2F(Form("hPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                    fOutput->Add(new TH2F(Form("hNonPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
                 }
                 for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
                     if (fEnableV0[iV0]) {
                         for (auto iReso{0u}; iReso<pdgReso[iV0].size(); ++iReso) {
-                            fHistMCGenAccPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 413 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
-                            fHistMCGenAccNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 413 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
+                            fOutput->Add(new TH2F(Form("hPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 413 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
+                            fOutput->Add(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 413 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
                         }
                     }
                 }
                 break;
             }
         }
-        for (auto iHist{0u}; iHist<fHistMCGenAccPrompt.size(); ++iHist) {
-            fOutput->Add(fHistMCGenAccPrompt[iHist]);
-            fOutput->Add(fHistMCGenAccNonPrompt[iHist]);
-        }
-        for (auto iHist{0u}; iHist<fHistMCGenAccAllDecaysPrompt.size(); ++iHist) {
-            fOutput->Add(fHistMCGenAccAllDecaysPrompt[iHist]);
-            fOutput->Add(fHistMCGenAccAllDecaysNonPrompt[iHist]);
-        }
     }
 
     PostData(1, fOutput);
-
-    fHistMCGenAccPrompt.clear();
-    fHistMCGenAccNonPrompt.clear();
-    fHistMCGenAccAllDecaysPrompt.clear();
-    fHistMCGenAccAllDecaysNonPrompt.clear();
 
     if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0))
         fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:pt_track:charge_track:id_track:signal_track:nsigma_tpc_track:nsigma_tof_track:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D");
@@ -966,8 +955,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
     {
         //variables for ML application
         int isMLsel = 0;
-        modelPred = {};
-        modelPredSecond = {};
+        modelPred.clear();
+        modelPredSecond.clear();
         double ptCand = dMeson->Pt();
 
         if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi)
@@ -1045,10 +1034,10 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
         }
       
         if(modelPred.size() > modelPredSecond.size())
-            for(int iScore=0; iScore<modelPred.size(); iScore++)
+            for(auto iScore{0u}; iScore<modelPred.size(); ++iScore)
                 modelPredSecond.push_back(-9999.);
         else if(modelPred.size() < modelPredSecond.size())
-            for(int iScore=0; iScore<modelPredSecond.size(); iScore++)
+            for(auto iScore{0u}; iScore<modelPredSecond.size(); ++iScore)
                 modelPred.push_back(-9999.);
 
         return isMLsel;
@@ -1314,17 +1303,33 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, A
 
 //________________________________________________________________________
 int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, AliAODMCParticle *partLight, TClonesArray* arrayMC) {
+
     std::vector<int> modthersD{};
     std::vector<int> modthersLight{};
-    int motherD = 0;
+    int motherD = partD->GetMother();
+
     while(motherD >= 0) {
-        motherD = partD->GetMother();
-        modthersD.push_back(motherD);
+        AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherD));
+        if (!partMother) {
+            motherD = -1;
+            break;
+        }
+        motherD = partMother->GetMother();
+        int pdgMother = partMother->GetPdgCode();
+        if ((std::abs(pdgMother)/100 == 4) || (std::abs(pdgMother)/1000 == 4) || ((std::abs(pdgMother)-10000)/100 == 4) || ((std::abs(pdgMother)-20000)/100 == 4)) // we are interested in charm resonances
+            modthersD.push_back(motherD);
     }
-    int motherLight = 0;
+    int motherLight = partLight->GetMother();
     while(motherLight >= 0) {
-        motherLight = partD->GetMother();
-        modthersLight.push_back(motherLight);
+        AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherLight));
+        if (!partMother) {
+            motherLight = -1;
+            break;
+        }
+        motherLight = partMother->GetMother();
+        int pdgMother = partMother->GetPdgCode();
+        if ((std::abs(pdgMother)/100 == 4) || (std::abs(pdgMother)/1000 == 4) || ((std::abs(pdgMother)-10000)/100 == 4) || ((std::abs(pdgMother)-20000)/100 == 4)) // we are interested in charm resonances
+            modthersLight.push_back(motherLight);
     }
     std::sort(modthersD.begin(), modthersD.end());
     std::sort(modthersLight.begin(), modthersLight.end());
@@ -1335,19 +1340,17 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
     for (auto &mother: commonMothers) {
         AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mother));
         int pdgMother = partMother->GetPdgCode();
-        if ((std::abs(pdgMother)/100 == 4) || (std::abs(pdgMother)/1000 == 4) || ((std::abs(pdgMother)-10000)/100 == 4) || ((std::abs(pdgMother)-20000)/100 == 4)) { // we are interested in charm resonances
-            // let's check also momentum conservation
-            double momMother[3] = {partMother->Px(), partMother->Py(), partMother->Pz()};
-            bool isMomConserved = true;
-            for (int iEl{0}; iEl<3; ++iEl) {
-                if (std::abs(momMother[iEl]-momSumDaughters[iEl]) / (std::abs(momMother[iEl]) + 1.e-13) > 0.00001) {
-                    isMomConserved = false;
-                    break;
-                }
+        // let's check also momentum conservation
+        double momMother[3] = {partMother->Px(), partMother->Py(), partMother->Pz()};
+        bool isMomConserved = true;
+        for (int iEl{0}; iEl<3; ++iEl) {
+            if (std::abs(momMother[iEl]-momSumDaughters[iEl]) / (std::abs(momMother[iEl]) + 1.e-13) > 0.00001) {
+                isMomConserved = false;
+                break;
             }
-            if (isMomConserved) {
-                return pdgMother;
-            }
+        }
+        if (isMomConserved) {
+            return pdgMother;
         }
     }
 
