@@ -1053,10 +1053,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       p.SetIsRemovedByNewPC(!p.UseParticle());
       if (!p.UseParticle()) p.SetUse(true);
     }
-    for (auto &p : protons) {
-      p.SetIsRemovedByNewPC(!p.UseParticle());
-      if (!p.UseParticle()) p.SetUse(true);
-    }
     for (auto &p : antiprotons) {
       p.SetIsRemovedByNewPC(!p.UseParticle());
       if (!p.UseParticle()) p.SetUse(true);
