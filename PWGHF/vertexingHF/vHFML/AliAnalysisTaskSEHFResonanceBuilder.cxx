@@ -1337,8 +1337,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
     double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
     std::vector<int> commonMothers{};
     std::set_intersection(modthersD.begin(), modthersD.end(), modthersLight.begin(), modthersLight.end(), std::back_inserter(commonMothers));
-    for (auto &mother: commonMothers) {
-        AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mother));
+    for (auto iMother{commonMothers.size()-1}; iMother>=0; ++iMother) {
+        AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(commonMothers[iMother]));
         int pdgMother = partMother->GetPdgCode();
         // let's check also momentum conservation
         double momMother[3] = {partMother->Px(), partMother->Py(), partMother->Pz()};
