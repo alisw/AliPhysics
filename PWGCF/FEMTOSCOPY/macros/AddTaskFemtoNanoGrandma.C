@@ -9,24 +9,26 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
-									 bool isMC = false,				                        //2
-									 int fFilterBit = 128,			                      //3
-									 TString triggerData = "kInt7",	                  //4
-                   bool DodPhidEtaPlots = false,                    //5
-                   bool Systematic = false,		                      //6
-									 const char *sTcut = "8",		                      //7
-									 bool DoSpherocity = false,		                    //8
-									 const char *s0cut = "08",		                    //9
-                   bool DoAncestors = false,                        //10
-                   const char *cutVariation = "0") {                //11
+AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,      // 1
+                                           bool isMC = false,             // 2
+                                           int fFilterBit = 128,          // 3
+                                           TString triggerData = "kInt7", // 4
+                                           bool DodPhidEtaPlots = false,  // 5
+                                           bool Systematic = false,       // 6
+                                           const char *sTcut = "8",       // 7
+                                           bool DoSpherocity = false,     // 8
+                                           const char *s0cut = "08",      // 9
+                                           bool DoAncestors = false,      // 10
+                                           const char *cutVariation = "0")
+{ // 11
 
   TString suffix = TString::Format("%s", cutVariation);
   TString sTsuffix = TString::Format("%s", sTcut);
   TString s0suffix = TString::Format("%s", s0cut);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
+  if (!mgr)
+  {
     Error("AddTaskFemtoNanoGrandma()", "No analysis manager found.");
     return 0x0;
   }
@@ -38,56 +40,82 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   //========= Init subtasks and start analysis ============================
   // Event Cuts
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
-//  void CleanUpMult(bool SPD, bool v0A, bool v0C, bool RefMult) {
+  //  void CleanUpMult(bool SPD, bool v0A, bool v0C, bool RefMult) {
   evtCuts->CleanUpMult(false, false, false, true);
-  if(DoSpherocity==true){
-	  evtCuts->SetDoSpherocityCuts(true);
-	  sTsuffix="8";
+  if (DoSpherocity == true)
+  {
+    evtCuts->SetDoSpherocityCuts(true);
+    sTsuffix = "8";
   }
 
-	  if(sTsuffix=="1"){
-		    evtCuts->SetSphericityCuts(0.,0.3);
-	  }else if(sTsuffix=="2"){
-		    evtCuts->SetSphericityCuts(0.3,0.7);
-	  }else if(sTsuffix=="3"){
-		    evtCuts->SetSphericityCuts(0.7,1.0);
-	  }else if(sTsuffix=="4"){
-		    evtCuts->SetSphericityCuts(0.,1.0);
-	  }else if(sTsuffix=="5"){
-		    evtCuts->SetSphericityCuts(0.8,1.0);
-	  }else if(sTsuffix=="6"){
-		    evtCuts->SetSphericityCuts(0.9,1.0);
-	  }else if(sTsuffix=="8"){
-		  std::cout<<"No SpherIcity cuts applied"<<std::endl;
-	  }
-	  if(Systematic==false)suffix=sTsuffix;
+  if (sTsuffix == "1")
+  {
+    evtCuts->SetSphericityCuts(0., 0.3);
+  }
+  else if (sTsuffix == "2")
+  {
+    evtCuts->SetSphericityCuts(0.3, 0.7);
+  }
+  else if (sTsuffix == "3")
+  {
+    evtCuts->SetSphericityCuts(0.7, 1.0);
+  }
+  else if (sTsuffix == "4")
+  {
+    evtCuts->SetSphericityCuts(0., 1.0);
+  }
+  else if (sTsuffix == "5")
+  {
+    evtCuts->SetSphericityCuts(0.8, 1.0);
+  }
+  else if (sTsuffix == "6")
+  {
+    evtCuts->SetSphericityCuts(0.9, 1.0);
+  }
+  else if (sTsuffix == "8")
+  {
+    std::cout << "No SpherIcity cuts applied" << std::endl;
+  }
+  if (Systematic == false)
+    suffix = sTsuffix;
 
-
-	  if(DoSpherocity==true)
-	  {
-	  if(s0suffix=="01"){
-		    evtCuts->SetSpherocityCuts(0.,0.3);
-	  }else if(s0suffix=="02"){
-		    evtCuts->SetSpherocityCuts(0.3,0.7);
-	  }else if(s0suffix=="03"){
-		    evtCuts->SetSpherocityCuts(0.7,1.0);
-	  }else if(s0suffix=="04"){
-		    evtCuts->SetSpherocityCuts(0.,1.0);
-	  }else if(s0suffix=="05"){
-		    evtCuts->SetSpherocityCuts(0.8,1.0);
-	  }else if(s0suffix=="06"){
-		    evtCuts->SetSpherocityCuts(0.9,1.0);
-	  }else if(s0suffix=="08"){
-		  std::cout<<"No SpherOcity cuts applied"<<std::endl;
-	  }
-	  if(Systematic==false)suffix=s0suffix;
-	  }
-
-
+  if (DoSpherocity == true)
+  {
+    if (s0suffix == "01")
+    {
+      evtCuts->SetSpherocityCuts(0., 0.3);
+    }
+    else if (s0suffix == "02")
+    {
+      evtCuts->SetSpherocityCuts(0.3, 0.7);
+    }
+    else if (s0suffix == "03")
+    {
+      evtCuts->SetSpherocityCuts(0.7, 1.0);
+    }
+    else if (s0suffix == "04")
+    {
+      evtCuts->SetSpherocityCuts(0., 1.0);
+    }
+    else if (s0suffix == "05")
+    {
+      evtCuts->SetSpherocityCuts(0.8, 1.0);
+    }
+    else if (s0suffix == "06")
+    {
+      evtCuts->SetSpherocityCuts(0.9, 1.0);
+    }
+    else if (s0suffix == "08")
+    {
+      std::cout << "No SpherOcity cuts applied" << std::endl;
+    }
+    if (Systematic == false)
+      suffix = s0suffix;
+  }
 
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-		  isMC, true, false, true);//DCAplots,CombSigma,ContribSplitting
+      isMC, true, false, true); // DCAplots,CombSigma,ContribSplitting
   TrackCuts->SetFilterBit(fFilterBit);
   TrackCuts->SetCutCharge(1);
 
@@ -96,15 +124,15 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   AntiTrackCuts->SetFilterBit(fFilterBit);
   AntiTrackCuts->SetCutCharge(-1);
 
-  //Lambda Cuts
+  // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
-  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
+  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false); // PileUpRej, false
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
-  v0Cuts->SetPDGCodePosDaug(2212);  //Proton
-  v0Cuts->SetPDGCodeNegDaug(211);  //Pion
-  v0Cuts->SetPDGCodev0(3122);  //Lambda
+  v0Cuts->SetPDGCodePosDaug(2212); // Proton
+  v0Cuts->SetPDGCodeNegDaug(211);  // Pion
+  v0Cuts->SetPDGCodev0(3122);      // Lambda
 
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
@@ -115,23 +143,23 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
-  Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
-  Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
-  Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
+  Antiv0Cuts->SetPDGCodePosDaug(211);  // Pion
+  Antiv0Cuts->SetPDGCodeNegDaug(2212); // Proton
+  Antiv0Cuts->SetPDGCodev0(-3122);     // Lambda
 
-    //Cascade Cuts
-  AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
+  // Cascade Cuts
+  AliFemtoDreamCascadeCuts *CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
       isMC, false);
   CascadeCuts->SetXiCharge(-1);
-    AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
+  AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
       isMC, true, false);
-  XiNegCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+  XiNegCuts->SetCheckTPCRefit(false); // for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
       isMC, true, false);
-  XiPosCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+  XiPosCuts->SetCheckTPCRefit(false); // for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
       isMC, true, false);
-  XiBachCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+  XiBachCuts->SetCheckTPCRefit(false); // for nanos this is already done while prefiltering
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
@@ -142,21 +170,21 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   CascadeCuts->SetPDGCodeNegDaug(-211);
   CascadeCuts->SetPDGCodeBach(-211);
 
-    AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
+  AliFemtoDreamCascadeCuts *AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
       isMC, false);
   AntiCascadeCuts->SetXiCharge(1);
   AliFemtoDreamTrackCuts *AntiXiNegCuts =
       AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
   AntiXiNegCuts->SetCutCharge(-1);
-  AntiXiNegCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+  AntiXiNegCuts->SetCheckTPCRefit(false); // for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
       isMC, true, false);
   AntiXiPosCuts->SetCutCharge(1);
-  AntiXiPosCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+  AntiXiPosCuts->SetCheckTPCRefit(false); // for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *AntiXiBachCuts =
       AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
   AntiXiBachCuts->SetCutCharge(1);
-  AntiXiBachCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+  AntiXiBachCuts->SetCheckTPCRefit(false); // for nanos this is already done while prefiltering
 
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
@@ -167,7 +195,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeCuts->SetPDGCodeBach(211);
 
-  if (!fullBlastQA || Systematic) {
+  if (!fullBlastQA || Systematic)
+  {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
@@ -181,11 +210,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
                                                                 "Femto", false);
   // Femto Collection
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);//p
+  PDGParticles.push_back(2212); // p
   PDGParticles.push_back(2212);
-  PDGParticles.push_back(3122);//Lambda
+  PDGParticles.push_back(3122); // Lambda
   PDGParticles.push_back(3122);
-  PDGParticles.push_back(3312);//Cascade
+  PDGParticles.push_back(3312); // Cascade
   PDGParticles.push_back(3312);
 
   std::vector<int> NBins;
@@ -194,76 +223,80 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   std::vector<int> pairQA;
   std::vector<int> pairQASyst;
   std::vector<bool> closeRejection;
-  //pairs:
-  //pp                0
-  //p bar p           1
-  //p La              2
-  //p bar La          3
-  //p  Xi             4
-  //p  bar Xi         5
-  //bar p bar p       6
-  //bar p La          7
-  //bar p bar La      8
-  //bar p Xi          9
-  //bar p bar Xi      10
-  //La La             11
-  //La bar La         12
-  //La Xi             13
-  //La bar Xi         14
-  //bar La bar La     15
-  //La bar Xi         16
-  //bar La bar Xi     17
-  //Xi Xi             18
-  //Xi bar Xi         19
-  //Xi bar Xi bar     20
+  // pairs:
+  // pp                0
+  // p bar p           1
+  // p La              2
+  // p bar La          3
+  // p  Xi             4
+  // p  bar Xi         5
+  // bar p bar p       6
+  // bar p La          7
+  // bar p bar La      8
+  // bar p Xi          9
+  // bar p bar Xi      10
+  // La La             11
+  // La bar La         12
+  // La Xi             13
+  // La bar Xi         14
+  // bar La bar La     15
+  // La bar Xi         16
+  // bar La bar Xi     17
+  // Xi Xi             18
+  // Xi bar Xi         19
+  // Xi bar Xi bar     20
 
   const int nPairs = 21;
-  for (int i = 0; i < nPairs; ++i) {
+  for (int i = 0; i < nPairs; ++i)
+  {
     pairQA.push_back(0);
     closeRejection.push_back(false);
     NBins.push_back(1500);
     kMin.push_back(0.);
     kMax.push_back(6.);
   }
-  if (Systematic){
-  pairQA[0] = 11;
-  pairQA[1] = 11;
-  pairQA[2] = 12;
-  pairQA[3] = 12;
-  pairQA[6] = 11;
-  pairQA[7] = 12;
-  pairQA[8] = 12;
-  pairQA[11] = 22;
-  pairQA[12] = 22;
-  pairQA[15] = 22;
-  closeRejection[0] = true;  // pp
-  closeRejection[6] = true;  // barp barp
-  } else {
-  pairQA[0] = 11;
-  pairQA[1] = 11;
-  pairQA[2] = 12;
-  pairQA[3] = 12;
-  pairQA[4] = 13;
-  pairQA[5] = 13;
-  pairQA[6] = 11;
-  pairQA[7] = 12;
-  pairQA[8] = 12;
-  pairQA[9] = 13;
-  pairQA[10] = 13;
-  pairQA[11] = 22;
-  pairQA[12] = 22;
-  pairQA[13] = 23;
-  pairQA[14] = 23;
-  pairQA[15] = 22;
-  pairQA[16] = 23;
-  pairQA[17] = 23;
-  pairQA[18] = 33;
-  pairQA[19] = 33;
-  pairQA[20] = 33;
-  closeRejection[0] = true;  // pp
-  closeRejection[6] = true;  // barp barp
-  closeRejection[18] = true;  // Xi Xi
-  closeRejection[20] = true;  // barXi barXi
+  if (Systematic)
+  {
+    pairQA[0] = 11;
+    pairQA[1] = 11;
+    pairQA[2] = 12;
+    pairQA[3] = 12;
+    pairQA[6] = 11;
+    pairQA[7] = 12;
+    pairQA[8] = 12;
+    pairQA[11] = 22;
+    pairQA[12] = 22;
+    pairQA[15] = 22;
+    closeRejection[0] = true; // pp
+    closeRejection[6] = true; // barp barp
+  }
+  else
+  {
+    pairQA[0] = 11;
+    pairQA[1] = 11;
+    pairQA[2] = 12;
+    pairQA[3] = 12;
+    pairQA[4] = 13;
+    pairQA[5] = 13;
+    pairQA[6] = 11;
+    pairQA[7] = 12;
+    pairQA[8] = 12;
+    pairQA[9] = 13;
+    pairQA[10] = 13;
+    pairQA[11] = 22;
+    pairQA[12] = 22;
+    pairQA[13] = 23;
+    pairQA[14] = 23;
+    pairQA[15] = 22;
+    pairQA[16] = 23;
+    pairQA[17] = 23;
+    pairQA[18] = 33;
+    pairQA[19] = 33;
+    pairQA[20] = 33;
+    closeRejection[0] = true;  // pp
+    closeRejection[6] = true;  // barp barp
+    closeRejection[18] = true; // Xi Xi
+    closeRejection[20] = true; // barXi barXi
   }
 
   config->SetPDGCodes(PDGParticles);
@@ -329,36 +362,43 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   config->SetdPhidEtaPlots(DodPhidEtaPlots);
   config->SetPhiEtaBinnign(false);
 
-  if (fullBlastQA) {
-  config->SetkTBinning(true);
-  config->SetPtQA(true);
-  config->SetMultBinning(true);
-  config->SetmTBinning(true);
+  if (fullBlastQA)
+  {
+    config->SetkTBinning(true);
+    config->SetPtQA(true);
+    config->SetMultBinning(true);
+    config->SetmTBinning(true);
   }
 
-  if (!fullBlastQA || Systematic) {
+  if (!fullBlastQA || Systematic)
+  {
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
     config->SetMultBinning(true);
     config->SetmTBinning(true);
   }
 
-
-  if (isMC) {
-    config->SetMomentumResolution(true);//kstar true vs. kstar reco
-  } else {
+  if (isMC)
+  {
+    config->SetMomentumResolution(true); // kstar true vs. kstar reco
+  }
+  else
+  {
     std::cout
         << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
   }
 
-  //Common/Non Common Ancestors
-  if (isMC && DoAncestors){
-  config->SetAncestors(true);
-  config->GetDoAncestorsPlots();
+  // Common/Non Common Ancestors
+  if (isMC && DoAncestors)
+  {
+    config->SetAncestors(true);
+    config->GetDoAncestorsPlots();
   }
 
-  if (Systematic) {
-    if (suffix == "1") {
+  if (Systematic)
+  {
+    if (suffix == "1")
+    {
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
@@ -375,8 +415,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "2") {
+    }
+    else if (suffix == "2")
+    {
       TrackCuts->SetPtRange(0.6, 4.05);
       AntiTrackCuts->SetPtRange(0.6, 4.05);
 
@@ -390,8 +431,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
       PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
       NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-    } else if (suffix == "3") {
+    }
+    else if (suffix == "3")
+    {
       v0Cuts->SetCutCPA(0.995);
       Antiv0Cuts->SetCutCPA(0.995);
 
@@ -402,8 +444,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    } else if (suffix == "4") {
+    }
+    else if (suffix == "4")
+    {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -417,8 +460,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "5") {
+    }
+    else if (suffix == "5")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -441,8 +485,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    } else if (suffix == "6") {
+    }
+    else if (suffix == "6")
+    {
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
@@ -461,8 +506,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.83, 0.83);
       PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
       NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-    } else if (suffix == "7") {
+    }
+    else if (suffix == "7")
+    {
       TrackCuts->SetEtaRange(-0.85, 0.85);
       AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
@@ -485,8 +531,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "8") {
+    }
+    else if (suffix == "8")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -503,8 +550,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.83, 0.83);
       PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
       NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-    } else if (suffix == "9") {
+    }
+    else if (suffix == "9")
+    {
       Posv0Daug->SetNClsTPC(80);
       Negv0Daug->SetNClsTPC(80);
       PosAntiv0Daug->SetNClsTPC(80);
@@ -517,8 +565,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    } else if (suffix == "10") {
+    }
+    else if (suffix == "10")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -537,8 +586,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "11") {
+    }
+    else if (suffix == "11")
+    {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -557,8 +607,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    } else if (suffix == "12") {
+    }
+    else if (suffix == "12")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -580,8 +631,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.77, 0.77);
       PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
       NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-    } else if (suffix == "13") {
+    }
+    else if (suffix == "13")
+    {
       TrackCuts->SetEtaRange(-0.85, 0.85);
       AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
@@ -601,8 +653,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "14") {
+    }
+    else if (suffix == "14")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -621,8 +674,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.83, 0.83);
       PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
       NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-    } else if (suffix == "15") {
+    }
+    else if (suffix == "15")
+    {
       TrackCuts->SetPtRange(0.6, 4.05);
       AntiTrackCuts->SetPtRange(0.6, 4.05);
 
@@ -648,8 +702,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "16") {
+    }
+    else if (suffix == "16")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -674,8 +729,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "17") {
+    }
+    else if (suffix == "17")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -698,8 +754,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "18") {
+    }
+    else if (suffix == "18")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -721,8 +778,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.77, 0.77);
       PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
       NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-    } else if (suffix == "19") {
+    }
+    else if (suffix == "19")
+    {
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
@@ -742,8 +800,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    } else if (suffix == "20") {
+    }
+    else if (suffix == "20")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -762,8 +821,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.83, 0.83);
       PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
       NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-    } else if (suffix == "21") {
+    }
+    else if (suffix == "21")
+    {
 
       TrackCuts->SetEtaRange(-0.85, 0.85);
       AntiTrackCuts->SetEtaRange(-0.85, 0.85);
@@ -786,8 +846,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.77, 0.77);
       PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
       NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-    } else if (suffix == "22") {
+    }
+    else if (suffix == "22")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -807,8 +868,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
       PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
       NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-    } else if (suffix == "23") {
+    }
+    else if (suffix == "23")
+    {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -827,8 +889,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    } else if (suffix == "24") {
+    }
+    else if (suffix == "24")
+    {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -854,9 +917,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
       NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
 
-      //XI
-
-    } else if (suffix == "25") {
+      // XI
+    }
+    else if (suffix == "25")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -878,8 +942,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "26") {
+    }
+    else if (suffix == "26")
+    {
       TrackCuts->SetPtRange(0.6, 4.05);
       AntiTrackCuts->SetPtRange(0.6, 4.05);
 
@@ -893,8 +958,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.77, 0.77);
       PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
       NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-    } else if (suffix == "27") {
+    }
+    else if (suffix == "27")
+    {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -916,8 +982,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    } else if (suffix == "28") {
+    }
+    else if (suffix == "28")
+    {
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
@@ -926,8 +993,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
-    } else if (suffix == "29") {
+    }
+    else if (suffix == "29")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -947,7 +1015,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    } else if (suffix == "30") {
+    }
+    else if (suffix == "30")
+    {
       TrackCuts->SetEtaRange(-0.85, 0.85);
       AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
@@ -974,7 +1044,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    } else if (suffix == "31") {
+    }
+    else if (suffix == "31")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -997,7 +1069,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    } else if (suffix == "32") {
+    }
+    else if (suffix == "32")
+    {
 
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
@@ -1018,7 +1092,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    } else if (suffix == "33") {
+    }
+    else if (suffix == "33")
+    {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -1037,7 +1113,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.77, 0.77);
       PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
       NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    } else if (suffix == "34") {
+    }
+    else if (suffix == "34")
+    {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -1056,8 +1134,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.77, 0.77);
       PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
       NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-    } else if (suffix == "35") {
+    }
+    else if (suffix == "35")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -1080,7 +1159,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    } else if (suffix == "36") {
+    }
+    else if (suffix == "36")
+    {
       TrackCuts->SetPtRange(0.6, 4.05);
       AntiTrackCuts->SetPtRange(0.6, 4.05);
 
@@ -1110,7 +1191,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    } else if (suffix == "37") {
+    }
+    else if (suffix == "37")
+    {
       TrackCuts->SetEtaRange(-0.85, 0.85);
       AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
@@ -1133,8 +1216,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    } else if (suffix == "38") {
+    }
+    else if (suffix == "38")
+    {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -1156,7 +1240,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.77, 0.77);
       PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
       NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    } else if (suffix == "39") {
+    }
+    else if (suffix == "39")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -1186,7 +1272,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    } else if (suffix == "40") {
+    }
+    else if (suffix == "40")
+    {
       TrackCuts->SetPtRange(0.6, 4.05);
       AntiTrackCuts->SetPtRange(0.6, 4.05);
 
@@ -1200,7 +1288,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    } else if (suffix == "41") {
+    }
+    else if (suffix == "41")
+    {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
 
@@ -1223,7 +1313,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    } else if (suffix == "42") {
+    }
+    else if (suffix == "42")
+    {
       TrackCuts->SetPtRange(0.6, 4.05);
       AntiTrackCuts->SetPtRange(0.6, 4.05);
 
@@ -1245,7 +1337,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
       v0Cuts->SetCutDCADaugTov0Vtx(1.2);
       Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    } else if (suffix == "43") {
+    }
+    else if (suffix == "43")
+    {
       TrackCuts->SetPtRange(0.6, 4.05);
       AntiTrackCuts->SetPtRange(0.6, 4.05);
 
@@ -1262,7 +1356,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Negv0Daug->SetEtaRange(-0.83, 0.83);
       PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
       NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-    } else if (suffix == "44") {
+    }
+    else if (suffix == "44")
+    {
       TrackCuts->SetEtaRange(-0.85, 0.85);
       AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
@@ -1295,15 +1391,19 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     }
   }
 
-  AliAnalysisTaskNanoBBar* task = new AliAnalysisTaskNanoBBar("femtoGrandmaBBar",isMC);
+  AliAnalysisTaskNanoBBar *task = new AliAnalysisTaskNanoBBar("femtoGrandmaBBar", isMC);
 
-  if (!fullBlastQA) {
+  if (!fullBlastQA)
+  {
     task->SetRunTaskLightWeight(true);
   }
-  if(triggerData=="kINT7"){
-	  task->SelectCollisionCandidates(AliVEvent::kINT7);
-  }else if(triggerData=="kHM"){
-	  task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+  if (triggerData == "kINT7")
+  {
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+  }
+  else if (triggerData == "kHM")
+  {
+    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   }
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
@@ -1317,9 +1417,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   mgr->AddTask(task);
 
   TString addon = "";
-  if (triggerData == "kINT7") {
+  if (triggerData == "kINT7")
+  {
     addon += "MBBBar";
-  } else if (triggerData == "kHM") {
+  }
+  else if (triggerData == "kHM")
+  {
     addon += "HMBBar";
   }
 
@@ -1329,7 +1432,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
   TString QAName = Form("%sQA%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputQA = mgr->CreateContainer(
-		  QAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      QAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
@@ -1444,10 +1547,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Form("%s:%s", file.Data(), DumpsterName.Data()));
   mgr->ConnectOutput(task, 13, coutputDumpster);
 
-
-   if (isMC) {
+  if (isMC)
+  {
     AliAnalysisDataContainer *coutputTrkCutsMC;
-    TString TrkCutsMCName = Form("%sTrkCutsMC%s",addon.Data(),suffix.Data());
+    TString TrkCutsMCName = Form("%sTrkCutsMC%s", addon.Data(), suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         TrkCutsMCName.Data(),
@@ -1457,7 +1560,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     mgr->ConnectOutput(task, 14, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
-    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s",addon.Data(),suffix.Data());
+    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s", addon.Data(), suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         AntiTrkCutsMCName.Data(),
@@ -1467,7 +1570,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
-    TString v0CutsMCName = Form("%sv0CutsMC%s",addon.Data(),suffix.Data());
+    TString v0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
     coutputv0CutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         v0CutsMCName.Data(),
@@ -1477,7 +1580,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     mgr->ConnectOutput(task, 16, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
-    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s",addon.Data(),suffix.Data());
+    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
     coutputAntiv0CutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         Antiv0CutsMCName.Data(),
@@ -1487,7 +1590,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     mgr->ConnectOutput(task, 17, coutputAntiv0CutsMC);
 
     AliAnalysisDataContainer *coutputXiCutsMC;
-    TString XiCutsMCName = Form("%sXiCutsMC%s",addon.Data(),suffix.Data());
+    TString XiCutsMCName = Form("%sXiCutsMC%s", addon.Data(), suffix.Data());
     coutputXiCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         XiCutsMCName.Data(),
@@ -1497,7 +1600,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     mgr->ConnectOutput(task, 18, coutputXiCutsMC);
 
     AliAnalysisDataContainer *coutputAntiXiCutsMC;
-    TString AntiXiCutsMCName = Form("%sAntiXiCutsMC%s",addon.Data(),suffix.Data());
+    TString AntiXiCutsMCName = Form("%sAntiXiCutsMC%s", addon.Data(), suffix.Data());
     coutputAntiXiCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         AntiXiCutsMCName.Data(),
@@ -1505,8 +1608,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
     mgr->ConnectOutput(task, 19, coutputAntiXiCutsMC);
-
-   }
+  }
 
   return task;
 }
