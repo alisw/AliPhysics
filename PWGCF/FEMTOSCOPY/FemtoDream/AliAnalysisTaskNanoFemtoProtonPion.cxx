@@ -34,6 +34,7 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion()
     fRemoveMCResonances(true),
     fRemoveMCResonanceDaughters(true),
     fDoInvMassPlot(false), 
+    fDoResonanceLorentzFactor(true),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -76,7 +77,8 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion()
     fSameEventPhiTheta(nullptr),
     fSameEventPhiTheta_Ancestors(nullptr),
     fMixedEventDeltaEtaDeltaPhi_List(nullptr),
-    fMixedEventPhiTheta(nullptr){
+    fMixedEventPhiTheta(nullptr),
+    fResonanceLorentzFactor(nullptr){
 }
 
 AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
@@ -98,6 +100,7 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
     fRemoveMCResonances(true),
     fRemoveMCResonanceDaughters(true),
     fDoInvMassPlot(false), 
+    fDoResonanceLorentzFactor(true),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -140,7 +143,8 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
     fSameEventPhiTheta(nullptr),
     fSameEventPhiTheta_Ancestors(nullptr),
     fMixedEventDeltaEtaDeltaPhi_List(nullptr),
-    fMixedEventPhiTheta(nullptr){
+    fMixedEventPhiTheta(nullptr),
+    fResonanceLorentzFactor(nullptr){
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
@@ -472,6 +476,19 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
  
   } //if(fDoOwnFemto)
 
+   if(fDoResonanceLorentzFactor){
+    fResonanceLorentzFactor = new TH2F("fResonanceLorentzFactor","fResonanceLorentzFactor", 1990, 1.,200., 45,0.,45.);
+    int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
+    int ProtonPion[12] = {2224, 32224, 2222, 12224, 12222, 2226, 22222, 22224, 2228, 12226, 9902228, 99022212};
+    for(int i=0; i<33; i++){
+      fResonanceLorentzFactor->GetYaxis()->SetBinLabel(1+i,Form("%d",ProtonAntiPion[i]));
+    }
+    for(int i=0; i<12; i++){
+      fResonanceLorentzFactor->GetYaxis()->SetBinLabel(34+i,Form("%d",ProtonPion[i]));
+    }
+    fResults->Add(fResonanceLorentzFactor); 
+  } 
+
   //////////////////////////////////////////////////////////////////////
 
   PostData(1, fEvtList);
@@ -638,6 +655,11 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
           fTrackCutsPion->FillGenerated(mcPart->Pt());
         } else if (mcPart->GetPdgCode() == fTrackCutsAntiPion->GetPDGCode()) {
           fTrackCutsAntiPion->FillGenerated(mcPart->Pt());
+        }
+      }
+      if(fDoResonanceLorentzFactor){
+        if(IsResonance(mcPart->GetPdgCode())){
+          fResonanceLorentzFactor->Fill(mcPart->E()/mcPart->M(), Form("%d",abs(mcPart->GetPdgCode())), 1.);
         }
       }
     }
@@ -1202,6 +1224,7 @@ bool AliAnalysisTaskNanoFemtoProtonPion::IsResonance(int PDG) {
     return false;
   }
 }
+
 //==================================================================================================================================================
 
 void AliAnalysisTaskNanoFemtoProtonPion::InitializeArrays()
