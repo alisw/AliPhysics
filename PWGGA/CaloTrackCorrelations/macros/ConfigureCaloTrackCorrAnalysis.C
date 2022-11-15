@@ -2326,10 +2326,10 @@ void ConfigureCaloTrackCorrAnalysis
   Float_t shshMin = 0.1;
   Float_t shshBkgMin = 0.4;
   Float_t shshBkgMax = 2.0;
-  if("ShMinCorrBkg04") shshBkgMin = 0.4;
-  if("ShMinCorrBkg10") shshBkgMin = 1.0;
-  if("ShMinCorrBkg06") shshBkgMin = 0.6;
-  if("ShMaxCorrBkg10") shshBkgMax = 1.0;
+  if(analysisString.Contains("ShMinCorrBkg04")) shshBkgMin = 0.4;
+  if(analysisString.Contains("ShMinCorrBkg10")) shshBkgMin = 1.0;
+  if(analysisString.Contains("ShMinCorrBkg06")) shshBkgMin = 0.6;
+  if(analysisString.Contains("ShMaxCorrBkg10")) shshBkgMax = 1.0;
 
   printf("ConfigureCaloTrackCorrAnalysis() << Settings: Base string <%s>, Analysis string <%s>, "
          "\n calorimeter <%s>, simulation <%d>, year <%d>, col <%s>, "
@@ -2337,7 +2337,7 @@ void ConfigureCaloTrackCorrAnalysis
          "\n leading <%d>, tm <%d>, mixOn <%d>, printSettings <%d>, debug <%d>\n",
          anaList->GetName(), analysisString.Data(),
          calorimeter.Data(), simulation, year, col.Data(),
-         shshMax,shshMin,shshBkgMax,shshBkgMin,
+         shshMax,shshMin,shshBkgMin,shshBkgMax,
          isoCone,isoConeMin,isoPtTh,isoMethod,isoContent,
          leading,tm,mixOn,printSettings,debug);
   
