@@ -446,6 +446,12 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoBckMCGammaHBTOpeningAnglePt;                  //! array of histos with Bck Inv mass of generated MC gammas
     TH2F**                  fHistoMCGammaHBTDeltaEPt;                           //! array of histos with Bck Inv mass of generated MC gammas
     TH2F**                  fHistoBckMCGammaHBTDeltaEPt;                        //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoMotherQCMPt;                                  //! array of histos for HBT analysis in LCMS frame, Data SE
+    TH2F**                  fHistoMotherBackQCMPt;                              //! array of histos for HBT analysis in LCMS frame, Data ME
+    TH2F**                  fHistoMCGammaHBTQCMPt;                              //! array of histos for HBT analysis in LCMS frame, MC gen SE
+    TH2F**                  fHistoTrueGammaQCMPt;                               //! array of histos for HBT analysis in LCMS frame, MC val SE
+    TH2F**                  fHistoBckTrueGammaQCMPt;                            //! array of histos for HBT analysis in LCMS frame, MC val ME
+    TH2F**                  fHistoBckMCGammaHBTQCMPt;                           //! array of histos for HBT analysis in LCMS frame, MC gen ME
 
     TH1F**                 fHistoPtJet;                                          //! Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         //! Histogram of Jet Eta
@@ -616,7 +622,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 72);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 73);
 };
 
 #endif
