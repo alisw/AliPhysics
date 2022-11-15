@@ -2324,14 +2324,21 @@ void ConfigureCaloTrackCorrAnalysis
   // Check the passed variables
   //
   Float_t shshMin = 0.1;
+  Float_t shshBkgMin = 0.4;
+  Float_t shshBkgMax = 2.0;
+  if(analysisString.Contains("ShMinCorrBkg04")) shshBkgMin = 0.4;
+  if(analysisString.Contains("ShMinCorrBkg10")) shshBkgMin = 1.0;
+  if(analysisString.Contains("ShMinCorrBkg06")) shshBkgMin = 0.6;
+  if(analysisString.Contains("ShMaxCorrBkg10")) shshBkgMax = 1.0;
 
   printf("ConfigureCaloTrackCorrAnalysis() << Settings: Base string <%s>, Analysis string <%s>, "
          "\n calorimeter <%s>, simulation <%d>, year <%d>, col <%s>, "
-         "\n photon shsh <%2.2f-%2.2f>, R <%1.2f>, Rmin <%1.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,"
+         "\n photon shsh <%2.2f-%2.2f>,bkg shsh <%2.2f-%2.2f>, R <%1.2f>, Rmin <%1.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,"
          "\n leading <%d>, tm <%d>, mixOn <%d>, printSettings <%d>, debug <%d>\n",
-         anaList->GetName(), analysisString.Data(), 
+         anaList->GetName(), analysisString.Data(),
          calorimeter.Data(), simulation, year, col.Data(),
-         shshMax,shshMin,isoCone,isoConeMin,isoPtTh,isoMethod,isoContent,
+         shshMax,shshMin,shshBkgMin,shshBkgMax,
+         isoCone,isoConeMin,isoPtTh,isoMethod,isoContent,
          leading,tm,mixOn,printSettings,debug);
   
   kAnaCutsString    = analysisString;
@@ -2629,7 +2636,8 @@ void ConfigureCaloTrackCorrAnalysis
           if ( !analysisString.Contains("Pi0Merged") && !analysisString.Contains("NarrowM02") )
           {
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 2.0, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshBkgMin, shshBkgMax,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
           }
         }
@@ -2643,7 +2651,8 @@ void ConfigureCaloTrackCorrAnalysis
           if ( !analysisString.Contains("Pi0Merged") && !analysisString.Contains("NarrowM02") )
           {
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE,  0.4, 2.0, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, shshBkgMin, shshBkgMax,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++);
           }
         }
