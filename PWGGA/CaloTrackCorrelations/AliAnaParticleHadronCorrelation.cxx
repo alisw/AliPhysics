@@ -98,7 +98,8 @@ fhPtTriggerMC(),
 fhPtDecayTrigger(),             fhPtDecayTriggerMC(),
 fhPtTriggerCentrality(0),       fhPtTriggerEventPlane(0),
 fhTriggerEventPlaneCentrality(0),
-fhPtTriggerMixed(0),            fhPtTriggerMixedVzBin(0), fhPtTriggerMixedBin(0),
+fhPtTriggerMixed(0),            fhPtTriggerMixedCentrality(0),
+fhPtTriggerMixedVzBin(0),       fhPtTriggerMixedBin(0),
 fhPhiTriggerMixed(0),           fhEtaTriggerMixed(0),
 fhPtLeadingOppositeHadron(0),   fhPtDiffPhiLeadingOppositeHadron(0), fhPtDiffEtaLeadingOppositeHadron(0),
 fhPtNoLeadingOppositeHadron(0), fhEtaPhiNoLeadingOppositeHadron(0),
@@ -3910,6 +3911,17 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
      nptbins,ptmin,ptmax);
     fhPtTriggerMixed->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     
+    if ( IsHighMultiplicityAnalysisOn() || fSelectCentrality )
+    {
+      fhPtTriggerMixedCentrality   = new TH2F
+      ("hPtTriggerMixedCentrality",
+       "Trigger particle #it{p}_{T} vs centrality",
+       nptbins,ptmin,ptmax, fCenBin[1]-fCenBin[0],fCenBin[0],fCenBin[1]) ;
+      fhPtTriggerMixedCentrality->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+      fhPtTriggerMixedCentrality->SetYTitle("Centrality (%)");
+      outputContainer->Add(fhPtTriggerMixedCentrality) ;
+    }
+    
     if ( fCorrelVzBin )
     {
       fhPtTriggerMixedVzBin  = new TH2F 
@@ -5660,6 +5672,9 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliCaloTrackPart
     
     //printf("\t Read Pool event %d, nTracks %d\n",ev,nTracks);
     
+    if ( IsHighMultiplicityAnalysisOn() || fSelectCentrality )
+      fhPtTriggerMixedCentrality->Fill(ptTrig, GetEventCentrality(), GetEventWeight());
+
     fhPtTriggerMixed   ->Fill(ptTrig,           GetEventWeight());
     fhPhiTriggerMixed  ->Fill(ptTrig,  phiTrig, GetEventWeight());
     fhEtaTriggerMixed  ->Fill(ptTrig,  etaTrig, GetEventWeight());
