@@ -2012,9 +2012,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           Double_t d0xd0 = the2Prong->Prodd0d0();
           if (fSelectD0 == 0 || dzeroSel == 1 || dzeroSel == 3)
             fHistInvMassD0->Fill(m0);
-          // fSelectD0bar has a (yet unknown) bug. Disable for the usage for the moment
-          //if (fSelectD0bar == 0 || dzeroSel == 2 || dzeroSel == 3)
-          if (fSelectD0 == 0 || dzeroSel == 2 || dzeroSel == 3)
+          if (fSelectD0bar == 0 || dzeroSel == 2 || dzeroSel == 3)
             fHistInvMassD0->Fill(m0b);
           fHistPtD0->Fill(ptD);
           fHistYPtD0->Fill(ptD, rapid);
