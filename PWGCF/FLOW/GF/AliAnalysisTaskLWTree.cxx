@@ -100,6 +100,7 @@ void AliAnalysisTaskLWTree::UserExec(Option_t*) {
     l_tcaInd = fTPCTracks->GetEntries();
     new ((*fTPCTracks)[l_tcaInd]) AliLWTPCTrack(lTrack->Pt(),lTrack->Phi(),lTrack->Eta(),gTrackFlags);
   };
+  if(fTPCTracks->GetEntries()>1) fTPCTracks->Sort(); //Sort tpc tracks following pT for more efficient postprocessing
   //Processing FMD info
   AliAODForwardMult* aodForward=static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
   if(!aodForward) { return; }
