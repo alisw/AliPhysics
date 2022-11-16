@@ -203,8 +203,13 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
         pairQA[8] = 22;
         pairQA[9] = 22;
 
-        closeRejection[0] = true;  /// pos kaon - pos kaon
-        closeRejection[4] = true;  /// neg kaon-neg kaon
+        closeRejection[0] = true;  ///pos kaon - pos kaon
+        closeRejection[2] = true;  ///pos kaon- lambda
+        closeRejection[3] = true;  ///pos kaon- antilambda
+        closeRejection[4] = true;  ///neg kaon-neg kaon
+        closeRejection[5] = true;  ///neg kaon-lambda
+        closeRejection[6] = true;  ///neg kaon-antilambda
+        
     }
 
     AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
@@ -216,13 +221,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     config->SetMultBins(MultBins);  // the event will be put in the correspondent multiplicity bin
     config->SetPDGCodes(PDGParticles);
     config->SetNBinsHist(NBins);
+    config->SetPhiEtaBinnign(true);
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
     config->SetClosePairRejection(closeRejection);
     config->SetMinKRel(kMin);
     config->SetMaxKRel(kMax);
     config->SetUseEventMixing(true);
     config->SetMixingDepth(30);  /// how many events i want to mix. 10 is usually okay
     config->SetMinimalBookingME(suffix != "0");
-
+    
     if (suffix == "0") {
        config->SetPtQA(true);
        config->SetMassQA(true);
@@ -272,8 +280,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     };
 
     if (suffix != "0") {
-        if (suffix ==
-            "1") {  /// depending on the value of "suffix", we have a different random combination of kaons and lambdas
+        if (suffix == "1") {  /// depending on the value of "suffix", we have a different random combination of kaons and lambdas
             TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
             TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
 
