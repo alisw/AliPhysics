@@ -74,6 +74,7 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH1F      *fHist_Proton_TPC_SharedCluster;
     TH1F      *fHist_Proton_TPC_Chi2overNDF;
     TH1F      *fHist_Proton_ITS_nCluster;
+    TH1F      *fHist_Proton_TOF_Signal;
 
     TH2F      *fHist_Proton_DCAxy;
     TH2F      *fHist_Proton_DCAz;
@@ -105,6 +106,7 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH1F      *fHist_Deuteron_TPC_SharedCluster;
     TH1F      *fHist_Deuteron_TPC_Chi2overNDF;
     TH1F      *fHist_Deuteron_ITS_nCluster;
+    TH1F      *fHist_Deuteron_TOF_Signal;
 
     TH2F      *fHist_Deuteron_DCAxy;
     TH2F      *fHist_Deuteron_DCAz;
@@ -152,6 +154,7 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH1F      *fHist_AntiProton_TPC_SharedCluster;
     TH1F      *fHist_AntiProton_TPC_Chi2overNDF;
     TH1F      *fHist_AntiProton_ITS_nCluster;
+    TH1F      *fHist_AntiProton_TOF_Signal;
 
     TH2F      *fHist_AntiProton_DCAxy;
     TH2F      *fHist_AntiProton_DCAz;
@@ -183,6 +186,7 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH1F      *fHist_AntiDeuteron_TPC_SharedCluster;
     TH1F      *fHist_AntiDeuteron_TPC_Chi2overNDF;
     TH1F      *fHist_AntiDeuteron_ITS_nCluster;
+    TH1F      *fHist_AntiDeuteron_TOF_Signal;
 
     TH2F      *fHist_AntiDeuteron_DCAxy;
     TH2F      *fHist_AntiDeuteron_DCAz;
