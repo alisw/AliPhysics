@@ -80,6 +80,8 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
   fUseRunList(),
   fOADBFileName(""),
   fOADBFile(nullptr),
+  fRunListFileName(""),
+  fSplinesFileName(""),
   fCalibRefFileName(""),
   fCalibRefFile(nullptr),
   fCalibRefObjList(nullptr),
@@ -166,6 +168,8 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name):
   fUseRunList(),
   fOADBFileName(""),
   fOADBFile(nullptr),
+  fRunListFileName(""),
+  fSplinesFileName(""),
   fCalibRefFileName(""),
   fCalibRefFile(nullptr),
   fCalibRefObjList(nullptr),
@@ -1026,7 +1030,7 @@ void AliAnalysisTaskRawJetWithEP::SetModulationRhoFit()
 }
 
 
-void AliAnalysisTaskRawJetWithEP::MeasureBkg(){
+Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
   TString groupName;
   TString histName;
 

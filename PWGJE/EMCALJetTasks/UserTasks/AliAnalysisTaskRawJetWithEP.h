@@ -213,7 +213,7 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     void       MeasureTpcEPQA();
     
     void       SetModulationRhoFit();
-    void       MeasureBkg();
+    Bool_t     MeasureBkg();
     void       BkgFitEvaluation();
     
     void       DoEventPlane();
