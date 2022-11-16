@@ -75,7 +75,10 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
   AliAnalysisTaskEmcalJet(),
   fAOD(nullptr),
   fOutputList(nullptr),
-  fEventCuts(),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
   fYAMLConfig(),
   fUseRunList(),
   fOADBFileName(""),
@@ -163,7 +166,10 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fAOD(nullptr),
   fOutputList(nullptr),
-  fEventCuts(),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
   fYAMLConfig(),
   fUseRunList(),
   fOADBFileName(""),
@@ -284,9 +290,27 @@ void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  fEventCuts.AddQAplotsToList(fOutput);
-  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  // Intialize AliEventCuts
+  if (fUseAliEventCuts) {
+    fEventCutList = new TList();
+    fEventCutList ->SetOwner();
+    fEventCutList ->SetName("EventCutOutput");
+    
+    fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+    if(fUseManualEventCuts==1)
+    {
+      fEventCuts.SetManualMode();
+      fEventCuts.fMC = false;
+      fEventCuts.SetupPbPb2018();
+      fEventCuts.fUseVariablesCorrelationCuts = true;
+    }
+    fEventCuts.AddQAplotsToList(fEventCutList);
+    fOutput->Add(fEventCutList);
+  }
   
+  // fEventCuts.AddQAplotsToList(fOutput);
+
   // == s == Set Out put Hist grams  ###########################################
   if(fEPQA)          AllocateEventPlaneHistograms();
   if(fBkgQA)         AllocateBkgHistograms();
@@ -752,7 +776,10 @@ void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
         fHistManager.CreateTH2(histName, histtitle, 60, 0.0, 300.0, 60, 0.0, 300.0);
 
         // histo local rho vs delta phi
-        histName = TString::Format("%s/hJetRhoVsDeltaPhi_%d", RhoGroupName.Data(), cent);
+        histName = TString::Format("%s/hJetGRhoVsDeltaPhi_%d", RhoGroupName.Data(), cent);
+        histtitle = "Global rho versus angle relative to event plane";
+        fHistManager.CreateTH2(histName, histtitle, 60, 0.0, TMath::TwoPi(), 60, 0.0, 300.0);
+        histName = TString::Format("%s/hJetLRhoVsDeltaPhi_%d", RhoGroupName.Data(), cent);
         histtitle = "Local rho versus angle relative to event plane";
         fHistManager.CreateTH2(histName, histtitle, 60, 0.0, TMath::TwoPi(), 60, 0.0, 300.0);
         // == e ==  Rho histograms   11111111111111111111111111111111111111111111111111111111111111
@@ -817,6 +844,24 @@ void AliAnalysisTaskRawJetWithEP::ExecOnce()
 
 }
 
+/**
+ * This function (overloading the base class) uses AliEventCuts to perform event selection.
+ */
+Bool_t AliAnalysisTaskRawJetWithEP::IsEventSelected()
+{
+  if (fUseAliEventCuts) {
+    if (!fEventCuts.AcceptEvent(InputEvent()))
+    {
+      PostData(1, fOutput);
+      return kFALSE;
+    }
+  }
+  else {
+    Bool_t answer = AliAnalysisTaskEmcal::IsEventSelected();
+    return answer;
+  }
+  return kTRUE;
+}
 
 /**
  * Run analysis code here, if needed.
@@ -827,8 +872,7 @@ void AliAnalysisTaskRawJetWithEP::ExecOnce()
  */
 Bool_t AliAnalysisTaskRawJetWithEP::Run()
 {
-  // std::cout << "ChecKuma Run Number === " << CheckRunNum << "==================" << std::endl;
-  // fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+
   if(!fEventCuts.AcceptEvent(InputEvent())) return kFALSE;
   
   if(fPileupCut){
@@ -836,9 +880,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::Run()
     Bool_t kPileupCutEvent = CheckEventIsPileUp2018();
     if(kPileupCutEvent) return kFALSE;
   }
-
-  fLeadingJet = GetLeadingJet();
-
+  
   DoEventPlane();
   SetModulationRhoFit();
   // std::cout << "Fomula = " << fFitModulation->GetExpFormula() << std::endl;
@@ -850,7 +892,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::Run()
 }
 
 void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
-
   if (!fAOD && AODEvent() && IsStandardAOD()) {
       // In case there is an AOD handler writing a standard AOD, use the AOD
       // event in memory rather than the input (ESD) event.
@@ -865,7 +906,7 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     AliWarning("AliAnalysisTaskJetQnVectors::Exec(): No AliInputEventHandler!");
     return;
   }
-  
+
   //== s == qn Calibration  111111111111111111111111111111111111111111111111111
   switch (fQnVCalibType) {
     case kOrig : {
@@ -1047,7 +1088,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
           excludeInPt = fLeadingJet->Pt();
       }
   }
-  
+
   // check the acceptance of the track selection that will be used
   // if one uses e.g. semi-good tpc tracks, accepance in phi is reduced to 0 < phi < 4
   // the defaults (-10 < phi < 10) which accept all, are then overwritten
@@ -1062,7 +1103,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
   TH1F _tempSwap;     // on stack for quick access
   TH1F _tempSwapN;    // on stack for quick access, bookkeeping histogram
 
-   _tempSwap = *hBkgTracks;         // now _tempSwap holds the desired histo
+   _tempSwap = *hBkgTracks; // now _tempSwap holds the desired histo
 
   // non poissonian error when using pt weights
   Double_t sumPt(0.), sumPt2(0.), trackN(0.);
@@ -1091,12 +1132,16 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
       }
   }
   
-  // in the case of pt weights overwrite the poissonian error estimate which is assigned by root by a more sophisticated appraoch
-  // the assumption here is that the bin error will be dominated by the uncertainty in the mean pt in a bin and in the uncertainty
-  // of the number of tracks in a bin, the first of which will be estimated from the sample standard deviation of all tracks in the 
+  // in the case of pt weights overwrite the poissonian error estimate
+  // which is assigned by root by a more sophisticated appraoch
+  // the assumption here is that the bin error will be dominated 
+  // by the uncertainty in the mean pt in a bin and in the uncertainty
+  // of the number of tracks in a bin, the first of which will be estimated 
+  // from the sample standard deviation of all tracks in the 
   // event, for the latter use a poissonian estimate. 
   // the two contrubitions are assumed to be uncorrelated
-  if(trackN < 2) return kFALSE; // not one track passes the cuts > 2 avoids possible division by 0 later on
+  // not one track passes the cuts > 2 avoids possible division by 0 later on
+  if(trackN < 2) return kFALSE; 
   for(Int_t l = 0; l < _tempSwap.GetNbinsX(); l++) {
       if(_tempSwapN.GetBinContent(l+1) == 0) {
           _tempSwap.SetBinContent(l+1,0);
@@ -1106,10 +1151,13 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
           Double_t vartimesnsq = sumPt2*trackN - sumPt*sumPt;
           Double_t variance = vartimesnsq/(trackN*(trackN-1.));
           Double_t SDOMSq = variance / _tempSwapN.GetBinContent(l+1);
-          Double_t SDOMSqOverMeanSq = SDOMSq * _tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1) / (_tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1));
+          Double_t SDOMSqOverMeanSq \ 
+            = SDOMSq * _tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1) \
+              / (_tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1));
           Double_t poissonfrac = 1./_tempSwapN.GetBinContent(l+1);
           Double_t vartotalfrac = SDOMSqOverMeanSq + poissonfrac;
-          Double_t vartotal = vartotalfrac * _tempSwap.GetBinContent(l+1) * _tempSwap.GetBinContent(l+1);
+          Double_t vartotal \
+            = vartotalfrac * _tempSwap.GetBinContent(l+1) * _tempSwap.GetBinContent(l+1);
           if(vartotal > 0.0001) _tempSwap.SetBinError(l+1,TMath::Sqrt(vartotal));
           else {
               _tempSwap.SetBinContent(l+1,0);
@@ -1117,7 +1165,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
           }
       }
   }
-
   fLocalRho->SetVal(fRho->GetVal());
   fFitModulation->SetParameter(0, fLocalRho->GetVal());
   fFitModulation->FixParameter(2, psi2V0[0]);
@@ -1138,30 +1185,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
   
   hBkgTracks = (TH1F*) _tempSwap.Clone();
   // AliAnalysisTaskJetV2 ===========================================================================
-
-  // UInt_t sumAcceptedTracks = 0;
-  // AliParticleContainer* partCont = 0;
-  // TIter next(&fParticleCollArray);
-  // while ((partCont = static_cast<AliParticleContainer*>(next()))) {
-  //   // groupname = partCont->GetName();
-  //   for(auto part : partCont->accepted()) {
-  //     if (!part) continue;
-  //     if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
-  //       const AliVTrack* track = static_cast<const AliVTrack*>(part);
-
-  //       Float_t trackDeltaPhi = track->Phi() - psi2V0[0];
-  //       if (trackDeltaPhi < 0.0) trackDeltaPhi += TMath::TwoPi();
-  //       hBkgTracks->Fill(trackDeltaPhi);
-  //     }
-  //   }
-  // }
-  
-  // fLocalRho->SetVal(fRho->GetVal());
-  // fFitModulation->SetParameter(0, fLocalRho->GetVal());
-  // fFitModulation->FixParameter(2, psi2V0[0]);
-  // fFitModulation->FixParameter(4, psi3V0[0]);
-
-  // hBkgTracks->Fit(fFitModulation, "N0Q"); 
   
   if(0){
     TCanvas *cBkgRhoFit = new TCanvas("cBkgRhoFit", "cBkgRhoFit", 2000, 1500);
@@ -1211,9 +1234,9 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
   // std::cout << "v2Reso = " << fV2ResoV0 << ", v3Reso = " << fV3ResoV0 << std::endl;
 
   fLocalRho->SetLocalRho(fFitModulation);
-  // fLocalRho->SetVal(fRho->GetVal());
-
   BkgFitEvaluation();
+
+  return kTRUE;
 }
 
 
@@ -1333,8 +1356,8 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
   AliJetContainer* jetCont = 0;
   TIter next(&fJetCollArray);
   
+  
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
-    
     groupName = jetCont->GetName();
     TString GenGroupName = TString::Format("%s/General", groupName.Data());
     TString RhoGroupName = TString::Format("%s/Rho", groupName.Data());
@@ -1396,7 +1419,6 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
         jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
       jetPtCorrLocal = jet->Pt() - localRhoValScaled * jet->Area();
       
-      
       if(0){
         std::cout << "(jetPt, jetPhi, jetA, globalRho, localRho, localRhoValScal) = (" \
           << jet->Pt() << ", " << jet->Phi() << ", " << jet->Area() << ", " \
@@ -1412,7 +1434,9 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
 
       histName = TString::Format("%s/hJetLRhoVsAveRho_%d", RhoGroupName.Data(), fCentBin);
       fHistManager.FillTH2(histName, jetCont->GetRhoVal(), localRhoValScaled);
-      histName = TString::Format("%s/hJetRhoVsDeltaPhi_%d", RhoGroupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetGRhoVsDeltaPhi_%d", RhoGroupName.Data(), fCentBin);
+      fHistManager.FillTH2(histName, deltaPhiJetEP, jetCont->GetRhoVal());
+      histName = TString::Format("%s/hJetLRhoVsDeltaPhi_%d", RhoGroupName.Data(), fCentBin);
       fHistManager.FillTH2(histName, deltaPhiJetEP, localRhoValScaled);
       
       Double_t rcPt = 0., rcEta = 0., rcPhi = 0.;
@@ -1484,7 +1508,6 @@ void AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
       << psi2V0[0] << "," << psi2V0[2] << "," << psi2V0[1] << ")" << std::endl;
   }
 
-
 	//fill histos for q2 spline calibration
   fQ2VecHandler->GetQnVecTPC(q2VecTpcM, q2VecTpcP, q2VecTpcN);
   fQ2VecHandler->GetQnVecV0(q2VecV0M, q2VecV0A, q2VecV0C);
@@ -1500,8 +1523,6 @@ void AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     std::cout << "(q2FullV0,q2V0A,q2V0C) = ("\
       << q2V0[0] << "," << q2V0[2] << "," << q2V0[1] << ")" << std::endl;    
   }
-
-
 
   //fill histos with EP angle
   fQ3VecHandler->GetEventPlaneAngleTPC(psi3Tpc[0],psi3Tpc[2],psi3Tpc[1]);
@@ -1785,6 +1806,7 @@ void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
   
   // std::cout << "(ChiSqr, ROOTChi, CDF, CDFROOT) = (" << ChiSqr << ", " << fFitModulation->GetChisquare() << ", " << CDF << ", " << CDFROOT << ")" << std::endl;
 
+  
   TString histName;
   TString groupName;
   groupName="BackgroundFit";
@@ -1809,7 +1831,7 @@ void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
   fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
 
   // std::cout <<"Comb Fit (ChiSqr, CDF) = ("<< ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl; 
-
+  
   // == v2 fit ==
   TF1* tempV2Fit = new TF1("tempRhoFitV2", "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))))", \
     0.0, TMath::TwoPi());
@@ -1844,10 +1866,9 @@ void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
   histName = TString::Format("%s/hPChi2ROOT_lRhoV2Fit", groupName.Data());
   fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
   // std::cout << "v2Fit (ChiSqr, CDF) = ("<< ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl;
-
   delete tempV2Fit;
 
-
+  
   // == global rho fit ==
   TF1* tempGlobalFit = new TF1("tempGlobalRhoFit", "[0]", 0.0, TMath::TwoPi());
   tempGlobalFit->FixParameter(0, fRho->GetVal());
@@ -1881,10 +1902,10 @@ void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
   fHistManager.FillTH2(histName, fCent, ChiSqr/((float)NDF));
   histName = TString::Format("%s/hPChi2ROOT_gRhoFit", groupName.Data());
   fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
-
+  
   // std::cout << "NoFit (ChiSqr, CDF) = (" << ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl;
   delete tempGlobalFit;
-
+  
 }
 
 //_____________________________________________________________________________

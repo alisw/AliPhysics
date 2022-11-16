@@ -127,6 +127,9 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     
     //== s == Setter Prepare  ################################################
     void SetRunListFileName(std::string fileName) {fRunListFileName = fileName;}
+    
+    void SetUseAliEventCuts(Bool_t b)      { fUseAliEventCuts = b; }
+    void SetUseManualEvtCuts(Bool_t input) { fUseManualEventCuts = input;}
 
     void SetQnOadbFile(TString oadbFileName){fOADBFileName = oadbFileName;}
     void SetSplineFile(TString splineFileName){fSplinesFileName = splineFileName;}
@@ -148,10 +151,14 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     //== e == Setter Prepare  ################################################
 
   protected:
-    AliEventCuts fEventCuts; //
+    Bool_t       fUseAliEventCuts; ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
+    AliEventCuts fEventCuts; ///< event selection utility
+    TList        *fEventCutList; //!<! Output list for event cut histograms
+    Bool_t       fUseManualEventCuts; ///< Flag to use manual event cuts
 
-    void       ExecOnce();
-    Bool_t     Run();
+    void              ExecOnce();
+    Bool_t            Run();
+    virtual Bool_t    IsEventSelected();
     
     THistManager fHistManager;        ///< Histogram manager
     
@@ -335,7 +342,7 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
 
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskRawJetWithEP, 43);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 47);
     /// \endcond
   // ### private ###############################################################
 };
