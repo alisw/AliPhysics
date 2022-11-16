@@ -6,6 +6,9 @@ class AliLWTPCTrack : public TObject {
     AliLWTPCTrack();
     AliLWTPCTrack(Float_t pt, Float_t phi, Float_t eta, Short_t trFlag=1);
     ~AliLWTPCTrack();
+    Bool_t IsEqual(TObject* obj) const;
+    Bool_t IsSortable() const;
+    Int_t Compare(TObject *obj) const;
     Float_t fPt;
     Float_t fPhi;
     Float_t fEta;
