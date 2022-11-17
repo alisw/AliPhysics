@@ -1371,10 +1371,10 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
         //
         // pileup bit: 0bxxxx, where the leftmost bit is the tightest and the rightmost is the loosest cut
         // OOB pileup cut (for Pb-Pb) based on ITS and TPC clusters: 0-> no cut; 1-> default cut (remove all OOB pileup); 2-> looser cut; 3-> even more looser cut; 4-> very loose cut
-        // if (fPileUpTightnessCut4->AcceptEvent(fESD)) { fPileUpBit |= 1 << 3; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
-        // if (fPileUpTightnessCut3->AcceptEvent(fESD)) { fPileUpBit |= 1 << 2; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
-        // if (fPileUpTightnessCut2->AcceptEvent(fESD)) { fPileUpBit |= 1 << 1; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
-        // if (fPileUpTightnessCut1->AcceptEvent(fESD)) { fPileUpBit |= 1 << 0; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
+        if (fPileUpTightnessCut4->AcceptEvent(fESD)) { fPileUpBit |= 1 << 3; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
+        if (fPileUpTightnessCut3->AcceptEvent(fESD)) { fPileUpBit |= 1 << 2; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
+        if (fPileUpTightnessCut2->AcceptEvent(fESD)) { fPileUpBit |= 1 << 1; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
+        if (fPileUpTightnessCut1->AcceptEvent(fESD)) { fPileUpBit |= 1 << 0; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
         fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,0); // do not apply any pile cut
         if (!fEventCuts.AcceptEvent(fESD)) {cout<< "pileup event " << endl; return;}
       }
