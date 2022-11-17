@@ -100,6 +100,7 @@ public:
    void   SetResolutionEtaBinsLinear  (const double min, const double max, const unsigned int steps){SetBinsLinear("eta_reso", min, max, steps);}
    void   SetResolutionPhiBinsLinear  (const double min, const double max, const unsigned int steps){SetBinsLinear("phi_reso", min, max, steps);}
    void   SetResolutionThetaBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("theta_reso", min, max, steps);}
+   void   SetResolutionGenptBins(const double min, const double max, const unsigned int steps){fGenptMin = min; fGenptMax = max; fNGenPt = steps;}
 
    // single electron binning setter
    void   SetPtBins(std::vector<double> ptBins)             {fPtBins = ptBins;}
@@ -264,6 +265,10 @@ private:
   std::vector<double> fPhiVBins;
   bool fDoGenSmearing;
 
+  int    fNGenPt;// pt binning for resolution map
+  double fGenPtMin;// pt binning for resolution map
+  double fGenPtMax;// pt binning for resolution map
+
   double  fPtMin; // Kinematic cut for pairing
   double  fPtMax; // Kinematic cut for pairing
   double  fEtaMin; // Kinematic cut for pairing
@@ -392,7 +397,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 11);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 12);
 };
 
 
