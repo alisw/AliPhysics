@@ -96,6 +96,9 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       //
       task->SetFillArmPodTree(kTRUE);
       task->SetRunOnGrid(kTRUE);
+      const Int_t tmpCentbins = 14;
+      Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80,85,90,95,100};
+      task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
       task->fEventCuts.fUseVariablesCorrelationCuts = true;
     }
     break;
@@ -420,7 +423,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->SetUseCouts(kFALSE);
       task->SetDefaultTrackCuts(kTRUE);
       task->SetRapidityType(0);      // 0:pseudorapidity, 1: rapidity
-      task->SetUsePtCut(1);          // 0: tpc momcut, 1: vertex momcut, 2: pT cut
+      task->SetUsePtCut(0);          // 0: tpc momcut, 1: vertex momcut, 2: pT cut
       task->SetFillTreeMC(kTRUE);
       task->SetFillEventInfo(kTRUE);
       task->SetIncludeITScuts(kTRUE);
@@ -434,17 +437,18 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
       task->fEventCuts.fUseVariablesCorrelationCuts = true;
       //
       // acceptance
-
-      const Int_t tmpCentbins  = 10;
+      const Int_t tmpCentbins  = 14;
       const Int_t tmpEtaBinsMC = 8;
       const Int_t tmpMomBinsMC = 1;
-      Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
+      Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80,85,90,95,100};
       Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.1,-0.2,-0.3,-0.4,-0.5,-0.6,-0.7,-0.8};
       Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
       Float_t tmppDownArr[tmpMomBinsMC] = {0.6};
       Float_t tmppUpArr[tmpMomBinsMC]   = {1.5};
       task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
       task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr);
+      task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
+
       // resonances to exclude
       const Int_t tmpNresonances = 1;
       TString tmpResArr[tmpNresonances] = {"xxx"};
@@ -531,7 +535,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Bool_t getFromAlien, Int
     break;
     case 101:{
       std::cout << " SETTING TYPE = " << settingType << " Info::marsland: FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE " << std::endl;
-      task->SetUseCouts(kFALSE);
+      task->SetUseCouts(kTRUE);
       task->SetIsMCtrue(kTRUE);
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -1025,10 +1029,10 @@ void SetDefaults(AliAnalysisTaskEbyeIterPID *defaultTask, Int_t year, TString pe
   defaultTask->SetPercentageOfEvents(0);
 
   // DEFAULT SETTINGS
-  const Int_t tmpCentbins  = 10;
+  const Int_t tmpCentbins  = 14;
   const Int_t tmpEtaBinsMC = 3;
   const Int_t tmpMomBinsMC = 4;
-  Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
+  Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80,85,90,95,100};
   Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.5,-0.8,-1.};
   Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.5, 0.8, 1.};
   Float_t tmppDownArr[tmpMomBinsMC] = { 0.2, 0.6, 0.2, 0.6};

@@ -306,7 +306,7 @@ fNMomBinsMC(-100),
 fNCentBinsMC(-100),
 fGenprotonBins(-100),
 fNResModeMC(2),
-fNCentbinsData(10),
+fNCentbinsData(14),
 fMissingCl(0.),
 fTPCMult(0),
 fEventMult(0),
@@ -606,7 +606,7 @@ fNMomBinsMC(-100),
 fNCentBinsMC(-100),
 fGenprotonBins(-100),
 fNResModeMC(2),
-fNCentbinsData(10),
+fNCentbinsData(14),
 fMissingCl(0.),
 fTPCMult(0),
 fEventMult(0),
@@ -990,9 +990,9 @@ void AliAnalysisTaskEbyeIterPID::Initialize()
   fESDtrackCutsLoose = new AliESDtrackCuts("esdTrackCutsLoose","");
   fESDtrackCutsLoose->SetEtaRange(-100.,100.);
   fESDtrackCutsLoose->SetPtRange(0.1,100000.);
-  fESDtrackCutsLoose->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  // fESDtrackCutsLoose->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   fESDtrackCutsLoose->SetAcceptKinkDaughters(kFALSE);
-  fESDtrackCutsLoose->SetMaxFractionSharedTPCClusters(0.4);
+  // fESDtrackCutsLoose->SetMaxFractionSharedTPCClusters(0.4);
   fESDtrackCutsLoose->SetMinNClustersTPC(50);
   fESDtrackCutsLoose->SetMinNCrossedRowsTPC(50);
   fESDtrackCutsLoose->SetMaxDCAToVertexXY(10);   // hybrid cuts  TODO
@@ -1088,7 +1088,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
     //                                        0    1,    2,                 3,           4,        5,       6
     Int_t   binsExpected[nExpectedbins]  = {  5,   3,  fNCentbinsData,   fNEtaBins,   fNMomBins,   240,   4000 };  // ????
     Double_t xminExpected[nExpectedbins] = {  0., -2.,   0.,             fEtaDown,    fMomDown,     1.,   20.  };
-    Double_t xmaxExpected[nExpectedbins] = {  5.,  2.,  80.,             fEtaUp,      fMomUp,      61.,   1020.};
+    Double_t xmaxExpected[nExpectedbins] = {  5.,  2.,  100.,            fEtaUp,      fMomUp,      61.,   1020.};
     TString axisNameExpected[nExpectedbins]   = {"particleType","sign","Centrality"    ,"eta" ,"momentum" ,"ExSigma","ExMean"};
     TString axisTitleExpected[nExpectedbins]  = {"particleType","sign","Centrality [%]","#eta","#it{p} (GeV/#it{c})", "#sigma","#mu"};
     for (Int_t i=0;i<fNSettings;i++){
@@ -1124,7 +1124,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
     // inclusive spectra
     Int_t   binsdEdx[nhistbins]  = { 2,  fNCentbinsData, fNEtaBins,   fNMomBins,    dEdxnBins};
     Double_t xmindEdx[nhistbins] = {-2,  0.,             fEtaDown,    fMomDown,     fDEdxDown};
-    Double_t xmaxdEdx[nhistbins] = { 2,  80.,            fEtaUp,      fMomUp,       fDEdxUp};
+    Double_t xmaxdEdx[nhistbins] = { 2,  100.,           fEtaUp,      fMomUp,       fDEdxUp};
     fHndEdx= new THnSparseF("hdEdx","Inclusive dEdx Spectrum"  ,nhistbins,binsdEdx,xmindEdx,xmaxdEdx);
     fHndEdx->GetAxis(1)->Set(fNCentbinsData-1,fxCentBins.data());
     // Set the branch names
@@ -1164,9 +1164,9 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
     //
     //
     const Int_t ndimScan=6;
-    Int_t nbinsScan[ndimScan]   = {2, fNSettings,           3,8, 40       ,16   };
-    Double_t xminScan[ndimScan] = {0, 0,                    0,0, fMomDown ,fEtaDown };
-    Double_t xmaxScan[ndimScan] = {2, Double_t(fNSettings), 3,80,fMomUp   ,fEtaUp };
+    Int_t nbinsScan[ndimScan]   = {2, fNSettings,           3,10, 40       ,16   };
+    Double_t xminScan[ndimScan] = {0, 0,                    0,0,  fMomDown ,fEtaDown };
+    Double_t xmaxScan[ndimScan] = {2, Double_t(fNSettings), 3,100,fMomUp   ,fEtaUp };
     fHistPosEffMatrixScanRec  =new THnF("fHistPosEffMatrixScanRec","fHistPosEffMatrixScanRec",ndimScan, nbinsScan,xminScan,xmaxScan);
     fHistNegEffMatrixScanRec  =new THnF("fHistNegEffMatrixScanRec","fHistNegEffMatrixScanRec",ndimScan, nbinsScan,xminScan,xmaxScan);
     fHistPosEffMatrixScanGen  =new THnF("fHistPosEffMatrixScanGen","fHistPosEffMatrixScanGen",ndimScan, nbinsScan,xminScan,xmaxScan);
@@ -1371,10 +1371,10 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
         //
         // pileup bit: 0bxxxx, where the leftmost bit is the tightest and the rightmost is the loosest cut
         // OOB pileup cut (for Pb-Pb) based on ITS and TPC clusters: 0-> no cut; 1-> default cut (remove all OOB pileup); 2-> looser cut; 3-> even more looser cut; 4-> very loose cut
-        if (fPileUpTightnessCut4->AcceptEvent(fESD)) { fPileUpBit |= 1 << 3; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
-        if (fPileUpTightnessCut3->AcceptEvent(fESD)) { fPileUpBit |= 1 << 2; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
-        if (fPileUpTightnessCut2->AcceptEvent(fESD)) { fPileUpBit |= 1 << 1; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
-        if (fPileUpTightnessCut1->AcceptEvent(fESD)) { fPileUpBit |= 1 << 0; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
+        // if (fPileUpTightnessCut4->AcceptEvent(fESD)) { fPileUpBit |= 1 << 3; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
+        // if (fPileUpTightnessCut3->AcceptEvent(fESD)) { fPileUpBit |= 1 << 2; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
+        // if (fPileUpTightnessCut2->AcceptEvent(fESD)) { fPileUpBit |= 1 << 1; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
+        // if (fPileUpTightnessCut1->AcceptEvent(fESD)) { fPileUpBit |= 1 << 0; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
         fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,0); // do not apply any pile cut
         if (!fEventCuts.AcceptEvent(fESD)) {cout<< "pileup event " << endl; return;}
       }
@@ -1512,7 +1512,6 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
       if (fMCImpactParameter<impParArr[0]  || fMCImpactParameter>impParArr[9]) fCentImpBin=-10.;
       fHistCentralityImpPar->Fill(fCentImpBin);
     }
-
     if (fCentrality<0) fCentrality=fCentImpBin;
     //
     // Use file name in Hashing to create unique event ID
@@ -1723,6 +1722,10 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     Bool_t dca11h     = TMath::Abs(fTrackDCAxy)<0.0105+0.0350/TMath::Power(fPt,1.1);    // 10h tuned loose cut
     Bool_t dca10h     = TMath::Abs(fTrackDCAxy)<0.0182+0.0350/TMath::Power(fPt,1.01);    // 10h tuned loose cut
     Bool_t dcaBaseCut = TMath::Abs(fTrackDCAxy)<0.0208+0.04/TMath::Power(fPt,1.01);  // 10h tuned loose cut
+
+    UShort_t tpcFindableCls = track->GetTPCNclsF();
+    UShort_t tpcSharedCls = track->GetTPCnclsS();
+
     //
     if (fFillTracks && !fFillOnlyHists)
     {
@@ -1750,6 +1753,9 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
       "itsmult="   << itsNumberOfTracklets <<    // ITS multiplicity
       "itsclmult=" << nITSClusters <<    // ITS multiplicity
       "tpcclmult=" << nTPCClusters <<    // ITS multiplicity
+      //
+      "tpcFindableCls=" << tpcFindableCls << // number of findable clusters
+      "tpcSharedCls=" << tpcSharedCls << // number of shared clusters
       //
       "gid="       << fEventGID             <<  //  global event ID
       "eventtime=" << fTimeStamp            <<  // event timeStamp
@@ -2708,9 +2714,6 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
             {
               // track loop
               //
-              // select pile up
-              Bool_t ispileup = (isTPCPileup || isITSPileup);
-              if (ipileup==0 && ispileup) continue;
               //
               // initialize the dummy particle id
               fElMC =-100.; fPiMC =-100.; fKaMC =-100.; fPrMC =-100.;
@@ -2719,6 +2722,11 @@ void AliAnalysisTaskEbyeIterPID::FillMCFull_NetParticles()
               AliESDtrack *trackReal = fESD->GetTrack(irectrack);
               if (trackReal==NULL) continue;
               Int_t lab = TMath::Abs(trackReal->GetLabel());           // avoid from negatif labels, they include some garbage
+              // select pile up
+              isTPCPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(lab,fMCEvent);
+              isITSPileup = AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent, "Hijing");
+              Bool_t ispileup = (isTPCPileup || isITSPileup);
+              if (ipileup==0 && ispileup) continue;
               //
               // check the origin of the track
               Bool_t bPrim     = fMCStack->IsPhysicalPrimary(lab);
@@ -4494,6 +4502,12 @@ void AliAnalysisTaskEbyeIterPID::FillCleanSamples()
     //  Selections from ionuts
     // ----------------------------------------------------------------------------------------------------------
     //
+
+    // protect against floating point exception in asin(deltat/chipair) calculation in AliESDv0KineCuts::PsiPair
+    if (!CheckPsiPair(fV0s)) {
+      continue;
+    }
+
     if(trackPosTest->GetSign() == trackNegTest->GetSign()) {fTrackCutBits=0; continue;}
     Bool_t v0ChargesAreCorrect = (trackPosTest->GetSign()==+1 ? kTRUE : kFALSE);
     trackPosTest = (!v0ChargesAreCorrect ? fESD->GetTrack(fV0s->GetNindex()) : trackPosTest);
@@ -4565,6 +4579,7 @@ void AliAnalysisTaskEbyeIterPID::FillCleanSamples()
 
     if ((vecP.Mag() * vecM.Mag())<0.00001) {fTrackCutBits=0; continue;}
     if ((vecN.Mag() * vecM.Mag())<0.00001) {fTrackCutBits=0; continue;}
+
     Double_t thetaP  = acos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
     Double_t thetaN  = acos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
     if ( ((vecP.Mag())*cos(thetaP)+(vecN.Mag())*cos(thetaN)) <0.00001) {fTrackCutBits=0; continue;}
@@ -5017,10 +5032,11 @@ void AliAnalysisTaskEbyeIterPID::FillDnchDeta()
     etaUpArray[i]=0.1*(i+1);
     etaDownArray[i]=etaUpArray[i]*-1.;
   }
-  Double_t centDownArray[9]={0., 5.,  10., 20., 30., 40., 50., 60., 70.};
-  Double_t centUpArray[9]  ={5., 10., 20., 30., 40., 50., 60., 70., 80.};
+  const Int_t nCentBins = 9;
+  Double_t centDownArray[nCentBins]={0., 5.,  10., 20., 30., 40., 50., 60., 70.};
+  Double_t centUpArray[nCentBins]  ={5., 10., 20., 30., 40., 50., 60., 70., 80.};
   for (Int_t ieta=0; ieta<netabins; ieta++){
-    for (Int_t icent=0; icent<9; icent++){
+    for (Int_t icent=0; icent<nCentBins; icent++){
 
       AliMCParticle *trackMCgen;
       Int_t trCount=0,    elCount=0,    piCount=0,    kaCount=0,    prCount=0;
@@ -6488,4 +6504,86 @@ void AliAnalysisTaskEbyeIterPID::DumpDownScaledTree()
 
   } // end of track LOOP
 
+}
+
+const Bool_t AliAnalysisTaskEbyeIterPID::CheckPsiPair(const AliESDv0* v0)
+{
+  // Angle between daughter momentum plane and plane
+  // taken from AliESDv0KineCuts
+
+  if(!fESD) return kFALSE;
+
+  Float_t magField = fESD->GetMagneticField();
+
+  // check if indices have been correctly applied
+  Int_t pIndexTemp = -1;
+  Int_t nIndexTemp = -1;
+
+  pIndexTemp = v0->GetPindex();
+  nIndexTemp = v0->GetNindex();
+
+  AliESDtrack* d[2];
+  d[0] = dynamic_cast<AliESDtrack*>(fESD->GetTrack(pIndexTemp));
+  d[1] = dynamic_cast<AliESDtrack*>(fESD->GetTrack(nIndexTemp));
+
+  Int_t sign[2];
+  sign[0] = (int)d[0]->GetSign();
+  sign[1] = (int)d[1]->GetSign();
+
+  Int_t pIndex = 0, nIndex = 0;
+  if(-1 == sign[0] && 1 == sign[1]){
+    pIndex = v0->GetPindex();
+    nIndex = v0->GetNindex();
+  }
+  else{
+    pIndex = v0->GetNindex();
+    nIndex = v0->GetPindex();
+  }
+
+  AliESDtrack* daughter[2];
+
+  daughter[0] = dynamic_cast<AliESDtrack *>(fESD->GetTrack(pIndex));
+  daughter[1] = dynamic_cast<AliESDtrack *>(fESD->GetTrack(nIndex));
+
+  Double_t x, y, z;
+  v0->GetXYZ(x,y,z);//Reconstructed coordinates of V0; to be replaced by Markus Rammler's method in case of conversions!
+
+  Double_t mn[3] = {0,0,0};
+  Double_t mp[3] = {0,0,0};
+
+
+  v0->GetNPxPyPz(mn[0],mn[1],mn[2]);//reconstructed cartesian momentum components of negative daughter;
+  v0->GetPPxPyPz(mp[0],mp[1],mp[2]);//reconstructed cartesian momentum components of positive daughter;
+
+
+  Double_t deltat = 1.;
+  deltat = TMath::ATan(mp[2]/(TMath::Sqrt(mp[0]*mp[0] + mp[1]*mp[1])+1.e-13)) -  TMath::ATan(mn[2]/(TMath::Sqrt(mn[0]*mn[0] + mn[1]*mn[1])+1.e-13));//difference of angles of the two daughter tracks with z-axis
+
+  Double_t radiussum = TMath::Sqrt(x*x + y*y) + 50;//radius to which tracks shall be propagated
+
+  Double_t momPosProp[3];
+  Double_t momNegProp[3];
+
+  AliExternalTrackParam pt(*daughter[0]), nt(*daughter[1]);
+
+  Double_t psiPair = 4.;
+
+  if(nt.PropagateTo(radiussum,magField) == 0)//propagate tracks to the outside
+    psiPair =  -5.;
+  if(pt.PropagateTo(radiussum,magField) == 0)
+    psiPair = -5.;
+  pt.GetPxPyPz(momPosProp);//Get momentum vectors of tracks after propagation
+  nt.GetPxPyPz(momNegProp);
+
+  Double_t pEle =
+    TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
+  Double_t pPos =
+    TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
+
+  Double_t scalarproduct =
+    momPosProp[0]*momNegProp[0]+momPosProp[1]*momNegProp[1]+momPosProp[2]*momNegProp[2];//scalar product of propagated positive and negative daughters' momenta
+
+  Double_t chipair = TMath::ACos(scalarproduct/(pEle*pPos));//Angle between propagated daughter tracks
+
+  return abs(deltat / chipair) <= 1;
 }
