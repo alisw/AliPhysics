@@ -1314,10 +1314,10 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
             motherD = -1;
             break;
         }
-        motherD = partMother->GetMother();
         int pdgMother = partMother->GetPdgCode();
         if ((std::abs(pdgMother)/100 == 4) || (std::abs(pdgMother)/1000 == 4) || ((std::abs(pdgMother)-10000)/100 == 4) || ((std::abs(pdgMother)-20000)/100 == 4)) // we are interested in charm resonances
             modthersD.push_back(motherD);
+        motherD = partMother->GetMother();
     }
     int motherLight = partLight->GetMother();
     while(motherLight >= 0) {
@@ -1326,17 +1326,20 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
             motherLight = -1;
             break;
         }
-        motherLight = partMother->GetMother();
         int pdgMother = partMother->GetPdgCode();
         if ((std::abs(pdgMother)/100 == 4) || (std::abs(pdgMother)/1000 == 4) || ((std::abs(pdgMother)-10000)/100 == 4) || ((std::abs(pdgMother)-20000)/100 == 4)) // we are interested in charm resonances
             modthersLight.push_back(motherLight);
+        motherLight = partMother->GetMother();
     }
     std::sort(modthersD.begin(), modthersD.end());
     std::sort(modthersLight.begin(), modthersLight.end());
 
-    double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
     std::vector<int> commonMothers{};
     std::set_intersection(modthersD.begin(), modthersD.end(), modthersLight.begin(), modthersLight.end(), std::back_inserter(commonMothers));
+    if (commonMothers.size() < 1)
+        return -1;
+
+    double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
     for (auto iMother{commonMothers.size()-1}; iMother>=0; ++iMother) {
         AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(commonMothers[iMother]));
         int pdgMother = partMother->GetPdgCode();
