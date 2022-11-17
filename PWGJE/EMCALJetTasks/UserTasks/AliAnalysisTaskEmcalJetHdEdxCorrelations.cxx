@@ -582,7 +582,7 @@ namespace PWGJE
 
               GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
-              Double_t *pionSignalDelta;
+              Double_t pionSignalDelta;
               pidResponse->GetSignalDeltaTPC(vTrack, (AliPID::EParticleType)2, pionSignalDelta, kFALSE);
 
               // Fill track properties
@@ -597,7 +597,7 @@ namespace PWGJE
               {
                 if (fDoLessSparseAxes)
                 { // check if we want all dimensions
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, *pionSignalDelta};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, pionSignalDelta};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
                 else
