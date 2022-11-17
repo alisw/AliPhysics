@@ -1408,7 +1408,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   double ZvtxBins[nZvtxBins+1] = {-10.0,-9.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0};
 
 
-  int PoolSize = 200;	    // maximum number of events in the pool (-1 means no limit)
+  int PoolSize = 20;	    // maximum number of events in the pool (-1 means no limit)
 			    // int nPools = nCentralityBins * nZvtxBins;
 			    // int nEventsMax = nPools * PoolSize;
 
@@ -2021,8 +2021,11 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 	TLorentzVector LorentzVectorDeuteron;
 	LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],DeuteronMass);
 
+	int nProtonsForMixing = 1;
+	if (nProtonsSelected == 2) nProtonsForMixing = 2;
 
-	for(int Track2 = 0; Track2 < nProtonsSelected; Track2++) // particle pair loop (proton loop)
+	//for(int Track2 = 0; Track2 < nProtonsSelected; Track2++) // particle pair loop (proton loop)
+	for(int Track2 = 0; Track2 < nProtonsForMixing; Track2++) // particle pair loop (proton loop)
 	{
 
 	  AliAODTrack *ProtonTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(ProtonTrackArray->at(Track2)));
@@ -2521,8 +2524,11 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 	TLorentzVector LorentzVectorAntiDeuteron;
 	LorentzVectorAntiDeuteron.SetXYZM(MomentumAntiDeuteron[0],MomentumAntiDeuteron[1],MomentumAntiDeuteron[2],DeuteronMass);
 
+	int nAntiProtonsForMixing = 1;
+	if (nAntiProtonsSelected == 2) nAntiProtonsForMixing = 2;
 
-	for(int Track2 = 0; Track2 < nAntiProtonsSelected; Track2++) // particle pair loop (antiproton loop)
+	//for(int Track2 = 0; Track2 < nAntiProtonsSelected; Track2++) // particle pair loop (antiproton loop)
+	for(int Track2 = 0; Track2 < nAntiProtonsForMixing; Track2++) // particle pair loop (antiproton loop)
 	{
 
 	  AliAODTrack *AntiProtonTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(AntiProtonTrackArray->at(Track2)));
