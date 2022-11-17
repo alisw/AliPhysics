@@ -583,7 +583,7 @@ namespace PWGJE
               GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
               Double_t pionSignalDelta;
-              pidResponse->GetSignalDeltaTPC(vTrack, (AliPID::EParticleType)2, pionSignalDelta, kFALSE);
+              pionSignalDelta = pidResponse->GetSignalDelta((AliPIDResponse::EDetector)1, vTrack, (AliPID::EParticleType)2, kFALSE);
 
               // Fill track properties
               fHistJetHTrackPt->Fill(track.Pt());
