@@ -2956,9 +2956,10 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
 
   double p    = Track.P();
   double pT   = Track.Pt();
+  double pTPC = Track.GetTPCmomentum();
 
   // check if TOF information is available above threshold
-  if((p >= Proton_TPC_Threshold) && (!TOFisOK)) return PassedParticleCuts;
+  if((pTPC >= Proton_TPC_Threshold) && (!TOFisOK)) return PassedParticleCuts;
   if(isMatter)	fHist_Proton_CutCounter->Fill(5);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(5);
 
@@ -2969,7 +2970,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   if(TOFisOK)
   {
 
-    if((p < Proton_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Proton_TOF_nSigma_max_low_p)) return PassedParticleCuts;
+    if((pTPC < Proton_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Proton_TOF_nSigma_max_low_p)) return PassedParticleCuts;
 
   }
   if(isMatter)	fHist_Proton_CutCounter->Fill(6);
@@ -2981,7 +2982,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
 
     nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kProton);
 
-    if((p >= Proton_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Proton_TOF_nSigma_max)) return PassedParticleCuts;
+    if((pTPC >= Proton_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Proton_TOF_nSigma_max)) return PassedParticleCuts;
 
   }
   if(isMatter)	fHist_Proton_CutCounter->Fill(7);
@@ -2989,7 +2990,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
 
 /*
   // reject tracks with better sigma for other particles
-  if((p >= Proton_TPC_Threshold) && (TOFisOK)){
+  if((pTPC >= Proton_TPC_Threshold) && (TOFisOK)){
 
     // apply TPC and TOF sigma cut
     nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kProton);
@@ -3175,9 +3176,10 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
 
   double p = Track.P();
   double pT = Track.Pt();
+  double pTPC = Track.GetTPCmomentum();
 
   // check TOF status above threshold
-  if((p >= Deuteron_TPC_Threshold) && (!TOFisOK)) return PassedParticleCuts;
+  if((pTPC >= Deuteron_TPC_Threshold) && (!TOFisOK)) return PassedParticleCuts;
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(5);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(5);
 
@@ -3188,14 +3190,14 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   if(TOFisOK)
   {
 
-    if((p < Deuteron_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Deuteron_TOF_nSigma_max_low_p)) return PassedParticleCuts;
+    if((pTPC < Deuteron_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Deuteron_TOF_nSigma_max_low_p)) return PassedParticleCuts;
 
   }
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(6);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(6);
 
 
-  if((UseBetaTOF) && (p >= Deuteron_TPC_Threshold))
+  if((UseBetaTOF) && (pTPC >= Deuteron_TPC_Threshold))
   {
 
     // apply TPC and TOF sigma cut
@@ -3238,7 +3240,7 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   if(UseMassSquareTOF)
   {
   
-    if(p >= Deuteron_TPC_Threshold)
+    if(pTPC >= Deuteron_TPC_Threshold)
     {
 
     double massSq = CalculateMassSquareTOF(Track);
