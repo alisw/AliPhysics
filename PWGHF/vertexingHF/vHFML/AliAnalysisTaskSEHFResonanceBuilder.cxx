@@ -385,7 +385,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
     // fix for temporary bug in ESDfilter
     // the AODs with null vertex pointer didn't pass the PhysSel
-    if (!fAOD->GetPrimaryVertex() || TMath::Abs(fAOD->GetMagneticField()) < 0.001)
+    if (!fAOD->GetPrimaryVertex() || std::abs(fAOD->GetMagneticField()) < 0.001)
     {
         PostData(1, fOutput);
         return;
@@ -495,7 +495,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                         AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(track->GetLabel()));
                         int pdgBach = part->GetPdgCode();
                         for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo) {
-                            if (TMath::Abs(pdgBach) == kPdgBachIDs[iHypo]) {
+                            if (std::abs(pdgBach) == kPdgBachIDs[iHypo]) {
                                 isSignal[iHypo] = true;
                                 break;
                             }
@@ -607,7 +607,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 if (fDecChannel == kD0toKpi) // check if signal is reflected
                 {
                     int labDau0 = dynamic_cast<AliAODTrack *>(dMeson->GetDaughter(0))->GetLabel();
-                    AliAODMCParticle *dau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(TMath::Abs(labDau0)));
+                    AliAODMCParticle *dau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(std::abs(labDau0)));
                     pdgCode0 = std::abs(dau0->GetPdgCode());
                 }
             }
@@ -791,9 +791,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                             }
                         }
 
-                        int signalReso = -1;
+                        int signalReso = 0;
                         if (fReadMC) {
-                            if (orig >= 4) { // D is signal
+                            if (std::abs(orig) >= 4) { // D is signal
                                 if (selectedV0Signal[iV0][iHypo]) { // V0 is signal
                                     AliAODMCParticle *partD = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labD));
                                     AliAODMCParticle *partV0 = dynamic_cast<AliAODMCParticle *>(arrayMC->At(selectedV0Labels[iV0][iHypo]));
@@ -1306,8 +1306,12 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
 
     std::vector<int> modthersD{};
     std::vector<int> modthersLight{};
-    int motherD = partD->GetMother();
 
+    if (!partD || !partLight) {
+        return 0;
+    }
+
+    int motherD = partD->GetMother();
     while(motherD >= 0) {
         AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherD));
         if (!partMother) {
@@ -1337,17 +1341,20 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
     std::vector<int> commonMothers{};
     std::set_intersection(modthersD.begin(), modthersD.end(), modthersLight.begin(), modthersLight.end(), std::back_inserter(commonMothers));
     if (commonMothers.size() < 1)
-        return -1;
+        return 0;
 
     double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
     for (auto iMother{commonMothers.size()-1}; iMother>=0; ++iMother) {
         AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(commonMothers[iMother]));
+        if(!partMother) {
+            continue;
+        }
         int pdgMother = partMother->GetPdgCode();
         // let's check also momentum conservation
         double momMother[3] = {partMother->Px(), partMother->Py(), partMother->Pz()};
         bool isMomConserved = true;
         for (int iEl{0}; iEl<3; ++iEl) {
-            if (std::abs(momMother[iEl]-momSumDaughters[iEl]) / (std::abs(momMother[iEl]) + 1.e-13) > 0.00001) {
+            if (std::abs(momMother[iEl]-momSumDaughters[iEl]) / (std::abs(momMother[iEl]) + 1.e-13) > 0.0001) {
                 isMomConserved = false;
                 break;
             }
@@ -1357,7 +1364,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
         }
     }
 
-    return -1;
+    return 0;
 }
 
 //________________________________________________________________________
@@ -1390,7 +1397,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
     }
 
     double zMCVertex = mcHeader->GetVtxZ(); // vertex MC
-    if (TMath::Abs(zMCVertex) <= fRDCuts->GetMaxVtxZ()) {
+    if (std::abs(zMCVertex) <= fRDCuts->GetMaxVtxZ()) {
         for (int iPart{0}; iPart < arrayMC->GetEntriesFast(); ++iPart) {
             AliAODMCParticle *mcPart = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iPart));
             std::array<int, 2> decay{}; 
@@ -1399,7 +1406,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
             int labDau[5] = {-1, -1, -1, -1, -1};
 
             for (auto &pdg: pdgResoAllDecays) {
-                if (TMath::Abs(pdgPart) == pdg) {
+                if (std::abs(pdgPart) == pdg) {
                     isGoodReso = true;
                     break;
                 }
@@ -1409,7 +1416,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
                 if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC))
                     continue;
 
-                int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true);
+                int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, false);
+
                 double pt = mcPart->Pt();
                 double rapid = mcPart->Y();
 
@@ -1417,10 +1425,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
                     continue;
 
                 if (orig == 4) {
-                    dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPromptMCGenPtVsY_%d", TMath::Abs(pdgPart))))->Fill(pt, rapid);
+                    dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPromptMCGenPtVsY_%d", std::abs(pdgPart))))->Fill(pt, rapid);
                 }
                 else if (orig == 5) {
-                    dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d", TMath::Abs(pdgPart))))->Fill(pt, rapid);
+                    dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d", std::abs(pdgPart))))->Fill(pt, rapid);
                 }
 
                 switch(fDecChannel) {
@@ -1442,21 +1450,17 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
                     }
                 }
 
-                int whichV0 = -1;
                 for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
-                    if (fEnableV0[iV0] && decay[iV0]) {
-                        whichV0 = iV0;
+                    if (decay[iV0] > 0 && fEnableV0[iV0]) {
+                        if (orig == 4) {
+                            dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPromptMCGenPtVsY_%d_to_%d_%d", std::abs(decay[iV0]), fPdgD, kPdgV0IDs[iV0])))->Fill(pt, rapid);
+                        }
+                        else if (orig == 5) {
+                            dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d_to_%d_%d", std::abs(decay[iV0]), fPdgD, kPdgV0IDs[iV0])))->Fill(pt, rapid);
+                        }
                     }
                 }
 
-                if (decay[whichV0] > 0) {
-                    if (orig == 4) {
-                        dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPromptMCGenPtVsY_%d_to_%d_%d", TMath::Abs(decay[whichV0]), fPdgD, kPdgV0IDs[whichV0])))->Fill(pt, rapid);
-                    }
-                    else if (orig == 5) {
-                        dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d_to_%d_%d", TMath::Abs(decay[whichV0]), fPdgD, kPdgV0IDs[whichV0])))->Fill(pt, rapid);
-                    }
-                }
             }
         }
     }
