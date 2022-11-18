@@ -64,8 +64,8 @@ AliHFMLVarHandler::~AliHFMLVarHandler()
 
 //________________________________________________________________
 void AliHFMLVarHandler::FillTree() {
-    //if fill only signal and not signal/reflection candidate, do not store
-    if(fFillOnlySignal && !TESTBIT(fCandType, kSignal) && !TESTBIT(fCandType, kRefl)) {
+    if(fFillOnlySignal && !TESTBIT(fCandType, 0) && !TESTBIT(fCandType, 4)) {
+      
         fCandType = 0;
     }
     else {      
