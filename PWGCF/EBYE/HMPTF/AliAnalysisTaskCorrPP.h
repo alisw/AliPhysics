@@ -26,8 +26,10 @@ class TTree;
 class AliESDEvent;
 //class AliAODEvent;
 class AliESDtrackCuts;
-//class AliESDcascade;
+class AliAODcascade;
 class AliMCEvent;
+class AliVTrack;
+class AliAODTrack;
 
 class TH1D;
 class TH2D;
