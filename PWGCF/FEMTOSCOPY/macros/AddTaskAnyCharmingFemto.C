@@ -29,8 +29,26 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
     int pdgBuddy = 2212,
     int mixingDepth = 10,
+    std::vector<std::string> colsToSave = {
+      "mult",
+      "kStar",
+      "is_oldpcrm",
+      "is_newpcrm",
+      "heavy_mult",
+      "heavy_invmass",
+      "heavy_pt",
+      "heavy_origin",
+      "light_mult",
+      "light_px",
+      "light_py",
+      "light_eta",
+      "light_nsigtpc",
+      "light_nsigtof",
+      "light_dcaxy",
+      "light_dcaz"},
     const char *cutVariation = "0"
   ) {
+
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -489,6 +507,8 @@ if (!isMC) {
   task->SetAODMismatchProtection(useAODProtection);
   task->SetMassSelection(massSelection);
   task->SetUseMCTruthReco(useMCTruthReco);
+  task->SetColsToSave(colsToSave);
+
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
