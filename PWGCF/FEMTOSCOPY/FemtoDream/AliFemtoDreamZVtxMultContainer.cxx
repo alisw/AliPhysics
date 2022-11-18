@@ -181,24 +181,24 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               if (tree->FindBranch("heavy_softpion_px")) tree->SetBranchAddress("heavy_softpion_px", &heavy_softpion_px);
               if (tree->FindBranch("heavy_softpion_py")) tree->SetBranchAddress("heavy_softpion_py", &heavy_softpion_py);
               if (tree->FindBranch("heavy_softpion_pz")) tree->SetBranchAddress("heavy_softpion_pz", &heavy_softpion_pz);
-              if (tree->FindBranch("heavy_bkg_score)")) tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
-              if (tree->FindBranch("heavy_prompt_score)")) tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
-              if (tree->FindBranch("heavy_d0label)")) tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
+              if (tree->FindBranch("heavy_bkg_score")) tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
+              if (tree->FindBranch("heavy_prompt_score")) tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
+              if (tree->FindBranch("heavy_d0label")) tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
 
               // light particle
-              if (tree->FindBranch("light_mult)")) tree->SetBranchAddress("light_mult", &light_mult);
-              if (tree->FindBranch("light_px)")) tree->SetBranchAddress("light_px", &light_px);
-              if (tree->FindBranch("light_py)")) tree->SetBranchAddress("light_py", &light_py);
-              if (tree->FindBranch("light_pz)")) tree->SetBranchAddress("light_pz", &light_pz);
-              if (tree->FindBranch("light_eta)")) tree->SetBranchAddress("light_eta", &light_eta);
-              if (tree->FindBranch("light_nsigtpc)")) tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
-              if (tree->FindBranch("light_nsigtof)")) tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
-              if (tree->FindBranch("light_ncls)")) tree->SetBranchAddress("light_ncls", &light_ncls);
-              if (tree->FindBranch("light_ncrossed)")) tree->SetBranchAddress("light_ncrossed", &light_ncrossed);
-              if (tree->FindBranch("light_dcaz)")) tree->SetBranchAddress("light_dcaz", &light_dcaz);
-              if (tree->FindBranch("light_dcaxy)")) tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
-              if (tree->FindBranch("light_label)")) tree->SetBranchAddress("light_label", &light_label);
-              if (tree->FindBranch("light_motherpdg)")) tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
+              if (tree->FindBranch("light_mult")) tree->SetBranchAddress("light_mult", &light_mult);
+              if (tree->FindBranch("light_px")) tree->SetBranchAddress("light_px", &light_px);
+              if (tree->FindBranch("light_py")) tree->SetBranchAddress("light_py", &light_py);
+              if (tree->FindBranch("light_pz")) tree->SetBranchAddress("light_pz", &light_pz);
+              if (tree->FindBranch("light_eta")) tree->SetBranchAddress("light_eta", &light_eta);
+              if (tree->FindBranch("light_nsigtpc")) tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
+              if (tree->FindBranch("light_nsigtof")) tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
+              if (tree->FindBranch("light_ncls")) tree->SetBranchAddress("light_ncls", &light_ncls);
+              if (tree->FindBranch("light_ncrossed")) tree->SetBranchAddress("light_ncrossed", &light_ncrossed);
+              if (tree->FindBranch("light_dcaz")) tree->SetBranchAddress("light_dcaz", &light_dcaz);
+              if (tree->FindBranch("light_dcaxy")) tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
+              if (tree->FindBranch("light_label")) tree->SetBranchAddress("light_label", &light_label);
+              if (tree->FindBranch("light_motherpdg")) tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
               tree->Fill();
             }
           }
@@ -312,42 +312,42 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 int light_motherPdg = itPart1->GetMotherPDG();
 
                 // event
-                if (tree->FindBranch("mult)")) tree->SetBranchAddress("mult", &mult);
-                if (tree->FindBranch("vz)")) tree->SetBranchAddress("vz", &zvtx);
+                if (tree->FindBranch("mult")) tree->SetBranchAddress("mult", &mult);
+                if (tree->FindBranch("vz")) tree->SetBranchAddress("vz", &zvtx);
 
                 // pair
-                if (tree->FindBranch("kStar)")) tree->SetBranchAddress("kStar", &RelativeK);
-                if (tree->FindBranch("is_oldpcrm)")) tree->SetBranchAddress("is_oldpcrm", &is_oldpcrm);
-                if (tree->FindBranch("is_newpcrm)")) tree->SetBranchAddress("is_newpcrm", &is_newpcrm);
+                if (tree->FindBranch("kStar")) tree->SetBranchAddress("kStar", &RelativeK);
+                if (tree->FindBranch("is_oldpcrm")) tree->SetBranchAddress("is_oldpcrm", &is_oldpcrm);
+                if (tree->FindBranch("is_newpcrm")) tree->SetBranchAddress("is_newpcrm", &is_newpcrm);
 
                 // heavy particle
-                if (tree->FindBranch("heavy_mult)")) tree->SetBranchAddress("heavy_mult", &heavy_mult);
-                if (tree->FindBranch("heavy_invmass)")) tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
-                if (tree->FindBranch("heavy_pt)")) tree->SetBranchAddress("heavy_pt", &heavy_pt);
-                if (tree->FindBranch("heavy_eta)")) tree->SetBranchAddress("heavy_eta", &heavy_eta);
-                if (tree->FindBranch("heavy_origin)")) tree->SetBranchAddress("heavy_origin", &heavy_origin);
-                if (tree->FindBranch("heavy_daus)")) tree->SetBranchAddress("heavy_daus", &heavy_daus);
-                if (tree->FindBranch("heavy_softpion_px)")) tree->SetBranchAddress("heavy_softpion_px", &heavy_softpion_px);
-                if (tree->FindBranch("heavy_softpion_py)")) tree->SetBranchAddress("heavy_softpion_py", &heavy_softpion_py);
-                if (tree->FindBranch("heavy_softpion_pz)")) tree->SetBranchAddress("heavy_softpion_pz", &heavy_softpion_pz);
-                if (tree->FindBranch("heavy_bkg_score)")) tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
-                if (tree->FindBranch("heavy_prompt_score)")) tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
-                if (tree->FindBranch("heavy_d0label)")) tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
+                if (tree->FindBranch("heavy_mult")) tree->SetBranchAddress("heavy_mult", &heavy_mult);
+                if (tree->FindBranch("heavy_invmass")) tree->SetBranchAddress("heavy_invmass", &heavy_invmass);
+                if (tree->FindBranch("heavy_pt")) tree->SetBranchAddress("heavy_pt", &heavy_pt);
+                if (tree->FindBranch("heavy_eta")) tree->SetBranchAddress("heavy_eta", &heavy_eta);
+                if (tree->FindBranch("heavy_origin")) tree->SetBranchAddress("heavy_origin", &heavy_origin);
+                if (tree->FindBranch("heavy_daus")) tree->SetBranchAddress("heavy_daus", &heavy_daus);
+                if (tree->FindBranch("heavy_softpion_px")) tree->SetBranchAddress("heavy_softpion_px", &heavy_softpion_px);
+                if (tree->FindBranch("heavy_softpion_py")) tree->SetBranchAddress("heavy_softpion_py", &heavy_softpion_py);
+                if (tree->FindBranch("heavy_softpion_pz")) tree->SetBranchAddress("heavy_softpion_pz", &heavy_softpion_pz);
+                if (tree->FindBranch("heavy_bkg_score")) tree->SetBranchAddress("heavy_bkg_score", &heavy_bkgscore);
+                if (tree->FindBranch("heavy_prompt_score")) tree->SetBranchAddress("heavy_prompt_score", &heavy_promptscore);
+                if (tree->FindBranch("heavy_d0label")) tree->SetBranchAddress("heavy_d0label", &heavy_d0label);
 
                 // light particle
-                if (tree->FindBranch("light_mult)")) tree->SetBranchAddress("light_mult", &light_mult);
-                if (tree->FindBranch("light_px)")) tree->SetBranchAddress("light_px", &light_px);
-                if (tree->FindBranch("light_py)")) tree->SetBranchAddress("light_py", &light_py);
-                if (tree->FindBranch("light_pz)")) tree->SetBranchAddress("light_pz", &light_pz);
-                if (tree->FindBranch("light_eta)")) tree->SetBranchAddress("light_eta", &light_eta);
-                if (tree->FindBranch("light_nsigtpc)")) tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
-                if (tree->FindBranch("light_nsigtof)")) tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
-                if (tree->FindBranch("light_ncls)")) tree->SetBranchAddress("light_ncls", &light_ncls);
-                if (tree->FindBranch("light_ncrossed)")) tree->SetBranchAddress("light_ncrossed", &light_ncrossed);
-                if (tree->FindBranch("light_dcaz)")) tree->SetBranchAddress("light_dcaz", &light_dcaz);
-                if (tree->FindBranch("light_dcaxy)")) tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
-                if (tree->FindBranch("light_label)")) tree->SetBranchAddress("light_label", &light_label);
-                if (tree->FindBranch("light_motherpdg)")) tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
+                if (tree->FindBranch("light_mult")) tree->SetBranchAddress("light_mult", &light_mult);
+                if (tree->FindBranch("light_px")) tree->SetBranchAddress("light_px", &light_px);
+                if (tree->FindBranch("light_py")) tree->SetBranchAddress("light_py", &light_py);
+                if (tree->FindBranch("light_pz")) tree->SetBranchAddress("light_pz", &light_pz);
+                if (tree->FindBranch("light_eta")) tree->SetBranchAddress("light_eta", &light_eta);
+                if (tree->FindBranch("light_nsigtpc")) tree->SetBranchAddress("light_nsigtpc", &light_nsigtpc);
+                if (tree->FindBranch("light_nsigtof")) tree->SetBranchAddress("light_nsigtof", &light_nsigtof);
+                if (tree->FindBranch("light_ncls")) tree->SetBranchAddress("light_ncls", &light_ncls);
+                if (tree->FindBranch("light_ncrossed")) tree->SetBranchAddress("light_ncrossed", &light_ncrossed);
+                if (tree->FindBranch("light_dcaz")) tree->SetBranchAddress("light_dcaz", &light_dcaz);
+                if (tree->FindBranch("light_dcaxy")) tree->SetBranchAddress("light_dcaxy", &light_dcaxy);
+                if (tree->FindBranch("light_label")) tree->SetBranchAddress("light_label", &light_label);
+                if (tree->FindBranch("light_motherpdg")) tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
                 tree->Fill();
               }
             }
