@@ -1354,7 +1354,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
         double momMother[3] = {partMother->Px(), partMother->Py(), partMother->Pz()};
         bool isMomConserved = true;
         for (int iEl{0}; iEl<3; ++iEl) {
-            if (std::abs(momMother[iEl]-momSumDaughters[iEl]) / (std::abs(momMother[iEl]) + 1.e-13) > 0.00001) {
+            if (std::abs(momMother[iEl]-momSumDaughters[iEl]) / (std::abs(momMother[iEl]) + 1.e-13) > 0.0001) {
                 isMomConserved = false;
                 break;
             }
