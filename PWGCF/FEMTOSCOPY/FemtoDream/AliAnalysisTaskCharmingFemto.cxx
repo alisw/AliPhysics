@@ -1021,7 +1021,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   //     printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
   //   }
   // }
-  if (fUseLFFromEvtsWithPairs || true) {
+  if (fUseLFFromEvtsWithPairs) {
     if (dplus.size() == 0 && dminus.size() == 0) {
       return;
     } 
