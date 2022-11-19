@@ -53,6 +53,7 @@ set(SRCS
   UeMpi/AliAnalysisTaskMpiUE.cxx
   Flatenicity/AliAnalysisTaskSpectraFlatenicity.cxx
   FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx
+  FlatenicityLambdaK0s/AliAnalysisTaskFlatenicityLambdaK0s.cxx
   )
 
 # Headers from sources
@@ -124,3 +125,4 @@ install(DIRECTORY UeDphi DESTINATION  PWGMM/UE)
 install(DIRECTORY macros DESTINATION  PWGMM/UE)
 install(DIRECTORY Flatenicity DESTINATION  PWGMM/UE)
 install(DIRECTORY FlatenicityPiKp DESTINATION  PWGMM/UE)
+install(DIRECTORY FlatenicityLambdaK0s DESTINATION  PWGMM/UE)
