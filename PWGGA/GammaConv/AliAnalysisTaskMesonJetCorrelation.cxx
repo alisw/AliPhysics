@@ -182,6 +182,8 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoTrueMesonJetPtVsTrueZ({}),
                                                                              fHistoTrueMesonJetPtVsRecPt({}),
                                                                              fHistoTrueMesonJetPtVsRecZ({}),
+                                                                             fHistoTrueSecMesonJetPtVsRecPt({}),
+                                                                             fHistoTrueSecMesonJetPtVsRecZ({}),
                                                                              fHistoTrueMesonInTrueJet_JetPtVsTruePt({}),
                                                                              fHistoTrueMesonInTrueJet_JetPtVsTrueZ({}),
                                                                              fHistoMesonResponse({}),
@@ -391,6 +393,8 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoTrueMesonJetPtVsTrueZ({}),
                                                                                            fHistoTrueMesonJetPtVsRecPt({}),
                                                                                            fHistoTrueMesonJetPtVsRecZ({}),
+                                                                                           fHistoTrueSecMesonJetPtVsRecPt({}),
+                                                                                           fHistoTrueSecMesonJetPtVsRecZ({}),
                                                                                            fHistoTrueMesonInTrueJet_JetPtVsTruePt({}),
                                                                                            fHistoTrueMesonInTrueJet_JetPtVsTrueZ({}),
                                                                                            fHistoMesonResponse({}),
@@ -638,6 +642,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
     fHistoTrueMesonJetPtVsRecPt.resize(fnCuts);
     fHistoTrueMesonJetPtVsRecZ.resize(fnCuts);
+
+    fHistoTrueSecMesonJetPtVsRecPt.resize(fnCuts);
+    fHistoTrueSecMesonJetPtVsRecZ.resize(fnCuts);
 
     fHistoTrueMesonInTrueJet_JetPtVsTruePt.resize(fnCuts);
     fHistoTrueMesonInTrueJet_JetPtVsTrueZ.resize(fnCuts);
@@ -1139,6 +1146,16 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoTrueMesonJetPtVsRecZ[iCut]->SetXTitle("Z");
       fHistoTrueMesonJetPtVsRecZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueMesonJetPtVsRecZ[iCut]);
+
+      fHistoTrueSecMesonJetPtVsRecPt[iCut] = new TH2F("ESD_TrueSecMeson_RecPt_JetPt", "ESD_TrueSecMeson_RecPt_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+      fHistoTrueSecMesonJetPtVsRecPt[iCut]->SetXTitle("Pt");
+      fHistoTrueSecMesonJetPtVsRecPt[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
+      fTrueList[iCut]->Add(fHistoTrueSecMesonJetPtVsRecPt[iCut]);
+
+      fHistoTrueSecMesonJetPtVsRecZ[iCut] = new TH2F("ESD_TrueSecMeson_RecFrag_JetPt", "ESD_TrueMeson_RecFrag_JetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+      fHistoTrueSecMesonJetPtVsRecZ[iCut]->SetXTitle("Z");
+      fHistoTrueSecMesonJetPtVsRecZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
+      fTrueList[iCut]->Add(fHistoTrueSecMesonJetPtVsRecZ[iCut]);
 
       fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut] = new TH2F("ESD_TrueMeson_InTrueJets_TruePt_JetPt", "ESD_TrueMeson_InTrueJets_TruePt_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut]->SetXTitle("meson p_{T} (GeV/c)");
@@ -3132,6 +3149,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
     // fill 4d response matrix
     fRespMatrixHandlerMesonPt[fiCut]->Fill(jetPtRec, jetPtTrue, mesonPtRec, mesonPtTrue, fWeightJetJetMC);
   } else { // fill all secondary mesons
+
+    fHistoTrueSecMesonJetPtVsRecZ[fiCut]->Fill(z_rec, jetPtRec, fWeightJetJetMC);
+    fHistoTrueSecMesonJetPtVsRecPt[fiCut]->Fill(Pi0Candidate->Pt(), jetPtRec, fWeightJetJetMC);
+
     fHistoTrueSecondaryMesonInvMassPt[fiCut]->Fill(Pi0Candidate->M(), mesonPtRec, fWeightJetJetMC);
     fRespMatrixHandlerTrueSecondaryMesonInvMassVsPt[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
     fRespMatrixHandlerTrueSecondaryMesonInvMassVsZ[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
