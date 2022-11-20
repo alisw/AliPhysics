@@ -346,7 +346,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
                     }
                 }
 
-                double binMinsRecoV0[7] = {0., -0.8, 0., minMassV0, 0., 0., 0.};
+                double binMinsRecoV0[7] = {0., -0.8, 0., minMassV0, 0.9, 0., 0.};
                 double binMaxsRecoV0[7] = {50., 0.8, 2*TMath::Pi(), maxMassV0, 1., 10., 0.1};
 
                 fHistMCGenV0[iV0] = new THnSparseF(Form("hV0MCGen_%d", kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
