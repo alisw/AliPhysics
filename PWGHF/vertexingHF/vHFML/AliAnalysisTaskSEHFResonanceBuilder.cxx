@@ -259,7 +259,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
         double binMinsRecoD[7] = {0., -0.8, 0., minMass, 0., 0., 0.};
         double binMaxsRecoD[7] = {50., 0.8, 2*TMath::Pi(), maxMass, 1., 1., 1.};
 
-        int nBinsRecoV0[7] = {100, 160, 360, 200, 100, 20, 10}; // pt, y, phi, mass, cosp, radius, min dau dca
+        int nBinsRecoV0[7] = {100, 160, 360, 200, 100, 100, 10}; // pt, y, phi, mass, cosp, radius, min dau dca
 
         switch (fDecChannel) {
             case kDplustoKpipi:
@@ -315,8 +315,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
 
                 fHistMCGenDmeson[0] = new THnSparseF("hPromptDmesonMCGen_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
                 fHistMCGenDmeson[1] = new THnSparseF("hNonPromptDmesonMCGen_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
-                fHistMCRecoDmeson[0] = new THnSparseF("hPromptDmesonMCReco_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#Delta#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
-                fHistMCRecoDmeson[1] = new THnSparseF("hNonPromptDmesonMCReco_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#Delta#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
+                fHistMCRecoDmeson[0] = new THnSparseF("hPromptDmesonMCReco_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#Delta#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt;", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
+                fHistMCRecoDmeson[1] = new THnSparseF("hNonPromptDmesonMCReco_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#Delta#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt;", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
                 fOutput->Add(fHistMCGenDmeson[0]);
                 fOutput->Add(fHistMCGenDmeson[1]);
                 fOutput->Add(fHistMCRecoDmeson[0]);
@@ -350,7 +350,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
                 double binMaxsRecoV0[7] = {50., 0.8, 2*TMath::Pi(), maxMassV0, 1., 10., 0.1};
 
                 fHistMCGenV0[iV0] = new THnSparseF(Form("hV0MCGen_%d", kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
-                fHistMCRecoV0[iV0] = new THnSparseF(Form("hV0MCReco_%d", kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#it{M} (GeV/#it{c}^{2}); cos(#vartheta_{P}); radius (cm); min daughter DCA (cm)", 7, nBinsRecoV0, binMinsRecoV0, binMaxsRecoV0);
+                fHistMCRecoV0[iV0] = new THnSparseF(Form("hV0MCReco_%d", kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#it{M} (GeV/#it{c}^{2}); cos(#vartheta_{P}); radius (cm); min daughter DCA (cm);", 7, nBinsRecoV0, binMinsRecoV0, binMaxsRecoV0);
                 fOutput->Add(fHistMCGenV0[iV0]);
                 fOutput->Add(fHistMCRecoV0[iV0]);
             }
@@ -601,7 +601,17 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     }
                     for(auto iHypo{0u}; iHypo<kPdgV0IDs.size(); ++iHypo) {
                         if (isSignal[iHypo]) {
-                            double massV0 = TDatabasePDG::Instance()->GetParticle(kPdgV0IDs[iHypo])->Mass();
+                            double massV0 = -1.;
+                            if (iHypo == kK0S) {
+                                massV0 = v0->MassK0Short();
+                            } else if (iHypo == kLambda) {
+                                AliAODMCParticle *partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcLab[kLambda]));
+                                if (partV0->GetPdgCode() > 0) {
+                                    massV0 = v0->MassLambda();
+                                } else {
+                                    massV0 = v0->MassAntiLambda();
+                                }
+                            }
                             double radV0 = std::sqrt(v0->Xv()*v0->Xv() + v0->Yv()*v0->Yv());
                             double minDCAV0 = (std::abs(v0->DcaPosToPrimVertex()) < std::abs(v0->DcaNegToPrimVertex())) ? std::abs(v0->DcaPosToPrimVertex()) : std::abs(v0->DcaNegToPrimVertex());
                             double array4Sparse[7] = {v0->Pt(), v0->Y(kPdgV0IDs[iHypo]), v0->Phi(), massV0, v0->CosPointingAngle(posPrimVtx), radV0, minDCAV0};
@@ -763,35 +773,47 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             if (isSelected == 1 || isSelected == 3) {
                 if (pdgCode0 == 211 || fDecChannel != kD0toKpi) {
                     arr4Sparse.push_back(massD[0]);
-                    if (fDependOnMLSelector) {
-                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][0]);
-                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][1]);
-                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][2]);
+                    if (fApplyML) {
+                        if (fDependOnMLSelector) {
+                            arr4Sparse.push_back(fScoresFromMLSelector[iCand][0]);
+                            arr4Sparse.push_back(fScoresFromMLSelector[iCand][1]);
+                            arr4Sparse.push_back(fScoresFromMLSelector[iCand][2]);
+                        } else {
+                            arr4Sparse.push_back(scores[0]);
+                            arr4Sparse.push_back(scores[1]);
+                            arr4Sparse.push_back(scores[2]);
+                        } 
                     } else {
-                        arr4Sparse.push_back(scores[0]);
-                        arr4Sparse.push_back(scores[1]);
-                        arr4Sparse.push_back(scores[2]);
+                        arr4Sparse.push_back(-999.);
+                        arr4Sparse.push_back(-999.);
+                        arr4Sparse.push_back(-999.);
                     }
                 }
             }
             if (isSelected >= 2) {
                 if (pdgCode0 == 321) {
                     arr4Sparse.push_back(massD[1]);
-                    if (fDependOnMLSelector) {
-                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][0]);
-                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][1]);
-                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][2]);
-                    } else {
-                        arr4Sparse.push_back(scoresSecond[0]);
-                        arr4Sparse.push_back(scoresSecond[1]);
-                        arr4Sparse.push_back(scoresSecond[2]);
+                    if (fApplyML) {
+                        if (fDependOnMLSelector) {
+                            arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][0]);
+                            arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][1]);
+                            arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][2]);
+                        } else {
+                            arr4Sparse.push_back(scoresSecond[0]);
+                            arr4Sparse.push_back(scoresSecond[1]);
+                            arr4Sparse.push_back(scoresSecond[2]);
+                        }
+                    }  else {
+                        arr4Sparse.push_back(-999.);
+                        arr4Sparse.push_back(-999.);
+                        arr4Sparse.push_back(-999.);
                     }
                 }
             }
             if (orig == 4)
                 fHistMCRecoDmeson[0]->Fill(arr4Sparse.data());
             else if (orig == 5)
-                fHistMCRecoDmeson[0]->Fill(arr4Sparse.data());
+                fHistMCRecoDmeson[1]->Fill(arr4Sparse.data());
         }
 
         // loop over tracks
@@ -1169,13 +1191,6 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
     else if (isSelected >= 2) {
         fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
     }
-
-    modelPred.push_back(-999.);
-    modelPred.push_back(-999.);
-    modelPred.push_back(-999.);
-    modelPredSecond.push_back(-999.);
-    modelPredSecond.push_back(-999.);
-    modelPredSecond.push_back(-999.);
 
     return isSelected;
 }
