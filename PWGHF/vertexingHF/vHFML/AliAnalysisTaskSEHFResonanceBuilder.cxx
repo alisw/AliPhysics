@@ -770,44 +770,40 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
         if (fReadMC && labD >= 0) 
         {
             std::vector<double> arr4Sparse = {dMeson->Pt(), rapidity, dMeson->Phi()};
-            if (isSelected == 1 || isSelected == 3) {
-                if (pdgCode0 == 211 || fDecChannel != kD0toKpi) {
-                    arr4Sparse.push_back(massD[0]);
-                    if (fApplyML) {
-                        if (fDependOnMLSelector) {
-                            arr4Sparse.push_back(fScoresFromMLSelector[iCand][0]);
-                            arr4Sparse.push_back(fScoresFromMLSelector[iCand][1]);
-                            arr4Sparse.push_back(fScoresFromMLSelector[iCand][2]);
-                        } else {
-                            arr4Sparse.push_back(scores[0]);
-                            arr4Sparse.push_back(scores[1]);
-                            arr4Sparse.push_back(scores[2]);
-                        } 
+            if (fDecChannel != kD0toKpi || ((isSelected == 1 || isSelected == 3) && pdgCode0 == 211)) {
+                arr4Sparse.push_back(massD[0]);
+                if (fApplyML) {
+                    if (fDependOnMLSelector) {
+                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][0]);
+                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][1]);
+                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][2]);
                     } else {
-                        arr4Sparse.push_back(-999.);
-                        arr4Sparse.push_back(-999.);
-                        arr4Sparse.push_back(-999.);
-                    }
+                        arr4Sparse.push_back(scores[0]);
+                        arr4Sparse.push_back(scores[1]);
+                        arr4Sparse.push_back(scores[2]);
+                    } 
+                } else {
+                    arr4Sparse.push_back(-999.);
+                    arr4Sparse.push_back(-999.);
+                    arr4Sparse.push_back(-999.);
                 }
             }
-            if (isSelected >= 2) {
-                if (pdgCode0 == 321) {
-                    arr4Sparse.push_back(massD[1]);
-                    if (fApplyML) {
-                        if (fDependOnMLSelector) {
-                            arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][0]);
-                            arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][1]);
-                            arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][2]);
-                        } else {
-                            arr4Sparse.push_back(scoresSecond[0]);
-                            arr4Sparse.push_back(scoresSecond[1]);
-                            arr4Sparse.push_back(scoresSecond[2]);
-                        }
-                    }  else {
-                        arr4Sparse.push_back(-999.);
-                        arr4Sparse.push_back(-999.);
-                        arr4Sparse.push_back(-999.);
+            else if (fDecChannel == kD0toKpi && isSelected >= 2 && pdgCode0 == 321) {
+                arr4Sparse.push_back(massD[1]);
+                if (fApplyML) {
+                    if (fDependOnMLSelector) {
+                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][0]);
+                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][1]);
+                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][2]);
+                    } else {
+                        arr4Sparse.push_back(scoresSecond[0]);
+                        arr4Sparse.push_back(scoresSecond[1]);
+                        arr4Sparse.push_back(scoresSecond[2]);
                     }
+                }  else {
+                    arr4Sparse.push_back(-999.);
+                    arr4Sparse.push_back(-999.);
+                    arr4Sparse.push_back(-999.);
                 }
             }
             if (orig == 4)
@@ -1185,10 +1181,10 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
         return isMLsel;
     }
-    if (isSelected == 1 || isSelected == 3) {
+    if (fDecChannel != kD0toKpi || (isSelected == 1 || isSelected == 3)) {
         fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
     }
-    else if (isSelected >= 2) {
+    else if (fDecChannel == kD0toKpi && isSelected >= 2) {
         fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
     }
 
