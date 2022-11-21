@@ -28,6 +28,31 @@ private:
   TH1F *hinvmassLambda;     //! dummy histogram
   TH1F *hinvmassAntiLambda; //! dummy histogram
   TH1F *hflat;              //! dummy histogram
+
+  Float_t invmK0s;
+  Float_t invpK0s;
+  Float_t invptK0s;
+  Float_t invyK0s;
+  Float_t flatenicityK0s;
+
+  TTree *treeK0s;
+
+  Float_t invmLambda;
+  Float_t invpLambda;
+  Float_t invptLambda;
+  Float_t invyLambda;
+  Float_t flatenicityLambda;
+  
+  TTree *treeLambda;
+
+  Float_t invmAntiLambda;
+  Float_t invpAntiLambda;
+  Float_t invptAntiLambda;
+  Float_t invyAntiLambda;
+  Float_t flatenicityAntiLambda;
+
+  TTree *treeAntiLambda;
+  
   AliPIDResponse *fPIDResponse;
   AliESDtrackCuts *fTracksCuts;
   AliAnalysisTaskFlatenicityLambdaK0s(const AliAnalysisTaskFlatenicityLambdaK0s &);            // not implemented

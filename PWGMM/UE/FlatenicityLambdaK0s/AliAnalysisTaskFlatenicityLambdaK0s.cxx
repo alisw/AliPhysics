@@ -46,14 +46,15 @@ Float_t invmassK0s;
 ClassImp(AliAnalysisTaskFlatenicityLambdaK0s)
 
     AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s() : AliAnalysisTaskSE(),
-                                                     fAOD(0), fOutputList(0), hinvmassK0s(0), fESD(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0)
+                                                                                 fAOD(0), fOutputList(0), hinvmassK0s(0), fESD(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
+
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s(const char *name) : AliAnalysisTaskSE(name),
-                                                                 fAOD(0), fOutputList(0), hinvmassK0s(0), fESD(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0)
+                                                                                             fAOD(0), fOutputList(0), hinvmassK0s(0), fESD(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
 {
     // constructor
     DefineInput(0, TChain::Class()); // define the input of the analysis: in this case we take a 'chain' of events
@@ -85,11 +86,34 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
     hinvmassAntiLambda = new TH1F("hinvmassAntiLambda", "hinvmassAntiLambda", 100, 1.08, 1.15);
     hflat = new TH1F("hflat", "hflat", 101, -0.005, 1.005);
 
+    treeK0s = new TTree("treeK0s", "treeK0s");
+    treeK0s->Branch("invmK0s", &invmK0s, "invmK0s/F");
+    treeK0s->Branch("invpK0s", &invpK0s, "invpK0s/F");
+    treeK0s->Branch("invptK0s", &invptK0s, "invptK0s/F");
+    treeK0s->Branch("invyK0s", &invyK0s, "invyK0s/F");
+    treeK0s->Branch("flatenicityK0s", &flatenicityK0s, "flatenicityK0s/F");
+
+    treeLambda = new TTree("treeLambda", "treeLambda");
+    treeLambda->Branch("invmLambda", &invmLambda, "invmLambda/F");
+    treeLambda->Branch("invpLambda", &invpLambda, "invpLambda/F");
+    treeLambda->Branch("invptLambda", &invptLambda, "invptLambda/F");
+    treeLambda->Branch("invyLambda", &invyLambda, "invyLambda/F");
+    treeLambda->Branch("flatenicityLambda", &flatenicityLambda, "flatenicityLambda/F");
+
+    treeAntiLambda = new TTree("treeAntiLambda", "treeAntiLambda");
+    treeAntiLambda->Branch("invmAntiLambda", &invmAntiLambda, "invmAntiLambda/F");
+    treeAntiLambda->Branch("invpAntiLambda", &invpAntiLambda, "invpAntiLambda/F");
+    treeAntiLambda->Branch("invptAntiLambda", &invptAntiLambda, "invptAntiLambda/F");
+    treeAntiLambda->Branch("invyAntiLambda", &invyAntiLambda, "invyAntiLambda/F");
+    treeAntiLambda->Branch("flatenicityAntiLambda", &flatenicityAntiLambda, "flatenicityAntiLambda/F");
 
     fOutputList->Add(hinvmassK0s);
     fOutputList->Add(hinvmassLambda);
     fOutputList->Add(hinvmassAntiLambda);
     fOutputList->Add(hflat);
+    fOutputList->Add(treeK0s);
+    fOutputList->Add(treeLambda);
+    fOutputList->Add(treeAntiLambda);
 
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
@@ -259,7 +283,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
     if (fESD->IsPileupFromSPD())
         return;
     Double_t flat = GetFlatenicityV0();
-    ((TH1D *)(fOutputList->FindObject("hflat")))->Fill(1.0-flat);
+    ((TH1D *)(fOutputList->FindObject("hflat")))->Fill(1.0 - flat);
 
     nv0sTot = fESD->GetNumberOfV0s();
     Int_t lComeFromSigma = 0;
@@ -420,6 +444,12 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
             if (ctauK0s > 20)
                 continue;
             ((TH1D *)(fOutputList->FindObject("hinvmassK0s")))->Fill(lInvMassK0s);
+            invmK0s = v0->GetEffMass();
+            invpK0s = v0->P();
+            invptK0s = v0->Pt();
+            invyK0s = lRapK0s;
+            flatenicityK0s = 1.0 - flat;
+            ((TTree *)(fOutputList->FindObject("treeK0s")))->Fill();
         }
         Float_t massLambda = 1.11568;
 
@@ -444,6 +474,14 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
             Float_t ctauLambda = lV0DecayLength * lInvMassLambda / v0->P();
             if (ctauLambda > 30)
                 continue;
+
+            invmLambda = v0->GetEffMass();
+            invpLambda = v0->P();
+            invptLambda = v0->Pt();
+            invyLambda = lRapLambda;
+            flatenicityLambda = 1.0 - flat;
+
+            ((TTree *)(fOutputList->FindObject("treeLambda")))->Fill();
             ((TH1D *)(fOutputList->FindObject("hinvmassLambda")))->Fill(lInvMassLambda);
         }
 
@@ -471,6 +509,14 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
             Float_t ctauAntiLambda = lV0DecayLength * lInvMassAntiLambda / v0->P();
             if (ctauAntiLambda > 30)
                 continue;
+
+            invmAntiLambda = v0->GetEffMass();
+            invpAntiLambda = v0->P();
+            invptAntiLambda = v0->Pt();
+            invyAntiLambda = lRapAntiLambda;
+            flatenicityAntiLambda = 1.0 - flat;
+
+            ((TTree *)(fOutputList->FindObject("treeAntiLambda")))->Fill();
             ((TH1D *)(fOutputList->FindObject("hinvmassAntiLambda")))->Fill(lInvMassAntiLambda);
         }
     }
