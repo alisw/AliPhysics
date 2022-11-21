@@ -35,6 +35,7 @@
 #include "AliAODHandler.h"
 #include "AliAODExtension.h"
 #include "AliAnalysisManager.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisTaskSECharmHadronMLSelector.h"
 
 #include "AliAnalysisTaskSEHFResonanceBuilder.h"
@@ -360,9 +361,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     PostData(1, fOutput);
 
     if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0))
-        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D:pt_track:charge_track:id_track:signal_track:nsigma_tpc_track:nsigma_tof_track");
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D:pt_track:charge_track:id_track:signal_track:nsigma_tpc_track:nsigma_tof_track:percentile_V0M");
     else 
-        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D:inv_mass_v0:pt_v0:charge_v0:id_v0:signal_v0:cosp_v0:declen_xy_v0:dca_dau_min_v0");
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D:inv_mass_v0:pt_v0:charge_v0:id_v0:signal_v0:cosp_v0:declen_xy_v0:dca_dau_min_v0:percentile_V0M");
 
     PostData(4, fNtupleCharmReso);
 
@@ -474,6 +475,11 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
     TClonesArray *arrayMC = nullptr;
     AliAODMCHeader *mcHeader = nullptr;
+
+    float centrality = -999.;
+    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+    if(multSelection)
+        centrality = multSelection->GetMultiplicityPercentile("V0M");
 
     // load MC particles
     if (fReadMC)
@@ -849,9 +855,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo, -1)) {
                         std::vector<float> arr4Tuple{};
                         if(fDependOnMLSelector)
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[0]), float(dMeson->Pt()), float(chargeD[0]), float(orig), float(fScoresFromMLSelector[iCand][0]), float(fScoresFromMLSelector[iCand][1]), float(fScoresFromMLSelector[iCand][2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo])};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[0]), float(dMeson->Pt()), float(chargeD[0]), float(orig), float(fScoresFromMLSelector[iCand][0]), float(fScoresFromMLSelector[iCand][1]), float(fScoresFromMLSelector[iCand][2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), centrality};
                         else
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[0]), float(dMeson->Pt()), float(chargeD[0]), float(orig), float(scores[0]), float(scores[1]), float(scores[2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo])};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[0]), float(dMeson->Pt()), float(chargeD[0]), float(orig), float(scores[0]), float(scores[1]), float(scores[2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), centrality};
                         fNtupleCharmReso->Fill(arr4Tuple.data());
                     }
                 }
@@ -863,9 +869,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo, -1)) {
                         std::vector<float> arr4Tuple{};
                         if(fDependOnMLSelector)
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[1]), float(dMeson->Pt()), float(chargeD[1]), float(orig), float(fScoresFromMLSelectorSecond[iCand][0]), float(fScoresFromMLSelectorSecond[iCand][1]), float(fScoresFromMLSelectorSecond[iCand][2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo])};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[1]), float(dMeson->Pt()), float(chargeD[1]), float(orig), float(fScoresFromMLSelectorSecond[iCand][0]), float(fScoresFromMLSelectorSecond[iCand][1]), float(fScoresFromMLSelectorSecond[iCand][2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), centrality};
                         else
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[1]), float(dMeson->Pt()), float(chargeD[1]), float(orig), float(scoresSecond[0]), float(scoresSecond[1]), float(scoresSecond[2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo])};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[1]), float(dMeson->Pt()), float(chargeD[1]), float(orig), float(scoresSecond[0]), float(scoresSecond[1]), float(scoresSecond[2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), centrality};
                         fNtupleCharmReso->Fill(arr4Tuple.data());
                     }
                 }
@@ -941,9 +947,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
                         std::vector<float> arr4Tuple{};
                         if(fDependOnMLSelector)
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso[iMass]), float(fourVecReso.Pt()), float(signalReso), float(massD[iMass]), float(dMeson->Pt()), float(chargeD[iMass]), float(orig), float(fScoresFromMLSelector[iCand][0]), float(fScoresFromMLSelector[iCand][1]), float(fScoresFromMLSelector[iCand][2]), float(invMassV0), float(v0->Pt()), float(chargeV0), float(kPdgV0IDs[iHypo]), float(selectedV0Signal[iV0][iHypo]), float(v0->CosPointingAngle(posPrimVtx)), float(radV0), float(minDCAV0)};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso[iMass]), float(fourVecReso.Pt()), float(signalReso), float(massD[iMass]), float(dMeson->Pt()), float(chargeD[iMass]), float(orig), float(fScoresFromMLSelector[iCand][0]), float(fScoresFromMLSelector[iCand][1]), float(fScoresFromMLSelector[iCand][2]), float(invMassV0), float(v0->Pt()), float(chargeV0), float(kPdgV0IDs[iHypo]), float(selectedV0Signal[iV0][iHypo]), float(v0->CosPointingAngle(posPrimVtx)), float(radV0), float(minDCAV0), centrality};
                         else
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso[iMass]), float(fourVecReso.Pt()), float(signalReso), float(massD[iMass]), float(dMeson->Pt()), float(chargeD[iMass]), float(orig), float(scores[0]), float(scores[1]), float(scores[2]), float(invMassV0), float(v0->Pt()), float(chargeV0), float(kPdgV0IDs[iHypo]), float(selectedV0Signal[iV0][iHypo]), float(v0->CosPointingAngle(posPrimVtx)), float(radV0), float(minDCAV0)};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso[iMass]), float(fourVecReso.Pt()), float(signalReso), float(massD[iMass]), float(dMeson->Pt()), float(chargeD[iMass]), float(orig), float(scores[0]), float(scores[1]), float(scores[2]), float(invMassV0), float(v0->Pt()), float(chargeV0), float(kPdgV0IDs[iHypo]), float(selectedV0Signal[iV0][iHypo]), float(v0->CosPointingAngle(posPrimVtx)), float(radV0), float(minDCAV0), centrality};
                         fNtupleCharmReso->Fill(arr4Tuple.data());
                     }
                 }
