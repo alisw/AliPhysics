@@ -10004,12 +10004,12 @@ void AliHFSystErr::InitLctopK0S2018PbPb010ML() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
   fRawYield->SetBinContent(1,0.00);
-  fRawYield->SetBinContent(2,0.11);
+  fRawYield->SetBinContent(2,0.13);
   for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.12);
   for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.11);
-  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.08);
+  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.10);
   for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.11);
-  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.15);
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.17);
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
   fCutsEff->SetBinContent(1,0.00);
@@ -10057,12 +10057,12 @@ void AliHFSystErr::InitLctopK0S2018PbPb3050ML() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
   fRawYield->SetBinContent(1,0.00);
-  fRawYield->SetBinContent(2,0.12);
-  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.09);
-  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.07);
-  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.09);
+  fRawYield->SetBinContent(2,0.14);
+  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.12);
   for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.07);
-  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.12);
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.14);
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
   fCutsEff->SetBinContent(1,0.00);
