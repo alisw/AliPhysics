@@ -133,12 +133,14 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH1F      *fHist_ProtonDeuteron_MED;
     TH1F      *fHist_ProtonDeuteron_RPD;
     TH1F      *fHist_ProtonDeuteron_PairsPerEvent;
+    TH1F      *fHist_ProtonDeuteron_EventsForMixing;
     TH2F      *fHist_ProtonDeuteron_AngleOfPairs;
     TH2F      *fHist_ProtonDeuteron_PairMultiplicity;
     TH2F      *fHist_ProtonDeuteron_pT; 
     TH2F      *fHist_ProtonDeuteron_Eta; 
     TH2F      *fHist_ProtonDeuteron_Centrality; 
     TH2F      *fHist_ProtonDeuteron_VertexZ; 
+    TH2F      *fHist_ProtonDeuteron_UsedEventsInPool;
 
 
     // histograms for antiprotons
@@ -213,12 +215,14 @@ class AliAnalysisTask_pdLd : public AliAnalysisTaskSE
     TH1F      *fHist_AntiProtonAntiDeuteron_MED;
     TH1F      *fHist_AntiProtonAntiDeuteron_RPD;
     TH1F      *fHist_AntiProtonAntiDeuteron_PairsPerEvent;
+    TH1F      *fHist_AntiProtonAntiDeuteron_EventsForMixing;
     TH2F      *fHist_AntiProtonAntiDeuteron_AngleOfPairs;
     TH2F      *fHist_AntiProtonAntiDeuteron_PairMultiplicity;
     TH2F      *fHist_AntiProtonAntiDeuteron_pT; 
     TH2F      *fHist_AntiProtonAntiDeuteron_Eta; 
     TH2F      *fHist_AntiProtonAntiDeuteron_Centrality; 
     TH2F      *fHist_AntiProtonAntiDeuteron_VertexZ; 
+    TH2F      *fHist_AntiProtonAntiDeuteron_UsedEventsInPool;
 
 
     std::vector<int>	*ProtonTrackArray;
@@ -248,7 +252,7 @@ class AliAODTrackTiny : public TObject
     AliAODTrackTiny() : x(-999),y(-999),z(-999){};
     virtual ~AliAODTrackTiny(){};
 
-    void InitFromTrack(const AliAODTrack *Track){
+    void InitFromTrack(const AliAODTrack *Track, double Centrality, double PrimaryVertexZ){
       if(!Track)
       {
 	std::cout << "WARNING: Input track for AliAODTrackTiny does not exist" << std::endl;
@@ -258,18 +262,24 @@ class AliAODTrackTiny : public TObject
       x = Track->Px();
       y = Track->Py();
       z = Track->Pz();
+      centrality = Centrality;
+      vertex = PrimaryVertexZ;
 
     }
 
     double Px() const { return x;}
     double Py() const { return y;}
     double Pz() const { return z;}
+    double GetPrimaryVertexZ() const { return vertex;}
+    double GetCentrality() const { return centrality;}
 
   private:
 
     double x;
     double y;
     double z;
+    double vertex;
+    double centrality;
 
 
   ClassDef(AliAODTrackTiny,1);
