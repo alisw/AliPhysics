@@ -228,4 +228,4 @@ install(FILES PHOS_Resonances/AddTaskPHOSResonances.C DESTINATION PWGGA/PHOSTask
 install(FILES AutoTrendQA/MakeTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES AutoTrendQA/DrawTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES PHOS_Nbar/AddTaskPHOSSigmaBar.C DESTINATION PWGGA/PHOSTasks/PHOS_Nbar)
-install(FILES PHOS_gamma/AddTaskGammaPHOSPP.C DESTINATION PWGGA/PHOSTasks/PHOS_Nbar)
+install(FILES PHOS_gamma/AddTaskGammaPHOSPP.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)
