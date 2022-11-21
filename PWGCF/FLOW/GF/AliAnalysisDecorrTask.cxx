@@ -790,7 +790,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, TSt
     TProfile* prof = (TProfile*)lSampleList->FindObject(Form("%s%s",fCorrName.Data(),suffix.Data()));
     if(!prof) { AliError(Form("Profile %s%s not found",fCorrName.Data(),suffix.Data())); return; }
     prof->Fill(lCent,val,d[0]);
-    refData[fTaskCounter].val = val;
+    //refData[fTaskCounter].val = val;
     if(fSampling) 
     {
         TProfile* prof_sample = (TProfile*)lSampleList->FindObject(Form("%s%s_sample%d",fCorrName.Data(),suffix.Data(),fIndexSampling));
@@ -816,9 +816,9 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, con
     if(!prof) { AliError(Form("Profile %s%s not found",fCorrName.Data(),suffix.Data())); return; }
     prof->Fill(lCent,lpta,val,d[0]);
     
-    if(suffix.Contains("_diff")) ptaData[fTaskCounter].val[0][iPtA] = val;
-    if(suffix.Contains("_PtA")) ptaData[fTaskCounter].val[1][iPtA] = val;
-    if(suffix.Contains("_PtRef")) ptaData[fTaskCounter].val[2][iPtA] = val;
+    //if(suffix.Contains("_diff")) ptaData[fTaskCounter].val[0][iPtA] = val;
+    //if(suffix.Contains("_PtA")) ptaData[fTaskCounter].val[1][iPtA] = val;
+    //if(suffix.Contains("_PtRef")) ptaData[fTaskCounter].val[2][iPtA] = val;
     if(fSampling) 
     {
         TProfile2D* prof_sample = (TProfile2D*)lSampleList->FindObject(Form("%s%s_sample%d",fCorrName.Data(),suffix.Data(),fIndexSampling));
@@ -846,7 +846,7 @@ void AliAnalysisDecorrTask::FillProfiles(TComplex c[2], const double &lCent, con
     TProfile3D* prof = (TProfile3D*)lSampleList->FindObject(Form("%s%s",fCorrName.Data(),suffix.Data()));
     if(!prof) { AliError(Form("Profile %s%s not found",fCorrName.Data(),suffix.Data())); return; }
     prof->Fill(lCent,lpta,lptb,val,d[0]);
-    ptbData[fTaskCounter].val[iPtA][iPtB] = val;
+    //ptbData[fTaskCounter].val[iPtA][iPtB] = val;
     if(fSampling) 
     {
         TProfile3D* prof_sample = (TProfile3D*)lSampleList->FindObject(Form("%s%s_sample%d",fCorrName.Data(),suffix.Data(),fIndexSampling));
@@ -889,6 +889,7 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             bIsRP = IsWithinRP(track);
             if (!bIsRP) { continue; }
 
+            if(bUseLikeSign && track->Charge() != iSign)  continue; 
             double dPhi = track->Phi();
             double dEta = track->Eta();
 
@@ -955,8 +956,7 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             if(fRedTracks && iPart > fTrackprevent*nPrim) continue;
             if(fAbsEtaMax > 0.0 && Abs(dEta) > fAbsEtaMax) continue;
             //Calculating weights
-            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
-            if(dWeight <= 0.0) { dWeight = 1.0; }
+            double dWeight = 1.0;
             
             //Filling Q-vectors for RPs
             if(!bHasGap)
@@ -1084,7 +1084,7 @@ int AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const tas
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
-
+            if(bUseLikeSign && track->Charge() != iSign)  continue; 
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();
@@ -1184,8 +1184,7 @@ int AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const tas
             if(!bIsWithinPOI) { continue; }
 
             //Load weights
-            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
-            if(dWeight <= 0.0) { dWeight = 1.0; }
+            double dWeight = 1.0;
 
             //POI with no eta gap
             if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
@@ -1345,7 +1344,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
-
+            if(bUseLikeSign && track->Charge() != iSign)  continue; 
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();
@@ -1445,8 +1444,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
             if(!bIsWithinPOI) { continue; }
 
             //Load weights
-            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
-            if(dWeight <= 0.0) { dWeight = 1.0; }
+            double dWeight = 1.0;
 
             //POI with no eta gap
             if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
