@@ -120,7 +120,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TProfile *hActivityV0DataSect;
 		TProfile *hActivityV0McSect;
 		TH2D *hFlatVsNchMC;
-		TH3F *hFlatVsV0MVsMult;
+		TH2F *hFlatVsV0MVsMult[9];
 		TH2F *hFlatVsPtV0M[9];
 		TH3F *hNsigmaPiPos[9][4];
 		TH3F *hNsigmaKPos[9][4];

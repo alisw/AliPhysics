@@ -108,6 +108,8 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fDCAzCut(-1),
     fTPCchi2Cut(-1),
     fNClustersTPCCut(-1),
+    fNTPCsharedCut(-1),
+    fTPCdEdxMin(-1.),
     fMinTPCCrossedRows(-1),
     fMinTPCRowsOverFindableCls(-1),
     fAODTrackCutBit(128),
@@ -216,6 +218,8 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fDCAzCut(-1),
     fTPCchi2Cut(-1),
     fNClustersTPCCut(-1),
+    fNTPCsharedCut(-1),
+    fTPCdEdxMin(-1.),
     fMinTPCCrossedRows(-1),
     fMinTPCRowsOverFindableCls(-1),
     fAODTrackCutBit(128),
@@ -668,6 +672,16 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  continue;
       		}
 		
+		// shared cluster 
+		if( fNTPCsharedCut != -1 && track->GetTPCnclsS() > fNTPCsharedCut){
+		  continue;
+		}
+		
+		// dE/dx
+		if( fTPCdEdxMin != -1 && track->GetDetPid()->GetTPCsignal() < fTPCdEdxMin){
+		  continue;
+		}
+			
 		if(fMinTPCCrossedRows != -1){
 		  if ((Float_t)track->GetTPCNCrossedRows() < (120 - (5/(Float_t)track->Pt())) ){
 		    continue;
@@ -1021,7 +1035,17 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                 if( fNClustersTPCCut != -1 && trackAOD->GetTPCNcls() < fNClustersTPCCut){
                   continue;
                 }
-
+                
+        // shared cluster 
+		if( fNTPCsharedCut != -1 && trackAOD->GetTPCnclsS() > fNTPCsharedCut){
+		  continue;
+		}
+		
+		// dE/dx
+		if( fTPCdEdxMin != -1 && trackAOD->GetDetPid()->GetTPCsignal() < fTPCdEdxMin){
+		  continue;
+		}
+		
 		if(fMinTPCCrossedRows != -1){
 		  if ((Float_t)trackAOD->GetTPCNCrossedRows() < (120 - (5/(Float_t)trackAOD->Pt())) ){
 		    continue;

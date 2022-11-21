@@ -69,6 +69,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetTrigger(UInt_t trigger) {
     fTrigger = trigger;
   }
+  void SetColsToSave(std::vector<std::string> cols) {
+    fColsToSave = cols;
+  }
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) {
     fEvtCuts = cuts;
   }
@@ -337,6 +340,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   std::map <std::pair<int, int>, TTree*> * fPairTreeSE; //!
   std::map <std::pair<int, int>, TTree*> * fPairTreeME; //!
+  std::vector<std::string> fColsToSave; //
 
   TList *fQA;                      //!
   TList *fEvtHistList;             //!
@@ -422,7 +426,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 18)
+ClassDef(AliAnalysisTaskCharmingFemto, 19)
 };
 
 #endif

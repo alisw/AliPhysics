@@ -272,11 +272,11 @@ namespace PWGJE
       UInt_t cifras = 0; // bit coded, see GetDimParams() below
       if (fDoLessSparseAxes)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 7 | 1 << 11;
       }
       else
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 7 | 1 << 11;
         ;
       }
       fhnJH = NewTHnSparseF("fhnJH", cifras);
@@ -581,10 +581,9 @@ namespace PWGJE
               AliDebugStream(4) << "Track rejected in signal correlation loop.\n";
 
               GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
-              Float_t electronNSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)0);
-              Float_t pionNSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)2);
-              Float_t kaonNSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)3);
-              Float_t protonNSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)4);
+
+              Double_t pionSignalDelta;
+              pionSignalDelta = pidResponse->GetSignalDelta((AliPIDResponse::EDetector)1, vTrack, (AliPID::EParticleType)2, kFALSE);
 
               // Fill track properties
               fHistJetHTrackPt->Fill(track.Pt());
@@ -598,12 +597,12 @@ namespace PWGJE
               {
                 if (fDoLessSparseAxes)
                 { // check if we want all dimensions
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, electronNSigma, pionNSigma, kaonNSigma, protonNSigma};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, pionSignalDelta};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, zVertex, deltaR, electronNSigma, pionNSigma, kaonNSigma, protonNSigma};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, zVertex, deltaR, pionSignalDelta};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
               }
@@ -1083,31 +1082,10 @@ namespace PWGJE
         break;
 
       case 11:
-        label = "TPC Electron NSigma";
+        label = "TPC Pion Signal Delta";
         nbins = 100;
-        xmin = -10;
-        xmax = 10;
-        break;
-
-      case 12:
-        label = "TPC Pion NSigma";
-        nbins = 100;
-        xmin = -10;
-        xmax = 10;
-        break;
-
-      case 13:
-        label = "TPC Kaon NSigma";
-        nbins = 100;
-        xmin = -10;
-        xmax = 10;
-        break;
-
-      case 14:
-        label = "TPC Proton NSigma";
-        nbins = 100;
-        xmin = -10;
-        xmax = 10;
+        xmin = -20;
+        xmax = 20;
         break;
       }
     }

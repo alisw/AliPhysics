@@ -584,14 +584,14 @@ AliAnalysisCuts *AliAnalysisTaskOmegaDielectron_AccEff::SetPIDcuts(){
 
   //TPC electrons: includes electrons and exclude all possible other contributions using the TPC
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4.,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3.5,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kMuon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kProton,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
 
   // //TOF electrons: includes all electrons, exlcludes Pions using the TPC
   mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3., 3. , 0. ,100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4. , 0.0 ,100., kTRUE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0.0 ,100., kTRUE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TOF->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
 
   // Combine

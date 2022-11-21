@@ -9,8 +9,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskFemtoNanoXiPi(bool fullBlastQA = false,       // 1
-                                        bool isMC = false,              // 2
+AliAnalysisTaskSE *AddTaskFemtoNanoXiPi(bool isMC = false,              // 2
                                         int fFilterBit = 128,           // 3
                                         bool Systematic = false,        // 6
                                         bool DoAncestors = false,       // 10
@@ -94,7 +93,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoXiPi(bool fullBlastQA = false,       // 1
     AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
     AntiCascadeCuts->SetPDGCodeBach(211);
 
-    if (!fullBlastQA || Systematic)
+    if (Systematic)
     {
         evtCuts->SetMinimalBooking(true);
         TrackCutsPion->SetMinimalBooking(true);
@@ -164,9 +163,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoXiPi(bool fullBlastQA = false,       // 1
         pairQA[5] = 12;
         pairQA[6] = 12;
 
-        pairQA[7] = 22;
-        pairQA[8] = 22;
-        pairQA[9] = 22;
+        // pairQA[7] = 22;
+        // pairQA[8] = 22;
+        // pairQA[9] = 22;
         closeRejection[0] = true;
         closeRejection[1] = true;
         closeRejection[2] = true;
@@ -174,9 +173,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoXiPi(bool fullBlastQA = false,       // 1
         closeRejection[4] = true;
         closeRejection[5] = true;
         closeRejection[6] = true;
-        closeRejection[7] = true;
-        closeRejection[8] = true;
-        closeRejection[9] = true;
+        // closeRejection[7] = true;
+        // closeRejection[8] = true;
+        // closeRejection[9] = true;
     }
 
     config->SetPDGCodes(PDGParticles);
@@ -188,7 +187,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoXiPi(bool fullBlastQA = false,       // 1
     config->SetDeltaPhiMax(0.012);
     config->SetExtendedQAPairs(pairQA);
 
-    config->SetMixingDepth(30);
+    config->SetMixingDepth(20);
     config->SetUseEventMixing(true);
 
     config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
@@ -238,23 +237,14 @@ AliAnalysisTaskSE *AddTaskFemtoNanoXiPi(bool fullBlastQA = false,       // 1
 
     config->SetZBins(ZVtxBins);
 
-    config->SetdPhidEtaPlotsSmallK(false);
-    config->SetdPhidEtaPlots(false);
-    config->SetPhiEtaBinnign(false);
-
-    if (fullBlastQA)
-    {
-        config->SetkTBinning(true);
-        config->SetPtQA(true);
-        config->SetMultBinning(true);
-        config->SetmTBinning(true);
-    }
-    if (!fullBlastQA || Systematic)
+    if (Systematic)
     {
         config->SetMinimalBookingME(true);
-        config->SetMinimalBookingSample(true);
-        config->SetMultBinning(true);
-        config->SetmTBinning(true);
+    }
+    else if (!Systematic)
+    {
+        config->SetPtQA(true);
+        config->SetMassQA(true);
     }
 
     if (isMC)
@@ -276,10 +266,6 @@ AliAnalysisTaskSE *AddTaskFemtoNanoXiPi(bool fullBlastQA = false,       // 1
 
     AliAnalysisTaskNanoXiPi *task = new AliAnalysisTaskNanoXiPi("femtoXiPi", isMC);
 
-    if (!fullBlastQA)
-    {
-        task->SetRunTaskLightWeight(true);
-    }
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
 
     task->SetEventCuts(evtCuts);

@@ -30,6 +30,7 @@ class AliPIDCombined;
 #include "AliPIDCombined.h"
 #include "AliTPCdEdxInfo.h"
 #include "AliESDv0KineCuts.h"
+#include "AliESDv0.h"
 #include "THnSparse.h"
 #include "TClonesArray.h"
 #include "THn.h"
@@ -533,6 +534,7 @@ private:
   Bool_t CheckIfFromAnyResonance(AliMCParticle *trackMCgen, Float_t etaLow, Float_t etaUp, Float_t pDown, Float_t pUp);
   Bool_t ApplyDCAcutIfNoITSPixel(AliESDtrack *track);
   Bool_t GetSystematicClassIndex(UInt_t cut,Int_t syst);
+  const Bool_t CheckPsiPair(const AliESDv0* v0);
   // ---------------------------------------------------------------------------------
   //                                   Members
   // ---------------------------------------------------------------------------------
@@ -901,7 +903,7 @@ private:
   AliEventCuts* fPileUpTightnessCut2;
   AliEventCuts* fPileUpTightnessCut1;
 
-  ClassDef(AliAnalysisTaskEbyeIterPID, 6);
+  ClassDef(AliAnalysisTaskEbyeIterPID, 7);
 
 };
 
