@@ -24,27 +24,26 @@ AliAnalysisTaskR2P2highMultpp * AddTaskR2P2highMultpp
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString prefixName             = "data_",
   //************ for Stage2_Step1 starts ************************
- 
  int    singlesOnly             =  0,   // 0: full correlations    1: singles only
  
  int    usePtEff                =  1,   // 0: no                   1: yes
- int    PtEffType               =  1,   // 1: MB Eff               2: Respective Mult Eff  
- TString inputPtEffFileName     = "alien:///alice/cern.ch/user/d/dbauri/efficiencyInv_Default.root",
+ int    PtEffType               =  2,   // 1: MB Eff               2: Respective Mult Eff  
+ TString inputPtEffFileName     = "alien:///alice/cern.ch/user/d/dbauri/efficiencyInv_0to1_HighMultTrigger.root",
   
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
  const char* taskname           = "ChPM",// ChPM, ChPP, ChMM
  //************ for Stage2_Step1 ends ************************
  
  TString System                 = "pp18_V0_kMB_kFALSE",
- int    CentralityGroup         =  60,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    CentralityGroup         =  65,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  double zMax                    =  8.,  // set vertexZ cut   
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  96,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
  int    nClusterMin             =  70,
  double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
  double etaBinWidth             =  0.1, // set yBinWidth acturally if useRapidity==1
- double dcaZMax                 =  0.2,//3.2,
- double dcaXYMax                =  0.2,//2.4,
+ double dcaZMax                 =  2.0,//3.2,
+ double dcaXYMax                =  2.0,//2.4,
  double ElectronVetoCut         =  1.0,
  int nBinsPhi                   =  72,  // 36 is default value
  double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
@@ -647,12 +646,26 @@ AliAnalysisTaskR2P2highMultpp * AddTaskR2P2highMultpp
       part1Name += int(10*ptMin);
       part1Name += "to";
       part1Name += int(10*ptCUTupperMax);
-
-      eventName =  "_";
-      eventName += int(minCentrality[iCentrality] );
-      //eventName += "0";
-      eventName += "Vo";
-      eventName += "0p1";
+            
+      if(CentralityGroup == 60)	{
+	eventName =  "_";
+	eventName += "0";
+	eventName += "Vo";
+	eventName += "0p1";
+      }
+      else if(CentralityGroup == 65){
+	eventName =  "_";
+	eventName += "0";
+	eventName += "Vo";
+	eventName += "1";
+      }
+      else{
+	eventName =  "_";
+	eventName += int(10*minCentrality[iCentrality] );   
+	eventName += "Vo";
+	eventName += int(10*maxCentrality[iCentrality] );   
+      }
+      
       //eventName += int(maxCentrality[iCentrality] );
       //eventName += "100";
             
