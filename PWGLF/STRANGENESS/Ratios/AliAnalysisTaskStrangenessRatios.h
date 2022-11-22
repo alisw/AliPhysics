@@ -68,6 +68,7 @@ struct MiniLambdaMC : public MiniLambda {
   int pdg;
   bool isPrimary;
   bool isReconstructed;
+  bool magFieldPolarity;
   unsigned char flag;
 };
 
