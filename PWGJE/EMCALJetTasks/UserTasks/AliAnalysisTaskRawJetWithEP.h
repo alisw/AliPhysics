@@ -148,6 +148,7 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     void SetEPQA(Bool_t bEPQA){fEPQA = bEPQA;}
     void SetTrackQA(Bool_t bTrackQA){fTrackQA = bTrackQA;}
     void SetBkgQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
+    void SetJetHistWithEP(Bool_t bSepEP){fSepEP = bSepEP;}
     //== e == Setter Prepare  ################################################
 
   protected:
@@ -184,6 +185,7 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     Bool_t  fEPQA = kFALSE;           ///<
     Bool_t  fTrackQA = kFALSE;        ///<
     Bool_t  fBkgQA = kFALSE;          ///<
+    Bool_t  fSepEP = kFALSE;          ///<
     
     PWG::Tools::AliYAMLConfiguration fYAMLConfig;  //!<! run List the YAML config
 
