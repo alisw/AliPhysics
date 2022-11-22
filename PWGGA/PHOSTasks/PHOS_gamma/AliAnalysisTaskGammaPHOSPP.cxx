@@ -1305,12 +1305,13 @@ void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliCaloPhoton *ph, Double_
     const Bool_t CPVBit  = ph->IsCPVOK();
     const Bool_t DispBit = ph->IsDispOK();
 
-    Int_t NTracksMatched = clu1->GetNTracksMatched();
+    const Int_t NTracksMatched = clu1->GetNTracksMatched();
 
-    Double_t dx = clu1->GetTrackDx(); 
-    Double_t dz = clu1->GetTrackDz(); 
+    const Double_t dx = clu1->GetTrackDx(); 
+    const Double_t dz = clu1->GetTrackDz(); 
 
-    Double_t dist = TMath::Hypot(dx,dz);
+    const Double_t dist = TMath::Hypot(dx,dz);
+   
     Double_t pBayesMatched[AliPID::kSPECIESC];
 
     AliPIDCombined *pidcomb=new AliPIDCombined();
@@ -1320,221 +1321,220 @@ void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliCaloPhoton *ph, Double_
     pidcomb->SetSelectedSpecies(AliPID::kSPECIESC);
     pidcomb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF|AliPIDResponse::kDetITS|AliPIDResponse::kDetTRD);
       
-    if (NTracksMatched > 0) {
-  
-      FillHistogram("hTracks_matched", 0.5);
-      FillHistogram("hDistance", dist);
-      AliAODTrack* trackMatched= dynamic_cast<AliAODTrack*>(clu1->GetTrackMatched(0));
-  
-      if (trackMatched->TestFilterBit(32) &&  trackMatched->GetTPCsignal() > 0.) {
-    
-        //UInt_t oo = pidcomb->ComputeProbabilities(trackMatched, fPIDResponse, pBayesMatched);
-        
-        Bool_t pidPion3 = kFALSE , pidKaon3 = kFALSE , pidProton3 = kFALSE , pidElectron3 = kFALSE, pidUndef3 = kFALSE ;
-        Bool_t pidPion1 = kFALSE , pidKaon1 = kFALSE , pidProton1 = kFALSE,  pidElectron1 = kFALSE, pidUndef1 = kFALSE;
-       
-        Float_t  nsigmaElectron =   TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kElectron )) ;
-        Float_t  nsigmaPion =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kPion )) ;
-        Float_t  nsigmaKaon =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kKaon ) ) ;
-        Float_t  nsigmaProton =     TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kProton ) );
-    
-       // smallest sigma
-        if (( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron) && (nsigmaPion < 3.)) 
-	  pidPion3= kTRUE;
-        if (( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron) &&  (nsigmaProton < 3.)) 
-	  pidProton3= kTRUE;
-        if (( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron) &&  (nsigmaKaon < 3.))
-	  pidKaon3= kTRUE;
-        if (( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < 3.))
-	  pidElectron3= kTRUE;
-        if (!pidPion3 && !pidProton3 && !pidKaon3 && !pidElectron3)
-	  pidUndef3=kTRUE;
-        if (pidPion3)    
-	  FillHistogram("hpid3", 0.5);     
-        if (pidProton3)   
-	  FillHistogram("hpid3", 1.5);     
-        if (pidKaon3)     
-	  FillHistogram("hpid3", 2.5);     
-        if (pidElectron3) 
-	  FillHistogram("hpid3", 3.5);     
-        if (pidUndef3)    
-	  FillHistogram("hpid3", 4.5);     
-    
-        if (( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron) && (nsigmaPion < 1.))
-	  pidPion1= kTRUE;
-        if (( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron) &&  (nsigmaProton < 1.)) 
-	  pidProton1= kTRUE;
-        if (( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron) &&  (nsigmaKaon < 1.)) 
-	  pidKaon1= kTRUE;
-        if (( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < 1.)) pidElectron1= kTRUE;
-        if (!pidPion1 && !pidProton1 && !pidKaon1 && !pidElectron1) pidUndef1=kTRUE;
-    
-        if (pidPion1)     FillHistogram("hpid1", 0.5);     
-        if (pidProton1)   FillHistogram("hpid1", 1.5);     
-        if (pidKaon1)     FillHistogram("hpid1", 2.5);     
-        if (pidElectron1) FillHistogram("hpid1", 3.5);     
-        if (pidUndef1)    FillHistogram("hpid1", 4.5);     
-        
-        const Int_t nmaxMatched = TMath::LocMax(AliPID::kSPECIESC, pBayesMatched);
-    
-        FillHistogram("hTracksofClusts", pt, nmaxMatched+0.5);
-        FillHistogram("hEnTrackvsClust", clu1->E(), trackMatched->E());
-    
-         
-        if (pidPion3 && trackMatched->Charge() > 0) {
-          FillHistogram("hTracksOfPi_ThreeSigma", pt, clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfPi_ThreeSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfPi_ThreeSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfPi_ThreeSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-        } 
-        if (pidPion1 && trackMatched->Charge() > 0) {
-          FillHistogram("hTracksOfPi_OneSigma",       pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfPi_OneSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfPi_OneSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfPi_OneSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-        } 
-        if (pidPion3 && trackMatched->Charge() < 0) {
-          FillHistogram("hTracksOfAntiPi_ThreeSigma", pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfAntiPi_ThreeSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfAntiPi_ThreeSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfAntiPi_ThreeSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-        } 
-        if (pidPion1 && trackMatched->Charge() < 0) {
-          FillHistogram("hTracksOfAntiPi_OneSigma", pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfAntiPi_OneSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfAntiPi_OneSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfAntiPi_OneSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-        } 
-        if (pidProton3 && trackMatched->Charge() > 0) { 
-          FillHistogram("hTracksOfPr_ThreeSigma",pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfPr_ThreeSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfPr_ThreeSigma_disp_label", pt, TestTrack(trackMatched) );
-            FillHistogram("hTracksOfPr_ThreeSigma_disp",pt,clu1->GetEmcCpvDistance());
-          }
-        } 
-        if (pidProton1 && trackMatched->Charge() > 0) { 
-          FillHistogram("hTracksOfPr_OneSigma",pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfPr_OneSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfPr_OneSigma_disp_label", pt, TestTrack(trackMatched) );
-            FillHistogram("hTracksOfPr_OneSigma_disp",pt,clu1->GetEmcCpvDistance());
-          }
-        }
-        if (pidProton3 && trackMatched->Charge() < 0) { 
-          FillHistogram("hTracksOfAntiPr_ThreeSigma",pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfAntiPr_ThreeSigma_label",pt,TestTrack(trackMatched));
-          if (DispBit) {
-            FillHistogram("hTracksOfAntiPr_ThreeSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfAntiPr_ThreeSigma_disp_label", pt, TestTrack(trackMatched));
-          }
-        }
-        if (pidProton1 && trackMatched->Charge() < 0) { 
-          FillHistogram("hTracksOfAntiPr_OneSigma",pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfAntiPr_OneSigma_label",pt,TestTrack(trackMatched));
-          if (DispBit) {
-            FillHistogram("hTracksOfAntiPr_OneSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfAntiPr_OneSigma_disp_label", pt, TestTrack(trackMatched));
-          }
-        }
-        if (pidKaon3 && trackMatched->Charge() > 0) { 
-          FillHistogram("hTracksOfKa_ThreeSigma",       pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfKa_ThreeSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfKa_ThreeSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfKa_ThreeSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-        } 
-        if (pidKaon1 && trackMatched->Charge() > 0) { 
-          FillHistogram("hTracksOfKa_OneSigma",       pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfKa_OneSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfKa_OneSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfKa_OneSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-        } 
-        if (pidKaon3 && trackMatched->Charge() < 0) { 
-          FillHistogram("hTracksOfAntiKa_ThreeSigma",       pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfAntiKa_ThreeSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) { 
-            FillHistogram("hTracksOfAntiKa_ThreeSigma_disp",   pt,clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfAntiKa_ThreeSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-        } 
-        if (pidKaon1 && trackMatched->Charge() < 0) { 
-          FillHistogram("hTracksOfAntiKa_OneSigma",       pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfAntiKa_OneSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) { 
-            FillHistogram("hTracksOfAntiKa_OneSigma_disp",       pt,clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfAntiKa_OneSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-        } 
-        if (pidElectron3 && trackMatched->Charge() > 0) {
-          FillHistogram("hTracksOfAntiBeta_ThreeSigma",	  pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfAntiBeta_ThreeSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfAntiBeta_ThreeSigma_disp",	 pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfAntiBeta_ThreeSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-   	}
-   	if (pidElectron1 && trackMatched->Charge() > 0) {
-          FillHistogram("hTracksOfAntiBeta_OneSigma",	pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfAntiBeta_OneSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfAntiBeta_OneSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfAntiBeta_OneSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-   	}
-        if (pidElectron3 && trackMatched->Charge() < 0) {
-          FillHistogram("hTracksOfBeta_ThreeSigma",	  pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfBeta_ThreeSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfBeta_ThreeSigma_disp",	 pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfBeta_ThreeSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-   	}
-   	if (pidElectron1 && trackMatched->Charge() < 0) {
-          FillHistogram("hTracksOfBeta_OneSigma",	pt,clu1->GetEmcCpvDistance());
-          FillHistogram("hTracksOfBeta_OneSigma_label", pt, TestTrack(trackMatched) );
-          if (DispBit) {
-            FillHistogram("hTracksOfBeta_OneSigma_disp",       pt, clu1->GetEmcCpvDistance());
-            FillHistogram("hTracksOfBeta_OneSigma_disp_label", pt, TestTrack(trackMatched) );
-          }
-   	} else {
-            FillHistogram("hTracksOfOthers", pt, clu1->GetEmcCpvDistance());
-            if (DispBit) 
-              FillHistogram("hTracksOfOthers_disp", pt, clu1->GetEmcCpvDistance());
-        }
+    if (NTracksMatched == 0) return;
+
+    FillHistogram("hTracks_matched", 0.5);
+     FillHistogram("hDistance", dist);
+     AliAODTrack* trackMatched= dynamic_cast<AliAODTrack*>(clu1->GetTrackMatched(0));
+ 
+     if (trackMatched->TestFilterBit(32) &&  trackMatched->GetTPCsignal() > 0.) {
    
-           
-        if (CPVBit) {
-          if (nmaxMatched==2) { 
-            FillHistogram("hTracksOfPiClose",pt);
-            if (DispBit) 
-              FillHistogram("hTracksOfPiCloseDispOK",pt);
-          } else if(nmaxMatched==4) { 
-              FillHistogram("hTracksOfPrClose",pt);
-              if (DispBit) 
-                FillHistogram("hTracksOfPrCloseDispOK",pt);
-          } else if (nmaxMatched==3) { 
-              FillHistogram("hTracksOfKaClose",pt);
-              if (DispBit) 
-                 FillHistogram("hTracksOfKaCloseDispOK",pt);
-          } else {
-              FillHistogram("hTracksOfOthersClose",pt);
-              FillHistogram("hTracksOfOthersCloseDispOK",pt);
-          }               
-        }
-      }
-   }
+       //UInt_t oo = pidcomb->ComputeProbabilities(trackMatched, fPIDResponse, pBayesMatched);
+       
+       Bool_t pidPion3 = kFALSE , pidKaon3 = kFALSE , pidProton3 = kFALSE , pidElectron3 = kFALSE, pidUndef3 = kFALSE ;
+       Bool_t pidPion1 = kFALSE , pidKaon1 = kFALSE , pidProton1 = kFALSE,  pidElectron1 = kFALSE, pidUndef1 = kFALSE;
+      
+       Float_t  nsigmaElectron =   TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kElectron )) ;
+       Float_t  nsigmaPion =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kPion )) ;
+       Float_t  nsigmaKaon =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kKaon ) ) ;
+       Float_t  nsigmaProton =     TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kProton ) );
+   
+      // smallest sigma
+       if (( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron) && (nsigmaPion < 3.)) 
+         pidPion3= kTRUE;
+       if (( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron) &&  (nsigmaProton < 3.)) 
+         pidProton3= kTRUE;
+       if (( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron) &&  (nsigmaKaon < 3.))
+         pidKaon3= kTRUE;
+       if (( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < 3.))
+         pidElectron3= kTRUE;
+       if (!pidPion3 && !pidProton3 && !pidKaon3 && !pidElectron3)
+         pidUndef3=kTRUE;
+       if (pidPion3)    
+         FillHistogram("hpid3", 0.5);     
+       if (pidProton3)   
+         FillHistogram("hpid3", 1.5);     
+       if (pidKaon3)     
+         FillHistogram("hpid3", 2.5);     
+       if (pidElectron3) 
+         FillHistogram("hpid3", 3.5);     
+       if (pidUndef3)    
+         FillHistogram("hpid3", 4.5);     
+   
+       if (( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron) && (nsigmaPion < 1.))
+         pidPion1= kTRUE;
+       if (( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron) &&  (nsigmaProton < 1.)) 
+         pidProton1= kTRUE;
+       if (( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron) &&  (nsigmaKaon < 1.)) 
+         pidKaon1= kTRUE;
+       if (( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < 1.)) pidElectron1= kTRUE;
+       if (!pidPion1 && !pidProton1 && !pidKaon1 && !pidElectron1) pidUndef1=kTRUE;
+   
+       if (pidPion1)     FillHistogram("hpid1", 0.5);     
+       if (pidProton1)   FillHistogram("hpid1", 1.5);     
+       if (pidKaon1)     FillHistogram("hpid1", 2.5);     
+       if (pidElectron1) FillHistogram("hpid1", 3.5);     
+       if (pidUndef1)    FillHistogram("hpid1", 4.5);     
+       
+       const Int_t nmaxMatched = TMath::LocMax(AliPID::kSPECIESC, pBayesMatched);
+       const Double_t distEmcCpv = clu1->GetEmcCpvDistance();
+       const Int_t  trackPdg = TestTrack(trackMatched);  
+   
+       FillHistogram("hTracksofClusts", pt, nmaxMatched+0.5);
+       FillHistogram("hEnTrackvsClust", clu1->E(), trackMatched->E());
+        
+       if (pidPion3 && trackMatched->Charge() > 0) {
+         FillHistogram("hTracksOfPi_ThreeSigma", pt, distEmcCpv);
+         FillHistogram("hTracksOfPi_ThreeSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfPi_ThreeSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfPi_ThreeSigma_disp_label", pt, trackPdg );
+         }
+       } 
+       if (pidPion1 && trackMatched->Charge() > 0) {
+         FillHistogram("hTracksOfPi_OneSigma",       pt,distEmcCpv);
+         FillHistogram("hTracksOfPi_OneSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfPi_OneSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfPi_OneSigma_disp_label", pt, trackPdg );
+         }
+       } 
+       if (pidPion3 && trackMatched->Charge() < 0) {
+         FillHistogram("hTracksOfAntiPi_ThreeSigma", pt,distEmcCpv);
+         FillHistogram("hTracksOfAntiPi_ThreeSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfAntiPi_ThreeSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfAntiPi_ThreeSigma_disp_label", pt, trackPdg );
+         }
+       } 
+       if (pidPion1 && trackMatched->Charge() < 0) {
+         FillHistogram("hTracksOfAntiPi_OneSigma", pt,distEmcCpv);
+         FillHistogram("hTracksOfAntiPi_OneSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfAntiPi_OneSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfAntiPi_OneSigma_disp_label", pt, trackPdg );
+         }
+       } 
+       if (pidProton3 && trackMatched->Charge() > 0) { 
+         FillHistogram("hTracksOfPr_ThreeSigma",pt,distEmcCpv);
+         FillHistogram("hTracksOfPr_ThreeSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfPr_ThreeSigma_disp_label", pt, trackPdg );
+           FillHistogram("hTracksOfPr_ThreeSigma_disp",pt,distEmcCpv);
+         }
+       } 
+       if (pidProton1 && trackMatched->Charge() > 0) { 
+         FillHistogram("hTracksOfPr_OneSigma",pt,distEmcCpv);
+         FillHistogram("hTracksOfPr_OneSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfPr_OneSigma_disp_label", pt, trackPdg );
+           FillHistogram("hTracksOfPr_OneSigma_disp",pt,distEmcCpv);
+         }
+       }
+       if (pidProton3 && trackMatched->Charge() < 0) { 
+         FillHistogram("hTracksOfAntiPr_ThreeSigma",pt,distEmcCpv);
+         FillHistogram("hTracksOfAntiPr_ThreeSigma_label",pt,trackPdg);
+         if (DispBit) {
+           FillHistogram("hTracksOfAntiPr_ThreeSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfAntiPr_ThreeSigma_disp_label", pt, trackPdg);
+         }
+       }
+       if (pidProton1 && trackMatched->Charge() < 0) { 
+         FillHistogram("hTracksOfAntiPr_OneSigma",pt,distEmcCpv);
+         FillHistogram("hTracksOfAntiPr_OneSigma_label",pt,trackPdg);
+         if (DispBit) {
+           FillHistogram("hTracksOfAntiPr_OneSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfAntiPr_OneSigma_disp_label", pt, trackPdg);
+         }
+       }
+       if (pidKaon3 && trackMatched->Charge() > 0) { 
+         FillHistogram("hTracksOfKa_ThreeSigma",       pt,distEmcCpv);
+         FillHistogram("hTracksOfKa_ThreeSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfKa_ThreeSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfKa_ThreeSigma_disp_label", pt, trackPdg );
+         }
+       } 
+       if (pidKaon1 && trackMatched->Charge() > 0) { 
+         FillHistogram("hTracksOfKa_OneSigma",       pt,distEmcCpv);
+         FillHistogram("hTracksOfKa_OneSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfKa_OneSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfKa_OneSigma_disp_label", pt, trackPdg );
+         }
+       } 
+       if (pidKaon3 && trackMatched->Charge() < 0) { 
+         FillHistogram("hTracksOfAntiKa_ThreeSigma",       pt,distEmcCpv);
+         FillHistogram("hTracksOfAntiKa_ThreeSigma_label", pt, trackPdg );
+         if (DispBit) { 
+           FillHistogram("hTracksOfAntiKa_ThreeSigma_disp",   pt,distEmcCpv);
+           FillHistogram("hTracksOfAntiKa_ThreeSigma_disp_label", pt, trackPdg );
+         }
+       } 
+       if (pidKaon1 && trackMatched->Charge() < 0) { 
+         FillHistogram("hTracksOfAntiKa_OneSigma",       pt,distEmcCpv);
+         FillHistogram("hTracksOfAntiKa_OneSigma_label", pt, trackPdg );
+         if (DispBit) { 
+           FillHistogram("hTracksOfAntiKa_OneSigma_disp",       pt,distEmcCpv);
+           FillHistogram("hTracksOfAntiKa_OneSigma_disp_label", pt, trackPdg );
+         }
+       } 
+       if (pidElectron3 && trackMatched->Charge() > 0) {
+         FillHistogram("hTracksOfAntiBeta_ThreeSigma",	  pt,distEmcCpv);
+         FillHistogram("hTracksOfAntiBeta_ThreeSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfAntiBeta_ThreeSigma_disp",	 pt, distEmcCpv);
+           FillHistogram("hTracksOfAntiBeta_ThreeSigma_disp_label", pt, trackPdg );
+         }
+  	}
+  	if (pidElectron1 && trackMatched->Charge() > 0) {
+         FillHistogram("hTracksOfAntiBeta_OneSigma",	pt,distEmcCpv);
+         FillHistogram("hTracksOfAntiBeta_OneSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfAntiBeta_OneSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfAntiBeta_OneSigma_disp_label", pt, trackPdg );
+         }
+  	}
+       if (pidElectron3 && trackMatched->Charge() < 0) {
+         FillHistogram("hTracksOfBeta_ThreeSigma",	  pt,distEmcCpv);
+         FillHistogram("hTracksOfBeta_ThreeSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfBeta_ThreeSigma_disp",	 pt, distEmcCpv);
+           FillHistogram("hTracksOfBeta_ThreeSigma_disp_label", pt, trackPdg );
+         }
+  	}
+  	if (pidElectron1 && trackMatched->Charge() < 0) {
+         FillHistogram("hTracksOfBeta_OneSigma",	pt,distEmcCpv);
+         FillHistogram("hTracksOfBeta_OneSigma_label", pt, trackPdg );
+         if (DispBit) {
+           FillHistogram("hTracksOfBeta_OneSigma_disp",       pt, distEmcCpv);
+           FillHistogram("hTracksOfBeta_OneSigma_disp_label", pt, trackPdg );
+         }
+  	} else {
+           FillHistogram("hTracksOfOthers", pt, distEmcCpv);
+           if (DispBit) 
+             FillHistogram("hTracksOfOthers_disp", pt, distEmcCpv);
+       }
+  
+       if (CPVBit) {
+         if (nmaxMatched == 2) { 
+           FillHistogram("hTracksOfPiClose", pt);
+           if (DispBit) 
+             FillHistogram("hTracksOfPiCloseDispOK", pt);
+         } else if(nmaxMatched==4) { 
+             FillHistogram("hTracksOfPrClose", pt);
+             if (DispBit) 
+               FillHistogram("hTracksOfPrCloseDispOK", pt);
+         } else if (nmaxMatched==3) { 
+             FillHistogram("hTracksOfKaClose", pt);
+             if (DispBit) 
+                FillHistogram("hTracksOfKaCloseDispOK", pt);
+         } else {
+             FillHistogram("hTracksOfOthersClose",pt);
+             FillHistogram("hTracksOfOthersCloseDispOK",pt);
+         }               
+       }
+     }
 }
 
 //===========================================================================//
