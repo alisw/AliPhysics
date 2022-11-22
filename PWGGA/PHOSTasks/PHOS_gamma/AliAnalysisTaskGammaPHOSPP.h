@@ -109,7 +109,6 @@ private:
   AliESDtrackCuts *fESDtrackCuts; // Track cut
   THashList * fOutputContainer;       //final histogram container
   THashList * fOutputContainer2;       //final histogram container
-  THashList * fOutputContainer3;       //final histogram container
   TList * fPHOSEvents[10][2] ;    //Container for PHOS photons
   TClonesArray * fPHOSEvent ;     //PHOS photons in current event
   AliPIDResponse *fPIDResponse;    //!

@@ -61,11 +61,11 @@ ClassImp(AliAnalysisTaskGammaPHOSPP)
 //________________________________________________________________________
 AliAnalysisTaskGammaPHOSPP::AliAnalysisTaskGammaPHOSPP(const char *name) 
 : AliAnalysisTaskSE(name),
-  fESDtrackCuts(0), fOutputContainer(0), fOutputContainer2(0), fOutputContainer3(0),
+  fESDtrackCuts(0), fOutputContainer(0), fOutputContainer2(0), 
   fPHOSEvent(0), fnCINT1B(0), fnCINT1A(0), fnCINT1C(0), fnCINT1E(0), fEventVtxExist(0), fEventVtxZ10cm(0), fEventPileup(0), fEventV0AND(0),
   fPHOSGeo(0),/* fBCgap(525e-09),*/ fBCgap(0),
-  fEventCounter(0), fAllEventCounter(0),  fEventCentrality(0),
-  fInPHOS(0), fInPHOS2(0),
+  fEventCounter(0), 
+  fInPHOS(0),
   fMCArray(0),
   fPIDResponse(0x0), //!
   fWeightFunction(0), fWeightFunction2(0), fWeightFunction3(0),  
@@ -110,17 +110,12 @@ void AliAnalysisTaskGammaPHOSPP::UserCreateOutputObjects()
     delete fOutputContainer2;
   }
 
-  if (fOutputContainer3 != NULL) {
-    delete fOutputContainer3;
-  }
 
   fOutputContainer  = new THashList();
   fOutputContainer2 = new THashList();
-  fOutputContainer3 = new THashList();
 
   fOutputContainer ->SetOwner(kTRUE);
   fOutputContainer2->SetOwner(kTRUE);
-  fOutputContainer3->SetOwner(kTRUE);
   
   const Int_t Ncut = 4;
   TString cut[Ncut] = {"all", "cpv", "disp", "both"};
@@ -162,7 +157,6 @@ void AliAnalysisTaskGammaPHOSPP::UserCreateOutputObjects()
 
   PostData(1, fOutputContainer);
   PostData(2, fOutputContainer2);
-  PostData(3, fOutputContainer3);
 }
 
 /*
@@ -183,7 +177,7 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)
 
   /* Initialize geometry */
   //
-  if (fAllEventCounter == 0) {
+  if (fEventCounter == 0) {
     fPHOSGeo = AliPHOSGeometry::GetInstance() ; // use tender
   
     if (!fPHOSGeo) {
@@ -203,7 +197,6 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)
 
   fWeightFunction  = new TF1("fWeightFunction", "1.0", 0., 99999.) ;
   fWeightFunction2 = new TF1("fWeightFunction2", "((([0]+([1]*x))+([2]*(x*x)))/((1.+([3]*x))+([4]*(x*x))))+([5]*x)", 0., 100);
-  fAllEventCounter++;
 
   /* Vertex */ 
   //
@@ -293,11 +286,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *aodEvent)
   FillHistogram("hSelEvents",0) ; // All events accepted by Physics Selection
 
   TString trigClasses = aodEvent->GetFiredTriggerClasses();
-  /*
-  Printf("Event nr %i with triggers %s, period %i.", fAllEventCounter, 
-                                                     trigClasses.Data(), 
-                                                     fEvent->GetPeriodNumber());
-  */                                                   
+
   if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL")) {
     AliWarning(Form("Skip event with triggers %s", trigClasses.Data()));
     return kFALSE;
@@ -1644,7 +1633,7 @@ void AliAnalysisTaskGammaPHOSPP::GammaEfficiencies()
     return;
   }
    
-  printf("Calculating photon detection efficiencies...\n");
+  printf("Calculating photon detection efficiencies!!!\n");
   
   TH2F *h2 = (TH2F*)fOutputContainer2->FindObject("fhGammaMC_true");
   TH1D *htot = (TH1D*)h2->ProjectionX("hgamma", 70, 170);
@@ -1665,10 +1654,10 @@ void AliAnalysisTaskGammaPHOSPP::GammaEfficiencies()
     pEff = new TEfficiency(*hpass, *htot);
     pEff->SetTitle(Form("#gamma efficienty, %s", cut.second.Data()));
     pEff->SetName(Form("gamma_efficiency_%s", cut.first.Data()));
-    fOutputContainer3->Add(pEff);
-    fOutputContainer3->Add(hpass);
+    fOutputContainer2->Add(pEff);
+    fOutputContainer2->Add(hpass);
   }
-  fOutputContainer3->Add(htot);
+  fOutputContainer2->Add(htot);
 }
 
 //===========================================================================//
@@ -1691,7 +1680,7 @@ void AliAnalysisTaskGammaPHOSPP::CutEfficiencies()
     TH1F *hpass = (TH1F*)fOutputContainer->FindObject(Form("hClustPt_%s", cut.first.Data()));
     pEff = new TEfficiency(*hpass, *htot);
     pEff->SetName(Form("cut_efficiency_%s", cut.first.Data())); 
-    fOutputContainer3->Add(pEff);
+    fOutputContainer2->Add(pEff);
   }
 }
 
