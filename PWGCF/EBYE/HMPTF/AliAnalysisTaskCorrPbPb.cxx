@@ -632,7 +632,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
                 
     //Selection of Multiplicity Range
     Double_t mult_percentile = multiplicitySelection->GetMultiplicityPercentile("V0M");
-    if (mult_percentile < 0.0 || mult_percentile > 100.0)
+    if (mult_percentile < 0.0 || mult_percentile > 80.0)
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);

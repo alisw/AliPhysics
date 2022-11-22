@@ -91,6 +91,7 @@ AliAnalysisTaskCorrPPHM::AliAnalysisTaskCorrPPHM():
   fMultLow(0),
   fMultHigh(100),
   hNumberOfEvents(0),
+  hNumberOfCascades(0),
   hNumberOfXi(0),
   hNumberOfAntiXi(0),
   hNumberOfKaonPlus(0),
@@ -127,6 +128,7 @@ AliAnalysisTaskCorrPPHM::AliAnalysisTaskCorrPPHM(const char *name):
   fMultLow(0),
   fMultHigh(100),
   hNumberOfEvents(0),
+  hNumberOfCascades(0),
   hNumberOfXi(0),
   hNumberOfAntiXi(0),
   hNumberOfKaonPlus(0),
@@ -197,8 +199,12 @@ void AliAnalysisTaskCorrPPHM::UserCreateOutputObjects()  {
     hNumberOfEvents = new TH1D ("hNumberOfEvents","",20,0,20);
     // hNumberOfEvents -> Sumw2();
     fOutputList -> Add(hNumberOfEvents);
-    
-    //Number of xi finally getting selected with specified cuts
+
+    //Cascade counter
+    hNumberOfCascades = new TH1D("hNumberOfCascades","hNumberOfCascades",20,0,20);
+    fOutputList -> Add(hNumberOfCascades);
+   
+   //Number of xi finally getting selected with specified cuts
     hNumberOfXi     = new TH1D ("hNumberOfXi","",20,0,20);
     hNumberOfAntiXi = new TH1D ("hNumberOfAntiXi","",20,0,20);
     // hNumberOfXi     -> Sumw2();
@@ -362,7 +368,7 @@ void AliAnalysisTaskCorrPPHM::UserExec(Option_t *)  {
     Int_t no_Xi_perevent_ptmax3 = 0;
     Int_t no_antiXi_perevent_ptmax3 = 0;
 
-    
+
     //Loop over Reconstructed Cascades
     for (Int_t icasc=0 ; icasc<fAODevent->GetNumberOfCascades(); icasc++)  {
         
@@ -374,6 +380,8 @@ void AliAnalysisTaskCorrPPHM::UserExec(Option_t *)  {
 	  continue;
 	}
       //cout<<"*****************Cascade particle found !!!**********************************"<<endl;
+
+       hNumberOfCascades->Fill(0.5);
 	    
         
       //Get Decay Daughters
@@ -386,6 +394,8 @@ void AliAnalysisTaskCorrPPHM::UserExec(Option_t *)  {
 
       cout<<"**************Daughter tracks of Cascade particle found !!!**************************"<<endl;
 
+      hNumberOfCascades->Fill(1.5);
+       
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       //Track properties
       Int_t nTPCcluster_posTrk = positive_track->GetTPCNcls();
@@ -416,17 +426,19 @@ void AliAnalysisTaskCorrPPHM::UserExec(Option_t *)  {
       if (!PassedTrackQualityCuts(negative_track)) continue;
       if (!PassedTrackQualityCuts(bachelor_track)) continue;
       cout<<"Daughter tracks of cascade passed track quality cuts !!!!!"<<endl;
-      
-      
-      // //Track pile up cuts
-      // if (!PassedSingleParticlePileUpCuts(positive_track)) continue;
-      // if (!PassedSingleParticlePileUpCuts(negative_track)) continue;
-      // if (!PassedSingleParticlePileUpCuts(bachelor_track)) continue;
-      // cout<<"Passed pileup cuts for track !!!"<<endl;
 
+       hNumberOfCascades->Fill(2.5);
       
+      //Track pile up cuts
+      if (!PassedSingleParticlePileUpCuts(positive_track)) continue;
+      if (!PassedSingleParticlePileUpCuts(negative_track)) continue;
+      if (!PassedSingleParticlePileUpCuts(bachelor_track)) continue;
+      cout<<"Passed pileup cuts for track !!!"<<endl;
+
+      hNumberOfCascades->Fill(3.5);
 
       //++++++++++++++++++Topological variables+++++++++++++++++++++++++++++++++++
+      //DCA of daughter tracks
       
       Double_t lDcaBachTrackToPrimVertexXi = cascade->DcaBachToPrimVertex();
       Double_t lDcaPosTrackToPrimVertexXi = cascade->DcaPosToPrimVertex();
@@ -434,6 +446,9 @@ void AliAnalysisTaskCorrPPHM::UserExec(Option_t *)  {
       cout<<"DCAtoPV_bachelor: "<<lDcaBachTrackToPrimVertexXi<<endl;
       cout<<"DCAtoPV_positive: "<<lDcaPosTrackToPrimVertexXi<<endl;
       cout<<"DCAtoPV_negative: "<<lDcaNegTrackToPrimVertexXi<<endl;
+
+
+      //Variables of V0
       
       Double_t lV0CosPointingAngleXi = cascade->CosPointingAngle(prim_vertex);
       Double_t lDcaV0DaughtersXi = cascade->DcaV0Daughters();
@@ -446,7 +461,18 @@ void AliAnalysisTaskCorrPPHM::UserExec(Option_t *)  {
       cout<<"DCA_V0_daughter: "<<lDcaV0DaughtersXi<<endl;
       cout<<"DCA_V0_toPV: "<<lDcaV0ParticleToPrimVertexXi<<endl;
       cout<<"V0 trans radius: "<<lV0TransRadiusXi<<endl;
-      
+
+      //Pt of V0
+      Double_t lBMom[3], lNMom[3], lPMom[3];
+      bachelor_track->GetPxPyPz( lBMom );
+      positive_track->GetPxPyPz( lPMom );
+      negative_track->GetPxPyPz( lNMom );
+      Float_t lV0Pt = TMath::Sqrt(  TMath::Power( lNMom[0]+lPMom[0] , 2)
+                                  + TMath::Power( lNMom[1]+lPMom[1] , 2) );
+       
+
+      // Variables of Xi
+	
       Double_t lCosPointingAngleXi = cascade->CosPointingAngleXi(vx,vy,vz);
       Double_t lDcaXiDaughters = cascade->DcaXiDaughters();
       //Cascade Radius
@@ -466,10 +492,18 @@ void AliAnalysisTaskCorrPPHM::UserExec(Option_t *)  {
       if (!PassedDaughterTrackDCAtoVertexSelectionCuts(cascade)) continue;
       cout<<"**************Daughter tracks passed DCA to PV cut !!!###############################"<<endl;
 
+       hNumberOfCascades->Fill(4.5);
+
+      //Extra: ptcut on Lambda
+      if (lV0Pt < 0.3) continue;
+
+      hNumberOfCascades->Fill(5.5);
+     
+
       //Topological cuts to select cascade particle
       if (!PassedCascadeSelectionCuts(cascade)) continue;
       cout<<"Passed CascadeSelections cut !!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
-
+    
       //Mass and Charge
       cout<<"Mass of cascade: "<<cascade->MassXi()<<"\t"<<"Charge: "<<cascade->ChargeXi()<<endl;
       
@@ -807,10 +841,10 @@ Bool_t AliAnalysisTaskCorrPPHM::PassedDaughterTrackDCAtoVertexSelectionCuts(AliA
   lDcaBachTrackToPrimVertexXi = cascade->DcaBachToPrimVertex();
   lDcaPosTrackToPrimVertexXi = cascade->DcaPosToPrimVertex();
   lDcaNegTrackToPrimVertexXi = cascade->DcaNegToPrimVertex();
-  
-  if (lDcaBachTrackToPrimVertexXi < 0.05) return passedDauTrackDCAtoVertexSelection;
-  if (lDcaPosTrackToPrimVertexXi < 0.04) return passedDauTrackDCAtoVertexSelection;
-  if (lDcaNegTrackToPrimVertexXi < 0.04) return passedDauTrackDCAtoVertexSelection;
+
+  if (lDcaBachTrackToPrimVertexXi <= 0.06) return passedDauTrackDCAtoVertexSelection;
+  if (lDcaPosTrackToPrimVertexXi <= 0.06) return passedDauTrackDCAtoVertexSelection;
+  if (lDcaNegTrackToPrimVertexXi <= 0.06) return passedDauTrackDCAtoVertexSelection;
   
   passedDauTrackDCAtoVertexSelection = kTRUE;
   return passedDauTrackDCAtoVertexSelection;
@@ -832,26 +866,41 @@ Bool_t AliAnalysisTaskCorrPPHM::PassedCascadeSelectionCuts (AliAODcascade *casca
 
     //Topological Selections for Lambda   //taken from a paper searched in google....please check the cut values
 
-    if (cascade->CosPointingAngle(primVtx) < 0.97) return passedCascadeSelection;
-    if (cascade->DcaV0Daughters() > 1.6) return passedCascadeSelection;
+    if (cascade->CosPointingAngle(primVtx) <= 0.979) return passedCascadeSelection;
+
+    hNumberOfCascades->Fill(6.5);
+      
+    if (cascade->DcaV0Daughters() >= 1.0) return passedCascadeSelection;
+
+    hNumberOfCascades->Fill(7.5);
+      
+
     Double_t lDcaV0ParticleToPrimVertexXi = -1.;
     lDcaV0ParticleToPrimVertexXi = cascade->DcaV0ToPrimVertex();
-    if (lDcaV0ParticleToPrimVertexXi < 0.07) return passedCascadeSelection;
+    if (lDcaV0ParticleToPrimVertexXi <= 0.08) return passedCascadeSelection;
+
+    hNumberOfCascades->Fill(8.5);
+      
+
     //V0 Radius
     Double_t lPosV0Xi[3] = { -1000. , -1000., -1000. }; // Position of VO coming from cascade
     cascade->GetXYZ( lPosV0Xi );
     Double_t radiusV0 = TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
-    Double_t rV01=1.4, rV02=200;
-    if (radiusV0 < rV01) return passedCascadeSelection;
-    if (radiusV0 > rV02) return passedCascadeSelection;
+    Double_t rV01=1.7, rV02=200;
+    if (radiusV0 <= rV01) return passedCascadeSelection;
+    if (radiusV0 >= rV02) return passedCascadeSelection;
 
-    
-    
+    hNumberOfCascades->Fill(9.5);
 
     //Topological Selections for Xi 
-    if (cascade->CosPointingAngleXi(vx,vy,vz) < 0.97) return passedCascadeSelection;
-    if (cascade->DcaXiDaughters() > 1.6) return passedCascadeSelection;
+    if (cascade->CosPointingAngleXi(vx,vy,vz) <= 0.98) return passedCascadeSelection;
 
+    hNumberOfCascades->Fill(10.5);
+      
+    if (cascade->DcaXiDaughters() >= 1.5) return passedCascadeSelection;
+
+    hNumberOfCascades->Fill(11.5);
+      
     //Cascade Radius
     Double_t lPosXi[3] = { -1000.0, -1000.0, -1000.0 };
     lPosXi[0] = cascade->DecayVertexXiX();
@@ -859,10 +908,11 @@ Bool_t AliAnalysisTaskCorrPPHM::PassedCascadeSelectionCuts (AliAODcascade *casca
     lPosXi[2] = cascade->DecayVertexXiZ();
     Double_t rC = TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
     Double_t r01=0.8, r02=200;  //cascade radius to be seen from note
-    if (rC < r01) return passedCascadeSelection;
-    if (rC > r02) return passedCascadeSelection;
-    
-     
+    if (rC <= r01) return passedCascadeSelection;
+    if (rC >= r02) return passedCascadeSelection;
+
+    hNumberOfCascades->Fill(12.5);
+      
     passedCascadeSelection = kTRUE;
     return passedCascadeSelection;
 }
@@ -874,25 +924,37 @@ Bool_t AliAnalysisTaskCorrPPHM::IsXiCandidate (AliAODcascade *casc, AliAODTrack 
     if (PassedPIDSelection(pos,AliPID::kProton) && PassedPIDSelection(neg,AliPID::kPion) && PassedPIDSelection(bac,AliPID::kPion)) passedPID=kTRUE;
     if (!passedPID) return kFALSE;
 
+    hNumberOfCascades->Fill(13.5);
    
     //Mass of V0(daughter of Xi)
     Double_t massV0 = casc->MassLambda();   
 
     Double_t massLambda_PDG=TDatabasePDG::Instance()->GetParticle(3122)->Mass();
-    if (massV0 < massLambda_PDG-0.006) return kFALSE;
-    if (massV0 > massLambda_PDG+0.006) return kFALSE;
+    if (massV0 <= massLambda_PDG-0.006) return kFALSE;
+    if (massV0 >= massLambda_PDG+0.006) return kFALSE;
+
+    hNumberOfCascades->Fill(14.5);
+
+    //Mass of Xi if bachelor is misidentified as Kaon, Omega rejection
+    Double_t massOmega = casc->MassOmega();
+    if (massOmega > 1.667 && massOmega < 1.677)
+      return kFALSE;
+
+    hNumberOfCascades->Fill(15.5);
+ 
 
     //Fill histogram before masscut
     histMassXi_vs_Pt_beforeMasscut->Fill(casc->Pt(),casc->MassXi());
-
     
     //Mass of Xi
     Double_t mass = casc->MassXi();   
  
     //Mass Selection
     Double_t massXi_PDG=TDatabasePDG::Instance()->GetParticle(3312)->Mass();
-    if (mass < massXi_PDG-0.005) return kFALSE;
-    if (mass > massXi_PDG+0.005) return kFALSE;
+    if (mass <= massXi_PDG-0.005) return kFALSE;
+    if (mass >= massXi_PDG+0.005) return kFALSE;
+
+    hNumberOfCascades->Fill(16.5);
     
     //Assignments
     // m = mass;
@@ -908,13 +970,24 @@ Bool_t AliAnalysisTaskCorrPPHM::IsAntiXiCandidate (AliAODcascade *casc, AliAODTr
     if (PassedPIDSelection(pos,AliPID::kPion) && PassedPIDSelection(neg,AliPID::kProton) && PassedPIDSelection(bac,AliPID::kPion)) passedPID=kTRUE;
     if (!passedPID) return kFALSE;
 
-  
+    hNumberOfCascades->Fill(13.5);
+    
     //Mass of V0(daughter of Xi)
     Double_t massV0 = casc->MassAntiLambda(); 
     
     Double_t massLambda_PDG=TDatabasePDG::Instance()->GetParticle(-3122)->Mass();
-    if (massV0 < massLambda_PDG-0.006) return kFALSE;
-    if (massV0 > massLambda_PDG+0.006) return kFALSE;
+    if (massV0 <= massLambda_PDG-0.006) return kFALSE;
+    if (massV0 >= massLambda_PDG+0.006) return kFALSE;
+
+    hNumberOfCascades->Fill(14.5);
+
+    //Mass of Xi if bachelor is misidentified as Kaon, Omega rejection
+    Double_t massOmega = casc->MassOmega();
+    if (massOmega > 1.667 && massOmega < 1.677)
+      return kFALSE;
+
+    hNumberOfCascades->Fill(15.5);
+ 
 
     //Fill histogram before masscut
     histMassAntiXi_vs_Pt_beforeMasscut->Fill(casc->Pt(),casc->MassXi());
@@ -925,8 +998,10 @@ Bool_t AliAnalysisTaskCorrPPHM::IsAntiXiCandidate (AliAODcascade *casc, AliAODTr
 
     //Mass Selection
     Double_t massXi_PDG=TDatabasePDG::Instance()->GetParticle(-3312)->Mass();
-    if (mass < massXi_PDG-0.005) return kFALSE;
-    if (mass > massXi_PDG+0.005) return kFALSE;
+    if (mass <= massXi_PDG-0.005) return kFALSE;
+    if (mass >= massXi_PDG+0.005) return kFALSE;
+
+    hNumberOfCascades->Fill(16.5);
     
     //Assignments
     // m = mass;
@@ -1086,10 +1161,23 @@ Bool_t AliAnalysisTaskCorrPPHM::PassedPIDSelection (AliAODTrack *track, AliPID::
  //_____________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskCorrPPHM::PassedSingleParticlePileUpCuts(AliAODTrack *track)
 {
-  Bool_t passedTrackPileupCut = (kTRUE);
+  Bool_t passedTrackPileupCut = (kFALSE);
+  /*
   if (!(track->HasPointOnITSLayer(1)) && !(track->HasPointOnITSLayer(4)) && !(track->HasPointOnITSLayer(5)) && !(track->GetTOFBunchCrossing() == 0))
     passedTrackPileupCut = (kFALSE);
   return passedTrackPileupCut;
+  */
+
+  Int_t flag = 0;
+  if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+    flag+=1;
+  if(track->HasPointOnITSLayer(4) || track->HasPointOnITSLayer(5))
+    flag+=1;
+  if(track->GetTOFBunchCrossing() == 0)
+    flag+=1;
+
+  if(flag != 0)
+    passedTrackPileupCut = (kTRUE);
 }
  //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskCorrPPHM::Terminate(Option_t *)  {
