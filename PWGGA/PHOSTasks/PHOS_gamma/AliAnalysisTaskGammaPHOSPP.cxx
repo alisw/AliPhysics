@@ -59,24 +59,28 @@
 ClassImp(AliAnalysisTaskGammaPHOSPP)
 
 //________________________________________________________________________
-AliAnalysisTaskGammaPHOSPP::AliAnalysisTaskGammaPHOSPP(const char *name) 
-: AliAnalysisTaskSE(name),
-  fESDtrackCuts(0), fOutputContainer(0), fOutputContainer2(0), 
-  fPHOSEvent(0), fnCINT1B(0), fnCINT1A(0), fnCINT1C(0), fnCINT1E(0), fEventVtxExist(0), fEventVtxZ10cm(0), fEventPileup(0), fEventV0AND(0),
-  fPHOSGeo(0),/* fBCgap(525e-09),*/ fBCgap(0),
+AliAnalysisTaskGammaPHOSPP::AliAnalysisTaskGammaPHOSPP(const char *name) : AliAnalysisTaskSE(name),
+  fOutputContainer(0), fOutputContainer2(0),  
+  fESDtrackCuts(0),
+  fEvent(0), fPHOSEvent(0), 
+  fnCINT1B(0), fnCINT1A(0), fnCINT1C(0), fnCINT1E(0), 
+  fEventVtxExist(0), fEventVtxZ10cm(0), fEventPileup(0), fEventV0AND(0), 
   fEventCounter(0), 
-  fInPHOS(0),
+  fPHOSGeo(0),
+  fInPHOS(0), 
   fMCArray(0),
   fPIDResponse(0x0), //!
-  fWeightFunction(0), fWeightFunction2(0), fWeightFunction3(0),  
-  fEvent(0), fCurrFileName(0), 
+  fBCgap(525e-09),
+  //fWeightFunction(0),
+  fWeightFunction(new TF1("fWeightFunction", "((([0]+([1]*x))+([2]*(x*x)))/((1.+([3]*x))+([4]*(x*x))))+([5]*x)", 0., 100.)),
+  fCurrFileName(0), 
   fCheckMCCrossSection(kFALSE),
-  fh1Xsec(0), fh1Trials(0), fAvgTrials(-1), fTriggerAnalysis(new AliTriggerAnalysis)
+  fh1Xsec(0), fh1Trials(0), fAvgTrials(-1), 
+  fTriggerAnalysis(new AliTriggerAnalysis)
 {
   // Output slots #0 write into a TH1 container
   DefineOutput(1,THashList::Class());
   DefineOutput(2,THashList::Class());
-  DefineOutput(3,THashList::Class());
 
 // Constructor
   Int_t nBin=10 ;
@@ -167,16 +171,14 @@ void AliAnalysisTaskGammaPHOSPP::UserCreateOutputObjects()
 */
 void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *) 
 {
-  /* Get AOD event */
-  //
+  // Get event
   fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent) {
      Printf("ERROR: Could not retrieve event");
      return;
   }
 
-  /* Initialize geometry */
-  //
+  // Initialize geometry
   if (fEventCounter == 0) {
     fPHOSGeo = AliPHOSGeometry::GetInstance() ; // use tender
   
@@ -188,85 +190,67 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)
           fPHOSGeo = AliPHOSGeometry::GetInstance("Run2") ;
     }
   }
-/*
-  if (fEvent->GetRunNumber() > 224994) {
-    fWeightFunction= new TF1("fWeightFunction", "1.0", 0., 99999.) ;
-  }  else
-    fWeightFunction= new TF1("fWeightFunction", "(3.02640e-01 + 8.59672e-01*x + 5.39777e-01*x*x)/(1.+ 9.82832e-02 *x+1.27487e+00 *x*x)+3.73416e-03*x", 0., 99999.) ;
-*/  
 
-  fWeightFunction  = new TF1("fWeightFunction", "1.0", 0., 99999.) ;
-  fWeightFunction2 = new TF1("fWeightFunction2", "((([0]+([1]*x))+([2]*(x*x)))/((1.+([3]*x))+([4]*(x*x))))+([5]*x)", 0., 100);
-
-  /* Vertex */ 
-  //
+  // Vertex 
   const AliAODVertex *aodVertex5 =    fEvent->GetPrimaryVertex();
   const AliAODVertex *aodVertexSPD  = fEvent->GetPrimaryVertexSPD();
-  
   Double_t fVtx0[3] = {0, 0, 0};
   Double_t fVtx5[3] = {aodVertex5->GetX(), aodVertex5->GetY(), aodVertex5->GetZ()};
 
-  /* Filter events */
-  //
+  // Filter events
   Bool_t acceptEvent = kFALSE;
-
   acceptEvent = AcceptEvent(fEvent);
-
   if (!acceptEvent) return;
   
-/* PHOS event */
-
+  //PHOS event
   if (fPHOSEvent) {
     fPHOSEvent->Clear() ;
   }  
   else
     fPHOSEvent = new TClonesArray("AliCaloPhoton", 50) ;
 
-/* PID */
-
+  // PID
   fPIDResponse -> SetUseTPCMultiplicityCorrection(kFALSE);
   AliPIDCombined *pidcomb=new AliPIDCombined();
   pidcomb->SetDefaultTPCPriors();
-  //pidcomb->SetEnablePriors(kFALSE);
   pidcomb->SetSelectedSpecies(AliPID::kSPECIESC);
   pidcomb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF|AliPIDResponse::kDetITS|AliPIDResponse::kDetTRD);
 
-/* Event centrality */
-  //always zero centrality
+  // Event centrality 
   fEventCentrality = GetEventCentrality(fEvent);
 
-/* Process MC */
+  // Process MC
   fMCArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
   ProcessMC() ;
  
 /*Notify*/
   Notify();
 
-/* Count PHOS and EMCAL clusters */
+  // Check PHOS and EMCAL clusters
   PHOSvsEMCALClusters();
   
-/* PHOS cells */
-   AnalyzeCells();
+  // PHOS cells 
+  AnalyzeCells();
 
-/* PHOS clusters */
-   fInPHOS = 0 ;
+  // PHOS clusters *
+  fInPHOS = 0 ;
+  for (Int_t ic = 0; ic < fEvent->GetNumberOfCaloClusters(); ic++) {
+    AliAODCaloCluster *clu1 = fEvent->GetCaloCluster(ic);
+    SelectCluster(clu1);
+  }
 
-   for (Int_t ic = 0; ic < fEvent->GetNumberOfCaloClusters(); ic++) {
-     AliAODCaloCluster *clu1 = fEvent->GetCaloCluster(ic);
-     SelectCluster(clu1);
-   }
-
-/* Photons */
+  // Photons 
   for (Int_t iph = 0; iph < fInPHOS; iph++) {
     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSEvent->At(iph) ;
     FillOnePhotonHistograms(ph);
   }
-
+ 
+  // Two photon histograms
   FillTwoPhotonHistograms();
   MixPhotons();
 
-/* Events */
-  FillHistogram("hEventCounter",0.5);
+  // Events 
+  FillHistogram("hEventCounter", 0.5);
   FillHistogram("hEventCounterCentrality", fEventCentrality + 0.5);
   fEventCounter++;
 }
@@ -280,7 +264,6 @@ void AliAnalysisTaskGammaPHOSPP::FinishTaskOutput()
 }
 
 //________________________________________________________________________
-
 Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *aodEvent)
 {
   FillHistogram("hSelEvents",0) ; // All events accepted by Physics Selection
@@ -847,8 +830,10 @@ void AliAnalysisTaskGammaPHOSPP::FillTwoPhotonHistograms()
 
   for (Int_t i1 = 0; i1 < fInPHOS-1; i1 ++ ) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
+    if (fEvent->GetRunNumber() <  224994 && ph1->GetBC() != 0 ) continue; //Run 1
     for (Int_t i2 = i1+1; i2 < fInPHOS; i2++) {
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
+      if (fEvent->GetRunNumber() <  224994 && ph2->GetBC() != 0 ) continue; //Run 1
       pv1 = *(ph1->GetMomV2());
       pv2 = *(ph2->GetMomV2());
       Double_t P1 = pv1.P();
@@ -946,10 +931,12 @@ void AliAnalysisTaskGammaPHOSPP::MixPhotons()
 
   for (Int_t i1 = 0; i1 < fInPHOS; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
+    if (fEvent->GetRunNumber() <  224994 && ph1->GetBC() != 0 ) continue; //Run 1
     for (Int_t ev = 0; ev < prevPHOS->GetSize(); ev ++) {
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
       for (Int_t i2=0; i2 < mixPHOS->GetEntriesFast();i2++) {
         AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
+        if (fEvent->GetRunNumber() <  224994 && ph2->GetBC() != 0 ) continue; //Run 1
         pv1 = *(ph1->GetMomV2());
         pv2 = *(ph2->GetMomV2());
         Double_t P1 = pv1.P();
@@ -1141,24 +1128,24 @@ Double_t AliAnalysisTaskGammaPHOSPP::Weight(AliAODMCParticle *particleAtVertex)
    }
 
    if (pdg == 111 || pdg  == 211 ) {
-          // fWeightFunction2->SetParameters(0.611073, -0.0222529, 0.190541, -0.416579, 0.396059, 0.611073);
+          // fWeightFunction->SetParameters(0.611073, -0.0222529, 0.190541, -0.416579, 0.396059, 0.611073);
 	  Double_t parsPi0[6] = {0.54556579, -0.16503941, 0.24846410, -0.65202206, 0.51017892, 0.0033008629};
-          fWeightFunction2->SetParameters(parsPi0);
+          fWeightFunction->SetParameters(parsPi0);
    }   else if (pdg == 221 || pdg == 331 || pdg == 223 ) {   
-         //fWeightFunction2->SetParameters(0.0601459, 0, 4.11665, 0, 6.46838, -0.00319589);
+         //fWeightFunction->SetParameters(0.0601459, 0, 4.11665, 0, 6.46838, -0.00319589);
 	 Double_t parsEta[6]={0.692057, -1.60313, 1.12976, -2.15741, 1.46253, 0.00414204};
-	 fWeightFunction2->SetParameters(parsEta);
+	 fWeightFunction->SetParameters(parsEta);
        } else if(pdg == 130 || pdg == 310 || pdg == 311 || pdg == 321 ) {    
-             //fWeightFunction2->SetParameters(0.708656, 0.355564, -0.00468263, 0.0570132, 0.076876, 0.0382327);
+             //fWeightFunction->SetParameters(0.708656, 0.355564, -0.00468263, 0.0570132, 0.076876, 0.0382327);
 	     Double_t parsKa[6] = {0.718241, 0.173219, 0.0504723, -0.111518, 0.118757, 0.0134929};
-             fWeightFunction2->SetParameters(parsKa);
+             fWeightFunction->SetParameters(parsKa);
          } else if (pdg > 1000) {
-             //fWeightFunction2->SetParameters(0.215726, 0.292934, 0.163074, -0.460113, 0.219988, -0.0903996);
+             //fWeightFunction->SetParameters(0.215726, 0.292934, 0.163074, -0.460113, 0.219988, -0.0903996);
 	     Double_t parsPN[6] = {0.209599, 0.298912, 0.139915, -0.450081, 0.207574, -0.0861399};
-	     fWeightFunction2->SetParameters(parsPN);
-           } else fWeightFunction2->SetParameters(1.0, 0., 0., 0., 0., 0.);
+	     fWeightFunction->SetParameters(parsPN);
+           } else fWeightFunction->SetParameters(1.0, 0., 0., 0., 0., 0.);
 
-   return fWeightFunction2->Eval(particleAtVertex->Pt());
+   return fWeightFunction->Eval(particleAtVertex->Pt());
 }
 
 //=======================================
