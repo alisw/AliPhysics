@@ -34,7 +34,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *) {};
   virtual void InitializeArrays();
-  void FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config); 
+  void FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH1F* HistInvMassMCResonance, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config); 
   void FillPairDistributionSEAncestors(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH2F **SameEventPhiTheta_OneDimensional, TH1F **histAncestor, TH2F **hist2dAncestor, TH2F **SameEventPhiTheta_OneDimensionalAncestor, int CombinationNumber, AliFemtoDreamCollConfig Config);
   void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH2F **EventPhiThetaArray, int CombinationNumber, AliFemtoDreamCollConfig Config);
 
@@ -67,6 +67,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   void SetDoAncestors(bool DoAncestors){fDoAncestors = DoAncestors;};
   void SetRemoveMCResonances(bool RemoveMCResonances, bool RemoveMCResonanceDaughters){fRemoveMCResonances = RemoveMCResonances; fRemoveMCResonanceDaughters = RemoveMCResonanceDaughters;};
   void SetDoInvMassPlot(bool DoInvMassPlot){fDoInvMassPlot = DoInvMassPlot;};
+  void SetDoResonanceLorentzFactor(bool DoResonanceLorentzFactor){fDoResonanceLorentzFactor = DoResonanceLorentzFactor;};
 
   private:
   AliAnalysisTaskNanoFemtoProtonPion(const AliAnalysisTaskNanoFemtoProtonPion &task);
@@ -94,6 +95,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   bool fRemoveMCResonances; //
   bool fRemoveMCResonanceDaughters; //
   bool fDoInvMassPlot; 
+  bool fDoResonanceLorentzFactor; 
 
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
@@ -128,6 +130,7 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   TH1F **fSameEvent_OneDimensional_Ancestors;
   TH2F **fSameEventMult_OneDimensional_Ancestors;
   TH1F **fSameEvent_InvMass; 
+  TH1F **fSameEvent_InvMass_MCResonance;
 
   TList *fMixedEvent_List_OneDimensional;
   TH1F **fMixedEvent_OneDimensional;
@@ -146,6 +149,9 @@ class AliAnalysisTaskNanoFemtoProtonPion : public AliAnalysisTaskSE {
   TList *fMixedEventDeltaEtaDeltaPhi_List;
   TH2F **fMixedEventPhiTheta;
 
-  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 8) 
+  TH2F *fResonanceLorentzFactor; 
+  TH2F *fInvMassResonancesMCTruth; 
+
+  ClassDef(AliAnalysisTaskNanoFemtoProtonPion, 9) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFEMTOPROTONPION_H_ */

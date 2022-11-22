@@ -69,7 +69,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetDoV0(Bool_t v0 = kTRUE) { fDoV0 = v0; }
         void                    SetIsMC(Bool_t mc = kTRUE, Bool_t tpc = kTRUE, Bool_t fmd = kTRUE) { fIsMC = mc; fIsTPCgen = tpc; fIsFMDgen = fmd; }
-        void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
+        void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; fTrigger = AliVEvent::kHighMultV0; }
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }

@@ -4,6 +4,7 @@
 #include "AliVParticle.h"
 #include "TString.h"
 #include "AliLog.h"
+#include "TParticle.h"
 
 class AliPartSimpleForCorr : public AliVParticle
 {
@@ -108,5 +109,4 @@ class AliPartSimpleForCorr : public AliVParticle
 
         ClassDef(AliPartSimpleForCorr, 2);
 };
-
 #endif

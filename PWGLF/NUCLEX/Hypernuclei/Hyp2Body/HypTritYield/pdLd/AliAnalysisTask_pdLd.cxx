@@ -84,6 +84,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fHist_Proton_TPC_SharedCluster(0),
   fHist_Proton_TPC_Chi2overNDF(0),
   fHist_Proton_ITS_nCluster(0),
+  fHist_Proton_TOF_Signal(0),
   fHist_Proton_DCAxy(0),
   fHist_Proton_DCAz(0),
   fHist_Proton_TPC_nSigma_pT(0),
@@ -112,6 +113,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fHist_Deuteron_TPC_SharedCluster(0),
   fHist_Deuteron_TPC_Chi2overNDF(0),
   fHist_Deuteron_ITS_nCluster(0),
+  fHist_Deuteron_TOF_Signal(0),
   fHist_Deuteron_DCAxy(0),
   fHist_Deuteron_DCAz(0),
   fHist_Deuteron_TPC_nSigma_pT(0),
@@ -135,10 +137,14 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fHist_ProtonDeuteron_MED(0),
   fHist_ProtonDeuteron_RPD(0),
   fHist_ProtonDeuteron_PairsPerEvent(0),
+  fHist_ProtonDeuteron_EventsForMixing(0),
   fHist_ProtonDeuteron_AngleOfPairs(0),
   fHist_ProtonDeuteron_PairMultiplicity(0),
   fHist_ProtonDeuteron_pT(0),
   fHist_ProtonDeuteron_Eta(0),
+  fHist_ProtonDeuteron_Centrality(0),
+  fHist_ProtonDeuteron_VertexZ(0),
+  fHist_ProtonDeuteron_UsedEventsInPool(0),
   fHist_AntiProton_CutCounter(0),
   fHist_AntiProton_pT(0),
   fHist_AntiProton_p(0),
@@ -151,6 +157,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fHist_AntiProton_TPC_SharedCluster(0),
   fHist_AntiProton_TPC_Chi2overNDF(0),
   fHist_AntiProton_ITS_nCluster(0),
+  fHist_AntiProton_TOF_Signal(0),
   fHist_AntiProton_DCAxy(0),
   fHist_AntiProton_DCAz(0),
   fHist_AntiProton_TPC_nSigma_pT(0),
@@ -179,6 +186,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fHist_AntiDeuteron_TPC_SharedCluster(0),
   fHist_AntiDeuteron_TPC_Chi2overNDF(0),
   fHist_AntiDeuteron_ITS_nCluster(0),
+  fHist_AntiDeuteron_TOF_Signal(0),
   fHist_AntiDeuteron_DCAxy(0),
   fHist_AntiDeuteron_DCAz(0),
   fHist_AntiDeuteron_TPC_nSigma_pT(0),
@@ -202,10 +210,14 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd() : AliAnalysisTaskSE(),
   fHist_AntiProtonAntiDeuteron_MED(0),
   fHist_AntiProtonAntiDeuteron_RPD(0),
   fHist_AntiProtonAntiDeuteron_PairsPerEvent(0),
+  fHist_AntiProtonAntiDeuteron_EventsForMixing(0),
   fHist_AntiProtonAntiDeuteron_AngleOfPairs(0),
   fHist_AntiProtonAntiDeuteron_PairMultiplicity(0),
   fHist_AntiProtonAntiDeuteron_pT(0),
   fHist_AntiProtonAntiDeuteron_Eta(0),
+  fHist_AntiProtonAntiDeuteron_Centrality(0),
+  fHist_AntiProtonAntiDeuteron_VertexZ(0),
+  fHist_AntiProtonAntiDeuteron_UsedEventsInPool(0),
   ProtonTrackArray(0),
   DeuteronTrackArray(0),
   Lambdav0Array(0),
@@ -249,6 +261,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_Proton_TPC_SharedCluster(0),
   fHist_Proton_TPC_Chi2overNDF(0),
   fHist_Proton_ITS_nCluster(0),
+  fHist_Proton_TOF_Signal(0),
   fHist_Proton_DCAxy(0),
   fHist_Proton_DCAz(0),
   fHist_Proton_TPC_nSigma_pT(0),
@@ -277,6 +290,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_Deuteron_TPC_SharedCluster(0),
   fHist_Deuteron_TPC_Chi2overNDF(0),
   fHist_Deuteron_ITS_nCluster(0),
+  fHist_Deuteron_TOF_Signal(0),
   fHist_Deuteron_DCAxy(0),
   fHist_Deuteron_DCAz(0),
   fHist_Deuteron_TPC_nSigma_pT(0),
@@ -300,10 +314,14 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_ProtonDeuteron_MED(0),
   fHist_ProtonDeuteron_RPD(0),
   fHist_ProtonDeuteron_PairsPerEvent(0),
+  fHist_ProtonDeuteron_EventsForMixing(0),
   fHist_ProtonDeuteron_AngleOfPairs(0),
   fHist_ProtonDeuteron_PairMultiplicity(0),
   fHist_ProtonDeuteron_pT(0),
   fHist_ProtonDeuteron_Eta(0),
+  fHist_ProtonDeuteron_Centrality(0),
+  fHist_ProtonDeuteron_VertexZ(0),
+  fHist_ProtonDeuteron_UsedEventsInPool(0),
   fHist_AntiProton_CutCounter(0),
   fHist_AntiProton_pT(0),
   fHist_AntiProton_p(0),
@@ -316,6 +334,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_AntiProton_TPC_SharedCluster(0),
   fHist_AntiProton_TPC_Chi2overNDF(0),
   fHist_AntiProton_ITS_nCluster(0),
+  fHist_AntiProton_TOF_Signal(0),
   fHist_AntiProton_DCAxy(0),
   fHist_AntiProton_DCAz(0),
   fHist_AntiProton_TPC_nSigma_pT(0),
@@ -344,6 +363,7 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_AntiDeuteron_TPC_SharedCluster(0),
   fHist_AntiDeuteron_TPC_Chi2overNDF(0),
   fHist_AntiDeuteron_ITS_nCluster(0),
+  fHist_AntiDeuteron_TOF_Signal(0),
   fHist_AntiDeuteron_DCAxy(0),
   fHist_AntiDeuteron_DCAz(0),
   fHist_AntiDeuteron_TPC_nSigma_pT(0),
@@ -367,10 +387,14 @@ AliAnalysisTask_pdLd::AliAnalysisTask_pdLd(const char *name,int CollisionSystem)
   fHist_AntiProtonAntiDeuteron_MED(0),
   fHist_AntiProtonAntiDeuteron_RPD(0),
   fHist_AntiProtonAntiDeuteron_PairsPerEvent(0),
+  fHist_AntiProtonAntiDeuteron_EventsForMixing(0),
   fHist_AntiProtonAntiDeuteron_AngleOfPairs(0),
   fHist_AntiProtonAntiDeuteron_PairMultiplicity(0),
   fHist_AntiProtonAntiDeuteron_pT(0),
   fHist_AntiProtonAntiDeuteron_Eta(0),
+  fHist_AntiProtonAntiDeuteron_Centrality(0),
+  fHist_AntiProtonAntiDeuteron_VertexZ(0),
+  fHist_AntiProtonAntiDeuteron_UsedEventsInPool(0),
   ProtonTrackArray(0),
   DeuteronTrackArray(0),
   Lambdav0Array(0),
@@ -468,6 +492,36 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
 
   fHistList_AntiProtonAntiDeuteron = new TList();
   fHistList_AntiProtonAntiDeuteron->SetOwner();
+
+
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // +++ PoolManager for event-mixing ++++++++++++++++++++++++
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+  const int nCentralityBins = 20; // number of centrality bins of the centrality array
+  const int nZvtxBins	    = 20; // number of z-vertex bins of the z-vertex array
+
+  double CentralityBins[nCentralityBins+1];
+
+  double CentralityBins_Central[nCentralityBins+1] = {0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0};
+  double CentralityBins_SemiCentral[nCentralityBins+1] = {30.0,31.0,32.0,33.0,34.0,35.0,36.0,37.0,38.0,39.0,40.0,41.0,42.0,43.0,44.0,45.0,46.0,47.0,48.0,49.0,50.0};
+
+  if(fCollisionSystem == 1) for(int i = 0; i <= nCentralityBins; i++){CentralityBins[i] = CentralityBins_Central[i];}
+  if(fCollisionSystem == 2) for(int i = 0; i <= nCentralityBins; i++){CentralityBins[i] = CentralityBins_SemiCentral[i];}
+
+
+  double ZvtxBins[nZvtxBins+1] = {-10.0,-9.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0};
+
+
+  int PoolSize = 200;	    // maximum number of events in the pool (-1 means no limit)
+			    // int nPools = nCentralityBins * nZvtxBins;
+			    // int nEventsMax = nPools * PoolSize;
+
+  int TrackDepth = 5000;   // maximum number of tracks in one bin of the pool?
+
+  fEventPoolManager = new AliEventPoolManager(PoolSize,TrackDepth,nCentralityBins,CentralityBins,nZvtxBins,ZvtxBins);
+  fEventPoolManager->Validate();
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // +++ histograms for events +++++++++++++++++++++++++++++++
@@ -585,6 +639,11 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_Proton_ITS_nCluster->GetYaxis()->SetTitle("counts");
   fHistList_Proton->Add(fHist_Proton_ITS_nCluster);
 
+  fHist_Proton_TOF_Signal = new TH1F("fHist_Proton_TOF_Signal","TOF signal of proton tracks",200,0.0,200.0);
+  fHist_Proton_TOF_Signal->GetXaxis()->SetTitle("TOF signal (ns)");
+  fHist_Proton_TOF_Signal->GetYaxis()->SetTitle("counts");
+  fHistList_Proton->Add(fHist_Proton_TOF_Signal);
+
   fHist_Proton_DCAxy = new TH2F("fHist_Proton_DCAxy","DCA_{xy} distribution of proton tracks",240,0.0,6.0,1000,-3.0,+3.0);
   fHist_Proton_DCAxy->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHist_Proton_DCAxy->GetYaxis()->SetTitle("DCA_{xy} (cm)");
@@ -601,7 +660,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Proton->Add(fHist_Proton_TPC_nSigma_pT);
 
   fHist_Proton_TPC_nSigma_p = new TH2F("fHist_Proton_TPC_nSigma_p","n#it{#sigma}_{TPC} of proton tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_Proton_TPC_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Proton_TPC_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Proton_TPC_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{TPC}");
   fHistList_Proton->Add(fHist_Proton_TPC_nSigma_p);
 
@@ -611,7 +670,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Proton->Add(fHist_Proton_TOF_nSigma_pT);
 
   fHist_Proton_TOF_nSigma_p = new TH2F("fHist_Proton_TOF_nSigma_p","n#it{#sigma}_{TOF} of proton tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_Proton_TOF_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Proton_TOF_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Proton_TOF_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{TOF}");
   fHistList_Proton->Add(fHist_Proton_TOF_nSigma_p);
 
@@ -631,7 +690,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Proton->Add(fHist_Proton_TPC_dEdx_pT);
 
   fHist_Proton_TPC_dEdx_p = new TH2F("fHist_Proton_TPC_dEdx_p","d#it{E}/d#it{x} of protons measured in TPC",240,0.0,6.0,500,0.0,500.0);
-  fHist_Proton_TPC_dEdx_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Proton_TPC_dEdx_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Proton_TPC_dEdx_p->GetYaxis()->SetTitle("TPC signal (a.u.)");
   fHistList_Proton->Add(fHist_Proton_TPC_dEdx_p);
 
@@ -641,7 +700,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Proton->Add(fHist_Proton_TOF_Beta_pT);
 
   fHist_Proton_TOF_Beta_p = new TH2F("fHist_Proton_TOF_Beta_p","#it{#beta} of protons",240,0.0,6.0,1200,-0.1,+1.1);
-  fHist_Proton_TOF_Beta_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Proton_TOF_Beta_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Proton_TOF_Beta_p->GetYaxis()->SetTitle("#it{#beta}_{TOF}");
   fHistList_Proton->Add(fHist_Proton_TOF_Beta_p);
 
@@ -651,7 +710,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Proton->Add(fHist_Proton_TOF_MassSquare_pT);
 
   fHist_Proton_TOF_MassSquare_p = new TH2F("fHist_Proton_TOF_MassSquare_p","#it{m}^{2} of protons measured in TOF",240,0.0,6.0,1200,0.0,8.0);
-  fHist_Proton_TOF_MassSquare_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Proton_TOF_MassSquare_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Proton_TOF_MassSquare_p->GetYaxis()->SetTitle("#it{m}^{2}_{TOF} (GeV/#it{c}^{2})");
   fHistList_Proton->Add(fHist_Proton_TOF_MassSquare_p);
 
@@ -758,6 +817,11 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_Deuteron_ITS_nCluster->GetYaxis()->SetTitle("counts");
   fHistList_Deuteron->Add(fHist_Deuteron_ITS_nCluster);
 
+  fHist_Deuteron_TOF_Signal = new TH1F("fHist_Deuteron_TOF_Signal","TOF signal of deuteron tracks",200,0.0,200.0);
+  fHist_Deuteron_TOF_Signal->GetXaxis()->SetTitle("TOF signal (ns)");
+  fHist_Deuteron_TOF_Signal->GetYaxis()->SetTitle("counts");
+  fHistList_Deuteron->Add(fHist_Deuteron_TOF_Signal);
+
   fHist_Deuteron_DCAxy = new TH2F("fHist_Deuteron_DCAxy","DCA_{xy} distribution of deuteron tracks",240,0.0,6.0,1000,-5.0,+5.0);
   fHist_Deuteron_DCAxy->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHist_Deuteron_DCAxy->GetYaxis()->SetTitle("DCA_{xy} (cm)");
@@ -774,7 +838,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Deuteron->Add(fHist_Deuteron_TPC_nSigma_pT);
 
   fHist_Deuteron_TPC_nSigma_p = new TH2F("fHist_Deuteron_TPC_nSigma_p","n#it{#sigma}_{TPC} of deuteron tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_Deuteron_TPC_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Deuteron_TPC_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Deuteron_TPC_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{TPC}");
   fHistList_Deuteron->Add(fHist_Deuteron_TPC_nSigma_p);
 
@@ -784,7 +848,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Deuteron->Add(fHist_Deuteron_TOF_nSigma_pT);
 
   fHist_Deuteron_TOF_nSigma_p = new TH2F("fHist_Deuteron_TOF_nSigma_p","n#it{#sigma}_{TOF} of deuteron tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_Deuteron_TOF_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Deuteron_TOF_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Deuteron_TOF_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{TOF}");
   fHistList_Deuteron->Add(fHist_Deuteron_TOF_nSigma_p);
 
@@ -794,7 +858,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Deuteron->Add(fHist_Deuteron_TOF_nSigmaMassSq_pT);
 
   fHist_Deuteron_TOF_nSigmaMassSq_p = new TH2F("fHist_Deuteron_TOF_nSigmaMassSq_p","n#it{#sigma}_{TOF} m^{2} of deuteron tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_Deuteron_TOF_nSigmaMassSq_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Deuteron_TOF_nSigmaMassSq_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Deuteron_TOF_nSigmaMassSq_p->GetYaxis()->SetTitle("n#it{#sigma}_{TOF}(#it{m}^{2})");
   fHistList_Deuteron->Add(fHist_Deuteron_TOF_nSigmaMassSq_p);
 
@@ -804,7 +868,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Deuteron->Add(fHist_Deuteron_ITS_nSigma_pT);
 
   fHist_Deuteron_ITS_nSigma_p = new TH2F("fHist_Deuteron_ITS_nSigma_p","n#it{#sigma}_{ITS} of deuteron tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_Deuteron_ITS_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Deuteron_ITS_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Deuteron_ITS_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{ITS}");
   fHistList_Deuteron->Add(fHist_Deuteron_ITS_nSigma_p);
 
@@ -814,7 +878,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Deuteron->Add(fHist_Deuteron_TPC_dEdx_pT);
 
   fHist_Deuteron_TPC_dEdx_p = new TH2F("fHist_Deuteron_TPC_dEdx_p","d#it{E}/d#it{x} of deuterons measured in TPC",240,0.0,6.0,500,0.0,500.0);
-  fHist_Deuteron_TPC_dEdx_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Deuteron_TPC_dEdx_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Deuteron_TPC_dEdx_p->GetYaxis()->SetTitle("TPC signal (a.u.)");
   fHistList_Deuteron->Add(fHist_Deuteron_TPC_dEdx_p);
 
@@ -824,7 +888,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Deuteron->Add(fHist_Deuteron_TOF_Beta_pT);
 
   fHist_Deuteron_TOF_Beta_p = new TH2F("fHist_Deuteron_TOF_Beta_p","#it{#beta} of deuterons",240,0.0,6.0,1200,-0.1,+1.1);
-  fHist_Deuteron_TOF_Beta_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Deuteron_TOF_Beta_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Deuteron_TOF_Beta_p->GetYaxis()->SetTitle("#it{#beta}_{TOF}");
   fHistList_Deuteron->Add(fHist_Deuteron_TOF_Beta_p);
 
@@ -834,7 +898,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_Deuteron->Add(fHist_Deuteron_TOF_MassSquare_pT);
 
   fHist_Deuteron_TOF_MassSquare_p = new TH2F("fHist_Deuteron_TOF_MassSquare_p","#it{m}^{2} of deuterons measured in TOF",240,0.0,6.0,1200,0.0,8.0);
-  fHist_Deuteron_TOF_MassSquare_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_Deuteron_TOF_MassSquare_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_Deuteron_TOF_MassSquare_p->GetYaxis()->SetTitle("#it{m}^{2}_{TOF} (GeV/#it{c}^{2})");
   fHistList_Deuteron->Add(fHist_Deuteron_TOF_MassSquare_p);
 
@@ -885,6 +949,14 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_ProtonDeuteron_PairsPerEvent->GetYaxis()->SetTitle("counts");
   fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_PairsPerEvent);
 
+  fHist_ProtonDeuteron_EventsForMixing = new TH1F("fHist_ProtonDeuteron_EventsForMixing","Event for p-d event-mixing found?",2,0.0,2.0);
+  fHist_ProtonDeuteron_EventsForMixing->GetXaxis()->SetNdivisions(102,false);
+  fHist_ProtonDeuteron_EventsForMixing->GetXaxis()->CenterLabels();
+  fHist_ProtonDeuteron_EventsForMixing->GetXaxis()->SetBinLabel(1,"no event found");
+  fHist_ProtonDeuteron_EventsForMixing->GetXaxis()->SetBinLabel(2,"events found");
+  fHist_ProtonDeuteron_EventsForMixing->GetYaxis()->SetTitle("counts");
+  fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_EventsForMixing);
+
   fHist_ProtonDeuteron_AngleOfPairs = new TH2F("fHist_ProtonDeuteron_AngleOfPairs","angle between p-d pair",360,0.0,180,750,0.0,3.0);
   fHist_ProtonDeuteron_AngleOfPairs->GetXaxis()->SetTitle("angle (#circ)");
   fHist_ProtonDeuteron_AngleOfPairs->GetYaxis()->SetTitle("#it{k}* (GeV/#it{c})");
@@ -904,6 +976,29 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_ProtonDeuteron_Eta->GetXaxis()->SetTitle("proton #it{#eta}");
   fHist_ProtonDeuteron_Eta->GetYaxis()->SetTitle("deuteron #it{#eta}");
   fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_Eta);
+
+  fHist_ProtonDeuteron_Centrality = new TH2F("fHist_ProtonDeuteron_Centrality","p-d centrality",100,0.0,100.0,750,0.0,3.0);
+  fHist_ProtonDeuteron_Centrality->GetXaxis()->SetTitle("centrality (%)");
+  fHist_ProtonDeuteron_Centrality->GetYaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+  fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_Centrality);
+
+  fHist_ProtonDeuteron_VertexZ = new TH2F("fHist_ProtonDeuteron_VertexZ","p-d primary vertex z-position",250,-12.0,+12.0,750,0.0,3.0);
+  fHist_ProtonDeuteron_VertexZ->GetXaxis()->SetTitle("z-position of primary vertex (cm)");
+  fHist_ProtonDeuteron_VertexZ->GetYaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+  fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_VertexZ);
+
+  double Centrality_min = 0.0;
+  double Centrality_max = 0.0;
+
+  if(fCollisionSystem == 1) Centrality_min = CentralityBins_Central[0];
+  if(fCollisionSystem == 1) Centrality_max = CentralityBins_Central[nCentralityBins];
+  if(fCollisionSystem == 2) Centrality_min = CentralityBins_SemiCentral[0];
+  if(fCollisionSystem == 2) Centrality_max = CentralityBins_SemiCentral[nCentralityBins];
+
+  fHist_ProtonDeuteron_UsedEventsInPool = new TH2F("fHist_ProtonDeuteron_UsedEventsInPool","used events in p-d event-mixing",nCentralityBins,Centrality_min,Centrality_max,nZvtxBins,ZvtxBins[0],ZvtxBins[nZvtxBins]);
+  fHist_ProtonDeuteron_UsedEventsInPool->GetXaxis()->SetTitle("centrality (%)");
+  fHist_ProtonDeuteron_UsedEventsInPool->GetYaxis()->SetTitle("z-vertex position (cm)");
+  fHistList_ProtonDeuteron->Add(fHist_ProtonDeuteron_UsedEventsInPool);
 
   
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -993,6 +1088,11 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_AntiProton_ITS_nCluster->GetYaxis()->SetTitle("counts");
   fHistList_AntiProton->Add(fHist_AntiProton_ITS_nCluster);
 
+  fHist_AntiProton_TOF_Signal = new TH1F("fHist_AntiProton_TOF_Signal","TOF signal of antiproton tracks",200,0.0,200.0);
+  fHist_AntiProton_TOF_Signal->GetXaxis()->SetTitle("TOF signal (ns)");
+  fHist_AntiProton_TOF_Signal->GetYaxis()->SetTitle("counts");
+  fHistList_AntiProton->Add(fHist_AntiProton_TOF_Signal);
+
   fHist_AntiProton_DCAxy = new TH2F("fHist_AntiProton_DCAxy","DCA_{xy} distribution of antiproton tracks",240,0.0,6.0,1000,-3.0,+3.0);
   fHist_AntiProton_DCAxy->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHist_AntiProton_DCAxy->GetYaxis()->SetTitle("DCA_{xy} (cm)");
@@ -1009,7 +1109,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiProton->Add(fHist_AntiProton_TPC_nSigma_pT);
 
   fHist_AntiProton_TPC_nSigma_p = new TH2F("fHist_AntiProton_TPC_nSigma_p","n#it{#sigma}_{TPC} of antiproton tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_AntiProton_TPC_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiProton_TPC_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiProton_TPC_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{TPC}");
   fHistList_AntiProton->Add(fHist_AntiProton_TPC_nSigma_p);
 
@@ -1019,7 +1119,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiProton->Add(fHist_AntiProton_TOF_nSigma_pT);
 
   fHist_AntiProton_TOF_nSigma_p = new TH2F("fHist_AntiProton_TOF_nSigma_p","n#it{#sigma}_{TOF} of antiproton tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_AntiProton_TOF_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiProton_TOF_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiProton_TOF_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{TOF}");
   fHistList_AntiProton->Add(fHist_AntiProton_TOF_nSigma_p);
 
@@ -1029,7 +1129,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiProton->Add(fHist_AntiProton_ITS_nSigma_pT);
 
   fHist_AntiProton_ITS_nSigma_p = new TH2F("fHist_AntiProton_ITS_nSigma_p","n#it{#sigma}_{ITS} of antiproton tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_AntiProton_ITS_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiProton_ITS_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiProton_ITS_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{ITS}");
   fHistList_AntiProton->Add(fHist_AntiProton_ITS_nSigma_p);
 
@@ -1039,7 +1139,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiProton->Add(fHist_AntiProton_TPC_dEdx_pT);
 
   fHist_AntiProton_TPC_dEdx_p = new TH2F("fHist_AntiProton_TPC_dEdx_p","d#it{E}/d#it{x} of antiprotons meausred in TPC",240,0.0,6.0,500,0.0,500.0);
-  fHist_AntiProton_TPC_dEdx_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiProton_TPC_dEdx_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiProton_TPC_dEdx_p->GetYaxis()->SetTitle("TPC signal (a.u.)");
   fHistList_AntiProton->Add(fHist_AntiProton_TPC_dEdx_p);
 
@@ -1049,7 +1149,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiProton->Add(fHist_AntiProton_TOF_Beta_pT);
 
   fHist_AntiProton_TOF_Beta_p = new TH2F("fHist_AntiProton_TOF_Beta_p","#it{#beta} of antiprotons",240,0.0,6.0,1200,-0.1,+1.1);
-  fHist_AntiProton_TOF_Beta_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiProton_TOF_Beta_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiProton_TOF_Beta_p->GetYaxis()->SetTitle("#it{#beta}_{TOF}");
   fHistList_AntiProton->Add(fHist_AntiProton_TOF_Beta_p);
 
@@ -1059,7 +1159,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiProton->Add(fHist_AntiProton_TOF_MassSquare_pT);
 
   fHist_AntiProton_TOF_MassSquare_p = new TH2F("fHist_AntiProton_TOF_MassSquare_p","#it{m}^{2} of antiprotons measured in TOF",240,0.0,6.0,1200,0.0,8.0);
-  fHist_AntiProton_TOF_MassSquare_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiProton_TOF_MassSquare_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiProton_TOF_MassSquare_p->GetYaxis()->SetTitle("#it{m}^{2}_{TOF} (GeV/#it{c}^{2})");
   fHistList_AntiProton->Add(fHist_AntiProton_TOF_MassSquare_p);
 
@@ -1161,6 +1261,11 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_AntiDeuteron_ITS_nCluster->GetYaxis()->SetTitle("counts");
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_ITS_nCluster);
 
+  fHist_AntiDeuteron_TOF_Signal = new TH1F("fHist_AntiDeuteron_TOF_Signal","TOF signal of antideuteron tracks",200,0.0,200.0);
+  fHist_AntiDeuteron_TOF_Signal->GetXaxis()->SetTitle("TOF signal (ns)");
+  fHist_AntiDeuteron_TOF_Signal->GetYaxis()->SetTitle("counts");
+  fHistList_Deuteron->Add(fHist_Deuteron_TOF_Signal);
+
   fHist_AntiDeuteron_DCAxy = new TH2F("fHist_AntiDeuteron_DCAxy","DCA_{xy} distribution of antideuteron tracks",240,0.0,6.0,1000,-5.0,+5.0);
   fHist_AntiDeuteron_DCAxy->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHist_AntiDeuteron_DCAxy->GetYaxis()->SetTitle("DCA_{xy} (cm)");
@@ -1177,7 +1282,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TPC_nSigma_pT);
 
   fHist_AntiDeuteron_TPC_nSigma_p = new TH2F("fHist_AntiDeuteron_TPC_nSigma_p","n#it{#sigma}_{TPC} of antideuteron tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_AntiDeuteron_TPC_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiDeuteron_TPC_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiDeuteron_TPC_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{TPC}");
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TPC_nSigma_p);
 
@@ -1187,7 +1292,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TOF_nSigma_pT);
 
   fHist_AntiDeuteron_TOF_nSigma_p = new TH2F("fHist_AntiDeuteron_TOF_nSigma_p","n#it{#sigma}_{TOF} of antideuteron tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_AntiDeuteron_TOF_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiDeuteron_TOF_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiDeuteron_TOF_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{TOF}");
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TOF_nSigma_p);
 
@@ -1197,7 +1302,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TOF_nSigmaMassSq_pT);
 
   fHist_AntiDeuteron_TOF_nSigmaMassSq_p = new TH2F("fHist_AntiDeuteron_TOF_nSigmaMassSq_p","n#it{#sigma}_{TOF} m^{2} of antideuteron tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_AntiDeuteron_TOF_nSigmaMassSq_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiDeuteron_TOF_nSigmaMassSq_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiDeuteron_TOF_nSigmaMassSq_p->GetYaxis()->SetTitle("n#it{#sigma}_{TOF}(#it{m}^{2})");
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TOF_nSigmaMassSq_p);
 
@@ -1207,7 +1312,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_ITS_nSigma_pT);
 
   fHist_AntiDeuteron_ITS_nSigma_p = new TH2F("fHist_AntiDeuteron_ITS_nSigma_p","n#it{#sigma}_{ITS} of antideuteron tracks",240,0.0,6.0,1200,-60.0,+60.0);
-  fHist_AntiDeuteron_ITS_nSigma_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiDeuteron_ITS_nSigma_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiDeuteron_ITS_nSigma_p->GetYaxis()->SetTitle("n#it{#sigma}_{ITS}");
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_ITS_nSigma_p);
 
@@ -1217,7 +1322,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TPC_dEdx_pT);
 
   fHist_AntiDeuteron_TPC_dEdx_p = new TH2F("fHist_AntiDeuteron_TPC_dEdx_p","d#it{E}/d#it{x} of antideuterons measured in TPC",240,0.0,6.0,500,0.0,500.0);
-  fHist_AntiDeuteron_TPC_dEdx_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiDeuteron_TPC_dEdx_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiDeuteron_TPC_dEdx_p->GetYaxis()->SetTitle("TPC signal (a.u.)");
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TPC_dEdx_p);
 
@@ -1227,7 +1332,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TOF_Beta_pT);
 
   fHist_AntiDeuteron_TOF_Beta_p = new TH2F("fHist_AntiDeuteron_TOF_Beta_p","#it{#beta} of antideuterons",240,0.0,6.0,1200,-0.1,+1.1);
-  fHist_AntiDeuteron_TOF_Beta_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiDeuteron_TOF_Beta_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiDeuteron_TOF_Beta_p->GetYaxis()->SetTitle("#it{#beta}_{TOF}");
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TOF_Beta_p);
 
@@ -1237,7 +1342,7 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TOF_MassSquare_pT);
 
   fHist_AntiDeuteron_TOF_MassSquare_p = new TH2F("fHist_AntiDeuteron_TOF_MassSquare_p","#it{m}^{2} of antideuterons measured in TOF",240,0.0,6.0,1200,0.0,8.0);
-  fHist_AntiDeuteron_TOF_MassSquare_p->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fHist_AntiDeuteron_TOF_MassSquare_p->GetXaxis()->SetTitle("#it{p}_{TPC} (GeV/#it{c})");
   fHist_AntiDeuteron_TOF_MassSquare_p->GetYaxis()->SetTitle("#it{m}^{2}_{TOF} (GeV/#it{c}^{2})");
   fHistList_AntiDeuteron->Add(fHist_AntiDeuteron_TOF_MassSquare_p);
 
@@ -1284,11 +1389,19 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_RPD);
 
   fHist_AntiProtonAntiDeuteron_PairsPerEvent = new TH1F("fHist_AntiProtonAntiDeuteron_PairsPerEvent","number of selected ap-ad pairs per event",200,0.0,200);
-  fHist_AntiProtonAntiDeuteron_PairsPerEvent->GetXaxis()->SetTitle("#it{N}_{ap-ad} selected per event");
+  fHist_AntiProtonAntiDeuteron_PairsPerEvent->GetXaxis()->SetTitle("#it{N}_{#bar{p}-#bar{d}} selected per event");
   fHist_AntiProtonAntiDeuteron_PairsPerEvent->GetYaxis()->SetTitle("counts");
   fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_PairsPerEvent);
 
-  fHist_AntiProtonAntiDeuteron_AngleOfPairs = new TH2F("fHist_AntiProtonAntiDeuteron_AngleOfPairs","angle between ap-ad pair",360,0.0,180,750,0.0,3.0);
+  fHist_AntiProtonAntiDeuteron_EventsForMixing = new TH1F("fHist_AntiProtonAntiDeuteron_EventsForMixing","Event for #bar{p}-#bar{d} event-mixing found?",2,0.0,2.0);
+  fHist_AntiProtonAntiDeuteron_EventsForMixing->GetXaxis()->SetNdivisions(102,false);
+  fHist_AntiProtonAntiDeuteron_EventsForMixing->GetXaxis()->CenterLabels();
+  fHist_AntiProtonAntiDeuteron_EventsForMixing->GetXaxis()->SetBinLabel(1,"no event found");
+  fHist_AntiProtonAntiDeuteron_EventsForMixing->GetXaxis()->SetBinLabel(2,"events found");
+  fHist_AntiProtonAntiDeuteron_EventsForMixing->GetYaxis()->SetTitle("counts");
+  fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_EventsForMixing);
+
+  fHist_AntiProtonAntiDeuteron_AngleOfPairs = new TH2F("fHist_AntiProtonAntiDeuteron_AngleOfPairs","angle between #bar{p}-#bar{d} pair",360,0.0,180,750,0.0,3.0);
   fHist_AntiProtonAntiDeuteron_AngleOfPairs->GetXaxis()->SetTitle("angle (#circ)");
   fHist_AntiProtonAntiDeuteron_AngleOfPairs->GetYaxis()->SetTitle("#it{k}* (GeV/#it{c})");
   fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_AngleOfPairs);
@@ -1308,7 +1421,20 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   fHist_AntiProtonAntiDeuteron_Eta->GetYaxis()->SetTitle("antideuteron #it{#eta}");
   fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_Eta);
 
+  fHist_AntiProtonAntiDeuteron_Centrality = new TH2F("fHist_AntiProtonAntiDeuteron_Centrality","#bar{p}-#bar{d} centrality",100,0.0,100.0,750,0.0,3.0);
+  fHist_AntiProtonAntiDeuteron_Centrality->GetXaxis()->SetTitle("centrality (%)");
+  fHist_AntiProtonAntiDeuteron_Centrality->GetYaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+  fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_Centrality);
 
+  fHist_AntiProtonAntiDeuteron_VertexZ = new TH2F("fHist_AntiProtonAntiDeuteron_VertexZ","#bar{p}-#bar{d} primary vertex z-position",250,-12.0,+12.0,750,0.0,3.0);
+  fHist_AntiProtonAntiDeuteron_VertexZ->GetXaxis()->SetTitle("z-position of primary vertex (cm)");
+  fHist_AntiProtonAntiDeuteron_VertexZ->GetYaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+  fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_VertexZ);
+
+  fHist_AntiProtonAntiDeuteron_UsedEventsInPool = new TH2F("fHist_AntiProtonAntiDeuteron_UsedEventsInPool","used events in #bar{p}-#bar{d} event-mixing",nCentralityBins,Centrality_min,Centrality_max,nZvtxBins,ZvtxBins[0],ZvtxBins[nZvtxBins]);
+  fHist_AntiProtonAntiDeuteron_UsedEventsInPool->GetXaxis()->SetTitle("centrality (%)");
+  fHist_AntiProtonAntiDeuteron_UsedEventsInPool->GetYaxis()->SetTitle("z-vertex position (cm)");
+  fHistList_AntiProtonAntiDeuteron->Add(fHist_AntiProtonAntiDeuteron_UsedEventsInPool);
 
 
 
@@ -1337,30 +1463,6 @@ void AliAnalysisTask_pdLd::UserCreateOutputObjects()
   AntiLambdav0Array	  = new std::vector<int>;
 
 
-
-  const int nCentralityBins = 20; // number of centrality bins of the centrality array
-  const int nZvtxBins	    = 20; // number of z-vertex bins of the z-vertex array
-
-  double CentralityBins[nCentralityBins+1];
-
-  double CentralityBins_Central[nCentralityBins+1] = {0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0};
-  double CentralityBins_SemiCentral[nCentralityBins+1] = {30.0,31.0,32.0,33.0,34.0,35.0,36.0,37.0,38.0,39.0,40.0,41.0,42.0,43.0,44.0,45.0,46.0,47.0,48.0,49.0,50.0};
-
-  if(fCollisionSystem == 1) for(int i = 0; i <= nCentralityBins; i++){CentralityBins[i] = CentralityBins_Central[i];}
-  if(fCollisionSystem == 2) for(int i = 0; i <= nCentralityBins; i++){CentralityBins[i] = CentralityBins_SemiCentral[i];}
-
-
-  double ZvtxBins[nZvtxBins+1] = {-10.0,-9.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0};
-
-
-  int PoolSize = 20;	    // maximum number of events in the pool (-1 means no limit)
-			    // int nPools = nCentralityBins * nZvtxBins;
-			    // int nEventsMax = nPools * PoolSize;
-
-  int TrackDepth = 10000;   // 
-
-  fEventPoolManager = new AliEventPoolManager(PoolSize,TrackDepth,nCentralityBins,CentralityBins,nZvtxBins,ZvtxBins);
-  fEventPoolManager->Validate();
 
 
 
@@ -1412,6 +1514,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
   bool DebugEventMixing	    = false;
   bool DebugPairSelection   = false;
   bool DebugPairRotation    = false;
+  bool DebugRandomization   = false;
 
   if(DebugAll)
   {
@@ -1480,8 +1583,8 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
   fHist_Event_PrimVertexZ->Fill(PrimaryVertexZ);
 
   // fill event information into pool
-  AliEventPool *EventPool_Proton      = fEventPoolManager->GetEventPool(Centrality,PrimaryVertexZ);
-  AliEventPool *EventPool_AntiProton  = fEventPoolManager->GetEventPool(Centrality,PrimaryVertexZ);
+  AliEventPool *EventPool_Deuteron	= fEventPoolManager->GetEventPool(Centrality,PrimaryVertexZ);
+  AliEventPool *EventPool_AntiDeuteron	= fEventPoolManager->GetEventPool(Centrality,PrimaryVertexZ);
 
   // get event information
   int PeriodNumber	= fAODEvent->GetPeriodNumber();
@@ -1547,11 +1650,6 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
     AliAODTrack *Track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(track));
     if(!Track)::Warning("AliAnalysisTask_pdLd::UserExec","No AliAODTrack found");
     if(!Track) continue;
-
-
-    
-
-    
   
     fHist_Proton_CutCounter->Fill(0);
 
@@ -1561,18 +1659,17 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 
     double pT				= Track->Pt();
     double p				= Track->P();
+    double pTPC				= Track->GetTPCmomentum();
     int nSharedClusterTPC		= Track->GetTPCnclsS();
     int nClusterTPCfindable		= Track->GetTPCNclsF();
     double nCrossedRowsTPC		= Track->GetTPCCrossedRows();
     double RatioRowsFindableClusterTPC	= ((double)nCrossedRowsTPC / (double)nClusterTPCfindable);
-
       
     double nSigmaTOF  = -999.0;
     double beta	      = -999.0;
     double massSq     = -999.0;
 
     AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,Track);
-
     if(statusTOF == AliPIDResponse::kDetPidOk)
     {
 
@@ -1612,17 +1709,18 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
     fHist_Proton_TPC_Chi2overNDF->Fill(Track->GetTPCchi2perNDF());
     fHist_Proton_TPC_nCluster->Fill(Track->GetTPCNcls());
     fHist_Proton_TPC_nSigma_pT->Fill(pT,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kProton));
-    fHist_Proton_TPC_nSigma_p->Fill(p,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kProton));
+    fHist_Proton_TPC_nSigma_p->Fill(pTPC,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kProton));
     fHist_Proton_TPC_dEdx_pT->Fill(pT,Track->GetTPCsignal());
-    fHist_Proton_TPC_dEdx_p->Fill(p,Track->GetTPCsignal());
+    fHist_Proton_TPC_dEdx_p->Fill(pTPC,Track->GetTPCsignal());
 
     // TOF
+    fHist_Proton_TOF_Signal->Fill(Track->GetTOFsignal()/1000);
     fHist_Proton_TOF_nSigma_pT->Fill(pT,nSigmaTOF);
-    fHist_Proton_TOF_nSigma_p->Fill(p,nSigmaTOF);
+    fHist_Proton_TOF_nSigma_p->Fill(pTPC,nSigmaTOF);
     fHist_Proton_TOF_Beta_pT->Fill(pT,beta);
-    fHist_Proton_TOF_Beta_p->Fill(p,beta);
+    fHist_Proton_TOF_Beta_p->Fill(pTPC,beta);
     fHist_Proton_TOF_MassSquare_pT->Fill(pT,massSq);
-    fHist_Proton_TOF_MassSquare_p->Fill(p,massSq);
+    fHist_Proton_TOF_MassSquare_p->Fill(pTPC,massSq);
 
     // ITS
     fHist_Proton_ITS_nCluster->Fill(Track->GetITSNcls());
@@ -1660,6 +1758,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
     if(!PassedDeuteronCuts) continue;
 
     double pT				= Track->Pt();
+    double pTPC				= Track->GetTPCmomentum();
     int nSharedClusterTPC		= Track->GetTPCnclsS();
     int nClusterTPCfindable		= Track->GetTPCNclsF();
     double nCrossedRowsTPC = Track->GetTPCCrossedRows();
@@ -1681,7 +1780,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
       nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(Track,AliPID::kDeuteron);
       beta	= CalculateBetaTOF(*Track);
       massSq	= CalculateMassSquareTOF(*Track);
-      nSigmaTOFMassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,1);
+      nSigmaTOFMassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,true);
 
     }
 
@@ -1702,7 +1801,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
     // general
     fHist_Deuteron_pT->Fill(Track->Pt());
     fHist_Deuteron_p->Fill(Track->P());
-    fHist_Deuteron_pTPC->Fill(Track->GetTPCmomentum());
+    fHist_Deuteron_pTPC->Fill(pTPC);
     fHist_Deuteron_Eta->Fill(Track->Eta());
     fHist_Deuteron_Phi->Fill(Track->Phi()*TMath::RadToDeg());
     fHist_Deuteron_DCAxy->Fill(pT,DCAxy);
@@ -1715,19 +1814,20 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
     fHist_Deuteron_TPC_Chi2overNDF->Fill(Track->GetTPCchi2perNDF());
     fHist_Deuteron_TPC_nCluster->Fill(Track->GetTPCNcls());
     fHist_Deuteron_TPC_nSigma_pT->Fill(pT,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kDeuteron));
-    fHist_Deuteron_TPC_nSigma_p->Fill(p,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kDeuteron));
+    fHist_Deuteron_TPC_nSigma_p->Fill(pTPC,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kDeuteron));
     fHist_Deuteron_TPC_dEdx_pT->Fill(pT,Track->GetTPCsignal());
-    fHist_Deuteron_TPC_dEdx_p->Fill(p,Track->GetTPCsignal());
+    fHist_Deuteron_TPC_dEdx_p->Fill(pTPC,Track->GetTPCsignal());
 
     // TOF
+    fHist_Deuteron_TOF_Signal->Fill(Track->GetTOFsignal()/1000);
     fHist_Deuteron_TOF_nSigma_pT->Fill(pT,nSigmaTOF);
-    fHist_Deuteron_TOF_nSigma_p->Fill(p,nSigmaTOF);
+    fHist_Deuteron_TOF_nSigma_p->Fill(pTPC,nSigmaTOF);
     fHist_Deuteron_TOF_nSigmaMassSq_pT->Fill(pT,nSigmaTOFMassSq);
-    fHist_Deuteron_TOF_nSigmaMassSq_p->Fill(p,nSigmaTOFMassSq);
+    fHist_Deuteron_TOF_nSigmaMassSq_p->Fill(pTPC,nSigmaTOFMassSq);
     fHist_Deuteron_TOF_Beta_pT->Fill(pT,beta);
-    fHist_Deuteron_TOF_Beta_p->Fill(p,beta);
+    fHist_Deuteron_TOF_Beta_p->Fill(pTPC,beta);
     fHist_Deuteron_TOF_MassSquare_pT->Fill(pT,massSq);
-    fHist_Deuteron_TOF_MassSquare_p->Fill(p,massSq);
+    fHist_Deuteron_TOF_MassSquare_p->Fill(pTPC,massSq);
 
     // ITS
     fHist_Deuteron_ITS_nCluster->Fill(Track->GetITSNcls());
@@ -1831,11 +1931,13 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 	nProtonDeuteronPairs++;
 	fHist_ProtonDeuteron_SED->Fill(RelativeMomentum);
 	fHist_ProtonDeuteron_AngleOfPairs->Fill(angle*TMath::RadToDeg(),RelativeMomentum);
+	fHist_ProtonDeuteron_Centrality->Fill(Centrality,RelativeMomentum);
+	fHist_ProtonDeuteron_VertexZ->Fill(PrimaryVertexZ,RelativeMomentum);
 
 	if(RelativeMomentum <= kstar_max){
 
-	  fHist_ProtonDeuteron_pT->Fill(ProtonTrack->Pt(),DeuteronTrack->Pt(),RelativeMomentum);
-	  fHist_ProtonDeuteron_Eta->Fill(ProtonTrack->Eta(),DeuteronTrack->Eta(),RelativeMomentum);
+	  fHist_ProtonDeuteron_pT->Fill(ProtonTrack->Pt(),DeuteronTrack->Pt());
+	  fHist_ProtonDeuteron_Eta->Fill(ProtonTrack->Eta(),DeuteronTrack->Eta());
 
 	}
 
@@ -1917,16 +2019,16 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
   // +++ proton-deuteron event mixing ++++++++++++++++++++++++
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  if(ProtonIsSelected && DeuteronIsSelected) // fill protons in event pool
+  if(ProtonIsSelected && DeuteronIsSelected) // perform event-mixing
   {
 
-    int nMixedEvents  = EventPool_Proton->GetCurrentNEvents();
-    double ZvtxMin    = EventPool_Proton->GetZvtxMin();
-    double ZvtxMax    = EventPool_Proton->GetZvtxMax();
-    double MultMin    = EventPool_Proton->GetMultMin();
-    double MultMax    = EventPool_Proton->GetMultMax();
-    double PtMin      = EventPool_Proton->GetPtMin();
-    double PtMax      = EventPool_Proton->GetPtMax();
+    int nMixedEvents  = EventPool_Deuteron->GetCurrentNEvents();
+    double ZvtxMin    = EventPool_Deuteron->GetZvtxMin();
+    double ZvtxMax    = EventPool_Deuteron->GetZvtxMax();
+    double MultMin    = EventPool_Deuteron->GetMultMin();
+    double MultMax    = EventPool_Deuteron->GetMultMax();
+    double PtMin      = EventPool_Deuteron->GetPtMin();
+    double PtMax      = EventPool_Deuteron->GetPtMax();
 
     if(DebugEventMixing)
     {
@@ -1938,21 +2040,31 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 
     } // end of DebugEventMixing
 
+    if(nMixedEvents == 0) fHist_ProtonDeuteron_EventsForMixing->Fill(0);
+    if(nMixedEvents > 0)  fHist_ProtonDeuteron_EventsForMixing->Fill(1);
 
+    for(int iMixedEvents = 0; iMixedEvents < nMixedEvents; iMixedEvents++){ // loop over events of the pool
 
-    for(int iMixedEvents = 0; iMixedEvents < nMixedEvents; iMixedEvents++){ // loop over mixed event
-
-      TObjArray *MixedEventArray = (TObjArray*)EventPool_Proton->GetEvent(iMixedEvents);
+      TObjArray *MixedEventArray = (TObjArray*)EventPool_Deuteron->GetEvent(iMixedEvents);
       if(!MixedEventArray) continue;
 
-      int nProtonsForMixing = MixedEventArray->GetEntriesFast();    
+      AliAODTrackTiny *DeuteronTrack = (AliAODTrackTiny*) MixedEventArray->At(0);
+      if(!DeuteronTrack) continue;
 
-      if(DebugEventMixing) cout << "Event number: " << iMixedEvents  << "\tnProtons: " << nProtonsForMixing << endl;
+      fHist_ProtonDeuteron_UsedEventsInPool->Fill(DeuteronTrack->GetCentrality(),DeuteronTrack->GetPrimaryVertexZ());
 
- 
-      for(int iProton = 0; iProton < nProtonsForMixing; iProton++){ // loop over protons for mixed event
+      double MomentumDeuteron[3];
+      MomentumDeuteron[0] = DeuteronTrack->Px();
+      MomentumDeuteron[1] = DeuteronTrack->Py();
+      MomentumDeuteron[2] = DeuteronTrack->Pz();
+   
+      TLorentzVector LorentzVectorDeuteron;
+      LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],DeuteronMass);
 
-	AliAODTrackTiny *ProtonTrack = (AliAODTrackTiny*) MixedEventArray->At(iProton); 
+      for(int Track2 = 0; Track2 < nProtonsSelected; Track2++) // particle pair loop (proton loop)
+      {
+
+	AliAODTrack *ProtonTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(ProtonTrackArray->at(Track2)));
 	if(!ProtonTrack) continue;
 
 	double MomentumProton[3];
@@ -1960,66 +2072,46 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 	MomentumProton[1] = ProtonTrack->Py();
 	MomentumProton[2] = ProtonTrack->Pz();
 
-	if(TMath::IsNaN(MomentumProton[0])) continue;
-	if(TMath::IsNaN(MomentumProton[1])) continue;
-	if(TMath::IsNaN(MomentumProton[2])) continue;
-   
 	TLorentzVector LorentzVectorProton;
 	LorentzVectorProton.SetXYZM(MomentumProton[0],MomentumProton[1],MomentumProton[2],ProtonMass);
 
+	TLorentzVector LorentzVectorPair = LorentzVectorProton + LorentzVectorDeuteron;
+	double RelativeMomentum = CalculateRelativeMomentum(LorentzVectorPair,LorentzVectorProton,LorentzVectorDeuteron);
 
-	for(int Track2 = 0; Track2 < nDeuteronsSelected; Track2++) // particle pair loop (deuteron loop)
-	{
+	if(TMath::IsNaN(RelativeMomentum)) continue;
 
-	  AliAODTrack *DeuteronTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(DeuteronTrackArray->at(Track2)));
-	  if(!DeuteronTrack) continue;
-
-	  double MomentumDeuteron[3];
-	  MomentumDeuteron[0] = DeuteronTrack->Px();
-	  MomentumDeuteron[1] = DeuteronTrack->Py();
-	  MomentumDeuteron[2] = DeuteronTrack->Pz();
-
-	  if(TMath::IsNaN(MomentumDeuteron[0])) continue;
-	  if(TMath::IsNaN(MomentumDeuteron[1])) continue;
-	  if(TMath::IsNaN(MomentumDeuteron[2])) continue;
-
-	  TLorentzVector LorentzVectorDeuteron;
-	  LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],DeuteronMass);
-
-	  TLorentzVector LorentzVectorPair = LorentzVectorProton + LorentzVectorDeuteron;
-	  double RelativeMomentum = CalculateRelativeMomentum(LorentzVectorPair,LorentzVectorProton,LorentzVectorDeuteron);
-
-	  if(TMath::IsNaN(RelativeMomentum)) continue;
-
-	  fHist_ProtonDeuteron_MED->Fill(RelativeMomentum);
-
-	} // loop over deuterons
+	fHist_ProtonDeuteron_MED->Fill(RelativeMomentum);
 
       } // loop over protons
 
     } // loop over mixed events
 
 
-    TObjArray *ProtonObjectArray = new TObjArray();
-    ProtonObjectArray->SetOwner(true);
-    int nMixingProtons = nProtonsSelected;
+    TObjArray *DeuteronObjectArray = new TObjArray();
+    DeuteronObjectArray->SetOwner(true);
 
-    for(int iProton = 0; iProton < nProtonsSelected; iProton++){ // fill array with selected protons
+    int PickDeuteronNumber = 0;
 
-      AliAODTrack *ProtonTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(ProtonTrackArray->at(iProton)));
-      if(!ProtonTrack) continue;
-      
-      int TrackStatus = ProtonTrack->GetStatus();
-      if(TrackStatus == 0) continue;
+    if(nDeuteronsSelected > 1)	// randomize deuteron selection if more than one deuteron is present in the current event
+    {
 
-      AliAODTrackTiny *TinyProtonTrack = new AliAODTrackTiny();
-      TinyProtonTrack->InitFromTrack(ProtonTrack);
+      TRandom3 *RandomGenerator = new TRandom3();
+      RandomGenerator->SetSeed(0);
+      PickDeuteronNumber = RandomGenerator->Integer(nDeuteronsSelected); // produces a random integer between 0 and nDeuteronsSelected-1
 
-      ProtonObjectArray->Add(TinyProtonTrack);
+    }
 
-    } // end of fill ProtonObjectArray
+    if(DebugRandomization) std::cout << "nDeuteronsSelected: " << nDeuteronsSelected << "\t PickDeuteronNumber: " << PickDeuteronNumber << std::endl;
 
-    EventPool_Proton->UpdatePool(ProtonObjectArray);
+    AliAODTrack *DeuteronTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(DeuteronTrackArray->at(PickDeuteronNumber))); // array starts at 0
+    if(!DeuteronTrack) std::cout << "AliAnalysisTask_pdLd: No DeuteronTrack received from the EventPool!" << std::endl;
+
+    AliAODTrackTiny *TinyDeuteronTrack = new AliAODTrackTiny();
+    TinyDeuteronTrack->InitFromTrack(DeuteronTrack,Centrality,PrimaryVertexZ);
+
+    DeuteronObjectArray->Add(TinyDeuteronTrack);
+
+    EventPool_Deuteron->UpdatePool(DeuteronObjectArray);
 
   } // end of proton and deuteron is selected
 
@@ -2030,7 +2122,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 
 
 
-  int nPoolEvents = EventPool_Proton->GetCurrentNEvents();
+  int nPoolEvents = EventPool_Deuteron->GetCurrentNEvents();
 
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2052,6 +2144,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 
     double pT				= Track->Pt();
     double p				= Track->P();
+    double pTPC				= Track->GetTPCmomentum();
     int nSharedClusterTPC		= Track->GetTPCnclsS();
     int nClusterTPCfindable		= Track->GetTPCNclsF();
     double nCrossedRowsTPC		= Track->GetTPCCrossedRows();
@@ -2103,17 +2196,18 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
     fHist_AntiProton_TPC_Chi2overNDF->Fill(Track->GetTPCchi2perNDF());
     fHist_AntiProton_TPC_nCluster->Fill(Track->GetTPCNcls());
     fHist_AntiProton_TPC_nSigma_pT->Fill(pT,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kProton));
-    fHist_AntiProton_TPC_nSigma_p->Fill(p,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kProton));
+    fHist_AntiProton_TPC_nSigma_p->Fill(pTPC,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kProton));
     fHist_AntiProton_TPC_dEdx_pT->Fill(pT,Track->GetTPCsignal());
-    fHist_AntiProton_TPC_dEdx_p->Fill(p,Track->GetTPCsignal());
+    fHist_AntiProton_TPC_dEdx_p->Fill(pTPC,Track->GetTPCsignal());
 
     // TOF
+    fHist_AntiProton_TOF_Signal->Fill(Track->GetTOFsignal()/1000);
     fHist_AntiProton_TOF_nSigma_pT->Fill(pT,nSigmaTOF);
-    fHist_AntiProton_TOF_nSigma_p->Fill(p,nSigmaTOF);
+    fHist_AntiProton_TOF_nSigma_p->Fill(pTPC,nSigmaTOF);
     fHist_AntiProton_TOF_Beta_pT->Fill(pT,beta);
-    fHist_AntiProton_TOF_Beta_p->Fill(p,beta);
+    fHist_AntiProton_TOF_Beta_p->Fill(pTPC,beta);
     fHist_AntiProton_TOF_MassSquare_pT->Fill(pT,massSq);
-    fHist_AntiProton_TOF_MassSquare_p->Fill(p,massSq);
+    fHist_AntiProton_TOF_MassSquare_p->Fill(pTPC,massSq);
 
     // ITS
     fHist_AntiProton_ITS_nCluster->Fill(Track->GetITSNcls());
@@ -2155,11 +2249,12 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
     if(!PassedAntiDeuteronCuts) continue;
 
     double pT				= Track->Pt();
+    double p				= Track->P();
+    double pTPC				= Track->GetTPCmomentum();
     int nSharedClusterTPC		= Track->GetTPCnclsS();
     int nClusterTPCfindable		= Track->GetTPCNclsF();
     double nCrossedRowsTPC		= Track->GetTPCCrossedRows();
     double RatioRowsFindableClusterTPC	= ((double)nCrossedRowsTPC / (double)nClusterTPCfindable);
-    double p				= Track->P();
 
       
     double nSigmaTOF	    = -999.0;
@@ -2176,7 +2271,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
       nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(Track,AliPID::kDeuteron);
       beta	= CalculateBetaTOF(*Track);
       massSq	= CalculateMassSquareTOF(*Track);
-      nSigmaTOFMassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,1);
+      nSigmaTOFMassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,false);
 
     }
       
@@ -2208,19 +2303,20 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
     fHist_AntiDeuteron_TPC_Chi2overNDF->Fill(Track->GetTPCchi2perNDF());
     fHist_AntiDeuteron_TPC_nCluster->Fill(Track->GetTPCNcls());
     fHist_AntiDeuteron_TPC_nSigma_pT->Fill(pT,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kDeuteron));
-    fHist_AntiDeuteron_TPC_nSigma_p->Fill(p,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kDeuteron));
+    fHist_AntiDeuteron_TPC_nSigma_p->Fill(pTPC,fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kDeuteron));
     fHist_AntiDeuteron_TPC_dEdx_pT->Fill(pT,Track->GetTPCsignal());
-    fHist_AntiDeuteron_TPC_dEdx_p->Fill(p,Track->GetTPCsignal());
+    fHist_AntiDeuteron_TPC_dEdx_p->Fill(pTPC,Track->GetTPCsignal());
 
     // TOF
+    fHist_AntiDeuteron_TOF_Signal->Fill(Track->GetTOFsignal()/1000);
     fHist_AntiDeuteron_TOF_nSigma_pT->Fill(pT,nSigmaTOF);
-    fHist_AntiDeuteron_TOF_nSigma_p->Fill(p,nSigmaTOF);
+    fHist_AntiDeuteron_TOF_nSigma_p->Fill(pTPC,nSigmaTOF);
     fHist_AntiDeuteron_TOF_nSigmaMassSq_pT->Fill(pT,nSigmaTOFMassSq);
-    fHist_AntiDeuteron_TOF_nSigmaMassSq_p->Fill(p,nSigmaTOFMassSq);
+    fHist_AntiDeuteron_TOF_nSigmaMassSq_p->Fill(pTPC,nSigmaTOFMassSq);
     fHist_AntiDeuteron_TOF_Beta_pT->Fill(pT,beta);
-    fHist_AntiDeuteron_TOF_Beta_p->Fill(p,beta);
+    fHist_AntiDeuteron_TOF_Beta_p->Fill(pTPC,beta);
     fHist_AntiDeuteron_TOF_MassSquare_pT->Fill(pT,massSq);
-    fHist_AntiDeuteron_TOF_MassSquare_p->Fill(p,massSq);
+    fHist_AntiDeuteron_TOF_MassSquare_p->Fill(pTPC,massSq);
 
     // ITS
     fHist_AntiDeuteron_ITS_nCluster->Fill(Track->GetITSNcls());
@@ -2261,7 +2357,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
   if(AntiProtonIsSelected && AntiDeuteronIsSelected)
   {
 
-    for(int Track1 = 0; Track1 < nAntiProtonsSelected; Track1++)	// particle pair loop (proton loop)
+    for(int Track1 = 0; Track1 < nAntiProtonsSelected; Track1++)	// particle pair loop (antiproton loop)
     { 
 
       AliAODTrack *AntiProtonTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(AntiProtonTrackArray->at(Track1)));
@@ -2274,7 +2370,7 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
       TLorentzVector LorentzVectorAntiProton;
       LorentzVectorAntiProton.SetXYZM(MomentumAntiProton[0],MomentumAntiProton[1],MomentumAntiProton[2],ProtonMass);
 
-      for(int Track2 = 0; Track2 < nAntiDeuteronsSelected; Track2++) // particle pair loop (deuteron loop)
+      for(int Track2 = 0; Track2 < nAntiDeuteronsSelected; Track2++) // particle pair loop (antideuteron loop)
       {
 
 	AliAODTrack *AntiDeuteronTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(AntiDeuteronTrackArray->at(Track2)));
@@ -2324,11 +2420,13 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 	nAntiProtonAntiDeuteronPairs++;
 	fHist_AntiProtonAntiDeuteron_SED->Fill(RelativeMomentum);
 	fHist_AntiProtonAntiDeuteron_AngleOfPairs->Fill(angle*TMath::RadToDeg(),RelativeMomentum);
+	fHist_AntiProtonAntiDeuteron_Centrality->Fill(Centrality,RelativeMomentum);
+	fHist_AntiProtonAntiDeuteron_VertexZ->Fill(PrimaryVertexZ,RelativeMomentum);
 
 	if(RelativeMomentum <= kstar_max){
 
-	  fHist_AntiProtonAntiDeuteron_pT->Fill(AntiProtonTrack->Pt(),AntiDeuteronTrack->Pt(),RelativeMomentum);
-	  fHist_AntiProtonAntiDeuteron_Eta->Fill(AntiProtonTrack->Eta(),AntiDeuteronTrack->Eta(),RelativeMomentum);
+	  fHist_AntiProtonAntiDeuteron_pT->Fill(AntiProtonTrack->Pt(),AntiDeuteronTrack->Pt());
+	  fHist_AntiProtonAntiDeuteron_Eta->Fill(AntiProtonTrack->Eta(),AntiDeuteronTrack->Eta());
 
 	}
 
@@ -2410,16 +2508,16 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
   // +++ antiproton-antideuteron event mixing ++++++++++++++++
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  if(AntiProtonIsSelected && AntiDeuteronIsSelected) // fill antiprotons in event pool
+  if(AntiProtonIsSelected && AntiDeuteronIsSelected) // fill antideuterons in event pool
   {
 
-    int nMixedEvents  = EventPool_AntiProton->GetCurrentNEvents();
-    double ZvtxMin    = EventPool_AntiProton->GetZvtxMin();
-    double ZvtxMax    = EventPool_AntiProton->GetZvtxMax();
-    double MultMin    = EventPool_AntiProton->GetMultMin();
-    double MultMax    = EventPool_AntiProton->GetMultMax();
-    double PtMin      = EventPool_AntiProton->GetPtMin();
-    double PtMax      = EventPool_AntiProton->GetPtMax();
+    int nMixedEvents  = EventPool_AntiDeuteron->GetCurrentNEvents();
+    double ZvtxMin    = EventPool_AntiDeuteron->GetZvtxMin();
+    double ZvtxMax    = EventPool_AntiDeuteron->GetZvtxMax();
+    double MultMin    = EventPool_AntiDeuteron->GetMultMin();
+    double MultMax    = EventPool_AntiDeuteron->GetMultMax();
+    double PtMin      = EventPool_AntiDeuteron->GetPtMin();
+    double PtMax      = EventPool_AntiDeuteron->GetPtMax();
 
     if(DebugEventMixing)
     {
@@ -2431,21 +2529,31 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 
     } // end of DebugEventMixing
 
-
+    if(nMixedEvents == 0) fHist_AntiProtonAntiDeuteron_EventsForMixing->Fill(0);
+    if(nMixedEvents > 0)  fHist_AntiProtonAntiDeuteron_EventsForMixing->Fill(1);
 
     for(int iMixedEvents = 0; iMixedEvents < nMixedEvents; iMixedEvents++){ // loop over mixed event
 
-      TObjArray *MixedEventArray = (TObjArray*)EventPool_AntiProton->GetEvent(iMixedEvents);
+      TObjArray *MixedEventArray = (TObjArray*)EventPool_AntiDeuteron->GetEvent(iMixedEvents);
       if(!MixedEventArray) continue;
 
-      int nAntiProtonsForMixing = MixedEventArray->GetEntriesFast();    
+      AliAODTrackTiny *AntiDeuteronTrack = (AliAODTrackTiny*) MixedEventArray->At(0); 
+      if(!AntiDeuteronTrack) continue;
 
-      if(DebugEventMixing) cout << "Event number: " << iMixedEvents  << "\tnAntiProtons: " << nAntiProtonsForMixing << endl;
+      fHist_AntiProtonAntiDeuteron_UsedEventsInPool->Fill(AntiDeuteronTrack->GetCentrality(),AntiDeuteronTrack->GetPrimaryVertexZ());
 
- 
-      for(int iAntiProton = 0; iAntiProton < nAntiProtonsForMixing; iAntiProton++){ // loop over antiprotons for mixed event
+      double MomentumAntiDeuteron[3];
+      MomentumAntiDeuteron[0] = AntiDeuteronTrack->Px();
+      MomentumAntiDeuteron[1] = AntiDeuteronTrack->Py();
+      MomentumAntiDeuteron[2] = AntiDeuteronTrack->Pz();
+   
+      TLorentzVector LorentzVectorAntiDeuteron;
+      LorentzVectorAntiDeuteron.SetXYZM(MomentumAntiDeuteron[0],MomentumAntiDeuteron[1],MomentumAntiDeuteron[2],DeuteronMass);
 
-	AliAODTrackTiny *AntiProtonTrack = (AliAODTrackTiny*) MixedEventArray->At(iAntiProton); 
+      for(int Track2 = 0; Track2 < nAntiProtonsSelected; Track2++) // particle pair loop (antiproton loop)
+      {
+
+	AliAODTrack *AntiProtonTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(AntiProtonTrackArray->at(Track2)));
 	if(!AntiProtonTrack) continue;
 
 	double MomentumAntiProton[3];
@@ -2453,68 +2561,48 @@ void AliAnalysisTask_pdLd::UserExec(Option_t*)
 	MomentumAntiProton[1] = AntiProtonTrack->Py();
 	MomentumAntiProton[2] = AntiProtonTrack->Pz();
 
-	if(TMath::IsNaN(MomentumAntiProton[0])) continue;
-	if(TMath::IsNaN(MomentumAntiProton[1])) continue;
-	if(TMath::IsNaN(MomentumAntiProton[2])) continue;
-   
 	TLorentzVector LorentzVectorAntiProton;
 	LorentzVectorAntiProton.SetXYZM(MomentumAntiProton[0],MomentumAntiProton[1],MomentumAntiProton[2],ProtonMass);
 
+	TLorentzVector LorentzVectorPair = LorentzVectorAntiProton + LorentzVectorAntiDeuteron;
+	double RelativeMomentum = CalculateRelativeMomentum(LorentzVectorPair,LorentzVectorAntiProton,LorentzVectorAntiDeuteron);
 
-	for(int Track2 = 0; Track2 < nAntiDeuteronsSelected; Track2++) // particle pair loop (antideuteron loop)
-	{
+	if(TMath::IsNaN(RelativeMomentum)) continue;
 
-	  AliAODTrack *AntiDeuteronTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(AntiDeuteronTrackArray->at(Track2)));
-	  if(!AntiDeuteronTrack) continue;
-
-	  double MomentumAntiDeuteron[3];
-	  MomentumAntiDeuteron[0] = AntiDeuteronTrack->Px();
-	  MomentumAntiDeuteron[1] = AntiDeuteronTrack->Py();
-	  MomentumAntiDeuteron[2] = AntiDeuteronTrack->Pz();
-
-	  if(TMath::IsNaN(MomentumAntiDeuteron[0])) continue;
-	  if(TMath::IsNaN(MomentumAntiDeuteron[1])) continue;
-	  if(TMath::IsNaN(MomentumAntiDeuteron[2])) continue;
-
-	  TLorentzVector LorentzVectorAntiDeuteron;
-	  LorentzVectorAntiDeuteron.SetXYZM(MomentumAntiDeuteron[0],MomentumAntiDeuteron[1],MomentumAntiDeuteron[2],DeuteronMass);
-
-	  TLorentzVector LorentzVectorPair = LorentzVectorAntiProton + LorentzVectorAntiDeuteron;
-	  double RelativeMomentum = CalculateRelativeMomentum(LorentzVectorPair,LorentzVectorAntiProton,LorentzVectorAntiDeuteron);
-
-	  if(TMath::IsNaN(RelativeMomentum)) continue;
-
-	  fHist_AntiProtonAntiDeuteron_MED->Fill(RelativeMomentum);
-
-	} // loop over antideuterons
+	fHist_AntiProtonAntiDeuteron_MED->Fill(RelativeMomentum);
 
       } // loop over antiprotons
 
     } // loop over mixed events
 
 
-    TObjArray *AntiProtonObjectArray = new TObjArray();
-    AntiProtonObjectArray->SetOwner(true);
-    int nMixingAntiProtons = nAntiProtonsSelected;
+    TObjArray *AntiDeuteronObjectArray = new TObjArray();
+    AntiDeuteronObjectArray->SetOwner(true);
 
-    for(int iAntiProton = 0; iAntiProton < nAntiProtonsSelected; iAntiProton++){ // fill array with selected protons
+    int PickAntiDeuteronNumber = 0;
 
-      AliAODTrack *AntiProtonTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(AntiProtonTrackArray->at(iAntiProton)));
-      if(!AntiProtonTrack) continue;
-      
-      int TrackStatus = AntiProtonTrack->GetStatus();
-      if(TrackStatus == 0) continue;
+    if(nAntiDeuteronsSelected > 1) // randomize antideuteorn selection if more than one antideuteron is present in the current event
+    {
 
-      AliAODTrackTiny *TinyAntiProtonTrack = new AliAODTrackTiny();
-      TinyAntiProtonTrack->InitFromTrack(AntiProtonTrack);
+      TRandom3 *RandomGenerator = new TRandom3();
+      RandomGenerator->SetSeed(0);
+      PickAntiDeuteronNumber = RandomGenerator->Integer(nAntiDeuteronsSelected); // produces a random integer between 0 and nAntiDeuteronsSelected-1
 
-      AntiProtonObjectArray->Add(TinyAntiProtonTrack);
+    }
 
-    } // end of fill AntiProtonObjectArray
+    if(DebugRandomization) std::cout << "nAntiDeuteronsSelected: " << nAntiDeuteronsSelected << "\t PickAntiDeuteronNumber: " << PickAntiDeuteronNumber << std::endl;
 
-    EventPool_AntiProton->UpdatePool(AntiProtonObjectArray);
+    AliAODTrack *AntiDeuteronTrack = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(AntiDeuteronTrackArray->at(PickAntiDeuteronNumber))); // array starts at 0
+    if(!AntiDeuteronTrack) std::cout << "AliAnalysisTask_pdLd: No AntiDeuteronTrack received from the Eventpool" << std::endl;
 
-  } // end of antiproton and deuteron is selected
+    AliAODTrackTiny *TinyAntiDeuteronTrack = new AliAODTrackTiny();
+    TinyAntiDeuteronTrack->InitFromTrack(AntiDeuteronTrack,Centrality,PrimaryVertexZ);
+
+    AntiDeuteronObjectArray->Add(TinyAntiDeuteronTrack);
+
+    EventPool_AntiDeuteron->UpdatePool(AntiDeuteronObjectArray);
+
+  } // end of antiproton and antideuteron is selected
 
 
 
@@ -2841,6 +2929,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   double Proton_TPC_RatioRowsCluster_min = 0.83;
   double Proton_TPC_nSigma_max = 3.0;
   double Proton_TOF_nSigma_max = 3.0;
+  double Proton_TOF_nSigma_max_low_p = 7.0;
   int Proton_TPC_nCluster_min = 80;
   int Proton_TPC_nCrossedRows_min = 70;
   int Proton_TPC_nSharedCluster_max = 0;
@@ -2849,9 +2938,7 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   double Proton_ITS_nSigma_max = 60;
 
   bool UseITS = true;
-  bool RejectLowPtPions = true;
-
-  double Proton_ThresholdTPC = 0.70;
+  double Proton_TPC_Threshold = 0.70;
 
 
   // check if TPC information is available
@@ -2860,53 +2947,70 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
   if(isMatter)	fHist_Proton_CutCounter->Fill(1);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(1);
 
-  // use TPC-only below threshold
-  double p = Track.P();
-  double pT = Track.Pt();
+  // apple TPC sigma cut
   double nSigmaTPC = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kProton);
-  if((p < Proton_ThresholdTPC) && (TMath::Abs(nSigmaTPC) > Proton_TPC_nSigma_max)) return PassedParticleCuts;
+  if(TMath::Abs(nSigmaTPC) > Proton_TPC_nSigma_max) return PassedParticleCuts;
   if(isMatter)	fHist_Proton_CutCounter->Fill(2);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(2);
 
-  // apply DCA cut
+  // get DCA infotmation
   float xv[2];
   float yv[3];
   Track.GetImpactParameters(xv,yv);
   double DCAxy = xv[0];
   double DCAz = xv[1];
+
+  // apply DCAxy cut
   if(TMath::Abs(DCAxy) > Proton_DCAxy_max) return PassedParticleCuts;
   if(isMatter)	fHist_Proton_CutCounter->Fill(3);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(3);
 
+  // apply DCAz cut
   if(TMath::Abs(DCAz) > Proton_DCAz_max) return PassedParticleCuts;
   if(isMatter)	fHist_Proton_CutCounter->Fill(4);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(4);
 
   AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
-  // check TOF status above threshold
-  if(p >= Proton_ThresholdTPC)
-  {
+  bool TOFisOK = false;
+  if(statusTOF == AliPIDResponse::kDetPidOk) TOFisOK = true;
 
-    if(!(statusTOF == AliPIDResponse::kDetPidOk)) return PassedParticleCuts;
+  double p    = Track.P();
+  double pT   = Track.Pt();
+  double pTPC = Track.GetTPCmomentum();
 
-  }
+  // check if TOF information is available above threshold
+  if((pTPC >= Proton_TPC_Threshold) && (!TOFisOK)) return PassedParticleCuts;
   if(isMatter)	fHist_Proton_CutCounter->Fill(5);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(5);
 
-  // apply TPC and TOF sigma cut
   double nSigmaTOF = -999.0;
-  if(p >= Proton_ThresholdTPC){
+  if(TOFisOK) nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kProton);
 
-    nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kProton);
-    if((TMath::Abs(nSigmaTPC) > Proton_TPC_nSigma_max) || (TMath::Abs(nSigmaTOF) > Proton_TOF_nSigma_max)) return PassedParticleCuts;
+  // apply TOF low p cut
+  if(TOFisOK)
+  {
+
+    if((pTPC < Proton_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Proton_TOF_nSigma_max_low_p)) return PassedParticleCuts;
 
   }
   if(isMatter)	fHist_Proton_CutCounter->Fill(6);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(6);
 
+  // apply TOF high p cut
+  if(TOFisOK)
+  {
 
+    nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kProton);
+
+    if((pTPC >= Proton_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Proton_TOF_nSigma_max)) return PassedParticleCuts;
+
+  }
+  if(isMatter)	fHist_Proton_CutCounter->Fill(7);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(7);
+
+/*
   // reject tracks with better sigma for other particles
-  if(p >= Proton_ThresholdTPC){
+  if((pTPC >= Proton_TPC_Threshold) && (TOFisOK)){
 
     // apply TPC and TOF sigma cut
     nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kProton);
@@ -2931,92 +3035,90 @@ bool AliAnalysisTask_pdLd::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &f
     if((TMath::Abs(nSigmaTPC) > TMath::Abs(nSigmaTPC_Pion))	  && (TMath::Abs(nSigmaTOF) > TMath::Abs(nSigmaTOF_Pion))) return PassedParticleCuts;
 
   }
-  if(isMatter)	fHist_Proton_CutCounter->Fill(7);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(7);
+  if(isMatter)	fHist_Proton_CutCounter->Fill(8);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(8);
+*/
 
   // apply FilterBit cut
   if(!Track.TestFilterBit(Proton_FilterBit)) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(8);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(8);
+  if(isMatter)	fHist_Proton_CutCounter->Fill(9);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(9);
 
   // apply pT cut
   if(pT < Proton_pT_min || pT > Proton_pT_max) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(9);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(9);
+  if(isMatter)	fHist_Proton_CutCounter->Fill(10);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(10);
 
   // apply charge cut
   int charge = Track.Charge();
   if(charge < 1 && isMatter)   return PassedParticleCuts;
   if(charge > -1 && !isMatter) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(10);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(10);
+  if(isMatter)	fHist_Proton_CutCounter->Fill(11);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(11);
 
   // apply pseudo-rapidity cut
   double eta = Track.Eta();
   if(eta < Proton_eta_min || eta > Proton_eta_max) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(11);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(11);
+  if(isMatter)	fHist_Proton_CutCounter->Fill(12);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(12);
 
   // apply cluster cut for TPC
   int nClusterTPC = Track.GetNcls(1);
   if(nClusterTPC < Proton_TPC_nCluster_min) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(12);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(12);
+  if(isMatter)	fHist_Proton_CutCounter->Fill(13);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(13);
 
   // apply crossed rows cut for TPC
   int nCrossedRowsTPC = Track.GetTPCCrossedRows();
   if(nCrossedRowsTPC < Proton_TPC_nCrossedRows_min) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(13);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(13);
-
-  // apply zero chared cluster cut for TPC
-  int nSharedClusterTPC = Track.GetTPCnclsS();
-  if(nSharedClusterTPC > Proton_TPC_nSharedCluster_max) return PassedParticleCuts;
   if(isMatter)	fHist_Proton_CutCounter->Fill(14);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(14);
+
+  // apply zero shared cluster cut for TPC
+  int nSharedClusterTPC = Track.GetTPCnclsS();
+  if(nSharedClusterTPC > Proton_TPC_nSharedCluster_max) return PassedParticleCuts;
+  if(isMatter)	fHist_Proton_CutCounter->Fill(15);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(15);
 
   // apply findable cluster cut for TPC
   int nClusterTPCfindable = Track.GetTPCNclsF();
   double RatioRowsFindableClusterTPC = -999.0;
   if(nClusterTPCfindable > 0) RatioRowsFindableClusterTPC = ((double)nCrossedRowsTPC / (double)nClusterTPCfindable);
   if(RatioRowsFindableClusterTPC < Proton_TPC_RatioRowsCluster_min) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(15);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(15);
-
-
-  // reject low pT pions in TOF if TOF status OK 
-  double nSigmaTOF_Pion = -999.0;
-  if(RejectLowPtPions){
-
-    //if((pT < Proton_ThresholdTPC) && (statusTOF == AliPIDResponse::kDetPidOk)){
-    if((p < Proton_ThresholdTPC) && (statusTOF == AliPIDResponse::kDetPidOk)){
-
-      nSigmaTOF_Pion = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kPion);
-      if(TMath::Abs(nSigmaTOF_Pion) < 3.0) return PassedParticleCuts;
-
-    }
-
-  }
   if(isMatter)	fHist_Proton_CutCounter->Fill(16);
   if(!isMatter) fHist_AntiProton_CutCounter->Fill(16);
 
-  // check if ITS information is available
-  AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
-  if((UseITS) && !(statusITS == AliPIDResponse::kDetPidOk)) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(17);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(17);
-
-  // ITS nSigma cut
-  double nSigmaITS = fPIDResponse.NumberOfSigmasITS(&Track,AliPID::kProton);
-  if((UseITS) && (p < Proton_ThresholdTPC) && (TMath::Abs(nSigmaITS) > Proton_ITS_nSigma_max)) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(18);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(18);
 
   // apply ITS cluster cut
   double nClusterITS = Track.GetITSNcls();
-  if((UseITS) && (nClusterITS < Proton_ITS_nCluster_min)) return PassedParticleCuts;
-  if(isMatter)	fHist_Proton_CutCounter->Fill(19);
-  if(!isMatter) fHist_AntiProton_CutCounter->Fill(19);
+  if((UseITS) && (nClusterITS <= Proton_ITS_nCluster_min)) return PassedParticleCuts;
+  if(isMatter)	fHist_Proton_CutCounter->Fill(17);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(17);
+
+  // apply ITS dEdx cut below proton band
+  if((UseITS))
+  {
+
+    TF1 *fdEdxProtonITS = new TF1("fdEdxProtonITS","0.7*[5]*[5]*AliExternalTrackParam::BetheBlochGeant([5]*x/([6]),[0],[1],[2],[3],[4])",0.1,6.);
+    fdEdxProtonITS->SetParameters(2.36861e-07,-55831.1,-238672,9.55834,17081,1,0.93827208816);
+
+    if(Track.GetITSsignal() < fdEdxProtonITS->Eval(p)) return PassedParticleCuts;
+
+  }
+
+  // apply ITS dEdx cut above proton band
+  if((UseITS))
+  {
+
+    TF1 *fdEdxProtonITS = new TF1("fdEdxProtonITS","1.3*[5]*[5]*AliExternalTrackParam::BetheBlochGeant([5]*x/([6]),[0],[1],[2],[3],[4])",0.1,6.);
+    fdEdxProtonITS->SetParameters(2.36861e-07,-55831.1,-238672,9.55834,17081,1,0.93827208816);
+
+    if(Track.GetITSsignal() > fdEdxProtonITS->Eval(p)) return PassedParticleCuts;
+
+  }
+  if(isMatter)	fHist_Proton_CutCounter->Fill(18);
+  if(!isMatter) fHist_AntiProton_CutCounter->Fill(18);
+
 
   PassedParticleCuts = true;
   return PassedParticleCuts;
@@ -3041,6 +3143,7 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   double Deuteron_TPC_RatioRowsCluster_min = 0.83;
   double Deuteron_TPC_nSigma_max = 3.0;
   double Deuteron_TOF_nSigma_max = 3.0;
+  double Deuteron_TOF_nSigma_max_low_p = 7.0;
   int Deuteron_TPC_nCluster_min = 80;
   int Deuteron_TPC_nCrossedRows_min = 70;
   int Deuteron_TPC_nSharedCluster_max = 0;
@@ -3048,15 +3151,14 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   int Deuteron_ITS_nCluster_min = 2;
   double Deuteron_ITS_nSigma_max = 60;
 
-  bool UseITS = true;
-  bool RejectLowPtPions = true;
 
-  double Deuteron_ThresholdTPC = 1.40;
+  double Deuteron_TPC_Threshold = 1.0;
 
   double Deuteron_TOF_MassSquare_nSigma_max = 3.0;
 
   bool UseBetaTOF = false;
   bool UseMassSquareTOF = true;
+  bool UseITS = true;
 
 
   // check if TPC information is available
@@ -3065,44 +3167,60 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(1);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(1);
 
-  // use TPC-only below threshold
-  double p = Track.P();
-  double pT = Track.Pt();
+  // apply TPC nSigma cut
   double nSigmaTPC = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kDeuteron);
-  if((p < Deuteron_ThresholdTPC) && (TMath::Abs(nSigmaTPC) > Deuteron_TPC_nSigma_max)) return PassedParticleCuts;
+  if(TMath::Abs(nSigmaTPC) > Deuteron_TPC_nSigma_max) return PassedParticleCuts;
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(2);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(2);
 
-  // apply DCA cut
+  // get DCA information
   float xv[2];
   float yv[3];
   Track.GetImpactParameters(xv,yv);
   double DCAxy = xv[0];
   double DCAz = xv[1];
+  
+  // apply DCAxy cut
   if(TMath::Abs(DCAxy) > Deuteron_DCAxy_max) return PassedParticleCuts;
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(3);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(3);
 
+  // apply DCAz cut
   if(TMath::Abs(DCAz) > Deuteron_DCAz_max) return PassedParticleCuts;
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(4);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(4);
 
   AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
+  bool TOFisOK = false;
+  if(statusTOF == AliPIDResponse::kDetPidOk) TOFisOK = true;
+
+  double p = Track.P();
+  double pT = Track.Pt();
+  double pTPC = Track.GetTPCmomentum();
+
   // check TOF status above threshold
-  if(p >= Deuteron_ThresholdTPC)
-  {
-
-    if(!(statusTOF == AliPIDResponse::kDetPidOk)) return PassedParticleCuts;
-
-  }
+  if((pTPC >= Deuteron_TPC_Threshold) && (!TOFisOK)) return PassedParticleCuts;
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(5);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(5);
 
-  if((UseBetaTOF) && (p >= Deuteron_ThresholdTPC))
+  double nSigmaTOF = -999.0;
+    nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kDeuteron);
+
+  // apply TOF low p cut
+  if(TOFisOK)
+  {
+
+    if((pTPC < Deuteron_TPC_Threshold) && (TMath::Abs(nSigmaTOF) > Deuteron_TOF_nSigma_max_low_p)) return PassedParticleCuts;
+
+  }
+  if(isMatter)	fHist_Deuteron_CutCounter->Fill(6);
+  if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(6);
+
+
+  if((UseBetaTOF) && (pTPC >= Deuteron_TPC_Threshold))
   {
 
     // apply TPC and TOF sigma cut
-    double nSigmaTOF = -999.0;
 
     nSigmaTOF = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kDeuteron);
     if((TMath::Abs(nSigmaTPC) > Deuteron_TPC_nSigma_max) || (TMath::Abs(nSigmaTOF) > Deuteron_TOF_nSigma_max)) return PassedParticleCuts;
@@ -3142,13 +3260,13 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   if(UseMassSquareTOF)
   {
   
-    if(p >= Deuteron_ThresholdTPC)
+    if(pTPC >= Deuteron_TPC_Threshold)
     {
 
     double massSq = CalculateMassSquareTOF(Track);
-    double Sigma_TOF_MassSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,isMatter);
+    double nSigmaTOFmSq = CalculateDeuteronSigmaMassSquareTOF(pT,massSq,isMatter);
 
-    if((TMath::Abs(nSigmaTPC) > Deuteron_TPC_nSigma_max) || (TMath::Abs(Sigma_TOF_MassSq) >= Deuteron_TOF_MassSquare_nSigma_max)) return PassedParticleCuts;
+    if(TMath::Abs(nSigmaTOFmSq) > Deuteron_TOF_MassSquare_nSigma_max) return PassedParticleCuts;
 
     } // end of UseMassSquareTOF
 
@@ -3192,7 +3310,7 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(15);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(15);
 
-  // apply zero chared cluster cut for TPC
+  // apply zero shared cluster cut for TPC
   int nSharedClusterTPC = Track.GetTPCnclsS();
   if(nSharedClusterTPC > Deuteron_TPC_nSharedCluster_max) return PassedParticleCuts;
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(16);
@@ -3207,40 +3325,37 @@ bool AliAnalysisTask_pdLd::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse 
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(17);
 
 
-  // reject low pT pions in TOF if TOF status OK 
-  double nSigmaTOF_Pion = -999.0;
-  if(RejectLowPtPions){
-
-    //if((pT < Deuteron_ThresholdTPC) && (statusTOF == AliPIDResponse::kDetPidOk)){
-    if((p < Deuteron_ThresholdTPC) && (statusTOF == AliPIDResponse::kDetPidOk)){
-
-      nSigmaTOF_Pion = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kPion);
-      if(TMath::Abs(nSigmaTOF_Pion) < 3.0) return PassedParticleCuts;
-
-    }
-
-    if(isMatter)	fHist_Deuteron_CutCounter->Fill(18);
-    if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(18);
-
-  }
-
   // check if ITS information is available
   AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
-  if((UseITS) && !(statusITS == AliPIDResponse::kDetPidOk)) return PassedParticleCuts;
-  if(isMatter)	fHist_Deuteron_CutCounter->Fill(19);
-  if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(19);
+  bool ITSisOK = false;
+  if(statusITS == AliPIDResponse::kDetPidOk) ITSisOK = true;
 
-  // ITS nSigma cut
-  double nSigmaITS = fPIDResponse.NumberOfSigmasITS(&Track,AliPID::kDeuteron);
-  if((UseITS) && (p < Deuteron_ThresholdTPC) && (TMath::Abs(nSigmaITS) > Deuteron_ITS_nSigma_max)) return PassedParticleCuts;
+  // apply ITS cluster cut
+  if(UseITS)
+  {
+
+    double nClusterITS = Track.GetITSNcls();
+    if(nClusterITS <= Deuteron_ITS_nCluster_min) return PassedParticleCuts;
+
+  }
+  if(isMatter)	fHist_Deuteron_CutCounter->Fill(21);
+  if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(21);
+
+
+  // apply ITS dEdx cut
+  if(UseITS)
+  {
+
+    TF1 *fdEdxDeuteronITS = new TF1("fdEdxDeuteronITS","0.7*[5]*[5]*AliExternalTrackParam::BetheBlochGeant([5]*x/([6]),[0],[1],[2],[3],[4])",0.1,6.);
+    fdEdxDeuteronITS->SetParameters(7.41722e-06,-55831.1,-238672,11249.3,19828.9,1,1.8756129425);
+
+    if(Track.GetITSsignal() < fdEdxDeuteronITS->Eval(p)) return PassedParticleCuts;
+
+  }
   if(isMatter)	fHist_Deuteron_CutCounter->Fill(20);
   if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(20);
 
-  // apply ITS cluster cut
-  double nClusterITS = Track.GetITSNcls();
-  if((UseITS) && (nClusterITS < Deuteron_ITS_nCluster_min)) return PassedParticleCuts;
-  if(isMatter)	fHist_Deuteron_CutCounter->Fill(21);
-  if(!isMatter) fHist_AntiDeuteron_CutCounter->Fill(21);
+
 
   PassedParticleCuts = true;
   return PassedParticleCuts;

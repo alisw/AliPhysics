@@ -110,6 +110,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetSystFlag(int syst){fCurrSystFlag = syst;} 
 		virtual int    GetSystFlag(){return fCurrSystFlag;}
 		virtual void   UseBootstrap(bool ftest = true){fBootstrapStat = ftest;}
+		virtual void   SetBootstrapRange(int low=-100, int high = 100){sampleLow = low; sampleHigh = high;}
 
         void SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
         void SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
@@ -203,6 +204,8 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
         Double_t                fFMDCacceptanceCutUpper;                // FMDCut
 		unsigned                fBinMethod;                             // fBinMethod
 		int                     nSamples;                               // Number of bootstrap samples
+		int                     sampleLow;                              // lower bound of bootstrap sample
+		int                     sampleHigh;                             // higher bound of bootstrap sample
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -316,7 +319,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 7); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 8); // Analysis task
 };
 
 #endif

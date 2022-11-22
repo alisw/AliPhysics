@@ -2,8 +2,8 @@
 /// \brief Task to for pT spectra vs. multiplicity analysis
 
 
-#ifndef AliAnalysisTaskOmegaDielectron_AccEff_cxx // header guard in case of multiple includes
-#define AliAnalysisTaskOmegaDielectron_AccEff_cxx
+#ifndef AliAnalysisTaskOmegaDielectron_AccEff_H // header guard in case of multiple includes
+#define AliAnalysisTaskOmegaDielectron_AccEff_H
 
 #define MAX_HISTO_DIM 4
 #define PRECISION 1e-6
@@ -101,8 +101,22 @@ class AliAnalysisTaskOmegaDielectron_AccEff : public AliAnalysisTaskSE {
     TH3D* fHist_MC_Omegas_gen;                     //!<! Histogram of generated primaries
     TH3D* fHist_MC_Omegas_gen_DaughtersinAcc;      //!<! Histogram of generated primaries
 
+    TH3D* fHist_MC_elec_gen;                 //!<! Histogram of generated primaries
+    TH3D* fHist_MC_posi_gen;                 //!<! Histogram of generated primaries
+    TH3D* fHist_MC_elec_gen_inAcc;                 //!<! Histogram of generated primaries
+    TH3D* fHist_MC_posi_gen_inAcc;                 //!<! Histogram of generated primaries
+
+    TH3D* fHist_elec_rec_inAcc;                 //!<! Histogram of generated primaries
+    TH3D* fHist_elec_rec_inAcc_Track;                 //!<! Histogram of generated primaries
+    TH3D* fHist_elec_rec_inAcc_Track_PID;                 //!<! Histogram of generated primaries
+    TH3D* fHist_posi_rec_inAcc;                 //!<! Histogram of generated primaries
+    TH3D* fHist_posi_rec_inAcc_Track;                 //!<! Histogram of generated primaries
+    TH3D* fHist_posi_rec_inAcc_Track_PID;                 //!<! Histogram of generated primaries
+
+    TH3D* fHist_MC_Omegas_withoutCuts;              //!<! Histogram of generated primaries
     TH3D* fHist_MC_Omegas_TrackCuts;               //!<! Histogram of generated primaries
     TH3D* fHist_MC_Omegas_TrackPID;                //!<! Histogram of generated primaries
+    TH3D* fHist_Rec_Omegas_withoutCuts;              //!<! Histogram of generated primaries
     TH3D* fHist_Rec_Omegas_TrackCuts;              //!<! Histogram of generated primaries
     TH3D* fHist_Rec_Omegas_TrackPID;               //!<! Histogram of generated primaries
 
@@ -114,9 +128,8 @@ class AliAnalysisTaskOmegaDielectron_AccEff : public AliAnalysisTaskSE {
     AliAnalysisCuts *SetupTrackCuts();        //!<! Track cuts
 
 
-    Bool_t AcceptKinematics(AliVParticle* particle);                    //!<! Accept kinematic
-    Bool_t CheckDielectronDecay(AliMCParticle *particle);               //!<! Check if particle has e+e- as daughters
-    Bool_t CheckDielectronDecay_DaughterinAcc(AliMCParticle *particle); //!<! Check if particle has e+e- as daughters within acc
+    Bool_t AcceptKinematics(AliVParticle* particle);                            //!<! Accept kinematic
+    Bool_t CheckDielectronDecay(AliMCParticle *particle, Bool_t checkacc);      //!<! Check if particle has e+e- as daughters , with bool for die kinematic acceptance check for the daughters
 
     AliAnalysisTaskOmegaDielectron_AccEff(const AliAnalysisTaskOmegaDielectron_AccEff&); // not implemented
     AliAnalysisTaskOmegaDielectron_AccEff& operator=(const AliAnalysisTaskOmegaDielectron_AccEff&); // not implemented

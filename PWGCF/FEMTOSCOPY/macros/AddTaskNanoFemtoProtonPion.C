@@ -11,7 +11,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool doOfficialFemto = true, //2
     TString trigger = "kHM", //3
     bool fullBlastQA = true,//4
-    bool UseSphericityCut = false,//5
+    bool UseSphericityCut = true,//5
     float SphericityMinPt = 0.5, //6
     int PionFilterbit = 96, //7
     bool DoPairCleaning = false, //8
@@ -19,7 +19,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool DoAncestors = false, //10
     bool RemoveMCResonances = true, //11 
     bool RemoveMCResonanceDaughters = true, //12
-    bool DoInvMass = false //13
+    bool DoInvMass = false, //13
+    bool DoResonanceLorentzFactor = false //14
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -247,6 +248,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   task->SetCollectionConfig(config);
   task->SetDoPairCleaning(DoPairCleaning);
   task->SetDoOfficialFemto(doOfficialFemto); 
+  task->SetDoResonanceLorentzFactor(DoResonanceLorentzFactor);
 
   //Set-up for own looping & calculus -> needed for 3D studies
   //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!

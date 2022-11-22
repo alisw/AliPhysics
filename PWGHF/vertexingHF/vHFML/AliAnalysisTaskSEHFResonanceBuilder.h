@@ -11,7 +11,13 @@
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////
 
+#include <array>
+#include <vector>
+
 #include <TNtuple.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <THnSparse.h>
 
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
@@ -25,6 +31,7 @@
 #include "AliNormalizationCounter.h"
 #include "AliHFMLResponse.h"
 #include "AliAODv0.h"
+#include "AliAODMCParticle.h"
 
 class AliAnalysisTaskSEHFResonanceBuilder : public AliAnalysisTaskSE
 {
@@ -144,6 +151,7 @@ private:
     int IsV0Selected(AliAODv0 *&track);
     bool IsInvMassResoSelected(double &mass, int bachHypo, int V0hypo);
     bool IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau, AliAnalysisVertexingHF *vHF);
+    int MatchResoToMC(AliAODMCParticle *partD, AliAODMCParticle *partLight, TClonesArray* arrayMC);
 
     void FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
 
@@ -154,12 +162,14 @@ private:
 
     TList *fOutput = nullptr;                                                             //!<! list send on output slot 0
     TH1F *fHistNEvents = nullptr;                                                         //!<! hist. for No. of events
-    std::vector<TH2F*> fHistMCGenAccPrompt{};                                             //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
-    std::vector<TH2F*> fHistMCGenAccNonPrompt{};                                          //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
     std::array<TH2F*, kNumBachIDs> fHistNsigmaTPCSelBach{};                               //!<! array of histograms with NsigmaTPC vs. p for selected bachelor tracks
     std::array<TH2F*, kNumBachIDs> fHistNsigmaTOFSelBach{};                               //!<! array of histograms with NsigmaTOF vs. p for selected bachelor tracks
     std::array<TH2F*, kNumV0IDs> fHistMassSelV0{};                                        //!<! array of histograms with invariant-mass vs. pT for selected V0s
     std::array<TH1F*, 3> fHistBDTOutputScore{};                                           //!<! array of histograms with BDT output scores for D mesons
+    std::array<THnSparseF*, 2> fHistMCGenDmeson{};                                        //!<! array of histograms with generated D mesons for efficiency
+    std::array<THnSparseF*, kNumV0IDs> fHistMCGenV0{};                                    //!<! array of histograms with generated V0s for efficiency
+    std::array<THnSparseF*, 2> fHistMCRecoDmeson{};                                       //!<! array of histograms with reconstructed D mesons for efficiency
+    std::array<THnSparseF*, kNumV0IDs> fHistMCRecoV0{};                                   //!<! array of histograms with reconstructed V0s for efficiency
     TH2F* fInvMassVsPt{};                                                                 //!<! 2D hist with D-meson inv mass vs pT
     TNtuple *fNtupleCharmReso = nullptr;                                                  //!<! ntuple for HF resonances
     AliNormalizationCounter *fCounter = nullptr;                                          //!<! Counter for normalization
@@ -167,7 +177,6 @@ private:
     int fDecChannel = kDplustoKpipi;                                                      /// channel to analyse
     int fPdgD = 411;                                                                      /// pdg code of the D meson
     bool fReadMC = false;                                                                 /// flag for access to MC
-    bool  fFillAcceptanceLevel = true;                                                    /// flag for filling true reconstructed D at acceptance level (see FillMCGenAccHistos)
     int fAODProtection = 0;                                                               /// flag to activate protection against AOD-dAOD mismatch.
                                                                                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
     TList *fListCuts = nullptr;                                                           /// list of cuts
@@ -210,7 +219,7 @@ private:
     std::vector<float> fInvMassResoLaMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of lambda combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 10); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 13); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 

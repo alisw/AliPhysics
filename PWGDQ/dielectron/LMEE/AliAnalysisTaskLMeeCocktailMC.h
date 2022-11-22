@@ -38,6 +38,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetEffFileName(TString name);
     void SetMinOpAng(Float_t MinOpAng = 0.050){fMinOpAng = MinOpAng;}
     void SetRapidityCut(Bool_t DoRapidityCut) {fDoRapidityCut = DoRapidityCut; }
+    void SetMaxRapPair(Float_t maxRap = 0.8){fMaxRap = maxRap;}
 
     TH1F *GetEffHisto() {return fhwEffpT;}
 
@@ -189,7 +190,8 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     Int_t              fcollisionSystem;
     Int_t                fResolType;
     Int_t               fALTweightType;
-    Bool_t               fDoRapidityCut;              //Check: Rapidity cut on mother particle
+    Bool_t               fDoRapidityCut;              // Possible to cut on the rapidity of the dielectron pair
+    Float_t              fMaxRap;                     // Max rapidity cut
 
   private:
     AliAnalysisTaskLMeeCocktailMC(const AliAnalysisTaskLMeeCocktailMC&); // Prevent copy-construction

@@ -16,6 +16,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
                                               const char *sTcut = "0",
                                               bool DoAncestors = false,
                                               bool IsSystematics = false,
+                                              bool isNewPC = false,
                                               const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
@@ -1195,7 +1196,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaKaon(bool isMC = false,
   // now we create the task
   AliAnalysisTaskNanoLambdaKaon *task =
       new AliAnalysisTaskNanoLambdaKaon(
-          "AliAnalysisTaskNanoLambdaKaon", isMC);
+          "AliAnalysisTaskNanoLambdaKaon", isMC, isNewPC);
 
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias

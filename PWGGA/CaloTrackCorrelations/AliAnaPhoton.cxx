@@ -3781,17 +3781,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     {
       if ( trigString.Contains("G1") )
       {
-        fhEnClusterColRowTriggerG1 = new TH3F
-        ("hEnClusterColRowTriggerG1",
-         "cluster max E cell column vs row vs energy, G1 from trigger decision",
-         ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
-         fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
-         fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
-        fhEnClusterColRowTriggerG1->SetZTitle("row");
-        fhEnClusterColRowTriggerG1->SetYTitle("column");
-        fhEnClusterColRowTriggerG1->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEnClusterColRowTriggerG1) ;
-        
+        if ( fFillControlClusterContentHisto )
+        {
+          fhEnClusterColRowTriggerG1 = new TH3F
+          ("hEnClusterColRowTriggerG1",
+           "cluster max E cell column vs row vs energy, G1 from trigger decision",
+           ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
+           fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
+           fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
+          fhEnClusterColRowTriggerG1->SetZTitle("row");
+          fhEnClusterColRowTriggerG1->SetYTitle("column");
+          fhEnClusterColRowTriggerG1->SetXTitle("#it{E} (GeV)");
+          outputContainer->Add(fhEnClusterColRowTriggerG1) ;
+        }
+
         fhEnPhotonColRowTriggerG1 = new TH3F
         ("hEnPhotonColRowTriggerG1",
          "selected cluster max E cell column vs row vs energy, G1 from trigger decision",
@@ -3806,17 +3809,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       if ( trigString.Contains("G2") )
       {
-        fhEnClusterColRowTriggerG2 = new TH3F
-        ("hEnClusterColRowTriggerG2",
-         "cluster max E cell column vs row vs energy, G2 from trigger decision",
-         ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
-         fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
-         fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
-        fhEnClusterColRowTriggerG2->SetZTitle("row");
-        fhEnClusterColRowTriggerG2->SetYTitle("column");
-        fhEnClusterColRowTriggerG2->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEnClusterColRowTriggerG2) ;
-        
+        if ( fFillControlClusterContentHisto )
+        {
+          fhEnClusterColRowTriggerG2 = new TH3F
+          ("hEnClusterColRowTriggerG2",
+           "cluster max E cell column vs row vs energy, G2 from trigger decision",
+           ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
+           fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
+           fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
+          fhEnClusterColRowTriggerG2->SetZTitle("row");
+          fhEnClusterColRowTriggerG2->SetYTitle("column");
+          fhEnClusterColRowTriggerG2->SetXTitle("#it{E} (GeV)");
+          outputContainer->Add(fhEnClusterColRowTriggerG2) ;
+        }
+
         fhEnPhotonColRowTriggerG2 = new TH3F
         ("hEnPhotonColRowTriggerG2",
          "selected cluster max E cell column vs row vs energy, G2 from trigger decision",
@@ -3831,16 +3837,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       if ( trigString.Contains("L0") )
       {
-        fhEnClusterColRowTriggerL0 = new TH3F
-        ("hEnClusterColRowTriggerL0",
-         "cluster max E cell column vs row vs energy, L0 from trigger decision",
-         ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
-         fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
-         fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
-        fhEnClusterColRowTriggerL0->SetZTitle("row");
-        fhEnClusterColRowTriggerL0->SetYTitle("column");
-        fhEnClusterColRowTriggerL0->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEnClusterColRowTriggerL0) ;
+        if ( fFillControlClusterContentHisto )
+        {
+          fhEnClusterColRowTriggerL0 = new TH3F
+          ("hEnClusterColRowTriggerL0",
+           "cluster max E cell column vs row vs energy, L0 from trigger decision",
+           ptWideBinsArray.GetSize() - 1,ptWideBinsArray.GetArray(),
+           fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(),
+           fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;
+          fhEnClusterColRowTriggerL0->SetZTitle("row");
+          fhEnClusterColRowTriggerL0->SetYTitle("column");
+          fhEnClusterColRowTriggerL0->SetXTitle("#it{E} (GeV)");
+          outputContainer->Add(fhEnClusterColRowTriggerL0) ;
+        }
         
         fhEnPhotonColRowTriggerL0 = new TH3F
         ("hEnPhotonColRowTriggerL0",

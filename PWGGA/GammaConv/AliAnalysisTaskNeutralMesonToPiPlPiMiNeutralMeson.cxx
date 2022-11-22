@@ -1682,8 +1682,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     }
 
     if(fEnableSubLambdaOutput){
-      fLambda[iCut]                                            = new TF1("fLambda","pol2",0.,20);
-      fLambda[iCut]->SetParameters(0.0637,0.483,-0.031074);
+      fLambda[iCut]                                            = new TF1("fLambda","pol3",0.,30);
+      if (fNDMRecoMode == 1){
+        fLambda[iCut]->SetParameters(0.651031,0.23351,-0.0108806,0.000177861); // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for PCMEMC
+      }
+      else{
+        fLambda[iCut]->SetParameters(0.192795,0.460392,-0.0323214,0.000255231);  // Parameters for EMCEMC
+      }
       fHistoMotherInvMassSubLambda[iCut]                       = new TH2F("ESD_InvMass_Mother_Sub_Lambda_InvMass_Neutral_Pt","ESD_InvMass_Mother_Sub_InvMass_Neutral_Pt",HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1], HistoNPtBins, arrPtBinning);
       fHistoMotherInvMassSubLambda[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - #lambda#times(M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
       fHistoMotherInvMassSubLambda[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -2894,7 +2899,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
             fTreeEventInfoHNM[iCut]->Branch("fPtHNM", &fPtHNM, "fPtHNM/F");
             fTrueTreeList[iCut]->Add(fTreeEventInfoHNM[iCut]);
             if (fDoMesonQA>2) {
-              fHistopi0vsmesonmassshiftangle[iCut]    = new TH3F("fHistopi0vsmesonmassshiftangle", "fHistopi0vsmesonmassshiftangle", 40, -0.1, 0.1, 40, -0.1, 0.1, 20, 0, TMath::Pi()/10.);
+              fHistopi0vsmesonmassshiftangle[iCut]    = new TH3F("fHistopi0vsmesonmassshiftangle", "fHistopi0vsmesonmassshiftangle", 15, -0.03, 0.03, 50, -0.1, 0.1, 60, 0, 3*TMath::Pi()/10.);
               if (fIsMC>1) fHistopi0vsmesonmassshiftangle[iCut]->Sumw2();
               fHistopi0vsmesonmassshiftangle[iCut]->GetXaxis()->SetTitle("M_{#pi^{0}}^{rec.}-M_{#pi^{0}}^{true.} (GeV/c^{2})");
               fHistopi0vsmesonmassshiftangle[iCut]->GetYaxis()->SetTitle(Form("M_{%s^{0}}^{rec.}-M_{%s^{0}}^{true.} (GeV/c^{2})", NameNeutralMesonAnalyzedLatex.Data(), NameNeutralMesonAnalyzedLatex.Data()));

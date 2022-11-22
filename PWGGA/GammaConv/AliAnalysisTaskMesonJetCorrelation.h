@@ -357,9 +357,20 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoTrueSecondaryMesonInvMassPt;                          //! vector of histos inv. mass vs. pT for true secondary mesons
   std::vector<TH2F*> fHistoTrueMesonJetPtVsTruePt;                               //! vector of histos true meson pt vs true jet pt
   std::vector<TH2F*> fHistoTrueMesonJetPtVsTrueZ;                                //! vector of histos true meson z vs true jet pt
+  std::vector<TH2F*> fHistoTrueMesonJetPtVsRecPt;                                //! vector of histos rec meson pt vs rec jet pt
+  std::vector<TH2F*> fHistoTrueMesonJetPtVsRecZ;                                 //! vector of histos rec meson z vs rec jet pt
+  std::vector<TH2F*> fHistoTrueSecMesonJetPtVsRecPt;                             //! vector of histos rec meson pt vs rec jet pt
+  std::vector<TH2F*> fHistoTrueSecMesonJetPtVsRecZ;                              //! vector of histos rec meson z vs rec jet pt
   std::vector<TH2F*> fHistoTrueMesonInTrueJet_JetPtVsTruePt;                     //! vector of histos true meson pt vs true jet pt inside true jets
   std::vector<TH2F*> fHistoTrueMesonInTrueJet_JetPtVsTrueZ;                      //! vector of histos true meson z vs true jet pt inside true jets
   std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
+
+  //-------------------------------
+  // Meson double counting
+  //-------------------------------
+  std::vector<int> fMesonDoubleCount;                                              //! keeps track of MC IDs of true mesons and check if one double counts
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount; //! vector of histos inv. mass vs. pT for true mesons which are counted more than once
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount;  //! vector of histos inv. mass vs. Z for true mesons which are counted more than once
 
   //-------------------------------
   // True conversion photon histograms

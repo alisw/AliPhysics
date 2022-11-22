@@ -57,6 +57,23 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fUseFDPairCleaner(true),
       fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
+      fColsToSave({
+        "mult",
+        "kStar",
+        "is_oldpcrm",
+        "is_newpcrm",
+        "heavy_mult",
+        "heavy_invmass",
+        "heavy_pt",
+        "heavy_origin",
+        "light_mult",
+        "light_px",
+        "light_py",
+        "light_eta",
+        "light_nsigtpc",
+        "light_nsigtof",
+        "light_dcaxy",
+        "light_dcaz"}),
       fQA(nullptr),
       fEvtHistList(nullptr),
       fTrackCutHistList(nullptr),
@@ -157,6 +174,23 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fUseFDPairCleaner(true),
       fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
+      fColsToSave({
+        "mult",
+        "kStar",
+        "is_oldpcrm",
+        "is_newpcrm",
+        "heavy_mult",
+        "heavy_invmass",
+        "heavy_pt",
+        "heavy_origin",
+        "light_mult",
+        "light_px",
+        "light_py",
+        "light_eta",
+        "light_nsigtpc",
+        "light_nsigtof",
+        "light_dcaxy",
+        "light_dcaz"}),
       fQA(nullptr),
       fEvtHistList(nullptr),
       fTrackCutHistList(nullptr),
@@ -987,6 +1021,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   //     printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
   //   }
   // }
+  if (fUseLFFromEvtsWithPairs) {
+    if (dplus.size() == 0 && dminus.size() == 0) {
+      return;
+    } 
+  }
 
   // set event properties
   int partMult = dplus.size();
@@ -1053,9 +1092,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       p.SetIsRemovedByNewPC(!p.UseParticle());
       if (!p.UseParticle()) p.SetUse(true);
     }
-    for (auto &p : protons) {
-      printf("slcnk %d\n", p.IsRemovedByOldPC());
-    }
     for (auto &p : antiprotons) {
       p.SetIsRemovedByNewPC(!p.UseParticle());
       if (!p.UseParticle()) p.SetUse(true);
@@ -1073,12 +1109,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
     fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
     fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
-  }
-
-  if (fUseLFFromEvtsWithPairs) {
-    if (dplus.size() == 0 && dminus.size() == 0) {
-      return;
-    } 
   }
   
   fPairCleaner->StoreParticle(protons);
@@ -1165,84 +1195,86 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     fPairTreeME->insert({{0, 3}, new TTree("tME_mp", "tME_mp")});
     fPairTreeME->insert({{1, 2}, new TTree("tME_pm", "tME_pm")});
 
+    auto saveCol = [this](const char * col) { return std::find(fColsToSave.begin(), fColsToSave.end(), col)!= fColsToSave.end(); };
+
     for (auto tree : *fPairTreeSE) {
       // event
-      tree.second->Branch("mult", &dummyint);
-      tree.second->Branch("vz", &dummyfloat);
+      if(saveCol("mult")) tree.second->Branch("mult", &dummyint);
+      if(saveCol("vz")) tree.second->Branch("vz", &dummyfloat);
 
       // pair
-      tree.second->Branch("kStar", &dummyfloat);
-      tree.second->Branch("is_oldpcrm", &dummybool);
-      tree.second->Branch("is_newpcrm", &dummybool);
+      if(saveCol("kStar")) tree.second->Branch("kStar", &dummyfloat);
+      if(saveCol("is_oldpcrm")) tree.second->Branch("is_oldpcrm", &dummybool);
+      if(saveCol("is_newpcrm")) tree.second->Branch("is_newpcrm", &dummybool);
 
       // heavy particle
-      tree.second->Branch("heavy_mult", &dummyint);
-      tree.second->Branch("heavy_invmass", &dummyfloat);
-      tree.second->Branch("heavy_pt", &dummyfloat);
-      tree.second->Branch("heavy_eta", &dummyfloat);
-      tree.second->Branch("heavy_origin", &dummyint);
-      tree.second->Branch("heavy_daus", &dummyvector);
-      tree.second->Branch("heavy_softpion_px", &dummyfloat);
-      tree.second->Branch("heavy_softpion_py", &dummyfloat);
-      tree.second->Branch("heavy_softpion_pz", &dummyfloat);
-      tree.second->Branch("heavy_bkg_score", &dummyfloat);
-      tree.second->Branch("heavy_prompt_score", &dummyfloat);
-      tree.second->Branch("heavy_d0label", &dummyint);
+      if(saveCol("heavy_mult")) tree.second->Branch("heavy_mult", &dummyint);
+      if(saveCol("heavy_invmass")) tree.second->Branch("heavy_invmass", &dummyfloat);
+      if(saveCol("heavy_pt")) tree.second->Branch("heavy_pt", &dummyfloat);
+      if(saveCol("heavy_eta")) tree.second->Branch("heavy_eta", &dummyfloat);
+      if(fIsMC && saveCol("heavy_origin")) tree.second->Branch("heavy_origin", &dummyint);
+      if(saveCol("heavy_daus")) tree.second->Branch("heavy_daus", &dummyvector);
+      if(saveCol("heavy_softpion_px")) tree.second->Branch("heavy_softpion_px", &dummyfloat);
+      if(saveCol("heavy_softpion_py")) tree.second->Branch("heavy_softpion_py", &dummyfloat);
+      if(saveCol("heavy_softpion_pz")) tree.second->Branch("heavy_softpion_pz", &dummyfloat);
+      if(fApplyML && saveCol("heavy_bkg_score")) tree.second->Branch("heavy_bkg_score", &dummyfloat);
+      if(fApplyML && saveCol("heavy_prompt_score")) tree.second->Branch("heavy_prompt_score", &dummyfloat);
+      if(saveCol("heavy_d0label")) tree.second->Branch("heavy_d0label", &dummyint);
 
       // light particle
-      tree.second->Branch("light_mult", &dummyint);
-      tree.second->Branch("light_px", &dummyfloat);
-      tree.second->Branch("light_py", &dummyfloat);
-      tree.second->Branch("light_pz", &dummyfloat);
-      tree.second->Branch("light_eta", &dummyfloat);
-      tree.second->Branch("light_nsigtpc", &dummyfloat);
-      tree.second->Branch("light_nsigtof", &dummyfloat);
-      tree.second->Branch("light_ncls", &dummyint);
-      tree.second->Branch("light_ncrossed", &dummyint);
-      tree.second->Branch("light_dcaz", &dummyfloat);
-      tree.second->Branch("light_dcaxy", &dummyfloat);
-      tree.second->Branch("light_label", &dummyint);
-      tree.second->Branch("light_motherpdg", &dummyint);
+      if(saveCol("light_mult")) tree.second->Branch("light_mult", &dummyint);
+      if(saveCol("light_px")) tree.second->Branch("light_px", &dummyfloat);
+      if(saveCol("light_py")) tree.second->Branch("light_py", &dummyfloat);
+      if(saveCol("light_pz")) tree.second->Branch("light_pz", &dummyfloat);
+      if(saveCol("light_eta")) tree.second->Branch("light_eta", &dummyfloat);
+      if(saveCol("light_nsigtpc")) tree.second->Branch("light_nsigtpc", &dummyfloat);
+      if(saveCol("light_nsigtof")) tree.second->Branch("light_nsigtof", &dummyfloat);
+      if(saveCol("light_ncls")) tree.second->Branch("light_ncls", &dummyint);
+      if(saveCol("light_ncrossed")) tree.second->Branch("light_ncrossed", &dummyint);
+      if(saveCol("light_dcaz")) tree.second->Branch("light_dcaz", &dummyfloat);
+      if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
+      if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
+      if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
 
     for (auto tree : *fPairTreeME) {
       // event
-      tree.second->Branch("mult", &dummyint);
-      tree.second->Branch("vz", &dummyfloat);
+      if(saveCol("mult")) tree.second->Branch("mult", &dummyint);
+      if(saveCol("vz")) tree.second->Branch("vz", &dummyfloat);
 
       // pair
-      tree.second->Branch("kStar", &dummyfloat);
-      tree.second->Branch("is_oldpcrm", &dummybool);
-      tree.second->Branch("is_newpcrm", &dummybool);
+      if(saveCol("kStar")) tree.second->Branch("kStar", &dummyfloat);
+      if(saveCol("is_oldpcrm")) tree.second->Branch("is_oldpcrm", &dummybool);
+      if(saveCol("is_newpcrm")) tree.second->Branch("is_newpcrm", &dummybool);
 
       // // heavy
-      tree.second->Branch("heavy_mult", &dummyint);
-      tree.second->Branch("heavy_invmass", &dummyfloat);
-      tree.second->Branch("heavy_pt", &dummyfloat);
-      tree.second->Branch("heavy_eta", &dummyfloat);
-      tree.second->Branch("heavy_origin", &dummyint);
-      tree.second->Branch("heavy_daus", &dummyvector);
-      tree.second->Branch("heavy_softpion_px", &dummyfloat);
-      tree.second->Branch("heavy_softpion_py", &dummyfloat);
-      tree.second->Branch("heavy_softpion_pz", &dummyfloat);
-      tree.second->Branch("heavy_bkg_score", &dummyfloat);
-      tree.second->Branch("heavy_prompt_score", &dummyfloat);
-      tree.second->Branch("heavy_d0label", &dummyint);
+      if(saveCol("heavy_mult")) tree.second->Branch("heavy_mult", &dummyint);
+      if(saveCol("heavy_invmass")) tree.second->Branch("heavy_invmass", &dummyfloat);
+      if(saveCol("heavy_pt")) tree.second->Branch("heavy_pt", &dummyfloat);
+      if(saveCol("heavy_eta")) tree.second->Branch("heavy_eta", &dummyfloat);
+      if(fIsMC && saveCol("heavy_origin")) tree.second->Branch("heavy_origin", &dummyint);
+      if(saveCol("heavy_daus")) tree.second->Branch("heavy_daus", &dummyvector);
+      if(saveCol("heavy_softpion_px")) tree.second->Branch("heavy_softpion_px", &dummyfloat);
+      if(saveCol("heavy_softpion_py")) tree.second->Branch("heavy_softpion_py", &dummyfloat);
+      if(saveCol("heavy_softpion_pz")) tree.second->Branch("heavy_softpion_pz", &dummyfloat);
+      if(fApplyML && saveCol("heavy_bkg_score")) tree.second->Branch("heavy_bkg_score", &dummyfloat);
+      if(fApplyML && saveCol("heavy_prompt_score")) tree.second->Branch("heavy_prompt_score", &dummyfloat);
+      if(saveCol("heavy_d0label")) tree.second->Branch("heavy_d0label", &dummyint);
 
       // light
-      tree.second->Branch("light_mult", &dummyint);
-      tree.second->Branch("light_eta", &dummyfloat);
-      tree.second->Branch("light_px", &dummyfloat);
-      tree.second->Branch("light_py", &dummyfloat);
-      tree.second->Branch("light_pz", &dummyfloat);
-      tree.second->Branch("light_nsigtpc", &dummyfloat);
-      tree.second->Branch("light_nsigtof", &dummyfloat);
-      tree.second->Branch("light_ncls", &dummyint);
-      tree.second->Branch("light_ncrossed", &dummyint);
-      tree.second->Branch("light_dcaz", &dummyfloat);
-      tree.second->Branch("light_dcaxy", &dummyfloat);
-      tree.second->Branch("light_label", &dummyint);
-      tree.second->Branch("light_motherpdg", &dummyint);
+      if(saveCol("light_mult")) tree.second->Branch("light_mult", &dummyint);
+      if(saveCol("light_eta")) tree.second->Branch("light_eta", &dummyfloat);
+      if(saveCol("light_px")) tree.second->Branch("light_px", &dummyfloat);
+      if(saveCol("light_py")) tree.second->Branch("light_py", &dummyfloat);
+      if(saveCol("light_pz")) tree.second->Branch("light_pz", &dummyfloat);
+      if(saveCol("light_nsigtpc")) tree.second->Branch("light_nsigtpc", &dummyfloat);
+      if(saveCol("light_nsigtof")) tree.second->Branch("light_nsigtof", &dummyfloat);
+      if(saveCol("light_ncls")) tree.second->Branch("light_ncls", &dummyint);
+      if(saveCol("light_ncrossed")) tree.second->Branch("light_ncrossed", &dummyint);
+      if(saveCol("light_dcaz")) tree.second->Branch("light_dcaz", &dummyfloat);
+      if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
+      if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
+      if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
   }
 

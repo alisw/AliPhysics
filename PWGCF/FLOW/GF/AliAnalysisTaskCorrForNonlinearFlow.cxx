@@ -184,6 +184,8 @@ ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
 		fFMDCacceptanceCutLower(-3.2),
 		fFMDCacceptanceCutUpper(-1.8),
 		nSamples(10),
+		sampleLow(-100),
+		sampleHigh(100),
 		rand(2333)
 {
 }
@@ -302,6 +304,8 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	fFMDCacceptanceCutLower(-3.2),
 	fFMDCacceptanceCutUpper(-1.8),
 	nSamples(10),
+		sampleLow(-100),
+		sampleHigh(100),
 	rand(2333)
 {
 
@@ -447,6 +451,8 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	fFMDCacceptanceCutLower(-3.2),
 	fFMDCacceptanceCutUpper(-1.8),
 	nSamples(10),
+		sampleLow(-100),
+		sampleHigh(100),
 	rand(2333)
 {
 
@@ -634,7 +640,6 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
 	// Mingrui: apply the bootstrap later
 	int sizeOfSamples = 1;
 	if (fBootstrapStat) sizeOfSamples = nSamples;
-	bootstrap_value = rand.Integer(sizeOfSamples);
 
 	// Check if it can pass the trigger
 	//..apply physics selection
@@ -1331,6 +1336,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 	const Double_t aodVtxZ = vtx->GetZ();
 	if(TMath::Abs(aodVtxZ) > 10) return kFALSE;
 
+
 	// FMD cut should be checked **before** the Preparation of FMD tracks
 	if(fUseFMDcut){
 
@@ -1378,6 +1384,10 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 		hFMDAvsV0->Fill(nFMD_fwd_hits, nV0A_hits);
 		hFMDCvsV0->Fill(nFMD_bwd_hits, nV0C_hits);
 	}
+
+
+	bootstrap_value = (((int)(aodVtxZ * 233)) % 10 + 10) % 10;
+	if (bootstrap_value < sampleLow || bootstrap_value >= sampleHigh) return false;
 
 	return kTRUE;
 }

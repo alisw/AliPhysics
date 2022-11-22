@@ -8,6 +8,8 @@
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////
 
+#include <algorithm>
+
 #include "yaml-cpp/yaml.h"
 
 #include <TRandom3.h>
@@ -32,8 +34,8 @@
 #include "AliAnalysisUtils.h"
 #include "AliAODHandler.h"
 #include "AliAODExtension.h"
-#include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisTaskSECharmHadronMLSelector.h"
 
 #include "AliAnalysisTaskSEHFResonanceBuilder.h"
@@ -173,8 +175,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     fOutput->Add(fHistBDTOutputScore[0]);
     fOutput->Add(fHistBDTOutputScore[1]);
     fOutput->Add(fHistBDTOutputScore[2]);
-    float minMass = -1.;
-    float maxMass = -1.;
+    double minMass = -1.;
+    double maxMass = -1.;
     switch(fDecChannel)
     {
         case kD0toKpi: {
@@ -201,7 +203,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
         fOutput->Add(fHistMassSelV0[iHypo]);
     }
 
-    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c}^{2})", 100, 0., 50., 200., minMass, maxMass);
+    fInvMassVsPt = new TH2F("fInvMassVsPt", ";#it{p}_{T} (GeV/#it{c});#it{M} (GeV/#it{c}^{2})", 100, 0., 50., 200, minMass, maxMass);
     fOutput->Add(fInvMassVsPt);
 
     //Counter for Normalization
@@ -248,48 +250,120 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
         }
     }
 
-    // Creat MC gen acc histos
+    // Creat MC gen/reco histos
     if (fReadMC) {
+        int nBinsGen[3] = {100, 160, 360}; // pt, y, phi
+        double binMinsGen[3] = {0., -0.8, 0.};
+        double binMaxsGen[3] = {50., 0.8, 2*TMath::Pi()};
+
+        int nBinsRecoD[7] = {100, 160, 360, 200, 1000, 100, 100}; // pt, y, phi, mass, bdt output scores
+        double binMinsRecoD[7] = {0., -0.8, 0., minMass, 0., 0., 0.};
+        double binMaxsRecoD[7] = {50., 0.8, 2*TMath::Pi(), maxMass, 1., 1., 1.};
+
+        int nBinsRecoV0[7] = {100, 160, 360, 200, 100, 100, 10}; // pt, y, phi, mass, cosp, radius, min dau dca
+
         switch (fDecChannel) {
             case kDplustoKpipi:
             {
                 std::array<std::vector<int>, 2> pdgReso = {std::vector<int>{435, 10433}, std::vector<int>{}}; 
+                std::set<int> pdgResoAllDecays{};
+                for (auto &array: pdgReso) {
+                    pdgResoAllDecays.insert(array.begin(), array.end());
+                }
+                for (auto &pdg: pdgResoAllDecays) {
+                    fOutput->Add(new TH2F(Form("hPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                    fOutput->Add(new TH2F(Form("hNonPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                }
                 for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
                     if (fEnableV0[iV0]) {
                         for (auto iReso{0u}; iReso<pdgReso[iV0].size(); ++iReso) {
-                            fHistMCGenAccPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 100., -1., 1.));
-                            fHistMCGenAccNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 100., -1., 1.));
+                            fOutput->Add(new TH2F(Form("hPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 411 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
+                            fOutput->Add(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_411_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 411 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
                         }
                     }
                 }
+
+                fHistMCGenDmeson[0] = new THnSparseF("hPromptDmesonMCGen_411", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
+                fHistMCGenDmeson[1] = new THnSparseF("hNonPromptDmesonMCGen_411", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
+                fHistMCRecoDmeson[0] = new THnSparseF("hPromptDmesonMCReco_411", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
+                fHistMCRecoDmeson[1] = new THnSparseF("hNonPromptDmesonMCReco_411", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
+                fOutput->Add(fHistMCGenDmeson[0]);
+                fOutput->Add(fHistMCGenDmeson[1]);
+                fOutput->Add(fHistMCRecoDmeson[0]);
+                fOutput->Add(fHistMCRecoDmeson[1]);
+
                 break;
             }
             case kDstartoD0pi:
             {
                 std::array<std::vector<int>, 2> pdgReso = {std::vector<int>{435, 10433}, std::vector<int>{}}; 
+                std::set<int> pdgResoAllDecays{};
+                for (auto &array: pdgReso) {
+                    pdgResoAllDecays.insert(array.begin(), array.end());
+                }
+                for (auto &pdg: pdgResoAllDecays) {
+                    fOutput->Add(new TH2F(Form("hPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                    fOutput->Add(new TH2F(Form("hNonPromptMCGenPtVsY_%d", pdg), Form("%d all decays ;#it{p}_{T} (GeV/#it{c});#it{y}", pdg), 100, 0., 50., 100., -1., 1.));
+                }
                 for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
                     if (fEnableV0[iV0]) {
                         for (auto iReso{0u}; iReso<pdgReso[iV0].size(); ++iReso) {
-                            fHistMCGenAccPrompt.push_back(new TH2F(Form("hPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 100., -1., 1.));
-                            fHistMCGenAccNonPrompt.push_back(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 100., -1., 1.));
+                            fOutput->Add(new TH2F(Form("hPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 413 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
+                            fOutput->Add(new TH2F(Form("hNonPromptMCGenPtVsY_%d_to_413_%d", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), Form("%d #rightarrow 413 %d;#it{p}_{T} (GeV/#it{c});#it{y}", pdgReso[iV0][iReso], kPdgV0IDs[iV0]), 100, 0., 50., 100., -1., 1.));
                         }
                     }
                 }
+
+                fHistMCGenDmeson[0] = new THnSparseF("hPromptDmesonMCGen_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
+                fHistMCGenDmeson[1] = new THnSparseF("hNonPromptDmesonMCGen_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
+                fHistMCRecoDmeson[0] = new THnSparseF("hPromptDmesonMCReco_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#Delta#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt;", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
+                fHistMCRecoDmeson[1] = new THnSparseF("hNonPromptDmesonMCReco_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#Delta#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt;", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
+                fOutput->Add(fHistMCGenDmeson[0]);
+                fOutput->Add(fHistMCGenDmeson[1]);
+                fOutput->Add(fHistMCRecoDmeson[0]);
+                fOutput->Add(fHistMCRecoDmeson[1]);
+
                 break;
             }
         }
-        for (auto iHist{0u}; iHist<fHistMCGenAccPrompt.size(); ++iHist) {
-            fOutput->Add(fHistMCGenAccPrompt[iHist]);
-            fOutput->Add(fHistMCGenAccNonPrompt[iHist]);
+
+        // histos for V0s
+        for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
+            if (fEnableV0[iV0]) {
+
+                double minMassV0 = 0., maxMassV0 = 0.;
+                switch(iV0) {
+                    case kK0S:
+                    {
+                        minMassV0 = 0.45;
+                        maxMassV0 = 0.55;
+                        break;
+                    }
+                    case kLambda:
+                    {
+                        minMassV0 = 1.0;
+                        maxMassV0 = 1.2;
+                        break;
+                    }
+                }
+
+                double binMinsRecoV0[7] = {0., -0.8, 0., minMassV0, 0.9, 0., 0.};
+                double binMaxsRecoV0[7] = {50., 0.8, 2*TMath::Pi(), maxMassV0, 1., 10., 0.1};
+
+                fHistMCGenV0[iV0] = new THnSparseF(Form("hV0MCGen_%d", kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
+                fHistMCRecoV0[iV0] = new THnSparseF(Form("hV0MCReco_%d", kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#it{M} (GeV/#it{c}^{2}); cos(#vartheta_{P}); radius (cm); min daughter DCA (cm);", 7, nBinsRecoV0, binMinsRecoV0, binMaxsRecoV0);
+                fOutput->Add(fHistMCGenV0[iV0]);
+                fOutput->Add(fHistMCRecoV0[iV0]);
+            }
         }
     }
 
     PostData(1, fOutput);
 
     if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0))
-        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:pt_track:charge_track:id_track:signal_track:nsigma_tpc_track:nsigma_tof_track:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D");
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D:pt_track:charge_track:id_track:signal_track:nsigma_tpc_track:nsigma_tof_track:percentile_V0M");
     else 
-        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:inv_mass_v0:pt_v0:charge_v0:id_v0:signal_v0:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D");
+        fNtupleCharmReso = new TNtuple("fNtupleCharmReso", "fNtupleCharmReso", "delta_inv_mass_reso:pt_reso:signal_reso:inv_mass_D:pt_D:charge_D:origin_D:outputscore_bkg_D:outputscore_prompt_D:outputscore_fd_D:inv_mass_v0:pt_v0:charge_v0:id_v0:signal_v0:cosp_v0:declen_xy_v0:dca_dau_min_v0:percentile_V0M");
 
     PostData(4, fNtupleCharmReso);
 
@@ -372,7 +446,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
     // fix for temporary bug in ESDfilter
     // the AODs with null vertex pointer didn't pass the PhysSel
-    if (!fAOD->GetPrimaryVertex() || TMath::Abs(fAOD->GetMagneticField()) < 0.001)
+    if (!fAOD->GetPrimaryVertex() || std::abs(fAOD->GetMagneticField()) < 0.001)
     {
         PostData(1, fOutput);
         return;
@@ -401,6 +475,11 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
     TClonesArray *arrayMC = nullptr;
     AliAODMCHeader *mcHeader = nullptr;
+
+    float centrality = -999.;
+    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+    if(multSelection)
+        centrality = multSelection->GetMultiplicityPercentile("V0M");
 
     // load MC particles
     if (fReadMC)
@@ -453,8 +532,12 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             chHadIdx.push_back(iCand);
     }
 
-    if (chHadIdx.size() == 0) // we don't have charm hadrons
+    if (chHadIdx.size() == 0 && !fReadMC) // we don't have charm hadrons
         return;
+
+    const AliVVertex* primVtx = fAOD->GetPrimaryVertex();
+    double posPrimVtx[3];
+    primVtx->GetXYZ(posPrimVtx);
 
     AliAODPidHF *pidHF = fRDCuts->GetPidHF();
 
@@ -476,20 +559,20 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 selectedTrackIds.push_back(id);
                 nSigmaTPC.push_back(nSigmaTrkTPC);
                 nSigmaTOF.push_back(nSigmaTrkTOF);
+                std::array<bool, kNumBachIDs> isSignal = {false, false, false, false};
                 if (fReadMC) { // match to MC signals
-                    std::array<bool, kNumBachIDs> isSignal = {false, false, false, false};
                     if (track->GetLabel() >= 0) {
                         AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(track->GetLabel()));
                         int pdgBach = part->GetPdgCode();
                         for (int iHypo{0}; iHypo<kNumBachIDs; ++iHypo) {
-                            if (TMath::Abs(pdgBach) == kPdgBachIDs[iHypo]) {
+                            if (std::abs(pdgBach) == kPdgBachIDs[iHypo]) {
                                 isSignal[iHypo] = true;
                                 break;
                             }
                         }
                     }
-                    selectedTrackSignal.push_back(isSignal);
                 }
+                selectedTrackSignal.push_back(isSignal);
             }
         }
     }
@@ -498,7 +581,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     std::vector<int> selectedV0Indices{};
     std::vector<int> selectedV0Ids{};
     std::vector<std::array<bool, kNumV0IDs>> selectedV0Signal{};
-    std::vector<std::array<bool, kNumV0IDs>> selectedV0Labels{};
+    std::vector<std::array<int, kNumV0IDs>> selectedV0Labels{};
     if (std::accumulate(fEnableV0.begin(), fEnableV0.end(), 0)) {
         for (int iV0{0}; iV0 < fAOD->GetNumberOfV0s(); ++iV0) {
             AliAODv0 *v0 = fAOD->GetV0(iV0);
@@ -507,9 +590,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             {
                 selectedV0Indices.push_back(iV0);
                 selectedV0Ids.push_back(id);
+                std::array<bool, kNumV0IDs> isSignal = {false, false};
+                std::array<int, kNumV0IDs> mcLab = {-1, -1};
                 if (fReadMC) { // match to MC signals
-                    std::array<bool, kNumV0IDs> isSignal = {false, false};
-                    std::array<int, kNumV0IDs> mcLab = {-1, -1};
                     if (TESTBIT(id, kK0S)) {
                         int pdgDaus[2] = {211, 211};
                         mcLab[kK0S] = v0->MatchToMC(kPdgV0IDs[kK0S], arrayMC, 2, pdgDaus);
@@ -522,8 +605,29 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                         if (mcLab[kLambda] >= 0)
                             isSignal[kLambda] = true;
                     }
-                    selectedV0Signal.push_back(isSignal);
+                    for(auto iHypo{0u}; iHypo<kPdgV0IDs.size(); ++iHypo) {
+                        if (isSignal[iHypo]) {
+                            double massV0 = -1.;
+                            if (iHypo == kK0S) {
+                                massV0 = v0->MassK0Short();
+                            } else if (iHypo == kLambda) {
+                                AliAODMCParticle *partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcLab[kLambda]));
+                                if (partV0->GetPdgCode() > 0) {
+                                    massV0 = v0->MassLambda();
+                                } else {
+                                    massV0 = v0->MassAntiLambda();
+                                }
+                            }
+                            double radV0 = std::sqrt(v0->Xv()*v0->Xv() + v0->Yv()*v0->Yv());
+                            double minDCAV0 = (std::abs(v0->DcaPosToPrimVertex()) < std::abs(v0->DcaNegToPrimVertex())) ? std::abs(v0->DcaPosToPrimVertex()) : std::abs(v0->DcaNegToPrimVertex());
+                            double array4Sparse[7] = {v0->Pt(), v0->Y(kPdgV0IDs[iHypo]), v0->Phi(), massV0, v0->CosPointingAngle(posPrimVtx), radV0, minDCAV0};
+                            fHistMCRecoV0[iHypo]->Fill(array4Sparse);
+                            break;
+                        }
+                    }
                 }
+                selectedV0Signal.push_back(isSignal);
+                selectedV0Labels.push_back(mcLab);
             }
         }
     }
@@ -593,7 +697,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 if (fDecChannel == kD0toKpi) // check if signal is reflected
                 {
                     int labDau0 = dynamic_cast<AliAODTrack *>(dMeson->GetDaughter(0))->GetLabel();
-                    AliAODMCParticle *dau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(TMath::Abs(labDau0)));
+                    AliAODMCParticle *dau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(std::abs(labDau0)));
                     pdgCode0 = std::abs(dau0->GetPdgCode());
                 }
             }
@@ -606,10 +710,12 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
         int chargeD[2] = {0, 0};
         std::array<ROOT::Math::PxPyPzMVector, 2> fourVecD{};
         double massD[2] = {-1, -1};
+        double rapidity = -999.;
         double massD4Delta[2] = {-1, -1};
         switch(fDecChannel) {
             case kD0toKpi:
             {
+                rapidity = dMeson->Y(421);
                 double massDau[2] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass()};
                 for (int iProng=0; iProng<2; ++iProng) {
                     fourVecD[0] += ROOT::Math::PxPyPzMVector(dMeson->PxProng(iProng), dMeson->PyProng(iProng), dMeson->PzProng(iProng), massDau[iProng]);
@@ -629,6 +735,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             }
             case kDplustoKpipi:
             {
+                rapidity = dMeson->Y(411);
                 double massDau[3] = {TDatabasePDG::Instance()->GetParticle(211)->Mass(), TDatabasePDG::Instance()->GetParticle(321)->Mass(), TDatabasePDG::Instance()->GetParticle(211)->Mass()};
                 for (int iProng=0; iProng<3; ++iProng) {
                     fourVecD[0] += ROOT::Math::PxPyPzMVector(dMeson->PxProng(iProng), dMeson->PyProng(iProng), dMeson->PzProng(iProng), massDau[iProng]);
@@ -640,6 +747,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             }
             case kDstartoD0pi:
             {
+                rapidity = dMeson->Y(413);
                 fourVecD[0] += ROOT::Math::PxPyPzMVector(dMeson->PxProng(0), dMeson->PyProng(0), dMeson->PzProng(0), TDatabasePDG::Instance()->GetParticle(211)->Mass());
                 AliAODRecoDecayHF2Prong* dZero = nullptr;
                 if(dMeson->GetIsFilled()<1)
@@ -665,6 +773,51 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             }
         }
 
+        if (fReadMC && labD >= 0) 
+        {
+            std::vector<double> arr4Sparse = {dMeson->Pt(), rapidity, dMeson->Phi()};
+            if (fDecChannel != kD0toKpi || ((isSelected == 1 || isSelected == 3) && pdgCode0 == 211)) {
+                arr4Sparse.push_back(massD[0]);
+                if (fApplyML) {
+                    if (fDependOnMLSelector) {
+                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][0]);
+                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][1]);
+                        arr4Sparse.push_back(fScoresFromMLSelector[iCand][2]);
+                    } else {
+                        arr4Sparse.push_back(scores[0]);
+                        arr4Sparse.push_back(scores[1]);
+                        arr4Sparse.push_back(scores[2]);
+                    } 
+                } else {
+                    arr4Sparse.push_back(-999.);
+                    arr4Sparse.push_back(-999.);
+                    arr4Sparse.push_back(-999.);
+                }
+            }
+            else if (fDecChannel == kD0toKpi && isSelected >= 2 && pdgCode0 == 321) {
+                arr4Sparse.push_back(massD[1]);
+                if (fApplyML) {
+                    if (fDependOnMLSelector) {
+                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][0]);
+                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][1]);
+                        arr4Sparse.push_back(fScoresFromMLSelectorSecond[iCand][2]);
+                    } else {
+                        arr4Sparse.push_back(scoresSecond[0]);
+                        arr4Sparse.push_back(scoresSecond[1]);
+                        arr4Sparse.push_back(scoresSecond[2]);
+                    }
+                }  else {
+                    arr4Sparse.push_back(-999.);
+                    arr4Sparse.push_back(-999.);
+                    arr4Sparse.push_back(-999.);
+                }
+            }
+            if (orig == 4)
+                fHistMCRecoDmeson[0]->Fill(arr4Sparse.data());
+            else if (orig == 5)
+                fHistMCRecoDmeson[1]->Fill(arr4Sparse.data());
+        }
+
         // loop over tracks
         for (std::size_t iTrack{0}; iTrack < selectedTrackIndices.size(); ++iTrack) {
             AliAODTrack* track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(selectedTrackIndices[iTrack]));
@@ -683,12 +836,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                         if (selectedTrackSignal[iTrack][iHypo]) { // bachelor is signal
                             AliAODMCParticle *partD = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labD));
                             AliAODMCParticle *partBach = dynamic_cast<AliAODMCParticle *>(arrayMC->At(track->GetLabel()));
-                            int motherD = partD->GetMother();
-                            int motherBach = partBach->GetMother();
-                            if (motherD == motherBach) {
-                                AliAODMCParticle *partReso = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherD));
-                                signalReso = partReso->GetPdgCode();
-                            }
+                            signalReso = MatchResoToMC(partD, partBach, arrayMC);
                         }
                     }
                 }
@@ -707,9 +855,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo, -1)) {
                         std::vector<float> arr4Tuple{};
                         if(fDependOnMLSelector)
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[0]), float(dMeson->Pt()), float(chargeD[0]), float(orig), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), float(fScoresFromMLSelector[iCand][0]), float(fScoresFromMLSelector[iCand][1]), float(fScoresFromMLSelector[iCand][2])};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[0]), float(dMeson->Pt()), float(chargeD[0]), float(orig), float(fScoresFromMLSelector[iCand][0]), float(fScoresFromMLSelector[iCand][1]), float(fScoresFromMLSelector[iCand][2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), centrality};
                         else
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[0]), float(dMeson->Pt()), float(chargeD[0]), float(orig), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), float(scores[0]), float(scores[1]), float(scores[2])};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[0]), float(dMeson->Pt()), float(chargeD[0]), float(orig), float(scores[0]), float(scores[1]), float(scores[2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), centrality};
                         fNtupleCharmReso->Fill(arr4Tuple.data());
                     }
                 }
@@ -721,9 +869,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     if (IsInvMassResoSelected(deltaInvMassReso, iHypo, -1)) {
                         std::vector<float> arr4Tuple{};
                         if(fDependOnMLSelector)
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[1]), float(dMeson->Pt()), float(chargeD[1]), float(orig), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), float(fScoresFromMLSelectorSecond[iCand][0]), float(fScoresFromMLSelectorSecond[iCand][1]), float(fScoresFromMLSelectorSecond[iCand][2])};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[1]), float(dMeson->Pt()), float(chargeD[1]), float(orig), float(fScoresFromMLSelectorSecond[iCand][0]), float(fScoresFromMLSelectorSecond[iCand][1]), float(fScoresFromMLSelectorSecond[iCand][2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), centrality};
                         else
-                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[1]), float(dMeson->Pt()), float(chargeD[1]), float(orig), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), float(scoresSecond[0]), float(scoresSecond[1]), float(scoresSecond[2])};
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso), float(fourVecReso.Pt()), float(signalReso), float(massD[1]), float(dMeson->Pt()), float(chargeD[1]), float(orig), float(scoresSecond[0]), float(scoresSecond[1]), float(scoresSecond[2]), float(track->Pt()), float(track->Charge()), float(kPdgBachIDs[iHypo]), float(selectedTrackSignal[iTrack][iHypo]), float(nSigmaTPC[iTrack][iHypo]), float(nSigmaTOF[iTrack][iHypo]), centrality};
                         fNtupleCharmReso->Fill(arr4Tuple.data());
                     }
                 }
@@ -744,9 +892,13 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 if (!trackVV0)
                     continue;
                 std::unique_ptr<AliNeutralTrackParam> trackV0(new AliNeutralTrackParam(trackVV0));
-                trackV0.get()->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), kVeryBig);
+
+                trackV0.get()->PropagateToDCA(primVtx, fAOD->GetMagneticField(), kVeryBig);
 
                 double massV0 = TDatabasePDG::Instance()->GetParticle(kPdgV0IDs[iHypo])->Mass();
+                double radV0 = std::sqrt(v0->Xv()*v0->Xv() + v0->Yv()*v0->Yv());
+                double minDCAV0 = (std::abs(v0->DcaPosToPrimVertex()) < std::abs(v0->DcaNegToPrimVertex())) ? std::abs(v0->DcaPosToPrimVertex()) : std::abs(v0->DcaNegToPrimVertex());
+
                 auto fourVecReso = ROOT::Math::PxPyPzMVector(trackV0.get()->Px(), trackV0.get()->Py(), trackV0.get()->Pz(), massV0);
                 double deltaInvMassReso[2] = {0., 0.};
                 bool isRefl[2] = {false, false};
@@ -782,26 +934,23 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                             }
                         }
 
-                        int signalReso = -1;
+                        int signalReso = 0;
                         if (fReadMC) {
-                            if (orig >= 4) { // D is signal
+                            if (std::abs(orig) >= 4) { // D is signal
                                 if (selectedV0Signal[iV0][iHypo]) { // V0 is signal
                                     AliAODMCParticle *partD = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labD));
                                     AliAODMCParticle *partV0 = dynamic_cast<AliAODMCParticle *>(arrayMC->At(selectedV0Labels[iV0][iHypo]));
-                                    int motherD = partD->GetMother();
-                                    int motherV0 = partV0->GetMother();
-                                    if (motherD == motherV0) {
-                                        AliAODMCParticle *partReso = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherD));
-                                        signalReso = partReso->GetPdgCode();
-                                    }
+                                    signalReso = MatchResoToMC(partD, partV0, arrayMC);
                                 }
                             }
                         }
 
+                        std::vector<float> arr4Tuple{};
                         if(fDependOnMLSelector)
-                            fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), signalReso, massD[iMass], dMeson->Pt(), chargeD[iMass], orig, invMassV0, v0->Pt(), chargeV0, kPdgV0IDs[iHypo], selectedV0Signal[iV0][iHypo], fScoresFromMLSelector[iCand][0], fScoresFromMLSelector[iCand][1], fScoresFromMLSelector[iCand][2]);
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso[iMass]), float(fourVecReso.Pt()), float(signalReso), float(massD[iMass]), float(dMeson->Pt()), float(chargeD[iMass]), float(orig), float(fScoresFromMLSelector[iCand][0]), float(fScoresFromMLSelector[iCand][1]), float(fScoresFromMLSelector[iCand][2]), float(invMassV0), float(v0->Pt()), float(chargeV0), float(kPdgV0IDs[iHypo]), float(selectedV0Signal[iV0][iHypo]), float(v0->CosPointingAngle(posPrimVtx)), float(radV0), float(minDCAV0), centrality};
                         else
-                            fNtupleCharmReso->Fill(deltaInvMassReso[iMass], fourVecReso.Pt(), signalReso, massD[iMass], dMeson->Pt(), chargeD[iMass], orig, invMassV0, v0->Pt(), chargeV0, kPdgV0IDs[iHypo], selectedV0Signal[iV0][iHypo], scores[0], scores[1], scores[2]);
+                            arr4Tuple = std::vector<float>{float(deltaInvMassReso[iMass]), float(fourVecReso.Pt()), float(signalReso), float(massD[iMass]), float(dMeson->Pt()), float(chargeD[iMass]), float(orig), float(scores[0]), float(scores[1]), float(scores[2]), float(invMassV0), float(v0->Pt()), float(chargeV0), float(kPdgV0IDs[iHypo]), float(selectedV0Signal[iV0][iHypo]), float(v0->CosPointingAngle(posPrimVtx)), float(radV0), float(minDCAV0), centrality};
+                        fNtupleCharmReso->Fill(arr4Tuple.data());
                     }
                 }
             }
@@ -951,8 +1100,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
     {
         //variables for ML application
         int isMLsel = 0;
-        modelPred = {};
-        modelPredSecond = {};
+        modelPred.clear();
+        modelPredSecond.clear();
         double ptCand = dMeson->Pt();
 
         if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi)
@@ -997,7 +1146,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
             if(fDependOnMLSelector)
             {
                 std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptCand);
-                int bin = low - fPtLimsML.begin() - 1;
+                unsigned int bin = low - fPtLimsML.begin() - 1;
                 if(bin < 0)
                     bin = 0;
                 else if(bin > fPtLimsML.size()-2)
@@ -1030,21 +1179,20 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
         }
       
         if(modelPred.size() > modelPredSecond.size())
-            for(int iScore=0; iScore<modelPred.size(); iScore++)
+            for(auto iScore{0u}; iScore<modelPred.size(); ++iScore)
                 modelPredSecond.push_back(-9999.);
         else if(modelPred.size() < modelPredSecond.size())
-            for(int iScore=0; iScore<modelPredSecond.size(); iScore++)
+            for(auto iScore{0u}; iScore<modelPredSecond.size(); ++iScore)
                 modelPred.push_back(-9999.);
 
         return isMLsel;
     }
-    if (isSelected == 1 || isSelected == 3) {
+    if (fDecChannel != kD0toKpi || (isSelected == 1 || isSelected == 3)) {
         fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
     }
-    else if (isSelected >= 2) {
+    else if (fDecChannel == kD0toKpi && isSelected >= 2) {
         fInvMassVsPt->Fill(dMeson->Pt(), massD[1]);
     }
-
 
     return isSelected;
 }
@@ -1110,20 +1258,20 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
         return retVal;
 
 
-    if (( pTrack->GetTPCClusterInfo(2,1) < 70 ) || ( nTrack->GetTPCClusterInfo(2,1) ) < 70 )
+    if (( pTrack->GetTPCClusterInfo(2, 1) < 70 ) || ( nTrack->GetTPCClusterInfo(2, 1) ) < 70 )
         return retVal;
 
     //GetKinkIndex condition
-    if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 )
+    if( pTrack->GetKinkIndex(0) > 0 || nTrack->GetKinkIndex(0) > 0 )
         return retVal;
 
     //Findable clusters > 0 condition
-    if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 )
+    if( pTrack->GetTPCNclsF() <= 0 || nTrack->GetTPCNclsF() <= 0 )
         return retVal;
 
     //Compute ratio Crossed Rows / Findable clusters
-    double lPosTrackCrossedRowsOverFindable = pTrack->GetTPCClusterInfo(2,1) / ((double)(pTrack->GetTPCNclsF()));
-    double lNegTrackCrossedRowsOverFindable = nTrack->GetTPCClusterInfo(2,1) / ((double)(nTrack->GetTPCNclsF()));
+    double lPosTrackCrossedRowsOverFindable = pTrack->GetTPCClusterInfo(2, 1) / ((double)(pTrack->GetTPCNclsF()));
+    double lNegTrackCrossedRowsOverFindable = nTrack->GetTPCClusterInfo(2, 1) / ((double)(nTrack->GetTPCNclsF()));
     if (lPosTrackCrossedRowsOverFindable < 0.8 || lNegTrackCrossedRowsOverFindable < 0.8)
         return retVal;
 
@@ -1131,7 +1279,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
     double posPrimVtx[3];
     vtx->GetXYZ(posPrimVtx);
 
-    if (v0->DcaPosToPrimVertex() < 0.06 || v0->DcaNegToPrimVertex() < 0.06)
+    if (v0->DcaPosToPrimVertex() < 0.02 || v0->DcaNegToPrimVertex() < 0.02)
         return retVal;
 
     // we want only primary V0s
@@ -1143,13 +1291,13 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsV0Selected(AliAODv0 *&v0)
         return retVal;
 
     double rad = std::sqrt(v0->Xv()*v0->Xv() + v0->Yv()*v0->Yv());
-    if (rad < 0.5 || rad > 100.)
+    if (rad < 0.1 || rad > 100.)
         return retVal;
 
     double invMasses[kNumV0IDs] = {v0->MassK0Short(), v0->MassLambda()};
     double invMassesAntiPart[kNumV0IDs] = {-999., v0->MassAntiLambda()};
     double y[kNumV0IDs] = {v0->RapK0Short(), v0->RapLambda()};
-    double cpaMin[kNumV0IDs] = {0.97, 0.99};
+    double cpaMin[kNumV0IDs] = {0.9, 0.95};
     for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo)
     {
         if (!fEnableV0[iHypo])
@@ -1298,6 +1446,72 @@ bool AliAnalysisTaskSEHFResonanceBuilder::IsDaughterTrack(AliAODTrack *&track, A
 }
 
 //________________________________________________________________________
+int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, AliAODMCParticle *partLight, TClonesArray* arrayMC) {
+
+    std::vector<int> modthersD{};
+    std::vector<int> modthersLight{};
+
+    if (!partD || !partLight) {
+        return 0;
+    }
+
+    int motherD = partD->GetMother();
+    while(motherD >= 0) {
+        AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherD));
+        if (!partMother) {
+            motherD = -1;
+            break;
+        }
+        int pdgMother = partMother->GetPdgCode();
+        if ((std::abs(pdgMother)/100 == 4) || (std::abs(pdgMother)/1000 == 4) || ((std::abs(pdgMother)-10000)/100 == 4) || ((std::abs(pdgMother)-20000)/100 == 4)) // we are interested in charm resonances
+            modthersD.push_back(motherD);
+        motherD = partMother->GetMother();
+    }
+    int motherLight = partLight->GetMother();
+    while(motherLight >= 0) {
+        AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherLight));
+        if (!partMother) {
+            motherLight = -1;
+            break;
+        }
+        int pdgMother = partMother->GetPdgCode();
+        if ((std::abs(pdgMother)/100 == 4) || (std::abs(pdgMother)/1000 == 4) || ((std::abs(pdgMother)-10000)/100 == 4) || ((std::abs(pdgMother)-20000)/100 == 4)) // we are interested in charm resonances
+            modthersLight.push_back(motherLight);
+        motherLight = partMother->GetMother();
+    }
+    std::sort(modthersD.begin(), modthersD.end());
+    std::sort(modthersLight.begin(), modthersLight.end());
+
+    std::vector<int> commonMothers{};
+    std::set_intersection(modthersD.begin(), modthersD.end(), modthersLight.begin(), modthersLight.end(), std::back_inserter(commonMothers));
+    if (commonMothers.size() < 1)
+        return 0;
+
+    double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
+    for (auto iMother{commonMothers.size()-1}; iMother>=0; ++iMother) {
+        AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(commonMothers[iMother]));
+        if(!partMother) {
+            continue;
+        }
+        int pdgMother = partMother->GetPdgCode();
+        // let's check also momentum conservation
+        double momMother[3] = {partMother->Px(), partMother->Py(), partMother->Pz()};
+        bool isMomConserved = true;
+        for (int iEl{0}; iEl<3; ++iEl) {
+            if (std::abs(momMother[iEl]-momSumDaughters[iEl]) / (std::abs(momMother[iEl]) + 1.e-13) > 0.0001) {
+                isMomConserved = false;
+                break;
+            }
+        }
+        if (isMomConserved) {
+            return pdgMother;
+        }
+    }
+
+    return 0;
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader) {
 
     std::array<std::vector<int>, 2> pdgReso{};
@@ -1321,67 +1535,151 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
         }
     }
 
+    std::set<int> pdgResoAllDecays{};
+    for (auto &array: pdgReso) {
+        pdgResoAllDecays.insert(array.begin(), array.end());
+    }
+
     double zMCVertex = mcHeader->GetVtxZ(); // vertex MC
-    if (TMath::Abs(zMCVertex) <= fRDCuts->GetMaxVtxZ()) {
+    if (std::abs(zMCVertex) <= fRDCuts->GetMaxVtxZ()) {
         for (int iPart{0}; iPart < arrayMC->GetEntriesFast(); ++iPart) {
             AliAODMCParticle *mcPart = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iPart));
-            std::array<int, 2> decay{}; 
-            bool isGoodReso = false;
             int pdgPart = mcPart->GetPdgCode();
-            int labDau[5] = {-1, -1, -1, -1, -1};
+            int whichV0 = -1;
 
-            for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
-                if (fEnableV0[iV0]) {
-                    for (auto iReso{0u}; iReso<pdgReso[iV0].size(); ++iReso) {
-                        if (TMath::Abs(pdgPart) == pdgReso[iV0][iReso]) {
-                            isGoodReso = true;
+            for (auto iV0{0u}; iV0<kPdgV0IDs.size(); ++iV0) {
+                if (std::abs(pdgPart) == kPdgV0IDs[iV0] && fEnableV0[iV0]) {
+                    switch(iV0) {
+                        case kK0S:
+                        {
+                            if (mcPart->GetNDaughters() != 2)
+                                continue;
+                            AliAODMCParticle *dau[2];
+                            dau[0] = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mcPart->GetDaughterLabel(0)));
+                            dau[1] = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mcPart->GetDaughterLabel(1)));
+                            if (std::abs(dau[0]->GetPdgCode()) != 211 || std::abs(dau[1]->GetPdgCode()) != 211)
+                                continue;
+                            break;
+                        }
+                        case kLambda:
+                        {
+                            if (mcPart->GetNDaughters() != 2)
+                                continue;
+                            AliAODMCParticle *dau[2];
+                            dau[0] = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mcPart->GetDaughterLabel(0)));
+                            dau[1] = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mcPart->GetDaughterLabel(1)));
+                            if (!(std::abs(dau[0]->GetPdgCode()) == 211 && std::abs(dau[1]->GetPdgCode()) == 2212) && !(std::abs(dau[0]->GetPdgCode()) == 2212 && std::abs(dau[1]->GetPdgCode()) == 211))
+                                continue;
+
                             break;
                         }
                     }
+                    whichV0 = iV0;
+                    break;
                 }
             }
 
-            if (isGoodReso) {
+            if (whichV0 >= 0) {
+                double rapid = mcPart->Y();
+                if (std::abs(rapid) > 0.8)
+                    continue;
 
+                double arr4Sparse[3] = {mcPart->Pt(), mcPart->Y(), mcPart->Phi()};
+                fHistMCGenV0[whichV0]->Fill(arr4Sparse);
+            }
+            else if (std::abs(pdgPart) == fPdgD) {
+                int isGoodDmesonDecay = -1;
+                int labDau[3] = {-1, -1, -1};
                 switch(fDecChannel) {
                     case kDplustoKpipi:
                     {
-                        if (fEnableV0[kK0S]) {
-                            decay[kK0S] = AliVertexingHFUtils::CheckResoToDplusK0SDecay(arrayMC, mcPart, labDau);
-                        }
-                        decay[kLambda] = -1;
+                        isGoodDmesonDecay = AliVertexingHFUtils::CheckDplusDecay(arrayMC, mcPart, labDau);
                         break;
                     }
                     case kDstartoD0pi:
                     {
-                        if (fEnableV0[kK0S]) {
-                            decay[kK0S] = AliVertexingHFUtils::CheckResoToDstarK0SDecay(arrayMC, mcPart, labDau);
-                        }
-                        decay[kLambda] = -1;
+                        isGoodDmesonDecay = AliVertexingHFUtils::CheckDstarDecay(arrayMC, mcPart, labDau);
                         break;
                     }
                 }
 
-                int whichV0 = -1;
-                for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
-                    if (fEnableV0[iV0] && decay[iV0]) {
-                        whichV0 = iV0;
+                if (isGoodDmesonDecay < 0)
+                    continue;
+
+                double rapid = mcPart->Y();
+                if (std::abs(rapid) > 0.8)
+                    continue;
+
+                double arr4Sparse[3] = {mcPart->Pt(), rapid, mcPart->Phi()};
+                int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true);
+                if (orig == 4) {
+                    fHistMCGenDmeson[0]->Fill(arr4Sparse);
+                }
+                else if (orig == 5) {
+                    fHistMCGenDmeson[1]->Fill(arr4Sparse);
+                }
+            }
+            else 
+            {
+                bool isGoodReso = false;
+                for (auto &pdg: pdgResoAllDecays) {
+                    if (std::abs(pdgPart) == pdg) {
+                        isGoodReso = true;
+                        break;
                     }
                 }
 
-                if (decay[whichV0] > 0) {
-                    bool isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
-                    if (!isParticleFromOutOfBunchPileUpEvent) {
-                        int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true);
-                        double pt = mcPart->Pt();
-                        double rapid = mcPart->Y();
-                        if (orig == 4) {
-                            dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d_to_%d_%d", TMath::Abs(decay[whichV0]), fPdgD, kPdgV0IDs[whichV0])))->Fill(pt, rapid);
+                std::array<int, 2> decay{}; 
+                int labDau[5] = {-1, -1, -1, -1, -1};
+                if (isGoodReso) {
+                    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC))
+                        continue;
+
+                    int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true);
+
+                    double pt = mcPart->Pt();
+                    double rapid = mcPart->Y();
+
+                    if (orig < 4)
+                        continue;
+
+                    if (orig == 4) {
+                        dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPromptMCGenPtVsY_%d", std::abs(pdgPart))))->Fill(pt, rapid);
+                    }
+                    else if (orig == 5) {
+                        dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d", std::abs(pdgPart))))->Fill(pt, rapid);
+                    }
+
+                    switch(fDecChannel) {
+                        case kDplustoKpipi:
+                        {
+                            if (fEnableV0[kK0S]) {
+                                decay[kK0S] = AliVertexingHFUtils::CheckResoToDplusK0SDecay(arrayMC, mcPart, labDau);
+                            }
+                            decay[kLambda] = -1; //TODO: implement check for Xic* -> D+Lambda
+                            break;
                         }
-                        else if (orig == 5) {
-                            dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d_to_%d_%d", TMath::Abs(decay[whichV0]), fPdgD, kPdgV0IDs[whichV0])))->Fill(pt, rapid);
+                        case kDstartoD0pi:
+                        {
+                            if (fEnableV0[kK0S]) {
+                                decay[kK0S] = AliVertexingHFUtils::CheckResoToDstarK0SDecay(arrayMC, mcPart, labDau);
+                            }
+                            decay[kLambda] = -1; //TODO: implement check for Xic* -> D*Lambda
+                            break;
                         }
                     }
+
+                    for (auto iV0{0u}; iV0<fEnableV0.size(); ++iV0) {
+                        if (decay[iV0] > 0 && fEnableV0[iV0]) {
+                            if (orig == 4) {
+                                dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPromptMCGenPtVsY_%d_to_%d_%d", std::abs(decay[iV0]), fPdgD, kPdgV0IDs[iV0])))->Fill(pt, rapid);
+                            }
+                            else if (orig == 5) {
+                                dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNonPromptMCGenPtVsY_%d_to_%d_%d", std::abs(decay[iV0]), fPdgD, kPdgV0IDs[iV0])))->Fill(pt, rapid);
+                            }
+                        }
+                    }
+
                 }
             }
         }

@@ -137,6 +137,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fRequireReloadOnRunChange(kFALSE),
   fRequirePositive(kFALSE),
   fUse2DEff(kFALSE),
+  fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
   EventNo(0),
   fConstEff(0.8),
@@ -239,6 +240,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fRequireReloadOnRunChange(kFALSE),
   fRequirePositive(kFALSE),
   fUse2DEff(kFALSE),
+  fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
   EventNo(0),
   fConstEff(0.8),
@@ -361,8 +363,21 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     fRndm = new TRandom(0);
     fRequireReloadOnRunChange = kFALSE;
     fWeightList = (TList*)GetInputData(1);
-    fWeights = new AliGFWWeights*[1];
+    fWeights = new AliGFWWeights*[4];
     const char* species[] = {"_ch","_pi","_ka","_pr"};
+    if(fUsePIDNUA){
+      if(!fWeightList) AliFatal("NUA list not set or does not exist!\n");
+      TString lBase(""); //base
+      TString lSubfix(""); //subfix
+      for(int i(0);i<4;++i) {
+        lBase = Form("weight%s",species[i]); 
+        lSubfix = fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():"";
+        lBase+=lSubfix;
+        fWeights[i] = (AliGFWWeights*)fWeightList->FindObject(lBase.Data());
+        if(!fWeights[i]) AliFatal(Form("Weights %s not not found in the list provided!\n",lBase.Data()));
+        fWeights[i]->CreateNUA();
+      }
+    }
     if(!fIsMC) { //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
       fEfficiencyList = (TList*)GetInputData(2+fEfficiencyIndex); //Efficiencies start from input slot 2
       if(fUse2DEff) {
@@ -397,6 +412,8 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
       vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
       for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
+      fIPDist = new TH1D("IPDistribution","Impact parameter distribution; b; N(events)",fIPAxis->GetNbins(),GetBinsFromAxis(fIPAxis));
+      fptVarList->Add(fIPDist);
     }
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
     fptVarList = new TList();
@@ -415,6 +432,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
         fPtCont[i]->InitializeSubsamples(fNBootstrapProfiles);
       }
     }
+    printf("a\n");
     if(fFillMptPowers) {
       fMpt = new AliProfileBS*[8*4];
       for(int i(0);i<endPID;++i) {
@@ -438,10 +456,8 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       if(fNBootstrapProfiles) for(int i(0);i<8*endPID;++i) fMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
     }
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
-    fIPDist = new TH1D("IPDistribution","Impact parameter distribution; b; N(events)",fIPAxis->GetNbins(),GetBinsFromAxis(fIPAxis));
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
     fptVarList->Add(fMultiDist);
-    fptVarList->Add(fIPDist);
     fptVarList->Add(fV0MMulti);
     fMultiVsV0MCorr = new TH2D*[2];
     fMultiVsV0MCorr[0] = new TH2D("MultVsV0M_BeforeConsistency","MultVsV0M_BeforeConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
@@ -532,30 +548,36 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     //Covariance
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    fCovariance = new AliProfileBS*[11*4];
+    fCovariance = new AliProfileBS*[Ncovpfs*4];
     for(Int_t i=0;i<endPID;i++) {
-      fCovariance[11*i] = new AliProfileBS(Form("covmpt_%s",spNames[i].Data()),Form("covmpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[11*i]);
-      fCovariance[1+11*i] = new AliProfileBS(Form("covnopt_%s",spNames[i].Data()),Form("covnopt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[1+11*i]); 
-      fCovariance[2+11*i] = new AliProfileBS(Form("covmpt_v3_%s",spNames[i].Data()),Form("covmpt_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[2+11*i]);
-      fCovariance[3+11*i] = new AliProfileBS(Form("covnopt_v3_%s",spNames[i].Data()),Form("covnopt_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[3+11*i]);
-      fCovariance[4+11*i] = new AliProfileBS(Form("covmpt_v23_%s",spNames[i].Data()),Form("covmpt_v23_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[4+11*i]);
-      fCovariance[5+11*i] = new AliProfileBS(Form("covnopt_v23_%s",spNames[i].Data()),Form("covnopt_v23_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[5+11*i]);
-      fCovariance[6+11*i] = new AliProfileBS(Form("covmpt_v24_%s",spNames[i].Data()),Form("covmpt_v24_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[6+11*i]);
-      fCovariance[7+11*i] = new AliProfileBS(Form("covnopt_v24_%s",spNames[i].Data()),Form("covnopt_v24_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[7+11*i]);
-      fCovariance[8+11*i] = new AliProfileBS(Form("covpt2_v2_%s",spNames[i].Data()),Form("covpt2_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[8+11*i]);
-      fCovariance[9+11*i] = new AliProfileBS(Form("covpt3_v2_%s",spNames[i].Data()),Form("covpt3_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[9+11*i]);
-      fCovariance[10+11*i] = new AliProfileBS(Form("covpt4_v2_%s",spNames[i].Data()),Form("covpt4_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariance[10+11*i]);
+      fCovariance[Ncovpfs*i] = new AliProfileBS(Form("covmpt_%s",spNames[i].Data()),Form("covmpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[Ncovpfs*i]);
+      fCovariance[1+Ncovpfs*i] = new AliProfileBS(Form("covnopt_%s",spNames[i].Data()),Form("covnopt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[1+Ncovpfs*i]); 
+      fCovariance[2+Ncovpfs*i] = new AliProfileBS(Form("covmpt_v3_%s",spNames[i].Data()),Form("covmpt_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[2+Ncovpfs*i]);
+      fCovariance[3+Ncovpfs*i] = new AliProfileBS(Form("covnopt_v3_%s",spNames[i].Data()),Form("covnopt_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[3+Ncovpfs*i]);
+      fCovariance[4+Ncovpfs*i] = new AliProfileBS(Form("covmpt_v23_%s",spNames[i].Data()),Form("covmpt_v23_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[4+Ncovpfs*i]);
+      fCovariance[5+Ncovpfs*i] = new AliProfileBS(Form("covnopt_v23_%s",spNames[i].Data()),Form("covnopt_v23_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[5+Ncovpfs*i]);
+      fCovariance[6+Ncovpfs*i] = new AliProfileBS(Form("covmpt_v24_%s",spNames[i].Data()),Form("covmpt_v24_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[6+Ncovpfs*i]);
+      fCovariance[7+Ncovpfs*i] = new AliProfileBS(Form("covnopt_v24_%s",spNames[i].Data()),Form("covnopt_v24_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[7+Ncovpfs*i]);
+      fCovariance[8+Ncovpfs*i] = new AliProfileBS(Form("covmpt_v34_%s",spNames[i].Data()),Form("covmpt_v34_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[8+Ncovpfs*i]);
+      fCovariance[9+Ncovpfs*i] = new AliProfileBS(Form("covnopt_v34_%s",spNames[i].Data()),Form("covnopt_v34_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[9+Ncovpfs*i]);
+      fCovariance[10+Ncovpfs*i] = new AliProfileBS(Form("covpt2_v2_%s",spNames[i].Data()),Form("covpt2_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[10+Ncovpfs*i]);
+      fCovariance[11+Ncovpfs*i] = new AliProfileBS(Form("covpt2_v3_%s",spNames[i].Data()),Form("covpt2_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[11+Ncovpfs*i]);
+      fCovariance[12+Ncovpfs*i] = new AliProfileBS(Form("covpt3_v2_%s",spNames[i].Data()),Form("covpt3_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[12+Ncovpfs*i]);
+      fCovariance[13+Ncovpfs*i] = new AliProfileBS(Form("covpt4_v2_%s",spNames[i].Data()),Form("covpt4_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[13+Ncovpfs*i]);
       if(fFillMptPowers) {
         fCovariancePowerMpt = new AliProfileBS*[3*4];
         for(Int_t i=0;i<endPID;i++) {
@@ -568,7 +590,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
         };
       };
     }
-    if(fNBootstrapProfiles) for(Int_t i=0;i<11*endPID;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
+    if(fNBootstrapProfiles) for(Int_t i=0;i<Ncovpfs*endPID;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fFillMptPowers && fNBootstrapProfiles) for(Int_t i=0;i<3*endPID;i++) fCovariancePowerMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
     PostData(3,fCovList);
     fQAList = new TList();
@@ -617,7 +639,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   fBayesPID->SetSelectedSpecies(AliPID::kSPECIES);
   fBayesPID->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
   LoadWeightAndMPT();
-  printf("4\n");
 };
 void AliAnalysisTaskDeform::UserExec(Option_t*) {
   EventNo++;
@@ -676,27 +697,30 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
 
     FillCovariance(fCovariance[0],corrconfigs.at(0),l_Cent,mptev,wp[0],l_Random);
     FillCovariance(fCovariance[1],corrconfigs.at(0),l_Cent,1,wp[0],l_Random);
-    FillCovariance(fCovariance[2],corrconfigs.at(13),l_Cent,mptev,wp[0],l_Random);
-    FillCovariance(fCovariance[3],corrconfigs.at(13),l_Cent,1,wp[0],l_Random);
-    FillCovariance(fCovariance[4],corrconfigs.at(27),l_Cent,mptev,wp[0],l_Random);
-    FillCovariance(fCovariance[5],corrconfigs.at(27),l_Cent,1,wp[0],l_Random);
-    FillCovariance(fCovariance[6],corrconfigs.at(9),l_Cent,mptev,wp[0],l_Random);
-    FillCovariance(fCovariance[7],corrconfigs.at(9),l_Cent,1,wp[0],l_Random);
+    FillCovariance(fCovariance[2],corrconfigs.at(16),l_Cent,mptev,wp[0],l_Random);
+    FillCovariance(fCovariance[3],corrconfigs.at(16),l_Cent,1,wp[0],l_Random);
+    FillCovariance(fCovariance[4],corrconfigs.at(33),l_Cent,mptev,wp[0],l_Random);
+    FillCovariance(fCovariance[5],corrconfigs.at(33),l_Cent,1,wp[0],l_Random);
+    FillCovariance(fCovariance[6],corrconfigs.at(8),l_Cent,mptev,wp[0],l_Random);
+    FillCovariance(fCovariance[7],corrconfigs.at(8),l_Cent,1,wp[0],l_Random);
+    FillCovariance(fCovariance[8],corrconfigs.at(24),l_Cent,mptev,wp[0],l_Random);
+    FillCovariance(fCovariance[9],corrconfigs.at(24),l_Cent,1,wp[0],l_Random);
     //Covariance of vn with multi-particle pt-correlation
     vector<double> pt2corr = fPtCont[0]->getEventCorrelation(wpPt[0],2);
     if(pt2corr[1]!=0) {
       double pt2ev = pt2corr[0]/pt2corr[1];
-      FillCovariance(fCovariance[8],corrconfigs.at(0),l_Cent,pt2ev,pt2corr[1],l_Random);
+      FillCovariance(fCovariance[10],corrconfigs.at(0),l_Cent,pt2ev,pt2corr[1],l_Random);
+      FillCovariance(fCovariance[11],corrconfigs.at(16),l_Cent,pt2ev,pt2corr[1],l_Random);
     }
     vector<double> pt3corr = fPtCont[0]->getEventCorrelation(wpPt[0],3);
     if(pt3corr[1]!=0) {
       double pt3ev = pt3corr[0]/pt3corr[1];
-      FillCovariance(fCovariance[9],corrconfigs.at(0),l_Cent,pt3ev,pt3corr[1],l_Random);
+      FillCovariance(fCovariance[12],corrconfigs.at(0),l_Cent,pt3ev,pt3corr[1],l_Random);
     }
     vector<double> pt4corr = fPtCont[0]->getEventCorrelation(wpPt[0],4);
     if(pt4corr[1]!=0) {
       double pt4ev = pt4corr[0]/pt4corr[1];
-      FillCovariance(fCovariance[10],corrconfigs.at(0),l_Cent,pt4ev,pt4corr[1],l_Random);
+      FillCovariance(fCovariance[13],corrconfigs.at(0),l_Cent,pt4ev,pt4corr[1],l_Random);
     }
     //Covariance of vn with powers of mpt
     if(fFillMptPowers) {
@@ -1083,7 +1107,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     if(fUseRecoNchForMC) fNchTrueVsReco->Fill(nTotNoTracksMC,nTotNoTracksReco);
   } else {
-    if(!LoadMyWeights(fAOD->GetRunNumber())) return; //Only load wieghts for data
+    if(!fUsePIDNUA && !LoadMyWeights(fAOD->GetRunNumber())) return; //Only load wieghts for data
     Bool_t usingPseudoEff = (fPseudoEfficiency<1);
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       if(usingPseudoEff) if(fRndm->Uniform()>fPseudoEfficiency) continue;
@@ -1125,7 +1149,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
         if(weff_PID==0.0) continue;
         weff_PID = 1./weff_PID;
       }     
-      Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
+
       if(TMath::Abs(lTrack->Eta())<fEta)  { //for mean pt, only consider -0.4-0.4 region
         FillWPCounter(wp[0],weff,lpt); 
         FillWPCounter(wpPt[0],weff,lpt);
@@ -1135,7 +1159,12 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
             if(PIDIndex==3) { FillWPCounter(wp[PIDIndex],weff_PID,lpt); FillWPCounter(wpPt[PIDIndex],weff_PID,lpt); }
         }
       }  //Actually, no need for if() statememnt now since GFW knows about eta's, so I can fill it all the time
-      if(PIDIndex) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff_PID,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full
+      Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
+      if(PIDIndex) { 
+        Double_t wacc_PID = 0.0;
+        (fUsePIDNUA)?wacc_PID = fWeights[PIDIndex]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz):wacc;
+        fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc_PID*weff_PID,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full
+      }
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mask 2)
     };
   };
@@ -1190,29 +1219,32 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   for(int i(0);i<endPID;++i) {
     if(wp[i][0]==0.0) continue;
     Double_t mptev = wp[i][1]/wp[i][0];
-    FillCovariance(fCovariance[11*i],corrconfigs.at(i),l_Multi,mptev,wp[i][0],l_Random);
-    FillCovariance(fCovariance[1+11*i],corrconfigs.at(i),l_Multi,1,wp[i][0],l_Random);
-    FillCovariance(fCovariance[2+11*i],corrconfigs.at(13+i),l_Multi,mptev,wp[i][0],l_Random);
-    FillCovariance(fCovariance[3+11*i],corrconfigs.at(13+i),l_Multi,1,wp[i][0],l_Random);
-    FillCovariance(fCovariance[4+11*i],corrconfigs.at(27),l_Multi,mptev,wp[i][0],l_Random);
-    FillCovariance(fCovariance[5+11*i],corrconfigs.at(27),l_Multi,1,wp[i][0],l_Random);
-    FillCovariance(fCovariance[6+11*i],corrconfigs.at(9+i),l_Multi,mptev,wp[i][0],l_Random);
-    FillCovariance(fCovariance[7+11*i],corrconfigs.at(9+i),l_Multi,1,wp[i][0],l_Random);
+    FillCovariance(fCovariance[Ncovpfs*i],corrconfigs.at(i),l_Multi,mptev,wp[i][0],l_Random);
+    FillCovariance(fCovariance[1+Ncovpfs*i],corrconfigs.at(i),l_Multi,1,wp[i][0],l_Random);
+    FillCovariance(fCovariance[2+Ncovpfs*i],corrconfigs.at(16+i),l_Multi,mptev,wp[i][0],l_Random);
+    FillCovariance(fCovariance[3+Ncovpfs*i],corrconfigs.at(16+i),l_Multi,1,wp[i][0],l_Random);
+    FillCovariance(fCovariance[4+Ncovpfs*i],corrconfigs.at(33+i),l_Multi,mptev,wp[i][0],l_Random);
+    FillCovariance(fCovariance[5+Ncovpfs*i],corrconfigs.at(33+i),l_Multi,1,wp[i][0],l_Random);
+    FillCovariance(fCovariance[6+Ncovpfs*i],corrconfigs.at(8+i),l_Multi,mptev,wp[i][0],l_Random);
+    FillCovariance(fCovariance[7+Ncovpfs*i],corrconfigs.at(8+i),l_Multi,1,wp[i][0],l_Random);
+    FillCovariance(fCovariance[8+Ncovpfs*i],corrconfigs.at(24+i),l_Multi,mptev,wp[i][0],l_Random);
+    FillCovariance(fCovariance[9+Ncovpfs*i],corrconfigs.at(24+i),l_Multi,1,wp[i][0],l_Random);
     //Covariance of vn with multi-particle pt-correlation
     vector<double> pt2corr = fPtCont[i]->getEventCorrelation(wpPt[i],2);
     if(pt2corr[1]!=0) {
       double pt2ev = pt2corr[0]/pt2corr[1];
-      FillCovariance(fCovariance[8+11*i],corrconfigs.at(i),l_Multi,pt2ev,pt2corr[1],l_Random);
+      FillCovariance(fCovariance[10+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt2ev,pt2corr[1],l_Random);
+      FillCovariance(fCovariance[11+Ncovpfs*i],corrconfigs.at(16+i),l_Multi,pt2ev,pt2corr[1],l_Random);
     }
     vector<double> pt3corr = fPtCont[i]->getEventCorrelation(wpPt[i],3);
     if(pt3corr[1]!=0) {
       double pt3ev = pt3corr[0]/pt3corr[1];
-      FillCovariance(fCovariance[9+11*i],corrconfigs.at(i),l_Multi,pt3ev,pt3corr[1],l_Random);
+      FillCovariance(fCovariance[12+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt3ev,pt3corr[1],l_Random);
     }
     vector<double> pt4corr = fPtCont[i]->getEventCorrelation(wpPt[i],4);
     if(pt4corr[1]!=0) {
       double pt4ev = pt4corr[0]/pt4corr[1];
-      FillCovariance(fCovariance[10+11*i],corrconfigs.at(i),l_Multi,pt4ev,pt4corr[1],l_Random);
+      FillCovariance(fCovariance[13+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt4ev,pt4corr[1],l_Random);
     }
     //Covariance of vn with powers of mpt
     if(fFillMptPowers) {
@@ -1297,45 +1329,56 @@ Double_t AliAnalysisTaskDeform::getEfficiency(double &lpt, int iCent){
   return weff;
 }
 void AliAnalysisTaskDeform::CreateCorrConfigs() {
-  corrconfigs.push_back(GetConf("ChGap22","refP {2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChGap22","refP {2} refN {-2}", kFALSE));     //ChGap22 0-3
   corrconfigs.push_back(GetConf("PiGap22","PiRefP {2} PiRefN {-2}", kFALSE));
   corrconfigs.push_back(GetConf("KaGap22","KaRefP {2} KaRefN {-2}", kFALSE));
   corrconfigs.push_back(GetConf("PrGap22","PrRefP {2} PrRefN {-2}", kFALSE));
 
-  corrconfigs.push_back(GetConf("ChFull22","mid {2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull22","mid {2 -2}", kFALSE));  //ChFull22 4-7
   corrconfigs.push_back(GetConf("PiFull22","PiMid {2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("KaFull22","KaMid {2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("PrFull22","PrMid {2 -2}", kFALSE));
 
-  corrconfigs.push_back(GetConf("ChGap24","refP {2 2} refN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChGap24","refP {2 2} refN {-2 -2}", kFALSE));  //ChGap24 8-11
+  corrconfigs.push_back(GetConf("PiGap24","PiRefP {2 2} PiRefN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("KaGap24","KaRefP {2 2} KaRefN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("PrGap24","PrRefP {2 2} PrRefN {-2 -2}", kFALSE));
 
-  corrconfigs.push_back(GetConf("ChFull24","mid {2 2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull24","mid {2 2 -2 -2}", kFALSE));   //ChFull24 12-15
   corrconfigs.push_back(GetConf("PiFull24","PiMid {2 2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("KaFull24","KaMid {2 2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("PrFull24","PrMid {2 2 -2 -2}", kFALSE));
 //v3:
-  corrconfigs.push_back(GetConf("ChGap32","refP {3} refN {-3}", kFALSE));
+  corrconfigs.push_back(GetConf("ChGap32","refP {3} refN {-3}", kFALSE));   //ChGap32 16-19
   corrconfigs.push_back(GetConf("PiGap32","PiRefP {3} PiRefN {-3}", kFALSE));
   corrconfigs.push_back(GetConf("KaGap32","KaRefP {3} KaRefN {-3}", kFALSE));
   corrconfigs.push_back(GetConf("PrGap32","PrRefP {3} PrRefN {-3}", kFALSE));
 
-  corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));   //ChFull32 20-23
   corrconfigs.push_back(GetConf("PiFull32","PiMid {3 -3}", kFALSE));
   corrconfigs.push_back(GetConf("KaFull32","KaMid {3 -3}", kFALSE));
   corrconfigs.push_back(GetConf("PrFull32","PrMid {3 -3}", kFALSE));
   
-  corrconfigs.push_back(GetConf("ChGap34","refP {3 3} refN {-3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("ChGap34","refP {3 3} refN {-3 -3}", kFALSE));   //ChGap34 24-27
+  corrconfigs.push_back(GetConf("PiGap34","PiRefP {3 3} PiRefN {-3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("KaGap34","KaRefP {3 3} KaRefN {-3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("PrGap34","PrRefP {3 3} PrRefN {-3 -3}", kFALSE));
 
-  corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));    //ChFull34 28-31
   corrconfigs.push_back(GetConf("PiFull34","PiMid {3 3 -3 -3}", kFALSE));
   corrconfigs.push_back(GetConf("KaFull34","KaMid {3 3 -3 -3}", kFALSE));
   corrconfigs.push_back(GetConf("PrFull34","PrMid {3 3 -3 -3}", kFALSE));
 
-  corrconfigs.push_back(GetConf("ChGap42","refP {4} refN {-4}", kFALSE));
+  corrconfigs.push_back(GetConf("ChGap42","refP {4} refN {-4}", kFALSE));   //ChGap42 32
 
-  corrconfigs.push_back(GetConf("ChSC234","refP {2 3} refN {-2 -3}", kFALSE));
-  corrconfigs.push_back(GetConf("ChSC244","refP {2 4} refN {-2 -4}", kFALSE));
-  corrconfigs.push_back(GetConf("ChFull28","mid {2 2 2 2 -2 -2 -2 -2}",kFALSE));
+  corrconfigs.push_back(GetConf("ChSC234","refP {2 3} refN {-2 -3}", kFALSE));    //  ChSC234 33-36
+  corrconfigs.push_back(GetConf("PiSC234","PiRefP {2 3} PiRefN {-2 -3}", kFALSE));    
+  corrconfigs.push_back(GetConf("KaSC234","KaRefP {2 3} KaRefN {-2 -3}", kFALSE));    
+  corrconfigs.push_back(GetConf("PrSC234","PrRefP {2 3} PrRefN {-2 -3}", kFALSE));    
+
+  corrconfigs.push_back(GetConf("ChSC244","refP {2 4} refN {-2 -4}", kFALSE));    //  ChSC244 37
+  corrconfigs.push_back(GetConf("ChFull28","mid {2 2 2 2 -2 -2 -2 -2}",kFALSE));  //  ChFull28 38
+  
 //v24 3-sub
   if(fEtaV2Sep<0) return; //if eta < 0, then pos & neg are w/o SE and thus doesn't make sense to calculate v24
   corrconfigs.push_back(GetConf("LM22","refP {2} subMid {-2}", kFALSE));

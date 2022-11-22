@@ -268,6 +268,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoMCEtaPtNoVertex;                            //! array of histos with weighted eta in not triggered events, pT
     TH1F**                fHistoMCGammaPtNotTriggered;                          //! array of histos with weighted gamm in not triggered events, pT
     TH1F**                fHistoMCGammaPtNoVertex;                          //! array of histos with weighted gamm in not triggered events, pT
+    TH1D**                fHistoMCEventsTrigg;                                  //! array of histos with number of accepted and rejected events selected on MC based trigger (important for mult. dep INEL>0)
 
     // MC validated reconstructed quantities mesons
     TH2F**                fHistoTruePi0InvMassPt;                               //! array of histos with validated mothers, invMass, pt

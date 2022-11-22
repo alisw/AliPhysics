@@ -110,7 +110,6 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
-	hFlatVsV0MVsMult(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
 	hMCPtPionNeg(0),hMCPtKaonNeg(0),hMCPtProtonNeg(0),
 	hTPCRecTracksPionPos(0), hTPCRecTracksKaonPos(0), hTPCRecTracksProtonPos(0),
@@ -125,6 +124,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 
 {
 	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+		hFlatVsV0MVsMult[i_c] = 0;
 		hFlatVsPtV0M[i_c] = 0;
 
 		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta){
@@ -193,7 +193,6 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
-	hFlatVsV0MVsMult(0), 
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
 	hMCPtPionNeg(0),hMCPtKaonNeg(0),hMCPtProtonNeg(0),
 	hTPCRecTracksPionPos(0), hTPCRecTracksKaonPos(0), hTPCRecTracksProtonPos(0),
@@ -207,6 +206,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 
 {
 	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+		hFlatVsV0MVsMult[i_c] = 0;
 		hFlatVsPtV0M[i_c] = 0;
 
 		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta){
@@ -532,6 +532,9 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 	for (int i_c = 0; i_c < nCent; ++i_c) 
 	{
+	
+		hFlatVsV0MVsMult[i_c] = new TH2F(Form("hFlatVsNch_V0_%s",V0MClass[i_c]), "; Flatenicity; #it{N}_{ch} (|#eta| < 0.8)", nFlatbins, Flatbins, nMultbins, Multbins);
+
 		hFlatVsPtV0M[i_c] = new TH2F(Form("hPtVsFlatV0M_c%d", i_c),"; Flat. V0M; #it{p}_{T} (GeV/#it{c})", nFlatbins, Flatbins, nPtbins, Ptbins);
 		//fOutputList->Add(hFlatVsPtV0M[i_c]);
 
@@ -558,9 +561,9 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			hdEdx[i_c][i_eta] = new TH3F(Form("hdEdx_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]), ";#it{p} (GeV/#it{c}); dE/dx; Flatenicity", nPtbins_high_pT, Ptbins_high_pT, ndEdxbins, dEdxbins, nFlatbins, Flatbins);
 			hPtrTPC[i_c][i_eta] = new TH2F(Form("hPtrTPC_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_high_pT, Ptbins_high_pT, nFlatbins, Flatbins);
 
-			if (i_c==0){ hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins); }
+			if (i_c==0) { hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins); }
 
-			if (!fUseMC && fV0MEqualisation){ 
+			if (!fUseMC && fV0MEqualisation) { 
 
 				if (save_this_mult_bin != i_c) { continue; }
 
@@ -600,6 +603,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 					fOutputList->Add(pMIPVsEta);
 					/* fOutputList->Add(hPlateauVsEta); */
 					fOutputList->Add(pPlateauVsEta);
+					fOutputList->Add(hFlatVsV0MVsMult[i_c]);
 				}
 			} 
 		}
@@ -750,7 +754,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 	// x: Sector y: Multiplicity z: V0M Multiplicity
 	hActivityV0CV0A = new TH3F("hActivityV0CV0A", "; VZERO channel; #it{N}_{ch} per VZERO cahnnel; V0M quantile", nV0Sectorsbins, V0Sectorsbins, nV0Multbins, V0Multbins, nCent, centClass);
-	fOutputList->Add(hActivityV0CV0A);
+	//fOutputList->Add(hActivityV0CV0A);
 
 	hActivityV0DataSect = new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 	fOutputList->Add(hActivityV0DataSect);
@@ -760,10 +764,10 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		fOutputList->Add(hActivityV0McSect);
 	}
 
-	hFlatVsV0MVsMult = new TH3F("hFlatVsV0MVsMult", "; Flatenicity; #it{N}_{ch}; V0M Percentile", nFlatbins, Flatbins, nMultbins, Multbins, nCent, centClass);
-	fOutputList->Add(hFlatVsV0MVsMult);
+	/* hFlatVsV0MVsMult = new TH3F("hFlatVsV0MVsMult", "; Flatenicity; #it{N}_{ch}; V0M Percentile", nFlatbins, Flatbins, nMultbins, Multbins, nCent, centClass); */
+	/* fOutputList->Add(hFlatVsV0MVsMult); */
 
-	fEventCuts.AddQAplotsToList(fOutputList);
+	/* fEventCuts.AddQAplotsToList(fOutputList); */
 	PostData(1, fOutputList); // postdata will notify the analysis manager of
 				  // changes / updates to the
 }
@@ -823,7 +827,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 
 	// Good events
 	if (!fEventCuts.AcceptEvent(event)) {
-		PostData(1, fOutputList);
+		/* PostData(1, fOutputList); */
 		return;
 	}
 
@@ -871,7 +875,8 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 
 	if (fFlat > 0 && fV0Mindex >= 0) {
 
-		hFlatVsV0MVsMult->Fill(fFlat, fMidRapidityMult, fv0mpercentile);
+		/* hFlatVsV0MVsMult->Fill(fFlat, fMidRapidityMult, fv0mpercentile); */
+		hFlatVsV0MVsMult[fV0Mindex]->Fill(fFlat, fMidRapidityMult);
 		//MakeDataanalysis();
 		MakePIDanalysis();
 	}

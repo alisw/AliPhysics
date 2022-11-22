@@ -127,7 +127,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
 
   void AddInvMassFitSaveAsFormat(std::string format) { fInvMassFitSaveAsFormats.insert(format); }
   void DisableInvMassFitSaveAs() { fInvMassFitSaveAsFormats.clear(); }
-
+  void SetAcceptValidFit() { fAcceptValidFit=kTRUE; }
 
   enum EBkgFuncCases{ kExpoBkg, kLinBkg, kPol2Bkg, kPol3Bkg, kPol4Bkg, kPol5Bkg, kPowBkg, kPowTimesExpoBkg, kNBkgFuncCases };
   enum EGausSigCases{ kFixSig, kFixSigUp, kFixSigDown, kFreeSig, kNGausSigCases};
@@ -237,6 +237,8 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   Double_t fMaxYieldGlob;   /// maximum yield
 
   std::vector<AliHFInvMassFitter*> fMassFitters; //!<! Mass fitters
+
+  Bool_t fAcceptValidFit;   /// switcher to accept fits according to ROOT::Fit:FitResults::IsValid()
 
   /// \cond CLASSIMP
   ClassDef(AliHFInvMassMultiTrialFit,8); /// class for multiple trials of invariant mass fit

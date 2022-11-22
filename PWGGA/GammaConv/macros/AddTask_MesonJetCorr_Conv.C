@@ -166,7 +166,7 @@ void AddTask_MesonJetCorr_Conv(
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskMesonJetCorrelation* task = NULL;
-  task = new AliAnalysisTaskMesonJetCorrelation(Form("MesonJetCorrelation_%i", trainConfig));
+  task = new AliAnalysisTaskMesonJetCorrelation(Form("MesonJetCorrelation_%i_%i", meson, trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -181,7 +181,12 @@ void AddTask_MesonJetCorr_Conv(
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2r52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 3) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2152103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
-
+  } else if (trainConfig == 6) {
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 6) {
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------

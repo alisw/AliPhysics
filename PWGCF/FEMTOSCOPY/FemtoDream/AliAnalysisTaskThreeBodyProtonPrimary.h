@@ -181,6 +181,10 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
     fQ3cutValue = Q3cutValue;
   }
 
+  void SetQ3MinValue(double Q3MinValue){
+    fQ3MinValue = Q3MinValue;
+  }
+
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
   static float BoostOneParticle(TLorentzVector &PartOne, TLorentzVector &PartTwo, TLorentzVector &PartThree);
@@ -270,6 +274,7 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   double fDeltaPhiMaxPAPrim;
   double fDeltaEtaMaxPAPrim;
   double fQ3cutValue;
+  double fQ3MinValue;
 
   bool fCleanWithLambdas; //if kTRUE: reject Proton + Pi- / Antiproton + Pi+ from Lambda/AntiLambda
   bool fDoOnlyThreeBody; //if kTRUE: 3 Body analysis, else 2 Body

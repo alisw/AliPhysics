@@ -54,5 +54,10 @@
 #pragma link C++ class AliGFWXXCuts+;
 #pragma link C++ class PhysicsProfile+;
 #pragma link C++ class PhysicsProfilePPTask+;
+#pragma link C++ class AliLWTPCTrack+;
+#pragma link C++ class AliLWFMDTrack+;
+#pragma link C++ class AliLWEvent+;
+#pragma link C++ class AliAnalysisTaskLWTree+;
+
 
 #endif
