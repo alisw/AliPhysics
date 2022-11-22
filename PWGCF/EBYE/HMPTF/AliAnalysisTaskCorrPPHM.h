@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef AliAnalysisTaskCorrPP_H
-#define AliAnalysisTaskCorrPP_H
+#ifndef AliAnalysisTaskCorrPPHM_H
+#define AliAnalysisTaskCorrPPHM_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -26,10 +26,11 @@ class TTree;
 class AliESDEvent;
 //class AliAODEvent;
 class AliESDtrackCuts;
+//class AliESDcascade;
 class AliAODcascade;
-class AliMCEvent;
 class AliVTrack;
 class AliAODTrack;
+class AliMCEvent;
 
 class TH1D;
 class TH2D;
@@ -39,11 +40,11 @@ class AliPIDResponse;
 class AliMultSelection;
 
 
-class AliAnalysisTaskCorrPP : public AliAnalysisTaskSE {
+class AliAnalysisTaskCorrPPHM : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskCorrPP();
-  AliAnalysisTaskCorrPP(const char *name);
-  virtual ~AliAnalysisTaskCorrPP();
+  AliAnalysisTaskCorrPPHM();
+  AliAnalysisTaskCorrPPHM(const char *name);
+  virtual ~AliAnalysisTaskCorrPPHM();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -154,9 +155,9 @@ class AliAnalysisTaskCorrPP : public AliAnalysisTaskSE {
   */
  
   
-  AliAnalysisTaskCorrPP(const AliAnalysisTaskCorrPP&);
-  AliAnalysisTaskCorrPP& operator=(const AliAnalysisTaskCorrPP&);  
-  ClassDef(AliAnalysisTaskCorrPP, 1);
+  AliAnalysisTaskCorrPPHM(const AliAnalysisTaskCorrPPHM&);
+  AliAnalysisTaskCorrPPHM& operator=(const AliAnalysisTaskCorrPPHM&);  
+  ClassDef(AliAnalysisTaskCorrPPHM, 1);
 };
 
 #endif

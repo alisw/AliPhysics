@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef AliAnalysisTaskCorrPP_H
-#define AliAnalysisTaskCorrPP_H
+#ifndef AliAnalysisTaskCorrPbPb_H
+#define AliAnalysisTaskCorrPbPb_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -26,8 +26,8 @@ class TTree;
 class AliESDEvent;
 //class AliAODEvent;
 class AliESDtrackCuts;
-class AliAODcascade;
 class AliMCEvent;
+class AliStack;
 class AliVTrack;
 class AliAODTrack;
 
@@ -39,23 +39,20 @@ class AliPIDResponse;
 class AliMultSelection;
 
 
-class AliAnalysisTaskCorrPP : public AliAnalysisTaskSE {
+class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskCorrPP();
-  AliAnalysisTaskCorrPP(const char *name);
-  virtual ~AliAnalysisTaskCorrPP();
+  AliAnalysisTaskCorrPbPb();
+  AliAnalysisTaskCorrPbPb(const char *name);
+  virtual ~AliAnalysisTaskCorrPbPb();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   Bool_t GetEvent();
   Bool_t PassedTrackQualityCuts (AliAODTrack *track);
-  Bool_t PassedDaughterTrackDCAtoVertexSelectionCuts(AliAODcascade *cascade);
-  Bool_t PassedCascadeSelectionCuts (AliAODcascade *cascade);
-  Bool_t AcceptEventAfterPileUpCut(AliESDEvent* fESD);
-  Bool_t IsXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac/*, Double_t &m, TVector3 &momentum*/);
-  Bool_t IsAntiXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac/*, Double_t &m, TVector3 &momentum*/);
   Bool_t KaonSelector (AliVTrack *track); 
+  Bool_t ProtonSelector (AliVTrack *track); 
+  Bool_t PionSelector (AliVTrack *track); 
   Bool_t PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type);
   Bool_t PassedSingleParticlePileUpCuts(AliAODTrack *track);
 
@@ -111,26 +108,30 @@ class AliAnalysisTaskCorrPP : public AliAnalysisTaskSE {
   Double_t fMultLow;
   Double_t fMultHigh;
   TH1D *hNumberOfEvents;
-  TH1D *hNumberOfCascades;
-  TH1D *hNumberOfXi;
-  TH1D *hNumberOfAntiXi;
   TH1D *hNumberOfKaonPlus;
   TH1D *hNumberOfKaonMinus;
-  TH2D *histMassXi_vs_Pt_beforeMasscut;
-  TH2D *histMassAntiXi_vs_Pt_beforeMasscut;
-  TH2D *histMassXi_vs_Pt;
-  TH2D *histMassAntiXi_vs_Pt;
+  TH1D *hNumberOfPionPlus;
+  TH1D *hNumberOfPionMinus;
+  TH1D *hNumberOfProtonPlus;
+  TH1D *hNumberOfProtonMinus;
+
+  //ftreeEvent object variables
   TTree *fTreeEvent;
   Float_t fTreeVariableCentrality;
-  Float_t fNoXi_ptmax2;
-  Float_t fNoAntiXi_ptmax2;
-  Float_t fNoXi_ptmax3;
-  Float_t fNoAntiXi_ptmax3;
+  //reconstruced
   Float_t fNoKaonPlus_ptmax2;
   Float_t fNoKaonMinus_ptmax2;
   Float_t fNoKaonPlus_ptmax3;
   Float_t fNoKaonMinus_ptmax3;
-  
+  Float_t fNoPionPlus_ptmax2;
+  Float_t fNoPionMinus_ptmax2;
+  Float_t fNoPionPlus_ptmax3;
+  Float_t fNoPionMinus_ptmax3;
+  Float_t fNoProtonPlus_ptmax2;
+  Float_t fNoProtonMinus_ptmax2;
+  Float_t fNoProtonPlus_ptmax3;
+  Float_t fNoProtonMinus_ptmax3;
+
 
   /*
   //Custom Functions:
@@ -154,9 +155,9 @@ class AliAnalysisTaskCorrPP : public AliAnalysisTaskSE {
   */
  
   
-  AliAnalysisTaskCorrPP(const AliAnalysisTaskCorrPP&);
-  AliAnalysisTaskCorrPP& operator=(const AliAnalysisTaskCorrPP&);  
-  ClassDef(AliAnalysisTaskCorrPP, 1);
+  AliAnalysisTaskCorrPbPb(const AliAnalysisTaskCorrPbPb&);
+  AliAnalysisTaskCorrPbPb& operator=(const AliAnalysisTaskCorrPbPb&);  
+  ClassDef(AliAnalysisTaskCorrPbPb, 1);
 };
 
 #endif
