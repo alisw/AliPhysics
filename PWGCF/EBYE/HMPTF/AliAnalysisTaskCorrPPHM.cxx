@@ -36,7 +36,7 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
-#include "AliAnalysisTaskCorrPP.h"
+#include "AliAnalysisTaskCorrPPHM.h"
 
 #include "TObjArray.h"
 #include "TVector2.h"
@@ -70,11 +70,11 @@ using namespace std;
 using std::cout;
 using std::endl;
 
-class AliAnalysisTaskCorrPP;
-ClassImp(AliAnalysisTaskCorrPP)
+class AliAnalysisTaskCorrPPHM;
+ClassImp(AliAnalysisTaskCorrPPHM)
 
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP():
+AliAnalysisTaskCorrPPHM::AliAnalysisTaskCorrPPHM():
   AliAnalysisTaskSE(),
   fAODeventCuts(),
   fESDevent(0),
@@ -111,7 +111,7 @@ AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP():
   fNoKaonMinus_ptmax3(0)
 {}
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP(const char *name):
+AliAnalysisTaskCorrPPHM::AliAnalysisTaskCorrPPHM(const char *name):
   AliAnalysisTaskSE(name),
   fAODeventCuts(),
   fESDevent(0),
@@ -154,7 +154,7 @@ AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP(const char *name):
   DefineOutput(3, TTree::Class());
 }
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPP::~AliAnalysisTaskCorrPP()  {
+AliAnalysisTaskCorrPPHM::~AliAnalysisTaskCorrPPHM()  {
 
   if (fOutputList){
     delete fOutputList;
@@ -176,7 +176,7 @@ AliAnalysisTaskCorrPP::~AliAnalysisTaskCorrPP()  {
 
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
+void AliAnalysisTaskCorrPPHM::UserCreateOutputObjects()  {
     
     //Create Output List
     fOutputList = new TList();
@@ -188,11 +188,12 @@ void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
     OpenFile(2);
     OpenFile(3);
 
-    /*
+    
     //QA Plots of Event Selection
-    fESDeventCuts.AddQAplotsToList(fQAList,kTRUE);
-    fESDeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-    */
+    fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
+    //fAODeventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMult, kTRUE);
+    //fESDeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    
     
     //Event Counter
     hNumberOfEvents = new TH1D ("hNumberOfEvents","",20,0,20);
@@ -203,8 +204,7 @@ void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
     hNumberOfCascades = new TH1D("hNumberOfCascades","hNumberOfCascades",20,0,20);
     fOutputList -> Add(hNumberOfCascades);
    
-    
-    //Number of xi finally getting selected with specified cuts
+   //Number of xi finally getting selected with specified cuts
     hNumberOfXi     = new TH1D ("hNumberOfXi","",20,0,20);
     hNumberOfAntiXi = new TH1D ("hNumberOfAntiXi","",20,0,20);
     // hNumberOfXi     -> Sumw2();
@@ -271,7 +271,7 @@ void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
     PostData(3, fTreeEvent);
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
+void AliAnalysisTaskCorrPPHM::UserExec(Option_t *)  {
   
     //Get Input Event
     if ( !GetEvent ()) return;
@@ -368,7 +368,7 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
     Int_t no_Xi_perevent_ptmax3 = 0;
     Int_t no_antiXi_perevent_ptmax3 = 0;
 
-    
+
     //Loop over Reconstructed Cascades
     for (Int_t icasc=0 ; icasc<fAODevent->GetNumberOfCascades(); icasc++)  {
         
@@ -503,7 +503,7 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
       //Topological cuts to select cascade particle
       if (!PassedCascadeSelectionCuts(cascade)) continue;
       cout<<"Passed CascadeSelections cut !!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
-     
+    
       //Mass and Charge
       cout<<"Mass of cascade: "<<cascade->MassXi()<<"\t"<<"Charge: "<<cascade->ChargeXi()<<endl;
       
@@ -580,7 +580,7 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
     PostData(3, fTreeEvent);
 }    
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::GetEvent ()  //event cuts copied from my code written earlier 
+Bool_t AliAnalysisTaskCorrPPHM::GetEvent ()  //event cuts copied from my code written earlier 
 
 {
  
@@ -613,14 +613,16 @@ Bool_t AliAnalysisTaskCorrPP::GetEvent ()  //event cuts copied from my code writ
   
   hNumberOfEvents -> Fill(0.5);
 
-    
+  
   //Standard Event Cuts
+  fAODeventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, kTRUE);
   if (!fAODeventCuts.AcceptEvent(fInputEvent)) {
     PostData(1, fOutputList);
     PostData(2, fQAList);
     PostData(3, fTreeEvent);
     return kFALSE;
   }
+  
   hNumberOfEvents -> Fill(1.5);
   
   
@@ -721,7 +723,7 @@ Bool_t AliAnalysisTaskCorrPP::GetEvent ()  //event cuts copied from my code writ
     ////tigger/////////////                                                                                                                     
     UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
-    isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+    isSelected = (maskIsSelected & AliVEvent::kHighMultV0) == AliVEvent::kHighMultV0;
     if ( !isSelected)
       {
 	PostData(1, fOutputList);
@@ -783,7 +785,7 @@ Bool_t AliAnalysisTaskCorrPP::GetEvent ()  //event cuts copied from my code writ
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedTrackQualityCuts (AliAODTrack *track)  {
+Bool_t AliAnalysisTaskCorrPPHM::PassedTrackQualityCuts (AliAODTrack *track)  {
     
     //Initialization
     Bool_t passedTrkSelection=(kFALSE);
@@ -794,7 +796,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedTrackQualityCuts (AliAODTrack *track)  {
     
     //Track Selection Cuts
     Int_t nTPCcluster = track->GetTPCNcls();  //TPC cluster cut
-    if (nTPCcluster <= 70)
+    if (nTPCcluster < 70)
       return passedTrkSelection;
 
     Double_t chi2TPCperClstr = track->GetTPCchi2perCluster();
@@ -818,7 +820,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedTrackQualityCuts (AliAODTrack *track)  {
       return passedTrkSelection;
 
     Double_t pt = track->Pt(); //Pt cut
-    if(pt < 0.2)
+    if(pt < 0.15)
       return passedTrkSelection;
 
     
@@ -826,7 +828,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedTrackQualityCuts (AliAODTrack *track)  {
     return passedTrkSelection;
 }
  //______________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedDaughterTrackDCAtoVertexSelectionCuts(AliAODcascade *cascade)
+Bool_t AliAnalysisTaskCorrPPHM::PassedDaughterTrackDCAtoVertexSelectionCuts(AliAODcascade *cascade)
 {
   //Initialization
   Bool_t passedDauTrackDCAtoVertexSelection=(kFALSE);
@@ -839,7 +841,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedDaughterTrackDCAtoVertexSelectionCuts(AliAOD
   lDcaBachTrackToPrimVertexXi = cascade->DcaBachToPrimVertex();
   lDcaPosTrackToPrimVertexXi = cascade->DcaPosToPrimVertex();
   lDcaNegTrackToPrimVertexXi = cascade->DcaNegToPrimVertex();
-  
+
   if (lDcaBachTrackToPrimVertexXi <= 0.06) return passedDauTrackDCAtoVertexSelection;
   if (lDcaPosTrackToPrimVertexXi <= 0.06) return passedDauTrackDCAtoVertexSelection;
   if (lDcaNegTrackToPrimVertexXi <= 0.06) return passedDauTrackDCAtoVertexSelection;
@@ -848,7 +850,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedDaughterTrackDCAtoVertexSelectionCuts(AliAOD
   return passedDauTrackDCAtoVertexSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedCascadeSelectionCuts (AliAODcascade *cascade)  {
+Bool_t AliAnalysisTaskCorrPPHM::PassedCascadeSelectionCuts (AliAODcascade *cascade)  {
 
     //Initialization
     Bool_t passedCascadeSelection=(kFALSE);
@@ -899,7 +901,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedCascadeSelectionCuts (AliAODcascade *cascade
 
     hNumberOfCascades->Fill(11.5);
       
-  //Cascade Radius
+    //Cascade Radius
     Double_t lPosXi[3] = { -1000.0, -1000.0, -1000.0 };
     lPosXi[0] = cascade->DecayVertexXiX();
     lPosXi[1] = cascade->DecayVertexXiY();
@@ -915,7 +917,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedCascadeSelectionCuts (AliAODcascade *cascade
     return passedCascadeSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::IsXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac)  {
+Bool_t AliAnalysisTaskCorrPPHM::IsXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -961,7 +963,7 @@ Bool_t AliAnalysisTaskCorrPP::IsXiCandidate (AliAODcascade *casc, AliAODTrack *p
     return kTRUE;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::IsAntiXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac)  {
+Bool_t AliAnalysisTaskCorrPPHM::IsAntiXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -1008,7 +1010,7 @@ Bool_t AliAnalysisTaskCorrPP::IsAntiXiCandidate (AliAODcascade *casc, AliAODTrac
     return kTRUE;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::KaonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPPHM::KaonSelector(AliVTrack *track)  {
   /*
   Double_t p[3];
   track->PxPyPz(p);
@@ -1143,27 +1145,27 @@ Bool_t AliAnalysisTaskCorrPP::KaonSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
+Bool_t AliAnalysisTaskCorrPPHM::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
     
     //Initialization
     Bool_t passedPIDSelection=(kFALSE);
     
     //TPC Particle Identification
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,type);
-    if (nsigmaTPC <= -4.0) return passedPIDSelection;
-    if (nsigmaTPC >= +4.0) return passedPIDSelection;
+    if (nsigmaTPC < -4.0) return passedPIDSelection;
+    if (nsigmaTPC > +4.0) return passedPIDSelection;
 
     passedPIDSelection = kTRUE;
     return passedPIDSelection;
 }
  //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedSingleParticlePileUpCuts(AliAODTrack *track)
+Bool_t AliAnalysisTaskCorrPPHM::PassedSingleParticlePileUpCuts(AliAODTrack *track)
 {
   Bool_t passedTrackPileupCut = (kFALSE);
-
   /*
   if (!(track->HasPointOnITSLayer(1)) && !(track->HasPointOnITSLayer(4)) && !(track->HasPointOnITSLayer(5)) && !(track->GetTOFBunchCrossing() == 0))
     passedTrackPileupCut = (kFALSE);
+  return passedTrackPileupCut;
   */
 
   Int_t flag = 0;
@@ -1176,11 +1178,9 @@ Bool_t AliAnalysisTaskCorrPP::PassedSingleParticlePileUpCuts(AliAODTrack *track)
 
   if(flag != 0)
     passedTrackPileupCut = (kTRUE);
-  
-  return passedTrackPileupCut;
 }
  //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPP::Terminate(Option_t *)  {
+void AliAnalysisTaskCorrPPHM::Terminate(Option_t *)  {
     
     fOutputList = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutputList) return;

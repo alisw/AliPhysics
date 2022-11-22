@@ -541,7 +541,8 @@ AliAnalysisCuts *AliAnalysisTaskOmegaDielectron_AccEff::SetupTrackCuts(){
   trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 999.0);
 
   // Chi2 per ITS cluster
-  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    -999.,   4.5);
+  // trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    -999.,   4.5);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    -999.,   5.5);
 
   // Number of shared ITS clusters
   trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kTRUE);
@@ -553,7 +554,8 @@ AliAnalysisCuts *AliAnalysisTaskOmegaDielectron_AccEff::SetupTrackCuts(){
   trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 999.0);
 
   // Min ratio TPC cross row over findable
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 999.);
+  // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 999.);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.6, 999.);
 
   // Shared TPC clusters
   trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracTPC,     -999., 0.4);
@@ -586,7 +588,7 @@ AliAnalysisCuts *AliAnalysisTaskOmegaDielectron_AccEff::SetPIDcuts(){
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3.5,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kMuon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  // mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kMuon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kProton,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
 
   // //TOF electrons: includes all electrons, exlcludes Pions using the TPC

@@ -81,6 +81,7 @@ public:
   Int_t GetTPCnclsS()         const { return fTPCnclsS;         }
   Int_t GetFilterMap()        const { return fFilterMap;        }
   Int_t GetTOFBunchCrossing() const { return fTOFBunchCrossing; }
+  Int_t GetGeneratorIndex()   const { return fGeneratorIndex;   }
   Int_t GetCovMat(Int_t index)  const { return fcovmat[index];  }
   Int_t GetTOFchi2()          const { return fTOFchi2;          }
   Int_t GetTOFsignalDz()      const { return fTOFsignalDz;      }
@@ -137,6 +138,7 @@ private:
   Int_t fTPCnclsS;    ///< Mapping variable
   Int_t fFilterMap;      ///< Mapping variable
   Int_t fTOFBunchCrossing;      ///< Mapping variable
+  Int_t fGeneratorIndex;      ///< Mapping variable
   Int_t fcovmat[21];          ///< Mapping variables
   Int_t fTOFchi2;  ///< Mapping variables
   Int_t fTOFsignalDz;  ///< Mapping variables 
@@ -146,7 +148,7 @@ private:
   static AliNanoAODTrackMapping * fInstance; ///< instance, needed for the singleton implementation
   static TString fMappingString; ///< the string which this class was initialized with
   std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
-  ClassDef(AliNanoAODTrackMapping, 3)
+  ClassDef(AliNanoAODTrackMapping, 4)
   
 };
 

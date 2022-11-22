@@ -409,6 +409,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         if (lambda && labMothNeg == labMothPos && std::abs(lambda->GetPdgCode()) == kLambdaPdg)
         {
           lambdaLabel = labMothNeg;
+          fGenLambda.magFieldPolarity = bField > 0.;
           fGenLambda.pdg = lambda->GetPdgCode();
           fGenLambda.ptMC = lambda->Pt();
           fGenLambda.etaMC = lambda->Eta();
