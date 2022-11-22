@@ -483,33 +483,33 @@ void AliAnalysisTaskGammaPHOSPP::ProcessMC()
      FillHistogram("hMCTrackCharge", particle->Charge());
 
      if(TMath::Abs(particle->GetPdgCode()) == 111)
-       FillHistogram("fhPi0MC", particle->Pt(), particle->Y(), Weight(particle));
+       FillHistogram("hPi0MC", particle->Pt(), particle->Y(), Weight(particle));
      else if (particle->GetPdgCode() == 211)
-       FillHistogram("fhPiPlusMC", particle->Pt(), particle->Y(), Weight(particle)); 
+       FillHistogram("hPiPlusMC", particle->Pt(), particle->Y(), Weight(particle)); 
      else if (particle->GetPdgCode() == -211)
-       FillHistogram("fhPiMinusMC", particle->Pt(), particle->Y(), Weight(particle));                  
+       FillHistogram("hPiMinusMC", particle->Pt(), particle->Y(), Weight(particle));                  
      else if (TMath::Abs(particle->GetPdgCode()) == 221)
-          FillHistogram("fhEtaMC", particle->Pt(), particle->Y(), Weight(particle)); 
+          FillHistogram("hEtaMC", particle->Pt(), particle->Y(), Weight(particle)); 
      else if (TMath::Abs(particle->GetPdgCode()) == 331)
-          FillHistogram("fhEtaPrimeMC", particle->Pt(), particle->Y(), Weight(particle)); 
+          FillHistogram("hEtaPrimeMC", particle->Pt(), particle->Y(), Weight(particle)); 
      else if (TMath::Abs(particle->GetPdgCode()) == 223)
-          FillHistogram("fhOmegaMC", particle->Pt(), particle->Y(), Weight(particle)); 
+          FillHistogram("hOmegaMC", particle->Pt(), particle->Y(), Weight(particle)); 
      else if (TMath::Abs(particle->GetPdgCode()) == 130)
-          FillHistogram("fhK0LMC", particle->Pt(), particle->Y(), Weight(particle));        
+          FillHistogram("hK0LMC", particle->Pt(), particle->Y(), Weight(particle));        
      else if (TMath::Abs(particle->GetPdgCode()) == 310)
-          FillHistogram("fhK0SMC", particle->Pt(), particle->Y(),  Weight(particle));         
+          FillHistogram("hK0SMC", particle->Pt(), particle->Y(),  Weight(particle));         
      else if (TMath::Abs(particle->GetPdgCode() == 2212)) 
-          FillHistogram("fhProtonMC",particle->Pt(), particle->Y(), Weight(particle));
+          FillHistogram("hProtonMC",particle->Pt(), particle->Y(), Weight(particle));
      else if (TMath::Abs(particle->GetPdgCode()==2112)) 
-          FillHistogram("fhNeutrMC",particle->Pt(), particle->Y(), Weight(particle));
+          FillHistogram("hNeutrMC",particle->Pt(), particle->Y(), Weight(particle));
      else if (TMath::Abs(particle->GetPdgCode()==321)) 
-          FillHistogram("fhKchMC",particle->Pt(), particle->Y(), Weight(particle));
+          FillHistogram("hKchMC",particle->Pt(), particle->Y(), Weight(particle));
      else if (TMath::Abs(particle->GetPdgCode()) == 22 || TMath::Abs(particle->GetPdgCode()) == 11) {           
          if (TMath::Abs(particle->GetPdgCode()) == 22)
-            FillHistogram("fhGammaMC_all", particle->Pt(), particle->Y());
+            FillHistogram("hGammaMC_all", particle->Pt(), particle->Y());
 
       if (particle->IsSecondaryFromMaterial()) {
-            FillHistogram(Form("fh%sMC_FromMaterial",  particle->GetPdgCode() == 22 ? "Gamma" : "Beta"), 
+            FillHistogram(Form("h%sMC_FromMaterial",  particle->GetPdgCode() == 22 ? "Gamma" : "Beta"), 
                                                        particle->Pt(), particle->Y(), Weight(particle));
       }						       
       else {
@@ -522,12 +522,12 @@ void AliAnalysisTaskGammaPHOSPP::ProcessMC()
              mparticle = (AliAODMCParticle*) fMCArray->At(iMother2);
 	   }  
       } 
-      FillHistogram("fhGammaMCSources", particle->Pt(), mparticle->GetPdgCode(), Weight(mparticle));
+      FillHistogram("hGammaMCSources", particle->Pt(), mparticle->GetPdgCode(), Weight(mparticle));
       if (TMath::Hypot(particle->Xv(), particle->Yv()) < 1.0 
                               && mparticle->GetPdgCode() != 130
                               && mparticle->GetPdgCode() != 310
                               && particle->GetPdgCode() == 22) {              
-        FillHistogram("fhGammaMC_true", particle->Pt(), particle->Y(), Weight(mparticle));
+        FillHistogram("hGammaMC_true", particle->Pt(), particle->Y(), Weight(mparticle));
        }	    
       }     
      }
@@ -1622,7 +1622,7 @@ void AliAnalysisTaskGammaPHOSPP::GammaEfficiencies()
    
   printf("Calculating photon detection efficiencies!!!\n");
   
-  TH2F *h2 = (TH2F*)fOutputContainer2->FindObject("fhGammaMC_true");
+  TH2F *h2 = (TH2F*)fOutputContainer2->FindObject("hGammaMC_true");
   TH1D *htot = (TH1D*)h2->ProjectionX("hgamma", 70, 170);
   htot->SetTitle("total #gamma-s");
   
@@ -1762,43 +1762,43 @@ void AliAnalysisTaskGammaPHOSPP::AddMCHistograms()
   fOutputContainer2->Add(new TH2F("hMCPdgvsPt","Pdg code vs particle p_{T}", nPt, ptMin, ptMax, 8000, -4000, 4000));
   fOutputContainer2->Add(new TH1F("hMCPt","MC particles p_{T}", nPt, ptMin, ptMax));
 
-  fOutputContainer2->Add(new TH2F("fhPi0MC", "MC distribution of #pi^{0}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new TH2F("hPi0MC", "MC distribution of #pi^{0}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new TH2F("fhPiPlusMC", "MC distribution of #pi^{+}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new TH2F("hPiPlusMC", "MC distribution of #pi^{+}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new TH2F("fhPiMinusMC", "MC distribution of #pi^{-}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new TH2F("hPiMinusMC", "MC distribution of #pi^{-}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhEtaMC", "MC distribution of #eta^{0}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hEtaMC", "MC distribution of #eta^{0}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhEtaPrimeMC", "MC distribution of #eta'", nPt, ptMin, ptMax,240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hEtaPrimeMC", "MC distribution of #eta'", nPt, ptMin, ptMax,240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhOmegaMC", "MC distribution of #omega", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hOmegaMC", "MC distribution of #omega", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhK0SMC", "MC distribution of #K_{0}^{S}-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hK0SMC", "MC distribution of #K_{0}^{S}-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhK0LMC", "MC distribution of #K_{0}^{L}-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hK0LMC", "MC distribution of #K_{0}^{L}-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhGammaMC_all", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hGammaMC_all", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhGammaMC_true", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hGammaMC_true", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhGammaMC_FromMaterial", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hGammaMC_FromMaterial", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhBetaMC_FromMaterial", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hBetaMC_FromMaterial", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhGammaMCSources", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 8000, -4000, 4000));
+  fOutputContainer2->Add(new  TH2F("hGammaMCSources", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 8000, -4000, 4000));
   
-  fOutputContainer2->Add(new  TH2F("fhProtonMC", "MC distribution of protons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hProtonMC", "MC distribution of protons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhNeutrMC", "MC distribution of neutrons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hNeutrMC", "MC distribution of neutrons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhKchMC", "MC distribution of neutrons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hKchMC", "MC distribution of neutrons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("fhPdgvsPt_MCTracks","MC Particle PDG code vs Pt", nPt, ptMin, ptMax , 8000, -4000, 4000));
+  fOutputContainer2->Add(new  TH2F("hPdgvsPt_MCTracks","MC Particle PDG code vs Pt", nPt, ptMin, ptMax , 8000, -4000, 4000));
  
-  fOutputContainer2->Add(new  TH2F("fhPrimMC ","MC Particle PDG code vs Pt, primary particles only", nPt, ptMin, ptMax , 40, -20, 20));
-  fOutputContainer2->Add(new TH2F("fhGenvsMeas","Generated vs measured energy", nPt, ptMin, ptMax, nPt, ptMin, ptMax ));
-  fOutputContainer2->Add(new TH2F("fhGenvsMeas_corr","Generated vs measured energy", nPt, ptMin, ptMax, nPt, ptMin, ptMax ));
+  fOutputContainer2->Add(new  TH2F("hPrimMC ","MC Particle PDG code vs Pt, primary particles only", nPt, ptMin, ptMax , 40, -20, 20));
+  fOutputContainer2->Add(new TH2F("hGenvsMeas","Generated vs measured energy", nPt, ptMin, ptMax, nPt, ptMin, ptMax ));
+  fOutputContainer2->Add(new TH2F("hGenvsMeas_corr","Generated vs measured energy", nPt, ptMin, ptMax, nPt, ptMin, ptMax ));
 }
 
 //============================================================
