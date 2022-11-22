@@ -184,7 +184,7 @@ void AddTask_MesonJetCorr_Conv(
   } else if (trainConfig == 6) {
     cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
     cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
-  } else if (trainConfig == 6) {
+  } else if (trainConfig == 7) {
     cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
     cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
     //---------------------------------------
