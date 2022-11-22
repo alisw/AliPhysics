@@ -35,7 +35,7 @@ void filterAOD_MC_Tracks()
   // Note: vertices are kept by default
   task->SetVarListHeader("OfflineTrigger,MagField,MultSelection.RefMult08,CentrV0M");
   // track level
-  task->SetVarListTrack("pt,theta,phi,TOFBunchCrossing,ID");
+  task->SetVarListTrack("pt,theta,phi,TOFBunchCrossing,ID,GeneratorIndex");
 
   task->SetTrkCuts(trkCuts);
   task->AddEvtCuts(evtCuts);
