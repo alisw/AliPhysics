@@ -85,13 +85,9 @@ private:
   Int_t TestBC(Double_t tof) ;
 
   Double_t NonlinearCorrection(Double_t en);
-  void TestMatchingTrackPID(AliVCluster *clu, Double_t pt);
+  void TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt);
   
-  TString              fCurrFileName;      // current file path name
-  Bool_t               fCheckMCCrossSection; // retrieve from the pyxsec.root file only if requested
-  Float_t              fAvgTrials;         // avg trials
 
-  TF1   *fWeightFunction;
   Double_t Weight(AliAODMCParticle *particle);
   Bool_t PhotonWithinPeak(Double_t Minv, Double_t pt);
 
@@ -105,49 +101,67 @@ private:
   void AddTrackHistograms();
 
 private:
- // AliAODtrackCuts *fAODtrackCuts; // Track cut
-  AliESDtrackCuts *fESDtrackCuts; // Track cut
-  THashList * fOutputContainer;       //final histogram container
-  THashList * fOutputContainer2;       //final histogram container
-  TList * fPHOSEvents[10][2] ;    //Container for PHOS photons
-  TClonesArray * fPHOSEvent ;     //PHOS photons in current event
-  AliPIDResponse *fPIDResponse;    //!
 
-  Int_t fnCINT1B;           // Number of CINT1B triggers
-  Int_t fnCINT1A;           // Number of CINT1A triggers
-  Int_t fnCINT1C;           // Number of CINT1C triggers
-  Int_t fnCINT1E;           // Number of CINT1E triggers
+  THashList *          fOutputContainer,  
+            *          fOutputContainer2;  //final histogram containers
 
-  Double_t fRecalib[5];     // Correction for abs.calibration per module
-  Double_t fBCgap;          // time gap between BC in seconds
-  Double_t fVtx0[3];
-  Double_t fVtx5[3];
+  AliESDtrackCuts *    fESDtrackCuts; // Track cut
 
-  std::vector<TString> fCuts = {"all", "cpv", "disp", "both"};
+  AliAODEvent *        fEvent;
+  TClonesArray *       fPHOSEvent ;     // PHOS photons in current event
+
+  Int_t                fnCINT1B, 
+                       fnCINT1A, 
+		       fnCINT1C, 
+		       fnCINT1E; // Numbers of triggers
+
+  Bool_t               fEventVtxExist, 
+                       fEventVtxZ10cm, 
+		       fEventPileup,  
+		       fEventV0AND; 
+
+  AliPHOSGeometry *    fPHOSGeo;  // PHOS geometry
+  Int_t                fInPHOS;               // number of PHOS clusters
+
+  TClonesArray *       fMCArray;  // MC
+
+  AliPIDResponse *     fPIDResponse;    // Pid response
+
+  Double_t             fBCgap, // BC gap in seconds 
+                       fTOFcut; // upped tof cut for PHOS clusters
+
+  Int_t                fEventCounter;         // number of analyzed events
   
- // TH2I *fPHOSBadMap[6] ;    //Container for PHOS bad channels map
+  TF1 *                fWeightFunction;
 
-  TH1F *  fh1Xsec ;                       //! Xsec pythia
-  TH1F *  fh1Trials ;                     //! trials pythia
+  TString              fCurrFileName;      // current file path name
 
-  Bool_t Notify();
+  Bool_t               fCheckMCCrossSection; // retrieve from the pyxsec.root file only if requested
 
-  AliPHOSGeometry  *fPHOSGeo;  // PHOS geometry
-  Int_t fEventCounter;         // number of analyzed events
-  Int_t fAllEventCounter;      // number of analyzed events
-  Int_t fInPHOS;               // number of PHOS clusters
-  Int_t fInPHOS2;              // number of PHOS clusters
-  Int_t fEventCentrality;      // number of analyzed events
-  
-  Bool_t fEventVtxExist;  
-  Bool_t fEventVtxZ10cm;
-  Bool_t fEventPileup;
-  Bool_t fEventV0AND; 
+  TH1F *               fh1Xsec ;          //! Xsec pythia
+  TH1F *               fh1Trials ;        //! trials pythia
+  Float_t              fAvgTrials;         // avg trials
 
-  AliAODEvent *fEvent;
-  TClonesArray *fMCArray;
-  AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
+  AliTriggerAnalysis * fTriggerAnalysis; //! Trigger analysis for normalisation
 
+  std::vector<std::pair<TString, TString>> fPidCuts; // name and title parts for histograms
+
+  TList *              fPHOSEvents[10][2] ;    //Container for PHOS photons
+
+  Double_t             fVtx0[3] = {0, 0, 0},
+                       fVtx5[3] = {0, 0, 0};
+
+  Double_t             fRecalib[5];     // Correction for abs.calibration per module
+
+  Bool_t               Notify();
+
+  Int_t                fEventCentrality;      // centrality
+
+  Int_t                fLHCRunN;
+
+  Double_t             NsigmaCPV,
+                       NsigmaDisp;
+ 
   ClassDef(AliAnalysisTaskGammaPHOSPP, 2); // PHOS analysis task
 };
 
