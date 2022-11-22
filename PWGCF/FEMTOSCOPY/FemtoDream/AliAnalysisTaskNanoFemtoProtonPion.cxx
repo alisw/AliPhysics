@@ -65,6 +65,7 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion()
     fSameEvent_OneDimensional_Ancestors(nullptr),
     fSameEventMult_OneDimensional_Ancestors(nullptr),
     fSameEvent_InvMass(nullptr),
+    fSameEvent_InvMass_MCResonance(nullptr),
     fMixedEvent_List_OneDimensional(nullptr),
     fMixedEvent_OneDimensional(nullptr),
     fMixedEventMult_OneDimensional(nullptr),
@@ -78,7 +79,8 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion()
     fSameEventPhiTheta_Ancestors(nullptr),
     fMixedEventDeltaEtaDeltaPhi_List(nullptr),
     fMixedEventPhiTheta(nullptr),
-    fResonanceLorentzFactor(nullptr){
+    fResonanceLorentzFactor(nullptr),
+    fInvMassResonancesMCTruth(nullptr){
 }
 
 AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
@@ -131,6 +133,7 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
     fSameEvent_OneDimensional_Ancestors(nullptr),
     fSameEventMult_OneDimensional_Ancestors(nullptr),
     fSameEvent_InvMass(nullptr),
+    fSameEvent_InvMass_MCResonance(nullptr),
     fMixedEvent_List_OneDimensional(nullptr),
     fMixedEvent_OneDimensional(nullptr),
     fMixedEventMult_OneDimensional(nullptr),
@@ -144,7 +147,8 @@ AliAnalysisTaskNanoFemtoProtonPion::AliAnalysisTaskNanoFemtoProtonPion(
     fSameEventPhiTheta_Ancestors(nullptr),
     fMixedEventDeltaEtaDeltaPhi_List(nullptr),
     fMixedEventPhiTheta(nullptr),
-    fResonanceLorentzFactor(nullptr){
+    fResonanceLorentzFactor(nullptr),
+    fInvMassResonancesMCTruth(nullptr){
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
@@ -303,6 +307,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
     fSameEvent_OneDimensional = new TH1F*[10];
     fSameEventMult_OneDimensional = new TH2F*[10];
     fSameEvent_InvMass = new TH1F*[10];
+    fSameEvent_InvMass_MCResonance = new TH1F*[10];
 
     if(!fDoThreeDFemto){
        for (int i = 0; i < PassedCombinations; i++) {
@@ -333,6 +338,14 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
            std::string title = "SameEvent_InvMass_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
            fSameEvent_InvMass[i] =  new TH1F(title.data(),title.data(), 3000, 0, 3.);
            fSameEvent_List_OneDimensional->Add(fSameEvent_InvMass[i]);
+         }
+
+         if(fIsMC){ 
+          for (int i = 0; i < PassedCombinations; i++) {
+            std::string title = "SameEvent_InvMass_MCTruth_"+fNameTags[fCombinations[i][0]]+fNameTags[fCombinations[i][1]];
+            fSameEvent_InvMass_MCResonance[i] =  new TH1F(title.data(),title.data(), 3000, 0, 3.);
+            fSameEvent_List_OneDimensional->Add(fSameEvent_InvMass_MCResonance[i]);
+          }
          }
        }
     }//if(!fDoThreeDFemto)
@@ -476,20 +489,34 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserCreateOutputObjects() {
  
   } //if(fDoOwnFemto)
 
-   if(fDoResonanceLorentzFactor){
-    fResonanceLorentzFactor = new TH2F("fResonanceLorentzFactor","fResonanceLorentzFactor", 1990, 1.,200., 45,0.,45.);
+  if(fIsMC){
+   
     int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
     int ProtonPion[12] = {2224, 32224, 2222, 12224, 12222, 2226, 22222, 22224, 2228, 12226, 9902228, 99022212};
-    for(int i=0; i<33; i++){
-      fResonanceLorentzFactor->GetYaxis()->SetBinLabel(1+i,Form("%d",ProtonAntiPion[i]));
+    
+    if(fDoResonanceLorentzFactor){
+      fResonanceLorentzFactor = new TH2F("fResonanceLorentzFactor","fResonanceLorentzFactor", 1990, 1.,200., 45,0.,45.);
+      for(int i=0; i<33; i++){
+        fResonanceLorentzFactor->GetYaxis()->SetBinLabel(1+i,Form("%d",ProtonAntiPion[i]));
+      }
+      for(int i=0; i<12; i++){
+        fResonanceLorentzFactor->GetYaxis()->SetBinLabel(34+i,Form("%d",ProtonPion[i]));
+      }
+      fResults->Add(fResonanceLorentzFactor); 
     }
-    for(int i=0; i<12; i++){
-      fResonanceLorentzFactor->GetYaxis()->SetBinLabel(34+i,Form("%d",ProtonPion[i]));
+    if(fDoInvMassPlot){
+      fInvMassResonancesMCTruth = new TH2F("fInvMassResonancesMCTruth","fInvMassResonancesMCTruth", 3000, 0.,3., 45,0.,45.);
+      for(int i=0; i<33; i++){
+        fInvMassResonancesMCTruth->GetYaxis()->SetBinLabel(1+i,Form("%d",ProtonAntiPion[i]));
+      }
+      for(int i=0; i<12; i++){
+        fInvMassResonancesMCTruth->GetYaxis()->SetBinLabel(34+i,Form("%d",ProtonPion[i]));
+      }
+      fResults->Add(fInvMassResonancesMCTruth); 
     }
-    fResults->Add(fResonanceLorentzFactor); 
   } 
 
-  //////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////// 
 
   PostData(1, fEvtList);
   PostData(2, fProtonList);
@@ -662,6 +689,11 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
           fResonanceLorentzFactor->Fill(mcPart->E()/mcPart->M(), Form("%d",abs(mcPart->GetPdgCode())), 1.);
         }
       }
+      if(fDoInvMassPlot){ 
+        if(IsResonance(mcPart->GetPdgCode())){
+          fInvMassResonancesMCTruth->Fill(mcPart->M(), Form("%d",abs(mcPart->GetPdgCode())), 1.);
+        }
+      }
     }
   }
 
@@ -702,7 +734,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::UserExec(Option_t*) {
 
     for (int i = 0; i < PassedCombinations; i++) {
         if(!fDoAncestors){
-         FillPairDistributionSE(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i],fSameEvent_InvMass[i],fSameEventPhiTheta,i,*fConfig);
+         FillPairDistributionSE(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i],fSameEvent_InvMass[i],fSameEvent_InvMass_MCResonance[i],fSameEventPhiTheta,i,*fConfig);
       } else {
          FillPairDistributionSEAncestors(ParticleVector,fCombinations[i][0],fCombinations[i][1],PDGCodes,bins[1],fClosePairRejection[i],fSameEvent_OneDimensional[i],fSameEventMult_OneDimensional[i],fSameEvent_InvMass[i],fSameEventPhiTheta,fSameEvent_OneDimensional_Ancestors,fSameEventMult_OneDimensional_Ancestors,fSameEventPhiTheta_Ancestors,i,*fConfig);
       }
@@ -793,7 +825,7 @@ void AliAnalysisTaskNanoFemtoProtonPion::StoreGlobalTrackReference(AliVTrack *tr
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config){
+void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, std::vector<int> PDGCodes, int mult, bool DoClosePairRejection, TH1F* hist, TH2F* hist2d, TH1F* HistInvMass, TH1F* HistInvMassMCResonance, TH2F **SameEventPhiTheta_OneDimensional, int CombinationNumber, AliFemtoDreamCollConfig Config){
 
   auto Particle1Vector = ParticleVector.begin()+firstSpecies;
   auto Particle2Vector = ParticleVector.begin()+secondSpecies;
@@ -847,8 +879,18 @@ void AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE(std::vector<std:
           TLorentzVector Sum = Particle1_LV + Particle2_LV; 
           if(Sum.M() >= 0.){
               HistInvMass->Fill(Sum.M()); 
+
+              if(fIsMC){
+                bool HasCommonAncestor = CommonAncestors(*iPart1, *iPart2);
+                if(HasCommonAncestor){
+                  bool HasCommonMotherResonance = CommonMotherResonance(*iPart1, *iPart2);
+                  if(HasCommonMotherResonance){
+                    HistInvMassMCResonance->Fill(Sum.M());
+                  }
+                } 
+              }//if(fIsMC)
           }
-        }
+        }//if(fDoInvMassPlot)
     }
   }
 } //AliAnalysisTaskNanoFemtoProtonPion::FillPairDistributionSE
