@@ -344,7 +344,7 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
 
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskRawJetWithEP, 47);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 50);
     /// \endcond
   // ### private ###############################################################
 };
