@@ -18,6 +18,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     bool useMCTruthReco = false,
     bool isMCtruth = false,
     bool useTree = false,
+    bool useLooseSelections = false,
     bool fullBlastQA = true,
     TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
@@ -363,11 +364,7 @@ if (!isMC) {
   }
 
   // overwrite previous settings and use loose selections if trees are used
-  if (useTree) {
-    // pt
-    TrackCuts->SetPtRange(0.14, 10);
-    AntiTrackCuts->SetPtRange(0.14, 10);
-
+  if (useTree && useLooseSelections) {
     // eta
     TrackCuts->SetEtaRange(-0.9, 0.9);
     AntiTrackCuts->SetEtaRange(-0.9, 0.9);
@@ -376,11 +373,14 @@ if (!isMC) {
     TrackCuts->SetNClsTPC(70);
     AntiTrackCuts->SetNClsTPC(70);
     
-    // PID
     if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPtRange(0.11, 10);
+      AntiTrackCuts->SetPtRange(0.11, 10);
       TrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
     } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPtRange(0.1, 10);
+      AntiTrackCuts->SetPtRange(0.1, 10);
       TrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
       AntiTrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
     }
