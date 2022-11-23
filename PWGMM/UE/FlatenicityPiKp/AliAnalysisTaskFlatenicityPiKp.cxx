@@ -532,7 +532,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 	for (int i_c = 0; i_c < nCent; ++i_c) 
 	{
-	
+
 		hFlatVsV0MVsMult[i_c] = new TH2F(Form("hFlatVsNch_V0_%s",V0MClass[i_c]), "; Flatenicity; #it{N}_{ch} (|#eta| < 0.8)", nFlatbins, Flatbins, nMultbins, Multbins);
 
 		hFlatVsPtV0M[i_c] = new TH2F(Form("hPtVsFlatV0M_c%d", i_c),"; Flat. V0M; #it{p}_{T} (GeV/#it{c})", nFlatbins, Flatbins, nPtbins, Ptbins);
@@ -563,7 +563,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 			if (i_c==0) { hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins); }
 
-			if (!fUseMC && fV0MEqualisation) { 
+			if (!fUseMC && fV0MEqualisation && !fSaveDCAxyHistograms) { 
 
 				if (save_this_mult_bin != i_c) { continue; }
 
@@ -606,7 +606,20 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 					fOutputList->Add(hFlatVsV0MVsMult[i_c]);
 				}
 			} 
-		}
+
+			if (!fUseMC && fSaveDCAxyHistograms) { 
+				if (i_eta==0) {
+					fOutputList->Add(hPionTPCDCAxyNegData);
+					fOutputList->Add(hPionTPCDCAxyPosData);
+					fOutputList->Add(hProtonTPCDCAxyNegData);
+					fOutputList->Add(hProtonTPCDCAxyPosData);
+					fOutputList->Add(hPionTOFDCAxyNegData);
+					fOutputList->Add(hPionTOFDCAxyPosData);
+					fOutputList->Add(hProtonTOFDCAxyNegData);
+					fOutputList->Add(hProtonTOFDCAxyPosData);
+				}
+			}
+		} // eta loop
 	}
 
 	if (fUseMC) {
