@@ -783,7 +783,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::Terminate(Option_t *)
 	}
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskCorrForFlowFMD::RangePhiFMD(Double_t DPhi) {
+Double_t AliAnalysisTaskCorrForNonlinearFlow::RangePhiFMD(Double_t DPhi) {
   DPhi = TMath::ATan2(TMath::Sin(DPhi), TMath::Cos(DPhi));
   if (DPhi < (-0.5*TMath::Pi()-0.0001))    DPhi += 2 * TMath::Pi();
   return DPhi;
