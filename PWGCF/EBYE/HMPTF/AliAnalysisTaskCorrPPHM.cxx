@@ -1096,6 +1096,7 @@ Bool_t AliAnalysisTaskCorrPPHM::KaonSelector(AliVTrack *track)  {
   //Selection for pT < 0.5 : TPC only
   if( Track_pt < 0.5 )
     {
+      /*
       //rejection
       Int_t flag = 0;
       if (TMath::Abs(fTPCnSigmaPion) < 3.0)
@@ -1109,6 +1110,7 @@ Bool_t AliAnalysisTaskCorrPPHM::KaonSelector(AliVTrack *track)  {
 
       if (fTPCnSigmaKaon > fTPCnSigmaProton) return kFALSE;
       if (fTPCnSigmaKaon > fTPCnSigmaPion) return kFALSE;
+      */
 
       //acception
       if(TMath::Abs(fTPCnSigmaKaon) < 2.0)

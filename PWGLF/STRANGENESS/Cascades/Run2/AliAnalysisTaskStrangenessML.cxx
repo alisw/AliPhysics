@@ -380,7 +380,7 @@ void AliAnalysisTaskStrangenessML::UserExec(Option_t *)
 	//Fill output histograms
 
 	float IM_Xi = Xi->GetEffMassXi();
-	float pT_Xi = TMath::Sqrt( p_Xi[0]*p_Xi[0] + p_Xi[1]*p_Xi[0] );
+	float pT_Xi = TMath::Sqrt( p_Xi[0]*p_Xi[0] + p_Xi[1]*p_Xi[1] );
 
 	if(std_cut_flag) fHist_XiMinus_Std_IM->Fill( IM_Xi, pT_Xi );
 
@@ -391,7 +391,7 @@ void AliAnalysisTaskStrangenessML::UserExec(Option_t *)
 	fHist_XiMinus_NNpred->Fill(NNpred);
 	fHist_XiMinus_NN_IM->Fill(IM_Xi, pT_Xi, NNpred);
 
-	if(fXiMinusBDT) BDTpred = fXiMinusBDT->Predict(X,11);
+	if(fXiMinusBDT) BDTpred = fXiMinusBDT->Predict(X,100);
 	fHist_XiMinus_BDTpred->Fill(BDTpred);
 	fHist_XiMinus_BDT_IM->Fill(IM_Xi, pT_Xi, BDTpred); 
 

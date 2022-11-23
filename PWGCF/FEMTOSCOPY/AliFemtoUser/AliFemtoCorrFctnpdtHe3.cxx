@@ -69,7 +69,8 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     f2DpTvsKStar(nullptr),
     fUsePairCutEtaPhi(0),
     fPairCut_eta(0.017),
-    fPairCut_phi(0.017)
+    fPairCut_phi(0.017),
+    fPassAllPair(0)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -127,7 +128,8 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     f2DpTvsKStar(aCorrFctn.f2DpTvsKStar),
     fUsePairCutEtaPhi(aCorrFctn.fUsePairCutEtaPhi),
     fPairCut_eta(aCorrFctn.fPairCut_eta),
-    fPairCut_phi(aCorrFctn.fPairCut_phi)
+    fPairCut_phi(aCorrFctn.fPairCut_phi),
+    fPassAllPair(aCorrFctn.fPassAllPair)
 {
     
 
@@ -370,14 +372,15 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
     }
     
     // add true pair
-    if (fPairCut && !fPairCut->Pass(fPair)) {
-        return;
-    }
-    
-    if(fUsePairCutEtaPhi){
-	if(!PairEtaPhiSelect(fPair)) return;
-    }
-
+	if(fPassAllPair==0){
+	    if (fPairCut && !fPairCut->Pass(fPair)) {
+		return;
+	    }
+	    
+	    if(fUsePairCutEtaPhi){
+		if(!PairEtaPhiSelect(fPair)) return;
+	    }
+	}
 
     double tKStar = fabs(fPair->KStar());
     fNumerator->Fill(tKStar);
@@ -458,12 +461,14 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
     }
 
     // add true pair
-    if (fPairCut && !fPairCut->Pass(fPair)) {
-        return;
-    } 
-    if(fUsePairCutEtaPhi){
-	if(!PairEtaPhiSelect(fPair)) return;
-    }
+	if(fPassAllPair==0){
+	    if (fPairCut && !fPairCut->Pass(fPair)) {
+		return;
+	    } 
+	    if(fUsePairCutEtaPhi){
+		if(!PairEtaPhiSelect(fPair)) return;
+	    }
+	}
     double tKStar = fabs(fPair->KStar());
     fDenominator->Fill(tKStar);
     if(fHighCF){
@@ -918,5 +923,7 @@ bool AliFemtoCorrFctnpdtHe3::PairEtaPhiSelect(AliFemtoPair* aPair){
    return true;
   
 }
-
+void AliFemtoCorrFctnpdtHe3::SetPassAllPair(int aUse){
+	fPassAllPair = aUse;
+}
 

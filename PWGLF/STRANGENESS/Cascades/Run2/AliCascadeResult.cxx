@@ -105,7 +105,10 @@ fCutDCABachToPVWeighted(-1),
 fCutAtLeastOneTOF(kFALSE),
 fCutITSorTOF(kFALSE),
 fCutIsCowboy(0),
-fCutIsCascadeCowboy(0)
+fCutIsCascadeCowboy(0),
+//ML selection   
+fCutMLthrsh(-1),
+fIsModelNN(kTRUE)
 {
     // Dummy Constructor - not to be used!
     fhNCentBounds = 21;
@@ -215,7 +218,10 @@ fCutDCABachToPVWeighted(-1),
 fCutAtLeastOneTOF(kFALSE),
 fCutITSorTOF(kFALSE),
 fCutIsCowboy(0),
-fCutIsCascadeCowboy(0)
+fCutIsCascadeCowboy(0),
+//ML selection   
+fCutMLthrsh(-1),
+fIsModelNN(kTRUE)
 {
     // Named constructor
     fhNCentBounds = 21;
@@ -325,7 +331,10 @@ fCutDCABachToPVWeighted(-1),
 fCutAtLeastOneTOF(kFALSE),
 fCutITSorTOF(kFALSE),
 fCutIsCowboy(0),
-fCutIsCascadeCowboy(0)
+fCutIsCascadeCowboy(0),
+//ML selection   
+fCutMLthrsh(-1),
+fIsModelNN(kTRUE)
 {
     //centrality binning assignment
     fhNCentBounds = lNCentBins+1;
@@ -435,7 +444,10 @@ fCutDCABachToPVWeighted(-1),
 fCutAtLeastOneTOF(kFALSE),
 fCutITSorTOF(kFALSE),
 fCutIsCowboy(0),
-fCutIsCascadeCowboy(0)
+fCutIsCascadeCowboy(0),
+//ML selection   
+fCutMLthrsh(-1),
+fIsModelNN(kTRUE)
 {
     //centrality binning assignment
     fhNCentBounds = lNCentBins+1;
@@ -547,7 +559,10 @@ fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted),
 fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF),
 fCutITSorTOF(lCopyMe.fCutITSorTOF),
 fCutIsCowboy(lCopyMe.fCutIsCowboy),
-fCutIsCascadeCowboy(lCopyMe.fCutIsCascadeCowboy)
+fCutIsCascadeCowboy(lCopyMe.fCutIsCascadeCowboy),
+//ML selection   
+fCutMLthrsh(lCopyMe.fCutMLthrsh),
+fIsModelNN(lCopyMe.fIsModelNN)
 
 {
     SetName( lNewName.Data() );
@@ -691,6 +706,10 @@ fHisto(0), fProtonProfile(0)
     fCutIsCowboy = lCopyMe -> GetCutIsCowboy();
     fCutIsCascadeCowboy = lCopyMe -> GetCutIsCascadeCowboy();
     
+    //ML selection
+    fCutMLthrsh = lCopyMe -> GetCutMLthrsh();
+    fIsModelNN  = lCopyMe -> GetIsModelNN();
+
     // Constructor
     Double_t lThisMass = GetMass();
     
@@ -849,6 +868,10 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutIsCowboy = lCopyMe.GetCutIsCowboy();
     fCutIsCascadeCowboy = lCopyMe.GetCutIsCascadeCowboy();
     
+    //ML selection
+    fCutMLthrsh = lCopyMe.GetCutMLthrsh();
+    fIsModelNN  = lCopyMe.GetIsModelNN();
+
     if (fhCentBins) {
         delete [] fhCentBins;
     }
@@ -1028,6 +1051,11 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if ( TMath::Abs(fCutIsCowboy - lCompareCascade->GetCutIsCowboy()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutIsCascadeCowboy - lCompareCascade->GetCutIsCascadeCowboy()) > 1e-6 ) lReturnValue = kFALSE;
     
+    //ML selection
+    if ( TMath::Abs(fCutMLthrsh - lCompareCascade->GetCutMLthrsh()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( fIsModelNN==kTRUE && lCompareCascade->GetIsModelNN()==kFALSE ) lReturnValue = kFALSE;
+    if ( fIsModelNN==kFALSE && lCompareCascade->GetIsModelNN()==kTRUE ) lReturnValue = kFALSE;
+
     return lReturnValue;
 }
 //________________________________________________________________
@@ -1139,6 +1167,10 @@ void AliCascadeResult::Print()
     
     cout<<" Is cowboy..........: "<<fCutIsCowboy<<endl;
     cout<<" Is cascade cowboy..: "<<fCutIsCascadeCowboy<<endl;
+
+    cout<<" ML threshold.......: "<<fCutMLthrsh<<endl;
+    cout<<" Is ML Model a NN...? "<<fIsModelNN<<endl;
+
     cout<<"========================================"<<endl;
     return;
 }

@@ -782,7 +782,12 @@ void AliAnalysisTaskCorrForNonlinearFlow::Terminate(Option_t *)
 		// delete fPoolMgr;
 	}
 }
-
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskCorrForNonlinearFlow::RangePhiFMD(Double_t DPhi) {
+  DPhi = TMath::ATan2(TMath::Sin(DPhi), TMath::Cos(DPhi));
+  if (DPhi < (-0.5*TMath::Pi()-0.0001))    DPhi += 2 * TMath::Pi();
+  return DPhi;
+}
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskCorrForNonlinearFlow::RangePhi(Double_t DPhi) {
 	if (DPhi < -TMath::Pi() / 2)   DPhi += 2 * TMath::Pi();
@@ -943,7 +948,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 				// if (trackTrig == trackAss) continue;
 				// Here these's a complicated way to check whether the pair pass or not
 				binscont[0] = etaTrig - etaAss;
-				binscont[1] = RangePhi(phiTrig - phiAss);
+				binscont[1] = RangePhiFMD(phiTrig - phiAss);
 				binscont[4] = 1.0;
 				binscont[5] = NtrksCounter;
 
@@ -1102,7 +1107,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 						// if (trackTrig == trackAss) continue;
 						// Here these's a complicated way to check whether the pair pass or not
 						binscont[0] = etaTrig - etaAss;
-						binscont[1] = RangePhi(phiTrig - phiAss);
+						binscont[1] = RangePhiFMD(phiTrig - phiAss);
 						binscont[4] = 1.0;
 						binscont[5] = NtrksCounter;
 

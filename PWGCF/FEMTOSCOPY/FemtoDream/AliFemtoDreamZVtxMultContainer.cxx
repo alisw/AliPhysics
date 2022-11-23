@@ -131,6 +131,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               // pair
               bool is_oldpcrm = part1.IsRemovedByOldPC() || part2.IsRemovedByOldPC();
               bool is_newpcrm = part1.IsRemovedByNewPC() || part2.IsRemovedByNewPC();
+              bool is_crosspcrm = part1.IsRemovedByCrossPC() || part2.IsRemovedByCrossPC();
 
               // load dmeson info
               int heavy_mult = part2.GetParticleMult();
@@ -169,6 +170,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               if (tree->FindBranch("kStar")) tree->SetBranchAddress("kStar", &RelativeK);
               if (tree->FindBranch("is_oldpcrm")) tree->SetBranchAddress("is_oldpcrm", &is_oldpcrm);
               if (tree->FindBranch("is_newpcrm")) tree->SetBranchAddress("is_newpcrm", &is_newpcrm);
+              if (tree->FindBranch("is_crosspcrm")) tree->SetBranchAddress("is_crosspcrm", &is_crosspcrm);
 
 
               // heavy particle
@@ -281,6 +283,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 // pair
                 bool is_oldpcrm = itPart1->IsRemovedByOldPC() || itPart2->IsRemovedByOldPC();
                 bool is_newpcrm = itPart1->IsRemovedByNewPC() || itPart2->IsRemovedByNewPC();
+                bool is_crosspcrm = itPart1->IsRemovedByCrossPC() || itPart2->IsRemovedByCrossPC();
               
                 // load dmeson info
                 int heavy_mult = itPart2->GetParticleMult();
@@ -319,6 +322,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 if (tree->FindBranch("kStar")) tree->SetBranchAddress("kStar", &RelativeK);
                 if (tree->FindBranch("is_oldpcrm")) tree->SetBranchAddress("is_oldpcrm", &is_oldpcrm);
                 if (tree->FindBranch("is_newpcrm")) tree->SetBranchAddress("is_newpcrm", &is_newpcrm);
+                if (tree->FindBranch("is_crosspcrm")) tree->SetBranchAddress("is_crosspcrm", &is_crosspcrm);
 
                 // heavy particle
                 if (tree->FindBranch("heavy_mult")) tree->SetBranchAddress("heavy_mult", &heavy_mult);
