@@ -158,7 +158,10 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
 bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
       if(AlldEdxmode){
-
+	if(fCharge==0){
+		fNTracksFailed++;
+                return false;
+	}
 	  if (fCharge != 0 && (track->Charge() != fCharge)) {
         	fNTracksFailed++;
         	return false;
