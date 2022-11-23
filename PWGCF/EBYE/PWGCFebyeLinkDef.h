@@ -132,7 +132,7 @@
 #pragma link C++ class AliAnalysisTaskCorrPbPb+;
 #pragma link C++ class AliAnalysisTaskCorrPPHM+;
 #pragma link C++ class AliAnalysisTaskCorrPbPbMC+;
-
+#pragma link C++ class AliAnalysisTaskCorrPPMC+;
 
 #pragma link C++ class AliAnalysisTaskNFMs+;
 
