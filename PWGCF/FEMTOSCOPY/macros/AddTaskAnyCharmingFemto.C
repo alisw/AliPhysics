@@ -27,7 +27,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TString cutHFsuffix = "",
     bool applyML = false, TString configML = "config_ML.yml",
     int useAODProtection = 0,
-    int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
+    AliAnalysisTaskCharmingFemto::MassSelectionType massSelection = AliAnalysisTaskCharmingFemto::kSignal,
     int pdgBuddy = 2212,
     int mixingDepth = 10,
     std::vector<std::string> colsToSave = {

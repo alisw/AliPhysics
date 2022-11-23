@@ -40,10 +40,12 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     kpp13TeV
   };
 
-  enum MassSelection
+  enum MassSelectionType
   {
+    kTaskDefault = -1,
     kAny,
     kSignal,
+    kSideband,
     kSidebandRight,
     kSidebandLeft,
     kStrictCut,
@@ -127,14 +129,14 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetMLConfigFile(TString path = "") {
     fConfigPath = path;
   }
-  void SetMassSelection(int type) {
+  void SetMassSelection(MassSelectionType type) {
     fMassSelectionType = type;
   }
   void SetNSigmaSelection(double nSigma = 2) {
     fMassSelectionType = kSignal;
     fNSigmaMass = nSigma;
   }
-  void SetSidebandChoice(MassSelection type, double offset, double width) {
+  void SetSidebandChoice(MassSelectionType type, double offset, double width) {
     fMassSelectionType = type;
     fNSigmaOffsetSideband = offset;
     fSidebandWidth = width;
@@ -306,7 +308,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &scores);
-  bool MassSelection(const double mass, const double pt, const int pdg);
+  bool MassSelection(const double mass, const double pt, const int pdg, MassSelectionType selection=kTaskDefault);
 
   // Track / event selection objects
   AliAODEvent *fInputEvent;                          //
@@ -394,7 +396,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliRDHFCuts* fRDHFCuts;                                  // HF cut object
   int fAODProtection;                                      // flag to activate protection against AOD-dAOD mismatch.
                                                            // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-  int fMassSelectionType;			           // Switch for the D meson inv. mass selection type
+  MassSelectionType fMassSelectionType;			           // Switch for the D meson inv. mass selection type
   double fNSigmaMass;					                             // Width of the mass window
   double fNSigmaOffsetSideband;                            // Offset of the mass window from the D inv. mass peak
   double fLowerMassSelection;			                         // Lower boundary of the mass selection
