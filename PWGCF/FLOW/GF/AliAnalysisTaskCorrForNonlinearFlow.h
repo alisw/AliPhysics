@@ -119,6 +119,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetBinningMethod(unsigned method) {fBinMethod = method;}
 
 		Double_t RangePhi(Double_t DPhi);
+        Double_t  RangePhiFMD(Double_t DPhi);
 		Double_t GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
 
 	private:
