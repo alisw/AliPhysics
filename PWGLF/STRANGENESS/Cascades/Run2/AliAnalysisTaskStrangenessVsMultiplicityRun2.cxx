@@ -142,6 +142,17 @@ fPIDResponse(0), fESDtrackCuts(0),
 fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),
 fUtils(0), fRand(0),
 
+//---> Pointers to ML Classes
+fXiMinusNN(0),
+fXiPlusNN(0),
+fOmegaMinusNN(0),
+fOmegaPlusNN(0),
+
+fXiMinusBDT(0),
+fXiPlusBDT(0),
+fOmegaMinusBDT(0),
+fOmegaPlusBDT(0),
+
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
 fkDownScaleEvent      ( kTRUE  ),
@@ -341,7 +352,15 @@ fTreeCascVarMinTrackLength(0),
 
 //-------------------------------------------
 //ML Prediction
-fTreeCascVarMLCascadeNNPrediction(-1),
+fTreeCascVarMLNNPredXiMinus(-1),
+fTreeCascVarMLNNPredXiPlus(-1),
+fTreeCascVarMLNNPredOmegaMinus(-1),
+fTreeCascVarMLNNPredOmegaPlus(-1),
+
+fTreeCascVarMLBDTPredXiMinus(-1),
+fTreeCascVarMLBDTPredXiPlus(-1),
+fTreeCascVarMLBDTPredOmegaMinus(-1),
+fTreeCascVarMLBDTPredOmegaPlus(-1),
 //-------------------------------------------
 
 fTreeCascVarNegNSigmaPion(0),
@@ -526,6 +545,17 @@ fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0),
 fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),
 fUtils(0), fRand(0),
+
+//---> Pointers to ML Classes
+fXiMinusNN(0),
+fXiPlusNN(0),
+fOmegaMinusNN(0),
+fOmegaPlusNN(0),
+
+fXiMinusBDT(0),
+fXiPlusBDT(0),
+fOmegaMinusBDT(0),
+fOmegaPlusBDT(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
@@ -727,7 +757,15 @@ fTreeCascVarMinTrackLength(0),
 
 //-------------------------------------------
 //ML Prediction
-fTreeCascVarMLCascadeNNPrediction(-1),
+fTreeCascVarMLNNPredXiMinus(-1),
+fTreeCascVarMLNNPredXiPlus(-1),
+fTreeCascVarMLNNPredOmegaMinus(-1),
+fTreeCascVarMLNNPredOmegaPlus(-1),
+
+fTreeCascVarMLBDTPredXiMinus(-1),
+fTreeCascVarMLBDTPredXiPlus(-1),
+fTreeCascVarMLBDTPredOmegaMinus(-1),
+fTreeCascVarMLBDTPredOmegaPlus(-1),
 //-------------------------------------------
 
 fTreeCascVarNegNSigmaPion(0),
@@ -1027,6 +1065,41 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::~AliAnalysisTaskStrangenessVsMulti
     delete fRand;
     fRand = 0x0;
   }
+
+  //Pointers to ML Classes
+  if (fXiMinusNN) {
+    delete fXiMinusNN;
+    fXiMinusNN = 0x0;
+  }
+  if (fXiPlusNN) {
+    delete fXiPlusNN;
+    fXiPlusNN = 0x0;
+  }
+  if (fOmegaMinusNN) {
+    delete fOmegaMinusNN;
+    fOmegaMinusNN = 0x0;
+  }
+  if (fOmegaPlusNN) {
+    delete fOmegaPlusNN;
+    fOmegaPlusNN = 0x0;
+  }
+  if (fXiMinusBDT) {
+    delete fXiMinusBDT;
+    fXiMinusBDT = 0x0;
+  }
+  if (fXiPlusBDT) {
+    delete fXiPlusBDT;
+    fXiPlusBDT = 0x0;
+  }
+  if (fOmegaMinusBDT) {
+    delete fOmegaMinusBDT;
+    fOmegaMinusBDT = 0x0;
+  }
+  if (fOmegaPlusBDT) {
+    delete fOmegaPlusBDT;
+    fOmegaPlusBDT = 0x0;
+  }
+
 }
 
 //________________________________________________________________________
@@ -1212,7 +1285,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     
     //-------------------------------------------
     //ML Prediction
-    fTreeCascade->Branch("fTreeCascVarMLCascadeNNPrediction", &fTreeCascVarMLCascadeNNPrediction, "fTreeCascVarMLCascadeNNPrediction/D");
+    fTreeCascade->Branch("fTreeCascVarMLNNPredXiMinus", &fTreeCascVarMLNNPredXiMinus, "fTreeCascVarMLNNPredXiMinus/D");
+    fTreeCascade->Branch("fTreeCascVarMLNNPredXiPlus", &fTreeCascVarMLNNPredXiPlus, "fTreeCascVarMLNNPredXiPlus/D");
+    fTreeCascade->Branch("fTreeCascVarMLNNPredOmegaMinus", &fTreeCascVarMLNNPredOmegaMinus, "fTreeCascVarMLNNPredOmegaMinus/D");
+    fTreeCascade->Branch("fTreeCascVarMLNNPredOmegaPlus", &fTreeCascVarMLNNPredOmegaPlus, "fTreeCascVarMLNNPredOmegaPlus/D");
+
+    fTreeCascade->Branch("fTreeCascVarMLBDTPredXiMinus", &fTreeCascVarMLBDTPredXiMinus, "fTreeCascVarMLBDTPredXiMinus/D");
+    fTreeCascade->Branch("fTreeCascVarMLBDTPredXiPlus", &fTreeCascVarMLBDTPredXiPlus, "fTreeCascVarMLBDTPredXiPlus/D");
+    fTreeCascade->Branch("fTreeCascVarMLBDTPredOmegaMinus", &fTreeCascVarMLBDTPredOmegaMinus, "fTreeCascVarMLBDTPredOmegaMinus/D");
+    fTreeCascade->Branch("fTreeCascVarMLBDTPredOmegaPlus", &fTreeCascVarMLBDTPredOmegaPlus, "fTreeCascVarMLBDTPredOmegaPlus/D");
     //-------------------------------------------
     
     //-----------MULTIPLICITY-INFO--------------------
@@ -3342,20 +3423,28 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     
     //-------------------------------------------
     //ML Prediction
-    Double_t v[11];
-    v[0] = lDcaV0DaughtersXi; //ML 0
-    v[1] = lDcaNegToPrimVertexXi; //ML 1
-    v[2] = lDcaPosToPrimVertexXi; //ML 2
-    v[3] = lV0RadiusXi; //ML 3
-    v[4] = lV0CosineOfPointingAngleXi; //ML 4
-    v[5] = lDcaXiDaughters; //ML 5
-    v[6] = lDcaBachToPrimVertexXi; //ML 6
-    v[7] = lDcaV0ToPrimVertexXi; //ML 7
-    v[8] = lXiRadius; //ML 8
-    v[9] = lXiCosineOfPointingAngle; //ML 9
-    v[10] = lInvMassLambdaAsCascDghter; //ML 10
+    Double_t X[11];
+    X[0] = lDcaV0DaughtersXi; //ML 0
+    X[1] = lDcaNegToPrimVertexXi; //ML 1
+    X[2] = lDcaPosToPrimVertexXi; //ML 2
+    X[3] = lV0RadiusXi; //ML 3
+    X[4] = lV0CosineOfPointingAngleXi; //ML 4
+    X[5] = lDcaXiDaughters; //ML 5
+    X[6] = lDcaBachToPrimVertexXi; //ML 6
+    X[7] = lDcaV0ToPrimVertexXi; //ML 7
+    X[8] = lXiRadius; //ML 8
+    X[9] = lXiCosineOfPointingAngle; //ML 9
+    X[10] = lInvMassLambdaAsCascDghter; //ML 10
     
-    fTreeCascVarMLCascadeNNPrediction = MLCascadeNeuralNetworkForward(v,lXiTransvMom);
+    if(fXiMinusNN)    fTreeCascVarMLNNPredXiMinus    = fXiMinusNN->Predict(X,11);
+    if(fXiPlusNN)     fTreeCascVarMLNNPredXiPlus     = fXiPlusNN->Predict(X,11);
+    if(fOmegaMinusNN) fTreeCascVarMLNNPredOmegaMinus = fOmegaMinusNN->Predict(X,11);
+    if(fOmegaPlusNN)  fTreeCascVarMLNNPredOmegaPlus  = fOmegaPlusNN->Predict(X,11);
+
+    if(fXiMinusBDT)    fTreeCascVarMLBDTPredXiMinus    = fXiMinusBDT->Predict(X,100);
+    if(fXiPlusBDT)     fTreeCascVarMLBDTPredXiPlus     = fXiPlusBDT->Predict(X,100);
+    if(fOmegaMinusBDT) fTreeCascVarMLBDTPredOmegaMinus = fOmegaMinusBDT->Predict(X,100);
+    if(fOmegaPlusBDT)  fTreeCascVarMLBDTPredOmegaPlus  = fOmegaPlusBDT->Predict(X,100);
     //-------------------------------------------
     
     //Copy Multiplicity information
@@ -3553,6 +3642,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
       lpipy = fTreeCascVarBachPy;
       lpipz = fTreeCascVarBachPz;
       
+      //Local variable to cut ML selection threshold 
+      Double_t lMLpred = 0;
+      //Local variable to control model type (NN or BDT) in the output
+      //IsModelNN == kTrue => Neural Network Selection
+      //IsModelNN == kFalse => BDT Selection
+      Bool_t lIsModelNN = lCascadeResult->GetIsModelNN();
+
       //For parametric V0 Mass selection
       Float_t lExpV0Mass =
       fLambdaMassMean[0]+
@@ -3669,6 +3765,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         lprpx = fTreeCascVarPosPx;
         lprpy = fTreeCascVarPosPy;
         lprpz = fTreeCascVarPosPz;
+	//ML thrsh
+        if(lIsModelNN) lMLpred = fTreeCascVarMLNNPredXiMinus;
+	else           lMLpred = fTreeCascVarMLBDTPredXiMinus;
       }
       if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiPlus      ){
         lCharge  = +1;
@@ -3686,6 +3785,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         lprpx = fTreeCascVarNegPx;
         lprpy = fTreeCascVarNegPy;
         lprpz = fTreeCascVarNegPz;
+	//ML thrsh
+        if(lIsModelNN) lMLpred = fTreeCascVarMLNNPredXiPlus;
+	else           lMLpred = fTreeCascVarMLBDTPredXiPlus;
       }
       if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaMinus     ){
         lCharge  = -1;
@@ -3703,6 +3805,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         lprpx = fTreeCascVarPosPx;
         lprpy = fTreeCascVarPosPy;
         lprpz = fTreeCascVarPosPz;
+	//ML thrsh
+        if(lIsModelNN) lMLpred = fTreeCascVarMLNNPredOmegaMinus;
+	else           lMLpred = fTreeCascVarMLBDTPredOmegaMinus;
       }
       if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaPlus      ){
         lCharge  = +1;
@@ -3720,6 +3825,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         lprpx = fTreeCascVarNegPx;
         lprpy = fTreeCascVarNegPy;
         lprpz = fTreeCascVarNegPz;
+	//ML thrsh
+        if(lIsModelNN) lMLpred = fTreeCascVarMLNNPredOmegaPlus;
+	else           lMLpred = fTreeCascVarMLBDTPredOmegaPlus;
       }
       
       if (lCascadeResult->GetCutUseTOFUnchecked() == kFALSE ){
@@ -3870,7 +3978,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
           //Check 20: ITS or TOF required
           (
            lCascadeResult->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
-           )
+           )&&
+	  //Check 21: ML threshold selection
+          lMLpred > lCascadeResult->GetCutMLthrsh()
+
           )//end major if
       {
         //This satisfies all my conditionals! Fill histogram
@@ -7057,124 +7168,64 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::Evaluate(const Double_t *h, D
   gg[0]=-h[4]*sn; gg[1]=h[4]*cs; gg[2]=0.;
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskStrangenessVsMultiplicityRun2::MLCascadeNeuralNetworkForward(Double_t v[11], Float_t lpT)
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::Create_ML_Model(TString FileName, TString ModelType, TString Particle)
 {
-  
-  int p = -1;
-  
-  //DEFINE NEURAL NETWORK WEIGHTS BASED ON PT
-  if( lpT>=0.75 && lpT<1.00 )	p=0;
-  if( lpT>=1.00 && lpT<1.50 )	p=1;
-  if( lpT>=1.50 && lpT<2.00 )	p=2;
-  if( lpT>=2.00 && lpT<3.00 )	p=3;
-  if( lpT>=3.00 && lpT<4.00 )	p=4;
-  if( lpT>=4.00 && lpT<5.00 )	p=5;
-  
-  if(p<0)	return(-1);
-  
-  //_________________________________________________________________________________________________
-  //1st Layer 11x256
-  
-  //_________________________________________________________________________________________________
-  //2nd Layer 256x64
-  
-  //_________________________________________________________________________________________________
-  //3rd Layer 64x16
-  
-  //_________________________________________________________________________________________________
-  //4th Layer 16x4
-  
-  //_________________________________________________________________________________________________
-  //5th Layer 4x1
-  
-  //_________________________________________________________________________________________________
-  
-  
-  //PERFORM FORWARD FUNCTION THROUGH NEURAL NETWORK
-  
-  //1st: [1][11]x[11][256] = [1][256]
-  
-//   double v1[256] = {0};
-//   
-//   for(Int_t j=0; j<256; j++)
-//   {
-//     //Layer product
-//     for(Int_t k=0; k<11; k++)
-//     v1[j] += v[k]*L1[p][k][j];
-//     
-//     //Bias sum
-//     v1[j]+=B1[p][j];
-//     
-//     //Activation function: Sigmoid
-//     v1[j] = 1.0/(1.0+TMath::Exp(-1.0*v1[j]));
-//   }
-//   
-//   //2nd: [1][256]x[256][64] = [1][64]
-//   
-//   double v2[64] = {0};
-//   
-//   for(Int_t j=0; j<64; j++)
-//   {
-//     //Layer product
-//     for(Int_t k=0; k<256; k++)
-//     v2[j] += v1[k]*L2[p][k][j];
-//     
-//     //Bias sum
-//     v2[j]+=B2[p][j];
-//     
-//     //Activation function: Sigmoid
-//     v2[j] = 1.0/(1.0+TMath::Exp(-1.0*v2[j]));
-//   }
-//   
-//   //3rd: [1][64]x[64][16] = [1][16]
-//   
-//   double v3[16] = {0};
-//   
-//   for(Int_t j=0; j<16; j++)
-//   {
-//     //Layer product
-//     for(Int_t k=0; k<64; k++)
-//     v3[j] += v2[k]*L3[p][k][j];
-//     
-//     //Bias sum
-//     v3[j]+=B3[p][j];
-//     
-//     //Activation function: Sigmoid
-//     v3[j] = 1.0/(1.0+TMath::Exp(-1.0*v3[j]));
-//   }
-//   
-//   //4th: [1][16]x[16][4] = [1][4]
-//   
-//   double v4[4] = {0};
-//   
-//   for(Int_t j=0; j<4; j++)
-//   {
-//     //Layer product
-//     for(Int_t k=0; k<16; k++)
-//     v4[j] += v3[k]*L4[p][k][j];
-//     
-//     //Bias sum
-//     v4[j]+=B4[p][j];
-//     
-//     //Activation function: Sigmoid
-//     v1[j] = 1.0/(1.0+TMath::Exp(-1.0*v1[j]));
-//   }
-//   
-//   //5th: [1][4]x[4][1] = [1][1]
-//   
-//   double v5 = 0;
-//   
-//   //Layer product
-//   for(Int_t k=0; k<4; k++)
-//   v5 += v4[k]*L5[p][k];
-//   
-//   //Bias sum
-//   v5+=B5[p];
-//   
-//   //Activation function: Sigmoid
-//   v5 = 1.0/(1.0+TMath::Exp(-1.0*v5));
-//   
-//   
-//   return(v5);
-  
+  if( ModelType=="NN" && Particle=="XiMinus")
+  {
+    fXiMinusNN = new AliNeuralNetwork("XiMinusNN");
+    fXiMinusNN->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="NN" && Particle=="XiPlus")
+  {
+    fXiPlusNN = new AliNeuralNetwork("XiPlusNN");
+    fXiPlusNN->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="NN" && Particle=="OmegaMinus")
+  {
+    fOmegaMinusNN = new AliNeuralNetwork("OmegaMinusNN");
+    fOmegaMinusNN->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="NN" && Particle=="OmegaPlus")
+  {
+    fOmegaPlusNN = new AliNeuralNetwork("OmegaPlusNN");
+    fOmegaPlusNN->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="BDT" && Particle=="XiMinus")
+  {
+    fXiMinusBDT = new AliBDT("XiMinusBDT");
+    fXiMinusBDT->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="BDT" && Particle=="XiPlus")
+  {
+    fXiPlusBDT = new AliBDT("XiPlusBDT");
+    fXiPlusBDT->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="BDT" && Particle=="OmegaMinus")
+  {
+    fOmegaMinusBDT = new AliBDT("OmegaMinusBDT");
+    fOmegaMinusBDT->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="BDT" && Particle=="OmegaPlus")
+  {
+    fOmegaPlusBDT = new AliBDT("OmegaPlusBDT");
+    fOmegaPlusBDT->LoadModel(FileName);
+    return;
+  }
+
+  return;
 }
+
