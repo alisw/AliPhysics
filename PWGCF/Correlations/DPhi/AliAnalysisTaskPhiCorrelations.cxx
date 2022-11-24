@@ -687,7 +687,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (inputEvent) {
     // Used to create the centrality correction
     Int_t referenceMultiplicity;
-    TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
+    TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, 0);
     referenceMultiplicity = tracks->GetEntriesFast();
     delete tracks;
 
@@ -1507,13 +1507,13 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(TString& centralityMethod
     }
     else if (centralityMethod == "TRACKS_MANUAL") {
       // for pp
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, 0);
       centrality = tracks->GetEntriesFast();
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
       delete tracks;
     }
     else if (centralityMethod == "TRACKS_MANUAL_CORRECTED") {
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, fGeneratorIndexMask);
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE, kTRUE, -999., kTRUE, 0);
       centrality = tracks->GetEntriesFast();
       delete tracks;
 
