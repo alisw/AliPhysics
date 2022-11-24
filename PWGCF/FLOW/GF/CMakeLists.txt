@@ -41,6 +41,7 @@ set(SRCS
   AliAnalysisTaskChargedFlow.cxx
   AliAnalysisTaskCorrForFlow.cxx
   AliAnalysisTaskCorrForFlowFMD.cxx
+  AliAnalysisTaskCorrForFlowMaster.cxx
   AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWPIDFlow.cxx

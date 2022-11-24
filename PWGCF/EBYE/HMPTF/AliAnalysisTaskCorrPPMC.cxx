@@ -29,14 +29,18 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDcascade.h"
 #include "AliAODcascade.h"
-#include "AliMCEvent.h"
-#include "AliMCEventHandler.h"
-#include "AliStack.h"
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
-#include "AliAnalysisTaskCorrPP.h"
+#include "AliAnalysisTaskCorrPPMC.h"
+
+//For MC event
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliStack.h"
+#include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
 
 #include "TObjArray.h"
 #include "TVector2.h"
@@ -70,15 +74,17 @@ using namespace std;
 using std::cout;
 using std::endl;
 
-class AliAnalysisTaskCorrPP;
-ClassImp(AliAnalysisTaskCorrPP)
+class AliAnalysisTaskCorrPPMC;
+ClassImp(AliAnalysisTaskCorrPPMC)
 
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP():
+AliAnalysisTaskCorrPPMC::AliAnalysisTaskCorrPPMC():
   AliAnalysisTaskSE(),
   fAODeventCuts(),
   fESDevent(0),
   fAODevent(0),
+  fMCevent(0),
+  fMCstack(0),
   fInputEvent(0),
   fPIDResponse(0),
   fUtils(0),
@@ -91,6 +97,7 @@ AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP():
   fMultLow(0),
   fMultHigh(100),
   hNumberOfEvents(0),
+  histNoOfCascades(0),
   hNumberOfCascades(0),
   hNumberOfXi(0),
   hNumberOfAntiXi(0),
@@ -108,14 +115,34 @@ AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP():
   fNoKaonPlus_ptmax2(0),
   fNoKaonMinus_ptmax2(0),
   fNoKaonPlus_ptmax3(0),
-  fNoKaonMinus_ptmax3(0)
+  fNoKaonMinus_ptmax3(0),
+  fNoGenXi_ptmax2(0),
+  fNoGenAntiXi_ptmax2(0),
+  fNoGenXi_ptmax3(0),
+  fNoGenAntiXi_ptmax3(0),
+  fNoGenKaonPlus_ptmax2(0),
+  fNoGenKaonMinus_ptmax2(0),
+  fNoGenKaonPlus_ptmax3(0),
+  fNoGenKaonMinus_ptmax3(0),
+  hist_KaonPlusWithoutPdg(0),
+  hist_KaonPlusWithPdg(0),
+  hist_KaonMinusWithoutPdg(0),
+  hist_KaonMinusWithPdg(0),
+  hist_GenKaonPlus(0),
+  hist_GenKaonMinus(0),
+  hist_GenXiPlus(0),
+  hist_GenXiMinus(0),
+  hist_RecXiPlus(0),
+  hist_RecXiMinus(0)
 {}
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP(const char *name):
+AliAnalysisTaskCorrPPMC::AliAnalysisTaskCorrPPMC(const char *name):
   AliAnalysisTaskSE(name),
   fAODeventCuts(),
   fESDevent(0),
   fAODevent(0),
+  fMCevent(0),
+  fMCstack(0),
   fInputEvent(0),
   fPIDResponse(0),
   fUtils(0),
@@ -128,6 +155,7 @@ AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP(const char *name):
   fMultLow(0),
   fMultHigh(100),
   hNumberOfEvents(0),
+  histNoOfCascades(0),
   hNumberOfCascades(0),
   hNumberOfXi(0),
   hNumberOfAntiXi(0),
@@ -145,7 +173,25 @@ AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP(const char *name):
   fNoKaonPlus_ptmax2(0),
   fNoKaonMinus_ptmax2(0),
   fNoKaonPlus_ptmax3(0),
-  fNoKaonMinus_ptmax3(0)
+  fNoKaonMinus_ptmax3(0),
+  fNoGenXi_ptmax2(0),
+  fNoGenAntiXi_ptmax2(0),
+  fNoGenXi_ptmax3(0),
+  fNoGenAntiXi_ptmax3(0),
+  fNoGenKaonPlus_ptmax2(0),
+  fNoGenKaonMinus_ptmax2(0),
+  fNoGenKaonPlus_ptmax3(0),
+  fNoGenKaonMinus_ptmax3(0),
+  hist_KaonPlusWithoutPdg(0),
+  hist_KaonPlusWithPdg(0),
+  hist_KaonMinusWithoutPdg(0),
+  hist_KaonMinusWithPdg(0),
+  hist_GenKaonPlus(0),
+  hist_GenKaonMinus(0),
+  hist_GenXiPlus(0),
+  hist_GenXiMinus(0),
+  hist_RecXiPlus(0),
+  hist_RecXiMinus(0)
 {
   fUtils = new AliAnalysisUtils();
   DefineInput (0, TChain::Class());
@@ -154,7 +200,7 @@ AliAnalysisTaskCorrPP::AliAnalysisTaskCorrPP(const char *name):
   DefineOutput(3, TTree::Class());
 }
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPP::~AliAnalysisTaskCorrPP()  {
+AliAnalysisTaskCorrPPMC::~AliAnalysisTaskCorrPPMC()  {
 
   if (fOutputList){
     delete fOutputList;
@@ -176,7 +222,7 @@ AliAnalysisTaskCorrPP::~AliAnalysisTaskCorrPP()  {
 
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
+void AliAnalysisTaskCorrPPMC::UserCreateOutputObjects()  {
     
     //Create Output List
     fOutputList = new TList();
@@ -196,27 +242,31 @@ void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
     
     //Event Counter
     hNumberOfEvents = new TH1D ("hNumberOfEvents","",20,0,20);
-    // hNumberOfEvents -> Sumw2();
+    hNumberOfEvents -> Sumw2();
     fOutputList -> Add(hNumberOfEvents);
 
-    //Cascade counter
+    //cascade number in each event
+    histNoOfCascades = new TH1D ("histNoOfCascades","histNoOfCascades",20,0,20);
+    fOutputList -> Add(histNoOfCascades);
+
+    //cascade selected after each cut: counter
     hNumberOfCascades = new TH1D("hNumberOfCascades","hNumberOfCascades",20,0,20);
     fOutputList -> Add(hNumberOfCascades);
-   
+    
     
     //Number of xi finally getting selected with specified cuts
     hNumberOfXi     = new TH1D ("hNumberOfXi","",20,0,20);
     hNumberOfAntiXi = new TH1D ("hNumberOfAntiXi","",20,0,20);
-    // hNumberOfXi     -> Sumw2();
-    // hNumberOfAntiXi -> Sumw2();
+    hNumberOfXi     -> Sumw2();
+    hNumberOfAntiXi -> Sumw2();
     fOutputList -> Add(hNumberOfXi);
     fOutputList -> Add(hNumberOfAntiXi);
 
     //Number of Kaon finally getting selected with specified cuts
     hNumberOfKaonPlus     = new TH1D ("hNumberOfKaonPlus","",100,0,100);
     hNumberOfKaonMinus = new TH1D ("hNumberOfKaonMinus","",100,0,100);
-    // hNumberOfKaonPlus     -> Sumw2();
-    // hNumberOfKaonMinus -> Sumw2();
+    hNumberOfKaonPlus     -> Sumw2();
+    hNumberOfKaonMinus -> Sumw2();
     fOutputList -> Add(hNumberOfKaonPlus);
     fOutputList -> Add(hNumberOfKaonMinus);
 
@@ -225,12 +275,39 @@ void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
     histMassAntiXi_vs_Pt_beforeMasscut = new TH2D ("histMassAntiXi_vs_Pt_beforeMasscut","histMassAntiXi_vs_Pt_beforeMasscut",100,0,10,500,1.30,1.35);
     histMassXi_vs_Pt     = new TH2D ("histMassXi_vs_Pt","histMassXi_vs_Pt",100,0,10,500,1.30,1.35);
     histMassAntiXi_vs_Pt = new TH2D ("histMassAntiXi_vs_Pt","histMassAntiXi_vs_Pt",100,0,10,500,1.30,1.35);
-    // hMassXi_vs_P     -> Sumw2();
-    // hMassAntiXi_vs_P -> Sumw2();
     fOutputList -> Add(histMassXi_vs_Pt_beforeMasscut);
     fOutputList -> Add(histMassAntiXi_vs_Pt_beforeMasscut); 
     fOutputList -> Add(histMassXi_vs_Pt);
     fOutputList -> Add(histMassAntiXi_vs_Pt);
+
+    //distributions for calculating Kaon purity
+    hist_KaonPlusWithoutPdg = new TH1F("hist_KaonPlusWithoutPdg"," hist_KaonPlusWithoutPdg",60,0,3.0);
+    hist_KaonPlusWithPdg = new TH1F("hist_KaonPlusWithPdg"," hist_KaonPlusWithPdg",60,0,3.0);
+    hist_KaonMinusWithoutPdg = new TH1F("hist_KaonMinusWithoutPdg"," hist_KaonMinusWithoutPdg",60,0,3.0);
+    hist_KaonMinusWithPdg = new TH1F("hist_KaonMinusWithPdg"," hist_KaonMinusWithPdg",60,0,3.0);
+    fOutputList->Add(hist_KaonPlusWithoutPdg);
+    fOutputList->Add(hist_KaonPlusWithPdg);
+    fOutputList->Add(hist_KaonMinusWithoutPdg);
+    fOutputList->Add(hist_KaonMinusWithPdg);
+
+    //Generated distributions: for efficiency
+    //Kaon
+    hist_GenKaonPlus = new TH1F("hist_GenKaonPlus"," hist_GenKaonPlus",60,0,3.0);
+    hist_GenKaonMinus = new TH1F("hist_GenKaonMinus"," hist_GenKaonMinus",60,0,3.0);
+    fOutputList->Add(hist_GenKaonPlus);
+    fOutputList->Add(hist_GenKaonMinus);
+    //Xi
+    hist_GenXiPlus = new TH1F("hist_GenXiPlus"," hist_GenXiPlus",60,0,3.0);
+    hist_GenXiMinus = new TH1F("hist_GenXiMinus"," hist_GenXiMinus",60,0,3.0);
+    fOutputList->Add(hist_GenXiPlus);
+    fOutputList->Add(hist_GenXiMinus);
+
+    hist_RecXiPlus = new TH1F("hist_RecXiPlus"," hist_RecXiPlus",60,0,3.0);
+    hist_RecXiMinus = new TH1F("hist_RecXiMinus"," hist_RecXiMinus",60,0,3.0);
+    fOutputList->Add(hist_RecXiPlus);
+    fOutputList->Add(hist_RecXiMinus);
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
 
     //TTree object to store variables
     fTreeEvent = new TTree("fTreeEvent","Event Tree");
@@ -243,6 +320,15 @@ void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fNoKaonMinus_ptmax2", &fNoKaonMinus_ptmax2, "fNoKaonMinus_ptmax2/F");
     fTreeEvent->Branch("fNoKaonPlus_ptmax3", &fNoKaonPlus_ptmax3, "fNoKaonPlus_ptmax3/F");
     fTreeEvent->Branch("fNoKaonMinus_ptmax3", &fNoKaonMinus_ptmax3, "fNoKaonMinus_ptmax3/F");
+
+    fTreeEvent->Branch("fNoGenXi_ptmax2", &fNoGenXi_ptmax2, "fNoGenXi_ptmax2/F");
+    fTreeEvent->Branch("fNoGenAntiXi_ptmax2", &fNoGenAntiXi_ptmax2, "fNoGenAntiXi_ptmax2/F");
+    fTreeEvent->Branch("fNoGenXi_ptmax3", &fNoGenXi_ptmax3, "fNoGenXi_ptmax3/F");
+    fTreeEvent->Branch("fNoGenAntiXi_ptmax3", &fNoGenAntiXi_ptmax3, "fNoGenAntiXi_ptmax3/F");
+    fTreeEvent->Branch("fNoGenKaonPlus_ptmax2", &fNoGenKaonPlus_ptmax2, "fNoGenKaonPlus_ptmax2/F");
+    fTreeEvent->Branch("fNoGenKaonMinus_ptmax2", &fNoGenKaonMinus_ptmax2, "fNoGenKaonMinus_ptmax2/F");
+    fTreeEvent->Branch("fNoGenKaonPlus_ptmax3", &fNoGenKaonPlus_ptmax3, "fNoGenKaonPlus_ptmax3/F");
+    fTreeEvent->Branch("fNoGenKaonMinus_ptmax3", &fNoGenKaonMinus_ptmax3, "fNoGenKaonMinus_ptmax3/F");
    
     /*
     
@@ -271,11 +357,11 @@ void AliAnalysisTaskCorrPP::UserCreateOutputObjects()  {
     PostData(3, fTreeEvent);
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
+void AliAnalysisTaskCorrPPMC::UserExec(Option_t *)  {
   
     //Get Input Event
     if ( !GetEvent ()) return;
-    cout<<"*********************** Found event !!! ******************************"<<endl;
+    //cout<<"*********************** Found AOD event !!! ******************************"<<endl;
 
     
     //Get multiplicity percentile
@@ -288,70 +374,207 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
     else
       {
 	lV0M = MultSelection->GetMultiplicityPercentile("V0M");
-	cout<<"V0M: "<<lV0M<<endl;
+	//cout<<"V0M: "<<lV0M<<endl;
       }
 
-   
+    fMCevent = dynamic_cast<AliMCEvent *>(MCEvent());
+    if (!fMCevent) {
+      Printf("ERROR: Could not retrieve MC event \n");
+      cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+      PostData(1, fOutputList);
+      PostData(2, fQAList);
+      PostData(3, fTreeEvent);
+      return;
+    }
+  
+    // fMCstack = fMCevent->Stack();
+    // if (!fMCstack) {
+    //   Printf("ERROR: Could not retrieve MC stack \n");
+    //   cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+    //   PostData(1, fOutputList);
+    //   PostData(2, fQAList);
+    //   PostData(3, fTreeEvent);
+    //   return;
+    // }
+
+    //cout<<"*********************** Found MC event !!! ******************************"<<endl;
+
+    /*
+    //"fTreeEvent" Tree Variable
+    fTreeVariableCentrality = lV0M;
+    fNoXi_ptmax2 = 0 ;
+    fNoAntiXi_ptmax2 = 0 ;
+    fNoXi_ptmax3 = 0 ;
+    fNoAntiXi_ptmax3 = 0 ;
+    fNoKaonPlus_ptmax2 = 0 ;
+    fNoKaonMinus_ptmax2 = 0 ;
+    fNoKaonPlus_ptmax3 = 0 ;
+    fNoKaonMinus_ptmax3 = 0;
+    */
+
+    //Initialize number 0f K+, K- per event
+    Int_t noGen_KaonPlus_perevent = 0;
+    Int_t noGen_KaonMinus_perevent = 0;
+    Int_t noGen_KaonPlus_perevent_ptmax2 = 0;
+    Int_t noGen_KaonMinus_perevent_ptmax2 = 0;
+
+    Int_t noGen_XiPlus_perevent = 0;
+    Int_t noGen_XiMinus_perevent = 0;
+    Int_t noGen_XiPlus_perevent_ptmax2 = 0;
+    Int_t noGen_XiMinus_perevent_ptmax2 = 0;
+
+    
+    //Loop on generated MC tracks
+    Int_t noGenMCtracks = fMCevent->GetNumberOfTracks();
+    //cout<<"No of generated MC tracks: "<<noGenMCtracks<<endl;
+    for(Int_t itr_mcgen=0; itr_mcgen < noGenMCtracks; itr_mcgen++)
+      {
+	AliAODMCParticle *mcGenTrack = (AliAODMCParticle*) fMCevent->GetTrack(itr_mcgen);
+	if (!mcGenTrack)
+	  {
+	    cout<<"Could not find track in MC generated loop !!!"<<endl;
+	    continue;
+	  }
+	//cout<<"Found generated MC track !!"<<endl;
+
+	if(!mcGenTrack->IsPhysicalPrimary())
+	  continue;
+
+	Double_t Track_pt = mcGenTrack->Pt();
+	Double_t Track_charge = mcGenTrack->Charge();
+	Double_t Track_PID = mcGenTrack->GetPdgCode();
+	Double_t Track_eta = mcGenTrack->Eta();
+
+	if (Track_pt < 0.3) continue;
+	if (Track_pt > 3.0) continue;
+	if (TMath::Abs(Track_eta) > 0.8) continue;
+
+	//Kaon
+	if (TMath::Abs(Track_PID) == 321)
+	  {
+	    if(Track_charge > 0)
+	      {
+		hist_GenKaonPlus->Fill(Track_pt);
+		noGen_KaonPlus_perevent+=1;
+		if(Track_pt < 2.0)
+		  noGen_KaonPlus_perevent_ptmax2 += 1;
+	      }
+	    if(Track_charge < 0)
+	      {
+		hist_GenKaonMinus->Fill(Track_pt);
+		noGen_KaonMinus_perevent+=1;
+		if(Track_pt < 2.0)
+		  noGen_KaonMinus_perevent_ptmax2 += 1;
+	      }
+	  }
+
+
+	//Xi
+	if (TMath::Abs(Track_PID) == 3312)
+	  {
+	    if(Track_charge > 0)
+	      {
+		hist_GenXiPlus->Fill(Track_pt);
+
+		noGen_XiPlus_perevent+=1;
+		if(Track_pt < 2.0)
+		  noGen_XiPlus_perevent_ptmax2 += 1;
+	      }
+	    if(Track_charge < 0)
+	      {
+		hist_GenXiMinus->Fill(Track_pt);
+
+		noGen_XiMinus_perevent+=1;
+		if(Track_pt < 2.0)
+		  noGen_XiMinus_perevent_ptmax2 += 1;
+	      }
+	  }
+
+	
+
+      } //end of generated loop
+
+
     //Initialize number 0f K+, K- per event
     Int_t no_KaonPlus_perevent = 0;
     Int_t no_KaonMinus_perevent = 0;
     Int_t no_KaonPlus_perevent_ptmax2 = 0;
     Int_t no_KaonMinus_perevent_ptmax2 = 0;
 
-    //Loop over primary tracks to select kaon
-    for( Int_t itr = 0; itr < fAODevent->GetNumberOfTracks(); itr++)
+    //Loop on reconstructed MC tracks
+    Int_t noRecMCtracks = fAODevent->GetNumberOfTracks();
+    //cout<<"No of reconstructed MC tracks: "<<noRecMCtracks<<endl;
+    for(Int_t itr_mcrec=0; itr_mcrec < noRecMCtracks; itr_mcrec++)
       {
-
-	AliVTrack   *track = (AliVTrack*)fAODevent->GetTrack(itr);
+	
+	AliVTrack   *track = (AliVTrack*)fAODevent->GetTrack(itr_mcrec);
 	if(!track)      continue;
 	AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(track);
 	if(!aodtrack)      continue;
 
-	
+	Int_t aodtrk_label = TMath::Abs(aodtrack->GetLabel());
+	AliAODMCParticle *mcRecTrack = (AliAODMCParticle*) fMCevent->GetTrack(aodtrk_label);
+	if (!mcRecTrack)
+	  {
+	    cout<<"Could not find MC generted track for the AODtrack Label !!!"<<endl;
+	    continue;
+	  }
+	//cout<<"Found reconstructed MC track (matched with generated) !!"<<endl;
+
+	if(!mcRecTrack->IsPhysicalPrimary())
+	  continue;
+
 	if(!aodtrack->TestFilterBit(96))  continue;
 
-	
-	Double_t trkPt = aodtrack->Pt();
-	Double_t trkPhi = aodtrack->Phi();
-	Double_t trkEta = aodtrack->Eta();
-	Double_t trkCharge = aodtrack->Charge();
-	Double_t trkDCAxy = aodtrack->DCA();
-	Double_t trkDCAz = aodtrack->ZAtDCA();
-	Double_t trkTPCNCls = aodtrack->GetTPCNcls();
-	Double_t trkChi2PerNDF = aodtrack->Chi2perNDF();
-	
-
-	Double_t p[3];
-	track->PxPyPz(p);
-	Double_t Track_pt;
-	Track_pt=TMath::Sqrt((p[0]*p[0])+(p[1]*p[1]));
+	Double_t Track_pt = mcRecTrack->Pt();
+	Double_t Track_charge = mcRecTrack->Charge();
+	Double_t Track_PID = mcRecTrack->GetPdgCode();
+	Double_t Track_eta = mcRecTrack->Eta();
 
 	if (Track_pt < 0.3) continue;
 	if (Track_pt > 3.0) continue;
-	if (TMath::Abs(trkEta) > 0.8) continue;
-	
+	if (TMath::Abs(Track_eta) > 0.8) continue;
+
 	Bool_t IsKaon = KaonSelector(track);
 	if (!IsKaon) continue;
 
-	cout<<"Found Kaon particle !!!"<<endl;
+	//cout<<"Found Kaon particle !!!"<<endl;
 
-	if (track->Charge() > 0)   //K+
+	if (Track_charge > 0)   //K+
 	  {
 	    no_KaonPlus_perevent += 1;
 	    if (Track_pt < 2.0)
 	      no_KaonPlus_perevent_ptmax2 += 1;
+	     
+	    if(IsKaon)
+	      hist_KaonPlusWithoutPdg->Fill(Track_pt);
+	    if (IsKaon && TMath::Abs(Track_PID) == 321)
+	      hist_KaonPlusWithPdg->Fill(Track_pt);
 	  }
+	  
 
-	if (track->Charge() < 0)   //K-
+	if (Track_charge < 0)   //K-
 	  {
 	    no_KaonMinus_perevent += 1;
 	    if (Track_pt < 2.0)
 	      no_KaonMinus_perevent_ptmax2 += 1;
+	     
+	    if(IsKaon)
+	      hist_KaonMinusWithoutPdg->Fill(Track_pt);
+	    if (IsKaon && TMath::Abs(Track_PID) == 321)
+	      hist_KaonMinusWithPdg->Fill(Track_pt);
 	  }
       }
-      //end primary track loop
+    //end reconstructed track loop
     
 
+
+    if(fAODevent->GetNumberOfCascades()>0)
+      cout<<"No of cascades: "<<fAODevent->GetNumberOfCascades()<<endl;
+
+    histNoOfCascades->Fill(fAODevent->GetNumberOfCascades());
+
+    
     //Primary Vertex
     AliAODVertex *primaryVertex = (AliAODVertex*) fAODevent->GetPrimaryVertex();
     Double_t vx = primaryVertex->GetX();
@@ -382,6 +605,15 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
       //cout<<"*****************Cascade particle found !!!**********************************"<<endl;
 
        hNumberOfCascades->Fill(0.5);
+
+       Int_t cascade_mclabel = TMath::Abs(cascade->GetLabel());
+       AliAODMCParticle *mcRecCascade = (AliAODMCParticle*) fMCevent->GetTrack(cascade_mclabel);
+       if (!mcRecCascade)
+	 {
+	   cout<<"Could not find MC generted track for the AODcascade track Label !!!"<<endl;
+	   continue;
+	 }
+       cout<<"Found reconstructed MC track (matched with generated) !!"<<endl;
 	    
         
       //Get Decay Daughters
@@ -492,7 +724,7 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
       if (!PassedDaughterTrackDCAtoVertexSelectionCuts(cascade)) continue;
       cout<<"**************Daughter tracks passed DCA to PV cut !!!###############################"<<endl;
 
-       hNumberOfCascades->Fill(4.5);
+      hNumberOfCascades->Fill(4.5);
 
       //Extra: ptcut on Lambda
       if (lV0Pt < 0.3) continue;
@@ -516,13 +748,17 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
       if ((!isXi)&&(!isAntiXi)) continue;
 
       Double_t massXi = cascade->MassXi();
+
       Double_t ptXi = cascade->Pt();
+      //Double_t ptXi = mcRecCascade->Pt();
 
       //Xi Selection.....filling invariant mass as function of momentum for xi
       if (isXi)
 	{
 	  histMassXi_vs_Pt->Fill (ptXi,massXi);
 	  no_Xi_perevent+=1;
+
+	  hist_RecXiMinus->Fill(ptXi);
 
 	  if(ptXi < 2.0)
 	    no_Xi_perevent_ptmax2 +=1;
@@ -537,6 +773,8 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
 	  histMassAntiXi_vs_Pt->Fill (ptXi,massXi);
 	  no_antiXi_perevent+=1;
 
+	  hist_RecXiPlus->Fill(ptXi);
+
 	  if(ptXi < 2.0)
 	    no_antiXi_perevent_ptmax2 +=1;
 	  if(ptXi < 3.0)
@@ -548,39 +786,54 @@ void AliAnalysisTaskCorrPP::UserExec(Option_t *)  {
       cout<<"**** Found Xi particle !!! *******"<<endl;
       
     }
+    
+    
     //end cascade loop
 
     
     // cout<<"************** Xi ****************: "<<no_Xi_perevent<<endl;
     // cout<<"************** AntiXi ****************: "<<no_antiXi_perevent<<endl;
      
-
+    
     hNumberOfXi->Fill(no_Xi_perevent);
     hNumberOfAntiXi->Fill(no_antiXi_perevent);
     hNumberOfKaonPlus->Fill(no_KaonPlus_perevent);
     hNumberOfKaonMinus->Fill(no_KaonMinus_perevent);
 
-     
+
     //"fTreeEvent" Tree Variable
     fTreeVariableCentrality = lV0M;
+
     fNoXi_ptmax2 = no_Xi_perevent_ptmax2 ;
     fNoAntiXi_ptmax2 = no_antiXi_perevent_ptmax2 ;
     fNoXi_ptmax3 = no_Xi_perevent_ptmax3 ;
     fNoAntiXi_ptmax3 = no_antiXi_perevent_ptmax3 ;
+
     fNoKaonPlus_ptmax2 = no_KaonPlus_perevent_ptmax2 ;
     fNoKaonMinus_ptmax2 = no_KaonMinus_perevent_ptmax2 ;
     fNoKaonPlus_ptmax3 = no_KaonPlus_perevent ;
     fNoKaonMinus_ptmax3 = no_KaonMinus_perevent ;
+
+    fNoGenKaonPlus_ptmax2 = noGen_KaonPlus_perevent_ptmax2 ;
+    fNoGenKaonMinus_ptmax2 = noGen_KaonMinus_perevent_ptmax2 ;
+    fNoGenKaonPlus_ptmax3 = noGen_KaonPlus_perevent ;
+    fNoGenKaonMinus_ptmax3 = noGen_KaonMinus_perevent ;
+
+    fNoGenAntiXi_ptmax2 = noGen_XiPlus_perevent_ptmax2 ;
+    fNoGenXi_ptmax2 = noGen_XiMinus_perevent_ptmax2 ;
+    fNoGenAntiXi_ptmax3 = noGen_XiPlus_perevent ;
+    fNoGenXi_ptmax3 = noGen_XiMinus_perevent ;
  
     fTreeEvent->Fill();
   
+     
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
     PostData(3, fTreeEvent);
 }    
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::GetEvent ()  //event cuts copied from my code written earlier 
+Bool_t AliAnalysisTaskCorrPPMC::GetEvent ()  //event cuts copied from my code written earlier 
 
 {
  
@@ -783,7 +1036,7 @@ Bool_t AliAnalysisTaskCorrPP::GetEvent ()  //event cuts copied from my code writ
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedTrackQualityCuts (AliAODTrack *track)  {
+Bool_t AliAnalysisTaskCorrPPMC::PassedTrackQualityCuts (AliAODTrack *track)  {
     
     //Initialization
     Bool_t passedTrkSelection=(kFALSE);
@@ -794,7 +1047,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedTrackQualityCuts (AliAODTrack *track)  {
     
     //Track Selection Cuts
     Int_t nTPCcluster = track->GetTPCNcls();  //TPC cluster cut
-    if (nTPCcluster <= 70)
+    if (nTPCcluster < 70)
       return passedTrkSelection;
 
     Double_t chi2TPCperClstr = track->GetTPCchi2perCluster();
@@ -826,7 +1079,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedTrackQualityCuts (AliAODTrack *track)  {
     return passedTrkSelection;
 }
  //______________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedDaughterTrackDCAtoVertexSelectionCuts(AliAODcascade *cascade)
+Bool_t AliAnalysisTaskCorrPPMC::PassedDaughterTrackDCAtoVertexSelectionCuts(AliAODcascade *cascade)
 {
   //Initialization
   Bool_t passedDauTrackDCAtoVertexSelection=(kFALSE);
@@ -848,7 +1101,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedDaughterTrackDCAtoVertexSelectionCuts(AliAOD
   return passedDauTrackDCAtoVertexSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedCascadeSelectionCuts (AliAODcascade *cascade)  {
+Bool_t AliAnalysisTaskCorrPPMC::PassedCascadeSelectionCuts (AliAODcascade *cascade)  {
 
     //Initialization
     Bool_t passedCascadeSelection=(kFALSE);
@@ -910,12 +1163,13 @@ Bool_t AliAnalysisTaskCorrPP::PassedCascadeSelectionCuts (AliAODcascade *cascade
     if (rC >= r02) return passedCascadeSelection;
 
     hNumberOfCascades->Fill(12.5);
-      
+    
+     
     passedCascadeSelection = kTRUE;
     return passedCascadeSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::IsXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac)  {
+Bool_t AliAnalysisTaskCorrPPMC::IsXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -961,7 +1215,7 @@ Bool_t AliAnalysisTaskCorrPP::IsXiCandidate (AliAODcascade *casc, AliAODTrack *p
     return kTRUE;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::IsAntiXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac)  {
+Bool_t AliAnalysisTaskCorrPPMC::IsAntiXiCandidate (AliAODcascade *casc, AliAODTrack *pos, AliAODTrack *neg, AliAODTrack *bac)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -1008,62 +1262,8 @@ Bool_t AliAnalysisTaskCorrPP::IsAntiXiCandidate (AliAODcascade *casc, AliAODTrac
     return kTRUE;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::KaonSelector(AliVTrack *track)  {
-  /*
-  Double_t p[3];
-  track->PxPyPz(p);
-
-  Double_t Track_pt;
-  Track_pt=TMath::Sqrt((p[0]*p[0])+(p[1]*p[1]));
+Bool_t AliAnalysisTaskCorrPPMC::KaonSelector(AliVTrack *track)  {
   
-  Double_t fTPCnSigmaPion = 0.0;
-  Double_t fTPCnSigmaProton = 0.0;
-  Double_t fTPCnSigmaKaon = 0.0;
-  Double_t fTOFnSigmaPion = 0.0;
-  Double_t fTOFnSigmaProton = 0.0;
-  Double_t fTOFnSigmaKaon = 0.0;
-
-  //TPC nsigma
-  fTPCnSigmaPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-  fTPCnSigmaProton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-  fTPCnSigmaKaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
-  //TOF nsigma
-  fTOFnSigmaPion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-  fTOFnSigmaProton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-  fTOFnSigmaKaon = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
-
-  Double_t fTPCplusTOFnSigmaKaon = sqrt(TMath::Power(fTPCnSigmaKaon, 2.0) + TMath::Power(fTOFnSigmaKaon, 2.0));
-
-  Int_t flag = 0;
-  if (TMath::Abs(fTPCnSigmaPion) < 3.0)
-    flag += 1;
-  if (TMath::Abs(fTPCnSigmaProton) < 3.0)
-    flag += 1;
-  if (TMath::Abs(fTPCnSigmaKaon) < 3.0)
-    flag += 1;
-
-  if (flag > 1) return kFALSE;
-
-
-  //Selection for pT < 0.5 : TPC only
-  if( Track_pt < 0.5 )
-    {
-      if(TMath::Abs(fTPCnSigmaKaon) < 2.0)
-	return kTRUE;
-      else
-	return kFALSE;
-    }
-
-  //Selection for pT > 0.5 : TOF + TPC
-  if( Track_pt >= 0.5 )
-    {
-      if (fTPCplusTOFnSigmaKaon < 2.0)
-	return kTRUE;
-      else
-	return kFALSE;
-    }
-  */
-
   Double_t p[3];
   track->PxPyPz(p);
 
@@ -1105,6 +1305,7 @@ Bool_t AliAnalysisTaskCorrPP::KaonSelector(AliVTrack *track)  {
 	flag += 1;
 
       if (flag > 1) return kFALSE;
+      
 
       if (fTPCnSigmaKaon > fTPCnSigmaProton) return kFALSE;
       if (fTPCnSigmaKaon > fTPCnSigmaPion) return kFALSE;
@@ -1141,11 +1342,10 @@ Bool_t AliAnalysisTaskCorrPP::KaonSelector(AliVTrack *track)  {
 	return kFALSE;
     }
   
-  
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
+Bool_t AliAnalysisTaskCorrPPMC::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
     
     //Initialization
     Bool_t passedPIDSelection=(kFALSE);
@@ -1159,9 +1359,9 @@ Bool_t AliAnalysisTaskCorrPP::PassedPIDSelection (AliAODTrack *track, AliPID::EP
     return passedPIDSelection;
 }
  //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPP::PassedSingleParticlePileUpCuts(AliAODTrack *track)
+Bool_t AliAnalysisTaskCorrPPMC::PassedSingleParticlePileUpCuts(AliAODTrack *track)
 {
-  Bool_t passedTrackPileupCut = (kFALSE);
+   Bool_t passedTrackPileupCut = (kFALSE);
 
   /*
   if (!(track->HasPointOnITSLayer(1)) && !(track->HasPointOnITSLayer(4)) && !(track->HasPointOnITSLayer(5)) && !(track->GetTOFBunchCrossing() == 0))
@@ -1182,7 +1382,7 @@ Bool_t AliAnalysisTaskCorrPP::PassedSingleParticlePileUpCuts(AliAODTrack *track)
   return passedTrackPileupCut;
 }
  //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPP::Terminate(Option_t *)  {
+void AliAnalysisTaskCorrPPMC::Terminate(Option_t *)  {
     
     fOutputList = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutputList) return;

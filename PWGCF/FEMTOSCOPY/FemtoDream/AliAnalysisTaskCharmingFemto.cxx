@@ -31,6 +31,31 @@ static bool dummybool;
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
+bool isSelectedSignal(const double mass, const double pt, const int pdg) {
+    if (pdg == 413) {
+      Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+      Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+      double massMean = mDstarPDG-mD0PDG; // no extra mass shift because it is deltamass
+    
+      double massWidth = 0.00124673 - pt * 0.000340426 + pt * pt * 4.40729e-05;
+      if(pt > 4 && pt < 5) massWidth = 0.00104329 - 0.000113275 * pt;
+      else if(pt >= 5) massWidth = 0.000519861 - 8.58874e-06 * pt;
+
+      // select D mesons mass window
+      double lowerMass = massMean - 2 * massWidth;
+      double upperMass = massMean + 2 * massWidth;
+
+      if (mass > lowerMass && mass < upperMass) {
+        return true;
+      }
+
+      return false;
+    } else {
+      printf(Form("charmed hadron with pdg %d not implemented!", pdg));
+      return false;
+    }
+}
+
     //____________________________________________________________________________________________________
     AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
     : AliAnalysisTaskSE("AliAnalysisTaskCharmingFemto"),
@@ -62,6 +87,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
         "kStar",
         "is_oldpcrm",
         "is_newpcrm",
+        "is_crosspcrm",
         "heavy_mult",
         "heavy_invmass",
         "heavy_pt",
@@ -179,6 +205,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
         "kStar",
         "is_oldpcrm",
         "is_newpcrm",
+        "is_crosspcrm",
         "heavy_mult",
         "heavy_invmass",
         "heavy_pt",
@@ -1104,6 +1131,46 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       d.SetIsRemovedByNewPC(!d.UseParticle());
       if (!d.UseParticle()) d.SetUse(true);
     }
+
+    // cross pair cleaner
+    auto CrossClean = [this, absPdgMom](std::vector<AliFemtoDreamBasePart> &tracks, std::vector<AliFemtoDreamBasePart> &decays) {
+      for (auto &decay : decays) {
+        if (isSelectedSignal(decay.GetInvMass(), decay.GetPt(), absPdgMom)) {
+          std::vector<int> dauIDs = decay.GetIDTracks();
+          for (auto &track : tracks) {
+            std::vector<int> trackIDs = track.GetIDTracks();
+            for (auto &dauID : dauIDs) {
+              if (dauID == trackIDs.at(0)) {
+                track.SetUse(false);
+              }
+            }
+          }
+        }
+      }
+    };
+
+    CrossClean(protons, dplus);
+    CrossClean(protons, dminus);
+    CrossClean(antiprotons, dplus);
+    CrossClean(antiprotons, dminus);
+
+    for (auto &part : protons) {
+      part.SetIsRemovedByCrossPC(!part.UseParticle());
+      if (!part.UseParticle()) part.SetUse(true);
+    }
+    for (auto &part : antiprotons) {
+      part.SetIsRemovedByCrossPC(!part.UseParticle());
+      if (!part.UseParticle()) part.SetUse(true);
+    }
+    for (auto &part : dplus) {
+      part.SetIsRemovedByCrossPC(!part.UseParticle());
+      if (!part.UseParticle()) part.SetUse(true);
+    }
+    for (auto &part : dminus) {
+      part.SetIsRemovedByCrossPC(!part.UseParticle());
+      if (!part.UseParticle()) part.SetUse(true);
+    }
+
   } else if (fUseFDPairCleaner) {
     fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
     fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
@@ -1206,6 +1273,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("kStar")) tree.second->Branch("kStar", &dummyfloat);
       if(saveCol("is_oldpcrm")) tree.second->Branch("is_oldpcrm", &dummybool);
       if(saveCol("is_newpcrm")) tree.second->Branch("is_newpcrm", &dummybool);
+      if(saveCol("is_crosspcrm")) tree.second->Branch("is_crosspcrm", &dummybool);
 
       // heavy particle
       if(saveCol("heavy_mult")) tree.second->Branch("heavy_mult", &dummyint);
@@ -1246,8 +1314,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("kStar")) tree.second->Branch("kStar", &dummyfloat);
       if(saveCol("is_oldpcrm")) tree.second->Branch("is_oldpcrm", &dummybool);
       if(saveCol("is_newpcrm")) tree.second->Branch("is_newpcrm", &dummybool);
+      if(saveCol("is_crosspcrm")) tree.second->Branch("is_crosspcrm", &dummybool);
 
-      // // heavy
+      // heavy
       if(saveCol("heavy_mult")) tree.second->Branch("heavy_mult", &dummyint);
       if(saveCol("heavy_invmass")) tree.second->Branch("heavy_invmass", &dummyfloat);
       if(saveCol("heavy_pt")) tree.second->Branch("heavy_pt", &dummyfloat);
@@ -1743,9 +1812,24 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
 //____________________________________________________________________________________________________
 bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
                                                  const double pt,
-                                                 const int pdg) {
-  if (fMassSelectionType == kAny) {
-    return true;
+                                                 const int pdg,
+                                                 enum MassSelectionType selection) {
+  if (selection == kTaskDefault) {
+    selection = fMassSelectionType;
+  } else if (selection == kSideband) {
+    if (pdg == 411)
+      return MassSelection(mass, pt, pdg, kSidebandLeft) || MassSelection(mass, pt, pdg, kSidebandRight);
+    else if (pdg == 413)
+      selection = kSidebandRight;
+    else
+      AliFatal(Form("charmed hadron with pdg %d not implemented!", pdg));
+  } else if (selection == kAny) {
+    if (pdg == 411)
+      return MassSelection(mass, pt, pdg, kSignal) || MassSelection(mass, pt, pdg, kSidebandLeft) || MassSelection(mass, pt, pdg, kSidebandRight);
+    else if (pdg == 413)
+      return MassSelection(mass, pt, pdg, kSignal) || MassSelection(mass, pt, pdg, kSidebandRight);
+    else
+      AliFatal(Form("charmed hadron with pdg %d not implemented!", pdg));
   }
 
   // simple parametrisation from D+ in 5.02 TeV

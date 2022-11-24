@@ -115,7 +115,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
         //correct Ramona cuts 
         //TrackNegKaonCuts->SetPIDkd(true, true);  // Ramona
         TrackNegKaonCuts->SetFilterBit(128);
-        TrackNegKaonCuts->SetCutCharge(1);
+        TrackNegKaonCuts->SetCutCharge(-1);
         TrackNegKaonCuts->SetPtRange(0.15, 1.4);
         TrackNegKaonCuts->SetPtExclusion(0.3,0.4);
         TrackNegKaonCuts->SetNClsTPC(70);
@@ -126,7 +126,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     }
     else if(CutKaon == 2){
         TrackNegKaonCuts->SetFilterBit(128);
-        TrackNegKaonCuts->SetCutCharge(1);
+        TrackNegKaonCuts->SetCutCharge(-1);
         TrackNegKaonCuts->SetPtRange(0.15, 1.4);
         TrackNegKaonCuts->SetPtExclusion(0.3,0.4);
         TrackNegKaonCuts->SetNClsTPC(70);
@@ -1218,17 +1218,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
             v0Cuts->SetCutDCADaugToPrimVtx(0.06);
             Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
         }
-        else if(suffix = 103){
+        else if(suffix = "103"){
             TrackPosKaonCuts->SetPtRange(0.15, 0.5);
             TrackNegKaonCuts->SetPtRange(0.15, 0.5);
 
         }
-        else if(suffix = 104){
+        else if(suffix = "104"){
             TrackPosKaonCuts->SetPtRange(0.5, 1.0);
-            TrackNegKaonCuts->SetPtRange(0.5, 1.0);
+            STrackNegKaonCuts->SetPtRange(0.5, 1.0);
 
         }       
-        else if(suffix = 105){
+        else if(suffix = "105"){
             TrackPosKaonCuts->SetPtRange(1.0, 4.0);
             TrackNegKaonCuts->SetPtRange(1.0, 4.0);
 

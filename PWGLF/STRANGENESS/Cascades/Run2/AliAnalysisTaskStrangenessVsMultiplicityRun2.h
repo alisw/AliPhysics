@@ -52,6 +52,11 @@ class AliExternalTrackParam;
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskWeakDecayVertexer.h"
 
+//include ML classes
+#include "AliMachineLearning.h"
+#include "AliNeuralNetwork.h"
+#include "AliBDT.h"
+
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskStrangenessVsMultiplicityRun2();
@@ -246,9 +251,8 @@ public:
     fkSaveSpecificConfig = kTRUE;
   }
   //---------------------------------------------------------------------------------------
-  
-  Double_t MLCascadeNeuralNetworkForward(Double_t v[11], Float_t lpT);
-  
+  //Function to load ML models 
+  void Create_ML_Model(TString FileName, TString ModelType, TString Particle); 
   //---------------------------------------------------------------------------------------
 private:
   // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -331,6 +335,19 @@ private:
   Bool_t fkSaveSpecificConfig;
   TString fkConfigToSave;
   
+  //===========================================================================================
+  //   Pointers to ML Classes
+  //===========================================================================================
+  AliNeuralNetwork* fXiMinusNN;
+  AliNeuralNetwork* fXiPlusNN;
+  AliNeuralNetwork* fOmegaMinusNN;
+  AliNeuralNetwork* fOmegaPlusNN;
+
+  AliBDT* fXiMinusBDT;
+  AliBDT* fXiPlusBDT;
+  AliBDT* fOmegaMinusBDT;
+  AliBDT* fOmegaPlusBDT;
+
   //===========================================================================================
   //   Variables for Event Tree
   //===========================================================================================
@@ -509,7 +526,15 @@ private:
   
   //-------------------------------------------
   //ML Prediction
-  Double_t fTreeCascVarMLCascadeNNPrediction; //!
+  Double_t fTreeCascVarMLNNPredXiMinus; //!
+  Double_t fTreeCascVarMLNNPredXiPlus; //!
+  Double_t fTreeCascVarMLNNPredOmegaMinus; //!
+  Double_t fTreeCascVarMLNNPredOmegaPlus; //!
+
+  Double_t fTreeCascVarMLBDTPredXiMinus; //!
+  Double_t fTreeCascVarMLBDTPredXiPlus; //!
+  Double_t fTreeCascVarMLBDTPredOmegaMinus; //!
+  Double_t fTreeCascVarMLBDTPredOmegaPlus; //!
   //-------------------------------------------
   
   //TPC dEdx
@@ -712,8 +737,9 @@ private:
   AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
   AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented
   
-  ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 4);
+  ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 5);
   //1: first implementation
+  //5: Addition of ML classes data members
 };
 
 #endif

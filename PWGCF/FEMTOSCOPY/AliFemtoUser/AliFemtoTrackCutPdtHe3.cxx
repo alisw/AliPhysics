@@ -157,7 +157,22 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 }
 
 bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
-    
+      if(AlldEdxmode){
+	if(fCharge==0){
+		fNTracksFailed++;
+                return false;
+	}
+	  if (fCharge != 0 && (track->Charge() != fCharge)) {
+        	fNTracksFailed++;
+        	return false;
+	    }
+
+        fNTracksPassed++ ;
+        return true;
+     
+    }
+
+ 
     if (fStatus && (track->Flags() & fStatus) != fStatus) {
         return false;
     }
@@ -312,12 +327,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 		fNTracksFailed++;
 		return false;
 	    }
-    }
-
-    if(AlldEdxmode){
-    	fNTracksPassed++ ;
-    	return true;
-    	
     }
 
 
@@ -582,6 +591,7 @@ bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float s
 	}else{
 		float tmpcut = fdcutline_k * mom + fdcutline_b;
 		if(SwitchMom_t > 4.0){	// only TPC
+			//cout<<"sss "<<nsigmaTPCT<<" "<<fNsigmaT<<" "<<fdcutline_k<<" "<<fdcutline_b<<endl;
 			if(nsigmaTPCT >= tmpcut && abs(nsigmaTPCT) < fNsigmaT){
 				return true;
 			}
