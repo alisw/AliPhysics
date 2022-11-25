@@ -7,8 +7,9 @@ class AliAnalysisDataContainer;
 
 AliAnalysisTaskFlatenicity *
 AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
-                   Bool_t isV0Calib = kFALSE, Bool_t woTrivialscaling = kFALSE,
-                   Bool_t useMC = kTRUE, Double_t minpT = 0.15)
+                   Bool_t isMyV0Equal = kFALSE, Bool_t isV0EqualAlice = kTRUE,
+                   Bool_t woTrivialscaling = kFALSE, Bool_t useMC = kTRUE,
+                   Double_t minpT = 0.15)
 
 {
   // detForFlat: "V0", "TPC", "V0_TPC"
@@ -34,7 +35,8 @@ AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
   taskFlat->SetDetectorForFlatenicity(detForFlat);
   taskFlat->SetPtMin(minpT);
   taskFlat->SetRemoveTrivialScaling(woTrivialscaling);
-  taskFlat->SetV0Calib(isV0Calib);
+  taskFlat->SetV0Calib(isMyV0Equal);
+  taskFlat->SetEqualV0Alice(isV0EqualAlice);
   mgr->AddTask(taskFlat);
 
   const char *complement;
@@ -45,7 +47,11 @@ AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
   }
   const char *complement2;
   if (detForFlat == "V0") {
-    complement2 = "V0";
+    if (isV0EqualAlice) {
+      complement2 = "V0eq";
+    } else {
+      complement2 = "V0";
+    }
   }
   if (detForFlat == "TPC") {
     complement2 = "TPC";

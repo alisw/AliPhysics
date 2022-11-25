@@ -669,6 +669,10 @@ Pair_number= NumJet-1;
                         if((dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->ClosestJet()){    
                         Double_t pt_det_JER=(dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Pt();
                         Double_t pt_tru_JER=((dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->ClosestJet())->Pt();                      
+                        if(!Bkg_sub_method){
+                        if(DetjetCont1->GetRhoParameter())pt_det_JER = pt_det_JER - DetjetCont1->GetRhoVal() * (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Area();
+                        if(GenjetCont1->GetRhoParameter())pt_tru_JER = pt_tru_JER- DetjetCont1->GetRhoVal()*((dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->ClosestJet())->Area();
+                                                }
                         histname = TString::Format("hJetEnergyResponse_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                         fHistManager.FillTH2(histname,pt_tru_JER,(pt_det_JER-pt_tru_JER));                      
                                                                                                 }
