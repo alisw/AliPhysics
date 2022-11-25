@@ -129,6 +129,7 @@ set(SRCS
     PHOS_Resonances/AliAnalysisPHOSResonances.cxx
     PHOS_Nbar/AliAnalysisSigmaBarCharged.cxx
     PHOS_gamma/AliAnalysisTaskGammaPHOSPP.cxx
+    PHOS_gamma/AliAnalysisTaskPHOSPbPbQARun2.cxx
    )
 
 # Headers from sources
@@ -229,3 +230,4 @@ install(FILES AutoTrendQA/MakeTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoT
 install(FILES AutoTrendQA/DrawTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES PHOS_Nbar/AddTaskPHOSSigmaBar.C DESTINATION PWGGA/PHOSTasks/PHOS_Nbar)
 install(FILES PHOS_gamma/AddTaskGammaPHOSPP.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)
+install(FILES PHOS_gamma/AddTaskPHOSPbPbQARun2.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)
