@@ -40,20 +40,24 @@ public:
  
 //===========
 
-    void                    Seteventvrtx(float vrtxz)		{fevtvrtxz		=vrtxz;};
-    void                    SettrackBit(int trackBit)		{ftrackBit		=trackBit;};
-    void                    Settrackpt(float pt_low, float pt_up)	{ptmin	=pt_low; ptmax	=pt_up;};    
-    void                    Settpcrows(int ftpcrows)	{TPCrows = ftpcrows;};    
-        
+    void                    Seteventvrtx(float vrtxz1, float vrtxz2)	{vzmin	=vrtxz1; vzmax = vrtxz2;};
+    void                    SettrackBit(int trackBit)					{ftrackBit =trackBit;};
+    void                    Settrackpt(float pt_low, float pt_up)		{ptmin	=pt_low; ptmax	=pt_up;};    
+    void                    Settpcrows(int ftpcrows)					{TPCrows = ftpcrows;};    
+    void					SetTreeName(TString nam)					{Nameoftree = nam;};
+
 private:
 
     	bool AcceptTrack(AliAODTrack* aodtrack) const;    
  
      	int                   	ftrackBit; //!
-     	float                   fevtvrtxz;    //! 	
-     	float				  	ptmin;//!
+     	float                   vzmin;    //! 	
+      	float                   vzmax;    //! 	
+      	float                   fevtvrtxz;    //! 	
+   		float				  	ptmin;//!
      	float					ptmax;//!
 		int						TPCrows;//!
+		TString					Nameoftree;//!
      
         
        AliAODEvent*            fAOD;           //! input event
@@ -65,12 +69,14 @@ private:
 		TH1F					*fHistSignal;	//!
 		TH1F					*fHistClustersTPC;	//!
 		TH1F					*fHistChi2perNDF;		//!
-	
+		TH1F					*fHistTPCFoundFrac;	//!
+		TH1F					*fHistTPCcrossrows;		//!
+
 		TTree					*fTreept;			//!
 		float					field;			//!
-		//float 		        	pt[5000];             	//!       
+		float 		        	pt[200];             	//!       
 		float 					cent;			//!
-		//int 					charge[5000];		//!
+		int 					charge[200];		//!
 		int						nevt;			//!
 		int						ns;			//!
 		int						nch;			//!
@@ -120,6 +126,7 @@ private:
     ClassDef(AliAnalysisMeanPt, 1);
     
 };
+
 #endif
 
 
