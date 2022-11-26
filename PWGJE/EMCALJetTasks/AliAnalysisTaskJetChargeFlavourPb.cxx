@@ -196,14 +196,14 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
   Int_t fPdgCodes[255] = {};
   Int_t fCurrentPdg = 0;
   Int_t nMothers = 0;
-  Double_t jetCharge = 0;
-  Double_t jetChargeParticle = 0;
+  Float_t jetCharge = 0;
+  Float_t jetChargeParticle = 0;
 
   Int_t fParticleUniqueID[255] = {};
   Int_t fCurrentParticleUniqueID = 0;
 
-  Double_t fMotherParticlePt[255] = {};
-  Double_t fCurrentMotherParticlePt = {};
+  Float_t fMotherParticlePt[255] = {};
+  Float_t fCurrentMotherParticlePt = {};
 
 
   // Initialise jet pointer
@@ -231,9 +231,9 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
   //cout << nAcceptedJets << endl;
 
 
-  Double_t JetPhi=0;
-  Double_t JetParticlePhi=0;
-  Double_t JetPt_ForThreshold=0;
+  Float_t JetPhi=0;
+  Float_t JetParticlePhi=0;
+  Float_t JetPt_ForThreshold=0;
 
   //cout << "Tracker 2" << endl;
 
@@ -330,8 +330,8 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           //Int_t mcEntries=MCParticleCloneContainer->GetEntriesFast();
           Int_t mcEntries=MCParticleCloneContainer->GetNParticles();
           //cout << mcEntries << endl;
-          Double_t ptpart=-1;
-          Double_t dR=-99;
+          Float_t ptpart=-1;
+          Float_t dR=-99;
           const Int_t arraySize=255;
           AliAODMCParticle* CountParticle;
 
@@ -339,7 +339,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           Int_t countpartcode[arraySize] = {};
           Int_t maxInd=-1;
           Int_t count=0;
-          Double_t maxPt=0;
+          Float_t maxPt=0;
           Int_t FoundBottomOrCharm = kFALSE;
           
           
@@ -520,7 +520,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           
           //cout << "Tracker 7" << endl;
           Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
-          Double_t UniquePdgFrequency[20] = {};
+          Float_t UniquePdgFrequency[20] = {};
           Int_t nUniques = 0;
           
 
@@ -578,7 +578,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           
          // Loop to store largest number And corresponding pdg code
          
-          Double_t CurrentFraction;
+          Float_t CurrentFraction;
 
           int IndexOfMaximum = -1;
           CurrentFraction = UniquePdgFrequency[0];
@@ -601,7 +601,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           
         
           Int_t IndexOfMaximumPt = 0;
-          Double_t CurrentHighestPt = 0;
+          Float_t CurrentHighestPt = 0;
 
           for(int i = 0; i < nMothers; i++) 
           {
