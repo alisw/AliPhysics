@@ -752,22 +752,22 @@ void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
         FillHistogram("hMatrixEff_beta_all", pt, ptMC); 
    } 
 
-   FillHistogram("hClustPt_all", pt, weight);
-   FillHistogram("hClustPdgvsPt_all", pt, pdg, weight);
-   FillHistogram("hClustPdgvsPt_all_naive",  pt, pdg_naive, weight);
+   FillHistogram("hCaloPhotonPt_all", pt, weight);
+   FillHistogram("hCaloPhotonPdgvsPt_all", pt, pdg, weight);
+   FillHistogram("hCaloPhotonPdgvsPt_all_naive",  pt, pdg_naive, weight);
 
-   FillHistogram("hClustPtvsNcl_all", pt, ph->GetNCells() + 0.5);
+   FillHistogram("hCaloPhotonPtvsNcl_all", pt, ph->GetNCells() + 0.5);
    FillHistogram("hCentralityvsClustPt_all", pt, fEventCentrality + 0.5);	
-   FillHistogram(Form("hClustPt_all_M%d", sm1),  pt, weight);
+   FillHistogram(Form("hCaloPhotonPt_all_M%d", sm1),  pt, weight);
 
    if (ph->IsCPVOK()) {
-     FillHistogram("hClustPt_cpv", pt, weight );
-     FillHistogram("hClustPdgvsPt_cpv", pt, pdg, weight); 
-     FillHistogram("hClustPdgvsPt_cpv_naive",  pt, pdg_naive, weight);  
+     FillHistogram("hCaloPhotonPt_cpv", pt, weight );
+     FillHistogram("hCaloPhotonPdgvsPt_cpv", pt, pdg, weight); 
+     FillHistogram("hCaloPhotonPdgvsPt_cpv_naive",  pt, pdg_naive, weight);  
 
-     FillHistogram("hClustPtvsNcl_cpv", pt, ph->GetNCells()  + 0.5);
+     FillHistogram("hCaloPhotonPtvsNcl_cpv", pt, ph->GetNCells()  + 0.5);
      FillHistogram("hCentralityvsClustPt_cpv", pt, fEventCentrality + 0.5);	
-     FillHistogram(Form("hClustPt_cpv_M%d", sm1),  pt, weight);
+     FillHistogram(Form("hCaloPhotonPt_cpv_M%d", sm1),  pt, weight);
 
      if (pdg == 22) {
        FillHistogram("hMatrixEff_cpv", pt, ptMC, weight);
@@ -779,13 +779,13 @@ void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
    }
 
    if (ph->IsDispOK()) {
-     FillHistogram("hClustPt_disp", pt, weight);
-     FillHistogram("hClustPdgvsPt_disp", pt, pdg, weight);
-     FillHistogram("hClustPdgvsPt_disp_naive",  pt, pdg_naive, weight);
+     FillHistogram("hCaloPhotonPt_disp", pt, weight);
+     FillHistogram("hCaloPhotonPdgvsPt_disp", pt, pdg, weight);
+     FillHistogram("hCaloPhotonPdgvsPt_disp_naive",  pt, pdg_naive, weight);
 
-     FillHistogram("hClustPtvsNcl_disp", pt, ph->GetNCells()  + 0.5);
+     FillHistogram("hCaloPhotonPtvsNcl_disp", pt, ph->GetNCells()  + 0.5);
      FillHistogram("hCentralityvsClustPt_disp", pt, fEventCentrality + 0.5);	
-     FillHistogram(Form("hClustPt_disp_M%d", sm1),  pt, weight);
+     FillHistogram(Form("hCaloPhotonPt_disp_M%d", sm1),  pt, weight);
 
      if (pdg == 22) {
        FillHistogram("hMatrixEff_disp", pt, ptMC, weight);
@@ -796,13 +796,13 @@ void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
      }                    
    }
    if (ph->IsCPVOK() && ph->IsDispOK()) { 
-     FillHistogram("hClustPt_both", pt, weight);
-     FillHistogram("hClustPdgvsPt_both", pt, pdg, weight);
-     FillHistogram("hClustPdgvsPt_both_naive",  pt, pdg_naive, weight);
+     FillHistogram("hCaloPhotonPt_both", pt, weight);
+     FillHistogram("hCaloPhotonPdgvsPt_both", pt, pdg, weight);
+     FillHistogram("hCaloPhotonPdgvsPt_both_naive",  pt, pdg_naive, weight);
 
-     FillHistogram("hClustPtvsNcl_both", pt, ph->GetNCells() + 0.5, weight);
+     FillHistogram("hCaloPhotonPtvsNcl_both", pt, ph->GetNCells() + 0.5, weight);
      FillHistogram("hCentralityvsClustPt_both", pt, fEventCentrality + 0.5, weight);	
-     FillHistogram(Form("hClustPt_both_M%d", sm1),  pt, weight);
+     FillHistogram(Form("hCaloPhotonPt_both_M%d", sm1),  pt, weight);
 
      if (pdg == 22) {
        FillHistogram("hMatrixEff_both", pt, ptMC, weight);
@@ -1030,7 +1030,7 @@ Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabelAtVertex(AliVCluster *clu)
    if (particle0-> IsSecondaryFromMaterial()) {
     // Printf("Secondary from the material, Epart = %f, Eclust = %f" , particle0 ->E(), clu->E());
    //  return 0;
-     FillHistogram("hClustPdgvsPt_FromMaterial", clu->E(), particle0->GetPdgCode());
+     FillHistogram("hCaloPhotonPdgvsPt_FromMaterial", clu->E(), particle0->GetPdgCode());
    }
 
    while (TMath::Hypot(particle0->Xv(), particle0->Yv()) > 1.0) {
@@ -1610,7 +1610,7 @@ void AliAnalysisTaskGammaPHOSPP::GammaEfficiencies()
   TEfficiency *pEff;
 
   for (auto cut : fPidCuts) {
-    TH2F *h2_1 = (TH2F*)fOutputContainer2->FindObject(Form("hClustPdgvsPt_%s", cut.first.Data()));
+    TH2F *h2_1 = (TH2F*)fOutputContainer2->FindObject(Form("hCaloPhotonPdgvsPt_%s", cut.first.Data()));
     TH1D *hpass = (TH1D*)h2_1->ProjectionX(Form("hpass_%s", cut.first.Data()), 4000 + 22 + 1, 4000 + 22 + 1);
     hpass->SetTitle(Form("Passed #gamma-s, %s", cut.second.Data()));
     pEff = new TEfficiency(*hpass, *htot);
@@ -1636,11 +1636,11 @@ void AliAnalysisTaskGammaPHOSPP::CutEfficiencies()
 
   TEfficiency *pEff;
   
-  TH1F *htot = (TH1F*)fOutputContainer->FindObject("hClustPt_all");
+  TH1F *htot = (TH1F*)fOutputContainer->FindObject("hCaloPhotonPt_all");
    
   for (auto cut : fPidCuts) {
     if (cut.first.CompareTo("all")==0) continue;
-    TH1F *hpass = (TH1F*)fOutputContainer->FindObject(Form("hClustPt_%s", cut.first.Data()));
+    TH1F *hpass = (TH1F*)fOutputContainer->FindObject(Form("hCaloPhotonPt_%s", cut.first.Data()));
     pEff = new TEfficiency(*hpass, *htot);
     pEff->SetName(Form("cut_efficiency_%s", cut.first.Data())); 
     fOutputContainer2->Add(pEff);
@@ -1655,17 +1655,17 @@ void AliAnalysisTaskGammaPHOSPP::AddClusterHistograms()
   const Double_t ptMax = 40;
 
   for (auto cut : fPidCuts) {
-    fOutputContainer->Add(new TH1F(Form("hClustPt_%s", cut.first.Data()),"Cluster P_{t} spectrum", nPt, ptMin, ptMax));
+    fOutputContainer->Add(new TH1F(Form("hCaloPhotonPt_%s", cut.first.Data()),"Cluster P_{t} spectrum", nPt, ptMin, ptMax));
     for (Int_t imod = 1; imod <5; imod++) {
-      fOutputContainer->Add(new TH1F(Form("hClustPt_%s_M%d", cut.first.Data(), imod), Form("Cluster P_{t} spectrum, M%d", imod), nPt, ptMin, ptMax));
+      fOutputContainer->Add(new TH1F(Form("hCaloPhotonPt_%s_M%d", cut.first.Data(), imod), Form("Cluster P_{t} spectrum, M%d", imod), nPt, ptMin, ptMax));
     }
-    fOutputContainer->Add(new TH2F(Form("hClustPtvsNcl_%s", cut.first.Data()),"Minumum number of cells in a cluster vs cluster P_{t}", nPt, ptMin, ptMax, 5, 3, 8));
+    fOutputContainer->Add(new TH2F(Form("hCaloPhotonPtvsNcl_%s", cut.first.Data()),"Minumum number of cells in a cluster vs cluster P_{t}", nPt, ptMin, ptMax, 5, 3, 8));
     fOutputContainer->Add(new TH2F(Form("hCentralityvsClustPt_%s", cut.first.Data()),"Centrality vs ClustPt", nPt, ptMin, ptMax, 8, 0., 8.));
   }
 
   for (auto cut : fPidCuts) {
-    fOutputContainer2->Add(new TH2F(Form("hClustPdgvsPt_%s", cut.first.Data()),"Cluster pdg vs p_{T}." , nPt, ptMin, ptMax, 8000, -4000, 4000));
-    fOutputContainer2->Add(new TH2F(Form("hClustPdgvsPt_%s_naive", cut.first.Data()),"Cluster pdg vs p_{T} (naive)." , nPt, ptMin, ptMax, 8000, -4000, 4000));
+    fOutputContainer2->Add(new TH2F(Form("hCaloPhotonPdgvsPt_%s", cut.first.Data()),"Cluster pdg vs p_{T}." , nPt, ptMin, ptMax, 8000, -4000, 4000));
+    fOutputContainer2->Add(new TH2F(Form("hCaloPhotonPdgvsPt_%s_naive", cut.first.Data()),"Cluster pdg vs p_{T} (naive)." , nPt, ptMin, ptMax, 8000, -4000, 4000));
     fOutputContainer2->Add(new TH2F(Form("hMatrixEff_%s", cut.first.Data()), "Efficiency matrix", nPt, ptMin, ptMax, nPt, ptMin, ptMax));
     fOutputContainer2->Add(new TH2F(Form("hMatrixEff_gamma_%s", cut.first.Data()), "Efficiency matrix for #gamma", nPt, ptMin, ptMax, nPt, ptMin, ptMax));     
     fOutputContainer2->Add(new TH2F(Form("hMatrixEff_beta_%s", cut.first.Data()), "Efficiency matrix for #beta^{#pm}", nPt, ptMin, ptMax, nPt, ptMin, ptMax));     
@@ -1737,7 +1737,7 @@ void AliAnalysisTaskGammaPHOSPP::AddMCHistograms()
   fOutputContainer2->Add(new  TH2F("hGammaMC_true", "MC distribution of #gamma-s at IP", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
   fOutputContainer2->Add(new  TH2F("hGammaMCSources", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 8000, -4000, 4000));
-  fOutputContainer2->Add(new  TH2F("hClustPdgvsPt_FromMaterial", "Cluster pdg vs p_{T} from material" , nPt, ptMin, ptMax, 8000, -4000, 4000));
+  fOutputContainer2->Add(new  TH2F("hCaloPhotonPdgvsPt_FromMaterial", "Cluster pdg vs p_{T} from material" , nPt, ptMin, ptMax, 8000, -4000, 4000));
   fOutputContainer2->Add(new  TH2F("hGammaMC_FromMaterial", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   fOutputContainer2->Add(new  TH2F("hBetaMC_FromMaterial", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
