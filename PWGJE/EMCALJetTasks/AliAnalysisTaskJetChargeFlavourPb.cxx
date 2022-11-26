@@ -202,8 +202,8 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
   Int_t fParticleUniqueID[255] = {};
   Int_t fCurrentParticleUniqueID = 0;
 
-  Float_t fMotherParticlePt[255] = {};
-  Float_t fCurrentMotherParticlePt = {};
+  Double_t fMotherParticlePt[255] = {};
+  Double_t fCurrentMotherParticlePt = {};
 
 
   // Initialise jet pointer
@@ -330,8 +330,8 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           //Int_t mcEntries=MCParticleCloneContainer->GetEntriesFast();
           Int_t mcEntries=MCParticleCloneContainer->GetNParticles();
           //cout << mcEntries << endl;
-          Float_t ptpart=-1;
-          Float_t dR=-99;
+          Double_t ptpart=-1;
+          Double_t dR=-99;
           const Int_t arraySize=255;
           AliAODMCParticle* CountParticle;
 
@@ -339,7 +339,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           Int_t countpartcode[arraySize] = {};
           Int_t maxInd=-1;
           Int_t count=0;
-          Float_t maxPt=0;
+          Double_t maxPt=0;
           Int_t FoundBottomOrCharm = kFALSE;
           
           
@@ -729,11 +729,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
          */
          
           fTreeJets->Fill();
-
-
-
       }
-
       //cout << "End of Jet" << endl;
       }
     }
