@@ -1302,13 +1302,13 @@ Bool_t AliAnalysisTaskGammaPHOSPP::PhotonWithinPeak(Double_t Minv, Double_t pt)
 //void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt)
 void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliAODCaloCluster *clu1, Double_t pt)
 {
-//    AliVCluster *clu1 = ph->GetCluster();
+   //  AliVCluster *clu1 = ph->GetCluster();
 
    // const Bool_t CPVBit  = ph->IsCPVOK();
    // const Bool_t DispBit = ph->IsDispOK();
 
-    Bool_t CPVBit = clu1->GetEmcCpvDistance() > fNsigmaCPV;
-    Bool_t DispBit = clu1->Chi2() < fNsigmaDisp;
+    const Bool_t CPVBit = clu1->GetEmcCpvDistance() > fNsigmaCPV;
+    const Bool_t DispBit = clu1->Chi2() < fNsigmaDisp;
 
     const Int_t NTracksMatched = clu1->GetNTracksMatched();
 
