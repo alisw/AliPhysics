@@ -11,4 +11,5 @@
 #pragma link C++ class AliAnalysisTaskPbPbTree_MCut+;
 #pragma link C++ class AliAnalysisTaskPbPbTree_SingleMuons+;
 #pragma link C++ class AliAnalysisTaskQuarkoniumTreeEmbedding+;
+#pragma link C++ class AliAnalysisTaskPsi2Spolarization+;
 #endif
