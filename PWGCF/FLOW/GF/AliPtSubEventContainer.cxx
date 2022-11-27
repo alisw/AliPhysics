@@ -28,9 +28,9 @@ AliPtSubEventContainer::AliPtSubEventContainer():
 {};
 AliPtSubEventContainer::~AliPtSubEventContainer()
 {
-    delete fCorrList;
     delete fTwoSubAnalysisList;
     delete fThreeSubAnalysisList;
+    delete fCorrList;
 };
 
 AliPtSubEventContainer::AliPtSubEventContainer(const char* name, const char* title, int m):
@@ -226,7 +226,7 @@ void AliPtSubEventContainer::FillRecursiveProfiles(const vector<double> &corr, c
     for(int m=1;m<=mpar;++m)
     {
       if(sumw[m]==0) continue; 
-      ((TProfile*)fCorrList->At(m-1))->Fill(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:sumw[m]);
+      ((TProfile*)fCorrList->At(m-1))->Fill(lMult,corr[m]/sumw[m],(fEventWeight==WeightSpace::kOne)?1.0:sumw[m]);
     }
     return;
 }
@@ -235,15 +235,15 @@ void AliPtSubEventContainer::FillTwoSubAnalsysis(const vector<vector<double>> &i
   vector<vector<double>> arrA = getEventCorrelation(inarrSubA);
   vector<vector<double>> arrB = getEventCorrelation(inarrSubB);
   for (int m(1); m <= mpar; m++){
-    ((TProfile*)((TList*)fTwoSubAnalysisList->At(0))->At(m-1))->Fill(lMult,arrA[0][m]/arrA[1][m],(fEventWeight==PtSpace::kOne)?1.0:arrA[1][m]);
-    ((TProfile*)((TList*)fTwoSubAnalysisList->At(1))->At(m-1))->Fill(lMult,arrB[0][m]/arrB[1][m],(fEventWeight==PtSpace::kOne)?1.0:arrB[1][m]);
+    ((TProfile*)((TList*)fTwoSubAnalysisList->At(0))->At(m-1))->Fill(lMult,arrA[0][m]/arrA[1][m],(fEventWeight==WeightSpace::kOne)?1.0:arrA[1][m]);
+    ((TProfile*)((TList*)fTwoSubAnalysisList->At(1))->At(m-1))->Fill(lMult,arrB[0][m]/arrB[1][m],(fEventWeight==WeightSpace::kOne)?1.0:arrB[1][m]);
   }
   double prod, prodw;
   for (int m(1); m <= mpar-1; m++){
     for(int k(1); k <= m; k++){
       prod =  (arrA[0][m-k]/arrA[1][m-k])*(arrB[0][k]/arrB[1][k]);
       prodw = arrA[1][m-k]*arrB[1][k];
-      ((TProfile*)((TList*)fTwoSubAnalysisList->At(m-1+2))->At(k-1))->Fill(lMult,prod,(fEventWeight==PtSpace::kOne)?1.0:prodw);
+      ((TProfile*)((TList*)fTwoSubAnalysisList->At(m-1+2))->At(k-1))->Fill(lMult,prod,(fEventWeight==WeightSpace::kOne)?1.0:prodw);
     }
   }
 }
@@ -255,38 +255,38 @@ void AliPtSubEventContainer::FillThreeSubAnalsysis(const vector<vector<double>> 
   vector<vector<double>> arrC = getEventCorrelation(inarrSubC);
   // fill <pt> in sub-ranges
   for (int m(1); m <= mpar; m++){
-    ((TProfile*)((TList*)fThreeSubAnalysisList->At(0))->At(m-1))->Fill(lMult,arrA[0][m]/arrA[1][m],(fEventWeight==PtSpace::kOne)?1.0:arrA[1][m]);
-    ((TProfile*)((TList*)fThreeSubAnalysisList->At(1))->At(m-1))->Fill(lMult,arrB[0][m]/arrB[1][m],(fEventWeight==PtSpace::kOne)?1.0:arrB[1][m]);
-    ((TProfile*)((TList*)fThreeSubAnalysisList->At(2))->At(m-1))->Fill(lMult,arrC[0][m]/arrC[1][m],(fEventWeight==PtSpace::kOne)?1.0:arrC[1][m]);
+    ((TProfile*)((TList*)fThreeSubAnalysisList->At(0))->At(m-1))->Fill(lMult,arrA[0][m]/arrA[1][m],(fEventWeight==WeightSpace::kOne)?1.0:arrA[1][m]);
+    ((TProfile*)((TList*)fThreeSubAnalysisList->At(1))->At(m-1))->Fill(lMult,arrB[0][m]/arrB[1][m],(fEventWeight==WeightSpace::kOne)?1.0:arrB[1][m]);
+    ((TProfile*)((TList*)fThreeSubAnalysisList->At(2))->At(m-1))->Fill(lMult,arrC[0][m]/arrC[1][m],(fEventWeight==WeightSpace::kOne)?1.0:arrC[1][m]);
   }
   // fill three-par corr
   if(mpar < 3) return;
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(3))->At(0))->Fill(lMult,(arrA[0][1]/arrA[1][1])*(arrB[0][1]/arrB[1][1])*(arrC[0][1]/arrC[1][1]),(fEventWeight==PtSpace::kOne)?1.0:(arrA[1][1]*arrB[1][1]*arrC[1][1]));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(3))->At(0))->Fill(lMult,(arrA[0][1]/arrA[1][1])*(arrB[0][1]/arrB[1][1])*(arrC[0][1]/arrC[1][1]),(fEventWeight==WeightSpace::kOne)?1.0:(arrA[1][1]*arrB[1][1]*arrC[1][1]));
   // fill four-par corr
   if(mpar < 4) return;
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(4))->At(0))->Fill(lMult,(arrA[0][1]/arrA[1][1])*(arrB[0][1]/arrB[1][1])*(arrC[0][2]/arrC[1][2]),(fEventWeight==PtSpace::kOne)?1.0:(arrA[1][1]*arrB[1][1]*arrC[1][2]));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(4))->At(1))->Fill(lMult,(arrA[0][1]/arrA[1][1])*(arrB[0][2]/arrB[1][2])*(arrC[0][1]/arrC[1][1]),(fEventWeight==PtSpace::kOne)?1.0:(arrA[1][1]*arrB[1][2]*arrC[1][1]));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(4))->At(2))->Fill(lMult,(arrA[0][2]/arrA[1][2])*(arrB[0][1]/arrB[1][1])*(arrC[0][1]/arrC[1][1]),(fEventWeight==PtSpace::kOne)?1.0:(arrA[1][2]*arrB[1][1]*arrC[1][1]));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(4))->At(0))->Fill(lMult,(arrA[0][1]/arrA[1][1])*(arrB[0][1]/arrB[1][1])*(arrC[0][2]/arrC[1][2]),(fEventWeight==WeightSpace::kOne)?1.0:(arrA[1][1]*arrB[1][1]*arrC[1][2]));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(4))->At(1))->Fill(lMult,(arrA[0][1]/arrA[1][1])*(arrB[0][2]/arrB[1][2])*(arrC[0][1]/arrC[1][1]),(fEventWeight==WeightSpace::kOne)?1.0:(arrA[1][1]*arrB[1][2]*arrC[1][1]));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(4))->At(2))->Fill(lMult,(arrA[0][2]/arrA[1][2])*(arrB[0][1]/arrB[1][1])*(arrC[0][1]/arrC[1][1]),(fEventWeight==WeightSpace::kOne)?1.0:(arrA[1][2]*arrB[1][1]*arrC[1][1]));
   // fill five-par corr
   if(mpar < 5) return;
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(0))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,1)*GetCorr(arrC,3),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,1)*GetWeight(arrC,3)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(1))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,3)*GetCorr(arrC,1),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,3)*GetWeight(arrC,1)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(2))->Fill(lMult, GetCorr(arrA,3)*GetCorr(arrB,1)*GetCorr(arrC,1),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,3)*GetWeight(arrB,1)*GetWeight(arrC,1)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(3))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,2)*GetCorr(arrC,2),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,2)*GetWeight(arrC,2)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(4))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,1)*GetCorr(arrC,2),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,1)*GetWeight(arrC,2)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(5))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,2)*GetCorr(arrC,1),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,2)*GetWeight(arrC,1)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(0))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,1)*GetCorr(arrC,3),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,1)*GetWeight(arrC,3)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(1))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,3)*GetCorr(arrC,1),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,3)*GetWeight(arrC,1)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(2))->Fill(lMult, GetCorr(arrA,3)*GetCorr(arrB,1)*GetCorr(arrC,1),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,3)*GetWeight(arrB,1)*GetWeight(arrC,1)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(3))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,2)*GetCorr(arrC,2),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,2)*GetWeight(arrC,2)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(4))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,1)*GetCorr(arrC,2),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,1)*GetWeight(arrC,2)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(5))->At(5))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,2)*GetCorr(arrC,1),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,2)*GetWeight(arrC,1)));
   // fill six-par corr
   if(mpar < 6) return;
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(0))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,1)*GetCorr(arrC,4),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,1)*GetWeight(arrC,4)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(1))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,4)*GetCorr(arrC,1),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,4)*GetWeight(arrC,1)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(2))->Fill(lMult, GetCorr(arrA,4)*GetCorr(arrB,1)*GetCorr(arrC,1),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,4)*GetWeight(arrB,1)*GetWeight(arrC,1)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(3))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,2)*GetCorr(arrC,3),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,2)*GetWeight(arrC,3)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(4))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,3)*GetCorr(arrC,2),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,3)*GetWeight(arrC,2)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(5))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,1)*GetCorr(arrC,3),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,3)*GetWeight(arrC,1)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(6))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,3)*GetCorr(arrC,1),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,1)*GetWeight(arrC,3)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(7))->Fill(lMult, GetCorr(arrA,3)*GetCorr(arrB,1)*GetCorr(arrC,2),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,3)*GetWeight(arrB,2)*GetWeight(arrC,1)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(8))->Fill(lMult, GetCorr(arrA,3)*GetCorr(arrB,2)*GetCorr(arrC,1),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,3)*GetWeight(arrB,1)*GetWeight(arrC,2)));
-  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(9))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,2)*GetCorr(arrC,2),(fEventWeight==PtSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,2)*GetWeight(arrC,2)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(0))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,1)*GetCorr(arrC,4),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,1)*GetWeight(arrC,4)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(1))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,4)*GetCorr(arrC,1),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,4)*GetWeight(arrC,1)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(2))->Fill(lMult, GetCorr(arrA,4)*GetCorr(arrB,1)*GetCorr(arrC,1),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,4)*GetWeight(arrB,1)*GetWeight(arrC,1)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(3))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,2)*GetCorr(arrC,3),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,2)*GetWeight(arrC,3)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(4))->Fill(lMult, GetCorr(arrA,1)*GetCorr(arrB,3)*GetCorr(arrC,2),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,1)*GetWeight(arrB,3)*GetWeight(arrC,2)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(5))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,1)*GetCorr(arrC,3),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,3)*GetWeight(arrC,1)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(6))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,3)*GetCorr(arrC,1),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,1)*GetWeight(arrC,3)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(7))->Fill(lMult, GetCorr(arrA,3)*GetCorr(arrB,1)*GetCorr(arrC,2),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,3)*GetWeight(arrB,2)*GetWeight(arrC,1)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(8))->Fill(lMult, GetCorr(arrA,3)*GetCorr(arrB,2)*GetCorr(arrC,1),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,3)*GetWeight(arrB,1)*GetWeight(arrC,2)));
+  ((TProfile*)((TList*)fThreeSubAnalysisList->At(6))->At(9))->Fill(lMult, GetCorr(arrA,2)*GetCorr(arrB,2)*GetCorr(arrC,2),(fEventWeight==WeightSpace::kOne)?1.0:(GetWeight(arrA,2)*GetWeight(arrB,2)*GetWeight(arrC,2)));
 }
 
 

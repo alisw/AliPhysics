@@ -56,19 +56,18 @@ class AliPtSubEventContainer: public TNamed {
         TH1* getSubeventCorrelation(int ind, int m);
         int getMpar() { return mpar;}
     protected:
-        TList* fCorrList;
-        TList* fCumulantList;
-        TList* fNormList;
-
-        // Subevent analysis
+         // Subevent analysis
         TList* fTwoSubAnalysisList;
         TList* fThreeSubAnalysisList;
 
-        TString fPostfix;
-
-
+        TList* fCorrList;
+        TList* fCumulantList;
+        TList* fNormList;
+   
         const int mpar;
         unsigned int fEventWeight;
+        TString fPostfix;
+
         double GetCorr(const vector<vector<double>> arr, const int m);
         double GetWeight(const vector<vector<double>> arr, const int m);
 
