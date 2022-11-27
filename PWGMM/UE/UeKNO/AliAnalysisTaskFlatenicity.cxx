@@ -877,18 +877,10 @@ void AliAnalysisTaskFlatenicity::ExtractMultiplicitiesEqualALICE() {
     AliError("AliVVZERO not available");
     return;
   }
-
-  const Int_t nChannels = 64;
-  fmultV0C = 0;
   fmultV0A = 0;
-  for (Int_t iCh = 0; iCh < nChannels; iCh++) {
-    Float_t mult = lVevent->GetVZEROEqMultiplicity(iCh);
-    if (iCh < 32) { // V0C
-      fmultV0C += mult;
-    } else { // V0A
-      fmultV0A += mult;
-    }
-  }
+  fmultV0C = 0;
+  fmultV0A = AliESDUtils::GetCorrV0A(lVV0->GetMTotV0A(), fVtxz);
+  fmultV0C = AliESDUtils::GetCorrV0C(lVV0->GetMTotV0C(), fVtxz);
 
   AliVAD *lVAD = 0x0;
   lVAD = lVevent->GetADData();
@@ -938,7 +930,14 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityV0EqualALICE() {
 
   // before calibration
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
-    Float_t mult = lVevent->GetVZEROEqMultiplicity(iCh);
+    Float_t mult = 0;
+    // only corrected for vertex
+    if (iCh < 32) { // V0C
+      mult = AliESDUtils::GetCorrV0C(lVV0->GetMultiplicity(iCh), fVtxz);
+    } else { // V0A
+      mult = AliESDUtils::GetCorrV0A(lVV0->GetMultiplicity(iCh), fVtxz);
+    }
+
     RhoLattice[iCh] = mult;
     hActivityV0DataSectBefore->Fill(iCh, lVV0->GetMultiplicity(iCh));
   }
