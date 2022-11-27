@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace PtSpace {
+namespace WeightSpace {
     enum kWeight {
         kOne,
         kWpt,

@@ -14,7 +14,8 @@ If used, modified, or distributed, please aknowledge the original author of this
 double AliPtSubEventContainer::fFactorial[9] = {1.,1.,2.,6.,24.,120.,720.,5040.,40320.};
 int AliPtSubEventContainer::fSign[9] = {1,-1,1,-1,1,-1,1,-1,1};
 
-using namespace PtSpace;
+using namespace WeightSpace;
+
 AliPtSubEventContainer::AliPtSubEventContainer():
     fTwoSubAnalysisList(0),
     fThreeSubAnalysisList(0),
