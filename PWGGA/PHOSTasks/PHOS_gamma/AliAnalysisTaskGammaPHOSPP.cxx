@@ -78,8 +78,8 @@ AliAnalysisTaskGammaPHOSPP::AliAnalysisTaskGammaPHOSPP(const char *name) : AliAn
   fCheckMCCrossSection(kFALSE),
   fh1Xsec(0), fh1Trials(0), fAvgTrials(-1), 
   fTriggerAnalysis(new AliTriggerAnalysis),
-  NsigmaCPV(2.5),
-  NsigmaDisp(2.5)
+  fNsigmaCPV(2.5),
+  fNsigmaDisp(2.5)
 
 {
 
@@ -202,8 +202,9 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)
   // Filter events
   Bool_t acceptEvent = kFALSE;
   acceptEvent = AcceptEvent(fEvent);
+
   if (!acceptEvent) return;
-  
+
   //PHOS event
   if (fPHOSEvent) {
     fPHOSEvent->Clear() ;
@@ -289,8 +290,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *aodEvent)
   fEventPileup      = kFALSE;
   fEventV0AND       = kFALSE;
 
-  Int_t eventNumberInFile = aodEvent->GetEventNumberInFile();
-  if (eventNumberInFile == 0) return kFALSE;
+  //Int_t eventNumberInFile = aodEvent->GetEventNumberInFile();
 
   if (aodEvent->GetPrimaryVertex()->GetNContributors() < 1 && !fMCArray) {
       fEventVtxExist    = kFALSE;
@@ -683,7 +683,9 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
 
   FillHistogram("hEmcCPVDistance", clu1->GetEmcCpvDistance());
   Int_t iPrimaryAtVertex = GetPrimaryLabelAtVertex(clu1);
-  
+ 
+  TestMatchingTrackPID(clu1, p11.Pt());
+   
   if (!fMCArray) {
     weight = 1.0;
   }  
@@ -707,14 +709,13 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
   ph->SetEMCz(global1.Z());
   ph->SetNsigmaCPV(clu1->GetEmcCpvDistance());
   ph->SetNsigmaFullDisp(TMath::Sqrt(clu1->Chi2()));
-  ph->SetCPVBit(ph->GetNsigmaCPV() < NsigmaCPV);
-  ph->SetDispBit(ph->GetNsigmaFullDisp() < NsigmaDisp);
+  ph->SetCPVBit(ph->GetNsigmaCPV() > fNsigmaCPV);
+  ph->SetDispBit(ph->GetNsigmaFullDisp() < fNsigmaDisp);
   ph->SetBC(TestBC(clu1->GetTOF()));
   ph->SetPrimary(GetPrimaryLabel(clu1));
   ph->SetPrimaryAtVertex(GetPrimaryLabelAtVertex(clu1));
   ph->SetWeight(weight); 
   
-  TestMatchingTrackPID(ph, p11.Pt());
 
   FillHistogram("hvt0vsvt5", p11.Pt()- p1.Pt());
   FillHistogram("hBC", TestBC(clu1->GetTOF()) + 0.5);
@@ -1298,12 +1299,16 @@ Bool_t AliAnalysisTaskGammaPHOSPP::PhotonWithinPeak(Double_t Minv, Double_t pt)
 }
 
 //=================
-void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt)
+//void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt)
+void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliAODCaloCluster *clu1, Double_t pt)
 {
-    AliVCluster *clu1 = ph->GetCluster();
+//    AliVCluster *clu1 = ph->GetCluster();
 
-    const Bool_t CPVBit  = ph->IsCPVOK();
-    const Bool_t DispBit = ph->IsDispOK();
+   // const Bool_t CPVBit  = ph->IsCPVOK();
+   // const Bool_t DispBit = ph->IsDispOK();
+
+    Bool_t CPVBit = clu1->GetEmcCpvDistance() > fNsigmaCPV;
+    Bool_t DispBit = clu1->Chi2() < fNsigmaDisp;
 
     const Int_t NTracksMatched = clu1->GetNTracksMatched();
 

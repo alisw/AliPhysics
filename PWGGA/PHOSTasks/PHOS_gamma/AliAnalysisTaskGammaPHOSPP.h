@@ -85,7 +85,8 @@ private:
   Int_t TestBC(Double_t tof) ;
 
   Double_t NonlinearCorrection(Double_t en);
-  void TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt);
+//  void TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt);
+  void TestMatchingTrackPID(AliAODCaloCluster *clu, Double_t pt);
   
 
   Double_t Weight(AliAODMCParticle *particle);
@@ -159,8 +160,8 @@ private:
 
   Int_t                fLHCRunN;
 
-  Double_t             NsigmaCPV,
-                       NsigmaDisp;
+  Double_t             fNsigmaCPV,
+                       fNsigmaDisp;
  
   ClassDef(AliAnalysisTaskGammaPHOSPP, 2); // PHOS analysis task
 };
