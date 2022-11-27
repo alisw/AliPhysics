@@ -33,6 +33,8 @@
 #pragma link C++ class AliAnalysisTaskCMWESETrkSyst+;
 #pragma link C++ class AliAnalysisTaskPtFlowCorrelation+;
 #pragma link C++ class AliAnalysisTaskMomentumFlowCorrelation++;
+#pragma link C++ class AliPtSubEventContainer++;
+#pragma link C++ class AliAnalysisTaskDensity++;
 #endif
 
 #ifdef __CLING__

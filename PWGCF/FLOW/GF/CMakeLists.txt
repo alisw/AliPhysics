@@ -68,6 +68,8 @@ set(SRCS
   AliAnalysisTaskCMWESETrkSyst.cxx
   AliAnalysisTaskPtFlowCorrelation.cxx
   AliAnalysisTaskMomentumFlowCorrelation.cxx
+  AliPtSubEventContainer.cxx
+  AliAnalysisTaskDensity.cxx
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
