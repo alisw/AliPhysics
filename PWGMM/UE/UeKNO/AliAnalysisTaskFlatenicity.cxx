@@ -18,7 +18,7 @@
 
 class TTree;
 
-class AliPPVsMultUtils;
+// class AliPPVsMultUtils;
 class AliESDtrackCuts;
 class AliESDAD; // AD
 
@@ -117,13 +117,13 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
 
     AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity()
     : AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fIsCalib(kFALSE), fIsEqualALICE(kTRUE), fVtxz(-1),
-      fV0Mindex(-1), fmultTPC(-1), fmultV0A(-1), fmultV0C(-1), fmultADA(-1),
-      fmultADC(-1), fmultTPCmc(-1), fmultV0Amc(-1), fmultV0Cmc(-1),
-      fmultADAmc(-1), fmultADCmc(-1), fDetFlat("V0"),
-      fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-      fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
-      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+      fPPVsMultUtils(0), fUtils(0), fUseMC(kFALSE), fIsCalib(kFALSE),
+      fIsEqualALICE(kTRUE), fVtxz(-1), fV0Mindex(-1), fmultTPC(-1),
+      fmultV0A(-1), fmultV0C(-1), fmultADA(-1), fmultADC(-1), fmultTPCmc(-1),
+      fmultV0Amc(-1), fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1),
+      fDetFlat("V0"), fRemoveTrivialScaling(kFALSE), fnGen(-1),
+      fPIDResponse(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8),
+      fPtMin(0.5), ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
@@ -163,13 +163,13 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
     : AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-      fUseMC(kFALSE), fIsCalib(kFALSE), fIsEqualALICE(kTRUE), fVtxz(-1),
-      fV0Mindex(-1), fmultTPC(-1), fmultV0A(-1), fmultV0C(-1), fmultADA(-1),
-      fmultADC(-1), fmultTPCmc(-1), fmultV0Amc(-1), fmultV0Cmc(-1),
-      fmultADAmc(-1), fmultADCmc(-1), fDetFlat("V0"),
-      fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-      fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
-      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+      fPPVsMultUtils(0), fUtils(0), fUseMC(kFALSE), fIsCalib(kFALSE),
+      fIsEqualALICE(kTRUE), fVtxz(-1), fV0Mindex(-1), fmultTPC(-1),
+      fmultV0A(-1), fmultV0C(-1), fmultADA(-1), fmultADC(-1), fmultTPCmc(-1),
+      fmultV0Amc(-1), fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1),
+      fDetFlat("V0"), fRemoveTrivialScaling(kFALSE), fnGen(-1),
+      fPIDResponse(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8),
+      fPtMin(0.5), ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
@@ -221,6 +221,14 @@ AliAnalysisTaskFlatenicity::~AliAnalysisTaskFlatenicity() {
                         // calling this function
     fOutputList = 0x0;
   }
+  if (fPPVsMultUtils) {
+    delete fPPVsMultUtils;
+    fPPVsMultUtils = 0x0;
+  }
+  if (fUtils) {
+    delete fUtils;
+    fUtils = 0x0;
+  }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
@@ -256,6 +264,15 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     min_flat = -0.1;
     max_flat = 9.9;
     nbins_flat = 2000;
+  }
+
+  // Helper
+  if (!fPPVsMultUtils) {
+    fPPVsMultUtils = new AliPPVsMultUtils();
+  }
+  // Analysis Utils
+  if (!fUtils) {
+    fUtils = new AliAnalysisUtils();
   }
 
   OpenFile(1);
@@ -421,7 +438,7 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                         min_flat, max_flat);
   fOutputList->Add(hFlatVsV0M);
 
-  hCounter = new TH1D("hCounter", "counter", 10, -0.5, 9.5);
+  hCounter = new TH1D("hCounter", "counter", 15, -0.5, 14.5);
   fOutputList->Add(hCounter);
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hMultmVsFlat[i_c] = new TH2D(Form("hMultmVsFlat_c%d", i_c), "", 100, 0.0,
@@ -461,7 +478,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     this->Dump();
     return;
   }
-
+  hCounter->Fill(0.0);
   if (fUseMC) {
 
     //      E S D
@@ -497,6 +514,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
   if (!isINT7selected)
     return;
+  hCounter->Fill(1.0);
 
   // Good events
   if (!fEventCuts.AcceptEvent(event)) {
@@ -504,21 +522,50 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     return;
   }
 
+  hCounter->Fill(2.0);
+
   // Good vertex
   Bool_t hasRecVertex = kFALSE;
   hasRecVertex = HasRecVertex();
   if (!hasRecVertex)
     return;
 
-  // Multiplicity Estimation
-  fv0mpercentile = -999;
+  hCounter->Fill(3.0);
 
+  // good multiplicity
   fMultSelection = (AliMultSelection *)fESD->FindListObject("MultSelection");
   if (!fMultSelection)
     cout << "------- No AliMultSelection Object Found --------"
          << fMultSelection << endl;
+
+  hCounter->Fill(4.0);
+
+  if (fESD->IsIncompleteDAQ()) {
+    return;
+  }
+  hCounter->Fill(5.0);
+  if (fUtils->IsSPDClusterVsTrackletBG(fESD)) {
+    return;
+  }
+  hCounter->Fill(6.0);
+  if (!AliPPVsMultUtils::IsINELgtZERO(fESD)) {
+    return;
+  }
+  hCounter->Fill(7.0);
+  if (!AliPPVsMultUtils::IsAcceptedVertexPosition(fESD)) {
+    return;
+  }
+  hCounter->Fill(8.0);
+  if (!AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD)) {
+    return;
+  }
+  hCounter->Fill(9.0);
+
+  // Multiplicity Estimation
+  fv0mpercentile = -999;
+
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-  hCounter->Fill(1);
+  hCounter->Fill(10.0);
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     if (fv0mpercentile >= centClass[i_c] &&
@@ -622,7 +669,6 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     }
   }
   if ((fFlat >= 0) && (fmultV0C) > 0 && (fmultV0A > 0)) {
-
     hFlatenicityBefore->Fill(fFlat);
     if (flatenicity_v0 < 0.9 && flatenicity_tpc < 0.9) {
       hFlatenicity->Fill(fFlat);
