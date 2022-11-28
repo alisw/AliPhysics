@@ -1742,8 +1742,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466510ga01cc00000","0163103100000010"); // INT7
     cuts.AddCutCalo("00010113","24466520ga01cc00000","0163103100000010"); // PHOS calo NL
   } else if( trainConfig == 705){ // Timing cut efficiency studies
-    cuts.AddCutCalo("00010113","244665100a01cc00000","0163103100000010"); //
-    cuts.AddCutCalo("000ap113","244665100001cc00000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("00010113","24466000ga012200000","0163103100000010"); //
+    cuts.AddCutCalo("000ap113","24466000g0012200000","0163103100000010"); // PHI7
   } else if( trainConfig == 706){ // DEFAULT with old tender, 51 is nonlin config
     cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); //
     cuts.AddCutCalo("000a0113","24466510g0012200000","0163103100000010"); //

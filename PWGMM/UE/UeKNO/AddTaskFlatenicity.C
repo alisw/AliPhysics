@@ -50,7 +50,7 @@ AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
     if (isV0EqualAlice) {
       complement2 = "V0eq";
     } else {
-      complement2 = "V0";
+      complement2 = "V0my";
     }
   }
   if (detForFlat == "TPC") {
