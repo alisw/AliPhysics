@@ -34,6 +34,7 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster() : AliAnalys
     fIsTPCgen(kFALSE),
     fIsHMpp(kFALSE),
     fUseNch(kFALSE),
+    fUseEventBias(kFALSE),
     fUseEfficiency(kFALSE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(kFALSE),
@@ -49,6 +50,7 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster() : AliAnalys
     fNchMin(0),
     fNchMax(100000),
     fnTPCcrossedRows(70),
+    fNumEventBias(2),
     fNOfSamples(1.0),
     fSampleIndex(0.0),
     fPtMinTrig(0.5),
@@ -92,6 +94,7 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* n
     fIsTPCgen(kFALSE),
     fIsHMpp(kFALSE),
     fUseNch(kFALSE),
+    fUseEventBias(kFALSE),
     fUseEfficiency(kFALSE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(kFALSE),
@@ -107,6 +110,7 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* n
     fNchMin(0),
     fNchMax(100000),
     fnTPCcrossedRows(70),
+    fNumEventBias(2),
     fNOfSamples(1.0),
     fSampleIndex(0.0),
     fPtMinTrig(0.5),
@@ -708,28 +712,43 @@ Bool_t AliAnalysisTaskCorrForFlowMaster::PrepareTPCTracks(){
 
   TObjArray* fTracksJets = nullptr;
   if(fVetoJetEvents) fTracksJets = new TObjArray;
-
+  vector<AliAODTrack*> tempVec(0);
+  vector<vector<AliAODTrack*>> vecTrack(fPtBinsTrigCharged.size(), tempVec);
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
-      AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
-      if(!track || !IsTrackSelected(track)) { continue; }
+    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
+    if(!track || !IsTrackSelected(track)) { continue; }
 
-      Double_t trackPt = track->Pt();
-      if(!EventBias(trackPt)){continue;}
+    Double_t trackPt = track->Pt();
 
-      if(fVetoJetEvents && trackPt > fJetParticleLowPt) fTracksJets->Add((AliAODTrack*)track);
-      if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
-        fNofTracks++;
-        fTracksAss->Add((AliAODTrack*)track); // only if associated from TPC
+    if(fVetoJetEvents && trackPt > fJetParticleLowPt) fTracksJets->Add((AliAODTrack*)track);
+
+    for(Int_t j(0); j<fPtBinsTrigCharged.size()-1; j++) {
+      if(fPtBinsTrigCharged[j+1]>trackPt){
+          vecTrack[j].emplace_back(track);
+          break;
       }
-      Double_t trackEta = track->Eta();
-      if(trackPt > fPtMinTrig && trackPt < fPtMaxTrig) {
-        binscont[2] = trackPt;
-        fhPT->Fill(trackPt);
-        fTracksTrig->Add((AliAODTrack*)track);
-        fhTrigTracks->Fill(binscont,0,1.);
-      }
+    }
       
   } // tracks loop end
+
+  for (Int_t i(0); i<vecTrack.size(); i++){
+    if(fUseEventBias && vecTrack[i].size()<fNumEventBias){continue;}
+    for (Int_t j(0); j<vecTrack[i].size(); j++){
+      AliAODTrack* track = vecTrack[i][j];
+      if(!track || !IsTrackSelected(track)) { continue; }
+      Double_t trackPt = track->Pt();
+      binscont[2] = trackPt;
+      if(trackPt<fPtMaxTrig && trackPt>fPtMinTrig){
+        fhTrigTracks->Fill(binscont,0,1.);
+        fTracksTrig->Add(track);
+        fNofTracks++;
+        fhPT->Fill(trackPt);
+      }
+      
+      if(trackPt<fPtMaxAss && trackPt>fPtMinAss){fTracksAss->Add(track);}
+
+    }
+  }
 
   if(fUseNch){
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
@@ -833,27 +852,6 @@ Double_t AliAnalysisTaskCorrForFlowMaster::TransverseBoost(const AliMCParticle *
   return eta_boosted;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowMaster::EventBias(Double_t trigPt){
-    Double_t lower;
-    Double_t higher;
-    for (Int_t i(1); i<=fPtBinsTrigCharged.size(); i++){
-        if(trigPt<fPtBinsTrigCharged[i]){
-            lower = fPtBinsTrigCharged[i-1];
-            higher = fPtBinsTrigCharged[i];
-            break;
-        }
-    }
-    Int_t count = 0;
-    for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
-      if(count == 2) {return kTRUE;}
-      AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
-      if(!track || !IsTrackSelected(track)) { continue; }
-      Double_t trackPt = track->Pt();
-      if(lower<=trackPt && trackPt<= higher) {count++;}
-    }
-  return kFALSE;
-}
-//_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowMaster::PrintSetup(){
   printf("\n\n\n ************** Parameters ************** \n");
   printf("\t fAnalType: (Int_t) %d\n", fAnalType);
@@ -866,6 +864,8 @@ void AliAnalysisTaskCorrForFlowMaster::PrintSetup(){
   printf("\t fUseOppositeSidesOnly: (Bool_t) %s\n", fUseOppositeSidesOnly ? "kTRUE" : "kFALSE");
   printf("\t fRejectSecondariesFromMC: (Bool_t) %s\n", fRejectSecondariesFromMC ? "kTRUE" : "kFALSE");
   printf("\t fNOfSamples: (Int_t) %d\n", (Int_t) fNOfSamples);
+  printf("\t fEventBias: (Bool_t) %s\n", fUseEventBias ? "kTRUE" : "kFALSE");
+  printf("\t fNumEventBias: (Int_t) %d\n", (Int_t) fNumEventBias);  
   printf(" **************************** \n");
   printf("\t fSystematicsFlag: (TString) %s\n", fSystematicsFlag.Data());
   printf("\t fAbsEtaMax: (Double_t) %f\n", fAbsEtaMax);
