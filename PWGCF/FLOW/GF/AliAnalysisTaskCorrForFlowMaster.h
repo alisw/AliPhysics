@@ -34,6 +34,7 @@
 #include "AliAODForwardMult.h"
 #include "AliAODVZERO.h"
 #include "AliPartSimpleForCorr.h"
+#include "AliStack.h"
 #include "TVirtualMCStack.h"
 
 class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
