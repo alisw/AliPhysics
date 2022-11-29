@@ -1037,8 +1037,15 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     }
     if(fUseEfficiency){
       if(!gGrid) { TGrid::Connect("alien://"); }
-      if(fEfficiency==1){
-        ptEfficiency = TFile::Open("alien:///alice/cern.ch/user/j/joachiha/efficiency/2018/Efficiency_default_18.root");
+      if(!fIs2018Data){
+        if(fEfficiency==1){
+          ptEfficiency = TFile::Open("alien:///alice/cern.ch/user/j/joachiha/efficiency/2015/Efficiency_LHC20j6a_AOD243_default.root");
+        }
+      }
+      else{
+        if(fEfficiency==1){
+          ptEfficiency = TFile::Open("alien:///alice/cern.ch/user/j/joachiha/efficiency/2018/Efficiency_LHC20e3a_AOD243_default.root");
+        }
       }
       if(!ptEfficiency) { printf("Problem with efficiency file!!! \n"); }
     }
