@@ -167,8 +167,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 
             if (fPeriod.EqualTo("LHC15o")) {
 				// inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
-				//inNUA = TFile::Open("alien:///alice/cern.ch/user/e/enielsen/Weights/NUA/WeightsPbPb15o.root");
-				inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zhlu/NUA_from_enielsen/WeightsPbPb15o.root");
+				inNUA = TFile::Open("alien:///alice/cern.ch/user/e/enielsen/Weights/NUA/WeightsPbPb15o.root");
+				//inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zhlu/NUA_from_enielsen/WeightsPbPb15o.root");
 				//inNUA = TFile::Open("/Users/lisck/Workdir/Alice_NonlinearFlow/Analysis/AnaFlow_LEGO/WeightsPbPb15o.root");
 				//task->SetUseWeigthsRunByRun(true);
             } 
