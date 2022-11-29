@@ -58,7 +58,7 @@ void MakeMmixPi0(const Int_t centrality = 0,
 
   Int_t nPadX=1,nPadY=1;
   Int_t nbin=1 ;
-  Double_t xa[]={0.6, 20.} ;
+  Double_t xa[]={1., 20.} ;
 
   PPRstyle();
   gStyle->SetOptFit(111);
@@ -341,7 +341,7 @@ void MakeMmixPi0(const Int_t centrality = 0,
   //Normalize by the number of events
   Int_t cMin,cMax;
   if      (centrality == 0) {
-    cMin=1;
+    cMin=0;
     cMax=20;
   }
   else if (centrality == 1) {
