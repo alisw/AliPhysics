@@ -73,7 +73,6 @@ private:
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
-  void PHOSvsEMCALClusters();
   void AnalyzeCells();
   //Bool_t TestLambda(Double_t l1,Double_t l2, Double_t R) ;
   void ProcessMC();
@@ -84,27 +83,25 @@ private:
   Int_t TestTrack(AliAODTrack *track);
   Int_t TestBC(Double_t tof) ;
 
-  Double_t NonlinearCorrection(Double_t en);
+  Double_t NonlinearMCCorrection(Double_t en);
 //  void TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt);
   void TestMatchingTrackPID(AliAODCaloCluster *clu, Double_t pt);
   
-
   Double_t Weight(AliAODMCParticle *particle);
-  Bool_t PhotonWithinPeak(Double_t Minv, Double_t pt);
 
   void GammaEfficiencies();
   void CutEfficiencies();
 
   void AddQAHistograms();
-  void AddClusterHistograms();
-  void AddMassHistograms();
+  void AddOnePhotonHistograms();
+  void AddTwoPhotonHistograms();
   void AddMCHistograms();
   void AddTrackHistograms();
 
 private:
 
-  THashList *          fOutputContainer,  
-            *          fOutputContainer2;  //final histogram containers
+  THashList *          fOutputContainer,  //final histogram container, contains detector date
+            *          fOutputContainer2;  //final histogram container, contains MC data
 
   AliESDtrackCuts *    fESDtrackCuts; // Track cut
 
@@ -114,22 +111,22 @@ private:
   Int_t                fnCINT1B, 
                        fnCINT1A, 
 		       fnCINT1C, 
-		       fnCINT1E; // Numbers of triggers
+		       fnCINT1E; // triggers
 
-  Bool_t               fEventVtxExist, 
+  Bool_t               fEventVtxExists, 
                        fEventVtxZ10cm, 
 		       fEventPileup,  
 		       fEventV0AND; 
 
   AliPHOSGeometry *    fPHOSGeo;  // PHOS geometry
-  Int_t                fInPHOS;               // number of PHOS clusters
+  Int_t                fInPHOS;   // number PHOS photons
 
-  TClonesArray *       fMCArray;  // MC
+  TClonesArray *       fMCArray;  // MC array
 
   AliPIDResponse *     fPIDResponse;    // Pid response
 
   Double_t             fBCgap, // BC gap in seconds 
-                       fTOFcut; // upped tof cut for PHOS clusters
+                       fTOFcut; // tof cut for PHOS photons
 
   Int_t                fEventCounter;         // number of analyzed events
   
@@ -145,12 +142,12 @@ private:
 
   AliTriggerAnalysis * fTriggerAnalysis; //! Trigger analysis for normalisation
 
-  std::vector<std::pair<TString, TString>> fPidCuts; // name and title parts for histograms
+  std::vector<std::pair<TString, TString>> fPidCuts; // names and titlesfor pid cuts
 
   TList *              fPHOSEvents[10][2] ;    //Container for PHOS photons
 
-  Double_t             fVtx0[3] = {0, 0, 0},
-                       fVtx5[3] = {0, 0, 0};
+  Double_t             fVtx0[3] = {0, 0, 0},  // geometrical centre of ALICE
+                       fVtx5[3] = {0, 0, 0};  // collision vertex
 
   Double_t             fRecalib[5];     // Correction for abs.calibration per module
 
@@ -158,10 +155,10 @@ private:
 
   Int_t                fEventCentrality;      // centrality
 
-  Int_t                fLHCRunN;
+  Int_t                fLHCRunN;              // number LHC operation period, Run 1, 2, 3, etc.              
 
-  Double_t             fNsigmaCPV,
-                       fNsigmaDisp;
+  Double_t             fNsigmaCPV,            // cpv cut
+                       fNsigmaDisp;           // dispersion cut
  
   ClassDef(AliAnalysisTaskGammaPHOSPP, 2); // PHOS analysis task
 };

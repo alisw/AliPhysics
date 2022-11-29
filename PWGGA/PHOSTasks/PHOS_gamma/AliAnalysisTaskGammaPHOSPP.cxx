@@ -65,7 +65,7 @@ AliAnalysisTaskGammaPHOSPP::AliAnalysisTaskGammaPHOSPP(const char *name) : AliAn
   fEvent(0), 
   fPHOSEvent(0), 
   fnCINT1B(0), fnCINT1A(0), fnCINT1C(0), fnCINT1E(0), 
-  fEventVtxExist(0), fEventVtxZ10cm(0), fEventPileup(0), fEventV0AND(0), 
+  fEventVtxExists(0), fEventVtxZ10cm(0), fEventPileup(0), fEventV0AND(0), 
   fPHOSGeo(0),
   fInPHOS(0), 
   fMCArray(0),
@@ -82,12 +82,13 @@ AliAnalysisTaskGammaPHOSPP::AliAnalysisTaskGammaPHOSPP(const char *name) : AliAn
   fNsigmaDisp(2.5)
 
 {
-
+  // define cust
   fPidCuts.emplace_back("all", "no cuts");
   fPidCuts.emplace_back("cpv", "cpv");
   fPidCuts.emplace_back("disp", "disp");
   fPidCuts.emplace_back("both", "both");
-// Constructor
+
+  // Constructor
   Int_t nBin=10 ;
   for (Int_t i=0; i<nBin; i++) {
     for (Int_t j=0; j<2; j++) {
@@ -153,9 +154,9 @@ void AliAnalysisTaskGammaPHOSPP::UserCreateOutputObjects()
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fOutputContainer->Add(fh1Trials);
 
+  AddOnePhotonHistograms();
+  AddTwoPhotonHistograms();
   AddQAHistograms();
-  AddMassHistograms();
-  AddClusterHistograms();
   AddTrackHistograms();
   AddMCHistograms();
 
@@ -163,27 +164,22 @@ void AliAnalysisTaskGammaPHOSPP::UserCreateOutputObjects()
   PostData(2, fOutputContainer2);
 }
 
-/*
-================================================================================
-  // Main loop, called for each event
-
-================================================================================
-*/
-void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *) 
+//________________________________________________________________________________
+void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)  // Main loop, called for each event
 {
   // Get event
   fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent) {
-     Printf("ERROR: Could not retrieve event");
+     Printf("ERROR: Could not retrieve evenat!");
      return;
   }
+
   fLHCRunN = fEvent->GetRunNumber() < 224994 ? 1 : 2;
 
   // Initialize geometry
   if (fEventCounter == 0) {
     fPHOSGeo = AliPHOSGeometry::GetInstance() ; // use tender
-  
-    if (!fPHOSGeo) {
+    if (!fPHOSGeo) { 
         AliInfo("PHOS geometry not initialized, initializing it for you");
         if(fLHCRunN == 1)
           fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ; // Run1 geometry
@@ -192,25 +188,20 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)
     }
   }
 
-  // Vertex 
-  const AliAODVertex *aodVertex5 =    fEvent->GetPrimaryVertex();
-  // const AliAODVertex *aodVertexSPD  = fEvent->GetPrimaryVertexSPD();
-  fVtx5[0] = aodVertex5->GetX();
-  fVtx5[1] = aodVertex5->GetY();
-  fVtx5[2] = aodVertex5->GetZ();
+  //Get MC
+  fMCArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
 
   // Filter events
   Bool_t acceptEvent = kFALSE;
   acceptEvent = AcceptEvent(fEvent);
-
   if (!acceptEvent) return;
 
   //PHOS event
   if (fPHOSEvent) {
     fPHOSEvent->Clear() ;
   }  
-  else
-    fPHOSEvent = new TClonesArray("AliCaloPhoton", 50) ;
+    
+  fPHOSEvent = new TClonesArray("AliCaloPhoton", 50) ;
 
   // PID
   fPIDResponse -> SetUseTPCMultiplicityCorrection(kFALSE);
@@ -223,15 +214,11 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)
   fEventCentrality = GetEventCentrality(fEvent);
 
   // Process MC
-  fMCArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
   ProcessMC() ;
  
   // Notify 
   Notify();
 
-  // Check PHOS and EMCAL clusters
-  PHOSvsEMCALClusters();
-  
   // PHOS cells 
   AnalyzeCells();
 
@@ -258,150 +245,122 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)
   fEventCounter++;
 }
 
-/*============================================================================*/
-// Terminate
-void AliAnalysisTaskGammaPHOSPP::FinishTaskOutput()
+//_______________________________________________________________________
+void AliAnalysisTaskGammaPHOSPP::FinishTaskOutput() // Terminate
 {
   GammaEfficiencies();
   CutEfficiencies();
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *aodEvent)
+Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
 {
-  FillHistogram("hSelEvents",0) ; // All events accepted by Physics Selection
 
-  TString trigClasses = aodEvent->GetFiredTriggerClasses();
+  // Event selection flags
+  fEventVtxExists    = kFALSE;
+  fEventVtxZ10cm     = kFALSE;
+  fEventPileup       = kFALSE;
+  fEventV0AND         = kFALSE;
+  
+  Int_t  iSel = 0;
+
+  FillHistogram("hSelEvents", iSel++) ; // Events accepted by the physics selection
+
+  TString trigClasses = event->GetFiredTriggerClasses();
 
   if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL")) {
     AliWarning(Form("Skip event with triggers %s", trigClasses.Data()));
     return kFALSE;
   }
 
-  if (trigClasses.Contains("CINT1B")) fnCINT1B++;
-  if (trigClasses.Contains("CINT1A")) fnCINT1A++;
-  if (trigClasses.Contains("CINT1C")) fnCINT1C++;
-  if (trigClasses.Contains("CINT1-E")) fnCINT1E++;
+  FillHistogram("hSelEvents", iSel++) ; // After filtering by trigger classes
 
-  // Event selection flags
 
-  fEventVtxExist    = kFALSE;
-  fEventVtxZ10cm    = kFALSE;
-  fEventPileup      = kFALSE;
-  fEventV0AND       = kFALSE;
-
-  //Int_t eventNumberInFile = aodEvent->GetEventNumberInFile();
-
-  if (aodEvent->GetPrimaryVertex()->GetNContributors() < 1 && !fMCArray) {
-      fEventVtxExist    = kFALSE;
-  }    
-  else     
-    fEventVtxExist    = kTRUE; 
-
-  if (aodEvent->IsPileupFromSPD()) {
-    fEventPileup = kTRUE;
-  }  
-
-  const AliAODVertex *aodVertex5 =    aodEvent->GetPrimaryVertex();
-  const AliAODVertex *aodVertexSPD  = aodEvent->GetPrimaryVertexSPD();
-
-  FillHistogram("hNvertexTracks", aodVertex5->GetNContributors());
-
-  if (aodEvent->GetPrimaryVertex() && aodEvent->GetPrimaryVertex()->GetNContributors() > 0) {
-    FillHistogram("hZvertex", aodVertex5->GetZ());
-    if (TMath::Abs(aodVertex5->GetZ()) < 10.) {
-      fEventVtxZ10cm = kTRUE;
-    }
+  const AliAODVertex *aodVertex5 =    event->GetPrimaryVertex();
+  const AliAODVertex *aodVertexSPD  = event->GetPrimaryVertexSPD();
+  
+  FillHistogram("hNContributors", aodVertex5->GetNContributors());
+  
+  if (!aodVertex5) {
+     fEventVtxExists    = kFALSE;
   }
+  else fEventVtxExists = kTRUE;
 
-  if (aodEvent->IsPileupFromSPD()) {
+  if (!fEventVtxExists) return kFALSE;
+    else FillHistogram("hSelEvents", iSel++);
+  
+  if (aodVertex5 && aodVertex5->GetNContributors() < 1)  return kFALSE;
+    else FillHistogram("hSelEvents", iSel++);
+
+  if (aodVertexSPD && aodVertexSPD->GetNContributors() < 1)  return kFALSE;
+    else FillHistogram("hSelEvents", iSel++);
+
+  fVtx5[0] = aodVertex5->GetX();
+  fVtx5[1] = aodVertex5->GetY();
+  fVtx5[2] = aodVertex5->GetZ();
+
+  FillHistogram("hZvertex", aodVertex5->GetZ());
+  if (TMath::Abs(aodVertex5->GetZ()) < 10.) 
+     fEventVtxZ10cm = kTRUE;
+
+  if (!fEventVtxZ10cm) return kFALSE;
+    else FillHistogram("hSelEvents", iSel++);
+
+  if (event->IsPileupFromSPD()) {
     fEventPileup = kTRUE;
-    FillHistogram("hNPileupVtx", aodEvent->GetNumberOfPileupVerticesSPD());
+    FillHistogram("hNPileupVtx", event->GetNumberOfPileupVerticesSPD());
     for (Int_t puVtx = 0;  puVtx < fEvent->GetNumberOfPileupVerticesSPD(); puVtx++) {
       Double_t dZpileup = aodVertexSPD->GetZ() - fEvent->GetPileupVertexSPD(puVtx)->GetZ();
       FillHistogram("hZPileupVtx", dZpileup);
     }
   }
 
-  ULong64_t trigmask = aodEvent->GetTriggerMask();
-  
-  fEventV0AND = (trigmask & (1ull << (AliTriggerAnalysis::kV0AND-1)));
+  if (fEventPileup) return kFALSE;
+    else FillHistogram("hSelEvents", iSel++);
 
-  // Fill event statistics for different selection criteria
+  if (trigClasses.Contains("CINT1B")) fnCINT1B++;
+  if (trigClasses.Contains("CINT1A")) fnCINT1A++;
+  if (trigClasses.Contains("CINT1C")) fnCINT1C++;
+  if (trigClasses.Contains("CINT1-E")) fnCINT1E++;
 
-  FillHistogram("hSelEvents",1) ;
-  if (fEventVtxExist) 
-    FillHistogram("hSelEvents",2) ;
-  if (fEventVtxExist && fEventVtxZ10cm)
-    FillHistogram("hSelEvents",3) ;
-  if (fEventVtxExist && fEventVtxZ10cm && fEventV0AND)
-    FillHistogram("hSelEvents",4) ;
-  if (fEventVtxExist && fEventVtxZ10cm && fEventV0AND && fEventPileup)
-    FillHistogram("hSelEvents",5) ;
-  if (fEventPileup)
-    FillHistogram("hSelEvents",6) ;
-  if(fEventV0AND)
-    FillHistogram("hSelEvents",7) ;
-  if(fEventVtxZ10cm)
-    FillHistogram("hSelEvents",8) ;  
-        
-  if (aodVertex5->GetNContributors() < 1  && !fMCArray)
-     return kFALSE;
-  if (aodVertexSPD->GetNContributors() < 1 && !fMCArray) 
-     return kFALSE;
-  if (!fEventVtxExist) 
-     return kFALSE;
-  if (!fEventVtxZ10cm) 
-     return kFALSE;
-  if (fEventPileup)
-     return kFALSE;
-  
-  return kTRUE;
-}
-/*============================================================================*/
-Int_t AliAnalysisTaskGammaPHOSPP::GetEventCentrality(AliAODEvent *event)
-{
-  //Calculate charged multiplicity   Bool_t   IsCPVOK(void)const {return fCpv;}
-  
-  for (Int_t i=0; i < event->GetNumberOfTracks(); i++) {
-      AliAODTrack* track = dynamic_cast<AliAODTrack*>(event->GetTrack(i)) ;
-      FillHistogram("hTrackCharge", track->Charge());
-  }
+  ULong64_t trigmask = event->GetTriggerMask();
+  fEventV0AND = fTriggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kV0AND);
 
-  Int_t trackMult = event->GetNumberOfTracks() ;
+  if (!fEventV0AND) return kFALSE;
+    else FillHistogram("hSelEvents", iSel++);
 
   Float_t tV0A = event->GetVZEROData()->GetV0ATime();
   Float_t tV0C = event->GetVZEROData()->GetV0CTime();
-  FillHistogram("hV0Atime", tV0A);
-  FillHistogram("hV0Ctime", tV0C);
+  FillHistogram("hV0Atime",    tV0A);
+  FillHistogram("hV0Ctime",    tV0C);
   FillHistogram("hV0AV0Ctime", tV0A, tV0C);  
-  FillHistogram("hTrackMult", trackMult+0.5) ;
 
-  Int_t centr = 0;
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskGammaPHOSPP::GetEventCentrality(AliAODEvent *event)
+{
+  //Calculate charged multiplicity   Bool_t   IsCPVOK(void)const {return fCpv;}
+  const Int_t trackMult = event->GetNumberOfTracks() ;
+
+  FillHistogram("hTrackMult", trackMult + 0.5) ;
+
   if (trackMult <= 2)
-    centr = 0 ;
-  else 
-    if (trackMult <= 5)
-      centr = 1 ;
-    else
-      if (trackMult <= 9)
-        centr = 2 ;
-      else
-        if (trackMult <= 14)
-          centr = 3 ;
-        else
-          if (trackMult <= 22)
-            centr = 4 ;
-          else
-            if (trackMult <= 35)
-              centr = 5 ;
-            else
-              if (trackMult <= 50)
-                centr = 6 ;
-              else
-                centr = 7 ;
-
-  return centr;
+    return 0 ;
+  else  if (trackMult <= 5)
+    return 1 ;
+  else if (trackMult <= 9)
+     return  2 ;
+  else if (trackMult <= 14)
+      return 3 ;
+   else if (trackMult <= 22)
+      return 4 ;
+   else if (trackMult <= 35)
+      return 5 ;
+   else if (trackMult <= 50)
+      return 6 ;
+    else return 7 ;
 }
 
 //_____________________________________________________________________________
@@ -650,7 +609,7 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
 
   Double_t en = clu1->E();
 
-  cluPHOS1.SetE(NonlinearCorrection(en));
+  cluPHOS1.SetE(NonlinearMCCorrection(en));
 
   cluPHOS1.GetMomentum(p1 , fVtx0);
   cluPHOS1.GetMomentum(p11, fVtx5);
@@ -688,8 +647,7 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
    
   if (!fMCArray) {
     weight = 1.0;
-  }  
-  else {
+  }  else {
      weight = Weight((AliAODMCParticle*)fMCArray->At(iPrimaryAtVertex));       
   }
 
@@ -725,7 +683,7 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
   fInPHOS++ ;
 }
 
-//===========================================================================
+//___________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
 {
    TLorentzVector p11 = *(ph->GetMomV2());
@@ -815,7 +773,7 @@ void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
    }
 }
 
-//============================================================================
+//____________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::FillTwoPhotonHistograms()
 {
   TLorentzVector p1, p2, p12, pv1, pv2, pv12, p11;
@@ -905,7 +863,7 @@ void AliAnalysisTaskGammaPHOSPP::FillTwoPhotonHistograms()
   } //end of loop  i2 
  } //end of loop   i1
 }
-//==============================================================================
+//______________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::MixPhotons()
 {
   TLorentzVector p1, p2, p12, pv1, pv2, pv12, p11;
@@ -1019,8 +977,8 @@ void AliAnalysisTaskGammaPHOSPP::MixPhotons()
   }
 }
 
-//=================================== Returns label at vertex ==================
-Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabelAtVertex(AliVCluster *clu)
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabelAtVertex(AliVCluster *clu) //Returns label at vertex
 {
    if (!fMCArray) 
      return 0;
@@ -1058,16 +1016,18 @@ Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabelAtVertex(AliVCluster *clu)
   
    return iPrimaryAtVertex;   
 }
-//=========================== Returns label of the impinging particle =========
-Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabel(AliVCluster *clu)
+
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabel(AliVCluster *clu) //Returns label of the impinging particle 
 {
    if (!fMCArray) 
      return 0;
       
    return clu->GetLabel();
 }
-//=================================== TestGamma returns momentum==============
-Double_t AliAnalysisTaskGammaPHOSPP::TestGammaPt(AliCaloPhoton *ph)
+
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskGammaPHOSPP::TestGammaPt(AliCaloPhoton *ph) //returns momentum of MC particle
 {
 
    if (!fMCArray) 
@@ -1079,7 +1039,7 @@ Double_t AliAnalysisTaskGammaPHOSPP::TestGammaPt(AliCaloPhoton *ph)
    return (particle0->Pt());
 }
 
-//=======================================
+//_____________________________________________________________________________
 Int_t AliAnalysisTaskGammaPHOSPP::TestTrack(AliAODTrack *track)
 {
    if (!fMCArray) 
@@ -1093,14 +1053,12 @@ Int_t AliAnalysisTaskGammaPHOSPP::TestTrack(AliAODTrack *track)
    if (!TrackParticle) 
      return 0;
 
- //  if (((AliAODMCParticle*) TrackParticle)->IsSecondaryFromWeakDecay()) return 0;
- //  if (!TrackParticle->IsPhysicalPrimary()) return 0;
-
    Int_t TrackPDG = TrackParticle->GetPdgCode();
 
    return TrackPDG;
 }
-//=======================================
+
+//_____________________________________________________________________________
 Double_t AliAnalysisTaskGammaPHOSPP::Weight(AliAODMCParticle *particleAtVertex)
 {
    //mt scaling for Run1 MC production
@@ -1138,14 +1096,14 @@ Double_t AliAnalysisTaskGammaPHOSPP::Weight(AliAODMCParticle *particleAtVertex)
    return fWeightFunction->Eval(particleAtVertex->Pt());
 }
 
-//=======================================
+//_____________________________________________________________________________
 Int_t AliAnalysisTaskGammaPHOSPP::TestBC(Double_t tof)
 {
   Int_t bc = (Int_t)(TMath::Ceil((tof + fBCgap/2)/fBCgap) - 1);
   return bc;
 }
 
-//===============================================
+//_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaPHOSPP::Notify()
 {
   //
@@ -1266,39 +1224,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::PythiaInfoFromFile(TString file,Float_t & xse
   return kTRUE;
 }
 
-//=============================================================================
-
-Bool_t AliAnalysisTaskGammaPHOSPP::PhotonWithinPeak(Double_t Minv, Double_t pt)
-{
-  const Int_t Nbins = 33;
-
-  Double_t xbins[Nbins+1] = { 0.3, 0.4, 0.5, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2,
-                              2.2, 2.4, 2.6, 2.8, 3, 3.2, 
-                              3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 7, 8, 10, 12, 14, 16, 
-                              18, 20, 25};
-
-  Double_t xmass  [Nbins] = { 0.13531, 0.13531,  0.13531,  0.13531,
-                              0.13531, 0.135298, 0.135323, 0.135263, 0.135279, 0.135261, 
-                              0.135328,0.135201, 0.135349, 0.135275, 0.1353, 0.1354, 
-                              0.135014,0.13545,  0.135336, 0.134832, 0.135384, 0.135042, 
-                              0.13505, 0.134911, 0.135474, 0.134483, 0.13551, 0.135829, 
-                              0.130291,0.134933, 0.145022, 0.139125, 0.135036};
-
-  Double_t xwidth [Nbins] = { 5.47384, 5.47384, 5.47384, 5.47384,
-                              5.47384, 5.19915, 5.16869, 5.00068, 5.03612, 4.92791, 
-		                      4.99442, 4.98119, 5.14243, 5.01174, 5.09855, 4.82253, 
-                              5.10046, 5.09045, 5.22204, 5.20583, 5.30179, 5.00537, 
-                              5.09301, 5.57206, 5.64171, 4.92138, 5.49863, 7.24342, 
-                              8.35561, 5.34015, 8.93808, 2.65933, 1.80287};
-
-  Int_t k = 0;
-
-  while (pt > xbins[k] && k < Nbins+1) 
-     k = k + 1;
-  return(Minv < xmass[k] + xwidth[k] && Minv > xmass[k] - xwidth[k]);
-}
-
-//=================
+//_____________________________________________________________________________
 //void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt)
 void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliAODCaloCluster *clu1, Double_t pt)
 {
@@ -1329,258 +1255,237 @@ void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliAODCaloCluster *clu1, D
     if (NTracksMatched == 0) return;
 
     FillHistogram("hTracks_matched", 0.5);
-     FillHistogram("hDistance", dist);
-     AliAODTrack* trackMatched= dynamic_cast<AliAODTrack*>(clu1->GetTrackMatched(0));
+    FillHistogram("hDistance", dist);
+    AliAODTrack* trackMatched= dynamic_cast<AliAODTrack*>(clu1->GetTrackMatched(0));
  
-     if (trackMatched->TestFilterBit(32) &&  trackMatched->GetTPCsignal() > 0.) {
+    if (trackMatched->TestFilterBit(32) &&  trackMatched->GetTPCsignal() > 0.) {
    
-       //UInt_t oo = pidcomb->ComputeProbabilities(trackMatched, fPIDResponse, pBayesMatched);
+    //UInt_t oo = pidcomb->ComputeProbabilities(trackMatched, fPIDResponse, pBayesMatched);
        
-       Bool_t pidPion3 = kFALSE , pidKaon3 = kFALSE , pidProton3 = kFALSE , pidElectron3 = kFALSE, pidUndef3 = kFALSE ;
-       Bool_t pidPion1 = kFALSE , pidKaon1 = kFALSE , pidProton1 = kFALSE,  pidElectron1 = kFALSE, pidUndef1 = kFALSE;
+    Bool_t pidPion3 = kFALSE , pidKaon3 = kFALSE , pidProton3 = kFALSE , pidElectron3 = kFALSE, pidUndef3 = kFALSE ;
+    Bool_t pidPion1 = kFALSE , pidKaon1 = kFALSE , pidProton1 = kFALSE,  pidElectron1 = kFALSE, pidUndef1 = kFALSE;
       
-       Float_t  nsigmaElectron =   TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kElectron )) ;
-       Float_t  nsigmaPion =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kPion )) ;
-       Float_t  nsigmaKaon =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kKaon ) ) ;
-       Float_t  nsigmaProton =     TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kProton ) );
+    Float_t  nsigmaElectron =   TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kElectron )) ;
+    Float_t  nsigmaPion =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kPion )) ;
+    Float_t  nsigmaKaon =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kKaon ) ) ;
+    Float_t  nsigmaProton =     TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kProton ) );
    
-      // smallest sigma
-       if (( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron) && (nsigmaPion < 3.)) 
-         pidPion3= kTRUE;
-       if (( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron) &&  (nsigmaProton < 3.)) 
-         pidProton3= kTRUE;
-       if (( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron) &&  (nsigmaKaon < 3.))
-         pidKaon3= kTRUE;
-       if (( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < 3.))
-         pidElectron3= kTRUE;
-       if (!pidPion3 && !pidProton3 && !pidKaon3 && !pidElectron3)
-         pidUndef3=kTRUE;
-       if (pidPion3)    
-         FillHistogram("hpid3", 0.5);     
-       if (pidProton3)   
-         FillHistogram("hpid3", 1.5);     
-       if (pidKaon3)     
-         FillHistogram("hpid3", 2.5);     
-       if (pidElectron3) 
-         FillHistogram("hpid3", 3.5);     
-       if (pidUndef3)    
-         FillHistogram("hpid3", 4.5);     
+    // smallest sigma
+    if (( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron) && (nsigmaPion < 3.)) 
+       pidPion3= kTRUE;
+    if (( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron) &&  (nsigmaProton < 3.)) 
+       pidProton3= kTRUE;
+    if (( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron) &&  (nsigmaKaon < 3.))
+       pidKaon3= kTRUE;
+    if (( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < 3.))
+       pidElectron3= kTRUE;
+    if (!pidPion3 && !pidProton3 && !pidKaon3 && !pidElectron3)
+       pidUndef3=kTRUE;
+    if (pidPion3)    
+       FillHistogram("hpid3", 0.5);     
+    if (pidProton3)   
+       FillHistogram("hpid3", 1.5);     
+    if (pidKaon3)     
+       FillHistogram("hpid3", 2.5);     
+    if (pidElectron3) 
+       FillHistogram("hpid3", 3.5);     
+    if (pidUndef3)    
+       FillHistogram("hpid3", 4.5);     
    
-       if (( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron) && (nsigmaPion < 1.))
-         pidPion1= kTRUE;
-       if (( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron) &&  (nsigmaProton < 1.)) 
-         pidProton1= kTRUE;
-       if (( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron) &&  (nsigmaKaon < 1.)) 
-         pidKaon1= kTRUE;
-       if (( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < 1.)) pidElectron1= kTRUE;
-       if (!pidPion1 && !pidProton1 && !pidKaon1 && !pidElectron1) pidUndef1=kTRUE;
+    if (( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron) && (nsigmaPion < 1.))
+      pidPion1= kTRUE;
+    if (( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron) &&  (nsigmaProton < 1.)) 
+       pidProton1= kTRUE;
+    if (( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron) &&  (nsigmaKaon < 1.)) 
+       pidKaon1= kTRUE;
+    if (( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton) && (nsigmaElectron < 1.)) 
+      pidElectron1= kTRUE;
+    if (!pidPion1 && !pidProton1 && !pidKaon1 && !pidElectron1) 
+      pidUndef1=kTRUE;
    
-       if (pidPion1)     FillHistogram("hpid1", 0.5);     
-       if (pidProton1)   FillHistogram("hpid1", 1.5);     
-       if (pidKaon1)     FillHistogram("hpid1", 2.5);     
-       if (pidElectron1) FillHistogram("hpid1", 3.5);     
-       if (pidUndef1)    FillHistogram("hpid1", 4.5);     
-       
-       const Int_t nmaxMatched = TMath::LocMax(AliPID::kSPECIESC, pBayesMatched);
-       const Double_t distEmcCpv = clu1->GetEmcCpvDistance();
-       const Int_t  trackPdg = TestTrack(trackMatched);  
-   
-       FillHistogram("hTracksofClusts", pt, nmaxMatched+0.5);
-       FillHistogram("hEnTrackvsClust", clu1->E(), trackMatched->E());
-        
-       if (pidPion3 && trackMatched->Charge() > 0) {
-         FillHistogram("hTracksOfPi_ThreeSigma", pt, distEmcCpv);
-         FillHistogram("hTracksOfPi_ThreeSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfPi_ThreeSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfPi_ThreeSigma_disp_label", pt, trackPdg );
-         }
-       } 
-       if (pidPion1 && trackMatched->Charge() > 0) {
-         FillHistogram("hTracksOfPi_OneSigma",       pt,distEmcCpv);
-         FillHistogram("hTracksOfPi_OneSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfPi_OneSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfPi_OneSigma_disp_label", pt, trackPdg );
-         }
-       } 
-       if (pidPion3 && trackMatched->Charge() < 0) {
-         FillHistogram("hTracksOfAntiPi_ThreeSigma", pt,distEmcCpv);
-         FillHistogram("hTracksOfAntiPi_ThreeSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfAntiPi_ThreeSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfAntiPi_ThreeSigma_disp_label", pt, trackPdg );
-         }
-       } 
-       if (pidPion1 && trackMatched->Charge() < 0) {
-         FillHistogram("hTracksOfAntiPi_OneSigma", pt,distEmcCpv);
-         FillHistogram("hTracksOfAntiPi_OneSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfAntiPi_OneSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfAntiPi_OneSigma_disp_label", pt, trackPdg );
-         }
-       } 
-       if (pidProton3 && trackMatched->Charge() > 0) { 
-         FillHistogram("hTracksOfPr_ThreeSigma",pt,distEmcCpv);
-         FillHistogram("hTracksOfPr_ThreeSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfPr_ThreeSigma_disp_label", pt, trackPdg );
-           FillHistogram("hTracksOfPr_ThreeSigma_disp",pt,distEmcCpv);
-         }
-       } 
-       if (pidProton1 && trackMatched->Charge() > 0) { 
-         FillHistogram("hTracksOfPr_OneSigma",pt,distEmcCpv);
-         FillHistogram("hTracksOfPr_OneSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfPr_OneSigma_disp_label", pt, trackPdg );
-           FillHistogram("hTracksOfPr_OneSigma_disp",pt,distEmcCpv);
-         }
+    if (pidPion1)     FillHistogram("hpid1", 0.5);     
+    if (pidProton1)   FillHistogram("hpid1", 1.5);     
+    if (pidKaon1)     FillHistogram("hpid1", 2.5);     
+    if (pidElectron1) FillHistogram("hpid1", 3.5);     
+    if (pidUndef1)    FillHistogram("hpid1", 4.5);     
+      
+    const Int_t nmaxMatched = TMath::LocMax(AliPID::kSPECIESC, pBayesMatched);
+    const Double_t distEmcCpv = clu1->GetEmcCpvDistance();
+    const Int_t  trackPdg = TestTrack(trackMatched);  
+ 
+    FillHistogram("hTracksOfClusts", pt, nmaxMatched+0.5);
+    FillHistogram("hEnTrackvsClust", clu1->E(), trackMatched->E());
+      
+    if (pidPion3 && trackMatched->Charge() > 0) {
+       FillHistogram("hTracksOfPi_ThreeSigma", pt, distEmcCpv);
+       FillHistogram("hTracksOfPi_ThreeSigma_label", pt, trackPdg );
+       if (DispBit) {
+          FillHistogram("hTracksOfPi_ThreeSigma_disp",       pt, distEmcCpv);
+          FillHistogram("hTracksOfPi_ThreeSigma_disp_label", pt, trackPdg );
        }
-       if (pidProton3 && trackMatched->Charge() < 0) { 
-         FillHistogram("hTracksOfAntiPr_ThreeSigma",pt,distEmcCpv);
-         FillHistogram("hTracksOfAntiPr_ThreeSigma_label",pt,trackPdg);
-         if (DispBit) {
-           FillHistogram("hTracksOfAntiPr_ThreeSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfAntiPr_ThreeSigma_disp_label", pt, trackPdg);
-         }
+    } 
+
+    if (pidPion1 && trackMatched->Charge() > 0) {
+       FillHistogram("hTracksOfPi_OneSigma",       pt,distEmcCpv);
+       FillHistogram("hTracksOfPi_OneSigma_label", pt, trackPdg );
+       if (DispBit) {
+         FillHistogram("hTracksOfPi_OneSigma_disp",       pt, distEmcCpv);
+         FillHistogram("hTracksOfPi_OneSigma_disp_label", pt, trackPdg );
        }
-       if (pidProton1 && trackMatched->Charge() < 0) { 
-         FillHistogram("hTracksOfAntiPr_OneSigma",pt,distEmcCpv);
-         FillHistogram("hTracksOfAntiPr_OneSigma_label",pt,trackPdg);
-         if (DispBit) {
-           FillHistogram("hTracksOfAntiPr_OneSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfAntiPr_OneSigma_disp_label", pt, trackPdg);
-         }
+    } 
+    
+    if (pidPion3 && trackMatched->Charge() < 0) {
+      FillHistogram("hTracksOfAntiPi_ThreeSigma", pt,distEmcCpv);
+      FillHistogram("hTracksOfAntiPi_ThreeSigma_label", pt, trackPdg );
+      if (DispBit) {
+        FillHistogram("hTracksOfAntiPi_ThreeSigma_disp",       pt, distEmcCpv);
+        FillHistogram("hTracksOfAntiPi_ThreeSigma_disp_label", pt, trackPdg );
+      }
+    } 
+
+    if (pidPion1 && trackMatched->Charge() < 0) {
+       FillHistogram("hTracksOfAntiPi_OneSigma", pt,distEmcCpv);
+       FillHistogram("hTracksOfAntiPi_OneSigma_label", pt, trackPdg );
+       if (DispBit) {
+         FillHistogram("hTracksOfAntiPi_OneSigma_disp",       pt, distEmcCpv);
+         FillHistogram("hTracksOfAntiPi_OneSigma_disp_label", pt, trackPdg );
        }
-       if (pidKaon3 && trackMatched->Charge() > 0) { 
-         FillHistogram("hTracksOfKa_ThreeSigma",       pt,distEmcCpv);
-         FillHistogram("hTracksOfKa_ThreeSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfKa_ThreeSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfKa_ThreeSigma_disp_label", pt, trackPdg );
-         }
-       } 
-       if (pidKaon1 && trackMatched->Charge() > 0) { 
-         FillHistogram("hTracksOfKa_OneSigma",       pt,distEmcCpv);
-         FillHistogram("hTracksOfKa_OneSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfKa_OneSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfKa_OneSigma_disp_label", pt, trackPdg );
-         }
-       } 
-       if (pidKaon3 && trackMatched->Charge() < 0) { 
-         FillHistogram("hTracksOfAntiKa_ThreeSigma",       pt,distEmcCpv);
-         FillHistogram("hTracksOfAntiKa_ThreeSigma_label", pt, trackPdg );
-         if (DispBit) { 
-           FillHistogram("hTracksOfAntiKa_ThreeSigma_disp",   pt,distEmcCpv);
-           FillHistogram("hTracksOfAntiKa_ThreeSigma_disp_label", pt, trackPdg );
-         }
-       } 
-       if (pidKaon1 && trackMatched->Charge() < 0) { 
-         FillHistogram("hTracksOfAntiKa_OneSigma",       pt,distEmcCpv);
-         FillHistogram("hTracksOfAntiKa_OneSigma_label", pt, trackPdg );
-         if (DispBit) { 
-           FillHistogram("hTracksOfAntiKa_OneSigma_disp",       pt,distEmcCpv);
-           FillHistogram("hTracksOfAntiKa_OneSigma_disp_label", pt, trackPdg );
-         }
-       } 
-       if (pidElectron3 && trackMatched->Charge() > 0) {
-         FillHistogram("hTracksOfAntiBeta_ThreeSigma",	  pt,distEmcCpv);
-         FillHistogram("hTracksOfAntiBeta_ThreeSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfAntiBeta_ThreeSigma_disp",	 pt, distEmcCpv);
-           FillHistogram("hTracksOfAntiBeta_ThreeSigma_disp_label", pt, trackPdg );
-         }
-  	}
-  	if (pidElectron1 && trackMatched->Charge() > 0) {
-         FillHistogram("hTracksOfAntiBeta_OneSigma",	pt,distEmcCpv);
-         FillHistogram("hTracksOfAntiBeta_OneSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfAntiBeta_OneSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfAntiBeta_OneSigma_disp_label", pt, trackPdg );
-         }
-  	}
-       if (pidElectron3 && trackMatched->Charge() < 0) {
-         FillHistogram("hTracksOfBeta_ThreeSigma",	  pt,distEmcCpv);
-         FillHistogram("hTracksOfBeta_ThreeSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfBeta_ThreeSigma_disp",	 pt, distEmcCpv);
-           FillHistogram("hTracksOfBeta_ThreeSigma_disp_label", pt, trackPdg );
-         }
-  	}
-  	if (pidElectron1 && trackMatched->Charge() < 0) {
-         FillHistogram("hTracksOfBeta_OneSigma",	pt,distEmcCpv);
-         FillHistogram("hTracksOfBeta_OneSigma_label", pt, trackPdg );
-         if (DispBit) {
-           FillHistogram("hTracksOfBeta_OneSigma_disp",       pt, distEmcCpv);
-           FillHistogram("hTracksOfBeta_OneSigma_disp_label", pt, trackPdg );
-         }
-  	} else {
-           FillHistogram("hTracksOfOthers", pt, distEmcCpv);
-           if (DispBit) 
-             FillHistogram("hTracksOfOthers_disp", pt, distEmcCpv);
-       }
-  
-       if (CPVBit) {
-         if (nmaxMatched == 2) { 
-           FillHistogram("hTracksOfPiClose", pt);
-           if (DispBit) 
-             FillHistogram("hTracksOfPiCloseDispOK", pt);
-         } else if(nmaxMatched==4) { 
-             FillHistogram("hTracksOfPrClose", pt);
-             if (DispBit) 
-               FillHistogram("hTracksOfPrCloseDispOK", pt);
-         } else if (nmaxMatched==3) { 
-             FillHistogram("hTracksOfKaClose", pt);
-             if (DispBit) 
-                FillHistogram("hTracksOfKaCloseDispOK", pt);
-         } else {
-             FillHistogram("hTracksOfOthersClose",pt);
-             FillHistogram("hTracksOfOthersCloseDispOK",pt);
-         }               
-       }
+    } 
+ 
+    if (pidProton3 && trackMatched->Charge() > 0) { 
+      FillHistogram("hTracksOfPr_ThreeSigma",pt,distEmcCpv);
+      FillHistogram("hTracksOfPr_ThreeSigma_label", pt, trackPdg );
+      if (DispBit) {
+         FillHistogram("hTracksOfPr_ThreeSigma_disp_label", pt, trackPdg );
+         FillHistogram("hTracksOfPr_ThreeSigma_disp",pt,distEmcCpv);
+      }
+    } 
+ 
+   if (pidProton1 && trackMatched->Charge() > 0) { 
+     FillHistogram("hTracksOfPr_OneSigma",pt,distEmcCpv);
+     FillHistogram("hTracksOfPr_OneSigma_label", pt, trackPdg );
+     if (DispBit) {
+       FillHistogram("hTracksOfPr_OneSigma_disp_label", pt, trackPdg );
+       FillHistogram("hTracksOfPr_OneSigma_disp",pt,distEmcCpv);
      }
-}
-
-//===========================================================================//
-void AliAnalysisTaskGammaPHOSPP::PHOSvsEMCALClusters()
-{
-   Int_t multPHOS = 0 , multEMCAL = 0;
-
-   AliAODCaloCluster *clu2; 
-   for (Int_t ic = 0; ic < fEvent->GetNumberOfCaloClusters(); ic++) {
-      clu2 = fEvent->GetCaloCluster(ic);
-      if (clu2->IsPHOS() ) 
-        multPHOS  =  multPHOS  + 1;
-      if (clu2->IsEMCAL()) 
-        multEMCAL =  multEMCAL + 1;
+   }
+ 
+   if (pidProton3 && trackMatched->Charge() < 0) { 
+     FillHistogram("hTracksOfAntiPr_ThreeSigma",pt,distEmcCpv);
+     FillHistogram("hTracksOfAntiPr_ThreeSigma_label",pt,trackPdg);
+     if (DispBit) {
+       FillHistogram("hTracksOfAntiPr_ThreeSigma_disp",       pt, distEmcCpv);
+       FillHistogram("hTracksOfAntiPr_ThreeSigma_disp_label", pt, trackPdg);
+     }
    }
 
-   //Printf("There are %d caloclusters in this event: %d in PHOS, %d in EMCAL", 
-   //fEvent->GetNumberOfCaloClusters(), multPHOS, multEMCAL);
+   if (pidProton1 && trackMatched->Charge() < 0) { 
+     FillHistogram("hTracksOfAntiPr_OneSigma",pt,distEmcCpv);
+     FillHistogram("hTracksOfAntiPr_OneSigma_label",pt,trackPdg);
+     if (DispBit) {
+       FillHistogram("hTracksOfAntiPr_OneSigma_disp",       pt, distEmcCpv);
+       FillHistogram("hTracksOfAntiPr_OneSigma_disp_label", pt, trackPdg);
+     }
+   }
+   if (pidKaon3 && trackMatched->Charge() > 0) { 
+     FillHistogram("hTracksOfKa_ThreeSigma",       pt,distEmcCpv);
+     FillHistogram("hTracksOfKa_ThreeSigma_label", pt, trackPdg );
+     if (DispBit) {
+       FillHistogram("hTracksOfKa_ThreeSigma_disp",       pt, distEmcCpv);
+       FillHistogram("hTracksOfKa_ThreeSigma_disp_label", pt, trackPdg );
+     }
+   } 
+   if (pidKaon1 && trackMatched->Charge() > 0) { 
+     FillHistogram("hTracksOfKa_OneSigma",       pt,distEmcCpv);
+     FillHistogram("hTracksOfKa_OneSigma_label", pt, trackPdg );
+     if (DispBit) {
+       FillHistogram("hTracksOfKa_OneSigma_disp",       pt, distEmcCpv);
+       FillHistogram("hTracksOfKa_OneSigma_disp_label", pt, trackPdg );
+     }
+   } 
+   if (pidKaon3 && trackMatched->Charge() < 0) { 
+     FillHistogram("hTracksOfAntiKa_ThreeSigma",       pt,distEmcCpv);
+     FillHistogram("hTracksOfAntiKa_ThreeSigma_label", pt, trackPdg );
+     if (DispBit) { 
+       FillHistogram("hTracksOfAntiKa_ThreeSigma_disp",   pt,distEmcCpv);
+       FillHistogram("hTracksOfAntiKa_ThreeSigma_disp_label", pt, trackPdg );
+     }
+   } 
+   if (pidKaon1 && trackMatched->Charge() < 0) { 
+     FillHistogram("hTracksOfAntiKa_OneSigma",       pt,distEmcCpv);
+     FillHistogram("hTracksOfAntiKa_OneSigma_label", pt, trackPdg );
+     if (DispBit) { 
+       FillHistogram("hTracksOfAntiKa_OneSigma_disp",       pt,distEmcCpv);
+       FillHistogram("hTracksOfAntiKa_OneSigma_disp_label", pt, trackPdg );
+     }
+   } 
+   if (pidElectron3 && trackMatched->Charge() > 0) {
+     FillHistogram("hTracksOfAntiBeta_ThreeSigma",	  pt,distEmcCpv);
+     FillHistogram("hTracksOfAntiBeta_ThreeSigma_label", pt, trackPdg );
+     if (DispBit) {
+       FillHistogram("hTracksOfAntiBeta_ThreeSigma_disp",	 pt, distEmcCpv);
+       FillHistogram("hTracksOfAntiBeta_ThreeSigma_disp_label", pt, trackPdg );
+     }
+    }
+    if (pidElectron1 && trackMatched->Charge() > 0) {
+     FillHistogram("hTracksOfAntiBeta_OneSigma",	pt,distEmcCpv);
+     FillHistogram("hTracksOfAntiBeta_OneSigma_label", pt, trackPdg );
+     if (DispBit) {
+       FillHistogram("hTracksOfAntiBeta_OneSigma_disp",       pt, distEmcCpv);
+       FillHistogram("hTracksOfAntiBeta_OneSigma_disp_label", pt, trackPdg );
+     }
+    }
+   if (pidElectron3 && trackMatched->Charge() < 0) {
+     FillHistogram("hTracksOfBeta_ThreeSigma",	  pt,distEmcCpv);
+     FillHistogram("hTracksOfBeta_ThreeSigma_label", pt, trackPdg );
+     if (DispBit) {
+       FillHistogram("hTracksOfBeta_ThreeSigma_disp",	 pt, distEmcCpv);
+       FillHistogram("hTracksOfBeta_ThreeSigma_disp_label", pt, trackPdg );
+     }
+    }
+    if (pidElectron1 && trackMatched->Charge() < 0) {
+     FillHistogram("hTracksOfBeta_OneSigma",	pt,distEmcCpv);
+     FillHistogram("hTracksOfBeta_OneSigma_label", pt, trackPdg );
+     if (DispBit) {
+       FillHistogram("hTracksOfBeta_OneSigma_disp",       pt, distEmcCpv);
+       FillHistogram("hTracksOfBeta_OneSigma_disp_label", pt, trackPdg );
+     }
+    } else {
+       FillHistogram("hTracksOfOthers", pt, distEmcCpv);
+       if (DispBit) 
+         FillHistogram("hTracksOfOthers_disp", pt, distEmcCpv);
+   }
 
-   FillHistogram("hPHOSvsEMCAL", 0.5, multPHOS );
-   FillHistogram("hPHOSvsEMCAL", 1.5, multEMCAL);
+   if (CPVBit) {
+     if (nmaxMatched == 2) { 
+       FillHistogram("hTracksOfPiClose", pt);
+       if (DispBit) 
+         FillHistogram("hTracksOfPiCloseDispOK", pt);
+     } else if(nmaxMatched==4) { 
+         FillHistogram("hTracksOfPrClose", pt);
+         if (DispBit) 
+           FillHistogram("hTracksOfPrCloseDispOK", pt);
+     } else if (nmaxMatched==3) { 
+         FillHistogram("hTracksOfKaClose", pt);
+         if (DispBit) 
+            FillHistogram("hTracksOfKaCloseDispOK", pt);
+     } else {
+         FillHistogram("hTracksOfOthersClose",pt);
+         FillHistogram("hTracksOfOthersCloseDispOK",pt);
+     }               
+   }
+ }
 }
 
-//===========================================================================//
-Double_t  AliAnalysisTaskGammaPHOSPP::NonlinearCorrection(Double_t en)
+//___________________________________________________________________________
+Double_t  AliAnalysisTaskGammaPHOSPP::NonlinearMCCorrection(Double_t en)
 {
-//   Double_t en = clu->E();
    if (!fMCArray) 
       return (en);
    else
-/*
-   if (fEvent->GetRunNumber() > 110000 && fEvent->GetRunNumber() < 150000) { // 7 TeV
-      Double_t calib=1.008;
-      Double_t ParA=0.015;
-      Double_t ParB=0.4;
-      return (0.0241+1.0504*en+0.000249*en*en)*calib*(1+ParA/(1.+en*en/ParB/ParB)) ;
-      //return clu->E() * calib * (1+ParA/(1+pow(clu->E()/ParB, 2)));
-   } else
-*/
-   if (fLHCRunN == 2) { // Run 2
-     Double_t calib = 0.9; //!!! 1st iteration!!!
+
+   if (fLHCRunN == 2) { 
+     Double_t calib = 0.9; 
      Double_t ParA = 0.132081;
      Double_t ParB = -4.91409e-03;
 
@@ -1593,7 +1498,8 @@ Double_t  AliAnalysisTaskGammaPHOSPP::NonlinearCorrection(Double_t en)
    } else   
    return (en);
 }
-//===========================================================================//
+
+//_____________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::GammaEfficiencies()
 {
   if (!fMCArray) {
@@ -1627,7 +1533,7 @@ void AliAnalysisTaskGammaPHOSPP::GammaEfficiencies()
   fOutputContainer2->Add(htot);
 }
 
-//===========================================================================//
+//_____________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::CutEfficiencies() 
 {
 
@@ -1652,34 +1558,34 @@ void AliAnalysisTaskGammaPHOSPP::CutEfficiencies()
   }
 }
 
-//===========================================================================//
-void AliAnalysisTaskGammaPHOSPP::AddClusterHistograms()
+//___________________________________________________________________________
+void AliAnalysisTaskGammaPHOSPP::AddOnePhotonHistograms()
 {
   const Int_t nPt      = 400;
   const Double_t ptMin = 0;
   const Double_t ptMax = 40;
 
   for (auto cut : fPidCuts) {
-    fOutputContainer->Add(new TH1F(Form("hCaloPhotonPt_%s", cut.first.Data()),"Cluster P_{t} spectrum", nPt, ptMin, ptMax));
+    fOutputContainer->Add(new TH1F(Form("hCaloPhotonPt_%s", cut.first.Data()),"Photon p_{T};p_{T}, GeV/c", nPt, ptMin, ptMax));
     for (Int_t imod = 1; imod <5; imod++) {
-      fOutputContainer->Add(new TH1F(Form("hCaloPhotonPt_%s_M%d", cut.first.Data(), imod), Form("Cluster P_{t} spectrum, M%d", imod), nPt, ptMin, ptMax));
+      fOutputContainer->Add(new TH1F(Form("hCaloPhotonPt_%s_M%d", cut.first.Data(), imod), Form("Photon p_{T}, M%d;p_{T}, GeV/c", imod), nPt, ptMin, ptMax));
     }
-    fOutputContainer->Add(new TH2F(Form("hCaloPhotonPtvsNcl_%s", cut.first.Data()),"Minumum number of cells in a cluster vs cluster P_{t}", nPt, ptMin, ptMax, 5, 3, 8));
-    fOutputContainer->Add(new TH2F(Form("hCentralityvsClustPt_%s", cut.first.Data()),"Centrality vs ClustPt", nPt, ptMin, ptMax, 8, 0., 8.));
+    fOutputContainer->Add(new TH2F(Form("hCaloPhotonPtvsNcl_%s", cut.first.Data()),"Number of cells in a cluster vs photon p_{t};p_{T}, GeV/c;N_{cells}", nPt, ptMin, ptMax, 5, 3, 8));
+    fOutputContainer->Add(new TH2F(Form("hCentralityvsClustPt_%s", cut.first.Data()),"Centrality vs photon p_{T};p_{T}, GeV/c;centrality", nPt, ptMin, ptMax, 8, 0., 8.));
   }
 
   for (auto cut : fPidCuts) {
-    fOutputContainer2->Add(new TH2F(Form("hCaloPhotonPdgvsPt_%s", cut.first.Data()),"Cluster pdg vs p_{T}." , nPt, ptMin, ptMax, 8000, -4000, 4000));
-    fOutputContainer2->Add(new TH2F(Form("hCaloPhotonPdgvsPt_%s_naive", cut.first.Data()),"Cluster pdg vs p_{T} (naive)." , nPt, ptMin, ptMax, 8000, -4000, 4000));
-    fOutputContainer2->Add(new TH2F(Form("hMatrixEff_%s", cut.first.Data()), "Efficiency matrix", nPt, ptMin, ptMax, nPt, ptMin, ptMax));
-    fOutputContainer2->Add(new TH2F(Form("hMatrixEff_gamma_%s", cut.first.Data()), "Efficiency matrix for #gamma", nPt, ptMin, ptMax, nPt, ptMin, ptMax));     
-    fOutputContainer2->Add(new TH2F(Form("hMatrixEff_beta_%s", cut.first.Data()), "Efficiency matrix for #beta^{#pm}", nPt, ptMin, ptMax, nPt, ptMin, ptMax));     
+    fOutputContainer2->Add(new TH2F(Form("hCaloPhotonPdgvsPt_%s", cut.first.Data()),"Photon pdg vs p_{T},p_{T}, GeV/c;pdg" , nPt, ptMin, ptMax, 8000, -4000, 4000));
+    fOutputContainer2->Add(new TH2F(Form("hCaloPhotonPdgvsPt_%s_naive", cut.first.Data()),"Photon pdg vs p_{T} (naive);p_{T}, GeV/c;pdg (naive)" , nPt, ptMin, ptMax, 8000, -4000, 4000));
+    fOutputContainer2->Add(new TH2F(Form("hMatrixEff_%s", cut.first.Data()), "Efficiency matrix;p_{T}^{meas}, GeV/c;p_{T}^{gen}, GeV/c", nPt, ptMin, ptMax, nPt, ptMin, ptMax));
+    fOutputContainer2->Add(new TH2F(Form("hMatrixEff_gamma_%s", cut.first.Data()), "Efficiency matrix for #gamma;p_{T}^{meas}, GeV/c;p_{T}^{gen}, GeV/c", nPt, ptMin, ptMax, nPt, ptMin, ptMax));     
+    fOutputContainer2->Add(new TH2F(Form("hMatrixEff_beta_%s", cut.first.Data()), "Efficiency matrix for #beta^{#pm};p_{T}^{meas}, GeV/c;p_{T}^{gen}, GeV/c", nPt, ptMin, ptMax, nPt, ptMin, ptMax));     
   }
 
 }
 
-//===========================================================================//
-void AliAnalysisTaskGammaPHOSPP::AddMassHistograms() 
+//___________________________________________________________________________
+void AliAnalysisTaskGammaPHOSPP::AddTwoPhotonHistograms() 
 {
   const Int_t nM       = 750;
   const Double_t mMin  = 0.0;
@@ -1688,19 +1594,19 @@ void AliAnalysisTaskGammaPHOSPP::AddMassHistograms()
   const Double_t ptMin = 0;
   const Double_t ptMax = 40;
 
-  fOutputContainer->Add(new TH1F("hAsym",     "Asymmetry, abs((p1-p2)/(p1+p2))", 100, 0, 1));
-  fOutputContainer->Add(new TH1F("hAsym_mix", "Asymmetry, abs((p1-p2)/(p1+p2))", 100, 0, 1));
+  fOutputContainer->Add(new TH1F("hAsym",     "Asymmetry, abs((p1-p2)/(p1+p2));asym", 100, 0, 1));
+  fOutputContainer->Add(new TH1F("hAsym_mix", "Asymmetry, abs((p1-p2)/(p1+p2));asym", 100, 0, 1));
 
   for (auto cut : fPidCuts) {
-    fOutputContainer->Add(new TH2F(Form("hMassPt_%s", cut.first.Data()) ,"(M,p_{T})_{#gamma#gamma}"   ,nM, mMin, mMax, nPt, ptMin, ptMax));
-    fOutputContainer->Add(new TH2F(Form("hMiMassPt_%s", cut.first.Data()) ,   "(M,p_{T})_{#gamma#gamma}"   ,nM, mMin, mMax, nPt, ptMin, ptMax));
-    fOutputContainer->Add(new TH3F(Form("hMassPt_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma}" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
-    fOutputContainer->Add(new TH3F(Form("hMiMassPt_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma}" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
+    fOutputContainer->Add(new TH2F(Form("hMassPt_%s", cut.first.Data()) ,"(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c"   ,nM, mMin, mMax, nPt, ptMin, ptMax));
+    fOutputContainer->Add(new TH2F(Form("hMiMassPt_%s", cut.first.Data()) ,   "(M,p_{T})_{#gamma#gamma}(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c"   ,nM, mMin, mMax, nPt, ptMin, ptMax));
+    fOutputContainer->Add(new TH3F(Form("hMassPt_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma}(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c;asym" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
+    fOutputContainer->Add(new TH3F(Form("hMiMassPt_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma}(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c, asym" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
 
-    fOutputContainer->Add(new TH2F(Form("hMassSingle_%s", cut.first.Data()),  "(M,p_{T})_{#gamma#gamma}" ,nM, mMin, mMax, nPt, ptMin, ptMax));
-    fOutputContainer->Add(new TH2F(Form("hMiMassSingle_%s", cut.first.Data()),  "(M,p_{T})_{#gamma#gamma}" ,nM, mMin, mMax, nPt, ptMin, ptMax));
-    fOutputContainer->Add(new TH3F(Form("hMassSingle_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma}" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
-    fOutputContainer->Add(new TH3F(Form("hMiMassSingle_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma}" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
+    fOutputContainer->Add(new TH2F(Form("hMassSingle_%s", cut.first.Data()),  "(M,p_{T})_{#gamma#gamma}(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c" ,nM, mMin, mMax, nPt, ptMin, ptMax));
+    fOutputContainer->Add(new TH2F(Form("hMiMassSingle_%s", cut.first.Data()),  "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c" ,nM, mMin, mMax, nPt, ptMin, ptMax));
+    fOutputContainer->Add(new TH3F(Form("hMassSingle_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
+    fOutputContainer->Add(new TH3F(Form("hMiMassSingle_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c;asym" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
 
     for (Int_t iMod = 1; iMod < 5; iMod ++) {  
       fOutputContainer->Add(new TH2F(Form("hMassPt_%s_M%d",       cut.first.Data(), iMod), Form("(M,p_{T})_{#gamma#gamma}, M%d",  iMod), nM, mMin, mMax, nPt, ptMin, ptMax));
@@ -1711,74 +1617,61 @@ void AliAnalysisTaskGammaPHOSPP::AddMassHistograms()
   }
 }
 
-//===========================================================================//
+//___________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::AddMCHistograms() 
 {
   const Int_t nPt      = 400;
   const Double_t ptMin = 0;
   const Double_t ptMax = 40;
 
-  fOutputContainer2->Add(new TH1F("hEventCounterMC","Count events", 1, 0, 1));
+  fOutputContainer2->Add(new TH1F("hEventCounterMC", "Count events;;events accepted", 1, 0, 1));
   
-  fOutputContainer2->Add(new TH1F("hWeights","Particle weights", 2000, 0., 2.));
+  fOutputContainer2->Add(new TH1F("hWeights","Particle weights;weight", 2000, 0., 2.));
 
-  fOutputContainer2->Add(new TH2F("hMCPdgvsPt","Pdg code vs particle p_{T}", nPt, ptMin, ptMax, 8000, -4000, 4000));
+  fOutputContainer2->Add(new TH2F("hMCPdgvsPt","Pdg code vs particle p_{T};p_{T}, GeV/c;pdg", nPt, ptMin, ptMax, 8000, -4000, 4000));
   fOutputContainer2->Add(new TH1F("hMCPt","MC particles p_{T}", nPt, ptMin, ptMax));
 
-  fOutputContainer2->Add(new TH2F("hPi0MC", "MC distribution of #pi^{0}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new TH2F("hPiPlusMC", "MC distribution of #pi^{+}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new TH2F("hPiMinusMC", "MC distribution of #pi^{-}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hEtaMC", "MC distribution of #eta^{0}-s ", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hEtaPrimeMC", "MC distribution of #eta'", nPt, ptMin, ptMax,240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hOmegaMC", "MC distribution of #omega", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hK0SMC", "MC distribution of #K_{0}^{S}-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hK0LMC", "MC distribution of #K_{0}^{L}-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hProtonMC", "MC distribution of protons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hNeutrMC", "MC distribution of neutrons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hKchMC", "MC distribution of neutrons", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hPdgvsPt_MCTracks","MC Particle PDG code vs Pt", nPt, ptMin, ptMax , 8000, -4000, 4000));
+  fOutputContainer2->Add(new TH2F("hPi0MC", "#pi^{0}-s;p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new TH2F("hPiPlusMC",  "#pi^{+};p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new TH2F("hPiMinusMC", "#pi^{-};p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hEtaMC", "#eta;p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hEtaPrimeMC", "#eta';p_{T};y", nPt, ptMin, ptMax,240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hOmegaMC", "#omega;p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hK0SMC", "K_{0}^{S};p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hK0LMC", "K_{0}^{L};p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hProtonMC", "p+#bar{p};p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hNeutrMC", "n+#bar{n};p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hKchMC", "K^{#pm};p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hPdgvsPt_MCTracks","pdg code vs p_{T};p_{T};pdg", nPt, ptMin, ptMax , 8000, -4000, 4000));
 
-  fOutputContainer2->Add(new  TH2F("hGammaMC_all", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  fOutputContainer2->Add(new  TH2F("hGammaMC_true", "MC distribution of #gamma-s at IP", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hGammaMC_all", "all #gamma;p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
+  fOutputContainer2->Add(new  TH2F("hGammaMC_true", "#gamma at IP;p_{T};y", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   
-  fOutputContainer2->Add(new  TH2F("hGammaMCSources", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 8000, -4000, 4000));
-  fOutputContainer2->Add(new  TH2F("hCaloPhotonPdgvsPt_FromMaterial", "Cluster pdg vs p_{T} from material" , nPt, ptMin, ptMax, 8000, -4000, 4000));
+  fOutputContainer2->Add(new  TH2F("hGammaMCSources", "sources of #gamma;p_{T};y", nPt, ptMin, ptMax, 8000, -4000, 4000));
+  fOutputContainer2->Add(new  TH2F("hCaloPhotonPdgvsPt_FromMaterial", "photon pdg vs p_{T} from material;p_{T};pdg" , nPt, ptMin, ptMax, 8000, -4000, 4000));
   fOutputContainer2->Add(new  TH2F("hGammaMC_FromMaterial", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
   fOutputContainer2->Add(new  TH2F("hBetaMC_FromMaterial", "MC distribution of #gamma-s", nPt, ptMin, ptMax, 240, -1.2, 1.2));
-  
+
   fOutputContainer2->Add(new TH1I("hpid3", "Pid #sigma<3, #pi, p, K, #beta, Undef", 5, 0., 5.));
   fOutputContainer2->Add(new TH1I("hpid1", "Pid #sigma<1, #pi, p, K, #beta, Undef", 5, 0., 5.));
 }
 
-//============================================================
+//_____________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::AddTrackHistograms() 
 {
   
-  Int_t nPt      = 400;
-  Double_t ptMin = 0;
-  Double_t ptMax = 40;
-  
+  const Int_t nPt      = 400;
+  const Double_t ptMin = 0;
+  const Double_t ptMax = 40;
   
   fOutputContainer->Add(new TH1F("hDistanceToBadChannel", "Distance to bad channel in cm", 1000, 0, 100));
 
-  fOutputContainer ->Add(new TH1F("hTrackCharge","Charge of track", 9, -4.5, 4.5));
   fOutputContainer2->Add(new TH1F("hMCTrackCharge","Charge of MC track", 9, -4.5, 4.5));
  
-  fOutputContainer->Add(new TH2F("hTracksPt2D","Tracks ID vs p_{T}", nPt, ptMin, ptMax, 9, 0.,9.));
-  fOutputContainer->Add(new TH1F("hTracksPt_beta","Electron tracks p_{T}", nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F("hTracksPt_mu","#mu tracks p_{T}", nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F("hTracksPt_pi","#pi^{#pm} tracks p_{T}", nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F("hTracksPt_ka","K^{#pm} tracks p_{T}", nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F("hTracksPt_p","p, #bar{p} tracks vs p_{T}", nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F("hTracksPt_de","^{2}_{1}H tracks vs p_{T}", nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F("hTracksPt_tri","^{3}_{1}H tracks vs p_{T}", nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F("hTracksPt_he3","^{3}_{2}He tracks vs p_{T}", nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F("hTracksPt_alpha","^{4}_{2} He tracks vs p_{T}", nPt, ptMin, ptMax));
-
-  fOutputContainer->Add(new TH2F("hTracksofClusts","Tracks vc p_{T}.", nPt, ptMin, ptMax, 9, 0.,9.));
-  fOutputContainer->Add(new TH2F("hTracksofClusts_cpv","Tracks vc p_{T}, CPV cut.", nPt, ptMin, ptMax, 9, 0.,9.));
-  fOutputContainer->Add(new TH2F("hTracksofClusts_disp","Tracks vc p_{T}, shape cut.", nPt, ptMin, ptMax, 9, 0.,9.));
-  fOutputContainer->Add(new TH2F("hTracksofClusts_both","Tracks vc p_{T}, CPV + shape cuts." , nPt, ptMin, ptMax, 9, 0.,9.));
+  fOutputContainer->Add(new TH2F("hTracksOfClusts","Tracks vs p_{T}.", nPt, ptMin, ptMax, 9, 0.,9.));
+  fOutputContainer->Add(new TH2F("hTracksOfClusts_cpv","Tracks vs p_{T}, CPV cut.", nPt, ptMin, ptMax, 9, 0.,9.));
+  fOutputContainer->Add(new TH2F("hTracksOfClusts_disp","Tracks vs p_{T}, shape cut.", nPt, ptMin, ptMax, 9, 0.,9.));
+  fOutputContainer->Add(new TH2F("hTracksOfClusts_both","Tracks vs p_{T}, CPV + shape cuts." , nPt, ptMin, ptMax, 9, 0.,9.));
 
   fOutputContainer->Add(new TH2F("hTracksOfPi_OneSigma", "#pi^{+} clusters", nPt, ptMin, ptMax, 1000, 0., 100.));
   fOutputContainer->Add(new TH2F("hTracksOfPi_OneSigma_disp", "#pi^{+} clusters, Disp cut", nPt, ptMin, ptMax, 1000., 0., 100.));
@@ -1823,8 +1716,7 @@ void AliAnalysisTaskGammaPHOSPP::AddTrackHistograms()
   fOutputContainer->Add(new TH1F("hTracksOfOthers", "Other clusters", nPt, ptMin, ptMax));
   fOutputContainer->Add(new TH2F("hTracksOfOthers_disp", "Other clusters, Disp cut", nPt, ptMin, ptMax, 1000, 0., 100.));
 
-  //==== MC ====
-
+  // MC 
   fOutputContainer2->Add(new TH2F("hTracksOfPi_OneSigma_label", "PDG #pi^{+}-s vs p_{T}", nPt, ptMin, ptMax, 8000, -4000, 4000));
   fOutputContainer2->Add(new TH2F("hTracksOfPi_OneSigma_disp_label", "PDG #pi^{+}-s vs p_{T}, dispersion cut", nPt, ptMin, ptMax, 8000, -4000, 4000));
   fOutputContainer2->Add(new TH2F("hTracksOfAntiPi_OneSigma_label", "PDG #pi^{-}-s vs p_{T}", nPt, ptMin, ptMax, 8000, -4000, 4000));
@@ -1865,7 +1757,6 @@ void AliAnalysisTaskGammaPHOSPP::AddTrackHistograms()
   fOutputContainer2->Add(new TH2F("hTracksOfAntiBeta_ThreeSigma_label", "PDG #beta^{+}-s vs p_{T}", nPt, ptMin, ptMax, 8000, -4000, 4000));
   fOutputContainer2->Add(new TH2F("hTracksOfAntiBeta_ThreeSigma_disp_label", "PDG #beta^{+}-s vs p_{T}, dispersion cut", nPt, ptMin, ptMax, 8000, -4000, 400));
 
-//=================
   fOutputContainer2->Add(new TH1F("hTracksOfPiClose","Tracks of #pi^{#pm} close to cluster", nPt, ptMin, ptMax));
   fOutputContainer2->Add(new TH1F("hTracksOfPiCloseDispOK","Tracks of #pi^{#pm} close to cluster", nPt, ptMin, ptMax));
   fOutputContainer2->Add(new TH1F("hTracksOfPrClose","Tracks of p#bar{p} close to cluster", nPt, ptMin, ptMax));
@@ -1875,14 +1766,13 @@ void AliAnalysisTaskGammaPHOSPP::AddTrackHistograms()
   fOutputContainer2->Add(new TH1F("hTracksOfOthersClose","Tracks of K^{#pm} close to cluster", nPt, ptMin, ptMax));
   fOutputContainer2->Add(new TH1F("hTracksOfOthersCloseDispOK","Tracks of Ka^{#pm} close to cluster", nPt, ptMin, ptMax));
         
-    
   fOutputContainer2->Add(new TH1F("hTracks_matched","Nr of matched tracks per cluster",20, 0,20));
   fOutputContainer2->Add(new TH2F("hEnTrackvsClust","Energies of track vs cluster", nPt, ptMin, ptMax, nPt, ptMin, ptMax));
   fOutputContainer2->Add(new TH1F("hEmcCPVDistance","EMC to CPV distance", 100, 0., 100.));
   fOutputContainer2->Add(new TH1F("hDistance","Distance from cluster to associated track, cm", 100, 0., 100.));
 }
-//================================================================================================
-//
+
+//________________________________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::AddQAHistograms()
 {
   const Int_t nPt      = 400;
@@ -1923,7 +1813,6 @@ void AliAnalysisTaskGammaPHOSPP::AddQAHistograms()
 
   fOutputContainer->Add(new TH1I("hModule","Module events", 5, 0., 5.));
   fOutputContainer->Add(new TH1F("hSelEvents","Selected events",9, -0.5, 8.5));
-  fOutputContainer->Add(new TH1F("hSelEventspi0","Selected events for pi0", 9, -0.5, 8.5)); 
 
   fOutputContainer->Add(new TH1F("hPhotonKappa","#kappa(#gamma)", 400, 0., 40.));
   fOutputContainer->Add(new TH1F("hPhotonPt","p_{T}(#gamma)", 400, 0., 40.));
@@ -1935,7 +1824,7 @@ void AliAnalysisTaskGammaPHOSPP::AddQAHistograms()
   fOutputContainer->Add(new TH1F("hZPileupVtx", "Z pileup", 200, -50., 50.));
 
   fOutputContainer->Add(new TH1F("hZvertex","Z vertex",200, -50.,+50.));
-  fOutputContainer->Add(new TH1F("hNvertexTracks","N of primary tracks from the primary vertex", 150, 0., 150.));
+  fOutputContainer->Add(new TH1F("hNContributors","N of primary tracks from the primary vertex", 150, 0., 150.));
   fOutputContainer->Add(new TH1F("hTrackMult","Charged track multiplicity", 150, 0., 150.));
 
   fOutputContainer->Add(new TH1F("hV0Atime","V0A time", 1200, -6.e-6,+6.e-6));
@@ -1949,5 +1838,4 @@ void AliAnalysisTaskGammaPHOSPP::AddQAHistograms()
 
   fOutputContainer->Add(new TH2F("hClustM02","Cluster M02 vs p_{T}", nPt, ptMin, ptMax, 100, 0, 10));
   fOutputContainer->Add(new TH2F("hClustM20","Cluster M20 vs p_{T}", nPt, ptMin, ptMax, 100, 0, 10));
-  fOutputContainer ->Add(new TH1F("hPHOSvsEMCAL", "PHOS and EMCAL clusters", 2, 0, 2));
 }
