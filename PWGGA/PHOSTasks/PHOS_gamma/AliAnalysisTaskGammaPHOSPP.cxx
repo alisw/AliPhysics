@@ -262,9 +262,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   fEventPileup       = kFALSE;
   fEventV0AND         = kFALSE;
   
-  Int_t  iSel = 0;
-
-  FillHistogram("hSelEvents", iSel++) ; // Events accepted by the physics selection
+  FillHistogram("hSelEvents", 0) ; // Events accepted by the physics selection
 
   TString trigClasses = event->GetFiredTriggerClasses();
 
@@ -272,9 +270,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
     AliWarning(Form("Skip event with triggers %s", trigClasses.Data()));
     return kFALSE;
   }
-
-  FillHistogram("hSelEvents", iSel++) ; // After filtering by trigger classes
-
+  else FillHistogram("hSelEvents", 1) ; // After filtering by trigger classes
 
   const AliAODVertex *aodVertex5 =    event->GetPrimaryVertex();
   const AliAODVertex *aodVertexSPD  = event->GetPrimaryVertexSPD();
@@ -287,24 +283,22 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   else fEventVtxExists = kTRUE;
 
   if (!fEventVtxExists) return kFALSE;
-    else FillHistogram("hSelEvents", iSel++);
+    else FillHistogram("hSelEvents", 2); //vtx exists
   
   if (aodVertex5 && aodVertex5->GetNContributors() < 1)  return kFALSE;
-    else FillHistogram("hSelEvents", iSel++);
+    else FillHistogram("hSelEvents", 3);  // aod vertex exists and has more than one contributors
 
   if (aodVertexSPD && aodVertexSPD->GetNContributors() < 1)  return kFALSE;
-    else FillHistogram("hSelEvents", iSel++);
+    else FillHistogram("hSelEvents", 4); // SPDvertex exists and has more than one contributors
 
   fVtx5[0] = aodVertex5->GetX();
   fVtx5[1] = aodVertex5->GetY();
   fVtx5[2] = aodVertex5->GetZ();
 
   FillHistogram("hZvertex", aodVertex5->GetZ());
-  if (TMath::Abs(aodVertex5->GetZ()) < 10.) 
-     fEventVtxZ10cm = kTRUE;
-
+  if (TMath::Abs(aodVertex5->GetZ()) < 10.) fEventVtxZ10cm = kTRUE; 
   if (!fEventVtxZ10cm) return kFALSE;
-    else FillHistogram("hSelEvents", iSel++);
+    else FillHistogram("hSelEvents", 5); //interaction vertex within 10 cm from the center
 
   if (event->IsPileupFromSPD()) {
     fEventPileup = kTRUE;
@@ -316,7 +310,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   }
 
   if (fEventPileup) return kFALSE;
-    else FillHistogram("hSelEvents", iSel++);
+    else FillHistogram("hSelEvents", 6); //no pileup from SPD
 
   if (trigClasses.Contains("CINT1B")) fnCINT1B++;
   if (trigClasses.Contains("CINT1A")) fnCINT1A++;
@@ -327,7 +321,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   fEventV0AND = fTriggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kV0AND);
 
   if (!fEventV0AND) return kFALSE;
-    else FillHistogram("hSelEvents", iSel++);
+    else FillHistogram("hSelEvents", 7); // V0AND trigger
 
   Float_t tV0A = event->GetVZEROData()->GetV0ATime();
   Float_t tV0C = event->GetVZEROData()->GetV0CTime();
