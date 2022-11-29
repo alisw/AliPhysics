@@ -95,6 +95,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetEta(Double_t etaLow, Double_t etaHigh) { fEtaLow = etaLow; fEta = etaHigh; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
   void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = newval; };
+  void SetChargedPt(Double_t chPtMin, Double_t chPtMax) { fUseChargedPtCut = true; fchPtMin = chPtMin; fchPtMax = chPtMax; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
@@ -144,7 +145,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUseCentralityOTF;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
-  TRandom *fRndm; //For random number generation
+  TRandom *fRndm; 
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   TAxis *fPtAxis;
   TAxis *fEtaAxis;
@@ -165,13 +166,17 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fEta;
   Double_t fEtaLow;
   Double_t fEtaNch;
-  Double_t fEtaV2Sep; //Please don't add multiple wagons with dif. values; implement subevents in the code instead. This would save TONS of CPU time.
+  Double_t fEtaV2Sep; 
+  Double_t fchPtMin;
+  Double_t fchPtMax;
+  Bool_t fUseChargedPtCut;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fQAList; //
   TH1D* fEventCount; //!
   TH1D *fMultiDist;
   TH1D *fIPDist;
+  TH1D* fChPtDist; //!
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
@@ -203,7 +208,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
   TH3D *fPtvsCentvsPower; //!
-  TH2D *fPtDist; //!
+  TH1D *fPtDist; //!
   TH3D *fDCAxyVsPt_noChi2;
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
