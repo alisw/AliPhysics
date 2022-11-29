@@ -2129,7 +2129,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446651044012300000","0163103100000000"); // min opening angle 0    -> open
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446651044012300000","0163103100000030"); // min opening angle 0.01 -> 2 cell diag
   } else if ( trainConfig == 812){ // NL variations
-    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446600044012300000","0163103100000010"); // No NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466000ga012200000","0h63103100000010"); // No NL
   } else if ( trainConfig == 813){ //
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga012200000","0h63103100000010"); //
   } else if ( trainConfig == 814){ // DEFAULT

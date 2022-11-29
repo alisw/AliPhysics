@@ -1225,7 +1225,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
         }
         else if(suffix == "104"){
             TrackPosKaonCuts->SetPtRange(0.5, 1.0);
-            STrackNegKaonCuts->SetPtRange(0.5, 1.0);
+            TrackNegKaonCuts->SetPtRange(0.5, 1.0);
 
         }       
         else if(suffix == "105"){

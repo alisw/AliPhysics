@@ -365,20 +365,20 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     fWeightList = (TList*)GetInputData(1);
     fWeights = new AliGFWWeights*[4];
     const char* species[] = {"_ch","_pi","_ka","_pr"};
-    if(fUsePIDNUA){
-      if(!fWeightList) AliFatal("NUA list not set or does not exist!\n");
-      TString lBase(""); //base
-      TString lSubfix(""); //subfix
-      for(int i(0);i<4;++i) {
-        lBase = Form("weight%s",species[i]); 
-        lSubfix = fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():"";
-        lBase+=lSubfix;
-        fWeights[i] = (AliGFWWeights*)fWeightList->FindObject(lBase.Data());
-        if(!fWeights[i]) AliFatal(Form("Weights %s not not found in the list provided!\n",lBase.Data()));
-        fWeights[i]->CreateNUA();
-      }
-    }
     if(!fIsMC) { //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
+      if(fUsePIDNUA) {
+        if(!fWeightList) AliFatal("NUA list not set or does not exist!\n");
+        TString lBase(""); //base
+        TString lSubfix(""); //subfix
+        for(int i(0);i<4;++i) {
+          lBase = Form("weight%s",species[i]); 
+          lSubfix = fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():"";
+          lBase+=lSubfix;
+          fWeights[i] = (AliGFWWeights*)fWeightList->FindObject(lBase.Data());
+          if(!fWeights[i]) AliFatal(Form("Weights %s not not found in the list provided!\n",lBase.Data()));
+          fWeights[i]->CreateNUA();
+        }
+      }
       fEfficiencyList = (TList*)GetInputData(2+fEfficiencyIndex); //Efficiencies start from input slot 2
       if(fUse2DEff) {
         fEfficiency.resize(l_NV0MBinsDefault,vector<TH2D*>(4));
@@ -518,6 +518,14 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     oba->Add(new TNamed("PrGap32","PrGap32"));
     oba->Add(new TNamed("PrFull32","PrFull32"));
     oba->Add(new TNamed("PrFull34","PrFull34"));
+
+    oba->Add(new TNamed("PiDiff22","PiDiff22"));
+    oba->Add(new TNamed("KaDiff22","KaDiff22"));
+    oba->Add(new TNamed("PrDiff22","PrDiff22"));
+    oba->Add(new TNamed("PiDiff24","PiDiff24"));
+    oba->Add(new TNamed("KaDiff24","KaDiff24"));
+    oba->Add(new TNamed("PrDiff24","PrDiff24"));
+
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
     if(!fContSubfix->IsNull()) fcname.Append(fContSubfix->Data());
@@ -1387,6 +1395,13 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("LLMR24","refP {2 2} subMid {-2} refN {-2}", kFALSE));
   corrconfigs.push_back(GetConf("LMMR24","refP {2} subMid {-2 -2} refN {2}", kFALSE));
   corrconfigs.push_back(GetConf("LMRR24","refP {2} subMid {2} refN {-2 -2}", kFALSE));
+
+  corrconfigs.push_back(GetConf("PiDiff22","PiMid {2} mid {-2}",kFALSE));
+  corrconfigs.push_back(GetConf("KaDiff22","KaMid {2} mid {-2}",kFALSE));
+  corrconfigs.push_back(GetConf("PrDiff22","PrMid {2} mid {-2}",kFALSE));  
+  corrconfigs.push_back(GetConf("PiDiff24","PiMid {2} mid {2 -2 -2}",kFALSE));
+  corrconfigs.push_back(GetConf("KaDiff24","KaMid {2} mid {2 -2 -2}",kFALSE));
+  corrconfigs.push_back(GetConf("PrDiff24","PrMid {2} mid {2 -2 -2}",kFALSE));
   return;
 };
 void AliAnalysisTaskDeform::GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf) {

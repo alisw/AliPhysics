@@ -1,25 +1,10 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: Vivek Singh (vivek.kumar.singh@cern.ch)                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliAnalysisHFEppEMCalBeauty.cxx                                            //
-// Task for beauty decay electron spectra in pp collisions with TPC and EMCal //            
-// References : TaskHFEBESpectraEMC and TaskBEpp13TeV                         //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+//                                                               //            
+// AliAnalysisHFEppEMCalBeauty.cxx                               //
+// Author: Vivek Singh                                           //
+//                                                               //
+///////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
 #include "AliAnalysisUtils.h"
@@ -967,6 +952,14 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
   fNentries->Sumw2();
   fNentries->SetMinimum(0);
 
+    int nPtBins = 14;
+    double ptbinningX[15] = { 3., 4., 5., 6., 8., 10.,12.,14.,16.,18.,20.,22.,25.,29.,35. };
+
+    int nBinsIP = 4000;
+    double minIP = -0.2;
+    double maxIP = 0.2;
+    double binLimIP[nBinsIP+1];
+    for(int i=0; i<=nBinsIP; i++) binLimIP[i] = minIP + (maxIP-minIP)/nBinsIP*(double)i;
 
     fHistVz=new TH1F("fHistVz","Z_{vtx} Posistion before cut;Z_{vtx};Counts",400,-20,20);
     fHistVz->Sumw2();
@@ -1061,7 +1054,7 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
   fHadEovpNL_AftEID->Sumw2();
   fOutputList->Add(fHadEovpNL_AftEID);
 
-  fHadDCA = new TH2F("fHadDCA","Hadron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
+  fHadDCA = new TH2F("fHadDCA","Hadron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fHadDCA->Sumw2();
   fOutputList->Add(fHadDCA);
 
@@ -1069,10 +1062,9 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
   fInclsElecPt->Sumw2();
   fOutputList->Add(fInclsElecPt);
 
-  fInclElecDCA = new TH2F("fInclElecDCA","Inclusive electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
+  fInclElecDCA = new TH2F("fInclElecDCA","Inclusive electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fInclElecDCA->Sumw2();
   fOutputList->Add(fInclElecDCA);
-
     
   fEopNL_AftEID = new TH2F("fEopNL_AftEID", "E/p distribution after nsig, SS cuts, NonLinearE;p_{T} (GeV/c);E/p", 100,0,50,200, 0.0, 2.0);
   fEopNL_AftEID->Sumw2();
@@ -1097,13 +1089,13 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
   fLSElecPt->Sumw2();
   fOutputList->Add(fLSElecPt);
     
-  fULSElecDCA = new TH2F("fULSElecDCA","ULS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
-  fULSElecDCA->Sumw2();
-  fOutputList->Add(fULSElecDCA);
+  //fULSElecDCA = new TH2F("fULSElecDCA","ULS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
+  //fULSElecDCA->Sumw2();
+  //fOutputList->Add(fULSElecDCA);
     
-  fLSElecDCA = new TH2F("fLSElecDCA","LS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
-  fLSElecDCA->Sumw2();
-  fOutputList->Add(fLSElecDCA);
+  //fLSElecDCA = new TH2F("fLSElecDCA","LS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
+  //fLSElecDCA->Sumw2();
+  //fOutputList->Add(fLSElecDCA);
 
  //---------------AliSelectNonHFE-------------------------------------------------------
   fInvmassLS1 = new TH1F("fInvmassLS1","Inv mass of LS (e,e) for pt^{e}; mass(GeV/c^2); counts;",1000,0,1.0);
@@ -1112,21 +1104,35 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
   fInvmassULS1 = new TH1F("fInvmassULS1","Inv mass of ULS (e,e) for pt^{e}; mass(GeV/c^2); counts;",1000,0,1.0);
   fOutputList->Add(fInvmassULS1);
 		
-  fPte_ULS = new TH1F("fPte_ULS", "ULS electron pt",250,0.,50.);
+  fPte_ULS = new TH1F("fPte_ULS", "ULS electron pt",nPtBins, ptbinningX);
   fPte_ULS->Sumw2();
   fOutputList->Add(fPte_ULS);
   
-  fPte_LS = new TH1F("fPte_LS", "LS electron pt",250,0.,50.);
+  fPte_LS = new TH1F("fPte_LS", "LS electron pt",nPtBins, ptbinningX);
   fPte_LS->Sumw2();
   fOutputList->Add(fPte_LS);
 
-  fDCAULSElec = new TH2F("fDCAULSElec","AliSelectNonHFE ULS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
+  fDCAULSElec = new TH2F("fDCAULSElec","AliSelectNonHFE ULS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fDCAULSElec->Sumw2();
   fOutputList->Add(fDCAULSElec);
     
-  fDCALSElec = new TH2F("fDCALSElec","AliSelectNonHFE LS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", 250,0,50., 400,-0.4,0.4);
+  fDCALSElec = new TH2F("fDCALSElec","AliSelectNonHFE LS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fDCALSElec->Sumw2();
   fOutputList->Add(fDCALSElec);
+
+  //----------------------Temprory Data Histograms move up ---------------------------
+  dcaTrack = new TH2F("dcaTrack", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaTrack);
+  
+  dcaPion = new TH2F("dcaPion", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaPion);
+
+  fULSElecDCA = new TH2F("fULSElecDCA","ULS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(fULSElecDCA);
+    
+  fLSElecDCA = new TH2F("fLSElecDCA","LS electron DCA; #it{p}_{T}(GeV/#it{c}); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(fLSElecDCA);
+  //----------------------Temprory Data Histograms move up ---------------------------
 
  //+++++++++++++++++++++++++++++++++++++++++MC++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if(fIsMC)
@@ -1338,99 +1344,99 @@ if(fIsMC)
   }
 
   if(fCalculateElecRecoEffi){
-        fInclElePhysPriAll = new TH1F("fInclElePhysPriAll","Physical primary inclusive electrons for reco effi, All;p_{T} (GeV/c);counts",350,0,35);
+        fInclElePhysPriAll = new TH1F("fInclElePhysPriAll","Physical primary inclusive electrons for reco effi, All;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fInclElePhysPriAll->Sumw2();
         fOutputList->Add(fInclElePhysPriAll);
         
-        fHFEPhysPriAll = new TH1F("fHFEPhysPriAll","Physical primary HFE for reco effi, All;p_{T} (GeV/c);counts",350,0,35);
+        fHFEPhysPriAll = new TH1F("fHFEPhysPriAll","Physical primary HFE for reco effi, All;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fHFEPhysPriAll->Sumw2();
         fOutputList->Add(fHFEPhysPriAll);
         
-        fBEPhysPriAll = new TH1F("fBEPhysPriAll","Physical primary b->e for reco effi, All;p_{T} (GeV/c);counts",350,0,35);
+        fBEPhysPriAll = new TH1F("fBEPhysPriAll","Physical primary b->e for reco effi, All;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fBEPhysPriAll->Sumw2();
         fOutputList->Add(fBEPhysPriAll);
         
-        fDEPhysPriAll = new TH1F("fDEPhysPriAll","Physical primary c->e for reco effi, All;p_{T} (GeV/c);counts",350,0,35);
+        fDEPhysPriAll = new TH1F("fDEPhysPriAll","Physical primary c->e for reco effi, All;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fDEPhysPriAll->Sumw2();
         fOutputList->Add(fDEPhysPriAll);
         
-        fInclElePhysPriTrkCuts = new TH1F("fInclElePhysPriTrkCuts","Physical primary inclusive electrons for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",350,0,35);
+        fInclElePhysPriTrkCuts = new TH1F("fInclElePhysPriTrkCuts","Physical primary inclusive electrons for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fInclElePhysPriTrkCuts->Sumw2();
         fOutputList->Add(fInclElePhysPriTrkCuts);
         
-        fHFEPhysPriTrkCuts = new TH1F("fHFEPhysPriTrkCuts","Physical primary HFE for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",350,0,35);
+        fHFEPhysPriTrkCuts = new TH1F("fHFEPhysPriTrkCuts","Physical primary HFE for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fHFEPhysPriTrkCuts->Sumw2();
         fOutputList->Add(fHFEPhysPriTrkCuts);
         
-        fBEPhysPriTrkCuts = new TH1F("fBEPhysPriTrkCuts","Physical primary b->e for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",350,0,35);
+        fBEPhysPriTrkCuts = new TH1F("fBEPhysPriTrkCuts","Physical primary b->e for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fBEPhysPriTrkCuts->Sumw2();
         fOutputList->Add(fBEPhysPriTrkCuts);
         
-        fDEPhysPriTrkCuts = new TH1F("fDEPhysPriTrkCuts","Physical primary c->e for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",350,0,35);
+        fDEPhysPriTrkCuts = new TH1F("fDEPhysPriTrkCuts","Physical primary c->e for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fDEPhysPriTrkCuts->Sumw2();
         fOutputList->Add(fDEPhysPriTrkCuts);
                 
-        fInclElePhysPriEMCMatch = new TH1F("fInclElePhysPriEMCMatch","Physical primary inclusive electron for reco effi, Aft EMC match;p_{T} (GeV/c);counts",350,0,35);
+        fInclElePhysPriEMCMatch = new TH1F("fInclElePhysPriEMCMatch","Physical primary inclusive electron for reco effi, Aft EMC match;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fInclElePhysPriEMCMatch->Sumw2();
         fOutputList->Add(fInclElePhysPriEMCMatch);
         
-        fHFEPhysPriEMCMatch = new TH1F("fHFEPhysPriEMCMatch","Physical primary HFE for reco effi, Aft EMC match;p_{T} (GeV/c);counts",350,0,35);
+        fHFEPhysPriEMCMatch = new TH1F("fHFEPhysPriEMCMatch","Physical primary HFE for reco effi, Aft EMC match;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fHFEPhysPriEMCMatch->Sumw2();
         fOutputList->Add(fHFEPhysPriEMCMatch);
         
-        fBEPhysPriEMCMatch = new TH1F("fBEPhysPriEMCMatch","Physical primary b->e for reco effi, Aft EMC match;p_{T} (GeV/c);counts",350,0,35);
+        fBEPhysPriEMCMatch = new TH1F("fBEPhysPriEMCMatch","Physical primary b->e for reco effi, Aft EMC match;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fBEPhysPriEMCMatch->Sumw2();
         fOutputList->Add(fBEPhysPriEMCMatch);
         
-        fDEPhysPriEMCMatch = new TH1F("fDEPhysPriEMCMatch","Physical primary c->e for reco effi, Aft EMC match;p_{T} (GeV/c);counts",350,0,35);
+        fDEPhysPriEMCMatch = new TH1F("fDEPhysPriEMCMatch","Physical primary c->e for reco effi, Aft EMC match;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fDEPhysPriEMCMatch->Sumw2();
         fOutputList->Add(fDEPhysPriEMCMatch);
 
-         fInclElePhysPriEovP = new TH1F("fInclElePhysPriEovP","Physical primary inclusive electron for reco effi, Aft E/p cut;p_{T} (GeV/c);counts",350,0,35);
+         fInclElePhysPriEovP = new TH1F("fInclElePhysPriEovP","Physical primary inclusive electron for reco effi, Aft E/p cut;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fInclElePhysPriEovP->Sumw2();
         fOutputList->Add(fInclElePhysPriEovP);
         
-        fHFEPhysPriEovP = new TH1F("fHFEPhysPriEovP","Physical primary HFE for reco effi, Aft E/p cut;p_{T} (GeV/c);counts",350,0,35);
+        fHFEPhysPriEovP = new TH1F("fHFEPhysPriEovP","Physical primary HFE for reco effi, Aft E/p cut;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fHFEPhysPriEovP->Sumw2();
         fOutputList->Add(fHFEPhysPriEovP);
         
-        fBEPhysPriEovP = new TH1F("fBEPhysPriEovP","Physical primary b->e for reco effi, Aft E/p cut;p_{T} (GeV/c);counts",350,0,35);
+        fBEPhysPriEovP = new TH1F("fBEPhysPriEovP","Physical primary b->e for reco effi, Aft E/p cut;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fBEPhysPriEovP->Sumw2();
         fOutputList->Add(fBEPhysPriEovP);
         
-        fDEPhysPriEovP = new TH1F("fDEPhysPriEovP","Physical primary c->e for reco effi, Aft E/p cut;p_{T} (GeV/c);counts",350,0,35);
+        fDEPhysPriEovP = new TH1F("fDEPhysPriEovP","Physical primary c->e for reco effi, Aft E/p cut;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fDEPhysPriEovP->Sumw2();
         fOutputList->Add(fDEPhysPriEovP);
 
-        fInclElePhysPriTPCnsig = new TH1F("fInclElePhysPriTPCnsig","Physical primary inclusive electron for reco effi, Aft TPCnsig;p_{T} (GeV/c);counts",350,0,35);
+        fInclElePhysPriTPCnsig = new TH1F("fInclElePhysPriTPCnsig","Physical primary inclusive electron for reco effi, Aft TPCnsig;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fInclElePhysPriTPCnsig->Sumw2();
         fOutputList->Add(fInclElePhysPriTPCnsig);
         
-        fHFEPhysPriTPCnsig = new TH1F("fHFEPhysPriTPCnsig","Physical primary HFE for reco effi, Aft TPCnsig;p_{T} (GeV/c);counts",350,0,35);
+        fHFEPhysPriTPCnsig = new TH1F("fHFEPhysPriTPCnsig","Physical primary HFE for reco effi, Aft TPCnsig;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fHFEPhysPriTPCnsig->Sumw2();
         fOutputList->Add(fHFEPhysPriTPCnsig);
         
-        fBEPhysPriTPCnsig = new TH1F("fBEPhysPriTPCnsig","Physical primary b->e for reco effi, Aft TPCnsig;p_{T} (GeV/c);counts",350,0,35);
+        fBEPhysPriTPCnsig = new TH1F("fBEPhysPriTPCnsig","Physical primary b->e for reco effi, Aft TPCnsig;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fBEPhysPriTPCnsig->Sumw2();
         fOutputList->Add(fBEPhysPriTPCnsig);
         
-        fDEPhysPriTPCnsig = new TH1F("fDEPhysPriTPCnsig","Physical primary c->e for reco effi, Aft TPCnsig;p_{T} (GeV/c);counts",350,0,35);
+        fDEPhysPriTPCnsig = new TH1F("fDEPhysPriTPCnsig","Physical primary c->e for reco effi, Aft TPCnsig;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fDEPhysPriTPCnsig->Sumw2();
         fOutputList->Add(fDEPhysPriTPCnsig);
                 
-        fInclElePhysPriSS = new TH1F("fInclElePhysPriSS","Physical primary inclusive electron for reco effi, Aft SS cut;p_{T} (GeV/c);counts",350,0,35);
+        fInclElePhysPriSS = new TH1F("fInclElePhysPriSS","Physical primary inclusive electron for reco effi, Aft SS cut;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fInclElePhysPriSS->Sumw2();
         fOutputList->Add(fInclElePhysPriSS);
         
-        fHFEPhysPriSS = new TH1F("fHFEPhysPriSS","Physical primary HFE for reco effi, Aft SS cut;p_{T} (GeV/c);counts",350,0,35);
+        fHFEPhysPriSS = new TH1F("fHFEPhysPriSS","Physical primary HFE for reco effi, Aft SS cut;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fHFEPhysPriSS->Sumw2();
         fOutputList->Add(fHFEPhysPriSS);
         
-        fBEPhysPriSS = new TH1F("fBEPhysPriSS","Physical primary b->e for reco effi, Aft SS cut;p_{T} (GeV/c);counts",350,0,35);
+        fBEPhysPriSS = new TH1F("fBEPhysPriSS","Physical primary b->e for reco effi, Aft SS cut;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fBEPhysPriSS->Sumw2();
         fOutputList->Add(fBEPhysPriSS);
         
-        fDEPhysPriSS = new TH1F("fDEPhysPriSS","Physical primary c->e for reco effi, Aft SS cut;p_{T} (GeV/c);counts",350,0,35);
+        fDEPhysPriSS = new TH1F("fDEPhysPriSS","Physical primary c->e for reco effi, Aft SS cut;p_{T} (GeV/c);counts",nPtBins, ptbinningX);
         fDEPhysPriSS->Sumw2();
         fOutputList->Add(fDEPhysPriSS);
         
@@ -1479,34 +1485,34 @@ if(fIsMC)
 
     if(fFillMCTemplates){
 
-        fDElecDCA = new TH2F("fDElecDCA","D meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fDElecDCA = new TH2F("fDElecDCA","D meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fDElecDCA);
 
-        fBElecDCA = new TH2F("fBElecDCA","B meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fBElecDCA = new TH2F("fBElecDCA","B meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fBElecDCA);
         
-        fBHadElecDCA = new TH2F("fBHadElecDCA","B hadron -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fBHadElecDCA = new TH2F("fBHadElecDCA","B hadron -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fBHadElecDCA);
         
-        fBMesonElecDCA = new TH2F("fBMesonElecDCA","B meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fBMesonElecDCA = new TH2F("fBMesonElecDCA","B meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fBMesonElecDCA);
         
-        fBBaryonElecDCA = new TH2F("fBBaryonElecDCA","B baryon -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fBBaryonElecDCA = new TH2F("fBBaryonElecDCA","B baryon -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fBBaryonElecDCA);
         
-        fDHadElecDCA = new TH2F("fDHadElecDCA","D hadron -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fDHadElecDCA = new TH2F("fDHadElecDCA","D hadron -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fDHadElecDCA);
         
-        fDMesonElecDCA = new TH2F("fDMesonElecDCA","D meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fDMesonElecDCA = new TH2F("fDMesonElecDCA","D meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fDMesonElecDCA);
         
-        fDBaryonElecDCA  = new TH2F("fDBaryonElecDCA","D baryon -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fDBaryonElecDCA  = new TH2F("fDBaryonElecDCA","D baryon -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fDBaryonElecDCA);
         
-        fLambdaCElecDCA = new TH2F("fLambdaCElecDCA","Lambda_c -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fLambdaCElecDCA = new TH2F("fLambdaCElecDCA","Lambda_c -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fLambdaCElecDCA);
         
-        fD0ElecDCA = new TH2F("fD0ElecDCA","D0 -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
+        fD0ElecDCA = new TH2F("fD0ElecDCA","D0 -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(fD0ElecDCA);
         
         Int_t binTemp[5] = {70,fnBinsDCAHisto,19,19,19}; //pT, DCA, Mom PID Sort,BeautySort,CharmSort
@@ -1537,8 +1543,8 @@ if(fIsMC)
         fHFEmcQA = new AliHFEmcQA();
         fHFEmcQA->Init();         
 
-        int nPtBins = 14;
-        double ptbinningX[15] = { 3., 4., 5., 6., 8., 10.,12.,14.,16.,18.,20.,22.,25.,29.,35. };
+        //int nPtBins = 14;
+        //double ptbinningX[15] = { 3., 4., 5., 6., 8., 10.,12.,14.,16.,18.,20.,22.,25.,29.,35. };
         double ptbinningD0[13]= { 1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 16., 24., 36. };
         double ptbinningLc[7] = { 1., 2., 4., 6., 8., 12., 24. };
         //----------------------------------------------------------------------
@@ -1576,18 +1582,12 @@ if(fIsMC)
         hRecBePt_SS = new TH1F("hRecBePt_SS", "", nPtBins, ptbinningX);
         fOutputList->Add(hRecBePt_SS);
         //----------------------------------------------------------------------
-        int nBinsIP = 4000;
-        double minIP = -0.2;
-        double maxIP = 0.2;
-        double binLimIP[nBinsIP+1];
-        for(int i=0; i<=nBinsIP; i++) binLimIP[i] = minIP + (maxIP-minIP)/nBinsIP*(double)i;
-
-        dcaTrack = new TH2F("dcaTrack", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
-        fOutputList->Add(dcaTrack);
-  
-        dcaPion = new TH2F("dcaPion", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
-        fOutputList->Add(dcaPion);
-  
+        //int nBinsIP = 4000;
+        //double minIP = -0.2;
+        //double maxIP = 0.2;
+        //double binLimIP[nBinsIP+1];
+        //for(int i=0; i<=nBinsIP; i++) binLimIP[i] = minIP + (maxIP-minIP)/nBinsIP*(double)i;
+        //------------------------------------------------------------------------------------------
         dcaBeauty = new TH2F("dcaBeauty", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
         fOutputList->Add(dcaBeauty);
   
@@ -1766,9 +1766,9 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
   ///////////////////////////////////
   //Initialization for MC analysis///
   ///////////////////////////////////
-  if(fIsMC)
+  if(fIsMC) 
   {
-    //cout<<" *********************Entering fIsMC***************  "<<endl;
+    //cout<<" *********************Entering fIsMC : generated MC loop***************  "<<endl;
     fMCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     if(!fMCArray){ AliError("Array of MC particles not found");
     return;
@@ -1804,7 +1804,7 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
 	    double srcPt = -999.;
 	    src = GetElecSource(fMCparticle, srcPt, srcPdg);
 
-	    if(TMath::Abs(fMCparticle->Eta()) < fEtarange){ //change Eta Here
+	    if(TMath::Abs(fMCparticle->Eta()) < fEtarange){
 		  if(src==kDirectBeauty || src==kBeautyCharm) hGenBePt_All->Fill(fMCparticle->Pt());
 	    }
   	}
@@ -1945,73 +1945,65 @@ for(Int_t icl=0; icl<Nclust; icl++)
             GetTrackHFStatus(track, IsMCEle, IsMCPPEle, IsMCHFEle, IsMCBEle, IsMCDEle);
         }
 
+        //==========TRACK cuts Applied =====
         Int_t tracktypeTrig=0;
-        tracktypeTrig=ClassifyTrack(track,vertex);  //track cuts applied
-        if(tracktypeTrig!=1) continue;    //==========TRACK cuts Applied =====
+        tracktypeTrig=ClassifyTrack(track,vertex);  
+        if(tracktypeTrig!=1) continue;    
         Nch++;
-    
+
+        //// Conversion radius for HFe befote track match
+        if(fIsMC && fIsAOD)
+        {
+          Bool_t IsHFEMC = IsHFelectronsMC(track);
+          if(IsHFEMC)
+          { 
+            Double_t Rconv; TrackConvRadius(track, Rconv); 
+            fHFeConvRadius->Fill(track->Pt(), Rconv);        
+          }
+        }
+
+        /////////////////////////////
+        //Reconstruction efficiency//
+        /////////////////////////////
+        if(fIsMC && fCalculateElecRecoEffi){
+          Double_t TrkPt = track->Pt();
+          if(IsMCPPEle) fInclElePhysPriTrkCuts->Fill(TrkPt);
+          if(IsMCHFEle) fHFEPhysPriTrkCuts->Fill(TrkPt);
+          if(IsMCBEle) fBEPhysPriTrkCuts->Fill(TrkPt);
+          if(IsMCDEle) fDEPhysPriTrkCuts->Fill(TrkPt);
+        }
+
         //cout<<" *********************After Trk Selection***************  "<<endl;
         fHistPt->Fill(track->Pt());
         fHistEta->Fill(track->Eta());
         fHistPhi->Fill(track->Phi());          
 
-        Double_t d0z0[2]={-999,-999}, cov[3];
+        fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+        fHistBethe->Fill(track->GetTPCmomentum(),track->GetTPCsignal());  
+        fnSigmaVsP_TPC->Fill(track->GetTPCmomentum(),fTPCnSigma);  
+
+        Double_t d0z0[2]={-999,-999}, cov[3]; fTrkDCA = -999.0;
         if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov)) 
         fHistdca->Fill( d0z0[0],d0z0[1]); 
-                  
-        fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+        fTrkDCA = d0z0[0] * track->Charge() * fMagSign;
 
-        fHistBethe->Fill(track->GetTPCmomentum(),track->GetTPCsignal());  
-        fnSigmaVsP_TPC->Fill(track->GetTPCmomentum(),fTPCnSigma);
-
-    //// Conversion radius for HFe befote track match
-    if(fIsMC && fIsAOD)
-    {
-      Bool_t IsHFEMC = IsHFelectronsMC(track);
-      if(IsHFEMC)
-      { 
-        Double_t Rconv; TrackConvRadius(track, Rconv); 
-        fHFeConvRadius->Fill(track->Pt(), Rconv);        
-      }
-    }
-
-    /////////////////////////////
-    //Reconstruction efficiency//
-    /////////////////////////////
-    if(fIsMC && fCalculateElecRecoEffi){
-        Double_t TrkPt = track->Pt();
-        if(IsMCPPEle) fInclElePhysPriTrkCuts->Fill(TrkPt);
-        if(IsMCHFEle) fHFEPhysPriTrkCuts->Fill(TrkPt);
-        if(IsMCBEle) fBEPhysPriTrkCuts->Fill(TrkPt);
-        if(IsMCDEle) fDEPhysPriTrkCuts->Fill(TrkPt);
-    }
-  
-    if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov))  
-    fTrkDCA = -999.0;
-    fTrkDCA = d0z0[0] * track->Charge() * fMagSign;
-
-    //cout<<" ********* fFillMCTemplates  ***************  "<< fFillMCTemplates <<endl;
-    Bool_t fFillTem = kFALSE;
-    if(fIsMC && fFillMCTemplates)   
-    {
         /////////////////////////////  Impact parameter from ALIHFE Class
 	      double pt = track->Pt();
         double hfeImpactParam = -999., hfeImpactParamResol = -999.;
         fExtraCuts->GetHFEImpactParameters((AliVTrack *)track, hfeImpactParam, hfeImpactParamResol);
         double IP = hfeImpactParam*fMagSign*track->Charge();
-      	dcaTrack->Fill(pt, IP);
-
-       //*************** Deepa's Method************************************************
-       fFillTem = GetMCDCATemplates(track, IP);
-       //**********Jonghans Method*****************************************************
-
-	      if(fTPCnSigma>-5 && fTPCnSigma<-3){
-	        dcaPion->Fill(pt, IP);
-	      }
-
+        
 	      int mcelectronSource=-999, mcelectronSourcePDG=-999;
 	      double mcelectronSourcePt=-999.;  
 
+    //cout<<" ********* fFillMCTemplates  ***************  "<< fFillMCTemplates <<endl;
+    Bool_t fFillTem = kFALSE;
+    if(fIsMC && fFillMCTemplates)   
+    {
+       //*************** Deepa's Method************************************************
+       fFillTem = GetMCDCATemplates(track, fTrkDCA);
+
+       //**********Jonghans Method*****************************************************
         fMCparticle = NULL;
 	      int label = TMath::Abs(track->GetLabel());
 	      if(label < fMCArray->GetEntriesFast())
@@ -2213,7 +2205,8 @@ for(Int_t icl=0; icl<Nclust; icl++)
             if(fHadTrack){
                 fHadPt_AftEID->Fill(track->Pt());
                 fHadDCA->Fill(track->Pt(),fTrkDCA);               
-              
+                dcaPion->Fill(pt, IP);
+
                 if(fIsMC){
                   Double_t Rconv = -999;  
                   TrackConvRadius(track, Rconv);
@@ -2225,7 +2218,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
             
             fInclsElecPt->Fill(track->Pt());
             fInclElecDCA->Fill(track->Pt(),fTrkDCA);
-
+            dcaTrack->Fill(pt, IP);
             fNEle++;      
 
             //////////////////////////////////
@@ -2261,11 +2254,13 @@ for(Int_t icl=0; icl<Nclust; icl++)
 				{
 					fPte_ULS->Fill(track->Pt(),fNULS);
 					fDCAULSElec->Fill(track->Pt(),fTrkDCA,fNULS);
+          fULSElecDCA->Fill(track->Pt(),IP,fNULS);    //AliHFe IP
 				}
 				if(fNonHFE->IsLS())
 				{
 					fPte_LS->Fill(track->Pt(),fNLS);
 					fDCALSElec->Fill(track->Pt(),fTrkDCA,fNLS);
+          fLSElecDCA->Fill(track->Pt(),IP,fNLS);    //AliHFe IP
 				}
 
             ////////////////////
@@ -3494,7 +3489,7 @@ void AliAnalysisHFEppEMCalBeauty::SelectPhotonicElectron(Int_t itrack, AliAODTra
         if(mass < fInvmassCut){
             if(fFlagLS){
                 fLSElecPt->Fill(TrkPt);
-                fLSElecDCA->Fill(TrkPt,fTrkDCA); 
+                //fLSElecDCA->Fill(TrkPt,fTrkDCA); //Commented to test by fillin IP
                 if(fIsMC){ 
                   TrackConvRadius(track, RLS);  
                   fRVsLSElecPt->Fill(TrkPt, RLS); 
@@ -3503,7 +3498,7 @@ void AliAnalysisHFEppEMCalBeauty::SelectPhotonicElectron(Int_t itrack, AliAODTra
 
             if(fFlagULS){
                 fULSElecPt->Fill(TrkPt);
-                fULSElecDCA->Fill(TrkPt,fTrkDCA); 
+                //fULSElecDCA->Fill(TrkPt,fTrkDCA); //Commented to test by fillin IP
                 if(fIsMC){ 
                   TrackConvRadius(track, RULS);
                   fRVsULSElecPt->Fill(TrkPt,RULS); 
@@ -3709,10 +3704,14 @@ Bool_t AliAnalysisHFEppEMCalBeauty::GetMCDCATemplates(AliAODTrack *track, Double
             if(MomPDGDummy == 511) fSortBeauty = 1; //Mom is B+
             if(MomPDGDummy == 521) fSortBeauty = 3; //Mom is B0
             if(MomPDGDummy == 531) fSortBeauty = 5; //Mom is Bs
-            if(MomPDGDummy == 513) fSortBeauty = 7; //Mom is B*+ 
-            if(MomPDGDummy == 5122) fSortBeauty = 9; //Mom is Lambda b
-            if(MomPDGDummy > 531 && MomPDG < 536) fSortBeauty = 11; //Mom is other Bs
-            if(MomPDGDummy == 553) fSortBeauty = 13; //Mom is Upsilon
+            if(MomPDGDummy == 5122)fSortBeauty = 7; //Mom is Lambda b0
+            if(MomPDGDummy == 5132)fSortBeauty = 9; //Mom is Cascade b-
+            if(MomPDGDummy == 5232)fSortBeauty = 11;//Mom is Cascade b0
+            if(MomPDGDummy == 5332)fSortBeauty = 13;//Mom is Omega b-
+
+            if(MomPDGDummy == 513) fSortBeauty = 15; //Mom is B*+ 
+            if(MomPDGDummy > 531 && MomPDG < 536) fSortBeauty = 16; //Mom is other Bs
+            if(MomPDGDummy == 553) fSortBeauty = 17; //Mom is Upsilon
 
             jMCmomDummy = -1;  //break the loop
         }
@@ -3742,10 +3741,14 @@ Bool_t AliAnalysisHFEppEMCalBeauty::GetMCDCATemplates(AliAODTrack *track, Double
         if(MomPDG == 411) fSortCharm = 1; //Mom is D+
         if(MomPDG == 421) fSortCharm = 3; //Mom is D0
         if(MomPDG == 431) fSortCharm = 5; //Mom is Ds
-        if(MomPDG == 413) fSortCharm = 7; //Mom is D*+ 
-        if(MomPDG == 4122) fSortCharm = 9; //Mom is Lambda c
-        if(MomPDG > 431 && MomPDG < 436) fSortCharm = 11; //Mom is other Ds
-        if(MomPDG == 443) fSortCharm = 13; //Mom is J/Psi
+        if(MomPDG == 4122)fSortCharm = 7; //Mom is Lambda c
+        if(MomPDG == 4132)fSortCharm = 9; //Mom is Cascade c0
+        if(MomPDG == 4232)fSortCharm = 11;//Mom is Cascade c+
+        if(MomPDG == 4332)fSortCharm = 13;//Mom is Omega c0
+
+        if(MomPDG == 413) fSortCharm = 15; //Mom is D*+ 
+        if(MomPDG > 431 && MomPDG < 436) fSortCharm = 16; //Mom is other Ds
+        if(MomPDG == 443) fSortCharm = 17; //Mom is J/Psi
                 
         if(MomPDG == 4122) fLambdaCElecDCA->Fill(TrkPt,TrkDCA);
         if(MomPDG == 421) fD0ElecDCA->Fill(TrkPt,TrkDCA);
