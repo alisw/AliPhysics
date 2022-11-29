@@ -80,12 +80,16 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fEtaLow(-9999),
   fEtaNch(0.8),
   fEtaV2Sep(0.4),
+  fchPtMin(0.2),
+  fchPtMax(3.0),
+  fUseChargedPtCut(false),
   fPIDResponse(0),
   fBayesPID(0),
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
   fIPDist(0),
+  fChPtDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
   fESDvsFB128(0),
@@ -183,12 +187,16 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fEtaLow(-9999),
   fEtaNch(0.8),
   fEtaV2Sep(0.4),
+  fchPtMin(0.2),
+  fchPtMax(3.0),
+  fUseChargedPtCut(false),
   fPIDResponse(0),
   fBayesPID(0),
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
   fIPDist(0),
+  fChPtDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
   fESDvsFB128(0),
@@ -432,7 +440,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
         fPtCont[i]->InitializeSubsamples(fNBootstrapProfiles);
       }
     }
-    printf("a\n");
     if(fFillMptPowers) {
       fMpt = new AliProfileBS*[8*4];
       for(int i(0);i<endPID;++i) {
@@ -609,6 +616,12 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     TString eventCutLabel[6]={"Input","Centrality","Trigger","AliEventCuts","Vertex","Tracks"};
     for(int i=0;i<nEventCutLabel;++i) fEventCount->GetXaxis()->SetBinLabel(i+1,eventCutLabel[i].Data());
     fQAList->Add(fEventCount);
+    if(fUseChargedPtCut) {
+      fChPtDist = new TH1D("fChPtDist","#it{p}_{T,ch} distribution",100,fchPtMin,fchPtMax);
+      fQAList->Add(fChPtDist);
+      fPtDist = new TH1D("fPtDist","#it{p}_{T} distribution",100,fPtBins[0],fPtBins[fNPtBins]);
+      fQAList->Add(fPtDist);
+    }
     printf("User output objects created!\n");
     PostData(4,fQAList);
   }
@@ -1095,20 +1108,24 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       Double_t leta = lPart->Eta();
       if(TMath::Abs(leta) > 0.8) continue;
       Double_t pt = lPart->Pt();
-      if (pt<ptMin || pt>ptMax) continue;
+      if(!fUseChargedPtCut && (pt<ptMin || pt>ptMax)) continue;
       if(leta<-fEtaV2Sep) lNegCount++;
       if(leta>fEtaV2Sep) lPosCount++;
       if(TMath::Abs(leta)<fEtaNch) nTotNoTracksMC++; //Nch calculated in EtaNch region
-      Double_t lpt = lPart->Pt();   
       if(TMath::Abs(leta)<fEta)  { //for mean pt, only consider -0.4-0.4 region
-        FillWPCounter(wp[0],1,lpt); 
-        FillWPCounter(wpPt[0],1,lpt);
+        FillWPCounter(wp[0],1,pt); 
+        FillWPCounter(wpPt[0],1,pt);
           if(!fDisablePID) {
-            if(PIDIndex==1) { FillWPCounter(wp[PIDIndex],1,lpt); FillWPCounter(wpPt[PIDIndex],1,lpt); }
-            if(PIDIndex==2) { FillWPCounter(wp[PIDIndex],1,lpt); FillWPCounter(wpPt[PIDIndex],1,lpt); }
-            if(PIDIndex==3) { FillWPCounter(wp[PIDIndex],1,lpt); FillWPCounter(wpPt[PIDIndex],1,lpt); }
+            if(PIDIndex==1) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
+            if(PIDIndex==2) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
+            if(PIDIndex==3) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
         }
-      } 
+      }
+      if(fUseChargedPtCut) { //Using different pt cuts for charged and PID particles
+        if(PIDIndex && (pt>ptMin || pt<ptMax)) { fPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); } 
+        if(pt>fchPtMin || pt<fchPtMax) { fChPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,3); }
+        continue;
+      }
       if(PIDIndex) fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
       fGFW->Fill(leta,1,lPart->Phi(),1,3); //filling both gap (bit mask 1) and full (bit maks 2). Since this is MC, weight is 1.
     };
