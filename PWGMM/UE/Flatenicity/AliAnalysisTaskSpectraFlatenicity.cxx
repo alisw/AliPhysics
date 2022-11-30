@@ -217,6 +217,7 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
     hPtInPrimRest(0),
     hPtOut(0),
     hPtOutPrim(0),
+    hPtOutSec(0),
     hPtOutPrimLambda(0),
     hPtOutPrimPion(0),
     hPtOutPrimKaon(0),
@@ -306,6 +307,7 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
     hPtInPrimRest(0),
     hPtOut(0),
     hPtOutPrim(0),
+    hPtOutSec(0),
     hPtOutPrimLambda(0),
     hPtOutPrimPion(0),
     hPtOutPrimKaon(0),
@@ -375,7 +377,6 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
 
   // wo DCA cut  
   fTrackFilterwoDCA = new AliAnalysisFilter("trackFilterwoDCA");
-  
   AliESDtrackCuts *fCutswoDCA = new AliESDtrackCuts();
   SetCutsFilterWoDCA(fCutswoDCA); 
   
@@ -1193,7 +1194,7 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArrayMC(vector<Float_t> &ptArray, v
 }
 
 //______________________________________________________________________________
-Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vector<Float_t> &dcaxyArray, vector<Float_t> &dcazArray, vector<Int_t> &isprimArray, vector<Int_t> &idArray, const bool wDcaCut)
+Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vector<Float_t> &dcaxyArray, vector<Float_t> &dcazArray, vector<Int_t> &isprimArray, vector<Int_t> &idArray, const Bool_t wDcaCut)
 {
 //      id 0: pion, 1: kaon, 2: proton, 3: sigma plus, 4: sigma minus, 5: Omega, 6: Xi, 7: other charged
   ptArray.clear();
@@ -1218,7 +1219,6 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vec
 
       if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
         continue;
-
       if (esdtrack->Pt() < fPtMin)
         continue;
 
