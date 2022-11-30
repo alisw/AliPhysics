@@ -887,7 +887,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     if(fEventCutsQAPlots)fAliEventCuts->AddQAplotsToList(fOutputList,kTRUE);
     if(fpp)fAliEventCuts->SetupRun2pp();
     else fAliEventCuts->SetupRun2PbPb();
-    if(fRejectEventPileUp)fAliEventCuts->SetRejectTPCPileupWithV0CentTPCnTracksCorr(kTRUE);
     if(fhighMult) fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0,kTRUE);
     if(fhighMultSPD) fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kHighMultSPD,kTRUE);
 
