@@ -87,18 +87,22 @@ private:
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
+  
   TH2D *hFlatVsNch;
   TH2D *hFlatVsNchMC;
   TH1D *hNchV0M;
   TH1D *hNchV0MMC;
+
   TH1D *hNchMidRap;
   TH1D *hNchMidRapMC;
   TH1D *hNchV0a;
   TH1D *hNchV0c;
   TH1D *hNchV0aMC;
   TH1D *hNchV0cMC;
+  
   TH1D *hPtPrimIn;
   TH1D *hPtOutRec;
+  
   TH1D *hPtInPrim;
   TH1D *hPtInPrimLambda;
   TH1D *hPtInPrimPion;
@@ -121,11 +125,13 @@ private:
   TH1D *hPtOutPrimOmega;
   TH1D *hPtOutPrimXi;
   TH1D *hPtOutPrimRest;
+  
   TH2D *hPtVsDCAData;
   TH2D *hPtVsDCAPrim;
   TH2D *hPtVsDCADec;
   TH2D *hPtVsDCAMat;
   TH2D *hPtVsDCAAll;
+  
   TH2D *hFlatVsV0M;
   TH1D *hEta;
   TH1D *hEtamc;
