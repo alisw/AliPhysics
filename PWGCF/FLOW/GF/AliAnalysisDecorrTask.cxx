@@ -889,7 +889,10 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             bIsRP = IsWithinRP(track);
             if (!bIsRP) { continue; }
 
-            if(bUseLikeSign && track->Charge() != iSign)  continue; 
+            if(bUseLikeSign) {
+                if(track->Charge() <= 0 && iSign >= 0) continue;
+                if(track->Charge() >= 0 && iSign <= 0) continue;
+            }
             double dPhi = track->Phi();
             double dEta = track->Eta();
 
@@ -1084,7 +1087,10 @@ int AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const tas
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
-            if(bUseLikeSign && track->Charge() != iSign)  continue; 
+            if(bUseLikeSign) {
+                if(track->Charge() <= 0 && iSign >= 0) continue;
+                if(track->Charge() >= 0 && iSign <= 0) continue;
+            }
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();
@@ -1344,7 +1350,10 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
-            if(bUseLikeSign && track->Charge() != iSign)  continue; 
+            if(bUseLikeSign) {
+                if(track->Charge() <= 0 && iSign >= 0) continue;
+                if(track->Charge() >= 0 && iSign <= 0) continue;
+            }
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();

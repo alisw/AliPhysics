@@ -1,69 +1,113 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* AliAnaysisTaskMyTask
+ *
+ * empty task which can serve as a starting point for building an analysis
+ * as an example, one histogram is filled
+ */
+
+class TTree;
+class TParticle;
+class TVector3;
+
+// class AliMCEventHandler;
+// class AliMCEvent;
+// class AliStack;
+
+class AliESDVertex;
+class AliAODVertex;
+class AliESDv0;
+class AliAODv0;
+
 #include <Riostream.h>
-
-#include <stdio.h>
-#include <iostream>
-#include "TChain.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
-#include "TF1.h"
 #include "TList.h"
-#include "TMath.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
+#include "TFile.h"
+#include "THnSparse.h"
+#include "TVector3.h"
 #include "TCanvas.h"
+#include "TMath.h"
+#include "TLegend.h"
+#include "TRandom3.h"
+#include "TLorentzVector.h"
+#include "TDatabasePDG.h"
+#include "TProfile.h"
+#include "TChain.h"
 
-#include "AliAnalysisManager.h"
+//#include "AliLog.h"
 
-#include "AliPhysicsSelection.h"
-#include "AliBackgroundSelection.h"
-
-#include "AliESDVertex.h"
 #include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliESDtrack.h"
-#include "AliESDv0.h"
-#include "AliESDtrackCuts.h"
-#include "AliESDpid.h"
-#include "AliMultiplicity.h"
-
 #include "AliAODEvent.h"
-#include "AliAODVertex.h"
-#include "AliAODTrack.h"
-#include "AliAODv0.h"
-#include "AliAODMCHeader.h"
-#include "AliAODInputHandler.h"
-#include "AliPIDResponse.h"
+#include "AliV0vertexer.h"
+#include "AliCascadeVertexer.h"
+#include "AliESDpid.h"
+#include "AliExternalTrackParam.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
+#include "AliCentrality.h"
+#include "AliOADBContainer.h"
+#include "AliOADBMultSelection.h"
+#include "AliMultEstimator.h"
+#include "AliMultVariable.h"
+#include "AliMultInput.h"
+#include "AliMultSelection.h"
 
+#include "AliTriggerIR.h"
+#include "AliCFContainer.h"
+#include "AliMultiplicity.h"
+#include "AliAODMCParticle.h"
+#include "AliESDcascade.h"
+#include "AliAODcascade.h"
+#include "AliESDUtils.h"
+#include "AliGenEventHeader.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
+#include "AliPPVsMultUtils.h"
+
+using std::cout;
+using std::endl;
 #include "AliAnalysisTaskFlatenicityLambdaK0s.h"
 
 class AliAnalysisTaskFlatenicityLambdaK0s;
 
 using namespace std;
 
-Int_t gTrack;
-Float_t invmassK0s;
-
 ClassImp(AliAnalysisTaskFlatenicityLambdaK0s)
 
     AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s() : AliAnalysisTaskSE(),
-                                                                                 fAOD(0), fOutputList(0), hinvmassK0s(0), fESD(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
-
+                                                     fESD(0), fOutputList(0), hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s(const char *name) : AliAnalysisTaskSE(name),
-                                                                                             fAOD(0), fOutputList(0), hinvmassK0s(0), fESD(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
+                                                                 fESD(0), fOutputList(0), hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
 {
-    // constructor
-    DefineInput(0, TChain::Class()); // define the input of the analysis: in this case we take a 'chain' of events
-                                     // this chain is created by the analysis manager, so no need to worry about it,
-                                     // it does its work automatically
-    DefineOutput(1, TList::Class()); // define the ouptut of the analysis: in this case it's a list of histograms
-                                     // you can add more output objects by calling DefineOutput(2, classname::Class())
-                                     // if you add more output objects, make sure to call PostData for all of them, and to
-                                     // make changes to your AddTask macro!
+
+    DefineInput(0, TChain::Class());
+    DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityLambdaK0s::~AliAnalysisTaskFlatenicityLambdaK0s()
@@ -80,7 +124,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
 
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
-    // example of a histogram
+
     hinvmassK0s = new TH1F("hinvmassK0s", "hinvmassK0s", 100, 0.41, 0.58);
     hinvmassLambda = new TH1F("hinvmassLambda", "hinvmassLambda", 100, 1.08, 1.15);
     hinvmassAntiLambda = new TH1F("hinvmassAntiLambda", "hinvmassAntiLambda", 100, 1.08, 1.15);
@@ -114,336 +158,346 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
     fOutputList->Add(treeK0s);
     fOutputList->Add(treeLambda);
     fOutputList->Add(treeAntiLambda);
-
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
+    inputHandler->SetNeedField();
     PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
 {
-    fESD = (AliESDEvent *)InputEvent();
+    AliESDEvent *lESDevent = 0x0;
 
-    if (!fESD)
+    lESDevent = dynamic_cast<AliESDEvent *>(InputEvent());
+    if (!lESDevent)
     {
-        Printf("ERROR: fESD not available");
+        AliWarning("ERROR: lESDevent not available \n");
         return;
     }
 
-    Double_t lPLambda = 0;
-    Double_t lPAntiLambda = 0;
-    Double_t lPK0s = 0;
-    Double_t lMagneticField = 999;
-
-    // Multiplcity:
-    Int_t nv0sTot = 0, nv0s = 0;
-    //  Int_t nv0sMI =0;
-    // Variables:
-    Double_t lV0Position[3];
-
-    Double_t lDcaPosToPrimVertex = 0;
-    Double_t lDcaNegToPrimVertex = 0;
-    Double_t lDcaV0Daughters = 0;
-    Double_t lV0cosPointAngle = 0;
-    Double_t lChi2V0 = 0;
-    Double_t lV0DecayLength = 0;
-    Double_t lV0Radius = 0;
-    Double_t lDcaV0ToPrimVertex = 0;
-    Double_t lcTauLambda = 0;
-    Double_t lcTauAntiLambda = 0;
-    Double_t lcTauK0s = 0;
-    Int_t lOnFlyStatus = 0;
-    // Float_t   tdcaPosToPrimVertexXYZ[2], tdcaNegToPrimVertexXYZ[2]; // ..[0] = Impact parameter in XY plane and ..[1] = Impact parameter in Z
-    // Double_t  tdcaDaughterToPrimVertex[2];                          // ..[0] = Pos and ..[1] = Neg
-
-    Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
-    Double_t lPtK0s = 0, lPtLambda = 0, lPtAntiLambda = 0;
-    Double_t lRapK0s = 0, lRapLambda = 0, lRapAntiLambda = 0;
-    //  Double_t lEtaK0s     = 0, lEtaLambda     = 0, lEtaAntiLambda     = 0;
-    Double_t lAlphaV0 = 0, lPtArmV0 = 0;
-
-    Double_t lPzK0s = 0, lPzLambda = 0, lPzAntiLambda = 0;
-
-    Double_t lV0Eta = 999;
-
-    // to study Associated V0s:
-    Int_t lIndexTrackPos = 0, lIndexTrackNeg = 0;
-    UInt_t lLabelTrackPos = 0, lLabelTrackNeg = 0;
-    Int_t lCheckPIdK0Short = 0, lCheckMcK0Short = 0;
-    Int_t lCheckPIdLambda = 0, lCheckMcLambda = 0;
-    Int_t lCheckPIdAntiLambda = 0, lCheckMcAntiLambda = 0;
-    Int_t lCheckSecondaryK0s = 0, lCheckSecondaryLambda = 0, lCheckSecondaryAntiLambda = 0;
-    Int_t lCheckGamma = 0;
-    Double_t mcPosMotherX = 0, mcPosMotherY = 0, mcPosMotherZ = 0;
-    Double_t mcPosMotherR = 0;
-    Double_t mcMotherPt = 0, mcMotherRap = 0;
-
-    Int_t lIndexPosMother = 0;
-    Int_t lIndexNegMother = 0;
-    Int_t lIndexMotherOfMother = 0;
-    Int_t lPDGCodePosDaughter = 0;
-    Int_t lPDGCodeNegDaughter = 0;
-    Int_t lPdgcodeMother = 0;
-    Int_t lPdgcodeMotherOfMother = 0;
-
-    // Reconstructed position
-    // Double_t rcPosXK0s        = 0,  rcPosYK0s        = 0, rcPosZK0s        = 0;
-    Double_t rcPosRK0s = 0;
-    // Double_t rcPosXLambda     = 0,  rcPosYLambda     = 0, rcPosZLambda     = 0;
-    Double_t rcPosRLambda = 0;
-    //  Double_t rcPosXAntiLambda = 0,  rcPosYAntiLambda = 0, rcPosZAntiLambda = 0;
-    Double_t rcPosRAntiLambda = 0;
-
-    // Pt resolution
-    // Double_t deltaPtK0s  = 0, deltaPtLambda  = 0, deltaPtAntiLambda  = 0;
-    AliESDtrack *myTrackPos = NULL;
-    AliESDtrack *myTrackNeg = NULL;
-
-    // Daughters' momentum:
-    Double_t lMomPos[3] = {999, 999, 999};
-    Double_t lMomNeg[3] = {999, 999, 999};
-    Double_t lPtPos = 999, lPtNeg = 999;
-    Double_t lPPos = 999, lPNeg = 999;
-
-    // Inner Wall parameters:
-    Double_t lMomInnerWallPos = 999, lMomInnerWallNeg = 999;
-
-    // AliKF Chi2 and Armenteros variables
-    //  Double_t lChi2KFK0s  = 0, lChi2KFLambda = 0,  lChi2KFAntiLambda = 0;
-    //  Double_t lAlphaV0K0s = 0, lAlphaV0Lambda = 0,  lAlphaV0AntiLambda = 0;
-    // Double_t lPtArmV0K0s = 0, lPtArmV0Lambda = 0,  lPtArmV0AntiLambda = 0;
-    //  Double_t lQlPos   = 0, lQlNeg   = 0;
-
-    // PID
-    Float_t nSigmaPosPion = 0;
-    Float_t nSigmaNegPion = 0;
-
-    Float_t nSigmaPosProton = 0;
-    Float_t nSigmaNegProton = 0;
-
-    Int_t lCheckPIDK0sPosDaughter = 0, lCheckPIDK0sNegDaughter = 0;
-    Int_t lCheckPIDLambdaPosDaughter = 0, lCheckPIDLambdaNegDaughter = 0;
-    Int_t lCheckPIDAntiLambdaPosDaughter = 0, lCheckPIDAntiLambdaNegDaughter = 0;
-
-    //****************************************************
-    // Primary Vertex cuts &
-    // Magnetic field and Quality tracks cuts
-    //****************************************************
-
-    Double_t lPrimaryVtxPosition[3];
-    Double_t lPrimaryVtxCov[6];
-    Double_t lPrimaryVtxChi2 = 999;
-    Double_t lResPrimaryVtxX = 999;
-    Double_t lResPrimaryVtxY = 999;
-    Double_t lResPrimaryVtxZ = 999;
-
-    AliAODVertex *myPrimaryVertex = NULL;
-
-    const AliESDVertex *myBestPrimaryVertex = ((AliESDEvent *)fESD)->GetPrimaryVertex();
-    myBestPrimaryVertex = ((AliESDEvent *)fESD)->GetPrimaryVertex();
-    if (!myBestPrimaryVertex)
+    // Get VZERO Information for multiplicity later
+    AliVVZERO *esdV0 = lESDevent->GetVZEROData();
+    if (!esdV0)
+    {
+        AliError("AliVVZERO not available");
         return;
-    if (!myBestPrimaryVertex->GetStatus())
-        return;
-    myBestPrimaryVertex->GetXYZ(lPrimaryVtxPosition);
-    myBestPrimaryVertex->GetCovMatrix(lPrimaryVtxCov);
-
-    if ((TMath::Abs(lPrimaryVtxPosition[2])) > 10.0)
-        return; //// cut on z of prim. vertex!!!!!
-
-    lPrimaryVtxChi2 = myBestPrimaryVertex->GetChi2toNDF();
-    lResPrimaryVtxX = myBestPrimaryVertex->GetXRes();
-    lResPrimaryVtxY = myBestPrimaryVertex->GetYRes();
-    lResPrimaryVtxZ = myBestPrimaryVertex->GetZRes();
-
-    // const AliESDVertex *mySPDPrimaryVertex = ((AliESDEvent *)fESD)->GetPrimaryVertexSPD();
-    // if (!mySPDPrimaryVertex)
-    //     return;
-    // const AliESDVertex *myPrimaryVertexTracking = ((AliESDEvent *)fESD)->GetPrimaryVertexTracks();
-    // if (!myPrimaryVertexTracking)
-    //     return;
-
-    // if (!mySPDPrimaryVertex->GetStatus() && !myPrimaryVertexTracking->GetStatus())
-    //     return;
-
-    myPrimaryVertex = new AliAODVertex(lPrimaryVtxPosition, lPrimaryVtxCov, lPrimaryVtxChi2, NULL, -1, AliAODVertex::kPrimary);
-    if (!myPrimaryVertex)
+    }
+    if (lESDevent->IsIncompleteDAQ())
         return;
 
-    lMagneticField = ((AliESDEvent *)fESD)->GetMagneticField();
-    // AliKFVertex primaryVtxKF(*myPrimaryVertex);
-    // AliKFParticle::SetField(lMagneticField);
-
-    //=========================================================================================================
-    fESDpid = new AliESDpid;
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(1.41543 / 50.0, 2.63394E1, 5.0411E-11, 2.12543, 4.88663);
-    //=========================================================================================================
-
-    if (fESD->IsPileupFromSPD())
+    AliAnalysisUtils *fUtils = new AliAnalysisUtils();
+    if (fUtils->IsSPDClusterVsTrackletBG(lESDevent))
         return;
+
+    if (lESDevent->IsPileupFromSPD(3))
+        return;
+
+    //------------------------------------------------
+    // Step 3:  Primary Vertex quality selection
+    //------------------------------------------------
+    const AliESDVertex *lESDPrimaryTrackingVtx = lESDevent->GetPrimaryVertexTracks();
+    const AliESDVertex *lESDPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
+    const AliESDVertex *lPrimaryBestESDVtx = lESDevent->GetPrimaryVertex();
+
+    //------------------------------------------------
+    // Step 3.1: reject events if SPDVtx or TrackVtx is not available
+    //------------------------------------------------
+    if (!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus()))
+    {
+        return;
+    }
+
+    //------------------------------------------------
+    // Step 3.2: check the spd vertex resolution and reject if not satisfied
+    //------------------------------------------------
+    if (lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion() < 0.04 && lESDPrimarySPDVtx->GetZRes() < 0.25))
+    {
+        return;
+    }
+
+    //------------------------------------------------
+    // Step 3.3: check the proximity between the spd vertex and trak vertex, and reject if not satisfied
+    //------------------------------------------------
+    if ((TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5))
+    {
+        return;
+    }
+
+    Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
+    lPrimaryBestESDVtx->GetXYZ(lBestPrimaryVtxPos);
+
+    if (TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0)
+    {
+        return;
+    }
+    Double_t lMagneticField = -10;
+
+    lMagneticField = lESDevent->GetMagneticField();
     Double_t flat = GetFlatenicityV0();
     ((TH1D *)(fOutputList->FindObject("hflat")))->Fill(1.0 - flat);
+    // Run number
+    Int_t fRun = lESDevent->GetRunNumber();
+    Int_t lOnFlyStatus = 0; // nv0sOn = 0, nv0sOff = 0;
+    Double_t lChi2V0 = 0;
+    Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
+    Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
+    Double_t lV0CosineOfPointingAngle = 0;
+    Double_t lV0Radius = 0, lPt = 0;
+    Double_t lRapK0Short = 0, lRapLambda = 0;
+    Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
+    Double_t lAlphaV0 = 0, lPtArmV0 = 0;
 
-    nv0sTot = fESD->GetNumberOfV0s();
-    Int_t lComeFromSigma = 0;
-    Int_t cnt = 0;
-    for (Int_t iV0 = 0; iV0 < nv0sTot; iV0++)
-    {
+    Double_t fMinV0Pt = 0;
+    Double_t fMaxV0Pt = 100;
 
-        lIndexPosMother = 0;
-        lIndexNegMother = 0;
-        lIndexMotherOfMother = 0;
-        lCheckPIdK0Short = 0;
-        lCheckMcK0Short = 0;
-        lCheckSecondaryK0s = 0;
-        lCheckPIdLambda = 0;
-        lCheckMcLambda = 0;
-        lCheckSecondaryLambda = 0;
-        lCheckPIdAntiLambda = 0;
-        lCheckMcAntiLambda = 0;
-        lCheckSecondaryAntiLambda = 0;
-        lComeFromSigma = 0;
-        lCheckGamma = 0;
+    Int_t nv0s = 0;
+    nv0s = lESDevent->GetNumberOfV0s();
 
-        AliESDv0 *v0 = ((AliESDEvent *)fESD)->GetV0(iV0);
+    for (Int_t iV0 = 0; iV0 < nv0s; iV0++) // extra-crazy test
+    {                                      // This is the begining of the V0 loop
+        AliESDv0 *v0 = ((AliESDEvent *)lESDevent)->GetV0(iV0);
         if (!v0)
             continue;
-        // V0's Daughters
-        lIndexTrackPos = TMath::Abs(v0->GetPindex());
-        lIndexTrackNeg = TMath::Abs(v0->GetNindex());
-        AliESDtrack *myTrackPosTest = ((AliESDEvent *)fESD)->GetTrack(lIndexTrackPos);
-        AliESDtrack *myTrackNegTest = ((AliESDEvent *)fESD)->GetTrack(lIndexTrackNeg);
-        if (!myTrackPosTest || !myTrackNegTest)
-        {
-            Printf("strange analysis::UserExec:: Error:Could not retreive one of the daughter track\n");
-            continue;
-        }
-        // Remove like-sign
-        if ((Int_t)myTrackPosTest->GetSign() == (Int_t)myTrackNegTest->GetSign())
+
+        CheckChargeV0(v0);
+        // Remove like-sign (will not affect offline V0 candidates!)
+        if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() > 0)
         {
             continue;
         }
-        // VO's main characteristics to check the reconstruction cuts
-        lOnFlyStatus = v0->GetOnFlyStatus();
-        lChi2V0 = v0->GetChi2V0();
-        lDcaV0Daughters = v0->GetDcaV0Daughters();
-        lDcaV0ToPrimVertex = v0->GetD(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);
-        lV0cosPointAngle = v0->GetV0CosineOfPointingAngle(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);
-        v0->GetXYZ(lV0Position[0], lV0Position[1], lV0Position[2]);
+        if (v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0)
+        {
+            continue;
+        }
 
-        lV0Radius = TMath::Sqrt(lV0Position[0] * lV0Position[0] + lV0Position[1] * lV0Position[1]);
-        lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0], 2) +
-                                     TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1], 2) +
-                                     TMath::Power(lV0Position[2] - lPrimaryVtxPosition[2], 2));
-        if (lV0DecayLength < 0.5)
+        Double_t tDecayVertexV0[3];
+        v0->GetXYZ(tDecayVertexV0[0], tDecayVertexV0[1], tDecayVertexV0[2]);
+
+        Double_t tV0mom[3];
+        v0->GetPxPyPz(tV0mom[0], tV0mom[1], tV0mom[2]);
+        Double_t lV0TotalMomentum = TMath::Sqrt(
+            tV0mom[0] * tV0mom[0] + tV0mom[1] * tV0mom[1] + tV0mom[2] * tV0mom[2]);
+
+        Double_t lV0Radius = TMath::Sqrt(tDecayVertexV0[0] * tDecayVertexV0[0] + tDecayVertexV0[1] * tDecayVertexV0[1]);
+
+        Double_t lPt = v0->Pt();
+        Double_t lRapK0Short = v0->RapK0Short();
+        Double_t lRapLambda = v0->RapLambda();
+
+        UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
+        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+
+        Double_t lMomPos[3];
+        v0->GetPPxPyPz(lMomPos[0], lMomPos[1], lMomPos[2]);
+        Double_t lMomNeg[3];
+        v0->GetNPxPyPz(lMomNeg[0], lMomNeg[1], lMomNeg[2]);
+
+        // Provisions for cowboy/sailor check
+        Double_t lModp1 = TMath::Sqrt(lMomPos[0] * lMomPos[0] + lMomPos[1] * lMomPos[1]);
+        Double_t lModp2 = TMath::Sqrt(lMomNeg[0] * lMomNeg[0] + lMomNeg[1] * lMomNeg[1]);
+
+        // Calculate vec prod with momenta projected to xy plane
+        Double_t lVecProd = (lMomPos[0] * lMomNeg[1] - lMomPos[1] * lMomNeg[0]) / (lModp1 * lModp2);
+
+        if (lMagneticField < 0)
+            lVecProd *= -1; // invert sign
+
+        Bool_t fTreeVariableIsCowboy = kFALSE;
+        if (lVecProd < 0)
+            fTreeVariableIsCowboy = kTRUE;
+
+        AliESDtrack *pTrack = ((AliESDEvent *)lESDevent)->GetTrack(lKeyPos);
+        AliESDtrack *nTrack = ((AliESDEvent *)lESDevent)->GetTrack(lKeyNeg);
+        AliExternalTrackParam *fTreeVariablePosTrack; //!
+        AliExternalTrackParam *fTreeVariableNegTrack; //!
+        fTreeVariablePosTrack = pTrack;
+        fTreeVariableNegTrack = nTrack;
+
+        if (!pTrack || !nTrack)
+        {
+            Printf("ERROR: Could not retreive one of the daughter track");
+            continue;
+        }
+        Int_t fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
+        Int_t fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
+
+        const AliExternalTrackParam *innernegv0 = nTrack->GetInnerParam();
+        const AliExternalTrackParam *innerposv0 = pTrack->GetInnerParam();
+        Float_t lThisPosInnerP = -1;
+        Float_t lThisNegInnerP = -1;
+        Float_t lThisPosInnerPt = -1;
+        Float_t lThisNegInnerPt = -1;
+        if (innerposv0)
+        {
+            lThisPosInnerP = innerposv0->GetP();
+        }
+        if (innernegv0)
+        {
+            lThisNegInnerP = innernegv0->GetP();
+        }
+        if (innerposv0)
+        {
+            lThisPosInnerPt = innerposv0->Pt();
+        }
+        if (innernegv0)
+        {
+            lThisNegInnerPt = innernegv0->Pt();
+        }
+        Float_t lThisPosdEdx = pTrack->GetTPCsignal();
+        Float_t lThisNegdEdx = nTrack->GetTPCsignal();
+
+        // Daughter Eta for Eta selection, afterwards
+        Float_t fTreeVariableNegEta = nTrack->Eta();
+        Float_t fTreeVariablePosEta = pTrack->Eta();
+        Bool_t fkExtraCleanup = kTRUE;
+
+        if (fkExtraCleanup)
+        {
+            if (TMath::Abs(fTreeVariableNegEta) > 0.8 || TMath::Abs(fTreeVariableNegEta) > 0.8)
+                continue;
+        }
+
+        // Filter like-sign V0 (next: add counter and distribution)
+        if (pTrack->GetSign() == nTrack->GetSign())
+        {
+            continue;
+        }
+
+        //________________________________________________________________________
+        // Track quality cuts
+        Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2, 1);
+        Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2, 1);
+        Int_t fTreeVariableLeastNbrCrossedRows = (Int_t)lPosTrackCrossedRows;
+        if (lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows)
+            fTreeVariableLeastNbrCrossedRows = (Int_t)lNegTrackCrossedRows;
+
+        // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+        if (!(pTrack->GetStatus() & AliESDtrack::kTPCrefit))
+            continue;
+        if (!(nTrack->GetStatus() & AliESDtrack::kTPCrefit))
             continue;
 
-        if (myTrackPosTest->GetSign() == 1)
-        {
+        // Get status flags
+        ULong64_t fTreeVariablePosTrackStatus = pTrack->GetStatus();
+        ULong64_t fTreeVariableNegTrackStatus = nTrack->GetStatus();
 
-            myTrackPos = ((AliESDEvent *)fESD)->GetTrack(lIndexTrackPos);
-            myTrackNeg = ((AliESDEvent *)fESD)->GetTrack(lIndexTrackNeg);
+        Float_t fTreeVariablePosDCAz = GetDCAz(pTrack);
+        Float_t fTreeVariableNegDCAz = GetDCAz(nTrack);
 
-            // Daughters' momentum;
-            v0->GetPPxPyPz(lMomPos[0], lMomPos[1], lMomPos[2]);
-            v0->GetNPxPyPz(lMomNeg[0], lMomNeg[1], lMomNeg[2]);
-        }
+        // GetKinkIndex condition
+        if (pTrack->GetKinkIndex(0) > 0 || nTrack->GetKinkIndex(0) > 0)
+            continue;
 
-        if (myTrackPosTest->GetSign() == -1)
-        {
+        // Findable clusters > 0 condition
+        if (pTrack->GetTPCNclsF() <= 0 || nTrack->GetTPCNclsF() <= 0)
+            continue;
 
-            myTrackPos = ((AliESDEvent *)fESD)->GetTrack(lIndexTrackNeg);
-            myTrackNeg = ((AliESDEvent *)fESD)->GetTrack(lIndexTrackPos);
-
-            // Daughters' momentum;
-            v0->GetPPxPyPz(lMomNeg[0], lMomNeg[1], lMomNeg[2]);
-            v0->GetNPxPyPz(lMomPos[0], lMomPos[1], lMomPos[2]);
-        }
-
-        Float_t lPosTrackCrossedRowsOverFindable = myTrackPos->GetTPCClusterInfo(2, 1) / ((double)(myTrackPos->GetTPCNclsF()));
-        Float_t lNegTrackCrossedRowsOverFindable = myTrackNeg->GetTPCClusterInfo(2, 1) / ((double)(myTrackNeg->GetTPCNclsF()));
+        // Compute ratio Crossed Rows / Findable clusters
+        // Note: above test avoids division by zero!
+        Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF()));
+        Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF()));
 
         Float_t fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
         if (lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable)
             fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
 
         // Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-        if ((fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8))
+        if (fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8)
             continue;
 
-        lLabelTrackPos = (UInt_t)TMath::Abs(myTrackPos->GetLabel());
-        lLabelTrackNeg = (UInt_t)TMath::Abs(myTrackNeg->GetLabel());
+        // Extra track quality: Chi2/cluster for cross-checks
+        Float_t lBiggestChi2PerCluster = -1;
 
-        // Daughters Pt and P:
-        lPtPos = TMath::Sqrt(lMomPos[0] * lMomPos[0] + lMomPos[1] * lMomPos[1]);
-        lPtNeg = TMath::Sqrt(lMomNeg[0] * lMomNeg[0] + lMomNeg[1] * lMomNeg[1]);
+        Float_t lPosChi2PerCluster = 1000;
+        Float_t lNegChi2PerCluster = 1000;
 
-        lPPos = TMath::Sqrt(lMomPos[0] * lMomPos[0] + lMomPos[1] * lMomPos[1] + lMomPos[2] * lMomPos[2]);
-        lPNeg = TMath::Sqrt(lMomNeg[0] * lMomNeg[0] + lMomNeg[1] * lMomNeg[1] + lMomNeg[2] * lMomNeg[2]);
+        if (pTrack->GetTPCNcls() > 0)
+            lPosChi2PerCluster = pTrack->GetTPCchi2() / ((Float_t)pTrack->GetTPCNcls());
+        if (nTrack->GetTPCNcls() > 0)
+            lNegChi2PerCluster = nTrack->GetTPCchi2() / ((Float_t)nTrack->GetTPCNcls());
 
-        // DCA between daughter and Primary Vertex:
-        if (myTrackPos)
-            lDcaPosToPrimVertex = TMath::Abs(myTrackPos->GetD(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lMagneticField));
+        if (lPosChi2PerCluster > lBiggestChi2PerCluster)
+            lBiggestChi2PerCluster = lPosChi2PerCluster;
+        if (lNegChi2PerCluster > lBiggestChi2PerCluster)
+            lBiggestChi2PerCluster = lNegChi2PerCluster;
 
-        if (myTrackNeg)
-            lDcaNegToPrimVertex = TMath::Abs(myTrackNeg->GetD(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lMagneticField));
+        Float_t fTreeVariableMaxChi2PerCluster = lBiggestChi2PerCluster;
 
-        if (TMath::Abs(lDcaPosToPrimVertex) < 0.06 || TMath::Abs(lDcaNegToPrimVertex) < 0.06)
+        // Extra track quality: min track length
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
+
+        if (pTrack->GetInnerParam())
+            lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        if (nTrack->GetInnerParam())
+            lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+
+        if (lPosTrackLength < lSmallestTrackLength)
+            lSmallestTrackLength = lPosTrackLength;
+        if (lNegTrackLength < lSmallestTrackLength)
+            lSmallestTrackLength = lNegTrackLength;
+
+        if ((((pTrack->GetTPCClusterInfo(2, 1)) < 70) || ((nTrack->GetTPCClusterInfo(2, 1)) < 70)) && lSmallestTrackLength < 80 && fkExtraCleanup)
             continue;
 
-        // Armenteros variables:
+        // End track Quality Cuts
+        //________________________________________________________________________
+
+        lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(lBestPrimaryVtxPos[0],
+                                                      lBestPrimaryVtxPos[1],
+                                                      lMagneticField));
+
+        lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(lBestPrimaryVtxPos[0],
+                                                      lBestPrimaryVtxPos[1],
+                                                      lMagneticField));
+
+        if (lDcaPosToPrimVertex < 0.06 || lDcaNegToPrimVertex < 0.06)
+            continue;
+
+        lOnFlyStatus = v0->GetOnFlyStatus();
+        lChi2V0 = v0->GetChi2V0();
+        lDcaV0Daughters = v0->GetDcaV0Daughters();
+        if (lDcaV0Daughters > 1)
+            continue;
+        lDcaV0ToPrimVertex = v0->GetD(lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2]);
+        Float_t lV0DecayLength = TMath::Sqrt(TMath::Power(tDecayVertexV0[0] - lBestPrimaryVtxPos[0], 2) +
+                                             TMath::Power(tDecayVertexV0[1] - lBestPrimaryVtxPos[1], 2) +
+                                             TMath::Power(tDecayVertexV0[2] - lBestPrimaryVtxPos[2], 2));
+        if (lV0DecayLength < 0.5)
+            continue;
+        lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2]);
+        Float_t fTreeVariableV0CosineOfPointingAngle = lV0CosineOfPointingAngle;
+
+        // Getting invariant mass infos directly from ESD
+        // v0->ChangeMassHypothesis(310);
+        // lInvMassK0s = v0->GetEffMass();
+        // v0->ChangeMassHypothesis(3122);
+        // lInvMassLambda = v0->GetEffMass();
+        // v0->ChangeMassHypothesis(-3122);
+        // lInvMassAntiLambda = v0->GetEffMass();
         // lAlphaV0 = v0->AlphaV0();
         // lPtArmV0 = v0->PtArmV0();
 
-        // Pseudorapidity:
-        lV0Eta = v0->Eta();
-
-        if ((((myTrackPos->GetTPCClusterInfo(2, 1)) < 70) || ((myTrackNeg->GetTPCClusterInfo(2, 1)) < 70)))
-            continue;
-
-        // GetKinkIndex condition
-        if (myTrackPos->GetKinkIndex(0) < 0 || myTrackNeg->GetKinkIndex(0) < 0)
-            continue;
-
-        // Findable clusters > 0 condition
-        if (myTrackPos->GetTPCNclsF() <= 0 || myTrackNeg->GetTPCNclsF() <= 0)
-            continue;
-
-        Float_t fTreeVariableNegEta = myTrackNeg->Eta();
-        Float_t fTreeVariablePosEta = myTrackPos->Eta();
-
-        if (TMath::Abs(fTreeVariableNegEta) > 0.8 || TMath::Abs(fTreeVariablePosEta) > 0.8)
-            continue;
-
-        nSigmaPosPion = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackPos, AliPID::kPion));
-        nSigmaNegPion = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackNeg, AliPID::kPion));
-        nSigmaPosProton = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackPos, AliPID::kProton));
-        nSigmaNegProton = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackNeg, AliPID::kProton));
-        //////////////////////////////////////////////////////////////////////////
-        // Invariant mass
         v0->ChangeMassHypothesis(310);
         lInvMassK0s = v0->GetEffMass();
-        if (TMath::Abs(lInvMassK0s - 0.497611) < 0.2)
+        if (TMath::Abs(lInvMassK0s - 0.497611) < 0.05)
         {
-            if (lV0cosPointAngle < 0.97)
+            if (lV0CosineOfPointingAngle < 0.97)
                 continue;
-            if (TMath::Abs(nSigmaPosPion) > 6 && TMath::Abs(nSigmaNegPion) > 6)
-                continue;
-            if (v0->GetDcaV0Daughters() > 1)
-                continue;
-            lPtK0s = v0->Pt();
-            lPzK0s = v0->Pz();
+            Float_t lPtK0s = v0->Pt();
+            Float_t lPzK0s = v0->Pz();
             if (lPtK0s == 0)
                 continue;
-            lRapK0s = v0->Y(310);
+            Float_t lRapK0s = v0->Y(310);
             if (TMath::Abs(lRapK0s) > 0.5)
                 continue;
 
             Float_t ctauK0s = lV0DecayLength * lInvMassK0s / v0->P();
             if (ctauK0s > 20)
                 continue;
-            ((TH1D *)(fOutputList->FindObject("hinvmassK0s")))->Fill(lInvMassK0s);
+            ((TH1F *)(fOutputList->FindObject("hinvmassK0s")))->Fill(lInvMassK0s);
             invmK0s = v0->GetEffMass();
             invpK0s = v0->P();
             invptK0s = v0->Pt();
@@ -455,20 +509,16 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
 
         v0->ChangeMassHypothesis(3122);
         lInvMassLambda = v0->GetEffMass();
-        if (TMath::Abs(lInvMassLambda - massLambda) < 0.2)
+        if (TMath::Abs(lInvMassLambda - massLambda) < 0.05)
         {
-            if (lV0cosPointAngle < 0.995)
-                continue;
-            if (TMath::Abs(nSigmaPosProton) > 6 && TMath::Abs(nSigmaNegPion) > 6)
-                continue;
-            if (v0->GetDcaV0Daughters() > 1)
+            if (lV0CosineOfPointingAngle < 0.995)
                 continue;
 
-            lPtLambda = v0->Pt();
-            lPzLambda = v0->Pz();
+            Float_t lPtLambda = v0->Pt();
+            Float_t lPzLambda = v0->Pz();
             if (lPtLambda == 0)
                 continue;
-            lRapLambda = v0->Y(3122);
+            Float_t lRapLambda = v0->Y(3122);
             if (TMath::Abs(lRapLambda) > 0.5)
                 continue;
             Float_t ctauLambda = lV0DecayLength * lInvMassLambda / v0->P();
@@ -482,28 +532,24 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
             flatenicityLambda = 1.0 - flat;
 
             ((TTree *)(fOutputList->FindObject("treeLambda")))->Fill();
-            ((TH1D *)(fOutputList->FindObject("hinvmassLambda")))->Fill(lInvMassLambda);
+            ((TH1F *)(fOutputList->FindObject("hinvmassLambda")))->Fill(lInvMassLambda);
         }
 
         v0->ChangeMassHypothesis(-3122);
 
         lInvMassAntiLambda = v0->GetEffMass();
 
-        if (TMath::Abs(lInvMassAntiLambda - massLambda) < 0.2)
+        if (TMath::Abs(lInvMassAntiLambda - massLambda) < 0.05)
         {
-            if (lV0cosPointAngle < 0.995)
-                continue;
-            if (TMath::Abs(nSigmaPosPion) > 6 && TMath::Abs(nSigmaNegProton) > 6)
-                continue;
-            if (v0->GetDcaV0Daughters() > 1)
+            if (lV0CosineOfPointingAngle < 0.995)
                 continue;
 
-            lPtAntiLambda = v0->Pt();
-            lPzAntiLambda = v0->Pz();
+            Float_t lPtAntiLambda = v0->Pt();
+            Float_t lPzAntiLambda = v0->Pz();
 
             if (lPtAntiLambda == 0)
                 continue;
-            lRapAntiLambda = v0->Y(-3122);
+            Float_t lRapAntiLambda = v0->Y(-3122);
             if (TMath::Abs(lRapAntiLambda) > 0.5)
                 continue;
             Float_t ctauAntiLambda = lV0DecayLength * lInvMassAntiLambda / v0->P();
@@ -517,22 +563,106 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
             flatenicityAntiLambda = 1.0 - flat;
 
             ((TTree *)(fOutputList->FindObject("treeAntiLambda")))->Fill();
-            ((TH1D *)(fOutputList->FindObject("hinvmassAntiLambda")))->Fill(lInvMassAntiLambda);
+            ((TH1F *)(fOutputList->FindObject("hinvmassAntiLambda")))->Fill(lInvMassAntiLambda);
         }
     }
 
-    // if (TestTrackCuts)
-    //     delete TestTrackCuts;
     PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlatenicityLambdaK0s::Terminate(Option_t *)
 {
     // terminate
-    // called at the END of the analysis (when all events are processed)
+    // called at the END of the anfalysis (when all events are processed)
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskFlatenicityLambdaK0s::GetFlatenicityV0()
+//________________________________________________________________________
+void AliAnalysisTaskFlatenicityLambdaK0s::CheckChargeV0(AliESDv0 *v0)
+{
+    // This function checks charge of negative and positive daughter tracks.
+    // If incorrectly defined (onfly vertexer), swaps out.
+    if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0)
+    {
+        // V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
+        Long_t lCorrectNidx = v0->GetPindex();
+        Long_t lCorrectPidx = v0->GetNindex();
+        Double32_t lCorrectNmom[3];
+        Double32_t lCorrectPmom[3];
+        v0->GetPPxPyPz(lCorrectNmom[0], lCorrectNmom[1], lCorrectNmom[2]);
+        v0->GetNPxPyPz(lCorrectPmom[0], lCorrectPmom[1], lCorrectPmom[2]);
+
+        AliExternalTrackParam lCorrectParamN(
+            v0->GetParamP()->GetX(),
+            v0->GetParamP()->GetAlpha(),
+            v0->GetParamP()->GetParameter(),
+            v0->GetParamP()->GetCovariance());
+        AliExternalTrackParam lCorrectParamP(
+            v0->GetParamN()->GetX(),
+            v0->GetParamN()->GetAlpha(),
+            v0->GetParamN()->GetParameter(),
+            v0->GetParamN()->GetCovariance());
+        lCorrectParamN.SetMostProbablePt(v0->GetParamP()->GetMostProbablePt());
+        lCorrectParamP.SetMostProbablePt(v0->GetParamN()->GetMostProbablePt());
+
+        // Get Variables___________________________________________________
+        Double_t lDcaV0Daughters = v0->GetDcaV0Daughters();
+        Double_t lCosPALocal = v0->GetV0CosineOfPointingAngle();
+        Bool_t lOnFlyStatusLocal = v0->GetOnFlyStatus();
+
+        // Create Replacement Object_______________________________________
+        AliESDv0 *v0correct = new AliESDv0(lCorrectParamN, lCorrectNidx, lCorrectParamP, lCorrectPidx);
+        v0correct->SetDcaV0Daughters(lDcaV0Daughters);
+        v0correct->SetV0CosineOfPointingAngle(lCosPALocal);
+        v0correct->ChangeMassHypothesis(kK0Short);
+        v0correct->SetOnFlyStatus(lOnFlyStatusLocal);
+
+        // Reverse Cluster info..._________________________________________
+        v0correct->SetClusters(v0->GetClusters(1), v0->GetClusters(0));
+
+        *v0 = *v0correct;
+        // Proper cleanup..._______________________________________________
+        v0correct->Delete();
+        v0correct = 0x0;
+
+        // Just another cross-check and output_____________________________
+        if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0)
+        {
+            AliWarning("Found Swapped Charges, tried to correct but something FAILED!");
+        }
+        else
+        {
+            // AliWarning("Found Swapped Charges and fixed.");
+        }
+        //________________________________________________________________
+    }
+    else
+    {
+        // Don't touch it! ---
+        // Printf("Ah, nice. Charges are already ordered...");
+    }
+    return;
+}
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetDCAz(AliESDtrack *lTrack)
+// Encapsulation of DCAz calculation
+{
+    Float_t b[2];
+    Float_t bCov[3];
+    lTrack->GetImpactParameters(b, bCov);
+    if (bCov[0] <= 0 || bCov[2] <= 0)
+    {
+        AliDebug(1, "Estimated b resolution lower or equal to zero!");
+        bCov[0] = 0;
+        bCov[2] = 0;
+    }
+    // Float_t dcaToVertexXY = b[0];
+    Float_t dcaToVertexZ = b[1];
+
+    return dcaToVertexZ;
+}
+
+Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetFlatenicityV0()
 {
     AliVVZERO *lVV0 = 0x0;
     AliVEvent *lVevent = 0x0;
