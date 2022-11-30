@@ -93,10 +93,11 @@ class AliAnalysisTask_pd : public AliAnalysisTaskSE
     float     fDeuteron_DCAz;
     float     fDeuteron_Event_Centrality;
     float     fDeuteron_Event_VertexPositionZ;
-    unsigned int    fDeuteron_TPC_nCrossedRows;
-    unsigned int    fDeuteron_TPC_nSharedCluster;
-    unsigned int    fDeuteron_TPC_nCluster;
-    unsigned int    fDeuteron_ITS_nCluster;
+    unsigned short  fDeuteron_TPC_nCrossedRows;
+    unsigned short  fDeuteron_TPC_nSharedCluster;
+    unsigned short  fDeuteron_TPC_nClusterFindable;
+    unsigned short  fDeuteron_TPC_nCluster;
+    unsigned short  fDeuteron_ITS_nCluster;
     unsigned int    fDeuteron_ID;
     unsigned int    fDeuteron_Event_Identifier;
 
@@ -150,10 +151,11 @@ class AliAnalysisTask_pd : public AliAnalysisTaskSE
     float     fAntiDeuteron_DCAz;
     float     fAntiDeuteron_Event_Centrality;
     float     fAntiDeuteron_Event_VertexPositionZ;
-    unsigned int    fAntiDeuteron_TPC_nCrossedRows;
-    unsigned int    fAntiDeuteron_TPC_nSharedCluster;
-    unsigned int    fAntiDeuteron_TPC_nCluster;
-    unsigned int    fAntiDeuteron_ITS_nCluster;
+    unsigned short  fAntiDeuteron_TPC_nCrossedRows;
+    unsigned short  fAntiDeuteron_TPC_nSharedCluster;
+    unsigned short  fAntiDeuteron_TPC_nClusterFindable;
+    unsigned short  fAntiDeuteron_TPC_nCluster;
+    unsigned short  fAntiDeuteron_ITS_nCluster;
     unsigned int    fAntiDeuteron_ID;
     unsigned int    fAntiDeuteron_Event_Identifier;
 

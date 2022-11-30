@@ -97,6 +97,7 @@ AliAnalysisTask_pd::AliAnalysisTask_pd() : AliAnalysisTaskSE(),
   fDeuteron_Event_VertexPositionZ(0),
   fDeuteron_TPC_nCrossedRows(0),
   fDeuteron_TPC_nSharedCluster(0),
+  fDeuteron_TPC_nClusterFindable(0),
   fDeuteron_TPC_nCluster(0),
   fDeuteron_ITS_nCluster(0),
   fDeuteron_ID(0),
@@ -150,6 +151,7 @@ AliAnalysisTask_pd::AliAnalysisTask_pd() : AliAnalysisTaskSE(),
   fAntiDeuteron_Event_VertexPositionZ(0),
   fAntiDeuteron_TPC_nCrossedRows(0),
   fAntiDeuteron_TPC_nSharedCluster(0),
+  fAntiDeuteron_TPC_nClusterFindable(0),
   fAntiDeuteron_TPC_nCluster(0),
   fAntiDeuteron_ITS_nCluster(0),
   fAntiDeuteron_ID(0),
@@ -166,7 +168,7 @@ AliAnalysisTask_pd::AliAnalysisTask_pd(const char *name,int CollisionSystem) : A
   fAODHandler(0),
   fHeader(0),
   fPIDResponse(0),
-  fCollisionSystem(CollisionSystem),
+  fCollisionSystem(0),
   fTree_Proton(0),
   fProton_px(0),
   fProton_py(0),
@@ -216,6 +218,7 @@ AliAnalysisTask_pd::AliAnalysisTask_pd(const char *name,int CollisionSystem) : A
   fDeuteron_Event_VertexPositionZ(0),
   fDeuteron_TPC_nCrossedRows(0),
   fDeuteron_TPC_nSharedCluster(0),
+  fDeuteron_TPC_nClusterFindable(0),
   fDeuteron_TPC_nCluster(0),
   fDeuteron_ITS_nCluster(0),
   fDeuteron_ID(0),
@@ -269,6 +272,7 @@ AliAnalysisTask_pd::AliAnalysisTask_pd(const char *name,int CollisionSystem) : A
   fAntiDeuteron_Event_VertexPositionZ(0),
   fAntiDeuteron_TPC_nCrossedRows(0),
   fAntiDeuteron_TPC_nSharedCluster(0),
+  fAntiDeuteron_TPC_nClusterFindable(0),
   fAntiDeuteron_TPC_nCluster(0),
   fAntiDeuteron_ITS_nCluster(0),
   fAntiDeuteron_ID(0),
@@ -370,10 +374,11 @@ void AliAnalysisTask_pd::UserCreateOutputObjects()
   fTree_Deuteron->Branch("Deuteron_DCAz",&fDeuteron_DCAz,"Deuteron_DCAz/f");
   fTree_Deuteron->Branch("Deuteron_Event_Centrality",&fDeuteron_Event_Centrality,"Deuteron_Event_Centrality/f");
   fTree_Deuteron->Branch("Deuteron_Event_VertexPositionZ",&fDeuteron_Event_VertexPositionZ,"Deuteron_Event_VertexPositionZ/f");
-  fTree_Deuteron->Branch("Deuteron_TPC_nCrossedRows",&fDeuteron_TPC_nCrossedRows,"Deuteron_TPC_nCrossedRows/i");
-  fTree_Deuteron->Branch("Deuteron_TPC_nSharedCluster",&fDeuteron_TPC_nSharedCluster,"Deuteron_TPC_nSharedCluster/i");
-  fTree_Deuteron->Branch("Deuteron_TPC_nCluster",&fDeuteron_TPC_nCluster,"Deuteron_TPC_nCluster/i");
-  fTree_Deuteron->Branch("Deuteron_ITS_nCluster",&fDeuteron_ITS_nCluster,"Deuteron_ITS_nCluster/i");
+  fTree_Deuteron->Branch("Deuteron_TPC_nCrossedRows",&fDeuteron_TPC_nCrossedRows,"Deuteron_TPC_nCrossedRows/s");
+  fTree_Deuteron->Branch("Deuteron_TPC_nSharedCluster",&fDeuteron_TPC_nSharedCluster,"Deuteron_TPC_nSharedCluster/s");
+  fTree_Deuteron->Branch("Deuteron_TPC_nClusterFindable",&fDeuteron_TPC_nClusterFindable,"Deuteron_TPC_nClusterFindable/s");
+  fTree_Deuteron->Branch("Deuteron_TPC_nCluster",&fDeuteron_TPC_nCluster,"Deuteron_TPC_nCluster/s");
+  fTree_Deuteron->Branch("Deuteron_ITS_nCluster",&fDeuteron_ITS_nCluster,"Deuteron_ITS_nCluster/s");
   fTree_Deuteron->Branch("Deuteron_ID",&fDeuteron_ID,"Deuteron_ID/i");
   fTree_Deuteron->Branch("Deuteron_Event_Identifier",&fDeuteron_Event_Identifier,"Deuteron_Event_Identifier/i");
 
@@ -427,10 +432,11 @@ void AliAnalysisTask_pd::UserCreateOutputObjects()
   fTree_AntiDeuteron->Branch("AntiDeuteron_DCAz",&fAntiDeuteron_DCAz,"AntiDeuteron_DCAz/f");
   fTree_AntiDeuteron->Branch("AntiDeuteron_Event_Centrality",&fAntiDeuteron_Event_Centrality,"AntiDeuteron_Event_Centrality/f");
   fTree_AntiDeuteron->Branch("AntiDeuteron_Event_VertexPositionZ",&fAntiDeuteron_Event_VertexPositionZ,"AntiDeuteron_Event_VertexPositionZ/f");
-  fTree_AntiDeuteron->Branch("AntiDeuteron_TPC_nCrossedRows",&fAntiDeuteron_TPC_nCrossedRows,"AntiDeuteron_TPC_nCrossedRows/i");
-  fTree_AntiDeuteron->Branch("AntiDeuteron_TPC_nSharedCluster",&fAntiDeuteron_TPC_nSharedCluster,"AntiDeuteron_TPC_nSharedCluster/i");
-  fTree_AntiDeuteron->Branch("AntiDeuteron_TPC_nCluster",&fAntiDeuteron_TPC_nCluster,"AntiDeuteron_TPC_nCluster/i");
-  fTree_AntiDeuteron->Branch("AntiDeuteron_ITS_nCluster",&fAntiDeuteron_ITS_nCluster,"AntiDeuteron_ITS_nCluster/i");
+  fTree_AntiDeuteron->Branch("AntiDeuteron_TPC_nCrossedRows",&fAntiDeuteron_TPC_nCrossedRows,"AntiDeuteron_TPC_nCrossedRows/s");
+  fTree_AntiDeuteron->Branch("AntiDeuteron_TPC_nSharedCluster",&fAntiDeuteron_TPC_nSharedCluster,"AntiDeuteron_TPC_nSharedCluster/s");
+  fTree_AntiDeuteron->Branch("AntiDeuteron_TPC_nClusterFindable",&fAntiDeuteron_TPC_nClusterFindable,"AntiDeuteron_TPC_nClusterFindable/s");
+  fTree_AntiDeuteron->Branch("AntiDeuteron_TPC_nCluster",&fAntiDeuteron_TPC_nCluster,"AntiDeuteron_TPC_nCluster/s");
+  fTree_AntiDeuteron->Branch("AntiDeuteron_ITS_nCluster",&fAntiDeuteron_ITS_nCluster,"AntiDeuteron_ITS_nCluster/s");
   fTree_AntiDeuteron->Branch("AntiDeuteron_ID",&fAntiDeuteron_ID,"AntiDeuteron_ID/i");
   fTree_AntiDeuteron->Branch("AntiDeuteron_Event_Identifier",&fAntiDeuteron_Event_Identifier,"AntiDeuteron_Event_Identifier/i");
 
@@ -665,6 +671,7 @@ void AliAnalysisTask_pd::UserExec(Option_t*)
     fDeuteron_Event_VertexPositionZ = PrimaryVertexZ;
     fDeuteron_TPC_nCrossedRows	    = Track->GetTPCCrossedRows();
     fDeuteron_TPC_nSharedCluster    = Track->GetTPCnclsS();
+    fDeuteron_TPC_nClusterFindable  = Track->GetTPCNclsF();
     fDeuteron_TPC_nCluster	    = Track->GetTPCNcls();
     fDeuteron_ITS_nCluster	    = Track->GetITSNcls();
     fDeuteron_ID		    = Track->GetID();
@@ -789,6 +796,7 @@ void AliAnalysisTask_pd::UserExec(Option_t*)
     fAntiDeuteron_Event_VertexPositionZ	= PrimaryVertexZ;
     fAntiDeuteron_TPC_nCrossedRows	= Track->GetTPCCrossedRows();
     fAntiDeuteron_TPC_nSharedCluster    = Track->GetTPCnclsS();
+    fAntiDeuteron_TPC_nClusterFindable  = Track->GetTPCNclsF();
     fAntiDeuteron_TPC_nCluster		= Track->GetTPCNcls();
     fAntiDeuteron_ITS_nCluster		= Track->GetITSNcls();
     fAntiDeuteron_ID			= Track->GetID();
