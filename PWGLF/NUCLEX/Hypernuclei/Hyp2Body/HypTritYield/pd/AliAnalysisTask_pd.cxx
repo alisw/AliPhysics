@@ -168,7 +168,7 @@ AliAnalysisTask_pd::AliAnalysisTask_pd(const char *name,int CollisionSystem) : A
   fAODHandler(0),
   fHeader(0),
   fPIDResponse(0),
-  fCollisionSystem(0),
+  fCollisionSystem(CollisionSystem),
   fTree_Proton(0),
   fProton_px(0),
   fProton_py(0),
