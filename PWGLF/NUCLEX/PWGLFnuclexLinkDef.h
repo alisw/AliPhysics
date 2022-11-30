@@ -119,6 +119,7 @@
 #pragma link C++ class AliAODTrackcorrelation+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTask_pdLd+;
+#pragma link C++ class AliAnalysisTask_pd+;
 #pragma link C++ class AliAODTrackTiny+;
 #pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
