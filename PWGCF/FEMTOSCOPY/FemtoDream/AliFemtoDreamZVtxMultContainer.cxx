@@ -133,6 +133,14 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               bool is_newpcrm = part1.IsRemovedByNewPC() || part2.IsRemovedByNewPC();
               bool is_crosspcrm = part1.IsRemovedByCrossPC() || part2.IsRemovedByCrossPC();
 
+              // auto p1 = TLorentzVector(part1.GetMomentum(), TMath::Sqrt(part1.GetInvMass() * part1.GetInvMass() + part1.GetMomentum().Mag2()));
+              // auto p2 = TLorentzVector(part2.GetMomentum(), TMath::Sqrt(part2.GetInvMass() * part2.GetInvMass() + part2.GetMomentum().Mag2()));
+              // float inv_mass = (p1 + p2).Mag();
+
+              // auto p1pdg = TLorentzVector(part1.GetMomentum(), TMath::Sqrt(0.139 * 0.139 + part1.GetMomentum().Mag2()));
+              // auto p2pdg = TLorentzVector(part2.GetMomentum(), TMath::Sqrt(2.010 * 2.010 + part2.GetMomentum().Mag2()));
+              // float inv_masspdg = (p1pdg + p2pdg).Mag();
+              
               // load dmeson info
               int heavy_mult = part2.GetParticleMult();
               float heavy_invmass = part2.GetInvMass();
@@ -171,6 +179,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               if (tree->FindBranch("is_oldpcrm")) tree->SetBranchAddress("is_oldpcrm", &is_oldpcrm);
               if (tree->FindBranch("is_newpcrm")) tree->SetBranchAddress("is_newpcrm", &is_newpcrm);
               if (tree->FindBranch("is_crosspcrm")) tree->SetBranchAddress("is_crosspcrm", &is_crosspcrm);
+              // if (tree->FindBranch("inv_mass")) tree->SetBranchAddress("inv_mass", &inv_mass);
+              // if (tree->FindBranch("inv_masspdg")) tree->SetBranchAddress("inv_masspdg", &inv_masspdg);
 
 
               // heavy particle
@@ -323,6 +333,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 if (tree->FindBranch("is_oldpcrm")) tree->SetBranchAddress("is_oldpcrm", &is_oldpcrm);
                 if (tree->FindBranch("is_newpcrm")) tree->SetBranchAddress("is_newpcrm", &is_newpcrm);
                 if (tree->FindBranch("is_crosspcrm")) tree->SetBranchAddress("is_crosspcrm", &is_crosspcrm);
+                // if (tree->FindBranch("inv_mass")) tree->SetBranchAddress("inv_mass", &inv_mass);
+                // if (tree->FindBranch("inv_masspdg")) tree->SetBranchAddress("inv_masspdg", &inv_masspdg);
 
                 // heavy particle
                 if (tree->FindBranch("heavy_mult")) tree->SetBranchAddress("heavy_mult", &heavy_mult);
