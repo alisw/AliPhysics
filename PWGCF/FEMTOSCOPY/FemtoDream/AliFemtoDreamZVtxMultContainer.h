@@ -33,6 +33,14 @@ class AliFemtoDreamZVtxMultContainer {
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
       AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+      std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr, bool usePart2Buffer=true);
+  void PairParticlesMEPart1Buffer(
+      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+      std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr);
+  void PairParticlesMEPart2Buffer(
+      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
       std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr);
   void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
                         AliFemtoDreamBasePart &part2, bool SEorME,
