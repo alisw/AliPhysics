@@ -897,9 +897,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       fHistDminusInvMassPt->Fill(dMeson->Pt(), mass);
     }
 
-
-    printf("nsig: %f\n", fNSigmaMass);
-
     if(IsMassSelected(mass, dMeson->Pt(), absPdgMom, fMassSelectionType, fNSigmaMass, fNSigmaOffsetSideband, fSidebandWidth)) {
       if (dMeson->Charge() > 0) {
         AliFemtoDreamBasePart dplusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
@@ -1186,7 +1183,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(dminus);
 
   if (fUseTree) {
-    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, fPairTreeSE, fPairTreeME);
+    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, fPairTreeSE, fPairTreeME, fUsePart2Buffer);
   } else {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
   }

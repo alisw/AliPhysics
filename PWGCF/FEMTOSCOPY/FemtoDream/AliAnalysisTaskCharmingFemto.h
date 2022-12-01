@@ -101,6 +101,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetUseUseLFFromEvtsWithPairs(int flag) {
     fUseLFFromEvtsWithPairs = flag;
   }
+  void SetPart2Buffer(bool flag) {
+    fUsePart2Buffer = flag;
+  }
   
   // HF related setters
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
@@ -344,6 +347,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool fIsLightweight;     //
   bool fUseFDPairCleaner;  //
   bool fUseLFFromEvtsWithPairs; //
+  bool fUsePart2Buffer; //
   UInt_t fTrigger;         //
   int fSystem;             //
 
@@ -442,7 +446,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 19)
+ClassDef(AliAnalysisTaskCharmingFemto, 20)
 };
 
 #endif
