@@ -1,0 +1,142 @@
+#include "AliAnalysisTask_pd_CreateTrees_PairsOnly.cxx"
+
+
+
+AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
+  TString Name = "AnalysisTask_pd_CreateTrees_PairsOnly",
+  int CollisionSystem = 0,
+  const char *Variation = "0") {
+
+
+  bool DebugAddTask = true;
+
+  // CollisionSystem:
+  //
+  // 0 = pp collisions
+  // 1 = Pb-Pb collisions (central: 0-10%)
+  // 2 = Pb-Pb collisions (semi-central: 30-50%)
+
+  TString suffix = TString::Format("%s",Variation);
+  TString prefix = TString::Format("%i",CollisionSystem);
+
+
+
+  AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
+  if(!manager)
+  {
+    std::cout << "AddTask_pd_CreateTrees_PairsOnly: x-x-x-x-> No AliAnalysisManager found" << std::endl;
+    return nullptr;
+  }
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: AliAnalysisManager received" << std::endl;
+
+
+
+
+  if(!manager->GetInputEventHandler())
+  {
+    std::cout << "AddTask_pd_CreateTrees_PairsOnly: x-x-x-x-> No InputEventHandler found" << std::endl;
+    return nullptr;
+  }
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: InputEventHandler received" << std::endl;
+
+
+
+
+  AliAnalysisTask_pd_CreateTrees_PairsOnly* task = new AliAnalysisTask_pd_CreateTrees_PairsOnly(Name.Data(),CollisionSystem);   
+  if(!task)
+  {
+    std::cout << "AddTask_pd_CreateTrees_PairsOnly: x-x-x-x-> No AliAnalysisTask found" << std::endl;
+    return nullptr;
+  }
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: AliAnalysisTask created" << std::endl;
+
+
+
+  // add the task to the manager
+  manager->AddTask(task);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: task added to AliAnalysisManager" << std::endl;
+
+
+
+  AliAnalysisDataContainer *container = manager->GetCommonInputContainer();
+  if(!container)
+  {
+    std::cout << "AddTask_pd_CreateTrees_PairsOnly: x-x-x-x-> No CommonInputContainer found" << std::endl;
+    return nullptr;
+  }
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: CommonInputContainer received" << std::endl;
+
+
+
+  // connect the manager to the task
+  manager->ConnectInput(task,0,container);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Input container connected" << std::endl;
+  
+  
+
+  task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMultV0 | AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Collision candidates selected" << std::endl;
+
+
+  TString TaskName = TString::Format("%s:%sAnalysisTask_pd_CreateTrees_PairsOnly%s",AliAnalysisManager::GetCommonFileName(),prefix.Data(),suffix.Data());
+
+
+  TString ProtonTreeName = Form("%sProtonTree%s",prefix.Data(),suffix.Data());
+  AliAnalysisDataContainer *ProtonTreeContainer = manager->CreateContainer(
+    ProtonTreeName.Data(),
+    TTree::Class(),
+    AliAnalysisManager::kOutputContainer,
+    TaskName.Data()
+  );
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: ProtonContainer created" << std::endl;
+
+
+  TString DeuteronTreeName = Form("%sDeuteronTree%s",prefix.Data(),suffix.Data());
+  AliAnalysisDataContainer *DeuteronTreeContainer = manager->CreateContainer(
+    DeuteronTreeName.Data(),
+    TTree::Class(),
+    AliAnalysisManager::kOutputContainer,
+    TaskName.Data()
+  );
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: DeuteronContainer created" << std::endl;
+
+
+  TString AntiProtonTreeName = Form("%sAntiProtonTree%s",prefix.Data(),suffix.Data());
+  AliAnalysisDataContainer *AntiProtonTreeContainer = manager->CreateContainer(
+    AntiProtonTreeName.Data(),
+    TTree::Class(),
+    AliAnalysisManager::kOutputContainer,
+    TaskName.Data()
+  );
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: AntiProtonContainer created" << std::endl;
+
+
+  TString AntiDeuteronTreeName = Form("%sAntiDeuteronTree%s",prefix.Data(),suffix.Data());
+  AliAnalysisDataContainer *AntiDeuteronTreeContainer = manager->CreateContainer(
+    AntiDeuteronTreeName.Data(),
+    TTree::Class(),
+    AliAnalysisManager::kOutputContainer,
+    TaskName.Data()
+  );
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: AntiDeuteronContainer created" << std::endl;
+
+
+
+
+  manager->ConnectOutput(task,1,ProtonTreeContainer);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Output container 1 connected" << std::endl;
+
+  manager->ConnectOutput(task,2,DeuteronTreeContainer);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Output container 2 connected" << std::endl;
+
+  manager->ConnectOutput(task,3,AntiProtonTreeContainer);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Output container 3 connected" << std::endl;
+
+  manager->ConnectOutput(task,4,AntiDeuteronTreeContainer);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Output container 4 connected" << std::endl;
+
+
+  // return a pointer to the task
+  return task;
+
+}
