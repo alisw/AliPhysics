@@ -1122,8 +1122,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
         }
       }
       if(fUseChargedPtCut) { //Using different pt cuts for charged and PID particles
-        if(PIDIndex && (pt>ptMin || pt<ptMax)) { fPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); } 
-        if(pt>fchPtMin || pt<fchPtMax) { fChPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,3); }
+        if(PIDIndex && pt>ptMin && pt<ptMax) { fPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); } 
+        if(pt>fchPtMin && pt<fchPtMax) { fChPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,3); }
         continue;
       }
       if(PIDIndex) fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
