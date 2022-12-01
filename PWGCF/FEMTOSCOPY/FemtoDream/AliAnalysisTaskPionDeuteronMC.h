@@ -1,6 +1,8 @@
 #ifndef ALIANALYSISTASKPIONDEUTERONMC_H
 #define ALIANALYSISTASKPIONDEUTERONMC_H
 
+
+#include "AliEasyFemto.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "TList.h"
@@ -9,9 +11,7 @@
 #include "TArrayF.h"
 #include "TLorentzVector.h"
 #include "CustomQueue.h"
-
-//____________________________________________________________________________________________________________________________________
-class AliAnalysisTaskPionDeuteronMC : public AliAnalysisTaskSE
+class AliAnalysisTaskPionDeuteronMC : public AliAnalysisTaskSE, public AliEasyFemto
 {
 
 public:
@@ -23,38 +23,12 @@ public:
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *);
 
-    // Utils
-    void SetPrimaryPtBins(int nbins, float min, float max);
-    void SetPrimaryPtBins(int nbins, float *bins);
-    void SetKstarBins(int nbins, float min, float max);
-    void SetKstarBins(int nbins, float *bins);
-    void SetP0(float p0) { fP0 = p0; }
-
-    void SetZvtxArray(std::vector<float> &vec);
-    void SetMultiplicityArray(std::vector<float> &vec);
-
-    int FindBin(float zvtx, float mult);
-
     void SetMixingDepth(unsigned int depth);
-
-    void SetSimpleCoalescence(bool makeItSimple) { fSimpleCoalescence = makeItSimple; }
-    void SetTwoGauss(bool useTwoGauss) { fTwoGauss = useTwoGauss; }
-
-    static float ComputeRadius(float mt);
 
     AliEventCuts fEventCuts;
 
 private:
     TList *fOutputList; ///< Output list
-
-    float fP0;                 ///< Coalescence momentum p0
-    unsigned int fMixingDepth; /// Depth of the mixing buffer
-
-    bool fSimpleCoalescence; ///< If true use simple coalescence, otherwise Wigner approach
-    bool fTwoGauss;          ///< If true use two-Gauss deuteron waver function, otherwise simple Gauss
-
-    TArrayF fPrimaryPtBins; ///<  Transverse momentum bins
-    TArrayF fKstarBins;     ///<  realtive momentum bins
 
     TH1F *fNormalisationHist;   //!<! Event selection
 
@@ -84,17 +58,7 @@ private:
     std::vector<CustomQueue<std::vector<TLorentzVector>>> fMixingBufferDeuterons;     ///< Mixing buffer for deuterons
     std::vector<CustomQueue<std::vector<TLorentzVector>>> fMixingBufferAntideuterons; ///< Mixing buffer for antideuterons
 
-    std::vector<float> fZvtxArray;         ///< Arrays with the z of the primary vertex for binning
-    std::vector<float> fMultiplicityArray; ///< Arrays with multiplicity for binning
-    int fNZvtxBins;                        ///< Number of z vertex bins
-    int fNMultiplicityBins;                ///< Number of multiplicity bins
-
-    float GetKstar(TLorentzVector &p1, TLorentzVector &p2);                                                               ///< return relative momentum in the rest frame of the pair
-    void FillMixedEvent(std::vector<TLorentzVector> &vec, CustomQueue<std::vector<TLorentzVector>> &buffer, TH1F *histo); ///< fill mixed event distribution
-
-    void DoCoalescence(std::vector<TLorentzVector> &v_proton, std::vector<TLorentzVector> &v_neutron, std::vector<TLorentzVector> &v_deuteron, TH1F *histo); ///< create deuterons from protons and neutrons
-
-    ClassDef(AliAnalysisTaskPionDeuteronMC, 4);
+    ClassDef(AliAnalysisTaskPionDeuteronMC, 5);
 };
 //____________________________________________________________________________________________________________________________________
 
