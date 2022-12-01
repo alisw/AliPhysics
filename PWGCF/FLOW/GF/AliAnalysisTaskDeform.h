@@ -116,11 +116,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000); };
   void SetEventWeight(unsigned int weight) { fEventWeight = weight; };
   void SetUse15oPass2PU(bool use) { fUSe15opass2PU = use; };
-  void SetPseudoEffPars(double fConstEff, double fSigmaEff);
-  void SetEfficiencyFlag(UInt_t newval) {fEfficiencyFlag = newval;};
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
   void SetUse2DEfficiencies(bool newval) {fUse2DEff = newval;};
-  void SetParticleFlag(UInt_t newval) {fParticleFlag = newval;};
   void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
@@ -225,8 +222,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fMultCutPU; //Store these
   Double_t fImpactParameterMC;
   int EventNo;
-  double fConstEff;
-  double fSigmaEff;
   unsigned int fEventWeight; 
   vector<vector<vector<double>>>  wpPt;
   std::map<double,double> centralitymap;  
@@ -246,8 +241,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   vector<Double_t> getPowerEfficiency(double &lpt, int iCent);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
-  UInt_t fEfficiencyFlag;
-  UInt_t fParticleFlag;
   UInt_t fEfficiencyIndex;
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
