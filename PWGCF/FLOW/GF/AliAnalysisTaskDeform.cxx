@@ -135,8 +135,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fStdTPCITS2011(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
-  fEfficiencyFlag(0),
-  fParticleFlag(0),
   fEfficiencyIndex(0),
   fRequireReloadOnRunChange(kFALSE),
   fRequirePositive(kFALSE),
@@ -144,8 +142,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
   EventNo(0),
-  fConstEff(0.8),
-  fSigmaEff(0.05),
   fEventWeight(PtSpace::kOne),
   wpPt(0)
 {
@@ -242,8 +238,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fStdTPCITS2011(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
-  fEfficiencyFlag(0),
-  fParticleFlag(0),
   fEfficiencyIndex(0),
   fRequireReloadOnRunChange(kFALSE),
   fRequirePositive(kFALSE),
@@ -251,8 +245,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
   EventNo(0),
-  fConstEff(0.8),
-  fSigmaEff(0.05),
   fEventWeight(PtSpace::kOne),
   wpPt(0)
 {
@@ -1071,7 +1063,6 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
                     {0,0,0,0,0},
                     {0,0,0,0,0}}; //Initial values, [species][w*p]
   wpPt.clear(); wpPt.resize(4,vector<vector<double>>(10,vector<double>(10)));
-  Double_t trackXYZ[3];
   fGFW->Clear();
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
@@ -1099,11 +1090,6 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(pdgcode==211) PIDIndex = 1;
       if(pdgcode==321) PIDIndex = 2;
       if(pdgcode==2212) PIDIndex = 3;
-      if(fParticleFlag) {
-        if(PIDIndex==1&&!(fParticleFlag&kPi)) continue;
-        if(PIDIndex==2&&!(fParticleFlag&kKa)) continue;
-        if(PIDIndex==3&&!(fParticleFlag&kPr)) continue;
-      }
       //Hardcoded cuts to inhereted from AcceptAODTrack
       Double_t leta = lPart->Eta();
       if(TMath::Abs(leta) > 0.8) continue;
@@ -1140,14 +1126,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(!lTrack) continue;
       if(fRequirePositive && lTrack->Charge()<0) continue;
       Int_t PIDIndex = 0;
-      if(!fDisablePID){ 
-        PIDIndex = GetBayesPIDIndex(lTrack)+1;
-        if(fParticleFlag) {
-          if(PIDIndex==1&&!(fParticleFlag&kPi)) continue;
-          if(PIDIndex==2&&!(fParticleFlag&kKa)) continue;
-          if(PIDIndex==3&&!(fParticleFlag&kPr)) continue;
-        }
-      }
+      if(!fDisablePID) PIDIndex = GetBayesPIDIndex(lTrack)+1;
+    
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
       //Counting FB128 for QA:
@@ -1158,37 +1138,27 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(leta>fEtaV2Sep) lPosCount++;
       if(fEtaV2Sep>0 && TMath::Abs(leta)<fEtaV2Sep) lMidCount++;
       Double_t lpt = lTrack->Pt();
-      double weff, weff_PID;
-      if(fEfficiencyFlag&EFF_FLAG::noeff) weff = 1.0;
-      else if(fUse2DEff){
-        weff = fEfficiency[iCent][0]->GetBinContent(fEfficiency[iCent][0]->FindBin(lpt,leta));
-        if(PIDIndex) weff_PID = fEfficiency[iCent][PIDIndex]->GetBinContent(fEfficiency[iCent][PIDIndex]->FindBin(lpt,leta));
-      }
-      else {
-        weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
-        weff_PID = weff;
-      }
+      Double_t weff = (fUse2DEff)?fEfficiency[iCent][0]->GetBinContent(fEfficiency[iCent][0]->FindBin(lpt,leta)):fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
       if(weff==0.0) continue;
       weff = 1./weff; 
+      Double_t weff_PID;
+      Bool_t noPID = fDisablePID;
       if(PIDIndex) {
-        if(weff_PID==0.0) continue;
-        weff_PID = 1./weff_PID;
-      }     
-
-      if(TMath::Abs(lTrack->Eta())<fEta)  { //for mean pt, only consider -0.4-0.4 region
+        weff_PID = (fUse2DEff)?fEfficiency[iCent][PIDIndex]->GetBinContent(fEfficiency[iCent][PIDIndex]->FindBin(lpt,leta)):weff;
+      }
+      if(TMath::Abs(lTrack->Eta())<fEta)  { 
         FillWPCounter(wp[0],weff,lpt); 
         FillWPCounter(wpPt[0],weff,lpt);
-        if(!fDisablePID) {
-            if(PIDIndex==1) { FillWPCounter(wp[PIDIndex],weff_PID,lpt); FillWPCounter(wpPt[PIDIndex],weff_PID,lpt); }
-            if(PIDIndex==2) { FillWPCounter(wp[PIDIndex],weff_PID,lpt); FillWPCounter(wpPt[PIDIndex],weff_PID,lpt); }
-            if(PIDIndex==3) { FillWPCounter(wp[PIDIndex],weff_PID,lpt); FillWPCounter(wpPt[PIDIndex],weff_PID,lpt); }
+        if(PIDIndex && weff_PID != 0.0) {
+          FillWPCounter(wp[PIDIndex],1./weff_PID,lpt); 
+          FillWPCounter(wpPt[PIDIndex],1./weff_PID,lpt);
         }
-      }  //Actually, no need for if() statememnt now since GFW knows about eta's, so I can fill it all the time
+      }  
       Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
-      if(PIDIndex) { 
+      if(PIDIndex && weff_PID != 0.0) { 
         Double_t wacc_PID = 0.0;
         (fUsePIDNUA)?wacc_PID = fWeights[PIDIndex]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz):wacc;
-        fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc_PID*weff_PID,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full
+        fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc_PID*1./weff_PID,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
       }
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mask 2)
     };
@@ -1319,40 +1289,6 @@ Bool_t AliAnalysisTaskDeform::FillCovariance(AliProfileBS *target, const AliGFW:
   };
   return kTRUE;
 };
-Double_t AliAnalysisTaskDeform::getEfficiency(double &lpt, int iCent){
-  double weff = 1.0;
-  double rnd_eff = 0.0;
-  if(!fEfficiencyFlag) {                 //If efficiency flag is not set, just do what you usually do
-    if(fIsMC) return 1.0;
-    else {
-      weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
-      if(weff==0.0) return 0.0;
-      else return 1./weff;
-    }
-  }
-  if(fEfficiencyFlag&EFF_FLAG::noeff) return weff;            //Use noeff for running without weights (primarily for MC rec)
-  if(fEfficiencyFlag&EFF_FLAG::flateff) fEfficiencyFlag|=EFF_FLAG::inputeff; //for flat eff: input efficiency is required
-  if(fEfficiencyFlag&EFF_FLAG::inputeff){
-    weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
-    if(weff==0.0) return 0.0;
-  }
-  else weff = fConstEff;
-  if(fEfficiencyFlag&EFF_FLAG::consteff) {
-    rnd_eff = fRndm->Rndm(); 
-    if(rnd_eff > weff) return 0.0;
-  }
-  if(fEfficiencyFlag&EFF_FLAG::gausseff) { 
-    weff = fRndm->Gaus(weff,fSigmaEff); 
-    rnd_eff = fRndm->Rndm(); 
-    if(rnd_eff > weff) return 0.0;
-  }
-  if(fEfficiencyFlag&EFF_FLAG::flateff) {
-    weff = fEfficiencies[iCent]->GetMinimum(0.00001)/weff;
-    rnd_eff = fRndm->Rndm(); 
-    if(rnd_eff > weff) return 0.0;
-  }
-  return weff;
-}
 void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChGap22","refP {2} refN {-2}", kFALSE));     //ChGap22 0-3
   corrconfigs.push_back(GetConf("PiGap22","PiRefP {2} PiRefN {-2}", kFALSE));
