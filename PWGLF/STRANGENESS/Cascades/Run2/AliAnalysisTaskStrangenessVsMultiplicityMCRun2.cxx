@@ -8611,11 +8611,11 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::GetErrorInPosition(AliE
   t1->GetXYZ(tmp);
   Double_t  x1=tmp[0],  y1=tmp[1],  z1=tmp[2];
   const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
-  Double_t sx1=sn*sn*t1->GetSigmaY2()+ss, sy1=cs*cs*t1->GetSigmaY2()+ss;
+  Double_t sx1=sn*sn*t1->GetSigmaY2()+ss, sy1=cs*cs*t1->GetSigmaY2()+ss;  
   return sx1;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::Create_ML_Model(TString FileName, TString ModelType, TString Particle)
+void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::Create_ML_Model(TString FileName, TString ModelType, TString Particle)
 {
   if( ModelType=="NN" && Particle=="XiMinus")
   {
