@@ -74,6 +74,8 @@ private:
   Bool_t fIsCalib;
   Bool_t fIsEqualALICE;
   Float_t fVtxz;
+  TF1 *fParVtx;
+  Float_t ParVtxNorm;
   Int_t fV0Mindex;
   Float_t fmultTPC;
   Float_t fmultV0A;
