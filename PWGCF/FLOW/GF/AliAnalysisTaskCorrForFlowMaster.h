@@ -34,6 +34,8 @@
 #include "AliAODForwardMult.h"
 #include "AliAODVZERO.h"
 #include "AliPartSimpleForCorr.h"
+#include "AliStack.h"
+#include "TVirtualMCStack.h"
 
 class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
 {
@@ -55,6 +57,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetAnaType(AnaType type) { fAnalType = type; }
         void                    SetColSystem(ColSystem type) { fColSystem = type; }
         void                    SetIsMC(Bool_t mc = kTRUE, Bool_t tpc = kTRUE) { fIsMC = mc; fIsTPCgen = tpc; }
+        void                    SetUseEventBias(Bool_t eventbias = kTRUE) {fUseEventBias = eventbias;}
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
@@ -64,6 +67,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
 
         // event selection
+        void                    SetNumEventBias(Int_t num) {fNumEventBias = num;}
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
         void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
@@ -109,7 +113,6 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    FillCorrelationsMixed();
         Bool_t                  PrepareTPCTracks();
         Bool_t                  PrepareMCTracks();
-        Bool_t                  EventBias(Double_t trigPt);
 
         Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
         Bool_t                  AreEfficienciesLoaded();
@@ -145,6 +148,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Bool_t                  fIsMC; // [kFALSE]
         Bool_t                  fIsTPCgen; // [kFALSE]
         Bool_t                  fIsHMpp; // [kFALSE]
+        Bool_t                  fUseEventBias; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
@@ -160,6 +164,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
+        Int_t                   fNumEventBias; // [2]
         Int_t                   fnTPCcrossedRows; // [70]
         Double_t                fNOfSamples; //[1]
         Double_t                fSampleIndex; //[0]

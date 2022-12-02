@@ -6,8 +6,8 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-#ifndef AliAnalysisHFEppEMCalBeauty1_H
-#define AliAnalysisHFEppEMCalBeauty1_H
+#ifndef AliAnalysisHFEppEMCalBeauty_H
+#define AliAnalysisHFEppEMCalBeauty_H
 
 #include<iostream>
 #include "AliLog.h"

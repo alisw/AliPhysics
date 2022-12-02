@@ -14,25 +14,23 @@ ClassImp(AliAnalysisTaskPionDeuteron);
 
 AliAnalysisTaskPionDeuteron::AliAnalysisTaskPionDeuteron(const char *name)
     : AliAnalysisTaskSE(name),
+      AliEasyFemto(),
       fEventCuts{true},
-      fPionCuts{BIT(7), 0.14, 4.0, 80, 70, 0.8, 0.3, 0.3, 3., 3., 3., 0.75},
-      fProtonCuts{BIT(7), 0.5, 4.0, 80, 70, 0.8, 0.1, 0.1, 3., 3., 3., 0.75},
-      fDeuteronCuts{BIT(8), 0.8, 4.0, 80, 70, 0.8, 0.2, 0.1, 3., 3., 3., 1.4},
+      fPionCuts{128, 0.14, 4.0, 80, 70, 0.8, 0.3, 0.3, 0.83, 3., 3., 3., 0.75},
+      fProtonCuts{128, 0.5, 4.0, 80, 70, 0.8, 0.1, 0.1, 0.83, 3., 3., 3., 0.75},
+      fDeuteronCuts{256, 0.8, 4.0, 80, 70, 0.8, 0.2, 0.1, 0.83, 3., 3., 3., 1.4},
       fOutputList{nullptr},
       fPID{nullptr},
       fEstimator{1},
-      fP0{0.285},
-      fMixingDepth{5},
-      fSimpleCoalescence{true},
-      fTwoGauss{false},
-      fPrimaryPtBins{0},
-      fKstarBins{0},
       fNormalisationHist{nullptr},
+      hPionTrackSelections{nullptr},
+      hProtonTrackSelections{nullptr},
+      hDeuteronTrackSelections{nullptr},
+      hDeltaP{nullptr},
       hPionSpectrum{nullptr},
       hProtonSpectrum{nullptr},
       hDeuteronSpectrum{nullptr},
       hFakeDeuteronSpectrum{nullptr},
-      hDeltaP{nullptr},
       hNparticles{nullptr},
       hNparticlesFake{nullptr},
       hSameEventPionProtonKstarLS{nullptr},
@@ -54,10 +52,6 @@ AliAnalysisTaskPionDeuteron::AliAnalysisTaskPionDeuteron(const char *name)
       fMixingBufferFakeDeuterons(),
       fMixingBufferFakeAntideuterons()
 {
-  fZvtxArray = {-10., -8., -6., -4., -2., 0., 2., 4., 6., 8., 10.};
-  fNZvtxBins = (int)fZvtxArray.size();
-  fMultiplicityArray = {0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100};
-  fNMultiplicityBins = (int)fMultiplicityArray.size();
   int BufferSize = fNZvtxBins * fNMultiplicityBins;
   fMixingBufferProtons.reserve(BufferSize);
   fMixingBufferAntiprotons.reserve(BufferSize);
@@ -88,7 +82,6 @@ AliAnalysisTaskPionDeuteron::~AliAnalysisTaskPionDeuteron()
 
 void AliAnalysisTaskPionDeuteron::UserCreateOutputObjects()
 {
-
   // Create Output List
   fOutputList = new TList();
   fOutputList->SetOwner(true);
@@ -104,6 +97,19 @@ void AliAnalysisTaskPionDeuteron::UserCreateOutputObjects()
     fNormalisationHist->GetXaxis()->SetBinLabel(iB, norm_labels[iB - 1].data());
   }
   fOutputList->Add(fNormalisationHist);
+
+  hPionTrackSelections = new TH1F("hPionTrackSelections", ";;Entries", kTrackSelection::kNselections, -0.5, (int)kTrackSelection::kNselections - 0.5);
+  hProtonTrackSelections = new TH1F("hProtonTrackSelections", ";;Entries", kTrackSelection::kNselections, -0.5, (int)kTrackSelection::kNselections - 0.5);
+  hDeuteronTrackSelections = new TH1F("hDeuteronTrackSelections", ";;Entries", kTrackSelection::kNselections, -0.5, (int)kTrackSelection::kNselections - 0.5);
+  for (int i = 0; i < kTrackSelection::kNselections; i++)
+  {
+    hPionTrackSelections->GetXaxis()->SetBinLabel(i + 1, vSelLabels[i]);
+    hProtonTrackSelections->GetXaxis()->SetBinLabel(i + 1, vSelLabels[i]);
+    hDeuteronTrackSelections->GetXaxis()->SetBinLabel(i + 1, vSelLabels[i]);
+  }
+  fOutputList->Add(hPionTrackSelections);
+  fOutputList->Add(hProtonTrackSelections);
+  fOutputList->Add(hDeuteronTrackSelections);
 
   const int nPrimaryPtBins = fPrimaryPtBins.GetSize() - 1;
   const float *primaryPtBins = fPrimaryPtBins.GetArray();
@@ -206,69 +212,84 @@ void AliAnalysisTaskPionDeuteron::UserExec(Option_t *)
     TLorentzVector fourVector;
     float fDCAxy = 0.;
 
-    if (applyTrackSelection(track, fPionCuts, fDCAxy) && applyStandardPID(track, fPionCuts, AliPID::kPion))
+    if (applyTrackSelection(track, fPionCuts, fDCAxy, hPionTrackSelections))
     {
       if (TMath::Abs(fDCAxy) < fPionCuts.dcaXY)
       {
-        fourVector.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), AliPID::ParticleMass(AliPID::kPion));
-        if (track->Charge() > 0)
+        hPionTrackSelections->Fill(AliEasyFemto::kDCAxy);
+        if (applyStandardPID(track, fPID, fPionCuts, AliPID::kPion))
         {
-          v_pospionID.push_back(iT);
-          v_pospionTLV.push_back(fourVector);
-          hPionSpectrum[0]->Fill(track->P());
-        }
-        else
-        {
-          v_negpionID.push_back(iT);
-          v_negpionTLV.push_back(fourVector);
-          hPionSpectrum[1]->Fill(track->P());
+          hPionTrackSelections->Fill(AliEasyFemto::kPID);
+          fourVector.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), AliPID::ParticleMass(AliPID::kPion));
+          if (track->Charge() > 0)
+          {
+            v_pospionID.push_back(iT);
+            v_pospionTLV.push_back(fourVector);
+            hPionSpectrum[0]->Fill(track->P());
+          }
+          else
+          {
+            v_negpionID.push_back(iT);
+            v_negpionTLV.push_back(fourVector);
+            hPionSpectrum[1]->Fill(track->P());
+          }
         }
       }
     }
 
-    if (applyTrackSelection(track, fProtonCuts, fDCAxy) && applyStandardPID(track, fProtonCuts, AliPID::kProton))
+    if (applyTrackSelection(track, fProtonCuts, fDCAxy, hProtonTrackSelections))
     {
       if (TMath::Abs(fDCAxy) < fProtonCuts.dcaXY)
       {
-        fourVector.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), AliPID::ParticleMass(AliPID::kProton));
-        if (track->Charge() > 0)
+        hProtonTrackSelections->Fill(AliEasyFemto::kDCAxy);
+        if (applyStandardPID(track, fPID, fProtonCuts, AliPID::kProton))
         {
-          v_protonID.push_back(iT);
-          v_protonTLV.push_back(fourVector);
-          hProtonSpectrum[0]->Fill(track->P());
-        }
-        else
-        {
-          v_antiprotonID.push_back(iT);
-          v_antiprotonTLV.push_back(fourVector);
-          hProtonSpectrum[1]->Fill(track->P());
+          hProtonTrackSelections->Fill(AliEasyFemto::kPID);
+          fourVector.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), AliPID::ParticleMass(AliPID::kProton));
+          if (track->Charge() > 0)
+          {
+            v_protonID.push_back(iT);
+            v_protonTLV.push_back(fourVector);
+            hProtonSpectrum[0]->Fill(track->P());
+          }
+          else
+          {
+            v_antiprotonID.push_back(iT);
+            v_antiprotonTLV.push_back(fourVector);
+            hProtonSpectrum[1]->Fill(track->P());
+          }
         }
       }
     }
 
-    if (applyTrackSelection(track, fDeuteronCuts, fDCAxy) && applyStandardPID(track, fDeuteronCuts, AliPID::kDeuteron))
+    if (applyTrackSelection(track, fDeuteronCuts, fDCAxy, hDeuteronTrackSelections))
     {
       if (TMath::Abs(fDCAxy) < fDeuteronCuts.dcaXY)
       {
-        fourVector.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), AliPID::ParticleMass(AliPID::kDeuteron));
-        if (track->Charge() > 0)
+        hDeuteronTrackSelections->Fill(AliEasyFemto::kDCAxy);
+        if (applyStandardPID(track, fPID, fDeuteronCuts, AliPID::kDeuteron))
         {
-          v_deuteronID.push_back(iT);
-          v_deuteronTLV.push_back(fourVector);
-          hDeuteronSpectrum[0]->Fill(track->P());
-        }
-        else
-        {
-          v_antideuteronID.push_back(iT);
-          v_antideuteronTLV.push_back(fourVector);
-          hDeuteronSpectrum[1]->Fill(track->P());
+          hDeuteronTrackSelections->Fill(AliEasyFemto::kPID);
+          fourVector.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), AliPID::ParticleMass(AliPID::kDeuteron));
+          if (track->Charge() > 0)
+          {
+            v_deuteronID.push_back(iT);
+            v_deuteronTLV.push_back(fourVector);
+            hDeuteronSpectrum[0]->Fill(track->P());
+          }
+          else
+          {
+            v_antideuteronID.push_back(iT);
+            v_antideuteronTLV.push_back(fourVector);
+            hDeuteronSpectrum[1]->Fill(track->P());
+          }
         }
       }
     }
   }
 
-  DoFakeCoalescence(v_protonTLV, v_fakedeuteronTLV, v_fakedeuteronID, hFakeDeuteronSpectrum[0]);             // deuteron
-  DoFakeCoalescence(v_antiprotonTLV, v_fakeantideuteronTLV, v_fakeantideuteronID, hFakeDeuteronSpectrum[1]); // antideuteron
+  DoFakeCoalescence(v_protonTLV, v_fakedeuteronTLV, v_fakedeuteronID, hFakeDeuteronSpectrum[0], hDeltaP);             // deuteron
+  DoFakeCoalescence(v_antiprotonTLV, v_fakeantideuteronTLV, v_fakeantideuteronID, hFakeDeuteronSpectrum[1], hDeltaP); // antideuteron
 
   // count particles
   float nPosPions = (float)v_pospionTLV.size();
@@ -437,64 +458,7 @@ void AliAnalysisTaskPionDeuteron::UserExec(Option_t *)
   PostData(1, fOutputList);
 }
 
-bool AliAnalysisTaskPionDeuteron::applyTrackSelection(AliAODTrack *track, CutContainer &cuts, float &dcaXY)
-{
-  if (!track->TestFilterBit(cuts.filterBit))
-    return false;
-  if (TMath::Abs(track->Eta()) > cuts.eta)
-    return false;
-  if (track->Pt() < cuts.minPt)
-    return false;
-  if (track->Pt() > cuts.maxPt)
-    return false;
-  if (track->GetTPCNcls() < cuts.nTPCcls)
-    return false;
-  if (track->GetTPCnclsS() > 0)
-    return false;
-  if (track->GetTPCNCrossedRows() < (int)cuts.nCrossedRows)
-    return false;
-  if (track->GetTPCCrossedRows() / (float)track->GetTPCNclsF() < cuts.crossedRowsOverFindable)
-    return false;
-  if (track->GetTPCCrossedRows() / (float)track->GetTPCNclsF() < cuts.crossedRowsOverFindable)
-    return false;
-  float dcaZ = 0.;
-  track->GetImpactParameters(dcaXY, dcaZ);
-  if (TMath::Abs(dcaZ) > cuts.dcaZ)
-    return false;
-  return true;
-}
-
-bool AliAnalysisTaskPionDeuteron::applyStandardPID(AliAODTrack *track, CutContainer &cuts, AliPID::EParticleType kType)
-{
-  float nSigmaTPC = fPID->NumberOfSigmasTPC(track, kType);
-
-  if (track->Pt() < cuts.ptPIDthreshold)
-  {
-    if (TMath::Abs(nSigmaTPC) > cuts.nSigmaTPC)
-      return false;
-    else
-      return true;
-  }
-  else
-  {
-    float beta = hasTOF(track);
-    if (beta > 0)
-    {
-      float nSigmaTOF = fPID->NumberOfSigmasTOF(track, kType);
-      float nSigmaComb = TMath::Sqrt(nSigmaTPC * nSigmaTPC + nSigmaTOF * nSigmaTOF);
-      if (TMath::Abs(nSigmaComb) > cuts.nSigmaComb)
-        return false;
-      else
-        return true;
-    }
-    else
-    {
-      return false;
-    }
-  }
-}
-
-bool AliAnalysisTaskPionDeuteron::applyDeuteronPID(AliAODTrack *track, CutContainer &cuts, float &tofBeta)
+bool AliAnalysisTaskPionDeuteron::applyDeuteronPID(AliAODTrack *track, AliPIDResponse *fPID, CutContainer &cuts, float &tofBeta)
 {
   float nSigmaTPC = fPID->NumberOfSigmasTPC(track, AliPID::kDeuteron);
   if (track->Pt() < cuts.ptPIDthreshold)
@@ -506,7 +470,7 @@ bool AliAnalysisTaskPionDeuteron::applyDeuteronPID(AliAODTrack *track, CutContai
   }
   else
   {
-    float beta = hasTOF(track);
+    float beta = hasTOF(track, fPID);
     if (beta > 0)
     {
       if (TMath::Abs(nSigmaTPC) > cuts.nSigmaTPC)
@@ -522,6 +486,7 @@ bool AliAnalysisTaskPionDeuteron::applyDeuteronPID(AliAODTrack *track, CutContai
         return false;
       if (TMath::Abs(fPID->NumberOfSigmasTOF(track, AliPID::kPion)) < 5.)
         return false;
+      return true;
     }
     else
     {
@@ -530,86 +495,8 @@ bool AliAnalysisTaskPionDeuteron::applyDeuteronPID(AliAODTrack *track, CutContai
   }
 }
 
-float AliAnalysisTaskPionDeuteron::hasTOF(AliAODTrack *track)
-{
-  bool hasTOFout = track->GetStatus() & AliVTrack::kTOFout;
-  bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
-  const float len = track->GetIntegratedLength();
-  bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
-
-  if (!hasTOF)
-    return -1.;
-  const float time = track->GetTOFsignal() - fPID->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
-  const float beta = len / (time * LIGHT_SPEED);
-  return beta;
-}
-
 void AliAnalysisTaskPionDeuteron::Terminate(Option_t *)
 {
-}
-
-float AliAnalysisTaskPionDeuteron::GetKstar(TLorentzVector &p1, TLorentzVector &p2)
-{
-  TLorentzVector sum = p1 + p2;
-  TVector3 boost_vector = sum.BoostVector();
-  TLorentzVector p1_prf = p1;
-  p1_prf.Boost(-boost_vector);
-  TLorentzVector p2_prf = p2;
-  p2_prf.Boost(-boost_vector);
-  TLorentzVector kStar = p1_prf - p2_prf;
-  return 0.5 * kStar.P();
-}
-
-void AliAnalysisTaskPionDeuteron::SetPrimaryPtBins(int nbins, float min, float max)
-{
-  const float delta = (max - min) / nbins;
-  fPrimaryPtBins.Set(nbins + 1);
-  for (int iB = 0; iB < nbins; ++iB)
-  {
-    fPrimaryPtBins[iB] = min + iB * delta;
-  }
-  fPrimaryPtBins[nbins] = max;
-}
-
-void AliAnalysisTaskPionDeuteron::SetPrimaryPtBins(int nbins, float *bins)
-{
-  fPrimaryPtBins.Set(nbins + 1, bins);
-}
-
-void AliAnalysisTaskPionDeuteron::SetKstarBins(int nbins, float min, float max)
-{
-  const float delta = (max - min) / nbins;
-  fKstarBins.Set(nbins + 1);
-  for (int iB = 0; iB < nbins; ++iB)
-  {
-    fKstarBins[iB] = min + iB * delta;
-  }
-  fKstarBins[nbins] = max;
-}
-
-void AliAnalysisTaskPionDeuteron::SetKstarBins(int nbins, float *bins)
-{
-  fKstarBins.Set(nbins + 1, bins);
-}
-
-void AliAnalysisTaskPionDeuteron::SetZvtxArray(std::vector<float> &vec)
-{
-  fZvtxArray.clear();
-  for (auto p : vec)
-  {
-    fZvtxArray.push_back(p);
-  }
-  fNZvtxBins = (int)fZvtxArray.size();
-}
-
-void AliAnalysisTaskPionDeuteron::SetMultiplicityArray(std::vector<float> &vec)
-{
-  fMultiplicityArray.clear();
-  for (auto p : vec)
-  {
-    fMultiplicityArray.push_back(p);
-  }
-  fNMultiplicityBins = (int)fMultiplicityArray.size();
 }
 
 void AliAnalysisTaskPionDeuteron::SetMixingDepth(unsigned int depth)
@@ -638,109 +525,4 @@ void AliAnalysisTaskPionDeuteron::SetMixingDepth(unsigned int depth)
   {
     p.SetDepth(depth);
   }
-}
-
-int AliAnalysisTaskPionDeuteron::FindBin(float zvtx, float mult)
-{
-  if (zvtx < fZvtxArray[0] || zvtx > fZvtxArray[fNZvtxBins - 1] || zvtx < fMultiplicityArray[0] || zvtx > fMultiplicityArray[fNMultiplicityBins - 1])
-    return -1;
-
-  auto iter_zvtx = std::upper_bound(fZvtxArray.begin(), fZvtxArray.end(), zvtx,
-                                    [](const float &comp1, const float &comp2)
-                                    { return comp1 < comp2; });
-  int index_zvtx = std::distance(fZvtxArray.begin(), iter_zvtx);
-  auto iter_mult = std::upper_bound(fMultiplicityArray.begin(), fMultiplicityArray.end(), mult,
-                                    [](const float &comp1, const float &comp2)
-                                    { return comp1 < comp2; });
-  int index_mult = std::distance(fMultiplicityArray.begin(), iter_mult);
-  return index_zvtx * fNZvtxBins + index_mult;
-}
-
-void AliAnalysisTaskPionDeuteron::FillMixedEvent(std::vector<TLorentzVector> &vec, CustomQueue<std::vector<TLorentzVector>> &buffer, TH1F *histo)
-{
-  for (int i = 0; i < buffer.GetSize(); i++)
-  {
-    auto vectorBuffer = buffer.GetElement(i);
-    for (auto &elementA : vec)
-    {
-      for (auto &elementB : vectorBuffer)
-      {
-        histo->Fill(GetKstar(elementA, elementB));
-      }
-    }
-  }
-}
-
-void AliAnalysisTaskPionDeuteron::DoFakeCoalescence(std::vector<TLorentzVector> &v_proton, std::vector<TLorentzVector> &v_fakedeuteron, std::vector<std::pair<int, int>> &v_fakedeuteronID, TH1F *histo)
-{
-
-  int n_protons = (int)v_proton.size();
-  std::vector<int> v_proton_status(n_protons, 0);
-
-  for (int i = 0; i < (int)v_proton.size(); i++)
-  {
-    if (v_proton_status[i] != 0)
-      continue;
-    for (int j = i + 1; j < (int)v_proton.size(); j++)
-    {
-      if (v_proton_status[j] != 0)
-        continue;
-      TLorentzVector deuteron;
-      deuteron.SetXYZM(v_proton[i].Px() + v_proton[j].Px(), v_proton[i].Py() + v_proton[j].Px(), v_proton[i].Pz() + v_proton[j].Pz(), AliPID::ParticleMass(AliPID::kDeuteron));
-      TVector3 boost_vector = deuteron.BoostVector();
-
-      // Lorentz Transformations (from Lab to Deuteron Frame)
-      TLorentzVector proton_prime = v_proton[i];
-      proton_prime.Boost(-boost_vector);
-      TLorentzVector pseudoneutron_prime = v_proton[j];
-      pseudoneutron_prime.Boost(-boost_vector);
-      TLorentzVector deltaPvector = proton_prime - pseudoneutron_prime;
-      double deltaP = deltaPvector.P();
-      double mt = 0.5 * (v_proton[i].Mt() + v_proton[j].Mt());
-
-      // Fill DeltaP Distribution
-      hDeltaP->Fill(deltaP);
-
-      if (fSimpleCoalescence)
-      {
-        // Simple Coalescence Condition
-        if (deltaP < fP0)
-        {
-          v_fakedeuteron.push_back(deuteron);
-          v_fakedeuteronID.push_back(std::make_pair(i, j));
-          v_proton_status[j] = 1;
-          histo->Fill(deuteron.P());
-          break;
-        }
-      }
-      else
-      {
-        float value = (float)gRandom->Uniform();
-        float q = 0.5 * deltaP;
-        float radius = ComputeRadius(mt);
-        float prob = 1;
-        if (fTwoGauss)
-        {
-          prob = 3 * (TMath::Power(3.979, 3) / TMath::Power(3.979 * 3.979 + 4 * radius * radius, 1.5) * TMath::Exp(-1 * q * q * 3.979 * 3.979 * 5.068 * 5.068) + (1. - 0.581) * TMath::Power(0.890, 3) / TMath::Power(0.890 * 0.890 + 4 * radius * radius, 1.5) * TMath::Exp(-1 * q * q * 0.890 * 0.890 * 5.068 * 5.068));
-        }
-        else
-        {
-          prob = 3 * TMath::Power(3.2, 3) / TMath::Power(3.2 * 3.2 + radius * radius, 1.5) * TMath::Exp(-1 * q * q * 3.2 * 3.2 * 5.068 * 5.068);
-        }
-        if (value < prob)
-        {
-          v_fakedeuteron.push_back(deuteron);
-          v_fakedeuteronID.push_back(std::make_pair(i, j));
-          v_proton_status[j] = 1;
-          histo->Fill(deuteron.P());
-          break;
-        }
-      }
-    }
-  }
-}
-
-float AliAnalysisTaskPionDeuteron::ComputeRadius(float mt)
-{
-  return 0.8 + TMath::Exp(1.4 - 1.9 * mt);
 }

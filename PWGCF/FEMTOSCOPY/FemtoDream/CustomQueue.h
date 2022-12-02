@@ -47,7 +47,7 @@ public:
 
   int GetDepth() { return (int)fDepth; }
 
-  bool IsFull() { return (int)fCollection.size() == fDepth; }
+  bool IsFull() { return fCollection.size() == fDepth; }
 
   bool IsEmpty() { return (int)fCollection.size() == 0; }
 

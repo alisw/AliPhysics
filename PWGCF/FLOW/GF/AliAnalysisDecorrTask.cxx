@@ -78,6 +78,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     hNumTracksB{nullptr},
     hNumTracksA{nullptr},
     hNumHighPtTracksA{nullptr},
+    hCharge{nullptr},
     fhEventSel{nullptr},
 
     fIndexSampling{0},
@@ -116,6 +117,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fRequireHighPtTracks{kFALSE},
     fNHighPtTracks{1},
     fHighPtCut{7.0},
+    bOnlyPrimariesAndCh(false),
 
     fCutChargedTrackFilterBit{96},
     fCutNumTPCclsMin{70},
@@ -172,6 +174,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, bool IsMC, bool i
     hNumTracksB{nullptr},
     hNumTracksA{nullptr},
     hNumHighPtTracksA{nullptr},
+    hCharge{nullptr},
     fhEventSel{nullptr},
 
     fIndexSampling{0},
@@ -210,6 +213,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, bool IsMC, bool i
     fRequireHighPtTracks{kFALSE},
     fNHighPtTracks{0},
     fHighPtCut{7.0},
+    bOnlyPrimariesAndCh(false),
 
     fCutChargedTrackFilterBit{96},
     fCutNumTPCclsMin{70},
@@ -486,6 +490,9 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(hNumTracksA);
         hNumHighPtTracksA = new TH1D("hNumHighPtTracksA",Form("Number of track above %.1f GeV",fHighPtCut),50,0.0,50.0);
         fQA->Add(hNumHighPtTracksA);
+        hCharge = new TH1I("hCharge","Charge distribution",4,-2,2);
+        fQA->Add(hCharge);
+
     }    
     /*
     if(fEventRejectAddPileUp)
@@ -889,7 +896,10 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             bIsRP = IsWithinRP(track);
             if (!bIsRP) { continue; }
 
-            if(bUseLikeSign && track->Charge() != iSign)  continue; 
+            if(bOnlyPrimariesAndCh && (!track->IsPhysicalPrimary() || track->Charge())) continue;
+            if(bUseLikeSign && (iSign <0)?(track->Charge() >= 0):(track->Charge() <= 0)) continue;
+            hCharge->Fill(track->Charge());
+
             double dPhi = track->Phi();
             double dEta = track->Eta();
 
@@ -1084,12 +1094,13 @@ int AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const tas
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
-            if(bUseLikeSign && track->Charge() != iSign)  continue; 
+            if(bOnlyPrimariesAndCh && (!track->IsPhysicalPrimary() || track->Charge())) continue;
+            if(bUseLikeSign && (iSign <0)?(track->Charge() >= 0):(track->Charge() <= 0)) continue;
+            hCharge->Fill(track->Charge());
+            
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();
-
-            //if (Abs(dEta) < dEtaLimit) { continue; } Why the hell is this here?
 
             //Check for overlap with RPs
             bool bIsWithinRP = IsWithinRP(track);
@@ -1344,7 +1355,10 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
         {
             AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
             if(!track) { continue; }
-            if(bUseLikeSign && track->Charge() != iSign)  continue; 
+            if(bOnlyPrimariesAndCh && (!track->IsPhysicalPrimary() || track->Charge())) continue;
+            if(bUseLikeSign && (iSign <0)?(track->Charge() >= 0):(track->Charge() <= 0)) continue;
+            hCharge->Fill(track->Charge());
+
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();

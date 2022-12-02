@@ -5,6 +5,8 @@
 #ifndef AliAnalysisTaskFlatenicity_H
 #define AliAnalysisTaskFlatenicity_H
 
+class AliPPVsMultUtils;
+class AliAnalysisUtils;
 class AliESDtrackCuts;
 class AliESDEvent;
 class AliESDAD;
@@ -64,12 +66,16 @@ protected:
 private:
   AliESDEvent *fESD; //! input ESD event
   AliEventCuts fEventCuts;
-  AliStack *fMCStack; //! MC stack
-  AliMCEvent *fMC;    //! MC Event
-  Bool_t fUseMC;      // analyze MC events
+  AliStack *fMCStack;               //! MC stack
+  AliMCEvent *fMC;                  //! MC Event
+  AliPPVsMultUtils *fPPVsMultUtils; //
+  AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
+  Bool_t fUseMC;                    // analyze MC events
   Bool_t fIsCalib;
   Bool_t fIsEqualALICE;
   Float_t fVtxz;
+  TF1 *fParVtx;
+  Float_t ParVtxNorm;
   Int_t fV0Mindex;
   Float_t fmultTPC;
   Float_t fmultV0A;
