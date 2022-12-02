@@ -132,69 +132,69 @@ AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::AliAnalysisTaskStrangeness
 : AliAnalysisTaskSE(), fListHist(0), fListK0Short(0), fListLambda(0), fListAntiLambda(0),
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
-fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),  fESDtrackCutsStandardITSTPC2011pp(0), fUtils(0),fPPVsMultUtils(0), fRand(0),
+fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fESDtrackCutsStandardITSTPC2011pp(0), fUtils(0), fPPVsMultUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
-fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
-fkDownScaleEvent      ( kFALSE  ),
-fDownScaleFactorEvent      ( 0.0  ),
+fkSaveEventTree(kTRUE), // no downscaling in this tree so far
+fkDownScaleEvent(kFALSE),
+fDownScaleFactorEvent(0.0),
 
 //---> Flags controlling V0 TTree output
-fkSaveV0Tree       ( kTRUE ),
-fkDownScaleV0      ( kTRUE  ),
-fDownScaleFactorV0 ( 0.001  ),
-fkPreselectDedx ( kFALSE ),
-fkPreselectPID  ( kTRUE  ),
-fkAlwaysKeepTrue( kFALSE ),
-fkUseOnTheFlyV0Cascading( kFALSE ),
+fkSaveV0Tree(kTRUE),
+fkDownScaleV0(kTRUE),
+fDownScaleFactorV0(0.001),
+fkPreselectDedx(kFALSE),
+fkPreselectPID(kTRUE),
+fkAlwaysKeepTrue(kFALSE),
+fkUseOnTheFlyV0Cascading(kFALSE),
 fkDoImprovedCascadeVertexFinding(kFALSE),
-fkIfImprovedPerformInitialLinearPropag( kFALSE ),
-fkIfImprovedExtraPrecisionFactor ( 1.0 ),
-fkDebugWrongPIDForTracking ( kFALSE ),
-fkDebugBump( kFALSE ),
+fkIfImprovedPerformInitialLinearPropag(kFALSE),
+fkIfImprovedExtraPrecisionFactor(1.0),
+fkDebugWrongPIDForTracking(kFALSE),
+fkDebugBump(kFALSE),
 fkDebugOOBPileup(kFALSE),
-fkDoExtraEvSels( kTRUE ),
+fkDoExtraEvSels(kTRUE),
 fkPileupRejectionMode(0),
-fkUseOldCentrality ( kFALSE ) ,
-fkMaxPVR2D(1e+5), 
+fkUseOldCentrality(kFALSE),
+fkMaxPVR2D(1e+5),
 
 //---> Flags controlling Cascade TTree output
-fkSaveCascadeTree       ( kTRUE  ),
-fkDownScaleCascade      ( kTRUE  ),
-fDownScaleFactorCascade ( 0.001  ),
-fMinPtToSave( 0.00   ) ,
-fMaxPtToSave( 100.00 ) ,
+fkSaveCascadeTree(kTRUE),
+fkDownScaleCascade(kTRUE),
+fDownScaleFactorCascade(0.001),
+fMinPtToSave(0.00),
+fMaxPtToSave(100.00),
 
 //---> Flags controlling sandbox mode (cascade)
-fkSandboxMode( kFALSE ),
+fkSandboxMode(kFALSE),
 
 //---> Fill tree with specific config
 fkSaveSpecificConfig(kFALSE),
 fkConfigToSave(""),
 
 //---> Variables for Sibling Tagging
-fSibCutDcaV0ToPrimVertex       ( 0.8    ),
-fSibCutDcaV0Daughters          ( 0.15   ),
-fSibCutV0CosineOfPointingAngle ( 0.995  ),
-fSibCutV0Radius                ( 14.    ),
-fSibCutDcaPosToPrimVertex      ( 5.     ),
-fSibCutDcaNegToPrimVertex      ( 5.     ),
-fSibCutInvMassK0s              ( 0.0075 ),
+fSibCutDcaV0ToPrimVertex(0.8),
+fSibCutDcaV0Daughters(0.15),
+fSibCutV0CosineOfPointingAngle(0.995),
+fSibCutV0Radius(14.),
+fSibCutDcaPosToPrimVertex(5.),
+fSibCutDcaNegToPrimVertex(5.),
+fSibCutInvMassK0s(0.0075),
 
 //---> Flags controlling Vertexers
-fkRunVertexers    ( kFALSE ),
-fkUseLightVertexer ( kTRUE ),
-fkDoV0Refit ( kTRUE ),
-fkExtraCleanup    ( kTRUE ),
+fkRunVertexers(kFALSE),
+fkUseLightVertexer(kTRUE),
+fkDoV0Refit(kTRUE),
+fkExtraCleanup(kTRUE),
 fkApplyTrackletsVsClustersCut(kFALSE),
 
 //---> Flags for hypertriton tests
-fkHypertritonMode ( kFALSE ),
-fkHeavyDaughterPID ( kFALSE ),
-fkSandboxV0Prongs( kTRUE ), 
+fkHypertritonMode(kFALSE),
+fkHeavyDaughterPID(kFALSE),
+fkSandboxV0Prongs(kTRUE),
 
 //---> Flags for Effective Energy analysis
-fkDebugZDCInfo (kTRUE),
+fkDebugZDCInfo(kTRUE),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -206,6 +206,7 @@ fEvSel_INELgtZERO(kFALSE),
 fEvSel_AllSelections(kFALSE),
 fEvSel_SelectedTrigger(kFALSE),
 fEvSel_zVtxZMC(kFALSE),
+fkDoPileupRejGen(kFALSE),
 fEvSel_AcceptedVertexPosition(kFALSE),
 fEvSel_NotIncDAQ(kFALSE),
 fEvSel_NotPileupSPDInMultBins(kFALSE),
@@ -339,7 +340,7 @@ fTreeVariableCentrality_SPDClusters(0),
 fTreeVariableCentrality_SPDTracklets(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
-//MC Variables
+// MC Variables
 fTreeVariablePtMother(0),
 fTreeVariableRapMother(0),
 fTreeVariablePID(0),
@@ -454,15 +455,15 @@ fTreeCascVarNegdEdx(-1),
 fTreeCascVarPosdEdx(-1),
 fTreeCascVarBachdEdx(-1),
 
-fTreeCascVarNegTrackStatus(0), //!
-fTreeCascVarPosTrackStatus(0), //!
+fTreeCascVarNegTrackStatus(0),  //!
+fTreeCascVarPosTrackStatus(0),  //!
 fTreeCascVarBachTrackStatus(0), //!
 fTreeCascVarNegDCAz(-1),
 fTreeCascVarPosDCAz(-1),
 fTreeCascVarBachDCAz(-1),
 
-//Variables for debugging the invariant mass bump
-//Full momentum information
+// Variables for debugging the invariant mass bump
+// Full momentum information
 fTreeCascVarNegPx(0),
 fTreeCascVarNegPy(0),
 fTreeCascVarNegPz(0),
@@ -531,7 +532,7 @@ fTreeCascVarMagField(0),
 fTreeCascVarV0Lifetime(0),
 fTreeCascVarV0ChiSquare(0),
 
-//Track Labels (check for duplicates, etc)
+// Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
 fTreeCascVarBachIndex(0),
@@ -545,7 +546,7 @@ fTreeCascVarNegLabelGrandMother(0),
 fTreeCascVarPosLabelGrandMother(0),
 fTreeCascVarBachLabelGrandMother(0),
 
-//Event Number (check same-event index mixups)
+// Event Number (check same-event index mixups)
 fTreeCascVarEventNumber(0),
 fTreeCascVarNegTOFExpTDiff(99999),
 fTreeCascVarPosTOFExpTDiff(99999),
@@ -679,7 +680,7 @@ fTreeCascVarBachITSSharedClusters3(0),
 fTreeCascVarBachITSSharedClusters4(0),
 fTreeCascVarBachITSSharedClusters5(0),
 
-//Uncertainty information on mass (from KF) for testing purposes
+// Uncertainty information on mass (from KF) for testing purposes
 fTreeCascVarV0LambdaMassError(0),
 fTreeCascVarV0AntiLambdaMassError(0),
 
@@ -695,14 +696,14 @@ fTreeCascVarCascadeCowboyness(-2),
 fTreeCascVarSwappedPID(0),
 
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//Save full info for full re-vertex offline replay ('sandbox mode')
+// Save full info for full re-vertex offline replay ('sandbox mode')
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
 fTreeCascVarMagneticField(0),
 
-//Histos
+// Histos
 fHistEventCounter(0),
 fHistCentrality(0),
 fHistPt_GenK0Short(0),
@@ -712,7 +713,7 @@ fHistPt_GenXiMinus(0),
 fHistPt_GenXiPlus(0),
 fHistPt_GenOmegaMinus(0),
 fHistPt_GenOmegaPlus(0),
-//Multiplicity
+// Multiplicity
 fHistPtVsCentV0M_GenK0Short(0),
 fHistPtVsCentV0M_GenLambda(0),
 fHistPtVsCentV0M_GenAntiLambda(0),
@@ -720,18 +721,18 @@ fHistPtVsCentV0M_GenXiMinus(0),
 fHistPtVsCentV0M_GenXiPlus(0),
 fHistPtVsCentV0M_GenOmegaMinus(0),
 fHistPtVsCentV0M_GenOmegaPlus(0),
-//V0s
+// V0s
 fHistGeneratedPtVsYVsCentralityK0Short(0),
 fHistGeneratedPtVsYVsCentralityLambda(0),
 fHistGeneratedPtVsYVsCentralityAntiLambda(0),
-//Cascades
+// Cascades
 fHistGeneratedPtVsYVsCentralityXiMinus(0),
 fHistGeneratedPtVsYVsCentralityXiPlus(0),
 fHistGeneratedPtVsYVsCentralityOmegaMinus(0),
 fHistGeneratedPtVsYVsCentralityOmegaPlus(0),
 fHistGeneratedPtVsYVsCentralityHypertriton(0),
 fHistGeneratedPtVsYVsCentralityAntihypertriton(0),
-//Effective Energy
+// Effective Energy
 fHistPtVsSPDcl_GenK0Short(0),
 fHistPtVsSPDcl_GenLambda(0),
 fHistPtVsSPDcl_GenAntiLambda(0),
@@ -739,16 +740,16 @@ fHistPtVsSPDcl_GenXiMinus(0),
 fHistPtVsSPDcl_GenXiPlus(0),
 fHistPtVsSPDcl_GenOmegaMinus(0),
 fHistPtVsSPDcl_GenOmegaPlus(0),
-//V0s
+// V0s
 fHistGeneratedPtVsSPDclK0Short(0),
 fHistGeneratedPtVsSPDclLambda(0),
 fHistGeneratedPtVsSPDclAntiLambda(0),
-//Cascades
+// Cascades
 fHistGeneratedPtVsSPDclXiMinus(0),
 fHistGeneratedPtVsSPDclXiPlus(0),
 fHistGeneratedPtVsSPDclOmegaMinus(0),
 fHistGeneratedPtVsSPDclOmegaPlus(0),
-//Double differential SPcl vs V0M
+// Double differential SPcl vs V0M
 fHistPtVsSPDclVsCentV0M_GenK0Short(0),
 fHistPtVsSPDclVsCentV0M_GenLambda(0),
 fHistPtVsSPDclVsCentV0M_GenAntiLambda(0),
@@ -756,16 +757,16 @@ fHistPtVsSPDclVsCentV0M_GenXiMinus(0),
 fHistPtVsSPDclVsCentV0M_GenXiPlus(0),
 fHistPtVsSPDclVsCentV0M_GenOmegaMinus(0),
 fHistPtVsSPDclVsCentV0M_GenOmegaPlus(0),
-//V0s
+// V0s
 fHistGeneratedPtVsSPDclVsCentV0MK0Short(0),
 fHistGeneratedPtVsSPDclVsCentV0MLambda(0),
 fHistGeneratedPtVsSPDclVsCentV0MAntiLambda(0),
-//Cascades
+// Cascades
 fHistGeneratedPtVsSPDclVsCentV0MXiMinus(0),
 fHistGeneratedPtVsSPDclVsCentV0MXiPlus(0),
 fHistGeneratedPtVsSPDclVsCentV0MOmegaMinus(0),
 fHistGeneratedPtVsSPDclVsCentV0MOmegaPlus(0),
-//Double differential SPDcl vs ZDC
+// Double differential SPDcl vs ZDC
 fHistPtVsSPDclVsZDC_GenK0Short(0),
 fHistPtVsSPDclVsZDC_GenLambda(0),
 fHistPtVsSPDclVsZDC_GenAntiLambda(0),
@@ -773,11 +774,11 @@ fHistPtVsSPDclVsZDC_GenXiMinus(0),
 fHistPtVsSPDclVsZDC_GenXiPlus(0),
 fHistPtVsSPDclVsZDC_GenOmegaMinus(0),
 fHistPtVsSPDclVsZDC_GenOmegaPlus(0),
-//V0s
+// V0s
 fHistGeneratedPtVsSPDclVsZDCK0Short(0),
 fHistGeneratedPtVsSPDclVsZDCLambda(0),
 fHistGeneratedPtVsSPDclVsZDCAntiLambda(0),
-//Cascades
+// Cascades
 fHistGeneratedPtVsSPDclVsZDCXiMinus(0),
 fHistGeneratedPtVsSPDclVsZDCXiPlus(0),
 fHistGeneratedPtVsSPDclVsZDCOmegaMinus(0),
@@ -796,66 +797,66 @@ fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fESDtrackCutsStandardITSTPC2011pp(0), fUtils(0), fPPVsMultUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
-fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
-fkDownScaleEvent      ( kFALSE  ),
-fDownScaleFactorEvent      ( 0.0  ),
+fkSaveEventTree(kTRUE), // no downscaling in this tree so far
+fkDownScaleEvent(kFALSE),
+fDownScaleFactorEvent(0.0),
 
 //---> Flags controlling V0 TTree output
-fkSaveV0Tree       ( kTRUE ),
-fkDownScaleV0      ( kTRUE  ),
-fDownScaleFactorV0 ( 0.001  ),
-fkPreselectDedx ( kFALSE ),
-fkPreselectPID  ( kTRUE  ),
-fkAlwaysKeepTrue( kFALSE ),
-fkUseOnTheFlyV0Cascading( kFALSE ),
+fkSaveV0Tree(kTRUE),
+fkDownScaleV0(kTRUE),
+fDownScaleFactorV0(0.001),
+fkPreselectDedx(kFALSE),
+fkPreselectPID(kTRUE),
+fkAlwaysKeepTrue(kFALSE),
+fkUseOnTheFlyV0Cascading(kFALSE),
 fkDoImprovedCascadeVertexFinding(kFALSE),
-fkIfImprovedPerformInitialLinearPropag( kFALSE ),
-fkIfImprovedExtraPrecisionFactor ( 1.0 ),
-fkDebugWrongPIDForTracking ( kFALSE ),
-fkDebugBump( kFALSE ),
+fkIfImprovedPerformInitialLinearPropag(kFALSE),
+fkIfImprovedExtraPrecisionFactor(1.0),
+fkDebugWrongPIDForTracking(kFALSE),
+fkDebugBump(kFALSE),
 fkDebugOOBPileup(kFALSE),
-fkDoExtraEvSels( kTRUE ),
-fkPileupRejectionMode(0), 
-fkUseOldCentrality ( kFALSE ) ,
+fkDoExtraEvSels(kTRUE),
+fkPileupRejectionMode(0),
+fkUseOldCentrality(kFALSE),
 fkMaxPVR2D(1e+5),
 
 //---> Flags controlling Cascade TTree output
-fkSaveCascadeTree       ( kTRUE  ),
-fkDownScaleCascade      ( kTRUE  ),
-fDownScaleFactorCascade ( 0.001  ),
-fMinPtToSave( 0.00   ) ,
-fMaxPtToSave( 100.00 ) ,
+fkSaveCascadeTree(kTRUE),
+fkDownScaleCascade(kTRUE),
+fDownScaleFactorCascade(0.001),
+fMinPtToSave(0.00),
+fMaxPtToSave(100.00),
 
 //---> Flags controlling sandbox mode (cascade)
-fkSandboxMode( kFALSE ),
+fkSandboxMode(kFALSE),
 
 //---> Fill tree with specific config
 fkSaveSpecificConfig(kFALSE),
 fkConfigToSave(""),
 
 //---> Variables for Sibling Tagging
-fSibCutDcaV0ToPrimVertex       ( 0.8    ),
-fSibCutDcaV0Daughters          ( 0.15   ),
-fSibCutV0CosineOfPointingAngle ( 0.995  ),
-fSibCutV0Radius                ( 14.    ),
-fSibCutDcaPosToPrimVertex      ( 5.     ),
-fSibCutDcaNegToPrimVertex      ( 5.     ),
-fSibCutInvMassK0s              ( 0.0075 ),
+fSibCutDcaV0ToPrimVertex(0.8),
+fSibCutDcaV0Daughters(0.15),
+fSibCutV0CosineOfPointingAngle(0.995),
+fSibCutV0Radius(14.),
+fSibCutDcaPosToPrimVertex(5.),
+fSibCutDcaNegToPrimVertex(5.),
+fSibCutInvMassK0s(0.0075),
 
 //---> Flags controlling Vertexers
-fkRunVertexers    ( kFALSE ),
-fkUseLightVertexer ( kTRUE ),
-fkDoV0Refit ( kTRUE ),
-fkExtraCleanup    ( kTRUE ),
+fkRunVertexers(kFALSE),
+fkUseLightVertexer(kTRUE),
+fkDoV0Refit(kTRUE),
+fkExtraCleanup(kTRUE),
 fkApplyTrackletsVsClustersCut(kFALSE),
 
 //---> Flags for hypertriton tests
-fkHypertritonMode ( kFALSE ),
-fkHeavyDaughterPID ( kFALSE ),
-fkSandboxV0Prongs( kTRUE ),
+fkHypertritonMode(kFALSE),
+fkHeavyDaughterPID(kFALSE),
+fkSandboxV0Prongs(kTRUE),
 
 //---> Flags for Effective Energy analysis
-fkDebugZDCInfo (kTRUE),
+fkDebugZDCInfo(kTRUE),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -867,6 +868,7 @@ fEvSel_INELgtZERO(kFALSE),
 fEvSel_AllSelections(kFALSE),
 fEvSel_SelectedTrigger(kFALSE),
 fEvSel_zVtxZMC(kFALSE),
+fkDoPileupRejGen(kFALSE),
 fEvSel_AcceptedVertexPosition(kFALSE),
 fEvSel_NotIncDAQ(kFALSE),
 fEvSel_NotPileupSPDInMultBins(kFALSE),
@@ -1000,7 +1002,7 @@ fTreeVariableCentrality_SPDClusters(0),
 fTreeVariableCentrality_SPDTracklets(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
-//MC Variables
+// MC Variables
 fTreeVariablePtMother(0),
 fTreeVariableRapMother(0),
 fTreeVariablePID(0),
@@ -1115,15 +1117,15 @@ fTreeCascVarNegdEdx(-1),
 fTreeCascVarPosdEdx(-1),
 fTreeCascVarBachdEdx(-1),
 
-fTreeCascVarNegTrackStatus(0), //!
-fTreeCascVarPosTrackStatus(0), //!
+fTreeCascVarNegTrackStatus(0),  //!
+fTreeCascVarPosTrackStatus(0),  //!
 fTreeCascVarBachTrackStatus(0), //!
 fTreeCascVarNegDCAz(-1),
 fTreeCascVarPosDCAz(-1),
 fTreeCascVarBachDCAz(-1),
 
-//Variables for debugging the invariant mass bump
-//Full momentum information
+// Variables for debugging the invariant mass bump
+// Full momentum information
 fTreeCascVarNegPx(0),
 fTreeCascVarNegPy(0),
 fTreeCascVarNegPz(0),
@@ -1192,7 +1194,7 @@ fTreeCascVarMagField(0),
 fTreeCascVarV0Lifetime(0),
 fTreeCascVarV0ChiSquare(0),
 
-//Track Labels (check for duplicates, etc)
+// Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
 fTreeCascVarBachIndex(0),
@@ -1206,7 +1208,7 @@ fTreeCascVarNegLabelGrandMother(0),
 fTreeCascVarPosLabelGrandMother(0),
 fTreeCascVarBachLabelGrandMother(0),
 
-//Event Number (check same-event index mixups)
+// Event Number (check same-event index mixups)
 fTreeCascVarEventNumber(0),
 fTreeCascVarNegTOFExpTDiff(99999),
 fTreeCascVarPosTOFExpTDiff(99999),
@@ -1340,7 +1342,7 @@ fTreeCascVarBachITSSharedClusters3(0),
 fTreeCascVarBachITSSharedClusters4(0),
 fTreeCascVarBachITSSharedClusters5(0),
 
-//Uncertainty information on mass (from KF) for testing purposes
+// Uncertainty information on mass (from KF) for testing purposes
 fTreeCascVarV0LambdaMassError(0),
 fTreeCascVarV0AntiLambdaMassError(0),
 
@@ -1356,14 +1358,14 @@ fTreeCascVarCascadeCowboyness(-2),
 fTreeCascVarSwappedPID(0),
 
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//Save full info for full re-vertex offline replay ('sandbox mode')
+// Save full info for full re-vertex offline replay ('sandbox mode')
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
 fTreeCascVarMagneticField(0),
 
-//Histos
+// Histos
 fHistEventCounter(0),
 fHistCentrality(0),
 
@@ -1374,7 +1376,7 @@ fHistPt_GenXiMinus(0),
 fHistPt_GenXiPlus(0),
 fHistPt_GenOmegaMinus(0),
 fHistPt_GenOmegaPlus(0),
-//Multiplicity
+// Multiplicity
 fHistPtVsCentV0M_GenK0Short(0),
 fHistPtVsCentV0M_GenLambda(0),
 fHistPtVsCentV0M_GenAntiLambda(0),
@@ -1382,18 +1384,18 @@ fHistPtVsCentV0M_GenXiMinus(0),
 fHistPtVsCentV0M_GenXiPlus(0),
 fHistPtVsCentV0M_GenOmegaMinus(0),
 fHistPtVsCentV0M_GenOmegaPlus(0),
-//V0s
+// V0s
 fHistGeneratedPtVsYVsCentralityK0Short(0),
 fHistGeneratedPtVsYVsCentralityLambda(0),
 fHistGeneratedPtVsYVsCentralityAntiLambda(0),
-//Cascades
+// Cascades
 fHistGeneratedPtVsYVsCentralityXiMinus(0),
 fHistGeneratedPtVsYVsCentralityXiPlus(0),
 fHistGeneratedPtVsYVsCentralityOmegaMinus(0),
 fHistGeneratedPtVsYVsCentralityOmegaPlus(0),
 fHistGeneratedPtVsYVsCentralityHypertriton(0),
 fHistGeneratedPtVsYVsCentralityAntihypertriton(0),
-//Effective Energy
+// Effective Energy
 fHistPtVsSPDcl_GenK0Short(0),
 fHistPtVsSPDcl_GenLambda(0),
 fHistPtVsSPDcl_GenAntiLambda(0),
@@ -1401,16 +1403,16 @@ fHistPtVsSPDcl_GenXiMinus(0),
 fHistPtVsSPDcl_GenXiPlus(0),
 fHistPtVsSPDcl_GenOmegaMinus(0),
 fHistPtVsSPDcl_GenOmegaPlus(0),
-//V0s
+// V0s
 fHistGeneratedPtVsSPDclK0Short(0),
 fHistGeneratedPtVsSPDclLambda(0),
 fHistGeneratedPtVsSPDclAntiLambda(0),
-//Cascades
+// Cascades
 fHistGeneratedPtVsSPDclXiMinus(0),
 fHistGeneratedPtVsSPDclXiPlus(0),
 fHistGeneratedPtVsSPDclOmegaMinus(0),
 fHistGeneratedPtVsSPDclOmegaPlus(0),
-//Double differential SPDcl vs V0M
+// Double differential SPDcl vs V0M
 fHistPtVsSPDclVsCentV0M_GenK0Short(0),
 fHistPtVsSPDclVsCentV0M_GenLambda(0),
 fHistPtVsSPDclVsCentV0M_GenAntiLambda(0),
@@ -1418,16 +1420,16 @@ fHistPtVsSPDclVsCentV0M_GenXiMinus(0),
 fHistPtVsSPDclVsCentV0M_GenXiPlus(0),
 fHistPtVsSPDclVsCentV0M_GenOmegaMinus(0),
 fHistPtVsSPDclVsCentV0M_GenOmegaPlus(0),
-//V0s
+// V0s
 fHistGeneratedPtVsSPDclVsCentV0MK0Short(0),
 fHistGeneratedPtVsSPDclVsCentV0MLambda(0),
 fHistGeneratedPtVsSPDclVsCentV0MAntiLambda(0),
-//Cascades
+// Cascades
 fHistGeneratedPtVsSPDclVsCentV0MXiMinus(0),
 fHistGeneratedPtVsSPDclVsCentV0MXiPlus(0),
 fHistGeneratedPtVsSPDclVsCentV0MOmegaMinus(0),
 fHistGeneratedPtVsSPDclVsCentV0MOmegaPlus(0),
-//Double differential SPDcl vs ZDC
+// Double differential SPDcl vs ZDC
 fHistPtVsSPDclVsZDC_GenK0Short(0),
 fHistPtVsSPDclVsZDC_GenLambda(0),
 fHistPtVsSPDclVsZDC_GenAntiLambda(0),
@@ -1435,11 +1437,11 @@ fHistPtVsSPDclVsZDC_GenXiMinus(0),
 fHistPtVsSPDclVsZDC_GenXiPlus(0),
 fHistPtVsSPDclVsZDC_GenOmegaMinus(0),
 fHistPtVsSPDclVsZDC_GenOmegaPlus(0),
-//V0s
+// V0s
 fHistGeneratedPtVsSPDclVsZDCK0Short(0),
 fHistGeneratedPtVsSPDclVsZDCLambda(0),
 fHistGeneratedPtVsSPDclVsZDCAntiLambda(0),
-//Cascades
+// Cascades
 fHistGeneratedPtVsSPDclVsZDCXiMinus(0),
 fHistGeneratedPtVsSPDclVsZDCXiPlus(0),
 fHistGeneratedPtVsSPDclVsZDCOmegaMinus(0),
@@ -1608,9 +1610,9 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserCreateOutputObjec
 		}
 		fTreeEvent->Branch("fRun",&fRun,"fRun/I");
 		fTreeEvent->Branch("fEvSel_AllSelections", &fEvSel_AllSelections, "fEvSel_AllSelections/O");	 
-		fTreeEvent->Branch("fEvSel_zVtxZMC", &fEvSel_zVtxZMC, "fEvSel_zVtxZMC/O");	     
-		fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
-	    fTreeEvent->Branch("fEvSel_INELgtZEROtrue", &fEvSel_INELgtZEROtrue, "fEvSel_INELgtZEROtrue/O");
+		fTreeEvent->Branch("fEvSel_zVtxZMC", &fEvSel_zVtxZMC, "fEvSel_zVtxZMC/O");
+        fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
+        fTreeEvent->Branch("fEvSel_INELgtZEROtrue", &fEvSel_INELgtZEROtrue, "fEvSel_INELgtZEROtrue/O");
 	    fTreeEvent->Branch("fEvSel_NotPileupSPDInMultBins", &fEvSel_NotPileupSPDInMultBins, "fEvSel_NotPileupSPDInMultBins/O");	    
 	    fTreeEvent->Branch("fEvSel_AcceptedVertexPosition", &fEvSel_AcceptedVertexPosition, "fEvSel_AcceptedVertexPosition/O");	    
 	    fTreeEvent->Branch("fEvSel_NoInconsSPDandTrackVrtx", &fEvSel_NoInconsSPDandTrackVrtx, "fEvSel_NoInconsSPDandTrackVrtx/O");	    
@@ -2664,10 +2666,11 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserExec(Option_t *)
     // Main loop
     // Called for each event
     AliAODEvent *lAODevent = 0x0;
+    AliAODMCHeader *lMCheader = 0x0;
     AliMCEvent  *lMCevent  = 0x0;
     AliStack    *lMCstack  = 0x0; //does not work with AODs
     TClonesArray *lMCarray = 0x0;
-    
+  
     // Connect to the InputEvent   
     lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
     if (!lAODevent) {
@@ -2683,6 +2686,13 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserExec(Option_t *)
         cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
         return;
     }
+
+    lMCheader = static_cast<AliAODMCHeader>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
+    if (!lMCheader) {
+        AliWarning("No header found.");
+        return;
+    }
+
     //Code for the acquisition of the 'perfect' primary vertex position
     TArrayF mcPrimaryVtx;
     AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
@@ -2703,7 +2713,7 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserExec(Option_t *)
     //Flags for event selection
     fEvSel_INELgtZEROtrue = kFALSE;
     fEvSel_zVtxZMC = kFALSE;
-
+    
     Int_t nMCtrack = lMCarray->GetEntriesFast();
     //----- Loop on Stack ----------------------------------------------------------------
    	for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < nMCtrack; iCurrentLabelStack++)
@@ -2722,15 +2732,20 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserExec(Option_t *)
 
         Double_t geta = particleOne->Eta();
         Double_t gpt = particleOne->Pt();
-      
+
+        if (fkDoPileupRejGen) {
+            if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iCurrentLabelStack, lMCheader, lMCarray))
+                continue;
+        }
+
         if( TMath::Abs(geta) < 1.0 ) fEvSel_INELgtZEROtrue = kTRUE;
-                
+
     }//End of loop on tracks 
     //----- End Loop on Stack ------------------------------------------------------------
 
     //True z vtx < 10 cm
     if (TMath::Abs(fzVtxZMC) < 10.) fEvSel_zVtxZMC = kTRUE;
-    
+  
     Double_t lMagneticField = -10;
     lMagneticField = lAODevent->GetMagneticField();
     fTreeVariableMagneticField = lMagneticField;
@@ -2798,11 +2813,14 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserExec(Option_t *)
     //----- Loop on Generated particles ---------------
     for (Int_t ilab = 0;  ilab < nMCtrack; ilab++)
     {   // This is the begining of the loop on tracks
-
         AliAODMCParticle* lPart = static_cast<AliAODMCParticle*>( lMCarray->At(ilab) );
         if(!lPart) {
             Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
             continue;
+        }
+        if (fkDoPileupRejGen) {
+            if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ilab, lMCheader, lMCarray))
+                continue;
         }
 
         lThisPDG = lPart->GetPdgCode();

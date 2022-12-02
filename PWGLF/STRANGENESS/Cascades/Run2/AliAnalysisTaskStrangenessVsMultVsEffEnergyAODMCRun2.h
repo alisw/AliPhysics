@@ -115,6 +115,9 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+    void SetRejectPileupGen(Bool_t lDoRejPileupGen = kTRUE){
+        fkDoPileupRejGen = lDoRejPileupGen;
+    }
     void SetApplySPDClsVsTrackletsCut(Bool_t lSPDClsVsTrk = kTRUE) {
         fkApplyTrackletsVsClustersCut = lSPDClsVsTrk;
     }
@@ -346,9 +349,10 @@ private:
     Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
     Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
     Float_t fkMaxPVR2D; 
-    Bool_t fkDebugZDCInfo; //if true, add extra information from ZDC   
-    
-    Bool_t fkSaveCascadeTree;         //if true, save TTree
+    Bool_t fkDebugZDCInfo; //if true, add extra information from ZDC
+    Bool_t fkDoPileupRejGen;
+
+    Bool_t fkSaveCascadeTree; // if true, save TTree
     Bool_t fkDownScaleCascade;
     Double_t fDownScaleFactorCascade;
     
