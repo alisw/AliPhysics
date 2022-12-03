@@ -571,6 +571,24 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   Float_t v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
   hCounter->Fill(10.0);
 
+  AliVVZERO *lVV0 = 0x0;
+  // Get VZERO Information for multiplicity later
+  lVV0 = event->GetVZEROData();
+  if (!lVV0) {
+    AliError("AliVVZERO not available");
+    return;
+  }
+
+  Double_t v0c012 = lVV0->GetMRingV0C(0) + lVV0->GetMRingV0C(1) + lVV0->GetMRingV0C(2);
+  Double_t v0c3   = lVV0->GetMRingV0C(3);
+  Bool_t isEventSelected = kTRUE;  
+  isEventSelected &= lVV0->GetMTotV0C() < (330. + 100. * TMath::Power(lVV0->GetMTotV0A(), .2));
+  isEventSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
+  if(!isEventSelected){
+	  return;
+  }
+
+  hCounter->Fill(11.0);
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     if (fv0mpercentile >= centClass[i_c] &&
         fv0mpercentile < centClass[i_c + 1]) {
@@ -864,6 +882,7 @@ void AliAnalysisTaskFlatenicity::ExtractMultiplicities() {
     return;
   }
 
+
   const Int_t nChannels = 64;
   fmultV0C = 0;
   fmultV0A = 0;
@@ -1076,6 +1095,8 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityV0() {
     AliError("AliVVZERO not available");
     return 9999;
   }
+
+
   // Flatenicity calculation
   const Int_t nRings = 4;
   const Int_t nSectors = 8;
