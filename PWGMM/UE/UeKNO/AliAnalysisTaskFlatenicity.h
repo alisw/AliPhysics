@@ -125,6 +125,7 @@ private:
   TH2D *hMultMCaVsV0M;
   TH2D *hMultMCcVsV0M;
   TH2D *hMultmVsV0M;
+  TH2D *hMultmVsV0Malice;
   TH2D *hMultaVsV0M;
   TH2D *hMultcVsV0M;
   TH2D *hFlatVsPtV0M[9];

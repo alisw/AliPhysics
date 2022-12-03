@@ -119,7 +119,7 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
       hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
-      hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultaVsV0M(0),
+      hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0), hMultaVsV0M(0),
       hMultcVsV0M(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
@@ -166,7 +166,7 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
       hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
-      hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultaVsV0M(0),
+      hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0), hMultaVsV0M(0),
       hMultcVsV0M(0)
 
 {
@@ -443,6 +443,11 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
       new TH2D("hMultmVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
   fOutputList->Add(hMultmVsV0M);
 
+  hMultmVsV0Malice =
+      new TH2D("hMultmVsV0Malice", "", nCent, centClass, 1000, -0.5, 999.5);
+  fOutputList->Add(hMultmVsV0Malice);
+
+
   hMultaVsV0M =
       new TH2D("hMultaVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
   fOutputList->Add(hMultaVsV0M);
@@ -563,6 +568,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   fv0mpercentile = -999;
 
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+  Float_t v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
   hCounter->Fill(10.0);
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -675,6 +681,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       hFlatVsV0M->Fill(fv0mpercentile, fFlat);
       hMultmVsFlat[fV0Mindex]->Fill(fFlat, fmultV0C + fmultV0A);
       hMultmVsV0M->Fill(fv0mpercentile, fmultV0C + fmultV0A);
+      hMultmVsV0Malice->Fill(fv0mpercentile, v0multalice);
       hMultcVsV0M->Fill(fv0mpercentile, fmultV0C);
       hMultaVsV0M->Fill(fv0mpercentile, fmultV0A);
 
