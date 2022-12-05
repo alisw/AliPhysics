@@ -200,7 +200,6 @@ void AliFlowAnalysisWithMixedHarmonics::Init()
 void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
 {
  // Running over data only in this method.
- 
  // a) Check all pointers used in this method;
  // b) Define local variables;
  // c) Fill common control histograms;
@@ -283,6 +282,7 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
      Double_t dPt1 = aftsTrack->Pt();
      Double_t dEta1 = aftsTrack->Eta();
      Int_t iCharge1 = aftsTrack->Charge();
+     
      Bool_t b1stPOIisAlsoRP = kFALSE;
      if(aftsTrack->InRPSelection()){b1stPOIisAlsoRP = kTRUE;}
      for(Int_t j=0;j<nPrim;j++)
@@ -425,7 +425,8 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  {
    Double_t gIntegrated3pCorrelator = 0.;
    this->CalculateDifferential3pCorrelator(gIntegrated3pCorrelator); // to be improved - add relevant if statements for the min # POIs as well
-
+   f3pCorrelatorPOIIntegratedPro->Fill(0.5, gIntegrated3pCorrelator);
+   
   //3particle correlator vs ref. mult
    if(fCalculateVsM)
      f3pPOICorrelatorVsM->Fill(nRefMult,gIntegrated3pCorrelator);
@@ -448,11 +449,14 @@ void AliFlowAnalysisWithMixedHarmonics::Finish()
  // d) Correct for detector effects;
  // e) Print on the screen the final results.
  
+ printf("AliFlowAnalysisWithMixedHarmonics::Finish()\n");
+ 
  this->CheckPointersUsedInFinish();
  this->AccessConstants("Finish");          
  this->AccessSettings();
  this->CorrectForDetectorEffects();
  if(fCalculateVsM){this->CorrectForDetectorEffectsVsM();}
+
  if(fPrintOnTheScreen){this->PrintOnTheScreen();}
                                                                                                                                                                                                                                                                                                                                                                        
 } // end of AliFlowAnalysisWithMixedHarmonics::Finish()
@@ -634,6 +638,12 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
   } // end of if(nonIsotropicTermsList)
  } // end of for(Int_t sd=0;sd<2;sd++)
 
+ TProfile *p3pCorrelatorPOIIntegratedPro = dynamic_cast<TProfile*>(profileList->FindObject("f3pCorrelatorPOIIntegratedPro"));
+ if(p3pCorrelatorPOIIntegratedPro)
+ {
+  this->Set3pCorrelatorPOIIntegratedPro(p3pCorrelatorPOIIntegratedPro);  
+ }
+ 
  //2p correlator vs |Pt1-Pt2|
  TProfile *g2pCorrelatorCosPsiDiffPtDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiffPtDiff"));
  if(g2pCorrelatorCosPsiDiffPtDiff)
@@ -754,6 +764,12 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
    this->Set3pCorrelatorVsEtaSumDiffHist(h3pCorrelatorVsEtaSumDiffHist,sd);  
   } 
  } // end of for(Int_t sd=0;sd<2;sd++)
+ 
+ TH1D *h3pCorrelatorPOIIntegratedHist = dynamic_cast<TH1D*>(resultsList->FindObject("f3pCorrelatorPOIIntegratedHist"));
+ if(h3pCorrelatorPOIIntegratedHist)
+ {
+  this->Set3pCorrelatorPOIIntegratedHist(h3pCorrelatorPOIIntegratedHist);  
+ }
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
 
@@ -810,6 +826,8 @@ void AliFlowAnalysisWithMixedHarmonics::InitializeArrays()
    fNonIsotropicTermsVsEtaSumDiffPro[sd][t] = NULL;
   } 
  } // end of for(Int_t sd=0;sd<2;sd++)
+ f3pCorrelatorPOIIntegratedPro = NULL;
+ f3pCorrelatorPOIIntegratedHist = NULL;
  for(Int_t fs=0;fs<2;fs++) // 1st/2nd POI which is also RP
  {
   for(Int_t sd=0;sd<2;sd++)
@@ -1263,6 +1281,15 @@ void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
   fProfileList->Add(f3pCorrelatorVsEtaSumDiffPro[sd]);
  }
  
+ f3pCorrelatorPOIIntegratedPro = new TProfile("f3pCorrelatorPOIIntegratedPro","",1,0.,1);
+ f3pCorrelatorPOIIntegratedPro->SetStats(kFALSE);
+ if(fHarmonic == 1) {
+   f3pCorrelatorPOIIntegratedPro->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT POI");
+ } else {
+   f3pCorrelatorPOIIntegratedPro->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT POI",fHarmonic));
+ }
+ fProfileList->Add(f3pCorrelatorPOIIntegratedPro);
+ 
  // Corrected for detector effects:
  for(Int_t sd=0;sd<2;sd++)
  {
@@ -1286,6 +1313,15 @@ void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
   f3pCorrelatorVsEtaSumDiffHist[sd]->GetXaxis()->SetTitle(psdTitleFlag2[sd].Data());
   fResultsList->Add(f3pCorrelatorVsEtaSumDiffHist[sd]);
  }
+ 
+ f3pCorrelatorPOIIntegratedHist = new TH1D("f3pCorrelatorPOIIntegratedHist","",1,0.,1);
+ f3pCorrelatorPOIIntegratedHist->SetStats(kFALSE);
+ if(fHarmonic == 1) {
+   f3pCorrelatorPOIIntegratedHist->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT POI");
+ } else {
+   f3pCorrelatorPOIIntegratedHist->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT POI",fHarmonic));
+ }
+ fResultsList->Add(f3pCorrelatorPOIIntegratedHist);
  
  //TString psdFlag[2] = {"PtSum","PtDiff"};
  //TString psdTitleFlag[2] = {"(p_{T,1}+ p_{T,2})/2","#left|p_{T,1}- p_{T,2}#right|"};
@@ -1703,6 +1739,20 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
    } 
   } // end of for(Int_t t=0;t<10;t++) 
  } // end of for(Int_t sd=0;sd<2;sd++)
+ if(!f3pCorrelatorPOIIntegratedPro)
+ {
+  cout<<endl;
+  cout<<" WARNING (MH): f3pCorrelatorPOIIntegratedPro is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ }
+ if(!f3pCorrelatorPOIIntegratedHist)
+ {
+  cout<<endl;
+  cout<<" WARNING (MH): f3pCorrelatorPOIIntegratedHist is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ } 
  for(Int_t sd=0;sd<2;sd++)
  {
   if(!fRePEBE[sd]||!fImPEBE[sd])
@@ -1865,7 +1915,6 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
 void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
 {
  // Check pointers used in method Finish().
- 
  if(!fAnalysisSettings)
  {                        
   cout<<endl;
@@ -1941,6 +1990,7 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
  */  
  
  // Differential correlators:
+ 
  if(!fEvaluateDifferential3pCorrelator){return;} 
  for(Int_t sd=0;sd<2;sd++)
  {
@@ -1990,6 +2040,23 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
    } 
   } // end of for(Int_t t=0;t<10;t++) 
  } // end of for(Int_t sd=0;sd<2;sd++)
+ 
+ if(!f3pCorrelatorPOIIntegratedPro)
+ {
+  cout<<endl;
+  cout<<" WARNING (MH): f3pCorrelatorPOIIntegratedPro is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ }
+
+ if(!f3pCorrelatorPOIIntegratedHist)
+ {
+  cout<<endl;
+  cout<<" WARNING (MH): f3pCorrelatorPOIIntegratedHist is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ } 
+ 
  //2p correlator vs |Pt1-Pt2|
  if(!f2pCorrelatorCosPsiDiffPtDiff) {
   cout<<endl;
@@ -2214,6 +2281,10 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
  
  if(!fEvaluateDifferential3pCorrelator){return;}
  // b.) Correct differential 3-p correlator cos[n(psi1+psi2-2phi3)] for detector effects:
+ Int_t iBinCounter = 0;
+   Double_t gSumBinContentTimesWeight = 0., gSumWeight = 0.;
+   Double_t gSumBinContentTimesWeightSquared = 0.;
+   Double_t gIntegratedValue = -1000.;
  for(Int_t sd=0;sd<2;sd++) 
  {
   // [(p1+p2)/2,|p1-p2|]
@@ -2249,8 +2320,18 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
     f3pCorrelatorVsPtSumDiffHist[sd]->SetBinContent(b,corrected);
     f3pCorrelatorVsPtSumDiffHist[sd]->SetBinError(b,correctedErr);
    }
+   
+   if(sd == 0) {
+      iBinCounter += 1;
+
+      gSumBinContentTimesWeight += f3pCorrelatorVsPtSumDiffHist[sd]->GetBinContent(b)*f3pCorrelatorVsPtSumDiffPro[sd]->GetBinEntries(b);
+      gSumWeight += f3pCorrelatorVsPtSumDiffPro[sd]->GetBinEntries(b);
+      gSumBinContentTimesWeightSquared += TMath::Power(gSumBinContentTimesWeight,2);
+   }
   } // end of for(Int_t b=1;b<=fnBinsPt;b++)
   
+  
+
   // [(eta1+eta2)/2,|eta1-eta2|]
   // looping over all bins and calculating reduced correlations: 
   for(Int_t b=1;b<=fnBinsEta;b++)
@@ -2286,7 +2367,11 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
    }
   } // end of for(Int_t b=1;b<=fnBinsEta;b++)
  } // end of for(Int_t sd=0;sd<2;sd++) 
-  
+    
+  if((gSumWeight)&&(iBinCounter)) 
+    gIntegratedValue = gSumBinContentTimesWeight/gSumWeight;
+  f3pCorrelatorPOIIntegratedHist->SetBinContent(1, gIntegratedValue);
+  f3pCorrelatorPOIIntegratedHist->SetBinError(1, f3pCorrelatorPOIIntegratedPro->GetBinError(1)); // to be improved later 
 } // end of AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
 
 //================================================================================================================
@@ -2877,4 +2962,3 @@ void AliFlowAnalysisWithMixedHarmonics::GetCorrelatorAndError(TProfile *g3pCorre
     g3pCorrelatorError = TMath::Abs((gSumXiYi/gSumXi))*TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumYi2DeltaXi2)/gSumXiYi),2) + TMath::Power((gSumDeltaXi2/gSumXi),2));
 }
 //================================================================================================================
-

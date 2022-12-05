@@ -1,3 +1,15 @@
+/**************************************************************************
+ *    Author:       Zuzana Moravcova                                      *
+ *    Framework for calculating di-hadron correlation                     *
+ *    for extraction of v_n{2} coefficients of identified particles       *
+ *    including primary identified particles (pi, K, p)                   *
+ *    and reconstructed "V0" particles (K0s, Lambda)                      *
+ *    using TPC-TPC and TPC-FMD correlations.                             *
+ *                                                                        *
+ *    If used, modified, or distributed,                                  *
+ *    please aknowledge the author of this code.                          *
+ **************************************************************************/
+
 #ifndef ALIANALYSISTASKCORRFORFLOWFMD_H
 #define ALIANALYSISTASKCORRFORFLOWFMD_H
 
@@ -57,12 +69,14 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetDoV0(Bool_t v0 = kTRUE) { fDoV0 = v0; }
         void                    SetIsMC(Bool_t mc = kTRUE, Bool_t tpc = kTRUE, Bool_t fmd = kTRUE) { fIsMC = mc; fIsTPCgen = tpc; fIsFMDgen = fmd; }
-        void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
+        void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; fTrigger = AliVEvent::kHighMultV0; }
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
         void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
-        void                    SetRejectHighPtEvents(Bool_t flag = kTRUE, Int_t cut = 4) { fRejectHighPtEvents = flag; fNofMinHighPtTracksForRejection = cut; }
+        void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
+        void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
+        void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -90,10 +104,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetV0sTaus(Double_t k0s, Double_t lambda) { fCutTauK0s = k0s; fCutTauLambda = lambda; }
         void                    SetNSigmaTPC(Double_t cut) { fSigmaTPC = cut; }
         void                    SetnTPCcrossedRows(Int_t cut) { fnTPCcrossedRows = cut; }
-        void                    SetMinimalTrackLength(Double_t cut) { fTrackLength = cut; }
-        void                    SetCrossedLengthRatio(Double_t cut) { fV0ratioLength = cut; }
         void                    SetMassRejWindowK0(Double_t cut) { fMassRejWindowK0 = cut; }
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
+        void                    SetK0MassRange(Double_t min, Double_t max) { fMinK0Mass = min; fMaxK0Mass = max; }
+	    void                    SetLambdaMassRange(Double_t min, Double_t max) { fMinLambdaMass = min; fMaxLambdaMass = max; }
 
         // correlation related
         void                    SetPtRangeTrig(Double_t min, Double_t max) {fPtMinTrig = min; fPtMaxTrig = max; }
@@ -166,6 +180,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT[6]; //!
         TH2D*                   fhPTvsMinv[2]; //!
+        TH2D*                   fh2FMDvsV0[4]; //!
 
         //event and track selection
         AnaType                 fAnalType;
@@ -185,7 +200,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fSkipCorr; // [kFALSE]
         Bool_t                  fIsAntiparticleCheck; // [kFALSE]
         Bool_t                  fDoAntiparticleOnly; // [kFALSE] == positive particles only and lambdas
-        Bool_t                  fRejectHighPtEvents; // [kFALSE]
+        Bool_t                  fVetoJetEvents; // [kFALSE]
+        Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
@@ -239,10 +255,13 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fCutTauK0s; // [0.]
         Double_t                fCutTauLambda; // [0.]
         Double_t                fSigmaTPC; // [3.0]
-        Double_t                fTrackLength; // [90]
-        Double_t                fV0ratioLength; // [0.8]
         Double_t                fMassRejWindowK0; // [0.005]
         Double_t                fMassRejWindowLambda; // [0.01]
+        Double_t                fMinK0Mass; // [0.44]
+        Double_t                fMaxK0Mass; // [0.56]
+        Double_t                fMinLambdaMass; // [1.08]
+        Double_t                fMaxLambdaMass; // [1.15]
+        Double_t                fJetParticleLowPt; // [5.]
         TString                 fCentEstimator; //"V0M"
         TString                 fSystematicsFlag; // ""
         AliEventCuts            fEventCuts;
@@ -257,7 +276,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 14);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 17);
 };
 
 #endif

@@ -100,16 +100,16 @@ ClassImp(AliAnalysisTaskFlatenicityPiKp) // classimp: necessary for root
 
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	: AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), fV0Mindex(-1), fV0MBin("0_1"), fDetFlat("V0"), fIsMCclosure(kFALSE),
-	fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE),
-	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0), fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
-	ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
+	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
+	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE) ,fdEdxCalibrated(kTRUE),
+	fSaveDCAxyHistograms(kFALSE), 
+	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0), fV0CCalibration(0x0), fV0ACalibration(0x0), 
+	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
+	ftrackmult08(0), fv0mpercentile(0), fMidRapidityMult(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
-	hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
-	hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
+	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
-	hFlatVsV0M(0), hCounter(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
 	hMCPtPionNeg(0),hMCPtKaonNeg(0),hMCPtProtonNeg(0),
 	hTPCRecTracksPionPos(0), hTPCRecTracksKaonPos(0), hTPCRecTracksProtonPos(0),
@@ -124,6 +124,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 
 {
 	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+		hFlatVsV0MVsMult[i_c] = 0;
 		hFlatVsPtV0M[i_c] = 0;
 
 		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta){
@@ -150,10 +151,18 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 			hPtrTPC[i_c][i_eta] = 0;
 			if (i_c==0){
 				hPtVsP[i_eta] = 0;	
-				hKaonContamination[i_eta] = 0;
-				hKaondEdx[i_eta] = 0;
-				hProtonContamination[i_eta] = 0;
-				hProtondEdx[i_eta] = 0;
+				random_cont_in_kaon_h[i_eta] = 0;
+				pion_cont_in_kaon_h[i_eta] = 0;
+				electron_cont_in_kaon_h[i_eta] = 0;
+				nsigma_kaon_h[i_eta] = 0;
+				random_cont_in_proton_h[i_eta] = 0;
+				pion_cont_in_proton_h[i_eta] = 0;
+				electron_cont_in_proton_h[i_eta] = 0;
+				nsigma_proton_h[i_eta] = 0;
+				random_cont_in_pion_h[i_eta] = 0;
+				kaon_cont_in_pion_h[i_eta] = 0;
+				electron_cont_in_pion_h[i_eta] = 0;
+				nsigma_pion_h[i_eta] = 0;
 			}
 		}
 	}
@@ -174,16 +183,16 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	: AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), fV0Mindex(-1), fV0MBin("0_1"), fDetFlat("V0"), fIsMCclosure(kFALSE),
-	fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE),
-	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0), fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
-	ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
+	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
+	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE), fdEdxCalibrated(kTRUE), 
+	fSaveDCAxyHistograms(kFALSE), 
+	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0), fV0CCalibration(0x0), fV0ACalibration(0x0), 
+	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
+	ftrackmult08(0), fv0mpercentile(0), fMidRapidityMult(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
-	hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
-	hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
+	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
-	hFlatVsV0M(0), hCounter(0), 
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
 	hMCPtPionNeg(0),hMCPtKaonNeg(0),hMCPtProtonNeg(0),
 	hTPCRecTracksPionPos(0), hTPCRecTracksKaonPos(0), hTPCRecTracksProtonPos(0),
@@ -197,6 +206,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 
 {
 	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+		hFlatVsV0MVsMult[i_c] = 0;
 		hFlatVsPtV0M[i_c] = 0;
 
 		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta){
@@ -223,10 +233,18 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 			hPtrTPC[i_c][i_eta] = 0;
 			if (i_c==0){
 				hPtVsP[i_eta] = 0;	
-				hKaonContamination[i_eta] = 0;
-				hKaondEdx[i_eta] = 0;
-				hProtonContamination[i_eta] = 0;
-				hProtondEdx[i_eta] = 0;
+				random_cont_in_kaon_h[i_eta] = 0;
+				pion_cont_in_kaon_h[i_eta] = 0;
+				electron_cont_in_kaon_h[i_eta] = 0;
+				nsigma_kaon_h[i_eta] = 0;
+				random_cont_in_proton_h[i_eta] = 0;
+				pion_cont_in_proton_h[i_eta] = 0;
+				electron_cont_in_proton_h[i_eta] = 0;
+				nsigma_proton_h[i_eta] = 0;
+				random_cont_in_pion_h[i_eta] = 0;
+				kaon_cont_in_pion_h[i_eta] = 0;
+				electron_cont_in_pion_h[i_eta] = 0;
+				nsigma_pion_h[i_eta] = 0;
 			}
 		}
 	}
@@ -244,16 +262,16 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	}
 
 	DefineInput(0, TChain::Class()); // define the input of the analysis: in this
-	// case you take a 'chain' of events
+					 // case you take a 'chain' of events
 	DefineOutput(1, TList::Class()); // define the ouptut of the analysis: in this
-	// case it's a list of histograms
+					 // case it's a list of histograms
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityPiKp::~AliAnalysisTaskFlatenicityPiKp() {
 	// destructor
 	if (fOutputList) {
 		delete fOutputList; // at the end of your task, it is deleted from memory by
-		// calling this function
+				    // calling this function
 		fOutputList = 0x0;
 	}
 }
@@ -307,6 +325,86 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	fEtaCalibrationPos = new TF1("fDeDxVsEtaPos", "pol7", 0.0, 1.0);
 	fEtaCalibrationNeg = new TF1("fDeDxVsEtaNeg", "pol7", -1.0, 0.0);
 
+	fV0CCalibration = new TF1("fV0CCalibration","(x>-0.5 && x<0.5)*[0]+(x>0.5 && x<1.5)*[1]+(x>1.5 && x<2.5)*[2]+(x>2.5 && x<3.5)*[3]+(x>3.5 && x<4.5)*[4]+(x>4.5 && x<5.5)*[5]+(x>5.5 && x<6.5)*[6]+(x>6.5 && x<7.5)*[7]+(x>7.5 && x<8.5)*[8]+(x>8.5 && x<9.5)*[9]+(x>9.5 && x<10.5)*[10]+(x>10.5 && x<11.5)*[11]+(x>11.5 && x<12.5)*[12]+(x>12.5 && x<13.5)*[13]+(x>13.5 && x<14.5)*[14]+(x>14.5 && x<15.5)*[15]+(x>15.5 && x<16.5)*[16]+(x>16.5 && x<17.5)*[17]+(x>17.5 && x<18.5)*[18]+(x>18.5 && x<19.5)*[19]+(x>19.5 && x<20.5)*[20]+(x>20.5 && x<21.5)*[21]+(x>21.5 && x<22.5)*[22]+(x>22.5 && x<23.5)*[23]+(x>23.5 && x<24.5)*[24]+(x>24.5 && x<25.5)*[25]+(x>25.5 && x<26.5)*[26]+(x>26.5 && x<27.5)*[27]+(x>27.5 && x<28.5)*[28]+(x>28.5 && x<29.5)*[29]+(x>29.5 && x<30.5)*[30]+(x>30.5 && x<31.5)*[31]",-1.0,64.0); 
+
+	fV0ACalibration = new TF1("fV0ACalibration","(x>31.5 && x<32.5)*[0]+(x>32.5 && x<33.5)*[1]+(x>33.5 && x<34.5)*[2]+(x>34.5 && x<35.5)*[3]+(x>35.5 && x<36.5)*[4]+(x>36.5 && x<37.5)*[5]+(x>37.5 && x<38.5)*[6]+(x>38.5 && x<39.5)*[7]+(x>39.5 && x<40.5)*[8]+(x>40.5 && x<41.5)*[9]+(x>41.5 && x<42.5)*[10]+(x>42.5 && x<43.5)*[11]+(x>43.5 && x<44.5)*[12]+(x>44.5 && x<45.5)*[13]+(x>45.5 && x<46.5)*[14]+(x>46.5 && x<47.5)*[15]+(x>47.5 && x<48.5)*[16]+(x>48.5 && x<49.5)*[17]+(x>49.5 && x<50.5)*[18]+(x>50.5 && x<51.5)*[19]+(x>51.5 && x<52.5)*[20]+(x>52.5 && x<53.5)*[21]+(x>53.5 && x<54.5)*[22]+(x>54.5 && x<55.5)*[23]+(x>55.5 && x<56.5)*[24]+(x>56.5 && x<57.5)*[25]+(x>57.5 && x<58.5)*[26]+(x>58.5 && x<59.5)*[27]+(x>59.5 && x<60.5)*[28]+(x>60.5 && x<61.5)*[29]+(x>61.5 && x<62.5)*[30]+(x>62.5 && x<63.5)*[31]",-1.0,64.0); 
+
+	std::map<std::string, std::array<double, 32>> v0c_amplitude{
+		{"16d",{2.88859, 2.9425, 2.70962, 2.4422, 2.44435, 2.29602, 2.49074, 2.40259, 2.45943, 2.39773, 2.38541, 2.22054, 2.33559, 2.34201, 2.16681, 2.46867, 2.47081, 2.50957, 2.52655, 2.26584, 2.39212, 2.3647, 2.50499, 2.47989, 2.53142, 2.46861, 2.46103, 2.4994, 2.44491, 2.44271, 2.33958, 2.52505}},
+			{"16e",{2.89366, 2.85949, 2.62631, 2.32898, 2.38875, 2.21869, 2.42988, 2.36176, 2.38161, 2.37093, 2.32494, 2.23242, 2.29866, 2.30922, 2.13053, 2.43641, 2.44453, 2.44562, 2.47836, 1.9416, 2.35135, 2.33201, 2.45869, 2.42061, 2.49221, 2.43157, 2.40212, 2.44178, 2.36991, 2.39498, 2.29111, 2.49456}},
+			{"16g",{2.67671, 2.5471, 2.42348, 2.08613, 2.15761, 2.002, 2.22534, 2.21273, 2.10284, 2.26812, 2.10112, 2.09817, 2.11615, 2.12125, 2.01179, 2.26377, 2.27508, 2.20886, 2.37089, 1.33468, 2.18924, 2.19892, 2.25556, 2.20254, 2.34502, 2.32921, 2.16082, 2.2195, 2.16853, 2.20722, 2.09993, 2.29104}},
+			{"16h",{2.33612, 2.26809, 2.12537, 1.88169, 1.95522, 1.77887, 2.0437, 2.12103, 1.85435, 2.07626, 1.90717, 1.85332, 1.96452, 1.94684, 1.90893, 1.98351, 2.08794, 2.00308, 2.30905, 1.08264, 1.99014, 2.05509, 2.08674, 2.0417, 2.19784, 2.27447, 1.98537, 2.04747, 2.00761, 2.05327, 1.94026, 2.08981}},
+			{"16i",{2.0423, 2.02063, 1.96021, 1.73538, 1.78623, 1.58327, 1.87745, 1.98272, 1.65337, 1.97798, 1.75918, 1.67196, 1.84317, 1.75949, 1.78895, 1.75522, 1.92888, 1.8301, 2.22534, 0.911158, 1.81421, 1.92777, 2.01283, 1.9071, 2.10377, 2.18697, 1.82169, 1.94804, 1.86921, 1.88186, 1.80901, 1.91244}},
+			{"16j",{1.95868, 1.96472, 1.91903, 1.69683, 1.75152, 1.5257, 1.82704, 1.94993, 1.61506, 2.0086, 1.73365, 1.64437, 1.81057, 1.70838, 1.75603, 1.67326, 1.90659, 1.79508, 2.20382, 0.868877, 1.75363, 1.89592, 2.01141, 1.88378, 2.08822, 2.16068, 1.7896, 1.93022, 1.8264, 1.828, 1.77086, 1.86613}},
+			{"16k",{1.72643, 1.84015, 1.79921, 1.56715, 1.70308, 1.34055, 1.70895, 1.85768, 1.52716, 1.9858, 1.6887, 1.56204, 1.75903, 1.57981, 1.70322, 1.44025, 1.84427, 1.72925, 2.16802, 0.790695, 1.60216, 1.86399, 2.08028, 1.87487, 2.10569, 2.15281, 1.76908, 1.91886, 1.73251, 1.73789, 1.73425, 1.7317}},
+			{"16l",{1.65161, 1.84126, 1.76513, 1.55961, 1.72932, 1.30832, 1.69058, 1.8817, 1.54905, 2.00574, 1.71596, 1.55232, 1.73046, 1.55812, 1.70838, 1.36756, 1.87649, 1.73007, 2.20212, 0.789001, 1.56607, 1.87129, 2.12388, 1.90665, 2.13669, 2.18499, 1.80152, 1.95482, 1.70738, 1.71503, 1.76513, 1.7081}},
+			{"16o",{1.48374, 1.7422, 1.66988, 1.48809, 1.69056, 1.20902, 1.60505, 1.79742, 1.49298, 1.93336, 1.69952, 1.46302, 1.65385, 1.46494, 1.6537, 1.2217, 1.78832, 1.6569, 2.2355, 0.736293, 1.4585, 1.8153, 2.15453, 1.8848, 2.1338, 2.17296, 1.78671, 1.94107, 1.62002, 1.60799, 1.74091, 1.62965}},
+			{"16p",{2.93483, 3.20832, 2.99334, 3.3261, 2.54983, 2.89501, 2.51013, 2.90777, 2.55903, 2.45066, 2.62424, 2.58929, 2.3392, 2.49357, 2.29021, 2.7133, 2.41837, 2.80721, 2.56776, 2.43797, 2.51013, 2.74952, 2.36557, 2.4998, 2.60273, 2.52206, 2.57731, 2.49322, 2.6449, 2.50129, 2.47595, 2.59006}},
+			{"18b",{3.08159, 3.19748, 2.77938, 3.04879, 2.42519, 2.87548, 2.57551, 2.74849, 2.53809, 2.45311, 2.29069, 2.57486, 2.35979, 2.42923, 2.36913, 2.41182, 2.46269, 2.69522, 2.4857, 2.5526, 2.54019, 2.13919, 2.44858, 2.5327, 2.41155, 2.40551, 2.46273, 2.34861, 2.49719, 2.64366, 2.5326, 2.56335}},
+			{"18d",{3.0705, 3.14734, 2.53269, 2.78988, 2.25234, 2.72589, 2.48763, 2.63238, 2.41553, 2.37558, 2.15017, 2.64329, 2.29934, 2.39839, 2.25375, 2.43454, 2.36777, 2.59163, 2.47143, 2.39133, 2.50839, 2.13931, 2.25245, 2.35241, 2.38071, 2.28772, 2.40713, 2.18472, 2.3351, 2.61293, 2.40294, 2.61465}},
+			{"18e",{3.02396, 3.12907, 2.50895, 2.76993, 2.24355, 2.64726, 2.47062, 2.62366, 2.41054, 2.3789, 2.1487, 2.62864, 2.30385, 2.371, 2.24949, 2.39337, 2.37222, 2.59958, 2.47397, 2.3656, 2.49349, 2.13968, 2.26987, 2.36458, 2.38284, 2.29216, 2.41156, 2.18318, 2.31997, 2.60461, 2.40244, 2.60859}},
+			{"18f",{2.97463, 3.11562, 2.47893, 2.73606, 2.23815, 2.60906, 2.45092, 2.60899, 2.41081, 2.36412, 2.13275, 2.61339, 2.28378, 2.34939, 2.24951, 2.36418, 2.35999, 2.58915, 2.4779, 2.33922, 2.4836, 2.12712, 2.26497, 2.36263, 2.38324, 2.29319, 2.42376, 2.16909, 2.30442, 2.58722, 2.39945, 2.60361}},
+			{"18g",{2.88071, 3.10159, 2.42844, 2.78716, 2.32997, 2.46117, 2.45172, 2.69474, 2.49334, 2.33229, 2.18501, 2.53084, 2.34269, 2.32048, 2.33723, 2.24911, 2.39719, 2.66591, 2.49365, 2.39723, 2.42477, 2.10153, 2.37976, 2.51532, 2.42291, 2.42315, 2.48471, 2.28951, 2.31141, 2.64284, 2.48925, 2.55139}},
+			{"18h",{2.9191, 3.09868, 2.48411, 2.75118, 2.26419, 2.6706, 2.44062, 2.59906, 2.43689, 2.40734, 2.16209, 2.55784, 2.27091, 2.3396, 2.24962, 2.32488, 2.37001, 2.58933, 2.49001, 2.35087, 2.4707, 2.07221, 2.27772, 2.38686, 2.38722, 2.31913, 2.43662, 2.21327, 2.32336, 2.57368, 2.42845, 2.58833}},
+			{"18i",{2.9574, 3.20372, 2.4924, 2.83474, 2.29383, 2.42112, 2.40437, 2.67238, 2.47689, 2.36947, 2.21064, 2.5682, 2.31418, 2.30989, 2.29315, 2.24719, 2.39801, 2.69544, 2.48819, 2.44001, 2.39726, 2.07442, 2.35663, 2.47369, 2.36768, 2.41879, 2.46522, 2.28373, 2.27772, 2.65826, 2.46805, 2.53935}},
+			{"18j",{2.94407, 3.11162, 2.50074, 2.7399, 2.31152, 2.49305, 2.41368, 2.65324, 2.44389, 2.44213, 2.20162, 2.59654, 2.2857, 2.31291, 2.28705, 2.25515, 2.40706, 2.63495, 2.54743, 2.37169, 2.45889, 2.17384, 2.33003, 2.45635, 2.43883, 2.39996, 2.50873, 2.27015, 2.308, 2.61714, 2.47269, 2.52805}},
+			{"18k",{2.90731, 3.10524, 2.50356, 2.78132, 2.29794, 2.68823, 2.4539, 2.61174, 2.44058, 2.3763, 2.16471, 2.5457, 2.30834, 2.34957, 2.27961, 2.32433, 2.37084, 2.60202, 2.51563, 2.40719, 2.48379, 2.11369, 2.30816, 2.43507, 2.38345, 2.32666, 2.40853, 2.23669, 2.3343, 2.58949, 2.45142, 2.60981}},
+			{"18l",{2.97792, 3.09252, 2.45164, 2.72767, 2.24591, 2.59975, 2.4335, 2.58351, 2.40456, 2.37248, 2.13892, 2.60159, 2.27453, 2.33748, 2.23175, 2.34048, 2.37324, 2.57468, 2.47221, 2.35206, 2.4516, 2.12329, 2.26985, 2.36874, 2.3713, 2.29759, 2.37431, 2.16252, 2.29167, 2.57675, 2.4127, 2.5988}},
+			{"18m",{2.89385, 3.0098, 2.27782, 2.65633, 2.17726, 2.47251, 2.39523, 2.58458, 2.34243, 2.25406, 2.08879, 2.48847, 2.25923, 2.30155, 2.20168, 2.27755, 2.34611, 2.55051, 2.45921, 2.29885, 2.37222, 2.10387, 2.22327, 2.34958, 2.31141, 2.31766, 2.35073, 2.11456, 2.25414, 2.57455, 2.36842, 2.58343}},
+			{"18o",{2.77061, 2.9181, 2.22791, 2.58354, 2.1417, 2.38836, 2.31785, 2.51692, 2.29156, 2.21925, 2.06104, 2.41119, 2.19668, 2.22722, 2.14253, 2.18927, 2.30954, 2.49196, 2.44773, 2.231, 2.2909, 2.07299, 2.23037, 2.31762, 2.28299, 2.29794, 2.31923, 2.14583, 2.19777, 2.49663, 2.34318, 2.52455}},
+			{"18p",{2.71809, 2.8741, 2.19078, 2.54602, 2.12489, 2.30997, 2.28647, 2.48755, 2.26862, 2.20438, 2.04033, 2.39476, 2.18014, 2.20534, 2.11804, 2.1523, 2.28822, 2.46603, 2.43157, 2.20377, 2.25786, 2.05725, 2.23172, 2.31506, 2.28462, 2.28424, 2.30451, 2.12212, 2.17608, 2.48428, 2.33963, 2.49184}}
+
+	};
+
+	std::map<std::string, std::array<double, 32>> v0a_amplitude{
+		{"16d",{0.971421, 1.11655, 1.05864, 1.08683, 1.03151, 1.02573, 1.03238, 0.941517, 1.37828, 1.50135, 1.5399, 1.35456, 1.18049, 1.19228, 1.13484, 1.18255, 1.71939, 1.89986, 1.63799, 1.88679, 1.61891, 1.69689, 1.57258, 1.80516, 1.60478, 1.51324, 1.74762, 1.49386, 1.56677, 1.46573, 1.43784, 1.55238}},
+			{"16e",{0.969655, 1.10002, 1.0654, 1.06858, 1.0231, 1.01162, 1.01959, 0.921065, 1.3694, 1.50243, 1.52358, 1.35367, 1.17458, 1.17788, 1.02715, 1.18671, 1.69487, 1.88413, 1.64172, 1.86886, 1.57371, 1.68736, 1.56884, 1.79218, 1.61649, 1.51156, 1.73323, 1.47831, 1.53877, 1.44827, 1.43159, 1.52308}},
+			{"16g",{0.884325, 0.956139, 1.00772, 0.966283, 0.948976, 0.896674, 0.901209, 0.791877, 1.256, 1.31627, 1.36619, 1.2678, 1.06494, 1.03874, 0.723382, 1.08314, 1.51745, 1.72091, 1.49148, 1.67301, 1.36114, 1.51159, 1.43387, 1.63219, 1.44352, 1.35758, 1.55055, 1.287, 1.38415, 1.30201, 1.28941, 1.36174}},
+			{"16h",{0.800192, 0.824447, 0.935033, 0.903582, 0.862988, 0.861472, 0.832187, 0.696825, 1.13655, 1.1557, 1.30811, 1.20822, 0.99614, 0.951441, 0.60321, 0.990838, 1.37307, 1.56072, 1.38165, 1.56203, 1.23693, 1.38469, 1.30561, 1.54617, 1.25821, 1.25937, 1.42333, 1.20108, 1.30029, 1.19768, 1.18934, 1.23768}},
+			{"16i",{0.743952, 0.733451, 0.858279, 0.836997, 0.785009, 0.769231, 0.754767, 0.599759, 1.0502, 0.999068, 1.20994, 1.10338, 0.903057, 0.858619, 0.499096, 0.91436, 1.23647, 1.42237, 1.22496, 1.43121, 1.12125, 1.2603, 1.21423, 1.39747, 1.11396, 1.16412, 1.28348, 1.06847, 1.1961, 1.09919, 1.10295, 1.12625}},
+			{"16j",{0.736535, 0.723495, 0.839619, 0.816173, 0.747102, 0.749498, 0.719656, 0.569794, 1.03702, 0.947788, 1.18833, 1.06432, 0.889022, 0.840056, 0.481015, 0.893523, 1.20513, 1.3994, 1.1937, 1.40482, 1.10053, 1.23474, 1.19074, 1.3581, 1.06813, 1.12446, 1.24884, 1.03969, 1.17679, 1.08257, 1.07869, 1.09233}},
+			{"16k",{0.717691, 0.694821, 0.778333, 0.759283, 0.676431, 0.695642, 0.636228, 0.524526, 1.0171, 0.791441, 1.13728, 0.954097, 0.855168, 0.789843, 0.404784, 0.854772, 1.12656, 1.334, 1.08943, 1.33638, 1.10253, 1.18247, 1.13922, 1.27195, 0.926424, 1.05565, 1.17978, 0.98097, 1.16752, 1.07625, 1.02955, 1.01988}},
+			{"16l",{0.730942, 0.702341, 0.764773, 0.74559, 0.670661, 0.695912, 0.622083, 0.526797, 1.03737, 0.660458, 1.14032, 0.925708, 0.860489, 0.78269, 0.399954, 0.838301, 1.11309, 1.3313, 1.06263, 1.34133, 1.14764, 1.17188, 1.12735, 1.25473, 0.897143, 1.05527, 1.17419, 0.988507, 1.19467, 1.10918, 1.02128, 1.01135}},
+			{"16o",{0.702296, 0.694677, 0.736833, 0.723689, 0.616863, 0.682144, 0.585175, 0.510394, 1.03063, 0.501502, 1.12609, 0.866576, 0.842466, 0.771877, 0.374963, 0.799778, 1.06629, 1.26713, 1.01831, 1.32292, 1.17846, 1.12289, 1.08058, 1.18916, 0.827616, 1.01742, 1.12101, 0.942487, 1.16264, 1.11224, 0.989178, 0.977369}},
+			{"16p",{1.08752, 1.27984, 1.10662, 1.18225, 1.16856, 1.14696, 1.15924, 1.03697, 1.43828, 1.17132, 1.56374, 1.42847, 1.33222, 1.2136, 1.45564, 1.46616, 1.96471, 1.99107, 1.94726, 1.90175, 1.83788, 1.91058, 1.90391, 1.79922, 1.59777, 1.62144, 1.61936, 1.57554, 1.52186, 1.51251, 1.61308, 1.53794}},
+			{"18b",{1.12188, 1.26894, 1.16166, 1.08826, 1.11157, 1.13305, 1.12165, 1.06657, 1.38892, 1.4402, 1.56636, 1.46453, 1.33702, 1.26924, 1.45266, 1.42624, 1.98509, 1.96881, 1.86641, 1.81826, 1.6425, 1.81295, 1.91942, 1.7379, 1.80829, 1.61968, 1.777, 1.72265, 1.6911, 1.64278, 1.69183, 1.54568}},
+			{"18d",{1.03547, 1.21255, 1.10661, 1.01664, 1.07067, 1.05409, 1.06893, 1.02957, 1.29723, 1.40247, 1.47046, 1.39044, 1.26849, 1.18913, 1.36425, 1.38743, 1.90076, 1.94909, 1.83833, 1.75814, 1.45789, 1.84467, 1.84217, 1.75002, 1.75289, 1.48591, 1.75049, 1.64159, 1.59108, 1.53666, 1.66915, 1.49595}},
+			{"18e",{1.04106, 1.21742, 1.10153, 1.00584, 1.05324, 1.0461, 1.05875, 1.03337, 1.30513, 1.37176, 1.46995, 1.37208, 1.26994, 1.19205, 1.35772, 1.39702, 1.90049, 1.95363, 1.84112, 1.75547, 1.47283, 1.83909, 1.8462, 1.74582, 1.72977, 1.47165, 1.75579, 1.63349, 1.5981, 1.53789, 1.65331, 1.49858}},
+			{"18f",{1.03521, 1.21303, 1.08178, 0.992882, 1.03612, 1.03595, 1.04813, 1.02718, 1.30164, 1.35294, 1.46126, 1.35675, 1.26414, 1.18675, 1.3465, 1.38513, 1.88575, 1.9359, 1.81367, 1.73644, 1.47388, 1.82419, 1.83461, 1.73407, 1.70888, 1.46237, 1.74618, 1.62422, 1.59631, 1.53684, 1.63262, 1.4979}},
+			{"18g",{1.05174, 1.23916, 1.07648, 0.995146, 1.02495, 1.12372, 1.01998, 1.02499, 1.31893, 1.236, 1.51956, 1.37464, 1.31125, 1.22365, 1.33494, 1.38037, 1.87978, 1.90258, 1.81982, 1.76821, 1.59869, 1.77914, 1.79793, 1.73138, 1.59438, 1.45716, 1.76112, 1.67778, 1.70276, 1.61948, 1.63708, 1.49436}},
+			{"18h",{1.03675, 1.20042, 1.06702, 1.00369, 1.04489, 1.05026, 1.04902, 1.01197, 1.30782, 1.34459, 1.46108, 1.36681, 1.2644, 1.18036, 1.34924, 1.3509, 1.87933, 1.90519, 1.78719, 1.73151, 1.49975, 1.79173, 1.82074, 1.6974, 1.70966, 1.48909, 1.73474, 1.63496, 1.61265, 1.55953, 1.62404, 1.48539}},
+			{"18i",{1.05756, 1.25256, 1.09818, 0.995157, 1.01336, 1.11604, 1.01675, 1.02099, 1.32361, 1.25052, 1.53227, 1.3716, 1.30446, 1.22085, 1.32083, 1.39617, 1.88151, 1.90553, 1.84768, 1.77298, 1.57139, 1.76409, 1.81039, 1.73898, 1.63894, 1.44437, 1.7816, 1.69065, 1.68854, 1.59552, 1.61335, 1.48486}},
+			{"18j",{1.04558, 1.21531, 1.06317, 0.98533, 1.02005, 1.04588, 1.01746, 1.0124, 1.32802, 1.27495, 1.45875, 1.33965, 1.30504, 1.18537, 1.32838, 1.34313, 1.88247, 1.93106, 1.78814, 1.73055, 1.54494, 1.78841, 1.83031, 1.67959, 1.65613, 1.46451, 1.74067, 1.62232, 1.65027, 1.5994, 1.63575, 1.49312}},
+			{"18k",{1.05602, 1.1974, 1.05841, 1.00209, 1.03504, 1.05661, 1.05814, 1.01765, 1.33321, 1.31911, 1.4739, 1.36589, 1.27212, 1.19571, 1.35809, 1.37207, 1.89393, 1.90681, 1.77728, 1.73736, 1.53362, 1.79099, 1.84364, 1.69482, 1.72392, 1.50753, 1.73637, 1.64682, 1.62917, 1.58585, 1.63893, 1.49182}},
+			{"18l",{1.03101, 1.19593, 1.0656, 0.988777, 1.03801, 1.04576, 1.05378, 1.01868, 1.3096, 1.32958, 1.46016, 1.34421, 1.26224, 1.18076, 1.34279, 1.36607, 1.88243, 1.91993, 1.79909, 1.73536, 1.4841, 1.80591, 1.82403, 1.7132, 1.71345, 1.45529, 1.74465, 1.62512, 1.60799, 1.55478, 1.62085, 1.48818}},
+			{"18m",{0.992725, 1.16553, 1.04112, 0.98627, 1.01663, 1.08135, 1.05395, 0.990249, 1.25981, 1.27567, 1.47281, 1.33155, 1.25146, 1.1691, 1.29802, 1.34089, 1.82294, 1.8481, 1.81158, 1.72872, 1.47083, 1.76285, 1.75441, 1.74088, 1.60722, 1.39846, 1.74179, 1.63405, 1.60857, 1.50971, 1.58388, 1.45925}},
+			{"18o",{0.975139, 1.12687, 1.01592, 0.965014, 0.974046, 1.05633, 1.0269, 0.966319, 1.25264, 1.24381, 1.44858, 1.29544, 1.22352, 1.13353, 1.25626, 1.30687, 1.78451, 1.79549, 1.77452, 1.69358, 1.46601, 1.67611, 1.71789, 1.69629, 1.5681, 1.382, 1.70683, 1.59611, 1.58028, 1.49707, 1.5505, 1.4321}},
+			{"18p",{0.967277, 1.13221, 1.00502, 0.948583, 0.957792, 1.04313, 0.995677, 0.960616, 1.24766, 1.21093, 1.4327, 1.26731, 1.21666, 1.1243, 1.25565, 1.30117, 1.76863, 1.77726, 1.74619, 1.67174, 1.46531, 1.65939, 1.70296, 1.67484, 1.54004, 1.35451, 1.69516, 1.56881, 1.57945, 1.49197, 1.52957, 1.4229}}
+	};
+
+	auto key_value_pair_v0c = v0c_amplitude.find(fPeriod);
+	std::array<double,32> pars_v0c = key_value_pair_v0c->second;
+
+	auto key_value_pair_v0a = v0a_amplitude.find(fPeriod);
+	std::array<double,32> pars_v0a = key_value_pair_v0a->second;
+
+	for (int par = 0; par < 32; ++par)
+	{
+		fV0CCalibration->SetParameter(par,pars_v0c[par]);
+		fV0ACalibration->SetParameter(par,pars_v0a[par]);
+	}
+
+
+	/* const int nParsV0 = 32; */
+	/* const double ParsV0C[nParsV0] = { 1.647294, 1.837619, 1.761105, 1.555255, 1.726714, 1.303948, 1.687114, 1.878224, 1.546167, 2.003266, 1.712996, 1.549461, 1.727268, 1.554480, 1.706153, 1.363934, 1.872374, 1.727050, 2.199335, 0.787233, 1.562607, 1.868105, 2.120761, 1.903412, 2.133782, 2.181180, 1.799161, 1.951639, 1.703616, 1.711802, 1.762529, 1.704079 }; */
+
+	/* const double ParsV0A[nParsV0] = { 0.729977, 0.700893, 0.763448, 0.743796, 0.669337, 0.694408, 0.620627, 0.525617, 1.035450, 0.655640, 1.137670, 0.923248, 0.859047, 0.781449, 0.398952, 0.835587, 1.110981, 1.328355, 1.060960, 1.338867, 1.145839, 1.169695, 1.125137, 1.252237, 0.894590, 1.053655, 1.171697, 0.986297, 1.192937, 1.107533, 1.018933, 1.009477 }; */
+
+	/* for (Int_t i = 1; i <= nParsV0; ++i){ */
+	/* 	fV0CCalibration->SetParameter(i-1,ParsV0C[i-1]); */
+	/* 	fV0ACalibration->SetParameter(i-1,ParsV0A[i-1]); */
+	/* } */
+
 	fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
 	fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
 
@@ -315,88 +413,107 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	fcutDCAxy->SetParameter(1,0.0350);
 	fcutDCAxy->SetParameter(2,1.1);
 
-	const Int_t nPtbins = 56;
-	Double_t Ptbins[nPtbins+1] = {
+	const int nPtbins = 56;
+	double Ptbins[nPtbins+1] = {
 		0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 
 		0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
 		1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
 		3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0,
 		9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0,
-		20.0,22.0,24.0,26.0,30.0};
+		20.0,22.0,24.0,26.0,30.0 };
+
+	const int nPtbins_low_pT = 17;
+	double Ptbins_low_pT[nPtbins_low_pT+1] = {
+		0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 
+		0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2 };
+
+	const int nPtbins_intermediate_pT = 30;
+	double Ptbins_intermediate_pT[nPtbins_intermediate_pT+1] = {
+		0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 
+		1.1,  1.2, 1.3,  1.4, 1.5,  1.6, 1.7,  1.8, 1.9, 
+		2.0,  2.2, 2.4,  2.6, 2.8,  3.0, 3.2,  3.4, 3.6, 
+		3.8, 4.0, 4.5, 5.0 };
+
+	const int nPtbins_high_pT = 31;
+	double Ptbins_high_pT[nPtbins_high_pT+1] = {
+		2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 
+		4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 
+		11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
+		26.0, 30.0 };
 
 	// create output objects
 	float min_flat = -0.01;
 	float max_flat = 1.01;
-	int nbins_flat = 204;
+	int nbins_flat = 1020;
 	if (fRemoveTrivialScaling) {
 		min_flat = -0.1;
 		max_flat = 9.9;
 		nbins_flat = 2000;
 	}
 
-	const Int_t nnSigmabins = 100;
-	Double_t nSigmabins[nnSigmabins+1] = {0.0};
-
-	for (Int_t i = 0; i <= nnSigmabins; ++i){
-		nSigmabins[i] = -8.0 + i*0.16;
+	const int nFlatbins = 1020;
+	double Flatbins[nFlatbins+1] = {0.0};
+	for (int i = 0; i <= nFlatbins; ++i) {
+		Flatbins[i] = -0.01 + (double)i * 0.001;
 	}
 
-	const Int_t nBetabins   = 100;
-	Double_t Betabins[nBetabins+1] = { 0.0 };
-	for( Int_t i = 0; i <= nBetabins; ++i){
-		Betabins[i] = 0.2+((double)i)/100.0;
+	const int nMultbins = 100;
+	double Multbins[nMultbins+1] = {0.0};
+	for (int i = 0; i <= nMultbins; ++i) {
+		Multbins[i] = -0.5 + (double)i;
 	}
 
-	const Int_t dEdxHigh = 140;
-	const Int_t dEdxLow = 40;
+	const int nnSigmabins = 80;
+	double nSigmabins[nnSigmabins+1] = {0.0};
 
-	const Int_t ndEdxbins = dEdxHigh-dEdxLow;
-	Double_t dEdxbins[ndEdxbins+1];
+	for (int i = 0; i <= nnSigmabins; ++i){
+		nSigmabins[i] = -4.0 + i*0.1;
+	}
 
-	for(Int_t i = dEdxLow; i <= dEdxHigh; ++i){
+	const int nBetabins   = 151;
+	double Betabins[nBetabins+1] = { 0.0 };
+	for(int i = 0; i <= nBetabins; ++i){
+		Betabins[i] = 0.6 + 0.003333 * ((double)i);
+	}
+
+	const int dEdxHigh = 100;
+	const int dEdxLow = 40;
+
+	const int ndEdxbins = dEdxHigh-dEdxLow;
+	double dEdxbins[ndEdxbins+1];
+
+	for(int i = dEdxLow; i <= dEdxHigh; ++i){
 		dEdxbins[i-dEdxLow] = i;
 	}
 
-	const Int_t nFlatenicitybins = 1000;
-	Double_t Flatenicitybins[nFlatenicitybins+1] = {0.0};
+	const int nV0Multbins = 51;
+	double V0Multbins[nV0Multbins+1] = { 0.0 };
 
-	for (Int_t i = 0; i <= nFlatenicitybins; ++i){
-		Flatenicitybins[i] = -0.1 + i*0.01;
+	for (Int_t i = 0; i <= nV0Multbins; ++i){
+		V0Multbins[i] = -0.5 + (double)i;
+	}
+
+	const int nV0Sectorsbins = 64;
+	double V0Sectorsbins[nV0Sectorsbins+1] = { 0.0 };
+
+	for (int i = 0; i <= nV0Sectorsbins; ++i){
+		V0Sectorsbins[i] = -0.5 + (double)i;
 	}
 
 	OpenFile(1);
-	fOutputList =
-		new TList(); // this is a list which will contain all of your histograms
+	fOutputList = new TList(); // this is a list which will contain all of your histograms
 	fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
-
-	hFlatV0vsFlatTPC =
-		new TH2D("hFlatV0vsFlatTPC", "counter", nbins_flat, min_flat, max_flat,
-				nbins_flat, min_flat, max_flat);
-	//fOutputList->Add(hFlatV0vsFlatTPC);
-
-	hFlatenicityBefore =
-		new TH1F("hFlatenicityBefore", "Counter; Flatenicity; Entries; ", nbins_flat, min_flat, max_flat);
-	fOutputList->Add(hFlatenicityBefore);
-
-	hFlatenicity =
-		new TH1D("hFlatenicity", "counter", nbins_flat, min_flat, max_flat);
-	//fOutputList->Add(hFlatenicity);
-
-	hFlatVsPt =
-		new TH2D("hFlatVsPt", "Measured; Flatenicity; #it{p}_{T} (GeV/#it{c})",
-				nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
-	//fOutputList->Add(hFlatVsPt);
-
-	Int_t SaveThisV0M = -1;
-	if (fV0MBin == "0_1") SaveThisV0M = 0;
-	else if (fV0MBin == "1_5") SaveThisV0M = 1;
-	else if (fV0MBin == "5_10") SaveThisV0M = 2;
-	else if (fV0MBin == "10_20") SaveThisV0M = 3;
-	else if (fV0MBin == "20_30") SaveThisV0M = 4;
-	else if (fV0MBin == "30_40") SaveThisV0M = 5;
-	else if (fV0MBin == "40_50") SaveThisV0M = 6;
-	else if (fV0MBin == "50_70") SaveThisV0M = 7;
-	else SaveThisV0M = 8;
+				      //
+	int save_this_mult_bin = -1;
+	if (fV0MBin == "0_1") save_this_mult_bin = 0;
+	else if (fV0MBin == "1_5") save_this_mult_bin = 1;
+	else if (fV0MBin == "5_10") save_this_mult_bin = 2;
+	else if (fV0MBin == "10_20") save_this_mult_bin = 3;
+	else if (fV0MBin == "20_30") save_this_mult_bin = 4;
+	else if (fV0MBin == "30_40") save_this_mult_bin = 5;
+	else if (fV0MBin == "40_50") save_this_mult_bin = 6;
+	else if (fV0MBin == "50_70") save_this_mult_bin = 7;
+	else save_this_mult_bin = 8;
 
 	hPionTPCDCAxyNegData = new TH2F("hPionTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
 	hPionTPCDCAxyPosData = new TH2F("hPionTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
@@ -413,62 +530,65 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	hPlateauVsEta = new TH2F("hPlateauVsEta","; #eta; dE/dx_{Plateau, primary tracks}",50, -0.8, 0.8, 50, 60.0, 110.0);
 	pPlateauVsEta = new TProfile("pPlateauVsEta","; #eta; #LT dE/dx #GT_{Plateau, primary tracks}", 50, -0.8, 0.8, 60.0, 110.0);
 
-	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
-		hFlatVsPtV0M[i_c] = new TH2D(Form("hFlatVsPtV0M_c%d", i_c),Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClass[i_c], centClass[i_c + 1]),nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+	for (int i_c = 0; i_c < nCent; ++i_c) 
+	{
+
+		hFlatVsV0MVsMult[i_c] = new TH2F(Form("hFlatVsNch_V0_%s",V0MClass[i_c]), "; Flatenicity; #it{N}_{ch} (|#eta| < 0.8)", nFlatbins, Flatbins, nMultbins, Multbins);
+
+		hFlatVsPtV0M[i_c] = new TH2F(Form("hPtVsFlatV0M_c%d", i_c),"; Flat. V0M; #it{p}_{T} (GeV/#it{c})", nFlatbins, Flatbins, nPtbins, Ptbins);
 		//fOutputList->Add(hFlatVsPtV0M[i_c]);
 
 		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta) {
 
-			hNsigmaPiPos[i_c][i_eta] = new TH3F(Form("hNsigmaPiPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins, Ptbins, nnSigmabins, nSigmabins, nFlatenicitybins, Flatenicitybins);
-			hNsigmaKPos[i_c][i_eta] = new TH3F(Form("hNsigmaKPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins, Ptbins, nnSigmabins, nSigmabins, nFlatenicitybins, Flatenicitybins);
-			hNsigmaPPos[i_c][i_eta] = new TH3F(Form("hNsigmaPPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins, Ptbins, nnSigmabins, nSigmabins, nFlatenicitybins, Flatenicitybins);
-			hPtTPCEtaPos[i_c][i_eta] = new TH2F(Form("hPtTPCEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}; Flatenicity;)", nPtbins, Ptbins, nFlatenicitybins, Flatenicitybins);
+			hNsigmaPiPos[i_c][i_eta] = new TH3F(Form("hNsigmaPiPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+			hNsigmaKPos[i_c][i_eta] = new TH3F(Form("hNsigmaKPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+			hNsigmaPPos[i_c][i_eta] = new TH3F(Form("hNsigmaPPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+			hPtTPCEtaPos[i_c][i_eta] = new TH2F(Form("hPtTPCEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}; Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
 
-			hNsigmaPiNeg[i_c][i_eta] = new TH3F(Form("hNsigmaPiNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins, Ptbins, nnSigmabins, nSigmabins, nFlatenicitybins, Flatenicitybins);
-			hNsigmaKNeg[i_c][i_eta] = new TH3F(Form("hNsigmaKNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins, Ptbins, nnSigmabins, nSigmabins, nFlatenicitybins, Flatenicitybins);
-			hNsigmaPNeg[i_c][i_eta] = new TH3F(Form("hNsigmaPNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins, Ptbins, nnSigmabins, nSigmabins, nFlatenicitybins, Flatenicitybins);
-			hPtTPCEtaNeg[i_c][i_eta] = new TH2F(Form("hPtTPCEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); Flatenicity;)", nPtbins, Ptbins, nFlatenicitybins, Flatenicitybins);
+			hNsigmaPiNeg[i_c][i_eta] = new TH3F(Form("hNsigmaPiNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+			hNsigmaKNeg[i_c][i_eta] = new TH3F(Form("hNsigmaKNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+			hNsigmaPNeg[i_c][i_eta] = new TH3F(Form("hNsigmaPNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+			hPtTPCEtaNeg[i_c][i_eta] = new TH2F(Form("hPtTPCEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
 
-			hBetaPos[i_c][i_eta] = new TH3F(Form("hBetaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); #beta; Flatenicity", nPtbins, Ptbins, nBetabins,Betabins, nFlatenicitybins, Flatenicitybins);
-			hMomentumTOFEtaPos[i_c][i_eta] = new TH2F(Form("hMomentumTOFEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins, Ptbins, nFlatenicitybins, Flatenicitybins);
-			hPtTOFEtaPos[i_c][i_eta] = new TH2F(Form("hPtTOFEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins, Ptbins, nFlatenicitybins, Flatenicitybins);
+			hBetaPos[i_c][i_eta] = new TH3F(Form("hBetaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); #beta; Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nBetabins,Betabins, nFlatbins, Flatbins);
+			hMomentumTOFEtaPos[i_c][i_eta] = new TH2F(Form("hMomentumTOFEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
+			hPtTOFEtaPos[i_c][i_eta] = new TH2F(Form("hPtTOFEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
 
-			hBetaNeg[i_c][i_eta] = new TH3F(Form("hBetaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}; #beta; Flatenicity", nPtbins, Ptbins, nBetabins,Betabins, nFlatenicitybins, Flatenicitybins);
-			hMomentumTOFEtaNeg[i_c][i_eta] = new TH2F(Form("hMomentumTOFEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins, Ptbins, nFlatenicitybins, Flatenicitybins);
-			hPtTOFEtaNeg[i_c][i_eta] = new TH2F(Form("hPtTOFEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins, Ptbins, nFlatenicitybins, Flatenicitybins);
+			hBetaNeg[i_c][i_eta] = new TH3F(Form("hBetaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}; #beta; Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nBetabins,Betabins, nFlatbins, Flatbins);
+			hMomentumTOFEtaNeg[i_c][i_eta] = new TH2F(Form("hMomentumTOFEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
+			hPtTOFEtaNeg[i_c][i_eta] = new TH2F(Form("hPtTOFEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
 
-			hdEdx[i_c][i_eta] = new TH3F(Form("hdEdx_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]), ";#it{p} (GeV/#it{c}); dE/dx; Flatenicity", nPtbins, Ptbins, ndEdxbins, dEdxbins, nFlatenicitybins, Flatenicitybins);
-			hPtrTPC[i_c][i_eta] = new TH2F(Form("hPtrTPC_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins, Ptbins, nFlatenicitybins, Flatenicitybins);
+			hdEdx[i_c][i_eta] = new TH3F(Form("hdEdx_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]), ";#it{p} (GeV/#it{c}); dE/dx; Flatenicity", nPtbins_high_pT, Ptbins_high_pT, ndEdxbins, dEdxbins, nFlatbins, Flatbins);
+			hPtrTPC[i_c][i_eta] = new TH2F(Form("hPtrTPC_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_high_pT, Ptbins_high_pT, nFlatbins, Flatbins);
 
-			if (i_c==0){
+			if (i_c==0) { hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins); }
 
-				hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins);
-			}
+			if (!fUseMC && fV0MEqualisation && !fSaveDCAxyHistograms) { 
 
-			if (!fUseMC){ 
-				if (SaveThisV0M == i_c){
+				if (save_this_mult_bin != i_c) { continue; }
 
-					fOutputList->Add(hNsigmaPiPos[i_c][i_eta]);
-					fOutputList->Add(hNsigmaKPos[i_c][i_eta]);
-					fOutputList->Add(hNsigmaPPos[i_c][i_eta]);
-					fOutputList->Add(hPtTPCEtaPos[i_c][i_eta]);
-					fOutputList->Add(hNsigmaPiNeg[i_c][i_eta]);
-					fOutputList->Add(hNsigmaKNeg[i_c][i_eta]);
-					fOutputList->Add(hNsigmaPNeg[i_c][i_eta]);
-					fOutputList->Add(hPtTPCEtaNeg[i_c][i_eta]);
+				fOutputList->Add(hNsigmaPiPos[i_c][i_eta]);
+				fOutputList->Add(hNsigmaKPos[i_c][i_eta]);
+				fOutputList->Add(hNsigmaPPos[i_c][i_eta]);
+				fOutputList->Add(hPtTPCEtaPos[i_c][i_eta]);
+				fOutputList->Add(hNsigmaPiNeg[i_c][i_eta]);
+				fOutputList->Add(hNsigmaKNeg[i_c][i_eta]);
+				fOutputList->Add(hNsigmaPNeg[i_c][i_eta]);
+				fOutputList->Add(hPtTPCEtaNeg[i_c][i_eta]);
 
-					fOutputList->Add(hBetaPos[i_c][i_eta]);
-					fOutputList->Add(hMomentumTOFEtaPos[i_c][i_eta]);
-					fOutputList->Add(hPtTOFEtaPos[i_c][i_eta]);
-					fOutputList->Add(hBetaNeg[i_c][i_eta]);
-					fOutputList->Add(hMomentumTOFEtaNeg[i_c][i_eta]);
-					fOutputList->Add(hPtTOFEtaNeg[i_c][i_eta]);
-					fOutputList->Add(hdEdx[i_c][i_eta]);
-					fOutputList->Add(hPtrTPC[i_c][i_eta]);
+				fOutputList->Add(hBetaPos[i_c][i_eta]);
+				fOutputList->Add(hMomentumTOFEtaPos[i_c][i_eta]);
+				fOutputList->Add(hPtTOFEtaPos[i_c][i_eta]);
+				fOutputList->Add(hBetaNeg[i_c][i_eta]);
+				fOutputList->Add(hMomentumTOFEtaNeg[i_c][i_eta]);
+				fOutputList->Add(hPtTOFEtaNeg[i_c][i_eta]);
+				fOutputList->Add(hdEdx[i_c][i_eta]);
+				fOutputList->Add(hPtrTPC[i_c][i_eta]);
 
-					fOutputList->Add(hPtVsP[i_eta]);
+				fOutputList->Add(hPtVsP[i_eta]);
 
-					if(i_eta == 0){
+				if (i_eta==0) {
+					if (fSaveDCAxyHistograms) {
 						fOutputList->Add(hPionTPCDCAxyNegData);
 						fOutputList->Add(hPionTPCDCAxyPosData);
 						fOutputList->Add(hProtonTPCDCAxyNegData);
@@ -477,98 +597,119 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 						fOutputList->Add(hPionTOFDCAxyPosData);
 						fOutputList->Add(hProtonTOFDCAxyNegData);
 						fOutputList->Add(hProtonTOFDCAxyPosData);
-						fOutputList->Add(hMIPVsEta);
-						fOutputList->Add(pMIPVsEta);
-						fOutputList->Add(hPlateauVsEta);
-						fOutputList->Add(pPlateauVsEta);
 					}
+
+					/* fOutputList->Add(hMIPVsEta); */
+					fOutputList->Add(pMIPVsEta);
+					/* fOutputList->Add(hPlateauVsEta); */
+					fOutputList->Add(pPlateauVsEta);
+					fOutputList->Add(hFlatVsV0MVsMult[i_c]);
+				}
+			} 
+
+			if (!fUseMC && fSaveDCAxyHistograms) { 
+				if (i_eta==0) {
+					fOutputList->Add(hPionTPCDCAxyNegData);
+					fOutputList->Add(hPionTPCDCAxyPosData);
+					fOutputList->Add(hProtonTPCDCAxyNegData);
+					fOutputList->Add(hProtonTPCDCAxyPosData);
+					fOutputList->Add(hPionTOFDCAxyNegData);
+					fOutputList->Add(hPionTOFDCAxyPosData);
+					fOutputList->Add(hProtonTOFDCAxyNegData);
+					fOutputList->Add(hProtonTOFDCAxyPosData);
 				}
 			}
-		}
+		} // eta loop
 	}
 
 	if (fUseMC) {
-		hPtPrimIn =
-			new TH1D("hPtPrimIn", "Prim In; #it{p}_{T} (GeV/#it{c}; counts)",
-					nPtbins, Ptbins);
-		fOutputList->Add(hPtPrimIn);
+		hPtPrimIn = new TH1D("hPtPrimIn", "Prim In; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
+		/* fOutputList->Add(hPtPrimIn); */
 
-		hPtPrimOut =
-			new TH1D("hPtPrimOut", "Prim Out; #it{p}_{T} (GeV/#it{c}; counts)",
-					nPtbins, Ptbins);
-		fOutputList->Add(hPtPrimOut);
+		hPtPrimOut = new TH1D("hPtPrimOut", "Prim Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
+		/* fOutputList->Add(hPtPrimOut); */
 
-		hPtSecOut =
-			new TH1D("hPtSecOut", "Sec Out; #it{p}_{T} (GeV/#it{c}; counts)",
-					nPtbins, Ptbins);
-		fOutputList->Add(hPtSecOut);
+		hPtSecOut = new TH1D("hPtSecOut", "Sec Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
+		/* fOutputList->Add(hPtSecOut); */
 
-		hPtOut = new TH1D("hPtOut", "all Out; #it{p}_{T} (GeV/#it{c}; counts)",
-				nPtbins, Ptbins);
-		fOutputList->Add(hPtOut);
+		hPtOut = new TH1D("hPtOut", "all Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
+		/* fOutputList->Add(hPtOut); */
 
-		hFlatenicityMC =
-			new TH1D("hFlatenicityMC", "counter", nbins_flat, min_flat, max_flat);
+		hFlatenicityMC = new TH2F("hFlatenicityMC", ";True Flatenicity; V0M Percentile;", nbins_flat, min_flat, max_flat, nCent, centClass );
 		fOutputList->Add(hFlatenicityMC);
-		hFlatResponse =
-			new TH2D("hFlatResponse", "; true flat; measured flat", nbins_flat,
-					min_flat, max_flat, nbins_flat, min_flat, max_flat);
-		fOutputList->Add(hFlatResponse);
-		hFlatVsPtMC =
-			new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})",
-					nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
-		fOutputList->Add(hFlatVsPtMC);
 
-		hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", nbins_flat,
-				min_flat, max_flat, 100, -0.5, 99.5);
+		hFlatenicityMCRec = new TH2F("hFlatenicityMCRec",";rec Flatenicity;V0M Percentile;", nbins_flat, min_flat, max_flat, nCent, centClass );
+		fOutputList->Add(hFlatenicityMCRec);
+
+		hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat", nbins_flat, min_flat, max_flat, nbins_flat, min_flat, max_flat);
+		fOutputList->Add(hFlatResponse);
+
+		hFlatVsPtMC = new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})", nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+		/* fOutputList->Add(hFlatVsPtMC); */
+
+		hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", nbins_flat, min_flat, max_flat, 100, -0.5, 99.5);
 		fOutputList->Add(hFlatVsNchMC);
 
 		hMCPtPionPos = new TH1F("hMCPtPionPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtPionPos);
+
 		hMCPtKaonPos = new TH1F("hMCPtKaonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtKaonPos);
+
 		hMCPtProtonPos = new TH1F("hMCPtProtonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtProtonPos);
 
 		hMCPtPionNeg = new TH1F("hMCPtPionNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtPionNeg);
+
 		hMCPtKaonNeg = new TH1F("hMCPtKaonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtKaonNeg);
+
 		hMCPtProtonNeg = new TH1F("hMCPtProtonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hMCPtProtonNeg);
 
 		hTPCRecTracksPionPos = new TH1F("hTPCRecTracksPionPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksPionPos);
+
 		hTPCRecTracksKaonPos = new TH1F("hTPCRecTracksKaonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksKaonPos);
+
 		hTPCRecTracksProtonPos = new TH1F("hTPCRecTracksProtonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksProtonPos);
 
 		hTPCRecTracksPionNeg = new TH1F("hTPCRecTracksPionNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksPionNeg);
+
 		hTPCRecTracksKaonNeg = new TH1F("hTPCRecTracksKaonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksKaonNeg);
+
 		hTPCRecTracksProtonNeg = new TH1F("hTPCRecTracksProtonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTPCRecTracksProtonNeg);
 
 		hTOFRecTracksPionPos = new TH1F("hTOFRecTracksPionPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksPionPos);
+
 		hTOFRecTracksKaonPos = new TH1F("hTOFRecTracksKaonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksKaonPos);
+
 		hTOFRecTracksProtonPos = new TH1F("hTOFRecTracksProtonPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksProtonPos);
 
 		hTOFRecTracksPionNeg = new TH1F("hTOFRecTracksPionNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksPionNeg);
+
 		hTOFRecTracksKaonNeg = new TH1F("hTOFRecTracksKaonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksKaonNeg);
+
 		hTOFRecTracksProtonNeg = new TH1F("hTOFRecTracksProtonNeg",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hTOFRecTracksProtonNeg);
 
 		hrTPCRecTracksPion = new TH1F("hrTPCRecTracksPion",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hrTPCRecTracksPion);
+
 		hrTPCRecTracksKaon = new TH1F("hrTPCRecTracksKaon",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hrTPCRecTracksKaon);
+
 		hrTPCRecTracksProton = new TH1F("hrTPCRecTracksProton",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
 		fOutputList->Add(hrTPCRecTracksProton);
 
@@ -593,44 +734,55 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 		}
 
-		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta) {
+		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta) 
+		{	
+			pion_cont_in_kaon_h[i_eta] = new TH2F(Form("pion_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(pion_cont_in_kaon_h[i_eta]);
+			nsigma_kaon_h[i_eta] = new TH2F(Form("nsigma_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(nsigma_kaon_h[i_eta]);
+			electron_cont_in_kaon_h[i_eta] = new TH2F(Form("electron_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(electron_cont_in_kaon_h[i_eta]);
+			random_cont_in_kaon_h[i_eta] = new TH2F(Form("random_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(random_cont_in_kaon_h[i_eta]);
 
-			hKaonContamination[i_eta] = new TH2F(Form("hKaonContamination_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); dEdx", nPtbins, Ptbins, nnSigmabins, nSigmabins);
-			fOutputList->Add(hKaonContamination[i_eta]);
+			pion_cont_in_proton_h[i_eta] = new TH2F(Form("pion_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(pion_cont_in_proton_h[i_eta]);
+			nsigma_proton_h[i_eta] = new TH2F(Form("nsigma_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(nsigma_proton_h[i_eta]);
+			electron_cont_in_proton_h[i_eta] = new TH2F(Form("electron_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(electron_cont_in_proton_h[i_eta]);
+			random_cont_in_proton_h[i_eta] = new TH2F(Form("random_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(random_cont_in_proton_h[i_eta]);
 
-			hKaondEdx[i_eta] = new TH2F(Form("hKaondEdx_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); dEdx", nPtbins, Ptbins, nnSigmabins, nSigmabins);
-			fOutputList->Add(hKaondEdx[i_eta]);
-
-			hProtonContamination[i_eta] = new TH2F(Form("hProtonContamination_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); dEdx", nPtbins, Ptbins, nnSigmabins, nSigmabins);
-			fOutputList->Add(hProtonContamination[i_eta]);
-
-			hProtondEdx[i_eta] = new TH2F(Form("hProtondEdx_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); dEdx", nPtbins, Ptbins, nnSigmabins, nSigmabins);
-			fOutputList->Add(hProtondEdx[i_eta]);
+			kaon_cont_in_pion_h[i_eta] = new TH2F(Form("kaon_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(kaon_cont_in_pion_h[i_eta]);
+			nsigma_pion_h[i_eta] = new TH2F(Form("nsigma_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(nsigma_pion_h[i_eta]);
+			electron_cont_in_pion_h[i_eta] = new TH2F(Form("electron_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(electron_cont_in_pion_h[i_eta]);
+			random_cont_in_pion_h[i_eta] = new TH2F(Form("random_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
+			fOutputList->Add(random_cont_in_pion_h[i_eta]);
 		}
-
 	}
 
-	hActivityV0DataSect =
-		new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT",
-				64, -0.5, 63.5);
+	// x: Sector y: Multiplicity z: V0M Multiplicity
+	hActivityV0CV0A = new TH3F("hActivityV0CV0A", "; VZERO channel; #it{N}_{ch} per VZERO cahnnel; V0M quantile", nV0Sectorsbins, V0Sectorsbins, nV0Multbins, V0Multbins, nCent, centClass);
+	//fOutputList->Add(hActivityV0CV0A);
+
+	hActivityV0DataSect = new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 	fOutputList->Add(hActivityV0DataSect);
+
 	if (fUseMC) {
-		hActivityV0McSect =
-			new TProfile("hActivityV0McSect", "true; V0 sector; #LTmultiplicity#GT",
-					64, -0.5, 63.5);
+		hActivityV0McSect = new TProfile("hActivityV0McSect", "true; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 		fOutputList->Add(hActivityV0McSect);
 	}
 
-	hFlatVsV0M = new TH2F("hFlatVsV0M", "; V0M Percentile; Flatenicity;", nCent, centClass, nbins_flat,
-			min_flat, max_flat);
-	fOutputList->Add(hFlatVsV0M);
+	/* hFlatVsV0MVsMult = new TH3F("hFlatVsV0MVsMult", "; Flatenicity; #it{N}_{ch}; V0M Percentile", nFlatbins, Flatbins, nMultbins, Multbins, nCent, centClass); */
+	/* fOutputList->Add(hFlatVsV0MVsMult); */
 
-	hCounter = new TH1F("hCounter", "counter", 10, -0.5, 9.5);
-	fOutputList->Add(hCounter);
-
-	fEventCuts.AddQAplotsToList(fOutputList);
+	/* fEventCuts.AddQAplotsToList(fOutputList); */
 	PostData(1, fOutputList); // postdata will notify the analysis manager of
-	// changes / updates to the
+				  // changes / updates to the
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
@@ -688,7 +840,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 
 	// Good events
 	if (!fEventCuts.AcceptEvent(event)) {
-		PostData(1, fOutputList);
+		/* PostData(1, fOutputList); */
 		return;
 	}
 
@@ -706,7 +858,6 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 		cout << "------- No AliMultSelection Object Found --------"
 			<< fMultSelection << endl;
 	fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-	hCounter->Fill(1);
 
 	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
 		if (fv0mpercentile >= centClass[i_c] &&
@@ -717,42 +868,30 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 		}
 	}
 
-	hCounter->Fill(3);
+	fMidRapidityMult = GetMidRapidityMultiplicity();
+	//fFlatTPC = GetFlatenicityTPC(); 
+	fFlat = GetFlatenicityV0();
 
-	Double_t flatenicity_v0 = GetFlatenicityV0();
-	Double_t flatenicity_tpc = GetFlatenicityTPC();
-	fFlat = flatenicity_v0; // default V0
-	if (fDetFlat == "VO_TPC") {
-		fFlat = (flatenicity_v0 + flatenicity_tpc) / 2.0;
-	}
-	if (fDetFlat == "TPC") {
-		fFlat = flatenicity_tpc;
-	}
-
-	hFlatV0vsFlatTPC->Fill(flatenicity_tpc, flatenicity_v0);
 	fFlatMC = -1;
 	if (fUseMC) {
+		if (!isGoodVtxPosMC) { return; }
 		fFlatMC = GetFlatenicityMC();
-		if (fFlatMC >= 0) {
-			hFlatenicityMC->Fill(fFlatMC);
-			hFlatResponse->Fill(fFlatMC, fFlat);
-			MakeMCanalysis();
-			MakeMCanalysisPID();
-			ElectronsContamination();
-		}
+		//	if (fFlatMC >= 0) {
+		hFlatenicityMC->Fill(fFlatMC,fv0mpercentile);
+		hFlatenicityMCRec->Fill(fFlat,fv0mpercentile);
+		hFlatResponse->Fill(fFlatMC, fFlat);
+		MakeMCanalysis();
+		MakeMCanalysisPID();
+		nSigmaContamination();
+		//	}
 	}
-	if (fFlat >= 0) {
 
-		hFlatenicityBefore->Fill(fFlat);
-		if (flatenicity_v0 < 0.9 && flatenicity_tpc < 0.9) {
-			hFlatenicity->Fill(fFlat);
-		}
-		if (fV0Mindex >= 0) {
-			hCounter->Fill(5);
-			hFlatVsV0M->Fill(fv0mpercentile, fFlat);
-			MakeDataanalysis();
-			MakePIDanalysis();
-		}
+	if (fFlat > 0 && fV0Mindex >= 0) {
+
+		/* hFlatVsV0MVsMult->Fill(fFlat, fMidRapidityMult, fv0mpercentile); */
+		hFlatVsV0MVsMult[fV0Mindex]->Fill(fFlat, fMidRapidityMult);
+		//MakeDataanalysis();
+		MakePIDanalysis();
 	}
 
 	if (fIsMCclosure) {
@@ -773,7 +912,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 	}
 
 	PostData(1, fOutputList); // stream the result of this event to the output
-	// manager which will write it to a file
+				  // manager which will write it to a file
 }
 //______________________________________________________________________________
 void AliAnalysisTaskFlatenicityPiKp::Terminate(Option_t *) {}
@@ -794,7 +933,6 @@ void AliAnalysisTaskFlatenicityPiKp::MakeDataanalysis() {
 			continue;
 		if (esdtrack->Pt() < fPtMin)
 			continue;
-		hFlatVsPt->Fill(fFlat, esdtrack->Pt());
 		hFlatVsPtV0M[fV0Mindex]->Fill(fFlat, esdtrack->Pt());
 	}
 }
@@ -997,7 +1135,6 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysis() {
 }
 
 //______________________________________________________________________________
-
 void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysisPID() {
 
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
@@ -1013,9 +1150,8 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysisPID() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
-
-		hFlatVsPtMC->Fill(fFlatMC, particle->Pt());
-		hPtPrimIn->Fill(particle->Pt());
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMC))
+			continue;
 
 		Int_t pdgCode = particle->PdgCode();
 		Int_t pidCode = GetPidCode(pdgCode);
@@ -1073,7 +1209,6 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysisPID() {
 		esdTrack->GetImpactParameters(DCAxy,dcaz);
 
 		if( fMC->IsPhysicalPrimary(mcLabel) ){
-
 			if( TOFPID(esdTrack) ){
 
 				if(esdTrack->Charge() < 0.0){
@@ -1183,14 +1318,15 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysisPID() {
 }
 
 //______________________________________________________________________________
-
 Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityTPC() {
 
-	const int nRings2 = 4;
+	const int nRings2 = 8;
 	const int nSectors2 = 8;
 	const int nCells2 = nRings2 * nSectors2;
-	float maxEta2[nRings2] = {-0.4, 0.0, +0.4, +0.8};
-	float minEta2[nRings2] = {-0.8, -0.4, +0.0, +0.4};
+	//	float maxEta2[nRings2] = {-0.4, 0.0, +0.4, +0.8};
+	//	float minEta2[nRings2] = {-0.8, -0.4, +0.0, +0.4};
+	float maxEta2[nRings2] = {-0.6, -0.4, -0.2, +0.0, +0.2, +0.4, +0.6, +0.8};
+	float minEta2[nRings2] = {-0.8, -0.6, -0.4, -0.2, +0.0, +0.2, +0.4, +0.6};
 	float maxPhi2[nSectors2] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 	float minPhi2[nSectors2] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
 	float RhoLattice2[nCells2];
@@ -1232,6 +1368,10 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityTPC() {
 	for (int iCell = 0; iCell < nCells2; ++iCell) {
 		mRho_glob += 1.0 * RhoLattice2[iCell];
 	}
+
+	// only events with tracks in the central region
+	if (mRho_glob <= 0.0) { return 9999; }
+
 	// average activity per cell
 	mRho_glob /= (1.0 * nCells2);
 	// get sigma
@@ -1252,7 +1392,6 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityTPC() {
 
 	return flatenicity_glob;
 }
-
 //______________________________________________________________________________
 Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityV0() {
 
@@ -1269,6 +1408,8 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityV0() {
 		AliError("AliVVZERO not available");
 		return 9999;
 	}
+
+	fV0MMultiplicity = -1.0;
 	// Flatenicity calculation
 	const Int_t nRings = 4;
 	const Int_t nSectors = 8;
@@ -1282,6 +1423,13 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityV0() {
 	for (Int_t iCh = 0; iCh < nCells; iCh++) {
 		RhoLattice[iCh] = 0.0;
 	}
+
+	std::map<std::string, double> v0_amplitude_mean_values{
+		{"16d",2.028},{"16e",1.991}, {"16g",1.805}, {"16h",1.653}, {"16i",1.514}, {"16j",1.481}, {"16k",1.407}, {"16l",1.404}, {"16o",1.352}, {"16p",2.169},
+			{"18b",2.146},{"18d",2.062},{"18e",2.055},{"18f",2.042},{"18g",2.06},{"18h",2.042},{"18i",2.06},{"18j",2.051},{"18k",2.054},{"18l",2.035},{"18m",1.996},{"18o",1.952},{"18p",1.931}
+	};
+	auto key_value_pair = v0_amplitude_mean_values.find(fPeriod);
+	double v0_mean_amplitude = key_value_pair->second;
 
 	Int_t nringA = 0;
 	Int_t nringC = 0;
@@ -1311,19 +1459,44 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityV0() {
 			}
 			detaV0 = maxEtaV0A[nringA] - minEtaV0A[nringA];
 		}
-		RhoLattice[iCh] =
-			mult / detaV0; // needed to consider the different eta coverage
+
+		if (fDeltaV0) { mult /= detaV0; }
+
+		// Removing the detaV0 before
+		// performing the equalization 
+		if (!fV0MEqualisation) { 
+			RhoLattice[iCh] = mult; 
+		} 
+		else{ 
+			// When doing the equalization
+			// one should take into account
+			// the Delta Eta
+			if (iCh < 32) { RhoLattice[iCh]  = mult * v0_mean_amplitude / fV0CCalibration->Eval(iCh); }
+			if (iCh >= 32) { RhoLattice[iCh] = mult * v0_mean_amplitude / fV0ACalibration->Eval(iCh); }
+		}
 	}
-	// Filling histos with mult info
-	for (Int_t iCh = 0; iCh < nCells; iCh++) {
-		hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]);
-	}
-	Float_t mRho = 0;
-	Float_t flatenicity = -1;
-	for (Int_t iCh = 0; iCh < nCells; iCh++) {
+
+	float mRho = 0.0;
+	float flatenicity = -1;
+
+	for (Int_t iCh = 0; iCh < nCells; iCh++)
+	{
 		mRho += RhoLattice[iCh];
 	}
-	Float_t multiplicityV0M = mRho;
+
+	float multiplicityV0M = mRho;
+
+	// If the Multiplicity in the V0C + V0A 
+	// is equal to zero, the event is discarded
+	if (mRho == 0.0) { return -1; }
+
+	// Filling histos with mult info
+	for (Int_t iCh = 0; iCh < nCells; iCh++) {
+		hActivityV0CV0A->Fill(iCh,RhoLattice[iCh],fv0mpercentile);
+		hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]);
+	}
+
+	fV0MMultiplicity = mRho;
 	// average activity per cell
 	mRho /= (1.0 * nCells);
 	// get sigma
@@ -1340,9 +1513,35 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityV0() {
 			flatenicity = sRho / mRho;
 		}
 	} else {
-		flatenicity = 9999;
+		flatenicity = -1;
 	}
 	return flatenicity;
+}
+//______________________________________________________________________________
+Double_t AliAnalysisTaskFlatenicityPiKp::GetMidRapidityMultiplicity() {
+
+	int mult_glob = 0;
+	int nTracks = fESD->GetNumberOfTracks();
+	for (Int_t iT = 0; iT < nTracks; ++iT) 
+	{
+
+		AliESDtrack *esdtrack = static_cast<AliESDtrack *>(
+				fESD->GetTrack(iT)); // get a track (type AliesdTrack)
+		if (!esdtrack)
+			continue;
+		if (!fTrackFilter->IsSelected(esdtrack))
+			continue;
+		float eta_a = esdtrack->Eta();
+
+		if (TMath::Abs(eta_a) > fEtaCut)
+			continue;
+		if (esdtrack->Pt() < fPtMin)
+			continue;
+
+		mult_glob++;
+	}
+
+	return (double)mult_glob;
 }
 //______________________________________________________________________________
 Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityMC() {
@@ -1383,6 +1582,8 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityMC() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMC))
+			continue;
 		Double_t phi = particle->Phi();
 		Double_t eta = particle->Eta();
 
@@ -1405,9 +1606,13 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityMC() {
 	for (int i_eta = 0; i_eta < nRings; ++i_eta) {
 		for (int i_phi = 0; i_phi < nSectors; ++i_phi) {
 			Float_t deltaEta = TMath::Abs(maxEta[i_eta] - minEta[i_eta]);
+			float mult = RhoLattice[i_segment];
 			RhoLattice[i_segment] /= deltaEta;
 			// Filling histos with mult info
-			hActivityV0McSect->Fill(i_segment, RhoLattice[i_segment]);
+			if (fDeltaV0) { mult /= deltaEta; }
+			else { mult *= 1.0; }
+
+			hActivityV0McSect->Fill(i_segment,mult);
 			i_segment++;
 		}
 	}
@@ -1438,7 +1643,7 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityMC() {
 	hFlatVsNchMC->Fill(flatenicity, nMult);
 	return flatenicity;
 }
-
+//______________________________________________________________________________
 Bool_t AliAnalysisTaskFlatenicityPiKp::HasRecVertex() {
 
 	float fMaxDeltaSpdTrackAbsolute = 0.5f;
@@ -1481,7 +1686,7 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::HasRecVertex() {
 		bool(fFlag & AliEventCuts::kVertexTracks)
 		? vtTrc->GetZ() - vtSPD->GetZ()
 		: 0.; /// If one of the two vertices is not available this cut
-	/// is always passed.
+		      /// is always passed.
 	double errTot = TMath::Sqrt(covTrc[5] + covSPD[5]);
 	double errTrc =
 		bool(fFlag & AliEventCuts::kVertexTracks) ? TMath::Sqrt(covTrc[5]) : 1.;
@@ -1497,7 +1702,7 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::HasRecVertex() {
 			 TMath::Sqrt(covSPD[5]) <= fMaxResolutionSPDvertex) &&
 			(!vtSPD->IsFromVertexerZ() ||
 			 vtSPDdispersion <= fMaxDispersionSPDvertex) /// vertex dispersion cut for
-			/// run1, only for ESD
+								     /// run1, only for ESD
 	   ) // quality cut on vertexer SPD z
 		fFlag |= BIT(AliEventCuts::kVertexQuality);
 
@@ -1506,7 +1711,7 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::HasRecVertex() {
 
 	return hasVtx;
 }
-
+//______________________________________________________________________________
 Bool_t AliAnalysisTaskFlatenicityPiKp::TOFPID(AliESDtrack * track) {
 	UInt_t status;
 	status=track->GetStatus();
@@ -1522,7 +1727,7 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::TOFPID(AliESDtrack * track) {
 
 	return kTRUE;
 }
-
+//______________________________________________________________________________
 Double_t AliAnalysisTaskFlatenicityPiKp::EtaCalibration(const Double_t &eta) {
 
 	double aPos = 0.0;
@@ -1549,7 +1754,7 @@ Double_t AliAnalysisTaskFlatenicityPiKp::EtaCalibration(const Double_t &eta) {
 	} else if(fPeriod == "16k"){
 		aPos = 49.9421; bPos = 2.3446; cPos = -41.2765; dPos = 279.695; ePos = -1027.73; fPos = 2022.84; gPos = -1967.79; hPos = 738.823;
 		aNeg = 50.0477; bNeg = 8.27344; cNeg = 125.29;  dNeg = 736.8;   eNeg = 2057.75;  fNeg = 2935.38; gNeg = 2064.03;  hNeg = 565.983;
-	} else if(fPeriod == "16deghijop"){
+	} else if(fPeriod == "16d" || fPeriod == "16e" || fPeriod == "16g" || fPeriod == "16h" || fPeriod == "16i" || fPeriod == "16j" || fPeriod == "16o" || fPeriod == "16p"){
 		aPos = 49.9743; bPos = 2.3388; cPos = -44.1496; dPos = 296.029; ePos = -1056.56; fPos = 2031.44; gPos = -1946.51; hPos = 723.89;
 		aNeg = 50.0329; bNeg = 6.99747; cNeg = 107.168;  dNeg = 649.001; eNeg = 1875.17;  fNeg = 2785.78; gNeg = 2063.77;  hNeg = 606.868;
 	} else if(fPeriod == "17data"){
@@ -1593,12 +1798,13 @@ Double_t AliAnalysisTaskFlatenicityPiKp::EtaCalibration(const Double_t &eta) {
 
 	return Calibration;
 }
-
-void AliAnalysisTaskFlatenicityPiKp::ElectronsContamination() {
+//______________________________________________________________________________
+void AliAnalysisTaskFlatenicityPiKp::nSigmaContamination() {
 
 	Int_t iTracks(fESD->GetNumberOfTracks());          
 
-	for (Int_t iT = 0; iT < iTracks; ++iT) {                
+	for (Int_t iT = 0; iT < iTracks; ++iT) 
+	{
 
 		AliESDtrack *esdTrack = static_cast<AliESDtrack *>(
 				fESD->GetTrack(iT)); // get a track (type AliesdTrack)
@@ -1627,19 +1833,19 @@ void AliAnalysisTaskFlatenicityPiKp::ElectronsContamination() {
 		Int_t mcLabel = -1;
 		mcLabel = TMath::Abs(esdTrack->GetLabel());
 
-		if (!fMC->IsPhysicalPrimary(mcLabel) )
-			continue;
+		/* if (!fMC->IsPhysicalPrimary(mcLabel) ) */
+		/* 	continue; */
 
-		AliMCParticle *mcTrack = 0;
-		mcTrack = (AliMCParticle*)fMC->GetTrack(mcLabel);
+		AliMCParticle *mc_particle = nullptr;
+		mc_particle = (AliMCParticle*)fMC->GetTrack(mcLabel);
 
-		if (!mcTrack) 
+		if (!mc_particle) 
 			continue;
 
 		if (TMath::Abs(esdTrack->Charge())==0)
 			continue;
 
-		Int_t pdgCode = mcTrack->PdgCode();
+		Int_t pdgCode = mc_particle->PdgCode();
 		Int_t pidCode = GetPidCode(pdgCode);
 
 		Int_t nh = -1;
@@ -1656,26 +1862,35 @@ void AliAnalysisTaskFlatenicityPiKp::ElectronsContamination() {
 		if ( nh < 0 )
 			continue;
 
-		Float_t nsigk = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
-		Float_t nsigp = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
+		Float_t nsigma_pi = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion);
+		Float_t nsigma_k = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
+		Float_t nsigma_p = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
 		Double_t pt = esdTrack->Pt();
 
-		if (pidCode == 7){
-			hKaonContamination[nh]->Fill(pt,nsigk);
-			hProtonContamination[nh]->Fill(pt,nsigp);
-		}
+		//	if (TMath::Abs(nsigma_k) <= 4.0){
+		if (pidCode==2) { nsigma_kaon_h[nh]->Fill(pt,nsigma_k); }
+		else if (pidCode==1) { pion_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+		else if (pidCode==7) { electron_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+		else { random_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+		//	}
 
-		if (pidCode == 2)
-			hKaondEdx[nh]->Fill(pt,nsigk);
+		//	if (TMath::Abs(nsigma_p) <= 4.0){	
+		if (pidCode==3) { nsigma_proton_h[nh]->Fill(pt,nsigma_p); }
+		else if (pidCode==1) { pion_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+		else if (pidCode==7) { electron_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+		else { random_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+		//	}
 
-		if (pidCode == 3)
-			hProtondEdx[nh]->Fill(pt,nsigp);
-
+		//	if (TMath::Abs(nsigma_pi) <= 3.0){	
+		if (pidCode==1) { nsigma_pion_h[nh]->Fill(pt,nsigma_pi); }
+		else if (pidCode==2) { kaon_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+		else if (pidCode==7) { electron_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+		else { random_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+		//	}
 	} 
 
 }
-
-
+//______________________________________________________________________________
 Bool_t AliAnalysisTaskFlatenicityPiKp::PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t mag, TF1* phiCutLow, TF1* phiCutHigh) {
 
 	if(pt < 2.0)
@@ -1697,7 +1912,7 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::PhiCut(Double_t pt, Double_t phi, Double_
 
 	return kTRUE;
 }
-
+//______________________________________________________________________________
 Int_t AliAnalysisTaskFlatenicityPiKp::GetPidCode(Int_t pdgCode) {
 	// return our internal code for pions, kaons, and protons
 

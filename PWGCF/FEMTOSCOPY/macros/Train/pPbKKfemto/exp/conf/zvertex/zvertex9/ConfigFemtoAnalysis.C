@@ -8,12 +8,12 @@
  *                                                                   *
  *********************************************************************/
 
-#if __cplusplus < 201103L
-#error "This file requires use of the c++11 standard (ROOT6)"
-#endif
+//#if __cplusplus < 201103L
+//#error "This file requires use of the c++11 standard (ROOT6)"
+//#endif
 
-//#if !defined(__CINT__) || defined(__MAKECINT_)
-#if !defined(__CINT__) && !defined(__CLING__)
+#if !defined(__CINT__) || defined(__MAKECINT_)
+//#if !defined(__CINT__) && !defined(__CLING__)
 #include "AliFemtoManager.h"
 //#include "AliFemtoEventReaderESDChain.h"
 //#include "AliFemtoEventReaderESDChainKine.h"
@@ -63,18 +63,18 @@
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoCutMonitorCollections.h"
 
-#include <TROOT.h>
-#include <TBase64.h>
+//#include <TROOT.h>
+//#include <TBase64.h>
 
-#include <TString.h>
-#include <TList.h>
-#include <TObjArray.h>
-#include <TObjString.h>
+//#include <TString.h>
+//#include <TList.h>
+//#include <TObjArray.h>
+//#include <TObjString.h>
 
-#include <TNamed.h>
-#include <random>
+//#include <TNamed.h>
+//#include <random>
 
-#include <TH1.h>
+//#include <TH1.h>
 
 #endif
 

@@ -31,6 +31,9 @@
 #include "AliEventPoolManager.h"
 #include "AliTHn.h"
 
+#include "AliAODForwardMult.h"
+#include "AliPartSimpleForCorr.h"
+
 class TList;
 class TF1;
 class TH1;
@@ -78,6 +81,8 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetMaxPtAss(Double_t maxPt){fPtMaxAss = maxPt;}
 		virtual void   SetMinPtTrig(Double_t minPt){fPtMinTrig = minPt;}
 		virtual void   SetMaxPtTrig(Double_t maxPt){fPtMaxTrig = maxPt;}
+		virtual void   SetMaxCent(Double_t maxCent){fCentMax = maxCent;}
+		virtual void   SetMinCent(Double_t maxCent){fCentMin = maxCent;}
 	
 		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
 		virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
@@ -96,7 +101,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		// virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		// virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
-
+		virtual void   SetAnaType(TString type) {anaType = type;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
 		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
@@ -104,8 +109,17 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetPeriod(TString period){fPeriod = period;}
 		virtual void   SetSystFlag(int syst){fCurrSystFlag = syst;} 
 		virtual int    GetSystFlag(){return fCurrSystFlag;}
+		virtual void   UseBootstrap(bool ftest = true){fBootstrapStat = ftest;}
+		virtual void   SetBootstrapRange(int low=-100, int high = 100){sampleLow = low; sampleHigh = high;}
+
+        void SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
+        void SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
+		virtual void   SetFMDacceptanceCuts(double AL, double AH, double CL, double CH) { fFMDAacceptanceCutLower = AL; fFMDAacceptanceCutUpper = AH; fFMDCacceptanceCutLower = CL; fFMDCacceptanceCutUpper = CH; }
+		virtual void   SetnSamples(int nsamples) {nSamples = nsamples;}
+		virtual void   SetBinningMethod(unsigned method) {fBinMethod = method;}
 
 		Double_t RangePhi(Double_t DPhi);
+        Double_t  RangePhiFMD(Double_t DPhi);
 		Double_t GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
 
 	private:
@@ -113,6 +127,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		AliAnalysisTaskCorrForNonlinearFlow& operator=(const AliAnalysisTaskCorrForNonlinearFlow&);
 
 		virtual void NTracksCalculation(AliVEvent* aod);
+                Bool_t PrepareTPCFMDTracks();
 		virtual void FillCorrelations();
 		virtual void FillCorrelationsMixed();
 		Bool_t AcceptAOD(AliAODEvent *inEv);
@@ -148,8 +163,10 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Double_t		fMaxPt;					// Max pt - for histogram limits
 		Double_t                fPtMinAss;                              // Min pt - for Associate particle 
 		Double_t                fPtMaxAss;                              // Min pt - for Associate particle 
-		Double_t                fPtMinTrig;                              // Min pt - for trigger particle 
-		Double_t                fPtMaxTrig;                              // Min pt - for trigger particle 
+		Double_t                fPtMinTrig;                             // Min pt - for trigger particle 
+		Double_t                fPtMaxTrig;                             // Min pt - for trigger particle 
+		Double_t                fCentMin;                               // Min Centrality
+		Double_t                fCentMax;                               // Max Centrality
 		Int_t			fSample;				// number of sample
 		Int_t			fTrigger;				// flag for trigger
 		Int_t			fAliTrigger;				// name for trigger
@@ -158,7 +175,8 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
 		bool                    fIsMC;                                  // The observable for MonteCarlo truth
 		TString                 fNtrksName;                             // Cent or Mult
-		TString			fPeriod;				// period
+		TString                 anaType;                                // TPC-TPC or TPC-FMD
+		TString					fPeriod;								// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
 		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region 
@@ -175,6 +193,20 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t                   fPoolMaxNEvents;                        // Maximum number of events in a pool
 		Int_t                   fPoolMinNTracks;                        // Minimum number of tracks to mix
 		Int_t                   fMinEventsToMix;                        // Minimum numver of events to mix
+        Bool_t                  fBootstrapStat;                         // Flag to calculate statistical uncertainty with bootstrap
+        Bool_t                  fUseFMDcut;                             // [kTRUE]
+        Double_t                fFMDcutapar0;                           // [1.64755]
+        Double_t                fFMDcutapar1;                           // [119.602]
+        Double_t                fFMDcutcpar0;                           // [2.73426]
+        Double_t                fFMDcutcpar1;                           // [150.31]
+        Double_t                fFMDAacceptanceCutLower;                // FMDCut
+        Double_t                fFMDAacceptanceCutUpper;                // FMDCut
+        Double_t                fFMDCacceptanceCutLower;                // FMDCut
+        Double_t                fFMDCacceptanceCutUpper;                // FMDCut
+		unsigned                fBinMethod;                             // fBinMethod
+		int                     nSamples;                               // Number of bootstrap samples
+		int                     sampleLow;                              // lower bound of bootstrap sample
+		int                     sampleHigh;                             // higher bound of bootstrap sample
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -244,40 +276,51 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 
 
 		// Track histograms
-		TH1D*				fPhiDis1D;		//! phi dis 1D
-		TH1D*				fPhiDis1DBefore;		//! phi dis 1D before track cuts
-		TH3D*				fPhiDis;		//! phi dist
-		TH1D*				fEtaDis;		//! eta dist
-		TH1D*				fEtaBefore;		//! eta dist before track cuts
-		TH1D*				fPtDis;			//! pt dist
-		TH1D*				fPtBefore;		//! pt dist before track cuts
+		TH1D*				fPhiDis1D;		    //! phi dis 1D
+		TH1D*				fPhiDis1DBefore;    //! phi dis 1D before track cuts
+		TH3D*				fPhiDis;		    //! phi dist
+		TH1D*				fEtaTriDis;		    //! eta dist
+		TH1D*				fEtaTriDisBefore;	//! eta dist before track cuts
+		TH1D*				fEtaAssDis;		    //! eta dist
+		TH1D*				fEtaAssDisBefore;	//! eta dist before track cuts
+		TH1D*				fPtTriDis;			//! pt dist
+		TH1D*				fPtTriDisBefore;	//! pt dist before track cuts
+		TH1D*				fPtAssDis;			//! pt dist
+		TH1D*				fPtAssDisBefore;	//! pt dist before track cuts
 		TH1F*				hDCAxyBefore; 		//!
 		TH1F*				hDCAzBefore; 		//!
-		TH1F*				hITSclustersBefore; 	//!
+		TH1F*				hITSclustersBefore; //!
 		TH1F*				hChi2Before; 		//!
-		TH1F*				hDCAxy; 		//!
-		TH1F*				hDCAz; 			//!
+		TH1F*				hDCAxy; 	       	//!
+		TH1F*				hDCAz; 			    //!
 		TH1F*				hITSclusters; 		//!
-		TH1F*				hChi2; 			//!
+		TH1F*				hChi2; 			    //!
+		TH2D*               hFMDAvsV0;          //!
+		TH2D*               hFMDCvsV0;          //!
 
+
+		
 		TObjArray*                   fTracksTrigCharged;     //! List of charged tracks
 		TObjArray*                   fTracksAss;             //! List of associate tracks
 		AliTHn*                      fhChargedSE;            //!
 		AliTHn*                      fhChargedME;            //!
 		AliEventPoolManager*         fPoolMgr;               //!  event pool manager for Event Mixing
+		TH2D*                        fhTracksTrigCent;       //! Trigger particle histogram
 
 		// Global variables
+		TRandom3 rand;                 //!
 		double NtrksCounter = 0;       //!
 		double NTracksCorrected = 0;   //!
 		double NTracksUncorrected = 0; //!
 		int NtrksAfter = 0;            //!
 
+		int bootstrap_value;           //!
 		int lastRunNumber   = 0;       //!
 		double fPVz;                   //!
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 1); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 8); // Analysis task
 };
 
 #endif

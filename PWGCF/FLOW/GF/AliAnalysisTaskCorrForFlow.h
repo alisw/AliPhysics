@@ -1,3 +1,11 @@
+/**************************************************************************
+ *    Author:       Zuzana Moravcova                                      *
+ *    Framework for calculating di-hadron correlation                     *
+ *    for extraction of v_n{2} and v_n[2] coefficients.                   *
+ *                                                                        *
+ *    If used, modified, or distributed,                                  *
+ *    please aknowledge the author of this code.                          *
+ **************************************************************************/
 
 #ifndef ALIANALYSISTASKCORRFORFLOW_H
 #define ALIANALYSISTASKCORRFORFLOW_H

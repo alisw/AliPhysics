@@ -30,11 +30,11 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
   
-  void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH1F* hPtPrimaries, TH1F* hPtProtons, TH1F* hPtPrimaries2, TH1F* hPtProtons2, TH2F* hPtvsQ3Primaries, TH2F* hPtvsQ3Protons, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Q3VskDistribution12, TH2F* Q3VskDistribution23, TH2F* hKinematics, TH2F* hPrimAngles, TH2F* hDeta, TH2F* hDphi, TH2F* InvMass12, TH2F* InvMass23, TH2F* InvMass31);
+  void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH1F* hPtPrimaries, TH1F* hPtProtons, TH1F* hPtPrimaries2, TH1F* hPtProtons2, TH2F* hPtvsQ3Primaries, TH2F* hPtvsQ3Protons, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Q3VskDistribution12, TH2F* Q3VskDistribution23, TH2F* hKinematics, TH2F* hPrimAngles, TH2F* hDeta, TH2F* hDphi, TH2F* InvMass12, TH2F* InvMass23, TH2F* InvMass31, TH2F* histDeltaPhi12, TH2F* histDeltaPhi23, TH2F* histDeltaPhi31, TH2F* histDeltaPhiDeltaEta12, TH2F* histDeltaPhiDeltaEta23, TH2F* histDeltaPhiDeltaEta31, TH2F* histP, TH2F* histK);
 
   void SetMixedEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer);
 
-  void FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH1F* hPtPrimaries, TH1F* hPtProtons, TH1F* hPtPrimaries2, TH1F* hPtProtons2, TH2F* hPtvsQ3Primaries, TH2F* hPtvsQ3Protons, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed, TH2F* hKinematics, TH2F* hPrimAngles, TH2F* hDeta, TH2F* hDphi); //, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed);
+  void FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH1F* hPtPrimaries, TH1F* hPtProtons, TH1F* hPtPrimaries2, TH1F* hPtProtons2, TH2F* hPtvsQ3Primaries, TH2F* hPtvsQ3Protons, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed, TH2F* hKinematics, TH2F* hPrimAngles, TH2F* hDeta, TH2F* hDphi, TH2F* histDeltaPhi12, TH2F* histDeltaPhi23, TH2F* histDeltaPhi31, TH2F* histDeltaPhiDeltaEta12, TH2F* histDeltaPhiDeltaEta23, TH2F* histDeltaPhiDeltaEta31, TH2F* histP, TH2F* histK); //, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed);
 
   // test different mixing
   void SetMixedEventPPP(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>*fPartContainer);
@@ -56,8 +56,8 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void FillPDGPairInvMass(AliFemtoDreamBasePart &part1, float massPart1, AliFemtoDreamBasePart &part2, float massPart2, AliFemtoDreamBasePart &part3, float massPart3, TH2F* hist, float Q3);
 
   //Two Body--------------------------------------------------------------------
-  void FillPairDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
-  void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
+  void FillPairDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* histDeltaPhi, TH2F* histLowDeltaPhi, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
+  void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* histDeltaPhi, TH2F* histLowDeltaPhi, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
   void FillPairTransverseMass(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies, int secondSpecies, TH1F* hist1, std::vector<int> PDGCodes, TH2F* hist2); 
 
   //Setters --------------------------------------------------------------------
@@ -109,6 +109,9 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   }
   void SetRunPlotMult(bool RunPlotMult) {
     fRunPlotMult=RunPlotMult;
+  }
+  void SetRunCorrDeltaPhi(bool RunCorrDeltaPhi) {
+    fRunCorrDeltaPhi=RunCorrDeltaPhi;
   }
 
   void SetClosePairRejectionForAll(bool ClosePairRejectionForAll) {
@@ -170,10 +173,21 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
     fPlotsMC = PlotsMC;
   }   
 
+  void SetPlotP1(bool PlotP1){
+    fPlotP1 = PlotP1;
+  }
 
+  void SetQ3cutValue(double Q3cutValue){
+    fQ3cutValue = Q3cutValue;
+  }
+
+  void SetQ3MinValue(double Q3MinValue){
+    fQ3MinValue = Q3MinValue;
+  }
 
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float BoostOneParticle(TLorentzVector &PartOne, TLorentzVector &PartTwo, TLorentzVector &PartThree);
  private:
   AliAnalysisTaskThreeBodyProtonPrimary(const AliAnalysisTaskThreeBodyProtonPrimary &task);
   AliAnalysisTaskThreeBodyProtonPrimary &operator=(const AliAnalysisTaskThreeBodyProtonPrimary &task);
@@ -211,6 +225,8 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TList *fMixedEvent;//!
   TList *fSameEventMult;//!
   TList *fMixedEventMult;//!
+  TList *fSameEventMultDphi;//!
+  TList *fMixedEventMultDphi;//!
   TList *fSameEventPtPrimaries;//!
   TList *fMixedEventPtPrimaries;//!
   TList *fSameEventPtPrimaries2;//!
@@ -230,6 +246,8 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TList *fOtherHistos;//!
   TList *fInvMassList;//!
   TList *fKinematicsPlots;//!
+  TList *fP1Histos;//!
+  TList *fKHistos;//!
 
 
   bool fRunThreeBody;
@@ -238,9 +256,11 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   bool fRunPlotPhiTheta;
   bool fRunPlotOtherHistos;
   bool fRunPlotMult;
+  bool fRunCorrDeltaPhi;
   bool fRunPlotPt;
   bool fRunOfficialTwoBody; // ADDED BY RAFFA
   bool fDoKinematicsPlots;
+  bool fPlotP1;
 
   bool fClosePairRejectionForAll; 
   bool fturnoffClosePairRejectionCompletely; 
@@ -253,6 +273,8 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   double fDeltaEtaMaxPPrim;
   double fDeltaPhiMaxPAPrim;
   double fDeltaEtaMaxPAPrim;
+  double fQ3cutValue;
+  double fQ3MinValue;
 
   bool fCleanWithLambdas; //if kTRUE: reject Proton + Pi- / Antiproton + Pi+ from Lambda/AntiLambda
   bool fDoOnlyThreeBody; //if kTRUE: 3 Body analysis, else 2 Body
@@ -275,8 +297,14 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TH2F **fSameEventTripletPtvsQ3Protons;
 
   TH1F **fSameEventTripletArray_TwoBody;
+  TH2F **fSameEventMultArray_TwoBody;
+  TH2F **fSameEventDphiArray_TwoBody;
   TH2F **fSameEventTripletMultArray_TwoBody;
   TH2F **fSameEventTripletPhiThetaArray_TwoBody;
+  TH2F **fSameEventP1;
+  TH2F **fSameEventK;
+
+
   TH1F **fPairTranverseMass_TwoBody; // ADDED BY RAFFA
   TH2F **fPairTranverseMassVSkstar_TwoBody; // ADDED BY RAFFA
   TH2F **fKinematics;
@@ -314,10 +342,28 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TH2F **fMixedEventTripletPhiThetaArray_DifferentPair;
   TH2F **fMixedEventTripletPtvsQ3Primaries;
   TH2F **fMixedEventTripletPtvsQ3Protons;
+  TH2F **fhistDeltaPhi12;
+  TH2F **fhistDeltaPhi23;
+  TH2F **fhistDeltaPhi31;
+  TH2F **fhistDeltaPhiDeltaEta12;
+  TH2F **fhistDeltaPhiDeltaEta23;
+  TH2F **fhistDeltaPhiDeltaEta31;
+  TH2F **fhistDeltaPhi12ME;
+  TH2F **fhistDeltaPhi23ME;
+  TH2F **fhistDeltaPhi31ME;
+  TH2F **fhistDeltaPhiDeltaEta12ME;
+  TH2F **fhistDeltaPhiDeltaEta23ME;
+  TH2F **fhistDeltaPhiDeltaEta31ME;
+
 
   TH1F **fMixedEventTripletArray_TwoBody;
   TH2F **fMixedEventTripletMultArray_TwoBody;
+  TH2F **fMixedEventMultArray_TwoBody;
+  TH2F **fMixedEventDphiArray_TwoBody;
   TH2F **fMixedEventTripletPhiThetaArray_TwoBody;
+  TH2F **fMixedEventP1;
+  TH2F **fMixedEventK;
+
   // Q3 and k* dependense
   TH2F **fQ3VskDistributionsArrayq12;
   TH2F **fQ3VskDistributionsArrayq12Mixed;

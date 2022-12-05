@@ -39,6 +39,7 @@ AliAnalysisTaskEbECumulants::AliAnalysisTaskEbECumulants(const char *name):
  fHistList(NULL),
  fUseFisherYates(kFALSE),
  fRandomIndices(NULL),
+ fVerbose(kFALSE),
  // Event histograms:
  fEventHistogramsList(NULL),
  fEventHistogramsPro(NULL),
@@ -81,6 +82,7 @@ AliAnalysisTaskEbECumulants::AliAnalysisTaskEbECumulants():
  fHistList(NULL),
  fUseFisherYates(kFALSE),
  fRandomIndices(NULL),
+ fVerbose(kFALSE),
  // Event histograms:
  fEventHistogramsList(NULL),
  fEventHistogramsPro(NULL),
@@ -216,7 +218,7 @@ void AliAnalysisTaskEbECumulants::InitializeArrays()
 
  // *) Event histograms;
  
- //// if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // *) Event histograms:
  for(Int_t t=0;t<gEventHistogramsEbE;t++) // type, see enum eEventHistograms
@@ -266,7 +268,7 @@ void AliAnalysisTaskEbECumulants::BookEventHistograms()
 {
  // Book all event histograms.
 
- // if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  TString stype[gEventHistogramsEbE] = {"NumberOfEvents","TotalMultiplicity","SelectedParticles","Centrality","Vertex_x","Vertex_y","Vertex_z"}; // keep in sync. with enum eEventHistograms
  TString srs[2] = {"rec","sim"};
@@ -298,6 +300,8 @@ void AliAnalysisTaskEbECumulants::BookEventHistograms()
 void AliAnalysisTaskEbECumulants::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
 } // void AliAnalysisTaskEbECumulants::BookFinalResultsHistograms()
 
@@ -404,6 +408,8 @@ void AliAnalysisTaskEbECumulants::ResetEventByEventQuantities()
 {
  // Reset all global event-by-event quantities here:
 
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
  // *) Fisher-Yates algorithm:
  if(fUseFisherYates)
  {
@@ -422,7 +428,7 @@ void AliAnalysisTaskEbECumulants::RandomIndices(AliVEvent *ave)
  // b) Get total number of tracks;
  // c) Fisher-Yates algorithm.
 
- //// // if(fVerbose){Green(__PRETTY_FUNCTION__);} // TBI 20211115 add support for verbose mode eventually
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);

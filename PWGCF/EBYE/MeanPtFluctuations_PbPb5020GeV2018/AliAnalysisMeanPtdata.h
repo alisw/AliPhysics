@@ -37,6 +37,7 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
     //    virtual     void    SetUsePileupCut_PbPb5TeV( int v ){ _usePileupCut_PbPb5TeV = v;}
     virtual     void    SetPileupCut_PbPb5TeV( TProfile * v ){ _hProfPileupCut = v;}
     virtual     void    SetNClusterMin(int v){ _nClusterMin       = v; }
+    virtual     void    SetFilterBit(int v)               { _fb  = v; }
     virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
     virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; }
     virtual     void    SetDcaZMax(double v)            { _dcaZMax           = v; }
@@ -189,6 +190,7 @@ class AliAnalysisMeanPtdata : public AliAnalysisTaskSE {
     Int_t fV0AMultiplicity;
     Int_t fV0CMultiplicity;
     Int_t fNoOfTPCoutTracks;    
+    int      _fb;
     int      _nClusterMin;
     int      _singlesOnly;
     int      _nTPCCrossRows;

@@ -110,7 +110,9 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fSystematicScalingEtaSigmaParaThreshold(250.)
   , fSystematicScalingEtaSigmaParaBelowThreshold(1.0)
   , fSystematicScalingEtaSigmaParaAboveThreshold(1.0)
-  , fSystematicScalingMultCorrection(1.0)
+  , fSystematicScalingMultCorrectionMomentumThreshold(2.0)
+  , fSystematicScalingMultCorrectionLowMomenta(1.0)
+  , fSystematicScalingMultCorrectionHighMomenta(1.0)
   , fCentralityEstimator("V0M")
   , fhPIDdataAll(0x0)
   , fhGenEl(0x0)
@@ -181,17 +183,6 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
-  , fIsUEPID(kFALSE)
-  , fh2UEDensity(0x0)
-  , fh1JetArea(0x0)
-  , fh3DCA_XY_Positive(0x0)
-  , fh3DCA_XY_Primaries_Positive(0x0)
-  , fh3DCA_XY_WeakDecays_Positive(0x0)
-  , fh3DCA_XY_Material_Positive(0x0) 
-  , fh3DCA_XY_Negative(0x0)
-  , fh3DCA_XY_Primaries_Negative(0x0)
-  , fh3DCA_XY_WeakDecays_Negative(0x0)
-  , fh3DCA_XY_Material_Negative(0x0)
   , fTPCclusterStudies(0x0)
   , fhclusterStudies(0x0) 
   , fClusterStudiesPiMomentumFirstLow(0.45)
@@ -203,6 +194,17 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fClusterStudiesPrMomentumLow(2.0)
   , fClusterStudiesPrMomentumHigh(2.1)  
   , fVicinityCut(0.2)
+  , fIsUEPID(kFALSE)
+  , fh2UEDensity(0x0)
+  , fh1JetArea(0x0)
+  , fh3DCA_XY_Positive(0x0)
+  , fh3DCA_XY_Primaries_Positive(0x0)
+  , fh3DCA_XY_WeakDecays_Positive(0x0)
+  , fh3DCA_XY_Material_Positive(0x0) 
+  , fh3DCA_XY_Negative(0x0)
+  , fh3DCA_XY_Primaries_Negative(0x0)
+  , fh3DCA_XY_WeakDecays_Negative(0x0)
+  , fh3DCA_XY_Material_Negative(0x0)
 {
   // default Constructor
   
@@ -287,7 +289,9 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fSystematicScalingEtaSigmaParaThreshold(250.)
   , fSystematicScalingEtaSigmaParaBelowThreshold(1.0)
   , fSystematicScalingEtaSigmaParaAboveThreshold(1.0)
-  , fSystematicScalingMultCorrection(1.0)
+  , fSystematicScalingMultCorrectionMomentumThreshold(2.0)
+  , fSystematicScalingMultCorrectionLowMomenta(1.0)
+  , fSystematicScalingMultCorrectionHighMomenta(1.0)
   , fCentralityEstimator("V0M")
   , fhPIDdataAll(0x0)
   , fhGenEl(0x0)
@@ -358,6 +362,17 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
+  , fTPCclusterStudies(0x0)
+  , fhclusterStudies(0x0)  
+  , fClusterStudiesPiMomentumFirstLow(0.45)
+  , fClusterStudiesPiMomentumFirstHigh(0.55)
+  , fClusterStudiesPiMomentumSecondLow(1.5)
+  , fClusterStudiesPiMomentumSecondHigh(1.6)
+  , fClusterStudiesKaMomentumLow(1.2)
+  , fClusterStudiesKaMomentumHigh(1.3)
+  , fClusterStudiesPrMomentumLow(2.0)
+  , fClusterStudiesPrMomentumHigh(2.1) 
+  , fVicinityCut(0.2)  
   , fIsUEPID(kFALSE)
   , fh2UEDensity(0x0)
   , fh1JetArea(0x0)
@@ -369,17 +384,6 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fh3DCA_XY_Primaries_Negative(0x0)
   , fh3DCA_XY_WeakDecays_Negative(0x0)
   , fh3DCA_XY_Material_Negative(0x0)  
-  , fTPCclusterStudies(0x0)
-  , fhclusterStudies(0x0)  
-  , fClusterStudiesPiMomentumFirstLow(0.45)
-  , fClusterStudiesPiMomentumFirstHigh(0.55)
-  , fClusterStudiesPiMomentumSecondLow(1.5)
-  , fClusterStudiesPiMomentumSecondHigh(1.6)
-  , fClusterStudiesKaMomentumLow(1.2)
-  , fClusterStudiesKaMomentumHigh(1.3)
-  , fClusterStudiesPrMomentumLow(2.0)
-  , fClusterStudiesPrMomentumHigh(2.1) 
-  , fVicinityCut(0.2)
 {
   // Constructor
   
@@ -1797,7 +1801,8 @@ void AliAnalysisTaskMTFPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
     return;
   }
   
-  if (TMath::Abs(fSystematicScalingMultCorrection - 1.0) > fgkEpsilon) {
+  if ((TMath::Abs(fSystematicScalingMultCorrectionLowMomenta - 1.0) > fgkEpsilon) || 
+     (TMath::Abs(fSystematicScalingMultCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
@@ -2977,7 +2982,9 @@ void AliAnalysisTaskMTFPID::PrintSystematicsSettings() const
   printf("SigmaParaThr:\t%f\n", GetSystematicScalingEtaSigmaParaThreshold());
   printf("SigmaParaBelowThr:\t%f\n", GetSystematicScalingEtaSigmaParaBelowThreshold());
   printf("SigmaParaAboveThr:\t%f\n", GetSystematicScalingEtaSigmaParaAboveThreshold());
-  printf("MultCorr:\t%f\n", GetSystematicScalingMultCorrection());
+  printf("MultCorrMomThreshold:\t%f\n", GetSystematicScalingMultCorrectionMomentumThreshold());
+  printf("MultCorrLowP:\t%f\n", GetSystematicScalingMultCorrectionLowMomenta());
+  printf("MultCorrHighP:\t%f\n", GetSystematicScalingMultCorrectionHighMomenta());
   printf("TOF mode: %d\n", GetTOFmode());
   
   printf("\n\n");
@@ -3217,15 +3224,23 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
                                         fPIDResponse->GetTPCResponse().GetMultiplicitySigmaCorrectionFast(dEdxPr * etaCorrPr, currEvtMultiplicity) : 1.;
     
     // Scale multiplicity correction factors, if desired (and multiplicity correction functions are to be used, otherwise it is not possible!)
-    if (fPIDResponse->UseTPCMultiplicityCorrection() && TMath::Abs(fSystematicScalingMultCorrection - 1.0) > fgkEpsilon) {
-      // Since we do not want to scale the splines with this, but only the multiplicity variation, only scale the deviation of the correction factor!
-      // E.g. if we would have a flat mult depence fix at 1.0, we would shift the whole thing equal to shifting the splines by the same factor!
+    if (fPIDResponse->UseTPCMultiplicityCorrection() && TMath::Abs(fSystematicScalingMultCorrectionHighMomenta - 1.0) > fgkEpsilon) {
       
-      multiplicityCorrEl = 1.0 + fSystematicScalingMultCorrection * (multiplicityCorrEl - 1.0);
-      multiplicityCorrKa = 1.0 + fSystematicScalingMultCorrection * (multiplicityCorrKa - 1.0);
-      multiplicityCorrPi = 1.0 + fSystematicScalingMultCorrection * (multiplicityCorrPi - 1.0);
-      multiplicityCorrMu = fTakeIntoAccountMuons ? (1.0 + fSystematicScalingMultCorrection * (multiplicityCorrMu - 1.0)) : 1.0;
-      multiplicityCorrPr = 1.0 + fSystematicScalingMultCorrection * (multiplicityCorrPr - 1.0);
+      Double_t usedSystematicScalingMultCorrection = fSystematicScalingMultCorrectionHighMomenta;
+      
+      if (TMath::Abs(fSystematicScalingMultCorrectionHighMomenta - fSystematicScalingMultCorrectionLowMomenta) > fgkEpsilon) {
+        const Double_t fractionHighMomentumScaleFactor = 0.5 * (1. + TMath::Erf((pTPC - fSystematicScalingMultCorrectionMomentumThreshold) / 0.1));
+        usedSystematicScalingMultCorrection = fSystematicScalingMultCorrectionLowMomenta * (1 - fractionHighMomentumScaleFactor)
+                                             + fSystematicScalingMultCorrectionHighMomenta * fractionHighMomentumScaleFactor;
+      }
+      // Since we do not want to scale the splines with this, but only the multiplicity variation, only scale the deviation of the correction factor!
+      // E.g. if we would have a flat mult dependence fix at 1.0, we would shift the whole thing equal to shifting the splines by the same factor!
+      
+      multiplicityCorrEl = 1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrEl - 1.0);
+      multiplicityCorrKa = 1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrKa - 1.0);
+      multiplicityCorrPi = 1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrPi - 1.0);
+      multiplicityCorrMu = fTakeIntoAccountMuons ? (1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrMu - 1.0)) : 1.0;
+      multiplicityCorrPr = 1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrPr - 1.0);
     }
     
     // eta correction must be enabled in order to use the new sigma parametrisation maps. Since this is the absolute sigma

@@ -202,11 +202,11 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
     fHistos->CreateTH2(Form("hJESVsNNeutralDet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{neutral,det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNConstPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{const,part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNChargedPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{charged,part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
-    fHistos->CreateTH2(Form("hJESVsNNeutralPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{neutral,part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.); 
+    fHistos->CreateTH2(Form("hJESVsNNeutralPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{neutral,part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
     fHistos->CreateTH2(Form("hCompNEF_%d_%d", ptbminI, ptbmaxI), Form("Comparisons NEF for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0., 1., 100, 0., 1.);
     fHistos->CreateTH2(Form("hCompNConst_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nconst for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5);
     fHistos->CreateTH2(Form("hCompNCharged_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nch for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5);
-    fHistos->CreateTH2(Form("hCompNNeutral_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nne for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5); 
+    fHistos->CreateTH2(Form("hCompNNeutral_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nne for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5);
   }
 
   // A bit of QA stuff
@@ -427,7 +427,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
        energydef = (AliVCluster::VCluUserDefEnergy_t)detjetscusters->GetDefaultClusterEnergy();
       }
       angularityDet = MakeAngularity(*detjet, energydef);
-      fHistos->FillTH2("hAngularityDet", detjet->Pt(), angularityDet); 
+      fHistos->FillTH2("hAngularityDet", detjet->Pt(), angularityDet);
     } catch(AngularityException &e) {
       fHistos->FillTH1("hAngularityErrorsDet", partjet->Pt());
     }
@@ -458,18 +458,18 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     double detptcharged = detjetpt * (1 - detjet->NEF()), detptneutral = detjetpt * detjet->NEF(),
            partptcharged = partjetpt * (1 - partjet->NEF()),  partptneutral = partjetpt * partjet->NEF();
     fHistos->FillTH2("hJetResponseFine", detjetpt, partjetpt);
-    fHistos->FillTH1("hJetResponseFineCharged", detptcharged, partptcharged);
-    fHistos->FillTH1("hJetResponseFineNeutral", detptneutral, partptneutral);
+    if(partptcharged) fHistos->FillTH1("hJetResponseFineCharged", detptcharged, partptcharged);
+    if(partptneutral) fHistos->FillTH1("hJetResponseFineNeutral", detptneutral, partptneutral);
     fHistos->FillTH1("hJetEnergyScale", partjetpt, (detjetpt - partjetpt)/partjetpt);
-    fHistos->FillTH1("hJetEnergyScaleCharged", partptcharged, (detptcharged - partptcharged)/partptcharged);
-    fHistos->FillTH1("hJetEnergyScaleNeutral", partptneutral, (detptneutral - partptneutral)/partptneutral);
-    fHistos->FillTH1("hJetEnergyScaleChargedVsFull", partjetpt, (detptcharged - partptcharged)/partptcharged);
-    fHistos->FillTH1("hJetEnergyScaleNeutralVsFull", partjetpt, (detptneutral - partptneutral)/partptneutral);
+    if(partptcharged) fHistos->FillTH1("hJetEnergyScaleCharged", partptcharged, (detptcharged - partptcharged)/partptcharged);
+    if(partptneutral) fHistos->FillTH1("hJetEnergyScaleNeutral", partptneutral, (detptneutral - partptneutral)/partptneutral);
+    if(partptcharged) fHistos->FillTH1("hJetEnergyScaleChargedVsFull", partjetpt, (detptcharged - partptcharged)/partptcharged);
+    if(partptneutral) fHistos->FillTH1("hJetEnergyScaleNeutralVsFull", partjetpt, (detptneutral - partptneutral)/partptneutral);
     fHistos->FillTH1("hJetEnergyScaleDet", detjetpt, (detjetpt - partjetpt)/partjetpt);
-    fHistos->FillTH1("hJetEnergyScaleDetCharged", detptcharged, (detptcharged - partptcharged)/partptcharged);
-    fHistos->FillTH1("hJetEnergyScaleDetNeutral", detptneutral, (detptneutral - partptneutral)/partptneutral);
-    fHistos->FillTH1("hJetEnergyScaleDetChargedVsFull", detjetpt, (detptcharged - partptcharged)/partptcharged);
-    fHistos->FillTH1("hJetEnergyScaleDetNeutralVsFull", detjetpt, (detptneutral - partptneutral)/partptneutral);
+    if(partptcharged) fHistos->FillTH1("hJetEnergyScaleDetCharged", detptcharged, (detptcharged - partptcharged)/partptcharged);
+    if(partptneutral) fHistos->FillTH1("hJetEnergyScaleDetNeutral", detptneutral, (detptneutral - partptneutral)/partptneutral);
+    if(partptcharged) fHistos->FillTH1("hJetEnergyScaleDetChargedVsFull", detjetpt, (detptcharged - partptcharged)/partptcharged);
+    if(partptneutral) fHistos->FillTH1("hJetEnergyScaleDetNeutralVsFull", detjetpt, (detptneutral - partptneutral)/partptneutral);
     // splitting for closure test
     if(isClosure) {
       fHistos->FillTH2("hJetResponseFineClosure", detjetpt, partjetpt);
@@ -500,7 +500,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       } catch(AngularityHandler::BinNotFoundException &e) {
          fHistos->FillTH1("hAngularityErrorsMatrix", partjetpt);
       }
-    } 
+    }
 
     // Fill histograms for JES debugging
     int ptbminI = -1,
@@ -521,12 +521,12 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       fHistos->FillTH2(Form("hJESVsNNeutralDet_%d_%d", ptbminI, ptbmaxI), detjet->Nn(), jes);
       fHistos->FillTH2(Form("hJESVsNConstPart_%d_%d", ptbminI, ptbmaxI), partjet->N(), jes);
       fHistos->FillTH2(Form("hJESVsNChargedPart_%d_%d", ptbminI, ptbmaxI), partjet->Nch(), jes);
-      fHistos->FillTH2(Form("hJESVsNNeutralPart_%d_%d", ptbminI, ptbmaxI), partjet->Nn(), jes); 
+      fHistos->FillTH2(Form("hJESVsNNeutralPart_%d_%d", ptbminI, ptbmaxI), partjet->Nn(), jes);
       // Add plots correlating the NEF and number of constituents between part. and det. level jets
       fHistos->FillTH2(Form("hCompNEF_%d_%d", ptbminI, ptbmaxI), partjet->NEF(), detjet->NEF());
       fHistos->FillTH2(Form("hCompNConst_%d_%d", ptbminI, ptbmaxI), partjet->N(), detjet->N());
       fHistos->FillTH2(Form("hCompNCharged_%d_%d", ptbminI, ptbmaxI), partjet->Nch(), detjet->Nch());
-      fHistos->FillTH2(Form("hCompNNeutral_%d_%d", ptbminI, ptbmaxI), partjet->Nn(), detjet->Nn()); 
+      fHistos->FillTH2(Form("hCompNNeutral_%d_%d", ptbminI, ptbmaxI), partjet->Nn(), detjet->Nn());
     }
 
     // Fill QA histograms
@@ -739,7 +739,7 @@ bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &tr
   return isEMCAL;
 }
 
-void AliAnalysisTaskEmcalJetEnergyScale::SetAngularitySpitting(bool doSplit) { 
+void AliAnalysisTaskEmcalJetEnergyScale::SetAngularitySpitting(bool doSplit) {
   if(doSplit) {
     auto partcont = GetPartLevelJetContainer();
     double radius = -1;
@@ -779,7 +779,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::ConfigureMinBias(MCProductionType_t mcp
 void AliAnalysisTaskEmcalJetEnergyScale::ConfigureJetSelection(Double_t minJetPtPart, Double_t minJetPtDet, Double_t maxTrackPtPart, Double_t maxTrackPtDet, Double_t maxClusterPt, Double_t minAreaPerc) {
   auto partjets = GetPartLevelJetContainer(),
        detjets = GetDetLevelJetContainer();
-  
+
   partjets->SetJetPtCut(minJetPtPart);
   partjets->SetMaxTrackPt(maxTrackPtPart);
   detjets->SetJetPtCut(minJetPtDet);
@@ -794,7 +794,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::ConfigureJetSelection(Double_t minJetPt
   }
 }
 
-AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBase(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *nametrackcont, const char *nameclustercont, const char *suffix) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
@@ -846,18 +846,22 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   energyscaletask->SetNameMCParticles(kNameMCParticles.data());
 
   AliClusterContainer *clusters(nullptr);
+  TString clustercontname(nameclustercont);
   if(addClusterContainer) {
     const std::string kNameClusterContainer = "EMCALClusters";
-    clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    if(clustercontname == "usedefault") clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    else clusters = energyscaletask->AddClusterContainer(clustercontname.Data());
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
     clusters->SetName(kNameClusterContainer.data());
     energyscaletask->SetNameClusters(kNameClusterContainer.data());
   }
   AliTrackContainer *tracks(nullptr);
+  TString trackcontname(nametrackcont);
   if(addTrackContainer) {
     const std::string kNameTrackContainer = "Tracks";
-    tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    if(trackcontname == "usedefault") tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    else tracks = energyscaletask->AddTrackContainer(trackcontname.Data());
     tracks->SetName(kNameTrackContainer.data());
     energyscaletask->SetNameTracks(kNameTrackContainer.data());
   }
@@ -886,7 +890,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   return energyscaletask;
 }
 
-AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSub(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *suffix) {
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSubBase(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *nametrackcont, const char *nameclustercont, const char *suffix) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
@@ -938,18 +942,22 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   energyscaletask->SetNameMCParticles(kNameMCParticles.data());
 
   AliClusterContainer *clusters(nullptr);
+  TString clustercontname(nameclustercont);
   if(addClusterContainer) {
     const std::string kNameClusterContainer = "EMCALClusters";
-    clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    if(clustercontname == "usedefault") clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    else clusters = energyscaletask->AddClusterContainer(clustercontname.Data());
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
     clusters->SetName(kNameClusterContainer.data());
     energyscaletask->SetNameClusters(kNameClusterContainer.data());
   }
   AliTrackContainer *tracks(nullptr);
+  TString trackcontname(nametrackcont);
   if(addTrackContainer) {
     const std::string kNameTrackContainer = "Tracks";
-    tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    if(trackcontname == "usedefault") tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    else tracks = energyscaletask->AddTrackContainer(trackcontname.Data());
     tracks->SetName(kNameTrackContainer.data());
     energyscaletask->SetNameTracks(kNameTrackContainer.data());
   }
@@ -1038,7 +1046,7 @@ AngularityHandler::AngularityBin AngularityHandler::FindBin(double pt) const {
   AngularityBin result;
   for(auto b : fBins) {
     AngularityBin *nextbin = dynamic_cast<AngularityBin *>(b);
-    if(!nextbin) continue;  
+    if(!nextbin) continue;
     if(nextbin->IsInRange(pt)) {
       result = *nextbin;
       AliDebugStream(3) << "Found bin with minb " << result.Min() << " and maxb " << result.Max() << " for pt = " << pt << std::endl;
@@ -1075,4 +1083,20 @@ std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::Angul
 std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::AngularityHandler::AngularityBin &bin) {
   bin.PrintStream(stream);
   return stream;
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
+  return AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBase(jettype, recoscheme, energydef, jetradius, useDCAL, namepartcont, trigger, "usedefault", "usedefault", suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *nametrackcont, const char *nameclustercont, const char *suffix) {
+  return AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBase(jettype, recoscheme, energydef, jetradius, useDCAL, namepartcont, trigger, nametrackcont, nameclustercont, suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSub(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *suffix) {
+  return AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSubBase(jettype, recoscheme, energydef, jetradius, useDCAL, namepartcont, nRho, nRhoMC, trigger, "usedefault", "usedefault", suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSub(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *nametrackcont, const char *nameclustercont, const char *suffix) {
+  return AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSubBase(jettype, recoscheme, energydef, jetradius, useDCAL, namepartcont, nRho, nRhoMC, trigger, nametrackcont, nameclustercont, suffix);
 }

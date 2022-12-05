@@ -91,6 +91,7 @@ set(SRCS
   AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
+  AliEmcalRejectMCBackground.cxx
   TestAliEmcalAODFilterBitCuts.cxx
   TestAliEmcalTrackSelection.cxx
   )

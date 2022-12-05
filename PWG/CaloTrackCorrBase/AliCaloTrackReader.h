@@ -453,7 +453,9 @@ public:
   void             SwitchOnBadTriggerEventsFromTriggerMakerRemoval()       { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kTRUE  ; }
   
   Bool_t           AreTriggerMakerDecisionHistoFill()   const { return fFillTriggerMakerDecisionHisto  ; }
-  void             SwitchOnTriggerMakerDecisionHistoFill ()   { fFillTriggerMakerDecisionHisto = kTRUE ; }
+  TString          GetTriggerMakerDecisionHistoList()   const { return fFillTriggerMakerDecisionHistoList  ; }
+  void             SwitchOnTriggerMakerDecisionHistoFill (TString trigList = "L0_G1_G2")
+  { fFillTriggerMakerDecisionHisto = kTRUE ;  fFillTriggerMakerDecisionHistoList = trigList; }
   void             SwitchOffTriggerMakerDecisionHistoFill()   { fFillTriggerMakerDecisionHisto = kFALSE; }
   TString          GetTriggerMakerDecisionName(Int_t i) const { if (i < fNTrigMakerDecision && i >= 0 ) return fTrigMakerLabels[i]  ;
                                                                  else                                     return ""; }
@@ -1172,12 +1174,16 @@ public:
   // Triggered event selection
   
   Bool_t           fRemoveBadTriggerEventsFromEMCalTriggerMaker;  ///<  Remove triggered events because recalculated trigger was bad
-  TString          fEMCalTriggerMakerDecisionContainerName;      ///<  Name of container with trigger decission
+  TString          fEMCalTriggerMakerDecisionContainerName;      ///<  Name of container with trigger decision
   
-  Bool_t           fFillTriggerMakerDecisionHisto;               ///< Fill histograms with trigger maker decisission
+  Bool_t           fFillTriggerMakerDecisionHisto;               ///< Fill histograms with trigger maker decision
+  TString          fFillTriggerMakerDecisionHistoList;           ///<  List of triggers active to be checked in analysis
   Int_t            fNTrigMakerDecision;                          ///< Number of trigger maker checks
-  TString          fTrigMakerLabels[10];                          ///< Trigger decission names
-  Bool_t           fTriggerMakerDecisionBoolArr[10];             ///< Trigger decission bits per trigger
+  TString          fTrigMakerLabels[10];                         ///< Trigger decision names
+  Bool_t           fTriggerMakerDecisionBoolArr[10];             ///< Trigger decision bits per trigger
+
+  Int_t            fNTriggerEMCal;                               ///< Number of EMCal trigger types checked
+  Bool_t           fTriggerEMCalBoolArr[16];                     ///< Trigger EMCal  types active in event
 
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
@@ -1311,12 +1317,16 @@ public:
   Bool_t           fHistoPtDependent;              ///< Fill control histograms with Pt not E 
   
   TH1F  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
-  TH1F  *          fhNEventsPerTrigger;            //!<! Each bin represents number of event from a trigger, correlation of trigger coincidences
-  TH1F  *          fhNEventsPerTriggerMakerSelected;//!<! Each bin represents number of event selected by trigger maker, correlation of trigger coincidences
+  TH1F  *          fhNEventsPerTrigger;            //!<! Each bin represents number of event from a trigger
+  TH1F  *          fhNEventsPerTriggerMakerSelected;//!<! Each bin represents number of event selected by trigger maker
+  TH1F  *          fhNEventsPerTriggerAfterCut;    //!<! Each bin represents number of event from a trigger, after all other event cuts applied
+  TH1F  *          fhNEventsPerTriggerMakerSelectedAfterCut;//!<! Each bin represents number of event selected by trigger maker, after all other event cuts applied
 
   TH2F  *          fhNEventsAfterCutCen;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
-  TH2F  *          fhNEventsPerTriggerCen;            //!<! Each bin represents number of event from a trigger, correlation of trigger coincidences
-  TH2F  *          fhNEventsPerTriggerMakerSelectedCen;//!<! Each bin represents number of event selected by trigger maker, correlation of trigger coincidences
+  TH2F  *          fhNEventsPerTriggerCen;            //!<! Each bin represents number of event from a trigger,
+  TH2F  *          fhNEventsPerTriggerMakerSelectedCen;//!<! Each bin represents number of event selected by trigger maker
+  TH2F  *          fhNEventsPerTriggerAfterCutCen;             //!<! Each bin represents number of event from a trigger, after all other event cuts applied
+  TH2F  *          fhNEventsPerTriggerMakerSelectedAfterCutCen;//!<! Each bin represents number of event selected by trigger maker, after all other event cuts applied
 
   // MC labels to accept
   Int_t            fNMCGenerToAccept;              ///<  Number of MC generators that should not be included in analysis
@@ -1341,7 +1351,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,100) ;
+  ClassDef(AliCaloTrackReader,102) ;
   /// \endcond
 
 } ;

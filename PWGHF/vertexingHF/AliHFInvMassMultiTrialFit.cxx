@@ -115,7 +115,8 @@ AliHFInvMassMultiTrialFit::AliHFInvMassMultiTrialFit() :
   fNtupleBinCount(0x0),
   fMinYieldGlob(0),
   fMaxYieldGlob(0),
-  fMassFitters()
+  fMassFitters(),
+  fAcceptValidFit(kFALSE)
 {
   // constructor
   Int_t rebinStep[4]={3,4,5,6};
@@ -370,6 +371,9 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
                   }else if(types==k2GausSigmaRatioPar){
                     if(fFixSecondGausSigRat>=0.) fitter->SetFixRatio2GausSigma(fFixSecondGausSigRat);
                     if(fFixSecondGausFrac>=0.) fitter->SetFixFrac2Gaus(fFixSecondGausFrac);
+                  }
+                  if(fAcceptValidFit){
+                    fitter->SetAcceptValidFit();
                   }
                   // D0 Reflection
                   if(fhTemplRefl && fhTemplSign){

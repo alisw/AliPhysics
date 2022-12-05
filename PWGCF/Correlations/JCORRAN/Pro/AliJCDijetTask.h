@@ -128,10 +128,14 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         UInt_t flags; //
         AliAnalysisUtils *fUtils; //!
         double fptHardBin;
+        double fPythiaSigma;
+        double fPythiaTrial;
         int fDetMCFlag;
         AliJCDijetAna::jetClasses iUnfJetClassTrue;
         AliJCDijetAna::jetClasses iUnfJetClassDet;
         bool bUseCrho;
+        bool bGoodEvent;
+        bool bGoodMCEvent;
 
         ClassDef(AliJCDijetTask, 1); 
 };

@@ -128,6 +128,8 @@ set(SRCS
     UserTasks/AliCaloClusterContent.cxx
     PHOS_Resonances/AliAnalysisPHOSResonances.cxx
     PHOS_Nbar/AliAnalysisSigmaBarCharged.cxx
+    PHOS_gamma/AliAnalysisTaskGammaPHOSPP.cxx
+    PHOS_gamma/AliAnalysisTaskPHOSPbPbQARun2.cxx
    )
 
 # Headers from sources
@@ -213,6 +215,7 @@ install(DIRECTORY CPVperf/macros            DESTINATION PWGGA/PHOSTasks/CPVperf)
 install(DIRECTORY PHOS_pp_8TeV_2012/macros  DESTINATION PWGGA/PHOSTasks/PHOS_pp_8TeV_2012)
 install(DIRECTORY PHOS_Run2/macros          DESTINATION PWGGA/PHOSTasks/PHOS_Run2)
 install(DIRECTORY PHOS_LHC16_pp/macros      DESTINATION PWGGA/PHOSTasks/PHOS_LHC16_pp)
+install(DIRECTORY PHOS_gamma/macros         DESTINATION	PWGGA/PHOSTasks/PHOS_gamma)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpp.C   DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpi0Conversion.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOSCalib/AddTaskEmeanCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCalib)
@@ -227,3 +230,5 @@ install(FILES PHOS_Resonances/AddTaskPHOSResonances.C DESTINATION PWGGA/PHOSTask
 install(FILES AutoTrendQA/MakeTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES AutoTrendQA/DrawTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES PHOS_Nbar/AddTaskPHOSSigmaBar.C DESTINATION PWGGA/PHOSTasks/PHOS_Nbar)
+install(FILES PHOS_gamma/AddTaskGammaPHOSPP.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)
+install(FILES PHOS_gamma/AddTaskPHOSPbPbQARun2.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)

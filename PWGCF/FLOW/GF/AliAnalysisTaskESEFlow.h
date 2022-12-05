@@ -11,6 +11,7 @@
 #include "TProfile.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "AliMCEvent.h"
 
 #include "AliUniFlowCorrTask.h"
 
@@ -50,7 +51,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         void                    SetReadMC(Bool_t activate) { fReadMC = activate;}
         void                    SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
-        void                    SetFlowPOIsPt(Double_t min, Double_t max) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; } 
+        void                    SetFlowPOIsPt(Double_t min, Double_t max) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; }
 
         void                    SetRedFlowPt(Double_t min, Double_t max) {fRedFlowPtMin = min; fRedFlowPtMax = max; }
 
@@ -83,11 +84,14 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetQARejFiller( Bool_t actQA ) { fFillQARej = actQA; }
 
         void                    SetNUEWeights( Bool_t actNUE, Int_t NUEType) {fUseNUEWeights = actNUE; fNUE = NUEType; }
+        void                    SetEfficiencyWeights ( Bool_t actEff, Int_t EffType) { fUseEfficiency = actEff; fEfficiency = EffType; }
 
         void                    SetBayesUnfolding( Bool_t actBayes) { fBayesUnfolding = actBayes; }
 
         void                    Activateq2ESEProjections(Bool_t actProj) { fActq2Projections = actProj; }
-        
+
+
+
 
     private:
         Bool_t                  fFlowRunByRunWeights;
@@ -101,8 +105,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
 
         static const Int_t      nCentBinMax = 11;           // maximum number of centrality bins
-        static const Int_t      nPtBinMax = 40;             // maximum number of pt bins
-        static const Int_t      nESEMaxPercs = 11;             //
+        static const Int_t      nPtBinMax = 70;             // maximum number of pt bins
+        static const Int_t      nESEMaxPercs = 15;             //
 
         Bool_t                  fInit; // initilization check
         Bool_t                  fMakeqSelectionRun; // make q-selections also used for V0 Calibration runs
@@ -124,7 +128,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TList*                  SPFlowEseList;     //!
         TList*                  fQAEvents;      //!
 
-        TList*                  fFlowWeightsList; //! 
+        TList*                  fFlowWeightsList; //!
         AliGFWWeights*          fWeights;           //!
         TList*                  fV0CalibList;   //!
         TList*                  fqSelList;   //!
@@ -134,11 +138,13 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistPhi;       //!
         TH1F*                   fHistEta;       //!
         TH1F*                   fHistPt;        //!
+        TH1F*                   fHistPtCorr;    //!
         TH1F*                   fHistZVertex;   //!
         TH1F*                   fHistPhiCor;    //!
         TH3F*                   fHistPhiCor3D;    //!
         TH1F*                   fHistTPCchi2;   //!
         TH1F*                   fHistITSchi2;   //!
+        TH3F*                   fHistMCPtEtaVz; //!
 
         TH2D*                   fhQAEventsfMult32vsCentr;   //!
         TH2D*                   fhQAEventsfMult128vsCentr;   //!
@@ -159,9 +165,11 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistPDG; //!
 
         TFile*                  fFileTrackEff; //! NUE
+        TFile*                  ptEfficiency; //! efficiency
         TH3F*                   fhTrackNUE; //!
+        TDirectory*             fDir_efficiencies; //!
+        TH2D*                   fhEfficiency2D; //!
 
-        
 
         /////////////////////////// CALIBRATION QA HISTOGRAMS ////////////////////////////////////
         TH2D*                   fq2TPC;    //!
@@ -178,7 +186,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnxTPC[2];    //!
         TH2F*                   fQnyTPC[2];    //!
 
-        
+
         TH1F*                   fQnxV0Cm[2];    //!
         TH1F*                   fQnyV0Cm[2];    //!
         TH1F*                   fQnxV0Am[2];    //!
@@ -201,7 +209,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnxV0CCor[2];    //!
         TH2F*                   fQnyV0CCor[2];    //!
         TH2F*                   fQnxV0ACor[2];    //!
-        TH2F*                   fQnyV0ACor[2];    //! 
+        TH2F*                   fQnyV0ACor[2];    //!
         ////////////////////////// end /////////////////////////////////////////
 
 
@@ -235,7 +243,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void POIVectors(const Float_t centrality, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C,Int_t q2ESECodeV0A, Int_t q3ESECodeV0A);
         void ReducedqVectorsTPC(const Float_t centrality, const Int_t SPCode);
         void ReducedqVectorsV0(const Float_t centrality, const Int_t SPCode);
-        
+
         void FillqnRedTPC(const Float_t centrality);
         void FillqnRedV0(const Float_t centrality, TString V0type);
         void FillPOI(const Double_t dPtLow, const Double_t dPtHigh);
@@ -243,7 +251,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void QAMultFiller(Float_t v0Centr);
 
         Int_t GetSamplingIndex() const;
-        
+
         Int_t GetCentralityCode(const Float_t centrality);
         Int_t GetEsePercentileCode(Double_t qPerc) const;
         Bool_t WithinRFP(const AliVParticle* track) const;
@@ -255,9 +263,11 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t InitializeTask();
         Bool_t LoadWeights(); // load weights histograms
         Bool_t LoadNUE();   // load Katka nue
+        Bool_t LoadEfficiency(); // load efficiencies
         Bool_t LoadV0Calibration();
         Double_t GetFlowWeight(const AliAODTrack* track, const float dVz) const;
         Double_t GetNUEPtWeight(Double_t pt, Double_t eta, const float dVz) const;
+        Double_t GetEfficiency(Double_t pt, const Float_t centrality);
         //############ GENERIC FRAMEWORK ############# MODIFIED WITH ESE //
 
         double GetWeight(double phi, double eta, double vz,  double runNumber);
@@ -266,7 +276,13 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void ResetReducedqVector(Double_t (&array)[2]);
 
         Bool_t sortPt(const AliAODTrack* t1, const AliAODTrack* t2) { return (t1->Pt() < t2->Pt()); } // function for std::sort
-        
+
+        Bool_t CreateNUETracks();
+        AliMCEvent *getMCEvent();
+        double getAMPTCentrality();
+
+        std::map<double,double> centralitymap;
+
         TComplex pvector[fNumHarms][fNumPowers];
         TComplex pvector10M[fNumHarms][fNumPowers];
         TComplex pvector10P[fNumHarms][fNumPowers];
@@ -312,7 +328,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         Double_t vnSPV0A[2];
         Double_t vnSPV0C[2];
-        
+
 
         TComplex Q(int n, int p);
         TComplex QGap10M(int n, int p);
@@ -389,6 +405,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
 
+        Double_t                fImpactParameterMC;
+
         Bool_t                  fReadMC;
         AliMCEvent*             fMCEvent;       //! corresponding MC event
         Double_t                fFlowRFPsPtMin; // [0.2] (GeV/c) min pT treshold for RFPs particle for reference flow
@@ -407,7 +425,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t                PtEdges[nPtBinMax+1];
         Double_t                EventShapeEdges[nESEMaxPercs+1];
 
-    
+
         Bool_t                  fTPCEse;
         Bool_t                  fV0CEse;
         Bool_t                  fV0AEse;
@@ -416,7 +434,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Int_t                   fNumSamples;
 
         Bool_t                  fSPAnalysis;
-        
+
         Int_t                   TPCqnBins;
         Double_t                TPCqnBinMin;
         Double_t                TPCqnBinMax;
@@ -432,7 +450,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Float_t                 vITSChi2Bound;
         Bool_t                  fFillQARej;
         Bool_t                  fUseNUEWeights;
+        Bool_t                  fUseEfficiency;
         Int_t                   fNUE;
+        Int_t                   fEfficiency;
         Bool_t                  fIs2018Data;
         Bool_t                  fBayesUnfolding;
         Bool_t                  fActq2Projections;

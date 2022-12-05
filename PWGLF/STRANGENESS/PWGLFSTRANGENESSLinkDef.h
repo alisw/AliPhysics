@@ -90,6 +90,10 @@
 #pragma link C++ class AliAnalysisTaskXiNucleusInteraction+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2+;
+#pragma link C++ class AliMachineLearning+;
+#pragma link C++ class AliNeuralNetwork+;
+#pragma link C++ class AliBDT+;
+#pragma link C++ class AliAnalysisTaskStrangenessML+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif
@@ -102,6 +106,8 @@
 #pragma link C++ class MiniCascadeMC+;
 #pragma link C++ class MiniLambda+;
 #pragma link C++ class MiniLambdaMC+;
+#pragma link C++ class MiniK0s+;
+#pragma link C++ class MiniK0sMC+;
 #pragma link C++ class MiniLambdaBDTOut+;
 #pragma link C++ class V0filler+;
 #pragma link C++ class Cascfiller+;

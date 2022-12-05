@@ -17,7 +17,7 @@
 
 class AliAnalysisFilter;
 class AliPIDCombined;
-//class AliESDevent;
+class AliEventCuts;
 class AliMCEvent;
 class TObjArray;
 class AliMESeventInfo;
@@ -62,14 +62,16 @@ public:
     ,kPP          = BIT(19)     // pp/pA data
     ,kPostProcess = BIT(20)     // run pos processing of QA histos
   };
-  enum EMEStenderQA{
-     kConfig = 0
-    ,kEfficiency
-    ,kEvInfo
-    ,kTrkInfo
-    ,kMCevInfo
-    ,kMCtrkInfo
-    ,kNqa
+  enum EMEStenderQA
+  {
+    kConfig = 0,
+    kEfficiency,
+    kEfficiencyMC,
+    kEvInfo,
+    kTrkInfo,
+    kMCevInfo,
+    kMCtrkInfo,
+    kNqa
   };
   AliMEStender();
   AliMEStender(const char *name);
@@ -101,7 +103,9 @@ private:
 
   AliMESconfigTender  fConfig;       // currrent configuration of task
 
-  AliAnalysisFilter  *fTrackFilter;  // working track filter
+  AliEventCuts *fEventFilterMB;      // working event filter
+  AliEventCuts *fEventFilterHM;      // working event filter
+  AliAnalysisFilter *fTrackFilter;   // working track filter
   AliPIDCombined     *fPIDcomb;      // working PID combined service
 
   TObjArray *fTracks;  //!
@@ -111,7 +115,7 @@ private:
 
   AliPPVsMultUtils *fUtils;
 
-  ClassDef(AliMEStender, 5)          // Tender task for the Multi Event Shape
+  ClassDef(AliMEStender, 6)          // Tender task for the Multi Event Shape
 };
 
 #endif

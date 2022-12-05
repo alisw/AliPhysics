@@ -166,7 +166,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(deuteron_dca_xy);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,deuteron_TPC_CrossedRows,deuteron_TPC_CrossedRowsOverCluster);
-  TrackCuts3->SetPID(AliPID::kDeuteron,deuteron_TPC_thresold,deuteron_nSigma);
+//  TrackCuts3->SetPID(AliPID::kDeuteron,deuteron_TPC_thresold,deuteron_nSigma);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);

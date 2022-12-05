@@ -309,7 +309,7 @@ YieldMean_LowExtrapolationHisto(TH1 *h, TF1 *f, Double_t min, Double_t binwidth)
   Double_t cont, err, width;
   for (Int_t ibin = 0; ibin < hlo->GetNbinsX(); ibin++) {
     width = hlo->GetBinWidth(ibin + 1);
-    cont = f->Integral(hlo->GetBinLowEdge(ibin + 1), hlo->GetBinLowEdge(ibin + 2), (Double_t *)0, 1.e-6);
+    cont = f->Integral(hlo->GetBinLowEdge(ibin + 1), hlo->GetBinLowEdge(ibin + 2), 1.e-6);
     err = f->IntegralError(hlo->GetBinLowEdge(ibin + 1), hlo->GetBinLowEdge(ibin + 2), (Double_t *)0, (Double_t *)0, 1.e-6);
     hlo->SetBinContent(ibin + 1, cont / width);
     hlo->SetBinError(ibin + 1, err / width);
@@ -344,7 +344,7 @@ YieldMean_HighExtrapolationHisto(TH1 *h, TF1 *f, Double_t max, Double_t binwidth
   Double_t cont, err, width;
   for (Int_t ibin = 0; ibin < hhi->GetNbinsX(); ibin++) {
     width = hhi->GetBinWidth(ibin + 1);
-    cont = f->Integral(hhi->GetBinLowEdge(ibin + 1), hhi->GetBinLowEdge(ibin + 2), (Double_t *)0, 1.e-6);
+    cont = f->Integral(hhi->GetBinLowEdge(ibin + 1), hhi->GetBinLowEdge(ibin + 2), 1.e-6);
     err = f->IntegralError(hhi->GetBinLowEdge(ibin + 1), hhi->GetBinLowEdge(ibin + 2), (Double_t *)0, (Double_t *)0, 1.e-6);
     hhi->SetBinContent(ibin + 1, cont / width);
     hhi->SetBinError(ibin + 1, err / width);

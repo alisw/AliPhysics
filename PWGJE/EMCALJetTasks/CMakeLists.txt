@@ -250,6 +250,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskRawJetWithEP.cxx
     UserTasks/AliAnalysisTaskEmbeddingJetWithEP.cxx
     UserTasks/AliPieceWisePoly.cxx
+    UserTasks/AliAnalysisTaskEmcalJetProperties.cxx
     FlowVectorCorrections/AliAnalysisTaskFlowVectorCorrectionsPWGJE.cxx
 )
 
@@ -284,6 +285,7 @@ if(FASTJET_FOUND)
         AliLundPlaneHelper.cxx
       AliAnalysisTaskJetCharge.cxx
       AliAnalysisTaskJetChargeFlavourTemplates.cxx
+      AliAnalysisTaskJetChargeFlavourPb.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
             UserTasks/AliAnalysisTaskJetPull.cxx

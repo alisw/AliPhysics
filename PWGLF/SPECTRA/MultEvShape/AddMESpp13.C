@@ -24,12 +24,11 @@ AliMESpp13 *AddMESpp13(Bool_t mc)
   // create output containers
   AliAnalysisDataContainer *co[AliMESpp13::kNcontainers] = {NULL};
   co[0] = mgr->CreateContainer("taskQA", TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
-  co[AliMESpp13::kEventTree] = mgr->CreateContainer("MES-ev", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
-  co[AliMESpp13::kTracksTree] = mgr->CreateContainer("MES-trk", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
+  co[AliMESpp13::kTree] = mgr->CreateContainer("MES-ev", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
   if (mc)
   {
-    co[AliMESpp13::kMCGenTracksTree] = mgr->CreateContainer("MES-genTrk", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
-    co[AliMESpp13::kMCMissedTracksTree] = mgr->CreateContainer("MES-missedTrk", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
+    co[AliMESpp13::kMCGenTree] = mgr->CreateContainer("MES-genTrk", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
+    // co[AliMESpp13::kMCMissTree] = mgr->CreateContainer("MES-missedTrk", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
   }
 
   // connect output

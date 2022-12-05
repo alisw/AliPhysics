@@ -25,6 +25,7 @@
 #include "AliAODEvent.h"
 #include "AliEventCuts.h"
 #include "AliYAMLConfiguration.h"
+#include "AliEmcalJet.h"
 // #include "AliMultSelection.h"
 
 #include "AliJEQnVectorHandler.h"
@@ -67,6 +68,8 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
 
     // AliJEQnVectorHandler* GetQnVectorHandler() const {return fQ2VecHandler;}
     TList* GetSplineForqnPercentileList(int det=kFullTPC) const;
+    // void SetUseAODBCalibrations(TString oadbFileName){fOADBFileName = oadbFileName; fCalibType = AliJEQnVectorHandler::kQnCalib;}
+    // void SetUseQnFrameworkCalibrations(){fCalibType = AliJEQnVectorHandler::kQnFrameworkCalib;}
 
     static AliAnalysisTaskRawJetWithEP* AddTaskRawJetWithEP(
         const char *ntracks            = "usedefault",
@@ -75,55 +78,58 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
         const char *suffix             = "");
 
     enum runModeType{
-      kLocal,
-      kGrid
+      kLocal,           ///< run location (local)
+      kGrid             ///< run location (grid)
     };
 
     enum fitModulationType  { 
-      kNoFit,
-      kV2,
-      kV3,
-      kCombined,
-      kFourierSeries,
-      kIntegratedFlow,
-      kQC2,
-      kQC4
+      kNoFit,           ///< background fit type plane
+      kV2,              ///< background fit type v2
+      kV3,              ///< background fit type v3
+      kCombined,        ///< background fit type v2 and v3
+      kFourierSeries,   ///< background fit type FourierSeries
+      kIntegratedFlow,  ///< background fit type integrated flow
+      kQC2,             ///< background fit type qumrant2
+      kQC4              ///< background fit type qumrant4
     };
     
     enum DetFlev{
-      kFullTPC,
-      kPosTPC,
-      kNegTPC,
-      kFullV0,
-      kV0A,
-      kV0C
+      kFullTPC,         ///< use all TPC Qn Vector
+      kPosTPC,          ///< use positive eta TPC Qn Vector
+      kNegTPC,          ///< use negative eta TPC Qn Vector
+      kFullV0,          ///< use A and C V0 Qn Vector
+      kV0A,             ///< use C V0 Qn Vector
+      kV0C              ///< use A V0 Qn Vector
     };
 
     enum detectorType{
-      kTPC,
-      kVZEROA,
-      kVZEROC,
-      kVZEROComb,
-      kFixedEP
+      kTPC,             ///< use all TPC for Event Plane
+      kVZEROA,          ///< use V0 A for Event Plane
+      kVZEROC,          ///< use V0 C for Event Plane
+      kVZEROComb,       ///< use V0 C and A for Event Plane
+      kFixedEP          ///< use Event Plane
     };  // detector that was used for event plane
     
     enum qnVCalibType{
-      kOrig,
-      kJeHand
+      kOrig,            ///< Own Qn Vector Calibration
+      kJeHand           ///< Jet Handlar Qn Vector Calibration
     };
 
     
-    AliAnalysisTaskJetQnVectors* fV0Q2VectTask; ///< Reader for the Qn vector
+    // AliAnalysisTaskJetQnVectors* fV0Q2VectTask; ///< Reader for the Qn vector
 
     PWG::Tools::AliYAMLConfiguration & GetYAMLConfiguration(){return fYAMLConfig;}
 
     //== s == Getter Prepare  ################################################
-    TString GetLocalRhoName() const {return fLocalRhoName;}
-    AliLocalRhoParameter* GetLocalRhoParameter() const {return fLocalRho;}
+    // TString GetLocalRhoName() const {return fLocalRhoName;}
+    // AliLocalRhoParameter* GetLocalRhoParameter() const {return fLocalRho;}
     //== e == Getter Prepare  ################################################
     
     //== s == Setter Prepare  ################################################
     void SetRunListFileName(std::string fileName) {fRunListFileName = fileName;}
+    
+    void SetUseAliEventCuts(Bool_t b)      { fUseAliEventCuts = b; }
+    void SetUseManualEvtCuts(Bool_t input) { fUseManualEventCuts = input;}
 
     void SetQnOadbFile(TString oadbFileName){fOADBFileName = oadbFileName;}
     void SetSplineFile(TString splineFileName){fSplinesFileName = splineFileName;}
@@ -133,21 +139,27 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
 
     void SetPileupCut(Bool_t bPileupCut){fPileupCut =  bPileupCut;} 
 
-    void SetPileupCutQA(Bool_t bPileupCutQA){fPileupCutQA =  bPileupCutQA;}
+    // void SetPileupCutQA(Bool_t bPileupCutQA){fPileupCutQA =  bPileupCutQA;}
     void SetEventQA(Int_t qaEventNum){fQaEventNum = qaEventNum;}
     void SetV0Combine(Bool_t bV0Combin){fV0Combin = bV0Combin;}
     void SetQnCalibType(qnVCalibType iQnVCalibType){fQnVCalibType = iQnVCalibType;}
+    void SetTPCQnMeasure(Bool_t bTPCQnMeasure){fTPCQnMeasure = bTPCQnMeasure;}
 
     void SetEPQA(Bool_t bEPQA){fEPQA = bEPQA;}
     void SetTrackQA(Bool_t bTrackQA){fTrackQA = bTrackQA;}
     void SetBkgQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
+    void SetJetHistWithEP(Bool_t bSepEP){fSepEP = bSepEP;}
     //== e == Setter Prepare  ################################################
 
   protected:
-    AliEventCuts fEventCuts; //
+    Bool_t       fUseAliEventCuts; ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
+    AliEventCuts fEventCuts; ///< event selection utility
+    TList        *fEventCutList; //!<! Output list for event cut histograms
+    Bool_t       fUseManualEventCuts; ///< Flag to use manual event cuts
 
-    void       ExecOnce();
-    Bool_t     Run();
+    void              ExecOnce();
+    Bool_t            Run();
+    virtual Bool_t    IsEventSelected();
     
     THistManager fHistManager;        ///< Histogram manager
     
@@ -156,7 +168,7 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
   // ### private ###############################################################
   private:
     
-    AliAODEvent* fAOD;                //!<! AOD event
+    AliAODEvent* fAOD;                /// AOD event
     TString fOADBFileName;            //< OADB input file name
     TFile*  fOADBFile;                //!<!
     TFile*  fCalibRefFile;            //!<!
@@ -173,13 +185,14 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     Bool_t  fEPQA = kFALSE;           ///<
     Bool_t  fTrackQA = kFALSE;        ///<
     Bool_t  fBkgQA = kFALSE;          ///<
+    Bool_t  fSepEP = kFALSE;          ///<
     
     PWG::Tools::AliYAMLConfiguration fYAMLConfig;  //!<! run List the YAML config
 
     AliJEQnVectorHandler* fQ2VecHandler;    ///< Qn-vector handler
     AliJEQnVectorHandler* fQ3VecHandler;    ///< Qn-vector handler
 
-    TList         *fOutputList;             //!<! output list for histograms
+    // TList         *fOutputList;             //!<! output list for histograms
     int           fCalibType;               ///< type of calibrations used by handler
     int           fNormMethod;              ///< normalisation of Q vector
     Bool_t        fV0Combin = kFALSE;       ///<
@@ -188,6 +201,11 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     std::string   fRunListFileName;         ///< Run list file Name
     TString       fSplinesFileName;         ///< Sprine input file name
     TString       fCalibRefFileName;        ///< Calibration input file name
+
+    Bool_t        fExLJetFromFit = kTRUE;         ///< exclude tracks from bkg fit.
+    AliEmcalJet*  fLeadingJet;            //! leading jet
+    AliEmcalJet*  fLeadingJetAfterSub;    //! leading jet after background subtraction
+    TF1*          fFitModulation;         //-> modulation fit for rho
 
     void          LoadSpliForqnPerce();
     void          VzeroGainCalibQA();
@@ -203,9 +221,8 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     
     void       MeasureTpcEPQA();
     
-    void       SetModulationRhoFit();
-    void       MeasureBkg();
-    void       BkgFitEvaluation();
+    Bool_t     MeasureBkg();
+    void       BkgFitEvaluation(TH1F* hBkgTracks, TF1* fFitModulation);
     
     void       DoEventPlane();
     void       DoJetLoop();
@@ -222,7 +239,7 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
       Double_t &leadingJetEta, Double_t &leadingJetPhi, Double_t &jetR
     ) const;
 
-    TH1F*   GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen);
+    // TH1F*   GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen);
     Double_t CalculateEventPlaneChi(Double_t res);
 
     static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
@@ -246,6 +263,9 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
       return chi2;
     }
 
+    AliEmcalJet* GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+
+
     // static Double_t CalcEPChi(Double_t res)
     // {
     //   // return chi for given resolution to combine event plane estimates from two subevents
@@ -263,11 +283,11 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
     qnVCalibType fQnVCalibType = kOrig; ///< fCalibration Type
     
     /// Functions for Pile Up Event Removal:
-    TF1   *fV0CutPU;        //!<!
-    TF1   *fSPDCutPU;       //!<!
-    TF1   *fMultCutPU;      //!<!
-    TF1   *fCenCutLowPU;    //!<!
-    TF1   *fCenCutHighPU;   //!<!
+    // TF1   *fV0CutPU;        //!<!
+    // TF1   *fSPDCutPU;       //!<!
+    // TF1   *fMultCutPU;      //!<!
+    // TF1   *fCenCutLowPU;    //!<!
+    // TF1   *fCenCutHighPU;   //!<!
 
     //qnVector 0:x, 1:y
     Double_t q2VecV0M[2];   //!<! Q2 V0 C+A vector(x,y)
@@ -314,16 +334,13 @@ class AliAnalysisTaskRawJetWithEP : public AliAnalysisTaskEmcalJet {
 
     fitModulationType  fFitModulationType;      ///< fit modulation type
     
-    TF1*               fFitModulation;          //-> modulation fit for rho
-    TH1F*              hBkgTracks;              //-> modulation fit for rho
-    
 
     AliAnalysisTaskRawJetWithEP(const AliAnalysisTaskRawJetWithEP&)           ; // not implemented
     AliAnalysisTaskRawJetWithEP &operator=(const AliAnalysisTaskRawJetWithEP&); // not implemented
 
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskRawJetWithEP, 21);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 51);
     /// \endcond
   // ### private ###############################################################
 };

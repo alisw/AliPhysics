@@ -32,6 +32,8 @@ set(SRCS
   AliAnalysisPseudoRapidityDensity.cxx
   AliPMDpPbAnalysisTaskData.cxx
   AliPMDpPbAnalysisTaskSim.cxx
+  AliPMDppAnalysisTaskData.cxx
+  AliPMDppAnalysisTaskSim.cxx
 )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

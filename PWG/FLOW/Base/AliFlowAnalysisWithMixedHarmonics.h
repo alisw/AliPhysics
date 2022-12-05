@@ -211,6 +211,8 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile* Get3pCorrelatorVsPtSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffPro[sd];};
   void Set3pCorrelatorVsEtaSumDiffPro(TProfile* const s3pcvpsd, Int_t const sd) {this->f3pCorrelatorVsEtaSumDiffPro[sd] = s3pcvpsd;};
   TProfile* Get3pCorrelatorVsEtaSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffPro[sd];};  
+  void Set3pCorrelatorPOIIntegratedPro(TProfile* const s3pcig) {this->f3pCorrelatorPOIIntegratedPro = s3pcig;};
+  TProfile* Get3pCorrelatorPOIIntegratedPro() const {return this->f3pCorrelatorPOIIntegratedPro;};  
   void SetNonIsotropicTermsList(TList* const nitlist) {this->fNonIsotropicTermsList = nitlist;}
   TList* GetNonIsotropicTermsList() const {return this->fNonIsotropicTermsList;}  
   void SetNonIsotropicTermsVsPtSumDiffPro(TProfile* const nt, Int_t const sd, Int_t const t) {this->fNonIsotropicTermsVsPtSumDiffPro[sd][t] = nt;};
@@ -223,6 +225,8 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D* Get3pCorrelatorVsPtSumDiffHist(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffHist[sd];};
   void Set3pCorrelatorVsEtaSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorVsEtaSumDiffHist[sd] = hist;};
   TH1D* Get3pCorrelatorVsEtaSumDiffHist(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffHist[sd];};  
+  void Set3pCorrelatorPOIIntegratedHist(TH1D* const hist) {this->f3pCorrelatorPOIIntegratedHist = hist;};
+  TH1D* Get3pCorrelatorPOIIntegratedHist() const {return this->f3pCorrelatorPOIIntegratedHist;}; 
 
  private:
   AliFlowAnalysisWithMixedHarmonics(const AliFlowAnalysisWithMixedHarmonics& afawQc);
@@ -291,6 +295,7 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile2D *fNonIsotropicTermsVsMPro; // non-isotropic terms in the decomposition of <cos[n(phi1+phi2-2phi3))]> vs multiplicity
   TProfile *f3pCorrelatorVsPtSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
   TProfile *f3pCorrelatorVsEtaSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
+  TProfile *f3pCorrelatorPOIIntegratedPro; // integrated differential 3-p correlator <<cos[psi1+psi2-2phi3)]>>
   // 5.) Acceptance terms:
   TList *fNonIsotropicTermsList; // list holding all non-isotropic terms for diff. profiles   
   TProfile *fReNITEBE[2][2][4]; // [POI_1,POI_2] [all,overlap] [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
@@ -331,6 +336,8 @@ class AliFlowAnalysisWithMixedHarmonics
   //TH1D *f2pCorrelatorHist;//<<cos[(psi1-psi2)]>>
   TH1D *f3pCorrelatorVsPtSumDiffHist[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|] corrected for detector effect
   TH1D *f3pCorrelatorVsEtaSumDiffHist[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|] corrected for detector effect
+  //TH1D integrated 3-p correlator for poi
+  TH1D *f3pCorrelatorPOIIntegratedHist; 
 
   ClassDef(AliFlowAnalysisWithMixedHarmonics, 0);
 
@@ -339,7 +346,6 @@ class AliFlowAnalysisWithMixedHarmonics
 //================================================================================================================
 
 #endif
-
 
 
 

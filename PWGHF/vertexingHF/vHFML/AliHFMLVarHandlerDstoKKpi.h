@@ -28,7 +28,10 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
             kpiKK
         };
 
-        static const int kDplustoKKpi = BIT(9);
+        enum bitsDs {
+            kDplustoKKpi  = BIT(9),
+            kDplustoKpipi = BIT(10)
+        };
 
         AliHFMLVarHandlerDstoKKpi();
         AliHFMLVarHandlerDstoKKpi(int PIDopt, int massopt);
@@ -39,6 +42,7 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
 
         virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
         virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliAODPidHF *pidrespo = nullptr);
+        virtual void FillTree() override;
 
         void SetMassKKOption(int opt) {fMassKKOpt = opt;}
         void SetIsDplustoKKpi(bool isDplus) {
@@ -46,6 +50,12 @@ class AliHFMLVarHandlerDstoKKpi : public AliHFMLVarHandler
                 fCandType |= kDplustoKKpi;
             else 
                 fCandType &= ~kDplustoKKpi;
+        }
+        void SetIsDplustoKpipi(bool isDplus) {
+            if(isDplus) 
+                fCandType |= kDplustoKpipi;
+            else 
+                fCandType &= ~kDplustoKpipi;
         }
 
     private:

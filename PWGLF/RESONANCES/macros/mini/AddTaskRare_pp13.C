@@ -1761,7 +1761,7 @@ Bool_t Config_Lambdakx(
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
-    if(V0Cuts==1)   v0d_dcaxy;
+    if(V0Cuts==1)   v0d_dcaxy=0.7;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -3742,7 +3742,7 @@ Bool_t Config_Xik0(
     Double_t mass= 0.497611+1.32171;
     
     bool PbpRapidityCut=kFALSE;
-    Double_t PairRapidity=0.8;
+    Double_t PairRapidity=0.7; // 0.8;
     
     // selections for V0 daughters
     
@@ -3767,7 +3767,7 @@ Bool_t Config_Xik0(
     Float_t k0s_radiushigh=200.;
     Float_t k0s_massTolSigma=4;
     Int_t   k0s_massTolID=0;
-    Float_t k0s_massTol=0.03;
+    Float_t k0s_massTol=0.022; // 0.03;
     Float_t k0s_massTolVeto=0.004;
     Bool_t  k0sSwitch=kTRUE;
     Float_t k0sCosPoinAn=0.97;
@@ -3807,9 +3807,9 @@ Bool_t Config_Xik0(
     Float_t V0dDCA=1.6;
     Float_t XidDCA=1.4; // 1.6;
     Float_t XiMinDCA=0.07;
-    Float_t Xi_massTol=0.007;
+    Float_t Xi_massTol=0.009; // 0.007;
     Float_t Xi_massTolVeto=0.007;
-    Float_t Xi_V0massTol=0.006;
+    Float_t Xi_V0massTol=0.007; // 0.006;
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
     Float_t V0lifetime=40.;
@@ -4120,7 +4120,8 @@ Bool_t Config_Xik0(
     
     if(isMC){
         AliRsnCutMiniPair* cutEta=new AliRsnCutMiniPair("cutPseudorapidity", AliRsnCutMiniPair::kPseudorapidityRangeMC);
-        cutEta->SetRangeD(-0.9,0.9);
+        //cutEta->SetRangeD(-0.9,0.9);
+        cutEta->SetRangeD(-1000.0,1000.0);
         
         AliRsnCutSet* cutsPairDaughter=new AliRsnCutSet("pairCutsDaughter", AliRsnTarget::kMother);
         cutsPairDaughter->AddCut(cutEta);
@@ -4134,6 +4135,7 @@ Bool_t Config_Xik0(
         out->SetMotherMass(0.497611);
         out->SetPairCuts(cutsPairDaughter);
         out->AddAxis(ptID,200,0.0,20.0);
+        out->AddAxis(yID,200,-1.,1.);
         
         //for efficiency of (anti-)Xi
         out = task->CreateOutput("Xik0_Xim_mother", "HIST", "MOTHER");
@@ -4143,6 +4145,7 @@ Bool_t Config_Xik0(
         out->SetMotherMass(1.32171);
         out->SetPairCuts(cutsPairDaughter);
         out->AddAxis(ptID,200,0.0,20.0);
+        out->AddAxis(yID,200,-1.,1.);
         
         out = task->CreateOutput("Xik0_Xip_mother", "HIST", "MOTHER");
         out->SetDaughter(0, AliRsnDaughter::kPion);
@@ -4151,6 +4154,26 @@ Bool_t Config_Xik0(
         out->SetMotherMass(1.32171);
         out->SetPairCuts(cutsPairDaughter);
         out->AddAxis(ptID,200,0.0,20.0);
+        out->AddAxis(yID,200,-1.,1.);
+        
+        //for (anti-)Omega
+        out = task->CreateOutput("Xik0_Omegam_mother", "HIST", "MOTHER");
+        out->SetDaughter(0, AliRsnDaughter::kKaon);
+        out->SetDaughter(1, AliRsnDaughter::kLambda);
+        out->SetMotherPDG(3334);
+        out->SetMotherMass(1.67243);
+        out->SetPairCuts(cutsPairDaughter);
+        out->AddAxis(ptID,200,0.0,20.0);
+        out->AddAxis(yID,200,-1.,1.);
+        
+        out = task->CreateOutput("Xik0_Omegap_mother", "HIST", "MOTHER");
+        out->SetDaughter(0, AliRsnDaughter::kKaon);
+        out->SetDaughter(1, AliRsnDaughter::kLambda);
+        out->SetMotherPDG(-3334);
+        out->SetMotherMass(1.67243);
+        out->SetPairCuts(cutsPairDaughter);
+        out->AddAxis(ptID,200,0.0,20.0);
+        out->AddAxis(yID,200,-1.,1.);
     }
     
     return kTRUE;

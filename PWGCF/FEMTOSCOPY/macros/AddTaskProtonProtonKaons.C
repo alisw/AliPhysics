@@ -15,7 +15,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
                                      bool isMC = false, bool isNano = true, bool triggerOn = false, int MixingDepth = 30,
                                      float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
                                      const char *cutVariation = "0", bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = "false",
-                                     const char *triggerVariation = "0", bool RunPlotPt = true, bool RunPlotQ3Vsq = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1, bool DoTwoPrimary = false, bool StandardMixing = false, bool DoKinematicPlots = false) {
+                                     const char *triggerVariation = "0", bool RunPlotPt = true, bool RunPlotQ3Vsq = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1, bool DoTwoPrimary = false, bool StandardMixing = false, bool DoKinematicPlots = false, bool RunPlotMult = true, bool RunCorrDeltaPhi = true, bool RunPlotPhiTheta = false, bool RunPlotP1 = false) {
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -43,12 +43,20 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, true, false, false);
-  TrackCuts->SetFilterBit(128);
+  if(trigger==0){
+    TrackCuts->SetFilterBit(128);
+  }else{
+    TrackCuts->SetFilterBit(256);
+  }
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  AntiTrackCuts->SetFilterBit(128);
+  if(trigger==0){
+    AntiTrackCuts->SetFilterBit(128);
+  }else{
+    AntiTrackCuts->SetFilterBit(256);
+  }
   AntiTrackCuts->SetCutCharge(-1);
   // If  cut variation needed
   if(suffix=="1" || suffix=="8"){
@@ -60,7 +68,11 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   AliFemtoDreamTrackCuts *KaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
   KaonCuts->SetPtRange(0.15, 10);
-  KaonCuts->SetFilterBit(128);
+  if(trigger==0){
+    KaonCuts->SetFilterBit(128);
+  }else{
+    KaonCuts->SetFilterBit(256);
+  }
   KaonCuts->SetCutCharge(1);
   if(KaonCut==0){ // cuts by Oton
    KaonCuts->SetPIDkd(true,false,3,3,3);
@@ -72,7 +84,11 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   AliFemtoDreamTrackCuts *AntiKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
   AntiKaonCuts->SetPtRange(0.15, 10);
-  AntiKaonCuts->SetFilterBit(128);
+  if(trigger==0){  
+    AntiKaonCuts->SetFilterBit(128);
+  }else{
+    AntiKaonCuts->SetFilterBit(256);
+  }
   AntiKaonCuts->SetCutCharge(-1);
   if(KaonCut==0){ // cuts by Oton
    AntiKaonCuts->SetPIDkd(true,false,3,3,3);
@@ -346,6 +362,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     taskNano->SetCleanWithLambdas(false);
     taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
     taskNano->SetRunOfficialTwoBody(RunOfficialTwoBody);
+    taskNano->SetRunPlotOtherHistos(false);
     //taskNano->SetDoTwoPrimary(DoTwoPrimary);
     taskNano->SetStandardMixing(StandardMixing);
     taskNano->SetRunPlotQ3Vsq(RunPlotQ3Vsq);
@@ -358,6 +375,10 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     taskNano->SetDeltaEtaMaxPAPrim(0.);
     taskNano->SetDoKinematicsPlots(DoKinematicPlots);
     taskNano->SetRunPlotInvMass(DoKinematicPlots);
+    taskNano->SetRunPlotMult(RunPlotMult);
+    taskNano->SetRunCorrDeltaPhi(RunCorrDeltaPhi);
+    taskNano->SetRunPlotPhiTheta(RunPlotPhiTheta);
+    taskNano->SetPlotP1(RunPlotP1);
     if (isMC) taskNano->SetPlotsMC(true);
 
     mgr->AddTask(taskNano);

@@ -41,9 +41,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     Int_t     enableMatBudWeightsPi0      = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ){
-  AliCutHandlerPCM cuts(13);
 
-  TString addTaskName                       = "AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp";
+  AliCutHandlerPCM cuts(13);
+  TString addTaskName                       = "AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb";
   TString fileNamePtWeights                 = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights               = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
   TString fileNameMatBudWeights             = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
@@ -200,6 +200,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     cuts.AddCutHeavyMesonPCM("80010113","00200009227000008250400000","32c51070a","0103603o00000000","0453503000000000"); //  First converstion cut guesstimate
   }else if (trainConfig == 1008){ // PCM  INT7 standard cut study guesstimate
     cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0153503000000000"); // Second converstion cut guesstimate
+  }else if (trainConfig == 1009){ // PCM  INT7 with restricted DCA
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c31070a","0103103500000000","0153503000000000"); // DCA resticted
+  }else if (trainConfig == 1010){ // PCM  INT7 with different pi0 selection windows
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103103s00000000","0153503000000000"); // PCM 2 sigma
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103113s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.4
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103123s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.7
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103133s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.9
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  PHI7 run1
     cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100%

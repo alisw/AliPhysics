@@ -174,13 +174,18 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
                                 RelativeK);
   }
   if (fillHists && fHists->GetDokTandMultBinning()) {
-    fHists->FillSameEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
-                                       RelativeK, Mult + 1);
+    fHists->FillSameEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo), RelativeK, Mult + 1);
     if (fHists->GetDokTandMultPtBinning() && RelativeK < 0.2) {
     fHists->FillSameEventkTandMultPtDist(iHC, RelativePairkT(PartOne, PartTwo),
                                        Part1Momentum.Pt(), Mult + 1);
     fHists->FillSameEventkTandMultPtDist(iHC, RelativePairkT(PartOne, PartTwo),
                                        Part2Momentum.Pt(), Mult + 1);
+    }
+  }
+  if (fillHists && fHists->GetDokTandMultMCTrueBinning()) {
+    if ((PDGPart1 == TMath::Abs(part1.GetMCPDGCode())) && ((PDGPart2 == TMath::Abs(part2.GetMCPDGCode())))) {
+      //Only record reconstructed MC True particles
+      fHists->FillSameEventkTandMultMCTrueDist(iHC, RelativePairkT(PartOne, PartTwo), RelativeK, Mult + 1);
     }
   }
   if (fillHists && fHists->GetDomTMultPlots()) {
@@ -296,8 +301,13 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
                                  RelativeK);
   }
   if (fillHists && fHists->GetDokTandMultBinning()) {
-    fHists->FillMixedEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
-                                        RelativeK, Mult + 1);
+    fHists->FillMixedEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo), RelativeK, Mult + 1);
+  }
+  if (fillHists && fHists->GetDokTandMultMCTrueBinning()) {
+    if ((PDGPart1 == TMath::Abs(part1.GetMCPDGCode())) && ((PDGPart2 == TMath::Abs(part2.GetMCPDGCode())))) {
+      //Only record reconstructed MC True particles
+      fHists->FillMixedEventkTandMultMCTrueDist(iHC, RelativePairkT(PartOne, PartTwo), RelativeK, Mult + 1);
+    }
   }
   if (fillHists && fHists->GetDomTMultPlots()) {
     fHists->FillMixedEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 

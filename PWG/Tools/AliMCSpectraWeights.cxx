@@ -62,7 +62,7 @@ fHistMCFractions(nullptr), fHistMCWeights(nullptr), fHistMCWeightsSysUp(nullptr)
 fMultOrCent(0), fNPartTypes(6), fNCentralities(0),
 fbTaskStatus(AliMCSpectraWeights::TaskState::kAllEmpty),
 fFlag(AliMCSpectraWeights::SysFlag::kNominal), fUseMultiplicity(kTRUE),
-fUseMBFractions(kFALSE) {}
+fUseMBFractions(kFALSE), fDoInterpolation(kTRUE) {}
 
 /**
  *  @brief standard way for constuctor
@@ -83,7 +83,7 @@ fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
 fHistMCFractions(nullptr), fHistMCWeights(nullptr),  fHistMCWeightsSysUp(nullptr), fHistMCWeightsSysDown(nullptr), fMCEvent(nullptr),
 fMultOrCent(0), fNPartTypes(6), fNCentralities(0),
 fbTaskStatus(AliMCSpectraWeights::TaskState::kAllEmpty), fFlag(flag),
-fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
+fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE), fDoInterpolation(kTRUE) {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
@@ -1115,23 +1115,48 @@ int const AliMCSpectraWeights::CheckAndIdentifyParticle(TParticle* part) {
     return AliMCSpectraWeights::IdentifyMCParticle(part);
 }
 
-int const AliMCSpectraWeights::FindBinEntry(float pt, int const part) {
-    auto const icent = AliMCSpectraWeights::GetCentFromMult(fMultOrCent);
+std::vector<int> const AliMCSpectraWeights::FindBinEntry(float pt, int const part) {
+    fMultClass = AliMCSpectraWeights::GetCentFromMult(fMultOrCent); // nominal cent value
     if (pt < 0.15) {
         DebugPCC("Warning: pt too low; pt = " + std::to_string(pt) + "\n");
-        return -1;
+        return {-1};
     }
     if (pt >= 20) {
         DebugPCC("Info: pt too high; pt = " + std::to_string(pt) + "; set to 19.9\n");
         pt = 19.9;
     }
-    std::array<float, 3> binEntry{
-        pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(icent)),
-        static_cast<float>(part)};
-    auto const _iBin = GetBinFromTH3(
-                                     fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal], binEntry);
-    DebugPCC("Found bin at " + std::to_string(_iBin) << "\n");
-    return _iBin;
+    auto const _multTuple = AliMCSpectraWeights::GetMultTupleFromCent(fMultClass);
+
+    std::vector<int> results;
+    auto const icent_low    = AliMCSpectraWeights::GetCentFromMult(_multTuple.front());
+    auto const icent_high   = AliMCSpectraWeights::GetCentFromMult(_multTuple.back());
+
+
+    if(fDoInterpolation){
+        std::array<float, 3> binEntry_low{
+            pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(icent_low)),
+            static_cast<float>(part)};
+        auto const _iBin_low = GetBinFromTH3(
+                                             fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal], binEntry_low);
+
+        std::array<float, 3> binEntry_high{
+            pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(icent_high)),
+            static_cast<float>(part)};
+        auto const _iBin_high = GetBinFromTH3(
+                                              fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal], binEntry_high);
+        results.push_back(_iBin_low);
+        results.push_back(_iBin_high);
+    } else {
+        std::array<float, 3> binEntry{
+            pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(fMultClass)),
+            static_cast<float>(part)};
+        auto const _iBin = GetBinFromTH3(
+                                             fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal], binEntry);
+        results.push_back(_iBin);
+    }
+
+    DebugPCC("Found bin at low: " + std::to_string(_iBin_low) << "\t high: " << std::to_string(_iBin_high) << "\n");
+    return results;
 }
 
 float const
@@ -1151,20 +1176,29 @@ AliMCSpectraWeights::GetMCSpectraWeightNominal(TParticle* mcGenParticle) {
     }
     auto const _iBin =
     AliMCSpectraWeights::FindBinEntry(mcGenParticle->Pt(), particleType);
-    if (_iBin < 0) {
+    if (_iBin.size() < 1) {
         DebugPCC("Can't find bin\n");
         return 1;
     }
-    float weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]
-    ->GetBinContent(_iBin);
-    if (weight <= 0) {
-        DebugPCC("ERROR: negative weight " << weight << "; set to 1\n");
-        weight = 1;
+    float _weight_Interpolated = 1;
+    if(fDoInterpolation){
+        auto const _MultTuple = AliMCSpectraWeights::GetMultTupleFromCent(fMultClass);
+        float const weight1 = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin.front());
+        float const weight2 = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin.back());
+        _weight_Interpolated = weight1 + (weight2 - weight1)/(_MultTuple.back() - _MultTuple.front()) * (fMultOrCent - _MultTuple.front()); // linear interpolation
+    }
+    else {
+        _weight_Interpolated = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin.front());
+    }
+
+    if (_weight_Interpolated <= 0) {
+        DebugPCC("ERROR: negative weight " << _weight_Interpolated << "; set to 1\n");
+        _weight_Interpolated = 1;
     }
     DebugPCC("GetMCSpectraWeight: nominal");
     DebugPCC(fstPartTypes[particleType] << " ");
     DebugPCC("pT: " + std::to_string(mcGenParticle->Pt()) + " ");
-    DebugPCC("weight: " + std::to_string(weight) + "\n");
+    DebugPCC("weight: " + std::to_string(_weight_Interpolated) + "\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
     auto duration =
@@ -1172,7 +1206,7 @@ AliMCSpectraWeights::GetMCSpectraWeightNominal(TParticle* mcGenParticle) {
     DebugChrono("GetMCSpectraWeightNominal took " << duration
                 << " microseconds\n");
 #endif
-    return weight;
+    return _weight_Interpolated;
 }
 
 float const
@@ -1185,36 +1219,7 @@ AliMCSpectraWeights::GetMCSpectraWeightNominal(Int_t mcGenParticle) {
         return 1;
     }
     AliMCParticle* _MCpart = (AliMCParticle*)fMCEvent->GetTrack(mcGenParticle);
-    int const particleType =
-    AliMCSpectraWeights::CheckAndIdentifyParticle(_MCpart->Particle());
-    if (particleType < 0) {
-        DebugPCC("Can't find particle type\n");
-        return 1;
-    }
-    auto const _iBin =
-    AliMCSpectraWeights::FindBinEntry(_MCpart->Pt(), particleType);
-    if (_iBin < 0) {
-        DebugPCC("Can't find bin\n");
-        return 1;
-    }
-    float weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]
-    ->GetBinContent(_iBin);
-    if (weight <= 0) {
-        DebugPCC("ERROR: negative weight " << weight << "; set to 1\n");
-        weight = 1;
-    }
-    DebugPCC("GetMCSpectraWeight: nominal");
-    DebugPCC(fstPartTypes[particleType] << " ");
-    DebugPCC("pT: " + std::to_string(_MCpart->Pt()) + " ");
-    DebugPCC("weight: " + std::to_string(weight) + "\n");
-#ifdef __AliMCSpectraWeights_DebugTiming__
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration =
-    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-    DebugChrono("GetMCSpectraWeightNominal took " << duration
-                << " microseconds\n");
-#endif
-    return weight;
+    return AliMCSpectraWeights::GetMCSpectraWeightNominal(_MCpart->Particle());
 }
 
 float const
@@ -1234,25 +1239,47 @@ AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int
     }
     auto const _iBin =
     AliMCSpectraWeights::FindBinEntry(mcGenParticle->Pt(), particleType);
-    if (_iBin < 0) {
+    if (_iBin.size() < 1) {
         DebugPCC("Can't find bin\n");
         return 1;
     }
-    float weight = 1 ;
-    if(SysCase > 0){
-        weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
+    float _weight_Interpolated = 1 ;
+    auto const _MultTuple = AliMCSpectraWeights::GetMultTupleFromCent(fMultClass);
+
+    if(fDoInterpolation){
+        if(SysCase > 0){
+            //weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
+            float const weight1 = fHistMCWeightsSysUp->GetBinContent(_iBin.front());
+            float const weight2 = fHistMCWeightsSysUp->GetBinContent(_iBin.back());
+            _weight_Interpolated = weight1 + (weight2 - weight1)/(_MultTuple.back() - _MultTuple.front()) * (fMultOrCent - _MultTuple.front()); // linear interpolation
+
+        }
+        if(SysCase < 0){
+            //        weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
+            float const weight1 = fHistMCWeightsSysDown->GetBinContent(_iBin.front());
+            float const weight2 = fHistMCWeightsSysDown->GetBinContent(_iBin.back());
+            _weight_Interpolated = weight1 + (weight2 - weight1)/(_MultTuple.back() - _MultTuple.front()) * (fMultOrCent - _MultTuple.front()); // linear interpolation
+        }
     }
-    if(SysCase < 0){
-        weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
+    else {
+        if(SysCase > 0){
+            //weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
+            _weight_Interpolated = fHistMCWeightsSysUp->GetBinContent(_iBin.front());
+        }
+        if(SysCase < 0){
+            //        weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
+            _weight_Interpolated = fHistMCWeightsSysDown->GetBinContent(_iBin.front());
+        }
     }
-    if (weight <= 0) {
+
+    if (_weight_Interpolated <= 0) {
         DebugPCC("ERROR: negative weight; set to 1\n");
-        weight = 1;
+        _weight_Interpolated = 1;
     }
     DebugPCC("GetMCSpectraWeight: with systematics");
     DebugPCC(fstPartTypes[particleType]+ " ");
     DebugPCC("pT: " + std::to_string(mcGenParticle->Pt()) + " ");
-    DebugPCC("weight: " + std::to_string(weight) + "\n");
+    DebugPCC("weight: " + std::to_string(_weight_Interpolated) + "\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
     auto duration =
@@ -1260,7 +1287,7 @@ AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int
     DebugChrono("GetMCSpectraWeightSystematics took " << duration
                 << " microseconds\n");
 #endif
-    return weight;
+    return _weight_Interpolated;
 }
 
 float const
@@ -1273,41 +1300,7 @@ AliMCSpectraWeights::GetMCSpectraWeightSystematics(Int_t mcGenParticle, Int_t Sy
         return 1;
     }
     AliMCParticle* _MCpart = (AliMCParticle*)fMCEvent->GetTrack(mcGenParticle);
-    int const particleType =
-    AliMCSpectraWeights::CheckAndIdentifyParticle(_MCpart->Particle());
-    if (particleType < 0) {
-        DebugPCC("Can't find particle type\n");
-        return 1;
-    }
-    auto const _iBin =
-    AliMCSpectraWeights::FindBinEntry(_MCpart->Pt(), particleType);
-    if (_iBin < 0) {
-        DebugPCC("Can't find bin\n");
-        return 1;
-    }
-    float weight = 1 ;
-    if(SysCase > 0){
-        weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
-    }
-    if(SysCase < 0){
-        weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
-    }
-    if (weight <= 0) {
-        DebugPCC("ERROR: negative weight; set to 1\n");
-        weight = 1;
-    }
-    DebugPCC("GetMCSpectraWeight: with systematics");
-    DebugPCC(fstPartTypes[particleType]+ " ");
-    DebugPCC("pT: " + std::to_string(_MCpart->Pt()) + " ");
-    DebugPCC("weight: " + std::to_string(weight) + "\n");
-#ifdef __AliMCSpectraWeights_DebugTiming__
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration =
-    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-    DebugChrono("GetMCSpectraWeightSystematics took " << duration
-                << " microseconds\n");
-#endif
-    return weight;
+    return AliMCSpectraWeights::GetMCSpectraWeightSystematics(_MCpart->Particle(), SysCase);
 }
 
 float const
@@ -1408,7 +1401,7 @@ int const AliMCSpectraWeights::IdentifySecondaryType(Int_t partLabel){
  */
 float const AliMCSpectraWeights::GetWeightForSecondaryParticle(Int_t partLabel, Int_t SysCase){
     DebugPCC("\n\nGetWeightForSecondaryParticle\n");
-    float weight = 1;
+    float _weight_Interpolated = 1;
     if (fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated) {
         DebugPCC("Warning: Status not kMCWeightCalculated\n");
         return 1;
@@ -1431,7 +1424,7 @@ float const AliMCSpectraWeights::GetWeightForSecondaryParticle(Int_t partLabel, 
         std::cerr << "AliMCSpectraWeights::Error: mother is not available\n";
         return 1;
     }
-    int _iBin = -1;
+    std::vector<int> _iBin = {};
     switch (_SecondaryID) {
         case 0: // Lambda case
             _iBin = AliMCSpectraWeights::FindBinEntry(motherPart->Pt(), AliMCSpectraWeights::ParticleType::kSigmaPlus);
@@ -1454,26 +1447,49 @@ float const AliMCSpectraWeights::GetWeightForSecondaryParticle(Int_t partLabel, 
         default:
             break;
     }
-    if (_iBin < 0) {
-        DebugPCC("\tCan't find bin; bin = " + std::to_string(_iBin) + "\n");
+    if (_iBin.size() < 1) {
+        DebugPCC("\tCan't find bin;\n");
         return 1;
     }
 
+    auto const _MultTuple = AliMCSpectraWeights::GetMultTupleFromCent(fMultClass);
+
     if(SysCase==0){
-        weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
+//        weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
+        if(fDoInterpolation){
+            float const weight1 = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin.front());
+            float const weight2 = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin.back());
+            _weight_Interpolated = weight1 + (weight2 - weight1)/(_MultTuple.back() - _MultTuple.front()) * (fMultOrCent - _MultTuple.front()); // linear interpolation
+        } else {
+            _weight_Interpolated = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin.front());
+        }
     } else if(SysCase<0){
-        weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
+//        weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
+        if(fDoInterpolation){
+            float const weight1 = fHistMCWeightsSysDown->GetBinContent(_iBin.front());
+            float const weight2 = fHistMCWeightsSysDown->GetBinContent(_iBin.back());
+            _weight_Interpolated = weight1 + (weight2 - weight1)/(_MultTuple.back() - _MultTuple.front()) * (fMultOrCent - _MultTuple.front()); // linear interpolation
+        } else {
+            _weight_Interpolated = fHistMCWeightsSysDown->GetBinContent(_iBin.front());
+        }
     } else if(SysCase>0){
-        weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
+//        weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
+        if(fDoInterpolation){
+            float const weight1 = fHistMCWeightsSysUp->GetBinContent(_iBin.front());
+            float const weight2 = fHistMCWeightsSysUp->GetBinContent(_iBin.back());
+            _weight_Interpolated = weight1 + (weight2 - weight1)/(_MultTuple.back() - _MultTuple.front()) * (fMultOrCent - _MultTuple.front()); // linear interpolation
+        } else {
+            _weight_Interpolated = fHistMCWeightsSysUp->GetBinContent(_iBin.front());
+        }
     }
 
-    if(weight < 1e-2){
+    if(_weight_Interpolated < 1e-2){
         DebugPCC("AliMCSpectraWeights::WARNING: weight is too small -> set to 1 \n");
-        weight = 1;
+        _weight_Interpolated = 1;
     }
 
-    DebugPCC("\t final weight is " + std::to_string(weight) + "\n");
-    return weight;
+    DebugPCC("\t final weight is " + std::to_string(_weight_Interpolated) + "\n");
+    return _weight_Interpolated;
 }
 
 void AliMCSpectraWeights::StartNewEvent() {

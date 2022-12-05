@@ -30,9 +30,27 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const int part)
       fMCPhi(0),
       fIDTracks(0),
       fCharge(0),
+      fSoftPionPx(0),
+      fSoftPionPy(0),
+      fSoftPionPz(0),
       fCPA(0),
       fInvMass(0),
       fOrigin(kUnknown),
+      fParticleMult(-1),
+      fIsRemovedByOldPC(false),
+      fIsRemovedByNewPC(false),
+      fIsRemovedByCrossPC(false),
+      fMult(0),
+      fZVtx(0),
+      fBkgScore(0),
+      fPromptScore(0),
+      fNSigTPC(0),
+      fNSigTOF(0),
+      fNCls(0),
+      fNCrossedRows(0),
+      fDCAZ(0),
+      fDCAXY(0),
+      fDzeroLabel(0),
       fPDGCode(0),
       fMCPDGCode(0),
       fPDGMotherWeak(0),
@@ -64,9 +82,27 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fMCPhi(part.fMCPhi),
       fIDTracks(part.fIDTracks),
       fCharge(part.fCharge),
+      fSoftPionPx(part.fSoftPionPx),
+      fSoftPionPy(part.fSoftPionPy),
+      fSoftPionPz(part.fSoftPionPz),
       fCPA(part.fCPA),
       fInvMass(part.fInvMass),
       fOrigin(part.fOrigin),
+      fParticleMult(part.fParticleMult),
+      fIsRemovedByOldPC(part.fIsRemovedByOldPC),
+      fIsRemovedByNewPC(part.fIsRemovedByNewPC),
+      fIsRemovedByCrossPC(part.fIsRemovedByCrossPC),
+      fMult(part.fMult),
+      fZVtx(part.fZVtx),
+      fBkgScore(part.fBkgScore),
+      fPromptScore(part.fPromptScore),
+      fNSigTPC(part.fNSigTPC),
+      fNSigTOF(part.fNSigTOF),
+      fNCls(part.fNCls),
+      fNCrossedRows(part.fNCrossedRows),
+      fDCAZ(part.fDCAZ),
+      fDCAXY(part.fDCAXY),
+      fDzeroLabel(part.fDzeroLabel),
       fPDGCode(part.fPDGCode),
       fMCPDGCode(part.fMCPDGCode),
       fPDGMotherWeak(part.fPDGMotherWeak),
@@ -102,9 +138,27 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fMCPhi = obj.fMCPhi;
   fIDTracks = obj.fIDTracks;
   fCharge = obj.fCharge;
+  fSoftPionPx = obj.fSoftPionPx,
+  fSoftPionPy = obj.fSoftPionPy,
+  fSoftPionPz = obj.fSoftPionPz,
   fCPA = obj.fCPA;
   fInvMass = obj.fInvMass;
   fOrigin = obj.fOrigin;
+  fParticleMult = obj.fParticleMult,
+  fIsRemovedByOldPC = obj.fIsRemovedByOldPC,
+  fIsRemovedByNewPC = obj.fIsRemovedByNewPC,
+  fIsRemovedByCrossPC = obj.fIsRemovedByCrossPC,
+  fMult = obj.fMult,
+  fZVtx = obj.fZVtx,
+  fBkgScore = obj.fBkgScore,
+  fPromptScore = obj.fPromptScore,
+  fNSigTPC = obj.fNSigTPC,
+  fNSigTOF = obj.fNSigTOF,
+  fNCls = obj.fNCls,
+  fNCrossedRows = obj.fNCrossedRows,
+  fDCAZ = obj.fDCAZ,
+  fDCAXY = obj.fDCAXY,
+  fDzeroLabel = obj.fDzeroLabel,
   fPDGCode = obj.fPDGCode;
   fMCPDGCode = obj.fMCPDGCode;
   fPDGMotherWeak = obj.fPDGMotherWeak;
@@ -139,9 +193,27 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCPhi(),
       fIDTracks(),
       fCharge(0),
+      fSoftPionPx(0),
+      fSoftPionPy(0),
+      fSoftPionPz(0),
       fCPA(0),
       fInvMass(gamma->GetPhotonMass()),
       fOrigin(kUnknown),
+      fParticleMult(-1),
+      fIsRemovedByOldPC(false),
+      fIsRemovedByNewPC(false),
+      fIsRemovedByCrossPC(false),
+      fMult(0),
+      fZVtx(0),
+      fBkgScore(0),
+      fPromptScore(0),
+      fNSigTPC(0),
+      fNSigTOF(0),
+      fNCls(0),
+      fNCrossedRows(0),
+      fDCAZ(0),
+      fDCAXY(0),
+      fDzeroLabel(0),
       fPDGCode(),
       fMCPDGCode(),
       fPDGMotherWeak(0),
@@ -229,9 +301,27 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       fMCPhi(),
       fIDTracks(),
       fCharge(),
+      fSoftPionPx(0),
+      fSoftPionPy(0),
+      fSoftPionPz(0),
       fCPA(dmeson->Eta()),
       fInvMass(0),
       fOrigin(kUnknown),
+      fParticleMult(-1),
+      fIsRemovedByOldPC(false),
+      fIsRemovedByNewPC(false),
+      fIsRemovedByCrossPC(false),
+      fMult(0),
+      fZVtx(0),
+      fBkgScore(0),
+      fPromptScore(0),
+      fNSigTPC(0),
+      fNSigTOF(0),
+      fNCls(0),
+      fNCrossedRows(0),
+      fDCAZ(0),
+      fDCAXY(0),
+      fDzeroLabel(0),
       fPDGCode(0),
       fMCPDGCode(0),
       fPDGMotherWeak(0),
@@ -272,6 +362,11 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
     PhiAtRadii(track, aod->GetMagneticField(), phiAtRadii);
     fPhiAtRadius.push_back(phiAtRadii);
     fCharge.push_back(track->Charge());
+    if (pdgParent == 413 ) {
+      fSoftPionPx = track->Px();
+      fSoftPionPy = track->Py();
+      fSoftPionPz = track->Pz();
+    }
   }
 
   // MC Matching
@@ -292,6 +387,8 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       int pdgD0Dau[2] = {321, 211};
       int pdgDstarDau[2] = {421, 211};
       label = dynamic_cast<const AliAODRecoCascadeHF *>(dmeson)->MatchToMC(413, 421, pdgDstarDau, pdgD0Dau, mcarray, false);
+      auto d0to2prong = dynamic_cast<const AliAODRecoCascadeHF *>(dmeson)->Get2Prong();
+      fDzeroLabel = d0to2prong->MatchToMC(421, mcarray, 2, pdgD0Dau);
     }
 
     if (label < 0) {

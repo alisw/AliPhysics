@@ -44,6 +44,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetCentLim(Double_t min, Double_t max) { fCentMin = min; fCentMax = max; } //Not used yet
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
         void                    SetRequireHighPtTracks(Int_t Ntracks, Double_t ptcut) { fRequireHighPtTracks = true; fNHighPtTracks = Ntracks; fHighPtCut = ptcut; }
+        void                    SetRequirePrimariesAndCh(Bool_t newval) { bOnlyPrimariesAndCh = newval; }
         AliEventCuts            fEventCuts;
         //track selection
         void                    SetDCAzMax(Double_t dcaz) {  fCutDCAzMax = dcaz; }
@@ -128,6 +129,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TH1D*                   hNumTracksB;                //!
         TH1D*                   hNumTracksA;                //!
         TH1D*                   hNumHighPtTracksA;          //!
+        TH1I*                   hCharge;                    //!
         TH1D*                   fhEventSel;                 //!
 
         void                    FillWeights();   
@@ -306,6 +308,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fRFPsPtMin;
         Bool_t                  fRequireTwoPart;
         Bool_t                  bEqualPt;
+        Bool_t                  bOnlyPrimariesAndCh;
         //QA
         TH2D*                   fhQAEventsfMult32vsCentr;   //!
         TH2D*                   fhQAEventsMult128vsCentr;   //!

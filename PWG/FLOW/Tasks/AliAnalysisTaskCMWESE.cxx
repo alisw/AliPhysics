@@ -1891,7 +1891,7 @@ bool AliAnalysisTaskCMWESE::RejectEvtTFFit(AliAODEvent* fAOD)
   if (fAOD->IsIncompleteDAQ()) return false;
 
   if (fPUSyst==1){
-     if (nclsDif > 100000)//can be varied to 150000, 200000
+     if (nclsDif > 200000)//can be varied to 150000, 200000
       return false;
   }
 

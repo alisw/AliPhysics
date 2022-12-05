@@ -988,11 +988,12 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(AliMCParticle *particle, AliM
     AliMCParticle* ePos = NULL;
     AliMCParticle* eNeg = NULL;
 
+
     if(particle->GetNDaughters() >= 2){
       for(Int_t daughterIndex=particle->GetDaughterFirst();daughterIndex<=particle->GetDaughterLast();daughterIndex++){
         if(daughterIndex<0) continue;
         AliMCParticle *tmpDaughter = (AliMCParticle*) mcEvent->GetTrack(daughterIndex);
-        if(tmpDaughter->GetUniqueID() == 5){
+        if(tmpDaughter->Particle()->GetUniqueID() == 5){
         if(tmpDaughter->PdgCode() == 11){
           eNeg = tmpDaughter;
         } else if(tmpDaughter->PdgCode() == -11){

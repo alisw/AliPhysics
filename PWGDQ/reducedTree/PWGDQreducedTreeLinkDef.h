@@ -6,11 +6,13 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliAnalysisTaskComputeLumi+;
 #pragma link C++ class AliAnalysisTaskReducedEventProcessor+;
 #pragma link C++ class AliAnalysisTaskReducedTreeMaker+;
 #pragma link C++ class AliCorrelationExtraction+;
 #pragma link C++ class AliHistogramManager+;
 #pragma link C++ class AliMixingHandler+;
+#pragma link C++ class AliReducedAnalysisBmeson2JpsiK+;
 #pragma link C++ class AliReducedAnalysisFilterTrees+;
 #pragma link C++ class AliReducedAnalysisJpsi2ee+;
 #pragma link C++ class AliReducedAnalysisJpsi2eeCorrelations+;

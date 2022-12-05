@@ -94,11 +94,13 @@ public:
    void   SetResolutionFileFromAlien(std::string filename) {fResoFilenameFromAlien = filename; }
    void   SetResolutionFile(std::string filenamelocal,std::string filenamealien);
    void   SetSmearGenerated(bool setSmearingGen) { fDoGenSmearing = setSmearingGen; }
+   void   SetResolutionDeltaPtBins(std::vector<double> ResolutionDeltaPtBins)             {fResolutionDeltaPtBins = ResolutionDeltaPtBins;}
    void   SetResolutionDeltaPtBinsLinear (const double min, const double max, const unsigned int steps){SetBinsLinear("ptDelta_reso", min, max, steps);}
    void   SetResolutionRelPtBinsLinear   (const double min, const double max, const unsigned int steps){SetBinsLinear("ptRel_reso", min, max, steps);}
    void   SetResolutionEtaBinsLinear  (const double min, const double max, const unsigned int steps){SetBinsLinear("eta_reso", min, max, steps);}
    void   SetResolutionPhiBinsLinear  (const double min, const double max, const unsigned int steps){SetBinsLinear("phi_reso", min, max, steps);}
    void   SetResolutionThetaBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("theta_reso", min, max, steps);}
+   void   SetResolutionGenptBins(const double min, const double max, const unsigned int steps){fGenptMin = min; fGenptMax = max; fNGenpt = steps;}
 
    // single electron binning setter
    void   SetPtBins(std::vector<double> ptBins)             {fPtBins = ptBins;}
@@ -263,6 +265,10 @@ private:
   std::vector<double> fPhiVBins;
   bool fDoGenSmearing;
 
+  int    fNGenpt;// pt binning for resolution map
+  double fGenptMin;// pt binning for resolution map
+  double fGenptMax;// pt binning for resolution map
+
   double  fPtMin; // Kinematic cut for pairing
   double  fPtMax; // Kinematic cut for pairing
   double  fEtaMin; // Kinematic cut for pairing
@@ -391,7 +397,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 10);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 12);
 };
 
 

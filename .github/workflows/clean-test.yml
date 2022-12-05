@@ -18,8 +18,13 @@ on:
         required: true
         default: 'AliPhysics'
 
+permissions: {}
 jobs:
   cleanup_pr_checks:
+    permissions:
+      pull-requests: read # to get last commit for pr (octokit/graphql-action)
+      statuses: write # for set-github-status
+
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python 3.7

@@ -1,28 +1,30 @@
-AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TString name             = "test",
-									   Int_t whichGen           = 0,// 0=all sources, 1=HS, 2=Jpsi
-									   Bool_t getFromAlien      = kFALSE,
-									   TString configFile       = "Config_hmurakam_ElectronEfficiencyV2.C",
-									   TString calibFileNameTOF = "alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/calibLMEE/calMaps_TOF_mc.root",
-									   //Binning of Pt,Mass,Ptee
-									   Bool_t usePtVector       = kTRUE,
-									   Bool_t useMassVector     = kFALSE,
-									   Bool_t usePteeVector     = kFALSE,
-									   Bool_t DoULSLS           = kTRUE,
-									   Bool_t DeactivateLS      = kFALSE,
-									   TString year             = "16",
-									   Bool_t usePhiV           = kFALSE,
-									   Double_t maxMee          = 0.04,
-									   Double_t minphiv         = 2.0,
-									   TString suffix           = "",
-									   TString outputFileName   = "LMEE.root",
-									   // Binning of resolution histograms
-									   Int_t NbinsDeltaMom      = 1,
-									   Int_t NbinsRelMom        = 1,
-									   Int_t NbinsDeltaEta      = 1,
-									   Int_t NbinsDeltaTheta    = 1,
-									   Int_t NbinsDeltaPhi      = 1
-									   )
-{
+AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(
+TString name             = "test",
+// 0=all sources, 1=HS, 2=Jpsi
+Int_t whichGen           = 0,
+Bool_t getFromAlien      = kFALSE,
+TString configFile       = "Config_hmurakam_ElectronEfficiencyV2.C",
+const std::string resoFilename ="",
+TString calibFileNameTOF = "alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/calibLMEE/calMaps_TOF_mc.root",
+//Binning of Pt,Mass,Ptee
+Bool_t usePtVector       = kTRUE,
+Bool_t useMassVector     = kFALSE,
+Bool_t usePteeVector     = kFALSE,
+Bool_t DoULSLS           = kTRUE,
+Bool_t DeactivateLS      = kFALSE,
+TString year             = "16",
+Bool_t usePhiV           = kFALSE,
+Double_t maxMee          = 0.04,
+Double_t minphiv         = 2.0,
+//Resolution
+Double_t GenptMax        = 10.0,
+Int_t NbinsGenPt         = 5000,
+Int_t NbinsDeltaMom      = 1,
+Int_t NbinsRelMom        = 1,
+Int_t NbinsDeltaEta      = 1,
+Int_t NbinsDeltaTheta    = 1,
+Int_t NbinsDeltaPhi      = 1
+){
 
   //Fiducial cut
   Float_t minPtCut         = 0.2;
@@ -42,7 +44,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
     printf("Configfile already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data()))) ){
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/%s file:./",configFile.Data()))) ){
     printf("Copy Configfile from alien\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
@@ -101,6 +103,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   const Double_t ptBins[] = {
     0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
     1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,4.00,5.0,6.0,7.0,10.0,20.0};
+
   const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
   if (usePtVector == true) {
     std::vector<double> ptBinsVec;
@@ -145,15 +148,15 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   else task->SetPairPtBinsLinear   (0,10,50);
 
   TGrid::Connect("alien://");
+
   //  Resolution File, If resoFilename = "" no correction is applied
-  std::string resoFilename = Form("%s.root",year.Data());
   task->SetResolutionFile(resoFilename,"/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/" + resoFilename);
-  task->SetResolutionDeltaPtBinsLinear   (-10.0, 2.0, 1);
+  task->SetResolutionGenptBins           (0.0, GenptMax, NbinsGenPt);//0.0 - 10.0 (5000 bins -> 2MeV/bin)
+  task->SetResolutionDeltaPtBinsLinear   (-10.0, 2.0, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (0., 2.0, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (-0.4, 0.4, NbinsDeltaEta);
   task->SetResolutionPhiBinsLinear  (-0.4, 0.4, NbinsDeltaPhi);
   task->SetResolutionThetaBinsLinear(-0.4, 0.4, NbinsDeltaTheta);
-
   // Set centrality correction. If resoFilename = "" no correction is applied
   // task->SetCentralityFile(centralityFilename);
   // Pairing related config
@@ -269,11 +272,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   }
 
   TString fileName = AliAnalysisManager::GetCommonFileName();
-  fileName = outputFileName; // create a subfolder in the file
-  TString outlistname = Form("efficiency%s",suffix.Data());
+  fileName = "LMEE.root"; // create a subfolder in the file
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(outlistname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer("efficiency", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 
 }

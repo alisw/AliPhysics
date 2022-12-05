@@ -1428,7 +1428,7 @@ Bool_t Config_pphi(
     if(!(TrackCutsP%10000)) TrackCutsP+=3020;//default settings
     Float_t nsigmaPTPC=0.1*(TrackCutsP%100);
     Float_t nsigmaPTOF=0.1*((TrackCutsP/100)%100);
-    Int_t CutTypeP=(TrackCutsP/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+    Int_t CutTypeP=(TrackCutsP/100000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
     
     if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
     Float_t nsigmaKTPC=0.1*(TrackCutsPhi%100);

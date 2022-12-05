@@ -343,7 +343,6 @@ void AliAnalysisTaskEPCalibForJet::AllocateGainCalibHistograms(){
   fHistManager.CreateHistoGroup(groupName);
   THashList *parent = static_cast<THashList *>(fHistManager.FindObject(groupName.Data()));
   
-  
   for(Int_t eventNumBin = 0; eventNumBin < fUseRunList.size(); eventNumBin++){
     Int_t runEventNum = stoi(fUseRunList.at(eventNumBin));
     histName = TString::Format("hAvgV0ChannelsvsVz_%d", runEventNum);
@@ -862,16 +861,14 @@ Bool_t AliAnalysisTaskEPCalibForJet::Run()
   
   CheckRunNum++;
   if(!fEventCuts.AcceptEvent(InputEvent())) return kFALSE;
-
+  
   if(fPileupCut){
     SetupPileUpRemovalFunctions();
     Bool_t kPileupCutEvent = CheckEventIsPileUp2018();
     if(kPileupCutEvent) return kFALSE;
   }
-  
   if(fGainCalibQA) DoMeasureChGainDiff();
   if(fEPQA) DoEventPlane();
-  
   if(fBkgQA){
     SetModulationRhoFit();
     // std::cout << "Fomula = " << fFitModulation->GetExpFormula() << std::endl;
@@ -896,16 +893,21 @@ void AliAnalysisTaskEPCalibForJet::DoMeasureChGainDiff(){
   Int_t ibinV0 = 0;
   Double_t fMultV0 = 0.;
   
-
+  
   for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
     fMultV0 = fAodV0->GetMultiplicity(iV0);
     
     histName = TString::Format("%s/hAvgV0ChannelsvsVz_%d", groupName.Data(), fRunNumber);
-    TProfile2D* tempProfile2DHist = (TProfile2D*) fHistManager.FindObject(histName);
-    tempProfile2DHist->Fill(fVtxZ, iV0, fMultV0);
+    TProfile2D* tempProfile2DHist = dynamic_cast<TProfile2D *>(fHistManager.FindObject(histName));
+    if(!tempProfile2DHist){
+      Fatal("THistManager::FillTProfile", "Histogram %s not found in parent group %s", histName.Data(), groupName.Data());
+    }
+    tempProfile2DHist->Fill(fVtxZ, iV0, fMultV0);//?????
     // fHistManager.FillProfile(histName, fVtxZ, iV0, fMultV0);
   }
+  
 }
+
 
 void AliAnalysisTaskEPCalibForJet::DoEventPlane(){
 
@@ -1099,58 +1101,7 @@ void AliAnalysisTaskEPCalibForJet::MeasureBkg(){
   fFitModulation->FixParameter(2, psi2V0[0]);
   fFitModulation->FixParameter(4, psi3V0[0]);
   
-  hBkgTracks->Fit(fFitModulation, "N0Q"); 
-  
-  if(0){ // ChecKuma fit parameters
-    std::cout << "psi2V0 = " << psi2V0[0] << ", psi3V0 = " << psi3V0[0] << std::endl;
-    
-    if(CheckRunNum == 24) hBkgTracks->SaveAs("checkOutput/checkhBkgTracks.root");
-    std::cout << "  rho0 = " << fFitModulation->GetParameter(0)\
-              << ", v2 = " << fFitModulation->GetParameter(1)\
-              << ", psi2 = " << fFitModulation->GetParameter(2)\
-              << ", v3 = " << fFitModulation->GetParameter(3)\
-              << ", psi3 = " << fFitModulation->GetParameter(4)\
-              << std::endl;
-    
-  }
-  
-  if(0){
-    TCanvas *cBkgRhoFit = new TCanvas("cBkgRhoFit", "cBkgRhoFit", 2000, 1500);
-    
-    TH1F* hBkgTracks_Event = (TH1F*) hBkgTracks->Clone("hnew");
-    histName = hBkgTracks->GetName() + std::to_string(CheckRunNum);
-    hBkgTracks_Event->SetName(histName);
-    hBkgTracks_Event->Draw("E");
-    hBkgTracks->Fit(fFitModulation, "N0Q");
-    fFitModulation->SetLineColor(632);
-    fFitModulation->Draw("same");
-
-    TF1* rhoFitV2Com = new TF1("rhoFitV2Com", "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))))", 0.0, TMath::TwoPi());
-    rhoFitV2Com->SetParameter(0, fFitModulation->GetParameter(0));
-    rhoFitV2Com->SetParameter(1, fFitModulation->GetParameter(1));//v2
-    rhoFitV2Com->SetParameter(2, fFitModulation->GetParameter(2));//psi2
-    rhoFitV2Com->SetLineColor(808);
-    rhoFitV2Com->Draw("same");
-
-    TF1* rhoFitV3Com = new TF1("rhoFitV3Com", "[0]*(1.+2.*([1]*TMath::Cos(3.*(x-[2]))))", 0.0, TMath::TwoPi());
-    rhoFitV3Com->SetParameter(0, fFitModulation->GetParameter(0));
-    rhoFitV3Com->SetParameter(1, fFitModulation->GetParameter(1));//v3
-    rhoFitV3Com->SetParameter(2, fFitModulation->GetParameter(2));//psi3
-    rhoFitV3Com->SetLineColor(824);
-    rhoFitV3Com->Draw("same");
-
-    histName = "checkOutput/cBkgRhoFit_Cent" + std::to_string(fCentBin) +".root";
-    cBkgRhoFit->SaveAs(histName);
-    
-    // histName = "checkOutput/hBkgTracks_Event" + std::to_string(CheckRunNum) +".root";
-    hBkgTracks_Event->SaveAs(histName);
-    delete cBkgRhoFit;
-    delete hBkgTracks_Event;
-  }
-  
-  // fV2ResoV0 = CalcEPReso(2, psi2V0[0], psi2Tpc[1], psi2Tpc[2]);
-  // fV3ResoV0 = CalcEPReso(3, psi3V0[0], psi3Tpc[1], psi3Tpc[2]);
-  // std::cout << "v2Reso = " << fV2ResoV0 << ", v3Reso = " << fV3ResoV0 << std::endl;
+  hBkgTracks->Fit(fFitModulation, "N0Q");
 
   fLocalRho->SetLocalRho(fFitModulation);
   // fLocalRho->SetVal(fRho->GetVal());
@@ -1593,8 +1544,6 @@ Bool_t  AliAnalysisTaskEPCalibForJet::QnRecenteringCalibration(){
     TString groupName;
     groupName="ReCentCalib";
 
-    std::cout << "after q2x:aveQ2x:q2y:aveQ2y = " << q2VecV0C[0] <<" : "<< avgqx\
-    <<" : "<< q2VecV0C[1] <<" : "<< avgqy << std::endl;
     histName = TString::Format("%s/hAvgQ2XvsCentV0CAft_%d", groupName.Data(), fRunNumber);
     fHistManager.FillProfile(histName, fCent, q2VecV0C[0]);
     histName = TString::Format("%s/hAvgQ2YvsCentV0CAft_%d", groupName.Data(), fRunNumber);
@@ -2017,9 +1966,6 @@ AliAnalysisTaskEPCalibForJet * AliAnalysisTaskEPCalibForJet::AddTaskEPCalibForJe
 
   return rawJetTask;
 }
-
-
-
 
 
 

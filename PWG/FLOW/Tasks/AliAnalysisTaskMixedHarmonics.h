@@ -20,6 +20,7 @@
 
 
 #include "AliAnalysisTaskSE.h"
+#include "TF1.h"
 
 class TString;
 class TList;
@@ -36,7 +37,13 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
  public:
   AliAnalysisTaskMixedHarmonics();
   AliAnalysisTaskMixedHarmonics(const char *name, Bool_t useParticleWeights=kFALSE);
-  virtual ~AliAnalysisTaskMixedHarmonics(){}; 
+  virtual ~AliAnalysisTaskMixedHarmonics(){
+	  if(fV0CutPU)      delete fV0CutPU;
+	  if(fSPDCutPU)     delete fSPDCutPU;
+	  if(fMultCutPU)    delete fMultCutPU;
+	  if(fCenCutLowPU)  delete fCenCutLowPU; 
+	  if(fCenCutHighPU) delete fCenCutHighPU;   
+  }; 
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -73,13 +80,22 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   void  SetRejectPileUp(Bool_t  pileup) {this->fRejectPileUp = pileup;}
   void  SetRejectPileUpTight(Bool_t pileupT) {this->fRejectPileUpTight = pileupT;}
   void  SetFillQAHistograms(Bool_t const fillQA) {this->fFillQAHistograms = fillQA;};
+  
+  // set fIs2018Data
+  void SetIs2018Data(Bool_t const is2018) {this->fIs2018Data = is2018;};
+  Bool_t GetIs2018Data() {return this->fIs2018Data;};
 
+  // set pileup for 2018
+  void SetupPileUpRemovalFunctions18qPass3();
+  void SetupPileUpRemovalFunctions18rPass3();
+  
  private:
   AliAnalysisTaskMixedHarmonics(const AliAnalysisTaskMixedHarmonics& aatmh);
   AliAnalysisTaskMixedHarmonics& operator=(const AliAnalysisTaskMixedHarmonics& aatmh);
   
   Bool_t CheckEventIsPileUp(AliAODEvent* faod);
   Bool_t PileUpMultiVertex(const AliAODEvent* faod);
+  Bool_t CheckEventIsPileUp2018(AliAODEvent* faod);
   double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
 
   AliMultSelection*   fMultSelection;    //! MultSelection (RUN2 centrality estimator)
@@ -116,9 +132,24 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
 
   TList    *fWeightsList; // list with weights
 
-
-
-
+  // bool variable for if the data set is 2018
+  Bool_t fIs2018Data;
+  // Functions for Pile Up Event Removal 2018 period:
+  TF1                   *fV0CutPU;      //
+  TF1                   *fSPDCutPU;     //
+  TF1                   *fMultCutPU;    //
+  TF1                   *fCenCutLowPU;  //
+  TF1                   *fCenCutHighPU; //
+  
+  // QA histograms
+  TH2F          *fHistTPConlyVsCL1Before; //!
+  TH2F          *fHistTPConlyVsCL1After;  //!
+  TH2F          *fHistTPConlyVsV0MBefore; //!
+  TH2F          *fHistTPConlyVsV0MAfter;  //!
+  TH2F          *fHistCentCL0VsV0MBefore; //!
+  TH2F          *fHistCentCL0VsV0MAfter;  //!  
+  TH2F          *fHistTPCVsESDTrkBefore;  //!
+  TH2F          *fHistTPCVsESDTrkAfter;   //!
 
 
 
@@ -129,7 +160,6 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
 //================================================================================================================
 
 #endif
-
 
 
 

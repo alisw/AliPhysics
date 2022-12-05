@@ -192,8 +192,16 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16p.pass1/splines_16p.pass1.root",  264612, 264895, "1"); 
 
   // ---| pass 2 |--------------------------------------------------------------
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16d.pass2.offline_clusters/TPCPIDResponseOADB_2022_02_21_16d_offline_pass2_It4_WithSigmaPar.root",  252140, 252536, "offlineclusters_pass2");
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16d.pass2.hlt_clusters/TPCPIDResponseOADB_2022_02_21_16d_HLT_pass2_It3_WithSigmaPar.root",  252140, 252536, "pass2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16d.pass2.offline_clusters/TPCPIDResponseOADB_2022_01_26_16d_pass2_It4.root",  252140, 252536, "offlineclusters_pass2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16d.pass2.hlt_clusters/TPCPIDResponseOADB_2022_07_14_16d_pass2_It8.root",  252140, 252536, "pass2");
+
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16e.pass2/TPCPIDResponseOADB_2022_07_22_16e_pass2_It6.root",  252537, 253609, "2");  
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16f.pass2/TPCPIDResponseOADB_2022_07_22_16f_pass2_It6.root",  253610, 253987, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16g.pass2/TPCPIDResponseOADB_2022_07_22_16g_pass2_It6.root",  253988, 254338, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16h.pass2/TPCPIDResponseOADB_2022_09_26_16h_pass2_It5.root",  254339, 255476, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16i.pass2/TPCPIDResponseOADB_2022_09_26_16i_pass2_It5.root",  255477, 255798, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16j.pass2/TPCPIDResponseOADB_2022_07_22_16j_pass2_It6.root",  255799, 256489, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16op.pass2/TPCPIDResponseOADB_2022_07_22_16o_pass2_It6.root", 261929, 264895, "2");
 
   // ---| pPb periods |---------------------------------------------------------
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16q.pass1/splines_16q.pass1.root", 264896, 265533, "1", "",
@@ -205,9 +213,15 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16q.pass1/splines_16q.pass1.root", 267139, 267388, "1", "",
                               "-1.609459e-06,-6.765851e-04,9.610860e-03,2.864834e-02,0 ; -2.121118e-07,-1.181542e-06, -0.5 ; 0.,0.,0.,0."); // same configuration as 16q, so use these splines
 
+  
+    
   // ---| pass2 |---------------------------------------------------------------
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC16k.pass2/Iteration3/splines.root", 256490, 258860, "2");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC16l.pass2/Iteration3/splines.root", 258861, 260199, "2");
+
+  // ---| pass3 |---------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC16k.pass3/TPCPIDResponseOADB_2022_09_21_16k_pass3_It2.root", 256490, 258860, "3");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC16l.pass3/TPCPIDResponseOADB_2022_09_21_16l_pass3_It4.root", 258861, 260199, "3");
 
   // ---| pPb periods |---------------------------------------------------------
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16q.pass2/TPCPIDResponseOADB_2021_11_05_16q_pass2_It3_WithSigmaPar.root", 264896, 265533, "2");
@@ -261,6 +275,17 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17r.pass1/splines_17R_PASS1.root", 282445, 282955, "1"); // temporary for 17r onwards
 
   // ---| pass2 |---------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17cef.pass2/TPCPIDResponseOADB_2022_06_29_17f_pass2_It5.root", 268198, 270870, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17g.pass2/TPCPIDResponseOADB_2022_07_11_17g_pass2_It6.root", 270871, 271785, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17h.pass2/TPCPIDResponseOADB_2022_06_29_17h_pass2_It5.root", 271786, 273471, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17i.pass2/TPCPIDResponseOADB_2022_06_29_17i_pass2_It5.root", 273472, 274518, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17j.pass2/TPCPIDResponseOADB_2022_07_08_17j_pass2_It6.root", 274519, 274677, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17k.pass2/TPCPIDResponseOADB_2022_06_29_17k_pass2_It5.root", 274678, 276533, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17l.pass2/TPCPIDResponseOADB_2022_06_29_17l_pass2_It5.root", 276534, 278765, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17m.pass2/TPCPIDResponseOADB_2022_06_29_17m_pass2_It5.root", 278766, 280154, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17o.pass2/TPCPIDResponseOADB_2022_06_29_17o_pass2_It5.root", 280247, 281969, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC17r.pass2/TPCPIDResponseOADB_2022_06_29_17r_pass2_It5.root", 282445, 282955, "2");
+
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC17p.pass2/TPCPIDResponseOADB_2022_06_02_17p_pass2_It6.root", 281970, 282350, "2");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC17q.pass2/TPCPIDResponseOADB_2022_06_02_17q_pass2_It4.root", 282351, 282444, "2");
 
@@ -394,7 +419,7 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
   arrTPCPIDResponse->SetOwner();
 
   // ---| Period and pass name deduced from the file name |---------------------
-  TPRegexp regPeriod(".*/((LHC|)[0-9]{2}[a-z].pass[0-9_a-zA-Z]*)/.*");
+  TPRegexp regPeriod(".*/((LHC|)[0-9]{2}[a-z]+.pass[0-9_a-zA-Z]*)/.*");
   TObjArray* arrPeriod = regPeriod.MatchS(fileName);
   if (arrPeriod && arrPeriod->GetEntriesFast() == 3) {
     TString periodName = arrPeriod->At(1)->GetName();

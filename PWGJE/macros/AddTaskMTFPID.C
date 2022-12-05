@@ -12,7 +12,7 @@ AliAnalysisTaskMTFPID *AddTaskMTFPID(Bool_t inputFromOtherTask = kFALSE, Bool_t 
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPID", "No analysis manager found.");
+    ::Error("AddTaskMTFPID", "No analysis manager found.");
     return 0x0;
   }
   

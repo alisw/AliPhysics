@@ -59,8 +59,9 @@ class AliEffFDContainer: public TNamed {
     TH1 *getPureEfficiency1D(Int_t iSpecie, Bool_t weighted=kTRUE, Int_t yb1=-1, Int_t yb2=-1) {if(weighted) return get1DRatio("nChRec_Weighted","nChGen_Weighted",iSpecie,yb1,yb2); return get1DRatio("nChRec_Uneighted","nChGen_Uneighted",iSpecie,yb1,yb2); };
     TH2 *getPurity2D(Int_t iSpecie, Bool_t weighted=kTRUE) {if(weighted) return get2DRatio("nChRec_Weighted","PurityPrimary_Weighted",iSpecie); return get2DRatio("nChRec_Uneighted","PurityPrimary_Uneighted",iSpecie); };
     TH1 *getPurity1D(Int_t iSpecie, Bool_t weighted=kTRUE, Int_t yb1=-1, Int_t yb2=-1) {if(weighted) return get1DRatio("nChRec_Weighted","PurityPrimary_Weighted",iSpecie,yb1,yb2); return get1DRatio("nChRec_Uneighted","PurityPrimary_Uneighted",iSpecie,yb1,yb2); };
-    TH1 *getPureFeeddown(Int_t iSpecie);
     TH2 *getFDvsPhi(Int_t iSpecie, Bool_t ratioToIntegrated=kTRUE, Int_t cBin1=-1, Int_t cBin2=-1);
+    TH1 *getPureFeeddown(Int_t iSpecie, Int_t centBin1=-1, Int_t centBin2=-1);
+    Int_t getNCentBins() { TH2 *hTemp = (TH2*)fetchObj("nChRec_Weighted"); return hTemp->GetNbinsY(); };
       // private:
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);
@@ -82,6 +83,7 @@ class AliEffFDContainer: public TNamed {
     //Getters for "pure" observables:
     TH2 *get2DRatio(TString numID, TString denID, Int_t iSpecie);
     TH1 *get1DRatio(TString numID, TString denID, Int_t iSpecie, Int_t yb1=-1, Int_t yb2=-1);
+    TH1 *getPureFeeddown(Int_t iSpecie, TH2 *inh);
     //Members
     TList *fOutList;
     TList *fCutList; //! might be interesting to store for reference, but irrelevant otherwise
@@ -107,7 +109,7 @@ class AliEffFDContainer: public TNamed {
     //Pointers to histograms -- so that we don't need to look them up in the list all the time:
     TH2D ***fEff; //! Stored by TList
     TH3D ***fDCA;//! Stored by TList
-    TH2D ***fWithinDCA;//! Stored by TList
+    TH3D ***fWithinDCA;//! Stored by TList
     TH2D ***fPurity;//! Stored by TList
     TH3D ***fFDvsPhi;//! Stored by TList
     TNamed *fIdentifier; //
@@ -125,6 +127,6 @@ class AliEffFDContainer: public TNamed {
     Double_t fPtMax;
     Double_t fEta;
     Double_t fEtaLow;
-    ClassDef(AliEffFDContainer,5);
+    ClassDef(AliEffFDContainer,6);
 };
 #endif

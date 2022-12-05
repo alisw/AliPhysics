@@ -68,6 +68,8 @@ set(SRCS
   AliJHOCFATask.cxx
   AliAnalysisSPC.cxx
   AliJSPCTask.cxx
+  AliAnalysisSPCRun2.cxx
+  AliJSPCTaskRun2.cxx
   AliJXtTask.cxx
   AliJXtAnalysis.cxx
   AliJHistogramInterface.cxx

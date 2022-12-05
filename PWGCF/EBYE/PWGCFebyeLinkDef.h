@@ -93,6 +93,7 @@
 #pragma link C++ class AliLightV0+;
 #pragma link C++ class AliLightGenV0+;
 #pragma link C++ class AliLightV0track+;
+#pragma link C++ class AliLightCascade+;
 
 #pragma link C++ class AliAnalysisTaskEbyeCharge+;
 
@@ -124,5 +125,19 @@
 #pragma link C++ class AliAnalysisMeanPtdata+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityMC+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity2+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2+;
+#pragma link C++ class AliAnalysisTaskCorrPP+;
+#pragma link C++ class AliAnalysisTaskCorrPbPb+;
+#pragma link C++ class AliAnalysisTaskCorrPPHM+;
+#pragma link C++ class AliAnalysisTaskCorrPbPbMC+;
+#pragma link C++ class AliAnalysisTaskCorrPPMC+;
+
+#pragma link C++ class AliAnalysisTaskNFMs+;
+
+#pragma link C++ class AliAnalysisHMMeanPt+;
+#pragma link C++ class AliAnalysisMeanPt+;
+
 
 #endif

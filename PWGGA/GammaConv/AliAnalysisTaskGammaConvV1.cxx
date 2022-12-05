@@ -134,6 +134,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   sPtRDeltaROpenAngle(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCAllGammaPt(NULL),
+  fHistoMCAllGammaPtNotTriggered(NULL),
+  fHistoMCAllGammaPtNoVertex(NULL),
   fHistoMCAllSecondaryGammaPt(NULL),
   fHistoMCDecayGammaPi0Pt(NULL),
   fHistoMCDecayGammaRhoPt(NULL),
@@ -147,15 +149,23 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoMCConvGammaR(NULL),
   fHistoMCConvGammaEta(NULL),
   fHistoMCPi0Pt(NULL),
+  fHistoMCPi0PtNotTriggered(NULL),
+  fHistoMCPi0PtNoVertex(NULL),
   fHistoMCPi0WOWeightPt(NULL),
   fHistoMCPi0WOEvtWeightPt(NULL),
   fHistoMCEtaWOEvtWeightPt(NULL),
   fHistoMCEtaPt(NULL),
+  fHistoMCEtaPtNotTriggered(NULL),
+  fHistoMCEtaPtNoVertex(NULL),
   fHistoMCEtaWOWeightPt(NULL),
   fHistoMCPi0WOWeightInAccPt(NULL),
   fHistoMCEtaWOWeightInAccPt(NULL),
   fHistoMCPi0InAccPt(NULL),
+  fHistoMCPi0InAccPtNotTriggered(NULL),
+  fHistoMCPi0InAccPtNoVertex(NULL),
   fHistoMCEtaInAccPt(NULL),
+  fHistoMCEtaInAccPtNotTriggered(NULL),
+  fHistoMCEtaInAccPtNoVertex(NULL),
   fHistoMCPi0WOEvtWeightInAccPt(NULL),
   fHistoMCEtaWOEvtWeightInAccPt(NULL),
   fHistoMCPi0PtY(NULL),
@@ -367,6 +377,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fFileNameBroken(NULL),
   fFileWasAlreadyReported(kFALSE),
   fAODMCTrackArray(NULL),
+  fAddressChanges(NULL),
   fMapPhotonHeaders()
 {
 
@@ -447,6 +458,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   sPtRDeltaROpenAngle(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCAllGammaPt(NULL),
+  fHistoMCAllGammaPtNotTriggered(NULL),
+  fHistoMCAllGammaPtNoVertex(NULL),
   fHistoMCAllSecondaryGammaPt(NULL),
   fHistoMCDecayGammaPi0Pt(NULL),
   fHistoMCDecayGammaRhoPt(NULL),
@@ -460,15 +473,23 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoMCConvGammaR(NULL),
   fHistoMCConvGammaEta(NULL),
   fHistoMCPi0Pt(NULL),
+  fHistoMCPi0PtNotTriggered(NULL),
+  fHistoMCPi0PtNoVertex(NULL),
   fHistoMCPi0WOWeightPt(NULL),
   fHistoMCPi0WOEvtWeightPt(NULL),
   fHistoMCEtaWOEvtWeightPt(NULL),
   fHistoMCEtaPt(NULL),
+  fHistoMCEtaPtNotTriggered(NULL),
+  fHistoMCEtaPtNoVertex(NULL),
   fHistoMCEtaWOWeightPt(NULL),
   fHistoMCPi0WOWeightInAccPt(NULL),
   fHistoMCEtaWOWeightInAccPt(NULL),
   fHistoMCPi0InAccPt(NULL),
+  fHistoMCPi0InAccPtNotTriggered(NULL),
+  fHistoMCPi0InAccPtNoVertex(NULL),
   fHistoMCEtaInAccPt(NULL),
+  fHistoMCEtaInAccPtNotTriggered(NULL),
+  fHistoMCEtaInAccPtNoVertex(NULL),
   fHistoMCPi0WOEvtWeightInAccPt(NULL),
   fHistoMCEtaWOEvtWeightInAccPt(NULL),
   fHistoMCPi0PtY(NULL),
@@ -680,6 +701,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fFileNameBroken(NULL),
   fFileWasAlreadyReported(kFALSE),
   fAODMCTrackArray(NULL),
+  fAddressChanges(NULL),
   fMapPhotonHeaders()
 {
   // Define output slots here
@@ -1606,6 +1628,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHeaderNameList               = new TList*[fnCuts];
     fHistoMCHeaders                    = new TH1I*[fnCuts];
     fHistoMCAllGammaPt                 = new TH1F*[fnCuts];
+    fHistoMCAllGammaPtNotTriggered     = new TH1F*[fnCuts];
+    fHistoMCAllGammaPtNoVertex         = new TH1F*[fnCuts];
     fHistoMCAllSecondaryGammaPt        = new TH2F*[fnCuts];
     fHistoMCDecayGammaPi0Pt            = new TH1F*[fnCuts];
     fHistoMCDecayGammaRhoPt            = new TH1F*[fnCuts];
@@ -1658,13 +1682,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
     if(fDoMesonAnalysis){
       fHistoMCPi0Pt                    = new TH1F*[fnCuts];
+      fHistoMCPi0PtNotTriggered        = new TH1F*[fnCuts];
+      fHistoMCPi0PtNoVertex            = new TH1F*[fnCuts];
       fHistoMCPi0WOWeightPt            = new TH1F*[fnCuts];
       fHistoMCEtaPt                    = new TH1F*[fnCuts];
+      fHistoMCEtaPtNotTriggered        = new TH1F*[fnCuts];
+      fHistoMCEtaPtNoVertex            = new TH1F*[fnCuts];
       fHistoMCEtaWOWeightPt            = new TH1F*[fnCuts];
       fHistoMCPi0WOWeightInAccPt       = new TH1F*[fnCuts];
       fHistoMCEtaWOWeightInAccPt       = new TH1F*[fnCuts];
       fHistoMCPi0InAccPt               = new TH1F*[fnCuts];
+      fHistoMCPi0InAccPtNotTriggered   = new TH1F*[fnCuts];
+      fHistoMCPi0InAccPtNoVertex       = new TH1F*[fnCuts];
       fHistoMCEtaInAccPt               = new TH1F*[fnCuts];
+      fHistoMCEtaInAccPtNotTriggered   = new TH1F*[fnCuts];
+      fHistoMCEtaInAccPtNoVertex       = new TH1F*[fnCuts];
 
       if(fIsMC > 1){
         fHistoMCPi0WOEvtWeightPt       = new TH1F*[fnCuts];
@@ -1784,6 +1816,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       }
       fHistoMCAllGammaPt[iCut]             = new TH1F("MC_AllGamma_Pt", "MC_AllGamma_Pt", nBinsPt, arrPtBinning);
       fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
+      fHistoMCAllGammaPtNotTriggered[iCut]             = new TH1F("MC_AllGamma_Pt_NotTriggered", "MC_AllGamma_Pt_NotTriggered", nBinsPt, arrPtBinning);
+      fMCList[iCut]->Add(fHistoMCAllGammaPtNotTriggered[iCut]);
+      fHistoMCAllGammaPtNoVertex[iCut]             = new TH1F("MC_AllGamma_Pt_NoVertex", "MC_AllGamma_Pt_NoVertex", nBinsPt, arrPtBinning);
+      fMCList[iCut]->Add(fHistoMCAllGammaPtNoVertex[iCut]);
       fHistoMCAllSecondaryGammaPt[iCut]    = new TH2F("MC_AllSecondaryGamma_Pt", "MC_AllSecondaryGamma_Pt", nBinsPt, arrPtBinning, 4, -0.5, 3.5);
       fHistoMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(1,"K0s");
       fHistoMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(2,"K0l");
@@ -1838,13 +1874,31 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoMCPi0Pt[iCut]                = new TH1F("MC_Pi0_Pt", "MC_Pi0_Pt", nBinsPt, arrPtBinning);
         fHistoMCPi0Pt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0Pt[iCut]);
+
+        fHistoMCPi0PtNotTriggered[iCut]     = new TH1F("MC_Pi0_Pt_NotTriggered", "MC_Pi0_Pt_NotTriggered", nBinsPt, arrPtBinning);
+        fHistoMCPi0PtNotTriggered[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0PtNotTriggered[iCut]);
+
+        fHistoMCPi0PtNoVertex[iCut]     = new TH1F("MC_Pi0_Pt_NoVertex", "MC_Pi0_Pt_NoVertex", nBinsPt, arrPtBinning);
+        fHistoMCPi0PtNoVertex[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0PtNoVertex[iCut]);
+
         fHistoMCPi0WOWeightPt[iCut]        = new TH1F("MC_Pi0_WOWeights_Pt", "MC_Pi0_WOWeights_Pt", nBinsPt, arrPtBinning);
         fHistoMCPi0WOWeightPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0WOWeightPt[iCut]);
 
+        fHistoMCEtaPtNotTriggered[iCut]     = new TH1F("MC_Eta_Pt_NotTriggered", "MC_Eta_Pt_NotTriggered", nBinsPt, arrPtBinning);
+        fHistoMCEtaPtNotTriggered[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCEtaPtNotTriggered[iCut]);
+
+        fHistoMCEtaPtNoVertex[iCut]        = new TH1F("MC_Eta_Pt_NoVertex", "MC_Eta_Pt_NoVertex", nBinsPt, arrPtBinning);
+        fHistoMCEtaPtNoVertex[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCEtaPtNoVertex[iCut]);
+
         fHistoMCEtaPt[iCut]                = new TH1F("MC_Eta_Pt", "MC_Eta_Pt", nBinsPt, arrPtBinning);
         fHistoMCEtaPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaPt[iCut]);
+
         fHistoMCEtaWOWeightPt[iCut]        = new TH1F("MC_Eta_WOWeights_Pt", "MC_Eta_WOWeights_Pt", nBinsPt, arrPtBinning);
         fHistoMCEtaWOWeightPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaWOWeightPt[iCut]);
@@ -1858,9 +1912,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoMCPi0InAccPt[iCut]           = new TH1F("MC_Pi0InAcc_Pt", "MC_Pi0InAcc_Pt", nBinsPt, arrPtBinning);
         fHistoMCPi0InAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0InAccPt[iCut]);
+        fHistoMCPi0InAccPtNotTriggered[iCut]           = new TH1F("MC_Pi0InAcc_Pt_NotTriggered", "MC_Pi0InAcc_Pt_NotTriggered", nBinsPt, arrPtBinning);
+        fHistoMCPi0InAccPtNotTriggered[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0InAccPtNotTriggered[iCut]);
+        fHistoMCPi0InAccPtNoVertex[iCut]           = new TH1F("MC_Pi0InAcc_Pt_NoVertex", "MC_Pi0InAcc_Pt_NoVertex", nBinsPt, arrPtBinning);
+        fHistoMCPi0InAccPtNoVertex[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0InAccPtNoVertex[iCut]);
         fHistoMCEtaInAccPt[iCut]           = new TH1F("MC_EtaInAcc_Pt", "MC_EtaInAcc_Pt", nBinsPt, arrPtBinning);
         fHistoMCEtaInAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaInAccPt[iCut]);
+        fHistoMCEtaInAccPtNotTriggered[iCut]           = new TH1F("MC_EtaInAcc_Pt_NotTriggered", "MC_EtaInAcc_Pt_NotTriggered", nBinsPt, arrPtBinning);
+        fHistoMCEtaInAccPtNotTriggered[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCEtaInAccPtNotTriggered[iCut]);
+        fHistoMCEtaInAccPtNoVertex[iCut]           = new TH1F("MC_EtaInAcc_Pt_NoVertex", "MC_EtaInAcc_Pt_NoVertex", nBinsPt, arrPtBinning);
+        fHistoMCEtaInAccPtNoVertex[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCEtaInAccPtNoVertex[iCut]);
 
         if (fIsMC > 1){
           fHistoMCPi0WOEvtWeightPt[iCut]   = new TH1F("MC_Pi0_WOEventWeights_Pt", "MC_Pi0_WOEventWeights_Pt", nBinsPt, arrPtBinning);
@@ -2310,6 +2376,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   tBrokenFiles = new TTree("BrokenFiles", "BrokenFiles");
   tBrokenFiles->Branch("fileName",&fFileNameBroken);
   fOutputContainer->Add(tBrokenFiles);
+  
+  fAddressChanges = new TH1F("fAddressChanges","fAddressChanges", 2, 0., 2.);
+  fOutputContainer->Add(fAddressChanges);
 
   OpenFile(1);
   PostData(1, fOutputContainer);
@@ -2368,7 +2437,22 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   fInputEvent = InputEvent();
 
   // Set MC events
-  if(fIsMC>0) fMCEvent = MCEvent();
+  if(fIsMC>0) {
+    fMCEvent = MCEvent();
+    
+    if(fInputEvent->IsA()==AliAODEvent::Class()){
+      TClonesArray* lOldAddress = fAODMCTrackArray;
+      fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      // remove next line  and fAddressChanges after first trainrun 
+      if (lOldAddress && fAODMCTrackArray!=lOldAddress) fAddressChanges->Fill(0.5);
+      
+      if (fAODMCTrackArray == NULL){
+        fAddressChanges->Fill(1.5);
+        AliInfo("AODMCTrackArray could not be loaded");
+        return;
+      }
+    }
+  }
 
   //calculating the weight for the centrality flattening
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
@@ -2416,7 +2500,10 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
     fiEventCut = dynamic_cast<AliConvEventCuts*>(fEventCutArray->At(iCut));
     fiPhotonCut = dynamic_cast<AliConversionPhotonCuts*>(fCutArray->At(fiCut));
     fiMesonCut  = dynamic_cast<AliConversionMesonCuts*>(fMesonCutArray->At(fiCut));
-
+    
+    // reset the event cuts fAODMCTrackArray to nullptr at the beginning of each event since in AliConvEventCuts it is only obtained from a new event if it's not a nullptr - hence only once at the beginning of a job. 
+    if(fIsMC) fiEventCut->ResetAODMCTrackArray(); 
+    
     Int_t eventNotAccepted = fiEventCut->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
     if( fIsMC == 2 ){
       Float_t xsection      = -1.;
@@ -2451,6 +2538,19 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       fHistoNEvents[iCut]->Fill(eventNotAccepted,fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
       if(fDoCentralityFlat > 0) fHistoNEventsWeighted[iCut]->Fill(eventNotAccepted, fWeightCentrality[iCut]*fWeightJetJetMC);
+
+      if (eventNotAccepted==3 && fIsMC > 0){
+        if(fInputEvent->IsA()==AliESDEvent::Class())
+          ProcessMCParticles(1);
+        if(fInputEvent->IsA()==AliAODEvent::Class())
+          ProcessAODMCParticles(1);
+      } else if (eventNotAccepted==5 && fIsMC > 0){
+        if(fInputEvent->IsA()==AliESDEvent::Class())
+          ProcessMCParticles(2);
+        if(fInputEvent->IsA()==AliAODEvent::Class())
+          ProcessAODMCParticles(2);
+      }
+
       continue;
     }
 
@@ -2459,6 +2559,16 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       fHistoNEvents[iCut]->Fill(eventQuality,fWeightJetJetMC);
       if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
       if(fDoCentralityFlat > 0) fHistoNEventsWeighted[iCut]->Fill(eventQuality, fWeightCentrality[iCut]*fWeightJetJetMC);
+
+      if(eventQuality == 5){ // event not accepted due to no vertex
+        if(fIsMC > 0){
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessMCParticles(2);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessAODMCParticles(2);
+        }
+      }
+
       continue;
     }
 
@@ -2518,6 +2628,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
                                               fMCEvent);
         }
         else if(fInputEvent->IsA()==AliAODEvent::Class()){
+          if(fiEventCut->GetSignalRejection()==5) fiEventCut->ResetMcHeader();
           fiEventCut->GetNotRejectedParticles(fiEventCut->GetSignalRejection(),
                                               fiEventCut->GetAcceptedHeader(),
                                               fInputEvent);
@@ -2918,11 +3029,6 @@ void AliAnalysisTaskGammaConvV1::InitializeBDT()
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessPhotonBDT()
 {
-  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) {
-    AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
   // Loop over Photon Candidates allocated by ReaderV1
   for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
     AliAODConversionPhoton *PhotonCandidate=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
@@ -2988,13 +3094,6 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
     magFieldFlip =  -1.0;
   }
 
-  //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-
-  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) {
-    AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
   if (fAODMCTrackArray != NULL && TruePhotonCandidate != NULL){
 
     AliAODMCParticle *posDaughter = (AliAODMCParticle*) fAODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
@@ -3309,19 +3408,12 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
   }
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
+void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelected)
 {
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
-
-  //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL){
-    AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
 
   // Check if MC generated particles should be filled for this event using the selected trigger
   if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
@@ -3347,6 +3439,11 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
         if(!fiPhotonCut->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
         if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kFALSE)){
           fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
+          if(isCurrentEventSelected == 1){
+            fHistoMCAllGammaPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+          } else if(isCurrentEventSelected == 2){
+            fHistoMCAllGammaPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+          }
           if(particle->GetMother() >-1){ // Meson Decay Gamma
             switch((static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetMother())))->GetPdgCode()){
             case 111: // Pi0
@@ -3450,7 +3547,14 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
             }
 
             if(particle->GetPdgCode() == 111){
-              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
+                fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+                if(isCurrentEventSelected == 1){
+                  fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                } else if(isCurrentEventSelected == 2){
+                  fHistoMCPi0PtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                }
+              }
               if(fDoJetAnalysis){
                 if(fConvJetReader->GetTrueNJets()>0){
                   if(!fDoLightOutput) fHistoMCPi0JetEventGenerated[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
@@ -3470,7 +3574,14 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
                 if ( fIsMC == 2 ) fHistoMCPi0PtJetPt[fiCut]->Fill(particle->Pt(),fiEventCut->GetMaxPtJet(),fWeightJetJetMC);
               }
             } else if(particle->GetPdgCode() == 221){
-              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
+                fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
+                if(isCurrentEventSelected == 1){
+                  fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                } else if(isCurrentEventSelected == 2){
+                  fHistoMCEtaPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                }
+              }
               if(fDoJetAnalysis){
                 if(fConvJetReader->GetTrueNJets()>0){
                   if(!fDoLightOutput) fHistoMCEtaJetEventGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
@@ -3500,7 +3611,14 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
               if(particle->GetPdgCode() == 111){
                 if(fIsMC > 1) fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc NOT weighted at all
                 fHistoMCPi0WOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Pi0 with gamma in acc NOT weighted
-                if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
+                if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
+                  fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
+                  if(isCurrentEventSelected == 1){
+                    fHistoMCPi0InAccPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                  } else if(isCurrentEventSelected == 2){
+                    fHistoMCPi0InAccPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                  }
+                }
                 if(fDoJetAnalysis){
                   if(fConvJetReader->GetTrueNJets()>0){
                     if(!fDoLightOutput) fHistoMCPi0JetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
@@ -3518,7 +3636,14 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
               } else if(particle->GetPdgCode() == 221){
                 if(fIsMC > 1) fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta with gamma in acc NOT weighted at all
                 fHistoMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Eta with gamma in acc NOT weighted
-                if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
+                if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
+                  fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
+                  if(isCurrentEventSelected == 1){
+                    fHistoMCEtaInAccPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                  } else if(isCurrentEventSelected == 2){
+                    fHistoMCEtaInAccPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                  }
+                }
                 if(fDoJetAnalysis){
                   if(fConvJetReader->GetTrueNJets()>0){
                     if(!fDoLightOutput) fHistoMCEtaJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
@@ -3623,7 +3748,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
   return;
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
+void AliAnalysisTaskGammaConvV1::ProcessMCParticles(int isCurrentEventSelected)
 {
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
@@ -3653,6 +3778,12 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
       if(!fiPhotonCut->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
       if(fiPhotonCut->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
         fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
+        if(isCurrentEventSelected == 1){
+          fHistoMCAllGammaPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+        } else if(isCurrentEventSelected == 2){
+          fHistoMCAllGammaPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+        }
+
         if(particle->GetMother() >-1){ // Meson Decay Gamma
           switch(fMCEvent->GetTrack(particle->GetMother())->PdgCode()){
             case 111: // Pi0
@@ -3747,7 +3878,14 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
           }
 
           if(particle->PdgCode() == 111){
-            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
+              fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+              if(isCurrentEventSelected == 1){
+                fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+              } else if(isCurrentEventSelected == 2){
+                fHistoMCPi0PtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+              }
+            }
             if(fDoJetAnalysis){
               if(fConvJetReader->GetTrueNJets()>0){
                 if(!fDoLightOutput) fHistoMCPi0JetEventGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
@@ -3776,7 +3914,14 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
               if (fIsMC == 2) fHistoMCPi0PtJetPt[fiCut]->Fill(particle->Pt(),fiEventCut->GetMaxPtJet(),fWeightJetJetMC);
             }
           } else if(particle->PdgCode() == 221){
-            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
+            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
+              fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
+              if(isCurrentEventSelected == 1){
+                fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+              } else if(isCurrentEventSelected == 2){
+                fHistoMCEtaPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+              }
+            }
             if(fDoJetAnalysis){
               if(fConvJetReader->GetTrueNJets()>0){
                 if(!fDoLightOutput) fHistoMCEtaJetEventGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
@@ -3810,25 +3955,39 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             if(particle->PdgCode() == 111){
               if(fIsMC > 1) fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc NOT weighted at all
               fHistoMCPi0WOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Pi0 with gamma in acc NOT weighted
-              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
-                if(fDoJetAnalysis){
-                  if(fConvJetReader->GetTrueNJets()>0){
-                    if(!fDoLightOutput) fHistoMCPi0JetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
-                    Double_t RJetPi0Cand;
-                    Int_t matchedJet = 0;
-                    if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->IsParticleInJet(fTrueVectorJetEta, fTrueVectorJetPhi, fConvJetReader->Get_Jet_Radius(), particle->Eta(), particle->Phi(), matchedJet, RJetPi0Cand)){
-                      if(!fDoLightOutput) {
-                        fHistoMCPi0inJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
-                        fHistoMCPi0WOWeightinJetInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
-                      }
-                      else fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
-                    } // inJet
-                  }
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
+                fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
+                if(isCurrentEventSelected == 1){
+                  fHistoMCPi0InAccPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                } else if(isCurrentEventSelected == 2){
+                  fHistoMCPi0InAccPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
                 }
+              }
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
+                  if(!fDoLightOutput) fHistoMCPi0JetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                  Double_t RJetPi0Cand;
+                  Int_t matchedJet = 0;
+                  if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->IsParticleInJet(fTrueVectorJetEta, fTrueVectorJetPhi, fConvJetReader->Get_Jet_Radius(), particle->Eta(), particle->Phi(), matchedJet, RJetPi0Cand)){
+                    if(!fDoLightOutput) {
+                      fHistoMCPi0inJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                      fHistoMCPi0WOWeightinJetInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                    }
+                    else fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
+                  } // inJet
+                }
+              }
             } else if(particle->PdgCode() == 221){
               if(fIsMC > 1) fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta with gamma in acc NOT weighted at all
               fHistoMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Eta with gamma in acc NOT weighted
-              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
+                fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
+                if(isCurrentEventSelected == 1){
+                  fHistoMCEtaInAccPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                } else if(isCurrentEventSelected == 2){
+                  fHistoMCEtaInAccPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+                }
+              }
               if(fDoJetAnalysis){
                 if(fConvJetReader->GetTrueNJets()>0){
                   if(!fDoLightOutput) fHistoMCEtaJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
@@ -3930,16 +4089,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
-  // fAODMCTrackArray is used when the flag DoIsolatedAnalysis is True. And can only work on AODs. This "if" is necessary for any  task running in ESDs, otherwise one skips the calculation
-  if(fDoIsolatedAnalysis){
-    if (fIsMC>0){
-      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (fAODMCTrackArray == NULL){
-	AliInfo("AODMCTrackArray could not be loaded");
-	return;
-      }
-    }
-  }
+  
   // Conversion Gammas
   if(fGammaCandidates->GetEntries()>1){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
@@ -4476,11 +4626,6 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
 {
-  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) {
-    AliInfo("AODMCTrackArray could not be loaded");
-    return;
-  }
   Double_t magField = fInputEvent->GetMagneticField();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();

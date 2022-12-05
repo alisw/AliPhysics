@@ -49,7 +49,7 @@ public:
     AngularityBin(): TObject(), fMin(-1.), fMax(-1.), fValue(-1.) {}
     AngularityBin(double min, double max, double value) : TObject(), fMin(min), fMax(max), fValue(value) {}
     virtual ~AngularityBin() {}
-          
+
     double Min() const { return fMin; }
     double Max() const { return fMax; }
     double Value() const { return fValue; }
@@ -103,7 +103,7 @@ public:
   void PrintStream(std::ostream &stream) const ;
 
 private:
-  AngularityBin FindBin(double pt) const; 
+  AngularityBin FindBin(double pt) const;
   double fRadius;       ///< Jet raduius
   TList fBins;          ///< Pt bins
 
@@ -162,6 +162,22 @@ public:
   void ConfigureMinBias(MCProductionType_t mcprodtype);
   void ConfigureJetSelection(Double_t minJetPtPart, Double_t minJetPtDet, Double_t maxTrackPtPart, Double_t maxTrackPtDet, Double_t maxClusterPt, Double_t minAreaPerc);
 
+  //*** Standard add functions. No random cones background subtraction. ***//
+  // Base add function called by both of the two add functions following it.
+  static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScaleBase(
+    AliJetContainer::EJetType_t       jetType,
+    AliJetContainer::ERecoScheme_t    recoscheme,
+    AliVCluster::VCluUserDefEnergy_t  energydef,
+    Double_t                          radius,
+    Bool_t                            useDCAL,
+    const char *                      namepartcont,
+    const char *                      trigger,
+    const char *                      nametrackcont,
+    const char *                      nameclustercont,
+    const char *                      suffix
+  );
+
+  // Standard add function. Calls the base add fuction above.
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
     AliJetContainer::EJetType_t       jetType,
     AliJetContainer::ERecoScheme_t    recoscheme,
@@ -173,6 +189,39 @@ public:
     const char *                      suffix
   );
 
+  // Add function with embedded MC background rejection handling. Calls the base add function above.
+  static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
+    AliJetContainer::EJetType_t       jetType,
+    AliJetContainer::ERecoScheme_t    recoscheme,
+    AliVCluster::VCluUserDefEnergy_t  energydef,
+    Double_t                          radius,
+    Bool_t                            useDCAL,
+    const char *                      namepartcont,
+    const char *                      trigger,
+    const char *                      nametrackcont,
+    const char *                      nameclustercont,
+    const char *                      suffix
+  );
+
+
+  //*** Add functions for use with random cones background subtraction. ***//
+  // Base add function called by both of the two add functions following it.
+  static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScaleBkgSubBase(
+    AliJetContainer::EJetType_t       jetType,
+    AliJetContainer::ERecoScheme_t    recoscheme,
+    AliVCluster::VCluUserDefEnergy_t  energydef,
+    Double_t                          radius,
+    Bool_t                            useDCAL,
+    const char *                      namepartcont,
+    const char *                      nRho,
+    const char *                      nRhoMC,
+    const char *                      trigger,
+    const char *                      nametrackcont,
+    const char *                      nameclustercont,
+    const char *                      suffix
+  );
+
+  // Standard add function. Calls the base add fuction above.
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScaleBkgSub(
     AliJetContainer::EJetType_t       jetType,
     AliJetContainer::ERecoScheme_t    recoscheme,
@@ -186,10 +235,26 @@ public:
     const char *                      suffix
   );
 
+  // Add function with embedded MC background rejection handling. Calls the base add function above.
+  static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScaleBkgSub(
+    AliJetContainer::EJetType_t       jetType,
+    AliJetContainer::ERecoScheme_t    recoscheme,
+    AliVCluster::VCluUserDefEnergy_t  energydef,
+    Double_t                          radius,
+    Bool_t                            useDCAL,
+    const char *                      namepartcont,
+    const char *                      nRho,
+    const char *                      nRhoMC,
+    const char *                      trigger,
+    const char *                      nametrackcont,
+    const char *                      nameclustercont,
+    const char *                      suffix
+  );
+
 protected:
   virtual void UserCreateOutputObjects();
   virtual void UserRunBeforeEventSelection();
-  virtual Bool_t Run(); 
+  virtual Bool_t Run();
   virtual Bool_t CheckMCOutliers();
   bool IsSelectEmcalTriggers(const TString &triggerstring) const;
   Double_t MakeAngularity(const AliEmcalJet &jet, AliVCluster::VCluUserDefEnergy_t energydef) const;

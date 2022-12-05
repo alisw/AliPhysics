@@ -129,7 +129,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   // #########################################################
   // #########################################################
   // Set Binning
-  if (UsePtVector == true) {
+  if (UsePtVec == true) {
 
     const Int_t    nBinsPt = 73; 
     const Double_t PtBins[] = {
@@ -153,7 +153,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   task->SetPhiBinsLinear  (0, TMath::TwoPi(), (Int_t)gROOT->ProcessLine("GetNbinsPhi()"));
   task->SetThetaBinsLinear(0, TMath::TwoPi(), (Int_t)gROOT->ProcessLine("GetNbinsTheta()"));
 
-  if (UsePairVector == true) {
+  if (UsePairVec == true) {
 
     const Double_t MeeBins[] = { 0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,
                                0.10,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,
@@ -179,7 +179,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
     task->SetMassBins(meeBinsVec);
   }
   else task->SetMassBinsLinear (0., 4.0, (Int_t)gROOT->ProcessLine("GetNbinsMee()"));
-  if (UsePairVector == true) {
+  if (UsePairVec == true) {
 
     const Double_t PteeBins[] = {
                                 0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,

@@ -1094,6 +1094,22 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   Double_t maxPt = 150;
   Int_t  nPtBins = 300;
 
+  // initialize variable cluster pt binning
+  Int_t nBinsClusterPt        = 500;
+  Float_t maxClusterPt        = 100;
+  Double_t *arrClusPtBinning  = new Double_t[1200];
+    for(Int_t i=0; i<nBinsClusterPt+1;i++){
+      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+      else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
+      else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
+      else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
+      else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
+      else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
+      else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
+      else arrClusPtBinning[i]                = maxClusterPt;
+    }
+
+
   Double_t minMass = 0.;
   Double_t maxMass = 2.;
   Int_t nMassBins = 200;
@@ -1615,7 +1631,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fCaloFolderRec->SetOwner(kTRUE);
   fOutputList->Add(fCaloFolderRec);
   // always fill this for trigger rejection factor and QA
-  fCaloPt = new TH1F("fCaloPt","calo photons in EMC acc;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+  fCaloPt = new TH1F("fCaloPt","calo photons in EMC acc;p_{T} (GeV/c); counts",nBinsClusterPt, arrClusPtBinning);
   fTrackPt = new TH1F("fTrackPt","pt distribution of hybrid tracks;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackEta = new TH1F("fTrackEta","#eta distribution of hybrid tracks;#eta; counts",200,-0.9,0.9);
   fTrackPhiPt = new TH2F("fTrackPhiPt","#phi distribution of hybrid tracks;#phi; counts",200,0,2*TMath::Pi(),nPtBins,minPt,maxPt);
@@ -5820,31 +5836,30 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   
   
   if(fIsMC>0){
+    // store truth information for all clusters, even if not a photon
+    trueClusterE = MCPhoton->E();
+    trueClusterPx = MCPhoton->Px();
+    trueClusterPy = MCPhoton->Py();
+    trueClusterPz = MCPhoton->Pz();
+    fracLeadingLabel = clus->GetClusterMCEdepFraction(0);
+    trueClusterMCIsoCharged1 = mcIso.isolationCone.at(0);
+    if(mcIso.isolationCone.size()>1)trueClusterMCIsoCharged2 = mcIso.isolationCone.at(1);
+    if(mcIso.isolationCone.size()>2)trueClusterMCIsoCharged3 = mcIso.isolationCone.at(2);
+    trueClusterMCIsoBckPerp = mcIso.backgroundLeft.at(2) + mcIso.backgroundRight.at(2);
+    TString headerName = fEventCuts->GetParticleHeaderName(photonlabel, fMCEvent, fInputEvent);
+    if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
+      headerName = "";
+    }
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(photonlabel, fMCEvent,headerName,1.);
+    trueClusterIsSignal = tag;
+    trueClusterIsConv = truePhotonFromConv;
     if(isTruePhoton){
-      trueClusterE = MCPhoton->E();
-      trueClusterPx = MCPhoton->Px();
-      trueClusterPy = MCPhoton->Py();
-      trueClusterPz = MCPhoton->Pz();
-      fracLeadingLabel = clus->GetClusterMCEdepFraction(0);
-      trueClusterMCIsoCharged1 = mcIso.isolationCone.at(0);
-      if(mcIso.isolationCone.size()>1)trueClusterMCIsoCharged2 = mcIso.isolationCone.at(1);
-      if(mcIso.isolationCone.size()>2)trueClusterMCIsoCharged3 = mcIso.isolationCone.at(2);
-      trueClusterMCIsoBckPerp = mcIso.backgroundLeft.at(2) + mcIso.backgroundRight.at(2);
-
-      TString headerName = fEventCuts->GetParticleHeaderName(photonlabel, fMCEvent, fInputEvent);
-      if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
-        headerName = "";
-      }
-      Int_t tag = GetMCAnalysisUtils()->CheckOrigin(photonlabel, fMCEvent,headerName,1.);
-      trueClusterIsSignal = tag;
-      trueClusterIsConv = truePhotonFromConv;
       if((m02<=0.5) && (m02>=0.1)){
         fCaloTruePhotonPt->Fill(MCPhoton->Pt(),fWeightJetJetMC);
         fCaloTruePhotonOldPt->Fill(MCPhotonOld->Pt(),fWeightJetJetMC);
         fCaloTruePhotonRecPt->Fill(photon->Pt(),fWeightJetJetMC);
         fCaloTruePhotonRecPtVsTruePt->Fill(MCPhoton->Pt(),photon->Pt(),fWeightJetJetMC);
-      }
-      
+      }  
     }
     fBuffer_TrueClusterE.push_back(trueClusterE);
     fBuffer_TrueClusterPx.push_back(trueClusterPx);

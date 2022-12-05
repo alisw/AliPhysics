@@ -58,8 +58,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void CalculateBackground();
     void CalculateBackgroundSwapp();
     void CalculateBackgroundRP();
-    void ProcessMCParticles();
-    void ProcessAODMCParticles();
+    void ProcessMCParticles(int isCurrentEventSelected = 0);
+    void ProcessAODMCParticles(int isCurrentEventSelected = 0);
     void RelabelAODPhotonCandidates(Bool_t mode);
     void ProcessTruePhotonCandidates( AliAODConversionPhoton* TruePhotonCandidate);
     void ProcessTruePhotonCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
@@ -175,6 +175,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     THnSparseF**                      sPtRDeltaROpenAngle;                          //!
     TH1I**                            fHistoMCHeaders;                                 //!
     TH1F**                            fHistoMCAllGammaPt;                              //!
+    TH1F**                            fHistoMCAllGammaPtNotTriggered;                  //!
+    TH1F**                            fHistoMCAllGammaPtNoVertex;                      //!
     TH2F**                            fHistoMCAllSecondaryGammaPt;                     //!
     TH1F**                            fHistoMCDecayGammaPi0Pt;                         //!
     TH1F**                            fHistoMCDecayGammaRhoPt;                         //!
@@ -188,15 +190,23 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoMCConvGammaR;                              //!
     TH1F**                            fHistoMCConvGammaEta;                            //!
     TH1F**                            fHistoMCPi0Pt;                                   //!
+    TH1F**                            fHistoMCPi0PtNotTriggered;                       //!
+    TH1F**                            fHistoMCPi0PtNoVertex;                           //!
     TH1F**                            fHistoMCPi0WOWeightPt;                           //! array of histos with unweighted pi0, pT
     TH1F**                            fHistoMCPi0WOEvtWeightPt;                        //! array of histos without event weights pi0, pT
     TH1F**                            fHistoMCEtaWOEvtWeightPt;                        //! array of histos without event weights eta, pT
     TH1F**                            fHistoMCEtaPt;                                   //!
+    TH1F**                            fHistoMCEtaPtNotTriggered;                       //!
+    TH1F**                            fHistoMCEtaPtNoVertex;                           //!
     TH1F**                            fHistoMCEtaWOWeightPt;                           //!
     TH1F**                            fHistoMCPi0WOWeightInAccPt;                      //!
     TH1F**                            fHistoMCEtaWOWeightInAccPt;                      //!
     TH1F**                            fHistoMCPi0InAccPt;                              //!
+    TH1F**                            fHistoMCPi0InAccPtNotTriggered;                  //!
+    TH1F**                            fHistoMCPi0InAccPtNoVertex;                      //!
     TH1F**                            fHistoMCEtaInAccPt;                              //!
+    TH1F**                            fHistoMCEtaInAccPtNotTriggered;                  //!
+    TH1F**                            fHistoMCEtaInAccPtNoVertex;                      //!
     TH1F**                            fHistoMCPi0WOEvtWeightInAccPt;                   //!
     TH1F**                            fHistoMCEtaWOEvtWeightInAccPt;                   //!
     TH2F**                            fHistoMCPi0PtY;                                  //!
@@ -419,6 +429,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TObjString*                       fFileNameBroken;                            // string object for broken file name
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
     TClonesArray*                     fAODMCTrackArray;                           //! pointer to track array
+    TH1F*                             fAddressChanges;                                //! count if addresses of aod mc tracks arrays ever change            
 
     AliConversionPhotonCuts::TMapPhotonBool fMapPhotonHeaders;                   // map to remember if the photon tracks are from selected headers
 
@@ -426,7 +437,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 56);
+    ClassDef(AliAnalysisTaskGammaConvV1, 57);
 };
 
 #endif

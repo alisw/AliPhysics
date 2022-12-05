@@ -124,6 +124,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fhistMCSpectrumAccSc(0x0),
   fhistMCSpectrumAccXic(0x0),
   fhistMCSpectrumAccCdeuteron(0x0),
+  fhistMCSpectrumAccLbToLcEle(0x0),
   fhSparseAnalysis(0x0),
   fhSparseAnalysis4Prong(0x0),
   fhSparseAnalysisReflections(0x0),
@@ -264,7 +265,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fRejFactorFastAnalysis(1.1)
   ,fFillSparseReflections(kFALSE)
   ,fLoopOverSignalOnly(kFALSE)
-   ,fptLoop1(2.)
+  ,fptLoop1(2.)
   ,fptLoop2(1.)
   ,fptLoop3(0.7)
   ,fminptTracksFastLoop(0.3)
@@ -284,6 +285,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fUseBayesInFiltering(kFALSE)
   ,fLcInvMassBins(125)
   ,fOnlyEleFourthLoop(kFALSE)
+  ,fFillNtuple4Prong(kFALSE)
+  ,fNtuple4Prong(0x0)
 {
   /// Default constructor
 
@@ -326,6 +329,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fhistMCSpectrumAccSc(0x0),
   fhistMCSpectrumAccXic(0x0),
   fhistMCSpectrumAccCdeuteron(0x0),
+  fhistMCSpectrumAccLbToLcEle(0x0),
   fhSparseAnalysis(0x0),
   fhSparseAnalysis4Prong(0x0),
   fhSparseAnalysisReflections(0x0),
@@ -485,6 +489,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fUseBayesInFiltering(kFALSE)
   ,fLcInvMassBins(125)
   ,fOnlyEleFourthLoop(kFALSE)
+  ,fFillNtuple4Prong(kFALSE)
+  ,fNtuple4Prong(0x0)
 {
   /// Default constructor
   
@@ -494,6 +500,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   DefineOutput(4,TTree::Class());
   DefineOutput(5,TNtuple::Class());
   DefineOutput(6,TNtuple::Class());
+  DefineOutput(7,TNtuple::Class());
   fCuts=cuts;
 }
 
@@ -544,6 +551,7 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fhistMCSpectrumAccLc)delete fhistMCSpectrumAccLc;
   if(fhistMCSpectrumAccLcFromSc)delete fhistMCSpectrumAccLcFromSc;
   if(fhistMCSpectrumAccSc)delete fhistMCSpectrumAccSc;
+  if(fhistMCSpectrumAccLbToLcEle)delete fhistMCSpectrumAccLbToLcEle;
   if(fhistMCSpectrumAccXic)delete fhistMCSpectrumAccXic;
   if(fhistMCSpectrumAccCdeuteron)delete fhistMCSpectrumAccCdeuteron;
   if(fhSparseAnalysis)delete fhSparseAnalysis;
@@ -608,7 +616,7 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fTuplePID_TOFreq){
     delete fTuplePID_TOFreq;
   }
-       
+  if(fNtuple4Prong) delete fNtuple4Prong;       
 }
 
 //________________________________________________________________________
@@ -904,6 +912,12 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   
   fhistMCSpectrumAccCdeuteron=new TH2F("fhistMCSpectrumAccCdeuteron","fhistMCSpectrumAccCdeuteron",250,0,50,20,-0.5,19.5); //
 
+  const Int_t nbinsAccLbToLcEle=7;
+  Int_t binsAccLbToLcEle[nbinsAccLbToLcEle]        = {250,  20,   50, 20, 250, 40,    6};
+  Double_t lowedgesAccLbToLcEle[nbinsAccLbToLcEle] = {0  ,-0.5, 2.2, -1,   0, -2, -1.5};
+  Double_t upedgesAccLbToLcEle[nbinsAccLbToLcEle]  = {50 ,19.5, 5.8,  1,  50,  2,  4.5};
+  fhistMCSpectrumAccLbToLcEle=new THnSparseF("fhistMCSpectrumAccLbToLcEle","fhistMCSpectrumAccLbToLcEle;ptPair;step;pairMass;ypair;ptLb;yLb;decay_channel",nbinsAccLbToLcEle,binsAccLbToLcEle,lowedgesAccLbToLcEle,upedgesAccLbToLcEle);
+
   // Sparse histos to study track reco & PID efficiency
   Int_t nbinsSparseTrack[9]={100,20,16,3,3,3,3,3,5};
   Double_t lowEdgesSparseTrack[9]={0.,-1,0,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5};
@@ -1133,6 +1147,8 @@ if(!fFillTree){
 
   fTuplePID_TOFreq=new TNtuple("fTuplePID_TOFreq","fTuplePID_TOFreq","pt_LcpKpi:mass_LcpKpi:daug0_isTPCsel:daug1_isTPCsel:daug2_isTPCsel:daug0_isTOFmatched:daug1_isTOFmatched:daug2_isTOFmatched:daug0_isCombTPCTOFSel:daug1_isCombTPCTOFSel:daug2_isCombTPCTOFSel",128000);
 
+  fNtuple4Prong=new TNtuple("fNtuple4Prong","fNtuple4Prong","pt:mass:Lxy:nLxy:cosThatPoint:normImpParXY:d0d0:PIDtrack4:LcMassHypo:chargePairProduct:infoMC:lcmassrange:truelxy:ptlb",128000);
+
   fHistFastInvMass=new TH2D("fHistFastInvMass","Inv Mass Fast;M(p,K,pi);pt",400,2.18,2.58,48,0,24);
   fOutput->Add(fDist12Signal);
   fOutput->Add(fDist12SignalFilter);
@@ -1164,6 +1180,7 @@ if(!fFillTree){
   fOutput->Add(fhistMCSpectrumAccSc);
   fOutput->Add(fhistMCSpectrumAccXic);
   fOutput->Add(fhistMCSpectrumAccCdeuteron);
+  fOutput->Add(fhistMCSpectrumAccLbToLcEle);
   if(fhSparseAnalysis)  fOutput->Add(fhSparseAnalysis);
   if(fhSparseAnalysisReflections)  fOutput->Add(fhSparseAnalysisReflections);
   if(fhSparseAnalysisSigma)  fOutput->Add(fhSparseAnalysisSigma);
@@ -1203,6 +1220,8 @@ if(!fFillTree){
   PostData(4,fTreeVar);
   PostData(5,ftnFastVariables);
   PostData(6,fTuplePID_TOFreq);
+  PostData(7,fNtuple4Prong);
+
   return;
 }
 
@@ -1366,6 +1385,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
       PostData(6,fTuplePID_TOFreq);
+      PostData(7,fNtuple4Prong);
+  
       return;
     }
   }
@@ -1419,6 +1440,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     PostData(4,fTreeVar);
     PostData(5,ftnFastVariables);
     PostData(6,fTuplePID_TOFreq);
+    PostData(7,fNtuple4Prong);
+  
     return;
   }
 
@@ -1436,6 +1459,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
       PostData(6,fTuplePID_TOFreq);
+      PostData(7,fNtuple4Prong);
+  
       return;
     }
   }
@@ -1453,6 +1478,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
       PostData(6,fTuplePID_TOFreq);
+  PostData(7,fNtuple4Prong);
+
       return;
     }
   }
@@ -2464,6 +2491,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   PostData(4,fTreeVar);
   PostData(5,ftnFastVariables);
   PostData(6,fTuplePID_TOFreq);
+  PostData(7,fNtuple4Prong);
+
 
   return;
 }
@@ -4333,15 +4362,16 @@ Int_t AliAnalysisTaskSEXicTopKpi::MatchToMC4prong(Int_t checkorigin,AliAODRecoDe
  
   AliAODMCParticle *partTrack=(AliAODMCParticle*)fmcArray->At(TMath::Abs(labelTrack));
   Int_t trackPdg=partTrack->GetPdgCode();
-  if(TMath::Abs(trackPdg)!=11){// checking only electron from Lb->Lc e X  for the time being...
-    return -1;
-  }
+  
   Int_t labelTrackMum=partTrack->GetMother();
   // electron must come directly from Lb decay, not from a resonant intermediate state (cannot be)
   if(labelTrackMum==labelLcMum){
     // cross check charge state (remember pdg(e-)=11 pdg(e+)=-1)
-    if((pdgLc>0 && trackPdg<0) || (pdgLc<0&&trackPdg>0))labelLcMum*=-1;// wrong charges
-    return labelLcMum;	      
+    // if((pdgLc>0 && trackPdg<0) || (pdgLc<0&&trackPdg>0))labelLcMum*=-1;// wrong charges
+    if(TMath::Abs(trackPdg)!=11){// checking only electron from Lb->Lc e X  for the time being...
+      return -1*labelLcMum;
+    }      
+    return labelLcMum;	
   }
   else return -1;     
 }
@@ -4362,40 +4392,97 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	if(pdg==11)partType=4;
 	Double_t point[4]={mcpart->Pt(),mcpart->Eta(),mcpart->Phi(),(Double_t)partType};
 	fhSparsePartGen->Fill(point); 
-      }
-
+    }
+    
     Int_t pdg=mcpart->GetPdgCode();
-      Int_t arrayDauLab[3];
-      if(TMath::Abs(pdg)==4122){
-        Int_t decay_channel = AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, mcpart, arrayDauLab);
-	if(decay_channel>=1){
-	  Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(fmcArray,mcpart,kTRUE);
-	  if(checkOrigin==0)continue;
+    Int_t arrayDauLab[3];
+    if(TMath::Abs(pdg)==4122){
+      Int_t decay_channel = AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, mcpart, arrayDauLab);
+      if(decay_channel>=1){
+	Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(fmcArray,mcpart,kTRUE);
+	if(checkOrigin==0)continue;
+	
+	Double_t ptpart=mcpart->Pt();
+	Double_t ypart=mcpart->Y();
 	  
-	  Double_t ptpart=mcpart->Pt();
-	  Double_t ypart=mcpart->Y();
-	  
-	  // SIGMA C
-    if(fDebug>=0)Printf("   AliAnalysisTaskSEXicTopKpi: LoopOverGenParticless - SigmaC stuff");
+	// SIGMA C
+	if(fDebug>=0)Printf("   AliAnalysisTaskSEXicTopKpi: LoopOverGenParticless - SigmaC stuff");
 	  Bool_t isFromSigmaC=kFALSE;
+	  Bool_t isFromLb=kFALSE;
 	  Int_t indSc=mcpart->GetMother();
-	  AliAODMCParticle *mcpartMum=0x0;
+	  AliAODMCParticle *mcpartMum=0x0,*mcpartLb=0x0;
 	  if(indSc>=0){
 	    mcpartMum=(AliAODMCParticle*)fmcArray->At(indSc); 
 	    Int_t pdgLcMum=TMath::Abs(mcpartMum->GetPdgCode());
 	    if(pdgLcMum==4112 || pdgLcMum==4222)isFromSigmaC=kTRUE;
-      if(fAbsValueScCharge>-1){
-        // We want a specific case!
-        // if fAbsValueScCharge>-1, it means that we want to take either only Sc0 or only Sc++
-        if(fAbsValueScCharge==0 && pdgLcMum==4112)        isFromSigmaC=kTRUE;   // Sc0
-        else if(fAbsValueScCharge==2 && pdgLcMum==4222)   isFromSigmaC=kTRUE;   // Sc++
-        else                                              isFromSigmaC=kFALSE;
-      }
+	    if(pdgLcMum==5122){
+	      mcpartLb=mcpartMum;
+	      isFromLb=kTRUE;
+	    }
+	    else if(checkOrigin==5){
+	      Int_t lcmumindex=mcpartMum->GetMother();
+	      while(lcmumindex>=0){
+		mcpartLb=(AliAODMCParticle*)fmcArray->At(lcmumindex);
+		Int_t pdglb=mcpartLb->GetPdgCode();
+		if(TMath::Abs(pdglb)==5122){
+		  isFromLb=kTRUE;
+		  break;
+		}
+		lcmumindex=mcpartLb->GetMother();
+	      }	      
+	    }
+	    if(fAbsValueScCharge>-1){
+	      // We want a specific case!
+	      // if fAbsValueScCharge>-1, it means that we want to take either only Sc0 or only Sc++
+	      if(fAbsValueScCharge==0 && pdgLcMum==4112)        isFromSigmaC=kTRUE;   // Sc0
+	      else if(fAbsValueScCharge==2 && pdgLcMum==4222)   isFromSigmaC=kTRUE;   // Sc++
+	      else                                              isFromSigmaC=kFALSE;
+	    }
 	  }
 	  //Double_t pointLcSc[6];
 	  Double_t pointLcSc[7];  // adding axis for Lc decay channel (MC)
 	  Double_t ptpartSc;
 	  Double_t ypartSc;
+	  Double_t pointLbToLch[7];  
+	  Double_t ptpartLb;
+	  Double_t ypartLb;
+	  Double_t ypartEle;
+
+	  // Fill Lb MC info
+	  Double_t pvLc[3],pvLch[3],eleEnergy;
+	  Bool_t isLbtoLch=kTRUE;// for the time being check only ele, not counting other cases, because one should take multiple combinations per Lb
+	  if(isFromLb){
+	    ptpartLb=mcpartLb->Pt();
+	    ypartLb=mcpartLb->Y();
+	    mcpart->PxPyPz(pvLc);
+	    // check whehter the Lb decays to Lc ele
+	    for(Int_t indDaugh=mcpartLb->GetDaughterLabel(0);indDaugh<=mcpartLb->GetDaughterLabel(1);indDaugh++){// no need to go back in the history, the electron must come directly from the b (even for PYTHIA decay states with quarks) 
+	      if(indDaugh>=0){
+		AliAODMCParticle *partEle=(AliAODMCParticle*)fmcArray->At(indDaugh);
+		if(TMath::Abs(partEle->GetPdgCode())==11){
+		  isLbtoLch==kTRUE;
+		  partEle->PxPyPz(pvLch);
+		  pvLch[0]+=pvLc[0];
+		  pvLch[1]+=pvLc[1];
+		  pvLch[2]+=pvLc[2];
+		  eleEnergy=partEle->E();
+		  ypartEle=partEle->Y();
+		}
+	      }
+	    }
+	    if(isLbtoLch){
+	      pointLbToLch[0]=TMath::Sqrt(pvLch[0]*pvLch[0]+pvLch[1]*pvLch[1]);//
+	      pointLbToLch[1]=-1;
+	      Double_t pairEnergy=eleEnergy+mcpart->E();
+	      pointLbToLch[2]=TMath::Sqrt(pairEnergy*pairEnergy-pvLch[0]*pvLch[0]+pvLch[1]*pvLch[1]+pvLch[2]*pvLch[2]);
+	      pointLbToLch[3]=0.5*TMath::Log((pairEnergy+pvLch[2])/(pairEnergy-pvLch[2]));
+	      pointLbToLch[4]=ptpartLb;
+	      pointLbToLch[5]=ypartLb;
+	      pointLbToLch[6]=decay_channel;
+	    }
+	  }
+	  
+	  // Fill SigmaC MC info
 	  if(isFromSigmaC){
 	    ptpartSc=mcpartMum->Pt();
 	    ypartSc=mcpartMum->Y();
@@ -4405,7 +4492,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	    pointLcSc[3]=ypart;
 	    pointLcSc[4]=ptpartSc;
 	    pointLcSc[5]=ypartSc;
-      pointLcSc[6]=decay_channel;
+	    pointLcSc[6]=decay_channel;
 	  }
 	  if(TMath::Abs(ypart)<0.5){
 	    //fhistMCSpectrumAccLc->Fill(ptpart,kGenLimAcc,checkOrigin);// Gen Level
@@ -4496,6 +4583,25 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	      }
 	    }	    
 	  }
+
+
+
+	   if(isLbtoLch){
+	     // check GenLim
+	     if(TMath::Abs(ypartLb)<0.5){
+	       pointLbToLch[1]=kGenLimAcc;
+	       fhistMCSpectrumAccLbToLcEle->Fill(pointLbToLch);
+	     }
+	     // check GenAcc level: for the moment we skip the GenAcc mother, not clearly defined
+	     Bool_t isInAccLbToLcEle=kTRUE;
+	       
+	     if(!isInAcc)isInAccLbToLcEle=kFALSE;// Lc not passing fiducial acc or Lc daughters out of acc
+	     if(TMath::Abs(ypartEle)<0.9)isInAccLbToLcEle=kFALSE;
+	     if(isInAccLbToLcEle){
+	       pointLbToLch[1]=kGenAcc;
+	       fhistMCSpectrumAccLbToLcEle->Fill(pointLbToLch); 
+	     }
+	   }
 	}
       }
       else if(TMath::Abs(pdg)==4232){
@@ -5243,7 +5349,6 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	GetTrackMomentumAtSecVert(&et4,secvtx,momentum,bz);
 	px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
   
-
 	Double_t d0z0[2],covd0z0[3];
 	AliAODVertex *primVertexCand=0x0;
 	Int_t id4[4];
@@ -5254,23 +5359,50 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	  }
 	  id4[3]=track4->GetID(); 
 	  primVertexCand=RemoveDaughtersFromPrimaryVtxCascHF(id4,aod);
-	  trackHF->PropagateToDCA(primVertexCand,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
+	  if(primVertexCand){
+	    trackHF->PropagateToDCA(primVertexCand,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 	   
+	  }
+	  else {
+	    trackHF->PropagateToDCA(fprimVtx,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
+	  }
 	  d0[0] = d0z0[0];
-	  d0err[0] = TMath::Sqrt(covd0z0[0]);
-	  et4.PropagateToDCA(primVertexCand,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
-	  d0[1] = d0z0[1];
-	  d0err[1] = TMath::Sqrt(covd0z0[1]);
+	  if(covd0z0[0]>=0.)d0err[0] = TMath::Sqrt(covd0z0[0]);
+	  else {
+	    d0[0]=-999; // set like this as a protection, hard to spot at analysis level differences otherwise, only alternative could be: d0err[0]=-0.00000001;
+	    d0err[0]=1.;
+	  }
+	  if(primVertexCand){
+	    et4.PropagateToDCA(primVertexCand,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
+	  }
+	  else {
+	    et4.PropagateToDCA(fprimVtx,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 	
+	  }
+	  d0[1] = d0z0[0];
+	  if(covd0z0[0]>=0.)d0err[1] = TMath::Sqrt(covd0z0[0]);
+	  else {
+	    d0[1]=-999; // set like this as a protection, hard to spot at analysis level differences otherwise, only alternative could be: d0err[1]=-0.00000001;
+	    d0err[1]=1.;
+	  }
 	}
 	else{
 	  trackHF->PropagateToDCA(fprimVtx,bz,kVeryBig,d0z0,covd0z0);// NEGLECTING CURVATURE 
+	
 	  d0[0] = d0z0[0];
-	  d0err[0] = TMath::Sqrt(covd0z0[0]);
+	  if(covd0z0[0]>=0.) d0err[0] = TMath::Sqrt(covd0z0[0]);
+	  else {
+	    d0[0]=-999; // set like this as a protection, hard to spot at analysis level differences otherwise, only alternative could be: d0err[0]=-0.00000001;
+	   d0err[0]=1.;
+	  }
 	  Float_t d0z0f[2],covd0z0f[3];
 	  et4.GetImpactParameters(d0z0f,covd0z0f);// need to convert to float?
-	  d0[1] = d0z0[1];
-	  d0err[1] = TMath::Sqrt(covd0z0[1]);
+	  d0[1] = d0z0f[0];
+	  if(covd0z0f[0]>=0.)d0err[1] = TMath::Sqrt(covd0z0f[0]);
+	  else {
+	    d0[1]=-999;// set like this as a protection, hard to spot at analysis level differences otherwise, only alternative could be: d0err[1]=-0.00000001;
+	    d0err[1]=1.;	  
+	  }
 	}
-
+	
 
 	UShort_t ids[2];
 	ids[0]= 0; 
@@ -5282,9 +5414,18 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 
 	// fill Right-Sign and Wrong-Sign sparses on the basis of candidates and charge-pairing: same histo, charge status is in sparse 
 
-	Double_t point4pr[12];
+	Double_t point4pr[14];
 	UInt_t pdg[2]={4122,11};
+	if(flagPart==2)pdg[1]=211;
+	else if(flagPart==4)pdg[1]=321;
+	else if(flagPart==8)pdg[1]=2212;
+	if(lcmassrange>=4)pdg[0]=4232;
 	Double_t massLcEle=hfCombined->InvMass(2,pdg);
+	// FOLLOWING LINES JUST FOR DEBUGGING, KEEP (COMMENTED) FOR HTE MOMENT
+	//	Printf("TREGETTING VARIABLS");
+	//AliAODVertex* secVtxTMP=(AliAODVertex*)hfCombined->GetSecondaryVtx();
+	//Double_t errlxy2=secVtxTMP->Error2DistanceXYToVertex(hfCombined->GetPrimaryVtx());
+	// Printf("VARIABLS EVIL CANDIDATES: %f,%f,%f,%f,%f,%f,%f,%f,%f, prop %d,%d,%d,%d", hfCombined->Getd0Prong(0), hfCombined->Getd0Prong(1),hfCombined->Getd0errProng(0),hfCombined->Getd0errProng(1),hfCombined->DecayLengthXY(),errlxy2,hfCombined->Pt(),hfCombined->PtProng(0),hfCombined->PtProng(1),propagateResult[0],propagateResult[1],propagateResult[2],propagateResult[3]);
 	FillArrayVariable4prongs(hfCombined,aod,point4pr);
 	point4pr[1]=massLcEle;
 	point4pr[7]=flagPart;
@@ -5293,11 +5434,46 @@ void AliAnalysisTaskSEXicTopKpi::ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,Ali
 	Short_t charge = io3Prong->Charge()*track4->Charge(); 
 	point4pr[9]= charge == -1 ? 1. : 0;
 	point4pr[11]=lcmassrange;
+	point4pr[12]=-1;
 	if(mcInfo>=0)point4pr[10]=1;
 	else if(mcInfo==-1)point4pr[10]=0;
 	else point4pr[10]=-1;
+	if(fReadMC && (mcInfo>0 || mcInfo<-1)){// note that this is not optimal, since Lb with label 0 or 1 (to Lc h, with h not electron) will not be included ... but it's unlikely that happens. Can be fixed later
+	  AliAODMCParticle *partLb=(AliAODMCParticle*)fmcArray->At(TMath::Abs(mcInfo));
+	  if(partLb){
+	    AliAODMCParticle *part3prong=(AliAODMCParticle*)fmcArray->At(label3prong);
+	    Double_t secvtx4p[3]={999.,999.,999.},primVtxMC[3]={-999.,-999,-999.};
+	    partLb->XvYvZv(primVtxMC);
+	    part3prong->XvYvZv(secvtx4p);
+	    point4pr[12]=TMath::Sqrt((secvtx4p[0]-primVtxMC[0])*(secvtx4p[0]-primVtxMC[0])
+				     +(secvtx4p[1]-primVtxMC[1])*(secvtx4p[1]-primVtxMC[1]));
+	    point4pr[13]=partLb->Pt();
+	    
+	    if(mcInfo>0){
+	      Double_t pLc[3],pvLch[3];
+	      part3prong->PxPyPz(pLc);
+	      AliAODMCParticle *eleMCpart=(AliAODMCParticle*)fmcArray->At(TMath::Abs(track4->GetLabel()));
+	      eleMCpart->PxPyPz(pvLch);
+	      pvLch[0]+=pLc[0];
+	      pvLch[1]+=pLc[1];
+	      pvLch[2]+=pLc[2];
+	      Double_t pairEnergy=eleMCpart->E()+part3prong->E();
+	      Double_t pointLbToLch[7];
+	      pointLbToLch[0]=TMath::Sqrt(pvLch[0]*pvLch[0]+pvLch[1]*pvLch[1]);//
+	      pointLbToLch[1]=kRecoPID;
+	      pointLbToLch[2]=TMath::Sqrt(pairEnergy*pairEnergy-pvLch[0]*pvLch[0]+pvLch[1]*pvLch[1]+pvLch[2]*pvLch[2]);
+	      pointLbToLch[3]=0.5*TMath::Log((pairEnergy+pvLch[2])/(pairEnergy-pvLch[2]));
+	      pointLbToLch[4]=part3prong->Pt();
+	      pointLbToLch[5]=part3prong->Y();
+	      Int_t arrayDauLabReco[3];
+	      pointLbToLch[6]= AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, part3prong, arrayDauLabReco);
+	      fhistMCSpectrumAccLbToLcEle->Fill(pointLbToLch);	      
+	    }	    
+	  }
+	}
+	
 	fhSparseAnalysis4Prong->Fill(point4pr);	
-
+	if(fFillNtuple4Prong)fNtuple4Prong->Fill(point4pr[0],point4pr[1],point4pr[2],point4pr[3],point4pr[4],point4pr[5],point4pr[6],point4pr[7],point4pr[8],point4pr[9],point4pr[10],point4pr[11],point4pr[12],point4pr[13]);// may change point4pr to float everywhere in the future
 	//	delete esdtr4;
 	delete hfCombined;
 	delete secvtx;
@@ -5316,16 +5492,13 @@ void AliAnalysisTaskSEXicTopKpi::FillArrayVariable4prongs(AliAODRecoDecayHF2Pron
   point[2]=io2Prong->DecayLengthXY();
   point[3]=io2Prong->NormalizedDecayLengthXY();
   point[4]=io2Prong->CosPointingAngle();
-  Double_t diffIP[3], errdiffIP[3],normIP[3],maxIP=0;
+  Double_t diffIP[2], errdiffIP[2],normIP[2],maxIP=0;
   io2Prong->Getd0MeasMinusExpProng(0,aod->GetMagneticField(),diffIP[0],errdiffIP[0]);
   io2Prong->Getd0MeasMinusExpProng(1,aod->GetMagneticField(),diffIP[1],errdiffIP[1]);
-  io2Prong->Getd0MeasMinusExpProng(2,aod->GetMagneticField(),diffIP[2],errdiffIP[2]);
   normIP[0]=diffIP[0]/errdiffIP[0];
   maxIP=TMath::Abs(  normIP[0]);
   normIP[1]=diffIP[1]/errdiffIP[1];
   if(TMath::Abs(  normIP[1])>maxIP)maxIP=TMath::Abs(  normIP[1]);
-  normIP[2]=diffIP[2]/errdiffIP[2];
-  if(TMath::Abs(  normIP[2])>maxIP)maxIP=TMath::Abs(  normIP[2]);
   point[5]=maxIP;
   point[6]=io2Prong->Prodd0d0();//FlagCandidateWithVariousCuts(io2Prong,aod,massHypothesis);// not needed for SigmaC! (replaced by ITSrefit for soft pion)
   point[7]=-1;

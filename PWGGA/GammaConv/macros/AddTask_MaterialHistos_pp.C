@@ -215,6 +215,8 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "0d0000t9266300008850404000");
     cuts.AddCutPCMMaterial("00010103", "0d0000u9266300008850404000");
 
+  } else if (trainConfig == 31) {   // INEL>0  default cut
+    cuts.AddCutPCMMaterial("00015103", "0d000009266300008850404000");
 
 
  } else if (trainConfig == 76) {   // +50 To be used with MBW
@@ -311,6 +313,8 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "1d0000t9266300008850404000");
     cuts.AddCutPCMMaterial("00010103", "1d0000u9266300008850404000");
 
+  } else if (trainConfig == 131) {   // INEL>0, default cut
+    cuts.AddCutPCMMaterial("00015103", "1d000009266300008850404000");
 
 
 

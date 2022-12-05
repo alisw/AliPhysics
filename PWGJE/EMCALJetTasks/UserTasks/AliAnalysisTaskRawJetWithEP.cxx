@@ -74,16 +74,24 @@ ClassImp(AliAnalysisTaskRawJetWithEP);
 AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
   AliAnalysisTaskEmcalJet(),
   fAOD(nullptr),
-  fOutputList(nullptr),
-  fEventCuts(),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
   fYAMLConfig(),
   fUseRunList(),
   fOADBFileName(""),
   fOADBFile(nullptr),
+  fRunListFileName(""),
+  fSplinesFileName(""),
   fCalibRefFileName(""),
   fCalibRefFile(nullptr),
   fCalibRefObjList(nullptr),
   fCalibV0Ref(nullptr),
+  fExLJetFromFit(kTRUE),
+  fLeadingJet(0),
+  fLeadingJetAfterSub(0),
+  fFitModulation(0),
   fPileupCut(kFALSE),
   fTPCQnMeasure(kFALSE),
   fPileupCutQA(kFALSE),
@@ -93,13 +101,13 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
   fEPQA(kFALSE),
   fTrackQA(kFALSE),
   fBkgQA(kFALSE),
+  fSepEP(kFALSE),
   fCalibType(0),
   fNormMethod(0),
   fV0Combin(kFALSE),
   fQnVCalibType(kOrig),
   fQ2VecHandler(nullptr),
   fQ3VecHandler(nullptr),
-  fV0Q2VectTask(0x0),
   fHistManager(),
   fHCorrV0ChWeghts(NULL),
   fHCorrQ2xV0C(NULL),
@@ -110,12 +118,7 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
   fHCorrQ3yV0C(NULL),
   fHCorrQ3xV0A(NULL),
   fHCorrQ3yV0A(NULL),
-  fV0CutPU(NULL),
-  fSPDCutPU(NULL),
-  fMultCutPU(NULL),
-  fCenCutLowPU(NULL),
-  fCenCutHighPU(NULL),
-  fFitModulationType(kNoFit), fFitModulation(nullptr), hBkgTracks(nullptr),
+  fFitModulationType(kNoFit),
   fV2ResoV0(0.), fV3ResoV0(0.),
   fQaEventNum(-1)
 {
@@ -157,16 +160,24 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
 AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fAOD(nullptr),
-  fOutputList(nullptr),
-  fEventCuts(),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
   fYAMLConfig(),
   fUseRunList(),
   fOADBFileName(""),
   fOADBFile(nullptr),
+  fRunListFileName(""),
+  fSplinesFileName(""),
   fCalibRefFileName(""),
   fCalibRefFile(nullptr),
   fCalibRefObjList(nullptr),
   fCalibV0Ref(nullptr),
+  fExLJetFromFit(kTRUE),
+  fLeadingJet(0),
+  fLeadingJetAfterSub(0),
+  fFitModulation(0),
   fPileupCut(kFALSE),
   fTPCQnMeasure(kFALSE),
   fPileupCutQA(kFALSE),
@@ -176,13 +187,13 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name):
   fEPQA(kFALSE),
   fTrackQA(kFALSE),
   fBkgQA(kFALSE),
+  fSepEP(kFALSE),
   fCalibType(0),
   fNormMethod(0),
   fV0Combin(kFALSE),
   fQnVCalibType(kOrig),
   fQ2VecHandler(nullptr),
   fQ3VecHandler(nullptr),
-  fV0Q2VectTask(0x0),
   fHistManager(name),
   fHCorrV0ChWeghts(NULL),
   fHCorrQ2xV0C(NULL),
@@ -193,12 +204,7 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name):
   fHCorrQ3yV0C(NULL),
   fHCorrQ3xV0A(NULL),
   fHCorrQ3yV0A(NULL),
-  fV0CutPU(NULL),
-  fSPDCutPU(NULL),
-  fMultCutPU(NULL),
-  fCenCutLowPU(NULL),
-  fCenCutHighPU(NULL),
-  fFitModulationType(kNoFit), fFitModulation(nullptr), hBkgTracks(nullptr),
+  fFitModulationType(kNoFit),
   fV2ResoV0(0.), fV3ResoV0(0.),
   fQaEventNum(-1)
 {
@@ -231,8 +237,6 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name):
       psi3Tpc[i] = 0.;
     }
   
-  
-  
   if(fLocalRhoName=="") fLocalRhoName = Form("LocalRhoFrom_%s", GetName());
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -250,7 +254,6 @@ AliAnalysisTaskRawJetWithEP::~AliAnalysisTaskRawJetWithEP()
   if(fQ2VecHandler) {delete fQ2VecHandler; fQ2VecHandler = 0x0;}
   if(fQ3VecHandler) {delete fQ3VecHandler; fQ3VecHandler = 0x0;}
   if(fFitModulation) {delete fFitModulation; fFitModulation = 0x0;}
-  if(hBkgTracks) {delete hBkgTracks; hBkgTracks = 0x0;}
 }
 
 void AliAnalysisTaskRawJetWithEP::SetRunList(bool removeDummyTask)
@@ -269,14 +272,32 @@ void AliAnalysisTaskRawJetWithEP::SetRunList(bool removeDummyTask)
 void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
 {
   
-  fOutputList = new TList();
-  fOutputList->SetOwner(true);
+  // fOutputList = new TList();
+  // fOutputList->SetOwner(true);
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-
-  fEventCuts.AddQAplotsToList(fOutput);
-  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   
+  // Intialize AliEventCuts
+  if (fUseAliEventCuts) {
+    fEventCutList = new TList();
+    fEventCutList ->SetOwner();
+    fEventCutList ->SetName("EventCutOutput");
+    
+    fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+    if(fUseManualEventCuts==1)
+    {
+      fEventCuts.SetManualMode();
+      fEventCuts.fMC = false;
+      fEventCuts.SetupPbPb2018();
+      fEventCuts.fUseVariablesCorrelationCuts = true;
+    }
+    fEventCuts.AddQAplotsToList(fEventCutList);
+    fOutput->Add(fEventCutList);
+  }
+  
+  // fEventCuts.AddQAplotsToList(fOutput);
+
   // == s == Set Out put Hist grams  ###########################################
   if(fEPQA)          AllocateEventPlaneHistograms();
   if(fBkgQA)         AllocateBkgHistograms();
@@ -328,100 +349,71 @@ void AliAnalysisTaskRawJetWithEP::AllocateEventPlaneHistograms()
   histtitle = TString::Format("%s;cell ch number;CorrGain", histName.Data());
   fHistManager.CreateTH1(histName, histtitle, 100, 0, 100);
 
-  // == s == gain calibration QA ============================================
-  histName  = TString::Format("%s/hV0CellChGains", groupName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 64, 0, 64);
-  histName  = TString::Format("%s/hV0CellChRatio", groupName.Data());
-  histtitle = TString::Format("%s;cell ch number;Ch ratio", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 64, 0, 64);
-
-  histName  = TString::Format("%s/hV0CellChVsMultBefEq", groupName.Data());
-  histtitle = TString::Format("%s;cell ch number;multiplisity before equalization", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 64, 0, 64);
-
-  histName  = TString::Format("%s/hV0CellChVsMultAftEq", groupName.Data());
-  histtitle = TString::Format("%s;cell ch number;multiplisity before equalization", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 64, 0, 64);
-  // == e == gain calibration QA ============================================
-
-  // == s == recentrering calibration QA =======================================
-  histName  = TString::Format("%s/hCentVsQxV0ABefCalib", groupName.Data());
-  histtitle = TString::Format("%s;centrality;Q_{x} V0A", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 10, 0, 10);
-  histName  = TString::Format("%s/hCentVsQyV0ABefCalib", groupName.Data());
-  histtitle = TString::Format("%s;centrality;Q_{y} V0A", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 10, 0, 10);
-
-  histName  = TString::Format("%s/hCentVsQxV0AAftCalib", groupName.Data());
-  histtitle = TString::Format("%s;centrality;Q_{x} V0A", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 10, 0, 10);
-  histName  = TString::Format("%s/hCentVsQyV0AAftCalib", groupName.Data());
-  histtitle = TString::Format("%s;centrality;Q_{y} V0A", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 10, 0, 10);
-
-  histName  = TString::Format("%s/hCentVsQxV0CBefCalib", groupName.Data());
-  histtitle = TString::Format("%s;centrality;Q_{x} V0C", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 10, 0, 10);
-  histName  = TString::Format("%s/hCentVsQyV0CBefCalib", groupName.Data());
-  histtitle = TString::Format("%s;centrality;Q_{y} V0C", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 10, 0, 10);
-
-  histName  = TString::Format("%s/hCentVsQxV0CAftCalib", groupName.Data());
-  histtitle = TString::Format("%s;centrality;Q_{x} V0C", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 10, 0, 10);
-  histName  = TString::Format("%s/hCentVsQyV0CAftCalib", groupName.Data());
-  histtitle = TString::Format("%s;centrality;Q_{y} V0C", histName.Data());
-  fHistManager.CreateTH1(histName, histtitle, 10, 0, 10);
-  // == e == recentrering calibration QA =======================================
-
-
   for (Int_t cent = 0; cent < fNcentBins; cent++) {
       // == s == Event plane angle histograms Setting
       histName = TString::Format("%s/hPsi2V0M_%d", groupName.Data(), cent);
       histtitle = "Psi2 from VZEROCA";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
       histName = TString::Format("%s/hPsi3V0M_%d", groupName.Data(), cent);
       histtitle = "Psi3 from V0M";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
 
       histName = TString::Format("%s/hPsi2V0C_%d", groupName.Data(), cent);
       histtitle = "Psi3 from V0A";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
       histName = TString::Format("%s/hPsi3V0C_%d", groupName.Data(), cent);
       histtitle = "Psi2 from V0C";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
 
       histName = TString::Format("%s/hPsi2V0A_%d", groupName.Data(), cent);
       histtitle = "Psi3 from V0A";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
 
       histName = TString::Format("%s/hPsi3V0A_%d", groupName.Data(), cent);
       histtitle = "Psi3 from V0A";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
 
       histName = TString::Format("%s/hPsi2TPCN_%d", groupName.Data(), cent);
       histtitle = "Psi2 from TPC eta negative";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
       histName = TString::Format("%s/hPsi3TPCN_%d", groupName.Data(), cent);
       histtitle = "Psi3 from TPC eta negative";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
 
       histName = TString::Format("%s/hPsi2TPCP_%d", groupName.Data(), cent);
       histtitle = "Psi2 from TPC eta positive";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
       histName = TString::Format("%s/hPsi3TPCP_%d", groupName.Data(), cent);
       histtitle = "Psi3 from TPC eta positive";
-      //fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, -TMath::TwoPi(), 2*TMath::TwoPi());
+      //fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi());
+
+      histName = TString::Format("%s/hPsi2V0MVsTPCP_%d", groupName.Data(), cent);
+      histtitle = "Psi2 from V0M vs TPC postitive";
+      fHistManager.CreateTH2(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi(),\
+        50, -TMath::TwoPi(), 2*TMath::TwoPi());
+      histName = TString::Format("%s/hPsi2V0MVsTPCN_%d", groupName.Data(), cent);
+      histtitle = "Psi2 from V0M vs TPC negative";
+      fHistManager.CreateTH2(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi(),\
+        50, -TMath::TwoPi(), 2*TMath::TwoPi());
+      histName = TString::Format("%s/hPsi2V0AVsV0C_%d", groupName.Data(), cent);
+      histtitle = "Psi2 from V0A vs V0C";
+      fHistManager.CreateTH2(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi(),\
+        50, -TMath::TwoPi(), 2*TMath::TwoPi());
+      histName = TString::Format("%s/hPsi2TPCPVsTPCN_%d", groupName.Data(), cent);
+      histtitle = "Psi2 from TPC posi vs nega";
+      fHistManager.CreateTH2(histName, histtitle, 50, -TMath::TwoPi(), 2*TMath::TwoPi(),\
+        50, -TMath::TwoPi(), 2*TMath::TwoPi());
+
 
       // profiles for all correlator permutations which are necessary to calculate each second and third order event plane resolution
       TProfile *tempHist;
@@ -457,8 +449,14 @@ void AliAnalysisTaskRawJetWithEP::AllocateEventPlaneHistograms()
       parent->Add(tempHist);
   }
 
-}
+  histName  = TString::Format("%s/v2", groupName.Data());
+  histtitle = TString::Format("%s;centrality;v2", histName.Data());
+  fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+  histName  = TString::Format("%s/v3", groupName.Data());
+  histtitle = TString::Format("%s;centrality;v3", histName.Data());
+  fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
 
+}
 
 void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
 {
@@ -484,7 +482,7 @@ void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
 
   histName = TString::Format("%s/hPChi2_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
 
   histName = TString::Format("%s/hPvalueCDFROOT_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
@@ -500,7 +498,7 @@ void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
 
   histName = TString::Format("%s/hPChi2ROOT_lRhoCombinFit", groupName.Data());
   histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
 
   //  = v2  fit local rho =
   histName = TString::Format("%s/hPvalueCDF_lRhoV2Fit", groupName.Data());
@@ -517,7 +515,7 @@ void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
 
   histName = TString::Format("%s/hPChi2_lRhoV2Fit", groupName.Data());
   histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
 
   histName = TString::Format("%s/hPvalueCDFROOT_lRhoV2Fit", groupName.Data());
   histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
@@ -533,7 +531,7 @@ void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
 
   histName = TString::Format("%s/hPChi2ROOT_lRhoV2Fit", groupName.Data());
   histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
 
     //  = fit global rho (rho0) =
   histName = TString::Format("%s/hPvalueCDF_gRhoFit", groupName.Data());
@@ -550,7 +548,7 @@ void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
 
   histName = TString::Format("%s/hPChi2_gRhoFit", groupName.Data());
   histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
 
   histName = TString::Format("%s/hPvalueCDFROOT_gRhoFit", groupName.Data());
   histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
@@ -566,7 +564,7 @@ void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
 
   histName = TString::Format("%s/hPChi2ROOT_gRhoFit", groupName.Data());
   histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 1000, 0, 1, 100, 0, 5);
+  fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
   // == e == cdf and pdf of chisquare distribution #############################
 
 
@@ -574,10 +572,6 @@ void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
   histName = TString::Format("%s/hRhoVsMult", groupName.Data());
   histtitle = TString::Format("%s; multiplicity; #rho [GeV/c]", histName.Data());
   fHistManager.CreateTH2(histName, histtitle, 100, 0, 4000, 100, 0, 250);
-  
-  histName = TString::Format("%s/hRhoVsCent", groupName.Data());
-  histtitle = TString::Format("%s; centrality; #rho [GeV/c]", histName.Data());
-  fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 100, 0, 250);
   
   histName = TString::Format("%s/hRhoAVsMult", groupName.Data());
   histtitle = TString::Format("%s; multiplicity; #rho * A (jet) [GeV/c]", histName.Data());
@@ -619,11 +613,11 @@ void AliAnalysisTaskRawJetWithEP::AllocateTrackHistograms()
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
       histName = TString::Format("%s/hTrackPt_%d", groupName.Data(), cent);
       histtitle = TString::Format("%s;#it{p}_{T,track} (GeV/#it{c});counts", histName.Data());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+      fHistManager.CreateTH1(histName, histtitle, 50, fMinBinPt, fMaxBinPt / 2);
 
       histName = TString::Format("%s/hTrackPhi_%d", groupName.Data(), cent);
       histtitle = TString::Format("%s;#it{#phi}_{track};counts", histName.Data());
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
 
       histName = TString::Format("%s/hTrackEta_%d", groupName.Data(), cent);
       histtitle = TString::Format("%s;#it{#eta}_{track};counts", histName.Data());
@@ -631,8 +625,8 @@ void AliAnalysisTaskRawJetWithEP::AllocateTrackHistograms()
 
       histName = TString::Format("%s/hNTracks_%d", groupName.Data(), cent);
       histtitle = TString::Format("%s;number of tracks;events", histName.Data());
-      if (fForceBeamType != kpp) fHistManager.CreateTH1(histName, histtitle, 500, 0, 5000);
-      else fHistManager.CreateTH1(histName, histtitle, 200, 0, 200);
+      fHistManager.CreateTH1(histName, histtitle, 500, 0, 5000);
+      
       
       // == e == Event plane angle histograms Setting
     }
@@ -665,6 +659,20 @@ void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
     }
     fHistManager.CreateHistoGroup(groupName);
 
+    TString GenGroupName = TString::Format("%s/General", groupName.Data());
+    if (fHistManager.FindObject(GenGroupName)) {
+      AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), GenGroupName.Data()));
+      continue;
+    }
+    fHistManager.CreateHistoGroup(GenGroupName);
+
+    TString RhoGroupName = TString::Format("%s/Rho", groupName.Data());
+    if (fHistManager.FindObject(RhoGroupName)) {
+      AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), RhoGroupName.Data()));
+      continue;
+    }
+    fHistManager.CreateHistoGroup(RhoGroupName);
+
     TString InclusiveGroupName = TString::Format("%s/Inclusive", groupName.Data());
     if (fHistManager.FindObject(InclusiveGroupName)) {
       AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), InclusiveGroupName.Data()));
@@ -673,149 +681,118 @@ void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
     fHistManager.CreateHistoGroup(InclusiveGroupName);
 
     TString IPlaneGroupName = TString::Format("%s/InPlane", groupName.Data());
-    if (fHistManager.FindObject(IPlaneGroupName)) {
-      AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), IPlaneGroupName.Data()));
-      continue;
-    }
-    fHistManager.CreateHistoGroup(IPlaneGroupName);
-
     TString OPlaneGroupName = TString::Format("%s/OutOfPlane", groupName.Data());
-    if (fHistManager.FindObject(OPlaneGroupName)) {
-      AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), OPlaneGroupName.Data()));
-      continue;
+    if(fSepEP){
+      if (fHistManager.FindObject(IPlaneGroupName)) {
+        AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), IPlaneGroupName.Data()));
+        continue;
+      }
+      fHistManager.CreateHistoGroup(IPlaneGroupName);
+      
+      if (fHistManager.FindObject(OPlaneGroupName)) {
+        AliWarning(TString::Format("%s: Found groupName %s in hist manager. The jet containers will be filled into the same histograms.", GetName(), OPlaneGroupName.Data()));
+        continue;
+      }
+      fHistManager.CreateHistoGroup(OPlaneGroupName);
     }
-    fHistManager.CreateHistoGroup(OPlaneGroupName);
+
 
     // A vs. pT
-    if (fForceBeamType == kAA) {
-      histName = TString::Format("%s/hRhoVsCent", groupName.Data());
-      histtitle = histName + ";Centrality (%);#rho (GeV/#it{c});counts";
-    	fHistManager.CreateTH2(histName, histtitle.Data(), 50, 0, 100, 100, 0, 500);
+    histName = TString::Format("%s/hRhoVsCent", RhoGroupName.Data());
+    histtitle = histName + ";Centrality (%);#rho (GeV/#it{c});counts";
+    fHistManager.CreateTH2(histName, histtitle.Data(), 50, 0, 100, 100, 0, 500);
 
-      histName = TString::Format("%s/CentVsPtVsPtdence", groupName.Data());
-      histtitle = histName + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}/#pi#it{R}^{2}";
-      // fHistManager.CreateTH3(histName, histtitle.Data(), 10, 0, 100, 300, 0, 250, 75, 0, 3);
-    }
-
+    
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
+      histName = TString::Format("%s/hJetArea_%d", GenGroupName.Data(), cent);
+      histtitle = TString::Format("%s;#it{A}_{jet};counts", histName.Data());
+      fHistManager.CreateTH1(histName, histtitle, 50, 0, 3);
 
-      histName = TString::Format("%s/hNJets_%d", groupName.Data(), cent);
+      histName = TString::Format("%s/hJetPhi_%d", GenGroupName.Data(), cent);
+      histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histName.Data());
+      fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+
+      histName = TString::Format("%s/hJetEta_%d", GenGroupName.Data(), cent);
+      histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histName.Data());
+      fHistManager.CreateTH1(histName, histtitle, 50, -1, 1);
+
+      histName = TString::Format("%s/hNJets_%d", GenGroupName.Data(), cent);
       histtitle = TString::Format("%s;number of jets;events", histName.Data());
       fHistManager.CreateTH1(histName, histtitle, 500, 0, 500);
 
       // histograms for jet angle relative to the event plane
-      histName = TString::Format("%s/hJetPhiMinusPsi2_%d", groupName.Data(), cent);
+      histName = TString::Format("%s/hJetPhiMinusPsi2_%d", GenGroupName.Data(), cent);
       histtitle = "Jet phi minus psi2";
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-      histName = TString::Format("%s/hJetPhiMinusPsi3_%d", groupName.Data(), cent);
+      fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
+      histName = TString::Format("%s/hJetPhiMinusPsi3_%d", GenGroupName.Data(), cent);
       histtitle = "Jet phi minus psi3";
-      fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
+      fHistManager.CreateTH1(histName, histtitle, 50, 0, TMath::TwoPi());
 
-      // histograms for in-plane vs out-of-plane jets
-      histName = TString::Format("%s/hJetsInPlaneOutOfPlaneV2_%d", groupName.Data(), cent);
-      histtitle = "In-plane vs out-of-plane jets (v2)";
-      fHistManager.CreateTH2(histName, histtitle, 2, 0, 2, 10, 0, 100);
-      histName = TString::Format("%s/hJetsInPlaneOutOfPlaneV3_%d", groupName.Data(), cent);
-      histtitle = "In-plane vs out-of-plane jets (v2)";
-      fHistManager.CreateTH2(histName, histtitle, 2, 0, 2, 10, 0, 100);
-
-      histName = TString::Format("%s/hDeltaPt_%d", groupName.Data(), cent);
+      histName = TString::Format("%s/hDeltaPt_%d", GenGroupName.Data(), cent);
       histtitle = "delta pt without EP distribution";
-      fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-      histName = TString::Format("%s/hDeltaPt_Local_%d", groupName.Data(), cent);
+      fHistManager.CreateTH1(histName, histtitle, 100, -50, 50);
+      histName = TString::Format("%s/hDeltaPt_Local_%d", GenGroupName.Data(), cent);
       histtitle = "delta pt according EP distribution";
-      fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-      histName = TString::Format("%s/hPhiVsDeltaPt_Local_%d", groupName.Data(), cent);
+      fHistManager.CreateTH1(histName, histtitle, 100, -50, 50);
+      histName = TString::Format("%s/hPhiVsDeltaPt_Global_%d", GenGroupName.Data(), cent);
       histtitle = "phi vs delta pt according EP distribution";
-      fHistManager.CreateTH2(histName, histtitle, fNbins/2, 0, TMath::TwoPi(), 300, -50, 250);
+      fHistManager.CreateTH2(histName, histtitle, 50, 0, TMath::TwoPi(), 100, -50, 50);
+      histName = TString::Format("%s/hPhiVsDeltaPt_Local_%d", GenGroupName.Data(), cent);
+      histtitle = "phi vs delta pt according EP distribution";
+      fHistManager.CreateTH2(histName, histtitle, 50, 0, TMath::TwoPi(), 100, -50, 50);
 
 
       if (!jetCont->GetRhoName().IsNull()) {
         
-        // Rho histograms
-        histName = TString::Format("%s/hJetRho_%d", groupName.Data(), cent);
+        // == s ==  Rho histograms   11111111111111111111111111111111111111111111111111111111111111
+        histtitle = "GlobalRho";
+        histName = TString::Format("%s/hJetRho_%d", RhoGroupName.Data(), cent);
+        fHistManager.CreateTH1(histName, histtitle, 60, 0.0, 300.0);
+        histtitle = "LocalRho";
+        histName = TString::Format("%s/hJetRhoLocal_%d", RhoGroupName.Data(), cent);
+        fHistManager.CreateTH1(histName, histtitle, 60, 0.0, 300.0);
         
-        histtitle = "Rho";
-        fHistManager.CreateTH1(histName, histtitle, fNbins, 0.0, 300.0);
-        histName = TString::Format("%s/hJetRhoLocal_%d", groupName.Data(), cent);
-        histtitle = "Rho Local";
-
-        fHistManager.CreateTH1(histName, histtitle, fNbins, 0.0, 300.0);
-        histName = TString::Format("%s/hJetLocalRhoVsAverageRho_%d", groupName.Data(), cent);
+        histName = TString::Format("%s/hJetLRhoVsAveRho_%d", RhoGroupName.Data(), cent);
         histtitle = "Local rho versus average rho";
-
-        fHistManager.CreateTH2(histName, histtitle, fNbins, 0.0, 300.0, fNbins, 0.0, 300.0);
-        histName = TString::Format("%s/hJetCorrPtLocalVsJetCorrPt_%d", groupName.Data(), cent);
-        histtitle = "Local rho adjusted jet pT versus average rho adjusted jet pT";
-        fHistManager.CreateTH2(histName, histtitle, fNbins, 0.0, 100.0, fNbins, 0.0, 100.0);
+        fHistManager.CreateTH2(histName, histtitle, 60, 0.0, 300.0, 60, 0.0, 300.0);
 
         // histo local rho vs delta phi
-        histName = TString::Format("%s/hJetRhoVsDeltaPhi_%d", groupName.Data(), cent);
+        histName = TString::Format("%s/hJetGRhoVsDeltaPhi_%d", RhoGroupName.Data(), cent);
+        histtitle = "Global rho versus angle relative to event plane";
+        fHistManager.CreateTH2(histName, histtitle, 60, 0.0, TMath::TwoPi(), 60, 0.0, 300.0);
+        histName = TString::Format("%s/hJetLRhoVsDeltaPhi_%d", RhoGroupName.Data(), cent);
         histtitle = "Local rho versus angle relative to event plane";
-        fHistManager.CreateTH2(histName, histtitle, fNbins, 0.0, TMath::TwoPi(), fNbins, 0.0, 300.0);
+        fHistManager.CreateTH2(histName, histtitle, 60, 0.0, TMath::TwoPi(), 60, 0.0, 300.0);
+        // == e ==  Rho histograms   11111111111111111111111111111111111111111111111111111111111111
 
-        
+
         // = s = Create histograms of Jet Yeild ====================================================
         //inlucive
         histName = TString::Format("%s/hJetPt_%d", InclusiveGroupName.Data(), cent);
         histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins, fMinBinPt, fMaxBinPt);
+        fHistManager.CreateTH1(histName, histtitle, 60, -50, 250);
         histName = TString::Format("%s/hJetCorrPt_%d", InclusiveGroupName.Data(), cent);
         histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} (GeV/#it{c});counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
-        histName = TString::Format("%s/hJetCorrPtLocal_%d", InclusiveGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} local (GeV/#it{c});counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
+        fHistManager.CreateTH1(histName, histtitle, 60, -50, 250);
         
-        histName = TString::Format("%s/hJetArea_%d", InclusiveGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{A}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, 3);
+        if(fSepEP){
+          //v2 in plane
+          histName = TString::Format("%s/hJetPt_%d", IPlaneGroupName.Data(), cent);
+          histtitle = "Jet yeild of in-plane (v2)";
+          fHistManager.CreateTH1(histName, histtitle, 60, -50, 250);
+          histName = TString::Format("%s/hJetCorrPtLocal_%d", IPlaneGroupName.Data(), cent);
+          histtitle = "corr Jet yeild of in-plane (v2)";
+          fHistManager.CreateTH1(histName, histtitle, 60, -50, 250);
 
-        histName = TString::Format("%s/hJetPhi_%d", InclusiveGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-
-        histName = TString::Format("%s/hJetEta_%d", InclusiveGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 6, -1, 1);
-
-        
-        //v2 in plane
-        histName = TString::Format("%s/hJetPt_%d", IPlaneGroupName.Data(), cent);
-        histtitle = "Jet yeild of in-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hCorrJetPt_%d", IPlaneGroupName.Data(), cent);
-        histtitle = "corr Jet yeild of in-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-
-        histName = TString::Format("%s/hJetArea_%d", IPlaneGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{A}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, 3);
-        histName = TString::Format("%s/hJetPhi_%d", IPlaneGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-        histName = TString::Format("%s/hJetEta_%d", IPlaneGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 6, -1, 1);
-
-        //v2 out of plane
-        histName = TString::Format("%s/hJetPt_%d", OPlaneGroupName.Data(), cent);
-        histtitle = "Jet yeild of out-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-        histName = TString::Format("%s/hCorrJetPt_%d", OPlaneGroupName.Data(), cent);
-        histtitle = "corr Jet yeild of in-plane (v2)";
-        fHistManager.CreateTH1(histName, histtitle, 300, -50, 250);
-
-        histName = TString::Format("%s/hJetArea_%d", OPlaneGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{A}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, 3);
-        histName = TString::Format("%s/hJetPhi_%d", OPlaneGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{#phi}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 2, 0, TMath::TwoPi());
-        histName = TString::Format("%s/hJetEta_%d", OPlaneGroupName.Data(), cent);
-        histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histName.Data());
-        fHistManager.CreateTH1(histName, histtitle, fNbins / 6, -1, 1);
-        // = e = Create histograms of Jet Yeild ====================================================
+          //v2 out of plane
+          histName = TString::Format("%s/hJetPt_%d", OPlaneGroupName.Data(), cent);
+          histtitle = "Jet yeild of out-plane (v2)";
+          fHistManager.CreateTH1(histName, histtitle, 60, -50, 250);
+          histName = TString::Format("%s/hJetCorrPtLocal_%d", OPlaneGroupName.Data(), cent);
+          histtitle = "corr Jet yeild of in-plane (v2)";
+          fHistManager.CreateTH1(histName, histtitle, 60, -50, 250);
+        }
+        // = e = Create histograms of Jet Yeild ===================================================
         
       }
     }
@@ -843,10 +820,27 @@ void AliAnalysisTaskRawJetWithEP::ExecOnce()
   
   AliAnalysisTaskEmcalJet::ExecOnce();
   if(!GetJetContainer()) AliFatal(Form("%s: Couldn't find jet container. Aborting !", GetName()));
-
-
+  
 }
 
+/**
+ * This function (overloading the base class) uses AliEventCuts to perform event selection.
+ */
+Bool_t AliAnalysisTaskRawJetWithEP::IsEventSelected()
+{
+  if (fUseAliEventCuts) {
+    if (!fEventCuts.AcceptEvent(InputEvent()))
+    {
+      PostData(1, fOutput);
+      return kFALSE;
+    }
+  }
+  else {
+    Bool_t answer = AliAnalysisTaskEmcal::IsEventSelected();
+    return answer;
+  }
+  return kTRUE;
+}
 
 /**
  * Run analysis code here, if needed.
@@ -857,7 +851,7 @@ void AliAnalysisTaskRawJetWithEP::ExecOnce()
  */
 Bool_t AliAnalysisTaskRawJetWithEP::Run()
 {
-  // std::cout << "ChecKuma Run Number === " << CheckRunNum << "==================" << std::endl;
+  
   if(!fEventCuts.AcceptEvent(InputEvent())) return kFALSE;
   
   if(fPileupCut){
@@ -865,19 +859,22 @@ Bool_t AliAnalysisTaskRawJetWithEP::Run()
     Bool_t kPileupCutEvent = CheckEventIsPileUp2018();
     if(kPileupCutEvent) return kFALSE;
   }
+  
+  if(!fLocalRho) {
+    AliWarning(Form("%s: No LocalRho object found, attempting to get it from Event based on name!",GetName()));
+    fLocalRho = GetLocalRhoFromEvent(fLocalRhoName);
+  }
 
   DoEventPlane();
-  SetModulationRhoFit();
-  // std::cout << "Fomula = " << fFitModulation->GetExpFormula() << std::endl;
   if(fTPCQnMeasure) MeasureTpcEPQA();
   MeasureBkg();
   DoJetLoop();
-  
+
+  // if(fLocalRho) delete fLocalRho;
   return kTRUE;
 }
 
 void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
-
   if (!fAOD && AODEvent() && IsStandardAOD()) {
       // In case there is an AOD handler writing a standard AOD, use the AOD
       // event in memory rather than the input (ESD) event.
@@ -892,13 +889,13 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     AliWarning("AliAnalysisTaskJetQnVectors::Exec(): No AliInputEventHandler!");
     return;
   }
-  
+
   //== s == qn Calibration  111111111111111111111111111111111111111111111111111
   switch (fQnVCalibType) {
     case kOrig : {
       // std::cout << "bef calib (qx,qy) = " << q2VecV0M[0] << "," << q2VecV0M[1] << ")" << std::endl;
       QnGainCalibration();
-      if(0 ){
+      if(0){
         std::cout << "recent calibA (qx,qy) = " \
           << q2VecV0A[0] << "," << q2VecV0A[1] << ")" << std::endl;
         std::cout << "recent calibM (qx,qy) = " \
@@ -981,7 +978,17 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
   fHistManager.FillTH1(histName, psi2Tpc[1]);
   histName = TString::Format("%s/hPsi2TPCP_%d", groupName.Data(), fCentBin);
   fHistManager.FillTH1(histName, psi3Tpc[1]);
-  
+
+  histName = TString::Format("%s/hPsi2V0MVsTPCP_%d", groupName.Data(), fCentBin);
+  fHistManager.FillTH2(histName, psi2V0[0], psi2Tpc[1]);
+  histName = TString::Format("%s/hPsi2V0MVsTPCN_%d", groupName.Data(), fCentBin);
+  fHistManager.FillTH2(histName, psi2V0[0], psi2Tpc[2]);
+  histName = TString::Format("%s/hPsi2V0AVsV0C_%d", groupName.Data(), fCentBin);
+  fHistManager.FillTH2(histName, psi2V0[2], psi2V0[1]);
+  histName = TString::Format("%s/hPsi2TPCPVsTPCN_%d", groupName.Data(), fCentBin);
+  fHistManager.FillTH2(histName, psi2V0[1], psi2Tpc[2]);
+
+
   histName = TString::Format("%s/hProfV2Resolution_%d", groupName.Data(), fCentBin);
   fHistManager.FillProfile(histName, 2., TMath::Cos(2.*(psi2V0[2] - psi2V0[1])));
   fHistManager.FillProfile(histName, 3., TMath::Cos(2.*(psi2V0[1] - psi2V0[2])));
@@ -1006,13 +1013,101 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
 }
 
 
-void AliAnalysisTaskRawJetWithEP::SetModulationRhoFit() 
-{
-  // set modulation fit
+Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
+  TString groupName;
   TString histName;
 
-  if(fFitModulation) delete fFitModulation;
-  fFitModulation = 0x0;
+  // AliAnalysisTaskJetV2 ==================================================================
+  Int_t iTracks(fTracks->GetEntriesFast());
+  Double_t excludeInEta = -999;
+  Double_t excludeInPhi = -999;
+  Double_t excludeInPt  = -999;
+  // if(fLocalRho->GetVal() <= 0 ) return kFALSE;   // no use fitting an empty event ...
+  if(fExLJetFromFit) {
+      if(fLeadingJet) {
+          excludeInEta = fLeadingJet->Eta();
+          excludeInPhi = fLeadingJet->Phi();
+          excludeInPt = fLeadingJet->Pt();
+      }
+  }
+
+  // check the acceptance of the track selection that will be used
+  // if one uses e.g. semi-good tpc tracks, accepance in phi is reduced to 0 < phi < 4
+  // the defaults (-10 < phi < 10) which accept all, are then overwritten
+  Double_t lowBound(0.), upBound(TMath::TwoPi());     // bounds for fit
+  if(GetParticleContainer()->GetParticlePhiMin() > lowBound){
+    lowBound = GetParticleContainer()->GetParticlePhiMin();
+  }
+  if(GetParticleContainer()->GetParticlePhiMax() < upBound){
+    upBound = GetParticleContainer()->GetParticlePhiMax();
+  }
+  
+  TH1F _tempSwap;     // on stack for quick access
+  TH1F _tempSwapN;    // on stack for quick access, bookkeeping histogram
+
+  // non poissonian error when using pt weights
+  Double_t sumPt(0.), sumPt2(0.), trackN(0.);
+  Double_t tempJetR = 0.;
+  tempJetR = GetJetContainer()->GetJetRadius();
+
+  AliParticleContainer* partCont = 0;
+  TIter next(&fParticleCollArray);
+  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+      for(auto part : partCont->accepted()) {
+        if (!part) continue;
+        if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
+          const AliVTrack* track = static_cast<const AliVTrack*>(part);
+          
+          if(( (TMath::Abs(track->Eta() - excludeInEta) < tempJetR) \
+          || (TMath::Abs(track->Eta()) - tempJetR - GetJetContainer()->GetJetEtaMax() ) > 0 )) continue;
+          
+          _tempSwap.Fill(track->Phi(), track->Pt());
+          
+          sumPt += track->Pt();
+          sumPt2 += track->Pt()*track->Pt();
+          trackN += 1;
+          _tempSwapN.Fill(track->Phi());
+          
+        }
+      }
+  }
+  
+  // in the case of pt weights overwrite the poissonian error estimate
+  // which is assigned by root by a more sophisticated appraoch
+  // the assumption here is that the bin error will be dominated 
+  // by the uncertainty in the mean pt in a bin and in the uncertainty
+  // of the number of tracks in a bin, the first of which will be estimated 
+  // from the sample standard deviation of all tracks in the 
+  // event, for the latter use a poissonian estimate. 
+  // the two contrubitions are assumed to be uncorrelated
+  // not one track passes the cuts > 2 avoids possible division by 0 later on
+  if(trackN < 2) return kFALSE; 
+  for(Int_t l = 0; l < _tempSwap.GetNbinsX(); l++) {
+      if(_tempSwapN.GetBinContent(l+1) == 0) {
+          _tempSwap.SetBinContent(l+1,0);
+          _tempSwap.SetBinError(l+1,0);
+      }
+      else {
+          Double_t vartimesnsq = sumPt2*trackN - sumPt*sumPt;
+          Double_t variance = vartimesnsq/(trackN*(trackN-1.));
+          Double_t SDOMSq = variance / _tempSwapN.GetBinContent(l+1);
+          Double_t SDOMSqOverMeanSq \
+            = SDOMSq * _tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1) \
+              / (_tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1));
+          Double_t poissonfrac = 1./_tempSwapN.GetBinContent(l+1);
+          Double_t vartotalfrac = SDOMSqOverMeanSq + poissonfrac;
+          Double_t vartotal \
+            = vartotalfrac * _tempSwap.GetBinContent(l+1) * _tempSwap.GetBinContent(l+1);
+          if(vartotal > 0.0001) _tempSwap.SetBinError(l+1,TMath::Sqrt(vartotal));
+          else {
+              _tempSwap.SetBinContent(l+1,0);
+              _tempSwap.SetBinError(l+1,0);
+          }
+      }
+  }
+
+  /// === s === determine background fit function   ###############################################
+  // TF1* fFitModulation = 0x0;
   const char * fitFunction = "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))+[3]*TMath::Cos(3.*(x-[4]))))";
   switch (fFitModulationType)  {
     case kNoFit : { fFitModulation = new TF1("fix_kNoFit", "[0]", 0, TMath::TwoPi()); } break;
@@ -1037,52 +1132,35 @@ void AliAnalysisTaskRawJetWithEP::SetModulationRhoFit()
       fFitModulation->SetParameter(3, 0.2);      // v3
     } break;
   }
+  /// === e === determine background fit function   ###############################################
 
-  
-
-  if(hBkgTracks) delete hBkgTracks;
-  histName = "hBkgTracks";
-  // hBkgTracks = new TH1F(histName, histName, 100, 0.0, TMath::TwoPi());
-  hBkgTracks = new TH1F(histName, histName, 25, 0.0, TMath::TwoPi());
-}
-
-
-void AliAnalysisTaskRawJetWithEP::MeasureBkg(){
-  TString histName;
-  
-  UInt_t sumAcceptedTracks = 0;
-  AliParticleContainer* partCont = 0;
-  TIter next(&fParticleCollArray);
-  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
-    // groupname = partCont->GetName();
-    for(auto part : partCont->accepted()) {
-      if (!part) continue;
-      if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
-        const AliVTrack* track = static_cast<const AliVTrack*>(part);
-
-        Float_t trackDeltaPhi = track->Phi() - psi2V0[0];
-        if (trackDeltaPhi < 0.0) trackDeltaPhi += TMath::TwoPi();
-        hBkgTracks->Fill(trackDeltaPhi);
-      }
-    }
-  }
-  
   fLocalRho->SetVal(fRho->GetVal());
   fFitModulation->SetParameter(0, fLocalRho->GetVal());
   fFitModulation->FixParameter(2, psi2V0[0]);
   fFitModulation->FixParameter(4, psi3V0[0]);
+
+  _tempSwap.Fit(fFitModulation, "N0Q", "", lowBound, upBound);
+
+  Double_t tempV2 = -999.9;
+  Double_t tempV3 = -999.9;
+  tempV2 = fFitModulation->GetParameter(1);
+  tempV3 = fFitModulation->GetParameter(3);
   
-  hBkgTracks->Fit(fFitModulation, "N0Q"); 
+  groupName="EventPlane";
+  histName = TString::Format("%s/v2", groupName.Data());
+  fHistManager.FillProfile(histName, fCentBin, tempV2);
+  histName = TString::Format("%s/v3", groupName.Data());
+  fHistManager.FillProfile(histName, fCentBin, tempV3);
+  
+  // AliAnalysisTaskJetV2 ===========================================================================
   
   if(0){
     TCanvas *cBkgRhoFit = new TCanvas("cBkgRhoFit", "cBkgRhoFit", 2000, 1500);
     
-    TH1F* hBkgTracks_Event = (TH1F*) hBkgTracks->Clone("hnew");
-    histName = hBkgTracks->GetName();
-    // histName = hBkgTracks->GetName() + std::to_string(CheckRunNum);
-    hBkgTracks_Event->SetName(histName);
+    TH1F* hBkgTracks_Event = (TH1F*) _tempSwap.Clone("hnew");
+    hBkgTracks_Event->SetName("hBkgTracks");
     hBkgTracks_Event->Draw("E");
-    hBkgTracks->Fit(fFitModulation, "N0Q");
+    _tempSwap.Fit(fFitModulation, "N0Q");
     fFitModulation->SetLineColor(632);
     fFitModulation->Draw("same");
 
@@ -1095,13 +1173,20 @@ void AliAnalysisTaskRawJetWithEP::MeasureBkg(){
 
     TF1* rhoFitV3Com = new TF1("rhoFitV3Com", "[0]*(1.+2.*([1]*TMath::Cos(3.*(x-[2]))))", 0.0, TMath::TwoPi());
     rhoFitV3Com->SetParameter(0, fFitModulation->GetParameter(0));
-    rhoFitV3Com->SetParameter(1, fFitModulation->GetParameter(1));//v3
-    rhoFitV3Com->SetParameter(2, fFitModulation->GetParameter(2));//psi3
+    rhoFitV3Com->SetParameter(1, fFitModulation->GetParameter(3));//v3
+    rhoFitV3Com->SetParameter(2, fFitModulation->GetParameter(4));//psi3
     rhoFitV3Com->SetLineColor(824);
     rhoFitV3Com->Draw("same");
 
     histName = "checkOutput/cBkgRhoFit_Cent" + std::to_string(fCentBin) +".root";
     cBkgRhoFit->SaveAs(histName);
+
+    histName = "checkOutput/fFitModulation_Cent" + std::to_string(fCentBin) +".root";
+    fFitModulation->SaveAs(histName);
+    histName = "checkOutput/v2Fit_Cent" + std::to_string(fCentBin) +".root";
+    rhoFitV2Com->SaveAs(histName);
+    histName = "checkOutput/v3Fit_Cent" + std::to_string(fCentBin) +".root";
+    rhoFitV3Com->SaveAs(histName);
     
     // histName = "checkOutput/hBkgTracks_Event" + std::to_string(CheckRunNum) +".root";
     hBkgTracks_Event->SaveAs(histName);
@@ -1114,9 +1199,11 @@ void AliAnalysisTaskRawJetWithEP::MeasureBkg(){
   // std::cout << "v2Reso = " << fV2ResoV0 << ", v3Reso = " << fV3ResoV0 << std::endl;
 
   fLocalRho->SetLocalRho(fFitModulation);
-  // fLocalRho->SetVal(fRho->GetVal());
+  BkgFitEvaluation(&_tempSwap, fFitModulation);
 
-  BkgFitEvaluation();
+  // delete fFitModulation;
+  
+  return kTRUE;
 }
 
 
@@ -1237,37 +1324,49 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
   TIter next(&fJetCollArray);
   
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
-    
     groupName = jetCont->GetName();
+    TString GenGroupName = TString::Format("%s/General", groupName.Data());
+    TString RhoGroupName = TString::Format("%s/Rho", groupName.Data());
+    TString InclusiveGroupName = TString::Format("%s/Inclusive", groupName.Data());
+    TString IPlaneGroupName = TString::Format("%s/InPlane", groupName.Data());
+    TString OPlaneGroupName = TString::Format("%s/OutOfPlane", groupName.Data());
     UInt_t count = 0;
     
     Double_t jetR = jetCont->GetJetRadius();
-
     Double_t rhoVal = 0;
     if (jetCont->GetRhoParameter()) { //kuma ??
       rhoVal = jetCont->GetRhoVal();
-      histName = TString::Format("%s/hRhoVsCent", groupName.Data());
+      histName = TString::Format("%s/hRhoVsCent", RhoGroupName.Data());
       fHistManager.FillTH2(histName.Data(), fCent, rhoVal);
     }
 
     Double_t leadingJetEta = -999.;
     Double_t leadingJetPhi = -999.;
     Double_t leadingJetPt  = -999.;
-
+    
     for(auto jet : jetCont->accepted()) {
       if (!jet) continue;
       count++;
+      
+      histName = TString::Format("%s/hNJets_%d", GenGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, count);
+      histName = TString::Format("%s/hJetArea_%d", GenGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, jet->Area());
+      histName = TString::Format("%s/hJetPhi_%d", GenGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, jet->Phi());
+      histName = TString::Format("%s/hJetEta_%d", GenGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, jet->Eta());
 
       // Filling histos for angle relative to event plane
       Double_t phiMinusPsi2 = jet->Phi() - psi2V0[0];
       if (phiMinusPsi2 < 0.0) phiMinusPsi2 += TMath::TwoPi();
-      histName = TString::Format("%s/hJetPhiMinusPsi2_%d", groupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetPhiMinusPsi2_%d", GenGroupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, phiMinusPsi2);
       Double_t phiMinusPsi3 = jet->Phi() - psi3V0[0];
       if (phiMinusPsi3 < 0.0) phiMinusPsi3 += TMath::TwoPi();
-      histName = TString::Format("%s/hJetPhiMinusPsi3_%d", groupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetPhiMinusPsi3_%d", GenGroupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, phiMinusPsi3);
-
+      
       //if (jetCont->GetRhoParameter()) {
       Double_t localRhoVal = 0.0;
       Double_t localRhoValScaled = 0.0;
@@ -1277,9 +1376,8 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
 
       deltaPhiJetEP = jet->Phi() - psi2V0[0];
       if (jet->Phi() - psi2V0[0] < 0.0) deltaPhiJetEP += TMath::TwoPi();
-
-      localRhoVal = fLocalRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
       
+      localRhoVal = fLocalRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
       // localRhoValScaled = localRhoVal * jetCont->GetRhoVal() / p0;
       jetPtCorr = jet->Pt() - jetCont->GetRhoVal() * jet->Area();
       localRhoValScaled = fLocalRho->GetLocalVal(\
@@ -1294,81 +1392,61 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
           << ")" << std::endl;
       }
       
-      histName = TString::Format("%s/hJetRho_%d", groupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetRho_%d", RhoGroupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, jetCont->GetRhoVal());
-      histName = TString::Format("%s/hJetRhoLocal_%d", groupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetRhoLocal_%d", RhoGroupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, localRhoVal); // trying out local rho val
 
-      histName = TString::Format("%s/hJetLocalRhoVsAverageRho_%d", groupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetLRhoVsAveRho_%d", RhoGroupName.Data(), fCentBin);
       fHistManager.FillTH2(histName, jetCont->GetRhoVal(), localRhoValScaled);
-      histName = TString::Format("%s/hJetCorrPtLocalVsJetCorrPt_%d", groupName.Data(), fCentBin);
-      fHistManager.FillTH2(histName, jetPtCorr, jetPtCorrLocal);
-      histName = TString::Format("%s/hJetRhoVsDeltaPhi_%d", groupName.Data(), fCentBin);
+      histName = TString::Format("%s/hJetGRhoVsDeltaPhi_%d", RhoGroupName.Data(), fCentBin);
+      fHistManager.FillTH2(histName, deltaPhiJetEP, jetCont->GetRhoVal());
+      histName = TString::Format("%s/hJetLRhoVsDeltaPhi_%d", RhoGroupName.Data(), fCentBin);
       fHistManager.FillTH2(histName, deltaPhiJetEP, localRhoValScaled);
       
+      Double_t rcPt = 0., rcEta = 0., rcPhi = 0.;
+      CalcRandomCone(rcPt, rcEta, rcPhi, leadingJetEta, leadingJetPhi, jetR);    
+      Double_t rcLocalRhoValScaled = fLocalRho->GetLocalVal(rcPhi, jetR, fLocalRho->GetVal());
+      Double_t deltaLoacalPt = rcPt - rcLocalRhoValScaled*jetR*jetR*TMath::Pi();
+      Double_t deltaGlobalPt = rcPt - fLocalRho->GetVal()*jetR*jetR*TMath::Pi();
+      histName = TString::Format("%s/hDeltaPt_%d", GenGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, deltaGlobalPt);
+      histName = TString::Format("%s/hDeltaPt_Local_%d", GenGroupName.Data(), fCentBin);
+      fHistManager.FillTH1(histName, deltaLoacalPt);
+      histName = TString::Format("%s/hPhiVsDeltaPt_Global_%d", GenGroupName.Data(), fCentBin);
+      fHistManager.FillTH2(histName, rcPhi, deltaGlobalPt);
+      histName = TString::Format("%s/hPhiVsDeltaPt_Local_%d", GenGroupName.Data(), fCentBin);
+      fHistManager.FillTH2(histName, rcPhi, deltaLoacalPt);
       
       //inclusive Jet
-      TString InclusiveGroupName = TString::Format("%s/Inclusive", groupName.Data());
-      histName = TString::Format("%s/hJetArea_%d", InclusiveGroupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jet->Area());
-      histName = TString::Format("%s/hJetPhi_%d", InclusiveGroupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jet->Phi());
-      histName = TString::Format("%s/hJetEta_%d", InclusiveGroupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jet->Eta());
       histName = TString::Format("%s/hJetPt_%d", InclusiveGroupName.Data(), fCentBin);
-
       fHistManager.FillTH1(histName, jet->Pt());
       histName = TString::Format("%s/hJetCorrPt_%d", InclusiveGroupName.Data(), fCentBin);
       fHistManager.FillTH1(histName, jetPtCorr);
-      histName = TString::Format("%s/hJetCorrPtLocal_%d", InclusiveGroupName.Data(), fCentBin);
-      fHistManager.FillTH1(histName, jetPtCorrLocal);
       
       //V2 In plane Jet
-      if ((phiMinusPsi2 < TMath::Pi()/4) || (phiMinusPsi2 >= 7*TMath::Pi()/4)\
-      || (phiMinusPsi2 >= 3*TMath::Pi()/4 && phiMinusPsi2 < 5*TMath::Pi()/4)) {
-        TString IPlaneGroupName = TString::Format("%s/InPlane", groupName.Data());
-
-        histName = TString::Format("%s/hJetPt_%d", IPlaneGroupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jet->Pt());
-        histName = TString::Format("%s/hCorrJetPt_%d", IPlaneGroupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jetPtCorrLocal);
-      }
-      else {
-        TString OPlaneGroupName = TString::Format("%s/OutOfPlane", groupName.Data());
-        histName = TString::Format("%s/hJetPt_%d", OPlaneGroupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jet->Pt());
-        histName = TString::Format("%s/hCorrJetPt_%d", OPlaneGroupName.Data(), fCentBin);
-        fHistManager.FillTH1(histName, jetPtCorrLocal);
+      if(fSepEP){
+        if ((phiMinusPsi2 < TMath::Pi()/4) || (phiMinusPsi2 >= 7*TMath::Pi()/4)\
+        || (phiMinusPsi2 >= 3*TMath::Pi()/4 && phiMinusPsi2 < 5*TMath::Pi()/4)) {
+          histName = TString::Format("%s/hJetPt_%d", IPlaneGroupName.Data(), fCentBin);
+          fHistManager.FillTH1(histName, jet->Pt());
+          histName = TString::Format("%s/hJetCorrPtLocal_%d", IPlaneGroupName.Data(), fCentBin);
+          fHistManager.FillTH1(histName, jetPtCorrLocal);
+        }
+        else {
+          histName = TString::Format("%s/hJetPt_%d", OPlaneGroupName.Data(), fCentBin);
+          fHistManager.FillTH1(histName, jet->Pt());
+          histName = TString::Format("%s/hJetCorrPtLocal_%d", OPlaneGroupName.Data(), fCentBin);
+          fHistManager.FillTH1(histName, jetPtCorrLocal);
+        }
       }
       
-      if(leadingJetPt < jetPtCorrLocal){
-        leadingJetEta = jet->Eta();
-        leadingJetPhi = jet->Phi();
-        leadingJetPt  = jetPtCorrLocal;
-      }
-
     }
-
-    Double_t rcPt = 0., rcEta = 0., rcPhi = 0.;
-    CalcRandomCone(rcPt, rcEta, rcPhi, leadingJetEta, leadingJetPhi, jetR);    
-    Double_t rcLocalRhoValScaled = fLocalRho->GetLocalVal(rcPhi, jetR, fLocalRho->GetVal());
-    Double_t deltaLoacalPt = rcPt - rcLocalRhoValScaled*jetR*jetR*TMath::Pi();
-    Double_t deltaGlobalPt = rcPt - fLocalRho->GetVal()*jetR*jetR*TMath::Pi();
-    histName = TString::Format("%s/hDeltaPt_%d", groupName.Data(), fCentBin);
-    fHistManager.FillTH1(histName, deltaGlobalPt);
-    histName = TString::Format("%s/hDeltaPt_Local_%d", groupName.Data(), fCentBin);
-    fHistManager.FillTH1(histName, deltaLoacalPt);
-    histName = TString::Format("%s/hPhiVsDeltaPt_Local_%d", groupName.Data(), fCentBin);
-    fHistManager.FillTH2(histName, rcPhi, deltaLoacalPt);
-
-    histName = TString::Format("%s/hNJets_%d", groupName.Data(), fCentBin);
-    fHistManager.FillTH1(histName, count);
   }
 }
 
 void AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
 {
-
   fQ2VecHandler = new AliJEQnVectorHandler(0,1,2,fOADBFileName);
   fQ3VecHandler = new AliJEQnVectorHandler(0,1,3,fOADBFileName);
   
@@ -1381,6 +1459,7 @@ void AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
   fQ3VecHandler->SetAODEvent(fAOD);
   fQ3VecHandler->ComputeCalibratedQnVectorTPC();
   fQ3VecHandler->ComputeCalibratedQnVectorV0();
+  
 
   //fill histos with EP angle
   fQ2VecHandler->GetEventPlaneAngleTPC(psi2Tpc[0],psi2Tpc[2],psi2Tpc[1]);
@@ -1392,12 +1471,11 @@ void AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
       << psi2V0[0] << "," << psi2V0[2] << "," << psi2V0[1] << ")" << std::endl;
   }
 
-
 	//fill histos for q2 spline calibration
   fQ2VecHandler->GetQnVecTPC(q2VecTpcM, q2VecTpcP, q2VecTpcN);
   fQ2VecHandler->GetQnVecV0(q2VecV0M, q2VecV0A, q2VecV0C);
   fQ2VecHandler->GetqnTPC(q2Tpc[0],q2Tpc[2],q2Tpc[1]);
-  fQ2VecHandler->GetqnV0(q2V0[0],q2Tpc[2],q2Tpc[1]);
+  fQ2VecHandler->GetqnV0(q2V0[0],q2V0[2],q2V0[1]);
   if(0){
     std::cout << "recent calibA (qx,qy) = " \
       << q2VecV0A[0] << "," << q2VecV0A[1] << ")" << std::endl;
@@ -1408,8 +1486,6 @@ void AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     std::cout << "(q2FullV0,q2V0A,q2V0C) = ("\
       << q2V0[0] << "," << q2V0[2] << "," << q2V0[1] << ")" << std::endl;    
   }
-
-
 
   //fill histos with EP angle
   fQ3VecHandler->GetEventPlaneAngleTPC(psi3Tpc[0],psi3Tpc[2],psi3Tpc[1]);
@@ -1538,9 +1614,6 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnGainCalibration(){
     
     return kTRUE;  
   }
-
-
-
 }
 
 Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
@@ -1603,62 +1676,62 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
   return kTRUE;
 }
 
-//_____________________________________________________________________________
-TH1F* AliAnalysisTaskRawJetWithEP::GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen)
-{
-    if(!fOutputList) {
-        printf(" > Please add fOutputList first < \n");
-        return 0x0;
-    }
-    TH1F* r(0x0);
-    (cen) ? r = new TH1F("R", "R", cen->GetSize()-1, cen->GetArray()) : r = new TH1F("R", "R", 10, 0, 10);
-    if(!cen) r->GetXaxis()->SetTitle("number of centrality bin");
-    r->GetYaxis()->SetTitle(Form("Resolution #Psi_{%i}", h));
-    for(Int_t i(0); i < 10; i++) {
-        TProfile* temp((TProfile*)fOutputList->FindObject(Form("fProfV%iResolution_%i", h, i)));
-        if(!temp) break;
-        Double_t a(temp->GetBinContent(3)); //cos(2[psi_V0A - psi_V0C])
-        Double_t b(temp->GetBinContent(5)); //cos(2[psi_TPC - psi_V0C])
-        Double_t c(temp->GetBinContent(7)); //cos(2[psi_TPC - psi_V0A])
+// //_____________________________________________________________________________
+// TH1F* AliAnalysisTaskRawJetWithEP::GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen)
+// {
+//     if(!fOutputList) {
+//         printf(" > Please add fOutputList first < \n");
+//         return 0x0;
+//     }
+//     TH1F* r(0x0);
+//     (cen) ? r = new TH1F("R", "R", cen->GetSize()-1, cen->GetArray()) : r = new TH1F("R", "R", 10, 0, 10);
+//     if(!cen) r->GetXaxis()->SetTitle("number of centrality bin");
+//     r->GetYaxis()->SetTitle(Form("Resolution #Psi_{%i}", h));
+//     for(Int_t i(0); i < 10; i++) {
+//         TProfile* temp((TProfile*)fOutputList->FindObject(Form("fProfV%iResolution_%i", h, i)));
+//         if(!temp) break;
+//         Double_t a(temp->GetBinContent(3)); //cos(2[psi_V0A - psi_V0C])
+//         Double_t b(temp->GetBinContent(5)); //cos(2[psi_TPC - psi_V0C])
+//         Double_t c(temp->GetBinContent(7)); //cos(2[psi_TPC - psi_V0A])
 
-        Double_t d(temp->GetBinContent(9));  //cos(2[psi_V0M - psi_TPCnega])
-        Double_t e(temp->GetBinContent(10)); //cos(2[psi_V0M - psi_TPCposi])
-        Double_t f(temp->GetBinContent(11)); //cos(2[psi_TPCnega - psi_TPCposi])
+//         Double_t d(temp->GetBinContent(9));  //cos(2[psi_V0M - psi_TPCnega])
+//         Double_t e(temp->GetBinContent(10)); //cos(2[psi_V0M - psi_TPCposi])
+//         Double_t f(temp->GetBinContent(11)); //cos(2[psi_TPCnega - psi_TPCposi])
 
-        Double_t _a(temp->GetBinError(3)), _b(temp->GetBinError(5)), _c(temp->GetBinError(7));
-        Double_t _d(temp->GetBinError(9)), _e(temp->GetBinError(10)), _f(temp->GetBinError(11));
-        Double_t error(0);
-        if(a <= 0 || b <= 0 || c <= 0 || d <= 0 || e <= 0 || f <= 0) continue;
-        switch (det) {
-            case kVZEROA : {
-                r->SetBinContent(1+i, TMath::Sqrt((a*b)/c));
-                if(i==0) r->SetNameTitle("VZEROA resolution", "VZEROA resolution");
-                error = TMath::Power((2.*a*TMath::Sqrt((a*b)/c))/3.,2.)*_a*_a+TMath::Power((2.*b*TMath::Sqrt((a*b)/c))/3.,2.)*_b*_b+TMath::Power(2.*c*TMath::Sqrt((a*b)/c),2.)*_c*_c;
-                if(error > 0.) error = TMath::Sqrt(error);
-                r->SetBinError(1+i, error);
-            } break;
-            case kVZEROC : {
-                r->SetBinContent(1+i, TMath::Sqrt((a*c)/b));
-                error = TMath::Power((2.*a*TMath::Sqrt((a*c)/b))/3.,2.)*_a*_a+TMath::Power((2.*b*TMath::Sqrt((a*c)/b)),2.)*_b*_b+TMath::Power(2.*c*TMath::Sqrt((a*c)/b)/3.,2.)*_c*_c;
-                if(error > 0.) error = TMath::Sqrt(error);
-                if(i==0) r->SetNameTitle("VZEROC resolution", "VZEROC resolution");
-                r->SetBinError(1+i, error);
-            } break;
-            case kTPC : {
-                r->SetBinContent(1+i, TMath::Sqrt((b*c)/a));
-                if(i==0) r->SetNameTitle("TPC resolution", "TPC resolution");
-                r->SetBinError(1+i, TMath::Sqrt(_a*_a+_b*_b+_c*_c));
-            } break;
-            case kVZEROComb : {
-                r->SetBinContent(1+i, TMath::Sqrt((d*e)/f));
-                if(i==0) r->SetNameTitle("VZEROComb resolution", "VZEROComb resolution");
-                r->SetBinError(1+i, TMath::Sqrt(_d*_d+_e*_e+_f*_f));
-            } break;
-            default : break;
-        }
-    }
-    return r;
-}
+//         Double_t _a(temp->GetBinError(3)), _b(temp->GetBinError(5)), _c(temp->GetBinError(7));
+//         Double_t _d(temp->GetBinError(9)), _e(temp->GetBinError(10)), _f(temp->GetBinError(11));
+//         Double_t error(0);
+//         if(a <= 0 || b <= 0 || c <= 0 || d <= 0 || e <= 0 || f <= 0) continue;
+//         switch (det) {
+//             case kVZEROA : {
+//                 r->SetBinContent(1+i, TMath::Sqrt((a*b)/c));
+//                 if(i==0) r->SetNameTitle("VZEROA resolution", "VZEROA resolution");
+//                 error = TMath::Power((2.*a*TMath::Sqrt((a*b)/c))/3.,2.)*_a*_a+TMath::Power((2.*b*TMath::Sqrt((a*b)/c))/3.,2.)*_b*_b+TMath::Power(2.*c*TMath::Sqrt((a*b)/c),2.)*_c*_c;
+//                 if(error > 0.) error = TMath::Sqrt(error);
+//                 r->SetBinError(1+i, error);
+//             } break;
+//             case kVZEROC : {
+//                 r->SetBinContent(1+i, TMath::Sqrt((a*c)/b));
+//                 error = TMath::Power((2.*a*TMath::Sqrt((a*c)/b))/3.,2.)*_a*_a+TMath::Power((2.*b*TMath::Sqrt((a*c)/b)),2.)*_b*_b+TMath::Power(2.*c*TMath::Sqrt((a*c)/b)/3.,2.)*_c*_c;
+//                 if(error > 0.) error = TMath::Sqrt(error);
+//                 if(i==0) r->SetNameTitle("VZEROC resolution", "VZEROC resolution");
+//                 r->SetBinError(1+i, error);
+//             } break;
+//             case kTPC : {
+//                 r->SetBinContent(1+i, TMath::Sqrt((b*c)/a));
+//                 if(i==0) r->SetNameTitle("TPC resolution", "TPC resolution");
+//                 r->SetBinError(1+i, TMath::Sqrt(_a*_a+_b*_b+_c*_c));
+//             } break;
+//             case kVZEROComb : {
+//                 r->SetBinContent(1+i, TMath::Sqrt((d*e)/f));
+//                 if(i==0) r->SetNameTitle("VZEROComb resolution", "VZEROComb resolution");
+//                 r->SetBinError(1+i, TMath::Sqrt(_d*_d+_e*_e+_f*_f));
+//             } break;
+//             default : break;
+//         }
+//     }
+//     return r;
+// }
 
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskRawJetWithEP::CalculateEventPlaneChi(Double_t res)
@@ -1674,7 +1747,7 @@ Double_t AliAnalysisTaskRawJetWithEP::CalculateEventPlaneChi(Double_t res)
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
+void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation(TH1F* hBkgTracks, TF1* fFitModulation)
 {
   // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
   // three methods are available, all with their drawbacks. 
@@ -1688,12 +1761,15 @@ void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
   Double_t CDF = 1.;
   Double_t CDFROOT = 1.;
   ChiSqr = ChiSquare(*hBkgTracks, fFitModulation);
-  // CDF = 1. - ChiSquareCDF(NDF, ChiSqr);  
+  // CDF = 1. - ChiSquareCDF(NDF, ChiSqr);
   // CDFROOT = 1.-ChiSquareCDF(NDF, fFitModulation->GetChisquare());
+  
   CDF = 1. - ChiSquarePDF(NDF, ChiSqr);  
   CDFROOT = 1.-ChiSquarePDF(NDF, fFitModulation->GetChisquare());
-  // std::cout << "CDF = " << ChiSquarePDF(NDF, ChiSqr) << std::endl;
+  
+  // std::cout << "(ChiSqr, ROOTChi, CDF, CDFROOT) = (" << ChiSqr << ", " << fFitModulation->GetChisquare() << ", " << CDF << ", " << CDFROOT << ")" << std::endl;
 
+  
   TString histName;
   TString groupName;
   groupName="BackgroundFit";
@@ -1718,7 +1794,7 @@ void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
   fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
 
   // std::cout <<"Comb Fit (ChiSqr, CDF) = ("<< ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl; 
-
+  
   // == v2 fit ==
   TF1* tempV2Fit = new TF1("tempRhoFitV2", "[0]*(1.+2.*([1]*TMath::Cos(2.*(x-[2]))))", \
     0.0, TMath::TwoPi());
@@ -1753,10 +1829,9 @@ void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
   histName = TString::Format("%s/hPChi2ROOT_lRhoV2Fit", groupName.Data());
   fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
   // std::cout << "v2Fit (ChiSqr, CDF) = ("<< ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl;
-
   delete tempV2Fit;
 
-
+  
   // == global rho fit ==
   TF1* tempGlobalFit = new TF1("tempGlobalRhoFit", "[0]", 0.0, TMath::TwoPi());
   tempGlobalFit->FixParameter(0, fRho->GetVal());
@@ -1790,10 +1865,10 @@ void AliAnalysisTaskRawJetWithEP::BkgFitEvaluation()
   fHistManager.FillTH2(histName, fCent, ChiSqr/((float)NDF));
   histName = TString::Format("%s/hPChi2ROOT_gRhoFit", groupName.Data());
   fHistManager.FillTH2(histName, CDFROOT, ChiSqr/((float)NDF));
-
+  
   // std::cout << "NoFit (ChiSqr, CDF) = (" << ChiSqr/((float)NDF) << ", "<< CDF <<")"<< std::endl;
   delete tempGlobalFit;
-
+  
 }
 
 //_____________________________________________________________________________
@@ -1851,28 +1926,64 @@ void AliAnalysisTaskRawJetWithEP::CalcRandomCone(Double_t &pt, Double_t &eta, Do
     
 }
 
-void AliAnalysisTaskRawJetWithEP::SetupPileUpRemovalFunctions(){
-  
-  ////==========> LHC18q/r PileUp Removal Functions: ---- Do not Remove them !!! -----
-  Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
-  fV0CutPU  = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
-  fV0CutPU->SetParameters(parV0);
-  
-  fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
-
-  Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
-  fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
-  fMultCutPU->SetParameters(parFB32);
-  
-  Double_t parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
-  fCenCutLowPU  = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",  0, 100);
-  fCenCutLowPU->SetParameters(parV0CL0);
-  
-  fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
-  fCenCutHighPU->SetParameters(parV0CL0);
-  //--------------------------------------------------------------------------------------
-
+AliEmcalJet* AliAnalysisTaskRawJetWithEP::GetLeadingJet(AliLocalRhoParameter* localRho) {
+    // return pointer to the highest pt jet (before background subtraction) within acceptance
+    // only rudimentary cuts are applied on this level, hence the implementation outside of
+    // the framework
+    Int_t iJets(fJets->GetEntriesFast());
+    Double_t pt(0);
+    AliEmcalJet* leadingJet(0x0);
+    if(!localRho) {
+        for(Int_t i(0); i < iJets; i++) {
+            AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
+            // if(!PassesSimpleCuts(jet)) continue;
+            if(jet->Pt() > pt) {
+              leadingJet = jet;
+              pt = leadingJet->Pt();
+            }
+        }
+        return leadingJet;
+    } else {
+        // return leading jet after background subtraction
+        Double_t rho(0);
+        for(Int_t i(0); i < iJets; i++) {
+            AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
+            // if(!PassesSimpleCuts(jet)) continue;
+            rho = localRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), localRho->GetVal());
+            // if(fUse2DIntegration) rho = localRho->GetLocalValInEtaPhi(jet->Phi(), GetJetContainer()->GetJetRadius(), localRho->GetVal());
+            if((jet->Pt()-jet->Area()*rho) > pt) {
+              leadingJet = jet;
+              pt = (leadingJet->Pt()-jet->Area()*rho);
+            }
+        }
+        return leadingJet;
+    }
+    return 0x0;
 }
+
+
+// void AliAnalysisTaskRawJetWithEP::SetupPileUpRemovalFunctions(){
+  
+//   ////==========> LHC18q/r PileUp Removal Functions: ---- Do not Remove them !!! -----
+//   Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
+//   fV0CutPU  = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+//   fV0CutPU->SetParameters(parV0);
+  
+//   fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
+
+//   Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
+//   fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
+//   fMultCutPU->SetParameters(parFB32);
+  
+//   Double_t parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
+//   fCenCutLowPU  = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",  0, 100);
+//   fCenCutLowPU->SetParameters(parV0CL0);
+  
+//   fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+//   fCenCutHighPU->SetParameters(parV0CL0);
+//   //--------------------------------------------------------------------------------------
+
+// }
 
 
 Bool_t AliAnalysisTaskRawJetWithEP::CheckEventIsPileUp2018(){
@@ -1939,13 +2050,13 @@ Bool_t AliAnalysisTaskRawJetWithEP::CheckEventIsPileUp2018(){
     - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
   
   
-  if(centrCL0 < fCenCutLowPU->Eval(centrV0M)) BisPileup=kTRUE;
-  if(centrCL0 > fCenCutHighPU->Eval(centrV0M)) BisPileup=kTRUE;
-  if(Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)) BisPileup=kTRUE;
-  if(multV0On < fV0CutPU->Eval(multV0Tot)) BisPileup=kTRUE;
-  if(Float_t(multTrk) < fMultCutPU->Eval(centrV0M)) BisPileup=kTRUE;
-  if(((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) BisPileup=kTRUE;
-  if(fAOD->IsIncompleteDAQ()) BisPileup=kTRUE;
+  // if(centrCL0 < fCenCutLowPU->Eval(centrV0M)) BisPileup=kTRUE;
+  // if(centrCL0 > fCenCutHighPU->Eval(centrV0M)) BisPileup=kTRUE;
+  // if(Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)) BisPileup=kTRUE;
+  // if(multV0On < fV0CutPU->Eval(multV0Tot)) BisPileup=kTRUE;
+  // if(Float_t(multTrk) < fMultCutPU->Eval(centrV0M)) BisPileup=kTRUE;
+  // if(((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) BisPileup=kTRUE;
+  // if(fAOD->IsIncompleteDAQ()) BisPileup=kTRUE;
   //if (nclsDif > 200000)//can be increased to 200000
   // BisPileup=kTRUE;
 
@@ -1979,8 +2090,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::CheckEventIsPileUp2018(){
   
   return BisPileup;
 }
-
-
 
 /**
  * This function is called once at the end of the analysis.

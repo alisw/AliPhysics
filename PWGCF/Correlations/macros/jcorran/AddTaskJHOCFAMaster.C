@@ -13,6 +13,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool cutTPCpileup = false, bool saveQA_TPCpileup = false,
     bool useEtaGap = true, float etaGap = 1.0,
     bool useWeightsNUE = true, bool useWeightsNUA = false,
+    bool useWeightsCent = false,
     bool getSC = true, bool getLower = true)
 {
   // Configuration of the analysis.
@@ -53,8 +54,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     case 4 :    // Syst: (pileup > 15000) changed to (pileup > 10000).
       configNames.push_back("pileup10");
       break;
-    case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 10|.
-      configNames.push_back("zvtx10");
+    case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 9|.
+      configNames.push_back("zvtx9");
       break;
     case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 6|.
       configNames.push_back("zvtx6");
@@ -95,6 +96,18 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     case 18 :     // Syst: (chi2 in [0.1, 4]) changed to (chi2 in [0.1, 2.5]).
       configNames.push_back("chi2tight01");
       break;
+    case 19 :     // Syst: (chi2 in [0.1, 4]) changed to (chi2 < 2.3).
+      configNames.push_back("chi2tight23");
+      break; 
+    case 20 :     // Syst: (chi2 in [0, 1.36])
+      configNames.push_back("chi2tight136");
+      break;
+    case 21 :     // Syst: (chi2 in [0.1, 1.36])
+      configNames.push_back("chi2low136");
+      break;  
+    case 22 :     // Syst: (chi2 in [0.1, 2.3])
+      configNames.push_back("chi2low23");
+      break;  
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -212,8 +225,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetCentDetName("V0M");
     } 
 
-    if (strcmp(configNames[i].Data(), "zvtx10") == 0) {
-      fJCatalyst[i]->SetZVertexCut(10.0);
+    if (strcmp(configNames[i].Data(), "zvtx9") == 0) {
+      fJCatalyst[i]->SetZVertexCut(9.0);
     } else if (strcmp(configNames[i].Data(), "zvtx6") == 0) {
       fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
@@ -245,6 +258,14 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetChi2Cuts(0.0, 2.5);
     } else if (strcmp(configNames[i].Data(), "chi2tight01") == 0) {
       fJCatalyst[i]->SetChi2Cuts(0.1, 2.5);
+    } else if (strcmp(configNames[i].Data(), "chi2tight23") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.0, 2.3);
+    } else if (strcmp(configNames[i].Data(), "chi2tight136") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.0, 1.36);
+    } else if (strcmp(configNames[i].Data(), "chi2low136") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 1.36);
+    } else if (strcmp(configNames[i].Data(), "chi2low23") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 2.3);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetChi2Cuts(0.1, 4.0);
     }
@@ -269,6 +290,13 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);
+    if (period == lhc18q || period == lhc18r) {useWeightsCent = false;} // Security for 18qr.
+    if (useWeightsCent) {   // Centrality weight correction for LHC15o.
+      TString centWeightFile = Form(
+        "alien:///alice/cern.ch/user/c/cimordas/CentWeights/CentralityWeights_LHC15oPass2_%s.root", configNames[i].Data());
+      fJCatalyst[i]->SetInputCentralityWeight15o(true, centWeightFile);
+      printf("Centrality weight will be used.\n");
+    }
 
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   } // Go to the next configuration.
@@ -288,6 +316,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     myTask[i]->HOCFASetPtRange(ptMin, ptMax);
     myTask[i]->HOCFASetEtaGap(useEtaGap, etaGap);
     myTask[i]->HOCFASetParticleWeights(useWeightsNUE, useWeightsNUA);
+    myTask[i]->HOCFASetCentralityWeights(useWeightsCent);    
 
     myTask[i]->HOCFASetObservable(getSC, getLower);
 

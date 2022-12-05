@@ -101,6 +101,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   if (AliNanoAODTrackMapping::GetInstance()->GetTPCmomentum() != -1)      SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCmomentum()      , aodTrack->GetTPCmomentum()          );
   if (AliNanoAODTrackMapping::GetInstance()->GetTPCTgl() != -1)           SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCTgl()           , aodTrack->GetTPCTgl()               );
   if (AliNanoAODTrackMapping::GetInstance()->GetTOFsignal() != -1)        SetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignal()        , aodTrack->GetTOFsignal()            );
+  if (AliNanoAODTrackMapping::GetInstance()->GetGeneratorIndex() != -1)   SetVarInt(AliNanoAODTrackMapping::GetInstance()->GetGeneratorIndex(), aodTrack->GetGeneratorIndex()       );
   if (AliNanoAODTrackMapping::GetInstance()->GetintegratedLength() != -1) SetVar(AliNanoAODTrackMapping::GetInstance()->GetintegratedLength() , aodTrack->GetIntegratedLength()     );
   if (AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned() != -1)   SetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned()   , aodTrack->GetTOFsignalTunedOnData() );
   if (AliNanoAODTrackMapping::GetInstance()->GetHMPIDsignal() != -1)      SetVar(AliNanoAODTrackMapping::GetInstance()->GetHMPIDsignal()      , aodTrack->GetHMPIDsignal()          );

@@ -1062,7 +1062,10 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
         TFile *inputandweights;
         Char_t localbuffer[2048];
 
-        TGrid::Connect("alien:");
+        /* only connect to alien if required */
+        if (((TObjString*) tokens->At(4))->String().BeginsWith("alien:")) {
+          TGrid::Connect("alien:");
+        }
         inputandweights = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
         if (inputandweights != NULL && inputandweights->IsOpen()) {
           /* the pT average histograms  */

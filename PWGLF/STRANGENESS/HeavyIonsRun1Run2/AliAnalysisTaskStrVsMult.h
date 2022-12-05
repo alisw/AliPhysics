@@ -18,8 +18,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     virtual ~AliAnalysisTaskStrVsMult();
 
     // enum and names.
-    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_MaxV0Rad, kV0_V0RadBin, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_TrackLengthCut, kV0_MaxChi2perCls, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_ITSTOFtracks, kV0cutsnum};
-    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_TrackLengthCut, kCasc_MaxChi2perCls, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_ITSTOFtracks, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_MaxV0Rad, kCasc_V0RadBin, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; 
+    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_MaxV0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_TrackLengthCut, kV0_MaxChi2perCls, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_ITSTOFtracks, kV0cutsnum};
+    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_TrackLengthCut, kCasc_MaxChi2perCls, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_ITSTOFtracks, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_CompetingXiMass, kCasc_V0Rad, kCasc_MaxV0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum};
     enum particles{kK0s, kLam, kXi, kOm, knumpart}; 
     enum signedparticles{kk0s, klam, kalam, kxip, kxim, komp, komm, ksignednumpart}; 
 
@@ -31,9 +31,15 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetDefOnly(bool);
     void SetCutVal(bool, bool, int, double);
     void SetParametricBacBarCosPA(int, float*, float*, int);
+    void SetParametricTrackLengthCut(int, float*, int*);
+
+    //TrackLength Cut setters
+    void SetDeadZoneWidthGeoCut(float DeadZoneWidth){fDeadZoneWidth_GeoCut = DeadZoneWidth;};
+    void SetNcrNclLengthGeoCut(float NcrNclLength){fNcrNclLength_GeoCut = NcrNclLength;};
+    void SetTPCsignalNCut(int TPCsignalNCut){fTPCsignalNCut = TPCsignalNCut;};
 
     //binning setters
-    void SetCentbinning(int, int, double*);
+    void SetCentbinning(int, double*);
     void SetMassbinning(int, int, double, double);
     void SetPtbinning(int, int, double*);
 
@@ -156,6 +162,12 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     TH1F *fHist_PtBacBarCosPA;                                //
     int fCentLimit_BacBarCosPA;                               //
 
+    bool fisParametricTrackLengthCut;                         //
+    TH1I *fHist_CentTrackLengthCut;                           //
+    float fDeadZoneWidth_GeoCut;                              //
+    float fNcrNclLength_GeoCut;                               //
+    int fTPCsignalNCut;                                       //
+
     //cut values to be set
     double cutval_V0[kV0cutsnum];                             //
     int nvarcut_V0[kV0cutsnum];                               //
@@ -167,8 +179,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double varhighcut_Casc[kCasccutsnum];                     //
 
     //variables to handle binning
-    int fncentbins[knumpart];                                 //
-    double fcentbinning[knumpart][150];                       //
+    int fncentbins;                                           //
+    double fcentbinning[150];                                 //
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //
@@ -186,8 +198,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 14); 
-    //version 14: add variations based on V0Rad
+    ClassDef(AliAnalysisTaskStrVsMult, 19); 
+    //version 19: add setters for TrackLength cut
 };
 
 #endif

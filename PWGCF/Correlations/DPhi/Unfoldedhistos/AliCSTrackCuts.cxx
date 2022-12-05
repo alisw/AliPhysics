@@ -54,6 +54,8 @@ AliCSTrackCuts::AliCSTrackCuts() :
     fEtaShift(0.0),
     fESDTrackCuts(NULL),
     fAODFilterBits(0),
+    fAODHandling(false),
+    fAODTPCChi2(0.0),
     fhCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
     fhPtVsDCAxy{NULL},
@@ -78,6 +80,8 @@ AliCSTrackCuts::AliCSTrackCuts(const char *name, const char *title) :
     fEtaShift(0.0),
     fESDTrackCuts(NULL),
     fAODFilterBits(0),
+    fAODHandling(false),
+    fAODTPCChi2(0.0),
     fhCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
     fhPtVsDCAxy{NULL},
@@ -434,6 +438,12 @@ Bool_t AliCSTrackCuts::AcceptTrackType(AliVTrack *trk, AliVTrack *&ttrk) {
     if(!aodt->TestFilterBit(fAODFilterBits)) {
       accepted = kFALSE;
     }
+    else if (fAODHandling) {
+      /* process additional AOD cuts over the filter bits */
+      if (!(aodt->GetTPCchi2perCluster() < fAODTPCChi2)) {
+        accepted = kFALSE;
+      }
+    }
     else {
       /* the track is accepted, check special handling depending on the cut */
       switch (fParameters[kTrackTypeCutParam]) {
@@ -765,6 +775,10 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
   if (fESDTrackCuts != NULL)
     delete fESDTrackCuts;
   fAODFilterBits = 0;
+  fAODHandling = false;
+  fAODTPCChi2 = 0.0;
+  bool aodhandling = false;
+  float chi2 = 0;
 
   TString system = "";
   TString period = "";
@@ -842,12 +856,16 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
       basename = "2011";
       system = "Pb-Pb";
       period = "2018q";
+      aodhandling = true;
+      chi2 = 2.5;
       break;
   case kLHC18r:
     fBaseSystem = k2011based;
     basename = "2011";
     system = "Pb-Pb";
     period = "2018r";
+      aodhandling = true;
+      chi2 = 2.5;
     break;
   default:
     fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -884,6 +902,11 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
     fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fESDTrackCuts->SetNameTitle(Form("TrackType_%s",GetCutsString()),"Type of tracks: Standard TPC only");
     fAODFilterBits = 1;
+    if (aodhandling) {
+      fAODHandling = true;
+      fAODTPCChi2 = chi2;
+      fESDTrackCuts->SetMaxChi2PerClusterTPC(chi2);
+    }
     tracktype = "FB1. Standard TPC only";
     break;
   case 2:
@@ -899,6 +922,11 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
       fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
       fESDTrackCuts->SetNameTitle(Form("TrackType_%s",GetCutsString()),"Type of tracks: Global 2011 primaries");
       fAODFilterBits = 32;
+      if (aodhandling) {
+        fAODHandling = true;
+        fAODTPCChi2 = chi2;
+        fESDTrackCuts->SetMaxChi2PerClusterTPC(chi2);
+      }
       tracktype = "FB32. Global primaries ITS+TPC 2011. Tight DCA. SPD:ANY. Number of rows";
       break;
     default:
@@ -923,6 +951,11 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
       fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
       fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
       fAODFilterBits = 64;
+      if (aodhandling) {
+        fAODHandling = true;
+        fAODTPCChi2 = chi2;
+        fESDTrackCuts->SetMaxChi2PerClusterTPC(chi2);
+      }
       tracktype = "FB64. Global primaries ITS+TPC 2011. Tight DCA. SPD:NONE, SDD:FIRST. Number of rows";
       break;
     default:

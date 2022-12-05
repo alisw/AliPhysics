@@ -124,7 +124,8 @@ void AliAnalysisTaskPtFlowCorrelation::UserCreateOutputObjects()
 
 
         
-    inputFile = TFile::Open("alien:///alice/cern.ch/user/f/frjensen/Stat-Pass2-2015o.root", "READ");  
+    //inputFile = TFile::Open("alien:///alice/cern.ch/user/f/frjensen/Stat-Pass2-2015o.root", "READ");  
+    inputFile = new TFile("Stat-Pass2-2015o.root", "READ"); 
 
     TDirectoryFile* statDirectory = (TDirectoryFile*)inputFile->Get("GetPassStatistic");
     if( statDirectory == nullptr ) printf("Could not load directory \n");
@@ -146,7 +147,6 @@ void AliAnalysisTaskPtFlowCorrelation::UserCreateOutputObjects()
     inputAxisPhi =  (TAxis*)inputHistPhi->GetXaxis();
     if( inputAxisPhi == nullptr ) printf("\n Could not load axis \n");
     N_max = inputHistPhi->GetBinContent( inputHistPhi->GetMaximumBin() );
-
 
 }
 //_____________________________________________________________________________
@@ -176,6 +176,7 @@ void AliAnalysisTaskPtFlowCorrelation::UserExec(Option_t *)
     Double_t sumWeightSubA_sq = 0;
 
     Double_t sumWeightSubB = 0;
+    Double_t sumWeightSubB_sq = 0;
     Double_t sumWeightSubC = 0;
     Double_t sumWeightSubC_sq = 0;
 
@@ -186,7 +187,6 @@ void AliAnalysisTaskPtFlowCorrelation::UserExec(Option_t *)
     Int_t iTracks(fAOD->GetNumberOfTracks());      
 
     Double_t meanPt = GetMeanPt(centrality);
-    //std::cout << "Multiplicity:" << iTracks << std::endl;
 
     for(Int_t i(0); i < iTracks; i++) {                 
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
@@ -203,14 +203,15 @@ void AliAnalysisTaskPtFlowCorrelation::UserExec(Option_t *)
         
         Double_t ptWeight = 1.0;
         Double_t phiWeight = GetPhiWeight(phi);
-        //std::cout << "Eta:" << eta << std::endl;
 
         if( std::abs(eta) < 0.4)            
         {
             // Fill sub-event B for mean pt
-            p11 += pt;
+            p11 += ptWeight*pt;
             p22 += TMath::Power(pt*ptWeight, 2.);
             sumWeightSubB += ptWeight;    
+            sumWeightSubB_sq += ptWeight*ptWeight;    
+
         }
         else if( 0.4 < eta && eta < 0.8)
         {
@@ -236,54 +237,45 @@ void AliAnalysisTaskPtFlowCorrelation::UserExec(Option_t *)
     if(sumWeightSubB < 2) return;
     if(sumWeightSubC < 2) return;
 
+    Double_t tau = sumWeightSubB_sq/TMath::Power(sumWeightSubB, 2.);
+
     p11 *= 1./sumWeightSubB; 
     p22 *= 1./TMath::Power(sumWeightSubB, 2.);
 
     PSubB = TComplex(p11, 0.);
 
-
-
     //Dynamic fluctuations non-central to central
     Double_t oneParPtCentralCorrelation = p11 - meanPt;
     Double_t twoParPtCentralCorrelation = p22 - 2.*p11*meanPt + meanPt*meanPt;
-    Double_t c2 = p11*p11 - p22;
+    Double_t c2 = 1+(TMath::Power(oneParPtCentralCorrelation, 2.) - twoParPtCentralCorrelation)/(1.-tau);
 
     // Internal subevent correlation -> Useed for four particle correlation later;
-    Double_t twoParCorrSubA = (TMath::Power(TComplex::Abs(QSubA), 2) - sumWeightSubA_sq)/(Double_t)(sumWeightSubA*sumWeightSubA - sumWeightSubC_sq); 
-    Double_t twoParCorrSubC = (TMath::Power(TComplex::Abs(QSubC), 2) - sumWeightSubC_sq)/(Double_t)(sumWeightSubC*sumWeightSubC - sumWeightSubC_sq); 
+    Double_t twoParCorrSubA = ((QSubA*TComplex::Conjugate(QSubA)).Re() - sumWeightSubA_sq)/(Double_t)(sumWeightSubA*sumWeightSubA - sumWeightSubC_sq); 
+    Double_t twoParCorrSubC = ((QSubC*TComplex::Conjugate(QSubC)).Re() - sumWeightSubC_sq)/(Double_t)(sumWeightSubC*sumWeightSubC - sumWeightSubC_sq); 
     
     // Multi-particle correlation
-    Double_t twoParCorr     = (QSubA * QSubC).Re(); 
-    Double_t threeParCorr   = (QSubA * QSubC * PSubB).Re();
-    Double_t fourParCorr    = twoParCorrSubA * twoParCorrSubC;
+    Double_t twoParCorr     = (QSubA*TComplex::Conjugate(QSubC)).Re();             // v2^2
+    Double_t threeParCorr   = (QSubA * TComplex::Conjugate(QSubC) * PSubB).Re();     // v2^2*pT
+    Double_t fourParCorr    = twoParCorrSubA * TComplex::Conjugate(twoParCorrSubC);  // v2^4
 
     // // Update with event weight
     twoParCorr      *= 1./(Double_t)(sumWeightSubA * sumWeightSubC);
     threeParCorr    *= 1./(Double_t)(sumWeightSubA * sumWeightSubB * sumWeightSubC);
-    fourParCorr     *= 1./(Double_t)(sumWeightSubA * (sumWeightSubA-1)*sumWeightSubB*(sumWeightSubB-1));
 
     Double_t twoParCum      = twoParCorr;
     Double_t threeParCum    = threeParCorr - twoParCorr*meanPt;
     Double_t fourParCum     = fourParCorr - 2.*twoParCorr;
-    Double_t var            = twoParCum*twoParCum - (-fourParCum);
+    Double_t var            = twoParCum*twoParCum + fourParCum;
 
     if(var < 0 || c2 < 0) return;
 
     Double_t rho = threeParCum/(TMath::Sqrt(var)*TMath::Sqrt(c2));
-
-    // printf("\n twoParCum: %f \n", twoParCum);
-    // printf("fourParCum: %f \n", fourParCum);
-
-    // printf("threeParCorr: %f \n", threeParCorr);
-    // printf("var: %f \n ", var);
-    // printf("c2: %f \n ", c2);
 
     fProfileRho->Fill(centrality, rho);
     fProfileVar->Fill(centrality, var);
     fProfileCov->Fill(centrality, threeParCum);
     fProfileC2->Fill(centrality, c2);
 
-    // printf("RHO: %f \n ", rho);
     
     PostData(1, fOutputList);                           
                                                        
