@@ -139,6 +139,9 @@ fHist_PtBacBarCosPA(0),
 fCentLimit_BacBarCosPA(0),
 fisParametricTrackLengthCut(kFALSE),                            
 fHist_CentTrackLengthCut(0),
+fDeadZoneWidth_GeoCut(0),
+fNcrNclLength_GeoCut(0),
+fTPCsignalNCut(0),
 fncentbins(0)
 {
   //default constructor
@@ -244,6 +247,9 @@ fHist_PtBacBarCosPA(0),
 fCentLimit_BacBarCosPA(0),
 fisParametricTrackLengthCut(kFALSE),                            
 fHist_CentTrackLengthCut(0),
+fDeadZoneWidth_GeoCut(3.),
+fNcrNclLength_GeoCut(130.),
+fTPCsignalNCut(50),
 fncentbins(0)
 {
   //setting default cuts
@@ -385,7 +391,7 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   if (fRejectPileupEvts) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
 
   //geometrical cut Setup
-  fESDTrackCuts.SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+  fESDTrackCuts.SetCutGeoNcrNcl(fDeadZoneWidth_GeoCut, fNcrNclLength_GeoCut, 1.5, 0.85, 0.7);
   //Output posting
   DataPosting();
 
@@ -633,7 +639,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
         //track length cut
-        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>50 && nTrack->GetTPCsignalN()>50) ? 1 : 0;
+        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>fTPCsignalNCut && nTrack->GetTPCsignalN()>fTPCsignalNCut) ? 1 : 0;
         if (fESDTrackCuts.AcceptTrack(pTrack) && fESDTrackCuts.AcceptTrack(nTrack)) fV0_TrackLengthCut = fV0_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
@@ -742,7 +748,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
         //track length cut
-        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>50 && nTrack->GetTPCsignalN()>50) ? 1 : 0;
+        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>fTPCsignalNCut && nTrack->GetTPCsignalN()>fTPCsignalNCut) ? 1 : 0;
         if (fESDTrackCuts.AcceptVTrack(pTrack) && fESDTrackCuts.AcceptVTrack(nTrack)) fV0_TrackLengthCut = fV0_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
@@ -885,7 +891,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
         //track length cut
-        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>50 && nTrackCasc->GetTPCsignalN()>50 && bTrackCasc->GetTPCsignalN()>50) ? 1 : 0;
+        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>fTPCsignalNCut && nTrackCasc->GetTPCsignalN()>fTPCsignalNCut && bTrackCasc->GetTPCsignalN()>fTPCsignalNCut) ? 1 : 0;
         if (fESDTrackCuts.AcceptTrack(pTrackCasc) && fESDTrackCuts.AcceptTrack(nTrackCasc) && fESDTrackCuts.AcceptTrack(bTrackCasc)) fCasc_TrackLengthCut = fCasc_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
@@ -1021,7 +1027,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
         //track length cut
-        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>50 && nTrackCasc->GetTPCsignalN()>50 && bTrackCasc->GetTPCsignalN()>50) ? 1 : 0;
+        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>fTPCsignalNCut && nTrackCasc->GetTPCsignalN()>fTPCsignalNCut && bTrackCasc->GetTPCsignalN()>fTPCsignalNCut) ? 1 : 0;
         if (fESDTrackCuts.AcceptVTrack(pTrackCasc) && fESDTrackCuts.AcceptVTrack(nTrackCasc) && fESDTrackCuts.AcceptVTrack(bTrackCasc)) fCasc_TrackLengthCut = fCasc_TrackLengthCut+2;
 
         //chi^2 per TPC cluster

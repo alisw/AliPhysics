@@ -33,6 +33,11 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetParametricBacBarCosPA(int, float*, float*, int);
     void SetParametricTrackLengthCut(int, float*, int*);
 
+    //TrackLength Cut setters
+    void SetDeadZoneWidthGeoCut(float DeadZoneWidth){fDeadZoneWidth_GeoCut = DeadZoneWidth;};
+    void SetNcrNclLengthGeoCut(float NcrNclLength){fNcrNclLength_GeoCut = NcrNclLength;};
+    void SetTPCsignalNCut(int TPCsignalNCut){fTPCsignalNCut = TPCsignalNCut;};
+
     //binning setters
     void SetCentbinning(int, double*);
     void SetMassbinning(int, int, double, double);
@@ -159,6 +164,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
 
     bool fisParametricTrackLengthCut;                         //
     TH1I *fHist_CentTrackLengthCut;                           //
+    float fDeadZoneWidth_GeoCut;                              //
+    float fNcrNclLength_GeoCut;                               //
+    int fTPCsignalNCut;                                       //
 
     //cut values to be set
     double cutval_V0[kV0cutsnum];                             //
@@ -190,8 +198,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 18); 
-    //version 17: add competing Xi Mass rejection for Omegas
+    ClassDef(AliAnalysisTaskStrVsMult, 19); 
+    //version 19: add setters for TrackLength cut
 };
 
 #endif
