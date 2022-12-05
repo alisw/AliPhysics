@@ -876,6 +876,9 @@ Pair_number= NumJet-1;
       //                for(auto cont:dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j))->GetParticleConstituents()){
       //                 fHistManager.FillTH2(histname,pt_low,cont.Pt()/pt_low);}
 
+                if((DeltaPt_det<=2)&&(DeltaPt_det>=0)){
+                   histname = TString::Format("hJetPtSmallDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
+                   fHistManager.FillTH2(histname,pt_low,DeltaPt_det);}
   
                   histname = TString::Format("hJetPtDeltaR_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                   fHistManager.FillTH2(histname,pt_low,DeltaR);
