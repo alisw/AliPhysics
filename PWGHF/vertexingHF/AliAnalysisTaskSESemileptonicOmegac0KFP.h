@@ -58,6 +58,7 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
    
     void                    SelectTrack(const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags, TClonesArray *mcArray);
     void                    SelectCascade(const AliVEvent *event,Int_t nCasc,Int_t &nSeleCasc, Bool_t *seleCascFlags, TClonesArray *mcArray);
+    Bool_t                  SelectKFTrack(KFParticle kfpart);
     Bool_t                  PrefilterElectronULS(AliAODTrack *trk, AliAODEvent *aodEvent, Double_t &mass);
     Bool_t                  PrefilterElectronLS(AliAODTrack *trk, AliAODEvent *aodEvent,  Double_t &samesign_mass);
     
@@ -200,7 +201,7 @@ private:
     
     
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,6);   // class for Omegac0 -> e+Omega KFP
+    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,7);   // class for Omegac0 -> e+Omega KFP
     /// \endcond
 };
 
