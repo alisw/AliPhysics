@@ -87,6 +87,7 @@ class AliAODv0;
 
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliAODMCHeader.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
 #include "AliLightV0vertexer.h"
@@ -2687,7 +2688,7 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserExec(Option_t *)
         return;
     }
 
-    lMCheader = static_cast<AliAODMCHeader>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
+    lMCheader = static_cast<AliAODMCHeader*>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
     if (!lMCheader) {
         AliWarning("No header found.");
         return;
