@@ -490,7 +490,9 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(hNumTracksA);
         hNumHighPtTracksA = new TH1D("hNumHighPtTracksA",Form("Number of track above %.1f GeV",fHighPtCut),50,0.0,50.0);
         fQA->Add(hNumHighPtTracksA);
-        hCharge = new TH1I("hCharge","Charge distribution",4,-2,2);
+        int nChBins = 3;
+        double chBins[] = {-1.5,-0.5,0.5,1.5};
+        hCharge = new TH1I("hCharge","Charge distribution",nChBins,chBins);
         fQA->Add(hCharge);
 
     }    
@@ -1096,8 +1098,7 @@ int AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const tas
             if(!track) { continue; }
             if(bOnlyPrimariesAndCh && (!track->IsPhysicalPrimary() || track->Charge())) continue;
             if(bUseLikeSign && (iSign <0)?(track->Charge() >= 0):(track->Charge() <= 0)) continue;
-            hCharge->Fill(track->Charge());
-            
+
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();
@@ -1357,7 +1358,6 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
             if(!track) { continue; }
             if(bOnlyPrimariesAndCh && (!track->IsPhysicalPrimary() || track->Charge())) continue;
             if(bUseLikeSign && (iSign <0)?(track->Charge() >= 0):(track->Charge() <= 0)) continue;
-            hCharge->Fill(track->Charge());
 
             double dPt = track->Pt();
             double dPhi = track->Phi();
