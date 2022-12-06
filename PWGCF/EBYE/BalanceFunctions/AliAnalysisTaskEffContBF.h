@@ -118,12 +118,12 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   }
   
   //Track cuts
-  void SetMinNumberOfTPCClusters(Double_t min) {
+  void SetMinNumberOfTPCClusters(Double_t min) { // fMinNumberOfTPCClusters doesn't really get used
     fMinNumberOfTPCClusters = min;}
-  void SetMaxChi2PerTPCCluster(Double_t max) {
+  void SetMaxChi2PerTPCCluster(Double_t max) { // fMaxChi2PerTPCCluster doesn't really get used
     fMaxChi2PerTPCCluster = max;}  
 
-  void SetExtra2DDCACutsAOD(Double_t DCAxy, Double_t DCAz){
+  void SetExtra2DDCACutsAOD(Double_t DCAxy, Double_t DCAz){ // actual setter for DCA cuts
     fDCAxyCut  = DCAxy;
     fDCAzCut = DCAz;
   }
@@ -137,9 +137,9 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fMinTPCRowsOverFindableCls =  minNTPCFindableCls;
   }
   
-  void SetMaxDCAxy(Double_t max) {
+  void SetMaxDCAxy(Double_t max) { // fMaxDCAxy doesn't really get used
     fMaxDCAxy = max;}
-  void SetMaxDCAz(Double_t max) {
+  void SetMaxDCAz(Double_t max) { // fMaxDCAz doesn't really get used
     fMaxDCAz = max;}
   void SetMinPt(Double_t minPt) {
     fMinPt = minPt;}
