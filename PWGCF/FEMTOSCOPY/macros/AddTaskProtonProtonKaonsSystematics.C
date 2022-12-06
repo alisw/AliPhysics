@@ -844,6 +844,12 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       Q3cutValue = 0.9;
     }else if (suffix == "46"){
       Q3cutValue = 1.1;
+    }else if (suffix == "47"){
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+    }else if (suffix == "48"){
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
     }else if (suffix == "50") {
       KaonCuts->SetPtRange(0.1, 10);
       AntiKaonCuts->SetPtRange(0.1, 10);
@@ -886,6 +892,48 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
     }else if (suffix == "63") {
       KaonCuts->SetCutTPCCrossedRows(true, 77, 0.80);
       AntiKaonCuts->SetCutTPCCrossedRows(true, 77, 0.80);
+    }else if (suffix == "64") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+    } else if (suffix == "65") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+    } else if (suffix == "66") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+    } else if (suffix == "67") {
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+    } else if (suffix == "68") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    } else if (suffix == "69") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    } else if (suffix == "70") {
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+    } else if (suffix == "71") {
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+    }else if (suffix == "72") {
+      TrackCuts->SetDCAVtxZ(0.18);
+      AntiTrackCuts->SetDCAVtxZ(0.18);
+    }else if (suffix == "73") {
+      TrackCuts->SetDCAVtxZ(0.22);
+      AntiTrackCuts->SetDCAVtxZ(0.22);
+    }else if (suffix == "74") {
+      TrackCuts->SetDCAVtxXY(0.19);
+      AntiTrackCuts->SetDCAVtxXY(0.19);
+    }else if (suffix == "75") {
+      TrackCuts->SetDCAVtxXY(0.11);
+      AntiTrackCuts->SetDCAVtxXY(0.11);
+    }else if (suffix == "76") {
+      TrackCuts->SetCutTPCCrossedRows(true, 63, 0.80);
+      AntiTrackCuts->SetCutTPCCrossedRows(true, 63, 0.80);
+    }else if (suffix == "77") {
+      TrackCuts->SetCutTPCCrossedRows(true, 77, 0.80);
+      AntiTrackCuts->SetCutTPCCrossedRows(true, 77, 0.80);
     }
 
 //===================================
