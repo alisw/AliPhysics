@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliAnalysisTaskGammaNonIsotropicCorr.cxx ver: 2.0                     $   */
+/* $Id: AliAnalysisTaskGammaNonIsotropicCorrUsingWeights.cxx ver: 2.0                     $   */
 /* Simple Task to fill V0 and ZDC Energies for Gain Calibration           */
 /* Works with 15o and 18q/r. Support to be added for LHC10h               */
 /* Developer: Md Rihan Haque (mhaque@cern.ch, rihanphys@gmail.com)        */
@@ -20,7 +20,7 @@
 /* Last Modified: Oct 08, 2021,  Second version committed                 */
 ////////////////////////////////////////////////////////////////////////////
 
-#include "AliAnalysisTaskGammaNonIsotropicCorr.h"
+#include "AliAnalysisTaskGammaNonIsotropicCorrUsingWeights.h"
 #include "AliInputEventHandler.h"
 #include "AliPhysicsSelection.h"
 #include "AliAnalysisManager.h"
@@ -66,9 +66,9 @@
 
 using namespace std;
 
-ClassImp(AliAnalysisTaskGammaNonIsotropicCorr)
+ClassImp(AliAnalysisTaskGammaNonIsotropicCorrUsingWeights)
 
-AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr(const char *name):
+AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::AliAnalysisTaskGammaNonIsotropicCorrUsingWeights(const char *name):
   AliAnalysisTaskSE(name),
   whichData(0),
   period("0"),
@@ -84,6 +84,7 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr(const
   fListV0MCorrRunByRun(NULL),
   fListZDCCorr(NULL),
   fListZDCCorrRunByRun(NULL),
+  fListMCEfficiencyWeightForTrack(NULL),
   fV0CutPU(NULL),
   fSPDCutPU(NULL),
   fMultCutPU(NULL),
@@ -117,7 +118,7 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr(const
   sCentrEstimator("V0M"),  
   bUseKinkTracks(kFALSE),
   bSkipPileUpCut(kFALSE),
-  
+  bUseMCEfficiencyWeight(kFALSE),
   fHistVertexZcm(NULL),
   fHistAnalysisInfo(NULL),
   fCentDistBeforCut(NULL),
@@ -214,14 +215,20 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr(const
   fImPEBEOS = NULL;
   f2pCorrelatorCosPsiDiffOS = NULL;
   f2pCorrelatorCos2PsiDiffOS = NULL;
+  fOverlapEBEOSPOI1 = NULL;
+  fOverlapEBEOSPOI2 = NULL;
   fRePEBEPP = NULL;
   fImPEBEPP = NULL;
   f2pCorrelatorCosPsiDiffPP = NULL;
   f2pCorrelatorCos2PsiDiffPP = NULL;
+  fOverlapEBEPPPOI1 = NULL;
+  fOverlapEBEPPPOI2 = NULL;
   fRePEBENN = NULL;
   fImPEBENN = NULL;
   f2pCorrelatorCosPsiDiffNN = NULL;
   f2pCorrelatorCos2PsiDiffNN = NULL;
+  fOverlapEBENNPOI1 = NULL;
+  fOverlapEBENNPOI2 = NULL;
   
   // 2-p correlator
   fCMESPPPCenBin = 18;
@@ -295,14 +302,20 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr(const
     fNonIsotropicTermsZDCNNPro[i] = NULL;
     fNonIsotropicTermsZDCSSPro[i] = NULL;
   }
-	
+
+  for(Int_t i = 0; i < 10; i++) {
+	fHMCEfficiencyWeightForPosTrack[i] = NULL;
+	fHMCEfficiencyWeightForNegTrack[i] = NULL;
+  }
+  
+
   //Must be here:
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
 }
 
 //_______________________empty constructor_______________________
-AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr():
+AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::AliAnalysisTaskGammaNonIsotropicCorrUsingWeights():
   AliAnalysisTaskSE(),
   whichData(0),
   period("0"),
@@ -318,6 +331,7 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr():
   fListV0MCorrRunByRun(NULL),
   fListZDCCorr(NULL),
   fListZDCCorrRunByRun(NULL),
+  fListMCEfficiencyWeightForTrack(NULL),
   fV0CutPU(NULL),
   fSPDCutPU(NULL),
   fMultCutPU(NULL),
@@ -351,7 +365,7 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr():
   sCentrEstimator("V0M"),  
   bUseKinkTracks(kFALSE),
   bSkipPileUpCut(kFALSE),
-  
+  bUseMCEfficiencyWeight(kFALSE),
   fHistVertexZcm(NULL),
   fHistAnalysisInfo(NULL),
   fCentDistBeforCut(NULL),
@@ -449,14 +463,20 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr():
   fImPEBEOS = NULL;
   f2pCorrelatorCosPsiDiffOS = NULL;
   f2pCorrelatorCos2PsiDiffOS = NULL;
+  fOverlapEBEOSPOI1 = NULL;
+  fOverlapEBEOSPOI2 = NULL;
   fRePEBEPP = NULL;
   fImPEBEPP = NULL;
   f2pCorrelatorCosPsiDiffPP = NULL;
   f2pCorrelatorCos2PsiDiffPP = NULL;
+  fOverlapEBEPPPOI1 = NULL;
+  fOverlapEBEPPPOI2 = NULL;
   fRePEBENN = NULL;
   fImPEBENN = NULL;
   f2pCorrelatorCosPsiDiffNN = NULL;
   f2pCorrelatorCos2PsiDiffNN = NULL;
+  fOverlapEBENNPOI1 = NULL;
+  fOverlapEBENNPOI2 = NULL;
   
   // 2-p correlator
   fCMESPPPCenBin = 18;
@@ -531,13 +551,19 @@ AliAnalysisTaskGammaNonIsotropicCorr::AliAnalysisTaskGammaNonIsotropicCorr():
     fNonIsotropicTermsZDCSSPro[i] = NULL;
   }
   
+  for(Int_t i = 0; i < 10; i++) {
+	fHMCEfficiencyWeightForPosTrack[i] = NULL;
+	fHMCEfficiencyWeightForNegTrack[i] = NULL;
+  }
+  
+  
   //Not needed for Empty Constructor:
   //DefineInput(0,TChain::Class());
   //DefineOutput(1,TList::Class());
 }
   
 //__________________ destructor ___________________
-AliAnalysisTaskGammaNonIsotropicCorr::~AliAnalysisTaskGammaNonIsotropicCorr()
+AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::~AliAnalysisTaskGammaNonIsotropicCorrUsingWeights()
 {
   if(fAnalysisUtil)  delete fAnalysisUtil;   // because its 'new' !!
   if(fTempList)      delete fTempList;
@@ -546,6 +572,7 @@ AliAnalysisTaskGammaNonIsotropicCorr::~AliAnalysisTaskGammaNonIsotropicCorr()
   if(fListV0MCorrRunByRun)   delete fListV0MCorrRunByRun;
   if(fListZDCCorr)   delete fListZDCCorr;
   if(fListZDCCorrRunByRun)   delete fListZDCCorrRunByRun;
+  if(fListMCEfficiencyWeightForTrack)   delete fListMCEfficiencyWeightForTrack;
 
   if(fV0CutPU)      delete fV0CutPU;
   if(fSPDCutPU)     delete fSPDCutPU;
@@ -556,7 +583,7 @@ AliAnalysisTaskGammaNonIsotropicCorr::~AliAnalysisTaskGammaNonIsotropicCorr()
 
 
 //________________ Define Histograms _______________
-void AliAnalysisTaskGammaNonIsotropicCorr::UserCreateOutputObjects()
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::UserCreateOutputObjects()
 {
   //Get The Input Hander:
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -595,8 +622,12 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserCreateOutputObjects()
     SetupPileUpRemovalFunctions18rPass3();
   //SetupPileUpRemovalFunctions();
   SetupEventAndTaskConfigInfo();
-
-
+  
+  if (fListMCEfficiencyWeightForTrack) {
+    GetMCEfficiencyWeightForTrackHist();
+  } else {
+	bUseMCEfficiencyWeight = kFALSE;
+  }
  
     
   cout<<"Ncls: "<<fTPCclustMin<<" TPCsharedCut: "<<fTPCsharedCut<<" UseTPCCrossedRows: "<<bUseTPCCrossedRows<<" Harm: "<<gHarmonic<<" POI: "<<gParticleID<<" nsigTPC: "<<fNSigmaTPCCut<<" nsigCirc: "<<fNSigmaTOFCut<<endl;
@@ -621,7 +652,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserCreateOutputObjects()
 
 
 //____________________________ Call Event by Event ___________________________________
-void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::UserExec(Option_t*) {
  
   //std::cout<<" Info:UserExec() called ..!!!\n";
 
@@ -1073,9 +1104,14 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
   //Double_t vTrk1[3] = {0 , 0, 0};
   //Double_t vTrk2[3] = {0 , 0, 0};
   
+  Int_t centBin = -1;
+  if (centrality <= 10) {
+	centBin = (Int_t) centrality/5;
+  } else {
+	centBin = (Int_t) centrality/10+1;
+  }
 
   ///----------> Starting Analysis track Loop -----------
-  
   for(Int_t iTrack = 0; iTrack < ntracks; iTrack++) {
 
 	AliAODTrack* AODtrack1 = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
@@ -1141,54 +1177,80 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
 	  //Apply track cuts for TPC EP here:
 	  //if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos)) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
 	  if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && (trk1dEdx >= fTPCdEdxMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
-		// ================================ save Qvec ===================================
+		// get efficiency weight for trk1
+		Double_t wgtEffTrk1 = 1;
+		if (bUseMCEfficiencyWeight) {
+			
+			if (trk1Chrg > 0) {
+				wgtEffTrk1 = fHMCEfficiencyWeightForPosTrack[centBin]->GetBinContent(fHMCEfficiencyWeightForPosTrack[centBin]->FindBin(trk1Pt));
+			} else if (trk1Chrg < 0) {
+				wgtEffTrk1 = fHMCEfficiencyWeightForNegTrack[centBin]->GetBinContent(fHMCEfficiencyWeightForNegTrack[centBin]->FindBin(trk1Pt));
+			}
+		}
 		
 		// Calculate Re[Q_{m,k}] and Im[Q_{m,k}], (m = 1,2,3,4,5,6 and k = 0,1,2,3) for this event:
-		for(Int_t h=0;h<2;h++) 
+		for(Int_t h=0;h<3;h++) 
 		{
 		  // RP All, OS
-		  // S_{p,k} is in it
-		  fCMEQReRP->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi)); 
-		  fCMEQImRP->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi)); 
-		
+		  // S_{p,k} is in it Re[Q{m.k}] w^k*cos((h+1)phi)
+		  fCMEQReRP->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi), wgtEffTrk1); // bin 1: w*cos(phi) bin 2: w*cos(2phi) bin 3: w*cos(3phi)
+		  fCMEQImRP->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi), wgtEffTrk1); 
+		  
+		  fCMEQReRP->Fill(h+3.5, TMath::Cos((h+1.)*trk1Phi), pow(wgtEffTrk1,2)); // bin 4: w^2*cos(phi) bin 5: w^2*cos(2phi) bin 6: w^2*cos(3phi)
+		  fCMEQImRP->Fill(h+3.5, TMath::Sin((h+1.)*trk1Phi), pow(wgtEffTrk1,2)); 
+		  
+		  fCMEQReRP->Fill(h+6.5, TMath::Cos((h+1.)*trk1Phi), pow(wgtEffTrk1,3)); // bin 7: w^3*cos(phi) bin 8: w^3*cos(2phi) bin 9: w^3*cos(3phi)
+		  fCMEQImRP->Fill(h+6.5, TMath::Sin((h+1.)*trk1Phi), pow(wgtEffTrk1,3)); 
+		  
 		  if (trk1Chrg>0) {
-			fCMEQRePOIPos->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi)); 
-			fCMEQImPOIPos->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi)); 
+			fCMEQRePOIPos->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi), wgtEffTrk1); 
+			fCMEQImPOIPos->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi), wgtEffTrk1); 
+			
+			fCMEQRePOIPos->Fill(h+3.5, TMath::Cos((h+1.)*trk1Phi), pow(wgtEffTrk1,2)); 
+			fCMEQImPOIPos->Fill(h+3.5, TMath::Sin((h+1.)*trk1Phi), pow(wgtEffTrk1,2)); 
+			
+			fCMEQRePOIPos->Fill(h+6.5, TMath::Cos((h+1.)*trk1Phi), pow(wgtEffTrk1,3)); 
+			fCMEQImPOIPos->Fill(h+6.5, TMath::Sin((h+1.)*trk1Phi), pow(wgtEffTrk1,3)); 
 		  } 
 		
 		  if (trk1Chrg<0) {
-			fCMEQRePOINeg->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi)); 
-			fCMEQImPOINeg->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi)); 
+			fCMEQRePOINeg->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi), wgtEffTrk1); 
+			fCMEQImPOINeg->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi), wgtEffTrk1); 
+			
+			fCMEQRePOINeg->Fill(h+3.5, TMath::Cos((h+1.)*trk1Phi), pow(wgtEffTrk1,2)); 
+			fCMEQImPOINeg->Fill(h+3.5, TMath::Sin((h+1.)*trk1Phi), pow(wgtEffTrk1,2)); 
+			
+			fCMEQRePOINeg->Fill(h+6.5, TMath::Cos((h+1.)*trk1Phi), pow(wgtEffTrk1,3)); 
+			fCMEQImPOINeg->Fill(h+6.5, TMath::Sin((h+1.)*trk1Phi), pow(wgtEffTrk1,3)); 
 		  }
 		
 		}
 	
-	
 		// Calculate <<cos(2a-2Psi_V0)>> for RP, POI OS
-		f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C)));
-		f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsi2V0A)));
-		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZDCC)));
-		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsiZDCA)));
-		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(2.5, TMath::Cos(2*(trk1Phi-fPsiZDCCA)));
+		f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C)), wgtEffTrk1);
+		f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsi2V0A)), wgtEffTrk1);
+		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZDCC)), wgtEffTrk1);
+		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsiZDCA)), wgtEffTrk1);
+		f2pCorrelatorCos2PsiDiff2PsiZDCRPPerEvent->Fill(2.5, TMath::Cos(2*(trk1Phi-fPsiZDCCA)), wgtEffTrk1);
 		
-		f2pCorrelatorCos2PsiDiff2PsiV0CRP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsi2V0C))); //<cos(2psi1-2phi_V0C)> // no event-by-event
-		f2pCorrelatorCos2PsiDiff2PsiV0ARP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsi2V0A))); //<cos(2psi1-2phi_V0A)> // no event-by-event
+		f2pCorrelatorCos2PsiDiff2PsiV0CRP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsi2V0C)), wgtEffTrk1); //<cos(2psi1-2phi_V0C)> // no event-by-event
+		f2pCorrelatorCos2PsiDiff2PsiV0ARP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsi2V0A)), wgtEffTrk1); //<cos(2psi1-2phi_V0A)> // no event-by-event
 		// Calculate <<cos(2a-2Psi_ZDC)>> for RP, POI OS
-		f2pCorrelatorCos2PsiDiff2PsiZDCCRP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsiZDCC))); //<cos(2psi1-2phi_ZDCC)> // no event-by-event
-		f2pCorrelatorCos2PsiDiff2PsiZDCARP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsiZDCA))); //<cos(2psi1-2phi_ZDCA)> // no event-by-event
-		f2pCorrelatorCos2PsiDiff2PsiZDCCARP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsiZDCCA))); //<cos(2psi1-2phi_ZDCCA)> // no event-by-event
+		f2pCorrelatorCos2PsiDiff2PsiZDCCRP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsiZDCC)), wgtEffTrk1); //<cos(2psi1-2phi_ZDCC)> // no event-by-event
+		f2pCorrelatorCos2PsiDiff2PsiZDCARP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsiZDCA)), wgtEffTrk1); //<cos(2psi1-2phi_ZDCA)> // no event-by-event
+		f2pCorrelatorCos2PsiDiff2PsiZDCCARP->Fill(centrality, TMath::Cos(2*(trk1Phi-fPsiZDCCA)), wgtEffTrk1); //<cos(2psi1-2phi_ZDCCA)> // no event-by-event
 	
-		fNITV0OS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C)); // <<cos(psi1-2phi_V0C)>>
-		fNITV0OS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C)); // <<sin(psi1-2phi_V0C)>>
-		fNITV0OS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A)); // <<cos(psi1-2phi_V0A)>>
-		fNITV0OS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A)); // <<sin(psi1-2phi_V0A)>>
+		fNITV0OS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C), wgtEffTrk1); // <<cos(psi1-2phi_V0C)>>
+		fNITV0OS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C), wgtEffTrk1); // <<sin(psi1-2phi_V0C)>>
+		fNITV0OS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A), wgtEffTrk1); // <<cos(psi1-2phi_V0A)>>
+		fNITV0OS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A), wgtEffTrk1); // <<sin(psi1-2phi_V0A)>>
 
-		fNITZDCOS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZDCC)); // <<cos(psi1-2phi_ZDCC)>>
-		fNITZDCOS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZDCC)); // <<sin(psi1-2phi_ZDCC)>>
-		fNITZDCOS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZDCA)); // <<cos(psi1-2phi_ZDCA)>>
-		fNITZDCOS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZDCA)); // <<sin(psi1-2phi_ZDCA)>>
-		fNITZDCOS->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZDCCA)); // <<cos(psi1-2phi_ZDCCA)>>
-		fNITZDCOS->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZDCCA)); // <<sin(psi1-2phi_ZDCCA)>>
+		fNITZDCOS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZDCC), wgtEffTrk1); // <<cos(psi1-2phi_ZDCC)>>
+		fNITZDCOS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZDCC), wgtEffTrk1); // <<sin(psi1-2phi_ZDCC)>>
+		fNITZDCOS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZDCA), wgtEffTrk1); // <<cos(psi1-2phi_ZDCA)>>
+		fNITZDCOS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZDCA), wgtEffTrk1); // <<sin(psi1-2phi_ZDCA)>>
+		fNITZDCOS->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZDCCA), wgtEffTrk1); // <<cos(psi1-2phi_ZDCCA)>>
+		fNITZDCOS->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZDCCA), wgtEffTrk1); // <<sin(psi1-2phi_ZDCCA)>>
 	
 		if (trk1Chrg>0) {
 		  // Calculate <<cos(2a-2Psi_V0)>> for POI Pos
@@ -1199,17 +1261,17 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
 		  //f2pCorrelatorCos2PsiDiff2PsiZDCAPOIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZDCA)));
 		  //f2pCorrelatorCos2PsiDiff2PsiZDCCAPOIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZDCCA)));
 		
-		  fNITV0POIPos->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C)); // <<cos(psi1-2phi_V0C)>>
-		  fNITV0POIPos->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C)); // <<sin(psi1-2phi_V0C)>>
-		  fNITV0POIPos->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A)); // <<cos(psi1-2phi_V0A)>>
-		  fNITV0POIPos->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A)); // <<sin(psi1-2phi_V0A)>>
+		  fNITV0POIPos->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C), wgtEffTrk1); // <<cos(psi1-2phi_V0C)>>
+		  fNITV0POIPos->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C), wgtEffTrk1); // <<sin(psi1-2phi_V0C)>>
+		  fNITV0POIPos->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A), wgtEffTrk1); // <<cos(psi1-2phi_V0A)>>
+		  fNITV0POIPos->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A), wgtEffTrk1); // <<sin(psi1-2phi_V0A)>>
 
-		  fNITZDCPOIPos->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZDCC)); // <<cos(psi1-2phi_ZDCC)>>
-		  fNITZDCPOIPos->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZDCC)); // <<sin(psi1-2phi_ZDCC)>>
-		  fNITZDCPOIPos->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZDCA)); // <<cos(psi1-2phi_ZDCA)>>
-		  fNITZDCPOIPos->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZDCA)); // <<sin(psi1-2phi_ZDCA)>>
-		  fNITZDCPOIPos->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZDCCA)); // <<cos(psi1-2phi_ZDCCA)>>
-		  fNITZDCPOIPos->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZDCCA)); // <<sin(psi1-2phi_ZDCCA)>>
+		  fNITZDCPOIPos->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZDCC), wgtEffTrk1); // <<cos(psi1-2phi_ZDCC)>>
+		  fNITZDCPOIPos->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZDCC), wgtEffTrk1); // <<sin(psi1-2phi_ZDCC)>>
+		  fNITZDCPOIPos->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZDCA), wgtEffTrk1); // <<cos(psi1-2phi_ZDCA)>>
+		  fNITZDCPOIPos->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZDCA), wgtEffTrk1); // <<sin(psi1-2phi_ZDCA)>>
+		  fNITZDCPOIPos->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZDCCA), wgtEffTrk1); // <<cos(psi1-2phi_ZDCCA)>>
+		  fNITZDCPOIPos->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZDCCA), wgtEffTrk1); // <<sin(psi1-2phi_ZDCCA)>>
 		}
 	
 		if (trk1Chrg<0) {
@@ -1221,24 +1283,24 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
 		  //f2pCorrelatorCos2PsiDiff2PsiZDCAPOINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZDCA)));
 		  //f2pCorrelatorCos2PsiDiff2PsiZDCCAPOINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZDCCA)));
 		
-		  fNITV0POINeg->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C)); // <<cos(psi1-2phi_V0C)>>
-		  fNITV0POINeg->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C)); // <<sin(psi1-2phi_V0C)>>
-		  fNITV0POINeg->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A)); // <<cos(psi1-2phi_V0A)>>
-		  fNITV0POINeg->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A)); // <<sin(psi1-2phi_V0A)>>
+		  fNITV0POINeg->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C), wgtEffTrk1); // <<cos(psi1-2phi_V0C)>>
+		  fNITV0POINeg->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C), wgtEffTrk1); // <<sin(psi1-2phi_V0C)>>
+		  fNITV0POINeg->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A), wgtEffTrk1); // <<cos(psi1-2phi_V0A)>>
+		  fNITV0POINeg->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A), wgtEffTrk1); // <<sin(psi1-2phi_V0A)>>
 
-		  fNITZDCPOINeg->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZDCC)); // <<cos(psi1-2phi_ZDCC)>>
-		  fNITZDCPOINeg->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZDCC)); // <<sin(psi1-2phi_ZDCC)>>
-		  fNITZDCPOINeg->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZDCA)); // <<cos(psi1-2phi_ZDCA)>>
-		  fNITZDCPOINeg->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZDCA)); // <<sin(psi1-2phi_ZDCA)>>
-		  fNITZDCPOINeg->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZDCCA)); // <<cos(psi1-2phi_ZDCCA)>>
-		  fNITZDCPOINeg->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZDCCA)); // <<sin(psi1-2phi_ZDCCA)>>
+		  fNITZDCPOINeg->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZDCC), wgtEffTrk1); // <<cos(psi1-2phi_ZDCC)>>
+		  fNITZDCPOINeg->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZDCC), wgtEffTrk1); // <<sin(psi1-2phi_ZDCC)>>
+		  fNITZDCPOINeg->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZDCA), wgtEffTrk1); // <<cos(psi1-2phi_ZDCA)>>
+		  fNITZDCPOINeg->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZDCA), wgtEffTrk1); // <<sin(psi1-2phi_ZDCA)>>
+		  fNITZDCPOINeg->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZDCCA), wgtEffTrk1); // <<cos(psi1-2phi_ZDCCA)>>
+		  fNITZDCPOINeg->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZDCCA), wgtEffTrk1); // <<sin(psi1-2phi_ZDCCA)>>
 		}
 
 		///---> 2nd track Loop   
-		for(Int_t jTrack = iTrack+1; jTrack < ntracks; jTrack++) {  // garanteed no overlap
-
+		//for(Int_t jTrack = iTrack+1; jTrack < ntracks; jTrack++) {  // garanteed no overlap
+		for(Int_t jTrack = 0; jTrack < ntracks; jTrack++) { // otherwise w^2w and ww^2 are not same
 		  /// skip autocorrelation:
-		  //if(jTrack==iTrack) continue; ///////////////////// Delete later
+		  if(jTrack==iTrack) continue; ///////////////////// Delete later
 
 		  AliAODTrack* AODtrack2 = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(jTrack));
 		  if(!AODtrack2) continue;
@@ -1298,32 +1360,51 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
   
 			//Apply track cuts for second track
 			if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && (trk2dEdx >= fTPCdEdxMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
-				// v2 for TPC
-				f2pCorrelatorCosPsiDiff->Fill(centrality, TMath::Cos(trk1Phi-trk2Phi)); // no event-by-event
-				f2pCorrelatorCos2PsiDiff->Fill(centrality, TMath::Cos(2*(trk1Phi-trk2Phi))); // no event-by-event
+				// get efficiency weight for trk2
+				Double_t wgtEffTrk2 = 1;
+				if (bUseMCEfficiencyWeight) {
+					
+					if (trk2Chrg > 0) {
+						wgtEffTrk2 = fHMCEfficiencyWeightForPosTrack[centBin]->GetBinContent(fHMCEfficiencyWeightForPosTrack[centBin]->FindBin(trk2Pt));
+					} else if (trk2Chrg < 0) {
+						wgtEffTrk2 = fHMCEfficiencyWeightForNegTrack[centBin]->GetBinContent(fHMCEfficiencyWeightForNegTrack[centBin]->FindBin(trk2Pt));
+					}
+				}
 				
-				f2pCorrelatorCosPsiDiffPerEvent->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi));
-				f2pCorrelatorCos2PsiDiffPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)));
+				// v2 for TPC
+				f2pCorrelatorCosPsiDiff->Fill(centrality, TMath::Cos(trk1Phi-trk2Phi), wgtEffTrk1*wgtEffTrk2); // no event-by-event
+				f2pCorrelatorCos2PsiDiff->Fill(centrality, TMath::Cos(2*(trk1Phi-trk2Phi)), wgtEffTrk1*wgtEffTrk2); // no event-by-event
+				
+				f2pCorrelatorCosPsiDiffPerEvent->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), wgtEffTrk1*wgtEffTrk2);
+				f2pCorrelatorCos2PsiDiffPerEvent->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)), wgtEffTrk1*wgtEffTrk2);
 				
 				if(trk1Chrg*trk2Chrg < 0){ //Opposite sign	
-					fRePEBEOS->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi));
-					fImPEBEOS->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi));
+					fRePEBEOS->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi), wgtEffTrk1*wgtEffTrk2);
+					fImPEBEOS->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi), wgtEffTrk1*wgtEffTrk2);
 					
-					f2pCorrelatorCosPsiDiffOS->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi)); 
-					f2pCorrelatorCos2PsiDiffOS->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)));
+					f2pCorrelatorCosPsiDiffOS->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), wgtEffTrk1*wgtEffTrk2); 
+					f2pCorrelatorCos2PsiDiffOS->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)), wgtEffTrk1*wgtEffTrk2);
+					
+					fOverlapEBEOSPOI1->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), pow(wgtEffTrk1,2)*wgtEffTrk2); 
+					fOverlapEBEOSPOI2->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), wgtEffTrk1*pow(wgtEffTrk2,2)); 
 				} else if(trk1Chrg > 0 && trk2Chrg > 0){		      
-					fRePEBEPP->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi));
-					fImPEBEPP->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi));
+					fRePEBEPP->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi), wgtEffTrk1*wgtEffTrk2);
+					fImPEBEPP->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi), wgtEffTrk1*wgtEffTrk2);
 					
-					f2pCorrelatorCosPsiDiffPP->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi));
-					f2pCorrelatorCos2PsiDiffPP->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)));
+					f2pCorrelatorCosPsiDiffPP->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), wgtEffTrk1*wgtEffTrk2);
+					f2pCorrelatorCos2PsiDiffPP->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)), wgtEffTrk1*wgtEffTrk2);
 					
+					fOverlapEBEPPPOI1->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), pow(wgtEffTrk1,2)*wgtEffTrk2); 
+					fOverlapEBEPPPOI2->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), wgtEffTrk1*pow(wgtEffTrk2,2)); 
 				} else{ //else if(trk1Chrg < 0 && trk2Chrg < 0){  ///this is obvious!
-					fRePEBENN->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi));
-					fImPEBENN->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi));
+					fRePEBENN->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi), wgtEffTrk1*wgtEffTrk2);
+					fImPEBENN->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi), wgtEffTrk1*wgtEffTrk2);
 					
-					f2pCorrelatorCosPsiDiffNN->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi));
-					f2pCorrelatorCos2PsiDiffNN->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)));
+					f2pCorrelatorCosPsiDiffNN->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), wgtEffTrk1*wgtEffTrk2);
+					f2pCorrelatorCos2PsiDiffNN->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)), wgtEffTrk1*wgtEffTrk2);
+					
+					fOverlapEBENNPOI1->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), pow(wgtEffTrk1,2)*wgtEffTrk2); 
+					fOverlapEBENNPOI2->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi), wgtEffTrk1*pow(wgtEffTrk2,2)); 
 				}
 			}//j-track cuts
 		  }//j-track FB validated
@@ -1331,7 +1412,6 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
       }//----> i-track loop => All trackCuts applied.     
     }//-----> i-track loop => FB is validated.    
   }///-----> i-track loop Ends here.<--------
-  
 
   Calculate2pCorrelator();
   CalculateNonIsotropicTerms();
@@ -1349,7 +1429,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::UserExec(Option_t*) {
 
 }//---------------- UserExec ----------------------
 
-void AliAnalysisTaskGammaNonIsotropicCorr::ResetEventByEventQuantities(){
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::ResetEventByEventQuantities(){
   centrality = -99.0;
   fPsi2V0C = 0.;
   fPsi2V0A = 0.;
@@ -1377,18 +1457,24 @@ void AliAnalysisTaskGammaNonIsotropicCorr::ResetEventByEventQuantities(){
   fImPEBEOS->Reset();
   f2pCorrelatorCosPsiDiffOS->Reset();
   f2pCorrelatorCos2PsiDiffOS->Reset();
+  fOverlapEBEOSPOI1->Reset();
+  fOverlapEBEOSPOI2->Reset();
   fRePEBEPP->Reset();
   fImPEBEPP->Reset();
   f2pCorrelatorCosPsiDiffPP->Reset();
   f2pCorrelatorCos2PsiDiffPP->Reset();
+  fOverlapEBEPPPOI1->Reset();
+  fOverlapEBEPPPOI2->Reset();
   fRePEBENN->Reset();
   fImPEBENN->Reset();
   f2pCorrelatorCosPsiDiffNN->Reset();
   f2pCorrelatorCos2PsiDiffNN->Reset();
+  fOverlapEBENNPOI1->Reset();
+  fOverlapEBENNPOI2->Reset();
   
 }
 
-void AliAnalysisTaskGammaNonIsotropicCorr::SetupAnalysisHistograms(){
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::SetupAnalysisHistograms(){
   
   Double_t centRange[11] = {0,5,10,20,30,40,50,60,70,80,90}; // Usual Bins for Observables
   Char_t  name[100];
@@ -1664,8 +1750,9 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupAnalysisHistograms(){
 
 //=======================================================================================================================
 
-void AliAnalysisTaskGammaNonIsotropicCorr::Calculate2pCorrelator()
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::Calculate2pCorrelator()
 {
+	// filled per event. Each event is weighted equally. 
 	f2pCorrelatorCosPsiDiffEBE->Fill(centrality, f2pCorrelatorCosPsiDiffPerEvent->GetBinContent(1));
 	f2pCorrelatorCos2PsiDiffEBE->Fill(centrality, f2pCorrelatorCos2PsiDiffPerEvent->GetBinContent(1));
 	f2pCorrelatorCos2PsiDiff2PsiV0CRPEBE->Fill(centrality, f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent->GetBinContent(1)); //<cos(2psi1-2phi_V0C)> // no event-by-event
@@ -1678,7 +1765,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::Calculate2pCorrelator()
 
 //=======================================================================================================================
 
-void AliAnalysisTaskGammaNonIsotropicCorr::CalculateNonIsotropicTerms()
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::CalculateNonIsotropicTerms()
 {
  // Calculate non-isotropic terms which appear in the decomposition of 3-p correlator <cos[n(phi1+phi2-2phi3)]>.
  
@@ -1699,59 +1786,64 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateNonIsotropicTerms()
 	
  // a) Calculate without using particle weights:
   // Multiplicity (number of RPs):
-  Double_t dMult = fCMEQReRP->GetBinEntries(1); // (*fSpk)(0,0);
+  Double_t dMult1n = fCMEQReRP->GetBinEntries(1); // (*fSpk)(0,0); sum(w)  (*fSpk)(p,k) = (sum(w^k))^(p+1)
+  Double_t dMult2n = fCMEQReRP->GetBinEntries(4); // (*fSpk)(0,1); sum(w^2)
+  Double_t dMult3n = fCMEQReRP->GetBinEntries(7); // (*fSpk)(0,2); sum(w^3)
+  
   // Real and imaginary parts of non-weighted Q-vectors (Q_{n,0}) evaluated in harmonics n and 2n: 
-  Double_t dReQ1n = fCMEQReRP->GetBinContent(1)*dMult; // (*fReQnk)(0,0) Qvec TPC cos(phi) 
-  Double_t dReQ2n = fCMEQReRP->GetBinContent(2)*dMult; // (*fReQnk)(1,0); 
-  Double_t dImQ1n = fCMEQImRP->GetBinContent(1)*dMult; // (*fImQnk)(0,0);
-  Double_t dImQ2n = fCMEQImRP->GetBinContent(2)*dMult; // (*fImQnk)(1,0);
+  Double_t dReQ1n1k = fCMEQReRP->GetBinContent(1)*dMult1n; // (*fReQnk)(0,0) Qvec TPC w*cos(phi) 
+  Double_t dReQ1n2k = fCMEQReRP->GetBinContent(4)*dMult2n; // (*fReQnk)(2,0) Qvec TPC w^2*cos(phi) 
+  Double_t dReQ2n1k = fCMEQReRP->GetBinContent(2)*dMult1n; // (*fReQnk)(1,1) w*cos(2phi)
+  Double_t dImQ1n1k = fCMEQImRP->GetBinContent(1)*dMult1n; // (*fImQnk)(0,0) w*sin(phi)
+  Double_t dImQ1n2k = fCMEQImRP->GetBinContent(4)*dMult2n; // (*fImQnk)(2,0) w^2*sin(phi)
+  Double_t dImQ2n1k = fCMEQImRP->GetBinContent(2)*dMult1n; // (*fImQnk)(1,1) w*sin(2phi)
   // 1-particle terms:
   Double_t cosP1n = 0.; // <cos(n*(phi1))>  
   Double_t sinP1n = 0.; // <sin(n*(phi1))>
   Double_t cosP2n = 0.; // <cos(2n*(phi1))>  
   Double_t sinP2n = 0.; // <sin(2n*(phi1))>
-  if(dMult>0) 
+  if(dMult1n>0) 
   { 
-   cosP1n = dReQ1n/dMult; 
-   sinP1n = dImQ1n/dMult;
-   cosP2n = dReQ2n/dMult; 
-   sinP2n = dImQ2n/dMult;   
+   cosP1n = dReQ1n1k/dMult1n; 
+   sinP1n = dImQ1n1k/dMult1n; 
+   cosP2n = dReQ2n1k/dMult1n; 
+   sinP2n = dImQ2n1k/dMult1n; 
    // All-event avarages:
-   fNonIsotropicTermsPro[0]->Fill(centrality,cosP1n,dMult); // <<cos(n*(phi1))>> 
-   fNonIsotropicTermsPro[1]->Fill(centrality,sinP1n,dMult); // <<sin(n*(phi1))>>   
-   fNonIsotropicTermsPro[2]->Fill(centrality,cosP2n,dMult); // <<cos(2n*(phi1))>> 
-   fNonIsotropicTermsPro[3]->Fill(centrality,sinP2n,dMult); // <<sin(2n*(phi1))>>    
-  } // end of if(dMult>0) 
+   fNonIsotropicTermsPro[0]->Fill(centrality,cosP1n,dMult1n); // <<w*cos(n*(phi1))>> 
+   fNonIsotropicTermsPro[1]->Fill(centrality,sinP1n,dMult1n); // <<w*sin(n*(phi1))>>   
+   fNonIsotropicTermsPro[2]->Fill(centrality,cosP2n,dMult1n); // <<w*cos(2n*(phi1))>> 
+   fNonIsotropicTermsPro[3]->Fill(centrality,sinP2n,dMult1n); // <<w*sin(2n*(phi1))>>    
+  } // end of if(dMult1n>0) 
   // 2-particle terms:
-  Double_t cosP1nP1n = 0.; // <cos(n*(phi1+phi2))>
-  Double_t sinP1nP1n = 0.; // <sin(n*(phi1+phi2))>
-  Double_t cosP2nM1n = 0.; // <cos(n*(2phi1-phi2))>
-  Double_t sinP2nM1n = 0.; // <sin(n*(2phi1-phi2))>
-  if(dMult>1)
+  Double_t cosP1nP1n = 0.; // <cos(phi1+phi2)>=(<w1cos(phi1)>)^2+(<w1sin(phi1)>)^2-<w1^2cos(2phi1)>
+  Double_t sinP1nP1n = 0.; // <sin(phi1+phi2)>
+  Double_t cosP2nM1n = 0.; // <cos(2phi1-phi2)>=<w1cos(2phi1)><w1cos(phi1)>+<w1sin(2phi1)><w1sin(phi1)>-<w^2cos(phi1)>
+  Double_t sinP2nM1n = 0.; // <sin(2phi1-phi2)>
+  if(dMult1n>1)
   {
-   cosP1nP1n = (pow(dReQ1n,2)-pow(dImQ1n,2)-dReQ2n)/(dMult*(dMult-1)); 
-   sinP1nP1n = (2.*dReQ1n*dImQ1n-dImQ2n)/(dMult*(dMult-1)); 
-   cosP2nM1n = (dReQ2n*dReQ1n+dImQ2n*dImQ1n-dReQ1n)/(dMult*(dMult-1)); 
-   sinP2nM1n = (dImQ2n*dReQ1n-dReQ2n*dImQ1n-dImQ1n)/(dMult*(dMult-1)); 
+   cosP1nP1n = (pow(dReQ1n1k,2)-pow(dImQ1n1k,2)-dReQ2n1k)/(dMult1n*dMult1n-dMult1n); // (pow(dReQ1n,2)-pow(dImQ1n,2)-dReQ2n)/(dMult1n*(dMult1n-1)) for wgt=1
+   sinP1nP1n = (2.*dReQ1n1k*dImQ1n1k-dImQ2n1k)/(dMult1n*dMult1n-dMult1n); // (2.*dReQ1n*dImQ1n-dImQ2n)/(dMult1n*(dMult1n-1)) for wgt=1
+   // <<cos(2phi1-phi2)>> = <<w1cos(2phi1)w2cos(phi2)+w1sin(2phi1)w2sin(phi2)-w1^2cos(phi1)>>
+   cosP2nM1n = (dReQ2n1k*dReQ1n1k+dImQ2n1k*dImQ1n1k-dReQ1n2k)/(dMult1n*dMult1n-dMult2n); // (dReQ2n*dReQ1n+dImQ2n*dImQ1n-dReQ1n)/(dMult1n*(dMult1n-1)) for wgt=1
+   // <<sin(2phi1-phi2)>> = <<w1sin(2phi1)w2cos(phi2)-w1cos(2phi1)w2sin(phi2)-w1^2sin(phi1)>>
+   sinP2nM1n = (dImQ2n1k*dReQ1n1k-dReQ2n1k*dImQ1n1k-dImQ1n2k)/(dMult1n*dMult1n-dMult2n); // (dImQ2n*dReQ1n-dReQ2n*dImQ1n-dImQ1n)/(dMult1n*(dMult1n-1)) for wgt=1
    // All-event avarages:
-   fNonIsotropicTermsPro[4]->Fill(centrality,cosP1nP1n,dMult*(dMult-1.)); // <<cos(n*(phi1+phi2))>> 
-   fNonIsotropicTermsPro[5]->Fill(centrality,sinP1nP1n,dMult*(dMult-1.)); // <<sin(n*(phi1+phi2))>>   
-   fNonIsotropicTermsPro[6]->Fill(centrality,cosP2nM1n,dMult*(dMult-1.)); // <<cos(n*(2phi1-phi2))>> 
-   fNonIsotropicTermsPro[7]->Fill(centrality,sinP2nM1n,dMult*(dMult-1.)); // <<sin(n*(2phi1-phi2))>>   
-  } // end of if(dMult>1) 
+   fNonIsotropicTermsPro[4]->Fill(centrality,cosP1nP1n,dMult1n*dMult1n-dMult1n); // <<cos(n*(phi1+phi2))>> multiply by  (dMult1n*(dMult1n-1)) for wgt=1
+   fNonIsotropicTermsPro[5]->Fill(centrality,sinP1nP1n,dMult1n*dMult1n-dMult1n); // <<sin(n*(phi1+phi2))>> multiply by  (dMult1n*(dMult1n-1)) for wgt=1
+   fNonIsotropicTermsPro[6]->Fill(centrality,cosP2nM1n,dMult1n*dMult1n-dMult2n); // <<cos(n*(2phi1-phi2))>> multiply by  (dMult1n*(dMult1n-1)) for wgt=1
+   fNonIsotropicTermsPro[7]->Fill(centrality,sinP2nM1n,dMult1n*dMult1n-dMult2n); // <<sin(n*(2phi1-phi2))>> multiply by  (dMult1n*(dMult1n-1)) for wgt=1
+  } // end of if(dMult1n>1) 
   // 3-particle: correct and ready but not needed, hence commented out.
-  Double_t cosP1nM1nM1n = 0.; // <cos(n*(phi1-phi2-phi3))>
-  Double_t sinP1nM1nM1n = 0.; // <sin(n*(phi1-phi2-phi3))>
-  if(dMult>2)
-  {
-   cosP1nM1nM1n = (dReQ1n*(pow(dReQ1n,2)+pow(dImQ1n,2))-dReQ1n*dReQ2n-dImQ1n*dImQ2n-2.*(dMult-1)*dReQ1n)
-                / (dMult*(dMult-1)*(dMult-2)); 
-   sinP1nM1nM1n = (-dImQ1n*(pow(dReQ1n,2)+pow(dImQ1n,2))+dReQ1n*dImQ2n-dImQ1n*dReQ2n+2.*(dMult-1)*dImQ1n)
-                / (dMult*(dMult-1)*(dMult-2));              
-   // All-events avarages:
-   fNonIsotropicTermsPro[8]->Fill(centrality,cosP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
-   fNonIsotropicTermsPro[9]->Fill(centrality,sinP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<sin(n*(phi1-phi2-phi3))>>    
-  } // end of if(dMult>2)
+  //Double_t cosP1nM1nM1n = 0.; // <cos(n*(phi1-phi2-phi3))>
+  //Double_t sinP1nM1nM1n = 0.; // <sin(n*(phi1-phi2-phi3))>
+  //if(dMult1n>2)
+  //{
+   //cosP1nM1nM1n = (dReQ1n1k*(pow(dReQ1n1k,2)+pow(dImQ1n1k,2))-dReQ1n1k*dReQ2n1k-dImQ1n1k*dImQ2n1k-2.*(dMult1n-1)*dReQ1n1k) / (dMult1n*(dMult1n-1)*(dMult1n-2)); 
+   //sinP1nM1nM1n = (-dImQ1n1k*(pow(dReQ1n1k,2)+pow(dImQ1n1k,2))+dReQ1n1k*dImQ2n1k-dImQ1n1k*dReQ2n1k+2.*(dMult1n-1)*dImQ1n1k) / (dMult1n*(dMult1n-1)*(dMult1n-2));              
+   //// All-events avarages:
+   //fNonIsotropicTermsPro[8]->Fill(centrality,cosP1nM1nM1n,dMult1n*(dMult1n-1.)*(dMult1n-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
+   //fNonIsotropicTermsPro[9]->Fill(centrality,sinP1nM1nM1n,dMult1n*(dMult1n-1.)*(dMult1n-2.)); // <<sin(n*(phi1-phi2-phi3))>>    
+  //} // end of if(dMult1n>2)
   
   // V0 and ZDC
   fNonIsotropicTermsV0Pro[0]->Fill(centrality, TMath::Cos(fPsi2V0C));
@@ -1777,11 +1869,11 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateNonIsotropicTerms()
   fNonIsotropicTermsZDCPro[11]->Fill(centrality, TMath::Sin(2*fPsiZDCCA));
   
 
-} // end of void AliAnalysisTaskGammaNonIsotropicCorr::CalculateNonIsotropicTerms()
+} // end of void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::CalculateNonIsotropicTerms()
 
 //=======================================================================================================================
 
-void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::CalculateDifferential3pCorrelator()
 {
  // Calculate differential 3-p azimuthal correlator cos[n(psi1+psi2-2phi3)] in terms of Q_{2n}, p_{n}, q1_{n} and q2_{n}.
  
@@ -1792,10 +1884,12 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
    Int_t iBinCounter = 0;
    
   // Multiplicity (number of RPs):
-  Double_t dMult = fCMEQReRP->GetBinEntries(1); // (*fSpk)(0,0);
+  Double_t dMult1n = fCMEQReRP->GetBinEntries(1); // (*fSpk)(0,0); sum(w)  (*fSpk)(p,k) = (sum(w^k))^(p+1)
+  Double_t dMult2n = fCMEQReRP->GetBinEntries(4); // (*fSpk)(0,1); sum(w^2)
+  
   // Real and imaginary parts of non-weighted Q-vectors (Q_{n,0}) evaluated in harmonic 2n: 
-  Double_t dReQ2n = fCMEQReRP->GetBinContent(2)*dMult; // (*fReQnk)(1,0);
-  Double_t dImQ2n = fCMEQImRP->GetBinContent(2)*dMult; // (*fImQnk)(1,0);
+  Double_t dReQ2n1k = fCMEQReRP->GetBinContent(2)*dMult1n; // (*fReQnk)(1,1); w^2cos(2phi)
+  Double_t dImQ2n1k = fCMEQImRP->GetBinContent(2)*dMult1n; // (*fImQnk)(1,1); w^2cos(2phi)
   
   Double_t dReQ2nV0C = cos(2*fPsi2V0C);
   Double_t dImQ2nV0C = sin(2*fPsi2V0C);
@@ -1820,32 +1914,34 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
   Double_t p1nImNN = fImPEBENN->GetBinContent(1)*fImPEBENN->GetBinEntries(1); // <sin(dPsi1+dPsi2)>
   
   // overlap 1: to be improved (terminology)
-  Double_t overlap1OS = f2pCorrelatorCosPsiDiffOS->GetBinContent(1)*f2pCorrelatorCosPsiDiffOS->GetBinEntries(1); // POI 1 <cos(dPsi1-dPsi2)>
-  Double_t overlap1PP = f2pCorrelatorCosPsiDiffPP->GetBinContent(1)*f2pCorrelatorCosPsiDiffPP->GetBinEntries(1); // POI 1 <cos(dPsi1-dPsi2)>
-  Double_t overlap1NN = f2pCorrelatorCosPsiDiffNN->GetBinContent(1)*f2pCorrelatorCosPsiDiffNN->GetBinEntries(1); // POI 1 <cos(dPsi1-dPsi2)>
+  Double_t overlap1OS = fOverlapEBEOSPOI1->GetBinContent(1)*fOverlapEBEOSPOI1->GetBinEntries(1); // POI 1 <w1^2w2cos(dPsi1-dPsi2)>
+  Double_t overlap1PP = fOverlapEBEPPPOI1->GetBinContent(1)*fOverlapEBEPPPOI1->GetBinEntries(1); // POI 1 <w1^2w2cos(dPsi1-dPsi2)>
+  Double_t overlap1NN = fOverlapEBENNPOI1->GetBinContent(1)*fOverlapEBENNPOI1->GetBinEntries(1); // POI 1 <w1^2w2cos(dPsi1-dPsi2)>
   // overlap 2: to be improved (terminology)
-  Double_t overlap2OS = f2pCorrelatorCosPsiDiffOS->GetBinContent(1)*f2pCorrelatorCosPsiDiffOS->GetBinEntries(1); // POI 2 <cos(dPsi1-dPsi2)> same as POI1
-  Double_t overlap2PP = f2pCorrelatorCosPsiDiffPP->GetBinContent(1)*f2pCorrelatorCosPsiDiffPP->GetBinEntries(1); // POI 2 <cos(dPsi1-dPsi2)> same as POI1
-  Double_t overlap2NN = f2pCorrelatorCosPsiDiffNN->GetBinContent(1)*f2pCorrelatorCosPsiDiffNN->GetBinEntries(1); // POI 2 <cos(dPsi1-dPsi2)> same as POI1
-  // number of pairs of POIs in particular (p1+p2)/2 or |p1-p2| bin:
-  Double_t mpOS = f2pCorrelatorCosPsiDiffOS->GetBinEntries(1);
+  Double_t overlap2OS = fOverlapEBEOSPOI2->GetBinContent(1)*fOverlapEBEOSPOI2->GetBinEntries(1); // POI 2 <w1w2^2cos(dPsi1-dPsi2)> same as POI1
+  Double_t overlap2PP = fOverlapEBEPPPOI2->GetBinContent(1)*fOverlapEBEPPPOI2->GetBinEntries(1); // POI 2 <w1w2^2cos(dPsi1-dPsi2)> same as POI1
+  Double_t overlap2NN = fOverlapEBENNPOI2->GetBinContent(1)*fOverlapEBENNPOI2->GetBinEntries(1); // POI 2 <w1w2^2cos(dPsi1-dPsi2)> same as POI1
+  // number of pairs of POIs 
+  Double_t mpOS = f2pCorrelatorCosPsiDiffOS->GetBinEntries(1); // <w1w2>
   Double_t mpPP = f2pCorrelatorCosPsiDiffPP->GetBinEntries(1);
   Double_t mpNN = f2pCorrelatorCosPsiDiffNN->GetBinEntries(1);
   // number of pairs of POI1/RP and POI2 in particular (p1+p2)/2 or |p1-p2| bin:
-  Double_t mOverlap1OS = f2pCorrelatorCosPsiDiffOS->GetBinEntries(1); // same number as POI1 and POI2 are all RP except for charges
-  Double_t mOverlap1PP = f2pCorrelatorCosPsiDiffPP->GetBinEntries(1); // same number as POI1 and POI2 are all RP except for charges
-  Double_t mOverlap1NN = f2pCorrelatorCosPsiDiffNN->GetBinEntries(1); // same number as POI1 and POI2 are all RP except for charges
+  Double_t mOverlap1OS = fOverlapEBEOSPOI1->GetBinEntries(1); // <w1^2w2> same number as POI1 and POI2 are all RP except for charges
+  Double_t mOverlap1PP = fOverlapEBEPPPOI1->GetBinEntries(1); // <w1^2w2> same number as POI1 and POI2 are all RP except for charges
+  Double_t mOverlap1NN = fOverlapEBENNPOI1->GetBinEntries(1); // <w1^2w2> same number as POI1 and POI2 are all RP except for charges
   // number of pairs of POI2/RP and POI1 in particular (p1+p2)/2 or |p1-p2| bin:
-  Double_t mOverlap2OS = f2pCorrelatorCosPsiDiffOS->GetBinEntries(1);
-  Double_t mOverlap2PP = f2pCorrelatorCosPsiDiffPP->GetBinEntries(1);
-  Double_t mOverlap2NN = f2pCorrelatorCosPsiDiffNN->GetBinEntries(1);
-  // e-b-e weight for cos[n(psi1+psi2-2phi3)]:
-  Double_t weightOS = mpOS*dMult-mOverlap1OS-mOverlap2OS;  // if POI1, POI2 and RP selection is same except for charge, mp=mOverlap1=mOverlap2
-  Double_t weightForV0andZDCOS = mpOS; // no overlap between psi1, psi2 and V0,ZDC. dMult for V0 and ZDC is just 1
-  Double_t weightPP = mpPP*dMult-mOverlap1PP-mOverlap2PP;  // if POI1, POI2 and RP selection is same except for charge, mp=mOverlap1=mOverlap2
-  Double_t weightForV0andZDCPP = mpPP; // no overlap between psi1, psi2 and V0,ZDC. dMult for V0 and ZDC is just 1
-  Double_t weightNN = mpNN*dMult-mOverlap1NN-mOverlap2NN;  // if POI1, POI2 and RP selection is same except for charge, mp=mOverlap1=mOverlap2
-  Double_t weightForV0andZDCNN = mpNN; // no overlap between psi1, psi2 and V0,ZDC. dMult for V0 and ZDC is just 1
+  Double_t mOverlap2OS = fOverlapEBEOSPOI2->GetBinEntries(1); // <w1w2^2>
+  Double_t mOverlap2PP = fOverlapEBEPPPOI2->GetBinEntries(1); // <w1w2^2>
+  Double_t mOverlap2NN = fOverlapEBENNPOI2->GetBinEntries(1); // <w1w2^2>
+  
+  // e-b-e weight for cos[n(psi1+psi2-2phi3)]: 
+  // for wgt = 1, weightOS = mpOS*dMult1n-mOverlap1OS-mOverlap2OS
+  Double_t weightOS = mpOS*dMult1n-mOverlap1OS-mOverlap2OS;  // if POI1, POI2 and RP selection is same except for charge, mp=mOverlap1=mOverlap2 <w1w2><w3>-<w1^2w2>-<w1w2^2>
+  Double_t weightForV0andZDCOS = mpOS; // no overlap between psi1, psi2 and V0,ZDC. dMult1n for V0 and ZDC is just 1
+  Double_t weightPP = mpPP*dMult1n-mOverlap1PP-mOverlap2PP;  // if POI1, POI2 and RP selection is same except for charge, mp=mOverlap1=mOverlap2
+  Double_t weightForV0andZDCPP = mpPP; // no overlap between psi1, psi2 and V0,ZDC. dMult1n for V0 and ZDC is just 1
+  Double_t weightNN = mpNN*dMult1n-mOverlap1NN-mOverlap2NN;  // if POI1, POI2 and RP selection is same except for charge, mp=mOverlap1=mOverlap2
+  Double_t weightForV0andZDCNN = mpNN; // no overlap between psi1, psi2 and V0,ZDC. dMult1n for V0 and ZDC is just 1
     
   Double_t cosP2nphi1M1npsi2M1npsi2OS = 0; // cos[n(psi1+psi2-2phi3)]
   Double_t cosP2nphi1M1npsi2M1npsiV0COS = 0, cosP2nphi1M1npsi2M1npsiV0AOS = 0; // cos[n(psi1+psi2-2phi_V0)]
@@ -1859,7 +1955,8 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
     
   if(weightOS>0.)
   {
-     cosP2nphi1M1npsi2M1npsi2OS = (p1nReOS*dReQ2n+p1nImOS*dImQ2n-overlap1OS-overlap2OS)/(weightOS);
+	 // <cos[psi1+psi2-2phi3]>=<w1w1cos(psi1+psi2)><w3cos(2phi3)>+<w1w2sin(psi1+psi2)><w3sin(2phi3)>-<w1^2w2cos(phi1-psi2)>-<w1w2^2cos(phi1-phi2>
+     cosP2nphi1M1npsi2M1npsi2OS = (p1nReOS*dReQ2n1k+p1nImOS*dImQ2n1k-overlap1OS-overlap2OS)/(weightOS);
      f3pCorrelatorTPCOSPro->Fill(centrality,cosP2nphi1M1npsi2M1npsi2OS,weightOS);
      
      // Calculate differential 3-p correlator for V0
@@ -1878,7 +1975,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
   }
   if(weightPP>0.)
   {
-     cosP2nphi1M1npsi2M1npsi2PP = (p1nRePP*dReQ2n+p1nImPP*dImQ2n-overlap1PP-overlap2PP)/(weightPP);
+     cosP2nphi1M1npsi2M1npsi2PP = (p1nRePP*dReQ2n1k+p1nImPP*dImQ2n1k-overlap1PP-overlap2PP)/(weightPP);
      f3pCorrelatorTPCPPPro->Fill(centrality,cosP2nphi1M1npsi2M1npsi2PP,weightPP);
      f3pCorrelatorTPCSSPro->Fill(centrality,cosP2nphi1M1npsi2M1npsi2PP,weightPP);
      
@@ -1904,7 +2001,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
   }
   if(weightNN>0.)
   {
-     cosP2nphi1M1npsi2M1npsi2NN = (p1nReNN*dReQ2n+p1nImNN*dImQ2n-overlap1NN-overlap2NN)/(weightNN);
+     cosP2nphi1M1npsi2M1npsi2NN = (p1nReNN*dReQ2n1k+p1nImNN*dImQ2n1k-overlap1NN-overlap2NN)/(weightNN);
      f3pCorrelatorTPCNNPro->Fill(centrality,cosP2nphi1M1npsi2M1npsi2NN,weightNN);
      f3pCorrelatorTPCSSPro->Fill(centrality,cosP2nphi1M1npsi2M1npsi2NN,weightNN);
      
@@ -1931,41 +2028,56 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
      
   // b) Calculate non-isotropic terms for 3-p correlator.
   // non-isotropic terms, 1st POI:
-  Double_t p1nRePOI1OS = fCMEQReRP->GetBinContent(1)*fCMEQReRP->GetBinEntries(1); //Cos(dPsi1) POI1, since POI OS is same as RP
-  Double_t p1nImPOI1OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //Sin(dPsi1) POI1
+  Double_t p1nRePOI1OS = fCMEQReRP->GetBinContent(1)*fCMEQReRP->GetBinEntries(1); //w*Cos(dPsi1) POI1, since POI OS is same as RP
+  Double_t p1nImPOI1OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //w*Sin(dPsi1) POI1
   Double_t mpPOI1OS = fCMEQReRP->GetBinEntries(1);
-  Double_t q1nRePOI1OS = fCMEQReRP->GetBinContent(1)*fCMEQReRP->GetBinEntries(1); //Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
-  Double_t q1nImPOI1OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //Sin(dPsi1) POI1&RP
+  Double_t q1nRePOI1OS = fCMEQReRP->GetBinContent(1)*fCMEQReRP->GetBinEntries(1); //w*Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
+  Double_t q1nImPOI1OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //w*Sin(dPsi1) POI1&RP
   Double_t mqPOI1OS = fCMEQReRP->GetBinEntries(1); 
+  Double_t q1n2kRePOI1OS = fCMEQReRP->GetBinContent(4)*fCMEQReRP->GetBinEntries(4); //w^2Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
+  Double_t q1n2kImPOI1OS = fCMEQImRP->GetBinContent(4)*fCMEQImRP->GetBinEntries(4); //w^2Sin(dPsi1) POI1&RP
+  Double_t mq2kPOI1OS = fCMEQReRP->GetBinEntries(4); //w^2
   
-  Double_t p1nRePOI1PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //Cos(dPsi1) POI1
-  Double_t p1nImPOI1PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //Sin(dPsi1) POI1
+  Double_t p1nRePOI1PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //w*Cos(dPsi1) POI1
+  Double_t p1nImPOI1PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //w*Sin(dPsi1) POI1
   Double_t mpPOI1PP = fCMEQRePOIPos->GetBinEntries(1);
-  Double_t q1nRePOI1PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
-  Double_t q1nImPOI1PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //Sin(dPsi1) POI1&RP
-  Double_t mqPOI1PP = fCMEQRePOIPos->GetBinEntries(1); 
+  Double_t q1nRePOI1PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //w*Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
+  Double_t q1nImPOI1PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //w*Sin(dPsi1) POI1&RP
+  Double_t mqPOI1PP = fCMEQRePOIPos->GetBinEntries(1);
+  Double_t q1n2kRePOI1PP = fCMEQRePOIPos->GetBinContent(4)*fCMEQRePOIPos->GetBinEntries(4); //w^2Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
+  Double_t q1n2kImPOI1PP = fCMEQImPOIPos->GetBinContent(4)*fCMEQImPOIPos->GetBinEntries(4); //w^2Sin(dPsi1) POI1&RP
+  Double_t mq2kPOI1PP = fCMEQRePOIPos->GetBinEntries(4); //w^2
   
-  Double_t p1nRePOI1NN = fCMEQRePOINeg->GetBinContent(1)*fCMEQRePOINeg->GetBinEntries(1); //Cos(dPsi1) POI1
-  Double_t p1nImPOI1NN = fCMEQImPOINeg->GetBinContent(1)*fCMEQImPOINeg->GetBinEntries(1); //Sin(dPsi1) POI1
+  Double_t p1nRePOI1NN = fCMEQRePOINeg->GetBinContent(1)*fCMEQRePOINeg->GetBinEntries(1); //w*Cos(dPsi1) POI1
+  Double_t p1nImPOI1NN = fCMEQImPOINeg->GetBinContent(1)*fCMEQImPOINeg->GetBinEntries(1); //w*Sin(dPsi1) POI1
   Double_t mpPOI1NN = fCMEQRePOINeg->GetBinEntries(1);
-  Double_t q1nRePOI1NN = fCMEQRePOINeg->GetBinContent(1)*fCMEQRePOINeg->GetBinEntries(1); //Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
-  Double_t q1nImPOI1NN = fCMEQImPOINeg->GetBinContent(1)*fCMEQImPOINeg->GetBinEntries(1); //Sin(dPsi1) POI1&RP
+  Double_t q1nRePOI1NN = fCMEQRePOINeg->GetBinContent(1)*fCMEQRePOINeg->GetBinEntries(1); //w*Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
+  Double_t q1nImPOI1NN = fCMEQImPOINeg->GetBinContent(1)*fCMEQImPOINeg->GetBinEntries(1); //w*Sin(dPsi1) POI1&RP
   Double_t mqPOI1NN = fCMEQRePOINeg->GetBinEntries(1); 
+  Double_t q1n2kRePOI1NN = fCMEQRePOINeg->GetBinContent(4)*fCMEQRePOINeg->GetBinEntries(4); //w^2Cos(dPsi1) POI1&RP, same as above as POI and RP overlap completely
+  Double_t q1n2kImPOI1NN = fCMEQImPOINeg->GetBinContent(4)*fCMEQImPOINeg->GetBinEntries(4); //w^2Sin(dPsi1) POI1&RP
+  Double_t mq2kPOI1NN = fCMEQRePOINeg->GetBinEntries(4); //w^2
   
   // non-isotropic terms, 2nd POI:
-  Double_t p1nRePOI2OS = fCMEQReRP->GetBinContent(1)*fCMEQReRP->GetBinEntries(1); //Cos(dPsi1) POI2, same as POI1 if POI1 and POI2 has exactly same selection
-  Double_t p1nImPOI2OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //Sin(dPsi1) POI2
+  Double_t p1nRePOI2OS = fCMEQReRP->GetBinContent(1)*fCMEQReRP->GetBinEntries(1); //w*Cos(dPsi1) POI2, same as POI1 if POI1 and POI2 has exactly same selection
+  Double_t p1nImPOI2OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //w*Sin(dPsi1) POI2
   Double_t mpPOI2OS = fCMEQReRP->GetBinEntries(1);
-  Double_t q1nRePOI2OS = fCMEQReRP->GetBinContent(1)*fCMEQReRP->GetBinEntries(1); //Cos(dPsi1) POI2&RP
-  Double_t q1nImPOI2OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //Sin(dPsi1) POI2&RP
+  Double_t q1nRePOI2OS = fCMEQReRP->GetBinContent(1)*fCMEQReRP->GetBinEntries(1); //w*Cos(dPsi1) POI2&RP
+  Double_t q1nImPOI2OS = fCMEQImRP->GetBinContent(1)*fCMEQImRP->GetBinEntries(1); //w*Sin(dPsi1) POI2&RP
   Double_t mqPOI2OS = fCMEQReRP->GetBinEntries(1);
+  Double_t q1n2kRePOI2OS = fCMEQReRP->GetBinContent(4)*fCMEQReRP->GetBinEntries(4); //w^2Cos(dPsi1) POI2&RP
+  Double_t q1n2kImPOI2OS = fCMEQImRP->GetBinContent(4)*fCMEQImRP->GetBinEntries(4); //w^2Sin(dPsi1) POI2&RP
+  Double_t mq2kPOI2OS = fCMEQReRP->GetBinEntries(4); //w^2
   
-  Double_t p1nRePOI2PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //Cos(dPsi1) POI2
-  Double_t p1nImPOI2PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //Sin(dPsi1) POI2
+  Double_t p1nRePOI2PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //w*Cos(dPsi1) POI2
+  Double_t p1nImPOI2PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //w*Sin(dPsi1) POI2
   Double_t mpPOI2PP = fCMEQRePOIPos->GetBinEntries(1);
-  Double_t q1nRePOI2PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //Cos(dPsi1) POI2&RP, same as above as POI and RP overlap completely
-  Double_t q1nImPOI2PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //Sin(dPsi1) POI2&RP
+  Double_t q1nRePOI2PP = fCMEQRePOIPos->GetBinContent(1)*fCMEQRePOIPos->GetBinEntries(1); //w*Cos(dPsi1) POI2&RP, same as above as POI and RP overlap completely
+  Double_t q1nImPOI2PP = fCMEQImPOIPos->GetBinContent(1)*fCMEQImPOIPos->GetBinEntries(1); //w*Sin(dPsi1) POI2&RP
   Double_t mqPOI2PP = fCMEQRePOIPos->GetBinEntries(1); 
+  Double_t q1n2kRePOI2PP = fCMEQRePOIPos->GetBinContent(4)*fCMEQRePOIPos->GetBinEntries(4); //w^2Cos(dPsi1) POI2&RP, same as above as POI and RP overlap completely
+  Double_t q1n2kImPOI2PP = fCMEQImPOIPos->GetBinContent(4)*fCMEQImPOIPos->GetBinEntries(4); //w^2Sin(dPsi1) POI2&RP
+  Double_t mq2kPOI2PP = fCMEQRePOIPos->GetBinEntries(4); //w^2
   
   Double_t p1nRePOI2NN = fCMEQRePOINeg->GetBinContent(1)*fCMEQRePOINeg->GetBinEntries(1); //Cos(dPsi1) POI2
   Double_t p1nImPOI2NN = fCMEQImPOINeg->GetBinContent(1)*fCMEQImPOINeg->GetBinEntries(1); //Sin(dPsi1) POI2
@@ -1973,6 +2085,9 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
   Double_t q1nRePOI2NN = fCMEQRePOINeg->GetBinContent(1)*fCMEQRePOINeg->GetBinEntries(1); //Cos(dPsi1) POI2&RP, same as above as POI and RP overlap completely
   Double_t q1nImPOI2NN = fCMEQImPOINeg->GetBinContent(1)*fCMEQImPOINeg->GetBinEntries(1); //Sin(dPsi1) POI2&RP
   Double_t mqPOI2NN = fCMEQRePOINeg->GetBinEntries(1); 
+  Double_t q1n2kRePOI2NN = fCMEQRePOINeg->GetBinContent(4)*fCMEQRePOINeg->GetBinEntries(4); //w^2Cos(dPsi1) POI2&RP, same as above as POI and RP overlap completely
+  Double_t q1n2kImPOI2NN = fCMEQImPOINeg->GetBinContent(4)*fCMEQImPOINeg->GetBinEntries(4); //w^2Sin(dPsi1) POI2&RP
+  Double_t mq2kPOI2NN = fCMEQRePOINeg->GetBinEntries(4); //w^2
   
   // Fill all-event profiles:   
   if(weightOS>0. && mpPOI1OS>0.)
@@ -1985,10 +2100,10 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
    fNonIsotropicTermsOSPro[2]->Fill(centrality,p1nRePOI2OS/mpPOI2OS,mpPOI2OS); // <<cos(#psi_{POI_2})>>
    fNonIsotropicTermsOSPro[3]->Fill(centrality,p1nImPOI2OS/mpPOI2OS,mpPOI2OS); // <<sin(#psi_{POI_2})>>
   }
-  if(weightOS>0. && mpPOI1OS*dMult-mqPOI1OS>0.)
+  if(weightOS>0. && mpPOI1OS*dMult1n-mq2kPOI1OS>0.)
   { 
-   fNonIsotropicTermsOSPro[4]->Fill(centrality,(p1nRePOI1OS*dReQ2n+p1nImPOI1OS*dImQ2n-q1nRePOI1OS)/(mpPOI1OS*dMult-mqPOI1OS),mpPOI1OS*dMult-mqPOI1OS); // <<cos(#psi_{POI_1}-2*phi)>>
-   fNonIsotropicTermsOSPro[5]->Fill(centrality, (p1nImPOI1OS*dReQ2n-p1nRePOI1OS*dImQ2n+q1nImPOI1OS)/(mpPOI1OS*dMult-mqPOI1OS),mpPOI1OS*dMult-mqPOI1OS); // <<sin(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsOSPro[4]->Fill(centrality,(p1nRePOI1OS*dReQ2n1k+p1nImPOI1OS*dImQ2n1k-q1n2kRePOI1OS)/(mpPOI1OS*dMult1n-mq2kPOI1OS),mpPOI1OS*dMult1n-mq2kPOI1OS); // <<cos(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsOSPro[5]->Fill(centrality, (p1nImPOI1OS*dReQ2n1k-p1nRePOI1OS*dImQ2n1k+q1n2kImPOI1OS)/(mpPOI1OS*dMult1n-mq2kPOI1OS),mpPOI1OS*dMult1n-mq2kPOI1OS); // <<sin(#psi_{POI_1}-2*phi)>>
    
    fNonIsotropicTermsV0OSPro[0]->Fill(centrality,(p1nRePOI1OS*dReQ2nV0C+p1nImPOI1OS*dImQ2nV0C)/(mpPOI1OS),mpPOI1OS); // <<cos(#psi_{POI_1}-2*phi_{V0C})>>
    fNonIsotropicTermsV0OSPro[1]->Fill(centrality, (p1nImPOI1OS*dReQ2nV0C-p1nRePOI1OS*dImQ2nV0C)/(mpPOI1OS),mpPOI1OS); // <<sin(#psi_{POI_1}-2*phi_{V0C})>>
@@ -2002,10 +2117,10 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
    fNonIsotropicTermsZDCOSPro[4]->Fill(centrality,(p1nRePOI1OS*dReQ2nZDCCA+p1nImPOI1OS*dImQ2nZDCCA)/(mpPOI1OS),mpPOI1OS); // <<cos(#psi_{POI_1}-2*phi_{ZDCCA})>>
    fNonIsotropicTermsZDCOSPro[5]->Fill(centrality, (p1nImPOI1OS*dReQ2nZDCCA-p1nRePOI1OS*dImQ2nZDCCA)/(mpPOI1OS),mpPOI1OS); // <<sin(#psi_{POI_1}-2*phi_{ZDCCA})>>
   }
-  if(weightOS>0. && mpPOI2OS*dMult-mqPOI2OS>0.)
+  if(weightOS>0. && mpPOI2OS*dMult1n-mq2kPOI2OS>0.)
   { 
-   fNonIsotropicTermsOSPro[6]->Fill(centrality,(p1nRePOI2OS*dReQ2n+p1nImPOI2OS*dImQ2n-q1nRePOI2OS)/(mpPOI2OS*dMult-mqPOI2OS),mpPOI2OS*dMult-mqPOI2OS); // <<cos(#psi_{POI_2}-2*phi)>>
-   fNonIsotropicTermsOSPro[7]->Fill(centrality,(p1nImPOI2OS*dReQ2n-p1nRePOI2OS*dImQ2n+q1nImPOI2OS)/(mpPOI2OS*dMult-mqPOI2OS),mpPOI2OS*dMult-mqPOI2OS); // <<sin(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsOSPro[6]->Fill(centrality,(p1nRePOI2OS*dReQ2n1k+p1nImPOI2OS*dImQ2n1k-q1n2kRePOI2OS)/(mpPOI2OS*dMult1n-mq2kPOI2OS),mpPOI2OS*dMult1n-mq2kPOI2OS); // <<cos(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsOSPro[7]->Fill(centrality,(p1nImPOI2OS*dReQ2n1k-p1nRePOI2OS*dImQ2n1k+q1n2kImPOI2OS)/(mpPOI2OS*dMult1n-mq2kPOI2OS),mpPOI2OS*dMult1n-mq2kPOI2OS); // <<sin(#psi_{POI_2}-2*phi)>>
    
    fNonIsotropicTermsV0OSPro[4]->Fill(centrality,(p1nRePOI2OS*dReQ2nV0C+p1nImPOI2OS*dImQ2nV0C)/(mpPOI2OS),mpPOI2OS); // <<cos(#psi_{POI_2}-2*phi_{V0C})>>
    fNonIsotropicTermsV0OSPro[5]->Fill(centrality, (p1nImPOI2OS*dReQ2nV0C-p1nRePOI2OS*dImQ2nV0C)/(mpPOI2OS),mpPOI2OS); // <<sin(#psi_{POI_2}-2*phi_{V0C})>>
@@ -2041,14 +2156,14 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
    fNonIsotropicTermsSSPro[2]->Fill(centrality,p1nRePOI2PP/mpPOI2PP,mpPOI2PP); // <<cos(#psi_{POI_2})>>
    fNonIsotropicTermsSSPro[3]->Fill(centrality,p1nImPOI2PP/mpPOI2PP,mpPOI2PP); // <<sin(#psi_{POI_2})>>
   }
-  if(weightPP>0. && mpPOI1PP*dMult-mqPOI1PP>0.)
+  if(weightPP>0. && mpPOI1PP*dMult1n-mq2kPOI1PP>0.)
   { 
    // TPC
-   fNonIsotropicTermsPPPro[4]->Fill(centrality,(p1nRePOI1PP*dReQ2n+p1nImPOI1PP*dImQ2n-q1nRePOI1PP)/(mpPOI1PP*dMult-mqPOI1PP),mpPOI1PP*dMult-mqPOI1PP); // <<cos(#psi_{POI_1}-2*phi)>>
-   fNonIsotropicTermsPPPro[5]->Fill(centrality, (p1nImPOI1PP*dReQ2n-p1nRePOI1PP*dImQ2n+q1nImPOI1PP)/(mpPOI1PP*dMult-mqPOI1PP),mpPOI1PP*dMult-mqPOI1PP); // <<sin(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsPPPro[4]->Fill(centrality,(p1nRePOI1PP*dReQ2n1k+p1nImPOI1PP*dImQ2n1k-q1n2kRePOI1PP)/(mpPOI1PP*dMult1n-mq2kPOI1PP),mpPOI1PP*dMult1n-mq2kPOI1PP); // <<cos(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsPPPro[5]->Fill(centrality, (p1nImPOI1PP*dReQ2n1k-p1nRePOI1PP*dImQ2n1k+q1n2kImPOI1PP)/(mpPOI1PP*dMult1n-mq2kPOI1PP),mpPOI1PP*dMult1n-mq2kPOI1PP); // <<sin(#psi_{POI_1}-2*phi)>>
    
-   fNonIsotropicTermsSSPro[4]->Fill(centrality,(p1nRePOI1PP*dReQ2n+p1nImPOI1PP*dImQ2n-q1nRePOI1PP)/(mpPOI1PP*dMult-mqPOI1PP),mpPOI1PP*dMult-mqPOI1PP); // <<cos(#psi_{POI_1}-2*phi)>>
-   fNonIsotropicTermsSSPro[5]->Fill(centrality, (p1nImPOI1PP*dReQ2n-p1nRePOI1PP*dImQ2n+q1nImPOI1PP)/(mpPOI1PP*dMult-mqPOI1PP),mpPOI1PP*dMult-mqPOI1PP); // <<sin(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsSSPro[4]->Fill(centrality,(p1nRePOI1PP*dReQ2n1k+p1nImPOI1PP*dImQ2n1k-q1n2kRePOI1PP)/(mpPOI1PP*dMult1n-mq2kPOI1PP),mpPOI1PP*dMult1n-mq2kPOI1PP); // <<cos(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsSSPro[5]->Fill(centrality, (p1nImPOI1PP*dReQ2n1k-p1nRePOI1PP*dImQ2n1k+q1n2kImPOI1PP)/(mpPOI1PP*dMult1n-mq2kPOI1PP),mpPOI1PP*dMult1n-mq2kPOI1PP); // <<sin(#psi_{POI_1}-2*phi)>>
    
    // V0
    fNonIsotropicTermsV0PPPro[0]->Fill(centrality,(p1nRePOI1PP*dReQ2nV0C+p1nImPOI1PP*dImQ2nV0C)/(mpPOI1PP),mpPOI1PP); // <<cos(#psi_{POI_1}-2*phi_{V0C})>>
@@ -2076,14 +2191,14 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
    fNonIsotropicTermsZDCSSPro[4]->Fill(centrality,(p1nRePOI1PP*dReQ2nZDCCA+p1nImPOI1PP*dImQ2nZDCCA)/(mpPOI1PP),mpPOI1PP); // <<cos(#psi_{POI_1}-2*phi_{ZDCCA})>>
    fNonIsotropicTermsZDCSSPro[5]->Fill(centrality, (p1nImPOI1PP*dReQ2nZDCCA-p1nRePOI1PP*dImQ2nZDCCA)/(mpPOI1PP),mpPOI1PP); // <<sin(#psi_{POI_1}-2*phi_{ZDCCA})>>
   }
-  if(weightPP>0. && mpPOI2PP*dMult-mqPOI2PP>0.)
+  if(weightPP>0. && mpPOI2PP*dMult1n-mq2kPOI2PP>0.)
   { 
    // TPC
-   fNonIsotropicTermsPPPro[6]->Fill(centrality,(p1nRePOI2PP*dReQ2n+p1nImPOI2PP*dImQ2n-q1nRePOI2PP)/(mpPOI2PP*dMult-mqPOI2PP),mpPOI2PP*dMult-mqPOI2PP); // <<cos(#psi_{POI_2}-2*phi)>>
-   fNonIsotropicTermsPPPro[7]->Fill(centrality,(p1nImPOI2PP*dReQ2n-p1nRePOI2PP*dImQ2n+q1nImPOI2PP)/(mpPOI2PP*dMult-mqPOI2PP),mpPOI2PP*dMult-mqPOI2PP); // <<sin(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsPPPro[6]->Fill(centrality,(p1nRePOI2PP*dReQ2n1k+p1nImPOI2PP*dImQ2n1k-q1n2kRePOI2PP)/(mpPOI2PP*dMult1n-mq2kPOI2PP),mpPOI2PP*dMult1n-mq2kPOI2PP); // <<cos(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsPPPro[7]->Fill(centrality,(p1nImPOI2PP*dReQ2n1k-p1nRePOI2PP*dImQ2n1k+q1n2kImPOI2PP)/(mpPOI2PP*dMult1n-mq2kPOI2PP),mpPOI2PP*dMult1n-mq2kPOI2PP); // <<sin(#psi_{POI_2}-2*phi)>>
    
-   fNonIsotropicTermsSSPro[6]->Fill(centrality,(p1nRePOI2PP*dReQ2n+p1nImPOI2PP*dImQ2n-q1nRePOI2PP)/(mpPOI2PP*dMult-mqPOI2PP),mpPOI2PP*dMult-mqPOI2PP); // <<cos(#psi_{POI_2}-2*phi)>>
-   fNonIsotropicTermsSSPro[7]->Fill(centrality,(p1nImPOI2PP*dReQ2n-p1nRePOI2PP*dImQ2n+q1nImPOI2PP)/(mpPOI2PP*dMult-mqPOI2PP),mpPOI2PP*dMult-mqPOI2PP); // <<sin(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsSSPro[6]->Fill(centrality,(p1nRePOI2PP*dReQ2n1k+p1nImPOI2PP*dImQ2n1k-q1n2kRePOI2PP)/(mpPOI2PP*dMult1n-mq2kPOI2PP),mpPOI2PP*dMult1n-mq2kPOI2PP); // <<cos(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsSSPro[7]->Fill(centrality,(p1nImPOI2PP*dReQ2n1k-p1nRePOI2PP*dImQ2n1k+q1n2kImPOI2PP)/(mpPOI2PP*dMult1n-mq2kPOI2PP),mpPOI2PP*dMult1n-mq2kPOI2PP); // <<sin(#psi_{POI_2}-2*phi)>>
    
    // V0
    fNonIsotropicTermsV0PPPro[4]->Fill(centrality,(p1nRePOI2PP*dReQ2nV0C+p1nImPOI2PP*dImQ2nV0C)/(mpPOI2PP),mpPOI2PP); // <<cos(#psi_{POI_2}-2*phi_{V0C})>>
@@ -2136,14 +2251,14 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
    fNonIsotropicTermsSSPro[2]->Fill(centrality,p1nRePOI2NN/mpPOI2NN,mpPOI2NN); // <<cos(#psi_{POI_2})>>
    fNonIsotropicTermsSSPro[3]->Fill(centrality,p1nImPOI2NN/mpPOI2NN,mpPOI2NN); // <<sin(#psi_{POI_2})>>
   }
-  if(weightNN>0. && mpPOI1NN*dMult-mqPOI1NN>0.)
+  if(weightNN>0. && mpPOI1NN*dMult1n-mq2kPOI1NN>0.)
   { 
    // TPC
-   fNonIsotropicTermsNNPro[4]->Fill(centrality,(p1nRePOI1NN*dReQ2n+p1nImPOI1NN*dImQ2n-q1nRePOI1NN)/(mpPOI1NN*dMult-mqPOI1NN),mpPOI1NN*dMult-mqPOI1NN); // <<cos(#psi_{POI_1}-2*phi)>>
-   fNonIsotropicTermsNNPro[5]->Fill(centrality, (p1nImPOI1NN*dReQ2n-p1nRePOI1NN*dImQ2n+q1nImPOI1NN)/(mpPOI1NN*dMult-mqPOI1NN),mpPOI1NN*dMult-mqPOI1NN); // <<sin(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsNNPro[4]->Fill(centrality,(p1nRePOI1NN*dReQ2n1k+p1nImPOI1NN*dImQ2n1k-q1n2kRePOI1NN)/(mpPOI1NN*dMult1n-mq2kPOI1NN),mpPOI1NN*dMult1n-mq2kPOI1NN); // <<cos(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsNNPro[5]->Fill(centrality, (p1nImPOI1NN*dReQ2n1k-p1nRePOI1NN*dImQ2n1k+q1n2kImPOI1NN)/(mpPOI1NN*dMult1n-mq2kPOI1NN),mpPOI1NN*dMult1n-mq2kPOI1NN); // <<sin(#psi_{POI_1}-2*phi)>>
    
-   fNonIsotropicTermsNNPro[4]->Fill(centrality,(p1nRePOI1NN*dReQ2n+p1nImPOI1NN*dImQ2n-q1nRePOI1NN)/(mpPOI1NN*dMult-mqPOI1NN),mpPOI1NN*dMult-mqPOI1NN); // <<cos(#psi_{POI_1}-2*phi)>>
-   fNonIsotropicTermsNNPro[5]->Fill(centrality, (p1nImPOI1NN*dReQ2n-p1nRePOI1NN*dImQ2n+q1nImPOI1NN)/(mpPOI1NN*dMult-mqPOI1NN),mpPOI1NN*dMult-mqPOI1NN); // <<sin(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsNNPro[4]->Fill(centrality,(p1nRePOI1NN*dReQ2n1k+p1nImPOI1NN*dImQ2n1k-q1n2kRePOI1NN)/(mpPOI1NN*dMult1n-mq2kPOI1NN),mpPOI1NN*dMult1n-mq2kPOI1NN); // <<cos(#psi_{POI_1}-2*phi)>>
+   fNonIsotropicTermsNNPro[5]->Fill(centrality, (p1nImPOI1NN*dReQ2n1k-p1nRePOI1NN*dImQ2n1k+q1n2kImPOI1NN)/(mpPOI1NN*dMult1n-mq2kPOI1NN),mpPOI1NN*dMult1n-mq2kPOI1NN); // <<sin(#psi_{POI_1}-2*phi)>>
    
    // V0
    fNonIsotropicTermsV0NNPro[0]->Fill(centrality,(p1nRePOI1NN*dReQ2nV0C+p1nImPOI1NN*dImQ2nV0C)/(mpPOI1NN),mpPOI1NN); // <<cos(#psi_{POI_1}-2*phi_{V0C})>>
@@ -2171,14 +2286,14 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
    fNonIsotropicTermsZDCNNPro[4]->Fill(centrality,(p1nRePOI1NN*dReQ2nZDCCA+p1nImPOI1NN*dImQ2nZDCCA)/(mpPOI1NN),mpPOI1NN); // <<cos(#psi_{POI_1}-2*phi_{ZDCCA})>>
    fNonIsotropicTermsZDCNNPro[5]->Fill(centrality, (p1nImPOI1NN*dReQ2nZDCCA-p1nRePOI1NN*dImQ2nZDCCA)/(mpPOI1NN),mpPOI1NN); // <<sin(#psi_{POI_1}-2*phi_{ZDCCA})>>
   }
-  if(weightNN>0. && mpPOI2NN*dMult-mqPOI2NN>0.)
+  if(weightNN>0. && mpPOI2NN*dMult1n-mq2kPOI2NN>0.)
   { 
    // TPC
-   fNonIsotropicTermsNNPro[6]->Fill(centrality,(p1nRePOI2NN*dReQ2n+p1nImPOI2NN*dImQ2n-q1nRePOI2NN)/(mpPOI2NN*dMult-mqPOI2NN),mpPOI2NN*dMult-mqPOI2NN); // <<cos(#psi_{POI_2}-2*phi)>>
-   fNonIsotropicTermsNNPro[7]->Fill(centrality,(p1nImPOI2NN*dReQ2n-p1nRePOI2NN*dImQ2n+q1nImPOI2NN)/(mpPOI2NN*dMult-mqPOI2NN),mpPOI2NN*dMult-mqPOI2NN); // <<sin(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsNNPro[6]->Fill(centrality,(p1nRePOI2NN*dReQ2n1k+p1nImPOI2NN*dImQ2n1k-q1n2kRePOI2NN)/(mpPOI2NN*dMult1n-mq2kPOI2NN),mpPOI2NN*dMult1n-mq2kPOI2NN); // <<cos(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsNNPro[7]->Fill(centrality,(p1nImPOI2NN*dReQ2n1k-p1nRePOI2NN*dImQ2n1k+q1n2kImPOI2NN)/(mpPOI2NN*dMult1n-mq2kPOI2NN),mpPOI2NN*dMult1n-mq2kPOI2NN); // <<sin(#psi_{POI_2}-2*phi)>>
    
-   fNonIsotropicTermsSSPro[6]->Fill(centrality,(p1nRePOI2NN*dReQ2n+p1nImPOI2NN*dImQ2n-q1nRePOI2NN)/(mpPOI2NN*dMult-mqPOI2NN),mpPOI2NN*dMult-mqPOI2NN); // <<cos(#psi_{POI_2}-2*phi)>>
-   fNonIsotropicTermsSSPro[7]->Fill(centrality,(p1nImPOI2NN*dReQ2n-p1nRePOI2NN*dImQ2n+q1nImPOI2NN)/(mpPOI2NN*dMult-mqPOI2NN),mpPOI2NN*dMult-mqPOI2NN); // <<sin(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsSSPro[6]->Fill(centrality,(p1nRePOI2NN*dReQ2n1k+p1nImPOI2NN*dImQ2n1k-q1n2kRePOI2NN)/(mpPOI2NN*dMult1n-mq2kPOI2NN),mpPOI2NN*dMult1n-mq2kPOI2NN); // <<cos(#psi_{POI_2}-2*phi)>>
+   fNonIsotropicTermsSSPro[7]->Fill(centrality,(p1nImPOI2NN*dReQ2n1k-p1nRePOI2NN*dImQ2n1k+q1n2kImPOI2NN)/(mpPOI2NN*dMult1n-mq2kPOI2NN),mpPOI2NN*dMult1n-mq2kPOI2NN); // <<sin(#psi_{POI_2}-2*phi)>>
    
    // V0
    fNonIsotropicTermsV0NNPro[4]->Fill(centrality,(p1nRePOI2NN*dReQ2nV0C+p1nImPOI2NN*dImQ2nV0C)/(mpPOI2NN),mpPOI2NN); // <<cos(#psi_{POI_2}-2*phi_{V0C})>>
@@ -2215,12 +2330,12 @@ void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator()
    fNonIsotropicTermsSSPro[9]->Fill(centrality,p1nImNN/mpNN,mpNN); // <<sin(#psi_{POI_1}+#psi_{POI_2})>>   
   }
 
-} // end of void AliAnalysisTaskGammaNonIsotropicCorr::CalculateDifferential3pCorrelator() 
+} // end of void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::CalculateDifferential3pCorrelator() 
 
 
 // ==========================================================================================================
 
-void AliAnalysisTaskGammaNonIsotropicCorr::SetupQAHistograms(){
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::SetupQAHistograms(){
 
   Double_t fVzBinsZDC[21] = {-10,-8,-7,-6,-5,-4,-3,-2,-1,-0.5, 0, 0.5, 1.,2.,3.,4.,5.,6.,7.,8.,10.};
   Double_t centRange[11] = {0,5,10,20,30,40,50,60,70,80,90}; // Usual Bins for Observables
@@ -2354,10 +2469,10 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupQAHistograms(){
   //fListHist->Add(fAvgSin4PsivsCentEtaNeg);
 
   /// Event by event quantities
-  fCMEQReRP = new TProfile("fCMEQReRP", "fCMEQReRP",2,0,2);
+  fCMEQReRP = new TProfile("fCMEQReRP", "fCMEQReRP",9,0,9);
   fTempList->Add(fCMEQReRP);
   
-  fCMEQImRP = new TProfile("fCMEQImRP", "fCMEQImRP",2,0,2);
+  fCMEQImRP = new TProfile("fCMEQImRP", "fCMEQImRP",9,0,9);
   fTempList->Add(fCMEQImRP);
   
   f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent = new TProfile("f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent", "f2pCorrelatorCos2PsiDiff2PsiV0RPPerEvent",2,0,2);
@@ -2372,16 +2487,16 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupQAHistograms(){
   f2pCorrelatorCos2PsiDiffPerEvent = new TProfile("f2pCorrelatorCos2PsiDiffPerEvent", "f2pCorrelatorCos2PsiDiffPerEvent",1,0,1);
   fTempList->Add(f2pCorrelatorCos2PsiDiffPerEvent);
   
-  fCMEQRePOIPos = new TProfile("fCMEQRePOIPos", "fCMEQRePOIPos",2,0,2);
+  fCMEQRePOIPos = new TProfile("fCMEQRePOIPos", "fCMEQRePOIPos",9,0,9);
   fTempList->Add(fCMEQRePOIPos);
   
-  fCMEQImPOIPos = new TProfile("fCMEQImPOIPos", "fCMEQImPOIPos",2,0,2);
+  fCMEQImPOIPos = new TProfile("fCMEQImPOIPos", "fCMEQImPOIPos",9,0,9);
   fTempList->Add(fCMEQImPOIPos);
   
-  fCMEQRePOINeg = new TProfile("fCMEQRePOINeg", "fCMEQRePOINeg",2,0,2);
+  fCMEQRePOINeg = new TProfile("fCMEQRePOINeg", "fCMEQRePOINeg",9,0,9);
   fTempList->Add(fCMEQRePOINeg);
   
-  fCMEQImPOINeg = new TProfile("fCMEQImPOINeg", "fCMEQImPOINeg",2,0,2);
+  fCMEQImPOINeg = new TProfile("fCMEQImPOINeg", "fCMEQImPOINeg",9,0,9);
   fTempList->Add(fCMEQImPOINeg);
   
   fNITV0OS = new TProfile("fNITV0OS", "fNITV0OS",4,0,4);
@@ -2417,6 +2532,12 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupQAHistograms(){
   f2pCorrelatorCos2PsiDiffOS = new TProfile("f2pCorrelatorCos2PsiDiffOS", "f2pCorrelatorCos2PsiDiffOS",1,0,1);
   fTempList->Add(f2pCorrelatorCos2PsiDiffOS);
   
+  fOverlapEBEOSPOI1 = new TProfile("fOverlapEBEOSPOI1", "fOverlapEBEOSPOI1",1,0,1);
+  fTempList->Add(fOverlapEBEOSPOI1);
+  
+  fOverlapEBEOSPOI2 = new TProfile("fOverlapEBEOSPOI2", "fOverlapEBEOSPOI2",1,0,1);
+  fTempList->Add(fOverlapEBEOSPOI2);
+  
   fRePEBEPP = new TProfile("fRePEBEPP", "fRePEBEPP",1,0,1);
   fTempList->Add(fRePEBEPP);
   
@@ -2429,6 +2550,12 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupQAHistograms(){
   f2pCorrelatorCos2PsiDiffPP = new TProfile("f2pCorrelatorCos2PsiDiffPP", "f2pCorrelatorCos2PsiDiffPP",1,0,1);
   fTempList->Add(f2pCorrelatorCos2PsiDiffPP);
   
+  fOverlapEBEPPPOI1 = new TProfile("fOverlapEBEPPPOI1", "fOverlapEBEPPPOI1",1,0,1);
+  fTempList->Add(fOverlapEBEPPPOI1);
+  
+  fOverlapEBEPPPOI2 = new TProfile("fOverlapEBEPPPOI2", "fOverlapEBEPPPOI2",1,0,1);
+  fTempList->Add(fOverlapEBEPPPOI2);
+  
   fRePEBENN = new TProfile("fRePEBENN", "fRePEBENN",1,0,1);
   fTempList->Add(fRePEBENN);
   
@@ -2440,6 +2567,12 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupQAHistograms(){
   
   f2pCorrelatorCos2PsiDiffNN = new TProfile("f2pCorrelatorCos2PsiDiffNN", "f2pCorrelatorCos2PsiDiffNN",1,0,1);
   fTempList->Add(f2pCorrelatorCos2PsiDiffNN);
+  
+  fOverlapEBENNPOI1 = new TProfile("fOverlapEBENNPOI1", "fOverlapEBENNPOI1",1,0,1);
+  fTempList->Add(fOverlapEBENNPOI1);
+  
+  fOverlapEBENNPOI2 = new TProfile("fOverlapEBENNPOI2", "fOverlapEBENNPOI2",1,0,1);
+  fTempList->Add(fOverlapEBENNPOI2);
  
 }
 
@@ -2447,7 +2580,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupQAHistograms(){
 
 
 
-void AliAnalysisTaskGammaNonIsotropicCorr::SetupPileUpRemovalFunctions18qPass3() { //@Shi for 2018 period Pass3 data
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::SetupPileUpRemovalFunctions18qPass3() { //@Shi for 2018 period Pass3 data
 	// 18q pass3
 	fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
    
@@ -2467,7 +2600,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupPileUpRemovalFunctions18qPass3()
 	
 }
 
-void AliAnalysisTaskGammaNonIsotropicCorr::SetupPileUpRemovalFunctions18rPass3() { //@Shi for 2018 period Pass3 data
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::SetupPileUpRemovalFunctions18rPass3() { //@Shi for 2018 period Pass3 data
     // 18r pass3
 
     fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
@@ -2488,7 +2621,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupPileUpRemovalFunctions18rPass3()
 	
 }
 
-void AliAnalysisTaskGammaNonIsotropicCorr::SetupEventAndTaskConfigInfo(){
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::SetupEventAndTaskConfigInfo(){
 
  
   ///--  Analysis cuts and settings: -------
@@ -2570,7 +2703,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::SetupEventAndTaskConfigInfo(){
 
 
 
-void AliAnalysisTaskGammaNonIsotropicCorr::GetV0MCorrectionHist(Int_t run){ 
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::GetV0MCorrectionHist(Int_t run){ 
 
   if(fListV0MCorr){
     //V0 Channel Gains:
@@ -2597,7 +2730,7 @@ void AliAnalysisTaskGammaNonIsotropicCorr::GetV0MCorrectionHist(Int_t run){
   } 
 }
 
-void AliAnalysisTaskGammaNonIsotropicCorr::GetZDCCorrectionHist(Int_t run){ 
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::GetZDCCorrectionHist(Int_t run){ 
   if(fListZDCCorr){
 	fListZDCCorrRunByRun = (TList*) fListZDCCorr->FindObject(Form("Run %d", run));
 	fHZDCCparameters = (TH1D*) fListZDCCorrRunByRun->FindObject(Form("fZDCCparameters[%d]",run));
@@ -2613,7 +2746,31 @@ void AliAnalysisTaskGammaNonIsotropicCorr::GetZDCCorrectionHist(Int_t run){
   }
 }
 
-Bool_t AliAnalysisTaskGammaNonIsotropicCorr::CheckPIDofParticle(AliAODTrack* ftrack,Int_t pidToCheck){
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::GetMCEfficiencyWeightForTrackHist(){ 
+  if(fListMCEfficiencyWeightForTrack){
+	bUseMCEfficiencyWeight = kTRUE;
+	Int_t centbinEdgeForEff[11] = {0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90};
+	
+	for(Int_t i = 0; i < 10; i++) {
+	  fHMCEfficiencyWeightForPosTrack[i] = (TH1D*) fListMCEfficiencyWeightForTrack->FindObject(Form("fHistEfficiencyPositiveChCent%d_%d",centbinEdgeForEff[i],centbinEdgeForEff[i+1]));
+	  fHMCEfficiencyWeightForNegTrack[i] = (TH1D*) fListMCEfficiencyWeightForTrack->FindObject(Form("fHistEfficiencyNegativeChCent%d_%d",centbinEdgeForEff[i],centbinEdgeForEff[i+1]));
+	  
+	  if(fHMCEfficiencyWeightForPosTrack[i] && fHMCEfficiencyWeightForNegTrack[i]){
+        printf("\n ===========> Info:: MC Efficiency Weights for Pos Tracks Found for cent%d_%d",centbinEdgeForEff[i],centbinEdgeForEff[i+1]);
+      }
+    }
+  }
+  else{
+	bUseMCEfficiencyWeight = kFALSE;
+	for(Int_t i = 0; i < 10; i++) {
+	  fHMCEfficiencyWeightForPosTrack[i] = NULL;
+	  fHMCEfficiencyWeightForNegTrack[i] = NULL;
+    }
+	printf("\n ===========> Info:: MC Efficiency Weights NOT Found \n ");
+  }
+}
+
+Bool_t AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::CheckPIDofParticle(AliAODTrack* ftrack,Int_t pidToCheck){
   
   if(pidToCheck==0) return kTRUE;    //// Charge Particles do not need PID check
   
@@ -2690,7 +2847,7 @@ Bool_t AliAnalysisTaskGammaNonIsotropicCorr::CheckPIDofParticle(AliAODTrack* ftr
 
 
 
-Bool_t AliAnalysisTaskGammaNonIsotropicCorr::CheckEventIsPileUp2018(AliAODEvent *faod) {
+Bool_t AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::CheckEventIsPileUp2018(AliAODEvent *faod) {
 
   /// Todo Rihan: I can check for PileUp and get TPC event Plane in Same Function
   /// Utilizing same track loop. This method would save time..
@@ -2794,7 +2951,7 @@ Bool_t AliAnalysisTaskGammaNonIsotropicCorr::CheckEventIsPileUp2018(AliAODEvent 
 
 
 
-void  AliAnalysisTaskGammaNonIsotropicCorr::ApplyV0XqVectRecenter(Float_t fCent,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A){
+void  AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::ApplyV0XqVectRecenter(Float_t fCent,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A){
 
   Int_t icentbin = 0;
   Double_t avgqx=0,avgqy=0; 
@@ -2845,7 +3002,7 @@ void  AliAnalysisTaskGammaNonIsotropicCorr::ApplyV0XqVectRecenter(Float_t fCent,
 
 
 
-Bool_t AliAnalysisTaskGammaNonIsotropicCorr::GetGainCorrectedV0Qvector(AliAODEvent *faod,Double_t fVtxZ,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A){
+Bool_t AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::GetGainCorrectedV0Qvector(AliAODEvent *faod,Double_t fVtxZ,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A){
 
   const AliAODVZERO *fAODV0 = (AliAODVZERO *) faod->GetVZEROData();
   Float_t fMultV0 = 0.;
@@ -2906,7 +3063,7 @@ Bool_t AliAnalysisTaskGammaNonIsotropicCorr::GetGainCorrectedV0Qvector(AliAODEve
 
 
 
-Bool_t AliAnalysisTaskGammaNonIsotropicCorr::GetGainCorrectedV0Qvector(AliAODEvent *faod,Double_t fVtxZ,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A, Double_t &sumMultV0C, Double_t &sumMultV0A){
+Bool_t AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::GetGainCorrectedV0Qvector(AliAODEvent *faod,Double_t fVtxZ,Int_t gPsiN,Double_t &qnxV0C,Double_t &qnyV0C,Double_t &qnxV0A,Double_t &qnyV0A, Double_t &sumMultV0C, Double_t &sumMultV0A){
 
   const AliAODVZERO *fAODV0 = (AliAODVZERO *) faod->GetVZEROData();
   Float_t fMultV0 = 0.;
@@ -2967,10 +3124,11 @@ Bool_t AliAnalysisTaskGammaNonIsotropicCorr::GetGainCorrectedV0Qvector(AliAODEve
   
 }
 
-void AliAnalysisTaskGammaNonIsotropicCorr::Terminate(Option_t *)  {
+void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::Terminate(Option_t *)  {
   //fOutputList = dynamic_cast<TList*> (GetOutputData(1));
   //if (!fOutputList) return;
 }
+
 
 
 
