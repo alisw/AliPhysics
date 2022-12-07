@@ -409,13 +409,18 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     };
     if(fOnTheFly)
     {
+      printf("Creating OTF objects\n");
       vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
       vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
       for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
-      fIPDist = new TH1D("IPDistribution","Impact parameter distribution; b; N(events)",fIPAxis->GetNbins(),GetBinsFromAxis(fIPAxis));
-      fptVarList->Add(fIPDist);
+      if(fIPAxis) { 
+        fIPDist = new TH1D("IPDistribution","Impact parameter distribution; b; N(events)",fIPAxis->GetNbins(),GetBinsFromAxis(fIPAxis));
+        fptVarList->Add(fIPDist);
+      }
+      printf("OTF objects created\n");
     }
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
+    printf("Creating pt-correlation objects\n");
     fptVarList = new TList();
     fptVarList->SetOwner(kTRUE);
     fPtCont = new AliPtContainer*[4];
@@ -454,6 +459,8 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       }
       if(fNBootstrapProfiles) for(int i(0);i<8*endPID;++i) fMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
     }
+    printf("pt-correlation objects created\n");
+    printf("Creating multiplicity objects\n");
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
     fptVarList->Add(fMultiDist);
@@ -472,8 +479,10 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
       fptVarList->Add(fNchTrueVsReco);
     }
+    printf("Multiplicity objects created\n");
     PostData(1,fptVarList);
     //Setting up the FlowContainer
+    printf("Creating flow container\n");
     TObjArray *oba = new TObjArray();
     oba->Add(new TNamed("ChGap22","ChGap22")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("ChGap24","ChGap24")); //for gap (|eta|>0.4) case
@@ -552,7 +561,9 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     fGFW->AddRegion("KaMid",9,powsFull,-0.8,0.8,1,64);
     fGFW->AddRegion("PrMid",9,powsFull,-0.8,0.8,1,128);  
     CreateCorrConfigs();
+    printf("Flow container created\n");
     //Covariance
+    printf("Creating covariance objects\n");
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
     fCovariance = new AliProfileBS*[Ncovpfs*4];
@@ -599,7 +610,9 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     }
     if(fNBootstrapProfiles) for(Int_t i=0;i<Ncovpfs*endPID;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fFillMptPowers && fNBootstrapProfiles) for(Int_t i=0;i<3*endPID;i++) fCovariancePowerMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
+    printf("Covariance objects created\n");
     PostData(3,fCovList);
+    printf("Creating QA objects\n");
     fQAList = new TList();
     fQAList->SetOwner(kTRUE);
     fEventCuts.AddQAplotsToList(fQAList,kTRUE);
@@ -614,7 +627,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       fPtDist = new TH1D("fPtDist","#it{p}_{T} distribution",100,fPtBins[0],fPtBins[fNPtBins]);
       fQAList->Add(fPtDist);
     }
-    printf("User output objects created!\n");
+    printf("QA objects created!\n");
     PostData(4,fQAList);
   }
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
@@ -689,7 +702,7 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
     fPtCont[0]->FillKurtosis(wpPt[0],l_Cent,l_Random);
     fV0MMulti->Fill(l_Cent);
     fMultiDist->Fill(l_Cent);
-    fIPDist->Fill(fImpactParameterMC);
+    if(fIPAxis) fIPDist->Fill(fImpactParameterMC);
     Double_t mptev = wp[1]/wp[0];
     if(fFillMptPowers) {
         fMpt[0]->FillProfile(l_Cent,mptev,fUseWeightsOne?1:wp[0],l_Random);
