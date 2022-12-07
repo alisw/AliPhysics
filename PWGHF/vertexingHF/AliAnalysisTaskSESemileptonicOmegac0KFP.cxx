@@ -113,11 +113,8 @@ fWriteElectronTree(kFALSE),
 fDoEventMixing(kFALSE),
 fNumberOfEventsForMixing(20),
 fNOfPools(1),
-fEventBuffer(0x0),
-fEventInfo(new TObjString("")),
 fVtxZ(0),
 fMultiplicityEM(0),
-fEventID(0),
 fHistEventTrackletZvME(0),
 fNzVertPoolsLimSize(0),
 fNMultPoolsLimSize(0),
@@ -125,7 +122,6 @@ fTree_MixedEvent(0),
 fVar_MixedEvent(0),
 fWriteMixedEventTree(kFALSE),
 fWriteTrackRotation(kFALSE),
-
 fQA(kFALSE),
 fPoolIndex(-9999),
 fNextResVec(),
@@ -174,11 +170,8 @@ fWriteElectronTree(kFALSE),
 fDoEventMixing(kFALSE),
 fNumberOfEventsForMixing(20),
 fNOfPools(1),
-fEventBuffer(0x0),
-fEventInfo(new TObjString("")),
 fVtxZ(0),
 fMultiplicityEM(0),
-fEventID(0),
 fHistEventTrackletZvME(0),
 fNzVertPoolsLimSize(0),
 fNMultPoolsLimSize(0),
@@ -186,7 +179,6 @@ fTree_MixedEvent(0),
 fVar_MixedEvent(0),
 fWriteMixedEventTree(kFALSE),
 fWriteTrackRotation(kFALSE),
-
 fQA(kFALSE),
 fPoolIndex(-9999),
 fNextResVec(),
@@ -1325,39 +1317,11 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
     const Float_t massK0S    = TDatabasePDG::Instance()->GetParticle(310)->Mass();
     const Float_t massOmega  = TDatabasePDG::Instance()->GetParticle(3334)->Mass();
    
-    /*
-    if(poolIndex<0 || poolIndex>fNzVertPoolsLimSize*fNMultPoolsLimSize) return;
-    if(fEventBuffer[poolIndex]->GetEntries()<fNumberOfEventsForMixing) return;
-    Int_t nEvents=fEventBuffer[poolIndex]->GetEntries();
-    
-    TObjArray* earray =0x0;
-    Double_t zVertex,mult;
-    TObjString* eventInfo=0x0;
-  //  ULong64_t eventID;
-    
-    fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&eventInfo);
-    fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &zVertex);
-    fEventBuffer[poolIndex]->SetBranchAddress("multiplicity", &mult);
-    fEventBuffer[poolIndex]->SetBranchAddress("earray", &earray);
-   // fEventBuffer[poolIndex]->SetBranchAddress("eventID", &eventID);
-    
-  //  ULong64_t eventID_casc;
-  //  ULong64_t eventID_ele;
-    
-    Double_t zVertex1, zVertex2;
-    Double_t mult1, mult2;
-
-    Int_t evId1, esdId1;
-    Int_t evId2, esdId2;
-    */
     
     Int_t nEl = mixTypeE.size();
     
     for(Int_t i=0; i<aodEvent->GetNumberOfCascades(); i++){
         
-      //  mult1 = mult;
-      //  zVertex1 = zVertex;
-       
         if(!seleCascFlags[i]) continue;
         AliAODcascade* casc = aodEvent->GetCascade(i);
         if(!casc)continue;
@@ -1365,9 +1329,6 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
         AliAODTrack *ptrack = (AliAODTrack*)(casc->GetDaughter(0));
         AliAODTrack *ntrack = (AliAODTrack*)(casc->GetDaughter(1));
         AliAODTrack *btrack = (AliAODTrack*)(casc->GetDecayVertexXi()->GetDaughter(0));
-        
-     //   eventID_casc = eventID;
-      //  sscanf((eventInfo->String()).Data(), "Ev%d_esd%d", &evId1, &esdId1);
         
         if( !ptrack || !ntrack || !btrack) continue;
         
@@ -1467,37 +1428,6 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
         
             for(Int_t iEv=0; iEv< nEl; iEv++ ){
                
-                /*
-                fEventBuffer[poolIndex]->GetEvent(iEv+nEvents-fNumberOfEventsForMixing);
-                TObjArray* earray1 = (TObjArray*)earray->Clone();
-                Int_t nElectrons = earray1->GetEntries();
-              
-              //  eventID_ele = eventID;
-              //  if(eventID_ele == eventID_casc ){
-              //      printf("DoEventWithMixingPools: ERROR: same event");
-              //      delete earray1;
-              //      continue;
-              // }
-                
-                sscanf( ( eventInfo ->String()).Data(), "EV%d_esd%d", &evId2, &esdId2);
-                if(evId2 == evId1 && esdId2 == esdId1){
-                    printf("DoEventMixingWithPools: ERROR: same event");
-                    delete earray1;
-                    continue;
-                }
-                zVertex2 = zVertex;
-                mult2 = mult;
-                if (TMath::Abs(zVertex2-zVertex1) <0.0001 && TMath::Abs(mult2-mult1)<0.001){
-                    printf("DoEventMixingWithPools: ERROR: same event");
-                   // delete earray1;
-                    continue;
-                }
-               
-                
-                for(Int_t iTr1=0; iTr1<nElectrons; iTr1++){
-                    AliAODTrack *trkBE = (AliAODTrack*)earray1->At(iTr1);
-                 */
-                
                 //--- evars: AliAODTrack
                 TVector * evars = mixTypeE[iEv];
                 if(!evars) continue;
@@ -1536,12 +1466,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
                 AliAODTrack *trkBE = new AliAODTrack(id, label, pxpypz, cartesian, xyz, isDCA, cv, sign, ITSclsmap, fpVtx, usedForVtxFit, usedForPrimVtxFit, ttype, selectInfo,  chi2perNDF);
                 
                     if(!trkBE) continue;
-                    //Int_t pid = ptrack->GetID();
-                   // Int_t nid = ntrack->GetID();
-                   // Int_t bid = btrack->GetID();
-                   // Int_t eid = trkBE->GetID();
-                   // if ( (pid==eid)|| (nid==eid)|| (bid==eid) ) continue;
-                    
+                
                     KFParticle kfpBE;
                     KFParticle kfpOmegac0;
                     
@@ -1672,40 +1597,6 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
             
             for(Int_t iEv=0; iEv<nEl; iEv++){
                
-                /*
-                fEventBuffer[poolIndex]->GetEvent(iEv+ nEvents -fNumberOfEventsForMixing);
-                TObjArray* earray1 = (TObjArray*)earray->Clone();
-                Int_t nElectrons = earray1->GetEntries();
-            
-             //   eventID_ele = eventID;
-             //   if(eventID_ele == eventID_casc ){
-             //       printf("DoEventWithMixingPools: ERROR: same event");
-             //       delete earray1;
-             //      continue;
-             //   }
-                
-                sscanf( ( eventInfo ->String()).Data(), "EV%d_esd%d", &evId2, &esdId2);
-                if(evId2 == evId1 && esdId2 == esdId1){
-                    printf("DoEventMixingWithPools: loop ERROR: same event");
-                    delete earray1;
-                    continue;
-                }
-                zVertex2 = zVertex;
-                mult2 = mult;
-                if (TMath::Abs(zVertex2-zVertex1)<0.0001 && TMath::Abs(mult2-mult1)<0.001){
-                    printf("DoEventMixingWithPools: loop ERROR: same event");
-                   // delete earray1;
-                    continue;
-                }
-                for(Int_t iTr1=0; iTr1<nElectrons; iTr1++){
-                    AliAODTrack *trkBE = (AliAODTrack*)earray1->At(iTr1);
-                    Int_t pid = ptrack->GetID();
-                    Int_t nid = ntrack->GetID();
-                    Int_t bid = btrack->GetID();
-                    Int_t eid = trkBE->GetID();
-                    if ( (pid==eid)|| (nid==eid)|| (bid==eid) ) continue;
-                    */
-                
                 //--- evars: AliAODTrack
                 TVector * evars = mixTypeE[iEv];
                 if(!evars) continue;
