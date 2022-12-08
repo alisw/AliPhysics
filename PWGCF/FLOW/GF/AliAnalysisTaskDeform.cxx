@@ -55,7 +55,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fBypassTriggerAndEvetCuts(kFALSE),
   fUSe15opass2PU(kFALSE),
   fOnTheFly(false),
-  fUseCentralityOTF(true),
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
@@ -63,7 +62,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fPtAxis(0),
   fEtaAxis(0),
   fMultiAxis(0),
-  fIPAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
@@ -88,7 +86,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
-  fIPDist(0),
   fChPtDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
@@ -158,7 +155,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fBypassTriggerAndEvetCuts(kFALSE),
   fUSe15opass2PU(kFALSE),
   fOnTheFly(false),
-  fUseCentralityOTF(true),
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
   fNBootstrapProfiles(10),
@@ -166,7 +162,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fPtAxis(0),
   fEtaAxis(0),
   fMultiAxis(0),
-  fIPAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
@@ -191,7 +186,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
-  fIPDist(0),
   fChPtDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
@@ -286,16 +280,9 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   Double_t *l_V0MBinsDefault=GetBinsFromAxis(fV0MMultiAxis);
   Int_t l_NV0MBinsDefault=fV0MMultiAxis->GetNbins();
   if(l_V0MBinsDefault[l_NV0MBinsDefault]>90) fExtendV0MAcceptance = kTRUE; //If V0M is beyond 90, then we need to extend the V0M acceptance!
-  if(fOnTheFly && !fUseCentralityOTF) { 
-    if(!fIPAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
-    fMultiBins = GetBinsFromAxis(fIPAxis);
-    fNMultiBins = fIPAxis->GetNbins();
-  } 
-  else {
-    if(!fMultiAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
-    fMultiBins = GetBinsFromAxis(fMultiAxis);
-    fNMultiBins = fMultiAxis->GetNbins();
-  }
+  if(!fMultiAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
+  fMultiBins = GetBinsFromAxis(fMultiAxis);
+  fNMultiBins = fMultiAxis->GetNbins();
   if(!fV2dPtMulti) {
     Double_t temp_bn[] = {0,1e6};
     SetV2dPtMultiBins(1,temp_bn);
@@ -413,10 +400,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
       vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
       for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
-      if(fIPAxis) { 
-        fIPDist = new TH1D("IPDistribution","Impact parameter distribution; b; N(events)",fIPAxis->GetNbins(),GetBinsFromAxis(fIPAxis));
-        fptVarList->Add(fIPDist);
-      }
       printf("OTF objects created\n");
     }
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
@@ -670,7 +653,7 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
   EventNo++;
   if(fOnTheFly){
     fMCEvent = getMCEvent();
-    Double_t l_Cent = (fUseCentralityOTF)?getAMPTCentrality():fImpactParameterMC;
+    Double_t l_Cent = getAMPTCentrality();
     Int_t nTracks = fMCEvent->GetNumberOfPrimaries();
     if(nTracks < 1) { return; }
     Double_t wp[5] = {0,0,0,0,0}; //Initial values, [species][w*p]
@@ -702,7 +685,6 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
     fPtCont[0]->FillKurtosis(wpPt[0],l_Cent,l_Random);
     fV0MMulti->Fill(l_Cent);
     fMultiDist->Fill(l_Cent);
-    if(fIPAxis) fIPDist->Fill(fImpactParameterMC);
     Double_t mptev = wp[1]/wp[0];
     if(fFillMptPowers) {
         fMpt[0]->FillProfile(l_Cent,mptev,fUseWeightsOne?1:wp[0],l_Random);
@@ -1437,10 +1419,6 @@ void AliAnalysisTaskDeform::SetEtaBins(Int_t nbins, Double_t *etabins) {
 void AliAnalysisTaskDeform::SetMultiBins(Int_t nMultiBins, Double_t *multibins) {
   if(fMultiAxis) delete fMultiAxis;
   fMultiAxis = new TAxis(nMultiBins, multibins);
-}
-void AliAnalysisTaskDeform::SetIPBins(Int_t nIPBins, Double_t *IPbins) {
-  if(fIPAxis) delete fIPAxis;
-  fIPAxis = new TAxis(nIPBins, IPbins);
 }
 void AliAnalysisTaskDeform::SetV0MBins(Int_t nMultiBins, Double_t *multibins) {
   if(fV0MMultiAxis) delete fV0MMultiAxis;
