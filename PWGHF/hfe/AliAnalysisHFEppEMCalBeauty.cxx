@@ -2001,7 +2001,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
     if(fIsMC && fFillMCTemplates)   
     {
        //*************** Deepa's Method************************************************
-       fFillTem = GetMCDCATemplates(track, fTrkDCA);
+       fFillTem = GetMCDCATemplates(track, IP);
 
        //**********Jonghans Method*****************************************************
         fMCparticle = NULL;
@@ -2357,8 +2357,9 @@ Int_t AliAnalysisHFEppEMCalBeauty::ClassifyTrack(AliAODTrack* track,const AliVVe
   else if(fSPDFirst){ if(!(track->HasPointOnITSLayer(0))) return 0;} //Hit on first and second SPD layer
 
   if(fRecalIP) RecalImpactParam(track, d0z0, cov);
+  else track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov); 
 
-  if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov)) 
+  //if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov)) 
   if(TMath::Abs(d0z0[0]) > fDCAxyCut || TMath::Abs(d0z0[1]) > fDCAzCut) return 0; 
      
   Double_t chi2ndf = track->Chi2perNDF();
@@ -2371,7 +2372,7 @@ Int_t AliAnalysisHFEppEMCalBeauty::ClassifyTrack(AliAODTrack* track,const AliVVe
 void AliAnalysisHFEppEMCalBeauty::RecalImpactParam(const AliAODTrack * const track, Double_t dcaD[2], Double_t covD[3])
 {
     //Recalculate impact parameter by recalculating primary vertex
-    
+
     const Double_t kBeampiperadius=3.0;
     Bool_t isRecalcVertex = kFALSE;
 
