@@ -47,10 +47,14 @@ AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
   }
   const char *complement2;
   if (detForFlat == "V0") {
+    if (!isV0EqualAlice && !isMyV0Equal) {
+      complement2 = "_";
+    }
     if (isV0EqualAlice) {
-      complement2 = "V0eq";
-    } else {
-      complement2 = "V0my";
+      complement2 = "_V0eq";
+    }
+    if (isMyV0Equal) {
+      complement2 = "_V0my";
     }
   }
   if (detForFlat == "TPC") {
@@ -66,7 +70,7 @@ AddTaskFlatenicity(const Char_t *taskname = "Flat", TString detForFlat = "V0",
   mgr->ConnectOutput(
       taskFlat, 1,
       mgr->CreateContainer(
-          Form("cList%s_%s_%s", taskname, complement, complement2),
+          Form("cList%s_%s%s", taskname, complement, complement2),
           TList::Class(), AliAnalysisManager::kOutputContainer,
           Form("%s:%s", AliAnalysisManager::GetCommonFileName(), taskname)));
 
