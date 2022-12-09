@@ -3086,7 +3086,12 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserExec(Option_t *)
         }
         
         lThisPDG = lPart->GetPdgCode();
-        
+
+        if (fkDoPileupRejGen) {
+            if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ilab, lMCheader, lMCarray))
+                continue;
+        }
+
         //This if is necessary in some situations (rapidity calculation and PYTHIA junctions, etc)
         if ( fEvSel_AllSelections && 
         	((TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 || (TMath::Abs(lThisPDG) == 1010010030))
