@@ -87,12 +87,12 @@ Double_t Ptbins[nPtbins + 1] = {
     0.0, 0.1, 0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45, 0.5,  0.6, 0.7, 0.8,
     0.9, 1.0, 1.25, 1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5,  5.0, 6.0, 7.0,
     8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 30.0, 40.0, 50.0};
-// const Int_t nCent = 9;
-// Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
-//                                  30.0, 40.0, 50.0, 70.0, 100.0};
+const Int_t nCent = 9;
+Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
+                                  30.0, 40.0, 50.0, 70.0, 100.0};
 
-const Int_t nCent = 2;
-Double_t centClass[nCent + 1] = {0.0, 50.0, 100.0};
+//const Int_t nCent = 2;
+//Double_t centClass[nCent + 1] = {0.0, 50.0, 100.0};
 const Int_t nDet = 4;
 const Char_t *DetName[nDet] = {"ADC", "V0C", "V0A", "ADA"};
 const Int_t nComb = 3;
