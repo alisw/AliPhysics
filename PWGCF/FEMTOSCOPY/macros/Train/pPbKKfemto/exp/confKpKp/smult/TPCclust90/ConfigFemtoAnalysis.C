@@ -93,11 +93,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int runch[2] = {1, 1};
   const char *chrgs[2] = { "Kp", "Km"};
 
-  int runktdep = 0;
+  int runktdep = 1;
   double ktrng[3] = {0.2, 0.5, 1.0};
   //double ktrng[9] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 1.3};
 
-  int run3d = 1;
+  int run3d = 0;
   //int runshlcms = 1;
   int runshlcms = 0;
   double shqmax;
