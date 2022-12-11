@@ -3,6 +3,7 @@
 
 
 class TTree;
+class TChain;
 class AliAnalysisManager;
 
 #include "AliAnalysisTaskEmcalJet.h"
@@ -72,6 +73,6 @@ class AliAnalysisTaskJetChargeFlavourPb : public AliAnalysisTaskEmcalJet {
 
 
 
-  ClassDef(AliAnalysisTaskJetChargeFlavourPb, 1)
+  ClassDef(AliAnalysisTaskJetChargeFlavourPb, 2)
 };
 #endif

@@ -18,9 +18,9 @@ jobs:
     steps:
     - name: Decide which branch to use
       run: |
-        cat << EOF
-        ::set-output name=branch::$(echo ${{ github.event.inputs.tag }}-patches | sed -e's/[a-z][a-z]*-01-patches$/-01-patches/')
-        ::set-output name=aliroot_tag::$(echo ${{ github.event.inputs.tag }} | sed -e's/-01$//')
+        cat << EOF >> "$GITHUB_OUTPUT"
+        branch=$(echo ${{ github.event.inputs.tag }}-patches | sed -e's/[a-z][a-z]*-01-patches$/-01-patches/')
+        aliroot_tag=$(echo ${{ github.event.inputs.tag }} | sed -e's/-01$//')
         EOF
       id: decide_release_branch
     - uses: actions/checkout@v2

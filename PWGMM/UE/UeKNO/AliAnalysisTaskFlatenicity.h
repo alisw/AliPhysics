@@ -34,9 +34,11 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   Double_t GetFlatenicityV0();
+  Double_t GetFlatenicityV0EqualALICE();
   Double_t GetFlatenicityTPC();
   Double_t GetFlatenicityMC();
   void ExtractMultiplicities();
+  void ExtractMultiplicitiesEqualALICE();
   void ExtractMultiplicitiesMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
@@ -52,6 +54,9 @@ public:
     fRemoveTrivialScaling = flat_flag;
   }
   void SetV0Calib(Bool_t calib_flag = kFALSE) { fIsCalib = calib_flag; }
+  void SetEqualV0Alice(Bool_t calib_flag = kFALSE) {
+    fIsEqualALICE = calib_flag;
+  }
 
   bool HasRecVertex();
 
@@ -63,11 +68,14 @@ private:
   AliMCEvent *fMC;    //! MC Event
   Bool_t fUseMC;      // analyze MC events
   Bool_t fIsCalib;
+  Bool_t fIsEqualALICE;
   Float_t fVtxz;
+  TF1 *fParVtx;
+  Float_t ParVtxNorm;
   Int_t fV0Mindex;
   Float_t fmultTPC;
-  Float_t fmultV0A;
-  Float_t fmultV0C;
+  int fmultV0A;
+  int fmultV0C;
   Float_t fmultADA;
   Float_t fmultADC;
   Float_t fmultTPCmc;
@@ -113,6 +121,7 @@ private:
   TH2D *hMultMCaVsV0M;
   TH2D *hMultMCcVsV0M;
   TH2D *hMultmVsV0M;
+  TH2D *hMultmVsV0Malice;
   TH2D *hMultaVsV0M;
   TH2D *hMultcVsV0M;
   TH2D *hFlatVsPtV0M[9];
@@ -122,6 +131,9 @@ private:
   TH2D *hComponentsMultmc[4];
   TH2D *hCombinedMultmc[3];
   TH2D *hRmCombinedMult[3];
+  TH2D *hMultMCmVsFlat[9];
+  TH2D *hMultmVsFlat[9];
+
   AliAnalysisTaskFlatenicity(
       const AliAnalysisTaskFlatenicity &); // not implemented
   AliAnalysisTaskFlatenicity &

@@ -367,6 +367,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		void CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks);
 		void InitProfile(PhysicsProfilePPTask& profile, TString);
+		Bool_t AcceptAODEvent(AliAODEvent* aliev);
         
         //===================================================================================
 

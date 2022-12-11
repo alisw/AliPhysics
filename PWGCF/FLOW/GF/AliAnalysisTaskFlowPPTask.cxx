@@ -355,7 +355,12 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	// 	fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
 	// }
 	
-	
+	if(!AcceptAODEvent(fAOD)){
+		//self-define event selection
+		PostData(1,fListOfObjects);
+		return;
+	}
+
 	if(fTrigger==0){
 		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
 	}
@@ -1529,6 +1534,24 @@ Bool_t AliAnalysisTaskFlowPPTask::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltr
   } else return kFALSE; //DCA cut is a must for now
 
   return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+}
+
+Bool_t AliAnalysisTaskFlowPPTask::AcceptAODEvent(AliAODEvent* aliev){
+	if(fPeriod.EqualTo("LHC15o_pass2")) {
+	int currentRun = fAOD->GetRunNumber();
+	//these runs have strange NUA
+	if (currentRun == 245729 ||
+		currentRun == 245731 ||
+		currentRun == 245752 ||
+		currentRun == 245759 ||
+		currentRun == 245766 ||
+		currentRun == 245775 ||
+		currentRun == 245785 ||
+		currentRun == 245793) {
+		return kFALSE;
+	}
+	}
+	return kTRUE;
 }
 
 void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks) {

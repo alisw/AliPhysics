@@ -55,7 +55,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fBypassTriggerAndEvetCuts(kFALSE),
   fUSe15opass2PU(kFALSE),
   fOnTheFly(false),
-  fUseCentralityOTF(true),
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
@@ -63,7 +62,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fPtAxis(0),
   fEtaAxis(0),
   fMultiAxis(0),
-  fIPAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
@@ -80,12 +78,15 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fEtaLow(-9999),
   fEtaNch(0.8),
   fEtaV2Sep(0.4),
+  fchPtMin(0.2),
+  fchPtMax(3.0),
+  fUseChargedPtCut(false),
   fPIDResponse(0),
   fBayesPID(0),
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
-  fIPDist(0),
+  fChPtDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
   fESDvsFB128(0),
@@ -131,8 +132,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fStdTPCITS2011(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
-  fEfficiencyFlag(0),
-  fParticleFlag(0),
   fEfficiencyIndex(0),
   fRequireReloadOnRunChange(kFALSE),
   fRequirePositive(kFALSE),
@@ -140,8 +139,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
   EventNo(0),
-  fConstEff(0.8),
-  fSigmaEff(0.05),
   fEventWeight(PtSpace::kOne),
   wpPt(0)
 {
@@ -158,7 +155,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fBypassTriggerAndEvetCuts(kFALSE),
   fUSe15opass2PU(kFALSE),
   fOnTheFly(false),
-  fUseCentralityOTF(true),
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
   fNBootstrapProfiles(10),
@@ -166,7 +162,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fPtAxis(0),
   fEtaAxis(0),
   fMultiAxis(0),
-  fIPAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
@@ -183,12 +178,15 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fEtaLow(-9999),
   fEtaNch(0.8),
   fEtaV2Sep(0.4),
+  fchPtMin(0.2),
+  fchPtMax(3.0),
+  fUseChargedPtCut(false),
   fPIDResponse(0),
   fBayesPID(0),
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
-  fIPDist(0),
+  fChPtDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
   fESDvsFB128(0),
@@ -234,8 +232,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fStdTPCITS2011(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
-  fEfficiencyFlag(0),
-  fParticleFlag(0),
   fEfficiencyIndex(0),
   fRequireReloadOnRunChange(kFALSE),
   fRequirePositive(kFALSE),
@@ -243,8 +239,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
   EventNo(0),
-  fConstEff(0.8),
-  fSigmaEff(0.05),
   fEventWeight(PtSpace::kOne),
   wpPt(0)
 {
@@ -286,16 +280,9 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   Double_t *l_V0MBinsDefault=GetBinsFromAxis(fV0MMultiAxis);
   Int_t l_NV0MBinsDefault=fV0MMultiAxis->GetNbins();
   if(l_V0MBinsDefault[l_NV0MBinsDefault]>90) fExtendV0MAcceptance = kTRUE; //If V0M is beyond 90, then we need to extend the V0M acceptance!
-  if(fOnTheFly && !fUseCentralityOTF) { 
-    if(!fIPAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
-    fMultiBins = GetBinsFromAxis(fIPAxis);
-    fNMultiBins = fIPAxis->GetNbins();
-  } 
-  else {
-    if(!fMultiAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
-    fMultiBins = GetBinsFromAxis(fMultiAxis);
-    fNMultiBins = fMultiAxis->GetNbins();
-  }
+  if(!fMultiAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
+  fMultiBins = GetBinsFromAxis(fMultiAxis);
+  fNMultiBins = fMultiAxis->GetNbins();
   if(!fV2dPtMulti) {
     Double_t temp_bn[] = {0,1e6};
     SetV2dPtMultiBins(1,temp_bn);
@@ -365,20 +352,20 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     fWeightList = (TList*)GetInputData(1);
     fWeights = new AliGFWWeights*[4];
     const char* species[] = {"_ch","_pi","_ka","_pr"};
-    if(fUsePIDNUA){
-      if(!fWeightList) AliFatal("NUA list not set or does not exist!\n");
-      TString lBase(""); //base
-      TString lSubfix(""); //subfix
-      for(int i(0);i<4;++i) {
-        lBase = Form("weight%s",species[i]); 
-        lSubfix = fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():"";
-        lBase+=lSubfix;
-        fWeights[i] = (AliGFWWeights*)fWeightList->FindObject(lBase.Data());
-        if(!fWeights[i]) AliFatal(Form("Weights %s not not found in the list provided!\n",lBase.Data()));
-        fWeights[i]->CreateNUA();
-      }
-    }
     if(!fIsMC) { //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
+      if(fUsePIDNUA) {
+        if(!fWeightList) AliFatal("NUA list not set or does not exist!\n");
+        TString lBase(""); //base
+        TString lSubfix(""); //subfix
+        for(int i(0);i<4;++i) {
+          lBase = Form("weight%s",species[i]); 
+          lSubfix = fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():"";
+          lBase+=lSubfix;
+          fWeights[i] = (AliGFWWeights*)fWeightList->FindObject(lBase.Data());
+          if(!fWeights[i]) AliFatal(Form("Weights %s not not found in the list provided!\n",lBase.Data()));
+          fWeights[i]->CreateNUA();
+        }
+      }
       fEfficiencyList = (TList*)GetInputData(2+fEfficiencyIndex); //Efficiencies start from input slot 2
       if(fUse2DEff) {
         fEfficiency.resize(l_NV0MBinsDefault,vector<TH2D*>(4));
@@ -409,13 +396,14 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     };
     if(fOnTheFly)
     {
+      printf("Creating OTF objects\n");
       vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
       vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
       for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
-      fIPDist = new TH1D("IPDistribution","Impact parameter distribution; b; N(events)",fIPAxis->GetNbins(),GetBinsFromAxis(fIPAxis));
-      fptVarList->Add(fIPDist);
+      printf("OTF objects created\n");
     }
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
+    printf("Creating pt-correlation objects\n");
     fptVarList = new TList();
     fptVarList->SetOwner(kTRUE);
     fPtCont = new AliPtContainer*[4];
@@ -432,7 +420,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
         fPtCont[i]->InitializeSubsamples(fNBootstrapProfiles);
       }
     }
-    printf("a\n");
     if(fFillMptPowers) {
       fMpt = new AliProfileBS*[8*4];
       for(int i(0);i<endPID;++i) {
@@ -455,6 +442,8 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       }
       if(fNBootstrapProfiles) for(int i(0);i<8*endPID;++i) fMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
     }
+    printf("pt-correlation objects created\n");
+    printf("Creating multiplicity objects\n");
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
     fptVarList->Add(fMultiDist);
@@ -473,8 +462,10 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
       fptVarList->Add(fNchTrueVsReco);
     }
+    printf("Multiplicity objects created\n");
     PostData(1,fptVarList);
     //Setting up the FlowContainer
+    printf("Creating flow container\n");
     TObjArray *oba = new TObjArray();
     oba->Add(new TNamed("ChGap22","ChGap22")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("ChGap24","ChGap24")); //for gap (|eta|>0.4) case
@@ -518,6 +509,14 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     oba->Add(new TNamed("PrGap32","PrGap32"));
     oba->Add(new TNamed("PrFull32","PrFull32"));
     oba->Add(new TNamed("PrFull34","PrFull34"));
+
+    oba->Add(new TNamed("PiDiff22","PiDiff22"));
+    oba->Add(new TNamed("KaDiff22","KaDiff22"));
+    oba->Add(new TNamed("PrDiff22","PrDiff22"));
+    oba->Add(new TNamed("PiDiff24","PiDiff24"));
+    oba->Add(new TNamed("KaDiff24","KaDiff24"));
+    oba->Add(new TNamed("PrDiff24","PrDiff24"));
+
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
     if(!fContSubfix->IsNull()) fcname.Append(fContSubfix->Data());
@@ -545,7 +544,9 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     fGFW->AddRegion("KaMid",9,powsFull,-0.8,0.8,1,64);
     fGFW->AddRegion("PrMid",9,powsFull,-0.8,0.8,1,128);  
     CreateCorrConfigs();
+    printf("Flow container created\n");
     //Covariance
+    printf("Creating covariance objects\n");
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
     fCovariance = new AliProfileBS*[Ncovpfs*4];
@@ -592,7 +593,9 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     }
     if(fNBootstrapProfiles) for(Int_t i=0;i<Ncovpfs*endPID;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fFillMptPowers && fNBootstrapProfiles) for(Int_t i=0;i<3*endPID;i++) fCovariancePowerMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
+    printf("Covariance objects created\n");
     PostData(3,fCovList);
+    printf("Creating QA objects\n");
     fQAList = new TList();
     fQAList->SetOwner(kTRUE);
     fEventCuts.AddQAplotsToList(fQAList,kTRUE);
@@ -601,7 +604,13 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     TString eventCutLabel[6]={"Input","Centrality","Trigger","AliEventCuts","Vertex","Tracks"};
     for(int i=0;i<nEventCutLabel;++i) fEventCount->GetXaxis()->SetBinLabel(i+1,eventCutLabel[i].Data());
     fQAList->Add(fEventCount);
-    printf("User output objects created!\n");
+    if(fUseChargedPtCut) {
+      fChPtDist = new TH1D("fChPtDist","#it{p}_{T,ch} distribution",100,fchPtMin,fchPtMax);
+      fQAList->Add(fChPtDist);
+      fPtDist = new TH1D("fPtDist","#it{p}_{T} distribution",100,fPtBins[0],fPtBins[fNPtBins]);
+      fQAList->Add(fPtDist);
+    }
+    printf("QA objects created!\n");
     PostData(4,fQAList);
   }
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
@@ -644,7 +653,7 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
   EventNo++;
   if(fOnTheFly){
     fMCEvent = getMCEvent();
-    Double_t l_Cent = (fUseCentralityOTF)?getAMPTCentrality():fImpactParameterMC;
+    Double_t l_Cent = getAMPTCentrality();
     Int_t nTracks = fMCEvent->GetNumberOfPrimaries();
     if(nTracks < 1) { return; }
     Double_t wp[5] = {0,0,0,0,0}; //Initial values, [species][w*p]
@@ -676,7 +685,6 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
     fPtCont[0]->FillKurtosis(wpPt[0],l_Cent,l_Random);
     fV0MMulti->Fill(l_Cent);
     fMultiDist->Fill(l_Cent);
-    fIPDist->Fill(fImpactParameterMC);
     Double_t mptev = wp[1]/wp[0];
     if(fFillMptPowers) {
         fMpt[0]->FillProfile(l_Cent,mptev,fUseWeightsOne?1:wp[0],l_Random);
@@ -1050,7 +1058,6 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
                     {0,0,0,0,0},
                     {0,0,0,0,0}}; //Initial values, [species][w*p]
   wpPt.clear(); wpPt.resize(4,vector<vector<double>>(10,vector<double>(10)));
-  Double_t trackXYZ[3];
   fGFW->Clear();
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
@@ -1078,29 +1085,28 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(pdgcode==211) PIDIndex = 1;
       if(pdgcode==321) PIDIndex = 2;
       if(pdgcode==2212) PIDIndex = 3;
-      if(fParticleFlag) {
-        if(PIDIndex==1&&!(fParticleFlag&kPi)) continue;
-        if(PIDIndex==2&&!(fParticleFlag&kKa)) continue;
-        if(PIDIndex==3&&!(fParticleFlag&kPr)) continue;
-      }
       //Hardcoded cuts to inhereted from AcceptAODTrack
       Double_t leta = lPart->Eta();
       if(TMath::Abs(leta) > 0.8) continue;
       Double_t pt = lPart->Pt();
-      if (pt<ptMin || pt>ptMax) continue;
+      if(!fUseChargedPtCut && (pt<ptMin || pt>ptMax)) continue;
       if(leta<-fEtaV2Sep) lNegCount++;
       if(leta>fEtaV2Sep) lPosCount++;
       if(TMath::Abs(leta)<fEtaNch) nTotNoTracksMC++; //Nch calculated in EtaNch region
-      Double_t lpt = lPart->Pt();   
       if(TMath::Abs(leta)<fEta)  { //for mean pt, only consider -0.4-0.4 region
-        FillWPCounter(wp[0],1,lpt); 
-        FillWPCounter(wpPt[0],1,lpt);
+        FillWPCounter(wp[0],1,pt); 
+        FillWPCounter(wpPt[0],1,pt);
           if(!fDisablePID) {
-            if(PIDIndex==1) { FillWPCounter(wp[PIDIndex],1,lpt); FillWPCounter(wpPt[PIDIndex],1,lpt); }
-            if(PIDIndex==2) { FillWPCounter(wp[PIDIndex],1,lpt); FillWPCounter(wpPt[PIDIndex],1,lpt); }
-            if(PIDIndex==3) { FillWPCounter(wp[PIDIndex],1,lpt); FillWPCounter(wpPt[PIDIndex],1,lpt); }
+            if(PIDIndex==1) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
+            if(PIDIndex==2) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
+            if(PIDIndex==3) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
         }
-      } 
+      }
+      if(fUseChargedPtCut) { //Using different pt cuts for charged and PID particles
+        if(PIDIndex && pt>ptMin && pt<ptMax) { fPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); } 
+        if(pt>fchPtMin && pt<fchPtMax) { fChPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,3); }
+        continue;
+      }
       if(PIDIndex) fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
       fGFW->Fill(leta,1,lPart->Phi(),1,3); //filling both gap (bit mask 1) and full (bit maks 2). Since this is MC, weight is 1.
     };
@@ -1115,14 +1121,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(!lTrack) continue;
       if(fRequirePositive && lTrack->Charge()<0) continue;
       Int_t PIDIndex = 0;
-      if(!fDisablePID){ 
-        PIDIndex = GetBayesPIDIndex(lTrack)+1;
-        if(fParticleFlag) {
-          if(PIDIndex==1&&!(fParticleFlag&kPi)) continue;
-          if(PIDIndex==2&&!(fParticleFlag&kKa)) continue;
-          if(PIDIndex==3&&!(fParticleFlag&kPr)) continue;
-        }
-      }
+      if(!fDisablePID) PIDIndex = GetBayesPIDIndex(lTrack)+1;
+    
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
       //Counting FB128 for QA:
@@ -1133,37 +1133,27 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(leta>fEtaV2Sep) lPosCount++;
       if(fEtaV2Sep>0 && TMath::Abs(leta)<fEtaV2Sep) lMidCount++;
       Double_t lpt = lTrack->Pt();
-      double weff, weff_PID;
-      if(fEfficiencyFlag&EFF_FLAG::noeff) weff = 1.0;
-      else if(fUse2DEff){
-        weff = fEfficiency[iCent][0]->GetBinContent(fEfficiency[iCent][0]->FindBin(lpt,leta));
-        if(PIDIndex) weff_PID = fEfficiency[iCent][PIDIndex]->GetBinContent(fEfficiency[iCent][PIDIndex]->FindBin(lpt,leta));
-      }
-      else {
-        weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
-        weff_PID = weff;
-      }
+      Double_t weff = (fUse2DEff)?fEfficiency[iCent][0]->GetBinContent(fEfficiency[iCent][0]->FindBin(lpt,leta)):fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
       if(weff==0.0) continue;
       weff = 1./weff; 
+      Double_t weff_PID;
+      Bool_t noPID = fDisablePID;
       if(PIDIndex) {
-        if(weff_PID==0.0) continue;
-        weff_PID = 1./weff_PID;
-      }     
-
-      if(TMath::Abs(lTrack->Eta())<fEta)  { //for mean pt, only consider -0.4-0.4 region
+        weff_PID = (fUse2DEff)?fEfficiency[iCent][PIDIndex]->GetBinContent(fEfficiency[iCent][PIDIndex]->FindBin(lpt,leta)):weff;
+      }
+      if(TMath::Abs(lTrack->Eta())<fEta)  { 
         FillWPCounter(wp[0],weff,lpt); 
         FillWPCounter(wpPt[0],weff,lpt);
-        if(!fDisablePID) {
-            if(PIDIndex==1) { FillWPCounter(wp[PIDIndex],weff_PID,lpt); FillWPCounter(wpPt[PIDIndex],weff_PID,lpt); }
-            if(PIDIndex==2) { FillWPCounter(wp[PIDIndex],weff_PID,lpt); FillWPCounter(wpPt[PIDIndex],weff_PID,lpt); }
-            if(PIDIndex==3) { FillWPCounter(wp[PIDIndex],weff_PID,lpt); FillWPCounter(wpPt[PIDIndex],weff_PID,lpt); }
+        if(PIDIndex && weff_PID != 0.0) {
+          FillWPCounter(wp[PIDIndex],1./weff_PID,lpt); 
+          FillWPCounter(wpPt[PIDIndex],1./weff_PID,lpt);
         }
-      }  //Actually, no need for if() statememnt now since GFW knows about eta's, so I can fill it all the time
+      }  
       Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
-      if(PIDIndex) { 
+      if(PIDIndex && weff_PID != 0.0) { 
         Double_t wacc_PID = 0.0;
         (fUsePIDNUA)?wacc_PID = fWeights[PIDIndex]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz):wacc;
-        fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc_PID*weff_PID,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full
+        fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc_PID*1./weff_PID,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
       }
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mask 2)
     };
@@ -1294,40 +1284,6 @@ Bool_t AliAnalysisTaskDeform::FillCovariance(AliProfileBS *target, const AliGFW:
   };
   return kTRUE;
 };
-Double_t AliAnalysisTaskDeform::getEfficiency(double &lpt, int iCent){
-  double weff = 1.0;
-  double rnd_eff = 0.0;
-  if(!fEfficiencyFlag) {                 //If efficiency flag is not set, just do what you usually do
-    if(fIsMC) return 1.0;
-    else {
-      weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
-      if(weff==0.0) return 0.0;
-      else return 1./weff;
-    }
-  }
-  if(fEfficiencyFlag&EFF_FLAG::noeff) return weff;            //Use noeff for running without weights (primarily for MC rec)
-  if(fEfficiencyFlag&EFF_FLAG::flateff) fEfficiencyFlag|=EFF_FLAG::inputeff; //for flat eff: input efficiency is required
-  if(fEfficiencyFlag&EFF_FLAG::inputeff){
-    weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
-    if(weff==0.0) return 0.0;
-  }
-  else weff = fConstEff;
-  if(fEfficiencyFlag&EFF_FLAG::consteff) {
-    rnd_eff = fRndm->Rndm(); 
-    if(rnd_eff > weff) return 0.0;
-  }
-  if(fEfficiencyFlag&EFF_FLAG::gausseff) { 
-    weff = fRndm->Gaus(weff,fSigmaEff); 
-    rnd_eff = fRndm->Rndm(); 
-    if(rnd_eff > weff) return 0.0;
-  }
-  if(fEfficiencyFlag&EFF_FLAG::flateff) {
-    weff = fEfficiencies[iCent]->GetMinimum(0.00001)/weff;
-    rnd_eff = fRndm->Rndm(); 
-    if(rnd_eff > weff) return 0.0;
-  }
-  return weff;
-}
 void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChGap22","refP {2} refN {-2}", kFALSE));     //ChGap22 0-3
   corrconfigs.push_back(GetConf("PiGap22","PiRefP {2} PiRefN {-2}", kFALSE));
@@ -1387,6 +1343,13 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("LLMR24","refP {2 2} subMid {-2} refN {-2}", kFALSE));
   corrconfigs.push_back(GetConf("LMMR24","refP {2} subMid {-2 -2} refN {2}", kFALSE));
   corrconfigs.push_back(GetConf("LMRR24","refP {2} subMid {2} refN {-2 -2}", kFALSE));
+
+  corrconfigs.push_back(GetConf("PiDiff22","PiMid {2} mid {-2}",kFALSE));
+  corrconfigs.push_back(GetConf("KaDiff22","KaMid {2} mid {-2}",kFALSE));
+  corrconfigs.push_back(GetConf("PrDiff22","PrMid {2} mid {-2}",kFALSE));  
+  corrconfigs.push_back(GetConf("PiDiff24","PiMid {2} mid {2 -2 -2}",kFALSE));
+  corrconfigs.push_back(GetConf("KaDiff24","KaMid {2} mid {2 -2 -2}",kFALSE));
+  corrconfigs.push_back(GetConf("PrDiff24","PrMid {2} mid {2 -2 -2}",kFALSE));
   return;
 };
 void AliAnalysisTaskDeform::GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf) {
@@ -1456,10 +1419,6 @@ void AliAnalysisTaskDeform::SetEtaBins(Int_t nbins, Double_t *etabins) {
 void AliAnalysisTaskDeform::SetMultiBins(Int_t nMultiBins, Double_t *multibins) {
   if(fMultiAxis) delete fMultiAxis;
   fMultiAxis = new TAxis(nMultiBins, multibins);
-}
-void AliAnalysisTaskDeform::SetIPBins(Int_t nIPBins, Double_t *IPbins) {
-  if(fIPAxis) delete fIPAxis;
-  fIPAxis = new TAxis(nIPBins, IPbins);
 }
 void AliAnalysisTaskDeform::SetV0MBins(Int_t nMultiBins, Double_t *multibins) {
   if(fV0MMultiAxis) delete fV0MMultiAxis;

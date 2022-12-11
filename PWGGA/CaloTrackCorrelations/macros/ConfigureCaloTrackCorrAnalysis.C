@@ -1728,22 +1728,27 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
         ana->SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms();
     }
     
-    //printf("ConfigureHadronCorrelationAnalysis() *** SET M02 limits in correlation task *** \n");
     ana->SetM02Cut(shshMin,shshMax);
     if ( kAnaCutsString.Contains("M02PtDepCut")  )
     {
       if ( shshMax > 0.5 ||  shshMin > 0.39 ) // for eg. M02 = 0.4 to 2
       {
+        printf("ConfigureHadronCorrelationAnalysis() *** Shower shape pT dependent MIN \n");
         ana->SwitchOnM02MinPtDependentCut();
         ana->SetM02PtDependentCutParam(0.7, -0.016) ;
       }
       else // for eg. M02 = 0.1 to 0.3
       {
+        printf("ConfigureHadronCorrelationAnalysis() *** Shower shape pT dependent MAX \n");
         ana->SwitchOnM02MaxPtDependentCut();
         ana->SetM02PtDependentCutParam(0.6, -0.016) ;
       }
+    } // pT M02 depedent cut setting
+    else
+    {
+      printf("ConfigureHadronCorrelationAnalysis() *** Shower shape range %f < M02 < %f \n", shshMin, shshMax);
     }
-  } // pT M02 depedent cut setting
+  } // Photon
   
   if ( kAnaCutsString.Contains("PerSM") ) 
     ana->SwitchOnFillHistogramsPerSM(); 
@@ -2326,10 +2331,13 @@ void ConfigureCaloTrackCorrAnalysis
   Float_t shshMin = 0.1;
   Float_t shshBkgMin = 0.4;
   Float_t shshBkgMax = 2.0;
-  if(analysisString.Contains("ShMinCorrBkg04")) shshBkgMin = 0.4;
-  if(analysisString.Contains("ShMinCorrBkg10")) shshBkgMin = 1.0;
-  if(analysisString.Contains("ShMinCorrBkg06")) shshBkgMin = 0.6;
-  if(analysisString.Contains("ShMaxCorrBkg10")) shshBkgMax = 1.0;
+  if(analysisString.Contains("ShMinCorrBkg035")) shshBkgMin = 0.35;
+  if(analysisString.Contains("ShMinCorrBkg05"))  shshBkgMin = 0.5;
+  if(analysisString.Contains("ShMinCorrBkg04"))  shshBkgMin = 0.4;
+  if(analysisString.Contains("ShMinCorrBkg10"))  shshBkgMin = 1.0;
+  if(analysisString.Contains("ShMinCorrBkg06"))  shshBkgMin = 0.6;
+  if(analysisString.Contains("ShMaxCorrBkg10"))  shshBkgMax = 1.0;
+  if(analysisString.Contains("ShMaxCorrBkg15"))  shshBkgMax = 1.5;
 
   printf("ConfigureCaloTrackCorrAnalysis() << Settings: Base string <%s>, Analysis string <%s>, "
          "\n calorimeter <%s>, simulation <%d>, year <%d>, col <%s>, "
@@ -2629,31 +2637,124 @@ void ConfigureCaloTrackCorrAnalysis
       {
         if ( !analysisString.Contains("MultiIso") && !analysisString.Contains("CorrelationIsoNarrowM02") )
         {
-          anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                         ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
           
-          if ( !analysisString.Contains("Pi0Merged") && !analysisString.Contains("NarrowM02") )
+          if ( analysisString.Contains("MultiBkgBoth")  )
           {
+            printf("*** MULTI BKG NO ISOLATION ON\n");
+  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
+  //                         ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.35, 2,
+  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshBkgMin, shshBkgMax,
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 2,
                             isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 1,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+    
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 1.5,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.5, 2.0,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.5, 1.5,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.6, 2,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
+  //                         ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 1.0, 2,
+  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          }
+          else if( !analysisString.Contains("MultiBkg"))
+          {
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+            if ( !analysisString.Contains("Pi0Merged") && !analysisString.Contains("NarrowM02") )
+            {
+              anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                             ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshBkgMin, shshBkgMax,
+                              isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                              col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            }
           }
         }
         
         if ( analysisString.Contains("Isolation")  )
         {
-          anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                         ("Photon", leading, cen[icen],cen[icen+1], kTRUE,  shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++);
-          
-          if ( !analysisString.Contains("Pi0Merged") && !analysisString.Contains("NarrowM02") )
+          if ( analysisString.Contains("MultiBkg")  )
+          {
+            printf("*** MULTI BKG ISOLATION ON\n");
+  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
+  //                         ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.35, 2,
+  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 2,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 1,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+    
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 1.5,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.5, 2.0,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.5, 1.5,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.6, 2,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
+  //                         ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 1.0, 2,
+  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          }
+          else
           {
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, shshBkgMin, shshBkgMax,
-                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE,  shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++);
+            
+            if ( !analysisString.Contains("Pi0Merged") && !analysisString.Contains("NarrowM02") )
+            {
+              anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                             ("Photon", leading, cen[icen],cen[icen+1], kTRUE, shshBkgMin, shshBkgMax,
+                              isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                              col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++);
+            }
           }
         }
       } // correlation

@@ -101,6 +101,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetUseUseLFFromEvtsWithPairs(int flag) {
     fUseLFFromEvtsWithPairs = flag;
   }
+  void SetPart2Buffer(bool flag) {
+    fUsePart2Buffer = flag;
+  }
   
   // HF related setters
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
@@ -131,6 +134,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   }
   void SetMassSelection(MassSelectionType type) {
     fMassSelectionType = type;
+  }
+  void SetMassSelection(MassSelectionType type, double nSigma) {
+    fMassSelectionType = type;
+    fNSigmaMass = nSigma;
   }
   void SetNSigmaSelection(double nSigma = 2) {
     fMassSelectionType = kSignal;
@@ -309,6 +316,16 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void StoreGlobalTrackReference(AliAODTrack *track);
   int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &scores);
   bool MassSelection(const double mass, const double pt, const int pdg, MassSelectionType selection=kTaskDefault);
+  static bool IsMassSelected(const double mass,
+                             const double pt,
+                             const int pdg,
+                             enum MassSelectionType selection,
+                             double nSigmaSignal = 2,
+                             double nSigmaOffset = 5,
+                             double sidebandWidth = 0.2,
+                             double lowerDstarRemoval = 1.992,
+                             double upperDstarRemoval = 2.028,
+                             CollSystem system = kpp13TeV);
 
   // Track / event selection objects
   AliAODEvent *fInputEvent;                          //
@@ -330,6 +347,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool fIsLightweight;     //
   bool fUseFDPairCleaner;  //
   bool fUseLFFromEvtsWithPairs; //
+  bool fUsePart2Buffer; //
   UInt_t fTrigger;         //
   int fSystem;             //
 
@@ -428,7 +446,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 19)
+ClassDef(AliAnalysisTaskCharmingFemto, 20)
 };
 
 #endif

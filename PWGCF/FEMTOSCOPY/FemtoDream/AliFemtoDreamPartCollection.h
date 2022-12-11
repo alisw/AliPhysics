@@ -36,7 +36,8 @@ class AliFemtoDreamPartCollection {
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
                 AliFemtoDreamEvent* evt,
                 std::map<std::pair<int, int>, TTree *> *kStarsSE = nullptr,
-                std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr);
+                std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr,
+                bool usePart2Buffer = true);
   void PrintEvent(int ZVtx, int Mult);
   TList* GetHistList() {
     return fHigherMath->GetHistList();

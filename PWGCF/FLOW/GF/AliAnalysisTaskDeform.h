@@ -95,6 +95,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetEta(Double_t etaLow, Double_t etaHigh) { fEtaLow = etaLow; fEta = etaHigh; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
   void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = newval; };
+  void SetChargedPt(Double_t chPtMin, Double_t chPtMax) { fUseChargedPtCut = true; fchPtMin = chPtMin; fchPtMax = chPtMax; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
@@ -115,15 +116,11 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000); };
   void SetEventWeight(unsigned int weight) { fEventWeight = weight; };
   void SetUse15oPass2PU(bool use) { fUSe15opass2PU = use; };
-  void SetPseudoEffPars(double fConstEff, double fSigmaEff);
-  void SetEfficiencyFlag(UInt_t newval) {fEfficiencyFlag = newval;};
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
   void SetUse2DEfficiencies(bool newval) {fUse2DEff = newval;};
-  void SetParticleFlag(UInt_t newval) {fParticleFlag = newval;};
   void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
-  void SetUseCentralityForOTF(bool newval) { fUseCentralityOTF = newval; }
   void SetIPBins(Int_t nBins, Double_t *multibins);
   void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
  protected:
@@ -141,15 +138,13 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fBypassTriggerAndEvetCuts;
   Bool_t fUSe15opass2PU;
   Bool_t fOnTheFly;
-  Bool_t fUseCentralityOTF;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
-  TRandom *fRndm; //For random number generation
+  TRandom *fRndm; 
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   TAxis *fPtAxis;
   TAxis *fEtaAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
-  TAxis *fIPAxis;      //Impact parameter axis for on-the-fly
   TAxis *fV0MMultiAxis;   //Defaults V0M bins
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
@@ -165,13 +160,16 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fEta;
   Double_t fEtaLow;
   Double_t fEtaNch;
-  Double_t fEtaV2Sep; //Please don't add multiple wagons with dif. values; implement subevents in the code instead. This would save TONS of CPU time.
+  Double_t fEtaV2Sep; 
+  Double_t fchPtMin;
+  Double_t fchPtMax;
+  Bool_t fUseChargedPtCut;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fQAList; //
   TH1D* fEventCount; //!
   TH1D *fMultiDist;
-  TH1D *fIPDist;
+  TH1D* fChPtDist; //!
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
@@ -203,7 +201,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
   TH3D *fPtvsCentvsPower; //!
-  TH2D *fPtDist; //!
+  TH1D *fPtDist; //!
   TH3D *fDCAxyVsPt_noChi2;
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
@@ -220,8 +218,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fMultCutPU; //Store these
   Double_t fImpactParameterMC;
   int EventNo;
-  double fConstEff;
-  double fSigmaEff;
   unsigned int fEventWeight; 
   vector<vector<vector<double>>>  wpPt;
   std::map<double,double> centralitymap;  
@@ -241,8 +237,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   vector<Double_t> getPowerEfficiency(double &lpt, int iCent);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
-  UInt_t fEfficiencyFlag;
-  UInt_t fParticleFlag;
   UInt_t fEfficiencyIndex;
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
