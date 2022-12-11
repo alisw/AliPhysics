@@ -1715,16 +1715,18 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     // reset double counting vector
     fMesonDoubleCount.clear();
 
-    if (eventNotAccepted != 0) {
+    if (eventNotAccepted != 0 && eventQuality != 4) {
       fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if (fIsMC > 1)
         fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
 
-      if (eventNotAccepted == 3 && fIsMC > 0) {
-        ProcessAODMCParticles(1);
-      }
-      if (eventNotAccepted == 5 && fIsMC > 0) {
-        ProcessAODMCParticles(2);
+      if (fIsMC > 0) {
+        if (eventNotAccepted == 3) { // Event rejected due to wrong trigger, MC particles still have to be processed
+          ProcessAODMCParticles(1);
+        }
+        if (eventNotAccepted != 1) { // exclude centrality/multiplicity selection from MC particles processing
+          ProcessAODMCParticles(2);
+        }
       }
       continue;
     }
@@ -1733,6 +1735,12 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC > 1)
         fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
+
+      if (fIsMC > 0) {
+        if (eventQuality != 4) { // 4 = event outside of +-10cm, we dont want to count these events
+          ProcessAODMCParticles(2);
+        }
+      }
       continue;
     }
 

@@ -2075,21 +2075,23 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
       fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
     }
 
-    if(eventNotAccepted!= 0){
+    // here we have to exclude eventQuality != 4 as these are events which have a vertex outside 10cm. Therefore, no MC particles should be considered!
+    if(eventNotAccepted!= 0 && eventQuality != 4){
       fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
       // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
-      if (eventNotAccepted==3 && fIsMC > 0){
-        if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessMCParticles(1);
-        if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessAODMCParticles(1);
-      }
-      if (eventNotAccepted==5 && fIsMC > 0){
-        if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessMCParticles(2);
-        if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessAODMCParticles(2);
+      if(fIsMC > 0){
+        if (eventNotAccepted==3){ // wrong trigger selected. However, we still want to count the MC particles fot these events! If MC particles should be rejected in addition, use IsMCTriggerSelected function
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessMCParticles(1);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessAODMCParticles(1);
+        } else if( eventNotAccepted != 1 && fIsMC > 0){ // exclude centrality/multiplicity selection from MC particles processing
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessMCParticles(2);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessAODMCParticles(2);
+        }
       }
       continue;
     }
@@ -2098,6 +2100,15 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
       //cout << "event rejected due to: " <<eventQuality << endl;
       fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
+
+      if(fIsMC > 0){
+        if(eventQuality != 4){ // 4 = event outside of +-10cm, we dont want to count these events
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessMCParticles(2);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessAODMCParticles(2);
+        }
+      }
 
       continue;
     }
