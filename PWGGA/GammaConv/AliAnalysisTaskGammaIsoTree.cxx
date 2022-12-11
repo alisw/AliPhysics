@@ -104,6 +104,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fGenPtCut(0),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
+  fHistoMCPileup(NULL),
   fHistoChargedIso(NULL),
   fHistoTaggingPCMPCM(NULL),
   fHistoTaggingPCMEMC(NULL),
@@ -417,6 +418,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_EventNPrimaryTracks(0),
   fBuffer_EventIsTriggered(0),
   fBuffer_EventZVertex(0),
+  fBuffer_EventQuality(0),
+  fBuffer_EventNotAccepted(0),
   fBuffer_ClusterE(0), 
   fBuffer_ClusterPx(0), 
   fBuffer_ClusterPy(0), 
@@ -548,6 +551,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fGenPtCut(0),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
+  fHistoMCPileup(NULL),
   fHistoChargedIso(NULL),
   fHistoTaggingPCMPCM(NULL),
   fHistoTaggingPCMEMC(NULL),
@@ -863,6 +867,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_EventNPrimaryTracks(0),
   fBuffer_EventIsTriggered(0),
   fBuffer_EventZVertex(0),
+  fBuffer_EventQuality(0),
+  fBuffer_EventNotAccepted(0),
   fBuffer_ClusterE(0), 
   fBuffer_ClusterPx(0), 
   fBuffer_ClusterPy(0), 
@@ -1085,6 +1091,13 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fHistoNEventsWOWeight->GetYaxis()->SetTitle("N_{events}");
     fHistoNEventsWOWeight->Sumw2();
     fGeneralFolder->Add(fHistoNEventsWOWeight);
+
+    fHistoMCPileup = new TH1F("fHistoMCPileup","fHistoMCPileup",2,-0.5,1.5);
+    fHistoMCPileup->GetXaxis()->SetBinLabel(1,"before MC pileup");
+    fHistoMCPileup->GetXaxis()->SetBinLabel(2,"after rejection");
+    fHistoMCPileup->GetYaxis()->SetTitle("N_{events}");
+    fHistoMCPileup->Sumw2();
+    fGeneralFolder->Add(fHistoMCPileup);
   }
 
   //
@@ -2517,6 +2530,8 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("Event_NPrimaryTracks", &fBuffer_EventNPrimaryTracks,"Event_NPrimaryTracks/s");
     fAnalysisTree->Branch("Event_IsTriggered", &fBuffer_EventIsTriggered,"Event_IsTriggered/O");
     fAnalysisTree->Branch("Event_ZVertex", &fBuffer_EventZVertex,"Event_ZVertex/D");
+    fAnalysisTree->Branch("Event_Quality", &fBuffer_EventQuality,"Event_Quality/s");
+    fAnalysisTree->Branch("Event_NotAccepted", &fBuffer_EventNotAccepted,"Event_NotAccepted/s");
     fAnalysisTree->Branch("Cluster_E","std::vector<Float_t>",&fBuffer_ClusterE);
     fAnalysisTree->Branch("Cluster_Px","std::vector<Float_t>",&fBuffer_ClusterPx);
     fAnalysisTree->Branch("Cluster_Py","std::vector<Float_t>",&fBuffer_ClusterPy);
@@ -2588,13 +2603,41 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
      RelabelAODPhotonCandidates(kTRUE);    // In case of AODMC relabeling MC
      fV0Reader->RelabelAODs(kTRUE);
   }
-
+  // preselection from V0Reader
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
   if(InputEvent()->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
   if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
     fHistoNEvents->Fill(eventQuality);
     if (fIsMC>1) fHistoNEventsWOWeight->Fill(eventQuality);
     return;
+  }
+
+  // check if event is any of the MC headers contains generated pileup event
+  if(fIsMC > 0){
+    fHistoMCPileup->Fill(0);
+    if(fMCEvent){
+      AliAODMCHeader *aodMCheader = NULL;
+      AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent);
+      if(aod) aodMCheader = (AliAODMCHeader*)aod->FindListObject(AliAODMCHeader::StdBranchName());   
+        
+      // find cocktail header
+      if(aodMCheader){
+        Int_t nGenerators = aodMCheader->GetNCocktailHeaders();
+        if ( nGenerators > 0  ){
+          for(Int_t igen = 0; igen < nGenerators; igen++)
+          {
+             AliGenEventHeader * eventHeaderGen = aodMCheader->GetCocktailHeader(igen) ;
+             TString genname = eventHeaderGen->ClassName();
+             bool isPileUp =   AliAnalysisUtils::IsPileupInGeneratedEvent(aodMCheader,genname);
+             if(isPileUp) return;  
+             // this case is rare and should almost never happen (i think)
+             isPileUp =   AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(aodMCheader,genname);
+              if(isPileUp) return;
+          }
+        }
+      }
+    }
+    fHistoMCPileup->Fill(1);
   }
 
   fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
@@ -2615,6 +2658,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
     if(!outrhoMC) AliInfo("could not find rho MC container!");
   }
 
+  // Do outlier rejection etc
   Float_t xsection = 0;
   Float_t ntrials = 0;
   if (fIsMC > 0){
@@ -2639,27 +2683,85 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
 
   }
 
+
+  // get rho etc
+  if(outrho){ // ugly workaround until problem is fixed
+    fChargedRho = outrho->GetVal();
+  } else{
+    fChargedRho = 0.;
+  }
+
+  fChargedRhoMC = 0;
+  if(outrhoMC){ // ugly workaround until problem is fixed
+    fChargedRhoMC = outrhoMC->GetVal();
+  } else{
+    fChargedRhoMC = 0.;
+  }
+  for (UInt_t r = 0; r < fTrackIsolationR.size(); r++)
+  {
+    fChargedRhoTimesArea[r] = fChargedRho * TMath::Pi() * pow(fTrackIsolationR.at(r),2);
+  }
+  // auto startMCPart = std::chrono::high_resolution_clock::now();
+  // if(fIsMC>0) ProcessMCParticles();
+  //ProcessTracks(); //
+  // auto endMCPart = std::chrono::high_resolution_clock::now();
+  if(!fUseHistograms){
+    fBuffer_EventWeight = fWeightJetJetMC;
+    fBuffer_EventXsection = xsection;
+    fBuffer_EventNtrials = ntrials;
+    fBuffer_EventIsTriggered = kFALSE;
+    fBuffer_EventQuality = (UShort_t) eventQuality;
+    fBuffer_EventNotAccepted = (UShort_t) eventNotAccepted;
+  }
+
+  // always process MC Gen Level particles unless when vertex is out of z range ( to avoid double counting)
+  if (fIsMC > 0 && eventQuality != 4){
+    ProcessMCParticles();
+  }
+
+// check if gen particles are filled for vertex outside z range !!! TODO
   Bool_t triggered = kTRUE;
   if(eventNotAccepted!=0){
       fHistoNEvents->Fill(eventNotAccepted,fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if (fIsMC>1) fHistoNEventsWOWeight->Fill(eventNotAccepted);
-      if (eventNotAccepted==3 && fIsMC > 0){
+      if (eventNotAccepted==3 && fIsMC > 0){ // this is suspicious!!!!!
         triggered = kFALSE;
-      }else {
-        return;
       }
+      fBuffer_EventIsTriggered = triggered;
+      // fill all the trees
+
+      if(!fUseHistograms){
+        fBuffer_EventRho = fChargedRho;
+        fBuffer_EventRhoMC = fChargedRhoMC;
+        fAnalysisTree->Fill();
+        PostData(2, fAnalysisTree);
+      }
+      ResetBuffer();
+      return;
   }
 
-  if(eventQuality != 0 && triggered== kTRUE){// Event Not Accepted
+  fBuffer_EventIsTriggered = triggered;
+
+
+  if(eventQuality != 0){// Event Not Accepted
     fHistoNEvents->Fill(eventQuality, fWeightJetJetMC);
     if (fIsMC>1) fHistoNEventsWOWeight->Fill(eventQuality); // Should be 0 here
+    if(!fUseHistograms){
+      fBuffer_EventRho = fChargedRho;
+      fBuffer_EventRhoMC = fChargedRhoMC;
+      fAnalysisTree->Fill();
+      PostData(2, fAnalysisTree);
+    }
+    ResetBuffer();
     return;
   }
 
-  if (triggered == kTRUE) {
-    fHistoNEvents->Fill(eventQuality,fWeightJetJetMC);
-    if (fIsMC>1) fHistoNEventsWOWeight->Fill(eventQuality); // Should be 0 here
-  }
+  
+  if(!fUseHistograms) fBuffer_EventIsTriggered = kTRUE;
+  // event is accepted! Fill the event histogram
+  fHistoNEvents->Fill(eventQuality,fWeightJetJetMC);
+  if (fIsMC>1) fHistoNEventsWOWeight->Fill(eventQuality); // Should be 0 here
+  
 
   fGeomEMCAL                          = AliEMCALGeometry::GetInstance();
   if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
@@ -2697,45 +2799,6 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   //
   // ─── MAIN PROCESSING ────────────────────────────────────────────────────────────
   //
-  if(outrho){ // ugly workaround until problem is fixed
-    fChargedRho = outrho->GetVal();
-  } else{
-    fChargedRho = 0.;
-  }
-
-  fChargedRhoMC = 0;
-  if(outrhoMC){ // ugly workaround until problem is fixed
-    fChargedRhoMC = outrhoMC->GetVal();
-  } else{
-    fChargedRhoMC = 0.;
-  }
-  for (UInt_t r = 0; r < fTrackIsolationR.size(); r++)
-  {
-    fChargedRhoTimesArea[r] = fChargedRho * TMath::Pi() * pow(fTrackIsolationR.at(r),2);
-  }
-  // auto startMCPart = std::chrono::high_resolution_clock::now();
-  if(fIsMC>0) ProcessMCParticles();
-  //ProcessTracks(); //
-  // auto endMCPart = std::chrono::high_resolution_clock::now();
-  if(!fUseHistograms){
-    fBuffer_EventWeight = fWeightJetJetMC;
-    fBuffer_EventXsection = xsection;
-    fBuffer_EventNtrials = ntrials;
-    fBuffer_EventIsTriggered = kFALSE;
-  }
-  if (triggered==kFALSE){
-    // fill output from MC
-    if(!fUseHistograms){
-      fBuffer_EventRho = fChargedRho;
-      fBuffer_EventRhoMC = fChargedRhoMC;
-      fAnalysisTree->Fill();
-      PostData(2, fAnalysisTree);
-    }
-    ResetBuffer();
-    return;
-  }
-
-  if(!fUseHistograms) fBuffer_EventIsTriggered = kTRUE;
   // vertex
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -3863,6 +3926,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
+  AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (fAODMCTrackArray){
@@ -3881,6 +3945,10 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
       //   new((*fMCParticles)[pos]) AliAODMCParticle();
       //   pos++;
       // }
+
+      // check if particle is from pileup event
+      bool isPileupMC = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, mcHeader, fAODMCTrackArray);
+      if(isPileupMC) AliWarning("Pileup MC particle found!");
       // check if primary
       Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 
