@@ -123,6 +123,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fV0MMulti(0),
   fITSvsTPCMulti(0),
   fV2dPtMulti(0),
+  fIP(0),
   fSPDCutPU(0),
   fV0CutPU(0),
   fCenCutLowPU(0),
@@ -223,6 +224,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fV0MMulti(0),
   fITSvsTPCMulti(0),
   fV2dPtMulti(0),
+  fIP(0),
   fSPDCutPU(0),
   fV0CutPU(0),
   fCenCutLowPU(0),
@@ -294,6 +296,11 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   if(!fPtAxis) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
   fPtBins = GetBinsFromAxis(fPtAxis);
   fNPtBins = fPtAxis->GetNbins();
+  int Neta_Default = 1;
+  double l_eta_Default[] = {-0.8,0.8};
+  if(!fEtaAxis) { printf("Setting default eta bins\n"); SetEtaBins(Neta_Default,l_eta_Default);}
+  fEtaBins=GetBinsFromAxis(fEtaAxis);
+  fNEtaBins=fEtaAxis->GetNbins();
   TString spNames[] = {"ch","pi","ka","pr"};
   if(fStageSwitch==1) {
     fRequireReloadOnRunChange = kFALSE;
@@ -319,11 +326,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   if(fStageSwitch==2) {
     fSpectraList = new TList();
     fSpectraList->SetOwner(kTRUE);
-    int Neta_Default = 1;
-    double l_eta_Default[] = {-0.8,0.8};
-    if(!fEtaAxis) { printf("Setting default eta bins\n"); SetEtaBins(Neta_Default,l_eta_Default);}
-    fEtaBins=GetBinsFromAxis(fEtaAxis);
-    fNEtaBins=fEtaAxis->GetNbins();
     TString spNames[]={"ch","pi","ka","pr"};
     Int_t l_NNchBins = 3000;
     Double_t *l_NchBins = new Double_t[l_NNchBins+1];
@@ -373,7 +375,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
           for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
             fEfficiency[i][iSp] = (TH2D*)fEfficiencyList->FindObject(Form("EffRescaled%s_Cent%i%s",species[iSp],i,fGFWSelection->GetSystPF()));
             if(!fEfficiency[i][iSp]) {
-              if(!i) AliFatal("Could not fetch efficiency!\n");
+              if(!i) AliFatal(Form("Could not fetch efficiency EffRescaled%s_Cent%i%s\n",species[iSp],i,fGFWSelection->GetSystPF()));
               printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
               fEfficiency[i][iSp] = (TH2D*)fEfficiency[i-1][iSp]->Clone(Form("EffRescaled%s_Cent%i%s",species[iSp],i,fGFWSelection->GetSystPF()));
             };
@@ -397,9 +399,12 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     if(fOnTheFly)
     {
       printf("Creating OTF objects\n");
-      vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
-      vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
-      for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
+      if(centralitymap.empty()) {
+        vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
+        vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
+        for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
+      }
+      fIP = new TH1D("fIP","Impact parameter",1000,0.0,30.0);
       printf("OTF objects created\n");
     }
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
@@ -653,6 +658,7 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
   EventNo++;
   if(fOnTheFly){
     fMCEvent = getMCEvent();
+    fIP->Fill(fImpactParameterMC);
     Double_t l_Cent = getAMPTCentrality();
     Int_t nTracks = fMCEvent->GetNumberOfPrimaries();
     if(nTracks < 1) { return; }
@@ -816,7 +822,9 @@ AliMCEvent *AliAnalysisTaskDeform::getMCEvent() {
 }
 double AliAnalysisTaskDeform::getAMPTCentrality()
 {
-  vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
+  vector<double> b;
+  if(centralitymap.empty()) AliFatal("Centralitymap is empty!");
+  for (auto const& element : centralitymap) b.push_back(element.first);
   vector<double>::iterator it = upper_bound(b.begin(),b.end(),fImpactParameterMC);
   double l_cent = (fImpactParameterMC<0)?-1.0:(centralitymap[b[it-b.begin()]]+centralitymap[b[it-b.begin()-1]])/2.0;
   return l_cent;

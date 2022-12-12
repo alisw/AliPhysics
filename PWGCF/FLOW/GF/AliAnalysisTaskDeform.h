@@ -123,6 +123,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
   void SetIPBins(Int_t nBins, Double_t *multibins);
   void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
+  void SetAMPTCentralityMap(vector<double> b, vector<double> cent) { for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i]; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -149,7 +150,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Int_t fNEtaBins; //!
-  Double_t *fEtaBins;
+  Double_t *fEtaBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
   Double_t fV0MCentMin;
@@ -209,6 +210,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D *fV0MMulti;
   TH2D *fITSvsTPCMulti;
   TH1D *fV2dPtMulti;
+  TH1D* fIP;
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store
   TF1 *fSPDCutPU; //Store these
