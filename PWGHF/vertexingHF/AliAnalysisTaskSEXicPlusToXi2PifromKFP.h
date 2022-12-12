@@ -77,10 +77,13 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         void FillEventROOTObjects();
         void FillTreeGenXicPlus(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP);
         void FillTreeRecXicPlusFromCasc(AliAODEvent *AODEvent, AliAODcascade *casc, KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, KFParticle PV_KF_Refit, TClonesArray *mcArray, Int_t lab_XicPlus);
-        void FillQATreeXicPlusFromCasc_woMassConstForLamAndXi(KFParticle kfpLambda, KFParticle kfpXiMinus_woMassConstForLamAndXi, KFParticle kfpXicPlus_woMassConstForLamAndXi, KFParticle PV, AliAODTrack *trackPiFromXicPlus_trk1, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
-        void FillQATreeXicPlusFromCasc_woMassConstForLam_wMassConstForXi(KFParticle kfpLambda, KFParticle kfpXiMinus_woMassConstForLam_wMassConstForXi, KFParticle kfpXicPlus_woMassConstForLam_wMassConstForXi, KFParticle PV, AliAODTrack *trackPiFromXicPlus_trk1, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
-        void FillQATreeXicPlusFromCasc_wMassConstForLam_woMassConstForXi(KFParticle kfpLambda_wMassConst, KFParticle kfpXiMinus_wMassConstForLam_woMassConstForXi, KFParticle kfpXicPlus_wMassConstForLam_woMassConstForXi, KFParticle PV, AliAODTrack *trackPiFromXicPlus_trk1, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
-        void FillQATreeXicPlusFromCasc_wMassConstForLamAndXi(KFParticle kfpLambda_wMassConst, KFParticle kfpXiMinus_wMassConstForLamAndXi, KFParticle kfpXicPlus_wMassConstForLamAndXi, KFParticle PV, AliAODTrack *trackPiFromXicPlus_trk1, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
+        void FillQATreeXicPlusFromCasc_woMassConstForLamAndXi(KFParticle kfpLambda, KFParticle kfpXiMinus_woMassConstForLamAndXi, KFParticle kfpXicPlus_woMassConstForLamAndXi, KFParticle PV, AliAODTrack *trackPiFromXicMinus_LowPt, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
+        void FillQATreeXicPlusFromCasc_woMassConstForLam_wMassConstForXi(KFParticle kfpLambda, KFParticle kfpXiMinus_woMassConstForLam_wMassConstForXi, KFParticle kfpXicPlus_woMassConstForLam_wMassConstForXi, KFParticle PV, AliAODTrack *trackPiFromXicPlus_LowPt, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
+        void FillQATreeXicPlusFromCasc_wMassConstForLam_woMassConstForXi(KFParticle kfpLambda_wMassConst, KFParticle kfpXiMinus_wMassConstForLam_woMassConstForXi, KFParticle kfpXicPlus_wMassConstForLam_woMassConstForXi, KFParticle PV, AliAODTrack *trackPiFromXicMinus_LowPt, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
+        void FillQATreeXicPlusFromCasc_wMassConstForLamAndXi(KFParticle kfpLambda_wMassConst, KFParticle kfpXiMinus_wMassConstForLamAndXi, KFParticle kfpXicPlus_wMassConstForLamAndXi, KFParticle PV, AliAODTrack *trackPiFromXicPlus_LowPt, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
+        void FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassConstForXi(KFParticle kfpLambda_wMassConst_To_Xi_wMassConst, KFParticle kfpXiMinus_wMassAndTopoConstForLam_wMassConstForXi, KFParticle kfpXicPlus_wMassAndTopoConstForLam_wMassConstForXi, KFParticle PV, AliAODTrack *trackPiFromXicPlus_LowPt, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
+        void FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassAndTopoConstForXi(KFParticle kfpLambda_wMassConst_To_Xi_wMassConst, KFParticle kfpXiMinus_wMassAndTopoConstForLam_wMassAndTopoConstForXi, KFParticle kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi, KFParticle PV, AliAODTrack *trackPiFromXicPlus_LowPt, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
+        void FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic(KFParticle kfpLambda_wMassConst_To_Xi_wMassConst, KFParticle kfpXiMinus_wMassAndTopoConstForLam_wMassAndTopoConstForXi, KFParticle kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic, KFParticle PV, AliAODTrack *trackPiFromXicPlus_LowPt, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent);
 
         AliAODVertex* PrimaryVertex(const TObjArray *trkArray, AliVEvent *event);
         AliAODVertex* CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *aodEvent);
@@ -97,6 +100,9 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         void                    DefineTreeQAXicPlus_woMassConstForLam_wMassConstForXi();
         void                    DefineTreeQAXicPlus_wMassConstForLam_woMassConstForXi();
         void                    DefineTreeQAXicPlus_wMassConstForLamAndXi();
+        void                    DefineTreeQAXicPlus_wMassAndTopoConstForLam_wMassConstForXi();
+        void                    DefineTreeQAXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi();
+        void                    DefineTreeQAXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic();
         AliPIDResponse*         fPID;                 ///<
         AliRDHFCutsKFP*         fAnaCuts;             ///< Cuts
         AliAODVertex*           fpVtx;                //!<! primary vertex
@@ -121,6 +127,12 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         Float_t*                fVar_XicPlus_QA_woMassConstForLam_wMassConstForXi;      //!<! variables of QA tree without mass constraint for Lambda and with mass constraint for Xi
         TTree*                  fTree_XicPlus_QA_wMassConstForLamAndXi;     //!<! QA tree with mass constraint for both Lambda and Xi
         Float_t*                fVar_XicPlus_QA_wMassConstForLamAndXi;      //!<! variables of QA tree with mass constraint for both Lambda and Xi
+        TTree*                  fTree_XicPlus_QA_wMassAndTopoConstForLam_wMassConstForXi;     //!<! QA tree (Lambda with mass constraint and topo to mass constrained Xi)
+        Float_t*                fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassConstForXi;      //!<! variables of QA tree
+        TTree*                  fTree_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi;     //!<! QA tree (Lambda with mass constraint and topo to mass constrained Xi + Xi with topo constraint to primary)
+        Float_t*                fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi;      //!<! variables of QA tree
+        TTree*                  fTree_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic;     //!<! QA tree (Lambda with mass constraint and topo to mass constrained Xi + Xi with topo constraint to primary)
+        Float_t*                fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic;      //!<! variables of QA tree
         TList*                  fListCuts;            //!<! User output slot 3 // Cuts 
         ULong64_t               fVar_XicPlus_EvtID;   //!<! Event ID
 
@@ -196,7 +208,7 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicPlusToXi2PifromKFP(const AliAnalysisTaskSEXicPlusToXi2PifromKFP &source); // not implemented
         AliAnalysisTaskSEXicPlusToXi2PifromKFP& operator=(const AliAnalysisTaskSEXicPlusToXi2PifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicPlusToXi2PifromKFP, 6);
+        ClassDef(AliAnalysisTaskSEXicPlusToXi2PifromKFP, 7);
 };
 
 #endif
