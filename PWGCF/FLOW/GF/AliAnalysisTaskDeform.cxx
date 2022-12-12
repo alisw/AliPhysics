@@ -141,7 +141,9 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fFillMptPowers(kFALSE),
   EventNo(0),
   fEventWeight(PtSpace::kOne),
-  wpPt(0)
+  wpPt(0),
+  wpPtSubP(0),
+  wpPtSubN(0)
 {
 };
 AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TString stageSwitch, TString ContSubfix, int Nkeys):
@@ -242,7 +244,9 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fFillMptPowers(kFALSE),
   EventNo(0),
   fEventWeight(PtSpace::kOne),
-  wpPt(0)
+  wpPt(0),
+  wpPtSubP(0),
+  wpPtSubN(0)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
   SetContSubfix(ContSubfix);
@@ -417,7 +421,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     for(Int_t i=0;i<endPID;i++) {
       fCkCont[i] = new AliCkContainer(Form("ckcont_%s",spNames[i].Data()),Form("ckcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fptVarList->Add(fCkCont[i]);
-      fPtCont[i] = new AliPtContainer(Form("ptcont_%s",spNames[i].Data()),Form("ptcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins,8,false);
+      fPtCont[i] = new AliPtContainer(Form("ptcont_%s",spNames[i].Data()),Form("ptcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins,8,true);
       fptVarList->Add(fPtCont[i]);
       fPtCont[i]->SetEventWeight(fEventWeight);
       if(fNBootstrapProfiles) {
@@ -1066,6 +1070,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
                     {0,0,0,0,0},
                     {0,0,0,0,0}}; //Initial values, [species][w*p]
   wpPt.clear(); wpPt.resize(4,vector<vector<double>>(10,vector<double>(10)));
+  wpPtSubP.clear(); wpPtSubP.resize(4,vector<vector<double>>(10,vector<double>(10)));
+  wpPtSubN.clear(); wpPtSubN.resize(4,vector<vector<double>>(10,vector<double>(10)));
   fGFW->Clear();
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
@@ -1101,14 +1107,18 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(leta<-fEtaV2Sep) lNegCount++;
       if(leta>fEtaV2Sep) lPosCount++;
       if(TMath::Abs(leta)<fEtaNch) nTotNoTracksMC++; //Nch calculated in EtaNch region
+      if(leta<-fEtaV2Sep) {
+        FillWPCounter(wpPtSubN[0],1,pt);
+        if(!fDisablePID) FillWPCounter(wpPtSubN[PIDIndex],1,pt); 
+      }
+      if(leta > fEtaV2Sep) {
+        FillWPCounter(wpPtSubP[0],1,pt);
+        if(!fDisablePID && PIDIndex > 0) FillWPCounter(wpPtSubP[PIDIndex],1,pt); 
+      }
       if(TMath::Abs(leta)<fEta)  { //for mean pt, only consider -0.4-0.4 region
         FillWPCounter(wp[0],1,pt); 
         FillWPCounter(wpPt[0],1,pt);
-          if(!fDisablePID) {
-            if(PIDIndex==1) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
-            if(PIDIndex==2) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
-            if(PIDIndex==3) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
-        }
+        if(!fDisablePID && PIDIndex > 0) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
       }
       if(fUseChargedPtCut) { //Using different pt cuts for charged and PID particles
         if(PIDIndex && pt>ptMin && pt<ptMax) { fPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); } 
@@ -1188,6 +1198,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   for(int i(0);i<endPID;++i){
     fCkCont[i]->FillObs(wp[i],l_Multi,l_Random);
     fPtCont[i]->FillRecursive(wpPt[i],l_Multi,l_Random);
+    fPtCont[i]->FillRecursive(wpPtSubP[i],l_Multi,l_Random,"subP");
+    fPtCont[i]->FillRecursive(wpPtSubN[i],l_Multi,l_Random,"subN");
     fPtCont[i]->FillCk(wpPt[i],l_Multi,l_Random);
     fPtCont[i]->FillSkew(wpPt[i],l_Multi,l_Random);
     fPtCont[i]->FillKurtosis(wpPt[i],l_Multi,l_Random);
