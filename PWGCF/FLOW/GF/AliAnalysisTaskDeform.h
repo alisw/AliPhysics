@@ -222,6 +222,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   int EventNo;
   unsigned int fEventWeight; 
   vector<vector<vector<double>>>  wpPt;
+  vector<vector<vector<double>>>  wpPtSubP;
+  vector<vector<vector<double>>>  wpPtSubN;
   std::map<double,double> centralitymap;  
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
