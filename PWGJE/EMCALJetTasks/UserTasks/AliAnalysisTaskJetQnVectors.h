@@ -38,6 +38,7 @@ public:
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
 
+    void CreateQnVectorHandlers(); // Create the QnVector handlers, including loading the calibration files
     TDirectoryFile*  GetSplineForqnPercentileList(int det=kFullTPC) const;
     void SetUseQnFrameworkCalibrations()                                                                 {fCalibType = AliJEQnVectorHandler::kQnFrameworkCalib;}
     void SetNormalisationMethod(int normmethod)                                                          {fNormMethod = normmethod;}
