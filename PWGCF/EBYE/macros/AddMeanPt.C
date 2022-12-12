@@ -42,7 +42,7 @@ AliAnalysisMeanPt* AddMeanPt(
     
     // same for the output
     mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("fList_%s_MB_FB%d_%s",period.Data(), trackBit, suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("fTreept_%s_MB_FB%d_%s",period.Data(), trackBit, suffix.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
+    //mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("fTreept_%s_MB_FB%d_%s",period.Data(), trackBit, suffix.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
 	//mgr->ConnectOutput(task,2,mgr->CreateContainer("fTreept", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
 
     return task;
