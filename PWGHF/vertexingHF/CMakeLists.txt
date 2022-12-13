@@ -76,6 +76,7 @@ set(SRCS
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
   AliRDHFCutsXicZerotoXiPifromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
+  AliAnaTaskSEXic0SL.C
   AliAnalysisVertexingHF.cxx
   AliAnalysisTaskSEB0toDPi.cxx
   AliAnalysisTaskSEB0toDStarPi.cxx

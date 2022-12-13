@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 
+#pragma link C++ class AliAnaTaskSEXic0SL+; 
 #pragma link C++ class AliAODRecoDecayHF+;
 #pragma link C++ class AliAODRecoDecayHF2Prong+;
 #pragma link C++ class AliAODRecoDecayHF3Prong+;
