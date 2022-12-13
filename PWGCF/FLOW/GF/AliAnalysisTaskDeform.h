@@ -124,6 +124,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetIPBins(Int_t nBins, Double_t *multibins);
   void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
   void SetAMPTCentralityMap(vector<double> b, vector<double> cent) { for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i]; }
+  void SetUseMcParticleForEfficiency(bool newval) { fUseMcParticleForEfficiency = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -247,6 +248,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUse2DEff;
   Bool_t fUsePIDNUA;
   Bool_t fFillMptPowers;
+  Bool_t fUseMcParticleForEfficiency;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskDeform,1);
 };
