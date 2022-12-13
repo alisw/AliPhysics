@@ -366,6 +366,7 @@ private:
   Int_t fCurrentRun;
   
   Float_t fQuantiles[100]; //! percentiles
+  Float_t fRaw[100]; //! raw vals
   Int_t fEvSelCode; //Final code in event selection
   Int_t fNDebug; // number of percentiles
   
